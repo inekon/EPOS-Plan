@@ -10162,3 +10162,246 @@ Zuruf; (b) Satz 79 `Abmessung_Anschluß_Fenster_Wand` 1.800 gegenüber
 Nach #487 (b)); (c) `Rang()`-Gewichtung Schlüssel gegen Anzeigename
 bleibt offener Anwenderentscheid (Empfehlung „Regel lassen“,
 unverändert aus Nach #487 (a)).
+
+## #491 — Katalogsatz 79 Krankenhaus: übrige Werte geprüft, keine Berichtigung (24.09.2026)
+
+Anwenderauftrag 24.09.2026 „starte: … die übrigen auffälligen Werte des
+Katalogsatzes 79“; Basis `571a80e5`, Merge `69d64d3e` auf `c6d0b0ac`. Ein
+Opus-Agent hat alle 87 Spalten von `Tab_Gebaeude_STAMM` des Satzes 79
+`Krankenhaus_92-EnEV2016` gegen `KrankenH_NE` (78) und `KrankenH-F-*`
+(80–83) geprüft. Commit `af37b530` (Konzept Administrationsdialoge 7.1
+(a)).
+
+**Leitgedanke.** Die Familie „EnEV-2016-Nichtwohngebäude“ (`gr_Hotel-80`,
+`Hotel-72`, `Bildungszentrum-53`, `Kindergarten_88`, `Büro_gross-30`,
+`Verwaltung_40`, Satz 79) teilt U-Werte 0,18/0,15/0,20, ψ-Werte
+0,09/0,18/0,30, Baualtersklasse Q und verkleinerte Fensterflächen mit
+gerundeten Anschlusslängen; Vorbild `gr_Hotel-80-EnEV2016` (Ost/West 1
+520,4 → 350, Anschlusslänge 600 m, Außenwand ebenfalls nicht nachgeführt).
+
+**Ergebnis.** Keine Abweichung der Klasse A (unplausibel), daher kein
+Schemaschritt, Nummer 131 nicht vergeben, Testdatenbank unverändert
+(LFS-oid
+`4c546a7c05137b9e45549d3d0dd171150f6f74734327bafaf61ad5405ff8345a`), kein
+Referenzlauf. Einfrierregel: kein Referenzprojekt nutzt Satz 79 (keine
+Kopie über `ID_Gebaeude_Stamm = 79`, kein Name „kranken%“; die 13
+Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56).
+
+**Klassifikationstabelle.**
+
+| Spalte | 79 | 78 | F-Sätze | Klasse | Begründung |
+|---|---|---|---|---|---|
+| `Fensterflaeche_Ost_West` | 400 | 1 520,4 | 1 520,4 | B | Verkleinerung wie in der Familie (`gr_Hotel-80`: 350); gesamt 1 895,9 stimmt |
+| `gesamte_Fensterflaeche` | 1 895,9 | 3 016,3 | 3 062,3 | B | folgt aus den Teilflächen (Schritt 126) |
+| `Abmessung_Anschluß_Fenster_Wand` | 1 800 | 7 655,75 | 243,7 | **C** | 0,95 m je m² Fenster (78: 2,54; Katalog-Median 2,52, 10-%-Quantil 0,44; Familie 0,18–2,0). Physikalisch möglich: Untergrenze Fensterbänder 2·A_w/h = 2·1 895,9/3,5 ≈ 1 083 m; Verhältnis von 78 übertragen → 2,538·1 895,9 ≈ 4 812 m, ΔH_T = 0,09·3 012 ≈ +271 W/K (≈ +4 % von H_T ≈ 6 581 W/K) — **Anwenderentscheid** |
+| `Flaeche_Außenwand` | 12 094 | 12 094 | 10 094 | **C** | Hüllfläche (Wand + Fenster) sinkt von 15 110,3 auf 13 989,9 m²; Geometrie (Umfang 313,8 m, 13,6 Geschosse) verlangt ~15 110 m²: entweder Wand 13 214,4 m² (+202 W/K) oder Ost/West 1 520,4 zurück — **Anwenderentscheid** |
+| `Raumhoehe` | 3,5 | 3,0 | 2,55 | B | passt zur Geometrie (15 110,3/313,8/13,62 ≈ 3,53 m) |
+| `k_Wert_Fenster` | 1,3 | 1,1 | 1,3 / 2,8 | B | Wert aus Schritt 126; Familie trägt 0,9 (Hinweis) |
+| `k_Wert_Dachflaeche` / `Grundflaeche` | 0,15 / 0,20 | 0,14 / 0,25 | 0,35 / 0,75 | B | EnEV-2016-Familienwerte |
+| `k_Wert_Außenwand`, `_Sonstiges` | 0,18 / 0,3 | 0,18 / 0,3 | 0,83 / 0,83 | – | wie 78 |
+| WBVK Fenster–Wand / Wand–Dach / Außenwand–Keller | 0,09 / 0,18 / 0,30 | 0,04 / 0,10 / 0,05 | 0,44 / 0,007 / 0,368 | B | ψ-Satz der Familie (14- bzw. 8-mal im Katalog) |
+| Abmessung Wand–Dach / Außenwand–Keller | 313,8 / 313,8 | 313,8 / 313,8 | 7 879 / 1 392,8 | – | wie 78, gleich dem Umfang |
+| `Baualtersklasse` | Q | I | F | B | Familie |
+| `Beschreibung` | „…EnEV 2016 Baustandard“ | „…Bj 2000 Niederenergiebauweise“ | – | B | Textstand |
+| `Gebaeudeart` | 'Krankenhaus' | 'Krankenhaus ' (Leerzeichen) | teils NULL | – | 79 ist sauber |
+| `Fensterdurchlassgrad`, `Fensterflaeche_Sued` u. a. | 0,4000000060 / 1245,9000244 | 0,4 / 1 245,9 | dito | B | Rauschen einfacher Genauigkeit |
+| übrige Spalten (Wohnfläche, Bewohner, Fläche je Nutzer, Nutzfläche, Bauweise, interne Gewinne, Solltemperaturen, Ferien, WW_Bedarf, Dach-/Grund-/sonstige Flächen, Luftwechsel, Modell-, Kühl-, Heizkreisspalten) | gleich 78 | | | – | 400,24·50 = 20 012 ✓ |
+
+**Nebenbefund (Folgewelle-Kandidat, nicht angefasst).** `KrankenH-F-*`
+(80–83), `gr_Hotel-G-134` (37), `Kaufhaus` (77): Fenster–Wand 243,7 m bei 3
+062 bzw. 2 262 m² Fenster (0,08 m je m², unter jeder physikalischen
+Untergrenze; 2·A_w/h ≈ 2 400 m) und Wand–Dach 7 879 m bei 1 469 m² Dach —
+sieht nach vertauschten/verschobenen Feldern aus.
+
+**Prüfung.** 78/78 grün: Doku-Wache
+(`EPOS.Kern.Tests/DokumentationLinkWacheTests`),
+`GebaeudeKatalogverweisTests` (GebäudeKatalog-Wächter),
+`TestdatenbankSchemastandWacheTests` (Schemastand-Wache); kein
+Schemaschritt, kein Build- oder Testeinfluss auf den Rechenweg.
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #491“).** (a) Anschlusslänge Fenster–Wand
+(`Abmessung_Anschluß_Fenster_Wand` 1 800 m gegenüber physikalisch rund 4
+812 m) — Anwenderentscheid; (b) Außenwandfläche gegenüber der geforderten
+Hüllfläche (`Flaeche_Außenwand` auf rund 15 110 m² nachführen oder
+Ost/West-Fenster auf 1 520,4 m² zurücksetzen) — Anwenderentscheid; (c)
+Nebenbefund `KrankenH-F-*`, `gr_Hotel-G-134`, `Kaufhaus` als Kandidat für
+eine Folgewelle, noch nicht geprüft; (d) Schrittnummer 131 frei.
+
+## #490 — Projektassistent, Bearbeiten-Zweig: Abgleich je Gewerk, Änderungsdatum nur bei echter Änderung (24.09.2026)
+
+Anwenderauftrag „starte: Bearbeiten-Zweig des Assistenten“
+(24.09.2026); Basis `571a80e5`, Merge `1f515ed4` auf `c2403cc4` (G3
+Welle A Teil 1 der Cloud-Sitzung). Commits (Opus 5.5): `80cb49ee`
+(Kern), `8f795d67` (Tests), `b80ba595` (Konzept).
+
+**Umsetzung.** Neue Klasse
+`EPOS.Kern/Controller/AssistentAbgleich.cs` (`AssistentGewerk`,
+`Abdruck`, `Abdruecke`, `KopfGleichGespeichert`). `AssistentCtrl`
+nimmt einen Abdruck je Gewerk am Ende von `Laden` und nach jedem
+festgeschriebenen Speichern (der Assistent bleibt offen);
+`Fortschreiben` vergleicht jedes Gewerk mit dem Abdruck und
+überspringt gleiche Gewerke samt anhängenden Schritten, Reihenfolge
+unverändert. Verglichen wird nur, was der Schreibweg trägt: Erzeuger
+(`Del_Projekt_Waermeerzeuger`/`Add_WP_Waermeerzeuger`/`ProjektgeraeteNachziehen`/`Add_Projekt_Energietraeger`/`NeueAnlagenSenkenNachziehen`)
+per Reflexion über alle Wertfelder ohne `ID`/`ID_Projekt`,
+Pufferzeilen ausgenommen (FR-1), `PV_Straenge` ausdrücklich (`null`
+= nicht angefasst, leere gesetzte Liste = Eingabe); Prozesswärme und
+Stromverbraucher: Bezeichner + Summe; Stromganglinie: Bezeichner
+(8760 Werte hängen an der Projektkopie); externer Wärmebedarf:
+Bezeichner + Kanal (leer = Heizung); Kopf gegen die Datenbank (Name,
+Bearbeiter, Kunde, Beschreibung, Klimaregion per Name); Gebäude
+weiter über den eigenen Abgleich (#475/#487). Ohne Abdruck (auch
+nach `BereitsGeladen = false`) wird wie zuvor alles geschrieben.
+Neue Auskünfte `GeschriebeneGewerke`, `KopfGeschrieben`.
+
+**Zwei nebenbei behobene Fehler.** (1) Wärmepumpen-Stammfelder:
+Wurde die WP-Seite nie gezeigt, schrieb `ProjektgeraeteNachziehen`
+bei jedem Speichern leere Firma/Beschreibung und Nennleistung 0 in
+`Tab_WP`; `LadeErzeuger` füllt sie jetzt beim Laden
+(`GeraetedatenFuellen`, WP und Referenz-WP). (2) Kanal des
+Wärmebedarfs: `LadeWaermebedarf` las ihn nicht, jedes Speichern
+setzte Brauchwasser- und Prozesskanal auf Heizung zurück; ruft jetzt
+`KanaeleNachladen`.
+
+**Nebenwirkungen abgesichert.** Ein unveränderter Erzeuger lässt
+Anlagen, Puffer, Senken, Stränge, Kostenanker (`Tab_ProjektWerte`),
+Projektgeräte und Trägersätze mit ihren Ids stehen;
+`NeueAnlagenSenkenNachziehen` läuft nur nach Neuschreiben der
+Anlagen; Zuordnungs-Ids werden bewusst nicht nachgezogen (der
+Schreibweg nutzt sie nicht, der Vergleich schließt sie aus);
+Projektgeräte-Ids bleiben.
+
+**Tests.** Neu `EPOS.Kern.Tests/AssistentAbgleichTests.cs`, 11 Fälle
+auf Projekt 1041 (Abbild von 20 Tabellen samt Ids und Datum): ohne
+Änderung auch nach Seitenbesuch und zweitem Speichern nichts
+geschrieben, `HatAenderungen` false; Theory über 6 Fälle (fünf
+Gewerke + Kopf) → nur dieses Gewerk geändert, Datum gesetzt, Rest
+inkl. Puffer/Senken/WP-Stammfelder gleich; WP-Stammfelder ohne
+WP-Seite; Kanal beim Laden; ohne Vergleichsstand alle fünf Gewerke;
+Abdruck ohne Datenbank. Angepasst
+`FachspaltenRettungTests.UeberDenAssistentenSpeichern` (setzt
+`BereitsGeladen = false`, weil die Rettung nur beim Neuschreiben
+läuft).
+
+**Gate (losgelöster Worktree, Stand `1f515ed4` inkl. G3).**
+Kern-Filter 0 Fehler; Tests EPOS.Kern 6.139, EPOS.UI 6.020, KiKern
+549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen);
+`Werkzeuge/Auslieferungsvorlage` 30/30; Windows-Schale Debug x64 0
+Fehler; Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4.207.049 Werte); SqlDialektPruefer
+1.826 Texte, 0 Fundstellen (Agent).
+
+**Papiere.** Konzept Administrationsdialoge 7.1 (a) Ist-Zustand
+„Abgleich je Gewerk“, Kopfzeile #490. Wiki unverändert.
+
+**Logbuch.** Satz vorgeschlagen (Version beim Anwender): „Ein
+Speichern im Projektassistenten ohne inhaltliche Änderung ändert das
+Änderungsdatum des Projekts nicht mehr, und das letzte
+Simulationsergebnis bleibt aktuell.“
+
+**Offen (in „Nach #490“).** (a) Energieträger: bei unverändertem
+Erzeuger läuft `Add_Projekt_Energietraeger` nicht mehr, fehlende
+Trägersätze heilen dann nicht mehr beim Speichern ohne
+Anlagenänderung; (b) Id-Nachzug der Zuordnungen nicht gebaut; (c)
+veraltete Listen nach Projektwechsel ohne Neuladen (Bestand); (d)
+Feld-für-Feld-Nachweis am Windows-Gerät `Referenzlauf.exe projekt`
+(R-W16-6) steht aus.
+
+## #493 — Gebäudekatalog: Anschlusslängen berichtigt, Schemaschritt 130 (24.09.2026)
+
+Anwenderentscheid 24.09.2026 wörtlich: „Entscheide zu Satz 79 und
+Nebenbefund zu den Sätzen 80 bis 83, 37 und 77: Ersetzt durch
+plausible Werte.“ Basis `fbc4e536`; Commits (Opus 5.5) `d0ba9300`
+(Schritt, Verdrahtung, Testdatenbank), `d52a7c2c` (Tests), `ea2df60f`
+(Papiere); Merge `1214d417` auf `c58e2b92`.
+
+**Umnummerierung.** Zunächst als Schritt 131 gebaut; nach der Regel „wer zuerst pusht“
+stand `origin` schon auf 129 mit dem Zapfprofil-Schritt Z4b auf 131 —
+Schritt 130 übernommen, Z4b bleibt auf 131. Gepusht als `247e2091`.
+
+**Schritt 130.** `EPOS.Kern/Allgemein/Update/GebaeudeAnschlusslaengenReparatur.cs`
+(Konstante `SCHRITT`, `SchemaStand.Zielversion`; `SchemaMigration.cs`
+`SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN` nach `SCHRITT_WIEDERHOLPERIODE`,
+Methode `Schritt_GebaeudeAnschlusslaengen`; Werkzeug und
+Nachzieh-Liste lesen die Konstante). Trifft nur Bezeichner und
+unplausiblen Wert (±0,05 Toleranz), je Spalte ein Handgriff, nichts
+gelöscht, Projektkopien unberührt, idempotent (offen vorher 20,
+berichtigt 20, danach 0).
+
+**Berichtigungen `Tab_Gebaeude_STAMM` (20 Zellen).**
+
+| Satz | Spalte | Vorher | Nachher | Herleitung |
+|---|---|---|---|---|
+| 79 `Krankenhaus_92-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 1 800 m | 4 812,0 m | Verhältnis Satz 78: 7 655,75/3 016,3 = 2,5381 m je m² × 1 895,9 m² |
+| 79 | `Flaeche_Außenwand` | 12 094 m² | 13 214,4 m² | Hüllfläche 15 110,3 − Fenster 1 895,9; Ost/West bleibt 400 |
+| 80–83 `KrankenH-F-*`, 37 `gr_Hotel-G-134` | Fenster–Wand | 243,7 m | 7 879,0 m | Tausch mit der Dachkante; 7 879/3 062,3 = 2,573 m je m² (Satz 78: 2,538) |
+| 80–83, 37 | Wand–Dach | 7 879 m | 313,8 m | Umfang der Grundfläche 1 469 m², wie Satz 78 |
+| 80–83, 37 | Außenwand–Kellerdecke | 1 392,8 m | 313,8 m | wie Satz 78 |
+| 77 `Kaufhaus` | Fenster–Wand | 243,7 m | 5 820,8 m | Verhältnis der F-Sätze 2,5729 × 2 262,36 m² (Tausch mit der Dachkante hätte 3,48 m je m² ergeben) |
+| 77 | Wand–Dach | 7 879 m | 313,8 m | wie Satz 78 |
+| 77 | Außenwand–Kellerdecke | 1 392,78 m | 313,8 m | wie Satz 78 |
+
+Nur die Laibung wird getauscht, nicht als Dachkante übernommen: mit
+243,7 m als Dachkante trüge die Geometrie nicht (13 156,3 m²/243,7 m =
+54,0 m Höhe = 4,40 m je Geschoss bei Raumhöhe 2,55 m); mit 313,8 m
+sind es 3,42 m (Satz 78: 3,54 m, `gr_Hotel-80-EnEV2016` gerundet 300
+m). Wirkung auf H_T: F-Sätze 675 → 3 584 W/K (+2 909 W/K, ψ
+Fenster–Wand 0,44), Kaufhaus +2 004 W/K, Satz 79 +271 W/K (Laibung)
+und +202 W/K (Außenwand). Kein weiterer Satz im Katalog trägt 243,7/7
+879/1 392,8.
+
+**Testdatenbank.** LFS
+`f8fe1b763d0f58bdf17ae8e6bc1d2c5e8878e7046a3f56bd7b55dcd5eefcbe34`, 67
+796 992 Byte; Zellvergleich gegen Schritt 129 (`4c546a7c…`): 21 Zellen
+(`SchemaVersion` 129 → 130 plus die 20 Berichtigungen), Schema gleich,
+`integrity_check` ok, `foreign_key_check` leer. Einfrierregel: keiner
+der sieben Sätze (79, 80–83, 37, 77) läuft in einem der 13
+Referenzprojekte (Referenzsätze 125, 129, 142–146, 233, 56) — die
+Basis bleibt.
+
+**Katalogweiter Scan (nur berichtet, nicht angefasst).** Kriterien: Laibung < 0,3 m je m² Fenster (L), Dachkante >
+16·√Dachfläche (D).
+
+| Muster | Sätze | Kennzahl |
+|---|---|---|
+| Laibung 185 m, Dachkante 985 m, Keller 0 m bei 545 m² Fenster, 540 m² Dach | 2, 4, 5, 7, 9, 10 (Alten-/Pflegeheim), 92, 94, 96 (Schule) | — |
+| dieselbe Kennlinie, 1 100 m² Dach | 17, 20 (Hallenbad) | 7,4-fach |
+| Laibung 515,2 m, Dachkante 5 380,8 m, Keller 40 m | 54, 69, 71 (`Hotel-F-228`) | 61,8-fach |
+| Laibung 86,6 m, Dachkante 295,5 m, Keller 14,6 m | 84, 85 (L 0,28), 42, 72, 134 (L 0,36) | — |
+| nur Laibung 0 m | 6, 15, 43, 64, 105, 106, 107, 117, 207 | — |
+| nur Laibung, gerundete EnEV-Werte | 23 (0,12), 34 (0,25), 108 (0,18) | — |
+| nur Dachkante, vermutlich geneigte Dächer | 35, 39–41, 47–49, 52, 55, 58, 61, 63, 66, 67, 112–114, 127, 128, 130, 144–146, 151, 169, 173, 189–191, 195–197, 205, 206, 209–213, 274 | 4,7–8-fach |
+
+Darunter die eingefrorenen Referenzsätze 145 und 146 (Dachkante) —
+bleiben unverändert. Kellerkante ungleich Umfang trifft fast den
+gesamten Katalog (systematisch klein oder 0); das Kriterium sagt hier
+nichts. Restbefund Kaufhaus: Außenwand 10 094 m² ist von den F-Sätzen
+übernommen; Nutzfläche 4 201 m² und Raumhöhe 4,55 m ergäben rund 950 m
+Umfang — nicht Teil dieses Entscheids.
+
+**Tests.** Neu `GebaeudeAnschlusslaengenReparaturTests` (Schrittprobe:
+vorher/nachher je Satz, abweichender Satz bleibt, Projektkopie bleibt,
+Idempotenz, Werkzeug-Wache); Editor-Wächter in
+`GebaeudeKatalogverweisTests` um die fünf weiteren Sätze ergänzt;
+`WiederholperiodeTests` prüft den Zielstand jetzt über den `cref`
+statt wörtlich (sonst rot nach der Umnummerierung); gezielter Lauf
+187/187.
+
+**Gate (Merge-Stand `247e2091`, inkl. G3 und #490).** Kern-Filter 0 Fehler; Tests EPOS.Kern 6.143, EPOS.UI 6.020, KiKern
+549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 30/30; Windows-Schale Debug x64 0 Fehler;
+Referenzlauf 13/13 GESAMT PASS gegen `2026-09-24_R14_Kaelteerzeuger`
+(4 207 049 Werte); SqlDialektPruefer 1 830 Texte, 0 Fundstellen (die
+vier UPDATE-Anweisungen zusätzlich per EXPLAIN geprüft).
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand 130, Nachtrag #493 mit
+Herleitungstabelle), Konzept Administrationsdialoge 7.1 (a) berichtigt
+(weitere auffällige Sätze nicht Teil des Entscheids).
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #493“).** (a) Scan-Kandidaten (oben) als mögliche Folgewelle, nur auf Zuruf; (b)
+Restbefund Kaufhaus Außenwand 10 094 m²; (c) Referenzsätze 145/146 mit
+hoher Dachkante bleiben eingefroren (Einfrierregel Gebäudedaten).

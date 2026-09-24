@@ -45,7 +45,9 @@ namespace EPOS.Kern.Tests
                 Assert.True(parameter.ContainsKey(g.Key), "Kein [Parameter] " + g.Key);
                 Assert.True(parameter[g.Key].IsInstanceOfType(g.Value), g.Key + ": " + g.Value.GetType().Name);
             }
-            Assert.Equal(12, gaben.Count);
+            // DREIZEHN seit der Stufe Z4b: "TyptagGaben" bringt den Dialog der eingespielten
+            // VDI-4655-Typtage als Ueberlagerung des Katalogdialogs herein.
+            Assert.Equal(13, gaben.Count);
             Assert.Equal(ZapfprofilHuelle.HILFE_KATALOG, gaben["HilfeSchluessel"]);
         }
 

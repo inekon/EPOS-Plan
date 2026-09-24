@@ -241,6 +241,32 @@ vorhandenen Verlaufsweg des Temperaturbilds; kein bestehendes Bild ändert sich.
 
 ---
 
+## Anlagenkopplung (Stufe AK1): Vorlauf und Rücklauf eines Gebäudes
+
+`ChartRenderer.VorlaufRuecklauf` zeichnet den Jahresverlauf des gefahrenen Vorlaufs und des
+Rücklaufs eines gekoppelt gerechneten Gebäudes mit dem Auslegungspunkt (Auslegungsvorlauf und
+-rücklauf, gestrichelt) — das Bild „Vorlauf und Rücklauf" des Bedarfsdialogs eines Gebäudes.
+Stunden ohne Heizbetrieb sind **Lücken**: Die Reihe trägt dort NaN, und mit dem Schalter
+`Reihe.Luecken` bricht die Linie ab, statt die Reihe unbrauchbar zu machen — im PNG ein Linienzug je
+Stück, im SVG ein Teilpfad mit eigenem `M` je Stück. Ohne den Schalter bleibt alles, wie es war. Die
+Proben stehen in `Program.Anlagenkopplung.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `vorlauf_ruecklauf_gebaeude` | 1240 × 560, die Farben der Rollen `SERIE_1` und `SERIE_2`, Determinismus; die Probenreihen heizen bis Stunde 2 999 und ab Stunde 6 500 |
+| Gegenprobe | `vorlauf_auslegung_wirkt` | dasselbe Bild mit und ohne Auslegungspunkt muss sich unterscheiden |
+| Gegenprobe | `vorlauf_luecke_wirkt` | dieselben Reihen mit gefülltem Sommer zeichnen anders |
+| SVG-Probe | `svg_vorlauf_luecken` | jede Reihe mit Lücke zerfällt in zwei Teilpfade (gebündelt wie roh), kein Pfad trägt „NaN", die Linien des Auslegungspunkts bleiben ein Zug, ein Ausschnitt ganz in der Lücke zeichnet nichts |
+| SVG-Probe | `svg_ohne_luecke_unveraendert` | ein Zug ohne Lücke bleibt ein Teilpfad mit jeder Stunde |
+
+Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Welle
+gemessen, alle 151 Hashes des Vorstands gleich, 5 neu (156 Zeilen). Die fünf Bilder (eines der
+Maßprobe, vier der Gegenproben) stehen noch nicht in der Messlatte; sie kommen mit dem nächsten
+Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel wie die Bilder der Etappe E6: alle alten
+Zeilen gleich, fünf neu, keines geändert.
+
+---
+
 ## Zapfprofilgenerator (Stufe Z1): die Vorschaubilder des Zapfprofils
 
 `ZapfprofilBilder` (`EPOS.Kern/Allgemein/Bericht/`) zeichnet die drei Vorschaubilder des

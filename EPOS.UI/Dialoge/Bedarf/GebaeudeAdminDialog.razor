@@ -143,7 +143,10 @@
                                                   AlleDatenOffenChanged="@(o => _alleDatenOffen = o)"
                                                   Geaendert="Nachziehen"
                                                   Texte="@HuellTexte" Prueftexte="@Prueftexte"
-                                                  Beschriftungen="@Beschriftungen" />
+                                                  Beschriftungen="@Beschriftungen"
+                                                  UebergabeHerleitung="@UebergabeHerleitung"
+                                                  WochenVorschau="@WochenVorschau"
+                                                  EntprellungMs="@EntprellungMs" />
                     }
                 </Gruppen>
             </Stammblatt>
@@ -311,6 +314,15 @@
 
     /// <summary>Der Parametersatz der Gebäudetypen-Verwaltung — ohne ihn kein „Gebäudetypen…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GebaeudetypGaben { get; set; }
+
+    /// <summary>Die Herleitung der Wärmeübergabe aus dem Kern (Anlagenkopplung 8.4); <c>null</c> = ohne Zahl.</summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
+
+    /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
+
+    /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>Der Dialog ist zu Ende — immer <c>true</c>: Jede Aktion hat bereits geschrieben.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -512,7 +524,8 @@
             {
                 HuellTexte.RandErdreich, HuellTexte.RandKeller, HuellTexte.RandAussenluft
             }),
-            Ferienname = n => n < Beschriftungen.Ferienzeitraeume.Count ? Beschriftungen.Ferienzeitraeume[n] : ""
+            Ferienname = n => n < Beschriftungen.Ferienzeitraeume.Count ? Beschriftungen.Ferienzeitraeume[n] : "",
+            Texte = HuellTexte
         });
     }
 

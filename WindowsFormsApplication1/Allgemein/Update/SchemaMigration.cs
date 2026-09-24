@@ -4192,6 +4192,51 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_WIEDERHOLPERIODE = WiederholperiodeSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/> — <b>die Berichtigung
+        /// der Anschlusslängen im Gebäudekatalog</b> (Welle #493, Konzept Administrationsdialoge
+        /// 7.1 (a)). Er folgt auf <see cref="SCHRITT_WIEDERHOLPERIODE"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz, Spalte und
+        /// Schadensbild: Krankenhaussatz Anschlusslänge Fenster–Wand 1 800 → 4 812 m und
+        /// Außenwand 12 094 → 13 214,4 m²; die sechs Sätze mit 243,7 / 7 879 / 1 392,8 m
+        /// (Fenster–Wand, Wand–Dach, Außenwand–Keller) auf Laibung nach dem Verhältnis des
+        /// Ausgangssatzes und Umfang 313,8 m. Die Nummer steht allein bei
+        /// <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Eine Spalte ohne ihr Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN = GebaeudeAnschlusslaengenReparatur.SCHRITT;
+
+        /// <summary>
+        /// Schritt 131 — <b>die eingespielten Typtage des lizenzierten Anwenders</b>
+        /// (Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Schemaschritt T3 „Typtage", Stufe
+        /// Z4b). Er folgt auf <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/> (130) ohne
+        /// Reihenfolgebedingung und braucht keinen früheren Schritt — die Tabelle steht für
+        /// sich, ohne Fremdschlüssel.
+        ///
+        /// <para><b>REIN DDL</b>, eine Tabelle und drei Spalten: <c>Tab_TwwTyptag_IMPORT</c> (STRICT,
+        /// elf Spalten, eine Zeile je Wert, natürlicher Schlüssel
+        /// Art/Klimazone/Gebaeudeart/Typtag/Zeilenindex, kein <c>Status</c>, kein <c>ReadOnly</c>)
+        /// und an <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt — <c>Typtage_Aktiv</c>
+        /// (0/1, Vorgabe 0), <c>Typtage_Klimazone</c> und <c>Typtage_Gebaeudeart</c> (beide NULL =
+        /// keine Wahl). Die Definitionen stehen bei <see cref="TwwSchema.AnweisungenT3Typtage"/> und
+        /// <see cref="TwwSchema.SpaltenT3Typtage"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis. Die Wahl steht im SELBEN Schritt
+        /// wie die Tabelle: Beide gehören zusammen, und der Schritt war noch nicht ausgerollt
+        /// (Nachtrag N14, Folge (b)).</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabelle entsteht LEER; das Repositorium bringt keine
+        /// Zeile mit (Konzept Kapitel 6: kein VDI-Wert im Produkt, in der Auslieferung, im
+        /// Repositorium oder in der CI), und ohne eingespielte Typtage ist der Typtagweg benannt
+        /// nicht verfügbar. Der Referenzlauf bleibt byte-gleich. <b>Wiederholbar</b> über
+        /// <c>CREATE TABLE IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_131_ZAPFPROFIL_TYPTAGE = 131;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5943,6 +5988,33 @@ namespace WindowsFormsApplication1
                         "2 Jahre), liesse sich nicht fuehren. KEIN Rechenergebnis aendert sich - alle " +
                         "Zeilen stehen auf leer, und leer heisst 'jaehrlich wie bisher'.",
                         Schritt_Wiederholperiode),
+
+            // WELLE #493 (Konzept Administrationsdialoge 7.1 (a)) - die Anschlusslaengen im
+            // Gebaeudekatalog: Krankenhaussatz (Fenster-Wand, Aussenwandflaeche) und die sechs
+            // Saetze mit 243,7 / 7 879 / 1 392,8 m. REIN DML; die Quelle ist
+            // GebaeudeAnschlusslaengenReparatur. Er steht NACH der Wiederholperiode ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN,
+                        "Tab_Gebaeude_STAMM: Anschlusslaengen (Fenster-Wand, Wand-Dach, Aussenwand-Keller) " +
+                        "von sieben Saetzen und Aussenwandflaeche des Krankenhaussatzes berichtigt",
+                        "Die Saetze rechneten mit unplausiblen Waermebrueckenlaengen (Laibung 0,08 m je m2 " +
+                        "Fenster, Dachkante 7 879 m bei 1 469 m2 Dach). KEIN Rechenergebnis eines Projekts " +
+                        "aendert sich - Projektkopien bleiben, wie sie sind.",
+                        Schritt_GebaeudeAnschlusslaengen),
+
+            // ZAPFPROFILGENERATOR Z4b (Schemaschritt T3 "Typtage") - die eingespielten Typtage
+            // des lizenzierten Anwenders: Tab_TwwTyptag_IMPORT. REIN DDL; die Quelle ist
+            // TwwSchema.AnweisungenT3Typtage. Er steht NACH 130 ohne Reihenfolgebedingung und
+            // braucht keinen frueheren Schritt (kein Fremdschluessel).
+            new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE,
+                        "Zapfprofilgenerator: die eingespielten Typtage des Anwenders " +
+                        "(Tab_TwwTyptag_IMPORT) und die Wahl des Typtagwegs je Projekt",
+                        "Der Anwender koennte seine eigenen Typtage nicht einspielen, und der " +
+                        "Typtagweg des Jahresgangs bliebe ohne Datenablage und ohne gespeicherte " +
+                        "Wahl. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, die " +
+                        "Wahl steht auf 'aus', und ohne eingespielte Typtage ist der Typtagweg " +
+                        "benannt nicht verfuegbar.",
+                        Schritt_131_ZapfprofilTyptage),
         };
 
         /// <summary>
@@ -9744,6 +9816,103 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                     ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
                     "bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT - die Anschlusslaengen (Welle #493)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Berichtigung der Anschlusslängen im Gebäudekatalog — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/>, Anweisungen, Schadensbilder und
+        /// Herleitungen bei <see cref="GebaeudeAnschlusslaengenReparatur"/>. Dieselbe Bauart wie
+        /// der Schritt <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/>: der ganze Schritt aus dem
+        /// Kern, danach die Nachprobe (<see cref="GebaeudeAnschlusslaengenReparatur.Offen"/>).
+        /// </summary>
+        private static bool Schritt_GebaeudeAnschlusslaengen(Lauf l)
+        {
+            string nr = GebaeudeAnschlusslaengenReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeAnschlusslaengenReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                offen = GebaeudeAnschlusslaengenReparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Anschlusslaenge(n) im Gebaeudekatalog tragen nach dem Schritt weiter ihr Schadensbild.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 131 - die eingespielten Typtage des Anwenders
+        // (Zapfprofilgenerator Stufe Z4b, T3 "Typtage")
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 131 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_131_ZAPFPROFIL_TYPTAGE"/>, die DDL bei
+        /// <see cref="TwwSchema.AnweisungenT3Typtage"/>. <b>Nur <see cref="SqliteDdl"/></b>;
+        /// <b>wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c>. <b>Kein DML</b> — die
+        /// Tabelle bleibt leer.
+        /// </summary>
+        private static bool Schritt_131_ZapfprofilTyptage(Lauf l)
+        {
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+            {
+                bool stand = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!stand) angelegt++;
+            }
+
+            // Die WAHL des Typtagwegs je Projekt - dieselbe Quelle, derselbe Schritt
+            // (TwwSchema.SpaltenT3Typtage): Tabelle und Wahl gehoeren zusammen.
+            int spalten = 0;
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, s.Definition)) return false;
+                spalten++;
+            }
+
+            bool vollstaendig = true;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+                vollstaendig &= SqliteTabelleVorhanden(a.Key);
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+                vollstaendig &= SqliteSpalteVorhanden(s.Tabelle, s.Name);
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle der eingespielten Typtage oder die Wahl des Typtagwegs " +
+                                  "steht nach dem Schritt nicht.";
+                l.Notiz("131: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("131: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+                    spalten.ToString(CultureInfo.InvariantCulture) + " von " +
+                    TwwSchema.SpaltenT3Typtage.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + TwwSchema.TAB_TWW_TYPTAG_IMPORT +
+                    " (eine Zeile je Wert, kein Status, kein ReadOnly) und die Wahl des Typtagwegs an " +
+                    TwwSchema.TAB_TWW_PROJEKT + ". KEIN DML: Die Tabelle bleibt LEER - das Repositorium " +
+                    "bringt keine Typtage mit -, die Wahl steht auf 'aus', und ohne eingespielte Typtage " +
+                    "ist der Typtagweg benannt nicht verfuegbar; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

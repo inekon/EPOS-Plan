@@ -384,6 +384,9 @@ namespace WindowsFormsApplication1
                 // ein Menuepunkt; sein Editor ist eine Ueberlagerung darin und hat dasselbe Ziel.
                 { KiMaskennamen.BRAUCHWASSER_NUTZUNGSARTEN, Masken.BrauchwasserNutzungsarten },
                 { KiMaskennamen.TWW_NUTZUNGSART_EDITOR,     Masken.BrauchwasserNutzungsarten },
+                // Der Dialog der eingespielten VDI-4655-Typtage ist eine Ueberlagerung des
+                // Katalogdialogs (und des Zapfprofils) - dasselbe Ziel.
+                { KiMaskennamen.BRAUCHWASSER_TYPTAGE,       Masken.BrauchwasserNutzungsarten },
 
                 // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
                 // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.

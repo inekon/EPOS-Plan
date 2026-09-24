@@ -279,7 +279,10 @@ namespace WindowsFormsApplication1
             => new ZapfprofilKatalogstandDaten
             {
                 Katalog = Katalog(),
-                Tagesgangsaetze = ZapfprofilCtrl.Tagesgangsaetze().Select(AlsTagesgangsatz).ToList()
+                Tagesgangsaetze = ZapfprofilCtrl.Tagesgangsaetze().Select(AlsTagesgangsatz).ToList(),
+                // Nach dem Dialog "VDI-4655-Typtage" (Z4b) ziehen die Wahllisten der Klimazone und
+                // der Gebaeudeart nach - derselbe Weg wie der Katalog.
+                Typtagstand = TyptagStand()
             };
 
         /// <summary>

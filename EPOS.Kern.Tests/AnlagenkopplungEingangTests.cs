@@ -22,6 +22,16 @@ namespace EPOS.Kern.Tests
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
         private readonly ITestOutputHelper _aus;
 
+        /// <summary>
+        /// <b>N-A4 nach Entscheid E36</b> (Konzept Gebäudesimulation N1.41): Mit wirksamer Kopplung
+        /// rechnet ein Gebäude höchstens 100 ms je Jahr. Die Probe berichtet die Zeit und scheitert erst
+        /// beim <see cref="N_A4_FAKTOR"/>-fachen — die Läufer der CI sind verschieden schnell.
+        /// </summary>
+        private const double N_A4_GRENZE_MS = 100.0;
+
+        /// <summary>Erst ab diesem Vielfachen der Grenze ist die Probe rot (keine harte Schwelle, E36).</summary>
+        private const double N_A4_FAKTOR = 5.0;
+
         public AnlagenkopplungEingangTests(ITestOutputHelper aus) { _aus = aus; }
 
         public void Dispose() => _kultur.Dispose();
@@ -394,7 +404,12 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine($"Nennleistung {hk.UebergabeNennKw:0.00} kW (Auslegung {hk.AuslegungAussenC} °C); Spitze {bestand.SpitzeKw:0.00} → {r.SpitzeKw:0.00} kW; " +
                            $"Jahr {bestand.JahresheizwaermeMwh:0.000} → {r.JahresheizwaermeMwh:0.000} MWh; Raumluft {bestand.MittlereRaumtemperaturHeizzeit:0.00} → {r.MittlereRaumtemperaturHeizzeit:0.00} °C; " +
                            $"Vorlauf {hk.VorlaufMittelC:0.0} °C, Rücklauf {hk.RuecklaufMittelC:0.0} °C, begrenzt {hk.UebergabeBegrenztStundenH:0.0} h; " +
-                           $"Laufzeit {zeitBestand:0.0} → {zeitKopplung:0.0} ms");
+                           $"Laufzeit {zeitBestand:0.0} → {zeitKopplung:0.0} ms (Grenze nach E36: {N_A4_GRENZE_MS:0} ms)");
+
+            // Rechenzeit (N-A4, E36): berichtet oben; rot erst weit über der Grenze.
+            Assert.True(zeitKopplung < N_A4_FAKTOR * N_A4_GRENZE_MS,
+                        $"Der gekoppelte Jahreslauf braucht {zeitKopplung:0.0} ms - mehr als das {N_A4_FAKTOR:0}-fache " +
+                        $"der Grenze von {N_A4_GRENZE_MS:0} ms je Gebäude und Jahr (E36).");
 
             Assert.NotNull(hk);
             Assert.True(r.SpitzeKw < bestand.SpitzeKw, "Aufheizspitze gekappt");

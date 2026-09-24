@@ -67,7 +67,10 @@ namespace EPOS.Kern.Tests
             "ZapfprofilErgebnis.cs", "ZapfprofilRechner.cs", "ZapfprofilStand.cs", "Zapfprofileingang.cs",
             "Zirkulationskanal.cs",
             // Stufe Z3: das Ensemble der Jahresreihe („stochastisch") ist Bilanz.
-            "Jahresensemble.cs"
+            "Jahresensemble.cs",
+            // Stufe Z4b: die eingespielten Typtage tragen den JAHRESGANG der Bilanz; die Auslegung
+            // (Wochenreihe, Bedarfstag, Summenlinie) bleibt unberührt (N14 (j)).
+            "Typtagsatz.cs", "Typtagzuordnung.cs"
         };
 
         /// <summary>Die Dateien, deren Typen Minuten- bzw. Stundenwerte tragen dürfen.</summary>
@@ -87,6 +90,9 @@ namespace EPOS.Kern.Tests
             ("Nenninhaltsliste", "Aus", "Bildet die Liste der Nenninhalte aus Werten (Einstellung), keine Zeitreihe."),
             ("Perzentilwerte", "Aus",
              "Perzentile einer Stichprobe je Realisierung des Auslegungsensembles (R Werte), keine Zeitreihe."),
+            ("Tageszeitdichte", "Aus",
+             "24 Stundenanteile eines eingespielten Typtags (Stufe Z4b) — eine TAGESFORM wie die des "
+             + "Tagesgangsatzes, keine Jahresreihe; die Dichte gibt nur Minuten heraus."),
         };
 
         /// <summary>Gegenprobe des Zahlenfeldsatzes: eine Zahlenliste als Konstruktorparameter, Rückgabe, Eigenschaft und Feld.</summary>

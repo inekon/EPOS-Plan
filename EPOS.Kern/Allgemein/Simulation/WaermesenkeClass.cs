@@ -766,6 +766,9 @@ namespace WindowsFormsApplication1
             List<Senkenzuordnung> liste = new List<Senkenzuordnung>();
             if (idProjekt <= 0) return liste;
 
+            // HB1-O1, offen: ungepflegt vor gepflegt — NULL-Prioritaet sortiert hier vorn
+            // (Ladeordnung.SqlAnlagenprio gilt nur für die Anzeige-Leser); ein Umbau ändert
+            // die Rechenreihenfolge und braucht einen eigenen Referenzlauf.
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, WS_Ziel, WS_ID_Puffer, WS_Typ, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, " +
                 "       WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2 " +
@@ -906,6 +909,8 @@ namespace WindowsFormsApplication1
             //
             // Der BEZEICHNER steht mit in der Auswahl: Die Protokollzeile „keine Senke
             // zugeordnet" nennt die Anlage beim Namen, nicht bei ihrer ID.
+            //
+            // HB1-O1, offen: ungepflegt vor gepflegt (siehe SenkenLaden).
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +

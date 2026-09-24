@@ -2361,6 +2361,15 @@ Keine stillen Teilsummen
         <div class="f-zeile breit"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">Räumlicher Zusammenhang (4,5 km) gegeben</span></div>
         <div class="f-zeile breit"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">Hocheffizienz nachgewiesen</span></div>
         <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Modus § 9 Abs. 1 Nr. 3">Ausweis (nicht im Kapitalwert)</span></div>
+        <div class="f-herleitung">Erfasster Stromsteueranteil im Strompreis „Strom": 0,050 ct/kWh (aktiv). Das ist der reduzierte
+        Satz 2026 (0,050 ct/kWh, § 9b StromStG).</div>
+        <div class="f-herleitung f-ok">✓ Passt zur Unternehmensart: Sie legt den reduzierten Satz nahe.</div>
+        <div class="f-info">Die zwei Zeilen darüber zeigen den im Strompreis erfassten Stromsteueranteil (gebaut #492): Träger,
+        Wert, aktiv oder abgeschaltet und den Abgleich mit Regelsatz oder reduziertem Satz des Bilanzjahres aus dem Katalog;
+        die zweite Zeile steht nur bei aktivem Anteil und sagt, ob er zur gewählten Unternehmensart passt — sonst legt sie
+        den anderen Satz nahe und verweist auf „Strompreis Details", ein Hinweis ohne Sperre. Beide folgen der Wahl der
+        Unternehmensart sofort, auch ungespeichert. Gepflegt wird der Anteil nur beim Stromträger (Kategorie 4); ohne
+        erfassten Anteil, ohne Stromträger oder bei nicht lesbarem Wert sagt die Zeile das.</div>
         <div class="f-herleitung">Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. Erlös: Sie wird als Erlös
         gebucht — nur, wenn der Bezugspreis die Stromsteuer enthält.</div>
         <div class="f-knopfzeile"><span class="f-knopf">BHKW-Tarif…</span></div>
@@ -2544,6 +2553,8 @@ Keine stillen Teilsummen
                 <span class="f-radio"><i></i></span><span class="f-lab" style="min-width:0">Erlös (im Kapitalwert) — Block A, stets mit Kohärenzwarnung</span></div>
             </div>
           </div>
+          <div class="f-herleitung" style="margin-top:8px">Erfasster Stromsteueranteil im Strompreis „Strom": 0,050 ct/kWh (aktiv). Das ist der reduzierte Satz 2026 (0,050 ct/kWh, § 9b StromStG).</div>
+          <div class="f-herleitung f-ok">✓ Passt zur Unternehmensart: Sie legt den reduzierten Satz nahe.</div>
           <div class="f-herleitung" style="margin-top:8px">§ 9b: STROMST_ENTLASTUNG_9B = 20,00 €/MWh, ab 2026 · Sockel STROMST_SOCKELBETRAG_9B 250 €/a · Menge Netzbezug 250,0 MWh (Lauf „Beide Anlagen")<br>
           § 9 Nr. 3: STROMST_REGELSATZ = 20,50 €/MWh, ab 2026 · Menge 1.155,0 MWh Eigenverbrauch brutto · P<sub>el</sub> 300 kW ≤ 2 MW ✓ · CO₂ 218,6 &lt; 270 g/kWh ✓ (EBeV 181,4 g/kWh, brennwertbezogen)</div>
           <div class="f-vorschau" style="margin-top:10px">
@@ -2938,6 +2949,7 @@ Stromsteuer
         <tr><td>Projektweite KWK-Angaben: fünf Felder und zwei Hinweiszeilen</td><td class="rs">WPAR_EINSP_KWK · BHW_P_ABSCHLAG · BHW_P_PAUSCHAL · BHW_P_STICHTAG · BHW_P_IBN · BHW_P_EINSP_KWK_HINWEIS · BHW_P_NUR_PROJEKTWEIT</td><td>Projektweite KWK-Angaben</td></tr>
         <tr><td>Energiesteuer: Wahl, Aufteilung, Nutzungsgrad, Herkunft aus dem Lauf</td><td class="rs">BHW_E_WAHL · BHW_E_AUFTEILUNG · BHW_E_NUTZUNGSGRAD · BHW_E_OHNE_HERKUNFT</td><td>Energiesteuer (Projektvorgabe)</td></tr>
         <tr><td>Stromsteuer: Unternehmensart, zwei Schalter, Modus, Modushinweis, Sprungknopf „BHKW-Tarif…", Sprunghinweis</td><td class="rs">BHW_S_UNTERNEHMENSART · BHW_S_RAEUMLICH · BHW_S_HOCHEFFIZIENZ · BHW_S_MODUS · BHW_S_MODUS_HERLEITUNG · BHW_BTN_BHKW_TARIF · BHW_S_SPRUNG_HINWEIS</td><td>Stromsteuer (Projektvorgabe)</td></tr>
+        <tr><td>Stromsteuer: der erfasste Stromsteueranteil unter der Unternehmensart — „Erfasster Stromsteueranteil im Strompreis „{0}": {1} ct/kWh ({2})." mit „aktiv" · „abgeschaltet"; Satzabgleich „Das ist der Regelsatz {0} ({1} ct/kWh, § 3 StromStG)." · „Das ist der reduzierte Satz {0} ({1} ct/kWh, § 9b StromStG)." · „Das ist weder der Regelsatz ({0} ct/kWh) noch der reduzierte Satz ({1} ct/kWh) des Jahres {2}."; Kohärenzzeile „Passt zur Unternehmensart: Sie legt den {0} nahe." oder der Vorschlag mit dem Verweis auf „Strompreis Details"; ohne Anteil · ohne Stromträger · nicht lesbar · Pflegehinweis <b>neu #492</b> (14 neu; gestrichen die zwei Schlüssel ohne Leser <span class="mono">PREIS_STROMSTEUER_REGELFALL</span>, <span class="mono">PREIS_STROMSTEUER_REDUZIERT</span>; je Sprache 10.027 Einträge, Designer 10.024)</td><td class="rs">BHW_S_STANTEIL_ERFASST · BHW_S_STANTEIL_AKTIV · BHW_S_STANTEIL_INAKTIV · BHW_S_STANTEIL_REGEL · BHW_S_STANTEIL_REDUZIERT · BHW_S_STANTEIL_ABWEICHEND · BHW_S_STANTEIL_SATZ_REGEL · BHW_S_STANTEIL_SATZ_REDUZIERT · BHW_S_STANTEIL_PASST · BHW_S_STANTEIL_VORSCHLAG · BHW_S_STANTEIL_KEINER · BHW_S_STANTEIL_KEIN_TRAEGER · BHW_S_STANTEIL_NICHT_LESBAR · BHW_S_STANTEIL_PFLEGE</td><td>Stromsteuer (Projektvorgabe) · Überlagerung, Stromsteuer</td></tr>
         <tr><td>§ 9 Abs. 1 Nr. 3, CO₂-Grenzwert brennwertbezogen: Begründung „über dem CO₂-Grenzwert … (brennwertbezogen)" · Herleitung je Anlage „{0}: {1} g/kWh (EBeV {2} g/kWh, brennwertbezogen)", „… (EBeV {2} g/kWh heizwertbezogen × H_i/H_s {3})", „… heizwertbezogen — kein Brennwert gepflegt)" · Herkunftszeile „CO₂ je kWh Energieertrag, brennwertbezogen geprüft — {0}; Grenzwert {1} g/kWh" · Hinweis ohne gepflegten Brennwert</td><td class="rs">STEUER_STROMST_CO2 · STEUER_STROMST_CO2_FAKTOR_HO · STEUER_STROMST_CO2_FAKTOR_UMGERECHNET · STEUER_STROMST_CO2_FAKTOR_HI · STEUER_STROMST_CO2_HERLEITUNG · STEUER_STROMST_CO2_HEIZWERT</td><td>Begründung und Herkunft der Befreiungszeile · Vorschau</td></tr>
         <tr><td>Kohärenz: Leerzeile und Fallzeilen des Laufs · Doppelpflege Hilfsenergie; die gesperrte Mischlage (Fall 5) als Warnung — der Hinweis <span class="mono">KOH_FALL5_MISCHLAGE</span> ist gestrichen</td><td class="rs">BHW_K_LEER · KOH_FALL1_ENERGIESTEUER … KOH_FALL4_STROMSTEUER · KOH_FALL5_MISCHLAGE_SPERRE · KOH_DOPPEL_STROMST_9_1_3 · KOH_HILFSENERGIE_DOPPELT</td><td>Kohärenzprüfung · Hilfsstrom</td></tr>
         <tr><td>Begründung der § 54-Zeile bei gesperrter Mischlage „§ 54 EnergieStG gesperrt: Im Projekt stehen § 53 / § 53a Abs. 5 ({0}) und § 54 ({1}) nebeneinander …" <b>neu</b></td><td class="rs">STEUER_ENERGIEST_54_MISCHLAGE</td><td>Grund der Energiesteuerzeile § 54 · Nachweis</td></tr>
@@ -4912,7 +4924,17 @@ Einstufung
   offen beim Anwender. Die Ressourcentafeln der Kategorien 2 und 8 nennen die acht neuen Schlüssel — je Sprache 10.009
   Einträge (10.001 vor E16), der Designer führt 10.006 Eigenschaften. Das Schema steht bei 129: Schemaschritt 129 hängt
   die Spalte <span class="mono">Wiederholperiode_a</span> an Projekt- und Vorlagenpositionen; er folgt auf 128, den
-  Heizkreis je Gebäude der Anlagenkopplung. Damit ist die Gap-Tafel V‑G des Konzepts (§ 2.11.2) geschlossen.</p>
+  Heizkreis je Gebäude der Anlagenkopplung. Damit ist die Gap-Tafel V‑G des Konzepts (§ 2.11.2) geschlossen. <b>E18
+  (#492) erledigt Restpunkte der Stromsteuer</b> — ohne eigene Zeile dieser Tafel: Der Dialog „BHKW-Wirtschaftlichkeit"
+  zeigt in der Gruppe Stromsteuer und in der Überlagerung „Sätze und Herkunft" unter der Unternehmensart den im
+  Strompreis erfassten Stromsteueranteil mit Satzabgleich und Kohärenzzeile, nur zur Ansicht (Kategorie 5, Zone
+  „Dialog" und Zone Überlagerung); gezeichnet ist der reduzierte Satz 0,050 ct/kWh, der zum produzierenden Gewerbe
+  passt. Die Wache der Stromsteuer-Rückfallebene gegen den Katalog und der Vermerk HB1-O1 an den fünf
+  Rechenweg-Sortierungen haben kein Bild. Die Zahlen der Zeichnung bleiben — keine Rechenwirkung. Fragen E18‑Q1 bis
+  E18‑Q6 entschieden nach Empfehlung a; E18‑Q7 (Unternehmensart ohne BHKW) ist ein Restpunkt. Die Ressourcentafel der
+  Kategorie 5 nennt die 14 neuen Schlüssel, zwei Stromsteuer-Schlüssel ohne Leser sind gestrichen — je Sprache 10.027
+  Einträge auf dem Merge, der Designer führt 10.024 Eigenschaften. Das Schema steht bei 130 (#493, die Anschlusslängen
+  im Gebäudekatalog); E18 hat keinen Schritt.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">

@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 24.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479) und E16 (#484) · Schwesterpapiere: das Konzept
+**Stand 24.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484) und E18 (#492) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -60,6 +60,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E15 | E15‑Q1…Q4 — die Fragen aus E15, dem Risikomodul V‑G7 (entschieden 24.09.2026, nach Empfehlung; Q4 a, Lesart c als spätere Erweiterung nicht beauftragt) | Protokoll E15; Statusdatei Nach #478 (a) | 4 |
 | R‑E16 | E16‑Q1…Q4 — die Fragen aus E16, der Wiederholperiode je Kostenposition V‑G3 (offen; gebaut jeweils a, die Empfehlung) | Protokoll E16; Statusdatei Nach #484 (a) | 4 |
 | R‑E17 | E17‑Q1…Q4 — die Fragen aus E17, den nicht monetarisierbaren Wirkungen V‑G11 (entschieden 24.09.2026, nach Empfehlung) | Protokoll E17; Statusdatei Nach #479 (a) | 4 |
+| R‑E18 | E18‑Q1…Q7 — die Fragen aus E18, den Restpunkten der Stromsteuer (Konzept § 6.3 Nr. 14, 16, 18; Q1…Q6 entschieden 24.09.2026, nach Empfehlung a, gebaut #492; Q7 offen, Restpunkt § 6.3 Nr. 33) | Protokoll E18; Statusdatei Nach #492 (a) | 7 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -664,6 +665,28 @@ Empfehlung a. Die Lücke selbst steht in R‑V (V‑G11).
 
 ---
 
+## R‑E18 — E18‑Q1…Q7: die Fragen aus E18
+
+Quelle: Protokoll
+[`E18_Restpunkte_Stromsteuer_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E18_Restpunkte_Stromsteuer_Protokoll.md),
+„Fragen aus der Welle", und die Statusdatei, Nach #492 (a). Die Fragen E18‑Q1 bis E18‑Q6 stellt der Phase‑0-Bericht der
+Welle E18 (Anwender 24.09.2026: „fahre fort" auf die Empfehlung, die Wache Konstante gegen Katalog mit Nr. 18 und
+Nr. 16 als nächste kleine Welle zu bauen); entschieden hat sie der Orchestrator am 24.09.2026 mit der Baufreigabe, nach
+Empfehlung a — gebaut ist jeweils a. E18‑Q7 ist eine Notiz des Berichts und steht als Restpunkt im Konzept (§ 6.3
+Nr. 33).
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E18‑Q1** | Gegen welche Katalogzeile die Wache die Rückfallebene hält: (a) die älteste Zeile je Schlüssel — eine Novelle ist eine spätere Jahreszeile; (b) die jüngste | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.5 (Stromsteuersatz); § 6.3 Nr. 14 | gebaut ist a (#492, E18/1: Saattest und Wache der Testdatenbank auf der ältesten Zeile) |
+| **E18‑Q2** | Die Ressourcen `PREIS_STROMSTEUER_REGELFALL` und `PREIS_STROMSTEUER_REDUZIERT` ohne Leser seit B4: (a) streichen; (b) lassen | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.5 (Stromsteuersatz) | gebaut ist a (#492, E18/1: beide Schlüssel de/en gestrichen) |
+| **E18‑Q3** | Nr. 18, die Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): (a) offen lassen mit Befundsatz, der Umbau nur als eigene Etappe mit Neueinfrierung; (b) in E18 umbauen; (c) als Grenze schließen | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 18 | gebaut ist a (#492, E18/2: Vermerk „HB1-O1, offen" an den fünf Stellen, nur Kommentare) — offen bleibt der Umbau |
+| **E18‑Q4** | Ort der Anzeige des erfassten Stromsteueranteils: (a) Dialog „BHKW-Wirtschaftlichkeit", Gruppe 4 und die Überlagerung „Sätze und Herkunft"; (b) zusätzlich der Parameterdialog; (c) nur der Parameterdialog | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 2.2, Gruppe 4; § 6.3 Nr. 16 | gebaut ist a (#492, E18/4) |
+| **E18‑Q5** | Umfang der Anzeige: (a) Wert, Aktiv, Satzabgleich, Vorschlag und Kohärenz ohne Sperre; (b) nur der Wert | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 2.2, Gruppe 4; § 6.5 | gebaut ist a (#492, E18/4: Herleitungs- und Kohärenzzeile, folgt live der Unternehmensart) |
+| **E18‑Q6** | Der rohe Leseweg des Stromsteueranteils: (a) aus `KohaerenzPruefung` nach `StrompreisZerlegungCtrl` verschoben; (b) als Kopie | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.9 (Fall 4) | gebaut ist a (#492, E18/3: `StromsteuerRoh` wortgleich verschoben, Fall 4 ruft ihn dort) |
+| **E18‑Q7** | *Die Unternehmensart ist nur mit BHKW pflegbar* (`WirtschaftlichkeitSeite.razor`, `_stand.MitBhkw`) — § 9b und die Anzeige sind für Projekte ohne BHKW unerreichbar | **offen** — Notiz, keine Lesarten | 24.09.2026 gestellt (Phase‑0-Bericht) | § 6.3 Nr. 33 | nicht gebaut |
+
+---
+
 ## R‑EZ — Einzelentscheide ohne eigene Familie
 
 Quelle: Konzept vor dem Schnitt (die Stelle steht in der Spalte *Ort der Regel*); Statusdatei #331
@@ -680,7 +703,7 @@ Register vergeben.
 | **EZ‑6** | *Mit welchem Strompreis bewertet eine Anlage, die selbst Strom bezieht, ihre Endenergie?* | „**Der Strompreis einer Anlage ist der ihres eigenen Trägers**" | 19.09.2026, Anwender | § 3.4 | umgesetzt #366 |
 | **EZ‑7** (B‑1) | Befund B‑1: Die Kessel-Modulspalte `Verbrauch` blieb leer | „Verbrauch aus dem Lauf nachziehen. Es gibt eine Größe Verbrauch aus dem Simulationslauf, aus der die Kosten ermittelt werden." — der frühere Entscheid „falsche Projektkonfiguration, Hinweistext bei 0" ist damit zurückgenommen | 18.09.2026, Anwender | § 4 (B‑1); § 3.4 | umgesetzt #331 (dieser Rechner) |
 | **EZ‑8** | *Referenzbasis nach Befund B‑1 neu einfrieren?* | „Ja, neue Basis einfrieren" | 18.09.2026, Anwender | § 6.2 (Referenzbasis) | umgesetzt #333 (`2026-09-18_R9_Kesselbrennstoff`); heute `2026-09-19_R10_BhkwWirkungsgrad` |
-| **EZ‑9** | *Abnahme des Mockups `../Mockups/Dialog_Formel_Zahlenprobe.html`* | abgenommen — „es ist die verbindliche Zielvorgabe der Etappen E4 ff. des Analysepapiers" | 22.09.2026, Anwender | § 2.12; Wegweiser des Ordners | E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461, Kern), E9b (#462, Dialoge), E10 (#463, Nutzungsdauer S3 und Speicherflotte) E13 (#474, Checkliste Punkt 9, Fehlergründe, A8-Halbsatz), E14 (#477, Formelmappe je Szenario), E15 (#478, Risikomodul V‑G7), E17 (#479, nicht monetarisierbare Wirkungen V‑G11) und E16 (#484, Wiederholperiode je Kostenposition V‑G3) gebaut; das Offene im Mockup-Anhang „Umsetzungsstand" |
-| **EZ‑10** | *Wiederaufnahme der am 20.09.2026 zurückgestellten Umsetzung* | wieder aufgenommen mit dem Auftrag, „das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen" (für E5: „setze das Konzept für die App epos-plan um") | 22.09.2026, Anwender | § 7; Analysepapier § 5 | E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474, die kleine Bauwelle zu E9b‑Q5 und E7c3‑Q6), E14 (#477, die Formelmappe je Szenario nach dem Befund 1 aus E9a), E15 (#478, das Risikomodul V‑G7 mit Schemaschritt 125) , E17 (#479, die nicht monetarisierbaren Wirkungen V‑G11 mit Schemaschritt 127) und E16 (#484, die Wiederholperiode je Kostenposition V‑G3 mit Schemaschritt 129) gebaut — E7, E8, E9 und E10 abgeschlossen; E12 (Wiki-Runden) vorbereitet #470, Sammel-Upload 26.09.2026; E11 entfällt |
+| **EZ‑9** | *Abnahme des Mockups `../Mockups/Dialog_Formel_Zahlenprobe.html`* | abgenommen — „es ist die verbindliche Zielvorgabe der Etappen E4 ff. des Analysepapiers" | 22.09.2026, Anwender | § 2.12; Wegweiser des Ordners | E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461, Kern), E9b (#462, Dialoge), E10 (#463, Nutzungsdauer S3 und Speicherflotte) E13 (#474, Checkliste Punkt 9, Fehlergründe, A8-Halbsatz), E14 (#477, Formelmappe je Szenario), E15 (#478, Risikomodul V‑G7), E17 (#479, nicht monetarisierbare Wirkungen V‑G11), E16 (#484, Wiederholperiode je Kostenposition V‑G3) und E18 (#492, Restpunkte der Stromsteuer mit dem erfassten Stromsteueranteil im Dialog „BHKW-Wirtschaftlichkeit") gebaut; das Offene im Mockup-Anhang „Umsetzungsstand" |
+| **EZ‑10** | *Wiederaufnahme der am 20.09.2026 zurückgestellten Umsetzung* | wieder aufgenommen mit dem Auftrag, „das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen" (für E5: „setze das Konzept für die App epos-plan um") | 22.09.2026, Anwender | § 7; Analysepapier § 5 | E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474, die kleine Bauwelle zu E9b‑Q5 und E7c3‑Q6), E14 (#477, die Formelmappe je Szenario nach dem Befund 1 aus E9a), E15 (#478, das Risikomodul V‑G7 mit Schemaschritt 125) , E17 (#479, die nicht monetarisierbaren Wirkungen V‑G11 mit Schemaschritt 127), E16 (#484, die Wiederholperiode je Kostenposition V‑G3 mit Schemaschritt 129) und E18 (#492, die Restpunkte der Stromsteuer, Konzept § 6.3 Nr. 14, 16, 18, ohne Schemaschritt) gebaut — E7, E8, E9 und E10 abgeschlossen; E12 (Wiki-Runden) vorbereitet #470, Sammel-Upload 26.09.2026; E11 entfällt |
 | **EZ‑11** | *Arbeitsregel beim Beginn des Papiers* | „erst das Konzept, keine Umsetzung" | 30.08.2026, Anwender | — (Entstehung, Protokoll § 2.1) | überholt — „die Regel beschreibt die Entstehung des Papiers, nicht seinen heutigen Geltungsumfang" |
 | **EZ‑12** (N‑3) | Befund N3: Ungepflegte Anteilsspalten wirkten als 11,746 ct/kWh, nicht als 0 | nach Empfehlung — „als 0 lesen"; ein ungepflegter Anteil ist inaktiv und trägt 0 bei | 18.09.2026, nach Empfehlung (Statusdatei #332) | § 4 (N3); § 3.5 | umgesetzt; der Sammelknopf „Vorschlagswerte übernehmen" ohne Vermerk |

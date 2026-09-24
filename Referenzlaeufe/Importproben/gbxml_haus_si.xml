@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EPOS-Plan Importprobe (selbst erzeugt): ein Einfamilienhaus mit beheiztem Erd- und Obergeschoss und unbeheiztem Keller. -->
+<gbXML xmlns="http://www.gbxml.org/schema" version="0.37" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true">
+  <Campus id="campus-1">
+    <Location>
+      <ZipcodeOrPostalCode>00000</ZipcodeOrPostalCode>
+      <Latitude>50</Latitude>
+      <Longitude>10</Longitude>
+      <Name>Musterort</Name>
+    </Location>
+    <Building id="geb-1" buildingType="SingleFamily">
+      <Name>Haus 1</Name>
+      <BuildingStorey id="gs-kg"><Name>Keller</Name><Level>-2.5</Level></BuildingStorey>
+      <BuildingStorey id="gs-eg"><Name>Erdgeschoss</Name><Level>0</Level></BuildingStorey>
+      <BuildingStorey id="gs-og"><Name>Obergeschoss</Name><Level>2.5</Level></BuildingStorey>
+      <Space id="raum-wohnen" conditionType="Heated" zoneIdRef="zone-1" buildingStoreyIdRef="gs-eg">
+        <Name>Wohnen</Name>
+        <Area>40</Area>
+        <Volume>100</Volume>
+        <AirChangesPerHour>0.5</AirChangesPerHour>
+        <PeopleNumber unit="NumberOfPeople">2</PeopleNumber>
+        <LightPowerPerArea unit="WattPerSquareMeter">2</LightPowerPerArea>
+        <EquipPowerPerArea unit="WattPerSquareMeter">3</EquipPowerPerArea>
+      </Space>
+      <Space id="raum-kueche" conditionType="Heated" zoneIdRef="zone-1" buildingStoreyIdRef="gs-eg">
+        <Name>Küche</Name>
+        <Area>20</Area>
+        <Volume>50</Volume>
+        <AirChangesPerHour>0.5</AirChangesPerHour>
+        <PeopleNumber unit="NumberOfPeople">1</PeopleNumber>
+        <LightPowerPerArea unit="WattPerSquareMeter">2</LightPowerPerArea>
+        <EquipPowerPerArea unit="WattPerSquareMeter">3</EquipPowerPerArea>
+      </Space>
+      <Space id="raum-schlafen" conditionType="Heated" zoneIdRef="zone-1" buildingStoreyIdRef="gs-og">
+        <Name>Schlafen</Name>
+        <Area>60</Area>
+        <Volume>150</Volume>
+        <AirChangesPerHour>0.5</AirChangesPerHour>
+        <PeopleNumber unit="NumberOfPeople">2</PeopleNumber>
+        <LightPowerPerArea unit="WattPerSquareMeter">2</LightPowerPerArea>
+        <EquipPowerPerArea unit="WattPerSquareMeter">3</EquipPowerPerArea>
+      </Space>
+      <Space id="raum-keller" conditionType="Unconditioned" buildingStoreyIdRef="gs-kg">
+        <Name>Keller</Name>
+        <Area>60</Area>
+        <Volume>120</Volume>
+        <AirChangesPerHour>0.2</AirChangesPerHour>
+      </Space>
+    </Building>
+    <Surface id="aw-eg-nord-wohnen" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>8</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-eg-n1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-eg-nord-kueche" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>4</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-eg-n2" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+      <Opening id="tuer-eg-nord" openingType="NonSlidingDoor">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>2</Height>
+        </RectangularGeometry>
+        <U-value unit="WPerSquareMeterK">1.8</U-value>
+      </Opening>
+    </Surface>
+    <Surface id="aw-eg-ost-kueche" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry>
+        <Azimuth>90</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>5</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-eg-o1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-eg-sued-wohnen" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry>
+        <Azimuth>180</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>8</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-eg-s1" openingType="FixedWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1.5</Height>
+        </RectangularGeometry>
+      </Opening>
+      <Opening id="fenster-eg-s2" openingType="FixedWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1.5</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-eg-sued-kueche" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry>
+        <Azimuth>180</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>4</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-eg-s3" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-eg-west-wohnen" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry>
+        <Azimuth>270</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>5</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-eg-w1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-og-nord" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-schlafen"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>12</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-og-n1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+      <Opening id="fenster-og-n2" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-og-ost" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-schlafen"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>12</Coordinate><Coordinate>0</Coordinate><Coordinate>2.5</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>12</Coordinate><Coordinate>5</Coordinate><Coordinate>2.5</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>12</Coordinate><Coordinate>5</Coordinate><Coordinate>5</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>12</Coordinate><Coordinate>0</Coordinate><Coordinate>5</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+      <Opening id="fenster-og-o1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-og-sued" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-schlafen"/>
+      <RectangularGeometry>
+        <Azimuth>180</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>12</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-og-s1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+      <Opening id="fenster-og-s2" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+      <Opening id="fenster-og-s3" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>2</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-og-west" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-schlafen"/>
+      <RectangularGeometry>
+        <Azimuth>270</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>5</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+      <Opening id="fenster-og-w1" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry>
+          <Width>1</Width>
+          <Height>1</Height>
+        </RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="dach-og" surfaceType="Roof" constructionIdRef="kon-dach">
+      <AdjacentSpaceId spaceIdRef="raum-schlafen"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>0</Tilt>
+        <Width>12</Width>
+        <Height>5</Height>
+      </RectangularGeometry>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>5</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>12</Coordinate><Coordinate>0</Coordinate><Coordinate>5</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>12</Coordinate><Coordinate>5</Coordinate><Coordinate>5</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>5</Coordinate><Coordinate>5</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="iw-eg" surfaceType="InteriorWall" constructionIdRef="kon-iw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry>
+        <Azimuth>90</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>5</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="decke-eg-og-wohnen" surfaceType="Ceiling" constructionIdRef="kon-geschossdecke">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen" surfaceType="Ceiling"/>
+      <AdjacentSpaceId spaceIdRef="raum-schlafen" surfaceType="InteriorFloor"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>0</Tilt>
+        <Width>8</Width>
+        <Height>5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="decke-eg-og-kueche" surfaceType="Ceiling" constructionIdRef="kon-geschossdecke">
+      <AdjacentSpaceId spaceIdRef="raum-kueche" surfaceType="Ceiling"/>
+      <AdjacentSpaceId spaceIdRef="raum-schlafen" surfaceType="InteriorFloor"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>0</Tilt>
+        <Width>4</Width>
+        <Height>5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="decke-kg-eg-wohnen" surfaceType="InteriorFloor" constructionIdRef="kon-kellerdecke">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen" surfaceType="InteriorFloor"/>
+      <AdjacentSpaceId spaceIdRef="raum-keller" surfaceType="Ceiling"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>180</Tilt>
+        <Width>8</Width>
+        <Height>5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="decke-kg-eg-kueche" surfaceType="InteriorFloor" constructionIdRef="kon-kellerdecke">
+      <AdjacentSpaceId spaceIdRef="raum-kueche" surfaceType="InteriorFloor"/>
+      <AdjacentSpaceId spaceIdRef="raum-keller" surfaceType="Ceiling"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>180</Tilt>
+        <Width>4</Width>
+        <Height>5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="kw-nord" surfaceType="UndergroundWall" constructionIdRef="kon-kellerwand">
+      <AdjacentSpaceId spaceIdRef="raum-keller"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>12</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="kw-ost" surfaceType="UndergroundWall" constructionIdRef="kon-kellerwand">
+      <AdjacentSpaceId spaceIdRef="raum-keller"/>
+      <RectangularGeometry>
+        <Azimuth>90</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>5</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="kw-sued" surfaceType="UndergroundWall" constructionIdRef="kon-kellerwand">
+      <AdjacentSpaceId spaceIdRef="raum-keller"/>
+      <RectangularGeometry>
+        <Azimuth>180</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>12</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="kw-west" surfaceType="UndergroundWall" constructionIdRef="kon-kellerwand">
+      <AdjacentSpaceId spaceIdRef="raum-keller"/>
+      <RectangularGeometry>
+        <Azimuth>270</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>5</Width>
+        <Height>2.5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="bp-keller" surfaceType="SlabOnGrade" constructionIdRef="kon-bodenplatte">
+      <AdjacentSpaceId spaceIdRef="raum-keller"/>
+      <RectangularGeometry>
+        <Azimuth>0</Azimuth>
+        <Tilt>180</Tilt>
+        <Width>12</Width>
+        <Height>5</Height>
+      </RectangularGeometry>
+    </Surface>
+    <Surface id="verschattung-1" surfaceType="Shade">
+      <RectangularGeometry>
+        <Azimuth>180</Azimuth>
+        <Tilt>90</Tilt>
+        <Width>3</Width>
+        <Height>2</Height>
+      </RectangularGeometry>
+    </Surface>
+  </Campus>
+  <Construction id="kon-aw">
+    <Name>Außenwand mit Innendämmung</Name>
+    <U-value unit="WPerSquareMeterK">0.4</U-value>
+    <LayerId layerIdRef="sch-aw"/>
+  </Construction>
+  <Construction id="kon-dach">
+    <Name>Flachdach</Name>
+    <U-value unit="WPerSquareMeterK">0.25</U-value>
+    <LayerId layerIdRef="sch-dach-1"/>
+    <LayerId layerIdRef="sch-dach-2"/>
+    <LayerId layerIdRef="sch-dach-3"/>
+  </Construction>
+  <Construction id="kon-kellerdecke">
+    <Name>Kellerdecke</Name>
+    <U-value unit="WPerSquareMeterK">0.4</U-value>
+    <LayerId layerIdRef="sch-kd"/>
+  </Construction>
+  <Construction id="kon-iw">
+    <Name>Innenwand</Name>
+    <LayerId layerIdRef="sch-iw"/>
+  </Construction>
+  <Construction id="kon-geschossdecke">
+    <Name>Geschossdecke</Name>
+    <LayerId layerIdRef="sch-gd"/>
+  </Construction>
+  <Construction id="kon-kellerwand">
+    <Name>Kellerwand</Name>
+    <LayerId layerIdRef="sch-kw"/>
+  </Construction>
+  <Construction id="kon-bodenplatte">
+    <Name>Bodenplatte Keller</Name>
+    <LayerId layerIdRef="sch-bp"/>
+  </Construction>
+  <Layer id="sch-aw">
+    <MaterialId materialIdRef="mat-aussenputz"/>
+    <MaterialId materialIdRef="mat-mauerwerk"/>
+    <MaterialId materialIdRef="mat-innendaemmung"/>
+    <MaterialId materialIdRef="mat-innenputz"/>
+  </Layer>
+  <Layer id="sch-dach-1">
+    <MaterialId materialIdRef="mat-dachdaemmung"/>
+  </Layer>
+  <Layer id="sch-dach-2">
+    <MaterialId materialIdRef="mat-beton-20"/>
+  </Layer>
+  <Layer id="sch-dach-3">
+    <MaterialId materialIdRef="mat-innenputz"/>
+  </Layer>
+  <Layer id="sch-kd">
+    <MaterialId materialIdRef="mat-kellerdaemmung"/>
+    <MaterialId materialIdRef="mat-beton-16"/>
+    <MaterialId materialIdRef="mat-estrich"/>
+  </Layer>
+  <Layer id="sch-iw">
+    <MaterialId materialIdRef="mat-innenputz"/>
+    <MaterialId materialIdRef="mat-mauerwerk-11"/>
+    <MaterialId materialIdRef="mat-innenputz"/>
+  </Layer>
+  <Layer id="sch-gd">
+    <MaterialId materialIdRef="mat-estrich"/>
+    <MaterialId materialIdRef="mat-beton-16"/>
+  </Layer>
+  <Layer id="sch-kw">
+    <MaterialId materialIdRef="mat-beton-25"/>
+  </Layer>
+  <Layer id="sch-bp">
+    <MaterialId materialIdRef="mat-beton-16"/>
+  </Layer>
+  <Material id="mat-aussenputz">
+    <Name>Außenputz</Name>
+    <Thickness>0.02</Thickness>
+    <Conductivity unit="WPerMeterK">1</Conductivity>
+    <Density unit="KgPerCubicM">1800</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-mauerwerk">
+    <Name>Mauerwerk 24 cm</Name>
+    <Thickness>0.24</Thickness>
+    <Conductivity unit="WPerMeterK">0.8</Conductivity>
+    <Density unit="KgPerCubicM">1600</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-innendaemmung">
+    <Name>Innendämmung</Name>
+    <Thickness>0.08</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">100</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-innenputz">
+    <Name>Innenputz</Name>
+    <Thickness>0.01</Thickness>
+    <Conductivity unit="WPerMeterK">1</Conductivity>
+    <Density unit="KgPerCubicM">1400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-dachdaemmung">
+    <Name>Dachdämmung</Name>
+    <Thickness>0.15</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">30</Density>
+    <SpecificHeat unit="JPerKgK">1500</SpecificHeat>
+  </Material>
+  <Material id="mat-beton-20">
+    <Name>Beton 20 cm</Name>
+    <Thickness>0.2</Thickness>
+    <Conductivity unit="WPerMeterK">2</Conductivity>
+    <Density unit="KgPerCubicM">2400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-kellerdaemmung">
+    <Name>Kellerdeckendämmung</Name>
+    <Thickness>0.08</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">30</Density>
+    <SpecificHeat unit="JPerKgK">1500</SpecificHeat>
+  </Material>
+  <Material id="mat-beton-16">
+    <Name>Beton 16 cm</Name>
+    <Thickness>0.16</Thickness>
+    <Conductivity unit="WPerMeterK">2</Conductivity>
+    <Density unit="KgPerCubicM">2400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-estrich">
+    <Name>Estrich</Name>
+    <Thickness>0.06</Thickness>
+    <Conductivity unit="WPerMeterK">0.75</Conductivity>
+    <Density unit="KgPerCubicM">2000</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-mauerwerk-11">
+    <Name>Mauerwerk 11,5 cm</Name>
+    <Thickness>0.115</Thickness>
+    <Conductivity unit="WPerMeterK">0.8</Conductivity>
+    <Density unit="KgPerCubicM">1600</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-beton-25">
+    <Name>Beton 25 cm</Name>
+    <Thickness>0.25</Thickness>
+    <Conductivity unit="WPerMeterK">2</Conductivity>
+    <Density unit="KgPerCubicM">2400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <WindowType id="fenster-typ-1">
+    <Name>Fenster zweifach verglast</Name>
+    <U-value unit="WPerSquareMeterK">1.1</U-value>
+    <SolarHeatGainCoeff unit="Fraction" solarIncidentAngle="60">0.5</SolarHeatGainCoeff>
+    <SolarHeatGainCoeff unit="Fraction" solarIncidentAngle="0">0.6</SolarHeatGainCoeff>
+    <Transmittance unit="Fraction" type="Visible">0.7</Transmittance>
+  </WindowType>
+  <Zone id="zone-1">
+    <Name>Wohnzone</Name>
+    <DesignHeatT>20</DesignHeatT>
+    <DesignCoolT>26</DesignCoolT>
+  </Zone>
+</gbXML>

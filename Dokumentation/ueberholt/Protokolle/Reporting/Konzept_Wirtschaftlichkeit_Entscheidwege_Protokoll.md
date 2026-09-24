@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479, #484), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479, #484, #492), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -226,7 +226,8 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | R4 | erledigt mit E1 (#380) | § 5.2 |
 | 25–29 | 25–28 erledigt mit E2 (#405); 29 erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3 | § 5.4, § 8.3 |
 | 20 | entfällt (22.09.2026) | § 6.4 |
-| 12, 14, 17 | erledigt bzw. überholt | § 7.1 |
+| 12, 14, 17 | erledigt bzw. überholt; 14 ganz erledigt mit E18 (#492) — die Wache Konstante gegen Katalog —, der Wortlaut vor #492 und der Grund in § 8.35 | § 7.1, § 8.35 |
+| 16 | erledigt mit E18 (#492), der Wortlaut vor #492 und der Grund in § 8.35; Nr. 18 mit E18 nachgemessen und wieder offen, ebenda | § 8.35 |
 | Q11 (ohne Nummer) | erledigt mit E7b (#439); stand vorher nicht in § 6.3, der Grund in § 8.5 | § 8.5 |
 
 ### 0.6 Umgebogene Verweise
@@ -1290,7 +1291,9 @@ und § 8.28 **vor #477** (Stand `61efa054`, der Anwender-Merge der Anlagenkopplu
 `d176b378`, lässt die Papiere unberührt), in § 8.31 und § 8.32 **vor #479** (Stand `c99c4c7a` = #478 samt seinen Papieren
 und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt), in § 8.33 und § 8.34 **vor #484** (Stand
 `c778ab12` = #479 samt seinen Papieren, #488, die Anlagenkopplung AK1 Welle 3 und die Entscheid-Papiere vom
-24.09.2026; der Merge #484, `ae7b0ed0`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+24.09.2026; der Merge #484, `ae7b0ed0`, lässt die Papiere unberührt), in § 8.35 und § 8.36 **vor #492** (Stand `247e2091` = #493 mit
+Schemaschritt 130 samt den Papieren zu #484, #489, #490, #491 und #493; der Merge #492, `e79bffb1`, lässt die Papiere
+unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2581,3 +2584,70 @@ Die Stellen, die mit E16 veraltet sind; „vorher" ist der Wortlaut vor #484 (St
 | § 6.2 (Z. 2759) | endete mit „… E17 bewegt keinen Anker." | dazu `WiederholperiodeTests` und fünf Dialogproben; „E16 bewegt keinen Anker" |
 | § 7 (Z. 2970–2973) | „Aus der Gap-Tafel des § 2.11.2 ist nur noch V‑G3 (Wiederholperiode je Kostenposition, E16, #484) offen" | „Die Lücke V‑G3 ist mit E16 (#484) gebaut … vier Fragen offen (→ Register R‑E16). Damit ist die Gap-Tafel des § 2.11.2 geschlossen" |
 | Anhang (Z. 3017, 3034, 3064) | Zeile V‑A…V‑E mit „V‑G3 = E16 (offen)"; Kürzelzeilen bis #479; Etappenzeilen bis „E17 — Nicht monetarisierbare Wirkungen (V‑G11)" | „V‑G3 = E16 (gebaut #484)"; Kürzelzeile der Welle (#484); Etappenzeile „E16 — Wiederholperiode je Kostenposition (V‑G3)" = #484 |
+
+### 8.35 E18 — Restpunkte der Stromsteuer: Wache der Rückfallebene, erfasster Stromsteueranteil, Nr. 18 nachgemessen (#492)
+
+Protokoll [`E18_Restpunkte_Stromsteuer_Protokoll.md`](E18_Restpunkte_Stromsteuer_Protokoll.md); im Register die neue
+Familie R‑E18. Die Welle folgt dem „fahre fort" des Anwenders vom 24.09.2026 auf die Empfehlung, die Wache Konstante
+gegen Katalog zusammen mit Nr. 18 und Nr. 16 als nächste kleine Welle zu bauen; sie ist keine Etappe des Plans E0–E12
+und kommt ohne Schemaschritt aus (130 ist #493, die Anschlusslängen im Gebäudekatalog). Die Fragen E18‑Q1…Q6 hat der
+Orchestrator am 24.09.2026 mit der Baufreigabe nach Empfehlung a entschieden; E18‑Q7 ist der neue Restpunkt Nr. 33.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E18** (#492, Merge `e79bffb1` über `247e2091`, Zweig `e18` = `29fad34d` von `fbc4e536`) | Wache der Rückfallebene `StrompreisZerlegungModel` gegen die älteste Zeile je Schlüssel in Saat und Testdatenbank (Stromsteuersätze und drei Umlagen), zwei tote Ressourcen gestrichen (E18‑Q1 a, Q2 a); `StrompreisZerlegungCtrl.StromsteuerErfasst`, der rohe Leseweg aus `KohaerenzPruefung` verschoben (Q6 a); der erfasste Stromsteueranteil unter der Unternehmensart im Dialog „BHKW-Wirtschaftlichkeit", Gruppe 4 und Überlagerung, mit Satzabgleich und Kohärenzzeile ohne Sperre (Q4 a, Q5 a); Nr. 18 nachgemessen, offen, HB1-O1 an den fünf Rechenweg-Sortierungen vermerkt (Q3 a) | **nein** — Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich |
+
+*§ 6.3 Nr. 14 (Z. 2884):*
+
+> 14. ~~Reduzierter Stromsteuersatz bleibt Konstante bis zur Katalog-Nachpflege~~ — überholt, siehe Protokoll; offen bleibt allein, dass **keine Wache Konstante gegen Katalog** hält (§ 6.5)
+
+**Erledigt mit E18 (#492):** Die Wache `StrompreisZerlegungTests.Die_Rueckfallebene_steht_wertgleich_im_Katalog_der_Testdatenbank`
+hält die Konstanten gegen die älteste Zeile des Katalogs der Testdatenbank, der Saattest
+`Die_Katalogwerte_und_die_Rueckfallebene_sind_wertgleich` gegen die älteste Saatzeile (statt `JahrVon == 2026`); die
+Meldung nennt die drei nachzuziehenden Orte; die Ressourcen `PREIS_STROMSTEUER_REGELFALL/_REDUZIERT` sind gestrichen.
+Gegenprobe: `STROMST_REGELSATZ` 2026 = 21 EUR/MWh in einer Kopie der Testdatenbank → rot.
+
+*§ 6.3 Nr. 16 (Z. 2886):*
+
+> 16. Rückweg „Parameterdialog zeigt den erfassten Preisanteil" fehlt
+
+**Erledigt mit E18 (#492):** Die Pflegestelle der Unternehmensart ist seit dem Auszug der Steuerfelder der Dialog
+„BHKW-Wirtschaftlichkeit", nicht der Parameterdialog; dort zeigen Gruppe 4 und die Überlagerung „Sätze und Herkunft"
+den erfassten Stromsteueranteil mit Satzabgleich und Kohärenzzeile, gepflegt wird er nur in „Strompreis Details"
+(E18‑Q4 a, Q5 a). Herkunft des Punkts: B4 § 4 Grenze 3.
+
+*§ 6.3 Nr. 18 (Z. 2888–2890):*
+
+> 18. ~~Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1)~~ — **vermutlich überholt**:
+>     `SimulationControl.cs:1512, 3372, 4117` sortieren `ORDER BY Prioritaet, ID`; ob dies die
+>     gemeinte Stelle ist, ist nicht gegengeprüft — nachmessen, dann streichen
+
+**Nachgemessen mit E18 (#492), offen:** Die Stellen waren die gemeinten, aber es sind fünf — `SimulationControl` dreimal
+und `WaermesenkeClass` zweimal —, und sie sortieren weiterhin ungepflegt vor gepflegt; die 99er-Regel änderte die
+Reihenfolge in 5 von 13 Referenzprojekten. Der Umbau ist eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a); die
+Durchstreichung entfällt, der Punkt steht wieder offen, die Stellen tragen den Vermerk „HB1-O1, offen".
+
+*§ 6.5, Zeile Stromsteuersatz (Z. 2962):*
+
+> | Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` und `STROMST_REDUZIERT_SATZ` gegen die `const double` in `StrompreisZerlegungModel` | wertgleich, **gekoppelt ist nichts**: Die vorhandene Wache (`StrompreisZerlegungTests`) prüft Modell gegen Konstante, **nicht** Konstante gegen Katalog — eine gepflegte Novelle erreicht die Modellkonstante nicht, und eine Wache dafür fehlt. Der reduzierte Satz ist gesät; die Konstante ist ausdrücklich nur noch Rückfallebene (§ 6.3 Nr. 14) |
+
+**Berichtigt mit E18 (#492):** Die Aussage war unzutreffend — die Wache hielt die Konstante schon gegen die Saat, aber
+nur für `JahrVon == 2026`; es fehlten die Testdatenbank und die Robustheit gegen eine spätere Jahreszeile. Neu:
+gekoppelt durch zwei Wachen (Saat und Testdatenbank, älteste Zeile) — eine Novelle ist eine spätere Jahreszeile und
+lässt die Rückfallebene stehen.
+
+### 8.36 Berichtigungen im gültigen Stand (#492)
+
+Die Stellen, die mit E18 veraltet sind; „vorher" ist der Wortlaut vor #492 (Stand `247e2091`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3), Liste der fremden Schritte (Z. 5, Z. 18–19) und Schrittabsatz (Z. 39–40) | Codestand `ae7b0ed0`, Zielversion 129, „Schemaschritte 90–129 vergeben"; „… 121 bis 124 und 128 gehören nicht diesem Feld"; der Absatz endete mit „126 … und 128 … gehören nicht diesem Feld" | Codestand `e79bffb1`, Zielversion 130, „90–130 vergeben … 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt"; 130 in der Liste der fremden Schritte (`GebaeudeAnschlusslaengenReparatur.SCHRITT`, reines DML); „126 …, 128 … und 130 … gehören nicht diesem Feld; die Etappe E18 (#492) kommt ohne Schritt aus" |
+| § 2.2, Gruppe 4 (nach Z. 309) | — | neuer Absatz „Erfasster Stromsteueranteil (gebaut #492, E18; § 6.3 Nr. 16)": Ort, Leseweg, Herleitungs- und Kohärenzzeile, Satzquelle, nur Anzeige, nur mit BHKW erreichbar |
+| § 6.1 (Z. 2746) | Kurztafel bis E16 (#484) | Zeile „E18 Restpunkte Stromsteuer" (#492), ohne Schemaschritt |
+| § 6.3 Nr. 14, 16, 18 (Z. 2884, 2886, 2888–2890) | Wortlaut in § 8.35 | Nr. 14 „überholt; die Wache Konstante gegen Katalog erledigt mit E18 (#492)"; Nr. 16 durchgestrichen, „erledigt mit E18 (#492)"; Nr. 18 offen mit den fünf Stellen, der Messung 5 von 13 und dem Vermerk im Code |
+| § 6.3, neuer Block vor „Nachweis und Betrieb" (vor Z. 2925) | — | „Aus Etappe E18 (#492)", Nr. 33 „Unternehmensart ohne BHKW nicht pflegbar" (E18‑Q7), offen |
+| § 6.5, Zeile Stromsteuersatz (Z. 2962) | Wortlaut in § 8.35 | „wertgleich und gekoppelt durch zwei Wachen (E18, #492)" — Saat und Testdatenbank, älteste Zeile, die Meldung mit den drei Orten, eine Novelle als spätere Jahreszeile |
+| § 6.5, Zeile „Energieintensiv" an drei Orten (Z. 2963) | „seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; gekoppelt ist weiterhin nichts" | dazu „umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre" |
+| § 7 (Z. 3011) | endete mit „Damit ist die Gap-Tafel des § 2.11.2 geschlossen." | dazu der Satz zu E18 (#492): Nr. 14 und 16 erledigt, Nr. 18 offen, Nr. 33 neu, sechs Fragen entschieden (→ Register R‑E18) |
+| Anhang (Z. 3073, 3104) | Kürzelzeilen bis #484; Etappenzeilen bis „E16 — Wiederholperiode je Kostenposition (V‑G3)" | Kürzelzeile der Welle (#492); Etappenzeile „E18 — Restpunkte Stromsteuer (§ 6.3 Nr. 14, 16, 18)" = #492 |

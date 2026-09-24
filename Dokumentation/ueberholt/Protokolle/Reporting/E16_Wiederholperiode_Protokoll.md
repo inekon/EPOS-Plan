@@ -164,7 +164,7 @@ pusht" wird E16 **129** (E16/7, E16/8). Die **Maskenwache** zählt am `VorlagenP
   196/196, `WiederholperiodeTests` 31/31, UI 239/239; voll Kern 6.107, UI 6.017, 549, 386, 27 und 1, Auslieferungsvorlage
   30/30).
 - **Gate auf `ae7b0ed0`:** Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte, voller Lauf 13.099 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 6.117, EPOS.UI 6.020, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE484b.log`, 24.09.2026 21:58–22:04 Uhr, auf `e2088f0c` = Merge `ae7b0ed0` mit `56865aad` [#487]; ein erster Lauf auf `ae7b0ed0` ohne Protokoll, dessen ChartProben-Hashes 151/151 gleich der Messlatte)
-- **CI:** steht aus (Beobachtung nach dem Push)
+- **CI:** alle drei Läufe auf `39319322` grün — Kern ubuntu Arbeitszweig 36053225364, Kern `main` 36053230020, Windows `main` 36053229976
 
 ## Abnahme am Gerät (A‑E16‑1, Windows)
 

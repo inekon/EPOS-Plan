@@ -278,8 +278,7 @@ namespace WindowsFormsApplication1
 
                 var paare = new List<string>
                 {
-                    "Rechenweg", g.IstVdi6007 ? MyResource.Resource.GEB_RECHENWEG_VDI6007
-                                              : MyResource.Resource.GEB_RECHENWEG_TAGESBILANZ,
+                    "Rechenweg", Rechenwegtext(g),
                     "Wärmebedarf Heizung", k.F(g.HeizwaermeMwh, 1) + " MWh/a",
                     "Spitzenlast (Stundenwert)", k.F(g.SpitzeKw, 1) + " kW",
                     "Spitzenlast (Tagesmittel)", k.F(g.SpitzeTagesmittelKw, 1) + " kW",
@@ -304,6 +303,102 @@ namespace WindowsFormsApplication1
             // K5 (E31): Die Grenze steht an JEDER Kaeltezahl - auch an der Kuehlenergie je Gebaeude.
             if (zeilen.Any(g => g.IstVdi6007 && g.KuehlenergieMwh.HasValue))
                 k.HinweisRoh(SimulationKaeltebedarf.GrenzeFeuchte);
+
+            // ANLAGENKOPPLUNG AK1 (Konzept 9.4): der Heizkreis der gekoppelt gerechneten Gebaeude.
+            HeizkreisSchreiben(k, stamm, zeilen);
+        }
+
+        /// <summary>
+        /// Der Rechenweg eines Gebäudes als Ausweis (E20, E23; Anlagenkopplung 9.4): auf dem VDI-Weg
+        /// mit wirksamer Kopplung „VDI 6007, gekoppelt (AK1)" — dieselbe Zeile wie im Bedarfsdialog.
+        /// </summary>
+        internal static string Rechenwegtext(ErgebnisGebaeudeModel g)
+        {
+            if (!g.IstVdi6007) return MyResource.Resource.GEB_RECHENWEG_TAGESBILANZ;
+            return g.IstGekoppelt
+                ? MyResource.Resource.GEB_RECHENWEG_VDI6007 + ", " + MyResource.Resource.GEB_RECHENWEG_GEKOPPELT
+                : MyResource.Resource.GEB_RECHENWEG_VDI6007;
+        }
+
+        /// <summary>Überschrift des Abschnitts Heizkreis (Anlagenkopplung AK1) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_HEIZKREIS = "Heizkreis und Übergabe (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tabelle des Heizkreises — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_HEIZKREIS =
+            "Die Mittel gelten für die Stunden mit Heizbetrieb; begrenzt heißt, die Übergabe lieferte weniger, als der Sollwert verlangte.";
+
+        /// <summary>
+        /// <b>ANLAGENKOPPLUNG AK1 — der Heizkreis je gekoppeltem Gebäude</b> (Konzept 9.4): Übergabeart
+        /// samt Auslegungspunkt, Heizkurve, die beiden Temperaturmittel über die Heizstunden und die
+        /// Stunden mit begrenzter Übergabe. Die Zahlen sind die des Laufs (<c>Tab_ErgebnisGebaeude</c>,
+        /// Schritt 128) — gerechnet wird hier nichts; Auslegungspunkt und Heizkurve sind die Eingaben
+        /// des Gebäudes, ein leeres Feld die Vorgabe der Art.
+        ///
+        /// <para><b>Der Abschnitt entfällt</b>, wenn kein Gebäude gekoppelt gerechnet hat — jedes
+        /// Bestands- und Referenzprojekt.</para>
+        /// </summary>
+        private static void HeizkreisSchreiben(WordKontext k, VariantenDaten stamm, List<ErgebnisGebaeudeModel> zeilen)
+        {
+            List<ErgebnisGebaeudeModel> gekoppelt = zeilen.Where(g => g.IstGekoppelt).ToList();
+            if (gekoppelt.Count == 0) return;
+
+            int[] b = { 2300, 2000, 2000, 1200, 1200, WordBerichtGenerator.INHALT_B - 8700 };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            string[] titel = { "Gebäude", "Übergabe (Auslegung)", "Heizkurve", "Vorlauf Mittel [°C]",
+                               "Rücklauf Mittel [°C]", "Übergabe begrenzt [h/a]" };
+            for (int i = 0; i < titel.Length; i++)
+                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            foreach (ErgebnisGebaeudeModel g in gekoppelt)
+            {
+                DataRow eingabe = Gebaeudeeingabe(stamm, g.ID_Gebaeude);
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename, b[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(Uebergabetext(k, g.UebergabeArt, eingabe), b[1], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(Heizkurventext(k, eingabe), b[2], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(g.VorlaufMittelC.HasValue ? k.F(g.VorlaufMittelC.Value, 1) : "—", b[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.RuecklaufMittelC.HasValue ? k.F(g.RuecklaufMittelC.Value, 1) : "—", b[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.UebergabeBegrenztStundenH.HasValue ? k.F(g.UebergabeBegrenztStundenH.Value, 0) : "—", b[5], false, null, JustificationValues.Right));
+                t.Append(tr);
+            }
+
+            k.Ueberschrift2(UEBERSCHRIFT_HEIZKREIS);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_HEIZKREIS);
+            k.HinweisRoh(MyResource.Resource.GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG);
+        }
+
+        /// <summary>Die Eingabezeile eines Gebäudes aus den Projektdetails (<c>Tab_Gebaeude</c>); <c>null</c> ohne.</summary>
+        private static DataRow Gebaeudeeingabe(VariantenDaten v, int idGebaeude)
+        {
+            DataTable dt = v?.Details?.Gebaeude;
+            if (dt == null || !dt.Columns.Contains("ID")) return null;
+            foreach (DataRow r in dt.Rows)
+                if ((int)(ProjektDetails.D(r, "ID") ?? 0) == idGebaeude) return r;
+            return null;
+        }
+
+        /// <summary>„Radiator, 55/45 °C" — die Übergabeart mit dem Auslegungspunkt (Eingabe, sonst Vorgabe der Art).</summary>
+        internal static string Uebergabetext(WordKontext k, string art, DataRow eingabe)
+        {
+            double? vorlauf = ProjektDetails.D(eingabe, "Auslegung_Vorlauf") ?? Waermeuebergabevorgaben.Vorlauf(art);
+            double? ruecklauf = ProjektDetails.D(eingabe, "Auslegung_Ruecklauf") ?? Waermeuebergabevorgaben.Ruecklauf(art);
+            string name = Waermeuebergabevorgaben.Anzeigename(art);
+            return vorlauf.HasValue && ruecklauf.HasValue
+                ? name + ", " + k.F(vorlauf.Value, 0) + "/" + k.F(ruecklauf.Value, 0) + " °C"
+                : name;
+        }
+
+        /// <summary>„Niveau 0 K, Steilheit 1,00" mit Heizkurve (leere Felder = Vorgabe), sonst „fester Vorlauf".</summary>
+        internal static string Heizkurventext(WordKontext k, DataRow eingabe)
+        {
+            if (eingabe == null) return "—";
+            if (ProjektDetails.B(eingabe, "Heizkurve_Aktiv") != true) return BerichtTexte.T("fester Vorlauf");
+            double niveau = ProjektDetails.D(eingabe, "Heizkurve_Niveau") ?? Waermeuebergabevorgaben.HeizkurveNiveau;
+            double steilheit = ProjektDetails.D(eingabe, "Heizkurve_Steilheit") ?? Waermeuebergabevorgaben.HeizkurveSteilheit;
+            return BerichtTexte.T("Niveau") + " " + k.F(niveau, 1) + " K, " + BerichtTexte.T("Steilheit") + " " + k.F(steilheit, 2);
         }
 
         private static string Wert(WordKontext k, double? w, int dez, string einheit)

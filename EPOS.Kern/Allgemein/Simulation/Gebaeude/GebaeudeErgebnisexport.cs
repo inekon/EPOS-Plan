@@ -54,6 +54,14 @@ namespace WindowsFormsApplication1
     /// <c>kuehlbedarf_&lt;n&gt;.csv</c> noch <c>Geb[n].KuehlenergieMwh</c> und
     /// <c>Geb[n].StundenMitKuehlbedarf</c> — nicht mit Nullen gefüllt (Befund W 3).</para>
     ///
+    /// <para><b>Die drei Reihen des Heizkreises nur mit wirksamer Kopplung</b> (Anlagenkopplung AK1,
+    /// Konzept 8.3): <c>vorlauf_&lt;n&gt;.csv</c> und <c>ruecklauf_&lt;n&gt;.csv</c> in °C — NaN in
+    /// den Stunden ohne Heizbetrieb —, <c>uebergabe_&lt;n&gt;.csv</c> mit dem Anteil der Stunde, in
+    /// dem die Übergabe die Grenze war (0 … 1). Ein ungekoppeltes Gebäude schreibt keine davon: Eine
+    /// Datei, die nur im neuen Lauf liegt, ist im Vergleich FAIL, und dagegen gibt es keinen
+    /// Schalter. Neue Skalare kommen nicht dazu — die Kennzahlen des Heizkreises stehen in
+    /// <c>Tab_ErgebnisGebaeude</c> (Schritt 128).</para>
+    ///
     /// <para><b>Wer schreibt.</b> Die CSV-Dateien und die Skalare in <c>aggregate.csv</c>
     /// schreibt <c>Referenzlauf/Ergebnisexport.cs</c> (beide Referenzlauf-Werkzeuge und die
     /// iOS-Prüfung teilen die Datei).</para>
@@ -85,6 +93,14 @@ namespace WindowsFormsApplication1
             };
             if (e.KuehlbedarfKwh != null)
                 reihen.Add(new KeyValuePair<string, double[]>("kuehlbedarf_" + n + ".csv", e.KuehlbedarfKwh));
+
+            // Anlagenkopplung AK1 (8.3): die drei Reihen nur mit wirksamer Kopplung.
+            if (e.Heizkreis != null)
+            {
+                reihen.Add(new KeyValuePair<string, double[]>("vorlauf_" + n + ".csv", e.Heizkreis.VorlaufC));
+                reihen.Add(new KeyValuePair<string, double[]>("ruecklauf_" + n + ".csv", e.Heizkreis.RuecklaufC));
+                reihen.Add(new KeyValuePair<string, double[]>("uebergabe_" + n + ".csv", e.Heizkreis.UebergabeBegrenztAnteil));
+            }
 
             string p = "Geb[" + n + "].";
             var skalare = new List<KeyValuePair<string, double>>

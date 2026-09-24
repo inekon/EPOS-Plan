@@ -91,9 +91,11 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         IReadOnlyList<string>? kwkSzenarioHinweise = null,
         Func<string>? ladefehler = null,
         Func<string>? speicherfehler = null,
-        string vorsorgewarnung = "")
+        string vorsorgewarnung = "",
+        StromsteueranteilStand? stromsteueranteil = null)
     {
         return Render<BhkwWirtschaftlichkeitDialog>(p => p
+            .Add(x => x.Stromsteueranteil, stromsteueranteil)
             .Add(x => x.Ladefehler, ladefehler)
             .Add(x => x.Speicherfehler, speicherfehler)
             .Add(x => x.Vorsorgewarnung, vorsorgewarnung)
@@ -2364,5 +2366,134 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
                      + "Speichern gescheitert: SqliteException: SQLite Error 19: 'E13-Probe'.",
                      cut.FindAll(".epos-warnbanner-text")[^1].TextContent);
         Assert.Single(Baender(cut), t => t.Contains("E13-Probe", StringComparison.Ordinal));
+    }
+
+    // =====================================================================
+    // ETAPPE E18 (Konzept § 6.3 Nr. 16) — der erfasste Stromsteueranteil
+    // =====================================================================
+
+    private static StromsteueranteilStand Erfasst(double? wert, bool aktiv = true)
+        => new StromsteueranteilStand
+        {
+            TraegerId = 60, TraegerName = "Elektrische Energie", WertCtKwh = wert, Aktiv = aktiv
+        };
+
+    private static IElement StAnteil(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut)
+        => Koerper(cut, 4).QuerySelector("div.epos-stanteil")!;
+
+    /// <summary>Ein Katalog, der nur die beiden Stromsteuersätze kennt (EUR/MWh).</summary>
+    private static Func<string, int, GesetzParameter> Stromsteuerkatalog(double regel, double reduziert)
+        => (schluessel, jahr) =>
+        {
+            if (schluessel == DbWerte.GESETZ_STROMST_REGELSATZ)
+                return new GesetzParameter(1, schluessel, "STROMSTEUER", 2026, regel, "EUR/MWh", "", "");
+            if (schluessel == DbWerte.GESETZ_STROMST_REDUZIERT)
+                return new GesetzParameter(2, schluessel, "STROMSTEUER", 2026, reduziert, "EUR/MWh", "", "");
+            return null!;
+        };
+
+    [Fact]
+    public void E18_Ohne_Gabe_steht_keine_Anteilszeile()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(StAnteil(cut).Children);
+    }
+
+    [Fact]
+    public void E18_Der_erfasste_Regelsatz_passt_zur_Unternehmensart_ohne_Entlastung()
+    {
+        var cut = Aufbauen(stromsteueranteil: Erfasst(2.05));
+        IElement z = StAnteil(cut);
+
+        string herleitung = z.QuerySelector(".epos-herleitung")!.TextContent;
+        Assert.Contains("Erfasster Stromsteueranteil im Strompreis „Elektrische Energie\": 2,050 ct/kWh (aktiv).",
+                        herleitung);
+        Assert.Contains("Das ist der Regelsatz 2026 (2,050 ct/kWh, § 3 StromStG).", herleitung);
+
+        IElement k = z.QuerySelector(".epos-kohaerenz")!;
+        Assert.Contains("epos-kohaerenz--ok", k.ClassName);
+        Assert.Contains("Sie legt den Regelsatz nahe.", k.TextContent);
+    }
+
+    /// <summary>Die Zeile folgt der GEWÄHLTEN Unternehmensart, ohne zu schreiben:
+    /// produzierendes Gewerbe legt den reduzierten Satz nahe, der erfasste Regelsatz
+    /// wird zum Hinweis — keine Sperre, der Parametersatz bleibt unberührt.</summary>
+    [Fact]
+    public void E18_Die_Wahl_der_Unternehmensart_dreht_den_Hinweis_live()
+    {
+        var p = new WirtschaftlichkeitParameter();
+        var cut = Aufbauen(parameter: p, stromsteueranteil: Erfasst(2.05));
+
+        Koerper(cut, 4).QuerySelectorAll("select")[0].Change("1");
+
+        IElement k = StAnteil(cut).QuerySelector(".epos-kohaerenz")!;
+        Assert.Contains("epos-kohaerenz--abweichend", k.ClassName);
+        Assert.Contains("Die Unternehmensart legt den reduzierten Satz nahe", k.TextContent);
+        Assert.Contains("„Strompreis Details\"", k.TextContent);
+        Assert.Equal(DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, p.Unternehmensart);
+    }
+
+    [Fact]
+    public void E18_Der_Satzabgleich_liest_den_Katalog_des_Bilanzjahres()
+    {
+        var parameter = new WirtschaftlichkeitParameter { BilanzJahr = 2027 };
+        var cut = Aufbauen(parameter: parameter, katalog: Stromsteuerkatalog(25.0, 1.0),
+                           stromsteueranteil: Erfasst(0.1));
+
+        string herleitung = StAnteil(cut).QuerySelector(".epos-herleitung")!.TextContent;
+        Assert.Contains("Das ist der reduzierte Satz 2027 (0,100 ct/kWh, § 9b StromStG).", herleitung);
+    }
+
+    [Fact]
+    public void E18_Ein_fremder_Satz_ist_weder_Regel_noch_reduziert()
+    {
+        var cut = Aufbauen(stromsteueranteil: Erfasst(1.0));
+
+        string herleitung = StAnteil(cut).QuerySelector(".epos-herleitung")!.TextContent;
+        Assert.Contains("Das ist weder der Regelsatz (2,050 ct/kWh) noch der reduzierte Satz (0,050 ct/kWh) " +
+                        "des Jahres 2026.", herleitung);
+        Assert.Contains("epos-kohaerenz--abweichend",
+                        StAnteil(cut).QuerySelector(".epos-kohaerenz")!.ClassName);
+    }
+
+    [Fact]
+    public void E18_Ein_abgeschalteter_Anteil_bekommt_keine_Kohaerenzzeile()
+    {
+        var cut = Aufbauen(stromsteueranteil: Erfasst(2.05, aktiv: false));
+        IElement z = StAnteil(cut);
+
+        Assert.Contains("(abgeschaltet)", z.TextContent);
+        Assert.Null(z.QuerySelector(".epos-kohaerenz"));
+        Assert.Contains("hier steht er nur zur Ansicht", z.TextContent);
+    }
+
+    [Fact]
+    public void E18_Nicht_erfasst_kein_Traeger_und_nicht_lesbar_sind_benannt()
+    {
+        Assert.Contains("Im Strompreis „Elektrische Energie\" ist kein Stromsteueranteil erfasst.",
+                        StAnteil(Aufbauen(stromsteueranteil: Erfasst(null))).TextContent);
+
+        Assert.Contains("Dem Projekt ist kein Strom-Energieträger zugeordnet",
+                        StAnteil(Aufbauen(stromsteueranteil: new StromsteueranteilStand())).TextContent);
+
+        var fehler = new StromsteueranteilStand { Lesbar = false, Grund = "E18-Probe" };
+        Assert.Contains("Der erfasste Stromsteueranteil ließ sich nicht lesen: E18-Probe",
+                        StAnteil(Aufbauen(stromsteueranteil: fehler)).TextContent);
+    }
+
+    [Fact]
+    public void E18_Die_Anteilszeile_spricht_englisch()
+    {
+        using var _ = new Kulturvorrichtung("en-US");
+
+        var cut = Aufbauen(stromsteueranteil: Erfasst(2.05));
+
+        // Das Zahlenformat folgt BhwTexte.Kultur (Bericht und Reiter), nicht der
+        // Anzeigesprache — geprüft wird deshalb der Text um die Zahl herum.
+        string text = StAnteil(cut).TextContent;
+        Assert.Contains("Electricity tax share recorded in the electricity price \"Elektrische Energie\": ", text);
+        Assert.Contains(" ct/kWh (active).", text);
+        Assert.Contains("Matches the company type: it suggests the standard rate.", StAnteil(cut).TextContent);
     }
 }

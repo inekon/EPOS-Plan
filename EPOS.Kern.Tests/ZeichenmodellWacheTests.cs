@@ -103,6 +103,9 @@ namespace EPOS.Kern.Tests
         /// <c>Zahlungsstrom</c> dazu — das Brückenbild von der Investition zur
         /// Kapitalwertdifferenz (U41) und den Zahlungsstrom je Jahr als gestapelte Balken
         /// (U42).</para>
+        ///
+        /// <para>Die Anlagenkopplung (Stufe AK1 Welle 3) brachte <c>VorlaufRuecklauf</c> dazu —
+        /// Vorlauf und Rücklauf eines gekoppelten Gebäudes mit Lücken ohne Heizbetrieb.</para>
         /// </summary>
         [Fact]
         public void JedeZeichenmethodeGibtIhrModellAnDenMaler()
@@ -110,7 +113,7 @@ namespace EPOS.Kern.Tests
             string text = RendererQuelle();
 
             int bildmethoden = Regex.Matches(text, @"public static byte\[\] ").Count;
-            Assert.Equal(33, bildmethoden);
+            Assert.Equal(34, bildmethoden);
 
             // Kein Bild entsteht mehr auf einer eigenen Flaeche; jedes geht durch
             // SkiaMaler.Png - auch die vier gemeinsamen Rumpfmethoden.

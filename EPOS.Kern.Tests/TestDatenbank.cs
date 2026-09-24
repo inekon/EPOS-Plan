@@ -650,6 +650,21 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
                     SpalteSicherstellen(s);
                 WiederholperiodeSchema.SpaltenStandVergessen();
+                // Schritt 131 (Zapfprofilgenerator Stufe Z4b, T3 "Typtage"): die eingespielten
+                // Typtage des Anwenders. Reines DDL aus DERSELBEN Quelle wie Migration und
+                // Werkzeug (TwwSchema.AnweisungenT3Typtage); CREATE ... IF NOT EXISTS ist selbst
+                // wiederholbar. Die Tabelle bleibt LEER - das Repositorium bringt keine Typtage
+                // mit (Konzept Kapitel 6).
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+                    DataRepository.ExecuteNonQuery(a.Value);
+                // ... und die WAHL des Typtagwegs je Projekt aus DERSELBEN Quelle
+                // (TwwSchema.SpaltenT3Typtage) - Typtage_Aktiv steht auf 0, beide Angaben auf NULL.
+                TwwSchema.T3TyptageAlle(null);
+
+                // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT (Welle #493): die
+                // Anschlusslaengen im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                GebaeudeAnschlusslaengenReparatur.Ausfuehren();
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

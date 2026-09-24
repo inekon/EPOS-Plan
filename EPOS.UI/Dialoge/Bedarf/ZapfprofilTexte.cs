@@ -723,6 +723,27 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_TAGESGANGSATZ</c></summary>
     public string HinweisTagesgangsatz { get; set; } = "Vorgabe · der Satz der Nutzungsart; ein unvollständiger Satz ist gesperrt.";
 
+    /// <summary><c>ZPG_GRP_TYPTAGE</c></summary>
+    public string GruppeTyptage { get; set; } = "Typtage nach VDI 4655";
+
+    /// <summary><c>ZPG_LBL_TYPTAGE_AKTIV</c></summary>
+    public string LabelTyptageAktiv { get; set; } = "Typtage nach VDI 4655 rechnen";
+
+    /// <summary><c>ZPG_LBL_TYPTAGE_ZONE</c></summary>
+    public string LabelTyptageZone { get; set; } = "Klimazone";
+
+    /// <summary><c>ZPG_LBL_TYPTAGE_GEBAEUDEART</c></summary>
+    public string LabelTyptageGebaeudeart { get; set; } = "Gebäudeart";
+
+    /// <summary><c>ZPG_HINW_TYPTAGE</c></summary>
+    public string HinweisTyptage { get; set; } = "Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.";
+
+    /// <summary><c>ZPG_HINW_TYPTAGE_OHNE</c></summary>
+    public string HinweisTyptageOhne { get; set; } = "Ohne eingespielte Typtage ist dieser Weg nicht verfügbar — „VDI-4655-Typtage…“ spielt ein Paket ein.";
+
+    /// <summary><c>ZPG_BTN_TYPTAGE</c></summary>
+    public string KnopfTyptage { get; set; } = "VDI-4655-Typtage…";
+
     /// <summary><c>ZPG_BTN_TAGESGANG</c></summary>
     public string KnopfTagesgang { get; set; } = "Tagesgang bearbeiten…";
 

@@ -732,6 +732,8 @@
 
         internal static string SimKuehlbetriebName => MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB;
         internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
+        internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;
+        internal static string SimAnlagenkopplungErl => MyResource.Resource.KI_DLG_SIM_ANLAGENKOPPLUNG_ERL;
         internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
         internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
         internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;
@@ -1100,6 +1102,33 @@
         internal static string GebkKuehlSollwertErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_SOLLWERT_ERL;
         internal static string GebkKuehlleistungMaxName => MyResource.Resource.GEBK_LBL_KUEHLLEISTUNG_MAX;
         internal static string GebkKuehlleistungMaxErl => MyResource.Resource.KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL;
+        // Stufe AK1 (Anlagenkopplung 9.1): die Gruppe „Waermeuebergabe"
+        internal static string GebkHeizkreisAktivName => MyResource.Resource.GEBK_LBL_HEIZKREIS_AKTIV;
+        internal static string GebkHeizkreisAktivErl => MyResource.Resource.KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL;
+        internal static string GebkUebergabeArtName => MyResource.Resource.GEBK_LBL_UEBERGABE_ART;
+        internal static string GebkUebergabeArtErl => MyResource.Resource.KI_DLG_GEBK_UEBERGABE_ART_ERL;
+        internal static string GebkUebergabeExponentName => MyResource.Resource.GEBK_LBL_UEBERGABE_EXPONENT;
+        internal static string GebkUebergabeExponentErl => MyResource.Resource.KI_DLG_GEBK_UEBERGABE_EXPONENT_ERL;
+        internal static string GebkUebergabeNennleistungName => MyResource.Resource.GEBK_LBL_UEBERGABE_NENNLEISTUNG;
+        internal static string GebkUebergabeNennleistungErl => MyResource.Resource.KI_DLG_GEBK_UEBERGABE_NENNLEISTUNG_ERL;
+        internal static string GebkAuslegungVorlaufName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_VORLAUF;
+        internal static string GebkAuslegungVorlaufErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_VORLAUF_ERL;
+        internal static string GebkAuslegungRuecklaufName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_RUECKLAUF;
+        internal static string GebkAuslegungRuecklaufErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_RUECKLAUF_ERL;
+        internal static string GebkAuslegungRaumName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_RAUM;
+        internal static string GebkAuslegungRaumErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_RAUM_ERL;
+        internal static string GebkAuslegungAussenName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_AUSSEN;
+        internal static string GebkAuslegungAussenErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_AUSSEN_ERL;
+        internal static string GebkHeizkurveAktivName => MyResource.Resource.GEBK_LBL_HEIZKURVE_AKTIV;
+        internal static string GebkHeizkurveAktivErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_AKTIV_ERL;
+        internal static string GebkHeizkurveNiveauName => MyResource.Resource.GEBK_LBL_HEIZKURVE_NIVEAU;
+        internal static string GebkHeizkurveNiveauErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_NIVEAU_ERL;
+        internal static string GebkHeizkurveSteilheitName => MyResource.Resource.GEBK_LBL_HEIZKURVE_STEILHEIT;
+        internal static string GebkHeizkurveSteilheitErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_STEILHEIT_ERL;
+        internal static string GebkProportionalbandName => MyResource.Resource.GEBK_LBL_PROPORTIONALBAND;
+        internal static string GebkProportionalbandErl => MyResource.Resource.KI_DLG_GEBK_PROPORTIONALBAND_ERL;
+        internal static string GebkSollwertprofilName => MyResource.Resource.GEBK_LBL_SOLLWERTPROFIL;
+        internal static string GebkSollwertprofilErl => MyResource.Resource.KI_DLG_GEBK_SOLLWERTPROFIL_ERL;
         internal static string GebkFensterflaecheOstName => MyResource.Resource.GEBK_LBL_FF_OST;
         internal static string GebkFensterflaecheOstErl => MyResource.Resource.KI_DLG_GEBK_FENSTERFLAECHE_OST_ERL;
         internal static string GebkFensterflaecheWestName => MyResource.Resource.GEBK_LBL_FF_WEST;
@@ -1484,6 +1513,33 @@
         internal static string ZpgkStandErl => MyResource.Resource.KI_DLG_ZPGK_STAND_ERL;
         internal static string ZpgkSperrgrundName => MyResource.Resource.KI_DLG_ZPGK_SPERRGRUND_NAME;
         internal static string ZpgkSperrgrundErl => MyResource.Resource.KI_DLG_ZPGK_SPERRGRUND_ERL;
+
+        /// <summary>Der Dialog „VDI-4655-Typtage" (Zapfprofilgenerator 4.2, Stufe Z4b).</summary>
+        internal static string MaskeBrauchwasserTyptage => MyResource.Resource.ZPGT_TITEL;
+
+        internal static string ZpgtQuelleName => MyResource.Resource.ZPGT_LBL_QUELLE;
+        internal static string ZpgtQuelleErl => MyResource.Resource.KI_DLG_ZPGT_QUELLE_ERL;
+        internal static string ZpgtAusgabeName => MyResource.Resource.ZPGT_LBL_AUSGABE;
+        internal static string ZpgtAusgabeErl => MyResource.Resource.KI_DLG_ZPGT_AUSGABE_ERL;
+        internal static string ZpgtDatumName => MyResource.Resource.ZPGT_LBL_DATUM;
+        internal static string ZpgtDatumErl => MyResource.Resource.KI_DLG_ZPGT_DATUM_ERL;
+        internal static string ZpgtZonenName => MyResource.Resource.ZPGT_LBL_ZONEN;
+        internal static string ZpgtZonenErl => MyResource.Resource.KI_DLG_ZPGT_ZONEN_ERL;
+        internal static string ZpgtArtenName => MyResource.Resource.ZPGT_LBL_GEBAEUDEARTEN;
+        internal static string ZpgtArtenErl => MyResource.Resource.KI_DLG_ZPGT_ARTEN_ERL;
+        internal static string ZpgtZeilenName => MyResource.Resource.ZPGT_LBL_ZEILEN;
+        internal static string ZpgtZeilenErl => MyResource.Resource.KI_DLG_ZPGT_ZEILEN_ERL;
+        internal static string ZpgtGrundName => MyResource.Resource.KI_DLG_ZPGT_GRUND_NAME;
+        internal static string ZpgtGrundErl => MyResource.Resource.KI_DLG_ZPGT_GRUND_ERL;
+        internal static string ZpgtBerichtName => MyResource.Resource.ZPGT_GRP_PRUEFUNG;
+        internal static string ZpgtBerichtErl => MyResource.Resource.KI_DLG_ZPGT_BERICHT_ERL;
+
+        internal static string ZpgTyptagewegName => MyResource.Resource.ZPG_LBL_TYPTAGE_AKTIV;
+        internal static string ZpgTyptagewegErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGEWEG_ERL;
+        internal static string ZpgTyptagzoneName => MyResource.Resource.ZPG_LBL_TYPTAGE_ZONE;
+        internal static string ZpgTyptagzoneErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGZONE_ERL;
+        internal static string ZpgTyptagartName => MyResource.Resource.ZPG_LBL_TYPTAGE_GEBAEUDEART;
+        internal static string ZpgTyptagartErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGART_ERL;
 
         /// <summary>Der Editor einer Nutzungsart (Überlagerung des Katalogdialogs).</summary>
         internal static string MaskeTwwNutzungsartEditor => MyResource.Resource.KI_DLG_ZPGK_EDITOR;

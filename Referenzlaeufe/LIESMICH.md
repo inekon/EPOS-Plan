@@ -231,7 +231,7 @@ und CO₂ — und lässt Dateien und Schlüssel im Export entstehen oder verschw
 >
 > **Nicht** betroffen sind Kühleingaben und Kälteerzeuger von Projekten außerhalb der Referenzliste.
 
-## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheid ZU19)
+## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
 — mit einer Ausnahme, die der Anwender am 23.09.2026 entschieden hat: **geringfügig abweichende
@@ -262,8 +262,26 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
   Testdatenbank und der JSON-Datei seinem Original gleicht und jeder innerhalb ±6 % liegt; ihre
   Meldung nennt Abweichungen, nie einen Absolutwert.
-- **Nicht abgeleitet** werden VDI 4655 (folgt mit Stufe Z4b unter derselben Regel) und die
-  DIN-Profile: A100-Referenzprofil und DIN-4708-Profil bleiben gesperrt (K1/K8).
+- **VDI 4655 läuft unter derselben Regel** (Anwenderentscheid ZU23, 24.09.2026). `--norm vdi4655`
+  liest die gitignorierten Originale unter `Normzahlen/vdi4655/` und schreibt
+  [`Skripte/vdi4655_abgeleitet.json`](Skripte/vdi4655_abgeleitet.json): Typtagkategorien,
+  Klimazonen, Typtage je Zone, Faktoren F_TWE,TT, Kennwerte und der Abschnitt `papierwerte` mit
+  allem, was allein das Grundlagenpapier braucht. Zwei Zusätze zur Regel: **ganze Zahlen** (Typtage
+  je Zone) weichen um mindestens einen und höchstens max(2; 6 %) Tag(e) ab und kommen je Zone
+  wieder auf 365; die **Faktoren** sind Schwankungen um einen Jahresmittelwert und werden
+  ausdrücklich **nicht** renormiert — die Prüfsumme des Originals gilt für sie nicht mehr. Codes,
+  Zonennamen und Gebäudebezeichnungen der Ausgabe sind neutral (TT01…, variante_1…, nur die
+  Zonennummer). Kein abgeleiteter Wert gleicht einem kennzeichnenden Originalwert, auch nicht dem
+  einer anderen Zelle.
+- **Auch das Grundlagenpapier trägt abgeleitete Werte** (ZU23):
+  [`Grundlagen_5_VDI-4655_Auswertung.md`](../Dokumentation/aktuell/Grundlagen_5_VDI-4655_Auswertung.md)
+  führt keinen Zahlenwert der Richtlinie mehr — Tabellen, Grenzwerte, Jahresbedarfe und die
+  Beispielrechnung stehen abgeleitet, ein Hinweisabsatz am Anfang sagt das. Fundstellen
+  (Abschnitt, Tabelle, Seite) und Geltungsangaben (Zahl der Zonen und Typtagkategorien, Personen-
+  und Wohneinheitengrenzen, Zeitauflösungen, Bezugskalenderjahr) bleiben unverändert; für die
+  Rechnung zählt allein das vom Anwender eingespielte Paket.
+- **Nicht abgeleitet** werden die DIN-Profile: A100-Referenzprofil und DIN-4708-Profil bleiben
+  gesperrt (K1/K8).
 - **Ergebnisneutral:** Kein Referenzprojekt steht auf dem Zapfprofilgenerator; die Basis bleibt.
 
 ## Der freie Paketteil (`Katalogpaket_frei/`)
@@ -310,7 +328,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **129**, LFS-SHA-256 `4c546a7c…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **131**, LFS-SHA-256 `a4a88c33…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -566,6 +584,60 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller
 > dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
+> **Nachtrag #493: Schemastand 130 (Anschlusslängen im Gebäudekatalog), die Basis bleibt.**
+> Migrationsschritt **130** (`SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN`; die Nummer steht allein bei
+> `GebaeudeAnschlusslaengenReparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; der Schritt der
+> Zapfprofil-Sitzung folgt ihm) berichtigt nach Anwenderentscheid vom 24.09.2026 („Ersetzt durch plausible Werte“)
+> 20 Zellen an sieben Sätzen von `Tab_Gebaeude_STAMM` — **reines DML, je Satz, Spalte und Schadensbild** (Bezeichner und
+> unplausibler Wert ± 0,05), nichts gelöscht, Projektkopien unberührt:
+>
+> | Satz | Spalte | vorher | nachher | Herleitung |
+> |---|---|---|---|---|
+> | 79 `Krankenhaus_92-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 1 800 | 4 812,0 m | Laibung je m² Fenster des Ausgangssatzes 78 `KrankenH_NE` 7 655,75 / 3 016,3 = 2,5381 m/m² × 1 895,9 m² |
+> | 79 | `Flaeche_Außenwand` | 12 094 | 13 214,4 m² | Hüllfläche der Geometrie von 78: 12 094 + 3 016,3 = 15 110,3 m² minus Fenster 1 895,9 m² (Ost/West bleibt 400) |
+> | 80–83 `KrankenH-F-*`, 37 `gr_Hotel-G-134` | `Abmessung_Anschluß_Fenster_Wand` | 243,7 | 7 879,0 m | Tausch mit der Dachkante trägt: 7 879 / 3 062,3 = 2,573 m/m² (78: 2,538); 243,7 m wären 0,08 m/m² |
+> | dieselben | `Abmessung_Anschluß_Wand_Dach` | 7 879 | 313,8 m | Umfang der Grundfläche 1 469 m² wie bei 78 (Wand–Dach = Keller = 313,8). Der Tausch (243,7 m) trägt hier nicht: Hülle 13 156,3 m² / 243,7 m = 54,0 m = 4,40 m je Geschoss (12,26 Geschosse, Raumhöhe 2,55 m); mit 313,8 m 3,42 m je Geschoss (78: 3,54 m bei 3,0 m) |
+> | dieselben | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 1 392,8 | 313,8 m | Umfang wie bei 78; 1 392,8 m wären das 4,4-Fache |
+> | 77 `Kaufhaus` | `Abmessung_Anschluß_Fenster_Wand` | 243,7 | 5 820,8 m | Abwandlung der F-Sätze (Fenster 2 262,36 m²); Tausch gäbe 3,48 m/m², daher Verhältnis der F-Quelle 2,5729 m/m² × 2 262,36 m² |
+> | 77 | `Abmessung_Anschluß_Wand_Dach`, `…_Außenwand_Kellerdecke` | 7 879 / 1 392,78 | 313,8 / 313,8 m | Umfang der Grundfläche 1 469 m² wie bei 78 und den F-Sätzen |
+>
+> Nachgezogen auf der Fassung **129** (Nachtrag E16 oben, `4c546a7c…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
+> 20, berichtigt 20, offen danach 0, Marker 130. Zellvergleich aller 133 Tabellen gegen die Fassung 129: allein
+> `SchemaVersion` 129 → 130 und die 20 Zellen der Tabelle; Schema unverändert; `integrity_check` ok, `foreign_key_check`
+> leer, 133 Tabellen (132 STRICT), 14 Sichten, 210 Indizes. Größe 67 796 992 Byte (LFS-SHA-256 `f8fe1b76…`).
+> **Ergebnisneutral:** Keinen der sieben Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch
+> über den Namen); die dreizehn Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist
+> berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte).
+
+> **Nachtrag: Schemastand 131 (Zapfprofilgenerator, Stufe Z4b, Schemaschritt T3 „Typtage"), die Basis
+> bleibt.** Migrationsschritt **131** (`SCHRITT_131_ZAPFPROFIL_TYPTAGE`; Quelle
+> `TwwSchema.AnweisungenT3Typtage`): die Tabelle `Tab_TwwTyptag_IMPORT` — STRICT, elf Spalten (`ID`,
+> `Art`, `Klimazone`, `Gebaeudeart`, `Typtag`, `Aufloesung_min`, `Zeilenindex`, `Wert`, `Quelle`,
+> `Ausgabe`, `Datum_Import`), natürlicher Schlüssel (`Art`, `Klimazone`, `Gebaeudeart`, `Typtag`,
+> `Zeilenindex`), **kein `Status` und kein `ReadOnly`**, kein Fremdschlüssel. Sie nimmt die Typtage auf,
+> die der **lizenzierte Anwender** selbst einspielt; das Repositorium bringt keine Zeile mit (Konzept
+> Kapitel 6), und die Auslieferungsvorlage leert sie. Im SELBEN Schritt stehen die drei Projektspalten
+> der Wahl an `Tab_TwwProjekt` — `Typtage_Aktiv` (0/1, Vorgabe 0), `Typtage_Klimazone` und
+> `Typtage_Gebaeudeart` (beide NULL = keine Wahl), Quelle `TwwSchema.SpaltenT3Typtage`. Die Nummer war in
+> der Arbeit 125; beim Zusammenführen mit origin waren 125 bis 129 belegt (Risikomodul, Gebaeude-
+> Katalogreparatur, Wirkungen, Heizkreis, Wiederholperiode) und mit der Welle #493 auch 130
+> (Anschlusslängen im Gebäudekatalog); der Schritt steht jetzt nach **130**.
+> Nachgezogen auf der Fassung von origin mit Schemastand **130** (Nachtrag #493 oben,
+> `f8fe1b76…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (eine
+> Tabelle und drei Spalten angelegt; ein zweiter Lauf legt nichts an), danach
+> `tww_testkatalog_fiktiv.py --stochastik` (0 angelegt, 0 nachgeführt — der Testkatalog stand schon
+> vollständig da; zweiter Lauf 0/0). **Kein DML:** Die Tabelle ist und bleibt LEER, `Typtage_Aktiv`
+> steht auf 0 und beide Angaben auf NULL. Zellvergleich aller Tabellen gegen die Fassung 130
+> (10 502 791 Zellen): allein `SchemaVersion` 130 → 131, die drei neuen Spalten und der Tabellentext von
+> `Tab_TwwProjekt`; `integrity_check` ok, `foreign_key_check` leer, 134 Tabellen (133 STRICT) statt 133
+> (132), 14 Sichten und 211 Indizes unverändert. Größe 67 805 184 Byte (LFS-SHA-256 `a4a88c33…`).
+> **Keine Einfrierregel ist berührt:** Kein Referenzprojekt steht auf dem Generator, und ohne
+> eingespielte Typtage ist der Typtagweg benannt nicht verfügbar.
+> Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
+> 160/160 CSV **byte-gleich**.
+
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
 > Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in
@@ -582,7 +654,7 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) und `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json`, ZU19) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) und `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
