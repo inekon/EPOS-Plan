@@ -72178,6 +72178,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen alle n Jahre mit p_B [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WDH_PB {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WDH_PB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionen alle n Jahre mit p_E [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WDH_PE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WDH_PE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichenwechsel bis hier ähnelt.
         /// </summary>
         public static string WIRT_FM_MJ_WECHSEL {

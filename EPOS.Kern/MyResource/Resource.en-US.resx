@@ -30429,4 +30429,10 @@ Do you want to allow this?</value>
   <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
     <value>Repeat period of an operating cost item in years: 1 = every year, n = the item pays in its start year and every n years after that. Operating side only.</value>
   </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Items every n years with p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Items every n years with p_E [€/a]</value>
+  </data>
 </root>
