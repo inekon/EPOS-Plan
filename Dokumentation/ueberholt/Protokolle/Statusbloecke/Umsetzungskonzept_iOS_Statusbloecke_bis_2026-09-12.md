@@ -9872,3 +9872,125 @@ grün; Builds 0 Fehler.
 UI 5 996, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1
 übersprungen), 0 rot; Windows-Schale 0 Fehler; kein Referenzlauf
 (kein Rechenweg), Schemastand 124.
+
+## #483 — Lastspitzenkappung: Ausgabehandlungen im schmalen Fenster (24.09.2026)
+
+Anwenderentscheid 24.09.2026 (Empfehlung übernommen): Im schmalen
+Fenster (unter 900 px, iPad hochkant) liegen „CSV-Export“ und „In
+Variante übernehmen“ zusätzlich im Kopf des Stammblatts, weil das
+Blatt dort die Werkzeugleiste verdeckt. Commits (Zweig
+`worktree-agent-a1ed150b9dd9df9f1`, Opus 5.5): `4f246732`
+Lastspitzenkappung: CSV/Variante schmal auch im Stammblattkopf,
+`16aecd5d` Papiere #483.
+
+**Umsetzung.** `EPOS.UI/Bausteine/Stammblatt.razor` bekommt den
+neuen Parameter `Kopfhandlungen` (RenderFragment): gesetzt zeigt
+die Kopfzeile `.epos-stammblatt-kopfzeile epos-nur-schmal` mit
+„‹ Liste“ links und den Handlungen rechts, ungesetzt bleibt das
+Markup unverändert. `EPOS.UI/Dialoge/Strom/PeakShavingDialog.razor`
+reicht dasselbe Fragment `Werkzeughandlungen` wie im Schlitz
+`Werkzeug` durch — eine Wahrheit, dieselben Sperrgründe „Bitte
+zuerst rechnen.“ bzw. gesperrt während der Rechnung. Drei neue
+CSS-Regeln in `EPOS.UI/wwwroot/epos-ui.css`; breit blendet die
+Container-Regel `.epos-katalograhmen .epos-nur-schmal` die Zeile
+weiterhin aus.
+
+**Messung.** Rasterprobe-Wirt (Chromium über Playwright aus
+NuGet): 400 × 624 nach „Stammblatt ›“ — Kopfzeile 44 px,
+Stammblattkopf 158 px (so hoch wie mit „‹ Liste“ allein),
+Querrollen 0 px, jeder Knopf genau einmal; 1.088 × 624 — keine
+Kopfzeile, Kopf 112 px unverändert, Knöpfe nur in der
+Werkzeugleiste. Katalogprobe 62 Fälle, Rückgabe 0.
+
+**Tests.** `PeakShavingDialogTests` +2 (schmal/breit),
+`StammblattTests` +1; `KnopfleistenWacheTests` und die
+KI-Wächter unverändert grün.
+
+**Papiere.** Konzept Administrationsdialoge (Kopf, 3.2 „Keine
+Handlung steht an zwei Orten, die zugleich sichtbar sind“, 3.6
+Punkt 6, A11, Stufenzeile 5, 7.1 (c) entschieden und umgesetzt),
+Konzept Knopfleisten (Regel und Tabellenzeile 5),
+`EPOS.UI/CLAUDE.md` Halbsatz. Wiki-Quelle Stromspeicher ein Satz,
+Upload ausstehend (Sammel-Upload). Kein Logbuch-Eintrag (Ergänzung
+zu #467).
+
+**Gate (gemeinsam für #483 und #485).** Stand `16aecd5d` auf origin
+`c99c4c7a` (Schemastand 126, E15). Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6.047, EPOS.UI 6.004, KiKern 549, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen); Windows-Schale Debug x64 0
+Fehler; Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4.207.049 Werte, 394/394 CSV
+byte-gleich); SqlDialektPruefer 1.817 Texte, 0 Fundstellen; keine
+Konfliktmarker. Push folgt durch die Hauptsitzung.
+
+**Offen.** Nichts.
+
+## #485 — Reparatur der Gebäude-Katalogsätze (Schemaschritt 126) (24.09.2026)
+
+Anwenderentscheid 24.09.2026 zu den in #473 vorgelegten Sätzen
+(Konzept Administrationsdialoge 7.1 (a)): Satz 79
+`Krankenhaus_92-EnEV2016` U-Wert Fenster 0,09 → 1,3 W/(m²K),
+Fensterfläche Nord 10.000 → 250 m², gesamt 11.645,9 → 1.895,9 m²
+(Süd 1.245,9, Ost/West 400 bleiben); Fläche je Nutzer aus
+Wohnfläche ÷ Bewohner bei 11 `EFH-BZ2` 40,0, 82
+`KrankenH-F-U-400` 50,0 (Bewohner 360 → 360,24 wie die
+Geschwister), 187 `KMEH-M-U-54` 31,78, 274 `Z-EFH-A-S-126`
+28,71; acht Testreste 275–282 (sieben `Z2-EFH-A-S*`,
+`EFH-BZ2 XXX`) gelöscht — in der Testdatenbank führt keine
+Projektkopie sie. Commits (Zweig
+`worktree-agent-a1ed150b9dd9df9f1`, Opus 5.5): `25c316bd`
+Schritt 126: Reparatur der Gebaeude-Katalogsaetze, `566d5c99`
+Tests, `85f2f875` Papiere.
+
+**Umsetzung.** Schemaschritt **126**
+`EPOS.Kern/Allgemein/Update/GebaeudeKatalogReparatur.cs`
+(Konstante `SCHRITT`, `SchemaStand.Zielversion = 126`, Migration
+nach Schritt 125 Risikomodul in `SchemaMigration.cs`,
+`Werkzeuge/Testdatenbankschema`, Nachzieh-Liste
+`EPOS.Kern.Tests/TestDatenbank.cs`). Trifft nur das exakte
+Schadensbild (Bezeichner und unplausibler Wert; U-Wert nur bei
+0,0895–0,0905, Nord nur bei genau 10.000, Nutzfläche nur bei
+leer und passender Wohnfläche/Bewohnerzahl), `ReadOnly` ohne
+Belang, `?`-Parameter. Testreste bleiben, sofern eine Kopie in
+`Tab_Gebaeude` sie über `ID_Gebaeude_Stamm` oder Namen führt
+(dann mit Projekt-IDs im Protokoll). `Offen()` 14 → 0, zweiter
+Lauf tut nichts.
+
+**Testdatenbank.** Neu (LFS
+`0fe67575a33ffbb9198285071525e78967f21e35d0455e5a1b398f46b4450764`,
+67.788.800 Byte); Zellvergleich gegen Schritt 125: nur
+`SchemaVersion`, 8 Zellen, 8 Zeilen; 355 Schemaobjekte gleich,
+`integrity_check` ok.
+
+**Tests.** Neu `GebaeudeKatalogReparaturTests` (4 Fälle:
+vorher/nachher und Idempotenz, abweichender Satz
+bleibt/`ReadOnly` wird berichtigt/Projektkopie bleibt, benutzter
+Testrest bleibt, Werkzeug-Wache); `GebaeudeKatalogverweisTests`
+neuer Wächter
+`Nach_der_Reparatur_besteht_jeder_Katalogsatz_die_Editorpruefung`
+(alle 269 Sätze gegen `GebaeudeArbeitsstand.Pruefen`);
+`KatalogpflegeTests` 269 Sätze, 9 Inhaltsgruppen.
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand 126,
+Nachtrag; die Basis bleibt, keine Einfrierregel berührt — kein
+Referenzprojekt nutzt einen der Sätze), Konzept
+Administrationsdialoge Kopf und 7.1 (a) erledigt. Kein
+Logbuch-Eintrag.
+
+**Nummernhistorie.** Zuerst als #482/Schritt 125 gebaut, nach
+Kollision mit der Access-Zeile #482 und dem E15-Push (Schritt
+125) auf #485 umnummeriert.
+
+**Gate (gemeinsam für #483 und #485).** Stand `16aecd5d` auf origin
+`c99c4c7a` (Schemastand 126, E15). Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6.047, EPOS.UI 6.004, KiKern 549, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen); Windows-Schale Debug x64 0
+Fehler; Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4.207.049 Werte, 394/394 CSV
+byte-gleich); SqlDialektPruefer 1.817 Texte, 0 Fundstellen; keine
+Konfliktmarker. Push folgt durch die Hauptsitzung.
+
+**Offen (Hinweis).** Satz 79 hat weitere auffällige Werte, z. B.
+`Abmessung_Anschluß_Fenster_Wand` 1.800 gegenüber 7.655,75 beim
+Ausgangssatz `KrankenH_NE` — nicht Teil des Entscheids,
+unverändert; ggf. mit der nächsten Katalogdurchsicht.
