@@ -315,3 +315,5 @@ Bezug stehen soll, klärt der Anwender mit der Versionsnummer.
   Kopf von § 8), Analysepapier (Kopf, Nachtrag, § 0 Punkt 4, § 3 P5, § 5 mit der Zeile E9 und dem Stand der Etappen),
   Mockup (Zonen „Dialog — Parameter" und „Was ist angenommen?", Ressourcentafel der Kategorie 8, Anhang U10 und U15,
   Stand-Absatz), Logbuch-Sätze und die Wiki-Quelle der Seite Wirtschaftlichkeit, Index Reporting.
+
+**Entscheide 24.09.2026:** alle nach Empfehlung (E9b‑Q5: b, Bau offen), siehe Register R‑E9b
