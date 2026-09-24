@@ -1202,6 +1202,12 @@ namespace WindowsFormsApplication1
                 m.Add(Fehler("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt,
                     Format(Text_("ZPG_MSG_ZONE_NAME_DOPPELT", "Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben."), doppelt)));
 
+            // Zirkulation manuell (gebäudeweit, Stufen Erweitert/Experte): dieselbe Regel wie der
+            // Rechenweg (Zirkulationskanal.ManuellGueltig, Z4, Gruppe 2a Punkt 7).
+            if (eingabe.Gebaeude is { ZirkAuto: false } gebaeude && !Zirkulationskanal.ManuellGueltig(gebaeude.ZirkManuellKw))
+                m.Add(Fehler("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", "",
+                    Text_("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", "Bitte die manuelle Zirkulationsleistung (kW, ≥ 0) angeben.")));
+
             // Die Stochastik der Jahresreihe (Stufe Experte): Seed ganz und ≥ 0, Realisierungen im
             // Bereich von Schema (Untergrenze) und Kern (Obergrenze der Jahresreihe).
             if (eingabe.Seed is int seed && seed < 0)
@@ -1269,6 +1275,12 @@ namespace WindowsFormsApplication1
             if (a.Auslastung != null && a.Auslastung.Any(x => x.HasValue && (x.Value < 0 || double.IsNaN(x.Value) || double.IsInfinity(x.Value))))
                 m.Add(Fehler("ZPG_MSG_AUSLASTUNG_NEGATIV", name,
                     Format(Text_("ZPG_MSG_AUSLASTUNG_NEGATIV", "Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0."), name)));
+
+            // Tagesbedarf manuell: dieselbe Regel wie der Rechenweg (Mengengeruest.TagesbedarfManuellGueltig,
+            // Z4, Gruppe 2a Punkt 7) — keine zweite Regelsammlung.
+            if (!a.TagesbedarfAuto && !Mengengeruest.TagesbedarfManuellGueltig(a.TagesbedarfManuellKwh))
+                m.Add(Fehler("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", name,
+                    Format(Text_("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", "Zone „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben."), name)));
         }
 
         private static ZapfprofilMeldung Fehler(string kennung, string zone, string text)

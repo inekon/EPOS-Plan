@@ -200,6 +200,15 @@ namespace WindowsFormsApplication1
         internal static bool WohnungstabelleWirksam(Nutzungsart n) => n != null && WohnungstabelleWirksam(n.Bezug);
 
         /// <summary>
+        /// Ist ein manueller Tagesbedarf [kWh/d] gültig — endlich, nicht negativ, gesetzt? Dieselbe
+        /// Regel wie <see cref="JahresenergieKwh"/> (<c>EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG</c>);
+        /// EINE Stelle, damit die Pflichtprüfung des Zapfprofil-Dialogs (Z4, Gruppe 2a Punkt 7)
+        /// keine zweite Regel führt.
+        /// </summary>
+        internal static bool TagesbedarfManuellGueltig(double? wert)
+            => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) && wert.Value >= 0;
+
+        /// <summary>
         /// Die wirksame Bezugsmenge: aus der Wohnungstabelle, wenn sie belegt ist und
         /// <see cref="WohnungstabelleWirksam(Nutzungsart)"/> gilt, sonst <see cref="ZonenStand.Bezugsmenge"/>.
         /// Bei Personen gilt je Wohnungstyp: eigene Personenzahl, sonst Belegung nach Raumzahl
@@ -267,8 +276,7 @@ namespace WindowsFormsApplication1
             // Tagesbedarf manuell — bei den Projekttemperaturen, ohne Umrechnung.
             if (!z.TagesbedarfAuto)
             {
-                if (!z.TagesbedarfManuellKwh.HasValue || double.IsNaN(z.TagesbedarfManuellKwh.Value)
-                    || double.IsInfinity(z.TagesbedarfManuellKwh.Value) || z.TagesbedarfManuellKwh.Value < 0)
+                if (!TagesbedarfManuellGueltig(z.TagesbedarfManuellKwh))
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesbedarfUngueltig, zone,
                         ZapfSatz.Neu("EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG", zone));
                 double qd = z.TagesbedarfManuellKwh.Value;

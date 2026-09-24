@@ -28717,6 +28717,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
     <value>Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0.</value>
   </data>
+  <data name="ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Zone „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben.</value>
+  </data>
+  <data name="ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Bitte die manuelle Zirkulationsleistung (kW, ≥ 0) angeben.</value>
+  </data>
   <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
     <value>Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.</value>
   </data>

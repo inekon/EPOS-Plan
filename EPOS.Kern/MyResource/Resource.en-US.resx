@@ -28710,6 +28710,12 @@ Do you want to allow this?</value>
   <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
     <value>Zone “{0}”: a factor of the utilisation profile is less than 0.</value>
   </data>
+  <data name="ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Zone “{0}”: please enter the manual daily demand (kWh/d, ≥ 0).</value>
+  </data>
+  <data name="ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG" xml:space="preserve">
+    <value>Please enter the manual circulation power (kW, ≥ 0).</value>
+  </data>
   <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
     <value>Technical values, daily profiles and seed are available at the Expert level.</value>
   </data>

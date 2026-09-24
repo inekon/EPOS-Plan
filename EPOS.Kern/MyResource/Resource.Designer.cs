@@ -84267,6 +84267,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau konnte nicht gerechnet werden: {0} ähnelt.
         /// </summary>
         public static string ZPG_MSG_UNERWARTET {
@@ -84281,6 +84290,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_MSG_WOHNUNG_OHNE_ANZAHL {
             get {
                 return ResourceManager.GetString("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die manuelle Zirkulationsleistung (kW, ≥ 0) angeben. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", resourceCulture);
             }
         }
         

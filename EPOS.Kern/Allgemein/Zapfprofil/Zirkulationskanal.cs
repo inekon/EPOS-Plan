@@ -130,8 +130,7 @@ namespace WindowsFormsApplication1
             if (!p.ZirkAuto)
             {
                 methode = null;
-                if (!p.ZirkManuellKw.HasValue || double.IsNaN(p.ZirkManuellKw.Value)
-                    || double.IsInfinity(p.ZirkManuellKw.Value) || p.ZirkManuellKw.Value < 0)
+                if (!ManuellGueltig(p.ZirkManuellKw))
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
                         ZapfSatz.Neu("EINGABE_ZIRKULATION_MANUELL"));
                 leistung = p.ZirkManuellKw.Value;
@@ -382,6 +381,14 @@ namespace WindowsFormsApplication1
             prot?.Vermerken("", feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft, "Parameter " + schluessel);
             return pw.Wert;
         }
+
+        /// <summary>
+        /// Ist eine manuelle Zirkulationsleistung [kW] gültig — endlich, nicht negativ, gesetzt?
+        /// Dieselbe Regel wie oben (<c>EINGABE_ZIRKULATION_MANUELL</c>); EINE Stelle, damit die
+        /// Pflichtprüfung des Zapfprofil-Dialogs (Z4, Gruppe 2a Punkt 7) keine zweite Regel führt.
+        /// </summary>
+        internal static bool ManuellGueltig(double? wert)
+            => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) && wert.Value >= 0;
 
         private static double NichtNegativ(double w, ZapfSatz was)
         {

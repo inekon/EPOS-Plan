@@ -319,6 +319,46 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Z4, Gruppe 2a Punkt 7: „Tagesbedarf manuell" und „Zirkulation manuell" ohne gültigen Wert
+        /// werden schon am OK des Zapfprofils benannt abgelehnt — dieselbe Regel wie der Rechenweg
+        /// (Mengengeruest.TagesbedarfManuellGueltig, Zirkulationskanal.ManuellGueltig), keine zweite
+        /// Regelsammlung in der Hülle.
+        /// </summary>
+        [Fact]
+        public void Manueller_Tagesbedarf_und_manuelle_Zirkulation_ohne_gueltigen_Wert_werden_abgelehnt()
+        {
+            var a = new ZapfprofilZonenangabenDaten { TagesbedarfAuto = false };
+            var e = new ZapfprofilEingabeDaten
+            {
+                Zonen = { new ZapfprofilZoneDaten { Name = "Zone", IdNutzungsart = 1, Bezugsmenge = 10, Angaben = a } },
+                Gebaeude = new ZapfprofilGebaeudeDaten { ZirkAuto = false }
+            };
+
+            string[] kennungen = ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung).ToArray();
+            Assert.Contains("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", kennungen);
+            Assert.Contains("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", kennungen);
+
+            a.TagesbedarfManuellKwh = 5.0;
+            e.Gebaeude.ZirkManuellKw = 1.0;
+            string[] frei = ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung).ToArray();
+            Assert.DoesNotContain("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", frei);
+            Assert.DoesNotContain("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", frei);
+
+            a.TagesbedarfManuellKwh = -1.0;
+            e.Gebaeude.ZirkManuellKw = double.NaN;
+            kennungen = ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung).ToArray();
+            Assert.Contains("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", kennungen);
+            Assert.Contains("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", kennungen);
+
+            // "auto" braucht keinen Wert.
+            a.TagesbedarfAuto = true;
+            e.Gebaeude.ZirkAuto = true;
+            kennungen = ZapfprofilHuelle.Pruefen(e).Select(m => m.Kennung).ToArray();
+            Assert.DoesNotContain("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", kennungen);
+            Assert.DoesNotContain("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", kennungen);
+        }
+
+        /// <summary>
         /// Z4, Gruppe 2a Punkt 6: Eine Zone einer Nicht-Wohnen-Nutzungsart (Bezugsart weder
         /// Wohneinheiten noch Personen) zeigt keine Wohnungstabelle — trägt sie dennoch (verdeckte)
         /// Zeilen ohne Anzahl, hält „OK" nicht an: Außerhalb der wirksamen Bezugsart wird die
