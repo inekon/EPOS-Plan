@@ -298,7 +298,10 @@ namespace EPOS.Kern.Tests
                .SelectMany(o => Directory.GetFiles(o, "*.cs"))
                // Der Leser der eingespielten Typtage (Stufe Z4b) liegt beim Import, nennt aber
                // seine Ablehnungen als ZapfSatz - also gehoert er in den Quellenkreis.
-               .Concat(new[] { Pfad("EPOS.Kern", "Allgemein", "Import", "Normformvektorleser.cs") });
+               .Concat(new[] { Pfad("EPOS.Kern", "Allgemein", "Import", "Normformvektorleser.cs"),
+                               // Der Leser der gemessenen Reihen (Stufe Z5) liegt ebenfalls beim
+                               // Import, nennt aber seine Ablehnungen als ZapfSatz.
+                               Pfad("EPOS.Kern", "Allgemein", "Import", "Messreihenleser.cs") });
 
         private static string[] Platzhalter(string text)
             => Regex.Matches(text ?? "", @"\{\d+(:[^}]*)?\}").Select(m => m.Value).Distinct().OrderBy(s => s, StringComparer.Ordinal).ToArray();

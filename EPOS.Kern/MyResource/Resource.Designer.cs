@@ -90171,6 +90171,222 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der kleinste Abstand zweier Zeitstempel ist {1:0.###} min — zugelassen sind {2} min. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Reihe beginnt in Minute {1} einer Stunde; angeschnittene Stunden gehen nicht in den Vergleich ein. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_BEGINN_NICHT_STUNDE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_BEGINN_NICHT_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} lässt sich nicht lesen: {1}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_DATEI_UNLESBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_DATEI_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Einheit der Wertspalte „{1}“ ist unbekannt — erwartet kWh, m³ oder kW. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_EINHEIT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_EINHEIT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Felder statt mindestens {3}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_FELDZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_FELDZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: „{3}“ in der Spalte „{2}“ ist keine Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Datei hat keine Kopfzeile. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_KOPFZEILE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_KOPFZEILE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} von {2} Zeitschritten fehlen in der Datei und stehen mit 0 ({3:0.0%}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_LUECKEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_LUECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} von {2} Zeitschritten fehlen ({3:0.0%}); zugelassen sind {4:0.0%}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_LUECKEN_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_LUECKEN_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Reihe trägt keine Menge — alle Werte sind 0. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_OHNE_MENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Reihe im Raster {0} min lässt sich nicht auf ganze Stunden verdichten; Dauerlinie, Spitze und Tagesgang bleiben ohne Vergleich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_OHNE_STUNDENWERTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_OHNE_STUNDENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Datei führt keine Datenzeile. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe überstreicht {0} Schalttag(e); der Rechenkern rechnet 365 Tage ohne Schaltjahr. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_SCHALTTAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_SCHALTTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Keine Wertspalte gefunden — erkannt werden {1}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_SPALTE_WERT_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_SPALTE_WERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Keine Zeitspalte gefunden — erkannt werden {1}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_SPALTE_ZEIT_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_SPALTE_ZEIT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Kopfzeile trägt keinen Trenner (Semikolon, Tabulator oder Komma). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_TRENNER_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_TRENNER_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe umfasst {0:0.#} Tage, mehr als ein Jahr; verglichen wird über Monat, Wochentag und Stunde. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_UEBER_EIN_JAHR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_UEBER_EIN_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Wert {2:0.###} ist negativ. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_WERT_NEGATIV {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_WERT_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Abstand {2:0.###} min ist kein Vielfaches der Auflösung {3} min. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_ZEITSCHRITT_UNGLEICH {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZEITSCHRITT_UNGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Zeitstempel geht nicht vorwärts. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_FOLGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_FOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: „{2}“ ist kein Zeitstempel (erwartet 2025-01-01T00:00 oder 01.01.2025 00:00). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist {1} Byte groß; zugelassen sind {2} Byte. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Datenzeile(n) — für eine Auflösung braucht die Reihe mindestens {2}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_ZU_KURZ {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZU_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: mehr Zeitschritte als zugelassen — {1} statt höchstens {2}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} ist keine mögliche Zahl von Kalendertagen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_NORMVEKTOR_ANZAHL_UNGUELTIG {

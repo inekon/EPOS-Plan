@@ -30925,4 +30925,76 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
     <value>Gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
   </data>
+  <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
+    <value>{0}: Der kleinste Abstand zweier Zeitstempel ist {1:0.###} min — zugelassen sind {2} min.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_BEGINN_NICHT_STUNDE" xml:space="preserve">
+    <value>{0}: Die Reihe beginnt in Minute {1} einer Stunde; angeschnittene Stunden gehen nicht in den Vergleich ein.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_DATEI_UNLESBAR" xml:space="preserve">
+    <value>{0} lässt sich nicht lesen: {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>{0}: Die Einheit der Wertspalte „{1}“ ist unbekannt — erwartet kWh, m³ oder kW.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_FELDZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: {2} Felder statt mindestens {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_KEINE_ZAHL" xml:space="preserve">
+    <value>{0}, Zeile {1}: „{3}“ in der Spalte „{2}“ ist keine Zahl.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_KOPFZEILE_FEHLT" xml:space="preserve">
+    <value>{0}: Die Datei hat keine Kopfzeile.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_LUECKEN" xml:space="preserve">
+    <value>{0}: {1} von {2} Zeitschritten fehlen in der Datei und stehen mit 0 ({3:0.0%}).</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_LUECKEN_ZU_GROSS" xml:space="preserve">
+    <value>{0}: {1} von {2} Zeitschritten fehlen ({3:0.0%}); zugelassen sind {4:0.0%}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_OHNE_MENGE" xml:space="preserve">
+    <value>{0}: Die Reihe trägt keine Menge — alle Werte sind 0.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>Eine Reihe im Raster {0} min lässt sich nicht auf ganze Stunden verdichten; Dauerlinie, Spitze und Tagesgang bleiben ohne Vergleich.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_OHNE_WERTE" xml:space="preserve">
+    <value>{0}: Die Datei führt keine Datenzeile.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SCHALTTAG" xml:space="preserve">
+    <value>Die Reihe überstreicht {0} Schalttag(e); der Rechenkern rechnet 365 Tage ohne Schaltjahr.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SPALTE_WERT_FEHLT" xml:space="preserve">
+    <value>{0}: Keine Wertspalte gefunden — erkannt werden {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SPALTE_ZEIT_FEHLT" xml:space="preserve">
+    <value>{0}: Keine Zeitspalte gefunden — erkannt werden {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_TRENNER_UNBEKANNT" xml:space="preserve">
+    <value>{0}: Die Kopfzeile trägt keinen Trenner (Semikolon, Tabulator oder Komma).</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_UEBER_EIN_JAHR" xml:space="preserve">
+    <value>Die Reihe umfasst {0:0.#} Tage, mehr als ein Jahr; verglichen wird über Monat, Wochentag und Stunde.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_WERT_NEGATIV" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Wert {2:0.###} ist negativ.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZEITSCHRITT_UNGLEICH" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Abstand {2:0.###} min ist kein Vielfaches der Auflösung {3} min.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_FOLGE" xml:space="preserve">
+    <value>{0}, Zeile {1}: Der Zeitstempel geht nicht vorwärts.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_UNGUELTIG" xml:space="preserve">
+    <value>{0}, Zeile {1}: „{2}“ ist kein Zeitstempel (erwartet 2025-01-01T00:00 oder 01.01.2025 00:00).</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZU_GROSS" xml:space="preserve">
+    <value>{0} ist {1} Byte groß; zugelassen sind {2} Byte.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZU_KURZ" xml:space="preserve">
+    <value>{0}: {1} Datenzeile(n) — für eine Auflösung braucht die Reihe mindestens {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN" xml:space="preserve">
+    <value>{0}: mehr Zeitschritte als zugelassen — {1} statt höchstens {2}.</value>
+  </data>
 </root>
