@@ -28700,6 +28700,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässig: {0}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit der Energiemengen; sie wirkt auf alle drei Reiterblätter zugleich. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_EINHEIT_ERL {
@@ -34343,6 +34352,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} von {2} Werten gesetzt ({3} bis {4}). ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlenreihe ({0}); gesetzt wird sie mit reihe_setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ trägt diese Werte bereits; es gibt nichts zu ändern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_OHNE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe trägt {0}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_UMFANG {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_UMFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der markierten Katalogzeile; er entscheidet, was der Löschknopf trifft. ähnelt.
         /// </summary>
         public static string KI_DLG_SGA_GEWAEHLT_ERL {
@@ -36692,6 +36737,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlenreihe ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_ZAHLENREIHE {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_ZAHLENREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Kostenposition, wie er in der Vorlage und im Bericht steht. ähnelt.
         /// </summary>
         public static string KI_DLG_VOP_BEZ_ERL {
@@ -37961,11 +38015,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} liegt außerhalb des zulässigen Bereichs ({2}). ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mindestens {0} ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH_AB {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die höchstens {0} ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH_BIS {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} bis {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH_VON_BIS {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH_VON_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske meldet dazu: {0} ähnelt.
         /// </summary>
         public static string KI_FELD_DIALOGBEFUND {
             get {
                 return ResourceManager.GetString("KI_FELD_DIALOGBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist eine Zahlenreihe mit {1} Werten; gesetzt wird sie mit reihe_setzen – ganz oder ab einer Stelle. ähnelt.
+        /// </summary>
+        public static string KI_FELD_IST_REIHE {
+            get {
+                return ResourceManager.GetString("KI_FELD_IST_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Zahlenreihe; einen einzelnen Wert setzt feld_setzen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_KEINE_REIHE {
+            get {
+                return ResourceManager.GetString("KI_FELD_KEINE_REIHE", resourceCulture);
             }
         }
         
@@ -38020,6 +38128,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_NICHT_SETZBAR {
             get {
                 return ResourceManager.GetString("KI_FELD_NICHT_SETZBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ hat {1} Werte, genannt sind {2}. Für einen Ausschnitt die erste Stelle mit ‚ab‘ angeben. ähnelt.
+        /// </summary>
+        public static string KI_FELD_REIHE_LAENGE {
+            get {
+                return ResourceManager.GetString("KI_FELD_REIHE_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ hat {1} Werte; ab Stelle {2} passen höchstens {3}, genannt sind {4}. ähnelt.
+        /// </summary>
+        public static string KI_FELD_REIHE_UEBERLAUF {
+            get {
+                return ResourceManager.GetString("KI_FELD_REIHE_UEBERLAUF", resourceCulture);
             }
         }
         
@@ -38936,6 +39062,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} von {2} Werten ändern sich ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … ({0} Werte) ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_GEKUERZT {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_GEKUERZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte, {1} bis {2} ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_UMFANG {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_UMFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … und {0} weitere ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_WEITERE {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ gehört zu {1} und ist in dieser Ausbaustufe noch nicht freigegeben. ähnelt.
         /// </summary>
         public static string KI_KERN_RIEGEL_STUFE_GESPERRT {
@@ -39215,6 +39377,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab Stelle ähnelt.
+        /// </summary>
+        public static string KI_REG_AB_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_AB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Änderungsdatum von Projekt {0} konnte nicht gesetzt werden. ähnelt.
         /// </summary>
         public static string KI_REG_AENDERUNGSDATUM_FEHLT {
@@ -39458,6 +39629,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setze die Monatswerte auf 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 und 11. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_REIHE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernimm 12 kWh und 5 kW als Speicherauslegung. ähnelt.
         /// </summary>
         public static string KI_REG_BEISPIEL_SPEICHERAUSLEGUNG {
@@ -39625,6 +39805,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ERGEBNISSE_KEINE {
             get {
                 return ResourceManager.GetString("KI_REG_ERGEBNISSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stelle des ersten Wertes, bei 1 beginnend - die Stellen nennt dialog_lesen (in einer Wochenreihe ist Dienstag, Stunde 1 die Stelle 25). Ohne Angabe beginnt die Liste bei Stelle 1 und muss vollständig sein. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_AB {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_AB", resourceCulture);
             }
         }
         
@@ -39886,6 +40075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ERL_QUELLPROJEKT {
             get {
                 return ResourceManager.GetString("KI_REG_ERL_QUELLPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlen in der Reihenfolge der Reihe, als Zahlenliste (Punkt als Dezimaltrenner). Ohne ‚ab‘ muss die Liste die ganze Reihe tragen, sonst den Ausschnitt ab dieser Stelle. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_REIHENWERTE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_REIHENWERTE", resourceCulture);
             }
         }
         
@@ -41087,6 +41285,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlenreihe der offenen Maske setzen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_REIHE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung übernehmen ähnelt.
         /// </summary>
         public static string KI_REG_TITEL_SPEICHERAUSLEGUNG {
@@ -41405,6 +41612,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe trägt danach die neuen Werte; nicht genannte Stellen bleiben, wie sie sind. In die Datenbank kommt sie erst mit dem Speicherweg der Maske. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_REIHE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Stromspeicher des Projekts trägt danach die genannten Werte. Nachgerechnet wird nichts — die Simulation startet der Anwender selbst. ähnelt.
         /// </summary>
         public static string KI_REG_WIRKUNG_SPEICHERAUSLEGUNG {
@@ -41653,6 +41869,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ZWECK_PROJEKT_SUCHEN {
             get {
                 return ResourceManager.GetString("KI_REG_ZWECK_PROJEKT_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt in eine Zahlenreihe einer geöffneten Maske (Monats-, Stunden- oder Wochenwerte, Feldtyp ZahlListe) eine Liste von Zahlen ein - die ganze Reihe oder einen Ausschnitt ab einer Stelle. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_REIHE_SETZEN", resourceCulture);
             }
         }
         

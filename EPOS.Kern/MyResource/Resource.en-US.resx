@@ -7754,6 +7754,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_KERN_FELD_GUELTIG_BIS" xml:space="preserve">
     <value>Valid until</value>
   </data>
+  <data name="KI_KERN_REIHE_UMFANG" xml:space="preserve">
+    <value>{0} values, {1} to {2}</value>
+  </data>
+  <data name="KI_KERN_REIHE_GEKUERZT" xml:space="preserve">
+    <value>… ({0} values)</value>
+  </data>
+  <data name="KI_KERN_REIHE_AENDERUNG" xml:space="preserve">
+    <value>{0} · {1} of {2} values change</value>
+  </data>
+  <data name="KI_KERN_REIHE_WEITERE" xml:space="preserve">
+    <value>… and {0} more</value>
+  </data>
   <data name="KI_AUS_KEIN_SCHREIBRECHT" xml:space="preserve">
     <value>The licence currently does not permit writing. Viewing and exporting remain possible, changes are blocked. {0}</value>
   </data>
@@ -8510,6 +8522,18 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
     <value>number</value>
   </data>
+  <data name="KI_DLG_TYP_ZAHLENREIHE" xml:space="preserve">
+    <value>number series</value>
+  </data>
+  <data name="KI_DLG_REIHE_UMFANG" xml:space="preserve">
+    <value>The series carries {0}.</value>
+  </data>
+  <data name="KI_DLG_BEREICH" xml:space="preserve">
+    <value>Permitted: {0}.</value>
+  </data>
+  <data name="KI_DLG_REIHE_HINWEIS" xml:space="preserve">
+    <value>Number series ({0}); it is set with reihe_setzen.</value>
+  </data>
   <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
     <value>text</value>
   </data>
@@ -8666,6 +8690,12 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
     <value>{0} fields set in “{1}”.</value>
   </data>
+  <data name="KI_DLG_REIHE_GESETZT" xml:space="preserve">
+    <value>“{0}”: {1} of {2} values set ({3} to {4}).</value>
+  </data>
+  <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
+    <value>“{0}” already carries these values; there is nothing to change.</value>
+  </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>The button “{0}” in “{1}” has been released.</value>
   </data>
@@ -8686,6 +8716,9 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Enters values into several fields of an open form - as one single confirmed block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_REIHE_SETZEN" xml:space="preserve">
+    <value>Enters a list of numbers into a number series of an open form (monthly, hourly or weekly values, field type ZahlListe) - the whole series or a section from a given position.</value>
   </data>
   <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
     <value>Releases a released button of an open form; the form's own check runs just as with a click by hand.</value>
@@ -8717,11 +8750,23 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_REG_ERL_WERTE" xml:space="preserve">
     <value>Assignments “field=value”, several separated by semicolons, e.g. “nutzungsdauer=20; raumbedarf=3”.</value>
   </data>
+  <data name="KI_REG_AB_NAME" xml:space="preserve">
+    <value>from position</value>
+  </data>
+  <data name="KI_REG_ERL_REIHENWERTE" xml:space="preserve">
+    <value>The numbers in the order of the series, as a list of numbers (point as decimal separator). Without 'ab' the list must cover the whole series, otherwise the section starting at that position.</value>
+  </data>
+  <data name="KI_REG_ERL_AB" xml:space="preserve">
+    <value>Position of the first value, starting at 1 - dialog_lesen names the positions (in a weekly series Tuesday, hour 1 is position 25). If omitted, the list starts at position 1 and must be complete.</value>
+  </data>
   <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
     <value>Logical name of the button as named by dialog_lesen.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
     <value>Afterwards the field carries the new text. It reaches the database only when the form's action button is released.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_REIHE_SETZEN" xml:space="preserve">
+    <value>Afterwards the series carries the new values; positions not named stay as they are. It reaches the database only via the form's save path.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Afterwards the named fields carry the new texts. They reach the database only when the form's action button is released.</value>
@@ -15798,6 +15843,12 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
     <value>Enter 3.8 for the seasonal performance factor.</value>
   </data>
+  <data name="KI_REG_TITEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Set a number series of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Set the monthly values to 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 and 11.</value>
+  </data>
   <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Fill in several fields of the open form</value>
   </data>
@@ -19154,6 +19205,30 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
     <value>The field „{0}“ expects a number; „{1}“ is not one.</value>
+  </data>
+  <data name="KI_FELD_IST_REIHE" xml:space="preserve">
+    <value>„{0}“ is a number series with {1} values; it is set with reihe_setzen – completely or from a position.</value>
+  </data>
+  <data name="KI_FELD_KEINE_REIHE" xml:space="preserve">
+    <value>„{0}“ is not a number series; a single value is set with feld_setzen.</value>
+  </data>
+  <data name="KI_FELD_REIHE_LAENGE" xml:space="preserve">
+    <value>„{0}“ has {1} values, {2} were given. For a section, give the first position with 'ab'.</value>
+  </data>
+  <data name="KI_FELD_REIHE_UEBERLAUF" xml:space="preserve">
+    <value>„{0}“ has {1} values; from position {2} at most {3} fit, {4} were given.</value>
+  </data>
+  <data name="KI_FELD_BEREICH" xml:space="preserve">
+    <value>„{0}“: {1} is outside the permitted range ({2}).</value>
+  </data>
+  <data name="KI_FELD_BEREICH_VON_BIS" xml:space="preserve">
+    <value>{0} to {1}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_AB" xml:space="preserve">
+    <value>at least {0}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_BIS" xml:space="preserve">
+    <value>at most {0}</value>
   </data>
   <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
     <value>The field „{0}“ expects yes or no; „{1}“ is neither.</value>

@@ -7761,6 +7761,18 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_KERN_FELD_GUELTIG_BIS" xml:space="preserve">
     <value>Gültig bis</value>
   </data>
+  <data name="KI_KERN_REIHE_UMFANG" xml:space="preserve">
+    <value>{0} Werte, {1} bis {2}</value>
+  </data>
+  <data name="KI_KERN_REIHE_GEKUERZT" xml:space="preserve">
+    <value>… ({0} Werte)</value>
+  </data>
+  <data name="KI_KERN_REIHE_AENDERUNG" xml:space="preserve">
+    <value>{0} · {1} von {2} Werten ändern sich</value>
+  </data>
+  <data name="KI_KERN_REIHE_WEITERE" xml:space="preserve">
+    <value>… und {0} weitere</value>
+  </data>
   <data name="KI_AUS_KEIN_SCHREIBRECHT" xml:space="preserve">
     <value>Die Lizenz erlaubt derzeit kein Schreiben. Ansehen und Exportieren bleiben möglich, Änderungen sind gesperrt. {0}</value>
   </data>
@@ -8517,6 +8529,18 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
     <value>Zahl</value>
   </data>
+  <data name="KI_DLG_TYP_ZAHLENREIHE" xml:space="preserve">
+    <value>Zahlenreihe</value>
+  </data>
+  <data name="KI_DLG_REIHE_UMFANG" xml:space="preserve">
+    <value>Die Reihe trägt {0}.</value>
+  </data>
+  <data name="KI_DLG_BEREICH" xml:space="preserve">
+    <value>Zulässig: {0}.</value>
+  </data>
+  <data name="KI_DLG_REIHE_HINWEIS" xml:space="preserve">
+    <value>Zahlenreihe ({0}); gesetzt wird sie mit reihe_setzen.</value>
+  </data>
   <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
     <value>Text</value>
   </data>
@@ -8673,6 +8697,12 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
     <value>{0} Felder in „{1}“ gesetzt.</value>
   </data>
+  <data name="KI_DLG_REIHE_GESETZT" xml:space="preserve">
+    <value>„{0}“: {1} von {2} Werten gesetzt ({3} bis {4}).</value>
+  </data>
+  <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
+    <value>„{0}“ trägt diese Werte bereits; es gibt nichts zu ändern.</value>
+  </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>Der Knopf „{0}“ in „{1}“ wurde ausgelöst.</value>
   </data>
@@ -8693,6 +8723,9 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   </data>
   <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Trägt in mehrere Felder einer geöffneten Maske Werte ein - als ein einziger bestätigter Block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_REIHE_SETZEN" xml:space="preserve">
+    <value>Trägt in eine Zahlenreihe einer geöffneten Maske (Monats-, Stunden- oder Wochenwerte, Feldtyp ZahlListe) eine Liste von Zahlen ein - die ganze Reihe oder einen Ausschnitt ab einer Stelle.</value>
   </data>
   <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
     <value>Löst einen freigegebenen Knopf einer geöffneten Maske aus; die Prüfung der Maske läuft dabei wie bei einem Klick von Hand.</value>
@@ -8724,11 +8757,23 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_REG_ERL_WERTE" xml:space="preserve">
     <value>Zuweisungen „feld=wert“, mehrere durch Semikolon getrennt, z. B. „nutzungsdauer=20; raumbedarf=3“.</value>
   </data>
+  <data name="KI_REG_AB_NAME" xml:space="preserve">
+    <value>ab Stelle</value>
+  </data>
+  <data name="KI_REG_ERL_REIHENWERTE" xml:space="preserve">
+    <value>Die Zahlen in der Reihenfolge der Reihe, als Zahlenliste (Punkt als Dezimaltrenner). Ohne ‚ab‘ muss die Liste die ganze Reihe tragen, sonst den Ausschnitt ab dieser Stelle.</value>
+  </data>
+  <data name="KI_REG_ERL_AB" xml:space="preserve">
+    <value>Stelle des ersten Wertes, bei 1 beginnend - die Stellen nennt dialog_lesen (in einer Wochenreihe ist Dienstag, Stunde 1 die Stelle 25). Ohne Angabe beginnt die Liste bei Stelle 1 und muss vollständig sein.</value>
+  </data>
   <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
     <value>Logischer Name des Knopfes, wie ihn dialog_lesen nennt.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
     <value>Das Feld trägt danach den neuen Text. In die Datenbank kommt er erst, wenn der Aktionsknopf der Maske ausgelöst wird.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_REIHE_SETZEN" xml:space="preserve">
+    <value>Die Reihe trägt danach die neuen Werte; nicht genannte Stellen bleiben, wie sie sind. In die Datenbank kommt sie erst mit dem Speicherweg der Maske.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Die genannten Felder tragen danach die neuen Texte. In die Datenbank kommen sie erst, wenn der Aktionsknopf der Maske ausgelöst wird.</value>
@@ -15787,6 +15832,12 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
     <value>Trage bei Jahresarbeitszahl 3,8 ein.</value>
   </data>
+  <data name="KI_REG_TITEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Zahlenreihe der offenen Maske setzen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Setze die Monatswerte auf 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 und 11.</value>
+  </data>
   <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Mehrere Felder der offenen Maske ausfüllen</value>
   </data>
@@ -19161,6 +19212,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
     <value>Das Feld „{0}“ erwartet eine Zahl; „{1}“ ist keine.</value>
+  </data>
+  <data name="KI_FELD_IST_REIHE" xml:space="preserve">
+    <value>„{0}“ ist eine Zahlenreihe mit {1} Werten; gesetzt wird sie mit reihe_setzen – ganz oder ab einer Stelle.</value>
+  </data>
+  <data name="KI_FELD_KEINE_REIHE" xml:space="preserve">
+    <value>„{0}“ ist keine Zahlenreihe; einen einzelnen Wert setzt feld_setzen.</value>
+  </data>
+  <data name="KI_FELD_REIHE_LAENGE" xml:space="preserve">
+    <value>„{0}“ hat {1} Werte, genannt sind {2}. Für einen Ausschnitt die erste Stelle mit ‚ab‘ angeben.</value>
+  </data>
+  <data name="KI_FELD_REIHE_UEBERLAUF" xml:space="preserve">
+    <value>„{0}“ hat {1} Werte; ab Stelle {2} passen höchstens {3}, genannt sind {4}.</value>
+  </data>
+  <data name="KI_FELD_BEREICH" xml:space="preserve">
+    <value>„{0}“: {1} liegt außerhalb des zulässigen Bereichs ({2}).</value>
+  </data>
+  <data name="KI_FELD_BEREICH_VON_BIS" xml:space="preserve">
+    <value>{0} bis {1}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_AB" xml:space="preserve">
+    <value>mindestens {0}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_BIS" xml:space="preserve">
+    <value>höchstens {0}</value>
   </data>
   <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
     <value>Das Feld „{0}“ erwartet Ja oder Nein; „{1}“ ist keines von beiden.</value>

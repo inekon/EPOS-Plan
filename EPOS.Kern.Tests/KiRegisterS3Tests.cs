@@ -67,6 +67,8 @@ namespace EPOS.Kern.Tests
             "komponente_uebernehmen", "merkmal_uebernehmen",
             "wirtschaftlichkeit_parameter_setzen",
             "feld_setzen", "formular_ausfuellen", "dialog_aktion_ausfuehren",
+            // Stufe 2, NEU mit Welle #458 Stufe 3b: die Zahlenreihen einer Maske
+            "reihe_setzen",
             // Stufe 2, NEU mit S3
             "dialog_speichern",
             // Stufe 3, NEU mit S3

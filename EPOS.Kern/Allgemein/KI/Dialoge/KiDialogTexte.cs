@@ -461,6 +461,29 @@
         internal static string LeerErlaubt => MyResource.Resource.KI_DLG_LEER_ERLAUBT;
         internal static string LeerPflicht => MyResource.Resource.KI_DLG_LEER_PFLICHT;
 
+        // ======================================== Zahlenreihen (Welle #458 Stufe 3b)
+
+        /// <summary>Die Feldart einer Zahlenreihe.</summary>
+        internal static string TypZahlenreihe => MyResource.Resource.KI_DLG_TYP_ZAHLENREIHE;
+
+        /// <summary>{0} = Umfang der Reihe („12 Werte, Januar bis Dezember").</summary>
+        internal static string ReiheUmfang => MyResource.Resource.KI_DLG_REIHE_UMFANG;
+
+        /// <summary>{0} = zulaessiger Bereich („0 bis 100000").</summary>
+        internal static string Bereich => MyResource.Resource.KI_DLG_BEREICH;
+
+        /// <summary>Der Hinweis in <c>dialog_lesen</c>. {0} = Umfang der Reihe.</summary>
+        internal static string ReiheHinweis => MyResource.Resource.KI_DLG_REIHE_HINWEIS;
+
+        /// <summary>
+        /// {0} = Reihe, {1} = gesetzte Werte, {2} = Laenge, {3} = erste, {4} = letzte
+        /// gesetzte Stelle.
+        /// </summary>
+        internal static string ReiheGesetzt => MyResource.Resource.KI_DLG_REIHE_GESETZT;
+
+        /// <summary>{0} = Reihe.</summary>
+        internal static string ReiheOhneAenderung => MyResource.Resource.KI_DLG_REIHE_OHNE_AENDERUNG;
+
         // ================================================================ Ablehnungen
 
         /// <summary>{0} = genannte Maske, {1} = freigegebene Masken.</summary>

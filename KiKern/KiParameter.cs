@@ -40,7 +40,21 @@ namespace KiKern
         /// Der Unterschied ist der ganze Punkt - eine Energietraegerliste im Katalog
         /// waere am Tag ihrer Deklaration richtig und danach nie wieder.
         /// </remarks>
-        Wahl = 6
+        Wahl = 6,
+
+        /// <summary>
+        /// Liste von Zahlen (Gleitkomma) - fuer eine Aktion die Werte einer Zahlenreihe
+        /// (<c>reihe_setzen</c>), fuer ein Maskenfeld die ZAHLENREIHE selbst: Monats-,
+        /// Stunden- oder Wochenwerte fester Laenge (<see cref="KiZahlenreihe"/>,
+        /// Welle #458 Stufe 3b).
+        /// </summary>
+        /// <remarks>
+        /// Uebergabe als JSON-Feld von Zahlen, invariant; Grenzen gelten je Glied -
+        /// dieselbe Regel wie bei <see cref="GanzzahlListe"/>. Ein Maskenfeld dieser Art
+        /// braucht seine Form (<see cref="KiDialogFeld.Reihe"/>): Laenge und Stellen
+        /// stehen in der Deklaration, nicht im Aufruf.
+        /// </remarks>
+        ZahlListe = 7
     }
 
     /// <summary>
