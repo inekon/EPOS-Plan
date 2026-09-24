@@ -9613,3 +9613,90 @@ KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
 Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS gegen
 `2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz), Schemastand
 121.
+
+## #472 — KI-Assistent: gemeinte Maske über die beste Wahlstufe, Speichern-Kommentare der sechs Dialoge, Klimadaten und Zeitreihen rollen nach dem Einlesen (24.09.2026)
+
+Folgeaufträge aus #469: fremde Maskentreffer über Anzeigenamen ohne offene
+Maske, dieselbe falsche Aussage „läuft über dialog_speichern“ in sechs
+Dialogen ohne Speicher-Haken, Klimadaten und die drei Zeitreihen wählen
+nach dem Einlesen einen neuen Satz, rollen aber nicht. Commits (Zweig
+`worktree-agent-ae9dbf11d3321db87`, Basis `65cfa844`): `13f3dea9` gemeinte
+Maske über die beste Stufe; `9b19200a` Speicher-Kommentare der sechs
+Dialoge; `67e45cf2` Einlesen rollt die Liste; `d3a0c6c0` Papiere. Merge in
+den Hauptbaum `0bbd062a`, konfliktfrei.
+
+**Punkt 1 — gemeinte Maske über die beste Wahlstufe.** Ursache: beim
+toleranten Suchen zählte jede Maske, die den Namen auf irgendeiner Stufe
+eindeutig traf, gleichrangig — „With PV surplus“: Wärmesenke über
+Wortanfang und Simulation über enthaltenen Teil gleichrangig → Simulation
+genannt; „Außenwand“: umgekehrter Wortanfang ohne Mindestlänge traf Spalte
+„A“ der Wirtschaftlichkeitsseite. Umsetzung: `KiWahltreffer` nennt seine
+Stufe (`KiWahlstufe`); `GemeinteMaske` sucht rangweise über alle Masken
+(exakter Schlüssel, gleicher Name — gefalteter Schlüssel und Anzeigename
+gleichrangig —, Wortanfang, enthaltener Teil); mehrere Masken auf dem
+besten Rang ohne gemeinsamen Ort → benannte Absage mit „Anzeigename
+(Maskenname)“, neuer Text `KI_DLG_MASKE_MEHRDEUTIG` (de/en); umgekehrter
+Wortanfang mindestens 3 Zeichen.
+
+**Wächter vorher/nachher** über 5 083 Eingaben (Feldschlüssel,
+Anzeigenamen mit/ohne Doppelpunkt, de-DE und en-US): 2 424 richtige
+Treffer unverändert, 0 verloren, 17 Korrekturen, 3 benannte Absagen bei
+echter Mehrdeutigkeit (en „Operating cost“, „Energy tax relief“, „Fuel
+split power/heat“), 1 802 neu richtig (vorher keine Maske), 835 weiter
+ohne Maske, 2 regelgerecht „fremd“ (Bezugspreis → Peak-Shaving, Standby →
+Stromspeicher-Verwaltung, dort wörtliche Feldschlüssel). Die vier
+gemeldeten Beispiele jetzt richtig: „With PV surplus“ → Wärmesenke,
+„Position ist ein Erlös“ → Vorlagenposition, „Außenwand“ und
+„Fensterfläche Ost + West“ → Gebäudeverwaltung.
+
+**Punkt 2 — Speichern-Kommentare der sechs Dialoge.** KI‑D‑Q4 erlaubt
+Speichern nur über einen Speicherweg der Maske; keiner der sechs Dialoge
+sieht einen Haken vor, also nur die Kommentare berichtigt (OK/„Übernehmen“
+klickt der Anwender, `dialog_speichern` lehnt benannt ab,
+`KI_AKTION_SPEICHERN_KEIN_WEG`). Befund je Dialog: EnergietraegerVariante
+(OK legt neuen Katalogsatz an = „Neu…“), KostenfaktorKatalog (Neu/Löschen
+schreiben sofort, OK schließt), BhkwWirtschaftlichkeit (`Schreiben()`
+schreibt und schließt), PhotovoltaikVerguetung („Übernehmen“ schreibt und
+schließt), Tarifstruktur (OK schreibt und schließt, bei Warnung zweiter
+Klick), WirtschaftlichkeitParameter (OK schreibt und schließt).
+
+**Punkt 3 — Klimadaten und Zeitreihen rollen nach dem Einlesen.**
+`KlimadatenDialog`, `WaermebedarfAdminDialog`, `SolarganglinieAdminDialog`,
+`StromganglinieAdminDialog` rufen nach dem Einlesen
+`_auswahl.Uebernommen(new[] { _gewaehlt })` statt `Aufheben()` und reichen
+`Zeigeanlass="@_auswahl.Uebernahmen"` an die `Katalogliste`; Katalogliste,
+JS und Zeilenhöhe unverändert, keine Rasterprobe nötig.
+
+**Tests.** `KiMaskenwegTests`
+(`Ein_Anzeigename_meint_die_Maske_die_ihn_traegt` 8 Fälle,
+`Eine_mehrdeutige_beste_Stufe_nennt_ihre_Kandidaten`, dauerhafter Wächter
+`Kein_Anzeigename_fuehrt_in_eine_fremde_Maske` de/en, drei
+Mehrdeutigkeitstests angepasst), `KiWahlTests` (Stufe je Treffer, ein
+Buchstabe ist kein Wortanfang), `KiKatalogKulturTests` grün; bunit je Wirt
+der vier Katalog-/Ganglinien-Dialoge (Einlesen → genau ein `zeileZeigen`
+an der Stelle des neuen Satzes, Öffnen rollt nicht, Gegenprobe ohne Fix
+rot).
+
+**Papiere.** Konzept Dialogintegration Absatz „Die Namensregel und der Weg
+zur Maske“ neu gefasst (beste Stufe, Absage mit Kandidaten, Mindestlänge,
+Wächter); Zeile KI‑D‑Q4 mit dem Befund der sechs Dialoge;
+`EPOS.UI/CLAUDE.md` unverändert (Regel steht schon); kein Logbuch-Eintrag.
+
+**Was offen bleibt.** Die Grenze „gefalteter Schlüssel = Anzeigename“ beim
+Vergleich über Masken hinweg ist eine Setzung des Agenten (macht z. B.
+„Preisquelle“ und „Quelltemperatur“ zu benannten Absagen statt dem
+Schlüssel einer anderen Maske den Vorzug zu geben; mit einer Zeile in
+`Rang()` umkehrbar, dann 12 statt 2 fremde Treffer über wörtliche
+Schlüssel); die Mindestlänge beim umgekehrten Wortanfang wirkt auch auf
+`feld_setzen` an der offenen Maske und auf Wahlwerte — Tests grün,
+Bedienung nicht geprüft.
+
+**Gate im Worktree des Umsetzungsagenten.** KiKern 549, SpeicherEngine
+386, SpeicherPlanung 27 (1 übersprungen), UI 5 910, Kern 5 796, 0 rot;
+Builds 0 Fehler; kein Referenzlauf nötig.
+
+**Gate nach Merge auf `0bbd062a`.** Kern-Filter 0 Fehler; Kern 5 802, UI
+5 911, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+0 rot; Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz), Schemastand
+121.
