@@ -326,7 +326,8 @@
         Uebernehmen(e);
         if (!e.Ok) return;
         _pfad = "";
-        _bericht = null;
+        // Der Bericht bleibt stehen, solange er Hinweise des gelungenen Einspielens traegt.
+        if (e.Hinweise.Count == 0) _bericht = null;
     }
 
     private void LoeschenAusfuehren()

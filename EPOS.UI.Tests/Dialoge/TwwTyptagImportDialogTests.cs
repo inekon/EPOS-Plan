@@ -301,6 +301,50 @@ public class TwwTyptagImportDialogTests : EposBunitContext
         Assert.Equal("", cut.Instance.Status);
     }
 
+    /// <summary>
+    /// Ein gelungenes Einspielen mit Hinweisen zeigt sie: Der Prüfbericht wird durch den Bericht des
+    /// Schreibwegs ersetzt, nicht weggeworfen — sonst sähe der Anwender nie, was übergangen wurde.
+    /// </summary>
+    [Fact]
+    public void Einspielen_mit_Hinweis_zeigt_ihn()
+    {
+        var ergebnis = new TwwTyptagErgebnisDaten
+        {
+            Ok = true,
+            Meldung = "42 Zeile(n) eingespielt, 0 ersetzt.",
+            Stand = Voll()
+        };
+        ergebnis.Hinweise.Add("Die Spalte notiz war leer und wurde übergangen.");
+        var p = new Pruefstand { Einspielergebnis = ergebnis };
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Paket wählen…").Click();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Bericht));
+        Knopf(cut, "Einspielen").Click();
+
+        Assert.Contains("42 Zeile(n) eingespielt", cut.Instance.Status);
+        Assert.NotNull(cut.Instance.Bericht);
+        Assert.Contains("notiz war leer", cut.Find(".epos-tww-typtage-hinweis").TextContent);
+        // Der Hinweis der Prüfung ist weg — es steht nur noch der Bericht des Schreibwegs.
+        Assert.Single(cut.FindAll(".epos-tww-typtage-hinweis"));
+        Assert.Contains("42 Zeile(n) eingespielt", cut.Find(".epos-tww-typtage-summe").TextContent);
+    }
+
+    /// <summary>Ohne Hinweise verschwindet der Prüfbericht nach dem Einspielen.</summary>
+    [Fact]
+    public void Einspielen_ohne_Hinweis_nimmt_den_Pruefbericht_weg()
+    {
+        var p = new Pruefstand();
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Paket wählen…").Click();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Bericht));
+        Knopf(cut, "Einspielen").Click();
+
+        Assert.Null(cut.Instance.Bericht);
+        Assert.Empty(cut.FindAll(".epos-tww-typtage-hinweis"));
+    }
+
     // =================================================================================
     // Löschen
     // =================================================================================
