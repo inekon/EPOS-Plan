@@ -34,7 +34,7 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// ALLE 277 Sätze mit den fünf Spalten des Profils; Verwendung und Baujahr stehen als
+        /// ALLE 269 Sätze mit den fünf Spalten des Profils; Verwendung und Baujahr stehen als
         /// KLARTEXT (der Trichter filtert auf dem angezeigten Wert), die zwei Verwendungen
         /// enthalten einander nicht.
         /// </summary>
