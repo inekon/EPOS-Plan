@@ -254,8 +254,14 @@ Form_Kosten_Auswahl.btn_Help = Kosten
 # iU9-W1.1: Zeileneditor der Vorlagenposition, jetzt VorlagenPositionDialog.razor.
 # Die WinForms-Maske hatte keinen Infoknopf; die Komponente hat einen, und er
 # zeigt dieselbe Wikiseite wie die uebrigen Kostendialoge.
-Form_VorlagenPosition.btn_Help = Kosten
-Form_LeistungspreisReihe.btn_Help = Kosten
+# E13: Der Zeileneditor hinter dem Stift springt auf den Abschnitt, der ihn
+# beschreibt (Ersatzbeschaffung und Restwert je Position, darueber die
+# Positionsart); die saisonalen Leistungspreis-Saetze auf "Was die drei Preise
+# bewirken" (Saisonreihe mit zwoelf Monatssaetzen). Kostenprofil und
+# Spotpreis-Import bleiben auf Seitenebene: Die Seite nennt beide nur als
+# Preisquelle der Speichervariante, einen Abschnitt zu den Dialogen gibt es nicht.
+Form_VorlagenPosition.btn_Help = Kosten#ersatz-restwert-kennzeichen
+Form_LeistungspreisReihe.btn_Help = Kosten#preiswirkung
 Form_SpotpreisImport.btn_Help = Kosten
 Form_VorlagenUebernahme.btn_Help = Kosten#uebernahme-vorlage
 # W-E2: Die beiden Dialoge gehoeren fachlich auf die Seite Wirtschaftlichkeit -

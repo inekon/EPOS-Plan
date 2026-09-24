@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 using Xunit;
@@ -462,5 +463,178 @@ namespace EPOS.Kern.Tests
                 Assert.Contains(e.KohaerenzHinweise, h => h.Text.StartsWith(
                     "Rechenstufe „Laden der Ergebnisse“ nicht ausführbar: ", StringComparison.Ordinal));
         }
+
+        // =================================================================
+        //  ETAPPE E13 (E7c3‑Q6 a) — die drei Gründe in der Oberfläche
+        // =================================================================
+
+        /// <summary>
+        /// Die Zeilen der Oberfläche: je Grund eine, in der Reihenfolge Laden, Speichern,
+        /// Vorsorge, mit dem Text des Kerns; derselbe Grund aus zwei Quellen ergibt EINE
+        /// Zeile, leere Gründe keine.
+        /// </summary>
+        [Fact]
+        public void Die_Anzeigezeilen_nennen_jeden_Grund_einmal()
+        {
+            Assert.Empty(Fehlergrund.Anzeigezeilen(null, null, null));
+            Assert.Empty(Fehlergrund.Anzeigezeilen(new[] { null, "", "  " }, "", null));
+
+            List<string> zeilen = Fehlergrund.Anzeigezeilen(
+                new[] { "SqliteException: no such table", null, "SqliteException: no such table" },
+                "FormatException: kaputt",
+                "SqliteException: no such table");
+            Assert.Equal(new[]
+            {
+                "Gespeicherte Ergebnisse nicht vollständig gelesen: SqliteException: no such table",
+                "Speichern gescheitert: FormatException: kaputt"
+            }, zeilen);
+
+            Assert.Equal(new[] { "Tabellenvorsorge unvollständig: IOException: gesperrt" },
+                         Fehlergrund.Anzeigezeilen(null, null, "IOException: gesperrt"));
+
+            // Kein Stapel: Die Zeile trägt, was Fehlergrund.Text liefert.
+            string grund = Fehlergrund.Text(new InvalidOperationException("Zeile 1\r\n   bei X.Y()"));
+            string zeile = Assert.Single(Fehlergrund.Anzeigezeilen(null, grund, null));
+            Assert.DoesNotContain("\n", zeile);
+            Assert.Equal(string.Format(Resource.WIRT_STATUS_SPEICHERFEHLER, grund), zeile);
+        }
+
+        /// <summary>
+        /// Die Statuszeile der Ergebnisseite nennt den Ladefehler des Kerns — einmal, mit
+        /// dem Text des Kerns —, statt dass die Zeilen still fehlen.
+        /// </summary>
+        [Fact]
+        public void Die_Statuszeile_nennt_den_Ladefehler_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Rechne(ctrl.LadeParameter(PROJEKT));
+            string ohne = Stand(new WirtschaftlichkeitSeiteGaben(PROJEKT, "")).Statuszeile;
+            Assert.DoesNotContain("nicht vollständig gelesen", ohne);
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " SET Zeitstempel = 'kaputt' " +
+                "WHERE ID_Projekt = " + PROJEKT);
+            string mit = Stand(new WirtschaftlichkeitSeiteGaben(PROJEKT, "")).Statuszeile;
+
+            const string anfang = "Gespeicherte Ergebnisse nicht vollständig gelesen: FormatException: ";
+            Assert.Contains(anfang, mit);
+            Assert.Equal(mit.IndexOf(anfang, StringComparison.Ordinal),
+                         mit.LastIndexOf(anfang, StringComparison.Ordinal));
+            Assert.DoesNotContain("   bei ", mit);    // kein Stapel
+        }
+
+        /// <summary>
+        /// Scheitert der Schreibweg der Referenzwahl an der Datenbank, erscheint der Grund
+        /// EINMAL: Die Zugriffsschicht meldet ihn (<c>DataRepository.FehlerMelden</c>), und
+        /// die Statuszeile wiederholt ihn nicht. Vor E13 lief der Kern danach in ein INSERT,
+        /// das am eindeutigen Index scheiterte und einen zweiten, falschen Grund meldete.
+        /// </summary>
+        [Fact]
+        public void Ein_Datenbankfehler_der_Referenzwahl_erscheint_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);   // Vorsorge vor dem Auslöser
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER e13_stop BEFORE UPDATE ON " + WirtschaftlichkeitCtrl.TAB_PARAMETER +
+                " BEGIN SELECT RAISE(ABORT, 'E13-Probe'); END");
+
+            var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT, "");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            var referenz = (Func<int, WirtschaftlichkeitStand>)gaben["ReferenzGewaehlt"];
+
+            IDialogDienst vorher = Dienste.Dialog;
+            var mitschrift = new Mitschrift();
+            string status;
+            try
+            {
+                Dienste.Dialog = mitschrift;
+                status = referenz(PROJEKT).Statuszeile;
+            }
+            finally { Dienste.Dialog = vorher; }
+
+            Assert.Single(mitschrift.Zeilen, z => z.Contains("E13-Probe", StringComparison.Ordinal));
+            Assert.DoesNotContain(mitschrift.Zeilen, z => z.Contains("UNIQUE", StringComparison.Ordinal));
+            Assert.DoesNotContain("E13-Probe", status);
+            Assert.DoesNotContain("Speichern gescheitert: ", status);
+        }
+
+        /// <summary>Ein Dialogdienst, der nichts zeigt, sondern mitschreibt.</summary>
+        private sealed class Mitschrift : IDialogDienst
+        {
+            public readonly List<string> Zeilen = new List<string>();
+            public void Meldung(string text, string titel = null) { Zeilen.Add("Meldung|" + text); }
+            public void Warnung(string text, string titel = null) { Zeilen.Add("Warnung|" + text); }
+            public void Fehler(string text, string titel = null) { Zeilen.Add("Fehler|" + text); }
+            public bool Frage(string text, string titel = null, bool warnend = false, bool vorgabeNein = false)
+            { Zeilen.Add("Frage|" + text); return true; }
+            public JaNeinAbbruch Wahl(string text, string titel = null)
+            { Zeilen.Add("Wahl|" + text); return JaNeinAbbruch.Ja; }
+            public void Warten(bool an) { }
+        }
+
+        /// <summary>
+        /// Der BHKW-Dialog bekommt die Gründe des Kerns: den Speicherfehler des
+        /// Schreibwegs (einmal gelesen) und den Ladefehler nach dem Laden des gebuchten
+        /// Stands.
+        /// </summary>
+        [Fact]
+        public void Der_BHKW_Dialog_bekommt_Speicher_und_Ladefehler_des_Kerns()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Rechne(ctrl.LadeParameter(PROJEKT));
+            IReadOnlyDictionary<string, object> gaben = BhkwWirtschaftlichkeitHuelle.Gaben(PROJEKT, null, out _);
+            Assert.Equal("", gaben["Vorsorgewarnung"]);
+
+            var laden = (Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>)gaben["ErgebnisseLaden"];
+            var ladefehler = (Func<string>)gaben["Ladefehler"];
+            laden(new[] { PROJEKT });
+            Assert.Null(ladefehler());
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " SET Zeitstempel = 'kaputt' " +
+                "WHERE ID_Projekt = " + PROJEKT);
+            laden(new[] { PROJEKT });
+            Assert.StartsWith("FormatException: ", ladefehler());
+
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER e13_stop BEFORE UPDATE ON " + WirtschaftlichkeitCtrl.TAB_PARAMETER +
+                " BEGIN SELECT RAISE(ABORT, 'E13-Probe'); END");
+            var speichern = (Func<WirtschaftlichkeitParameter, bool>)gaben["SpeichereVorgaben"];
+            var speicherfehler = (Func<string>)gaben["Speicherfehler"];
+
+            // Ein Datenbankfehler: Die Zugriffsschicht meldet ihn einmal, der Dialog
+            // bekommt keinen zweiten Grund (sonst stünde er zweimal da).
+            IDialogDienst vorher = Dienste.Dialog;
+            var mitschrift = new Mitschrift();
+            bool gespeichert;
+            try
+            {
+                Dienste.Dialog = mitschrift;
+                gespeichert = speichern((WirtschaftlichkeitParameter)gaben["Parameter"]);
+            }
+            finally { Dienste.Dialog = vorher; }
+            Assert.False(gespeichert);
+            Assert.Single(mitschrift.Zeilen, z => z.Contains("E13-Probe", StringComparison.Ordinal));
+            Assert.Null(speicherfehler());
+
+            // Der Träger des Grundes für Fehler außerhalb der Zugriffsschicht: einmal gelesen,
+            // leere Gründe überschreiben keinen.
+            var grund = new BhkwWirtschaftlichkeitHuelle.Speichergrund();
+            grund.Setzen("InvalidOperationException: E13-Probe");
+            grund.Setzen("  ");
+            Assert.Equal("InvalidOperationException: E13-Probe", grund.Lesen());
+            Assert.Null(grund.Lesen());
+        }
+
+        private static WirtschaftlichkeitStand Stand(WirtschaftlichkeitSeiteGaben seite)
+            => ((Func<WirtschaftlichkeitStand>)seite.Gaben()["Laden"])();
     }
 }

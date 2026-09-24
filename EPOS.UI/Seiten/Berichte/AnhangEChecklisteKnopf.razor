@@ -89,6 +89,8 @@
             PositionenOhneNutzungsdauer = s.Nutzungsdauerhinweise.Count > 0,
             SensitivitaetGerechnet = s.Ansicht.Sensitivitaet.Zeilen.Count > 0,
             SzenarienGerechnet = BeideSzenarien(s.Ansicht.Bandbreite),
+            // ETAPPE E13 (E9b‑Q5 b): nur ein Szenario gerechnet hebt Punkt 9 auf „teilweise".
+            EinSzenarioGerechnet = EinSzenario(s.Ansicht.Bandbreite),
             VorschlagVorhanden = !string.IsNullOrEmpty(s.Ansicht.Empfehlungszeile),
             // ETAPPE E9b: Punkt 9 nennt den Ausweis „n von m Parametern szenariert".
             Szenarioabdeckung = s.Szenarioabdeckung
@@ -108,6 +110,19 @@
         if (worst < 0 || best < 0) return false;
         return tafel.Zeilen.Any(z => z is not null && z.Zellen.Count > Math.Max(worst, best)
                                   && IstZahl(z.Zellen[worst]) && IstZahl(z.Zellen[best]));
+    }
+
+    /// <summary>
+    /// ETAPPE E13 — Ungünstig ODER Günstig trägt in einer Zeile der Bandbreite eine Zahl;
+    /// dieselbe Bedingung wie im Bericht (<see cref="ChecklistenLage.EinSzenarioGerechnet"/>).
+    /// </summary>
+    internal static bool EinSzenario(ErgebnisMatrix tafel)
+    {
+        int worst = IndexVon(tafel.Spalten, Resource.WIRT_SZEN_WORST) - 1;
+        int best = IndexVon(tafel.Spalten, Resource.WIRT_SZEN_BEST) - 1;
+        return tafel.Zeilen.Any(z => z is not null
+            && ((worst >= 0 && z.Zellen.Count > worst && IstZahl(z.Zellen[worst]))
+             || (best >= 0 && z.Zellen.Count > best && IstZahl(z.Zellen[best]))));
     }
 
     private static int IndexVon(IReadOnlyList<string> liste, string wert)

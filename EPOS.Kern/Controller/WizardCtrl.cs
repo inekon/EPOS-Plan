@@ -699,10 +699,11 @@ namespace WindowsFormsApplication1
 
                     // Ohne Treffer ist die Anlage im Dialog NEU hinzugekommen: Sie bekommt
                     // die Vorbelegung des Modells - dieselben Werte wie aus
-                    // Migrationsschritt 11d.
+                    // Migrationsschritt 11d; ETAPPE E13 (Register A8): die Nutzungsdauer
+                    // aus der Nutzungsdauertabelle (Stromspeicher · Batterie).
                     StromspeicherVarianteModel neuesatz = treffer != null
                         ? SpParameterUebernehmen(treffer.Parameter)
-                        : new StromspeicherVarianteModel();
+                        : StromspeicherVarianteCtrl.NeueVariante();
 
                     neuesatz.ID_Energieanlage = idAnlage;
                     neuesatz.Aktiv = false;           // SetzeAktiv ist die einzige Schreibstelle

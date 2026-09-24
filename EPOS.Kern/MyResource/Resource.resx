@@ -6880,10 +6880,10 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
-    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz.</value>
+    <value>nur Erwartet oder nur eines der Szenarien Günstig und Ungünstig mit Kapitalwert gerechnet.</value>
   </data>
   <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
-    <value>keine Bandbreite gerechnet.</value>
+    <value>keine Szenarien gerechnet — erst berechnen.</value>
   </data>
   <data name="WIRT_AE_10_THEMA" xml:space="preserve">
     <value>Auswertung</value>
@@ -27339,6 +27339,21 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
     <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}.</value>
+  </data>
+  <data name="WIRT_AE_9_ERFUELLT" xml:space="preserve">
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz.</value>
+  </data>
+  <data name="WIRT_AE_9_TEILWEISE_ABDECKUNG" xml:space="preserve">
+    <value>nur Erwartet oder nur eines der Szenarien Günstig und Ungünstig mit Kapitalwert gerechnet; {0}.</value>
+  </data>
+  <data name="WIRT_STATUS_LADEFEHLER" xml:space="preserve">
+    <value>Gespeicherte Ergebnisse nicht vollständig gelesen: {0}</value>
+  </data>
+  <data name="WIRT_STATUS_SPEICHERFEHLER" xml:space="preserve">
+    <value>Speichern gescheitert: {0}</value>
+  </data>
+  <data name="WIRT_STATUS_VORSORGE" xml:space="preserve">
+    <value>Tabellenvorsorge unvollständig: {0}</value>
   </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
