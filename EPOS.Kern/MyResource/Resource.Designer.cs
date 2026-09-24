@@ -71728,6 +71728,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominale Zahlungen je Jahr im Szenario „{0}“, in €: die Eingangswerte aus dem Lauf dieses Szenarios, die Formeln rechnen mit seiner Spalte im Parameterblock (Namen mit dem Anhang {1}). Jahre nach T = {2} a tragen keine Zahlung; ihre Formeln bleiben leer. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_SZENARIO_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrjahresübersicht der Zahlungsströme — Szenario „{0}“ (T = {1} a) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_SZENARIO_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer — Änderung gegenüber Erwartet [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_DAUER {
@@ -82202,6 +82220,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_DAUERLINIE_SCHWELLE {
             get {
                 return ResourceManager.GetString("ZPG_DAUERLINIE_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen. ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE", resourceCulture);
             }
         }
         

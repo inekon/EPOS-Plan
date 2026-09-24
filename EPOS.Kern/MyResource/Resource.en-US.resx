@@ -6647,6 +6647,12 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
     <value>Rate</value>
   </data>
+  <data name="WIRT_FM_MJ_SZENARIO_TITEL" xml:space="preserve">
+    <value>Multi-year overview of cash flows — scenario “{0}” (T = {1} a)</value>
+  </data>
+  <data name="WIRT_FM_MJ_SZENARIO_HINWEIS" xml:space="preserve">
+    <value>Nominal payments per year in the scenario “{0}”, in €: the input values come from the run of this scenario, the formulas use its column in the parameter block (names with the suffix {1}). Years after T = {2} a carry no payment; their formulas stay empty.</value>
+  </data>
   <data name="WIRT_AE_TITEL" xml:space="preserve">
     <value>Checklist for the evaluation report (DIN EN 17463, Annex E)</value>
   </data>
