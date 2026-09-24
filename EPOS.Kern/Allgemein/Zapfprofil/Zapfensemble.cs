@@ -357,10 +357,13 @@ namespace WindowsFormsApplication1
         /// der Tagesmenge der Zone geteilt durch n_E. Ein Ereignis über Mitternacht läuft am
         /// Tagesanfang weiter (der Bedarfstag wiederholt sich). Mit <paramref name="volumen"/> rechnet
         /// jede Realisierung ihr erforderliches Volumen und das der ersten Einheit jeder Zone
-        /// (<see cref="Volumina"/>, 4.5 b) gleich mit.
+        /// (<see cref="Volumina"/>, 4.5 b) gleich mit. Mit <paramref name="abbruch"/> endet die Ziehung
+        /// zwischen zwei Realisierungen mit <see cref="OperationCanceledException"/> (der nebenläufige
+        /// Lauf der Oberfläche, 5.1).
         /// </summary>
         internal static Bedarfstagensemble Ziehen(IReadOnlyList<Ensemblezone> zonen, long seed, int realisierungen,
-                                                  int perzentil, Volumenauftrag volumen = null, bool parallel = true)
+                                                  int perzentil, Volumenauftrag volumen = null, bool parallel = true,
+                                                  CancellationToken abbruch = default)
         {
             PerzentilPruefen(perzentil);
             RealisierungenPruefen(realisierungen);
@@ -400,7 +403,7 @@ namespace WindowsFormsApplication1
             {
                 int anzahl = Math.Min(BLOCK, realisierungen - start);
                 var teil = new Realisierungsteil[anzahl];
-                Lauf(anzahl, parallel, i => teil[i] = Realisierung(zonen, seed, start + i, plan));
+                Lauf(anzahl, parallel, i => teil[i] = Realisierung(zonen, seed, start + i, plan), abbruch);
                 // Feste Summationsfolge: Realisierung für Realisierung; die Tage des Blocks verfallen danach.
                 for (int i = 0; i < anzahl; i++)
                 {

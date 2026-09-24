@@ -26567,4 +26567,13 @@ Do you want to allow this?</value>
   <data name="ZPG_MSG_JAHRESREIHE_UNERWARTET" xml:space="preserve">
     <value>The annual series could not be calculated: {0}</value>
   </data>
+  <data name="ZPG_AUS_PERZENTIL_LAEUFT" xml:space="preserve">
+    <value>calculating … — the design-day ensemble is being drawn.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_LAEUFT" xml:space="preserve">
+    <value>Design calculating … · design-day ensemble</value>
+  </data>
+  <data name="ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN" xml:space="preserve">
+    <value>The ensemble was cancelled — “Calculate stochastically” is off again.</value>
+  </data>
 </root>

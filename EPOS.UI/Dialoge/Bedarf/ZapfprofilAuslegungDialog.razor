@@ -24,7 +24,11 @@
    aus dem Stundenprofil traegt das Warnbanner "Spitzen unterschaetzt" (SpitzenUnterschaetzt).
 
    STOCHASTIK (Stufe Z3, 4.5 b). Der Schalter "Stochastisch rechnen" (eine Laufangabe) zieht
-   je Topologiegruppe das Ensemble des Bedarfstags; mit ihm stehen das Auslegungsperzentil
+   je Topologiegruppe das Ensemble des Bedarfstags NEBENLAEUFIG (Delegat "StochastischRechnen":
+   Arbeitsfaden der Huelle, Abbruchmarke bis in den Kern; Fortschritt mit Abbrechen, Karte (b)
+   "rechnet ..." bis zum Ergebnis, das per InvokeAsync kommt; ein Abbruch schaltet ihn aus und
+   rechnet deterministisch nach; der Delegat "Rechnen" rechnet stets ohne Ensemble). Mit ihm
+   stehen das Auslegungsperzentil
    (P95 | P99, K3) und die Realisierungen des Bedarfstags (leer = Vorgabe des Kerns) in den
    Eingaben. Die Karte (b) zeigt dann den Perzentilwert der Auslegungsgroesse (Speicher:
    Volumen beim Phi_N des Summenlinienpunkts; sonst Minutenspitze), das Streuband P50 ... P99
@@ -133,10 +137,14 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* Der nebenläufige Lauf des Ensembles (5.1): Status und Abbruch, nie im Zeichenfaden. *@
+    <Fortschritt Sichtbar="@EnsembleLaeuft" Text="@Texte.StatusEnsembleLaeuft"
+                 Abbrechen="@(EventCallback.Factory.Create(this, EnsembleAbbrechen))" />
+
     @* ------------------------------------------------ je Topologiegruppe ---------- *@
     @if (_ergebnis is null || _ergebnis.Zustand != ZapfprofilAuslegungZustand.Gerechnet)
     {
-        <p class="epos-leisezeile epos-zapfausl-ohne" role="status">@OhneGrund</p>
+        <p class="epos-leisezeile epos-zapfausl-ohne" role="status">@(EnsembleLaeuft && _ergebnis is null ? Texte.StatusEnsembleLaeuft : OhneGrund)</p>
     }
     else
     {
@@ -198,7 +206,11 @@
                         <section class="epos-zapfausl-karte epos-zapfausl-karte--perzentil" aria-label="@Texte.KartePerzentil">
                             <h4>@Texte.KartePerzentil</h4>
                             <p class="epos-leisezeile">@Texte.KartePerzentilUnter</p>
-                            @if (g.PerzentilErgebnis is { } pz)
+                            @if (EnsembleLaeuft)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-laeuft" role="status">@Texte.PerzentilLaeuft</p>
+                            }
+                            else if (g.PerzentilErgebnis is { } pz)
                             {
                                 <p class="epos-leisezeile epos-zapfausl-perzentil-lauf">@Format(Texte.PerzentilLauf, pz.Seed, pz.Realisierungen, pz.Tag)</p>
                                 <div class="epos-zapfausl-wert epos-zapfausl-perzentil-wert">
@@ -483,8 +495,19 @@
     /// <summary>Die Beschriftungen (Textbündel).</summary>
     [Parameter] public ZapfprofilAuslegungTexte Texte { get; set; } = new();
 
-    /// <summary>Die Auslegung zu den Eingaben — der Delegat der Hülle. Kein Delegat = das Ergebnis bleibt beim Öffnen.</summary>
+    /// <summary>
+    /// Die Auslegung zu den Eingaben — der Delegat der Hülle, im Zeichenlauf und darum stets
+    /// deterministisch (der Dialog reicht die Eingaben ohne „Stochastisch rechnen"). Kein Delegat =
+    /// das Ergebnis bleibt beim Öffnen.
+    /// </summary>
     [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>? Rechnen { get; set; }
+
+    /// <summary>
+    /// Die Auslegung MIT dem Ensemble des Bedarfstags (4.5 b) — der Delegat der Hülle, der den Lauf
+    /// auf einen Arbeitsfaden legt und die Abbruchmarke an den Kern reicht (5.1). Kein Delegat =
+    /// „Stochastisch rechnen" zieht kein Ensemble, das Perzentil bleibt offen.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>? StochastischRechnen { get; set; }
 
     /// <summary>Der Konstruktor der Hülle; kein Delegat = kein Knopf „Bedarfstag konstruieren…".</summary>
     [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
@@ -528,11 +551,17 @@
     private string _hinweis = "";
     private CancellationTokenSource? _entprellung;
 
+    /// <summary>Die Abbruchmarke des laufenden Ensembles; <c>null</c>, solange keines läuft.</summary>
+    private CancellationTokenSource? _lauf;
+
     /// <summary>Die Felder, deren Text gerade keine gültige Zahl ist (Feldname) — sie halten das OK an.</summary>
     private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
 
     /// <summary>Die Eingaben — Prüfhilfe für die Tests.</summary>
     public ZapfprofilAuslegungEingabeDaten Eingabe => _eingabe;
+
+    /// <summary>Läuft das Ensemble des Bedarfstags gerade? Prüfhilfe für die Tests.</summary>
+    public bool EnsembleLaeuft => _lauf is not null;
 
     /// <summary>Das angezeigte Ergebnis — Prüfhilfe für die Tests.</summary>
     public ZapfprofilAuslegungDaten? AktuellesErgebnis => _ergebnis;
@@ -571,7 +600,11 @@
     }
 
     /// <inheritdoc/>
-    public void Dispose() => EntprellungAbbrechen();
+    public void Dispose()
+    {
+        EntprellungAbbrechen();
+        LaufVerwerfen();
+    }
 
     // =================================================================================
     // Anzeige
@@ -789,6 +822,7 @@
     {
         get
         {
+            if (EnsembleLaeuft) return Texte.StatusEnsembleLaeuft;
             if (_ergebnis is null) return "";
             if (_ergebnis.Zustand != ZapfprofilAuslegungZustand.Gerechnet) return _ergebnis.Status;
             ZapfprofilAuslegungsgruppeDaten? g = _ergebnis.Punktgruppe;
@@ -801,7 +835,7 @@
         if (_leiste is null || Status == _statusGezeigt) return;
         _statusGezeigt = Status;
         bool fehler = _ergebnis is not null && _ergebnis.Zustand == ZapfprofilAuslegungZustand.Abgebrochen;
-        _leiste.Zeigen(Status, fehler);
+        _leiste.Zeigen(Status, fehler && !EnsembleLaeuft);
     }
 
     private static string Zahl(double? wert, string format)
@@ -934,11 +968,15 @@
         Geaendert();
     }
 
-    /// <summary>Eine Eingabe hat die Auslegung geändert: das Ergebnis ist überholt und wird entprellt neu gerechnet.</summary>
+    /// <summary>
+    /// Eine Eingabe hat die Auslegung geändert: das Ergebnis ist überholt und wird entprellt neu
+    /// gerechnet; ein laufendes Ensemble gehört zu den alten Eingaben und bricht ab.
+    /// </summary>
     private void Geaendert()
     {
         _hinweis = "";
         _aktuell = false;
+        LaufVerwerfen();
         EntprellungAbbrechen();
         if (Rechnen is null) return;
         if (EntprellungMs <= 0)
@@ -977,14 +1015,122 @@
         offen.Dispose();
     }
 
-    /// <summary>Rechnet über den Delegaten neu; führt das Ergebnis den Fall „ohne Tag" neu herbei, öffnet der Konstruktor.</summary>
+    /// <summary>
+    /// Rechnet neu; führt das Ergebnis den Fall „ohne Tag" neu herbei, öffnet der Konstruktor. Mit
+    /// „Stochastisch rechnen" läuft die Rechnung samt Ensemble NEBENLÄUFIG (5.1) — Karte (b) sagt
+    /// „rechnet …" bis zum Ergebnis; ohne Schalter rechnet der Delegat <see cref="Rechnen"/>
+    /// deterministisch im Zeichenlauf.
+    /// </summary>
     private void Neurechnen(bool konstruktorFolgen = true)
     {
+        if (_eingabe.Stochastisch && StochastischRechnen is not null)
+        {
+            EnsembleStarten(konstruktorFolgen);
+            return;
+        }
+        LaufVerwerfen();
+        DeterministischRechnen(konstruktorFolgen);
+    }
+
+    /// <summary>Die Rechnung im Zeichenlauf — ohne Ensemble, auch wenn der Schalter steht.</summary>
+    private void DeterministischRechnen(bool konstruktorFolgen)
+    {
         if (Rechnen is null) return;
+        ZapfprofilAuslegungEingabeDaten e = _eingabe.Kopie();
+        e.Stochastisch = false;
+        ErgebnisSetzen(Rechnen(e), konstruktorFolgen);
+    }
+
+    /// <summary>Ein neues Ergebnis: es gilt; führt es den Fall „ohne Tag" neu herbei, öffnet der Konstruktor.</summary>
+    private void ErgebnisSetzen(ZapfprofilAuslegungDaten? neu, bool konstruktorFolgen)
+    {
         ZapfprofilAuslegungDaten? vorher = _ergebnis;
-        _ergebnis = Rechnen(_eingabe.Kopie());
-        _aktuell = _ergebnis is not null;
-        if (konstruktorFolgen && KonstruktorFaellig(vorher, _ergebnis)) _konstruktorOffen = true;
+        _ergebnis = neu;
+        _aktuell = neu is not null;
+        if (konstruktorFolgen && KonstruktorFaellig(vorher, neu)) _konstruktorOffen = true;
+    }
+
+    // =================================================================================
+    // Das Ensemble des Bedarfstags: nebenläufig, mit Status und Abbruch (5.1)
+    // =================================================================================
+
+    /// <summary>Startet die Rechnung samt Ensemble zu den Eingaben; ein laufendes Ensemble endet vorher.</summary>
+    private void EnsembleStarten(bool konstruktorFolgen)
+    {
+        LaufVerwerfen();
+        var quelle = new CancellationTokenSource();
+        _lauf = quelle;
+        _aktuell = false;
+        _ = EnsembleLaufen(quelle, _eingabe.Kopie(), konstruktorFolgen);
+    }
+
+    /// <summary>
+    /// Der Lauf: Der Delegat der Hülle rechnet auf einem Arbeitsfaden; das Ergebnis kommt über
+    /// <c>InvokeAsync</c> in den Verteiler. Ein überholter Lauf hinterlässt nichts; ein
+    /// abgebrochener schaltet „Stochastisch rechnen" aus und rechnet deterministisch nach. Jede
+    /// Ausnahme bleibt hier — ein loser Task erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task EnsembleLaufen(CancellationTokenSource quelle, ZapfprofilAuslegungEingabeDaten kopie, bool konstruktorFolgen)
+    {
+        ZapfprofilAuslegungDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await StochastischRechnen!(kopie, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new ZapfprofilAuslegungDaten
+            {
+                Zustand = ZapfprofilAuslegungZustand.Abgebrochen,
+                Grund = ex.Message,
+                Status = Format(Texte.StatusOhne, ex.Message)
+            };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_lauf, quelle)) return;
+                _lauf = null;
+                if (abgebrochen) EnsembleAbgebrochen();
+                else ErgebnisSetzen(ergebnis, konstruktorFolgen);
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* die Überlagerung ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt: Das Ensemble endet zwischen zwei Realisierungen.</summary>
+    private void EnsembleAbbrechen()
+    {
+        try { _lauf?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>
+    /// Nach dem Abbruch: „Stochastisch rechnen" ist wieder aus (sein Feld verschwindet samt
+    /// Fehleingabe), eine leise Zeile sagt es, und die Karten rechnen deterministisch nach.
+    /// </summary>
+    private void EnsembleAbgebrochen()
+    {
+        _eingabe.Stochastisch = false;
+        _fehlfelder.Remove(Texte.LabelRealisierungen);
+        DeterministischRechnen(konstruktorFolgen: false);
+        _hinweis = Texte.HinweisEnsembleAbgebrochen;
+    }
+
+    /// <summary>Verwirft ein laufendes Ensemble — es gehört zu alten Eingaben.</summary>
+    private void LaufVerwerfen()
+    {
+        CancellationTokenSource? offen = _lauf;
+        _lauf = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
     }
 
     /// <summary>
@@ -1020,8 +1166,11 @@
             _hinweis = Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder));
             return;
         }
+        // Der Punkt hängt nicht am Ensemble (4.5, Empfehlung aus (a)): Ein laufendes Ensemble endet,
+        // ein überholtes Ergebnis rechnet deterministisch nach — nie das Ensemble im Zeichenlauf.
         EntprellungAbbrechen();
-        if (!_aktuell) Neurechnen(konstruktorFolgen: false);
+        LaufVerwerfen();
+        if (!_aktuell) DeterministischRechnen(konstruktorFolgen: false);
         if (_eingabe.Quelle == ZapfprofilBedarfstagquelle.Stundenprofil && _ergebnis?.Punktgruppe is not null)
         {
             _rueckfrage = true;
@@ -1049,6 +1198,7 @@
     private Task Abbrechen()
     {
         EntprellungAbbrechen();
+        LaufVerwerfen();
         return Geschlossen.InvokeAsync(null);
     }
 

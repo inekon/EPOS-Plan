@@ -242,6 +242,23 @@ namespace EPOS.Kern.Tests
 
         private static Auslegungsgruppe Gruppe(Auslegungsergebnis r, ZapfTopologie t) => r.Gruppen.Single(g => g.Topologie == t);
 
+        /// <summary>
+        /// Der nebenläufige Lauf „Stochastisch rechnen" der Überlagerung (5.1): Die Abbruchmarke des
+        /// Auslegungseingangs beendet die Ziehung des Ensembles — die Ausnahme reist hinaus, sie
+        /// wird nicht zu „nicht rechenbar"; ohne „Stochastisch rechnen" stört die Marke nicht.
+        /// </summary>
+        [Fact]
+        public void Eine_Abbruchmarke_beendet_das_Auslegungsensemble()
+        {
+            using var marke = new System.Threading.CancellationTokenSource();
+            marke.Cancel();
+            Assert.ThrowsAny<OperationCanceledException>(
+                () => ZapfprofilAuslegung.Rechnen(Eingang(Projekt()), Katalog, Zusatz() with { Abbruch = marke.Token }));
+            Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(Eingang(Projekt()), Katalog,
+                                                               Zusatz(stochastisch: false) with { Abbruch = marke.Token });
+            Assert.All(r.Gruppen, g => Assert.Null(g.Perzentil));
+        }
+
         [Fact]
         public void Ohne_Stochastisch_rechnen_bleibt_das_Perzentil_offen()
         {

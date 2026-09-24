@@ -115,11 +115,16 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>? rechnen = null,
         Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? konstruieren = null,
         Action<ZapfprofilAuslegungEingabeDaten?>? geschlossen = null,
-        int entprellungMs = 0)
+        int entprellungMs = 0,
+        Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>? stochastisch = null)
         => Render<ZapfprofilAuslegungDialog>(p => p
             .Add(x => x.Daten, daten ?? Start())
             .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
             .Add(x => x.Rechnen, rechnen)
+            // Ohne eigenen Prüfdelegaten des Ensembles: derselbe Prüfdelegat, sofort erfüllt.
+            .Add(x => x.StochastischRechnen, stochastisch ?? (rechnen is null ? null
+                : new Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>(
+                    (e, _) => Task.FromResult(rechnen(e)))))
             .Add(x => x.Konstruieren, konstruieren)
             .Add(x => x.EntprellungMs, entprellungMs)
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
@@ -937,6 +942,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
             .Add(x => x.Daten, StartMitStochastik())
             .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
             .Add(x => x.Rechnen, e => { gesehen.Add(e); return ErgebnisZu(e); })
+            .Add(x => x.StochastischRechnen, (e, _) => { gesehen.Add(e); return Task.FromResult(ErgebnisZu(e)); })
             .Add(x => x.EntprellungMs, 0)
             .Add(x => x.StochastischBeimOeffnen, true));
 
@@ -945,6 +951,64 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
         Assert.True(Feld(cut, "Stochastisch rechnen").HasAttribute("checked"));
         Assert.False(cut.Instance.KonstruktorOffen);
+    }
+
+    /// <summary>
+    /// 5.1: Das Ensemble läuft nebenläufig — der Zeichenlauf rechnet nie das Ensemble; Karte (b)
+    /// sagt „rechnet …", der Fortschritt steht mit Abbrechen, die Karten (a) und (c) bleiben. Das
+    /// Ergebnis kommt per InvokeAsync; eine Eingabe startet einen neuen Lauf; Abbrechen schaltet
+    /// „Stochastisch rechnen" aus und rechnet deterministisch nach; OK beendet einen laufenden Lauf
+    /// und nimmt den Punkt aus der deterministischen Rechnung.
+    /// </summary>
+    [Fact]
+    public void Das_Ensemble_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
+    {
+        var laeufe = new List<(TaskCompletionSource<ZapfprofilAuslegungDaten> Ende, CancellationToken Marke, ZapfprofilAuslegungEingabeDaten Eingabe)>();
+        var imZeichenlauf = new List<ZapfprofilAuslegungEingabeDaten>();
+        ZapfprofilAuslegungEingabeDaten? zurueck = null;
+        var cut = Aufbauen(StartMitStochastik(), rechnen: e => { imZeichenlauf.Add(e); return ErgebnisZu(e); },
+            geschlossen: e => zurueck = e,
+            stochastisch: (e, marke) =>
+            {
+                var ende = new TaskCompletionSource<ZapfprofilAuslegungDaten>(TaskCreationOptions.RunContinuationsAsynchronously);
+                marke.Register(() => ende.TrySetCanceled(marke));
+                laeufe.Add((ende, marke, e));
+                return ende.Task;
+            });
+
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Assert.True(cut.Instance.EnsembleLaeuft);
+        Assert.True(Assert.Single(laeufe).Eingabe.Stochastisch);
+        Assert.Empty(imZeichenlauf);                                         // nie das Ensemble im Zeichenlauf
+        Assert.Equal("rechnet … — das Ensemble des Bedarfstags wird gezogen.", cut.Find(".epos-zapfausl-perzentil-laeuft").TextContent);
+        Assert.Equal("Auslegung rechnet … · Ensemble des Bedarfstags", cut.Find(".epos-fortschritt-text").TextContent);
+        Assert.NotNull(cut.Find(".epos-zapfausl-karte--haupt"));            // (a) bleibt stehen
+
+        laeufe[0].Ende.SetResult(ErgebnisZu(laeufe[0].Eingabe));
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".epos-zapfausl-streuband")));
+        Assert.False(cut.Instance.EnsembleLaeuft);
+        Assert.Empty(cut.FindAll(".epos-fortschritt"));
+
+        // Eine Eingabe startet einen neuen Lauf; Abbrechen am Fortschritt schaltet aus und rechnet deterministisch nach.
+        Feld(cut, "Speichertemperatur").Input("55");
+        Assert.Equal(2, laeufe.Count);
+        Assert.True(cut.Instance.EnsembleLaeuft);
+        cut.Find(".epos-fortschritt-abbruch").Click();
+        Assert.True(laeufe[1].Marke.IsCancellationRequested);
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.EnsembleLaeuft));
+        Assert.False(cut.Instance.Eingabe.Stochastisch);
+        Assert.Equal("Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.", cut.Instance.Hinweis);
+        Assert.False(Assert.Single(imZeichenlauf).Stochastisch);
+        Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));                // Karte (b) wieder offen
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Auslegungsperzentil']"));
+
+        // OK während eines Laufs: Der Lauf endet, der Punkt kommt aus der deterministischen Rechnung.
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Knopf(cut, "OK").Click();
+        Assert.True(laeufe[2].Marke.IsCancellationRequested);
+        Assert.NotNull(zurueck);
+        Assert.Equal(300, zurueck!.PunktVolumenL);
+        Assert.All(imZeichenlauf, e => Assert.False(e.Stochastisch));
     }
 
     [Fact]

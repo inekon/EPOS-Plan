@@ -189,6 +189,15 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_PERZENTIL_OFFEN</c></summary>
     public string PerzentilOffen { get; set; } = "noch nicht gerechnet — „Stochastisch rechnen“ in den Eingaben zieht das Ensemble; die Empfehlung stützt sich auf (a) und (c).";
 
+    /// <summary><c>ZPG_AUS_PERZENTIL_LAEUFT</c></summary>
+    public string PerzentilLaeuft { get; set; } = "rechnet … — das Ensemble des Bedarfstags wird gezogen.";
+
+    /// <summary><c>ZPG_AUS_STATUS_LAEUFT</c></summary>
+    public string StatusEnsembleLaeuft { get; set; } = "Auslegung rechnet … · Ensemble des Bedarfstags";
+
+    /// <summary><c>ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN</c></summary>
+    public string HinweisEnsembleAbgebrochen { get; set; } = "Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.";
+
     /// <summary><c>ZPG_AUS_PERZENTIL_LAUF</c></summary>
     public string PerzentilLauf { get; set; } = "nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2}";
 

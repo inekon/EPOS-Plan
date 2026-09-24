@@ -75546,6 +75546,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konstruktor nach A100 NA.5.2.3; der Tag gilt beim Kaltwasser der Auslegung des Katalogs. ähnelt.
         /// </summary>
         public static string ZPG_AUS_HINW_KONSTRUKTOR {
@@ -76311,6 +76320,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die rechnet … — das Ensemble des Bedarfstags wird gezogen. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_PERZENTIL_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_PERZENTIL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2} ähnelt.
         /// </summary>
         public static string ZPG_AUS_PERZENTIL_LAUF {
@@ -76631,6 +76649,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH {
             get {
                 return ResourceManager.GetString("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung rechnet … · Ensemble des Bedarfstags ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_STATUS_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_STATUS_LAEUFT", resourceCulture);
             }
         }
         

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -34,6 +35,13 @@ namespace WindowsFormsApplication1
         /// den Projektgrößen, die Kategorien aus dem Eingang (<see cref="Zapfprofileingang.Zapfkategorien"/>).
         /// </summary>
         public bool Stochastisch { get; init; }
+
+        /// <summary>
+        /// Die Abbruchmarke des nebenläufigen Laufs „Stochastisch rechnen" (5.1): Sie beendet die
+        /// Ziehung des Auslegungsensembles mit <see cref="OperationCanceledException"/> — kein halbes
+        /// Perzentil. Ohne Marke (Vorgabe) läuft die Rechnung durch.
+        /// </summary>
+        public CancellationToken Abbruch { get; init; }
     }
 
     /// <summary>
@@ -503,7 +511,7 @@ namespace WindowsFormsApplication1
             Auslegungswert perzentilwert = Dreiergruppe.PerzentilOffen();
             Perzentilergebnis perzentil = null;
             if (a.Stochastisch)
-                perzentilwert = Stochastik(topo, zonen, bausteine, p, ps, kategorien, kwAuslegung, sl, slp, h, out perzentil);
+                perzentilwert = Stochastik(topo, zonen, bausteine, p, ps, kategorien, kwAuslegung, sl, slp, h, a.Abbruch, out perzentil);
             if (topo == ZapfTopologie.Wohnungsstation && perzentil == null)
                 h.Add(new Auslegungshinweis("WOHNUNGSSTATION_JE_EINHEIT",
                     "Die Spitze je Wohnungsstation kommt aus dem Auslegungsensemble („Stochastisch rechnen“); angegeben ist die Summe."));
@@ -551,7 +559,7 @@ namespace WindowsFormsApplication1
         private static Auslegungswert Stochastik(ZapfTopologie topo, List<Zonenarbeit> zonen, List<Wochenbaustein> bausteine,
                                                  ProjektStand p, Parametersatz ps, IReadOnlyList<Zapfkategorie> kategorien,
                                                  double kwAuslegung, Summenlinienergebnis sl, Summenlinienparameter slp,
-                                                 List<Auslegungshinweis> h, out Perzentilergebnis ergebnis)
+                                                 List<Auslegungshinweis> h, CancellationToken abbruch, out Perzentilergebnis ergebnis)
         {
             ergebnis = null;
             bool speicher = topo == ZapfTopologie.Speicher;
@@ -574,7 +582,7 @@ namespace WindowsFormsApplication1
                 // Bei Speicher rechnet jede Realisierung ihr Volumen beim Φ_N des Summenlinienpunkts gleich mit
                 // (Volumenauftrag) — das Ensemble bewahrt keine gezogenen Tage auf.
                 Bedarfstagensemble ens = Zapfensemble.Ziehen(ensemblezonen, p.Seed, realisierungen, perzentil,
-                    speicher ? new Volumenauftrag(slp, sl.Punkt.LeistungKw) : null);
+                    speicher ? new Volumenauftrag(slp, sl.Punkt.LeistungKw) : null, abbruch: abbruch);
                 Speicherensemble volumen = ens.Volumina;
 
                 ergebnis = new Perzentilergebnis

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -44,10 +45,11 @@ namespace WindowsFormsApplication1
     /// Anlagenbestands zurück (<see cref="ZapfErzeugerbestand.Vorschlag"/>), der Werkstoff nie.
     /// Dazu „Stochastisch rechnen" (4.5 b, Stufe Z3): zieht je Topologiegruppe das Ensemble des
     /// Bedarfstags (<see cref="Auslegungseingang.Stochastisch"/>); Seed, Perzentil und
-    /// Realisierungen kommen aus den Projektgrößen des Stands.
+    /// Realisierungen kommen aus den Projektgrößen des Stands. Die Abbruchmarke des nebenläufigen
+    /// Laufs (5.1) reicht bis in die Ziehung (<see cref="Auslegungseingang.Abbruch"/>).
     /// </summary>
     internal sealed record Auslegungslauf(ZapfErzeugerart? Erzeugerart, ZapfUebertragerwerkstoff? Werkstoff,
-                                          bool Stochastisch = false);
+                                          bool Stochastisch = false, CancellationToken Abbruch = default);
 
     /// <summary>
     /// Das Ergebnis eines Auslegungslaufs samt den Angaben, aus denen er rechnete: Nenninhalte,
@@ -301,7 +303,8 @@ namespace WindowsFormsApplication1
                 Nenninhalte = nenn.Liste,
                 Erzeugerart = art,
                 Uebertragerwerkstoff = lauf?.Werkstoff,
-                Stochastisch = lauf?.Stochastisch == true
+                Stochastisch = lauf?.Stochastisch == true,
+                Abbruch = lauf?.Abbruch ?? CancellationToken.None
             };
             Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(e, katalog, a);
             if (nenn.Hinweis != null)

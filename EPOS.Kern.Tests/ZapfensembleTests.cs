@@ -169,6 +169,27 @@ namespace EPOS.Kern.Tests
         // Auslegungsensemble: √N und Topologie
         // =================================================================================
 
+        /// <summary>
+        /// Der nebenläufige Lauf der Oberfläche (5.1): Eine gesetzte Abbruchmarke beendet beide
+        /// Ensembles — parallel und seriell — mit <see cref="OperationCanceledException"/>, ohne
+        /// halbes Ergebnis; ohne Marke rechnen dieselben Aufrufe durch.
+        /// </summary>
+        [Fact]
+        public void Eine_Abbruchmarke_beendet_beide_Ensembles()
+        {
+            using var marke = new System.Threading.CancellationTokenSource();
+            marke.Cancel();
+            Assert.ThrowsAny<OperationCanceledException>(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 10, 95, abbruch: marke.Token));
+            Assert.ThrowsAny<OperationCanceledException>(
+                () => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 10, 95, parallel: false, abbruch: marke.Token));
+            Assert.ThrowsAny<OperationCanceledException>(() => Jahresensemble.Ziehen(Jahreszone(2), 1, 2, abbruch: marke.Token));
+            Assert.ThrowsAny<OperationCanceledException>(
+                () => Jahresensemble.Ziehen(Jahreszone(2), 1, 2, parallel: false, abbruch: marke.Token));
+
+            Assert.Equal(10, Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 10, 95).Realisierungen);
+            Assert.Equal(2, Jahresensemble.Ziehen(Jahreszone(2), 1, 2).Realisierungen);
+        }
+
         /// <summary>Eine Gruppe aus einer Zone mit n Einheiten und der Tagesmenge je Einheit (bei 40 K Spreizung).</summary>
         private static IReadOnlyList<Ensemblezone> Gruppe(int einheiten, double jeEinheitKwh)
             => new[]

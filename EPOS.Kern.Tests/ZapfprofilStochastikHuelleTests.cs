@@ -567,6 +567,43 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// 5.1: Die Überlagerung zieht das Ensemble nur nebenläufig — der Delegat <c>Rechnen</c>
+        /// (Zeichenlauf) rechnet auch mit „Stochastisch rechnen" ohne Ensemble, erst
+        /// <c>StochastischRechnen</c> füllt die Karte (b), auf einem Arbeitsfaden; eine gesetzte
+        /// Abbruchmarke beendet ihn ohne Ergebnis. Der Stand beim Öffnen rechnet deterministisch.
+        /// </summary>
+        [Fact]
+        public async System.Threading.Tasks.Task Die_Auslegung_zieht_das_Ensemble_nur_nebenlaeufig()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            AuslegungTestbau.ParameterEinspielen(VERSION);
+            ZapfprofilEingabeDaten zonen = Zonen();
+            zonen.Auslegung = MitTag();
+            zonen.Auslegung.Stochastisch = true;
+
+            IReadOnlyDictionary<string, object> gaben = ZapfprofilHuelle.AuslegungGaben(PROJEKT, zonen, null, ZapfprofilStufe.Einfach);
+            var start = (ZapfprofilAuslegungStartDaten)gaben["Daten"];
+            Assert.Null(Assert.Single(start.Ergebnis.Gruppen).PerzentilErgebnis);
+            var rechnen = (Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>)gaben["Rechnen"];
+            var nebenlaeufig = (Func<ZapfprofilAuslegungEingabeDaten, System.Threading.CancellationToken,
+                                     System.Threading.Tasks.Task<ZapfprofilAuslegungDaten>>)gaben["StochastischRechnen"];
+
+            ZapfprofilAuslegungDaten sofort = rechnen(zonen.Auslegung);
+            Assert.False(sofort.Stochastisch);
+            Assert.Null(Assert.Single(sofort.Gruppen).PerzentilErgebnis);
+
+            ZapfprofilAuslegungDaten gezogen = await nebenlaeufig(zonen.Auslegung, System.Threading.CancellationToken.None);
+            Assert.True(gezogen.Stochastisch);
+            Assert.NotNull(Assert.Single(gezogen.Gruppen).PerzentilErgebnis);
+            Assert.Equal(Assert.Single(sofort.Gruppen).Empfehlung.VolumenL, gezogen.Gruppen[0].Empfehlung.VolumenL);
+
+            using var marke = new System.Threading.CancellationTokenSource();
+            marke.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => nebenlaeufig(zonen.Auslegung, marke.Token));
+        }
+
+        /// <summary>
         /// Fehlen der Nutzungsart die Zapfkategorien, bleibt das Perzentil benannt nicht rechenbar —
         /// der Satz nennt die Nutzungsart, die Warnliste den Eintrag „Stochastik nicht rechenbar";
         /// Summenlinie und Empfehlung stehen weiter.
