@@ -15,7 +15,7 @@
      Szenarien - Etappe E6, KapitalwertVerlaufAbschnitt -, Sensitivitaet mit Steigung,
      darunter die Szenario-Klappliste - sie steuert NUR die Tafeln darunter),
      "Woraus entsteht die Zahl?" (Gliederung des gewaehlten Szenarios) und
-     "Was ist angenommen?" (Annahmentafel, Hinweistext, Parameternachweis,
+     "Was ist angenommen?" (Annahmentafel, Ausweis der Szenarioabdeckung, Parameternachweis,
      Nutzungsdauer-Hinweise, Nr.-31-Zeile, Bewertungsblock mit den
      Deklarationen, Knopf "Bericht erzeugen").
    - "ValERI-Bewertung": die fuenf Bloecke der Norm. Block 2 (Zahlungsreihen,
@@ -330,19 +330,22 @@
                     @Tafel(_stand.Annahmen, "epos-raster epos-wirt-tafel epos-wirt-annahmen", false, 3)
                 }
 
-                @* U10: der Hinweistext UNMITTELBAR unter der Annahmentafel - was ein
-                   Szenario heute variiert und was nicht, mit den wirksamen Spannen. *@
-                @if (!string.IsNullOrEmpty(_stand.Szenariohinweis))
+                @* U10 (ETAPPE E9b, E9b-Q3): UNMITTELBAR unter der Annahmentafel der
+                   Ausweis "n von m Parametern szenariert" samt der gepflegten Groessen -
+                   an der Stelle des Hinweistexts, den die Pflege in den Dialogen
+                   ueberfluessig macht (Konzept § 2.11.7). *@
+                @if (!string.IsNullOrEmpty(_stand.Szenarioabdeckung))
                 {
-                    <div class="epos-wirt-szenariohinweis">
-                        <Herleitungszeile Text="@_stand.Szenariohinweis" />
+                    <div class="epos-wirt-szenarioabdeckung">
+                        <Herleitungszeile Text="@_stand.Szenarioabdeckung" />
                     </div>
                 }
 
-                @* ETAPPE E8a (U47, Mockup "Was ist angenommen?"): UNTER dem Hinweistext die
+                @* ETAPPE E8a (U47, Mockup "Was ist angenommen?"): UNTER dem Ausweis die
                    Tafel "Was daraus im Lauf wird" - je Szenario die Wirkung auf die
-                   Leitversion (I0, faellige Ersatzbeschaffungen, Restwert am Ende). Der
-                   Hinweistext sagt, was ein Szenario variiert; die Tafel, was daraus wird. *@
+                   Leitversion (I0, faellige Ersatzbeschaffungen, Restwert am Ende).
+                   Annahmentafel und Ausweis sagen, was ein Szenario variiert; die Tafel,
+                   was daraus wird. *@
                 @Laufwirkungsteil
 
                 @* Der Parameternachweis (L12/L13) und der Nachweisblock W5-B-11 (VALERI
@@ -511,8 +514,8 @@
                    Darstellungen auf der Seite; die Kennungen der Bilder bleiben damit je
                    Blatt eindeutig. Reihenfolge wie in „Wie sicher ist das?": das
                    Spannenbild unter der Bandbreitentafel, der Verlauf vor der
-                   Sensitivität; Vorschlag und Hinweistext bleiben bei der Bandbreite, aus
-                   der sie entstehen. *@
+                   Sensitivität; Vorschlag und Ausweis der Szenarioabdeckung bleiben bei
+                   der Bandbreite, aus der sie entstehen. *@
                 @Spannenteil
                 @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
                 {
@@ -520,10 +523,10 @@
                         <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
                     </div>
                 }
-                @if (!string.IsNullOrEmpty(_stand.Szenariohinweis))
+                @if (!string.IsNullOrEmpty(_stand.Szenarioabdeckung))
                 {
-                    <div class="epos-wirt-szenariohinweis">
-                        <Herleitungszeile Text="@_stand.Szenariohinweis" />
+                    <div class="epos-wirt-szenarioabdeckung">
+                        <Herleitungszeile Text="@_stand.Szenarioabdeckung" />
                     </div>
                 }
                 <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"

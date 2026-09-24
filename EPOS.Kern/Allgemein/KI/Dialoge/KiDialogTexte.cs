@@ -1596,6 +1596,14 @@
         internal static string CseJahrErl => MyResource.Resource.KI_DLG_CSE_JAHR_ERL;
         internal static string CseZuschussName => MyResource.Resource.KI_DLG_CSE_ZUSCHUSS_NAME;
         internal static string CseZuschussErl => MyResource.Resource.KI_DLG_CSE_ZUSCHUSS_ERL;
+        // ---- ETAPPE E9b: der allgemeine Baustein (Szenariopaar) — nur lesbare Auskunft ----
+        internal static string CseGroesseName => MyResource.Resource.KI_DLG_CSE_GROESSE_NAME;
+        internal static string CseGroesseErl => MyResource.Resource.KI_DLG_CSE_GROESSE_ERL;
+        internal static string CseErwartetName => MyResource.Resource.KI_DLG_CSE_ERWARTET_NAME;
+        internal static string CseErwartetErl => MyResource.Resource.KI_DLG_CSE_ERWARTET_ERL;
+        internal static string CseEinheitName => MyResource.Resource.KI_DLG_CSE_EINHEIT_NAME;
+        internal static string CseEinheitErl => MyResource.Resource.KI_DLG_CSE_EINHEIT_ERL;
+        // ---- Ende ETAPPE E9b ----
 
         // ============================================ Wirtschaftlichkeit (Welle KI-F4)
 
@@ -1665,6 +1673,15 @@
         internal static string WpaSzBestDauer => Block(SzBest, MyResource.Resource.WPAR_SZ_DAUER);
         internal static string WpaSzWorstDauer => Block(SzWorst, MyResource.Resource.WPAR_SZ_DAUER);
         internal static string WpaSzDauerErl => MyResource.Resource.KI_DLG_WPA_SZ_DAUER_ERL;
+
+        // ---- ETAPPE E9b: Zeilen 8 und 9 der Szenariotafel (ohne Vorgabe) ----
+        internal static string WpaSzBestZeitraum => Block(SzBest, MyResource.Resource.WPAR_SZ_ZEITRAUM);
+        internal static string WpaSzWorstZeitraum => Block(SzWorst, MyResource.Resource.WPAR_SZ_ZEITRAUM);
+        internal static string WpaSzZeitraumErl => MyResource.Resource.KI_DLG_WPA_SZ_ZEITRAUM_ERL;
+        internal static string WpaSzBestMenge => Block(SzBest, MyResource.Resource.WPAR_SZ_MENGE);
+        internal static string WpaSzWorstMenge => Block(SzWorst, MyResource.Resource.WPAR_SZ_MENGE);
+        internal static string WpaSzMengeErl => MyResource.Resource.KI_DLG_WPA_SZ_MENGE_ERL;
+        // ---- Ende ETAPPE E9b ----
 
         // ---- Form_BhkwWirtschaftlichkeit
         internal static string MaskeBhkwWirtschaft => MyResource.Resource.KI_DLG_MASKE_BHW;

@@ -19,12 +19,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <list type="bullet">
 /// <item>Allgemein (immer): Zins, T, Preissteigerung Energie, Betrieb und — seit
 ///       W5‑B‑12 — Investition/Ersatz p_I (5, davon 4 Dezimalfelder)</item>
-/// <item>Szenarien (immer, ETAPPE W5‑B‑9 vom 09.09.2026, seit W5‑B‑12 mit p_I):
-///       sieben Größen × Best und Worst = 14 Zahlenfelder, dazu der Knopf
-///       „Vorgaben“. Die Erwartet-Spalte ist Anzeige. Die Felder stehen im
-///       Feldbestand ZWISCHEN Allgemein und Strom — daher die verschobenen Indizes
-///       der Zahlenfelder unten.</item>
-/// <item>Strom (immer): Einspeisung PV (1). AUFTRAG #325 (17.09.2026): Der
+/// <item>Szenarien (immer, ETAPPE W5‑B‑9 vom 09.09.2026, seit W5‑B‑12 mit p_I,
+///       seit ETAPPE E9b mit Betrachtungszeitraum und Mengenänderung): neun Größen ×
+///       Best und Worst = 18 Felder (16 Dezimalfelder, 2 Ganzzahlfelder für den
+///       Zeitraum), dazu der Knopf „Vorgaben“. Die Erwartet-Spalte ist Anzeige. Die
+///       Felder stehen im Feldbestand ZWISCHEN Allgemein und Strom — daher die
+///       verschobenen Indizes der Zahlenfelder unten.</item>
+/// <item>Strom (immer): Einspeisung PV (1) und — ETAPPE E9b — ihr ±-Knopf, der das
+///       Best/Worst-Paar in einer Überlagerung pflegt. AUFTRAG #325 (17.09.2026): Der
 ///       KWK-Satz steht im Dialog „BHKW-Wirtschaftlichkeit", der Freitextblock
 ///       „Bewertung nach DIN EN 17463" auf der Seite „Wirtschaftlichkeit“ — beide
 ///       sind hier ausgezogen. Der PV-Satz BLEIBT: Zwei Rechenwege brauchen ihn
@@ -56,11 +58,20 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     // Zahlen aendern sich hier, der Rest rechnet sich daraus.
     // AUFTRAG #325 (17.09.2026): Der KWK-Satz ist ausgezogen - die Stromgruppe
     // fuehrt nur noch EIN Zahlenfeld, und die Indizes ruecken um eins nach.
+    // ETAPPE E9b (24.09.2026): Die Tafel traegt neun Zeilen - der Betrachtungszeitraum
+    // als Ganzzahlfeld (inputmode numeric), die Mengenaenderung als Zahlenfeld. Alle
+    // Felder der Tafel sind damit 18, ihre Dezimalfelder 16; die Indizes der
+    // Dezimalfelder dahinter ruecken um zwei.
     private const int ALLGEMEIN_FELDER = 4;
-    private const int SZENARIO_FELDER = 14;
-    private const int EINSPEISUNG_PV = ALLGEMEIN_FELDER + SZENARIO_FELDER;
+    private const int SZENARIO_FELDER = 18;
+    private const int SZENARIO_DEZIMAL = 16;
+    private const int EINSPEISUNG_PV = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL;
     private const int CO2 = EINSPEISUNG_PV + 1;
-    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_FELDER + 1;
+    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL + 1;
+
+    /// <summary>ETAPPE E9b: die Zeilen 8 und 9 der Tafel (Index ab 0).</summary>
+    private const int ZEILE_ZEITRAUM = 7;
+    private const int ZEILE_MENGE = 8;
 
     private static WirtschaftlichkeitParameter Satz() => new WirtschaftlichkeitParameter
     {
@@ -88,7 +99,8 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Func<bool>? speichern = null,
         Action<WirtParameterErgebnis>? geschlossen = null,
         Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        IReadOnlyList<string>? einspeisungHinweise = null)
     {
         return Render<WirtschaftlichkeitParameterDialog>(p => p
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
@@ -99,6 +111,7 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
             .Add(x => x.ReferenzkesselZeile, "Referenzkessel (aus Projekt): Kessel A — η 92 %, Erdgas")
             .Add(x => x.Co2PrognoseAb, 2028)
             .Add(x => x.GesetzeGaben, gesetzeGaben)
+            .Add(x => x.EinspeisungSzenarioHinweise, einspeisungHinweise ?? Array.Empty<string>())
             .Add(x => x.Speichern, speichern ?? (() => true))
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
@@ -141,9 +154,10 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
                              "Strom — Einspeisung und Bezug" },
                      cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToArray());
 
-        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 7×2 (14) + Einspeisung PV (1)
+        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 8×2 (16) + Einspeisung PV (1)
         Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Single(cut.FindAll("input[inputmode=numeric]"));   // T
+        // T + ETAPPE E9b: der Betrachtungszeitraum je Szenario (Best, Worst)
+        Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         // SP-E-2: Der Anzeigehaken „Aufschlaege beruecksichtigen" ist entfallen -
         // die Preisanteile zerlegen den Arbeitspreis, statt auf ihn zu kommen.
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
@@ -178,7 +192,7 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Contains("Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel)", titel);
         Assert.Equal(FELDER_OHNE_ERZEUGER + 1,
                      cut.FindAll("input[inputmode=decimal]").Count);       // + CO2
-        Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);   // + Bilanzjahr
+        Assert.Equal(4, cut.FindAll("input[inputmode=numeric]").Count);   // + Bilanzjahr
         Assert.Equal(3, cut.FindAll("select").Count);                     // Park, Methode, Biomasse
         Assert.Single(cut.FindAll("input[type=checkbox]"));               // Nachweis
         Assert.Single(cut.FindAll("button.epos-sprung"));                 // Katalogknopf
@@ -209,13 +223,14 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die Tabelle trägt drei Wertspalten über sieben Zeilen (seit W5‑B‑12 mit p_I,
-    /// unmittelbar hinter den beiden anderen Preissteigerungen). Die Erwartet-Spalte ist
-    /// ANZEIGE — sie wiederholt die Projektparameter und trägt kein Eingabefeld
+    /// Die Tabelle trägt drei Wertspalten über neun Zeilen (seit W5‑B‑12 mit p_I,
+    /// unmittelbar hinter den beiden anderen Preissteigerungen; seit ETAPPE E9b mit
+    /// Betrachtungszeitraum und Mengenänderung als Zeilen 8 und 9). Die Erwartet-Spalte
+    /// ist ANZEIGE — sie wiederholt die Projektparameter und trägt kein Eingabefeld
     /// („Kein Delegat ist kein Knopf“).
     /// </summary>
     [Fact]
-    public void Die_Szenariotabelle_zeigt_drei_Spalten_und_sieben_Groessen()
+    public void Die_Szenariotabelle_zeigt_drei_Spalten_und_neun_Groessen()
     {
         var cut = Aufbauen(Satz());
         var tabelle = cut.FindAll("table.epos-matrix")[0];
@@ -224,15 +239,52 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
                      tabelle.QuerySelectorAll("thead th").Select(e => e.TextContent).ToArray());
 
         var zeilen = tabelle.QuerySelectorAll("tbody tr");
-        Assert.Equal(7, zeilen.Length);
+        Assert.Equal(9, zeilen.Length);
         Assert.Equal(new[] { "Kalkulationszins", "Preissteigerung Energie",
                              "Preissteigerung Betrieb", "Preissteigerung Investition",
-                             "Investition", "Erträge", "Nutzungsdauer" },
+                             "Investition", "Erträge", "Nutzungsdauer",
+                             "Betrachtungszeitraum", "Mengenänderung" },
                      zeilen.Select(z => z.QuerySelector(".epos-matrix-titel")!.TextContent).ToArray());
 
         // Je Zeile genau ZWEI Eingabefelder - Best und Worst.
         foreach (var z in zeilen) Assert.Equal(2, z.QuerySelectorAll("input").Length);
         Assert.Equal(SZENARIO_FELDER, tabelle.QuerySelectorAll("input").Length);
+        // E9b: Der Zeitraum ist eine ganze Zahl von Jahren, die Mengenänderung ein Prozentsatz.
+        Assert.Equal(2, zeilen[ZEILE_ZEITRAUM].QuerySelectorAll("input[inputmode=numeric]").Length);
+        Assert.Equal(2, zeilen[ZEILE_MENGE].QuerySelectorAll("input[inputmode=decimal]").Length);
+    }
+
+    /// <summary>
+    /// ETAPPE E9b (E9a‑Q5): Die Zeilen 8 und 9 haben KEINE Vorgabe — leer heißt „wie
+    /// Erwartet". Die Felder zeigen deshalb den GEPFLEGTEN Wert und bleiben ohne Pflege
+    /// leer; der Platzhalter nennt den Wert, mit dem dann gerechnet wird. Die
+    /// Erwartet-Spalte trägt T und 0 %. Wer tippt, pflegt genau dieses Szenario.
+    /// </summary>
+    [Fact]
+    public void Die_Zeilen_Zeitraum_und_Menge_bleiben_ohne_Pflege_leer_und_schreiben_ihr_Szenario()
+    {
+        WirtschaftlichkeitParameter satz = Satz();               // T = 20 a
+        var cut = Aufbauen(satz);
+        var zeilen = cut.FindAll("table.epos-matrix tbody tr");
+
+        Assert.Equal("20 a", Zelle(zeilen[ZEILE_ZEITRAUM], 0).TextContent.Trim());
+        Assert.Equal("0 %", Zelle(zeilen[ZEILE_MENGE], 0).TextContent.Trim());
+
+        Assert.Equal("", Feld(zeilen[ZEILE_ZEITRAUM], 0).GetAttribute("value") ?? "");
+        Assert.Equal("", Feld(zeilen[ZEILE_MENGE], 1).GetAttribute("value") ?? "");
+        Assert.Equal("20", Feld(zeilen[ZEILE_ZEITRAUM], 0).GetAttribute("placeholder"));
+        Assert.Equal("20", Feld(zeilen[ZEILE_ZEITRAUM], 1).GetAttribute("placeholder"));
+        Assert.Equal("0", Feld(zeilen[ZEILE_MENGE], 0).GetAttribute("placeholder"));
+
+        Feld(zeilen[ZEILE_ZEITRAUM], 0).Input("25");
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_MENGE], 1).Input("-10");
+
+        Assert.Equal(25, satz.SatzBest!.Zeitraum);
+        Assert.Null(satz.SatzWorst!.Zeitraum);
+        Assert.Equal(-10.0, satz.SatzWorst.Menge);
+        Assert.Null(satz.SatzBest.Menge);
+        Assert.True(satz.SatzBest.ZeitraumGepflegt(satz.Betrachtungszeitraum));
+        Assert.True(satz.SatzWorst.MengeGepflegt);
     }
 
     /// <summary>
@@ -263,12 +315,13 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 
     /// <summary>
     /// Wer tippt, pflegt — und die Herleitungszeile sagt es. „Vorgaben“ setzt alle
-    /// vierzehn Felder wieder auf <c>null</c> (seit W5‑B‑12 mit p_I); das ist NICHT
-    /// dasselbe wie „auf die heutigen Vorgabezahlen setzen“, denn ein leeres Feld zieht
-    /// bei einer geänderten Projektangabe mit.
+    /// achtzehn Felder der Tafel wieder auf <c>null</c> (seit W5‑B‑12 mit p_I, seit
+    /// ETAPPE E9b mit Betrachtungszeitraum und Mengenänderung); das ist NICHT dasselbe
+    /// wie „auf die heutigen Vorgabezahlen setzen“, denn ein leeres Feld zieht bei einer
+    /// geänderten Projektangabe mit.
     /// </summary>
     [Fact]
-    public void Vorgaben_setzt_die_vierzehn_Felder_zurueck()
+    public void Vorgaben_setzt_die_achtzehn_Felder_zurueck()
     {
         WirtschaftlichkeitParameter satz = Satz();
         var cut = Aufbauen(satz);
@@ -286,12 +339,49 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Equal(4.0, satz.SatzWorst.PreissteigerungInvestition);
         Assert.False(satz.SatzWorst.NurVorgaben);
 
+        // E9b: die Zeilen 8 und 9.
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_ZEITRAUM], 1).Input("30");
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_MENGE], 0).Input("5");
+        Assert.Equal(30, satz.SatzWorst.Zeitraum);
+        Assert.Equal(5.0, satz.SatzBest.Menge);
+
         cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Vorgaben").Click();
 
         Assert.Null(satz.SatzBest.Zinssatz);
         Assert.Null(satz.SatzWorst.PreissteigerungInvestition);
+        Assert.Null(satz.SatzWorst.Zeitraum);
+        Assert.Null(satz.SatzBest.Menge);
         Assert.True(satz.SatzBest.NurVorgaben);
         Assert.True(satz.SatzWorst.NurVorgaben);
+
+        // Die Felder der Zeilen 8 und 9 sind wieder leer.
+        var zeilen = cut.FindAll("table.epos-matrix tbody tr");
+        Assert.Equal("", Feld(zeilen[ZEILE_ZEITRAUM], 1).GetAttribute("value") ?? "");
+        Assert.Equal("", Feld(zeilen[ZEILE_MENGE], 0).GetAttribute("value") ?? "");
+    }
+
+    /// <summary>
+    /// ETAPPE E9b: „Vorgaben“ leert die TAFEL — die Einspeisevergütungen je Szenario
+    /// stehen nicht in ihr, ihr Paar pflegt der ±-Knopf an ihrem Feld (PV hier, KWK im
+    /// Dialog „BHKW-Wirtschaftlichkeit"). Ein Knopf der Tafel, der sie mitleerte, löschte
+    /// eine Pflege, die an dieser Stelle niemand sieht.
+    /// </summary>
+    [Fact]
+    public void Vorgaben_laesst_die_Einspeiseverguetungen_je_Szenario_stehen()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        satz.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
+        satz.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+        satz.SatzBest.Einspeiseverguetung = 0.10;
+        satz.SatzWorst.EinspeiseverguetungKwk = 0.06;
+        satz.SatzBest.Zinssatz = 2.0;
+        var cut = Aufbauen(satz);
+
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Vorgaben").Click();
+
+        Assert.Null(satz.SatzBest.Zinssatz);
+        Assert.Equal(0.10, satz.SatzBest.Einspeiseverguetung);
+        Assert.Equal(0.06, satz.SatzWorst.EinspeiseverguetungKwk);
     }
 
     /// <summary>Die Herleitungszeilen nennen beide Sätze mit ihren wirksamen Zahlen.</summary>
@@ -307,6 +397,34 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         // W5-B-12: p_I steht mit in der Annahmenzeile - p_B = 1,5 ∓ 1.
         Assert.Contains("p_I = 0,5 %/a", cut.Instance.SzenarioZeileBest);
         Assert.Contains("p_I = 2,5 %/a", cut.Instance.SzenarioZeileWorst);
+    }
+
+    /// <summary>
+    /// ETAPPE E9b: Die Herleitungszeilen nennen Betrachtungszeitraum, Mengenänderung und
+    /// Einspeisevergütung NUR, wenn dieses Szenario sie gepflegt hat — „wie Erwartet"
+    /// steht schon in der Erwartet-Spalte daneben. Ein Zeitraum gleich dem
+    /// Erwartungswert ist keine Pflege (dieselbe Regel wie im Kern).
+    /// </summary>
+    [Fact]
+    public void Die_Herleitungszeilen_nennen_die_neuen_Groessen_nur_wenn_gepflegt()
+    {
+        WirtschaftlichkeitParameter satz = Satz();               // T = 20 a
+        var cut = Aufbauen(satz);
+
+        Assert.DoesNotContain("T = ", cut.Instance.SzenarioZeileBest);
+        Assert.DoesNotContain("Mengen", cut.Instance.SzenarioZeileBest);
+        Assert.DoesNotContain("Einspeisevergütung", cut.Instance.SzenarioZeileBest);
+
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_ZEITRAUM], 0).Input("25");
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_MENGE], 0).Input("5");
+
+        Assert.Contains("T = 25 a", cut.Instance.SzenarioZeileBest);
+        Assert.Contains("Mengen +5 %", cut.Instance.SzenarioZeileBest);
+        Assert.DoesNotContain("T = ", cut.Instance.SzenarioZeileWorst);
+
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_ZEITRAUM], 1).Input("20");
+        Assert.Equal(20, satz.SatzWorst!.Zeitraum);
+        Assert.DoesNotContain("T = ", cut.Instance.SzenarioZeileWorst);
     }
 
     // =====================================================================
@@ -387,6 +505,165 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         // Beides steht unverändert im Satz: Was der Dialog nicht zeigt, schreibt er nicht.
         Assert.Equal("Versorgungssicherheit, Arbeitsschutz", satz.NichtMonetaer);
         Assert.Equal(0.09, satz.EinspeiseverguetungKWK);
+    }
+
+    // =====================================================================
+    // ETAPPE E9b — der ±-Knopf der Einspeisevergütung PV (E9b‑Q1, Lesart a)
+    // =====================================================================
+
+    /// <summary>
+    /// Der ±-Knopf steht an der Einspeisevergütung PV und öffnet den
+    /// <c>CaseEingabeDialog</c> als SZENARIOPAAR in einer Überlagerung: Titel und Kreuz
+    /// trägt die Überlagerung („Ein Titel, eine Stelle"), das Blatt darin nennt den
+    /// Erwartet-Wert und hat weder Nutzungsdauer noch Startjahr. OK legt das Paar auf
+    /// beide Szenariosätze, und der Knopf trägt danach das Kennzeichen.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_der_Einspeiseverguetung_pflegt_das_Paar_und_zeigt_das_Kennzeichen()
+    {
+        WirtschaftlichkeitParameter satz = Satz();               // v_pv = 0,0820 €/kWh
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(satz, geschlossen: e => ergebnis = e);
+
+        IElement knopf = cut.Find("button.epos-szenarioknopf");
+        Assert.Equal("± Einspeisevergütung PV", knopf.GetAttribute("aria-label"));
+        Assert.Equal("Szenariowerte Best/Worst pflegen", knopf.GetAttribute("title"));
+        Assert.Empty(cut.FindAll(".epos-szenarioknopf-kennzeichen"));
+        Assert.False(cut.Instance.SzenarioOffen);
+
+        knopf.Click();
+
+        Assert.True(cut.Instance.SzenarioOffen);
+        IElement ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Szenariowerte — Einspeisevergütung PV",
+                     cut.Find(".epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Contains(ueberlagerung.QuerySelectorAll(".epos-herleitung-text"),
+                        e => e.TextContent == "Erwartet: 0,0820 €/kWh");
+        // Keine Warnung: eine Vergütung von 0 wäre keine Datenlücke.
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-warnbanner"));
+
+        var felder = ueberlagerung.QuerySelectorAll("input[inputmode=decimal]");
+        Assert.Equal(2, felder.Length);                          // nur Best und Worst
+        Assert.Empty(ueberlagerung.QuerySelectorAll("input[inputmode=numeric]"));
+        felder[0].Input("0,0900");
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[1].Input("0,0700");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);                                   // der Dialog steht noch
+        Assert.Equal(0.09, satz.SatzBest!.Einspeiseverguetung);
+        Assert.Equal(0.07, satz.SatzWorst!.Einspeiseverguetung);
+        Assert.True(cut.Instance.EinspeisungSzenarioGepflegt);
+
+        knopf = cut.Find("button.epos-szenarioknopf");
+        Assert.Contains("epos-szenarioknopf--gepflegt", knopf.ClassName);
+        Assert.Single(cut.FindAll(".epos-szenarioknopf-kennzeichen"));
+        Assert.Equal("± Einspeisevergütung PV (gepflegt)", knopf.GetAttribute("aria-label"));
+        Assert.Equal("Szenariowerte gepflegt — Best 0,0900 €/kWh · Worst 0,0700 €/kWh",
+                     knopf.GetAttribute("title"));
+        // Die Herleitungszeile nennt die gepflegte Vergütung jetzt.
+        Assert.Contains("Einspeisevergütung 0,090 €/kWh", cut.Instance.SzenarioZeileBest);
+    }
+
+    /// <summary>
+    /// Ein leeres Feld heißt „wie Erwartet": OK mit geleerten Feldern schreibt
+    /// <c>null</c>, nicht 0 — und der Knopf verliert sein Kennzeichen.
+    /// </summary>
+    [Fact]
+    public void Geleerte_Felder_des_Paars_schreiben_wie_Erwartet()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        satz.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
+        satz.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+        satz.SatzBest.Einspeiseverguetung = 0.09;
+        var cut = Aufbauen(satz);
+        Assert.Single(cut.FindAll(".epos-szenarioknopf-kennzeichen"));
+
+        cut.Find("button.epos-szenarioknopf").Click();
+        var felder = cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]");
+        Assert.Equal("0,0900", felder[0].GetAttribute("value"));
+        Assert.Equal("", felder[1].GetAttribute("value") ?? "");  // nicht gepflegt = leer
+        felder[0].Input("");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Null(satz.SatzBest.Einspeiseverguetung);
+        Assert.Null(satz.SatzWorst.Einspeiseverguetung);
+        Assert.Empty(cut.FindAll(".epos-szenarioknopf-kennzeichen"));
+    }
+
+    /// <summary>
+    /// E9a‑Q7: Die Kohärenzzeilen der Hülle (Tarif-Rollenmodell, PV-Vergütungsdialog)
+    /// erscheinen erst, wenn ein Paar gepflegt ist — dann unter dem Knopf UND im Blatt
+    /// der Überlagerung. Sie sperren nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Kohaerenzzeilen_erscheinen_erst_mit_einem_gepflegten_Paar()
+    {
+        const string ROLLEN = "Szenario-Einspeisevergütung ohne Wirkung: Rollenmodell.";
+        WirtschaftlichkeitParameter satz = Satz();
+        var cut = Aufbauen(satz, einspeisungHinweise: new[] { ROLLEN });
+
+        Assert.DoesNotContain(cut.FindAll(".epos-kohaerenz-text"), e => e.TextContent == ROLLEN);
+
+        cut.Find("button.epos-szenarioknopf").Click();
+        // Im Blatt steht die Zeile schon beim Öffnen — dort wird gepflegt.
+        Assert.Contains(cut.Find(".epos-ueberlagerung").QuerySelectorAll(".epos-kohaerenz-text"),
+                        e => e.TextContent == ROLLEN);
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[1].Input("0,0500");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Contains(cut.FindAll(".epos-kohaerenz-text"), e => e.TextContent == ROLLEN);
+        Assert.Equal(0.05, satz.SatzWorst!.Einspeiseverguetung);
+    }
+
+    /// <summary>
+    /// Esc gehört der OBERSTEN Ebene: Steht das Szenariopaar, schließt Esc nur die
+    /// Überlagerung — der Parameterdialog bleibt stehen, und das Paar ist unverändert.
+    /// Das ✕ der Überlagerung wirkt ebenso.
+    /// </summary>
+    [Fact]
+    public void Esc_und_Kreuz_schliessen_nur_die_Ueberlagerung_des_Paars()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(satz, geschlossen: e => ergebnis = e);
+
+        cut.Find("button.epos-szenarioknopf").Click();
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[inputmode=decimal]")[0].Input("0,0900");
+
+        // Der Wirt selbst ignoriert Esc, solange die Überlagerung steht …
+        cut.Find("div.epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.True(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+
+        // … und die Überlagerung schließt auf Esc, ohne zu schreiben.
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+        Assert.Null(satz.SatzBest?.Einspeiseverguetung);
+
+        cut.Find("button.epos-szenarioknopf").Click();
+        cut.Find(".epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.SzenarioOffen);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Der Hilfeknopf des Blatts führt auf den Abschnitt „Weitere Werte je Szenario" der
+    /// Wirtschaftlichkeitsseite — nicht auf die Kostenposition.
+    /// </summary>
+    [Fact]
+    public void Das_Blatt_des_Paars_traegt_den_Hilfeschluessel_der_Szenariowerte()
+    {
+        var hilfe = new TestHilfe();
+        Services.AddSingleton<IHilfeDienst>(hilfe);
+        var cut = Aufbauen(Satz());
+
+        cut.Find("button.epos-szenarioknopf").Click();
+        cut.Find(".epos-ueberlagerung .epos-infoknopf").Click();
+
+        Assert.Equal(new[] { "Form_WirtschaftlichkeitSzenariowerte.btn_Help" }, hilfe.Geoeffnet);
     }
 
     private static IElement Zelle(IElement zeile, int nummer) =>
@@ -757,5 +1034,49 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         cut.Render();
         Assert.Equal(3.0, Convert.ToDouble(best.Lesen(), CultureInfo.InvariantCulture), 3);
         Assert.Equal(3.0, satz.SatzBest!.Zinssatz!.Value, 3);
+    }
+
+    /// <summary>
+    /// ETAPPE E9b: Die Zeilen 8 und 9 stehen auch im Katalog des Assistenten — vier
+    /// Felder, die den GEPFLEGTEN Wert zeigen (leer = wie Erwartet) und ihn in genau
+    /// dieses Szenario schreiben; ein geleertes Feld ist wieder „wie Erwartet".
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_Zeitraum_und_Menge_je_Szenario()
+    {
+        var satz = Satz();
+        var cut = Aufbauen(satz);
+
+        KiFeldzugang zeitraum = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "best_zeitraum");
+        Assert.NotNull(zeitraum);
+        Assert.True(zeitraum.Setzbar);
+        Assert.Null(zeitraum.Lesen());                            // leer = wie Erwartet
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(zeitraum, "25");
+        Assert.True(neu.Ok, neu.Grund);
+        zeitraum.Setzen(neu.Wert);
+        cut.Render();
+        Assert.Equal(25, satz.SatzBest!.Zeitraum);
+        Assert.Equal("25", Feld(cut.FindAll("table.epos-matrix tbody tr")[ZEILE_ZEITRAUM], 0)
+                               .GetAttribute("value"));
+
+        KiFeldzugang menge = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "worst_menge");
+        Assert.NotNull(menge);
+        KiFeldumsetzung neuMenge = KiFeldwandler.Wandle(menge, "-15");
+        Assert.True(neuMenge.Ok, neuMenge.Grund);
+        menge.Setzen(neuMenge.Wert);
+        cut.Render();
+        Assert.Equal(-15.0, satz.SatzWorst!.Menge);
+        Assert.Equal(-15.0, Convert.ToDouble(menge.Lesen(), CultureInfo.InvariantCulture), 3);
+
+        KiFeldumsetzung leer = KiFeldwandler.Wandle(menge, "");
+        Assert.True(leer.Ok, leer.Grund);
+        menge.Setzen(leer.Wert);
+        Assert.Null(satz.SatzWorst.Menge);
+
+        Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "worst_zeitraum"));
+        Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "best_menge"));
     }
 }

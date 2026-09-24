@@ -16,6 +16,15 @@
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff
 /// ihren Delegaten.</para>
+///
+/// <para><b>ETAPPE E9b — verallgemeinert.</b> Dieselbe Maske pflegt seither auch das
+/// Best/Worst-Paar eines Trägerpreises oder Erlössatzes (Szenariopaar). Drei
+/// Auskunftsfelder sagen dem Assistenten, WAS gepflegt wird (<see cref="Groesse"/>),
+/// gegen welchen Erwartet-Wert (<see cref="Erwartet"/>) und in welcher Einheit
+/// (<see cref="Einheit"/>). Im Szenariopaar führt die Maske weder Nutzungsdauer noch
+/// Startjahr noch Zuschuss: Ihre Setzwege lehnen dann mit Grund ab (eine Ausnahme mit
+/// dem Text <c>KI_DLG_CSE_NUR_KOSTEN</c>, die der Assistent meldet), und gelesen wird
+/// 0 bzw. „nein".</para>
 /// </summary>
 public sealed class CaseEingabeKiSicht
 {
@@ -88,4 +97,23 @@ public sealed class CaseEingabeKiSicht
         get => ZuschussLesen?.Invoke() ?? false;
         set => ZuschussSetzen?.Invoke(value);
     }
+
+    // =====================================================================
+    //  ETAPPE E9b — die Auskunft über das gepflegte Paar (nur lesbar)
+    // =====================================================================
+
+    public Func<string>? GroesseLesen { get; init; }
+    public Func<double?>? ErwartetLesen { get; init; }
+    public Func<string>? EinheitLesen { get; init; }
+
+    /// <summary>ETAPPE E9b: Was die Maske pflegt — „Kosten" bei einer Kostenposition,
+    /// sonst der Trägerpreis oder Erlössatz („Arbeitspreis Erdgas E").</summary>
+    public string Groesse => GroesseLesen?.Invoke() ?? "";
+
+    /// <summary>ETAPPE E9b: der Erwartet-Wert, gegen den das Paar steht; leer = keiner
+    /// gepflegt (dann rechnen Günstig und Ungünstig mit ihrem Wert allein).</summary>
+    public double? Erwartet => ErwartetLesen?.Invoke();
+
+    /// <summary>ETAPPE E9b: die Einheit der zwei Wertfelder im Absolutmodus.</summary>
+    public string Einheit => EinheitLesen?.Invoke() ?? "";
 }

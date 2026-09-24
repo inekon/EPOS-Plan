@@ -199,6 +199,7 @@
                                              KatalogFuerZeile="KatalogZeileOeffnen"
                                              KatalogVerwalten="KatalogVerwaltenOeffnen"
                                              HistorieLoeschen="@HistorienzeileLoeschenWeg"
+                                             SzenarioPflegen="SzenarioOeffnen"
                                              JaText="@JaText" NeinText="@NeinText"
                                              Speichern="BeiSpeichern" />
             }
@@ -292,6 +293,23 @@
                                                 Geschlossen="EmissionskatalogFertig" />
                         break;
                 }
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* ETAPPE E9b (Konzept § 2.11.5, Pflege; E9b-Q1): der ±-Knopf eines Preises oeffnet
+       den CaseEingabeDialog als SZENARIOPAAR - derselbe Baustein wie an der
+       Kostenposition. Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also
+       traegt sie auch das ✕; TitelText="" hinter dem Satz schaltet beides im Blatt ab.
+       OK legt die Werte auf die Karte, geschrieben wird mit der Karte (Speichern/OK) -
+       Abbrechen der Karte verwirft sie mit. *@
+    <Ueberlagerung Offen="@(_szenarioGaben is not null)" Titel="@_szenarioTitel"
+                   Geschlossen="() => SzenarioFertig(null)">
+        <KindInhalt>
+            @if (_szenarioGaben is not null)
+            {
+                <CaseEingabeDialog @attributes="_szenarioGaben" TitelText=""
+                                   Geschlossen="SzenarioFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -1265,7 +1283,103 @@
     }
 
     private bool UeberlagerungOffen => _namensGaben is not null || _uebernahmeOffen
-        || _unterGaben is not null || _frage.Length > 0 || _luecke is not null;
+        || _unterGaben is not null || _frage.Length > 0 || _luecke is not null
+        || _szenarioGaben is not null;
+
+    // =====================================================================
+    // ETAPPE E9b — die ±-Knöpfe der Preise (Konzept § 2.11.5, Pflege)
+    // =====================================================================
+
+    private IReadOnlyDictionary<string, object>? _szenarioGaben;
+    private string _szenarioPreis = "";
+    private string _szenarioTitel = "";
+
+    /// <summary>Steht die Überlagerung eines Szenariopaars? (Prüfhilfe für Tests)</summary>
+    public bool SzenarioOffen => _szenarioGaben is not null;
+
+    /// <summary>Ein Text der Karte (<see cref="KarteTexte"/>) mit deutschem Rückfall.</summary>
+    private string KartenText(string name, string rueckfall)
+        => KarteTexte is not null && KarteTexte.TryGetValue(name, out object? t) && t is string s
+           && s.Length > 0 ? s : rueckfall;
+
+    /// <summary>
+    /// ETAPPE E9b: „±" an einem Preis der Karte — der <c>CaseEingabeDialog</c> als
+    /// Szenariopaar, mit dem Wert des Feldes als Erwartet-Wert, derselben Einheit und den
+    /// Kohärenzzeilen der Karte. Der Arbeitspreis steht in der gewählten Preisbasis wie
+    /// das Feld daneben; die Hülle rechnet beim Speichern zurück.
+    /// </summary>
+    private void SzenarioOeffnen(string preisart)
+    {
+        EnergietraegerStand? s = _ansicht.Stand;
+        if (s is null || !s.MitSzenario) return;
+
+        string feld;
+        IReadOnlyDictionary<string, object> gaben;
+        switch (preisart)
+        {
+            case EnergietraegerEinstellungen.PREIS_GRUND:
+                feld = KartenText("LabelGrundpreis", "Grundpreis");
+                gaben = Szenariopaar.Gaben(feld, feld + " " + s.TraegerName, s.EinheitGrundpreis,
+                    s.Grundpreis, s.SzenarioGrundBest, s.SzenarioGrundWorst, 2, SZENARIO_MAX,
+                    null, warnenOhneErwartet: false);
+                break;
+            case EnergietraegerEinstellungen.PREIS_LEISTUNG:
+                feld = KartenText("LabelLeistungspreis", "Leistungspreis");
+                gaben = Szenariopaar.Gaben(feld, feld + " " + s.TraegerName, s.EinheitLeistungspreis,
+                    s.Leistungspreis, s.SzenarioLeistungBest, s.SzenarioLeistungWorst, 2, SZENARIO_MAX,
+                    new[] { s.SzenarioLeistungOhneWirkung },
+                    warnenOhneErwartet: s.SzenarioLeistungOhneErwartet);
+                break;
+            default:
+                preisart = EnergietraegerEinstellungen.PREIS_ARBEIT;
+                feld = KartenText("LabelArbeitspreis", "Arbeitspreis");
+                gaben = Szenariopaar.Gaben(feld, feld + " " + s.TraegerName, s.EinheitArbeitspreis,
+                    s.Arbeitspreis, s.SzenarioArbeitBest, s.SzenarioArbeitWorst, 4, SZENARIO_MAX,
+                    null, warnenOhneErwartet: s.SzenarioArbeitOhneErwartet);
+                break;
+        }
+
+        _szenarioPreis = preisart;
+        _szenarioTitel = Szenariopaar.Titel(feld + " " + s.TraegerName);
+        _szenarioGaben = gaben;
+    }
+
+    /// <summary>Obergrenze der Szenariopreise im Absolutmodus — die Felder der Karte
+    /// selbst kennen keine.</summary>
+    private const double SZENARIO_MAX = 10_000_000;
+
+    /// <summary>
+    /// ETAPPE E9b: Das Ergebnis des Szenariopaars auf die Karte legen — 0 heißt „wie
+    /// Erwartet" (<see cref="Szenariopaar.Wert"/>). Geschrieben wird mit der Karte; danach
+    /// rechnet die Hülle nach (Kennzeichen, Kohärenzzeilen, Basiswerte).
+    /// </summary>
+    private void SzenarioFertig(CaseEingabeErgebnis? ergebnis)
+    {
+        string preisart = _szenarioPreis;
+        EnergietraegerStand? s = _ansicht.Stand;
+        _szenarioGaben = null;
+        _szenarioPreis = "";
+        if (ergebnis is null || s is null) return;
+
+        double? best = Szenariopaar.Wert(ergebnis.BestCase);
+        double? worst = Szenariopaar.Wert(ergebnis.WorstCase);
+        switch (preisart)
+        {
+            case EnergietraegerEinstellungen.PREIS_GRUND:
+                s.SzenarioGrundBest = best;
+                s.SzenarioGrundWorst = worst;
+                break;
+            case EnergietraegerEinstellungen.PREIS_LEISTUNG:
+                s.SzenarioLeistungBest = best;
+                s.SzenarioLeistungWorst = worst;
+                break;
+            default:
+                s.SzenarioArbeitBest = best;
+                s.SzenarioArbeitWorst = worst;
+                break;
+        }
+        Nachziehen();
+    }
 
     private Task BeiTaste(KeyboardEventArgs e)
     {

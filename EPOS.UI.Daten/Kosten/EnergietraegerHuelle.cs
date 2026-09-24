@@ -95,6 +95,14 @@ namespace WindowsFormsApplication1
         /// <summary>Der unberührte DB-Zustand für den Historienvergleich.</summary>
         private double _dbHi, _dbHs, _dbWork, _dbPower, _dbGround, _dbCO2, _dbSO2, _dbNOx;
 
+        /// <summary>
+        /// ETAPPE E9b: der Arbeitspreis je Szenario als BASISWERT je Abrechnungseinheit —
+        /// wie <see cref="_baseWork"/>. Die Karte zeigt ihn in der gewählten Preisbasis;
+        /// Grund- und Leistungspreis kennen die Preisbasis nicht und stehen in der Karte
+        /// unverändert. <c>null</c> = wie Erwartet.
+        /// </summary>
+        private double? _baseSzArbeitBest, _baseSzArbeitWorst;
+
         private EmissionenCtrl _emissionen;
         private int _katalogJahr;
         private string _unternehmensart = DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE;
@@ -839,7 +847,12 @@ namespace WindowsFormsApplication1
                 // der Katalog fuehrt keine.
                 MitStaffel = _projektId > 0 &&
                              string.Equals(_gewaehlt.PricingModel, "ELECTRICITY",
-                                           StringComparison.OrdinalIgnoreCase)
+                                           StringComparison.OrdinalIgnoreCase),
+                // ETAPPE E9b (Konzept § 2.11.5, Pflege): die ±-Knöpfe der Preise - nur im
+                // PROJEKT, denn die Szenariopreise stehen an der Projektübersteuerung
+                // (Schemaschritt 117), und nur, wenn die Datenbank die Spalten führt.
+                MitSzenario = _projektId > 0 && SzenarioSpaltenLesbar(),
+                TraegerName = _gewaehlt.Name ?? ""
             };
 
             EnergietraegerPreisCtrl.Projektpreis projekt =
@@ -879,6 +892,17 @@ namespace WindowsFormsApplication1
                 stand.StaffelGrenze = projekt.Staffel.GrenzeKW;
                 stand.StaffelPreis1 = projekt.Staffel.Preis1EurKWa;
                 stand.StaffelPreis2 = projekt.Staffel.Preis2EurKWa;
+
+                // ETAPPE E9b: die Preise je Szenario (Schemaschritt 117) — leer bleibt leer
+                // („wie Erwartet"), sie haben keinen Katalogwert. Der Arbeitspreis bleibt
+                // hier Basiswert; AnzeigeAusBasis rechnet ihn in die Preisbasis der Karte.
+                TraegerpreisSzenario sz = projekt.Szenario ?? new TraegerpreisSzenario();
+                _baseSzArbeitBest = sz.ArbeitspreisBest;
+                _baseSzArbeitWorst = sz.ArbeitspreisWorst;
+                stand.SzenarioGrundBest = sz.GrundpreisBest;
+                stand.SzenarioGrundWorst = sz.GrundpreisWorst;
+                stand.SzenarioLeistungBest = sz.LeistungspreisBest;
+                stand.SzenarioLeistungWorst = sz.LeistungspreisWorst;
             }
             else
             {
@@ -892,6 +916,10 @@ namespace WindowsFormsApplication1
                 stand.AltNOx = _gewaehlt.NOx;
 
                 gemerkteBasis = _gewaehlt.BillingUnit;
+
+                // ETAPPE E9b: ohne Projektzeile gibt es keine Szenariopreise.
+                _baseSzArbeitBest = null;
+                _baseSzArbeitWorst = null;
             }
 
             // UR-1: Die Preisbasis „kWh" traegt den HEIZWERT als Faktor, nicht den
@@ -947,6 +975,31 @@ namespace WindowsFormsApplication1
             _stand.Leistungspreis = _basePower;
             _stand.Grundpreis = _baseGround;
             _stand.Arbeitspreis = EnergietraegerPreiskarte.AnzeigeArbeitspreis(_baseWork, Faktor());
+
+            // ETAPPE E9b: Die Szenario-Arbeitspreise folgen der Preisbasis wie das Feld
+            // daneben — sonst stünde „Erwartet 0,0800 €/kWh" neben „Best 0,74 €/Nm³".
+            _stand.SzenarioArbeitBest = AnzeigeSzenario(_baseSzArbeitBest);
+            _stand.SzenarioArbeitWorst = AnzeigeSzenario(_baseSzArbeitWorst);
+        }
+
+        /// <summary>ETAPPE E9b: ein Szenario-Arbeitspreis in der gewählten Preisbasis;
+        /// <c>null</c> bleibt <c>null</c> („wie Erwartet").</summary>
+        private double? AnzeigeSzenario(double? basis)
+            => basis.HasValue ? EnergietraegerPreiskarte.AnzeigeArbeitspreis(basis.Value, Faktor()) : null;
+
+        /// <summary>ETAPPE E9b: die Gegenrichtung — aus der Anzeige der Basiswert.</summary>
+        private double? BasisSzenario(double? anzeige)
+            => anzeige.HasValue ? EnergietraegerPreiskarte.BasisArbeitspreis(anzeige.Value, Faktor()) : null;
+
+        /// <summary>
+        /// ETAPPE E9b: Führt die Datenbank die Spalten der Trägerpreise je Szenario
+        /// (Schemaschritt 117)? Ohne sie zeigt die Karte keine ±-Knöpfe — es gäbe nichts
+        /// zu schreiben.
+        /// </summary>
+        private static bool SzenarioSpaltenLesbar()
+        {
+            try { return EnergietraegerPreisCtrl.SzenarioSpaltenVorhanden(); }
+            catch { return false; }
         }
 
         /// <summary>
@@ -1286,7 +1339,12 @@ namespace WindowsFormsApplication1
             PreisbasenBauen(_stand, _stand.Heizwert, vorher);
             if (EnergietraegerPreiskarte.IstKwh(vorher) &&
                 !EnergietraegerPreiskarte.IstKwh(AktuelleEinheit()))
+            {
                 _stand.Arbeitspreis = _baseWork;
+                // ETAPPE E9b: dieselbe Regel für die Szenario-Arbeitspreise.
+                _stand.SzenarioArbeitBest = _baseSzArbeitBest;
+                _stand.SzenarioArbeitWorst = _baseSzArbeitWorst;
+            }
 
             // DIE EINHEITEN (B1): Heiz- und Brennwert tragen IMMER
             // kWh/<Abrechnungseinheit> - sie sind Stoffwerte und folgen der
@@ -1310,12 +1368,16 @@ namespace WindowsFormsApplication1
             _baseWork = EnergietraegerPreiskarte.BasisArbeitspreis(_stand.Arbeitspreis, Faktor());
             _basePower = _stand.Leistungspreis;
             _baseGround = _stand.Grundpreis;
+            // ETAPPE E9b: die Szenario-Arbeitspreise mit demselben Faktor zurück.
+            _baseSzArbeitBest = BasisSzenario(_stand.SzenarioArbeitBest);
+            _baseSzArbeitWorst = BasisSzenario(_stand.SzenarioArbeitWorst);
 
             FormelSetzen();
             EffektivSetzen();
             RegelnSetzen();
             EmissionsSummeSetzen();
             LueckenSetzen();
+            SzenarioSetzen();
         }
 
         /// <summary>
@@ -1656,6 +1718,24 @@ namespace WindowsFormsApplication1
                     T("ETV_STAFFEL_SPEICHERFEHLER",
                       "Die Leistungspreis-Staffel ließ sich nicht speichern."));
 
+            // ETAPPE E9b (Konzept § 2.11.5, Pflege): die Preise je Szenario - in DIESELBE
+            // Zeile, deshalb wie die Staffel erst nach dem Upsert. Eigener Schreibweg des
+            // Kerns (SzenarioSchreiben): Leer oder 0 geht als NULL („wie Erwartet") hinein;
+            // der Arbeitspreis als Basiswert je Abrechnungseinheit, wie der Erwartet-Preis.
+            // Ein Schreibfehler bricht das Speichern ab, statt still zu verschwinden.
+            if (_stand.MitSzenario &&
+                !EnergietraegerPreisCtrl.SzenarioSchreiben(_projektId, _gewaehlt.ID, new TraegerpreisSzenario
+                {
+                    ArbeitspreisBest = _baseSzArbeitBest,
+                    ArbeitspreisWorst = _baseSzArbeitWorst,
+                    GrundpreisBest = _stand.SzenarioGrundBest,
+                    GrundpreisWorst = _stand.SzenarioGrundWorst,
+                    LeistungspreisBest = _stand.SzenarioLeistungBest,
+                    LeistungspreisWorst = _stand.SzenarioLeistungWorst
+                }))
+                throw new InvalidOperationException(
+                    T("ETV_SZ_SPEICHERFEHLER", "Die Szenariopreise ließen sich nicht speichern."));
+
             // AP4/B2: Die beiden Blöcke schreiben in DIESELBE Zeile und deshalb
             // ERST JETZT — vor dem Upsert gäbe es beim ersten Speichern keine.
             if (_stand.Zerlegung != null && _zerlegungModell != null)
@@ -1979,6 +2059,42 @@ namespace WindowsFormsApplication1
                   + "rechnet ihn mit 0."));
 
             _stand.Wertluecken = liste;
+        }
+
+        /// <summary>
+        /// ETAPPE E9b (Konzept § 2.11.5, Pflege) — was die Karte zu den Preisen je Szenario
+        /// sagt, gemessen an denselben Größen wie die Lückenzeilen darüber:
+        /// <list type="bullet">
+        ///   <item><description><b>kein Erwartet-Preis</b> (E9b‑Q4, Lesart a — warnen, nicht
+        ///     verweigern): Arbeitspreis bzw. Leistungspreis weder im Feld noch in der
+        ///     Lesekette (beim Leistungspreis auch keine Saisonreihe, keine Staffel). Ein
+        ///     Szenariopreis rechnet dann in Günstig und Ungünstig; Erwartet zeigt die
+        ///     Datenlücke. Der Grundpreis kennt keine Lücke — 0 €/a ist ein gültiger
+        ///     Vertragswert.</description></item>
+        ///   <item><description><b>Szenario-Leistungspreis ohne Wirkung</b> (E9a‑Q3, Lesart a):
+        ///     Eine gepflegte Staffel oder Saisonreihe gilt auch im Szenario — der Satz des
+        ///     Kerns (<c>WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG</c>) mit dem Namen des
+        ///     Trägers.</description></item>
+        /// </list>
+        /// </summary>
+        private void SzenarioSetzen()
+        {
+            if (_stand == null || _gewaehlt == null) return;
+
+            bool staffel = (_stand.StaffelPreis1 ?? 0) > 0 || (_stand.StaffelPreis2 ?? 0) > 0;
+            bool reihe = (_stand.ReihenStatus ?? "").Length > 0;
+
+            _stand.SzenarioArbeitOhneErwartet = !(_baseWork > 0.0 || _arbeitspreisAusKette);
+            _stand.SzenarioLeistungOhneErwartet = _gewaehlt.HasPowerPrice &&
+                !(_basePower > 0.0 || _leistungspreisAusKette || reihe || staffel);
+            _stand.SzenarioLeistungOhneWirkung = staffel || reihe
+                ? string.Format(CultureInfo.CurrentCulture,
+                    T("WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG",
+                      "Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die gepflegte "
+                      + "Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des Trägers gilt "
+                      + "auch in diesem Szenario."),
+                    _gewaehlt.Name ?? "")
+                : "";
         }
 
         /// <summary>
@@ -2790,6 +2906,16 @@ namespace WindowsFormsApplication1
                     + "gilt der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt "
                     + "Leistungspreis und saisonale Sätze dieses Stromträgers; leere Preise heißen "
                     + "„keine Staffel“."),
+                // ETAPPE E9b (Konzept § 2.11.5, Pflege): die ±-Knöpfe der Preise.
+                ["TitelSzenario"] = T("ETV_SZ_TITEL", "Szenariopreise Best/Worst"),
+                ["HinweisSzenario"] = T("ETV_SZ_HINWEIS",
+                    "± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; "
+                    + "geschrieben wird mit der Karte."),
+                ["VorlageSzenarioOhneErwartet"] = T("ETV_SZ_OHNE_ERWARTET",
+                    "{0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, "
+                    + "Erwartet zeigt die Datenlücke."),
+                ["SzenarioGepflegtText"] = T("SZP_GEPFLEGT", "gepflegt"),
+                ["SzenarioWarnungText"] = T("SZP_OHNE_ERWARTET_KURZ", "ohne Erwartet-Wert"),
                 ["SpalteName"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NAME,
                 ["SpalteVon"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_VON,
                 ["SpalteNach"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NACH,

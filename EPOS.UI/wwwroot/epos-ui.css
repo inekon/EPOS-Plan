@@ -652,9 +652,10 @@ body {
     border-top: 2px solid var(--epos-rahmen);
 }
 
-/* Der Hinweistext unter der Annahmentafel (U10) und die Luecke an der Stelle von
-   Block 2: je ein leiser Kasten, damit der Absatz als Hinweis lesbar bleibt. */
-.epos-wirt-szenariohinweis,
+/* Der Ausweis der Szenarioabdeckung unter der Annahmentafel (U10; seit E9b an der
+   Stelle des Hinweistexts) und die Luecke an der Stelle von Block 2: je ein leiser
+   Kasten, damit der Absatz als Hinweis lesbar bleibt. */
+.epos-wirt-szenarioabdeckung,
 .epos-wirt-block-luecke {
     margin-top: var(--epos-rand);
     padding: 6px 10px;
@@ -2271,6 +2272,54 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-zr-knopf {
     min-width: var(--epos-touchziel);
     padding: 0;
+}
+
+/* ETAPPE E9b (Konzept § 2.11.5, Pflege): der ±-Knopf eines Szenariopaars
+   (Baustein SzenarioKnopf) an Traegerpreisen und Erloessaetzen. Anders als der
+   Zeilenknopf der Kostenposition traegt er seinen Gegenstand als Text ("±
+   Arbeitspreis") - er steht in einer Leiste, nicht in einer Spalte. Ist ein Paar
+   gepflegt, steht dahinter ein Punkt in der Hausfarbe; fehlt der Erwartet-Wert
+   zu einem gepflegten Paar (E9b-Q4), ein Warnzeichen. Beides ist Beiwerk: Die
+   Aussage traegt das aria-label bzw. der Kurztext. */
+/* Die Zeile der ±-Knöpfe (ETAPPE E9b) unter ihrem Feld: eine Bedienzeile im
+   Feldblock, KEINE Knopfleiste des Dialogs - deshalb nicht epos-leiste, die als
+   Fussleiste des Hauses gilt (Wache KnopfleistenWacheTests, Leistenzugriffe der
+   Dialogproben). Das Mass ist dasselbe. */
+.epos-szenarioleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: var(--epos-rand);
+}
+
+.epos-szenarioknopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-szenarioknopf-zeichen {
+    font-weight: 700;
+}
+
+.epos-szenarioknopf-kennzeichen {
+    color: var(--epos-marke);
+    font-size: 0.75em;
+}
+
+.epos-szenarioknopf-warnung {
+    color: var(--epos-warn-text);
+}
+
+@media (forced-colors: active) {
+    .epos-szenarioknopf-kennzeichen {
+        color: Highlight;
+    }
+
+    .epos-szenarioknopf-warnung {
+        color: LinkText;
+    }
 }
 
 .epos-zr-kette {

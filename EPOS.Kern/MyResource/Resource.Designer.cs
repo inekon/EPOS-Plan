@@ -11831,6 +11831,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ± je Preis: Best (Günstig) und Worst (Ungünstig) — leer heißt „wie Erwartet“; geschrieben wird mit der Karte. ähnelt.
+        /// </summary>
+        public static string ETV_SZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("ETV_SZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Szenariopreis ohne Erwartet-Preis — Günstig und Ungünstig rechnen damit, Erwartet zeigt die Datenlücke. ähnelt.
+        /// </summary>
+        public static string ETV_SZ_OHNE_ERWARTET {
+            get {
+                return ResourceManager.GetString("ETV_SZ_OHNE_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Szenariopreise ließen sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string ETV_SZ_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("ETV_SZ_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariopreise Best/Worst ähnelt.
+        /// </summary>
+        public static string ETV_SZ_TITEL {
+            get {
+                return ResourceManager.GetString("ETV_SZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preishistorie ähnelt.
         /// </summary>
         public static string ETV_TITEL_HISTORIE {
@@ -29438,6 +29474,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der zwei Wertfelder im Absolutmodus („€“ bei einer Kostenposition, sonst die Einheit des Preises oder Satzes). Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_EINHEIT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_EINHEIT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert des Szenarios Erwartet, gegen den Best und Worst stehen und auf den sich der Prozentmodus bezieht; leer = keiner gepflegt. Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_ERWARTET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_ERWARTET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet-Wert ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_ERWARTET_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_ERWARTET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was die Maske pflegt: in der Kostenverwaltung die Kosten einer Position, sonst ein Trägerpreis oder Erlössatz mit seinem Best- und Worst-Wert (Szenariopaar). Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_GROESSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_GROESSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegte Größe ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_GROESSE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_GROESSE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahr des Betrachtungszeitraums, in dem die Zahlung beginnt; 0 heißt „im ersten Jahr“. ähnelt.
         /// </summary>
         public static string KI_DLG_CSE_JAHR_ERL {
@@ -29470,6 +29560,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_CSE_MODUS_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_CSE_MODUS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr noch Zuschuss — sie pflegt nur den Best- und den Worst-Wert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_NUR_KOSTEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_NUR_KOSTEN", resourceCulture);
             }
         }
         
@@ -37520,6 +37619,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mengenänderung dieses Szenarios in Prozent — ein Faktor auf die Mengen der Simulation (Erzeugung, Einspeisung, Bezug, Brennstoff). Leer heißt „wie Erwartet“; eine Vorgabe gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_MENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_MENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Preissteigerung der Betriebskosten in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem Erwartungswert. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_SZ_PREIS_B_ERL {
@@ -37543,6 +37651,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_SZ_PREIS_I_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_SZ_PREIS_I_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrachtungszeitraum dieses Szenarios in ganzen Jahren. Leer heißt „wie Erwartet“ — eine Vorgabe wie bei den Zeilen darüber gibt es nicht. Er wirkt auf Horizont, Restwert und Ersatzbeschaffungen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_ZEITRAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_ZEITRAUM_ERL", resourceCulture);
             }
         }
         
@@ -66506,6 +66623,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe absolut [{0}] ähnelt.
+        /// </summary>
+        public static string SZP_ABSOLUT {
+            get {
+                return ResourceManager.GetString("SZP_ABSOLUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet: {0} {1} ähnelt.
+        /// </summary>
+        public static string SZP_ERWARTET {
+            get {
+                return ResourceManager.GetString("SZP_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet: kein Wert gepflegt ähnelt.
+        /// </summary>
+        public static string SZP_ERWARTET_LEER {
+            get {
+                return ResourceManager.GetString("SZP_ERWARTET_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
+        /// </summary>
+        public static string SZP_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("SZP_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte gepflegt — Best {0} · Worst {1} ähnelt.
+        /// </summary>
+        public static string SZP_KNOPF_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("SZP_KNOPF_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte Best/Worst pflegen ähnelt.
+        /// </summary>
+        public static string SZP_KNOPF_KURZ {
+            get {
+                return ResourceManager.GetString("SZP_KNOPF_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Best (Günstig): ähnelt.
+        /// </summary>
+        public static string SZP_LABEL_BEST {
+            get {
+                return ResourceManager.GetString("SZP_LABEL_BEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst (Ungünstig): ähnelt.
+        /// </summary>
+        public static string SZP_LABEL_WORST {
+            get {
+                return ResourceManager.GetString("SZP_LABEL_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer oder 0 heißt „wie Erwartet“; ein Wert gleich dem Erwartet-Wert ist keine Pflege. ähnelt.
+        /// </summary>
+        public static string SZP_LEER {
+            get {
+                return ResourceManager.GetString("SZP_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Erwartet-Wert gepflegt: Günstig und Ungünstig rechnen mit ihrem Szenariowert, Erwartet zeigt die Datenlücke. Gespeichert wird trotzdem. ähnelt.
+        /// </summary>
+        public static string SZP_OHNE_ERWARTET {
+            get {
+                return ResourceManager.GetString("SZP_OHNE_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Erwartet-Wert ähnelt.
+        /// </summary>
+        public static string SZP_OHNE_ERWARTET_KURZ {
+            get {
+                return ResourceManager.GetString("SZP_OHNE_ERWARTET_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe in % vom Erwartet-Wert ähnelt.
+        /// </summary>
+        public static string SZP_PROZENT {
+            get {
+                return ResourceManager.GetString("SZP_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt je Szenario ohne Wirkung: Es gilt nur für die Direktvermarktung mit Marktprämie. ähnelt.
+        /// </summary>
+        public static string SZP_PV_DV_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SZP_PV_DV_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt und PPA-Preis je Szenario ohne Wirkung: Die Vergütung wird nicht angewendet (Schalter „Vergütung anwenden“). ähnelt.
+        /// </summary>
+        public static string SZP_PV_INAKTIV {
+            get {
+                return ResourceManager.GetString("SZP_PV_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA). ähnelt.
+        /// </summary>
+        public static string SZP_PV_PPA_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SZP_PV_PPA_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte — {0} ähnelt.
+        /// </summary>
+        public static string SZP_TITEL {
+            get {
+                return ResourceManager.GetString("SZP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ergibt: Best {0} · Worst {1} ähnelt.
+        /// </summary>
+        public static string SZP_UMRECHNUNG {
+            get {
+                return ResourceManager.GetString("SZP_UMRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Erwartet ähnelt.
+        /// </summary>
+        public static string SZP_WIE_ERWARTET {
+            get {
+                return ResourceManager.GetString("SZP_WIE_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string SZR_BTN_ABBRECHEN {
@@ -68677,6 +68956,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_ABDECKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_ABDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein ungünstiger und ein günstiger Fall sind vollständig durchgerechnet. ähnelt.
         /// </summary>
         public static string WIRT_AE_9_ANF {
@@ -68704,7 +68992,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe, je Szenario mit eigenem Parametersatz. ähnelt.
         /// </summary>
         public static string WIRT_AE_9_TEILWEISE {
             get {
@@ -68920,6 +69208,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DV-Entgelt ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_DV_ENTGELT {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_DV_ENTGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
         /// </summary>
         public static string WIRT_ANN_GEPFLEGT {
@@ -68934,6 +69231,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ANN_MENGE {
             get {
                 return ResourceManager.GetString("WIRT_ANN_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PPA-Preis ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_PPA_PREIS {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_PPA_PREIS", resourceCulture);
             }
         }
         
@@ -72340,20 +72646,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Eins [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
-        /// </summary>
-        public static string WIRT_SZEN_HINWEIS {
-            get {
-                return ResourceManager.GetString("WIRT_SZEN_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ungünstig ähnelt.
         /// </summary>
         public static string WIRT_SZEN_WORST {
             get {
                 return ResourceManager.GetString("WIRT_SZEN_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Parametern szenariert ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ABDECKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ABDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Parametern szenariert: {2} ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ABDECKUNG_LISTE {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ABDECKUNG_LISTE", resourceCulture);
             }
         }
         
@@ -73980,6 +74295,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengenänderung ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_MENGE {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb ähnelt.
         /// </summary>
         public static string WPAR_SZ_PREIS_B {
@@ -74048,6 +74372,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_SZ_VORGABEN {
             get {
                 return ResourceManager.GetString("WPAR_SZ_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_ZEITRAUM", resourceCulture);
             }
         }
         

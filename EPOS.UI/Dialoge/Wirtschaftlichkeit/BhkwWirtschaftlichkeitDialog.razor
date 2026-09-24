@@ -53,6 +53,7 @@
 
 @using WindowsFormsApplication1
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using EPOS.UI.Dialoge.Kosten
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -295,6 +296,28 @@
                Wer ihn aendert, aendert die Speicherrechnung mit - und das muss
                dort stehen, wo er ihn aendert. *@
             <Herleitungszeile Text="@_t.PEinspKwkHinweis" />
+
+            @* ETAPPE E9b (Konzept § 2.11.5, Pflege; E9b-Q1): der ±-Knopf der
+               Einspeiseverguetung KWK - HIER, weil ihr Erwartet-Wert hier gepflegt wird
+               ("dasselbe Muster wandert an jeden Ort, an dem ein Erwartet-Wert gepflegt
+               wird"). Das Paar steht im Szenariosatz des Parametersatzes
+               (SzenarioSatz.EinspeiseverguetungKwk, Schemaschritt 118) und reist wie
+               die uebrigen Projektvorgaben im Arbeitsstand bis zum OK-Weg. Ist es
+               gepflegt und das Tarif-Rollenmodell wirksam, sagt die Kohaerenzzeile, dass
+               es im Lauf nicht wirkt (E9a-Q7). *@
+            <div class="epos-szenarioleiste">
+                <SzenarioKnopf Text="@_t.SzEinspKwk" Gepflegt="@EinspeisungKwkSzenarioGepflegt"
+                               Kurztext="@EinspeisungKwkSzenarioKurztext"
+                               GepflegtText="@_sz.Gepflegt" WarnungText="@_sz.OhneErwartetKurz"
+                               Angefordert="EinspeisungKwkSzenarioOeffnen" />
+            </div>
+            @if (EinspeisungKwkSzenarioGepflegt)
+            {
+                @foreach (string hinweis in EinspeisungKwkSzenarioHinweise)
+                {
+                    <Kohaerenzzeile Text="@hinweis" Zustand="KohaerenzZustand.Abweichend" />
+                }
+            }
 
             @* BK1: Wo die uebrigen KWK-Angaben hin sind - sonst sucht ein Anwender,
                der den Dialog kennt, die Saetze. *@
@@ -690,6 +713,21 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* ETAPPE E9b: das Szenariopaar der Einspeiseverguetung KWK - der CaseEingabeDialog
+       als allgemeiner Baustein (E9b-Q1). Ein Titel, eine Stelle: Die Ueberlagerung traegt
+       Titel und Kreuz, TitelText="" steht RECHTS vom Satz. OK legt die Werte auf den
+       Arbeitsstand der Projektvorgaben; geschrieben wird im OK-Weg des Dialogs. *@
+    <Ueberlagerung Offen="@(_szenarioGaben is not null)" Titel="@_szenarioTitel"
+                   Geschlossen="() => EinspeisungKwkSzenarioFertig(null)">
+        <KindInhalt>
+            @if (_szenarioGaben is not null)
+            {
+                <CaseEingabeDialog @attributes="_szenarioGaben" TitelText=""
+                                   Geschlossen="EinspeisungKwkSzenarioFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -777,6 +815,15 @@
     /// fehlgeschlagen. <b>Nur im OK-Weg</b>, und erst nach den Anlagenzeilen.</summary>
     [Parameter] public Func<WirtschaftlichkeitParameter, bool>? SpeichereVorgaben { get; set; }
 
+    /// <summary>
+    /// ETAPPE E9b (E9a‑Q7): die Kohärenzzeilen des ±-Knopfes der Einspeisevergütung KWK —
+    /// ist das Tarif-Rollenmodell wirksam, bewertet es die Einspeisung mit seinem
+    /// Einspeisetarif, und eine Szenario-Einspeisevergütung bleibt ohne Wirkung
+    /// (<c>WIRT_SZ_ROLLEN_EINSPEISUNG</c>). Leer = sie wirkt.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> EinspeisungKwkSzenarioHinweise { get; set; }
+        = Array.Empty<string>();
+
     /// <summary>Der Dialog ist zu Ende. Geschlossen wird das Fenster von der Huelle,
     /// nicht von der Komponente.</summary>
     [Parameter] public EventCallback<BhkwWirtschaftlichkeitErgebnis> Geschlossen { get; set; }
@@ -803,6 +850,54 @@
     // =====================================================================
 
     private readonly BhkwWirtschaftlichkeitTexte _t = new BhkwWirtschaftlichkeitTexte();
+    private readonly SzenariopaarTexte _sz = new SzenariopaarTexte();
+
+    // =====================================================================
+    // ETAPPE E9b — der ±-Knopf der Einspeisevergütung KWK
+    // =====================================================================
+
+    private IReadOnlyDictionary<string, object>? _szenarioGaben;
+    private string _szenarioTitel = "";
+
+    /// <summary>Steht die Überlagerung des Szenariopaars? (Prüfhilfe für Tests)</summary>
+    public bool SzenarioOffen => _szenarioGaben is not null;
+
+    /// <summary>ETAPPE E9b: Trägt die Einspeisevergütung KWK ein gepflegtes Paar — gemessen
+    /// am Arbeitsstand (1e−9-Regel gegen den Erwartet-Wert im Feld daneben)?</summary>
+    public bool EinspeisungKwkSzenarioGepflegt =>
+        Szenariopaar.Gepflegt(_vorgaben.EinspeiseverguetungKwkBest, _vorgaben.EinspeiseverguetungKwkWorst,
+                              _vorgaben.EinspeiseverguetungKwk ?? 0.0);
+
+    private string EinspeisungKwkSzenarioKurztext =>
+        Szenariopaar.Kurztext(_vorgaben.EinspeiseverguetungKwkBest, _vorgaben.EinspeiseverguetungKwkWorst,
+                              _vorgaben.EinspeiseverguetungKwk ?? 0.0, "€/kWh", 4);
+
+    /// <summary>
+    /// ETAPPE E9b: „±" an der Einspeisevergütung KWK — der <c>CaseEingabeDialog</c> als
+    /// Szenariopaar gegen den Wert des Feldes daneben (€/kWh, vier Stellen, bis 2 wie das
+    /// Feld). Keine Warnung ohne Erwartet-Wert: „nicht gepflegt" ist hier keine
+    /// Datenlücke, sondern „keine Vergütung".
+    /// </summary>
+    private void EinspeisungKwkSzenarioOeffnen()
+    {
+        _szenarioTitel = Szenariopaar.Titel(_t.SzEinspKwk);
+        _szenarioGaben = Szenariopaar.Gaben(_t.SzEinspKwk, _t.SzEinspKwk, "€/kWh",
+            _vorgaben.EinspeiseverguetungKwk, _vorgaben.EinspeiseverguetungKwkBest,
+            _vorgaben.EinspeiseverguetungKwkWorst, 4, 2, EinspeisungKwkSzenarioHinweise,
+            warnenOhneErwartet: false);
+        _meldung = "";
+    }
+
+    /// <summary>ETAPPE E9b: das Ergebnis auf den Arbeitsstand der Projektvorgaben — 0 heißt
+    /// „wie Erwartet". Geschrieben wird erst im OK-Weg (<see cref="BhkwVorgabenstand.Anwenden"/>).</summary>
+    private void EinspeisungKwkSzenarioFertig(CaseEingabeErgebnis? ergebnis)
+    {
+        _szenarioGaben = null;
+        if (ergebnis is null) return;
+        _vorgaben.EinspeiseverguetungKwkBest = Szenariopaar.Wert(ergebnis.BestCase);
+        _vorgaben.EinspeiseverguetungKwkWorst = Szenariopaar.Wert(ergebnis.WorstCase);
+        _geaendert = true;
+    }
 
     private ElementReference _wurzel;
     private SpeichernLeiste? _leiste;
@@ -2286,9 +2381,10 @@
     private Task Schliessen(BhkwSprung sprung) =>
         Geschlossen.InvokeAsync(new BhkwWirtschaftlichkeitErgebnis(_gespeichert, sprung));
 
-    /// <summary>Esc wirkt wie Abbrechen — geschrieben wird nichts.</summary>
+    /// <summary>Esc wirkt wie Abbrechen — geschrieben wird nichts. ETAPPE E9b: Steht das
+    /// Szenariopaar obenauf, gehört die Geste ihm.</summary>
     private Task BeiTaste(KeyboardEventArgs e) =>
-        e.Key == "Escape" ? Verwerfen() : Task.CompletedTask;
+        e.Key == "Escape" && !SzenarioOffen ? Verwerfen() : Task.CompletedTask;
     // =============================================================================
     // Der Hilfe-Assistent (Welle KI-F4)
     // =============================================================================
