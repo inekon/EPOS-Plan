@@ -120,7 +120,12 @@ namespace WindowsFormsApplication1
                     Waermebedarfsdeckung = w.Waermebedarfsdeckung,
                     Vollbenutzungsstunden = w.Vollbenutzungsstunden * f,
                     Bivalenzpunkt = w.Bivalenzpunkt,
-                    Deckung_Kanal = w.Deckung_Kanal
+                    Deckung_Kanal = w.Deckung_Kanal,
+                    // KU2 (Kühlkonzept 6.1–6.3, E34/E35): die Kälteseite skaliert wie die Wärmeseite;
+                    // Kühlträger und Abrechnungsart sind Konfiguration und bleiben. Ohne sie verlöre
+                    // ein Mengenszenario Kosten und Emissionen des Kältestroms eines Kühlträgers.
+                    Kaelteproduktion_WP = Mal(w.Kaelteproduktion_WP, f),
+                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f)
                 };
                 if (w.Module != null)
                     foreach (ErgebnisWaermepumpeModulModel mo in w.Module)
@@ -131,7 +136,12 @@ namespace WindowsFormsApplication1
                             Waermeproduktion = mo.Waermeproduktion * f,
                             Stromverbrauch = mo.Stromverbrauch * f,
                             Heizstab = mo.Heizstab * f,
-                            Betriebsstunden = mo.Betriebsstunden * f
+                            Betriebsstunden = mo.Betriebsstunden * f,
+                            Kaelteproduktion = Mal(mo.Kaelteproduktion, f),
+                            Stromverbrauch_Kuehlung = Mal(mo.Stromverbrauch_Kuehlung, f),
+                            Kaeltestrom_Netzbezug = Mal(mo.Kaeltestrom_Netzbezug, f),
+                            Kuehl_CarrierId = mo.Kuehl_CarrierId,
+                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler
                         });
                 k.Waermepumpe = wk;
             }
@@ -299,15 +309,30 @@ namespace WindowsFormsApplication1
                                  r.Key.StartsWith(ZeitreihenSatz.DECKUNG_PRAEFIX, StringComparison.Ordinal);
                 k.Reihen[r.Key] = skalieren ? Mal(r.Value, f) : r.Value;
             }
-            if (z.Bezugsspitze != null)
-            {
-                var spitze = new Netzbezugsspitze { JahrKW = z.Bezugsspitze.JahrKW * f };
-                for (int mo = 0; mo < spitze.MonatKW.Length && z.Bezugsspitze.MonatKW != null &&
-                                 mo < z.Bezugsspitze.MonatKW.Length; mo++)
-                    spitze.MonatKW[mo] = z.Bezugsspitze.MonatKW[mo] * f;
-                k.Bezugsspitze = spitze;
-            }
+            k.Bezugsspitze = Spitze(z.Bezugsspitze, f);
+
+            // E35 (Konzept Gebäudesimulation N1.40): die eigenen Spitzen des Kältestroms folgen
+            // ihrem Kältestrom wie die Bezugsspitze dem Netzbezug.
+            if (z.Kaeltestromspitzen != null)
+                foreach (KeyValuePair<int, Netzbezugsspitze> s in z.Kaeltestromspitzen)
+                    if (s.Value != null) k.Kaeltestromspitzen[s.Key] = Spitze(s.Value, f);
             return k;
+        }
+
+        /// <summary>Eine Spitze mal f — neue Spitze, das Original bleibt; <c>null</c> bleibt <c>null</c>.</summary>
+        private static Netzbezugsspitze Spitze(Netzbezugsspitze s, double f)
+        {
+            if (s == null) return null;
+            var spitze = new Netzbezugsspitze { JahrKW = s.JahrKW * f };
+            for (int mo = 0; mo < spitze.MonatKW.Length && s.MonatKW != null && mo < s.MonatKW.Length; mo++)
+                spitze.MonatKW[mo] = s.MonatKW[mo] * f;
+            return spitze;
+        }
+
+        /// <summary>Ein Wert mal f; <c>null</c> („nicht erhoben") bleibt <c>null</c>.</summary>
+        private static double? Mal(double? wert, double f)
+        {
+            return wert.HasValue ? (double?)(wert.Value * f) : null;
         }
 
         /// <summary>Eine Reihe mal f — neue Reihe, das Original bleibt.</summary>

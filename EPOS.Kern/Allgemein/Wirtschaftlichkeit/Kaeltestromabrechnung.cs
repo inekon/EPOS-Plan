@@ -24,7 +24,13 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Bepreist wird genau einmal</b>, im <c>KostenEmissionRechner</c>; die Wege, die den
     /// Netzbezug ein zweites Mal aus anderen Größen bewerten (Rollentarif, „% der Stromkosten",
-    /// Autarkie), nehmen die Mengen von hier, statt sie neu zu bilden.</para>
+    /// Autarkie, die Bemessungsmenge der Entlastung nach § 9b StromStG, der Preis des vermiedenen
+    /// Bezugs), nehmen die Mengen und den Projektträger von hier, statt sie neu zu bilden.</para>
+    ///
+    /// <para><b>Ein eigener Zähler trägt auch Grund- und Leistungspreis</b> seines Kühlträgers
+    /// (Entscheid E35, Konzept Gebäudesimulation N1.40): je Zähler — je Anlage — einen Grundpreis und
+    /// den Leistungspreis auf die eigene Spitze des Kältestroms der Anlage
+    /// (<see cref="EigeneZaehler"/>, <c>ZeitreihenSatz.Kaeltestromspitzen</c>).</para>
     /// </summary>
     public static class Kaeltestromabrechnung
     {
@@ -125,6 +131,55 @@ namespace WindowsFormsApplication1
                 }
                 a.MengeMwh += menge;
                 a.Anlagen.Add(string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul);
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>Ein eigener Zähler</b> (E34 Wahl 2; E35, Konzept Gebäudesimulation N1.40): die Anlage
+        /// mit abweichendem Kühlträger und eigenem Zähler. <b>Je Anlage ein Zähler</b> — die Wahl steht
+        /// je Anlage (E34), und zwei Anlagen mit demselben Kühlträger und eigenem Zähler sind zwei
+        /// Zähler: zwei Grundpreise, zwei eigene Spitzen. Einen gemeinsamen Zähler mehrerer Anlagen
+        /// bildet das Datenmodell nicht ab.
+        /// </summary>
+        public sealed class Zaehler
+        {
+            /// <summary>Platz der Anlage in der Modulliste der Wärmepumpe (<c>Module[i]</c>) — derselbe
+            /// Index wie der Modulplatz des Laufs (<c>Kaelteerzeuger.Modulindex</c>).</summary>
+            public int Modulindex;
+
+            /// <summary>Bezeichner der Anlage (Modulzeile).</summary>
+            public string Anlage = "";
+
+            /// <summary>Der Kühlträger (<c>energy_carrier.id</c>).</summary>
+            public int Traeger;
+
+            /// <summary>Der Kältestrom über diesen Zähler [MWh/a] — ganz aus dem Netz; auch 0.</summary>
+            public double MengeMwh;
+        }
+
+        /// <summary>
+        /// Die eigenen Zähler im gespeicherten Ergebnis, in Modulreihenfolge (E35). Anders als
+        /// <see cref="Anteile"/> steht hier auch ein Zähler ohne Kältestrom im Jahr: Der Grundpreis
+        /// gehört zum Zähler, nicht zur Menge. Leer ohne eigenen Zähler.
+        /// </summary>
+        public static List<Zaehler> EigeneZaehler(ErgebnisModel m)
+        {
+            var liste = new List<Zaehler>();
+            if (m == null || m.Waermepumpe == null || m.Waermepumpe.Module == null) return liste;
+            for (int i = 0; i < m.Waermepumpe.Module.Count; i++)
+            {
+                ErgebnisWaermepumpeModulModel mo = m.Waermepumpe.Module[i];
+                if (mo == null || !mo.Kuehl_CarrierId.HasValue || mo.Kuehl_CarrierId.Value <= 0 ||
+                    mo.Kuehl_EigenerZaehler != true) continue;
+                double menge = mo.Kaeltestrom_Netzbezug ?? 0.0;
+                liste.Add(new Zaehler
+                {
+                    Modulindex = i,
+                    Anlage = string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul,
+                    Traeger = mo.Kuehl_CarrierId.Value,
+                    MengeMwh = menge > 0 ? menge : 0.0
+                });
             }
             return liste;
         }

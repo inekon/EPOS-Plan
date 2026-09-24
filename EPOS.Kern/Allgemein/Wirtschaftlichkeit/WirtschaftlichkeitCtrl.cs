@@ -4431,18 +4431,38 @@ namespace WindowsFormsApplication1
             if (matrix != null && !matrix.StrombedarfFehlt)
                 eingabe.KwkEigenMWh = matrix.KwkEigenGesamtMWh;
 
-            // Netzbezug: die Stundenreihe, sonst die Jahressumme des Laufs — beides sind
-            // gerechnete Größen desselben Laufs, keine Näherung.
-            //
-            // STROMBEDARF OHNE VERWENDUNG (Anwenderentscheide 22.09.2026): 0. Die
-            // Entlastung nach § 9b StromStG ist eine Gutschrift auf den bezogenen Strom;
-            // wo dieser Strom weder bepreist noch bewertet wird, gibt es auch nichts zu
-            // entlasten — sonst stünde eine Gutschrift auf Kosten, die nicht angesetzt sind.
-            eingabe.NetzbezugMWh = v.StrombedarfOhneVerwendungMWh.HasValue ? 0.0
-                : matrix != null ? matrix.BezugGesamtMWh
-                : (v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0);
+            eingabe.NetzbezugMWh = NetzbezugFuerStromsteuer(v, matrix);
 
             return eingabe;
+        }
+
+        /// <summary>
+        /// <b>Die Bemessungsmenge der Entlastung nach § 9b StromStG</b> [MWh/a] — der bezogene,
+        /// versteuerte Strom des Laufs.
+        ///
+        /// <para>Der Netzbezug des Anschlusses: die Stundenreihe, sonst die Jahressumme des Laufs —
+        /// beides sind gerechnete Größen desselben Laufs, keine Näherung.</para>
+        ///
+        /// <para><b>Strombedarf ohne Verwendung</b> (Anwenderentscheide 22.09.2026): 0. Die
+        /// Entlastung ist eine Gutschrift auf den bezogenen Strom; wo dieser Strom weder bepreist
+        /// noch bewertet wird, gibt es auch nichts zu entlasten — sonst stünde eine Gutschrift auf
+        /// Kosten, die nicht angesetzt sind.</para>
+        ///
+        /// <para><b>Der Kältestrom eines eigenen Zählers</b> (Stufe KU2 Welle 4; Kühlkonzept 6.2;
+        /// Entscheide E34, E35) ist versteuerter Strom aus dem Netz, bezogen NEBEN dem Anschluss: Er
+        /// steht weder in der Stundenreihe des Netzbezugs noch in <c>Stromrestbedarf</c> und kommt
+        /// deshalb genau einmal hinzu, mit der Menge der <see cref="Kaeltestromabrechnung"/> — wie in
+        /// Energiekosten und Autarkie. Er zählt nicht als Netzbezug des Projektträgers (dessen Menge
+        /// bleibt die des Anschlusses) und nicht als vermiedener Bezug (die vermiedene Menge ist
+        /// Bedarf minus Restbezug des Anschlusses). Der anteilige Kältestrom steht als Teil des
+        /// Netzbezugs schon darin; ohne eigenen Zähler ist der Summand 0.</para>
+        /// </summary>
+        internal static double NetzbezugFuerStromsteuer(VariantenDaten v, StromMatrix matrix)
+        {
+            if (v == null || v.StrombedarfOhneVerwendungMWh.HasValue) return 0.0;
+            double anschluss = matrix != null ? matrix.BezugGesamtMWh
+                : (v.Ergebnis != null && v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0);
+            return anschluss + Kaeltestromabrechnung.EigenerZaehlerMwh(v.Ergebnis);
         }
 
         /// <summary>Eine Anlagenzeile der Steuerprüfung aus Anlagen- und Modulangaben.</summary>
@@ -6486,10 +6506,9 @@ namespace WindowsFormsApplication1
                                                     erg.VermiedenEntlastung9bJahr);
         }
 
-        /// <summary>Arbeitspreis Strom [€/kWh] des Projekt-Stromträgers; null = keiner gepflegt.
-        /// <para><c>custom_price</c> ist eine Lazy-Spalte und fehlt auf nie berührten
-        /// Datenbanken (Produktiv-Befund 26.08.2026) - sie wird deshalb vor dem
-        /// Zugriff still geprobt statt blind angefragt.</para></summary>
+        /// <summary>Arbeitspreis Strom [€/kWh] des Projekt-Stromträgers — des Trägers, der in den
+        /// Energiekosten den Netzbezug bepreist, nicht der abweichende Kühlträger einer Wärmepumpe
+        /// (E34, E35); null = kein Träger oder kein Preis gepflegt.</summary>
         internal static double? StromArbeitspreisEurJeKwh(int idProjekt)
         {
             return StromArbeitspreisEurJeKwh(idProjekt, null);
@@ -6505,33 +6524,21 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // Bestandsspalten der Kostenwelt: custom_price_work (Projekt) vor
-                // price_work (Katalog) - NICHT "custom_price"/"price" (Befund
-                // 26.08.2026: diese Namen existieren nur auf der Testkopie, der
-                // Produktivbestand kennt sie nicht -> ACE-Parameterfehler).
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT s.custom_price_work AS Projektpreis, ec.price_work AS price, " +
-                    "s.[ID_Energieträger] AS Traeger " +
-                    "FROM energy_project_settings AS s " +
-                    "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
-                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
-                    new DbParam("@p", idProjekt));
-                if (dt == null || dt.Rows.Count == 0) return null;
-                DataRow r = dt.Rows[0];
-                double? projektwert = D2(r, "Projektpreis");
-                double? katalogwert = D2(r, "price");
-                double? erwartet = projektwert.HasValue && projektwert.Value > 0 ? projektwert
-                                 : (katalogwert.HasValue && katalogwert.Value > 0 ? katalogwert : null);
-
-                // ETAPPE E9a: der Szenariopreis des Stromträgers — die EINE Regel.
-                if (!string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal) &&
-                    !string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal))
-                    return erwartet;
-                double? traeger = D2(r, "Traeger");
-                if (!traeger.HasValue || traeger.Value <= 0) return erwartet;
-                TraegerpreisSzenario sz = EnergietraegerPreisCtrl.SzenarioLesen(idProjekt, (int)traeger.Value);
-                bool gepflegt;
-                return TraegerpreisSzenario.Wirksam(erwartet, sz.Arbeitspreis(szenario), out gepflegt);
+                // STUFE KU2 WELLE 4 (Kühlkonzept 6.2; Entscheide E34, E35) — KEINE EIGENE
+                // PREISABFRAGE MEHR. Hier stand eine eigene Abfrage, die IRGENDEINEN dem Projekt
+                // zugeordneten Stromträger las (LIMIT 1) und dessen Preis ohne Preisstand. Seit
+                // ein Projekt für die Kühlung einen zweiten Stromträger führen kann (K9, E33),
+                // konnte das der Kühlträger sein: Der vermiedene Bezug der Photovoltaik — die nie
+                // Kältestrom eines eigenen Zählers deckt — und ihr Mehrbezug durch Degradation
+                // trugen dann den Preis der Kühlung. Jetzt ist es der Stromträger, der den
+                // Netzbezug in den Energiekosten bepreist (Kaeltestromabrechnung.Projekttraeger,
+                // samt Rückfall auf den Auslieferungsträger), mit dem Arbeitspreis aus derselben
+                // Vorrangkette (KostenEmissionRechner.ArbeitspreisJeKwh: Projektwert →
+                // Preisstand → Katalog, im Szenario der wirksame Szenariopreis, E9a) — eine
+                // Wahrheit statt zwei.
+                int traeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+                if (traeger <= 0) return null;
+                return KostenEmissionRechner.ArbeitspreisJeKwh(idProjekt, traeger, szenario);
             }
             catch (Exception)
             {
@@ -6539,14 +6546,6 @@ namespace WindowsFormsApplication1
                 // bleibt leer; die Degradation der PV-Reihe rechnet dann ohne Mehrbezug.
                 return null;
             }
-        }
-
-
-        private static double? D2(DataRow r, string spalte)
-        {
-            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
-            try { return Convert.ToDouble(r[spalte]); }
-            catch (Exception ex) when (IstZahlfehler(ex)) { return null; }   // E7c3 (B‑6): benannt
         }
 
         /// <summary>Absolutes Zahlungsbild + Kennzahlen eines Projekts für ein Szenario.</summary>

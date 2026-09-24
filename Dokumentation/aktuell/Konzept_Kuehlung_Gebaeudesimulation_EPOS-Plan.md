@@ -95,6 +95,15 @@
 > Bericht die Kältedeckung („Kältebedarf und -deckung"); die Wiki-Quellen sind fortgeschrieben. Der
 > Import der Kühlsollwerte wartet auf die Importe selbst (G4, 9.1). Kein Referenzprojekt kühlt — die
 > Basis bleibt byte-gleich (6.1–6.4, 7.3, 7.4, 8.2, 8.4, 9.1, 9.2, 11.1, 11.3).
+>
+> **Nachzug 24.09.2026 — E35 ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.40) und
+> KU2 Welle 4:** Ein eigener Zähler trägt zusätzlich Grund- und Leistungspreis seines Kühlträgers — je
+> Zähler (je Anlage) einen Grundpreis und den Leistungspreis auf die eigene Spitze des Kältestroms der
+> Anlage, nach der Leistungspreisregel des Trägers; anteilig bleibt es bei E34. Die Reste von E34 sind
+> nachgezogen: der Preis des vermiedenen Bezugs (Projektträger statt irgendeines Stromträgers), die
+> Bemessungsmenge nach § 9b StromStG (eigener Zähler genau einmal) und das Mengenszenario (Kälteseite
+> samt Kühlträger). Geprüft und benannt: die Wahl des Projektträgers bei mehreren Stromträgern ohne
+> Anlagenwahl (6.1–6.3).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -139,7 +148,7 @@ Strom und Wirtschaftlichkeit, Datenmodell, Dialogführung, Import und Export, Na
 Regressionsnetz, eine Stufung KU0–KU3 und die Fragen K1–K23 mit Empfehlung. **Es entscheidet
 nichts, was der Anwender zu entscheiden hat** — Kapitel 12 trennt „jetzt zu entscheiden" von
 „technische Festlegung zur Kenntnis"; was E20, E21, E23, E26, E27, E31 und E33 bereits entschieden haben,
-trägt dort den Vermerk und wird nicht erneut vorgelegt; E34 ergänzt K9 (6.1).
+trägt dort den Vermerk und wird nicht erneut vorgelegt; E34 ergänzt K9 (6.1), E35 ergänzt E34 (6.2).
 
 **Es steht neben, nicht über den Schwesterpapieren:**
 
@@ -1555,7 +1564,7 @@ eingeht:
 | Wahl | Stufenrechnung | Kosten und Emissionen |
 |---|---|---|
 | **(1) anteilig am Netzbezug — Vorgabe** | der Kältestrom läuft wie oben durch den Rest: Eigenverbrauch aus Photovoltaik und Stromspeicher bleiben **gemeinsam** | der Netzbezug jedes Zeitschritts wird nach dem Anteil des Kältestroms am Stromverbrauch geteilt: `Netzbezug_Kaelte(t) = Netzbezug(t) · Kaeltestrom(t) / Stromverbrauch(t)` trägt Arbeitspreis und CO₂-Faktor des Kühlträgers, der Rest die des Projektträgers; der **Leistungspreis** bleibt beim Projektträger |
-| **(2) eigener Zähler** | der Kältestrom läuft **neben** der Stufenrechnung — er wird nicht aus PV-Eigenstrom oder Stromspeicher gedeckt | der ganze Kältestrom mit Arbeitspreis und CO₂-Faktor des Kühlträgers |
+| **(2) eigener Zähler** | der Kältestrom läuft **neben** der Stufenrechnung — er wird nicht aus PV-Eigenstrom oder Stromspeicher gedeckt | der ganze Kältestrom mit Arbeitspreis und CO₂-Faktor des Kühlträgers; **dazu** (E35) je Zähler der Grundpreis des Kühlträgers und sein Leistungspreis auf die eigene Spitze des Kältestroms der Anlage |
 
 Ohne abweichenden Kühlträger (NULL oder gleich dem Projektträger) gilt allein die Zeile „wie oben" —
 die Wahl wirkt dann nicht. **Umgesetzt wird die Regel mit der dritten Welle von KU2**, zusammen mit
@@ -1580,6 +1589,15 @@ bleibt die Stufenrechnung bitgleich (Netzbezug 28,84 MWh/a, PV-Eigenverbrauch 2,
 Netzbezug des Kältestroms tragen den Kühlträger; mit eigenem Zähler sinkt der Netzbezug des Anschlusses
 auf 28,70 MWh/a und der PV-Eigenverbrauch auf 1,91 MWh/a, die 0,23 MWh/a tragen ganz den Kühlträger.
 
+**Ergänzt mit E35** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.40, 24.09.2026),
+**gebaut mit KU2 Welle 4:** Ein eigener Zähler ist ein Zähler mit eigenem Vertrag — er trägt zusätzlich
+den **Grundpreis** seines Kühlträgers (je Zähler, also je Anlage mit eigenem Zähler) und, wenn der
+Träger einen führt, dessen **Leistungspreis auf die eigene Spitze des Kältestroms** der Anlage. Die
+Spitze bildet der Lauf aus der Stundenreihe der Anlage — sie geht mit derselben Leistung in jede
+Viertelstunde der Stunde, die Viertelstundenspitze ist also die Stundenspitze — und gibt sie wie die
+Bezugsspitze des Anschlusses über die Zeitreihen des frischen Laufs weiter
+(`ZeitreihenSatz.Kaeltestromspitzen`, Schlüssel ist der Modulplatz der Wärmepumpe).
+
 ### 6.2 Wirtschaftlichkeit
 
 Die Wirtschaftlichkeit hat **keinen** Kanalbegriff; sie rechnet je **Komponente**
@@ -1603,9 +1621,39 @@ eine Anlage einen abweichenden Kühlträger, steht ihr Kältestrom als eigene Ze
 Energiekosten je Anlage (mit „(eigener Zähler)", wenn so gewählt). Der Rollentarif nimmt den Netzbezug
 des Kühlträgers aus dem Reststromtarif und nennt es (`WirtschaftlichkeitCtrl.RechneRollentarif`). Fehlt
 dem Kühlträger der Arbeitspreis, bleiben die Energiekosten aus, mit benanntem Grund — kein Rückfall
-auf den Projektträger. **Offen, benannt:** Beim eigenen Zähler setzt die Rechnung Grund- und
-Leistungspreis des Kühlträgers nicht an — E34 nennt für diesen Fall allein Arbeitspreis und Faktor;
-ob ein eigener Zähler auch eigene Festkosten trägt, ist eine Frage an den Anwender.
+auf den Projektträger.
+
+**Entschieden mit E35** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.40,
+24.09.2026) — die Frage, ob ein eigener Zähler auch eigene Festkosten trägt: **ja.** **Gebaut mit KU2
+Welle 4:** `KostenEmissionRechner` setzt je eigenem Zähler (`Kaeltestromabrechnung.EigeneZaehler`) den
+Grundpreis des Kühlträgers an und, wenn er einen führt, dessen Leistungspreis auf die eigene Spitze
+der Anlage — mit derselben Regel wie beim Projektträger (`LeistungsanteilStrom`: Staffel vor
+Saisonreihe vor Satz je Monat oder Jahr), im Szenario mit den wirksamen Szenariopreisen des
+Kühlträgers. Beide stehen je Zähler als eigene Zeile in den Energiekosten je Anlage („Grundpreis
+Kältestromzähler …", „Leistungspreis Kältestromzähler …"), in den Kosten des Kältestroms und — der
+Leistungspreis — im Leistungsanteil der Energiekosten; ein Rollentarif lässt sie stehen. Ob ein Lauf
+Zeitreihen braucht, fragt `StromLeistungspreisGepflegt` auch für einen solchen Kühlträger; fehlen sie,
+steht der Grundpreis, und der Leistungspreis wird benannt. Zwei Anlagen mit demselben Kühlträger und
+eigenem Zähler sind zwei Zähler — ein gemeinsamer Zähler ist im Datenmodell nicht abbildbar. **Probe an
+1045** (Arbeitskopie, Phantasiewerte: Kühlträger 0,20 €/kWh, Grundpreis 120 €/a, Leistungspreis
+100 €/(kW·a)): 0,23 MWh/a Kältestrom über den eigenen Zähler mit einer eigenen Spitze von 2,71 kW
+kosten 46 + 120 + 271 = 437 €/a (anteilig 22 €/a; ohne Zeitreihen 166 €/a mit benanntem
+Leistungspreis; mit einer Staffel 1 kW zu 50 und darüber 200 €/(kW·a) 392 €/a).
+
+**Die Reste von E34, nachgezogen mit KU2 Welle 4.** Drei Wege bewerteten den Strom noch an der
+Kältestromabrechnung vorbei: (1) Der **Preis des vermiedenen Bezugs** der Photovoltaik und ihres
+Mehrbezugs durch Degradation kam aus einer eigenen Abfrage, die irgendeinen Stromträger des Projekts
+las (`LIMIT 1`) — in einem Projekt mit Kühlträger konnte das dessen Preis sein, obwohl die
+Photovoltaik den Kältestrom eines eigenen Zählers nie deckt. Er ist jetzt der Arbeitspreis des
+Projektträgers aus derselben Vorrangkette wie in den Energiekosten
+(`WirtschaftlichkeitCtrl.StromArbeitspreisEurJeKwh` über `Kaeltestromabrechnung.Projekttraeger` und
+`KostenEmissionRechner.ArbeitspreisJeKwh`). (2) Die **Bemessungsmenge der Entlastung nach § 9b
+StromStG** (`NetzbezugFuerStromsteuer`) kannte den eigenen Zähler nicht: Sein Kältestrom ist
+versteuerter Strom aus dem Netz neben dem Anschluss und zählt jetzt genau einmal hinzu — nicht als
+Netzbezug des Projektträgers und nicht als vermiedener Bezug; der anteilige Kältestrom steht schon im
+Netzbezug. (3) Ein **Mengenszenario** (E9a) verlor die Kälteseite der Wärmepumpe samt Kühlträger und
+Abrechnungsart (`SzenarioMengen`), sodass ein Kühlträger im Szenario weder Menge noch Kosten trug; die
+Kältespalten skalieren jetzt mit dem Faktor wie die Wärmespalten, die eigenen Spitzen ebenso.
 
 ### 6.3 Emissionen (K9)
 
@@ -1647,7 +1695,22 @@ dessen Arbeitspreis (`LadeTraeger`, derselbe Leseweg wie für den Projektträger
 ist; ein eigener Zähler kommt zum Netzbezug des Anschlusses hinzu. Ausgewiesen werden Netzbezug,
 Kosten und CO₂ des Kältestroms (`VariantenDaten.KaeltestromNetzbezugMWh`, `…Kosten`, `…CO2t`); die
 Autarkie zählt einen eigenen Zähler als Bezug. Der Bericht trägt den Satz zu den Kältemittelverlusten
-(8.4).
+(8.4). **Mit E35 (KU2 Welle 4)** trägt ein eigener Zähler dazu Grund- und Leistungspreis seines
+Kühlträgers (6.1, 6.2) — die Emissionen ändert das nicht. Dieselbe Abrechnung liefert jetzt auch den
+Projektträger für den Preis des vermiedenen Bezugs und den eigenen Zähler für die Bemessungsmenge
+nach § 9b StromStG (6.2).
+
+**Geprüft mit KU2 Welle 4 — der Projektträger bei mehreren Stromträgern.** Wählt keine Anlage ihren
+Stromträger (`ID_Carrier`), nimmt `Emissionsquelle.StromTraeger` in Stufe 2 per `LIMIT 1` einen der
+dem Projekt zugeordneten Stromträger — über den Index auf (`ID_Projekt`, `ID_Energieträger`) den mit
+der kleinsten Kennung, ohne dass die Abfrage eine Reihenfolge verlangt. **Die Kühlseite ist davon
+betroffen**, sobald ein Projekt einen Kühlträger führt, denn der muss dem Projekt zugeordnet sein (E33):
+Ist er der Träger, den Stufe 2 greift, wird er zum Stromträger des Projekts — der ganze Netzbezug trägt
+seinen Preis und Faktor, und die Kühlwahl wirkt nicht, weil Kühl- und Projektträger gleich sind. Der
+Anwender behebt das, indem er an der Wärmepumpe den Stromträger des Heizbetriebs wählt (Stufe 1). Die
+Regel selbst gehört nicht zur Kühlung und ist unverändert; benannt ist der Fall hier, bis die
+Trägerwahl eine feste Reihenfolge bekommt. Referenzprojekt 1017 führt zwei Stromträger ohne
+Anlagenwahl; sein Kältestrom trägt keinen Kühlträger (10.4) und rechnet mit dem Träger aus Stufe 2.
 
 ### 6.4 Kennzahlen (F-K11)
 
@@ -2900,7 +2963,9 @@ K6, K7 und K12** nach Empfehlung — die Zeilen tragen den Vermerk. **E33 (23.09
 [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.38)** entscheidet **K8, K21 und K23**
 nach Empfehlung und **K9 abweichend von der Empfehlung** (6.3); auch diese Zeilen tragen den
 Vermerk. **E34 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.39)**
-ergänzt K9 um die Rechenregel für einen abweichenden Kühlträger (6.1). Vor KU2 ist keine Frage mehr offen.
+ergänzt K9 um die Rechenregel für einen abweichenden Kühlträger (6.1), **E35 (24.09.2026,
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.40)** den eigenen Zähler um Grund- und
+Leistungspreis seines Kühlträgers (6.2). Vor KU2 ist keine Frage mehr offen.
 
 ### 12.1 Jetzt zu entscheiden
 

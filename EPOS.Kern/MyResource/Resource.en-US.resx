@@ -27000,6 +27000,12 @@ Do you want to allow this?</value>
   <data name="WIRT_ENK_KAELTESTROM_ZAEHLER" xml:space="preserve">
     <value>Cooling electricity {0} (separate meter)</value>
   </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND" xml:space="preserve">
+    <value>Standing charge, cooling meter {0}</value>
+  </data>
+  <data name="WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG" xml:space="preserve">
+    <value>Demand charge, cooling meter {0}</value>
+  </data>
   <data name="WIRT_GRUND_KUEHLTRAEGER_PREIS_FEHLT" xml:space="preserve">
     <value>Energy costs cannot be determined: the electricity carrier for cooling "{0}" has no energy price. Remedy: maintain the energy price under "Reports &amp; Costs › Energy carriers" or set the cooling electricity carrier to "as in heating mode" in the heat pump dialog.</value>
   </data>

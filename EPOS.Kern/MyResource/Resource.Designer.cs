@@ -69883,6 +69883,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis Kältestromzähler {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis Kältestromzähler {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KAELTESTROM_ZAEHLER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug Strom ähnelt.
         /// </summary>
         public static string WIRT_ENK_NETZBEZUG {

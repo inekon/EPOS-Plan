@@ -201,7 +201,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? KwkEigenMWh;
 
-        /// <summary>Netzbezug Strom [MWh/a] — Bemessungsgrundlage des § 9b StromStG.</summary>
+        /// <summary>Netzbezug Strom [MWh/a] — Bemessungsgrundlage des § 9b StromStG: der Netzbezug
+        /// des Anschlusses samt dem Kältestrom eigener Zähler (E34, E35;
+        /// <c>WirtschaftlichkeitCtrl.NetzbezugFuerStromsteuer</c>).</summary>
         public double NetzbezugMWh;
 
         /// <summary>ETAPPE E7c3 (E7c2‑Q8 b): eine unabhängige Kopie samt kopierter
