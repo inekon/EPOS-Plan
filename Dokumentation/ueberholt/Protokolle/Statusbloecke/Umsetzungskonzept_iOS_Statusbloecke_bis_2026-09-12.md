@@ -9046,3 +9046,91 @@ Kern 5 607, UI 5 783, KiKern 524, SpeicherEngine 386,
 SpeicherPlanung 27 (1 übersprungen), 0 rot; Windows-Schale 0
 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
 Basisprojekte PASS (4 145 687 Werte in Toleranz); Schemastand 118.
+
+## #458 Stufe 3b — KI-Assistent: Zahlenfolgen als Zahlenreihen setzbar (Feldtyp Zahlenreihe, Aktion `reihe_setzen`) (24.09.2026)
+
+Anlass: Rest aus #458 Stufe 3a — für die gleichartigen
+Zahlenfolgen der sieben Masken fehlte weiterhin ein Rahmen. Commits
+(Zweig `worktree-agent-aa90e37e0bef9284b`, Basis `ea6f8608` =
+3a): `7b64c453` KI-Rahmen: Zahlenreihe als Feldtyp und Aktion
+reihe_setzen; `97660220` KI-Masken: Zahlenfolgen der sieben
+Masken als Zahlenreihen; `8da525ce` Papiere. Merge in den Hauptbaum
+`84e743fc` (Konflikt nur im Konzept Dialogintegration: Stufentabelle
+3a+3b, Abschnitt 4 „Stand der Abdeckung" zusammengeführt;
+Zählisten geprüft; Wiki-Widerspruch berichtigt: Stundenwerte eines
+Kostenprofils sind setzbar, nicht setzbar sind nur Zeitreihen aus
+Dateien und Ladevorgänge; resx 8 934/8 935 Schlüssel, Designer
+unverändert).
+
+**Rahmenentscheid.** Tabellen mit benannten Zeilen bleiben im
+Spaltenmodell (Ferien des Gebäudekatalogs: vier Zeiträume
+mit Zeilenkennzeichen „Zeitraum", je Beginn/Ende mit Tag und
+Monat). Gleichartige Zahlenfolgen (Monats-, Stunden-, Wochenwerte)
+trägt das Spaltenmodell nicht (eine Wochenreihe wären 168 Felder,
+`formular_ausfuellen` hat 2 000 Zeichen Grenze, `dialog_lesen` und
+Bestätigung hätten 168 Zeilen; Stellen sind Listenplätze, keine
+Zeilen eines Datenobjekts). Deshalb neuer Feldtyp Zahlenreihe
+und neue Aktion `reihe_setzen` (`maske`, `feld`, `werte`
+als Zahlenliste, optional `ab`: ganze Reihe oder Ausschnitt ab
+Stelle); Länge und Grenzen prüft der Kern je Wert mit dem Namen
+der Stelle in der Absage (Grenzen gelten jetzt auch für Einzel-
+und Spaltenfelder); Bestätigung zeigt „alt → neu" gekürzt auf
+zwölf Stellen plus Gesamtzahl, Protokoll trägt die volle Liste;
+`feld_setzen`/`formular_ausfuellen` lehnen eine Reihe ab und nennen
+den Weg, umgekehrt ebenso. Eine Wahrheit: Reihen hängen an den
+Datenobjekten/Sichtklassen. Nebenbefund behoben: Vorbedingung von
+`dialog_parameter_erklaeren` lehnte jedes Feld ab (Aktion konnte
+nie antworten) — jetzt mit Test und Gegenprobe.
+
+**Umfang je Maske.** TYPSTAMM `monatswerte` (12; 4 Felder);
+TYPPROFIL `wochenwerte` (168; 4); GEBAEUDETYP `stundenwerte` (24,
+gewählte Kurve im Arbeitsstand, Kurvenwechsel bis zum Speichern
+gesperrt; 4); KOSTENPROFIL `monatswerte` + `wochenwerte` (5);
+LEISTUNGSPREISREIHE `monatssaetze` (12, Grenzen 0–100 000;
+4); QUELLPROFIL `monatswerte` (12, nur Betriebsart Monat; 5);
+GEBAEUDE_KATALOG Ferien als vier Spalten + Randbedingung Bodenplatte
+als Wahlfeld (59). Schreibwege = die der Masken (Speicher-Haken,
+Schreibschutz bei Auslieferungssatz, Prüfung des Dialogs).
+
+**Wächter danach.** Katalog 75 Masken (wie 3a), genau 7 Zahlenreihen
+(neue Zählliste in `KiDialogkatalogTests`); Vermerke „Stufe 3
+(Zahlenfolgen)" aufgelöst (drei entfallen, Gebäudetyp „Felder
+von Neu…", Quellprofil „Anzeigeschalter und Zeitreihen");
+`EINGABESTELLEN` 84 Einträge; `BewusstDraussen` ohne Typstamm;
+Ausnahmeliste 22, keine `Offen`.
+
+**Tests.** Im Worktree KiKern 542, UI 5 791, Kern 5 606,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0
+rot; neue Tests `KiZahlenreiheTests` (18), `KiReiheSetzenTests`
+(18), Dialogtests je Maske, `KiFeldwerteTests`; Kern-Filter und
+Windows-Schale 0 Fehler. Nach dem Merge gefiltert: UI 928, Kern 358,
+KiKern 542, Doku-Wachen 26 grün.
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(Stufenzeile 3b, Abschnitt 4 Punkt „Zahlenfolgen: Tabelle
+oder Zahlenreihe", Stand der Abdeckung: alles abgedeckt);
+`Konzept_KI-Assistent_Aufgabensteuerung.md` (`reihe_setzen` in 11.4,
+neuer Abschnitt 11.4a Feldtypen); Wiki-Quelle `Projekte/Wiki/Programm
+Dokumentation - Hilfe-Assistent.wiki` (Absatz mit neutralem Beispiel;
+Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent setzt auch Monats-, Stunden- und Wochenwerte
+> als ganze Reihe.
+
+**Was offen bleibt.** Bedarfsverwaltungen (#456) behalten ihre zwölf
+Einzelfelder — andere Form als der Bedarfskopfsatz, im Konzept
+vermerkt. Kostenprofil, Leistungspreisreihe und Quellprofil bleiben
+ohne Speicherweg für den Assistenten (OK/„Übernehmen" klickt der
+Anwender, die gesetzten Reihen gehen mit; Kommentare an den Haken
+verweisen fälschlich auf `dialog_speichern`, Bestand). 365/8 760
+Werte des Quellprofils bleiben Zeitreihen über den Dateiweg. Das
+Konzept Dialogintegration trägt ein BOM (Bestand, Markdown-Regel
+sagt ohne BOM — Aufräumpunkt).
+
+**Gate nach Merge auf `84e743fc`.** Kern-Filter 0 Fehler; Tests Kern
+5 628, UI 5 810, KiKern 542, SpeicherEngine 386, SpeicherPlanung
+27 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf
+gegen `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145
+687 Werte in Toleranz); Schemastand 118.
