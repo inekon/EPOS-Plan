@@ -2341,6 +2341,119 @@ namespace WindowsFormsApplication1
         public const string GRUND_AUSSENLUFT = "AUSSENLUFT";
 
         // =====================================================================
+        // Gebaeudesimulation, Stufe G3 (Softwarearchitektur Gebaeudesimulation 2.2,
+        //   W7 bis W9; Schemaschritte S-A bis S-C). Persistenzwerte der Spalten
+        //   Tab_Bauteil.Bauteilart, Tab_Bauteilaufbau(_STAMM).Bauteilart,
+        //   Tab_Bauteil.Randbedingung und der Spalte Herkunft an Baustoff, Aufbau,
+        //   Zone und Bauteil. Eingefroren, ASCII, Grossbuchstaben, nie Anzeigetext
+        //   (Drei-Schichten-Regel); jede Liste steht als CHECK in der Tabelle.
+        // =====================================================================
+
+        /// <summary>
+        /// Bauteilart Aussenwand (<c>Tab_Bauteil.Bauteilart</c>, NOT NULL). Am Aufbau
+        /// (<c>Tab_Bauteilaufbau(_STAMM).Bauteilart</c>) ist die Spalte nullbar: <b>NULL heisst
+        /// dort „fuer jede Bauteilart"</b>.
+        /// </summary>
+        public const string BAUTEILART_AUSSENWAND = "AUSSENWAND";
+
+        /// <summary>Bauteilart Dach (Neigung ohne Angabe: 0°).</summary>
+        public const string BAUTEILART_DACH = "DACH";
+
+        /// <summary>Bauteilart Bodenplatte (Neigung ohne Angabe: 180°).</summary>
+        public const string BAUTEILART_BODENPLATTE = "BODENPLATTE";
+
+        /// <summary>Bauteilart Fenster — traegt U- und g-Wert, Rahmenanteil und Verschattung.</summary>
+        public const string BAUTEILART_FENSTER = "FENSTER";
+
+        /// <summary>Bauteilart Tuer.</summary>
+        public const string BAUTEILART_TUER = "TUER";
+
+        /// <summary>Bauteilart Innenwand.</summary>
+        public const string BAUTEILART_INNENWAND = "INNENWAND";
+
+        /// <summary>Bauteilart Decke (Neigung ohne Angabe: 0°).</summary>
+        public const string BAUTEILART_DECKE = "DECKE";
+
+        /// <summary>
+        /// Bauteilart Vorhangfassade — traegt U- <b>und</b> g-Wert wie ein Fenster (W7); als
+        /// <see cref="BAUTEILART_SONSTIGES"/> verloere sie den g-Wert.
+        /// </summary>
+        public const string BAUTEILART_VORHANGFASSADE = "VORHANGFASSADE";
+
+        /// <summary>Bauteilart Sonstiges — was keiner der acht Arten entspricht.</summary>
+        public const string BAUTEILART_SONSTIGES = "SONSTIGES";
+
+        /// <summary>
+        /// Die neun Bauteilarten in Schemareihenfolge — die EINE Liste, aus der die
+        /// <c>CHECK</c>-Klauseln von <c>ZonenSchema</c> und <c>BauteilaufbauSchema</c> gebaut
+        /// werden.
+        /// </summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> BAUTEILARTEN = new[]
+        {
+            BAUTEILART_AUSSENWAND, BAUTEILART_DACH, BAUTEILART_BODENPLATTE, BAUTEILART_FENSTER,
+            BAUTEILART_TUER, BAUTEILART_INNENWAND, BAUTEILART_DECKE, BAUTEILART_VORHANGFASSADE,
+            BAUTEILART_SONSTIGES
+        };
+
+        /// <summary>
+        /// Randbedingung eines Bauteils: Aussenluft (<c>Tab_Bauteil.Randbedingung</c>).
+        /// <b>Auch NULL bedeutet AUSSENLUFT.</b>
+        /// </summary>
+        public const string RANDBEDINGUNG_AUSSENLUFT = "AUSSENLUFT";
+
+        /// <summary>Randbedingung eines Bauteils: Erdreich.</summary>
+        public const string RANDBEDINGUNG_ERDREICH = "ERDREICH";
+
+        /// <summary>
+        /// Randbedingung eines Bauteils: eine Nachbarzone. Den Verweis auf die Zone traegt ab
+        /// Schritt S-G die Spalte <c>ID_Nachbarzone</c>; bis dahin steht der Wert ohne Verweis.
+        /// </summary>
+        public const string RANDBEDINGUNG_ZONE = "ZONE";
+
+        /// <summary>
+        /// Randbedingung eines Bauteils: unbeheizter Raum. <b>Es gibt kein <c>KELLER</c> am
+        /// Bauteil</b> (W8) — im Zonenmodell ist ein Keller eine unbeheizte Zone;
+        /// <see cref="GRUND_KELLER"/> bleibt allein an <c>Tab_Gebaeude.Grundflaeche_Randbedingung</c>.
+        /// </summary>
+        public const string RANDBEDINGUNG_UNBEHEIZT = "UNBEHEIZT";
+
+        /// <summary>Die vier Randbedingungen in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> RANDBEDINGUNGEN = new[]
+        {
+            RANDBEDINGUNG_AUSSENLUFT, RANDBEDINGUNG_ERDREICH, RANDBEDINGUNG_ZONE, RANDBEDINGUNG_UNBEHEIZT
+        };
+
+        /// <summary>
+        /// Herkunft einer Zeile: von Hand angelegt oder geaendert (Spalte <c>Herkunft</c> an
+        /// <c>Tab_Baustoff(_STAMM)</c>, <c>Tab_Bauteilaufbau(_STAMM)</c>, <c>Tab_Zone</c>,
+        /// <c>Tab_Bauteil</c>). <b>NULL heisst „nicht angegeben"</b> — der Altbestand und
+        /// jede Zeile, deren Weg die Herkunft nicht kennt.
+        /// </summary>
+        public const string HERKUNFT_MANUELL = "MANUELL";
+
+        /// <summary>
+        /// Herkunft: aus dem Katalog uebernommen (<c>CopyFromStamm</c>) oder beim Import ueber
+        /// den Namensabgleich einem Katalogsatz zugeordnet. Fehlte der Wert im <c>CHECK</c>,
+        /// lehnte das Schema jede Katalogkopie ab (W9).
+        /// </summary>
+        public const string HERKUNFT_KATALOG = "KATALOG";
+
+        /// <summary>Herkunft: aus einer IFC-Datei eingelesen.</summary>
+        public const string HERKUNFT_IFC = "IFC";
+
+        /// <summary>Herkunft: aus einer gbXML-Datei eingelesen.</summary>
+        public const string HERKUNFT_GBXML = "GBXML";
+
+        /// <summary>Herkunft: Auslieferungssaat (Norm- oder Richtwert mit Quelle je Zeile).</summary>
+        public const string HERKUNFT_VORGABE = "VORGABE";
+
+        /// <summary>Die fuenf Herkunftswerte in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> HERKUENFTE = new[]
+        {
+            HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE
+        };
+
+        // =====================================================================
         // Anlagenkopplung, Stufe AK1 (Konzept Anlagenkopplung 3.1 und 8.1,
         //   Schemaschritt 122 = AK-S1). Persistenzwerte, eingefroren und ASCII
         //   (in SQL verglichen). Welche Vorgaben eine Art mitbringt (Exponent,

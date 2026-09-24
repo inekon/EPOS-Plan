@@ -583,6 +583,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_BAUTEILAUFBAU {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_BAUTEILAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string ADM_KATALOG_BHKW {
@@ -2785,6 +2803,249 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BADM_TITEL_STROM {
             get {
                 return ResourceManager.GetString("BADM_TITEL_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baustoff braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Baustoff „{0}“ gibt es bereits (gleicher Name und Hersteller). ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Baustoff mit der Kennung {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baustoff konnte nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baustoff „{0}“ gehört zur Auslieferung und ist schreibgeschützt. Duplizieren Sie ihn, um ihn zu ändern. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist länger als {1} Zeichen. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_TEXT_LANG {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_TEXT_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baustoff „{0}“ wird in {1} Schicht(en) verwendet und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_VERWENDET {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} = {1} liegt außerhalb des zulässigen Bereichs {2} bis {3}. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_WERT_BAND {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_WERT_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellkennung ähnelt.
+        /// </summary>
+        public static string BAUTEIL_FELD_QUELLKENNUNG {
+            get {
+                return ResourceManager.GetString("BAUTEIL_FELD_QUELLKENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Den Aufbau mit der Kennung {1} gibt es in diesem Projekt nicht. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_FREMD {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_NAME_LEER {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Bauteilaufbau „{0}“ gibt es bereits. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Bauteilaufbau mit der Kennung {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau konnte nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau „{0}“ gehört zur Auslieferung und ist schreibgeschützt. Duplizieren Sie ihn, um ihn zu ändern. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau „{0}“ wird von {1} Bauteil(en) verwendet und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AUFBAU_VERWENDET {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AUFBAU_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Ein geneigtes Außenbauteil braucht einen Azimut; er wird nicht auf Nord vorbelegt. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_AZIMUT_FEHLT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_AZIMUT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauteilart „{0}“ ist kein gültiger Wert. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_BAUTEILART {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_BAUTEILART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Fläche muss größer als null sein. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_FLAECHE {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Bauteil mit der Kennung {1} gehört zu keiner Zone dieses Gebäudes. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_FREMD {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Herkunft „{0}“ ist kein gültiger Wert. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_HERKUNFT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Bauteil braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Randbedingung „{1}“ ist kein gültiger Wert. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_RANDBEDINGUNG {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_RANDBEDINGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Den Baustoff mit der Kennung {1} gibt es in dieser Ablage nicht. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_SCHICHT_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Die Dicke muss größer als null sein. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_SCHICHT_DICKE {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: {1} ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_SCHICHT_WERT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_WERT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_WERT", resourceCulture);
             }
         }
         
@@ -28156,6 +28417,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilart ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BAUTEILART {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BAUTEILART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string KFLT_SP_BESCHREIBUNG {
@@ -28219,11 +28489,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmekapazität ähnelt.
+        /// </summary>
+        public static string KFLT_SP_CP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_CP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate ähnelt.
         /// </summary>
         public static string KFLT_SP_CRATE {
             get {
                 return ResourceManager.GetString("KFLT_SP_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dicke ähnelt.
+        /// </summary>
+        public static string KFLT_SP_DICKE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_DICKE", resourceCulture);
             }
         }
         
@@ -28287,6 +28575,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_GEBAEUDEART {
             get {
                 return ResourceManager.GetString("KFLT_SP_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string KFLT_SP_GRUPPE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_GRUPPE", resourceCulture);
             }
         }
         
@@ -28395,6 +28692,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_KURVEN {
             get {
                 return ResourceManager.GetString("KFLT_SP_KURVEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die λ ähnelt.
+        /// </summary>
+        public static string KFLT_SP_LAMBDA {
+            get {
+                return ResourceManager.GetString("KFLT_SP_LAMBDA", resourceCulture);
             }
         }
         
@@ -28530,6 +28836,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_QUELLE {
             get {
                 return ResourceManager.GetString("KFLT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rohdichte ähnelt.
+        /// </summary>
+        public static string KFLT_SP_RHO {
+            get {
+                return ResourceManager.GetString("KFLT_SP_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
+        /// </summary>
+        public static string KFLT_SP_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("KFLT_SP_SCHICHTEN", resourceCulture);
             }
         }
         
@@ -81608,6 +81932,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_PFLICHT {
             get {
                 return ResourceManager.GetString("WZP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone mit der Kennung {0} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_FREMD {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projektgebäude mit der Kennung {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_GEBAEUDE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_GEBAEUDE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0}: Die Zone braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen des Gebäudes konnten nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Übergabeart „{1}“ ist kein gültiger Wert. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_UEBERGABEART {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_UEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_WERT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_WERT", resourceCulture);
             }
         }
         

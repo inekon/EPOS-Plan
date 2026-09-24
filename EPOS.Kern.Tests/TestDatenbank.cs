@@ -665,6 +665,13 @@ namespace EPOS.Kern.Tests
                 // Anschlusslaengen im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
                 GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                // Schritte S-A, S-B, S-C (Gebaeudesimulation G3, Welle B): Baustoffkatalog samt
+                // Norm- und Herstellersaat, Bauteilaufbauten mit Schichten, Zonen und Bauteile. Aus DENSELBEN
+                // Quellen wie Migration und Werkzeug (BaustoffSchema, BauteilaufbauSchema,
+                // ZonenSchema); wiederholbar.
+                BaustoffSchema.Ausfuehren();
+                BauteilaufbauSchema.Ausfuehren();
+                ZonenSchema.Ausfuehren();
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

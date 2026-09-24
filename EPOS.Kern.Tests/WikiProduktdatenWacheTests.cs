@@ -295,6 +295,14 @@ namespace EPOS.Kern.Tests
             // Geraetenamen.
             Assert.Contains(namen, n => n.StartsWith("allSTOR exclusiv VPS", StringComparison.Ordinal));
 
+            // Gebaeudesimulation G3: die Herstellerzeilen des Baustoffkatalogs - Hersteller und
+            // Produkt -, die herstellerneutralen Normzeilen NICHT (eine Hilfeseite darf
+            // "Stahlbeton" sagen).
+            Assert.Contains("Wienerberger", namen);
+            Assert.Contains("Ytong ThermUltra PP2-0,30", namen);
+            Assert.DoesNotContain("Stahlbeton", namen);
+            Assert.DoesNotContain("Kalksandstein 1800", namen);
+
             // Platzhalter NICHT.
             Assert.DoesNotContain("Muster", namen);
             Assert.DoesNotContain("meins", namen);
@@ -576,6 +584,26 @@ namespace EPOS.Kern.Tests
                     foreach (string wert in Werte(tabelle, namensspalte))
                         Aufnehmen(namen, wert);
                 }
+
+            // Gebaeudesimulation G3: der Baustoffkatalog (Schritt S-A) und seine Projektkopie
+            // tragen BEIDES - herstellerneutrale Normzeilen ("Stahlbeton", "Kalksandstein 1800"),
+            // die eine Hilfeseite nennen darf, und Herstellerzeilen, die sie nicht nennen darf.
+            // Aufgenommen werden deshalb nur die Zeilen MIT Hersteller: der Hersteller (voll und
+            // ohne Firmenzusatz) und der Produktname.
+            foreach (string tabelle in new[] { SchemaKatalog.TAB_BAUSTOFF_STAMM, SchemaKatalog.TAB_BAUSTOFF })
+            {
+                if (!DataRepository.TabelleVorhanden(tabelle)) continue;
+                DataTable t = DataRepository.GetDataTable(
+                    "SELECT DISTINCT \"Hersteller\", \"Bezeichner\" FROM \"" + tabelle + "\" WHERE \"Hersteller\" IS NOT NULL");
+                if (t == null) continue;
+                foreach (DataRow r in t.Rows)
+                {
+                    string hersteller = Convert.ToString(r["Hersteller"])?.Trim();
+                    Aufnehmen(namen, hersteller);
+                    Aufnehmen(namen, OhneFirmenzusatz(hersteller ?? ""));
+                    Aufnehmen(namen, Convert.ToString(r["Bezeichner"])?.Trim());
+                }
+            }
 
             return namen.ToList();
         }
