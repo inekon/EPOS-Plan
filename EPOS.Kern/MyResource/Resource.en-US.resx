@@ -8627,6 +8627,9 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
     <value>No controllable form is open. Controllable are: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_MEHRDEUTIG" xml:space="preserve">
+    <value>No controllable form is open, and the named fields fit several forms equally well: {0}. The action dialog_oeffnen with the key of the intended form leads there; the values can be set there.</value>
+  </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
     <value>The named fields belong to the form “{0}”. It is not open right now — the action dialog_oeffnen ({1}) leads there. In an administration the field “satz” selects the catalogue record; then the values can be set and saved with dialog_speichern.</value>
   </data>

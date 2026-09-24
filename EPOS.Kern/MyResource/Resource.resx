@@ -8634,6 +8634,9 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
     <value>Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_MEHRDEUTIG" xml:space="preserve">
+    <value>Es ist keine steuerbare Maske geöffnet, und die genannten Felder passen gleich gut zu mehreren Masken: {0}. Die Aktion dialog_oeffnen mit dem Schlüssel der gemeinten Maske führt dorthin; dort lassen sich die Werte setzen.</value>
+  </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
     <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern.</value>
   </data>

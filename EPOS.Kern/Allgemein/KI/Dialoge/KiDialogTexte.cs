@@ -517,6 +517,12 @@
         /// </summary>
         internal static string MaskeNichtOffen => MyResource.Resource.KI_DLG_MASKE_NICHT_OFFEN;
 
+        /// <summary>
+        /// Keine Maske offen, und die genannten Felder treffen auf der besten Stufe der
+        /// Namensregel mehrere Masken (Welle #472). {0} = die Kandidaten.
+        /// </summary>
+        internal static string MaskeMehrdeutig => MyResource.Resource.KI_DLG_MASKE_MEHRDEUTIG;
+
         /// <summary>{0} = die offenen Masken.</summary>
         internal static string MehrereOffen => MyResource.Resource.KI_DLG_MEHRERE_OFFEN;
 
