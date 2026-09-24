@@ -9303,3 +9303,65 @@ UI 5 893, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27
 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
 `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
 Toleranz), Schemastand 119.
+
+## #467 — Lastspitzenkappung: „CSV-Export“ und „In Variante übernehmen“ in der Werkzeugleiste (Konzept 7.1 c) (24.09.2026)
+
+Anwenderentscheid „Lastspitzenkappung: Werkzeugleiste“ zur offenen Frage 7.1
+(c) des Konzepts Administrationsdialoge. Beide Knöpfe standen in der Fußleiste
+von `EPOS.UI/Dialoge/Strom/PeakShavingDialog.razor`; der Katalograhmen hat
+keinen eigenen Werkzeug-Schlitz, der Schlitz sitzt in der `Katalogliste`
+(`Werkzeug`, Suchzeile — bisher nur Wärmepumpe); `Katalogliste.razor` blieb
+unverändert. Commits (Zweig `worktree-agent-ac446611b02598f0e`, Basis
+`4a9d7449`): `f5366a4a` Lastspitzenkappung: CSV-Export und Übernahme in die
+Werkzeugleiste (Dialog, CSS, Tests); `ffdd658d` Papiere: Lastspitzenkappung
+Werkzeugleiste (Admin-Konzept 7.1 c). Merge in den Hauptbaum `8c68d21b`,
+konfliktfrei.
+
+**Umsetzung.** Beide Knöpfe stehen jetzt im Schlitz `Werkzeug` in einer neuen
+Gruppe `.epos-werkzeughandlungen` (Beschriftung, Sperre „solange gerechnet
+wird“ und Meldung „Bitte zuerst rechnen.“ unverändert; ohne Delegaten entsteht
+keine leere Zelle). Die Fußleiste trägt nur noch „Lastgang aus Datei…“, die
+Statuszeile und „Beenden“. Die Tabulatorfolge läuft Suche → CSV-Export → In
+Variante übernehmen → Liste → Fußleiste, nichts ist per CSS umsortiert. In
+`epos-ui.css` brechen die Knöpfe nicht um, das Suchfeld der Lastspitzenkappung
+beginnt mit 16rem statt 22rem. Die KI-Sicht `PEAK_SHAVING` und ihr Wächter sind
+unberührt — Knöpfe zählen nicht als Eingabestellen.
+
+**Messung** (Rasterprobe-Wirt, Chromium/Playwright 1.58). Bei 1 088 × 624:
+Werkzeugleiste eine Zeile, Liste 426 px/8 Zeilen, Fußleiste eine Zeile,
+Sucheingabe 124 px statt 309 px (Platzhalter abgeschnitten). Bei 400 × 624:
+Suchzeile 3 Zeilen/126 px statt 2/72 px, Fußleiste 1 Zeile/44 px statt 2/100
+px, Liste 283 px statt 281 px. Katalogprobe 60/60 ohne Überlagerung.
+
+**Tests.** Neue Fälle in `PeakShavingDialogTests` (Knöpfe stehen in der
+Werkzeugleiste, nicht in der Fußleiste; gesperrt während der Rechnung) und
+`PeakShavingVarianteTests`. Im Worktree 12 602 bestanden, 0 rot, 1 übersprungen
+(Kern 5 744, UI 5 903, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27);
+Kern-Filter und Windows-Schale 0 Fehler.
+
+**Papiere.** Konzept Administrationsdialoge (7.1 (c) entschieden und umgesetzt;
+3.1 Kopf/Zonen 2 und 6, 3.2 „Handlungen am Ergebnis“, 3.5 Zeile A11, 3.6 Punkt
+6, Stufe 5); Konzept Knopfleisten (neue Regel: Ausgabe- und Übernahmehandlungen
+gehören in die Werkzeugleiste, die Fußleiste bleibt dem Gerüst vorbehalten;
+Tabellenzeile 5); `EPOS.UI/CLAUDE.md` (Regel beim Schlitz WERKZEUG);
+Wiki-Quelle `Programm Dokumentation - Stromspeicher.wiki` (Abschnitt Maske
+Lastspitzenkappung; Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Lastspitzenkappung: „CSV-Export“ und „In Variante übernehmen“ stehen in der
+> Werkzeugleiste über der Liste der Lastgänge.
+
+**Was offen bleibt.** Im schmalen Fenster (unter 900 px, iPad hochkant) liegt
+das Stammblatt über Werkzeugleiste und Liste — wer im Blatt rechnet, erreicht
+die Knöpfe erst über „‹ Liste“ (vorher stand die Fußleiste immer sichtbar);
+Anwenderfrage. Bei gesetztem Spaltenfilter rückt „Filter zurücksetzen“ bei
+1 088 px in eine zweite Zeile (+54 px); das Suchfeld bleibt bei 124 px statt
+309 px. Der Widerspruch im Konzept 3.5 Zeile A11 („Vergleichen rechnet über
+zwei bis drei Lastgänge“) gegen 7.1 (c) und den Dialog („kein Vergleich“) ist
+unverändert.
+
+**Gate nach Merge auf `8c68d21b`.** Kern-Filter 0 Fehler; Kern 5 744, UI 5 903,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 120.
