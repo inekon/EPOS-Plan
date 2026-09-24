@@ -236,7 +236,7 @@ namespace WindowsFormsApplication1
                 rechenprojekt = stand.Projekt;
                 r = ZapfprofilCtrl.Auslegung(idProjekt, stand, jan1, we,
                     new Auslegungslauf(AlsErzeugerart(auslegung.Erzeugerart), AlsWerkstoff(auslegung.Werkstoff),
-                                       auslegung.Stochastisch, abbruch));
+                                       auslegung.Stochastisch, abbruch, (ZapfStufe)(int)stufe));
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex) when (ex is ZapfprofilEingabeException || ex is ParametersatzException || ex is ZapfAuslegungException)
@@ -366,7 +366,8 @@ namespace WindowsFormsApplication1
                     VolumenL = e.VolumenL,
                     LeistungKw = e.LeistungKw,
                     NenninhaltL = e.NenninhaltL,
-                    Schnellauslegung = e.Rechenbar && (e.Schnellauslegung || stufe == ZapfprofilStufe.Einfach),
+                    // Die Marke setzt der Kern je Stufe (N11 (c)); die Hülle rechnet sie nicht nach.
+                    Schnellauslegung = e.Rechenbar && e.Schnellauslegung,
                     Vermerk = string.Join("; ", e.Vermerke.Select(Satztext)),
                     Grund = Satztext(e.Grund)
                 };
@@ -510,6 +511,12 @@ namespace WindowsFormsApplication1
                 ProfilbasiertVorhanden = sa.ProfilbasiertVorhanden,
                 FuellstandBezugL = sa.FuellstandBezugL,
                 FuellstandBezug = sa.FuellstandBezug.HasValue ? Satztext(TwwSpeicherauslegung.Fuellstandbegriff(sa.FuellstandBezug.Value)) : "",
+                FuellstandBezugArt = sa.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)sa.FuellstandBezug.Value
+                                                                 : ZapfprofilFuellstandbezug.Vorgabe,
+                Ladeleistung = AlsSchaetzhilfe(sa.LadeSchaetzhilfe),
+                PersonenVorschlag = sa.PersonenWert.HasValue && !double.IsNaN(sa.PersonenWert.Value.Vorschlag)
+                    ? sa.PersonenWert.Value.Vorschlag : (double?)null,
+                PersonenManuell = sa.PersonenWert.HasValue && sa.PersonenWert.Value.IstManuell,
                 KapazitaetKwh = sa.KapazitaetKwh,
                 MinFuellstandKwh = sa.MinFuellstandKwh,
                 ReserveAnteil = sa.ReserveAnteil
@@ -612,14 +619,43 @@ namespace WindowsFormsApplication1
                 // Realisierungen des Bedarfstags; „Stochastisch rechnen" trägt keine Spalte.
                 a.Perzentil = TwwSchema.Perzentile.Contains(p.Perzentil) ? p.Perzentil : (int?)null;
                 a.RealisierungenAuslegung = p.RealisierungenAuslegung;
+                // Der Verfahrensvergleich (4.7; Stufe Z4): Ladeleistung, Ladefenster, Nutzanteil und
+                // Zuschlag aus den Projektgrößen; Personen und Füllstandsbezug nur im Arbeitsstand (N13).
+                a.LadeAuto = p.LadeAuto;
+                a.LadeManuellKw = p.LadeManuellKw;
+                a.LadefensterH = p.LadefensterH;
+                a.LadefensterBeginnH = p.LadefensterBeginnH;
+                a.Nutzanteil = p.Nutzanteil;
+                a.Zuschlag = p.Zuschlag;
+                a.PersonenAuto = p.PersonenAuto;
+                a.PersonenManuell = p.PersonenManuell;
+                a.FuellstandBezug = p.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)p.FuellstandBezug.Value
+                                                               : ZapfprofilFuellstandbezug.Vorgabe;
             }
             if (stand?.BedarfstagEntwurf != null)
             {
                 a.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
                 a.IdBedarfstag = null;
                 a.Entwurf = AlsBedarfstag(stand.BedarfstagEntwurf, true);
+                // Die Zeilen des Konstruktors gehen mit dem Arbeitsstand (N11 (j)).
+                a.Entwurf.Konstruktorzeilen = (stand.Konstruktorzeilen ?? new KonstruktorzeileStand[0])
+                    .Select(z => new ZapfprofilKonstruktorZeileDaten
+                    {
+                        BeginnH = z.BeginnH, EndeH = z.EndeH, Regel = z.Regel, Anzahl = z.Anzahl, VolumenL = z.VolumenL,
+                        ZapftemperaturC = z.ZapftemperaturC, Verbraucher = z.Verbraucher
+                    }).ToList();
             }
             return a;
+        }
+
+        /// <summary>Die Zeilen des Konstruktors aus den Eingaben der Überlagerung — nur beim Entwurf, sonst keine.</summary>
+        internal static IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen(ZapfprofilAuslegungEingabeDaten a)
+        {
+            if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return new KonstruktorzeileStand[0];
+            return a.Entwurf.Konstruktorzeilen
+                .Where(z => z != null)
+                .Select(z => new KonstruktorzeileStand(z.BeginnH, z.EndeH, z.Regel, z.Anzahl, z.VolumenL, z.ZapftemperaturC, z.Verbraucher))
+                .ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -650,7 +686,17 @@ namespace WindowsFormsApplication1
                 AuslegungVolumenL = a.PunktVolumenL,
                 AuslegungLeistungKw = a.PunktLeistungKw,
                 Perzentil = a.Perzentil ?? p.Perzentil,
-                RealisierungenAuslegung = a.RealisierungenAuslegung
+                RealisierungenAuslegung = a.RealisierungenAuslegung,
+                LadeAuto = a.LadeAuto,
+                LadeManuellKw = a.LadeManuellKw,
+                LadefensterH = a.LadefensterH,
+                LadefensterBeginnH = a.LadefensterBeginnH,
+                Nutzanteil = a.Nutzanteil,
+                Zuschlag = a.Zuschlag,
+                PersonenAuto = a.PersonenAuto,
+                PersonenManuell = a.PersonenManuell,
+                FuellstandBezug = a.FuellstandBezug == ZapfprofilFuellstandbezug.Vorgabe
+                    ? (ZapfFuellstandbezug?)null : (ZapfFuellstandbezug)(int)a.FuellstandBezug
             };
         }
 

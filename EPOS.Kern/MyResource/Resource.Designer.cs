@@ -76410,6 +76410,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden des Jahres, absteigend geordnet, Teilung alle 1000 h ähnelt.
+        /// </summary>
+        public static string ZPG_ACHSE_RANG {
+            get {
+                return ResourceManager.GetString("ZPG_ACHSE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
         /// </summary>
         public static string ZPG_ACHSE_STUNDE {
@@ -78867,11 +78876,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauerlinie Zapfung und Zirkulation ähnelt.
+        /// </summary>
+        public static string ZPG_BILD_DAUERLINIE {
+            get {
+                return ResourceManager.GetString("ZPG_BILD_DAUERLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresgang Zapfung und Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_BILD_JAHRESGANG {
             get {
                 return ResourceManager.GetString("ZPG_BILD_JAHRESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P{0} ähnelt.
+        /// </summary>
+        public static string ZPG_BILD_PERZENTIL {
+            get {
+                return ResourceManager.GetString("ZPG_BILD_PERZENTIL", resourceCulture);
             }
         }
         
@@ -79218,6 +79245,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen in der Stufe Erweitert. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_WEITERE_ERWEITERT {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_WEITERE_ERWEITERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen auf den Vorgaben des Katalogs. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WEITERE_VORGABE {
@@ -79241,6 +79277,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_INFO_RECHENWEG {
             get {
                 return ResourceManager.GetString("ZPG_INFO_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone benutzt die Nutzungsart — geänderte Kategorien entstehen als neue Katalogversion. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_BENUTZT_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_BENUTZT_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für die neue Katalogversion fehlt ihr Name. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_ENTWURF_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_ENTWURF_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Datenbank hat die Änderung nicht angenommen. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Nutzungsart steht in dieser Katalogversion schon. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Nutzungsart gibt es nicht mehr. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Kategorien verletzen eine Regel. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_RASTER_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_RASTER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart gehört zur Auslieferung — geänderte Kategorien entstehen als neue Katalogversion. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_READ_ONLY_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_READ_ONLY_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Tabellen der Zapfkategorien fehlen in dieser Datenbank. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_TABELLEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_TABELLEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Tagesgangsatz der Nutzungsart steht nicht im Katalog. ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_GRUND_TAGESGANGSATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_GRUND_TAGESGANGSATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorien wurden nicht gespeichert — {0} ähnelt.
+        /// </summary>
+        public static string ZPG_KATEG_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPG_KATEG_MSG_NICHT_GESPEICHERT", resourceCulture);
             }
         }
         
@@ -79826,6 +79952,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_PUNKT_UEBERHOLT {
             get {
                 return ResourceManager.GetString("ZPG_PUNKT_UEBERHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfung und Zirkulation ähnelt.
+        /// </summary>
+        public static string ZPG_REIHE_GESAMT {
+            get {
+                return ResourceManager.GetString("ZPG_REIHE_GESAMT", resourceCulture);
             }
         }
         
@@ -83633,6 +83768,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_VORSCHAU_LIVE {
             get {
                 return ResourceManager.GetString("ZPG_VORSCHAU_LIVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf außerhalb der Bandbreite ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsmenge und Wohnungstabelle ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_BEZUGSMENGE_WOHNUNGSTABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_BEZUGSMENGE_WOHNUNGSTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellung ungültig ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_EINSTELLUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_EINSTELLUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihe stochastisch ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_JAHRESREIHE_STOCHASTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_JAHRESREIHE_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Messwert weicht ab ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSWERT_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSWERT_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Messwert mit Speicherverlust ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSWERT_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSWERT_SPEICHERVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverluste und Zirkulation ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_NETZVERLUST_UND_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_NETZVERLUST_UND_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter fehlt ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_PARAMETER_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_PARAMETER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieprobe der Stochastik ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_STOCHASTIK_ENERGIEPROBE {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_STOCHASTIK_ENERGIEPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang leer ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TAGESGANG_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TAGESGANG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang normiert ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_TAGESGANG_SUMME {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_TAGESGANG_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenfaktoren normiert ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_WOCHENFAKTOREN_SUMME {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_WOCHENFAKTOREN_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone außerhalb der Zirkulation ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ZIRKULATION_NICHT_IN_Z1 {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_NICHT_IN_Z1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation ohne Fläche ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ZIRKULATION_OHNE_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_OHNE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation ohne Zone ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ZIRKULATION_OHNE_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_OHNE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation größer als Zapfung ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ohne Fläche ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE", resourceCulture);
             }
         }
         

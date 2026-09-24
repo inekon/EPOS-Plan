@@ -131,6 +131,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_WEITERE_VORGABE</c></summary>
     public string HinweisWeitereVorgabe { get; set; } = "Weitere Angaben stehen auf den Vorgaben des Katalogs.";
 
+    /// <summary><c>ZPG_HINW_WEITERE_ERWEITERT</c></summary>
+    public string HinweisWeitereErweitert { get; set; } = "Weitere Angaben stehen in der Stufe Erweitert.";
+
     /// <summary><c>ZPG_HINW_NUTZUNGSART_KATALOG</c></summary>
     public string HinweisNutzungsartKatalog { get; set; } = "Katalog · {0}";
 

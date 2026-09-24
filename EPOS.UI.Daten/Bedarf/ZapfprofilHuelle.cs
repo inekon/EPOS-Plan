@@ -167,6 +167,8 @@ namespace WindowsFormsApplication1
                 e.Seed = p.Seed;
                 e.Realisierungen = p.Realisierungen;
             }
+            e.AnzeigetemperaturC = stand?.Anzeige?.AnzeigetemperaturC;
+            e.SchwelleKw = stand?.Anzeige?.SchwelleKw;
             return e;
         }
 
@@ -271,15 +273,25 @@ namespace WindowsFormsApplication1
             // Punkt — sie gehen in die Projektgrößen, ein konstruierter Tag als Entwurf mit; ohne
             // sie bleiben Projektgrößen und Entwurf der Basis, wie sie sind.
             BedarfstagKatalogzeile entwurf = basis?.BedarfstagEntwurf;
+            IReadOnlyList<KonstruktorzeileStand> zeilen = basis?.Konstruktorzeilen ?? new KonstruktorzeileStand[0];
             if (eingabe.Auslegung != null)
             {
                 projekt = MitAuslegung(projekt ?? ZapfprofilCtrl.ProjektVorgabe(), eingabe.Auslegung);
                 entwurf = EntwurfAus(eingabe.Auslegung);
+                zeilen = Konstruktorzeilen(eingabe.Auslegung);
             }
             // Haben sich die Zonen nach der Übernahme geändert, ist der Punkt überholt: verworfen,
             // nicht gespeichert — auch ein Punkt, den schon der Stand beim Öffnen trug.
             if (eingabe.PunktUeberholt) projekt = OhnePunkt(projekt);
-            return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), projekt) { BedarfstagEntwurf = entwurf };
+            // Die Laufangaben der Anzeige (N9 (h)) gehen mit dem Arbeitsstand, nicht in die Datenbank.
+            ZapfAnzeige anzeige = eingabe.AnzeigetemperaturC.HasValue || eingabe.SchwelleKw.HasValue
+                ? new ZapfAnzeige(eingabe.AnzeigetemperaturC, eingabe.SchwelleKw) : null;
+            return new ZapfprofilStand(AlsWeg(eingabe.Weg), zonen.AsReadOnly(), projekt)
+            {
+                BedarfstagEntwurf = entwurf,
+                Konstruktorzeilen = zeilen,
+                Anzeige = anzeige
+            };
         }
 
         /// <summary>
@@ -547,7 +559,9 @@ namespace WindowsFormsApplication1
             string summe = Text_("ZPG_ANSICHT_SUMME", "Summe aller Zonen");
             ZapfprofilAnsichtDaten gesamt = Ansicht(0, summe, false, e.Zapfung, e.Zirkulation, kalender, wochentagJan1, bildtexte);
             gesamt.Kennzahlen = Kennzahlen(e.Kennzahlen);
+            gesamt.Dauerlinie = AlsDauerlinie(e.Dauerlinie, bildtexte);
             vorschau.Ansichten.Add(gesamt);
+            vorschau.Zirkulation = AlsSchaetzhilfe(e.SchaetzhilfeZirkulation);
 
             for (int i = 0; i < e.JeZone.Count; i++)
             {
@@ -558,6 +572,13 @@ namespace WindowsFormsApplication1
                 ZapfprofilAnsichtDaten a = Ansicht(z.IdZone, name, z.Abgelehnt, z.Zapfung, z.Zirkulation,
                                                    z.Kalender ?? grund, wochentagJan1, bildtexte);
                 a.Kennzahlen = Kennzahlen(z, d != null && einheiten.TryGetValue(d.IdNutzungsart, out string eh) ? eh : "");
+                if (!z.Abgelehnt)
+                {
+                    a.Tagesbedarf = AlsSchaetzhilfe(z.SchaetzhilfeTagesbedarf);
+                    a.Auslastung = AlsAuslastung(z.Auslastung);
+                    a.Auslastungsgang = AlsAuslastungsgang(z.Auslastungsgang);
+                    a.Dauerlinie = AlsDauerlinie(Zapfauswertung.Dauerlinie(z.Zapfung, z.Zirkulation, e.Dauerlinie?.SchwelleKw), bildtexte);
+                }
                 // Die Konsistenzprobe der stochastischen Jahresreihe (4.4): an der Zone und in der Summe.
                 if (!z.Abgelehnt && z.Konsistenz != null)
                 {
@@ -582,7 +603,71 @@ namespace WindowsFormsApplication1
             IReadOnlyDictionary<string, int> position = EindeutigePositionen(e.JeZone.Select(z => z.Zone));
             foreach (ZapfAblehnung a in e.Ablehnungen) vorschau.Meldungen.Add(MitPosition(Meldung(a), position));
             foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(MitPosition(Meldung(h), position));
+            // Die Warnliste der Bilanz (Warnlogik Z4, N9 (g)): jeder Hinweis mit Titel und Stufe.
+            foreach (ZapfHinweis h in e.Hinweise) vorschau.Warnliste.Add(Warnung(h));
             return vorschau;
+        }
+
+        /// <summary>
+        /// Die Kennungen der Hinweise des Bilanzrechenwegs — je eine Ressource <c>ZPG_WARN_…</c> als
+        /// Titel der Warnliste (Stufe Z4). Die Wache hält die Liste gegen den Quelltext des Kerns.
+        /// </summary>
+        internal static readonly string[] BILANZHINWEISE =
+        {
+            ZapfHinweis.PARAMETER_FEHLT, "TAGESGANG_LEER", "TAGESGANG_SUMME", "WOCHENFAKTOREN_SUMME",
+            Mengengeruest.HINWEIS_BANDBREITE, Mengengeruest.HINWEIS_WOHNUNGSTABELLE, "MESSWERT_SPEICHERVERLUST",
+            "MESSWERT_ABWEICHUNG", ZapfprofilRechner.HINWEIS_NETZVERLUST, ZapfprofilRechner.HINWEIS_ZIRKULATION_UEBER_ZAPFUNG,
+            ZapfprofilRechner.HINWEIS_STOCHASTISCH, ZapfprofilRechner.HINWEIS_ENERGIEPROBE, "ZIRKULATION_ZONE_OHNE_FLAECHE",
+            "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE", "ZIRKULATION_NICHT_IN_Z1", ZapfprofilCtrl.HINWEIS_EINSTELLUNG_UNGUELTIG
+        };
+
+        /// <summary>Ein Hinweis der Bilanz als Eintrag der Warnliste: Titel aus <c>ZPG_WARN_…</c>, sonst „Hinweis"; Satz des Kerns; Stufe nach der Warnlogik.</summary>
+        internal static ZapfprofilWarnDaten Warnung(ZapfHinweis h)
+        {
+            string kennung = "ZPG_WARN_" + (h?.Code ?? "");
+            string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
+            return new ZapfprofilWarnDaten(kennung, titel, Satztext(h?.Satz),
+                                           h != null && h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
+        }
+
+        /// <summary>Eine Schätzhilfe des Kerns als DTO — Vorschlag <c>null</c> ohne Verfahren, Rechenweg in der Oberflächensprache.</summary>
+        internal static ZapfprofilSchaetzhilfeDaten AlsSchaetzhilfe(Schaetzhilfe s)
+            => s == null ? null : new ZapfprofilSchaetzhilfeDaten
+            {
+                Auto = s.Auto,
+                Vorschlag = s.HatVorschlag ? s.Vorschlag : (double?)null,
+                Manuell = s.Manuell,
+                Angesetzt = s.Angesetzt,
+                Einheit = s.Einheit ?? "",
+                Rechenweg = Satztext(s.Rechenweg)
+            };
+
+        private static ZapfprofilAuslastungDaten AlsAuslastung(Zapfauslastung a)
+            => a == null ? null : new ZapfprofilAuslastungDaten
+            {
+                Monate = a.Monate.ToArray(), Wochentage = a.Wochentage.ToArray(), Stunden = a.Stunden.ToArray()
+            };
+
+        private static ZapfprofilAuslastungsgangDaten AlsAuslastungsgang(Auslastungsgang g)
+            => g == null ? null : new ZapfprofilAuslastungsgangDaten
+            {
+                Wirksam = g.Wirksam.ToArray(), Katalog = g.Katalog.ToArray(), Ueberschrieben = g.JeMonatUeberschrieben.ToArray()
+            };
+
+        /// <summary>Die Dauerlinie des Kerns als DTO samt Bild (Perzentilmarken an ihrem Rang).</summary>
+        internal static ZapfprofilDauerlinieDaten AlsDauerlinie(Zapfdauerlinie d, ZapfprofilBildtexte bild)
+        {
+            if (d == null) return null;
+            var x = new ZapfprofilDauerlinieDaten
+            {
+                GesamtKw = d.GesamtKw.ToArray(),
+                SchwelleKw = d.SchwelleKw,
+                StundenUeberSchwelle = d.StundenUeberSchwelle
+            };
+            foreach (Dauerlinienmarke m in d.Marken) x.Marken.Add(new ZapfprofilDauerlinienmarkeDaten(m.Perzentil, m.LeistungKw, m.Rang));
+            x.Modell = ZapfprofilBilder.DauerlinieModell(x.GesamtKw, x.Marken.Select(m => m.Perzentil).ToArray(),
+                x.Marken.Select(m => m.Rang).ToArray(), x.Marken.Select(m => m.LeistungKw).ToArray(), null, null, bild);
+            return x;
         }
 
         /// <summary>Die Konsistenzprobe des Kerns als DTO — Zahlen in ihrer Quelleneinheit, die Anzeige formatiert.</summary>
@@ -1099,6 +1184,7 @@ namespace WindowsFormsApplication1
             t.HinweisBezugsmengeEinheit = Text_("ZPG_HINW_BEZUGSMENGE_EINHEIT", t.HinweisBezugsmengeEinheit);
             t.HinweisNiveauVorgabe = Text_("ZPG_HINW_NIVEAU_VORGABE", t.HinweisNiveauVorgabe);
             t.HinweisWeitereVorgabe = Text_("ZPG_HINW_WEITERE_VORGABE", t.HinweisWeitereVorgabe);
+            t.HinweisWeitereErweitert = Text_("ZPG_HINW_WEITERE_ERWEITERT", t.HinweisWeitereErweitert);
             t.HinweisNutzungsartKatalog = Text_("ZPG_HINW_NUTZUNGSART_KATALOG", t.HinweisNutzungsartKatalog);
             t.KatalogKeineAuswahl = Text_("ZPG_KAT_KEINE_AUSWAHL", t.KatalogKeineAuswahl);
 
@@ -1195,6 +1281,10 @@ namespace WindowsFormsApplication1
             t.AchseStunde = Text_("ZPG_ACHSE_STUNDE", t.AchseStunde);
             t.AchseWochenstunde = Text_("ZPG_ACHSE_WOCHENSTUNDE", t.AchseWochenstunde);
             t.AchseLeistung = Text_("ZPG_ACHSE_LEISTUNG", t.AchseLeistung);
+            t.TitelDauerlinie = Text_("ZPG_BILD_DAUERLINIE", t.TitelDauerlinie);
+            t.Gesamt = Text_("ZPG_REIHE_GESAMT", t.Gesamt);
+            t.AchseRang = Text_("ZPG_ACHSE_RANG", t.AchseRang);
+            t.Perzentil = Text_("ZPG_BILD_PERZENTIL", t.Perzentil);
             return t;
         }
 

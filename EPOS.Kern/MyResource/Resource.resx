@@ -28192,4 +28192,100 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
     <value>Die Einstellung „{0}“ ist keine gültige Zahl („{1}“) — sie gilt nicht.</value>
   </data>
+  <data name="ZPG_WARN_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Parameter fehlt</value>
+  </data>
+  <data name="ZPG_WARN_TAGESGANG_LEER" xml:space="preserve">
+    <value>Tagesgang leer</value>
+  </data>
+  <data name="ZPG_WARN_TAGESGANG_SUMME" xml:space="preserve">
+    <value>Tagesgang normiert</value>
+  </data>
+  <data name="ZPG_WARN_WOCHENFAKTOREN_SUMME" xml:space="preserve">
+    <value>Wochenfaktoren normiert</value>
+  </data>
+  <data name="ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
+    <value>Bedarf außerhalb der Bandbreite</value>
+  </data>
+  <data name="ZPG_WARN_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Bezugsmenge und Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_WARN_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
+    <value>Messwert mit Speicherverlust</value>
+  </data>
+  <data name="ZPG_WARN_MESSWERT_ABWEICHUNG" xml:space="preserve">
+    <value>Messwert weicht ab</value>
+  </data>
+  <data name="ZPG_WARN_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>Netzverluste und Zirkulation</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
+    <value>Zirkulation größer als Zapfung</value>
+  </data>
+  <data name="ZPG_WARN_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Jahresreihe stochastisch</value>
+  </data>
+  <data name="ZPG_WARN_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Energieprobe der Stochastik</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zone ohne Fläche</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zirkulation ohne Fläche</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
+    <value>Zirkulation ohne Zone</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
+    <value>Zone außerhalb der Zirkulation</value>
+  </data>
+  <data name="ZPG_WARN_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>Einstellung ungültig</value>
+  </data>
+  <data name="ZPG_BILD_DAUERLINIE" xml:space="preserve">
+    <value>Dauerlinie Zapfung und Zirkulation</value>
+  </data>
+  <data name="ZPG_REIHE_GESAMT" xml:space="preserve">
+    <value>Zapfung und Zirkulation</value>
+  </data>
+  <data name="ZPG_ACHSE_RANG" xml:space="preserve">
+    <value>Stunden des Jahres, absteigend geordnet, Teilung alle 1000 h</value>
+  </data>
+  <data name="ZPG_BILD_PERZENTIL" xml:space="preserve">
+    <value>P{0}</value>
+  </data>
+  <data name="ZPG_HINW_WEITERE_ERWEITERT" xml:space="preserve">
+    <value>Weitere Angaben stehen in der Stufe Erweitert.</value>
+  </data>
+  <data name="ZPG_KATEG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Zapfkategorien wurden nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>die Nutzungsart gibt es nicht mehr.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>Die Nutzungsart gehört zur Auslieferung — geänderte Kategorien entstehen als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>Eine Zone benutzt die Nutzungsart — geänderte Kategorien entstehen als neue Katalogversion.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>die Nutzungsart steht in dieser Katalogversion schon.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>für die neue Katalogversion fehlt ihr Name.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>der Tagesgangsatz der Nutzungsart steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>die Tabellen der Zapfkategorien fehlen in dieser Datenbank.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>die Datenbank hat die Änderung nicht angenommen.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>die Kategorien verletzen eine Regel.</value>
+  </data>
 </root>

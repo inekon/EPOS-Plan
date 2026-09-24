@@ -28185,4 +28185,100 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
     <value>The setting “{0}” is not a valid number (“{1}”) — it does not apply.</value>
   </data>
+  <data name="ZPG_WARN_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Parameter missing</value>
+  </data>
+  <data name="ZPG_WARN_TAGESGANG_LEER" xml:space="preserve">
+    <value>Empty daily profile</value>
+  </data>
+  <data name="ZPG_WARN_TAGESGANG_SUMME" xml:space="preserve">
+    <value>Daily profile normalised</value>
+  </data>
+  <data name="ZPG_WARN_WOCHENFAKTOREN_SUMME" xml:space="preserve">
+    <value>Weekly factors normalised</value>
+  </data>
+  <data name="ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
+    <value>Demand outside the range</value>
+  </data>
+  <data name="ZPG_WARN_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Reference quantity and dwelling table</value>
+  </data>
+  <data name="ZPG_WARN_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
+    <value>Measured value with storage loss</value>
+  </data>
+  <data name="ZPG_WARN_MESSWERT_ABWEICHUNG" xml:space="preserve">
+    <value>Measured value deviates</value>
+  </data>
+  <data name="ZPG_WARN_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>Network losses and circulation</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
+    <value>Circulation exceeds draw-off</value>
+  </data>
+  <data name="ZPG_WARN_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Stochastic annual series</value>
+  </data>
+  <data name="ZPG_WARN_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Energy check of the stochastics</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zone without area</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
+    <value>Circulation without area</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
+    <value>Circulation without zone</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
+    <value>Zone outside the circulation</value>
+  </data>
+  <data name="ZPG_WARN_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>Invalid setting</value>
+  </data>
+  <data name="ZPG_BILD_DAUERLINIE" xml:space="preserve">
+    <value>Duration curve of draw-off and circulation</value>
+  </data>
+  <data name="ZPG_REIHE_GESAMT" xml:space="preserve">
+    <value>Draw-off and circulation</value>
+  </data>
+  <data name="ZPG_ACHSE_RANG" xml:space="preserve">
+    <value>Hours of the year, sorted descending, grid every 1000 h</value>
+  </data>
+  <data name="ZPG_BILD_PERZENTIL" xml:space="preserve">
+    <value>P{0}</value>
+  </data>
+  <data name="ZPG_HINW_WEITERE_ERWEITERT" xml:space="preserve">
+    <value>Further inputs are available at the Extended level.</value>
+  </data>
+  <data name="ZPG_KATEG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The draw-off categories were not saved — {0}</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>the type of use no longer exists.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>The type of use belongs to the delivery — changed categories are created as a new catalogue version.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>A zone uses the type of use — changed categories are created as a new catalogue version.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>the type of use already exists in this catalogue version.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>the name of the new catalogue version is missing.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>the daily profile set of the type of use is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>the tables of the draw-off categories are missing in this database.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>the database did not accept the change.</value>
+  </data>
+  <data name="ZPG_KATEG_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>the categories violate a rule.</value>
+  </data>
 </root>
