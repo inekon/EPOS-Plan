@@ -328,7 +328,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **130**, LFS-SHA-256 `f8fe1b76…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **131**, LFS-SHA-256 `a4a88c33…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -621,17 +621,18 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > der Wahl an `Tab_TwwProjekt` — `Typtage_Aktiv` (0/1, Vorgabe 0), `Typtage_Klimazone` und
 > `Typtage_Gebaeudeart` (beide NULL = keine Wahl), Quelle `TwwSchema.SpaltenT3Typtage`. Die Nummer war in
 > der Arbeit 125; beim Zusammenführen mit origin waren 125 bis 129 belegt (Risikomodul, Gebaeude-
-> Katalogreparatur, Wirkungen, Heizkreis, Wiederholperiode), der Schritt steht jetzt nach **129**.
-> Nachgezogen auf der Fassung von origin mit Schemastand **129** (Nachtrag E16 (#484) oben,
-> `4c546a7c…`) mit
+> Katalogreparatur, Wirkungen, Heizkreis, Wiederholperiode) und mit der Welle #493 auch 130
+> (Anschlusslängen im Gebäudekatalog); der Schritt steht jetzt nach **130**.
+> Nachgezogen auf der Fassung von origin mit Schemastand **130** (Nachtrag #493 oben,
+> `f8fe1b76…`) mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (eine
 > Tabelle und drei Spalten angelegt; ein zweiter Lauf legt nichts an), danach
 > `tww_testkatalog_fiktiv.py --stochastik` (0 angelegt, 0 nachgeführt — der Testkatalog stand schon
 > vollständig da; zweiter Lauf 0/0). **Kein DML:** Die Tabelle ist und bleibt LEER, `Typtage_Aktiv`
-> steht auf 0 und beide Angaben auf NULL. Zellvergleich aller Tabellen gegen die Fassung 129
-> (10 502 791 Zellen): allein `SchemaVersion` 129 → 131, die drei neuen Spalten und der Tabellentext von
+> steht auf 0 und beide Angaben auf NULL. Zellvergleich aller Tabellen gegen die Fassung 130
+> (10 502 791 Zellen): allein `SchemaVersion` 130 → 131, die drei neuen Spalten und der Tabellentext von
 > `Tab_TwwProjekt`; `integrity_check` ok, `foreign_key_check` leer, 134 Tabellen (133 STRICT) statt 133
-> (132), 14 Sichten und 211 Indizes unverändert. Größe 67 805 184 Byte (LFS-SHA-256 `819c4b3a…`).
+> (132), 14 Sichten und 211 Indizes unverändert. Größe 67 805 184 Byte (LFS-SHA-256 `a4a88c33…`).
 > **Keine Einfrierregel ist berührt:** Kein Referenzprojekt steht auf dem Generator, und ohne
 > eingespielte Typtage ist der Typtagweg benannt nicht verfügbar.
 > Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
