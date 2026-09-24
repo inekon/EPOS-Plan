@@ -65,9 +65,15 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     private const int ALLGEMEIN_FELDER = 4;
     private const int SZENARIO_FELDER = 18;
     private const int SZENARIO_DEZIMAL = 16;
-    private const int EINSPEISUNG_PV = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL;
+    // ETAPPE E15 (V-G7): Die Gruppe „Risiko" steht zwischen den Szenarien und Strom und
+    // bringt drei Dezimalfelder (Zinszuschlag, R_loss, p_loss) und eine Klappliste (Art).
+    private const int RISIKO_DEZIMAL = 3;
+    private const int RISIKO_ZUSCHLAG = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL;
+    private const int RISIKO_VERLUST = RISIKO_ZUSCHLAG + 1;
+    private const int RISIKO_P = RISIKO_ZUSCHLAG + 2;
+    private const int EINSPEISUNG_PV = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL + RISIKO_DEZIMAL;
     private const int CO2 = EINSPEISUNG_PV + 1;
-    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL + 1;
+    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_DEZIMAL + RISIKO_DEZIMAL + 1;
 
     /// <summary>ETAPPE E9b: die Zeilen 8 und 9 der Tafel (Index ab 0).</summary>
     private const int ZEILE_ZEITRAUM = 7;
@@ -151,17 +157,19 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 
         Assert.Equal(new[] { "Allgemein",
                              "Szenarien — Best und Worst gegen den Erwartungsfall",
+                             "Risiko (DIN EN 17463, 6.5)",
                              "Strom — Einspeisung und Bezug" },
                      cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToArray());
 
-        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 8×2 (16) + Einspeisung PV (1)
+        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 8×2 (16) + Risiko (3, E15) + Einspeisung PV (1)
         Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
         // T + ETAPPE E9b: der Betrachtungszeitraum je Szenario (Best, Worst)
         Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         // SP-E-2: Der Anzeigehaken „Aufschlaege beruecksichtigen" ist entfallen -
         // die Preisanteile zerlegen den Arbeitspreis, statt auf ihn zu kommen.
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
-        Assert.Empty(cut.FindAll("select"));
+        // ETAPPE E15: die einzige Klappliste ist die Art des Risikos.
+        Assert.Single(cut.FindAll("select"));
         // AUFTRAG #325: kein Freitextfeld mehr - der Bewertungsblock steht auf der Seite.
         Assert.Empty(cut.FindAll("textarea"));
     }
@@ -193,7 +201,7 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Equal(FELDER_OHNE_ERZEUGER + 1,
                      cut.FindAll("input[inputmode=decimal]").Count);       // + CO2
         Assert.Equal(4, cut.FindAll("input[inputmode=numeric]").Count);   // + Bilanzjahr
-        Assert.Equal(3, cut.FindAll("select").Count);                     // Park, Methode, Biomasse
+        Assert.Equal(4, cut.FindAll("select").Count);                     // Risiko (E15), Park, Methode, Biomasse
         Assert.Single(cut.FindAll("input[type=checkbox]"));               // Nachweis
         Assert.Single(cut.FindAll("button.epos-sprung"));                 // Katalogknopf
     }
@@ -947,7 +955,10 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
         Assert.Null(ergebnis);
 
-        Assert.Single(cut.FindAll(".epos-infoknopf"));
+        // ETAPPE E15: Der Kopf trägt genau einen Infoknopf; der zweite gehört der Gruppe
+        // „Risiko" und zeigt auf ihren Abschnitt.
+        Assert.Single(cut.FindAll(".epos-dialog-kopf .epos-infoknopf"));
+        Assert.Equal(2, cut.FindAll(".epos-infoknopf").Count);
         Assert.Equal("Form_WirtschaftlichkeitParameter.btn_Help", cut.Instance.HilfeSchluessel);
     }
 
@@ -1078,5 +1089,137 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 
         Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "worst_zeitraum"));
         Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "best_menge"));
+    }
+
+    // =====================================================================
+    //  Risiko (ETAPPE E15, V-G7 — DIN EN 17463, 6.5 und Anhang F)
+    // =====================================================================
+
+    /// <summary>
+    /// ETAPPE E15: Vorgabe AUS — die Klappliste steht auf „aus", alle drei Zahlenfelder
+    /// sind gesperrt (nicht ausgeblendet), und die Herleitungszeile sagt, dass kein Risiko
+    /// angesetzt ist.
+    /// </summary>
+    [Fact]
+    public void Risiko_Vorgabe_aus_sperrt_die_drei_Felder()
+    {
+        var cut = Aufbauen(Satz());
+        var zahlen = cut.FindAll("input[inputmode=decimal]");
+
+        Assert.True(zahlen[RISIKO_ZUSCHLAG].HasAttribute("disabled"));
+        Assert.True(zahlen[RISIKO_VERLUST].HasAttribute("disabled"));
+        Assert.True(zahlen[RISIKO_P].HasAttribute("disabled"));
+        Assert.Equal("0", cut.Find("select").GetAttribute("value"));
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.StartsWith("Kein Risiko angesetzt"));
+    }
+
+    /// <summary>
+    /// ETAPPE E15: Die Wahl „Zinszuschlag" gibt genau das Zuschlagsfeld frei; die
+    /// Herleitungszeile nennt den Zins, mit dem gerechnet wird (i + Zuschlag).
+    /// </summary>
+    [Fact]
+    public void Risiko_Zinszuschlag_gibt_sein_Feld_frei_und_nennt_den_Zins()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        var cut = Aufbauen(satz);
+
+        cut.Find("select").Change("1");
+        Assert.Equal(Risikoart.ZINS, satz.RisikoArt);
+
+        var zahlen = cut.FindAll("input[inputmode=decimal]");
+        Assert.False(zahlen[RISIKO_ZUSCHLAG].HasAttribute("disabled"));
+        Assert.True(zahlen[RISIKO_VERLUST].HasAttribute("disabled"));
+        Assert.True(zahlen[RISIKO_P].HasAttribute("disabled"));
+
+        zahlen[RISIKO_ZUSCHLAG].Input("1");
+        Assert.Equal(1.0, satz.RisikoZinszuschlag);
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("3,50 % + 1,00 %-Punkte = 4,50 %"));
+    }
+
+    /// <summary>
+    /// ETAPPE E15: Die Wahl „Zahlungsstromabzug" gibt R_loss und p_loss frei; die
+    /// Herleitungszeile nennt den Abzug je Periode (10.000 € × 10 % = 1.000 €).
+    /// Gespeichert wird mit „Speichern" des Dialogs; zurück auf „aus" wird die Art leer.
+    /// </summary>
+    [Fact]
+    public void Risiko_Abzug_gibt_R_loss_und_p_loss_frei_und_speichert()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(satz, geschlossen: e => ergebnis = e);
+
+        cut.Find("select").Change("2");
+        Assert.Equal(Risikoart.ABZUG, satz.RisikoArt);
+
+        var zahlen = cut.FindAll("input[inputmode=decimal]");
+        Assert.True(zahlen[RISIKO_ZUSCHLAG].HasAttribute("disabled"));
+        Assert.False(zahlen[RISIKO_VERLUST].HasAttribute("disabled"));
+        Assert.False(zahlen[RISIKO_P].HasAttribute("disabled"));
+
+        zahlen[RISIKO_VERLUST].Input("10000");
+        cut.FindAll("input[inputmode=decimal]")[RISIKO_P].Input("10");
+        Assert.Equal(10000.0, satz.RisikoVerlust);
+        Assert.Equal(10.0, satz.RisikoWahrscheinlichkeit);
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("= 1.000,00 €"));
+
+        cut.Find(".epos-knopf--primaer").Click();
+        Assert.True(ergebnis!.Gespeichert);
+
+        // Zurück auf „aus": leer heißt kein Risiko; die Zahlen bleiben erhalten.
+        var neu = Aufbauen(satz);
+        neu.Find("select").Change("0");
+        Assert.Null(satz.RisikoArt);
+        Assert.Equal(10000.0, satz.RisikoVerlust);
+    }
+
+    /// <summary>
+    /// ETAPPE E15: Die Gruppe „Risiko" trägt ihren eigenen Infoknopf mit dem Schlüssel
+    /// des help_mapping (Abschnitt „risiko" der Seite Wirtschaftlichkeit).
+    /// </summary>
+    [Fact]
+    public void Risiko_Gruppe_traegt_ihren_Infoknopf()
+    {
+        var cut = Aufbauen(Satz());
+
+        // Der Schlüssel steht nicht im Markup, sondern am Baustein.
+        var knoepfe = cut.FindComponents<EPOS.UI.Bausteine.InfoKnopf>();
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Contains(knoepfe, k => k.Instance.Schluessel == "Form_WirtschaftlichkeitParameter.btn_Help_Risiko");
+    }
+
+    /// <summary>
+    /// ETAPPE E15: Die vier Felder der Gruppe stehen im Katalog des Assistenten — die Art
+    /// als Wahl (Schlüssel ZINS/ABZUG, leer = aus), die drei Zahlen nullbar.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_das_Risiko()
+    {
+        var satz = Satz();
+        var cut = Aufbauen(satz);
+
+        KiFeldzugang art = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "risiko_art");
+        Assert.NotNull(art);
+        Assert.True(art.Setzbar);
+        KiFeldumsetzung abzug = KiFeldwandler.Wandle(art, Risikoart.ABZUG);
+        Assert.True(abzug.Ok, abzug.Grund);
+        art.Setzen(abzug.Wert);
+        cut.Render();
+        Assert.Equal(Risikoart.ABZUG, satz.RisikoArt);
+
+        KiFeldzugang verlust = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "risiko_verlust");
+        Assert.NotNull(verlust);
+        Assert.Null(verlust.Lesen());
+        KiFeldumsetzung v = KiFeldwandler.Wandle(verlust, "10000");
+        Assert.True(v.Ok, v.Grund);
+        verlust.Setzen(v.Wert);
+        Assert.Equal(10000.0, satz.RisikoVerlust);
+
+        Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "risiko_zinszuschlag"));
+        Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "risiko_wahrscheinlichkeit"));
     }
 }

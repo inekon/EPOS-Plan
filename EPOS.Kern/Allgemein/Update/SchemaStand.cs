@@ -499,11 +499,17 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> NULL bzw. <c>Personen_Auto</c> = 1 rechnen wie ohne
         /// Spalte, und kein Referenzprojekt steht auf dem Generator; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit dem RISIKOMODUL (Schritt 125, Etappe E15, V‑G7; DIN EN 17463 6.5 und Anhang F)
+        /// steht das Ziel auf <b>125</b>: <c>Risiko_Art</c>, <c>Risiko_Zinszuschlag</c>,
+        /// <c>Risiko_Verlust</c> und <c>Risiko_Wahrscheinlichkeit</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> (<see cref="SchemaKatalog.RisikomodulSpalten"/>).
+        /// <b>Reines DDL, ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „kein Risiko
+        /// angesetzt"; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 124;
+        public const int Zielversion = 125;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

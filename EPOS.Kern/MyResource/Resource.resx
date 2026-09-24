@@ -30211,4 +30211,91 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Zwölf Monatsfaktoren Januar bis Dezember; beim Speichern auf das Mittel 1 normiert.</value>
   </data>
+  <data name="WIRT_RISIKO_KURZ_ZINS" xml:space="preserve">
+    <value>Zinszuschlag {0} %-Punkte</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ABZUG" xml:space="preserve">
+    <value>Abzug R_loss × p_loss = {0} € × {1} % = {2} € je Periode ab Jahr 1</value>
+  </data>
+  <data name="WIRT_RISIKO_NACHWEIS" xml:space="preserve">
+    <value>Risiko (DIN EN 17463, 6.5): {0}</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_AUS" xml:space="preserve">
+    <value>Kein Risiko angesetzt (Vorgabe) — gerechnet wird mit dem Kalkulationszins und den Zahlungen, wie sie sind.</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ZINS" xml:space="preserve">
+    <value>Gerechnet wird in allen drei Szenarien mit dem Kalkulationszins plus Zuschlag: {0} % + {1} %-Punkte = {2} % im Erwartungsfall (Kapitalwert, Annuität, Amortisation, Zinsfuß).</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ABZUG" xml:space="preserve">
+    <value>Abzug je Periode ab Jahr 1: {0} € × {1} % = {2} € — nicht im Jahr 0, nicht auf den Restwert; in allen drei Szenarien für jeden Stand außer der Referenz (rechnet die Gruppe nur einen Stand, trägt er den Abzug).</value>
+  </data>
+  <data name="WIRT_ANN_RISIKO" xml:space="preserve">
+    <value>Risiko (DIN EN 17463, 6.5)</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT" xml:space="preserve">
+    <value>Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen benannt</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM" xml:space="preserve">
+    <value>Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen: keine benannt</value>
+  </data>
+  <data name="WIRT_MJ_RISIKO" xml:space="preserve">
+    <value>Risikoabzug</value>
+  </data>
+  <data name="WIRT_GL_RISIKO" xml:space="preserve">
+    <value>Risikoabzug (Anhang F)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Risikozuschlag auf den Zins (6.5)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS_RISIKO" xml:space="preserve">
+    <value>Kalkulationszins mit Risikozuschlag</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_VERLUST" xml:space="preserve">
+    <value>Rückflusseinbuße R_loss [€ je Periode]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_P" xml:space="preserve">
+    <value>Eintrittswahrscheinlichkeit p_loss</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ABZUG" xml:space="preserve">
+    <value>Risikoabzug je Periode ab Jahr 1 [€]</value>
+  </data>
+  <data name="WPAR_G_RISIKO" xml:space="preserve">
+    <value>Risiko (DIN EN 17463, 6.5)</value>
+  </data>
+  <data name="WPAR_RISIKO_ART" xml:space="preserve">
+    <value>Art der Risikoberücksichtigung:</value>
+  </data>
+  <data name="WPAR_RISIKO_AUS" xml:space="preserve">
+    <value>aus — kein Risiko angesetzt</value>
+  </data>
+  <data name="WPAR_RISIKO_ZINS" xml:space="preserve">
+    <value>Zinszuschlag</value>
+  </data>
+  <data name="WPAR_RISIKO_ABZUG" xml:space="preserve">
+    <value>Zahlungsstromabzug R_loss × p_loss (Anhang F)</value>
+  </data>
+  <data name="WPAR_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Zinszuschlag [%-Punkte]:</value>
+  </data>
+  <data name="WPAR_RISIKO_VERLUST" xml:space="preserve">
+    <value>Rückflusseinbuße R_loss [€ je Periode]:</value>
+  </data>
+  <data name="WPAR_RISIKO_P" xml:space="preserve">
+    <value>Eintrittswahrscheinlichkeit p_loss [%]:</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ART_ERL" xml:space="preserve">
+    <value>Art der Risikoberücksichtigung nach DIN EN 17463 (6.5): leer = aus (Vorgabe), ZINS = Zinszuschlag auf den Kalkulationszins, ABZUG = Zahlungsstromabzug R_loss × p_loss je Periode ab Jahr 1.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Zuschlag in Prozentpunkten auf den Kalkulationszins aller drei Szenarien; wirkt nur bei Art ZINS.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_VERLUST_ERL" xml:space="preserve">
+    <value>Quantifizierte Rückflusseinbuße R_loss in Euro je Periode; wirkt nur bei Art ABZUG.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_P_ERL" xml:space="preserve">
+    <value>Eintrittswahrscheinlichkeit p_loss in Prozent; der Abzug je Periode ist R_loss × p_loss / 100, nur bei Art ABZUG.</value>
+  </data>
+  <data name="WIRT_AE_6_STAND_RISIKO" xml:space="preserve">
+    <value>drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risiko angesetzt: {0}; Degradation nicht gerechnet — deklariert.</value>
+  </data>
 </root>

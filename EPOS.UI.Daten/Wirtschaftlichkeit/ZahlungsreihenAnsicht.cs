@@ -131,7 +131,8 @@ namespace WindowsFormsApplication1
                                           Name(staende, leitversion), Name(staende, idReferenz)));
 
             var zeilen = new List<MatrixZeile>();
-            foreach (string schluessel in Zahlungsgliederung.Reihenfolge)
+            // ETAPPE E15: mit einem Risikoabzug in einer Gliederung die Zeile „Risikoabzug".
+            foreach (string schluessel in Zahlungsgliederung.SchluesselVon(gliederungen))
             {
                 // Die Investition fließt im Jahr 0 — Barwert und Nominalsumme sind dieselbe
                 // Zahl, die zweite Zeile entfällt (Mockup).
@@ -148,7 +149,8 @@ namespace WindowsFormsApplication1
                 }
                 if (differenz != null)
                 {
-                    zellen.Add(differenz.Bestandteil(schluessel).Barwert.ToString(GELD, kultur));
+                    Zahlungsbestandteil db = differenz.Bestandteil(schluessel);
+                    zellen.Add((db == null ? 0.0 : db.Barwert).ToString(GELD, kultur));
                     unter.Add("");
                 }
                 zeilen.Add(new MatrixZeile
@@ -322,7 +324,8 @@ namespace WindowsFormsApplication1
         private static ErgebnisMatrix Jahrestafel(Zahlungsgliederung g, CultureInfo kultur)
         {
             var spalten = new List<string> { MyResource.Resource.WIRT_MJ_JAHR };
-            foreach (string s in Zahlungsgliederung.Reihenfolge) spalten.Add(Zahlungsgliederung.Titel(s));
+            IReadOnlyList<string> schluessel = g.Schluessel;   // E15: mit Risikoabzug eine Spalte mehr
+            foreach (string s in schluessel) spalten.Add(Zahlungsgliederung.Titel(s));
             spalten.Add(MyResource.Resource.WIRT_MJ_NETTO);
             spalten.Add(MyResource.Resource.WIRT_MJ_BARWERT);
 
@@ -332,7 +335,7 @@ namespace WindowsFormsApplication1
             for (int t = 0; t <= g.Jahre; t++)
             {
                 var zellen = new List<string>();
-                foreach (string s in Zahlungsgliederung.Reihenfolge) zellen.Add(Jahr(g.Bestandteil(s).Wert(t), kultur));
+                foreach (string s in schluessel) zellen.Add(Jahr(g.Bestandteil(s).Wert(t), kultur));
                 zellen.Add(Jahr(netto[t], kultur));
                 zellen.Add(Jahr(barwert[t], kultur));
                 zeilen.Add(new MatrixZeile { Titel = t.ToString(CultureInfo.InvariantCulture), Zellen = zellen });
@@ -342,7 +345,7 @@ namespace WindowsFormsApplication1
             var summe = new List<string>();
             double nettoSumme = 0;
             foreach (double w in netto) nettoSumme += w;
-            foreach (string s in Zahlungsgliederung.Reihenfolge) summe.Add(g.Bestandteil(s).Nominal.ToString(GELD, kultur));
+            foreach (string s in schluessel) summe.Add(g.Bestandteil(s).Nominal.ToString(GELD, kultur));
             summe.Add(nettoSumme.ToString(GELD, kultur));
             summe.Add("");
             zeilen.Add(new MatrixZeile { Titel = MyResource.Resource.WIRT_ZR_SUMME, Zellen = summe, IstSumme = true });
@@ -350,7 +353,7 @@ namespace WindowsFormsApplication1
             // Die Barwerte: je Bestandteil — dieselben Zahlen wie die Gliederung — und die
             // Summe der Barwertspalte, der Nettobarwert.
             var barwerte = new List<string>();
-            foreach (string s in Zahlungsgliederung.Reihenfolge) barwerte.Add(g.Bestandteil(s).Barwert.ToString(GELD, kultur));
+            foreach (string s in schluessel) barwerte.Add(g.Bestandteil(s).Barwert.ToString(GELD, kultur));
             barwerte.Add("");
             barwerte.Add(g.SummeBarwerte.ToString(GELD, kultur));
             zeilen.Add(new MatrixZeile { Titel = MyResource.Resource.WIRT_MJ_BARWERT, Zellen = barwerte, IstSumme = true });

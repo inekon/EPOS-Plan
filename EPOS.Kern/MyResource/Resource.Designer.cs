@@ -37817,6 +37817,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Risikoberücksichtigung nach DIN EN 17463 (6.5): leer = aus (Vorgabe), ZINS = Zinszuschlag auf den Kalkulationszins, ABZUG = Zahlungsstromabzug R_loss × p_loss je Periode ab Jahr 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_RISIKO_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_RISIKO_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrittswahrscheinlichkeit p_loss in Prozent; der Abzug je Periode ist R_loss × p_loss / 100, nur bei Art ABZUG. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_RISIKO_P_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_RISIKO_P_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quantifizierte Rückflusseinbuße R_loss in Euro je Periode; wirkt nur bei Art ABZUG. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_RISIKO_VERLUST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_RISIKO_VERLUST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag in Prozentpunkten auf den Kalkulationszins aller drei Szenarien; wirkt nur bei Art ZINS. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur der Anlage in °C, ganze Zahl und frei eingebbar; die angezeigten Werte sind ein Vorschlag. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_RUECKLAUF_ERL {
@@ -70333,6 +70369,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risiko angesetzt: {0}; Degradation nicht gerechnet — deklariert. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_6_STAND_RISIKO {
+            get {
+                return ResourceManager.GetString("WIRT_AE_6_STAND_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“ ähnelt.
         /// </summary>
         public static string WIRT_AE_6_STELLE {
@@ -70747,6 +70792,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiko (DIN EN 17463, 6.5) ähnelt.
+        /// </summary>
+        public static string WIRT_ANN_RISIKO {
+            get {
+                return ResourceManager.GetString("WIRT_ANN_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
         /// </summary>
         public static string WIRT_ANN_SP_HERKUNFT {
@@ -71121,6 +71175,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_DEKL_RISIKO {
             get {
                 return ResourceManager.GetString("WIRT_DEKL_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen benannt ähnelt.
+        /// </summary>
+        public static string WIRT_DEKL_RISIKO_ANGESETZT {
+            get {
+                return ResourceManager.GetString("WIRT_DEKL_RISIKO_ANGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen: keine benannt ähnelt.
+        /// </summary>
+        public static string WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM {
+            get {
+                return ResourceManager.GetString("WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM", resourceCulture);
             }
         }
         
@@ -72079,6 +72151,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risikoabzug je Periode ab Jahr 1 [€] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_RISIKO_ABZUG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_RISIKO_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrittswahrscheinlichkeit p_loss ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_RISIKO_P {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_RISIKO_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückflusseinbuße R_loss [€ je Periode] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_RISIKO_VERLUST {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_RISIKO_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risikozuschlag auf den Zins (6.5) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_RISIKO_ZUSCHLAG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_RISIKO_ZUSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parameter der Rechnung (je Szenario) ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_TITEL {
@@ -72147,6 +72255,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_FM_PARAM_ZINS {
             get {
                 return ResourceManager.GetString("WIRT_FM_PARAM_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins mit Risikozuschlag ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ZINS_RISIKO {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ZINS_RISIKO", resourceCulture);
             }
         }
         
@@ -72318,6 +72435,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_GL_RESTWERT {
             get {
                 return ResourceManager.GetString("WIRT_GL_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risikoabzug (Anhang F) ähnelt.
+        /// </summary>
+        public static string WIRT_GL_RISIKO {
+            get {
+                return ResourceManager.GetString("WIRT_GL_RISIKO", resourceCulture);
             }
         }
         
@@ -73528,6 +73654,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risikoabzug ähnelt.
+        /// </summary>
+        public static string WIRT_MJ_RISIKO {
+            get {
+                return ResourceManager.GetString("WIRT_MJ_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mehrjahresübersicht der Zahlungsströme ähnelt.
         /// </summary>
         public static string WIRT_MJ_TITEL {
@@ -73722,6 +73857,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_REIHE_STROMSTEUER_ENTLASTUNG {
             get {
                 return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_ENTLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug je Periode ab Jahr 1: {0} € × {1} % = {2} € — nicht im Jahr 0, nicht auf den Restwert; in allen drei Szenarien für jeden Stand außer der Referenz (rechnet die Gruppe nur einen Stand, trägt er den Abzug). ähnelt.
+        /// </summary>
+        public static string WIRT_RISIKO_HERLEITUNG_ABZUG {
+            get {
+                return ResourceManager.GetString("WIRT_RISIKO_HERLEITUNG_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Risiko angesetzt (Vorgabe) — gerechnet wird mit dem Kalkulationszins und den Zahlungen, wie sie sind. ähnelt.
+        /// </summary>
+        public static string WIRT_RISIKO_HERLEITUNG_AUS {
+            get {
+                return ResourceManager.GetString("WIRT_RISIKO_HERLEITUNG_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird in allen drei Szenarien mit dem Kalkulationszins plus Zuschlag: {0} % + {1} %-Punkte = {2} % im Erwartungsfall (Kapitalwert, Annuität, Amortisation, Zinsfuß). ähnelt.
+        /// </summary>
+        public static string WIRT_RISIKO_HERLEITUNG_ZINS {
+            get {
+                return ResourceManager.GetString("WIRT_RISIKO_HERLEITUNG_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug R_loss × p_loss = {0} € × {1} % = {2} € je Periode ab Jahr 1 ähnelt.
+        /// </summary>
+        public static string WIRT_RISIKO_KURZ_ABZUG {
+            get {
+                return ResourceManager.GetString("WIRT_RISIKO_KURZ_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zinszuschlag {0} %-Punkte ähnelt.
+        /// </summary>
+        public static string WIRT_RISIKO_KURZ_ZINS {
+            get {
+                return ResourceManager.GetString("WIRT_RISIKO_KURZ_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiko (DIN EN 17463, 6.5): {0} ähnelt.
+        /// </summary>
+        public static string WIRT_RISIKO_NACHWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_RISIKO_NACHWEIS", resourceCulture);
             }
         }
         
@@ -75681,6 +75870,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiko (DIN EN 17463, 6.5) ähnelt.
+        /// </summary>
+        public static string WPAR_G_RISIKO {
+            get {
+                return ResourceManager.GetString("WPAR_G_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strom — Einspeisung und Bezug ähnelt.
         /// </summary>
         public static string WPAR_G_STROM {
@@ -75857,6 +76055,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_REFKESSEL_VORGABE {
             get {
                 return ResourceManager.GetString("WPAR_REFKESSEL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsstromabzug R_loss × p_loss (Anhang F) ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_ABZUG {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Risikoberücksichtigung: ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_ART {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus — kein Risiko angesetzt ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_AUS {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eintrittswahrscheinlichkeit p_loss [%]: ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_P {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückflusseinbuße R_loss [€ je Periode]: ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_VERLUST {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zinszuschlag ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_ZINS {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zinszuschlag [%-Punkte]: ähnelt.
+        /// </summary>
+        public static string WPAR_RISIKO_ZUSCHLAG {
+            get {
+                return ResourceManager.GetString("WPAR_RISIKO_ZUSCHLAG", resourceCulture);
             }
         }
         

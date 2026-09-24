@@ -1571,6 +1571,18 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt 125: das Risikomodul (V-G7, DIN EN 17463 6.5 und Anhang F, Etappe
+            //      E15). NACH 124. REIN DDL aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Risikomodul (SchemaKatalog.RisikomodulSpalten):
+            //      Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust, Risiko_Wahrscheinlichkeit an
+            //      Tab_ProjektWirtschaftlichkeit, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "kein Risiko angesetzt".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 125, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

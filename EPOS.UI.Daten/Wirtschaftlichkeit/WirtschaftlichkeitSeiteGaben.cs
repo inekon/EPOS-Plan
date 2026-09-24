@@ -620,7 +620,11 @@ namespace WindowsFormsApplication1
             var texte = new List<string>();
             try
             {
-                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen(NichtMonetaer()))
+                // ETAPPE E15 (V‑G7): mit dem Parametersatz, damit die Risikozeile ein
+                // gepflegtes Risiko nennt.
+                WirtschaftlichkeitParameter p = null;
+                try { p = _ctrl.LadeParameter(_idStamm); } catch { p = null; }
+                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen(NichtMonetaer(), p))
                     texte.Add(d.Text);
             }
             catch { }

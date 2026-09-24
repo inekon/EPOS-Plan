@@ -47,6 +47,22 @@ namespace WindowsFormsApplication1
         /// <summary>Preissteigerung Investition/Ersatz p_I als Dezimalzahl (wirksam).</summary>
         internal const string PREIS_I = "p_I";
 
+        /// <summary>ETAPPE E15 — mit Zinszuschlag: der Kalkulationszins OHNE Risiko; der Name
+        /// <see cref="ZINS"/> trägt dann die Summe Basis + Zuschlag.</summary>
+        internal const string ZINS_BASIS = "Zins_Basis";
+
+        /// <summary>ETAPPE E15 — der Risikozuschlag auf den Zins als Dezimalzahl.</summary>
+        internal const string RISIKO_ZUSCHLAG = "Risiko_Zuschlag";
+
+        /// <summary>ETAPPE E15 — die Rückflusseinbuße R_loss [€ je Periode].</summary>
+        internal const string RISIKO_VERLUST = "Risiko_Verlust";
+
+        /// <summary>ETAPPE E15 — die Eintrittswahrscheinlichkeit p_loss als Dezimalzahl.</summary>
+        internal const string RISIKO_P = "Risiko_p";
+
+        /// <summary>ETAPPE E15 — der Risikoabzug je Periode [€] = R_loss × p_loss.</summary>
+        internal const string RISIKO_ABZUG = "Risiko_Abzug";
+
         /// <summary>Anhang der Namen für die Spalten der beiden anderen Szenarien.</summary>
         internal const string ANHANG_GUENSTIG = "_Guenstig";
 
@@ -87,6 +103,23 @@ namespace WindowsFormsApplication1
         internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
                                            IEnumerable<VariantenDaten> staende)
         {
+            return Parameterblock(ws, r, p, staende, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E15 (V‑G7) — derselbe Parameterblock mit den <b>Risikozeilen</b>, nur wenn ein
+        /// Risiko gepflegt ist (<see cref="RisikoModul.Gepflegt"/>): beim Zinszuschlag heißt die
+        /// Zeile „Kalkulationszins" <see cref="ZINS_BASIS"/>, darunter stehen der Zuschlag
+        /// (<see cref="RISIKO_ZUSCHLAG"/>) und der Zins mit Zuschlag als Formel — er trägt den
+        /// Namen <see cref="ZINS"/>, auf den jede Barwertformel der Mappe zeigt. Beim Abzug
+        /// folgen R_loss, p_loss und der Abzug je Periode als Formel
+        /// (<see cref="RISIKO_ABZUG"/>). Ohne Risiko ist der Block Zelle für Zelle der von vorher.
+        /// </summary>
+        /// <param name="register">Das Formelregister der Mappe; <c>null</c> = die Risikoformeln
+        /// werden ohne zwischengespeicherten Wert geschrieben (Excel rechnet beim Öffnen).</param>
+        internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
+                                           IEnumerable<VariantenDaten> staende, Formelregister register)
+        {
             SzenarioSatz best = p.SatzFuer(WirtschaftlichkeitSzenario.BEST)
                                 ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
             SzenarioSatz worst = p.SatzFuer(WirtschaftlichkeitSzenario.WORST)
@@ -104,10 +137,32 @@ namespace WindowsFormsApplication1
             // Die Sätze als Dezimalzahl — derselbe Ausdruck „Prozent / 100", mit dem der
             // Rechenkern sie liest (KapitalwertRechner.Rechne); eine Formel auf diese Zelle
             // rechnet deshalb mit dem Bit, mit dem der Lauf gerechnet hat.
-            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZINS, ZINS, FORMAT_SATZ,
+            bool zinsRisiko = RisikoModul.ZinsAktiv(p);
+            int zeileZins = r;
+            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZINS, zinsRisiko ? ZINS_BASIS : ZINS, FORMAT_SATZ,
                       p.Zinssatz / 100.0,
                       best.ZinsWirksam(p.Zinssatz) / 100.0,
                       worst.ZinsWirksam(p.Zinssatz) / 100.0);
+            if (zinsRisiko)
+            {
+                // ETAPPE E15 (V‑G7, 6.5): Zuschlag und Zins mit Zuschlag — in allen drei
+                // Szenarien derselbe Zuschlag (E15‑Q1 a). Die Summe trägt den Namen Zins_i, damit
+                // jede Barwertformel der Mappe unverändert auf den gerechneten Zins zeigt; ihre
+                // Werte sind die Zinssätze, mit denen der Lauf gerechnet hat (FuerSzenario).
+                double zuschlag = RisikoModul.Zinszuschlag(p) / 100.0;
+                int zeileZuschlag = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_ZUSCHLAG, RISIKO_ZUSCHLAG, FORMAT_SATZ,
+                          zuschlag, zuschlag, zuschlag);
+                Satzzeile(ws, r, MyResource.Resource.WIRT_FM_PARAM_ZINS_RISIKO, ZINS, FORMAT_SATZ,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.ERWARTET).Zinssatz / 100.0,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.BEST).Zinssatz / 100.0,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.WORST).Zinssatz / 100.0);
+                for (int c = 2; c <= 4; c++)
+                    Parameterformel(ws.Cell(r, c), Bezug(zeileZins, c) + "+" + Bezug(zeileZuschlag, c),
+                                    ws.Cell(zeileZins, c).GetDouble() + ws.Cell(zeileZuschlag, c).GetDouble(),
+                                    register);
+                r++;
+            }
             // ETAPPE E9a (Schritt B): der Zeitraum JE SZENARIO — ohne Pflege dreimal T.
             Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZEITRAUM, ZEITRAUM, "0",
                       p.Betrachtungszeitraum,
@@ -148,6 +203,27 @@ namespace WindowsFormsApplication1
                       p.EinspeiseverguetungKWK ?? 0.0,
                       best.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0,
                       worst.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0);
+
+            // ETAPPE E15 (V‑G7, Anhang F): der Zahlungsstromabzug — R_loss, p_loss und der Abzug
+            // je Periode als Formel; in allen drei Szenarien gleich (E15‑Q1 a).
+            if (RisikoModul.AbzugAktiv(p))
+            {
+                double verlust = p.RisikoVerlust.Value;
+                double wahrsch = RisikoModul.Wahrscheinlichkeit(p) / 100.0;
+                int zeileVerlust = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_VERLUST, RISIKO_VERLUST, "#,##0",
+                          verlust, verlust, verlust);
+                int zeileP = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_P, RISIKO_P, FORMAT_SATZ,
+                          wahrsch, wahrsch, wahrsch);
+                double abzug = RisikoModul.AbzugJeJahr(p);
+                Satzzeile(ws, r, MyResource.Resource.WIRT_FM_PARAM_RISIKO_ABZUG, RISIKO_ABZUG, "#,##0.00",
+                          abzug, abzug, abzug);
+                for (int c = 2; c <= 4; c++)
+                    Parameterformel(ws.Cell(r, c), Bezug(zeileVerlust, c) + "*" + Bezug(zeileP, c),
+                                    verlust * wahrsch, register);
+                r++;
+            }
 
             // ETAPPE E9a (Schritt C): gepflegte Trägerpreise — je Stand, Träger und Preisart
             // eine Zeile mit den wirksamen Preisen der drei Szenarien.
@@ -196,6 +272,19 @@ namespace WindowsFormsApplication1
                               le ?? 0.0, lb ?? 0.0, lw ?? 0.0);
             }
             return r;
+        }
+
+        /// <summary>
+        /// ETAPPE E15 — eine Formel im Parameterblock: über das Register, wenn es eines gibt
+        /// (dann trägt die Zelle Formel UND den Wert, der dort stand); sonst bleibt der Wert
+        /// stehen, und die Formel kommt dazu.
+        /// </summary>
+        private static void Parameterformel(IXLCell zelle, string formel, double nachgerechnet,
+                                            Formelregister register)
+        {
+            double wert = zelle.GetDouble();
+            if (register != null) register.Formel(zelle, formel, wert, nachgerechnet);
+            else zelle.FormulaA1 = formel;
         }
 
         /// <summary>Eine Zeile des Parameterblocks: Bezeichnung, Erwartet, Günstig,
@@ -309,6 +398,16 @@ namespace WindowsFormsApplication1
             string nameE = Name(PREIS_E, tafel.Szenario);
             string nameB = Name(PREIS_B, tafel.Szenario);
             string zeitraum = Name(ZEITRAUM, tafel.Szenario);
+
+            // ---- ETAPPE E15 (V‑G7, Anhang F): der Risikoabzug als Bezug auf den Parameterblock ----
+            int cRisiko = SpalteVon(bild, Mehrjahresbild.RISIKO);
+            if (cRisiko > 0 && zb.RisikoJeJahr != null)
+            {
+                MehrjahresSpalte risiko = bild.Spalten[cRisiko - 2];
+                for (int t = 1; t <= T; t++)
+                    register.Formel(ws.Cell(tafel.Zeile(t), cRisiko), "-" + Name(RISIKO_ABZUG, tafel.Szenario),
+                                    risiko.Wert(t), -RisikoModul.AbzugJeJahr(ps));
+            }
 
             // ---- Energie und CO₂-Abgabe (Rückfallzweig): Fortschreibung ab Jahr 2 ----
             Fortschreibung(ws, tafel, bild, "ENERGIE", nameE, pE, register);
