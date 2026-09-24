@@ -18,7 +18,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Vorschau kommt aus einem Prüfdelegaten, der die Schätzhilfen aus der Eingabe spiegelt —
 /// der Dialog rechnet nicht; die Entprellung steht auf 0. Werte erfunden, Kultur de-DE.</para>
 /// </summary>
-public class ZapfprofilDialogStufenTests : EposBunitContext
+public partial class ZapfprofilDialogStufenTests : EposBunitContext
 {
     public ZapfprofilDialogStufenTests()
     {

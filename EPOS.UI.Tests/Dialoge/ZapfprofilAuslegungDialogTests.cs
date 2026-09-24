@@ -21,7 +21,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Auslegung kommt aus einem Prüfdelegaten — der Dialog rechnet nicht; die Entprellung
 /// steht auf 0, außer im Fall, der sie selbst prüft. Kultur de-DE, alle Zahlen erfunden.</para>
 /// </summary>
-public class ZapfprofilAuslegungDialogTests : EposBunitContext
+public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
 {
     public ZapfprofilAuslegungDialogTests()
     {
