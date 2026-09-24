@@ -622,6 +622,11 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
                 TwwSchema.T3Alle(null);
 
+                // Schritt 125 (Etappe E15, V-G7): das Risikomodul an Tab_ProjektWirtschaftlichkeit.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

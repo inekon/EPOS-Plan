@@ -4097,6 +4097,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_124_ZAPFPROFIL_LAUFANGABEN = 124;
 
+        /// <summary>
+        /// Schritt 125 — <b>das Risikomodul</b> (V‑G7, DIN EN 17463 Abschnitt 6.5 und Anhang F;
+        /// Etappe E15, Konzept Wirtschaftlichkeit § 2.11.2). Er folgt auf
+        /// <see cref="SCHRITT_124_ZAPFPROFIL_LAUFANGABEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// <c>Risiko_Art</c> (leer = kein Risiko, <c>ZINS</c>, <c>ABZUG</c>),
+        /// <c>Risiko_Zinszuschlag</c> [%-Punkte], <c>Risiko_Verlust</c> [€ je Periode, R_loss]
+        /// und <c>Risiko_Wahrscheinlichkeit</c> [%, p_loss] — die Liste steht bei
+        /// <see cref="SchemaKatalog.RisikomodulSpalten"/>, EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Leer heißt „kein Risiko angesetzt"; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_125_RISIKOMODUL = 125;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5785,6 +5802,18 @@ namespace WindowsFormsApplication1
                         "truege keine Bezugsart. KEIN Rechenergebnis aendert sich - die Spalten stehen " +
                         "auf 'keine Angabe' bzw. Personen automatisch.",
                         Schritt_124_ZapfprofilLaufangaben),
+
+            // ETAPPE E15 (V-G7, DIN EN 17463 6.5 und Anhang F) - das Risikomodul: Art,
+            // Zinszuschlag, Rueckflusseinbusse und Eintrittswahrscheinlichkeit an der
+            // Parametertabelle. REIN DDL; die Quelle ist SchemaKatalog.RisikomodulSpalten. Er
+            // steht NACH 124 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_125_RISIKOMODUL,
+                        "Tab_ProjektWirtschaftlichkeit: Risikomodul (Zinszuschlag oder " +
+                        "Zahlungsstromabzug R_loss x p_loss)",
+                        "Ein Risiko nach DIN EN 17463 (6.5, Anhang F) liesse sich nicht ansetzen. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten bleiben leer, und leer heisst " +
+                        "'kein Risiko angesetzt'.",
+                        Schritt_Risikomodul),
         };
 
         /// <summary>
@@ -9398,6 +9427,38 @@ namespace WindowsFormsApplication1
                     "Fuellstand_Bezug an " + TwwSchema.TAB_TWW_PROJEKT + ", Bezugsart an " +
                     TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ". KEIN DML: Alles steht auf 'keine Angabe' " +
                     "bzw. Personen automatisch; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 125 - das Risikomodul (Etappe E15, V-G7)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 125 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_125_RISIKOMODUL"/> und bei
+        /// <see cref="SchemaKatalog.RisikomodulSpalten"/>. <b>Reines DDL</b>, dieselbe Schleife
+        /// wie bei Schritt 116. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Risikomodul(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz(SCHRITT_125_RISIKOMODUL.ToString(CultureInfo.InvariantCulture) + ": " +
+                    angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust und " +
+                    "Risiko_Wahrscheinlichkeit an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT +
+                    ". KEIN DML: Leer heisst 'kein Risiko angesetzt' - der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

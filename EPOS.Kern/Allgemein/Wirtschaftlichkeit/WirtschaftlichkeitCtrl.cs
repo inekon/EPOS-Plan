@@ -392,6 +392,13 @@ namespace WindowsFormsApplication1
                                   "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "\" REAL, " +
+                                  // ETAPPE E15 (V-G7, Schemaschritt 125): das Risikomodul -
+                                  // dieselbe Begruendung; leer heisst "kein Risiko".
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_ART + "\" " +
+                                  StilleDb.SqliteSpaltenTyp(SchemaKatalog.SPALTE_PW_RISIKO_ART, "TEXT(10)") + ", " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_ZINSZUSCHLAG + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_VERLUST + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT + "\" REAL, " +
                                   "\"GeaendertAm\" TEXT)");
                         Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
                             "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
@@ -614,6 +621,13 @@ namespace WindowsFormsApplication1
                     // Rechenweg, und die Vorsorge gehoert zum Leser. KEINE
                     // Werte-Vorbelegung: leer heisst "wie Erwartet".
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE E15 (V-G7) - das Risikomodul. Regulaer entstehen die vier
+                    // Spalten ueber Schemaschritt 125; das hier ist die tolerante VORSORGE
+                    // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls).
+                    // KEINE Werte-Vorbelegung: leer heisst "kein Risiko angesetzt".
+                    foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die

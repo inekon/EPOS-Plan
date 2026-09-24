@@ -4908,6 +4908,55 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_PPV_PPA_PREIS_BEST"/>
         public const string SPALTE_PPV_PPA_PREIS_WORST = "PpaPreis_Worst";
 
+        // -------------------------------------------------------------------------
+        // Schritt 125 - das Risikomodul (V-G7, DIN EN 17463 Abschnitt 6.5 und
+        //               Anhang F; Etappe E15, Konzept § 2.11.2)
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E15 (V‑G7, Schemaschritt 125): das <b>Risikomodul</b> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> — die Art der Risikoberücksichtigung und ihre
+        /// drei Größen. DIN EN 17463 (6.5) lässt das Risiko entweder als <b>Zinszuschlag</b>
+        /// oder als <b>zusätzliche Auszahlung</b> je Periode ansetzen; Anhang F erläutert den
+        /// Zahlungsstromabzug <c>R_loss × p_loss</c>, nur für t &gt; 0.
+        ///
+        /// <para><b>Vorgabe aus:</b> <c>Risiko_Art</c> NULL (oder leer, oder ein unbekannter
+        /// Wert) heißt „kein Risiko angesetzt"; <c>ZINS</c> rechnet den Kalkulationszins
+        /// plus <c>Risiko_Zinszuschlag</c> [%-Punkte], <c>ABZUG</c> zieht je Periode t ≥ 1
+        /// <c>Risiko_Verlust</c> [€ je Periode, R_loss] × <c>Risiko_Wahrscheinlichkeit</c>
+        /// [%, p_loss] / 100 ab. Damit ist der Schritt <b>ergebnisneutral bis zur ersten
+        /// Pflege</b>.</para>
+        ///
+        /// <para><b>KEIN DML, kein DDL-DEFAULT, kein <c>_STAMM</c>-Gegenstück</b> — dieselbe
+        /// Begründung wie bei <see cref="Schritt116_Szenariorahmen"/>. <b>Doppelpflicht:</b>
+        /// dieselben Spalten im CREATE-Text und als <c>SpalteSicher</c>-Nachzug in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; nicht in <see cref="Alle"/>
+        /// (kein Rechenweg der Simulation liest sie).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] RisikomodulSpalten =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_RISIKO_ART,              "TEXT(10)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_RISIKO_ZINSZUSCHLAG,     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_RISIKO_VERLUST,          "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT, "DOUBLE"),
+        };
+
+        /// <summary>Art der Risikoberücksichtigung: NULL/leer = kein Risiko, <c>ZINS</c> =
+        /// Zinszuschlag, <c>ABZUG</c> = Zahlungsstromabzug (Schemaschritt 125).</summary>
+        public const string SPALTE_PW_RISIKO_ART = "Risiko_Art";
+
+        /// <summary>Risikozuschlag auf den Kalkulationszins [%-Punkte]; wirkt nur bei
+        /// <c>Risiko_Art = ZINS</c> (Schemaschritt 125).</summary>
+        public const string SPALTE_PW_RISIKO_ZINSZUSCHLAG = "Risiko_Zinszuschlag";
+
+        /// <summary>Quantifizierte Rückflusseinbuße R_loss [€ je Periode]; wirkt nur bei
+        /// <c>Risiko_Art = ABZUG</c> (Schemaschritt 125).</summary>
+        public const string SPALTE_PW_RISIKO_VERLUST = "Risiko_Verlust";
+
+        /// <summary>Eintrittswahrscheinlichkeit p_loss [%]; wirkt nur bei
+        /// <c>Risiko_Art = ABZUG</c> (Schemaschritt 125).</summary>
+        public const string SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT = "Risiko_Wahrscheinlichkeit";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -5137,6 +5186,8 @@ namespace WindowsFormsApplication1
         /// <see cref="Schritt118_ErloessatzSzenario"/> (Schritt D) ebenso: Die Erlössätze je
         /// Szenario hängen an <c>Tab_ProjektWirtschaftlichkeit</c> und
         /// <c>Tab_ProjektPhotovoltaik</c>, gelesen allein von der Wirtschaftlichkeit.
+        /// <see cref="RisikomodulSpalten"/> (Schritt 125, Etappe E15) ebenso: Das Risiko
+        /// erreicht den Rechenweg als Parameter der Wirtschaftlichkeit.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.
