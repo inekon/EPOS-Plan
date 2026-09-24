@@ -475,6 +475,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Setzt die Werte der AUSLIEFERUNGSZEILEN auf die Saat zurueck und legt
         /// fehlende Saatzeilen wieder an (ND-Q5). Eigene Zeilen bleiben unberuehrt.
+        /// <para><b>ETAPPE E10 (Stufe S3):</b> Die zwei Saetze gehoeren zu den Werten einer
+        /// Auslieferungszeile — sie gehen mit zurueck auf die Saat
+        /// (<see cref="NutzungsdauerSaetze.SaatSatz(NutzungsdauerSaat, Satzart)"/>: die
+        /// Standardzeilen tragen den Satz aus den Vorlagen-Konstanten, alle uebrigen Zeilen
+        /// keinen).</para>
         /// </summary>
         /// <returns>Zahl der zurueckgesetzten und neu angelegten Zeilen.</returns>
         public static int AuslieferungWiederherstellen()
@@ -492,11 +497,15 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + NutzungsdauerSchema.TABELLE + "] SET [" +
                     NutzungsdauerSchema.SPALTE_NUTZUNGSDAUER + "] = ?, [" +
                     NutzungsdauerSchema.SPALTE_AFA + "] = ?, [" +
+                    NutzungsdauerSchema.SPALTE_INSTANDSETZUNG + "] = ?, [" +
+                    NutzungsdauerSchema.SPALTE_WARTUNG + "] = ?, [" +
                     NutzungsdauerSchema.SPALTE_QUELLE + "] = ?, [" +
                     NutzungsdauerSchema.SPALTE_IST_STANDARD + "] = ?, [" +
                     NutzungsdauerSchema.SPALTE_READONLY + "] = 1 WHERE [ID] = ?",
                     NutzungsdauerSchema.Wert("@nd", s.Nutzungsdauer),
                     NutzungsdauerSchema.Wert("@afa", s.AfaSteuerlich),
+                    NutzungsdauerSchema.Wert("@in", NutzungsdauerSaetze.SaatSatz(s, Satzart.Instandsetzung)),
+                    NutzungsdauerSchema.Wert("@wa", NutzungsdauerSaetze.SaatSatz(s, Satzart.Wartung)),
                     new DbParam("@q", s.Quelle),
                     new DbParam("@std", s.IstStandard ? 1 : 0),
                     new DbParam("@id", id));

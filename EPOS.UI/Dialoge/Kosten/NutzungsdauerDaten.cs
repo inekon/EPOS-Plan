@@ -136,7 +136,8 @@ public sealed class NutzungsdauerTexte
     public string SaetzeHinweis { get; set; } =
         "Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). " +
         "Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; " +
-        "eine leere Zelle heißt „kein Satz“.";
+        "eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des " +
+        "Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.";
 
     /// <summary><c>ND_SP_QUELLE</c></summary>
     public string SpalteQuelle { get; set; } = "Quelle";

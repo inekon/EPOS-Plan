@@ -3988,6 +3988,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_119_KAELTESTROM = 119;
 
+        /// <summary>
+        /// Schritt 120 — <b>die Sätze der Nutzungsdauertabelle</b> (Etappe E10, Stufe S3 des
+        /// Nutzungsdauer-Konzepts; Empfehlung E10‑Q1 (a)). Er folgt auf
+        /// <see cref="SCHRITT_119_KAELTESTROM"/> ohne Reihenfolgebedingung; er braucht die
+        /// Tabelle aus Schritt 75.
+        ///
+        /// <para><b>REIN DML</b> an <c>Tab_Nutzungsdauer</c>: Die leeren Satzzellen
+        /// <c>Instandsetzung_Prozent</c>/<c>Wartung_Prozent</c> der Standardzeilen bekommen die
+        /// Mitte des Empfehlungsbereichs derselben Position der Betriebsvorlagen-Saat — heute
+        /// fünf Zellen (Instandsetzung Heizkessel, BHKW, Wärmezentrale, Bauliche Anlagen,
+        /// Stromeinspeisung). Die Quelle ist <see cref="NutzungsdauerSaetze"/> — EINE Quelle
+        /// für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Wirkung:</b> Der Schritt selbst setzt nur Tabellenwerte; rechenwirksam wird
+        /// ein Satz über die Satzermittlung der Betriebskosten, an einer Position „% der
+        /// Investition" ohne eigenen Satz und ohne erfassten Betrag (Etappe E10). Der
+        /// Referenzlauf bleibt byte-gleich — er führt keine Wirtschaftlichkeitsgröße.
+        /// <b>Wiederholbar:</b> Gesetzt wird nur, was leer ist.</para>
+        /// </summary>
+        public const int SCHRITT_120_NUTZUNGSDAUER_SAETZE = 120;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5614,6 +5635,17 @@ namespace WindowsFormsApplication1
                         "Kaeltestrom je Anlage nicht. KEIN Rechenergebnis aendert sich - alle Spalten " +
                         "bleiben leer, bis eine Waermepumpe kuehlt.",
                         Schritt_119_Kaeltestrom),
+
+            // ETAPPE E10 (Nutzungsdauer Stufe S3) - die Saetze der Nutzungsdauertabelle.
+            // REIN DML; die Quelle ist NutzungsdauerSaetze. Er steht NACH 119 ohne
+            // Reihenfolgebedingung und braucht 75 (Tab_Nutzungsdauer).
+            new Schritt(SCHRITT_120_NUTZUNGSDAUER_SAETZE,
+                        "Tab_Nutzungsdauer: Instandsetzungssaetze der Standardzeilen",
+                        "Die Nutzungsdauertabelle truege keine Instandsetzungssaetze, und eine " +
+                        "Betriebskostenposition 'Instandhaltung ...' mit der Bemessung '% der " +
+                        "Investition' ohne eigenen Satz fuehrte weiter 0 EUR/a. Gesetzt werden nur " +
+                        "leere Zellen, mit der Mitte des Empfehlungsbereichs der Kostenvorlage.",
+                        Schritt_120_NutzungsdauerSaetze),
         };
 
         /// <summary>
@@ -8980,6 +9012,42 @@ namespace WindowsFormsApplication1
                     "Stromverbrauch_Kuehlung, Kaeltestrom_Netzbezug, Kuehl_carrier_id und " +
                     "Kuehl_EigenerZaehler an Tab_ErgebnisWaermepumpeModul. KEIN DML: Alle Spalten " +
                     "bleiben leer; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 120 - die Saetze der Nutzungsdauertabelle (Etappe E10, Stufe S3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 120 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_120_NUTZUNGSDAUER_SAETZE"/>, Zuordnung und Saat bei
+        /// <see cref="NutzungsdauerSaetze"/>. <b>Die Nachprobe</b> fragt dasselbe wie die
+        /// Anweisungen: Steht danach noch ein Satz der Saat leer an seiner Standardzeile, ist
+        /// der Schritt nicht gelaufen.
+        /// </summary>
+        private static bool Schritt_120_NutzungsdauerSaetze(Lauf l)
+        {
+            NutzungsdauerSaetze.Bericht bericht;
+            try { bericht = NutzungsdauerSaetze.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz("120: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int offen = NutzungsdauerSaetze.Offen();
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Satz/Saetze stehen nach dem Schritt weiter leer.";
+                l.Notiz("120: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("120: " + bericht.Text() + ". Gesetzt wird nur, was leer ist; der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

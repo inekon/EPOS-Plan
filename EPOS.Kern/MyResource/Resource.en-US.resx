@@ -20074,7 +20074,7 @@ Do you want to allow this?</value>
     <value>Maintenance [%/y]</value>
   </data>
   <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
-    <value>Repair and maintenance as a percentage of the investment per year (VDI 2067 Part 1, Table A2). They apply to operating cost items “% of investment” without their own rate; an empty cell means “no rate”.</value>
+    <value>Repair and maintenance as a percentage of the investment per year (VDI 2067 Part 1, Table A2). They apply to operating cost items “% of investment” without their own rate; an empty cell means “no rate”. The delivered rates are the middle of the cost template's recommended range, where it has one.</value>
   </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Source</value>

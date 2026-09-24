@@ -20081,7 +20081,7 @@ Möchten Sie das zulassen?</value>
     <value>Wartung [%/a]</value>
   </data>
   <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
-    <value>Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“.</value>
+    <value>Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.</value>
   </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>

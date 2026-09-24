@@ -163,7 +163,8 @@ namespace WindowsFormsApplication1
                 SaetzeHinweis = Text("ND_SAETZE_HINWEIS",
                     "Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, " +
                     "Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ " +
-                    "ohne eigenen Satz; eine leere Zelle heißt „kein Satz“."),
+                    "ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. Ausgeliefert ist " +
+                    "die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt."),
                 SpalteQuelle = Text("ND_SP_QUELLE", "Quelle"),
                 SpalteAktionen = Text("ND_SP_AKTIONEN", "Aktionen"),
                 Suche = Text("ND_SUCHE", "Suchen"),

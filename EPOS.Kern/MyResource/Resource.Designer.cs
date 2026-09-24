@@ -47385,7 +47385,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt. ähnelt.
         /// </summary>
         public static string ND_SAETZE_HINWEIS {
             get {
