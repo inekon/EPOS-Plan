@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using KiKern;
 
 namespace WindowsFormsApplication1
@@ -3329,8 +3330,9 @@ namespace WindowsFormsApplication1
         private const string ZAPFPROFIL_SICHT = "ZapfprofilKiSicht";
 
         /// <summary>
-        /// Das Brauchwasser-Zapfprofil — elf Felder aus
-        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>, fuenf davon SPALTEN der Zonenliste.
+        /// Das Brauchwasser-Zapfprofil — die Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>: fuenf SPALTEN der Zonenliste, vier der
+        /// Wohnungstabelle der gewaehlten Zone und die Angaben der Stufen Erweitert und Experte.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -3350,11 +3352,13 @@ namespace WindowsFormsApplication1
         /// waehlt die Ansicht der Vorschau.
         /// </para>
         /// <para>
-        /// <b>Die Stochastik der Stufe Experte</b> (Rechenweg der Jahresreihe, Seed,
-        /// Realisierungen) ist nur setzbar, solange sie auf der Maske steht; sonst nennt die
-        /// Absage die Stufe bzw. den Rechenweg, der sie zeigt. Die Stufe „Erweitert" ist
-        /// gesperrt und nennt ihren Grund. Neu, Duplizieren und Entfernen einer Zone,
-        /// „Auslegung…" und „Stochastisch rechnen" bleiben Klicks des Anwenders.
+        /// <b>Die Stufen Erweitert und Experte</b> (Rechenweg der Jahresreihe ab Erweitert,
+        /// Seed und Realisierungen, Belegung und Anlage, Schaetzhilfen, Fachwerte) sind nur
+        /// setzbar, solange sie auf der Maske stehen; sonst nennt die Absage die Stufe, den
+        /// Rechenweg, die Nutzungsart, die Einheit oder die Methode, die sie zeigt. Die Angaben
+        /// einer Zone gelten der gewaehlten Zone. Neu, Duplizieren und Entfernen einer Zone oder
+        /// eines Wohnungstyps, „Auslegung…", „Stochastisch rechnen", der Tagesgang-Editor und die
+        /// Zapfkategorien bleiben Klicks des Anwenders.
         /// </para>
         /// </remarks>
         private static KiDialog Zapfprofil()
@@ -3409,12 +3413,141 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgRealisierungenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.ZpgRealisierungenErl,
                                      einheit: KiDialogTexte.ZpgEinheitJahre, leerErlaubt: true)
-                },
+                }
+                .Concat(ZapfprofilHoehereStufen())
+                .ToArray(),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
                 });
+        }
+
+        /// <summary>
+        /// Die Felder der Stufen Erweitert und Experte des Zapfprofils (Stufe Z4, Gruppe 2a) — wie der
+        /// Eingabeblock gelten sie der GEWÄHLTEN Zone (Satzwahl „zone") und dem Gebäude; die
+        /// Wohnungstabelle der gewählten Zone steht als SPALTEN mit der Zeilennummer als Kennzeichen.
+        /// Ein Feld, das die Stufe (oder die Nutzungsart, die Einheit des Messwerts, die Methode der
+        /// Zirkulation) nicht zeigt, lehnt die Maske benannt ab. Die Grenzen sind die der Eingabefelder.
+        /// </summary>
+        private static IEnumerable<KiDialogFeld> ZapfprofilHoehereStufen()
+        {
+            // ---- Die Wohnungstabelle der gewählten Zone (Erweitert, nur Wohnen) ----------------
+            yield return new KiDialogFeld("wohnung_anzahl", ZAPFPROFIL_SICHT + ".Wohnungen[].Anzahl",
+                                          KiDialogTexte.ZpgWohnungAnzahlName, KiParameterTyp.Ganzzahl,
+                                          KiDialogTexte.ZpgWohnungAnzahlErl, zeilenkennzeichen: "Kennzeichen", min: 1);
+            yield return new KiDialogFeld("wohnung_raumzahl", ZAPFPROFIL_SICHT + ".Wohnungen[].Raumzahl",
+                                          KiDialogTexte.ZpgWohnungRaumzahlName, KiParameterTyp.Zahl,
+                                          KiDialogTexte.ZpgWohnungRaumzahlErl, leerErlaubt: true,
+                                          zeilenkennzeichen: "Kennzeichen", min: 0);
+            yield return new KiDialogFeld("wohnung_personen", ZAPFPROFIL_SICHT + ".Wohnungen[].Personen",
+                                          KiDialogTexte.ZpgWohnungPersonenName, KiParameterTyp.Zahl,
+                                          KiDialogTexte.ZpgWohnungPersonenErl, leerErlaubt: true,
+                                          zeilenkennzeichen: "Kennzeichen", min: 0);
+            yield return new KiDialogFeld("wohnung_ausstattung", ZAPFPROFIL_SICHT + ".Wohnungen[].Ausstattung",
+                                          KiDialogTexte.ZpgWohnungAusstattungName, KiParameterTyp.Wahl,
+                                          KiDialogTexte.ZpgWohnungAusstattungErl, leerErlaubt: true,
+                                          zeilenkennzeichen: "Kennzeichen");
+
+            // ---- Belegung und Anlage der gewählten Zone (Erweitert) ------------------------------
+            yield return Zahl("personen_je_we", "PersonenJeWe", KiDialogTexte.ZpgPersonenJeWeName,
+                              KiDialogTexte.ZpgPersonenJeWeErl, KiDialogTexte.ZpgEinheitPersonenJeWe, 0, null);
+            yield return Zahl("wohnflaeche_je_we", "WohnflaecheJeWe", KiDialogTexte.ZpgWohnflaecheJeWeName,
+                              KiDialogTexte.ZpgWohnflaecheJeWeErl, KiDialogTexte.EINHEIT_M2, 0, null);
+            yield return Wahl("topologie", "Topologie", KiDialogTexte.ZpgTopologieName, KiDialogTexte.ZpgTopologieErl, false);
+            yield return Wahl("zirkulation_vorhanden", "ZirkulationVorhanden", KiDialogTexte.ZpgZirkulationVorhandenName,
+                              KiDialogTexte.ZpgZirkulationVorhandenErl, false);
+            yield return Wahl("kalender", "Kalender", KiDialogTexte.ZpgKalenderName, KiDialogTexte.ZpgKalenderErl, false);
+            // Die vier Ferienzeitraeume als TABELLE (Muster Gebaeudekatalog): Spalten mit dem Zeitraum als Kennzeichen.
+            yield return Ferienspalte("ferien_beginn_tag", "BeginnTag", KiDialogTexte.ZpgFerienBeginnTagName, 31);
+            yield return Ferienspalte("ferien_beginn_monat", "BeginnMonat", KiDialogTexte.ZpgFerienBeginnMonatName, 12);
+            yield return Ferienspalte("ferien_ende_tag", "EndeTag", KiDialogTexte.ZpgFerienEndeTagName, 31);
+            yield return Ferienspalte("ferien_ende_monat", "EndeMonat", KiDialogTexte.ZpgFerienEndeMonatName, 12);
+            yield return Zahl("jahresmesswert", "Jahresmesswert", KiDialogTexte.ZpgJahresmesswertName,
+                              KiDialogTexte.ZpgJahresmesswertErl, null, 0, null);
+            yield return Wahl("messwert_einheit", "MesswertEinheit", KiDialogTexte.ZpgMesswertEinheitName,
+                              KiDialogTexte.ZpgMesswertEinheitErl, true);
+            yield return Wahl("messwert_grenze", "MesswertGrenze", KiDialogTexte.ZpgMesswertGrenzeName,
+                              KiDialogTexte.ZpgMesswertGrenzeErl, true);
+            yield return Zahl("speicherverlust", "Speicherverlust", KiDialogTexte.ZpgSpeicherverlustName,
+                              KiDialogTexte.ZpgSpeicherverlustErl, KiDialogTexte.EINHEIT_KWH_A, 0, null);
+            yield return new KiDialogFeld("messwert_quelle", ZAPFPROFIL_SICHT + ".MesswertQuelle",
+                                          KiDialogTexte.ZpgMesswertQuelleName, KiParameterTyp.Text,
+                                          KiDialogTexte.ZpgMesswertQuelleErl, leerErlaubt: true);
+            yield return new KiDialogFeld("messwert_zeitraum", ZAPFPROFIL_SICHT + ".MesswertZeitraum",
+                                          KiDialogTexte.ZpgMesswertZeitraumName, KiParameterTyp.Text,
+                                          KiDialogTexte.ZpgMesswertZeitraumErl, leerErlaubt: true);
+
+            // ---- Tagesbedarf der Zone, Ladeleistung und Zirkulation des Gebäudes (Erweitert) -----
+            yield return Wahl("tagesbedarf_modus", "TagesbedarfModus", KiDialogTexte.ZpgTagesbedarfModusName,
+                              KiDialogTexte.ZpgTagesbedarfModusErl, false);
+            yield return Zahl("tagesbedarf_manuell", "TagesbedarfManuell", KiDialogTexte.ZpgTagesbedarfManuellName,
+                              KiDialogTexte.ZpgTagesbedarfManuellErl, KiDialogTexte.EINHEIT_KWH_D, 0, null);
+            yield return Wahl("ladeleistung_modus", "LadeleistungModus", KiDialogTexte.ZpgLadeleistungModusName,
+                              KiDialogTexte.ZpgLadeleistungModusErl, false);
+            yield return Zahl("ladeleistung_manuell", "LadeleistungManuell", KiDialogTexte.ZpgLadeleistungManuellName,
+                              KiDialogTexte.ZpgLadeleistungManuellErl, KiDialogTexte.EINHEIT_KW, 0, null);
+            yield return Zahl("ladefenster", "Ladefenster", KiDialogTexte.ZpgLadefensterName,
+                              KiDialogTexte.ZpgLadefensterErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
+            yield return Zahl("ladefenster_beginn", "LadefensterBeginn", KiDialogTexte.ZpgLadefensterBeginnName,
+                              KiDialogTexte.ZpgLadefensterBeginnErl, KiDialogTexte.EINHEIT_STUNDE, 0, 24);
+            yield return Wahl("zirkulation_modus", "ZirkulationModus", KiDialogTexte.ZpgZirkulationModusName,
+                              KiDialogTexte.ZpgZirkulationModusErl, false);
+            yield return Wahl("zirk_methode", "ZirkMethode", KiDialogTexte.ZpgZirkMethodeName, KiDialogTexte.ZpgZirkMethodeErl, false);
+            yield return Zahl("zirk_laenge", "ZirkLaenge", KiDialogTexte.ZpgZirkLaengeName,
+                              KiDialogTexte.ZpgZirkLaengeErl, KiDialogTexte.EINHEIT_METER, 0, null);
+            yield return Zahl("zirk_verlust", "ZirkVerlust", KiDialogTexte.ZpgZirkVerlustName,
+                              KiDialogTexte.ZpgZirkVerlustErl, KiDialogTexte.EINHEIT_W_M, 0, null);
+            yield return Zahl("zirk_anteil", "ZirkAnteil", KiDialogTexte.ZpgZirkAnteilName,
+                              KiDialogTexte.ZpgZirkAnteilErl, KiDialogTexte.EINHEIT_FAKTOR, 0, null);
+            yield return Wahl("zirk_lage", "ZirkLage", KiDialogTexte.ZpgZirkLageName, KiDialogTexte.ZpgZirkLageErl, true);
+            yield return Zahl("zirk_manuell", "ZirkManuell", KiDialogTexte.ZpgZirkManuellName,
+                              KiDialogTexte.ZpgZirkManuellErl, KiDialogTexte.EINHEIT_KW, 0, null);
+            yield return Zahl("leitungsinhalt", "Leitungsinhalt", KiDialogTexte.ZpgLeitungsinhaltName,
+                              KiDialogTexte.ZpgLeitungsinhaltErl, KiDialogTexte.EINHEIT_LITER, 0, null);
+
+            // ---- Fachwerte der gewählten Zone und des Gebäudes (Experte) -------------------------
+            yield return Zahl("bedarf_spez", "BedarfSpez", KiDialogTexte.ZpgBedarfSpezName,
+                              KiDialogTexte.ZpgBedarfSpezErl, null, 0, null);
+            yield return Zahl("zapftemperatur", "Zapftemperatur", KiDialogTexte.ZpgZapftemperaturName,
+                              KiDialogTexte.ZpgZapftemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("kaltwasser_mittel", "KaltwasserMittel", KiDialogTexte.ZpgKaltwasserMittelName,
+                              KiDialogTexte.ZpgKaltwasserMittelErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("kaltwasser_amplitude", "KaltwasserAmplitude", KiDialogTexte.ZpgKaltwasserAmplitudeName,
+                              KiDialogTexte.ZpgKaltwasserAmplitudeErl, KiDialogTexte.EINHEIT_KELVIN, 0, null);
+            yield return new KiDialogFeld("auslastungsgang", ZAPFPROFIL_SICHT + ".Auslastungsgang",
+                                          KiDialogTexte.ZpgAuslastungsgangName, KiParameterTyp.ZahlListe,
+                                          KiDialogTexte.ZpgAuslastungsgangErl, leerErlaubt: true,
+                                          reihe: KiZahlenreihen.Monate(), min: 0);
+            yield return Wahl("tagesgangsatz", "Tagesgangsatz", KiDialogTexte.ZpgTagesgangsatzName,
+                              KiDialogTexte.ZpgTagesgangsatzErl, true);
+            yield return Zahl("kaltwasser_auslegung", "KaltwasserAuslegung", KiDialogTexte.ZpgKaltwasserAuslegungName,
+                              KiDialogTexte.ZpgKaltwasserAuslegungErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("speichertemperatur", "Speichertemperatur", KiDialogTexte.ZpgSpeichertemperaturName,
+                              KiDialogTexte.ZpgSpeichertemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("zirk_kennwert", "ZirkKennwert", KiDialogTexte.ZpgZirkKennwertName,
+                              KiDialogTexte.ZpgZirkKennwertErl, KiDialogTexte.EINHEIT_KWH_M2A, 0, null);
+            yield return Zahl("zirk_flaeche", "ZirkFlaeche", KiDialogTexte.ZpgZirkFlaecheName,
+                              KiDialogTexte.ZpgZirkFlaecheErl, KiDialogTexte.EINHEIT_M2, 0, null);
+            yield return Zahl("zirk_laufzeit", "ZirkLaufzeit", KiDialogTexte.ZpgZirkLaufzeitName,
+                              KiDialogTexte.ZpgZirkLaufzeitErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
+            yield return Zahl("anzeigetemperatur", "Anzeigetemperatur", KiDialogTexte.ZpgAnzeigetemperaturName,
+                              KiDialogTexte.ZpgAnzeigetemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
+            yield return Zahl("stundenschwelle", "Stundenschwelle", KiDialogTexte.ZpgStundenschwelleName,
+                              KiDialogTexte.ZpgStundenschwelleErl, KiDialogTexte.EINHEIT_KW, 0, null);
+
+            static KiDialogFeld Zahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, string einheit,
+                                     double? min, double? max)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Zahl, erlaeuterung,
+                                    einheit: einheit, leerErlaubt: true, min: min, max: max);
+
+            static KiDialogFeld Ferienspalte(string name, string eigenschaft, string anzeigename, double max)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + ".Ferien[]." + eigenschaft, anzeigename, KiParameterTyp.Ganzzahl,
+                                    KiDialogTexte.ZpgFerienErl, leerErlaubt: true, zeilenkennzeichen: "Zeitraum", min: 1, max: max);
+
+            static KiDialogFeld Wahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, bool leer)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Wahl, erlaeuterung,
+                                    leerErlaubt: leer);
         }
 
         // =====================================================================

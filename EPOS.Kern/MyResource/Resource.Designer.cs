@@ -38636,11 +38636,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur, auf die die Literanzeige der Kennzahlen umrechnet — nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwölf Monatsfaktoren der gewählten Zone; leer je Monat = Faktor des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_AUSLASTUNGSGANG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_AUSLASTUNGSGANG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf der gewählten Zone je Bezugseinheit und Tag; leer = Katalogwert des Niveaus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_BEDARF_SPEZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_BEDARF_SPEZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Menge der Zone in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_BEZUGSMENGE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPG_BEZUGSMENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferienzeitraum der gewählten Zone als Beginn Tag, Beginn Monat, Ende Tag und Ende Monat; leer = keine Ferien. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_FERIEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_FERIEN_ERL", resourceCulture);
             }
         }
         
@@ -38659,6 +38695,132 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ZPG_JAHRESBEDARF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPG_JAHRESBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein gemessener Jahresverbrauch der gewählten Zone; er skaliert die Zone mit einem ausgewiesenen Faktor, leer = kein Messwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_JAHRESMESSWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_JAHRESMESSWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender der gewählten Zone: der der Nutzungsart oder die Ferien eines Gebäudes des Projekts, die nur vorbelegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_KALENDER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_KALENDER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schwankung des Kaltwassers über das Jahr; leer = Konvention. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kaltwasser der Auslegung, gleich für alle Tage; leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahresmittel des Kaltwassers der gewählten Zone (nur Bilanz); leer = Konvention. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_KALTWASSER_MITTEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_KALTWASSER_MITTEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stunde, zu der das Ladefenster beginnt; leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die effektive Ladezeit je Tag; leer = Vorgabe des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_LADEFENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_LADEFENSTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die manuelle Ladeleistung; sie gilt nur bei „manuell“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ladeleistung des Gebäudes als Vorschlag der Auslegung (auto) oder als manueller Wert — wirkt nur auf die Auslegung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wasserinhalt der Leitungen; er entscheidet mit über die Großanlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_LEITUNGSINHALT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_LEITUNGSINHALT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit des Jahresmesswerts: kWh/a oder m³/a; ein Volumen gilt an der Zapfstelle. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_MESSWERT_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_MESSWERT_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was der Messwert einschließt: nur die Zapfung, dazu Verteil- und Zirkulationsverlust oder zusätzlich den Speicherverlust. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_MESSWERT_GRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_MESSWERT_GRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Messwert stammt, etwa Zähler oder Abrechnung — nur Vermerk. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_MESSWERT_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_MESSWERT_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zeitraum des Messwerts — nur Vermerk. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL", resourceCulture);
             }
         }
         
@@ -38690,6 +38852,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen je Wohneinheit der gewählten Zone; leer = Belegung nach der Wohnungsgröße aus dem Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_PERSONEN_JE_WE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_PERSONEN_JE_WE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Jahre der stochastische Lauf zieht, um die Konsistenz zu prüfen; leer = Vorgabe. Steht in der Stufe „Experte“ beim Rechenweg „stochastisch“. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_REALISIERUNGEN_ERL {
@@ -38717,6 +38888,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichertemperatur; leer = Vorgabe, bei einer Großanlage die Mindesttemperatur. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_SPEICHERTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_SPEICHERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicherverlust in kWh/a, den ein Messwert mit Speicherverlust einschließt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_SPEICHERVERLUST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_SPEICHERVERLUST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_STUFE_ERL {
@@ -38726,11 +38915,209 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schwelle, ab der die Kennzahlen Stunden zählen — nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_STUNDENSCHWELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_STUNDENSCHWELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der manuelle Tagesbedarf der gewählten Zone; er gilt nur bei „manuell“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf der gewählten Zone aus dem Katalog (auto) oder als manueller Wert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz der gewählten Zone; leer = der Satz der Nutzungsart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TAGESGANGSATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TAGESGANGSATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die gewählte Zone Trinkwarmwasser erwärmt (Speicher, Frischwasserstation, Durchfluss, Wohnungsstation) — wirkt nur auf die Auslegung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_TOPOLOGIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_TOPOLOGIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnfläche je Wohneinheit der gewählten Zone; leer = Annahme des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Wohnungen dieses Typs die gewählte Zone hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Erweitert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ausstattungsklasse des Wohnungstyps für die Bedarfskennzahl; leer = Vorgabeklasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_WOHNUNG_AUSSTATTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_WOHNUNG_AUSSTATTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Personen je Wohnung dieses Typs; leer = Belegung nach der Raumzahl aus dem Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_WOHNUNG_PERSONEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_WOHNUNG_PERSONEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Raumzahl des Wohnungstyps; ohne Personenangabe folgt aus ihr die Belegung nach dem Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur der gewählten Zone; leer = Bezugstemperatur des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZAPFTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZAPFTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Zeile steht nicht mehr in der Liste. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ZEILE_FEHLT {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPG_ZEILE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulation des Gebäudes nach der gewählten Methode (auto) oder als manuelle Leistung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRKULATION_MODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRKULATION_MODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob die gewählte Zone an der Zirkulation hängt; „nein“ nimmt sie aus dem Zirkulationsanteil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anteil der Zirkulation am Tagesbedarf von 0 bis 1 (Methode Anteil); leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_ANTEIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_ANTEIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fläche für den Flächenkennwert; leer = aus Wohnfläche je Wohneinheit bzw. dem Gebäude. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_FLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_FLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Flächenkennwert des Zirkulationsverlusts; leer = Kennwert nach der Lage der Leitung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_KENNWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_KENNWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge der Zirkulationsleitung (Methode Leitungslänge). ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_LAENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lage der Leitung zur thermischen Hülle (Methode Flächenkennwert); leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_LAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_LAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufzeit der Zirkulation je Tag; leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die manuelle Leistung der Zirkulation; sie gilt nur bei „manuell“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_MANUELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_MANUELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die Zirkulation geschätzt wird: Leitungslänge × Verlust, Anteil am Tagesbedarf oder Flächenkennwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_METHODE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_METHODE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Verlust der Leitung (Methode Leitungslänge); leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZIRK_VERLUST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZIRK_VERLUST_ERL", resourceCulture);
             }
         }
         

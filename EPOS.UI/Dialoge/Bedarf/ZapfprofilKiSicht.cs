@@ -24,9 +24,12 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Kennzeichen — der Assistent setzt die Bezugsgröße der Zone „Wohnen" ohne sie vorher zu
 /// wählen. <see cref="Zone"/> wählt trotzdem, welche Zone ihren Eingabeblock zeigt.</para>
 ///
-/// <para><b>Was nicht auf der Maske steht, ist nicht setzbar</b>: Rechenweg, Seed und
-/// Realisierungen stehen erst in der Stufe „Experte" (die Realisierungen dazu nur beim
-/// Rechenweg „stochastisch"); davor nennt die Absage, was sie sichtbar macht.</para>
+/// <para><b>Was nicht auf der Maske steht, ist nicht setzbar</b>: Der Rechenweg und die Angaben
+/// der Stufe „Erweitert" stehen ab dieser Stufe, Seed, Realisierungen (nur beim Rechenweg
+/// „stochastisch") und die Fachwerte erst in der Stufe „Experte"; die Wohnungstabelle nur bei
+/// einer Nutzungsart „Wohnen", die Felder einer Zirkulationsmethode nur bei ihr. Davor nennt die
+/// Absage, was sie sichtbar macht. Die Angaben der höheren Stufen gelten der GEWÄHLTEN Zone —
+/// wie ihr Eingabeblock — und dem Gebäude (Stufe Z4).</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
 /// Delegaten.</para>
@@ -68,7 +71,7 @@ public sealed class ZapfprofilKiSicht
     //  Die Wahllisten (KI‑D‑Q6)
     // =====================================================================
 
-    /// <summary>Die drei Stufen; „Erweitert" steht darin und nennt beim Setzen ihren Grund.</summary>
+    /// <summary>Die drei Stufen Einfach, Erweitert und Experte — alle wählbar.</summary>
     public IReadOnlyList<KiWahleintrag> StufeWahl => Liste(StufeEintraege);
 
     /// <summary>Die Zonen nach ihrer Nummer in der Liste (ab 1), mit dem Namen als Text.</summary>
@@ -139,8 +142,176 @@ public sealed class ZapfprofilKiSicht
         set => ZapfprofilKiRegeln.Setze(RealisierungenSetzen, value);
     }
 
+    // =====================================================================
+    //  Stufen Erweitert und Experte (Z4): die GEWÄHLTE Zone und das Gebäude
+    // =====================================================================
+    //
+    // Die Angaben der höheren Stufen stehen — wie auf der Maske — für die gewählte Zone
+    // (Satzwahl „zone") und fürs Gebäude. Gelesen und gesetzt wird über EINEN Weg je Richtung,
+    // benannt nach der Eigenschaft: Der Dialog prüft Stufe, Sichtbarkeit und Grenzen wie am Feld
+    // und nimmt den Weg des Eingabefeldes.
+
+    /// <summary>Liest eine Angabe der höheren Stufen nach dem Namen ihrer Eigenschaft; <c>null</c> = leer.</summary>
+    public Func<string, object?>? AngabeLesen { get; init; }
+
+    /// <summary>Setzt eine Angabe nach dem Namen ihrer Eigenschaft; zurück kommt der Grund einer Ablehnung.</summary>
+    public Func<string, object?, string?>? AngabeSetzen { get; init; }
+
+    /// <summary>Die Einträge einer Wahl der höheren Stufen nach dem Namen ihrer Eigenschaft.</summary>
+    public Func<string, IReadOnlyList<KiWahleintrag>>? AngabeWahl { get; init; }
+
+    /// <summary>Die Wohnungstabelle der gewählten Zone — je Wohnungstyp eine Zeile.</summary>
+    public Func<IReadOnlyList<ZapfprofilWohnungKiZeile>>? WohnungenLesen { get; init; }
+
+    /// <summary>Die Zeilen der Wohnungstabelle der gewählten Zone (nur Wohnen, Stufe Erweitert).</summary>
+    public IReadOnlyList<ZapfprofilWohnungKiZeile> Wohnungen
+        => WohnungenLesen?.Invoke() ?? Array.Empty<ZapfprofilWohnungKiZeile>();
+
+    public IReadOnlyList<KiWahleintrag> AusstattungWahl => Wahl(nameof(ZapfprofilWohnungKiZeile.Ausstattung));
+
+    // ---- Belegung und Anlage (Erweitert) --------------------------------------------
+
+    public double? PersonenJeWe { get => Zahl(nameof(PersonenJeWe)); set => Setze(nameof(PersonenJeWe), value); }
+    public double? WohnflaecheJeWe { get => Zahl(nameof(WohnflaecheJeWe)); set => Setze(nameof(WohnflaecheJeWe), value); }
+    public int? Topologie { get => Ganz(nameof(Topologie)); set => Setze(nameof(Topologie), value); }
+    public IReadOnlyList<KiWahleintrag> TopologieWahl => Wahl(nameof(Topologie));
+    public int? ZirkulationVorhanden { get => Ganz(nameof(ZirkulationVorhanden)); set => Setze(nameof(ZirkulationVorhanden), value); }
+    public IReadOnlyList<KiWahleintrag> ZirkulationVorhandenWahl => Wahl(nameof(ZirkulationVorhanden));
+    public int? Kalender { get => Ganz(nameof(Kalender)); set => Setze(nameof(Kalender), value); }
+    public IReadOnlyList<KiWahleintrag> KalenderWahl => Wahl(nameof(Kalender));
+
+    /// <summary>Die vier Ferienzeiträume der gewählten Zone als Zeilen (Muster Gebäudekatalog).</summary>
+    public Func<IReadOnlyList<ZapfprofilFerienKiZeile>>? FerienLesen { get; init; }
+
+    /// <summary>Die Ferienzeiträume 1 … 4 der gewählten Zone — Beginn und Ende als Tag und Monat.</summary>
+    public IReadOnlyList<ZapfprofilFerienKiZeile> Ferien
+        => FerienLesen?.Invoke() ?? Array.Empty<ZapfprofilFerienKiZeile>();
+
+    public double? Jahresmesswert { get => Zahl(nameof(Jahresmesswert)); set => Setze(nameof(Jahresmesswert), value); }
+    public int? MesswertEinheit { get => Ganz(nameof(MesswertEinheit)); set => Setze(nameof(MesswertEinheit), value); }
+    public IReadOnlyList<KiWahleintrag> MesswertEinheitWahl => Wahl(nameof(MesswertEinheit));
+    public int? MesswertGrenze { get => Ganz(nameof(MesswertGrenze)); set => Setze(nameof(MesswertGrenze), value); }
+    public IReadOnlyList<KiWahleintrag> MesswertGrenzeWahl => Wahl(nameof(MesswertGrenze));
+    public double? Speicherverlust { get => Zahl(nameof(Speicherverlust)); set => Setze(nameof(Speicherverlust), value); }
+    public string MesswertQuelle { get => Text(nameof(MesswertQuelle)); set => Setze(nameof(MesswertQuelle), value); }
+    public string MesswertZeitraum { get => Text(nameof(MesswertZeitraum)); set => Setze(nameof(MesswertZeitraum), value); }
+
+    // ---- Tagesbedarf, Ladeleistung, Zirkulation (Erweitert) --------------------------
+
+    public int? TagesbedarfModus { get => Ganz(nameof(TagesbedarfModus)); set => Setze(nameof(TagesbedarfModus), value); }
+    public IReadOnlyList<KiWahleintrag> TagesbedarfModusWahl => Wahl(nameof(TagesbedarfModus));
+    public double? TagesbedarfManuell { get => Zahl(nameof(TagesbedarfManuell)); set => Setze(nameof(TagesbedarfManuell), value); }
+    public int? LadeleistungModus { get => Ganz(nameof(LadeleistungModus)); set => Setze(nameof(LadeleistungModus), value); }
+    public IReadOnlyList<KiWahleintrag> LadeleistungModusWahl => Wahl(nameof(LadeleistungModus));
+    public double? LadeleistungManuell { get => Zahl(nameof(LadeleistungManuell)); set => Setze(nameof(LadeleistungManuell), value); }
+    public double? Ladefenster { get => Zahl(nameof(Ladefenster)); set => Setze(nameof(Ladefenster), value); }
+    public double? LadefensterBeginn { get => Zahl(nameof(LadefensterBeginn)); set => Setze(nameof(LadefensterBeginn), value); }
+    public int? ZirkulationModus { get => Ganz(nameof(ZirkulationModus)); set => Setze(nameof(ZirkulationModus), value); }
+    public IReadOnlyList<KiWahleintrag> ZirkulationModusWahl => Wahl(nameof(ZirkulationModus));
+    public int? ZirkMethode { get => Ganz(nameof(ZirkMethode)); set => Setze(nameof(ZirkMethode), value); }
+    public IReadOnlyList<KiWahleintrag> ZirkMethodeWahl => Wahl(nameof(ZirkMethode));
+    public double? ZirkLaenge { get => Zahl(nameof(ZirkLaenge)); set => Setze(nameof(ZirkLaenge), value); }
+    public double? ZirkVerlust { get => Zahl(nameof(ZirkVerlust)); set => Setze(nameof(ZirkVerlust), value); }
+    public double? ZirkAnteil { get => Zahl(nameof(ZirkAnteil)); set => Setze(nameof(ZirkAnteil), value); }
+    public int? ZirkLage { get => Ganz(nameof(ZirkLage)); set => Setze(nameof(ZirkLage), value); }
+    public IReadOnlyList<KiWahleintrag> ZirkLageWahl => Wahl(nameof(ZirkLage));
+    public double? ZirkManuell { get => Zahl(nameof(ZirkManuell)); set => Setze(nameof(ZirkManuell), value); }
+    public double? Leitungsinhalt { get => Zahl(nameof(Leitungsinhalt)); set => Setze(nameof(Leitungsinhalt), value); }
+
+    // ---- Fachwerte (Experte) ---------------------------------------------------------
+
+    public double? BedarfSpez { get => Zahl(nameof(BedarfSpez)); set => Setze(nameof(BedarfSpez), value); }
+    public double? Zapftemperatur { get => Zahl(nameof(Zapftemperatur)); set => Setze(nameof(Zapftemperatur), value); }
+    public double? KaltwasserMittel { get => Zahl(nameof(KaltwasserMittel)); set => Setze(nameof(KaltwasserMittel), value); }
+    public double? KaltwasserAmplitude { get => Zahl(nameof(KaltwasserAmplitude)); set => Setze(nameof(KaltwasserAmplitude), value); }
+
+    /// <summary>Der Auslastungsgang: zwölf Monatsfaktoren, leer je Monat = Katalog.</summary>
+    public double?[]? Auslastungsgang { get => Reihe(nameof(Auslastungsgang)); set => Setze(nameof(Auslastungsgang), value); }
+
+    public int? Tagesgangsatz { get => Ganz(nameof(Tagesgangsatz)); set => Setze(nameof(Tagesgangsatz), value); }
+    public IReadOnlyList<KiWahleintrag> TagesgangsatzWahl => Wahl(nameof(Tagesgangsatz));
+    public double? KaltwasserAuslegung { get => Zahl(nameof(KaltwasserAuslegung)); set => Setze(nameof(KaltwasserAuslegung), value); }
+    public double? Speichertemperatur { get => Zahl(nameof(Speichertemperatur)); set => Setze(nameof(Speichertemperatur), value); }
+    public double? ZirkKennwert { get => Zahl(nameof(ZirkKennwert)); set => Setze(nameof(ZirkKennwert), value); }
+    public double? ZirkFlaeche { get => Zahl(nameof(ZirkFlaeche)); set => Setze(nameof(ZirkFlaeche), value); }
+    public double? ZirkLaufzeit { get => Zahl(nameof(ZirkLaufzeit)); set => Setze(nameof(ZirkLaufzeit), value); }
+    public double? Anzeigetemperatur { get => Zahl(nameof(Anzeigetemperatur)); set => Setze(nameof(Anzeigetemperatur), value); }
+    public double? Stundenschwelle { get => Zahl(nameof(Stundenschwelle)); set => Setze(nameof(Stundenschwelle), value); }
+
+    private double? Zahl(string feld) => AngabeLesen?.Invoke(feld) as double?;
+    private int? Ganz(string feld) => AngabeLesen?.Invoke(feld) as int?;
+    private string Text(string feld) => AngabeLesen?.Invoke(feld) as string ?? "";
+    private double?[]? Reihe(string feld) => AngabeLesen?.Invoke(feld) as double?[];
+
+    private IReadOnlyList<KiWahleintrag> Wahl(string feld) => AngabeWahl?.Invoke(feld) ?? Array.Empty<KiWahleintrag>();
+
+    private void Setze(string feld, object? wert)
+        => ZapfprofilKiRegeln.Setze(AngabeSetzen is null ? null : new Func<object?, string?>(w => AngabeSetzen(feld, w)), wert);
+
     private static IReadOnlyList<KiWahleintrag> Liste(Func<IReadOnlyList<KiWahleintrag>>? quelle)
         => quelle?.Invoke() ?? Array.Empty<KiWahleintrag>();
+}
+
+/// <summary>
+/// Ein Ferienzeitraum der gewählten Zone als ZEILE der Sichtklasse <see cref="ZapfprofilKiSicht"/>
+/// (Stufe Erweitert) — Beginn und Ende als Tag und Monat, wie die vier Felder der Maske; das
+/// Kennzeichen ist die Nummer des Zeitraums.
+/// </summary>
+public sealed class ZapfprofilFerienKiZeile
+{
+    private readonly ZapfprofilFerienDaten _ferien;
+    private readonly int _nummer;
+
+    /// <summary>Legt die Zeile zu einem Ferienzeitraum an; <paramref name="nummer"/> zählt ab 1.</summary>
+    public ZapfprofilFerienKiZeile(ZapfprofilFerienDaten ferien, int nummer)
+    {
+        _ferien = ferien ?? throw new ArgumentNullException(nameof(ferien));
+        _nummer = nummer;
+    }
+
+    public Func<int?, string?>? BeginnTagSetzen { get; init; }
+    public Func<int?, string?>? BeginnMonatSetzen { get; init; }
+    public Func<int?, string?>? EndeTagSetzen { get; init; }
+    public Func<int?, string?>? EndeMonatSetzen { get; init; }
+
+    /// <summary>Das ZEILENKENNZEICHEN — die Nummer des Zeitraums („2"), wie die Maske ihn beschriftet.</summary>
+    public string Zeitraum => _nummer.ToString(CultureInfo.InvariantCulture);
+
+    public int? BeginnTag { get => _ferien.BeginnTag; set => ZapfprofilKiRegeln.Setze(BeginnTagSetzen, value); }
+    public int? BeginnMonat { get => _ferien.BeginnMonat; set => ZapfprofilKiRegeln.Setze(BeginnMonatSetzen, value); }
+    public int? EndeTag { get => _ferien.EndeTag; set => ZapfprofilKiRegeln.Setze(EndeTagSetzen, value); }
+    public int? EndeMonat { get => _ferien.EndeMonat; set => ZapfprofilKiRegeln.Setze(EndeMonatSetzen, value); }
+}
+
+/// <summary>
+/// Ein Wohnungstyp der Wohnungstabelle der gewählten Zone als ZEILE der Sichtklasse
+/// <see cref="ZapfprofilKiSicht"/> (Stufe Erweitert, nur Wohnen). Sie hält die Zeile selbst — ist
+/// sie weg, lehnt der Setzer benannt ab.
+/// </summary>
+public sealed class ZapfprofilWohnungKiZeile
+{
+    private readonly ZapfprofilWohnungDaten _wohnung;
+    private readonly int _nummer;
+
+    /// <summary>Legt die Zeile zu einem Wohnungstyp an; <paramref name="nummer"/> zählt ab 1.</summary>
+    public ZapfprofilWohnungKiZeile(ZapfprofilWohnungDaten wohnung, int nummer)
+    {
+        _wohnung = wohnung ?? throw new ArgumentNullException(nameof(wohnung));
+        _nummer = nummer;
+    }
+
+    public Func<int?, string?>? AnzahlSetzen { get; init; }
+    public Func<double?, string?>? RaumzahlSetzen { get; init; }
+    public Func<double?, string?>? PersonenSetzen { get; init; }
+    public Func<int?, string?>? AusstattungSetzen { get; init; }
+
+    /// <summary>Das ZEILENKENNZEICHEN — die Nummer der Zeile, wie der Tabellenkopf sie zählt („1").</summary>
+    public string Kennzeichen => _nummer.ToString(CultureInfo.InvariantCulture);
+
+    public int? Anzahl { get => _wohnung.Anzahl; set => ZapfprofilKiRegeln.Setze(AnzahlSetzen, value); }
+    public double? Raumzahl { get => _wohnung.Raumzahl; set => ZapfprofilKiRegeln.Setze(RaumzahlSetzen, value); }
+    public double? Personen { get => _wohnung.Personen; set => ZapfprofilKiRegeln.Setze(PersonenSetzen, value); }
+    public int? Ausstattung { get => _wohnung.IdAusstattung; set => ZapfprofilKiRegeln.Setze(AusstattungSetzen, value); }
 }
 
 /// <summary>

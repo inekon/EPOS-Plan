@@ -1256,6 +1256,118 @@
         internal static string ZpgRealisierungenName => MyResource.Resource.ZPG_LBL_REALISIERUNGEN;
         internal static string ZpgRealisierungenErl => MyResource.Resource.KI_DLG_ZPG_REALISIERUNGEN_ERL;
 
+        // Die Stufen Erweitert und Experte des Zapfprofils (Z4, Gruppe 2a): die Beschriftungen der
+        // Maske (ZPG_LBL_*) und je Feld die Erlaeuterung des Assistenten.
+
+        /// <summary>Einheit „Stunden je Tag" — so beschriftet die Zapfprofilmaske Ladefenster und Laufzeit.</summary>
+        internal const string EINHEIT_H_D = "h/d";
+
+        /// <summary>Einheit „kWh je Tag" (Tagesbedarf).</summary>
+        internal const string EINHEIT_KWH_D = "kWh/d";
+
+        /// <summary>Einheit „kWh je Jahr" (Speicherverlust).</summary>
+        internal const string EINHEIT_KWH_A = "kWh/a";
+
+        /// <summary>Einheit „Watt je Meter" (Verlust der Zirkulationsleitung).</summary>
+        internal const string EINHEIT_W_M = "W/m";
+
+        /// <summary>Einheit „kWh je m² und Jahr" (Flächenkennwert der Zirkulation).</summary>
+        internal const string EINHEIT_KWH_M2A = "kWh/(m²·a)";
+
+        /// <summary>Einheit „Personen je Wohneinheit" — ein Kürzel, darum aus der Ressource.</summary>
+        internal static string ZpgEinheitPersonenJeWe => MyResource.Resource.ZPG_EINHEIT_PERSONEN_JE_WE;
+
+        internal static string ZpgWohnungAnzahlName => MyResource.Resource.ZPG_LBL_ANZAHL;
+        internal static string ZpgWohnungAnzahlErl => MyResource.Resource.KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL;
+        internal static string ZpgWohnungRaumzahlName => MyResource.Resource.ZPG_LBL_RAUMZAHL;
+        internal static string ZpgWohnungRaumzahlErl => MyResource.Resource.KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL;
+        internal static string ZpgWohnungPersonenName => MyResource.Resource.ZPG_LBL_PERSONEN;
+        internal static string ZpgWohnungPersonenErl => MyResource.Resource.KI_DLG_ZPG_WOHNUNG_PERSONEN_ERL;
+        internal static string ZpgWohnungAusstattungName => MyResource.Resource.ZPG_LBL_AUSSTATTUNG;
+        internal static string ZpgWohnungAusstattungErl => MyResource.Resource.KI_DLG_ZPG_WOHNUNG_AUSSTATTUNG_ERL;
+        internal static string ZpgPersonenJeWeName => MyResource.Resource.ZPG_LBL_PERSONEN_JE_WE;
+        internal static string ZpgPersonenJeWeErl => MyResource.Resource.KI_DLG_ZPG_PERSONEN_JE_WE_ERL;
+        internal static string ZpgWohnflaecheJeWeName => MyResource.Resource.ZPG_LBL_WOHNFLAECHE_JE_WE;
+        internal static string ZpgWohnflaecheJeWeErl => MyResource.Resource.KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL;
+        internal static string ZpgTopologieName => MyResource.Resource.ZPG_LBL_TOPOLOGIE;
+        internal static string ZpgTopologieErl => MyResource.Resource.KI_DLG_ZPG_TOPOLOGIE_ERL;
+        internal static string ZpgZirkulationVorhandenName => MyResource.Resource.ZPG_LBL_ZIRKULATION_VORHANDEN;
+        internal static string ZpgZirkulationVorhandenErl => MyResource.Resource.KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL;
+        internal static string ZpgKalenderName => MyResource.Resource.ZPG_LBL_KALENDER;
+        internal static string ZpgKalenderErl => MyResource.Resource.KI_DLG_ZPG_KALENDER_ERL;
+
+        internal static string ZpgFerienBeginnTagName => MyResource.Resource.ZPG_LBL_BEGINN_TAG;
+        internal static string ZpgFerienBeginnMonatName => MyResource.Resource.ZPG_LBL_BEGINN_MONAT;
+        internal static string ZpgFerienEndeTagName => MyResource.Resource.ZPG_LBL_ENDE_TAG;
+        internal static string ZpgFerienEndeMonatName => MyResource.Resource.ZPG_LBL_ENDE_MONAT;
+        internal static string ZpgFerienErl => MyResource.Resource.KI_DLG_ZPG_FERIEN_ERL;
+        internal static string ZpgJahresmesswertName => MyResource.Resource.ZPG_LBL_JAHRESMESSWERT;
+        internal static string ZpgJahresmesswertErl => MyResource.Resource.KI_DLG_ZPG_JAHRESMESSWERT_ERL;
+        internal static string ZpgMesswertEinheitName => MyResource.Resource.ZPG_LBL_MESSWERT_EINHEIT;
+        internal static string ZpgMesswertEinheitErl => MyResource.Resource.KI_DLG_ZPG_MESSWERT_EINHEIT_ERL;
+        internal static string ZpgMesswertGrenzeName => MyResource.Resource.ZPG_LBL_MESSWERT_GRENZE;
+        internal static string ZpgMesswertGrenzeErl => MyResource.Resource.KI_DLG_ZPG_MESSWERT_GRENZE_ERL;
+        internal static string ZpgSpeicherverlustName => MyResource.Resource.ZPG_LBL_SPEICHERVERLUST;
+        internal static string ZpgSpeicherverlustErl => MyResource.Resource.KI_DLG_ZPG_SPEICHERVERLUST_ERL;
+        internal static string ZpgMesswertQuelleName => MyResource.Resource.ZPG_LBL_MESSWERT_QUELLE;
+        internal static string ZpgMesswertQuelleErl => MyResource.Resource.KI_DLG_ZPG_MESSWERT_QUELLE_ERL;
+        internal static string ZpgMesswertZeitraumName => MyResource.Resource.ZPG_LBL_MESSWERT_ZEITRAUM;
+        internal static string ZpgMesswertZeitraumErl => MyResource.Resource.KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL;
+        internal static string ZpgTagesbedarfModusName => MyResource.Resource.ZPG_LBL_TAGESBEDARF;
+        internal static string ZpgTagesbedarfModusErl => MyResource.Resource.KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL;
+        internal static string ZpgTagesbedarfManuellName => MyResource.Resource.ZPG_LBL_TAGESBEDARF_MANUELL;
+        internal static string ZpgTagesbedarfManuellErl => MyResource.Resource.KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL;
+        internal static string ZpgLadeleistungModusName => MyResource.Resource.ZPG_LBL_LADELEISTUNG;
+        internal static string ZpgLadeleistungModusErl => MyResource.Resource.KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL;
+        internal static string ZpgLadeleistungManuellName => MyResource.Resource.ZPG_LBL_LADELEISTUNG_MANUELL;
+        internal static string ZpgLadeleistungManuellErl => MyResource.Resource.KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL;
+        internal static string ZpgLadefensterName => MyResource.Resource.ZPG_LBL_LADEFENSTER;
+        internal static string ZpgLadefensterErl => MyResource.Resource.KI_DLG_ZPG_LADEFENSTER_ERL;
+        internal static string ZpgLadefensterBeginnName => MyResource.Resource.ZPG_LBL_LADEFENSTER_BEGINN;
+        internal static string ZpgLadefensterBeginnErl => MyResource.Resource.KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL;
+        internal static string ZpgZirkulationModusName => MyResource.Resource.ZPG_LBL_ZIRKULATION;
+        internal static string ZpgZirkulationModusErl => MyResource.Resource.KI_DLG_ZPG_ZIRKULATION_MODUS_ERL;
+        internal static string ZpgZirkMethodeName => MyResource.Resource.ZPG_LBL_ZIRK_METHODE;
+        internal static string ZpgZirkMethodeErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_METHODE_ERL;
+        internal static string ZpgZirkLaengeName => MyResource.Resource.ZPG_LBL_ZIRK_LAENGE;
+        internal static string ZpgZirkLaengeErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_LAENGE_ERL;
+        internal static string ZpgZirkVerlustName => MyResource.Resource.ZPG_LBL_ZIRK_VERLUST;
+        internal static string ZpgZirkVerlustErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_VERLUST_ERL;
+        internal static string ZpgZirkAnteilName => MyResource.Resource.ZPG_LBL_ZIRK_ANTEIL;
+        internal static string ZpgZirkAnteilErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_ANTEIL_ERL;
+        internal static string ZpgZirkLageName => MyResource.Resource.ZPG_LBL_ZIRK_LAGE;
+        internal static string ZpgZirkLageErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_LAGE_ERL;
+        internal static string ZpgZirkManuellName => MyResource.Resource.ZPG_LBL_ZIRK_MANUELL;
+        internal static string ZpgZirkManuellErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_MANUELL_ERL;
+        internal static string ZpgLeitungsinhaltName => MyResource.Resource.ZPG_LBL_LEITUNGSINHALT;
+        internal static string ZpgLeitungsinhaltErl => MyResource.Resource.KI_DLG_ZPG_LEITUNGSINHALT_ERL;
+        internal static string ZpgBedarfSpezName => MyResource.Resource.ZPG_LBL_BEDARF_SPEZ;
+        internal static string ZpgBedarfSpezErl => MyResource.Resource.KI_DLG_ZPG_BEDARF_SPEZ_ERL;
+        internal static string ZpgZapftemperaturName => MyResource.Resource.ZPG_LBL_ZAPFTEMPERATUR;
+        internal static string ZpgZapftemperaturErl => MyResource.Resource.KI_DLG_ZPG_ZAPFTEMPERATUR_ERL;
+        internal static string ZpgKaltwasserMittelName => MyResource.Resource.ZPG_LBL_KALTWASSER_MITTEL;
+        internal static string ZpgKaltwasserMittelErl => MyResource.Resource.KI_DLG_ZPG_KALTWASSER_MITTEL_ERL;
+        internal static string ZpgKaltwasserAmplitudeName => MyResource.Resource.ZPG_LBL_KALTWASSER_AMPLITUDE;
+        internal static string ZpgKaltwasserAmplitudeErl => MyResource.Resource.KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL;
+        internal static string ZpgAuslastungsgangName => MyResource.Resource.ZPG_LBL_AUSLASTUNGSGANG;
+        internal static string ZpgAuslastungsgangErl => MyResource.Resource.KI_DLG_ZPG_AUSLASTUNGSGANG_ERL;
+        internal static string ZpgTagesgangsatzName => MyResource.Resource.ZPG_LBL_TAGESGANGSATZ;
+        internal static string ZpgTagesgangsatzErl => MyResource.Resource.KI_DLG_ZPG_TAGESGANGSATZ_ERL;
+        internal static string ZpgKaltwasserAuslegungName => MyResource.Resource.ZPG_LBL_KALTWASSER_AUSLEGUNG;
+        internal static string ZpgKaltwasserAuslegungErl => MyResource.Resource.KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL;
+        internal static string ZpgSpeichertemperaturName => MyResource.Resource.ZPG_LBL_SPEICHERTEMPERATUR;
+        internal static string ZpgSpeichertemperaturErl => MyResource.Resource.KI_DLG_ZPG_SPEICHERTEMPERATUR_ERL;
+        internal static string ZpgZirkKennwertName => MyResource.Resource.ZPG_LBL_ZIRK_KENNWERT;
+        internal static string ZpgZirkKennwertErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_KENNWERT_ERL;
+        internal static string ZpgZirkFlaecheName => MyResource.Resource.ZPG_LBL_ZIRK_FLAECHE;
+        internal static string ZpgZirkFlaecheErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_FLAECHE_ERL;
+        internal static string ZpgZirkLaufzeitName => MyResource.Resource.ZPG_LBL_ZIRK_LAUFZEIT;
+        internal static string ZpgZirkLaufzeitErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL;
+        internal static string ZpgAnzeigetemperaturName => MyResource.Resource.ZPG_LBL_ANZEIGETEMPERATUR;
+        internal static string ZpgAnzeigetemperaturErl => MyResource.Resource.KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL;
+        internal static string ZpgStundenschwelleName => MyResource.Resource.ZPG_LBL_STUNDENSCHWELLE;
+        internal static string ZpgStundenschwelleErl => MyResource.Resource.KI_DLG_ZPG_STUNDENSCHWELLE_ERL;
+
         internal static string ZpgaBedarfstagName => MyResource.Resource.ZPG_AUS_LBL_BEDARFSTAG;
         internal static string ZpgaBedarfstagErl => MyResource.Resource.KI_DLG_ZPGA_BEDARFSTAG_ERL;
         internal static string ZpgaSpeichertemperaturName => MyResource.Resource.ZPG_AUS_LBL_SPEICHERTEMPERATUR;

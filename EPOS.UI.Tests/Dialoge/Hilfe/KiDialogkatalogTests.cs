@@ -1079,11 +1079,12 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die Zählliste der Zahlenreihen:</b> genau diese sieben Reihen an sechs Masken.
+    /// <b>Die Zählliste der Zahlenreihen:</b> genau diese acht Reihen an sieben Masken — der
+    /// Auslastungsgang des Zapfprofils (Stufe Z4) ist die achte.
     /// Eine neue Reihe erzwingt einen Blick hierher — und in die Tests ihrer Maske.
     /// </summary>
     [Fact]
-    public void Genau_sieben_Zahlenreihen_stehen_im_Katalog()
+    public void Genau_acht_Zahlenreihen_stehen_im_Katalog()
     {
         string[] reihen = KiDialoge.Katalog.Alle
             .SelectMany(d => d.Felder.Where(f => f.IstReihe).Select(f => d.Maskenname + "." + f.Name))
@@ -1098,7 +1099,8 @@ public class KiDialogkatalogTests : IDisposable
             KiMaskennamen.KOSTENPROFIL + ".monatswerte",
             KiMaskennamen.KOSTENPROFIL + ".wochenwerte",
             KiMaskennamen.LEISTUNGSPREISREIHE + ".monatssaetze",
-            KiMaskennamen.QUELLPROFIL + ".monatswerte"
+            KiMaskennamen.QUELLPROFIL + ".monatswerte",
+            KiMaskennamen.ZAPFPROFIL + ".auslastungsgang"
         }.OrderBy(s => s, StringComparer.Ordinal), reihen);
     }
 

@@ -29116,4 +29116,133 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_WARNLISTE_LEER" xml:space="preserve">
     <value>Keine Hinweise.</value>
   </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie viele Wohnungen dieses Typs die gewählte Zone hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Erweitert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL" xml:space="preserve">
+    <value>Die Raumzahl des Wohnungstyps; ohne Personenangabe folgt aus ihr die Belegung nach dem Katalog.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_PERSONEN_ERL" xml:space="preserve">
+    <value>Die Personen je Wohnung dieses Typs; leer = Belegung nach der Raumzahl aus dem Katalog.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_AUSSTATTUNG_ERL" xml:space="preserve">
+    <value>Die Ausstattungsklasse des Wohnungstyps für die Bedarfskennzahl; leer = Vorgabeklasse.</value>
+  </data>
+  <data name="KI_DLG_ZPG_PERSONEN_JE_WE_ERL" xml:space="preserve">
+    <value>Personen je Wohneinheit der gewählten Zone; leer = Belegung nach der Wohnungsgröße aus dem Katalog.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL" xml:space="preserve">
+    <value>Wohnfläche je Wohneinheit der gewählten Zone; leer = Annahme des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TOPOLOGIE_ERL" xml:space="preserve">
+    <value>Wie die gewählte Zone Trinkwarmwasser erwärmt (Speicher, Frischwasserstation, Durchfluss, Wohnungsstation) — wirkt nur auf die Auslegung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL" xml:space="preserve">
+    <value>Ob die gewählte Zone an der Zirkulation hängt; „nein“ nimmt sie aus dem Zirkulationsanteil.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALENDER_ERL" xml:space="preserve">
+    <value>Der Kalender der gewählten Zone: der der Nutzungsart oder die Ferien eines Gebäudes des Projekts, die nur vorbelegen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_ERL" xml:space="preserve">
+    <value>Ein Ferienzeitraum der gewählten Zone als Beginn Tag, Beginn Monat, Ende Tag und Ende Monat; leer = keine Ferien.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESMESSWERT_ERL" xml:space="preserve">
+    <value>Ein gemessener Jahresverbrauch der gewählten Zone; er skaliert die Zone mit einem ausgewiesenen Faktor, leer = kein Messwert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit des Jahresmesswerts: kWh/a oder m³/a; ein Volumen gilt an der Zapfstelle.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_GRENZE_ERL" xml:space="preserve">
+    <value>Was der Messwert einschließt: nur die Zapfung, dazu Verteil- und Zirkulationsverlust oder zusätzlich den Speicherverlust.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SPEICHERVERLUST_ERL" xml:space="preserve">
+    <value>Der Speicherverlust in kWh/a, den ein Messwert mit Speicherverlust einschließt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_QUELLE_ERL" xml:space="preserve">
+    <value>Woher der Messwert stammt, etwa Zähler oder Abrechnung — nur Vermerk.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL" xml:space="preserve">
+    <value>Der Zeitraum des Messwerts — nur Vermerk.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL" xml:space="preserve">
+    <value>Der Tagesbedarf der gewählten Zone aus dem Katalog (auto) oder als manueller Wert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
+    <value>Der manuelle Tagesbedarf der gewählten Zone; er gilt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL" xml:space="preserve">
+    <value>Die Ladeleistung des Gebäudes als Vorschlag der Auslegung (auto) oder als manueller Wert — wirkt nur auf die Auslegung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Ladeleistung; sie gilt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADEFENSTER_ERL" xml:space="preserve">
+    <value>Die effektive Ladezeit je Tag; leer = Vorgabe des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
+    <value>Die Stunde, zu der das Ladefenster beginnt; leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRKULATION_MODUS_ERL" xml:space="preserve">
+    <value>Die Zirkulation des Gebäudes nach der gewählten Methode (auto) oder als manuelle Leistung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_METHODE_ERL" xml:space="preserve">
+    <value>Wie die Zirkulation geschätzt wird: Leitungslänge × Verlust, Anteil am Tagesbedarf oder Flächenkennwert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAENGE_ERL" xml:space="preserve">
+    <value>Die Länge der Zirkulationsleitung (Methode Leitungslänge).</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_VERLUST_ERL" xml:space="preserve">
+    <value>Der spezifische Verlust der Leitung (Methode Leitungslänge); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_ANTEIL_ERL" xml:space="preserve">
+    <value>Der Anteil der Zirkulation am Tagesbedarf von 0 bis 1 (Methode Anteil); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAGE_ERL" xml:space="preserve">
+    <value>Die Lage der Leitung zur thermischen Hülle (Methode Flächenkennwert); leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_MANUELL_ERL" xml:space="preserve">
+    <value>Die manuelle Leistung der Zirkulation; sie gilt nur bei „manuell“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LEITUNGSINHALT_ERL" xml:space="preserve">
+    <value>Der Wasserinhalt der Leitungen; er entscheidet mit über die Großanlage.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEDARF_SPEZ_ERL" xml:space="preserve">
+    <value>Der spezifische Bedarf der gewählten Zone je Bezugseinheit und Tag; leer = Katalogwert des Niveaus.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZAPFTEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Zapftemperatur der gewählten Zone; leer = Bezugstemperatur des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_MITTEL_ERL" xml:space="preserve">
+    <value>Das Jahresmittel des Kaltwassers der gewählten Zone (nur Bilanz); leer = Konvention.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL" xml:space="preserve">
+    <value>Die Schwankung des Kaltwassers über das Jahr; leer = Konvention.</value>
+  </data>
+  <data name="KI_DLG_ZPG_AUSLASTUNGSGANG_ERL" xml:space="preserve">
+    <value>Zwölf Monatsfaktoren der gewählten Zone; leer je Monat = Faktor des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESGANGSATZ_ERL" xml:space="preserve">
+    <value>Der Tagesgangsatz der gewählten Zone; leer = der Satz der Nutzungsart.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>Das Kaltwasser der Auslegung, gleich für alle Tage; leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Speichertemperatur; leer = Vorgabe, bei einer Großanlage die Mindesttemperatur.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_KENNWERT_ERL" xml:space="preserve">
+    <value>Der Flächenkennwert des Zirkulationsverlusts; leer = Kennwert nach der Lage der Leitung.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_FLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche für den Flächenkennwert; leer = aus Wohnfläche je Wohneinheit bzw. dem Gebäude.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL" xml:space="preserve">
+    <value>Die Laufzeit der Zirkulation je Tag; leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur, auf die die Literanzeige der Kennzahlen umrechnet — nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
+    <value>Die Schwelle, ab der die Kennzahlen Stunden zählen — nicht gespeichert.</value>
+  </data>
 </root>

@@ -29109,4 +29109,133 @@ Do you want to allow this?</value>
   <data name="ZPG_WARNLISTE_LEER" xml:space="preserve">
     <value>No notes.</value>
   </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>How many dwellings of this type the selected zone has — a row of the dwelling table, only for a residential type of use at the Extended level.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL" xml:space="preserve">
+    <value>The number of rooms of the dwelling type; without persons it gives the occupancy from the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_PERSONEN_ERL" xml:space="preserve">
+    <value>The persons per dwelling of this type; empty = occupancy by number of rooms from the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNUNG_AUSSTATTUNG_ERL" xml:space="preserve">
+    <value>The equipment class of the dwelling type for the demand index; empty = default class.</value>
+  </data>
+  <data name="KI_DLG_ZPG_PERSONEN_JE_WE_ERL" xml:space="preserve">
+    <value>Persons per dwelling unit of the selected zone; empty = occupancy by dwelling size from the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL" xml:space="preserve">
+    <value>Living area per dwelling unit of the selected zone; empty = assumption of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TOPOLOGIE_ERL" xml:space="preserve">
+    <value>How the selected zone heats domestic hot water (storage, fresh water station, instantaneous, apartment station) — affects only the design.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL" xml:space="preserve">
+    <value>Whether the selected zone is connected to the circulation; “no” takes it out of the circulation share.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALENDER_ERL" xml:space="preserve">
+    <value>The calendar of the selected zone: that of the type of use or the holidays of a building of the project, which only preset.</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_ERL" xml:space="preserve">
+    <value>A holiday period of the selected zone as start day, start month, end day and end month; empty = no holidays.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESMESSWERT_ERL" xml:space="preserve">
+    <value>A measured annual consumption of the selected zone; it scales the zone with a stated factor, empty = no measured value.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the measured annual value: kWh/a or m³/a; a volume applies at the draw-off point.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_GRENZE_ERL" xml:space="preserve">
+    <value>What the measured value includes: only the draw-off, also distribution and circulation loss, or additionally the storage loss.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SPEICHERVERLUST_ERL" xml:space="preserve">
+    <value>The storage loss in kWh/a that a measured value including storage loss contains.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_QUELLE_ERL" xml:space="preserve">
+    <value>Where the measured value comes from, e.g. meter or billing — note only.</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL" xml:space="preserve">
+    <value>The period of the measured value — note only.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL" xml:space="preserve">
+    <value>The daily demand of the selected zone from the catalogue (auto) or as a manual value.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
+    <value>The manual daily demand of the selected zone; it applies only with “manual”.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL" xml:space="preserve">
+    <value>The charging power of the building as proposal of the design (auto) or as a manual value — affects only the design.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
+    <value>The manual charging power; it applies only with “manual”.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADEFENSTER_ERL" xml:space="preserve">
+    <value>The effective charging time per day; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
+    <value>The hour at which the charging window starts; empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRKULATION_MODUS_ERL" xml:space="preserve">
+    <value>The circulation of the building by the selected method (auto) or as a manual power.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_METHODE_ERL" xml:space="preserve">
+    <value>How the circulation is estimated: pipe length × loss, share of daily demand or area-related value.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAENGE_ERL" xml:space="preserve">
+    <value>The length of the circulation pipe (pipe length method).</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_VERLUST_ERL" xml:space="preserve">
+    <value>The specific loss of the pipe (pipe length method); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_ANTEIL_ERL" xml:space="preserve">
+    <value>The share of circulation in the daily demand from 0 to 1 (share method); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAGE_ERL" xml:space="preserve">
+    <value>The position of the pipe relative to the thermal envelope (area method); empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_MANUELL_ERL" xml:space="preserve">
+    <value>The manual circulation power; it applies only with “manual”.</value>
+  </data>
+  <data name="KI_DLG_ZPG_LEITUNGSINHALT_ERL" xml:space="preserve">
+    <value>The water content of the pipes; it helps decide a large system.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEDARF_SPEZ_ERL" xml:space="preserve">
+    <value>The specific demand of the selected zone per reference unit and day; empty = catalogue value of the level.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZAPFTEMPERATUR_ERL" xml:space="preserve">
+    <value>The draw-off temperature of the selected zone; empty = reference temperature of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_MITTEL_ERL" xml:space="preserve">
+    <value>The annual mean cold water temperature of the selected zone (balance only); empty = convention.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL" xml:space="preserve">
+    <value>The variation of the cold water over the year; empty = convention.</value>
+  </data>
+  <data name="KI_DLG_ZPG_AUSLASTUNGSGANG_ERL" xml:space="preserve">
+    <value>Twelve monthly factors of the selected zone; empty per month = catalogue factor.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TAGESGANGSATZ_ERL" xml:space="preserve">
+    <value>The daily profile set of the selected zone; empty = the set of the type of use.</value>
+  </data>
+  <data name="KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>The cold water of the design, the same for all days; empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>The storage temperature; empty = default, for a large system the minimum temperature.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_KENNWERT_ERL" xml:space="preserve">
+    <value>The area-related value of the circulation loss; empty = value by position of the pipe.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_FLAECHE_ERL" xml:space="preserve">
+    <value>The area for the area-related value; empty = from living area per dwelling unit or the building.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL" xml:space="preserve">
+    <value>The running time of the circulation per day; empty = default.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL" xml:space="preserve">
+    <value>The temperature to which the litre display of the key figures converts — not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
+    <value>The threshold from which the key figures count hours — not saved.</value>
+  </data>
 </root>
