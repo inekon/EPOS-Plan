@@ -4709,6 +4709,205 @@ namespace WindowsFormsApplication1
         /// Begründung und Typwahl bei <see cref="Schritt72_NichtMonetaer"/>.</summary>
         public const string SPALTE_PW_NICHT_MONETAER = "Nicht_Monetaer";
 
+        // -------------------------------------------------------------------------
+        // Schritt 116 - der Szenariorahmen (Schritt B des Analysepapiers, Etappe E9a,
+        //               vollstaendige Szenarioabdeckung V-E, Konzept § 2.11.5)
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt B, Schemaschritt 116): der <b>Betrachtungszeitraum</b> und der
+        /// <b>Mengenfaktor</b> je Szenario an <c>Tab_ProjektWirtschaftlichkeit</c> — die zwei
+        /// Rahmengrößen, die der Parametersatz des Schritts 71 noch nicht führte (Konzept
+        /// § 2.11.5, Zeilen „Rahmen" und „Mengen").
+        ///
+        /// <para><b>NULL heißt „wie Erwartet"</b> — nicht „Vorgabe" wie bei den Spalten des
+        /// Schritts 71 (Entscheid E9a‑Q5, Lesart a): Es gibt für den Zeitraum und die Menge
+        /// keine Richtungsvorgabe; ein leeres Feld rechnet den Erwartungswert, und erst eine
+        /// gepflegte Zahl (<c>|Wert − Erwartet| &gt; 1e−9</c>, 0 zählt wie leer) verändert das
+        /// Szenario. Damit ist der Schritt <b>ergebnisneutral bis zur ersten Pflege</b>.</para>
+        ///
+        /// <para><b>Namensvorsicht:</b> <c>Szen_*_Dauer</c> (Schritt 71) ist die
+        /// NUTZUNGSDAUERänderung der Positionen, nicht der Betrachtungszeitraum — deshalb die
+        /// eigenen Namen <c>Szen_*_Zeitraum</c>.</para>
+        ///
+        /// <para><b>KEIN DML, kein DDL-DEFAULT, kein <c>_STAMM</c>-Gegenstück</b> — wortgleiche
+        /// Begründung wie bei <see cref="Schritt71_SzenarioBest"/>. Die Spalten stehen BEWUSST
+        /// NICHT in <see cref="Alle"/>: Kein Rechenweg der Simulation liest sie; die tolerante
+        /// Vorsorge steht unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dort auch im CREATE — die
+        /// doppelte Schema-Wahrheit dieses Moduls).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt116_Szenariorahmen =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_ZEITRAUM,  "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_ZEITRAUM, "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_MENGE,     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_MENGE,    "DOUBLE"),
+        };
+
+        /// <summary>Betrachtungszeitraum des BEST-Szenarios [ganze Jahre]; NULL = wie Erwartet
+        /// (Schemaschritt 116). Er wirkt auf Horizont, Restwert am Ende und die
+        /// Ersatzbeschaffungen innerhalb des Zeitraums — genau wie ein Erwartet-Lauf mit
+        /// diesem Zeitraum (E9a‑Q4, Lesart a).</summary>
+        public const string SPALTE_PW_SZEN_BEST_ZEITRAUM = "Szen_Best_Zeitraum";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_ZEITRAUM"/>
+        public const string SPALTE_PW_SZEN_WORST_ZEITRAUM = "Szen_Worst_Zeitraum";
+
+        /// <summary>Mengenänderung des BEST-Szenarios [%], + = mehr; NULL = wie Erwartet
+        /// (Schemaschritt 116). Ein einheitlicher Faktor (1 + Menge/100) auf das
+        /// Mengengerüst des Simulationsergebnisses der Variante (E9a‑Q2, Lesart a).</summary>
+        public const string SPALTE_PW_SZEN_BEST_MENGE = "Szen_Best_Menge";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_MENGE"/>
+        public const string SPALTE_PW_SZEN_WORST_MENGE = "Szen_Worst_Menge";
+
+        // -------------------------------------------------------------------------
+        // Schritt 117 - die Traegerpreise best/worst (Schritt C des Analysepapiers,
+        //               Etappe E9a, Konzept § 2.11.5 Zeile „Energiepreise je Traeger")
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C, Schemaschritt 117): die <b>Trägerpreise je Szenario</b> an
+        /// der Projektübersteuerung <c>energy_project_settings</c> — Arbeits-, Grund- und
+        /// Leistungspreis je Best und Worst, in derselben Einheit wie die Erwartet-Spalten
+        /// <c>custom_price_work</c>, <c>custom_price_base</c> und <c>custom_price_power</c>
+        /// (je Abrechnungseinheit, €/a, €/(kW·a) bzw. €/(kW·Monat)).
+        ///
+        /// <para><b>NULL (und 0) heißt „wie Erwartet"</b> (E9a‑Q5, Lesart a). Ein gepflegter
+        /// Wert ersetzt den wirksamen Erwartet-Preis des Trägers ALS GANZES (E9a‑Q3, Lesart a);
+        /// die Preisanteile der Zerlegung bleiben prozentual. Bei gepflegter
+        /// Leistungspreis-Staffel (Schritt 104) oder saisonaler Leistungspreisreihe gilt diese,
+        /// und ein Szenario-Leistungspreis bleibt mit einer Kohärenzzeile ohne Wirkung.</para>
+        ///
+        /// <para><b>Kein zweiter DDL-Ort.</b> Der Kern legt <c>energy_project_settings</c>
+        /// nirgends selbst an (die Tabelle steht im Grundschema); jeder Leser fragt die Spalten
+        /// tolerant (<c>EnergietraegerPreisCtrl.SzenarioLesen</c>), der Schreibweg prüft sie
+        /// vorher (<c>EnergietraegerPreisCtrl.SzenarioSpaltenVorhanden</c>). KEIN DML; die
+        /// Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe Begründung wie bei
+        /// <see cref="Schritt12_Preismodell"/>.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt117_TraegerpreisSzenario =
+        {
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_ARBEIT_BEST,    "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_ARBEIT_WORST,   "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_GRUND_BEST,     "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_GRUND_WORST,    "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_LEISTUNG_BEST,  "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_LEISTUNG_WORST, "DOUBLE"),
+        };
+
+        /// <summary>Arbeitspreis des BEST-Szenarios je Abrechnungseinheit; NULL = wie Erwartet
+        /// (<c>custom_price_work</c> bzw. dessen Rückfallkette). Schemaschritt 117.</summary>
+        public const string SPALTE_EPS_PREIS_ARBEIT_BEST = "custom_price_work_best";
+
+        /// <inheritdoc cref="SPALTE_EPS_PREIS_ARBEIT_BEST"/>
+        public const string SPALTE_EPS_PREIS_ARBEIT_WORST = "custom_price_work_worst";
+
+        /// <summary>Grundpreis des BEST-Szenarios [€/a]; NULL = wie Erwartet
+        /// (<c>custom_price_base</c>). Schemaschritt 117.</summary>
+        public const string SPALTE_EPS_PREIS_GRUND_BEST = "custom_price_base_best";
+
+        /// <inheritdoc cref="SPALTE_EPS_PREIS_GRUND_BEST"/>
+        public const string SPALTE_EPS_PREIS_GRUND_WORST = "custom_price_base_worst";
+
+        /// <summary>Leistungspreis des BEST-Szenarios (Einheit wie
+        /// <c>custom_price_power</c>); NULL = wie Erwartet. Schemaschritt 117.</summary>
+        public const string SPALTE_EPS_PREIS_LEISTUNG_BEST = "custom_price_power_best";
+
+        /// <inheritdoc cref="SPALTE_EPS_PREIS_LEISTUNG_BEST"/>
+        public const string SPALTE_EPS_PREIS_LEISTUNG_WORST = "custom_price_power_worst";
+
+        // -------------------------------------------------------------------------
+        // Schritt 118 - die Erloessaetze best/worst (Schritt D des Analysepapiers,
+        //               Etappe E9a, Konzept § 2.11.5 Zeile „Erloessaetze")
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): die <b>Einspeisevergütungen je
+        /// Szenario</b> an <c>Tab_ProjektWirtschaftlichkeit</c> — je ein Best/Worst-Paar zu
+        /// <c>Einspeiseverguetung</c> (PV-Überschuss) und <c>Einspeiseverguetung_KWK</c>
+        /// [€/kWh], „an derselben Tabelle" wie der Erwartungswert (Konzept § 2.11.5).
+        ///
+        /// <para><b>NULL (und 0) heißt „wie Erwartet"</b> (E9a‑Q5, Lesart a).
+        /// <b>Doppelpflicht:</b> dieselben Spalten im CREATE-Text und als
+        /// <c>SpalteSicher</c>-Nachzug in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        /// KEIN DML; nicht in <see cref="Alle"/> (Begründung bei
+        /// <see cref="Schritt71_SzenarioBest"/>).</para>
+        ///
+        /// <para><b>Nicht in diesem Schritt</b> (E9a‑Q1, Lesart a): <c>PpaSpotAufschlag</c>,
+        /// <c>MarktwertJahresmittel</c> und <c>MarktwertEntwicklung</c> der PV-Vergütung.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt118_ErloessatzWirtschaftlichkeit =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_BEST,      "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_WORST,     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK_BEST,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK_WORST, "DOUBLE"),
+        };
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): <b>DV-Entgelt und PPA-Preis je
+        /// Szenario</b> an <c>Tab_ProjektPhotovoltaik</c> [ct/kWh], neben ihren
+        /// Erwartungswerten <c>DvEntgelt</c> und <c>PpaPreis</c> — dieselbe Zeile, dieselbe
+        /// Auflösung „eigene Werte / übernommen vom Stamm" (Konzept § 2.16).
+        ///
+        /// <para><b>NULL (und 0) heißt „wie Erwartet".</b> <b>Doppelpflicht (PPV):</b> Die
+        /// Tabelle gehört <c>ProjektPhotovoltaikCtrl</c>, gelesen werden die Spalten vom
+        /// Rechenweg der Wirtschaftlichkeit — die tolerante Vorsorge steht deshalb wie beim
+        /// Schritt 93 beim Leser (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>), der
+        /// Schreibweg der PV-Karte prüft die Spalten vorher. Der CREATE-Text des Schritts 41
+        /// (<see cref="SQL_CREATE_PROJEKTPHOTOVOLTAIK"/>) bleibt, wie er ist: Ein
+        /// Migrationsschritt wird nie rückwirkend geändert, und er trägt auch die Spalten der
+        /// Schritte 64 und 93 nicht.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt118_ErloessatzPhotovoltaik =
+        {
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DV_ENTGELT_BEST,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DV_ENTGELT_WORST, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_PPA_PREIS_BEST,   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_PPA_PREIS_WORST,  "DOUBLE"),
+        };
+
+        /// <summary>Beide Blöcke des Schritts 118 in Anlegereihenfolge — EINE Quelle für
+        /// Migration, Testdatenbankschema, Testdatenbank und Nachweis.</summary>
+        public static IEnumerable<SchemaSpalte> Schritt118_ErloessatzSzenario
+        {
+            get
+            {
+                foreach (SchemaSpalte s in Schritt118_ErloessatzWirtschaftlichkeit) yield return s;
+                foreach (SchemaSpalte s in Schritt118_ErloessatzPhotovoltaik) yield return s;
+            }
+        }
+
+        /// <summary>Einspeisevergütung PV-Überschuss des BEST-Szenarios [€/kWh]; NULL = wie
+        /// Erwartet (<c>Einspeiseverguetung</c>). Schemaschritt 118.</summary>
+        public const string SPALTE_PW_VERGUETUNG_BEST = "Einspeiseverguetung_Best";
+
+        /// <inheritdoc cref="SPALTE_PW_VERGUETUNG_BEST"/>
+        public const string SPALTE_PW_VERGUETUNG_WORST = "Einspeiseverguetung_Worst";
+
+        /// <summary>Einspeisevergütung KWK des BEST-Szenarios [€/kWh]; NULL = wie Erwartet
+        /// (<see cref="SPALTE_PW_VERGUETUNG_KWK"/>). Schemaschritt 118.</summary>
+        public const string SPALTE_PW_VERGUETUNG_KWK_BEST = "Einspeiseverguetung_KWK_Best";
+
+        /// <inheritdoc cref="SPALTE_PW_VERGUETUNG_KWK_BEST"/>
+        public const string SPALTE_PW_VERGUETUNG_KWK_WORST = "Einspeiseverguetung_KWK_Worst";
+
+        /// <summary>DV-Entgelt des BEST-Szenarios [ct/kWh]; NULL = wie Erwartet
+        /// (<c>DvEntgelt</c>). Schemaschritt 118.</summary>
+        public const string SPALTE_PPV_DV_ENTGELT_BEST = "DvEntgelt_Best";
+
+        /// <inheritdoc cref="SPALTE_PPV_DV_ENTGELT_BEST"/>
+        public const string SPALTE_PPV_DV_ENTGELT_WORST = "DvEntgelt_Worst";
+
+        /// <summary>PPA-Festpreis des BEST-Szenarios [ct/kWh]; NULL = wie Erwartet
+        /// (<c>PpaPreis</c>). Schemaschritt 118.</summary>
+        public const string SPALTE_PPV_PPA_PREIS_BEST = "PpaPreis_Best";
+
+        /// <inheritdoc cref="SPALTE_PPV_PPA_PREIS_BEST"/>
+        public const string SPALTE_PPV_PPA_PREIS_WORST = "PpaPreis_Worst";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -4928,6 +5127,16 @@ namespace WindowsFormsApplication1
         /// <c>Tab_ProjektWirtschaftlichkeit</c>, und der Preisänderungssatz erreicht den
         /// <c>KapitalwertRechner</c> als PARAMETER, nicht über einen Lesezugriff aus einem
         /// Simulationsrechenweg.
+        ///
+        /// <see cref="Schritt116_Szenariorahmen"/> (Etappe E9a, Schritt B) ist aus demselben
+        /// Grund BEWUSST NICHT aufgeführt: Zeitraum und Mengenfaktor je Szenario hängen an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> und erreichen den Rechenweg als Parameter.
+        /// <see cref="Schritt117_TraegerpreisSzenario"/> (Schritt C) aus dem Grund von
+        /// <see cref="Schritt12_Preismodell"/>: <c>energy_project_settings</c> gehört dem
+        /// Kostenmodul, die Simulation liest die Tabelle nirgends.
+        /// <see cref="Schritt118_ErloessatzSzenario"/> (Schritt D) ebenso: Die Erlössätze je
+        /// Szenario hängen an <c>Tab_ProjektWirtschaftlichkeit</c> und
+        /// <c>Tab_ProjektPhotovoltaik</c>, gelesen allein von der Wirtschaftlichkeit.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.

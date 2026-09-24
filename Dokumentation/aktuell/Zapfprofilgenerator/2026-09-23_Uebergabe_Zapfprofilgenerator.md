@@ -370,7 +370,7 @@ Nach Abschnitt 8 wurde die Stufe Z2 am selben Tag auf dem Zweig `z2` ausgeführt
 ## 10 Nachtrag 24.09.2026 — Stufe Z3 umgesetzt
 
 Nach Abschnitt 9 wurde die Stufe Z3 in der Nacht vom 23. auf den 24.09.2026 auf dem Zweig `z3`
-ausgeführt (von `ffc27d18`, 49 eigene Commits bis `1a2ec19e`, Merges von `origin` `7a32b6f3`,
+ausgeführt (von `ffc27d18`, 49 eigene Commits bis `ea6f8608`, gepusht am 24.09.2026, Kern-Lauf 35941477369 grün, Merges von `origin` `7a32b6f3`,
 `aab9896e` und `a1df2dbe`) und mit dem Stand von `ios_migration_september` zusammengeführt; der
 Übertrag setzt nach Push und Sichtabnahme bei Z4 an.
 

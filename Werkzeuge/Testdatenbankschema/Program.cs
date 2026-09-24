@@ -1401,6 +1401,42 @@ namespace Testdatenbankschema
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
                 tabellen += TabelleSicherstellen(a.Key, a.Value, 115, trocken);
 
+            // ---- Schritt 116: der Szenariorahmen (Schritt B des Analysepapiers, Etappe E9a der
+            //      vollstaendigen Szenarioabdeckung V-E). REIN DDL aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_116_SzenarioRahmen bedient
+            //      (SchemaKatalog.Schritt116_Szenariorahmen): Szen_Best/Worst_Zeitraum (ganze
+            //      Jahre) und Szen_Best/Worst_Menge (Prozent) an Tab_ProjektWirtschaftlichkeit,
+            //      nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 116, trocken);
+
+            // ---- Schritt 117: die Traegerpreise best/worst (Schritt C, Etappe E9a). REIN DDL
+            //      aus DERSELBEN Quelle wie SchemaMigration.Schritt_117_TraegerpreisSzenario
+            //      (SchemaKatalog.Schritt117_TraegerpreisSzenario): custom_price_work/base/
+            //      power_best/_worst an energy_project_settings, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 117, trocken);
+
+            // ---- Schritt 118: die Erloessaetze best/worst (Schritt D, Etappe E9a). REIN DDL aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_118_ErloessatzSzenario
+            //      (SchemaKatalog.Schritt118_ErloessatzSzenario): Einspeiseverguetung(_KWK)_Best/
+            //      _Worst an Tab_ProjektWirtschaftlichkeit, DvEntgelt_Best/_Worst und
+            //      PpaPreis_Best/_Worst an Tab_ProjektPhotovoltaik, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 118, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

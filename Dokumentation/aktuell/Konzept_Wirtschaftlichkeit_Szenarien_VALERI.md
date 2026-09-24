@@ -3,12 +3,15 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
-**Stand 23.09.2026** · Codestand `704356a4` · `SchemaStand.Zielversion` = **113**, Schemaschritte
-90–113 vergeben, neue ab **114**. Die Etappen W5‑B‑9 bis W5‑B‑12 sind gebaut; ihre Fortsetzung läuft
-unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im Etappenplan **E0–E12** des
-Analysepapiers. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die Degradation nicht
-ein** — der Entscheid „G3 nicht umsetzen" dieses Papiers gilt, der Widerspruch zum konsolidierten
-Konzept ist aufgelöst (§ 7.3, § 9.4).
+**Stand 24.09.2026** · Codestand `62613292` · `SchemaStand.Zielversion` = **118**, Schemaschritte
+90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a). Die Etappen W5‑B‑9 bis W5‑B‑12 sind
+gebaut; ihre Fortsetzung läuft unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im
+Etappenplan **E0–E12** des Analysepapiers. **V-E ist mit E9 Teil a (#461) im Kern gebaut:** Günstig und
+Ungünstig lesen zusätzlich Betrachtungszeitraum, Mengenänderung, Trägerpreise und Erlössätze je Szenario
+— NULL heißt „wie Erwartet", eine Vorgabe gibt es für diese Größen nicht (konsolidiertes Konzept § 2.11.5);
+die Pflege in den Dialogen kommt mit E9b. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die
+Degradation nicht ein** — der Entscheid „G3 nicht umsetzen" dieses Papiers gilt, der Widerspruch zum
+konsolidierten Konzept ist aufgelöst (§ 7.3, § 9.4).
 
 ---
 
@@ -137,6 +140,10 @@ Parametersatz-Abzug** (`WirtschaftlichkeitParameter.FuerSzenario`):
   `PreissteigerungEnergie` und `PreissteigerungBetrieb`. Alles Weitere
   (Betrachtungszeitraum, Einspeisevergütung, KWKG, Steuern, Bilanzierung) bleibt
   unverändert — es sind Rechtsstände und Preise, keine Szenariogrößen.
+  **Mit E9 Teil a (#461)** ersetzt die Kopie zusätzlich den Betrachtungszeitraum und die
+  Einspeisevergütungen PV und KWK, wo das Szenario eigene trägt; Mengenänderung, Trägerpreise,
+  DV-Entgelt und PPA-Preis je Szenario liest der Kern an je einer eigenen Stelle (konsolidiertes
+  Konzept § 2.11.5, „Regeln des Kerns"). KWKG, Steuern und Bilanzierung bleiben unverändert.
 
 Investitions-, Ertrags- und Nutzungsdaueränderung wirken **in der Eingabe**
 (`BaueEingabe` → `LiesInvestitionen`, Einspeiseerlös, PV-Vergütungsreihe), nicht
@@ -192,7 +199,10 @@ Drei Spalten, **sieben Zeilen** (seit W5‑B‑12 mit p_I):
 
 Die p_I-Zeile steht **bei den beiden anderen Preissteigerungen** und nicht am Ende
 der Tabelle — dieselbe Reihenfolge, in der `SzenarioSatz.Nachweis` die Größen
-aufzählt (i · p_E · p_B · p_I · Investition · Erträge · Nutzungsdauer). Ihre
+aufzählt (i · p_E · p_B · p_I · Investition · Erträge · Nutzungsdauer). Mit E9 Teil a (#461)
+nennt die Nachweiszeile dazu den Betrachtungszeitraum T hinter i und am Ende die
+Einspeisevergütung, die Einspeisevergütung KWK, wo eine geführt wird, und die Mengenänderung nur,
+wenn sie gepflegt ist; die Tabelle selbst behält ihre sieben Zeilen bis E9b (Zeilen 8 und 9). Ihre
 Erwartet-Zelle zeigt das **wirksame** p_I, nicht das gepflegte: Bei leerem Feld ist
 das p_B, und genau um diesen Wert spannen sich die Vorgaben daneben.
 
@@ -473,7 +483,7 @@ Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G
   nicht berührt.
 * **Zielstand dieser Etappe:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
   `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab. Der **heutige** Schemastand ist
-  ein anderer (23.09.2026: Zielversion 113, neue Schritte ab 114) — die 72 beziffert, womit diese
+  ein anderer (24.09.2026: Zielversion 118, neue Schritte ab 119) — die 72 beziffert, womit diese
   Etappe abgeschlossen wurde, nicht den Stand des Programms.
 
 ### 10.4 Parametersatz und Dialog (Teil b)
@@ -562,15 +572,16 @@ Drei Entscheide zur Ergebnisansicht (konsolidiertes Konzept § 2.11.4, § 2.11.6
 § 2.13) berühren die Etappen dieses Papiers; das Papier beschreibt weiterhin den gebauten Stand
 W5‑B‑9 bis W5‑B‑12, den Stand der drei Entscheide nennt die Tafel.
 
-**Stand 23.09.2026: V-4 (Hinweistext) und K8/V-1 sind gebaut — der Umschalter mit E5 (#434), der
+**Stand 24.09.2026: V-4 (Hinweistext) und K8/V-1 sind gebaut — der Umschalter mit E5 (#434), der
 Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit E6 (#436), der Verlauf auch in
-Block 4 der Darstellung „ValERI-Bewertung" mit E8 Teil a (#454); V-G10 ist mit E8 Teil b (#455) gebaut** —
+Block 4 der Darstellung „ValERI-Bewertung" mit E8 Teil a (#454); V-G10 ist mit E8 Teil b (#455) gebaut; die
+Szenarioabdeckung selbst (V-E) ist mit E9 Teil a (#461) im Kern gebaut, der Hinweistext bleibt bis E9b** —
 eingeordnet im Etappenplan **E0–E12** des
 Analysepapiers ([`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5):
 
 | Entscheid | Etappe | Bemerkung |
 |---|---|---|
-| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | Hinweistext **gebaut #434** (E5, U10); die Abdeckung selbst **E9** | `WIRT_SZEN_HINWEIS` in beiden Sprachen, Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz); die Zahlen im Text sind die wirksamen — ohne Pflege die Vorgaben aus § 2.1, sonst die gepflegten Werte; unter der Annahmentafel und in Wort- und Tabellenbericht |
+| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | Hinweistext **gebaut #434** (E5, U10); die Abdeckung im Kern **gebaut #461** (E9 Teil a); die Pflege in den Dialogen und der Wegfall des Hinweistexts mit **E9b** | `WIRT_SZEN_HINWEIS` in beiden Sprachen, Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz); die Zahlen im Text sind die wirksamen — ohne Pflege die Vorgaben aus § 2.1, sonst die gepflegten Werte; unter der Annahmentafel und in Wort- und Tabellenbericht; nach #461 stimmt er nur noch für Projekte ohne Pflege von Zeitraum, Menge, Trägerpreisen und Erlössätzen |
 | **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | Umschalter **gebaut #434** (E5); der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" **gebaut #436** (E6); derselbe Verlauf in Block 4 **gebaut #454** (E8 Teil a, E6‑Q1) | Der Verlauf steht als Abschnitt in „Wie sicher ist das?" und rechnet je Version alle drei Szenarien über einen frei wählbaren Zeitraum (§ 7.1); die Fußleiste trägt höchstens vier Knöpfe |
 | **V-G10** Der ganze Bericht formelbasiert, soweit ableitbar | **gebaut #455** (E8 Teil b, V-D; V-C gebaut #454) | Stufenplan 0–3 im konsolidierten Konzept § 2.11.6, alle vier Stufen gebaut: der Parameterblock je Szenario aus echten Zellen, die Mehrjahrestabellen und die Kennzahlen des Erwartungsfalls in Formeln; die Blöcke Günstig und Ungünstig bleiben Werte (E8b‑Q1) |
 
@@ -588,7 +599,9 @@ unverändert.
   vollständigen Sätze kommen (Rahmen, Trägerpreise, Erlössätze, Mengenfaktor), sagt ein
   Hinweis unter der Annahmentafel der Seite genau das; Wortlaut im konsolidierten Konzept
   § 2.11.7. Die Statuszeile aus § 5 bleibt daneben bestehen. **Gebaut #434** als
-  `WIRT_SZEN_HINWEIS`.
+  `WIRT_SZEN_HINWEIS`. **Mit E9 Teil a (#461)** liest der Kern die vollständigen Sätze (Rahmen,
+  Trägerpreise, Erlössätze, Mengenfaktor); ohne Pflege bleibt alles wie oben beschrieben. Der
+  Hinweis bleibt stehen, bis E9b die Pflege in die Dialoge bringt, und entfällt dann.
 * **K8 / V-1 — Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite** statt
   eines weiteren Knopfes. Die Ergebnisansicht bringt den kumulierten Barwert der Differenz
   mit allen drei Szenarien in einem Bild (Farbe = Variante, Strichart = Szenario) auf die
@@ -611,7 +624,7 @@ niemand zweimal baut:
 
 | hier | konsolidiertes Konzept | Stand |
 |---|---|---|
-| **W5‑B‑9** Parametersatz je Szenario (§ 2, Migrationsschritt 71) | Teil von **V-E** (vollständige Szenarioabdeckung) | gebaut — V-E bleibt für Rahmen, Trägerpreise, Erlössätze, Mengenfaktor offen |
+| **W5‑B‑9** Parametersatz je Szenario (§ 2, Migrationsschritt 71) | Teil von **V-E** (vollständige Szenarioabdeckung) | gebaut — V-E für Rahmen (Betrachtungszeitraum), Trägerpreise, Erlössätze und Mengenfaktor **im Kern gebaut #461** (E9 Teil a, Schemaschritte 116 bis 118); offen die Pflege in den Dialogen, der Wegfall des Hinweistexts und der Ausweis „n von m" (E9b) |
 | **W5‑B‑10** VALERI-Abgleich (§ 7) | Grundlage der Gap-Tafel **V-G1…V-G12** (§ 2.11.2) | gebaut |
 | **W5‑B‑11** Umsetzung der Entscheidungen (§ 9) | **V-B** ≡ Etappe „VG" der Statuszeile **#358** (wählbare Referenz, Schemaschritt 92) | gebaut |
 | **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — von V-G11 fehlen Kategorie und Beurteilung |

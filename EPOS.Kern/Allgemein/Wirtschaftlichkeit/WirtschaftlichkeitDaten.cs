@@ -101,8 +101,63 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? PreissteigerungInvestition;
 
+        // ---- ETAPPE E9a (vollständige Szenarioabdeckung V‑E, Schritte B und D) ----
+        //
+        // Vier Größen, die ANDERS gelesen werden als die sieben darüber (Entscheid E9a‑Q5,
+        // Lesart a): <c>null</c> heißt nicht „Vorgabe", sondern „WIE ERWARTET" — es gibt für
+        // sie keine Richtungsvorgabe. Gepflegt ist ein Wert erst, wenn er sich vom
+        // Erwartungswert unterscheidet (<see cref="Gepflegt(double?, double)"/>: VALERI-Vorrang
+        // |Wert − Erwartet| &gt; 1e−9, und 0 zählt wie leer — Konzept § 2.11.5, „NULL/0 heißt
+        // wie Erwartet"). Ohne Pflege rechnet ein Szenario damit Zahl für Zahl wie bisher.
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt B, Schemaschritt 116): der Betrachtungszeitraum dieses
+        /// Szenarios [ganze Jahre]; <c>null</c> (und jeder Wert unter 1) = wie Erwartet. Er
+        /// wirkt auf Horizont, Restwert und Ersatzbeschaffungen — genau wie ein Erwartet-Lauf
+        /// mit diesem Zeitraum (E9a‑Q4, Lesart a).
+        /// </summary>
+        public int? Zeitraum;
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt B, Schemaschritt 116): die Mengenänderung dieses Szenarios
+        /// [%], + = mehr; <c>null</c> (und 0) = wie Erwartet. Ein einheitlicher Faktor
+        /// <see cref="MengeFaktor"/> auf das Mengengerüst des Simulationsergebnisses
+        /// (E9a‑Q2, Lesart a; die EINE Stelle ist <c>SzenarioMengen</c>).
+        /// </summary>
+        public double? Menge;
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): die Einspeisevergütung PV-Überschuss
+        /// dieses Szenarios [€/kWh]; <c>null</c> (und 0) = wie Erwartet.
+        /// </summary>
+        public double? Einspeiseverguetung;
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): die Einspeisevergütung KWK dieses
+        /// Szenarios [€/kWh]; <c>null</c> (und 0) = wie Erwartet.
+        /// </summary>
+        public double? EinspeiseverguetungKwk;
+
+        /// <summary>ETAPPE E9a: die Schwelle des VALERI-Vorrangs — ein Szenariowert ist
+        /// gepflegt, wenn er sich um MEHR als sie vom Erwartungswert unterscheidet.</summary>
+        public const double GEPFLEGT_SCHWELLE = 1e-9;
+
+        /// <summary>
+        /// ETAPPE E9a — die EINE Regel „gepflegt" der neuen Szenariogrößen (Konzept § 2.11.5):
+        /// ein Wert steht da, ist nicht 0 und unterscheidet sich um mehr als
+        /// <see cref="GEPFLEGT_SCHWELLE"/> vom Erwartungswert. Dieselbe Regel lesen die
+        /// Trägerpreise und die PV-Erlössätze.
+        /// </summary>
+        public static bool Gepflegt(double? wert, double erwartet)
+        {
+            return wert.HasValue && wert.Value != 0 &&
+                   Math.Abs(wert.Value - erwartet) > GEPFLEGT_SCHWELLE;
+        }
+
         /// <summary>true, wenn kein einziges Feld gepflegt ist — dann gelten durchweg die
-        /// Vorgaben (Statuszeile der Seite und Herleitungszeile des Dialogs).</summary>
+        /// Vorgaben (Statuszeile der Seite und Herleitungszeile des Dialogs).
+        /// <para><b>ETAPPE E9a:</b> Die vier Rahmen- und Erlösgrößen zählen mit — ein
+        /// gepflegter Zeitraum ist eine gepflegte Annahme dieses Szenarios.</para></summary>
         public bool NurVorgaben
         {
             get
@@ -110,8 +165,65 @@ namespace WindowsFormsApplication1
                 return !Zinssatz.HasValue && !PreissteigerungEnergie.HasValue &&
                        !PreissteigerungBetrieb.HasValue && !InvestitionAenderung.HasValue &&
                        !ErtragAenderung.HasValue && !NutzungsdauerAenderung.HasValue &&
-                       !PreissteigerungInvestition.HasValue;
+                       !PreissteigerungInvestition.HasValue &&
+                       !Zeitraum.HasValue && !Menge.HasValue &&
+                       !Einspeiseverguetung.HasValue && !EinspeiseverguetungKwk.HasValue;
             }
+        }
+
+        /// <summary>ETAPPE E9a: Ist der Zeitraum dieses Szenarios gepflegt (≥ 1 a und vom
+        /// Erwartungswert verschieden)?</summary>
+        public bool ZeitraumGepflegt(int erwartet)
+        {
+            return Zeitraum.HasValue && Zeitraum.Value >= 1 && Zeitraum.Value != erwartet;
+        }
+
+        /// <summary>ETAPPE E9a: der wirksame Betrachtungszeitraum [a] — der gepflegte, sonst
+        /// der Erwartungswert.</summary>
+        public int ZeitraumWirksam(int erwartet)
+        {
+            return ZeitraumGepflegt(erwartet) ? Zeitraum.Value : erwartet;
+        }
+
+        /// <summary>ETAPPE E9a: Ist die Mengenänderung gepflegt (≠ 0 %)?</summary>
+        public bool MengeGepflegt
+        {
+            get { return Gepflegt(Menge, 0.0); }
+        }
+
+        /// <summary>ETAPPE E9a: die wirksame Mengenänderung [%] — 0 ohne Pflege.</summary>
+        public double MengeWirksam
+        {
+            get { return MengeGepflegt ? Menge.Value : 0.0; }
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: der Mengenfaktor (1 + Menge/100), nie negativ. <b>Ohne Pflege genau
+        /// 1,0</b> — daran erkennt <c>SzenarioMengen</c>, dass es nichts zu skalieren gibt,
+        /// und der Lauf bleibt bitgleich.
+        /// </summary>
+        public double MengeFaktor
+        {
+            get
+            {
+                if (!MengeGepflegt) return 1.0;
+                double f = 1.0 + Menge.Value / 100.0;
+                return f < 0 ? 0 : f;
+            }
+        }
+
+        /// <summary>ETAPPE E9a: die wirksame Einspeisevergütung PV [€/kWh].</summary>
+        public double EinspeiseverguetungWirksam(double erwartet)
+        {
+            return Gepflegt(Einspeiseverguetung, erwartet) ? Einspeiseverguetung.Value : erwartet;
+        }
+
+        /// <summary>ETAPPE E9a: die wirksame Einspeisevergütung KWK [€/kWh]; <c>null</c>
+        /// bleibt <c>null</c> (nicht gepflegt, wirkt wie 0), solange das Szenario keine
+        /// eigene trägt.</summary>
+        public double? EinspeiseverguetungKwkWirksam(double? erwartet)
+        {
+            return Gepflegt(EinspeiseverguetungKwk, erwartet ?? 0.0) ? EinspeiseverguetungKwk : erwartet;
         }
 
         /// <summary>Das Vorzeichen der Vorgaben: BEST = −1 (billiger, weniger Zins),
@@ -227,13 +339,29 @@ namespace WindowsFormsApplication1
             // Satz indiziert die Ersatzbeschaffungen, und eine Bandbreite, deren
             // Annahmen nicht vollständig dastehen, ist keine offengelegte Annahme.
             double pi = p != null ? p.PreisInvestWirksam : 0;
-            return "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · p_E = " +
+            // ETAPPE E9a (vollständige Szenarioabdeckung): Der Betrachtungszeitraum und die
+            // Einspeisevergütung stehen IMMER da — sie sind Annahmen jedes Laufs, gepflegt
+            // oder nicht; die Vergütung KWK nur, wo das Projekt oder das Szenario eine
+            // führt. Der Mengenfaktor nur, wenn er gepflegt ist („wie Erwartet" wird nicht
+            // wiederholt); die gepflegten Trägerpreise nennt der Bericht je Stand
+            // (TraegerpreisSzenario.Nachweiszeile).
+            int t = p != null ? ZeitraumWirksam(p.Betrachtungszeitraum) : (Zeitraum ?? 0);
+            double ev = EinspeiseverguetungWirksam(p != null ? p.Einspeiseverguetung : 0);
+            double? evKwk = EinspeiseverguetungKwkWirksam(p != null ? p.EinspeiseverguetungKWK : null);
+            string zeile = "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · T = " +
+                   t.ToString(kultur) + " a · p_E = " +
                    PreisEnergieWirksam(pe).ToString("N1", kultur) + " %/a · p_B = " +
                    PreisBetriebWirksam(pb).ToString("N1", kultur) + " %/a · p_I = " +
                    PreisInvestWirksam(pi).ToString("N1", kultur) + " %/a · Investition " +
                    InvestWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Erträge " +
                    ErtragWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Nutzungsdauer " +
-                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a";
+                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a · Einspeisevergütung " +
+                   ev.ToString("N3", kultur) + " €/kWh";
+            if (evKwk.HasValue && evKwk.Value != 0)
+                zeile += " · Einspeisevergütung KWK " + evKwk.Value.ToString("N3", kultur) + " €/kWh";
+            if (MengeGepflegt)
+                zeile += " · Mengen " + MengeWirksam.ToString("+0.#;-0.#;0", kultur) + " %";
+            return zeile;
         }
     }
 
@@ -518,10 +646,21 @@ namespace WindowsFormsApplication1
         /// Behauptung, sondern eine Eigenschaft des Codes.</para>
         ///
         /// <para>Für BEST und WORST eine flache Kopie mit ersetztem Zins und ersetzten
-        /// Preissteigerungen. <b>Alles übrige bleibt stehen</b> — Betrachtungszeitraum,
-        /// Einspeisevergütung, KWKG, Steuern, Bilanzierung sind Rechtsstände und Preise,
-        /// keine Szenariogrößen. Investitions-, Ertrags- und Nutzungsdaueränderung wirken
-        /// nicht hier, sondern in der EINGABE (Vorrangregel je Zeile).</para>
+        /// Preissteigerungen. KWKG, Steuern und Bilanzierung bleiben stehen — sie sind
+        /// Rechtsstände, keine Szenariogrößen. Investitions-, Ertrags- und
+        /// Nutzungsdaueränderung wirken nicht hier, sondern in der EINGABE (Vorrangregel je
+        /// Zeile).</para>
+        ///
+        /// <para><b>ETAPPE E9a (vollständige Szenarioabdeckung V‑E):</b> Die Kopie trägt
+        /// zusätzlich den wirksamen <b>Betrachtungszeitraum</b> (Schritt B) und die wirksamen
+        /// <b>Einspeisevergütungen</b> PV und KWK (Schritt D) — ohne Pflege dieselben Zahlen
+        /// wie der Erwartungsfall. Der Zeitraum wirkt damit auf alles, was aus dem Satz
+        /// liest: Horizont, Restwert am Ende von T_s, Ersatzbeschaffungen innerhalb T_s, die
+        /// Länge der Erlös- und CO₂-Reihen, Annuität und Gestehungskosten — genau wie ein
+        /// Erwartet-Lauf mit diesem Zeitraum (E9a‑Q4, Lesart a). Mengenfaktor und
+        /// Trägerpreise wirken auf die Mengen- und Preisbasis der Variante
+        /// (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>), die PV-Erlössätze auf die
+        /// Vergütungszeile (<c>ProjektPhotovoltaikCtrl.FuerSzenario</c>).</para>
         /// </summary>
         public WirtschaftlichkeitParameter FuerSzenario(string szenario)
         {
@@ -536,6 +675,11 @@ namespace WindowsFormsApplication1
             // Kopie über PreisInvestWirksam auf ihr eigenes (schon ersetztes) p_B
             // zurück und das Szenario rechnete an seinem Satz vorbei.
             k.PreissteigerungInvestition = s.PreisInvestWirksam(PreisInvestWirksam);
+            // ETAPPE E9a: Zeitraum und Erlössätze je Szenario — NULL heißt „wie Erwartet",
+            // die Kopie trägt dann die Zahl des Projektsatzes unverändert.
+            k.Betrachtungszeitraum = s.ZeitraumWirksam(Betrachtungszeitraum);
+            k.Einspeiseverguetung = s.EinspeiseverguetungWirksam(Einspeiseverguetung);
+            k.EinspeiseverguetungKWK = s.EinspeiseverguetungKwkWirksam(EinspeiseverguetungKWK);
             return k;
         }
 

@@ -54,8 +54,13 @@ namespace WindowsFormsApplication1
         internal const string ANHANG_UNGUENSTIG = "_Unguenstig";
 
         /// <summary>Zeilen, um die der Parameterblock das Blatt unter der Prosazeile
-        /// verschiebt: Kopf, acht Parameterzeilen, Hinweis, Grenze, Leerzeile.</summary>
-        internal const int PARAMETERBLOCK_ZEILEN = 12;
+        /// verschiebt: Kopf, elf Parameterzeilen, Hinweis, Grenze, Leerzeile.
+        /// <para><b>ETAPPE E9a:</b> Zu den acht Zeilen aus E8b kommen Mengenänderung,
+        /// Einspeisevergütung PV und Einspeisevergütung KWK je Szenario (Konzept § 2.11.5,
+        /// „die Kalkulationstabelle je Szenario nennt die Parametereinstellungen
+        /// vollständig"). Gepflegte Trägerpreise hängen je Stand, Träger und Preisart eine
+        /// weitere Zeile an — ohne Pflege bleibt es bei dieser Zahl.</para></summary>
+        internal const int PARAMETERBLOCK_ZEILEN = 15;
 
         /// <summary>Zellformat der Sätze (Dezimalzahl, als Prozent gezeigt).</summary>
         internal const string FORMAT_SATZ = "0.00%";
@@ -68,6 +73,19 @@ namespace WindowsFormsApplication1
         /// anderen Szenarien entstehen daraus wie im Rechenlauf
         /// (<see cref="WirtschaftlichkeitParameter.FuerSzenario"/>).</param>
         internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p)
+        {
+            return Parameterblock(ws, r, p, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E9a — derselbe Parameterblock mit den Größen der vollständigen
+        /// Szenarioabdeckung: Betrachtungszeitraum je Szenario (Schritt B), Mengenänderung
+        /// (Schritt B), Einspeisevergütung PV und KWK (Schritt D) und — nur wo gepflegt — die
+        /// Trägerpreise der <paramref name="staende"/> (Schritt C), je Stand, Träger und
+        /// Preisart eine Zeile mit den WIRKSAMEN Preisen, mit denen gerechnet wird.
+        /// </summary>
+        internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
+                                           IEnumerable<VariantenDaten> staende)
         {
             SzenarioSatz best = p.SatzFuer(WirtschaftlichkeitSzenario.BEST)
                                 ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
@@ -90,8 +108,11 @@ namespace WindowsFormsApplication1
                       p.Zinssatz / 100.0,
                       best.ZinsWirksam(p.Zinssatz) / 100.0,
                       worst.ZinsWirksam(p.Zinssatz) / 100.0);
+            // ETAPPE E9a (Schritt B): der Zeitraum JE SZENARIO — ohne Pflege dreimal T.
             Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZEITRAUM, ZEITRAUM, "0",
-                      p.Betrachtungszeitraum, p.Betrachtungszeitraum, p.Betrachtungszeitraum);
+                      p.Betrachtungszeitraum,
+                      best.ZeitraumWirksam(p.Betrachtungszeitraum),
+                      worst.ZeitraumWirksam(p.Betrachtungszeitraum));
             Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_PREIS_E, PREIS_E, FORMAT_SATZ,
                       p.PreissteigerungEnergie / 100.0,
                       best.PreisEnergieWirksam(p.PreissteigerungEnergie) / 100.0,
@@ -115,6 +136,25 @@ namespace WindowsFormsApplication1
             Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_DAUER, null, "+0.#;-0.#;0",
                       0.0, best.DauerWirksam, worst.DauerWirksam);
 
+            // ETAPPE E9a (Schritte B und D): Mengenänderung und Erlössätze je Szenario —
+            // ohne Pflege die Erwartet-Werte (Menge 0 %).
+            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_MENGE, null, "+0.0%;-0.0%;0.0%",
+                      0.0, best.MengeWirksam / 100.0, worst.MengeWirksam / 100.0);
+            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_VERGUETUNG, null, "0.0000",
+                      p.Einspeiseverguetung,
+                      best.EinspeiseverguetungWirksam(p.Einspeiseverguetung),
+                      worst.EinspeiseverguetungWirksam(p.Einspeiseverguetung));
+            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_VERGUETUNG_KWK, null, "0.0000",
+                      p.EinspeiseverguetungKWK ?? 0.0,
+                      best.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0,
+                      worst.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0);
+
+            // ETAPPE E9a (Schritt C): gepflegte Trägerpreise — je Stand, Träger und Preisart
+            // eine Zeile mit den wirksamen Preisen der drei Szenarien.
+            if (staende != null)
+                foreach (VariantenDaten v in staende)
+                    if (v != null) r = Traegerpreiszeilen(ws, r, v);
+
             ws.Cell(r, 1).Value = MyResource.Resource.WIRT_FM_PARAM_HINWEIS;
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r++;
@@ -122,6 +162,40 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r++;
             return r + 1;   // Leerzeile unter dem Block
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C) — die Zeilen der gepflegten Trägerpreise EINES Standes:
+        /// für jeden Träger mit Szenariopreis und jede Preisart (Arbeit, Grund, Leistung), in
+        /// der Günstig oder Ungünstig gepflegt ist, eine Zeile mit den wirksamen Preisen
+        /// Erwartet / Günstig / Ungünstig — dieselben, mit denen die Energiekosten rechnen
+        /// (<see cref="KostenEmissionRechner.PreisSatz"/>). Rückgabe: die nächste Zeile.
+        /// </summary>
+        private static int Traegerpreiszeilen(IXLWorksheet ws, int r, VariantenDaten v)
+        {
+            string stand = v.IstStamm ? "Stamm" : v.Anzeige;
+            foreach (KeyValuePair<int, TraegerpreisSzenario> kv in EnergietraegerPreisCtrl.SzenarioJeTraeger(v.IdProjekt))
+            {
+                string traeger = Emissionsquelle.TraegerName(kv.Key);
+                double? ae, ge, le, ab, gb, lb, aw, gw, lw;
+                KostenEmissionRechner.PreisSatz(v.IdProjekt, kv.Key, WirtschaftlichkeitSzenario.ERWARTET, out ae, out ge, out le);
+                KostenEmissionRechner.PreisSatz(v.IdProjekt, kv.Key, WirtschaftlichkeitSzenario.BEST, out ab, out gb, out lb);
+                KostenEmissionRechner.PreisSatz(v.IdProjekt, kv.Key, WirtschaftlichkeitSzenario.WORST, out aw, out gw, out lw);
+
+                if (kv.Value.ArbeitspreisBest.HasValue || kv.Value.ArbeitspreisWorst.HasValue)
+                    Satzzeile(ws, r++, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_PARAM_TP_ARBEIT,
+                                                     traeger, stand), null, "0.0000",
+                              ae ?? 0.0, ab ?? 0.0, aw ?? 0.0);
+                if (kv.Value.GrundpreisBest.HasValue || kv.Value.GrundpreisWorst.HasValue)
+                    Satzzeile(ws, r++, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_PARAM_TP_GRUND,
+                                                     traeger, stand), null, "#,##0.00",
+                              ge ?? 0.0, gb ?? 0.0, gw ?? 0.0);
+                if (kv.Value.LeistungspreisBest.HasValue || kv.Value.LeistungspreisWorst.HasValue)
+                    Satzzeile(ws, r++, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_PARAM_TP_LEISTUNG,
+                                                     traeger, stand), null, "#,##0.00",
+                              le ?? 0.0, lb ?? 0.0, lw ?? 0.0);
+            }
+            return r;
         }
 
         /// <summary>Eine Zeile des Parameterblocks: Bezeichnung, Erwartet, Günstig,

@@ -43,6 +43,23 @@ namespace WindowsFormsApplication1
         /// <summary>PPA-Aufschlag auf Spot [ct/kWh] (Form c mit Reihe).</summary>
         public double? PpaSpotAufschlag;
 
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): DV-Entgelt des Szenarios Günstig
+        /// [ct/kWh]; <c>null</c> (und 0) = wie Erwartet (<see cref="DvEntgelt"/>). Wirksam
+        /// über <see cref="ProjektPhotovoltaikCtrl.FuerSzenario"/>.
+        /// </summary>
+        public double? DvEntgeltBest;
+
+        /// <summary>ETAPPE E9a: DV-Entgelt des Szenarios Ungünstig [ct/kWh]; <c>null</c> = wie Erwartet.</summary>
+        public double? DvEntgeltWorst;
+
+        /// <summary>ETAPPE E9a (Schritt D): PPA-Festpreis des Szenarios Günstig [ct/kWh];
+        /// <c>null</c> (und 0) = wie Erwartet (<see cref="PpaPreis"/>).</summary>
+        public double? PpaPreisBest;
+
+        /// <summary>ETAPPE E9a: PPA-Festpreis des Szenarios Ungünstig [ct/kWh]; <c>null</c> = wie Erwartet.</summary>
+        public double? PpaPreisWorst;
+
         /// <summary>DbWerte.PV_SCHALTER_* - AUTO wendet die Regel aus PV-Konzept 4.4 an.</summary>
         public string Par51_Anwenden = DbWerte.PV_SCHALTER_AUTO;
 

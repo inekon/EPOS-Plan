@@ -462,6 +462,11 @@ namespace EPOS.Kern.Tests
         ///
         /// <para>Die Prüfgruppe rechnet mit den Vorgaben (i = 3 %, T = 20 a, p = 0), die
         /// Szenariosätze mit den Vorgaben ∓1 %-Punkt, ∓10 %, ±10 %, ±2 a.</para>
+        ///
+        /// <para><b>ETAPPE E9a:</b> Der Zeitraum steht je Szenario (ohne Pflege dreimal T),
+        /// darunter Mengenänderung, Einspeisevergütung PV und KWK je Szenario — ohne Pflege
+        /// die Erwartet-Werte; gepflegte Trägerpreise hat die Prüfgruppe nicht, der Block
+        /// bleibt <c>PARAMETERBLOCK_ZEILEN</c> hoch.</para>
         /// </summary>
         [Fact]
         public void Excel_Stufe0_Parameterblock_aus_echten_Zellen_mit_Namen()
@@ -487,9 +492,13 @@ namespace EPOS.Kern.Tests
                 SatzZeile(w, 9, R.WIRT_FM_PARAM_INVEST, "", 0.0, -0.10, 0.10);
                 SatzZeile(w, 10, R.WIRT_FM_PARAM_ERTRAG, "", 0.0, 0.10, -0.10);
                 SatzZeile(w, 11, R.WIRT_FM_PARAM_DAUER, "", 0.0, 2.0, -2.0);
-                Assert.Equal(R.WIRT_FM_PARAM_HINWEIS, w.Cell(12, 1).GetString());
-                Assert.Equal(R.WIRT_FM_GRENZE, w.Cell(13, 1).GetString());
-                // Unter dem Block eine Leerzeile — der Block ist P Zeilen hoch (3 bis 14).
+                SatzZeile(w, 12, R.WIRT_FM_PARAM_MENGE, "", 0.0, 0.0, 0.0);
+                SatzZeile(w, 13, R.WIRT_FM_PARAM_VERGUETUNG, "", 0.0, 0.0, 0.0);
+                SatzZeile(w, 14, R.WIRT_FM_PARAM_VERGUETUNG_KWK, "", 0.0, 0.0, 0.0);
+                Assert.Equal(R.WIRT_FM_PARAM_HINWEIS, w.Cell(15, 1).GetString());
+                Assert.Equal(R.WIRT_FM_GRENZE, w.Cell(16, 1).GetString());
+                Assert.Equal(15, P);
+                // Unter dem Block eine Leerzeile — der Block ist P Zeilen hoch (3 bis 17).
                 for (int c = 1; c <= 5; c++)
                     Assert.Equal("", w.Cell(3 + P - 1, c).GetString());
                 Assert.StartsWith("Betrachtungszeitraum T = 20 a", w.Cell(3 + P + 1, 1).GetString());

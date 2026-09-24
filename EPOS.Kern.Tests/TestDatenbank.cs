@@ -574,6 +574,24 @@ namespace EPOS.Kern.Tests
                 foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
                     DataRepository.ExecuteNonQuery(a.Value);
 
+                // Schritt 116 (Schritt B, Etappe E9a): der Szenariorahmen - Zeitraum und
+                // Mengenfaktor je Szenario an Tab_ProjektWirtschaftlichkeit. Wie in der
+                // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst
+                // "wie Erwartet".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                    SpalteSicherstellen(s);
+
+                // Schritt 117 (Schritt C, Etappe E9a): die Traegerpreise best/worst an
+                // energy_project_settings. Aus DERSELBEN Quelle; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                    SpalteSicherstellen(s);
+
+                // Schritt 118 (Schritt D, Etappe E9a): die Erloessaetze best/worst an
+                // Tab_ProjektWirtschaftlichkeit und Tab_ProjektPhotovoltaik. Aus DERSELBEN
+                // Quelle; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
