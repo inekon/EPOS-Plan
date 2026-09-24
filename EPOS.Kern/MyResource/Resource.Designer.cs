@@ -57194,6 +57194,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Schichtaufbau hat keine Schicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_AUFBAU_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_AUFBAU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_BAUTEIL_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_BAUTEIL_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Schicht {1}: Die ruhende Luftschicht ist {2} m dick; DIN EN ISO 6946 Tabelle 8 gilt bis {3} m. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_LUFTSCHICHT_DICKE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_LUFTSCHICHT_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Neigung {1}° liegt nicht in 0 … 180° (0° = waagerecht nach oben, 90° = senkrecht, 180° = waagerecht nach unten). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_NEIGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Reduktion des Schichtaufbaus nach VDI 6007 Blatt 1 Gl. (12)–(17) liefert keinen endlichen, positiven Wert (R_1 = {1} K/W, C_1 = {2} J/K); ein Aufbau ohne wirksame Speichermasse ist als masseloses Bauteil zu führen. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_REDUKTION_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_REDUKTION_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Schicht {1}: {2} = {3} {4} liegt nicht in {5} … {6} {4}; ein Stoffwert außerhalb des Plausibilitätsbands ist kein Wert. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_SCHICHT_STOFFWERT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_SCHICHT_STOFFWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug; Eigenverbrauch aus Photovoltaik und Stromspeicher bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_ABRECHNUNG_ANTEILIG {
