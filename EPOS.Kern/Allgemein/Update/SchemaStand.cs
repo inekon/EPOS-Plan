@@ -502,7 +502,10 @@ namespace WindowsFormsApplication1
         /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 125, Zapfprofilgenerator Stufe
         /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>125</b>: die Tabelle
         /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein
-        /// <c>ReadOnly</c>) — <see cref="TwwSchema.AnweisungenT3Typtage"/>.
+        /// <c>ReadOnly</c>) — <see cref="TwwSchema.AnweisungenT3Typtage"/> — und an
+        /// <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt (<c>Typtage_Aktiv</c> 0/1 mit
+        /// Vorgabe 0, <c>Typtage_Klimazone</c>, <c>Typtage_Gebaeudeart</c>) —
+        /// <see cref="TwwSchema.SpaltenT3Typtage"/>.
         /// <b>Reines DDL, ergebnisneutral:</b> Die Tabelle entsteht LEER, das Repositorium bringt
         /// keine Zeile mit (Konzept Kapitel 6), und ohne eingespielte Typtage ist der
         /// Typtagweg benannt nicht verfügbar; der Referenzlauf bleibt byte-gleich.

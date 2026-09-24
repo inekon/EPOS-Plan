@@ -660,6 +660,100 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  Schemaschritt T3 „Typtage" (Schritt 125, Stufe Z4b): die WAHL des
+        //  Typtagwegs je Projekt
+        // =================================================================
+
+        /// <summary>
+        /// <c>Tab_TwwProjekt.Typtage_Aktiv</c> — rechnet der Jahresgang des Projekts über die
+        /// eingespielten Typtage (1) oder wie im Bestand über den Formvektor (0)? Vorgabe 0: Ohne
+        /// die Wahl des Anwenders rechnet das Projekt genau wie vor dem Schritt.
+        /// </summary>
+        public const string SPALTE_TYPTAGE_AKTIV = "Typtage_Aktiv";
+
+        /// <summary>
+        /// <c>Tab_TwwProjekt.Typtage_Klimazone</c> — die gewählte Klimazone des eingespielten
+        /// Pakets (&gt; 0); NULL = keine Wahl. Die Nummer ist die des Pakets, nicht eine Kennung der
+        /// Datenbank — <c>Tab_Klimaregion</c> führt keine TRY-Zone (N14 (d)).
+        /// </summary>
+        public const string SPALTE_TYPTAGE_KLIMAZONE = "Typtage_Klimazone";
+
+        /// <summary>
+        /// <c>Tab_TwwProjekt.Typtage_Gebaeudeart</c> — die gewählte Gebäudeart des eingespielten
+        /// Pakets; NULL oder leer = keine Wahl. Der Text ist der des Pakets (Konzept Kapitel 6: die
+        /// Namen kommen aus dem Paket des Anwenders, nicht aus dem Quelltext).
+        /// </summary>
+        public const string SPALTE_TYPTAGE_GEBAEUDEART = "Typtage_Gebaeudeart";
+
+        /// <summary>
+        /// <b>Die drei Spalten der Wahl des Typtagwegs</b> (Schritt 125, Stufe Z4b, Gruppe 2;
+        /// Umsetzungskonzept Zapfprofilgenerator N14 (i), Folge (b)): Sie stehen im SELBEN Schritt
+        /// wie <see cref="AnweisungenT3Typtage"/> — die Tabelle der eingespielten Werte und die
+        /// Wahl, die sie benutzt, gehören zusammen, und der Schritt war noch nicht ausgerollt.
+        ///
+        /// <para><b>Gespeichert wird die WAHL, nie ein Wert.</b> Die Zeilen der Typtage stehen in
+        /// <c>Tab_TwwTyptag_IMPORT</c> und bleiben anwenderlokal; die drei Spalten nennen nur, ob
+        /// das Projekt sie benutzt und mit welcher Zone und Gebäudeart. Ein Projekttransfer trägt
+        /// deshalb die Wahl mit — die Daten nicht (Konzept Kapitel 6).</para>
+        ///
+        /// <para><b>Reines DDL, ergebnisneutral:</b> Nach dem Schritt steht <c>Typtage_Aktiv</c> auf
+        /// 0 und beide Angaben auf NULL — so, wie der Kern ohne Spalte rechnete (Formvektor wie im
+        /// Bestand). Je Spalte die SQLite-Definition hinter <c>ADD COLUMN</c> (STRICT-Typen);
+        /// EINE Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c>, die Testhelfer und den
+        /// Nachweis.</para>
+        /// </summary>
+        public static readonly IReadOnlyList<TwwSpalte> SpaltenT3Typtage = new[]
+        {
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_TYPTAGE_AKTIV,
+                "INTEGER NOT NULL DEFAULT 0 CHECK (\"" + SPALTE_TYPTAGE_AKTIV + "\" IN (0,1))"),
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_TYPTAGE_KLIMAZONE,
+                "INTEGER CHECK (\"" + SPALTE_TYPTAGE_KLIMAZONE + "\" > 0)"),
+            new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_TYPTAGE_GEBAEUDEART, "TEXT"),
+        };
+
+        /// <summary>Stehen alle Spalten von <see cref="SpaltenT3Typtage"/> (die Wahl des Typtagwegs, Schritt 125)?</summary>
+        public static bool T3TyptageVollstaendig()
+            => SpaltenT3Typtage.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+
+        /// <summary>
+        /// Legt die Spalten von <see cref="SpaltenT3Typtage"/> in EINEM Vorgang an — für
+        /// <c>Werkzeuge/Testdatenbankschema</c> und die Testhelfer; die Migration der Schale geht
+        /// denselben Weg über ihre eigenen Helfer, aus denselben Definitionen. <b>Wiederholbar:</b>
+        /// Eine vorhandene Spalte wird übergangen, eine fehlende Tabelle (Stand vor 103) ebenso.
+        /// <b>Kein DML.</b>
+        /// </summary>
+        /// <param name="bericht">Nimmt eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (höchstens drei).</returns>
+        public static int T3TyptageAlle(IList<string> bericht)
+        {
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen Verbindung.
+            var fehlend = SpaltenT3Typtage.Where(s => DataRepository.TabelleVorhanden(s.Tabelle)
+                                                      && !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+            int angelegt = 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    foreach (TwwSpalte s in fehlend)
+                    {
+                        v.Ausfuehren(SpalteAnlegen(s));
+                        angelegt++;
+                    }
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                         SpaltenT3Typtage.Count.ToString(CultureInfo.InvariantCulture) +
+                         " Spalte(n) angelegt (Wahl des Typtagwegs an " + TAB_TWW_PROJEKT + ")");
+            return angelegt;
+        }
+
+        // =================================================================
         //  Schemaschritt T3 (Schritt 124, Stufe Z4): Laufangaben der Auslegung
         //  und Bezugsart am Bedarfstag
         // =================================================================

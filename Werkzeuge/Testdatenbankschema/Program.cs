@@ -1576,12 +1576,26 @@ namespace Testdatenbankschema
             //      aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_125_ZapfprofilTyptage
             //      bedient (TwwSchema.AnweisungenT3Typtage): Tab_TwwTyptag_IMPORT.
             //
-            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabelle entsteht LEER und bleibt es.
-            //      Das Repositorium bringt keine Typtage mit (Konzept Kapitel 6); eingespielt
-            //      werden sie allein beim lizenzierten Anwender.
+            //      bedient (TwwSchema.AnweisungenT3Typtage und TwwSchema.SpaltenT3Typtage):
+            //      Tab_TwwTyptag_IMPORT und an Tab_TwwProjekt die Wahl des Typtagwegs
+            //      (Typtage_Aktiv 0/1 mit Vorgabe 0, Typtage_Klimazone, Typtage_Gebaeudeart).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabelle entsteht LEER und bleibt es,
+            //      die Wahl steht auf "aus". Das Repositorium bringt keine Typtage mit (Konzept
+            //      Kapitel 6); eingespielt werden sie allein beim lizenzierten Anwender.
             Console.WriteLine();
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
                 tabellen += TabelleSicherstellen(a.Key, a.Value, 125, trocken);
+            Console.WriteLine("Schritt 125 - Wahl des Typtagwegs je Projekt: " +
+                              (TwwSchema.T3TyptageVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht125 = new List<string>();
+                angelegt += TwwSchema.T3TyptageAlle(bericht125);
+                foreach (string zeile in bericht125)
+                    Console.WriteLine("Schritt 125 - " + zeile + ".");
+                Console.WriteLine("Schritt 125 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
+            }
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");

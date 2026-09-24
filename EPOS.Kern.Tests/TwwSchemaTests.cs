@@ -423,7 +423,51 @@ namespace EPOS.Kern.Tests
             int methode = text.IndexOf("private static bool Schritt_125_ZapfprofilTyptage(Lauf l)", StringComparison.Ordinal);
             Assert.True(methode > 0, "Die Methode des Schrittes 125 fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
-            Assert.Contains("TwwSchema.AnweisungenT3Typtage", text.Substring(methode, ende - methode), StringComparison.Ordinal);
+            string rumpf = text.Substring(methode, ende - methode);
+            Assert.Contains("TwwSchema.AnweisungenT3Typtage", rumpf, StringComparison.Ordinal);
+            // Die WAHL des Typtagwegs steht im SELBEN Schritt (Gruppe 2, N14 Folge (b)):
+            // ein zweiter Schemaschritt fuer drei Spalten waere einer zu viel.
+            Assert.Contains("TwwSchema.SpaltenT3Typtage", rumpf, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Die Wahl des Typtagwegs</b> (Schritt 125, Stufe Z4b, Gruppe 2) auf einer Datenbank mit
+        /// Stand 124: Die drei Spalten entstehen an <c>Tab_TwwProjekt</c> neben der vorhandenen
+        /// Projektzeile — wiederholbar, ohne eine Zeile zu ändern. Nach dem Schritt steht
+        /// <c>Typtage_Aktiv</c> auf 0 und beide Angaben auf NULL: Das Projekt rechnet genau wie
+        /// vorher über den Formvektor. Die CHECK-Klauseln greifen (0/1, Zone &gt; 0), und STRICT
+        /// weist einen Text in der Zonenspalte ab.
+        /// </summary>
+        [Fact]
+        public void Schritt_125_legt_die_Wahl_des_Typtagwegs_an()
+        {
+            using SqliteConnection c = Datenbank();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
+            Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwProjekt\" (\"ID_Projekt\") VALUES (1)");
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3) Ausfuehren(c, TwwSchema.SpalteAnlegen(s));
+            int vorher = Spalten(c, TwwSchema.TAB_TWW_PROJEKT).Count;
+
+            Assert.Equal(3, TwwSchema.SpaltenT3Typtage.Count);
+            Assert.All(TwwSchema.SpaltenT3Typtage, s => Assert.Equal(TwwSchema.TAB_TWW_PROJEKT, s.Tabelle));
+            for (int lauf = 0; lauf < 2; lauf++)
+                foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+                    if (!Spalten(c, s.Tabelle).Contains(s.Name)) Ausfuehren(c, TwwSchema.SpalteAnlegen(s));
+
+            Assert.Equal(vorher + 3, Spalten(c, TwwSchema.TAB_TWW_PROJEKT).Count);
+            Assert.Equal(0L, Skalar(c, "SELECT \"Typtage_Aktiv\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Typtage_Klimazone\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Typtage_Gebaeudeart\" FROM \"Tab_TwwProjekt\""));
+
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Aktiv\" = 2"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Aktiv\" = NULL"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Klimazone\" = 0"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Klimazone\" = 'drei'"));   // STRICT
+            Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Aktiv\" = 1, \"Typtage_Klimazone\" = 3, " +
+                          "\"Typtage_Gebaeudeart\" = 'probehaus'");
+            Assert.Equal(3L, Skalar(c, "SELECT \"Typtage_Klimazone\" FROM \"Tab_TwwProjekt\""));
+            Assert.Equal("probehaus", Skalar(c, "SELECT \"Typtage_Gebaeudeart\" FROM \"Tab_TwwProjekt\""));
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
         }
 
         /// <summary>

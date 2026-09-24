@@ -4104,11 +4104,16 @@ namespace WindowsFormsApplication1
         /// Reihenfolgebedingung und braucht keinen früheren Schritt — die Tabelle steht für
         /// sich, ohne Fremdschlüssel.
         ///
-        /// <para><b>REIN DDL</b>, eine Tabelle: <c>Tab_TwwTyptag_IMPORT</c> (STRICT, elf Spalten,
-        /// eine Zeile je Wert, natürlicher Schlüssel Art/Klimazone/Gebaeudeart/Typtag/Zeilenindex,
-        /// kein <c>Status</c>, kein <c>ReadOnly</c>). Die Definition steht bei
-        /// <see cref="TwwSchema.AnweisungenT3Typtage"/> — EINE Quelle für Migration,
-        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        /// <para><b>REIN DDL</b>, eine Tabelle und drei Spalten: <c>Tab_TwwTyptag_IMPORT</c> (STRICT,
+        /// elf Spalten, eine Zeile je Wert, natürlicher Schlüssel
+        /// Art/Klimazone/Gebaeudeart/Typtag/Zeilenindex, kein <c>Status</c>, kein <c>ReadOnly</c>)
+        /// und an <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt — <c>Typtage_Aktiv</c>
+        /// (0/1, Vorgabe 0), <c>Typtage_Klimazone</c> und <c>Typtage_Gebaeudeart</c> (beide NULL =
+        /// keine Wahl). Die Definitionen stehen bei <see cref="TwwSchema.AnweisungenT3Typtage"/> und
+        /// <see cref="TwwSchema.SpaltenT3Typtage"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis. Die Wahl steht im SELBEN Schritt
+        /// wie die Tabelle: Beide gehören zusammen, und der Schritt war noch nicht ausgerollt
+        /// (Nachtrag N14, Folge (b)).</para>
         ///
         /// <para><b>Ergebnisneutral:</b> Die Tabelle entsteht LEER; das Repositorium bringt keine
         /// Zeile mit (Konzept Kapitel 6: kein VDI-Wert im Produkt, in der Auslieferung, im
@@ -5813,11 +5818,12 @@ namespace WindowsFormsApplication1
             // braucht keinen frueheren Schritt (kein Fremdschluessel).
             new Schritt(SCHRITT_125_ZAPFPROFIL_TYPTAGE,
                         "Zapfprofilgenerator: die eingespielten Typtage des Anwenders " +
-                        "(Tab_TwwTyptag_IMPORT)",
+                        "(Tab_TwwTyptag_IMPORT) und die Wahl des Typtagwegs je Projekt",
                         "Der Anwender koennte seine eigenen Typtage nicht einspielen, und der " +
-                        "Typtagweg des Jahresgangs bliebe ohne Datenablage. KEIN Rechenergebnis " +
-                        "aendert sich - die Tabelle entsteht LEER, und ohne eingespielte Typtage " +
-                        "ist der Typtagweg benannt nicht verfuegbar.",
+                        "Typtagweg des Jahresgangs bliebe ohne Datenablage und ohne gespeicherte " +
+                        "Wahl. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, die " +
+                        "Wahl steht auf 'aus', und ohne eingespielte Typtage ist der Typtagweg " +
+                        "benannt nicht verfuegbar.",
                         Schritt_125_ZapfprofilTyptage),
         };
 
@@ -9457,21 +9463,37 @@ namespace WindowsFormsApplication1
                 if (!stand) angelegt++;
             }
 
+            // Die WAHL des Typtagwegs je Projekt - dieselbe Quelle, derselbe Schritt
+            // (TwwSchema.SpaltenT3Typtage): Tabelle und Wahl gehoeren zusammen.
+            int spalten = 0;
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, s.Definition)) return false;
+                spalten++;
+            }
+
             bool vollstaendig = true;
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
                 vollstaendig &= SqliteTabelleVorhanden(a.Key);
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+                vollstaendig &= SqliteSpalteVorhanden(s.Tabelle, s.Name);
             if (!vollstaendig)
             {
-                l.LetzterFehler = "Die Tabelle der eingespielten Typtage steht nach dem Schritt nicht.";
+                l.LetzterFehler = "Die Tabelle der eingespielten Typtage oder die Wahl des Typtagwegs " +
+                                  "steht nach dem Schritt nicht.";
                 l.Notiz("125: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("125: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) angelegt - " +
-                    TwwSchema.TAB_TWW_TYPTAG_IMPORT + " (eine Zeile je Wert, kein Status, kein ReadOnly). " +
-                    "KEIN DML: Die Tabelle bleibt LEER - das Repositorium bringt keine Typtage mit, und " +
-                    "ohne eingespielte Typtage ist der Typtagweg benannt nicht verfuegbar; der " +
-                    "Referenzlauf bleibt byte-gleich.");
+            l.Notiz("125: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+                    spalten.ToString(CultureInfo.InvariantCulture) + " von " +
+                    TwwSchema.SpaltenT3Typtage.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + TwwSchema.TAB_TWW_TYPTAG_IMPORT +
+                    " (eine Zeile je Wert, kein Status, kein ReadOnly) und die Wahl des Typtagwegs an " +
+                    TwwSchema.TAB_TWW_PROJEKT + ". KEIN DML: Die Tabelle bleibt LEER - das Repositorium " +
+                    "bringt keine Typtage mit -, die Wahl steht auf 'aus', und ohne eingespielte Typtage " +
+                    "ist der Typtagweg benannt nicht verfuegbar; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
