@@ -1,4 +1,4 @@
-﻿# H7 — Info-Buttons auf allen Hauptdialogen (Umsetzungsprotokoll, 29.08.2026)
+# H7 — Info-Buttons auf allen Hauptdialogen (Umsetzungsprotokoll, 29.08.2026)
 
 Grundlage: `Inventar.md` und `Entscheidungen.md` der H7-Orchestrierung, Soll-Zuordnung
 `mapping_soll.txt` (73 Zeilen, wörtlich übernommen). Vorbild für die Knopfklasse:

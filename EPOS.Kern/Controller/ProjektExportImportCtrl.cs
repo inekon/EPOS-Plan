@@ -267,6 +267,12 @@ namespace WindowsFormsApplication1
                                         // Aufgefüllt unter der Original-Id stieße ein Katalogsatz
                                         // am eindeutigen Bezeichner eines anderen Satzes an.
                                         if (IstGebaeudekatalog(fk.RefTab)) continue;
+                                        // Ebenso der Waermepumpenkatalog (Schritt 80): Tab_WP.ID_Stamm
+                                        // findet seinen Satz am Ziel ueber den Bezeichner
+                                        // (WaermepumpeKatalogverweis.SqlNachtragProjekt); unter
+                                        // der Original-Id zeigte er dort auf ein fremdes Geraet
+                                        // oder legte einen Katalogsatz an.
+                                        if (IstWaermepumpenkatalog(fk.RefTab)) continue;
                                         if (!dt.Columns.Contains(fk.Col)) continue;
                                         if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
                                             fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
@@ -777,9 +783,10 @@ namespace WindowsFormsApplication1
                         { berichte.Add("Hinweis: Verknüpfung \u201E" + link.projekt + "\u201C fehlgeschlagen: " + exLink.Message); }
                     }
 
-                    // Schemaschritt 121: Die importierten Projektgebäude finden ihren
-                    // Katalogsatz am ZIEL über den Namen — dieselbe Regel wie der Schritt
-                    // (genau ein Treffer); ohne Treffer bleibt der Verweis leer.
+                    // Schemaschritte 121 und 80: Die importierten Projektgebäude und
+                    // Wärmepumpen finden ihren Katalogsatz am ZIEL über den Namen — dieselbe
+                    // Regel wie der Schritt (genau ein Treffer); ohne Treffer bleibt der
+                    // Verweis leer.
                     VerweiseNachtragen(v, eigene.Values);
 
                     v.Commit();
@@ -1163,18 +1170,29 @@ namespace WindowsFormsApplication1
         private static bool IstGebaeudekatalog(string tabelle) =>
             string.Equals(tabelle, GebaeudeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>Ist das der Wärmepumpenkatalog, auf den <c>Tab_WP.ID_Stamm</c> zeigt?</summary>
+        private static bool IstWaermepumpenkatalog(string tabelle) =>
+            string.Equals(tabelle, WaermepumpeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
+
         /// <summary>
-        /// Trägt den Katalogverweis der Gebäude der importierten Projekte nach — über den
-        /// Namen, im laufenden Vorgang. Ein Ziel ohne die Spalte (älterer Stand) bleibt
-        /// unberührt.
+        /// Trägt die Katalogverweise der importierten Projekte nach — der Gebäude
+        /// (<c>Tab_Gebaeude.ID_Gebaeude_Stamm</c>) über den Namen, der Wärmepumpen
+        /// (<c>Tab_WP.ID_Stamm</c>) über den Bezeichner, je nur bei genau einem Treffer, im
+        /// laufenden Vorgang. Ein Ziel ohne die Spalte (älterer Stand) bleibt unberührt.
         /// </summary>
         private void VerweiseNachtragen(DbVorgang v, IEnumerable<int> projekte)
         {
+            List<int> ids = projekte.Where(id => id > 0).ToList();
+
             Dictionary<string, Type> typen = ZielTypen(GebaeudeKatalogverweis.TABELLE);
-            if (typen == null || !typen.ContainsKey(GebaeudeKatalogverweis.SPALTE)) return;
-            foreach (int id in projekte)
-                if (id > 0)
+            if (typen != null && typen.ContainsKey(GebaeudeKatalogverweis.SPALTE))
+                foreach (int id in ids)
                     v.Ausfuehren(GebaeudeKatalogverweis.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
+            Dictionary<string, Type> wp = ZielTypen(WaermepumpeKatalogverweis.TABELLE);
+            if (wp != null && wp.ContainsKey(WaermepumpeKatalogverweis.SPALTE))
+                foreach (int id in ids)
+                    v.Ausfuehren(WaermepumpeKatalogverweis.SqlNachtragProjekt(), new DbParam("@projekt", id));
         }
 
         // ---- Umschlüsselung ----------------------------------------------------------------
@@ -1192,6 +1210,10 @@ namespace WindowsFormsApplication1
             // Der Import trägt ihn nach dem Einfügen über den Namen nach (VerweiseNachtragen).
             if (tab.Equals(GebaeudeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(GebaeudeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Dieselbe Regel fuer den Katalogverweis der Waermepumpen-Projektkopie (Schritt 80).
+            if (tab.Equals(WaermepumpeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(WaermepumpeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
 
             if (col.Equals("ID_Projekt", StringComparison.OrdinalIgnoreCase) ||
@@ -1242,6 +1264,11 @@ namespace WindowsFormsApplication1
             if (IstTwwStamm(k.name))
                 throw new Exception("Das Paket führt " + k.name + " unter fill/ (Original-Id). Tww-Katalogzeilen " +
                                     "reisen nur über ihren natürlichen Schlüssel - Import abgelehnt, nichts geändert.");
+            // Gebäude- und Wärmepumpenkatalog füllt der Import nie unter der Original-Id auf:
+            // Ihr einziger Verweis aus dem Projekt reist nicht (Umschluessele) und wird über den
+            // Namen nachgetragen. Ein Paket, das sie noch unter fill/ führt (exportiert vor
+            // dieser Regel), legt deshalb keinen Katalogsatz an.
+            if (IstGebaeudekatalog(k.name) || IstWaermepumpenkatalog(k.name)) return;
             Dictionary<string, Type> zielTypen = ZielTypen(k.name);
             if (zielTypen == null || !zielTypen.ContainsKey(k.pk)) return;
             foreach (var row in rows)

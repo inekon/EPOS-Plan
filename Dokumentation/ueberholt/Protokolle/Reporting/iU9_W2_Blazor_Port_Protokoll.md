@@ -1,4 +1,4 @@
-﻿# iU9 Welle 2 — Namensdialog-Ausrollung, Sprungbrücke und die drei Wirtschaftlichkeitsmasken (Umsetzungsprotokoll)
+# iU9 Welle 2 — Namensdialog-Ausrollung, Sprungbrücke und die drei Wirtschaftlichkeitsmasken (Umsetzungsprotokoll)
 
 > Muster: [`iU9_W1_Blazor_Port_Protokoll.md`](iU9_W1_Blazor_Port_Protokoll.md) und
 > [`B5b_Blazor_Port_Protokoll.md`](B5b_Blazor_Port_Protokoll.md) — Feldkarten-Abgleich

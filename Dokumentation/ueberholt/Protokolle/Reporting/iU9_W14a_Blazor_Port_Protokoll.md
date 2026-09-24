@@ -1,4 +1,4 @@
-﻿# iU9 Welle 14a — Erzeuger-Admin: Portprotokoll
+# iU9 Welle 14a — Erzeuger-Admin: Portprotokoll
 
 **Sieben WinForms-Masken → drei Razor-Komponenten und sieben Hüllen**, jede WinForms-Fassung
 im selben Commit gelöscht (Regel M1). Stand 04.09.2026, Basis `01c9933` (nach W13).

@@ -53,6 +53,7 @@ public class GebaeudeDialogTests : EposBunitContext
     {
         IdZ = idZ,
         IdGebaeude = 7,
+        IdKatalog = 42,
         Name = name,
         Art = "Einfamilienhaus",
         Beschreibung = "Ein Haus",
@@ -268,6 +269,34 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(1, zeilen[0].Jahresnutzungsgrad);
         Assert.False(zeilen[0].DezentralWarmwasser);
         Assert.True(gemeldet);
+    }
+
+    /// <summary>
+    /// <b>Der Katalogverweis reist mit der Zeile</b> (Konzept Administrationsdialoge
+    /// 7.1 (a)): Die übernommene Zeile ist genau die, die der Kern liefert — samt
+    /// <c>IdKatalog</c> —, und eine Änderung der Wohnflächenangabe oder das Entfernen einer
+    /// anderen Zeile lässt ihn stehen. Assistent und Startseite schreiben die Liste danach
+    /// über diesen Verweis neu, nicht über den Namen.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_und_Entfernen_lassen_den_Katalogverweis_stehen()
+    {
+        var zeilen = new List<GebaeudeProjektZeile> { Zeile(11) };
+        zeilen[0].IdKatalog = 17;
+        var cut = Aufbauen(zeilen: zeilen);
+
+        cut.FindAll("button.epos-anlagenwahl").Last().Click();   // eine Katalogzeile
+        Uebernehmen(cut).Click();
+
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal(42, zeilen[1].IdKatalog);                    // aus StammSatz
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();        // die neue Projektzeile
+        Entfernen(cut).Click();
+
+        GebaeudeProjektZeile bleibt = Assert.Single(zeilen);
+        Assert.Equal(11, bleibt.IdZ);
+        Assert.Equal(17, bleibt.IdKatalog);
     }
 
     /// <summary>

@@ -374,6 +374,55 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Nach dem Einlesen rollt die Liste zur neuen Fokuszeile</b> — derselbe Weg wie
+    /// jede Übernahme (<c>Zeilenauswahl.Uebernommen</c> → <c>Zeigeanlass</c>): die
+    /// Katalogliste ruft <c>zeileZeigen</c> mit der Stelle der neuen Ganglinie. Das
+    /// Öffnen rollt nicht.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Einlesen_rollt_die_Liste_zur_neuen_Fokuszeile()
+    {
+        var modul = JSInterop.SetupModule(Katalogliste.MODUL);
+        modul.SetupVoid("anmelden", _ => true);
+        modul.SetupVoid("zeileZeigen", _ => true);
+
+        var liste = new List<Katalogfilterzeile>(KATALOG);
+        var cut = Aufbauen(
+            katalog: liste,
+            dateiWaehlen: _ => Task.FromResult<string?>(@"D:\VDI-3805-Daten\Solarthermie\Tsol2.txt"),
+            einlesen: (p, m) =>
+            {
+                liste.Add(Zeitreihenproben.Zeile(4, "Tsol2", beschreibung: "Neu",
+                                                 jahresarbeitMwh: 1.0, spitzeKw: 2.0));
+                return Task.FromResult(new SolarganglinieImportErgebnis
+                {
+                    Erfolgreich = true,
+                    Bezeichner = "Tsol2",
+                    Meldung = ""
+                });
+            });
+        cut.WaitForAssertion(() => Assert.Contains(modul.Invocations, i => i.Identifier == "anmelden"));
+
+        ImportOeffnen(cut);
+        Knopf(cut, "Datei Auswählen...").Click();
+        Assert.DoesNotContain(modul.Invocations, i => i.Identifier == "zeileZeigen");
+
+        Knopf(cut, "Datei Einlesen...").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal("Tsol2", cut.Instance.Gewaehlt));
+        int stelle = cut.FindAll(".epos-katalogliste tbody tr").ToList()
+                        .FindIndex(z => z.TextContent.Contains("Tsol2", StringComparison.Ordinal));
+        Assert.True(stelle >= 0);
+
+        cut.WaitForAssertion(() =>
+        {
+            var zeigen = modul.Invocations.Where(i => i.Identifier == "zeileZeigen").ToList();
+            Assert.Single(zeigen);
+            Assert.Equal(stelle, zeigen[0].Arguments[1]);
+        });
+    }
+
+    /// <summary>
     /// Ein belegter Name meldet und lässt den Katalog stehen. Der Vorläufer prüfte
     /// dafür <c>listBox_Extern.FindString</c> — eine PRÄFIXsuche in der ANZEIGE
     /// (Befund W14‑B70).

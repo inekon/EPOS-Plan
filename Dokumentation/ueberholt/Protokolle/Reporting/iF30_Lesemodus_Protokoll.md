@@ -1,4 +1,4 @@
-﻿# iF30 — Lesemodus streng durchsetzen: Protokoll
+# iF30 — Lesemodus streng durchsetzen: Protokoll
 
 > Anwenderentscheid vom **04.09.2026** (Entscheidungsregister `iF30` im
 > [`Umsetzungskonzept_iOS_EPOS-Plan.md`](../../../aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md)):

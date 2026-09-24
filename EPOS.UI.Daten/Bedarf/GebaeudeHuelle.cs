@@ -204,6 +204,7 @@ namespace WindowsFormsApplication1
             {
                 IdZ = naechsteId[0]++,      // noch nicht gespeichert, also noch unbekannt
                 IdGebaeude = m.ID,
+                IdKatalog = m.ID > 0 ? m.ID : (int?)null,
                 Name = m.Gebaeudename ?? "",
                 Art = m.Typ ?? "",
                 Beschreibung = m.Beschreibung ?? "",
@@ -289,6 +290,7 @@ namespace WindowsFormsApplication1
             {
                 IdZ = m.ID_Z,
                 IdGebaeude = m.ID_Gebaeude,
+                IdKatalog = m.ID_Gebaeude_Stamm,
                 Name = m.Gebaeudename ?? "",
                 Art = m.Gebaeudeart ?? "",
                 Beschreibung = m.Beschreibung ?? "",
@@ -307,6 +309,7 @@ namespace WindowsFormsApplication1
                 ID_Z = z.IdZ,
                 ID_Projekt = projektId,
                 ID_Gebaeude = z.IdGebaeude,
+                ID_Gebaeude_Stamm = z.IdKatalog,
                 Gebaeudename = z.Name,
                 Gebaeudeart = z.Art,
                 Beschreibung = z.Beschreibung,

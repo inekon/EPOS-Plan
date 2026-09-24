@@ -1,4 +1,4 @@
-﻿# iU9 — Welle 12: Stromganglinie, Peak-Shaving, Importkonflikte
+# iU9 — Welle 12: Stromganglinie, Peak-Shaving, Importkonflikte
 
 **Stand 04.09.2026.** Vermessung: `iU9_W12_Vermessung.md` (1 300 Zeilen, Stand
 `d1683bd`) mit den Befunden W12‑B1 … W12‑B26. Basis dieser Welle: `73a4338`

@@ -1,4 +1,4 @@
-﻿# Merge 5 `origin/ios_migration` → `ios_migration` (05.09.2026)
+# Merge 5 `origin/ios_migration` → `ios_migration` (05.09.2026)
 
 Fünfte Zusammenführung desselben Strangs. Die Merges 1–4 vom 03.09.2026 holten den Umzug nach
 `EPOS.Kern`/`EPOS.UI`, iU9/iU10, die Welle 1 des Blazor-Ports und die Stilllegung (Welle 0).

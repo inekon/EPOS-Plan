@@ -371,3 +371,5 @@ wie der Tooltip, denn auch die Nutzungsdauer rechnet aus der Position, die Tabel
   § 6), Mockup (Kategorien 1 bis 3 — in Kategorie 3 heißt der vierte Knopf der Betriebsseite jetzt „Sätze vorbelegen…" —,
   Ressourcentafeln der Kategorien 1 und 2, Anhang U39, Stand-Absatz), die Logbuch-Sätze, die Wiki-Quellen Kosten und
   Gerätekataloge und der Index Reporting.
+
+**Entscheide 24.09.2026:** alle nach Empfehlung, siehe Register R‑E10

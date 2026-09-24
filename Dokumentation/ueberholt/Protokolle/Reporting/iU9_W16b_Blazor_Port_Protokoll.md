@@ -1,4 +1,4 @@
-﻿# iU9 Welle 16b — Die Startseite: Form_Start, FormMain, AktionsKarte, Form_Hinweis — Portprotokoll
+# iU9 Welle 16b — Die Startseite: Form_Start, FormMain, AktionsKarte, Form_Hinweis — Portprotokoll
 
 > Teilwelle **W16b** des Pakets iU9 (Welle 16 = der Rahmen K5 in drei Teilwellen).
 > Grundlage: `iU9_W16_Vermessung.md` (1 907 Zeilen, Stand `4101740`) und die

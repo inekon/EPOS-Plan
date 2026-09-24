@@ -1,16 +1,17 @@
 # Wiki-Update 26.09.2026 — Vorbereitung des Sammel-Uploads
 
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
-Termin ist **nach Freigabe des Anwenders** — Vorschlag 26.09.2026 (dieses Papier, seit dem
-vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuletzt durchgehend den 28.09.2026;
-E12‑Q1 legt beide Lesarten dem Anwender zur Entscheidung vor (Empfehlung a: 26.09.2026). Mit E12
+Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
+seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
+28.09.2026; der Upload selbst folgt weiterhin erst **nach Freigabe des Anwenders**. Mit E12
 sind die Repo-Quellen so weit nachgezogen, dass der Sammel-Upload nur noch diese Freigabe
 braucht (Abschnitt 3 nennt den Ablauf). Es listet die Seiten, deren Repo-Quelle seit dem letzten
 Upload (Version 1.2.0.0, Auftrag #252) fortgeschrieben wurde, sammelt die dazu entworfenen
 Logbuch-Sätze geordnet nach Version und nennt, was zum Stichtag noch offen ist. Quelle aller
 Angaben ist [`Status_iOS_Migration.md`](Status_iOS_Migration.md); die Statusdatei selbst ist
-hier nicht geändert. Die Versionsnummer ist ein Vorschlag — beim Anwender zu bestätigen (Regel:
-Konzept Hilfesystem 13.3; E12‑Q3, Empfehlung a: 1.2.0.4 für den ganzen Sammel-Upload).
+hier nicht geändert. Die Versionsnummer ist **1.2.0.4** für den ganzen Sammel-Upload (E12‑Q3,
+entschieden 24.09.2026 nach Empfehlung: a; Regel: Konzept Hilfesystem 13.3), ebenfalls unter dem
+Vorbehalt der Freigabe des Anwenders.
 
 ## 1 Seiten für den Sammel-Upload
 
@@ -55,11 +56,11 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 ### Version 1.2.0.4 — eine Version für den ganzen Sammel-Upload
 
 Anwenderentscheid 22.09.2026 („letzte Nummer erhöhen"; das Programm trägt heute 1.2.0.3 in
-`AssemblyInfo.cs`, die Anhebung gehört zur Auslieferung). E12‑Q3 (Empfehlung a): Die früher
-getrennt entworfenen Versionen 1.2.0.2 (05/§ 7, Statuszeilen #343–#367) und 1.2.0.3 (Statuszeilen
-#358–#403) stehen ab dieser Fassung zusammengeführt unter 1.2.0.4 — der Sammel-Upload
-veröffentlicht **eine** Version, nicht eine je Etappe; die eigene Versionsüberschrift „1.2.0.3"
-entfällt entsprechend weiter unten.
+`AssemblyInfo.cs`, die Anhebung gehört zur Auslieferung). E12‑Q3 (**entschieden 24.09.2026, nach
+Empfehlung: a**): Die früher getrennt entworfenen Versionen 1.2.0.2 (05/§ 7, Statuszeilen
+#343–#367) und 1.2.0.3 (Statuszeilen #358–#403) stehen ab dieser Fassung zusammengeführt unter
+1.2.0.4 — der Sammel-Upload veröffentlicht **eine** Version, nicht eine je Etappe; die eigene
+Versionsüberschrift „1.2.0.3" entfällt entsprechend weiter unten.
 
 Die Diagramm-Umstellung auf Vektorgrafik (DG-E3) ist mit Statuszeile #413 abgeschlossen. Die
 folgenden vier Sätze fassen die Zwischenstände aus #404 und #411 zusammen, die dieselbe
@@ -272,7 +273,8 @@ Auslieferung führt keinen) und die Kennzeichnung des festen Restwerts einer Flo
 beiden Sätze aus #411 zu „Wärmeproduktion/Stromproduktion“ sowie zu den Bedarfs- und
 Quellprofildialogen — sie beschreiben dieselbe Bedienung wie oben, nur an weniger Stellen.
 
-**Die „14+1 Sätze" aus Protokoll 05/§ 7 (Statuszeilen #343–#367, E12‑Q2 Empfehlung a):** 14 der
+**Die „14+1 Sätze" aus Protokoll 05/§ 7 (Statuszeilen #343–#367, E12‑Q2 entschieden 24.09.2026 nach
+Empfehlung: a):** 14 der
 15 Sätze decken sich inhaltlich mit den Statuszeilen #358–#366 unten oder mit bereits
 veröffentlichten Sätzen; neun Themen hatten hier noch keinen eigenen Satz. Alle neun gegen die
 Tabuwort-Regex aus `CLAUDE.md` geprüft: 0 Treffer.

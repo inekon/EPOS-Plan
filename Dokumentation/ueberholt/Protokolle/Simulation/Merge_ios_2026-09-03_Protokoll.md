@@ -1,4 +1,4 @@
-﻿# Merge `origin/ios_migration` → `ios_migration` (03.09.2026)
+# Merge `origin/ios_migration` → `ios_migration` (03.09.2026)
 
 Zusammenführung des lokalen Standes (13 Commits: Paket A und B des PV-Ertragsmodells,
 Projektdialoge, FS1) mit den 81 Remote-Commits des **Umzugs nach `EPOS.Kern` / `EPOS.UI`**.

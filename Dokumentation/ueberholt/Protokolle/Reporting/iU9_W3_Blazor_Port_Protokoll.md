@@ -1,4 +1,4 @@
-﻿# iU9 Welle 3 — Port der Energieträger-Kleindialoge (Umsetzungsprotokoll)
+# iU9 Welle 3 — Port der Energieträger-Kleindialoge (Umsetzungsprotokoll)
 
 > Muster: [`iU9_W2_Blazor_Port_Protokoll.md`](iU9_W2_Blazor_Port_Protokoll.md) und
 > [`iU9_W1_Blazor_Port_Protokoll.md`](iU9_W1_Blazor_Port_Protokoll.md) — Feldkarten-Abgleich

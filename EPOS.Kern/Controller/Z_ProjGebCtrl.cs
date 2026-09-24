@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
                 "[Tab_Gebaeude].ID_ProjektGebaeude, [Tab_Gebaeude].Gebaeudename, " +
                 "[Tab_Gebaeude].Baualtersklasse, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, " +
                 "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, dezWarmwasserbereitung, " +
-                "Gebaeudeart, Beschreibung FROM [Tab_Gebaeude] " +
+                "Gebaeudeart, Beschreibung, [Tab_Gebaeude].ID_Gebaeude_Stamm FROM [Tab_Gebaeude] " +
                 "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID " +
                 "WHERE Z_ProjektGebaeude.ID_Projekt = ?";
 
@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1
                 item.Gebaeudeart = Text(row, "Gebaeudeart");
                 item.Beschreibung = Text(row, "Beschreibung");
                 item.Baualtersklasse = Text(row, "Baualtersklasse");
+                item.ID_Gebaeude_Stamm = Verweis(row, "ID_Gebaeude_Stamm");
                 liste.Add(item);
             }
             return liste;
@@ -73,6 +74,14 @@ namespace WindowsFormsApplication1
 
         private static double Zahl(DataRow row, string spalte)
             => row[spalte] == DBNull.Value ? 0.0 : Convert.ToDouble(row[spalte]);
+
+        /// <summary>Ein nullbarer Id-Verweis: NULL oder nicht positiv heißt „kein Verweis“.</summary>
+        internal static int? Verweis(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            int id = Convert.ToInt32(row[spalte]);
+            return id > 0 ? id : (int?)null;
+        }
 
         public void ReadAll(string sql)
         {

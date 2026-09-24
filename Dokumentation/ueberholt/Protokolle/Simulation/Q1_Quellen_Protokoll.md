@@ -1,4 +1,4 @@
-﻿# Paket Q1 — Quellen-Ausbau: Umsetzungsprotokoll
+# Paket Q1 — Quellen-Ausbau: Umsetzungsprotokoll
 
 Stand: 28.08.2026 · Branch `Pufferspeicher` · Bezug:
 [`Konzept_Brauchwasser_Heizung_Pufferspeicher.md`](Konzept_Brauchwasser_Heizung_Pufferspeicher.md)

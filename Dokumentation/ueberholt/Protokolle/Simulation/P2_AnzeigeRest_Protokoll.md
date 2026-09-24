@@ -1,4 +1,4 @@
-﻿# Paket P2 — Anzeige-Nachzügler des Schichtmodells: Umsetzungsprotokoll
+# Paket P2 — Anzeige-Nachzügler des Schichtmodells: Umsetzungsprotokoll
 
 Stand: 28.08.2026 · Branch `Pufferspeicher` (HEAD `69baf0b`, Paket Q1) · Bezug:
 [`Konzept_Brauchwasser_Heizung_Pufferspeicher.md`](Konzept_Brauchwasser_Heizung_Pufferspeicher.md)

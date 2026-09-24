@@ -1,4 +1,4 @@
-﻿# Basis 2026-08-29_E1E2 — Laufprotokoll
+# Basis 2026-08-29_E1E2 — Laufprotokoll
 
 **Anlass: Etappen E1 (CO2-Saat der Katalogträger, Migrationsschritt 56, `933fc97`) und
 E2 (Emissionsarten-Katalog, Migrationsschritt 57, `6694c7a`) + Datenänderung des

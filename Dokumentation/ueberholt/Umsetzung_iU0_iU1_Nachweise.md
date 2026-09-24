@@ -1,4 +1,4 @@
-﻿# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
+# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
 
 **Stand 03.09.2026 · Branch `ios_migration` · Kopfstand `f95fc34`**
 

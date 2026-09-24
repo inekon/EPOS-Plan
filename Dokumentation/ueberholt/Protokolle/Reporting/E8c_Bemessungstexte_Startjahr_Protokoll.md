@@ -196,3 +196,5 @@ Lücke. (5) Englisch („per hour", „% of fuel costs", „from year …").
   § 8), Analysepapier (Kopf, Nachtrag, § 0 Punkt 5, § 5 mit der Zeile E8c, § 6), Rechenweg 08 (Gap-Kurztafel), Mockup
   (Anhang U42, Zone „Bericht und Ausgabe", Kasten zum Nachweisumschlag, Ressourcentafel der Kategorie 8,
   Stand-Absatz), Logbuch-Sätze und die Wiki-Quelle der Seite Wirtschaftlichkeit, Index Reporting.
+
+**Entscheide 24.09.2026:** alle nach Empfehlung, siehe Register R‑E8c
