@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -36,6 +38,32 @@ namespace WindowsFormsApplication1
 
         public List<WErzeugerModel> wp_model = new List<WErzeugerModel>();
         private List<_Kenndaten> wp_kenndaten = new List<_Kenndaten>();
+
+        /// <summary>
+        /// <b>Der gerechnete Vorlauf des Heizkreises je Stunde</b> [°C] (Anlagenkopplung AK1,
+        /// 6.1, F-A8) — gesetzt von <c>SimulationControl</c> aus dem Heizkreis des Projekts, vor
+        /// dem Modulaufbau: das bedarfsgewichtete Mittel der gekoppelten Gebäude, NaN in Stunden
+        /// ohne gekoppelten Bedarf. <c>null</c> = keine Kopplung: jedes Modul rechnet wie im
+        /// Bestand mit der Kennlinie seines projektierten Vorlaufs.
+        /// </summary>
+        internal double[] Heizkreisvorlauf { get; set; }
+
+        /// <summary>
+        /// Die Kennlinienwahl eines Moduls am gerechneten Vorlauf (6.1): alle Kennlinien des
+        /// Geräts aufsteigend nach Vorlauf, die Stunden je Stützstelle und die Stunden außerhalb.
+        /// </summary>
+        private sealed class Kennlinienwahl
+        {
+            internal _Kenndaten[] Kurven;
+            internal int[] Stunden;
+            internal int Darueber;
+            internal double DarueberMax = double.NegativeInfinity;
+            internal int Darunter;
+            internal double DarunterMin = double.PositiveInfinity;
+        }
+
+        // Je Modul die Kennlinienwahl am gerechneten Vorlauf; null = fester Vorlauf (Bestand).
+        private readonly List<Kennlinienwahl> wp_kennlinienwahl = new List<Kennlinienwahl>();
 
         // Quelltemperatur-Jahresprofil je WP-Modul (Wärmequelle):
         // Luft-Wasser = Außentemperatur; Sole-/Wasser-Wasser gemäß WQ_Typ
@@ -609,6 +637,7 @@ namespace WindowsFormsApplication1
 
             wp_model.Clear();
             wp_kenndaten.Clear();
+            wp_kennlinienwahl.Clear();
             wp_quelltemp.Clear();
             wp_quellspeicher.Clear();
             wp_typ.Clear();
@@ -740,9 +769,195 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 wp_kenndaten.Add(item);
+
+                // ANLAGENKOPPLUNG (AK1, 6.1): Mit gerechnetem Vorlauf braucht die Kennlinienwahl
+                // alle Stützstellen des Geräts - nur für Module, die Heizwärme liefern (Senke
+                // „Beides" oder „Heizung"); ein reines Warmwassermodul behält seinen Vorlauf.
+                wp_kennlinienwahl.Add(Heizkreisvorlauf != null && SenkeMitHeizung(wp_senke[i])
+                    ? KennlinienwahlLaden(model.ID_WP, item)
+                    : null);
             }
 
             return true;
+        }
+
+        /// <summary>Liefert die Senke eines Moduls Heizwärme (Beides oder Heizung)?</summary>
+        private static bool SenkeMitHeizung(string senke)
+            => senke == WaermequelleClass.SENKE_BEIDES || senke == WaermequelleClass.SENKE_HEIZUNG;
+
+        /// <summary>
+        /// Lädt alle Kennlinien eines Geräts, aufsteigend nach Vorlauf (Anlagenkopplung 6.1). Die
+        /// Kennlinie des projektierten Vorlaufs ist DIESELBE, die der Bestand gelesen hat
+        /// (<paramref name="fest"/>) — trifft der gerechnete Vorlauf sie, rechnet die Stunde
+        /// Zeichen für Zeichen wie ohne Kopplung. <c>null</c>, wenn nichts zu lesen ist.
+        /// </summary>
+        private static Kennlinienwahl KennlinienwahlLaden(int idWp, _Kenndaten fest)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT Vorlauf, Temperatur, COP, Ptherm FROM Tab_Kenndaten " +
+                "WHERE ID_WP = ? ORDER BY Vorlauf, Temperatur DESC",
+                StilleDb.Par("@wp", DbParamTyp.Integer, idWp));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            var kurven = new List<_Kenndaten>();
+            var punkte = new List<_DAT>();
+            int aktuell = int.MinValue;
+            foreach (DataRow r in dt.Rows)
+            {
+                int vorlauf = Convert.ToInt32(r["Vorlauf"], CultureInfo.InvariantCulture);
+                if (vorlauf != aktuell && punkte.Count > 0)
+                {
+                    kurven.Add(Kurve(idWp, aktuell, punkte, fest));
+                    punkte = new List<_DAT>();
+                }
+                aktuell = vorlauf;
+                punkte.Add(new _DAT
+                {
+                    Temperatur = Convert.ToInt32(r["Temperatur"], CultureInfo.InvariantCulture),
+                    COP = Convert.ToDouble(r["COP"], CultureInfo.InvariantCulture),
+                    Leistung = Convert.ToDouble(r["Ptherm"], CultureInfo.InvariantCulture),
+                });
+            }
+            if (punkte.Count > 0) kurven.Add(Kurve(idWp, aktuell, punkte, fest));
+            return new Kennlinienwahl { Kurven = kurven.ToArray(), Stunden = new int[kurven.Count] };
+        }
+
+        private static _Kenndaten Kurve(int idWp, int vorlauf, List<_DAT> punkte, _Kenndaten fest)
+        {
+            if (fest != null && fest.Vorlauf == vorlauf) return fest;
+            return new _Kenndaten { ID_WP = idWp, Vorlauf = vorlauf, anz = punkte.Count, dat = punkte.ToArray() };
+        }
+
+        /// <summary>
+        /// Die Stützstelle zum gerechneten Vorlauf (3.4, H-F4): die nächstgelegene, bei
+        /// Gleichstand die höhere, weil sie den ungünstigeren COP liefert. Eine Interpolation
+        /// über den Vorlauf gibt es nicht — eine Regel für Heiz- und Kälteseite.
+        /// </summary>
+        /// <param name="vorlaeufe">Die Vorläufe der Kennlinien, aufsteigend.</param>
+        internal static int StuetzstelleWaehlen(IReadOnlyList<int> vorlaeufe, double vorlauf)
+        {
+            int beste = 0;
+            double abstand = Math.Abs(vorlauf - vorlaeufe[0]);
+            for (int i = 1; i < vorlaeufe.Count; i++)
+            {
+                double a = Math.Abs(vorlauf - vorlaeufe[i]);
+                if (a <= abstand)
+                {
+                    beste = i;
+                    abstand = a;
+                }
+            }
+            return beste;
+        }
+
+        /// <summary>
+        /// Die Kennlinie des Moduls in dieser Stunde. Ohne Kopplung, für ein Modul ohne
+        /// Heizwärme und in Stunden ohne gekoppelten Bedarf die Kennlinie des projektierten
+        /// Vorlaufs (Rückfall, 12.2); sonst die Stützstelle zum gerechneten Vorlauf.
+        ///
+        /// <para><b>Außerhalb der Stützstellen gilt die Regel des Bestands, zweiseitig wie dort</b>
+        /// (F-A8; benannte Lesart): Der Bestand kappt die Kennlinie auf der günstigen Seite mit
+        /// Hinweis (Quelle über der obersten Stützstelle) und wendet auf der ungünstigen die
+        /// Extrapolationsregel samt Projektschalter an. Für den Vorlauf ist die günstige Seite
+        /// UNTEN — unter der untersten Stützstelle rechnet die unterste Kennlinie (die
+        /// Arbeitszahl eher zu niedrig), gezählt und am Ende gemeldet; ÜBER der obersten gilt die
+        /// Extrapolationsregel: erlaubt — die oberste Kennlinie, gezählt und gemeldet; verboten —
+        /// <c>null</c> mit <see cref="Fehlertext"/>, der Lauf bricht ab. Eine Heizkurve fährt in
+        /// der Übergangszeit regelmäßig unter jede Stützstelle; ein Abbruch dort machte die
+        /// Kopplung mit verbotener Extrapolation unbenutzbar.</para>
+        /// </summary>
+        private _Kenndaten KenndatenDerStunde(int index, int stunde)
+        {
+            _Kenndaten fest = wp_kenndaten[index];
+            Kennlinienwahl wahl = index < wp_kennlinienwahl.Count ? wp_kennlinienwahl[index] : null;
+            if (wahl == null || Heizkreisvorlauf == null || stunde < 0 || stunde >= Heizkreisvorlauf.Length) return fest;
+            double v = Heizkreisvorlauf[stunde];
+            if (double.IsNaN(v) || double.IsInfinity(v)) return fest;
+
+            int[] vorlaeufe = new int[wahl.Kurven.Length];
+            for (int k = 0; k < vorlaeufe.Length; k++) vorlaeufe[k] = wahl.Kurven[k].Vorlauf;
+            switch (VorlaufAuswerten(vorlaeufe, v, Extrapolation_Erlaubt, out int stelle))
+            {
+                case Vorlauflage.Verboten:
+                    string bezeichner = wp_model[index]?.Bezeichner ?? "";
+                    Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN,
+                                               bezeichner, v.ToString("0.0"), vorlaeufe[vorlaeufe.Length - 1]);
+                    SimulationProtokoll.Aktuell.Fehlermeldung(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
+                    return null;
+                case Vorlauflage.Darueber:
+                    wahl.Darueber++;
+                    if (v > wahl.DarueberMax) wahl.DarueberMax = v;
+                    break;
+                case Vorlauflage.Darunter:
+                    wahl.Darunter++;
+                    if (v < wahl.DarunterMin) wahl.DarunterMin = v;
+                    break;
+            }
+            wahl.Stunden[stelle]++;
+            return wahl.Kurven[stelle];
+        }
+
+        /// <summary>Wo der gerechnete Vorlauf zu den Stützstellen liegt (F-A8).</summary>
+        internal enum Vorlauflage
+        {
+            /// <summary>Zwischen unterster und oberster Stützstelle.</summary>
+            Innerhalb,
+            /// <summary>Unter der untersten — gerechnet mit der untersten Kennlinie, gemeldet.</summary>
+            Darunter,
+            /// <summary>Über der obersten, Extrapolation erlaubt — die oberste Kennlinie, gemeldet.</summary>
+            Darueber,
+            /// <summary>Über der obersten, Extrapolation verboten — der Lauf bricht ab.</summary>
+            Verboten,
+        }
+
+        /// <summary>
+        /// Die Regel am gerechneten Vorlauf (F-A8, benannte zweiseitige Lesart, siehe
+        /// <see cref="KenndatenDerStunde"/>): Stützstelle und Lage des Vorlaufs.
+        /// </summary>
+        internal static Vorlauflage VorlaufAuswerten(IReadOnlyList<int> vorlaeufe, double vorlauf,
+                                                     bool extrapolationErlaubt, out int stelle)
+        {
+            stelle = StuetzstelleWaehlen(vorlaeufe, vorlauf);
+            if (vorlauf > vorlaeufe[vorlaeufe.Count - 1])
+                return extrapolationErlaubt ? Vorlauflage.Darueber : Vorlauflage.Verboten;
+            return vorlauf < vorlaeufe[0] ? Vorlauflage.Darunter : Vorlauflage.Innerhalb;
+        }
+
+        /// <summary>
+        /// Meldet am Ende des Laufs die Kennlinienwahl am gerechneten Vorlauf je Modul — die
+        /// Stunden je Stützstelle und, falls es sie gab, die Stunden außerhalb der Stützstellen
+        /// (F-A8, 9.5: einmal je Gerät). Ohne Kopplung meldet sie nichts.
+        /// </summary>
+        private void VorlaufwahlMelden()
+        {
+            for (int i = 0; i < wp_kennlinienwahl.Count && i < wp_model.Count; i++)
+            {
+                Kennlinienwahl w = wp_kennlinienwahl[i];
+                if (w == null) continue;
+                string bezeichner = wp_model[i]?.Bezeichner ?? "";
+                var teile = new List<string>();
+                for (int k = 0; k < w.Kurven.Length; k++)
+                    if (w.Stunden[k] > 0)
+                        teile.Add(w.Kurven[k].Vorlauf.ToString(CultureInfo.InvariantCulture) + " °C: " +
+                                  w.Stunden[k].ToString(CultureInfo.InvariantCulture) + " h");
+                if (teile.Count > 0)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "WP_Vorlaufwahl_" + i + "_" + bezeichner,
+                        MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
+                        string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_KENNLINIENWAHL, bezeichner, string.Join(", ", teile)));
+                if (w.Darueber > 0)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "WP_Vorlauf_darueber_" + i + "_" + bezeichner,
+                        MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
+                        string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_AUSSERHALB_HINWEIS, bezeichner, w.Darueber,
+                                      w.Kurven[w.Kurven.Length - 1].Vorlauf, w.DarueberMax.ToString("0.0")));
+                if (w.Darunter > 0)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "WP_Vorlauf_darunter_" + i + "_" + bezeichner,
+                        MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
+                        string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN, bezeichner, w.Darunter,
+                                      w.Kurven[0].Vorlauf, w.DarunterMin.ToString("0.0")));
+            }
         }
 
         // PAKET A1: Hier stand "Berechnung_Stundenschleife" - die EINKANALIGE
@@ -1096,7 +1311,14 @@ namespace WindowsFormsApplication1
                     try
                     {
                     WErzeugerModel model = wp_model[index];
-                    _Kenndaten kenndaten = wp_kenndaten[index];
+                    // ANLAGENKOPPLUNG (AK1, 6.1): die Kennlinie der Stunde - ohne Kopplung die des
+                    // projektierten Vorlaufs, wie bisher.
+                    _Kenndaten kenndaten = KenndatenDerStunde(index, stunde);
+                    if (kenndaten == null)
+                    {
+                        AbbruchAufraeumen();
+                        return false;
+                    }
                     Senkenliste senken = kontext.SenkenlisteJeModul[index];
                     SimulationPufferspeicher quelle = wp_quellspeicher[index];
 
@@ -1361,6 +1583,9 @@ namespace WindowsFormsApplication1
 
             // PAKET B1 (F13): dieselbe Stelle für die Kappung nach unten am Booster.
             KappungUntenMelden();
+
+            // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf.
+            VorlaufwahlMelden();
 
             if (biv != null && biv.Count > 0)
                 Bivalenzpunkt = biv.Max();

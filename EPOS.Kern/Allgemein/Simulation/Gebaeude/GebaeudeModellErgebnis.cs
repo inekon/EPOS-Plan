@@ -38,8 +38,9 @@ namespace WindowsFormsApplication1
             double verbrauchAltKwh, double skalierungsfaktor,
             int stundenMitUmschaltung, int stundenHeizenUndKuehlen,
             double[] heizsollwert = null, int stundenMitSommerlueftung = 0,
-            double? kuehlSollwert = null)
+            double? kuehlSollwert = null, HeizkreisErgebnis heizkreis = null)
         {
+            Heizkreis = heizkreis;
             if (heizsollwert != null && heizsollwert.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizsollwert));
             if (heizlastW == null || heizlastW.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizlastW));
             if (raumtemperatur == null || raumtemperatur.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(raumtemperatur));
@@ -216,6 +217,13 @@ namespace WindowsFormsApplication1
         internal bool KuehlungWirksam => KuehlSollwert.HasValue;
 
         /// <summary>
+        /// Der Heizkreis des Gebäudes (Anlagenkopplung AK1): Vorlauf und Rücklauf je Stunde,
+        /// begrenzte Stunden, Kennzahlen und Auslegung. <c>null</c>, wenn die Kopplung für dieses
+        /// Gebäude nicht wirksam war — dann ist das Ergebnis Zeichen für Zeichen das des Bestands.
+        /// </summary>
+        internal HeizkreisErgebnis Heizkreis { get; }
+
+        /// <summary>
         /// Dasselbe Ergebnis mit der Heizlast- und Kühlreihe mal <paramref name="faktor"/>
         /// (E8, Nachmultiplikation der Fassade); die Kennzahlen entstehen neu aus den
         /// skalierten Reihen.
@@ -232,7 +240,8 @@ namespace WindowsFormsApplication1
             return new GebaeudeModellErgebnis(Index, ID_Gebaeude, Modell, heiz, Raumtemperatur, OperativeTemperatur,
                                               kuehl, ThetaMax, VerbrauchAltKwh, Skalierungsfaktor * faktor,
                                               StundenMitUmschaltung, StundenHeizenUndKuehlen,
-                                              Heizsollwert, StundenMitSommerlueftung, KuehlSollwert);
+                                              Heizsollwert, StundenMitSommerlueftung, KuehlSollwert,
+                                              Heizkreis?.Skaliert(faktor));
         }
     }
 

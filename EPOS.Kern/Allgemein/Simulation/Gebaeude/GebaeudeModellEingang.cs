@@ -159,6 +159,67 @@ namespace WindowsFormsApplication1
         internal bool AussenbauteileStrahlung { get; private set; }
 
         // =====================================================================
+        //  Anlagenkopplung, Stufe AK1 (Konzept Anlagenkopplung 3.4, 4.3, 6.1, 8.1, 8.4)
+        // =====================================================================
+
+        /// <summary>Die Kopplungsstufe des PROJEKTS, wie gelesen (<c>Tab_Einstellungen.Anlagenkopplung</c>); <c>null</c> = aus.</summary>
+        internal string AnlagenkopplungStufe { get; private set; }
+
+        /// <summary>Der Schalter <c>Heizkreis_Aktiv</c> des Gebäudes — die Absicht, unabhängig von der Projektstufe.</summary>
+        internal bool HeizkreisAktiv { get; private set; }
+
+        /// <summary>Die Übergabeart des Gebäudes (<c>DbWerte.UEBERGABE_*</c>), wie gelesen; <c>null</c> = ideal.</summary>
+        internal string UebergabeArt { get; private set; }
+
+        /// <summary>
+        /// <b>Ist die Kopplung für dieses Gebäude wirksam?</b> Projektstufe AK1 oder höher,
+        /// <c>Heizkreis_Aktiv</c> und eine Übergabeart, die nicht „ideal" ist
+        /// (<see cref="Waermeuebergabe.KopplungWirksamFuer"/>). Nur dann gelten die dreizehn
+        /// Spalten der Übergabe samt Zeitprogramm; sonst rechnet das Gebäude byte-gleich wie
+        /// vorher (N-A3).
+        /// </summary>
+        internal bool KopplungWirksam { get; private set; }
+
+        /// <summary>Die Kennwerte der Übergabe in W und W/K; <c>null</c> ohne wirksame Kopplung.</summary>
+        internal Uebergabekennwerte Uebergabe { get; private set; }
+
+        /// <summary>Die Heizkurve des Auslegungspunkts (auch bei festem Vorlauf gebildet, für die Herleitung).</summary>
+        internal Heizkurve Heizkurve { get; private set; }
+
+        /// <summary>Fährt das Gebäude die Heizkurve (<c>Heizkurve_Aktiv</c>)? Sonst gilt ein fester Vorlauf.</summary>
+        internal bool HeizkurveAktiv { get; private set; }
+
+        /// <summary>Woher der Vorlauf kommt.</summary>
+        internal Vorlaufquelle Vorlaufquelle { get; private set; }
+
+        /// <summary>Der feste Vorlauf [°C] bei ausgeschalteter Heizkurve; NaN mit Heizkurve.</summary>
+        internal double VorlaufFestC { get; private set; } = double.NaN;
+
+        /// <summary>Vorlauf je Stunde [°C] (Schritt E, 10.1); NaN jenseits der Heizgrenze; <c>null</c> ohne Kopplung.</summary>
+        internal double[] VorlaufC { get; private set; }
+
+        /// <summary>Proportionalband des Raumreglers [K] (H1, E25).</summary>
+        internal double ReglerbandK { get; private set; }
+
+        /// <summary>Die Auslegungs-Außentemperatur [°C] — eingegeben oder hergeleitet (H10).</summary>
+        internal double AuslegungAussentemperaturC { get; private set; } = double.NaN;
+
+        /// <summary>Ist die Auslegungs-Außentemperatur aus der Klimareihe hergeleitet (kältestes Tagesmittel, abgerundet)?</summary>
+        internal bool AuslegungAussentemperaturHergeleitet { get; private set; }
+
+        /// <summary>
+        /// Die hergeleitete Auslegungsheizlast des Katalogbaus [W] — die stationäre Last des
+        /// vorhandenen Modells am Auslegungspunkt (8.4), ausdrücklich kein Normnachweis (H-F12).
+        /// </summary>
+        internal double AuslegungsheizlastW { get; private set; } = double.NaN;
+
+        /// <summary>Ist die Nennleistung der Übergabe aus der Auslegungsheizlast hergeleitet (NULL, H7)?</summary>
+        internal bool UebergabeNennleistungHergeleitet { get; private set; }
+
+        /// <summary>Gilt ein Sollwert-Zeitprogramm (Wochenprofil) statt der vier Bestandssollwerte (4.3, H8)?</summary>
+        internal bool SollwertprofilWirksam { get; private set; }
+
+        // =====================================================================
         //  Ersatzparameter und Randreihen (Schritte A und E)
         // =====================================================================
 
@@ -203,12 +264,24 @@ namespace WindowsFormsApplication1
         {
             // Die Kühlleistung wirkt in KU1 rein konvektiv am Luftknoten (Kühlkonzept 3.2):
             // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
+            // Mit wirksamer Kopplung (AK1) trägt die Stunde Übergabe, Vorlauf und Reglerband —
+            // die Kälteseite der Kopplung ist benannt vertagt (H9) und bleibt ideal.
+            if (!KopplungWirksam)
+                return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
+                                       PhiRadAW[h], PhiRadIW[h], PhiConv[h],
+                                       heizleistungMaxW: HeizleistungMaxW,
+                                       kuehlleistungMaxW: KuehlleistungMaxW,
+                                       heizungStrahlungsanteil: HeizungStrahlungsanteil,
+                                       zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
             return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                    heizleistungMaxW: HeizleistungMaxW,
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
+                                   zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                   uebergabe: Uebergabe,
+                                   vorlaufC: VorlaufC[h],
+                                   reglerbandK: ReglerbandK);
         }
 
         /// <summary>Ist Stunde <paramref name="h"/> (0 … 8759) Nutzungszeit — Stunde des Tages 7 … 22, 1-basiert (Rechenschritte 8.2, E8)?</summary>
@@ -235,6 +308,15 @@ namespace WindowsFormsApplication1
         /// <param name="zeitbezug">Zeitbezug der Sonnengeometrie (U6).</param>
         /// <param name="kuehlbetrieb">Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>)?
         /// Ohne ihn wird kein Gebäude gekühlt; es läuft frei (<see cref="KuehlungWirksam"/>, E32).</param>
+        /// <param name="anlagenkopplung">Die Kopplungsstufe des PROJEKTS (<c>Tab_Einstellungen.Anlagenkopplung</c>);
+        /// <c>null</c> = aus. Nur mit ihr gilt die Wärmeübergabe (<see cref="KopplungWirksam"/>).</param>
+        /// <param name="vorlaufAnlageC">Der feste Vorlauf der Anlage [°C] für ein Gebäude ohne Heizkurve —
+        /// der höchste projektierte Vorlauf der Wärmeerzeuger des Heizkanals, von der Fassade gelesen
+        /// (das Modul liest keine Anlagendaten); NaN = keiner.</param>
+        /// <param name="nennleistungSkalierung">Verhältnis wirkliches Gebäude : Katalogbau (E8) für eine
+        /// FEST eingetragene Nennleistung der Übergabe — sie gilt dem wirklichen Gebäude und wird auf den
+        /// Katalogbau umgerechnet (H7); NaN = die Nennleistung wird auch dann hergeleitet (erster Lauf
+        /// der Verhältnisrechnung).</param>
         /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
         internal static GebaeudeModellEingang Bauen(
             ProjektGebaeudeModel gebaeude,
@@ -242,7 +324,10 @@ namespace WindowsFormsApplication1
             bool[] wochenende,
             double laengengrad, double breitengrad,
             Zeitbezug zeitbezug = GebaeudeKlimaweg.ZEITBEZUG_VORGABE,
-            bool kuehlbetrieb = false)
+            bool kuehlbetrieb = false,
+            string anlagenkopplung = null,
+            double vorlaufAnlageC = double.NaN,
+            double nennleistungSkalierung = 1.0)
         {
             GebaeudeModellEingang e = Daten(gebaeude);
             e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
@@ -342,7 +427,16 @@ namespace WindowsFormsApplication1
             e.PhiRadIW = phiRadIW;
             e.PhiConv = phiConv;
             e.PhiSolar = phiSolar;
-            e.ThetaSoll = Sollwertfahrplan(e, wochenende);
+
+            // Anlagenkopplung (AK1): ob sie wirkt, entscheidet sich VOR dem Sollwertfahrplan —
+            // das Zeitprogramm gilt nur mit ihr (4.3, F-A17). Ohne sie bleibt jede Zeile wie bisher.
+            e.AnlagenkopplungStufe = anlagenkopplung;
+            e.HeizkreisAktiv = gebaeude.Heizkreis_Aktiv;
+            e.UebergabeArt = gebaeude.Uebergabe_Art;
+            e.KopplungWirksam = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
+            e.ThetaSoll = e.KopplungWirksam
+                ? e.SollwertfahrplanMitProfil(gebaeude, wochenende)
+                : Sollwertfahrplan(e, wochenende);
 
             // KU1 (Kühlkonzept 3.2, K11): Kühlsollwert und Kühlleistungsgrenze - nur mit
             // wirksamer Kühlung. Ohne sie gibt es keine obere Grenze (+∞): Das Gebäude läuft
@@ -350,7 +444,244 @@ namespace WindowsFormsApplication1
             e.KuehlungAufloesen(gebaeude, kuehlbetrieb);
             e.ThetaMax = new double[8760];
             for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
+
+            if (e.KopplungWirksam)
+                e.KopplungAufloesen(gebaeude, uaLuftseitig, uaGrund, uaFenster, uaSumme,
+                                    vorlaufAnlageC, nennleistungSkalierung);
             return e;
+        }
+
+        // =====================================================================
+        //  Anlagenkopplung (AK1): Auslegungspunkt, hergeleitete Vorgaben, Vorlaufreihe
+        // =====================================================================
+
+        /// <summary>
+        /// Löst die Wärmeübergabe eines gekoppelten Gebäudes auf (Anlagenkopplung 3.1, 3.4, 8.1,
+        /// 8.4): Vorgaben der Übergabeart bei NULL, harte Prüfregeln mit benanntem Fehler (9.1,
+        /// 9.5), die hergeleiteten Vorgaben — Auslegungs-Außentemperatur aus der Klimareihe
+        /// (H10), Nennleistung aus der stationären Auslegungsheizlast des Katalogbaus (8.4, H7),
+        /// Strahlungsanteil der Übergabeart (H12) — und die Vorlaufreihe aus Heizkurve oder
+        /// festem Vorlauf. Die Umrechnung kW → W geschieht hier, einmal (3.3).
+        /// </summary>
+        private void KopplungAufloesen(ProjektGebaeudeModel g, double uaLuftseitig, double uaGrund,
+                                       double uaFenster, double uaSumme, double vorlaufAnlageC,
+                                       double nennleistungSkalierung)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string art = g.Uebergabe_Art;
+            if (!Waermeuebergabe.ArtBekannt(art))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABEART_UNBEKANNT, art));
+
+            double n = g.Uebergabe_Exponent ?? Waermeuebergabe.VorgabeExponent(art);
+            Bereich(GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT, n,
+                    GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN, GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX);
+
+            double vN = g.Auslegung_Vorlauf ?? Waermeuebergabe.VorgabeVorlaufC(art);
+            double rN = g.Auslegung_Ruecklauf ?? Waermeuebergabe.VorgabeRuecklaufC(art);
+            double iN = g.Auslegung_Raumtemperatur ?? SollTag;
+            if (g.Auslegung_Vorlauf.HasValue)
+                Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF, vN,
+                        GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
+            if (g.Auslegung_Raumtemperatur.HasValue)
+                Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR, iN,
+                        GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX);
+            if (!Endlich(vN) || !Endlich(iN) || !(vN > iN))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_UNTER_RAUM, Text(vN), Text(iN)));
+            if (!Endlich(rN) || !(rN > iN) || !(rN < vN))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(k, MyResource.Resource.SIMENG_AK_RUECKLAUF_AUSSERHALB, Text(rN), Text(iN), Text(vN)));
+
+            // H12: Mit einer Übergabeart heißt ein leerer Strahlungsanteil „Vorgabe der Art".
+            if (!g.Heizung_Strahlungsanteil.HasValue)
+                HeizungStrahlungsanteil = Waermeuebergabe.VorgabeStrahlungsanteil(art);
+
+            double xp = g.Regler_Proportionalband ?? GebaeudeFestwerte.VORGABE_REGLER_PROPORTIONALBAND_K;
+            Bereich(GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND, xp,
+                    GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+            ReglerbandK = xp;
+
+            HeizkurveAktiv = g.Heizkurve_Aktiv;
+            double niveau = g.Heizkurve_Niveau ?? GebaeudeFestwerte.VORGABE_HEIZKURVE_NIVEAU_K;
+            double steilheit = g.Heizkurve_Steilheit ?? GebaeudeFestwerte.VORGABE_HEIZKURVE_STEILHEIT;
+            Bereich(GebaeudeSchema.SPALTE_HEIZKURVE_NIVEAU, niveau,
+                    GebaeudeFestwerte.HEIZKURVE_NIVEAU_MIN, GebaeudeFestwerte.HEIZKURVE_NIVEAU_MAX);
+            Bereich(GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT, steilheit,
+                    GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MIN, GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MAX);
+
+            // H10: die Auslegungs-Außentemperatur — kältestes Tagesmittel der Klimareihe,
+            // auf ganze Grad abgerundet; das Feld überschreibt.
+            int auslegungstag = KaeltesterTag(ThetaOut, out double kaeltestesMittel);
+            AuslegungAussentemperaturHergeleitet = !g.Auslegung_Aussentemperatur.HasValue;
+            double aN = g.Auslegung_Aussentemperatur ?? Math.Floor(kaeltestesMittel);
+            if (g.Auslegung_Aussentemperatur.HasValue)
+                Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_AUSSENTEMPERATUR, aN,
+                        GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MIN, GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MAX);
+            if (!Endlich(aN) || !(aN < iN))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(k, MyResource.Resource.SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM, Text(aN), Text(iN)));
+            AuslegungAussentemperaturC = aN;
+
+            // 8.4: die Auslegungsheizlast — die stationäre Last des Katalogbaus bei aN und iN,
+            // ohne solare und innere Lasten; die Grundfläche am Auslegungstag, die Fenster und
+            // opaken Flächen ohne Strahlung (benannte Festlegung). Ein Aufruf des Lösers.
+            double grundN = Grundtemperatur(auslegungstag, aN);
+            double eqN = uaSumme > 0.0 ? (uaLuftseitig * aN + uaGrund * grundN + uaFenster * aN) / uaSumme : aN;
+            AuslegungsheizlastW = new Zonenmodell2K(Parameter, Bezeichnung)
+                .StationaereHeizlastW(iN, aN, eqN, HeizungStrahlungsanteil);
+
+            // H7: Die Nennleistung gilt dem wirklichen Gebäude. Fest eingetragen wird sie auf den
+            // Katalogbau umgerechnet; leer ist sie die Auslegungsheizlast des Katalogbaus - nach
+            // der Nachmultiplikation (E8) also die skalierte Auslegungslast.
+            double phiN;
+            if (g.Uebergabe_Leistung_Nenn.HasValue && !double.IsNaN(nennleistungSkalierung))
+            {
+                double wertKw = g.Uebergabe_Leistung_Nenn.Value;
+                if (!(wertKw > 0.0))
+                    Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_NENNLEISTUNG_UNGUELTIG, Text(wertKw)));
+                if (!(nennleistungSkalierung > 0.0) || double.IsInfinity(nennleistungSkalierung))
+                    Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_SKALIERUNG_UNGUELTIG, Text(nennleistungSkalierung)));
+                phiN = double.IsPositiveInfinity(wertKw) ? double.PositiveInfinity : 1000.0 * wertKw / nennleistungSkalierung;
+                UebergabeNennleistungHergeleitet = false;
+            }
+            else
+            {
+                if (!(AuslegungsheizlastW > 0.0) || !Endlich(AuslegungsheizlastW))
+                    Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV,
+                                         Text(AuslegungsheizlastW), Text(aN), Text(iN)));
+                phiN = AuslegungsheizlastW;
+                UebergabeNennleistungHergeleitet = true;
+            }
+
+            Uebergabe = new Uebergabekennwerte(phiN, n, vN, rN, iN);
+            Heizkurve = new Heizkurve(Uebergabe, aN, niveau, steilheit);
+
+            // Schritt E (10.1): die Vorlaufreihe — Heizkurve je Stunde am Sollwert der Stunde
+            // oder fester Vorlauf der Anlage (3.4 Punkt 4); ohne Anlagenwert der Auslegungsvorlauf.
+            var vorlauf = new double[8760];
+            if (HeizkurveAktiv)
+            {
+                Vorlaufquelle = Vorlaufquelle.Heizkurve;
+                for (int h = 0; h < 8760; h++) vorlauf[h] = Heizkurve.VorlaufC(ThetaSoll[h], ThetaOut[h]);
+            }
+            else
+            {
+                bool anlage = Endlich(vorlaufAnlageC) && vorlaufAnlageC > 0.0;
+                Vorlaufquelle = anlage ? Vorlaufquelle.Anlage : Vorlaufquelle.Auslegung;
+                VorlaufFestC = anlage ? vorlaufAnlageC : vN;
+                for (int h = 0; h < 8760; h++) vorlauf[h] = VorlaufFestC;
+            }
+            VorlaufC = vorlauf;
+        }
+
+        /// <summary>Der Tag (0 … 364) mit dem kältesten Tagesmittel der Außenluft und dieses Mittel [°C] (H10).</summary>
+        internal static int KaeltesterTag(double[] thetaOut, out double tagesmittelC)
+        {
+            int tag = 0;
+            tagesmittelC = double.PositiveInfinity;
+            for (int d = 0; d < 365; d++)
+            {
+                double summe = 0.0;
+                for (int s = 0; s < 24; s++) summe += thetaOut[d * 24 + s];
+                double mittel = summe / 24.0;
+                if (mittel < tagesmittelC)
+                {
+                    tagesmittelC = mittel;
+                    tag = d;
+                }
+            }
+            return tag;
+        }
+
+        /// <summary>
+        /// Die Temperatur an der Grundfläche am Auslegungspunkt [°C]: Außenluft → θ_out,N,
+        /// Keller → Kellertemperatur, Erdreich → Tagesmittel der Erdreichreihe am kältesten Tag.
+        /// </summary>
+        private double Grundtemperatur(int auslegungstag, double aussenN)
+        {
+            if (string.Equals(GrundRandbedingung, DbWerte.GRUND_AUSSENLUFT, StringComparison.Ordinal)) return aussenN;
+            if (string.Equals(GrundRandbedingung, DbWerte.GRUND_KELLER, StringComparison.Ordinal)) return Kellertemperatur;
+            double summe = 0.0;
+            for (int s = 0; s < 24; s++) summe += ThetaGrund[auslegungstag * 24 + s];
+            return summe / 24.0;
+        }
+
+        /// <summary>Harte Prüfregel eines Eingabewerts (9.1): benannter Fehler mit Spalte, Wert und Bereich.</summary>
+        private void Bereich(string spalte, double wert, double min, double max)
+        {
+            if (!Endlich(wert) || wert < min || wert > max)
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK_WERT_AUSSERHALB,
+                                     spalte, Text(wert), Text(min), Text(max)));
+        }
+
+        /// <summary>
+        /// Der Sollwertfahrplan mit Anlagenkopplung (4.3, H8): Ist ein Wochenprofil gepflegt,
+        /// gilt es — 168 Werte, Montag 00:00 bis Sonntag 23:00 im Ortszeit-Kalender des Laufs —,
+        /// und die Ferienzeiträume wirken darüber mit dem Ferienwert. Ohne Profil der
+        /// Bestandsfahrplan, unverändert. Der Leser ist streng (H-F10): falsche Wertzahl, keine
+        /// Zahl oder ein Wert außerhalb der Plausibilitätsgrenze ist ein benannter Fehler.
+        /// </summary>
+        private double[] SollwertfahrplanMitProfil(ProjektGebaeudeModel g, bool[] wochenende)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            AnlagenkopplungSchema.Wochenprofil p = AnlagenkopplungSchema.WochenprofilLesen(g.Sollwertprofil);
+            switch (p.Befund)
+            {
+                case AnlagenkopplungSchema.WochenprofilBefund.KeinProfil:
+                    return Sollwertfahrplan(this, wochenende);
+                case AnlagenkopplungSchema.WochenprofilBefund.FalscheWertzahl:
+                    Fehler(GebaeudeModellFehler.SollwertprofilUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_WERTZAHL,
+                                         p.Gefunden, AnlagenkopplungSchema.WOCHENWERTE));
+                    break;
+                case AnlagenkopplungSchema.WochenprofilBefund.KeineZahl:
+                    Fehler(GebaeudeModellFehler.SollwertprofilUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KEINE_ZAHL, p.Stelle));
+                    break;
+            }
+
+            double[] werte = p.Werte;
+            for (int i = 0; i < werte.Length; i++)
+                if (werte[i] < GebaeudeFestwerte.SOLLWERTPROFIL_MIN_C || werte[i] > GebaeudeFestwerte.SOLLWERTPROFIL_MAX_C)
+                    Fehler(GebaeudeModellFehler.SollwertprofilUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_WERT, i + 1, Text(werte[i]),
+                                         Text(GebaeudeFestwerte.SOLLWERTPROFIL_MIN_C), Text(GebaeudeFestwerte.SOLLWERTPROFIL_MAX_C)));
+
+            int wochentag0 = WochentagDesErstenTags(wochenende);
+            if (wochentag0 < 0)
+                Fehler(GebaeudeModellFehler.SollwertprofilUngueltig, MyResource.Resource.SIMENG_AK_SOLLWERTPROFIL_KALENDER);
+
+            SollwertprofilWirksam = true;
+            var soll = new double[8760];
+            for (int h = 0; h < 8760; h++)
+            {
+                int tag = h / 24;
+                soll[h] = Ferientage[tag]
+                    ? SollFerien
+                    : werte[((wochentag0 + tag) % 7) * 24 + h % 24];
+            }
+            return soll;
+        }
+
+        /// <summary>
+        /// Der Wochentag des ersten Tags (Montag = 0 … Sonntag = 6), aus der Wochenendmaske des
+        /// Ortszeit-Kalenders — derselben, nach der der Bestandsfahrplan das Wochenende setzt (U7).
+        /// −1, wenn die Maske kein Wochenkalender ist (Samstag und Sonntag im Sieben-Tage-Takt).
+        /// </summary>
+        internal static int WochentagDesErstenTags(bool[] wochenende)
+        {
+            if (wochenende == null || wochenende.Length < 7) return -1;
+            int ersterWe = Array.IndexOf(wochenende, true);
+            if (ersterWe < 0 || ersterWe > 6) return -1;
+            int w0 = ersterWe == 0 ? (wochenende[1] ? 5 : 6) : ((5 - ersterWe) % 7 + 7) % 7;
+            for (int d = 0; d < wochenende.Length; d++)
+                if (wochenende[d] != ((w0 + d) % 7 >= 5)) return -1;
+            return w0;
         }
 
         /// <summary>

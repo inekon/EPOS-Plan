@@ -111,6 +111,22 @@ namespace WindowsFormsApplication1
         /// <summary>Die obere Raumtemperatur, gegen die die Überhitzung gezählt ist [°C]; nur VDI-Weg.</summary>
         public double? ObereRaumtemperaturC;
 
+        // ---- Anlagenkopplung (AK1): je Gebäude schon hier, gespeichert noch nicht ----------
+        //
+        // Die drei Größen der Projektzeile (Schritt 123) je Gebäude — gebildet aus dem
+        // Heizkreis des Gebäudes. Ob sie auch nach Tab_ErgebnisGebaeude gehören (Muster E30),
+        // entscheidet die dritte Welle; bis dahin schreibt ErgebnisCtrl sie nicht. null ohne
+        // wirksame Kopplung.
+
+        /// <summary>Heizzeitgewichtetes Mittel des Vorlaufs [°C]; nur mit wirksamer Kopplung.</summary>
+        public double? VorlaufMittelC;
+
+        /// <summary>Heizzeitgewichtetes Mittel des Rücklaufs [°C]; nur mit wirksamer Kopplung.</summary>
+        public double? RuecklaufMittelC;
+
+        /// <summary>Stunden, in denen die Übergabe die Grenze war [h]; nur mit wirksamer Kopplung.</summary>
+        public double? UebergabeBegrenztStundenH;
+
         /// <summary>Rechnet das Gebäude auf dem VDI-Weg?</summary>
         public bool IstVdi6007 => Rechenweg == DbWerte.GEBAEUDE_MODELL_VDI6007;
     }
@@ -174,6 +190,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hat der Lauf Kälte erhoben? Bestimmt, ob die Kältespalten Werte oder NULL tragen.</summary>
         public bool KaelteErhoben => Kaeltebedarf_Gesamt.HasValue;
+
+        // ---- Anlagenkopplung, Wärmeteil (Schemaschritt 123, AK-S3; Anlagenkopplung 8.3) --
+        //
+        // null heißt „nicht erhoben" — kein Gebäude des Laufs rechnete gekoppelt. Wie bei der
+        // Kälteseite nimmt der Referenzlauf-Export eine NULL-Spalte nicht auf, und ein Projekt
+        // ohne Kopplung schreibt dieselben Zeilen wie vorher.
+
+        /// <summary><c>Vorlauf_Mittel</c> [°C]: Mittel des gefahrenen Vorlaufs über die Stunden mit gekoppeltem Bedarf.</summary>
+        public double? VorlaufMittelC;
+
+        /// <summary><c>Ruecklauf_Mittel</c> [°C]: dasselbe für den Rücklauf.</summary>
+        public double? RuecklaufMittelC;
+
+        /// <summary><c>Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Übergabe (mindestens eines Gebäudes) die Grenze war.</summary>
+        public double? UebergabeBegrenztStundenH;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

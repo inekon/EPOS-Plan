@@ -21,6 +21,11 @@
     /// beiden Oberflächenknoten, der Rest konvektiv an die Luft. Die Kühlleistung wirkt
     /// konvektiv an der Luft; zum Anteil <see cref="KuehlungAnteilInnenflaeche"/> greift
     /// sie an der Innenbauteiloberfläche an (Flächenkühlung, etwa eine Kühldecke).</para>
+    ///
+    /// <para><b>Anlagenkopplung (Stufe AK1, Konzept Anlagenkopplung 6.1, 10.2).</b> Mit
+    /// <see cref="Uebergabe"/> ≠ <c>null</c> ist die Heizung keine ideale Regelung mehr, sondern
+    /// eine Übergabe bei <see cref="VorlaufC"/> mit dem Raumregler <see cref="ReglerbandK"/>
+    /// (Schritt H). <c>null</c> heißt: der Bestandsweg, Zeichen für Zeichen.</para>
     /// </summary>
     internal readonly struct Stundenrand
     {
@@ -36,7 +41,10 @@
             double kuehlleistungMaxW = double.NaN,
             double heizungStrahlungsanteil = 0.0,
             double kuehlungAnteilInnenflaeche = 0.0,
-            double zusatzleitwertWK = 0.0)
+            double zusatzleitwertWK = 0.0,
+            Uebergabekennwerte uebergabe = null,
+            double vorlaufC = double.NaN,
+            double reglerbandK = 0.0)
         {
             ThetaOut = thetaOut;
             ThetaEq = thetaEq;
@@ -50,6 +58,9 @@
             HeizungStrahlungsanteil = heizungStrahlungsanteil;
             KuehlungAnteilInnenflaeche = kuehlungAnteilInnenflaeche;
             ZusatzleitwertWK = zusatzleitwertWK;
+            Uebergabe = uebergabe;
+            VorlaufC = vorlaufC;
+            ReglerbandK = reglerbandK;
         }
 
         /// <summary>Außenlufttemperatur am masselosen Zweig [°C].</summary>
@@ -91,11 +102,29 @@
         /// </summary>
         internal double ZusatzleitwertWK { get; }
 
+        /// <summary>
+        /// Die Kennwerte der Wärmeübergabe (Anlagenkopplung AK1); <c>null</c> = ideale Regelung,
+        /// der Bestandsweg.
+        /// </summary>
+        internal Uebergabekennwerte Uebergabe { get; }
+
+        /// <summary>
+        /// Vorlauf der Stunde [°C] aus Heizkurve oder Festwert (Schritt E); NaN = Heizkurve aus
+        /// (Heizgrenze) — die Übergabe liefert dann nichts. Nur mit <see cref="Uebergabe"/>.
+        /// </summary>
+        internal double VorlaufC { get; }
+
+        /// <summary>Proportionalband Xp des Raumreglers [K]; 0 = ideale Regelung mit Grenze (H1, E25).</summary>
+        internal double ReglerbandK { get; }
+
         /// <summary>Ist eine Heizung vorhanden?</summary>
         internal bool MitHeizung => !double.IsNaN(ThetaSoll);
 
         /// <summary>Ist eine Kühlung (obere Regelgrenze der idealen Regelung) vorhanden?</summary>
         internal bool MitKuehlung => !double.IsNaN(ThetaMax) && !double.IsPositiveInfinity(ThetaMax);
+
+        /// <summary>Rechnet die Heizung als Übergabe (Anlagenkopplung, Schritt H)?</summary>
+        internal bool MitUebergabe => Uebergabe != null;
     }
 
     /// <summary>
@@ -106,6 +135,10 @@
     /// <para><b>Vorzeichen:</b> <see cref="HeizleistungW"/> und <see cref="KuehlleistungW"/>
     /// sind beide ≥ 0. Eine Stunde mit Fallwechsel kann beide größer null tragen; die
     /// Heizlast der Richtlinie ist <c>HeizleistungW − KuehlleistungW</c>.</para>
+    ///
+    /// <para><b>Anlagenkopplung (AK1).</b> Mit Übergabe trägt die Stunde zusätzlich Vorlauf,
+    /// Rücklauf zur GELIEFERTEN Leistung (H6), den überwiegenden Begrenzungsgrund und die
+    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null.</para>
     /// </summary>
     internal readonly struct Stundenergebnis
     {
@@ -120,8 +153,20 @@
             double thetaMIwMittel,
             double thetaMAwEnde,
             double thetaMIwEnde,
-            int abschnitte)
+            int abschnitte,
+            double vorlaufC = double.NaN,
+            double ruecklaufC = double.NaN,
+            Begrenzungsgrund begrenzungsgrund = Begrenzungsgrund.KeineBegrenzung,
+            double uebergabeBegrenztAnteil = 0.0,
+            double heizleistungMaxAnteil = 0.0,
+            double heizgrenzeAnteil = 0.0)
         {
+            VorlaufC = vorlaufC;
+            RuecklaufC = ruecklaufC;
+            Begrenzungsgrund = begrenzungsgrund;
+            UebergabeBegrenztAnteil = uebergabeBegrenztAnteil;
+            HeizleistungMaxAnteil = heizleistungMaxAnteil;
+            HeizgrenzeAnteil = heizgrenzeAnteil;
             HeizleistungW = heizleistungW;
             KuehlleistungW = kuehlleistungW;
             ThetaAirMittel = thetaAirMittel;
@@ -170,5 +215,29 @@
 
         /// <summary>Zahl der Abschnitte (Betriebsfälle) in dieser Stunde, ≥ 1.</summary>
         internal int Abschnitte { get; }
+
+        /// <summary>Vorlauf der Stunde [°C] (Anlagenkopplung); NaN ohne Übergabe oder jenseits der Heizgrenze.</summary>
+        internal double VorlaufC { get; }
+
+        /// <summary>
+        /// Rücklauf der Stunde [°C], θ_V − Φ̄/W_H zur gelieferten mittleren Leistung (H6, H-F2) —
+        /// das Stundenmittel des Rücklaufs bei konstantem Massenstrom; NaN wie <see cref="VorlaufC"/>.
+        /// </summary>
+        internal double RuecklaufC { get; }
+
+        /// <summary>Der Begrenzungsgrund mit dem größten Zeitanteil der Stunde (Anlagenkopplung 4.5).</summary>
+        internal Begrenzungsgrund Begrenzungsgrund { get; }
+
+        /// <summary>Zeitanteil der Stunde, in dem die Übergabe die Grenze war [–], 0 … 1.</summary>
+        internal double UebergabeBegrenztAnteil { get; }
+
+        /// <summary>Zeitanteil der Stunde, in dem <c>Heizleistung_Max</c> gekappt hat [–].</summary>
+        internal double HeizleistungMaxAnteil { get; }
+
+        /// <summary>Zeitanteil der Stunde an der Heizgrenze der Übergabe [–] (Heizkurve aus oder Vorlauf nicht über der Raumluft).</summary>
+        internal double HeizgrenzeAnteil { get; }
+
+        /// <summary>War die Übergabe in dieser Stunde die Grenze — ja/nein?</summary>
+        internal bool UebergabeBegrenzt => UebergabeBegrenztAnteil > 0.0;
     }
 }
