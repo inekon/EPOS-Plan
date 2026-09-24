@@ -183,6 +183,36 @@ Mit ''Stochastisch rechnen'' zeigt die Karte (b) den Perzentilwert der Auslegung
 
 Der Punkt gilt für die Zonen, mit denen er gerechnet wurde. Wird danach eine Zone hinzugefügt, dupliziert oder entfernt oder ändert sich ihre Nutzungsart, Bezugsgröße oder ihr Niveau, ist der Punkt überholt: Eine Zeile unter der Kopfzeile des Zapfprofils sagt es, und beim Speichern wird der Punkt verworfen – auch ein Punkt, der schon gespeichert war. Ein erneutes ''OK'' der Auslegung übernimmt den Punkt zum aktuellen Stand der Zonen. Der Name einer Zone ändert die Auslegung nicht.
 
+== Katalog der Brauchwasser-Nutzungsarten ==
+
+{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn.
+
+Die Liste führt je Nutzungsart Bezeichner, Bezugsart, Kalender, Herkunft der Bedarfswerte, Katalogversion und Stand (''Auslieferung'', ''eigen'' oder ''Import''); ein Eintrag der Auslieferung trägt ein Schloss. Neben der Liste steht das Stammblatt der gewählten Nutzungsart, nur lesend:
+
+* '''Kennwerte''' – Bezugsart, Bedarf je Einheit und Tag für die Niveaus ''niedrig'', ''mittel'' und ''hoch'' samt Bandbreite, die Zapf- und die Kaltwassertemperatur, auf die sich der Bedarf bezieht, Bilanzgrenze, Kalender und Ferienfaktor.
+* '''Tagesgang''' – der Tagesgangsatz und ein Bild des Tagesgangs je Tagtyp für eine Einheit am mittleren Niveau. ''Grafik…'' zeigt es groß, dazu die Monatsmengen je Einheit; Wochengang, Kalender, Ferien und Zirkulation wirken erst in der Rechnung des Projekts.
+* '''Jahres- und Wochengang''' – die zwölf Monatsfaktoren (Mittel 1) und die sieben Wochenfaktoren (Summe 1).
+* '''Zapfkategorien''' – je Kategorie Volumenstrom, Streuung, Dauer und Anteil; ohne Kategorien rechnet die Nutzungsart nur deterministisch.
+* '''Herkunft''' – Stand, Katalogversion, die Herkunft je Wertgruppe, die Vorlage einer abgeleiteten Version und die Projekte, die die Nutzungsart benutzen.
+
+{{Anker|katalog-sperre}}Eine Nutzungsart der Auslieferung und eine Nutzungsart, die eine Zone eines Projekts benutzt, sind unveränderlich; so ändert die Pflege des Katalogs kein Ergebnis eines Projekts im Nachhinein. Andere Werte entstehen dann als neue Version mit eigener Katalogversion, und die alte Version bleibt, wie sie ist.
+
+=== Neu, Ändern, Speichern unter ===
+
+{{Anker|katalog-editor}}''Neu…'' in der Fußleiste legt eine eigene Nutzungsart an, vorbelegt mit den Werten der gewählten. ''Ändern…'' im Kopf der Kennwerte ändert eine freie Nutzungsart an Ort und Stelle; bei einer unveränderlichen Nutzungsart öffnet es als ''Speichern unter'' und nennt den Grund. ''Speichern unter…'' in der Leiste über dem Stammblatt legt die Werte als neue Nutzungsart mit eigener Katalogversion an und schlägt eine freie Katalogversion vor.
+
+Der Editor führt Bezeichner, Katalogversion, Bezugsart, Tagesgangsatz, den Bedarf der drei Niveaus mit Bandbreite, die Bezugstemperaturen, Bilanzgrenze, Kalender, Ferienfaktor und die Monatsfaktoren. Die Monatsfaktoren werden beim Speichern auf das Mittel 1 gebracht; eine Zeile nennt das Mittel vorab. Die Wochenfaktoren stehen als Text da und werden über ''Tagesgang…'' bearbeitet. Eine Wertgruppe mit neuen Werten trägt danach die Herkunft ''Eigenkonstruktion''. Fehlt eine Angabe oder sind Bezeichner und Katalogversion schon vergeben, bleibt der Editor offen und nennt den Grund.
+
+''Tagesgang…'' im Kopf des Tagesgangs und ''Kategorien…'' im Kopf der Zapfkategorien öffnen dieselben Editoren wie im Zapfprofil (siehe [[#tagesgang|Tagesgang bearbeiten]] und [[#kategorien|Zapfkategorien]]); bei einer unveränderlichen Nutzungsart entsteht dort eine neue Version, und der Katalog wählt sie.
+
+''Löschen'' entfernt eine freie Nutzungsart nach einer Rückfrage. Bei einer Nutzungsart der Auslieferung oder einer, die ein Projekt benutzt, ist ''Löschen'' gesperrt; der Hinweis nennt den Grund und die Projekte.
+
+=== Import ===
+
+{{Anker|katalog-import}}''Import…'' spielt ein Katalogpaket ein: je Tabelle eine CSV-Datei – ''Tab_TwwTagesgangsatz_STAMM.csv'', ''Tab_TwwTagesgang_STAMM.csv'', ''Tab_TwwNutzungsart_STAMM.csv'' und ''Tab_TwwZapfkategorie_STAMM.csv'' – mit Kopfzeile, Trenner Semikolon oder Komma und Zahlen mit Punkt, als ZIP-Archiv oder als Ordner; gewählt wird das Archiv oder eine Datei des Ordners. Zapfkategorien ohne Nutzungsart gelten für jede Nutzungsart des Pakets ohne eigene Kategorien.
+
+Eingespielte Nutzungsarten tragen den Stand ''Import'' und die Herkunft ''Import''; frei verfügbare und fiktive Werte behalten ihre Herkunft. Vorhandene Einträge bleiben unverändert: Steht eine Nutzungsart mit gleichem Bezeichner, gleicher Katalogversion und gleichem Inhalt schon im Katalog oder gehört sie zur Auslieferung, wird sie übersprungen; weicht der Inhalt ab, kommt sie als eigene Version „… (Import 1)“. Der Bericht nennt je Nutzungsart, ob sie angelegt, übersprungen oder abgelehnt wurde, und den Grund; eine abgelehnte Nutzungsart verletzt eine Regel des Katalogs, die übrigen kommen trotzdem. Taugt das Paket seiner Form nach nicht – eine unbekannte oder fehlende Spalte, eine falsche Feldzahl, eine Zahl mit Komma –, bleibt der Katalog unverändert, und der Bericht nennt Datei, Zeile und Spalte. Nach dem Import ist die erste neue Nutzungsart gewählt.
+
 == Simulation und monatlicher Verlauf ==
 
 Steht der Rechenweg auf ''Zapfprofil'', rechnet ''Simulation'' im Bedarfsprofil-Dialog die Zonen des Arbeitsstands – auch vor dem Speichern und ohne markiertes Bestandsprofil; die Leiste trägt dann den Vermerk ''rechnet den Zapfprofilweg''. Das Ergebnis zeigt die Brauchwassersäulen gestapelt aus Zapfung und Zirkulation und nennt die Zirkulation als eigenen Posten. Trägt eine Zone 0 oder kann das Zapfprofil nicht gerechnet werden, steht der Grund als Hinweis über den Listen.

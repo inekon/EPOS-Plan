@@ -166,6 +166,11 @@ Form_Zapfprofil.grp_Auslegung       = Brauchwasser-Zapfprofil#auslegung
 Form_Zapfprofil.grp_Konstruktor     = Brauchwasser-Zapfprofil#konstruktor
 Form_Zapfprofil.grp_Tagesgang       = Brauchwasser-Zapfprofil#tagesgang
 Form_Zapfprofil.grp_Kategorien      = Brauchwasser-Zapfprofil#kategorien
+# Der Katalog der Brauchwasser-Nutzungsarten (Menue Administration -> Brauchwasser):
+# ein Abschnitt derselben Seite; Editor und Katalogimport springen auf ihre Anker.
+Form_Brauchwasser_Nutzungsarten.btn_Help   = Brauchwasser-Zapfprofil#katalog
+Form_Brauchwasser_Nutzungsarten.grp_Editor = Brauchwasser-Zapfprofil#katalog-editor
+Form_Brauchwasser_Nutzungsarten.grp_Import = Brauchwasser-Zapfprofil#katalog-import
 
 # --- Strombedarf ----------------------------------------------------------
 Form_Stromverbraucher.btn_Help      = Stromverbraucher
