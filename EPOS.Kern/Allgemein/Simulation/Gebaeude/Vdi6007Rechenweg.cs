@@ -329,6 +329,21 @@ namespace WindowsFormsApplication1
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " führt weder Infiltration noch Nutzerlüftung noch eine " +
                           "Luftwechselrate; gerechnet wird mit der Vorgabe " +
                           e.Luftwechselrate_h.ToString("0.0#", CultureInfo.InvariantCulture) + " 1/h.");
+            if (e.Bauteilweg)
+            {
+                // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als
+                // 10 % vom aus den Schichten gerechneten abweicht (Mehrzonenkonzept 3.4).
+                int geschichtet = 0;
+                foreach (BauteilEingang b in e.Bauteile) if (b.HatSchichten) geschichtet++;
+                p.HinweisEinmal("g3-bauteilweg-" + wer,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_BAUTEILWEG, wer, e.Zone.Bezeichnung,
+                                  e.Bauteile.Count.ToString(CultureInfo.CurrentCulture),
+                                  geschichtet.ToString(CultureInfo.CurrentCulture)));
+                foreach (BauteilHerleitung herleitung in e.Parameter.Bauteilherleitung)
+                    if (herleitung.Hinweis != null)
+                        p.HinweisEinmal("g3-uwert-" + wer + "-" + herleitung.Bezeichnung,
+                                        "Gebäudemodell VDI 6007: " + wer + ", " + herleitung.Hinweis);
+            }
             if (e.AussenbauteileStrahlung && e.StundenMitGegenstrahlung < 8760)
                 p.HinweisEinmal("vdi6007-aussenbauteile-ohne-gegenstrahlung",
                     "Gebäudemodell VDI 6007: Strahlung auf Außenbauteile ist eingeschaltet; die Klimareihe führt in " +

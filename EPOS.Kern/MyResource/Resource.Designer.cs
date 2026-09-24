@@ -60047,6 +60047,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche des Gebäudes). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ANGABE_NICHT_SKALIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ANGABE_NICHT_SKALIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Schichtaufbau hat keine Schicht. ähnelt.
         /// </summary>
         public static string SIMENG_G3_AUFBAU_LEER {
@@ -60061,6 +60070,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G3_AZIMUT_FEHLT {
             get {
                 return ResourceManager.GetString("SIMENG_G3_AZIMUT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Sollwerte, Lüftung, innere Gewinne und Nutzfläche kommen aus der Gebäudezeile. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_BAUTEILWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_BAUTEILWEG", resourceCulture);
             }
         }
         
@@ -60097,6 +60115,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G3_LUFTSCHICHT_DICKE {
             get {
                 return ResourceManager.GetString("SIMENG_G3_LUFTSCHICHT_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; mehrere Zonen rechnet EPOS mit Stufe G6. Bis dahin rechnet ein Gebäude ohne Zone (Klassenweg) oder mit genau einer Zone (Bauteilweg). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_MEHRERE_ZONEN {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_MEHRERE_ZONEN", resourceCulture);
             }
         }
         
@@ -60196,6 +60223,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G3_WIDERSTAND_GL26 {
             get {
                 return ResourceManager.GetString("SIMENG_G3_WIDERSTAND_GL26", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZONE_ALTWEG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZONE_ALTWEG", resourceCulture);
             }
         }
         

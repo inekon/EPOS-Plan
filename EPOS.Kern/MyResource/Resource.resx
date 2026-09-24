@@ -3251,6 +3251,18 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_G3_UWERT_ABWEICHUNG" xml:space="preserve">
     <value>{0}: Der eingetragene U-Wert {1} W/(m²K) weicht vom aus den Schichten gerechneten {2} W/(m²K) um {3} % ab; in der Rechnung gilt der eingetragene.</value>
   </data>
+  <data name="SIMENG_G3_MEHRERE_ZONEN" xml:space="preserve">
+    <value>{0}: Das Gebäude trägt {1} Zonen; mehrere Zonen rechnet EPOS mit Stufe G6. Bis dahin rechnet ein Gebäude ohne Zone (Klassenweg) oder mit genau einer Zone (Bauteilweg).</value>
+  </data>
+  <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Sollwerte, Lüftung, innere Gewinne und Nutzfläche kommen aus der Gebäudezeile.</value>
+  </data>
+  <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche des Gebäudes).</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
+    <value>{0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>

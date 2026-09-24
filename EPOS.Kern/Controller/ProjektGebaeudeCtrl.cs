@@ -158,6 +158,10 @@ namespace WindowsFormsApplication1
                     _internalList.Add(item);
                 }
             }
+
+            // Stufe G3 (A14/E27): die Zonen der Gebäude - die eine Anschlussstelle für Lauf und
+            // Auskunft. Ohne angeschlossenen Leser trägt kein Gebäude eine Zone (Klassenweg).
+            GebaeudeZonenanschluss.Anschliessen(ID_Projekt, _internalList);
         }
 
         private static double? ZahlOderNull(DataRow row, string spalte)
