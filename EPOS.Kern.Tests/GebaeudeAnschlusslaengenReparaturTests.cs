@@ -180,7 +180,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt()
         {
-            Assert.Equal(GebaeudeAnschlusslaengenReparatur.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= GebaeudeAnschlusslaengenReparatur.SCHRITT);
             Assert.True(GebaeudeAnschlusslaengenReparatur.SCHRITT > WiederholperiodeSchema.SCHRITT);
 
             string wurzel = Repowurzel();
@@ -198,7 +198,9 @@ namespace EPOS.Kern.Tests
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.Contains("GebaeudeAnschlusslaengenReparatur.Ausfuehren()", vorrichtung);
             string stand = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Update", "SchemaStand.cs"));
-            Assert.Contains("public const int Zielversion = GebaeudeAnschlusslaengenReparatur.SCHRITT;", stand, StringComparison.Ordinal);
+            // Der Zielstand ist spaeter weitergezogen (Gebaeudesimulation G3, Schritte S-A bis S-C);
+            // SchemaStand nennt den Schritt weiter in seiner Chronik.
+            Assert.Contains("<see cref=\"GebaeudeAnschlusslaengenReparatur.SCHRITT\"/>", stand, StringComparison.Ordinal);
 
             string pfad = Path.Combine(wurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");
             if (!File.Exists(pfad)) return;
