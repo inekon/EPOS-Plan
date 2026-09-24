@@ -1208,6 +1208,27 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_BPF_RECHENWEG_NUR_BW, ex.Message);
     }
 
+    /// <summary>
+    /// <b>Die Überlagerung „Brauchwasser-Zapfprofil" ist eine EIGENE Maske</b> (Welle #458,
+    /// Stufe 3a): Solange sie offen steht, meint der Assistent sie; geht sie zu, meint er
+    /// wieder die Bedarfsprofile.
+    /// </summary>
+    [Fact]
+    public void Das_offene_Zapfprofil_ist_die_aktive_Maske_des_Assistenten()
+    {
+        KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete - ohne Reste anderer Fälle
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { });
+        Assert.Equal(KiMaskennamen.BEDARFSPROFILE, KiMaskenbruecke.AktiveMaske());
+
+        ZapfprofilKnopf(cut)!.Click();
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL));
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL, KiMaskenbruecke.AktiveMaske());
+
+        cut.FindAll(".epos-ueberlagerung-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL));
+        Assert.Equal(KiMaskennamen.BEDARFSPROFILE, KiMaskenbruecke.AktiveMaske());
+    }
+
     /// <summary>Ohne gespeichertes Projekt nennt die Absage den Grund der Hülle (ZU10).</summary>
     [Fact]
     public void Ohne_gespeichertes_Projekt_nennt_der_Assistent_den_Grund_der_Huelle()

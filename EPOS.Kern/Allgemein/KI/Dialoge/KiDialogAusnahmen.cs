@@ -210,12 +210,6 @@ namespace WindowsFormsApplication1
                            "Die Wahl stellt nur das Bild der Größenrechnung ein."),
 
             // ---- Offen: Stufe 3 (nach dem Merge der Zapfprofil-Sitzung) --------------
-            new KiAusnahme("ZapfprofilDialog", KiAusnahmegrund.Offen,
-                           "Der Zapfprofilgenerator wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,
-                           hilfeschluessel: "Form_Zapfprofil.btn_Help"),
-            new KiAusnahme("ZapfprofilAuslegungDialog", KiAusnahmegrund.Offen,
-                           "Die Zapfprofilauslegung wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,
-                           hilfeschluessel: "Form_Zapfprofil.btn_Help"),
             new KiAusnahme("BedarfstagKonstruktor", KiAusnahmegrund.Offen,
                            "Der Bedarfstag-Konstruktor wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,
                            hilfeschluessel: "Form_Zapfprofil_Berechnung")
@@ -279,9 +273,14 @@ namespace WindowsFormsApplication1
         /// Eine <see cref="KiAusnahmegrund.Offen"/>-Maske ist nicht BEWUSST ausgenommen,
         /// sondern noch nicht angebunden; ihre Absage sagt das.
         /// </remarks>
-        public static string Absage(string hilfeschluessel)
+        public static string Absage(string hilfeschluessel) => AbsageFuer(FuerHilfeschluessel(hilfeschluessel));
+
+        /// <summary>
+        /// Die Absage zu einem Eintrag — derselbe Satz wie über seinen Hilfeschlüssel;
+        /// <c>null</c> ohne Eintrag.
+        /// </summary>
+        public static string AbsageFuer(KiAusnahme a)
         {
-            KiAusnahme a = FuerHilfeschluessel(hilfeschluessel);
             if (a == null) return null;
 
             string vorlage = a.Grund == KiAusnahmegrund.Offen

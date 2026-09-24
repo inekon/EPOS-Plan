@@ -46,7 +46,13 @@
    gesperrt mit Grund.
 
    ENTPRELLT. Jede Eingabe rechnet neu, erst EntprellungMs nach der letzten (0 = sofort,
-   bunit). *@
+   bunit).
+
+   HILFE-ASSISTENT (Welle #458, Stufe 3a). Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.ZAPFPROFIL_AUSLEGUNG), solange sie offen steht - angemeldet sind ihre
+   Eingaben ueber ZapfprofilAuslegungKiSicht, gesetzt auf den Wegen der Eingabefelder (jede
+   Setzung rechnet neu), dazu der empfohlene Punkt nur lesbar. Pruefen ist der Befund des OK;
+   kein Speicherweg - OK bleibt beim Anwender. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -606,6 +612,10 @@
         // Ergebnis rechnet genau EIN Lauf — gleich nebenläufig mit Ensemble, kein
         // deterministischer Vorlauf. Sein erstes Ergebnis darf den Konstruktor öffnen (4.5).
         if (_ergebnis is null && _eingabe.Stochastisch) Neurechnen(konstruktorFolgen: true);
+
+        // Welle #458, Stufe 3a: die Ueberlagerung als EIGENE Maske - solange sie offen
+        // steht; ihr Dispose meldet sie ab.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, () => KiSicht(), KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -620,6 +630,7 @@
     /// <inheritdoc/>
     public void Dispose()
     {
+        _kiMaske?.Dispose();
         EntprellungAbbrechen();
         LaufVerwerfen();
     }
@@ -1177,6 +1188,124 @@
     private static bool OhneTag(ZapfprofilAuslegungDaten? d) => d is not null && d.Gruppen.Any(g => g.KonstruktorOeffnen);
 
     // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ZapfprofilAuslegungKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die EINGABEN der Auslegung und den empfohlenen Punkt.
+    /// Gesetzt wird auf den Wegen der Eingabefelder — jede Setzung rechnet die Karten
+    /// entprellt neu, mit „Stochastisch rechnen" nebenläufig samt Ensemble.
+    /// </summary>
+    private ZapfprofilAuslegungKiSicht KiSicht() => _kiSicht ??= new ZapfprofilAuslegungKiSicht
+    {
+        BedarfstagLesen = () => BedarfstagAuswahl,
+        BedarfstagSetzen = KiBedarfstag,
+        BedarfstagEintraege = () => KiMaskenanmeldung.Eintraege(Bedarfstagwahl, e => e.Id, e => e.Text),
+
+        SpeichertemperaturLesen = () => _eingabe.SpeicherC,
+        SpeichertemperaturSetzen = w => KiWeg(() => this.SpeicherCSetzen(w)),
+        ErzeugerleistungLesen = () => _eingabe.ErzeugerKw,
+        ErzeugerleistungSetzen = w => KiZahl(Texte.LabelErzeugerleistung, w, 0, null, () => this.ErzeugerSetzen(w)),
+        UebertragerleistungLesen = () => _eingabe.UebertragerKw,
+        UebertragerleistungSetzen = w => KiZahl(Texte.LabelUebertragerleistung, w, 0, null, () => this.UebertragerSetzen(w)),
+
+        SpeicherartLesen = () => (int)_eingabe.Speicherart,
+        SpeicherartSetzen = id => KiWeg(() => this.SpeicherartSetzen(id)),
+        SpeicherartEintraege = () => KiMaskenanmeldung.Eintraege(Speicherarten, e => e.Id, e => e.Text),
+        SensorhoeheLesen = () => _eingabe.SensorhoeheAnteil,
+        SensorhoeheSetzen = w => KiZahl(Texte.LabelSensorhoehe, w, 0, 1, () => this.SensorSetzen(w)),
+        ErzeugerartLesen = () => (int)_eingabe.Erzeugerart,
+        ErzeugerartSetzen = id => KiWeg(() => this.ErzeugerartSetzen(id)),
+        ErzeugerartEintraege = () => KiMaskenanmeldung.Eintraege(Erzeugerarten, e => e.Id, e => e.Text),
+        WerkstoffLesen = () => (int)_eingabe.Werkstoff,
+        WerkstoffSetzen = id => KiWeg(() => this.WerkstoffSetzen(id)),
+        WerkstoffEintraege = () => KiMaskenanmeldung.Eintraege(Werkstoffe, e => e.Id, e => e.Text),
+
+        StochastischLesen = () => _eingabe.Stochastisch,
+        StochastischSetzen = an => KiWeg(() => this.StochastischSetzen(an)),
+        PerzentilLesen = () => PerzentilAuswahl,
+        PerzentilSetzen = KiPerzentil,
+        PerzentilEintraege = () => KiMaskenanmeldung.Eintraege(Perzentilwahl, e => e.Id, e => e.Text),
+        RealisierungenLesen = () => _eingabe.RealisierungenAuslegung,
+        RealisierungenSetzen = KiRealisierungen,
+
+        PunktLesen = () => _ergebnis?.Punktgruppe is { } g ? Punkttext(g) : ""
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg</b> — „OK" übernimmt Eingaben und Punkt in das Zapfprofil, und
+    /// geschrieben wird mit dem OK der Bedarfsprofile; das bleibt der Klick des Anwenders.
+    /// <b>Prüfen</b> ist der Befund des OK: die Fehleingabe, die es anhält.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = OkBefund
+    };
+
+    /// <summary>Der Befund des OK: Ein Feld mit ungültigem Text hält es an; leer = in Ordnung.</summary>
+    private string OkBefund()
+        => _fehlfelder.Count > 0 ? Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder)) : "";
+
+    /// <summary>
+    /// Der Bedarfstag wie in der Auswahlliste; eine gesperrte Quelle nennt ihren Grund, statt
+    /// still nichts zu tun.
+    /// </summary>
+    private string? KiBedarfstag(int? id)
+    {
+        int wahl = id ?? WAHL_VORGABE;
+        if (Sperrgruende.TryGetValue(wahl, out string? grund))
+            return grund.Length > 0
+                ? grund
+                : ZapfprofilKiRegeln.Gesperrt(Bedarfstagwahl.FirstOrDefault(e => e.Id == wahl).Text ?? "");
+        BedarfstagWaehlen(wahl);
+        return null;
+    }
+
+    /// <summary>Das Perzentil — es steht nur mit „Stochastisch rechnen" auf der Maske.</summary>
+    private string? KiPerzentil(int? id)
+    {
+        if (!_eingabe.Stochastisch)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelPerzentil, Texte.LabelStochastisch);
+        PerzentilSetzen(id);
+        return null;
+    }
+
+    /// <summary>Die Realisierungen des Bedarfstags — nur mit „Stochastisch rechnen", in den Grenzen des Feldes.</summary>
+    private string? KiRealisierungen(int? wert)
+    {
+        if (!_eingabe.Stochastisch)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelRealisierungen, Texte.LabelStochastisch);
+        string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelRealisierungen, wert,
+                                                   Daten.RealisierungenMindestens, Daten.RealisierungenHoechstens);
+        if (grund is not null) return grund;
+        RealisierungenSetzen(wert);
+        return null;
+    }
+
+    /// <summary>Eine Zahl in den Grenzen des Eingabefeldes (<c>Min</c>/<c>Max</c>), dann ihr Weg.</summary>
+    private static string? KiZahl(string feld, double? wert, double? min, double? max, Action weg)
+    {
+        string? grund = ZapfprofilKiRegeln.Bereich(feld, wert, min, max);
+        if (grund is not null) return grund;
+        weg();
+        return null;
+    }
+
+    /// <summary>Ein Weg ohne eigene Ablehnung.</summary>
+    private static string? KiWeg(Action weg)
+    {
+        weg();
+        return null;
+    }
+
+    // =================================================================================
     // Ergebnis
     // =================================================================================
 
@@ -1193,9 +1322,10 @@
             return;
         }
         // Ein Feld mit ungültigem Text (Realisierungen) hielte sonst still den alten Wert.
-        if (_fehlfelder.Count > 0)
+        string befund = OkBefund();
+        if (befund.Length > 0)
         {
-            _hinweis = Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder));
+            _hinweis = befund;
             return;
         }
         // Der Punkt hängt nicht am Ensemble (4.5, Empfehlung aus (a)): Ein laufendes Ensemble endet,

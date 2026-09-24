@@ -142,6 +142,10 @@ public class KiFeldwerteTests : EposBunitContext
     [InlineData(typeof(EPOS.UI.Seiten.Assistent.ProjektKopfSeite))]
     [InlineData(typeof(EPOS.UI.Seiten.Start.Startseite))]
     [InlineData(typeof(EPOS.UI.Dialoge.Admin.EinstellungenDialog))]
+    // Welle #458, Stufe 3a: die Ueberlagerungen des Zapfprofils melden sich nur an,
+    // solange sie offen stehen.
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilDialog))]
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungDialog))]
     public void Jede_angemeldete_Komponente_kann_sich_abmelden(Type komponente)
     {
         // Ohne IDisposable käme das Abmelden nie — die Anmeldung überlebte den Dialog,

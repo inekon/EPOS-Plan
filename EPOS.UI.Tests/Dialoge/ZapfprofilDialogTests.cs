@@ -1206,6 +1206,159 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Brauchwasser (Trinkwarmwasser)", vorgabe.HinweisRechenweg);
     }
 
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    /// <summary>Der Feldzugang der Maske „Brauchwasser-Zapfprofil" an der Maskenbrücke.</summary>
+    private static WindowsFormsApplication1.KiFeldzugang Zugang(string feld)
+        => WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL, feld);
+
+    /// <summary>Setzt ein Feld wie der Assistent: Text des Modells → Wert der Eigenschaft → Setzweg.</summary>
+    private static void Setze(string feld, string text)
+    {
+        WindowsFormsApplication1.KiFeldzugang z = Zugang(feld);
+        Assert.NotNull(z);
+        WindowsFormsApplication1.KiFeldumsetzung u = WindowsFormsApplication1.KiFeldwandler.Wandle(z, text);
+        Assert.True(u.Ok, u.Grund);
+        z.Setzen(u.Wert);
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Überlagerung meldet ihren
+    /// Arbeitsstand über <c>ZapfprofilKiSicht</c> an: Die Zonen sind Spalten mit dem Zonennamen
+    /// als Kennzeichen, gesetzt wird auf den Wegen der Eingabefelder — die Vorschau rechnet neu,
+    /// ein übernommener Punkt wird überholt wie von Hand. Mit dem Dialog fällt die Anmeldung.
+    /// </summary>
+    [Fact]
+    public void Der_Dialog_meldet_Stufe_und_Zonen_an_und_setzt_auf_den_Wegen_der_Felder()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.Auslegung = new ZapfprofilAuslegungEingabeDaten { PunktVolumenL = 300, PunktLeistungKw = 25 };
+        int vorschauen = 0;
+        WindowsFormsApplication1.KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete
+        var cut = Aufbauen(Daten(e), vorschau: x => { vorschauen++; return Vorschau(x); });
+
+        Assert.True(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL));
+        Assert.Equal(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL, WindowsFormsApplication1.KiMaskenbruecke.AktiveMaske());
+
+        Assert.Equal((int)ZapfprofilStufe.Einfach, Zugang("stufe").Lesen());
+        Assert.Equal(1, Zugang("zone").Lesen());
+
+        // Zwei Zonen, die Spalten tragen den Zonennamen als Kennzeichen.
+        WindowsFormsApplication1.KiFeldzugang menge2 = Zugang("bezugsmenge_2");
+        Assert.NotNull(menge2);
+        Assert.Contains("Zone 2", menge2.Feld.Anzeigename, StringComparison.Ordinal);
+        Assert.Equal(50.0, menge2.Lesen());
+        Assert.Null(Zugang("bezugsmenge_3"));
+        Assert.False(Zugang("jahresbedarf_1").Setzbar);
+
+        // Die Bezugsgröße der Zone 2 — ohne sie zu wählen; die Vorschau rechnet neu, der Punkt ist überholt.
+        Setze("bezugsmenge_2", "60");
+        cut.Render();
+        Assert.Equal(60.0, cut.Instance.Eingabe.Zonen[1].Bezugsmenge);
+        Assert.Equal(1, vorschauen);
+        Assert.Equal(60000.0, cut.Instance.AktuelleVorschau!.Zonen[1].JahresbedarfZapfungKwh);
+        Assert.True(cut.Instance.Eingabe.PunktUeberholt);
+        Assert.Null(cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.Contains("60", Zugang("jahresbedarf_2").Lesen() as string, StringComparison.Ordinal);
+
+        // Nutzungsart und Niveau über ihre Wahl, der Name als Text.
+        Setze("nutzungsart_1", "Büro B");
+        Setze("niveau_1", "hoch");
+        Setze("zonenname_1", "Wohnen");
+        cut.Render();
+        Assert.Equal(2, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
+        Assert.Equal(ZapfprofilNiveau.Hoch, cut.Instance.Eingabe.Zonen[0].Niveau);
+        Assert.Equal("Wohnen", cut.Instance.Eingabe.Zonen[0].Name);
+        Assert.Contains("Wohnen", Zugang("zonenname_1").Feld.Anzeigename, StringComparison.Ordinal);
+
+        // Die Zone wählen wie ein Klick in die Liste: ihr Eingabeblock steht.
+        Setze("zone", "Zone 2");
+        cut.Render();
+        Assert.Equal(2, Zugang("zone").Lesen());
+        Assert.Equal("Zone 2", Feld(cut, "Zonenname").GetAttribute("value"));
+
+        // „Anzeigen für" wählt die Ansicht der Vorschau.
+        Setze("ansicht", "Wohnen");
+        Assert.Equal(1, Zugang("ansicht").Lesen());
+
+        cut.Instance.Dispose();
+        Assert.False(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL));
+    }
+
+    /// <summary>
+    /// <b>Was die Maske sperrt oder nicht zeigt, lehnt der Assistent benannt ab</b>: eine
+    /// gesperrte Nutzungsart mit ihrem Grund, die Stufe „Erweitert" mit dem ihren, Seed und
+    /// Realisierungen, solange Stufe bzw. Rechenweg sie nicht zeigen, und Werte außerhalb der
+    /// Grenzen des Feldes. In der Stufe Experte gehen sie durch.
+    /// </summary>
+    [Fact]
+    public void Gesperrtes_und_Verdecktes_lehnt_der_Assistent_benannt_ab()
+    {
+        var cut = Aufbauen();
+        var texte = new ZapfprofilTexte();
+
+        var gesperrt = Assert.Throws<InvalidOperationException>(() => Zugang("nutzungsart_1").Setzen(3));
+        Assert.Equal("Der Tagesgangsatz dieser Nutzungsart ist unvollständig.", gesperrt.Message);
+        Assert.Equal(1, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
+
+        var erweitert = Assert.Throws<InvalidOperationException>(() => Zugang("stufe").Setzen((int)ZapfprofilStufe.Erweitert));
+        Assert.Equal(texte.GrundNochNicht, erweitert.Message);
+
+        var seed = Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(42));
+        Assert.Contains(texte.LabelSeed, seed.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.StufeExperte, seed.Message, StringComparison.Ordinal);
+        Assert.Throws<InvalidOperationException>(() => Zugang("rechenweg_jahresreihe").Setzen(1));
+
+        Setze("stufe", "Experte");
+        cut.Render();
+        Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
+
+        Setze("seed", "42");
+        Assert.Equal(42, cut.Instance.Eingabe.Seed);
+        Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(-1));
+
+        var ohneStochastik = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(20));
+        Assert.Contains(texte.OptionStochastisch, ohneStochastik.Message, StringComparison.Ordinal);
+
+        Setze("rechenweg_jahresreihe", "stochastisch");
+        cut.Render();
+        Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
+
+        var zuViel = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(5000));
+        Assert.Contains("1000", zuViel.Message, StringComparison.Ordinal);
+        Setze("realisierungen", "20");
+        Assert.Equal(20, cut.Instance.Eingabe.Realisierungen);
+
+        // Ein geleertes Feld steht für die Vorgabe — wie von Hand.
+        Setze("seed", "");
+        Assert.Equal(1, cut.Instance.Eingabe.Seed);
+    }
+
+    /// <summary>
+    /// <b>Prüfen ist der Befund des OK</b> — dieselbe Pflichtprüfung, ohne dass sich etwas
+    /// schließt; <b>einen Speicherweg gibt es nicht</b>: OK bleibt beim Anwender, geschrieben
+    /// wird mit dem OK der Bedarfsprofile.
+    /// </summary>
+    [Fact]
+    public void Pruefen_ist_der_Befund_des_OK_und_speichern_gibt_es_nicht()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        bool geschlossen = false;
+        var meldung = new ZapfprofilMeldung("ZPG_EINGABE_BEZUG", "Zone 1", "Zone 1: Bezugsgröße fehlt.",
+                                            ZapfprofilMeldungsart.Fehler);
+        var cut = Aufbauen(pruefen: _ => new[] { meldung }, geschlossen: x => { geschlossen = true; ergebnis = x; });
+
+        WindowsFormsApplication1.KiMaskenhaken haken =
+            WindowsFormsApplication1.KiMaskenbruecke.Haken(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL);
+        Assert.Equal("Zone 1: Bezugsgröße fehlt.", haken.Befund());
+        Assert.Null(haken.Speichern);
+        Assert.False(haken.IstSchreibgeschuetzt());
+        Assert.False(geschlossen);
+        Assert.Null(ergebnis);
+    }
+
     private static string Pfad(params string[] teile) => Path.Combine(new[] { Wurzel() }.Concat(teile).ToArray());
 
     private static string Wurzel([CallerFilePath] string eigeneDatei = "")

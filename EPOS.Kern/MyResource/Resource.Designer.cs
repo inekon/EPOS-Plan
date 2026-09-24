@@ -37844,6 +37844,240 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_BEDARFSTAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_BEDARFSTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Erzeugerart am Speicher (Kessel oder Wärmepumpe) — eine Laufangabe für die Schätzung des Wärmeübertragers; sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_ERZEUGERART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_ERZEUGERART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistung des Erzeugers am Speicher, nicht negativ; leer = angesetzte Ladeleistung. Die Nachweisleistung ist das Kleinere aus Erzeuger und Wärmeübertrager. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Auslegungsperzentil, P95 oder P99. Steht nur mit „Stochastisch rechnen“ auf der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_PERZENTIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_PERZENTIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der empfohlene Auslegungspunkt — beim Speicher Volumen und Leistung, sonst die Minutenspitze; OK übernimmt ihn in das Zapfprofil. Ergebnis, nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_PUNKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_PUNKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Bedarfstage das Ensemble zieht; leer = Vorgabe des Kerns. Unter der Mindestzahl ist das Perzentil nicht belastbar. Steht nur mit „Stochastisch rechnen“ auf der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_REALISIERUNGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_REALISIERUNGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe des Temperaturfühlers als Anteil der Speicherhöhe, von 0 bis 1; leer = Vorgabe des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_SENSORHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_SENSORHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladespeicher oder gemischter Speicher — sie bestimmt die Summenlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_SPEICHERART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_SPEICHERART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur des Speichers; leer = Vorgabe des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit; der Lauf rechnet nebenläufig. Eine Laufangabe; sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_STOCHASTISCH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_STOCHASTISCH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistung des Wärmeübertragers, nicht negativ; leer = aus U·A, Fläche oder der Schätzformel der Erzeugerart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Werkstoff des Wärmeübertragers (Stahl oder Edelstahl) — eine Laufangabe; sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_WERKSTOFF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_WERKSTOFF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Zonen oder eine Zone. Ändert nur die Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ANSICHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ANSICHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Menge der Zone in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_BEZUGSMENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_BEZUGSMENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresbedarf der Zapfung der Zone aus der aktuellen Vorschau; „–“ ohne gerechnete Vorschau. Nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_JAHRESBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_JAHRESBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bedarfsniveau der Zone — niedrig, mittel oder hoch; es wählt den spezifischen Bedarf der Nutzungsart je Einheit und Tag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_NIVEAU_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_NIVEAU_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht nur mit „{1}“ auf der Maske — bitte zuerst das wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_NUR_MIT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_NUR_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart der Zone aus dem Katalog; sie bestimmt Bezugsgröße, Tagesgang und den spezifischen Bedarf je Niveau. Pflichtfeld für OK; eine gesperrte Nutzungsart nennt ihren Grund. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_NUTZUNGSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_NUTZUNGSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Jahre der stochastische Lauf zieht, um die Konsistenz zu prüfen; leer = Vorgabe. Steht in der Stufe „Experte“ beim Rechenweg „stochastisch“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_REALISIERUNGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_REALISIERUNGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Jahresreihe in die Bilanz geht: die deterministische oder das stochastisch gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Steht ab der Stufe „Experte“; die Vorschau bleibt deterministisch. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_RECHENWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_RECHENWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zufallssaat, ganze Zahl ab 0; leer = Vorgabe. Derselbe Seed zieht dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung. Steht in der Stufe „Experte“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_SEED_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_SEED_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_STUFE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_STUFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Zeile steht nicht mehr in der Liste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZEILE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZEILE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Zone; Pflichtfeld für OK. Er benennt die Zone in Liste, Vorschau und Meldungen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZONENNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZONENNAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Zone der Zonenliste, nach Nummer oder Name; ihr Eingabeblock steht unter der Liste. Die Werte jeder Zone lassen sich auch ohne Wahl über die Spalten setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_EINST_BTN_ABBRECHEN {

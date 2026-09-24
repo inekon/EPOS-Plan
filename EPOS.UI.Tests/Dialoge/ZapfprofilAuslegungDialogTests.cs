@@ -1226,4 +1226,131 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Knopf(cut, "OK").Click();
         Assert.Equal(1, gerufen);
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    /// <summary>Der Feldzugang der Überlagerung „Auslegung Brauchwasser" an der Maskenbrücke.</summary>
+    private static KiFeldzugang Zugang(string feld)
+        => KiMaskenbruecke.Feldzugang(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, feld);
+
+    /// <summary>Setzt ein Feld wie der Assistent: Text des Modells → Wert der Eigenschaft → Setzweg.</summary>
+    private static void Setze(string feld, string text)
+    {
+        KiFeldzugang z = Zugang(feld);
+        Assert.NotNull(z);
+        KiFeldumsetzung u = KiFeldwandler.Wandle(z, text);
+        Assert.True(u.Ok, u.Grund);
+        z.Setzen(u.Wert);
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Überlagerung meldet ihre
+    /// Eingaben über <c>ZapfprofilAuslegungKiSicht</c> an; gesetzt wird auf den Wegen der
+    /// Eingabefelder, und jede Setzung rechnet die Karten neu. Der Bedarfstag ist EINE Wahl aus
+    /// Quelle und Katalogtag, der empfohlene Punkt nur lesbar. Mit der Überlagerung fällt die
+    /// Anmeldung.
+    /// </summary>
+    [Fact]
+    public void Die_Auslegung_meldet_ihre_Eingaben_an_und_rechnet_je_Setzung_neu()
+    {
+        var gerechnet = new List<ZapfprofilAuslegungEingabeDaten>();
+        KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete
+        var cut = Aufbauen(StartMitStochastik(), rechnen: e => { gerechnet.Add(e); return ErgebnisZu(e); });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG));
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+        Assert.Equal(60.0, Zugang("speichertemperatur").Lesen());
+        Assert.Equal(25.0, Zugang("erzeugerleistung").Lesen());
+        Assert.Contains("300", Zugang("punkt").Lesen() as string, StringComparison.Ordinal);
+        Assert.False(Zugang("punkt").Setzbar);
+
+        Setze("speichertemperatur", "55");
+        Assert.Equal(55.0, cut.Instance.Eingabe.SpeicherC);
+        Assert.Equal(55.0, Assert.Single(gerechnet).SpeicherC);
+
+        Setze("speicherart", "gemischter Speicher");
+        Setze("erzeugerart", "Wärmepumpe");
+        Setze("werkstoff", "Edelstahl");
+        Setze("sensorhoehe", "0,6");
+        Setze("uebertragerleistung", "30");
+        cut.Render();
+        Assert.Equal(ZapfprofilSpeicherart.GemischterSpeicher, cut.Instance.Eingabe.Speicherart);
+        Assert.Equal(ZapfprofilErzeugerart.Waermepumpe, cut.Instance.Eingabe.Erzeugerart);
+        Assert.Equal(ZapfprofilWerkstoff.Edelstahl, cut.Instance.Eingabe.Werkstoff);
+        Assert.Equal(0.6, cut.Instance.Eingabe.SensorhoeheAnteil);
+        Assert.Equal(30.0, cut.Instance.Eingabe.UebertragerKw);
+        Assert.Equal(6, gerechnet.Count);
+
+        // Der Bedarfstag ist EINE Wahl: der Katalogtag setzt Quelle und Id zugleich.
+        Setze("bedarfstag", "Tag A");
+        Assert.Equal(5, cut.Instance.Eingabe.IdBedarfstag);
+        Assert.Equal(ZapfprofilBedarfstagquelle.Konstruktor, cut.Instance.Eingabe.Quelle);
+        Setze("bedarfstag", "Stundenprofil der Zonen");
+        Assert.Equal(ZapfprofilBedarfstagquelle.Stundenprofil, cut.Instance.Eingabe.Quelle);
+        Assert.Null(cut.Instance.Eingabe.IdBedarfstag);
+
+        // Mit „Stochastisch rechnen" stehen Perzentil und Realisierungen auf der Maske.
+        Setze("stochastisch", "ja");
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.EnsembleLaeuft), Frist);
+        Setze("perzentil", "P95");
+        Setze("realisierungen", "40");
+        Assert.Equal(95, cut.Instance.Eingabe.Perzentil);
+        Assert.Equal(40, cut.Instance.Eingabe.RealisierungenAuslegung);
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG));
+    }
+
+    /// <summary>
+    /// <b>Was die Maske sperrt oder nicht zeigt, lehnt der Assistent benannt ab</b>: ein
+    /// gesperrter Katalogtag und eine gesperrte Quelle mit ihrem Grund, Perzentil und
+    /// Realisierungen ohne „Stochastisch rechnen" und Zahlen außerhalb der Grenzen des Feldes.
+    /// Die Eingaben bleiben dabei stehen.
+    /// </summary>
+    [Fact]
+    public void Gesperrtes_und_Verdecktes_lehnt_die_Auslegung_benannt_ab()
+    {
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu);
+        var texte = new ZapfprofilAuslegungTexte();
+
+        var normtag = Assert.Throws<InvalidOperationException>(() => Zugang("bedarfstag").Setzen(6));
+        Assert.Equal("Das DIN-4708-Profil rechnet der Kern aus der Kennzahl.", normtag.Message);
+        var a100 = Assert.Throws<InvalidOperationException>(() => Zugang("bedarfstag").Setzen(-2));
+        Assert.Equal(texte.GrundA100, a100.Message);
+        Assert.Equal(ZapfprofilBedarfstagquelle.Vorgaberegel, cut.Instance.Eingabe.Quelle);
+
+        var perzentil = Assert.Throws<InvalidOperationException>(() => Zugang("perzentil").Setzen(95));
+        Assert.Contains(texte.LabelPerzentil, perzentil.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.LabelStochastisch, perzentil.Message, StringComparison.Ordinal);
+        Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(40));
+
+        Assert.Throws<InvalidOperationException>(() => Zugang("sensorhoehe").Setzen(1.5));
+        var negativ = Assert.Throws<InvalidOperationException>(() => Zugang("erzeugerleistung").Setzen(-5.0));
+        Assert.Contains(texte.LabelErzeugerleistung, negativ.Message, StringComparison.Ordinal);
+        Assert.Equal(25.0, cut.Instance.Eingabe.ErzeugerKw);
+        Assert.Null(cut.Instance.Eingabe.SensorhoeheAnteil);
+    }
+
+    /// <summary>
+    /// <b>Prüfen ist der Befund des OK</b> (die Fehleingabe, die es anhält);
+    /// <b>einen Speicherweg gibt es nicht</b> — OK übernimmt in das Zapfprofil, und das bleibt
+    /// der Klick des Anwenders.
+    /// </summary>
+    [Fact]
+    public void Pruefen_nennt_die_Fehleingabe_und_speichern_gibt_es_nicht()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu, geschlossen: _ => gerufen++);
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG);
+        Assert.Equal("", haken.Befund());
+        Assert.Null(haken.Speichern);
+
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Feld(cut, "Realisierungen des Bedarfstags").Input("0");
+
+        Assert.Equal("Bitte die markierten Felder berichtigen: Realisierungen des Bedarfstags.", haken.Befund());
+        Assert.Equal(0, gerufen);
+    }
 }
