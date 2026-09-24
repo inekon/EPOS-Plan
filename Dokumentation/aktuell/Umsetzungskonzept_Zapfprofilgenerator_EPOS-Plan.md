@@ -527,9 +527,13 @@ Lauf rechnet sie neu. Die Liste der Speicher-Nenninhalte ist keine Tabelle, sond
 (`Speicherauslegung.Nenninhalt.Liste.{k}`), nicht aus dem Code (N11).
 
 **Später:** `Tab_TwwZapfkategorie_STAMM` (T2 = Schritt 115, umgesetzt in Z3 mit 16 Spalten, N12 (l); Erstfassung: `ID_Nutzungsart`, `Kategorie`, `Volumenstrom_l_min`,
-`Dauer_min`, `Anteil`, `Sigma`, Provenienz, `Status`), `Tab_TwwTyptag_IMPORT` (T3, Z4b: `Klimazone`,
-`Gebaeudeart`, `Typtag`, `Aufloesung_min`, Werte als Zeilen, `Quelle`; nie `ReadOnly`, nie in der
-Auslieferungsvorlage) und der Feiertags-/Ferienkalender **erst nach Entscheid A6**.
+`Dauer_min`, `Anteil`, `Sigma`, Provenienz, `Status`) und der Feiertags-/Ferienkalender
+**erst nach Entscheid A6**.
+
+`Tab_TwwTyptag_IMPORT` (T3) ist **umgesetzt** — Schritt 125 mit elf Spalten, Einzelheiten in
+**N14 (c)**; nie `ReadOnly`, nie in der Auslieferungsvorlage. Offen bleiben allein die drei
+Projektspalten an `Tab_TwwProjekt` für die Wahl des Anwenders (Typtagweg, Klimazone,
+Gebäudeart) — ein eigener Schemaschritt der Gruppe 2 (N14, Folge (b)).
 
 ### 3.2 Schemaschritte
 
@@ -742,8 +746,11 @@ Tagesmengen (4.7).
 **VDI-4655-Typtage (Z4b).** Der Import legt die Typtage im eigenen Modell `Tab_TwwTyptag_IMPORT` ab;
 die Klasse `Typtagzuordnung` ordnet jedem Kalendertag einen Typtag zu (Jahreszeit aus der
 Tagesmitteltemperatur, Wochentag, Bedeckung) und setzt die Tagesmenge nach der Methodik der
-Richtlinie: `Q_TT = Q_a · (1/365 + N_Pers · F_TT)` (N_Pers Personen bzw. WE der Zone), mit Klemmung auf
-`Q_TT ≥ 0` und Hinweis; `F_TT` stammt aus den eingespielten Daten, nie aus dem Produkt. Vorfragen: `Tab_Solar.Bedeckungsgrad` ist in
+Richtlinie: `Q_TT = Q_a · (1/365 + N_Pers · F_TT)` (N_Pers Personen bzw. WE der Zone); ergäbe die
+Gleichung für einen Typtag einen negativen Tagesbedarf, wird **sein Faktor auf 0 gesetzt** (Grundlagen 5,
+Abschnitt 2.5, Anmerkung zu Gl. (1)–(3); N14 (N2)) — sein Tag trägt dann `Q_a/365` —, danach skaliert die
+Reihe auf `Σ Q_d = Q_a`, beides mit Hinweis; `F_TT` stammt aus den eingespielten Daten, nie aus dem Produkt.
+Steht die Jahresreihe auf „stochastisch", zieht das Ensemble über **diese** Tagesmengen (N14 (N1)). Vorfragen: `Tab_Solar.Bedeckungsgrad` ist in
 der Testdatenbank überall leer, `Tab_Klimadaten.TagTyp_W` nur eine Näherung heiter/bewölkt
 (`KlimaImportAblauf.cs:982-995`), `Tab_Klimaregion` ohne TRY-Zone. Die Wetterkopplung ist deshalb ein
 eigener Unterpunkt Z4b mit Vorbedingung K3a/K8 (Kapitel 7); die Vorfragen sind in **N14 (d)**
@@ -809,7 +816,9 @@ Kategorien und Parameter nach der frei dokumentierten Jordan/Vajen-Parametrik (I
 Nichtwohnen zwei Kategorien nach dem OpenDHW-Muster; gekennzeichnet als Modellannahme bis Z5. Im
 Experten-Modus sind Kategorien und σ als Katalogkopie bearbeitbar (Status EIGEN). Superposition
 unabhängiger Einheiten lässt die Gleichzeitigkeit **entstehen** — es gibt keinen Eingabefaktor.
-Urlaube werden je Einheit versetzt gezogen (Entkopplung). Weil `z` aus zwölf Gleichverteilten nur
+Urlaube werden je Einheit versetzt gezogen (Entkopplung). **Auf dem Typtagweg (Z4b)** ist `Q_d,Zone`
+die Tagesmenge des Typtagjahres, `Dichte(t)` der Tagesgang seines Typtags, sofern das Paket welche
+führt, und die Urlaube werden nicht versetzt (N14 (N1)). Weil `z` aus zwölf Gleichverteilten nur
 näherungsweise normal ist, prüft der Generatortest das empirische Mittel von `max(0, μ + σz)` gegen
 `E_k` (±1 %).
 
@@ -2718,3 +2727,61 @@ die Originale bleiben lokal und gitignoriert unter `Referenzlaeufe/Normzahlen/vd
   `Werkzeuge/Auslieferungsvorlage.Tests/TwwVorlageTests.cs`) — sie sind auf erfundene Werte zu
   stellen. Außerdem führt `Dokumentation/aktuell/Konzept_TWW-Zapfprofile_WP-Plan_1.md` die
   Jahresanker und die Beispielrechnung noch im Original (Kapitel „VDI-4655-Anker").
+
+**Nachbesserung Gruppe 1 (24.09.2026) — nach der Gegenprüfung.** Die Gegenprüfung fand sieben
+Punkte; alle sind umgesetzt. Was hier steht, gilt gegenüber (e), (f) und (g) oben vor.
+
+- **(N1) Der Typtagweg trägt jetzt auch die stochastische Jahresreihe** (Befund hoch): Bisher
+  überschrieb der Rechenweg „stochastisch" den Typtagweg still — das Ensemble zog seine
+  Tagesmengen aus Formvektor, Kalender und Kaltwasserfaktor und ersetzte die Typtagreihe damit
+  vollständig; die Energieprobe warnte ohne erkennbaren Grund. Jetzt zieht das Ensemble über die
+  **Tagesmengen des Typtagjahres** (`Jahreszone.TyptagmengenKwh`, je Einheit geteilt), und führt
+  das Paket Tagesgänge, auch über die **Tagesform des Typtags** (`Typtagzuordnung.Dichten`,
+  `Tageszeitdichte.Aus(double[])`). Die Energieprobe hält die gezogene Reihe damit gegen die
+  Typtagreihe, nicht gegen den Formvektor. Die **Entkopplung der Urlaube entfällt** auf dem
+  Typtagweg — dort wirkt kein Ferienfenster (Hinweis wie bisher); ein unbrauchbarer Typtageingang
+  wird benannt abgelehnt (`EINGABE_JAHRESZONE_TYPTAGE`, `EINGABE_JAHRESZONE_TYPTAGE_URLAUB`).
+- **(N2) Nicht die Tagesmenge wird geklemmt, sondern der Faktor genullt** (gilt vor (e) und (f)):
+  Grundlagen 5, Abschnitt 2.5, Anmerkung zu Gl. (1)–(3) verlangt, für die betroffene
+  Typtagkategorie **den Faktor auf 0 zu setzen**; ihr Tag trägt dann den Mittelwertanteil
+  `Q_a/365`. Die Entscheidung fällt **je Typtag** (der Faktor ist innerhalb eines Typtags
+  derselbe), die Skalierung auf `Σ Q_d = Q_a` folgt danach. Hinweis und Warnungstitel heißen
+  jetzt `TYPTAGE_FAKTOR_NULL`.
+- **(N3) Das Tagesgangraster muss sich stündlich summieren lassen:** `Normformvektorleser`
+  verlangt neben „teilt 1440" auch „Teiler oder Vielfaches von 60"
+  (`AufloesungTauglich`) — 16 Minuten teilen den Tag, lassen sich aber nicht auf Stunden
+  zusammenfassen. Benannte Ablehnung; `TwwTyptagCtrl` hält dieselbe Schranke beim Lesen aus der
+  Tabelle. Zu (b) gehört damit: `aufloesung_min` ist ein Teiler oder ein Vielfaches von 60.
+- **(N4) Der Merkmalsdreier ist der Schlüssel:** Zwei Kategorien mit gleicher Jahreszeit, Tagart
+  und Bewölkung waren nicht unterscheidbar, die zweite blieb still ungenutzt — jetzt benannt
+  abgelehnt. Dazu eine **Mengengrenze des Archivs** wie im TRY-Paketleser, allein aus dem
+  Zentralverzeichnis und vor dem Entpacken (200 Einträge, 64 MB entpackt).
+- **(N5) Der Kaltwasserfaktor wirkt auf dem Typtagweg nicht.** Die Gleichung (3) der Richtlinie
+  kennt keine Kaltwasserkorrektur der Tagesmenge; `Kaltwassergang.Monatsfaktoren` bleibt deshalb
+  ohne Wirkung, sobald die Typtage rechnen — die Jahreszeit steckt in den Typtagfaktoren selbst.
+  Die Spreizung θ_Zapf − θ_KW(m) wirkt weiter, wo sie hingehört: in den Zapfereignissen der
+  stochastischen Reihe und in der Literanzeige.
+- **(N6) ZU23 abgeschlossen** (der offene Punkt des ZU23-Absatzes oben): Die drei Grenzwerte der
+  Proben stehen einmal als erfundene Konstanten `Typtagpaketbauer.GRENZE_WINTER`, `GRENZE_HEIZEN`
+  und `GRENZE_BEWOELKUNG` — weder Wert der Richtlinie noch abgeleiteter Wert; kein Fall hängt an
+  ihrer Höhe. `Konzept_TWW-Zapfprofile_WP-Plan_1.md` trägt die Jahresanker und die
+  Beispielrechnung jetzt aus dem Abschnitt `papierwerte` der abgeleiteten Datei samt
+  Hinweisabsatz, und in Grundlagen 5 trägt auch das Tagesband des Abschnitts 7.6 die abgeleiteten
+  Prozente. **Nachweis** (Python über `git ls-files`, 3 262 Textdateien): Keine Zeile, die einen
+  der Grenzwerte nennt, trägt noch eine Originalschreibweise (je Wert ganz, mit Punkt, mit Komma,
+  als Bruch), und keine Zeile, die VDI 4655 nennt, trägt noch eine Originalschreibweise eines
+  Papierwerts — 0 von 13 Fundstellen des Ausgangsstands (Gegenprobe gegen `6a2b351e`).
+- **(N7) Die Wache und die Proben:** Die Spanne der abgeleiteten ganzen Zahlen hat ihre eigene
+  Konstante (`GANZ_BAND` = 0,06, dieselbe Zahl wie das Skript; `BAND` = 0,059 gilt nur den reellen
+  Werten). Die Wache prüft zusätzlich die **Vollständigkeit je Abschnitt** gegen die Quelle
+  (Faktoren, Kalendertage, benutzte Quellzeilen, Zonenzahl, Summe der Vergleiche), und die
+  **Gegenprobe** der beiden Regeln läuft als eigener Fall auch ohne die lokalen Originale — also
+  in der CI. Neue Fälle: Typtagweg mit Stochastik (mit und ohne Tagesgänge), Prüfung des
+  Typtageingangs der Jahresreihe, Faktornullung, Raster 16 Minuten, zwanzig untaugliche Raster,
+  doppelter Merkmalsdreier, Archiv mit zu vielen Einträgen, Feiertag am Samstag, Klimakalender
+  ohne Kennzeichen, RFC-4180-Feld mit Anführungszeichen und Trenner.
+
+**Abnahme der Nachbesserung.** Kern-Filter 0 Fehler; voller Testlauf des Filters 0 Fehler;
+Auslieferungsvorlage-Tests grün; Windows-Schale mit `-p:EnableWindowsTargeting=true` 0 Fehler;
+Referenzlauf der fünf CI-Projekte gegen `2026-09-24_R14_Kaelteerzeuger` **PASS**;
+`ResourceDesigner` ohne Diff. Kein neuer Schemaschritt, keine neue Spalte.
