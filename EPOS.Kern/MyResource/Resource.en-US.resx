@@ -3235,6 +3235,18 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_G3_UWERT_ABWEICHUNG" xml:space="preserve">
     <value>{0}: the entered U-value {1} W/(m²K) deviates by {3} % from the value {2} W/(m²K) calculated from the layers; the calculation uses the entered value.</value>
   </data>
+  <data name="SIMENG_G3_MEHRERE_ZONEN" xml:space="preserve">
+    <value>{0}: the building has {1} zones; EPOS computes several zones with stage G6. Until then a building is computed without a zone (class method) or with exactly one zone (building-element method).</value>
+  </data>
+  <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
+    <value>VDI 6007 building model: {0} uses the building-element method with the zone “{1}” and {2} building elements, {3} of them with a layer build-up; set points, ventilation, internal gains and usable floor area come from the building record.</value>
+  </data>
+  <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
+    <value>VDI 6007 building model: {0} is computed with its zone and its building elements (actual envelope). The entry {1} {2} is neither back-calculated nor applied as a scaling factor — scaling factor 1, reference area {3} m² (usable floor area of the building).</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
+    <value>{0} is computed on the daily-balance path; its zone is not used there — only the VDI 6007 path computes the building-element method.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>

@@ -208,6 +208,13 @@ namespace WindowsFormsApplication1
         /// Stufe G6b (Mehrzonenkonzept 2.3). Kein stilles Umdeuten auf eine andere Randbedingung.
         /// </summary>
         RandbedingungNichtAbgebildet,
+
+        /// <summary>
+        /// Ein Gebäude trägt mehr als eine Zone. Stufe G3 rechnet ein Gebäude ohne Zone
+        /// (Klassenweg) oder mit genau einer Zone (Bauteilweg, Entscheid A14/E27); mehrere
+        /// Zonen rechnet EPOS mit Stufe G6. Keine stille Auswahl einer der Zonen.
+        /// </summary>
+        MehrereZonen,
     }
 
     /// <summary>

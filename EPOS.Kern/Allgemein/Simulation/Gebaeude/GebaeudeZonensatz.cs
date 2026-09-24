@@ -1,0 +1,71 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// <b>Eine Zone eines Gebäudes als Eingang des Rechenkerns</b> (Stufe G3; Mehrzonenkonzept
+    /// 1.2, 4.3; Softwarearchitektur 2.9) — Kennung, Bezeichnung und die Bauteile der Zone als
+    /// <see cref="BauteilEingang"/>. Ein Kern-Datensatz ohne Datenbank: Gefüllt wird er vom
+    /// Leser der Zonentabellen (<see cref="GebaeudeZonenanschluss"/>) oder von
+    /// <see cref="GebaeudeZonenuebernahme.AlsEineZone"/>; er hängt an
+    /// <see cref="ProjektGebaeudeModel.Zonen"/>.
+    ///
+    /// <para><b>Der Umschalter folgt der Datenlage</b> (Entscheid A14/E27): Ein Gebäude ohne
+    /// Zone rechnet den Klassenweg, bitgleich wie ohne diesen Typ; mit genau einer Zone rechnet
+    /// es den Bauteilweg; mehr als eine Zone ist in G3 ein benannter Fehler
+    /// (<see cref="GebaeudeModellFehler.MehrereZonen"/>) — mehrere Zonen rechnet EPOS mit
+    /// Stufe G6. Die Regel steht an einer Stelle: <see cref="EineZone"/>.</para>
+    ///
+    /// <para><b>Was G3 von der Zone liest: nur die Bauteile.</b> Die Parameterspalten einer
+    /// Zone (Fläche, Höhe, Sollwerte, Luftwechsel, innere Gewinne …) liest G3 nicht; es gelten
+    /// die Werte der Gebäudezeile, wie sie der Eingangsbauer auflöst (Nutzfläche, Raumhöhe,
+    /// Bauweise, Lüftung, Sollwertfahrplan, Kühl- und Übergabeeingaben). Die Zonenwerte
+    /// gehen mit Stufe G6 ein.</para>
+    ///
+    /// <para>Unveränderlich; geprüft wird im Bauteilweg, nicht beim Anlegen.</para>
+    /// </summary>
+    internal sealed class GebaeudeZonensatz
+    {
+        /// <param name="zonenId">Die Kennung der Zone (<c>Tab_Zone.ID</c>); 0 = noch nicht gespeichert.</param>
+        /// <param name="bezeichnung">Die Bezeichnung für Meldungen.</param>
+        /// <param name="bauteile">Die Bauteile der Zone; <c>null</c> = keine.</param>
+        internal GebaeudeZonensatz(int zonenId, string bezeichnung, IReadOnlyList<BauteilEingang> bauteile)
+        {
+            ZonenId = zonenId;
+            Bezeichnung = bezeichnung ?? "";
+            Bauteile = bauteile ?? Array.Empty<BauteilEingang>();
+        }
+
+        /// <summary>Die Kennung der Zone (<c>Tab_Zone.ID</c>); 0 = noch nicht gespeichert.</summary>
+        internal int ZonenId { get; }
+
+        /// <summary>Die Bezeichnung der Zone für Meldungen.</summary>
+        internal string Bezeichnung { get; }
+
+        /// <summary>Die Bauteile der Zone, in der Reihenfolge des Lesers.</summary>
+        internal IReadOnlyList<BauteilEingang> Bauteile { get; }
+
+        /// <summary>
+        /// <b>Die Regel des Umschalters</b> (A14/E27): keine Zone (<c>null</c> oder leer) →
+        /// <c>null</c>, der Klassenweg rechnet; genau eine → diese Zone, der Bauteilweg rechnet;
+        /// mehr als eine → benannter Fehler.
+        /// </summary>
+        /// <param name="zonen">Die Zonen des Gebäudes (<see cref="ProjektGebaeudeModel.Zonen"/>).</param>
+        /// <param name="wer">Die Bezeichnung des Gebäudes für die Meldung.</param>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.MehrereZonen"/>.</exception>
+        internal static GebaeudeZonensatz EineZone(IReadOnlyList<GebaeudeZonensatz> zonen, string wer)
+        {
+            if (zonen == null || zonen.Count == 0) return null;
+            if (zonen.Count > 1)
+                throw new GebaeudeModellException(GebaeudeModellFehler.MehrereZonen,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_MEHRERE_ZONEN,
+                                  wer, zonen.Count.ToString(CultureInfo.CurrentCulture)));
+            return zonen[0] ?? throw new ArgumentException("Die Zonenliste enthält einen leeren Eintrag.", nameof(zonen));
+        }
+
+        /// <summary>Hat das Gebäude mindestens eine Zone — rechnet es also nicht den Klassenweg?</summary>
+        internal static bool HatZonen(ProjektGebaeudeModel g) => g?.Zonen != null && g.Zonen.Count > 0;
+    }
+}

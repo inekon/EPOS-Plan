@@ -823,7 +823,8 @@ namespace WindowsFormsApplication1
         /// Fläche wird im Verhältnis des angegebenen zum gerechneten Verbrauch
         /// zurückgerechnet, und der Weg rechnet ein zweites Mal auf dieser Fläche — die
         /// Reihenfolge des Bestands, weil der Tagesbilanz-Weg die Skalierung in der
-        /// Tagesrechnung trägt.</para>
+        /// Tagesrechnung trägt. Ein Gebäude mit Zone (Stufe G3) trägt seine echte Hülle und
+        /// rechnet ohne Rückrechnung und Nachmultiplikation (<see cref="EinLaufMitZone"/>).</para>
         ///
         /// <para><b>Der Index ist ein Merkplatz, kein Rang.</b> Eine Rechnung für EIN
         /// Gebäude nimmt deshalb 0 und bekommt bitgleich dasselbe Ergebnis wie dieses
@@ -880,11 +881,26 @@ namespace WindowsFormsApplication1
             _vdi6007.NennleistungSkalierung = 1.0;
             _vdi6007.Probelauf = false;
 
+            // STUFE G3 (Konzept 4.7, E8): Ein Gebäude mit Zone trägt seine echte Hülle - ein
+            // Lauf, keine Nachmultiplikation, keine Verbrauchs-Rückrechnung. Ohne Zone bleibt
+            // jeder Schritt darunter, wie er war.
+            if (ReferenceEquals(weg, _vdi6007) && GebaeudeZonensatz.HatZonen(item))
+                return EinLaufMitZone(weg, vorbereitung, item, index, ziel, gemeinsam);
+
             // Der VDI-Weg läuft EINMAL; Rückrechnung und Skalierung sind eine
             // Nachmultiplikation hinter der Weiche (F-Ü2, Rechenschritte 8.3). Der
             // Tagesbilanz-Weg geht unverändert den Bestandsweg darunter (zwei Aufrufe).
             if (!ReferenceEquals(weg, _altweg))
                 return EinLaufMitNachmultiplikation(weg, vorbereitung, item, index, ziel, gemeinsam);
+
+            // G3: Der Tagesbilanz-Weg kennt keine Zonen (keine neue Funktion im Altweg) - eine
+            // Zone an einem Gebäude auf diesem Weg wird benannt, nicht still übergangen.
+            if (GebaeudeZonensatz.HatZonen(item))
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "g3-zone-altweg-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                  MyResource.Resource.SIMENG_G3_ZONE_ALTWEG,
+                                  (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ")"));
 
             // F-A18: Der Tagesbilanz-Weg rechnet keine Anlagenkopplung - benannt, nie still. Der
             // Hinweis gilt für die Dauer des Übergangs und steht in der Löschliste der Stufe GA.
@@ -1013,6 +1029,52 @@ namespace WindowsFormsApplication1
             GebaeudeModellErgebnis ergebnis = GebaeudeErgebnisse.Ergebnis(index);
             if (ergebnis != null) GebaeudeErgebnisse.Setzen(index, ergebnis.Skaliert(faktor));
 
+            Anzahl_Bewohner = (int)item.Bewohner;
+            Wohnflaeche = item.Z_AuswahlWohnflaeche;
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Der Zweig des VDI-Wegs für ein Gebäude mit Zone</b> (Stufe G3; Konzept 4.7,
+        /// Rechenschritte 8.3, Entscheid E8): Die Zone trägt die echte Hülle, also entfällt die
+        /// Nachmultiplikation für dieses Gebäude.
+        /// <list type="bullet">
+        /// <item><b>Ein Lauf, Skalierungsfaktor 1</b> — die Reihe geht, wie sie das Modul liefert,
+        /// in den Heizkanal; das Ergebnis im Träger bleibt unskaliert.</item>
+        /// <item><b>Keine Verbrauchs-Rückrechnung.</b> Ein eingetragener Verbrauch — oder eine
+        /// Fläche, die von der Nutzfläche abweicht und im Klassenweg skaliert hätte — wird einmal
+        /// benannt im Laufprotokoll ausgewiesen, nicht still übergangen.</item>
+        /// <item><b>Nennleistung:</b> Eine fest eingetragene Nennleistung der Übergabe gilt dem
+        /// wirklichen Gebäude, und das rechnet jetzt selbst — Verhältnis 1, kein Probelauf.</item>
+        /// <item><b>Bezugsfläche</b> ist die Nutzfläche des Gebäudes (A_f, E13 — die Fläche, mit der
+        /// der Eingangsbauer rechnet; die Zonenfläche liest G3 nicht), Bewohner = Nutzfläche /
+        /// Fläche je Nutzer, ohne Skalierung. Wie im Bestandszweig werden <c>Bewohner</c> und
+        /// <c>Z_AuswahlWohnflaeche</c> an der gelesenen Zeile nachgetragen.</item>
+        /// </list>
+        /// Die Auskunft (<see cref="GebaeudeBedarfCtrl"/>) nimmt denselben Weg, weil sie dieselbe
+        /// Fassade ruft.
+        /// </summary>
+        private bool EinLaufMitZone(IGebaeudeRechenweg weg, GebaeudeVorbereitung vorbereitung,
+                                    ProjektGebaeudeModel item, int index, double[] ziel,
+                                    KlimakalenderGemeinsam gemeinsam)
+        {
+            _vdi6007.NennleistungSkalierung = 1.0;
+            _vdi6007.Probelauf = false;
+            if (!weg.Rechnen(item, index, ziel, gemeinsam, out double _)) return false;
+
+            if (!vorbereitung.IstFlaeche || item.Z_AuswahlWohnflaeche != item.Nutzflaeche)
+            {
+                System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "g3-angabe-nicht-skaliert-" + item.ID_Gebaeude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.Format(k, MyResource.Resource.SIMENG_G3_ANGABE_NICHT_SKALIERT,
+                                  (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ")",
+                                  item.Z_AuswahlWohnflaeche.ToString("0.##", k), item.Einheit ?? "",
+                                  item.Nutzflaeche.ToString("0.##", k)));
+            }
+
+            item.Z_AuswahlWohnflaeche = item.Nutzflaeche;
+            item.Bewohner = item.Nutzflaeche / item.Flaeche_Nutzer;
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
             return true;

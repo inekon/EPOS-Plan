@@ -158,6 +158,21 @@ namespace WindowsFormsApplication1
         /// <summary>Sollwert-Zeitprogramm, 168 Werte (<c>AnlagenkopplungSchema.WochenprofilLesen</c>); null = die vier Bestandssollwerte.</summary>
         public string Sollwertprofil;
 
+        // =====================================================================
+        //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
+        //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
+        //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel
+        //  (UebergabeHerleitung, Assistent) sehen nur öffentliche Felder.
+        // =====================================================================
+
+        /// <summary>
+        /// Die Zonen des Gebäudes mit ihren Bauteilen; <c>null</c> oder leer = keine Zone — dann
+        /// rechnet der VDI-Weg den Klassenweg, bitgleich wie ohne diese Eigenschaft. Genau eine
+        /// Zone rechnet den Bauteilweg; mehr als eine ist in G3 ein benannter Fehler
+        /// (<see cref="GebaeudeZonensatz.EineZone"/>).
+        /// </summary>
+        internal IReadOnlyList<GebaeudeZonensatz> Zonen { get; set; }
+
         public ProjektGebaeudeModel()
         {
             items = null;
