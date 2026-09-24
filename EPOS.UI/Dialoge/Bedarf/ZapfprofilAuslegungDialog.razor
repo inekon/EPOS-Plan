@@ -568,7 +568,7 @@
                                        Name="@KonstruktorName" Startzeilen="@_eingabe.Entwurf?.Konstruktorzeilen"
                                        Bezugsarten="@Daten.Bezugsarten" Bezugsart="@_eingabe.Entwurf?.Bezugsart"
                                        Bezugsmenge="@_eingabe.Entwurf?.Bezugsmenge"
-                                       Konstruieren="@Konstruieren" HilfeSchluessel="@HilfeRechenweg"
+                                       Konstruieren="@Konstruieren"
                                        OkText="@OkText" AbbrechenText="@AbbrechenText"
                                        TitelAnzeigen="false" Geschlossen="KonstruktorFertig" />
             }
@@ -633,8 +633,8 @@
     /// <summary>Hilfeschlüssel der Bedienung.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.btn_Help";
 
-    /// <summary>Hilfeschlüssel des Rechenwegs.</summary>
-    [Parameter] public string HilfeRechenweg { get; set; } = "Form_Zapfprofil_Berechnung";
+    /// <summary>Hilfeschlüssel des Rechenwegs der Auslegung.</summary>
+    [Parameter] public string HilfeRechenweg { get; set; } = "Form_Zapfprofil.grp_Auslegung";
 
     /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;

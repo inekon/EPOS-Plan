@@ -3575,7 +3575,7 @@ namespace WindowsFormsApplication1
         private const string AUSLEGUNG_SICHT = "ZapfprofilAuslegungKiSicht";
 
         /// <summary>
-        /// Die Auslegung Brauchwasser — zwoelf Felder aus
+        /// Die Auslegung Brauchwasser — einundzwanzig Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3591,7 +3591,10 @@ namespace WindowsFormsApplication1
         /// Bedarfstag ist eine Wahl aus Quelle UND Katalogtag in einem; gesperrte Quellen
         /// nennen ihren Grund. Perzentil und Realisierungen stehen nur mit „Stochastisch
         /// rechnen" auf der Maske und sind nur dann setzbar. Der empfohlene Punkt ist
-        /// Ergebnis und nur lesbar.
+        /// Ergebnis und nur lesbar. Die Eingaben des Verfahrensvergleichs (Ladeleistung und
+        /// Personen auto/manuell, Ladezeitfenster, nutzbarer Anteil, Zuschlag, Bezug des
+        /// Fuellstands) wirken nur auf den nachrichtlichen Vergleich; manuelle Werte sind nur
+        /// mit „manuell" wirksam.
         /// </para>
         /// <para>
         /// <b>„Bedarfstag konstruieren…" und „An Speicherauslegung uebergeben…" bleiben
@@ -3699,7 +3702,7 @@ namespace WindowsFormsApplication1
         private const string KONSTRUKTOR_SICHT = "BedarfstagKonstruktorKiSicht";
 
         /// <summary>
-        /// Der Konstruktor eines Bedarfstags nach A100 — acht Felder aus
+        /// Der Konstruktor eines Bedarfstags nach A100 — zehn Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht</c>, sieben davon SPALTEN
         /// der Zeilentabelle.
         /// </summary>
@@ -3716,7 +3719,8 @@ namespace WindowsFormsApplication1
         /// Kennzeichen. Anzahl steht nur mit einer Zapfregel, Volumen und Zapftemperatur nur
         /// bei „Volumen direkt" auf der Maske — sonst nennt die Absage, was sie bedienbar
         /// macht. Zeitfenster und Mengen tragen die Grenzen ihrer Felder. Eine Zeile legt
-        /// der Anwender an oder entfernt sie.
+        /// der Anwender an oder entfernt sie. Bezugsart und Bezugsmenge gehoeren zusammen:
+        /// die Menge ist nur mit einer Bezugsart setzbar, „ohne Bezug" nimmt sie weg.
         /// </para>
         /// </remarks>
         private static KiDialog BedarfstagKonstruktor()

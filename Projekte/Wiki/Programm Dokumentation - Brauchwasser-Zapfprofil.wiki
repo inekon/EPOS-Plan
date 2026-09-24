@@ -52,12 +52,36 @@ In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eint
 {{Anker|schaetzhilfen}}Die drei Größen folgen dem Muster ''auto/manuell'': Der '''Vorschlag''' kommt aus dem Rechenweg, ''Als manuellen Wert übernehmen'' setzt ihn als manuellen Wert, und '''Angesetzt''' nennt den Wert, der weitergeht, samt Rechenweg.
 
 * '''Tagesbedarf''' der markierten Zone – ''auto'' aus Bezugsgröße und Katalog, ''manuell'' mit eigenem Wert in kWh/d; ein Jahresmesswert setzt den Tagesbedarf über die Kalibrierung.
-* '''Ladeleistung (Gebäude)''' – mit Ladezeitfenster und dessen Beginn; sie wirkt nur auf die Auslegung, nie auf die Bilanzreihe. Den Vorschlag rechnet die Auslegung.
+* '''Ladeleistung (Gebäude)''' – mit Ladezeitfenster und dessen Beginn; sie wirkt nur auf die Auslegung, nie auf die Bilanzreihe. Den Vorschlag rechnet der Verfahrensvergleich der Auslegung zum aktuellen Stand der Zonen, sobald die Vorschau gerechnet ist und eine Zone über einen Speicher versorgt wird.
 * '''Zirkulation (Gebäude)''' – Methode ''Leitungslänge × spezifischer Verlust'', ''Anteil am Tagesbedarf'' oder ''Flächenkennwert'' mit der Lage der Leitung, dazu der manuelle Wert und der '''Leitungsinhalt''', der mit über die Großanlage nach DVGW W 551 entscheidet. Die Zirkulation bleibt eine eigene Teilreihe.
 
 === Fachwerte ===
 
-{{Anker|fachwerte}}Die Stufe ''Experte'' zeigt je Zone den spezifischen Bedarf, die Zapftemperatur, Jahresmittel und Amplitude des Kaltwassers, den Tagesgangsatz und den '''Auslastungsgang''' mit zwölf Monatsfaktoren; leer gilt jeweils der Wert des Katalogs, der grau im Feld steht. Für das Gebäude stehen das Kaltwasser der Auslegung, die Speichertemperatur, Kennwert, Fläche und Laufzeit der Zirkulation sowie die Temperatur der Literanzeige und die Schwelle der Stundenzählung für die Kennzahlen. ''Tagesgang bearbeiten…'' und ''Zapfkategorien und Streuung…'' sind gesperrt; ihr Hinweis nennt den Grund.
+{{Anker|fachwerte}}Die Stufe ''Experte'' zeigt je Zone den spezifischen Bedarf, die Zapftemperatur, Jahresmittel und Amplitude des Kaltwassers, den Tagesgangsatz und den '''Auslastungsgang''' mit zwölf Monatsfaktoren; leer gilt jeweils der Wert des Katalogs, der grau im Feld steht. Für das Gebäude stehen das Kaltwasser der Auslegung, die Speichertemperatur, Kennwert, Fläche und Laufzeit der Zirkulation sowie die Temperatur der Literanzeige und die Schwelle der Stundenzählung für die Kennzahlen. ''Tagesgang bearbeiten…'' und ''Zapfkategorien und Streuung…'' öffnen die Editoren der Nutzungsart, die die markierte Zone trägt (siehe [[#tagesgang|Tagesgang bearbeiten]] und [[#kategorien|Zapfkategorien]]); ohne Nutzungsart sind beide gesperrt, ihr Hinweis nennt den Grund.
+
+=== Tagesgang bearbeiten ===
+
+{{Anker|tagesgang}}''Tagesgang bearbeiten…'' öffnet über dem Zapfprofil den Editor des Tagesgangs. Der Tagesgang gehört zur Nutzungsart der markierten Zone und damit zum Katalog, nicht zum Projekt; die Kopfzeile nennt Nutzungsart und Tagesgangsatz.
+
+* '''Tagesgang je Tagtyp''' – je Tagtyp (''Werktag'', ''Samstag'', ''Sonn-/Feiertag'', ''Ruhetag'') 24 Stundenanteile in Prozent. Die Zeile darunter prüft die Summe: ''summiert zu 100 %'' oder die abweichende Summe, dazu die Werte nach der Normierung. ''Normieren'' rechnet den Tag auf 100 % um; ''OK'' normiert ohnehin. ''Tag kopieren'' und ''Tag einfügen'' übertragen die Anteile auf einen anderen Tagtyp.
+* '''Wochenfaktoren Mo–So''' – der Anteil jedes Wochentags an der Wochenmenge, zusammen 100 %; Sonn- und Feiertage rechnen mit dem Sonntag.
+* '''Vorlage aus dem Katalog''' – ''Vorlage laden'' übernimmt die vier Tagesgänge eines anderen Tagesgangsatzes, die Wochenfaktoren bleiben; unvollständige Sätze sind in der Auswahl gesperrt, ihr Hinweis nennt den Grund. ''Zurücksetzen'' stellt die Werte beim Öffnen wieder her.
+
+''OK'' schreibt den Tagesgang sofort in den Katalog, in einem Schritt. Gehört die Nutzungsart zur Auslieferung oder nutzt eine andere Nutzungsart oder die Expertenwahl einer Zone denselben Tagesgangsatz, ist der Editor nur lesbar: ''Als eigene Kopie bearbeiten…'' gibt die Felder frei, ''Katalogversion der Kopie'' trägt einen freien Vorschlag, und ''OK'' legt die Nutzungsart unter dieser Katalogversion als eigenen Eintrag neu an. Die markierte Zone rechnet danach mit der Kopie, der ursprüngliche Eintrag bleibt unverändert; eine Zeile unter den Knöpfen des Zapfprofils nennt, womit die Zone jetzt rechnet. ''Abbrechen'', ✕ und ''Esc'' schließen den Editor ohne Änderung.
+
+=== Zapfkategorien ===
+
+{{Anker|kategorien}}''Zapfkategorien und Streuung…'' öffnet den Editor der Zapfkategorien der Nutzungsart, die die markierte Zone trägt. Aus ihnen zieht der stochastische Rechenweg die einzelnen Zapfereignisse (siehe [[#stochastik|Stochastik]]). Die Tabelle führt je Kategorie:
+
+* '''Reihenfolge''' – die Stelle in der Liste, verschiebbar mit ''Nach oben'' und ''Nach unten'';
+* '''Kategorie''' – der Name; jeder Name steht einmal;
+* '''Volumenstrom μ''' und '''Streuung σ''' in l/min, beide mindestens 0;
+* '''Dauer''' in Minuten, 1 bis 1440;
+* '''Anteil''' – der Anteil der Kategorie an den Zapfungen. Die Anteile müssen zusammen größer 0 sein; die Rechnung normiert sie auf 1. Weicht ihre Summe von 1 ab, nennt ein Hinweis die Summe, ''OK'' bleibt frei;
+* '''Kappung''' in l/min – die Obergrenze des gezogenen Volumenstroms; leer gilt ''keine'';
+* '''Herkunft''' – woher die Zeile stammt.
+
+''Kategorie hinzufügen'' und ''Entfernen'' bearbeiten die Liste; die letzte Kategorie bleibt stehen, ''Entfernen'' nennt dann den Grund. ''Vorgabesatz laden'' ersetzt die Zeilen durch den Vorgabesatz des Katalogs, eine frei dokumentierte Modellannahme. Verstößt eine Zeile gegen eine Regel, steht der Verstoß über der Tabelle, und ''OK'' schreibt nicht. Sonst schreibt ''OK'' die Kategorien sofort in den Katalog. Ist der Eintrag gesperrt, etwa weil er zur Auslieferung gehört, ist die Tabelle nur lesbar und ihr Hinweis nennt den Grund; ''Als eigene Kopie bearbeiten…'' führt wie beim Tagesgang zu einer eigenen Kopie unter einer neuen Katalogversion, mit der die Zone danach rechnet.
 
 == Vorschau ==
 
@@ -111,7 +135,7 @@ Der Knopf '''Stochastisch rechnen''' in der Fußleiste zieht die Jahresreihe im 
 * '''Wärmeübertragerleistung''' in kW – leer wird sie aus den Angaben des Wärmeübertragers oder über eine Schätzung nach der Erzeugerart bestimmt.
 * '''Speicherart''' – ''Ladespeicher'' oder ''gemischter Speicher''.
 * '''Sensorhöhe''' – die Höhe des Temperaturfühlers als Anteil der Speicherhöhe, zwischen 0 und 1; leer gilt die Vorgabe des Katalogs.
-* '''Erzeugerart am Speicher''' und '''Werkstoff des Übertragers''' – Angaben für die Rechnung im Dialog; sie werden nicht gespeichert. Ohne Angabe setzt das Programm die Erzeugerart aus den Anlagen des Projekts an, wenn diese eindeutig sind; die Zeile unter dem Feld nennt die Herkunft.
+* '''Erzeugerart am Speicher''' und '''Werkstoff des Übertragers''' – sie werden mit dem Projekt gespeichert. Nennen die Anlagen des Projekts eindeutig eine Erzeugerart, steht sie unter dem leeren Feld als Vorschlag; ''Vorschlag wählen'' übernimmt sie. Ohne Angabe setzt das Programm diesen Vorschlag an; die Zeile unter dem Feld nennt die Herkunft.
 
 Jede Eingabe rechnet die Auslegung neu.
 
@@ -135,15 +159,23 @@ Mit ''Stochastisch rechnen'' zeigt die Karte (b) den Perzentilwert der Auslegung
 
 {{Anker|verfahrensvergleich}}Für Speichergruppen folgt der '''Verfahrensvergleich''' der Speicherauslegung. Er ist nachrichtlich und ändert den empfohlenen Punkt nicht. Die Tabelle stellt die Speichervolumen nach mehreren Verfahren nebeneinander – profilbasiert, nach DIN 4708, als Faustwert mit Gleichzeitigkeit und als klassischer Faustwert –, markiert den größten Wert und kennzeichnet Verfahren, die nur nachrichtlich mitlaufen. Deckt die Ladeleistung jede Stundenlast, zeigt das profilbasierte Verfahren „–“ statt 0 l. Kacheln nennen den größten Wert, die nächste Größe der Nenninhaltsliste, das Kriterium und den kleinsten Füllstand; das Wochenbild zeigt Zapfung, Zirkulation, Ladung und Füllstand der maßgebenden Woche. ''An Speicherauslegung übergeben…'' ist gesperrt; sein Hinweis nennt den Grund.
 
+{{Anker|vergleich-eingaben}}Die Gruppe '''Eingaben des Verfahrensvergleichs''' wirkt nur auf diesen Vergleich, nicht auf den empfohlenen Punkt; ihre Werte werden mit dem Projekt gespeichert.
+
+* '''Ladeleistung''' – ''auto'' setzt die Leistung an, die die Auslegung rechnet, ''manuell'' einen eigenen Wert in kW. Der Vorschlag steht unter dem Umschalter, ''Als manuellen Wert übernehmen'' setzt ihn; die Zeile ''Angesetzt'' nennt den Wert und seinen Rechenweg.
+* '''Ladezeitfenster''' in h/d und sein '''Beginn''' – leer gilt die Vorgabe des Katalogs; es sind dieselben Werte wie im Zapfprofil.
+* '''Personen''' – ''auto'' aus dem Mengengerüst der Zonen, ''manuell'' mit eigener Zahl.
+* '''Nutzbarer Anteil''' zwischen 0 und 1 und '''Zuschlag''' – leer gilt die Vorgabe des Katalogs; die Zeile darunter nennt den angesetzten Wert.
+* '''Bezug des Füllstands''' – das Volumen, auf das sich der Füllstand der Kachel bezieht: der Nenninhalt des empfohlenen Punkts, der Punkt selbst, der Nenninhalt des Bands oder V_max des Bands. Vorgabe ist der Nenninhalt des Punkts, sonst der Punkt.
+
 === Hinweise der Auslegung ===
 
 {{Anker|warnliste}}Die '''Hinweise''' jeder Gruppe stehen als Liste mit Stufe (''Warnung'' oder ''Hinweis''), Titel und einem Satz mit den eingesetzten Zahlen – etwa wenn der Bedarfstag fehlt oder eine Angabe außerhalb der Gültigkeit eines Verfahrens liegt. Keiner dieser Hinweise blockiert ''OK''. Bei Speichergruppen steht darunter die Zeile ''Konsistenzhinweis''; sie vergleicht die stochastische Spitze mit der Leistung des Punkts, bleibt ohne Perzentil leer und nennt den Grund.
 
 === Bedarfstag konstruieren ===
 
-{{Anker|konstruktor}}'''Bedarfstag konstruieren…''' öffnet den Konstruktor über der Auslegung. Jede Zeile beschreibt ein Zeitfenster in Stunden mit ''Beginn'' und ''Ende'' und entweder eine ''Zapfregel'' des Katalogs mit der ''Anzahl'' ihrer Vorgänge oder ein ''Volumen'' direkt mit seiner ''Zapftemperatur''; dazu ein frei benannter ''Verbraucher''. Unter der Tabelle stehen die Zapfregeln des Katalogs mit ihrem Volumen je Vorgang. ''Zeile hinzufügen'' und ''Entfernen'' bearbeiten die Liste; die letzte Zeile bleibt stehen, ''Entfernen'' nennt dann den Grund. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs. Solange das Zapfprofil geöffnet ist, bringt ein erneutes ''Bedarfstag konstruieren…'' die Zeilen des konstruierten Tages wieder mit.
+{{Anker|konstruktor}}'''Bedarfstag konstruieren…''' öffnet den Konstruktor über der Auslegung. Jede Zeile beschreibt ein Zeitfenster in Stunden mit ''Beginn'' und ''Ende'' und entweder eine ''Zapfregel'' des Katalogs mit der ''Anzahl'' ihrer Vorgänge oder ein ''Volumen'' direkt mit seiner ''Zapftemperatur''; dazu ein frei benannter ''Verbraucher''. Unter der Tabelle stehen die Zapfregeln des Katalogs mit ihrem Volumen je Vorgang. ''Zeile hinzufügen'' und ''Entfernen'' bearbeiten die Liste; die letzte Zeile bleibt stehen, ''Entfernen'' nennt dann den Grund. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs. '''Bezugsart''' und '''Bezugsmenge''' geben dem Tag einen Bezug, etwa 4 Wohneinheiten: Mit Bezug skaliert die Auslegung den Tag auf die Bezugsmenge einer Gruppe derselben Bezugsart, ''ohne Bezug'' gilt er, wie er ist. Die Bezugsmenge ist erst mit einer Bezugsart bedienbar; beides wird mit dem Tag gespeichert. Solange der Bedarfsprofil-Dialog geöffnet ist – auch wenn das Zapfprofil dazwischen geschlossen und wieder geöffnet wird –, bringt ein erneutes ''Bedarfstag konstruieren…'' die Zeilen und den Bezug des konstruierten Tages wieder mit.
 
-''OK'' prüft die Zeilen und den Namen; eine Beanstandung steht über der Tabelle, und der Konstruktor bleibt offen. Eine ungültige Zahl nennt ihr Feld mit Spalte und Zeile; einen Namen, den der Katalog schon führt, beanstandet ''OK'' mit einem freien Namen als Vorschlag. Sonst wird der Tag unter seinem Namen zum Bedarfstag der Auslegung. Gespeichert wird er mit dem Projekt, als eigener Eintrag des Katalogs; ist sein Name bis dahin vergeben, wird das Speichern abgelehnt. ''Abbrechen'', ✕ und ''Esc'' schließen den Konstruktor ohne Übernahme.
+''OK'' prüft die Zeilen und den Namen; eine Beanstandung steht über der Tabelle, und der Konstruktor bleibt offen. Eine ungültige Zahl nennt ihr Feld mit Spalte und Zeile; einen Namen, den der Katalog schon führt, beanstandet ''OK'' mit einem freien Namen als Vorschlag. Sonst wird der Tag unter seinem Namen zum Bedarfstag der Auslegung. Gespeichert wird er mit dem Projekt, als eigener Eintrag des Katalogs; ist sein Name beim Speichern schon vergeben, wird das Speichern abgelehnt. ''Abbrechen'', ✕ und ''Esc'' schließen den Konstruktor ohne Übernahme.
 
 === Übernehmen ===
 

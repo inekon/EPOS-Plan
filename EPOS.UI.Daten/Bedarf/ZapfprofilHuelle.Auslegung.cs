@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
                 ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>(
                     BedarfstagKonstruieren),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
-                ["HilfeRechenweg"] = HILFE_RECHENWEG
+                ["HilfeRechenweg"] = HILFE_AUSLEGUNG_RECHENWEG
             };
         }
 

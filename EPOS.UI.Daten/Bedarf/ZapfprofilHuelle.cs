@@ -48,8 +48,11 @@ namespace WindowsFormsApplication1
         /// <summary>Der Hilfeschlüssel des Dialogs (5.8).</summary>
         internal const string HILFE_DIALOG = "Form_Zapfprofil.btn_Help";
 
-        /// <summary>Der Hilfeschlüssel der Berechnungsseite (5.8).</summary>
+        /// <summary>Der Hilfeschlüssel des Rechenwegs der Jahresreihe (5.8).</summary>
         internal const string HILFE_RECHENWEG = "Form_Zapfprofil_Berechnung";
+
+        /// <summary>Der Hilfeschlüssel des Rechenwegs der Auslegung (5.8).</summary>
+        internal const string HILFE_AUSLEGUNG_RECHENWEG = "Form_Zapfprofil.grp_Auslegung";
 
         private const string TRENNER = " · ";
 

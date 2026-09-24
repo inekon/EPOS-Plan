@@ -157,6 +157,15 @@ Form_Zapfprofil.grp_Belegung        = Brauchwasser-Zapfprofil#belegung
 Form_Zapfprofil.grp_Schaetzhilfen   = Brauchwasser-Zapfprofil#schaetzhilfen
 Form_Zapfprofil.grp_Fachwerte       = Brauchwasser-Zapfprofil#fachwerte
 Form_Zapfprofil.grp_Warnliste       = Brauchwasser-Zapfprofil#warnliste-bilanz
+# Die Infoknoepfe "Rechenweg": im Kopf des Zapfprofils der Abschnitt Stochastik
+# (wie die Jahresreihe entsteht), im Kopf der Auslegung ihr Abschnitt, im
+# Konstruktor dessen Abschnitt. Die Editoren der Stufe Experte (Ueberlagerungen
+# "Tagesgang bearbeiten" und "Zapfkategorien und Streuung") haben je einen Anker.
+Form_Zapfprofil_Berechnung          = Brauchwasser-Zapfprofil#stochastik
+Form_Zapfprofil.grp_Auslegung       = Brauchwasser-Zapfprofil#auslegung
+Form_Zapfprofil.grp_Konstruktor     = Brauchwasser-Zapfprofil#konstruktor
+Form_Zapfprofil.grp_Tagesgang       = Brauchwasser-Zapfprofil#tagesgang
+Form_Zapfprofil.grp_Kategorien      = Brauchwasser-Zapfprofil#kategorien
 
 # --- Strombedarf ----------------------------------------------------------
 Form_Stromverbraucher.btn_Help      = Stromverbraucher
