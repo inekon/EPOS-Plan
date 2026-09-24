@@ -72970,6 +72970,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeicherte Ergebnisse nicht vollständig gelesen: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_LADEFEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_LADEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern gescheitert: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_SPEICHERFEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_SPEICHERFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gespeicherte Ergebnisse vom {0}. ähnelt.
         /// </summary>
         public static string WIRT_STATUS_STAND {
@@ -72984,6 +73002,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STATUS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_STATUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabellenvorsorge unvollständig: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_VORSORGE {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_VORSORGE", resourceCulture);
             }
         }
         

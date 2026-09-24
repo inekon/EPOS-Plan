@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 using Xunit;
@@ -462,5 +463,134 @@ namespace EPOS.Kern.Tests
                 Assert.Contains(e.KohaerenzHinweise, h => h.Text.StartsWith(
                     "Rechenstufe „Laden der Ergebnisse“ nicht ausführbar: ", StringComparison.Ordinal));
         }
+
+        // =================================================================
+        //  ETAPPE E13 (E7c3‑Q6 a) — die drei Gründe in der Oberfläche
+        // =================================================================
+
+        /// <summary>
+        /// Die Zeilen der Oberfläche: je Grund eine, in der Reihenfolge Laden, Speichern,
+        /// Vorsorge, mit dem Text des Kerns; derselbe Grund aus zwei Quellen ergibt EINE
+        /// Zeile, leere Gründe keine.
+        /// </summary>
+        [Fact]
+        public void Die_Anzeigezeilen_nennen_jeden_Grund_einmal()
+        {
+            Assert.Empty(Fehlergrund.Anzeigezeilen(null, null, null));
+            Assert.Empty(Fehlergrund.Anzeigezeilen(new[] { null, "", "  " }, "", null));
+
+            List<string> zeilen = Fehlergrund.Anzeigezeilen(
+                new[] { "SqliteException: no such table", null, "SqliteException: no such table" },
+                "FormatException: kaputt",
+                "SqliteException: no such table");
+            Assert.Equal(new[]
+            {
+                "Gespeicherte Ergebnisse nicht vollständig gelesen: SqliteException: no such table",
+                "Speichern gescheitert: FormatException: kaputt"
+            }, zeilen);
+
+            Assert.Equal(new[] { "Tabellenvorsorge unvollständig: IOException: gesperrt" },
+                         Fehlergrund.Anzeigezeilen(null, null, "IOException: gesperrt"));
+
+            // Kein Stapel: Die Zeile trägt, was Fehlergrund.Text liefert.
+            string grund = Fehlergrund.Text(new InvalidOperationException("Zeile 1\r\n   bei X.Y()"));
+            string zeile = Assert.Single(Fehlergrund.Anzeigezeilen(null, grund, null));
+            Assert.DoesNotContain("\n", zeile);
+            Assert.Equal(string.Format(Resource.WIRT_STATUS_SPEICHERFEHLER, grund), zeile);
+        }
+
+        /// <summary>
+        /// Die Statuszeile der Ergebnisseite nennt den Ladefehler des Kerns — einmal, mit
+        /// dem Text des Kerns —, statt dass die Zeilen still fehlen.
+        /// </summary>
+        [Fact]
+        public void Die_Statuszeile_nennt_den_Ladefehler_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Rechne(ctrl.LadeParameter(PROJEKT));
+            string ohne = Stand(new WirtschaftlichkeitSeiteGaben(PROJEKT, "")).Statuszeile;
+            Assert.DoesNotContain("nicht vollständig gelesen", ohne);
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " SET Zeitstempel = 'kaputt' " +
+                "WHERE ID_Projekt = " + PROJEKT);
+            string mit = Stand(new WirtschaftlichkeitSeiteGaben(PROJEKT, "")).Statuszeile;
+
+            const string anfang = "Gespeicherte Ergebnisse nicht vollständig gelesen: FormatException: ";
+            Assert.Contains(anfang, mit);
+            Assert.Equal(mit.IndexOf(anfang, StringComparison.Ordinal),
+                         mit.LastIndexOf(anfang, StringComparison.Ordinal));
+            Assert.DoesNotContain("   bei ", mit);    // kein Stapel
+        }
+
+        /// <summary>
+        /// Scheitert der Schreibweg der Referenzwahl, nennt die Statuszeile des folgenden
+        /// Ladens den Speicherfehler des Kerns — und nur dieses eine Mal.
+        /// </summary>
+        [Fact]
+        public void Die_Statuszeile_nennt_den_Speicherfehler_der_Referenzwahl_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);   // Vorsorge vor dem Auslöser
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER e13_stop BEFORE UPDATE ON " + WirtschaftlichkeitCtrl.TAB_PARAMETER +
+                " BEGIN SELECT RAISE(ABORT, 'E13-Probe'); END");
+
+            var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT, "");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            var referenz = (Func<int, WirtschaftlichkeitStand>)gaben["ReferenzGewaehlt"];
+
+            string status = referenz(PROJEKT).Statuszeile;
+            Assert.Contains("Speichern gescheitert: ", status);
+            Assert.Contains("E13-Probe", status);
+
+            string danach = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])().Statuszeile;
+            Assert.DoesNotContain("Speichern gescheitert: ", danach);
+        }
+
+        /// <summary>
+        /// Der BHKW-Dialog bekommt die Gründe des Kerns: den Speicherfehler des
+        /// Schreibwegs (einmal gelesen) und den Ladefehler nach dem Laden des gebuchten
+        /// Stands.
+        /// </summary>
+        [Fact]
+        public void Der_BHKW_Dialog_bekommt_Speicher_und_Ladefehler_des_Kerns()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Rechne(ctrl.LadeParameter(PROJEKT));
+            IReadOnlyDictionary<string, object> gaben = BhkwWirtschaftlichkeitHuelle.Gaben(PROJEKT, null, out _);
+            Assert.Equal("", gaben["Vorsorgewarnung"]);
+
+            var laden = (Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>)gaben["ErgebnisseLaden"];
+            var ladefehler = (Func<string>)gaben["Ladefehler"];
+            laden(new[] { PROJEKT });
+            Assert.Null(ladefehler());
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " SET Zeitstempel = 'kaputt' " +
+                "WHERE ID_Projekt = " + PROJEKT);
+            laden(new[] { PROJEKT });
+            Assert.StartsWith("FormatException: ", ladefehler());
+
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER e13_stop BEFORE UPDATE ON " + WirtschaftlichkeitCtrl.TAB_PARAMETER +
+                " BEGIN SELECT RAISE(ABORT, 'E13-Probe'); END");
+            var speichern = (Func<WirtschaftlichkeitParameter, bool>)gaben["SpeichereVorgaben"];
+            var speicherfehler = (Func<string>)gaben["Speicherfehler"];
+            Assert.False(speichern((WirtschaftlichkeitParameter)gaben["Parameter"]));
+            Assert.Contains("E13-Probe", speicherfehler());
+            Assert.Null(speicherfehler());   // einmal gelesen
+        }
+
+        private static WirtschaftlichkeitStand Stand(WirtschaftlichkeitSeiteGaben seite)
+            => ((Func<WirtschaftlichkeitStand>)seite.Gaben()["Laden"])();
     }
 }

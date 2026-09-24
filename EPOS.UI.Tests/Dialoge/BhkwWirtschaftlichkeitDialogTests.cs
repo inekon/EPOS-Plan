@@ -88,9 +88,15 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>? ergebnisseLaden = null,
         Func<string, int, GesetzParameter>? katalog = null,
         bool titelAnzeigen = true,
-        IReadOnlyList<string>? kwkSzenarioHinweise = null)
+        IReadOnlyList<string>? kwkSzenarioHinweise = null,
+        Func<string>? ladefehler = null,
+        Func<string>? speicherfehler = null,
+        string vorsorgewarnung = "")
     {
         return Render<BhkwWirtschaftlichkeitDialog>(p => p
+            .Add(x => x.Ladefehler, ladefehler)
+            .Add(x => x.Speicherfehler, speicherfehler)
+            .Add(x => x.Vorsorgewarnung, vorsorgewarnung)
             .Add(x => x.IdStamm, STAMM)
             .Add(x => x.StammName, "Musterprojekt")
             .Add(x => x.Anlagen, anlagen ?? ZweiAnlagen())
@@ -2264,5 +2270,99 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         zweiter.Anwenden(p);
         Assert.Null(p.SatzBest.EinspeiseverguetungKwk);
         Assert.Equal(2.0, p.SatzBest.Zinssatz);
+    }
+
+    // =====================================================================
+    // ETAPPE E13 (E7c3‑Q6 a) — Ladefehler, Speicherfehler, Vorsorgewarnung
+    // =====================================================================
+
+    /// <summary>Die Texte aller Warnbänder des Dialogs.</summary>
+    private static List<string> Baender(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut)
+        => cut.FindAll(".epos-warnbanner-text").Select(e => e.TextContent).ToList();
+
+    /// <summary>
+    /// Bricht das Laden des gebuchten Stands ab, nennt der Dialog den Ladefehler des
+    /// Kerns in einem Warnband — einmal, mit dem Text des Kerns; ohne Fehler kein Band.
+    /// </summary>
+    [Fact]
+    public void Der_Ladefehler_des_Kerns_steht_einmal_im_Dialog()
+    {
+        const string grund = "FormatException: String 'kaputt' was not recognized as a valid DateTime.";
+        var cut = Aufbauen(ergebnisseLaden: _ => Array.Empty<WirtschaftlichkeitErgebnis>(),
+                           ladefehler: () => grund);
+
+        string zeile = "Gespeicherte Ergebnisse nicht vollständig gelesen: " + grund;
+        Assert.Single(Baender(cut), t => t == zeile);
+        Assert.DoesNotContain(Baender(cut), t => t.Contains("   bei ", StringComparison.Ordinal));
+
+        var ohne = Aufbauen(ergebnisseLaden: _ => Array.Empty<WirtschaftlichkeitErgebnis>(),
+                            ladefehler: () => null!);
+        Assert.DoesNotContain(Baender(ohne), t => t.StartsWith("Gespeicherte Ergebnisse", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Wirft der Ladeweg selbst, geht der Grund nicht still verloren: Der Dialog nennt
+    /// ihn (Fehlerart und Meldung, ohne Stapel).
+    /// </summary>
+    [Fact]
+    public void Ein_werfender_Ladeweg_nennt_seinen_Grund()
+    {
+        var cut = Aufbauen(ergebnisseLaden: _ => throw new InvalidOperationException("E13-Probe"));
+        Assert.Single(Baender(cut),
+                      t => t == "Gespeicherte Ergebnisse nicht vollständig gelesen: InvalidOperationException: E13-Probe");
+    }
+
+    /// <summary>
+    /// Nennt schon eine Kohärenzzeile des Laufs denselben Grund („Rechenstufe „Laden der
+    /// Ergebnisse“ nicht ausführbar: …"), erscheint er nicht ein zweites Mal.
+    /// </summary>
+    [Fact]
+    public void Ein_Grund_aus_der_Kohaerenzzeile_erscheint_nicht_doppelt()
+    {
+        const string grund = "FormatException: kaputt";
+        var e = new WirtschaftlichkeitErgebnis
+        {
+            IdProjekt = STAMM,
+            Szenario = WirtschaftlichkeitSzenario.ERWARTET,
+            KohaerenzHinweise = new List<KohaerenzHinweis>
+            {
+                new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.WARNUNG,
+                    Text = "Rechenstufe „Laden der Ergebnisse“ nicht ausführbar: " + grund
+                }
+            }
+        };
+        var cut = Aufbauen(ergebnisseLaden: _ => new[] { e }, ladefehler: () => grund);
+
+        Assert.Single(Baender(cut), t => t.Contains(grund, StringComparison.Ordinal));
+    }
+
+    /// <summary>Die Warnung der Tabellenvorsorge steht als Warnband im Dialog.</summary>
+    [Fact]
+    public void Die_Vorsorgewarnung_steht_im_Dialog()
+    {
+        var cut = Aufbauen(vorsorgewarnung: "SqliteException: database is locked");
+        Assert.Single(Baender(cut), t => t == "Tabellenvorsorge unvollständig: SqliteException: database is locked");
+    }
+
+    /// <summary>
+    /// Scheitert der OK-Weg, nennt die Meldung neben der Zahl den Speicherfehler des
+    /// Kerns — in DEMSELBEN Fehlerband, einmal.
+    /// </summary>
+    [Fact]
+    public void Ein_gescheitertes_OK_nennt_den_Speicherfehler_des_Kerns()
+    {
+        var z = new Schreibzaehler { VorgabenAntwort = _ => false };
+        var cut = Aufbauen(speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben,
+                           speicherfehler: () => "SqliteException: SQLite Error 19: 'E13-Probe'.");
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        OkKnopf(cut).Click();
+
+        Assert.Equal("1 Angabe(n) konnten nicht gespeichert werden. "
+                     + "Speichern gescheitert: SqliteException: SQLite Error 19: 'E13-Probe'.",
+                     cut.FindAll(".epos-warnbanner-text")[^1].TextContent);
+        Assert.Single(Baender(cut), t => t.Contains("E13-Probe", StringComparison.Ordinal));
     }
 }

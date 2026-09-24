@@ -338,6 +338,9 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public void StelleTabellenSicher()
         {
+            // ETAPPE E13 (E7c3‑Q6): Die Warnung gilt für DIESE Vorsorge — seit die
+            // Oberfläche sie zeigt, darf ein längst behobener Fehler nicht stehen bleiben.
+            Vorsorgewarnung = null;
             try
             {
                 // Der Block hielt bis S4b die eigene OleDbConnection; er bleibt als
@@ -713,6 +716,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="StelleTabellenSicher"/>, <see cref="SpalteSicher"/>); <c>null</c> =
         /// keiner. Die Vorsorge bleibt still (kein Dialog beim Start), aber der Grund ist
         /// abrufbar statt verschluckt; die Folgen nennen Laden und Speichern selbst.
+        /// ETAPPE E13: Jede Vorsorge setzt sie zu Beginn zurück; Statuszeile der
+        /// Ergebnisseite und BHKW-Dialog zeigen sie (<see cref="Fehlergrund.Anzeigezeilen"/>).
         /// </summary>
         public static string Vorsorgewarnung { get; private set; }
 

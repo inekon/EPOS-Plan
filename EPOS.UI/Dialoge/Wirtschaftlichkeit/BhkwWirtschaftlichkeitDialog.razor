@@ -464,6 +464,12 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* ETAPPE E13 (E7c3-Q6 a): Ladefehler und Vorsorgewarnung des Kerns, je Grund einmal. *@
+    @foreach (string zeile in Fehlergruende())
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@zeile" />
+    }
+
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="WarnStufe.Fehler" Text="@_meldung" />
@@ -814,6 +820,25 @@
     /// (<c>WirtschaftlichkeitCtrl.SpeichereParameter</c>); <c>false</c> =
     /// fehlgeschlagen. <b>Nur im OK-Weg</b>, und erst nach den Anlagenzeilen.</summary>
     [Parameter] public Func<WirtschaftlichkeitParameter, bool>? SpeichereVorgaben { get; set; }
+
+    /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a): der Grund des zuletzt gescheiterten Schreibwegs
+    /// (<c>WirtschaftlichkeitCtrl.Speicherfehler</c> bzw. der gefangene Fehler), einmal
+    /// gelesen; <c>null</c> = keiner. Der Dialog nennt ihn neben der Meldung des OK-Wegs.
+    /// </summary>
+    [Parameter] public Func<string>? Speicherfehler { get; set; }
+
+    /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a): der Ladefehler des Kerns nach <see cref="ErgebnisseLaden"/>
+    /// (<c>WirtschaftlichkeitCtrl.Ladefehler</c>); <c>null</c> = vollständig geladen.
+    /// </summary>
+    [Parameter] public Func<string>? Ladefehler { get; set; }
+
+    /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a): die Warnung der Tabellenvorsorge beim Öffnen
+    /// (<c>WirtschaftlichkeitCtrl.Vorsorgewarnung</c>); leer = keine.
+    /// </summary>
+    [Parameter] public string Vorsorgewarnung { get; set; } = "";
 
     /// <summary>
     /// ETAPPE E9b (E9a‑Q7): die Kohärenzzeilen des ±-Knopfes der Einspeisevergütung KWK —
@@ -2065,9 +2090,43 @@
                 if (e is not null && string.Equals(e.Szenario, WirtschaftlichkeitSzenario.ERWARTET,
                                                    StringComparison.Ordinal))
                     _ergebnisCache.Add(e);
+            _ladefehler = Ladefehler?.Invoke();
         }
-        catch { /* ohne gebuchten Stand bleiben Vorschau und Herkunft leer */ }
+        catch (Exception ex)
+        {
+            // Ohne gebuchten Stand bleiben Vorschau und Herkunft leer — ETAPPE E13
+            // (E7c3‑Q6 a): und der Dialog sagt, warum.
+            _ladefehler = Fehlergrund.Text(ex);
+        }
         return _ergebnisCache;
+    }
+
+    /// <summary>ETAPPE E13: der Grund, aus dem das Laden des gebuchten Stands abbrach.</summary>
+    private string? _ladefehler;
+
+    /// <summary>
+    /// ETAPPE E13 (E7c3‑Q6 a) — Ladefehler und Vorsorgewarnung des Kerns als Zeilen
+    /// (<see cref="Fehlergrund.Anzeigezeilen"/>): jeder Grund einmal, mit dem Text des
+    /// Kerns. Ein Grund, den schon eine Kohärenzzeile des Dialogs nennt („Rechenstufe
+    /// „Laden der Ergebnisse“ nicht ausführbar: …"), erscheint nicht ein zweites Mal.
+    /// </summary>
+    public List<string> Fehlergruende()
+    {
+        Ergebnisse();   // setzt _ladefehler — unabhängig von der Reihenfolge des Zeichnens
+        var gezeigt = new List<string>();
+        foreach (KohaerenzHinweis h in AusLaufHinweise()) gezeigt.Add(h.Text);
+        foreach (KohaerenzHinweis h in Doppelpflege)
+            if (h is not null && !string.IsNullOrEmpty(h.Text)) gezeigt.Add(h.Text);
+
+        var lade = new List<string>();
+        if (!string.IsNullOrWhiteSpace(_ladefehler) &&
+            !gezeigt.Exists(t => t.EndsWith(": " + _ladefehler!.Trim(), StringComparison.Ordinal)))
+            lade.Add(_ladefehler!);
+        string vorsorge = Vorsorgewarnung;
+        if (!string.IsNullOrWhiteSpace(vorsorge) &&
+            gezeigt.Exists(t => t.EndsWith(": " + vorsorge.Trim(), StringComparison.Ordinal)))
+            vorsorge = "";
+        return Fehlergrund.Anzeigezeilen(lade, null, vorsorge);
     }
 
     /// <summary>Die Modulzeile des zuletzt gebuchten Laufs zu einer Anlage - ueber den
@@ -2307,6 +2366,9 @@
         if (fehler > 0)
         {
             _meldung = string.Format(_t.MsgFehler, fehler);
+            // ETAPPE E13 (E7c3‑Q6 a): der Grund des Kerns, einmal, ohne Stapel.
+            foreach (string zeile in Fehlergrund.Anzeigezeilen(null, Speicherfehler?.Invoke(), null))
+                _meldung += " " + zeile;
             _leiste?.Fehler();
             return;
         }
