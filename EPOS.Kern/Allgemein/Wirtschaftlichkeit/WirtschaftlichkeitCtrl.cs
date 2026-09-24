@@ -1860,10 +1860,16 @@ namespace WindowsFormsApplication1
 
                 foreach (VariantenDaten v in daten.Varianten)
                 {
-                    ProjektEingabe eingabe = BaueEingabe(v, ps, tarif, szenario);
+                    // ETAPPE E9a (V‑E): die Mengen- und Preisbasis DIESES Szenarios —
+                    // Mengenfaktor (Schritt B) und Trägerpreise (Schritt C) an einer Stelle.
+                    // Ohne Pflege (und immer für ERWARTET) dieselbe Referenz wie v.
+                    VariantenDaten vs = Szenariodaten(v, ps, szenario);
+                    ProjektEingabe eingabe = BaueEingabe(vs, ps, tarif, szenario);
+                    // Die gespeicherte Strommatrix bleibt die des ERWARTUNGSfalls: Er wird
+                    // zuerst gerechnet, und nur die erste Matrix je Projekt wird gemerkt.
                     if (eingabe.Matrix != null && !matrizen.ContainsKey(v.IdProjekt))
                         matrizen[v.IdProjekt] = eingabe.Matrix;
-                    WirtschaftlichkeitErgebnis erg = RechneProjekt(v, ps, eingabe,
+                    WirtschaftlichkeitErgebnis erg = RechneProjekt(vs, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
                     alle.Add(erg);
                     eingaben.Add(eingabe); bilder.Add(bild); ergebnisse.Add(erg);
@@ -2020,15 +2026,18 @@ namespace WindowsFormsApplication1
                     IstStamm = v.IstStamm
                 };
 
-                ProjektEingabe eingabe = BaueEingabe(v, ph, tarif, verlauf.Szenario);
-                if (v.Fehler != null || v.Ergebnis == null)
-                    serie.Fehlgrund = v.Fehler ?? "Kein Simulationsergebnis vorhanden.";
+                // ETAPPE E9a: dieselbe Mengen- und Preisbasis des Szenarios wie im Hauptlauf —
+                // sonst zeigte die Linie eines Szenarios eine andere Zahl als seine Kennzahl.
+                VariantenDaten vs = Szenariodaten(v, ph, verlauf.Szenario);
+                ProjektEingabe eingabe = BaueEingabe(vs, ph, tarif, verlauf.Szenario);
+                if (vs.Fehler != null || vs.Ergebnis == null)
+                    serie.Fehlgrund = vs.Fehler ?? "Kein Simulationsergebnis vorhanden.";
                 else if (!eingabe.Energie.HasValue)
                     // AUFTRAG #267: derselbe benannte Grund wie in RechneProjekt —
                     // der Verlauf zeigte bisher „Energiekosten nicht bestimmbar." und
                     // ließ den Anwender damit allein.
-                    serie.Fehlgrund = !string.IsNullOrEmpty(v.EnergiekostenGrund)
-                        ? v.EnergiekostenGrund : "Energiekosten nicht bestimmbar.";
+                    serie.Fehlgrund = !string.IsNullOrEmpty(vs.EnergiekostenGrund)
+                        ? vs.EnergiekostenGrund : "Energiekosten nicht bestimmbar.";
                 else
                 {
                     KapitalwertRechner.Zahlungsbild bild =
@@ -2095,6 +2104,50 @@ namespace WindowsFormsApplication1
             foreach (string szenario in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
                 modell.Laeufe[szenario] = BerechneVerlauf(daten, p, jahre, szenario, idReferenz);
             return modell;
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt B, E9a‑Q4) — der Verlauf mit allen drei Szenarien <b>über den
+        /// Betrachtungszeitraum JEDES Szenarios</b>: Ungünstig über T_Worst, Erwartet über T,
+        /// Günstig über T_Best (<see cref="WirtschaftlichkeitParameter.FuerSzenario"/>). Jede
+        /// Linie endet damit dort, wo ihr Kapitalwert steht, und ihre Gliederung
+        /// (<see cref="Zahlungsgliederungen"/>) passt zum gerechneten Ergebnis — „je Szenario
+        /// mit eigener Länge".
+        ///
+        /// <para><b>Ohne gepflegten Zeitraum ist das Zahl für Zahl
+        /// <see cref="BerechneVerlaufSzenarien"/> mit <c>p.Betrachtungszeitraum</c></b>.
+        /// <see cref="WirtschaftlichkeitVerlaufSzenarien.Jahre"/> ist der längste der drei
+        /// Zeiträume; jeder Lauf trägt seinen eigenen. Der Verlaufsdialog mit frei gewähltem
+        /// Horizont bleibt bei <see cref="BerechneVerlaufSzenarien"/>.</para>
+        /// </summary>
+        /// <param name="idReferenz">0 = die Gruppenreferenz (in Sicht 2 A) — dieselbe Kette
+        /// wie in <see cref="BerechneVerlauf(BerichtsDaten, WirtschaftlichkeitParameter, int, string, int)"/>.</param>
+        public WirtschaftlichkeitVerlaufSzenarien BerechneVerlaufSzenarienJeZeitraum(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz = 0)
+        {
+            int t = p != null ? p.Betrachtungszeitraum : 1;
+            var modell = new WirtschaftlichkeitVerlaufSzenarien { Jahre = Math.Max(1, t) };
+            if (daten == null || daten.Varianten.Count == 0 || p == null) return modell;
+            foreach (string szenario in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+            {
+                int ts = Math.Max(1, p.FuerSzenario(szenario).Betrachtungszeitraum);
+                modell.Laeufe[szenario] = BerechneVerlauf(daten, p, ts, szenario, idReferenz);
+                if (ts > modell.Jahre) modell.Jahre = ts;
+            }
+            return modell;
+        }
+
+        /// <summary>
+        /// ETAPPE E9a — hat ein Szenario einen eigenen Betrachtungszeitraum? Dann brauchen
+        /// Gliederung und Mehrjahresreihen den Verlauf
+        /// <see cref="BerechneVerlaufSzenarienJeZeitraum"/> statt eines gemeinsamen Horizonts.
+        /// </summary>
+        public static bool ZeitraumJeSzenario(WirtschaftlichkeitParameter p)
+        {
+            if (p == null) return false;
+            foreach (string szenario in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+                if (p.FuerSzenario(szenario).Betrachtungszeitraum != p.Betrachtungszeitraum) return true;
+            return false;
         }
 
         // ------------------------------------------------------------- Eingaben (W2)
@@ -2267,6 +2320,47 @@ namespace WindowsFormsApplication1
             /// die Anlagen ein zweites Mal aufzulösen.
             /// </summary>
             public SteuerEingabe SteuerEingabe;
+
+            /// <summary>ETAPPE E9a (E9a‑Q7): true, wenn das Tarif-Rollenmodell den
+            /// Stromanteil und den Einspeiseerlös dieses Laufs tatsächlich ersetzt hat.</summary>
+            public bool RollenGerechnet;
+
+            /// <summary>ETAPPE E9a: die Kohärenzzeilen des Szenariolaufs — gepflegte
+            /// Szenariowerte, die in diesem Lauf ohne Wirkung bleiben. <b>Reine Ausgabe.</b></summary>
+            public List<string> SzenarioHinweise = new List<string>();
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (vollständige Szenarioabdeckung V‑E) — <b>die Mengen- und Preisbasis
+        /// einer Variante in einem Szenario</b>, gebildet an EINER Stelle:
+        /// <list type="bullet">
+        ///   <item><description>der <b>Mengenfaktor</b> des Satzes (Schritt B, E9a‑Q2) skaliert
+        ///     das Mengengerüst des Simulationsergebnisses (<see cref="SzenarioMengen"/>),
+        ///     BEVOR es Preise, Sätze oder Kontingente trifft;</description></item>
+        ///   <item><description>die <b>Trägerpreise</b> des Szenarios (Schritt C, E9a‑Q3)
+        ///     bepreisen die Mengen: Die Energiekosten der Kopie rechnet
+        ///     <see cref="KostenEmissionRechner.Berechne(VariantenDaten, string)"/> neu —
+        ///     Arbeits-, Grund- und Leistungspreis je Träger ersetzt, wo gepflegt.</description></item>
+        /// </list>
+        /// <para><b>Für ERWARTET und ohne jede Pflege kommt <paramref name="v"/> selbst
+        /// zurück</b> — dieselbe Referenz, also Zahl für Zahl der Lauf von vor E9a. Das
+        /// Original wird nie verändert: Seite, Bericht und Kennzahlen lesen weiter die
+        /// Erwartet-Zahlen der Variante.</para>
+        /// </summary>
+        private static VariantenDaten Szenariodaten(VariantenDaten v, WirtschaftlichkeitParameter ps,
+                                                    string szenario)
+        {
+            if (v == null || v.Fehler != null || v.Ergebnis == null || ps == null) return v;
+            SzenarioSatz satz = ps.SatzFuer(szenario);
+            if (satz == null) return v;                                   // ERWARTET
+
+            double faktor = satz.MengeFaktor;                             // genau 1,0 ohne Pflege
+            bool preise = EnergietraegerPreisCtrl.SzenarioGepflegt(v.IdProjekt, szenario);
+            if (faktor == 1.0 && !preise) return v;                       // nichts gepflegt
+
+            VariantenDaten k = faktor == 1.0 ? v.Kopie() : SzenarioMengen.Variante(v, faktor);
+            KostenEmissionRechner.Berechne(k, szenario);
+            return k;
         }
 
         private ProjektEingabe BaueEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
@@ -2396,7 +2490,35 @@ namespace WindowsFormsApplication1
             // NACH beiden Pfaden ist Absicht: Jeder von ihnen führt e.ErloesPv,
             // also wird genau dieser Anteil aus dem konstanten Erlös herausgelöst.
             // Inaktiv (Aktiv = false) ändert sich NICHTS — Abnahmekriterium P4.
-            RechnePvVerguetung(v, p, e);
+            // ETAPPE E9a (Schritt D): mit DV-Entgelt und PPA-Preis DIESES Szenarios.
+            RechnePvVerguetung(v, p, e, szenario);
+
+            // ETAPPE E9a (E9a‑Q7, Empfehlung) — gepflegte Szenariowerte, die dieser Lauf nicht
+            // lesen kann, werden BENANNT statt still verschluckt. Das Rollenmodell ersetzt den
+            // Stromanteil samt Leistungspreis durch den Reststromtarif und den Einspeiseerlös
+            // durch den Einspeisetarif (RechneRollentarif) — seine Rollenpreise bleiben in
+            // allen Szenarien die Erwartet-Preise. Rechnet der Vergütungsdialog die PV-Reihe,
+            // trägt die flache Einspeisevergütung den PV-Anteil nicht mehr.
+            if (satz != null)
+            {
+                bool verguetungGepflegt = satz.Einspeiseverguetung.HasValue;
+                if (e.RollenGerechnet)
+                {
+                    if (v.SzenarioStrompreisGepflegt)
+                        e.SzenarioHinweise.Add(T("WIRT_SZ_ROLLEN_STROMPREIS",
+                            "Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — " +
+                            "Bezug, Reststrom und Einspeisung rechnen in allen Szenarien mit den " +
+                            "Preisen des Tarifsatzes."));
+                    if (verguetungGepflegt || satz.EinspeiseverguetungKwk.HasValue)
+                        e.SzenarioHinweise.Add(T("WIRT_SZ_ROLLEN_EINSPEISUNG",
+                            "Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell " +
+                            "bewertet die Einspeisung mit dem Einspeisetarif des Tarifsatzes."));
+                }
+                else if (verguetungGepflegt && e.PvVerguetung != null)
+                    e.SzenarioHinweise.Add(T("WIRT_SZ_PV_DIALOG_EINSPEISUNG",
+                        "Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet " +
+                        "der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario."));
+            }
 
             // BEHG (W2): nur Brennstoff-CO₂ ist abgabepflichtig; ohne vollständige
             // Faktoren (CO2Brennstoff = null) bleibt die Abgabe 0 und ist im
@@ -2589,6 +2711,7 @@ namespace WindowsFormsApplication1
             e.StromkostenTarif = r.Reststrom.SummeEur;
             e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + r.Reststrom.SummeEur;
             e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
+            e.RollenGerechnet = true;          // E9a (E9a‑Q7): Anlass der Kohärenzzeilen
 
             // ETAPPE E7: Das Rollenmodell kennt EINEN Einspeisetarif für beide Mengen —
             // die Aufteilung kann deshalb nur MENGENPROPORTIONAL sein, und sie wird als
@@ -2634,7 +2757,7 @@ namespace WindowsFormsApplication1
         /// <c>Einspeiseverguetung</c> bleibt je Gruppe (VV‑Q5).</para>
         /// </summary>
         private void RechnePvVerguetung(VariantenDaten v, WirtschaftlichkeitParameter p,
-                                        ProjektEingabe e)
+                                        ProjektEingabe e, string szenario)
         {
             try
             {
@@ -2642,6 +2765,11 @@ namespace WindowsFormsApplication1
                 PvVerguetungStand stand = pvc.LiesAufgeloest(v.IdProjekt);
                 ProjektPhotovoltaikModel pv = stand.Modell;
                 if (pv == null || !pv.Aktiv) return;
+
+                // ETAPPE E9a (Schritt D): die WIRKSAME Zeile des Szenarios — DV-Entgelt und
+                // PPA-Festpreis durch ihren gepflegten Szenariowert ersetzt, sonst dieselbe
+                // Referenz (ProjektPhotovoltaikCtrl.FuerSzenario, die EINE Stelle).
+                pv = ProjektPhotovoltaikCtrl.FuerSzenario(pv, szenario);
 
                 e.PvVerguetungUebernommen = stand.Uebernommen;
                 e.PvVerguetungQuelle = stand.Uebernommen
@@ -2691,7 +2819,9 @@ namespace WindowsFormsApplication1
                 if (v.Ergebnis != null && v.Ergebnis.Photovoltaik != null)
                     evKwh = Math.Max(0, (v.Ergebnis.Photovoltaik.Stromproduktion
                                        - v.Ergebnis.Photovoltaik.Ueberschuss) * 1000.0);
-                double? arbeitspreis = StromArbeitspreisEurJeKwh(v.IdProjekt);
+                // ETAPPE E9a (Schritt C): der Arbeitspreis des Szenarios — derselbe, mit dem
+                // die Energiekosten dieses Szenarios den Mehrbezug bepreisen.
+                double? arbeitspreis = StromArbeitspreisEurJeKwh(v.IdProjekt, szenario);
                 if (arbeitspreis.HasValue) strompreis = arbeitspreis.Value;
 
                 GesetzKatalog katalog = new GesetzKatalog();
@@ -6223,7 +6353,7 @@ namespace WindowsFormsApplication1
         /// <c>KostenEmissionRechner.FindeStromTraeger</c>). KEIN Bestandteil des
         /// Kapitalwerts; im ROLLEN-Modus tragen die E5-Zeilen die Systemsicht.
         /// </summary>
-        private static double? PvVermiedenerBezugAusweis(VariantenDaten v)
+        private static double? PvVermiedenerBezugAusweis(VariantenDaten v, string szenario)
         {
             try
             {
@@ -6231,7 +6361,8 @@ namespace WindowsFormsApplication1
                 double evMWh = v.Ergebnis.Photovoltaik.Stromproduktion
                              - v.Ergebnis.Photovoltaik.Ueberschuss;
                 if (evMWh <= 0.0005) return null;
-                double? preis = StromArbeitspreisEurJeKwh(v.IdProjekt);
+                // ETAPPE E9a: Menge (v trägt den Mengenfaktor) und Preis des Szenarios.
+                double? preis = StromArbeitspreisEurJeKwh(v.IdProjekt, szenario);
                 if (!preis.HasValue) return null;
                 return evMWh * 1000.0 * preis.Value;
             }
@@ -6346,6 +6477,17 @@ namespace WindowsFormsApplication1
         /// Zugriff still geprobt statt blind angefragt.</para></summary>
         internal static double? StromArbeitspreisEurJeKwh(int idProjekt)
         {
+            return StromArbeitspreisEurJeKwh(idProjekt, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C) — derselbe Arbeitspreis des Stromträgers im SZENARIO: Ein
+        /// gepflegter Szenario-Arbeitspreis des Trägers ersetzt den Erwartet-Preis nach
+        /// derselben Regel wie in den Energiekosten (<see cref="TraegerpreisSzenario.Wirksam"/>).
+        /// <paramref name="szenario"/> = <c>null</c> oder ERWARTET ist der Weg von vor E9a.
+        /// </summary>
+        internal static double? StromArbeitspreisEurJeKwh(int idProjekt, string szenario)
+        {
             try
             {
                 // Bestandsspalten der Kostenwelt: custom_price_work (Projekt) vor
@@ -6353,7 +6495,8 @@ namespace WindowsFormsApplication1
                 // 26.08.2026: diese Namen existieren nur auf der Testkopie, der
                 // Produktivbestand kennt sie nicht -> ACE-Parameterfehler).
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT s.custom_price_work AS Projektpreis, ec.price_work AS price " +
+                    "SELECT s.custom_price_work AS Projektpreis, ec.price_work AS price, " +
+                    "s.[ID_Energieträger] AS Traeger " +
                     "FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
                     "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
@@ -6361,9 +6504,19 @@ namespace WindowsFormsApplication1
                 if (dt == null || dt.Rows.Count == 0) return null;
                 DataRow r = dt.Rows[0];
                 double? projektwert = D2(r, "Projektpreis");
-                if (projektwert.HasValue && projektwert.Value > 0) return projektwert;
                 double? katalogwert = D2(r, "price");
-                return katalogwert.HasValue && katalogwert.Value > 0 ? katalogwert : null;
+                double? erwartet = projektwert.HasValue && projektwert.Value > 0 ? projektwert
+                                 : (katalogwert.HasValue && katalogwert.Value > 0 ? katalogwert : null);
+
+                // ETAPPE E9a: der Szenariopreis des Stromträgers — die EINE Regel.
+                if (!string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal) &&
+                    !string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal))
+                    return erwartet;
+                double? traeger = D2(r, "Traeger");
+                if (!traeger.HasValue || traeger.Value <= 0) return erwartet;
+                TraegerpreisSzenario sz = EnergietraegerPreisCtrl.SzenarioLesen(idProjekt, (int)traeger.Value);
+                bool gepflegt;
+                return TraegerpreisSzenario.Wirksam(erwartet, sz.Arbeitspreis(szenario), out gepflegt);
             }
             catch (Exception)
             {
@@ -6453,7 +6606,7 @@ namespace WindowsFormsApplication1
                 erg.PvVerguetungsausfall = pv.VerguetungsausfallEur;
                 erg.PvKompensation51a = pv.Kompensation51aEur;
                 erg.PvKappungsverlustKwh = pv.KappungsverlustKwh;
-                erg.PvVermiedenerBezug = PvVermiedenerBezugAusweis(v);
+                erg.PvVermiedenerBezug = PvVermiedenerBezugAusweis(v, szenario);
                 // KONZEPT § 2.16: die Herkunft der Verguetung - "eigene Werte" oder
                 // "uebernommen von <Stamm>". Sie reist im Nachweisumschlag mit, damit
                 // der Bericht sie auch beim GEBUCHTEN Stand nennen kann.
@@ -6616,6 +6769,11 @@ namespace WindowsFormsApplication1
                 // der Aufbau des Laufs.)
                 Stufenfehler(v.IdProjekt, STUFE_KOHAERENZ, Fehlergrund.Text(ex));
             }
+            // ETAPPE E9a (E9a‑Q3, E9a‑Q7): gepflegte Szenariowerte ohne Wirkung als HINWEIS —
+            // der Szenario-Leistungspreis neben Staffel oder Saisonreihe, Strompreis und
+            // Einspeisevergütung im Rollenmodell, die flache PV-Vergütung neben dem
+            // Vergütungsdialog. Ohne Pflege entsteht keine Zeile.
+            SzenarioHinweiseAnhaengen(erg, eingabe, v);
             // ETAPPE E7c3 (B‑6): die gescheiterten Rechenstufen dieses Laufs als WARNUNG.
             if (_gesetze != null && _gesetze.Lesefehler != null)
                 Stufenfehler(0, STUFE_KATALOG, _gesetze.Lesefehler);
@@ -6674,6 +6832,40 @@ namespace WindowsFormsApplication1
                 erg.Gestehungskosten = (-bild.Kapitalwert * a) / (eingabe.WaermeMWh * 1000.0);
             }
             return erg;
+        }
+
+        /// <summary>
+        /// ETAPPE E9a — die Kohärenzzeilen des Szenariolaufs an ein Ergebnis hängen: je
+        /// Träger, dessen Szenario-Leistungspreis neben einer Staffel oder Saisonreihe ohne
+        /// Wirkung blieb, eine Zeile; dazu die Zeilen, die die Eingabe gesammelt hat
+        /// (Rollenmodell, Vergütungsdialog). Schwere HINWEIS — gerechnet ist richtig, nur ohne
+        /// den gepflegten Wert. Jede Zeile einmal.
+        /// </summary>
+        private static void SzenarioHinweiseAnhaengen(WirtschaftlichkeitErgebnis erg, ProjektEingabe eingabe,
+                                                      VariantenDaten v)
+        {
+            var zeilen = new List<string>();
+            if (v != null && v.SzenarioLeistungspreisOhneWirkung != null)
+                foreach (string traeger in v.SzenarioLeistungspreisOhneWirkung)
+                    zeilen.Add(string.Format(BerichtTexte.Kultur,
+                        T("WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG",
+                          "Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die " +
+                          "gepflegte Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des " +
+                          "Trägers gilt auch in diesem Szenario."),
+                        traeger));
+            if (eingabe != null && eingabe.SzenarioHinweise != null)
+                zeilen.AddRange(eingabe.SzenarioHinweise);
+            if (zeilen.Count == 0) return;
+
+            if (erg.KohaerenzHinweise == null) erg.KohaerenzHinweise = new List<KohaerenzHinweis>();
+            foreach (string z in zeilen)
+            {
+                bool schon = false;
+                foreach (KohaerenzHinweis h in erg.KohaerenzHinweise)
+                    if (string.Equals(h.Text, z, StringComparison.Ordinal)) { schon = true; break; }
+                if (!schon)
+                    erg.KohaerenzHinweise.Add(new KohaerenzHinweis { Schwere = KohaerenzSchwere.HINWEIS, Text = z });
+            }
         }
 
         /// <summary>
@@ -7235,14 +7427,18 @@ namespace WindowsFormsApplication1
                             // Konserve, wenn frisch nichts ermittelbar ist. Alle übrigen
                             // Arten lesen unverändert die gepflegte Herleitung.
                             double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
+                            // ETAPPE E9a: Der Auflöser trägt Mengenfaktor und Trägerpreise des
+                            // Szenarios — eine an Endenergie, Stunden oder kWh bemessene Zeile
+                            // folgt damit den Mengen und Preisen, mit denen das Szenario rechnet.
                             if (IstEndenergieArt(bem))
                                 menge = EndenergieMenge(idProjekt, r, bem,
-                                                        ref endenergie, ref endenergieVersucht);
+                                                        ref endenergie, ref endenergieVersucht,
+                                                        szenario, satz);
                             else if (IstRueckfallErmittelbareArt(bem))
                             {
                                 double? frisch = RueckfallMenge(idProjekt, r, bem,
                                                                 ref endenergie, ref endenergieVersucht,
-                                                                ref investSummen, satz);
+                                                                ref investSummen, satz, szenario);
                                 if (frisch.HasValue) menge = frisch;
                             }
 
@@ -7385,12 +7581,13 @@ namespace WindowsFormsApplication1
                     double? menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
                     if (IstEndenergieArt(bem))
                         menge = EndenergieMenge(idProjekt, r, bem,
-                                                ref endenergie, ref endenergieVersucht);
+                                                ref endenergie, ref endenergieVersucht,
+                                                szenario, satz);
                     else if (IstRueckfallErmittelbareArt(bem))
                     {
                         double? frisch = RueckfallMenge(idProjekt, r, bem,
                                                         ref endenergie, ref endenergieVersucht,
-                                                        ref investSummen, satz);
+                                                        ref investSummen, satz, szenario);
                         if (frisch.HasValue) menge = frisch;
                     }
 
@@ -7548,12 +7745,13 @@ namespace WindowsFormsApplication1
         /// dann gilt die dokumentierte 0.
         /// </summary>
         private static double? EndenergieMenge(int idProjekt, DataRow r, string bem,
-                                               ref EndenergieAufloeser aufloeser, ref bool versucht)
+                                               ref EndenergieAufloeser aufloeser, ref bool versucht,
+                                               string szenario, SzenarioSatz satz)
         {
             if (!versucht)
             {
                 versucht = true;
-                aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+                aufloeser = Aufloeser(idProjekt, szenario, satz);
             }
             if (aufloeser == null) return null;
 
@@ -7572,6 +7770,18 @@ namespace WindowsFormsApplication1
             // Stromanlage bewerten Weg A und Weg B damit mit demselben Preis.
             double? strompreis = g.BewertungspreisJeKwh;
             return strompreis.HasValue ? g.BedarfKwh * strompreis.Value : (double?)null;
+        }
+
+        /// <summary>
+        /// ETAPPE E9a — der Endenergie-Auflöser DIESES Szenarios: Mengen mit dem Mengenfaktor
+        /// des Satzes, Preise mit den Trägerpreisen des Szenarios
+        /// (<see cref="EndenergieAufloeser.FuerProjekt(int, string, double)"/>). Ohne Satz
+        /// (ERWARTET, jede Anzeige) und ohne gepflegte Szenariopreise der Auflöser von vor E9a.
+        /// </summary>
+        private static EndenergieAufloeser Aufloeser(int idProjekt, string szenario, SzenarioSatz satz)
+        {
+            return EndenergieAufloeser.FuerProjekt(idProjekt, szenario,
+                                                  satz != null ? satz.MengeFaktor : 1.0);
         }
 
         /// <summary>Komponente und Anlage der Positionszeile (0 = nicht gesetzt bzw.
@@ -7650,7 +7860,7 @@ namespace WindowsFormsApplication1
         private static double? RueckfallMenge(int idProjekt, DataRow r, string bem,
                                               ref EndenergieAufloeser aufloeser, ref bool versucht,
                                               ref Dictionary<KeyValuePair<int, int>, double> investSummen,
-                                              SzenarioSatz satz)
+                                              SzenarioSatz satz, string szenario)
         {
             int komponente, idAnlage;
             KomponenteUndAnlage(r, out komponente, out idAnlage);
@@ -7676,7 +7886,7 @@ namespace WindowsFormsApplication1
                 if (!versucht)
                 {
                     versucht = true;
-                    aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+                    aufloeser = Aufloeser(idProjekt, szenario, satz);   // E9a: Mengen und Preise des Szenarios
                 }
                 if (aufloeser == null) return null;
                 return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal)
@@ -7697,7 +7907,7 @@ namespace WindowsFormsApplication1
             if (!versucht)
             {
                 versucht = true;
-                aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+                aufloeser = Aufloeser(idProjekt, szenario, satz);   // E9a: Mengen und Preise des Szenarios
             }
             if (aufloeser == null) return null;
 
@@ -7994,10 +8204,10 @@ namespace WindowsFormsApplication1
                 bool versucht = false;
                 Dictionary<KeyValuePair<int, int>, double> investSummen = null;
                 double? menge = IstEndenergieArt(bem)
-                    ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
+                    ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht, null, null)
                     : IstRueckfallErmittelbareArt(bem)
                         ? RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
-                                         ref investSummen, null)
+                                         ref investSummen, null, null)
                         : null;
 
                 if (menge.HasValue) return menge;
@@ -8073,9 +8283,9 @@ namespace WindowsFormsApplication1
                 // hier nur, weil RueckfallMenge ihn führt.
                 Dictionary<KeyValuePair<int, int>, double> investSummen = null;
                 menge = endenergie
-                    ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
+                    ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht, null, null)
                     : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
-                                     ref investSummen, null);   // W5-B-11: Ausweis = Erwartungslauf
+                                     ref investSummen, null, null);   // W5-B-11: Ausweis = Erwartungslauf
 
                 var p = new DbParam("@m", DbParamTyp.Double);
                 p.Wert = menge.HasValue ? (object)menge.Value : DBNull.Value;
@@ -8191,10 +8401,12 @@ namespace WindowsFormsApplication1
                                 // ist die Zeile Wert fuer Wert die von vorher.
                                 WirtschaftlichkeitParameter pz = p.FuerSzenario(e.Szenario);
                                 pl.Add(new DbParam("@z", pz.Zinssatz));
+                                // ETAPPE E9a: Zeitraum und Einspeisevergütung DIESES Szenarios
+                                // (FuerSzenario, Schritte B und D) — ohne Pflege der Projektwert.
                                 pl.Add(new DbParam("@t", pz.Betrachtungszeitraum));
                                 pl.Add(new DbParam("@pe", pz.PreissteigerungEnergie));
                                 pl.Add(new DbParam("@pb", pz.PreissteigerungBetrieb));
-                                pl.Add(new DbParam("@ev", p.Einspeiseverguetung));
+                                pl.Add(new DbParam("@ev", pz.Einspeiseverguetung));
                                 pl.Add(new DbParam("@inv", R(e.Investition)));
                                 pl.Add(DbWert(e.BetriebskostenJahr));
                                 pl.Add(DbWert(e.EnergiekostenJahr));

@@ -70576,11 +70576,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die gepflegte Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des Trägers gilt auch in diesem Szenario. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_PV_DIALOG_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_PV_DIALOG_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eige [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_SZ_QUELLEN {
             get {
                 return ResourceManager.GetString("WIRT_SZ_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell bewertet die Einspeisung mit dem Einspeisetarif des Tarifsatzes. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ROLLEN_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ROLLEN_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — Bezug, Reststrom und Einspeisung rechnen in allen Szenarien mit den Preisen des Tarifsatzes. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ROLLEN_STROMPREIS {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ROLLEN_STROMPREIS", resourceCulture);
             }
         }
         

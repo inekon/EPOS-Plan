@@ -187,6 +187,34 @@ namespace WindowsFormsApplication1
             return zeilen == 1;
         }
 
+        /// <summary>
+        /// ETAPPE E9a: Trägt irgendein Träger des Projekts einen Szenariopreis (Wert ungleich
+        /// 0) für dieses Szenario? Die schnelle Vorprobe des Szenariolaufs — ohne Treffer
+        /// rechnet die Variante mit ihren Erwartet-Energiekosten, ohne neu zu bepreisen. Ob ein
+        /// Wert gegenüber dem Erwartet-Preis wirklich abweicht, entscheidet danach
+        /// <see cref="TraegerpreisSzenario.Wirksam"/>. Für ERWARTET und ohne die Spalten false.
+        /// </summary>
+        public static bool SzenarioGepflegt(int projektId, string szenario)
+        {
+            bool best = string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal);
+            bool worst = string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal);
+            if (projektId <= 0 || (!best && !worst)) return false;
+            try
+            {
+                if (!SzenarioSpaltenVorhanden()) return false;
+                string a = best ? SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_BEST : SchemaKatalog.SPALTE_EPS_PREIS_ARBEIT_WORST;
+                string g = best ? SchemaKatalog.SPALTE_EPS_PREIS_GRUND_BEST : SchemaKatalog.SPALTE_EPS_PREIS_GRUND_WORST;
+                string l = best ? SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_BEST : SchemaKatalog.SPALTE_EPS_PREIS_LEISTUNG_WORST;
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = ? AND " +
+                    "(COALESCE([" + a + "], 0) <> 0 OR COALESCE([" + g + "], 0) <> 0 OR " +
+                    "COALESCE([" + l + "], 0) <> 0)",
+                    new DbParam("@p", projektId));
+                return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
+            }
+            catch { return false; }
+        }
+
         /// <summary>Die sechs Szenariopreise einer Zeile, tolerant (fehlende Spalte = leer);
         /// eine 0 wird leer — „NULL/0 heißt wie Erwartet".</summary>
         private static TraegerpreisSzenario SzenarioAus(DataRow row)

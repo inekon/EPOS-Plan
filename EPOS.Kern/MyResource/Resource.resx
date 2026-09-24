@@ -26370,4 +26370,16 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
   </data>
+  <data name="WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die gepflegte Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des Trägers gilt auch in diesem Szenario.</value>
+  </data>
+  <data name="WIRT_SZ_ROLLEN_STROMPREIS" xml:space="preserve">
+    <value>Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — Bezug, Reststrom und Einspeisung rechnen in allen Szenarien mit den Preisen des Tarifsatzes.</value>
+  </data>
+  <data name="WIRT_SZ_ROLLEN_EINSPEISUNG" xml:space="preserve">
+    <value>Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell bewertet die Einspeisung mit dem Einspeisetarif des Tarifsatzes.</value>
+  </data>
+  <data name="WIRT_SZ_PV_DIALOG_EINSPEISUNG" xml:space="preserve">
+    <value>Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario.</value>
+  </data>
 </root>

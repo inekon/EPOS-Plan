@@ -630,10 +630,21 @@ namespace WindowsFormsApplication1
         /// Behauptung, sondern eine Eigenschaft des Codes.</para>
         ///
         /// <para>Für BEST und WORST eine flache Kopie mit ersetztem Zins und ersetzten
-        /// Preissteigerungen. <b>Alles übrige bleibt stehen</b> — Betrachtungszeitraum,
-        /// Einspeisevergütung, KWKG, Steuern, Bilanzierung sind Rechtsstände und Preise,
-        /// keine Szenariogrößen. Investitions-, Ertrags- und Nutzungsdaueränderung wirken
-        /// nicht hier, sondern in der EINGABE (Vorrangregel je Zeile).</para>
+        /// Preissteigerungen. KWKG, Steuern und Bilanzierung bleiben stehen — sie sind
+        /// Rechtsstände, keine Szenariogrößen. Investitions-, Ertrags- und
+        /// Nutzungsdaueränderung wirken nicht hier, sondern in der EINGABE (Vorrangregel je
+        /// Zeile).</para>
+        ///
+        /// <para><b>ETAPPE E9a (vollständige Szenarioabdeckung V‑E):</b> Die Kopie trägt
+        /// zusätzlich den wirksamen <b>Betrachtungszeitraum</b> (Schritt B) und die wirksamen
+        /// <b>Einspeisevergütungen</b> PV und KWK (Schritt D) — ohne Pflege dieselben Zahlen
+        /// wie der Erwartungsfall. Der Zeitraum wirkt damit auf alles, was aus dem Satz
+        /// liest: Horizont, Restwert am Ende von T_s, Ersatzbeschaffungen innerhalb T_s, die
+        /// Länge der Erlös- und CO₂-Reihen, Annuität und Gestehungskosten — genau wie ein
+        /// Erwartet-Lauf mit diesem Zeitraum (E9a‑Q4, Lesart a). Mengenfaktor und
+        /// Trägerpreise wirken auf die Mengen- und Preisbasis der Variante
+        /// (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>), die PV-Erlössätze auf die
+        /// Vergütungszeile (<c>ProjektPhotovoltaikCtrl.FuerSzenario</c>).</para>
         /// </summary>
         public WirtschaftlichkeitParameter FuerSzenario(string szenario)
         {
@@ -648,6 +659,11 @@ namespace WindowsFormsApplication1
             // Kopie über PreisInvestWirksam auf ihr eigenes (schon ersetztes) p_B
             // zurück und das Szenario rechnete an seinem Satz vorbei.
             k.PreissteigerungInvestition = s.PreisInvestWirksam(PreisInvestWirksam);
+            // ETAPPE E9a: Zeitraum und Erlössätze je Szenario — NULL heißt „wie Erwartet",
+            // die Kopie trägt dann die Zahl des Projektsatzes unverändert.
+            k.Betrachtungszeitraum = s.ZeitraumWirksam(Betrachtungszeitraum);
+            k.Einspeiseverguetung = s.EinspeiseverguetungWirksam(Einspeiseverguetung);
+            k.EinspeiseverguetungKWK = s.EinspeiseverguetungKwkWirksam(EinspeiseverguetungKWK);
             return k;
         }
 
