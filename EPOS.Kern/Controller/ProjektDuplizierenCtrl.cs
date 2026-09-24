@@ -162,7 +162,19 @@ namespace WindowsFormsApplication1
             // Zapfprofilgenerator (Schemaschritt 103): der Wohnungstyp haengt an der Zone.
             // Die deklarierte Beziehung Tab_TwwWohnungstyp.ID_Zone -> Tab_TwwZone erkennt
             // _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne sie.
-            {"ID_Zone","Tab_TwwZone"}
+            {"ID_Zone","Tab_TwwZone"},
+            // Gebaeudesimulation G3 (Schritte S-B/S-C, Softwarearchitektur 2.6): das Bauteil
+            // zeigt auf den Aufbau der PROJEKTKOPIE, die Schicht auf den Baustoff der
+            // Projektkopie (W11). Beide Beziehungen sind deklariert und werden von _echteFks
+            // erkannt; die Eintraege tragen den Versatz auch ohne Schemaauskunft.
+            //
+            // NICHT hier: ID_Zone des Bauteils. "ID_Zone" steht eine Zeile hoeher schon fuer
+            // Tab_TwwZone - ein zweiter Eintrag waere bei OrdinalIgnoreCase eine
+            // ArgumentException beim Laden der Klasse (Falle 2 des Mehrzonenkonzepts 4.4).
+            // Die Zone des Bauteils loest FK_OVERRIDE je Tabelle auf. NICHT hier auch
+            // ID_Nachbarzone (kommt mit S-G) und ID_Importquelle (Sitzung G4).
+            {"ID_Aufbau","Tab_Bauteilaufbau"},
+            {"ID_Baustoff","Tab_Baustoff"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -175,6 +187,9 @@ namespace WindowsFormsApplication1
             {"Tab_WaermebedarfDaten",   new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Waermebedarf"}}},
             {"Tab_StromganglinieDaten", new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Stromganglinie"}}},
             {"Tab_SolarganglinieDaten", new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Solarganglinie"}}},
+            // Gebaeudesimulation G3 (S-C): "ID_Zone" meint in FK_MAP die Tww-Zone; am Bauteil
+            // ist es die Gebaeudezone. Die deklarierte Beziehung hat ohnehin Vorrang.
+            {SchemaKatalog.TAB_BAUTEIL, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
         };
 
         // Kind-Tabellen (kein verlaessliches ID_Projekt) -> Sonderfilter ueber den Eltern-FK. {0} = Quell-Projekt-ID.
@@ -236,6 +251,22 @@ namespace WindowsFormsApplication1
             // Erkennung braucht die deklarierte Beziehung, und ohne sie fuehre eine
             // Projektkopie mit Zonen, aber ohne Wohnungstypen.
             {"Tab_TwwWohnungstyp",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
+
+            // Gebaeudesimulation G3 (Schritte S-B/S-C, Softwarearchitektur 2.6, W19) - von
+            // Hand und DREISTUFIG: Gebaeude -> Zone -> Bauteil und Aufbau -> Schicht. Keines
+            // der drei Kinder fuehrt ein eigenes ID_Projekt (W16); es haengt ueber seinen
+            // unmittelbaren Eltern am Projekt.
+            //
+            // AUSDRUECKLICH UND NICHT UEBER DIE AUTO-ERKENNUNG: Die Schicht traegt ZWEI
+            // Fremdschluessel (ID_Aufbau, ID_Baustoff), das Bauteil ebenso (ID_Zone,
+            // ID_Aufbau). Die Erkennung nimmt die ERSTE Spalte mit deklarierter Beziehung auf
+            // eine geplante Tabelle - ueber ID_Baustoff gefiltert fielen alle Schichten mit
+            // freier Eingabe (ID_Baustoff NULL) aus der Kopie, ueber ID_Aufbau alle Bauteile
+            // ohne Aufbau. Fehlte der Eintrag ganz, reiste ein Projekt mit Zonen still ohne
+            // seine Zonen (der Projekttransfer erbt diese Tabelle, ProjektExportImportCtrl).
+            {SchemaKatalog.TAB_ZONE,           "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+            {SchemaKatalog.TAB_BAUTEIL,        "ID_Zone IN (SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
+            {SchemaKatalog.TAB_BAUTEILSCHICHT, "ID_Aufbau IN (SELECT ID FROM Tab_Bauteilaufbau WHERE ID_Projekt = {0})"},
         };
 
         /// <summary>

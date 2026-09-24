@@ -264,6 +264,62 @@ namespace WindowsFormsApplication1
                 Schluessel = "GEBAEUDE",
                 Tabelle = "Tab_Gebaeude_STAMM"
             },
+            // ------------------------------------------------------------------------
+            // Gebaeudesimulation, Stufe G3 (Softwarearchitektur 2.6, W21): der
+            // Baustoffkatalog (Schritt S-A) und der Aufbaukatalog samt Schichten (S-B).
+            // Der Registerschluessel spiegelt den Tabellennamen - BAUTEILAUFBAU, nicht
+            // AUFBAU. KOPIERSEMANTIK wie bei den Erzeugern: Projekte verweisen auf die
+            // Projektkopien (BaustoffCtrl/BauteilaufbauCtrl.CopyFromStamm), nie auf den
+            // Katalog.
+            //
+            // BAUSTOFF traegt EINE Verwendungspruefung - katalogintern ueber die ID: Eine
+            // Katalogschicht zeigt mit Tab_Bauteilschicht_STAMM.ID_Baustoff auf den Stoff,
+            // und der Fremdschluessel ist restriktiv (W11). Ein benutzter Stoff laesst sich
+            // deshalb nicht loeschen; die Pruefung sagt es vorher.
+            //
+            // Die Schichten sind der Datenblock des Aufbaus (Muster Waermepumpe): Sie zaehlen
+            // zum Inhalt, sortiert nach Reihenfolge, und gehen mit ihm (Kaskade). Die
+            // Stoffwerte der Schicht sind eine Kopie und damit Inhalt; ID_Baustoff ebenso.
+            //
+            // ImDublettendialog = false: Anzeigename und Texte stehen (ADM_KATALOG_*), die
+            // Verwaltungsseite kommt mit der Oberflaechenwelle; bis dahin bleiben beide
+            // Kataloge fuer Scan, Bereinigung und Verwendungspruefung im Kern erreichbar.
+            // ------------------------------------------------------------------------
+            new KatalogDefinition
+            {
+                Schluessel = "BAUSTOFF",
+                Tabelle = SchemaKatalog.TAB_BAUSTOFF_STAMM,
+                ImDublettendialog = false,
+                // Der Hersteller gehoert zum natuerlichen Schluessel: Derselbe Name bei zwei
+                // Herstellern ist keine Namensdublette.
+                SchluesselZusatzSpalten = new[] { BaustoffSchema.SPALTE_HERSTELLER },
+                VerwendungsPruefungen = new[]
+                {
+                    new VerwendungsPruefung
+                    {
+                        Tabelle = SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
+                        Spalte = BauteilaufbauSchema.SPALTE_ID_BAUSTOFF,
+                        UeberName = false
+                    }
+                }
+            },
+            new KatalogDefinition
+            {
+                Schluessel = "BAUTEILAUFBAU",
+                Tabelle = SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM,
+                ImDublettendialog = false,
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
+                        FkSpalte = BauteilaufbauSchema.SPALTE_ID_AUFBAU,
+                        Sortierung = "Reihenfolge, ID",
+                        WertSpalten = new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht",
+                                              "Lambda", "Rho", "cp" }
+                    }
+                }
+            },
             new KatalogDefinition
             {
                 Schluessel = "KLIMAREGION",
@@ -579,6 +635,8 @@ namespace WindowsFormsApplication1
                 case "BHKW": return MyResource.Resource.ADM_KATALOG_BHKW;
                 case "STROMSPEICHER": return MyResource.Resource.ADM_KATALOG_STROMSPEICHER;
                 case "GEBAEUDE": return MyResource.Resource.ADM_KATALOG_GEBAEUDE;
+                case "BAUSTOFF": return MyResource.Resource.ADM_KATALOG_BAUSTOFF;
+                case "BAUTEILAUFBAU": return MyResource.Resource.ADM_KATALOG_BAUTEILAUFBAU;
                 case "KLIMAREGION": return MyResource.Resource.ADM_KATALOG_KLIMAREGION;
                 case "BRAUCHWASSER": return MyResource.Resource.ADM_KATALOG_BRAUCHWASSER;
                 case "BRAUCHWASSERTYP": return MyResource.Resource.ADM_KATALOG_BRAUCHWASSERTYP;

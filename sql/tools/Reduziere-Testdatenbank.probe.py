@@ -15,6 +15,12 @@ Aufruf (Linux/macOS/Windows, nur Standardbibliothek):
 
 Voraussetzung: sqlite3 >= 3.37 (STRICT-Tabellen). Rueckgabewert 0 = alles gut,
 1 = mindestens eine Pruefung fehlgeschlagen.
+
+Die acht Tabellen der Gebaeudesimulation Stufe G3 (Schritte S-A bis S-C) stehen
+nicht im eingefrorenen Zielschema sql/schema/001..003. Ihre DDL liest die Probe
+aus der Messlatte Referenzlaeufe/Kenndaten_Test.sqlite (LFS) - die EINE Quelle ist
+dort die Schema-Klasse des Kerns, und die Testdatenbank traegt genau deren Stand.
+Ist die Datei nur ein LFS-Zeiger, bricht die Probe mit 2 ab.
 """
 
 import os
@@ -26,6 +32,16 @@ HIER = os.path.dirname(os.path.abspath(__file__))
 WURZEL = os.path.dirname(os.path.dirname(HIER))          # Repo-Wurzel
 SCHEMA = os.path.join(WURZEL, "sql", "schema")
 SKRIPT = os.path.join(HIER, "Reduziere-Testdatenbank.sql")
+TESTDB = os.path.join(WURZEL, "Referenzlaeufe", "Kenndaten_Test.sqlite")
+
+# Gebaeudesimulation G3: die acht Tabellen und vier Indizes der Schritte S-A bis S-C,
+# Eltern vor Kind. Ihre DDL kommt aus der Testdatenbank (Modulkopf).
+G3_OBJEKTE = [
+    "Tab_Baustoff_STAMM", "Tab_Baustoff", "Tab_Bauteilaufbau_STAMM", "Tab_Bauteilaufbau",
+    "Tab_Bauteilschicht_STAMM", "Tab_Bauteilschicht", "Tab_Zone", "Tab_Bauteil",
+    "idx_Bauteilschicht_STAMM_Aufbau", "idx_Bauteilschicht_Aufbau", "idx_Zone_Gebaeude",
+    "idx_Bauteil_Zone",
+]
 
 # Die dreizehn Referenzprojekte (Referenzlaeufe/LIESMICH.md, Basis B3-Kaskade)
 BEHALTEN = [1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042]
@@ -50,11 +66,28 @@ def pruefe(bedingung, text):
 # ---------------------------------------------------------------------------
 # 1. Leere Datenbank aus dem Zielschema
 # ---------------------------------------------------------------------------
+def g3_ddl():
+    """Die CREATE-Texte der G3-Objekte aus der Testdatenbank, in G3_OBJEKTE-Reihenfolge."""
+    quelle = sqlite3.connect("file:%s?immutable=1" % TESTDB.replace(os.sep, "/"), uri=True)
+    try:
+        texte = dict(quelle.execute(
+            "SELECT name, sql FROM sqlite_master WHERE name IN (%s)" % ",".join("?" for _ in G3_OBJEKTE),
+            G3_OBJEKTE).fetchall())
+    finally:
+        quelle.close()
+    fehlend = [n for n in G3_OBJEKTE if n not in texte]
+    if fehlend:
+        raise RuntimeError("Testdatenbank ohne G3-Objekte: %s" % fehlend)
+    return [texte[n] for n in G3_OBJEKTE]
+
+
 def baue_schema(pfad):
     con = sqlite3.connect(pfad, isolation_level=None)
     for datei in ("001_grundschema.sql", "002_views.sql", "003_indizes_fk.sql"):
         with open(os.path.join(SCHEMA, datei), encoding="utf-8") as fh:
             con.executescript(fh.read())
+    for sql in g3_ddl():
+        con.execute(sql)
     con.commit()
     return con
 
@@ -120,6 +153,8 @@ ALLE_PROJEKTSPALTEN = [
     ("Tab_Stromverbrauchertyp", "ID_Projekt"), ("Tab_Variante", "ID_Projekt"),
     ("Tab_WP", "ID_Projekt"), ("Tab_Waermebedarf", "ID_Projekt"),
     ("Berichtskonfiguration", "ProjektID"),
+    # Gebaeudesimulation G3 (S-A, S-B): die zwei Projektkataloge, ID_Projekt ohne FK (W16)
+    ("Tab_Baustoff", "ID_Projekt"), ("Tab_Bauteilaufbau", "ID_Projekt"),
 ]
 
 # Zweite Ebene: Detailtabelle -> (Elterntabelle, Verweisspalte, PK der Eltern)
@@ -128,6 +163,15 @@ DETAIL = [
     ("Tab_WaermebedarfDaten", "Tab_Waermebedarf", "ID_Ganglinie", "ID"),
     ("Tab_ErgebnisBHKW", "Tab_Ergebnis", "ID_Ergebnis", "ID"),
     ("Tab_Kenndaten_Kuehlung", "Tab_WP", "ID_WP", "ID"),
+]
+
+# Gebaeudesimulation G3: Detailtabellen ohne ID_Projekt (W16), nur fuer die Gegenprobe -
+# gefuellt werden sie in fuelle_g3 ausdruecklich (Bauteilart und Randbedingung sind
+# CHECK-Listen, die ein Ersatzwert nicht trifft).
+DETAIL_G3 = [
+    ("Tab_Zone", "Tab_Gebaeude", "ID_Gebaeude", "ID"),
+    ("Tab_Bauteil", "Tab_Zone", "ID_Zone", "ID"),
+    ("Tab_Bauteilschicht", "Tab_Bauteilaufbau", "ID_Aufbau", "ID"),
 ]
 
 ZEILEN_JE_GANGLINIE = 100     # in der Praxis 8760
@@ -290,8 +334,36 @@ def fuelle(con):
             for _ in range(ZEILEN_JE_GANGLINIE):
                 einfuegen(cur, bild, kind, {spalte: eid})
 
+    fuelle_g3(cur, bild)
+
     con.commit()
     cur.execute("PRAGMA foreign_keys = ON")
+
+
+def fuelle_g3(cur, bild):
+    """Gebaeudesimulation G3: je Projekt Gebaeude -> Zone -> zwei Bauteile, zwei Baustoffe
+    und ein Aufbau mit zwei Schichten (eine auf einen Stoff, eine freie Eingabe); dazu ein
+    Katalogsatz je Katalog, der die Reduzierung ueberstehen muss."""
+    for pid in ALLE:
+        zpg = einfuegen(cur, bild, "Z_ProjektGebaeude", {"ID_Projekt": pid})
+        geb = einfuegen(cur, bild, "Tab_Gebaeude",
+                        {"ID_Projekt": pid, "ID_ProjektGebaeude": zpg, "Gebaeudename": "Gebaeude %d" % pid})
+        stoff = einfuegen(cur, bild, "Tab_Baustoff", {"ID_Projekt": pid, "Bezeichner": "Stoff A %d" % pid})
+        einfuegen(cur, bild, "Tab_Baustoff", {"ID_Projekt": pid, "Bezeichner": "Stoff B %d" % pid})
+        aufbau = einfuegen(cur, bild, "Tab_Bauteilaufbau", {"ID_Projekt": pid, "Bezeichner": "Aufbau %d" % pid})
+        einfuegen(cur, bild, "Tab_Bauteilschicht",
+                  {"ID_Aufbau": aufbau, "Reihenfolge": 1, "ID_Baustoff": stoff, "Dicke": 0.2})
+        einfuegen(cur, bild, "Tab_Bauteilschicht", {"ID_Aufbau": aufbau, "Reihenfolge": 2, "Dicke": 0.1})
+        zone = einfuegen(cur, bild, "Tab_Zone", {"ID_Gebaeude": geb, "Rang": 1, "Bezeichner": "Zone %d" % pid})
+        einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 1, "Bezeichner": "Aussenwand",
+                                             "Bauteilart": "AUSSENWAND", "Flaeche": 10.0,
+                                             "ID_Aufbau": aufbau, "Azimut": 180.0})
+        einfuegen(cur, bild, "Tab_Bauteil", {"ID_Zone": zone, "Rang": 2, "Bezeichner": "Dach",
+                                             "Bauteilart": "DACH", "Flaeche": 5.0})
+    stoff_k = einfuegen(cur, bild, "Tab_Baustoff_STAMM", {"Bezeichner": "Katalogstoff", "ReadOnly": 1})
+    aufbau_k = einfuegen(cur, bild, "Tab_Bauteilaufbau_STAMM", {"Bezeichner": "Katalogaufbau"})
+    einfuegen(cur, bild, "Tab_Bauteilschicht_STAMM",
+              {"ID_Aufbau": aufbau_k, "Reihenfolge": 1, "ID_Baustoff": stoff_k, "Dicke": 0.3})
 
 
 # ---------------------------------------------------------------------------
@@ -339,6 +411,10 @@ KATALOGPROBEN = {
     "Tab_Brauchwasser/0": ("Tab_Brauchwasser", '"ID_Projekt" = 0'),
     "Tab_Einstellungen/0": ("Tab_Einstellungen", '"ID_Projekt" = 0'),
     "Tab_Kenndaten_Kuehlung_STAMM": ("Tab_Kenndaten_Kuehlung_STAMM", "1"),
+    # Gebaeudesimulation G3: die drei Kataloge der Gebaeudehuelle bleiben vollstaendig.
+    "Tab_Baustoff_STAMM": ("Tab_Baustoff_STAMM", "1"),
+    "Tab_Bauteilaufbau_STAMM": ("Tab_Bauteilaufbau_STAMM", "1"),
+    "Tab_Bauteilschicht_STAMM": ("Tab_Bauteilschicht_STAMM", "1"),
 }
 
 
@@ -380,7 +456,7 @@ def fremdprojekt_reste(con):
 def detail_waisen(con):
     """Detailzeilen ohne Elternzeile - eigene Gegenprobe neben foreign_key_check."""
     waisen = []
-    for kind, eltern, spalte, pk in DETAIL:
+    for kind, eltern, spalte, pk in DETAIL + DETAIL_G3:
         n = con.execute('SELECT COUNT(*) FROM "%s" WHERE "%s" IS NOT NULL AND "%s" NOT IN '
                         '(SELECT "%s" FROM "%s")'
                         % (kind, spalte, spalte, pk, eltern)).fetchone()[0]
@@ -439,9 +515,10 @@ def main():
               "" if not (fehlt or zuviel) else " -> fehlt %s / zuviel %s" % (fehlt, zuviel)))
     pruefe(len(kaskaden) == 19, "19 Tabellen mit ON DELETE CASCADE auf Tab_Projekt (%d)"
            % len(kaskaden))
-    pruefe(len(aus_schema) - len(kaskaden) == 29,
-           "29 Tabellen mit Projektspalte ohne Kaskade (%d): 28 x ID_Projekt + "
-           "Berichtskonfiguration.ProjektID" % (len(aus_schema) - len(kaskaden)))
+    pruefe(len(aus_schema) - len(kaskaden) == 31,
+           "31 Tabellen mit Projektspalte ohne Kaskade (%d): 28 x ID_Projekt + "
+           "Berichtskonfiguration.ProjektID + Tab_Baustoff/Tab_Bauteilaufbau (G3)"
+           % (len(aus_schema) - len(kaskaden)))
 
     fuelle(con)
 
@@ -507,6 +584,15 @@ def main():
     pruefe(n_detail == erwartet,
            "Tab_StromganglinieDaten: %d Zeilen (13 Projekte x 2 Ganglinien x %d), erwartet %d"
            % (n_detail, ZEILEN_JE_GANGLINIE, erwartet))
+
+    # Pruefung 7b: Gebaeudesimulation G3 - je behaltenem Projekt eine Zone mit zwei
+    # Bauteilen, zwei Baustoffe und ein Aufbau mit zwei Schichten; nichts darueber.
+    g3 = dict((t, con.execute('SELECT COUNT(*) FROM "%s"' % t).fetchone()[0])
+              for t in ("Tab_Zone", "Tab_Bauteil", "Tab_Baustoff", "Tab_Bauteilaufbau", "Tab_Bauteilschicht"))
+    n = len(BEHALTEN)
+    pruefe(g3 == {"Tab_Zone": n, "Tab_Bauteil": 2 * n, "Tab_Baustoff": 2 * n,
+                  "Tab_Bauteilaufbau": n, "Tab_Bauteilschicht": 2 * n},
+           "G3: Zonen, Bauteile, Baustoffe, Aufbauten und Schichten genau der 13 Projekte (%s)" % g3)
 
     # Pruefung 8: PRAGMA-Kontrollen. foreign_key_check darf nur die vorher schon
     # vorhandene, bewusst gesaete Verletzung melden - keine neue.

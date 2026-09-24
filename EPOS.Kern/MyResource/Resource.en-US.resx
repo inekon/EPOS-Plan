@@ -8381,6 +8381,132 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
     <value>Building types (daily profiles)</value>
   </data>
+  <data name="ADM_KATALOG_BAUSTOFF" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="ADM_KATALOG_BAUTEILAUFBAU" xml:space="preserve">
+    <value>Construction build-ups</value>
+  </data>
+  <data name="KFLT_SP_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="KFLT_SP_LAMBDA" xml:space="preserve">
+    <value>λ</value>
+  </data>
+  <data name="KFLT_SP_RHO" xml:space="preserve">
+    <value>Density</value>
+  </data>
+  <data name="KFLT_SP_CP" xml:space="preserve">
+    <value>Heat capacity</value>
+  </data>
+  <data name="KFLT_SP_BAUTEILART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="KFLT_SP_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="KFLT_SP_DICKE" xml:space="preserve">
+    <value>Thickness</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NAME_LEER" xml:space="preserve">
+    <value>The building material needs a name.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>The building material “{0}” already exists (same name and manufacturer).</value>
+  </data>
+  <data name="BAUSTOFF_MSG_TEXT_LANG" xml:space="preserve">
+    <value>{0} is longer than {1} characters.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_WERT_BAND" xml:space="preserve">
+    <value>{0} = {1} lies outside the permitted range {2} to {3}.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>The building material “{0}” belongs to the delivered catalogue and is write-protected. Duplicate it to change it.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_VERWENDET" xml:space="preserve">
+    <value>The building material “{0}” is used in {1} layer(s) and cannot be deleted.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>There is no building material with ID {0}.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The building material could not be saved: {0}</value>
+  </data>
+  <data name="BAUTEIL_FELD_QUELLKENNUNG" xml:space="preserve">
+    <value>Source identifier</value>
+  </data>
+  <data name="BAUTEIL_MSG_HERKUNFT" xml:space="preserve">
+    <value>The origin “{0}” is not a valid value.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BAUTEILART" xml:space="preserve">
+    <value>The component type “{0}” is not a valid value.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NAME_LEER" xml:space="preserve">
+    <value>The construction build-up needs a name.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NAME_VERGEBEN" xml:space="preserve">
+    <value>The construction build-up “{0}” already exists.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>The construction build-up “{0}” belongs to the delivered catalogue and is write-protected. Duplicate it to change it.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_VERWENDET" xml:space="preserve">
+    <value>The construction build-up “{0}” is used by {1} component(s) and cannot be deleted.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>There is no construction build-up with ID {0}.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The construction build-up could not be saved: {0}</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_DICKE" xml:space="preserve">
+    <value>Layer {0}: The thickness must be greater than zero.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_BAUSTOFF" xml:space="preserve">
+    <value>Layer {0}: There is no building material with ID {1} in this store.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_WERT" xml:space="preserve">
+    <value>Layer {0}: {1}</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_LEER" xml:space="preserve">
+    <value>Zone “{0}”: A component needs a name.</value>
+  </data>
+  <data name="BAUTEIL_MSG_FLAECHE" xml:space="preserve">
+    <value>Component “{0}”: The area must be greater than zero.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AZIMUT_FEHLT" xml:space="preserve">
+    <value>Component “{0}”: An inclined external component needs an azimuth; it is not preset to north.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RANDBEDINGUNG" xml:space="preserve">
+    <value>Component “{0}”: The boundary condition “{1}” is not a valid value.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_FREMD" xml:space="preserve">
+    <value>Component “{0}”: There is no build-up with ID {1} in this project.</value>
+  </data>
+  <data name="BAUTEIL_MSG_FREMD" xml:space="preserve">
+    <value>Zone “{0}”: The component with ID {1} does not belong to any zone of this building.</value>
+  </data>
+  <data name="BAUTEIL_MSG_WERT" xml:space="preserve">
+    <value>Component “{0}”: {1}</value>
+  </data>
+  <data name="ZONE_MSG_NAME_LEER" xml:space="preserve">
+    <value>Zone {0}: The zone needs a name.</value>
+  </data>
+  <data name="ZONE_MSG_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>There is no project building with ID {0}.</value>
+  </data>
+  <data name="ZONE_MSG_FREMD" xml:space="preserve">
+    <value>The zone with ID {0} does not belong to this building.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERGABEART" xml:space="preserve">
+    <value>Zone “{0}”: The heat emission type “{1}” is not a valid value.</value>
+  </data>
+  <data name="ZONE_MSG_WERT" xml:space="preserve">
+    <value>Zone “{0}”: {1}</value>
+  </data>
+  <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The zones of the building could not be saved: {0}</value>
+  </data>
   <data name="LIZ_TITEL" xml:space="preserve">
     <value>License</value>
   </data>
