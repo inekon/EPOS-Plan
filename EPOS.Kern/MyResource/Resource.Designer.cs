@@ -47016,6 +47016,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasserprofile ähnelt.
+        /// </summary>
+        public static string MENU_BRAUCHWASSERPROFILE {
+            get {
+                return ResourceManager.GetString("MENU_BRAUCHWASSERPROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Nutzungsarten ähnelt.
+        /// </summary>
+        public static string MENU_BRAUCHWASSER_NUTZUNGSARTEN {
+            get {
+                return ResourceManager.GetString("MENU_BRAUCHWASSER_NUTZUNGSARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Daten &amp; Import ähnelt.
         /// </summary>
         public static string MENU_DAT_IMPORT {

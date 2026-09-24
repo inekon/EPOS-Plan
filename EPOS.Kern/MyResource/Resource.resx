@@ -29587,4 +29587,10 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_LBL_VORSCHLAG" xml:space="preserve">
     <value>Vorschlag: {0} {1}</value>
   </data>
+  <data name="MENU_BRAUCHWASSERPROFILE" xml:space="preserve">
+    <value>Brauchwasserprofile</value>
+  </data>
+  <data name="MENU_BRAUCHWASSER_NUTZUNGSARTEN" xml:space="preserve">
+    <value>Brauchwasser-Nutzungsarten</value>
+  </data>
 </root>
