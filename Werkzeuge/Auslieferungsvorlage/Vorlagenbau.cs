@@ -24,6 +24,33 @@ namespace Auslieferungsvorlage
         internal List<string> GeleerteKataloge { get; } = new List<string>();
 
         /// <summary>
+        /// <b>Die Kindkataloge ohne Spalte <c>ReadOnly</c> — NAMENTLICH</b> (Softwarearchitektur
+        /// Gebaeudesimulation L1). Sie gehoeren zur Auslieferung, wenn ihr Kopf dazugehoert: Die
+        /// Klimareihen haengen an der Region, die Kuehlkennlinien an der Waermepumpe, die
+        /// Bauteilschichten (Schritt S-B) an ihrem Aufbau. Die ReadOnly-Regel fasst sie nie an;
+        /// sie bleiben VOLLSTAENDIG, und nur die Kaskade ihres Kopfes kann sie leeren.
+        ///
+        /// <para><b>Warum eine namentliche Liste.</b> Ohne sie risse ein Katalog beim Bereinigen
+        /// ueber die Kaskade ab, und der Waechter meldete einen leeren Katalog, ohne dass der
+        /// Bericht sagt, wessen Kind er ist. Der Waechter selbst schlaegt nur an, wenn eine
+        /// Tabelle von Zeilen auf NULL FAELLT — ein von Anfang an leerer Kindkatalog (die
+        /// Schichten, solange der Aufbaukatalog leer ausgeliefert wird) ist kein Befund. Die
+        /// Probe <c>VorlageTests</c> haelt die Liste gegen das Schema: Jede <c>*_STAMM</c>-Tabelle
+        /// ohne <c>ReadOnly</c> ausser den Tww-Katalogen (eigene Regel, Schritt 3c) steht hier.</para>
+        /// </summary>
+        internal static readonly IReadOnlyList<string> KindkatalogeOhneReadOnly = new[]
+        {
+            "Tab_Kenndaten_Kuehlung_STAMM",
+            "Tab_Klimadaten_STAMM",
+            "Tab_Solar_STAMM",
+            SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM
+        };
+
+        /// <summary>Steht die Tabelle in <see cref="KindkatalogeOhneReadOnly"/> (ordinal)?</summary>
+        internal static bool IstKindkatalog(string tabelle) =>
+            KindkatalogeOhneReadOnly.Contains(tabelle, StringComparer.Ordinal);
+
+        /// <summary>
         /// Die Tww-Katalogzeilen, die ein Beispielpaket beim Einspielen mit Status IMPORT
         /// mitgenommen hat — „Paket: Berichtszeile“. Die Pruefung nennt damit das
         /// verursachende Paket (<see cref="TwwKataloge.Pruefen"/>).
@@ -173,7 +200,9 @@ namespace Auslieferungsvorlage
                 summeVor += vorher[t];
                 summeNach += nachher[t];
                 _bericht.Tabellenzeile(t + (TwwKataloge.IstTww(t) ? "  (eigene Regel, 3c)"
-                                            : sicht.Hat(t, "ReadOnly") ? "" : "  (ohne Spalte ReadOnly)"),
+                                            : sicht.Hat(t, "ReadOnly") ? ""
+                                            : IstKindkatalog(t) ? "  (Kindkatalog ohne ReadOnly, L1)"
+                                            : "  (ohne Spalte ReadOnly)"),
                                        vorher[t], nachher[t]);
                 if (vorher[t] > 0 && nachher[t] == 0 && !TwwKataloge.IstTww(t)) GeleerteKataloge.Add(t);
             }
@@ -184,7 +213,9 @@ namespace Auslieferungsvorlage
                 _bericht.Leer();
                 _bericht.Zeile("WARNUNG — diese Katalogtabellen sind durch die ReadOnly-Regel LEER geworden:");
                 foreach (string t in GeleerteKataloge)
-                    _bericht.Zeile("    " + t + (Hat(sicht, t) ? "" : "   (ohne Spalte ReadOnly — ueber eine Kaskade mitgerissen)"));
+                    _bericht.Zeile("    " + t + (Hat(sicht, t) ? ""
+                                                 : IstKindkatalog(t) ? "   (Kindkatalog ohne ReadOnly — mit seinem Kopf ueber die Kaskade gefallen)"
+                                                 : "   (ohne Spalte ReadOnly — ueber eine Kaskade mitgerissen)"));
                 _bericht.Zeile("In der Quelle traegt dort keine Zeile ReadOnly = TRUE. Entweder ist die Marke");
                 _bericht.Zeile("im Bestand nicht gepflegt (sie wirkt dort als Schreibschutz der Oberflaeche —");
                 _bericht.Zeile("siehe HeizkesselStammCtrl, GebaeudeStammCtrl), oder die Tabelle gehoert wirklich");

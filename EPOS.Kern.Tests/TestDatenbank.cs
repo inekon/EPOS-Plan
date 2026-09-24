@@ -643,6 +643,14 @@ namespace EPOS.Kern.Tests
                 // (ErgebnisGebaeudeSchema.SpaltenHeizkreis); NACH 127, braucht 107; kein DML.
                 ErgebnisGebaeudeSchema.HeizkreisAlle(null);
 
+                // Schritte S-A, S-B, S-C (Gebaeudesimulation G3, Welle B): Baustoffkatalog samt
+                // Normsaat, Bauteilaufbauten mit Schichten, Zonen und Bauteile. Aus DENSELBEN
+                // Quellen wie Migration und Werkzeug (BaustoffSchema, BauteilaufbauSchema,
+                // ZonenSchema); wiederholbar.
+                BaustoffSchema.Ausfuehren();
+                BauteilaufbauSchema.Ausfuehren();
+                ZonenSchema.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

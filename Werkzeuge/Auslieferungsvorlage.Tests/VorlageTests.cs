@@ -159,7 +159,64 @@ namespace Auslieferungsvorlage.Tests
             //
             // 132 seit Schemaschritt 127 (E17, nicht monetarisierbare Wirkungen der
             // Wirtschaftlichkeit): Tab_ProjektWirkung, STRICT von ihrer ersten Zeile an.
-            Assert.Equal(132, befund.Strict);
+            //
+            // 140 seit den Schritten S-A bis S-C der Gebaeudesimulation (Stufe G3, Welle B):
+            // Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Bauteilschicht(_STAMM),
+            // Tab_Zone und Tab_Bauteil - acht Tabellen, alle STRICT von ihrer ersten Zeile an.
+            Assert.Equal(140, befund.Strict);
+        }
+
+        // =============================================================================
+        //  P6c — Der Baustoffkatalog und die Kindkataloge ohne ReadOnly (Stufe G3, L1)
+        // =============================================================================
+        /// <summary>
+        /// <b>Die Normsaat des Baustoffkatalogs reist vollstaendig mit</b> — Name exakt
+        /// <c>_STAMM</c>, jede Zeile <c>ReadOnly = 1</c>; der Aufbaukatalog und seine Schichten
+        /// stehen leer, die Projektkopien, Zonen und Bauteile ebenso.
+        ///
+        /// <para><b>Und die namentliche Liste der Kindkataloge (L1) haelt gegen das Schema:</b>
+        /// Jede <c>*_STAMM</c>-Tabelle der Vorlage ohne Spalte <c>ReadOnly</c> — ausser den
+        /// Tww-Katalogen mit ihrer eigenen Regel — steht im Prueflauf als „Kindkatalog ohne
+        /// ReadOnly". Ein neuer Kindkatalog, der die Liste verfehlt, faellt hier auf.</para>
+        /// </summary>
+        [Fact]
+        public void P6c_Baustoffsaat_und_Kindkataloge_ohne_ReadOnly()
+        {
+            if (!_v.Vorhanden) return;
+
+            var befund = _v.Lesen(() =>
+            {
+                var ohneReadOnly = new List<string>();
+                DataTable t = DataRepository.GetDataTable(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name");
+                foreach (DataRow r in t.Rows)
+                {
+                    string name = Convert.ToString(r["name"]);
+                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (name.StartsWith("Tab_Tww", StringComparison.Ordinal)) continue;
+                    if (!DataRepository.SpalteVorhanden(name, "ReadOnly")) ohneReadOnly.Add(name);
+                }
+                return (
+                    Saat: Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\" WHERE \"ReadOnly\" = 1")),
+                    Katalog: Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\"")),
+                    Leer: Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\") + (SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\") + " +
+                        "(SELECT COUNT(*) FROM \"Tab_Baustoff\") + (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau\") + " +
+                        "(SELECT COUNT(*) FROM \"Tab_Bauteilschicht\") + (SELECT COUNT(*) FROM \"Tab_Zone\") + " +
+                        "(SELECT COUNT(*) FROM \"Tab_Bauteil\")")),
+                    OhneReadOnly: ohneReadOnly);
+            });
+
+            Assert.Equal(BaustoffSchema.Saat.Count, befund.Saat);
+            Assert.Equal(befund.Saat, befund.Katalog);
+            Assert.Equal(0, befund.Leer);
+
+            Assert.Contains("Tab_Bauteilschicht_STAMM", befund.OhneReadOnly);
+            string pruefbericht = File.ReadAllText(_v.Ziel + ".bericht.txt");
+            foreach (string kind in befund.OhneReadOnly)
+                Assert.True(pruefbericht.Contains(kind + "  (Kindkatalog ohne ReadOnly, L1)", StringComparison.Ordinal),
+                            kind + " steht nicht in der namentlichen Liste der Kindkataloge ohne ReadOnly.");
         }
 
         // =============================================================================

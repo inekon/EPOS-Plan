@@ -4175,6 +4175,50 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_128_ERGEBNIS_HEIZKREIS = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS;
 
+        // ---- Gebäudesimulation Stufe G3, Welle B: die Schritte S-A, S-B, S-C --------------
+
+        /// <summary>
+        /// Schritt <see cref="BaustoffSchema.SCHRITT"/> (S-A) — <b>der Baustoffkatalog</b>
+        /// (Softwarearchitektur Gebäudesimulation 2.2 und 2.4; Mehrzonenkonzept 3.5). Er folgt
+        /// auf die bis dahin vergebenen Schritte ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und Saat:</b> <c>Tab_Baustoff_STAMM</c> und die spaltengleiche
+        /// Projektkopie <c>Tab_Baustoff</c> (STRICT, samt Spalte <c>Hersteller</c>), dann die
+        /// Normsaat mit fester Id, <c>ReadOnly = 1</c> und <c>Herkunft = VORGABE</c>; die
+        /// AUTOINCREMENT-Folge des Katalogs steigt auf die Saatgrenze. Alles aus
+        /// <see cref="BaustoffSchema"/> — EINE Quelle für Migration, Werkzeug und Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest den Katalog; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_BAUSTOFFKATALOG = BaustoffSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BauteilaufbauSchema.SCHRITT"/> (S-B) — <b>Bauteilaufbauten und
+        /// Schichten</b>. Er braucht <see cref="SCHRITT_BAUSTOFFKATALOG"/>, auf dessen Tabellen die
+        /// Schichten zeigen.
+        ///
+        /// <para><b>REIN DDL:</b> vier STRICT-Tabellen (Katalog und Projektkopie je für Aufbau
+        /// und Schicht) und zwei Indizes über (<c>ID_Aufbau</c>, <c>Reihenfolge</c>); die Schicht
+        /// ohne <c>ReadOnly</c> und ohne <c>Herkunft</c> (L1). Quelle
+        /// <see cref="BauteilaufbauSchema"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, keine Saat; <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILAUFBAU = BauteilaufbauSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ZonenSchema.SCHRITT"/> (S-C) — <b>Zonen und Bauteile</b>. Er braucht
+        /// <see cref="SCHRITT_BAUTEILAUFBAU"/>, auf dessen Projektaufbauten das Bauteil zeigt.
+        ///
+        /// <para><b>REIN DDL:</b> <c>Tab_Zone</c> (Kaskade zum Gebäude, samt den Zonenspalten aus
+        /// KU-S1 und AK-S1) und <c>Tab_Bauteil</c> (Kaskade zur Zone), zwei Indizes. Quelle
+        /// <see cref="ZonenSchema"/>. Keine implizite Zone — die Tabelle bleibt leer.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, keine Saat; <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN = ZonenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5914,6 +5958,29 @@ namespace WindowsFormsApplication1
                         "Rechenergebnis aendert sich - die Spalten bleiben leer, bis ein Lauf die " +
                         "Uebergabe rechnet.",
                         Schritt_128_ErgebnisHeizkreis),
+
+            // GEBAEUDESIMULATION STUFE G3, WELLE B (Softwarearchitektur 2.2/2.4, W1) - die
+            // Schritte S-A, S-B, S-C in fester Reihenfolge. Die Quellen sind BaustoffSchema,
+            // BauteilaufbauSchema und ZonenSchema; die Nummern stehen allein dort.
+            new Schritt(SCHRITT_BAUSTOFFKATALOG,
+                        "Tab_Baustoff_STAMM und Tab_Baustoff: Baustoffkatalog samt Projektkopie, " +
+                        "Normsaat nach DIN 4108-4 und DIN EN ISO 10456 (ReadOnly, Quelle je Zeile)",
+                        "Ein Bauteilaufbau faende keine Stoffwerte, und der IFC-Import keinen Katalog fuer " +
+                        "den Namensabgleich. KEIN Rechenergebnis aendert sich - kein Rechenweg liest den " +
+                        "Katalog.",
+                        Schritt_BaustoffKatalog),
+            new Schritt(SCHRITT_BAUTEILAUFBAU,
+                        "Tab_Bauteilaufbau(_STAMM) und Tab_Bauteilschicht(_STAMM): Bauteilaufbauten " +
+                        "mit geordneten Schichten, Katalog und Projektkopie",
+                        "Ein Bauteil haette keinen Schichtaufbau und damit keinen U-Wert aus Schichten. " +
+                        "KEIN Rechenergebnis aendert sich - die Tabellen bleiben leer.",
+                        Schritt_Bauteilaufbau),
+            new Schritt(SCHRITT_ZONEN,
+                        "Tab_Zone und Tab_Bauteil: Zonen je Projektgebaeude und ihre Bauteile",
+                        "Ein Gebaeude liesse sich nicht in Zonen und Bauteile gliedern, und die " +
+                        "Uebernahme als eine Zone faende keinen Ort. KEIN Rechenergebnis aendert sich - " +
+                        "die Tabellen bleiben leer, und eine leere Tab_Zone heisst Klassenweg.",
+                        Schritt_Zonen),
         };
 
         /// <summary>
@@ -9681,6 +9748,125 @@ namespace WindowsFormsApplication1
                     " Spalte(n) des Heizkreises an " + ErgebnisGebaeudeSchema.TAB + " angelegt - " +
                     "Uebergabe_Art, VorlaufMittel_C, RuecklaufMittel_C, UebergabeBegrenzt_H, alle nullbar. " +
                     "KEIN DML: NULL heisst 'nicht gekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Gebaeudesimulation G3, Welle B - S-A Baustoffkatalog, S-B Bauteilaufbau, S-C Zonen
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt S-A — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUSTOFFKATALOG"/>, die
+        /// Anweisungen und die Saat bei <see cref="BaustoffSchema"/>.
+        ///
+        /// <para><b>Zwei Handgriffe in fester Reihenfolge</b> (R2): die zwei Tabellen über
+        /// <see cref="SqliteDdl"/>, dann die Saat über den KERN mit <c>?</c>-Parametern
+        /// (<see cref="BaustoffSchema.SaatSchreiben"/>) — die Bezeichner tragen Umlaute und
+        /// Sonderzeichen. Deshalb ein <c>try</c> wie in Schritt 75: Dieser Zweig läuft vor dem
+        /// ersten Fenster und muss still bleiben; der Fehlertext landet im Bericht. Die Nachprobe
+        /// fragt <see cref="BaustoffSchema.Vollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_BaustoffKatalog(Lauf l)
+        {
+            string nr = BaustoffSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in BaustoffSchema.Anweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            int gesaet;
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    gesaet = BaustoffSchema.SaatSchreiben();
+                    vollstaendig = BaustoffSchema.Vollstaendig();
+                }
+                catch (Exception ex)
+                {
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Der Baustoffkatalog " + BaustoffSchema.TAB_STAMM + " traegt nach dem Schritt " +
+                                  "nicht alle Saatzeilen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    BaustoffSchema.TAB_STAMM + ", " + BaustoffSchema.TAB_PROJEKT + "), " +
+                    gesaet.ToString(CultureInfo.InvariantCulture) + " von " +
+                    BaustoffSchema.Saat.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Saatzeile(n) geschrieben (ReadOnly, Herkunft VORGABE). KEIN Rechenergebnis aendert " +
+                    "sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt S-B — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILAUFBAU"/>, die
+        /// Anweisungen bei <see cref="BauteilaufbauSchema"/>: vier Tabellen, dann zwei Indizes
+        /// (R2), <b>nur <see cref="SqliteDdl"/></b>. Die Idempotenz trägt <c>IF NOT EXISTS</c>.
+        /// </summary>
+        private static bool Schritt_Bauteilaufbau(Lauf l)
+        {
+            string nr = BauteilaufbauSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0, tabellen = 0;
+            foreach (KeyValuePair<string, string> a in BauteilaufbauSchema.Tabellenanweisungen)
+            {
+                tabellen++;
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in BauteilaufbauSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    tabellen.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) angelegt (" +
+                    BauteilaufbauSchema.TAB_AUFBAU_STAMM + ", " + BauteilaufbauSchema.TAB_AUFBAU + ", " +
+                    BauteilaufbauSchema.TAB_SCHICHT_STAMM + ", " + BauteilaufbauSchema.TAB_SCHICHT +
+                    ") samt zwei Indizes. KEIN DML: alle vier Tabellen sind LEER, kein Rechenweg liest sie; " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt S-C — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN"/>, die Anweisungen
+        /// bei <see cref="ZonenSchema"/>: zwei Tabellen, dann zwei Indizes (R2), <b>nur
+        /// <see cref="SqliteDdl"/></b>. Keine implizite Zone — die Tabelle bleibt leer.
+        /// </summary>
+        private static bool Schritt_Zonen(Lauf l)
+        {
+            string nr = ZonenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in ZonenSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in ZonenSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    ZonenSchema.TAB_ZONE + ", " + ZonenSchema.TAB_BAUTEIL + ") samt zwei Indizes. KEIN DML: " +
+                    "keine implizite Zone, kein Rechenweg liest die Tabellen; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

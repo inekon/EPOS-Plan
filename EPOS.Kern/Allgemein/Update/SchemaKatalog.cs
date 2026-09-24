@@ -242,6 +242,41 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string Z_ANLAGESTRANG = "Z_AnlageStrang";
 
+        // ------------------------------------------------------------------------
+        // GEBAEUDESIMULATION, STUFE G3 (Softwarearchitektur Gebaeudesimulation 2.2
+        // und 2.4, W1): die acht Tabellen der Schritte S-A bis S-C. Je Tabelle EINE
+        // Konstante (2.6, R11) - die DDL steht in BaustoffSchema,
+        // BauteilaufbauSchema und ZonenSchema. Jeder Name kommt hier genau einmal
+        // vor: Die Sammlungen, in denen diese Namen landen (FK_MAP, KINDER,
+        // KatalogRegistry.FindeTabelle), vergleichen ohne Ruecksicht auf Gross- und
+        // Kleinschreibung, und ein zweiter Eintrag in anderer Schreibweise waere
+        // eine Ausnahme beim Laden der Klasse.
+        // ------------------------------------------------------------------------
+
+        /// <summary>Baustoffkatalog (Schritt S-A, <see cref="BaustoffSchema"/>) — Auslieferung, <c>ReadOnly</c> = Saat.</summary>
+        public const string TAB_BAUSTOFF_STAMM = "Tab_Baustoff_STAMM";
+
+        /// <summary>Projektkopie des Baustoffkatalogs (S-A), spaltengleich, mit <c>ID_Projekt</c> ohne Fremdschlüssel.</summary>
+        public const string TAB_BAUSTOFF = "Tab_Baustoff";
+
+        /// <summary>Bauteilaufbau-Katalog (Schritt S-B, <see cref="BauteilaufbauSchema"/>).</summary>
+        public const string TAB_BAUTEILAUFBAU_STAMM = "Tab_Bauteilaufbau_STAMM";
+
+        /// <summary>Projektkopie der Bauteilaufbauten (S-B), mit <c>ID_Projekt</c> ohne Fremdschlüssel.</summary>
+        public const string TAB_BAUTEILAUFBAU = "Tab_Bauteilaufbau";
+
+        /// <summary>Schichten der Katalogaufbauten (S-B) — Kindkatalog OHNE <c>ReadOnly</c> (L1).</summary>
+        public const string TAB_BAUTEILSCHICHT_STAMM = "Tab_Bauteilschicht_STAMM";
+
+        /// <summary>Schichten der Projektaufbauten (S-B) — ohne <c>ID_Projekt</c>, hängt am Aufbau (W16).</summary>
+        public const string TAB_BAUTEILSCHICHT = "Tab_Bauteilschicht";
+
+        /// <summary>Zonen eines Projektgebäudes (Schritt S-C, <see cref="ZonenSchema"/>) — Projektware, ohne <c>_STAMM</c>.</summary>
+        public const string TAB_ZONE = "Tab_Zone";
+
+        /// <summary>Bauteile einer Zone (S-C) — ohne <c>ID_Projekt</c>, hängt an der Zone (W4, W16).</summary>
+        public const string TAB_BAUTEIL = "Tab_Bauteil";
+
         /// <summary>
         /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher
         /// § 8.1 Punkt 2/3): der KOPF eines Quellprofils — ein benanntes

@@ -527,11 +527,20 @@ namespace WindowsFormsApplication1
         /// (<see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/>), nullbar, NULL = nicht gekoppelt
         /// gerechnet. <b>Reines DDL, ergebnisneutral:</b> Kein Referenzprojekt rechnet gekoppelt, und
         /// der Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich.
+        /// Mit der STUFE G3 DER GEBÄUDESIMULATION (Schritte S-A bis S-C; Softwarearchitektur
+        /// Gebäudesimulation 2.2 und 2.4, W1) steht das Ziel auf <see cref="ZonenSchema.SCHRITT"/>:
+        /// der Baustoffkatalog samt Projektkopie und Normsaat (<see cref="BaustoffSchema.SCHRITT"/>,
+        /// <see cref="BaustoffSchema"/>), Bauteilaufbauten und Schichten
+        /// (<see cref="BauteilaufbauSchema.SCHRITT"/>, <see cref="BauteilaufbauSchema"/>) und Zonen
+        /// und Bauteile (<see cref="ZonenSchema.SCHRITT"/>, <see cref="ZonenSchema"/>) — acht
+        /// STRICT-Tabellen. Die Nummern stehen allein bei den drei Schema-Klassen.
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
+        /// Zone; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 128;
+        public const int Zielversion = ZonenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
