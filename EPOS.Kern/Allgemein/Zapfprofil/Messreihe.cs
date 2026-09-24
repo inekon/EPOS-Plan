@@ -73,7 +73,7 @@ namespace WindowsFormsApplication1
             _werte = new double[werte.Count];
             _mengeJeSchritt = new double[werte.Count];
             double stundenJeSchritt = aufloesungMin / MINUTEN_JE_STUNDE;
-            double summe = 0.0, menge = 0.0, groesster = 0.0;
+            double menge = 0.0, groesster = 0.0;
             for (int i = 0; i < werte.Count; i++)
             {
                 double w = werte[i];
@@ -81,11 +81,9 @@ namespace WindowsFormsApplication1
                     throw new ArgumentException("Ein Wert der Messreihe ist kein Betrag ≥ 0.", nameof(werte));
                 _werte[i] = w;
                 _mengeJeSchritt[i] = groesse == ZapfMessgroesse.Leistung ? w * stundenJeSchritt : w;
-                summe += w;
                 menge += _mengeJeSchritt[i];
                 if (w > groesster) groesster = w;
             }
-            SummeRoh = summe;
             Menge = menge;
             GroessterWert = groesster;
         }
@@ -123,10 +121,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Länge der Reihe in Tagen [d] — auch gebrochen.</summary>
         internal double Tage => (double)Schritte * AufloesungMin / MINUTEN_JE_TAG;
 
-        /// <summary>Die Summe der rohen Werte (bei <see cref="ZapfMessgroesse.Leistung"/> eine Leistungssumme ohne Sinn).</summary>
-        internal double SummeRoh { get; }
-
-        /// <summary>Der größte rohe Wert eines Zeitschritts.</summary>
+        /// <summary>
+        /// Der größte rohe Wert eines Zeitschritts — in der Einheit der <see cref="Groesse"/> (kWh,
+        /// m³ oder kW). Er trägt seine Einheit deshalb nicht im Namen: Sie steht an der Größe, nicht
+        /// am Feld. Eine SUMME der rohen Werte führt die Reihe bewusst nicht — bei einer
+        /// Leistungsreihe wäre sie eine Summe von kW und damit ohne Sinn; die Summe der Bilanz ist
+        /// <see cref="Menge"/>.
+        /// </summary>
         internal double GroessterWert { get; }
 
         /// <summary>

@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
             Messreihe leistung = Lesen("Zeitstempel;Leistung [kW]\n2025-01-01T00:00;2\n2025-01-01T00:15;2\n", out _, out _);
             Assert.Equal(ZapfMessgroesse.Leistung, leistung.Groesse);
             Assert.Equal(1.0, leistung.Menge, 12);          // 2 kW * 0,25 h zweimal
-            Assert.Equal(4.0, leistung.SummeRoh, 12);
+            Assert.Equal(4.0, leistung.Werte.Sum(), 12);    // die rohen kW - eine Summe ohne Sinn
 
             Messreihe volumen = Lesen("Zeitstempel;Volumen [m³]\n2025-01-01T00:00;0.1\n2025-01-01T01:00;0.1\n", out _, out _);
             Assert.Equal(ZapfMessgroesse.Volumen, volumen.Groesse);

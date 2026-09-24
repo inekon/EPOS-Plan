@@ -433,7 +433,8 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue())
                 .ToArray();
-            Assert.Equal(18, schluessel.Length);
+            // 23 seit Stufe Z5: die fuenf Setzungen Zapfprofil.Validierung.* des freien Paketteils.
+            Assert.Equal(23, schluessel.Length);
             foreach (string s in schluessel) Assert.True(ps.Enthaelt(s), "Parameter fehlt im Testkatalog: " + s);
         }
 
