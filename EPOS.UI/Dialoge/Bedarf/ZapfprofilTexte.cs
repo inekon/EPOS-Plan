@@ -1,9 +1,9 @@
 ﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
-/// Die Anzeigetexte des Dialogs „Brauchwasser-Zapfprofil" in der Stufe Einfach samt Vorschau
+/// Die Anzeigetexte des Dialogs „Brauchwasser-Zapfprofil" in allen drei Stufen samt Vorschau
 /// und Fußleiste (Umsetzungskonzept Zapfprofilgenerator 5.1, 5.3) — EIN Parameter statt
-/// neunzig.
+/// zweihundertvierzig.
 /// </summary>
 /// <remarks>
 /// <para><b>Warum gebündelt.</b> Hausregel „ab etwa zehn Anzeigetexten ein Bündel"
@@ -130,6 +130,9 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_HINW_WEITERE_VORGABE</c></summary>
     public string HinweisWeitereVorgabe { get; set; } = "Weitere Angaben stehen auf den Vorgaben des Katalogs.";
+
+    /// <summary><c>ZPG_HINW_WEITERE_ERWEITERT</c></summary>
+    public string HinweisWeitereErweitert { get; set; } = "Weitere Angaben stehen in der Stufe Erweitert.";
 
     /// <summary><c>ZPG_HINW_NUTZUNGSART_KATALOG</c></summary>
     public string HinweisNutzungsartKatalog { get; set; } = "Katalog · {0}";
@@ -359,4 +362,599 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_STATUS_OHNE_VORSCHAU</c></summary>
     public string StatusOhneVorschau { get; set; } = "Keine Vorschau — {0}";
+
+    // ------------------------------------------------------------ Stufen Erweitert und Experte (Z4)
+
+    /// <summary><c>ZPG_HINW_WEITERE_EXPERTE</c></summary>
+    public string HinweisWeitereExperte { get; set; } = "Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.";
+
+    /// <summary><c>ZPG_GRUND_DAUERLINIE</c></summary>
+    public string GrundDauerlinie { get; set; } = "Die Dauerlinie zeigt die Stufe Erweitert.";
+
+    /// <summary><c>ZPG_VORGABE_EINTRAG</c></summary>
+    public string VorgabeEintrag { get; set; } = "Vorgabe · {0}";
+
+    /// <summary><c>ZPG_AUS_AUTO</c></summary>
+    public string OptionAuto { get; set; } = "auto";
+
+    /// <summary><c>ZPG_AUS_MANUELL</c></summary>
+    public string OptionManuell { get; set; } = "manuell";
+
+    /// <summary><c>ZPG_OPT_JA</c></summary>
+    public string OptionJa { get; set; } = "ja";
+
+    /// <summary><c>ZPG_OPT_NEIN</c></summary>
+    public string OptionNein { get; set; } = "nein";
+
+    /// <summary><c>ZPG_FELD_ZEILE</c></summary>
+    public string FeldZeile { get; set; } = "{0}, Zeile {1}";
+
+    // ------------------------------------------------------------ Zonenliste ab Erweitert
+
+    /// <summary><c>ZPG_SP_TOPOLOGIE</c></summary>
+    public string SpalteTopologie { get; set; } = "Topologie";
+
+    /// <summary><c>ZPG_SP_ANTEIL</c></summary>
+    public string SpalteAnteil { get; set; } = "Anteil";
+
+    /// <summary><c>ZPG_SP_RECHENWEG</c></summary>
+    public string SpalteRechenweg { get; set; } = "Rechenweg";
+
+    /// <summary><c>ZPG_RECHENWEG_KATALOG</c></summary>
+    public string RechenwegKatalog { get; set; } = "Katalog";
+
+    /// <summary><c>ZPG_RECHENWEG_MANUELL</c></summary>
+    public string RechenwegManuell { get; set; } = "manuell";
+
+    /// <summary><c>ZPG_RECHENWEG_MESSWERT</c></summary>
+    public string RechenwegMesswert { get; set; } = "Messwert";
+
+    /// <summary><c>ZPG_AUS_TOPOLOGIE_SPEICHER</c></summary>
+    public string TopologieSpeicher { get; set; } = "Speicher";
+
+    /// <summary><c>ZPG_AUS_TOPOLOGIE_FRISCHWASSERSTATION</c></summary>
+    public string TopologieFrischwasserstation { get; set; } = "Frischwasserstation";
+
+    /// <summary><c>ZPG_AUS_TOPOLOGIE_DURCHFLUSS</c></summary>
+    public string TopologieDurchfluss { get; set; } = "Durchfluss";
+
+    /// <summary><c>ZPG_AUS_TOPOLOGIE_WOHNUNGSSTATION</c></summary>
+    public string TopologieWohnungsstation { get; set; } = "Wohnungsstation";
+
+    // ------------------------------------------------------------ Nutzungsart aufgeklappt
+
+    /// <summary><c>ZPG_KAT_AUFGEKLAPPT</c></summary>
+    public string KatalogAufgeklappt { get; set; } = "Katalog der Nutzungsarten";
+
+    /// <summary><c>ZPG_SP_KALENDER</c></summary>
+    public string SpalteKalender { get; set; } = "Kalender";
+
+    /// <summary><c>ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE</c></summary>
+    public string HinweisBezugsmengeWohnungstabelle { get; set; } = "Wirksam aus der Wohnungstabelle: {0} {1} — OK übernimmt sie als Bezugsgröße.";
+
+    // ------------------------------------------------------------ Belegung und Anlage (Erweitert)
+
+    /// <summary><c>ZPG_GRP_BELEGUNG</c></summary>
+    public string GruppeBelegung { get; set; } = "Belegung und Anlage";
+
+    /// <summary><c>ZPG_LBL_WOHNUNGSTABELLE</c></summary>
+    public string LabelWohnungstabelle { get; set; } = "Wohnungstabelle";
+
+    /// <summary><c>ZPG_LBL_ANZAHL</c></summary>
+    public string LabelAnzahl { get; set; } = "Anzahl";
+
+    /// <summary><c>ZPG_LBL_RAUMZAHL</c></summary>
+    public string LabelRaumzahl { get; set; } = "Raumzahl";
+
+    /// <summary><c>ZPG_LBL_PERSONEN</c></summary>
+    public string LabelPersonen { get; set; } = "Personen je Wohnung";
+
+    /// <summary><c>ZPG_LBL_AUSSTATTUNG</c></summary>
+    public string LabelAusstattung { get; set; } = "Ausstattungsklasse";
+
+    /// <summary><c>ZPG_SP_AKTION</c></summary>
+    public string SpalteAktion { get; set; } = "Aktion";
+
+    /// <summary><c>ZPG_BTN_WOHNUNG_NEU</c></summary>
+    public string KnopfWohnungNeu { get; set; } = "Wohnungstyp hinzufügen";
+
+    /// <summary><c>ZPG_BTN_WOHNUNG_ENTFERNEN</c></summary>
+    public string KnopfWohnungEntfernen { get; set; } = "Entfernen";
+
+    /// <summary><c>ZPG_AUSSTATTUNG_VORGABE</c></summary>
+    public string AusstattungVorgabe { get; set; } = "Vorgabeklasse";
+
+    /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE</c></summary>
+    public string HinweisWohnungstabelle { get; set; } = "Personen leer = Belegung nach Raumzahl aus dem Katalog, sonst Personen je Wohneinheit; Ausstattung leer = Vorgabeklasse. Mit Tabelle gilt ihre Menge als Bezugsgröße.";
+
+    /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE_LEER</c></summary>
+    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungstabelle — es gilt die Bezugsgröße.";
+
+    /// <summary><c>ZPG_LBL_PERSONEN_JE_WE</c></summary>
+    public string LabelPersonenJeWe { get; set; } = "Personen je Wohneinheit";
+
+    /// <summary><c>ZPG_EINHEIT_PERSONEN_JE_WE</c></summary>
+    public string EinheitPersonenJeWe { get; set; } = "P/WE";
+
+    /// <summary><c>ZPG_HINW_PERSONEN_JE_WE</c></summary>
+    public string HinweisPersonenJeWe { get; set; } = "Vorgabe · Belegung nach der Wohnungsgröße aus dem Katalog (Verfahren nach DIN 4708-2).";
+
+    /// <summary><c>ZPG_LBL_WOHNFLAECHE_JE_WE</c></summary>
+    public string LabelWohnflaecheJeWe { get; set; } = "Wohnfläche je Wohneinheit";
+
+    /// <summary><c>ZPG_HINW_WOHNFLAECHE_JE_WE</c></summary>
+    public string HinweisWohnflaecheJeWe { get; set; } = "Vorgabe · {0} m² (Annahme); Flächenformel nach DIN V 18599-10.";
+
+    /// <summary><c>ZPG_LBL_TOPOLOGIE</c></summary>
+    public string LabelTopologie { get; set; } = "Anlagentopologie";
+
+    /// <summary><c>ZPG_HINW_TOPOLOGIE</c></summary>
+    public string HinweisTopologie { get; set; } = "Vorgabe · Speicher; wirkt nur auf die Auslegung.";
+
+    /// <summary><c>ZPG_LBL_ZIRKULATION_VORHANDEN</c></summary>
+    public string LabelZirkulationVorhanden { get; set; } = "Zirkulation vorhanden";
+
+    /// <summary><c>ZPG_HINW_ZIRKULATION_VORHANDEN</c></summary>
+    public string HinweisZirkulationVorhanden { get; set; } = "Vorgabe · ja; „nein“ nimmt die Zone aus dem Zirkulationsanteil.";
+
+    /// <summary><c>ZPG_LBL_KALENDER</c></summary>
+    public string LabelKalender { get; set; } = "Kalender";
+
+    /// <summary><c>ZPG_KALENDER_NUTZUNGSART</c></summary>
+    public string KalenderNutzungsart { get; set; } = "Kalender der Nutzungsart · {0}";
+
+    /// <summary><c>ZPG_KALENDER_GEBAEUDE</c></summary>
+    public string KalenderGebaeude { get; set; } = "Ferien des Gebäudes {0}";
+
+    /// <summary><c>ZPG_HINW_KALENDER</c></summary>
+    public string HinweisKalender { get; set; } = "Vorgabe · Kalender der Nutzungsart; ein Gebäude belegt Ferien und Fläche nur vor — eigene Ferien der Zone gehen vor.";
+
+    /// <summary><c>ZPG_LBL_FERIEN</c></summary>
+    public string LabelFerien { get; set; } = "Ferienzeitraum {0}";
+
+    /// <summary><c>ZPG_LBL_BEGINN_TAG</c></summary>
+    public string LabelBeginnTag { get; set; } = "Beginn Tag";
+
+    /// <summary><c>ZPG_LBL_BEGINN_MONAT</c></summary>
+    public string LabelBeginnMonat { get; set; } = "Beginn Monat";
+
+    /// <summary><c>ZPG_LBL_ENDE_TAG</c></summary>
+    public string LabelEndeTag { get; set; } = "Ende Tag";
+
+    /// <summary><c>ZPG_LBL_ENDE_MONAT</c></summary>
+    public string LabelEndeMonat { get; set; } = "Ende Monat";
+
+    /// <summary><c>ZPG_HINW_FERIEN</c></summary>
+    public string HinweisFerien { get; set; } = "Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
+
+    /// <summary><c>ZPG_LBL_BUNDESLAND</c></summary>
+    public string LabelBundesland { get; set; } = "Bundesland";
+
+    /// <summary><c>ZPG_BUNDESLAND_KLIMAREGION</c></summary>
+    public string BundeslandKlimaregion { get; set; } = "wie Klimaregion";
+
+    /// <summary><c>ZPG_GRUND_BUNDESLAND</c></summary>
+    public string GrundBundesland { get; set; } = "Wirkt erst mit einer Kalendertabelle je Bundesland; bis dahin gelten Wochenende und Feiertage der Klimaregion.";
+
+    /// <summary><c>ZPG_LBL_JAHRESMESSWERT</c></summary>
+    public string LabelJahresmesswert { get; set; } = "Jahresmesswert";
+
+    /// <summary><c>ZPG_LBL_MESSWERT_EINHEIT</c></summary>
+    public string LabelMesswertEinheit { get; set; } = "Einheit des Messwerts";
+
+    /// <summary><c>ZPG_MESSWERT_KWH</c></summary>
+    public string MesswertKwh { get; set; } = "kWh/a";
+
+    /// <summary><c>ZPG_MESSWERT_M3</c></summary>
+    public string MesswertM3 { get; set; } = "m³/a";
+
+    /// <summary><c>ZPG_LBL_MESSWERT_GRENZE</c></summary>
+    public string LabelMesswertGrenze { get; set; } = "Bilanzgrenze des Messwerts";
+
+    /// <summary><c>ZPG_GRENZE_ZAPFSTELLE</c></summary>
+    public string GrenzeZapfstelle { get; set; } = "an der Zapfstelle";
+
+    /// <summary><c>ZPG_GRENZE_VERTEILUNG</c></summary>
+    public string GrenzeVerteilung { get; set; } = "mit Verteil- und Zirkulationsverlust";
+
+    /// <summary><c>ZPG_GRENZE_SPEICHER</c></summary>
+    public string GrenzeSpeicher { get; set; } = "zusätzlich mit Speicherverlust";
+
+    /// <summary><c>ZPG_LBL_SPEICHERVERLUST</c></summary>
+    public string LabelSpeicherverlust { get; set; } = "Speicherverlust";
+
+    /// <summary><c>ZPG_LBL_MESSWERT_QUELLE</c></summary>
+    public string LabelMesswertQuelle { get; set; } = "Quelle des Messwerts";
+
+    /// <summary><c>ZPG_LBL_MESSWERT_ZEITRAUM</c></summary>
+    public string LabelMesswertZeitraum { get; set; } = "Zeitraum des Messwerts";
+
+    /// <summary><c>ZPG_HINW_JAHRESMESSWERT</c></summary>
+    public string HinweisJahresmesswert { get; set; } = "Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.";
+
+    // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Erweitert)
+
+    /// <summary><c>ZPG_GRP_SCHAETZHILFEN</c></summary>
+    public string GruppeSchaetzhilfen { get; set; } = "Tagesbedarf, Ladeleistung, Zirkulation";
+
+    /// <summary><c>ZPG_HINW_SCHAETZHILFEN</c></summary>
+    public string HinweisSchaetzhilfen { get; set; } = "Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der weiterverwendet wird. Der angesetzte Wert folgt aus dem Umschalter.";
+
+    /// <summary><c>ZPG_LBL_TAGESBEDARF</c></summary>
+    public string LabelTagesbedarf { get; set; } = "Tagesbedarf";
+
+    /// <summary><c>ZPG_LBL_TAGESBEDARF_MANUELL</c></summary>
+    public string LabelTagesbedarfManuell { get; set; } = "Tagesbedarf manuell";
+
+    /// <summary><c>ZPG_LBL_VORSCHLAG</c></summary>
+    public string LabelVorschlag { get; set; } = "Vorschlag: {0} {1}";
+
+    /// <summary><c>ZPG_BTN_VORSCHLAG</c></summary>
+    public string KnopfVorschlag { get; set; } = "Als manuellen Wert übernehmen";
+
+    /// <summary><c>ZPG_HINW_VORSCHLAG_OHNE</c></summary>
+    public string HinweisVorschlagOhne { get; set; } = "Das Verfahren liefert keinen Vorschlag — der Rechenweg nennt den Grund.";
+
+    /// <summary><c>ZPG_HINW_OHNE_VORSCHLAG</c></summary>
+    public string HinweisOhneVorschlag { get; set; } = "Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.";
+
+    /// <summary><c>ZPG_HINW_MANUELL</c></summary>
+    public string HinweisManuell { get; set; } = "Wirkt nur bei „manuell“.";
+
+    /// <summary><c>ZPG_LBL_ANGESETZT</c></summary>
+    public string LabelAngesetzt { get; set; } = "Angesetzt: {0} {1} ({2})";
+
+    /// <summary><c>ZPG_ANGESETZT_KALIBRIERT</c></summary>
+    public string AngesetztKalibriert { get; set; } = "kalibriert auf den Jahresmesswert";
+
+    /// <summary><c>ZPG_LBL_RECHENWEG</c></summary>
+    public string LabelRechenweg { get; set; } = "Rechenweg: {0}";
+
+    /// <summary><c>ZPG_LBL_LADELEISTUNG</c></summary>
+    public string LabelLadeleistung { get; set; } = "Ladeleistung (Gebäude)";
+
+    /// <summary><c>ZPG_LBL_LADELEISTUNG_MANUELL</c></summary>
+    public string LabelLadeleistungManuell { get; set; } = "Ladeleistung manuell";
+
+    /// <summary><c>ZPG_LBL_LADEFENSTER</c></summary>
+    public string LabelLadefenster { get; set; } = "Ladezeitfenster";
+
+    /// <summary><c>ZPG_LBL_LADEFENSTER_BEGINN</c></summary>
+    public string LabelLadefensterBeginn { get; set; } = "Beginn des Ladefensters";
+
+    /// <summary><c>ZPG_HINW_LADEFENSTER</c></summary>
+    public string HinweisLadefenster { get; set; } = "Vorgabe · {0} h/d ab {1} Uhr; effektive Ladezeit je Tag, Sperr- und Heizzeiten abgezogen.";
+
+    /// <summary><c>ZPG_HINW_LADELEISTUNG</c></summary>
+    public string HinweisLadeleistung { get; set; } = "Wirkt nur auf die Auslegung, nie auf die Bilanzreihe. Den Vorschlag rechnet die Auslegung: größter Tagesbedarf samt Zirkulation ÷ Ladezeitfenster.";
+
+    /// <summary><c>ZPG_LADE_ANGESETZT_AUTO</c></summary>
+    public string LadeAngesetztAuto { get; set; } = "Angesetzt: Vorschlag der Auslegung (auto)";
+
+    /// <summary><c>ZPG_LADE_ANGESETZT_MANUELL</c></summary>
+    public string LadeAngesetztManuell { get; set; } = "Angesetzt: {0} kW (manuell)";
+
+    /// <summary><c>ZPG_LBL_ZIRKULATION</c></summary>
+    public string LabelZirkulation { get; set; } = "Zirkulation (Gebäude)";
+
+    /// <summary><c>ZPG_LBL_ZIRK_MANUELL</c></summary>
+    public string LabelZirkManuell { get; set; } = "Zirkulation manuell";
+
+    /// <summary><c>ZPG_LBL_ZIRK_METHODE</c></summary>
+    public string LabelZirkMethode { get; set; } = "Methode der Zirkulation";
+
+    /// <summary><c>ZPG_ZIRK_METHODE_LAENGE</c></summary>
+    public string ZirkMethodeLaenge { get; set; } = "Leitungslänge × spezifischer Verlust";
+
+    /// <summary><c>ZPG_ZIRK_METHODE_ANTEIL</c></summary>
+    public string ZirkMethodeAnteil { get; set; } = "Anteil am Tagesbedarf";
+
+    /// <summary><c>ZPG_ZIRK_METHODE_FLAECHE</c></summary>
+    public string ZirkMethodeFlaeche { get; set; } = "Flächenkennwert";
+
+    /// <summary><c>ZPG_LBL_ZIRK_LAENGE</c></summary>
+    public string LabelZirkLaenge { get; set; } = "Leitungslänge";
+
+    /// <summary><c>ZPG_LBL_ZIRK_VERLUST</c></summary>
+    public string LabelZirkVerlust { get; set; } = "Spezifischer Verlust";
+
+    /// <summary><c>ZPG_LBL_ZIRK_ANTEIL</c></summary>
+    public string LabelZirkAnteil { get; set; } = "Anteil am Tagesbedarf";
+
+    /// <summary><c>ZPG_LBL_ZIRK_LAGE</c></summary>
+    public string LabelZirkLage { get; set; } = "Lage der Leitung";
+
+    /// <summary><c>ZPG_LAGE_INNEN</c></summary>
+    public string LageInnen { get; set; } = "innerhalb der thermischen Hülle";
+
+    /// <summary><c>ZPG_LAGE_AUSSEN</c></summary>
+    public string LageAussen { get; set; } = "außerhalb der thermischen Hülle";
+
+    /// <summary><c>ZPG_HINW_ZIRK_VORGABEN</c></summary>
+    public string HinweisZirkVorgaben { get; set; } = "Leer = Vorgabe · {0} W/m bzw. Anteil {1}.";
+
+    /// <summary><c>ZPG_HINW_ZIRKULATION</c></summary>
+    public string HinweisZirkulation { get; set; } = "Eigener Kanal neben dem Zapfprofil, nie in das Profil eingerechnet; Kennwert, Fläche und Laufzeit zeigt die Stufe Experte.";
+
+    /// <summary><c>ZPG_LBL_LEITUNGSINHALT</c></summary>
+    public string LabelLeitungsinhalt { get; set; } = "Leitungsinhalt";
+
+    /// <summary><c>ZPG_HINW_LEITUNGSINHALT</c></summary>
+    public string HinweisLeitungsinhalt { get; set; } = "Wasserinhalt der Leitungen zwischen Erwärmer und entferntester Zapfstelle; er entscheidet mit über die Großanlage nach DVGW W 551.";
+
+    // ------------------------------------------------------------ Fachwerte (Experte)
+
+    /// <summary><c>ZPG_GRP_FACHWERTE</c></summary>
+    public string GruppeFachwerte { get; set; } = "Fachwerte · {0}";
+
+    /// <summary><c>ZPG_LBL_BEDARF_SPEZ</c></summary>
+    public string LabelBedarfSpez { get; set; } = "Spezifischer Bedarf";
+
+    /// <summary><c>ZPG_HINW_BEDARF_SPEZ</c></summary>
+    public string HinweisBedarfSpez { get; set; } = "Leer = Katalogwert des Niveaus ({0} kWh/({1}·d)).";
+
+    /// <summary><c>ZPG_LBL_ZAPFTEMPERATUR</c></summary>
+    public string LabelZapftemperatur { get; set; } = "Zapftemperatur";
+
+    /// <summary><c>ZPG_HINW_ZAPFTEMPERATUR</c></summary>
+    public string HinweisZapftemperatur { get; set; } = "Leer = Bezugstemperatur des Katalogs ({0} °C); eine Großanlage erwartet die Mindesttemperatur nach DVGW W 551.";
+
+    /// <summary><c>ZPG_LBL_KALTWASSER_MITTEL</c></summary>
+    public string LabelKaltwasserMittel { get; set; } = "Kaltwasser Jahresmittel";
+
+    /// <summary><c>ZPG_LBL_KALTWASSER_AMPLITUDE</c></summary>
+    public string LabelKaltwasserAmplitude { get; set; } = "Kaltwasser Amplitude";
+
+    /// <summary><c>ZPG_HINW_KALTWASSER</c></summary>
+    public string HinweisKaltwasser { get; set; } = "Leer = Konvention {0} °C ± {1} K, sinusförmig über das Jahr (nur Bilanz).";
+
+    /// <summary><c>ZPG_LBL_AUSLASTUNGSGANG</c></summary>
+    public string LabelAuslastungsgang { get; set; } = "Auslastungsgang";
+
+    /// <summary><c>ZPG_HINW_AUSLASTUNGSGANG</c></summary>
+    public string HinweisAuslastungsgang { get; set; } = "Zwölf Monatsfaktoren; leer = Faktor des Katalogs (im Feld grau).";
+
+    /// <summary><c>ZPG_LBL_TAGESGANGSATZ</c></summary>
+    public string LabelTagesgangsatz { get; set; } = "Tagesgangsatz";
+
+    /// <summary><c>ZPG_TAGESGANGSATZ_VORGABE</c></summary>
+    public string TagesgangsatzVorgabe { get; set; } = "Satz der Nutzungsart";
+
+    /// <summary><c>ZPG_HINW_TAGESGANGSATZ</c></summary>
+    public string HinweisTagesgangsatz { get; set; } = "Vorgabe · der Satz der Nutzungsart; ein unvollständiger Satz ist gesperrt.";
+
+    /// <summary><c>ZPG_BTN_TAGESGANG</c></summary>
+    public string KnopfTagesgang { get; set; } = "Tagesgang bearbeiten…";
+
+    /// <summary><c>ZPG_BTN_KATEGORIEN</c></summary>
+    public string KnopfKategorien { get; set; } = "Zapfkategorien und Streuung…";
+
+    /// <summary><c>ZPG_GRP_FACHWERTE_GEBAEUDE</c></summary>
+    public string GruppeFachwerteGebaeude { get; set; } = "Fachwerte · Gebäude";
+
+    /// <summary><c>ZPG_LBL_KALTWASSER_AUSLEGUNG</c></summary>
+    public string LabelKaltwasserAuslegung { get; set; } = "Kaltwasser der Auslegung";
+
+    /// <summary><c>ZPG_HINW_KALTWASSER_AUSLEGUNG</c></summary>
+    public string HinweisKaltwasserAuslegung { get; set; } = "Leer = {0} °C; gilt für alle Tage der Auslegung.";
+
+    /// <summary><c>ZPG_LBL_SPEICHERTEMPERATUR</c></summary>
+    public string LabelSpeichertemperatur { get; set; } = "Speichertemperatur";
+
+    /// <summary><c>ZPG_HINW_SPEICHERTEMPERATUR</c></summary>
+    public string HinweisSpeichertemperatur { get; set; } = "Leer = {0} °C; eine Großanlage nimmt die Mindesttemperatur nach DVGW W 551.";
+
+    /// <summary><c>ZPG_LBL_ZIRK_KENNWERT</c></summary>
+    public string LabelZirkKennwert { get; set; } = "Zirkulationsverlust (Kennwert)";
+
+    /// <summary><c>ZPG_LBL_ZIRK_FLAECHE</c></summary>
+    public string LabelZirkFlaeche { get; set; } = "Zirkulationsfläche";
+
+    /// <summary><c>ZPG_LBL_ZIRK_LAUFZEIT</c></summary>
+    public string LabelZirkLaufzeit { get; set; } = "Laufzeit der Zirkulation";
+
+    /// <summary><c>ZPG_HINW_ZIRK_EXPERTE</c></summary>
+    public string HinweisZirkExperte { get; set; } = "Leer = Kennwert nach der Lage ({0} bzw. {1} kWh/(m²·a), Verfahren nach DIN V 4701-10), Fläche aus Wohnfläche je Wohneinheit bzw. Gebäude, Laufzeit {2} h/d nach DVGW W 551.";
+
+    /// <summary><c>ZPG_LBL_ANZEIGETEMPERATUR</c></summary>
+    public string LabelAnzeigetemperatur { get; set; } = "Temperatur der Literanzeige";
+
+    /// <summary><c>ZPG_LBL_STUNDENSCHWELLE</c></summary>
+    public string LabelStundenschwelle { get; set; } = "Schwelle der Stundenzählung";
+
+    /// <summary><c>ZPG_HINW_ANZEIGE</c></summary>
+    public string HinweisAnzeige { get; set; } = "Nur für die Kennzahlen, nicht gespeichert; leer = Einstellung, sonst {0} °C bzw. {1} kW.";
+
+    // ------------------------------------------------------------ Vorschau: Dauerlinie und Warnliste (Z4)
+
+    /// <summary><c>ZPG_UNTERSCHRIFT_DAUERLINIE</c></summary>
+    public string UnterschriftDauerlinie { get; set; } = "Sortierte Stundenwerte der Bilanzreihe (Zapfung und Zirkulation) — Bilanzwerte, keine Auslegungsgröße.";
+
+    /// <summary><c>ZPG_DAUERLINIE_MARKE</c></summary>
+    public string DauerlinieMarke { get; set; } = "P{0} · {1} kW (Rang {2})";
+
+    /// <summary><c>ZPG_DAUERLINIE_SCHWELLE</c></summary>
+    public string DauerlinieSchwelle { get; set; } = "{0} Stunden über {1} kW";
+
+    /// <summary><c>ZPG_DAUERLINIE_OHNE</c></summary>
+    public string DauerlinieOhne { get; set; } = "Die Zone trägt 0 — keine Dauerlinie.";
+
+    /// <summary><c>ZPG_GRP_WARNLISTE</c></summary>
+    public string GruppeWarnliste { get; set; } = "Hinweise der Bilanz";
+
+    /// <summary><c>ZPG_WARNLISTE_UNTER</c></summary>
+    public string WarnlisteUnter { get; set; } = "Nicht blockierend; die Hinweise einer Zone stehen auch an ihrem Eingabeblock.";
+
+    /// <summary><c>ZPG_WARNLISTE_LEER</c></summary>
+    public string WarnlisteLeer { get; set; } = "Keine Hinweise.";
+
+    /// <summary><c>ZPG_AUS_STUFE_WARNUNG</c></summary>
+    public string StufeWarnung { get; set; } = "Warnung";
+
+    /// <summary><c>ZPG_AUS_STUFE_HINWEIS</c></summary>
+    public string StufeHinweis { get; set; } = "Hinweis";
+
+    // ------------------------------------------------------------ Editoren Tagesgang und Zapfkategorien (Z4, Gruppe 2b)
+
+    /// <summary><c>ZPG_GRUND_OHNE_NUTZUNGSART</c></summary>
+    public string GrundOhneNutzungsart { get; set; } = "Zuerst eine Nutzungsart wählen.";
+
+    /// <summary><c>ZPG_TAGTYP_RUHETAG</c></summary>
+    public string TagtypRuhetag { get; set; } = "Ruhetag";
+
+    /// <summary><c>ZPG_TGE_TITEL</c></summary>
+    public string TgeTitel { get; set; } = "Tagesgang bearbeiten";
+
+    /// <summary><c>ZPG_TGE_KONTEXT</c></summary>
+    public string TgeKontext { get; set; } = "Nutzungsart {0} · Tagesgangsatz {1}";
+
+    /// <summary><c>ZPG_TGE_GRP_TAGESGANG</c></summary>
+    public string TgeGruppeTagesgang { get; set; } = "Tagesgang je Tagtyp [%]";
+
+    /// <summary><c>ZPG_TGE_LBL_TAGTYP</c></summary>
+    public string TgeLabelTagtyp { get; set; } = "Tagtyp";
+
+    /// <summary><c>ZPG_TGE_FELD_STUNDE</c></summary>
+    public string TgeFeldStunde { get; set; } = "{0} · Stunde {1}";
+
+    /// <summary><c>ZPG_TGE_HERKUNFT</c></summary>
+    public string TgeHerkunft { get; set; } = "Herkunft: {0}";
+
+    /// <summary><c>ZPG_TGE_SUMME_OK</c></summary>
+    public string SummeOk { get; set; } = "summiert zu 100 %";
+
+    /// <summary><c>ZPG_TGE_SUMME_ABWEICHEND</c></summary>
+    public string SummeAbweichend { get; set; } = "Summe {0} % — korrigieren oder normieren; „OK“ normiert auf 100 %.";
+
+    /// <summary><c>ZPG_TGE_SUMME_NULL</c></summary>
+    public string SummeNull { get; set; } = "Summe 0 % — ohne Anteile lässt sich nichts normieren.";
+
+    /// <summary><c>ZPG_TGE_VORSCHAU_NORMIERT</c></summary>
+    public string TgeVorschauNormiert { get; set; } = "Nach der Normierung: {0}";
+
+    /// <summary><c>ZPG_TGE_BTN_NORMIEREN</c></summary>
+    public string KnopfNormieren { get; set; } = "Normieren";
+
+    /// <summary><c>ZPG_TGE_BTN_TAG_KOPIEREN</c></summary>
+    public string KnopfTagKopieren { get; set; } = "Tag kopieren";
+
+    /// <summary><c>ZPG_TGE_BTN_TAG_EINFUEGEN</c></summary>
+    public string KnopfTagEinfuegen { get; set; } = "Tag einfügen";
+
+    /// <summary><c>ZPG_TGE_GRUND_EINFUEGEN</c></summary>
+    public string TgeGrundEinfuegen { get; set; } = "Zuerst einen Tag kopieren.";
+
+    /// <summary><c>ZPG_TGE_GRP_WOCHE</c></summary>
+    public string TgeGruppeWoche { get; set; } = "Wochenfaktoren Mo–So [%]";
+
+    /// <summary><c>ZPG_TGE_HINW_WOCHE</c></summary>
+    public string TgeHinweisWoche { get; set; } = "Anteil jedes Wochentags an der Wochenmenge (Σ 100 %); Sonn- und Feiertage rechnen mit dem Sonntag.";
+
+    /// <summary><c>ZPG_TGE_GRP_VORLAGE</c></summary>
+    public string TgeGruppeVorlage { get; set; } = "Vorlage aus dem Katalog";
+
+    /// <summary><c>ZPG_TGE_LBL_VORLAGE</c></summary>
+    public string TgeLabelVorlage { get; set; } = "Tagesgangsatz";
+
+    /// <summary><c>ZPG_TGE_BTN_VORLAGE</c></summary>
+    public string TgeKnopfVorlage { get; set; } = "Vorlage laden";
+
+    /// <summary><c>ZPG_TGE_HINW_VORLAGE</c></summary>
+    public string TgeHinweisVorlage { get; set; } = "„Vorlage laden“ übernimmt die vier Tagesgänge des gewählten Satzes, die Wochenfaktoren bleiben; „Zurücksetzen“ stellt die Werte beim Öffnen wieder her.";
+
+    /// <summary><c>ZPG_TGE_GRUND_VORLAGE</c></summary>
+    public string TgeGrundVorlage { get; set; } = "Zuerst einen Tagesgangsatz wählen.";
+
+    /// <summary><c>ZPG_TGE_STATUS_GESPEICHERT</c></summary>
+    public string TgeStatusGespeichert { get; set; } = "Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+
+    /// <summary><c>ZPG_BTN_ZURUECKSETZEN</c></summary>
+    public string KnopfZuruecksetzen { get; set; } = "Zurücksetzen";
+
+    /// <summary><c>ZPG_BTN_KOPIE</c></summary>
+    public string KnopfKopie { get; set; } = "Als eigene Kopie bearbeiten…";
+
+    /// <summary><c>ZPG_LBL_KATALOGVERSION_KOPIE</c></summary>
+    public string LabelKatalogversion { get; set; } = "Katalogversion der Kopie";
+
+    /// <summary><c>ZPG_HINW_KOPIE</c></summary>
+    public string HinweisKopie { get; set; } = "„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist.";
+
+    /// <summary><c>ZPG_HINW_FREI</c></summary>
+    public string HinweisFrei { get; set; } = "„OK“ schreibt an Ort und Stelle in den Katalog — in einer Transaktion; der Freigabevermerk der Nutzungsart entfällt.";
+
+    /// <summary><c>ZPG_HINW_NUR_LESEN</c></summary>
+    public string HinweisNurLesen { get; set; } = "Nur lesbar — bearbeiten lässt sich eine eigene Kopie.";
+
+    /// <summary><c>ZPG_KATEG_TITEL</c></summary>
+    public string KatTitel { get; set; } = "Zapfkategorien und Streuung";
+
+    /// <summary><c>ZPG_KATEG_KONTEXT</c></summary>
+    public string KatKontext { get; set; } = "Nutzungsart {0} · {1} Kategorien · Σ Anteile {2}";
+
+    /// <summary><c>ZPG_KATEG_HINW_REGELN</c></summary>
+    public string KatHinweisRegeln { get; set; } = "μ und σ ≥ 0 l/min, Dauer 1 … 1440 min, Anteil ≥ 0 mit Σ > 0 (die Rechnung normiert auf 1), Kappung > 0 oder leer; jeder Name einmal.";
+
+    /// <summary><c>ZPG_KATEG_SP_REIHENFOLGE</c></summary>
+    public string KatSpalteReihenfolge { get; set; } = "Reihenfolge";
+
+    /// <summary><c>ZPG_KATEG_SP_NAME</c></summary>
+    public string KatSpalteName { get; set; } = "Kategorie";
+
+    /// <summary><c>ZPG_KATEG_SP_VOLUMENSTROM</c></summary>
+    public string KatSpalteVolumenstrom { get; set; } = "Volumenstrom μ [l/min]";
+
+    /// <summary><c>ZPG_KATEG_SP_DAUER</c></summary>
+    public string KatSpalteDauer { get; set; } = "Dauer [min]";
+
+    /// <summary><c>ZPG_KATEG_SP_ANTEIL</c></summary>
+    public string KatSpalteAnteil { get; set; } = "Anteil [–]";
+
+    /// <summary><c>ZPG_KATEG_SP_STREUUNG</c></summary>
+    public string KatSpalteStreuung { get; set; } = "Streuung σ [l/min]";
+
+    /// <summary><c>ZPG_KATEG_SP_KAPPUNG</c></summary>
+    public string KatSpalteKappung { get; set; } = "Kappung [l/min]";
+
+    /// <summary><c>ZPG_KATEG_SP_HERKUNFT</c></summary>
+    public string KatSpalteHerkunft { get; set; } = "Herkunft";
+
+    /// <summary><c>ZPG_KATEG_KAPPUNG_KEINE</c></summary>
+    public string KatKappungKeine { get; set; } = "keine";
+
+    /// <summary><c>ZPG_KATEG_BTN_NEU</c></summary>
+    public string KatKnopfNeu { get; set; } = "Kategorie hinzufügen";
+
+    /// <summary><c>ZPG_KATEG_BTN_ENTFERNEN</c></summary>
+    public string KatKnopfEntfernen { get; set; } = "Entfernen";
+
+    /// <summary><c>ZPG_KATEG_BTN_HOCH</c></summary>
+    public string KatKnopfHoch { get; set; } = "Nach oben";
+
+    /// <summary><c>ZPG_KATEG_BTN_RUNTER</c></summary>
+    public string KatKnopfRunter { get; set; } = "Nach unten";
+
+    /// <summary><c>ZPG_KATEG_GRUND_LETZTE</c></summary>
+    public string KatGrundLetzte { get; set; } = "Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch.";
+
+    /// <summary><c>ZPG_KATEG_GRUND_RAND</c></summary>
+    public string KatGrundRand { get; set; } = "Die Kategorie steht schon am Rand der Liste.";
+
+    /// <summary><c>ZPG_KATEG_BTN_VORGABE</c></summary>
+    public string KatKnopfVorgabe { get; set; } = "Vorgabesatz laden";
+
+    /// <summary><c>ZPG_KATEG_HINW_VORGABE</c></summary>
+    public string KatHinweisVorgabe { get; set; } = "Der Vorgabesatz sind die frei dokumentierten Kategorien des Katalogs (Modellannahme); er ersetzt die Zeilen im Editor.";
+
+    /// <summary><c>ZPG_KATEG_GRUND_OHNE_VORGABE</c></summary>
+    public string KatGrundOhneVorgabe { get; set; } = "Der Katalog führt keinen Vorgabesatz der Zapfkategorien.";
+
+    /// <summary><c>ZPG_KATEG_NEU_NAME</c></summary>
+    public string KatNeuName { get; set; } = "Kategorie {0}";
+
+    /// <summary><c>ZPG_KATEG_LEER</c></summary>
+    public string KatLeer { get; set; } = "Die Nutzungsart führt keine Zapfkategorien — „Vorgabesatz laden“ oder „Kategorie hinzufügen“.";
+
+    /// <summary><c>ZPG_KATEG_STATUS_GESPEICHERT</c></summary>
+    public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
 }

@@ -174,7 +174,13 @@ public class MenuebandTests : EposBunitContext
         // Es ist der ERSTE Punkt, den ein Entscheid je gestrichen hat (alle
         // frueheren Aufloesungen liessen das Ziel an einem anderen Punkt
         // stehen). Also 59 Punkte und 46 Handlungen.
-        Assert.Equal(59, Punkte.Count);
+        //
+        // ZAPFPROFILGENERATOR 5.4 (Stufe Z4): „Brauchwasser" wird ein Untermenue
+        // mit „Brauchwasserprofile" (bisheriges Ziel) und „Brauchwasser-
+        // Nutzungsarten" (NEUES Ziel, der Katalog des Zapfprofilgenerators). Der
+        // Knoten bleibt als Punkt stehen und klappt nur noch auf. Also 61 Punkte
+        // und 47 Handlungen.
+        Assert.Equal(61, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -302,6 +308,53 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_Prozesswaerme",
             "MenuItem_SolThermGanglinie",
         }, Kinder(rubrik));
+    }
+
+    [Fact]
+    public void Brauchwasser_ist_ein_Untermenue_mit_Profilen_und_Nutzungsarten()
+    {
+        // Zapfprofilgenerator 5.4 (Stufe Z4): „Brauchwasser" klappt nur noch auf
+        // und fuehrt genau zwei Punkte - die Profile mit dem bisherigen Ziel und
+        // den Katalog der Nutzungsarten. Kein Untermenue mit nur einem Punkt.
+        Menuepunkt bw = Rubrik("MenuItem_WBundHeizung")
+                        .Untereintraege.Single(p => p.Name == "MenuItem_Brauchwasser");
+
+        Assert.True(bw.Klappt);
+        Assert.True(string.IsNullOrEmpty(bw.Ziel));
+        Assert.Equal("MENU_BRAUCHWASSER", bw.TextSchluessel);
+        Assert.Equal(new[] { "MenuItem_Brauchwasserprofile", "MenuItem_BrauchwasserNutzungsarten" }, Kinder(bw));
+
+        Menuepunkt profile = bw.Untereintraege[0];
+        Assert.Equal("MENU_BRAUCHWASSERPROFILE", profile.TextSchluessel);
+        Assert.Equal(Seitenschluessel.BrauchwasserAdmin, profile.Ziel);
+
+        Menuepunkt katalog = bw.Untereintraege[1];
+        Assert.Equal("MENU_BRAUCHWASSER_NUTZUNGSARTEN", katalog.TextSchluessel);
+        Assert.Equal(Seitenschluessel.BrauchwasserNutzungsarten, katalog.Ziel);
+        Assert.Equal("Form_Brauchwasser_Nutzungsarten", katalog.Ziel);
+
+        // Beide Texte stehen in beiden Sprachen.
+        foreach (string k in new[] { "MENU_BRAUCHWASSERPROFILE", "MENU_BRAUCHWASSER_NUTZUNGSARTEN" })
+        {
+            Assert.False(string.IsNullOrEmpty(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(k, CultureInfo.GetCultureInfo("de-DE"))));
+            Assert.False(string.IsNullOrEmpty(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(k, CultureInfo.GetCultureInfo("en-US"))));
+        }
+    }
+
+    [Fact]
+    public void Der_Klick_auf_Brauchwasser_klappt_auf_und_der_Katalog_springt_ueber_die_Navigation()
+    {
+        // Der Knoten oeffnet nichts; erst der Punkt der dritten Ebene springt -
+        // unter Windows ueber Dienste.Navigation in das Fenster der Schale.
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+        cut.Find("#menue-MenuItem_Brauchwasser").Click();
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_Brauchwasser").GetAttribute("aria-expanded"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Brauchwasserprofile"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_BrauchwasserNutzungsarten"));
     }
 
     [Fact]
@@ -790,6 +843,9 @@ public class MenuebandTests : EposBunitContext
         {
             Seitenschluessel.BhkwAdmin,
             Seitenschluessel.BrauchwasserAdmin,
+            // Zapfprofilgenerator 5.4: das NEUE Ziel - der Katalog der
+            // Brauchwasser-Nutzungsarten im Untermenue „Brauchwasser".
+            Seitenschluessel.BrauchwasserNutzungsarten,
             Seitenschluessel.Einstellungen,
             Seitenschluessel.EnergietraegerVerwaltung,
             Seitenschluessel.GebaeudeAdmin,
@@ -1141,8 +1197,13 @@ public class MenuebandTests : EposBunitContext
         // aufklappenden bleibt 13 - kein Untermenue kommt, keines faellt; die
         // Rubrik „Kosten" bekommt nur ein viertes Kind (die gesetzlichen
         // Parameter), „Daten & Import" ein siebtes (die Dublettenpruefung).
-        Assert.Equal(13, Punkte.Count(p => p.Klappt));
-        Assert.Equal(46, Punkte.Count(p => !p.Klappt));
+        //
+        // Der Zapfprofilgenerator (5.4) macht aus „Brauchwasser" ein Untermenue
+        // (13 -> 14 aufklappende) und legt den SECHSTEN echten Weg an: den
+        // Katalog der Brauchwasser-Nutzungsarten (46 -> 47). Das bisherige Ziel
+        // wandert unveraendert eine Ebene tiefer.
+        Assert.Equal(14, Punkte.Count(p => p.Klappt));
+        Assert.Equal(47, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

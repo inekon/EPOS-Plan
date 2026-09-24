@@ -263,6 +263,13 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Brauchwasser (Razor seit W14b.1).</summary>
     public const string BrauchwasserAdmin = WindowsFormsApplication1.Masken.BrauchwasserAdmin;
 
+    /// <summary>
+    /// Katalog der Brauchwasser-Nutzungsarten (Zapfprofilgenerator, Umsetzungskonzept 5.4) —
+    /// unter Windows ein Fenster der Schale, in der <c>AppWurzel</c> nicht geführt (iOS lehnt
+    /// benannt ab wie <see cref="BrauchwasserAdmin"/>).
+    /// </summary>
+    public const string BrauchwasserNutzungsarten = WindowsFormsApplication1.Masken.BrauchwasserNutzungsarten;
+
     /// <summary>Herstellerdaten Solarkollektoren einlesen (Razor seit W13.1).</summary>
     public const string SolarkollektorenImport = WindowsFormsApplication1.Masken.SolarkollektorenImport;
 
@@ -399,6 +406,7 @@ public static class Seitenschluessel
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
         WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
+        BrauchwasserNutzungsarten,
         SolarkollektorenImport, PvImport, WechselrichterAdmin, WechselrichterImport,
         StromspeicherImport,
         ProjektSpeichernUnter,

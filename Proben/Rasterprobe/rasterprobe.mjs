@@ -19,6 +19,16 @@
 //    (h) dasselbe unter der Virtualisierungsschwelle (119 Zeilen),
 //    (i) wie oft die zwei Sichtbarkeitsmelder von Virtualize zurueckmelden.
 //
+//  In den Faellen mit "frei: true" (ein Raster ohne eigene Hoechsthoehe,
+//  Begrenzt=false, etwa die Wohnungstabelle des Zapfprofils) misst sie dazu
+//    (l) ob die Huelle selbst rollt (soll nicht: der Rollbereich ist der Dialog),
+//        welcher Vorfahr wirklich rollt, und ob alle Zeilen gleich hoch sind;
+//        dazu, ob die Seite oder die Ueberlagerung um das Raster QUER rollt
+//        (soll nicht - quer rollt allein die Huelle, und in den Faellen mit
+//        "querMax" auch sie hoechstens so weit).
+//  "bereich" grenzt die Messung auf EIN Raster der Seite ein (CSS-Selektor),
+//  "klick" ist der Schritt des Anwenders vor der Messung (etwa die Stufe).
+//
 //  (i) ist der schaerfste Wert. Streiten sich die beiden - weil ItemSize nicht
 //  zur wirklichen Zeilenhoehe passt -, melden sie im Takt des Bildaufbaus
 //  (gemessen 370 Mal in drei Sekunden statt vier).
@@ -73,7 +83,10 @@ const SONDE = () => {
   const Echt = window.IntersectionObserver;
   function Mit(rueckruf, gaben) {
     const huelle = (eintraege, wer) => {
-      for (const e of eintraege) p.melder.push({
+      // Nur die Melder IM Bereich zaehlen - andere Bausteine der Seite (Bilder,
+      // Dialoge) duerfen eigene IntersectionObserver fuehren.
+      const b = window.__probeBereich;
+      for (const e of eintraege) if (!b || (e.target.closest && e.target.closest(b))) p.melder.push({
         t: +(performance.now() - p.t0).toFixed(0),
         halter: (e.target.getAttribute('style') || '').slice(8, 24),
         schneidet: e.isIntersecting
@@ -106,7 +119,8 @@ const SONDE = () => {
   });
 
   setInterval(() => {
-    const t = document.querySelector('table.quickgrid');
+    const w = window.__probeBereich ? document.querySelector(window.__probeBereich) : document;
+    const t = w && w.querySelector('table.quickgrid');
     const tb = t && t.querySelector('tbody');
     if (!tb) { p.proben.push({ t: +(performance.now() - p.t0).toFixed(0), platzhalter: 0, echt: 0, laden: false }); return; }
 
@@ -131,9 +145,10 @@ const SONDE = () => {
 // Rollbehaelter. findeRollbehaelter bildet Virtualize.ts nach
 // (findClosestScrollContainer): der naechste Vorfahr, dessen overflow-y
 // nicht 'visible' ist; body und html zaehlen nicht mit.
-const ABLESEN = () => {
-  const tabelle = document.querySelector('table.quickgrid');
-  if (!tabelle) return { fehler: 'kein QuickGrid im Baum' };
+const ABLESEN = (bereich) => {
+  const wurzel = bereich ? document.querySelector(bereich) : document;
+  const tabelle = wurzel && wurzel.querySelector('table.quickgrid');
+  if (!tabelle) return { fehler: 'kein QuickGrid im Baum' + (bereich ? ' unter ' + bereich : '') };
 
   const tbody = tabelle.querySelector('tbody');
   const alle = [...tbody.children];
@@ -158,6 +173,18 @@ const ABLESEN = () => {
   };
 
   const behaelter = abstand.length ? findeRollbehaelter(abstand[0]) : findeRollbehaelter(tabelle);
+
+  // (l) Der Vorfahr, der WIRKLICH rollt: overflow-y auto/scroll UND mehr Inhalt
+  // als Platz. Bei einem Raster ohne eigene Hoechsthoehe ist das der Dialog.
+  const findeRollenden = el => {
+    for (let v = el.parentElement; v && v !== document.documentElement; v = v.parentElement) {
+      const oy = getComputedStyle(v).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && v.scrollHeight > v.clientHeight + 1) return v;
+    }
+    return null;
+  };
+  const rollender = findeRollenden(tabelle);
+  const echtHoehen = echteZeilen.map(z => +z.getBoundingClientRect().height.toFixed(3));
   const huelle = tabelle.closest('.epos-raster-huelle, .epos-raster-huelle--hoch');
   const kopf = tabelle.querySelector('thead');
 
@@ -185,12 +212,18 @@ const ABLESEN = () => {
       offsetOben: e.offsetTop,
       display: getComputedStyle(e).display
     })),
+    echtMin: echtHoehen.length ? Math.min(...echtHoehen) : null,
+    echtMax: echtHoehen.length ? Math.max(...echtHoehen) : null,
+    rollenderVorfahr: rollender ? kennung(rollender) : '(keiner)',
+    seiteQuer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ueberlagerungQuer: (u => u ? u.scrollWidth - u.clientWidth : null)(tabelle.closest('.epos-ueberlagerung')),
     rollbehaelter: kennung(behaelter),
     rollbehaelterHoehe: behaelter ? behaelter.clientHeight : null,
     huelle: huelle ? {
       kennung: kennung(huelle),
       clientHoehe: huelle.clientHeight,
       rollHoehe: huelle.scrollHeight,
+      querUeberstand: huelle.scrollWidth - huelle.clientWidth,
       rollStand: huelle.scrollTop,
       overflowY: getComputedStyle(huelle).overflowY,
       hoeheStil: getComputedStyle(huelle).height,
@@ -237,7 +270,9 @@ async function fall(browser, f) {
     deviceScaleFactor: f.dpr
   });
   const seite = await kontext.newPage();
+  await seite.addInitScript(b => { window.__probeBereich = b; }, f.bereich || '');
   await seite.addInitScript(SONDE);
+  const B = f.bereich || '';
 
   // f.pfad: eine andere Seite des Wirtes - die Katalogprobe mit dem GANZEN
   // Dialog (Neuordnung Stufe 1, Faelle J und K): dieselbe virtualisierte Liste,
@@ -246,12 +281,23 @@ async function fall(browser, f) {
                          : `${WURZEL}/probe?modus=${f.modus}&zeilen=${f.zeilen}&takt=${f.takt}`;
   await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
 
+  // f.klick: der Schritt des Anwenders vor der Messung (etwa die Stufe
+  // "Erweitert" des Zapfprofils, erst mit ihr steht die Wohnungstabelle da).
+  for (const k of [].concat(f.klick || [])) {
+    await seite.waitForSelector(k, { timeout: 20000 });
+    await schlaf(500);
+    await seite.click(k);
+  }
+
   // Auf den Aufbau der interaktiven Komponente warten (Blazor Server).
-  await seite.waitForSelector('table.quickgrid', { timeout: 20000 });
+  await seite.waitForSelector((B ? B + ' ' : '') + 'table.quickgrid', { timeout: 20000 });
 
   // DIE GEGENPROBE (#235): Nimmt man der Zeile ihr gesetztes Mass wieder weg,
   // muss der Fehler zurueckkommen. Sonst belegt die Messung nur, dass es heute
   // laeuft - nicht, dass DIESE Zeile im Stilblatt es laufen laesst.
+  // f.stil: ein Stilblatt der Gegenprobe, das eine Behebung wieder wegnimmt.
+  if (f.stil) await seite.addStyleTag({ content: f.stil });
+
   if (f.entpinnt || ENTPINNT) {
     await seite.addStyleTag({
       content: '.epos-raster-huelle--hoch .epos-raster > tbody > tr,' +
@@ -263,13 +309,13 @@ async function fall(browser, f) {
   // STILPROBE. Ohne epos-ui.css hat die Huelle keine Hoechsthoehe, es gibt
   // nichts zu rollen und nichts zu virtualisieren - und die Zaehler stehen
   // dann alle auf 0, was wie ein Erfolg aussieht. Das darf nicht durchgehen.
-  const stil = await seite.evaluate(() => {
-    const h = document.querySelector('.epos-raster-huelle');
+  const stil = await seite.evaluate(b => {
+    const h = (b ? document.querySelector(b) : document).querySelector('.epos-raster-huelle');
     // Gelesen wird der RAHMEN der Huelle: Im Katalogdialog traegt die Liste seit
     // Stufe 1 der Neuordnung keine Hoechsthoehe mehr (max-height: none), der
     // Rahmen aber steht nur im Hausstilblatt.
     return h ? getComputedStyle(h).borderTopStyle : '(keine Huelle)';
-  });
+  }, B);
   if (stil !== 'solid') {
     throw new Error(`Das Stilblatt epos-ui.css wirkt nicht (Rahmen der Huelle: ${stil}). ` +
       'Der Wirt liefert seine statischen Dateien nicht aus - Messung wertlos.');
@@ -289,11 +335,11 @@ async function fall(browser, f) {
   }
 
   await schlaf(500);
-  const bei500 = await seite.evaluate(ABLESEN);
+  const bei500 = await seite.evaluate(ABLESEN, B);
   await fotoschuss('t0500');
 
   await schlaf(4500);                       // t = 5 s
-  const bei5000 = await seite.evaluate(ABLESEN);
+  const bei5000 = await seite.evaluate(ABLESEN, B);
   await fotoschuss('t5000');
 
   const proben1 = await seite.evaluate(() => window.__probe.proben);
@@ -305,47 +351,47 @@ async function fall(browser, f) {
   const fertig = f.suche ? 2200 : (f.modus === 'laden' ? 1200 : 0);
 
   // --- (g) Rollen um 2 000 px und zurueck ---------------------------
-  const rollmass = await seite.evaluate(() => {
-    const h = document.querySelector('.epos-raster-huelle--hoch, .epos-raster-huelle');
+  const rollmass = await seite.evaluate(b => {
+    const h = (b ? document.querySelector(b) : document).querySelector('.epos-raster-huelle--hoch, .epos-raster-huelle');
     if (!h) return null;
     h.scrollTop = 2000;
     return { gesetzt: h.scrollTop, rollHoehe: h.scrollHeight };
-  });
+  }, B);
   const t_roll = Date.now();
   let nachRollen = null;
   if (rollmass) {
     // Sollwert: binnen 300 ms echte Zeilen im sichtbaren Bereich.
     for (let i = 0; i < 12; i++) {
       await schlaf(25);
-      const s = await seite.evaluate(() => {
-        const t = document.querySelector('table.quickgrid');
+      const s = await seite.evaluate(b => {
+        const t = (b ? document.querySelector(b) : document).querySelector('table.quickgrid');
         const zeilen = [...t.querySelectorAll('tbody > tr')]
           .filter(z => !/flex-shrink/.test(z.getAttribute('style') || ''));
         return {
           echt: zeilen.filter(z => !z.querySelector('td.grid-cell-placeholder')).length,
           platzhalter: zeilen.filter(z => z.querySelector('td.grid-cell-placeholder')).length
         };
-      });
+      }, B);
       if (s.echt > 0) { nachRollen = { ...s, ms: Date.now() - t_roll }; break; }
     }
     if (!nachRollen) {
-      const s = await seite.evaluate(ABLESEN);
+      const s = await seite.evaluate(ABLESEN, B);
       nachRollen = { echt: s.echt, platzhalter: s.platzhalter, ms: Date.now() - t_roll };
     }
     await schlaf(3000);                     // drei Sekunden Ruhe NACH dem Rollen
     await fotoschuss('gerollt');
   }
 
-  const nachRollenStand = await seite.evaluate(ABLESEN);
+  const nachRollenStand = await seite.evaluate(ABLESEN, B);
   const umRollen = await seite.evaluate(() => window.__probe.umschaltungen.length) - um1.length;
   const melderRollen = await seite.evaluate(() => window.__probe.melder.length) - melder1;
 
-  await seite.evaluate(() => {
-    const h = document.querySelector('.epos-raster-huelle--hoch, .epos-raster-huelle');
+  await seite.evaluate(b => {
+    const h = (b ? document.querySelector(b) : document).querySelector('.epos-raster-huelle--hoch, .epos-raster-huelle');
     if (h) h.scrollTop = 0;
-  });
+  }, B);
   await schlaf(800);
-  const zurueck = await seite.evaluate(ABLESEN);
+  const zurueck = await seite.evaluate(ABLESEN, B);
   await fotoschuss('zurueck');
 
   // --- STUFE 2 (V11): die Tastatur, nur in den Dialogfaellen mit tasten: true ---
@@ -423,6 +469,12 @@ function zeige(e) {
   console.log(`      Verlauf (t|Platzh|echt|laden|HalterVor|HalterNach): ${e.verlauf}`);
   console.log(`  (c) Zeilenhoehen gemessen: ${JSON.stringify(b.zeilenhoehen)}` +
               `  (echt ${b.echtHoehe}, Platzhalter ${b.platzhalterHoehe}, ItemSize ${e.fall.zeile || 53})`);
+  if (e.fall.frei)
+    console.log(`  (l) echte Zeilen ${b.echt} von ${e.fall.zeilen}, Hoehe ${b.echtMin} … ${b.echtMax} px;` +
+                ` Huelle rollt senkrecht ${b.huelle ? b.huelle.rollHoehe - b.huelle.clientHoehe : '-'} px,` +
+                ` quer ${b.huelle ? b.huelle.querUeberstand : '-'} px; rollender Vorfahr ${b.rollenderVorfahr};` +
+                ` Seite quer ${b.seiteQuer} px` +
+                (b.ueberlagerungQuer === null ? '' : `, Ueberlagerung quer ${b.ueberlagerungQuer} px`));
   console.log(`  (d) Abstandshalter: ${JSON.stringify(b.abstandshalter)}`);
   console.log(`      Huelle: ${JSON.stringify(b.huelle)}`);
   console.log(`  (e) Rollbehaelter (wie Virtualize.ts ihn sucht): ${b.rollbehaelter}` +
@@ -465,7 +517,29 @@ function pruefe(e) {
   // Im Katalogdialog (Faelle J, K): Virtualize muss die HUELLE als Rollbehaelter
   // finden - fixe Hoehe aus dem Rahmen statt max-height - und die Zeile ist so
   // hoch wie ItemSize.
-  if (e.fall.pfad) {
+  // (l) Ein Raster ohne eigene Hoechsthoehe (Begrenzt=false): keine
+  // Virtualisierung, also weder Abstandshalter noch Sichtbarkeitsmelder; alle
+  // Zeilen gezeichnet und gleich hoch; die Huelle rollt NICHT selbst - der
+  // Rollbereich ist der Dialog (sonst Rollbereich im Rollbereich).
+  if (e.fall.frei) {
+    const b = e.bei5000;
+    if (b.abstandshalter.length) maengel.push(`${b.abstandshalter.length} Abstandshalter (soll 0: nicht virtualisiert)`);
+    if (e.melder1 + e.melderRollen !== 0)
+      maengel.push(`${e.melder1 + e.melderRollen} Sichtbarkeitsmeldungen (soll 0: nicht virtualisiert)`);
+    if (b.echt !== e.fall.zeilen) maengel.push(`${b.echt} von ${e.fall.zeilen} Zeilen gezeichnet`);
+    if (b.echtMin !== null && b.echtMax - b.echtMin > 0.5)
+      maengel.push(`Zeilenhoehen ${b.echtMin} … ${b.echtMax} px (soll gleich)`);
+    if (b.huelle && b.huelle.rollHoehe - b.huelle.clientHoehe > 1)
+      maengel.push(`die Huelle rollt selbst (${b.huelle.rollHoehe - b.huelle.clientHoehe} px) - Rollbereich im Rollbereich`);
+    if (/epos-raster-huelle/.test(b.rollenderVorfahr || ''))
+      maengel.push(`der rollende Vorfahr ist die Huelle (${b.rollenderVorfahr})`);
+    if (b.seiteQuer > 0) maengel.push(`die Seite rollt quer um ${b.seiteQuer} px (soll 0)`);
+    if (b.ueberlagerungQuer !== null && b.ueberlagerungQuer > 1)
+      maengel.push(`die Ueberlagerung rollt quer um ${b.ueberlagerungQuer} px (soll 0: quer rollt allein die Huelle)`);
+    if (e.fall.querMax !== undefined && b.huelle && b.huelle.querUeberstand > e.fall.querMax)
+      maengel.push(`die Huelle rollt quer um ${b.huelle.querUeberstand} px (soll <= ${e.fall.querMax})`);
+  }
+  if (e.fall.pfad && !e.fall.frei) {
     const b = e.bei5000;
     if (!/epos-raster-huelle/.test(b.rollbehaelter || ''))
       maengel.push(`Rollbehaelter ist ${b.rollbehaelter}, nicht die Huelle der Liste`);
@@ -522,6 +596,46 @@ const FAELLE = [
     pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1', zeile: 46, tasten: true },
   { name: 'K_6654_Dialog_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1', zeile: 46, tasten: true },
+  // ZAPFPROFILGENERATOR (Stufe Z4): der Katalog der Brauchwasser-Nutzungsarten
+  // (Katalogliste, Zeile ist Wahl, 46 px) - virtualisiert (6 654 Zeilen) und im
+  // Mass eines Katalogs unter der Schwelle (40); dazu die zwei Raster ohne eigene
+  // Hoechsthoehe: die Wohnungstabelle der Stufe Erweitert (Zapfprofil) und das
+  // Raster der Zapfkategorien, bearbeitbar und lesend.
+  { name: 'T1_tww_6654_Dialog_1088x624', modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=tww&zeilen=6654', zeile: 46, tasten: true },
+  { name: 'T2_tww_6654_Dialog_400x624',  modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=tww&zeilen=6654', zeile: 46, tasten: true },
+  { name: 'T3_tww_40_Dialog_1088x624',   modus: 'sofort', zeilen: 40, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=tww&zeilen=40', zeile: 46, tasten: true },
+  { name: 'Z1_wohnungen_12_1088x624',    modus: 'sofort', zeilen: 12, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },
+  { name: 'Z2_wohnungen_12_400x624',     modus: 'sofort', zeilen: 12, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },
+  { name: 'Z3_kategorien_10_1088x624',   modus: 'sofort', zeilen: 10, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=kategorien&zeilen=10', frei: true, bereich: '.epos-zapfprofil-kategorienraster' },
+  { name: 'Z4_kategorien_10_400x624',    modus: 'sofort', zeilen: 10, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=kategorien&zeilen=10', frei: true, bereich: '.epos-zapfprofil-kategorienraster' },
+  { name: 'Z5_kategorien_lesend_1088x624', modus: 'sofort', zeilen: 10, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=kategorien&art=lesen&zeilen=10', frei: true, bereich: '.epos-zapfprofil-kategorienraster' },
+  // Das Raster der Zapfkategorien DORT, wo der Anwender es sieht: in der
+  // Ueberlagerung "Kategorien..." des Katalogdialogs (position: fixed). Bei
+  // 1 088 px rollt es nicht quer; bei 400 px rollt allein die Huelle. Z8 ist
+  // die GEGENPROBE: ohne positionierten Vorfahren der versteckten Beschriftung
+  // rollt die Ueberlagerung mit - sie MUSS die Sollwerte verfehlen.
+  { name: 'Z6_kategorien_ueberlagerung_1088x624', modus: 'sofort', zeilen: 10, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=tww&zeilen=10', frei: true, querMax: 1,
+    bereich: '.epos-ueberlagerung .epos-zapfprofil-kategorienraster', klick: ['button.epos-tww-kategorien'] },
+  { name: 'Z7_kategorien_ueberlagerung_400x624', modus: 'sofort', zeilen: 10, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=tww&zeilen=10', frei: true,
+    bereich: '.epos-ueberlagerung .epos-zapfprofil-kategorienraster',
+    klick: ['.epos-auswahlleiste button.epos-nur-schmal', 'button.epos-tww-kategorien'] },
+  { name: 'Z8_kategorien_ohne_Bezugskasten', modus: 'sofort', zeilen: 10, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=tww&zeilen=10', frei: true,
+    bereich: '.epos-ueberlagerung .epos-zapfprofil-kategorienraster',
+    klick: ['.epos-auswahlleiste button.epos-nur-schmal', 'button.epos-tww-kategorien'],
+    stil: '.epos-zapfprofil-kategorienraster .epos-feld { position: static !important; }', mussFehlschlagen: true },
   { name: 'L_6654_sofort_1088x624',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1 },
   { name: 'M_6654_sofort_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1 }
 ];

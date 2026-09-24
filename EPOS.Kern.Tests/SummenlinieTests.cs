@@ -215,7 +215,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(a.Punkt.LadezeitH, b.Punkt.LadezeitH);
             Assert.True(b.Schnellpfad);
             Assert.False(a.Schnellpfad);
-            Assert.Equal(Summenlinie.VERMERK_ENTWURF, b.Vermerk);
+            Assert.Equal(Summenlinie.VERMERK_ENTWURF, b.Vermerk.Kennung);
         }
 
         [Fact]

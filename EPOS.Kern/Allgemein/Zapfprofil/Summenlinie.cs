@@ -13,13 +13,12 @@ namespace WindowsFormsApplication1
         /// <summary>Das leere Fenster.</summary>
         internal static Tagesfenster Leer => new Tagesfenster(0.0, 0.0);
 
-        /// <summary>Beginn und Länge im Bereich, sonst benannte Ablehnung.</summary>
-        internal Tagesfenster Geprueft(string was)
+        /// <summary>Beginn und Länge im Bereich, sonst benannte Ablehnung; <paramref name="was"/> ist ein Begriff.</summary>
+        internal Tagesfenster Geprueft(ZapfSatz was)
         {
             if (double.IsNaN(BeginnH) || BeginnH < 0 || BeginnH >= Zapfkalender.STUNDEN_TAG
                 || double.IsNaN(LaengeH) || LaengeH < 0 || LaengeH > Zapfkalender.STUNDEN_TAG)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — " + was + " liegt nicht im Tag (Beginn 0 … 24 h, Länge 0 … 24 h).");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_FENSTER_AUSSERHALB", was));
             return this;
         }
 
@@ -176,8 +175,8 @@ namespace WindowsFormsApplication1
         /// <summary>Schnellpfad des Vereinfachungsverfahrens („Schnellauslegung").</summary>
         public bool Schnellpfad { get; init; }
 
-        /// <summary>Vermerk des Entwurfsstands.</summary>
-        public string Vermerk { get; init; } = Summenlinie.VERMERK_ENTWURF;
+        /// <summary>Vermerk des Entwurfsstands als Satz (N11 (k)).</summary>
+        public ZapfSatz Vermerk { get; init; } = ZapfSatz.Neu(Summenlinie.VERMERK_ENTWURF);
 
         /// <summary>Hinweise des Verfahrens.</summary>
         public IReadOnlyList<Auslegungshinweis> Hinweise { get; init; } = new Auslegungshinweis[0];
@@ -218,11 +217,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class Summenlinie
     {
-        /// <summary>Vermerk jedes Ergebnisses (A100 und A1 sind Entwürfe).</summary>
-        internal const string VERMERK_ENTWURF = "Entwurfsstand, Anwendung besonders zu vereinbaren";
+        /// <summary>Kennung des Vermerks jedes Ergebnisses (A100 und A1 sind Entwürfe): „Entwurfsstand, Anwendung besonders zu vereinbaren".</summary>
+        internal const string VERMERK_ENTWURF = "AUSTEXT_VERMERK_ENTWURF";
 
-        /// <summary>Beschriftung der Wertepaarkurve.</summary>
-        internal const string VERMERK_WERTEPAARKURVE = "Wertepaarkurve: eigene Erweiterung des Nachweisverfahrens";
+        /// <summary>Kennung der Beschriftung der Wertepaarkurve („eigene Erweiterung des Nachweisverfahrens").</summary>
+        internal const string VERMERK_WERTEPAARKURVE = "AUSHINWEIS_WERTEPAARKURVE";
 
         /// <summary>Punkte des groben Monotonierasters (numerische Setzung).</summary>
         internal const int RASTER_GROB = 20;
@@ -263,43 +262,42 @@ namespace WindowsFormsApplication1
                                                         ZapfUebertragerwerkstoff? werkstoff = null)
         {
             if (p == null)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — die Projektgrößen der Auslegung fehlen.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_PROJEKTGROESSEN_FEHLEN"));
             double kw = ZapfAuslegungParameter.ProjektOderParameter(p.KaltwasserAuslegungC,
-                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C");
-            double speicher = Auslegungspruefung.Endlich(speicherC, "die Speichertemperatur");
+                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C",
+                ZapfSatz.Neu("BEGRIFF_KALTWASSER_AUSLEGUNG"));
+            double speicher = Auslegungspruefung.Endlich(speicherC, ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR"));
             double sensor = ZapfAuslegungParameter.ProjektOderParameter(p.SensorhoeheAnteil,
-                ZapfAuslegungParameter.SENSORHOEHE, ps, prot, "Auslegung.Sensorhoehe", "-");
+                ZapfAuslegungParameter.SENSORHOEHE, ps, prot, "Auslegung.Sensorhoehe", "-", ZapfSatz.Neu("BEGRIFF_SENSORHOEHE"));
             double? misch = p.Speicherart == ZapfSpeicherart.GemischterSpeicher
                 ? ps.Wert(ZapfAuslegungParameter.MISCHWASSERTEMPERATUR) : (double?)null;
 
             double verlustKw = 0.0;
             if (p.SpeicherverlustW.HasValue)
-                verlustKw = Auslegungspruefung.NichtNegativ(p.SpeicherverlustW.Value, "der Speicherverlust")
+                verlustKw = Auslegungspruefung.NichtNegativ(p.SpeicherverlustW.Value, ZapfSatz.Neu("BEGRIFF_SPEICHERVERLUST"))
                             / Zirkulationskanal.W_JE_KW;
             else
-                hinweise?.Add(new Auslegungshinweis("SPEICHERVERLUST_NULL",
-                    "Ohne Angabe des Bereitschaftsverlusts rechnet die Summenlinie ohne Speicherverlust."));
+                hinweise?.Add(new Auslegungshinweis("SPEICHERVERLUST_NULL", ZapfSatz.Neu("AUSHINWEIS_SPEICHERVERLUST_NULL")));
 
             Uebertrager ue = null;
             if (p.UebertragerKw.HasValue)
-                ue = new Uebertrager(Auslegungspruefung.NichtNegativ(p.UebertragerKw.Value, "die Übertragerleistung"),
+                ue = new Uebertrager(Auslegungspruefung.NichtNegativ(p.UebertragerKw.Value, ZapfSatz.Neu("BEGRIFF_UEBERTRAGERLEISTUNG")),
                                      p.UebertragerUaWJeK, null, null, null, null, null);
             else if (p.UebertragerUaWJeK.HasValue)
-                ue = new Uebertrager(null, Auslegungspruefung.NichtNegativ(p.UebertragerUaWJeK.Value, "U·A des Übertragers"),
+                ue = new Uebertrager(null, Auslegungspruefung.NichtNegativ(p.UebertragerUaWJeK.Value, ZapfSatz.Neu("BEGRIFF_UA")),
                                      null, null, ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR), null, null);
             else if (p.UebertragerFlaecheM2.HasValue)
-                ue = new Uebertrager(null, null, Auslegungspruefung.NichtNegativ(p.UebertragerFlaecheM2.Value, "die Übertragerfläche"),
-                                     UWert(ps, werkstoff, "die Übertragerfläche des Projekts", prot),
+                ue = new Uebertrager(null, null,
+                                     Auslegungspruefung.NichtNegativ(p.UebertragerFlaecheM2.Value, ZapfSatz.Neu("BEGRIFF_UEBERTRAGERFLAECHE")),
+                                     UWert(ps, werkstoff, ZapfSatz.Neu("BEGRIFF_UEBERTRAGERFLAECHE_PROJEKT"), prot),
                                      ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR), null, null);
             else
             {
                 if (!erzeugerart.HasValue)
                     throw new ZapfAuslegungException(ZapfAuslegungsfehler.UebertragerUnbestimmt,
-                        "Nicht rechenbar — ohne Übertrager im Projekt schätzt die Summenlinie die Fläche, und die Schätzformel "
-                        + "hängt an der Erzeugerart (Kessel NA.1, Wärmepumpe NA.2); bitte die Erzeugerart oder den Übertrager angeben.");
+                        ZapfSatz.Neu("AUSLEGUNG_ERZEUGERART_FEHLT"));
                 var (steigung, achsabschnitt) = ZapfAuslegungParameter.Uebertragerflaeche(erzeugerart.Value);
-                ue = new Uebertrager(null, null, null, UWert(ps, werkstoff, "die Schätzformel der Übertragerfläche", prot),
+                ue = new Uebertrager(null, null, null, UWert(ps, werkstoff, ZapfSatz.Neu("BEGRIFF_SCHAETZFORMEL"), prot),
                                      ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR),
                                      ps.Wert(steigung), ps.Wert(achsabschnitt));
                 prot?.Vermerken("", "Auslegung.Uebertragerflaeche", null, "m²", Wertstatus.Vorgabe, ps.Lies(steigung).Herkunft,
@@ -327,17 +325,16 @@ namespace WindowsFormsApplication1
                 ErzeugerKw = erzeuger,
                 Uebertrager = ue,
                 ZeitkonstanteKoeffizient = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.ZEITKONSTANTE_KOEFFIZIENT,
-                    "Die Zeitkonstante des Speichers wird nicht angezeigt.", hinweise)
+                    ZapfSatz.Neu("FOLGE_ZEITKONSTANTE_ENTFAELLT"), hinweise)
             });
         }
 
         /// <summary>Der U-Wert [W/(m²·K)] zum Werkstoff des Übertragers; ohne Werkstoff benannte Ablehnung.</summary>
-        private static double UWert(Parametersatz ps, ZapfUebertragerwerkstoff? werkstoff, string wozu, Herkunftsprotokoll prot)
+        private static double UWert(Parametersatz ps, ZapfUebertragerwerkstoff? werkstoff, ZapfSatz wozu, Herkunftsprotokoll prot)
         {
             if (!werkstoff.HasValue)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.UebertragerUnbestimmt,
-                    "Nicht rechenbar — " + wozu + " braucht den U-Wert des Übertragers, und der hängt am Werkstoff "
-                    + "(Stahl oder Edelstahl); bitte den Werkstoff oder U·A angeben.");
+                    ZapfSatz.Neu("AUSLEGUNG_WERKSTOFF_FEHLT", wozu));
             ZapfParameterwert pw = ps.Lies(ZapfAuslegungParameter.UebertragerU(werkstoff.Value));
             prot?.Vermerken("", "Auslegung.UebertragerU", pw.Wert, "W/(m²·K)", Wertstatus.Vorgabe, pw.Herkunft,
                             "Werkstoff " + werkstoff.Value);
@@ -348,28 +345,24 @@ namespace WindowsFormsApplication1
         internal static Summenlinienparameter Pruefen(Summenlinienparameter p)
         {
             if (p == null) throw new ArgumentNullException(nameof(p));
-            Auslegungspruefung.Spreizung(p.SpeicherC, p.KaltwasserAuslegungC, "Speicher − Kaltwasser der Auslegung");
+            Auslegungspruefung.Spreizung(p.SpeicherC, p.KaltwasserAuslegungC, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_SPEICHER"));
             if (!(p.Ladungsfaktor > 0) || p.Ladungsfaktor > 1)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — der Ladungsfaktor liegt nicht in (0; 1].");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_LADUNGSFAKTOR"));
             if (double.IsNaN(p.SensorhoeheAnteil) || p.SensorhoeheAnteil < 0 || p.SensorhoeheAnteil > 1)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — die Sensorhöhe liegt nicht in [0; 1].");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_SENSORHOEHE"));
             if (p.Speicherart == ZapfSpeicherart.GemischterSpeicher)
             {
                 if (!p.MischwasserC.HasValue)
-                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.TemperaturUngueltig,
-                        "Nicht rechenbar — der gemischte Speicher braucht die Mischwassertemperatur.");
-                Auslegungspruefung.Spreizung(p.MischwasserC.Value, p.KaltwasserAuslegungC, "Mischwasser − Kaltwasser der Auslegung");
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.TemperaturUngueltig, ZapfSatz.Neu("AUSLEGUNG_MISCHWASSER_FEHLT"));
+                Auslegungspruefung.Spreizung(p.MischwasserC.Value, p.KaltwasserAuslegungC, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_MISCHWASSER"));
             }
-            Auslegungspruefung.NichtNegativ(p.VerzoegerungMin, "die Verzögerung des Erzeugers");
-            Auslegungspruefung.NichtNegativ(p.SpeicherverlustKw, "der Speicherverlust");
-            Auslegungspruefung.NichtNegativ(p.Zirkulation.LeistungKw, "die Zirkulationsleistung");
-            p.Zirkulation.Laufzeit.Geprueft("Die Laufzeit der Zirkulation");
-            if (p.ErzeugerKw.HasValue) Auslegungspruefung.NichtNegativ(p.ErzeugerKw.Value, "die Erzeugerleistung");
+            Auslegungspruefung.NichtNegativ(p.VerzoegerungMin, ZapfSatz.Neu("BEGRIFF_VERZOEGERUNG"));
+            Auslegungspruefung.NichtNegativ(p.SpeicherverlustKw, ZapfSatz.Neu("BEGRIFF_SPEICHERVERLUST"));
+            Auslegungspruefung.NichtNegativ(p.Zirkulation.LeistungKw, ZapfSatz.Neu("BEGRIFF_ZIRK_LEISTUNG"));
+            p.Zirkulation.Laufzeit.Geprueft(ZapfSatz.Neu("BEGRIFF_ZIRK_LAUFZEIT"));
+            if (p.ErzeugerKw.HasValue) Auslegungspruefung.NichtNegativ(p.ErzeugerKw.Value, ZapfSatz.Neu("BEGRIFF_ERZEUGERLEISTUNG"));
             if (!p.ErzeugerKw.HasValue && p.Uebertrager == null)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.LeistungFehlt,
-                    "Nicht rechenbar — weder Erzeuger- noch Übertragerleistung ist bekannt.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.LeistungFehlt, ZapfSatz.Neu("AUSLEGUNG_LEISTUNG_FEHLT"));
             return p;
         }
 
@@ -414,8 +407,7 @@ namespace WindowsFormsApplication1
                                                       Summenlinienparameter p, bool mitVerlauf = false)
         {
             if (tag == null)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,
-                    "Nicht rechenbar — die Summenlinie braucht einen Bedarfstag.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig, ZapfSatz.Neu("AUSLEGUNG_SUMMENLINIE_OHNE_TAG"));
             IReadOnlyList<double> q = tag.MinutenKwh;
             double cw = Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K;
             double qMax = volumenL * cw * p.SpreizungK * p.Ladungsfaktor / Mengengeruest.WH_JE_KWH;
@@ -494,8 +486,7 @@ namespace WindowsFormsApplication1
             while (!Gelingt(hoch, out _, out _, out _))
             {
                 if (++verdopplung > VERDOPPLUNGEN)
-                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.KeinVolumen,
-                        "Nicht rechenbar — die Summenlinie findet kein Volumen mit Nachweis.");
+                    throw new ZapfAuslegungException(ZapfAuslegungsfehler.KeinVolumen, ZapfSatz.Neu("AUSLEGUNG_KEIN_VOLUMEN"));
                 hoch *= 2.0;
             }
 
@@ -540,14 +531,13 @@ namespace WindowsFormsApplication1
                 }
                 suche = Summenliniensuche.Rasterlauf;
                 Auslegungshinweis.Einmal(hinweise, new Auslegungshinweis("SUMMENLINIE_NICHT_MONOTON",
-                    "Der Nachweis der Summenlinie ist über das Volumen nicht monoton; das kleinste Volumen stammt aus einem feinen Rasterlauf."));
+                    ZapfSatz.Neu("AUSHINWEIS_SUMMENLINIE_NICHT_MONOTON")));
             }
 
             Gelingt(v, out double phi, out double ladezeit, out bool unplausibelV);
             if (unplausibelV)
                 Auslegungshinweis.Einmal(hinweise, new Auslegungshinweis("UEBERTRAGER_UNPLAUSIBEL",
-                    "Die Schätzformel der Übertragerfläche ergibt beim Auslegungsvolumen keine positive Fläche; bitte die Fläche angeben.",
-                    true));
+                    ZapfSatz.Neu("AUSHINWEIS_UEBERTRAGER_UNPLAUSIBEL"), true));
             return new Summenlinienpunkt(v, phi, ladezeit, suche, unplausibelV);
         }
 
@@ -586,7 +576,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double ZeitkonstanteMin(double volumenL, double uaWJeK, double koeffizient)
         {
-            Auslegungspruefung.Positiv(uaWJeK, "U·A des Übertragers");
+            Auslegungspruefung.Positiv(uaWJeK, ZapfSatz.Neu("BEGRIFF_UA"));
             return volumenL * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * KJ_JE_WH / uaWJeK * koeffizient;
         }
 
@@ -601,12 +591,12 @@ namespace WindowsFormsApplication1
             var hinweise = new List<Auslegungshinweis>();
             if (tag != null && tag.SpitzenUnterschaetzt)
                 hinweise.Add(new Auslegungshinweis(Bedarfstag.VERMERK_SPITZEN_UNTERSCHAETZT,
-                    "Der Bedarfstag stammt aus einem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt.", true));
+                    ZapfSatz.Neu("AUSHINWEIS_SPITZEN_UNTERSCHAETZT"), true));
             Summenlinienpunkt punkt = KleinstesVolumen(tag, p, hinweise);
             Summenliniennachweis nachweis = Nachweis(tag, punkt.VolumenL, punkt.LeistungKw, p, true);
             IReadOnlyList<Summenlinienpunkt> kurve = Wertepaarkurve(tag, p, p.ErzeugerKw ?? punkt.LeistungKw, wertepaare, hinweise);
             if (kurve.Count > 0)
-                hinweise.Add(new Auslegungshinweis("WERTEPAARKURVE", VERMERK_WERTEPAARKURVE + "."));
+                hinweise.Add(new Auslegungshinweis("WERTEPAARKURVE", ZapfSatz.Neu(VERMERK_WERTEPAARKURVE)));
 
             double? tau = null;
             if (p.ZeitkonstanteKoeffizient.HasValue && p.Uebertrager != null)

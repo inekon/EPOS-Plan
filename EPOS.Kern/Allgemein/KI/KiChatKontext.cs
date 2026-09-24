@@ -248,6 +248,7 @@ namespace WindowsFormsApplication1
             { "Form_Waermebedarf",             B_WAERMEBEDARF },
             { "Form_Waermesenke",              B_SIM_KONFIG },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
+            { "Form_Zapfprofil",               B_BRAUCHWASSER },
             { "Hauptfenster",                  B_HAUPTFENSTER },
             { "Kenndaten",                     B_WAERMEPUMPE },
             { "KiWerkzeugliste",               B_HILFE },

@@ -66,11 +66,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class ZapfprofilEingabeException : Exception
     {
-        internal ZapfprofilEingabeException(ZapfEingabefehler fehler, string zone, string meldung)
-            : base(meldung)
+        internal ZapfprofilEingabeException(ZapfEingabefehler fehler, string zone, ZapfSatz satz)
+            : base(satz?.Klartext ?? "")
         {
             Fehler = fehler;
             Zone = zone ?? "";
+            Satz = satz;
         }
 
         /// <summary>Der Grund der Ablehnung.</summary>
@@ -80,33 +81,45 @@ namespace WindowsFormsApplication1
         internal string Zone { get; }
 
         /// <summary>
-        /// Die genauere Kennung innerhalb des Grundes (etwa
-        /// <see cref="Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN"/>); <c>null</c> = nur der Grund.
-        /// Die Hülle nimmt sie als Ressourcenschlüssel <c>ZPG_EINGABE_</c> + Kennung.
+        /// Der Satz der Ablehnung als Kennung und Werte (N11 (k)) — die Hülle baut daraus den Satz
+        /// der Oberflächensprache; die Meldung der Ausnahme ist sein deutscher Wortlaut.
         /// </summary>
-        internal string Kennung { get; init; }
+        internal ZapfSatz Satz { get; }
 
-        /// <summary>
-        /// Die Werte, die der Text der <see cref="Kennung"/> in seine Platzhalter {0}, {1}, …
-        /// einsetzt — sprachfrei, je Wert getrennt (etwa Bezeichner und Katalogversion der
-        /// Nutzungsart); sonst <c>null</c>. Den Satz baut die Hülle in der Oberflächensprache.
-        /// </summary>
-        internal IReadOnlyList<string> Argumente { get; init; }
+        /// <summary>Die Kennung des Satzes (<see cref="ZapfSatz.Kennung"/>); <c>null</c> ohne Satz.</summary>
+        internal string Kennung => Satz?.Kennung;
+
+        /// <summary>Die Werte des Satzes, sprachfrei und getrennt; <c>null</c> ohne Satz.</summary>
+        internal IReadOnlyList<object> Argumente => Satz?.Werte;
     }
 
-    /// <summary>Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung, Klartext.</summary>
-    internal sealed record ZapfHinweis(string Zone, string Code, string Text)
+    /// <summary>
+    /// Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung der Art
+    /// (<see cref="Code"/>, etwa <c>TAGESGANG_SUMME</c>) und der Satz als Kennung und Werte
+    /// (<see cref="Satz"/>, N11 (k)); <see cref="Text"/> ist sein deutscher Wortlaut.
+    /// </summary>
+    internal sealed record ZapfHinweis(string Zone, string Code, ZapfSatz Satz)
     {
         /// <summary>Kennung „Parameter fehlt" eines Parameters, der die Rechnung nicht entscheidet (N7).</summary>
         internal const string PARAMETER_FEHLT = "PARAMETER_FEHLT";
+
+        /// <summary>Der deutsche Wortlaut des Satzes (Protokoll, Test).</summary>
+        public string Text => Satz?.Klartext ?? "";
+
+        /// <summary>
+        /// Stufe der Warnlogik (Z4): <c>true</c> = Warnung — ein Befund, der das Ergebnis fraglich
+        /// macht (Doppelzählung ZU5, Bedarf außerhalb der Bandbreite, Messwert weit ab,
+        /// Energieprobe); <c>false</c> = Hinweis (etwa eine Zirkulation, die groß gegen die Zapfung ist —
+        /// in kleinen Mehrfamilienhäusern üblich). Entscheidet die Rechnung nie.
+        /// </summary>
+        public bool Warnung { get; init; }
 
         /// <summary>
         /// Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt: Er nennt den
         /// Schlüssel und die Folge; ein Rückfallwert wird nicht gesetzt (Konzept 2.1, N7).
         /// </summary>
-        internal static ZapfHinweis ParameterFehlt(string schluessel, string folge)
-            => new ZapfHinweis("", PARAMETER_FEHLT,
-                               "Parameter fehlt: „" + (schluessel ?? "") + "“. " + (folge ?? ""));
+        internal static ZapfHinweis ParameterFehlt(string schluessel, ZapfSatz folge)
+            => new ZapfHinweis("", PARAMETER_FEHLT, ZapfSatz.Neu("HINWEIS_PARAMETER_FEHLT", schluessel ?? "", folge));
 
         /// <summary>Nimmt einen Hinweis nur auf, wenn derselbe noch nicht in der Liste steht.</summary>
         internal static void Einmal(ICollection<ZapfHinweis> liste, ZapfHinweis h)
@@ -123,7 +136,9 @@ namespace WindowsFormsApplication1
     /// und die Vorgabe der Wohnfläche je WE für die Zonenfläche entscheiden die Rechnung nicht —
     /// fehlen sie, entfällt ihre Prüfung bzw. die Fläche, und der Hinweis
     /// <see cref="ZapfHinweis.PARAMETER_FEHLT"/> nennt den Schlüssel; einen Rückfallwert gibt es
-    /// nicht (N7).
+    /// nicht (N7). Das Hinweisverhältnis der Zirkulation, die Anzeigetemperatur und die
+    /// Stundenschwelle (Stufe Z4) sind Vorgaben der Anzeige und der Warnlogik: Fehlen sie, entfällt
+    /// der Hinweis bzw. die Literanzeige oder die Zählung — ohne eigenen Hinweis.
     /// </summary>
     internal static class ZapfParameter
     {
@@ -171,6 +186,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Warnschwelle der Formvektor-Summe [-] (Hinweis, INEKON-Setzung, 2.4).</summary>
         internal const string FORMVEKTOR_WARNSCHWELLE = "Zapfprofil.Formvektor.Warnschwelle";
+
+        /// <summary>
+        /// Hinweisverhältnis der Zirkulation [-] (Warnlogik Z4, INEKON-Setzung, freier Paketteil):
+        /// Verliert die Zirkulation mehr als dieses Vielfache der Zapfung, nennt es ein Hinweis; ohne
+        /// Parameter kein Hinweis.
+        /// </summary>
+        internal const string ZIRKULATION_HINWEISVERHAELTNIS = "Zapfprofil.Zirkulation.Hinweisverhaeltnis";
+
+        /// <summary>
+        /// Vorgabe der Temperatur der Literanzeige θ_Anzeige [°C] (4.0, 4.6; INEKON-Setzung, freier
+        /// Paketteil) — gilt, wenn weder der Dialog noch die Einstellung eine nennt; nur für Kennzahlen.
+        /// </summary>
+        internal const string ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
+
+        /// <summary>
+        /// Vorgabe der Schwelle der Stundenzählung [kW] (4.6; INEKON-Setzung, freier Paketteil) — gilt,
+        /// wenn weder der Dialog noch die Einstellung eine nennt.
+        /// </summary>
+        internal const string STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
     }
 
     /// <summary>
@@ -214,6 +248,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Schwelle für „Stunden über" [kW]; <c>null</c> = keine Zählung.</summary>
         public double? SchwelleKw { get; init; }
+
+        /// <summary>
+        /// Hinweise, die schon der Eingang kennt (etwa eine ungültige Einstellung der Anzeige, Z4) —
+        /// der Rechenweg stellt sie seinen eigenen voran.
+        /// </summary>
+        public IReadOnlyList<ZapfHinweis> Vorhinweise { get; init; } = new ZapfHinweis[0];
 
         /// <summary>
         /// Die Netzverluste des Projekts (Einstellungen, in % oder kWh/a — hier zählt nur, ob sie

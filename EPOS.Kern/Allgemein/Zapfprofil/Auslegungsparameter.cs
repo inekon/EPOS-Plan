@@ -182,7 +182,7 @@ namespace WindowsFormsApplication1
         /// Der Wert eines Parameters, der die Rechnung nicht entscheidet: fehlt er, nennt ein
         /// Hinweis den Schlüssel einmal, und der Aufrufer lässt die Prüfung weg (N7).
         /// </summary>
-        internal static double? Wahlweise(Parametersatz ps, string schluessel, string folge,
+        internal static double? Wahlweise(Parametersatz ps, string schluessel, ZapfSatz folge,
                                           ICollection<Auslegungshinweis> hinweise)
         {
             if (ps != null && ps.Enthaelt(schluessel)) return ps.Wert(schluessel);
@@ -190,13 +190,16 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        /// <summary>Ein Projektwert oder, wenn er fehlt, der Parameter; beides mit Herkunft im Protokoll.</summary>
+        /// <summary>
+        /// Ein Projektwert oder, wenn er fehlt, der Parameter; beides mit Herkunft im Protokoll.
+        /// <paramref name="was"/> benennt die Größe in einer Ablehnung (ein Begriff, N11 (k)).
+        /// </summary>
         internal static double ProjektOderParameter(double? projektwert, string schluessel, Parametersatz ps,
-                                                    Herkunftsprotokoll prot, string feld, string einheit)
+                                                    Herkunftsprotokoll prot, string feld, string einheit, ZapfSatz was)
         {
             if (projektwert.HasValue)
             {
-                Auslegungspruefung.Endlich(projektwert.Value, feld);
+                Auslegungspruefung.Endlich(projektwert.Value, was);
                 prot?.Vermerken("", feld, projektwert.Value, einheit, Wertstatus.Ueberschrieben, null);
                 return projektwert.Value;
             }
@@ -266,24 +269,35 @@ namespace WindowsFormsApplication1
         UebertragerUnbestimmt = 11
     }
 
-    /// <summary>Die benannte Ablehnung einer Auslegungseingabe: Grund und Klartext.</summary>
+    /// <summary>
+    /// Die benannte Ablehnung einer Auslegungseingabe: Grund und Satz als Kennung und Werte (N11 (k));
+    /// die Meldung ist sein deutscher Wortlaut.
+    /// </summary>
     internal sealed class ZapfAuslegungException : Exception
     {
-        internal ZapfAuslegungException(ZapfAuslegungsfehler fehler, string meldung) : base(meldung)
+        internal ZapfAuslegungException(ZapfAuslegungsfehler fehler, ZapfSatz satz) : base(satz?.Klartext ?? "")
         {
             Fehler = fehler;
+            Satz = satz;
         }
 
         /// <summary>Der Grund der Ablehnung.</summary>
         internal ZapfAuslegungsfehler Fehler { get; }
+
+        /// <summary>Der Satz der Ablehnung als Kennung und Werte.</summary>
+        internal ZapfSatz Satz { get; }
     }
 
     /// <summary>
-    /// Ein Eintrag der Warnliste der Auslegung (4.7): Kennung, Klartext mit eingesetzten Zahlen,
-    /// <see cref="Warnung"/> für die hervorgehobenen Einträge. Nie blockierend.
+    /// Ein Eintrag der Warnliste der Auslegung (4.7): Kennung der Art (<see cref="Code"/>), der Satz
+    /// als Kennung und Werte (<see cref="Satz"/>, N11 (k)) und <see cref="Warnung"/> für die
+    /// hervorgehobenen Einträge. Nie blockierend. <see cref="Text"/> ist der deutsche Wortlaut.
     /// </summary>
-    internal sealed record Auslegungshinweis(string Code, string Text, bool Warnung = false)
+    internal sealed record Auslegungshinweis(string Code, ZapfSatz Satz, bool Warnung = false)
     {
+        /// <summary>Der deutsche Wortlaut des Satzes (Protokoll, Test).</summary>
+        public string Text => Satz?.Klartext ?? "";
+
         /// <summary>
         /// Die benannte Ablehnung hinter dem Hinweis (Kennung und sprachfreie Werte, etwa fehlende
         /// Zapfkategorien); sonst <c>null</c>. Die Hülle baut daraus den Satz der Oberflächensprache.
@@ -291,9 +305,12 @@ namespace WindowsFormsApplication1
         public ZapfAblehnung Ablehnung { get; init; }
 
         /// <summary>Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt (N7).</summary>
-        internal static Auslegungshinweis ParameterFehlt(string schluessel, string folge)
-            => new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
-                                     "Parameter fehlt: „" + (schluessel ?? "") + "“. " + (folge ?? ""));
+        internal static Auslegungshinweis ParameterFehlt(string schluessel, ZapfSatz folge)
+            => new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT, ZapfSatz.Neu("HINWEIS_PARAMETER_FEHLT", schluessel ?? "", folge));
+
+        /// <summary>Der Hinweis „Parameter fehlt" aus der benannten Ablehnung des Parametersatzes und der Folge.</summary>
+        internal static Auslegungshinweis ParameterFehlt(ParametersatzException ex, ZapfSatz folge)
+            => new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT, ZapfSatz.Neu("AUSHINWEIS_GRUND_UND_FOLGE", ex.Satz, folge));
 
         /// <summary>Nimmt einen Hinweis nur auf, wenn derselbe noch nicht in der Liste steht.</summary>
         internal static void Einmal(ICollection<Auslegungshinweis> liste, Auslegungshinweis h)
@@ -362,7 +379,7 @@ namespace WindowsFormsApplication1
             if (p?.SpeicherC != null)
                 return new Speichertemperaturwahl(
                     ZapfAuslegungParameter.ProjektOderParameter(p.SpeicherC, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR, ps,
-                                                                prot, feld, "°C"),
+                                                                prot, feld, "°C", ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR")),
                     Speichertemperaturquelle.Projekt, false);
             string schluessel;
             Speichertemperaturquelle quelle;
@@ -382,7 +399,7 @@ namespace WindowsFormsApplication1
                 quelle = Speichertemperaturquelle.Vorgabe;
             }
             ZapfParameterwert pw = ps.Lies(schluessel);
-            Auslegungspruefung.Endlich(pw.Wert, "die Speichertemperatur (Parameter " + schluessel + ")");
+            Auslegungspruefung.Endlich(pw.Wert, ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR_PARAMETER", schluessel));
             prot?.Vermerken("", feld, pw.Wert, "°C", Wertstatus.Vorgabe, pw.Herkunft,
                             "Parameter " + schluessel + (quelle == Speichertemperaturquelle.Grossanlage ? " (Großanlage)"
                                                          : quelle == Speichertemperaturquelle.Schnellpfad ? " (Schnellauslegung)" : ""));
@@ -393,42 +410,38 @@ namespace WindowsFormsApplication1
     /// <summary>Die Wertprüfungen der Auslegung: jede Verletzung ist eine benannte Ablehnung.</summary>
     internal static class Auslegungspruefung
     {
-        /// <summary>Eine endliche Zahl, sonst <see cref="ZapfAuslegungsfehler.GroesseUngueltig"/>.</summary>
-        internal static double Endlich(double wert, string was)
+        /// <summary>Eine endliche Zahl, sonst <see cref="ZapfAuslegungsfehler.GroesseUngueltig"/>; <paramref name="was"/> ist ein Begriff.</summary>
+        internal static double Endlich(double wert, ZapfSatz was)
         {
             if (double.IsNaN(wert) || double.IsInfinity(wert))
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — " + was + " ist keine endliche Zahl.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_NICHT_ENDLICH", was));
             return wert;
         }
 
         /// <summary>Eine endliche, nicht negative Zahl.</summary>
-        internal static double NichtNegativ(double wert, string was)
+        internal static double NichtNegativ(double wert, ZapfSatz was)
         {
             Endlich(wert, was);
             if (wert < 0)
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — " + was + " ist negativ.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_NEGATIV", was));
             return wert;
         }
 
         /// <summary>Eine endliche, positive Zahl.</summary>
-        internal static double Positiv(double wert, string was)
+        internal static double Positiv(double wert, ZapfSatz was)
         {
             Endlich(wert, was);
             if (!(wert > 0))
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
-                    "Nicht rechenbar — " + was + " ist nicht positiv.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_NICHT_POSITIV", was));
             return wert;
         }
 
         /// <summary>Eine positive Temperaturdifferenz, sonst <see cref="ZapfAuslegungsfehler.TemperaturUngueltig"/>.</summary>
-        internal static double Spreizung(double obenC, double untenC, string was)
+        internal static double Spreizung(double obenC, double untenC, ZapfSatz was)
         {
             double d = obenC - untenC;
             if (double.IsNaN(d) || double.IsInfinity(d) || !(d > 0))
-                throw new ZapfAuslegungException(ZapfAuslegungsfehler.TemperaturUngueltig,
-                    "Nicht rechenbar — die Spreizung " + was + " ist nicht positiv.");
+                throw new ZapfAuslegungException(ZapfAuslegungsfehler.TemperaturUngueltig, ZapfSatz.Neu("AUSLEGUNG_SPREIZUNG", was));
             return d;
         }
     }

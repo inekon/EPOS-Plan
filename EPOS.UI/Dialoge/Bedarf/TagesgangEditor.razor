@@ -1,0 +1,619 @@
+﻿@* Die Ueberlagerung "TAGESGANG BEARBEITEN" des Zapfprofils (Umsetzungskonzept
+   Zapfprofilgenerator 5.1, 5.3 Zeile "Tagesgang je Tagtyp", 4.2; Stufe Z4, Gruppe 2b) -
+   Muster TypProfilDialog (24 Stundenfelder im Stundenraster, Tag kopieren/einfuegen).
+
+   WO SIE STEHT. Im Zapfprofil-Dialog ueber den Knopf "Tagesgang bearbeiten..." der Gruppe
+   "Fachwerte" (Stufe Experte), je gewaehlter Zone; eingebettet traegt die Ueberlagerung
+   Titel und Kreuz, der Wirt setzt TitelAnzeigen="false".
+
+   WAS SIE TUT. Sie zeigt den Tagesgangsatz, den die Zone rechnet (ihre Expertenwahl, sonst
+   der Satz der Nutzungsart): je Tagtyp (Werktag, Samstag, Sonn-/Feiertag, Ruhetag) 24
+   Stundenanteile in Prozent, darunter die Wochenfaktoren Mo-So. Zwei Summenkontrollen im
+   Klartext (gruen "summiert zu 100 %", sonst "Summe ... - korrigieren oder normieren") sind
+   NICHT blockierend: "OK" normiert jede Reihe auf 100 % (im Kern), eine Leise Zeile zeigt die
+   normierten Werte vorab, "Normieren" setzt sie in die Felder. "Vorlage laden" uebernimmt die
+   vier Tagesgaenge eines Satzes des Katalogs, "Zuruecksetzen" die Werte beim Oeffnen.
+
+   KATALOG, NICHT ARBEITSSTAND (5.1). "OK" schreibt in EINER Transaktion ueber den Delegaten
+   der Huelle (TwwNutzungsartCtrl.TagesgangSpeichern). Ist die Nutzungsart oder ihr Satz
+   gesperrt (Auslieferung, benutzt), zeigt die Ueberlagerung die Werte nur lesbar samt Schloss
+   und Grund; "Als eigene Kopie bearbeiten..." gibt die Felder frei und fragt die
+   Katalogversion der Kopie (Vorschlag der Huelle) - "OK" legt dann eine neue Katalogversion
+   an (Status eigen), und der Wirt stellt die Zone auf sie um. Eine Ablehnung steht benannt als
+   Banner da, die Ueberlagerung bleibt offen. Ohne Aenderung schreibt "OK" nichts.
+
+   TASTATUR. Esc wirkt wie Abbrechen; Enter bleibt unbelegt (OK schreibt).
+
+   HILFE-ASSISTENT. Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.TAGESGANG_EDITOR), solange sie offen steht: Tagtyp, die 24 Stundenanteile des
+   gezeigten Tagtyps, die Wochenfaktoren, die Vorlage und die Katalogversion der Kopie ueber
+   TagesgangEditorKiSicht - gesetzt auf den Wegen der Felder, nur wo sie bedienbar sind.
+   Pruefen ist der Befund des OK; kein Speicherweg - OK bleibt beim Anwender. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-zapfprofil-tagesgang" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.TgeTitel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.TgeTitel" Dialogname="@Texte.TgeTitel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    <p class="epos-kontextzeile">@Kontext</p>
+
+    @if (!Daten.Verfuegbar)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Daten.Grund" />
+    }
+    else if (Daten.Kopie && !_kopie)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-editorsperre">
+            <Kennzeichen Kurztext="@Texte.HinweisNurLesen" /> @Daten.Sperrgrund
+        </p>
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-zapfprofil-kopie" @onclick="KopieBearbeiten">@Texte.KnopfKopie</button>
+        </div>
+    }
+    else if (Daten.Kopie)
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Textfeld Bezeichnung="@Texte.LabelKatalogversion" Wert="@_version" WertChanged="v => _version = v ?? string.Empty" />
+                <Herleitungszeile Text="@Texte.HinweisKopie" />
+            </KindInhalt>
+        </Formularraster>
+    }
+    else
+    {
+        <p class="epos-leisezeile">@Texte.HinweisFrei</p>
+    }
+
+    @if (_meldung is not null)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung.Text" Kennung="@_meldung.Kennung" />
+    }
+    @if (_hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-editorhinweis" role="status">@_hinweis</p>
+    }
+
+    <Gruppenkopf Titel="@Texte.TgeGruppeTagesgang" Summe="@Tagtypname(_tagtyp)">
+        <KindInhalt>
+            <Optionsgruppe Bezeichnung="@Texte.TgeLabelTagtyp" Eintraege="@Tagtypen" Auswahl="@_tagtyp" AuswahlChanged="TagtypWaehlen" />
+            @if (Daten.Satz.Herkunft.Length > _tagtyp && Daten.Satz.Herkunft[_tagtyp].Length > 0)
+            {
+                <Herleitungszeile Text="@Format(Texte.TgeHerkunft, Daten.Satz.Herkunft[_tagtyp])" />
+            }
+            <div class="epos-stundenraster epos-zapfprofil-tagesgangraster">
+                @for (int s = 0; s < ZapfprofilTagesgangsatzDaten.STUNDEN; s++)
+                {
+                    int stunde = s;
+                    int tag = _tagtyp;
+                    <Zahlenfeld @key="@(tag * 100 + stunde)" Bezeichnung="@((stunde + 1).ToString(CultureInfo.CurrentCulture))"
+                                Feldname="@Stundenfeld(tag, stunde)" Min="0" Aktiv="@Bearbeitbar"
+                                Wert="@_werte[tag][stunde]" WertChanged="w => StundeSetzen(tag, stunde, w)"
+                                FehlerZustand="FehlerZustandMelden" />
+                }
+            </div>
+            <Kohaerenzzeile Text="@Summentext(_werte[_tagtyp])"
+                            Zustand="@(SummeHundert(_werte[_tagtyp]) ? KohaerenzZustand.Ok : KohaerenzZustand.Abweichend)" />
+            @if (Normierungsvorschau(_werte[_tagtyp]) is { Length: > 0 } vorschau)
+            {
+                <p class="epos-leisezeile epos-zapfprofil-normiert">@Format(Texte.TgeVorschauNormiert, vorschau)</p>
+            }
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" @onclick="TagKopieren">@Texte.KnopfTagKopieren</button>
+                <button type="button" class="epos-knopf" aria-disabled="@(Einfuegbar ? null : "true")"
+                        title="@(Einfuegbar ? null : EinfuegenGrund)" @onclick="TagEinfuegen">@Texte.KnopfTagEinfuegen</button>
+                <button type="button" class="epos-knopf" aria-disabled="@(Bearbeitbar ? null : "true")"
+                        title="@(Bearbeitbar ? null : Texte.HinweisNurLesen)" @onclick="TagNormieren">@Texte.KnopfNormieren</button>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@Texte.TgeGruppeWoche">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    @for (int t = 0; t < ZapfprofilTagesgangDaten.WOCHENTAGE; t++)
+                    {
+                        int tag = t;
+                        <Zahlenfeld Bezeichnung="@Wochentag(tag)" Feldname="@(Texte.TgeGruppeWoche + " · " + Wochentag(tag))"
+                                    Min="0" Aktiv="@Bearbeitbar" Wert="@_woche[tag]" WertChanged="w => WocheSetzen(tag, w)"
+                                    FehlerZustand="FehlerZustandMelden" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@Texte.TgeHinweisWoche" />
+            @if (Daten.WochengangHerkunft.Length > 0)
+            {
+                <Herleitungszeile Text="@Format(Texte.TgeHerkunft, Daten.WochengangHerkunft)" />
+            }
+            <Kohaerenzzeile Text="@Summentext(_woche)"
+                            Zustand="@(SummeHundert(_woche) ? KohaerenzZustand.Ok : KohaerenzZustand.Abweichend)" />
+            @if (Normierungsvorschau(_woche) is { Length: > 0 } wochenvorschau)
+            {
+                <p class="epos-leisezeile epos-zapfprofil-normiert">@Format(Texte.TgeVorschauNormiert, wochenvorschau)</p>
+            }
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" aria-disabled="@(Bearbeitbar ? null : "true")"
+                        title="@(Bearbeitbar ? null : Texte.HinweisNurLesen)" @onclick="WocheNormieren">@Texte.KnopfNormieren</button>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@Texte.TgeGruppeVorlage">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.TgeLabelVorlage" Eintraege="@Vorlagenwahl" Auswahl="@_vorlage"
+                                 Platzhalter="@Texte.KatalogKeineAuswahl" GesperrteEintraege="@GesperrteVorlagen"
+                                 GesperrtHinweise="@Vorlagengruende" AuswahlChanged="id => _vorlage = id" />
+                </KindInhalt>
+            </Formularraster>
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" aria-disabled="@(VorlageLadbar ? null : "true")"
+                        title="@(VorlageLadbar ? null : VorlageGrund)" @onclick="VorlageLaden">@Texte.TgeKnopfVorlage</button>
+                <button type="button" class="epos-knopf" aria-disabled="@(Bearbeitbar ? null : "true")"
+                        title="@(Bearbeitbar ? null : Texte.HinweisNurLesen)" @onclick="Zuruecksetzen">@Texte.KnopfZuruecksetzen</button>
+            </div>
+            <Herleitungszeile Text="@Texte.TgeHinweisVorlage" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // --- Parameter (Schluessel wie ZapfprofilHuelle.TagesgangGaben) --------------------
+
+    /// <summary>Der Stand beim Öffnen: Satz der Zone, Wochenfaktoren, Vorlagen, Sperre.</summary>
+    [Parameter] public ZapfprofilTagesgangDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen (Textbündel des Zapfprofils).</summary>
+    [Parameter] public ZapfprofilTexte Texte { get; set; } = new();
+
+    /// <summary>Der Schreibweg der Hülle — eine Transaktion; kein Delegat = „OK" schreibt nichts.</summary>
+    [Parameter] public Func<ZapfprofilTagesgangEingabeDaten, ZapfprofilTagesgangErgebnis>? Speichern { get; set; }
+
+    /// <summary>Hilfeschlüssel des Editors.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.grp_Tagesgang";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Das Ergebnis: geschrieben (mit neuer Nutzungsart und Satz) bei OK, <c>null</c> bei Abbruch oder ohne Änderung.</summary>
+    [Parameter] public EventCallback<ZapfprofilTagesgangErgebnis?> Geschlossen { get; set; }
+
+    // --- Stand -----------------------------------------------------------------------
+
+    /// <summary>Genauigkeit der Summenkontrolle in Prozentpunkten — die Anzeige, nicht die Regel des Kerns.</summary>
+    private const double TOLERANZ_PROZENT = 1e-6;
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private double?[][] _werte = Leer();
+    private double?[][] _start = Leer();
+    private double?[] _woche = new double?[ZapfprofilTagesgangDaten.WOCHENTAGE];
+    private double?[] _startWoche = new double?[ZapfprofilTagesgangDaten.WOCHENTAGE];
+    private double?[]? _puffer;
+    private int _tagtyp;
+    private bool _kopie;
+    private string _version = "";
+    private int? _vorlage;
+    private string _hinweis = "";
+    private ZapfprofilMeldung? _meldung;
+    private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
+
+    /// <summary>Die Werte des gezeigten Tagtyps [%] — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<double?> Stunden => _werte[_tagtyp];
+
+    /// <summary>Die Wochenfaktoren [%] — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<double?> Woche => _woche;
+
+    /// <summary>Der gezeigte Tagtyp (0 = Werktag … 3 = Ruhetag) — Prüfhilfe für die Tests.</summary>
+    public int Tagtyp => _tagtyp;
+
+    /// <summary>Die Meldung eines abgelehnten OK — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilMeldung? Meldung => _meldung;
+
+    /// <summary>Die leise Zeile nach einem gesperrten Versuch — Prüfhilfe für die Tests.</summary>
+    public string Hinweis => _hinweis;
+
+    protected override void OnInitialized()
+    {
+        ZapfprofilTagesgangsatzDaten satz = Daten.Satz ?? new ZapfprofilTagesgangsatzDaten();
+        for (int t = 0; t < ZapfprofilTagesgangsatzDaten.TAGTYPEN; t++)
+            for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
+                _start[t][h] = Prozent(satz.Anteile, t, h);
+        for (int w = 0; w < ZapfprofilTagesgangDaten.WOCHENTAGE; w++)
+            _startWoche[w] = Daten.Wochenfaktoren is { } f && w < f.Length ? f[w] * 100.0 : 0.0;
+        _werte = Kopie(_start);
+        _woche = (double?[])_startWoche.Clone();
+        _version = Daten.KatalogversionVorschlag ?? "";
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.TAGESGANG_EDITOR, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    /// <summary>Sind die Felder bedienbar? Frei, oder als eigene Kopie freigegeben — nie ohne Verfügbarkeit.</summary>
+    private bool Bearbeitbar => Daten.Verfuegbar && (!Daten.Kopie || _kopie);
+
+    private string Kontext => Format(Texte.TgeKontext, Daten.Nutzungsart, Daten.Satz?.Name ?? "")
+                              + (string.IsNullOrEmpty(Daten.Satz?.Status) ? "" : " · " + Daten.Satz!.Status);
+
+    private IReadOnlyList<(int Id, string Text)> Tagtypen => new[]
+    {
+        (0, Texte.TagtypWerktag), (1, Texte.TagtypSamstag), (2, Texte.TagtypSonntag), (3, Texte.TagtypRuhetag)
+    };
+
+    private string Tagtypname(int t) => Tagtypen.FirstOrDefault(e => e.Id == t).Text ?? "";
+
+    /// <summary>Der Wochentag (0 = Montag) in der Oberflächensprache — je Aufruf gelesen, nie zwischengespeichert.</summary>
+    private static string Wochentag(int t) => t switch
+    {
+        0 => Resource.ALLG_WOCHENTAG_1,
+        1 => Resource.ALLG_WOCHENTAG_2,
+        2 => Resource.ALLG_WOCHENTAG_3,
+        3 => Resource.ALLG_WOCHENTAG_4,
+        4 => Resource.ALLG_WOCHENTAG_5,
+        5 => Resource.ALLG_WOCHENTAG_6,
+        _ => Resource.ALLG_WOCHENTAG_7
+    };
+
+    /// <summary>Der Feldname eines Stundenfeldes: „Werktag · Stunde 7".</summary>
+    private string Stundenfeld(int tag, int stunde) => Format(Texte.TgeFeldStunde, Tagtypname(tag), stunde + 1);
+
+    private static double Summe(IReadOnlyList<double?> reihe) => reihe.Sum(w => w ?? 0.0);
+
+    private static bool SummeHundert(IReadOnlyList<double?> reihe) => Math.Abs(Summe(reihe) - 100.0) <= TOLERANZ_PROZENT;
+
+    /// <summary>Die Summenkontrolle im Klartext: 100 %, eine Abweichung mit Summe, oder Summe 0.</summary>
+    private string Summentext(IReadOnlyList<double?> reihe)
+    {
+        double s = Summe(reihe);
+        if (SummeHundert(reihe)) return Texte.SummeOk;
+        return s > 0 ? Format(Texte.SummeAbweichend, s.ToString("N2", CultureInfo.CurrentCulture)) : Texte.SummeNull;
+    }
+
+    /// <summary>Die normierten Werte als Zeile („1: 4,2 · 2: 4,2 …") — nur, wenn die Summe von 100 % abweicht und größer 0 ist.</summary>
+    private static string Normierungsvorschau(IReadOnlyList<double?> reihe)
+    {
+        double s = Summe(reihe);
+        if (!(s > 0) || Math.Abs(s - 100.0) <= TOLERANZ_PROZENT || reihe.Any(w => w < 0)) return "";
+        return string.Join(" · ", reihe.Select((w, i) => (i + 1).ToString(CultureInfo.CurrentCulture) + ": "
+                                                         + ((w ?? 0.0) / s * 100.0).ToString("0.#", CultureInfo.CurrentCulture)));
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Vorlagenwahl => Daten.Vorlagen.Select(v => (v.Id, v.Name)).ToList();
+
+    private IReadOnlyCollection<int> GesperrteVorlagen => Daten.Vorlagen.Where(v => !v.Waehlbar).Select(v => v.Id).ToList();
+
+    private IReadOnlyDictionary<int, string> Vorlagengruende
+        => Daten.Vorlagen.Where(v => !v.Waehlbar).ToDictionary(v => v.Id, v => v.Sperrgrund);
+
+    private bool VorlageLadbar => Bearbeitbar && _vorlage is int id && Daten.Vorlagen.Any(v => v.Id == id && v.Waehlbar);
+
+    private string VorlageGrund => !Bearbeitbar ? Texte.HinweisNurLesen : Texte.TgeGrundVorlage;
+
+    private bool Einfuegbar => Bearbeitbar && _puffer is not null;
+
+    private string EinfuegenGrund => !Bearbeitbar ? Texte.HinweisNurLesen : Texte.TgeGrundEinfuegen;
+
+    /// <summary>Weicht ein Wert vom Stand beim Öffnen ab?</summary>
+    private bool Geaendert
+    {
+        get
+        {
+            for (int t = 0; t < ZapfprofilTagesgangsatzDaten.TAGTYPEN; t++)
+                if (!TagtypUnveraendert(t)) return true;
+            return !WocheUnveraendert();
+        }
+    }
+
+    /// <summary>
+    /// Sind die Anzeigewerte des Tagtyps <paramref name="t"/> gegenüber dem Stand beim Öffnen
+    /// unverändert? Dann reicht „OK" die Originalanteile bitgleich durch (Z4, Gruppe 2b Punkt 1) —
+    /// sonst gälte eine unveränderte, nicht runde Reihe (VDI-Werte) über den Umweg Prozent als
+    /// geändert.
+    /// </summary>
+    private bool TagtypUnveraendert(int t)
+    {
+        for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
+            if ((_werte[t][h] ?? 0.0) != (_start[t][h] ?? 0.0)) return false;
+        return true;
+    }
+
+    private bool WocheUnveraendert()
+    {
+        for (int w = 0; w < ZapfprofilTagesgangDaten.WOCHENTAGE; w++)
+            if ((_woche[w] ?? 0.0) != (_startWoche[w] ?? 0.0)) return false;
+        return true;
+    }
+
+    /// <summary>Die Originalanteile [-] des Tagtyps <paramref name="t"/>, wie der Satz beim Öffnen stand.</summary>
+    private double[]? OriginalAnteile(int t)
+        => Daten.Satz?.Anteile is { } a && t < a.Length ? a[t] : null;
+
+    private static double? Prozent(double[][]? anteile, int t, int h)
+        => anteile is not null && t < anteile.Length && anteile[t] is { } r && h < r.Length ? r[h] * 100.0 : 0.0;
+
+    private static double?[][] Leer()
+        => Enumerable.Range(0, ZapfprofilTagesgangsatzDaten.TAGTYPEN).Select(_ => new double?[ZapfprofilTagesgangsatzDaten.STUNDEN]).ToArray();
+
+    private static double?[][] Kopie(double?[][] quelle) => quelle.Select(r => (double?[])r.Clone()).ToArray();
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    // =================================================================================
+    // Bedienung
+    // =================================================================================
+
+    /// <summary>
+    /// Ein Tagtypwechsel lässt die 24 Stundenfelder des alten Tagtyps neu entstehen (ihr <c>@key</c>
+    /// wechselt) — eine noch offene Fehleingabe dort wäre sonst eine hängende Meldung, die „OK"
+    /// dauerhaft anhielte, obwohl das Feld beim nächsten Zeichnen wieder einen gültigen Wert zeigt.
+    /// </summary>
+    private void TagtypWaehlen(int? id)
+    {
+        if (id is not int t || t < 0 || t >= ZapfprofilTagesgangsatzDaten.TAGTYPEN) return;
+        for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
+            _fehlfelder.Remove(Stundenfeld(_tagtyp, h));
+        _tagtyp = t;
+        _hinweis = "";
+    }
+
+    private void StundeSetzen(int tag, int stunde, double? wert)
+    {
+        if (!Bearbeitbar) return;
+        _werte[tag][stunde] = wert;
+        Geaendert_();
+    }
+
+    private void WocheSetzen(int tag, double? wert)
+    {
+        if (!Bearbeitbar) return;
+        _woche[tag] = wert;
+        Geaendert_();
+    }
+
+    /// <summary>Eine Eingabe verwirft die Meldung des letzten OK und die leise Zeile.</summary>
+    private void Geaendert_()
+    {
+        _meldung = null;
+        _hinweis = "";
+    }
+
+    /// <summary>„Als eigene Kopie bearbeiten…": gibt die Felder frei und fragt die Katalogversion der Kopie.</summary>
+    private void KopieBearbeiten()
+    {
+        _kopie = true;
+        _hinweis = "";
+    }
+
+    private void TagKopieren()
+    {
+        _puffer = (double?[])_werte[_tagtyp].Clone();
+        _hinweis = "";
+    }
+
+    private void TagEinfuegen()
+    {
+        if (!Einfuegbar)
+        {
+            _hinweis = EinfuegenGrund;
+            return;
+        }
+        _werte[_tagtyp] = (double?[])_puffer!.Clone();
+        Geaendert_();
+    }
+
+    private void TagNormieren() => Normieren(_werte[_tagtyp]);
+
+    private void WocheNormieren() => Normieren(_woche);
+
+    /// <summary>„Normieren": die Werte auf Σ 100 % — die Vorschau der Zeile in die Felder; ohne Summe nennt die leise Zeile den Grund.</summary>
+    private void Normieren(double?[] reihe)
+    {
+        if (!Bearbeitbar)
+        {
+            _hinweis = Texte.HinweisNurLesen;
+            return;
+        }
+        double s = Summe(reihe);
+        if (!(s > 0) || reihe.Any(w => w < 0))
+        {
+            _hinweis = Texte.SummeNull;
+            return;
+        }
+        for (int i = 0; i < reihe.Length; i++) reihe[i] = (reihe[i] ?? 0.0) / s * 100.0;
+        Geaendert_();
+    }
+
+    private void VorlageLaden()
+    {
+        if (!VorlageLadbar)
+        {
+            _hinweis = VorlageGrund;
+            return;
+        }
+        ZapfprofilTagesgangsatzDaten v = Daten.Vorlagen.First(x => x.Id == _vorlage);
+        for (int t = 0; t < ZapfprofilTagesgangsatzDaten.TAGTYPEN; t++)
+            for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
+                _werte[t][h] = Prozent(v.Anteile, t, h);
+        Geaendert_();
+    }
+
+    private void Zuruecksetzen()
+    {
+        if (!Bearbeitbar)
+        {
+            _hinweis = Texte.HinweisNurLesen;
+            return;
+        }
+        _werte = Kopie(_start);
+        _woche = (double?[])_startWoche.Clone();
+        _fehlfelder.Clear();
+        Geaendert_();
+    }
+
+    /// <summary>Ein Feld meldet, ob sein Text gerade eine gültige Zahl ist — eine Fehleingabe hält das OK an.</summary>
+    private void FehlerZustandMelden((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlfelder.Add(f.Feld);
+        else _fehlfelder.Remove(f.Feld);
+    }
+
+    // =================================================================================
+    // Ergebnis
+    // =================================================================================
+
+    /// <summary>Der Befund des OK: eine Fehleingabe hält es an; leer = in Ordnung. Dieselbe Prüfung am Knopf und beim Assistenten.</summary>
+    private string OkBefund() => _fehlfelder.Count > 0 ? Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder)) : "";
+
+    /// <summary>
+    /// „OK": ohne Änderung nichts zu schreiben; sonst die Werte in Prozent an den Schreibweg der
+    /// Hülle (er normiert und schreibt in EINER Transaktion). Eine Ablehnung bleibt als Banner, die
+    /// Überlagerung offen.
+    /// </summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Abbrechen();
+            return;
+        }
+        string befund = OkBefund();
+        if (befund.Length > 0)
+        {
+            _meldung = new ZapfprofilMeldung("ZPG_MSG_FEHLEINGABE", "", befund, ZapfprofilMeldungsart.Fehler);
+            return;
+        }
+        if (!Bearbeitbar || !Geaendert)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+        if (Speichern is null) return;
+
+        var eingabe = new ZapfprofilTagesgangEingabeDaten
+        {
+            IdNutzungsart = Daten.IdNutzungsart,
+            TagesgaengeProzent = _werte.Select(r => r.Select(w => w ?? 0.0).ToArray()).ToArray(),
+            TagesgaengeOriginal = Enumerable.Range(0, ZapfprofilTagesgangsatzDaten.TAGTYPEN)
+                                             .Select(t => TagtypUnveraendert(t) ? OriginalAnteile(t) : null).ToArray(),
+            WochenfaktorenProzent = _woche.Select(w => w ?? 0.0).ToArray(),
+            WochenfaktorenOriginal = WocheUnveraendert() ? Daten.Wochenfaktoren : null,
+            Vorlage = _vorlage,
+            AngezeigterSatz = Daten.Satz?.Id,
+            Katalogversion = Daten.Kopie ? _version.Trim() : ""
+        };
+        ZapfprofilTagesgangErgebnis e = Speichern(eingabe);
+        if (!e.Ok)
+        {
+            _meldung = e.Meldung;
+            return;
+        }
+        await Geschlossen.InvokeAsync(e);
+    }
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+
+    // =================================================================================
+    // Der Hilfe-Assistent
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TagesgangEditorKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten auf den Editor — gesetzt wird auf den Wegen der Felder, nur wo sie bedienbar sind.</summary>
+    private TagesgangEditorKiSicht KiSicht() => _kiSicht ??= new TagesgangEditorKiSicht
+    {
+        TagtypLesen = () => _tagtyp,
+        TagtypSetzen = id =>
+        {
+            if (id is not int t || Tagtypen.All(e => e.Id != t)) return ZapfprofilKiRegeln.Gesperrt(Texte.TgeLabelTagtyp);
+            TagtypWaehlen(t);
+            return null;
+        },
+        TagtypEintraege = () => KiMaskenanmeldung.Eintraege(Tagtypen, e => e.Id, e => e.Text),
+
+        StundenLesen = () => (double?[])_werte[_tagtyp].Clone(),
+        StundenSetzen = r => KiReihe(r, ZapfprofilTagesgangsatzDaten.STUNDEN, Texte.TgeGruppeTagesgang,
+                                     i => Stundenfeld(_tagtyp, i), w => _werte[_tagtyp] = w),
+        WocheLesen = () => (double?[])_woche.Clone(),
+        WocheSetzen = r => KiReihe(r, ZapfprofilTagesgangDaten.WOCHENTAGE, Texte.TgeGruppeWoche, Wochentag, w => _woche = w),
+
+        VorlageLesen = () => _vorlage,
+        VorlageSetzen = id =>
+        {
+            if (id is int v && Daten.Vorlagen.FirstOrDefault(x => x.Id == v) is { } satz)
+            {
+                if (!satz.Waehlbar) return satz.Sperrgrund.Length > 0 ? satz.Sperrgrund : ZapfprofilKiRegeln.Gesperrt(satz.Name);
+            }
+            else if (id is not null) return ZapfprofilKiRegeln.Gesperrt(Texte.TgeLabelVorlage);
+            _vorlage = id;
+            return null;
+        },
+        VorlageEintraege = () => KiMaskenanmeldung.Eintraege(Vorlagenwahl, e => e.Id, e => e.Text),
+
+        KatalogversionLesen = () => Daten.Kopie ? _version : "",
+        KatalogversionSetzen = v =>
+        {
+            if (!Daten.Kopie || !_kopie) return ZapfprofilKiRegeln.NurMit(Texte.LabelKatalogversion, Texte.KnopfKopie);
+            _version = v ?? "";
+            return null;
+        }
+    };
+
+    /// <summary>Eine Zahlenreihe setzen — nur bedienbar, in der richtigen Länge, jeder Wert ≥ 0 wie das Feld.</summary>
+    private string? KiReihe(double?[]? reihe, int laenge, string feld, Func<int, string> stelle, Action<double?[]> weg)
+    {
+        if (!Bearbeitbar) return Daten.Verfuegbar ? ZapfprofilKiRegeln.NurMit(feld, Texte.KnopfKopie) : Daten.Grund;
+        if (reihe is null || reihe.Length != laenge) return ZapfprofilKiRegeln.Gesperrt(feld);
+        for (int i = 0; i < reihe.Length; i++)
+            if (ZapfprofilKiRegeln.Bereich(stelle(i), reihe[i], 0, null) is { } grund) return grund;
+        weg((double?[])reihe.Clone());
+        Geaendert_();
+        return null;
+    }
+
+    /// <summary>Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen — kein Speicherweg.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = OkBefund
+    };
+}

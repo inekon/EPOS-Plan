@@ -43,6 +43,14 @@ namespace WindowsFormsApplication1
             return new KiZahlenreihe(stellen);
         }
 
+        /// <summary>Sieben Werte je Wochentag, Montag bis Sonntag (Wochenfaktoren des Tagesgang-Editors).</summary>
+        internal static KiZahlenreihe Wochentage()
+        {
+            var stellen = new string[TAGE];
+            for (int t = 0; t < TAGE; t++) stellen[t] = Wochentagname(t);
+            return new KiZahlenreihe(stellen);
+        }
+
         /// <summary>
         /// 168 Wochenwerte, Montag Stunde 1 bis Sonntag Stunde 24 - Tag fuer Tag, je Tag
         /// die 24 Stunden. Die Stelle des Tages t (Montag = 1) und der Stunde s ist

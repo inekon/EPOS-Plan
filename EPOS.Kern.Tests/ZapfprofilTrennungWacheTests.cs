@@ -54,7 +54,9 @@ namespace EPOS.Kern.Tests
             // die strengere Regel — keine Bilanzreihe, keine Zahlenliste in einer Signatur.
             "ZapfZufall.cs", "Zapfkategorie.cs", "Zapfereignisgenerator.cs",
             // Das Auslegungsensemble (Bedarfstag, Perzentile, Gleichzeitigkeit) — die Zapfensemble-Auswertung der Invariante 2.4.
-            "Zapfensemble.cs"
+            "Zapfensemble.cs",
+            // Stufe Z4: die Sätze des Kerns und die Schätzhilfen dienen beiden Produkten und halten die strengere Regel.
+            "ZapfSatz.cs", "Schaetzhilfe.cs"
         };
 
         /// <summary>Die Dateien der Bilanz (Stufe Z1) — jede Datei des Ordners gehört zu genau einer Liste.</summary>

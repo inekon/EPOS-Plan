@@ -67,16 +67,14 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Jede_Ablehnung_Topologie_und_jedes_Verfahren_der_Auslegung_hat_seinen_Text()
+        public void Jede_Topologie_und_jedes_Verfahren_der_Auslegung_hat_seinen_Text()
         {
             var schluessel = new List<string>();
-            schluessel.AddRange(Enum.GetValues(typeof(ZapfAuslegungsfehler)).Cast<ZapfAuslegungsfehler>().Select(ZapfprofilHuelle.Schluessel));
             schluessel.AddRange(Enum.GetValues(typeof(ZapfTopologie)).Cast<ZapfTopologie>()
                                     .Select(t => "ZPG_AUS_TOPOLOGIE_" + ZapfprofilHuelle.Gross(t.ToString())));
             schluessel.AddRange(Enum.GetValues(typeof(ZapfSpeicherverfahren)).Cast<ZapfSpeicherverfahren>()
                                     .Select(v => "ZPG_AUS_VERFAHREN_" + ZapfprofilHuelle.Gross(v.ToString())));
-            Assert.Equal(11 + 4 + 4, schluessel.Count);
-            Assert.Contains("ZPG_AUSLEGUNG_UEBERTRAGER_UNBESTIMMT", schluessel);
+            Assert.Equal(4 + 4, schluessel.Count);
             Assert.Contains("ZPG_AUS_VERFAHREN_DIN4708", schluessel);
 
             string[] fehlend = schluessel.Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
@@ -86,14 +84,28 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Warnliste_nennt_Titel_und_Satz_des_Kerns()
         {
-            ZapfprofilWarnDaten w = ZapfprofilHuelle.Warnung(new Auslegungshinweis("MEHRSPEICHER", "Satz des Kerns mit 1500 l.", true));
+            ZapfprofilWarnDaten w = ZapfprofilHuelle.Warnung(new Auslegungshinweis("MEHRSPEICHER",
+                ZapfSatz.Neu("AUSHINWEIS_MEHRSPEICHER_PUNKT", 1500.0, 1000.0), true));
             Assert.Equal("ZPG_AUSHINW_MEHRSPEICHER", w.Kennung);
             Assert.Equal("Mehrspeicheranlage", w.Titel);
-            Assert.Equal("Satz des Kerns mit 1500 l.", w.Text);
+            Assert.Contains("1500", w.Text);
+            Assert.DoesNotContain("AUSHINWEIS_", w.Text);
             Assert.Equal(ZapfprofilWarnstufe.Warnung, w.Stufe);
 
+            // Ein Befund der Bilanz in der Warnliste der Auslegung: Titel und Kennung der Bilanz, Stufe wie dort.
+            foreach (string code in new[] { Mengengeruest.HINWEIS_BANDBREITE, Mengengeruest.HINWEIS_WOHNUNGSTABELLE, "TAGESGANG_SUMME",
+                                            "ZIRKULATION_OHNE_FLAECHE", "ZIRKULATION_ZONE_OHNE_FLAECHE", "ZIRKULATION_OHNE_ZONE",
+                                            "ZIRKULATION_NICHT_IN_Z1" })
+            {
+                ZapfprofilWarnDaten b = ZapfprofilHuelle.Warnung(new Auslegungshinweis(code, ZapfSatz.Neu("UNBEKANNT_NEU"), true));
+                Assert.Equal("ZPG_WARN_" + code, b.Kennung);
+                Assert.Equal(Text("ZPG_WARN_" + code, DE), b.Titel);
+                Assert.NotEqual("Hinweis", b.Titel);
+                Assert.Equal(ZapfprofilWarnstufe.Warnung, b.Stufe);
+            }
+
             // Eine Kennung ohne Titel bekommt den allgemeinen — benannt statt still.
-            ZapfprofilWarnDaten u = ZapfprofilHuelle.Warnung(new Auslegungshinweis("UNBEKANNT_NEU", "Wortlaut"));
+            ZapfprofilWarnDaten u = ZapfprofilHuelle.Warnung(new Auslegungshinweis("UNBEKANNT_NEU", ZapfSatz.Neu("UNBEKANNT_NEU")));
             Assert.Equal("Hinweis", u.Titel);
             Assert.Equal(ZapfprofilWarnstufe.Hinweis, u.Stufe);
         }
@@ -168,9 +180,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(58.0, zurueck.SpeicherC);
             Assert.Equal(ZapfprofilSpeicherart.GemischterSpeicher, zurueck.Speicherart);
             Assert.Equal(370.0, zurueck.PunktVolumenL);
-            // Laufangaben tragen keine Spalte — sie kommen nicht zurück.
-            Assert.Equal(ZapfprofilErzeugerart.KeineAngabe, zurueck.Erzeugerart);
-            Assert.Equal(ZapfprofilWerkstoff.KeineAngabe, zurueck.Werkstoff);
+            // Erzeugerart und Werkstoff sind Projektgrößen (Schritt 124) — sie kommen zurück.
+            Assert.Equal(ZapfErzeugerart.Waermepumpe, p.Erzeugerart);
+            Assert.Equal(ZapfUebertragerwerkstoff.Edelstahl, p.UebertragerWerkstoff);
+            Assert.Equal(ZapfprofilErzeugerart.Waermepumpe, zurueck.Erzeugerart);
+            Assert.Equal(ZapfprofilWerkstoff.Edelstahl, zurueck.Werkstoff);
 
             // Vorgaberegel und Stundenprofil tragen keinen Katalogtag.
             Assert.Null(ZapfprofilHuelle.MitAuslegung(basis, new ZapfprofilAuslegungEingabeDaten { IdBedarfstag = 17 }).BedarfstagQuelle);
@@ -626,7 +640,7 @@ namespace EPOS.Kern.Tests
             {
                 ZapfprofilSpeicherergebnis nein = behaelter.Schreiben(v);
                 Assert.False(nein.Erfolg);
-                Assert.Equal("ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT", nein.Meldung.Kennung);
+                Assert.Equal("ZPG_SATZ_SPEICHER_ENTWURF_NAME_BELEGT", nein.Meldung.Kennung);
                 Assert.StartsWith("Das Zapfprofil wurde nicht gespeichert — ", nein.Meldung.Text);
                 v.Rollback();
             }

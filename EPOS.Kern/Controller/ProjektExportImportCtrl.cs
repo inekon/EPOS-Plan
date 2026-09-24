@@ -597,6 +597,8 @@ namespace WindowsFormsApplication1
                 _twwKinderMeta = twwKinder;
                 _twwKindRows = kindRows;
                 TwwDirekteVerweiseSammeln(new[] { tableRows }.Concat(variantRows));
+                // Schemaschritt 124: Werte in Spalten, die das Ziel noch nicht führt, benannt statt still.
+                TwwSchritt124Melden(new[] { tableRows }.Concat(variantRows), catalogRows);
 
                 // § 2.16: die Beilagen. Ein ALTPAKET führt den Abschnitt nicht — dann
                 // bleibt die Liste leer, und der Import läuft wie zuvor.

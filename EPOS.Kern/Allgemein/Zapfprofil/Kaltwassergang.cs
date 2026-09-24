@@ -41,19 +41,18 @@ namespace WindowsFormsApplication1
         {
             if (monatswerteC == null || monatswerteC.Length != Zapfkalender.MONATE)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    "Nicht rechenbar — der Kaltwassergang trägt nicht zwölf Monatswerte.");
+                    ZapfSatz.Neu("EINGABE_KALTWASSERGANG_RASTER"));
             double mitte = zapfC - mittelC;
             if (!(mitte > 0))
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                    "Nicht rechenbar — die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „" + zone + "“).");
+                    ZapfSatz.Neu("EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER", zone));
             var f = new double[Zapfkalender.MONATE];
             for (int m = 0; m < Zapfkalender.MONATE; m++)
             {
                 double delta = zapfC - monatswerteC[m];
                 if (!(delta > 0))
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                        "Nicht rechenbar — im Monat " + (m + 1) + " liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „"
-                        + zone + "“).");
+                        ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UEBER_ZAPF", m + 1, zone));
                 f[m] = delta / mitte;
             }
             return f;

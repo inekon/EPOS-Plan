@@ -99,7 +99,7 @@ namespace EPOS.Kern.Tests
             double max = Enumerable.Range(0, 8760).Max(h => e.Zapfung.StundenKwh[h] + e.Zirkulation.StundenKwh[h]);
             Assert.Equal(max, k.GroessterStundenwertKw);
             Assert.Equal((zapf + zirk) / max, k.VolllaststundenH, 9);
-            Assert.Equal("Bilanzwert, keine Auslegungsgröße", k.VermerkGroessterStundenwert);
+            Assert.Equal("Bilanzwert, keine Auslegungsgröße", k.VermerkGroessterStundenwert.Klartext);
             Assert.Equal(Enumerable.Range(0, 8760).Count(h => e.Zapfung.StundenKwh[h] + e.Zirkulation.StundenKwh[h] > 1.0),
                          k.StundenUeberSchwelle);
             Assert.Equal(1.0, k.SchwelleKw);

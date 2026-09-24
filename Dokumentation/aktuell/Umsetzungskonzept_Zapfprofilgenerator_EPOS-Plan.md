@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N12 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N13 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1322,7 +1322,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z1 — Bilanz deterministisch** | S1 samt Temperaturumrechnung und Messwertgrenzen, S2 mit Tagtypgewicht und Ferienregel, S5 mit Zonenanteil und Vorgabe Flächenkennwert, Fassade mit `Bilanzreihe`, Weiche (2.2) samt getrennter Monatssummen, `ZapfprofilCtrl.Speichern/Eingang`, `Tab_TwwProjekt`; Dialog Stufe Einfach mit Vorschau (Tagesgang, Wochenprofil, Jahresgang, Kennzahlen) als Überlagerung unter Windows; Knopf, Optionsgruppe, Leiste „monatlicher Verlauf" und gemeinsamer `DbVorgang` im Bedarfsprofil-Dialog; Wiki-Entwurf | Z0; A3, A4/ZU5, A6, K4; fiktiver Testkatalog genügt | Tests aus 2.4, 4.1–4.3; **ein unabhängig per Tabellenkalkulation (umgesetzt als Python-Skript, N7) gerechneter fiktiver Referenzfall über 8760 h mit Abweichung 0** (Testdaten erfunden, Konzept 3.6 P1); `ZapfprofilWeicheTests` auf einer Projektkopie der Testdatenbank; Referenzlauf grün innerhalb der Toleranz (kein Referenzprojekt setzt die Weiche); `EinheitenWacheTests` mit den neuen Dateien; bunit; Sichtabnahme Windows | 14–18 PT |
 | **Z2 — Auslegung deterministisch** | Bedarfstag mit Vorgaberegel und Konstruktor, Wochenreihe, Summenlinie mit Speicherart, Übertrager, Einschaltpunkt, Wertepaarkurve, Monotonieprüfung und Ladezeit, Schnellpfad, Wohnungstabelle und DIN-4708-Kennzahl, DIN 1988-300 nachrichtlich, Speicherauslegung nach V4 mit Ladefenster, GLF, Plausibilitätsband und Warnliste, Großanlagenerkennung, Topologiegruppen; Überlagerung „Auslegung"; `SummenlinieModell` | Z1; K1/K8 für A100- und DIN-4708-Profil (ohne: Konstruktor) | `SummenlinieTests`, `Din4708KennzahlTests`, `SpeicherauslegungTests`, `AuslegungsergebnisTests`, `GrossanlageTests`, `ZapfprofilTrennungWacheTests`; `ChartProben` mit neuem Fall; Referenzlauf unberührt | 16–20 PT |
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
-| **Z4 — Oberfläche vollständig** | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
+| **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** | T3, `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2), Importdialog | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
@@ -1606,7 +1606,7 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
 | ZU18 | bei Entscheid nach Empfehlung: Testklasse aufspüren und umstellen | Agent eines Folgepostens | unabhängig von den Stufen |
 | ZU19 | Anwenderentscheid 23./24.09.2026: geringfügig abweichende VDI-Werte im Repositorium, Ableitung reproduzierbar (Rückrechenbarkeit zugelassen) — umgesetzt für VDI 6002 (N12) | Anwender (entschieden) | Z3 |
 | ZU20 | Auslieferung der abgeleiteten VDI-Werte: ja/nein (N12) | Anwender | nach K8 |
-| ZU21 | Setzungen des freien Paketteils bestätigen oder ändern (N12 (u)) | Anwender | vor der ersten Auslieferung |
+| ZU21 | Setzungen des freien Paketteils bestätigen oder ändern (N12 (u), erweitert in N13) | Anwender | vor der ersten Auslieferung |
 | P14 | ruht bis zum Ergebnis von K8 (N1) | Agent nach K8 | Z0, eigener Schritt |
 
 ### N3 (23.09.2026) — Nachbesserung der Abschlusspapiere Z0
@@ -2407,3 +2407,159 @@ bleiben lokal unter `Referenzlaeufe/Normzahlen/` (gitignoriert). Festlegungen da
 | (k) | ChartProben-Messlatte auf Linux einfrieren (unverändert: Z3 fügt keine Bilder hinzu) | Anwender/CI | nach #451 |
 | (s) | Sichtabnahme unter Windows (Prüfliste im Übergabepapier, Abschnitt 10) | Anwender | nach dem Push |
 | Wiki | Abschnitt „Stochastik" der Seite Brauchwasser-Zapfprofil; Logbuch-Sätze (Versionsnummer) | Anwender (Upload gebündelt) | nächster Upload |
+
+### N13 (24.09.2026) — Umsetzungsbefunde Z4 (Oberfläche vollständig): Kern, Dialoge, Katalogdialog
+
+**Anlass.** Stufe Z4 nach Kapitel 7: Stufen Erweitert und Experte, Zonenliste für Mischnutzung,
+Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen,
+Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki;
+dazu die Z4-Folgen aus N9 (c, g, h), N10 (i, j), N11 (c, d, i, j, k) und N12. Vier Gruppen (Kern und
+Controller · Zapfprofil-Dialog · Editoren, Auslegung und Konstruktor · Katalogdialog) durch Agenten
+mit `model: opus` im Worktree `z4`, je Gruppe eine Gegenprüfung; Schemaschritt **124**
+(zunächst 120, dann 121 — beide Nummern wurden während der Stufe von anderen Konten belegt, Regel:
+wer zuerst pusht, hat die Nummer); Protokoll
+[Z4](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-24_Z4_Oberflaeche.md), Statuszeile #464.
+
+**Befunde und Festlegungen (Kern und Controller, Gruppe 1):**
+
+- **(a) Schemaschritt 124 `SCHRITT_124_ZAPFPROFIL_LAUFANGABEN` (N10 (i), N11 (d), (j)).**
+  `Tab_TwwProjekt`: `Erzeugerart` (1,2), `Uebertrager_Werkstoff` (1,2), `Personen_Auto` (0/1),
+  `Personen_Manuell` ≥ 0, `Fuellstand_Bezug` (1…4); `Tab_TwwBedarfstag_STAMM`: `Bezugsart` (1…7,
+  NULL erlaubt). Wertemengen je einmal in `TwwSchema` für DDL und Schreibweg. Vor dem Schritt läuft
+  das Speichern ohne Angabe durch, eine gesetzte Angabe wird benannt abgelehnt; ein Ziel vor dem
+  Schritt importiert, der Bericht nennt die liegen gebliebenen Werte. Das Ecodesign-Profil L trägt die
+  Bezugsart 2 (Wohneinheiten) ohne Bezugsmenge und wird nicht skaliert (Fachentscheid offen).
+- **(b) Sätze des Kerns (N11 (k)).** `ZapfSatz` mit Kennung und Werten (`ZPG_SATZ_*`, 385 Muster je
+  Sprache, 64 alte Schlüssel entfernt); Wache `ZapfSaetzeWacheTests` prüft Muster, Platzhalterzahl und
+  Sprachen; `ZapfSatz.Text` wirft bei unpassendem Muster. Satzregeln: kein Präfix „Nicht rechenbar —"
+  (der Bannertitel sagt das), die Hülle setzt den Zonenvorsatz nur vor Sätze ohne Zone, Nutzungsart
+  ohne Id, Tabellennamen als Katalogbezeichnung (`BEGRIFF_TABELLE_*`). Die Vermerke des
+  Herkunftsprotokolls bleiben deutsche Klartexte (Folge).
+- **(c) Kategorien als Katalogkopie (4.4, N12).** `TwwNutzungsartCtrl.KategorienLesen/Vorgabe/
+  Speichern` mit `Zapfkategoriensatz.Pruefen` (dieselben Einzelregeln wie der Rechenweg); eine freie
+  Nutzungsart wird an Ort und Stelle geändert, eine gesperrte als neue Katalogversion (EIGEN,
+  Katalogversion „<Version>-E<n>"); Vorgabesatz eindeutig: nur ganz freie Sätze, Auslieferungszeilen
+  zuerst, dann der häufigste, dann der größere Satz.
+- **(d) Warnlogik und Schätzhilfen (4.x, N9 (g)).** `ZapfHinweis.Warnung` trennt Warnung und
+  Hinweis; die Warnstufe geht in die Auslegung (Titel `ZPG_WARN_<Code>` als Rückfall). Neu: Hinweis
+  auf die Bezugsmenge neben der Wohnungstabelle, Bandbreite auch beim manuellen Tagesbedarf, Hinweis
+  `ZIRKULATION_GROSS` über dem Katalogverhältnis `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (nicht
+  als Warnung — Lehre 3 des Mockups). Schätzhilfen für Tagesbedarf (nach Kalibrierung; „angesetzt" nur
+  ohne Messwert), Zirkulation je Methode und Ladeleistung als Kennung und Werte. Die Regel
+  „Ein-/Zweifamilienhaus: größte Einzelentnahme" bleibt vorgemerkt (Normwert aus dem Katalogpaket
+  nach K1/K8, Erkennung „höchstens zwei Wohneinheiten").
+- **(e) Dauerlinie und Auslastungsgang (5.6).** `Zapfauswertung.Dauerlinie` (8760 sortierte Stunden,
+  P50/P90/P95/P99 als ganzzahlige Rangquantile), `Auslastung` (Mittel 1), `Formvektor.Auslastungsgang`
+  (4.2, eine Regel für Rechnung und Anzeige); neues Bild `zapfprofil_dauerlinie` (vier Proben in
+  `Proben/ChartProben`, alte Bilder unverändert; Linux-Messlatte nachziehen — Folge N9 (a)).
+- **(f) Eingang (N9 (h), N11 (c)).** Anzeigetemperatur und Stundenschwelle: Laufangabe → Einstellung
+  `Zapfprofil.*` → Parametersatz (`Zapfprofil.Anzeigetemperatur` 45 °C, `Zapfprofil.Stundenschwelle`
+  0,1 kW im Paketteil); ungültige Werte benannt. Die Stufe geht in den `Auslegungslauf`; in Einfach
+  setzt der Kern Marke und Vermerk „Schnellauslegung" (zusätzlich beim Schnellpfad, wie seit Z2).
+
+**Befunde und Festlegungen (Zapfprofil-Dialog, Gruppe 2a):**
+
+- **(g) Stufen (2.x, 5.1).** Alle drei Stufen wählbar; Stufen blenden nur ein und aus, Eingaben
+  bleiben; die leise Zeile verweist in Einfach auf Erweitert, in Erweitert auf Experte (N9 (c)); der
+  Rechenweg der Jahresreihe steht ab Erweitert, Seed und Realisierungen in Experte (N12 (s)); das
+  Auslegungsperzentil bleibt in der Auslegung.
+- **(h) Zonenliste und Wohnungstabelle (5.3).** Die Zonenliste ist eine Haustabelle mit Summenfuß
+  (`Raster` hat keinen Fuß, N9 (k)); ab Erweitert Topologie, Anteil und Rechenweg; die wirksame
+  Bezugsmenge liefert der Kern, OK übernimmt sie. Wohnungstabelle als `Raster` nur bei Wohnen —
+  das Kriterium ist eine Kernfunktion (`Mengengeruest.WohnungstabelleWirksam`: Bezugsart Wohneinheiten oder Personen, ohne Kalenderbezug), die Rechnung, Pflichtprüfung, Schreibweg und Hülle gleichermaßen nutzen; eine nicht wirksame Tabelle wird weder gerechnet noch geprüft, der Schreibweg verwirft sie (Gegenprüfung).
+- **(i) Abweichungen von 5.3.** Der Vorschlag zur Ladeleistung entsteht im Kern der Auslegung und
+  wird ab Erweitert auch im Hauptdialog gezeigt (2b); das Bundesland ist gesperrt, zählt nicht und
+  fehlt in der KI (keine Kalendertabelle je Bundesland, A6); der Kalender bindet an ein Gebäude des
+  Projekts (A8, neuer Kernleser `GebaeudeDesProjekts`); Ferien als vier Zeiträume Tag/Monat
+  (Jahrestag, 0 und 366 = keine Angabe); Schlüsselnamen teils `ZPG_LBL_*_MANUELL`; die Dauerlinie
+  steht ab Erweitert (Mockup); die KI-Zonenfelder gelten der markierten Zone; jede Gruppe trägt einen
+  eigenen Hilfeknopf mit Assistent.
+- **(j) Jahresmesswert (4.1).** Einheit kWh oder m³; die Bilanzgrenze nur bei kWh, der Speicherverlust
+  nur bei der passenden Grenze; der Kern nutzt ihn ebenso.
+- **(k) Überschrieben-Zähler.** Er zählt nur wirksame Abweichungen: ein auto/manuell-Paar einmal, der Speicherverlust nur bei Bilanzgrenze 3 mit Messwert, Zirkulationsangaben nur für die gewählte Methode, die Wohnungstabelle nur bei wirksamer Bezugsart (Gegenprüfung; die erste Fassung zählte Schalter und Wert doppelt).
+- **(l) Pflichtprüfung des OK.** Die Gültigkeit manueller Werte (Tagesbedarf, Zirkulation) prüfen Kernfunktionen (`Mengengeruest.TagesbedarfManuellGueltig`, `Zirkulationskanal.ManuellGueltig`), die Rechenweg und Pflichtprüfung des OK gleichermaßen rufen — keine zweite Regelsammlung in der Oberfläche (Gegenprüfung).
+
+**Befunde und Festlegungen (Editoren, Auslegung, Konstruktor, Gruppe 2b):**
+
+- **(m) Tagesgang-Editor (5.1, 4.2).** Überlagerung `TagesgangEditor.razor` (Muster
+  `TypProfilDialog`): vier Tagtypen × 24 Anteile, Summenzeile mit Vorschau der Normierung, Normieren,
+  Tag kopieren/einfügen, Vorlage laden, Zurücksetzen; eine gesperrte Nutzungsart wird als
+  Anwenderkopie (EIGEN) geschrieben, die Zone rechnet danach mit ihr; hat eine Zone einen eigenen
+  Satz gewählt, schreibt der Editor über die Nutzungsart und die Wahl der Zone folgt dem
+  geschriebenen Satz; zeigt der Editor einen anderen Satz als den der Nutzungsart, entsteht immer
+  eine Kopie (nie wird ein nicht gezeigter Satz überschrieben). **Herkunft bleibt erhalten:** das
+  DTO führt die Originalanteile des Stands beim Öffnen mit, unveränderte Reihen und Wochenfaktoren
+  gehen bitgleich zurück, normiert wird nur bei |Σ−1| > 1e-9, der Kernvergleich `Gleich` arbeitet
+  mit Toleranz 1e-12, „Vorlage laden" gibt die Herkunft der Vorlage mit — die erste Fassung hätte
+  16 von 20 abgeleiteten Reihen als Eigenkonstruktion ohne Beleg geschrieben (Gegenprüfung,
+  lizenzrelevant). Ein Tagtypwechsel räumt die Fehleingaben des verlassenen Tagtyps. Esc schließt
+  erst den Editor, dann den Dialog.
+- **(n) Kategorien-Raster (5.3).** Überlagerung `ZapfkategorienEditor` mit allen Spalten,
+  Vorgabesatz, Prüfregeln allein aus dem Kern: eine Anteilsumme ≠ 1 ist nur ein Hinweis, abgelehnt
+  wird Summe 0 (fachlich richtig: `Zapfkategoriensatz.Aus` teilt jeden Anteil durch die Summe, der Generator rechnet mit dem normierten Anteil); Kopie bei gesperrtem Eintrag; schreibgeschützte Ansicht mit Schloss
+  und Grund.
+- **(o) Auslegung (N11 (d), N10 (i)).** Eingaben des Verfahrensvergleichs als Felder (Ladeleistung
+  und Personen auto/manuell mit Vorschlag, Ladefenster, Nutzanteil, Zuschlag, Füllstand-Bezug),
+  nachrichtlich; Erzeugerart und Werkstoff mit Vorschlag aus dem Projekt, gespeichert; der
+  Ladeleistungs-Vorschlag steht ab Erweitert auch im Hauptdialog.
+- **(p) Konstruktor (N11 (j), Schritt 124).** Bezugsart und Bezugsmenge wählbar; Zeilen und
+  Bezug bleiben über das Schließen des Zapfprofils hinaus am Arbeitsstand; nach OK im Bedarfsprofil
+  bleiben Ereignisse und Bezug (die Konstruktorzeilen selbst in der Datenbank zu halten braucht einen
+  Schemaschritt — Folge).
+- **(q) Hilfe und Wiki (5.8).** Hilfeschlüssel je Gruppe (`Form_Zapfprofil.grp_*`, `grp_Auslegung`,
+  `grp_Konstruktor`, Editoren); `Form_Zapfprofil_Berechnung` zeigt auf den Anker `stochastik` der
+  Bedienseite, bis die Berechnungsseite `Zapfprofil.wiki` existiert (Folge); Bedienseite um
+  Stufen, Belegung, Schätzhilfen, Fachwerte, Dauerlinie, Warnliste, Tagesgang bearbeiten,
+  Zapfkategorien, Verfahrensvergleich und Konstruktor-Bezug fortgeschrieben.
+
+**Befunde und Festlegungen (Katalogdialog, Gruppe 3):**
+
+- **(r) Katalogdialog (5.4).** `TwwNutzungsartAdminDialog.razor` nach dem gültigen Muster der
+  Verwaltungen (Stammblatt statt „Gestapelt + lesendes Formularraster"): Liste mit Spaltenrängen und
+  Schloss, Stammblatt mit Kennzahlen, Tagesgang- und Jahresgangbild (bestehende Renderer), Editor
+  `TwwNutzungsartEditor` für Neu, Ändern und Speichern unter (gesperrte Zeilen als neue eigene Zeile),
+  Löschen mit Sperrgrund (ReadOnly, benutzende Projekte), Tagesgang, Kategorien, Grafik und Import;
+  Ändern/Tagesgang/Kategorien/Grafik in den Gruppenköpfen, Speichern unter und Löschen in der
+  Auswahlleiste, der Fuß trägt Import · Neu · Beenden; kein eigener Knopf „Typ ändern" (Bezugsart und
+  Kalender im Editor). Menü: Administration → Brauchwasser ist ein Untermenü mit „Brauchwasserprofile"
+  und „Brauchwasser-Nutzungsarten" (`Menuetabelle.cs`, `MenuebandTests`); auf iOS bleibt der Katalog
+  geschlossen (Folge).
+- **(s) Katalogimport (2.5, 3.2, N2).** Paket aus Ordner, ZIP oder CSV im Format N2; Zeilen mit
+  Herkunftsart IMPORT (FREI und FIKTIV bleiben), Dublettenscan wie im Projektimport, Bericht
+  angelegt/übersprungen/abgelehnt mit Grund, Katalogsperre unberührt; Bedarfstag und Parameter deckt
+  der Import nicht ab (Folge).
+- **(t) Wachen (Kapitel 6, ZU-Folge (c)).** `WikiProduktdatenWacheTests` prüft die Texte aller
+  `Tab_Tww*_STAMM` ohne `Beleg` und alle `ZPG_`/`ZPGK_`-Ressourcen mit Gegenprobe; die Katalogsperre
+  ist auch über den Dialogweg gehalten.
+- **(u) Rasterprobe (5.7).** Gelaufen im echten Browser (Chromium/Playwright aus NuGet): drei
+  Verstöße behoben — die Katalogliste rollte quer (Spaltenränge im Profil), die Überlagerung
+  „Zapfkategorien" rollte quer mit (versteckte Feldbeschriftung ohne positionierten Vorfahren,
+  `position: relative`), das Kategorien-Raster war 1 548 px breit (schmalere Felder, umbrechende
+  Köpfe). Messwerte: Katalogliste 6 654 Sätze, Zeilenhöhe 46 px, Abstandshalter 0/305 256 px,
+  Sichtbarkeitsmelder 3–4 (Soll ≤ 12), Zeilen nach dem Rollen in 122 ms; Wohnungstabelle und
+  Kategorien-Raster 45 px ohne senkrechtes Rollen. Die Wohnungstabelle rollte im 498 px breiten Eingabeblock bei 1 088 px Breite noch 102 px quer (Folge, Kleinigkeit).
+
+**KI-Maskenanmeldung (Pflegeregel seit #458).** Jede Eingabestelle der Zapfprofil-Dialoge steht in
+der Feldkarte und in der Zählliste von `KiMaskenabdeckungWacheTests`: ZapfprofilDialog 55,
+ZapfprofilAuslegungDialog 20, BedarfstagKonstruktor 10, TagesgangEditor 5, ZapfkategorienEditor 7,
+TwwNutzungsartEditor 13, TwwNutzungsartAdminDialog 0 (nur Auswahl und Knöpfe); der KI-Katalog führt 80 Masken und 11 Zahlenreihen.
+
+**Setzungen des Paketteils (ZU21, Fortschreibung).** Zusätzlich zu N12 (u): Zirkulations-Hinweis-
+verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| (a) | Ecodesign L nach Wohneinheiten skalieren: ja/nein | Anwender (Fachentscheid) | vor Z5 |
+| (b) | Vermerke des Herkunftsprotokolls als Kennung und Werte | Agent der Stufe Z5 | Z5 |
+| (d) | Regel „Ein-/Zweifamilienhaus: größte Einzelentnahme" mit Normwert aus dem Katalogpaket | Katalogpflege nach K1/K8 | nach K8 |
+| (e) | Dauerlinienbild in die Linux-Messlatte von `Proben/ChartProben` | CI-Lauf, Anwender | mit N9 (a) |
+| (p) | Konstruktorzeilen in der Datenbank (Schemaschritt) | Agent der Stufe Z5 | Z5 |
+| (q) | Berechnungsseite `Zapfprofil.wiki` und Umlenkung von `Form_Zapfprofil_Berechnung` | Wiki-Runde | nächster Upload |
+| (r) | Katalogdialog auf iOS (Naht der Schale) | Agent einer iOS-Welle | nach iU11 |
+| (s) | Katalogimport um Bedarfstage und Parameter erweitern; Größenschutz beim ZIP-Import (wie im Projektimport) | Agent der Stufe Z5 | Z5 |
+| Rest | geringe Befunde der Gegenprüfungen 2a/2b: Fehleingaben verschwundener Felder räumen, Zonenliste mit wirksamer Bezugsmenge und Summenfuß, Maximum des Zirkulationsanteils in der KI-Karte, Ladeleistungs-Vorschlag mit gefangenen Ausnahmen und Grundtext, Editor-Knöpfe ohne Delegat nicht rendern, `FreieKopieversion` ohne „-E1-E1", Vorgabesatz bei leerer Nutzungsart, Balkengrafik im Tagesgang-Editor, Wohnungstabelle 102 px | Agent eines Folgepostens | Z5 |
+| ZU21 | Setzungen des Paketteils (N12 (u) und oben) bestätigen | Anwender | vor der ersten Auslieferung |
+| Wiki | Bedienseite hochladen; Logbuch-Sätze (Versionsnummer) | Anwender (Upload gebündelt) | nächster Upload |
+| Sicht | Sichtabnahme unter Windows (Übergabe, Abschnitt 11) | Anwender | nach dem Push |

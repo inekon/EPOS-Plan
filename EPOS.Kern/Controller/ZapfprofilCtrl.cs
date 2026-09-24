@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -47,8 +48,7 @@ namespace WindowsFormsApplication1
             string version = AktuelleKatalogversion();
             if (version == null)
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, "", "",
-                    "Nicht rechenbar — die Tabelle " + TwwSchema.TAB_TWW_PARAMETER_STAMM +
-                    " fehlt oder trägt keine Katalogversion.");
+                    ZapfSatz.Neu("PARAMETER_TABELLE_OHNE_VERSION", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
             return Parameter(version);
         }
 
@@ -60,10 +60,10 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(katalogversion))
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, "", "",
-                    "Nicht rechenbar — es wurde keine Katalogversion der Brauchwasserparameter genannt.");
+                    ZapfSatz.Neu("PARAMETER_KEINE_VERSION_GENANNT"));
             if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM))
                 throw new ParametersatzException(ParametersatzFehler.KeineKatalogversion, katalogversion, "",
-                    "Nicht rechenbar — die Tabelle " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " fehlt.");
+                    ZapfSatz.Neu("PARAMETER_TABELLE_FEHLT", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Schluessel, Wert, Einheit, Quelle, Ausgabe, Version, Herkunftsart " +
@@ -114,17 +114,15 @@ namespace WindowsFormsApplication1
                 if (!DataRepository.TabelleVorhanden(a.Key)) fehlend.Add(a.Key);
             if (fehlend.Count > 0)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.TabellenFehlen,
-                    "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen die Tabellen "
-                    + string.Join(", ", fehlend) + ".");
+                    ZapfSatz.Neu("VERFUEGBAR_TABELLEN_FEHLEN", (object)fehlend.Select(ZapfSatz.Tabelle).ToArray()));
 
             string version = AktuelleKatalogversion();
             if (version == null)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.KeineKatalogversion,
-                    "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — "
-                    + TwwSchema.TAB_TWW_PARAMETER_STAMM + " trägt keine Katalogversion.");
+                    ZapfSatz.Neu("VERFUEGBAR_KEINE_KATALOGVERSION", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)));
 
             return new ZapfVerfuegbarkeit(true, ZapfVerfuegbarkeitsgrund.Verfuegbar,
-                "Der Zapfprofilgenerator ist verfügbar (Katalogversion „" + version + "“).");
+                ZapfSatz.Neu("VERFUEGBAR_JA", version));
         }
 
         // =================================================================================
@@ -424,6 +422,11 @@ namespace WindowsFormsApplication1
         {
             int? lage = GanzOderNull(r, "Zirk_Lage");
             int? quelle = GanzOderNull(r, "Bedarfstag_Quelle");
+            // Schritt 124 (T3): Vor dem Schritt fehlen die Spalten — dann gelten die DDL-Vorgaben.
+            int? erzeuger = SpalteDa(r, TwwSchema.SPALTE_ERZEUGERART) ? GanzOderNull(r, TwwSchema.SPALTE_ERZEUGERART) : null;
+            int? werkstoff = SpalteDa(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF)
+                ? GanzOderNull(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF) : null;
+            int? bezug = SpalteDa(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) ? GanzOderNull(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) : null;
 
             return new ProjektStand
             {
@@ -465,9 +468,17 @@ namespace WindowsFormsApplication1
                 IdBedarfstag = GanzOderNull(r, "ID_Bedarfstag"),
                 AuslegungVolumenL = ZahlOderNull(r, "Auslegung_Volumen_l"),
                 AuslegungLeistungKw = ZahlOderNull(r, "Auslegung_Leistung_Kw"),
-                Aenderungsdatum = TextOderNull(r, "Aenderungsdatum")
+                Aenderungsdatum = TextOderNull(r, "Aenderungsdatum"),
+                Erzeugerart = erzeuger.HasValue ? (ZapfErzeugerart)erzeuger.Value : (ZapfErzeugerart?)null,
+                UebertragerWerkstoff = werkstoff.HasValue ? (ZapfUebertragerwerkstoff)werkstoff.Value : (ZapfUebertragerwerkstoff?)null,
+                PersonenAuto = !SpalteDa(r, TwwSchema.SPALTE_PERSONEN_AUTO) || Wahr(r, TwwSchema.SPALTE_PERSONEN_AUTO),
+                PersonenManuell = SpalteDa(r, TwwSchema.SPALTE_PERSONEN_MANUELL) ? ZahlOderNull(r, TwwSchema.SPALTE_PERSONEN_MANUELL) : null,
+                FuellstandBezug = bezug.HasValue ? (ZapfFuellstandbezug)bezug.Value : (ZapfFuellstandbezug?)null
             };
         }
+
+        /// <summary>Führt die gelesene Zeile die Spalte (Stand nach dem Schemaschritt)?</summary>
+        internal static bool SpalteDa(DataRow r, string spalte) => r?.Table != null && r.Table.Columns.Contains(spalte);
 
         // =================================================================================
         // Lesehilfen — die DataTable liefert je nach Spalte long, int, bool oder double

@@ -24,9 +24,10 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Benannt statt still.</b> Ablehnungen des Kerns (<see cref="ZapfAuslegungException"/>,
     /// <see cref="ZapfprofilEingabeException"/>, <see cref="ParametersatzException"/>) kommen als
-    /// <see cref="ZapfprofilMeldung"/> mit Ressourcenschlüssel; die Warnliste trägt je Kennung des
-    /// Kerns einen Titel in der Oberflächensprache (<c>ZPG_AUSHINW_…</c>) und den Satz des Kerns
-    /// mit eingesetzten Zahlen.</para>
+    /// <see cref="ZapfprofilMeldung"/> mit dem Satz des Kerns (<see cref="ZapfSatz"/>) in der
+    /// Oberflächensprache; die Warnliste trägt je Kennung des Kerns einen Titel in der
+    /// Oberflächensprache (<c>ZPG_AUSHINW_…</c>) und den Satz des Kerns mit Zahlen in der Kultur
+    /// der Oberfläche (N11 (k)).</para>
     ///
     /// <para><b>Der Punkt ist Ergebnis, nicht Eingabe.</b> Der mit OK übernommene Punkt geht nur in
     /// Übernahme und Speichern; der Rechenweg der Überlagerung rechnet ohne ihn
@@ -39,8 +40,9 @@ namespace WindowsFormsApplication1
     /// in den Arbeitsstand des Dialogs (<see cref="ZapfprofilEingabeDaten.Auslegung"/>); das OK
     /// des Bedarfsprofil-Dialogs schreibt sie im gemeinsamen Vorgang über
     /// <see cref="AuslegungSpeichern"/> — Projektgrößen in <c>Tab_TwwProjekt</c>, ein
-    /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart und Werkstoff tragen keine Spalte
-    /// und werden nicht gespeichert (N10 (i)).</para>
+    /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart, Werkstoff, Personen und Bezug des
+    /// Füllstands stehen ab Schritt 124 als Projektgrößen darin; der Vorschlag des
+    /// Anlagenbestands bleibt ein Vorschlag (N10 (i)).</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
     {
@@ -87,10 +89,10 @@ namespace WindowsFormsApplication1
                     a => Auslegung(idProjekt, zonen, Deterministisch(a), basis, stufe)),
                 ["StochastischRechnen"] = new Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>(
                     (a, abbruch) => Kulturweitergabe.Starten(() => Auslegung(idProjekt, zonen, a, basis, stufe, abbruch), abbruch)),
-                ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>(
+                ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>(
                     BedarfstagKonstruieren),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
-                ["HilfeRechenweg"] = HILFE_RECHENWEG
+                ["HilfeRechenweg"] = HILFE_AUSLEGUNG_RECHENWEG
             };
         }
 
@@ -109,6 +111,9 @@ namespace WindowsFormsApplication1
         {
             eingabe ??= new ZapfprofilEingabeDaten();
             ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
+            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufen Erweitert
+            // und Experte, Z4): Die Überlagerung beginnt mit seinem Stand.
+            eingabe.Gebaeude?.InAuslegung(anfang);
             anfang.Stochastisch = stochastisch;
             var start = new ZapfprofilAuslegungStartDaten
             {
@@ -120,11 +125,20 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             start.Verfuegbar = verfuegbar.Ja;
-            start.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar.Grund);
+            start.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar);
             if (!verfuegbar.Ja) return start;
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
             StochastikRahmen(start);
+            // Die Wertemengen des Schemas (Schritt 124): Bezugsart eines konstruierten Tags, Bezug des Füllstands.
+            start.Bezugsarten = TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE)
+                .Select(b => new ZapfprofilKatalogeintragDaten { Id = b, Name = Bezugsgroesse((ZapfBezugsart)b) }).ToList();
+            start.Fuellstandbezuege = TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE)
+                .Select(b => new ZapfprofilKatalogeintragDaten
+                {
+                    Id = b,
+                    Name = Satztext(TwwSpeicherauslegung.Fuellstandbegriff((ZapfFuellstandbezug)b))
+                }).ToList();
             try
             {
                 Parametersatz ps = ZapfprofilCtrl.Parameter();
@@ -138,7 +152,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex) when (ex is ZapfAuslegungException || ex is ParametersatzException)
                 {
                     start.RegelnGrund = Format(Text_("ZPG_AUS_KON_REGELN_UNGUELTIG",
-                        "Die Zapfregeln des Katalogs sind ungültig — nur Zeilen mit direktem Volumen: {0}"), ex.Message);
+                        "Die Zapfregeln des Katalogs sind ungültig — nur Zeilen mit direktem Volumen: {0}"), Ausnahmetext(ex));
                 }
             }
             catch (ParametersatzException) { /* das Ergebnis nennt den Grund */ }
@@ -168,9 +182,9 @@ namespace WindowsFormsApplication1
                 foreach (int p in TwwSchema.Perzentile)
                     start.RealisierungenVorgabe[p] = Zapfensemble.RealisierungenAuslegung(null, p, ps);
             }
-            catch (ParametersatzException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
-            catch (ZapfAuslegungException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
-            catch (ZapfprofilEingabeException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
+            catch (ParametersatzException ex) { OhneVorgabe(start, Satztext(ex.Satz)); }
+            catch (ZapfAuslegungException ex) { OhneVorgabe(start, Satztext(ex.Satz)); }
+            catch (ZapfprofilEingabeException ex) { OhneVorgabe(start, Satztext(ex.Satz)); }
         }
 
         private static void OhneVorgabe(ZapfprofilAuslegungStartDaten start, string grund)
@@ -214,8 +228,8 @@ namespace WindowsFormsApplication1
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
-                                     Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar),
+                                     Verfuegbarkeitsgrund(verfuegbar), verfuegbar.Klartext);
             if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
                 return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_MSG_KEINE_KLIMAREGION",
                     Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau."), "");
@@ -223,6 +237,9 @@ namespace WindowsFormsApplication1
             auslegung ??= AuslegungAusStand(basis);
             ZapfprofilEingabeDaten mit = eingabe.Kopie();
             mit.Auslegung = auslegung;
+            // In der Überlagerung gelten ihre Eingaben: Die geteilten gebäudeweiten Größen (Ladeleistung,
+            // Ladefenster, Speichertemperatur) nehmen den Stand der Überlagerung an, die übrigen bleiben.
+            mit.Gebaeude?.AusAuslegung(auslegung);
             Auslegungsrechnung r;
             ProjektStand rechenprojekt;
             try
@@ -235,23 +252,14 @@ namespace WindowsFormsApplication1
                 rechenprojekt = stand.Projekt;
                 r = ZapfprofilCtrl.Auslegung(idProjekt, stand, jan1, we,
                     new Auslegungslauf(AlsErzeugerart(auslegung.Erzeugerart), AlsWerkstoff(auslegung.Werkstoff),
-                                       auslegung.Stochastisch, abbruch));
+                                       auslegung.Stochastisch, abbruch, (ZapfStufe)(int)stufe));
             }
             catch (OperationCanceledException) { throw; }
-            catch (ZapfprofilEingabeException ex)
+            catch (Exception ex) when (ex is ZapfprofilEingabeException || ex is ParametersatzException || ex is ZapfAuslegungException)
             {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
-            }
-            catch (ParametersatzException ex)
-            {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
-            }
-            catch (ZapfAuslegungException ex)
-            {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
-                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+                ZapfSatz satz = SatzAus(ex);
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Satzkennung(satz, "ZPG_AUS_MSG_UNERWARTET"),
+                                     Satztext(satz), ex.Message);
             }
             catch (Exception ex)
             {
@@ -313,7 +321,10 @@ namespace WindowsFormsApplication1
                 Zustand = ZapfprofilAuslegungZustand.Gerechnet,
                 Stochastisch = eingabe?.Stochastisch == true,
                 Status = Text_("ZPG_AUS_STATUS_GERECHNET", "Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“"),
-                ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart)
+                ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart),
+                // Der Vorschlag des Projekts (N10 (i)): der eindeutige Anlagenbestand — eine Wahl, die der
+                // Anwender übernimmt; gespeichert wird sie erst mit ihr (Schritt 124).
+                ErzeugerartVorschlag = AlsErzeugerart(r.Bestand?.Vorschlag)
             };
 
             if (eingabe != null && eingabe.Erzeugerart != ZapfprofilErzeugerart.KeineAngabe)
@@ -329,7 +340,7 @@ namespace WindowsFormsApplication1
 
             foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
                 d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
-                    Format(Text_("ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"), a.Zone ?? "", a.Klartext ?? ""),
+                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"),
                     ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
             foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
             {
@@ -352,7 +363,7 @@ namespace WindowsFormsApplication1
                 Speicher = speicher,
                 Zonen = g.Zonen.ToList(),
                 Bedarfstag = g.Bedarfstag?.Bezeichner ?? "",
-                BedarfstagWahl = g.Bedarfstagwahl?.Grund ?? "",
+                BedarfstagWahl = Satztext(g.Bedarfstagwahl?.Grund),
                 KonstruktorOeffnen = g.Bedarfstagwahl?.KonstruktorOeffnen == true && g.Bedarfstag == null,
                 SpitzenUnterschaetzt = g.Bedarfstag?.SpitzenUnterschaetzt == true,
                 SpeicherC = g.Speichertemperatur?.SpeicherC,
@@ -374,9 +385,10 @@ namespace WindowsFormsApplication1
                     VolumenL = e.VolumenL,
                     LeistungKw = e.LeistungKw,
                     NenninhaltL = e.NenninhaltL,
-                    Schnellauslegung = e.Rechenbar && (e.Schnellauslegung || stufe == ZapfprofilStufe.Einfach),
-                    Vermerk = e.Vermerk ?? "",
-                    Grund = e.Grund ?? ""
+                    // Die Marke setzt der Kern je Stufe (N11 (c)); die Hülle rechnet sie nicht nach.
+                    Schnellauslegung = e.Rechenbar && e.Schnellauslegung,
+                    Vermerk = string.Join("; ", e.Vermerke.Select(Satztext)),
+                    Grund = Satztext(e.Grund)
                 };
 
             ZapfprofilAuslegungBildtexte bild = AuslegungBildtexte();
@@ -386,7 +398,7 @@ namespace WindowsFormsApplication1
                 d.LadezeitH = sl.Punkt?.LadezeitH;
                 d.ZeitkonstanteMin = sl.ZeitkonstanteMin;
                 d.Wertepaare = sl.Wertepaare.Count;
-                d.Vermerk = sl.Vermerk ?? "";
+                d.Vermerk = Satztext(sl.Vermerk);
                 Summenlinienkurven k = ZapfprofilBilder.SummenlinieKurven(g.Bedarfstag, sl.Nachweis);
                 if (k != null) d.SummenlinieModell = ZapfprofilBilder.SummenlinieModell(k.BedarfKwh, k.VersorgungKwh, k.BeruehrungMinute, bild);
                 if (sl.Wertepaare.Count >= 2)
@@ -483,19 +495,16 @@ namespace WindowsFormsApplication1
             VolumenL = w.VolumenL,
             LeistungKw = w.LeistungKw,
             Empfohlen = w.Empfohlen,
-            Text = AblehnungsSatz(w.Ablehnung) ?? w.Text ?? ""
+            Text = AblehnungsSatz(w.Ablehnung) ?? Satztext(w.Satz)
         };
 
         /// <summary>
-        /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone,
-        /// wo sie eine trägt; <c>null</c> ohne Kennung oder ohne Ressource (dann gilt der Satz des Kerns).
+        /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone
+        /// davor, wo sie eine trägt und der Satz sie nicht schon nennt; <c>null</c> ohne Ablehnung
+        /// oder ohne Satz.
         /// </summary>
         private static string AblehnungsSatz(ZapfAblehnung a)
-        {
-            string grund = GenauerGrund(a, out _);
-            if (grund == null) return null;
-            return string.IsNullOrEmpty(a.Zone) ? grund : Format(Text_("ZPG_MSG_ZONE", "Zone „{0}“: {1}"), a.Zone, grund);
-        }
+            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Zone „{0}“: {1}");
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
@@ -510,14 +519,20 @@ namespace WindowsFormsApplication1
                 KennzahlN = din != null && din.Gueltig ? din.KennzahlN : null,
                 LadeleistungKw = sa.Ladeleistung.Angesetzt,
                 LadeManuell = sa.Ladeleistung.IstManuell,
-                LadeRechenweg = sa.LadeRechenweg ?? "",
+                LadeRechenweg = Satztext(sa.LadeRechenweg),
                 Personen = sa.Personen,
                 Nutzanteil = sa.Nutzanteil,
                 Zuschlag = sa.Zuschlag,
                 DmaxKwh = sa.DmaxKwh,
                 ProfilbasiertVorhanden = sa.ProfilbasiertVorhanden,
                 FuellstandBezugL = sa.FuellstandBezugL,
-                FuellstandBezug = sa.FuellstandBezug ?? "",
+                FuellstandBezug = sa.FuellstandBezug.HasValue ? Satztext(TwwSpeicherauslegung.Fuellstandbegriff(sa.FuellstandBezug.Value)) : "",
+                FuellstandBezugArt = sa.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)sa.FuellstandBezug.Value
+                                                                 : ZapfprofilFuellstandbezug.Vorgabe,
+                Ladeleistung = AlsSchaetzhilfe(sa.LadeSchaetzhilfe),
+                PersonenVorschlag = sa.PersonenWert.HasValue && !double.IsNaN(sa.PersonenWert.Value.Vorschlag)
+                    ? sa.PersonenWert.Value.Vorschlag : (double?)null,
+                PersonenManuell = sa.PersonenWert.HasValue && sa.PersonenWert.Value.IstManuell,
                 KapazitaetKwh = sa.KapazitaetKwh,
                 MinFuellstandKwh = sa.MinFuellstandKwh,
                 ReserveAnteil = sa.ReserveAnteil
@@ -531,8 +546,8 @@ namespace WindowsFormsApplication1
                     ImBand = z.ImBand,
                     Groesster = z.ImBand && z.VolumenL.HasValue && sa.BandMaxL.HasValue && z.VolumenL.Value == sa.BandMaxL.Value,
                     Nachrichtlich = z.Verfahren == ZapfSpeicherverfahren.Klassisch,
-                    Kennwert = z.Kennwert ?? "",
-                    Rechenweg = z.Rechenweg ?? ""
+                    Kennwert = Satztext(z.Kennwert),
+                    Rechenweg = Satztext(z.Rechenweg)
                 });
 
             if (sa.ProfilbasiertVorhanden && sa.StundeDesTags.HasValue && sa.TagInWoche2.HasValue && sa.Wochentag.HasValue)
@@ -550,20 +565,29 @@ namespace WindowsFormsApplication1
             return v;
         }
 
-        /// <summary>Ein Hinweis des Kerns als Eintrag der Warnliste: Titel aus <c>ZPG_AUSHINW_…</c>, sonst „Hinweis"; Satz des Kerns.</summary>
+        /// <summary>
+        /// Ein Hinweis des Kerns als Eintrag der Warnliste: Titel aus <c>ZPG_AUSHINW_…</c>; ein Befund
+        /// der Bilanz, den die Auslegung mitträgt (Mengengerüst, Tagesgang, Zirkulation), trägt den
+        /// Titel der Warnliste der Bilanz (<c>ZPG_WARN_…</c>) samt dessen Kennung; sonst „Hinweis".
+        /// Satz des Kerns, Stufe nach der Warnlogik.
+        /// </summary>
         internal static ZapfprofilWarnDaten Warnung(Auslegungshinweis h)
         {
             string kennung = AuslegungsHinweisSchluessel(h.Code);
-            string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
-            return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? h.Text ?? "",
+            string titel = Text_(kennung, null);
+            if (titel == null && Text_("ZPG_WARN_" + (h.Code ?? ""), null) is string bilanz)
+            {
+                kennung = "ZPG_WARN_" + h.Code;
+                titel = bilanz;
+            }
+            titel ??= Text_("ZPG_AUS_HINWEIS", "Hinweis");
+            return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? Satztext(h.Satz),
                                            h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
         }
 
         /// <summary>Der Ressourcenschlüssel des Titels einer Hinweiskennung der Auslegung: <c>ZPG_AUSHINW_</c> + Kennung.</summary>
         internal static string AuslegungsHinweisSchluessel(string code) => "ZPG_AUSHINW_" + (code ?? "");
 
-        /// <summary>Der Ressourcenschlüssel einer Ablehnung der Auslegung: <c>ZPG_AUSLEGUNG_…</c>.</summary>
-        internal static string Schluessel(ZapfAuslegungsfehler f) => "ZPG_AUSLEGUNG_" + Gross(f.ToString());
 
         private static string Speichertemperaturherkunft(Speichertemperaturquelle q)
         {
@@ -598,8 +622,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Eingaben der Überlagerung aus dem Stand des Kerns: Projektgrößen (nullbar =
-        /// Vorgabe) und ein noch ungespeicherter Entwurf. Erzeugerart und Werkstoff tragen keine
-        /// Spalte — sie stehen auf „keine Angabe".
+        /// Vorgabe) und ein noch ungespeicherter Entwurf; Erzeugerart und Werkstoff aus der
+        /// gespeicherten Wahl (Schritt 124), sonst „keine Angabe".
         /// </summary>
         internal static ZapfprofilAuslegungEingabeDaten AuslegungAusStand(ZapfprofilStand stand)
         {
@@ -622,14 +646,47 @@ namespace WindowsFormsApplication1
                 // Realisierungen des Bedarfstags; „Stochastisch rechnen" trägt keine Spalte.
                 a.Perzentil = TwwSchema.Perzentile.Contains(p.Perzentil) ? p.Perzentil : (int?)null;
                 a.RealisierungenAuslegung = p.RealisierungenAuslegung;
+                // Der Verfahrensvergleich (4.7; Stufe Z4): Ladeleistung, Ladefenster, Nutzanteil und
+                // Zuschlag, Personen und Bezug des Füllstands aus den Projektgrößen (Schritt 124).
+                a.LadeAuto = p.LadeAuto;
+                a.LadeManuellKw = p.LadeManuellKw;
+                a.LadefensterH = p.LadefensterH;
+                a.LadefensterBeginnH = p.LadefensterBeginnH;
+                a.Nutzanteil = p.Nutzanteil;
+                a.Zuschlag = p.Zuschlag;
+                a.Erzeugerart = AlsErzeugerart(p.Erzeugerart);
+                a.Werkstoff = p.UebertragerWerkstoff == ZapfUebertragerwerkstoff.Stahl ? ZapfprofilWerkstoff.Stahl
+                            : p.UebertragerWerkstoff == ZapfUebertragerwerkstoff.Edelstahl ? ZapfprofilWerkstoff.Edelstahl
+                            : ZapfprofilWerkstoff.KeineAngabe;
+                a.PersonenAuto = p.PersonenAuto;
+                a.PersonenManuell = p.PersonenManuell;
+                a.FuellstandBezug = p.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)p.FuellstandBezug.Value
+                                                               : ZapfprofilFuellstandbezug.Vorgabe;
             }
             if (stand?.BedarfstagEntwurf != null)
             {
                 a.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
                 a.IdBedarfstag = null;
                 a.Entwurf = AlsBedarfstag(stand.BedarfstagEntwurf, true);
+                // Die Zeilen des Konstruktors gehen mit dem Arbeitsstand (N11 (j)).
+                a.Entwurf.Konstruktorzeilen = (stand.Konstruktorzeilen ?? new KonstruktorzeileStand[0])
+                    .Select(z => new ZapfprofilKonstruktorZeileDaten
+                    {
+                        BeginnH = z.BeginnH, EndeH = z.EndeH, Regel = z.Regel, Anzahl = z.Anzahl, VolumenL = z.VolumenL,
+                        ZapftemperaturC = z.ZapftemperaturC, Verbraucher = z.Verbraucher
+                    }).ToList();
             }
             return a;
+        }
+
+        /// <summary>Die Zeilen des Konstruktors aus den Eingaben der Überlagerung — nur beim Entwurf, sonst keine.</summary>
+        internal static IReadOnlyList<KonstruktorzeileStand> Konstruktorzeilen(ZapfprofilAuslegungEingabeDaten a)
+        {
+            if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return new KonstruktorzeileStand[0];
+            return a.Entwurf.Konstruktorzeilen
+                .Where(z => z != null)
+                .Select(z => new KonstruktorzeileStand(z.BeginnH, z.EndeH, z.Regel, z.Anzahl, z.VolumenL, z.ZapftemperaturC, z.Verbraucher))
+                .ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -660,7 +717,19 @@ namespace WindowsFormsApplication1
                 AuslegungVolumenL = a.PunktVolumenL,
                 AuslegungLeistungKw = a.PunktLeistungKw,
                 Perzentil = a.Perzentil ?? p.Perzentil,
-                RealisierungenAuslegung = a.RealisierungenAuslegung
+                RealisierungenAuslegung = a.RealisierungenAuslegung,
+                LadeAuto = a.LadeAuto,
+                LadeManuellKw = a.LadeManuellKw,
+                LadefensterH = a.LadefensterH,
+                LadefensterBeginnH = a.LadefensterBeginnH,
+                Nutzanteil = a.Nutzanteil,
+                Zuschlag = a.Zuschlag,
+                Erzeugerart = AlsErzeugerart(a.Erzeugerart),
+                UebertragerWerkstoff = AlsWerkstoff(a.Werkstoff),
+                PersonenAuto = a.PersonenAuto,
+                PersonenManuell = a.PersonenManuell,
+                FuellstandBezug = a.FuellstandBezug == ZapfprofilFuellstandbezug.Vorgabe
+                    ? (ZapfFuellstandbezug?)null : (ZapfFuellstandbezug)(int)a.FuellstandBezug
             };
         }
 
@@ -676,12 +745,15 @@ namespace WindowsFormsApplication1
         {
             if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return null;
             ZapfprofilBedarfstagDaten t = a.Entwurf;
+            // Bezugsmenge und Bezugsart gehen mit dem Tag (Schritt 124, N10 (j)) — nur zusammen.
+            bool mitBezug = t.Bezugsmenge.HasValue && t.Bezugsart.HasValue;
             return new BedarfstagKatalogzeile(ZapfprofilCtrl.ENTWURF_ID, (t.Bezeichner ?? "").Trim(), t.Katalogversion ?? "",
-                ZapfBedarfstagquelle.Konstruktor, null,
+                ZapfBedarfstagquelle.Konstruktor, mitBezug ? t.Bezugsmenge : null,
                 new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, t.Katalogversion ?? "", Herkunftsart.Eigenkonstruktion),
                 t.Ereignisse.Select(e => new Zapfereignis(e.MinuteBeginn, e.DauerMin, e.EnergieKwh)).ToArray())
             {
-                Status = ZapfKatalogstatus.Eigen
+                Status = ZapfKatalogstatus.Eigen,
+                Bezugsart = mitBezug ? (ZapfBezugsart)t.Bezugsart.Value : (ZapfBezugsart?)null
             };
         }
 
@@ -698,7 +770,9 @@ namespace WindowsFormsApplication1
                 Bezeichner = t.Bezeichner ?? "",
                 Quelle = (ZapfprofilBedarfstagquelle)(int)t.QuelleArt,
                 Herkunft = Herkunft(t.Herkunft),
-                Katalogversion = t.Katalogversion ?? ""
+                Katalogversion = t.Katalogversion ?? "",
+                Bezugsmenge = t.Bezugsmenge,
+                Bezugsart = t.Bezugsart.HasValue ? (int)t.Bezugsart.Value : (int?)null
             };
             if (entwurf)
                 d.Ereignisse = t.Ereignisse.Select(e => new ZapfprofilEreignisDaten(e.MinuteBeginn, e.DauerMin, e.EnergieKwh)).ToList();
@@ -711,7 +785,7 @@ namespace WindowsFormsApplication1
             catch (ZapfAuslegungException ex)
             {
                 d.Waehlbar = false;
-                d.Sperrgrund = Text_(Schluessel(ex.Fehler), ex.Message);
+                d.Sperrgrund = Satztext(ex.Satz);
             }
             if (!entwurf && t.QuelleArt == ZapfBedarfstagquelle.Din4708Profil)
             {
@@ -747,9 +821,16 @@ namespace WindowsFormsApplication1
         /// Namen prüft er schon hier LESEND gegen die Katalogversion
         /// (<see cref="ZapfprofilCtrl.FreierBedarfstagname"/>) und nennt einen freien; der
         /// Schreibweg prüft ihn erneut.
+        ///
+        /// <para><b>Bezugsart und Bezugsmenge</b> (Schritt 124, N10 (j); Stufe Z4, Gruppe 2b) gehen
+        /// nur zusammen mit dem Tag: beide leer = ein Tag des Projekts, der nie skaliert wird; eine
+        /// Menge größer 0 samt Bezugsart aus der Wertemenge des Schemas = ein Tag, den die Auslegung
+        /// auf die Bezugsmenge einer Gruppe derselben Bezugsart skaliert. Eine halbe Angabe lehnt der
+        /// Konstruktor benannt ab (<c>ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG</c>).</para>
         /// </summary>
         internal static ZapfprofilKonstruktorErgebnis BedarfstagKonstruieren(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen,
-                                                                            string bezeichner)
+                                                                            string bezeichner, double? bezugsmenge = null,
+                                                                            int? bezugsart = null)
         {
             var meldungen = new List<ZapfprofilMeldung>();
             string name = (bezeichner ?? "").Trim();
@@ -757,12 +838,18 @@ namespace WindowsFormsApplication1
                 meldungen.Add(Fehler("ZPG_AUS_KON_OHNE_NAME", "", Text_("ZPG_AUS_KON_OHNE_NAME", "Bitte einen Namen für den Bedarfstag eingeben.")));
             if (zeilen == null || zeilen.Count == 0)
                 meldungen.Add(Fehler("ZPG_AUS_KON_OHNE_ZEILE", "", Text_("ZPG_AUS_KON_OHNE_ZEILE", "Mindestens eine Zeile eintragen.")));
+            bool bezugGueltig = bezugsmenge.HasValue == bezugsart.HasValue
+                                && (!bezugsmenge.HasValue || (bezugsmenge.Value > 0 && !double.IsInfinity(bezugsmenge.Value)))
+                                && (!bezugsart.HasValue || TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE).Contains(bezugsart.Value));
+            if (!bezugGueltig)
+                meldungen.Add(Fehler("ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG", "", Text_("ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG",
+                    "Bezugsart und Bezugsmenge (größer 0) gehören zusammen.")));
 
             Parametersatz ps;
             try { ps = ZapfprofilCtrl.Parameter(); }
             catch (ParametersatzException ex)
             {
-                meldungen.Add(new ZapfprofilMeldung(Schluessel(ex.Fehler), "", Text_(Schluessel(ex.Fehler), ex.Message),
+                meldungen.Add(new ZapfprofilMeldung(Satzkennung(ex.Satz, ""), "", Satztext(ex.Satz),
                                                     ZapfprofilMeldungsart.Fehler, ex.Message));
                 return new ZapfprofilKonstruktorErgebnis(null, meldungen);
             }
@@ -822,24 +909,17 @@ namespace WindowsFormsApplication1
 
             try
             {
-                BedarfstagKatalogzeile t = ZapfprofilCtrl.BedarfstagKonstruieren(kern, name, ps);
+                BedarfstagKatalogzeile t = ZapfprofilCtrl.BedarfstagKonstruieren(kern, name, ps, bezugsmenge,
+                    bezugsart.HasValue ? (ZapfBezugsart)bezugsart.Value : (ZapfBezugsart?)null);
                 ZapfprofilBedarfstagDaten tag = AlsBedarfstag(t, true);
                 tag.Konstruktorzeilen = zeilen.Select(z => z.Kopie()).ToList();
                 return new ZapfprofilKonstruktorErgebnis(tag, new ZapfprofilMeldung[0]);
             }
-            catch (ZapfAuslegungException ex)
+            catch (Exception ex) when (ex is ZapfAuslegungException || ex is ParametersatzException)
             {
-                string schluessel = Schluessel(ex.Fehler);
-                meldungen.Add(new ZapfprofilMeldung(schluessel, "",
-                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Text_(schluessel, ex.Message)),
-                    ZapfprofilMeldungsart.Fehler, ex.Message));
-                return new ZapfprofilKonstruktorErgebnis(null, meldungen);
-            }
-            catch (ParametersatzException ex)
-            {
-                string schluessel = Schluessel(ex.Fehler);
-                meldungen.Add(new ZapfprofilMeldung(schluessel, "",
-                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Text_(schluessel, ex.Message)),
+                ZapfSatz satz = SatzAus(ex);
+                meldungen.Add(new ZapfprofilMeldung(Satzkennung(satz, "ZPG_AUS_KON_NICHT_GEBAUT"), "",
+                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Satztext(satz)),
                     ZapfprofilMeldungsart.Fehler, ex.Message));
                 return new ZapfprofilKonstruktorErgebnis(null, meldungen);
             }
@@ -903,7 +983,6 @@ namespace WindowsFormsApplication1
             t.HerleitungErzeuger = Text_("ZPG_AUS_HERL_ERZEUGER", t.HerleitungErzeuger);
             t.HerleitungUebertrager = Text_("ZPG_AUS_HERL_UEBERTRAGER", t.HerleitungUebertrager);
             t.HerleitungSensorhoehe = Text_("ZPG_AUS_HERL_SENSORHOEHE", t.HerleitungSensorhoehe);
-            t.HerleitungLaufangabe = Text_("ZPG_AUS_HERL_LAUFANGABE", t.HerleitungLaufangabe);
             t.LabelStochastisch = Text_("ZPG_AUS_LBL_STOCHASTISCH", t.LabelStochastisch);
             t.HerleitungStochastisch = Text_("ZPG_AUS_HERL_STOCHASTISCH", t.HerleitungStochastisch);
             t.LabelPerzentil = Text_("ZPG_AUS_LBL_PERZENTIL", t.LabelPerzentil);
@@ -1034,6 +1113,35 @@ namespace WindowsFormsApplication1
             t.KonstruktorFeld = Text_("ZPG_AUS_KON_FELD", t.KonstruktorFeld);
             t.KonstruktorFehleingabe = Text_("ZPG_AUS_KON_FEHLEINGABE", t.KonstruktorFehleingabe);
             t.KonstruktorGrundLetzteZeile = Text_("ZPG_AUS_KON_GRUND_LETZTE_ZEILE", t.KonstruktorGrundLetzteZeile);
+            // Eingaben des Verfahrensvergleichs, Laufangaben, Konstruktor (Z4, Gruppe 2b)
+            t.GruppeVergleichEingaben = Text_("ZPG_AUS_GRP_VERGLEICH_EINGABEN", t.GruppeVergleichEingaben);
+            t.HinweisVergleichEingaben = Text_("ZPG_AUS_HINW_VERGLEICH_EINGABEN", t.HinweisVergleichEingaben);
+            t.LabelLadeleistung = Text_("ZPG_AUS_LBL_LADELEISTUNG", t.LabelLadeleistung);
+            t.LabelLadeManuell = Text_("ZPG_AUS_LBL_LADE_MANUELL", t.LabelLadeManuell);
+            t.LabelLadefenster = Text_("ZPG_AUS_LBL_LADEFENSTER", t.LabelLadefenster);
+            t.LabelLadefensterBeginn = Text_("ZPG_AUS_LBL_LADEFENSTER_BEGINN", t.LabelLadefensterBeginn);
+            t.LabelNutzanteil = Text_("ZPG_AUS_LBL_NUTZANTEIL", t.LabelNutzanteil);
+            t.LabelZuschlag = Text_("ZPG_AUS_LBL_ZUSCHLAG", t.LabelZuschlag);
+            t.LabelPersonen = Text_("ZPG_AUS_LBL_PERSONEN", t.LabelPersonen);
+            t.LabelPersonenManuell = Text_("ZPG_AUS_LBL_PERSONEN_MANUELL", t.LabelPersonenManuell);
+            t.LabelFuellstandBezug = Text_("ZPG_AUS_LBL_FUELLSTAND_BEZUG", t.LabelFuellstandBezug);
+            t.FuellstandVorgabe = Text_("ZPG_AUS_FUELLSTAND_VORGABE", t.FuellstandVorgabe);
+            t.KnopfVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG", t.KnopfVorschlag);
+            t.LabelVorschlag = Text_("ZPG_AUS_LBL_VORSCHLAG", t.LabelVorschlag);
+            t.HerleitungLade = Text_("ZPG_AUS_HERL_LADE", t.HerleitungLade);
+            t.HerleitungLadeOhne = Text_("ZPG_AUS_HERL_LADE_OHNE", t.HerleitungLadeOhne);
+            t.HerleitungLadefenster = Text_("ZPG_AUS_HERL_LADEFENSTER", t.HerleitungLadefenster);
+            t.HerleitungPersonen = Text_("ZPG_AUS_HERL_PERSONEN", t.HerleitungPersonen);
+            t.HerleitungAngesetzt = Text_("ZPG_AUS_HERL_ANGESETZT", t.HerleitungAngesetzt);
+            t.HerleitungFuellstand = Text_("ZPG_AUS_HERL_FUELLSTAND", t.HerleitungFuellstand);
+            t.HerleitungGespeichert = Text_("ZPG_AUS_HERL_GESPEICHERT", t.HerleitungGespeichert);
+            t.HerleitungWerkstoff = Text_("ZPG_AUS_HERL_WERKSTOFF", t.HerleitungWerkstoff);
+            t.KnopfErzeugerVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG_WAEHLEN", t.KnopfErzeugerVorschlag);
+            t.LabelErzeugerVorschlag = Text_("ZPG_AUS_ERZEUGERART_VORSCHLAG", t.LabelErzeugerVorschlag);
+            t.KonstruktorLabelBezugsart = Text_("ZPG_AUS_KON_LBL_BEZUGSART", t.KonstruktorLabelBezugsart);
+            t.KonstruktorOhneBezug = Text_("ZPG_AUS_KON_OHNE_BEZUG", t.KonstruktorOhneBezug);
+            t.KonstruktorLabelBezugsmenge = Text_("ZPG_AUS_KON_LBL_BEZUGSMENGE", t.KonstruktorLabelBezugsmenge);
+            t.KonstruktorHinweisBezug = Text_("ZPG_AUS_KON_HINW_BEZUG", t.KonstruktorHinweisBezug);
             return t;
         }
 

@@ -3,23 +3,28 @@
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Eine benannte Ablehnung im Ergebnis: Zone (leer = Projekt), Grund, Klartext. Die
-    /// betroffene Zone — bzw. bei leerer Zone die Zirkulation — trägt 0 (Konzept 2.2).
+    /// Eine benannte Ablehnung im Ergebnis: Zone (leer = Projekt), Grund und der Satz als Kennung
+    /// und Werte (N11 (k)). Die betroffene Zone — bzw. bei leerer Zone die Zirkulation — trägt 0
+    /// (Konzept 2.2).
     /// </summary>
-    internal sealed record ZapfAblehnung(string Zone, ZapfEingabefehler Grund, string Klartext)
+    internal sealed record ZapfAblehnung(string Zone, ZapfEingabefehler Grund, ZapfSatz Satz)
     {
-        /// <summary>Die genauere Kennung der Ablehnung (<see cref="ZapfprofilEingabeException.Kennung"/>); sonst <c>null</c>.</summary>
-        public string Kennung { get; init; }
+        /// <summary>Der deutsche Wortlaut des Satzes (Protokoll, Test).</summary>
+        public string Klartext => Satz?.Klartext ?? "";
 
-        /// <summary>
-        /// Die Werte zur <see cref="Kennung"/>, sprachfrei und getrennt (etwa Bezeichner und
-        /// Katalogversion der Nutzungsart); sonst <c>null</c>.
-        /// </summary>
-        public IReadOnlyList<string> Argumente { get; init; }
+        /// <summary>Die Kennung des Satzes; <c>null</c> ohne Satz.</summary>
+        public string Kennung => Satz?.Kennung;
 
-        /// <summary>Die Ablehnung einer Zone aus der benannten Ausnahme des Rechenwegs — samt Kennung und Werten.</summary>
+        /// <summary>Die Werte des Satzes, sprachfrei und getrennt; <c>null</c> ohne Satz.</summary>
+        public IReadOnlyList<object> Argumente => Satz?.Werte;
+
+        /// <summary>Die Ablehnung einer Zone aus der benannten Ausnahme des Rechenwegs — samt Satz.</summary>
         internal static ZapfAblehnung Aus(string zone, ZapfprofilEingabeException ex)
-            => new ZapfAblehnung(zone, ex.Fehler, ex.Message) { Kennung = ex.Kennung, Argumente = ex.Argumente };
+            => new ZapfAblehnung(zone, ex.Fehler, ex.Satz);
+
+        /// <summary>Die Ablehnung einer Zone aus einem fehlenden Parameter — samt Satz.</summary>
+        internal static ZapfAblehnung Aus(string zone, ParametersatzException ex)
+            => new ZapfAblehnung(zone, ZapfEingabefehler.ParameterFehlt, ex.Satz);
     }
 
     /// <summary>
@@ -64,6 +69,19 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
 
         /// <summary>
+        /// Die Schätzhilfe des Tagesbedarfs der Zone (Stufe Erweitert, 5.3): Vorschlag des Katalogs
+        /// (Mengengerüst vor der Kalibrierung), manueller Wert, angesetzter Wert, Rechenweg;
+        /// <c>null</c> bei einer abgelehnten Zone.
+        /// </summary>
+        public Schaetzhilfe SchaetzhilfeTagesbedarf { get; init; }
+
+        /// <summary>Die Auslastung der Zapfung nach Monat, Wochentag und Tagesstunde (Mittel 1); <c>null</c> bei einer abgelehnten Zone.</summary>
+        public Zapfauslastung Auslastung { get; init; }
+
+        /// <summary>Der Auslastungsgang der Zone: wirksame Monatsfaktoren, Katalogwerte und welche die Zone überschreibt (Experte).</summary>
+        public Auslastungsgang Auslastungsgang { get; init; }
+
+        /// <summary>
         /// Die Konsistenzprobe der stochastischen Jahresreihe (4.4) — Mittel der R Jahre gegen den
         /// deterministischen Pfad mit Toleranz, dazu der Faktor der Energieprobe, der die Realisierung
         /// zum Seed (die Zapfreihe der Zone) auf die Jahresmenge bringt; <c>null</c> auf dem
@@ -78,8 +96,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record Zapfkennzahlen
     {
-        /// <summary>Der Vermerk am größten Stundenwert.</summary>
-        internal const string VERMERK_STUNDENWERT = "Bilanzwert, keine Auslegungsgröße";
+        /// <summary>Die Kennung des Vermerks am größten Stundenwert („Bilanzwert, keine Auslegungsgröße").</summary>
+        internal const string VERMERK_STUNDENWERT = "VERMERK_STUNDENWERT";
 
         /// <summary>Jahresbedarf der Zapfung [kWh/a].</summary>
         public double JahresbedarfZapfungKwh { get; init; }
@@ -102,8 +120,8 @@ namespace WindowsFormsApplication1
         /// <summary>Größter Stundenwert von Zapfung + Zirkulation [kW] — Bilanzwert, keine Auslegungsgröße.</summary>
         public double GroessterStundenwertKw { get; init; }
 
-        /// <summary>Der Vermerk zum größten Stundenwert.</summary>
-        public string VermerkGroessterStundenwert { get; init; } = VERMERK_STUNDENWERT;
+        /// <summary>Der Vermerk zum größten Stundenwert als Satz (N11 (k)).</summary>
+        public ZapfSatz VermerkGroessterStundenwert { get; init; } = ZapfSatz.Neu(VERMERK_STUNDENWERT);
 
         /// <summary>Volllaststunden [h/a] = Jahresbedarf gesamt / größter Stundenwert; 0 ohne Bedarf.</summary>
         public double VolllaststundenH { get; init; }
@@ -146,6 +164,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Kennzahlen (4.6).</summary>
         public Zapfkennzahlen Kennzahlen { get; init; }
+
+        /// <summary>Die Dauerlinie von Zapfung und Zirkulation samt Perzentilmarken (Reiter „Dauerlinie", Z4).</summary>
+        public Zapfdauerlinie Dauerlinie { get; init; }
+
+        /// <summary>
+        /// Die Schätzhilfe der Zirkulation (Stufe Erweitert, 5.3): Vorschlag der Methode, manueller
+        /// Wert, angesetzte Leistung, Rechenweg; <c>null</c>, wenn die Zirkulation abgelehnt ist.
+        /// </summary>
+        public Schaetzhilfe SchaetzhilfeZirkulation { get; init; }
 
         /// <summary>Das Herkunftsprotokoll je Wert.</summary>
         public IReadOnlyList<Herkunftseintrag> Herkunft { get; init; } = new Herkunftseintrag[0];

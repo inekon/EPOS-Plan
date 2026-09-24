@@ -55,18 +55,30 @@ namespace WindowsFormsApplication1
         BedarfstagNameBelegt = 14
     }
 
-    /// <summary>Die benannte Ablehnung des Schreibwegs: Grund, betroffene Zone (leer = Projekt) und Klartext.</summary>
+    /// <summary>
+    /// Die benannte Ablehnung des Schreibwegs: Grund, betroffene Zone (leer = Projekt) und der Grund als
+    /// Satz (Kennung und Werte, N11 (k)); die Meldung ist der deutsche Wortlaut „Das Zapfprofil kann nicht
+    /// gespeichert werden — …".
+    /// </summary>
     internal sealed class ZapfprofilSpeicherException : Exception
     {
-        internal ZapfprofilSpeicherException(ZapfSpeicherfehler fehler, string zone, string meldung) : base(meldung)
+        internal ZapfprofilSpeicherException(ZapfSpeicherfehler fehler, string zone, ZapfSatz grund)
+            : base(ZapfSatz.Neu("SPEICHER_NICHT_GESPEICHERT", grund).Klartext)
         {
             Fehler = fehler;
             Zone = zone ?? "";
+            Grund = grund;
         }
 
         internal ZapfSpeicherfehler Fehler { get; }
 
         internal string Zone { get; }
+
+        /// <summary>Der Grund als Satz (ohne den Vorsatz „Das Zapfprofil kann nicht gespeichert werden —").</summary>
+        internal ZapfSatz Grund { get; }
+
+        /// <summary>Der ganze Satz: „Das Zapfprofil kann nicht gespeichert werden —" samt <see cref="Grund"/>.</summary>
+        internal ZapfSatz Satz => ZapfSatz.Neu("SPEICHER_NICHT_GESPEICHERT", Grund);
     }
 
     /// <summary>
@@ -129,10 +141,10 @@ namespace WindowsFormsApplication1
             foreach (string t in new[] { TwwSchema.TAB_TWW_PROJEKT, TwwSchema.TAB_TWW_ZONE, TwwSchema.TAB_TWW_WOHNUNGSTYP })
                 if (Anzahl(v, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", t) == 0)
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
-                        "Das Zapfprofil kann nicht gespeichert werden — die Tabelle " + t + " fehlt in dieser Datenbank.");
+                        ZapfSatz.Neu("SPEICHER_TABELLE_FEHLT", ZapfSatz.Tabelle(t)));
             if (Anzahl(v, "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?", idProjekt) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektFehlt, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — das Projekt " + idProjekt + " gibt es nicht.");
+                    ZapfSatz.Neu("SPEICHER_PROJEKT_FEHLT", idProjekt));
 
             var bekannteZonen = new HashSet<int>();
             DataTable dz = v.Lese("SELECT ID FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID_Projekt = ?",
@@ -156,8 +168,7 @@ namespace WindowsFormsApplication1
                 && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " WHERE ID = ?",
                           projektZeile.IdBedarfstag.Value) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.BedarfstagFehlt, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — der Bedarfstag " + projektZeile.IdBedarfstag.Value
-                    + " steht nicht im Katalog.");
+                    ZapfSatz.Neu("SPEICHER_BEDARFSTAG_FEHLT", projektZeile.IdBedarfstag.Value));
             if (entwurf != null) projektZeile = projektZeile with { IdBedarfstag = BedarfstagAnlegen(v, entwurf) };
 
             // --- 2. Projektzeile ---------------------------------------------------------------
@@ -183,6 +194,15 @@ namespace WindowsFormsApplication1
             else
             {
                 List<KeyValuePair<string, object>> werte = ProjektWerte(projektZeile, weg, jetzt);
+                // Schritt 124 (T3): die Laufangaben der Auslegung — vor dem Schritt fehlen die Spalten.
+                // Eine gesetzte Angabe lehnt der Schreibweg dann benannt ab, statt sie still fallen zu lassen.
+                if (SpalteImVorgang(v, TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_PERSONEN_AUTO))
+                    werte.AddRange(LaufangabenWerte(projektZeile));
+                else if (projektZeile.Erzeugerart.HasValue || projektZeile.UebertragerWerkstoff.HasValue
+                         || !projektZeile.PersonenAuto || projektZeile.PersonenManuell.HasValue
+                         || projektZeile.FuellstandBezug.HasValue)
+                    throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
+                        ZapfSatz.Neu("SPEICHER_SPALTE_FEHLT", TwwSchema.TAB_TWW_PROJEKT + "." + TwwSchema.SPALTE_PERSONEN_AUTO));
                 if (zeileDa)
                 {
                     idZeile = Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture);
@@ -253,73 +273,83 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void ProjektPruefen(ProjektStand p)
         {
-            string grund = null;
-            if (!TwwSchema.Perzentile.Contains(p.Perzentil)) grund = "das Perzentil " + p.Perzentil;
-            else if (p.Realisierungen < TwwSchema.RealisierungenMindestens) grund = "die Zahl der Realisierungen";
+            ZapfSatz grund = null;
+            if (!TwwSchema.Perzentile.Contains(p.Perzentil)) grund = ZapfSatz.Neu("BEGRIFF_PERZENTIL_WERT", p.Perzentil);
+            else if (p.Realisierungen < TwwSchema.RealisierungenMindestens) grund = ZapfSatz.Neu("BEGRIFF_REALISIERUNGEN");
             else if (p.RealisierungenAuslegung.HasValue && p.RealisierungenAuslegung.Value < TwwSchema.RealisierungenMindestens)
-                grund = "die Zahl der Realisierungen der Auslegung";
-            else if (!Enum.IsDefined(typeof(ZapfZirkulationsmethode), p.ZirkMethode)) grund = "die Methode der Zirkulation";
+                grund = ZapfSatz.Neu("BEGRIFF_REALISIERUNGEN_AUSLEGUNG");
+            else if (!Enum.IsDefined(typeof(ZapfZirkulationsmethode), p.ZirkMethode)) grund = ZapfSatz.Neu("BEGRIFF_ZIRK_METHODE");
             else if (p.ZirkLage.HasValue && !Enum.IsDefined(typeof(ZapfLeitungslage), p.ZirkLage.Value))
-                grund = "die Lage der Zirkulationsleitung";
-            else if (!Enum.IsDefined(typeof(ZapfSpeicherart), p.Speicherart)) grund = "die Speicherart";
+                grund = ZapfSatz.Neu("BEGRIFF_ZIRK_LAGE");
+            else if (!Enum.IsDefined(typeof(ZapfSpeicherart), p.Speicherart)) grund = ZapfSatz.Neu("BEGRIFF_SPEICHERART");
             else if (p.BedarfstagQuelle.HasValue && !Enum.IsDefined(typeof(ZapfBedarfstagquelle), p.BedarfstagQuelle.Value))
-                grund = "die Quelle des Bedarfstags";
+                grund = ZapfSatz.Neu("BEGRIFF_BEDARFSTAG_QUELLE");
+            // Schritt 124: die Wertemengen der DDL (TwwSchema, EINE Quelle).
+            else if (p.Erzeugerart.HasValue && !TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE).Contains((int)p.Erzeugerart.Value))
+                grund = ZapfSatz.Neu("BEGRIFF_ERZEUGERART");
+            else if (p.UebertragerWerkstoff.HasValue
+                     && !TwwSchema.Werte(TwwSchema.WERKSTOFF_WERTE).Contains((int)p.UebertragerWerkstoff.Value))
+                grund = ZapfSatz.Neu("BEGRIFF_WERKSTOFF");
+            else if (p.FuellstandBezug.HasValue && !TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE).Contains((int)p.FuellstandBezug.Value))
+                grund = ZapfSatz.Neu("BEGRIFF_FUELLSTAND_BEZUG");
+            else if (p.PersonenManuell.HasValue && (double.IsNaN(p.PersonenManuell.Value) || double.IsInfinity(p.PersonenManuell.Value)
+                                                    || p.PersonenManuell.Value < 0))
+                grund = ZapfSatz.Neu("BEGRIFF_PERSONEN");
             if (grund != null)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektUngueltig, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — " + grund + " liegt außerhalb der Wertemenge.");
+                    ZapfSatz.Neu("SPEICHER_WERTEMENGE", grund));
         }
 
         private static void ZonePruefen(DbVorgang v, int idProjekt, ZonenStand z, HashSet<int> bekannteZonen)
         {
             if (z == null)
-                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, "", "Eine Zone ohne Angaben.");
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, "", ZapfSatz.Neu("EINGABE_ZONE_OHNE_ANGABEN"));
             string name = z.Name ?? "";
             if (name.Trim().Length == 0)
-                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, "",
-                    "Das Zapfprofil kann nicht gespeichert werden — eine Zone hat keinen Namen.");
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, "", ZapfSatz.Neu("SPEICHER_ZONE_OHNE_NAME"));
             if (double.IsNaN(z.Bezugsmenge) || double.IsInfinity(z.Bezugsmenge) || z.Bezugsmenge <= 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — die Zone „" + name + "“ hat keine positive Bezugsmenge.");
+                    ZapfSatz.Neu("SPEICHER_ZONE_BEZUGSMENGE", name));
             if (!Enum.IsDefined(typeof(ZapfNiveau), z.Niveau) || !Enum.IsDefined(typeof(ZapfTopologie), z.Topologie)
                 || (z.JahresmesswertEinheit.HasValue && !Enum.IsDefined(typeof(ZapfMesswerteinheit), z.JahresmesswertEinheit.Value))
                 || (z.JahresmesswertBilanzgrenze.HasValue && !Enum.IsDefined(typeof(ZapfBilanzgrenze), z.JahresmesswertBilanzgrenze.Value))
                 || !FerienImBereich(z))
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — die Zone „" + name + "“ trägt einen Wert außerhalb seiner Wertemenge.");
+                    ZapfSatz.Neu("SPEICHER_ZONE_WERTEMENGE", name));
 
             if (z.Id > 0 && !bekannteZonen.Contains(z.Id)
                 && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID = ?", z.Id) > 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneFremd, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — die Zone „" + name + "“ gehört zu einem anderen Projekt.");
+                    ZapfSatz.Neu("SPEICHER_ZONE_FREMD", name));
 
             if (Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?", z.IdNutzungsart) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.NutzungsartFehlt, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — die Nutzungsart " + z.IdNutzungsart + " der Zone „"
-                    + name + "“ steht nicht im Katalog.");
+                    ZapfSatz.Neu("SPEICHER_NUTZUNGSART_FEHLT", name));
             if (z.IdTagesgangsatz.HasValue
                 && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + " WHERE ID = ?",
                           z.IdTagesgangsatz.Value) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TagesgangsatzFehlt, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — der Tagesgangsatz " + z.IdTagesgangsatz.Value
-                    + " der Zone „" + name + "“ steht nicht im Katalog.");
+                    ZapfSatz.Neu("SPEICHER_TAGESGANGSATZ_FEHLT", z.IdTagesgangsatz.Value, name));
             if (z.IdGebaeude.HasValue
                 && Anzahl(v, "SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID = ?", z.IdGebaeude.Value) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.GebaeudeFehlt, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — das Gebäude " + z.IdGebaeude.Value + " der Zone „"
-                    + name + "“ gibt es nicht.");
+                    ZapfSatz.Neu("SPEICHER_GEBAEUDE_FEHLT", z.IdGebaeude.Value, name));
             if (z.IdGebaeude.HasValue
                 && Anzahl(v, "SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID = ? AND ID_Projekt = ?",
                           z.IdGebaeude.Value, idProjekt) == 0)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.GebaeudeFremd, name,
-                    "Das Zapfprofil kann nicht gespeichert werden — das Gebäude " + z.IdGebaeude.Value + " der Zone „"
-                    + name + "“ gehört zu einem anderen Projekt.");
+                    ZapfSatz.Neu("SPEICHER_GEBAEUDE_FREMD", z.IdGebaeude.Value, name));
 
+            // Außerhalb der Bezugsart Wohneinheiten/Personen (Mengengeruest.WohnungstabelleWirksam) wird
+            // die Wohnungstabelle weder gerechnet noch geprüft — eine verdeckte Zeile bleibt ungeprüft
+            // und wird gar nicht erst geschrieben (WohnungenSchreiben verwirft sie ebenso, Z4, Gruppe
+            // 2a Punkt 6); nur das CHECK der Datenbank bliebe sonst die einzige, unbenannte Ablehnung.
+            if (!WohnungstabelleWirksamFuerNutzungsart(v, z.IdNutzungsart)) return;
             foreach (WohnungstypStand w in z.Wohnungen ?? new WohnungstypStand[0])
             {
                 if (w == null || w.Anzahl <= 0)
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.WohnungstypUngueltig, name,
-                        "Das Zapfprofil kann nicht gespeichert werden — ein Wohnungstyp der Zone „" + name
-                        + "“ hat keine positive Anzahl.");
+                        ZapfSatz.Neu("SPEICHER_WOHNUNGSTYP_ANZAHL", name));
                 // Wie bei den Zonen (ZoneFremd): Die Id eines Wohnungstyps einer ANDEREN Zone wird
                 // nie still als neue Zeile angelegt; eine unbekannte Id legt eine neue an.
                 if (w.Id > 0)
@@ -329,16 +359,27 @@ namespace WindowsFormsApplication1
                     if (zoneDesTyps != null && zoneDesTyps != DBNull.Value
                         && Convert.ToInt32(zoneDesTyps, CultureInfo.InvariantCulture) != z.Id)
                         throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.WohnungstypUngueltig, name,
-                            "Das Zapfprofil kann nicht gespeichert werden — ein Wohnungstyp der Zone „" + name
-                            + "“ gehört zu einer anderen Zone.");
+                            ZapfSatz.Neu("SPEICHER_WOHNUNGSTYP_FREMD", name));
                 }
                 if (w.IdAusstattung.HasValue
                     && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_DIN4708_WERT_STAMM + " WHERE ID = ? AND Art = ?",
                               w.IdAusstattung.Value, TwwSchema.DIN4708_ART_AUSSTATTUNG) == 0)
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.AusstattungFehlt, name,
-                        "Das Zapfprofil kann nicht gespeichert werden — die Ausstattungsklasse " + w.IdAusstattung.Value
-                        + " eines Wohnungstyps der Zone „" + name + "“ steht nicht im Katalog.");
+                        ZapfSatz.Neu("SPEICHER_AUSSTATTUNG_FEHLT", w.IdAusstattung.Value, name));
             }
+        }
+
+        /// <summary>
+        /// Ist die Wohnungstabelle für die Nutzungsart <paramref name="idNutzungsart"/> wirksam
+        /// (<see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>) — im laufenden Vorgang
+        /// gelesen, damit Prüfung und Schreiben denselben Stand sehen. <c>false</c> ohne Zeile.
+        /// </summary>
+        private static bool WohnungstabelleWirksamFuerNutzungsart(DbVorgang v, int idNutzungsart)
+        {
+            object roh = v.Skalar("SELECT Bezugsart FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?",
+                                  new DbParam("@id", idNutzungsart));
+            return roh != null && roh != DBNull.Value
+                && Mengengeruest.WohnungstabelleWirksam((ZapfBezugsart)Convert.ToInt32(roh, CultureInfo.InvariantCulture));
         }
 
         private static bool FerienImBereich(ZonenStand z)
@@ -352,6 +393,10 @@ namespace WindowsFormsApplication1
             }
             return true;
         }
+
+        /// <summary>Führt die Tabelle die Spalte? Im laufenden Vorgang gefragt (Stand vor oder nach einem Schemaschritt).</summary>
+        internal static bool SpalteImVorgang(DbVorgang v, string tabelle, string spalte)
+            => Anzahl(v, "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?", tabelle, spalte) > 0;
 
         private static long Anzahl(DbVorgang v, string sql, params object[] werte)
         {
@@ -367,7 +412,11 @@ namespace WindowsFormsApplication1
 
         private static IReadOnlyList<WohnungstypStand> WohnungenSchreiben(DbVorgang v, int idZone, ZonenStand z)
         {
-            IReadOnlyList<WohnungstypStand> liste = z.Wohnungen ?? new WohnungstypStand[0];
+            // Außerhalb der wirksamen Bezugsart (ZonePruefen) wird nichts geschrieben — eine
+            // verdeckte Wohnungstabelle verschwindet dann mit dem nächsten Speichern; ihre Werte
+            // wären ohnehin nie gerechnet oder geprüft worden (Z4, Gruppe 2a Punkt 6).
+            IReadOnlyList<WohnungstypStand> liste = WohnungstabelleWirksamFuerNutzungsart(v, z.IdNutzungsart)
+                ? (z.Wohnungen ?? new WohnungstypStand[0]) : new WohnungstypStand[0];
             var bekannt = new HashSet<int>();
             DataTable dt = v.Lese("SELECT ID FROM " + TwwSchema.TAB_TWW_WOHNUNGSTYP + " WHERE ID_Zone = ?",
                                   new DbParam("@zone", idZone));
@@ -499,6 +548,16 @@ namespace WindowsFormsApplication1
                 W("Auslegung_Leistung_Kw", p.AuslegungLeistungKw),
                 W("Aenderungsdatum", datum)
             };
+        }
+
+        /// <summary>Die Laufangaben der Auslegung (Schritt 124, <see cref="TwwSchema.SpaltenT3"/>) in ihren Spalten.</summary>
+        private static IEnumerable<KeyValuePair<string, object>> LaufangabenWerte(ProjektStand p)
+        {
+            yield return W(TwwSchema.SPALTE_ERZEUGERART, Enumwert(p.Erzeugerart));
+            yield return W(TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF, Enumwert(p.UebertragerWerkstoff));
+            yield return W(TwwSchema.SPALTE_PERSONEN_AUTO, Bool(p.PersonenAuto));
+            yield return W(TwwSchema.SPALTE_PERSONEN_MANUELL, p.PersonenManuell);
+            yield return W(TwwSchema.SPALTE_FUELLSTAND_BEZUG, Enumwert(p.FuellstandBezug));
         }
 
         /// <summary><c>INSERT</c> mit den festen Spaltennamen und <c>?</c>-Parametern; liefert die neue Id.</summary>

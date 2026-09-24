@@ -55,11 +55,67 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// <b>Die Dauerlinie der Bilanz</b> (Reiter „Dauerlinie", 5.1, 5.6; Stufe Z4): die 8760
+    /// Stundenwerte von Zapfung und Zirkulation [kW = kWh je Stunde], absteigend geordnet, die
+    /// Marken der Perzentile P50, P90, P95 und P99 der Stundenwerte mit ihrem Rang auf der Linie und
+    /// — mit Schwelle — die Stunden über ihr. Eine Bilanzgröße, keine Auslegungsgröße: Die
+    /// Stundenwerte glätten jede Spitze unter einer Stunde.
+    /// </summary>
+    internal sealed record Zapfdauerlinie
+    {
+        /// <summary>Zapfung plus Zirkulation je Stunde [kW], absteigend geordnet (8760 Werte).</summary>
+        public IReadOnlyList<double> GesamtKw { get; init; } = new double[0];
+
+        /// <summary>Die Perzentilmarken in der Reihenfolge P50, P90, P95, P99.</summary>
+        public IReadOnlyList<Dauerlinienmarke> Marken { get; init; } = new Dauerlinienmarke[0];
+
+        /// <summary>Die Schwelle der Stundenzählung [kW]; <c>null</c> = keine.</summary>
+        public double? SchwelleKw { get; init; }
+
+        /// <summary>Stunden mit einem Wert über der Schwelle; <c>null</c> ohne Schwelle.</summary>
+        public int? StundenUeberSchwelle { get; init; }
+    }
+
+    /// <summary>
+    /// Eine Perzentilmarke der Dauerlinie: P_p der Stundenwerte nach dem Rangverfahren
+    /// (aufsteigend der Wert auf Rang ⌈p/100 · 8760⌉, ganzzahlig gerechnet als (p · 8760 + 99) / 100)
+    /// und ihr Rang auf der absteigenden Linie (1 = größte Stunde).
+    /// </summary>
+    internal sealed record Dauerlinienmarke(int Perzentil, double LeistungKw, int Rang);
+
+    /// <summary>
+    /// <b>Die Auslastung der Zapfung einer Zone</b> (Auslastungsgang, Stufe Z4): je Monat, je
+    /// Wochentag (Montag = 0) und je Tagesstunde der mittlere Tages- bzw. Stundenwert bezogen auf
+    /// das Jahresmittel — Mittel 1, dimensionslos. Gezählt wird, was die Bilanzreihe trägt (samt
+    /// Kalender, Ferien und Kaltwassergang); ohne Zapfung alle 0.
+    /// </summary>
+    internal sealed record Zapfauslastung(IReadOnlyList<double> Monate, IReadOnlyList<double> Wochentage,
+                                          IReadOnlyList<double> Stunden);
+
+    /// <summary>
+    /// Der Auslastungsgang einer Zone als Eingabe (Experte): je Monat der wirksame Faktor, der des
+    /// Katalogs und ob die Zone ihn überschreibt.
+    /// </summary>
+    internal sealed record Auslastungsgang(IReadOnlyList<double> Wirksam, IReadOnlyList<double> Katalog,
+                                           IReadOnlyList<bool> JeMonatUeberschrieben)
+    {
+        /// <summary>Überschreibt die Zone mindestens einen Monat?</summary>
+        public bool Ueberschrieben
+        {
+            get
+            {
+                foreach (bool b in JeMonatUeberschrieben) if (b) return true;
+                return false;
+            }
+        }
+    }
+
+    /// <summary>
     /// <b>Die Auswertung der Bilanzreihen für die Vorschau</b> (Umsetzungskonzept
-    /// Zapfprofilgenerator 5.1, 5.6; Stufe Z1, Gruppe 3): größter Monat, mittlerer Tagesgang je
-    /// Tagtyp, Woche mit dem größten Tagesbedarf. Sie liest nur fertige
-    /// <see cref="Bilanzreihe"/>n und einen Kalender — sie rechnet keinen Bedarf und ändert keine
-    /// Reihe. Die Vorschau zeigt damit dieselbe Reihe, die der Lauf verbucht (2.4).
+    /// Zapfprofilgenerator 5.1, 5.6; Stufe Z1, Gruppe 3; Stufe Z4): größter Monat, mittlerer
+    /// Tagesgang je Tagtyp, Woche mit dem größten Tagesbedarf, Dauerlinie und Auslastung. Sie liest
+    /// nur fertige <see cref="Bilanzreihe"/>n und einen Kalender — sie rechnet keinen Bedarf und
+    /// ändert keine Reihe. Die Vorschau zeigt damit dieselbe Reihe, die der Lauf verbucht (2.4).
     ///
     /// <para><b>Regeln.</b> Gleichstände entscheidet der früheste Monat bzw. Tag (feste
     /// Reihenfolge, wiederholbar). Ruhetage (Ferien einer Zone) gehen in keinen der drei
@@ -67,6 +123,83 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class Zapfauswertung
     {
+        /// <summary>Die Perzentile der Dauerlinie (Mockup: P90, P95, P99; dazu der Median).</summary>
+        internal static readonly IReadOnlyList<int> DAUERLINIE_PERZENTILE = new[] { 50, 90, 95, 99 };
+
+        /// <summary>
+        /// Die Dauerlinie aus Zapfung und Zirkulation (Summe je Stunde, absteigend) mit den Marken
+        /// <see cref="DAUERLINIE_PERZENTILE"/> und der Zählung über <paramref name="schwelleKw"/>.
+        /// </summary>
+        internal static Zapfdauerlinie Dauerlinie(Bilanzreihe zapfung, Bilanzreihe zirkulation, double? schwelleKw)
+        {
+            int n = Bilanzreihe.STUNDEN;
+            var werte = new double[n];
+            IReadOnlyList<double> a = zapfung?.StundenKwh, b = zirkulation?.StundenKwh;
+            for (int h = 0; h < n; h++) werte[h] = (a != null ? a[h] : 0.0) + (b != null ? b[h] : 0.0);
+            Array.Sort(werte);                       // aufsteigend
+            var marken = new List<Dauerlinienmarke>(DAUERLINIE_PERZENTILE.Count);
+            foreach (int p in DAUERLINIE_PERZENTILE)
+            {
+                int rang = (p * n + 99) / 100;                    // ⌈p·n/100⌉ ganzzahlig: 1 … n, aufsteigend
+                if (rang < 1) rang = 1;
+                marken.Add(new Dauerlinienmarke(p, werte[rang - 1], n - rang + 1));
+            }
+            int? ueber = null;
+            if (schwelleKw.HasValue)
+            {
+                int z = 0;
+                foreach (double w in werte) if (w > schwelleKw.Value) z++;
+                ueber = z;
+            }
+            Array.Reverse(werte);                    // absteigend
+            return new Zapfdauerlinie
+            {
+                GesamtKw = Array.AsReadOnly(werte),
+                Marken = marken.AsReadOnly(),
+                SchwelleKw = schwelleKw,
+                StundenUeberSchwelle = ueber
+            };
+        }
+
+        /// <summary>
+        /// Die Auslastung einer Zapfreihe nach Monat, Wochentag und Tagesstunde (Mittel 1): mittlerer
+        /// Tageswert des Monats bzw. des Wochentags und mittlerer Stundenwert der Tagesstunde, je
+        /// bezogen auf das Jahresmittel.
+        /// </summary>
+        internal static Zapfauslastung Auslastung(Bilanzreihe reihe, int wochentagJan1)
+        {
+            var monate = new double[Zapfkalender.MONATE];
+            var wochentage = new double[Zapfkalender.WOCHENTAGE];
+            var stunden = new double[Zapfkalender.STUNDEN_TAG];
+            double jahr = reihe?.JahressummeKwh ?? 0.0;
+            if (reihe == null || !(jahr > 0))
+                return new Zapfauslastung(Array.AsReadOnly(monate), Array.AsReadOnly(wochentage), Array.AsReadOnly(stunden));
+
+            var tageJeWochentag = new int[Zapfkalender.WOCHENTAGE];
+            IReadOnlyList<double> s = reihe.StundenKwh;
+            for (int d = 1; d <= Zapfkalender.TAGE; d++)
+            {
+                double tag = 0.0;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                {
+                    double w = s[(d - 1) * Zapfkalender.STUNDEN_TAG + h];
+                    tag += w;
+                    stunden[h] += w;
+                }
+                monate[Zapfkalender.Monat(d) - 1] += tag;
+                int wt = Zapfkalender.Wochentag(wochentagJan1, d);
+                wochentage[wt] += tag;
+                tageJeWochentag[wt]++;
+            }
+            double tagesmittel = jahr / Zapfkalender.TAGE;
+            for (int m = 0; m < Zapfkalender.MONATE; m++) monate[m] = monate[m] / Zapfkalender.TageJeMonat[m] / tagesmittel;
+            for (int w = 0; w < Zapfkalender.WOCHENTAGE; w++)
+                wochentage[w] = tageJeWochentag[w] > 0 ? wochentage[w] / tageJeWochentag[w] / tagesmittel : 0.0;
+            double stundenmittel = jahr / Zapfkalender.STUNDEN_JAHR;
+            for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) stunden[h] = stunden[h] / Zapfkalender.TAGE / stundenmittel;
+            return new Zapfauslastung(Array.AsReadOnly(monate), Array.AsReadOnly(wochentage), Array.AsReadOnly(stunden));
+        }
+
         /// <summary>Tage einer Woche.</summary>
         private const int WOCHE_TAGE = Zapfkalender.WOCHENTAGE;
 
