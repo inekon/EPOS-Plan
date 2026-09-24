@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N13 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N14 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1337,7 +1337,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z2 — Auslegung deterministisch** | Bedarfstag mit Vorgaberegel und Konstruktor, Wochenreihe, Summenlinie mit Speicherart, Übertrager, Einschaltpunkt, Wertepaarkurve, Monotonieprüfung und Ladezeit, Schnellpfad, Wohnungstabelle und DIN-4708-Kennzahl, DIN 1988-300 nachrichtlich, Speicherauslegung nach V4 mit Ladefenster, GLF, Plausibilitätsband und Warnliste, Großanlagenerkennung, Topologiegruppen; Überlagerung „Auslegung"; `SummenlinieModell` | Z1; K1/K8 für A100- und DIN-4708-Profil (ohne: Konstruktor) | `SummenlinieTests`, `Din4708KennzahlTests`, `SpeicherauslegungTests`, `AuslegungsergebnisTests`, `GrossanlageTests`, `ZapfprofilTrennungWacheTests`; `ChartProben` mit neuem Fall; Referenzlauf unberührt | 16–20 PT |
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
-| **Z4b — VDI-4655-Import mit Typtagzuordnung** (Gruppe 1 umgesetzt, N14) | T3 (Schritt 131), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
+| **Z4b — VDI-4655-Import mit Typtagzuordnung** (umgesetzt, N14) | T3 (Schritt 131), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
@@ -2785,3 +2785,51 @@ Punkte; alle sind umgesetzt. Was hier steht, gilt gegenüber (e), (f) und (g) ob
 Auslieferungsvorlage-Tests grün; Windows-Schale mit `-p:EnableWindowsTargeting=true` 0 Fehler;
 Referenzlauf der fünf CI-Projekte gegen `2026-09-24_R14_Kaelteerzeuger` **PASS**;
 `ResourceDesigner` ohne Diff. Kein neuer Schemaschritt, keine neue Spalte.
+
+**N14, Ergänzung (24.09.2026) — Umsetzungsbefunde Z4b, Gruppe 2 (Importdialog und Projektwahl) und Nachbesserungen**
+
+- **(l) Projektwahl im selben Schritt.** Die Wahl je Projekt — Typtagweg ja/nein, Klimazone,
+  Gebäudeart — steht als drei Spalten an `Tab_TwwProjekt` (`Typtage_Aktiv` 0/1, `Typtage_Klimazone`
+  > 0 oder NULL = keine Wahl, `Typtage_Gebaeudeart`) im selben Schritt wie die Typtag-Tabelle
+  (`TwwSchema.SpaltenT3Typtage`); Folge (b) von N14 ist damit erledigt. `ZapfprofilCtrl.Lies/Speichern`
+  tragen die Wahl (vor dem Schritt läuft das Speichern ohne Wahl durch, mit Wahl benannte Ablehnung);
+  der Projekttransfer trägt die Wahl, nie die Daten.
+- **(m) Der Eingang baut die Anbindung immer, sobald die Wahl steht.** `ZapfprofilCtrl.Eingang` liefert
+  dann die 365 Tagesmittel der Temperatur aus `Tab_Klimadaten` und die Tagesmittel des Bedeckungsgrads
+  aus den 8 760 Zeilen von `Tab_Solar`; eine Lücke macht die Reihe `null`, die benannte Ablehnung
+  leistet `Typtagzuordnung.Zuordnen` (fehlende Daten, Zone, Gebäudeart, Temperatur, Bedeckung) — kein
+  stiller Rückfall. Die Testdatenbank führt keinen Bedeckungsgrad; ein Referenzfall der Wetterkopplung
+  braucht einen TRY-Import (Folge, Z5).
+- **(n) Importdialog.** `TwwTyptagImportDialog.razor` (Überlagerung aus dem Katalogdialog
+  „Brauchwasser-Nutzungsarten" und aus dem Zapfprofil-Experten): Stand (Quelle, Ausgabe, Importdatum,
+  Zonen, Gebäudearten, Typtage, Auflösungen), Paketwahl über `Dienste.Datei` mit gemerktem Startordner
+  `Zapfprofil.Importordner`, Prüfung ohne Schreibzugriff mit Bericht (Datei und Zeile), Einspielen mit
+  Rückfrage (ersetzt vollständig), Löschen mit Rückfrage, zwei Herleitungszeilen (anwenderlokal,
+  Paketformat). Beim KI-Assistenten als Maske ohne Einstellwert angemeldet (Paketwahl, Einspielen und
+  Löschen bleiben Klicks). Hinweise eines gelungenen Einspielens werden gezeigt (Nachbesserung).
+- **(o) Wahl im Zapfprofil-Dialog (5.3).** Gruppe „Typtage nach VDI 4655" bei den Fachwerten der
+  gewählten Zone — die Wahl gilt dem Projekt, die Herleitungszeile sagt das (Abweichung, benannt);
+  Schalter ohne Daten gesperrt mit Grund, Klimazone und Gebäudeart aus dem Stand, eine einzige wird
+  vorbelegt, eine gespeicherte Fremdwahl bleibt sichtbar; die Vorschau rechnet über die Wahl; die
+  Warnliste zeigt die `ZPG_WARN_TYPTAGE_*`.
+- **(p) Wiki und Hilfe.** Abschnitt „Typtage nach VDI 4655" (Anker `typtage`) mit Lizenzhinweis und
+  Paketformat in Worten, ohne Zahl der Richtlinie; Hilfeschlüssel `Form_Zapfprofil.grp_Typtage` und
+  der des Importdialogs auf denselben Anker.
+- **(q) Nachbesserung Gruppe 1.** Siehe den Absatz „Nachbesserung Gruppe 1" (N1)–(N7) oben: das Ensemble zieht über die Typtagmengen samt Tagesform (Typtagweg und Stochastik rechnen zusammen, keine Urlaubsentkopplung), Faktornullung je Typtag nach Grundlagen 5 §2.5, stündlich summierbares Tagesgangraster, Merkmalsdreier als Schlüssel, Mengengrenze des Archivs, erfundene Grenzwerte in den Proben, Wache mit eigener Spanne, Vollständigkeit und Gegenprobe, ZU23 vollständig (Konzept 1 und Grundlagen 5 ohne Originalzahlen, Nachweis 0 Fundstellen).
+- **(r) Nachbesserung Gruppe 2.** Die Hinweise eines gelungenen Einspielens bleiben sichtbar (der Prüfbericht wird nur ohne Hinweise weggenommen); Hüllentests `ZapfprofilHuelleTyptageTests` (Gaben, Stand, Prüfung ohne Schreibzugriff, Einspielen/Ersetzen/Löschen, Paketwahl mit gemerktem Ordner, `MitTyptagwahl`, Vorschau über die Hülle); der Auslegungspunkt gilt nur als überholt, wenn der Typtagweg vorher oder nachher trägt; der Katalogdialog meldet einen geänderten Typtagstand mit eigenem Text; Wiki („ein Archiv oder eine Datei des Paketordners") und Kopfkommentar der Typtagzuordnung berichtigt; Konzept 3.1 nennt die Projektspalten im Schritt.
+- **(s) Schemanummer.** Gruppe 1 maß 125 als frei; bis zum Abschluss belegten E15 (125), Dialog Design
+  (126), E17 (127) und AK1 W3 (128) die Nummern, E16 (129) und Dialog Design #493 (130); Z4b nummerierte beim Abschluss auf
+  **131** um; Statusnummer #486 (#481 nahm die parallele Anwender-Sitzung des
+  Katalogimport-Fixes).
+
+**Abnahme (Stufe).** Auf dem Stand `40ef6ff3` (Schritt 131, nach Merge 247e2091): Kern-Filter 0 Fehler; voller Testlauf 13 257 grün (1 übersprungen); SqlDialektPruefer 1 836 Texte ohne Fund; Auslieferungsvorlage 31/31 mit 133 STRICT-Tabellen; ChartProben 165 Bilder; Windows-Schale 0 Fehler; Referenzlauf der fünf CI-Projekte gegen R14 PASS; Testdatenbank oid a4a88c33…, Typtag-Tabelle leer. Zwei fremde Wachen (E16, #493) prüfen die Zielversion seither nur noch „nicht darüber".
+
+**Folgen (Ergänzung):**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| (m) | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` (TRY-Import) | Agent der Stufe Z5 | Z5 |
+| (n) | Hüllentests für Stand/Prüfen/Einspielen/Löschen/Paketwahl und `MitTyptagwahl` | Agent eines Folgepostens | Z5 |
+| ZU22 | Auslieferung der abgeleiteten VDI-4655-Werte; Vervielfältigungsfrage (VDI 4655 untersagt innerbetriebliche Kopien) | Anwender mit K3a/K8 | vor der Auslieferung |
+| Wiki | Abschnitt „Typtage nach VDI 4655" hochladen; Logbuch-Satz mit Versionsnummer | Anwender (Upload gebündelt) | nächster Upload |
+| Sicht | Sichtabnahme unter Windows (Übergabe, Abschnitt 12) | Anwender | nach dem Push |
