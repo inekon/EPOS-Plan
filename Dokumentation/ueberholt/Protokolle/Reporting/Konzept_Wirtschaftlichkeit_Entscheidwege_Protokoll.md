@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -1284,8 +1284,9 @@ Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460), in § 8.
 `75d45630`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
 Papieren zu #461), in § 8.23 und § 8.24 **vor #463** (Stand `94521f2e`, der Merge #463 über `502fea3c` = Dialog
 Design #466 samt den Papieren zu #462), in § 8.25 und § 8.26 **vor #474** (Stand `4b50b77b`, der erste Merge #474 über
-`3ff9840b` = Anlagenkopplung AK1 samt den Papieren zu #463 und #470 und den Entscheid-Papieren vom 24.09.2026) —, nicht
-vor dem Schnitt.*
+`3ff9840b` = Anlagenkopplung AK1 samt den Papieren zu #463 und #470 und den Entscheid-Papieren vom 24.09.2026), in § 8.27
+und § 8.28 **vor #477** (Stand `61efa054`, der Anwender-Merge der Anlagenkopplung AK1, Welle 2, samt den Papieren zu
+#474 und #476) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2413,3 +2414,50 @@ Die Stellen, die mit E13 veraltet sind; „vorher" ist der Wortlaut vor #474 (St
 | § 6.3 Nr. 9h (Z. 2754–2755) | „offen bleibt allein der Halbsatz aus A8 zur Speichervariante (Positionsarten 20/21)" | „der Halbsatz … ist erledigt mit E13 (#474)" |
 | § 6.5, Nutzungsdauer an zwei Orten (Z. 2853) | „(der Halbsatz aus A8 ist offen)" | „eine neue Variante bekommt sie aus der Zeile „Stromspeicher · Batterie" (Halbsatz aus A8, #474)" |
 | § 7 und Anhang | § 7: Wortlaut in § 8.25; Mockup-Zeile „U12 und U43 erledigt #455"; Etappenzeile „E11 … E12 — nächste Etappe: E12 …; Bau offen: E9b‑Q5 b, E7c3‑Q6 a" | § 7 „Alle Fragen sind entschieden", E13 (#474); Kürzeltafel mit der Zeile der Welle (#474) und „U43 … (Punkt 9 „erfüllt" #474)"; Etappenzeilen „E11 … E12 — E12 vorbereitet #470, Sammel-Upload 26.09.2026 …; gebaut mit E13 (#474) …; alle Fragen entschieden" und „E13 — kleine Bauwelle" = #474 |
+
+### 8.27 E14 — Formelmappe je Szenario: Stufen 1 und 2 für Günstig und Ungünstig (#477)
+
+Protokoll [`E14_Formelmappe_je_Szenario_Protokoll.md`](E14_Formelmappe_je_Szenario_Protokoll.md); der Stand von E8b‑Q1
+(R‑E8b, abgelöst), der Befund 1 aus E9a (R‑E9a, erledigt) und die neue Familie R‑E14 im Register. Die Welle folgt dem
+Befund 1 aus E9a („Formelmappe Stufe 1 und 2 rechnen nur Erwartet") auf den Auftrag des Anwenders vom 24.09.2026, 18:35
+(„Formelmappe und Befund aus E9a: Auftrag"); sie ergänzt V‑D (E8 Teil b) und ist keine eigene Etappe des Plans E0–E12.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E14** (#477, Merge `f3f071d2` über `61efa054`, der Baum gleich `f6727fdd`) | Stufe 1 je Szenario: unter den Tabellen von Erwartet je Stand eine Tabelle Günstig und Ungünstig aus dem Lauf des Szenarios, Formeln auf seine Spalte im Parameterblock, bis zum längsten Zeitraum, jenseits von T_s leer über eine Schutzformel, der Restwert am Ende von T_s (E14‑Q1 a); Stufe 2 je Szenario: Nettobarwert, Annuität, Differenzreihe, Amortisation, zwei Hilfsspalten für Vorzeichen und Wechsel, der Zinsfuß „nicht eindeutig" bei mehreren Wechseln (E14‑Q3 a, auch bei Erwartet), die Bandbreite als Zellbezug mit `MAX-MIN` (E14‑Q2 a löst E8b‑Q1 a ab); Punkt 11 der Checkliste „alle drei Szenarien formelbasiert"; 5 Ressourcenschlüssel neu, 3 neu gefasst | **keine** — Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich (394/394 CSV, 4.207.049 Werte), kein Schemaschritt; Wertfassung = Formelfassung in 16 Prüfgruppen (Excel 16 und ClosedXML abweichend 0, OpenXML 0 Fehler); voller Lauf auf `f6727fdd` 12.967 bestanden / 0 Fehler / 1 übersprungen |
+
+*§ 2.11.6, Stufe 0, der Schluss (Z. 994–996):*
+
+> drei Sätze der Grenze. Die Formeln rechnen mit der Spalte Erwartet: Wer dort einen Satz ändert, sieht
+> Mehrjahrestabellen und Kennzahlen des Erwartungsfalls mitziehen; die Jahreszeilen stehen fest — ein anderer
+> Betrachtungszeitraum verlangt einen neuen Bericht.
+
+**Umgesetzt mit E14 (#477):** Die Formeln rechnen je Szenario mit seiner Spalte; die Jahreszeilen reichen bis zum
+längsten Zeitraum der drei Szenarien, Jahre nach T_s eines Szenarios bleiben leer — ein längerer Zeitraum verlangt
+einen neuen Bericht.
+
+*§ 2.11.6, Stufe 2, der Schluss (Z. 1006–1008):*
+
+> Ein mehrdeutiger Zinsfuß und die
+> Kennzahlen der Blöcke Günstig und Ungünstig bleiben Werte — für sie gibt es keine Mehrjahrestabelle (E8b‑Q1,
+> → Register R‑E8b).
+
+**Umgesetzt mit E14 (#477):** Die Blöcke Günstig und Ungünstig rechnen auf ihre eigenen Tabellen in Formeln
+(E14‑Q2 a); ein mehrdeutiger Zinsfuß steht in allen drei Szenarien als Text „nicht eindeutig" (E14‑Q3 a).
+
+### 8.28 Berichtigungen im gültigen Stand (#477)
+
+Die Stellen, die mit E14 veraltet sind; „vorher" ist der Wortlaut vor #477 (Stand `61efa054`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `c71addf5`, „E13 ohne Schritt" | Codestand `f3f071d2`, „E13 und E14 ohne Schritt" |
+| § 2.11.2, Zeile V‑G10 (Z. 792) | „Stand: gebaut #455 … die Kennzahlen des Szenarios Erwartet in Formeln …" | dazu „Ergänzt #477 (E14): Stufe 1 und 2 rechnen alle drei Szenarien formelbasiert" |
+| § 2.11.4, Zeile V‑D (Z. 846) und Fußnote (Z. 852) | „… die Kennzahlen von Günstig und Ungünstig bleiben Werte (E8b‑Q1, → Register R‑E8b)"; Stand „E8 Teil b — gebaut"; Fußnote bis E9 (#461, #462) | „Ergänzt #477 (E14, nach dem Befund 1 aus E9a)" mit Tabellen, Kennzahlen, Zinsfuß und Bandbreite je Szenario, 16 Prüfgruppen, E14‑Q2 a löst E8b‑Q1 a ab; Stand „… gebaut; ergänzt #477 (E14)"; Fußnote „außerhalb des Plans E13 (#474) und E14 (#477)" |
+| § 2.11.6, Einleitung (Z. 974–975) | „Gebaut sind alle vier Stufen mit #455 …" | dazu „mit #477 (E14) rechnen die Stufen 1 und 2 alle drei Szenarien formelbasiert" |
+| § 2.11.6, „Was die Mappe trägt", Stufen 0, 1, 2, 3 (Z. 994–1015) | Stufe 0 und 2: Wortlaut in § 8.27; Stufe 1 ohne Szenarien; Stufe 3 ohne Szenarioangabe | Stufe 0 und 2 wie in § 8.27; Stufe 1 mit dem Absatz „Je Szenario (#477, E14‑Q1 a)" — Eingangswerte, Energiespalte ohne Zerlegung Menge × Preis, Schutzformel, Restwert, Nachweisblock nur bei Erwartet; Stufe 3 „gilt für das Szenario Erwartet" |
+| § 2.11.6, Gegenrechnung (Z. 1017–1018) | „in allen 13 Prüfgruppen … (mit #460 über 15 Prüfgruppen nachgemessen …)" | dazu „mit #477 über 16 Prüfgruppen für alle drei Szenarien — Excel 16 und die ClosedXML-Nachrechnung abweichend 0" |
+| § 2.11.6, „Dauerhaft Werte bleiben" und „EPOS trägt die Werte ein" (Z. 1041–1043) | Liste ohne Satz zu Günstig/Ungünstig; „EPOS trägt die Werte ein, Excel rechnet neu." | dazu „Die Kennzahlen der Szenarien Günstig und Ungünstig gehören nicht dazu …"; „… Excel rechnet neu — in allen drei Szenarien." |
+| § 6.1 | Kurztafel bis E13 (#474) | Zeile „E14 Formelmappe je Szenario" (#477) |
+| § 6.2 | endete mit „… E13 bewegt keinen Anker." | dazu die zwei Wachfälle in `BerichtBlattstrukturWacheTests`, `Punkt_11_nennt_alle_drei_Szenarien_formelbasiert` und „E14 bewegt keinen Anker" |
+| § 7 und Anhang | § 7: „Alle Fragen sind entschieden: …" (Z. 2899), der Absatz endete mit „… nicht gebaut). Aus der" (Z. 2904); Kürzeltafel bis #474; Mockup-Zeile „U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474)"; Etappenzeilen bis „E13 — kleine Bauwelle" | § 7 „Alle Fragen der Etappen bis E10 sind entschieden", dazu E14 (#477) mit drei offenen Fragen und die freigegebenen Aufträge E15, E16, E17; Kürzeltafel mit der Zeile der Welle (#477); „… Günstig und Ungünstig in Formeln, Punkt 11 #477"; Etappenzeile „E14 — Formelmappe je Szenario" = #477, die Zeile „E11 … E12" mit „E8b‑Q1 abgelöst … alle Fragen bis E10 entschieden" |

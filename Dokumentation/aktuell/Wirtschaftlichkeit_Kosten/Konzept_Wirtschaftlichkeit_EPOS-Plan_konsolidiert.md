@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 24.09.2026** · Codestand `c71addf5` · `SchemaStand.Zielversion` = 124 · Schemaschritte 90–124 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 24.09.2026** · Codestand `f3f071d2` · `SchemaStand.Zielversion` = 124 · Schemaschritte 90–124 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119 und 121 bis 124 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -789,7 +789,7 @@ die `V-G`-Nummern; die Tafel übersetzt:
 | V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
 | V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme. **Stand: gebaut #434** (V‑A) — Label an Amortisation und Zinsfuß, die Annuität ohne (E5‑Q3, Statusdatei „Nach #434"); Warnung bei mehr als einem Vorzeichenwechsel, ohne Wechsel „kein Zinsfuß bestimmbar" |
 | V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt". **Stand: gebaut #434** (V‑A) — `WIRT_DEKL_STEUERN` in der Deklarationsliste auf Seite und in beiden Berichten |
-| V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1. **Stand: gebaut #455** (V‑D, E8 Teil b) — die Stufen 0 bis 3 nach § 2.11.6: Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und die Kennzahlen des Szenarios Erwartet in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt zu jeder Formel den Wert ein, Excel rechnet beim Öffnen neu |
+| V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1. **Stand: gebaut #455** (V‑D, E8 Teil b) — die Stufen 0 bis 3 nach § 2.11.6: Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und die Kennzahlen des Szenarios Erwartet in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt zu jeder Formel den Wert ein, Excel rechnet beim Öffnen neu. **Ergänzt #477** (E14): Stufe 1 und 2 rechnen alle drei Szenarien formelbasiert, je Szenario auf seine Spalte im Parameterblock |
 | V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | **Freitext umgesetzt** (W5‑B‑12/G6 des Szenarienkonzepts) | es fehlen **Kategorie und Beurteilung** nach Dauer × Wirkung; fließt nie in den NPV, immer in den Bericht |
 | V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe. **Stand: gebaut #455** (V‑D, U43) — 15 Punkte in fünf Gruppen mit Anforderung, Stelle im Bericht und Stand aus dem Lauf (`AnhangECheckliste`); Abschlussseite des Wortberichts, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" auf der Ergebnisseite. **Punkt 9 (Szenarioanalyse), gebaut #474** (E9b‑Q5 b, → Register R‑E9b): „erfüllt", sobald Günstig und Ungünstig mit Kapitalwert gerechnet sind — auch ohne gepflegten Parameter; „teilweise" bei nur Erwartet oder nur einem Szenario; „offen" ohne Lauf; der Ausweis „n von m Parametern szenariert" steht als Beleg im Punkt (§ 2.11.5) |
 
@@ -843,13 +843,14 @@ Arbeit.
 | **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | gebaut **#434** (Merge `deba5e57`): `WirtschaftlichkeitZeilen.IstNachrichtlich` (Amortisation und Zinsfuß, E5‑Q3), `KapitalwertRechner.Vorzeichenwechsel` mit Nachweisumschlag Fassung 7, `ValeriAusweis.Deklarationen()`, `SensitivitaetZeile.Steigung` — auf der Seite und in beiden Berichten | keine | **E5** (mit der Ergebnisansicht) — gebaut |
 | **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe | gebaut |
 | **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | vorgezogen mit **#434** (die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5) und **#436** (das Cashflow-Bild als Verlauf mit drei Szenarien unter „Wie sicher ist das?"); **vollständig mit #454** (E8 Teil a): **Block 2 „Zahlungsreihen"** je Stand und Szenario — Jahrestafel der sechs Bestandteile Investition, Betriebskosten, Energiekosten, Erlöse, Ersatzbeschaffungen und Restwert mit Netto, Barwert und „Summe nominal", darunter das **Zahlungsstrombild** (gestapelte Jahresbalken der Positionsspalten der Mehrjahrestafel, Ausgaben nach unten, Ersatzjahre markiert, ohne Restwert; E8a‑Q1, → Register R‑E8a), Vorgabe die Leitversion im Erwartungsfall (größte Kapitalwertdifferenz, in Sicht 2 der Stand B; E8a‑Q2); **Block 4** mit Spannenbild und Verlauf aus denselben Bausteinen wie „Wie sicher ist das?" (E6‑Q1, → Register R‑E6); in „Woraus entsteht die Zahl?" die **Gliederung des Kapitalwerts** mit Barwert und Nominalsumme je Bestandteil und der Spalte „Differenz ‹Leitversion› − ‹Referenz›", die in der Kapitalwertdifferenz aufgeht (U46), darunter das **Brückenbild** „Von der Investition zur Kapitalwertdifferenz" (U41, auch im Wortbericht); in „Was ist angenommen?" die Tafel **„Was daraus im Lauf wird"** (je Szenario I₀, die Jahre der fälligen Ersatzbeschaffungen und der Restwert am Ende, nominal — U47) und die **Fußzeile** „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" (U48; mit #455 links in der Reihe der Knöpfe „Anhang-E-Checkliste…" und „Bericht erzeugen", E8a‑Q4). Alles ist Ausgabe: `Zahlungsgliederung` ordnet das Zahlungsbild des Laufs, die sechs Barwerte ergeben den Kapitalwert, gezeigt wird nur, was zum gespeicherten Ergebnis passt; die Jahresreihen stehen nach einem Lauf in der Sitzung, gespeicherte Ergebnisse tragen keine (E8a‑Q3) | Ausweis | **E8** Teil a — gebaut |
-| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6); **gebaut mit #455** (E8 Teil b): die **Formelmappe** in den Stufen 0 bis 3 (§ 2.11.6) samt der Blattstruktur-Wache über Excel- und Wortbericht und der Wache über den ClosedXML-Befund; die **Anhang-E-Checkliste** als Abschlussseite beider Berichte und hinter dem Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks (V‑G12, U43); die **Gegenprobe an der Anhang-D-Fallstudie** (§ 2.11.2). Alles ist Ausgabe: die Werte der Mappe gleich denen der Wertfassung (13 Prüfgruppen), die Anker unverändert; die Kennzahlen von Günstig und Ungünstig bleiben Werte (E8b‑Q1, → Register R‑E8b) | Ausgabe | **E8** Teil b — gebaut |
+| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6); **gebaut mit #455** (E8 Teil b): die **Formelmappe** in den Stufen 0 bis 3 (§ 2.11.6) samt der Blattstruktur-Wache über Excel- und Wortbericht und der Wache über den ClosedXML-Befund; die **Anhang-E-Checkliste** als Abschlussseite beider Berichte und hinter dem Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks (V‑G12, U43); die **Gegenprobe an der Anhang-D-Fallstudie** (§ 2.11.2). Alles ist Ausgabe: die Werte der Mappe gleich denen der Wertfassung (13 Prüfgruppen), die Anker unverändert. **Ergänzt #477** (E14, nach dem Befund 1 aus E9a): Stufe 1 und 2 auch für Günstig und Ungünstig — je Stand und Szenario eine Mehrjahrestabelle bis zum längsten Zeitraum mit Schutzformel jenseits von T_s, Kennzahlen, Zinsfuß und Bandbreite als Formeln auf die Spalte des Szenarios im Parameterblock; Wertfassung = Formelfassung in 16 Prüfgruppen, Anker und Referenzlauf unverändert; E14‑Q2 a löst E8b‑Q1 a ab (→ Register R‑E14, R‑E8b) | Ausgabe | **E8** Teil b — gebaut; ergänzt #477 (E14) |
 | **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72); **Teil a gebaut #461** (E9a): die Schemaschritte 116 (Betrachtungszeitraum und Mengenänderung je Szenario), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare je Größe an einer Stelle (§ 2.11.5, „Regeln des Kerns"), Nachweiszeile, Parameterblock und Verlauf je Szenario; `SzenarioParameterTests`, A/B-Nachweis über neun Größen mit Erwartet bitgleich; **Teil b gebaut #462** (E9b): die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (ein verallgemeinerter `CaseEingabeDialog`), der Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.11.7); `SzenarioAbdeckungTests` und die Dialogproben, ohne Pflege keine Rechenwirkung. Risiko (V-G7) und n-jährliche Zeitpunkte (V-G3) baut E9 nicht (E9a‑Q6, → Register R‑E9a) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** — gebaut #461 (Kern) und #462 (Dialoge, Ausweis); E9 abgeschlossen |
 
 *Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
 gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7 (#437, #439,
-#440, #446, #452), E8 (#454, #455; die Nachbesserung E8c #460) und E9 (#461, #462).*
+#440, #446, #452), E8 (#454, #455; die Nachbesserung E8c #460) und E9 (#461, #462); außerhalb des Plans die kleine
+Bauwelle E13 (#474) und die Formelmappe je Szenario E14 (#477, ergänzt V‑D).*
 
 *Entscheid A5 (Degradation) und die Entscheidungsfragen V-1 bis V-4: → Register R‑A (A5) und R‑V;
 der Entscheidweg zu A5: → Protokoll § 5.5.*
@@ -972,7 +973,8 @@ Preise, Laufzeit und Zins — genau die stehen oben.
 **Der ganze Bericht wird formelbasiert, nicht nur das ValERI-Blatt** (V-G10, das kippt V-2 —
 → Register R‑V). Die Grenze ist am Generator gemessen und gegengelesen; die Messung steht im
 Protokoll § 3.11 und begrenzt den Stufenplan unten. **Gebaut sind alle vier Stufen mit #455** (E8 Teil b, V‑D; die
-Klasse `ExcelFormelmappe` im Tabellenbericht) — was die Mappe trägt, steht unter der Tafel.
+Klasse `ExcelFormelmappe` im Tabellenbericht); **mit #477** (E14) rechnen die Stufen 1 und 2 **alle drei Szenarien
+formelbasiert**, jedes aus seinem eigenen Parametersatz — was die Mappe trägt, steht unter der Tafel.
 
 **Stufenplan** — jede Stufe ein eigener Schritt mit Gegenprobe (die Mappe muss vor und nach der
 Stufe dieselben Werte zeigen; die Formelfassung wird gegen die Wertfassung gehalten):
@@ -984,38 +986,53 @@ Stufe dieselben Werte zeigen; die Formelfassung wird gegen die Wertfassung gehal
 | **2** | **Ergebniskennzahlen**: Nettobarwert und Annuität über NBW/RMZ auf die Spalten der Stufe 1; interner Zinsfuß und Amortisation über eine **Differenzreihe Variante − Referenz** (samt Restwert-Nominaldifferenz im letzten Jahr), die das Blatt heute nicht führt und je Variante bekommt; benannter Leerwert bei fehlendem Vorzeichenwechsel als Text, nicht als Zellfehler | die Kennzahlen hängen an Stufe 1 und an einer Reihe, die erst entstehen muss |
 | **3** | **Betriebskostenblock**: Menge und Satz in eigene Spalten, Betrag als Produkt — nur für bemessene Positionen; die Spalte Herleitung bleibt für feste, szenariogepflegte und unvollständige Positionen. **Delta-Block** des Vergleichsblatts als Zellbezug (Wert − Referenz) / |Referenz| | kleine Blöcke gleicher Mechanik; kosmetisch |
 
-**Was die Mappe trägt** (umgesetzt #455):
+**Was die Mappe trägt** (umgesetzt #455, je Szenario ergänzt #477):
 
 - **Stufe 0** — unter der Prosazeile des Parameternachweises der Block „Parameter der Rechnung (je Szenario)" mit den
   Spalten Erwartet, Günstig und Ungünstig: Kalkulationszins, Betrachtungszeitraum und die Preissteigerungen p_E, p_B,
   p_I als Dezimalzahl (derselbe Ausdruck Prozent ÷ 100, mit dem der Rechenkern sie liest), dazu die Änderungen an
   Investition, Erträgen und Nutzungsdauer (Norm 9 c). Die Spalte Erwartet trägt die Namen `Zins_i`, `Zeitraum_T`,
   `p_E`, `p_B`, `p_I`, die beiden anderen dieselben mit `_Guenstig` bzw. `_Unguenstig`; darunter ein Hinweis und die
-  drei Sätze der Grenze. Die Formeln rechnen mit der Spalte Erwartet: Wer dort einen Satz ändert, sieht
-  Mehrjahrestabellen und Kennzahlen des Erwartungsfalls mitziehen; die Jahreszeilen stehen fest — ein anderer
-  Betrachtungszeitraum verlangt einen neuen Bericht.
+  drei Sätze der Grenze. Die Formeln rechnen je Szenario mit seiner Spalte (#477): Wer dort einen Satz ändert, sieht
+  Mehrjahrestabellen, Kennzahlen und Bandbreite dieses Szenarios mitziehen. Die Zeile „Betrachtungszeitraum T_s je
+  Szenario [a]" nennt den Zeitraum jedes Szenarios; die Jahreszeilen stehen fest und reichen bis zum längsten der drei
+  Zeiträume, Jahre nach T_s eines Szenarios bleiben leer — ein längerer Betrachtungszeitraum verlangt einen neuen
+  Bericht.
 - **Stufe 1** — die Mehrjahrestabellen wie in der Tafel; die Hilfsspalten „Basis Betrieb mit p_B" und „Basis Betrieb
   mit p_E" tragen die Basis beider Töpfe je Jahr samt den Stufen der Positionen mit späterem Startjahr (aus den
   Ausweisfeldern `BetriebBasisJeJahr` und `EndenergieBasisJeJahr` des Zahlungsbilds); die CO₂-Abgabe ist nur im
   Rückfallzweig eine Formel (`BehgFortgeschrieben`); die Abschlusszeile trägt den nominalen Restwert, seinen Barwert
-  und den Nettobarwert.
+  und den Nettobarwert. **Je Szenario (#477, E14‑Q1 a, → Register R‑E14):** Unter den Tabellen von Erwartet steht je
+  Szenario Günstig und Ungünstig ein Block „Mehrjahresübersicht der Zahlungsströme — Szenario „…" (T = n a)" mit
+  Hinweiszeile und je Stand einer Tabelle. Die Eingangswerte kommen aus dem Lauf des Szenarios
+  (`BerechneVerlaufSzenarienJeZeitraum`), die Formeln rechnen mit seiner Spalte im Parameterblock (`p.FuerSzenario(s)`);
+  die Energiespalte ist der Kernwert des ersten Jahres aus dem Szenariolauf, fortgeschrieben mit dessen p_E —
+  Menge × Preis je Träger ist dort nicht zerlegt, Grund- und Leistungspreise bleiben Werte. Die Tabellen reichen bis zum
+  längsten Zeitraum der drei Szenarien; jenseits von T_s hält die Schutzformel `IF(A<=Zeitraum_T_s,…,"")` die Zeile
+  leer, der Restwert steht am Ende von T_s. Der Nachweisblock „vermiedene Kosten" steht nur bei Erwartet.
 - **Stufe 2** — im Block „Erwartet" der Nettobarwert je Stand über `NPV` (dazu Jahr 0 und der Barwert des
   Restwerts), die Kapitalwertdifferenz als Zellbezug, die Annuität über `PMT`; rechts neben jeder Tabelle einer
   Variante die Differenzreihe Variante − Referenz (nominal, im Jahr T samt Restwert-Nominaldifferenz, Barwert,
   kumuliert, Nulldurchgang je Jahr); der Zinsfuß über `IRR` nur bei genau einem Vorzeichenwechsel, die Amortisation
-  über die Hilfsspalte, ohne Wechsel bzw. Nulldurchgang der Satz der Seite als Text. Ein mehrdeutiger Zinsfuß und die
-  Kennzahlen der Blöcke Günstig und Ungünstig bleiben Werte — für sie gibt es keine Mehrjahrestabelle (E8b‑Q1,
-  → Register R‑E8b).
+  über die Hilfsspalte, ohne Wechsel bzw. Nulldurchgang der Satz der Seite als Text. **Dasselbe für die Blöcke
+  Günstig und Ungünstig** auf ihre eigenen Tabellen (#477, E14‑Q2 a, → Register R‑E14; E8b‑Q1 ist abgelöst). Zwei
+  Hilfsspalten je Differenzreihe tragen das Vorzeichen (über Nullwerte ≤ 1E‑6 € fortgeschrieben) und die Zahl der
+  Wechsel bis zum Jahr — die Regel von `KapitalwertRechner.Vorzeichenwechsel`; der Zinsfuß ist
+  `ROUND(IRR(…)*100,2)` bei genau einem Wechsel, ohne Wechsel steht „kein Zinsfuß bestimmbar", bei mehr als einem
+  „nicht eindeutig" — als Text in allen drei Szenarien (E14‑Q3 a). Die Bandbreitentafel führt die
+  Kapitalwertdifferenzen der drei Szenarien als Zellbezug, die Spanne als `MAX-MIN`.
 - **Stufe 3** — Menge und Satz einer bemessenen Position rechts des Betrags, der Betrag ihr Produkt (bei
   Prozentbemessung ÷ 100, ein Erlös negativ); welche Rechnung gilt, sagt der eine Rechenweg selbst:
   `BetriebskostenCtrl.Bemessungsfaktor` — 1 für eine Art „Satz je Einheit", 0,01 für eine Prozentart, sonst fest —,
   für jede der 16 bemessenen Arten; dieselbe Frage stellt die Herleitungsspalte (umgesetzt #460, § 3.4). Die Spalte
   „Bemessung" nennt jede Art mit dem Text des Bemessungskatalogs. Die Summe als Spaltensumme; der Δ%-Block als
-  (Wert − Stamm) / |Stamm| · 100.
+  (Wert − Stamm) / |Stamm| · 100. Stufe 3 gilt für das Szenario Erwartet.
 - **Keine Formel ohne Gegenrechnung:** Jede Formel wird vor dem Schreiben in C# nachgerechnet; weicht ihr Ergebnis
   vom Wert ab, bleibt die Zelle ein Wert (`Formelregister`). Die Mappe zeigt damit nie eine Formel, die etwas anderes
   rechnet als der Bericht sagt; in allen 13 Prüfgruppen gleicht die Formelfassung der Wertfassung (mit #460 über 15
-  Prüfgruppen nachgemessen: Beträge, Mengen, Sätze und Formeln unverändert, nur die Texte der Spalte „Bemessung").
+  Prüfgruppen nachgemessen: Beträge, Mengen, Sätze und Formeln unverändert, nur die Texte der Spalte „Bemessung"; mit
+  #477 über 16 Prüfgruppen für alle drei Szenarien — Excel 16 und die ClosedXML-Nachrechnung abweichend 0, die Zahl
+  der Formeln je Mappe drei- bis vierfach, z. B. hyb1042 429 → 1.541).
 
 **Dauerhaft Werte bleiben**, weil sie am Stundenlauf, an Katalog- und Datenbankzugriff oder an
 Text hängen:
@@ -1034,13 +1051,16 @@ Text hängen:
   (KWKG-Kontingente und ihr Auslaufen, Befreiungs- und Entlastungstatbestände, BEHG-Pflichtigkeit,
   Preisstände).
 
+Die Kennzahlen der Szenarien Günstig und Ungünstig gehören nicht dazu: Sie rechnen mit #477 in Formeln wie die des
+Szenarios Erwartet (E14‑Q2 a).
+
 **Drei Sätze, die der Formelbericht trägt:** Er rechnet die Bewertung bereits feststehender
 Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen
 Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre
 Gültigkeit geben, sind nicht abbildbar. Und was der Anwender in der Mappe umstellt, kommt nie ins
 Projekt zurück: Die Formelmappe ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche.
 
-**EPOS trägt die Werte ein, Excel rechnet neu.** Die eingesetzte Fassung ClosedXML 0.105.1 legt eine Formel ohne
+**EPOS trägt die Werte ein, Excel rechnet neu** — in allen drei Szenarien. Die eingesetzte Fassung ClosedXML 0.105.1 legt eine Formel ohne
 ihr Ergebnis ab — auch nach `RecalculateAllFormulas` —, und ihre Rechenmaschine kennt `NPV` und `IRR` nicht (`PMT`
 rechnet sie; eine Annuität, deren `PMT` auf den Nettobarwert zeigt, erbt dessen Fehler). Deshalb schreibt ClosedXML
 nur die Formeln; nach dem Speichern trägt EPOS zu jeder Formelzelle die Zahl des Rechenkerns als Ergebnis ein, in
@@ -2665,6 +2685,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E9b Szenarioabdeckung, Teil b** (V‑E, § 2.11.5, § 2.11.7) | Die Pflege in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein mit dem Knopf `SzenarioKnopf` — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV (Parameterdialog) und KWK (Dialog „BHKW-Wirtschaftlichkeit"), an DV-Entgelt und PPA-Preis (PV-Vergütungsdialog), mit Kohärenzzeilen und Warnzeichen ohne Erwartet-Preis; der Hinweistext `WIRT_SZEN_HINWEIS` entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert" (`SzenarioAbdeckung`) auf der Seite, in beiden Berichten und in Punkt 9 der Anhang-E-Checkliste — kein Schemaschritt, ohne Pflege keine Rechenwirkung (Anker, Referenzlauf 13/13); E9 ist damit abgeschlossen. | #462 |
 | **E10 Nutzungsdauer S3 und Speicherflotte** (A7, A8, § 2.13 (3), § 3.4) | Schemaschritt 120 sät die Instandsetzungssätze der Nutzungsdauertabelle (fünf Standardzeilen, die Mitte der Vorlagenbereiche), der Dialog „Nutzungsdauern (AfA)" zeigt Instandsetzung und Wartung; die Sätze wirken nur über die ausdrückliche Vorbelegung — Übernahme einer Kostenvorlage oder „Sätze vorbelegen…" —, die Herkunft steht am Satz, in Herleitung und Formelmappe (Nachweisfassung 10); ein neuer Kesseleintrag in %/a übernimmt den Wartungssatz; die Flottenstudie rechnet den Restwert je Einheit linear aus der Nutzungsdauer, ohne eigenes Intervall aus der Batteriezeile, der feste Restwert der Einheit ist Altfeld; die Nutzungsdauer von Kessel und BHKW ist als Gerätedaten gekennzeichnet — ohne Zutun keine Rechenwirkung auf die Projektwirtschaftlichkeit (Anker unverändert, Referenzlauf 13/13 byte-gleich, keine neue Basis). | #463 |
 | **E13 Checkliste Punkt 9, Fehlergründe, A8-Halbsatz** (E9b‑Q5, E7c3‑Q6, A8, § 2.11.2, § 3.9) | Punkt 9 der Anhang-E-Checkliste „erfüllt", sobald Günstig und Ungünstig gerechnet sind; Lade-, Speicher- und Vorsorgegrund des Kerns in der Statuszeile der Ergebnisseite und im Dialog BHKW-Wirtschaftlichkeit, je Grund einmal, einen Datenbankfehler meldet die Anwendung selbst; eine neue Speichervariante nimmt die Nutzungsdauer der Zeile „Stromspeicher · Batterie"; die Hilfe von Zeileneditor und Saisonreihe des Leistungspreises auf ihren Abschnitt der Seite Kosten — ohne Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), kein Schemaschritt. | #474 |
+| **E14 Formelmappe je Szenario** (V‑D, § 2.11.6; Befund 1 aus E9a) | Die Formelmappe rechnet die Stufen 1 und 2 für alle drei Szenarien: je Stand und Szenario eine Mehrjahrestabelle aus der Spalte des Szenarios im Parameterblock, bis zum längsten Zeitraum, jenseits von T_s leer über eine Schutzformel; Kennzahlen Günstig und Ungünstig, Zinsfuß („nicht eindeutig" als Text) und Bandbreite als Formeln; Punkt 11 der Anhang-E-Checkliste nennt alle drei Szenarien — ohne Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich, Wertfassung = Formelfassung in 16 Prüfgruppen), kein Schemaschritt; drei Fragen offen (→ Register R‑E14). | #477 |
 
 ## 6.2 Regressionsanker
 
@@ -2695,7 +2716,10 @@ Wiederholbarkeit, Werkzeug-Wache, Vorrang des gepflegten Satzes, Herkunft nur be
 1046 vorher/nachher) und `NutzungsdauerKennzeichnungTests` (4); E10 bewegt keinen Anker. E13 (#474) ergänzt
 `AnhangEChecklisteTests` (Punkt 9 offen, teilweise, erfüllt; das Blatt der Mappe mit demselben Stand), `RobustheitB6Tests`
 (+4 und der Datenbankfehler der Referenzwahl einmal) und `SpeichervarianteSicherstellenTests` (die Nutzungsdauer der
-Tabelle für eine neue Variante); E13 bewegt keinen Anker.
+Tabelle für eine neue Variante); E13 bewegt keinen Anker. E14 (#477) ergänzt `BerichtBlattstrukturWacheTests` um
+`Excel_E14_Kennzahlen_Guenstig_und_Unguenstig_rechnen_in_Formeln` und `Excel_E14_Zeitraum_je_Szenario_mit_Schutzformel`
+(Zeiträume 25/20/15 a) samt den Ankerzeilen der Szenariotabellen und `AnhangEChecklisteTests` um
+`Punkt_11_nennt_alle_drei_Szenarien_formelbasiert`; E14 bewegt keinen Anker.
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -2896,12 +2920,16 @@ Speicherflotte, #463) ist gebaut: die Instandsetzungs- und Wartungssätze der Nu
 Kennzeichnung der geräteeigenen Spalten (§ 2.13 (3)); den eigenen Entscheid zu ND‑S3 vertreten die Fragen aus E10.
 **E12** (Wiki-Runden) ist mit **#470** vorbereitet — der Sammel-Upload ist für den 26.09.2026 freigegeben (Version
 1.2.0.4); E11 entfällt — damit ist der Etappenplan E0–E12 bis auf den Upload
-abgearbeitet. **Alle Fragen sind entschieden:** die aus E7c3 (→ Register R‑E7c3), E8b (→ Register R‑E8b), E8c
+abgearbeitet. **Alle Fragen der Etappen bis E10 sind entschieden:** die aus E7c3 (→ Register R‑E7c3), E8b (→ Register R‑E8b), E8c
 (→ Register R‑E8c), E9a (→ Register R‑E9a), E9b (→ Register R‑E9b) und E10 (→ Register R‑E10; E10‑Q5 erledigt), zuletzt
 am 24.09.2026 nach Empfehlung. Die zwei daraus offenen Bauten sind als kleine Bauwelle **E13 (#474)** gebaut —
 Punkt 9 der Anhang-E-Checkliste (E9b‑Q5 b, § 2.11.2) und die Anzeige der drei Kerneigenschaften `Ladefehler`,
 `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6 a, § 3.9) —, dazu der Halbsatz aus A8 zur Speichervariante (§ 2.13 (3)).
-Aus E7c3 bleibt der Rest von B‑6 (E7c3‑Q5 a: eine eigene kleine Etappe, nicht gebaut). Aus der
+Aus E7c3 bleibt der Rest von B‑6 (E7c3‑Q5 a: eine eigene kleine Etappe, nicht gebaut). Nach dem Befund 1 aus E9a ist
+**E14 (#477)** gebaut — die Formelmappe rechnet die Stufen 1 und 2 für alle drei Szenarien (§ 2.11.6, V‑D ergänzt); ihre
+drei Fragen sind offen, gebaut ist jeweils die Empfehlung a (→ Register R‑E14). Freigegeben und im Bau sind die
+Lücken V‑G7 (Risikomodul, E15) und V‑G11 (nicht monetarisierbare Wirkungen, E17); V‑G3 (Wiederholperiode je
+Kostenposition, E16) folgt nach E15 (§ 2.11.2). Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2960,8 +2988,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **V-E** Teil b (§ 2.11.5, § 2.11.7) · V‑G5 in den Dialogen · V‑4 · A14 (Hinweistext entfallen) · U10, U15 · E9b‑Q1…Q5 | Fortsetzung von W5‑B‑9 | — | **#462** | E9 Teil b: Zeilen 8 und 9 der Szenariotafel, ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts, Punkt 9 der Checkliste nennt ihn |
 | A7 · A8 · § 3.4 · § 6.3 Nr. 9h und Nr. 19 · U39 · ND‑Q6 · ND‑Q7 · E10‑Q1…Q7 | — | **S3** | **#463** | E10: Schemaschritt 120 (Sätze der Nutzungsdauertabelle), die Vorbelegung über Kostenvorlage und „Sätze vorbelegen…" mit der Herkunft am Satz (Nachweisfassung 10), neue Kesseleinträge in %/a, die Speicherflotte mit linearem Restwert je Einheit, die Kennzeichnung „Nutzungsdauer (Gerätedaten)" |
 | E9b‑Q5 b · V‑G12 Punkt 9 (U43) · E7c3‑Q6 a (§ 3.9) · A8-Halbsatz · zwei Hilfe-Anker aus E12 | — | — | **#474** | E13: Punkt 9 „erfüllt" mit beiden Szenarien, Lade-, Speicher- und Vorsorgegrund in Statuszeile und BHKW-Dialog, eine neue Speichervariante mit der Nutzungsdauer der Tabelle, `Form_VorlagenPosition` und `Form_LeistungspreisReihe` auf ihren Abschnitt der Seite Kosten |
+| **V-D** ergänzt (§ 2.11.4, § 2.11.6) · V‑G10 · E8b‑Q1 abgelöst · Befund 1 aus E9a · V‑G12 Punkt 11 (U43) · U12 · E14‑Q1…Q3 | — | — | **#477** | E14: Stufe 1 und 2 der Formelmappe je Szenario — Mehrjahrestabellen Günstig und Ungünstig bis zum längsten Zeitraum mit Schutzformel, Kennzahlen, Zinsfuß und Bandbreite als Formeln, Punkt 11 „alle drei Szenarien formelbasiert" |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 = **#463** (**E10**) | AfA-Tabelle |
-| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474), U15 erledigt #461/#462, U10 entfallen #462 |
+| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474; Günstig und Ungünstig in Formeln, Punkt 11 #477), U15 erledigt #461/#462, U10 entfallen #462 |
 
 **Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
 
@@ -2985,8 +3014,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E9** Teil a — V‑E im Kern | die Schemaschritte 116 (Szenariorahmen), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare, `SzenarioParameterTests`, A/B über neun Größen, Testdatenbank 118 | **#461** (Merge `62613292`) |
 | **E9** Teil b — V‑E in den Dialogen | die Zeilen 8 und 9 der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), der Ausweis „n von m Parametern szenariert" statt des Hinweistexts, `SzenarioAbdeckungTests` — E9 abgeschlossen | **#462** (Merge `75d45630`) |
 | **E10** — Nutzungsdauer S3 und Speicherflotte | Schemaschritt 120 (Sätze der Nutzungsdauertabelle), die Sätze wirksam nur über die ausdrückliche Vorbelegung, die Herkunft am Satz (Nachweisfassung 10), neue Kesseleinträge in %/a, die Speicherflotte an der Tabelle (linearer Restwert je Einheit, `RestwertEuro` der Einheit Altfeld), die Kennzeichnung A8, `NutzungsdauerS3Tests`, Testdatenbank 120, Referenzlauf byte-gleich ohne neue Basis — E10 abgeschlossen | **#463** (Merge `94521f2e`) |
-| **E11** … **E12** | Wiki-Runden (E11 entfällt) | **E12 vorbereitet #470**, Sammel-Upload 26.09.2026 (Version 1.2.0.4); die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs aus E10 (→ Register R‑E10) **entschieden 24.09.2026, nach Empfehlung; gebaut mit E13 (#474): E9b‑Q5 b, E7c3‑Q6 a**; E8b entschieden und gebaut (→ Register R‑E8b) — **alle Fragen entschieden** |
+| **E11** … **E12** | Wiki-Runden (E11 entfällt) | **E12 vorbereitet #470**, Sammel-Upload 26.09.2026 (Version 1.2.0.4); die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs aus E10 (→ Register R‑E10) **entschieden 24.09.2026, nach Empfehlung; gebaut mit E13 (#474): E9b‑Q5 b, E7c3‑Q6 a**; E8b entschieden und gebaut (→ Register R‑E8b; E8b‑Q1 abgelöst durch E14‑Q2 a, #477) — **alle Fragen bis E10 entschieden** |
 | **E13** — kleine Bauwelle | Punkt 9 der Anhang-E-Checkliste „erfüllt" mit beiden Szenarien (E9b‑Q5 b), Lade-, Speicher- und Vorsorgegrund in der Oberfläche (E7c3‑Q6 a), der Halbsatz aus A8 zur Speichervariante, zwei Hilfe-Anker der Seite Kosten; ohne Rechenwirkung, kein Schemaschritt | **#474** (Merge `c71addf5`) |
+| **E14** — Formelmappe je Szenario | Stufe 1 und 2 der Formelmappe für Günstig und Ungünstig aus dem eigenen Parametersatz (Befund 1 aus E9a): Mehrjahrestabellen bis zum längsten Zeitraum mit Schutzformel jenseits von T_s, Kennzahlen, Zinsfuß und Bandbreite als Formeln, Punkt 11 der Checkliste; Wertfassung = Formelfassung in 16 Prüfgruppen; ohne Rechenwirkung, kein Schemaschritt; E14‑Q1…Q3 offen (→ Register R‑E14) | **#477** (Merge `f3f071d2`) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
