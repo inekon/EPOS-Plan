@@ -78,8 +78,9 @@ namespace WindowsFormsApplication1
     // Gedanke ist derselbe - liegt die Datei schon da, ist nichts zu tun -, und der Ordner
     // heisst auf beiden Seiten EPOS_PLAN.
     //
-    // WAS SIE NICHT IST: ein Ersatz fuer die Uebernahme eines Access-Altbestands. Die ist
-    // seit W3 ein HAUSWERKZEUG (EposSqliteMigrator) und kein Kundenweg mehr.
+    // WAS SIE NICHT IST: eine Uebernahme eines Access-Altbestands. Die ist seit W3 kein
+    // Kundenweg mehr und seit dem 24.09.2026 ganz eingestellt (Hauswerkzeug
+    // EposSqliteMigrator aus dem Repository entfernt).
     // =====================================================================================
 
     /// <summary>

@@ -595,10 +595,11 @@ Assistentenseite „Vorhandene Datenbank gefunden" samt `G_LegacyDb`,
 `InitializeWizard` und `ShouldSkipPage`. Abschnitt 5.1 dieses Konzepts beschreibt
 damit einen Stand, den es nicht mehr gibt.
 
-Die Übernahme eines `.accdb`-Altbestands ist seither ein **Hauswerkzeug**
-(`EposSqliteMigrator.exe`); wer sie fährt, installiert die ACE-Engine dort, wo sie
-läuft — beim Anwender wird sie nicht mehr gebraucht. `AccessDatabaseEngine_X64.exe`
-gehört damit auch nicht mehr in `Setup\Voraussetzungen\`.
+Die Übernahme eines `.accdb`-Altbestands war seither ein **Hauswerkzeug**
+(`EposSqliteMigrator.exe`) und ist seit dem 24.09.2026 eingestellt — das Werkzeug ist am
+13.09.2026 aus dem Repository entfernt worden (BETRIEB_SQLITE.md 1.1 und 7). Die ACE-Engine
+wird nirgends mehr gebraucht; `AccessDatabaseEngine_X64.exe` gehört damit auch nicht mehr
+in `Setup\Voraussetzungen\`.
 
 ### 6.4 Was das Setup mit der Datenbank nie tut
 

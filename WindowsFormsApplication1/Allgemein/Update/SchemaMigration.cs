@@ -17,12 +17,12 @@ namespace WindowsFormsApplication1
     /// (<see cref="SCHRITTE_SQLITE"/>).</para>
     ///
     /// <para><b>Die Schritte 1 bis 61 stehen nicht in diesem Programm.</b> Sie sind der
-    /// Freeze-Stand, den eine Quelle mitbringen muss: Auf ihn hebt die letzte
-    /// Access-Fassung von EPOS-Plan (Auslieferung August 2026, Git-Zweig
-    /// <c>version_august_2026</c>), nach SQLite übernimmt danach das Hauswerkzeug
-    /// <c>EposSqliteMigrator</c> (BETRIEB_SQLITE.md 1.1 und 7). Ihre Nummern bleiben hier
-    /// als Konstanten stehen, weil sie den Schemastand benennen, den eine Datei
-    /// führt.</para>
+    /// Freeze-Stand, den eine Quelle mitbringen muss. Den Weg dorthin — die letzte
+    /// Access-Fassung von EPOS-Plan (Git-Zweig <c>version_august_2026</c>) auf der
+    /// <c>.accdb</c>, danach das Hauswerkzeug <c>EposSqliteMigrator</c> nach SQLite — gibt
+    /// es seit dem 24.09.2026 nicht mehr: Die Übernahme aus Access ist eingestellt
+    /// (BETRIEB_SQLITE.md 1.1 und 7). Ihre Nummern bleiben hier als Konstanten stehen,
+    /// weil sie den Schemastand benennen, den eine Datei führt.</para>
     ///
     /// Ablauf:
     ///   1. Alle registrierten Schritte mit Nummer &gt; gespeicherter Version in
@@ -108,8 +108,9 @@ namespace WindowsFormsApplication1
         public const int ZIEL_VERSION = SchemaStand.Zielversion;
 
         /// <summary>
-        /// Der <b>Freeze-Stand</b>: der Schemastand, den der <c>EposSqliteMigrator</c>
-        /// fertig abliefert und den eine Quelle mitbringen muss (Schritte 1 bis 61).
+        /// Der <b>Freeze-Stand</b>: der Schemastand, den das frühere Hauswerkzeug
+        /// <c>EposSqliteMigrator</c> fertig ablieferte und den eine Quelle mitbringen muss
+        /// (Schritte 1 bis 61).
         ///
         /// <para><b>Er ist NICHT dasselbe wie <see cref="ZIEL_VERSION"/></b>, und genau
         /// dafür gibt es ihn: Mit dem ersten eigenen Schritt (<see
@@ -702,8 +703,10 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Die Tabelle kann FEHLEN — der Sonderfall dieses Schritts.</b>
         /// <c>energy_conversion</c> wird von keinem Migrationsschritt und von keinem
-        /// Controller angelegt; sie stammt aus der ausgelieferten
-        /// <c>Kenndaten.accdb</c> bzw. aus <c>migration.manuell.sql</c>. Fehlt sie,
+        /// Controller angelegt; sie stammte aus der ausgelieferten
+        /// <c>Kenndaten.accdb</c> bzw. aus dem früheren Handskript
+        /// <c>migration.manuell.sql</c> (Access-Datenübernahme, aus dem Repository
+        /// entfernt). Fehlt sie,
         /// meldete <see cref="SpaltenAnlegen"/> nur „Tabelle nicht lesbar" und der
         /// Schritt scheiterte — für immer, denn der Marker bliebe stehen. 25a legt sie
         /// deshalb mit dem Spaltensatz des Handskripts an
@@ -4615,11 +4618,11 @@ namespace WindowsFormsApplication1
         //                                    Bootstrap - die Markerspalte bringt die
         //                                    Erstmigration mit.
         //
-        // Eine Datei UNTERHALB Stand 61 weist dieser Lauf ab, statt sie zu heben: Auf den
-        // Freeze-Stand hebt die letzte Access-Fassung von EPOS-Plan (Auslieferung
-        // August 2026, Git-Zweig version_august_2026), nach SQLite uebernimmt danach das
-        // Hauswerkzeug EposSqliteMigrator (BETRIEB_SQLITE.md 1.1 und 7). Im Programm gibt
-        // es keinen Access-Weg mehr und keine ACE-Verbindung.
+        // Eine Datei UNTERHALB Stand 61 weist dieser Lauf ab, statt sie zu heben: Die
+        // Schritte 1 bis 61 gehoeren dem Access-Zweig, und die Uebernahme aus Access ist
+        // seit dem 24.09.2026 eingestellt - das Hauswerkzeug EposSqliteMigrator ist aus dem
+        // Repository entfernt (BETRIEB_SQLITE.md 1.1 und 7). Im Programm gibt es keinen
+        // Access-Weg mehr und keine ACE-Verbindung.
 
         /// <summary>
         /// Führt alle noch ausstehenden Migrationsschritte des SQLITE-Zweigs aus
@@ -4808,12 +4811,12 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Seit iU9‑W14c nicht mehr leer:</b> Der erste Eintrag ist
         /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die Altbereinigung der verwaisten
-        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kommt
-        /// weiterhin fertig aus dem <c>EposSqliteMigrator</c>; was danach kommt, steht
-        /// hier.</para>
+        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kam
+        /// fertig aus dem <c>EposSqliteMigrator</c> (Werkzeug entfernt, Übernahme aus
+        /// Access eingestellt); was danach kommt, steht hier.</para>
         ///
         /// <para><b>Seither sind Freeze-Stand und Ziel zweierlei:</b>
-        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator liefert),
+        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator lieferte),
         /// <see cref="ZIEL_VERSION"/> stand damit auf 62. Wer beide verwechselt, weist eine
         /// frisch migrierte Datei als „nicht auf Freeze-Stand" ab.</para>
         ///
@@ -5857,23 +5860,23 @@ namespace WindowsFormsApplication1
             // --- Zwei Abbruchgründe, die KEINE Migration sind, sondern eine falsche Datei -
             if (version <= 0)
             {
-                l.Zeile("Die Datenbank führt keine Schemaversion - Erstmigration nötig.");
+                l.Zeile("Die Datenbank führt keine Schemaversion - kein Bestand von EPOS-Plan.");
                 l.Zeile("        In Tab_Applikation fehlt der Schemamarker (Spalte, Zeile oder " +
                         "die Tabelle selbst). Eine so beschaffene Datei ist kein migrierter " +
-                        "Bestand; sie ist mit dem EposSqliteMigrator aus der Access-Datenbank " +
-                        "zu erzeugen.");
+                        "Bestand, und die Übernahme aus Access ist eingestellt " +
+                        "(BETRIEB_SQLITE.md 1.1 und 7).");
                 return false;
             }
 
             if (version < FREEZE_VERSION)
             {
                 l.Zeile("Bestand ist nicht auf Freeze-Stand " + FREEZE_VERSION +
-                        " - bitte Erstmigration mit EposSqliteMigrator fahren.");
+                        " - die Übernahme aus Access ist eingestellt.");
                 l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
                         FREEZE_VERSION + " lassen sich auf einer SQLite-Datei nicht " +
-                        "nachspielen. Der Weg führt über den Altbestand: erst die letzte " +
-                        "Access-Fassung von EPOS-Plan (Auslieferung August 2026) auf der " +
-                        ".accdb, dann der EposSqliteMigrator.");
+                        "nachspielen, und den Weg über den Access-Altbestand (letzte " +
+                        "Access-Fassung von EPOS-Plan, dann EposSqliteMigrator) gibt es " +
+                        "nicht mehr (BETRIEB_SQLITE.md 1.1 und 7).");
                 return false;
             }
 

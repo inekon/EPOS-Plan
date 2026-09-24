@@ -99,9 +99,9 @@ namespace ZugriffsschichtProben
 
                 // Die Anwendung uebernimmt keinen Access-Altbestand: Weder der
                 // Erststart-Assistent (Fall 16) noch die Alt-Hebung (Fall 15) stehen
-                // noch im Programm. Die Uebernahme ist ein Hauswerkzeug - die letzte
-                // Access-Fassung hebt auf Stand 61, der EposSqliteMigrator uebernimmt
-                // nach SQLite; beide haben ihre eigenen Nachweise.
+                // noch im Programm. Die Uebernahme aus Access ist seit dem 24.09.2026
+                // ganz eingestellt; das Hauswerkzeug EposSqliteMigrator (Stand 61 nach
+                // SQLite) ist aus dem Repository entfernt, letzter Stand b0647c7e.
 
                 DataRepository.PfadUeberschreibung = kopie;
 
@@ -546,8 +546,8 @@ namespace ZugriffsschichtProben
                               "Stand 60 wurde als erfolgreiche Migration gewertet");
                     fall.Muss(bericht.IndexOf("Freeze-Stand 61", StringComparison.Ordinal) >= 0,
                               "Stand 60: der Bericht nennt den Freeze-Stand nicht: " + Erste(bericht));
-                    fall.Muss(bericht.IndexOf("EposSqliteMigrator", StringComparison.Ordinal) >= 0,
-                              "Stand 60: der Bericht nennt den Weg zur Erstmigration nicht");
+                    fall.Muss(bericht.IndexOf("aus Access ist eingestellt", StringComparison.Ordinal) >= 0,
+                              "Stand 60: der Bericht sagt nicht, dass die Uebernahme aus Access eingestellt ist");
                     fall.Muss(SchemaMigration.SimulationGesperrt(out grund),
                               "Stand 60: die Simulation ist NICHT gesperrt");
 

@@ -25,8 +25,9 @@ namespace WindowsFormsApplication1
     // NachOleDb() samt Typabbildung - und mit ihnen ein "using System.Data.OleDb", das
     // EPOS.Kern an ein Windows-Paket band. Alle drei sind zuerst in die Anwendung
     // gewandert und mit deren Access-Zweig entfallen: Es gibt KEIN Access-Gegenstueck
-    // mehr. Einen Altbestand hebt allein das Hauswerkzeug EposSqliteMigrator (eigene
-    // Projektmappe, eigene System.Data.OleDb-Referenz).
+    // mehr, und auch keine Uebernahme eines Access-Altbestands: Das Hauswerkzeug
+    // EposSqliteMigrator ist am 13.09.2026 aus dem Repository entfernt, die Uebernahme am
+    // 24.09.2026 eingestellt.
     //
     // Was hier bleibt, ist damit der reine Datentraeger - kein Provider, kein
     // Plattformbezug, kein #pragma. EPOS.Kern nennt System.Data.OleDb nicht mehr, weder

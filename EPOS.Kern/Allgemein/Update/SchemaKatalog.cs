@@ -4380,9 +4380,10 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Warum die Tabelle vorher angelegt werden muss.</b> Anders als bei allen
         /// bisherigen Schritten ist <c>energy_conversion</c> nirgends im Code ANGELEGT
-        /// — sie kommt aus der ausgelieferten <c>Kenndaten.accdb</c> bzw. aus der
-        /// Handmigration (<c>migration.manuell.sql</c>, Abschnitt „energy_conversion:
-        /// global, Quelle gewinnt komplett"). Eine Datenbank ohne diese Herkunft hat
+        /// — sie kam aus der ausgelieferten <c>Kenndaten.accdb</c> bzw. aus der
+        /// Handmigration (früheres Skript <c>migration.manuell.sql</c>, Abschnitt
+        /// „energy_conversion: global, Quelle gewinnt komplett"; mit der Access-Übernahme
+        /// aus dem Repository entfernt). Eine Datenbank ohne diese Herkunft hat
         /// sie schlicht nicht, und <see cref="SchemaMigration.SpaltenAnlegen"/> würde
         /// dort „Tabelle nicht lesbar" melden und den Schritt scheitern lassen.
         /// Deshalb legt Schritt 25a sie bei Bedarf selbst an — mit exakt dem
