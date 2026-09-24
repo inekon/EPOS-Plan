@@ -35,6 +35,7 @@ den Katalogverweis** `Tab_Gebaeude.ID_Gebaeude_Stamm` (Schemaschritt 121) und er
 Namen (7.1 a); **mit #473 (24.09.2026)** legt auch das Neuschreiben der Gebäudeliste eines Projekts die
 Kopien über diesen Verweis an (7.1 a); **mit #475 (24.09.2026)** behält das Speichern der Gebäudeliste
 jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schreibt in einem Vorgang
+(7.1 a); **mit #485 (24.09.2026)** berichtigt Schemaschritt 126 die vorgelegten Gebäude-Katalogsätze
 (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
@@ -649,10 +650,15 @@ Bezeichner nach (sonst NULL). **`SET NULL` statt `RESTRICT`:** Die
 Kopie trägt alle Werte selbst und rechnet ohne den Katalogsatz; die Sperre ist die weiche der
 Verwaltung, und ein harter Datenbankfehler träfe jeden anderen Löschweg (Dublettenbereinigung,
 „Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). Mit demselben Schritt tragen vier
-Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert); der
-Krankenhaussatz mit dem U-Wert Fenster 0,09 bleibt dem Anwender vorgelegt, ebenso (#473) die zwölf
-Katalogsätze ohne „Fläche je Nutzer" (von keinem Projekt benutzt; bei allen übrigen 265 Sätzen gilt
-Fläche je Nutzer = Wohnfläche / Bewohner). (b)
+Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert). ✔ **Die
+dem Anwender vorgelegten Sätze sind erledigt** (Anwenderentscheid „Empfehlung übernehmen", Welle #485,
+Schemaschritt 126, `GebaeudeKatalogReparatur`): Der Krankenhaussatz trägt U-Wert Fenster 1,3 statt 0,09
+und 250 statt 10 000 m² Nordfenster (gesamte Fensterfläche neu gebildet); die vier Sätze ohne „Fläche
+je Nutzer" (`EFH-BZ2`, `KrankenH-F-U-400`, `KMEH-M-U-54`, `Z-EFH-A-S-126`) tragen Wohnfläche /
+Bewohner; die acht Testreste (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) sind gelöscht. Der Schritt trifft je Satz
+nur Bezeichner UND Schadensbild — ein schon berichtigter oder anderer Satz einer Kundendatenbank bleibt,
+ein benutzter Testrest ebenso (Protokoll). Alle 269 Katalogsätze bestehen jetzt die Prüfung des
+Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im

@@ -310,7 +310,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **125**, LFS-SHA-256 `6c4c32f9…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **126**, LFS-SHA-256 `0fe67575…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -495,6 +495,28 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > heißt „kein Risiko", und kein Referenzprojekt trägt eines; die Wirtschaftlichkeit geht ohnehin nicht in
 > `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
 > diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag: Schemastand 126 (Reparatur der Gebäude-Katalogsätze, Welle #485), die Basis bleibt.**
+> Migrationsschritt **126** (`SCHRITT_GEBAEUDE_KATALOGREPARATUR`; die Nummer steht allein bei
+> `GebaeudeKatalogReparatur.SCHRITT`, dort auch Anweisungen und Schadensbilder), **reines DML** an
+> `Tab_Gebaeude_STAMM`, je Satz nach Bezeichner UND Schadensbild (Konzept Administrationsdialoge 7.1 (a)):
+> `Krankenhaus_92-EnEV2016` U-Wert Fenster 0,09 → 1,3, Fensterfläche Nord 10 000 → 250 m², gesamte
+> Fensterfläche 11 645,9 → 1 895,9 m² (Süd + Ost/West + Nord wie im Editor); „Fläche je Nutzer" leer →
+> Wohnfläche ÷ Bewohner bei `EFH-BZ2` (40,0), `KrankenH-F-U-400` (50,0, Bewohner 360 → 360,24 wie die
+> Geschwister), `KMEH-M-U-54` (31,78), `Z-EFH-A-S-126` (28,71); die acht Testreste 275–282
+> (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) gelöscht — nur, weil keine Projektkopie sie über
+> `ID_Gebaeude_Stamm` oder den Namen führt (ein benutzter Rest bliebe und stünde im Protokoll).
+> Nachgezogen auf der Fassung 125 (Nachtrag E15 oben, `6c4c32f9…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (offen
+> vorher 14, danach 0; ein zweiter Lauf findet nichts). Zellvergleich aller Tabellen gegen die Fassung 125
+> (10 503 021 Zellen): `SchemaVersion` 125 → 126, die acht Zellen der fünf berichtigten Sätze und die acht
+> gelöschten Zeilen, sonst nichts; 355 Schemaobjekte unverändert, `integrity_check` ok,
+> `foreign_key_check` leer, 67 788 800 Byte (LFS-SHA-256 `0fe67575…`). Der Katalog zählt 269 Sätze,
+> und jeder besteht die Prüfung des Gebäudeeditors (Wächter
+> `GebaeudeKatalogverweisTests.Nach_der_Reparatur_besteht_jeder_Katalogsatz_die_Editorpruefung`).
+> **Keine Einfrierregel ist berührt:** Keiner der dreizehn Sätze ist einem Referenzprojekt zugeordnet,
+> und Projektkopien bleiben unberührt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
+> Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
