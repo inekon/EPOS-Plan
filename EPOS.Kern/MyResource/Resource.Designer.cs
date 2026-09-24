@@ -13856,6 +13856,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall 0: Die Nutzungsdauertabelle führt für Stromspeicher keine Nutzungsdauer — die Einheit wird nicht ersetzt und trägt keinen Restwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher. Aus dem Intervall folgen Ersatz und linearer Restwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL_TABELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher ({0} Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL_VORGABE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzkosten: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ERSATZKOSTEN {
@@ -14450,7 +14477,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit: Gerätedaten, nicht mehr rechenwirksam. Die Studie setzt den Restwert linear an — Betrag der letzten Beschaffung × Restdauer ÷ Nutzungsdauer. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_RESTWERT_ALTFELD {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_RESTWERT_ALTFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit (Gerätedaten): ähnelt.
         /// </summary>
         public static string FLOTTE_ED_RESTWERT_EINHEIT {
             get {
@@ -30338,7 +30374,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nach wie vielen Jahren diese Einheit ersetzt wird; 0 = kein Ersatz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer dieser Einheit: nach wie vielen Jahren sie ersetzt wird; daraus folgt auch ihr linearer Restwert. 0 = die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher. ähnelt.
         /// </summary>
         public static string KI_DLG_FLE_ERSATZINTERVALL_ERL {
             get {
@@ -30473,7 +30509,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Restwert dieser Einheit am Ende der Betrachtung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedaten, nicht mehr rechenwirksam: ein fester Restwert dieser Einheit, der nur noch gespeichert wird. Der Kapitalwert setzt den Restwert linear aus der Nutzungsdauer (Ersatzintervall) an. ähnelt.
         /// </summary>
         public static string KI_DLG_FLE_RESTWERT_ERL {
             get {

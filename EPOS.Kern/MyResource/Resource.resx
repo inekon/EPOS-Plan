@@ -17879,7 +17879,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Ersatzintervall:</value>
   </data>
   <data name="FLOTTE_ED_RESTWERT_EINHEIT" xml:space="preserve">
-    <value>Restwert der Einheit:</value>
+    <value>Restwert der Einheit (Gerätedaten):</value>
   </data>
   <data name="FLOTTE_ED_NETZ_PLANUNG" xml:space="preserve">
     <value>Netzgrenzen und Fahrplanung</value>
@@ -23801,10 +23801,10 @@ Möchten Sie das zulassen?</value>
     <value>Was ein Ersatz dieser Einheit kostet.</value>
   </data>
   <data name="KI_DLG_FLE_ERSATZINTERVALL_ERL" xml:space="preserve">
-    <value>Nach wie vielen Jahren diese Einheit ersetzt wird; 0 = kein Ersatz.</value>
+    <value>Nutzungsdauer dieser Einheit: nach wie vielen Jahren sie ersetzt wird; daraus folgt auch ihr linearer Restwert. 0 = die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher.</value>
   </data>
   <data name="KI_DLG_FLE_RESTWERT_ERL" xml:space="preserve">
-    <value>Der Restwert dieser Einheit am Ende der Betrachtung.</value>
+    <value>Gerätedaten, nicht mehr rechenwirksam: ein fester Restwert dieser Einheit, der nur noch gespeichert wird. Der Kapitalwert setzt den Restwert linear aus der Nutzungsdauer (Ersatzintervall) an.</value>
   </data>
   <data name="KI_DLG_SPA2_LASTQUELLE_ERL" xml:space="preserve">
     <value>Woher der Strombedarf kommt: aus der EPOS-Rechnung oder aus einer eingelesenen Datei.</value>
@@ -27543,5 +27543,17 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
     <value>Der Kühlbetrieb ist in dieser Maske nicht einstellbar.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_VORGABE" xml:space="preserve">
+    <value>Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher ({0} Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_TABELLE" xml:space="preserve">
+    <value>Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher. Aus dem Intervall folgen Ersatz und linearer Restwert.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE" xml:space="preserve">
+    <value>Ersatzintervall 0: Die Nutzungsdauertabelle führt für Stromspeicher keine Nutzungsdauer — die Einheit wird nicht ersetzt und trägt keinen Restwert.</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_ALTFELD" xml:space="preserve">
+    <value>Restwert der Einheit: Gerätedaten, nicht mehr rechenwirksam. Die Studie setzt den Restwert linear an — Betrag der letzten Beschaffung × Restdauer ÷ Nutzungsdauer.</value>
   </data>
 </root>

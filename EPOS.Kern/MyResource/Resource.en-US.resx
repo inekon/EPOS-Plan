@@ -17890,7 +17890,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Replacement interval:</value>
   </data>
   <data name="FLOTTE_ED_RESTWERT_EINHEIT" xml:space="preserve">
-    <value>Residual value of the unit:</value>
+    <value>Residual value of the unit (device data):</value>
   </data>
   <data name="FLOTTE_ED_NETZ_PLANUNG" xml:space="preserve">
     <value>Grid limits and scheduling</value>
@@ -23794,10 +23794,10 @@ Do you want to allow this?</value>
     <value>What replacing this unit costs.</value>
   </data>
   <data name="KI_DLG_FLE_ERSATZINTERVALL_ERL" xml:space="preserve">
-    <value>After how many years this unit is replaced; 0 = no replacement.</value>
+    <value>Service life of this unit: after how many years it is replaced; its linear residual value follows from it. 0 = the service life from the service life table for battery storage.</value>
   </data>
   <data name="KI_DLG_FLE_RESTWERT_ERL" xml:space="preserve">
-    <value>The residual value of this unit at the end of the study period.</value>
+    <value>Device data, no longer used in the calculation: a fixed residual value of this unit that is only kept on record. The net present value derives the residual value linearly from the service life (replacement interval).</value>
   </data>
   <data name="KI_DLG_SPA2_LASTQUELLE_ERL" xml:space="preserve">
     <value>Where the electricity demand comes from: the EPOS calculation or an imported file.</value>
@@ -27536,5 +27536,17 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR" xml:space="preserve">
     <value>Cooling mode cannot be set in this form.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_VORGABE" xml:space="preserve">
+    <value>Replacement interval 0: the service life from the service life table for battery storage applies ({0} years). Replacement and linear residual value follow from the interval.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_TABELLE" xml:space="preserve">
+    <value>Replacement interval 0: the service life from the service life table for battery storage applies. Replacement and linear residual value follow from the interval.</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL_OHNE_TABELLE" xml:space="preserve">
+    <value>Replacement interval 0: the service life table has no service life for battery storage — the unit is not replaced and carries no residual value.</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_ALTFELD" xml:space="preserve">
+    <value>Residual value of the unit: device data, no longer used in the calculation. The study derives the residual value linearly — amount of the last purchase × remaining life ÷ service life.</value>
   </data>
 </root>

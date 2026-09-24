@@ -141,7 +141,9 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
 
         Eingabe(cut, "Ersatzkosten:").Input("12000");
         Eingabe(cut, "Ersatzintervall:").Input("8");
-        Eingabe(cut, "Restwert der Einheit:").Input("2500");
+        // ETAPPE E10: Die Beschriftung nennt den festen Restwert „Gerätedaten" — er bleibt
+        // pflegbar, rechnet aber nicht mehr (Empfehlung E10-Q3 a).
+        Eingabe(cut, "Restwert der Einheit (Gerätedaten):").Input("2500");
 
         Assert.Equal(12000, gemeldet!.Einheiten[0].ErsatzkostenEuro);
         Assert.Equal(8, gemeldet.Einheiten[0].ErsatzintervallJahre);
