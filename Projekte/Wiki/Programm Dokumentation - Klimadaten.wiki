@@ -8,11 +8,11 @@ Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechn
 
 Links steht die Liste der vorhandenen Klimaregionen – mit Suchfeld über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf, wie Sie es aus den Gerätekatalogen kennen. Über der Liste steht, wie viele Sätze die Einengung übrig lässt.
 
-Die Spalten sind: ''Klimaregion'', ''Quelle'', ''Standort'' (der Ortsname, sonst das Koordinatenpaar), ''Longitude'', ''Latitude'', ''Importdatum'' und ''Schreibschutz''. Das Importdatum steht als Jahr-Monat-Tag; „2026-09" im Trichter zeigt deshalb alles, was in diesem Monat eingelesen wurde. Führt eine Region keine Angabe zu Quelle und Importdatum, bleiben die beiden Spalten leer.
+Die Spalten sind: ''Klimaregion'', ''Quelle'', ''Standort'' (der Ortsname, sonst das Koordinatenpaar), ''Longitude'', ''Latitude'' und ''Importdatum''; eine Region der Auslieferung trägt hinter ihrem Namen ein Schloss. Das Importdatum steht als Jahr-Monat-Tag; „2026-09" im Trichter zeigt deshalb alles, was in diesem Monat eingelesen wurde. Führt eine Region keine Angabe zu Quelle und Importdatum, bleiben die beiden Spalten leer.
 
 Die Spalte ''Quelle'' nennt neben der Herkunft auch das '''Bezugsjahr''' und das '''Szenario''' der Daten, etwa „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm“. Weil das Suchfeld über alle Spalten sucht, engt „2045“ die Liste auf die Regionen dieses Bezugsjahres ein. Ein PVGIS-Abruf kennt kein Szenario; dort steht die Quelle allein.
 
-''Löschen'' entfernt die gewählte Region samt ihren Stunden- und Tageswerten, nach einer Rückfrage. Regionen der Auslieferung sind schreibgeschützt und bleiben stehen. Ein Kästchen je Zeile erlaubt die Mehrfachwahl; darüber erscheint eine Leiste mit ''Vergleichen'' (nur die Kennwerte) und ''Löschen'' für die gewählten Regionen.
+''Löschen'' entfernt die gewählte Region samt ihren Stunden- und Tageswerten, nach einer Rückfrage. Regionen der Auslieferung sind schreibgeschützt und bleiben stehen, solange ihr Schloss steht: ''Schloss aufheben…'' macht sie nach einer Rückfrage zu eigenen Regionen, die sich löschen lassen — ein Programm-Update stellt eine gelöschte Region nicht wieder her —, ''Schloss setzen…'' sperrt eigene Regionen als Auslieferung. Die Stunden- und Tageswerte bleiben dabei, wie sie sind. Ein Kästchen je Zeile erlaubt die Mehrfachwahl; darüber erscheint eine Leiste mit ''Vergleichen'' (nur die Kennwerte), ''Schloss aufheben…'' bzw. ''Schloss setzen…'' und ''Löschen'' für die gewählten Regionen.
 
 == Die zwei Diagramme ==
 {{Anker|diagramme}}

@@ -40,4 +40,21 @@ public sealed record Auswahlhandlung(string Text, EventCallback Ausfuehren)
 
     /// <summary>Ein Umschalter (<c>aria-pressed</c>) — „Vergleichen" steht gedrückt, solange verglichen wird.</summary>
     public bool? Gedrueckt { get; init; }
+
+    /// <summary>
+    /// Der Kurztext (<c>title</c>) am freien Knopf — was die Handlung tut, wo die
+    /// Beschriftung es nicht ganz sagt („Schloss aufheben…": die gewählten
+    /// Auslieferungssätze werden eigene Sätze). Leer = keiner. Ein weich gesperrter Knopf
+    /// trägt statt dessen seinen Grund.
+    /// </summary>
+    public string Kurztext { get; init; } = "";
+
+    /// <summary>
+    /// <b>Eine zweite Beschriftung, deren Breite der Knopf hält</b> — die, die er im
+    /// anderen Zustand trägt („Schloss setzen…" neben „Schloss aufheben…"). Wechselt die
+    /// Beschriftung mit der Auswahl, bliebe sonst die Leiste nicht gleich breit, sie bräche
+    /// anders um, und im schmalen Fenster spränge die Liste darunter (Katalogprobe, Fall
+    /// u4). Leer = keine; die Vorlage ist unsichtbar und für die Sprachausgabe verborgen.
+    /// </summary>
+    public string Breitenvorlage { get; init; } = "";
 }

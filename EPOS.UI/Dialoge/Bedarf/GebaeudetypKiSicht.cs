@@ -33,6 +33,12 @@ public sealed class GebaeudetypKiSicht
 
     public Func<string>? BeschreibungLesen { get; init; }
 
+    /// <summary>
+    /// Setzt die Beschreibung im Arbeitsstand — derselbe Weg wie eine Eingabe von Hand
+    /// (<c>BeiBeschreibung</c>); gespeichert wird mit „Speichern".
+    /// </summary>
+    public Action<string>? BeschreibungSetzen { get; init; }
+
     /// <summary>Liefert die Gebäudetypen, die die Liste der Maske führt.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? TypEintraege { get; init; }
 
@@ -71,6 +77,14 @@ public sealed class GebaeudetypKiSicht
         set => KurveSetzen?.Invoke(value);
     }
 
-    /// <summary>Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt.</summary>
-    public string Beschreibung => BeschreibungLesen?.Invoke() ?? "";
+    /// <summary>
+    /// Der Freitext des geladenen Typs — im Arbeitsstand bearbeitbar wie das Feld der
+    /// Maske. Einen Auslieferungstyp schützt der Haken <c>Schreibgeschuetzt</c> der Maske,
+    /// und die Maske selbst übernimmt dort keine Eingabe.
+    /// </summary>
+    public string Beschreibung
+    {
+        get => BeschreibungLesen?.Invoke() ?? "";
+        set => BeschreibungSetzen?.Invoke(value ?? "");
+    }
 }

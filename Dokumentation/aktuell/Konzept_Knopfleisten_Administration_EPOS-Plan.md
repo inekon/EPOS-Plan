@@ -32,7 +32,11 @@ Quelle: [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md), Abschnitt „Bedienung".
    „Beenden". Seit der Stufe 3 der Administrationsdialoge (23.09.2026) stehen
    „Duplizieren…" und „Löschen" nicht mehr in dieser Fußleiste, sondern in der `Auswahlleiste`
    über dem Stammblatt (V8: keine Handlung an zwei Orten) — „Duplizieren…" legt dort aus einem
-   Auslieferungssatz einen eigenen Satz an.
+   Auslieferungssatz einen eigenen Satz an. Zwischen beiden steht seit dem 23.09.2026 (Entscheid
+   AD-Q15) „Schloss aufheben…" bzw. „Schloss setzen…" — die Beschriftung folgt der Auswahl, eine
+   Rückfrage (Vorgabe „Nein") geht voraus; die Handlung steht in allen zehn Verwaltungen, auch in
+   Klimadaten und den Zeitreihen ohne „Duplizieren…". Die Reihenfolge der Auswahlleiste ist damit
+   Vergleichen · Duplizieren… · Schloss aufheben…/Schloss setzen… · Löschen.
 
 **Leseregel der Fußleiste,** aus den konformen Vorbildern (`KlimadatenDialog`, `ModulKatalogDialog`,
 `KatalogBrowserDialog`) abgelesen: **links vom Füller** stehen die Knöpfe, die auf den Eingabeblock

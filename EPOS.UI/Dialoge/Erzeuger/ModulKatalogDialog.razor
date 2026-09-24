@@ -102,6 +102,7 @@
                und der Kopf sagt es in Worten (V13). *@
             <Stammblatt Name="@Blattname" Unterzeile="@Unterzeile"
                         Auslieferung="@NurLesbar" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@(!_neu && _schloss.Entsperrt(_fokuszeile))"
                         Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
@@ -190,6 +191,10 @@
 
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
+
+    @* --- Rueckfrage vor dem Umschalten des Schlosses (AD-Q15, Vorgabe Nein) *@
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchlossAntwort" />
 
     @* --- Namensabfrage von „Neu…" ---------------------------------------- *@
     <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
@@ -400,6 +405,9 @@
     /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
     public bool Duplizierfrage => _duplizierfrage;
 
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
     /// <summary>
     /// Trägt die Maske etwas, das noch nicht geschrieben ist — ein geändertes Feld oder
     /// einen neuen Satz? Dann halten Zeilenwechsel und Beenden an (V11).
@@ -427,7 +435,11 @@
 
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
     private EventCallback _loeschen;
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15) — Rückfrage und die in dieser Sitzung entsperrten Sätze.</summary>
+    private readonly Schlossumschaltung _schloss = new();
     private EventCallback _blattOeffnen;
     private EventCallback _blattSchliessen;
 
@@ -550,6 +562,9 @@
                 Hoechstens = 1,
                 ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
             });
+        // AD-Q15: die Beschriftung folgt der Auswahl.
+        if (_schloss.Handlung(Wege.Schloss, _schlossHandlung, SchlossZiele, false) is { } schloss)
+            liste.Add(schloss);
         liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
         return liste;
     }
@@ -653,6 +668,7 @@
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
         _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
         _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
         _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
@@ -1045,6 +1061,43 @@
         _status = string.Format(MeldungDupliziert, alt, ergebnis.Name);
     }
 
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =====================================================================
+
+    /// <summary>Die Zeilen, auf die die Auswahlleiste gerade wirkt.</summary>
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _zeilen);
+
+    /// <summary>
+    /// Der Klick: Rückfrage in beiden Richtungen, Vorgabe „Nein". Geänderte Felder oder ein
+    /// ungespeicherter neuer Satz halten sie auf.
+    /// </summary>
+    private void BeiSchloss()
+    {
+        string? grund = _schloss.Fragen(Wege.Schloss, SchlossZiele, Ungespeichert);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Nach dem „Ja": schalten, die Liste neu lesen — Schloss, Lesemodus und Speichern
+    /// folgen aus der Fokuszeile —, Erfolg in die Statuszeile.
+    /// </summary>
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Wege.Schloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeAufbauen();
+        if (_gewaehlt.Length > 0) DetailLaden();
+        _meldung = "";
+        _status = a.Status;
+    }
+
     /// <summary>
     /// „Neu…": Namensabfrage, dann die Vorbelegungen aus dem Profil. Beim
     /// Stromspeicher sind darunter die zwei fachlichen Vorgaben
@@ -1219,7 +1272,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_namensfrage || _duplizierfrage || _loeschfrage || ImportOffen) return Task.CompletedTask;
+        if (_namensfrage || _duplizierfrage || _loeschfrage || _schloss.FrageOffen || ImportOffen)
+            return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
         if (_auswahl.BlattOffen)

@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Text;
+using EPOS.UI.Dienste;
 using KiKern;
+using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Seiten.Simulation;
 
@@ -32,9 +34,16 @@ namespace EPOS.UI.Seiten.Simulation;
 /// Schritt, der Reiter, die sieben Kennzahlen des Laufs und die Laufhinweise. Das ist
 /// die Aussage, nicht eine Nachlässigkeit: Sie lassen sich nicht eingeben, und
 /// <c>feld_setzen</c> lehnt sie deshalb ab (<c>KiFeldzugang.Setzbar</c> folgt der
-/// Schreibbarkeit der Eigenschaft). Setzbar sind genau die FÜNF Laufparameter — und
-/// sie gehen denselben Weg wie das Feld auf dem Bildschirm
-/// (<see cref="SimulationParameterDienste"/>, jedes Feld schreibt sofort).</para>
+/// Schreibbarkeit der Eigenschaft). Setzbar sind die Laufparameter — und sie gehen
+/// denselben Weg wie das Feld auf dem Bildschirm (<see cref="SimulationParameterDienste"/>,
+/// jedes Feld schreibt sofort).</para>
+///
+/// <para><b>Welle #458: der Kühlschalter und die Werte JE ANLAGE.</b> Die
+/// Projekteinstellung „Kühlung rechnen" geht über denselben Delegaten wie ihr Schalter;
+/// Wärmequelle, konstante Quelltemperatur, WP-Priorität und Betriebsmodus der gewählten
+/// Karte gehen über Schritt ① selbst (<c>SimulationKonfigSeite.Ki*Setzen</c>) — dieselben
+/// Vorprüfungen und Schreibwege wie die Überlagerungen, aus denen der Anwender sie
+/// setzt. Einen Grund der Seite wirft die Sicht als benannte Absage weiter.</para>
 /// </summary>
 public sealed class SimulationKiSicht
 {
@@ -47,6 +56,7 @@ public sealed class SimulationKiSicht
     private readonly Func<SimulationErgebnisDienste?>? _speicherwege;
     private readonly Func<SimulationKonfigDienste?>? _konfigwege;
     private readonly Action<double>? _autarkiespeicher;
+    private readonly Func<SimulationKonfigSeite?>? _konfigseite;
 
     /// <summary>Legt die Sicht über die lebenden Stände der Ansicht.</summary>
     /// <param name="konfiguration">Der Stand von Schritt ①; <c>null</c> = ① steht nicht.</param>
@@ -69,6 +79,12 @@ public sealed class SimulationKiSicht
     /// das EINZIGE echte Eingabefeld der neun Reiterblätter. <c>null</c> = das Blatt
     /// steht nicht; dann bleibt der Wert lesbar.
     /// </param>
+    /// <param name="konfigseite">
+    /// Schritt ① selbst (Welle #458) — er trägt die Werte JE ANLAGE (Wärmequelle,
+    /// konstante Quelltemperatur, WP-Priorität, Betriebsmodus) samt den Vorprüfungen
+    /// seiner Überlagerungen. <c>null</c> = ① steht nicht; dann lesen die Felder leer,
+    /// und eine Setzung wird benannt abgelehnt.
+    /// </param>
     public SimulationKiSicht(Func<SimulationKonfigDaten?> konfiguration,
                              Func<ParameterDaten?> laufparameter,
                              Func<SimulationParameterDienste?> schreibwege,
@@ -77,9 +93,11 @@ public sealed class SimulationKiSicht
                              Func<string> reiter,
                              Func<SimulationErgebnisDienste?>? speicherwege = null,
                              Func<SimulationKonfigDienste?>? konfigwege = null,
-                             Action<double>? autarkiespeicher = null)
+                             Action<double>? autarkiespeicher = null,
+                             Func<SimulationKonfigSeite?>? konfigseite = null)
     {
         _autarkiespeicher = autarkiespeicher;
+        _konfigseite = konfigseite;
         _konfiguration = konfiguration ?? throw new ArgumentNullException(nameof(konfiguration));
         _laufparameter = laufparameter ?? throw new ArgumentNullException(nameof(laufparameter));
         _schreibwege = schreibwege ?? throw new ArgumentNullException(nameof(schreibwege));
@@ -99,9 +117,44 @@ public sealed class SimulationKiSicht
 
     /// <summary>
     /// Das offene Reiterblatt von Schritt ③ („Übersicht", „Stromspeicher", …); leer,
-    /// solange ① vorn steht.
+    /// solange ① vorn steht. <b>Seit Welle #458 (Stufe 2) ein Wahlfeld:</b> Es zu setzen
+    /// schlägt das Blatt auf wie ein Klick auf den Reiter — nur, solange ③ vorn steht;
+    /// sonst lehnt die Ansicht benannt ab.
     /// </summary>
-    public string Reiter => _reiter() ?? "";
+    public string Reiter
+    {
+        get => _reiter() ?? "";
+        set
+        {
+            if (ReiterWaehlen is null)
+                throw new InvalidOperationException(Resource.KI_DLG_SIM_REITER_NICHT_VORN);
+            ReiterWaehlen(value ?? "");
+        }
+    }
+
+    /// <summary>Die Blätter, zwischen denen der Anwender in ③ wechselt — Schlüssel ist der Titel (KI‑D‑Q6).</summary>
+    public IReadOnlyList<KiWahleintrag> ReiterWahl
+        => KiMaskenanmeldung.Eintraege(ReiterEintraege?.Invoke() ?? Array.Empty<string>(), t => t);
+
+    /// <summary>Die Titel der Blätter, die der Reiter in ③ gerade führt; leer in ①.</summary>
+    public Func<IReadOnlyList<string>>? ReiterEintraege { get; init; }
+
+    /// <summary>Schlägt ein Blatt über seinen Titel auf; wirft mit Grund, wenn ③ nicht vorn steht.</summary>
+    public Action<string>? ReiterWaehlen { get; init; }
+
+    // =====================================================================
+    //  Die Anzeigeschalter des offenen Ergebnisblattes (Welle #458, Stufe 2)
+    // =====================================================================
+
+    /// <summary>Liefert die Schalter der gezeichneten Blätter; leer in ①.</summary>
+    public Func<IReadOnlyList<Anzeigeschalter>>? ErgebnisschalterLesen { get; init; }
+
+    /// <summary>
+    /// Die Schalter der Anzeige auf dem offenen Ergebnisblatt — eine SPALTE, je Schalter
+    /// eine Zeile mit seiner Beschriftung als Kennzeichen. Sie stellen nur das Bild ein.
+    /// </summary>
+    public IReadOnlyList<Anzeigeschalter> Ergebnisschalter
+        => ErgebnisschalterLesen?.Invoke() ?? Array.Empty<Anzeigeschalter>();
 
     // =====================================================================
     //  Schritt ① — Kaskade und Reihenfolge (nur lesend)
@@ -267,6 +320,119 @@ public sealed class SimulationKiSicht
             if (_konfigwege?.Invoke()?.LesepunktSchreiben?.Invoke(value) == true)
                 d.BoosterDavor = value;
         }
+    }
+
+    // =====================================================================
+    //  Schritt ① — der Kühlschalter und die Werte JE ANLAGE (Welle #458)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Projekteinstellung „Kühlung rechnen" — geschrieben über denselben Delegaten
+    /// wie der Schalter (<c>KuehlbetriebSchreiben</c>), sofort.
+    /// </summary>
+    /// <remarks>
+    /// <b>Benannt statt still:</b> Bietet die Plattform keinen Schreibweg an, steht der
+    /// Schalter gar nicht auf der Seite — die Setzung sagt das; scheitert das Schreiben,
+    /// sagt sie denselben Satz wie die Seite (<c>SIMKONF_MSG_KUEHLBETRIEB_FEHLER</c>).
+    /// </remarks>
+    public bool Kuehlbetrieb
+    {
+        get => Parameter?.Kuehlbetrieb ?? false;
+        set
+        {
+            ParameterDaten? p = Parameter;
+            Func<bool, bool>? schreiben = Wege?.KuehlbetriebSchreiben;
+            if (p is null || schreiben is null)
+                throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+            if (!schreiben(value))
+                throw new InvalidOperationException(Resource.SIMKONF_MSG_KUEHLBETRIEB_FEHLER);
+            p.Kuehlbetrieb = value;
+        }
+    }
+
+    /// <summary>
+    /// Die gewählte Karte mit Quellenwahl (Wärmepumpe oder Heizkessel) als
+    /// <c>ID_Anlage</c>; 0 = keine. Setzen wählt die Karte — derselbe Weg wie der Knopf an
+    /// einer Meldung (<c>KarteHervorheben</c>).
+    /// </summary>
+    public int Quellanlage
+    {
+        get => Seite?.KiAnlage?.IdAnlage ?? 0;
+        set => Absage(SeiteOderAbsage().KiAnlageWaehlen(value));
+    }
+
+    /// <summary>Die Karten mit Quellenwahl als Wahleinträge (Schlüssel = <c>ID_Anlage</c>).</summary>
+    public IReadOnlyList<KiWahleintrag> QuellanlageWahl
+        => KiMaskenanmeldung.Eintraege(Seite?.KiAnlagen, z => z.IdAnlage,
+                                       z => string.IsNullOrWhiteSpace(z.Bezeichner) ? z.Kachel.Titel : z.Bezeichner);
+
+    /// <summary>Der Quelltyp der gewählten Anlage (Steuerwert, nicht Anzeigetext).</summary>
+    public string Waermequelle
+    {
+        get => Seite?.KiQuelle() ?? "";
+        set => Absage(SeiteOderAbsage().KiQuelleSetzen(value ?? ""));
+    }
+
+    /// <summary>Die Quelltypen der gewählten Anlage.</summary>
+    public IReadOnlyList<KiWahleintrag> WaermequelleWahl
+    {
+        get
+        {
+            IReadOnlyList<Quellentyp> typen = Seite?.KiQuellentypen() ?? Array.Empty<Quellentyp>();
+            var liste = new List<KiWahleintrag>(typen.Count);
+            foreach (Quellentyp t in typen) liste.Add(new KiWahleintrag(t.Wert, t.Text));
+            return liste;
+        }
+    }
+
+    /// <summary>Die konstante Quelltemperatur der gewählten Anlage [°C].</summary>
+    public double QuelltemperaturKonstant
+    {
+        get => Seite?.KiQuelltemperatur() ?? 0.0;
+        set => Absage(SeiteOderAbsage().KiQuelltemperaturSetzen(value));
+    }
+
+    /// <summary>Die Einsatzreihenfolge der gewählten Wärmepumpe; 0 = keine gewählt.</summary>
+    public int WpPrioritaet
+    {
+        get => Seite?.KiAnlage?.Prioritaet ?? 0;
+        set => Absage(SeiteOderAbsage().KiPrioritaetSetzen(value));
+    }
+
+    /// <summary>Der Betriebsmodus (<c>BM_Typ</c>) der gewählten Wärmepumpe als Steuerwert.</summary>
+    public string WpBetriebsmodus
+    {
+        get => Seite?.KiBetriebsmodi().Aktuell ?? "";
+        set => Absage(SeiteOderAbsage().KiBetriebsmodusSetzen(value ?? ""));
+    }
+
+    /// <summary>Die drei Betriebsmodi, die der Dialog anbietet.</summary>
+    public IReadOnlyList<KiWahleintrag> WpBetriebsmodusWahl
+    {
+        get
+        {
+            var liste = new List<KiWahleintrag>();
+            if (Seite is { } s)
+                foreach ((string wert, string text) in s.KiBetriebsmodi().Modi)
+                    liste.Add(new KiWahleintrag(wert, text));
+            return liste;
+        }
+    }
+
+    /// <summary>Schritt ①; <c>null</c> = er steht nicht.</summary>
+    private SimulationKonfigSeite? Seite => _konfigseite?.Invoke();
+
+    /// <summary>Schritt ① — oder die benannte Absage, dass er nicht steht.</summary>
+    private SimulationKonfigSeite SeiteOderAbsage()
+        => Seite ?? throw new InvalidOperationException(Resource.KI_SIM_SCHRITT1_FEHLT);
+
+    /// <summary>
+    /// Ein Grund der Seite wird zur benannten Absage — der Assistent meldet dann nicht
+    /// „gesetzt", wo nichts geschah.
+    /// </summary>
+    private static void Absage(string? grund)
+    {
+        if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
     }
 
     // =====================================================================

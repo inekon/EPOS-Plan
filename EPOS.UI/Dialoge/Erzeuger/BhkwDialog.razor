@@ -686,10 +686,34 @@
         // Projektliste.
         // KI-F1b: Die Brennstoffvariante ist ein WAHLFELD; ihre Einträge kennt nur
         // dieser Dialog, deshalb geht der Lieferant als Quelle mit.
+        // Welle #458, Stufe 2: angemeldet ist seither die SICHTKLASSE - sie reicht die
+        // gewaehlte Zeile durch und traegt den Aufklapper „Alle Daten" als Feldtafel.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BHKW_PROJEKT,
-                                          () => _projektZeile, KiHaken(),
+                                          () => KiSicht(), KiHaken(),
                                           ("energietraeger", Traegereintraege));
     }
+
+    private ErzeugerProjektKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die gewählte Projektzeile und der Aufklapper „Alle
+    /// Daten" des gewählten Katalogsatzes (Welle #458, Stufe 2).
+    /// </summary>
+    private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
+    {
+        Zeilenquelle = () => _projektZeile,
+        AlleDaten = new AlleDatenTafel
+        {
+            Felder = () => _parameterOffen ? _felder : null,
+            // Der BHKW-Katalog kennt den Auslieferungssatz ZUSAETZLICH ueber seinen
+            // eigenen Weg (KatalogfelderGeschuetzt) - derselbe, vor dem der Knopf fragt.
+            Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
+                                                    _katalogZeile?.Geschuetzt == true ||
+                                                    (_katalogZeile is not null &&
+                                                     KatalogfelderGeschuetzt?.Invoke(_katalogZeile.Bezeichner) == true)),
+            Gesetzt = () => _felderGeaendert = true
+        }
+    };
 
     /// <summary>Die Brennstoffvarianten der gewählten Zeile für den Assistenten (KI-F1b).</summary>
     private IReadOnlyList<KiWahleintrag> Traegereintraege()
@@ -727,8 +751,29 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
-        Speichern = () => Task.FromResult(KiUebernehmen())
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>
+    /// „Speichern" des Assistenten: Trägt der Aufklapper „Alle Daten" Änderungen, geht
+    /// er den Weg SEINES Knopfes (<see cref="FelderSpeichern"/>) — sonst wird die
+    /// gewählte Projektzeile übernommen wie bisher (Welle #458, Stufe 2).
+    /// </summary>
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (!_felderGeaendert) return KiUebernehmen();
+
+        FelderSpeichern();
+
+        // Ein Auslieferungssatz fragt erst nach - die Antwort gibt der Anwender, nicht
+        // der Assistent.
+        if (_schutzfrage) return KiKern.KiErgebnis.Abgelehnt(Resource.ADM_SPEICHERN_GESPERRT);
+
+        return _felderGeaendert
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
+                  : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+    }
 
     private KiKern.KiErgebnis KiUebernehmen()
     {

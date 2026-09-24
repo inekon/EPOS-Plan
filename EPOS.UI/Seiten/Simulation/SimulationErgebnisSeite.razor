@@ -94,6 +94,9 @@
 
     <fieldset class="epos-simerg-bereich" disabled="@_daten.Gesperrt">
 
+        @* Welle #458, Stufe 2: Die Blaetter melden ihre Anzeigeschalter beim Register
+           dieser Seite an (Ergebnisblattwirt) - fuer den Hilfe-Assistenten. *@
+        <CascadingValue Value="@Anzeige" IsFixed="true">
         <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL">
             <KindInhalt>
 
@@ -243,6 +246,7 @@
 
             </KindInhalt>
         </Reiter>
+        </CascadingValue>
 
     </fieldset>
 
@@ -467,6 +471,34 @@
 
     /// <summary>Das sichtbare Blatt (Pruefhilfe).</summary>
     public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
+
+    /// <summary>
+    /// Das Register der Anzeigeschalter der gezeichneten Blätter (Welle #458, Stufe 2) —
+    /// die Blätter melden sich über den Kaskadenwert an, die Ansicht „Simulation" liest
+    /// es für den Hilfe-Assistenten.
+    /// </summary>
+    public Ergebnisanzeige Anzeige { get; } = new Ergebnisanzeige();
+
+    /// <summary>
+    /// Die Blätter, die der Reiter gerade führt — Schlüssel und Titel, in seiner
+    /// Reihenfolge; die Erzeugerblätter nur, wenn der Lauf den Erzeuger führt.
+    /// </summary>
+    public IReadOnlyList<(string Schluessel, string Titel)> Blaetter
+    {
+        get
+        {
+            var liste = new List<string> { Blatt.Uebersicht, Blatt.Bedarf };
+            if (_daten.ReiterWaermepumpe) liste.Add(Blatt.Waermepumpe);
+            if (_daten.ReiterHeizkessel) liste.Add(Blatt.Heizkessel);
+            if (_daten.ReiterSolarthermie) liste.Add(Blatt.Solarthermie);
+            if (_daten.ReiterBhkw) liste.Add(Blatt.Bhkw);
+            if (_daten.ReiterPhotovoltaik) liste.Add(Blatt.Photovoltaik);
+            if (_daten.ReiterStromspeicher) liste.Add(Blatt.Stromspeicher);
+            liste.Add(Blatt.Ergebnis);
+
+            return liste.Select(s => (s, SimulationBlattnamen.Text(s))).ToList();
+        }
+    }
 
     /// <summary>Laeuft die Simulation gerade? (Pruefhilfe)</summary>
     public bool Laeuft => _laeuft;

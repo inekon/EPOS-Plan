@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using EPOS.UI.Dienste;
+﻿using EPOS.UI.Dienste;
 using EPOS.UI.Standards;
 using KiKern;
 using WindowsFormsApplication1;
@@ -94,21 +93,7 @@ public sealed class KatalogBrowserKiSicht : IKiFeldtafel
     public object? Lesen(string schluessel)
     {
         BrowserFeldwert? feld = Feldsuche?.Invoke(schluessel);
-        if (feld is null) return null;
-
-        switch (feld.Art)
-        {
-            case BrowserFeldArt.Schalter:
-                return feld.Schalterwert;
-            case BrowserFeldArt.Zahl:
-                if (Zahlen.ZahlParsen(feld.Wert, out double d)) return d;
-                return feld.Wert.Length == 0 ? null : feld.Wert;
-            case BrowserFeldArt.Ganzzahl:
-                if (Zahlen.GanzzahlParsen(feld.Wert, out int i)) return i;
-                return feld.Wert.Length == 0 ? null : feld.Wert;
-            default:
-                return feld.Wert;
-        }
+        return feld is null ? null : BrowserFeldwertWandler.Lesen(feld);
     }
 
     /// <inheritdoc/>
@@ -123,20 +108,7 @@ public sealed class KatalogBrowserKiSicht : IKiFeldtafel
         BrowserFeldwert? feld = Feldsuche?.Invoke(schluessel);
         if (feld is null || !feld.Editierbar) return;
 
-        switch (feld.Art)
-        {
-            case BrowserFeldArt.Schalter:
-                feld.Schalterwert = wert is bool b && b;
-                break;
-            case BrowserFeldArt.Zahl:
-            case BrowserFeldArt.Ganzzahl:
-                feld.Wert = wert is null ? "" : Convert.ToString(wert, CultureInfo.CurrentCulture) ?? "";
-                break;
-            default:
-                feld.Wert = Convert.ToString(wert, CultureInfo.CurrentCulture) ?? "";
-                break;
-        }
-
+        BrowserFeldwertWandler.Setzen(feld, wert);
         Gesetzt?.Invoke();
     }
 }

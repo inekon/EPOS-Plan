@@ -463,10 +463,30 @@
         // Projektliste.
         // KI-F1b: Der Energieträger ist ein WAHLFELD; seine Einträge stehen im
         // Trägerkatalog, den die Hülle hereinreicht.
+        // Welle #458, Stufe 2: angemeldet ist seither die SICHTKLASSE - sie reicht die
+        // gewaehlte Zeile durch und traegt den Aufklapper „Alle Daten" als Feldtafel.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_PROJEKT,
-                                          () => _projektZeile, KiHaken(),
+                                          () => KiSicht(), KiHaken(),
                                           ("energietraeger", Traegereintraege));
     }
+
+    private ErzeugerProjektKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die gewählte Projektzeile und der Aufklapper „Alle
+    /// Daten" des gewählten Katalogsatzes (Welle #458, Stufe 2).
+    /// </summary>
+    private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
+    {
+        Zeilenquelle = () => _projektZeile,
+        AlleDaten = new AlleDatenTafel
+        {
+            Felder = () => _parameterOffen ? _felder : null,
+            Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
+                                                    _katalogZeile?.Geschuetzt == true),
+            Gesetzt = () => _felderGeaendert = true
+        }
+    };
 
     /// <summary>Die Energieträger des Katalogs für den Assistenten (KI-F1b).</summary>
     private IReadOnlyList<KiWahleintrag> Traegereintraege()
@@ -491,18 +511,33 @@
     /// Was der Assistent über den Feldwert hinaus darf (Stufe S3).
     /// </summary>
     /// <remarks>
-    /// <para><b>KEIN Speicherweg, und das ist die Angabe.</b> Diese Maske wählt das
-    /// Gerät und zeigt seine Katalogwerte; die Betriebsführung der Speicher steht in
-    /// der Ansicht „Stromspeicher-Auslegung". <c>dialog_speichern</c> lehnt hier
-    /// benannt ab, statt still nichts zu tun.</para>
+    /// <para><b>Speichern ist der Knopf des Aufklappers „Alle Daten"</b> (Welle #458,
+    /// Stufe 2). Die Maske selbst wählt das Gerät; die Betriebsführung der Speicher
+    /// steht in der Ansicht „Stromspeicher-Auslegung". Trägt der Aufklapper keine
+    /// Änderung, lehnt <c>dialog_speichern</c> benannt ab.</para>
     /// <para><b>Der SCHREIBSCHUTZ hängt am Gerät</b>, auf das die gewählte Zeile
-    /// verweist (<c>ErzeugerZeile.NurLesen</c>).</para>
+    /// verweist (<c>ErzeugerZeile.NurLesen</c>); den Auslieferungssatz im Aufklapper
+    /// meldet die Feldtafel selbst.</para>
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
-        Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false
+        Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>„Speichern" des Assistenten — der Weg des Knopfes im Aufklapper.</summary>
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (!_felderGeaendert)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_DLG_ALLE_DATEN_UNGEAENDERT.Replace("{0}", TitelText));
+
+        FelderSpeichern();
+        return _felderGeaendert
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
+                  : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+    }
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();

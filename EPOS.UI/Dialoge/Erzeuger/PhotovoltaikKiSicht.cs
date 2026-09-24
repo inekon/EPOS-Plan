@@ -29,7 +29,15 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// zwei Einträge mit denselben Schlüsseln (0 und 1) und denselben Texten, die der
 /// Anwender liest; die Eigenschaft selbst bleibt der Wahrheitswert der Anlage.</para>
 /// </summary>
-public sealed class PhotovoltaikKiSicht
+/// <remarks>
+/// <b>Seit Welle #458 (Stufe 2) dazu der Aufklapper „Alle Daten"</b> — der gewählte
+/// KATALOGsatz des Moduls als FELDTAFEL (<see cref="AlleDaten"/>, Feldkarte aus dem
+/// <c>ModulKatalogProfil</c>). Die Sicht steht deshalb auch, solange nur eine Katalogzeile
+/// gewählt ist; die Felder der Anlage und die zwei Auslegungstemperaturen sind dann leer
+/// und nehmen nichts an — wie auf der Maske, die den Strangabschnitt nur zu einer
+/// Projektzeile zeigt.
+/// </remarks>
+public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 {
     // =====================================================================
     //  Die Zugriffswege — der Dialog setzt sie beim Anmelden
@@ -56,6 +64,15 @@ public sealed class PhotovoltaikKiSicht
 
     /// <summary>Die zwei Einträge des Auswahlfelds „Rechenmodell".</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? ModellEintraege { get; init; }
+
+    /// <summary>Die Feldtafel des Aufklappers „Alle Daten" (Welle #458, Stufe 2).</summary>
+    public AlleDatenTafel? AlleDaten { get; init; }
+
+    /// <inheritdoc/>
+    public object? Lesen(string schluessel) => AlleDaten?.Lesen(schluessel);
+
+    /// <inheritdoc/>
+    public void Setzen(string schluessel, object? wert) => AlleDaten?.Setzen(schluessel, wert);
 
     private ErzeugerZeile? Zeile => Zeilenquelle?.Invoke();
 
@@ -153,8 +170,8 @@ public sealed class PhotovoltaikKiSicht
     /// </summary>
     public double? AuslegungKalt
     {
-        get => KaltLesen?.Invoke();
-        set => KaltSetzen?.Invoke(value);
+        get => Zeile is null ? null : KaltLesen?.Invoke();
+        set { if (Zeile is not null) KaltSetzen?.Invoke(value); }
     }
 
     /// <summary>
@@ -163,7 +180,7 @@ public sealed class PhotovoltaikKiSicht
     /// </summary>
     public double? AuslegungHeiss
     {
-        get => HeissLesen?.Invoke();
-        set => HeissSetzen?.Invoke(value);
+        get => Zeile is null ? null : HeissLesen?.Invoke();
+        set { if (Zeile is not null) HeissSetzen?.Invoke(value); }
     }
 }

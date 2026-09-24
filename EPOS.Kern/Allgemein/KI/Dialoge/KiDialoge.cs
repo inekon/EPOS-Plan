@@ -468,6 +468,46 @@ namespace WindowsFormsApplication1
         /// <summary>„Administration Pufferspeicher" (<c>KatalogBrowserDialog</c>).</summary>
         public const string PUFFERSPEICHER_ADMIN = Masken.PufferSpAdmin;
 
+        // =================================================================
+        //  Welle #458, Stufe 2: die uebrigen Masken mit Einstellwerten
+        // =================================================================
+        //
+        // Die Schluessel folgen der Regel des Katalogs: Wo es eine WinForms-Maske
+        // gab, bleibt ihr Name (er steht in den Hilfeschluesseln), sonst ein
+        // sprechender Name ohne Vorsilbe.
+
+        /// <summary>
+        /// Der Kennlinieneditor der Waermepumpe (<c>KennlinienEditorDialog</c>) — eine
+        /// Ueberlagerung der Waermepumpen-Verwaltung und der Waermepumpen-Anlage.
+        /// </summary>
+        /// <remarks>
+        /// Der Name ist der der abgeloesten Maske <c>Views/Waermepumpe/Kenndaten</c>;
+        /// ihr Hilfeschluessel <c>Kenndaten.btn_Help</c> steht noch am Info-Knopf.
+        /// Wie die Ueberlagerung „Anlagenwerte" meldet sie sich nur an, solange sie
+        /// offen steht.
+        /// </remarks>
+        public const string KENNLINIEN = "Kenndaten";
+
+        /// <summary>
+        /// Der Projektkopf, Schritt 1 des Assistenten „Neues Projekt"
+        /// (<c>ProjektKopfSeite</c>) — der Nachfolger von <c>Wizard_Projekt</c>, dessen
+        /// Namen er behaelt.
+        /// </summary>
+        public const string PROJEKTKOPF = "Wizard_Projekt";
+
+        /// <summary>
+        /// Die Startseite (<c>Startseite</c> samt <c>ErzeugerReiter</c>) — der Nachfolger
+        /// von <c>Form_Start</c>, dessen Namen er behaelt; ihre Info-Knoepfe tragen
+        /// weiter <c>Form_Start.btn_Help_*</c>.
+        /// </summary>
+        public const string STARTSEITE = "Form_Start";
+
+        /// <summary>
+        /// Die Programmeinstellungen (<c>EinstellungenDialog</c>) — der Nachfolger von
+        /// <c>Form_AdminSettings</c>, dessen Namen er behaelt.
+        /// </summary>
+        public const string EINSTELLUNGEN = "Form_AdminSettings";
+
         /// <summary>
         /// Der Katalogschluessel der Verwaltung zu einer Auspraegung des Katalogbrowsers —
         /// die EINE Stelle, an der der Dialog erfaehrt, unter welchem Namen er sich anmeldet.
@@ -662,7 +702,11 @@ namespace WindowsFormsApplication1
                 BerichteUebersicht(),
                 Berichtseite(),
                 ProjektKopie(),
-                ProjektVariante());
+                ProjektVariante(),
+                Kennlinien(),
+                Projektkopf(),
+                Startseite(),
+                Einstellungen());
         }
 
         // =====================================================================
@@ -753,6 +797,101 @@ namespace WindowsFormsApplication1
                 case BrowserFeldArt.Schalter: return KiParameterTyp.Wahrheitswert;
                 default: return KiParameterTyp.Text;
             }
+        }
+
+        // =====================================================================
+        // „Alle Daten" der sechs Erzeugermasken des Projekts   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse der vier Erzeugermasken mit Projektzeile
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerProjektKiSicht</c>).
+        /// </summary>
+        public const string ERZEUGER_PROJEKT_SICHT = "ErzeugerProjektKiSicht";
+
+        /// <summary>
+        /// Die Vorsilbe eines Feldes des Aufklappers „Alle Daten" im Eigenschaftspfad
+        /// (<c>ErzeugerProjektKiSicht.Katalog_PTHERM</c>) und — klein — im Feldnamen
+        /// (<c>katalog_ptherm</c>).
+        /// </summary>
+        /// <remarks>
+        /// Ohne sie traefen sich Profil und Anlage: <c>VORLAUF</c> des Katalogsatzes und
+        /// <c>Vorlauf</c> der Projektzeile sind fuer den Katalog DERSELBE Pfad (er
+        /// vergleicht ohne Gross/Klein), fuer den Anwender aber zwei Werte — der eine
+        /// gilt fuer das Geraet im Katalog, der andere fuer diese Anlage.
+        /// </remarks>
+        public const string KATALOGFELD_VORSILBE = "Katalog_";
+
+        /// <summary>
+        /// Die Felder des Aufklappers „Alle Daten" einer Erzeugermaske, deren Katalog der
+        /// KATALOGBROWSER fuehrt (Heizkessel, BHKW, Pufferspeicher, Solarkollektoren) —
+        /// erzeugt aus demselben Profil wie die Verwaltung (<see cref="ErzeugerVerwaltung"/>)
+        /// und mit denselben Erlaeuterungen.
+        /// </summary>
+        private static IEnumerable<KiDialogFeld> AlleDaten(KatalogBrowserArt art, string sicht)
+        {
+            KatalogBrowserProfil profil = KatalogBrowserProfil.Finde(art, KiDialogTexte.Profiltext);
+
+            foreach (BrowserDetailfeld f in profil.Detailfelder)
+                yield return AlleDatenFeld(sicht, f.Schluessel, f.Feldname, f.Einheit, f.Art,
+                                           !f.Editierbar,
+                                           KiDialogTexte.KbrowErlaeuterung(art, f.Schluessel, f.Feldname));
+        }
+
+        /// <summary>
+        /// Die Felder des Aufklappers „Alle Daten" einer Erzeugermaske, deren Katalog der
+        /// MODULKATALOG fuehrt (Photovoltaik, Stromspeicher) — erzeugt aus dem
+        /// <see cref="ModulKatalogProfil"/>. Nicht setzbar ist, was die Bruecke des
+        /// Aufklappers nicht zurueckschreibt: der gesperrte Bezeichner und ein
+        /// Auswahlfeld (<c>ModulFeldwertBruecke.Editierbar</c>).
+        /// </summary>
+        /// <param name="modulkatalog">
+        /// Der Katalogeintrag des Modulkatalogs — seine Erlaeuterungen gelten fuer
+        /// dieselben Felder; zugeordnet wird ueber die Beschriftung, die der
+        /// Profilwaechter des Modulkatalogs festhaelt.
+        /// </param>
+        private static IEnumerable<KiDialogFeld> AlleDaten(ModulKatalogArt art, KiDialog modulkatalog, string sicht)
+        {
+            ModulKatalogProfil profil = ModulKatalogProfil.Finde(art, KiDialogTexte.Profiltext);
+
+            foreach (ModulKatalogFeld f in profil.Felder)
+            {
+                string erlaeuterung = null;
+                foreach (KiDialogFeld k in modulkatalog.Felder)
+                    if (string.Equals(k.Anzeigename.TrimEnd(' ', ':'), f.Feldname, StringComparison.Ordinal))
+                    {
+                        erlaeuterung = k.Erlaeuterung;
+                        break;
+                    }
+
+                yield return AlleDatenFeld(sicht, f.Schluessel, f.Feldname, f.Einheit, f.Art,
+                                           f.Gesperrt || f.Art == BrowserFeldArt.Auswahl,
+                                           erlaeuterung ?? KiDialogTexte.KbrowRueckfall(f.Feldname));
+            }
+        }
+
+        /// <summary>Ein Feld des Aufklappers „Alle Daten" — Name, Pfad und Anzeigename mit Vorsilbe.</summary>
+        private static KiDialogFeld AlleDatenFeld(string sicht, string schluessel, string feldname,
+                                                  string einheit, BrowserFeldArt art, bool nurLesen,
+                                                  string erlaeuterung)
+            => new KiDialogFeld(
+                (KATALOGFELD_VORSILBE + schluessel).ToLowerInvariant(),
+                sicht + "." + KATALOGFELD_VORSILBE + schluessel,
+                KiDialogTexte.AlleDatenName(feldname),
+                Feldtyp(art),
+                erlaeuterung,
+                einheit: einheit,
+                leerErlaubt: art == BrowserFeldArt.Text || art == BrowserFeldArt.Mehrzeilig ||
+                             art == BrowserFeldArt.Auswahl,
+                nurLesen: nurLesen);
+
+        /// <summary>Die benannten Felder einer Maske und dahinter die ihres Aufklappers.</summary>
+        private static List<KiDialogFeld> MitAlleDaten(IEnumerable<KiDialogFeld> benannt,
+                                                       IEnumerable<KiDialogFeld> alleDaten)
+        {
+            var liste = new List<KiDialogFeld>(benannt);
+            liste.AddRange(alleDaten);
+            return liste;
         }
 
         // =====================================================================
@@ -987,9 +1126,11 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Die DATEIWAHL bleibt draussen</b> (KI-D-Q6): Eine Datei einzulesen ist
-        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist ein
-        /// Optionsfeld der Maske, und auf „Datei importieren" umzustellen ist dasselbe
-        /// wie ein Klick darauf. Der Pfad selbst laedt nichts.
+        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist die Spalte
+        /// „Quelle" der Lastgangliste (Stufe 5 der Neuordnung): „Ganglinie" waehlt die
+        /// erste Ganglinienzeile, „Datei" die zuletzt eingelesene Datei, wie ein Klick;
+        /// ohne eingelesene Datei lehnt die Setzung benannt ab. Die GANGLINIE waehlt
+        /// ihre Zeile. Der Pfad selbst laedt nichts.
         /// </para>
         /// <para>
         /// <b>Keine Knoepfe.</b> „Berechnen", „Minimale Schwelle" und „In Variante
@@ -1297,7 +1438,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Reiterblatt „Wirtschaftlichkeit" — sechs Felder aus
+        /// Das Reiterblatt „Wirtschaftlichkeit" — zehn Felder aus
         /// <c>EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1314,10 +1455,21 @@ namespace WindowsFormsApplication1
         /// Setzung durch denselben Rueckruf schickt wie ein Griff in die Klappliste.
         /// </para>
         /// <para>
-        /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und der
-        /// Kapitalwertverlauf</b> (gerechnete Anzeige) sowie die VERGLEICHSGRUPPE:
+        /// <b>Die zwei Anzeigewahlen von Block 2 der ValERI-Bewertung sind drin</b>
+        /// (KI-D-Q11): Stand und Szenario der Zahlungsreihen waehlen nur, welche schon
+        /// gelieferte Jahrestafel die Seite zeigt - kein neuer Stand, kein Nachrechnen.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und das Bild
+        /// des Kapitalwertverlaufs</b> (gerechnete Anzeige) sowie die VERGLEICHSGRUPPE:
         /// Welche Varianten angehakt sind, ist eine Menge von Verweisen und kein
         /// Feldwert.
+        /// </para>
+        /// <para>
+        /// <b>Drin ist seit Welle #458 (Stufe 2) die Bedienleiste des Verlaufs</b>
+        /// (<c>KapitalwertVerlaufAbschnitt</c>, ein Baustein dieser Seite): der Zeitraum
+        /// und je Stand und je Szenario ein Haken als SPALTE. Ein Haken zeichnet nur neu;
+        /// gerechnet wird erst mit „Aktualisieren", das der Anwender drueckt.
         /// </para>
         /// </remarks>
         private static KiDialog Wirtschaftlichkeitsseite()
@@ -1346,7 +1498,25 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nicht_monetaer",
                                      "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
                                      KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
-                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true)
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true),
+                    new KiDialogFeld("zahlungsreihen_stand",
+                                     "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenStand",
+                                     KiDialogTexte.WseZrStandName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseZrStandErl, leerErlaubt: true),
+                    new KiDialogFeld("zahlungsreihen_szenario",
+                                     "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenSzenario",
+                                     KiDialogTexte.WseZrSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseZrSzenarioErl, leerErlaubt: true),
+
+                    // ---- Der Abschnitt „Verlauf" (Welle #458, Stufe 2) ---------------
+                    new KiDialogFeld("verlauf_zeitraum",
+                                     "WirtschaftlichkeitSeiteKiSicht.VerlaufZeitraum",
+                                     KiDialogTexte.WseVerlaufZeitraumName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WseVerlaufZeitraumErl, leerErlaubt: true),
+                    new KiDialogFeld("verlauf_anzeige",
+                                     "WirtschaftlichkeitSeiteKiSicht.Verlaufsschalter[].An",
+                                     KiDialogTexte.WseVerlaufAnzeigeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WseVerlaufAnzeigeErl, zeilenkennzeichen: "Name")
                 });
         }
 
@@ -3154,10 +3324,13 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kurve", "GebaeudetypKiSicht.Kurve",
                                      KiDialogTexte.GtypKurveName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GtypKurveErl, leerErlaubt: true),
+                    // Welle #458: Die Beschreibung ist seit der Neuordnung der
+                    // Verwaltungen im Stammblatt bearbeitbar (BeiBeschreibung) - und
+                    // damit auch fuer den Assistenten; ein Auslieferungstyp bleibt
+                    // ueber Schreibgeschuetzt geschuetzt.
                     new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
                                      KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.GtypBeschreibungErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -4263,8 +4436,11 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Waermepumpen-ANLAGE eines Projekts — einundzwanzig Felder aus
-        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten</c>.
+        /// Die Waermepumpen-ANLAGE eines Projekts — dreiundzwanzig Felder aus
+        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageKiSicht</c>, die den Feldsatz
+        /// <c>WaermepumpeAnlageDaten</c> unveraendert durchreicht und die
+        /// Projekteinstellung „Extrapolation der WP-Kennlinie erlauben" dazu traegt
+        /// (Welle #458).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4289,9 +4465,9 @@ namespace WindowsFormsApplication1
         /// Kostenlauf wortlos ueberschriebe.
         /// </para>
         /// <para>
-        /// <b>Der ENERGIETRAEGER fehlt mit Absicht</b> — er steht im Daten-Objekt allein
-        /// als Id (<c>CarrierId</c>); dieselbe Regel wie bei Kessel, BHKW und
-        /// Stromspeicher. Die KENNLINIEN fehlen ebenfalls: Sie sind eine Tabelle von
+        /// <b>Der ENERGIETRAEGER ist eine Wahl</b> (KI-F1b): Die Id (<c>CarrierId</c>)
+        /// ist der Schluessel, die Eintraege reicht der Dialog aus dem Traegerkatalog
+        /// herein. Die KENNLINIEN fehlen mit Absicht: Sie sind eine Tabelle von
         /// Stuetzstellen mit eigenem Editor, kein Maskenfeld.
         /// </para>
         /// <para>
@@ -4308,87 +4484,97 @@ namespace WindowsFormsApplication1
                 felder: new[]
                 {
                     // ---- Woran der Anwender gerade arbeitet -------------------------
-                    new KiDialogFeld("anlage", "WaermepumpeAnlageDaten.Bezeichner",
+                    new KiDialogFeld("anlage", "WaermepumpeAnlageKiSicht.Bezeichner",
                                      KiDialogTexte.WpaAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
 
                     // ---- Auslegung fuer die Verteilung ------------------------------
-                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageDaten.Vorlauf",
+                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageKiSicht.Vorlauf",
                                      KiDialogTexte.WpaVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageDaten.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageKiSicht.Ruecklauf",
                                      KiDialogTexte.WpaRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageDaten.Nutzungszeit",
+                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageKiSicht.Nutzungszeit",
                                      KiDialogTexte.WpaNutzungsdauerName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaNutzungsdauerErl,
                                      einheit: KiDialogTexte.EINHEIT_JAHR, leerErlaubt: true),
 
+                    // ---- Die Projekteinstellung neben der Auslegung (Welle #458) -----
+                    //
+                    // „Extrapolation der WP-Kennlinie erlauben" gilt allen Waermepumpen
+                    // des Projekts und schreibt SOFORT (ExtrapolationSchreiben) - sie
+                    // haengt nicht am Feldsatz der Anlage; deshalb meldet der Dialog
+                    // eine Sichtklasse an, die beides traegt.
+                    new KiDialogFeld("extrapolation", "WaermepumpeAnlageKiSicht.Extrapolation",
+                                     KiDialogTexte.WpaExtrapolationName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaExtrapolationErl),
+
                     // ---- Der Block „Konfiguration" ---------------------------------
-                    new KiDialogFeld("heizstab", "WaermepumpeAnlageDaten.Heizstab",
+                    new KiDialogFeld("heizstab", "WaermepumpeAnlageKiSicht.Heizstab",
                                      KiDialogTexte.WpaHeizstabName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaHeizstabErl),
-                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageDaten.Sperrung",
+                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageKiSicht.Sperrung",
                                      KiDialogTexte.WpaSperrungName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaSperrungErl),
-                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageDaten.SperrzeitVon",
+                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageKiSicht.SperrzeitVon",
                                      KiDialogTexte.WpaSperrzeitVonName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitVonErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
-                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageDaten.SperrzeitBis",
+                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageKiSicht.SperrzeitBis",
                                      KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaSperrzeitBisErl,
                                      einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
-                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageDaten.BivalenterBetrieb",
+                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageKiSicht.BivalenterBetrieb",
                                      KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.WpaBivalentErl),
-                    new KiDialogFeld("energietraeger", "WaermepumpeAnlageDaten.CarrierId",
+                    new KiDialogFeld("energietraeger", "WaermepumpeAnlageKiSicht.CarrierId",
                                      KiDialogTexte.WpaTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaTraegerErl),
-                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageDaten.Betriebsart",
+                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageKiSicht.Betriebsart",
                                      KiDialogTexte.WpaBetriebsartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaBetriebsartErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageDaten.Abschaltpunkt",
+                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageKiSicht.Abschaltpunkt",
                                      KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaAbschaltpunktErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Die Felder des Geraets (Stammfeldblock) --------------------
-                    new KiDialogFeld("hersteller", "WaermepumpeAnlageDaten.Firma",
+                    new KiDialogFeld("hersteller", "WaermepumpeAnlageKiSicht.Firma",
                                      KiDialogTexte.WpaFirmaName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaFirmaErl, leerErlaubt: true),
-                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageDaten.Beschreibung",
+                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageKiSicht.Beschreibung",
                                      KiDialogTexte.WpaBeschreibungName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaBeschreibungErl, leerErlaubt: true),
-                    new KiDialogFeld("typ", "WaermepumpeAnlageDaten.Typ",
+                    new KiDialogFeld("typ", "WaermepumpeAnlageKiSicht.Typ",
                                      KiDialogTexte.WpaTypName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaTypErl, leerErlaubt: true),
-                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageDaten.Regelung",
+                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageKiSicht.Regelung",
                                      KiDialogTexte.WpaRegelungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaRegelungErl, leerErlaubt: true),
-                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageDaten.Aufstellung",
+                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageKiSicht.Aufstellung",
                                      KiDialogTexte.WpaAufstellungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaAufstellungErl, leerErlaubt: true),
-                    new KiDialogFeld("baujahr", "WaermepumpeAnlageDaten.Baujahr",
+                    new KiDialogFeld("baujahr", "WaermepumpeAnlageKiSicht.Baujahr",
                                      KiDialogTexte.WpaBaujahrName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WpaBaujahrErl),
-                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageDaten.Nennleistung",
+                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageKiSicht.Nennleistung",
                                      KiDialogTexte.WpaNennleistungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaNennleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW),
-                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageDaten.HeizstabLeistung",
+                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageKiSicht.HeizstabLeistung",
                                      KiDialogTexte.WpaHeizstabLeistungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaHeizstabLeistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageDaten.Kuehlleistung",
+                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageKiSicht.Kuehlleistung",
                                      KiDialogTexte.WpaKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaKuehlleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageDaten.Modulkosten",
+                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageKiSicht.Modulkosten",
                                      KiDialogTexte.WpaModulkostenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpaModulkostenErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, nurLesen: true)
@@ -4429,29 +4615,29 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeSolarkollektoren,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anzahl_module", "SolarkollektorenEingaben.Anzahl",
+                    new KiDialogFeld("anzahl_module", "SolarkollektorenKiSicht.Anzahl",
                                      KiDialogTexte.SkAnzahlName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAnzahlErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("neigung", "SolarkollektorenEingaben.Neigung",
+                    new KiDialogFeld("neigung", "SolarkollektorenKiSicht.Neigung",
                                      KiDialogTexte.SkNeigungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkNeigungErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("azimut", "SolarkollektorenEingaben.Azimut",
+                    new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("vorlauf", "SolarkollektorenEingaben.Vorlauf",
+                    new KiDialogFeld("vorlauf", "SolarkollektorenKiSicht.Vorlauf",
                                      KiDialogTexte.SkVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "SolarkollektorenEingaben.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "SolarkollektorenKiSicht.Ruecklauf",
                                      KiDialogTexte.SkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
@@ -4467,22 +4653,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Pufferspeicher im Projekt — die gewaehlte Zeile der Projektliste
-        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>), mit EINEM Feld.
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerProjektKiSicht</c>) mit EINEM Feld der
+        /// Anlage, dazu der Aufklapper „Alle Daten".
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Ein Feld, und das ist kein Versehen.</b> Diese Maske fuehrt keine
-        /// Einstellwerte der ANLAGE: Sie waehlt den Speicher aus dem Katalog, zeigt
-        /// seine Werte und laesst den KATALOGSATZ im Aufklapper „Alle Daten"
-        /// bearbeiten. Der Name der gewaehlten Zeile ist damit alles, was der Assistent
-        /// hier lesen kann — und genau das soll er koennen: „welcher Pufferspeicher ist
-        /// im Projekt gewaehlt?" beantwortet er dann aus der Maske und nicht aus der
-        /// Dokumentation.
+        /// <b>Ein Feld der Anlage, und das ist kein Versehen.</b> Diese Maske fuehrt
+        /// keine Einstellwerte der ANLAGE: Sie waehlt den Speicher aus dem Katalog und
+        /// zeigt seine Werte. Der Name der gewaehlten Zeile beantwortet „welcher
+        /// Pufferspeicher ist im Projekt gewaehlt?" aus der Maske.
         /// </para>
         /// <para>
-        /// <b>Der Aufklapper bleibt draussen</b> — dieselbe Begruendung wie beim
-        /// Heizkessel: Er zeigt die Spalten des KATALOGsatzes ueber ein Profil und
-        /// nicht ueber benannte Eigenschaften der Zeile.
+        /// <b>Einstellbar ist der KATALOGSATZ im Aufklapper „Alle Daten"</b> (Welle #458,
+        /// Stufe 2): Seine Felder entstehen aus dem Profil des Katalogbrowsers
+        /// (<see cref="AlleDaten(KatalogBrowserArt,string)"/>), gesetzt wird ueber die
+        /// Feldtafel der Sichtklasse, gespeichert ueber den Knopf des Aufklappers; ein
+        /// Auslieferungssatz lehnt mit dem Weg „Duplizieren…" ab.
         /// </para>
         /// </remarks>
         private static KiDialog PufferspeicherProjekt()
@@ -4490,13 +4676,13 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.PUFFERSPEICHER_PROJEKT,
                 anzeigename: KiDialogTexte.MaskePufferSpProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.PspAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.PspAnlageErl,
                                      leerErlaubt: true, nurLesen: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Pufferspeicher, ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4521,11 +4707,11 @@ namespace WindowsFormsApplication1
         /// mit siebenundzwanzig Feldern.
         /// </para>
         /// <para>
-        /// <b>Der ENERGIETRAEGER fehlt mit Absicht.</b> Er steht als Wahl ueber Gruppe
-        /// und Art auf der Maske, im Daten-Objekt aber allein als Id
-        /// (<c>ErzeugerZeile.CarrierId</c>); gelesen waere er eine nackte Zahl,
-        /// gesetzt eine geratene — dieselbe Regel wie bei der Brennstoffvariante der
-        /// Kessel- und BHKW-Maske.
+        /// <b>Der ENERGIETRAEGER ist eine Wahl</b> (KI-F1b, KI-D-Q6): Auf der Maske
+        /// steht er ueber Gruppe und Art, im Daten-Objekt als Id
+        /// (<c>ErzeugerZeile.CarrierId</c>); die Eintraege reicht der Dialog als
+        /// Wahlquelle herein, gesetzt wird ueber den angezeigten Text — dieselbe Regel
+        /// wie bei der Traegervariante der Kessel- und BHKW-Maske.
         /// </para>
         /// </remarks>
         private static KiDialog StromspeicherProjekt()
@@ -4533,16 +4719,16 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.STROMSPEICHER_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeStromspeicherProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.StspAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.StspAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "ErzeugerProjektKiSicht.CarrierId",
                                      KiDialogTexte.StspTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.StspTraegerErl)
-                },
+                }, AlleDaten(ModulKatalogArt.Stromspeicher, Stromspeicherkatalog(), ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4567,19 +4753,23 @@ namespace WindowsFormsApplication1
         /// Zustand, den der Anwender auf der Maske sieht.
         /// </para>
         /// <para>
-        /// <b>Die BRENNSTOFFVARIANTE fehlt mit Absicht.</b> Sie ist ein Verweis in eine
-        /// kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus den
-        /// Varianten der Traegergruppe); sie ueber ihre rohe Id setzen zu lassen hiesse,
-        /// das Modell eine Zahl raten zu lassen, deren Bedeutung nur die Maske kennt —
-        /// dieselbe Regel wie bei der Bemessung der Kostenverwaltung. Sie kommt in den
-        /// Katalog, sobald es dafuer eine benannte Auswahl gibt.
+        /// <b>Die TRAEGERVARIANTE ist eine Wahl</b> (KI-F1b, KI-D-Q6): ein Verweis in
+        /// eine kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus
+        /// den Varianten der Traegergruppe). Die Eintraege reicht der Dialog als
+        /// Wahlquelle herein; der Assistent setzt sie ueber den angezeigten Text und
+        /// raet keine rohe Id — dieselbe Regel wie bei der Bemessung der
+        /// Kostenverwaltung.
         /// </para>
         /// <para>
-        /// <b>Der Aufklapper „Alle Daten" bleibt draussen.</b> Er zeigt die Spalten des
-        /// gewaehlten KATALOGsatzes ueber ein Profil
-        /// (<c>EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs</c>) und nicht ueber
-        /// benannte Eigenschaften der Zeile; was dort steht, gehoert dem Katalog und
-        /// nicht der Anlage.
+        /// <b>Der Aufklapper „Alle Daten"</b> zeigt die Spalten des gewaehlten
+        /// KATALOGsatzes ueber ein Profil
+        /// (<c>EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs</c>); was dort steht,
+        /// gehoert dem Katalog und nicht der Anlage. Seit Welle #458 (Stufe 2) steht er
+        /// als FELDTAFEL im Katalog — die Felder entstehen aus demselben Profil
+        /// (<see cref="AlleDaten(KatalogBrowserArt,string)"/>, Vorsilbe
+        /// <see cref="KATALOGFELD_VORSILBE"/>), gesetzt wird in die lebende Feldliste des
+        /// Aufklappers, gespeichert ueber seinen Knopf. Dasselbe gilt fuer BHKW,
+        /// Pufferspeicher, Solarkollektoren, Stromspeicher und Photovoltaik.
         /// </para>
         /// </remarks>
         private static KiDialog HeizkesselProjekt()
@@ -4587,24 +4777,24 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.HEIZKESSEL_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeHeizkesselProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.HkpAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.HkpAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("vorlauf", "ErzeugerZeile.Vorlauf",
+                    new KiDialogFeld("vorlauf", "ErzeugerProjektKiSicht.Vorlauf",
                                      KiDialogTexte.HkpVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkpVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "ErzeugerProjektKiSicht.CarrierId",
                                      KiDialogTexte.HkpTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.HkpTraegerErl),
-                    new KiDialogFeld("ruecklauf", "ErzeugerZeile.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "ErzeugerProjektKiSicht.Ruecklauf",
                                      KiDialogTexte.HkpRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkpRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Heizkessel, ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4624,36 +4814,35 @@ namespace WindowsFormsApplication1
         /// <b>Die untere GRENZLEISTUNG ist der Unterschied zum Heizkessel.</b> Sie sagt,
         /// bis wohin das Modul moduliert; 0 heisst „Projektvorgabe"
         /// (<c>Tab_Einstellungen.Leistungsgrenze</c>), und genau das steht in ihrer
-        /// Erlaeuterung. Die Brennstoffvariante fehlt aus demselben Grund wie beim
-        /// Heizkessel.
+        /// Erlaeuterung. Die Traegervariante ist eine Wahl wie beim Heizkessel.
         /// </remarks>
         private static KiDialog BhkwProjekt()
         {
             return new KiDialog(
                 maskenname: KiMaskennamen.BHKW_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeBhkwProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.BhkwAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.BhkwAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("grenzleistung", "ErzeugerZeile.Grenzleistung",
+                    new KiDialogFeld("grenzleistung", "ErzeugerProjektKiSicht.Grenzleistung",
                                      KiDialogTexte.BhkwGrenzleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BhkwGrenzleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
-                    new KiDialogFeld("vorlauf", "ErzeugerZeile.Vorlauf",
+                    new KiDialogFeld("vorlauf", "ErzeugerProjektKiSicht.Vorlauf",
                                      KiDialogTexte.BhkwVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkwVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "ErzeugerProjektKiSicht.CarrierId",
                                      KiDialogTexte.BhkwTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BhkwTraegerErl),
-                    new KiDialogFeld("ruecklauf", "ErzeugerZeile.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "ErzeugerProjektKiSicht.Ruecklauf",
                                      KiDialogTexte.BhkwRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkwRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Bhkw, ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4696,12 +4885,11 @@ namespace WindowsFormsApplication1
         /// setzen - und die naechste Neuberechnung ueberschriebe es wortlos.
         /// </para>
         /// <para>
-        /// <b>Die Bemessung fehlt mit Absicht.</b> Sie ist ein Verweis in eine
-        /// kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>); sie ueber
-        /// ihre rohe Id setzen zu lassen hiesse, das Modell eine Zahl raten zu lassen,
-        /// deren Bedeutung nur die Maske kennt. Sie kommt in den Katalog, sobald es
-        /// dafuer eine benannte Auswahl gibt - dieselbe Regel wie ueberall:
-        /// Aufzaehlungswerte stammen aus dem Bestand, nie aus Modelltext.
+        /// <b>Die Bemessung ist eine Wahl je Zeile</b> (KI-F1b, KI-D-Q6): ein Verweis in
+        /// eine kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>),
+        /// gesetzt ueber den angezeigten Text statt ueber die rohe Id — dieselbe Regel
+        /// wie ueberall: Aufzaehlungswerte stammen aus dem Bestand, nie aus
+        /// Modelltext.
         /// </para>
         /// <para>
         /// <b>Keine Knoepfe.</b> „Speichern" und „OK" sind datenbankwirksam und laufen
@@ -4970,7 +5158,7 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.PHOTOVOLTAIK,
                 anzeigename: KiDialogTexte.MaskePv,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
                     // ---- Die Anlage -------------------------------------------------
                     new KiDialogFeld("neigung", "PhotovoltaikKiSicht.Neigung",
@@ -5056,7 +5244,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvStrangAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
                                      zeilenkennzeichen: STRANGKENNZEICHEN)
-                },
+                }, AlleDaten(ModulKatalogArt.Photovoltaik, PvModulkatalog(), "PhotovoltaikKiSicht")),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -5149,8 +5337,9 @@ namespace WindowsFormsApplication1
         /// <b>Die INVESTITIONSKOSTEN kommen nicht mehr in Frage.</b> Sie verlassen die
         /// Maske mit dem Anwenderentscheid vom 15.09.2026 (kein Kosteneintrag im
         /// Bearbeiten-Dialog) und sind seither im Aufklapper „Alle Daten" des
-        /// Projektdialogs zu pflegen — ohne Weg des Assistenten, wie beim Heizkessel.
-        /// Der Katalog hat sie nie gefuehrt; hier steht nur, dass das so bleibt.
+        /// Projektdialogs zu pflegen — dort fuehrt sie seit Welle #458 (Stufe 2) auch
+        /// der Dialogkatalog, als Feld des Aufklappers der Maske Form_PufferSp.
+        /// Dieser Editor hat sie nie gefuehrt; hier steht nur, dass das so bleibt.
         /// </para>
         /// </remarks>
         private static KiDialog Pufferspeicher()
@@ -5756,7 +5945,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die SECHSTE Maske (Auftrag #221, Anwenderentscheid KI‑D‑E‑1): die Ansicht
-        /// „Simulation" — achtunddreissig Felder aus
+        /// „Simulation" — sechsundvierzig Felder aus
         /// <c>EPOS.UI.Seiten.Simulation.SimulationKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -5802,9 +5991,18 @@ namespace WindowsFormsApplication1
         /// <c>dialog_speichern</c> druecken koennte, fehlt hier weiterhin.
         /// </para>
         /// <para>
-        /// <b>Die PREISREIHE bleibt draussen</b> — ein Verweis in eine
-        /// kontextabhaengige Liste (rohe Id, deren Inhalt mit der Preisquelle
-        /// wechselt); dieselbe Regel wie bei der Brennstoffvariante.
+        /// <b>Die PREISREIHE ist eine Wahl</b> (KI‑F1b): Ihre Einträge hängen an der
+        /// Preisquelle und kommen bei jedem Zugriff frisch aus dem Stand
+        /// (<c>SpeicherPreisreiheWahl</c>); eine Id, die die Liste gerade nicht führt,
+        /// weist die Sichtklasse ab.
+        /// </para>
+        /// <para>
+        /// <b>Welle #458: der Kühlschalter und die Werte JE ANLAGE</b> — die
+        /// Projekteinstellung „Kühlung rechnen" und, für die gewählte Karte
+        /// (<c>quellanlage</c>), Wärmequelle, konstante Quelltemperatur, WP-Priorität und
+        /// Betriebsmodus. Sie gehen dieselben Wege wie die Überlagerungen der Karte; eine
+        /// offene Überlagerung hält die Setzung benannt an, weil sie ihren Stand von
+        /// vorhin mit OK zurückschriebe.
         /// </para>
         /// </remarks>
         private static KiDialog Simulation()
@@ -5818,9 +6016,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("schritt", "SimulationKiSicht.Ansichtsschritt",
                                      KiDialogTexte.SimSchrittName, KiParameterTyp.Text,
                                      KiDialogTexte.SimSchrittErl, leerErlaubt: true),
+                    // Welle #458, Stufe 2: das Blatt ist ein WAHLFELD (Satzwahl - es
+                    // wechselt, was gezeigt wird), und die Schalter der Anzeige des
+                    // offenen Blattes sind eine SPALTE, je Schalter eine Zeile.
                     new KiDialogFeld("reiter", "SimulationKiSicht.Reiter",
-                                     KiDialogTexte.SimReiterName, KiParameterTyp.Text,
-                                     KiDialogTexte.SimReiterErl, leerErlaubt: true),
+                                     KiDialogTexte.SimReiterName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimReiterErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("anzeige", "SimulationKiSicht.Ergebnisschalter[].An",
+                                     KiDialogTexte.SimAnzeigeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAnzeigeErl, zeilenkennzeichen: "Name"),
 
                     // ---- Schritt ① : Kaskade und Reihenfolge (nur lesend) -----------
                     new KiDialogFeld("kaskade", "SimulationKiSicht.Kaskade",
@@ -5851,6 +6055,43 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimBereitschaftErl,
                                      einheit: KiDialogTexte.EINHEIT_H_A),
+
+                    // ---- Der Kuehlschalter von Schritt ① (Welle #458) ---------------
+                    //
+                    // Die Projekteinstellung „Kuehlung rechnen" steht neben den
+                    // Netzverlusten und schreibt wie sie SOFORT - ueber denselben
+                    // Delegaten wie der Schalter (KuehlbetriebSchreiben).
+                    new KiDialogFeld("kuehlbetrieb", "SimulationKiSicht.Kuehlbetrieb",
+                                     KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimKuehlbetriebErl),
+
+                    // ---- Die Werte JE ANLAGE von Schritt ① (Welle #458) -------------
+                    //
+                    // Quelle, konstante Quelltemperatur, WP-Prioritaet und Betriebsmodus
+                    // setzt der Anwender ueber die Ueberlagerungen der Karte
+                    // (Quellenwahl, WertAbfrage, BetriebsmodusDialog). Hier stehen sie
+                    // als Felder der Ansicht - fuer die GEWAEHLTE Karte (quellanlage,
+                    // eine Satzwahl) und mit denselben Schreibwegen und Vorpruefungen
+                    // wie die Ueberlagerungen (SimulationKonfigSeite.Ki*Setzen). Die
+                    // Ueberlagerung „Betriebsmodus" steht deshalb mit dem Grund
+                    // FeldDesWirts auf der Ausnahmeliste und bekommt keine eigene Maske.
+                    new KiDialogFeld("quellanlage", "SimulationKiSicht.Quellanlage",
+                                     KiDialogTexte.SimAnlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAnlageErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("waermequelle", "SimulationKiSicht.Waermequelle",
+                                     KiDialogTexte.SimQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("quelltemperatur_konstant",
+                                     "SimulationKiSicht.QuelltemperaturKonstant",
+                                     KiDialogTexte.SimQuelltempName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimQuelltempErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C),
+                    new KiDialogFeld("wp_prioritaet", "SimulationKiSicht.WpPrioritaet",
+                                     KiDialogTexte.SimPrioritaetName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimPrioritaetErl),
+                    new KiDialogFeld("wp_betriebsmodus", "SimulationKiSicht.WpBetriebsmodus",
+                                     KiDialogTexte.SimBetriebsmodusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimBetriebsmodusErl, leerErlaubt: true),
 
                     // ---- Schritt ③ : die Kennzahlen des Laufs (nur lesend) ----------
                     new KiDialogFeld("waermebedarf", "SimulationKiSicht.WaermebedarfMwh",
@@ -6563,6 +6804,265 @@ namespace WindowsFormsApplication1
                 new KiDialogKnopf("neu", "btn_Neu", KiDialogTexte.KnopfNeu),
                 new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfOk)
             };
+        }
+
+        // =====================================================================
+        // Kenndaten  ->  Dialoge.Waermepumpe.KennlinienEditorDialog   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kennlinieneditor der Waermepumpe — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Waermepumpe.KennlinienKiSicht</c>, drei davon SPALTEN.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung mit eigenem Arbeitsstand</b> — dieselbe Bauart wie
+        /// <see cref="KiMaskennamen.PV_ANLAGENWERTE"/>: Der Editor bearbeitet eine KOPIE
+        /// der Stuetzstellen, „OK" gibt sie an den Wirt zurueck (Waermepumpen-Verwaltung
+        /// oder -Anlage), und der gleicht sie im Kern ab. Angemeldet sind Auffrischen und
+        /// Schreibschutz, KEIN Speicherweg — <c>dialog_speichern</c> lehnt benannt ab.
+        /// </para>
+        /// <para>
+        /// <b>Die Stuetzstellen sind SPALTEN der gewaehlten Vorlaufstufe</b>; nur deren
+        /// Zeilen stehen im Raster. Die Stufe selbst ist ein Wahlfeld und SATZWAHL: Sie
+        /// wechselt, was angezeigt wird, und bleibt auch am Auslieferungssatz frei.
+        /// </para>
+        /// <para>
+        /// <b>Anlegen und Entfernen bleiben beim Anwender</b> (KI-D-Q11): „Neue
+        /// Vorlauftemperatur", „Daten uebernehmen" und der Papierkorb einer Zeile. Der
+        /// Assistent fuellt die Felder davor.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Kennlinien()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KENNLINIEN,
+                anzeigename: KiDialogTexte.MaskeKennlinien,
+                felder: new[]
+                {
+                    new KiDialogFeld("vorlauf", "KennlinienKiSicht.Vorlauf",
+                                     KiDialogTexte.WpklVorlaufName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpklVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true,
+                                     satzwahl: true),
+                    new KiDialogFeld("neuer_vorlauf", "KennlinienKiSicht.NeuerVorlauf",
+                                     KiDialogTexte.WpklNeuerVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpklNeuerVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Stuetzstellen der gewaehlten Stufe: SPALTEN --------------
+                    new KiDialogFeld("temperatur", "KennlinienKiSicht.Zeilen[].Temperatur",
+                                     KiDialogTexte.WpklTemperaturName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpklTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("cop", "KennlinienKiSicht.Zeilen[].Cop",
+                                     KiDialogTexte.WpklCopName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklCopErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("ptherm", "KennlinienKiSicht.Zeilen[].Ptherm",
+                                     KiDialogTexte.WpklPthermName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklPthermErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+
+                    // ---- Die Gruppe „Neue Stuetzstelle" ---------------------------------
+                    new KiDialogFeld("neu_temperatur", "KennlinienKiSicht.NeuTemperatur",
+                                     KiDialogTexte.WpklNeuTemperaturName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpklNeuTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("neu_cop", "KennlinienKiSicht.NeuCop",
+                                     KiDialogTexte.WpklNeuCopName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklNeuCopErl, leerErlaubt: true),
+                    new KiDialogFeld("neu_ptherm", "KennlinienKiSicht.NeuPtherm",
+                                     KiDialogTexte.WpklNeuPthermName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklNeuPthermErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Wizard_Projekt  ->  Seiten.Assistent.ProjektKopfSeite   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Projektkopf des Assistenten „Neues Projekt" — fuenf Felder aus
+        /// <c>EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Sichtklasse, obwohl die Seite in ein Daten-Objekt schreibt</b>
+        /// (<c>ProjektKopfDaten</c>): Die Klimaregion steht darin als Id UND Name, und
+        /// die Seite setzt beide zugleich; der Name steht im Bearbeiten-Modus fest. Beides
+        /// kennt nur der Weg der Seite, nicht die nackte Eigenschaft.
+        /// </para>
+        /// <para>
+        /// <b>Die Pruefung ist die der Seite</b> (<c>ProjektKopfRegeln</c>): Name leer,
+        /// Name vergeben, Klimaregion fehlt — derselbe Hinweis unter den Feldern und
+        /// dasselbe Veto beim Verlassen der Seite. <b>Kein Speicherweg:</b> Angelegt wird
+        /// das Projekt mit „Fertig"; das bleibt der Klick des Anwenders.
+        /// </para>
+        /// <para>
+        /// <b>Die zwei Datumsfelder bleiben draussen</b> — sie sind gesperrt und zeigen,
+        /// was das Programm gespeichert hat.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Projektkopf()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKTKOPF,
+                anzeigename: KiDialogTexte.MaskeProjektkopf,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "ProjektKopfKiSicht.Name",
+                                     KiDialogTexte.PkopfNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfNameErl),
+                    new KiDialogFeld("klimaregion", "ProjektKopfKiSicht.Klimaregion",
+                                     KiDialogTexte.PkopfKlimaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PkopfKlimaErl),
+                    new KiDialogFeld("kunde", "ProjektKopfKiSicht.Kunde",
+                                     KiDialogTexte.PkopfKundeName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfKundeErl, leerErlaubt: true),
+                    new KiDialogFeld("bearbeiter", "ProjektKopfKiSicht.Bearbeiter",
+                                     KiDialogTexte.PkopfBearbeiterName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfBearbeiterErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "ProjektKopfKiSicht.Beschreibung",
+                                     KiDialogTexte.PkopfBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfBeschreibungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("weiter", "btn_Weiter", KiDialogTexte.KnopfWeiter)
+                });
+        }
+
+        // =====================================================================
+        // Form_Start  ->  Seiten.Start.Startseite   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Startseite — zwei Einstellwerte des offenen Projekts aus
+        /// <c>EPOS.UI.Seiten.Start.StartseiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Klimaregion</b> des Kopfbandes ist ein Wahlfeld ueber die Stammregionen;
+        /// geschrieben wird sie mit dem Knopf „Speichern" daneben, und genau der ist der
+        /// Speicherweg der Maske. <b>Die Solarart</b> ist die Weiche der
+        /// Solarthermiekachel (Profil oder Ganglinie); sie wirkt wie der Klick sofort.
+        /// </para>
+        /// <para>
+        /// <b>Die Projekt- und Variantenwahl bleibt draussen:</b> Sie oeffnet ein anderes
+        /// Projekt — eine Navigation, kein Einstellwert. Ohne offenes Projekt ist die
+        /// Maske schreibgeschuetzt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Startseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.STARTSEITE,
+                anzeigename: KiDialogTexte.MaskeStartseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("klimaregion", "StartseiteKiSicht.Klimaregion",
+                                     KiDialogTexte.StartKlimaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.StartKlimaErl, leerErlaubt: true),
+                    new KiDialogFeld("solarart", "StartseiteKiSicht.Solarart",
+                                     KiDialogTexte.StartSolarartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.StartSolarartErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern)
+                });
+        }
+
+        // =====================================================================
+        // Form_AdminSettings  ->  Dialoge.Admin.EinstellungenDialog   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse der Programmeinstellungen
+        /// (<c>EPOS.UI.Dialoge.Admin.EinstellungenKiSicht</c>).
+        /// </summary>
+        public const string EINSTELLUNGEN_SICHT = "EinstellungenKiSicht";
+
+        /// <summary>Die Vorsilbe der Farbfelder: <c>farbe_waerme_wp</c>.</summary>
+        public const string FARBFELD_VORSILBE = "farbe_";
+
+        /// <summary>
+        /// Die Programmeinstellungen — sechs benannte Werte und je Farbrolle der
+        /// Diagramme ein Feld der FELDTAFEL.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Setzbar sind die Adressen</b> (Wiki, Geokodierung, PVGIS, DWD-Portal,
+        /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b> und <b>die
+        /// Diagrammfarben</b>. Die Farbfelder ENTSTEHEN aus der Rollenliste
+        /// (<see cref="Zeichnung.Diagrammfarben.Gruppen"/>) — derselben, aus der die Huelle
+        /// die Rubrik „Diagramme" fuellt; eine zweite Liste gibt es nicht. Feldname =
+        /// Vorsilbe + Rollenname klein, Anzeigename = der Name der Rolle, der Wert ein
+        /// Farbton <c>#RRGGBB</c>.
+        /// </para>
+        /// <para>
+        /// <b>Nicht ueber den Assistenten</b> gehen die fuenf Ordner (Dateiwahlen), der
+        /// Name der Datenbank (ein Datenbankwechsel beim naechsten Start) und der
+        /// Abschalter des Assistenten selbst. „Standardwerte" und „Hausfarben" setzen
+        /// zurueck und bleiben Knoepfe des Anwenders.
+        /// </para>
+        /// <para>
+        /// <b>Speichern ist der Weg von „OK"</b>, nur ohne zu schliessen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Einstellungen()
+        {
+            var felder = new List<KiDialogFeld>
+            {
+                new KiDialogFeld("wiki_url", EINSTELLUNGEN_SICHT + ".WikiUrl",
+                                 KiDialogTexte.AdmsetWikiName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetWikiErl, leerErlaubt: true),
+                new KiDialogFeld("geokodierung_url", EINSTELLUNGEN_SICHT + ".GeokodierungUrl",
+                                 KiDialogTexte.AdmsetGeokodierungName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetGeokodierungErl, leerErlaubt: true),
+                new KiDialogFeld("pvgis_url", EINSTELLUNGEN_SICHT + ".PvgisUrl",
+                                 KiDialogTexte.AdmsetPvgisName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetPvgisErl, leerErlaubt: true),
+                new KiDialogFeld("try_portal_url", EINSTELLUNGEN_SICHT + ".TryPortalUrl",
+                                 KiDialogTexte.AdmsetTryPortalName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetTryPortalErl, leerErlaubt: true),
+                new KiDialogFeld("try_regional_url", EINSTELLUNGEN_SICHT + ".TryRegionalUrl",
+                                 KiDialogTexte.AdmsetTryRegionalName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetTryRegionalErl, leerErlaubt: true),
+                new KiDialogFeld("neue_projekte_kuehlung", EINSTELLUNGEN_SICHT + ".NeueProjekteMitKuehlung",
+                                 KiDialogTexte.AdmsetKuehlungName, KiParameterTyp.Wahrheitswert,
+                                 KiDialogTexte.AdmsetKuehlungErl)
+            };
+
+            foreach (Zeichnung.Rollengruppe gruppe in Zeichnung.Diagrammfarben.Gruppen)
+                foreach (Zeichnung.Farbrolle rolle in gruppe.Rollen)
+                {
+                    string name = Zeichnung.Diagrammfarben.Anzeigename(rolle);
+                    felder.Add(new KiDialogFeld(
+                        FARBFELD_VORSILBE + rolle.Name.ToLowerInvariant(),
+                        EINSTELLUNGEN_SICHT + "." + rolle.Name,
+                        name, KiParameterTyp.Text,
+                        KiDialogTexte.AdmsetFarbeErl(name, gruppe.Titel)));
+                }
+
+            return new KiDialog(
+                maskenname: KiMaskennamen.EINSTELLUNGEN,
+                anzeigename: KiDialogTexte.MaskeEinstellungen,
+                felder: felder,
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
     }
 }

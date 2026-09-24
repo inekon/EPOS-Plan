@@ -107,12 +107,15 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? abgleichen = null,
         Func<IReadOnlyList<Katalogfilterzeile>>? liste = null,
         Action<bool>? geschlossen = null,
-        Func<Farbrolle, Farbe, Task>? farbeSetzen = null)
+        Func<Farbrolle, Farbe, Task>? farbeSetzen = null,
+        Func<int, WaermepumpeStammDaten>? satz = null,
+        EPOS.UI.Bausteine.Schlossweg? schloss = null)
         => Render<WaermepumpeStammDialog>(p => p
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.FarbeSetzen, farbeSetzen)
             .Add(x => x.Liste, liste ?? (() => Liste))
-            .Add(x => x.Satz, Satz)
+            .Add(x => x.Satz, satz ?? Satz)
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Bilder, (id, kuehl) => new KennlinienBilder(
                 kuehl ? BildLeistung : BildCop, kuehl ? BildCop : BildLeistung))
             .Add(x => x.HatKuehlung, hatKuehlung ?? (id => id == 1))
@@ -1190,5 +1193,45 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Assert.False(cut.Instance.ImportOffen);
         Assert.Equal(3, cut.Instance.GewaehlteId);
         Assert.Equal("„WP Gamma“ eingelesen.", cut.Instance.Status);
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss aufheben</b> (AD-Q15) in der Wärmepumpenverwaltung: Nach dem „Ja"
+    /// liest der Dialog Liste und Satz neu — <c>NurLesen</c> fällt, die Kenndaten sind
+    /// Eingabefelder, „Speichern" ist frei, das Stammblatt trägt das Band.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Speichern_frei()
+    {
+        var schloss = new Schlosspruefung(2);
+        IReadOnlyList<Katalogfilterzeile> Frisch() => schloss.Markieren(new[]
+        {
+            new Katalogfilterzeile(1, "WP Alpha").MitText(Katalogfilterprofil.SpBezeichner, "WP Alpha"),
+            new Katalogfilterzeile(2, "WP Ausliefer").MitText(Katalogfilterprofil.SpBezeichner, "WP Ausliefer")
+        });
+        WaermepumpeStammDaten SatzMitSchloss(int id)
+        {
+            WaermepumpeStammDaten d = Satz(id);
+            d.NurLesen = schloss.Gesperrt.Contains(id);
+            return d;
+        }
+        var cut = Aufbauen(liste: Frisch, satz: SatzMitSchloss, schloss: schloss.Weg());
+
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer
+        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+        Assert.Equal("Schloss aufheben...", Schlosspruefung.Beschriftung(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Assert.StartsWith("Schloss von „WP Ausliefer“ aufheben?", Schlosspruefung.Frage(cut));
+        Schlosspruefung.Ja(cut);
+
+        Assert.Equal(new[] { 2 }, schloss.Aufrufe.Single().Ids);
+        Assert.Equal("WP Ausliefer", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Null(Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+        Assert.Equal("Schloss von „WP Ausliefer“ aufgehoben.", cut.Instance.Status);
     }
 }

@@ -1984,6 +1984,21 @@ namespace WindowsFormsApplication1
         /// <summary>true, wenn ein gepflegter Best-/Worst-Case-Betrag die Ableitung
         /// geschlagen hat (VALERI-Muster) — dann steht kein Menge × Preis dahinter.</summary>
         public bool SzenarioGepflegt;
+
+        /// <summary>
+        /// ETAPPE E8c (E8b‑Q3) — das <b>Startjahr</b> der Position (KD6,
+        /// <c>Tab_ProjektWerte.StartJahr</c>): ≥ 2 = sie zahlt erst ab diesem Jahr;
+        /// <c>null</c> = ab dem ersten Jahr. Die Summenschleife der Rechnung führt eine
+        /// solche Position im Topf „ab Jahr" und NICHT in den Betriebskosten p. a.; die Probe
+        /// der Gliederung vergleicht deshalb nur die Positionen des ersten Jahres
+        /// (<see cref="WirtschaftlichkeitZeilen.LaeuftImErstenJahr"/>).
+        ///
+        /// <para>Ein Nachweisumschlag vor Fassung 9 kennt das Feld nicht; seine Positionen
+        /// lesen sich als „ab dem ersten Jahr". <c>null</c> steht nicht im Umschlag
+        /// (<c>WhenWritingNull</c>) — eine Position ohne Startjahr schreibt sich wie
+        /// zuvor.</para>
+        /// </summary>
+        public int? StartJahr;
     }
 
     /// <summary>

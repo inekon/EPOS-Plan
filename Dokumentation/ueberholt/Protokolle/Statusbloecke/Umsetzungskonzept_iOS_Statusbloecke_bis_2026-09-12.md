@@ -8646,3 +8646,325 @@ UI 5 625, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
 übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf
 gegen `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte
 in Toleranz).
+
+## #458 Stufe 1 — Wächter für die Maskenabdeckung, Ausnahmeliste, benannte Absage, Nachzüge veralteter Feldkarten (24.09.2026)
+
+Anlass: Anwenderentscheid KI‑D‑Q11 vom 23.09.2026 („alle Masken
+außer den nicht sinnvoll steuerbaren sollen steuerbar sein"), nach
+dem Inventar vom 23.09.2026 (151 Razor-Masken unter
+`EPOS.UI/Dialoge/**` und `Seiten/**`, davon 79 angemeldet: 62
+Dateien mit eigener Anmeldung, 18 Kind-Bausteine über ihren Wirt).
+Commits `eac5e34d` (KI: Waechter Maskenabdeckung, Ausnahmeliste,
+benannte Absage), `09e906a4` (KI: Simulation fuehrt Kuehlbetrieb
+und die Werte je Anlage), `47ff167c` (KI: Gebaeudetyp,
+WP-Extrapolation, Leistungspreismodus nachgezogen), `1d44cecc`
+(KI: Kommentare berichtigt, Peak-Shaving-Quelle benannt),
+`111dfd49` (Papiere zu #458 Stufe 1); Zweig
+`worktree-agent-a0079ae45bc09d90a` von `ee84fce5`; Merge
+`4f236bf8` (konfliktfrei, resx/Designer geprüft).
+
+**Befund/Inventar.** Kandidaten für Stufe 2: Kennlinien-Editor,
+Projektkopf, Startseite Klimaregion/Solarart,
+Einstellungen-Teilmenge, „Alle Daten" der Erzeugermasken,
+Anzeigeschalter. Kandidaten für Stufe 3: drei Zapfprofil-Dialoge
+und die Rechenweg-Optionsgruppe, beide erst nach dem Z3-Merge der
+Zapfprofil-Sitzung; dafür braucht es einen Rahmen für Zahlenfolgen
+(TYPPROFIL 7×24, GEBAEUDETYP 24, TYPSTAMM 12, KOSTENPROFIL,
+LEISTUNGSPREISREIHE, QUELLPROFIL, GEBAEUDE_KATALOG).
+
+**Umsetzung.** Wächter
+`EPOS.UI.Tests/Dialoge/Hilfe/KiMaskenabdeckungWacheTests.cs`: jede
+Maske mit Eingabefeldern ist angemeldet, hängt an einem
+anmeldenden Wirt oder steht mit Grund in `KiDialogAusnahmen.Alle`
+(40 Einträge: Anzeige 13, Import 5, Aktion 4, Assistent 3,
+Lizenz/Schlüssel 2, je 1 Export, Rückfrage, Werkzeug,
+Anlegen/Entfernen, FeldDesWirts; 8 „Offen" mit Auftrag — fünf
+„#458 Stufe 2", drei „#458 Stufe 3 nach Z3"); vier Einträge aus
+#456 gestrichen, weil sie nicht mehr zutrafen (LizenzDialog,
+Rueckfrage, WaermebedarfAdminDialog, SolarganglinieAdminDialog).
+Eingabebilanz: die Zahl der Eingabestellen ist für 66 Dateien
+festgeschrieben, Markup-Masken sind gegen ihren Katalog gehalten;
+Altlasten mit Grund in `BewusstDraussen` (Form_WP
+Filterschalter/Kennfeldwahl; Form_PV_Anlagenwerte
+Auslegungstemperaturen, Hersteller/Gerät, Modul/Gerät je Strang;
+„Alle Daten" der fünf Erzeuger-Projektmasken;
+Typstamm-Monatswerte). Benannte Absage: aus einer ausgenommenen
+Maske heraus sagt der Assistent „Diese Maske ist bewusst nicht
+steuerbar: ⟨Grund⟩" bzw. „noch nicht steuerbar" (Erkennung über
+den Hilfeschlüssel des Aufrufs; Ausnahmen ohne eigenen
+Hilfeschlüssel bleiben bei der Maskenliste). Nachzüge: die
+Simulation führt jetzt 46 statt 40 Felder (`kuehlbetrieb`, je
+Karte `quellanlage`, `waermequelle`, `quelltemperatur_konstant`,
+`wp_prioritaet`, `wp_betriebsmodus`, mit denselben Prüfungen und
+Schreibwegen wie die Überlagerungen; eine offene Überlagerung
+oder eine gesperrte Seite lehnt benannt ab); die
+Gebäudetyp-Beschreibung ist setzbar (der Auslieferungstyp bleibt
+geschützt); neue Sichtklasse `WaermepumpeAnlageKiSicht` mit
+Extrapolationsschalter (23 Felder, Muster `PhotovoltaikKiSicht`);
+der Betriebsmodus-Dialog ist Ausnahme `FeldDesWirts` (der Wert
+läuft über `wp_betriebsmodus` der Simulation); die
+Peak-Shaving-Kommentare sind berichtigt, „Datei" ohne eingelesene
+Datei lehnt benannt ab; widersprüchliche Kommentare in
+`KiDialoge.cs` und `KiMaskenanmeldung` sind bereinigt; der
+Energieträger-Modus `leistungspreis_monatlich` geht jetzt über
+`LeistungsModusGewechselt` und wird gespeichert (Nebenbefund aus
+#457).
+
+**Tests.** Voller Lauf im Worktree 11 928 bestanden, 1
+übersprungen, 0 rot (EPOS.UI 5 664, EPOS.Kern 5 327, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27); Kern-Filter und
+Windows-Schale 0 Fehler; kein Referenzlauf nötig (kein Rechenweg).
+Neue Tests: `KiDialogAusnahmenTests`, `SimulationKonfigKiTests`
+(12 Fälle), Fälle in `KiMaskenwegTests`, `KiSimulationMaskeTests`,
+`GebaeudetypDialogTests`, `WaermepumpeAnlageDialogTests`,
+`EnergietraegerDialogTests`, `PeakShavingDialogTests`.
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(neuer Abschnitt 4 „Abdeckung" mit Regel, Stufenzeile #458/1,
+KI‑D‑Q11 aktualisiert, Abschnitt 5 berichtigt);
+`Konzept_KI-Assistent_Aufgabensteuerung.md` 11.7 (Gruppen, Regel,
+Wächter); `EPOS.UI/CLAUDE.md` (Satz zur Wache); Wiki-Quelle
+`Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki`
+(Absatz Simulation, Absatz zu bewusst nicht steuerbaren Masken;
+Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent setzt in der Simulation auch Kühlbetrieb,
+> Wärmequelle und Betriebsmodus.
+
+**Was offen bleibt.** Stufe 2 und Stufe 3 wie oben — die
+Zahlenfolgen brauchen noch einen Rahmen, ebenso „Alle Daten" der
+Erzeugermasken. Der Z3-Merge macht die Wache absichtlich rot und
+erzwingt den Entscheid über die Zahlenfolgen. Zusammenführung mit
+#459 steht aus (`GebaeudetypDialog.razor` eine Zeile,
+resx-Zeilenenden). Wiki-Upload Hilfe-Assistent weiterhin
+ausstehend.
+
+**Gate nach Merge auf `4f236bf8`.** Kern-Filter 0 Fehler; Tests
+Kern 5 327, UI 5 664, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge; Windows-Schale
+0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz).
+
+**Nachzug im Hauptbaum.** Vor dem Merge von #459 lag im Hauptbaum
+bereits der Merge `c897aab0` von `origin/ios_migration_september`
+(KU2 Welle 2, Schema 114, E8b-Nachtrag; die `.resx` dreiseitig
+vereinigt). Darauf folgte der Wächter-Nachzug `76e62117`:
+`WirtschaftlichkeitSeite` meldet die zwei ValERI-Wahlen
+`zahlungsreihen_stand` und `zahlungsreihen_szenario` jetzt als
+Anzeigewahlen an die KI-Maskenbrücke, die Zählliste der Wachen
+wächst dadurch auf neun Wahlen. Beide Commits sind kein Teil der
+Welle #458, standen aber vor ihrem Merge im Hauptbaum und gehören
+deshalb an dieser Stelle vermerkt.
+
+## #459 — Administrationsdialoge: Auslieferungskennzeichen (Schloss) in den Verwaltungen umschaltbar, mit Rückfrage (AD-Q15) (24.09.2026)
+
+Anlass: Auftrag des Anwenders wörtlich (23.09.2026, zur
+„Administration Brauchwasser"): „1. Die Auslieferungssätze
+sollten auch auf änderbar (vom Nutzer) gesetzt werden können (ohne
+Schloss). 2. Es sollen Datensätze als Auslieferungssätze gesetzt
+werden können." Nachtrag: „Beim Ändern eines
+Auslieferungsdatensatzes sollte ein Hinweis erscheinen." Commits
+`37d50246` (Kern: Auslieferungskennzeichen umschaltbar, AD-Q15),
+`8ffc31c9` (Bausteine: Schloss setzen/aufheben in Auswahlleiste und
+Stammblatt), `5b2eec73` (Verwaltungen A1-A3, A5), `0a35945e`
+(Verwaltungen A4, A6-A10), `9b9c1864` (Auswahlleiste: breit zwei
+Zeilen mit vier Handlungen, Katalogprobe), `07cded05` (Papiere und
+Wiki zu AD-Q15); Zweig `worktree-agent-a91f9e845fae03873` von
+`cd2ac9ec`; Merge `80672c0d` (Konflikte: Konzept 7.1 (e)+(f),
+`GebaeudetypDialogTests.cs`, `KatalogBrowserDialogTests.cs` —
+jeweils beide Seiten übernommen; resx auto, 8 713 Schlüssel,
+Designer unverändert); Nachbesserung `23b50d29` (zwei beim
+Zusammenführen verlorene Methodenklammern in
+`GebaeudetypDialogTests.cs`/`KatalogBrowserDialogTests.cs`
+nachgetragen).
+
+**Befund.** Das Kennzeichen ist die Spalte `ReadOnly` der
+`Tab_*_STAMM`-Kopftabellen; sie steuert Schloss und Lesemodus,
+Speicher- und Löschsperre, das Duplizieren (Kopie ohne Schloss) und
+den KI-Schreibschutz — der Gebäudetyp führt zusätzlich
+`Veraenderbar`, die Tww-Kataloge `Status`. Programm-Update,
+`Erstbereitstellung` und `SchemaMigration` fassen Katalogsätze nie
+an, weder überschreibend noch nachsäend; die gegenteilige Aussage
+stand im Importhinweis (`IMP_KONFLIKT_HINWEIS_READONLY`), im
+`WPStammCtrl`-Kommentar, in `Brauchwasser.wiki` und in
+`KONTEXT_Brauchwassertypen_VDI6002.md` — ein Rest aus der
+Access-Zeit, falsch. Die Auslieferungsvorlage übernimmt mit der
+Vorgabe „alle" jede Zeile 1:1 samt Kennzeichen. Das Lizenzkonzept
+kennt keine Rolle und keinen Herstellermodus; einziges Gatter bleibt
+der Lizenz-Lesemodus.
+
+**Entscheide (AD-Q15, löst AD-Q11 ab).** Ein Kennzeichen, in beide
+Richtungen umschaltbar über die Auswahlleiste (Mehrfachauswahl) in
+allen zehn Verwaltungen, auch Zeitreihen und Klimadaten; die
+Beschriftung folgt der Auswahl („Schloss aufheben…" bei
+gesperrten Sätzen, sonst „Schloss setzen…"); eine Rückfrage in
+beide Richtungen nennt die echten Folgen; ein Band `ADM_SB_ENTSPERRT`
+im Stammblatt markiert die in dieser Sitzung entsperrten Sätze, ohne
+Schemaschritt; der Gebäudetyp schaltet beide Spalten zusammen;
+Tww-Kataloge und Tabellen ohne die Spalte lehnen benannt ab; das
+Typ-Schloss der Brauchwasser- und Stromverbrauchertypen bleibt
+eigenständig; Werte werden nie zurückgesetzt; kein Weg über den
+KI-Assistenten.
+
+**Umsetzung.** Kern-Klasse
+`EPOS.Kern/Allgemein/Katalog/Auslieferungskennzeichen.cs` (`Setzen`
+läuft in einer Transaktion, meldet je ID geändert oder
+unverändert, mit Rollback bei fehlendem Satz; lehnt Tww, Kataloge
+ohne Spalte, den Lizenz-Lesemodus und unbekannte Kataloge benannt
+ab); `KatalogRegistry` um `SchlossGegenspalte` (Gebäudetyp:
+`Veraenderbar`) und `SchlossAusStatus` (Tww) erweitert; ein Einzeiler
+in acht Gerätecontrollern, der Wärmepumpe, dem Gebäude, der
+Klimaregion, `BedarfStammCtrl` und `TagVCtrl`, für Zeitreihen
+zentral in `ZeitreihenKatalogCtrl`. Neuer Baustein
+`Schlossumschaltung` (Handlung, Rückfrage, Statuszeile, für alle
+zehn Wirte gleich) und `Auswahlhandlung` mit `Kurztext` und
+`Breitenvorlage` (der Knopf wird so breit wie seine längere
+Beschriftung); `Schlosswege.Aus(...)` trägt den Lesemodus in
+`EPOS.UI.Daten` über die Schreibnaht; das Stammblatt-Band sitzt
+daneben. Die Gebäudetyp-Handlung greift nur bei echten
+Katalogzeilen. Berichtigt: `IMP_KONFLIKT_HINWEIS_READONLY`,
+`WP_STAMM_UEBERNAHME_MSG_READONLY`, `…_OHNE_KOPIE`. Die
+Auswahlleiste steht in der Breite jetzt zweizeilig mit vier
+Handlungen (erstes Wort höchstens 10rem breit, der Hinweis
+„Kästchen: mehrere wählen" gekürzt, der volle Text im Kurztext).
+
+**Rasterprobe** (Playwright, wie vor jeder Änderung an der
+Auswahlleiste vorgeschrieben). Katalogprobe 60 Fälle, Rasterprobe 13
+Fälle, die Liste springt nicht. Bei 1 088 × 624: die Auswahlleiste
+94 px hoch in beiden Zuständen (Bedarfsprofile mit langem Löschtext
+118/94 px). Bei 400 × 624: die Auswahlleiste 150 statt 100 px
+(Klimadaten weiterhin 100 px), die Liste durchgehend 50 px niedriger.
+
+**Tests.** Im Worktree Kern 5 346, UI 5 620, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Kern-Filter und Windows-Schale 0 Fehler; neue Tests
+`SchlossumschaltungTests`/`AuswahlleisteTests` mit 32 Fällen auf
+Arbeitskopien, dazu je Wirt ein bunit-Fall. Testdatenbank
+unverändert; SqlDialektPruefer ohne Fundstelle.
+
+**Papiere.** Konzept Administrationsdialoge (AD-Q15 neu, AD-Q11
+abgelöst; Stand, 3.3, 3.4, V8, V13, 6.2, 7.1 (f));
+`EPOS.UI/CLAUDE.md` (die Regel „nie durch Überschreiben"
+angepasst, neue Regel zur Schlossumschaltung); Konzept Knopfleisten;
+Setup-Konzept 6.1; `KONTEXT_Brauchwassertypen_VDI6002.md`;
+Wiki-Quellen `Programm Dokumentation - Gerätekataloge.wiki` und `…
+- Klimadaten.wiki` (Spalte „Schreibschutz" entfernt),
+`EPOS.Kern/Allgemein/Hilfe/Berechnung/Brauchwasser.wiki` (die
+Update-Aussage berichtigt). Upload ausstehend.
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> In der Administration lässt sich das Schloss eines
+> Auslieferungssatzes aufheben und wieder setzen.
+
+**Was offen bleibt.** Das Band „Schloss aufgehoben" im Stammblatt
+kennt nur der offene Dialog — die Datenbank führt allein das
+Kennzeichen, ein Neustart oder ein zweiter Anwender sieht den Hinweis
+nicht mehr. Die vierte Handlung in der Auswahlleiste kostet Platz:
+schmal 50 px weniger Liste, breit ein Nachrücken beim
+Stromverbraucher-Katalog. Wiki-Upload (Gerätekataloge, Klimadaten,
+Brauchwasser) ausstehend.
+
+**Gate nach Merge auf `23b50d29`.** Kern-Filter 0 Fehler; Tests Kern
+5 448, UI 5 705, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687
+Werte in Toleranz).
+
+## #458 Stufe 2 — KI-Assistent: die übrigen Masken mit Einstellwerten angemeldet (24.09.2026)
+
+Anlass: Entscheide der Hauptsitzung nach KI‑D‑Q11, aufbauend auf den
+Kandidaten aus #458 Stufe 1 (Kennlinien-Editor, Projektkopf,
+Startseite Klimaregion/Solarart, Einstellungen-Teilmenge, „Alle Daten"
+der Erzeugermasken, Anzeigeschalter). Commits `24643eda`
+(Kennlinieneditor), `bf82be6c` (Projektkopf und Startseite),
+`0af5116e` (Programmeinstellungen, Farben als Feldtafel), `9d681d33`
+(„Alle Daten" der sechs Erzeugermasken), `8b6daa99` (Anzeigeschalter
+der Ergebnisreiter und des Verlaufs), `8e78d31d` (Papiere); Zweig
+`worktree-agent-a0506527f9e4cf95f` von `4f236bf8`; Merge `ab580309`
+(Konflikte an der Wirtschaftlichkeitsseite: `KiDialoge.cs`,
+`WirtschaftlichkeitSeiteKiSicht.cs`, `WirtschaftlichkeitSeite.razor` —
+jeweils beide Seiten übernommen, die Feldkarte trägt jetzt zehn
+Felder: die ValERI-Wahlen aus `76e62117` plus Zeitraum und Haken des
+Kapitalwertverlaufs; resx dreiseitig vereinigt, 8 757 Schlüssel,
+Designer unverändert; die Wächter-Zählliste wächst auf 81 Einträge,
+sechs Zahlenfolgen-Vermerke stehen jetzt auf „#458 Stufe 3
+(Zahlenfolgen)").
+
+**Umfang.** Kennlinien-Editor `KennlinienEditorDialog` (Maske
+„Kenndaten", Sichtklasse `KennlinienKiSicht`): die Überlagerung meldet
+die Vorlaufstufe als Wahlfeld, Temperatur, COP und Ptherm der Stufe
+als Spalten, dazu die neue Vorlauftemperatur und die neue Stützstelle;
+Schreibschutz `NurLesen`, kein Speicherweg, „OK" bleibt beim Anwender;
+8 Felder. Projektkopf `ProjektKopfSeite` (Maske `Wizard_Projekt`): die
+Sichtklasse `ProjektKopfKiSicht` löst die Reflection ab, weil die
+Klimaregion als Id+Name über `KlimaGewaehlt` gesetzt wird; die Prüfung
+ist die Kopfregel (Name leer oder vergeben, Klima fehlt); kein
+Speicherweg, „Fertig" bleibt beim Anwender; 5 Felder. Startseite
+`Startseite`+`ErzeugerReiter` (Maske `Form_Start`,
+`StartseiteKiSicht`): Klimaregion und Solarart; Speichern läuft über
+den Knopf neben der Klimaregion, ohne offenes Projekt bleibt die Sicht
+schreibgeschützt; die Variantenwahl bleibt Navigation; die nackten
+Radioknöpfe sind durch `Optionsgruppe` ersetzt, die Stilregel steht in
+`epos-ui.css`. Einstellungen `EinstellungenDialog` (Maske
+`Form_AdminSettings`, `EinstellungenKiSicht`): fünf Adressen, „Neue
+Projekte mit Kühlung anlegen", die Diagrammfarben als Feldtafel je
+Farbrolle (54 Rollen aus `Diagrammfarben.Gruppen`), der Farbwert nur
+als `#RRGGBB`; Ordner, Datenbankname und der KI-Abschalter bleiben
+draußen; Speichern läuft über den Weg von OK ohne Schließen; neues
+Öffnungsziel `EINSTELLUNGEN` in `WinFormsNavigation`, iOS lehnt es
+benannt ab. „Alle Daten" der sechs Erzeuger-Projektmasken: eine
+Feldtafel über `ErzeugerProjektKiSicht`, `SolarkollektorenKiSicht` und
+`PhotovoltaikKiSicht`; die Feldkarte kommt aus `KatalogBrowserProfil`
+bzw. `ModulKatalogProfil`, die Namen tragen das Muster
+`katalog_<schlüssel>`; Speichern läuft über den Knopf des Aufklappers;
+ein zugeklappter Aufklapper, ein fehlender Speicherweg oder ein
+Auslieferungssatz lehnen mit Grund ab. Anzeigeschalter der neun
+Ergebnisreiter und des Kapitalwertverlaufs: keine eigene Maske — die
+Schalter hängen an `Simulation` als Spalte `anzeige` samt
+Reihenauswahl und Bedarfsart, `reiter` steht als Wahlfeld nur in
+Schritt ③, über das Register `Ergebnisanzeige` und die Grundklasse
+`Ergebnisblattwirt`; die Simulation wächst von 46 auf 47 Felder; die
+Wirtschaftlichkeitsseite trägt zusätzlich Zeitraum und Haken des
+Kapitalwertverlaufs.
+
+**Wächter danach.** Katalog 72 Masken, 151 Komponenten, 66
+Anmeldungen, 29 Wirte, 25 Ausnahmen (drei „Offen" = die
+Zapfprofil-Masken, Stufe 3), 81 Dateien in der Eingabebilanz; die fünf
+„#458 Stufe 2"-Ausnahmen, zehn Anzeige-Ausnahmen und fünf
+`BewusstDraussen`-Einträge entfallen; die Markup-Probe und die
+Eingabebilanz erkennen die Feldtafel; neue Profilwächter für „Alle
+Daten" und für die Farbrollen.
+
+**Tests.** Im Worktree Kern 5 327, UI 5 696, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Kern-Filter und Windows-Schale 0 Fehler. Nach dem Merge gefiltert: UI
+1 283 + 767, Kern 337 grün.
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(Stufenzeile #458/2, Abschnitt 4 „Stand der Abdeckung", die
+KI‑D‑Q11-Zeile fortgeschrieben); Wiki-Quelle `Projekte/Wiki/Programm
+Dokumentation - Hilfe-Assistent.wiki` (Absatz zum Ist-Zustand; Upload
+ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent steuert auch Startseite, Projektkopf,
+> Einstellungen, Kenndaten der Wärmepumpe und die Anzeige der
+> Simulationsergebnisse.
+
+**Was offen bleibt.** Stufe 3 — das Zapfprofil-Trio und der Rechenweg
+nach dem Z3-Merge, dafür fehlt weiterhin ein Rahmen für die
+Zahlenfolgen. iOS kennt das Öffnungsziel `EINSTELLUNGEN` nicht. Bei
+der Photovoltaik bleiben in „Alle Daten" zwei Temperaturkoeffizienten
+reine Lesewerte außerhalb des Profils. Die Puffer- und
+Stromspeicher-Projektmasken haben jetzt einen Speicherweg, der nur den
+Aufklapper trägt. Wiki-Upload (Hilfe-Assistent) weiterhin ausstehend.
+
+**Gate nach Merge auf `ab580309`.** Kern-Filter 0 Fehler; Tests Kern
+5 448, UI 5 737, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687
+Werte in Toleranz).

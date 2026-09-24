@@ -390,7 +390,7 @@ public class ZeileIstWahlTests : EposBunitContext
                 Schloss = WindowsFormsApplication1.MyResource.Resource.ADM_SCHLOSS_DUPLIZIEREN
             }));
 
-        Assert.Equal("Auslieferungssatz – nur lesen, Duplizieren erlaubt",
+        Assert.Equal("Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt",
                      cut.Find(".epos-schloss").GetAttribute("title"));
     }
 

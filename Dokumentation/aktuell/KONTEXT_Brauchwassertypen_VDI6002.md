@@ -200,7 +200,12 @@ der Insert mit den erhalten gebliebenen Vorlagenzeilen.
    bloß „schreibgeschützt". Wenn die 7 generischen Typen und die 9 zugehörigen Datensätze
    Auslieferungsbestand sein sollen — und dafür spricht alles, sie stammen aus der INEKON-Vorlage —
    müssen sie ebenfalls auf `ReadOnly = TRUE` gesetzt werden. Anwender ändern sie dann über
-   „Speichern unter" statt in place. Das ist eine bewusste Entscheidung, kein Automatismus.
+   „Duplizieren…" oder heben in der Verwaltung das Schloss auf („Schloss aufheben…", Entscheid
+   AD-Q15 vom 23.09.2026); ebenso lässt sich dort jeder Satz als Auslieferungssatz sperren
+   („Schloss setzen…"). Ein Programm-Update überschreibt Katalogsätze nie und sät sie nicht nach
+   (ADR-001): Ein entsperrter, angepasster Satz bleibt, wie er ist; die ausgelieferten Werte gibt es
+   dann nur noch in einer Sicherung. Das Kennzeichen geht 1:1 in die Auslieferungsvorlage
+   (Setup-Konzept 6.1) — was ausgeliefert gesperrt sein soll, wird in der Quelle gesperrt.
 3. Den Ausschluss in Zeile 126 auf alle erhaltenen Vorlagen-IDs erweitern oder den Quell-Import mit
    einem ID-Versatz einlesen. Achtung: `Bezeichner` bzw. `Typname` sind global eindeutig indiziert —
    heißt in einer Anwender-DB ein Typ ebenfalls „Hotel", scheitert der Insert. Für die

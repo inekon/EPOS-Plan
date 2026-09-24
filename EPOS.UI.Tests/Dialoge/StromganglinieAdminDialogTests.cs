@@ -42,10 +42,12 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         Func<string, GanglinienRaster, GanglinienImportRueckrufe,
              Task<GanglinienImportErgebnis>>? einlesen = null,
         Action<bool>? geschlossen = null,
-        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null)
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null,
+        EPOS.UI.Bausteine.Schlossweg? schloss = null)
     {
         return Render<StromganglinieAdminDialog>(p => p
             .Add(x => x.Katalogzeilen, katalog ?? (() => Task.FromResult(Katalog())))
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Stromganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Loeschen, loeschen ?? (n => Task.FromResult(true)))
@@ -139,7 +141,7 @@ public class StromganglinieAdminDialogTests : EposBunitContext
 
         Waehle(cut, 1);
         Assert.Equal("true", LoeschKnopf(cut).GetAttribute("aria-disabled"));
-        Assert.Equal("Auslieferungssatz – Löschen gesperrt.", LoeschKnopf(cut).GetAttribute("title"));
+        Assert.Equal("Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.", LoeschKnopf(cut).GetAttribute("title"));
     }
 
     // =====================================================================
@@ -537,5 +539,34 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         Assert.False(markiert.Setzbar);
         Assert.False(string.IsNullOrEmpty(Convert.ToString(markiert.Lesen(),
                                                            CultureInfo.InvariantCulture)));
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss einer Zeitreihe aufheben</b> (AD-Q15): nach dem „Ja" ist die
+    /// Auslieferungszeile ein eigener Satz, „Löschen" ist frei, das Stammblatt trägt das Band.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Loeschen_frei()
+    {
+        IReadOnlyList<Katalogfilterzeile> zeilen = Katalog();
+        var schloss = new Schlosspruefung(2);
+        var cut = Zeige(katalog: () => Task.FromResult(zeilen), schloss: schloss.Weg(zeilen: zeilen));
+
+        Waehle(cut, 1);                  // "Auslieferung"
+        Assert.Equal("true", LoeschKnopf(cut).GetAttribute("aria-disabled"));
+        Assert.Equal(new[] { "Vergleichen", "Schloss aufheben...", "Ganglinie Löschen" },
+                     Schlosspruefung.Handlungen(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Schlosspruefung.Ja(cut);
+
+        cut.WaitForAssertion(() => Assert.Null(LoeschKnopf(cut).GetAttribute("aria-disabled")),
+                             TimeSpan.FromSeconds(10));
+        Assert.False(schloss.Aufrufe.Single().Gesperrt);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Equal("Schloss von „Auslieferung“ aufgehoben.", cut.Instance.Status);
     }
 }

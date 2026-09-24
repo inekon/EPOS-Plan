@@ -970,6 +970,32 @@ public class EnergietraegerDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Der Leistungspreismodus geht den Weg der Optionsgruppe</b> (Welle #458, Befund
+    /// aus #457): Die Karte schreibt ihn sofort in den Katalog
+    /// (<c>LeistungsModusGewechselt</c>); ein Setzen allein im Kartenstand ginge verloren.
+    /// Derselbe Wert ein zweites Mal meldet nichts.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_den_Leistungspreismodus_ueber_den_Weg_der_Optionsgruppe()
+    {
+        var gemeldet = new List<bool>();
+        Zeige(p => p.Add(x => x.LeistungsModusGewechselt, (bool monat) => gemeldet.Add(monat)));
+
+        KiFeldzugang modus =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "leistungspreis_monatlich");
+        Assert.NotNull(modus);
+        Assert.True(modus.Setzbar);
+        Assert.Equal(false, modus.Lesen());
+
+        modus.Setzen(true);
+        Assert.Equal(new[] { true }, gemeldet);
+        Assert.Equal(true, modus.Lesen());
+
+        modus.Setzen(true);
+        Assert.Equal(new[] { true }, gemeldet);
+    }
+
+    /// <summary>
     /// ET-D: Der Dialogkopf nennt den Träger, an dem gerade gearbeitet wird; ohne
     /// Träger bleibt es beim Maskentitel.
     /// </summary>

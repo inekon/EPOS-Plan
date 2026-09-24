@@ -542,4 +542,45 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-wirt-verlauf-teil .epos-chartbild-platzhalter"));
         Assert.Empty(cut.FindAll("button.epos-wirt-verlauf-rechnen"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2) — über den Wirt
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE der Felder, die der Wirt für den Abschnitt anmeldet</b>: je Stand und
+    /// je Szenario ein Haken, gesetzt über denselben Weg wie der Haken (er zeichnet nur
+    /// neu), und der Zeitraum mit seinen Grenzen.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_Haken_und_Zeitraum_ueber_die_Wege_des_Abschnitts()
+    {
+        var wahlen = new List<VerlaufWahl>();
+        var cut = Abschnitt(new VerlaufDienste
+        {
+            Zeichnen = w => { wahlen.Add(w); return Ansicht(w.Staende?.ToList(), w.Szenarien?.ToList()); }
+        });
+
+        IReadOnlyList<Anzeigeschalter> haken = cut.Instance.KiSchalter;
+        Assert.Equal(new[] { "WP klein", "BHKW", "Ungünstig", "Erwartet", "Günstig" },
+                     haken.Select(h => h.Name).ToArray());
+        Assert.All(haken, h => Assert.True(h.An));
+
+        haken[0].An = false;                                               // WP klein ab
+        Assert.Equal(new[] { BHKW }, wahlen[^1].Staende);
+        Assert.False(cut.Instance.KiSchalter[0].An);
+
+        cut.Instance.KiZeitraum = 30;
+        Assert.Equal(30, cut.Instance.KiZeitraum);
+        Assert.Throws<InvalidOperationException>(() => cut.Instance.KiZeitraum = 99);
+    }
+
+    /// <summary>Ohne gerechneten Verlauf gibt es keine Haken für den Assistenten.</summary>
+    [Fact]
+    public void Ohne_Verlauf_gibt_es_keine_Haken_fuer_den_Assistenten()
+    {
+        var cut = Abschnitt(null);
+
+        Assert.Empty(cut.Instance.KiSchalter);
+    }
 }

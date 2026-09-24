@@ -4489,7 +4489,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Name kommt in der Auswahl mehrfach vor</value>
   </data>
   <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
-    <value>Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren.</value>
+    <value>Auslieferungssatz: Ein Überschreiben ersetzt die ausgelieferten Werte; ein Programm-Update stellt sie nicht wieder her.</value>
   </data>
   <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
     <value>Importieren</value>
@@ -6925,7 +6925,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Betriebskosten nach Kostenarten</value>
   </data>
   <data name="WIRT_BK_HINWEIS" xml:space="preserve">
-    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen.</value>
+    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.</value>
   </data>
   <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
     <value>Position</value>
@@ -6948,8 +6948,11 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_BK_SZENARIOWERT" xml:space="preserve">
     <value>Szenariowert gepflegt</value>
   </data>
+  <data name="WIRT_BK_AB_JAHR" xml:space="preserve">
+    <value>ab Jahr {0}</value>
+  </data>
   <data name="WIRT_BK_ABWEICHUNG" xml:space="preserve">
-    <value>⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.</value>
+    <value>⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.</value>
   </data>
   <data name="WIRT_BK_OHNE_SPALTEN" xml:space="preserve">
     <value>Gliederung nach Kostenarten nicht möglich: Die Datenbank führt die Spalten aus Migrationsschritt 19 (Kostenart, Bemessung, Menge, Einheitpreis) nicht.</value>
@@ -6968,21 +6971,6 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="KOSTENART_OHNE" xml:space="preserve">
     <value>nicht eingeordnet</value>
-  </data>
-  <data name="BEMESSUNG_BETRAG" xml:space="preserve">
-    <value>fester Betrag</value>
-  </data>
-  <data name="BEMESSUNG_PROZENT_INVESTITION" xml:space="preserve">
-    <value>% der Investition</value>
-  </data>
-  <data name="BEMESSUNG_EUR_PRO_H" xml:space="preserve">
-    <value>je Betriebsstunde</value>
-  </data>
-  <data name="BEMESSUNG_EUR_PRO_KWH" xml:space="preserve">
-    <value>je kWh</value>
-  </data>
-  <data name="BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN" xml:space="preserve">
-    <value>% der Brennstoffkosten</value>
   </data>
   <data name="WIRT_KWKG_MODUL_TITEL" xml:space="preserve">
     <value>KWK-Zuschlag je Modul</value>
@@ -11620,11 +11608,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="HZK_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>Der Datensatz konnte nicht in das Projekt übernommen werden.</value>
   </data>
-  <!-- ===========================================================  </data>
-       iU9-W5 — die vier Seiten des Reiters "Berichte & Kosten"
-       (Sammelnachtrag der Welle 5; Zugriff ueber
-       ResourceManager.GetString mit deutschem Rueckfall im Code).
-       ================================================================== -->
   <data name="BKS_LBL_FORTSCHRITT" xml:space="preserve">
     <value>Fortschritt</value>
   </data>
@@ -12107,15 +12090,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="WPS_LBL_KUEHLLEISTUNG" xml:space="preserve">
     <value>Kühlleistung</value>
-  </data>
-  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
-    <value>Kühlbetrieb</value>
-  </data>
-  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
-    <value>Kühl-Vorlauf</value>
-  </data>
-  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
-    <value>Hilfsstromanteil Kühlung</value>
   </data>
   <data name="WPS_LBL_KENNLINIEN" xml:space="preserve">
     <value>Kenndaten Kennlinien:</value>
@@ -19336,7 +19310,7 @@ Möchten Sie das zulassen?</value>
     <value>Offenes Reiterblatt</value>
   </data>
   <data name="KI_DLG_SIM_REITER_ERL" xml:space="preserve">
-    <value>Das Blatt des Ergebnisses, das der Anwender gerade ansieht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis); leer in der Konfiguration.</value>
+    <value>Das Blatt des Ergebnisses, das vorn steht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis). Es zu wählen ist derselbe Klick wie auf den Reiter — nur, solange das Ergebnis vorn steht; leer in der Konfiguration.</value>
   </data>
   <data name="KI_DLG_SIM_KASKADE_NAME" xml:space="preserve">
     <value>Kaskade und Reihenfolge</value>
@@ -20302,7 +20276,7 @@ Möchten Sie das zulassen?</value>
     <value>Katalogsatz „{0}“ neu angelegt.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
-    <value>Auslieferungssätze werden nicht überschrieben.</value>
+    <value>Auslieferungssätze werden nicht überschrieben – zuerst in der Wärmepumpenverwaltung das Schloss aufheben.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
     <value>Die Übernahme in den Katalog ist fehlgeschlagen.</value>
@@ -22135,7 +22109,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Tageskurve, deren 24 Stundenwerte die Maske zeigt; ein Typ führt fünf oder acht davon.</value>
   </data>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt.</value>
+    <value>Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar.</value>
   </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste.</value>
@@ -22982,6 +22956,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
     <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
+    <value>Zahlungsreihen: Stand</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_STAND_ERL" xml:space="preserve">
+    <value>Der Stand, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist die Leitversion. Die Wahl ändert nur die Anzeige von Jahrestafel und Zahlungsstrombild, nicht die Kennzahlen; zur Wahl steht nur, wofür der letzte Rechenlauf Jahresreihen geliefert hat.</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_NAME" xml:space="preserve">
+    <value>Zahlungsreihen: Szenario</value>
+  </data>
+  <data name="KI_DLG_WSE_ZR_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario, dessen Zahlungsreihen Block 2 der ValERI-Bewertung zeigt — Vorgabe ist der Erwartungsfall. Die Wahl ändert nur die Anzeige; trägt der Stand das Szenario nicht, steht der Erwartungsfall. Das Szenario der Kennzahlen stellt das Feld „Szenario“.</value>
   </data>
   <data name="KI_DLG_SKK_H0_NAME" xml:space="preserve">
     <value>h0</value>
@@ -24913,7 +24899,7 @@ Möchten Sie das zulassen?</value>
     <value>Auslieferungssatz – nur lesen</value>
   </data>
   <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen, Duplizieren erlaubt</value>
+    <value>Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt</value>
   </data>
   <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
     <value>Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen.</value>
@@ -25780,7 +25766,7 @@ Möchten Sie das zulassen?</value>
     <value>Duplizieren gilt für genau eine Zeile.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
-    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“.</value>
+    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“ oder „Schloss aufheben...“.</value>
   </data>
   <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
     <value>Sollen diese {0} Sätze gelöscht werden? {1}</value>
@@ -25816,7 +25802,7 @@ Möchten Sie das zulassen?</value>
     <value>Alle Daten</value>
   </data>
   <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren.</value>
+    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren oder das Schloss aufheben.</value>
   </data>
   <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
     <value>Auslieferungssatz</value>
@@ -26014,13 +26000,82 @@ Möchten Sie das zulassen?</value>
     <value>groß…</value>
   </data>
   <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen, nicht löschbar.</value>
+    <value>Auslieferungssatz – nur lesen, nicht löschbar. Zum Ändern in der Auswahlleiste das Schloss aufheben.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
-    <value>Auslieferungssatz – Löschen gesperrt.</value>
+    <value>Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
     <value>In Projekten verwendet ({0}) – Löschen gesperrt; dort zuerst entfernen.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN" xml:space="preserve">
+    <value>Schloss aufheben...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN" xml:space="preserve">
+    <value>Schloss setzen...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN_KURZ" xml:space="preserve">
+    <value>Die gewählten Auslieferungssätze werden eigene Sätze – nach Rückfrage.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN_KURZ" xml:space="preserve">
+    <value>Die gewählten Sätze werden Auslieferungssätze: nur lesbar, nicht löschbar – nach Rückfrage.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Schloss aufheben</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>Schloss von „{0}“ aufheben? Der Satz wird ein eigener Satz: Sie können ihn ändern und löschen. Ein Programm-Update ändert ihn nicht und stellt ihn nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen aufheben ({1})? Die Sätze werden eigene Sätze: Sie können sie ändern und löschen. Ein Programm-Update ändert sie nicht und stellt sie nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT" xml:space="preserve">
+    <value>Das Wochenprofil gehört zum Typ „{0}“ und bleibt gesperrt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT_MEHR" xml:space="preserve">
+    <value>Die Wochenprofile gehören zu ihren Typen ({0}) und bleiben gesperrt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_TITEL" xml:space="preserve">
+    <value>Schloss setzen</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE" xml:space="preserve">
+    <value>„{0}“ als Auslieferungssatz sperren? Er ist danach nur lesbar und nicht löschbar; ändern lässt er sich erst nach „Schloss aufheben...“ wieder. Seine Werte bleiben, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE_MEHR" xml:space="preserve">
+    <value>{0} Sätze als Auslieferungssätze sperren ({1})? Sie sind danach nur lesbar und nicht löschbar; ändern lassen sie sich erst nach „Schloss aufheben...“ wieder. Ihre Werte bleiben, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
+    <value>Schon so und unverändert: {0}.</value>
+  </data>
+  <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
+    <value>Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN" xml:space="preserve">
+    <value>Schloss von „{0}“ aufgehoben.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen aufgehoben.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT" xml:space="preserve">
+    <value>Schloss von „{0}“ gesetzt.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen gesetzt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_KATALOG_UNBEKANNT" xml:space="preserve">
+    <value>Der Katalog „{0}“ ist nicht bekannt – das Schloss bleibt, wie es ist.</value>
+  </data>
+  <data name="ADM_SCHLOSS_STATUS" xml:space="preserve">
+    <value>Das Schloss dieses Katalogs folgt seinem Freigabestatus und lässt sich hier nicht umschalten.</value>
+  </data>
+  <data name="ADM_SCHLOSS_OHNE_KENNZEICHEN" xml:space="preserve">
+    <value>Der Katalog „{0}“ führt kein Auslieferungskennzeichen – es gibt kein Schloss zum Umschalten.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Satz {0} steht nicht mehr im Katalog – kein Schloss wurde umgeschaltet.</value>
+  </data>
+  <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
+    <value>Das Schloss ließ sich nicht umschalten; nichts wurde geändert.</value>
   </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Stehen bleiben (in Projekten verwendet): {0}</value>
@@ -26289,6 +26344,135 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert.</value>
   </data>
+  <data name="KI_DLG_BEWUSST_NICHT_STEUERBAR" xml:space="preserve">
+    <value>Diese Maske ist bewusst nicht steuerbar: {0}</value>
+  </data>
+  <data name="KI_DLG_NOCH_NICHT_STEUERBAR" xml:space="preserve">
+    <value>Diese Maske ist noch nicht steuerbar: {0}</value>
+  </data>
+  <data name="KI_AUSNAHME_ANZEIGE" xml:space="preserve">
+    <value>Sie zeigt Ergebnisse an; ihre Schalter stellen nur das Bild ein und führen keine Einstellwerte.</value>
+  </data>
+  <data name="KI_AUSNAHME_OHNE_EINSTELLWERTE" xml:space="preserve">
+    <value>Sie verwaltet nur Zeitreihen und ihre Herkunft und führt keine Einstellwerte.</value>
+  </data>
+  <data name="KI_AUSNAHME_ANLEGEN" xml:space="preserve">
+    <value>Sie legt Sätze an oder entfernt sie — das bleibt dem Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_IMPORT" xml:space="preserve">
+    <value>Sie gehört zu einem Import; was eingelesen wird, entscheidet der Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_EXPORT" xml:space="preserve">
+    <value>Sie gehört zu einem Export oder Transfer; was ausgegeben wird, entscheidet der Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_DATEI" xml:space="preserve">
+    <value>Sie wählt Dateien; die Pfadwahl bleibt Sache des Anwenders.</value>
+  </data>
+  <data name="KI_AUSNAHME_RUECKFRAGE" xml:space="preserve">
+    <value>Sie ist eine Rückfrage, die der Anwender beantwortet.</value>
+  </data>
+  <data name="KI_AUSNAHME_LIZENZ" xml:space="preserve">
+    <value>Sie nimmt Lizenz- oder Schlüsseleingaben auf, die Sache des Anwenders bleiben.</value>
+  </data>
+  <data name="KI_AUSNAHME_ASSISTENT" xml:space="preserve">
+    <value>Sie gehört zum Hilfe-Assistenten selbst.</value>
+  </data>
+  <data name="KI_AUSNAHME_AKTION" xml:space="preserve">
+    <value>Sie löst eine Aktion aus (Übernahme, Auswahl zum Öffnen), die der Anwender selbst bestätigt.</value>
+  </data>
+  <data name="KI_AUSNAHME_WERKZEUG" xml:space="preserve">
+    <value>Sie ist ein Pflegewerkzeug, dessen Eingriffe der Anwender selbst vornimmt.</value>
+  </data>
+  <data name="KI_AUSNAHME_FELD_DES_WIRTS" xml:space="preserve">
+    <value>Ihr Wert ist ein Feld der Maske, in der sie steht; dort setzt ihn der Assistent.</value>
+  </data>
+  <data name="KI_AUSNAHME_OFFEN" xml:space="preserve">
+    <value>Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHLBETRIEB_ERL" xml:space="preserve">
+    <value>An = der Lauf rechnet die Kühlung der Gebäude mit, aus = ohne Kühlung. Projekteinstellung; der Schalter schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_NAME" xml:space="preserve">
+    <value>Anlage (Wärmequelle)</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGE_ERL" xml:space="preserve">
+    <value>Die Wärmepumpe oder der Heizkessel, auf den sich Wärmequelle, konstante Quelltemperatur, WP-Priorität und Betriebsmodus beziehen. Setzen wählt die Karte in der Konfiguration.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_NAME" xml:space="preserve">
+    <value>Wärmequelle</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLE_ERL" xml:space="preserve">
+    <value>Die Wärmequelle der gewählten Anlage. Systemrücklauf, Außenluft und Konstant schreiben sofort; Pufferspeicher, Quellprofil und Erdreich öffnen ihren Dialog, der erst mit OK übernimmt; eine CSV-Datei wählt der Anwender selbst.</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_NAME" xml:space="preserve">
+    <value>Konstante Quelltemperatur</value>
+  </data>
+  <data name="KI_DLG_SIM_QUELLTEMP_ERL" xml:space="preserve">
+    <value>Die Temperatur der Quelle „Konstant“ der gewählten Anlage; setzbar, wenn diese Quelle gewählt ist. Schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_NAME" xml:space="preserve">
+    <value>WP-Priorität</value>
+  </data>
+  <data name="KI_DLG_SIM_PRIORITAET_ERL" xml:space="preserve">
+    <value>Die Einsatzreihenfolge der gewählten Wärmepumpe, eine ganze Zahl ab 1; gilt nur für Wärmepumpen. Schreibt sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_NAME" xml:space="preserve">
+    <value>Betriebsmodus</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSMODUS_ERL" xml:space="preserve">
+    <value>Die Leistungssteuerung der gewählten Wärmepumpe: laufzeit-, leistungs- oder PV-optimiert; gilt nur für Wärmepumpen. Schreibt sofort.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_UNBEKANNT" xml:space="preserve">
+    <value>Die Anlage {0} steht nicht unter den Wärmepumpen und Heizkesseln der Konfiguration.</value>
+  </data>
+  <data name="KI_SIM_ANLAGE_FEHLT" xml:space="preserve">
+    <value>Es ist keine Wärmepumpe und kein Heizkessel gewählt — zuerst das Feld „quellanlage“ setzen.</value>
+  </data>
+  <data name="KI_SIM_NUR_WP" xml:space="preserve">
+    <value>Dieser Wert gilt nur für Wärmepumpen; „{0}“ ist keine.</value>
+  </data>
+  <data name="KI_SIM_UEBERLAGERUNG_OFFEN" xml:space="preserve">
+    <value>Auf der Konfiguration steht ein Dialog offen; der Wert wird dort gewählt oder nach dem Schließen gesetzt.</value>
+  </data>
+  <data name="KI_SIM_WERT_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“ steht nicht in der Auswahl der gewählten Anlage.</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DATEI" xml:space="preserve">
+    <value>Die Quelle „{0}“ liest ein Profil aus einer Datei; die Datei wählt der Anwender an der Karte (Chip „Quelle“).</value>
+  </data>
+  <data name="KI_SIM_QUELLE_DIALOG" xml:space="preserve">
+    <value>Die Quelle „{0}“ braucht ihre Angaben im Dialog „{1}“; er steht jetzt offen — die Werte dort setzen, übernommen wird erst mit OK.</value>
+  </data>
+  <data name="KI_SIM_QUELLTEMP_NUR_KONSTANT" xml:space="preserve">
+    <value>Die Quelltemperatur gilt nur für die Quelle „{0}“; zuerst die Wärmequelle umstellen.</value>
+  </data>
+  <data name="KI_SIM_PRIORITAET_POSITIV" xml:space="preserve">
+    <value>Die WP-Priorität ist eine ganze Zahl ab 1.</value>
+  </data>
+  <data name="KI_SIM_KEIN_SCHREIBWEG" xml:space="preserve">
+    <value>Diesen Wert schreibt die Plattform hier nicht.</value>
+  </data>
+  <data name="KI_SIM_SCHRITT1_FEHLT" xml:space="preserve">
+    <value>Die Konfiguration (Schritt ①) steht nicht; dorthin wechseln, dann lässt sich der Wert setzen.</value>
+  </data>
+  <data name="KI_DLG_WPA_EXTRAPOLATION_ERL" xml:space="preserve">
+    <value>An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_DATEI" xml:space="preserve">
+    <value>Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender.</value>
+  </data>
+  <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
+    <value>Die Liste der Lastgänge führt keine Ganglinie.</value>
+  </data>
+  <data name="WPS_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_VORLAUF" xml:space="preserve">
+    <value>Kühl-Vorlauf</value>
+  </data>
+  <data name="WPS_LBL_KUEHL_HILFSSTROM" xml:space="preserve">
+    <value>Hilfsstromanteil Kühlung</value>
+  </data>
   <data name="SIM_ZIEL_KAELTEKREIS" xml:space="preserve">
     <value>Kältekreis</value>
   </data>
@@ -26420,5 +26604,137 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
     <value>Einspeisevergütung KWK</value>
+  </data>
+  <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
+    <value>Kenndaten der Wärmepumpe</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_NAME" xml:space="preserve">
+    <value>Vorlaufstufe</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlaufstufe, deren Stützstellen das Raster zeigt, in °C. Sie zu wählen ist derselbe Klick wie in der Vorlaufliste; eine neue Stufe entsteht erst mit „Neue Vorlauftemperatur“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEUVORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur einer neuen Stufe in °C. Angelegt wird die Stufe erst mit dem Knopf „Neue Vorlauftemperatur“, den der Anwender drückt.</value>
+  </data>
+  <data name="KI_DLG_WPKL_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Außen- bzw. Quelltemperatur dieser Stützstelle in °C; sie ordnet die Stützstelle auf der Kennlinie der gewählten Vorlaufstufe ein.</value>
+  </data>
+  <data name="KI_DLG_WPKL_COP_ERL" xml:space="preserve">
+    <value>Die Leistungszahl (COP) der Wärmepumpe an dieser Stützstelle — Wärmeleistung geteilt durch elektrische Leistung, ohne Einheit.</value>
+  </data>
+  <data name="KI_DLG_WPKL_PTHERM_ERL" xml:space="preserve">
+    <value>Die Wärmeleistung der Wärmepumpe an dieser Stützstelle in kW.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur der nächsten Stützstelle in °C. Die Zeile entsteht erst mit „Daten übernehmen“, und nur, wenn Temperatur, COP und Ptherm gesetzt sind.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_COP_ERL" xml:space="preserve">
+    <value>Die Leistungszahl (COP) der nächsten Stützstelle, ohne Einheit. Die Zeile entsteht erst mit „Daten übernehmen“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_PTHERM_ERL" xml:space="preserve">
+    <value>Die Wärmeleistung der nächsten Stützstelle in kW. Die Zeile entsteht erst mit „Daten übernehmen“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_STUFE_FEHLT" xml:space="preserve">
+    <value>Die Vorlaufstufe „{0}“ steht nicht in der Liste. Eine neue Stufe legt der Anwender mit „{1}“ an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PKOPF" xml:space="preserve">
+    <value>Projektkopf (Assistent „Neues Projekt“)</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_ERL" xml:space="preserve">
+    <value>Der Name des Projekts — Pflicht und bei einem neuen Projekt eindeutig. Im Bearbeiten-Modus steht er fest.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KLIMA_ERL" xml:space="preserve">
+    <value>Die Klimaregion des Projekts aus den Stammregionen — Pflicht; mit ihren Wetterdaten rechnet die Simulation.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KUNDE_ERL" xml:space="preserve">
+    <value>Der Kunde, für den das Projekt geplant wird — Freitext.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BEARBEITER_ERL" xml:space="preserve">
+    <value>Wer das Projekt bearbeitet — Freitext; ein neues Projekt trägt den angemeldeten Benutzer vor.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine Kurzbeschreibung des Vorhabens — Standort, Besonderheiten; Freitext.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_FEST" xml:space="preserve">
+    <value>Im Bearbeiten-Modus steht der Projektname fest.</value>
+  </data>
+  <data name="KI_DLG_MASKE_START" xml:space="preserve">
+    <value>Startseite</value>
+  </data>
+  <data name="KI_DLG_START_KLIMA_ERL" xml:space="preserve">
+    <value>Die Klimaregion des offenen Projekts aus den Stammregionen; geschrieben wird sie erst mit dem Knopf „Speichern“ daneben.</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_NAME" xml:space="preserve">
+    <value>Solarthermie: Profil oder Ganglinie</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_ERL" xml:space="preserve">
+    <value>Die Weiche der Kachel „Solarthermie“: „Profil“ öffnet die Eingabe der Kollektoren, „Ganglinie“ die Solarganglinien. Sie wirkt sofort.</value>
+  </data>
+  <data name="KI_DLG_START_KEIN_PROJEKT" xml:space="preserve">
+    <value>Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt.</value>
+  </data>
+  <data name="KI_DLG_MASKE_ADMSET" xml:space="preserve">
+    <value>Programmeinstellungen</value>
+  </data>
+  <data name="KI_DLG_ADMSET_WIKI_ERL" xml:space="preserve">
+    <value>Die Adresse des Hilfe-Wikis, das „Hilfe“ und die Info-Knöpfe öffnen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_GEOKODIERUNG_ERL" xml:space="preserve">
+    <value>Die Adresse des Geokodierungsdienstes (Nominatim), der aus einer Anschrift Breite und Länge eines Standorts sucht.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_PVGIS_ERL" xml:space="preserve">
+    <value>Die Adresse der PVGIS-Schnittstelle, aus der die Klimadaten weltweite Wetterjahre (TMY) laden.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_PORTAL_ERL" xml:space="preserve">
+    <value>Die Adresse des Portals der DWD-Testreferenzjahre.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_REGIONAL_ERL" xml:space="preserve">
+    <value>Die Adresse, unter der die TRY-Regionaldaten liegen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_KUEHLUNG_ERL" xml:space="preserve">
+    <value>Der Anfangswert der Kühlung eines NEU angelegten Projekts; vorhandene Projekte und Läufe ändert der Schalter nicht.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_ERL" xml:space="preserve">
+    <value>Die Farbe der Größe „{0}“ (Gruppe „{1}“) in allen Diagrammen und Berichten, als Farbton #RRGGBB; die Deckung bleibt die des Bildes.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein Farbton — erwartet wird #RRGGBB, etwa #1F77B4.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_NAME" xml:space="preserve">
+    <value>{0} (Alle Daten)</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_ZU" xml:space="preserve">
+    <value>„Alle Daten anzeigen“ ist zugeklappt, oder es ist kein Katalogsatz gewählt — die Werte stehen dann nicht vor dem Anwender.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_NUR_ANZEIGE" xml:space="preserve">
+    <value>„Alle Daten“ ist in dieser Maske nur Anzeige — der Katalog hat hier keinen Speicherweg.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_UNGEAENDERT" xml:space="preserve">
+    <value>Im Aufklapper „Alle Daten“ ist nichts geändert; einen anderen Speicherweg bietet die Maske „{0}“ nicht — ihre Liste übernimmt „OK“.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANZEIGE_NAME" xml:space="preserve">
+    <value>Anzeige</value>
+  </data>
+  <data name="KI_DLG_SIM_ANZEIGE_ERL" xml:space="preserve">
+    <value>Ein Schalter der Anzeige auf dem offenen Ergebnisblatt — „sortiert“ (Dauerlinie), eine Reihe des Bildes ein oder aus, im Wärmegang auch die Bedarfsart. Er stellt nur das Bild ein; gerechnet und gespeichert wird nichts.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANZEIGE_WAHL" xml:space="preserve">
+    <value>„{0}“ ist eine Option einer Wahl — gewechselt wird, indem eine andere Option eingeschaltet wird.</value>
+  </data>
+  <data name="KI_DLG_SIM_REITER_NICHT_VORN" xml:space="preserve">
+    <value>Das Ergebnis steht nicht vorn — ein Blatt lässt sich erst in Schritt ③ wählen.</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL" xml:space="preserve">
+    <value>Der Zeitraum des Kapitalwertverlaufs in Jahren (2 bis 60); gerechnet wird erst mit „Aktualisieren“, das der Anwender drückt.</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME" xml:space="preserve">
+    <value>Im Verlauf zeigen</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL" xml:space="preserve">
+    <value>Ob der Kapitalwertverlauf diesen Stand bzw. dieses Szenario zeigt; ein Haken zeichnet nur neu, gerechnet ist schon.</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_GESPERRT" xml:space="preserve">
+    <value>Der Verlauf rechnet gerade, oder die Seite ist gesperrt — Zeitraum und Haken stehen erst danach wieder offen.</value>
   </data>
 </root>

@@ -47,7 +47,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
-@inherits Farbwahlwirt
+@inherits Ergebnisblattwirt
 
 <div class="epos-simerg-block">
 
@@ -166,7 +166,10 @@
     private bool _erstBelegt;
 
     protected override void OnInitialized()
-        => _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.WAERMEGANG);
+    {
+        _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.WAERMEGANG);
+        base.OnInitialized();   // meldet die Anzeigeschalter an (Ergebnisblattwirt)
+    }
 
     /// <summary>
     /// <b>Das erste Befuellen — Anwenderrueckmeldung 12.09.2026 (#234).</b> Der Reiter
@@ -303,4 +306,42 @@
 
     private Task CsvGewuenscht()
         => Csv.InvokeAsync((Bedarfsart, GewaehlteErzeuger, GewaehlteSpeicher));
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>
+    /// Die Bedarfsart (je Option ein Schalter — „an" wählt sie), „sortiert", die
+    /// Bedarfslinie und je vorhandener Reihe ein Schalter der Erzeuger- und der
+    /// Speicherauswahl.
+    /// </summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+    {
+        var liste = new List<Anzeigeschalter>();
+        foreach ((int Id, string Text) art in Bedarfsarten)
+        {
+            int kanal = art.Id;
+            liste.Add(Wahloption(Resource.SIM_LABEL_BEDARFSART + " " + art.Text,
+                                 () => (_bedarfsart ?? -1) == kanal, () => BedarfsartGesetzt(kanal)));
+        }
+
+        liste.Add(Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => { _sortiert = w; Merken(); }));
+        liste.Add(Umschalter(Resource.SIM_CHK_WAERMEBEDARF_EINBLENDEN, () => _bedarfslinie,
+                             w => { _bedarfslinie = w; Merken(); }));
+
+        foreach ((int Id, string Text) e in Eintraege(Vorhandene(Daten.Erzeuger)))
+        {
+            int platz = e.Id;
+            liste.Add(Umschalter(e.Text, () => _erzeuger.Contains(platz),
+                                 an => { _erzeuger = MitPlatz(_erzeuger, platz, an); Merken(); }));
+        }
+        foreach ((int Id, string Text) e in Eintraege(Vorhandene(Daten.Speicher)))
+        {
+            int platz = e.Id;
+            liste.Add(Umschalter(e.Text, () => _speicher.Contains(platz),
+                                 an => { _speicher = MitPlatz(_speicher, platz, an); Merken(); }));
+        }
+        return liste;
+    }
 }

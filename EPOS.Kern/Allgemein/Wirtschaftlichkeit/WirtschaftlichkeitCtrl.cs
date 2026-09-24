@@ -7551,9 +7551,14 @@ namespace WindowsFormsApplication1
                     "w.[" + SchemaKatalog.SPALTE_PW_MENGE + "], " +
                     "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.KomponentenID" +
                     (AnlagenSpalteVorhanden()
-                        ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] "
-                        : " ") +
-                    "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
+                        ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]"
+                        : "") +
+                    // ETAPPE E8c (E8b‑Q3): das Startjahr (KD6) — die Probe der Gliederung
+                    // vergleicht nur die Positionen, die im ersten Jahr zahlen.
+                    (StartjahrSpalteVorhanden()
+                        ? ", w.[" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]"
+                        : "") +
+                    " FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
                     "ON w.StammID = f.StammID " +
                     "WHERE w.ProjektID = ? AND w.KategorieID = 2",
                     new DbParam("@p", idProjekt));
@@ -7593,6 +7598,9 @@ namespace WindowsFormsApplication1
 
                     int komponente, idAnlage;
                     KomponenteUndAnlage(r, out komponente, out idAnlage);
+                    // ETAPPE E8c (E8b‑Q3): dieselbe Lesung des Startjahrs wie in der
+                    // Summenschleife — 0 heißt „ab dem ersten Jahr".
+                    int start = StartJahrDerZeile(r);
 
                     var n = new KostenPositionNachweis
                     {
@@ -7609,7 +7617,8 @@ namespace WindowsFormsApplication1
                         Menge = menge,
                         Einheitpreis = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
                         IstErloes = erloes,
-                        SzenarioGepflegt = szenarioGepflegt
+                        SzenarioGepflegt = szenarioGepflegt,
+                        StartJahr = start > 1 ? start : (int?)null
                     };
                     n.BetragJahr =
                         string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal)

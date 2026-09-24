@@ -839,12 +839,22 @@
     /// </remarks>
     private PhotovoltaikKiSicht? KiSicht()
     {
-        if (_projektZeile is null) return null;
+        // Welle #458, Stufe 2: Die Sicht steht auch, solange nur eine KATALOGzeile
+        // gewaehlt ist - dann traegt sie allein den Aufklapper „Alle Daten"; die Felder
+        // der Anlage sind leer, genau wie auf der Maske.
+        if (_projektZeile is null && _katalogZeile is null) return null;
 
         return _kiSicht ??= new PhotovoltaikKiSicht
         {
             Zeilenquelle = () => _projektZeile,
             ModellEintraege = Modelleintraege,
+            AlleDaten = new AlleDatenTafel
+            {
+                Felder = () => _parameterOffen ? _felder : null,
+                Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
+                                                        _katalogZeile?.Geschuetzt == true),
+                Gesetzt = () => _felderGeaendert = true
+            },
             KaltLesen = () => _straenge?.TKaltLebend ?? AuslegungKalt,
             HeissLesen = () => _straenge?.THeissLebend ?? AuslegungHeiss,
             KaltSetzen = wert =>
@@ -893,8 +903,24 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
-        Speichern = () => Task.FromResult(KiUebernehmen())
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>
+    /// „Speichern" des Assistenten: Trägt der Aufklapper „Alle Daten" Änderungen, geht
+    /// er den Weg SEINES Knopfes (<see cref="FelderSpeichern"/>) — sonst wird die
+    /// gewählte Projektzeile übernommen wie bisher (Welle #458, Stufe 2).
+    /// </summary>
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (!_felderGeaendert) return KiUebernehmen();
+
+        FelderSpeichern();
+        return _felderGeaendert
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
+                  : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+    }
 
     private KiKern.KiErgebnis KiUebernehmen()
     {
