@@ -30411,4 +30411,7 @@ Do you want to allow this?</value>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
   </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>every {0} years from year {1}</value>
+  </data>
 </root>
