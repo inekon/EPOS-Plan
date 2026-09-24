@@ -17,6 +17,16 @@
 > des Repositoriums, der Validierungstest wird benannt übersprungen, wenn sie fehlt. Mit E27 ist
 > auch **U10** entschieden (Lizenzhinweisseite mit der ersten IFC-Stufe). Die Fließtexte in 0, 1.3,
 > 1.4, 3.3, 5.1, 6.1, 6.4, 6.6, 8.1, 8.2, 9, 10, 11 und 12 tragen den entschiedenen Stand.
+>
+> **Nachzug 24.09.2026 — E38 (24.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.43):** Der Anwender hat
+> die drei Importfragen **U13**, **U14** und **U15** des Umsetzungskonzepts nach Empfehlung
+> entschieden; sie gelten für beide Importwege, weil gbXML (G4c) und IFC (G4a) über das gemeinsame
+> Zuordnungsgerüst dieselben Zielfelder füllen (2.1): **U13** eines je Lauf (Klappliste), **U14** die
+> Wandfläche um Fenster und Außentüren vermindert, **U15** ψ als Vorgabe je Baualtersklasse,
+> Anschlusslängen leer, beide mit Herkunftsmarke. Zugleich ist die Stufe G4 beauftragt — zuerst G4c,
+> dann G4a; G4b erst nach G3 und nachdem G4a im Feld war. Für G4 gibt es genau einen iOS-Lauf, bei
+> der Abnahme von G4a und nur nach ausdrücklicher Rückfrage; G4c wird ohne iOS-Lauf abgenommen. 3.4,
+> 3.6, 3.7 und 9 tragen den Vermerk.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -429,7 +439,7 @@ Grundlage ist die Tabelle aus Befund R, 5.1; hier steht sie auf die Tabellen des
 
 | gbXML | EPOS-Ziel | Regel, Verlust |
 |---|---|---|
-| `Campus/Building` | `Tab_Gebaeude` | ein EPOS-Gebäude je `Building`; mehrere → Klappliste, **eines je Lauf** (Umsetzungskonzept 3.5, Nr. 1) |
+| `Campus/Building` | `Tab_Gebaeude` | ein EPOS-Gebäude je `Building`; mehrere → Klappliste, **eines je Lauf** (Umsetzungskonzept 3.5, Nr. 1; Frage U13, **mit E38 nach Empfehlung entschieden**) |
 | `Building/@buildingType` | — | nur Anzeige; `SingleFamily`/`MultiFamily` bestätigen die Wohnnutzung |
 | `Space` (+ `Zone` über `@zoneIdRef`) | `Tab_Zone` (`Bezeichner`, `Rang`) | Aggregation nach 3.3; `Bezeichner` aus `Space/Name`, sonst `@id` |
 | `Space/Area`, `/Volume` | `Tab_Zone.Nutzflaeche`, `.Volumen` | `Raumhoehe` = Volumen ÷ Fläche, wenn beides vorliegt; sonst NULL = Wert des Gebäudes. **E13 (16.09.2026):** die Zielgröße heißt durchgängig **Nutzfläche** (beheizte Netto-Grundfläche) — auf Gebäudeebene trägt sie weiter die Spalte `Tab_Gebaeude.Wohnflaeche` (Annahme, Frage Q11a; Konzept N1.17) |
@@ -535,7 +545,9 @@ aus den mit Nullen gefüllten IFC-Dateien (Befund P, 0, Nr. 6) und gilt hier gen
 `Opening`-Kinder liegen zusätzlich darauf. Regel wie beim IFC-Weg (Umsetzungskonzept 3.5, Nr. 10):
 A_Wand = Σ Wandfläche − Σ A_Fenster − Σ A_Außentür derselben Fläche; wird das negativ, A = 0, Zeile
 rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV`. **Der Bruttowert wird mitgeführt** (Wandfläche zuzüglich
-ihrer Öffnungen), weil der Export ihn braucht (5.5, Punkt 2).
+ihrer Öffnungen), weil der Export ihn braucht (5.5, Punkt 2). Der Abzug ist die Antwort auf Frage
+**U14** des Umsetzungskonzepts, **mit E38 (24.09.2026) nach Empfehlung entschieden** — für beide
+Importwege.
 
 ### 3.7 Was gbXML nicht sagt
 
@@ -544,7 +556,7 @@ Drei Angaben fehlen im Schema und müssen anders entstehen:
 | Fehlend | Warum es fehlt | Wie vorbelegt wird |
 |---|---|---|
 | **Baualtersklasse / Baujahr** | gbXML hat kein Gegenstück zu `Pset_BuildingCommon.YearOfConstruction` (Befund R, 5.1) | **Anwenderangabe im Zuordnungsdialog**, Klappliste über die 21 Klassen; sie steuert alle U-Wert- und ψ-Vorgaben und ist deshalb das erste Feld des Dialogs |
-| **Wärmebrückenzuschlag ψ·L** | kein Ziel im Schema | ψ als Vorgabe je Baualtersklasse, Anschlusslängen **leer** — dieselbe Regel wie beim IFC-Weg (Umsetzungskonzept, Frage U15) |
+| **Wärmebrückenzuschlag ψ·L** | kein Ziel im Schema | ψ als Vorgabe je Baualtersklasse, Anschlusslängen **leer** — dieselbe Regel wie beim IFC-Weg (Umsetzungskonzept, Frage U15, **mit E38 nach Empfehlung entschieden**; Herkunftsmarke `Vorgabe` bzw. `Leer`) |
 | **Schichtrichtung innen/außen** | `Construction` sagt die Reihenfolge, aber nicht, welches Ende raumseitig ist | **Annahme: erste Schicht außen** — wie die **benannte EPOS-Annahme** beim IFC-Weg ohne `…Usage` (Mehrzonenkonzept 6.3: die Spezifikation gibt dort **keine** Lage an; es ist keine Normvorgabe, sondern eine Hausannahme mit 50 % Irrtumswahrscheinlichkeit je Bauteil). Die Annahme wird **markiert**, ist im Aufbaueditor umkehrbar, und weil `Tab_Bauteilschicht.Reihenfolge` innen → außen zählt, wird die gelesene Folge beim Schreiben **umgekehrt** (3.4) |
 
 Die Nutzungssemantik geht zusätzlich verloren: `spaceTypeEnum` hat 126 Werte, und **kein einziger**
@@ -1333,7 +1345,9 @@ als nicht abgenommen; RWTH- und bim2sim-Dateien kommen erst nach der Lizenzklär
 
 **Abnahme je Teilstufe:** Kern-Filter grün, die zugehörigen Proben bestanden, Referenzlauf
 unverändert, Windows-Sichtabnahme (Datei wählen bzw. schreiben, Zuordnung prüfen, OK), iOS-Lauf nach
-Rückfrage.
+Rückfrage. **Für G4 gilt E38 (24.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+N1.43):** genau ein iOS-Lauf, bei der Abnahme von G4a und ausschließlich nach ausdrücklicher
+Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 
 ---
 
