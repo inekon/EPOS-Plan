@@ -8872,3 +8872,99 @@ Brauchwasser) ausstehend.
 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
 `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687
 Werte in Toleranz).
+
+## #458 Stufe 2 — KI-Assistent: die übrigen Masken mit Einstellwerten angemeldet (24.09.2026)
+
+Anlass: Entscheide der Hauptsitzung nach KI‑D‑Q11, aufbauend auf den
+Kandidaten aus #458 Stufe 1 (Kennlinien-Editor, Projektkopf,
+Startseite Klimaregion/Solarart, Einstellungen-Teilmenge, „Alle Daten"
+der Erzeugermasken, Anzeigeschalter). Commits `24643eda`
+(Kennlinieneditor), `bf82be6c` (Projektkopf und Startseite),
+`0af5116e` (Programmeinstellungen, Farben als Feldtafel), `9d681d33`
+(„Alle Daten" der sechs Erzeugermasken), `8b6daa99` (Anzeigeschalter
+der Ergebnisreiter und des Verlaufs), `8e78d31d` (Papiere); Zweig
+`worktree-agent-a0506527f9e4cf95f` von `4f236bf8`; Merge `ab580309`
+(Konflikte an der Wirtschaftlichkeitsseite: `KiDialoge.cs`,
+`WirtschaftlichkeitSeiteKiSicht.cs`, `WirtschaftlichkeitSeite.razor` —
+jeweils beide Seiten übernommen, die Feldkarte trägt jetzt zehn
+Felder: die ValERI-Wahlen aus `76e62117` plus Zeitraum und Haken des
+Kapitalwertverlaufs; resx dreiseitig vereinigt, 8 757 Schlüssel,
+Designer unverändert; die Wächter-Zählliste wächst auf 81 Einträge,
+sechs Zahlenfolgen-Vermerke stehen jetzt auf „#458 Stufe 3
+(Zahlenfolgen)").
+
+**Umfang.** Kennlinien-Editor `KennlinienEditorDialog` (Maske
+„Kenndaten", Sichtklasse `KennlinienKiSicht`): die Überlagerung meldet
+die Vorlaufstufe als Wahlfeld, Temperatur, COP und Ptherm der Stufe
+als Spalten, dazu die neue Vorlauftemperatur und die neue Stützstelle;
+Schreibschutz `NurLesen`, kein Speicherweg, „OK" bleibt beim Anwender;
+8 Felder. Projektkopf `ProjektKopfSeite` (Maske `Wizard_Projekt`): die
+Sichtklasse `ProjektKopfKiSicht` löst die Reflection ab, weil die
+Klimaregion als Id+Name über `KlimaGewaehlt` gesetzt wird; die Prüfung
+ist die Kopfregel (Name leer oder vergeben, Klima fehlt); kein
+Speicherweg, „Fertig" bleibt beim Anwender; 5 Felder. Startseite
+`Startseite`+`ErzeugerReiter` (Maske `Form_Start`,
+`StartseiteKiSicht`): Klimaregion und Solarart; Speichern läuft über
+den Knopf neben der Klimaregion, ohne offenes Projekt bleibt die Sicht
+schreibgeschützt; die Variantenwahl bleibt Navigation; die nackten
+Radioknöpfe sind durch `Optionsgruppe` ersetzt, die Stilregel steht in
+`epos-ui.css`. Einstellungen `EinstellungenDialog` (Maske
+`Form_AdminSettings`, `EinstellungenKiSicht`): fünf Adressen, „Neue
+Projekte mit Kühlung anlegen", die Diagrammfarben als Feldtafel je
+Farbrolle (54 Rollen aus `Diagrammfarben.Gruppen`), der Farbwert nur
+als `#RRGGBB`; Ordner, Datenbankname und der KI-Abschalter bleiben
+draußen; Speichern läuft über den Weg von OK ohne Schließen; neues
+Öffnungsziel `EINSTELLUNGEN` in `WinFormsNavigation`, iOS lehnt es
+benannt ab. „Alle Daten" der sechs Erzeuger-Projektmasken: eine
+Feldtafel über `ErzeugerProjektKiSicht`, `SolarkollektorenKiSicht` und
+`PhotovoltaikKiSicht`; die Feldkarte kommt aus `KatalogBrowserProfil`
+bzw. `ModulKatalogProfil`, die Namen tragen das Muster
+`katalog_<schlüssel>`; Speichern läuft über den Knopf des Aufklappers;
+ein zugeklappter Aufklapper, ein fehlender Speicherweg oder ein
+Auslieferungssatz lehnen mit Grund ab. Anzeigeschalter der neun
+Ergebnisreiter und des Kapitalwertverlaufs: keine eigene Maske — die
+Schalter hängen an `Simulation` als Spalte `anzeige` samt
+Reihenauswahl und Bedarfsart, `reiter` steht als Wahlfeld nur in
+Schritt ③, über das Register `Ergebnisanzeige` und die Grundklasse
+`Ergebnisblattwirt`; die Simulation wächst von 46 auf 47 Felder; die
+Wirtschaftlichkeitsseite trägt zusätzlich Zeitraum und Haken des
+Kapitalwertverlaufs.
+
+**Wächter danach.** Katalog 72 Masken, 151 Komponenten, 66
+Anmeldungen, 29 Wirte, 25 Ausnahmen (drei „Offen" = die
+Zapfprofil-Masken, Stufe 3), 81 Dateien in der Eingabebilanz; die fünf
+„#458 Stufe 2"-Ausnahmen, zehn Anzeige-Ausnahmen und fünf
+`BewusstDraussen`-Einträge entfallen; die Markup-Probe und die
+Eingabebilanz erkennen die Feldtafel; neue Profilwächter für „Alle
+Daten" und für die Farbrollen.
+
+**Tests.** Im Worktree Kern 5 327, UI 5 696, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Kern-Filter und Windows-Schale 0 Fehler. Nach dem Merge gefiltert: UI
+1 283 + 767, Kern 337 grün.
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(Stufenzeile #458/2, Abschnitt 4 „Stand der Abdeckung", die
+KI‑D‑Q11-Zeile fortgeschrieben); Wiki-Quelle `Projekte/Wiki/Programm
+Dokumentation - Hilfe-Assistent.wiki` (Absatz zum Ist-Zustand; Upload
+ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent steuert auch Startseite, Projektkopf,
+> Einstellungen, Kenndaten der Wärmepumpe und die Anzeige der
+> Simulationsergebnisse.
+
+**Was offen bleibt.** Stufe 3 — das Zapfprofil-Trio und der Rechenweg
+nach dem Z3-Merge, dafür fehlt weiterhin ein Rahmen für die
+Zahlenfolgen. iOS kennt das Öffnungsziel `EINSTELLUNGEN` nicht. Bei
+der Photovoltaik bleiben in „Alle Daten" zwei Temperaturkoeffizienten
+reine Lesewerte außerhalb des Profils. Die Puffer- und
+Stromspeicher-Projektmasken haben jetzt einen Speicherweg, der nur den
+Aufklapper trägt. Wiki-Upload (Hilfe-Assistent) weiterhin ausstehend.
+
+**Gate nach Merge auf `ab580309`.** Kern-Filter 0 Fehler; Tests Kern
+5 448, UI 5 737, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687
+Werte in Toleranz).
