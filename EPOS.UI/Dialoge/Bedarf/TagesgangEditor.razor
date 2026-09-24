@@ -379,9 +379,16 @@
     // Bedienung
     // =================================================================================
 
+    /// <summary>
+    /// Ein Tagtypwechsel lässt die 24 Stundenfelder des alten Tagtyps neu entstehen (ihr <c>@key</c>
+    /// wechselt) — eine noch offene Fehleingabe dort wäre sonst eine hängende Meldung, die „OK"
+    /// dauerhaft anhielte, obwohl das Feld beim nächsten Zeichnen wieder einen gültigen Wert zeigt.
+    /// </summary>
     private void TagtypWaehlen(int? id)
     {
         if (id is not int t || t < 0 || t >= ZapfprofilTagesgangsatzDaten.TAGTYPEN) return;
+        for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
+            _fehlfelder.Remove(Stundenfeld(_tagtyp, h));
         _tagtyp = t;
         _hinweis = "";
     }

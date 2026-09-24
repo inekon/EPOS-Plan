@@ -344,6 +344,27 @@ public class TagesgangEditorTests : EposBunitContext
         Assert.Contains("Werktag · Stunde 3", cut.Instance.Meldung?.Text);
     }
 
+    /// <summary>
+    /// Z4, Gruppe 2b Punkt 2: Ein Tagtypwechsel entfernt die Fehleingabe des alten Tagtyps aus
+    /// <c>_fehlfelder</c> — sonst hielte eine Fehleingabe, die der Anwender nie mehr sieht, „OK"
+    /// dauerhaft an.
+    /// </summary>
+    [Fact]
+    public void Ein_Tagtypwechsel_raeumt_die_Fehleingabe_des_alten_Tagtyps()
+    {
+        ZapfprofilTagesgangEingabeDaten? gesendet = null;
+        var cut = Aufbauen(speichern: e => { gesendet = e; return new ZapfprofilTagesgangErgebnis(true, 7, 1, false, null); });
+
+        Stundenfelder(cut)[2].Input("x");        // Werktag · Stunde 3: ungültig
+        Tagtyp(cut, "Samstag", 1);                // Tagtypwechsel — das Feld wird nicht mehr gezeigt
+        Stundenfelder(cut)[0].Input("10");        // eine echte Änderung im neuen Tagtyp
+
+        Ok(cut).Click();
+
+        Assert.NotNull(gesendet);                 // OK schreibt statt einer hängenden Fehlermeldung
+        Assert.Null(cut.Instance.Meldung);
+    }
+
     // =================================================================================
     // Der Hilfe-Assistent
     // =================================================================================
