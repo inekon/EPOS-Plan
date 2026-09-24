@@ -35,7 +35,10 @@
 @using WindowsFormsApplication1
 
 @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld, Zahlenfelder
-   kurz mit der Einheit dahinter, zwei Feldpaare je Zeile, sobald es passt. *@
+   kurz mit der Einheit dahinter, zwei Feldpaare je Zeile, sobald es passt.
+   ETAPPE E10 (Kennzeichnung A8): Traegt das Profil einen Vermerk zum Feld
+   (BrowserFeldwert.Hinweis), steht er als Tooltip an der Beschriftung - etwa
+   „Geraetedaten - nicht rechenwirksam" an der Nutzungsdauer von Kessel und BHKW. *@
 <Formularraster>
     <KindInhalt>
     @foreach (BrowserFeldwert feld in Felder)
@@ -48,21 +51,21 @@
         }
         else if (feld.Art == BrowserFeldArt.Zahl && Setzbar(feld))
         {
-            <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+            <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit" Titel="@feld.Hinweis"
                         Feldname="@feld.Feldname" Wert="@Zahl(feld)"
                         WertChanged="@(w => ZahlSetzen(feld, w))"
                         FehlerZustand="FehlerZustand" />
         }
         else if (feld.Art == BrowserFeldArt.Ganzzahl && Setzbar(feld))
         {
-            <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+            <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit" Titel="@feld.Hinweis"
                           Feldname="@feld.Feldname" Wert="@Ganzzahl(feld)"
                           WertChanged="@(w => GanzzahlSetzen(feld, w))"
                           FehlerZustand="FehlerZustand" />
         }
         else
         {
-            <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert"
+            <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert" Titel="@feld.Hinweis"
                       WertChanged="@(w => TextSetzen(feld, w))"
                       NurLesen="@(!Setzbar(feld))"
                       Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />

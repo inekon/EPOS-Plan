@@ -131,6 +131,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WirtschaftlichkeitParameterDialog", 30),
         // ---- Ende ETAPPE E9b ----
 
+        // ---- ETAPPE E10 (Nutzungsdauer Stufe S3) ----
+        // Die Nutzungsdauern (AfA) zeigen die zwei Saetze Instandsetzung und Wartung je
+        // Zeile und in der Neuzeile - vier Eingabestellen mehr. Die Feldkarte (KiDialoge,
+        // Maske Form_Nutzungsdauer) fuehrt sie mit: die Kopffelder neue_instandsetzung und
+        // neue_wartung, die Spalten instandsetzung und wartung (8 -> 12).
+        new("NutzungsdauerDialog", 12),
+        // ---- Ende ETAPPE E10 ----
+
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
@@ -170,7 +178,6 @@ public sealed class KiMaskenabdeckungWacheTests
         new("LeistungspreisBlock", 2),
         new("LeistungspreisReiheDialog", 2),
         new("ModulKatalogDialog", 4, "der Feldsatz des Profils, gebaut über den RenderTreeBuilder"),
-        new("NutzungsdauerDialog", 8),
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),

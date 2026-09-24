@@ -32,6 +32,10 @@
         public double m_Investition_KWel;
         public double m_Raumbedarf;
         public double m_Wartungskosten_kWhel;
+        /// <summary>
+        /// Nutzungsdauer laut Gerätekatalog [a] — Gerätedaten, NICHT rechenwirksam; maßgeblich
+        /// ist die Nutzungsdauertabelle (Etappe E10, Kennzeichnung A8, Empfehlung E10-Q4 a).
+        /// </summary>
         public int m_Nutzungsdauer;
         public int m_NOx;
         public int m_SO2;

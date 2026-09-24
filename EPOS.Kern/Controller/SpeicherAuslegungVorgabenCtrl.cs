@@ -92,6 +92,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> Leistungspreisquellen { get; set; }
             = new List<SpeicherOptimierungLeistungspreisQuelle>();
+
+        /// <summary>
+        /// ETAPPE E10 (Empfehlung E10-Q3 a): das Ersatzintervall [a], mit dem eine Einheit
+        /// OHNE eigene Angabe rechnet — die Nutzungsdauer der Nutzungsdauertabelle für
+        /// Stromspeicher; 0 = die Tabelle führt keine, <c>null</c> = nicht gelesen. Der
+        /// Flotten-Editor nennt es unter dem Feld „Ersatzintervall".
+        /// </summary>
+        public int? ErsatzintervallVorgabeJahre { get; set; }
     }
 
     /// <summary>

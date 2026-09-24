@@ -49,8 +49,12 @@ namespace WindowsFormsApplication1
         /// <summary>Fassung des Umschlags. Eine HÖHERE Fassung wird NICHT gelesen —
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
-        /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 9;
+        /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).
+        /// <para><b>Fassung 10 (Etappe E10, Stufe S3):</b> Jede Betriebskostenposition trägt
+        /// die Herkunft ihres Satzes (<c>KostenPositionNachweis.SatzHerkunft</c>), geschrieben
+        /// nur, wo der Satz aus der Nutzungsdauertabelle kam. Einer älteren Fassung fehlt sie;
+        /// ihre Positionen lesen sich „Satz der Zeile" — die Aussage des damaligen Laufs.</para></summary>
+        public const int FASSUNG = 10;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>

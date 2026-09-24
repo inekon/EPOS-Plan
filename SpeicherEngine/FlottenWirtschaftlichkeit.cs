@@ -137,7 +137,12 @@ public static class FlottenWirtschaftlichkeit
                 - a.OpexEuro - a.DurchsatzkostenEuro - a.ErsatzkostenEuro + a.EndenergieAusgleichEuro;
 
         var capex = x.Einheiten.Sum(Investition);
-        var residual = x.RestwertEuro + x.Einheiten.Sum(b => b.RestwertEuro);
+        // ETAPPE E10 (Nutzungsdauer Stufe S3, Empfehlung E10-Q3 a): Der Restwert je Einheit
+        // ist LINEAR aus ihrer Nutzungsdauer (Ersatzintervall) auf der Ersatzkette der Flotte -
+        // derselbe Ausdruck wie bei den Kostenpositionen (Rechenweg 08). Der feste Betrag
+        // FlottenEinheit.RestwertEuro ist ein Altfeld und wird NICHT mehr gelesen. Der
+        // zusaetzliche Restwert der Studie (x.RestwertEuro) bleibt, was er ist.
+        var residual = x.RestwertEuro + x.Einheiten.Sum(b => LinearerRestwert(b, accounts.Count));
         var npv = -capex;
         var accumulated = -capex;
         int? payback = null;
@@ -158,11 +163,52 @@ public static class FlottenWirtschaftlichkeit
         {
             InvestitionEuro = capex,
             KapitalwertEuro = npv,
+            RestwertEuro = residual,
             DiskontierteAmortisationJahr = payback,
             JahresCashflowsEuro = flows,
             Jahreskonten = accounts,
             IstWiederholteReferenzjahrProjektion = repeated
         };
+    }
+
+    /// <summary>
+    /// ETAPPE E10 (Nutzungsdauer Stufe S3, Empfehlung E10-Q3 a): der LINEARE Restwert EINER
+    /// Einheit am Ende der Laufzeit [EUR], nominal —
+    /// <c>RW_T = Betrag x Restdauer / n</c> wie bei den Kostenpositionen
+    /// (Rechenweg 08, <c>KapitalwertRechner.Ersatz</c>), aber auf der ERSATZKETTE DER FLOTTE.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Ersatzkette der Flotte</b> ist die, nach der <see cref="ErzeugeJahreskonto"/>
+    /// und <see cref="Bewerte"/> die Ersatzkosten buchen: faellig ist jedes Jahr 1…T, dessen
+    /// Nummer durch <c>n</c> (<see cref="FlottenEinheit.ErsatzintervallJahre"/>) teilbar ist —
+    /// auch das letzte Jahr. Die LETZTE Beschaffung ist damit das groesste Vielfache von
+    /// <c>n</c>, das T nicht uebersteigt, sonst die Erstbeschaffung in t = 0.</para>
+    /// <para><b>Der Betrag</b> ist der der letzten Beschaffung: die Ersatzkosten
+    /// (<see cref="FlottenEinheit.ErsatzkostenEuro"/>) nach einem Ersatz, sonst die Investition
+    /// (<see cref="Investition"/>). Alter = T − letzte Beschaffung, Restdauer = n − Alter; ein
+    /// Restwert steht nur bei positiver Restdauer. Faellt ein Ersatz genau ins letzte Jahr,
+    /// steht sein voller Betrag als Restwert daneben — Ausgabe und Restwert heben sich im
+    /// Kapitalwert auf, wie es die Kostenpositionen ohne Ersatz im Jahr T auch tun.</para>
+    /// <para><b>Ohne Nutzungsdauer</b> (<c>n &lt;= 0</c>) gibt es weder Ersatz noch Restwert —
+    /// dieselbe Regel wie „n &lt; 1 rechnet wie T" der Kostenpositionen. Die Nutzungsdauer der
+    /// Nutzungsdauertabelle setzt der Kern vor der Bewertung ein, wo die Einheit keine traegt
+    /// (<c>SpeicherFlottenStudieCtrl.ErsatzintervallAufloesen</c>); die Engine kennt keine
+    /// Tabelle.</para>
+    /// </remarks>
+    /// <param name="b">Die Einheit.</param>
+    /// <param name="jahre">Die Laufzeit T [a] — die Zahl der bewerteten Jahreskonten.</param>
+    /// <returns>Der nominale Restwert [EUR] im Jahr T; 0 ohne Nutzungsdauer oder Restdauer.</returns>
+    public static double LinearerRestwert(FlottenEinheit b, int jahre)
+    {
+        if (b is null || jahre <= 0) return 0.0;
+        var n = b.ErsatzintervallJahre;
+        if (n <= 0) return 0.0;
+
+        var letzte = jahre / n * n;                 // groesstes Vielfaches von n in 1…T, sonst 0
+        var betrag = letzte > 0 ? b.ErsatzkostenEuro : Investition(b);
+        double alter = jahre - letzte;
+        var rest = n - alter;
+        return rest > 1e-9 ? betrag * (rest / n) : 0.0;
     }
 
     /// <summary>

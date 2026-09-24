@@ -7585,6 +7585,9 @@ namespace WindowsFormsApplication1
                 bool endenergieVersucht = false;
                 // W5‑B‑8: dieselbe Kaskade wie in der Summenschleife, einmal je Lesepass.
                 Dictionary<KeyValuePair<int, int>, double> investSummen = null;
+                // ETAPPE E10 (Stufe S3): Lesestand der Nutzungsdauertabelle — nur für die
+                // HERKUNFT eines gepflegten Satzes, einmal je Lesepass und nur bei Bedarf.
+                NutzungsdauerSatztafel satztafel = null;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -7617,6 +7620,14 @@ namespace WindowsFormsApplication1
                     // Summenschleife — 0 heißt „ab dem ersten Jahr".
                     int start = StartJahrDerZeile(r);
 
+                    // ETAPPE E10 (Stufe S3, Fassung E10/9): gerechnet wird mit dem Satz der
+                    // Zeile, wie er gepflegt ist — die Nutzungsdauertabelle rechnet nicht
+                    // selbst. Ist der gepflegte Satz GENAU der der Tabelle (vorbelegt oder
+                    // übernommen), trägt die Zeile ihre Herkunft; Herleitung und Formelmappe
+                    // nennen sie.
+                    double? satzDerZeile = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
+                    bool satzAusTabelle = SatzAusTabelle(r, bem, satzDerZeile, ref satztafel);
+
                     var n = new KostenPositionNachweis
                     {
                         // W5‑B‑7: der Schlüssel und die Zuordnung — damit Dialog und
@@ -7630,7 +7641,8 @@ namespace WindowsFormsApplication1
                         Kostenart = Text(r, SchemaKatalog.SPALTE_PW_KOSTENART),
                         Bemessung = bem,
                         Menge = menge,
-                        Einheitpreis = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
+                        Einheitpreis = satzDerZeile,
+                        SatzHerkunft = satzAusTabelle ? NutzungsdauerSatzCtrl.HERKUNFT_TABELLE : null,
                         IstErloes = erloes,
                         SzenarioGepflegt = szenarioGepflegt,
                         StartJahr = start > 1 ? start : (int?)null
@@ -7651,6 +7663,28 @@ namespace WindowsFormsApplication1
                 // deren Abbruch nennt die Ergebniszeile (Rechenstufe „Betriebskosten").
             }
             return liste;
+        }
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3, Fassung E10/9) — die HERKUNFT des Satzes einer Betriebszeile,
+        /// allein für den Nachweis: Trägt eine Position „Instandhaltung …"/„Wartung …" mit
+        /// „% der Investition" GENAU den Satz der Nutzungsdauertabelle ihrer Technik, stammt er
+        /// aus ihr — vorbelegt über „Sätze vorbelegen…" oder übernommen mit der Vorlage
+        /// (<see cref="NutzungsdauerSatzCtrl.AusTabelle"/>).
+        ///
+        /// <para><b>Rechnet nichts.</b> Summen- und Nachweisschleife rechnen mit dem Satz der
+        /// Zeile, wie er steht; eine leere Zeile bleibt leer (Anwenderentscheid ND‑Q4: nichts
+        /// ändert eine gerechnete Wirtschaftlichkeit ohne Zutun). Ohne gepflegten Satz wird
+        /// die Tabelle gar nicht erst gelesen.</para>
+        /// </summary>
+        private static bool SatzAusTabelle(DataRow r, string bem, double? satz,
+                                           ref NutzungsdauerSatztafel satztafel)
+        {
+            if (!satz.HasValue || !IstProzentInvest(bem)) return false;
+            int komponente = r.Table.Columns.Contains("KomponentenID") && r["KomponentenID"] != DBNull.Value
+                ? Convert.ToInt32(r["KomponentenID"], System.Globalization.CultureInfo.InvariantCulture) : 0;
+            return NutzungsdauerSatzCtrl.AusTabelle(bem, satz, komponente, Text(r, "Bezeichnung"),
+                                                    ref satztafel);
         }
 
         /// <summary>
