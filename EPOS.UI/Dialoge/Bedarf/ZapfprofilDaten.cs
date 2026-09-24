@@ -984,6 +984,12 @@ public sealed class ZapfprofilPerzentilDaten
     /// <summary>Der maßgebende Jahrestag (1 … 365).</summary>
     public int Tag { get; set; }
 
+    /// <summary>
+    /// Der maßgebende Tag als Datum in der Oberflächensprache („17. Januar") — aus dem Rechenjahr
+    /// ohne Schaltjahr, unabhängig vom Kalenderjahr; leer = die Hülle hat keines gesetzt.
+    /// </summary>
+    public string Datum { get; set; } = "";
+
     /// <summary>Speicher: Die Werte sind erforderliche Volumina [l] beim Φ_N; sonst Minutenspitzen [kW].</summary>
     public bool Volumen { get; set; }
 

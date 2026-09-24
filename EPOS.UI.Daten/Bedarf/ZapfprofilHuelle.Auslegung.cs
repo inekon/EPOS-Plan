@@ -438,6 +438,7 @@ namespace WindowsFormsApplication1
                 Mindestzahl = Zapfensemble.Mindestzahl(p.Perzentil),
                 Belastbar = p.Belastbar,
                 Tag = p.Tag,
+                Datum = Datum(p.Tag),
                 Volumen = volumen,
                 LeistungKw = volumen ? p.LeistungKw : null,
                 Minimum = w.Minimum,
@@ -462,6 +463,18 @@ namespace WindowsFormsApplication1
                 d.KonsistenzLeistungKw = p.LeistungKw;
             }
             return d;
+        }
+
+        /// <summary>
+        /// Ein Jahrestag 1 … 365 als Datum in der Oberflächensprache („17. Januar", „January 17") —
+        /// über das Rechenjahr ohne Schaltjahr (<see cref="Zapfkalender"/>), nie über ein
+        /// Kalenderjahr; außerhalb des Rasters leer.
+        /// </summary>
+        internal static string Datum(int jahrestag)
+        {
+            if (jahrestag < 1 || jahrestag > Zapfkalender.TAGE) return "";
+            (int tag, int monat) = TagUndMonat(jahrestag);
+            return Format(Text_("ZPG_AUS_DATUM", "{0}. {1}"), tag.ToString(CultureInfo.CurrentCulture), Monatsname(monat));
         }
 
         private static ZapfprofilKarteDaten Karte(Auslegungswert w) => new ZapfprofilKarteDaten

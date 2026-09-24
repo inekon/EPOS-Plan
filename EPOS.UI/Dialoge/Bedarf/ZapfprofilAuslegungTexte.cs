@@ -143,7 +143,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string LabelPerzentil { get; set; } = "Auslegungsperzentil";
 
     /// <summary><c>ZPG_AUS_HERL_PERZENTIL</c></summary>
-    public string HerleitungPerzentil { get; set; } = "P95 oder P99 (K3) · Vorgabe P{0}";
+    public string HerleitungPerzentil { get; set; } = "P95 oder P99 · Vorgabe P{0}";
 
     /// <summary><c>ZPG_AUS_LBL_REALISIERUNGEN</c></summary>
     public string LabelRealisierungen { get; set; } = "Realisierungen des Bedarfstags";

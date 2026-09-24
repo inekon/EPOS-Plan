@@ -1216,7 +1216,7 @@ namespace WindowsFormsApplication1
                 : "";
 
         /// <summary>Tag im Monat und Monat eines Jahrestags 1 … 365.</summary>
-        private static (int Tag, int Monat) TagUndMonat(int jahrestag)
+        internal static (int Tag, int Monat) TagUndMonat(int jahrestag)
         {
             int monat = Zapfkalender.Monat(jahrestag);
             int vorher = 0;

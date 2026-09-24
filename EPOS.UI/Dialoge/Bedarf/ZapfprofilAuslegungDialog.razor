@@ -29,7 +29,7 @@
    "rechnet ..." bis zum Ergebnis, das per InvokeAsync kommt; ein Abbruch schaltet ihn aus und
    rechnet deterministisch nach; der Delegat "Rechnen" rechnet stets ohne Ensemble). Mit ihm
    stehen das Auslegungsperzentil
-   (P95 | P99, K3) und die Realisierungen des Bedarfstags (leer = Vorgabe des Kerns) in den
+   (P95 | P99) und die Realisierungen des Bedarfstags (leer = Vorgabe des Kerns) in den
    Eingaben. Die Karte (b) zeigt dann den Perzentilwert der Auslegungsgroesse (Speicher:
    Volumen beim Phi_N des Summenlinienpunkts; sonst Minutenspitze), das Streuband P50 ... P99
    samt Spannweite als Tabellenzeilen, die Gleichzeitigkeit als Ergebnis (GLF_V bzw. GLF_P mit
@@ -213,7 +213,7 @@
                             }
                             else if (g.PerzentilErgebnis is { } pz)
                             {
-                                <p class="epos-leisezeile epos-zapfausl-perzentil-lauf">@Format(Texte.PerzentilLauf, pz.Seed, pz.Realisierungen, pz.Tag)</p>
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-lauf">@Format(Texte.PerzentilLauf, pz.Seed, pz.Realisierungen, pz.Datum.Length > 0 ? pz.Datum : Ganz(pz.Tag))</p>
                                 @* P_p = ∞ (ohne Nachweis beim Φ_N): der Satz des Kerns und ein eigener „entfällt". *@
                                 if (g.Perzentil.Stand == ZapfprofilKartenstand.NichtRechenbar)
                                 {

@@ -25848,7 +25848,7 @@ Do you want to allow this?</value>
     <value>Design percentile</value>
   </data>
   <data name="ZPG_AUS_HERL_PERZENTIL" xml:space="preserve">
-    <value>P95 or P99 (K3) · default P{0}</value>
+    <value>P95 or P99 · default P{0}</value>
   </data>
   <data name="ZPG_AUS_LBL_REALISIERUNGEN" xml:space="preserve">
     <value>Realisations of the design day</value>
@@ -26593,5 +26593,8 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL" xml:space="preserve">
     <value>Consistency note omitted — the percentile is not calculable (reason in card (b)).</value>
+  </data>
+  <data name="ZPG_AUS_DATUM" xml:space="preserve">
+    <value>{1} {0}</value>
   </data>
 </root>

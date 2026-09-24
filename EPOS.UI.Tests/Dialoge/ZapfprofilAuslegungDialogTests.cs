@@ -710,6 +710,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Mindestzahl = 100,
         Belastbar = belastbar,
         Tag = 17,
+        Datum = "17. Januar",
         Volumen = volumen,
         LeistungKw = volumen ? 25 : null,
         Streuband =
@@ -782,7 +783,8 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         IElement p99 = cut.FindAll("fieldset[aria-label='Auslegungsperzentil'] label.epos-option")
                           .Single(l => l.TextContent.Trim() == "P99").QuerySelector("input")!;
         Assert.True(p99.HasAttribute("checked"));
-        Assert.Contains("P95 oder P99 (K3) · Vorgabe P99", cut.Markup);
+        Assert.Contains("P95 oder P99 · Vorgabe P99", cut.Markup);
+        Assert.DoesNotContain("(K3)", cut.Markup);
         Assert.Equal("(150)", Feld(cut, "Realisierungen des Bedarfstags").GetAttribute("placeholder"));
         Assert.Contains("Ganze Zahl von 1 bis 100000 · leer = Vorgabe 150 (Vielfaches der Mindestzahl); unter 100 ist P99 "
                         + "nicht belastbar.", cut.Markup);
@@ -841,7 +843,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
 
         IElement b = cut.Find(".epos-zapfausl-karte--perzentil");
-        Assert.Contains("nach „Stochastisch rechnen“: Seed 1 · 150 Tage gezogen · maßgebender Tag 17", b.TextContent);
+        Assert.Contains("nach „Stochastisch rechnen“: Seed 1 · 150 Tage gezogen · maßgebender Tag 17. Januar", b.TextContent);
         IElement wert = b.QuerySelector(".epos-zapfausl-perzentil-wert")!;
         Assert.Contains("Volumen P99", wert.TextContent);
         Assert.Contains("310 l bei 25,0 kW", wert.TextContent);

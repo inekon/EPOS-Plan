@@ -75204,6 +75204,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}. {1} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_DATUM {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die D_max = 0: Die Ladeleistung deckt jede Stundenlast; „profilbasiert“ zeigt „–“ statt 0 l — den größten Wert liefert dann DIN 4708. ähnelt.
         /// </summary>
         public static string ZPG_AUS_DMAX_NULL {
@@ -75483,7 +75492,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die P95 oder P99 (K3) · Vorgabe P{0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die P95 oder P99 · Vorgabe P{0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_HERL_PERZENTIL {
             get {

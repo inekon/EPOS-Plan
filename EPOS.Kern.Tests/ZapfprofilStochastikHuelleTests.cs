@@ -180,6 +180,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4, s.Seed);
             Assert.Equal(12, s.Realisierungen);
             Assert.Equal(33, s.Tag);
+            Assert.Equal("2. Februar", s.Datum);                             // der maßgebende Tag als Datum
             Assert.Equal(20, s.Mindestzahl);
             Assert.False(s.Belastbar);
             Assert.Equal(25.0, s.LeistungKw);
@@ -240,6 +241,24 @@ namespace EPOS.Kern.Tests
             Assert.False(w.Volumen);
 
             Assert.Null(ZapfprofilHuelle.PerzentilDaten(new Auslegungsgruppe { Topologie = ZapfTopologie.Speicher }));
+        }
+
+        /// <summary>
+        /// Der maßgebende Tag der Karte (b) als Datum: aus dem Rechenjahr ohne Schaltjahr (Tag 60 ist
+        /// der 1. März), in der Oberflächensprache; außerhalb 1 … 365 leer.
+        /// </summary>
+        [Fact]
+        public void Der_massgebende_Tag_steht_als_Datum_ohne_Schaltjahr()
+        {
+            Assert.Equal("17. Januar", ZapfprofilHuelle.Datum(17));
+            Assert.Equal("1. März", ZapfprofilHuelle.Datum(60));
+            Assert.Equal("31. Dezember", ZapfprofilHuelle.Datum(365));
+            Assert.Equal("", ZapfprofilHuelle.Datum(0));
+            Assert.Equal("", ZapfprofilHuelle.Datum(366));
+
+            CultureInfo.CurrentUICulture = EN;
+            Assert.Equal("January 17", ZapfprofilHuelle.Datum(17));
+            Assert.Equal("March 1", ZapfprofilHuelle.Datum(60));
         }
 
         /// <summary>
