@@ -902,8 +902,14 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Sechs Spalten</b> nach 5.4: Nutzungsart (der Bezeichner) · Bezugsart ·
         /// Kalender · Herkunft der Bedarfswerte · Katalogversion · Status. Kennwerte je
-        /// Niveau stehen bewusst NICHT in der Liste, sondern im lesenden Formularraster
-        /// darunter — die Liste waehlt, sie vergleicht keine Zahlen.</para>
+        /// Niveau stehen bewusst NICHT in der Liste, sondern im Stammblatt daneben —
+        /// die Liste waehlt, sie vergleicht keine Zahlen.</para>
+        ///
+        /// <para><b>Rang</b> (Stufe Z4, Katalogprobe N23: ohne Rang rollte die Liste bei
+        /// 1 088 px um 58 px, bei 400 px um 350 px quer): Nutzungsart und Bezugsart stehen
+        /// immer; Kalender und Katalogversion bei Platz; Herkunft und Status weichen als
+        /// erste — das Schloss zeigt die Auslieferung ohnehin, und das Stammblatt nennt
+        /// beide.</para>
         ///
         /// <para>Die Zeilen liefert <c>TwwNutzungsartCtrl.Katalogfilterzeilen</c>; ihr
         /// <see cref="Katalogfilterzeile.Schluessel"/> ist die ID, weil der Bezeichner
@@ -920,10 +926,10 @@ namespace WindowsFormsApplication1
                 {
                     new Katalogspalte(SpBezeichner,     t("KFLT_SP_NUTZUNGSART")),
                     new Katalogspalte(SpBezugsart,      t("KFLT_SP_BEZUGSART")),
-                    new Katalogspalte(SpKalender,       t("KFLT_SP_KALENDER")),
-                    new Katalogspalte(SpHerkunft,       t("KFLT_SP_HERKUNFT")),
-                    new Katalogspalte(SpKatalogversion, t("KFLT_SP_KATALOGVERSION")),
-                    new Katalogspalte(SpStatus,         t("KFLT_SP_STATUS"))
+                    new Katalogspalte(SpKalender,       t("KFLT_SP_KALENDER"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpHerkunft,       t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.Breit),
+                    new Katalogspalte(SpKatalogversion, t("KFLT_SP_KATALOGVERSION"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpStatus,         t("KFLT_SP_STATUS"), rang: Katalogspaltenrang.Breit)
                 }
             };
         }
