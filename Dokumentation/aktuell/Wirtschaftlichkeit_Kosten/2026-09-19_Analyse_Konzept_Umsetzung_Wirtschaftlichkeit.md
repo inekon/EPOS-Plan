@@ -606,11 +606,11 @@ aus E10. **Alle Fragen sind entschieden** (24.09.2026, nach Empfehlung); die zwe
 E9b‑Q5 b und E7c3‑Q6 a — sind mit der kleinen Bauwelle **E13 (#474)** gebaut, dazu der Halbsatz aus A8 und zwei
 Hilfe-Anker. **E12** (Wiki-Runden) ist mit #470 vorbereitet, der Sammel-Upload am 26.09.2026 freigegeben; E11 entfällt —
 damit ist der Etappenplan E0–E12 bis auf den Upload abgearbeitet. Nach dem Befund 1 aus E9a ergänzt **E14 (#477)** den
-Teil b von E8: Die Formelmappe rechnet die Stufen 1 und 2 für alle drei Szenarien; ihre drei Fragen E14‑Q1…Q3 sind offen.
+Teil b von E8: Die Formelmappe rechnet die Stufen 1 und 2 für alle drei Szenarien; ihre drei Fragen E14‑Q1…Q3 sind am 24.09.2026 nach Empfehlung entschieden (a).
 Aus V‑E (E9) ist das Risiko V‑G7 mit dem eigenen Auftrag **E15 (#478)** gebaut — Schemaschritt 125, Zinszuschlag oder
-Zahlungsstromabzug, Vorgabe aus; seine vier Fragen E15‑Q1…Q4 sind offen. Die nicht monetarisierbaren Wirkungen V‑G11
+Zahlungsstromabzug, Vorgabe aus; seine vier Fragen E15‑Q1…Q4 sind am 24.09.2026 nach Empfehlung entschieden (a). Die nicht monetarisierbaren Wirkungen V‑G11
 sind mit **E17 (#479)** gebaut — Schemaschritt 127, Liste mit Kategorie und Beurteilung statt Freitext, ohne
-Rechenwirkung; seine vier Fragen E17‑Q1…Q4 sind offen. Die n-jährlichen Zeitpunkte V‑G3 sind mit **E16 (#484)** gebaut —
+Rechenwirkung; seine vier Fragen E17‑Q1…Q4 sind am 24.09.2026 nach Empfehlung entschieden (a). Die n-jährlichen Zeitpunkte V‑G3 sind mit **E16 (#484)** gebaut —
 Schemaschritt 129, Betriebspositionen „alle n Jahre", ohne Pflege ergebnisneutral; seine vier Fragen E16‑Q1…Q4 sind
 offen. Damit ist die Gap-Tafel V‑G des Konzepts geschlossen.
 **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
