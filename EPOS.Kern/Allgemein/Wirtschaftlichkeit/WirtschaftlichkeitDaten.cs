@@ -2029,8 +2029,20 @@ namespace WindowsFormsApplication1
         /// <summary>Bezugsmenge der Bemessung; <c>null</c> = nicht gepflegt.</summary>
         public double? Menge;
 
-        /// <summary>Satz der Bemessung; <c>null</c> = nicht gepflegt.</summary>
+        /// <summary>Satz der Bemessung, mit dem gerechnet wurde; <c>null</c> = keiner.
+        /// <para><b>ETAPPE E10:</b> Kam er aus der Nutzungsdauertabelle (die Zeile trug
+        /// keinen eigenen), steht er hier trotzdem — und <see cref="SatzHerkunft"/> sagt
+        /// es.</para></summary>
         public double? Einheitpreis;
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3, Nachweisumschlag Fassung 10) — WOHER der Satz kommt:
+        /// <c>NutzungsdauerSatzCtrl.HERKUNFT_TABELLE</c>, wenn die Zeile keinen eigenen Satz
+        /// trug und der der Nutzungsdauertabelle für ihre Technik galt; <c>null</c> = der
+        /// gepflegte Satz der Zeile (oder keiner). <c>null</c> steht nicht im Umschlag
+        /// (<c>WhenWritingNull</c>) — eine Zeile mit eigenem Satz schreibt sich wie zuvor.
+        /// </summary>
+        public string SatzHerkunft;
 
         /// <summary>Angesetzter Jahresbetrag [€/a] — positiv Ausgabe, negativ Einnahme.</summary>
         public double BetragJahr;
