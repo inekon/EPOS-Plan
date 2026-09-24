@@ -28,9 +28,16 @@ namespace WindowsFormsApplication1
         /// Zeigt den Modulkatalog als eigenes Fenster — der Weg von
         /// <c>WinFormsNavigation</c> für beide Maskenschlüssel.
         /// </summary>
+        /// <param name="importmass">Das Wunschmaß des Imports, den das Fenster hinter
+        /// „Import…" als Überlagerung trägt (<c>KatalogImportHuelle.Wunschmass</c>,
+        /// <c>ModulImportHuelle.Wunschmass</c>); leer = keiner. Das Fenster wünscht
+        /// mindestens dieses Maß — eine Überlagerung wird nie breiter als ihr Fenster, und
+        /// mit 860 px bekam der Stromspeicherimport (1 180 px) nur 826 px (Konzept
+        /// Administrationsdialoge 7.1 d).</param>
         /// <returns><c>true</c>, wenn der Anwender mit „Beenden" geschlossen hat.</returns>
         internal static bool Oeffnen(IWin32Window besitzer, ModulKatalogProfil profil,
-                                     IReadOnlyDictionary<string, object> gaben)
+                                     IReadOnlyDictionary<string, object> gaben,
+                                     Size importmass = default)
         {
             bool ok = false;
             BlazorDialogForm<ModulKatalogDialog> dlg = null;
@@ -44,7 +51,9 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<ModulKatalogDialog>(profil.Titel, MASS, werte);
+            (int breite, int hoehe) = EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                MASS.Width, MASS.Height, importmass.Width, importmass.Height);
+            dlg = new BlazorDialogForm<ModulKatalogDialog>(profil.Titel, new Size(breite, hoehe), werte);
 
             using (dlg)
             {
