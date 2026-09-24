@@ -405,3 +405,5 @@ Bearbeiten; Brennstoffkatalog: „Sonstige" mit Heizwert und Brennwert 1,0. (6) 
   Logbuch-Sätze und die Wiki-Quelle der Seite Wirtschaftlichkeit, der Nachtrag „Katalog-Generation 9" in
   `Referenzlaeufe/LIESMICH.md`; die Berichtigung der Vbh-Aussagen aus #440 und #446 in der Statusdatei (Nach #440
   (a), Nach #446 (a), „präzisiert #452").
+
+**Entscheide 24.09.2026:** alle nach Empfehlung (E7c3‑Q6: a, Bau offen), siehe Register R‑E7c3
