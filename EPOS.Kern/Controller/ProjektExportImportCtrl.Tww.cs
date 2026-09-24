@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
     /// beides. Eine Auslieferungszeile ist eine unveränderliche Version und wird nicht
     /// verglichen.</para>
     ///
-    /// <para><b>Schemaschritt 125 (T3 „Typtage").</b> Die WAHL des Typtagwegs an
+    /// <para><b>Schemaschritt 130 (T3 „Typtage").</b> Die WAHL des Typtagwegs an
     /// <c>Tab_TwwProjekt</c> (<c>Typtage_Aktiv</c>, <c>Typtage_Klimazone</c>,
     /// <c>Typtage_Gebaeudeart</c>) reist mit der Projektzeile — die eingespielten Typtage selbst
     /// NIE: <c>Tab_TwwTyptag_IMPORT</c> führt kein <c>ID_Projekt</c>, endet nicht auf <c>_STAMM</c>
@@ -246,9 +246,9 @@ namespace WindowsFormsApplication1
             var quellen = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>>(baeume ?? Enumerable.Empty<Dictionary<string, List<Dictionary<string, JsonElement>>>>());
             if (katalogzeilen != null) quellen.Add(katalogzeilen);
             TwwSpaltenschrittMelden(quellen, TwwSchema.SpaltenT3, 124);
-            // Schritt 125 (T3 "Typtage", Stufe Z4b): die WAHL des Typtagwegs reist mit der
+            // Schritt 130 (T3 "Typtage", Stufe Z4b): die WAHL des Typtagwegs reist mit der
             // Projektzeile - die eingespielten Typtage selbst NIE (Konzept Kapitel 6).
-            TwwSpaltenschrittMelden(quellen, TwwSchema.SpaltenT3Typtage, 125);
+            TwwSpaltenschrittMelden(quellen, TwwSchema.SpaltenT3Typtage, 130);
         }
 
         /// <summary>

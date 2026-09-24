@@ -584,18 +584,18 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller
 > dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
-> **Nachtrag: Schemastand 125 (Zapfprofilgenerator, Stufe Z4b, Schemaschritt T3 „Typtage"), die Basis
-> bleibt.** Migrationsschritt **125** (`SCHRITT_125_ZAPFPROFIL_TYPTAGE`; Quelle
+> **Nachtrag: Schemastand 130 (Zapfprofilgenerator, Stufe Z4b, Schemaschritt T3 „Typtage"), die Basis
+> bleibt.** Migrationsschritt **130** (`SCHRITT_130_ZAPFPROFIL_TYPTAGE`; Quelle
 > `TwwSchema.AnweisungenT3Typtage`): die Tabelle `Tab_TwwTyptag_IMPORT` — STRICT, elf Spalten (`ID`,
 > `Art`, `Klimazone`, `Gebaeudeart`, `Typtag`, `Aufloesung_min`, `Zeilenindex`, `Wert`, `Quelle`,
 > `Ausgabe`, `Datum_Import`), natürlicher Schlüssel (`Art`, `Klimazone`, `Gebaeudeart`, `Typtag`,
 > `Zeilenindex`), **kein `Status` und kein `ReadOnly`**, kein Fremdschlüssel. Sie nimmt die Typtage auf,
 > die der **lizenzierte Anwender** selbst einspielt; das Repositorium bringt keine Zeile mit (Konzept
 > Kapitel 6), und die Auslieferungsvorlage leert sie. Nachgezogen auf der Fassung von origin mit
-> Schemastand **124** (Nachtrag oben, `1d971b1a…`) mit
+> Schemastand **129** (Nachtrag oben, `4c546a7c…`) mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (eine
 > Tabelle angelegt, keine Spalte; ein zweiter Lauf legt nichts an). **Kein DML:** Die Tabelle ist und
-> bleibt LEER — 132 Tabellen statt 131, sonst nichts geändert; `SchemaVersion` 124 → 125. Größe
+> bleibt LEER — 132 Tabellen statt 131, sonst nichts geändert; `SchemaVersion` 129 → 130. Größe
 > 67 801 088 Byte (LFS-SHA-256 `40f742d5…`). **Keine Einfrierregel ist berührt:** Kein Referenzprojekt
 > steht auf dem Generator, und ohne eingespielte Typtage ist der Typtagweg benannt nicht verfügbar.
 > Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,

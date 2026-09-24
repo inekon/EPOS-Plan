@@ -203,7 +203,7 @@ namespace WindowsFormsApplication1
                          || projektZeile.FuellstandBezug.HasValue)
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
                         ZapfSatz.Neu("SPEICHER_SPALTE_FEHLT", TwwSchema.TAB_TWW_PROJEKT + "." + TwwSchema.SPALTE_PERSONEN_AUTO));
-                // Schritt 125 (T3 „Typtage"): die Wahl des Typtagwegs - vor dem Schritt fehlen die
+                // Schritt 130 (T3 „Typtage"): die Wahl des Typtagwegs - vor dem Schritt fehlen die
                 // Spalten. Eine gesetzte Wahl lehnt der Schreibweg dann benannt ab, statt sie still
                 // fallen zu lassen; OHNE Wahl laeuft das Speichern durch wie vor dem Schritt.
                 if (SpalteImVorgang(v, TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_TYPTAGE_AKTIV))
@@ -304,7 +304,7 @@ namespace WindowsFormsApplication1
             else if (p.PersonenManuell.HasValue && (double.IsNaN(p.PersonenManuell.Value) || double.IsInfinity(p.PersonenManuell.Value)
                                                     || p.PersonenManuell.Value < 0))
                 grund = ZapfSatz.Neu("BEGRIFF_PERSONEN");
-            // Schritt 125: die Wahl des Typtagwegs - die Klimazone ist eine Nummer des Pakets > 0
+            // Schritt 130: die Wahl des Typtagwegs - die Klimazone ist eine Nummer des Pakets > 0
             // (Wertemenge der DDL, TwwSchema.SpaltenT3Typtage).
             else if (p.TyptageKlimazone.HasValue && p.TyptageKlimazone.Value <= 0)
                 grund = ZapfSatz.Neu("BEGRIFF_TYPTAGE_KLIMAZONE");
@@ -574,7 +574,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Wahl des Typtagwegs (Schritt 125, <see cref="TwwSchema.SpaltenT3Typtage"/>) in ihren
+        /// Die Wahl des Typtagwegs (Schritt 130, <see cref="TwwSchema.SpaltenT3Typtage"/>) in ihren
         /// Spalten: gespeichert wird die WAHL, nie ein Wert der Typtage. Eine leere Gebäudeart
         /// wird als NULL geschrieben — „keine Wahl" ist genau ein Zustand.
         /// </summary>

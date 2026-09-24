@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.True(TwwTyptagCtrl.TabelleVorhanden(), "Die Kopie steht nicht auf Schritt 125.");
+            Assert.True(TwwTyptagCtrl.TabelleVorhanden(), "Die Kopie steht nicht auf Schritt 130.");
             TwwTyptagstand stand = TwwTyptagCtrl.Stand();
             Assert.False(stand.Vorhanden);
             Assert.Equal(0, stand.Zeilen);

@@ -535,8 +535,8 @@ namespace WindowsFormsApplication1
         /// folgt auf den Heizkreis (128). Die Nummer steht allein bei <see cref="WiederholperiodeSchema.SCHRITT"/>.
         /// <b>Reines DDL, ergebnisneutral bis zur ersten Pflege:</b> NULL, 0 und 1 heißen
         /// „jährlich wie bisher"; der Referenzlauf bleibt byte-gleich.
-        /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 125, Zapfprofilgenerator Stufe
-        /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>125</b>: die Tabelle
+        /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 130, Zapfprofilgenerator Stufe
+        /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>130</b>: die Tabelle
         /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein
         /// <c>ReadOnly</c>) — <see cref="TwwSchema.AnweisungenT3Typtage"/> — und an
         /// <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt (<c>Typtage_Aktiv</c> 0/1 mit
@@ -549,7 +549,7 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = WiederholperiodeSchema.SCHRITT;
+        public const int Zielversion = 130;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

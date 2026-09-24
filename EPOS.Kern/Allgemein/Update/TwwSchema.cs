@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     /// Abschnitte 3.1 und 3.2, Stufe Z0), Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
     /// Schritt 115, <see cref="AnweisungenT2"/>) und Schemaschritt T3 „Laufangaben der Auslegung
     /// und Bezugsart am Bedarfstag" (Stufe Z4, Schritt 124, <see cref="SpaltenT3"/>) und
-    /// Schemaschritt T3 „Typtage" (Stufe Z4b, Schritt 125,
+    /// Schemaschritt T3 „Typtage" (Stufe Z4b, Schritt 130,
     /// <see cref="AnweisungenT3Typtage"/>): Den Papiernamen T3 des Konzepts 3.2 trägt im
     /// Bestand schon Schritt 124 — gemeint ist dort die Spaltenerweiterung, hier die Tabelle
     /// der Typtage (Nachtrag N14).
@@ -602,7 +602,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Schemaschritt T3 „Typtage" (Schritt 125, Stufe Z4b): die
+        //  Schemaschritt T3 „Typtage" (Schritt 130, Stufe Z4b): die
         //  eingespielten Typtage des lizenzierten Anwenders
         // =================================================================
 
@@ -645,7 +645,7 @@ namespace WindowsFormsApplication1
             ") STRICT";
 
         /// <summary>
-        /// Die Anweisungen des Schemaschritts T3 „Typtage" (Schritt 125, Stufe Z4b): die
+        /// Die Anweisungen des Schemaschritts T3 „Typtage" (Schritt 130, Stufe Z4b): die
         /// eingespielten Typtage. Die Tabelle steht für sich — kein Fremdschlüssel, kein Verweis
         /// auf einen Katalog —, sie darf deshalb vor oder nach den übrigen entstehen. Reines DDL,
         /// wiederholbar über <c>IF NOT EXISTS</c>; nach dem Schritt ist sie leer, und kein
@@ -660,7 +660,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Schemaschritt T3 „Typtage" (Schritt 125, Stufe Z4b): die WAHL des
+        //  Schemaschritt T3 „Typtage" (Schritt 130, Stufe Z4b): die WAHL des
         //  Typtagwegs je Projekt
         // =================================================================
 
@@ -686,7 +686,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_TYPTAGE_GEBAEUDEART = "Typtage_Gebaeudeart";
 
         /// <summary>
-        /// <b>Die drei Spalten der Wahl des Typtagwegs</b> (Schritt 125, Stufe Z4b, Gruppe 2;
+        /// <b>Die drei Spalten der Wahl des Typtagwegs</b> (Schritt 130, Stufe Z4b, Gruppe 2;
         /// Umsetzungskonzept Zapfprofilgenerator N14 (i), Folge (b)): Sie stehen im SELBEN Schritt
         /// wie <see cref="AnweisungenT3Typtage"/> — die Tabelle der eingespielten Werte und die
         /// Wahl, die sie benutzt, gehören zusammen, und der Schritt war noch nicht ausgerollt.
@@ -711,7 +711,7 @@ namespace WindowsFormsApplication1
             new TwwSpalte(TAB_TWW_PROJEKT, SPALTE_TYPTAGE_GEBAEUDEART, "TEXT"),
         };
 
-        /// <summary>Stehen alle Spalten von <see cref="SpaltenT3Typtage"/> (die Wahl des Typtagwegs, Schritt 125)?</summary>
+        /// <summary>Stehen alle Spalten von <see cref="SpaltenT3Typtage"/> (die Wahl des Typtagwegs, Schritt 130)?</summary>
         public static bool T3TyptageVollstaendig()
             => SpaltenT3Typtage.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
 

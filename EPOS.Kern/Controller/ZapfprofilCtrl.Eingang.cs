@@ -98,7 +98,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Weiche des Jahresgangs auf die eingespielten Typtage</b> (Konzept 4.2, 5.3;
         /// N14 (i)): <c>null</c>, solange das Projekt den Typtagweg nicht gewählt hat
-        /// (<c>Tab_TwwProjekt.Typtage_Aktiv</c> = 0, auch der Stand vor Schritt 125) — dann rechnet
+        /// (<c>Tab_TwwProjekt.Typtage_Aktiv</c> = 0, auch der Stand vor Schritt 130) — dann rechnet
         /// der Jahresgang wie im Bestand über den Formvektor.
         ///
         /// <para><b>Ist die Wahl gesetzt, entsteht die Anbindung IMMER</b> — mit dem eingespielten

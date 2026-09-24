@@ -109,7 +109,7 @@ namespace WindowsFormsApplication1
         private const string SPALTEN = "\"Art\", \"Klimazone\", \"Gebaeudeart\", \"Typtag\", \"Aufloesung_min\", " +
                                        "\"Zeilenindex\", \"Wert\", \"Quelle\", \"Ausgabe\", \"Datum_Import\"";
 
-        /// <summary>Führt die Datenbank die Tabelle der eingespielten Typtage (Stand ab Schritt 125)?</summary>
+        /// <summary>Führt die Datenbank die Tabelle der eingespielten Typtage (Stand ab Schritt 130)?</summary>
         internal static bool TabelleVorhanden() => DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TYPTAG_IMPORT);
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// <b>Der Stand der eingespielten Typtage.</b> Ohne Tabelle (Stand vor 125) und ohne Zeile
+        /// <b>Der Stand der eingespielten Typtage.</b> Ohne Tabelle (Stand vor 130) und ohne Zeile
         /// ist <see cref="TwwTyptagstand.Vorhanden"/> <c>false</c>.
         /// </summary>
         internal static TwwTyptagstand Stand()

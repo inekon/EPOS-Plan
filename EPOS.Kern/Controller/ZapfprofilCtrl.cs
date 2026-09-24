@@ -427,7 +427,7 @@ namespace WindowsFormsApplication1
             int? werkstoff = SpalteDa(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF)
                 ? GanzOderNull(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF) : null;
             int? bezug = SpalteDa(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) ? GanzOderNull(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) : null;
-            // Schritt 125 (T3 „Typtage"): die Wahl des Typtagwegs - vor dem Schritt fehlen die
+            // Schritt 130 (T3 „Typtage"): die Wahl des Typtagwegs - vor dem Schritt fehlen die
             // Spalten, dann gelten die DDL-Vorgaben (aus, keine Angabe).
             int? typtagzone = SpalteDa(r, TwwSchema.SPALTE_TYPTAGE_KLIMAZONE)
                 ? GanzOderNull(r, TwwSchema.SPALTE_TYPTAGE_KLIMAZONE) : null;

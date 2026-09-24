@@ -402,26 +402,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt 125 (T3 „Typtage", Stufe Z4b) steht in der Migration der Schale NACH 124
+        /// Der Schritt 130 (T3 „Typtage", Stufe Z4b) steht in der Migration der Schale NACH dem
+        /// letzten fremden Schritt (129, die Wiederholperiode)
         /// und bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT3Typtage"/>); das
-        /// Ziel steht auf mindestens 125.
+        /// Ziel steht auf mindestens 130.
         /// </summary>
         [Fact]
-        public void Schritt_125_steht_in_der_Migration_nach_124()
+        public void Schritt_130_steht_in_der_Migration_nach_129()
         {
-            Assert.True(SchemaStand.Zielversion >= 125, "Zielstand " + SchemaStand.Zielversion + " liegt unter 125.");
+            Assert.True(SchemaStand.Zielversion >= 130, "Zielstand " + SchemaStand.Zielversion + " liegt unter 130.");
 
             string datei = Migrationsquelle();
             if (datei == null) return;
             string text = File.ReadAllText(datei);
 
-            Assert.Contains("public const int SCHRITT_125_ZAPFPROFIL_TYPTAGE = 125;", text, StringComparison.Ordinal);
-            int ort124 = text.IndexOf("new Schritt(SCHRITT_124_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
-            int ort125 = text.IndexOf("new Schritt(SCHRITT_125_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
-            Assert.True(ort124 > 0 && ort125 > ort124, "Schritt 125 steht nicht nach 124 in der Schrittliste.");
+            Assert.Contains("public const int SCHRITT_130_ZAPFPROFIL_TYPTAGE = 130;", text, StringComparison.Ordinal);
+            int ort129 = text.IndexOf("new Schritt(SCHRITT_WIEDERHOLPERIODE", StringComparison.Ordinal);
+            int ort130 = text.IndexOf("new Schritt(SCHRITT_130_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
+            Assert.True(ort129 > 0 && ort130 > ort129, "Schritt 130 steht nicht nach 129 in der Schrittliste.");
 
-            int methode = text.IndexOf("private static bool Schritt_125_ZapfprofilTyptage(Lauf l)", StringComparison.Ordinal);
-            Assert.True(methode > 0, "Die Methode des Schrittes 125 fehlt.");
+            int methode = text.IndexOf("private static bool Schritt_130_ZapfprofilTyptage(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 130 fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
             string rumpf = text.Substring(methode, ende - methode);
             Assert.Contains("TwwSchema.AnweisungenT3Typtage", rumpf, StringComparison.Ordinal);
@@ -431,7 +432,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Wahl des Typtagwegs</b> (Schritt 125, Stufe Z4b, Gruppe 2) auf einer Datenbank mit
+        /// <b>Die Wahl des Typtagwegs</b> (Schritt 130, Stufe Z4b, Gruppe 2) auf einer Datenbank mit
         /// Stand 124: Die drei Spalten entstehen an <c>Tab_TwwProjekt</c> neben der vorhandenen
         /// Projektzeile — wiederholbar, ohne eine Zeile zu ändern. Nach dem Schritt steht
         /// <c>Typtage_Aktiv</c> auf 0 und beide Angaben auf NULL: Das Projekt rechnet genau wie
@@ -439,7 +440,7 @@ namespace EPOS.Kern.Tests
         /// weist einen Text in der Zonenspalte ab.
         /// </summary>
         [Fact]
-        public void Schritt_125_legt_die_Wahl_des_Typtagwegs_an()
+        public void Schritt_130_legt_die_Wahl_des_Typtagwegs_an()
         {
             using SqliteConnection c = Datenbank();
             foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);

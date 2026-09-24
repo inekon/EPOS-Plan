@@ -257,7 +257,7 @@ namespace WindowsFormsApplication1
                 e.Seed = p.Seed;
                 e.Realisierungen = p.Realisierungen;
                 e.Gebaeude = AlsGebaeude(p);
-                // Die Wahl des Typtagwegs (Stufe Z4b, Schritt 125) - eine Groesse des Projekts.
+                // Die Wahl des Typtagwegs (Stufe Z4b, Schritt 130) - eine Groesse des Projekts.
                 e.TyptageAktiv = p.TyptageAktiv;
                 e.TyptageKlimazone = p.TyptageKlimazone;
                 e.TyptageGebaeudeart = p.TyptageGebaeudeart ?? "";
@@ -307,7 +307,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Projektgrößen mit der Wahl des Typtagwegs aus dem Dialog</b> (Stufe Z4b, Gruppe 2;
-        /// Schritt 125): Typtagweg ja/nein, Klimazone und Gebäudeart. Weicht nichts ab, bleibt die
+        /// Schritt 130): Typtagweg ja/nein, Klimazone und Gebäudeart. Weicht nichts ab, bleibt die
         /// Basis dieselbe Instanz; ohne Projektzeile entsteht eine aus den Vorgaben der DDL nur,
         /// wenn der Dialog den Typtagweg überhaupt will (Muster <see cref="MitStochastik"/>).
         ///
