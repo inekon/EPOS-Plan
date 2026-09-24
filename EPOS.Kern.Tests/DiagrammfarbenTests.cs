@@ -209,5 +209,51 @@ namespace EPOS.Kern.Tests
             foreach (Farbrolle rolle in Diagrammfarben.Rollen)
                 Assert.Equal(Vorgabe(rolle), Diagrammfarben.Hex(palette[rolle]));
         }
+
+        // =====================================================================
+        // 2 — Die Anzeigetexte folgen der Oberflächenkultur
+        // =====================================================================
+
+        /// <summary>Die Gabe einer Rolle aus <see cref="Diagrammfarben.Gaben"/>.</summary>
+        private static Farbrollengabe Gabe(Farbrolle rolle)
+        {
+            foreach (Farbrollengabe g in Diagrammfarben.Gaben())
+                if (g.Schluessel == rolle.Name) return g;
+            return null;
+        }
+
+        /// <summary>
+        /// Anzeigename, Gruppentitel und Gabe einer Rolle kommen <b>je Aufruf</b> aus
+        /// der Ressource der aktuellen Oberflächenkultur — in beliebiger Reihenfolge
+        /// der Kulturen, erst Englisch, dann Deutsch, dann wieder Englisch. Rollen und
+        /// Gruppen sind statisch; ein beim ersten Zugriff abgelegter Text trüge die
+        /// Sprache dieses Zugriffs in jeden späteren.
+        /// </summary>
+        [Fact]
+        public void DieAnzeigetexteFolgenDerOberflaechenkultur()
+        {
+            Rollengruppe erzeuger = null;
+            foreach (Rollengruppe g in Diagrammfarben.Gruppen)
+                if (g.Schluessel == "ERZEUGER") erzeuger = g;
+            Assert.NotNull(erzeuger);
+
+            foreach (string kultur in new[] { "en-US", "de-DE", "en-US" })
+            {
+                bool deutsch = kultur == "de-DE";
+                string rolle = deutsch ? "Wärmepumpe" : "Heat pump";
+                string gruppe = deutsch ? "Erzeuger und Bedarf" : "Generators and demand";
+
+                using (new Kulturvorrichtung(kultur))
+                {
+                    Assert.Equal(rolle, Diagrammfarben.Anzeigename(Farbrolle.WAERME_WP));
+                    Assert.Equal(gruppe, erzeuger.Titel);
+
+                    Farbrollengabe gabe = Gabe(Farbrolle.WAERME_WP);
+                    Assert.NotNull(gabe);
+                    Assert.Equal(rolle, gabe.Name);
+                    Assert.Equal(gruppe, gabe.Gruppe);
+                }
+            }
+        }
     }
 }

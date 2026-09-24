@@ -40,18 +40,26 @@ namespace WindowsFormsApplication1.Zeichnung
     /// </summary>
     public sealed class Rollengruppe
     {
-        public Rollengruppe(string schluessel, string titel, IReadOnlyList<Farbrolle> rollen)
+        /// <param name="schluessel">Sprachneutraler Schlüssel der Gruppe.</param>
+        /// <param name="titel">
+        /// Liefert den Anzeigetext — <b>je Aufruf</b>, nicht einmal beim Anlegen: Die
+        /// Gruppen sind statisch, die Oberflächenkultur nicht.
+        /// </param>
+        /// <param name="rollen">Die Rollen der Gruppe, in Anzeigereihenfolge.</param>
+        public Rollengruppe(string schluessel, Func<string> titel, IReadOnlyList<Farbrolle> rollen)
         {
             Schluessel = schluessel ?? "";
-            Titel = titel ?? "";
+            _titel = titel;
             Rollen = rollen ?? new List<Farbrolle>();
         }
+
+        private readonly Func<string> _titel;
 
         /// <summary>Sprachneutraler Schlüssel der Gruppe (<c>ALLGEMEIN</c>, <c>ERZEUGER</c>, …).</summary>
         public string Schluessel { get; }
 
-        /// <summary>Der Anzeigetext der Gruppe (Ressource, beide Sprachen).</summary>
-        public string Titel { get; }
+        /// <summary>Der Anzeigetext der Gruppe (Ressource, in der aktuellen Oberflächenkultur).</summary>
+        public string Titel => _titel?.Invoke() ?? "";
 
         /// <summary>Die Rollen dieser Gruppe, in Anzeigereihenfolge.</summary>
         public IReadOnlyList<Farbrolle> Rollen { get; }
@@ -117,12 +125,12 @@ namespace WindowsFormsApplication1.Zeichnung
         /// </summary>
         public static IReadOnlyList<Rollengruppe> Gruppen { get; } = new List<Rollengruppe>
         {
-            new Rollengruppe("ALLGEMEIN", MyResource.Resource.DGF_GRUPPE_ALLGEMEIN, new List<Farbrolle>
+            new Rollengruppe("ALLGEMEIN", () => MyResource.Resource.DGF_GRUPPE_ALLGEMEIN, new List<Farbrolle>
             {
                 Farbrolle.HINTERGRUND, Farbrolle.TEXT, Farbrolle.ACHSE,
                 Farbrolle.RASTER, Farbrolle.RAHMEN, Farbrolle.LEGENDENRAHMEN
             }),
-            new Rollengruppe("ERZEUGER", MyResource.Resource.DGF_GRUPPE_ERZEUGER, new List<Farbrolle>
+            new Rollengruppe("ERZEUGER", () => MyResource.Resource.DGF_GRUPPE_ERZEUGER, new List<Farbrolle>
             {
                 Farbrolle.WAERME_WP, Farbrolle.WAERME_BHKW, Farbrolle.WAERME_KESSEL,
                 Farbrolle.WAERME_SOLAR, Farbrolle.STROM_PV, Farbrolle.STROM_NETZ,
@@ -131,12 +139,12 @@ namespace WindowsFormsApplication1.Zeichnung
                 Farbrolle.PROZESSWAERME, Farbrolle.STROM_BHKW, Farbrolle.UEBERSCHUSS,
                 Farbrolle.ERZEUGUNG_GESAMT, Farbrolle.VERBRAUCH_GESAMT
             }),
-            new Rollengruppe("VARIANTEN", MyResource.Resource.DGF_GRUPPE_VARIANTEN, new List<Farbrolle>
+            new Rollengruppe("VARIANTEN", () => MyResource.Resource.DGF_GRUPPE_VARIANTEN, new List<Farbrolle>
             {
                 Farbrolle.SERIE_1, Farbrolle.SERIE_2, Farbrolle.SERIE_3, Farbrolle.SERIE_4,
                 Farbrolle.SERIE_5, Farbrolle.SERIE_6, Farbrolle.SERIE_7, Farbrolle.SERIE_8
             }),
-            new Rollengruppe("SPEICHER", MyResource.Resource.DGF_GRUPPE_SPEICHER, new List<Farbrolle>
+            new Rollengruppe("SPEICHER", () => MyResource.Resource.DGF_GRUPPE_SPEICHER, new List<Farbrolle>
             {
                 Farbrolle.SPEICHER_1, Farbrolle.SPEICHER_2, Farbrolle.SPEICHER_3,
                 Farbrolle.SPEICHER_4, Farbrolle.SPEICHER_5, Farbrolle.SPEICHER_6,
@@ -144,13 +152,13 @@ namespace WindowsFormsApplication1.Zeichnung
                 Farbrolle.STROM_SPEICHER, Farbrolle.NETZ_OHNE_SPEICHER,
                 Farbrolle.NETZ_MIT_SPEICHER
             }),
-            new Rollengruppe("PROFILE", MyResource.Resource.DGF_GRUPPE_PROFILE, new List<Farbrolle>
+            new Rollengruppe("PROFILE", () => MyResource.Resource.DGF_GRUPPE_PROFILE, new List<Farbrolle>
             {
                 Farbrolle.KOSTENPROFIL, Farbrolle.PROFILFLAECHE, Farbrolle.PROFILLINIE,
                 Farbrolle.QUELLTEMPERATUR, Farbrolle.AUSSENTEMPERATUR, Farbrolle.ERSATZJAHR,
                 Farbrolle.SONNENWINKEL
             }),
-            new Rollengruppe("RASTERKARTE", MyResource.Resource.DGF_GRUPPE_RASTERKARTE, new List<Farbrolle>
+            new Rollengruppe("RASTERKARTE", () => MyResource.Resource.DGF_GRUPPE_RASTERKARTE, new List<Farbrolle>
             {
                 Farbrolle.RASTER_SCHLECHT, Farbrolle.RASTER_MITTE, Farbrolle.RASTER_GUT,
                 Farbrolle.RASTER_LOCH, Farbrolle.FEINRASTER
@@ -184,12 +192,15 @@ namespace WindowsFormsApplication1.Zeichnung
             return name != null && _nachName.TryGetValue(name.Trim(), out rolle) ? rolle : null;
         }
 
-        /// <summary>Der Anzeigename einer Rolle (Ressource); der Schlüssel selbst als Rückfall.</summary>
+        /// <summary>
+        /// Der Anzeigename einer Rolle (Ressource, in der aktuellen Oberflächenkultur);
+        /// der Schlüssel selbst als Rückfall.
+        /// </summary>
         public static string Anzeigename(Farbrolle rolle)
         {
             if (rolle == null) return "";
-            string text;
-            return _namen.TryGetValue(rolle, out text) ? text : rolle.Name;
+            Func<string> text;
+            return _namen.TryGetValue(rolle, out text) ? text() : rolle.Name;
         }
 
         /// <summary>
@@ -503,70 +514,74 @@ namespace WindowsFormsApplication1.Zeichnung
 
         // =====================================================================
         // Die Anzeigenamen der Rollen
+        //
+        // Je Rolle der ZUGRIFF auf die Ressource, nicht ihr Text: Das Woerterbuch
+        // ist statisch und entsteht einmal je Prozess; ein darin abgelegter Text
+        // truege fuer immer die Sprache, die beim ersten Zugriff galt.
         // =====================================================================
 
-        private static readonly Dictionary<Farbrolle, string> _namen =
-            new Dictionary<Farbrolle, string>
+        private static readonly Dictionary<Farbrolle, Func<string>> _namen =
+            new Dictionary<Farbrolle, Func<string>>
             {
-                { Farbrolle.HINTERGRUND,      MyResource.Resource.DGF_ROLLE_HINTERGRUND },
-                { Farbrolle.TEXT,             MyResource.Resource.DGF_ROLLE_TEXT },
-                { Farbrolle.ACHSE,            MyResource.Resource.DGF_ROLLE_ACHSE },
-                { Farbrolle.RASTER,           MyResource.Resource.DGF_ROLLE_RASTER },
-                { Farbrolle.RAHMEN,           MyResource.Resource.DGF_ROLLE_RAHMEN },
-                { Farbrolle.LEGENDENRAHMEN,   MyResource.Resource.DGF_ROLLE_LEGENDENRAHMEN },
+                { Farbrolle.HINTERGRUND,      () => MyResource.Resource.DGF_ROLLE_HINTERGRUND },
+                { Farbrolle.TEXT,             () => MyResource.Resource.DGF_ROLLE_TEXT },
+                { Farbrolle.ACHSE,            () => MyResource.Resource.DGF_ROLLE_ACHSE },
+                { Farbrolle.RASTER,           () => MyResource.Resource.DGF_ROLLE_RASTER },
+                { Farbrolle.RAHMEN,           () => MyResource.Resource.DGF_ROLLE_RAHMEN },
+                { Farbrolle.LEGENDENRAHMEN,   () => MyResource.Resource.DGF_ROLLE_LEGENDENRAHMEN },
 
-                { Farbrolle.WAERME_WP,        MyResource.Resource.DGF_ROLLE_WAERME_WP },
-                { Farbrolle.WAERME_BHKW,      MyResource.Resource.DGF_ROLLE_WAERME_BHKW },
-                { Farbrolle.WAERME_KESSEL,    MyResource.Resource.DGF_ROLLE_WAERME_KESSEL },
-                { Farbrolle.WAERME_SOLAR,     MyResource.Resource.DGF_ROLLE_WAERME_SOLAR },
-                { Farbrolle.STROM_PV,         MyResource.Resource.DGF_ROLLE_STROM_PV },
-                { Farbrolle.STROM_NETZ,       MyResource.Resource.DGF_ROLLE_STROM_NETZ },
-                { Farbrolle.REST,             MyResource.Resource.DGF_ROLLE_REST },
-                { Farbrolle.BEDARF,           MyResource.Resource.DGF_ROLLE_BEDARF },
-                { Farbrolle.STAMM,            MyResource.Resource.DGF_ROLLE_STAMM },
-                { Farbrolle.HEIZSTAB,         MyResource.Resource.DGF_ROLLE_HEIZSTAB },
-                { Farbrolle.HEIZWAERME,       MyResource.Resource.DGF_ROLLE_HEIZWAERME },
-                { Farbrolle.WARMWASSER,       MyResource.Resource.DGF_ROLLE_WARMWASSER },
-                { Farbrolle.PROZESSWAERME,    MyResource.Resource.DGF_ROLLE_PROZESSWAERME },
-                { Farbrolle.STROM_BHKW,       MyResource.Resource.DGF_ROLLE_STROM_BHKW },
-                { Farbrolle.UEBERSCHUSS,      MyResource.Resource.DGF_ROLLE_UEBERSCHUSS },
-                { Farbrolle.ERZEUGUNG_GESAMT, MyResource.Resource.DGF_ROLLE_ERZEUGUNG_GESAMT },
-                { Farbrolle.VERBRAUCH_GESAMT, MyResource.Resource.DGF_ROLLE_VERBRAUCH_GESAMT },
+                { Farbrolle.WAERME_WP,        () => MyResource.Resource.DGF_ROLLE_WAERME_WP },
+                { Farbrolle.WAERME_BHKW,      () => MyResource.Resource.DGF_ROLLE_WAERME_BHKW },
+                { Farbrolle.WAERME_KESSEL,    () => MyResource.Resource.DGF_ROLLE_WAERME_KESSEL },
+                { Farbrolle.WAERME_SOLAR,     () => MyResource.Resource.DGF_ROLLE_WAERME_SOLAR },
+                { Farbrolle.STROM_PV,         () => MyResource.Resource.DGF_ROLLE_STROM_PV },
+                { Farbrolle.STROM_NETZ,       () => MyResource.Resource.DGF_ROLLE_STROM_NETZ },
+                { Farbrolle.REST,             () => MyResource.Resource.DGF_ROLLE_REST },
+                { Farbrolle.BEDARF,           () => MyResource.Resource.DGF_ROLLE_BEDARF },
+                { Farbrolle.STAMM,            () => MyResource.Resource.DGF_ROLLE_STAMM },
+                { Farbrolle.HEIZSTAB,         () => MyResource.Resource.DGF_ROLLE_HEIZSTAB },
+                { Farbrolle.HEIZWAERME,       () => MyResource.Resource.DGF_ROLLE_HEIZWAERME },
+                { Farbrolle.WARMWASSER,       () => MyResource.Resource.DGF_ROLLE_WARMWASSER },
+                { Farbrolle.PROZESSWAERME,    () => MyResource.Resource.DGF_ROLLE_PROZESSWAERME },
+                { Farbrolle.STROM_BHKW,       () => MyResource.Resource.DGF_ROLLE_STROM_BHKW },
+                { Farbrolle.UEBERSCHUSS,      () => MyResource.Resource.DGF_ROLLE_UEBERSCHUSS },
+                { Farbrolle.ERZEUGUNG_GESAMT, () => MyResource.Resource.DGF_ROLLE_ERZEUGUNG_GESAMT },
+                { Farbrolle.VERBRAUCH_GESAMT, () => MyResource.Resource.DGF_ROLLE_VERBRAUCH_GESAMT },
 
-                { Farbrolle.SERIE_1,          MyResource.Resource.DGF_ROLLE_SERIE_1 },
-                { Farbrolle.SERIE_2,          MyResource.Resource.DGF_ROLLE_SERIE_2 },
-                { Farbrolle.SERIE_3,          MyResource.Resource.DGF_ROLLE_SERIE_3 },
-                { Farbrolle.SERIE_4,          MyResource.Resource.DGF_ROLLE_SERIE_4 },
-                { Farbrolle.SERIE_5,          MyResource.Resource.DGF_ROLLE_SERIE_5 },
-                { Farbrolle.SERIE_6,          MyResource.Resource.DGF_ROLLE_SERIE_6 },
-                { Farbrolle.SERIE_7,          MyResource.Resource.DGF_ROLLE_SERIE_7 },
-                { Farbrolle.SERIE_8,          MyResource.Resource.DGF_ROLLE_SERIE_8 },
+                { Farbrolle.SERIE_1,          () => MyResource.Resource.DGF_ROLLE_SERIE_1 },
+                { Farbrolle.SERIE_2,          () => MyResource.Resource.DGF_ROLLE_SERIE_2 },
+                { Farbrolle.SERIE_3,          () => MyResource.Resource.DGF_ROLLE_SERIE_3 },
+                { Farbrolle.SERIE_4,          () => MyResource.Resource.DGF_ROLLE_SERIE_4 },
+                { Farbrolle.SERIE_5,          () => MyResource.Resource.DGF_ROLLE_SERIE_5 },
+                { Farbrolle.SERIE_6,          () => MyResource.Resource.DGF_ROLLE_SERIE_6 },
+                { Farbrolle.SERIE_7,          () => MyResource.Resource.DGF_ROLLE_SERIE_7 },
+                { Farbrolle.SERIE_8,          () => MyResource.Resource.DGF_ROLLE_SERIE_8 },
 
-                { Farbrolle.SPEICHER_1,       MyResource.Resource.DGF_ROLLE_SPEICHER_1 },
-                { Farbrolle.SPEICHER_2,       MyResource.Resource.DGF_ROLLE_SPEICHER_2 },
-                { Farbrolle.SPEICHER_3,       MyResource.Resource.DGF_ROLLE_SPEICHER_3 },
-                { Farbrolle.SPEICHER_4,       MyResource.Resource.DGF_ROLLE_SPEICHER_4 },
-                { Farbrolle.SPEICHER_5,       MyResource.Resource.DGF_ROLLE_SPEICHER_5 },
-                { Farbrolle.SPEICHER_6,       MyResource.Resource.DGF_ROLLE_SPEICHER_6 },
-                { Farbrolle.SPEICHERLADUNG,   MyResource.Resource.DGF_ROLLE_SPEICHERLADUNG },
-                { Farbrolle.SPEICHERFUELLSTAND, MyResource.Resource.DGF_ROLLE_SPEICHERFUELLSTAND },
-                { Farbrolle.STROM_SPEICHER,   MyResource.Resource.DGF_ROLLE_STROM_SPEICHER },
-                { Farbrolle.NETZ_OHNE_SPEICHER, MyResource.Resource.DGF_ROLLE_NETZ_OHNE_SPEICHER },
-                { Farbrolle.NETZ_MIT_SPEICHER, MyResource.Resource.DGF_ROLLE_NETZ_MIT_SPEICHER },
+                { Farbrolle.SPEICHER_1,       () => MyResource.Resource.DGF_ROLLE_SPEICHER_1 },
+                { Farbrolle.SPEICHER_2,       () => MyResource.Resource.DGF_ROLLE_SPEICHER_2 },
+                { Farbrolle.SPEICHER_3,       () => MyResource.Resource.DGF_ROLLE_SPEICHER_3 },
+                { Farbrolle.SPEICHER_4,       () => MyResource.Resource.DGF_ROLLE_SPEICHER_4 },
+                { Farbrolle.SPEICHER_5,       () => MyResource.Resource.DGF_ROLLE_SPEICHER_5 },
+                { Farbrolle.SPEICHER_6,       () => MyResource.Resource.DGF_ROLLE_SPEICHER_6 },
+                { Farbrolle.SPEICHERLADUNG,   () => MyResource.Resource.DGF_ROLLE_SPEICHERLADUNG },
+                { Farbrolle.SPEICHERFUELLSTAND, () => MyResource.Resource.DGF_ROLLE_SPEICHERFUELLSTAND },
+                { Farbrolle.STROM_SPEICHER,   () => MyResource.Resource.DGF_ROLLE_STROM_SPEICHER },
+                { Farbrolle.NETZ_OHNE_SPEICHER, () => MyResource.Resource.DGF_ROLLE_NETZ_OHNE_SPEICHER },
+                { Farbrolle.NETZ_MIT_SPEICHER, () => MyResource.Resource.DGF_ROLLE_NETZ_MIT_SPEICHER },
 
-                { Farbrolle.KOSTENPROFIL,     MyResource.Resource.DGF_ROLLE_KOSTENPROFIL },
-                { Farbrolle.PROFILFLAECHE,    MyResource.Resource.DGF_ROLLE_PROFILFLAECHE },
-                { Farbrolle.PROFILLINIE,      MyResource.Resource.DGF_ROLLE_PROFILLINIE },
-                { Farbrolle.QUELLTEMPERATUR,  MyResource.Resource.DGF_ROLLE_QUELLTEMPERATUR },
-                { Farbrolle.AUSSENTEMPERATUR, MyResource.Resource.DGF_ROLLE_AUSSENTEMPERATUR },
-                { Farbrolle.ERSATZJAHR,       MyResource.Resource.DGF_ROLLE_ERSATZJAHR },
-                { Farbrolle.SONNENWINKEL,     MyResource.Resource.DGF_ROLLE_SONNENWINKEL },
+                { Farbrolle.KOSTENPROFIL,     () => MyResource.Resource.DGF_ROLLE_KOSTENPROFIL },
+                { Farbrolle.PROFILFLAECHE,    () => MyResource.Resource.DGF_ROLLE_PROFILFLAECHE },
+                { Farbrolle.PROFILLINIE,      () => MyResource.Resource.DGF_ROLLE_PROFILLINIE },
+                { Farbrolle.QUELLTEMPERATUR,  () => MyResource.Resource.DGF_ROLLE_QUELLTEMPERATUR },
+                { Farbrolle.AUSSENTEMPERATUR, () => MyResource.Resource.DGF_ROLLE_AUSSENTEMPERATUR },
+                { Farbrolle.ERSATZJAHR,       () => MyResource.Resource.DGF_ROLLE_ERSATZJAHR },
+                { Farbrolle.SONNENWINKEL,     () => MyResource.Resource.DGF_ROLLE_SONNENWINKEL },
 
-                { Farbrolle.RASTER_SCHLECHT,  MyResource.Resource.DGF_ROLLE_RASTER_SCHLECHT },
-                { Farbrolle.RASTER_MITTE,     MyResource.Resource.DGF_ROLLE_RASTER_MITTE },
-                { Farbrolle.RASTER_GUT,       MyResource.Resource.DGF_ROLLE_RASTER_GUT },
-                { Farbrolle.RASTER_LOCH,      MyResource.Resource.DGF_ROLLE_RASTER_LOCH },
-                { Farbrolle.FEINRASTER,       MyResource.Resource.DGF_ROLLE_FEINRASTER }
+                { Farbrolle.RASTER_SCHLECHT,  () => MyResource.Resource.DGF_ROLLE_RASTER_SCHLECHT },
+                { Farbrolle.RASTER_MITTE,     () => MyResource.Resource.DGF_ROLLE_RASTER_MITTE },
+                { Farbrolle.RASTER_GUT,       () => MyResource.Resource.DGF_ROLLE_RASTER_GUT },
+                { Farbrolle.RASTER_LOCH,      () => MyResource.Resource.DGF_ROLLE_RASTER_LOCH },
+                { Farbrolle.FEINRASTER,       () => MyResource.Resource.DGF_ROLLE_FEINRASTER }
             };
     }
 }
