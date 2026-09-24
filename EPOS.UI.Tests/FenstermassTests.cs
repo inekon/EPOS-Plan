@@ -172,4 +172,47 @@ public sealed class FenstermassTests : IDisposable
         Assert.Equal(erwarteteCssBreite, (int)(breite / skalierung));
         Assert.True(erwarteteCssBreite > 900, "unter der Umbruchbreite des Katalograhmens");
     }
+
+    // =====================================================================
+    //  Ein Fenster, das einen Import als Überlagerung trägt (Konzept 7.1 d)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Stromspeicherimport im Modulkatalog.</b> Der Modulkatalog wünscht 860 × 780
+    /// (<c>ModulKatalogHuelle.MASS</c>), der Stromspeicherimport als eigenes Fenster
+    /// 1 180 × 700 (<c>KatalogImportHuelle.MASS_STROMSPEICHER</c>). Das Fenster, das ihn als
+    /// Überlagerung trägt, wünscht deshalb 1 180 × 780 — je Richtung das größere.
+    /// </summary>
+    [Fact]
+    public void Ein_Fenster_mit_Import_wuenscht_mindestens_dessen_Mass()
+    {
+        Assert.Equal((1180, 780), Fenstermass.MitUeberlagerung(860, 780, 1180, 700));
+        Assert.Equal((1240, 800), Fenstermass.MitUeberlagerung(860, 780, 1240, 800));   // PV/WR: Modulimport
+        Assert.Equal((900, 700), Fenstermass.MitUeberlagerung(900, 700, 900, 640));     // Katalogbrowser: gleich breit
+        Assert.Equal((860, 780), Fenstermass.MitUeberlagerung(860, 780, 0, 0));         // ohne Import
+    }
+
+    /// <summary>
+    /// <b>Wo es sich zeigt: auf einem kleinen Schirm.</b> Auf 1 280 × 1 024 (Arbeitsbereich
+    /// 1 280 × 984) nahm der Modulkatalog nur den Anteil, 1 088 px — so breit wird dann
+    /// auch die Import-Überlagerung höchstens. Mit dem Wunsch des Imports öffnet er so breit,
+    /// wie der Deckel erlaubt (92 % = 1 177 px), und damit so breit wie der Import als
+    /// eigenes Fenster. Auf dem 1920er Schirm ändert sich nichts: Dort nimmt ohnehin jedes
+    /// Fenster den Anteil (1 632 px).
+    /// </summary>
+    [Fact]
+    public void Auf_einem_kleinen_Schirm_oeffnet_der_Modulkatalog_so_breit_wie_sein_Import()
+    {
+        (int ohneBreite, _) = Fenstermass.Vorgabe(860, 780, 1280, 984);
+        (int wunschBreite, int wunschHoehe) = Fenstermass.MitUeberlagerung(860, 780, 1180, 700);
+        (int mitBreite, _) = Fenstermass.Vorgabe(wunschBreite, wunschHoehe, 1280, 984);
+        (int importBreite, _) = Fenstermass.Vorgabe(1180, 700, 1280, 984);
+
+        Assert.Equal(1088, ohneBreite);
+        Assert.Equal(1177, mitBreite);
+        Assert.Equal(importBreite, mitBreite);
+
+        (int grossBreite, _) = Fenstermass.Vorgabe(wunschBreite, wunschHoehe, ARBEIT_BREITE, ARBEIT_HOEHE);
+        Assert.Equal(1632, grossBreite);
+    }
 }

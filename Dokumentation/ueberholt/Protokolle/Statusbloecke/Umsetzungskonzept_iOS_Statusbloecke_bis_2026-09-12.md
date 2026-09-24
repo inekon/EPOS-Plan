@@ -9134,3 +9134,81 @@ sagt ohne BOM — Aufräumpunkt).
 27 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf
 gegen `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145
 687 Werte in Toleranz); Schemastand 118.
+
+## #466 — Administrationsdialoge: Import-Reste nach Stufe 5 — Auswahl nach dem Import, Fensterbreite des Stromspeicherimports (24.09.2026)
+
+Zwei Restpunkte aus #450 (Konzept Administrationsdialoge Neuordnung, Abschnitt
+7.1 (d)): „Import…“ wählte die neuen Sätze nicht, und der Stromspeicherimport
+blieb im 860 px breiten Modulkatalog-Fenster schmaler als sein eigenes
+Fenster. Commits (Zweig `worktree-agent-aff8742a9839b06de`, Basis `48d8836d`):
+`d515b7fe` Import in den Gerätekatalogen: neue Sätze gewählt; `d614c3e7`
+Modulkatalog öffnet so breit wie sein Import; `84eb0328` Papiere: Konzept 7.1
+(d) erledigt, Wiki Gerätekataloge. Merge in den Hauptbaum `221a36f9`,
+konfliktfrei.
+
+**Befund und Umsetzung, Punkt 1 (Auswahl nach dem Import).** `ImportFertig`
+setzte in den drei Wirten mit „Import…“ (`KatalogBrowserDialog`,
+`ModulKatalogDialog`, `WaermepumpeStammDialog`) nur die Fokuszeile; Kästchen
+der neuen Sätze blieben leer, alte Kästchen blieben stehen (A4, A6–A8 lesen je
+Lauf genau einen Satz — nichts zu ändern). Neue Methode
+`Zeilenauswahl.Uebernommen` (`EPOS.UI/Bausteine/Zeilenauswahl.cs`), von allen
+drei Wirten gerufen: ab zwei neuen Sätzen alle angekreuzt, Auswahlleiste „n
+gewählt“ (Vergleichen, Schloss, Löschen wirken auf genau diese), erster neuer
+Satz Fokuszeile im Stammblatt, alte Kästchen fallen, ein laufender Vergleich
+endet; ein einzelner neuer Satz bekommt kein Kästchen (Fokuszeile allein ist
+die Wahl, Auswahlleiste nennt ihn beim Namen — wie beim Einlesen in A4/A6–A8).
+Statuszeile: `ADM_MSG_IMPORTIERT` neu „{0} Sätze übernommen und gewählt.“/„{0}
+records imported and selected.“
+
+**Befund und Umsetzung, Punkt 2 (Fensterbreite des Stromspeicherimports).**
+Ursache war die Fensterbreite der Ausprägung, nicht das CSS: alle Importe
+tragen dieselbe Überlagerung `min(96vw, 1400px)`, nie breiter als ihr Fenster;
+der Modulkatalog wünschte 860 × 780 für alle drei Ausprägungen, der
+Stromspeicherimport als eigenes Fenster 1 180 × 700 (Konzept
+Stromspeicherimport). Neue plattformfreie Regel `Fenstermass.MitUeberlagerung`
+(`EPOS.UI/Dienste/Fenstermass.cs`): ein Fenster, das einen Import als
+Überlagerung trägt, wünscht mindestens dessen Maß;
+`KatalogImportHuelle.Wunschmass(art)` und `ModulImportHuelle.Wunschmass`
+liefern die Maße, `ModulKatalogHuelle.Oeffnen` nimmt sie entgegen, die drei
+Verwaltungshüllen reichen sie herein. Neue Wunschmaße: Stromspeicher 1 180 ×
+780, PV-Module und Wechselrichter 1 240 × 800 (dieselbe Ursache, bewusst
+mitgenommen).
+
+**Messung.** Im Rasterprobe-Wirt bei 860 px war die Überlagerung 826 px breit,
+Dialoghöhe in 733 px Überlagerung: Stromspeicher 818 px, PV-Module 1 137 px,
+Wechselrichter 1 524 px, alle rollten senkrecht. Bei 1 180 × 780 ist die
+Überlagerung 1 132,8 × 711 px, der Import passt ohne Rollen (677 px). Beim
+Anwender (1 920 px bei 150 %) ändert sich nichts (85 % Breite = 1 088 CSS-px),
+spürbar nur auf kleinen Schirmen (1 280 × 1 024: 1 177 statt 1 088 px).
+Rasterprobe nicht gezogen — Katalogliste, Raster und die
+`.epos-raster*`-Regeln sind unberührt, der Rasterprobe-Wirt diente nur als
+Messbrücke.
+
+**Tests.** Neue Fälle in `KaestchenTests` (je Wirt ein Fall mit mehreren neuen
+Sätzen: Kästchen, Fokus, „n gewählt“, Stammblatt, Statuszeile; dazu je Wirt
+ein Fall mit einem einzelnen Satz); zwei neue Fälle in `FenstermassTests`;
+kein CSS geändert. Im Worktree Kern 5 700, UI 5 883, KiKern 542,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot; Kern-Filter
+und Windows-Schale 0 Fehler; gefiltert 582 grün.
+
+**Papiere.** `Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`
+(Abschnitt 7.1 (d) erledigt, mit Ursache, Lösung und Messung, Beispiel der
+Statuszeile in 3.3); Wiki-Quelle `Programm Dokumentation -
+Gerätekataloge.wiki` (Satz zu „Import…“: neue Sätze gewählt; 0 Treffer der
+Verbotsmuster; Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen; gehört zum Eintrag
+„Import…“ aus #450, falls der noch nicht veröffentlicht ist):
+
+> Nach „Import…“ in den Gerätekatalogen stehen alle übernommenen Sätze
+> gewählt in der Liste.
+
+**Was offen bleibt.** Die Liste rollt nach dem Import nicht von selbst zur
+neuen Fokuszeile, nur bei Tastaturschritten — eine Änderung träfe die
+`Katalogliste` samt Rasterprobe.
+
+**Gate nach Merge auf `221a36f9`.** Kern-Filter 0 Fehler; Kern 5 700,
+UI 5 883, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
+Toleranz), Schemastand 119.

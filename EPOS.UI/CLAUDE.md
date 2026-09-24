@@ -228,7 +228,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Herstellerimport, also keinen Knopf). Ihre `Ueberlagerung` trägt hier KEINEN eigenen Kopf —
   der Importdialog darin führt Titel und Kreuz selbst, weil er sein Kreuz während eines
   laufenden Imports wegnimmt und Esc dann als „Lauf abbrechen" deutet; ein Kreuz der
-  `Ueberlagerung` schlösse mitten im Lauf.
+  `Ueberlagerung` schlösse mitten im Lauf. Nach einer Übernahme sind alle neuen Sätze gewählt
+  (`Zeilenauswahl.Uebernommen`), der erste ist Fokuszeile; ein einzelner neuer Satz ist allein
+  die Wahl. Ein Fenster, das einen Import als Überlagerung trägt, wünscht mindestens dessen
+  Maß (`Fenstermass.MitUeberlagerung`).
 - **Eine Zeitreihe zeigt ihren Verlauf über GANGLINIENBLATTGRUPPE, nicht als Diagramm im
   Detailblock:** `Ganglinienblattgruppe` und `Ganglinienblatt` bringen Jahresverlauf und Herkunft
   (mit „Verwendet in“) ins Stammblatt; eine im Projekt verwendete Zeitreihe ist weich gegen

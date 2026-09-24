@@ -65,6 +65,14 @@ namespace WindowsFormsApplication1
         private static readonly Size MASS_STROMSPEICHER = new Size(1180, 700);
 
         /// <summary>
+        /// Das Wunschmaß einer Ausprägung als eigenes Fenster — auch für das Fenster einer
+        /// Verwaltung, die den Import als Überlagerung trägt: Es wünscht mindestens dieses
+        /// Maß (<c>Fenstermass.MitUeberlagerung</c>, Konzept Administrationsdialoge 7.1 d).
+        /// </summary>
+        internal static Size Wunschmass(KatalogImportArt art)
+            => art == KatalogImportArt.Stromspeicher ? MASS_STROMSPEICHER : MASS;
+
+        /// <summary>
         /// Der Unterordner der mitgelieferten <c>bslib_database.csv</c> und ihr
         /// Dateiname — beides steht in <c>VDI-3805-Daten/Stromspeicher/</c>
         /// neben einer <c>LIESMICH_bslib.md</c> (CC BY 4.0, Namensnennung).
@@ -92,10 +100,7 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<KatalogImportDialog>(
-                Titel(art),
-                art == KatalogImportArt.Stromspeicher ? MASS_STROMSPEICHER : MASS,
-                werte);
+            dlg = new BlazorDialogForm<KatalogImportDialog>(Titel(art), Wunschmass(art), werte);
 
             using (dlg)
             {

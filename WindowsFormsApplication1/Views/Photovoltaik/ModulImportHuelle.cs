@@ -43,6 +43,13 @@ namespace WindowsFormsApplication1
         private static readonly Size MASS = new Size(1240, 800);
 
         /// <summary>
+        /// Das Wunschmaß als eigenes Fenster — auch für den Modulkatalog, der den Import als
+        /// Überlagerung trägt (<c>Fenstermass.MitUeberlagerung</c>, Konzept
+        /// Administrationsdialoge 7.1 d).
+        /// </summary>
+        internal static Size Wunschmass => MASS;
+
+        /// <summary>
         /// Zeigt den Import als eigenes Fenster — der Weg von
         /// <c>WinFormsNavigation</c> (<c>Masken.PvImport</c> bzw.
         /// <c>Masken.WechselrichterImport</c>).
