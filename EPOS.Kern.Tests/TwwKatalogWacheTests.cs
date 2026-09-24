@@ -376,6 +376,190 @@ namespace EPOS.Kern.Tests
                                           verglichen + ":\n" + string.Join("\n", funde.Take(40)));
         }
 
+        /// <summary>Höchste Abweichung einer abgeleiteten GANZEN ZAHL in Tagen — mindestens zwei (ZU19, VDI 4655).</summary>
+        private const int GANZ_SPANNE = 2;
+
+        /// <summary>
+        /// <b>Lokaler Nachweis zu ZU19 (VDI 4655, Stufe Z4b):</b> Kein Wert von
+        /// <c>Referenzlaeufe/Skripte/vdi4655_abgeleitet.json</c> gleicht seinem Original.
+        /// <list type="bullet">
+        /// <item>REELLE Werte (Faktoren der Tagesenergie, Kennwerte): relativ mehr als 1e-9 und
+        /// höchstens 6 % entfernt.</item>
+        /// <item>GANZE ZAHLEN (Kalendertage je Klimazone): mindestens ein und höchstens
+        /// max(2; 6 %) Tag(e) entfernt, jeder ≥ 0, Zeilensumme wieder 365 — innerhalb von 6 %
+        /// ließe sich eine Zahl von drei Tagen nicht verändern (Regel des Skripts).</item>
+        /// <item>Codes, Zonennamen und Namen der Gebäudevarianten stehen nicht in der
+        /// Ausgabe: Die Typtage heißen TT01…, die Varianten variante_1…, von den Zonen bleibt
+        /// die Nummer.</item>
+        /// </list>
+        /// Nur, wenn <c>Referenzlaeufe/Normzahlen/vdi4655/</c> lokal liegt; sonst schweigt der
+        /// Fall. Die Meldung nennt Abweichungen, nie einen Absolutwert.
+        /// </summary>
+        [Fact]
+        public void Kein_abgeleiteter_Typtagwert_gleicht_dem_VDI_Original()
+        {
+            string originale = Vdi4655Originale();
+            if (originale == null) return;                      // lokal nicht beigestellt — schweigen
+            string json = AbgeleiteteTyptage();
+            Assert.NotNull(json);
+
+            var quellTyptage = Csv(Path.Combine(originale, "typtage.csv"));
+            var quellAnzahl = Csv(Path.Combine(originale, "typtage_je_zone.csv"));
+            var quellFaktoren = Csv(Path.Combine(originale, "f_twe_tt.csv"));
+            var quellKennwerte = Csv(Path.Combine(originale, "kennwerte.csv")).ToDictionary(r => r["schluessel"]);
+
+            var funde = new List<string>();
+            int verglichen = 0;
+
+            void Reell(string was, double abgeleitet, double original)
+            {
+                verglichen++;
+                if (original == 0.0) { if (abgeleitet != 0.0) funde.Add(was + ": Null nicht Null"); return; }
+                double a = Math.Abs(abgeleitet / original - 1.0);
+                if (!(a > GLEICH)) funde.Add(was + ": gleich dem Original");
+                else if (a > BAND + GLEICH)
+                    funde.Add(was + ": Abweichung " + (a * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %");
+            }
+
+            void Ganz(string was, int abgeleitet, int original)
+            {
+                verglichen++;
+                int d = Math.Abs(abgeleitet - original);
+                int spanne = Math.Max(GANZ_SPANNE, (int)Math.Round(BAND * original, MidpointRounding.AwayFromZero));
+                if (d == 0) funde.Add(was + ": gleich dem Original");
+                else if (d > spanne) funde.Add(was + ": " + d + " Tag(e) Abweichung, erlaubt " + spanne);
+                else if (abgeleitet < 0) funde.Add(was + ": negativ");
+            }
+
+            using JsonDocument d = JsonDocument.Parse(File.ReadAllText(json, Encoding.UTF8));
+            JsonElement w = d.RootElement;
+
+            // --- 1. Die Codes sind neutral, die Merkmale stimmen ------------------------------
+            var codeAlt = new Dictionary<string, string>(StringComparer.Ordinal);
+            JsonElement typtage = w.GetProperty("typtage");
+            Assert.Equal(quellTyptage.Count, typtage.GetArrayLength());
+            int i = 0;
+            foreach (JsonElement t in typtage.EnumerateArray())
+            {
+                string code = t.GetProperty("code").GetString();
+                Assert.Matches("^TT[0-9]{2}$", code);
+                Assert.DoesNotContain(quellTyptage.Select(r => r["code"]), c => c == code);
+                codeAlt[code] = quellTyptage[i]["code"];
+                i++;
+            }
+
+            // --- 2. Die Varianten sind neutral ----------------------------------------------
+            var artAlt = new Dictionary<string, string>(StringComparer.Ordinal);
+            var reihenfolge = new List<string>();
+            foreach (Dictionary<string, string> r in quellFaktoren)
+                if (!reihenfolge.Contains(r["gebaeude"])) reihenfolge.Add(r["gebaeude"]);
+            JsonElement arten = w.GetProperty("gebaeudearten");
+            Assert.Equal(reihenfolge.Count, arten.GetArrayLength());
+            i = 0;
+            foreach (JsonElement a in arten.EnumerateArray())
+            {
+                string neu = a.GetString();
+                Assert.Matches("^variante_[0-9]+$", neu);
+                artAlt[neu] = reihenfolge[i];
+                i++;
+            }
+
+            // --- 3. Die Kalendertage je Zone: ganze Zahlen, Summe 365 -----------------------
+            foreach (JsonProperty art in w.GetProperty("typtage_je_zone").EnumerateObject())
+            {
+                string alt = artAlt[art.Name];
+                string variante = quellAnzahl.Select(r => r["variante"]).Distinct()
+                                             .First(v => alt.EndsWith(v, StringComparison.Ordinal));
+                foreach (JsonProperty zone in art.Value.EnumerateObject())
+                {
+                    Dictionary<string, string> quelle = quellAnzahl.Single(
+                        r => r["variante"] == variante && r["zone"] == zone.Name);
+                    int summe = 0;
+                    foreach (JsonProperty tt in zone.Value.EnumerateObject())
+                    {
+                        int neu = tt.Value.GetInt32();
+                        summe += neu;
+                        Ganz(art.Name + "/" + zone.Name + "/" + tt.Name, neu,
+                             int.Parse(quelle[codeAlt[tt.Name]], CultureInfo.InvariantCulture));
+                    }
+                    if (summe != 365) funde.Add(art.Name + "/" + zone.Name + ": Summe " + summe + " statt 365");
+                }
+            }
+
+            // --- 4. Die Faktoren: reell, dürfen negativ sein ------------------------------
+            var quellFaktor = quellFaktoren.ToDictionary(r => r["gebaeude"] + "|" + r["zone"] + "|" + r["typtag"],
+                                                        r => double.Parse(r["f_twe_tt"], CultureInfo.InvariantCulture),
+                                                        StringComparer.Ordinal);
+            foreach (JsonProperty art in w.GetProperty("f_twe_tt").EnumerateObject())
+                foreach (JsonProperty zone in art.Value.EnumerateObject())
+                    foreach (JsonProperty tt in zone.Value.EnumerateObject())
+                        Reell(art.Name + "/" + zone.Name + "/" + tt.Name, tt.Value.GetDouble(),
+                              quellFaktor[artAlt[art.Name] + "|" + zone.Name + "|" + codeAlt[tt.Name]]);
+
+            // --- 5. Die Kennwerte -----------------------------------------------------------
+            foreach (JsonProperty kw in w.GetProperty("kennwerte").EnumerateObject())
+            {
+                string alt = kw.Name == "wintergrenze" ? "grenze_uebergang_winter"
+                           : kw.Name == "bewoelkung.schwelle" ? "grenze_bewoelkt_bedeckungsgrad"
+                           : kw.Name.StartsWith("heizgrenze.", StringComparison.Ordinal)
+                               ? "heizgrenztemperatur_" + quellAnzahl.Select(r => r["variante"]).Distinct()
+                                     .First(v => artAlt[kw.Name.Substring("heizgrenze.".Length)].EndsWith(v, StringComparison.Ordinal))
+                               : kw.Name;
+                Assert.True(quellKennwerte.ContainsKey(alt), "Kein Kennwert der Quelle zu " + kw.Name);
+                Reell("Kennwert " + kw.Name, kw.Value.GetDouble(), Kennwertzahl(quellKennwerte[alt]));
+            }
+
+            Assert.True(verglichen > 0, "Nichts verglichen.");
+            Assert.True(funde.Count == 0, "Abgeleitete VDI-4655-Werte ausserhalb der Regel (ZU19), " + funde.Count +
+                                          " von " + verglichen + ":\n" + string.Join("\n", funde.Take(40)));
+        }
+
+        /// <summary>
+        /// Ein Kennwert der Quelle als Zahl. Ein Bruch <c>a/b</c> wird ausgerechnet; trägt er die
+        /// Einheit „Achtel", zählt er in Achteln (mal 8) — dieselbe Regel wie im Ableitungsskript.
+        /// </summary>
+        private static double Kennwertzahl(Dictionary<string, string> zeile)
+        {
+            string s = (zeile["wert"] ?? "").Trim();
+            if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double wert)) return wert;
+            string[] teile = s.Split('/');
+            Assert.True(teile.Length == 2, "Kennwert ist weder Zahl noch Bruch.");
+            double bruch = double.Parse(teile[0], CultureInfo.InvariantCulture)
+                           / double.Parse(teile[1], CultureInfo.InvariantCulture);
+            string einheit = zeile.TryGetValue("einheit", out string e) ? (e ?? "") : "";
+            return einheit.Trim().StartsWith("Achtel", StringComparison.OrdinalIgnoreCase) ? bruch * 8.0 : bruch;
+        }
+
+        /// <summary>Der lokale Ordner der VDI-4655-Originale (Muster <see cref="VdiOriginale"/>); sonst <c>null</c>.</summary>
+        private static string Vdi4655Originale([System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = null)
+        {
+            foreach (string start in new[] { Path.GetDirectoryName(eigeneDatei ?? ""), AppContext.BaseDirectory })
+            {
+                DirectoryInfo o = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+                for (int i = 0; i < 8 && o != null; i++, o = o.Parent)
+                {
+                    string kandidat = Path.Combine(o.FullName, "Referenzlaeufe", "Normzahlen", "vdi4655");
+                    if (File.Exists(Path.Combine(kandidat, "typtage.csv"))) return kandidat;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>Die committete Datei <c>Referenzlaeufe/Skripte/vdi4655_abgeleitet.json</c>; sonst <c>null</c>.</summary>
+        private static string AbgeleiteteTyptage([System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = null)
+        {
+            foreach (string start in new[] { Path.GetDirectoryName(eigeneDatei ?? ""), AppContext.BaseDirectory })
+            {
+                DirectoryInfo o = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+                for (int i = 0; i < 8 && o != null; i++, o = o.Parent)
+                {
+                    string kandidat = Path.Combine(o.FullName, "Referenzlaeufe", "Skripte", "vdi4655_abgeleitet.json");
+                    if (File.Exists(kandidat)) return kandidat;
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// Der lokale Ordner der VDI-6002-Originale: aufwärts gesucht nach
         /// <c>Referenzlaeufe/Normzahlen/vdi6002/bedarfskennwerte.csv</c> (Muster <see cref="Normzahlen"/>),
