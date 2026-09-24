@@ -279,13 +279,17 @@ namespace WindowsFormsApplication1
                 hinweise.Add(new ZapfHinweis("", HINWEIS_NETZVERLUST,
                     ZapfSatz.Neu("HINWEIS_NETZVERLUST_UND_ZIRKULATION", zirkulation.JahressummeKwh)) { Warnung = true });
 
-            // --- 6. Warnlogik (Z4): Zirkulation größer als die Zapfung ---------------------
-            // Ohne Schwelle aus dem Katalog: Verliert die Zirkulation mehr, als gezapft wird, ist
-            // ein Kennwert oder die Methode fraglich — eine Warnung, die die Rechnung nicht ändert.
-            if (zapfung.JahressummeKwh > 0.0 && zirkulation.JahressummeKwh > zapfung.JahressummeKwh)
-                hinweise.Add(new ZapfHinweis("", HINWEIS_ZIRKULATION_UEBER_ZAPFUNG,
-                    ZapfSatz.Neu("HINWEIS_ZIRKULATION_UEBER_ZAPFUNG", zirkulation.JahressummeKwh, zapfung.JahressummeKwh))
-                    { Warnung = true });
+            // --- 6. Warnlogik (Z4): Zirkulation groß gegenüber der Zapfung ----------------
+            // Lehre 3 des Mockups: In kleinen Mehrfamilienhäusern verliert die Zirkulation mehr, als
+            // gezapft wird — das ist üblich, keine Warnung. Ein HINWEIS nennt es erst über dem
+            // Verhältnis des Katalogs (Parameter Zapfprofil.Zirkulation.Hinweisverhaeltnis); ohne
+            // gültigen Parameter kein Hinweis. Die Rechnung ändert er nie.
+            double? verhaeltnis = Hinweisverhaeltnis(e.Parameter);
+            if (verhaeltnis.HasValue && zapfung.JahressummeKwh > 0.0
+                && zirkulation.JahressummeKwh > verhaeltnis.Value * zapfung.JahressummeKwh)
+                hinweise.Add(new ZapfHinweis("", HINWEIS_ZIRKULATION_GROSS,
+                    ZapfSatz.Neu("HINWEIS_ZIRKULATION_GROSS", zirkulation.JahressummeKwh,
+                                 zirkulation.JahressummeKwh / zapfung.JahressummeKwh, zapfung.JahressummeKwh, verhaeltnis.Value)));
 
             return new ZapfprofilErgebnis
             {
@@ -359,8 +363,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const string HINWEIS_NETZVERLUST = "NETZVERLUST_UND_ZIRKULATION";
 
-        /// <summary>Kennung der Warnung: Die Zirkulation verliert im Jahr mehr, als gezapft wird (Warnlogik Z4).</summary>
-        internal const string HINWEIS_ZIRKULATION_UEBER_ZAPFUNG = "ZIRKULATION_UEBER_ZAPFUNG";
+        /// <summary>
+        /// Kennung des Hinweises: Die Zirkulation verliert im Jahr mehr als das Verhältnis des Katalogs
+        /// mal die Zapfung (Warnlogik Z4, <see cref="ZapfParameter.ZIRKULATION_HINWEISVERHAELTNIS"/>).
+        /// </summary>
+        internal const string HINWEIS_ZIRKULATION_GROSS = "ZIRKULATION_GROSS";
+
+        /// <summary>
+        /// Das Hinweisverhältnis der Zirkulation aus dem Katalog; <c>null</c> ohne Parameter oder bei
+        /// einem Wert, der nicht endlich und positiv ist.
+        /// </summary>
+        private static double? Hinweisverhaeltnis(Parametersatz ps)
+        {
+            if (ps == null || !ps.Enthaelt(ZapfParameter.ZIRKULATION_HINWEISVERHAELTNIS)) return null;
+            double v = ps.Wert(ZapfParameter.ZIRKULATION_HINWEISVERHAELTNIS);
+            return double.IsNaN(v) || double.IsInfinity(v) || v <= 0 ? (double?)null : v;
+        }
 
         /// <summary>
         /// Kennung der Ablehnung „zu viele Einheitentage" der Jahresreihe

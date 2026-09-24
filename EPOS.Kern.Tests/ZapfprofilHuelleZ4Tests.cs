@@ -65,13 +65,16 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Warnliste_nennt_Titel_Satz_und_Stufe()
         {
-            var h = new ZapfHinweis("", ZapfprofilRechner.HINWEIS_ZIRKULATION_UEBER_ZAPFUNG,
-                ZapfSatz.Neu("HINWEIS_ZIRKULATION_UEBER_ZAPFUNG", 13140.0, 7300.0)) { Warnung = true };
+            var h = new ZapfHinweis("", ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS,
+                ZapfSatz.Neu("HINWEIS_ZIRKULATION_GROSS", 13140.0, 1.8, 7300.0, 1.5));
             ZapfprofilWarnDaten w = ZapfprofilHuelle.Warnung(h);
-            Assert.Equal("ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG", w.Kennung);
-            Assert.Equal("Zirkulation größer als Zapfung", w.Titel);
-            Assert.StartsWith("Die Zirkulation verliert im Jahr 13140 kWh", w.Text);
-            Assert.Equal(ZapfprofilWarnstufe.Warnung, w.Stufe);
+            Assert.Equal("ZPG_WARN_ZIRKULATION_GROSS", w.Kennung);
+            Assert.Equal("Zirkulation groß gegenüber der Zapfung", w.Titel);
+            Assert.StartsWith("Die Zirkulation verliert im Jahr 13140 kWh, das 1,8-Fache der Zapfung (7300 kWh/a)", w.Text);
+            Assert.Equal(ZapfprofilWarnstufe.Hinweis, w.Stufe);
+            var warnung = new ZapfHinweis("", ZapfprofilRechner.HINWEIS_NETZVERLUST,
+                ZapfSatz.Neu("HINWEIS_NETZVERLUST_UND_ZIRKULATION", 1000.0)) { Warnung = true };
+            Assert.Equal(ZapfprofilWarnstufe.Warnung, ZapfprofilHuelle.Warnung(warnung).Stufe);
             Assert.Equal(ZapfprofilWarnstufe.Hinweis,
                          ZapfprofilHuelle.Warnung(new ZapfHinweis("", "UNBEKANNT", ZapfSatz.Neu("UNBEKANNT"))).Stufe);
             Assert.Equal("Hinweis", ZapfprofilHuelle.Warnung(new ZapfHinweis("", "UNBEKANNT", ZapfSatz.Neu("UNBEKANNT"))).Titel);

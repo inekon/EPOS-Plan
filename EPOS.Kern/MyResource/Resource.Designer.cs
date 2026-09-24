@@ -77814,7 +77814,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Auslegungspunkt: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Auslegungspunkt — {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_EMPFEHLUNG_KEINE {
             get {
@@ -78471,7 +78471,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag wurde nicht gebaut: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag wurde nicht gebaut — {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_KON_NICHT_GEBAUT {
             get {
@@ -79299,7 +79299,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Auslegung: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Auslegung — {0} ähnelt.
         /// </summary>
         public static string ZPG_AUS_STATUS_OHNE {
             get {
@@ -81621,7 +81621,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708 nicht rechenbar: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708: nicht rechenbar — {0} ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSTEXT_DIN_NICHT_RECHENBAR_GRUND {
             get {
@@ -83907,6 +83907,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulation verliert im Jahr {0:0} kWh, das {1:0.##}-Fache der Zapfung ({2:0} kWh/a); der Katalog nennt das ab dem {3:0.##}-Fachen. In kleinen Mehrfamilienhäusern ist das üblich — sonst Methode und Kennwerte der Zirkulation prüfen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_NICHT_IN_Z1 {
@@ -83930,15 +83939,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulation verliert im Jahr {0:0} kWh und damit mehr, als gezapft wird ({1:0} kWh/a) — Methode und Kennwerte der Zirkulation prüfen. ähnelt.
-        /// </summary>
-        public static string ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG {
-            get {
-                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG", resourceCulture);
             }
         }
         
@@ -84798,6 +84798,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation groß gegenüber der Zapfung ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_ZIRKULATION_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone außerhalb der Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_WARN_ZIRKULATION_NICHT_IN_Z1 {
@@ -84821,15 +84830,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_ZIRKULATION_OHNE_ZONE {
             get {
                 return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_OHNE_ZONE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation größer als Zapfung ähnelt.
-        /// </summary>
-        public static string ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG {
-            get {
-                return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG", resourceCulture);
             }
         }
         

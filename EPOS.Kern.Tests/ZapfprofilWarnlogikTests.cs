@@ -166,17 +166,33 @@ namespace EPOS.Kern.Tests
         // Warnlogik
         // =================================================================================
 
+        /// <summary>
+        /// Lehre 3 des Mockups: Eine Zirkulation, die mehr verliert, als gezapft wird, ist in kleinen
+        /// Mehrfamilienhäusern üblich — ein HINWEIS erst über dem Verhältnis des Katalogs
+        /// (<see cref="ZapfParameter.ZIRKULATION_HINWEISVERHAELTNIS"/>), keine Warnung; ohne Parameter
+        /// oder mit ungültigem Wert keiner.
+        /// </summary>
         [Fact]
-        public void Eine_Zirkulation_groesser_als_die_Zapfung_ist_eine_Warnung()
+        public void Eine_grosse_Zirkulation_ist_ein_Hinweis_ueber_dem_Verhaeltnis_des_Katalogs()
         {
-            // 7300 kWh/a Zapfung, manuell 2 kW · 18 h · 365 = 13 140 kWh/a Zirkulation.
-            ZapfprofilErgebnis e = Rechnen(Projekt() with { ZirkAuto = false, ZirkManuellKw = 2.0 }, ZoneFlach());
-            ZapfHinweis h = Assert.Single(e.Hinweise, x => x.Code == ZapfprofilRechner.HINWEIS_ZIRKULATION_UEBER_ZAPFUNG);
-            Assert.True(h.Warnung);
-            Assert.Equal(new object[] { 13140.0, 7300.0 }, h.Satz.Werte.Select(w => (object)Math.Round((double)w, 6)).ToArray());
+            static ZapfprofilErgebnis Mit(double kw, double? verhaeltnis)
+                => ZapfprofilRechner.Rechnen(Eingang(Projekt() with { ZirkAuto = false, ZirkManuellKw = kw },
+                    verhaeltnis.HasValue
+                        ? Parameter(new Dictionary<string, double> { [ZapfParameter.ZIRKULATION_HINWEISVERHAELTNIS] = verhaeltnis.Value })
+                        : Parameter(), ZoneFlach()), Katalog);
 
-            ZapfprofilErgebnis klein = Rechnen(Projekt() with { ZirkAuto = false, ZirkManuellKw = 0.5 }, ZoneFlach());
-            Assert.DoesNotContain(klein.Hinweise, x => x.Code == ZapfprofilRechner.HINWEIS_ZIRKULATION_UEBER_ZAPFUNG);
+            // 7300 kWh/a Zapfung, manuell 2 kW · 18 h · 365 = 13 140 kWh/a Zirkulation: das 1,8-Fache.
+            ZapfHinweis h = Assert.Single(Mit(2.0, 1.5).Hinweise, x => x.Code == ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS);
+            Assert.False(h.Warnung);
+            Assert.Equal(new object[] { 13140.0, 1.8, 7300.0, 1.5 }, h.Satz.Werte.Select(w => (object)Math.Round((double)w, 6)).ToArray());
+            Assert.StartsWith("Die Zirkulation verliert im Jahr 13140 kWh, das 1.8-Fache der Zapfung (7300 kWh/a)", h.Text);
+
+            // Größer als die Zapfung, aber unter dem Verhältnis: kein Hinweis (1,2 kW ergibt das 1,08-Fache).
+            Assert.DoesNotContain(Mit(1.2, 1.5).Hinweise, x => x.Code == ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS);
+            // Ohne Parameter oder mit einem Wert, der nicht positiv ist: kein Hinweis, auch keiner zum Parameter.
+            Assert.DoesNotContain(Mit(2.0, null).Hinweise, x => x.Code == ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS);
+            Assert.DoesNotContain(Mit(2.0, 0.0).Hinweise, x => x.Code == ZapfprofilRechner.HINWEIS_ZIRKULATION_GROSS);
+            Assert.DoesNotContain(Mit(2.0, null).Hinweise, x => x.Code == ZapfHinweis.PARAMETER_FEHLT);
         }
 
         [Fact]

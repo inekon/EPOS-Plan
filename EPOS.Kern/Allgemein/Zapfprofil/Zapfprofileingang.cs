@@ -109,8 +109,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Stufe der Warnlogik (Z4): <c>true</c> = Warnung — ein Befund, der das Ergebnis fraglich
         /// macht (Doppelzählung ZU5, Bedarf außerhalb der Bandbreite, Messwert weit ab,
-        /// Zirkulation größer als die Zapfung, Energieprobe); <c>false</c> = Hinweis. Entscheidet die
-        /// Rechnung nie.
+        /// Energieprobe); <c>false</c> = Hinweis (etwa eine Zirkulation, die groß gegen die Zapfung ist —
+        /// in kleinen Mehrfamilienhäusern üblich). Entscheidet die Rechnung nie.
         /// </summary>
         public bool Warnung { get; init; }
 
@@ -184,6 +184,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Warnschwelle der Formvektor-Summe [-] (Hinweis, INEKON-Setzung, 2.4).</summary>
         internal const string FORMVEKTOR_WARNSCHWELLE = "Zapfprofil.Formvektor.Warnschwelle";
+
+        /// <summary>
+        /// Hinweisverhältnis der Zirkulation [-] (Warnlogik Z4, INEKON-Setzung, freier Paketteil):
+        /// Verliert die Zirkulation mehr als dieses Vielfache der Zapfung, nennt es ein Hinweis; ohne
+        /// Parameter kein Hinweis.
+        /// </summary>
+        internal const string ZIRKULATION_HINWEISVERHAELTNIS = "Zapfprofil.Zirkulation.Hinweisverhaeltnis";
     }
 
     /// <summary>

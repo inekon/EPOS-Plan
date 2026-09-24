@@ -28420,9 +28420,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG" xml:space="preserve">
     <value>Ohne Vorschlag der Methode — angesetzt: {0:0.###} kW ({1}).</value>
   </data>
-  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
-    <value>Die Zirkulation verliert im Jahr {0:0} kWh und damit mehr, als gezapft wird ({1:0} kWh/a) — Methode und Kennwerte der Zirkulation prüfen.</value>
-  </data>
   <data name="ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
     <value>Die Bezugsmenge der Zone „{0}“ ({1:0.##}) weicht von ihrer Wohnungstabelle ab ({2:0.##} {3}); es gilt die Wohnungstabelle.</value>
   </data>
@@ -28455,9 +28452,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>Netzverluste und Zirkulation</value>
-  </data>
-  <data name="ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
-    <value>Zirkulation größer als Zapfung</value>
   </data>
   <data name="ZPG_WARN_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
     <value>Jahresreihe stochastisch</value>
@@ -28593,5 +28587,11 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
     <value>Katalog der Zapfkategorien</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
+    <value>Die Zirkulation verliert im Jahr {0:0} kWh, das {1:0.##}-Fache der Zapfung ({2:0} kWh/a); der Katalog nennt das ab dem {3:0.##}-Fachen. In kleinen Mehrfamilienhäusern ist das üblich — sonst Methode und Kennwerte der Zirkulation prüfen.</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
+    <value>Zirkulation groß gegenüber der Zapfung</value>
   </data>
 </root>

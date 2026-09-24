@@ -28413,9 +28413,6 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG" xml:space="preserve">
     <value>No proposal of the method — applied: {0:0.###} kW ({1}).</value>
   </data>
-  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
-    <value>The circulation loses {0:0} kWh per year, more than is drawn off ({1:0} kWh/a) — check the circulation method and its characteristic values.</value>
-  </data>
   <data name="ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
     <value>The reference quantity of zone “{0}” ({1:0.##}) differs from its dwelling table ({2:0.##} {3}); the dwelling table applies.</value>
   </data>
@@ -28448,9 +28445,6 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_WARN_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>Network losses and circulation</value>
-  </data>
-  <data name="ZPG_WARN_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
-    <value>Circulation exceeds draw-off</value>
   </data>
   <data name="ZPG_WARN_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
     <value>Stochastic annual series</value>
@@ -28586,5 +28580,11 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
     <value>catalogue of draw-off categories</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
+    <value>The circulation loses {0:0} kWh per year, {1:0.##} times the draw-off ({2:0} kWh/a); the catalogue flags this from {3:0.##} times. This is usual in small multi-family houses — otherwise check the circulation method and its characteristic values.</value>
+  </data>
+  <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
+    <value>Circulation large compared with draw-off</value>
   </data>
 </root>
