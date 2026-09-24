@@ -33,6 +33,14 @@
 > `AK-S1` nach dem [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Rev. 3: `Tab_Zone`
 > entsteht mit dem Schritt S-C der Stufe G3, der die drei Übergabespalten gleich mit anlegt;
 > gerechnet wird die Übergabe je Zone weiter ab G6.
+>
+> **Nachzug 24.09.2026 — AK1 Welle 3 und E36:** Die Rechnung der zweiten Welle von AK1 berichtigt
+> zwei Aussagen dieses Papiers: Die Aufheizspitze wird gekappt, und die Tagesenergie **sinkt** — der
+> Raum bleibt länger kühler und verliert weniger (3.5, F-A6 und die Probe „Aufheizspitze" in 11.1
+> trugen „größer"); Fall 3 in 10.3 ergibt **8,844 kW** statt der gedruckten 8,85. **N-A4** (2.2)
+> folgt dem Entscheid **E36** (24.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+> N1.41): Mit wirksamer Kopplung gilt höchstens **100 ms je Gebäude und Jahr** (gemessen 21 bis
+> 31 ms), ungekoppelte Gebäude bleiben beim Bestand.
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -40,8 +48,8 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 24.09.2026 (Nachzug AK0). **Fassung:** Rev. 2 — mit **E23**, **E24**, **E25** und
-**E26** fortgeschrieben, **E27** nachgezogen.
+**Stand:** 24.09.2026 (Nachzug AK1 Welle 3 und E36). **Fassung:** Rev. 2 — mit **E23**, **E24**,
+**E25** und **E26** fortgeschrieben, **E27** und **E36** nachgezogen.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
 Anlagenkopplung vom Heizkörper bis zum Wiki bedeutet: die Physik der Übergabe, Heizkurve und
@@ -250,7 +258,7 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | **F-A3** | Der **Auslegungspunkt** (Vorlauf, Rücklauf, Raumtemperatur, Außentemperatur, Nennleistung) ist je Gebäude eingebbar; fehlende Werte werden **benannt hergeleitet**, nie geraten (8.1) | E22 | Rechenprobe „Heizkurve trifft am Auslegungspunkt den Auslegungsvorlauf" | AK1 |
 | **F-A4** | Die **Vorlauftemperatur je Stunde** folgt einer außentemperaturgeführten **Heizkurve** mit Niveau und Steilheit — oder ist fest je Anlage (`Tab_Energieanlagen.Vorlauf`, `:713`) | E22 | Rechenprobe gegen Handrechnung an drei Stützpunkten | AK1 |
 | **F-A5** | Die **Übergabeleistung** ist eine Funktion von mittlerer Heizmitteltemperatur und Raumtemperatur; der **Rücklauf** ist ihr **Ergebnis**, keine Eingabe | E22 | Rechenprobe: Energiebilanz des Heizkreises schließt auf 1e‑9 kW | AK1 |
-| **F-A6** | Reicht die Übergabe nicht, **sinkt die Raumtemperatur** — Leistungsvorgabe statt idealer Regelung; die **Aufheizspitze nach Absenkung** wird dadurch gekappt und zeitlich verteilt | E22; Konzept 4.5 | Rechenprobe „Aufheizspitze": Spitze mit Übergabe kleiner als ohne, Tagesenergie größer | AK1 |
+| **F-A6** | Reicht die Übergabe nicht, **sinkt die Raumtemperatur** — Leistungsvorgabe statt idealer Regelung; die **Aufheizspitze nach Absenkung** wird dadurch gekappt und zeitlich verteilt | E22; Konzept 4.5 | Rechenprobe „Aufheizspitze": Spitze mit Übergabe kleiner als ohne, Tagesenergie kleiner | AK1 |
 | **F-A7** | **Grenzfall:** Mit **unbegrenzter Übergabe** und Proportionalband null rechnet der gekoppelte Weg **bitgleich** wie die ideale Regelung — weil er in diesem Fall **wörtlich dieselbe Leistungsgleichung** benutzt (6.1, 11.1) | E22 | Rechenprobe „Grenzfall bitgleich"; dazu Referenzlauf byte-gleich bei ausgeschalteter Kopplung | AK1 |
 | **F-A8** | Der **gerechnete Vorlauf** geht in die Kennlinienwahl der Wärmepumpe ein, wie es der projektierte Festwert heute tut (`SimulationWaermepumpe.cs:600`, `:604`, `:654`); liegt er außerhalb der Stützstellen, gilt die **Extrapolationsregel des Bestands** (`:1859-1904`, Meldung `:1900-1903`, Schalter `Tab_Einstellungen.Extrapolation_erlaubt`, `sql/schema/001_grundschema.sql:696`) | E22 | Rechenprobe je Vorlauf-Stützstelle; Hinweis einmal je Gerät und Vorlauf | AK1 |
 | **F-A9** | Je Gebäude ist ein **Raumsollwert-Zeitprogramm** im Wochenraster hinterlegbar (168 Werte, Muster `WQ_Wochenwerte`, `:738`); NULL bedeutet die vier Bestandssollwerte (`:1147-1150`) | E22 | Datenbankfall: NULL ergibt die Bestandsreihe byte-gleich | AK1 |
@@ -272,7 +280,7 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | **N-A1** | **Referenzbasis** — jede Stufe rechnet gegen die aktuelle Basis; eine neue **Datei** ohne Bedingung ist FAIL (`Referenzlauf/Vergleich.cs:183-190`) | `GESAMT: PASS` | Referenzlauf je Merge |
 | **N-A2** | **Determinismus** — zwei Läufe byte-gleich, auch mit Kopplung; die Iteration in AK3 ist deterministisch (feste Reihenfolge, feste Höchstzahl) | 13 von 13 | Protokollzeile des Referenzlaufs |
 | **N-A3** | **Rückwärtsverträglichkeit** — ein Projekt **ohne** Kopplung rechnet nach AK1, AK2 und AK3 **byte-gleich** wie vorher | 12 von 13 Projekten unberührt | Vergleich je Projekt |
-| **N-A4** | **Rechenzeit** — AK1 bleibt in der Größenordnung des Bestands (rund 5 ms je Zone und Jahr, Konzept 4.8); AK3 zahlt die Durchläufe, beschränkt ihr Produkt je Stunde auf **120** (6.3) und **wird gemessen**, nicht geschätzt | AK1 höchstens +20 %; AK3 gemessen und im Papier fortgeschrieben | Laufzeitzeile des Referenzlaufs |
+| **N-A4** | **Rechenzeit** — ohne wirksame Kopplung bleibt jedes Gebäude beim Bestand (rund 5 ms je Zone und Jahr, Konzept 4.8). Mit wirksamer Kopplung kostet das Fallsystem je Abschnitt (Schritt H) mehr: gemessen **7 ms ohne und 21 bis 31 ms mit Kopplung** je Gebäude und Jahr; dafür gilt nach **E36** eine eigene Grenze. AK3 zahlt die Durchläufe, beschränkt ihr Produkt je Stunde auf **120** (6.3) und **wird gemessen**, nicht geschätzt | AK1: höchstens **100 ms je gekoppeltem Gebäude und Jahr** (E36), ungekoppelt unverändert; AK3 gemessen und im Papier fortgeschrieben | Messprobe des gekoppelten Jahreslaufs (`AnlagenkopplungEingangTests`): gibt die Zeit aus und scheitert erst beim Fünffachen der Grenze — die Läufer der CI sind verschieden schnell; Laufzeitzeile des Referenzlaufs |
 | **N-A5** | **Plattformgleichheit** — alle Kopplungsfelder sind auf iOS erreichbar oder **benannt** abgelehnt | keine stumme Absage | iOS-Zeile je Maske |
 | **N-A6** | **Zweisprachigkeit** — jeder neue Anzeigetext und jede Meldung in beiden `.resx`, danach `Werkzeuge/ResourceDesigner` | vollständig | Wächter und Designerlauf |
 | **N-A7** | **Einheitenwächter** — Zeitreihen in kWh mit Einheit im Namen, Temperaturen in °C, Leistungen in kW; keine nackten Faktoren 1 000 in Hülle oder Anzeige | grün | `EinheitenWacheTests`, `DoubleWacheTests` |
@@ -503,7 +511,7 @@ Drei Erscheinungen, die das Stundenmodell heute zeigt oder verdeckt, bekommen mi
 
 | Erscheinung | Heute (ideale Regelung) | Mit AK1 |
 |---|---|---|
-| **Aufheizspitze nach Absenkung** | Die Jahresspitze fällt in elf von zwölf Referenzprojekten auf Stundenindex 1 398, die erste Stunde nach Ende der Nachtabsenkung am kältesten Tag, und liegt über alle Projekte zusammen +29 % über der Tagesmodell-Spitze (Konzept 4.5, 5.6). Sie ist rechnerisch richtig und technisch unmöglich | Die Übergabe kann sie nicht liefern. Die Spitze wird **gekappt und über mehrere Stunden verteilt**; die Tagesenergie steigt leicht (der Raum ist länger kühler und verliert weniger), die Spitze sinkt deutlich. Das ist die Zahl, die ein Erzeuger tragen muss |
+| **Aufheizspitze nach Absenkung** | Die Jahresspitze fällt in elf von zwölf Referenzprojekten auf Stundenindex 1 398, die erste Stunde nach Ende der Nachtabsenkung am kältesten Tag, und liegt über alle Projekte zusammen +29 % über der Tagesmodell-Spitze (Konzept 4.5, 5.6). Sie ist rechnerisch richtig und technisch unmöglich | Die Übergabe kann sie nicht liefern. Die Spitze wird **gekappt und über mehrere Stunden verteilt**; die Tagesenergie sinkt leicht (der Raum ist länger kühler und verliert weniger), die Spitze sinkt deutlich. Das ist die Zahl, die ein Erzeuger tragen muss |
 | **Wiederaufheizzeit** | null — der Sollwert ist in der ersten Stunde wieder erreicht | eine **Größe**: die Zahl der Stunden, bis der Sollwert wieder steht. Sie hängt an Exponent, Auslegungsvorlauf und Masse und ist die eigentliche Antwort auf „lohnt sich die Nachtabsenkung?" |
 | **Auskühlung bei Ausfall** | tritt nicht auf, weil die Regelung ideal ist | tritt auf, sobald die Übergabe oder (mit AK2) der Erzeuger nicht liefert — und wird als **Komfortstunde** gezählt (5.5) |
 
@@ -1766,25 +1774,26 @@ theta_V        = 48,72 °C                     (theta_R,soll = 40,91 °C)
 
 Uebergabe bei theta_i = 17,0 (Newton, drei Schritte):
 loese  Phi = 10,0 * ((48,72 - Phi/2 - 17,0)/30,0)^1,3
-       Phi = 8,85 kW
-theta_R        = 48,72 - 8,85       = 39,87 °C
+       Phi = 8,844 kW
+theta_R        = 48,72 - 8,844      = 39,87 °C
 theta_m        = 48,72 - 4,42       = 44,30 °C
 Uebertemperatur theta_m - theta_i   = 27,30 K
 
 Sekantenleitwert:
-G_H     = (1,3 * 8,85 / 27,30) / (1 + 1,3 * 8,85 / (27,30 * 2 * 1,00))
+G_H     = (1,3 * 8,844 / 27,30) / (1 + 1,3 * 8,844 / (27,30 * 2 * 1,00))
         = 0,4212 / 1,2106 = 0,348 kW/K
-theta_H = 17,0 + 8,85/0,348 = 42,4 °C
-Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,85 kW
+theta_H = 17,0 + 8,844/0,348 = 42,4 °C
+Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,84 kW
 ```
 
 **Drei Ablesungen aus diesem einen Fall:**
 
-1. **Die Übergabe liefert 8,85 kW, nicht das, was die ideale Regelung verlangt.** Die stationäre
+1. **Die Übergabe liefert 8,844 kW, nicht das, was die ideale Regelung verlangt** (die Probe
+   `WaermeuebergabeTests` hält die Zahl auf 0,1 W). Die stationäre
    Last bei −5 °C beträgt 7,8 kW; die ideale Regelung verlangt in der ersten Stunde nach der
    Absenkung ein Vielfaches davon, weil sie die Raumluft **sofort** auf 20 °C heben will — das ist
    die Aufheizspitze, die heute +29 % über der Tagesmodell-Spitze liegt (Konzept 5.6). Mit AK1 ist
-   sie auf 8,85 kW gedeckelt, der Sollwert wird erst nach mehreren Stunden erreicht, und die
+   sie auf 8,844 kW gedeckelt, der Sollwert wird erst nach mehreren Stunden erreicht, und die
    Auslegung eines Erzeugers auf diese Stunde wird gegenstandslos.
 2. **Der Rücklauf sinkt auf 39,9 °C** — deutlich unter den projektierten 45 °C. Für eine
    Wärmepumpe ist das die günstige Nachricht; für einen Brennwertkessel ebenso. Beides ist heute
@@ -1824,7 +1833,7 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,85 kW
 | **Rücklauf nach der Begrenzung** | Wird die Leistung gedrosselt, **steigt** der Rücklauf gegenüber dem voll geöffneten Ventil, und die Bilanz `Phi = W_H * (theta_V - theta_R)` hält auf 1e‑6 W (10.2, H6) | AK1 |
 | **Zwei Knicke, zwei Umschaltzeitpunkte** | Ein Abschnitt, der `theta_soll - Xp` **und** `theta_soll` überstreicht, erzeugt in der Bisektion zwei Fallwechsel; mit `Xp = 0` genau einen (10.2) | AK1 |
 | **Einheiten in Schritt H** | Alle Leistungen, die Schritt H führt, sind in W; ein Parametersatz in kW und derselbe in W ergeben dasselbe Ergebnis auf 1e‑9 relativ (3.3) | AK1 |
-| **Aufheizspitze** | Gegenüberstellung derselben Stunde mit und ohne Übergabe: **Spitze kleiner, Tagesenergie größer, Sollwert später erreicht** — alle drei zugleich, sonst ist ein Vorzeichen falsch | AK1 |
+| **Aufheizspitze** | Gegenüberstellung derselben Stunde mit und ohne Übergabe: **Spitze kleiner, Tagesenergie kleiner, Sollwert später erreicht** — alle drei zugleich, sonst ist ein Vorzeichen falsch. Die Tagesenergie sinkt, weil der Raum länger kühler bleibt und weniger verliert; mehr Energie ließe die Bilanz nicht zu | AK1 |
 | **Exponent wirkt in der richtigen Richtung** | größerer Exponent bei gleicher Übertemperatur unter dem Auslegungspunkt: kleinere Leistung | AK1 |
 | **Reglerband** | `Xp = 0` gleich Bestandsverhalten; `Xp > 0` senkt die mittlere Raumtemperatur in der Heizzeit, monoton mit `Xp` | AK1 |
 | **Sollwertprofil** | 168 Werte gleich der Bestandsbelegung ergeben **byte-gleiche** Reihen; 167 Werte ergeben einen **benannten Fehler** (4.3) | AK1 |

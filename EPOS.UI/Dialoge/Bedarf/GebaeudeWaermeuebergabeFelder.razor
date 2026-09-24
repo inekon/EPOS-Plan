@@ -1,0 +1,236 @@
+﻿@* DIE GRUPPE „WAERMEUEBERGABE" (Konzept Anlagenkopplung 9.1, 9.2; Stufe AK1 Welle 3) — die
+   Felder des Heizkreises eines Gebaeudes, fuer den Katalogeditor (Reiter „Gebaeude und Huelle",
+   unter „Rechenweg", ueber „Kuehlung") UND das Stammblatt der Gebaeudeverwaltung („Alle Daten").
+   Ein Baustein, zwei Wirte: dieselben Felder, dieselben Wege des ARBEITSSTANDS.
+
+   SIE HEISST „WAERMEUEBERGABE", NICHT „HEIZKREIS" (H11) - „Heizkreis" ist die Waermesenke des
+   Anlagenschemas.
+
+   IMMER SICHTBAR (E20): Der Haken steht immer; mit ihm die Uebergabeart; mit einer rechnenden
+   Art (Radiator, Flaechenheizung, Konvektor) die uebrigen Felder und das Zeitprogramm. Auf dem
+   Tagesbilanz-Weg sagt eine Zeile, dass die Eingaben erst mit VDI 6007 gelten (F-A18, bis GA).
+
+   NULL-ERHALTEND: Jedes Zahlenfeld schreibt null, nicht die Vorgabe; der Platzhalter zeigt die
+   Vorgabe als ZAHL - die der Art (Exponent, Auslegung), das Soll am Tag (Raum) oder die
+   HERGELEITETE Zahl (Aussentemperatur und Nennleistung, 8.4, H10). Die hergeleitete Zahl kommt
+   ueber den Delegaten der Huelle aus dem Kern - entprellt nach der letzten Eingabe, sofort beim
+   Oeffnen (EPOS.UI-Regel: eine Pruefung je Tastendruck fragt keine Datenbank). Ohne Delegaten
+   steht die Regel ohne Zahl da.
+
+   PROPORTIONALBAND (H1, E25): Schnellwahl 0,5 / 1 / 2 K oder „frei" (0 bis 5 K); ein Wert
+   ohne Schnellwahl zeigt „frei".
+
+   DER BAUSTEIN MELDET NICHT AN - der Wirt meldet an (Katalogeditor: Form_Gebaeude1,
+   Verwaltung: Form_Gebaeude_Admin). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
+
+<div class="gebk-waermeuebergabe">
+    <Formularraster>
+        <KindInhalt>
+            <Schalter Bezeichnung="@U.LabelHeizkreisAktiv"
+                      Wert="@Arbeit.Stand.HeizkreisAktiv"
+                      WertChanged="@(w => Setze(() => Arbeit.HeizkreisSetzen(w)))" />
+            @if (Arbeit.Stand.HeizkreisAktiv)
+            {
+                <Auswahlfeld Bezeichnung="@U.LabelArt" Eintraege="@Arbeit.Arteintraege(Texte)"
+                             Auswahl="@Arbeit.Artindex"
+                             AuswahlChanged="@(i => Setze(() => Arbeit.ArtWaehlen(i)))" />
+            }
+            @if (Arbeit.UebergabeAktiv)
+            {
+                <Zahlenfeld Bezeichnung="@U.LabelExponent"
+                            Min="@Waermeuebergabevorgaben.EXPONENT_MIN" Max="@Waermeuebergabevorgaben.EXPONENT_MAX"
+                            Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.Exponent(Arbeit.Stand.UebergabeArt), Texte)"
+                            Feldname="@Feld(U.LabelExponent)" FehlerZustand="FehlerMelden"
+                            Wert="@Arbeit.Stand.UebergabeExponent"
+                            WertChanged="@(w => Setze(() => Arbeit.Stand.UebergabeExponent = w))" />
+                <Zahlenfeld Bezeichnung="@U.LabelAuslegungVorlauf" Einheit="°C"
+                            Min="@Waermeuebergabevorgaben.VORLAUF_MIN" Max="@Waermeuebergabevorgaben.VORLAUF_MAX"
+                            Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.Vorlauf(Arbeit.Stand.UebergabeArt), Texte)"
+                            Feldname="@Feld(U.LabelAuslegungVorlauf)" FehlerZustand="FehlerMelden"
+                            Wert="@Arbeit.Stand.AuslegungVorlauf"
+                            WertChanged="@(w => Setze(() => Arbeit.Stand.AuslegungVorlauf = w))" />
+                <Zahlenfeld Bezeichnung="@U.LabelAuslegungRuecklauf" Einheit="°C"
+                            Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.Ruecklauf(Arbeit.Stand.UebergabeArt), Texte)"
+                            Feldname="@Feld(U.LabelAuslegungRuecklauf)" FehlerZustand="FehlerMelden"
+                            Wert="@Arbeit.Stand.AuslegungRuecklauf"
+                            WertChanged="@(w => Setze(() => Arbeit.Stand.AuslegungRuecklauf = w))" />
+                <Zahlenfeld Bezeichnung="@U.LabelAuslegungRaum" Einheit="°C"
+                            Min="@Waermeuebergabevorgaben.RAUM_MIN" Max="@Waermeuebergabevorgaben.RAUM_MAX"
+                            Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Arbeit.Stand.SollTag ?? 0, Texte)"
+                            Feldname="@Feld(U.LabelAuslegungRaum)" FehlerZustand="FehlerMelden"
+                            Wert="@Arbeit.Stand.AuslegungRaumtemperatur"
+                            WertChanged="@(w => Setze(() => Arbeit.Stand.AuslegungRaumtemperatur = w))" />
+                <Zahlenfeld Bezeichnung="@U.LabelAuslegungAussen" Einheit="°C"
+                            Min="@Waermeuebergabevorgaben.AUSSEN_MIN" Max="@Waermeuebergabevorgaben.AUSSEN_MAX"
+                            Platzhalter="@GebaeudeArbeitsstand.UebergabeHergeleitet(_herleitung?.AuslegungAussenC, Texte)"
+                            Feldname="@Feld(U.LabelAuslegungAussen)" FehlerZustand="FehlerMelden"
+                            Wert="@Arbeit.Stand.AuslegungAussentemperatur"
+                            WertChanged="@(w => Setze(() => Arbeit.Stand.AuslegungAussentemperatur = w))" />
+                <Zahlenfeld Bezeichnung="@U.LabelNennleistung" Einheit="kW" Min="0.01"
+                            Platzhalter="@GebaeudeArbeitsstand.UebergabeHergeleitet(_herleitung?.AuslegungsheizlastKw, Texte)"
+                            Feldname="@Feld(U.LabelNennleistung)" FehlerZustand="FehlerMelden"
+                            Wert="@Arbeit.Stand.UebergabeLeistungNennKw"
+                            WertChanged="@(w => Setze(() => Arbeit.Stand.UebergabeLeistungNennKw = w))" />
+                <Schalter Bezeichnung="@U.LabelHeizkurveAktiv"
+                          Wert="@Arbeit.Stand.HeizkurveAktiv"
+                          WertChanged="@(w => Setze(() => Arbeit.Stand.HeizkurveAktiv = w))" />
+                @if (Arbeit.Stand.HeizkurveAktiv)
+                {
+                    <Zahlenfeld Bezeichnung="@U.LabelHeizkurveNiveau" Einheit="K"
+                                Min="@Waermeuebergabevorgaben.NIVEAU_MIN" Max="@Waermeuebergabevorgaben.NIVEAU_MAX"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.HeizkurveNiveau, Texte)"
+                                Feldname="@Feld(U.LabelHeizkurveNiveau)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.HeizkurveNiveau"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.HeizkurveNiveau = w))" />
+                    <Zahlenfeld Bezeichnung="@U.LabelHeizkurveSteilheit"
+                                Min="@Waermeuebergabevorgaben.STEILHEIT_MIN" Max="@Waermeuebergabevorgaben.STEILHEIT_MAX"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.HeizkurveSteilheit, Texte)"
+                                Feldname="@Feld(U.LabelHeizkurveSteilheit)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.HeizkurveSteilheit"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.HeizkurveSteilheit = w))" />
+                }
+                <Optionsgruppe Bezeichnung="@U.LabelProportionalband"
+                               Eintraege="@GebaeudeArbeitsstand.Bandeintraege(Texte)"
+                               Auswahl="@Arbeit.BandIndex"
+                               AuswahlChanged="@(i => Setze(() => Arbeit.BandWaehlen(i)))" />
+                @if (Arbeit.BandIndex == 3)
+                {
+                    <Zahlenfeld Bezeichnung="@U.LabelBandFrei" Einheit="K"
+                                Min="@Waermeuebergabevorgaben.BAND_MIN" Max="@Waermeuebergabevorgaben.BAND_MAX"
+                                Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Waermeuebergabevorgaben.Proportionalband, Texte)"
+                                Feldname="@Feld(U.LabelBandFrei)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.ReglerProportionalband"
+                                WertChanged="@(w => Setze(() => Arbeit.BandSetzen(w)))" />
+                }
+            }
+        </KindInhalt>
+    </Formularraster>
+
+    <Herleitungszeile Text="@Arbeit.UebergabeArtZeile(Texte)" />
+    @if (Arbeit.UebergabeAktiv)
+    {
+        <Herleitungszeile Text="@Arbeit.UebergabeRaumZeile(Texte)" />
+        <Herleitungszeile Text="@Arbeit.UebergabeAussenZeile(Texte, _herleitung)" />
+        <Herleitungszeile Text="@Arbeit.UebergabeNennleistungZeile(Texte, _herleitung)" />
+        <Herleitungszeile Text="@Arbeit.UebergabeHeizkurveZeile(Texte, _herleitung)" />
+        <Herleitungszeile Text="@GebaeudeArbeitsstand.UebergabeBandZeile(Texte)" />
+
+        @* Das Sollwert-Zeitprogramm (9.2) - ein Wochenraster, kein Zahlenfeld. *@
+        <p class="epos-stammblattwerte-abschnitt">@U.LabelSollwertprofil</p>
+        <Wochenraster Wert="@Arbeit.ProfilWerte" WertChanged="ProfilGeaendert"
+                      Vorgabe="@Arbeit.Bestandswoche"
+                      Min="@Waermeuebergabevorgaben.SOLLWERT_MIN" Max="@Waermeuebergabevorgaben.SOLLWERT_MAX"
+                      Einheit="°C" Kennung="@Kennung" Texte="@U.Raster" Vorschau="@WochenVorschau"
+                      FehlerZustand="FehlerMelden" />
+        <Herleitungszeile Text="@Arbeit.UebergabeProfilZeile(Texte)" />
+    }
+    <Herleitungszeile Text="@U.ZeileProjekt" />
+    @if (!Arbeit.IstVdi6007)
+    {
+        <Herleitungszeile Text="@U.ZeileBestandsweg" />
+    }
+</div>
+
+@code {
+    /// <summary>Der ARBEITSSTAND des Wirts — die Felder schreiben über seine Wege.</summary>
+    [Parameter, EditorRequired] public GebaeudeArbeitsstand Arbeit { get; set; } = new();
+
+    /// <summary>Die Texte der VDI-Struktur samt dem Bündel der Wärmeübergabe.</summary>
+    [Parameter] public GebaeudeHuelleTexte Texte { get; set; } = new();
+
+    /// <summary>Ein Feld hat den Arbeitsstand geändert — der Wirt führt Hinweis und Statuszeile nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Leitet Auslegungs-Außentemperatur und Nennleistung aus dem Kern her
+    /// (<c>UebergabeHerleitungsquelle</c> über die Hülle); <c>null</c> = keine Zahl, die Zeilen
+    /// nennen die Regel.
+    /// </summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? Herleitung { get; set; }
+
+    /// <summary>Das Vorschaubild des Zeitprogramms aus dem Kern; <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<double[], Zeichenmodell?>? WochenVorschau { get; set; }
+
+    /// <summary>Entprellung der Herleitung nach der letzten Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>Kennung des Wochenrasters auf dem Blatt.</summary>
+    [Parameter] public string Kennung { get; set; } = "gebaeude-sollwertprofil";
+
+    private WaermeuebergabeTexte U => Texte.Uebergabe;
+
+    private UebergabeHerleitungDaten? _herleitung;
+    private string? _abdruck;
+    private CancellationTokenSource? _entprellung;
+
+    /// <summary>Die zuletzt hergeleiteten Zahlen (Prüfhilfe).</summary>
+    public UebergabeHerleitungDaten? Hergeleitet => _herleitung;
+
+    /// <summary>Wie oft die Herleitung gerufen wurde (Prüfhilfe: entprellt, nicht je Zeichen).</summary>
+    public int Herleitungen { get; private set; }
+
+    private Task Setze(Action weg)
+    {
+        weg();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        Arbeit.UebergabeFehlerMelden(e);
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task ProfilGeaendert(double[]? werte) => Setze(() => Arbeit.ProfilSetzen(werte));
+
+    private static string Feld(string beschriftung) => GebaeudeArbeitsstand.Feld(beschriftung);
+
+    /// <summary>
+    /// Nach jedem Zeichnen: Hat sich der Stand geändert, wird die Herleitung neu angestoßen —
+    /// beim ersten Mal sofort, danach <see cref="EntprellungMs"/> nach der LETZTEN Änderung.
+    /// </summary>
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (Herleitung is null || !Arbeit.UebergabeAktiv) return;
+        string abdruck = Arbeit.Abdruck();
+        if (abdruck == _abdruck) return;
+        bool erstes = _abdruck is null;
+        _abdruck = abdruck;
+
+        _entprellung?.Cancel();
+        _entprellung?.Dispose();
+        var quelle = new CancellationTokenSource();
+        _entprellung = quelle;
+        _ = Abwarten(quelle, erstes ? 0 : EntprellungMs);
+    }
+
+    private async Task Abwarten(CancellationTokenSource quelle, int ms)
+    {
+        try
+        {
+            if (ms > 0) await Task.Delay(ms, quelle.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        if (quelle.IsCancellationRequested || Herleitung is null) return;
+
+        Herleitungen++;
+        _herleitung = Herleitung(Arbeit.Probestand());
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _entprellung?.Cancel();
+        _entprellung?.Dispose();
+        _entprellung = null;
+    }
+}

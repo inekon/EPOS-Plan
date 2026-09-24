@@ -660,4 +660,108 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll("td.gebb-kaelte-monat"));
         Assert.Empty(cut.FindAll("table.gebb-monate thead"));
     }
+
+    // =================================================================================
+    // Anlagenkopplung AK1 Welle 3 (Konzept 9.4, 9.6 Maske 5) — Kacheln, Bild, Ausweis
+    // =================================================================================
+
+    /// <summary>Ein gekoppelt gerechneter Satz: Vorlauf 35,3 °C, Rücklauf 32,06 °C, 210,9 h begrenzt.</summary>
+    private static GebaeudeBedarfDaten GekoppelterSatz(bool mitHeizstunden = true) => new()
+    {
+        Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, VollbenutzungsstundenH = 2048.0,
+        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, gekoppelt (AK1)", IstVdi6007 = true,
+        IstGekoppelt = true,
+        VorlaufMittelC = mitHeizstunden ? 35.3 : null,
+        RuecklaufMittelC = mitHeizstunden ? 32.06 : null,
+        UebergabeBegrenztStundenH = mitHeizstunden ? 210.9 : 0.0,
+        Heizkreiszeile = "Mittel der Stunden mit Heizbetrieb — Radiator, Auslegung 55/45 °C"
+    };
+
+    /// <summary>Das Bild „Vorlauf und Rücklauf" einer Woche — die zweite Wochenhälfte ohne Heizbetrieb.</summary>
+    private static Zeichenmodell Vorlaufbild()
+    {
+        var v = new double[168];
+        var r = new double[168];
+        for (int i = 0; i < 168; i++)
+        {
+            bool heizt = i < 100;
+            v[i] = heizt ? 40.0 + Math.Sin(i / 12.0) : double.NaN;
+            r[i] = heizt ? v[i] - 7.0 : double.NaN;
+        }
+        return ChartRenderer.VorlaufRuecklaufModell("Vorlauf und Rücklauf", v, r, 55.0, 45.0,
+                                                    new ChartRenderer.VorlaufRuecklaufnamen());
+    }
+
+    private static string Kachel(IElement kachel, string teil)
+        => kachel.QuerySelector(".epos-kennzahlkachel-" + teil)?.TextContent.Trim() ?? "";
+
+    /// <summary>
+    /// Ein gekoppelt gerechnetes Gebäude zeigt unter den Kennzahlen ZWEI Kacheln — die Mittel von
+    /// Vorlauf und Rücklauf mit Übergabeart und Auslegungspunkt, die Stunden mit begrenzter
+    /// Übergabe — und die Rechenwegzeile trägt den Ausweis „gekoppelt (AK1)".
+    /// </summary>
+    [Fact]
+    public void Ein_gekoppeltes_Gebaeude_zeigt_zwei_Kacheln_und_den_Ausweis()
+    {
+        var cut = Aufbauen(GekoppelterSatz());
+
+        IReadOnlyList<IElement> kacheln = cut.FindAll("div.gebb-heizkreis .epos-kennzahlkachel");
+        Assert.Equal(2, kacheln.Count);
+        Assert.Equal("Vorlauf / Rücklauf", Kachel(kacheln[0], "titel"));
+        Assert.Equal("35,3 / 32,1 °C", Kachel(kacheln[0], "wert"));
+        Assert.Equal("Mittel der Stunden mit Heizbetrieb — Radiator, Auslegung 55/45 °C", Kachel(kacheln[0], "quelle"));
+        Assert.Equal("Stunden mit begrenzter Übergabe", Kachel(kacheln[1], "titel"));
+        Assert.Equal("211 h", Kachel(kacheln[1], "wert"));
+        Assert.Contains("VDI 6007, gekoppelt (AK1)", cut.Find("table.gebb-kennzahlen").TextContent);
+
+        // Die Kacheln stehen im Abschnitt „Wärmebedarf", nicht bei der Kälte.
+        Assert.NotNull(cut.Find("section[data-seite=waerme]").QuerySelector("div.gebb-heizkreis"));
+    }
+
+    /// <summary>Ohne Heizstunde steht der Strich statt einer erfundenen Zahl.</summary>
+    [Fact]
+    public void Ohne_Heizstunde_zeigt_die_Vorlaufkachel_den_Strich()
+    {
+        var cut = Aufbauen(GekoppelterSatz(mitHeizstunden: false));
+
+        IReadOnlyList<IElement> kacheln = cut.FindAll("div.gebb-heizkreis .epos-kennzahlkachel");
+        Assert.Equal("—", Kachel(kacheln[0], "wert"));
+        Assert.Equal("0 h", Kachel(kacheln[1], "wert"));
+    }
+
+    /// <summary>Ein ungekoppeltes Gebäude (jeder Bestandsfall) zeigt weder Kacheln noch Vorlaufbild.</summary>
+    [Fact]
+    public void Ohne_Kopplung_stehen_keine_Kacheln_und_kein_Vorlaufbild()
+    {
+        var cut = Aufbauen(VdiSatz());
+
+        Assert.Empty(cut.FindAll("div.gebb-heizkreis"));
+        Assert.Empty(cut.FindAll(".epos-kennzahlkachel"));
+        Assert.DoesNotContain("gekoppelt", cut.Find("table.gebb-kennzahlen").TextContent);
+        Assert.DoesNotContain("Stunden ohne Heizbetrieb", cut.Markup);
+    }
+
+    /// <summary>
+    /// Das Bild „Vorlauf und Rücklauf" steht nur mit Delegat, wird einmal gerechnet (Zoom bleibt
+    /// stehen), trägt die Zeile zu den Lücken — und kein Pfad schreibt ein „NaN".
+    /// </summary>
+    [Fact]
+    public void Das_Vorlaufbild_steht_nur_mit_Delegat_und_wird_einmal_gerechnet()
+    {
+        int aufrufe = 0;
+        Zeichenmodell bild = Vorlaufbild();
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, GekoppelterSatz())
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragVorlauf, () => { aufrufe++; return bild; }));
+
+        Assert.Equal(2, cut.FindAll("svg.epos-flaeche").Count);
+        Assert.Contains("Stunden ohne Heizbetrieb bleiben im Bild leer", cut.Markup);
+        Assert.DoesNotContain("NaN", cut.Markup);
+        cut.Render();
+        Assert.Equal(1, aufrufe);
+
+        var ohne = Aufbauen(GekoppelterSatz());
+        Assert.Single(ohne.FindAll("svg.epos-flaeche"));
+    }
 }

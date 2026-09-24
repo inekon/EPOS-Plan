@@ -306,6 +306,16 @@ else
                     <Herleitungszeile Text="@Arbeit.Rechenwegzeile(Texte)" />
                     <Herleitungszeile Text="@Texte.HinweisModellparameter" />
 
+                    @* Stufe AK1 (Anlagenkopplung 9.1): die Waermeuebergabe - derselbe Baustein
+                       wie im Katalogeditor, unter dem Rechenweg und ueber der Kuehlung. *@
+                    <p class="epos-stammblattwerte-abschnitt">@Texte.Uebergabe.Gruppe</p>
+                    <GebaeudeWaermeuebergabeFelder Arbeit="@Arbeit" Texte="@Texte"
+                                                   Geaendert="@(() => Geaendert.InvokeAsync())"
+                                                   Herleitung="@UebergabeHerleitung"
+                                                   WochenVorschau="@WochenVorschau"
+                                                   EntprellungMs="@EntprellungMs"
+                                                   Kennung="gebaeude-admin-sollwertprofil" />
+
                     <p class="epos-stammblattwerte-abschnitt">@Texte.GruppeKuehlung</p>
                     <Formularraster>
                         <KindInhalt>
@@ -377,6 +387,15 @@ else
 
     /// <summary>Die übrigen Beschriftungen des Stammblatts.</summary>
     [Parameter] public GebaeudeStammblattTexte Beschriftungen { get; set; } = new();
+
+    /// <summary>Die Herleitung der Wärmeübergabe aus dem Kern (über die Hülle); <c>null</c> = ohne Zahl.</summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
+
+    /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
+
+    /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>Der Knopf, der „Alle Daten" auf- und zuklappt (derselbe wie der Aufklapper der Parameterübersicht).</summary>
     private RenderFragment Aufklapper => @<button type="button" class="epos-modulparameter-knopf"

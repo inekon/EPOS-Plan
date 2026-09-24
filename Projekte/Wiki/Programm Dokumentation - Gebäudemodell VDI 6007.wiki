@@ -52,6 +52,44 @@ Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, 
 | Sommerlüftung || aus || siehe [[#sommerlueftung|Sommerlüftung]]
 |}
 
+== Heizkreis und Wärmeübergabe ==
+{{Anker|heizkreis}}
+
+Ohne weitere Angaben rechnet das Modell mit '''idealer Regelung''': In jeder Stunde kommt genau die Wärme in den Raum, die den Sollwert hält – begrenzt nur durch die Heizleistungsgrenze. Mit der '''Wärmeübergabe''' rechnet es statt dessen den Heizkreis des Gebäudes: Heizkörper oder Heizflächen geben je nach Vorlauftemperatur nur eine bestimmte Leistung ab, ein Raumregler öffnet nach der Abweichung vom Sollwert, und reicht die Übergabe nicht, sinkt die Raumtemperatur. Die Spitze nach einer Nachtabsenkung wird dadurch gekappt und auf mehrere Stunden verteilt, und die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf.
+
+Gerechnet wird der Heizkreis, wenn drei Dinge zusammenkommen:
+* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'';
+* im Gebäude ist der Haken '''Übergabe rechnen (statt idealer Regelung)''' gesetzt;
+* eine Übergabeart ist gewählt: '''Radiator''', '''Flächenheizung''' oder '''Konvektor'''. ''ideal'' rechnet wie ohne Haken.
+
+Auf dem Rechenweg ''Tagesbilanz'' gelten die Eingaben nicht; sie bleiben gespeichert und wirken, sobald das Gebäude nach VDI 6007 rechnet.
+
+Die Eingaben stehen im Gebäudedialog in der Gruppe '''Wärmeübergabe''' unter dem Rechenweg und im Stammblatt der Gebäudeverwaltung unter ''Alle Daten''. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert. Die Vorgaben sind '''Vorgaben von EPOS-Plan, keine Normwerte'''; jedes Feld überschreibt sie.
+
+{| class="wikitable"
+! Eingabe !! Vorgabe !! Bedeutung
+|-
+| Exponent || Radiator 1,3 · Flächenheizung 1,1 · Konvektor 1,4 || wie stark die abgegebene Leistung mit der Übertemperatur wächst
+|-
+| Auslegung Vorlauf / Rücklauf || Radiator und Konvektor 55/45 °C · Flächenheizung 35/28 °C || der Auslegungspunkt der Übergabe
+|-
+| Auslegung Raum || Raumtemperatur am Tag || die Raumtemperatur im Auslegungspunkt
+|-
+| Auslegungs-Außentemperatur || hergeleitet || das kälteste Tagesmittel der Klimareihe des Projekts, abgerundet
+|-
+| Nennleistung der Übergabe || hergeleitet || die stationäre Heizlast dieses Gebäudes im Auslegungspunkt – kein Nachweis nach DIN EN 12831; im Projekt wird sie mit dem Gebäude hochgerechnet
+|-
+| Heizkurve fahren || beim ersten Einschalten des Hakens vorgeschlagen || mit Heizkurve folgt der Vorlauf der Außentemperatur durch den Auslegungspunkt; ohne sie fährt das Gebäude einen festen Vorlauf – den höchsten projektierten Vorlauf der Wärmeerzeuger des Heizkanals, ohne solche Anlage den Auslegungsvorlauf
+|-
+| Niveau / Steilheit der Heizkurve || 0 K / 1 || verschieben bzw. neigen die Heizkurve
+|-
+| Proportionalband des Raumreglers || 1 K || Schnellwahl 0,5 K, 1 K, 2 K oder frei von 0 bis 5 K; 0 K ist die ideale Regelung mit der Grenze der Übergabe
+|}
+
+Die hergeleiteten Zahlen stehen als Vorgabe im Feld und in einer Zeile darunter, sobald der Gebäudedialog in einem Projekt mit Klimaregion geöffnet ist. Widersprüchliche Angaben meldet ''OK'' mit beiden Werten: ein Auslegungsvorlauf, der nicht über der Raumtemperatur liegt, ein Rücklauf außerhalb von Raumtemperatur und Vorlauf, eine Auslegungs-Außentemperatur über der Raumtemperatur.
+
+{{Anker|sollwert-zeitprogramm}}'''Sollwert-Zeitprogramm.''' Unter den Feldern steht ein Raster aus sieben Tagen und 24 Stunden. Ohne Zeitprogramm zeigt es gesperrt die Sollwerte, die ohnehin gelten (Tag, Nacht, Wochenende); ''Als Zeitprogramm bearbeiten'' macht daraus ein eigenes Zeitprogramm mit einem Sollwert je Wochenstunde, von Montag 0 Uhr bis Sonntag 23 Uhr. Eine Zeile lässt sich mit einem Wert füllen und auf die Werktage, das Wochenende oder alle Tage kopieren; ''Zeitprogramm verwerfen'' kehrt zu den Sollwerten des Gebäudes zurück. Die Ferien wirken in beiden Fällen darüber. Zulässig sind 0 bis 30 °C; eine leere Zelle wird nicht aufgefüllt, sondern beim Speichern gemeldet.
+
 == Lüftung ==
 {{Anker|lueftung}}
 
@@ -101,6 +139,12 @@ Die Tabelle '''Vergleich der Rechenwege''' stellt dasselbe Gebäude auf beiden R
 
 Das Bild '''Raumtemperatur''' zeigt den Jahresverlauf der Raumluft und der operativen Temperatur, dazu gestrichelt den Heizsollwert und die obere Raumtemperatur. Zoom, Ausschnitt, Legende und Farbwahl bedienen Sie wie in den übrigen Diagrammen; das Bild führt seinen Ausschnitt getrennt von der Ganglinie der Wärmelast.
 
+Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf zusätzlich:
+* in der Zeile '''Rechenweg''' den Zusatz ''gekoppelt (AK1)'';
+* zwei Kacheln: '''Vorlauf / Rücklauf''' – die Mittel über die Stunden mit Heizbetrieb, darunter Übergabeart und Auslegungspunkt – und '''Stunden mit begrenzter Übergabe''', in denen die Übergabe weniger lieferte, als der Sollwert verlangte;
+* das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer.
+Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
+
 Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistungen stehen in kW, Temperaturen in °C.
 
 == Grenzen ==
@@ -111,4 +155,5 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
 * Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
 * Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
+* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm. Gekühlt wird ein Gebäude mit Wärmeübergabe weiter mit idealer Regelung.
 * Wie beim Bestandsweg rechnet das Modell das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch.

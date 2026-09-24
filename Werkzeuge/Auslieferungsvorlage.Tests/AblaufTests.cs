@@ -100,6 +100,13 @@ namespace Auslieferungsvorlage.Tests
             Assert.Equal(4, e.Code);
             Assert.Contains("Katalogtabelle", e.Fehlerausgabe);
             Assert.False(File.Exists(ziel), "Trotz Abbruch liegt eine Zieldatei da.");
+
+            // Stufe G3 (L1): Der Waechter schlaegt nur an einem Katalog an, der auf NULL FAELLT.
+            // Aufbaukatalog und Schichten sind von Anfang an leer, der Baustoffkatalog traegt
+            // seine Saat mit ReadOnly = 1 - keiner der drei steht in der Abbruchliste.
+            Assert.DoesNotContain("Tab_Bauteilschicht_STAMM", e.Fehlerausgabe);
+            Assert.DoesNotContain("Tab_Bauteilaufbau_STAMM", e.Fehlerausgabe);
+            Assert.DoesNotContain("Tab_Baustoff_STAMM", e.Fehlerausgabe);
         }
 
         // =============================================================================

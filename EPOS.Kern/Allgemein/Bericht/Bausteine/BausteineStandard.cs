@@ -41,7 +41,10 @@ namespace WindowsFormsApplication1
             if (ProduktausweisNoetig(daten))
             {
                 paare.Add(ZEILE_GEBAEUDEMODELL);
-                paare.Add(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007);
+                // Anlagenkopplung AK1 (9.4, B-A3): EIN Satz dazu, sobald ein Gebäude gekoppelt rechnete.
+                paare.Add(KopplungImBericht(daten)
+                    ? MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007 + ". " + MyResource.Resource.GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG
+                    : MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007);
             }
             k.Eigenschaften(paare.ToArray());
 
@@ -56,6 +59,18 @@ namespace WindowsFormsApplication1
         /// Trägt der Berichtskopf den Produktausweis nach E10 (A12)? Ja, sobald ein Stand des
         /// Berichts ein Gebäude auf dem VDI-Weg gerechnet hat (<c>Tab_ErgebnisGebaeude</c>, E30).
         /// </summary>
+        /// <summary>
+        /// Hat ein Stand des Berichts ein Gebäude GEKOPPELT gerechnet (Anlagenkopplung AK1,
+        /// <c>Tab_ErgebnisGebaeude.Uebergabe_Art</c>)? Dann bekommt der Ausweis nach E10 den Satz,
+        /// dass Übergabe, Heizkurve und Raumregler EPOS-Erweiterungen sind (Konzept 9.4, B-A3).
+        /// </summary>
+        internal static bool KopplungImBericht(BerichtsDaten daten)
+        {
+            if (daten == null || daten.Varianten == null) return false;
+            return daten.Varianten.Any(v => v != null && v.Ergebnis != null && v.Ergebnis.Gebaeude != null
+                                            && v.Ergebnis.Gebaeude.Any(g => g != null && g.IstGekoppelt));
+        }
+
         internal static bool ProduktausweisNoetig(BerichtsDaten daten)
         {
             if (daten == null || daten.Varianten == null) return false;

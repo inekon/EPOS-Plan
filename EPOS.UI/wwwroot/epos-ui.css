@@ -11431,6 +11431,58 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==================================================================== */
+/* WOCHENRASTER (Konzept Anlagenkopplung 9.2; Stufe AK1 Welle 3)        */
+/*                                                                      */
+/* Ein Zeitprogramm von 168 Wochenstunden als Raster 7 x 24. Das Raster */
+/* rollt QUER in seiner eigenen Huelle - 24 Zellen passen in keine      */
+/* Dialogbreite, und eine Zelle wird nicht unter das Beruehrungsmass    */
+/* gedrueckt. Werkzeugleiste und Knoepfe brechen um.                    */
+/* ==================================================================== */
+.epos-wochenraster {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.epos-wochenraster-hinweis {
+    margin: 0;
+}
+
+.epos-wochenraster-werkzeug,
+.epos-wochenraster-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.epos-wochenraster-huelle {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.epos-wochenraster-tabelle {
+    border-collapse: collapse;
+}
+
+.epos-wochenraster-tabelle th {
+    padding: 0 0.2rem;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.epos-wochenraster-tabelle td {
+    padding: 0.1rem;
+}
+
+.epos-wochenraster-tabelle .epos-eingabe {
+    width: 3.6em;
+    min-width: 3.6em;
+    text-align: right;
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

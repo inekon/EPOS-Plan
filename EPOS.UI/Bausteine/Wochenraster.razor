@@ -1,0 +1,268 @@
+﻿@* DAS WOCHENRASTER (Konzept Anlagenkopplung 9.2; AK1 Welle 3) — ein Zeitprogramm von 168
+   Wochenstunden als Raster 7 x 24, Montag 00:00 bis Sonntag 23:00.
+
+   EIN TEXTFELD MIT 168 WERTEN IST KEINE BEDIENUNG. Deshalb: je Wochentag eine Zeile, je
+   Stunde eine Zelle, dazu ein Wert fuer eine ganze Zeile, das Kopieren einer Zeile auf die
+   Werktage, das Wochenende oder alle Tage, und - wo der Wirt einen Bildweg reicht - ein
+   Vorschaubild der Woche (Zeichenmodell aus dem Kern, Baustein DiagrammSvg).
+
+   ER ENTSTEHT EINMAL UND WIRD ZWEIMAL GEBRAUCHT: fuer das Sollwert-Zeitprogramm eines
+   Gebaeudes (AK1) und fuer den Erzeugerfahrplan (AK2) - deshalb kennt er weder Gebaeude noch
+   Anlage, nur Werte, Grenzen und Einheit.
+
+   OHNE ZEITPROGRAMM IST ER NICHT LEER. Er zeigt die VORGABE (beim Gebaeude die vier
+   Bestandssollwerte als Raster) gesperrt, mit einem Knopf, der daraus ein Zeitprogramm macht -
+   wer eins anlegt, sieht, was er bekommt. „Verwerfen" kehrt zur Vorgabe zurueck.
+
+   STRENG (H-F10). Er meldet nur ein VOLLSTAENDIGES Raster nach aussen; eine leere oder
+   ungueltige Zelle meldet er als Fehlerfeld (FehlerZustand) und laesst das Raster, wie es
+   war - kein Auffuellen, keine erfundene Stunde. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using WindowsFormsApplication1.Zeichnung
+
+<div class="epos-wochenraster" data-kennung="@Kennung">
+
+    @if (Wert is null)
+    {
+        <p class="epos-wochenraster-hinweis">@Texte.ZeileVorgabe</p>
+    }
+    else if (Aktiv)
+    {
+        <div class="epos-wochenraster-werkzeug">
+            <Auswahlfeld Bezeichnung="@Texte.LabelZeile" Eintraege="@Tageseintraege"
+                         Auswahl="@_zeile" AuswahlChanged="i => _zeile = i ?? 0" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelZeilenwert" Einheit="@Einheit" Min="@Min" Max="@Max"
+                        Nachkommastellen="@Nachkommastellen"
+                        Wert="@_zeilenwert" WertChanged="w => _zeilenwert = w" />
+            <button type="button" class="epos-knopf" disabled="@(!_zeilenwert.HasValue)"
+                    @onclick="ZeileSetzen">@Texte.KnopfZeileSetzen</button>
+            <button type="button" class="epos-knopf" @onclick="() => Kopieren(WERKTAGE)">@Texte.KnopfWerktage</button>
+            <button type="button" class="epos-knopf" @onclick="() => Kopieren(WOCHENENDE)">@Texte.KnopfWochenende</button>
+            <button type="button" class="epos-knopf" @onclick="() => Kopieren(ALLE)">@Texte.KnopfAlle</button>
+        </div>
+    }
+
+    <div class="epos-wochenraster-huelle">
+        <table class="epos-wochenraster-tabelle">
+            <thead>
+                <tr>
+                    <th scope="col">@Texte.KopfTag</th>
+                    @for (int h = 0; h < STUNDEN; h++)
+                    {
+                        <th scope="col">@h.ToString("00", CultureInfo.InvariantCulture)</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (int t = 0; t < TAGE; t++)
+                {
+                    int tag = t;
+                    <tr @key="tag">
+                        <th scope="row">@Tagesname(tag)</th>
+                        @for (int h = 0; h < STUNDEN; h++)
+                        {
+                            int stunde = h;
+                            <td>
+                                <Zahlenfeld Titel="@Zellname(tag, stunde)" Min="@Min" Max="@Max"
+                                            Nachkommastellen="@Nachkommastellen"
+                                            Aktiv="@(Aktiv && Wert is not null)"
+                                            Feldname="@Zellname(tag, stunde)" FehlerZustand="ZelleMeldet"
+                                            Wert="@Zellwert(tag, stunde)"
+                                            WertChanged="w => ZelleSetzen(tag, stunde, w)" />
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Aktiv)
+    {
+        <div class="epos-wochenraster-knoepfe">
+            @if (Wert is null)
+            {
+                <button type="button" class="epos-knopf" disabled="@(!VorgabeVollstaendig)"
+                        @onclick="Anlegen">@Texte.KnopfAnlegen</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" @onclick="Verwerfen">@Texte.KnopfVerwerfen</button>
+            }
+        </div>
+    }
+
+    @if (Vorschau is not null)
+    {
+        <DiagrammSvg Modell="@VorschauModell" Kennung="@(Kennung + "-vorschau")" Bezeichnung="@Texte.BildTitel"
+                     Einheit="@Einheit" />
+    }
+</div>
+
+@code {
+    /// <summary>Zahl der Tage einer Woche.</summary>
+    public const int TAGE = 7;
+
+    /// <summary>Zahl der Stunden eines Tages.</summary>
+    public const int STUNDEN = 24;
+
+    /// <summary>Zahl der Werte eines Wochenrasters: 168.</summary>
+    public const int WERTE = TAGE * STUNDEN;
+
+    private static readonly int[] WERKTAGE = { 0, 1, 2, 3, 4 };
+    private static readonly int[] WOCHENENDE = { 5, 6 };
+    private static readonly int[] ALLE = { 0, 1, 2, 3, 4, 5, 6 };
+
+    /// <summary>
+    /// Die 168 Werte des Zeitprogramms, Montag 00:00 zuerst; <c>null</c> = kein Zeitprogramm —
+    /// dann steht <see cref="Vorgabe"/> gesperrt da. Eine Länge ungleich 168 gilt als keines.
+    /// </summary>
+    [Parameter] public double[]? Wert { get; set; }
+
+    /// <summary>Meldet das neue, VOLLSTÄNDIGE Raster (eine Kopie) — oder <c>null</c> nach „verwerfen".</summary>
+    [Parameter] public EventCallback<double[]?> WertChanged { get; set; }
+
+    /// <summary>Was ohne Zeitprogramm gilt (168 Werte) — gesperrt gezeigt und Vorlage von „anlegen".</summary>
+    [Parameter] public IReadOnlyList<double>? Vorgabe { get; set; }
+
+    /// <summary>Kleinster zulässiger Wert einer Zelle; <c>null</c> = keine Untergrenze.</summary>
+    [Parameter] public double? Min { get; set; }
+
+    /// <summary>Größter zulässiger Wert einer Zelle; <c>null</c> = keine Obergrenze.</summary>
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Einheit der Werte, z. B. „°C".</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Feste Nachkommastellen der Anzeige; <c>null</c> = so genau wie nötig.</summary>
+    [Parameter] public int? Nachkommastellen { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> zeigt nur.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Kennung des Rasters auf dem Blatt — sie bildet auch die Kennung des Vorschaubilds.</summary>
+    [Parameter] public string Kennung { get; set; } = "wochenraster";
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public WochenrasterTexte Texte { get; set; } = new();
+
+    /// <summary>Das Vorschaubild der Woche aus dem Kern; <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<double[], Zeichenmodell?>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Meldet jede Änderung des Fehlerzustands einer Zelle — ungültiger Text, ein Wert außerhalb
+    /// der Grenzen oder eine GELEERTE Zelle. Der Name ist <see cref="WochenrasterTexte.Zelle"/>.
+    /// </summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    private int? _zeile = 0;
+    private double? _zeilenwert;
+    private Zeichenmodell? _vorschau;
+    private double[]? _vorschauWerte;
+
+    /// <summary>Die gewählte Zeile des Werkzeugs (Prüfhilfe).</summary>
+    public int? GewaehlteZeile => _zeile;
+
+    private bool VorgabeVollstaendig => Vorgabe is { Count: WERTE };
+
+    private IReadOnlyList<(int Id, string Text)> Tageseintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int t = 0; t < TAGE; t++) l.Add((t, Tagesname(t)));
+            return l;
+        }
+    }
+
+    private string Tagesname(int tag) => Texte.Tagesnamen[tag];
+
+    /// <summary>Der Name einer Zelle, z. B. „Mo 07 Uhr".</summary>
+    public string Zellname(int tag, int stunde)
+        => string.Format(CultureInfo.CurrentCulture, Texte.Zelle, Tagesname(tag),
+                         stunde.ToString("00", CultureInfo.InvariantCulture));
+
+    /// <summary>Die angezeigten 168 Werte: das Zeitprogramm, sonst die Vorgabe, sonst nichts.</summary>
+    private double[]? Angezeigt
+    {
+        get
+        {
+            if (Wert is { Length: WERTE }) return Wert;
+            if (VorgabeVollstaendig) return Vorgabe!.ToArray();
+            return null;
+        }
+    }
+
+    private double? Zellwert(int tag, int stunde)
+    {
+        double[]? w = Angezeigt;
+        return w is null ? null : w[tag * STUNDEN + stunde];
+    }
+
+    private Zeichenmodell? VorschauModell
+    {
+        get
+        {
+            double[]? w = Angezeigt;
+            if (Vorschau is null || w is null) return null;
+            // Das Modell wird nur neu gebaut, wenn sich ein Wert geändert hat - sonst verwürfe
+            // DiagrammSvg mit dem Knotenbaum auch Zoom und Zeigerstelle (Hausregel).
+            if (_vorschau is null || _vorschauWerte is null || !_vorschauWerte.SequenceEqual(w))
+            {
+                _vorschauWerte = (double[])w.Clone();
+                _vorschau = Vorschau((double[])w.Clone());
+            }
+            return _vorschau;
+        }
+    }
+
+    private async Task ZelleSetzen(int tag, int stunde, double? wert)
+    {
+        if (Wert is not { Length: WERTE }) return;
+        string name = Zellname(tag, stunde);
+
+        // Eine GELEERTE Zelle ist ein Fehlerfeld, kein Wert: Das Raster bleibt, wie es war.
+        if (!wert.HasValue)
+        {
+            await FehlerZustand.InvokeAsync((name, true));
+            return;
+        }
+
+        await FehlerZustand.InvokeAsync((name, false));
+        double[] neu = (double[])Wert.Clone();
+        neu[tag * STUNDEN + stunde] = wert.Value;
+        await Melden(neu);
+    }
+
+    private Task ZelleMeldet((string Feld, bool Fehlerhaft) e) => FehlerZustand.InvokeAsync(e);
+
+    /// <summary>Setzt die gewählte Zeile auf den Zeilenwert.</summary>
+    private async Task ZeileSetzen()
+    {
+        if (Wert is not { Length: WERTE } || !_zeilenwert.HasValue || _zeile is not int zeile) return;
+        double[] neu = (double[])Wert.Clone();
+        for (int h = 0; h < STUNDEN; h++) neu[zeile * STUNDEN + h] = _zeilenwert.Value;
+        await Melden(neu);
+    }
+
+    /// <summary>Kopiert die gewählte Zeile auf die Zieltage.</summary>
+    private async Task Kopieren(int[] ziele)
+    {
+        if (Wert is not { Length: WERTE } || _zeile is not int quelle) return;
+        double[] neu = (double[])Wert.Clone();
+        foreach (int ziel in ziele)
+        {
+            if (ziel == quelle) continue;
+            Array.Copy(Wert, quelle * STUNDEN, neu, ziel * STUNDEN, STUNDEN);
+        }
+        await Melden(neu);
+    }
+
+    private Task Anlegen() => VorgabeVollstaendig ? Melden(Vorgabe!.ToArray()) : Task.CompletedTask;
+
+    private Task Verwerfen() => WertChanged.InvokeAsync(null);
+
+    private Task Melden(double[] neu) => WertChanged.InvokeAsync(neu);
+}

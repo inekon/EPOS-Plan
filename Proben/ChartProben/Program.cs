@@ -1266,6 +1266,10 @@ namespace ChartProben
             // maßgebende Woche): Mass-, Gegen- und SVG-Proben in Program.Auslegung.cs.
             AuslegungProben(ziel);
 
+            // ANLAGENKOPPLUNG AK1 WELLE 3 - das Bild „Vorlauf und Rücklauf" mit Lücken ohne
+            // Heizbetrieb: Mass-, Gegen- und SVG-Proben in Program.Anlagenkopplung.cs.
+            AnlagenkopplungProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell

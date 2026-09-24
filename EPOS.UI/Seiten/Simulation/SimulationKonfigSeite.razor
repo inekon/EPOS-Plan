@@ -110,6 +110,30 @@
             </section>
         }
 
+        @* DIE PROJEKTEINSTELLUNG „ANLAGENKOPPLUNG" (Konzept Anlagenkopplung 9.4 und 9.6 Maske 1;
+           AK1 Welle 3). Ohne sie ist jede Eingabe der Waermeuebergabe am Gebaeude wirkungslos -
+           deshalb steht sie hier, neben dem Kuehlschalter, und schreibt wie er sofort. Waehlbar
+           sind nur die gebauten Stufen („aus", „Heizkreis (AK1)"); Fahrplan (AK2) und
+           geschlossener Kreis (AK3) stehen in der Liste, sind aber gesperrt und nennen den Grund -
+           steht eine davon schon in der Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet
+           dann AK1 und sagt es). Scheitert das Schreiben, kehrt die Wahl zurueck (@key). *@
+        @if (Parameter?.Laden is not null && Parameter.AnlagenkopplungSchreiben is not null)
+        {
+            <section class="epos-simkonfig-bedarf epos-simkonfig-anlagenkopplung" aria-label="@Resource.SIMKONF_GRP_ANLAGENKOPPLUNG">
+                <Gruppenkopf Titel="@Resource.SIMKONF_GRP_ANLAGENKOPPLUNG" />
+                <div class="epos-simkonfig-felder" @key="_anlagenkopplungSchluessel">
+                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_ANLAGENKOPPLUNG"
+                                 Eintraege="@Kopplungseintraege"
+                                 Auswahl="@Kopplungsindex(_parameter.Anlagenkopplung)"
+                                 GesperrteEintraege="@KopplungGesperrt"
+                                 GesperrtHinweis="@Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR"
+                                 Aktiv="@(!_daten.Gesperrt)"
+                                 AuswahlChanged="AnlagenkopplungGewaehlt" />
+                    <Herleitungszeile Text="@Kopplungszeile" />
+                </div>
+            </section>
+        }
+
         @if (_ansicht == ANSICHT_SCHEMA)
         {
             <Schema Layout="@_schema" Gewaehlt="@_auswahl"
@@ -924,6 +948,104 @@
 
         _kuehlbetriebSchluessel++;
         Melden(Resource.SIMKONF_MSG_KUEHLBETRIEB_FEHLER, WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Anlagenkopplung" (Konzept Anlagenkopplung 9.4)
+    // =====================================================================
+
+    /// <summary>@key der Kopplungswahl — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _anlagenkopplungSchluessel;
+
+    /// <summary>
+    /// Die vier Stufen der Liste (Id = Platz in <see cref="WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen"/>) —
+    /// ihre Namen aus den Ressourcen; die nicht gebauten tragen „(noch nicht verfügbar)".
+    /// </summary>
+    private static IReadOnlyList<(int Id, string Text)> Kopplungseintraege
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            for (int i = 0; i < WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen.Count; i++)
+            {
+                string stufe = WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen[i];
+                string text = Kopplungsname(stufe);
+                if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(stufe))
+                    text += " — " + Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR;
+                liste.Add((i, text));
+            }
+            return liste;
+        }
+    }
+
+    /// <summary>Die gesperrten Einträge: jede Stufe, deren Rechenweg nicht gebaut ist.</summary>
+    private static IReadOnlyCollection<int> KopplungGesperrt
+    {
+        get
+        {
+            var gesperrt = new List<int>();
+            for (int i = 0; i < WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen.Count; i++)
+                if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen[i])) gesperrt.Add(i);
+            return gesperrt;
+        }
+    }
+
+    /// <summary>Der Anzeigename einer Stufe (Steuerwert → Ressource).</summary>
+    internal static string Kopplungsname(string? stufe) => stufe switch
+    {
+        WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1 => Resource.SIMKONF_ANLAGENKOPPLUNG_AK1,
+        WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK2 => Resource.SIMKONF_ANLAGENKOPPLUNG_AK2,
+        WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3 => Resource.SIMKONF_ANLAGENKOPPLUNG_AK3,
+        _ => Resource.SIMKONF_ANLAGENKOPPLUNG_AUS
+    };
+
+    /// <summary>Der Listenplatz des gespeicherten Werts; NULL und „AUS" sind „aus".</summary>
+    private static int Kopplungsindex(string? stufe)
+    {
+        for (int i = 0; i < WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen.Count; i++)
+            if (string.Equals(WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen[i], stufe, StringComparison.Ordinal)) return i;
+        return 0;
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile unter der Wahl: was die gewählte Stufe rechnet — bei einer nicht
+    /// gebauten Stufe, dass der Lauf den Heizkreis (AK1) rechnet.
+    /// </summary>
+    private string Kopplungszeile
+    {
+        get
+        {
+            string? stufe = _parameter.Anlagenkopplung;
+            if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(stufe))
+                return string.Format(Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT, Kopplungsname(stufe));
+            return stufe == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1
+                ? Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1
+                : Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS;
+        }
+    }
+
+    /// <summary>
+    /// Die Wahl „Anlagenkopplung" — schreibt sofort über die Naht der Hülle. Eine nicht gebaute
+    /// Stufe lässt das Feld gar nicht erst zu; steht danach nicht die gewünschte Stufe, zeigt die
+    /// Wahl wieder den gespeicherten Stand, und die Fußzeile meldet es.
+    /// </summary>
+    private void AnlagenkopplungGewaehlt(int? index)
+    {
+        if (Parameter?.AnlagenkopplungSchreiben is null || index is null) return;
+        if (index.Value < 0 || index.Value >= WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen.Count) return;
+
+        string stufe = WindowsFormsApplication1.Waermeuebergabevorgaben.Stufen[index.Value];
+        if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(stufe)) return;
+        string? wert = stufe == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AUS ? null : stufe;
+
+        if (Parameter.AnlagenkopplungSchreiben(wert))
+        {
+            _parameter.Anlagenkopplung = wert;
+            return;
+        }
+
+        _anlagenkopplungSchluessel++;
+        Melden(Resource.SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>

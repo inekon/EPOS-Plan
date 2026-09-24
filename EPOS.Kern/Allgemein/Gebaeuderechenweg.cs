@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
@@ -149,6 +150,168 @@ namespace WindowsFormsApplication1
             if (ferienAktiv && sollFerien >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN)
                 max = Math.Max(max, sollFerien);
             return max;
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Vorgaben und Grenzen der Wärmeübergabe</b> (Anlagenkopplung AK1; Konzept 3.1, 4.4,
+    /// 8.1, 9.1; H1, H10, H12, E25) — öffentlich, damit die Gruppe „Wärmeübergabe" des
+    /// Gebäudedialogs jede Vorgabe als ZAHL zeigt und mit DERSELBEN Grenze prüft, mit der der
+    /// Eingangsbauer des Kerns hart abbricht (<c>GebaeudeModellEingang.KopplungAufloesen</c>).
+    /// Der Dialog schreibt NULL, nicht diese Werte; alle Zahlen sind Vorgaben von EPOS-Plan, keine
+    /// Normwerte.
+    /// </summary>
+    public static class Waermeuebergabevorgaben
+    {
+        /// <summary>Die Übergabearten in Anzeigereihenfolge: ideal (= Kopplung aus), Radiator, Flächenheizung, Konvektor.</summary>
+        public static readonly IReadOnlyList<string> Arten = new[]
+        {
+            DbWerte.UEBERGABE_IDEAL, DbWerte.UEBERGABE_RADIATOR, DbWerte.UEBERGABE_FLAECHE, DbWerte.UEBERGABE_KONVEKTOR
+        };
+
+        /// <summary>
+        /// Die Kopplungsstufen des Projekts in Anzeigereihenfolge (<c>Tab_Einstellungen.Anlagenkopplung</c>):
+        /// aus, AK1, AK2, AK3. Gebaut und damit wählbar sind nur aus und AK1 (<see cref="StufeGebaut"/>).
+        /// </summary>
+        public static readonly IReadOnlyList<string> Stufen = new[]
+        {
+            DbWerte.ANLAGENKOPPLUNG_AUS, DbWerte.ANLAGENKOPPLUNG_AK1, DbWerte.ANLAGENKOPPLUNG_AK2, DbWerte.ANLAGENKOPPLUNG_AK3
+        };
+
+        /// <summary>
+        /// <b>Ist die Stufe gebaut?</b> Nur „aus" (auch NULL) und AK1 — ein Wert, dessen Rechenweg nicht
+        /// gebaut ist, wird nicht angeboten (Konzept Anlagenkopplung 9.4, Kühlkonzept K7). Steht AK2 oder
+        /// AK3 schon in der Datenbank, rechnet der Lauf AK1 und nennt es.
+        /// </summary>
+        public static bool StufeGebaut(string stufe)
+            => string.IsNullOrEmpty(stufe) || stufe == DbWerte.ANLAGENKOPPLUNG_AUS || stufe == DbWerte.ANLAGENKOPPLUNG_AK1;
+
+        /// <summary>Rechnet diese Art eine Übergabe (Radiator, Flächenheizung, Konvektor)? NULL und „ideal" nicht.</summary>
+        public static bool ArtRechnet(string art) => Waermeuebergabe.ArtBekannt(art);
+
+        /// <summary>Exponent der Art [–]; <c>null</c> für ideal oder unbekannt.</summary>
+        public static double? Exponent(string art) => Zahl(Waermeuebergabe.VorgabeExponent(art));
+
+        /// <summary>Auslegungsvorlauf der Art [°C]; <c>null</c> für ideal oder unbekannt.</summary>
+        public static double? Vorlauf(string art) => Zahl(Waermeuebergabe.VorgabeVorlaufC(art));
+
+        /// <summary>
+        /// Der ANZEIGENAME einer Übergabeart (Drei-Schichten-Regel: der Steuerwert bleibt deutsch und
+        /// eingefroren, angezeigt wird der Ressourcentext) — für Bedarfsdialog, Bericht und
+        /// Variantenvergleich aus EINER Stelle; NULL heißt „ideal", ein unbekannter Wert steht, wie er ist.
+        /// </summary>
+        public static string Anzeigename(string art)
+        {
+            switch (art)
+            {
+                case null:
+                case "":
+                case DbWerte.UEBERGABE_IDEAL: return Text("GEBK_UEBERGABE_IDEAL", "ideal (keine Übergabe)");
+                case DbWerte.UEBERGABE_RADIATOR: return Text("GEBK_UEBERGABE_RADIATOR", "Radiator");
+                case DbWerte.UEBERGABE_FLAECHE: return Text("GEBK_UEBERGABE_FLAECHE", "Flächenheizung");
+                case DbWerte.UEBERGABE_KONVEKTOR: return Text("GEBK_UEBERGABE_KONVEKTOR", "Konvektor");
+                default: return art;
+            }
+        }
+
+        /// <summary>Der Anzeigename einer Kopplungsstufe (<c>DbWerte.ANLAGENKOPPLUNG_*</c>); NULL heißt „aus".</summary>
+        public static string Stufenname(string stufe)
+        {
+            switch (stufe)
+            {
+                case null:
+                case "":
+                case DbWerte.ANLAGENKOPPLUNG_AUS: return Text("SIMKONF_ANLAGENKOPPLUNG_AUS", "aus");
+                case DbWerte.ANLAGENKOPPLUNG_AK1: return Text("SIMKONF_ANLAGENKOPPLUNG_AK1", "Heizkreis (AK1)");
+                case DbWerte.ANLAGENKOPPLUNG_AK2: return Text("SIMKONF_ANLAGENKOPPLUNG_AK2", "Fahrplan (AK2)");
+                case DbWerte.ANLAGENKOPPLUNG_AK3: return Text("SIMKONF_ANLAGENKOPPLUNG_AK3", "geschlossener Kreis (AK3)");
+                default: return stufe;
+            }
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel, MyResource.Resource.Culture); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>Auslegungsrücklauf der Art [°C]; <c>null</c> für ideal oder unbekannt.</summary>
+        public static double? Ruecklauf(string art) => Zahl(Waermeuebergabe.VorgabeRuecklaufC(art));
+
+        /// <summary>Strahlungsanteil der Art [–] (H12: gilt, wenn <c>Heizung_Strahlungsanteil</c> leer ist); <c>null</c> für ideal.</summary>
+        public static double? Strahlungsanteil(string art) => Zahl(Waermeuebergabe.VorgabeStrahlungsanteil(art));
+
+        /// <summary>Proportionalband des Raumreglers bei leerem Feld [K] (H1, E25).</summary>
+        public static double Proportionalband => GebaeudeFestwerte.VORGABE_REGLER_PROPORTIONALBAND_K;
+
+        /// <summary>Die Schnellwahl des Proportionalbands [K] (E25); jeder andere Wert zeigt „frei".</summary>
+        public static readonly IReadOnlyList<double> ProportionalbandSchnellwahl = new[] { 0.5, 1.0, 2.0 };
+
+        /// <summary>Niveau der Heizkurve bei leerem Feld [K].</summary>
+        public static double HeizkurveNiveau => GebaeudeFestwerte.VORGABE_HEIZKURVE_NIVEAU_K;
+
+        /// <summary>Steilheit der Heizkurve bei leerem Feld [–] — die Kurve durch den Auslegungspunkt.</summary>
+        public static double HeizkurveSteilheit => GebaeudeFestwerte.VORGABE_HEIZKURVE_STEILHEIT;
+
+        // ---- Die Grenzen der Prüfregeln (9.1) — dieselben Zahlen wie im Eingangsbauer ----
+
+        /// <summary>Kleinster Exponent [–].</summary>
+        public const double EXPONENT_MIN = GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN;
+        /// <summary>Größter Exponent [–].</summary>
+        public const double EXPONENT_MAX = GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX;
+        /// <summary>Kleinster Auslegungsvorlauf [°C].</summary>
+        public const double VORLAUF_MIN = GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN;
+        /// <summary>Größter Auslegungsvorlauf [°C].</summary>
+        public const double VORLAUF_MAX = GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX;
+        /// <summary>Kleinste Auslegungs-Raumtemperatur [°C].</summary>
+        public const double RAUM_MIN = GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN;
+        /// <summary>Größte Auslegungs-Raumtemperatur [°C].</summary>
+        public const double RAUM_MAX = GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX;
+        /// <summary>Kleinste eingegebene Auslegungs-Außentemperatur [°C].</summary>
+        public const double AUSSEN_MIN = GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MIN;
+        /// <summary>Größte eingegebene Auslegungs-Außentemperatur [°C].</summary>
+        public const double AUSSEN_MAX = GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MAX;
+        /// <summary>Kleinstes Niveau der Heizkurve [K].</summary>
+        public const double NIVEAU_MIN = GebaeudeFestwerte.HEIZKURVE_NIVEAU_MIN;
+        /// <summary>Größtes Niveau der Heizkurve [K].</summary>
+        public const double NIVEAU_MAX = GebaeudeFestwerte.HEIZKURVE_NIVEAU_MAX;
+        /// <summary>Kleinste Steilheit der Heizkurve [–].</summary>
+        public const double STEILHEIT_MIN = GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MIN;
+        /// <summary>Größte Steilheit der Heizkurve [–].</summary>
+        public const double STEILHEIT_MAX = GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MAX;
+        /// <summary>Kleinstes Proportionalband [K]; 0 = ideale Regelung mit Grenze.</summary>
+        public const double BAND_MIN = GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K;
+        /// <summary>Größtes Proportionalband [K].</summary>
+        public const double BAND_MAX = GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K;
+        /// <summary>Kleinster Wert des Sollwert-Zeitprogramms [°C].</summary>
+        public const double SOLLWERT_MIN = GebaeudeFestwerte.SOLLWERTPROFIL_MIN_C;
+        /// <summary>Größter Wert des Sollwert-Zeitprogramms [°C].</summary>
+        public const double SOLLWERT_MAX = GebaeudeFestwerte.SOLLWERTPROFIL_MAX_C;
+
+        private static double? Zahl(double w) => double.IsNaN(w) ? (double?)null : w;
+
+        /// <summary>
+        /// <b>Die vier Bestandssollwerte als Woche</b> (Konzept Anlagenkopplung 4.3, 9.2) — 168
+        /// Werte, Montag 00:00 zuerst, nach DERSELBEN Regel wie der Sollwertfahrplan des
+        /// Stundenmodells ohne Zeitprogramm: Samstag und Sonntag den ganzen Tag der
+        /// Wochenendwert, sofern er über der Wirksamkeitsschwelle liegt, sonst wie die Werktage;
+        /// an Werktagen in der Nutzungszeit der Tagwert, sonst der Nachtwert. Die Ferien wirken im
+        /// Lauf darüber und stehen hier nicht. Das Wochenraster zeigt diese Woche, solange kein
+        /// Zeitprogramm gepflegt ist — wer daraus eins anlegt, bekommt genau das.
+        /// </summary>
+        public static double[] Bestandswoche(double sollTag, double sollNacht, double sollWochenende)
+        {
+            bool weWirksam = sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE;
+            var woche = new double[AnlagenkopplungSchema.WOCHENWERTE];
+            for (int i = 0; i < woche.Length; i++)
+            {
+                int tag = i / 24;   // 0 = Montag … 6 = Sonntag
+                if (weWirksam && tag >= 5) woche[i] = sollWochenende;
+                else woche[i] = GebaeudeModellEingang.Nutzungszeit(i) ? sollTag : sollNacht;
+            }
+            return woche;
         }
     }
 

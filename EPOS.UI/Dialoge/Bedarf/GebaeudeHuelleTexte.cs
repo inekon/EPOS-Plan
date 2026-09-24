@@ -276,6 +276,11 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_MSG_KUEHLLEISTUNG</c></summary>
     public string MeldungKuehlleistung { get; set; } = "Die Kühlleistungsgrenze muss größer als 0 sein.";
 
+    // ------------------------------------------------------------ Wärmeübergabe (Stufe AK1, Anlagenkopplung 9.1)
+
+    /// <summary>Die Texte der Gruppe „Wärmeübergabe" samt Wochenraster (eigenes Bündel).</summary>
+    public WaermeuebergabeTexte Uebergabe { get; set; } = new();
+
     // ------------------------------------------------------------ Schreibweg
 
     /// <summary><c>GEBK_HINWEIS_SPEICHERN_UNTER</c></summary>

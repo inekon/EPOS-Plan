@@ -8426,6 +8426,132 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
     <value>Building types (daily profiles)</value>
   </data>
+  <data name="ADM_KATALOG_BAUSTOFF" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="ADM_KATALOG_BAUTEILAUFBAU" xml:space="preserve">
+    <value>Construction build-ups</value>
+  </data>
+  <data name="KFLT_SP_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="KFLT_SP_LAMBDA" xml:space="preserve">
+    <value>λ</value>
+  </data>
+  <data name="KFLT_SP_RHO" xml:space="preserve">
+    <value>Density</value>
+  </data>
+  <data name="KFLT_SP_CP" xml:space="preserve">
+    <value>Heat capacity</value>
+  </data>
+  <data name="KFLT_SP_BAUTEILART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="KFLT_SP_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="KFLT_SP_DICKE" xml:space="preserve">
+    <value>Thickness</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NAME_LEER" xml:space="preserve">
+    <value>The building material needs a name.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>The building material “{0}” already exists (same name and manufacturer).</value>
+  </data>
+  <data name="BAUSTOFF_MSG_TEXT_LANG" xml:space="preserve">
+    <value>{0} is longer than {1} characters.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_WERT_BAND" xml:space="preserve">
+    <value>{0} = {1} lies outside the permitted range {2} to {3}.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>The building material “{0}” belongs to the delivered catalogue and is write-protected. Duplicate it to change it.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_VERWENDET" xml:space="preserve">
+    <value>The building material “{0}” is used in {1} layer(s) and cannot be deleted.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>There is no building material with ID {0}.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The building material could not be saved: {0}</value>
+  </data>
+  <data name="BAUTEIL_FELD_QUELLKENNUNG" xml:space="preserve">
+    <value>Source identifier</value>
+  </data>
+  <data name="BAUTEIL_MSG_HERKUNFT" xml:space="preserve">
+    <value>The origin “{0}” is not a valid value.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BAUTEILART" xml:space="preserve">
+    <value>The component type “{0}” is not a valid value.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NAME_LEER" xml:space="preserve">
+    <value>The construction build-up needs a name.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NAME_VERGEBEN" xml:space="preserve">
+    <value>The construction build-up “{0}” already exists.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>The construction build-up “{0}” belongs to the delivered catalogue and is write-protected. Duplicate it to change it.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_VERWENDET" xml:space="preserve">
+    <value>The construction build-up “{0}” is used by {1} component(s) and cannot be deleted.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>There is no construction build-up with ID {0}.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The construction build-up could not be saved: {0}</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_DICKE" xml:space="preserve">
+    <value>Layer {0}: The thickness must be greater than zero.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_BAUSTOFF" xml:space="preserve">
+    <value>Layer {0}: There is no building material with ID {1} in this store.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_WERT" xml:space="preserve">
+    <value>Layer {0}: {1}</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_LEER" xml:space="preserve">
+    <value>Zone “{0}”: A component needs a name.</value>
+  </data>
+  <data name="BAUTEIL_MSG_FLAECHE" xml:space="preserve">
+    <value>Component “{0}”: The area must be greater than zero.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AZIMUT_FEHLT" xml:space="preserve">
+    <value>Component “{0}”: An inclined external component needs an azimuth; it is not preset to north.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RANDBEDINGUNG" xml:space="preserve">
+    <value>Component “{0}”: The boundary condition “{1}” is not a valid value.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_FREMD" xml:space="preserve">
+    <value>Component “{0}”: There is no build-up with ID {1} in this project.</value>
+  </data>
+  <data name="BAUTEIL_MSG_FREMD" xml:space="preserve">
+    <value>Zone “{0}”: The component with ID {1} does not belong to any zone of this building.</value>
+  </data>
+  <data name="BAUTEIL_MSG_WERT" xml:space="preserve">
+    <value>Component “{0}”: {1}</value>
+  </data>
+  <data name="ZONE_MSG_NAME_LEER" xml:space="preserve">
+    <value>Zone {0}: The zone needs a name.</value>
+  </data>
+  <data name="ZONE_MSG_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>There is no project building with ID {0}.</value>
+  </data>
+  <data name="ZONE_MSG_FREMD" xml:space="preserve">
+    <value>The zone with ID {0} does not belong to this building.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERGABEART" xml:space="preserve">
+    <value>Zone “{0}”: The heat emission type “{1}” is not a valid value.</value>
+  </data>
+  <data name="ZONE_MSG_WERT" xml:space="preserve">
+    <value>Zone “{0}”: {1}</value>
+  </data>
+  <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The zones of the building could not be saved: {0}</value>
+  </data>
   <data name="LIZ_TITEL" xml:space="preserve">
     <value>License</value>
   </data>
@@ -30848,6 +30974,309 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
+  </data>
+  <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling</value>
+  </data>
+  <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling:</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
+    <value>off</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
+    <value>Heating circuit (AK1)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK2" xml:space="preserve">
+    <value>Operating schedule (AK2)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK3" xml:space="preserve">
+    <value>Closed loop (AK3)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>not yet available</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
+    <value>Off: every building is calculated with ideal control; the heat emission inputs of the buildings are inactive. The setting applies to the whole project.</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
+    <value>Heating circuit (AK1): buildings with heat emission switched on calculate flow, return and the limit of the heat emitter; the heat pump chooses its characteristic curve at the calculated flow temperature. The setting applies to the whole project.</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT" xml:space="preserve">
+    <value>The stored level is “{0}” — this level is not yet available; the run calculates the heating circuit (AK1) and says so.</value>
+  </data>
+  <data name="SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER" xml:space="preserve">
+    <value>The system coupling level could not be saved.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
+    <value>Project setting system coupling: AUS (ideal control) or AK1 (heating circuit as boundary condition); AK2 and AK3 are not yet available. Saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
+    <value>The level “{0}” does not exist; known levels are AUS, AK1, AK2 and AK3.</value>
+  </data>
+  <data name="GEBK_GRP_WAERMEUEBERGABE" xml:space="preserve">
+    <value>Heat emission</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKREIS_AKTIV" xml:space="preserve">
+    <value>Calculate heat emission (instead of ideal control)</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_ART" xml:space="preserve">
+    <value>Heat emitter type :</value>
+  </data>
+  <data name="GEBK_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>ideal (no heat emitter)</value>
+  </data>
+  <data name="GEBK_UEBERGABE_RADIATOR" xml:space="preserve">
+    <value>Radiator</value>
+  </data>
+  <data name="GEBK_UEBERGABE_FLAECHE" xml:space="preserve">
+    <value>Panel heating</value>
+  </data>
+  <data name="GEBK_UEBERGABE_KONVEKTOR" xml:space="preserve">
+    <value>Convector</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Exponent :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design flow temperature :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design return temperature :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Design room temperature :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_AUSSEN" xml:space="preserve">
+    <value>Design outdoor temperature :</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nominal output of the heat emitter :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_AKTIV" xml:space="preserve">
+    <value>Use heating curve</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_NIVEAU" xml:space="preserve">
+    <value>Heating curve offset :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_STEILHEIT" xml:space="preserve">
+    <value>Heating curve slope :</value>
+  </data>
+  <data name="GEBK_LBL_PROPORTIONALBAND" xml:space="preserve">
+    <value>Proportional band of the room controller :</value>
+  </data>
+  <data name="GEBK_BAND_FREI" xml:space="preserve">
+    <value>custom</value>
+  </data>
+  <data name="GEBK_LBL_BAND_FREI" xml:space="preserve">
+    <value>Proportional band (custom) :</value>
+  </data>
+  <data name="GEBK_VORGABE_HERGELEITET" xml:space="preserve">
+    <value>Default: derived</value>
+  </data>
+  <data name="GEBK_LBL_SOLLWERTPROFIL" xml:space="preserve">
+    <value>Set point schedule</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_AUS" xml:space="preserve">
+    <value>Without the tick the building is calculated with ideal control as before.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>Heat emitter type “ideal”: the building is calculated with ideal control, as without the tick. Heat emission is calculated with radiator, panel heating or convector.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_ART" xml:space="preserve">
+    <value>Defaults of the heat emitter type {0}: exponent {1}, design {2}/{3} °C, radiant share of heating {4} (applies when the field is empty) — EPOS-Plan defaults, not standard values; each field overrides them.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Design room temperature empty: the day set point, {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_AUSSEN" xml:space="preserve">
+    <value>Design outdoor temperature empty: the coldest daily mean of the project's climate series, rounded down — {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_AUSSEN_OHNE" xml:space="preserve">
+    <value>Design outdoor temperature empty: the coldest daily mean of the project's climate series, rounded down; the number appears here once the building is opened in a project with a climate region.</value>
+  </data>
+  <data name="GEBK_ZEILE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nominal output empty: the steady-state heat load of this building at {1} °C outdoors and {2} °C indoors — {0} kW. Not a verification to DIN EN 12831; in the project it scales with the building.</value>
+  </data>
+  <data name="GEBK_ZEILE_NENNLEISTUNG_OHNE" xml:space="preserve">
+    <value>Nominal output empty: the steady-state heat load of the building at the design point, not a verification to DIN EN 12831; the number appears here once the building is opened in a project with a climate region.</value>
+  </data>
+  <data name="GEBK_ZEILE_HERLEITUNG_BEFUND" xml:space="preserve">
+    <value>No derived number: {0}</value>
+  </data>
+  <data name="GEBK_ZEILE_HEIZKURVE_AN" xml:space="preserve">
+    <value>Heating curve: the flow temperature follows the outdoor temperature through the design point ({0} °C at {1} °C); the offset shifts and the slope tilts the curve (default {2} K and {3}).</value>
+  </data>
+  <data name="GEBK_ZEILE_HEIZKURVE_AUS" xml:space="preserve">
+    <value>Without a heating curve the building runs a fixed flow temperature: the highest planned flow temperature of the heat generators of the heating channel, without such a plant the design flow temperature.</value>
+  </data>
+  <data name="GEBK_ZEILE_PROPORTIONALBAND" xml:space="preserve">
+    <value>Proportional band: quick choice 0.5 / 1 / 2 K or custom from 0 to {1} K; 0 K is ideal control with a limit. Empty means the default {0} K.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
+    <value>Heat emission is only calculated in projects with the project setting system coupling “Heating circuit (AK1)” (simulation configuration).</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
+    <value>The daily balance (legacy method) does not calculate system coupling — these inputs take effect once the building is calculated to VDI 6007.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLLWERTPROFIL_OHNE" xml:space="preserve">
+    <value>Without a schedule the building's set points apply (day, night, weekend); the grid shows them. Holidays apply on top in both cases.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLLWERTPROFIL_MIT" xml:space="preserve">
+    <value>The schedule applies per hour of the week (Monday 00:00 to Sunday 23:00); holiday periods apply on top with the holiday set point.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_BEREICH" xml:space="preserve">
+    <value>{0} must lie between {1} and {2}.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_ART_UNBEKANNT" xml:space="preserve">
+    <value>The heat emitter type “{0}” is unknown; please choose radiator, panel heating, convector or ideal.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_NENNLEISTUNG" xml:space="preserve">
+    <value>The nominal output of the heat emitter must be greater than 0.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_VORLAUF_RAUM" xml:space="preserve">
+    <value>The design flow temperature {0} °C is not above the design room temperature {1} °C — the heat emitter would not deliver any heat.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_RUECKLAUF" xml:space="preserve">
+    <value>The design return temperature {0} °C must lie between the design room temperature {1} °C and the design flow temperature {2} °C.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_AUSSEN_RAUM" xml:space="preserve">
+    <value>The design outdoor temperature {0} °C must be below the design room temperature {1} °C.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_WERTZAHL" xml:space="preserve">
+    <value>The set point schedule has {0} values instead of {1}.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_KEINE_ZAHL" xml:space="preserve">
+    <value>The set point schedule contains no number at position {0}.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_WERT" xml:space="preserve">
+    <value>The set point schedule has the value {1} °C at position {0}; permitted are {2} to {3} °C.</value>
+  </data>
+  <data name="WRASTER_TAGE" xml:space="preserve">
+    <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
+  </data>
+  <data name="WRASTER_KOPF_TAG" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="WRASTER_ZELLE" xml:space="preserve">
+    <value>{0} {1}:00</value>
+  </data>
+  <data name="WRASTER_LBL_ZEILE" xml:space="preserve">
+    <value>Row :</value>
+  </data>
+  <data name="WRASTER_LBL_ZEILENWERT" xml:space="preserve">
+    <value>Value for the whole row :</value>
+  </data>
+  <data name="WRASTER_BTN_ZEILE_SETZEN" xml:space="preserve">
+    <value>Set row</value>
+  </data>
+  <data name="WRASTER_BTN_WERKTAGE" xml:space="preserve">
+    <value>copy to Mon–Fri</value>
+  </data>
+  <data name="WRASTER_BTN_WOCHENENDE" xml:space="preserve">
+    <value>copy to Sat–Sun</value>
+  </data>
+  <data name="WRASTER_BTN_ALLE" xml:space="preserve">
+    <value>copy to all days</value>
+  </data>
+  <data name="WRASTER_BTN_ANLEGEN" xml:space="preserve">
+    <value>Edit as schedule</value>
+  </data>
+  <data name="WRASTER_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard schedule</value>
+  </data>
+  <data name="WRASTER_ZEILE_VORGABE" xml:space="preserve">
+    <value>No schedule yet — the grid shows what applies without one.</value>
+  </data>
+  <data name="WRASTER_BILD_TITEL" xml:space="preserve">
+    <value>The week</value>
+  </data>
+  <data name="WRASTER_BILD_X" xml:space="preserve">
+    <value>Hour of the week (1..168)</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL" xml:space="preserve">
+    <value>Calculate heat emission instead of ideal control (system coupling AK1); effective only with a heat emitter type and in a project with system coupling AK1. When first switched on the dialog proposes the heating curve.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Heat emitter type: IDEAL (no heat emitter), RADIATOR, FLAECHE (panel heating) or KONVEKTOR; the type brings exponent, design point and radiant share as defaults.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Exponent of the heat emission equation, 1.0 to 1.6; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Nominal output of the heat emitter at the design point in kW; empty = derived from the building's steady-state heat load (not a standard verification).</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_VORLAUF_ERL" xml:space="preserve">
+    <value>Design flow temperature in °C, 25 to 90; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Design return temperature in °C, between design room temperature and design flow temperature; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_RAUM_ERL" xml:space="preserve">
+    <value>Room temperature at the design point in °C, 15 to 26; empty = day set point.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_AUSSEN_ERL" xml:space="preserve">
+    <value>Design outdoor temperature in °C, −30 to 5; empty = coldest daily mean of the project's climate series, rounded down.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_AKTIV_ERL" xml:space="preserve">
+    <value>Use the heating curve (flow temperature from the outdoor temperature); otherwise the plant's fixed flow temperature.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_NIVEAU_ERL" xml:space="preserve">
+    <value>Heating curve offset in K, −10 to 10; empty = 0.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_STEILHEIT_ERL" xml:space="preserve">
+    <value>Heating curve slope, 0.2 to 3; empty = 1.0 (curve through the design point).</value>
+  </data>
+  <data name="KI_DLG_GEBK_PROPORTIONALBAND_ERL" xml:space="preserve">
+    <value>Proportional band of the room controller in K, 0 to 5 (0 = ideal control with a limit); empty = 1 K.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLLWERTPROFIL_ERL" xml:space="preserve">
+    <value>Set point schedule: exactly 168 values in °C (0 to 30), Monday 00:00 to Sunday 23:00, separated by “;”, decimal point; empty = the building's set points. A wrong number of values is rejected, not padded.</value>
+  </data>
+  <data name="GEB_RECHENWEG_GEKOPPELT" xml:space="preserve">
+    <value>coupled (AK1)</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow / return</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_QUELLE" xml:space="preserve">
+    <value>Mean over the hours with heating — {0}, design {1}/{2} °C</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT" xml:space="preserve">
+    <value>Hours with limited heat emission</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT_QUELLE" xml:space="preserve">
+    <value>Hours in which the heat emitter delivered less than the set point required</value>
+  </data>
+  <data name="GEBB_BILD_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow and return temperature</value>
+  </data>
+  <data name="GEBB_REIHE_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="GEBB_REIHE_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design flow</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design return</value>
+  </data>
+  <data name="GEBB_HRL_VORLAUF_LUECKEN" xml:space="preserve">
+    <value>Hours without heating stay empty in the chart — there is no flow temperature then.</value>
+  </data>
+  <data name="GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Heat emission, heating curve and room controller of the system coupling are extensions of EPOS-Plan, not part of VDI 6007.</value>
+  </data>
+  <data name="ABW_MERKMAL_HEIZKREIS" xml:space="preserve">
+    <value>Calculate heat emission</value>
+  </data>
+  <data name="ABW_MERKMAL_UEBERGABEART" xml:space="preserve">
+    <value>Heat emitter type</value>
+  </data>
+  <data name="ABW_MERKMAL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling</value>
   </data>
   <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
     <value>every {0} years from year {1}</value>

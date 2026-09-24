@@ -1165,6 +1165,9 @@ else
 
                 int index = Reihenindex(r, _zeiger.Value);
                 if (index < 0) continue;
+                // Eine LÜCKE der Reihe (ein nicht endlicher Wert, etwa der Vorlauf jenseits der
+                // Heizgrenze) hat unter dem Zeiger keinen Wert - die Reihe steht dann nicht in der Zeile.
+                if (!double.IsFinite(r.Werte![index])) continue;
 
                 string einheit = Reiheneinheit(r);
                 string wert = r.Werte![index].ToString("0.###", CultureInfo.CurrentCulture);

@@ -732,6 +732,8 @@
 
         internal static string SimKuehlbetriebName => MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB;
         internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
+        internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;
+        internal static string SimAnlagenkopplungErl => MyResource.Resource.KI_DLG_SIM_ANLAGENKOPPLUNG_ERL;
         internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
         internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
         internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;
@@ -1100,6 +1102,33 @@
         internal static string GebkKuehlSollwertErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_SOLLWERT_ERL;
         internal static string GebkKuehlleistungMaxName => MyResource.Resource.GEBK_LBL_KUEHLLEISTUNG_MAX;
         internal static string GebkKuehlleistungMaxErl => MyResource.Resource.KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL;
+        // Stufe AK1 (Anlagenkopplung 9.1): die Gruppe „Waermeuebergabe"
+        internal static string GebkHeizkreisAktivName => MyResource.Resource.GEBK_LBL_HEIZKREIS_AKTIV;
+        internal static string GebkHeizkreisAktivErl => MyResource.Resource.KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL;
+        internal static string GebkUebergabeArtName => MyResource.Resource.GEBK_LBL_UEBERGABE_ART;
+        internal static string GebkUebergabeArtErl => MyResource.Resource.KI_DLG_GEBK_UEBERGABE_ART_ERL;
+        internal static string GebkUebergabeExponentName => MyResource.Resource.GEBK_LBL_UEBERGABE_EXPONENT;
+        internal static string GebkUebergabeExponentErl => MyResource.Resource.KI_DLG_GEBK_UEBERGABE_EXPONENT_ERL;
+        internal static string GebkUebergabeNennleistungName => MyResource.Resource.GEBK_LBL_UEBERGABE_NENNLEISTUNG;
+        internal static string GebkUebergabeNennleistungErl => MyResource.Resource.KI_DLG_GEBK_UEBERGABE_NENNLEISTUNG_ERL;
+        internal static string GebkAuslegungVorlaufName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_VORLAUF;
+        internal static string GebkAuslegungVorlaufErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_VORLAUF_ERL;
+        internal static string GebkAuslegungRuecklaufName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_RUECKLAUF;
+        internal static string GebkAuslegungRuecklaufErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_RUECKLAUF_ERL;
+        internal static string GebkAuslegungRaumName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_RAUM;
+        internal static string GebkAuslegungRaumErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_RAUM_ERL;
+        internal static string GebkAuslegungAussenName => MyResource.Resource.GEBK_LBL_AUSLEGUNG_AUSSEN;
+        internal static string GebkAuslegungAussenErl => MyResource.Resource.KI_DLG_GEBK_AUSLEGUNG_AUSSEN_ERL;
+        internal static string GebkHeizkurveAktivName => MyResource.Resource.GEBK_LBL_HEIZKURVE_AKTIV;
+        internal static string GebkHeizkurveAktivErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_AKTIV_ERL;
+        internal static string GebkHeizkurveNiveauName => MyResource.Resource.GEBK_LBL_HEIZKURVE_NIVEAU;
+        internal static string GebkHeizkurveNiveauErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_NIVEAU_ERL;
+        internal static string GebkHeizkurveSteilheitName => MyResource.Resource.GEBK_LBL_HEIZKURVE_STEILHEIT;
+        internal static string GebkHeizkurveSteilheitErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_STEILHEIT_ERL;
+        internal static string GebkProportionalbandName => MyResource.Resource.GEBK_LBL_PROPORTIONALBAND;
+        internal static string GebkProportionalbandErl => MyResource.Resource.KI_DLG_GEBK_PROPORTIONALBAND_ERL;
+        internal static string GebkSollwertprofilName => MyResource.Resource.GEBK_LBL_SOLLWERTPROFIL;
+        internal static string GebkSollwertprofilErl => MyResource.Resource.KI_DLG_GEBK_SOLLWERTPROFIL_ERL;
         internal static string GebkFensterflaecheOstName => MyResource.Resource.GEBK_LBL_FF_OST;
         internal static string GebkFensterflaecheOstErl => MyResource.Resource.KI_DLG_GEBK_FENSTERFLAECHE_OST_ERL;
         internal static string GebkFensterflaecheWestName => MyResource.Resource.GEBK_LBL_FF_WEST;
