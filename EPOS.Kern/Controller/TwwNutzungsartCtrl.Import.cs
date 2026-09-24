@@ -63,11 +63,11 @@ namespace WindowsFormsApplication1
     /// <b>Der Katalogimport der Brauchwasser-Nutzungsarten</b> (Umsetzungskonzept
     /// Zapfprofilgenerator 5.4, Kapitel 6 (b), N2, N12 (m)/(p); Stufe Z4): eine Nutzungsart samt
     /// Tagesgangsatz, Tagesgängen und Zapfkategorien aus einem Paket im Format N2 — je Tabelle eine
-    /// Datei <c>&lt;Tabelle&gt;.csv</c> (UTF-8, Kopfzeile mit den Spaltennamen, Trenner <c>;</c> oder
-    /// <c>,</c>, Felder nach RFC 4180, Zahlen mit Punkt, leeres Feld = NULL). Das Paket vergibt die
-    /// <c>ID</c> seiner Köpfe selbst; Tagesgänge verweisen über <c>ID_Tagesgangsatz</c>, Nutzungsarten
-    /// über <c>ID_Tagesgangsatz</c>, Kategorien über <c>ID_Nutzungsart</c> auf diese IDs — die
-    /// Datenbank vergibt die echten.
+    /// Datei <c>&lt;Tabelle&gt;.csv</c> (UTF-8, Zeilenende CRLF, LF oder CR, Kopfzeile mit den
+    /// Spaltennamen, Trenner <c>;</c> oder <c>,</c>, Felder nach RFC 4180, Zahlen mit Punkt, leeres
+    /// Feld = NULL). Das Paket vergibt die <c>ID</c> seiner Köpfe selbst; Tagesgänge verweisen über
+    /// <c>ID_Tagesgangsatz</c>, Nutzungsarten über <c>ID_Tagesgangsatz</c>, Kategorien über
+    /// <c>ID_Nutzungsart</c> auf diese IDs — die Datenbank vergibt die echten.
     ///
     /// <para><b>Was entsteht.</b> Jede angelegte Zeile ist eine Anwenderzeile: <c>Status = 'IMPORT'</c>,
     /// <c>ReadOnly = 0</c>, ohne <c>ID_Vorlage</c>, ohne internen <c>Beleg</c> und ohne Freigabe (die
@@ -529,6 +529,10 @@ namespace WindowsFormsApplication1
             var t = new PaketTabelle { Datei = d.Name, Tabelle = tabelle };
             string text = d.Inhalt ?? "";
             if (text.Length > 0 && text[0] == '﻿') text = text.Substring(1);
+            // Ein Paket aus Windows trägt CRLF, eines aus Linux, macOS oder iOS LF, ein älteres Excel für
+            // Mac CR. Der CSV-Leser trennt Sätze bei allen dreien; die Kopfzeile für die Trennerwahl und
+            // ein Zeilenumbruch IN einem Feld in Anführungszeichen hingen aber an der Herkunft.
+            text = text.Replace("\r\n", "\n").Replace('\r', '\n');
             int ende = text.IndexOf('\n');
             string kopfzeile = ende < 0 ? text : text.Substring(0, ende);
             string trenner = kopfzeile.IndexOf(';') >= 0 ? ";" : ",";
