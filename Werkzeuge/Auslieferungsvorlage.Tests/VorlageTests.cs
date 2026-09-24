@@ -156,7 +156,10 @@ namespace Auslieferungsvorlage.Tests
             //
             // 131 seit Schemaschritt 115 (Zapfprofilgenerator T2): Tab_TwwZapfkategorie_STAMM,
             // STRICT von ihrer ersten Zeile an.
-            Assert.Equal(131, befund.Strict);
+            //
+            // 132 seit Schemaschritt 127 (E17, nicht monetarisierbare Wirkungen der
+            // Wirtschaftlichkeit): Tab_ProjektWirkung, STRICT von ihrer ersten Zeile an.
+            Assert.Equal(132, befund.Strict);
         }
 
         // =============================================================================
