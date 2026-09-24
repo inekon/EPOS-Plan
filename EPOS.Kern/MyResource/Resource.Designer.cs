@@ -73591,6 +73591,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
         /// </summary>
         public static string WIRT_NM_SP_KATEGORIE {

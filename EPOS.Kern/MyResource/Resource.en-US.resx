@@ -30225,4 +30225,7 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL" xml:space="preserve">
     <value>The assessment according to DIN EN 17463, 8.2: duration × strongest of the three effects (0 to 9); display only, it is not saved and does not enter the net present value.</value>
   </data>
+  <data name="WIRT_NM_SP_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
 </root>
