@@ -101,6 +101,60 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1.0 / 7.0, n.Wochenfaktoren[6], 12);
         }
 
+        /// <summary>
+        /// Z4, Gruppe 2b Punkt 1: Der Editor schickt alle Reihen in Prozent, die Hülle teilt durch
+        /// 100 — ohne die Originalanteile trüge eine nicht runde, aber UNVERÄNDERTE Reihe (VDI-Werte)
+        /// nach dem Umweg Prozent → Bruch → Normierung eine andere Bitfolge als die gespeicherte und
+        /// gälte als geändert, würde also ohne Beleg als Eigenkonstruktion neu geschrieben. Öffnen →
+        /// „OK" ohne jede Änderung darf das nicht tun.
+        /// </summary>
+        [Fact]
+        public void Ein_nicht_runder_Tagesgangsatz_bleibt_ohne_Aenderung_mit_seiner_Herkunft_und_ohne_neuen_Satz()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz VDI", "T1");
+
+            // Werktag (Tagtyp 1) auf nicht runde Anteile überschreiben — 23 × 0,0417 plus Rest,
+            // damit die Summe (fast) exakt 1 bleibt — mit eigener Herkunft und Beleg.
+            double[] anteile = Enumerable.Repeat(0.0417, 23).Append(1.0 - 23 * 0.0417).ToArray();
+            string setze = string.Join(", ", Enumerable.Range(1, 24).Select(h => "\"Anteil_" + h.ToString("00") + "\" = ?"));
+            var p = anteile.Select((a, i) => new DbParam("@a" + i.ToString(CultureInfo.InvariantCulture), a)).ToList();
+            p.Add(new DbParam("@id", satz));
+            DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_TwwTagesgang_STAMM\" SET " + setze +
+                ", \"Quelle\" = 'VDI 6002', \"Ausgabe\" = '2019', \"Version\" = 'T1', \"Herkunftsart\" = 'VERFAHREN' " +
+                "WHERE \"ID_Tagesgangsatz\" = ? AND \"Tagtyp\" = 1", p.ToArray());
+            DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_TwwTagesgangsatz_STAMM\" SET \"Beleg\" = 'VDI-Beleg' WHERE \"ID\" = ?", new DbParam("@id", satz));
+
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung VDI", "T1", satz);
+            TwwTestdatenbank.ZoneAnlegen(1, id, "Zone", 10.0);    // Satz benutzt: eine echte Änderung erzwänge einen neuen Satz
+
+            ZapfprofilTagesgangDaten d = ZapfprofilHuelle.TagesgangLaden(id, null);
+            Assert.Equal(anteile[0], d.Satz.Anteile[0][0], 15);
+            Assert.Contains("VDI 6002", d.Satz.Herkunft[0]);
+
+            // „OK" ohne jede Änderung: der Editor reicht die geladenen Werte unverändert durch.
+            var e = new ZapfprofilTagesgangEingabeDaten
+            {
+                IdNutzungsart = id,
+                TagesgaengeProzent = d.Satz.Anteile.Select(r => r.Select(a => a * 100.0).ToArray()).ToArray(),
+                TagesgaengeOriginal = d.Satz.Anteile,
+                WochenfaktorenProzent = d.Wochenfaktoren.Select(w => w * 100.0).ToArray(),
+                WochenfaktorenOriginal = d.Wochenfaktoren
+            };
+            ZapfprofilTagesgangErgebnis erg = ZapfprofilHuelle.TagesgangSpeichern(e);
+            Assert.True(erg.Ok, erg.Meldung?.Text);
+            Assert.False(erg.NeueZeile);
+            Assert.Equal(satz, erg.IdTagesgangsatz);              // kein neuer Satz
+
+            Tagesgangsatz nach = ZapfprofilCtrl.Tagesgangsaetze().Single(s => s.Id == satz);
+            Assert.Equal(new Provenienz("VDI 6002", "2019", "T1", Herkunftsart.Verfahren), nach.JeTagtyp[0]);
+            Assert.Equal("VDI-Beleg", DataRepository.ExecuteScalar(
+                "SELECT \"Beleg\" FROM \"Tab_TwwTagesgangsatz_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", satz)));
+            Assert.Equal(1, Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_TwwTagesgangsatz_STAMM\"")));
+        }
+
         [Fact]
         public void Eine_gesperrte_Nutzungsart_bekommt_eine_neue_Katalogversion_und_nennt_jede_Ablehnung()
         {

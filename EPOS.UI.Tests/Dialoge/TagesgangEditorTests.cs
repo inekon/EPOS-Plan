@@ -246,6 +246,55 @@ public class TagesgangEditorTests : EposBunitContext
         Assert.True(ergebnis.NeueZeile);
     }
 
+    /// <summary>
+    /// Z4, Gruppe 2b Punkt 1: Ein unveränderter Tagtyp zeigt seine Prozente unverändert und trägt
+    /// im Rückweg die Originalanteile bitgleich mit — die Hülle reicht sie durch, statt sie über
+    /// den Umweg Prozent neu zu berechnen (sonst gälte eine unveränderte, nicht runde Reihe als
+    /// geändert). Ein geänderter Tagtyp trägt keine Originalanteile.
+    /// </summary>
+    [Fact]
+    public void Eine_unveraenderte_Reihe_zeigt_ihre_Prozente_und_traegt_die_Originalanteile_im_Rueckweg()
+    {
+        ZapfprofilTagesgangEingabeDaten? gesendet = null;
+        var cut = Aufbauen(speichern: e => { gesendet = e; return new ZapfprofilTagesgangErgebnis(true, 7, 1, false, null); });
+
+        Assert.Equal(50.0, cut.Instance.Stunden[6]);
+        Assert.Equal(50.0, cut.Instance.Stunden[18]);
+
+        // Nur eine Stunde des Werktags ändern — die anderen Tagtypen und die Woche bleiben unverändert.
+        Stundenfelder(cut)[0].Input("10");
+        Ok(cut).Click();
+
+        Assert.NotNull(gesendet);
+        ZapfprofilTagesgangsatzDaten stand = Daten().Satz;
+        Assert.Null(gesendet!.TagesgaengeOriginal[0]);                        // Werktag geändert
+        Assert.Equal(stand.Anteile[1], gesendet.TagesgaengeOriginal[1]);      // Samstag unverändert
+        Assert.Equal(stand.Anteile[2], gesendet.TagesgaengeOriginal[2]);      // Sonn-/Feiertag unverändert
+        Assert.Equal(stand.Anteile[3], gesendet.TagesgaengeOriginal[3]);      // Ruhetag unverändert
+        Assert.Equal(Daten().Wochenfaktoren, gesendet.WochenfaktorenOriginal);
+        Assert.Null(gesendet.Vorlage);
+    }
+
+    /// <summary>
+    /// Z4, Gruppe 2b Punkt 1: „Vorlage laden" gibt die Id der Vorlage mit dem Rückweg mit, damit
+    /// eine dadurch geänderte Reihe im Kern deren Herkunft statt Eigenkonstruktion tragen kann.
+    /// </summary>
+    [Fact]
+    public void Vorlage_laden_schickt_ihre_Id_zur_Herkunftszuordnung_im_Rueckweg()
+    {
+        ZapfprofilTagesgangEingabeDaten? gesendet = null;
+        var cut = Aufbauen(speichern: e => { gesendet = e; return new ZapfprofilTagesgangErgebnis(true, 7, 1, false, null); });
+
+        IElement wahl = cut.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Tagesgangsatz")
+                           .QuerySelector("select")!;
+        wahl.Change("2");
+        Knopf(cut, "Vorlage laden").Click();
+        Ok(cut).Click();
+
+        Assert.NotNull(gesendet);
+        Assert.Equal(2, gesendet!.Vorlage);
+    }
+
     [Fact]
     public void Eine_Ablehnung_bleibt_als_Banner_und_der_Editor_offen()
     {

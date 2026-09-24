@@ -104,6 +104,13 @@ public sealed class ZapfprofilTagesgangDaten
 /// PROZENT, wie sie im Editor stehen (leer = 0), und die Katalogversion der Kopie. Die Hülle
 /// normiert je Reihe auf Σ 1 über den Kern — eine Reihe ohne Summe oder mit negativem Wert lehnt
 /// sie benannt ab.
+///
+/// <para><b>Herkunft unveränderter Reihen (Z4, Gruppe 2b Punkt 1).</b> Eine Reihe (bzw. die
+/// Wochenfaktoren), deren Anzeigewerte gegenüber dem Stand beim Öffnen unverändert sind, trägt
+/// zusätzlich ihre Originalanteile [-] (<see cref="TagesgaengeOriginal"/>,
+/// <see cref="WochenfaktorenOriginal"/>); die Hülle reicht sie dann bitgleich durch, statt sie
+/// über den Umweg Prozent → Bruch neu zu berechnen — sonst gälte eine unveränderte, nicht runde
+/// Reihe (VDI-Werte) als geändert und würde ohne Beleg als Eigenkonstruktion geschrieben.</para>
 /// </summary>
 public sealed class ZapfprofilTagesgangEingabeDaten
 {
@@ -112,8 +119,24 @@ public sealed class ZapfprofilTagesgangEingabeDaten
     /// <summary>Je Tagtyp 24 Werte [%].</summary>
     public double[][] TagesgaengeProzent { get; set; } = ZapfprofilTagesgangsatzDaten.Leer();
 
+    /// <summary>
+    /// Je Tagtyp die Originalanteile [-] des Satzes beim Öffnen, wenn die Anzeigewerte der Reihe
+    /// unverändert sind; sonst <c>null</c> an der Stelle des Tagtyps.
+    /// </summary>
+    public double[]?[] TagesgaengeOriginal { get; set; } = new double[]?[ZapfprofilTagesgangsatzDaten.TAGTYPEN];
+
     /// <summary>Sieben Wochenfaktoren Mo–So [%].</summary>
     public double[] WochenfaktorenProzent { get; set; } = new double[ZapfprofilTagesgangDaten.WOCHENTAGE];
+
+    /// <summary>Die Originalwochenfaktoren [-] beim Öffnen, wenn die Anzeigewerte unverändert sind; sonst <c>null</c>.</summary>
+    public double[]? WochenfaktorenOriginal { get; set; }
+
+    /// <summary>
+    /// Der Satz der zuletzt im Editor gewählten Vorlage — nur zur Herkunftszuordnung: Eine
+    /// geänderte Reihe, die bitgleich einer Reihe dieser Vorlage ist, übernimmt deren Herkunft
+    /// statt Eigenkonstruktion („Vorlage laden").
+    /// </summary>
+    public int? Vorlage { get; set; }
 
     /// <summary>Die Katalogversion einer neuen Zeile; leer, wenn an Ort und Stelle geschrieben wird.</summary>
     public string Katalogversion { get; set; } = "";

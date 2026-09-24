@@ -436,7 +436,9 @@ namespace WindowsFormsApplication1
         /// selbst gesperrt ist; dann entsteht bei geändertem Tagesgang ein NEUER Satz
         /// (Bezeichner des alten, Katalogversion <paramref name="katalogversion"/>, Status
         /// <c>EIGEN</c>) samt vier Tagesgängen — die unveränderten mit ihrer Provenienz, die
-        /// geänderten als Eigenkonstruktion. Ist die <b>Nutzungsart</b> gesperrt (ReadOnly oder
+        /// geänderten als Eigenkonstruktion, außer eine geänderte Reihe ist bitgleich (Toleranz
+        /// <see cref="GLEICH_TOLERANZ"/>) einer Reihe des Satzes <paramref name="idVorlageSatz"/>
+        /// (Editor „Vorlage laden") — dann trägt sie dessen Provenienz. Ist die <b>Nutzungsart</b> gesperrt (ReadOnly oder
         /// von einer Zone benutzt), entsteht sie per „Speichern unter" neu (Katalogversion
         /// <paramref name="katalogversion"/>, <c>ID_Vorlage</c> auf die alte) und trägt Satz,
         /// Wochenfaktoren und die Zapfkategorien der alten (Status <c>EIGEN</c>, <c>ReadOnly = 0</c>);
@@ -449,7 +451,8 @@ namespace WindowsFormsApplication1
         /// bisherigen IDs.</para>
         /// </summary>
         internal static TwwTagesgangErgebnis TagesgangSpeichern(int idNutzungsart, IReadOnlyList<double[]> tagesgaenge,
-                                                                double[] wochenfaktoren, string katalogversion = null)
+                                                                double[] wochenfaktoren, string katalogversion = null,
+                                                                int? idVorlageSatz = null)
         {
             if (!TabellenVorhanden() || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANG_STAMM))
                 return new TwwTagesgangErgebnis(TwwKatalogAusgang.TabellenFehlen, idNutzungsart, 0);
@@ -473,19 +476,14 @@ namespace WindowsFormsApplication1
                 string satzVersion = ZapfprofilCtrl.Text(kopf.Rows[0], "Katalogversion");
 
                 // Die gespeicherten Tagesgänge je Tagtyp (fehlt einer, gilt er als geändert).
-                var alt = new double[Tagesgangsatz.TAGTYPEN][];
-                var altHerkunft = new Provenienz[Tagesgangsatz.TAGTYPEN];
-                DataTable gaenge = v.Lese("SELECT * FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
-                                          " WHERE ID_Tagesgangsatz = ? ORDER BY Tagtyp", new DbParam("@id", satz));
-                foreach (DataRow r in gaenge.Rows)
-                {
-                    int t = ZapfprofilCtrl.Ganz(r, "Tagtyp") - 1;
-                    if (t < 0 || t >= Tagesgangsatz.TAGTYPEN) continue;
-                    alt[t] = new double[Tagesgangsatz.STUNDEN];
-                    for (int h = 0; h < Tagesgangsatz.STUNDEN; h++)
-                        alt[t][h] = ZapfprofilCtrl.Zahl(r, ZapfprofilCtrl.AnteilSpalte(h + 1));
-                    altHerkunft[t] = ZapfprofilCtrl.Herkunft(r, "");
-                }
+                (double[][] alt, Provenienz[] altHerkunft) = TagesgangZeilenLesen(v, satz);
+
+                // Die Vorlage, aus der der Editor geladen haben könnte („Vorlage laden") — nur zur
+                // Herkunftszuordnung einer geänderten Reihe, die ihr bitgleich ist.
+                double[][] vorlageWerte = null;
+                Provenienz[] vorlageHerkunft = null;
+                if (idVorlageSatz.HasValue && idVorlageSatz.Value != satz && idVorlageSatz.Value > 0)
+                    (vorlageWerte, vorlageHerkunft) = TagesgangZeilenLesen(v, idVorlageSatz.Value);
 
                 var tagGeaendert = new bool[Tagesgangsatz.TAGTYPEN];
                 bool tagesgangGeaendert = false;
@@ -496,6 +494,13 @@ namespace WindowsFormsApplication1
                 }
                 bool wocheGeaendert = !Gleich(bezug.Wochenfaktoren, wochenfaktoren);
                 if (!tagesgangGeaendert && !wocheGeaendert) return TwwKatalogAusgang.Ausgefuehrt;
+
+                // Die Herkunft einer geänderten Reihe: die Vorlage, wenn die Reihe ihr bitgleich
+                // ist, sonst Eigenkonstruktion.
+                Provenienz HerkunftGeaendert(int t, string version)
+                    => vorlageWerte != null && vorlageWerte[t] != null && Gleich(vorlageWerte[t], tagesgaenge[t])
+                        ? vorlageHerkunft[t]
+                        : Eigenkonstruktion(version);
 
                 bool nutzungsartGesperrt = Sperre(v, idNutzungsart) != TwwKatalogAusgang.Ausgefuehrt;
                 bool satzGesperrt = nutzungsartGesperrt
@@ -522,7 +527,7 @@ namespace WindowsFormsApplication1
                                 new DbParam("@s", TwwWertemengen.Text(ZapfKatalogstatus.Eigen)) });
                     for (int t = 0; t < Tagesgangsatz.TAGTYPEN; t++)
                         TagesgangEinfuegen(v, satzNeu, t + 1, tagesgaenge[t],
-                                           tagGeaendert[t] ? Eigenkonstruktion(neueVersion) : altHerkunft[t]);
+                                           tagGeaendert[t] ? HerkunftGeaendert(t, neueVersion) : altHerkunft[t]);
                 }
                 else if (tagesgangGeaendert)
                 {
@@ -533,7 +538,7 @@ namespace WindowsFormsApplication1
                             v.Ausfuehren("DELETE FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
                                          " WHERE ID_Tagesgangsatz = ? AND Tagtyp = ?",
                                          new DbParam("@id", satz), new DbParam("@t", t + 1));
-                        TagesgangEinfuegen(v, satz, t + 1, tagesgaenge[t], Eigenkonstruktion(satzVersion));
+                        TagesgangEinfuegen(v, satz, t + 1, tagesgaenge[t], HerkunftGeaendert(t, satzVersion));
                     }
                     v.Ausfuehren("UPDATE " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + " SET Beleg = NULL WHERE ID = ?",
                                  new DbParam("@id", satz));
@@ -685,6 +690,25 @@ namespace WindowsFormsApplication1
                 new DbParam("@von", von));
         }
 
+        /// <summary>Die vier Tagesgänge eines Satzes samt Provenienz je Tagtyp — fehlt einer, bleibt sein Feld <c>null</c>.</summary>
+        private static (double[][] Werte, Provenienz[] Herkunft) TagesgangZeilenLesen(DbVorgang v, int idSatz)
+        {
+            var werte = new double[Tagesgangsatz.TAGTYPEN][];
+            var herkunft = new Provenienz[Tagesgangsatz.TAGTYPEN];
+            DataTable gaenge = v.Lese("SELECT * FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                      " WHERE ID_Tagesgangsatz = ? ORDER BY Tagtyp", new DbParam("@id", idSatz));
+            foreach (DataRow r in gaenge.Rows)
+            {
+                int t = ZapfprofilCtrl.Ganz(r, "Tagtyp") - 1;
+                if (t < 0 || t >= Tagesgangsatz.TAGTYPEN) continue;
+                werte[t] = new double[Tagesgangsatz.STUNDEN];
+                for (int h = 0; h < Tagesgangsatz.STUNDEN; h++)
+                    werte[t][h] = ZapfprofilCtrl.Zahl(r, ZapfprofilCtrl.AnteilSpalte(h + 1));
+                herkunft[t] = ZapfprofilCtrl.Herkunft(r, "");
+            }
+            return (werte, herkunft);
+        }
+
         private static long Anzahl(DbVorgang v, string sql, params int[] werte)
         {
             var p = new DbParam[werte.Length];
@@ -778,11 +802,15 @@ namespace WindowsFormsApplication1
             v.Ausfuehren(SQL_INSERT_TAGESGANG, p.ToArray());
         }
 
+        /// <summary>Die Toleranz von <see cref="Gleich(double[], double[])"/> je Wert — ein Runden über Prozent
+        /// und zurück darf eine unveränderte Reihe nicht als geändert erscheinen lassen (Z4, Gruppe 2b Punkt 1).</summary>
+        private const double GLEICH_TOLERANZ = 1e-12;
+
         private static bool Gleich(double[] a, double[] b)
         {
             if (a == null || b == null) return a == b;
             if (a.Length != b.Length) return false;
-            for (int i = 0; i < a.Length; i++) if (!a[i].Equals(b[i])) return false;
+            for (int i = 0; i < a.Length; i++) if (Math.Abs(a[i] - b[i]) > GLEICH_TOLERANZ) return false;
             return true;
         }
 

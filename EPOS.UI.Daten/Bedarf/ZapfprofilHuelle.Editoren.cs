@@ -92,10 +92,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// „OK" des Tagesgang-Editors: je Reihe Prozent → Anteil, auf Σ 1 normiert (Kern), dann
+        /// „OK" des Tagesgang-Editors: je Reihe Prozent → Anteil, dann
         /// <see cref="TwwNutzungsartCtrl.TagesgangSpeichern"/> in EINER Transaktion. Eine Reihe ohne
         /// Summe, mit negativem oder fehlendem Wert oder mit falscher Länge wird benannt abgelehnt;
         /// eine fehlende Katalogversion einer Kopie, ein belegter Name, eine gesperrte Zeile ebenso.
+        ///
+        /// <para><b>Herkunft unveränderter Reihen (Z4, Gruppe 2b Punkt 1).</b> Trägt
+        /// <paramref name="e"/> für einen Tagtyp (bzw. die Woche) die Originalanteile mit, werden
+        /// sie bitgleich durchgereicht statt neu berechnet; normiert wird für eine geänderte Reihe
+        /// nur, wenn ihre Summe um mehr als 1e-9 von 1 abweicht — sonst bliebe die Rundung des
+        /// Editors (Prozent → Bruch) als Rauschen im Kernvergleich hängen.</para>
         /// </summary>
         internal static ZapfprofilTagesgangErgebnis TagesgangSpeichern(ZapfprofilTagesgangEingabeDaten e)
         {
@@ -106,24 +112,44 @@ namespace WindowsFormsApplication1
                            && e.WochenfaktorenProzent != null && e.WochenfaktorenProzent.Length == NutzungsartRaster.WOCHENTAGE;
             if (gueltig)
             {
-                foreach (double[] reihe in e.TagesgaengeProzent)
+                for (int t = 0; t < e.TagesgaengeProzent.Length && gueltig; t++)
                 {
-                    double[] normiert = reihe != null && reihe.Length == Tagesgangsatz.STUNDEN
-                        ? TwwNutzungsartCtrl.AnteileNormiert(reihe.Select(p => p / 100.0).ToArray()) : null;
+                    double[] original = e.TagesgaengeOriginal != null && t < e.TagesgaengeOriginal.Length
+                        ? e.TagesgaengeOriginal[t] : null;
+                    double[] reihe = e.TagesgaengeProzent[t];
+                    double[] normiert = original != null && original.Length == Tagesgangsatz.STUNDEN
+                        ? original
+                        : reihe != null && reihe.Length == Tagesgangsatz.STUNDEN
+                            ? AnteileOhneUnnoetigeNormierung(reihe.Select(p => p / 100.0).ToArray())
+                            : null;
                     if (normiert == null) { gueltig = false; break; }
                     gaenge.Add(normiert);
                 }
                 if (gueltig)
                 {
-                    woche = TwwNutzungsartCtrl.AnteileNormiert(e.WochenfaktorenProzent.Select(p => p / 100.0).ToArray());
+                    woche = e.WochenfaktorenOriginal != null && e.WochenfaktorenOriginal.Length == NutzungsartRaster.WOCHENTAGE
+                        ? e.WochenfaktorenOriginal
+                        : AnteileOhneUnnoetigeNormierung(e.WochenfaktorenProzent.Select(p => p / 100.0).ToArray());
                     gueltig = woche != null;
                 }
             }
             if (!gueltig) return TagesgangAbgelehnt(e.IdNutzungsart, TwwKatalogAusgang.RasterUngueltig);
 
-            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(e.IdNutzungsart, gaenge, woche, e.Katalogversion);
+            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(e.IdNutzungsart, gaenge, woche, e.Katalogversion, e.Vorlage);
             if (!erg.Ok) return TagesgangAbgelehnt(e.IdNutzungsart, erg.Ausgang);
             return new ZapfprofilTagesgangErgebnis(true, erg.IdNutzungsart, erg.IdTagesgangsatz, erg.IdNutzungsart != e.IdNutzungsart, null);
+        }
+
+        /// <summary>
+        /// Ein Anteilsraster auf Σ 1 normiert (Kern) — nur, wenn die Summe um mehr als 1e-9 von 1
+        /// abweicht; sonst unverändert. <c>null</c>, wenn das Raster ungültig ist (negativ, nicht
+        /// endlich, ohne Summe).
+        /// </summary>
+        private static double[] AnteileOhneUnnoetigeNormierung(double[] anteile)
+        {
+            double[] normiert = TwwNutzungsartCtrl.AnteileNormiert(anteile);
+            if (normiert == null) return null;
+            return Math.Abs(anteile.Sum() - 1.0) > 1e-9 ? normiert : anteile;
         }
 
         private static ZapfprofilTagesgangErgebnis TagesgangAbgelehnt(int idNutzungsart, TwwKatalogAusgang ausgang)

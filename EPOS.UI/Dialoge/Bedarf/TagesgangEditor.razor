@@ -332,13 +332,34 @@
         get
         {
             for (int t = 0; t < ZapfprofilTagesgangsatzDaten.TAGTYPEN; t++)
-                for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
-                    if ((_werte[t][h] ?? 0.0) != (_start[t][h] ?? 0.0)) return true;
-            for (int w = 0; w < ZapfprofilTagesgangDaten.WOCHENTAGE; w++)
-                if ((_woche[w] ?? 0.0) != (_startWoche[w] ?? 0.0)) return true;
-            return false;
+                if (!TagtypUnveraendert(t)) return true;
+            return !WocheUnveraendert();
         }
     }
+
+    /// <summary>
+    /// Sind die Anzeigewerte des Tagtyps <paramref name="t"/> gegenüber dem Stand beim Öffnen
+    /// unverändert? Dann reicht „OK" die Originalanteile bitgleich durch (Z4, Gruppe 2b Punkt 1) —
+    /// sonst gälte eine unveränderte, nicht runde Reihe (VDI-Werte) über den Umweg Prozent als
+    /// geändert.
+    /// </summary>
+    private bool TagtypUnveraendert(int t)
+    {
+        for (int h = 0; h < ZapfprofilTagesgangsatzDaten.STUNDEN; h++)
+            if ((_werte[t][h] ?? 0.0) != (_start[t][h] ?? 0.0)) return false;
+        return true;
+    }
+
+    private bool WocheUnveraendert()
+    {
+        for (int w = 0; w < ZapfprofilTagesgangDaten.WOCHENTAGE; w++)
+            if ((_woche[w] ?? 0.0) != (_startWoche[w] ?? 0.0)) return false;
+        return true;
+    }
+
+    /// <summary>Die Originalanteile [-] des Tagtyps <paramref name="t"/>, wie der Satz beim Öffnen stand.</summary>
+    private double[]? OriginalAnteile(int t)
+        => Daten.Satz?.Anteile is { } a && t < a.Length ? a[t] : null;
 
     private static double? Prozent(double[][]? anteile, int t, int h)
         => anteile is not null && t < anteile.Length && anteile[t] is { } r && h < r.Length ? r[h] * 100.0 : 0.0;
@@ -502,7 +523,11 @@
         {
             IdNutzungsart = Daten.IdNutzungsart,
             TagesgaengeProzent = _werte.Select(r => r.Select(w => w ?? 0.0).ToArray()).ToArray(),
+            TagesgaengeOriginal = Enumerable.Range(0, ZapfprofilTagesgangsatzDaten.TAGTYPEN)
+                                             .Select(t => TagtypUnveraendert(t) ? OriginalAnteile(t) : null).ToArray(),
             WochenfaktorenProzent = _woche.Select(w => w ?? 0.0).ToArray(),
+            WochenfaktorenOriginal = WocheUnveraendert() ? Daten.Wochenfaktoren : null,
+            Vorlage = _vorlage,
             Katalogversion = Daten.Kopie ? _version.Trim() : ""
         };
         ZapfprofilTagesgangErgebnis e = Speichern(eingabe);
