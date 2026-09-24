@@ -3,13 +3,15 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
-**Stand 24.09.2026** · Codestand `62613292` · `SchemaStand.Zielversion` = **118**, Schemaschritte
-90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a). Die Etappen W5‑B‑9 bis W5‑B‑12 sind
-gebaut; ihre Fortsetzung läuft unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im
-Etappenplan **E0–E12** des Analysepapiers. **V-E ist mit E9 Teil a (#461) im Kern gebaut:** Günstig und
-Ungünstig lesen zusätzlich Betrachtungszeitraum, Mengenänderung, Trägerpreise und Erlössätze je Szenario
-— NULL heißt „wie Erwartet", eine Vorgabe gibt es für diese Größen nicht (konsolidiertes Konzept § 2.11.5);
-die Pflege in den Dialogen kommt mit E9b. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die
+**Stand 24.09.2026** · Codestand `9fbac8c6` · `SchemaStand.Zielversion` = **118**, Schemaschritte
+90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt). Die Etappen W5‑B‑9 bis
+W5‑B‑12 sind gebaut; ihre Fortsetzung läuft unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im
+Etappenplan **E0–E12** des Analysepapiers. **V-E ist mit E9 gebaut** (Teil a im Kern #461, Teil b in den
+Dialogen #462): Günstig und Ungünstig lesen zusätzlich Betrachtungszeitraum, Mengenänderung, Trägerpreise und
+Erlössätze je Szenario — NULL heißt „wie Erwartet", eine Vorgabe gibt es für diese Größen nicht (konsolidiertes
+Konzept § 2.11.5); gepflegt werden sie in den Zeilen 8 und 9 der Szenariotafel (§ 4) und mit dem ±-Knopf an
+Trägerpreisen und Erlössätzen, und an der Stelle des Hinweistexts steht der Ausweis „n von m Parametern
+szenariert". **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die
 Degradation nicht ein** — der Entscheid „G3 nicht umsetzen" dieses Papiers gilt, der Widerspruch zum
 konsolidierten Konzept ist aufgelöst (§ 7.3, § 9.4).
 
@@ -185,7 +187,8 @@ Szen_Worst_Invest Szen_Worst_Ertrag    Szen_Worst_Dauer
 
 ## 4 Dialog „Parameter…" — Abschnitt „Szenarien"
 
-Drei Spalten, **sieben Zeilen** (seit W5‑B‑12 mit p_I):
+Drei Spalten, **neun Zeilen** (seit W5‑B‑12 mit p_I, seit E9b, #462, mit Betrachtungszeitraum und
+Mengenänderung):
 
 | | Erwartet | Best | Worst |
 |---|---|---|---|
@@ -196,21 +199,36 @@ Drei Spalten, **sieben Zeilen** (seit W5‑B‑12 mit p_I):
 | Investition [%] | 0 | Feld | Feld |
 | Erträge [%] | 0 | Feld | Feld |
 | Nutzungsdauer [a] | 0 | Feld | Feld |
+| Betrachtungszeitraum [a] | *Projektwert T* | Feld (ganze Jahre, 1–50; leer = wie Erwartet) | Feld |
+| Mengenänderung [%] | 0 % | Feld (leer = wie Erwartet) | Feld |
 
 Die p_I-Zeile steht **bei den beiden anderen Preissteigerungen** und nicht am Ende
 der Tabelle — dieselbe Reihenfolge, in der `SzenarioSatz.Nachweis` die Größen
 aufzählt (i · p_E · p_B · p_I · Investition · Erträge · Nutzungsdauer). Mit E9 Teil a (#461)
 nennt die Nachweiszeile dazu den Betrachtungszeitraum T hinter i und am Ende die
 Einspeisevergütung, die Einspeisevergütung KWK, wo eine geführt wird, und die Mengenänderung nur,
-wenn sie gepflegt ist; die Tabelle selbst behält ihre sieben Zeilen bis E9b (Zeilen 8 und 9). Ihre
-Erwartet-Zelle zeigt das **wirksame** p_I, nicht das gepflegte: Bei leerem Feld ist
+wenn sie gepflegt ist; die Herleitungszeilen des Dialogs nennen Zeitraum, Mengenänderung und
+Einspeisevergütungen nur, wenn das Szenario sie pflegt (#462). Die Erwartet-Zelle der p_I-Zeile
+zeigt das **wirksame** p_I, nicht das gepflegte: Bei leerem Feld ist
 das p_B, und genau um diesen Wert spannen sich die Vorgaben daneben.
+
+**Die Zeilen 8 und 9 (E9b, #462) haben keine Vorgabe:** Ein leeres Feld heißt „wie Erwartet"; das
+Feld zeigt den gepflegten Wert, der Platzhalter den Wert, mit dem dann gerechnet wird (T bzw. 0). Der
+Zeitraum ist eine ganze Zahl von Jahren wie das Feld T; ein längerer Zeitraum ist nicht von selbst der
+günstigere — überwiegen die Kosten, senkt er den Kapitalwert.
 
 Die Erwartet-Spalte ist **Anzeige, kein Eingabefeld** — sie wiederholt, was im
 Abschnitt „Allgemein" gepflegt wird („Kein Delegat ist kein Knopf"). Der Knopf
-**„Vorgaben"** setzt alle **vierzehn** Felder auf NULL zurück; die Herleitungszeile
+**„Vorgaben"** setzt alle **achtzehn** Felder der Tafel auf NULL zurück und lässt die
+Einspeisevergütungen je Szenario stehen; die Herleitungszeile
 nennt die geltende Regel und ob der Satz aus Vorgaben oder aus gepflegten Werten
 besteht.
+
+**±-Knöpfe (E9b, #462).** Die übrigen neuen Größen pflegt der ±-Knopf dort, wo ihr Erwartet-Wert
+steht: die Einspeisevergütung PV in der Gruppe „Strom" dieses Dialogs, die Einspeisevergütung KWK im
+Dialog „BHKW-Wirtschaftlichkeit", Arbeits-, Grund- und Leistungspreis an der Trägerkarte im Projekt,
+DV-Entgelt und PPA-Preis im PV-Vergütungsdialog — derselbe Baustein wie an den Kostenpositionen
+(`CaseEingabeDialog`; konsolidiertes Konzept § 2.11.5, Regel „Pflege").
 
 ---
 
@@ -221,8 +239,8 @@ Wahl: Sie nennt für das gewählte Szenario den wirksamen Satz und seine Herkunf
 „Vorgaben" oder „gepflegt" —, für Erwartet den unveränderten Projektparametersatz.
 Die Kennzahltabelle zeigt je gewählter Version die Zahlen des gewählten Szenarios;
 Restwert und Ersatzbeschaffungen stehen seit W5‑B‑10 als eigene Zeilen darin. Was die
-Ergebnisansicht daran ändert (Umschalter, Verlauf mit drei Szenarien, Hinweistext zu den
-Szenarien), steht in § 11 — entschieden, nicht gebaut.
+Ergebnisansicht daran ändert (Umschalter, Verlauf mit drei Szenarien, der Ausweis „n von m
+Parametern szenariert" an der Stelle des Hinweistexts), steht in § 11 — gebaut.
 
 ---
 
@@ -572,16 +590,17 @@ Drei Entscheide zur Ergebnisansicht (konsolidiertes Konzept § 2.11.4, § 2.11.6
 § 2.13) berühren die Etappen dieses Papiers; das Papier beschreibt weiterhin den gebauten Stand
 W5‑B‑9 bis W5‑B‑12, den Stand der drei Entscheide nennt die Tafel.
 
-**Stand 24.09.2026: V-4 (Hinweistext) und K8/V-1 sind gebaut — der Umschalter mit E5 (#434), der
+**Stand 24.09.2026: V-4 ist erledigt, K8/V-1 sind gebaut — der Umschalter mit E5 (#434), der
 Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit E6 (#436), der Verlauf auch in
 Block 4 der Darstellung „ValERI-Bewertung" mit E8 Teil a (#454); V-G10 ist mit E8 Teil b (#455) gebaut; die
-Szenarioabdeckung selbst (V-E) ist mit E9 Teil a (#461) im Kern gebaut, der Hinweistext bleibt bis E9b** —
+Szenarioabdeckung selbst (V-E) ist mit E9 gebaut (Teil a im Kern #461, Teil b in den Dialogen #462), der
+Hinweistext ist entfallen** —
 eingeordnet im Etappenplan **E0–E12** des
 Analysepapiers ([`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5):
 
 | Entscheid | Etappe | Bemerkung |
 |---|---|---|
-| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | Hinweistext **gebaut #434** (E5, U10); die Abdeckung im Kern **gebaut #461** (E9 Teil a); die Pflege in den Dialogen und der Wegfall des Hinweistexts mit **E9b** | `WIRT_SZEN_HINWEIS` in beiden Sprachen, Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz); die Zahlen im Text sind die wirksamen — ohne Pflege die Vorgaben aus § 2.1, sonst die gepflegten Werte; unter der Annahmentafel und in Wort- und Tabellenbericht; nach #461 stimmt er nur noch für Projekte ohne Pflege von Zeitraum, Menge, Trägerpreisen und Erlössätzen |
+| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | Hinweistext **gebaut #434** (E5, U10); die Abdeckung im Kern **gebaut #461** (E9 Teil a), die Pflege in den Dialogen **gebaut #462** (E9 Teil b) — der Hinweistext ist **entfallen #462** | `WIRT_SZEN_HINWEIS` in beiden Sprachen, Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz); die Zahlen im Text sind die wirksamen — ohne Pflege die Vorgaben aus § 2.1, sonst die gepflegten Werte; unter der Annahmentafel und in Wort- und Tabellenbericht; nach #461 stimmte er nur noch für Projekte ohne Pflege von Zeitraum, Menge, Trägerpreisen und Erlössätzen; mit #462 steht an seiner Stelle der Ausweis „n von m Parametern szenariert" |
 | **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | Umschalter **gebaut #434** (E5); der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" **gebaut #436** (E6); derselbe Verlauf in Block 4 **gebaut #454** (E8 Teil a, E6‑Q1) | Der Verlauf steht als Abschnitt in „Wie sicher ist das?" und rechnet je Version alle drei Szenarien über einen frei wählbaren Zeitraum (§ 7.1); die Fußleiste trägt höchstens vier Knöpfe |
 | **V-G10** Der ganze Bericht formelbasiert, soweit ableitbar | **gebaut #455** (E8 Teil b, V-D; V-C gebaut #454) | Stufenplan 0–3 im konsolidierten Konzept § 2.11.6, alle vier Stufen gebaut: der Parameterblock je Szenario aus echten Zellen, die Mehrjahrestabellen und die Kennzahlen des Erwartungsfalls in Formeln; die Blöcke Günstig und Ungünstig bleiben Werte (E8b‑Q1) |
 
@@ -600,8 +619,10 @@ unverändert.
   Hinweis unter der Annahmentafel der Seite genau das; Wortlaut im konsolidierten Konzept
   § 2.11.7. Die Statuszeile aus § 5 bleibt daneben bestehen. **Gebaut #434** als
   `WIRT_SZEN_HINWEIS`. **Mit E9 Teil a (#461)** liest der Kern die vollständigen Sätze (Rahmen,
-  Trägerpreise, Erlössätze, Mengenfaktor); ohne Pflege bleibt alles wie oben beschrieben. Der
-  Hinweis bleibt stehen, bis E9b die Pflege in die Dialoge bringt, und entfällt dann.
+  Trägerpreise, Erlössätze, Mengenfaktor); ohne Pflege bleibt alles wie oben beschrieben. **Mit E9
+  Teil b (#462)** kommt die Pflege in die Dialoge (Zeilen 8 und 9 der Szenariotafel, ±-Knopf an
+  Trägerpreisen und Erlössätzen), und der Hinweis ist entfallen; an seiner Stelle steht der Ausweis
+  „n von m Parametern szenariert".
 * **K8 / V-1 — Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite** statt
   eines weiteren Knopfes. Die Ergebnisansicht bringt den kumulierten Barwert der Differenz
   mit allen drei Szenarien in einem Bild (Farbe = Variante, Strichart = Szenario) auf die
@@ -624,7 +645,7 @@ niemand zweimal baut:
 
 | hier | konsolidiertes Konzept | Stand |
 |---|---|---|
-| **W5‑B‑9** Parametersatz je Szenario (§ 2, Migrationsschritt 71) | Teil von **V-E** (vollständige Szenarioabdeckung) | gebaut — V-E für Rahmen (Betrachtungszeitraum), Trägerpreise, Erlössätze und Mengenfaktor **im Kern gebaut #461** (E9 Teil a, Schemaschritte 116 bis 118); offen die Pflege in den Dialogen, der Wegfall des Hinweistexts und der Ausweis „n von m" (E9b) |
+| **W5‑B‑9** Parametersatz je Szenario (§ 2, Migrationsschritt 71) | Teil von **V-E** (vollständige Szenarioabdeckung) | gebaut — V-E für Rahmen (Betrachtungszeitraum), Trägerpreise, Erlössätze und Mengenfaktor **gebaut #461/#462** (E9: Teil a im Kern mit den Schemaschritten 116 bis 118, Teil b die Pflege in den Dialogen und der Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts) |
 | **W5‑B‑10** VALERI-Abgleich (§ 7) | Grundlage der Gap-Tafel **V-G1…V-G12** (§ 2.11.2) | gebaut |
 | **W5‑B‑11** Umsetzung der Entscheidungen (§ 9) | **V-B** ≡ Etappe „VG" der Statuszeile **#358** (wählbare Referenz, Schemaschritt 92) | gebaut |
 | **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — von V-G11 fehlen Kategorie und Beurteilung |

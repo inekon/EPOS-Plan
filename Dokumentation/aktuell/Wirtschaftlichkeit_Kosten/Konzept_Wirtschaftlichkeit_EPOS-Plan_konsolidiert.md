@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 24.09.2026** · Codestand `62613292` · `SchemaStand.Zielversion` = 118 · Schemaschritte 90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 24.09.2026** · Codestand `9fbac8c6` · `SchemaStand.Zielversion` = 118 · Schemaschritte 90–118 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-23_R13_Kuehlung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114 und 115 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -773,7 +773,7 @@ die `V-G`-Nummern; die Tafel übersetzt:
 | V-G2 | **Degradation** je Position [%/a] **mit Quellenangabe** (6.3.1/6.3.3) | fehlt vollständig | neue optionale Positionsattribute; Vorgabe 0 %/a = ergebnisneutral |
 | V-G3 | **Zeitpunktattribut** je Cashflow: Periode 0 · jährlich · alle n Jahre · einmalig in k (6.3.1) | teilweise (StartJahr, Ersatz über Nutzungsdauer) | „alle n Jahre" fehlt (z. B. Dichtheitsprüfung alle 2 a) — kleiner Ausbau der Bemessung |
 | V-G4 | **Kein Restwertverfahren** — Endzahlungen (Demontage, Veräußerung) gehören als explizite Cashflows in die Endperiode (6.4) | Restwert linear | **dokumentierte Abweichung**: Restwert bleibt als Schätzer des Veräußerungswerts, wird aber im Bericht als Modellannahme deklariert; Endzahlungs-Positionen sind über StartJahr bereits abbildbar |
-| V-G5 | **Szenarien = gleichzeitige Variation aller Einstellparameter** — auch r, T, Preisraten, Mengen (7.3) | Best/Worst variieren nur die Kosten-/Betragsspalten; r, T, p sind je Szenario fix | **entschieden 31.08.2026: vollständige Abdeckung** — alle Parameter (Investition, Energiekosten, Betriebskosten, Erlöse, Rahmen, Mengen) erhalten Best/Worst-Werte; Modell in § 2.11.5. **Stand: teilweise gebaut #461** (V‑E Teil a, Kern) — die Schemaschritte 116 bis 118 und die Regeln des Kerns in § 2.11.5: Betrachtungszeitraum, Mengenänderung, Trägerpreise und Erlössätze je Szenario, NULL/0 = wie Erwartet; die Pflege in den Dialogen mit E9b |
+| V-G5 | **Szenarien = gleichzeitige Variation aller Einstellparameter** — auch r, T, Preisraten, Mengen (7.3) | Best/Worst variieren nur die Kosten-/Betragsspalten; r, T, p sind je Szenario fix | **entschieden 31.08.2026: vollständige Abdeckung** — alle Parameter (Investition, Energiekosten, Betriebskosten, Erlöse, Rahmen, Mengen) erhalten Best/Worst-Werte; Modell in § 2.11.5. **Stand: gebaut #461/#462** (V‑E, E9 Teil a im Kern, Teil b in den Dialogen) — die Schemaschritte 116 bis 118 und die Regeln des Kerns in § 2.11.5: Betrachtungszeitraum, Mengenänderung, Trägerpreise und Erlössätze je Szenario, NULL/0 = wie Erwartet; gepflegt über die Szenariotafel und den ±-Knopf, ausgewiesen als „n von m Parametern szenariert" |
 | V-G6 | **Sensitivität**: die 7 Regelparameter, Ausweis mit **Steigung €/%** und Liniendiagramm (7.2, 8.1.3) | 5 Fälle vorhanden (Zins, p_E, Invest, Energie, KWKG-Wegfall) | fehlt: T-Variation, Endzahlungen; Ausgabeformat um Steigungsspalte + Diagramm ergänzen. **Stand: Steigungsspalte gebaut #434** (V‑A; Seite, Wort- und Tabellenbericht); T-Variation, Endzahlungen und Diagramm offen |
 | V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
 | V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme. **Stand: gebaut #434** (V‑A) — Label an Amortisation und Zinsfuß, die Annuität ohne (E5‑Q3, Statusdatei „Nach #434"); Warnung bei mehr als einem Vorzeichenwechsel, ohne Wechsel „kein Zinsfuß bestimmbar" |
@@ -833,12 +833,12 @@ Arbeit.
 | **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe | gebaut |
 | **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | vorgezogen mit **#434** (die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5) und **#436** (das Cashflow-Bild als Verlauf mit drei Szenarien unter „Wie sicher ist das?"); **vollständig mit #454** (E8 Teil a): **Block 2 „Zahlungsreihen"** je Stand und Szenario — Jahrestafel der sechs Bestandteile Investition, Betriebskosten, Energiekosten, Erlöse, Ersatzbeschaffungen und Restwert mit Netto, Barwert und „Summe nominal", darunter das **Zahlungsstrombild** (gestapelte Jahresbalken der Positionsspalten der Mehrjahrestafel, Ausgaben nach unten, Ersatzjahre markiert, ohne Restwert; E8a‑Q1, → Register R‑E8a), Vorgabe die Leitversion im Erwartungsfall (größte Kapitalwertdifferenz, in Sicht 2 der Stand B; E8a‑Q2); **Block 4** mit Spannenbild und Verlauf aus denselben Bausteinen wie „Wie sicher ist das?" (E6‑Q1, → Register R‑E6); in „Woraus entsteht die Zahl?" die **Gliederung des Kapitalwerts** mit Barwert und Nominalsumme je Bestandteil und der Spalte „Differenz ‹Leitversion› − ‹Referenz›", die in der Kapitalwertdifferenz aufgeht (U46), darunter das **Brückenbild** „Von der Investition zur Kapitalwertdifferenz" (U41, auch im Wortbericht); in „Was ist angenommen?" die Tafel **„Was daraus im Lauf wird"** (je Szenario I₀, die Jahre der fälligen Ersatzbeschaffungen und der Restwert am Ende, nominal — U47) und die **Fußzeile** „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" (U48; mit #455 links in der Reihe der Knöpfe „Anhang-E-Checkliste…" und „Bericht erzeugen", E8a‑Q4). Alles ist Ausgabe: `Zahlungsgliederung` ordnet das Zahlungsbild des Laufs, die sechs Barwerte ergeben den Kapitalwert, gezeigt wird nur, was zum gespeicherten Ergebnis passt; die Jahresreihen stehen nach einem Lauf in der Sitzung, gespeicherte Ergebnisse tragen keine (E8a‑Q3) | Ausweis | **E8** Teil a — gebaut |
 | **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6); **gebaut mit #455** (E8 Teil b): die **Formelmappe** in den Stufen 0 bis 3 (§ 2.11.6) samt der Blattstruktur-Wache über Excel- und Wortbericht und der Wache über den ClosedXML-Befund; die **Anhang-E-Checkliste** als Abschlussseite beider Berichte und hinter dem Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks (V‑G12, U43); die **Gegenprobe an der Anhang-D-Fallstudie** (§ 2.11.2). Alles ist Ausgabe: die Werte der Mappe gleich denen der Wertfassung (13 Prüfgruppen), die Anker unverändert; die Kennzahlen von Günstig und Ungünstig bleiben Werte (E8b‑Q1, → Register R‑E8b) | Ausgabe | **E8** Teil b — gebaut |
-| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72); **Teil a gebaut #461** (E9a): die Schemaschritte 116 (Betrachtungszeitraum und Mengenänderung je Szenario), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare je Größe an einer Stelle (§ 2.11.5, „Regeln des Kerns"), Nachweiszeile, Parameterblock und Verlauf je Szenario; `SzenarioParameterTests`, A/B-Nachweis über neun Größen mit Erwartet bitgleich. Risiko (V-G7) und n-jährliche Zeitpunkte (V-G3) baut E9 nicht (E9a‑Q6, → Register R‑E9a) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** — Teil a gebaut #461 (Kern); Teil b (die Pflege in den Dialogen, der Hinweistext entfällt, der Ausweis „n von m") mit E9b |
+| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72); **Teil a gebaut #461** (E9a): die Schemaschritte 116 (Betrachtungszeitraum und Mengenänderung je Szenario), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare je Größe an einer Stelle (§ 2.11.5, „Regeln des Kerns"), Nachweiszeile, Parameterblock und Verlauf je Szenario; `SzenarioParameterTests`, A/B-Nachweis über neun Größen mit Erwartet bitgleich; **Teil b gebaut #462** (E9b): die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (ein verallgemeinerter `CaseEingabeDialog`), der Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.11.7); `SzenarioAbdeckungTests` und die Dialogproben, ohne Pflege keine Rechenwirkung. Risiko (V-G7) und n-jährliche Zeitpunkte (V-G3) baut E9 nicht (E9a‑Q6, → Register R‑E9a) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** — gebaut #461 (Kern) und #462 (Dialoge, Ausweis); E9 abgeschlossen |
 
 *Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
 gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7 (#437, #439,
-#440, #446, #452), E8 (#454, #455; die Nachbesserung E8c #460) und E9 Teil a (#461).*
+#440, #446, #452), E8 (#454, #455; die Nachbesserung E8c #460) und E9 (#461, #462).*
 
 *Entscheid A5 (Degradation) und die Entscheidungsfragen V-1 bis V-4: → Register R‑A (A5) und R‑V;
 der Entscheidweg zu A5: → Protokoll § 5.5.*
@@ -860,10 +860,10 @@ Eine automatische „Richtungslogik" gibt es nicht und braucht es nicht.
 |---|---|---|---|
 | **Investitionskosten** je Position | `Tab_ProjektWerte` Kat. 1 | `BestCase`/`WorstCase` (+ Nutzungsdauern) | **vorhanden** (E3/H4b, Kaskadenwirkung gemessen) |
 | **Betriebskosten** je Position | `Tab_ProjektWerte` Kat. 2 | dito | **vorhanden** |
-| **Energiepreise** je Träger | `energy_project_settings.custom_price_work` (+ Grundpreis) | neue Spalten `custom_price_work_best/_worst` (Grund-/Leistungspreis analog, nullable) | **Kern gebaut #461**, Spalten aus Schritt 117: `custom_price_work_best/_worst`, `custom_price_base_best/_worst`, `custom_price_power_best/_worst`; die Pflege im Dialog mit E9b |
-| **Erlössätze** (Marktgrößen) | `Einspeiseverguetung`, `Einspeiseverguetung_KWK`, PPA-/DV-Preise des PV-Dialogs | je Feld ein Best/Worst-Paar an derselben Tabelle | **Kern gebaut #461**, Spalten aus Schritt 118: `Einspeiseverguetung_Best/_Worst`, `Einspeiseverguetung_KWK_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_Best/_Worst`, `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik`; nicht szenariert sind der Spot-Aufschlag des PPA und die Marktwertfelder (E9a‑Q1); die Pflege im Dialog mit E9b |
-| **Rahmen** | `Tab_ProjektWirtschaftlichkeit`: `Zinssatz`, `Betrachtungszeitraum`, `Preissteigerung_Energie`, `Preissteigerung_Betrieb` | je Größe `_Best`/`_Worst` (8 Spalten), NULL/0 = wie Erwartet | **8 von 8:** 6 seit Schritt 71 (`Szen_Best/Worst_Zins`, `_Preis_E`, `_Preis_B`); der **Betrachtungszeitraum Kern gebaut #461**, Spalten aus Schritt 116: `Szen_Best/Worst_Zeitraum` (ganze Jahre). Namensvorsicht: `Szen_*_Dauer` ist die **Nutzungsdaueränderung**, nicht der Betrachtungszeitraum |
-| **Mengen** (Simulationsergebnis) | Stromerzeugung, Wärme, Einspeisung … | **ein Mengenfaktor [%] je Szenario** an der Rahmenzeile (wirkt multiplikativ auf die Energie- und Erlösmengen) — die Simulation selbst wird nicht dreifach gerechnet | **Kern gebaut #461**, Spalten aus Schritt 116: `Szen_Best/Worst_Menge` (%) |
+| **Energiepreise** je Träger | `energy_project_settings.custom_price_work` (+ Grundpreis) | neue Spalten `custom_price_work_best/_worst` (Grund-/Leistungspreis analog, nullable) | **gebaut #461/#462** — Spalten aus Schritt 117: `custom_price_work_best/_worst`, `custom_price_base_best/_worst`, `custom_price_power_best/_worst` (Kern #461); gepflegt mit dem ±-Knopf je Preis an der Trägerkarte im Projekt (#462) |
+| **Erlössätze** (Marktgrößen) | `Einspeiseverguetung`, `Einspeiseverguetung_KWK`, PPA-/DV-Preise des PV-Dialogs | je Feld ein Best/Worst-Paar an derselben Tabelle | **gebaut #461/#462** — Spalten aus Schritt 118: `Einspeiseverguetung_Best/_Worst`, `Einspeiseverguetung_KWK_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_Best/_Worst`, `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik` (Kern #461); nicht szenariert sind der Spot-Aufschlag des PPA und die Marktwertfelder (E9a‑Q1); gepflegt mit dem ±-Knopf am Feld — Einspeisevergütung PV im Parameterdialog, KWK im Dialog „BHKW-Wirtschaftlichkeit", DV-Entgelt und PPA-Preis im PV-Vergütungsdialog (#462) |
+| **Rahmen** | `Tab_ProjektWirtschaftlichkeit`: `Zinssatz`, `Betrachtungszeitraum`, `Preissteigerung_Energie`, `Preissteigerung_Betrieb` | je Größe `_Best`/`_Worst` (8 Spalten), NULL/0 = wie Erwartet | **8 von 8, gebaut #461/#462:** 6 seit Schritt 71 (`Szen_Best/Worst_Zins`, `_Preis_E`, `_Preis_B`), gepflegt in den Zeilen 1 bis 3 der Szenariotafel (p_I in Zeile 4); der **Betrachtungszeitraum** aus Schritt 116: `Szen_Best/Worst_Zeitraum` (ganze Jahre, Kern #461), gepflegt in Zeile 8 (#462). Namensvorsicht: `Szen_*_Dauer` ist die **Nutzungsdaueränderung**, nicht der Betrachtungszeitraum |
+| **Mengen** (Simulationsergebnis) | Stromerzeugung, Wärme, Einspeisung … | **ein Mengenfaktor [%] je Szenario** an der Rahmenzeile (wirkt multiplikativ auf die Energie- und Erlösmengen) — die Simulation selbst wird nicht dreifach gerechnet | **gebaut #461/#462** — Spalten aus Schritt 116: `Szen_Best/Worst_Menge` (%, Kern #461), gepflegt in Zeile 9 der Szenariotafel (#462) |
 
 **Ausdrücklich nicht szenariert werden gesetzliche Sätze** — KWKG-Zuschläge, Energie- und
 Stromsteuersätze, BEHG-Festpreise sind Rechtsgrößen, keine Unsicherheitsparameter; ihre Zukunft
@@ -878,11 +878,31 @@ Preise, Laufzeit und Zins — genau die stehen oben.
   (`szenarioGepflegt ⇔ |Wert − Erwartet| > 1e−9`), an allen Lesestellen identisch.
 - Die **Sensitivität** (7.2) bleibt davon getrennt: Sie variiert einzeln ceteris paribus; die
   Szenarien variieren alles gleichzeitig (7.3). Beide nutzen dieselben Erwartet-Werte als Basis.
-- **Pflege**: der vorhandene ±-Knopf (`CaseEingabeDialog`) als einheitliches Muster auch an
-  Trägerpreisen, Erlösfeldern und der Rahmen-Gruppe; die ValERI-Ansicht zeigt je Szenario, welche
-  Parameter gepflegte Abweichungen tragen („12 von 31 Parametern szenariert"). **Mit E9b** — die
-  neuen Größen haben bis dahin keine Eingabestelle; ein Projekt trägt sie nur, wenn sie in seiner
-  Datenbank stehen.
+- **Pflege** (umgesetzt #462, E9b): der vorhandene ±-Knopf (`CaseEingabeDialog`) als einheitliches Muster
+  auch an Trägerpreisen und Erlösfeldern — der Dialog ist dafür ein allgemeiner Baustein (Beschriftung,
+  Erwartet-Wert, Einheit, Best/Worst, Nachkommastellen, Grenzen, Kohärenzzeilen), die Kostenposition bleibt,
+  wie sie war (E9b‑Q1, → Register R‑E9b). Der Knopf steht je Preis (Arbeit, Grund, Leistung) an der
+  Trägerkarte im Projekt, an der Einspeisevergütung PV im Parameterdialog, an der Einspeisevergütung KWK im
+  Dialog „BHKW-Wirtschaftlichkeit" — dort wird ihr Erwartet-Wert gepflegt — und an DV-Entgelt und PPA-Preis
+  des PV-Vergütungsdialogs; ein Kennzeichen ● zeigt ein gepflegtes Paar, ein Warnzeichen ⚠ einen
+  Szenariopreis ohne Erwartet-Preis — gespeichert wird trotzdem (E9b‑Q4); im Katalog trägt die Trägerkarte
+  keine Knöpfe. Die **Rahmen-Gruppe** (Zins, Preissteigerungen, Betrachtungszeitraum) und die
+  **Mengenänderung** pflegt die Szenariotafel des Parameterdialogs: neun Zeilen, die Zeilen 8
+  (Betrachtungszeitraum, ganze Jahre) und 9 (Mengenänderung, %) ohne Vorgabe; „Vorgaben" leert alle
+  achtzehn Felder und lässt die Einspeisevergütungen stehen. Einen eigenen ±-Knopf hat die Rahmen-Gruppe
+  nicht — die Tafel trägt sie schon.
+- **Ausweis „n von m Parametern szenariert"** (umgesetzt #462, E9b‑Q2 und E9b‑Q3, → Register R‑E9b): unter
+  der Annahmentafel der Seite und in Block 4, im Wort- und im Tabellenbericht an der Stelle des Hinweistexts
+  (§ 2.11.7) und in Punkt 9 der Anhang-E-Checkliste; gepflegte Größen folgen als Liste („2 von 16 Parametern
+  szenariert: Betrachtungszeitraum, Arbeitspreis Erdgas E"), ohne Parametersatz steht kein Ausweis.
+  **Zählregel** (`SzenarioAbdeckung`): m = die sieben Größen des W5‑B‑9-Satzes, Betrachtungszeitraum,
+  Mengenänderung, Einspeisevergütung PV und KWK, je Vergütungszeile eines Standes mit PV-Anlage DV-Entgelt
+  und PPA-Preis, je Träger mit Verbrauch und Stand Arbeits- und Grundpreis, der Leistungspreis beim
+  Stromträger immer, sonst nur, wo einer gepflegt ist; n = die Parameter, deren Best- oder Worst-Wert um
+  mehr als 1e−9 vom Erwartet-Wert abweicht — bei den sieben Größen zählt nur ein eingetragenes Feld, die
+  Vorgabe nicht. **Lesart:** Ohne Pflege steht „0 von m", obwohl die Vorgaben der Tafel Günstig und
+  Ungünstig verschieben; die Einspeisevergütung KWK zählt auch ohne BHKW (beides zum Mitentscheiden,
+  E9b‑Q2).
 - **Ausweis im Bericht** (Norm 9c): Die Kalkulationstabelle je Szenario nennt die
   Parametereinstellungen vollständig — die Szenariospalten der Rahmenzeile erscheinen im
   Parameterblock des XLSX-Blatts. **Umgesetzt #455 und #461:** Die Nachweiszeile je Szenario
@@ -1021,11 +1041,15 @@ rot, sobald eine neue ClosedXML-Fassung eines der beiden Verhalten ändert — d
 
 ### 2.11.7 Hinweistext bis zur vollständigen Szenarioabdeckung
 
-Die vollständigen Parametersätze je Szenario (§ 2.11.5) kommen **nach** der Darstellungsetappe. Bis
-dahin sagt ein Hinweis unter der Annahmentafel der Wirtschaftlichkeitsseite, was ein Szenario heute
-variiert und was nicht (V-4, → Register R‑V; die Messung dazu: → Protokoll § 3.11).
+**Entfallen mit E9b (#462).** Der Hinweistext ist aus der Seite, aus Block 4, aus Wort- und Tabellenbericht
+und aus den Ressourcen entfernt; an seiner Stelle steht der Ausweis „n von m Parametern szenariert" (§ 2.11.5,
+Ausweis). Der Hinweis entfällt mit der Etappe, die ihn überflüssig macht — das ist E9b. Was folgt, ist Rückschau.
 
-**Wortlaut** (beide Sprachen als Ressource — **umgesetzt #434 als `WIRT_SZEN_HINWEIS`**, ohne den letzten Satz, siehe A14 unten):
+Die vollständigen Parametersätze je Szenario (§ 2.11.5) kamen **nach** der Darstellungsetappe. Bis
+dahin sagte ein Hinweis unter der Annahmentafel der Wirtschaftlichkeitsseite, was ein Szenario
+variierte und was nicht (V-4, → Register R‑V; die Messung dazu: → Protokoll § 3.11).
+
+**Wortlaut** (beide Sprachen als Ressource — **umgesetzt #434 als `WIRT_SZEN_HINWEIS`**, ohne den letzten Satz, siehe A14 unten; **entfallen #462**):
 
 > **Was ein Szenario heute variiert — und was nicht.** Ungünstig und Günstig verändern gegenüber
 > Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und
@@ -1037,22 +1061,22 @@ variiert und was nicht (V-4, → Register R‑V; die Messung dazu: → Protokoll
 > Zeitraum, Trägerpreise, Erlössätze und ein Mengenfaktor — kommen nach dieser Darstellung; bis
 > dahin steht dieser Hinweis unter der Tafel.
 
-Die Vorgabewerte im Text (±10 %, ±2 a) sind die Vorgaben aus § 2.1 des Szenarienkonzepts; trägt
-das Projekt gepflegte Sätze, nennt der Hinweis die gepflegten Werte. Der Hinweis entfällt mit der
-Etappe, die ihn überflüssig macht.
+Die Vorgabewerte im Text (±10 %, ±2 a) waren die Vorgaben aus § 2.1 des Szenarienkonzepts; trug
+das Projekt gepflegte Sätze, nannte der Hinweis die gepflegten Werte. Der Hinweis entfällt mit der
+Etappe, die ihn überflüssig macht — das ist E9b (#462).
 
 *Entscheid A14 (→ Register R‑A):* Die Ressource
-`WIRT_SZEN_HINWEIS` trägt die Konzeptfassung **ohne den Roadmap-Satz** (den letzten Satz des Wortlauts
-oben); das Mockup führte einen abweichenden Schlusssatz. **Umgesetzt #434:** Die Zahlen im Text sind die
+`WIRT_SZEN_HINWEIS` trug die Konzeptfassung **ohne den Roadmap-Satz** (den letzten Satz des Wortlauts
+oben); das Mockup führte einen abweichenden Schlusssatz. **Umgesetzt #434:** Die Zahlen im Text waren die
 wirksamen — ohne Pflege die Vorgaben (±10 %, ±10 %, ±2 a), mit gepflegtem Satz die gepflegten Werte,
-ungünstig vor günstig (`WirtschaftlichkeitEmpfehlung.Szenariohinweis`); der Hinweis steht unter der
+ungünstig vor günstig (`WirtschaftlichkeitEmpfehlung.Szenariohinweis`); der Hinweis stand unter der
 Annahmentafel, in Block 4 der Darstellung „ValERI-Bewertung" und in Wort- und Tabellenbericht.
 
-**Bis E9b (Stand #461):** Mit E9 Teil a rechnet der Kern Betrachtungszeitraum, Mengenänderung,
-Trägerpreise und Erlössätze je Szenario (§ 2.11.5). Der Hinweistext bleibt stehen, bis die Pflege in den
-Dialogen kommt; er stimmt nur noch für Projekte ohne Pflege dieser Größen — eine Pflege zeigen dann die
-Annahmentafel, die Nachweiszeile je Szenario und die Kohärenzzeilen. Er entfällt mit E9b; an seiner Stelle
-steht der Ausweis „n von m Parametern szenariert" (§ 2.11.5, Pflege).
+**Zwischen E9a und E9b (#461):** Mit E9 Teil a rechnete der Kern Betrachtungszeitraum, Mengenänderung,
+Trägerpreise und Erlössätze je Szenario (§ 2.11.5). Der Hinweistext blieb stehen, bis die Pflege in den
+Dialogen kam; er stimmte nur noch für Projekte ohne Pflege dieser Größen — eine Pflege zeigten die
+Annahmentafel, die Nachweiszeile je Szenario und die Kohärenzzeilen. **Mit E9b (#462) ist er entfallen;** an
+seiner Stelle steht der Ausweis „n von m Parametern szenariert" (§ 2.11.5, Ausweis).
 
 ## 2.12 Kategorien-Mockups mit Rechenweg
 
@@ -1279,8 +1303,8 @@ Schwarz-Weiß-Ausdruck davon zu trennen sein. Nachweis: `Proben/ChartProben` (Bi
 `VerlaufSzenarienTests`, `KapitalwertVerlaufAbschnittTests`. **Block 4 der Darstellung „ValERI-Bewertung"**
 zeigt Spannenbild und Verlauf mit denselben Bausteinen — dem Fragment des Spannenbilds und
 `KapitalwertVerlaufAbschnitt` mit derselben Datenseite und Fassung — in der Folge Bandbreite, Spannenbild,
-Vorschlag, Hinweistext, Verlauf, Sensitivität; je Darstellung steht genau ein Verlauf (E6‑Q1, → Register R‑E6;
-umgesetzt #454).
+Vorschlag, Ausweis der Szenarioabdeckung (an der Stelle des Hinweistexts, #462), Verlauf, Sensitivität; je
+Darstellung steht genau ein Verlauf (E6‑Q1, → Register R‑E6; umgesetzt #454).
 
 *Die Messung vor der Umsetzung und die Liste dessen, was die Umsetzung brauchte: → Protokoll § 8.1.*
 
@@ -2587,6 +2611,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E8b Formelmappe, Anhang E und Anhang D** (V‑D) | Der Tabellenbericht als Formelmappe in den Stufen 0 bis 3 — Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und Kennzahlen des Erwartungsfalls in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu; die Anhang-E-Checkliste als Abschlussseite beider Berichte und hinter einem Knopf der Ergebnisseite; die Gegenprobe an der Fallstudie des Anhangs D gegen den Rechenkern; die Fußzeile in der Knopfreihe — keine Rechenwirkung, kein Schemaschritt; E8 ist damit abgeschlossen. | #455 |
 | **E8c Bemessungstexte und Gliederungsprobe** (E8b‑Q2, E8b‑Q3) | Die Betriebskostentabelle beider Berichte nennt jede Bemessungsart mit dem Text des Bemessungskatalogs, Herleitung und Formelmappe fragen denselben Faktor; die Probe der Gliederung hält nur die Positionen des ersten Jahres gegen die angesetzten Betriebskosten, eine Position mit späterem Startjahr trägt „ab Jahr X" (Nachweisfassung 9); der Kommentar zu U42 berichtigt — keine Rechenwirkung, kein Schemaschritt. | #460 |
 | **E9a Szenarioabdeckung, Teil a** (V‑E, § 2.11.5) | Schemaschritt 116 (`Szen_Best/Worst_Zeitraum` in ganzen Jahren und `Szen_Best/Worst_Menge` in Prozent an `Tab_ProjektWirtschaftlichkeit`), 117 (`custom_price_work/base/power_best/_worst` an `energy_project_settings`) und 118 (`Einspeiseverguetung_Best/_Worst` und `Einspeiseverguetung_KWK_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_Best/_Worst` und `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik`), reines DDL, 18 nullbare Spalten; der Kern liest die Paare — Zeitraum, Mengenfaktor, Trägerpreise, Einspeisevergütungen, DV-Entgelt und PPA-Preis je Szenario an je einer Stelle; Nachweiszeile, Parameterblock und Verlauf je Szenario — rechenwirksam je Pflege, ohne Pflege bitgleich (Anker, Referenzlauf 13/13); die Dialoge mit E9b. | #461 |
+| **E9b Szenarioabdeckung, Teil b** (V‑E, § 2.11.5, § 2.11.7) | Die Pflege in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein mit dem Knopf `SzenarioKnopf` — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV (Parameterdialog) und KWK (Dialog „BHKW-Wirtschaftlichkeit"), an DV-Entgelt und PPA-Preis (PV-Vergütungsdialog), mit Kohärenzzeilen und Warnzeichen ohne Erwartet-Preis; der Hinweistext `WIRT_SZEN_HINWEIS` entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert" (`SzenarioAbdeckung`) auf der Seite, in beiden Berichten und in Punkt 9 der Anhang-E-Checkliste — kein Schemaschritt, ohne Pflege keine Rechenwirkung (Anker, Referenzlauf 13/13); E9 ist damit abgeschlossen. | #462 |
 
 ## 6.2 Regressionsanker
 
@@ -2605,7 +2630,11 @@ Bemessungskatalog) und `BetriebskostenStartjahrGliederungTests` (12, die Probe m
 Die Szenarioabdeckung (§ 2.11.5, #461) hält `SzenarioParameterTests` (39: die 17 Fälle des W5‑B‑9-Satzes und 22 je
 neuer Größe — Nullsemantik, 1e−9-Regel, Wirkungsrichtung, Speicherweg über drei Controller, auf 1030 der Zeitraum je
 Szenario Zahl für Zahl wie ein Lauf mit diesem Zeitraum und die Menge ±10 %, die Staffel-Kohärenz, das Rollenmodell
-und die Werkzeug-Wache über die 18 Spalten der Testdatenbank); E9a bewegt keinen Anker.
+und die Werkzeug-Wache über die 18 Spalten der Testdatenbank); E9a bewegt keinen Anker. Den Ausweis der
+Szenarioabdeckung (#462) hält `SzenarioAbdeckungTests` (15: die Zählregel m und n, die Vorgabe zählt nicht, die
+Nullregel, DV-Entgelt und PPA-Preis je Vergütungszeile, die Trägerpreise nach der einen Regel, der Satz in beiden
+Sprachen, Punkt 9 der Checkliste, „Hinweistext weg, Ausweis da", die Zählung am Projekt 1030), die Trägerkarte
+`EnergietraegerSzenarioHuelleTests` (6, Speichern und Laden in Nm³ und kWh); E9b bewegt keinen Anker.
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -2797,20 +2826,20 @@ Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepap
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434), E6
 (#436), E7 Teil a (#437), E7 Teil b (#439), E7 Teil c1 (#440), E7 Teil c2 (#446), E7 Teil c3 (#452), E8 Teil
-a (#454), E8 Teil b (#455) und E9 Teil a (#461)** — **E7 und E8 sind damit abgeschlossen**: von E8 die ValERI-Ansicht (V‑C) mit allen
+a (#454), E8 Teil b (#455), E9 Teil a (#461) und E9 Teil b (#462)** — **E7, E8 und E9 sind damit abgeschlossen**: von E8 die ValERI-Ansicht (V‑C) mit allen
 fünf Blöcken samt Block 2 und dem Zahlungsstrombild U42, der Gliederung mit Nominalsumme und Differenzspalte, dem
 Brückenbild, „Was daraus im Lauf wird", der Fußzeile und E6‑Q1 (§ 2.11.4), und V‑D — die Formelmappe in den Stufen 0
 bis 3 (§ 2.11.6), die Anhang-E-Checkliste (U43) und die Anhang-D-Gegenprobe (§ 2.11.2), dazu die Fußzeile in der
 Knopfreihe (E8a‑Q4); aus E8b ist die Nachbesserung **E8c (#460)** gebaut — die zwei kleinen Aufträge zu E8b‑Q2 und
 E8b‑Q3, die Betriebskostentabelle der Berichte (§ 3.4); der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt.
-**E9** (V‑E, die Szenarioabdeckung nach § 2.11.5) läuft in zwei Wellen: **E9 Teil a (#461) ist gebaut** — die
+**E9** (V‑E, die Szenarioabdeckung nach § 2.11.5) ist in zwei Wellen gebaut: **E9 Teil a (#461)** — die
 Schemaschritte 116 (B, Betrachtungszeitraum und Mengenfaktor je Szenario), 117 (C, Trägerpreise best/worst) und 118
-(D, Erlössätze best/worst) und der Kern, der die Paare liest, ohne Degradation (A5), rechenwirksam je Pflege; **als
-Nächstes kommt E9b** (voraussichtlich #462) mit dem ±-Knopf an den drei neuen Orten und den Zeilen 8 und 9 der
-Szenariotafel, mit ihr entfällt der Hinweistext (§ 2.11.7) zugunsten des Ausweises „n von m Parametern
-szenariert". Offen
-sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c) und die sieben aus E9a
-(→ Register R‑E9a); die sechs aus E8b sind entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6
+(D, Erlössätze best/worst) und der Kern, der die Paare liest, ohne Degradation (A5), rechenwirksam je Pflege — und
+**E9 Teil b (#462)** — der ±-Knopf an Trägerpreisen und Erlössätzen, die Zeilen 8 und 9 der Szenariotafel und der
+Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.11.7). **Als Nächstes kommt E10**
+(Nutzungsdauer S3 und Speicherflotte, voraussichtlich #463) nach dem eigenen Entscheid zu ND‑S3. Offen
+sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a
+(→ Register R‑E9a) und die fünf aus E9b (→ Register R‑E9b); die sechs aus E8b sind entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6
 (E7c3‑Q5) und die Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6)
 dazu. Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
@@ -2856,7 +2885,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
 | **B8** | — | — | S-2 **#446**, B-6 **#452** (fünf Dateien; der Rest offen, E7c3‑Q5) | Befunde S-2 (≡ A3, erledigt) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
 | **B9** ≡ A8 | — | — | entfällt (Anwender 22.09.2026) | Zahlenprobe gegen die Altanwendung — BHKW-Plan-Mappen nicht relevant, E11 entfällt |
-| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, V-C = **#454**, V-D = **#455**, V-E Teil a = **#461** | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C = **E8** Teil a (gebaut #454; die Blöcke 1, 3, 4, 5 mit #434 vorgezogen), V-D = **E8** Teil b (gebaut #455), V-E = **E9** (Teil a im Kern gebaut #461, Teil b mit E9b) |
+| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, V-C = **#454**, V-D = **#455**, V-E = **#461**/**#462** | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C = **E8** Teil a (gebaut #454; die Blöcke 1, 3, 4, 5 mit #434 vorgezogen), V-D = **E8** Teil b (gebaut #455), V-E = **E9** (Teil a im Kern gebaut #461, Teil b in den Dialogen gebaut #462) |
 | § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434**, **#436**, **#454** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3); mit #436 der Verlauf mit drei Szenarien (5) und das Spannenbild; mit #454 beide auch in Block 4 (E6‑Q1) |
 | § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile), **#446** (Entkopplung, Schritt 111), **#452** (gemessen) | Nutzungsdauer, Ersatz, Restwert; der Rest mit ND‑S3 |
 | § 6.3 Nr. 29, 30, 32 | — | — | **#437** (Nr. 30 zum Teil, der Rest **#440**) | E7 Teil a: CO₂-Grenzwert brennwertbezogen, Schemaschritt 102 und „(bitte wählen)", vermiedene Menge ohne jede Eigenerzeugung |
@@ -2868,8 +2897,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **V-D** (§ 2.11.4) · V‑G10 · V‑G12 · Anhang D (§ 2.11.2) · Q18 (U43) · U12 · E8a‑Q4 | — | — | **#455** | E8 Teil b: Formelmappe Stufen 0 bis 3 mit Blattstruktur- und ClosedXML-Wache, Anhang-E-Checkliste in beiden Berichten und hinter dem Knopf der Ergebnisseite, Anhang-D-Gegenprobe, Fußzeile in der Knopfreihe |
 | E8b‑Q2 · E8b‑Q3 (§ 3.4) · Kommentar zu U42 | — | — | **#460** | E8c: Bemessungstexte aus dem Bemessungskatalog, `Bemessungsfaktor` für Herleitung und Formelmappe, Gliederungsprobe mit den Positionen des ersten Jahres, „ab Jahr X", Nachweisfassung 9 |
 | **V-E** Teil a (§ 2.11.4, § 2.11.5) · V‑G5 im Kern · Schritte **B**, **C**, **D** · E9a‑Q1…Q7 | Fortsetzung von W5‑B‑9 | — | **#461** | E9 Teil a: Schemaschritte 116, 117 und 118, der Kern liest Zeitraum, Mengenfaktor, Trägerpreise, Einspeisevergütungen, DV-Entgelt und PPA-Preis je Szenario; Nachweiszeile, Parameterblock und Verlauf je Szenario; Testdatenbank 118 |
+| **V-E** Teil b (§ 2.11.5, § 2.11.7) · V‑G5 in den Dialogen · V‑4 · A14 (Hinweistext entfallen) · U10, U15 · E9b‑Q1…Q5 | Fortsetzung von W5‑B‑9 | — | **#462** | E9 Teil b: Zeilen 8 und 9 der Szenariotafel, ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts, Punkt 9 der Checkliste nennt ihn |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
-| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455, U15 teilweise #461 (Kern; Dialog mit E9b) |
+| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455, U15 erledigt #461/#462, U10 entfallen #462 |
 
 **Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
 
@@ -2891,7 +2921,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E8** Teil b — V‑D | die Formelmappe Stufen 0 bis 3 (U12) samt Blattstruktur- und ClosedXML-Wache, die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`, die Fußzeile in der Knopfreihe (E8a‑Q4) — E8 abgeschlossen | **#455** (Merge `704356a4`) |
 | **E8c** — E8b‑Q2/Q3 | die Bemessungstexte aller Arten aus dem Bemessungskatalog, die Gliederungsprobe mit den Positionen des ersten Jahres („ab Jahr X", Nachweisfassung 9), der Kommentar zu U42 | **#460** (Merge `9ab55946`) |
 | **E9** Teil a — V‑E im Kern | die Schemaschritte 116 (Szenariorahmen), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare, `SzenarioParameterTests`, A/B über neun Größen, Testdatenbank 118 | **#461** (Merge `62613292`) |
-| **E9** Teil b … **E12** | V-E Teil b (±-Knopf an drei Orten, Zeilen 8 und 9 der Szenariotafel, Hinweistext entfällt, Ausweis „n von m") · ND-S3 · Wiki (E11 entfällt) | **nächste Etappe: E9b** (voraussichtlich #462); offen die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c) und die sieben aus E9a (→ Register R‑E9a); E8b entschieden und gebaut (→ Register R‑E8b) |
+| **E9** Teil b — V‑E in den Dialogen | die Zeilen 8 und 9 der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), der Ausweis „n von m Parametern szenariert" statt des Hinweistexts, `SzenarioAbdeckungTests` — E9 abgeschlossen | **#462** (Merge `9fbac8c6`) |
+| **E10** … **E12** | ND-S3 (Nutzungsdauer S3 und Speicherflotte) · Wiki (E11 entfällt) | **nächste Etappe: E10** (voraussichtlich #463); offen die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a) und die fünf aus E9b (→ Register R‑E9b); E8b entschieden und gebaut (→ Register R‑E8b) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
