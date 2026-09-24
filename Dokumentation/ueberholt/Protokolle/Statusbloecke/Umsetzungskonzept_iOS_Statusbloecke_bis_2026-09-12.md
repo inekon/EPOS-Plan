@@ -9212,3 +9212,94 @@ UI 5 883, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27
 (1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
 `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
 Toleranz), Schemastand 119.
+
+## #465 — Gebäudeverwaltung (A9): Hülle, Wohnfläche und alle Gebäudedaten im
+Stammblatt editierbar, Verwaltung für den Hilfe-Assistenten steuerbar
+(24.09.2026)
+
+**Anlass.** Konzept Administrationsdialoge, Abschnitt 7.1 (a) und (e): Hülle
+und Wohnfläche standen im Stammblatt nur lesbar, bearbeitbar nur im
+Katalogeditor; die Verwaltung war beim Hilfe-Assistenten unter der
+Projektmaske `Form_Gebaeude` angemeldet und blieb offen, „solange ihre Hülle
+nur liest“ (KI‑D‑Q11). Commits (Zweig `worktree-agent-a0e85f8966f6d1c0c`,
+Basis `48d8836d`): `29c4ed45` Gebaeude: ein Arbeitsstand fuer Katalogeditor
+und Stammblatt; `cd548c3c` Gebaeudeverwaltung: Stammblatt editierbar, eigene
+KI-Maske; `e8e9ed4c` Papiere #465. Merge in den Hauptbaum `3dd0348a`,
+konfliktfrei (resx 9 020 Schlüssel, Designer unverändert).
+
+**Umsetzung.** Eine Wahrheit: Prüfung, Ableitungen und Hüllrechnung stehen
+einmal in der neuen Klasse `GebaeudeArbeitsstand`; Katalogeditor
+(`GebaeudeKatalogDialog`) und Stammblatt (`GebaeudeAdminDialog`) nutzen sie,
+gespeichert wird über `GebaeudeKatalogHuelle.Schreiben`; der alte Schreibweg
+für fünf Kenndaten ist entfernt. Im Stammblatt editierbar: Kenndaten (jetzt
+mit Wohn-/Nutzfläche und Bauart), Hülle (acht Bauteile mit Kennwert und
+Größe, Randbedingung der Bodenplatte samt Kellertemperatur, Zeile
+H_T/H_ve/H_ges), Fenster nach Orientierung und Kenngrößen (Luftwechsel,
+Fensterdurchlassgrad), aufklappbar „Alle Daten“ (Raumtemperaturen, Ferien,
+Modellparameter, Rechenweg, Kühlung). Bedienung wie in den übrigen
+Verwaltungen: Speichern/Verwerfen in der Fußleiste, „n Felder geändert“,
+Statuszeile, Lesemodus, Schloss; verstößt ein Feld unter „Alle Daten“ gegen
+eine Regel, klappt die Gruppe beim Speichern auf. Katalogeditor nur noch für
+„Neu…“ (wie Heizkessel), „Bearbeiten…“ entfällt. Neue Stilregel
+`.epos-gebaeude-huellraster` gegen Querrollen des Hüll-Rasters (im Browser
+gemessen 1088 × 624 und 400 × 624: kein Querrollen, Fußleiste im Fenster).
+Gruppe Wärmebedarf bewusst nicht: Der Kern rechnet den Wärmebedarf je
+Projektzuordnung (Klimaregion, Kalender, Wohnflächen-/Verbrauchsangabe,
+Kühlbetrieb) — ohne Projekt wäre ein zweiter Rechenweg mit erfundenen
+Annahmen nötig; Begründung im Konzept 7.1 (a).
+
+**KI-Maske.** Neuer Schlüssel `Form_Gebaeude_Admin` (Navigationsschlüssel
+`Masken.GebaeudeAdmin` war bisher gleich `Form_Gebaeude`, umbenannt);
+Anmeldung mit der Sichtklasse des Katalogeditors `GebaeudeKatalogKiSicht`
+auf demselben Arbeitsstand; 59 Felder (Wahlfeld `satz` plus 58 aus derselben
+Liste wie der Editor; Name nur lesbar, Betriebsart des Editors entfällt);
+Haken Auffrischen, Schreibschutz (Absage beim Auslieferungssatz:
+„duplizieren oder das Schloss aufheben“), Prüfen, Speichern über den Knopf;
+Öffnungsziele: Verwaltung und Katalogeditor führen zur Verwaltung,
+`Form_Gebaeude` zur Startseite. Maskenkatalog 76 (vorher 75);
+Abdeckungswächter: neuer Wirt-Eintrag für das Stammblatt, Eingabestellen 7
+in der Verwaltung und 36 im neuen Baustein; neuer Test: Feldliste der
+Verwaltung = Feldliste des Editors; `GebaeudeAdminDialogTests` neu gefasst
+(27 Tests).
+
+**Löschsperre.** Bleibt beim Namen (weder `Z_ProjektGebaeude` noch
+`Tab_Gebaeude` führen einen Katalogverweis). Vorschlag, nicht angelegt:
+Schemaschritt 122 mit Spalte `Tab_Gebaeude.ID_Gebaeude_Stamm` (gefüllt beim
+Übernehmen, einmalig über den Namen nachgetragen); die Löschsperre fragt
+dann zuerst die ID statt des Namens.
+
+**Tests.** Im Worktree voller Lauf 12 542 bestanden, 0 rot, 1 übersprungen;
+Kern-Filter und Windows-Schale 0 Fehler; SQL-Dialekt-Prüfer 0; Referenzlauf
+1030 und 1045 PASS gegen `2026-09-23_R13_Kuehlung`; Testdatenbank
+unverändert.
+
+**Papiere.** `Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`
+(Stand, 3.5, 3.6, Stufe 5, 7.1 (a) und (e) abgeschlossen); Konzept
+KI-Dialogintegration (Abdeckung, Schrittzeile); `EPOS.UI/CLAUDE.md` (zwei
+neue Regeln: gemeinsamer Arbeitsstand von Stammblatt und Editor;
+Eingabefelder in einer Stammblatt-Tabelle nehmen die Zellbreite);
+Wiki-Quellen „Gebäudemodell VDI 6007“ und „Hilfe-Assistent“ nachgezogen
+(Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Die Gebäudeverwaltung bearbeitet Hülle, Wohnfläche und alle übrigen
+> Gebäudedaten direkt im Stammblatt.
+
+**Was offen bleibt.** Die Wiki-Seite „Gebäude“ hat keine Quelle im Repo —
+ihre Beschreibung („Bearbeiten…“) beim nächsten Upload anpassen; Speichern
+schreibt jetzt den ganzen Satz über den Editorweg (leere
+`spez_Waermeverbrauch`/`Waermebedarf` werden 0, leere Baualtersklasse „A“ —
+wie der Editor schon immer); 5 der 277 Katalogsätze der Testdatenbank
+verletzen Editor-Regeln (U-Wert „Sonstiges“/„Fenster“ außerhalb des
+Bereichs) — der Anwender muss den Wert vor dem Speichern berichtigen; Feld
+`verwaltung` der Projektmaske `Form_Gebaeude` meldet immer „nein“ (könnte
+samt zwei Ressourcen entfallen); die Playwright-Katalogprobe lief nicht
+(kein Node auf dem Rechner), Messung stattdessen im Browser über den
+Probe-Wirt.
+
+**Gate nach Merge auf `3dd0348a`.** Kern-Filter 0 Fehler; Kern 5 700,
+UI 5 893, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), 0 rot; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
+Toleranz), Schemastand 119.
