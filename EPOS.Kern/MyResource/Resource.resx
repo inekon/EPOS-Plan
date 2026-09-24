@@ -6613,7 +6613,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Kalkulationszins i</value>
   </data>
   <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
-    <value>Betrachtungszeitraum T [a]</value>
+    <value>Betrachtungszeitraum T_s je Szenario [a]</value>
   </data>
   <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
     <value>Preissteigerung Energie p_E (je Jahr)</value>
@@ -6634,7 +6634,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Nutzungsdauer — Änderung gegenüber Erwartet [a]</value>
   </data>
   <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
-    <value>Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte.</value>
+    <value>Die Formeln dieses Blatts rechnen je Szenario mit seiner Spalte: „Erwartet“ mit den Namen Zins_i, Zeitraum_T, p_E, p_B, p_I, „Günstig“ und „Ungünstig“ mit denselben Namen und dem Anhang _Guenstig bzw. _Unguenstig. Zins und Preissteigerungen lassen sich dort ändern, Mehrjahrestabellen, Kennzahlen und Bandbreite des Szenarios ziehen mit. Die Jahreszeilen stehen fest und reichen bis zum längsten Betrachtungszeitraum der drei Szenarien; Jahre nach dem Zeitraum eines Szenarios bleiben leer — ein längerer Betrachtungszeitraum verlangt einen neuen Bericht.</value>
   </data>
   <data name="WIRT_FM_GRENZE" xml:space="preserve">
     <value>Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche.</value>
@@ -6662,6 +6662,21 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
     <value>Satz</value>
+  </data>
+  <data name="WIRT_FM_MJ_SZENARIO_TITEL" xml:space="preserve">
+    <value>Mehrjahresübersicht der Zahlungsströme — Szenario „{0}“ (T = {1} a)</value>
+  </data>
+  <data name="WIRT_FM_MJ_VORZEICHEN" xml:space="preserve">
+    <value>Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht)</value>
+  </data>
+  <data name="WIRT_FM_MJ_WECHSEL" xml:space="preserve">
+    <value>Vorzeichenwechsel bis hier</value>
+  </data>
+  <data name="WIRT_FM_IZF_NICHT_EINDEUTIG" xml:space="preserve">
+    <value>nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C)</value>
+  </data>
+  <data name="WIRT_FM_MJ_SZENARIO_HINWEIS" xml:space="preserve">
+    <value>Nominale Zahlungen je Jahr im Szenario „{0}“, in €: die Eingangswerte aus dem Lauf dieses Szenarios, die Formeln rechnen mit seiner Spalte im Parameterblock (Namen mit dem Anhang {1}). Jahre nach T = {2} a tragen keine Zahlung; ihre Formeln bleiben leer.</value>
   </data>
   <data name="WIRT_AE_TITEL" xml:space="preserve">
     <value>Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)</value>
@@ -6910,7 +6925,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen)</value>
   </data>
   <data name="WIRT_AE_11_STAND" xml:space="preserve">
-    <value>Deklarationen im Bericht; die Mappe rechnet mit sichtbaren Formeln auf den Parameterblock.</value>
+    <value>Deklarationen im Bericht; die Mappe rechnet alle drei Szenarien formelbasiert — mit sichtbaren Formeln auf ihre Spalte im Parameterblock.</value>
   </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>

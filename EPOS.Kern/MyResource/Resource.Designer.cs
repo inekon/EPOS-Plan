@@ -70054,7 +70054,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Deklarationen im Bericht; die Mappe rechnet mit sichtbaren Formeln auf den Parameterblock. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deklarationen im Bericht; die Mappe rechnet alle drei Szenarien formelbasiert — mit sichtbaren Formeln auf ihre Spalte im Parameterblock. ähnelt.
         /// </summary>
         public static string WIRT_AE_11_STAND {
             get {
@@ -71899,6 +71899,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_IZF_NICHT_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_IZF_NICHT_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang in diesem Jahr [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_MJ_AMORT_HILFE {
@@ -71953,6 +71962,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominale Zahlungen je Jahr im Szenario „{0}“, in €: die Eingangswerte aus dem Lauf dieses Szenarios, die Formeln rechnen mit seiner Spalte im Parameterblock (Namen mit dem Anhang {1}). Jahre nach T = {2} a tragen keine Zahlung; ihre Formeln bleiben leer. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_SZENARIO_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrjahresübersicht der Zahlungsströme — Szenario „{0}“ (T = {1} a) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_SZENARIO_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_VORZEICHEN {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_VORZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichenwechsel bis hier ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WECHSEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer — Änderung gegenüber Erwartet [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_DAUER {
@@ -71971,7 +72016,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Formeln dieses Blatts rechnen je Szenario mit seiner Spalte: „Erwartet“ mit den Namen Zins_i, Zeitraum_T, p_E, p_B, p_I, „Günstig“ und „Ungünstig“ mit denselben Namen und dem Anhang _Guenstig bzw. _Unguenstig. Zins und Preissteigerungen lassen sich dort ändern, Mehrjahrestabellen, Kennzahlen und Bandbreite des Szenarios ziehen mit. Die Jahreszeilen stehen fest und reichen bis zum längsten Betrachtungszeitraum der drei Szenarien; Jahre nach dem Zeitraum eines Szenarios bleiben leer — ein längerer Betrach [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_HINWEIS {
             get {
@@ -72088,7 +72133,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T [a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T_s je Szenario [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_ZEITRAUM {
             get {
