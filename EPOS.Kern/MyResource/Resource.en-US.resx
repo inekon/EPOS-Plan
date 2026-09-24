@@ -6597,7 +6597,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Discount rate i</value>
   </data>
   <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
-    <value>Evaluation period T [a]</value>
+    <value>Evaluation period T_s per scenario [a]</value>
   </data>
   <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
     <value>Price change energy p_E (per year)</value>
@@ -6618,7 +6618,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Service life — change against Expected [a]</value>
   </data>
   <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
-    <value>The formulas on this sheet use the column “Expected” (names Zins_i, Zeitraum_T, p_E, p_B, p_I): the discount rate and the price changes can be edited there, and the multi-year table and the key figures of the scenario “Expected” follow. The year rows are fixed — a different evaluation period requires a new report. The columns “Favourable” and “Unfavourable” state the assumptions of their runs; their key figures remain values.</value>
+    <value>The formulas on this sheet use the column of their scenario: “Expected” the names Zins_i, Zeitraum_T, p_E, p_B, p_I, “Favourable” and “Unfavourable” the same names with the suffix _Guenstig or _Unguenstig. The discount rate and the price changes can be edited there, and the multi-year tables, key figures and range of the scenario follow. The year rows are fixed and run to the longest evaluation period of the three scenarios; years after a scenario’s period stay empty — a longer evaluation period requires a new report.</value>
   </data>
   <data name="WIRT_FM_GRENZE" xml:space="preserve">
     <value>The workbook recalculates the evaluation of fixed annual quantities — any change to plant size, demand or operation requires a new hourly simulation that no cell formula provides. The legal logic and the evidence that make the figures valid cannot be represented. Whatever is changed in the workbook never returns to the project: it is traceable evidence, not a second input interface.</value>
@@ -6909,7 +6909,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Word report: chapters “Economic evaluation” and “Annex” · Workbook: formula workbook (parameter block, multi-year tables, key figures)</value>
   </data>
   <data name="WIRT_AE_11_STAND" xml:space="preserve">
-    <value>declarations in the report; the workbook calculates with visible formulas on the parameter block.</value>
+    <value>declarations in the report; the workbook calculates all three scenarios with formulas — visible formulas on their column in the parameter block.</value>
   </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Multi-year overview omitted — no cash flow series could be calculated for this project.</value>

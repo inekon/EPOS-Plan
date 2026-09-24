@@ -329,6 +329,24 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
                              w.Cell(P + 151, 1).GetString());
 
+                // ETAPPE E14 (E14‑Q1 a): unter den Tabellen des Erwartungsfalls dieselben
+                // Tabellen für Günstig und Ungünstig — je ein Titel mit T_s und ein Hinweis,
+                // dann je Stand Name, Kopf, Jahre 0…T, Abschluss- und Probezeile. Alles bis
+                // P + 151 bleibt, wo es war.
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_SZENARIO_TITEL, "Günstig", 20), w.Cell(P + 154, 1).GetString());
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_SZENARIO_HINWEIS, "Günstig", "_Guenstig", 20),
+                             w.Cell(P + 155, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(P + 157, 1).GetString());
+                Zeile(w, P + 158, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(P + 180, 1).GetString());
+                Assert.Equal("Variante A", w.Cell(P + 183, 1).GetString());
+                Zeile(w, P + 184, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(P + 206, 1).GetString());
+                Assert.Equal(string.Format(R.WIRT_FM_MJ_SZENARIO_TITEL, "Ungünstig", 20), w.Cell(P + 209, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(P + 212, 1).GetString());
+                Assert.Equal("Variante A", w.Cell(P + 238, 1).GetString());
+                Assert.Equal(R.WIRT_MJ_RESTWERT_T, w.Cell(P + 261, 1).GetString());
+
                 // ---- Verlauf (ETAPPE E6, U13) ---------------------------------
                 // Je Jahr eine Zeile, je Variante und Szenario eine Spalte in der
                 // Spaltengruppe des Szenarios — hier EINE Variante, also je Gruppe eine Spalte.
