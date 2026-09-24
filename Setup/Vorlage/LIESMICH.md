@@ -4,11 +4,11 @@ Hier liegt die Datenbank, die das Setup mitliefert: **`Kenndaten.sqlite`** — d
 Vorlage mit den Auslieferungskatalogen und den Beispielprojekten, aus der die Anwendung beim
 Erststart die Arbeitsdatenbank des Kontos anlegt.
 
-> **Nichts davon wird eingecheckt.** `Kenndaten.sqlite`, ihre Beidateien und der Prüfbericht
-> stehen in [`.gitignore`](../../.gitignore). Diese Liesmich-Datei ist der einzige versionierte
-> Inhalt des Ordners. Der Grund: Die Vorlage entsteht aus der **produktiven**
-> Entwicklungsdatenbank, die reale Kunden- und Objektdaten führt — sie in ein Repository zu
-> legen wäre der Umweg, auf dem genau diese Daten doch wieder herauskommen.
+> **Die Datenbank wird nie eingecheckt.** `Kenndaten.sqlite`, ihre Beidateien und der
+> Prüfbericht stehen in [`.gitignore`](../../.gitignore). Versioniert sind nur diese
+> Liesmich-Datei und die von Hand gepflegte Lizenzhinweisseite. Der Grund: Die Vorlage entsteht
+> aus der **produktiven** Entwicklungsdatenbank, die reale Kunden- und Objektdaten führt — sie in
+> ein Repository zu legen wäre der Umweg, auf dem genau diese Daten doch wieder herauskommen.
 
 ---
 
@@ -17,6 +17,7 @@ Erststart die Arbeitsdatenbank des Kontos anlegt.
 | Datei | Herkunft | Versioniert |
 |---|---|---|
 | `LIESMICH.md` | von Hand | **ja** |
+| `Lizenzhinweise.txt` | von Hand — je ausgelieferter Fremdbibliothek Name, Fassung, Lizenz, Copyright-Vermerk und Quelltextverweis (E27, U10); das Setup legt sie nach `{app}`, der Wächter `EPOS.Kern.Tests/LizenzhinweiseWacheTests.cs` hält sie gegen `Directory.Packages.props` | **ja** |
 | `Kenndaten.sqlite` | erzeugt von `Werkzeuge/Auslieferungsvorlage` | nein |
 | `Kenndaten.sqlite.bericht.txt` | erzeugt im selben Lauf — der Prüfbericht | nein |
 
