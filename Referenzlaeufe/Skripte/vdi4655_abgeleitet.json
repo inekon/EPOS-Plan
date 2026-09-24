@@ -4,7 +4,7 @@
     "regel": "v' = v * (1 + delta), delta zyklisch je Zeilenindex aus (+0,04; -0,03; +0,05; -0,04; +0,03; -0,05); reelle Werte auf die signifikanten Ziffern der Quelle gerundet, kein Wert gleich dem Original, jeder hoechstens 5,9 % entfernt. GANZE ZAHLEN (Typtage je Klimazone): jeder Wert weicht um mindestens einen und hoechstens max(2; 6 %) Tag(e) ab, bleibt >= 0, und die Zeilensumme ist wieder 365. Skript: Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py",
     "datum": "2026-09-24",
     "hinweis": "Kein Wert dieser Datei ist ein Originalwert der Richtlinie (Anwenderentscheid ZU19). Codes der Typtage, Namen der Klimazonen und Bezeichnungen der Gebaeudevarianten sind neutral vergeben (TT01.., variante_1.., nur die Zonennummer). Die Faktoren sind Schwankungen um einen Jahresmittelwert und nicht renormiert - die Pruefsumme des Originals gilt hier nicht mehr.",
-    "werte": 756
+    "werte": 800
   },
   "typtage": [
     {
@@ -1194,5 +1194,94 @@
     "heizgrenze.variante_3": 12.6,
     "wintergrenze": 4.8,
     "bewoelkung.schwelle": 5.15
+  },
+  "papierwerte": {
+    "hinweis": "Werte, die allein das Grundlagenpapier fuehrt. Jahres-TWW-Bedarf, Jahresstrombedarf und die zehn Tages-TWW-Energien des Beispiels sind aus den abgeleiteten Kennwerten und Faktoren gerechnet (Gleichung (3)), nicht einzeln gestoert - sie sind darum ebenfalls keine Originalwerte.",
+    "klimazonen_jahresmittel_c": {
+      "1": 9.4,
+      "2": 8.7,
+      "3": 8.9,
+      "4": 9.1,
+      "5": 8.3,
+      "6": 6.5,
+      "7": 9.2,
+      "8": 5.8,
+      "9": 8.3,
+      "10": 6.5,
+      "11": 3.1,
+      "12": 9.69,
+      "13": 7.7,
+      "14": 6.6,
+      "15": 7.1
+    },
+    "urlaubstag_anteil_prozent": {
+      "strom_anteil": 52,
+      "heizwaerme_anteil": 77
+    },
+    "strom_jahresbedarf_kwh": {
+      "efh_1_pers_kwh": 2280,
+      "mfh_kwh_je_we": 2910,
+      "efh_2_pers_kwh_je_person": 2121,
+      "efh_3_pers_kwh_je_person": 1584,
+      "efh_4_pers_kwh_je_person": 1545,
+      "efh_5_pers_kwh_je_person": 1330,
+      "efh_6_pers_kwh_je_person": 1310
+    },
+    "beispiel": {
+      "personen": 3,
+      "zone": 5,
+      "wohnflaeche_m2": 113,
+      "q_heiz_a_kwh": 7838,
+      "w_a_kwh": 4752,
+      "q_twe_a_kwh": 1560,
+      "q_heiz_tt_kwh": {
+        "TT01": 21.28,
+        "TT02": 24.68,
+        "TT03": 11.63,
+        "TT04": 25.86,
+        "TT05": 0,
+        "TT06": 0,
+        "TT07": 54.72,
+        "TT08": 50.15,
+        "TT09": 56.4,
+        "TT10": 45.17
+      },
+      "w_tt_kwh": {
+        "TT01": 13.32,
+        "TT02": 13.04,
+        "TT03": 15.83,
+        "TT04": 15.12,
+        "TT05": 12.22,
+        "TT06": 14.16,
+        "TT07": 14.13,
+        "TT08": 13.94,
+        "TT09": 17.21,
+        "TT10": 16.54
+      },
+      "q_twe_tt_kwh": {
+        "TT01": 4.35,
+        "TT02": 4.42,
+        "TT03": 5.85,
+        "TT04": 4.27,
+        "TT05": 3.52,
+        "TT06": 4.2,
+        "TT07": 4.33,
+        "TT08": 4.73,
+        "TT09": 5.234,
+        "TT10": 5.4
+      },
+      "twe_anteil_prozent": {
+        "TT01": 17.0,
+        "TT02": 15.2,
+        "TT03": 33.5,
+        "TT04": 14.2,
+        "TT05": 100.0,
+        "TT06": 100.0,
+        "TT07": 7.3,
+        "TT08": 8.6,
+        "TT09": 8.49,
+        "TT10": 10.7
+      }
+    }
   }
 }

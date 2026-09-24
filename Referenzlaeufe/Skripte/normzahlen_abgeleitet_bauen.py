@@ -55,6 +55,17 @@ Ausgabe NICHT: Die Typtage heissen TT01 bis TTnn in der Reihenfolge der Quelldat
 Gebaeudevarianten variante_1 bis variante_n in der Reihenfolge ihres ersten Auftretens, und von den
 Klimazonen bleibt allein die Nummer. Ausgabe: Referenzlaeufe/Skripte/vdi4655_abgeleitet.json.
 
+ANWENDERENTSCHEID ZU23 (24.09.2026): Auch das Grundlagenpapier
+Dokumentation/aktuell/Grundlagen_5_VDI-4655_Auswertung.md traegt nur noch abgeleitete Zahlen.
+Dafuer fuehrt die Ausgabe neben den Rechenwerten den Abschnitt "papierwerte" mit allem, was allein
+das Papier braucht: Jahresmittel der Aussentemperatur je Klimazone, die beiden Urlaubstaganteile,
+die Jahresstrombedarfe und die Beispielrechnung des Abschnitts 8. Drei Groessen der
+Beispielrechnung werden NICHT einzeln gestoert, sondern aus schon abgeleiteten Werten GERECHNET,
+damit das Papier in sich stimmt: der Jahres-TWW-Bedarf (Personenzahl mal abgeleiteter
+Personenkennwert), der Jahresstrombedarf (Personenzahl mal abgeleiteter Personenkennwert) und die
+Tages-TWW-Energien nach Gleichung (3) aus dem abgeleiteten Jahresbedarf und den abgeleiteten
+Faktoren. Sie sind damit ebenso wenig Originalwerte wie alles andere in dieser Datei.
+
 Die Sperren fuer A100-Referenzprofil und DIN-4708-Profil bleiben (DIN, nicht VDI).
 
 VERWENDUNG IM TESTKATALOG (tww_testkatalog_fiktiv.py; die JSON-Datei bleibt vollstaendig):
@@ -93,6 +104,14 @@ D4655 = ("typtage.csv", "klimazonen.csv", "typtage_je_zone.csv", "f_twe_tt.csv",
 
 # Mindest- und Hoechstabweichung einer GANZEN ZAHL (Typtage je Zone) in Tagen.
 GANZ_MINDESTENS = 1
+
+# Die Beispielrechnung des Abschnitts 8 der Richtlinie: Strukturangaben, keine Messwerte.
+BEISPIEL_PERSONEN = 3
+BEISPIEL_ZONE = 5
+
+# Der Jahresstrombedarf je Person faellt in der Quelle mit der Personenzahl; abgeleitet faellt er
+# weiter (sonst stuende im Papier eine Reihe, die der Aussage der Richtlinie widerspricht).
+FALLENDE_REIHE = tuple("w_a_efh_%d_pers_kwh_je_person" % n for n in range(2, 7))
 
 BEDARF_SPALTEN = ("mittel", "minimum", "maximum", "winterspitze", "sommerschwachlast")
 
@@ -325,8 +344,12 @@ def runden_signifikant(x, ziffern):
     return Decimal("%.*g" % (ziffern, x))
 
 
-def ableiten_reell(text, zeile):
-    """Ein reeller Wert nach der Regel; er darf negativ sein, nicht aber 0."""
+def ableiten_reell(text, zeile, verboten=None):
+    """
+    Ein reeller Wert nach der Regel; er darf negativ sein, nicht aber 0. Ist `verboten` gegeben
+    (Menge aller Originalzahlen), meidet der Wert auch die Originalwerte ANDERER Zellen - sonst
+    stuende in einer Tabelle des Papiers wieder eine Zahl der Richtlinie, nur in der falschen Zeile.
+    """
     v = Decimal(text)
     if v == 0:
         return v, Decimal(0), True            # 0 laesst sich nicht multiplikativ ableiten
@@ -335,6 +358,8 @@ def ableiten_reell(text, zeile):
         for k in range(len(D)):
             neu = runden_signifikant(v * (1 + D[(zeile + k) % len(D)]), ziffern + feiner)
             if neu == 0:
+                continue
+            if verboten is not None and neu.normalize() in verboten:
                 continue
             a = abs(neu / v - 1)
             if GLEICH < a <= BAND:
@@ -387,6 +412,36 @@ def ableiten_ganz(werte, zeile0):
     return neu
 
 
+def ableiten_fallend(texte, zeile0):
+    """
+    Eine Reihe, die in der Quelle streng fallend ist (Jahresstrombedarf je Person), bleibt es auch
+    abgeleitet: jeder Wert nimmt das erste delta seiner Reihenfolge, das die Regel haelt UND unter
+    dem schon angenommenen Vorgaenger bleibt.
+    """
+    ergebnis, vorher = [], None
+    for j, text in enumerate(texte):
+        v = Decimal(text)
+        ziffern = signifikant(text)
+        gewaehlt = None
+        for feiner in range(0, 7):
+            for k in range(len(D)):
+                neu = runden_signifikant(v * (1 + D[(zeile0 + j + k) % len(D)]), ziffern + feiner)
+                a = abs(neu / v - 1)
+                if not (GLEICH < a <= BAND):
+                    continue
+                if vorher is not None and neu >= vorher:
+                    continue
+                gewaehlt = (neu, a)
+                break
+            if gewaehlt:
+                break
+        if not gewaehlt:
+            raise SystemExit("Keine fallende Ableitung fuer Glied %d der Reihe." % j)
+        ergebnis.append(gewaehlt)
+        vorher = gewaehlt[0]
+    return ergebnis
+
+
 def kennwertzahl(text, einheit):
     """
     Ein Kennwert als Zahl. Ein Bruch "a/b" (die Bewoelkungsschwelle steht so in der Quelle) wird
@@ -406,6 +461,51 @@ def kennwertzahl(text, einheit):
     except Exception:
         return None
     return wert * 8 if (einheit or "").strip().lower().startswith("achtel") else wert
+
+
+def originalzahlen(quelle):
+    """
+    Die KENNZEICHNENDEN Zahlen der lokalen Originale als Menge (normierte Decimal): jede, die
+    keine ganze Zahl ist, und jede ganze ab 100. Ein abgeleiteter oder gerechneter Wert des
+    Papiers darf keiner von ihnen gleichen - auch nicht der einer anderen Zelle, sonst stuende
+    eine Zahl der Richtlinie wieder im Papier, nur in der falschen Zeile. Kleine ganze Zahlen
+    (Typtage je Zone, Personen- und Wohneinheitenzahlen, Prozentangaben) bleiben draussen: sie
+    treten im Papier auch als Seiten-, Tabellen- und Abschnittsnummer auf, sind also nicht
+    unterscheidbar; fuer sie gilt die Probe Zelle gegen Zelle.
+    """
+    menge = set()
+    for datei in D4655:
+        for r in lies(os.path.join(quelle, datei)):
+            for wert in r.values():
+                for stueck in str(wert or "").replace(",", " ").replace(";", " ").split():
+                    try:
+                        v = Decimal(stueck).normalize()
+                    except Exception:
+                        continue
+                    if v != v.to_integral_value() or abs(v) >= 100:
+                        menge.add(v)
+    return menge
+
+
+def ohne_kollision(exakt, verboten, d):
+    """Rundet `exakt` auf d Stellen; kollidiert das mit einem Originalwert, eine Stelle feiner."""
+    for stellen_ in range(d, d + 4):
+        kandidat = runden(exakt, stellen_)
+        if kandidat.normalize() not in verboten:
+            return kandidat
+    raise SystemExit("Ein gerechneter Wert des Papiers trifft einen Originalwert.")
+
+
+def zahlen_pruefen(knoten, verboten, pfad=""):
+    """Wacht, dass kein Zahlwert des Abschnitts `papierwerte` einem Originalwert gleicht."""
+    if isinstance(knoten, dict):
+        for k, v in knoten.items():
+            if k in ("personen", "zone"):               # Strukturangaben der Beispielrechnung
+                continue
+            zahlen_pruefen(v, verboten, pfad + "/" + str(k))
+    elif isinstance(knoten, (int, float)) and knoten != 0:
+        if Decimal(str(knoten)).normalize() in verboten:
+            raise SystemExit("Der abgeleitete Wert %s gleicht einem Originalwert." % pfad)
 
 
 def vdi4655(quelle, ziel):
@@ -428,7 +528,8 @@ def vdi4655(quelle, ziel):
         typtage.append({"code": neu, "jahreszeit": js, "tagart": ta, "bewoelkung": bw})
 
     # --- Klimazonen: allein die Nummer --------------------------------------------------
-    zonen = [int(r["zone"]) for r in lies(os.path.join(quelle, "klimazonen.csv"))]
+    quell_zonen = lies(os.path.join(quelle, "klimazonen.csv"))
+    zonen = [int(r["zone"]) for r in quell_zonen]
 
     # --- Gebaeudevarianten: neutrale Namen in der Reihenfolge des Auftretens ------------
     quell_faktoren = lies(os.path.join(quelle, "f_twe_tt.csv"))
@@ -471,6 +572,7 @@ def vdi4655(quelle, ziel):
 
     # --- Faktoren der Tagesenergie: reell, duerfen negativ sein -------------------------
     faktoren = {}
+    faktoren_dec = {}                                   # dieselben Werte als Decimal (Gl. (3))
     for i, r in enumerate(quell_faktoren):
         neu, a, war_null = ableiten_reell(r["f_twe_tt"], i)
         if war_null:
@@ -478,10 +580,12 @@ def vdi4655(quelle, ziel):
         else:
             buchen(a)
         faktoren.setdefault(art_neu[r["gebaeude"]], {}).setdefault(str(int(r["zone"])), {})[code_neu[r["typtag"]]] = zahl(neu)
+        faktoren_dec.setdefault(art_neu[r["gebaeude"]], {}).setdefault(str(int(r["zone"])), {})[code_neu[r["typtag"]]] = neu
 
     # --- Kennwerte: nur Zahlen, Texte bleiben draussen ----------------------------------
+    quell_kennwerte = lies(os.path.join(quelle, "kennwerte.csv"))
     kennwerte = {}
-    for i, r in enumerate(lies(os.path.join(quelle, "kennwerte.csv"))):
+    for i, r in enumerate(quell_kennwerte):
         schluessel = r["schluessel"]
         # Abgeleitet wird NUR, was der Rechenweg braucht oder was ein echter Kennwert der
         # Richtlinie ist. Struktur- und Geltungsangaben (Tage je Jahr, Zeitaufloesungen, Grenzen
@@ -513,6 +617,108 @@ def vdi4655(quelle, ziel):
         if "heizgrenze." + a not in kennwerte:
             raise SystemExit("Die Heizgrenze der Gebaeudeart %s fehlt." % a)
 
+    # --- Werte, die allein das Grundlagenpapier fuehrt (Anwenderentscheid ZU23) ----------
+    verboten = originalzahlen(quelle)
+    # Jahresmittel der Aussentemperatur je Zone (Tabelle 3 des Papiers): reell, je Zeile ein delta.
+    # Ihre Originale sind teils ganzzahlig (9,0 oder 3,0 °C) und stehen darum nicht in `verboten`;
+    # fuer diese Spalte gilt zusaetzlich ihr eigener Satz, damit kein Wert den einer anderen Zone traegt.
+    verboten_zonen = set(verboten)
+    for r in quell_zonen:
+        try:
+            verboten_zonen.add(Decimal((r.get("jahresmittel_c") or "").strip()).normalize())
+        except Exception:
+            pass
+    jahresmittel = {}
+    for i, r in enumerate(quell_zonen):
+        roh = (r.get("jahresmittel_c") or "").strip()
+        if not roh:
+            continue
+        abgeleitet, a, _ = ableiten_reell(roh, i, verboten_zonen)
+        buchen(a)
+        jahresmittel[str(int(r["zone"]))] = zahl(abgeleitet)
+
+    # Jahresstrombedarfe, Urlaubstaganteile und die einzeln stoerbaren Groessen des Beispiels.
+    # beispiel_q_twe_* bleibt aussen vor: der Jahresbedarf und die zehn Tagesenergien werden aus
+    # schon abgeleiteten Werten gerechnet, damit Gleichung (3) im Papier aufgeht.
+    papier = {}
+    reihe = {}
+    for i, r in enumerate(quell_kennwerte):
+        schluessel = r["schluessel"]
+        if not schluessel.startswith(("w_a_", "urlaubstag_", "beispiel_")):
+            continue
+        if schluessel.startswith("beispiel_q_twe"):
+            continue
+        if schluessel in FALLENDE_REIHE:                # geschlossen abgeleitet, damit sie faellt
+            reihe[schluessel] = (i, r["wert"])
+            continue
+        roh = kennwertzahl(r["wert"], r.get("einheit"))
+        if roh is None:
+            continue                                    # ein Text
+        abgeleitet, a, war_null = ableiten_reell(format(roh, "f"), i, verboten)
+        if war_null:
+            statistik["null"] += 1
+        else:
+            buchen(a)
+        papier[schluessel] = zahl(abgeleitet)
+
+    if len(reihe) == len(FALLENDE_REIHE):
+        i0 = reihe[FALLENDE_REIHE[0]][0]
+        if [reihe[s][0] for s in FALLENDE_REIHE] != list(range(i0, i0 + len(FALLENDE_REIHE))):
+            raise SystemExit("Die Reihe der Jahresstrombedarfe steht nicht in aufeinanderfolgenden Zeilen.")
+        for s, (neu, a) in zip(FALLENDE_REIHE, ableiten_fallend([reihe[s][1] for s in FALLENDE_REIHE], i0)):
+            buchen(a)
+            papier[s] = zahl(neu)
+
+    strom = {s[len("w_a_"):]: w for s, w in papier.items() if s.startswith("w_a_")}
+    urlaub = {s[len("urlaubstag_"):]: w for s, w in papier.items() if s.startswith("urlaubstag_")}
+
+    # Die Beispielrechnung des Abschnitts 8: EFH Bestand, drei Personen, Zone 5. Personenzahl und
+    # Zone sind Strukturangaben der Richtlinie, keine Messwerte - sie bleiben, wie sie sind.
+    beispiel = {}
+    art_beispiel = art_neu.get("efh_bestand")
+    if art_beispiel and "5" in faktoren_dec.get(art_beispiel, {}):
+        n = Decimal(BEISPIEL_PERSONEN)
+        q_twe_a = runden(Decimal(str(kennwerte["q_twe_a_efh_kwh_je_person"])) * n, 0)
+        w_a = runden(Decimal(str(strom["efh_3_pers_kwh_je_person"])) * n, 0) \
+            if "efh_3_pers_kwh_je_person" in strom else None
+        q_heiz = {code_neu[c]: papier["beispiel_q_heiz_tt_" + c] for c in codes_alt
+                  if "beispiel_q_heiz_tt_" + c in papier}
+        w_tt = {code_neu[c]: papier["beispiel_w_tt_" + c] for c in codes_alt
+                if "beispiel_w_tt_" + c in papier}
+        q_twe, anteil = {}, {}
+        for c in codes_alt:
+            code = code_neu[c]
+            f = faktoren_dec[art_beispiel][str(BEISPIEL_ZONE)][code]
+            tag = ohne_kollision(q_twe_a * (Decimal(1) / Decimal(365) + n * f), verboten, 2)
+            q_twe[code] = zahl(tag)
+            if code in q_heiz:
+                nenner = Decimal(str(q_heiz[code])) + tag
+                anteil[code] = zahl(ohne_kollision(tag / nenner * 100, verboten, 1)) if nenner else None
+        beispiel = {
+            "personen": BEISPIEL_PERSONEN,
+            "zone": BEISPIEL_ZONE,
+            "wohnflaeche_m2": papier.get("beispiel_wohnflaeche_m2"),
+            "q_heiz_a_kwh": papier.get("beispiel_q_heiz_a"),
+            "w_a_kwh": zahl(w_a) if w_a is not None else None,
+            "q_twe_a_kwh": zahl(q_twe_a),
+            "q_heiz_tt_kwh": q_heiz,
+            "w_tt_kwh": w_tt,
+            "q_twe_tt_kwh": q_twe,
+            "twe_anteil_prozent": anteil,
+        }
+
+    papierwerte = {
+        "hinweis": "Werte, die allein das Grundlagenpapier fuehrt. Jahres-TWW-Bedarf, "
+                   "Jahresstrombedarf und die zehn Tages-TWW-Energien des Beispiels sind aus den "
+                   "abgeleiteten Kennwerten und Faktoren gerechnet (Gleichung (3)), nicht einzeln "
+                   "gestoert - sie sind darum ebenfalls keine Originalwerte.",
+        "klimazonen_jahresmittel_c": jahresmittel,
+        "urlaubstag_anteil_prozent": urlaub,
+        "strom_jahresbedarf_kwh": strom,
+        "beispiel": beispiel,
+    }
+    zahlen_pruefen(papierwerte, verboten)
+
     ergebnis = {
         "kopf": {
             "quelle": "abgeleitet aus VDI 4655 (Ausgabe 2021-07)",
@@ -536,6 +742,7 @@ def vdi4655(quelle, ziel):
         "typtage_je_zone": anzahl,
         "f_twe_tt": faktoren,
         "kennwerte": kennwerte,
+        "papierwerte": papierwerte,
     }
     text = json.dumps(ergebnis, ensure_ascii=False, indent=2) + "\n"
     with open(ziel, "w", encoding="utf-8") as f:   # Zeilenende des Arbeitsbaums (Windows: CRLF)
