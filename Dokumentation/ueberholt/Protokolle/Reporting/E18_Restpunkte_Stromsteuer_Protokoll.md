@@ -136,8 +136,8 @@ Entschieden hat der Orchestrator am 24.09.2026 jeweils nach der Empfehlung a (mi
   Lauf EPOS.Kern.Tests 6.124, EPOS.UI.Tests 6.028, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27
   und 1 übersprungen — 13.114 bestanden / 0 Fehler; Designer 10.018.
 - **Merge** `e79bffb1` auf `pm19` über `247e2091` ohne Konflikt; Designer 10.024, wiederholbar (+0).
-- **Gate:** NACHTRAG-492-GATE
-- **CI:** NACHTRAG-492-CI
+- **Gate:** Gate auf `e79bffb1` (Merge e18 auf #493): Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte, voller Lauf 13.138 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 6.148, EPOS.UI 6.028, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE492.log`, 24.09.2026 23:42–23:47 Uhr); Gate auf dem End-Merge `5efe2a90` (mit `315665f4` = Papiere #493 und G3 Welle A Teil 2): ChartProben 151/151, voller Lauf 13.160 bestanden / 0 Fehler / 1 übersprungen (EPOS.Kern 6.170, EPOS.UI 6.028, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE492b.log`, 24./25.09.2026 23:52–00:04 Uhr)
+- **CI:** steht aus (Beobachtung nach dem Push)
 
 ## Abnahme am Gerät (A‑E18‑1, Windows)
 
