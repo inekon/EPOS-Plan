@@ -80271,6 +80271,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitstage ähnelt.
+        /// </summary>
+        public static string ZPG_KALENDER_ARBEITSTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KALENDER_ARBEITSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslastungsgang ähnelt.
+        /// </summary>
+        public static string ZPG_KALENDER_AUSLASTUNGSGANG {
+            get {
+                return ResourceManager.GetString("ZPG_KALENDER_AUSLASTUNGSGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string ZPG_KALENDER_BETRIEB {
+            get {
+                return ResourceManager.GetString("ZPG_KALENDER_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schulferien ähnelt.
+        /// </summary>
+        public static string ZPG_KALENDER_SCHULFERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_KALENDER_SCHULFERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string ZPG_KALENDER_WOHNEN {
+            get {
+                return ResourceManager.GetString("ZPG_KALENDER_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone benutzt die Nutzungsart — geänderte Kategorien entstehen als neue Katalogversion. ähnelt.
         /// </summary>
         public static string ZPG_KATEG_GRUND_BENUTZT_GESPERRT {
@@ -80739,11 +80784,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_AUSLASTUNG_NEGATIV {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_AUSLASTUNG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die markierten Felder berichtigen: {0}. ähnelt.
         /// </summary>
         public static string ZPG_MSG_FEHLEINGABE {
             get {
                 return ResourceManager.GetString("ZPG_MSG_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_FERIEN_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_FERIEN_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -80771,6 +80834,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_MSG_KEINE_ZONE {
             get {
                 return ResourceManager.GetString("ZPG_MSG_KEINE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Jahresmesswert muss größer 0 sein. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_MESSWERT_NICHT_POSITIV {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_MESSWERT_NICHT_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte die Einheit des Jahresmesswerts wählen. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_MESSWERT_OHNE_EINHEIT {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_MESSWERT_OHNE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_MESSWERT_OHNE_GRENZE {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_MESSWERT_OHNE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", resourceCulture);
             }
         }
         
@@ -80825,6 +80924,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_MSG_UNERWARTET {
             get {
                 return ResourceManager.GetString("ZPG_MSG_UNERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_WOHNUNG_OHNE_ANZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", resourceCulture);
             }
         }
         

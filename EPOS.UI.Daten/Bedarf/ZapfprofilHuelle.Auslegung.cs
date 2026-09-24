@@ -111,6 +111,9 @@ namespace WindowsFormsApplication1
         {
             eingabe ??= new ZapfprofilEingabeDaten();
             ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
+            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufen Erweitert
+            // und Experte, Z4): Die Überlagerung beginnt mit seinem Stand.
+            eingabe.Gebaeude?.InAuslegung(anfang);
             anfang.Stochastisch = stochastisch;
             var start = new ZapfprofilAuslegungStartDaten
             {
@@ -225,6 +228,9 @@ namespace WindowsFormsApplication1
             auslegung ??= AuslegungAusStand(basis);
             ZapfprofilEingabeDaten mit = eingabe.Kopie();
             mit.Auslegung = auslegung;
+            // In der Überlagerung gelten ihre Eingaben: Die geteilten gebäudeweiten Größen (Ladeleistung,
+            // Ladefenster, Speichertemperatur) nehmen den Stand der Überlagerung an, die übrigen bleiben.
+            mit.Gebaeude?.AusAuslegung(auslegung);
             Auslegungsrechnung r;
             ProjektStand rechenprojekt;
             try

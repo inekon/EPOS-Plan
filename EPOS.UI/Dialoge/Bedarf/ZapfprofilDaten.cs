@@ -4,7 +4,8 @@ namespace EPOS.UI.Dialoge.Bedarf;
 
 // =====================================================================================
 //  Die DATENSEITE des Dialogs „Brauchwasser-Zapfprofil" (Umsetzungskonzept
-//  Zapfprofilgenerator 5.1–5.3; Stufe Z1, Gruppe 3). Nur Daten: keine Datenbank, keine
+//  Zapfprofilgenerator 5.1–5.3; Stufe Z1, Gruppe 3; die Angaben der Stufen Erweitert und
+//  Experte mit Stufe Z4, Gruppe 2a). Nur Daten: keine Datenbank, keine
 //  Fachklasse des Kerns. Die Hülle (EPOS.UI.Daten/Bedarf/ZapfprofilHuelle.cs) ist die
 //  einzige Stelle, die den Arbeitsstand des Kerns (ZapfprofilStand) in diese Typen
 //  übersetzt und zurück; der Dialog rechnet nichts nach.
@@ -37,6 +38,66 @@ public enum ZapfprofilNiveau
     Niedrig = 1,
     Mittel = 2,
     Hoch = 3
+}
+
+/// <summary>Die Topologie der Trinkwassererwärmung einer Zone (Stufe Erweitert); die Zahlen des Kerns (1 … 4).</summary>
+public enum ZapfprofilTopologie
+{
+    Speicher = 1,
+    Frischwasserstation = 2,
+    Durchfluss = 3,
+    Wohnungsstation = 4
+}
+
+/// <summary>Die Einheit eines Jahresmesswerts; die Zahlen des Kerns.</summary>
+public enum ZapfprofilMesswerteinheit
+{
+    KwhJeJahr = 1,
+    KubikmeterJeJahr = 2
+}
+
+/// <summary>Die Bilanzgrenze eines Jahresmesswerts (4.1); die Zahlen des Kerns.</summary>
+public enum ZapfprofilBilanzgrenze
+{
+    /// <summary>An der Zapfstelle.</summary>
+    Zapfstelle = 1,
+
+    /// <summary>Mit Verteil- und Zirkulationsverlust.</summary>
+    MitVerteilung = 2,
+
+    /// <summary>Zusätzlich mit Speicherverlust.</summary>
+    MitSpeicher = 3
+}
+
+/// <summary>Die Methode der Zirkulation (4.3); die Zahlen des Kerns.</summary>
+public enum ZapfprofilZirkulationsmethode
+{
+    Leitungslaenge = 1,
+    Anteil = 2,
+    Flaechenkennwert = 3
+}
+
+/// <summary>Die Lage der Zirkulationsleitung; die Zahlen des Kerns.</summary>
+public enum ZapfprofilLeitungslage
+{
+    InnerhalbHuelle = 1,
+    AusserhalbHuelle = 2
+}
+
+/// <summary>Wie die Jahresmenge einer Zone entsteht — die Spalte „Rechenweg" der Zonenliste.</summary>
+public enum ZapfprofilZonenrechenweg
+{
+    /// <summary>Mengengerüst aus dem Katalog (Tagesbedarf „auto").</summary>
+    Katalog = 0,
+
+    /// <summary>Der manuelle Tagesbedarf gilt.</summary>
+    Manuell = 1,
+
+    /// <summary>Ein Jahresmesswert setzt die Menge (Kalibrierung, 4.8).</summary>
+    Messwert = 2,
+
+    /// <summary>Der Rechenweg hat die Zone abgelehnt — sie trägt 0.</summary>
+    Abgelehnt = 3
 }
 
 /// <summary>Wie schwer eine Meldung wiegt — sie entscheidet über leise Zeile oder Banner, nie über das Blockieren.</summary>
@@ -130,13 +191,303 @@ public sealed class ZapfprofilNutzungsartDaten
 
     /// <summary>Warum die Nutzungsart nicht wählbar ist; leer, solange sie es ist.</summary>
     public string Sperrgrund { get; set; } = "";
+
+    // ---- Stufe Erweitert und Experte (Z4): Vorgaben am Feld, nie Normtabellen -------
+
+    /// <summary>Die Kalenderart als Zahl des Kerns (1 Wohnen … 5 Auslastungsgang).</summary>
+    public int Kalenderart { get; set; }
+
+    /// <summary>Die Kalenderart als Text („Wohnen").</summary>
+    public string Kalender { get; set; } = "";
+
+    /// <summary>
+    /// Führt die Nutzungsart eine Wohnungstabelle (5.3: „nur Wohnen")? Kalender Wohnen und eine
+    /// Bezugsart, die die Tabelle trägt (Wohneinheiten oder Personen, 4.1).
+    /// </summary>
+    public bool Wohnen { get; set; }
+
+    /// <summary>Die Bilanzgrenze der Katalogwerte als Zahl des Kerns (1 … 3).</summary>
+    public int Bilanzgrenze { get; set; }
+
+    /// <summary>Die Bezugstemperatur der Zapfung [°C] — die Vorgabe der Zapftemperatur; <c>null</c> ohne Angabe.</summary>
+    public double? ZapftemperaturC { get; set; }
+
+    /// <summary>Die zwölf Monatsfaktoren des Katalogs — die Vorgabe des Auslastungsgangs.</summary>
+    public double[] Monatsfaktoren { get; set; } = new double[12];
+
+    /// <summary>Der Tagesgangsatz der Nutzungsart — die Vorgabe der Zone; <c>null</c> ohne Satz.</summary>
+    public int? IdTagesgangsatz { get; set; }
 }
 
 /// <summary>
-/// Eine Zone in der Stufe Einfach (5.3): Zonenname, Nutzungsart, Bezugsmenge, Bedarfsniveau.
-/// Was die Stufen Erweitert und Experte führen, steht NICHT hier — die Hülle behält es am
-/// Arbeitsstand des Kerns und setzt nur diese vier Felder zurück (Die Stufe behält
-/// Überschreibungen).
+/// Ein Eintrag einer Katalogauswahl der höheren Stufen (Tagesgangsatz, Ausstattungsklasse,
+/// Gebäude des Projekts): Id, neutraler Name, Herkunft als Kurztext und — wenn er nicht wählbar
+/// ist — der Grund. Nie ein Tabellenwert, nie ein Beleg.
+/// </summary>
+public sealed class ZapfprofilKatalogeintragDaten
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Herkunft { get; set; } = "";
+    public bool Waehlbar { get; set; } = true;
+    public string Sperrgrund { get; set; } = "";
+}
+
+/// <summary>
+/// Die Vorgaben des Parametersatzes für die Felder der Stufen Erweitert und Experte (Platzhalter
+/// „leer = Vorgabe"): <c>null</c> = der Parametersatz führt den Wert nicht. Nur Anzeige — der
+/// Rechenweg liest den Parametersatz selbst.
+/// </summary>
+public sealed class ZapfprofilVorgabenDaten
+{
+    public double? KaltwasserMittelC { get; set; }
+    public double? KaltwasserAmplitudeK { get; set; }
+    public double? WohnflaecheJeWeM2 { get; set; }
+    public double? ZirkLaufzeitH { get; set; }
+    public double? ZirkAnteil { get; set; }
+    public double? ZirkVerlustWJeM { get; set; }
+
+    /// <summary>Die Lage der Zirkulationsleitung als Zahl des Kerns (1, 2).</summary>
+    public int? ZirkLage { get; set; }
+
+    public double? ZirkKennwertLage1 { get; set; }
+    public double? ZirkKennwertLage2 { get; set; }
+    public double? KaltwasserAuslegungC { get; set; }
+    public double? SpeicherC { get; set; }
+    public double? LadefensterH { get; set; }
+    public double? LadefensterBeginnH { get; set; }
+    public double? AnzeigetemperaturC { get; set; }
+    public double? SchwelleKw { get; set; }
+}
+
+/// <summary>Eine Zeile der Wohnungstabelle (5.3, nur Wohnen): Anzahl, Raumzahl, Personen, Ausstattungsklasse.</summary>
+public sealed class ZapfprofilWohnungDaten
+{
+    /// <summary>Die Id der Zeile (<c>Tab_TwwWohnungstyp.ID</c>); 0 = neu.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Die Anzahl der Wohnungen dieses Typs; <c>null</c> = nicht eingegeben (Pflicht, &gt; 0).</summary>
+    public int? Anzahl { get; set; }
+
+    /// <summary>Die Raumzahl; <c>null</c> = keine Angabe.</summary>
+    public double? Raumzahl { get; set; }
+
+    /// <summary>Die Personen je Wohnung; <c>null</c> = Belegung nach Raumzahl aus dem Katalog.</summary>
+    public double? Personen { get; set; }
+
+    /// <summary>Die Ausstattungsklasse; <c>null</c> = Vorgabeklasse.</summary>
+    public int? IdAusstattung { get; set; }
+
+    /// <summary>Eine unabhängige Kopie.</summary>
+    public ZapfprofilWohnungDaten Kopie() => (ZapfprofilWohnungDaten)MemberwiseClone();
+}
+
+/// <summary>
+/// Ein Ferienzeitraum einer Zone (5.3 „Kalender / Ferien", vier Zeiträume) als Tag und Monat —
+/// die Hülle rechnet ihn in den Jahrestag des Kerns um (Rechenjahr ohne Schaltjahr). Leer =
+/// keine Angabe; ein Beginn ohne Ende gilt nicht.
+/// </summary>
+public sealed class ZapfprofilFerienDaten
+{
+    public int? BeginnTag { get; set; }
+    public int? BeginnMonat { get; set; }
+    public int? EndeTag { get; set; }
+    public int? EndeMonat { get; set; }
+
+    /// <summary>Trägt der Zeitraum irgendeine Angabe?</summary>
+    public bool Belegt => BeginnTag.HasValue || BeginnMonat.HasValue || EndeTag.HasValue || EndeMonat.HasValue;
+
+    /// <summary>Eine unabhängige Kopie.</summary>
+    public ZapfprofilFerienDaten Kopie() => (ZapfprofilFerienDaten)MemberwiseClone();
+}
+
+/// <summary>
+/// <b>Die Angaben einer Zone in den Stufen Erweitert und Experte</b> (5.3) — jede nullbare Größe
+/// heißt <c>null</c> = Vorgabe; die Einheit steht im Namen. Die Stufe blendet nur ein und aus: Die
+/// Angaben bleiben, auch wenn der Anwender zurück auf Einfach schaltet.
+/// </summary>
+public sealed class ZapfprofilZonenangabenDaten
+{
+    /// <summary>Anzahl der Ferienzeiträume je Zone.</summary>
+    public const int FERIENZEITRAEUME = 4;
+
+    /// <summary>Anzahl der Monate des Auslastungsgangs.</summary>
+    public const int MONATE = 12;
+
+    /// <summary>Das gebundene Gebäude des Projekts (A8, belegt nur vor); <c>null</c> = Kalender der Nutzungsart.</summary>
+    public int? IdGebaeude { get; set; }
+
+    /// <summary>Der Tagesgangsatz (Experte); <c>null</c> = der Satz der Nutzungsart.</summary>
+    public int? IdTagesgangsatz { get; set; }
+
+    public double? PersonenJeWe { get; set; }
+    public double? WohnflaecheJeWeM2 { get; set; }
+    public ZapfprofilTopologie Topologie { get; set; } = ZapfprofilTopologie.Speicher;
+
+    /// <summary>Zirkulation vorhanden? <c>false</c> nimmt die Zone aus dem Zirkulationsanteil (4.3).</summary>
+    public bool Zirkulation { get; set; } = true;
+
+    /// <summary>Die vier Ferienzeiträume der Zone.</summary>
+    public List<ZapfprofilFerienDaten> Ferien { get; set; } = NeueFerien();
+
+    public double? Jahresmesswert { get; set; }
+    public ZapfprofilMesswerteinheit? JahresmesswertEinheit { get; set; }
+    public ZapfprofilBilanzgrenze? JahresmesswertBilanzgrenze { get; set; }
+    public string JahresmesswertQuelle { get; set; } = "";
+    public string JahresmesswertZeitraum { get; set; } = "";
+
+    /// <summary>Der Speicherverlust [kWh/a] — gebraucht, wenn der Messwert den Speicherverlust einschließt (Grenze 3).</summary>
+    public double? SpeicherverlustKwhJeJahr { get; set; }
+
+    /// <summary>Tagesbedarf „auto" (Katalog) oder „manuell".</summary>
+    public bool TagesbedarfAuto { get; set; } = true;
+
+    public double? TagesbedarfManuellKwh { get; set; }
+    public double? BedarfSpezKwhJeEinheitTag { get; set; }
+    public double? ZapftemperaturC { get; set; }
+    public double? KaltwasserMittelC { get; set; }
+    public double? KaltwasserAmplitudeK { get; set; }
+
+    /// <summary>Zwölf Faktoren des Auslastungsgangs (Experte); <c>null</c> je Monat = Katalog.</summary>
+    public double?[] Auslastung { get; set; } = new double?[MONATE];
+
+    /// <summary>Die Wohnungstabelle (nur Wohnen); leer = keine.</summary>
+    public List<ZapfprofilWohnungDaten> Wohnungen { get; set; } = new();
+
+    /// <summary>Vier leere Ferienzeiträume.</summary>
+    public static List<ZapfprofilFerienDaten> NeueFerien()
+        => Enumerable.Range(0, FERIENZEITRAEUME).Select(_ => new ZapfprofilFerienDaten()).ToList();
+
+    /// <summary>
+    /// Wie viele Größen die Zone überschreibt (Zähler „n Werte überschrieben") — jede nullbare
+    /// Größe mit Wert, jeder Schalter abseits seiner Vorgabe, jeder Ferienzeitraum und jeder
+    /// Auslastungsmonat mit Wert, eine gepflegte Wohnungstabelle. Die Bindung an ein Gebäude ist
+    /// keine Überschreibung. EINE Stelle: Die Hülle zählt den Stand des Kerns hierüber.
+    /// </summary>
+    public int Ueberschrieben()
+    {
+        int n = 0;
+        if (IdTagesgangsatz.HasValue) n++;
+        if (PersonenJeWe.HasValue) n++;
+        if (WohnflaecheJeWeM2.HasValue) n++;
+        if (Topologie != ZapfprofilTopologie.Speicher) n++;
+        if (!Zirkulation) n++;
+        n += (Ferien ?? new List<ZapfprofilFerienDaten>()).Count(f => f is not null && f.Belegt);
+        if (Jahresmesswert.HasValue) n++;
+        if (SpeicherverlustKwhJeJahr.HasValue) n++;
+        if (!TagesbedarfAuto) n++;
+        if (TagesbedarfManuellKwh.HasValue) n++;
+        if (BedarfSpezKwhJeEinheitTag.HasValue) n++;
+        if (ZapftemperaturC.HasValue) n++;
+        if (KaltwasserMittelC.HasValue) n++;
+        if (KaltwasserAmplitudeK.HasValue) n++;
+        if (Auslastung is not null) n += Auslastung.Count(a => a.HasValue);
+        if (Wohnungen is { Count: > 0 }) n++;
+        return n;
+    }
+
+    /// <summary>Eine unabhängige Kopie samt Ferien, Auslastung und Wohnungstabelle.</summary>
+    public ZapfprofilZonenangabenDaten Kopie()
+    {
+        var k = (ZapfprofilZonenangabenDaten)MemberwiseClone();
+        k.Ferien = (Ferien ?? NeueFerien()).Select(f => f?.Kopie() ?? new ZapfprofilFerienDaten()).ToList();
+        k.Auslastung = (double?[])(Auslastung ?? new double?[MONATE]).Clone();
+        k.Wohnungen = (Wohnungen ?? new List<ZapfprofilWohnungDaten>()).Select(w => w.Kopie()).ToList();
+        return k;
+    }
+}
+
+/// <summary>
+/// <b>Die gebäudeweiten Größen</b> der Stufen Erweitert und Experte (5.3): Zirkulation,
+/// Leitungsinhalt, Ladeleistung samt Ladefenster, Speichertemperatur und Kaltwasser der Auslegung —
+/// Größen des Projekts (<c>Tab_TwwProjekt</c>), nicht einer Zone. Jede nullbare Größe heißt
+/// <c>null</c> = Vorgabe.
+///
+/// <para><b>Mit der Überlagerung „Auslegung" geteilt:</b> Ladeleistung, Ladefenster und
+/// Speichertemperatur stehen auch in <see cref="ZapfprofilAuslegungEingabeDaten"/>. Der Dialog
+/// gleicht sie mit dem OK der Überlagerung an (<see cref="AusAuslegung"/>), die Überlagerung beginnt
+/// mit ihnen (<see cref="InAuslegung"/>) — eine Liste der geteilten Größen, hier.</para>
+/// </summary>
+public sealed class ZapfprofilGebaeudeDaten
+{
+    public bool ZirkAuto { get; set; } = true;
+    public ZapfprofilZirkulationsmethode ZirkMethode { get; set; } = ZapfprofilZirkulationsmethode.Flaechenkennwert;
+    public ZapfprofilLeitungslage? ZirkLage { get; set; }
+    public double? ZirkLaengeM { get; set; }
+    public double? ZirkVerlustWJeM { get; set; }
+    public double? ZirkAnteil { get; set; }
+    public double? ZirkKennwert { get; set; }
+    public double? ZirkFlaecheM2 { get; set; }
+    public double? ZirkLaufzeitH { get; set; }
+    public double? ZirkManuellKw { get; set; }
+    public double? LeitungsinhaltL { get; set; }
+    public bool LadeAuto { get; set; } = true;
+    public double? LadeManuellKw { get; set; }
+    public double? LadefensterH { get; set; }
+    public double? LadefensterBeginnH { get; set; }
+    public double? SpeicherC { get; set; }
+    public double? KaltwasserAuslegungC { get; set; }
+
+    /// <summary>Eine unabhängige Kopie.</summary>
+    public ZapfprofilGebaeudeDaten Kopie() => (ZapfprofilGebaeudeDaten)MemberwiseClone();
+
+    /// <summary>
+    /// Wie viele Größen von der <paramref name="vorgabe"/> abweichen (die Vorgaben der DDL; ohne
+    /// Vorgabe die des DTO) — der Anteil des Gebäudes am Zähler „n Werte überschrieben".
+    /// </summary>
+    public int Ueberschrieben(ZapfprofilGebaeudeDaten? vorgabe)
+    {
+        ZapfprofilGebaeudeDaten v = vorgabe ?? new ZapfprofilGebaeudeDaten();
+        int n = 0;
+        if (ZirkAuto != v.ZirkAuto) n++;
+        if (ZirkMethode != v.ZirkMethode) n++;
+        if (ZirkLage != v.ZirkLage) n++;
+        if (ZirkLaengeM != v.ZirkLaengeM) n++;
+        if (ZirkVerlustWJeM != v.ZirkVerlustWJeM) n++;
+        if (ZirkAnteil != v.ZirkAnteil) n++;
+        if (ZirkKennwert != v.ZirkKennwert) n++;
+        if (ZirkFlaecheM2 != v.ZirkFlaecheM2) n++;
+        if (ZirkLaufzeitH != v.ZirkLaufzeitH) n++;
+        if (ZirkManuellKw != v.ZirkManuellKw) n++;
+        if (LeitungsinhaltL != v.LeitungsinhaltL) n++;
+        if (LadeAuto != v.LadeAuto) n++;
+        if (LadeManuellKw != v.LadeManuellKw) n++;
+        if (LadefensterH != v.LadefensterH) n++;
+        if (LadefensterBeginnH != v.LadefensterBeginnH) n++;
+        if (SpeicherC != v.SpeicherC) n++;
+        if (KaltwasserAuslegungC != v.KaltwasserAuslegungC) n++;
+        return n;
+    }
+
+    /// <summary>Übernimmt die geteilten Größen aus den Eingaben der Überlagerung „Auslegung" (ihr OK).</summary>
+    public void AusAuslegung(ZapfprofilAuslegungEingabeDaten a)
+    {
+        if (a is null) return;
+        LadeAuto = a.LadeAuto;
+        LadeManuellKw = a.LadeManuellKw;
+        LadefensterH = a.LadefensterH;
+        LadefensterBeginnH = a.LadefensterBeginnH;
+        SpeicherC = a.SpeicherC;
+    }
+
+    /// <summary>Setzt die geteilten Größen in die Eingaben der Überlagerung — sie beginnt mit dem Stand des Dialogs.</summary>
+    public void InAuslegung(ZapfprofilAuslegungEingabeDaten a)
+    {
+        if (a is null) return;
+        a.LadeAuto = LadeAuto;
+        a.LadeManuellKw = LadeManuellKw;
+        a.LadefensterH = LadefensterH;
+        a.LadefensterBeginnH = LadefensterBeginnH;
+        a.SpeicherC = SpeicherC;
+    }
+}
+
+/// <summary>
+/// Eine Zone (5.3): die vier Felder der Stufe Einfach — Zonenname, Nutzungsart, Bezugsmenge,
+/// Bedarfsniveau — und die Angaben der Stufen Erweitert und Experte
+/// (<see cref="Angaben"/>). Fehlen die Angaben (<c>null</c>), behält die Hülle die Größen des
+/// Arbeitsstands des Kerns (bzw. der Vorlage eines Duplikats) und setzt nur die vier Felder
+/// zurück — die Stufe behält Überschreibungen in beiden Fällen.
 /// </summary>
 public sealed class ZapfprofilZoneDaten
 {
@@ -162,12 +513,22 @@ public sealed class ZapfprofilZoneDaten
     public ZapfprofilNiveau Niveau { get; set; } = ZapfprofilNiveau.Mittel;
 
     /// <summary>
-    /// Wie viele Größen der höheren Stufen diese Zone überschreibt (nicht auf Vorgabe) — nur
-    /// Anzeige für den Zähler „n Werte überschrieben"; die Hülle zählt, der Dialog zeigt.
+    /// Wie viele Größen der höheren Stufen diese Zone beim Öffnen überschreibt (nicht auf
+    /// Vorgabe) — die Zahl der Hülle; sie gilt, solange die Zone keine <see cref="Angaben"/>
+    /// trägt (<see cref="UeberschriebenZahl"/>).
     /// </summary>
     public int Ueberschrieben { get; set; }
 
-    /// <summary>Eine unabhängige Kopie (der Dialog arbeitet bis OK auf Kopien).</summary>
+    /// <summary>
+    /// Die Angaben der Stufen Erweitert und Experte; <c>null</c> = der Arbeitsstand des Kerns
+    /// bleibt, wie er ist (die Hülle füllt sie beim Öffnen immer).
+    /// </summary>
+    public ZapfprofilZonenangabenDaten? Angaben { get; set; }
+
+    /// <summary>Der Anteil der Zone am Zähler „n Werte überschrieben" — aus den Angaben, sonst die Zahl der Hülle.</summary>
+    public int UeberschriebenZahl => Angaben?.Ueberschrieben() ?? Ueberschrieben;
+
+    /// <summary>Eine unabhängige Kopie (der Dialog arbeitet bis OK auf Kopien) samt Angaben.</summary>
     public ZapfprofilZoneDaten Kopie() => new()
     {
         Id = Id,
@@ -176,7 +537,8 @@ public sealed class ZapfprofilZoneDaten
         IdNutzungsart = IdNutzungsart,
         Bezugsmenge = Bezugsmenge,
         Niveau = Niveau,
-        Ueberschrieben = Ueberschrieben
+        Ueberschrieben = Ueberschrieben,
+        Angaben = Angaben?.Kopie()
     };
 }
 
@@ -234,7 +596,21 @@ public sealed class ZapfprofilEingabeDaten
     /// </summary>
     public double? SchwelleKw { get; set; }
 
-    /// <summary>Eine unabhängige Kopie samt Zonen und Auslegung.</summary>
+    /// <summary>
+    /// Die gebäudeweiten Größen der Stufen Erweitert und Experte (Zirkulation, Leitungsinhalt,
+    /// Ladeleistung, Speichertemperatur, Kaltwasser der Auslegung); <c>null</c> = die Projektzeile
+    /// des Arbeitsstands bleibt, wie sie ist.
+    /// </summary>
+    public ZapfprofilGebaeudeDaten? Gebaeude { get; set; }
+
+    /// <summary>
+    /// Die Stufe des Dialogs als Laufangabe (nicht gespeichert): Sie geht mit dem Öffnen der
+    /// Überlagerung „Auslegung" in den Auslegungslauf — die Stufe Einfach trägt die Marke
+    /// „Schnellauslegung" (N11 (c)).
+    /// </summary>
+    public ZapfprofilStufe Stufe { get; set; } = ZapfprofilStufe.Einfach;
+
+    /// <summary>Eine unabhängige Kopie samt Zonen, Auslegung und Gebäude.</summary>
     public ZapfprofilEingabeDaten Kopie() => new()
     {
         Weg = Weg,
@@ -245,7 +621,9 @@ public sealed class ZapfprofilEingabeDaten
         Seed = Seed,
         Realisierungen = Realisierungen,
         AnzeigetemperaturC = AnzeigetemperaturC,
-        SchwelleKw = SchwelleKw
+        SchwelleKw = SchwelleKw,
+        Gebaeude = Gebaeude?.Kopie(),
+        Stufe = Stufe
     };
 }
 
@@ -496,6 +874,18 @@ public sealed class ZapfprofilZonenwertDaten
 
     /// <summary>Trägt die Zone 0 (Ablehnung)?</summary>
     public bool Abgelehnt { get; set; }
+
+    /// <summary>
+    /// Die wirksame Bezugsmenge des Kerns in der Bezugsart der Nutzungsart — bei einer
+    /// Wohnungstabelle die Menge aus ihr; <c>null</c> bei einer abgelehnten Zone.
+    /// </summary>
+    public double? BezugsmengeWirksam { get; set; }
+
+    /// <summary>Der Anteil der Zone an der Zapfung aller Zonen [-]; <c>null</c> ohne Zapfung.</summary>
+    public double? Anteil { get; set; }
+
+    /// <summary>Wie die Jahresmenge der Zone entsteht (Spalte „Rechenweg").</summary>
+    public ZapfprofilZonenrechenweg Rechenweg { get; set; }
 }
 
 /// <summary>
@@ -603,19 +993,41 @@ public sealed class ZapfprofilDaten
     /// <summary>Die Obergrenze der Realisierungen der Jahresreihe (Kern); <c>null</c> = keine bekannt.</summary>
     public int? RealisierungenHoechstens { get; set; }
 
+    // ---- Stufen Erweitert und Experte (Z4) ------------------------------------------
+
+    /// <summary>Die gebäudeweiten Größen einer Projektzeile ohne Eingabe (DDL); <c>null</c> = unbekannt.</summary>
+    public ZapfprofilGebaeudeDaten? GebaeudeVorgabe { get; set; }
+
+    /// <summary>Die Vorgaben des Parametersatzes für die Platzhalter der höheren Stufen.</summary>
+    public ZapfprofilVorgabenDaten Vorgaben { get; set; } = new();
+
+    /// <summary>Die Tagesgangsätze des Katalogs (Experte); ein unvollständiger ist gesperrt mit Grund.</summary>
+    public List<ZapfprofilKatalogeintragDaten> Tagesgangsaetze { get; set; } = new();
+
+    /// <summary>Die Ausstattungsklassen der Wohnungstabelle — neutraler Name, nie ein Tabellenwert.</summary>
+    public List<ZapfprofilKatalogeintragDaten> Ausstattungen { get; set; } = new();
+
+    /// <summary>Die Gebäude des Projekts, an die eine Zone ihren Kalender binden kann (A8).</summary>
+    public List<ZapfprofilKatalogeintragDaten> Gebaeude { get; set; } = new();
+
+    /// <summary>Die zwölf Monatsnamen in der Oberflächensprache (Auslastungsgang); leer = die Nummern.</summary>
+    public List<string> Monatsnamen { get; set; } = new();
+
     /// <summary>Wie viele Werte der Arbeitsstand beim Öffnen überschreibt (<see cref="UeberschriebenIn"/>).</summary>
     public int Ueberschrieben => UeberschriebenIn(Eingabe);
 
     /// <summary>
     /// <b>Der Zähler „n Werte überschrieben"</b> — an EINER Stelle: die Größen der höheren Stufen
-    /// je Zone (die Hülle zählt sie je Zone) und die der Stochastik — der Rechenweg
-    /// „stochastisch", ein Seed oder eine Zahl der Realisierungen abseits der Vorgabe. Die Stufe
-    /// blendet nur aus, die Überschreibung bleibt.
+    /// je Zone (<see cref="ZapfprofilZoneDaten.UeberschriebenZahl"/>), die gebäudeweiten Größen
+    /// abseits ihrer Vorgabe und die der Stochastik — der Rechenweg „stochastisch", ein Seed oder
+    /// eine Zahl der Realisierungen abseits der Vorgabe. Die Stufe blendet nur aus, die
+    /// Überschreibung bleibt.
     /// </summary>
     public int UeberschriebenIn(ZapfprofilEingabeDaten? eingabe)
     {
         if (eingabe is null) return 0;
-        int n = eingabe.Zonen.Sum(z => z.Ueberschrieben);
+        int n = eingabe.Zonen.Sum(z => z.UeberschriebenZahl);
+        if (eingabe.Gebaeude is { } g) n += g.Ueberschrieben(GebaeudeVorgabe);
         if (eingabe.JahresreiheStochastisch) n++;
         if (eingabe.Seed is int seed && SeedVorgabe is int sv && seed != sv) n++;
         if (eingabe.Realisierungen is int r && RealisierungenVorgabe is int rv && r != rv) n++;

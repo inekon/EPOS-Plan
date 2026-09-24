@@ -316,6 +316,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Gebäude eines Projekts, an die eine Zone ihren Kalender binden kann (A8, Stufe Z4):
+        /// Id und Name aus <c>Tab_Gebaeude</c> (die Projektkopien, <c>ID_Projekt</c>), geordnet nach
+        /// Name und Id. Ohne Projekt eine leere Liste.
+        /// </summary>
+        internal static IReadOnlyList<(int Id, string Name)> GebaeudeDesProjekts(int idProjekt)
+        {
+            var liste = new List<(int Id, string Name)>();
+            if (idProjekt <= 0 || !DataRepository.TabelleVorhanden("Tab_Gebaeude")) return liste;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Gebaeudename FROM Tab_Gebaeude WHERE ID_Projekt = ? ORDER BY Gebaeudename, ID",
+                new DbParam("@projekt", idProjekt));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows) liste.Add((Ganz(r, "ID"), Text(r, "Gebaeudename")));
+            return liste.AsReadOnly();
+        }
+
+        /// <summary>
         /// Fläche und Ferien eines Gebäudes des Projekts aus <c>Tab_Gebaeude</c>; <c>null</c>, wenn
         /// es die Zeile nicht gibt oder sie zu einem anderen Projekt gehört.
         /// </summary>

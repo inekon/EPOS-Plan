@@ -28684,4 +28684,40 @@ Möchten Sie das zulassen?</value>
   <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
     <value>Gerätedaten — nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)).</value>
   </data>
+  <data name="ZPG_KALENDER_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="ZPG_KALENDER_ARBEITSTAGE" xml:space="preserve">
+    <value>Arbeitstage</value>
+  </data>
+  <data name="ZPG_KALENDER_SCHULFERIEN" xml:space="preserve">
+    <value>Schulferien</value>
+  </data>
+  <data name="ZPG_KALENDER_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="ZPG_KALENDER_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Auslastungsgang</value>
+  </data>
+  <data name="ZPG_MSG_WOHNUNG_OHNE_ANZAHL" xml:space="preserve">
+    <value>Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0.</value>
+  </data>
+  <data name="ZPG_MSG_FERIEN_UNGUELTIG" xml:space="preserve">
+    <value>Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_NICHT_POSITIV" xml:space="preserve">
+    <value>Zone „{0}“: Der Jahresmesswert muss größer 0 sein.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
+    <value>Zone „{0}“: Bitte die Einheit des Jahresmesswerts wählen.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_GRENZE" xml:space="preserve">
+    <value>Zone „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST" xml:space="preserve">
+    <value>Zone „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a.</value>
+  </data>
+  <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
+    <value>Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0.</value>
+  </data>
 </root>

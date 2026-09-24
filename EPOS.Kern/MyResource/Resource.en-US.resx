@@ -28677,4 +28677,40 @@ Do you want to allow this?</value>
   <data name="KBROW_ND_GERAETEDATEN_HINWEIS" xml:space="preserve">
     <value>Device data — not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
+  <data name="ZPG_KALENDER_WOHNEN" xml:space="preserve">
+    <value>Residential</value>
+  </data>
+  <data name="ZPG_KALENDER_ARBEITSTAGE" xml:space="preserve">
+    <value>Working days</value>
+  </data>
+  <data name="ZPG_KALENDER_SCHULFERIEN" xml:space="preserve">
+    <value>School holidays</value>
+  </data>
+  <data name="ZPG_KALENDER_BETRIEB" xml:space="preserve">
+    <value>Operating days</value>
+  </data>
+  <data name="ZPG_KALENDER_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Utilisation profile</value>
+  </data>
+  <data name="ZPG_MSG_WOHNUNG_OHNE_ANZAHL" xml:space="preserve">
+    <value>Zone “{0}”: dwelling type {1} needs a number greater than 0.</value>
+  </data>
+  <data name="ZPG_MSG_FERIEN_UNGUELTIG" xml:space="preserve">
+    <value>Zone “{0}”: holiday period {1} needs an end and a valid day and month for start and end.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_NICHT_POSITIV" xml:space="preserve">
+    <value>Zone “{0}”: the measured annual value must be greater than 0.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
+    <value>Zone “{0}”: please select the unit of the measured annual value.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_GRENZE" xml:space="preserve">
+    <value>Zone “{0}”: please select the balance boundary of the measured annual value.</value>
+  </data>
+  <data name="ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST" xml:space="preserve">
+    <value>Zone “{0}”: a measured value including storage loss needs the storage loss in kWh/a.</value>
+  </data>
+  <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
+    <value>Zone “{0}”: a factor of the utilisation profile is less than 0.</value>
+  </data>
 </root>

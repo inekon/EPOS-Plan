@@ -18,8 +18,10 @@ namespace WindowsFormsApplication1
     /// <para><b>Die einzige Stelle, die übersetzt.</b> Nur hier wird der Arbeitsstand des Kerns
     /// (<see cref="ZapfprofilStand"/>) zu den DTO aus <c>ZapfprofilDaten.cs</c> und zurück
     /// (<see cref="AlsEingabe"/>, <see cref="AlsStand"/>); der Dialog kennt keinen Kern-Typ.
-    /// Was die Stufe Einfach nicht zeigt, bleibt am Arbeitsstand des Kerns stehen — eine
-    /// Rückübersetzung setzt nur Name, Nutzungsart, Bezugsmenge, Niveau und Reihenfolge.</para>
+    /// Die Angaben der Stufen Erweitert und Experte gehen je Zone als
+    /// <see cref="ZapfprofilZonenangabenDaten"/> und fürs Gebäude als
+    /// <see cref="ZapfprofilGebaeudeDaten"/> hin und zurück (Stufe Z4); fehlen sie im DTO, bleibt
+    /// der Arbeitsstand des Kerns stehen — die Stufe blendet nur ein und aus.</para>
     ///
     /// <para><b>Die Vorschau ruft den Lauf.</b> <see cref="Vorschau"/> geht über
     /// <see cref="BedarfsVorschauCtrl.ProjektVorschau"/> mit dem Arbeitsstand, also über
@@ -100,8 +102,10 @@ namespace WindowsFormsApplication1
                     (e, abbruch) => Kulturweitergabe.Starten(() => Jahresreihe(idProjekt, e, basis, abbruch), abbruch)),
                 ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
                 // Der Schalter „Stochastisch rechnen" ist eine Laufangabe: aus bei „Auslegung…", an beim Fußknopf.
+                // Die Stufe des Dialogs reist als Laufangabe im Arbeitsstand mit (N11 (c): „Schnellauslegung"
+                // nur in der Stufe Einfach).
                 ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>(
-                    (e, stochastisch) => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach, stochastisch)),
+                    (e, stochastisch) => AuslegungGaben(idProjekt, e, basis, e?.Stufe ?? ZapfprofilStufe.Einfach, stochastisch)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };
@@ -134,8 +138,77 @@ namespace WindowsFormsApplication1
 
             StochastikRahmen(daten);
             daten.Katalog = Katalog();
+            HoehereStufen(daten, idProjekt);
             daten.Vorschau = Vorschau(idProjekt, daten.Eingabe, stand);
             return daten;
+        }
+
+        /// <summary>
+        /// Was die Stufen Erweitert und Experte zum Öffnen brauchen (Stufe Z4): die gebäudeweiten
+        /// Größen einer Projektzeile ohne Eingabe (DDL, <see cref="ZapfprofilCtrl.ProjektVorgabe()"/>)
+        /// — trägt der Arbeitsstand keine Projektzeile, beginnt der Dialog mit ihnen —, die Vorgaben des
+        /// Parametersatzes für die Platzhalter, die Tagesgangsätze, die Ausstattungsklassen der
+        /// Wohnungstabelle (neutraler Name, nie ein Wert) und die Gebäude des Projekts (A8).
+        /// </summary>
+        private static void HoehereStufen(ZapfprofilDaten daten, int idProjekt)
+        {
+            daten.GebaeudeVorgabe = AlsGebaeude(ZapfprofilCtrl.ProjektVorgabe());
+            daten.Eingabe.Gebaeude ??= daten.GebaeudeVorgabe?.Kopie();
+            daten.Vorgaben = Vorgaben();
+            daten.Monatsnamen = Enumerable.Range(1, 12).Select(Monatsname).ToList();
+            daten.Tagesgangsaetze = ZapfprofilCtrl.Tagesgangsaetze().Select(AlsTagesgangsatz).ToList();
+            string version = ZapfprofilCtrl.AktuelleKatalogversion();
+            daten.Ausstattungen = ZapfprofilCtrl.Ausstattungen(version)
+                .Select(a => new ZapfprofilKatalogeintragDaten { Id = a.Id, Name = a.Schluessel ?? "" }).ToList();
+            daten.Gebaeude = ZapfprofilCtrl.GebaeudeDesProjekts(idProjekt)
+                .Select(g => new ZapfprofilKatalogeintragDaten
+                {
+                    Id = g.Id,
+                    Name = string.IsNullOrWhiteSpace(g.Name) ? "#" + g.Id.ToString(CultureInfo.InvariantCulture) : g.Name.Trim()
+                }).ToList();
+        }
+
+        /// <summary>Ein Tagesgangsatz als Eintrag der Auswahl: Name · Katalogversion, Herkunft als Status; unvollständig = gesperrt mit Grund.</summary>
+        internal static ZapfprofilKatalogeintragDaten AlsTagesgangsatz(Tagesgangsatz s)
+            => new ZapfprofilKatalogeintragDaten
+            {
+                Id = s.Id,
+                Name = string.IsNullOrEmpty(s.Katalogversion) ? s.Bezeichner ?? "" : (s.Bezeichner ?? "") + TRENNER + s.Katalogversion,
+                Herkunft = Status(s.Status),
+                Waehlbar = s.Vollstaendig,
+                Sperrgrund = s.Vollstaendig ? "" : Text_("ZPG_KAT_SPERRE_TAGESGANG", "Der Tagesgangsatz dieser Nutzungsart ist unvollständig.")
+            };
+
+        /// <summary>
+        /// Die Vorgaben des Parametersatzes für die Platzhalter der höheren Stufen — nur Werte, die
+        /// der Parametersatz führt; ohne Katalogversion bleiben alle leer (der Rechenweg nennt dann
+        /// den Grund).
+        /// </summary>
+        internal static ZapfprofilVorgabenDaten Vorgaben()
+        {
+            var v = new ZapfprofilVorgabenDaten();
+            Parametersatz ps;
+            try { ps = ZapfprofilCtrl.Parameter(); }
+            catch (ParametersatzException) { return v; }
+
+            double? W(string schluessel) => ps.Enthaelt(schluessel) ? ps.Wert(schluessel) : (double?)null;
+            v.KaltwasserMittelC = W(ZapfParameter.KALTWASSER_MITTEL);
+            v.KaltwasserAmplitudeK = W(ZapfParameter.KALTWASSER_AMPLITUDE);
+            v.WohnflaecheJeWeM2 = W(ZapfParameter.WOHNEN_FLAECHE_JE_WE);
+            v.ZirkLaufzeitH = W(ZapfParameter.ZIRKULATION_LAUFZEIT);
+            v.ZirkAnteil = W(ZapfParameter.ZIRKULATION_ANTEIL);
+            v.ZirkVerlustWJeM = W(ZapfParameter.ZIRKULATION_VERLUST_JE_METER);
+            double? lage = W(ZapfParameter.ZIRKULATION_LAGE);
+            v.ZirkLage = lage.HasValue ? (int)Math.Round(lage.Value) : (int?)null;
+            v.ZirkKennwertLage1 = W(ZapfParameter.ZIRKULATION_KENNWERT_LAGE1);
+            v.ZirkKennwertLage2 = W(ZapfParameter.ZIRKULATION_KENNWERT_LAGE2);
+            v.KaltwasserAuslegungC = W(ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG);
+            v.SpeicherC = W(ZapfAuslegungParameter.SPEICHERTEMPERATUR_VORGABE);
+            v.LadefensterH = W(ZapfAuslegungParameter.LADEFENSTER_LAENGE);
+            v.LadefensterBeginnH = W(ZapfAuslegungParameter.LADEFENSTER_BEGINN);
+            v.AnzeigetemperaturC = W(ZapfParameter.ANZEIGETEMPERATUR);
+            v.SchwelleKw = W(ZapfParameter.STUNDENSCHWELLE);
+            return v;
         }
 
         // =================================================================================
@@ -151,9 +224,10 @@ namespace WindowsFormsApplication1
             => weg == ZapfprofilWeg.Generator ? BrauchwasserWeg.Generator : BrauchwasserWeg.Bestand;
 
         /// <summary>
-        /// Der Arbeitsstand des Kerns als DTO: Weg, Zonen der Stufe Einfach und die Stochastik der
-        /// Jahresreihe (Rechenweg, Seed, Realisierungen; Stufe Experte). Ohne Projektzeile bleiben
-        /// Seed und Realisierungen <c>null</c> — dann gilt die Vorgabe der DDL.
+        /// Der Arbeitsstand des Kerns als DTO: Weg, Zonen samt den Angaben der höheren Stufen, die
+        /// gebäudeweiten Größen und die Stochastik der Jahresreihe (Rechenweg, Seed, Realisierungen).
+        /// Ohne Projektzeile bleiben Seed, Realisierungen und Gebäude <c>null</c> — dann gilt die
+        /// Vorgabe der DDL.
         /// </summary>
         internal static ZapfprofilEingabeDaten AlsEingabe(ZapfprofilStand stand)
         {
@@ -166,6 +240,7 @@ namespace WindowsFormsApplication1
                 e.JahresreiheStochastisch = p.JahresreiheStochastisch;
                 e.Seed = p.Seed;
                 e.Realisierungen = p.Realisierungen;
+                e.Gebaeude = AlsGebaeude(p);
             }
             e.AnzeigetemperaturC = stand?.Anzeige?.AnzeigetemperaturC;
             e.SchwelleKw = stand?.Anzeige?.SchwelleKw;
@@ -210,23 +285,242 @@ namespace WindowsFormsApplication1
             return basis with { JahresreiheStochastisch = e.JahresreiheStochastisch, Seed = seed, Realisierungen = realisierungen };
         }
 
-        /// <summary>Eine Zone des Kerns als DTO; die Bezugsmenge 0 gilt als „nicht eingegeben".</summary>
-        internal static ZapfprofilZoneDaten AlsZone(ZonenStand z) => new ZapfprofilZoneDaten
+        /// <summary>
+        /// Eine Zone des Kerns als DTO samt den Angaben der höheren Stufen; die Bezugsmenge 0 gilt
+        /// als „nicht eingegeben".
+        /// </summary>
+        internal static ZapfprofilZoneDaten AlsZone(ZonenStand z)
         {
-            Id = z.Id,
-            Name = z.Name ?? "",
-            IdNutzungsart = z.IdNutzungsart,
-            Bezugsmenge = z.Bezugsmenge > 0 ? z.Bezugsmenge : null,
-            Niveau = Enum.IsDefined(typeof(ZapfprofilNiveau), (int)z.Niveau) ? (ZapfprofilNiveau)(int)z.Niveau
-                                                                              : ZapfprofilNiveau.Mittel,
-            Ueberschrieben = Ueberschrieben(z)
+            ZapfprofilZonenangabenDaten angaben = AlsAngaben(z);
+            return new ZapfprofilZoneDaten
+            {
+                Id = z.Id,
+                Name = z.Name ?? "",
+                IdNutzungsart = z.IdNutzungsart,
+                Bezugsmenge = z.Bezugsmenge > 0 ? z.Bezugsmenge : null,
+                Niveau = Enum.IsDefined(typeof(ZapfprofilNiveau), (int)z.Niveau) ? (ZapfprofilNiveau)(int)z.Niveau
+                                                                                  : ZapfprofilNiveau.Mittel,
+                Ueberschrieben = angaben.Ueberschrieben(),
+                Angaben = angaben
+            };
+        }
+
+        /// <summary>
+        /// Die Angaben der Stufen Erweitert und Experte einer Zone des Kerns (5.3): Jahrestage der
+        /// Ferien als Tag und Monat des Rechenjahrs (0, 366 und leer = keine Angabe), Wohnungstabelle
+        /// in ihrer Reihenfolge, Texte leer statt <c>null</c>.
+        /// </summary>
+        internal static ZapfprofilZonenangabenDaten AlsAngaben(ZonenStand z)
+        {
+            var a = new ZapfprofilZonenangabenDaten
+            {
+                IdGebaeude = z.IdGebaeude,
+                IdTagesgangsatz = z.IdTagesgangsatz,
+                PersonenJeWe = z.PersonenJeWe,
+                WohnflaecheJeWeM2 = z.WohnflaecheJeWeM2,
+                Topologie = Enum.IsDefined(typeof(ZapfprofilTopologie), (int)z.Topologie)
+                    ? (ZapfprofilTopologie)(int)z.Topologie : ZapfprofilTopologie.Speicher,
+                Zirkulation = z.Zirkulation,
+                Jahresmesswert = z.Jahresmesswert,
+                JahresmesswertEinheit = z.JahresmesswertEinheit.HasValue
+                    ? (ZapfprofilMesswerteinheit)(int)z.JahresmesswertEinheit.Value : (ZapfprofilMesswerteinheit?)null,
+                JahresmesswertBilanzgrenze = z.JahresmesswertBilanzgrenze.HasValue
+                    ? (ZapfprofilBilanzgrenze)(int)z.JahresmesswertBilanzgrenze.Value : (ZapfprofilBilanzgrenze?)null,
+                JahresmesswertQuelle = z.JahresmesswertQuelle ?? "",
+                JahresmesswertZeitraum = z.JahresmesswertZeitraum ?? "",
+                SpeicherverlustKwhJeJahr = z.SpeicherverlustKwhJeJahr,
+                TagesbedarfAuto = z.TagesbedarfAuto,
+                TagesbedarfManuellKwh = z.TagesbedarfManuellKwh,
+                BedarfSpezKwhJeEinheitTag = z.BedarfSpezKwhJeEinheitTag,
+                ZapftemperaturC = z.ZapftemperaturC,
+                KaltwasserMittelC = z.KaltwasserMittelC,
+                KaltwasserAmplitudeK = z.KaltwasserAmplitudeK
+            };
+            for (int i = 0; i < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; i++)
+            {
+                int? b = z.Ferienbeginn != null && i < z.Ferienbeginn.Length ? z.Ferienbeginn[i] : null;
+                int? e = z.Ferienende != null && i < z.Ferienende.Length ? z.Ferienende[i] : null;
+                (int? bt, int? bm) = AlsDatum(b);
+                (int? et, int? em) = AlsDatum(e);
+                a.Ferien[i] = new ZapfprofilFerienDaten { BeginnTag = bt, BeginnMonat = bm, EndeTag = et, EndeMonat = em };
+            }
+            for (int m = 0; m < ZapfprofilZonenangabenDaten.MONATE; m++)
+                a.Auslastung[m] = z.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
+            foreach (WohnungstypStand w in (z.Wohnungen ?? new WohnungstypStand[0]).OrderBy(w => w.Reihenfolge))
+                a.Wohnungen.Add(new ZapfprofilWohnungDaten
+                {
+                    Id = w.Id,
+                    Anzahl = w.Anzahl > 0 ? w.Anzahl : (int?)null,
+                    Raumzahl = w.Raumzahl,
+                    Personen = w.Personen,
+                    IdAusstattung = w.IdAusstattung
+                });
+            return a;
+        }
+
+        /// <summary>
+        /// Die Zone des Kerns mit den Angaben des Dialogs: jede Größe der höheren Stufen aus dem DTO
+        /// (Ferien als Jahrestag des Rechenjahrs, unvollständig = keine Angabe; Wohnungstabelle in
+        /// der Reihenfolge des Dialogs, eine Zeile ohne Anzahl trägt 0 — der Schreibweg lehnt sie
+        /// benannt ab). Was das DTO nicht führt (die Fläche des gebundenen Gebäudes), bleibt.
+        /// </summary>
+        internal static ZonenStand MitAngaben(ZonenStand z, ZapfprofilZonenangabenDaten a)
+        {
+            if (z == null || a == null) return z;
+            var beginn = new int?[ZapfprofilZonenangabenDaten.FERIENZEITRAEUME];
+            var ende = new int?[ZapfprofilZonenangabenDaten.FERIENZEITRAEUME];
+            for (int i = 0; i < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; i++)
+            {
+                ZapfprofilFerienDaten f = a.Ferien != null && i < a.Ferien.Count ? a.Ferien[i] : null;
+                beginn[i] = Jahrestag(f?.BeginnTag, f?.BeginnMonat);
+                ende[i] = Jahrestag(f?.EndeTag, f?.EndeMonat);
+            }
+            var auslastung = new double?[ZapfprofilZonenangabenDaten.MONATE];
+            for (int m = 0; m < auslastung.Length; m++)
+                auslastung[m] = a.Auslastung != null && m < a.Auslastung.Length ? a.Auslastung[m] : null;
+            var wohnungen = new List<WohnungstypStand>();
+            for (int i = 0; i < (a.Wohnungen?.Count ?? 0); i++)
+            {
+                ZapfprofilWohnungDaten w = a.Wohnungen[i];
+                if (w == null) continue;
+                wohnungen.Add(new WohnungstypStand
+                {
+                    Id = w.Id,
+                    Anzahl = w.Anzahl ?? 0,
+                    Raumzahl = w.Raumzahl,
+                    Personen = w.Personen,
+                    IdAusstattung = w.IdAusstattung,
+                    Reihenfolge = wohnungen.Count + 1
+                });
+            }
+            return z with
+            {
+                IdGebaeude = a.IdGebaeude,
+                IdTagesgangsatz = a.IdTagesgangsatz,
+                PersonenJeWe = a.PersonenJeWe,
+                WohnflaecheJeWeM2 = a.WohnflaecheJeWeM2,
+                Topologie = (ZapfTopologie)(int)a.Topologie,
+                Zirkulation = a.Zirkulation,
+                Ferienbeginn = beginn,
+                Ferienende = ende,
+                Jahresmesswert = a.Jahresmesswert,
+                JahresmesswertEinheit = a.JahresmesswertEinheit.HasValue
+                    ? (ZapfMesswerteinheit)(int)a.JahresmesswertEinheit.Value : (ZapfMesswerteinheit?)null,
+                JahresmesswertBilanzgrenze = a.JahresmesswertBilanzgrenze.HasValue
+                    ? (ZapfBilanzgrenze)(int)a.JahresmesswertBilanzgrenze.Value : (ZapfBilanzgrenze?)null,
+                JahresmesswertQuelle = string.IsNullOrWhiteSpace(a.JahresmesswertQuelle) ? null : a.JahresmesswertQuelle.Trim(),
+                JahresmesswertZeitraum = string.IsNullOrWhiteSpace(a.JahresmesswertZeitraum) ? null : a.JahresmesswertZeitraum.Trim(),
+                SpeicherverlustKwhJeJahr = a.SpeicherverlustKwhJeJahr,
+                TagesbedarfAuto = a.TagesbedarfAuto,
+                TagesbedarfManuellKwh = a.TagesbedarfManuellKwh,
+                BedarfSpezKwhJeEinheitTag = a.BedarfSpezKwhJeEinheitTag,
+                ZapftemperaturC = a.ZapftemperaturC,
+                KaltwasserMittelC = a.KaltwasserMittelC,
+                KaltwasserAmplitudeK = a.KaltwasserAmplitudeK,
+                Auslastung = auslastung,
+                Wohnungen = wohnungen.AsReadOnly()
+            };
+        }
+
+        /// <summary>
+        /// Ein Jahrestag des Kerns (1 … 365) als Tag und Monat des Rechenjahrs ohne Schaltjahr;
+        /// <c>null</c>, 0, 366 und alles außerhalb = keine Angabe.
+        /// </summary>
+        internal static (int? Tag, int? Monat) AlsDatum(int? jahrestag)
+        {
+            if (!jahrestag.HasValue || jahrestag.Value < 1 || jahrestag.Value > Zapfkalender.TAGE) return (null, null);
+            (int tag, int monat) = TagUndMonat(jahrestag.Value);
+            return (tag, monat);
+        }
+
+        /// <summary>
+        /// Tag und Monat als Jahrestag des Rechenjahrs (1 … 365, kein Schaltjahr); fehlt eines von
+        /// beiden oder gibt es den Tag nicht (30. Februar), keine Angabe (<c>null</c>) — die
+        /// Pflichtprüfung nennt den Zeitraum vorher.
+        /// </summary>
+        internal static int? Jahrestag(int? tag, int? monat)
+        {
+            if (!tag.HasValue || !monat.HasValue) return null;
+            if (monat.Value < 1 || monat.Value > 12 || tag.Value < 1 || tag.Value > Zapfkalender.TageJeMonat[monat.Value - 1])
+                return null;
+            int vorher = 0;
+            for (int m = 0; m < monat.Value - 1; m++) vorher += Zapfkalender.TageJeMonat[m];
+            return vorher + tag.Value;
+        }
+
+        /// <summary>Die gebäudeweiten Größen einer Projektzeile als DTO; <c>null</c> ohne Projektzeile.</summary>
+        internal static ZapfprofilGebaeudeDaten AlsGebaeude(ProjektStand p)
+            => p == null ? null : new ZapfprofilGebaeudeDaten
+            {
+                ZirkAuto = p.ZirkAuto,
+                // Wertgetreu hin und zurück — eine Zahl außerhalb der Wertemenge lehnt der Schreibweg benannt ab.
+                ZirkMethode = (ZapfprofilZirkulationsmethode)(int)p.ZirkMethode,
+                ZirkLage = p.ZirkLage.HasValue ? (ZapfprofilLeitungslage)(int)p.ZirkLage.Value : (ZapfprofilLeitungslage?)null,
+                ZirkLaengeM = p.ZirkLaengeM,
+                ZirkVerlustWJeM = p.ZirkVerlustWJeM,
+                ZirkAnteil = p.ZirkAnteil,
+                ZirkKennwert = p.ZirkKennwert,
+                ZirkFlaecheM2 = p.ZirkFlaecheM2,
+                ZirkLaufzeitH = p.ZirkLaufzeitH,
+                ZirkManuellKw = p.ZirkManuellKw,
+                LeitungsinhaltL = p.LeitungsinhaltL,
+                LadeAuto = p.LadeAuto,
+                LadeManuellKw = p.LadeManuellKw,
+                LadefensterH = p.LadefensterH,
+                LadefensterBeginnH = p.LadefensterBeginnH,
+                SpeicherC = p.SpeicherC,
+                KaltwasserAuslegungC = p.KaltwasserAuslegungC
+            };
+
+        /// <summary>
+        /// Die Projektgrößen mit den gebäudeweiten Größen des Dialogs (<c>null</c> = die Projektzeile
+        /// bleibt). Weicht nichts ab, bleibt die Projektzeile dieselbe Instanz; ohne Projektzeile
+        /// entsteht eine aus den Vorgaben der DDL nur, wenn der Dialog etwas anderes will als sie
+        /// (Muster <see cref="MitStochastik"/>).
+        /// </summary>
+        internal static ProjektStand MitGebaeude(ProjektStand p, ZapfprofilGebaeudeDaten g)
+        {
+            if (g == null) return p;
+            if (p == null)
+            {
+                ProjektStand vorgabe = ZapfprofilCtrl.ProjektVorgabe();
+                if (vorgabe == null) return null;
+                ProjektStand neu = Gebaeudegroessen(vorgabe, g);
+                return neu == vorgabe ? null : neu;
+            }
+            ProjektStand mit = Gebaeudegroessen(p, g);
+            return mit == p ? p : mit;
+        }
+
+        private static ProjektStand Gebaeudegroessen(ProjektStand p, ZapfprofilGebaeudeDaten g) => p with
+        {
+            ZirkAuto = g.ZirkAuto,
+            ZirkMethode = (ZapfZirkulationsmethode)(int)g.ZirkMethode,
+            ZirkLage = g.ZirkLage.HasValue ? (ZapfLeitungslage)(int)g.ZirkLage.Value : (ZapfLeitungslage?)null,
+            ZirkLaengeM = g.ZirkLaengeM,
+            ZirkVerlustWJeM = g.ZirkVerlustWJeM,
+            ZirkAnteil = g.ZirkAnteil,
+            ZirkKennwert = g.ZirkKennwert,
+            ZirkFlaecheM2 = g.ZirkFlaecheM2,
+            ZirkLaufzeitH = g.ZirkLaufzeitH,
+            ZirkManuellKw = g.ZirkManuellKw,
+            LeitungsinhaltL = g.LeitungsinhaltL,
+            LadeAuto = g.LadeAuto,
+            LadeManuellKw = g.LadeManuellKw,
+            LadefensterH = g.LadefensterH,
+            LadefensterBeginnH = g.LadefensterBeginnH,
+            SpeicherC = g.SpeicherC,
+            KaltwasserAuslegungC = g.KaltwasserAuslegungC
         };
 
         /// <summary>
         /// Der Arbeitsstand des Dialogs für den Kern. Je Zone gilt als Grundlage: die Zone
         /// derselben Id im <paramref name="basis"/>-Stand, sonst die Vorlage eines Duplikats
-        /// (mit neuen Ids), sonst eine neue Zone mit den Vorgaben. Gesetzt werden nur die Felder
-        /// der Stufe Einfach und die Reihenfolge; Projektzeile und alles Übrige bleiben.
+        /// (mit neuen Ids), sonst eine neue Zone mit den Vorgaben. Gesetzt werden die Felder der
+        /// Stufe Einfach, die Reihenfolge und — trägt die Zone sie — die Angaben der höheren Stufen
+        /// (<see cref="MitAngaben"/>); ohne Angaben bleibt alles Übrige der Grundlage. Die
+        /// gebäudeweiten Größen gehen nach der Auslegung in die Projektzeile: Der Dialog hat sie mit
+        /// dem OK der Überlagerung angeglichen, sie sind der jüngere Stand.
         /// </summary>
         internal static ZapfprofilStand AlsStand(ZapfprofilEingabeDaten eingabe, ZapfprofilStand basis)
         {
@@ -254,7 +548,7 @@ namespace WindowsFormsApplication1
                 }
                 grund ??= new ZonenStand();
 
-                zonen.Add(grund with
+                ZonenStand zone = grund with
                 {
                     Id = grund.Id,
                     Name = (d.Name ?? "").Trim(),
@@ -262,7 +556,15 @@ namespace WindowsFormsApplication1
                     Bezugsmenge = d.Bezugsmenge ?? 0.0,
                     Niveau = (ZapfNiveau)(int)d.Niveau,
                     Reihenfolge = i + 1
-                });
+                };
+                // Die Angaben der Stufen Erweitert und Experte (Z4): Trägt die Zone sie, gelten sie —
+                // bei einem Duplikat ohne Ids der Vorlage (neue Wohnungstypen).
+                if (d.Angaben != null)
+                {
+                    zone = MitAngaben(zone, d.Angaben);
+                    if (zone.Id == 0) zone = zone with { Wohnungen = zone.Wohnungen.Select(w => w with { Id = 0 }).ToArray() };
+                }
+                zonen.Add(zone);
             }
 
             // Die Stochastik der Jahresreihe (Z3, Stufe Experte): Rechenweg, Seed, Realisierungen —
@@ -280,6 +582,9 @@ namespace WindowsFormsApplication1
                 entwurf = EntwurfAus(eingabe.Auslegung);
                 zeilen = Konstruktorzeilen(eingabe.Auslegung);
             }
+            // Die gebäudeweiten Größen der Stufen Erweitert und Experte (Z4) — nach der Auslegung:
+            // Ladeleistung, Ladefenster und Speichertemperatur hat der Dialog mit ihrem OK angeglichen.
+            projekt = MitGebaeude(projekt, eingabe.Gebaeude);
             // Haben sich die Zonen nach der Übernahme geändert, ist der Punkt überholt: verworfen,
             // nicht gespeichert — auch ein Punkt, den schon der Stand beim Öffnen trug.
             if (eingabe.PunktUeberholt) projekt = OhnePunkt(projekt);
@@ -307,38 +612,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Wie viele Größen der höheren Stufen eine Zone überschreibt — jede nullbare Größe mit
-        /// Wert, jeder Schalter abseits seiner Vorgabe, jedes Ferienfenster und jeder
-        /// Auslastungsmonat mit Wert, eine gepflegte Wohnungstabelle. Die Bindung an ein Gebäude
-        /// ist keine Überschreibung.
+        /// Wie viele Größen der höheren Stufen eine Zone überschreibt — gezählt an EINER Stelle,
+        /// den Angaben des DTO (<see cref="ZapfprofilZonenangabenDaten.Ueberschrieben"/>): jede nullbare
+        /// Größe mit Wert, jeder Schalter abseits seiner Vorgabe, jeder Ferienzeitraum und jeder
+        /// Auslastungsmonat mit Wert, eine gepflegte Wohnungstabelle. Die Bindung an ein Gebäude ist
+        /// keine Überschreibung; ein Ferientag 0 oder 366 ist keine Angabe.
         /// </summary>
-        internal static int Ueberschrieben(ZonenStand z)
-        {
-            if (z == null) return 0;
-            int n = 0;
-            if (z.IdTagesgangsatz.HasValue) n++;
-            if (z.PersonenJeWe.HasValue) n++;
-            if (z.WohnflaecheJeWeM2.HasValue) n++;
-            if (z.Topologie != ZapfTopologie.Speicher) n++;
-            if (!z.Zirkulation) n++;
-            for (int i = 0; i < Math.Max(z.Ferienbeginn?.Length ?? 0, z.Ferienende?.Length ?? 0); i++)
-            {
-                int? b = z.Ferienbeginn != null && i < z.Ferienbeginn.Length ? z.Ferienbeginn[i] : null;
-                int? e = z.Ferienende != null && i < z.Ferienende.Length ? z.Ferienende[i] : null;
-                if (b.HasValue || e.HasValue) n++;
-            }
-            if (z.Jahresmesswert.HasValue) n++;
-            if (z.SpeicherverlustKwhJeJahr.HasValue) n++;
-            if (!z.TagesbedarfAuto) n++;
-            if (z.TagesbedarfManuellKwh.HasValue) n++;
-            if (z.BedarfSpezKwhJeEinheitTag.HasValue) n++;
-            if (z.ZapftemperaturC.HasValue) n++;
-            if (z.KaltwasserMittelC.HasValue) n++;
-            if (z.KaltwasserAmplitudeK.HasValue) n++;
-            if (z.Auslastung != null) n += z.Auslastung.Count(a => a.HasValue);
-            if (z.Wohnungen != null && z.Wohnungen.Count > 0) n++;
-            return n;
-        }
+        internal static int Ueberschrieben(ZonenStand z) => z == null ? 0 : AlsAngaben(z).Ueberschrieben();
 
         // =================================================================================
         // Katalog
@@ -365,9 +645,22 @@ namespace WindowsFormsApplication1
                 Katalogversion = n.Katalogversion ?? "",
                 Auslieferung = n.ReadOnly,
                 Waehlbar = vollstaendig,
-                Sperrgrund = vollstaendig ? "" : Text_("ZPG_KAT_SPERRE_TAGESGANG", "Der Tagesgangsatz dieser Nutzungsart ist unvollständig.")
+                Sperrgrund = vollstaendig ? "" : Text_("ZPG_KAT_SPERRE_TAGESGANG", "Der Tagesgangsatz dieser Nutzungsart ist unvollständig."),
+                // Die Vorgaben der höheren Stufen (Z4) — Bezug und Faktoren des Katalogs, nie ein Beleg.
+                Kalenderart = (int)n.Kalender,
+                Kalender = Kalendername(n.Kalender),
+                Wohnen = n.Kalender == ZapfKalenderart.Wohnen
+                         && (n.Bezug == ZapfBezugsart.Wohneinheiten || n.Bezug == ZapfBezugsart.Personen),
+                Bilanzgrenze = (int)n.Grenze,
+                ZapftemperaturC = n.Bezugstemperaturen?.ZapftemperaturC,
+                Monatsfaktoren = (double[])(n.Monatsfaktoren ?? new double[NutzungsartRaster.MONATE]).Clone(),
+                IdTagesgangsatz = n.Tagesgaenge?.Id
             };
         }
+
+        /// <summary>Die Kalenderart als Text („Wohnen") — Schlüssel <c>ZPG_KALENDER_…</c>.</summary>
+        internal static string Kalendername(ZapfKalenderart art)
+            => Text_("ZPG_KALENDER_" + Gross(art.ToString()), art.ToString());
 
         /// <summary>Die Herkunft als Kurztext: Art, Quelle und Ausgabe — nie Zahlen, nie ein Beleg.</summary>
         internal static string Herkunft(Provenienz p)
@@ -588,13 +881,22 @@ namespace WindowsFormsApplication1
                 }
                 vorschau.Ansichten.Add(a);
 
+                double summeZapfung = e.Kennzahlen?.JahresbedarfZapfungKwh ?? 0.0;
                 vorschau.Zonen.Add(new ZapfprofilZonenwertDaten
                 {
                     IdZone = z.IdZone,
                     Position = i,
                     Zone = name,
                     JahresbedarfZapfungKwh = z.JahresbedarfZapfungKwh,
-                    Abgelehnt = z.Abgelehnt
+                    Abgelehnt = z.Abgelehnt,
+                    // Die Spalten der Zonenliste ab Erweitert (Z4): wirksame Menge (bei Wohnungstabelle aus
+                    // ihr), Anteil an der Zapfung und wie die Menge entsteht — alles aus dem Kern.
+                    BezugsmengeWirksam = z.Abgelehnt || !(z.Bezugsmenge > 0) ? null : z.Bezugsmenge,
+                    Anteil = summeZapfung > 0 ? z.JahresbedarfZapfungKwh / summeZapfung : (double?)null,
+                    Rechenweg = z.Abgelehnt ? ZapfprofilZonenrechenweg.Abgelehnt
+                              : z.SchaetzhilfeTagesbedarf?.Kalibriert == true || z.Kalibrierfaktor.HasValue ? ZapfprofilZonenrechenweg.Messwert
+                              : z.SchaetzhilfeTagesbedarf?.IstManuell == true ? ZapfprofilZonenrechenweg.Manuell
+                              : ZapfprofilZonenrechenweg.Katalog
                 });
             }
 
@@ -862,6 +1164,7 @@ namespace WindowsFormsApplication1
                 if (!(z.Bezugsmenge > 0) || double.IsInfinity(z.Bezugsmenge.Value))
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", name,
                         Format(Text_("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Zone „{0}“: Bitte eine Bezugsgröße größer 0 eingeben."), name)));
+                if (z.Angaben != null) AngabenPruefen(z.Angaben, name, m);
             }
             foreach (string doppelt in eingabe.Zonen.Select(z => (z.Name ?? "").Trim())
                                                     .Where(n => n.Length > 0)
@@ -880,6 +1183,59 @@ namespace WindowsFormsApplication1
                     Format(Text_("ZPG_MSG_REALISIERUNGEN_UNGUELTIG", "Die Zahl der Realisierungen muss zwischen {0} und {1} liegen."),
                            TwwSchema.RealisierungenMindestens, Jahresensemble.HOECHSTENS)));
             return m;
+        }
+
+        /// <summary>
+        /// Die Pflichtprüfung der Angaben einer Zone (Stufen Erweitert und Experte): jeder Wohnungstyp
+        /// mit einer Anzahl größer 0, jeder begonnene Ferienzeitraum vollständig und ein Datum des
+        /// Rechenjahrs, ein Jahresmesswert größer 0 mit Einheit, bei kWh mit Bilanzgrenze und bei
+        /// Grenze 3 mit Speicherverlust (4.1), kein negativer Auslastungsfaktor. Dieselben Regeln, die
+        /// Rechenweg und Schreibweg benannt ablehnen — hier schon am OK des Zapfprofils.
+        /// </summary>
+        private static void AngabenPruefen(ZapfprofilZonenangabenDaten a, string name, List<ZapfprofilMeldung> m)
+        {
+            for (int i = 0; i < (a.Wohnungen?.Count ?? 0); i++)
+                if (!(a.Wohnungen[i]?.Anzahl > 0))
+                    m.Add(Fehler("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", name,
+                        Format(Text_("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", "Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0."),
+                               name, i + 1)));
+
+            for (int i = 0; i < (a.Ferien?.Count ?? 0); i++)
+            {
+                ZapfprofilFerienDaten f = a.Ferien[i];
+                if (f == null || !f.Belegt) continue;
+                bool beginn = f.BeginnTag.HasValue || f.BeginnMonat.HasValue;
+                bool beginnGut = !beginn || Jahrestag(f.BeginnTag, f.BeginnMonat).HasValue;
+                bool endeGut = Jahrestag(f.EndeTag, f.EndeMonat).HasValue;
+                if (!beginnGut || !endeGut)
+                    m.Add(Fehler("ZPG_MSG_FERIEN_UNGUELTIG", name,
+                        Format(Text_("ZPG_MSG_FERIEN_UNGUELTIG",
+                                     "Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat."),
+                               name, i + 1)));
+            }
+
+            if (a.Jahresmesswert.HasValue)
+            {
+                double w = a.Jahresmesswert.Value;
+                if (!(w > 0) || double.IsInfinity(w))
+                    m.Add(Fehler("ZPG_MSG_MESSWERT_NICHT_POSITIV", name,
+                        Format(Text_("ZPG_MSG_MESSWERT_NICHT_POSITIV", "Zone „{0}“: Der Jahresmesswert muss größer 0 sein."), name)));
+                if (!a.JahresmesswertEinheit.HasValue)
+                    m.Add(Fehler("ZPG_MSG_MESSWERT_OHNE_EINHEIT", name,
+                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_EINHEIT", "Zone „{0}“: Bitte die Einheit des Jahresmesswerts wählen."), name)));
+                else if (a.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KwhJeJahr && !a.JahresmesswertBilanzgrenze.HasValue)
+                    m.Add(Fehler("ZPG_MSG_MESSWERT_OHNE_GRENZE", name,
+                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_GRENZE", "Zone „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen."), name)));
+                if (a.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KwhJeJahr
+                    && a.JahresmesswertBilanzgrenze == ZapfprofilBilanzgrenze.MitSpeicher && !(a.SpeicherverlustKwhJeJahr >= 0))
+                    m.Add(Fehler("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", name,
+                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST",
+                                     "Zone „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a."), name)));
+            }
+
+            if (a.Auslastung != null && a.Auslastung.Any(x => x.HasValue && (x.Value < 0 || double.IsNaN(x.Value) || double.IsInfinity(x.Value))))
+                m.Add(Fehler("ZPG_MSG_AUSLASTUNG_NEGATIV", name,
+                    Format(Text_("ZPG_MSG_AUSLASTUNG_NEGATIV", "Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0."), name)));
         }
 
         private static ZapfprofilMeldung Fehler(string kennung, string zone, string text)
