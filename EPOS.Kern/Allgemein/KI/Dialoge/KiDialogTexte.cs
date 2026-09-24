@@ -1469,6 +1469,51 @@
         internal static string ZpgzKappungName => MyResource.Resource.ZPG_KATEG_SP_KAPPUNG;
         internal static string ZpgzKappungErl => MyResource.Resource.KI_DLG_ZPGZ_KAPPUNG_ERL;
 
+        /// <summary>Der Katalogdialog „Brauchwasser-Nutzungsarten" (Zapfprofilgenerator 5.4).</summary>
+        internal static string MaskeBrauchwasserNutzungsarten => MyResource.Resource.ZPGK_TITEL;
+
+        internal static string ZpgkSatzName => MyResource.Resource.ZPGK_LBL_BEZEICHNER;
+        internal static string ZpgkSatzErl => MyResource.Resource.KI_DLG_ZPGK_SATZ_ERL;
+        internal static string ZpgkKatalogversionName => MyResource.Resource.ZPGK_LBL_KATALOGVERSION;
+        internal static string ZpgkKatalogversionErl => MyResource.Resource.KI_DLG_ZPGK_KATALOGVERSION_ERL;
+        internal static string ZpgkStandName => MyResource.Resource.ZPGK_LBL_STATUS;
+        internal static string ZpgkStandErl => MyResource.Resource.KI_DLG_ZPGK_STAND_ERL;
+        internal static string ZpgkSperrgrundName => MyResource.Resource.KI_DLG_ZPGK_SPERRGRUND_NAME;
+        internal static string ZpgkSperrgrundErl => MyResource.Resource.KI_DLG_ZPGK_SPERRGRUND_ERL;
+
+        /// <summary>Der Editor einer Nutzungsart (Überlagerung des Katalogdialogs).</summary>
+        internal static string MaskeTwwNutzungsartEditor => MyResource.Resource.KI_DLG_ZPGK_EDITOR;
+
+        internal static string ZpgkeBezeichnerName => MyResource.Resource.ZPGK_LBL_BEZEICHNER;
+        internal static string ZpgkeBezeichnerErl => MyResource.Resource.KI_DLG_ZPGKE_BEZEICHNER_ERL;
+        internal static string ZpgkeKatalogversionErl => MyResource.Resource.KI_DLG_ZPGKE_KATALOGVERSION_ERL;
+        internal static string ZpgkeBezugsartName => MyResource.Resource.ZPGK_LBL_BEZUGSART;
+        internal static string ZpgkeBezugsartErl => MyResource.Resource.KI_DLG_ZPGKE_BEZUGSART_ERL;
+        internal static string ZpgkeTagesgangsatzName => MyResource.Resource.ZPGK_LBL_TAGESGANGSATZ;
+        internal static string ZpgkeTagesgangsatzErl => MyResource.Resource.KI_DLG_ZPGKE_TAGESGANGSATZ_ERL;
+        internal static string ZpgkeBilanzgrenzeName => MyResource.Resource.ZPGK_LBL_BILANZGRENZE;
+        internal static string ZpgkeBilanzgrenzeErl => MyResource.Resource.KI_DLG_ZPGKE_BILANZGRENZE_ERL;
+        internal static string ZpgkeKalenderName => MyResource.Resource.ZPGK_LBL_KALENDER;
+        internal static string ZpgkeKalenderErl => MyResource.Resource.KI_DLG_ZPGKE_KALENDER_ERL;
+        internal static string ZpgkeBedarfNiedrigName => MyResource.Resource.ZPGK_LBL_BEDARF_NIEDRIG;
+        internal static string ZpgkeBedarfMittelName => MyResource.Resource.ZPGK_LBL_BEDARF_MITTEL;
+        internal static string ZpgkeBedarfHochName => MyResource.Resource.ZPGK_LBL_BEDARF_HOCH;
+        internal static string ZpgkeBedarfErl => MyResource.Resource.KI_DLG_ZPGKE_BEDARF_ERL;
+        internal static string ZpgkeEinheitBedarf => MyResource.Resource.ZPGK_EINHEIT_BEDARF;
+        internal static string ZpgkeBandbreiteErl => MyResource.Resource.KI_DLG_ZPGKE_BANDBREITE_ERL;
+        internal static string ZpgkeZapftemperaturName => MyResource.Resource.ZPGK_LBL_ZAPFTEMPERATUR;
+        internal static string ZpgkeKaltwasserName => MyResource.Resource.ZPGK_LBL_KALTWASSER;
+        internal static string ZpgkeTemperaturErl => MyResource.Resource.KI_DLG_ZPGKE_TEMPERATUR_ERL;
+        internal static string ZpgkeFerienfaktorName => MyResource.Resource.ZPGK_LBL_FERIENFAKTOR;
+        internal static string ZpgkeFerienfaktorErl => MyResource.Resource.KI_DLG_ZPGKE_FERIENFAKTOR_ERL;
+        internal static string ZpgkeMonatsfaktorenName => MyResource.Resource.ZPGK_LBL_MONATSFAKTOREN;
+        internal static string ZpgkeMonatsfaktorenErl => MyResource.Resource.KI_DLG_ZPGKE_MONATSFAKTOREN_ERL;
+
+        /// <summary>„Bedarf mittel – untere Grenze" bzw. „– obere Grenze" (<c>ZPGK_LBL_UNTERE_GRENZE</c>/<c>ZPGK_LBL_OBERE_GRENZE</c>).</summary>
+        internal static string ZpgkeGrenze(string niveau, bool obere)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             obere ? MyResource.Resource.ZPGK_LBL_OBERE_GRENZE : MyResource.Resource.ZPGK_LBL_UNTERE_GRENZE, niveau);
+
         internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
         internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;
         internal static string BadmTypName => MyResource.Resource.BADM_LBL_TYP;

@@ -29689,4 +29689,400 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_KATALOGIMPORT_RASTER" xml:space="preserve">
     <value>Die Faktoren verletzen die Regeln des Katalogs: keine negativen Werte, Wochenfaktoren mit der Summe 1, Monatsfaktoren im Mittel 1.</value>
   </data>
+  <data name="ZPGK_TITEL" xml:space="preserve">
+    <value>Brauchwasser-Nutzungsarten</value>
+  </data>
+  <data name="ZPGK_LEER" xml:space="preserve">
+    <value>Der Katalog führt noch keine Nutzungsart — „Neu…“ legt eine an, „Import…“ spielt ein Paket ein.</value>
+  </data>
+  <data name="ZPGK_KZ_BEDARF_MITTEL" xml:space="preserve">
+    <value>Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_EINHEIT_BEDARF" xml:space="preserve">
+    <value>kWh/(Einheit·d)</value>
+  </data>
+  <data name="ZPGK_EINHEIT_GRAD" xml:space="preserve">
+    <value>°C</value>
+  </data>
+  <data name="ZPGK_GRP_KENNWERTE" xml:space="preserve">
+    <value>Kennwerte</value>
+  </data>
+  <data name="ZPGK_GRP_GAENGE" xml:space="preserve">
+    <value>Jahres- und Wochengang</value>
+  </data>
+  <data name="ZPGK_GRP_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang</value>
+  </data>
+  <data name="ZPGK_GRP_KATEGORIEN" xml:space="preserve">
+    <value>Zapfkategorien</value>
+  </data>
+  <data name="ZPGK_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPGK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Nutzungsart</value>
+  </data>
+  <data name="ZPGK_LBL_KATALOGVERSION" xml:space="preserve">
+    <value>Katalogversion</value>
+  </data>
+  <data name="ZPGK_LBL_STATUS" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPGK_LBL_BEZUGSART" xml:space="preserve">
+    <value>Bezugsart</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_NIEDRIG" xml:space="preserve">
+    <value>Bedarf niedrig</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_MITTEL" xml:space="preserve">
+    <value>Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_HOCH" xml:space="preserve">
+    <value>Bedarf hoch</value>
+  </data>
+  <data name="ZPGK_LBL_UNTERE_GRENZE" xml:space="preserve">
+    <value>{0} – untere Grenze</value>
+  </data>
+  <data name="ZPGK_LBL_OBERE_GRENZE" xml:space="preserve">
+    <value>{0} – obere Grenze</value>
+  </data>
+  <data name="ZPGK_LBL_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur (Bezug)</value>
+  </data>
+  <data name="ZPGK_LBL_KALTWASSER" xml:space="preserve">
+    <value>Kaltwassertemperatur (Bezug)</value>
+  </data>
+  <data name="ZPGK_LBL_BILANZGRENZE" xml:space="preserve">
+    <value>Bilanzgrenze</value>
+  </data>
+  <data name="ZPGK_LBL_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="ZPGK_LBL_FERIENFAKTOR" xml:space="preserve">
+    <value>Ferienfaktor</value>
+  </data>
+  <data name="ZPGK_LBL_MONATSFAKTOREN" xml:space="preserve">
+    <value>Monatsfaktoren (Mittel 1)</value>
+  </data>
+  <data name="ZPGK_LBL_WOCHENFAKTOREN" xml:space="preserve">
+    <value>Wochenfaktoren Mo–So (Summe 1)</value>
+  </data>
+  <data name="ZPGK_LBL_TAGESGANGSATZ" xml:space="preserve">
+    <value>Tagesgangsatz</value>
+  </data>
+  <data name="ZPGK_LBL_VORLAGE" xml:space="preserve">
+    <value>Vorlage</value>
+  </data>
+  <data name="ZPGK_LBL_VERWENDET" xml:space="preserve">
+    <value>Verwendet in</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_BEDARF" xml:space="preserve">
+    <value>Herkunft Bedarf</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_JAHRESGANG" xml:space="preserve">
+    <value>Herkunft Jahresgang</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_WOCHENGANG" xml:space="preserve">
+    <value>Herkunft Wochengang</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_TAGESGANG" xml:space="preserve">
+    <value>Herkunft Tagesgang {0}</value>
+  </data>
+  <data name="ZPGK_WERT_BANDBREITE" xml:space="preserve">
+    <value>{0} ({1} … {2})</value>
+  </data>
+  <data name="ZPGK_WERT_KATEGORIE" xml:space="preserve">
+    <value>{0} l/min · σ {1} l/min · {2} min · Anteil {3}</value>
+  </data>
+  <data name="ZPGK_WERT_KAPPUNG" xml:space="preserve">
+    <value>{0} · höchstens {1} l/min</value>
+  </data>
+  <data name="ZPGK_WERT_KEINE_KATEGORIEN" xml:space="preserve">
+    <value>keine — die Nutzungsart rechnet nur deterministisch</value>
+  </data>
+  <data name="ZPGK_WERT_SATZ_VOLLSTAENDIG" xml:space="preserve">
+    <value>alle vier Tagtypen</value>
+  </data>
+  <data name="ZPGK_WERT_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>unvollständig — nicht alle vier Tagtypen</value>
+  </data>
+  <data name="ZPGK_WERT_NIRGENDS" xml:space="preserve">
+    <value>in keinem Projekt</value>
+  </data>
+  <data name="ZPGK_WERT_OHNE_VORLAGE" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="ZPGK_BTN_AENDERN" xml:space="preserve">
+    <value>Ändern…</value>
+  </data>
+  <data name="ZPGK_BTN_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang…</value>
+  </data>
+  <data name="ZPGK_BTN_GRAFIK" xml:space="preserve">
+    <value>Grafik…</value>
+  </data>
+  <data name="ZPGK_BTN_KATEGORIEN" xml:space="preserve">
+    <value>Kategorien…</value>
+  </data>
+  <data name="ZPGK_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="ZPGK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter…</value>
+  </data>
+  <data name="ZPGK_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ZPGK_GRUND_AUSLIEFERUNG" xml:space="preserve">
+    <value>Die Nutzungsart gehört zur Auslieferung und ist unveränderlich — „Speichern unter…“ legt eine eigene Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_BENUTZT" xml:space="preserve">
+    <value>Die Nutzungsart ist in {0} benutzt und damit unveränderlich — „Speichern unter…“ legt eine neue Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_LOESCHEN_AUSLIEFERUNG" xml:space="preserve">
+    <value>Eine Nutzungsart der Auslieferung wird nicht gelöscht.</value>
+  </data>
+  <data name="ZPGK_GRUND_LOESCHEN_BENUTZT" xml:space="preserve">
+    <value>In {0} benutzt — nicht löschbar.</value>
+  </data>
+  <data name="ZPGK_GRUND_KEINE_WAHL" xml:space="preserve">
+    <value>Bitte zuerst eine Nutzungsart wählen.</value>
+  </data>
+  <data name="ZPGK_GRUND_OHNE_WEG" xml:space="preserve">
+    <value>In dieser Umgebung nicht verfügbar.</value>
+  </data>
+  <data name="ZPGK_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Soll die Nutzungsart „{0}“ gelöscht werden?</value>
+  </data>
+  <data name="ZPGK_MSG_GELOESCHT" xml:space="preserve">
+    <value>„{0}“ ist gelöscht.</value>
+  </data>
+  <data name="ZPGK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>„{0}“ ist gespeichert.</value>
+  </data>
+  <data name="ZPGK_MSG_TAGESGANG" xml:space="preserve">
+    <value>Der Tagesgang von „{0}“ ist gespeichert.</value>
+  </data>
+  <data name="ZPGK_MSG_KATEGORIEN" xml:space="preserve">
+    <value>Die Zapfkategorien von „{0}“ sind gespeichert.</value>
+  </data>
+  <data name="ZPGK_MSG_IMPORTIERT" xml:space="preserve">
+    <value>Import: {0}</value>
+  </data>
+  <data name="ZPGK_GRAFIK_TITEL" xml:space="preserve">
+    <value>Vorschau der Nutzungsart</value>
+  </data>
+  <data name="ZPGK_GRAFIK_HINWEIS" xml:space="preserve">
+    <value>Die Vorschau zeigt eine Einheit der Bezugsart am mittleren Bedarfsniveau; Wochengang, Kalender, Ferien und Zirkulation wirken erst in der Rechnung des Projekts.</value>
+  </data>
+  <data name="ZPGK_KEIN_BILD" xml:space="preserve">
+    <value>Keine Vorschau — der Tagesgangsatz ist unvollständig.</value>
+  </data>
+  <data name="ZPGK_BILD_TAGESGANG" xml:space="preserve">
+    <value>Tagesgang je Einheit, Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_BILD_JAHRESGANG" xml:space="preserve">
+    <value>Monatsmengen je Einheit, Bedarf mittel</value>
+  </data>
+  <data name="ZPGK_IMPORT_TITEL" xml:space="preserve">
+    <value>Katalog importieren</value>
+  </data>
+  <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
+    <value>Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.</value>
+  </data>
+  <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
+    <value>Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Vorhandene Zeilen bleiben unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“.</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEI" xml:space="preserve">
+    <value>Paket wählen…</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Katalogpaket (*.zip;*.csv)|*.zip;*.csv</value>
+  </data>
+  <data name="ZPGK_IMPORT_STARTEN" xml:space="preserve">
+    <value>Importieren</value>
+  </data>
+  <data name="ZPGK_IMPORT_KEIN_PAKET" xml:space="preserve">
+    <value>Bitte zuerst ein Paket wählen.</value>
+  </data>
+  <data name="ZPGK_IMPORT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>{0} angelegt · {1} übersprungen · {2} abgelehnt</value>
+  </data>
+  <data name="ZPGK_IMPORT_ANGELEGT" xml:space="preserve">
+    <value>angelegt</value>
+  </data>
+  <data name="ZPGK_IMPORT_UEBERSPRUNGEN" xml:space="preserve">
+    <value>übersprungen</value>
+  </data>
+  <data name="ZPGK_IMPORT_ABGELEHNT" xml:space="preserve">
+    <value>abgelehnt</value>
+  </data>
+  <data name="ZPGK_IMPORT_ZEILE" xml:space="preserve">
+    <value>Zeile {0}</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Nutzungsart</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_GRUND" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="ZPGK_IMPORT_ABBRUCH" xml:space="preserve">
+    <value>Das Paket ist abgelehnt — {0}</value>
+  </data>
+  <data name="ZPGK_IMPORT_HINWEISE" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_NEU" xml:space="preserve">
+    <value>Neue Nutzungsart</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_AENDERN" xml:space="preserve">
+    <value>Nutzungsart ändern</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Nutzungsart speichern unter</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_NEU" xml:space="preserve">
+    <value>Vorbelegt sind die Werte der gewählten Nutzungsart; die neue Zeile trägt den Stand „eigen“, ihre Wertgruppen die Herkunft Eigenkonstruktion.</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_AENDERN" xml:space="preserve">
+    <value>Die Zeile wird an Ort und Stelle geändert; geänderte Wertgruppen tragen danach die Herkunft Eigenkonstruktion.</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Die Werte werden als neue Zeile mit eigener Katalogversion gespeichert; die Vorlage bleibt unverändert.</value>
+  </data>
+  <data name="ZPGK_ED_GRP_KENNUNG" xml:space="preserve">
+    <value>Kennung</value>
+  </data>
+  <data name="ZPGK_ED_GRP_BEDARF" xml:space="preserve">
+    <value>Bedarf je Einheit und Tag</value>
+  </data>
+  <data name="ZPGK_ED_GRP_ZEIT" xml:space="preserve">
+    <value>Kalender und Jahresgang</value>
+  </data>
+  <data name="ZPGK_ED_WOCHE" xml:space="preserve">
+    <value>Wochenfaktoren: {0} — sie werden über „Tagesgang…“ bearbeitet.</value>
+  </data>
+  <data name="ZPGK_ED_MONATE_MITTEL" xml:space="preserve">
+    <value>Mittel der Monatsfaktoren {0} — beim Speichern auf 1 normiert.</value>
+  </data>
+  <data name="ZPGK_ED_MONATE_EINS" xml:space="preserve">
+    <value>Die Monatsfaktoren haben das Mittel 1.</value>
+  </data>
+  <data name="ZPGK_ED_PFLICHT" xml:space="preserve">
+    <value>Es fehlen Angaben: {0}</value>
+  </data>
+  <data name="ZPGK_ED_FEHLEINGABE" xml:space="preserve">
+    <value>Bitte die markierten Eingaben berichtigen: {0}</value>
+  </data>
+  <data name="ZPGK_ED_KEINE_WAHL" xml:space="preserve">
+    <value>— bitte wählen —</value>
+  </data>
+  <data name="ZPGK_ED_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Nutzungsart wurde nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPGK_ED_NICHT_GELOESCHT" xml:space="preserve">
+    <value>Die Nutzungsart wurde nicht gelöscht — {0}</value>
+  </data>
+  <data name="ZPGK_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Die Nutzungsart steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="ZPGK_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>Sie gehört zur Auslieferung und ist unveränderlich; „Speichern unter…“ legt eine eigene Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>Ein Projekt benutzt sie; sie ist unveränderlich, „Speichern unter…“ legt eine neue Version an.</value>
+  </data>
+  <data name="ZPGK_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>Bezeichner und Katalogversion sind schon vergeben.</value>
+  </data>
+  <data name="ZPGK_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Es fehlt eine Pflichtangabe.</value>
+  </data>
+  <data name="ZPGK_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>Der gewählte Tagesgangsatz steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPGK_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>Diese Datenbank führt den Katalog der Nutzungsarten nicht (älterer Schemastand).</value>
+  </data>
+  <data name="ZPGK_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Datenbank hat die Änderung nicht angenommen.</value>
+  </data>
+  <data name="ZPGK_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>Ein Wert ist negativ oder die Monatsfaktoren lassen sich nicht auf das Mittel 1 bringen.</value>
+  </data>
+  <data name="KFLT_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Nutzungsart</value>
+  </data>
+  <data name="KFLT_SP_BEZUGSART" xml:space="preserve">
+    <value>Bezugsart</value>
+  </data>
+  <data name="KFLT_SP_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="KFLT_SP_KATALOGVERSION" xml:space="preserve">
+    <value>Katalogversion</value>
+  </data>
+  <data name="KFLT_SP_STATUS" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SATZ_ERL" xml:space="preserve">
+    <value>Die gewählte Nutzungsart des Katalogs; sie zu setzen wählt die Zeile in der Liste, das Stammblatt zieht nach.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion der gewählten Nutzungsart; mit dem Bezeichner ihr natürlicher Schlüssel.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_STAND_ERL" xml:space="preserve">
+    <value>Katalogversion, Stand (Auslieferung, eigen, Import) und Bezugsart der gewählten Nutzungsart.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SPERRGRUND_NAME" xml:space="preserve">
+    <value>Sperrgrund</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SPERRGRUND_ERL" xml:space="preserve">
+    <value>Warum die gewählte Nutzungsart nur als neue Version geändert werden kann (Auslieferung oder in Projekten benutzt); leer, wenn sie frei ist.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_EDITOR" xml:space="preserve">
+    <value>Nutzungsart bearbeiten</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Bezeichner der Nutzungsart — neutral, ohne Hersteller- oder Produktnamen.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>Die Katalogversion; Bezeichner und Katalogversion sind zusammen eindeutig. Bei „Speichern unter“ eine neue Version.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEZUGSART_ERL" xml:space="preserve">
+    <value>Worauf sich der Bedarf bezieht (Personen, Wohneinheiten, Betten …).</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_TAGESGANGSATZ_ERL" xml:space="preserve">
+    <value>Der Tagesgangsatz der Nutzungsart — nur vollständige Sätze mit allen vier Tagtypen.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BILANZGRENZE_ERL" xml:space="preserve">
+    <value>Wo der Bedarf bilanziert ist: an der Zapfstelle, mit Verteil- und Zirkulationsverlust oder zusätzlich mit Speicherverlust.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_KALENDER_ERL" xml:space="preserve">
+    <value>Der Kalender, nach dem die Nutzung über das Jahr läuft (Wohnen, Arbeitstage, Schulferien, Betrieb, Auslastungsgang).</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEDARF_ERL" xml:space="preserve">
+    <value>Der Bedarf je Einheit und Tag am jeweiligen Niveau, nicht negativ.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BANDBREITE_ERL" xml:space="preserve">
+    <value>Untere bzw. obere Grenze der Bandbreite des Bedarfs laut Quelle; leer = keine Angabe.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur, auf die sich die Bedarfszahl bezieht.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_FERIENFAKTOR_ERL" xml:space="preserve">
+    <value>Der Faktor des Bedarfs an Ferientagen; leer = keiner.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
+    <value>Zwölf Monatsfaktoren Januar bis Dezember; beim Speichern auf das Mittel 1 normiert.</value>
+  </data>
 </root>

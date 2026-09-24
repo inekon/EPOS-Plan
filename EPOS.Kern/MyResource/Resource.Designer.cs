@@ -26383,6 +26383,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsart ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BEZUGSART {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BEZUGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
         /// </summary>
         public static string KFLT_SP_BRENNSTOFF {
@@ -26554,6 +26563,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KALENDER {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogversion ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KATALOGVERSION {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortyp ähnelt.
         /// </summary>
         public static string KFLT_SP_KOLLEKTORTYP {
@@ -26662,6 +26689,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ähnelt.
+        /// </summary>
+        public static string KFLT_SP_NUTZUNGSART {
+            get {
+                return ResourceManager.GetString("KFLT_SP_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die P_AC ähnelt.
         /// </summary>
         public static string KFLT_SP_PAC {
@@ -26730,6 +26766,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_SPITZE {
             get {
                 return ResourceManager.GetString("KFLT_SP_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string KFLT_SP_STATUS {
+            get {
+                return ResourceManager.GetString("KFLT_SP_STATUS", resourceCulture);
             }
         }
         
@@ -38636,6 +38681,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere bzw. obere Grenze der Bandbreite des Bedarfs laut Quelle; leer = keine Angabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_BANDBREITE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_BANDBREITE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarf je Einheit und Tag am jeweiligen Niveau, nicht negativ. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_BEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_BEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der Nutzungsart — neutral, ohne Hersteller- oder Produktnamen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worauf sich der Bedarf bezieht (Personen, Wohneinheiten, Betten …). ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_BEZUGSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_BEZUGSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wo der Bedarf bilanziert ist: an der Zapfstelle, mit Verteil- und Zirkulationsverlust oder zusätzlich mit Speicherverlust. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_BILANZGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_BILANZGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Faktor des Bedarfs an Ferientagen; leer = keiner. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_FERIENFAKTOR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_FERIENFAKTOR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender, nach dem die Nutzung über das Jahr läuft (Wohnen, Arbeitstage, Schulferien, Betrieb, Auslastungsgang). ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_KALENDER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_KALENDER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion; Bezeichner und Katalogversion sind zusammen eindeutig. Bei „Speichern unter“ eine neue Version. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_KATALOGVERSION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_KATALOGVERSION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwölf Monatsfaktoren Januar bis Dezember; beim Speichern auf das Mittel 1 normiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_MONATSFAKTOREN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_MONATSFAKTOREN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz der Nutzungsart — nur vollständige Sätze mit allen vier Tagtypen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_TAGESGANGSATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_TAGESGANGSATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur, auf die sich die Bedarfszahl bezieht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGKE_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGKE_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wie oft die Zapfregel im Zeitfenster zapft, nicht negativ; nur mit einer Zapfregel. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGK_ANZAHL_ERL {
@@ -38672,11 +38816,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart bearbeiten ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_EDITOR {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_EDITOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Ende des Zeitfensters der Zeile in Stunden, bis 24 und nach dem Beginn. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGK_ENDE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPGK_ENDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion der gewählten Nutzungsart; mit dem Bezeichner ihr natürlicher Schlüssel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_KATALOGVERSION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_KATALOGVERSION_ERL", resourceCulture);
             }
         }
         
@@ -38695,6 +38857,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ZPGK_REGEL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPGK_REGEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Nutzungsart des Katalogs; sie zu setzen wählt die Zeile in der Liste, das Stammblatt zieht nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_SATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_SATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum die gewählte Nutzungsart nur als neue Version geändert werden kann (Auslieferung oder in Projekten benutzt); leer, wenn sie frei ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_SPERRGRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_SPERRGRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrgrund ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_SPERRGRUND_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_SPERRGRUND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogversion, Stand (Auslieferung, eigen, Import) und Bezugsart der gewählten Nutzungsart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_STAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_STAND_ERL", resourceCulture);
             }
         }
         
@@ -77999,6 +78197,996 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_PFLICHT {
             get {
                 return ResourceManager.GetString("WZP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsmengen je Einheit, Bedarf mittel ähnelt.
+        /// </summary>
+        public static string ZPGK_BILD_JAHRESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_BILD_JAHRESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang je Einheit, Bedarf mittel ähnelt.
+        /// </summary>
+        public static string ZPGK_BILD_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_BILD_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändern… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_AENDERN {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_GRAFIK {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_IMPORT {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorien… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_KATEGORIEN {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_KATEGORIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_NEU {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang… ähnelt.
+        /// </summary>
+        public static string ZPGK_BTN_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_BTN_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die markierten Eingaben berichtigen: {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_FEHLEINGABE {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf je Einheit und Tag ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_GRP_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_GRP_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennung ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_GRP_KENNUNG {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_GRP_KENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender und Jahresgang ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_GRP_ZEIT {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_GRP_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile wird an Ort und Stelle geändert; geänderte Wertgruppen tragen danach die Herkunft Eigenkonstruktion. ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_HINWEIS_AENDERN {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_HINWEIS_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt sind die Werte der gewählten Nutzungsart; die neue Zeile trägt den Stand „eigen“, ihre Wertgruppen die Herkunft Eigenkonstruktion. ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_HINWEIS_NEU {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_HINWEIS_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte werden als neue Zeile mit eigener Katalogversion gespeichert; die Vorlage bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_HINWEIS_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_HINWEIS_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — bitte wählen — ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Monatsfaktoren haben das Mittel 1. ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_MONATE_EINS {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_MONATE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittel der Monatsfaktoren {0} — beim Speichern auf 1 normiert. ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_MONATE_MITTEL {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_MONATE_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart wurde nicht gelöscht — {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_NICHT_GELOESCHT {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_NICHT_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart wurde nicht gespeichert — {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es fehlen Angaben: {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_PFLICHT {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ändern ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_TITEL_AENDERN {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_TITEL_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Nutzungsart ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart speichern unter ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_TITEL_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_TITEL_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenfaktoren: {0} — sie werden über „Tagesgang…“ bearbeitet. ähnelt.
+        /// </summary>
+        public static string ZPGK_ED_WOCHE {
+            get {
+                return ResourceManager.GetString("ZPGK_ED_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh/(Einheit·d) ähnelt.
+        /// </summary>
+        public static string ZPGK_EINHEIT_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPGK_EINHEIT_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die °C ähnelt.
+        /// </summary>
+        public static string ZPGK_EINHEIT_GRAD {
+            get {
+                return ResourceManager.GetString("ZPGK_EINHEIT_GRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Nutzungsart „{0}“ gelöscht werden? ähnelt.
+        /// </summary>
+        public static string ZPGK_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ZPGK_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau zeigt eine Einheit der Bezugsart am mittleren Bedarfsniveau; Wochengang, Kalender, Ferien und Zirkulation wirken erst in der Rechnung des Projekts. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRAFIK_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZPGK_GRAFIK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau der Nutzungsart ähnelt.
+        /// </summary>
+        public static string ZPGK_GRAFIK_TITEL {
+            get {
+                return ResourceManager.GetString("ZPGK_GRAFIK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahres- und Wochengang ähnelt.
+        /// </summary>
+        public static string ZPGK_GRP_GAENGE {
+            get {
+                return ResourceManager.GetString("ZPGK_GRP_GAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPGK_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfkategorien ähnelt.
+        /// </summary>
+        public static string ZPGK_GRP_KATEGORIEN {
+            get {
+                return ResourceManager.GetString("ZPGK_GRP_KATEGORIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennwerte ähnelt.
+        /// </summary>
+        public static string ZPGK_GRP_KENNWERTE {
+            get {
+                return ResourceManager.GetString("ZPGK_GRP_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang ähnelt.
+        /// </summary>
+        public static string ZPGK_GRP_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_GRP_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart gehört zur Auslieferung und ist unveränderlich — „Speichern unter…“ legt eine eigene Version an. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart ist in {0} benutzt und damit unveränderlich — „Speichern unter…“ legt eine neue Version an. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_BENUTZT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_BENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Projekt benutzt sie; sie ist unveränderlich, „Speichern unter…“ legt eine neue Version an. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_BENUTZT_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_BENUTZT_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es fehlt eine Pflichtangabe. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_ENTWURF_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_ENTWURF_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank hat die Änderung nicht angenommen. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst eine Nutzungsart wählen. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Nutzungsart der Auslieferung wird nicht gelöscht. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_LOESCHEN_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_LOESCHEN_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} benutzt — nicht löschbar. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_LOESCHEN_BENUTZT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_LOESCHEN_BENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner und Katalogversion sind schon vergeben. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart steht nicht mehr im Katalog. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In dieser Umgebung nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_OHNE_WEG {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_OHNE_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wert ist negativ oder die Monatsfaktoren lassen sich nicht auf das Mittel 1 bringen. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_RASTER_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_RASTER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zur Auslieferung und ist unveränderlich; „Speichern unter…“ legt eine eigene Version an. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_READ_ONLY_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_READ_ONLY_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt den Katalog der Nutzungsarten nicht (älterer Schemastand). ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_TABELLEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_TABELLEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Tagesgangsatz steht nicht im Katalog. ähnelt.
+        /// </summary>
+        public static string ZPGK_GRUND_TAGESGANGSATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPGK_GRUND_TAGESGANGSATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket ist abgelehnt — {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_ABBRUCH {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgelehnt ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angelegt ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_ANGELEGT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket wählen… ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_DATEI {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogpaket (*.zip;*.csv)|*.zip;*.csv ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Vorhandene Zeilen bleiben unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_HINWEISE {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst ein Paket wählen. ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_KEIN_PAKET {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_KEIN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_SP_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_SP_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grund ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_SP_GRUND {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_SP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_SP_NUTZUNGSART {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_SP_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importieren ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_STARTEN {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_STARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog importieren ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_TITEL {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übersprungen ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_ZEILE {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} angelegt · {1} übersprungen · {2} abgelehnt ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_ZUSAMMENFASSUNG {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_ZUSAMMENFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vorschau — der Tagesgangsatz ist unvollständig. ähnelt.
+        /// </summary>
+        public static string ZPGK_KEIN_BILD {
+            get {
+                return ResourceManager.GetString("ZPGK_KEIN_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf mittel ähnelt.
+        /// </summary>
+        public static string ZPGK_KZ_BEDARF_MITTEL {
+            get {
+                return ResourceManager.GetString("ZPGK_KZ_BEDARF_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf hoch ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_BEDARF_HOCH {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_BEDARF_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf mittel ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_BEDARF_MITTEL {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_BEDARF_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf niedrig ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_BEDARF_NIEDRIG {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_BEDARF_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsart ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_BEZUGSART {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_BEZUGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzgrenze ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_BILANZGRENZE {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_BILANZGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienfaktor ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_FERIENFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_FERIENFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_KALENDER {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwassertemperatur (Bezug) ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_KALTWASSER {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_KALTWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogversion ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_KATALOGVERSION {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsfaktoren (Mittel 1) ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_MONATSFAKTOREN {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_MONATSFAKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – obere Grenze ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_OBERE_GRENZE {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_OBERE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft Bedarf ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_QUELLE_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_QUELLE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft Jahresgang ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_QUELLE_JAHRESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_QUELLE_JAHRESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft Tagesgang {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_QUELLE_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_QUELLE_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft Wochengang ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_QUELLE_WOCHENGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_QUELLE_WOCHENGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_STATUS {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgangsatz ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_TAGESGANGSATZ {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_TAGESGANGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – untere Grenze ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_UNTERE_GRENZE {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_UNTERE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet in ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_VERWENDET {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_VORLAGE {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenfaktoren Mo–So (Summe 1) ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_WOCHENFAKTOREN {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_WOCHENFAKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapftemperatur (Bezug) ähnelt.
+        /// </summary>
+        public static string ZPGK_LBL_ZAPFTEMPERATUR {
+            get {
+                return ResourceManager.GetString("ZPGK_LBL_ZAPFTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt noch keine Nutzungsart — „Neu…“ legt eine an, „Import…“ spielt ein Paket ein. ähnelt.
+        /// </summary>
+        public static string ZPGK_LEER {
+            get {
+                return ResourceManager.GetString("ZPGK_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gelöscht. ähnelt.
+        /// </summary>
+        public static string ZPGK_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("ZPGK_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gespeichert. ähnelt.
+        /// </summary>
+        public static string ZPGK_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPGK_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import: {0} ähnelt.
+        /// </summary>
+        public static string ZPGK_MSG_IMPORTIERT {
+            get {
+                return ResourceManager.GetString("ZPGK_MSG_IMPORTIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorien von „{0}“ sind gespeichert. ähnelt.
+        /// </summary>
+        public static string ZPGK_MSG_KATEGORIEN {
+            get {
+                return ResourceManager.GetString("ZPGK_MSG_KATEGORIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang von „{0}“ ist gespeichert. ähnelt.
+        /// </summary>
+        public static string ZPGK_MSG_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPGK_MSG_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Nutzungsarten ähnelt.
+        /// </summary>
+        public static string ZPGK_TITEL {
+            get {
+                return ResourceManager.GetString("ZPGK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} … {2}) ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_BANDBREITE {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_BANDBREITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · höchstens {1} l/min ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_KAPPUNG {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} l/min · σ {1} l/min · {2} min · Anteil {3} ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_KATEGORIE {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine — die Nutzungsart rechnet nur deterministisch ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_KEINE_KATEGORIEN {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_KEINE_KATEGORIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in keinem Projekt ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_NIRGENDS {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_NIRGENDS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_OHNE_VORLAGE {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_OHNE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unvollständig — nicht alle vier Tagtypen ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_SATZ_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_SATZ_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle vier Tagtypen ähnelt.
+        /// </summary>
+        public static string ZPGK_WERT_SATZ_VOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPGK_WERT_SATZ_VOLLSTAENDIG", resourceCulture);
             }
         }
         

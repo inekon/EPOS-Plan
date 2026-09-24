@@ -91,6 +91,11 @@ namespace WindowsFormsApplication1
                 case Masken.BrauchwasserAdmin:
                     return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Brauchwasser);
 
+                // Zapfprofilgenerator 5.4 (Stufe Z4): der Katalog der Brauchwasser-Nutzungsarten -
+                // die Datenseite ist plattformfrei (ZapfprofilHuelle.KatalogGaben), das Fenster hier.
+                case Masken.BrauchwasserNutzungsarten:
+                    return TwwNutzungsartAdminHuelle.Oeffnen(null);
+
                 // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
                 // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie
                 // ueber KatalogImportArt. Der Rueckgabewert sagt jetzt, ob etwas

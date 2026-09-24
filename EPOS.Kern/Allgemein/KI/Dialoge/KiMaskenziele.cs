@@ -380,6 +380,11 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.STROMVERBRAUCHER_ADMIN, Masken.StromverbraucherAdmin },
                 { KiMaskennamen.BRAUCHWASSER_ADMIN,     Masken.BrauchwasserAdmin },
 
+                // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Zapfprofilgenerator 5.4) ist selbst
+                // ein Menuepunkt; sein Editor ist eine Ueberlagerung darin und hat dasselbe Ziel.
+                { KiMaskennamen.BRAUCHWASSER_NUTZUNGSARTEN, Masken.BrauchwasserNutzungsarten },
+                { KiMaskennamen.TWW_NUTZUNGSART_EDITOR,     Masken.BrauchwasserNutzungsarten },
+
                 // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
                 // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.
                 { KiMaskennamen.BEDARF_ERGEBNIS, Masken.Simulation },

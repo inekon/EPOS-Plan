@@ -29682,4 +29682,400 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_KATALOGIMPORT_RASTER" xml:space="preserve">
     <value>The factors violate the catalogue rules: no negative values, weekly factors summing to 1, monthly factors averaging 1.</value>
   </data>
+  <data name="ZPGK_TITEL" xml:space="preserve">
+    <value>Hot water usage types</value>
+  </data>
+  <data name="ZPGK_LEER" xml:space="preserve">
+    <value>The catalogue holds no usage type yet — “New…” creates one, “Import…” loads a package.</value>
+  </data>
+  <data name="ZPGK_KZ_BEDARF_MITTEL" xml:space="preserve">
+    <value>Medium demand</value>
+  </data>
+  <data name="ZPGK_EINHEIT_BEDARF" xml:space="preserve">
+    <value>kWh/(unit·d)</value>
+  </data>
+  <data name="ZPGK_EINHEIT_GRAD" xml:space="preserve">
+    <value>°C</value>
+  </data>
+  <data name="ZPGK_GRP_KENNWERTE" xml:space="preserve">
+    <value>Characteristics</value>
+  </data>
+  <data name="ZPGK_GRP_GAENGE" xml:space="preserve">
+    <value>Annual and weekly pattern</value>
+  </data>
+  <data name="ZPGK_GRP_TAGESGANG" xml:space="preserve">
+    <value>Daily profile</value>
+  </data>
+  <data name="ZPGK_GRP_KATEGORIEN" xml:space="preserve">
+    <value>Draw-off categories</value>
+  </data>
+  <data name="ZPGK_GRP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ZPGK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Usage type</value>
+  </data>
+  <data name="ZPGK_LBL_KATALOGVERSION" xml:space="preserve">
+    <value>Catalogue version</value>
+  </data>
+  <data name="ZPGK_LBL_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="ZPGK_LBL_BEZUGSART" xml:space="preserve">
+    <value>Reference unit</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_NIEDRIG" xml:space="preserve">
+    <value>Low demand</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_MITTEL" xml:space="preserve">
+    <value>Medium demand</value>
+  </data>
+  <data name="ZPGK_LBL_BEDARF_HOCH" xml:space="preserve">
+    <value>High demand</value>
+  </data>
+  <data name="ZPGK_LBL_UNTERE_GRENZE" xml:space="preserve">
+    <value>{0} – lower bound</value>
+  </data>
+  <data name="ZPGK_LBL_OBERE_GRENZE" xml:space="preserve">
+    <value>{0} – upper bound</value>
+  </data>
+  <data name="ZPGK_LBL_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Draw-off temperature (reference)</value>
+  </data>
+  <data name="ZPGK_LBL_KALTWASSER" xml:space="preserve">
+    <value>Cold water temperature (reference)</value>
+  </data>
+  <data name="ZPGK_LBL_BILANZGRENZE" xml:space="preserve">
+    <value>Balance boundary</value>
+  </data>
+  <data name="ZPGK_LBL_KALENDER" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="ZPGK_LBL_FERIENFAKTOR" xml:space="preserve">
+    <value>Holiday factor</value>
+  </data>
+  <data name="ZPGK_LBL_MONATSFAKTOREN" xml:space="preserve">
+    <value>Monthly factors (mean 1)</value>
+  </data>
+  <data name="ZPGK_LBL_WOCHENFAKTOREN" xml:space="preserve">
+    <value>Weekly factors Mon–Sun (sum 1)</value>
+  </data>
+  <data name="ZPGK_LBL_TAGESGANGSATZ" xml:space="preserve">
+    <value>Daily profile set</value>
+  </data>
+  <data name="ZPGK_LBL_VORLAGE" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="ZPGK_LBL_VERWENDET" xml:space="preserve">
+    <value>Used in</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_BEDARF" xml:space="preserve">
+    <value>Origin of demand</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_JAHRESGANG" xml:space="preserve">
+    <value>Origin of annual pattern</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_WOCHENGANG" xml:space="preserve">
+    <value>Origin of weekly pattern</value>
+  </data>
+  <data name="ZPGK_LBL_QUELLE_TAGESGANG" xml:space="preserve">
+    <value>Origin of daily profile {0}</value>
+  </data>
+  <data name="ZPGK_WERT_BANDBREITE" xml:space="preserve">
+    <value>{0} ({1} … {2})</value>
+  </data>
+  <data name="ZPGK_WERT_KATEGORIE" xml:space="preserve">
+    <value>{0} l/min · σ {1} l/min · {2} min · share {3}</value>
+  </data>
+  <data name="ZPGK_WERT_KAPPUNG" xml:space="preserve">
+    <value>{0} · at most {1} l/min</value>
+  </data>
+  <data name="ZPGK_WERT_KEINE_KATEGORIEN" xml:space="preserve">
+    <value>none — the usage type is computed deterministically only</value>
+  </data>
+  <data name="ZPGK_WERT_SATZ_VOLLSTAENDIG" xml:space="preserve">
+    <value>all four day types</value>
+  </data>
+  <data name="ZPGK_WERT_SATZ_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>incomplete — not all four day types</value>
+  </data>
+  <data name="ZPGK_WERT_NIRGENDS" xml:space="preserve">
+    <value>in no project</value>
+  </data>
+  <data name="ZPGK_WERT_OHNE_VORLAGE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="ZPGK_BTN_AENDERN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="ZPGK_BTN_TAGESGANG" xml:space="preserve">
+    <value>Daily profile…</value>
+  </data>
+  <data name="ZPGK_BTN_GRAFIK" xml:space="preserve">
+    <value>Chart…</value>
+  </data>
+  <data name="ZPGK_BTN_KATEGORIEN" xml:space="preserve">
+    <value>Categories…</value>
+  </data>
+  <data name="ZPGK_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="ZPGK_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as…</value>
+  </data>
+  <data name="ZPGK_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ZPGK_GRUND_AUSLIEFERUNG" xml:space="preserve">
+    <value>The usage type belongs to the delivered catalogue and is immutable — “Save as…” creates an own version.</value>
+  </data>
+  <data name="ZPGK_GRUND_BENUTZT" xml:space="preserve">
+    <value>The usage type is used in {0} and therefore immutable — “Save as…” creates a new version.</value>
+  </data>
+  <data name="ZPGK_GRUND_LOESCHEN_AUSLIEFERUNG" xml:space="preserve">
+    <value>A usage type of the delivered catalogue is not deleted.</value>
+  </data>
+  <data name="ZPGK_GRUND_LOESCHEN_BENUTZT" xml:space="preserve">
+    <value>Used in {0} — cannot be deleted.</value>
+  </data>
+  <data name="ZPGK_GRUND_KEINE_WAHL" xml:space="preserve">
+    <value>Please select a usage type first.</value>
+  </data>
+  <data name="ZPGK_GRUND_OHNE_WEG" xml:space="preserve">
+    <value>Not available in this environment.</value>
+  </data>
+  <data name="ZPGK_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the usage type “{0}”?</value>
+  </data>
+  <data name="ZPGK_MSG_GELOESCHT" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+  <data name="ZPGK_MSG_GESPEICHERT" xml:space="preserve">
+    <value>“{0}” has been saved.</value>
+  </data>
+  <data name="ZPGK_MSG_TAGESGANG" xml:space="preserve">
+    <value>The daily profile of “{0}” has been saved.</value>
+  </data>
+  <data name="ZPGK_MSG_KATEGORIEN" xml:space="preserve">
+    <value>The draw-off categories of “{0}” have been saved.</value>
+  </data>
+  <data name="ZPGK_MSG_IMPORTIERT" xml:space="preserve">
+    <value>Import: {0}</value>
+  </data>
+  <data name="ZPGK_GRAFIK_TITEL" xml:space="preserve">
+    <value>Usage type preview</value>
+  </data>
+  <data name="ZPGK_GRAFIK_HINWEIS" xml:space="preserve">
+    <value>The preview shows one unit of the reference at the medium demand level; weekly pattern, calendar, holidays and circulation only act in the project calculation.</value>
+  </data>
+  <data name="ZPGK_KEIN_BILD" xml:space="preserve">
+    <value>No preview — the daily profile set is incomplete.</value>
+  </data>
+  <data name="ZPGK_BILD_TAGESGANG" xml:space="preserve">
+    <value>Daily profile per unit, medium demand</value>
+  </data>
+  <data name="ZPGK_BILD_JAHRESGANG" xml:space="preserve">
+    <value>Monthly amounts per unit, medium demand</value>
+  </data>
+  <data name="ZPGK_IMPORT_TITEL" xml:space="preserve">
+    <value>Import catalogue</value>
+  </data>
+  <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
+    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder.</value>
+  </data>
+  <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
+    <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. Existing rows remain unchanged: identical content is skipped, differing content is added as an own version “(Import n)”.</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEI" xml:space="preserve">
+    <value>Select package…</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Catalogue package (*.zip;*.csv)|*.zip;*.csv</value>
+  </data>
+  <data name="ZPGK_IMPORT_STARTEN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ZPGK_IMPORT_KEIN_PAKET" xml:space="preserve">
+    <value>Please select a package first.</value>
+  </data>
+  <data name="ZPGK_IMPORT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>{0} created · {1} skipped · {2} rejected</value>
+  </data>
+  <data name="ZPGK_IMPORT_ANGELEGT" xml:space="preserve">
+    <value>created</value>
+  </data>
+  <data name="ZPGK_IMPORT_UEBERSPRUNGEN" xml:space="preserve">
+    <value>skipped</value>
+  </data>
+  <data name="ZPGK_IMPORT_ABGELEHNT" xml:space="preserve">
+    <value>rejected</value>
+  </data>
+  <data name="ZPGK_IMPORT_ZEILE" xml:space="preserve">
+    <value>Line {0}</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Usage type</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_GRUND" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="ZPGK_IMPORT_ABBRUCH" xml:space="preserve">
+    <value>The package has been rejected — {0}</value>
+  </data>
+  <data name="ZPGK_IMPORT_HINWEISE" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_NEU" xml:space="preserve">
+    <value>New usage type</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_AENDERN" xml:space="preserve">
+    <value>Edit usage type</value>
+  </data>
+  <data name="ZPGK_ED_TITEL_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save usage type as</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_NEU" xml:space="preserve">
+    <value>The values of the selected usage type are pre-filled; the new row carries the status “own”, its value groups the origin own design.</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_AENDERN" xml:space="preserve">
+    <value>The row is changed in place; changed value groups then carry the origin own design.</value>
+  </data>
+  <data name="ZPGK_ED_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
+    <value>The values are saved as a new row with an own catalogue version; the template remains unchanged.</value>
+  </data>
+  <data name="ZPGK_ED_GRP_KENNUNG" xml:space="preserve">
+    <value>Identification</value>
+  </data>
+  <data name="ZPGK_ED_GRP_BEDARF" xml:space="preserve">
+    <value>Demand per unit and day</value>
+  </data>
+  <data name="ZPGK_ED_GRP_ZEIT" xml:space="preserve">
+    <value>Calendar and annual pattern</value>
+  </data>
+  <data name="ZPGK_ED_WOCHE" xml:space="preserve">
+    <value>Weekly factors: {0} — they are edited via “Daily profile…”.</value>
+  </data>
+  <data name="ZPGK_ED_MONATE_MITTEL" xml:space="preserve">
+    <value>Mean of the monthly factors {0} — normalised to 1 when saving.</value>
+  </data>
+  <data name="ZPGK_ED_MONATE_EINS" xml:space="preserve">
+    <value>The monthly factors have the mean 1.</value>
+  </data>
+  <data name="ZPGK_ED_PFLICHT" xml:space="preserve">
+    <value>Values are missing: {0}</value>
+  </data>
+  <data name="ZPGK_ED_FEHLEINGABE" xml:space="preserve">
+    <value>Please correct the marked entries: {0}</value>
+  </data>
+  <data name="ZPGK_ED_KEINE_WAHL" xml:space="preserve">
+    <value>— please select —</value>
+  </data>
+  <data name="ZPGK_ED_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The usage type was not saved — {0}</value>
+  </data>
+  <data name="ZPGK_ED_NICHT_GELOESCHT" xml:space="preserve">
+    <value>The usage type was not deleted — {0}</value>
+  </data>
+  <data name="ZPGK_GRUND_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The usage type is no longer in the catalogue.</value>
+  </data>
+  <data name="ZPGK_GRUND_READ_ONLY_GESPERRT" xml:space="preserve">
+    <value>It belongs to the delivered catalogue and is immutable; “Save as…” creates an own version.</value>
+  </data>
+  <data name="ZPGK_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
+    <value>A project uses it; it is immutable, “Save as…” creates a new version.</value>
+  </data>
+  <data name="ZPGK_GRUND_NAME_BELEGT" xml:space="preserve">
+    <value>Name and catalogue version are already taken.</value>
+  </data>
+  <data name="ZPGK_GRUND_ENTWURF_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>A mandatory value is missing.</value>
+  </data>
+  <data name="ZPGK_GRUND_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>The selected daily profile set is not in the catalogue.</value>
+  </data>
+  <data name="ZPGK_GRUND_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>This database does not hold the catalogue of usage types (older schema).</value>
+  </data>
+  <data name="ZPGK_GRUND_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The database did not accept the change.</value>
+  </data>
+  <data name="ZPGK_GRUND_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>A value is negative or the monthly factors cannot be brought to the mean 1.</value>
+  </data>
+  <data name="KFLT_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Usage type</value>
+  </data>
+  <data name="KFLT_SP_BEZUGSART" xml:space="preserve">
+    <value>Reference unit</value>
+  </data>
+  <data name="KFLT_SP_KALENDER" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="KFLT_SP_KATALOGVERSION" xml:space="preserve">
+    <value>Catalogue version</value>
+  </data>
+  <data name="KFLT_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SATZ_ERL" xml:space="preserve">
+    <value>The selected usage type of the catalogue; setting it selects the row in the list, the data sheet follows.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>The catalogue version of the selected usage type; together with the name its natural key.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_STAND_ERL" xml:space="preserve">
+    <value>Catalogue version, status (delivered, own, import) and reference unit of the selected usage type.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SPERRGRUND_NAME" xml:space="preserve">
+    <value>Lock reason</value>
+  </data>
+  <data name="KI_DLG_ZPGK_SPERRGRUND_ERL" xml:space="preserve">
+    <value>Why the selected usage type can only be changed as a new version (delivered or used in projects); empty if it is free.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_EDITOR" xml:space="preserve">
+    <value>Edit usage type</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of the usage type — neutral, without manufacturer or product names.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_KATALOGVERSION_ERL" xml:space="preserve">
+    <value>The catalogue version; name and catalogue version are unique together. With “Save as” a new version.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEZUGSART_ERL" xml:space="preserve">
+    <value>What the demand refers to (persons, dwellings, beds …).</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_TAGESGANGSATZ_ERL" xml:space="preserve">
+    <value>The daily profile set of the usage type — only complete sets with all four day types.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BILANZGRENZE_ERL" xml:space="preserve">
+    <value>Where the demand is balanced: at the draw-off point, with distribution and circulation loss, or additionally with storage loss.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_KALENDER_ERL" xml:space="preserve">
+    <value>The calendar the usage follows over the year (residential, working days, school holidays, operation, utilisation pattern).</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BEDARF_ERL" xml:space="preserve">
+    <value>The demand per unit and day at the respective level, not negative.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_BANDBREITE_ERL" xml:space="preserve">
+    <value>Lower or upper bound of the demand range according to the source; empty = no value.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The temperature the demand figure refers to.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_FERIENFAKTOR_ERL" xml:space="preserve">
+    <value>The demand factor on holidays; empty = none.</value>
+  </data>
+  <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
+    <value>Twelve monthly factors January to December; normalised to the mean 1 when saving.</value>
+  </data>
 </root>

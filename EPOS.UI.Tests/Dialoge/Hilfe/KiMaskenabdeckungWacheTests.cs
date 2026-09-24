@@ -222,6 +222,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // Zahlenreihen, Vorlage, Katalogversion der Kopie).
         new("TagesgangEditor", 5),
         new("TarifstrukturDialog", 13),
+        // Zapfprofil Z4, Gruppe 3: der Katalog der Nutzungsarten ist lesend (Stammblatt), sein Editor
+        // führt Kennung, Bezugsart, Tagesgangsatz, Bedarf samt Bandbreite, Bezugstemperaturen,
+        // Bilanzgrenze, Kalender, Ferienfaktor und Monatsfaktoren (Schleifen je einmal gezählt).
+        new("TwwNutzungsartAdminDialog", 0),
+        new("TwwNutzungsartEditor", 13),
         new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
