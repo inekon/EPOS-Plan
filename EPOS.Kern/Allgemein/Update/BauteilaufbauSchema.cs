@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
         /// <summary>„Gehört zur Auslieferung" — nur am Katalogaufbau, nie an der Schicht (L1).</summary>
         public const string SPALTE_READONLY = "ReadOnly";
 
-        /// <summary>Projekt der Kopie — nur am Projektaufbau, ohne Fremdschlüssel (W16).</summary>
+        /// <summary>Projekt der Kopie — nur am Projektaufbau; Fremdschlüssel auf <c>Tab_Projekt</c> mit Löschweitergabe (Schritt 96).</summary>
         public const string SPALTE_ID_PROJEKT = "ID_Projekt";
 
         /// <summary>Eltern der Schicht, NOT NULL, <c>ON DELETE CASCADE</c> (W5).</summary>
@@ -151,7 +151,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>CREATE TABLE IF NOT EXISTS Tab_Bauteilaufbau</c> — die Projektkopie, spaltengleich,
-        /// zusätzlich <c>ID_Projekt</c> (ohne Fremdschlüssel), ohne <c>ReadOnly</c>.
+        /// zusätzlich <c>ID_Projekt</c> (Fremdschlüssel auf <c>Tab_Projekt</c>, Löschweitergabe wie
+        /// jede Projekttabelle seit Schritt 96 — ein gelöschtes Projekt nimmt seine Aufbauten samt
+        /// Schichten mit), ohne <c>ReadOnly</c>.
         /// </summary>
         public const string SQL_CREATE_AUFBAU =
             "CREATE TABLE IF NOT EXISTS \"Tab_Bauteilaufbau\" (\n" +
@@ -162,7 +164,8 @@ namespace WindowsFormsApplication1
             "    \"Bauteilart\" TEXT CHECK (\"Bauteilart\" IN (" + WERTE_BAUTEILART + ")),\n" +
             "    \"Quelle\" TEXT CHECK (length(\"Quelle\") <= 120),\n" +
             "    \"Herkunft\" TEXT CHECK (\"Herkunft\" IN (" + BaustoffSchema.WERTE_HERKUNFT + ")),\n" +
-            "    \"Quellkennung\" TEXT CHECK (length(\"Quellkennung\") <= 64)\n" +
+            "    \"Quellkennung\" TEXT CHECK (length(\"Quellkennung\") <= 64),\n" +
+            "    FOREIGN KEY (\"ID_Projekt\") REFERENCES \"Tab_Projekt\" (\"ID\") ON DELETE CASCADE ON UPDATE CASCADE\n" +
             ") STRICT";
 
         /// <summary>

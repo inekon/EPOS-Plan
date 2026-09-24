@@ -194,6 +194,7 @@ namespace WindowsFormsApplication1
         public Ergebnis SpeichernJeGebaeude(int idGebaeude, IList<ZoneModel> zonen)
         {
             List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();
+            foreach (ZoneModel z in liste) z.Bauteile ??= new List<BauteilModel>();
             string fehler = Pruefen(liste);
             if (fehler != null) return Ergebnis.Fehler(fehler);
 

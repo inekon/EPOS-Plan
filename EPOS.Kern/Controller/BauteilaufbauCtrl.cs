@@ -297,6 +297,7 @@ namespace WindowsFormsApplication1
 
         private Ergebnis Speichern(Seite seite, int? idProjekt, BauteilaufbauModel m)
         {
+            if (m != null) m.Schichten ??= new List<BauteilschichtModel>();
             string fehler = Pruefen(m);
             if (fehler != null) return Ergebnis.Fehler(fehler);
             string tab = AufbauTabelle(seite);

@@ -30,9 +30,14 @@ namespace WindowsFormsApplication1
     // werden in einem spaeteren Schritt gesaet; die Spalte entsteht schon jetzt, damit dieser
     // Schritt kein DDL braucht.
     //
-    // KEIN FREMDSCHLUESSEL AUF ID_PROJEKT (W16) - wie Tab_Wechselrichter und Tab_PV. Ein
-    // Fremdschluessel aenderte den Loeschweg eines Projekts; die Projektkopie reist ueber
-    // ihre Spalte ID_Projekt mit (ProjektDuplizierenCtrl, Projekttransfer).
+    // DER PROJEKTFREMDSCHLUESSEL (Hausregel seit Schemaschritt 96, BETRIEB_SQLITE.md 2a).
+    // ID_Projekt der Projektkopie traegt FOREIGN KEY auf Tab_Projekt mit ON DELETE CASCADE
+    // ON UPDATE CASCADE - wie ihre Vorbilder Tab_Wechselrichter und Tab_PV heute: Ein
+    // geloeschtes Projekt nimmt seine Baustoffe mit, eine Waise kann nicht entstehen, und der
+    // Waechter ProjektFremdschluesselTests haelt jede Tabelle mit Projektspalte darauf.
+    // Softwarearchitektur 2.2 ("ohne Fremdschluessel, wie der Bestand") beschreibt den Stand
+    // vor Schritt 96 und ist an dieser Stelle vom Bestand ueberholt. Die Projektkopie reist
+    // ueber ihre Spalte ID_Projekt mit (ProjektDuplizierenCtrl, Projekttransfer).
     //
     // DIE SAAT (BaustoffSaat.cs). 132 Zeilen mit fester Id: 65 herstellerneutrale Normzeilen
     // (1 bis 65) und 67 Herstellerzeilen (1001 bis 1067), ReadOnly = 1, Herkunft = VORGABE und
@@ -100,7 +105,7 @@ namespace WindowsFormsApplication1
         /// <summary>„Gehört zur Auslieferung" — nur im Katalog.</summary>
         public const string SPALTE_READONLY = "ReadOnly";
 
-        /// <summary>Das Projekt der Kopie — nur in der Projektkopie, ohne Fremdschlüssel (W16).</summary>
+        /// <summary>Das Projekt der Kopie — nur in der Projektkopie; Fremdschlüssel auf <c>Tab_Projekt</c> mit Löschweitergabe (Schritt 96).</summary>
         public const string SPALTE_ID_PROJEKT = "ID_Projekt";
 
         /// <summary>Höchstlänge des Bezeichners.</summary>
@@ -160,7 +165,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>CREATE TABLE IF NOT EXISTS Tab_Baustoff</c> — die Projektkopie, spaltengleich,
-        /// zusätzlich <c>ID_Projekt</c> (ohne Fremdschlüssel), ohne <c>ReadOnly</c>.
+        /// zusätzlich <c>ID_Projekt</c> (Fremdschlüssel auf <c>Tab_Projekt</c>, Löschweitergabe wie
+        /// jede Projekttabelle seit Schritt 96), ohne <c>ReadOnly</c>.
         /// </summary>
         public const string SQL_CREATE_PROJEKT =
             "CREATE TABLE IF NOT EXISTS \"Tab_Baustoff\" (\n" +
@@ -174,7 +180,8 @@ namespace WindowsFormsApplication1
             "    \"cp\" REAL,\n" +
             "    \"Quelle\" TEXT CHECK (length(\"Quelle\") <= 120),\n" +
             "    \"Herkunft\" TEXT CHECK (\"Herkunft\" IN (" + WERTE_HERKUNFT + ")),\n" +
-            "    \"Quellkennung\" TEXT CHECK (length(\"Quellkennung\") <= 64)\n" +
+            "    \"Quellkennung\" TEXT CHECK (length(\"Quellkennung\") <= 64),\n" +
+            "    FOREIGN KEY (\"ID_Projekt\") REFERENCES \"Tab_Projekt\" (\"ID\") ON DELETE CASCADE ON UPDATE CASCADE\n" +
             ") STRICT";
 
         /// <summary>

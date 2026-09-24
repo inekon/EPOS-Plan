@@ -267,8 +267,11 @@ namespace EPOS.Kern.Tests
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT));
             Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau_STAMM", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff_STAMM", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM));
-            Assert.Empty(Fks(SchemaKatalog.TAB_BAUSTOFF));
-            Assert.Empty(Fks(SchemaKatalog.TAB_BAUTEILAUFBAU));
+            // Die Projektkopien tragen den Projektfremdschluessel der Hausregel (Schritt 96).
+            Assert.Equal(new[] { ("ID_Projekt", "Tab_Projekt", "CASCADE") }, Fks(SchemaKatalog.TAB_BAUSTOFF));
+            Assert.Equal(new[] { ("ID_Projekt", "Tab_Projekt", "CASCADE") }, Fks(SchemaKatalog.TAB_BAUTEILAUFBAU));
+            Assert.Empty(Fks(SchemaKatalog.TAB_BAUSTOFF_STAMM));
+            Assert.Empty(Fks(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
         }
 
         /// <summary>Die Tabellen halten ihre Wertlisten selbst — auch an jeder Oberfläche vorbei.</summary>

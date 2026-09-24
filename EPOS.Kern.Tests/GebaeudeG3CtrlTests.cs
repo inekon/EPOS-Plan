@@ -307,7 +307,7 @@ namespace EPOS.Kern.Tests
             BauteilaufbauModel fremd = Wand("Wand 3");
             fremd.Schichten[0].ID_Baustoff = 999999;
             Assert.Equal(string.Format(R.BAUTEIL_MSG_SCHICHT_BAUSTOFF, 1, 999999), ctrl.KatalogSpeichern(fremd).Meldung);
-            Assert.Equal(1, ctrl.LesenKatalog().Count);
+            Assert.Single(ctrl.LesenKatalog());
 
             // Die Kaskade nimmt die Schichten mit.
             Assert.True(ctrl.KatalogLoeschen(e.Id).Ok);
@@ -588,18 +588,24 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
         }
 
-        /// <summary>Ein gelöschtes Projekt nimmt Gebäude, Zonen und Bauteile mit (Kaskade über <c>Tab_Projekt</c>).</summary>
+        /// <summary>
+        /// Ein gelöschtes Projekt nimmt Gebäude, Zonen und Bauteile mit (Kaskade über
+        /// <c>Tab_Projekt</c> → <c>Tab_Gebaeude</c>) und ebenso seine Baustoffe, Aufbauten und
+        /// Schichten (Projektfremdschlüssel der Hausregel); der Katalog bleibt.
+        /// </summary>
         [Fact]
-        public void A1_Ein_geloeschtes_Projekt_nimmt_seine_Zonen_mit()
+        public void A1_Ein_geloeschtes_Projekt_nimmt_seine_Zonen_und_Aufbauten_mit()
         {
             if (!_db.Vorhanden) return;
-            Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(GEBAEUDE,
-                new List<ZoneModel> { GebaeudeG3PruefregelTests.GueltigeZone() }).Ok);
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
+            Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(GEBAEUDE, ZweiZonen(ProjektAufbau())).Ok);
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau"));
 
             ProjektCtrl.LoeschenMitVorarbeiten(PROJEKT, PROJEKTNAME);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
+            foreach (string t in new[] { "Tab_Zone", "Tab_Bauteil", "Tab_Bauteilaufbau", "Tab_Bauteilschicht", "Tab_Baustoff" })
+                Assert.True(Zahl("SELECT COUNT(*) FROM " + t) == 0, t + " traegt nach dem Loeschen des Projekts noch Zeilen.");
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
+            Assert.Equal((long)BaustoffSchema.Saat.Count, Zahl("SELECT COUNT(*) FROM Tab_Baustoff_STAMM"));
         }
 
         // =============================================================================

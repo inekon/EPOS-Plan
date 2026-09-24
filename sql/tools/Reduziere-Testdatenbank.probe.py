@@ -153,7 +153,7 @@ ALLE_PROJEKTSPALTEN = [
     ("Tab_Stromverbrauchertyp", "ID_Projekt"), ("Tab_Variante", "ID_Projekt"),
     ("Tab_WP", "ID_Projekt"), ("Tab_Waermebedarf", "ID_Projekt"),
     ("Berichtskonfiguration", "ProjektID"),
-    # Gebaeudesimulation G3 (S-A, S-B): die zwei Projektkataloge, ID_Projekt ohne FK (W16)
+    # Gebaeudesimulation G3 (S-A, S-B): die zwei Projektkataloge, ID_Projekt mit Kaskade
     ("Tab_Baustoff", "ID_Projekt"), ("Tab_Bauteilaufbau", "ID_Projekt"),
 ]
 
@@ -513,12 +513,11 @@ def main():
            "Gegenprobe deckt alle %d Projektspalten des Schemas ab%s"
            % (len(tatsaechlich),
               "" if not (fehlt or zuviel) else " -> fehlt %s / zuviel %s" % (fehlt, zuviel)))
-    pruefe(len(kaskaden) == 19, "19 Tabellen mit ON DELETE CASCADE auf Tab_Projekt (%d)"
-           % len(kaskaden))
-    pruefe(len(aus_schema) - len(kaskaden) == 31,
-           "31 Tabellen mit Projektspalte ohne Kaskade (%d): 28 x ID_Projekt + "
-           "Berichtskonfiguration.ProjektID + Tab_Baustoff/Tab_Bauteilaufbau (G3)"
-           % (len(aus_schema) - len(kaskaden)))
+    pruefe(len(kaskaden) == 21, "21 Tabellen mit ON DELETE CASCADE auf Tab_Projekt (%d): "
+           "19 + Tab_Baustoff/Tab_Bauteilaufbau (G3)" % len(kaskaden))
+    pruefe(len(aus_schema) - len(kaskaden) == 29,
+           "29 Tabellen mit Projektspalte ohne Kaskade (%d): 28 x ID_Projekt + "
+           "Berichtskonfiguration.ProjektID" % (len(aus_schema) - len(kaskaden)))
 
     fuelle(con)
 

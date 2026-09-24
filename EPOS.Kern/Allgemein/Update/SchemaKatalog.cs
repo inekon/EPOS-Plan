@@ -256,13 +256,13 @@ namespace WindowsFormsApplication1
         /// <summary>Baustoffkatalog (Schritt S-A, <see cref="BaustoffSchema"/>) — Auslieferung, <c>ReadOnly</c> = Saat.</summary>
         public const string TAB_BAUSTOFF_STAMM = "Tab_Baustoff_STAMM";
 
-        /// <summary>Projektkopie des Baustoffkatalogs (S-A), spaltengleich, mit <c>ID_Projekt</c> ohne Fremdschlüssel.</summary>
+        /// <summary>Projektkopie des Baustoffkatalogs (S-A), spaltengleich, <c>ID_Projekt</c> mit Fremdschlüssel auf <c>Tab_Projekt</c> (Schritt 96).</summary>
         public const string TAB_BAUSTOFF = "Tab_Baustoff";
 
         /// <summary>Bauteilaufbau-Katalog (Schritt S-B, <see cref="BauteilaufbauSchema"/>).</summary>
         public const string TAB_BAUTEILAUFBAU_STAMM = "Tab_Bauteilaufbau_STAMM";
 
-        /// <summary>Projektkopie der Bauteilaufbauten (S-B), mit <c>ID_Projekt</c> ohne Fremdschlüssel.</summary>
+        /// <summary>Projektkopie der Bauteilaufbauten (S-B), <c>ID_Projekt</c> mit Fremdschlüssel auf <c>Tab_Projekt</c> (Schritt 96).</summary>
         public const string TAB_BAUTEILAUFBAU = "Tab_Bauteilaufbau";
 
         /// <summary>Schichten der Katalogaufbauten (S-B) — Kindkatalog OHNE <c>ReadOnly</c> (L1).</summary>

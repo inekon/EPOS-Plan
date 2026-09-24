@@ -77,6 +77,11 @@
 --   Achtung: Tab_ProjektWerte verknuepft ueber die Spalte ProjektID, nicht
 --   ID_Projekt - als einzige der neunzehn.
 --
+--   Gebaeudesimulation Stufe G3 (Schritte S-A/S-B): die zwei Projektkataloge der
+--   Gebaeudehuelle tragen ihren Fremdschluessel auf Tab_Projekt von Anfang an
+--   (Hausregel seit Schemaschritt 96) und gehoeren damit ebenfalls hierher:
+--     Tab_Baustoff                Tab_Bauteilaufbau (Schichten ueber ihre Kaskade)
+--
 -- Stufe 1b - dieselben 19 Tabellen noch einmal explizit (Sicherheitsnetz, falls
 --   PRAGMA foreign_keys nicht greift). In einer intakten Datenbank mit
 --   eingeschalteten Fremdschluesseln treffen diese Anweisungen keine Zeile mehr.
@@ -97,10 +102,6 @@
 --   Dazu kommt eine 27. Tabelle, die nicht in der Vormessung stand, weil sie die
 --   Spalte anders nennt:
 --     Berichtskonfiguration       (ProjektID, ohne Fremdschluessel)
---
---   Gebaeudesimulation Stufe G3 (Schritte S-A/S-B, Softwarearchitektur 2.6): die
---   zwei Projektkataloge der Gebaeudehuelle, ID_Projekt ohne Fremdschluessel (W16):
---     Tab_Baustoff                Tab_Bauteilaufbau
 --
 --   Jede dieser Anweisungen schont Katalogzeilen:
 --     WHERE <spalte> IS NOT NULL AND <spalte> <> 0 AND <spalte> NOT IN (behalten)
@@ -294,6 +295,10 @@ DELETE FROM "energy_price"                 WHERE "ID_Projekt" IS NOT NULL AND "I
 DELETE FROM "energy_project_settings"      WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 -- Einzige der neunzehn mit abweichendem Spaltennamen:
 DELETE FROM "Tab_ProjektWerte"             WHERE "ProjektID"  IS NOT NULL AND "ProjektID"  <> 0 AND "ProjektID"  NOT IN (SELECT "ID" FROM behalten);
+-- Gebaeudesimulation G3 (S-A, S-B): die zwei Projektkataloge der Gebaeudehuelle. Die
+-- Schichten gehen ueber ihre Kaskade mit; Stufe 3 raeumt sie zusaetzlich ab.
+DELETE FROM "Tab_Bauteilaufbau"            WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
+DELETE FROM "Tab_Baustoff"                 WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 
 
 -- ============================================================================
@@ -332,11 +337,6 @@ DELETE FROM "Tab_Gebaeude"                 WHERE "ID_Projekt" IS NOT NULL AND "I
 DELETE FROM "Tab_Klimadaten"               WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 DELETE FROM "Tab_Solar"                    WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 DELETE FROM "Tab_Kenndaten"                WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
-
--- --- Gebaeudesimulation G3: Projektkataloge der Gebaeudehuelle (S-A, S-B) ---
--- Die Schichten gehen ueber ihre Kaskade mit; Stufe 3 raeumt sie zusaetzlich ab.
-DELETE FROM "Tab_Bauteilaufbau"            WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
-DELETE FROM "Tab_Baustoff"                 WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 
 -- --- Sonstiges: Spalte heisst ProjektID, kein Fremdschluessel ----------------
 DELETE FROM "Berichtskonfiguration"        WHERE "ProjektID"  IS NOT NULL AND "ProjektID"  <> 0 AND "ProjektID"  NOT IN (SELECT "ID" FROM behalten);
