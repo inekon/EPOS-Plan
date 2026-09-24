@@ -429,9 +429,33 @@ namespace WindowsFormsApplication1
         /// auf <c>energy_carrier.id</c>, NULL = wie Heizbetrieb) — alle bei
         /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> kein Rechenweg
         /// liest die Spalten; der Referenzlauf bleibt byte-gleich.
+        /// Mit den ZAPFKATEGORIEN DES ZAPFPROFILGENERATORS (Schritt 115, Papiername T2,
+        /// Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Stufe Z3) steht das Ziel auf
+        /// <b>115</b>: die Tabelle <c>Tab_TwwZapfkategorie_STAMM</c>
+        /// (<see cref="TwwSchema.AnweisungenT2"/>). <b>Reines DDL, ergebnisneutral:</b> Die
+        /// Tabelle entsteht leer, kein Projekt steht auf dem Generator; der Referenzlauf bleibt
+        /// byte-gleich.
+        /// Mit dem SZENARIORAHMEN (Schritt 116, Schritt B des Analysepapiers, Etappe E9a der
+        /// vollständigen Szenarioabdeckung V‑E) steht das Ziel auf <b>116</b>:
+        /// <c>Szen_Best/Worst_Zeitraum</c> (ganze Jahre) und <c>Szen_Best/Worst_Menge</c> [%]
+        /// an <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// (<see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>). <b>Reines DDL,
+        /// ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „wie Erwartet"; der
+        /// Referenzlauf bleibt byte-gleich.
+        /// Mit den TRÄGERPREISEN BEST/WORST (Schritt 117, Schritt C) steht das Ziel auf
+        /// <b>117</b>: <c>custom_price_work/base/power_best/_worst</c> an
+        /// <c>energy_project_settings</c>
+        /// (<see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>). <b>Reines DDL,
+        /// ergebnisneutral bis zur ersten Pflege</b>; der Referenzlauf bleibt byte-gleich.
+        /// Mit den ERLÖSSÄTZEN BEST/WORST (Schritt 118, Schritt D) steht das Ziel auf
+        /// <b>118</b>: <c>Einspeiseverguetung(_KWK)_Best/_Worst</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, <c>DvEntgelt_Best/_Worst</c> und
+        /// <c>PpaPreis_Best/_Worst</c> an <c>Tab_ProjektPhotovoltaik</c>
+        /// (<see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>). <b>Reines DDL,
+        /// ergebnisneutral bis zur ersten Pflege</b>; der Referenzlauf bleibt byte-gleich.
         /// Mit der ABRECHNUNGSART DES KAELTESTROMS UND DER KAELTESEITE DER
-        /// WAERMEPUMPENERGEBNISSE (Schritt 115, Stufe KU2 Welle 3; Kuehlkonzept 6.1–6.4 und 8.4,
-        /// Entscheid E34 vom 23.09.2026) steht das Ziel auf <b>115</b>:
+        /// WAERMEPUMPENERGEBNISSE (Schritt 119, Stufe KU2 Welle 3; Kuehlkonzept 6.1–6.4 und 8.4,
+        /// Entscheid E34 vom 23.09.2026) steht das Ziel auf <b>119</b>:
         /// <c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c> (0/1, nullbar, NULL = anteilig am
         /// Netzbezug) und sieben nullbare Ergebnisspalten an <c>Tab_ErgebnisWaermepumpe</c> und
         /// <c>Tab_ErgebnisWaermepumpeModul</c> (<see cref="KuehlungSchema.Kaelteerzeugerspalten"/>).
@@ -442,7 +466,7 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 115;
+        public const int Zielversion = 119;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

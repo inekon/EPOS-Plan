@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             var namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten) namen.Add(s.Name);
-            // Schemaschritt 115 (Stufe KU2 Welle 3): die Kaelteseite der Waermepumpe - dieselbe
+            // Schemaschritt 119 (Stufe KU2 Welle 3): die Kaelteseite der Waermepumpe - dieselbe
             // Regel, sie steht erst mit einer gerechneten Kaeltekaskade in aggregate.csv.
             foreach (SchemaSpalte s in KuehlungSchema.Kaelteerzeugerspalten) namen.Add(s.Name);
             return namen;

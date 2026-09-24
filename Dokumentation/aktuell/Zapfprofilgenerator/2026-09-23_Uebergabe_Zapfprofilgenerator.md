@@ -366,3 +366,81 @@ Nach Abschnitt 8 wurde die Stufe Z2 am selben Tag auf dem Zweig `z2` ausgeführt
   Nummer erst bei der Vergabe messen — `git fetch origin`, dann `SchemaStand.Zielversion` auf
   `origin/ios_migration_september` **und** auf allen lokalen Zweigen und Worktrees; heute steht
   sie überall auf 113, der nächste freie Schritt ist 114; die Nummer im Merge festschreiben.
+
+## 10 Nachtrag 24.09.2026 — Stufe Z3 umgesetzt
+
+Nach Abschnitt 9 wurde die Stufe Z3 in der Nacht vom 23. auf den 24.09.2026 auf dem Zweig `z3`
+ausgeführt (von `ffc27d18`, 49 eigene Commits bis `ea6f8608`, gepusht am 24.09.2026, Kern-Lauf 35941477369 grün, Merges von `origin` `7a32b6f3`,
+`aab9896e` und `a1df2dbe`) und mit dem Stand von `ios_migration_september` zusammengeführt; der
+Übertrag setzt nach Push und Sichtabnahme bei Z4 an.
+
+- **Ergebnis Gruppe 1 (Kern):** `ZapfZufall` (SplitMix64, xoshiro256** mit veröffentlichtem
+  Prüfvektor, Lemire, Σ12u−6, von Neumann, Poisson; keine transzendente Funktion, bitgleich),
+  `Zapfkategorie`/`Zapfkategoriensatz`/`ZapfStochastikParameter`, `Zapfereignisgenerator` (Poisson je
+  Kategorie und Tag, exaktes Irwin-Hall-Mittel, Kappung), `Zapfensemble` (Bedarfstag: Perzentile je
+  Topologie, GLF_V/GLF_P, √N, Kennzahlen statt Tage, `Volumenauftrag`), `Jahresensemble` (Bilanz =
+  Jahr zum Seed × E_det/E_0, R Jahre für die Konsistenzprobe), `Minutenstatistik`, Obergrenzen;
+  unabhängige Referenzfälle für Zufall, Auslegungs- und Jahresensemble; DHWcalc-Vergleich gegen
+  OpenDHW (MIT, gz, Attribution) in Verteilungsgrößen.
+- **Ergebnis Gruppe 2 (Katalog und Schema):** Schemaschritt **115** `Tab_TwwZapfkategorie_STAMM`
+  (16 Spalten, zunächst als 114 aufgesetzt, nach der Kollision mit KU2 W1 umnummeriert); Kategorien als
+  Datenblock der Nutzungsart in Transfer, Sperre, Kopierstellen und Auslieferungsvorlage;
+  `ZapfprofilCtrl.Eingang` liest Kategorien und Parameter; **ZU19**: Ableitungsskript
+  `Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py` (nur mit den lokalen Originalen lauffähig)
+  → `tww_katalogwerte_abgeleitet.json` (497 Werte, reproduzierbar), vier abgeleitete Nutzungsarten
+  (`FIKTIV`, Quelle „VDI 6002 Blatt n (abgeleitet)"); **freier Paketteil**
+  `Referenzlaeufe/Katalogpaket_frei/` (Ecodesign-Profil L, 5 Parameter, 4 Kategorien; `FREI`,
+  AUSLIEFERUNG, ReadOnly 1), von der Vorlage immer eingespielt; Wachen Testdatenbank = JSON/Paketteil
+  und gegen die lokalen Originale; Testdatenbank neu (LFS `fbc30835…`, 82 Zeilen); Nachtrag N12.
+- **Ergebnis Gruppe 3 (Oberfläche):** Zapfprofil-Dialog mit Stufe Experte, Gruppe „Stochastik ·
+  Jahresreihe" (Rechenweg, Seed, Realisierungen), Konsistenzprobe im Reiter Kennzahlen; Auslegung mit
+  „Stochastisch rechnen", P95/P99, Realisierungen, Karte (b) mit Perzentilwert, Streuband, GLF,
+  „nicht belastbar", Konsistenzhinweis, Spitze je Einheit der Wohnungsstation; Vorschau bleibt
+  deterministisch, Ensembles rechnen nebenläufig mit Status und Abbruch; Kernschranke der Einheitentage je Projekt, Abbruch bis in den Kern; DTO, Hülle,
+  70 neue und 10 geänderte Ressourcenschlüssel je Sprache.
+- **Statuszeile und Protokoll:** #453, Protokoll
+  [`2026-09-24_Z3_Stochastik.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-24_Z3_Stochastik.md).
+- **Gate im Worktree (nach dem Merge):** Kern-Filter 0 Fehler; voller Testlauf 12 287 grün, 0 rot, 1 übersprungen; ChartProben 161 Bilder ohne Verstoß; SQL-Dialekt-Prüfer 1 759 Texte ohne Fund; Auslieferungsvorlage 30/30; Windows-Schale 0 Fehler; Referenzlauf der fünf CI-Projekte gegen R13 PASS, byte-gleich.
+- **Gegenprüfungen:** je Gruppe eine, zusammen 27 Befunde (Gruppe 1: 9 mit 1 hoch; Gruppe 2: 9 mit
+  1 hoch; Gruppe 3: 9 mit 1 hoch); die hohen Befunde — Bilanz als Ensemblemittel, rückrechenbare
+  Ableitung, stochastische Vorschau im Renderfaden — sind behoben bzw. vom Anwender entschieden
+  (Rückrechenbarkeit zugelassen); alle mittleren Befunde behoben, geringe im Nachtrag N12.
+- **Anwenderentscheide dieser Stufe:** ZU19 (abgeleitete VDI-Werte im Repositorium; Rückrechenbarkeit
+  zugelassen) — umgesetzt; offen: **ZU20** (Auslieferung der abgeleiteten Werte, nach K8), **ZU21**
+  (Setzungen des Paketteils bestätigen: Urlaubsversatz 14 d, Vielfaches 2, Konsistenzschwelle 1,5,
+  Quantile, Streuungen nach DHWcalc-Protokoll, keine Kappung), K8/ZU15 (Lizenz), Versionsnummer für
+  die drei Logbuch-Sätze.
+- **Sichtabnahme unter Windows (Bedarfsprofil Brauchwasser → „Zapfprofil erzeugen…"):**
+  1. Stufe „Experte": Gruppe „Stochastik · Jahresreihe" erscheint; „Erweitert" meldet „noch nicht
+     verfügbar"; Seed (1) steht auch bei „deterministisch", Realisierungen (10) nur bei „stochastisch".
+  2. Rechenweg „stochastisch": Vorschau ohne Hänger, leise Zeile darunter; Zähler „+1 überschrieben";
+     Leiste „monatlicher Verlauf" im Bedarfsprofil zeigt sofort an.
+  3. Realisierungen „5000" eingeben: Feld rot, OK meldet „Bitte die markierten Felder berichtigen".
+  4. „Stochastisch rechnen" in der Fußleiste: Auslegung öffnet sofort mit gesetztem Schalter, Karte (b)
+     sagt „rechnet …", Fortschritt mit Abbrechen, Oberfläche bleibt bedienbar; danach Perzentilwert,
+     Tabelle P50 … P99 mit Spannweite, GLF_V mit Σ n_E, Konsistenzsatz mit Werten, kein „(K3)".
+  5. Zurück im Zapfprofil: Fortschritt „Jahresreihe rechnet …", danach im Reiter Kennzahlen je Zone die
+     Konsistenzprobe (±%, ✓) und Status „Stochastik gerechnet · Seed · Jahre".
+  6. Abbrechen am Fortschritt: Lauf endet zügig, leise Zeile nennt den Abbruch; eine Eingabe während
+     des Laufs verwirft ihn.
+  7. Auslegung: Realisierungen „5" → Marke „nicht belastbar" mit Tooltip; P95 wählen → Vorgabe 40;
+     Abbrechen schaltet „Stochastisch rechnen" aus; OK während des Laufs übernimmt den Punkt sofort.
+  8. „Auslegung…" nach einem OK mit Schalter: Schalter aus, kein sofortiger Lauf; Haken aus → Karte (b)
+     wieder „noch nicht gerechnet".
+  9. Zone mit Nutzungsart ohne Zapfkategorien (Testnutzung): Banner mit Nutzungsart an der Zone; Zone
+     mit „Wohnen groß" rechnet.
+  10. Wohnungsstation: Zeile „Spitze je Einheit" in Karte (b); maßgebender Tag als Datum; bei P_p = ∞
+     „entfällt" mit Standtext.
+  11. OK, OK im Bedarfsprofil: Ergebnis gilt als veraltet; nach Wiederöffnen stehen Rechenweg und Seed.
+  12. Englisch dieselben Stellen; bei R = 1000 und großer Zone erscheint der benannte Grund der
+     Einheitentage statt eines Hängers.
+- **Koordination:** Schrittnummer 115 und Statusnummer #453 mit den Sitzungen Wirtschaftlichkeit
+  (E9 ab 116, #454/#455) und Dialog Design (#456–#459; KI-Maskenanmeldung der drei Zapfprofil-Dialoge
+  nach dem Z3-Merge in #458) abgestimmt; das Kühlungskonto vergab 114 ohne Abstimmung — künftig wird
+  die Nummer unmittelbar vor dem Merge erneut gemessen.
+- **Nächster Auftrag:** Stufe Z4 nach Kapitel 7 — Stufe Erweitert der Dialoge, Kategorien als
+  Katalogkopie (Status EIGEN) im Experten-Modus, Erzeugerart und Werkstoff, DIN 1988-300; Z4b:
+  VDI 4655 (T3 `Tab_TwwTyptag_IMPORT`) unter der Regel ZU19; Z5: Nichtwohn-Kategorien nach
+  OpenDHW-Muster, Kategorien als Katalogpflege. **Schemaschritt T3:** Nummer erst bei der Vergabe
+  messen (`git fetch origin`, `SchemaStand.Zielversion` auf `origin` und allen lokalen Zweigen); heute
+  ist 115 die höchste, Wirtschaftlichkeit nimmt ab 116.

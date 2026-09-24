@@ -46,7 +46,17 @@ namespace WindowsFormsApplication1
         KeineVerteilung = 13,
 
         /// <summary>Der Generator ist in dieser Datenbank nicht verfügbar — die Tww-Tabellen fehlen (3.2).</summary>
-        NichtVerfuegbar = 14
+        NichtVerfuegbar = 14,
+
+        /// <summary>
+        /// Die Stochastik ist nicht rechenbar (4.4): Zapfkategorien fehlen oder sind ungültig (auch
+        /// eine nicht endliche Rate der Ereignisse), die Einheiten sind nicht bestimmbar, die Zahl der
+        /// Realisierungen liegt außerhalb 1 … Obergrenze (Jahresreihe <c>Jahresensemble.HOECHSTENS</c>,
+        /// Bedarfstag <c>Zapfensemble.HOECHSTENS</c>), das Auslegungsensemble überschreitet die
+        /// Einheitentage (<c>Zapfensemble.HOECHSTENS_EINHEITSTAGE</c>) oder das Jahr zum Seed trägt
+        /// keine Zapfung.
+        /// </summary>
+        StochastikUngueltig = 15
     }
 
     /// <summary>
@@ -68,6 +78,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zone; leer, wenn das Projekt betroffen ist.</summary>
         internal string Zone { get; }
+
+        /// <summary>
+        /// Die genauere Kennung innerhalb des Grundes (etwa
+        /// <see cref="Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN"/>); <c>null</c> = nur der Grund.
+        /// Die Hülle nimmt sie als Ressourcenschlüssel <c>ZPG_EINGABE_</c> + Kennung.
+        /// </summary>
+        internal string Kennung { get; init; }
+
+        /// <summary>
+        /// Die Werte, die der Text der <see cref="Kennung"/> in seine Platzhalter {0}, {1}, …
+        /// einsetzt — sprachfrei, je Wert getrennt (etwa Bezeichner und Katalogversion der
+        /// Nutzungsart); sonst <c>null</c>. Den Satz baut die Hülle in der Oberflächensprache.
+        /// </summary>
+        internal IReadOnlyList<string> Argumente { get; init; }
     }
 
     /// <summary>Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung, Klartext.</summary>
@@ -198,6 +222,16 @@ namespace WindowsFormsApplication1
         /// bleibt unberührt. 0 = keine Netzverluste oder unbekannt.
         /// </summary>
         public double NetzverlusteProjekt { get; init; }
+
+        /// <summary>
+        /// Die Zapfkategorien des Katalogs (T2, 4.4) für die Nutzungsarten der Zonen — gelesen von
+        /// <c>ZapfprofilCtrl.Eingang</c> aus <c>Tab_TwwZapfkategorie_STAMM</c> je Nutzungsart in der
+        /// Reihenfolge des Katalogs; leer, solange der Katalog keine trägt oder die Datenbank die
+        /// Tabelle nicht führt (Stand vor 115). Gebraucht nur auf dem stochastischen Weg — der Jahresreihe
+        /// (<see cref="ProjektStand.JahresreiheStochastisch"/>) und des Auslegungsensembles; fehlen die
+        /// Kategorien einer Nutzungsart dort, lehnt die Zone benannt ab.
+        /// </summary>
+        public IReadOnlyList<Zapfkategorie> Zapfkategorien { get; init; } = new Zapfkategorie[0];
 
         /// <summary>Der Eingang aus einem Arbeitsstand, dem Kalender und dem Parametersatz.</summary>
         internal static Zapfprofileingang Aus(ZapfprofilStand stand, int wochentagJan1, bool[] we, Parametersatz ps)

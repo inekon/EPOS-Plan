@@ -379,10 +379,39 @@ namespace WindowsFormsApplication1
         /// <summary>Fehlertext, falls dieses Projekt beim Sammeln scheiterte (Bericht läuft weiter).</summary>
         public string Fehler;
 
+        /// <summary>
+        /// ETAPPE E9a (Schritt C): Die Energiekosten dieser Daten sind mit den Trägerpreisen
+        /// eines SZENARIOS gerechnet, und der Preis des Stromträgers (Arbeit, Grund oder
+        /// Leistung) trägt dort eine gepflegte Abweichung. Gesetzt von
+        /// <see cref="KostenEmissionRechner"/>; die Wirtschaftlichkeit meldet damit den Fall
+        /// „Rollenmodell aktiv — der Szenario-Strompreis wirkt nicht" (E9a‑Q7). Im
+        /// Erwartungsfall immer false.
+        /// </summary>
+        public bool SzenarioStrompreisGepflegt;
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C, E9a‑Q3): Namen der Träger, deren gepflegter
+        /// Szenario-LEISTUNGSpreis ohne Wirkung blieb, weil eine Leistungspreis-Staffel oder
+        /// eine saisonale Leistungspreisreihe gilt. Gesetzt von
+        /// <see cref="KostenEmissionRechner"/>, gemeldet als Kohärenzzeile; leer = kein Fall.
+        /// </summary>
+        public List<string> SzenarioLeistungspreisOhneWirkung = new List<string>();
+
         /// <summary>Anzeigename: Variantenname, sonst Projektname.</summary>
         public string Anzeige
         {
             get { return IstStamm ? "Stamm" : (string.IsNullOrEmpty(Variantenname) ? Projektname : Variantenname); }
+        }
+
+        /// <summary>
+        /// ETAPPE E9a: flache Kopie — die Grundlage der Szenariodaten einer Variante
+        /// (skaliertes Mengengerüst, Energiekosten mit den Trägerpreisen des Szenarios). Die
+        /// Kopie teilt Listen und Bäume mit dem Original, bis sie ersetzt werden; die Rechner
+        /// ersetzen, statt zu verändern.
+        /// </summary>
+        public VariantenDaten Kopie()
+        {
+            return (VariantenDaten)MemberwiseClone();
         }
     }
 

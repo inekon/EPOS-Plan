@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
     /// Waermepumpe steht danach auf „kein Kuehlbetrieb", die uebrigen Spalten auf NULL, und kein
     /// Rechenweg liest sie.</para>
     ///
-    /// <para><b>Schritt 115</b> — Stufe KU2 Welle 3 (Kuehlkonzept 6.1–6.4, 8.4; Entscheid E34): die
+    /// <para><b>Schritt 119</b> — Stufe KU2 Welle 3 (Kuehlkonzept 6.1–6.4, 8.4; Entscheid E34): die
     /// Abrechnungsart des Kaeltestroms bei abweichendem Kuehltraeger an der Anlagenzeile
     /// (<see cref="SPALTE_KUEHL_EIGENER_ZAEHLER"/>) und die sieben Ergebnisspalten der Kaelteseite
     /// der Waermepumpe (<see cref="Kaelteerzeugerspalten"/>). Reines DDL, alle NULL; der Lauf
@@ -241,7 +241,7 @@ namespace WindowsFormsApplication1
             SPALTE_KUEHL_ID_CARRIER + "\" " + TYP_KUEHL_ID_CARRIER;
 
         // =====================================================================
-        //  Schritt 115 — die Abrechnungsart des Kältestroms (E34) und die
+        //  Schritt 119 — die Abrechnungsart des Kältestroms (E34) und die
         //  Kälteseite der Wärmepumpenergebnisse (Kühlkonzept 6.1–6.4, 7.3, 7.4, 8.4)
         // =====================================================================
 
@@ -309,7 +309,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_MODUL_KUEHL_CARRIER = "Kuehl_carrier_id";
 
         /// <summary>
-        /// Die sieben Ergebnisspalten der Kälteseite der Wärmepumpe (Schritt 115): zwei an
+        /// Die sieben Ergebnisspalten der Kälteseite der Wärmepumpe (Schritt 119): zwei an
         /// <c>Tab_ErgebnisWaermepumpe</c>, fünf an der Modulzeile — <b>DOUBLE, nullbar, ohne Vorgabe</b>
         /// bzw. <c>LONG</c> und <c>YESNO_NULL</c>. NULL heißt „keine Kälteerzeugung gerechnet": Der
         /// Lauf schreibt sie nur mit einer gerechneten Kältekaskade, und der Referenzlauf-Export nimmt
@@ -335,8 +335,8 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ERGEBNIS_WP_MODUL,                 SPALTE_KUEHL_EIGENER_ZAEHLER,   "YESNO_NULL"),
         };
 
-        /// <summary>Alle acht Einträge von Schritt 115: die Abrechnungsart an der Anlagenzeile, dann die sieben Ergebnisspalten.</summary>
-        public static IEnumerable<SchemaSpalte> Schritt115Spalten()
+        /// <summary>Alle acht Einträge von Schritt 119: die Abrechnungsart an der Anlagenzeile, dann die sieben Ergebnisspalten.</summary>
+        public static IEnumerable<SchemaSpalte> Schritt119Spalten()
         {
             yield return Abrechnungsspalte;
             foreach (SchemaSpalte s in Kaelteerzeugerspalten) yield return s;
@@ -369,29 +369,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Steht Schritt 115? Die Abrechnungsart des Kältestroms an der Anlagenzeile und die sieben
+        /// Steht Schritt 119? Die Abrechnungsart des Kältestroms an der Anlagenzeile und die sieben
         /// Ergebnisspalten der Kälteseite der Wärmepumpe stehen.
         /// </summary>
-        public static bool Schritt115Vollstaendig()
+        public static bool Schritt119Vollstaendig()
         {
-            return Schritt115Spalten().All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+            return Schritt119Spalten().All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
         }
 
         /// <summary>
-        /// Führt Schritt 115 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
+        /// Führt Schritt 119 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
         /// <c>EPOS.Kern.Tests</c>; die Migration der Schale geht denselben Weg über ihre eigenen
-        /// Helfer, aus denselben Definitionen (<see cref="Schritt115Spalten"/>). <b>Wiederholbar:</b>
+        /// Helfer, aus denselben Definitionen (<see cref="Schritt119Spalten"/>). <b>Wiederholbar:</b>
         /// Eine vorhandene Spalte wird übergangen. <b>Kein DML</b> — alle acht Spalten stehen danach
         /// auf NULL.
         /// </summary>
         /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
         /// <returns>Die Zahl der angelegten Spalten (höchstens acht).</returns>
-        public static int Schritt115Alle(IList<string> bericht)
+        public static int Schritt119Alle(IList<string> bericht)
         {
             int angelegt = 0;
             // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
             // Verbindung und saehe die offene Transaktion nicht.
-            var alle = Schritt115Spalten().ToList();
+            var alle = Schritt119Spalten().ToList();
             var fehlend = alle.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
 
             using (DbVorgang v = DataRepository.Vorgang())

@@ -11,7 +11,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Der Kältestrom in Kosten und Emissionen — Stufe KU2 Welle 3</b> (Kühlkonzept 6.1–6.4, 8.4;
-    /// Entscheid E34, Konzept Gebäudesimulation N1.39): Schemaschritt 115, die Abrechnungsart an der
+    /// Entscheid E34, Konzept Gebäudesimulation N1.39): Schemaschritt 119, die Abrechnungsart an der
     /// Anlagenzeile samt Speicherweg, die Aufteilung des Netzbezugs im Lauf, die Bepreisung und
     /// Bewertung genau einmal im <c>KostenEmissionRechner</c> und die Kennzahlen der Kälteseite.
     ///
@@ -44,18 +44,18 @@ namespace EPOS.Kern.Tests
         private const double CO2_PROJEKT = 400.0, CO2_KUEHLUNG = 100.0;
 
         // =============================================================================
-        //  Teil 1 — ohne Datenbank: Schritt 115, Anteilsregel, Abweichung, Anteile
+        //  Teil 1 — ohne Datenbank: Schritt 119, Anteilsregel, Abweichung, Anteile
         // =============================================================================
 
         /// <summary>
-        /// Schritt 115: die Abrechnungsart als nullbarer Wahrheitswert OHNE Vorgabe an der
+        /// Schritt 119: die Abrechnungsart als nullbarer Wahrheitswert OHNE Vorgabe an der
         /// Anlagenzeile (keine DDL-Vorgabe, kein NOT NULL — nicht vom Vorgabewert-Problem der
         /// Fachspaltenrettung betroffen), sieben Ergebnisspalten; keine davon in der Rückfallebene.
         /// </summary>
         [Fact]
-        public void Schritt_115_Definitionen_nullbar_ohne_Vorgabe_und_nicht_in_der_Rueckfallebene()
+        public void Schritt_119_Definitionen_nullbar_ohne_Vorgabe_und_nicht_in_der_Rueckfallebene()
         {
-            Assert.True(SchemaStand.Zielversion >= 115);
+            Assert.True(SchemaStand.Zielversion >= 119);
             Assert.Equal("Kuehl_EigenerZaehler", KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER);
             Assert.Equal(SchemaKatalog.TAB_ENERGIEANLAGEN, KuehlungSchema.Abrechnungsspalte.Tabelle);
             string typ = StilleDb.SqliteSpaltenTyp(KuehlungSchema.Abrechnungsspalte.Name,
@@ -65,10 +65,10 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("NOT NULL", typ, StringComparison.OrdinalIgnoreCase);
 
             Assert.Equal(7, KuehlungSchema.Kaelteerzeugerspalten.Length);
-            Assert.Equal(8, KuehlungSchema.Schritt115Spalten().Count());
+            Assert.Equal(8, KuehlungSchema.Schritt119Spalten().Count());
             var rueckfall = new HashSet<string>(SchemaKatalog.Alle.Select(s => s.Tabelle + "." + s.Name),
                                                 StringComparer.OrdinalIgnoreCase);
-            foreach (SchemaSpalte s in KuehlungSchema.Schritt115Spalten())
+            foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
                 Assert.DoesNotContain(s.Tabelle + "." + s.Name, rueckfall);
         }
 
@@ -157,18 +157,18 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
-        //  Teil 2 — die Testdatenbank auf Stand 115 und die Anlagenzeile
+        //  Teil 2 — die Testdatenbank auf Stand 119 und die Anlagenzeile
         // =============================================================================
 
         /// <summary>Alle acht Spalten stehen, alle NULL; die Prüfung weist eine 2 ab; STRICT bleibt.</summary>
         [Fact]
-        public void Die_Testdatenbank_steht_auf_115_und_alles_ist_leer()
+        public void Die_Testdatenbank_steht_auf_119_und_alles_ist_leer()
         {
             if (!_db.Vorhanden) return;
 
-            Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= 115);
-            Assert.True(KuehlungSchema.Schritt115Vollstaendig());
-            foreach (SchemaSpalte s in KuehlungSchema.Schritt115Spalten())
+            Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= 119);
+            Assert.True(KuehlungSchema.Schritt119Vollstaendig());
+            foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL"));
 
             try
@@ -189,24 +189,24 @@ namespace EPOS.Kern.Tests
             }
         }
 
-        /// <summary>Schritt 115 aus dem Stand davor: Die acht Spalten entstehen, der Bestand bleibt, ein zweiter Lauf legt nichts an.</summary>
+        /// <summary>Schritt 119 aus dem Stand davor: Die acht Spalten entstehen, der Bestand bleibt, ein zweiter Lauf legt nichts an.</summary>
         [Fact]
-        public void Schritt_115_aus_dem_Stand_davor_und_wiederholbar()
+        public void Schritt_119_aus_dem_Stand_davor_und_wiederholbar()
         {
             if (!_db.Vorhanden) return;
 
             string bestand = Abdruck("SELECT ID, Bezeichner, ID_Carrier, Kuehl_ID_Carrier FROM Tab_Energieanlagen ORDER BY ID");
-            foreach (SchemaSpalte s in KuehlungSchema.Schritt115Spalten())
+            foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" DROP COLUMN \"" + s.Name + "\"");
-            Assert.False(KuehlungSchema.Schritt115Vollstaendig());
+            Assert.False(KuehlungSchema.Schritt119Vollstaendig());
 
             var bericht = new List<string>();
-            Assert.Equal(8, KuehlungSchema.Schritt115Alle(bericht));
+            Assert.Equal(8, KuehlungSchema.Schritt119Alle(bericht));
             Assert.Contains(bericht, z => z.Contains("8 von 8 Spalte(n)"));
-            Assert.True(KuehlungSchema.Schritt115Vollstaendig());
+            Assert.True(KuehlungSchema.Schritt119Vollstaendig());
             Assert.Equal(bestand, Abdruck("SELECT ID, Bezeichner, ID_Carrier, Kuehl_ID_Carrier FROM Tab_Energieanlagen ORDER BY ID"));
 
-            Assert.Equal(0, KuehlungSchema.Schritt115Alle(null));
+            Assert.Equal(0, KuehlungSchema.Schritt119Alle(null));
         }
 
         /// <summary>

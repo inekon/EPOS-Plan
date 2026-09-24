@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -20,7 +23,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Die Vorschau ruft den Lauf.</b> <see cref="Vorschau"/> geht über
     /// <see cref="BedarfsVorschauCtrl.ProjektVorschau"/> mit dem Arbeitsstand, also über
-    /// denselben Generatoraufruf, den der Lauf nimmt (2.4); die Reihen für Tagesgang und Woche
+    /// denselben Generatoraufruf, den der Lauf nimmt (2.4) — live auf dem deterministischen Pfad
+    /// (5.1); die stochastische Jahresreihe zieht allein <see cref="Jahresreihe"/>, nebenläufig
+    /// mit Abbruchmarke (Delegat <c>Jahresreihe</c>). Die Reihen für Tagesgang und Woche
     /// wertet der Kern aus (<see cref="Zapfauswertung"/>), die Bilder zeichnen die
     /// Zeichenbausteine des Kerns (<see cref="ZapfprofilBilder"/>). Die Hülle rechnet keinen
     /// Bedarf.</para>
@@ -31,7 +36,7 @@ namespace WindowsFormsApplication1
     /// des Kerns steht daneben (<c>Klartext</c>).</para>
     ///
     /// <para><b>Der Parametersatz</b> (<see cref="Gaben"/>) trägt die Schlüssel
-    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Pruefen</c>, <c>AuslegungGaben</c>,
+    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Jahresreihe</c>, <c>Pruefen</c>, <c>AuslegungGaben</c>,
     /// <c>HilfeSchluessel</c> und <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
     /// <c>ZapfprofilDialog.razor</c>. <c>AuslegungGaben</c> baut je Öffnen den Parametersatz der
     /// Überlagerung „Auslegung" zum Arbeitsstand des Dialogs (<see cref="AuslegungGaben"/>).</para>
@@ -89,9 +94,14 @@ namespace WindowsFormsApplication1
                 ["Daten"] = Laden(idProjekt, basis),
                 ["Texte"] = Texte(),
                 ["Vorschau"] = new Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>(e => Vorschau(idProjekt, e, basis)),
+                // Die stochastische Jahresreihe nebenläufig (5.1): auf einem Arbeitsfaden mit der Kultur
+                // des Aufrufers, abbrechbar — nie im Zeichenfaden.
+                ["Jahresreihe"] = new Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>(
+                    (e, abbruch) => Kulturweitergabe.Starten(() => Jahresreihe(idProjekt, e, basis, abbruch), abbruch)),
                 ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
-                ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>(
-                    e => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach)),
+                // Der Schalter „Stochastisch rechnen" ist eine Laufangabe: aus bei „Auslegung…", an beim Fußknopf.
+                ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>(
+                    (e, stochastisch) => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach, stochastisch)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };
@@ -122,6 +132,7 @@ namespace WindowsFormsApplication1
             daten.Kontext = Kontext(projekt);
             if (!verfuegbar.Ja) return daten;
 
+            StochastikRahmen(daten);
             daten.Katalog = Katalog();
             daten.Vorschau = Vorschau(idProjekt, daten.Eingabe, stand);
             return daten;
@@ -139,13 +150,62 @@ namespace WindowsFormsApplication1
         internal static BrauchwasserWeg AlsWeg(ZapfprofilWeg weg)
             => weg == ZapfprofilWeg.Generator ? BrauchwasserWeg.Generator : BrauchwasserWeg.Bestand;
 
-        /// <summary>Der Arbeitsstand des Kerns als DTO der Stufe Einfach.</summary>
+        /// <summary>
+        /// Der Arbeitsstand des Kerns als DTO: Weg, Zonen der Stufe Einfach und die Stochastik der
+        /// Jahresreihe (Rechenweg, Seed, Realisierungen; Stufe Experte). Ohne Projektzeile bleiben
+        /// Seed und Realisierungen <c>null</c> — dann gilt die Vorgabe der DDL.
+        /// </summary>
         internal static ZapfprofilEingabeDaten AlsEingabe(ZapfprofilStand stand)
         {
             var e = new ZapfprofilEingabeDaten { Weg = AlsWeg(stand?.Weg ?? BrauchwasserWeg.Bestand) };
             if (stand?.Zonen != null)
                 foreach (ZonenStand z in stand.Zonen) e.Zonen.Add(AlsZone(z));
+            ProjektStand p = stand?.Projekt;
+            if (p != null)
+            {
+                e.JahresreiheStochastisch = p.JahresreiheStochastisch;
+                e.Seed = p.Seed;
+                e.Realisierungen = p.Realisierungen;
+            }
             return e;
+        }
+
+        /// <summary>
+        /// Die Vorgaben und Grenzen der Stochastik für den Dialog: Seed und Realisierungen aus der
+        /// DDL (<see cref="ZapfprofilCtrl.ProjektVorgabe()"/>, keine zweite Abschrift im Quelltext),
+        /// die Untergrenze des Schemas und die Obergrenze der Jahresreihe aus dem Kern.
+        /// </summary>
+        private static void StochastikRahmen(ZapfprofilDaten daten)
+        {
+            ProjektStand vorgabe = ZapfprofilCtrl.ProjektVorgabe();
+            daten.SeedVorgabe = vorgabe?.Seed;
+            daten.RealisierungenVorgabe = vorgabe?.Realisierungen;
+            daten.RealisierungenMindestens = TwwSchema.RealisierungenMindestens;
+            daten.RealisierungenHoechstens = Jahresensemble.HOECHSTENS;
+        }
+
+        /// <summary>
+        /// Die Projektgrößen mit der Stochastik der Jahresreihe aus dem Dialog: Rechenweg, Seed und
+        /// Realisierungen (<c>null</c> = der Wert der Basis bleibt). Weicht nichts ab, bleibt die
+        /// Basis dieselbe Instanz; ohne Projektzeile entsteht eine aus den Vorgaben der DDL nur, wenn
+        /// der Dialog etwas anderes will als sie.
+        /// </summary>
+        internal static ProjektStand MitStochastik(ProjektStand p, ZapfprofilEingabeDaten e)
+        {
+            if (e == null) return p;
+            ProjektStand basis = p;
+            if (basis == null)
+            {
+                if (!e.JahresreiheStochastisch && !e.Seed.HasValue && !e.Realisierungen.HasValue) return null;
+                basis = ZapfprofilCtrl.ProjektVorgabe();
+                if (basis == null) return null;
+            }
+            int seed = e.Seed ?? basis.Seed;
+            int realisierungen = e.Realisierungen ?? basis.Realisierungen;
+            if (basis.JahresreiheStochastisch == e.JahresreiheStochastisch && basis.Seed == seed
+                && basis.Realisierungen == realisierungen)
+                return p;
+            return basis with { JahresreiheStochastisch = e.JahresreiheStochastisch, Seed = seed, Realisierungen = realisierungen };
         }
 
         /// <summary>Eine Zone des Kerns als DTO; die Bezugsmenge 0 gilt als „nicht eingegeben".</summary>
@@ -203,10 +263,13 @@ namespace WindowsFormsApplication1
                 });
             }
 
+            // Die Stochastik der Jahresreihe (Z3, Stufe Experte): Rechenweg, Seed, Realisierungen —
+            // was der Dialog nicht ändert, bleibt die Projektzeile der Basis.
+            ProjektStand projekt = MitStochastik(basis?.Projekt, eingabe);
+
             // Die Auslegung (Z2): Mit OK der Überlagerung trägt der Arbeitsstand ihre Eingaben samt
             // Punkt — sie gehen in die Projektgrößen, ein konstruierter Tag als Entwurf mit; ohne
             // sie bleiben Projektgrößen und Entwurf der Basis, wie sie sind.
-            ProjektStand projekt = basis?.Projekt;
             BedarfstagKatalogzeile entwurf = basis?.BedarfstagEntwurf;
             if (eingabe.Auslegung != null)
             {
@@ -342,8 +405,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Vorschau zu einem Arbeitsstand (5.1: „live über den deterministischen Pfad"): immer
         /// über den Generatorweg, auch wenn die Weiche noch auf den Bestandsprofilen steht —
-        /// sie zeigt, was das Zapfprofil rechnen würde. Ohne Zone keine Rechnung; kann der
-        /// Generator für das Projekt nicht rechnen, der benannte Grund.
+        /// sie zeigt, was das Zapfprofil rechnen würde —, und immer deterministisch, auch bei
+        /// Rechenweg „stochastisch" (<see cref="BedarfsVorschauCtrl.ProjektVorschau"/> zieht kein
+        /// Jahresensemble; die stochastische Reihe entsteht erst im Lauf). Ohne Zone keine
+        /// Rechnung; kann der Generator für das Projekt nicht rechnen, der benannte Grund.
         /// </summary>
         internal static ZapfprofilVorschauDaten Vorschau(int idProjekt, ZapfprofilEingabeDaten eingabe,
                                                          ZapfprofilStand basis)
@@ -376,11 +441,86 @@ namespace WindowsFormsApplication1
 
             try
             {
-                return AlsVorschau(v.Waerme.Zapfprofil, v.Waerme.WochentagJan1, v.Waerme.WochenendkennzeichenKopie(),
-                                   eingabe);
+                return AlsVorschau(v.Waerme.Zapfprofil, v.Waerme.WochentagJan1, v.Waerme.WochenendkennzeichenKopie(), eingabe);
             }
             catch (Exception ex) { return Unerwartet(ex.Message); }
         }
+
+        /// <summary>
+        /// <b>Die stochastische Jahresreihe</b> zum Arbeitsstand (4.4; „Stochastisch rechnen" des
+        /// Dialogs, 5.1): derselbe Generatorweg wie der Lauf (<see cref="ZapfprofilCtrl.Rechnen(int, ZapfprofilStand, int, bool[], CancellationToken)"/>)
+        /// mit dem Rechenweg, dem Seed und den Realisierungen des Arbeitsstands — in der Bilanz das
+        /// Jahr zum Seed, je Zone die Konsistenzprobe aus den R Jahren. Läuft nebenläufig (der
+        /// Delegat <c>Jahresreihe</c> legt sie auf einen Arbeitsfaden); <paramref name="abbruch"/>
+        /// beendet sie mit <see cref="OperationCanceledException"/>, jede andere Ablehnung kommt
+        /// benannt als Zustand <see cref="ZapfprofilVorschauZustand.Abgebrochen"/> zurück — auch die
+        /// Schranke der Einheitentage, mit Kennung und Werten in der Oberflächensprache.
+        /// </summary>
+        internal static ZapfprofilVorschauDaten Jahresreihe(int idProjekt, ZapfprofilEingabeDaten eingabe, ZapfprofilStand basis,
+                                                            CancellationToken abbruch)
+        {
+            if (eingabe == null || eingabe.Zonen.Count == 0)
+                return OhneJahresreihe(ZapfprofilVorschauZustand.NichtGerechnet, "ZPG_MSG_KEINE_ZONE",
+                                       Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt."), "");
+
+            ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
+            if (!verfuegbar.Ja)
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
+                                       Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+            if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, "ZPG_MSG_KEINE_KLIMAREGION",
+                                       Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau."), "");
+
+            ZapfprofilStand stand = AlsStand(eingabe, basis) with { Weg = BrauchwasserWeg.Generator };
+            ZapfprofilErgebnis e;
+            try
+            {
+                e = ZapfprofilCtrl.Rechnen(idProjekt, stand, jan1, we, abbruch);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (ZapfprofilEingabeException ex)
+            {
+                string grund = GenauerGrund(ZapfAblehnung.Aus(ex.Zone, ex), out string kennung);
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, kennung ?? Schluessel(ex.Fehler),
+                                       grund ?? Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (ParametersatzException ex)
+            {
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, Schluessel(ex.Fehler),
+                                       Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (Exception ex) { return JahresreiheUnerwartet(ex.Message); }
+
+            try
+            {
+                ZapfprofilVorschauDaten d = AlsVorschau(e, jan1, we, eingabe);
+                if (d.Stochastisch)
+                {
+                    // Derselbe Seed und dieselbe Zahl der Jahre wie im Eingang der Rechnung.
+                    ProjektStand p = stand.Projekt ?? ZapfprofilCtrl.ProjektVorgabe();
+                    d.Seed = p?.Seed;
+                    d.Realisierungen = p?.Realisierungen;
+                    d.Status = Format(Text_("ZPG_STATUS_VORSCHAU_STOCHASTISCH", "Stochastik gerechnet · Seed {0} · {1} Jahre"),
+                                      d.Seed ?? 0, d.Realisierungen ?? 0);
+                }
+                return d;
+            }
+            catch (Exception ex) { return JahresreiheUnerwartet(ex.Message); }
+        }
+
+        /// <summary>Die Jahresreihe ohne Ergebnis: Zustand, Grund und Meldung wie die Vorschau, der Status nennt die Stochastik.</summary>
+        private static ZapfprofilVorschauDaten OhneJahresreihe(ZapfprofilVorschauZustand zustand, string kennung, string grund,
+                                                              string klartext)
+        {
+            ZapfprofilVorschauDaten d = OhneVorschau(zustand, kennung, grund, klartext);
+            d.Status = Format(Text_("ZPG_STATUS_OHNE_JAHRESREIHE", "Stochastik nicht gerechnet — {0}"), grund ?? "");
+            return d;
+        }
+
+        private static ZapfprofilVorschauDaten JahresreiheUnerwartet(string klartext)
+            => OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, "ZPG_MSG_JAHRESREIHE_UNERWARTET",
+                   Format(Text_("ZPG_MSG_JAHRESREIHE_UNERWARTET", "Die Jahresreihe konnte nicht gerechnet werden: {0}"), klartext ?? ""),
+                   klartext);
 
         /// <summary>
         /// Das Ergebnis des Generators als Vorschau-DTO: die Summe und je Zone eine Ansicht, die
@@ -401,6 +541,7 @@ namespace WindowsFormsApplication1
             var vorschau = new ZapfprofilVorschauDaten
             {
                 Zustand = ZapfprofilVorschauZustand.Gerechnet,
+                Stochastisch = e.Stochastisch,
                 Status = Text_("ZPG_STATUS_VORSCHAU", "Vorschau aktuell · deterministisch · Stochastik noch nicht gerechnet")
             };
 
@@ -418,6 +559,13 @@ namespace WindowsFormsApplication1
                 ZapfprofilAnsichtDaten a = Ansicht(z.IdZone, name, z.Abgelehnt, z.Zapfung, z.Zirkulation,
                                                    z.Kalender ?? grund, wochentagJan1, bildtexte);
                 a.Kennzahlen = Kennzahlen(z, d != null && einheiten.TryGetValue(d.IdNutzungsart, out string eh) ? eh : "");
+                // Die Konsistenzprobe der stochastischen Jahresreihe (4.4): an der Zone und in der Summe.
+                if (!z.Abgelehnt && z.Konsistenz != null)
+                {
+                    ZapfprofilKonsistenzDaten probe = Konsistenz(z.Konsistenz, name, i);
+                    a.Konsistenzen.Add(probe);
+                    gesamt.Konsistenzen.Add(probe);
+                }
                 vorschau.Ansichten.Add(a);
 
                 vorschau.Zonen.Add(new ZapfprofilZonenwertDaten
@@ -437,6 +585,22 @@ namespace WindowsFormsApplication1
             foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(MitPosition(Meldung(h), position));
             return vorschau;
         }
+
+        /// <summary>Die Konsistenzprobe des Kerns als DTO — Zahlen in ihrer Quelleneinheit, die Anzeige formatiert.</summary>
+        internal static ZapfprofilKonsistenzDaten Konsistenz(Jahreskonsistenz k, string zone, int position)
+            => new ZapfprofilKonsistenzDaten
+            {
+                Zone = zone ?? "",
+                Position = position,
+                DeterministischKwh = k.DeterministischKwh,
+                MittelKwh = k.MittelKwh,
+                StandardabweichungKwh = k.StandardabweichungKwh,
+                Realisierungen = k.Realisierungen,
+                ToleranzKwh = k.ToleranzKwh,
+                Erfuellt = k.Erfuellt,
+                Faktor = k.Faktor,
+                Abweichung = k.Abweichung
+            };
 
         /// <summary>Zonenname → Position, nur für Namen, die genau einmal vorkommen.</summary>
         private static IReadOnlyDictionary<string, int> EindeutigePositionen(IEnumerable<string> namen)
@@ -620,6 +784,15 @@ namespace WindowsFormsApplication1
                                                     .Select(g => g.First()))
                 m.Add(Fehler("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt,
                     Format(Text_("ZPG_MSG_ZONE_NAME_DOPPELT", "Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben."), doppelt)));
+
+            // Die Stochastik der Jahresreihe (Stufe Experte): Seed ganz und ≥ 0, Realisierungen im
+            // Bereich von Schema (Untergrenze) und Kern (Obergrenze der Jahresreihe).
+            if (eingabe.Seed is int seed && seed < 0)
+                m.Add(Fehler("ZPG_MSG_SEED_UNGUELTIG", "", Text_("ZPG_MSG_SEED_UNGUELTIG", "Der Seed muss eine ganze Zahl ab 0 sein.")));
+            if (eingabe.Realisierungen is int r && (r < TwwSchema.RealisierungenMindestens || r > Jahresensemble.HOECHSTENS))
+                m.Add(Fehler("ZPG_MSG_REALISIERUNGEN_UNGUELTIG", "",
+                    Format(Text_("ZPG_MSG_REALISIERUNGEN_UNGUELTIG", "Die Zahl der Realisierungen muss zwischen {0} und {1} liegen."),
+                           TwwSchema.RealisierungenMindestens, Jahresensemble.HOECHSTENS)));
             return m;
         }
 
@@ -812,11 +985,22 @@ namespace WindowsFormsApplication1
             return new ZapfprofilMeldung(schluessel, ex.Zone ?? "", text, ZapfprofilMeldungsart.Fehler, ex.Message ?? "");
         }
 
-        /// <summary>Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0, mit Grund.</summary>
+        /// <summary>
+        /// Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0, mit Grund. Trägt
+        /// die Ablehnung eine genauere Kennung (etwa fehlende Zapfkategorien einer Nutzungsart), ist
+        /// der Grund deren Text <c>ZPG_EINGABE_</c> + Kennung mit den Werten der Ablehnung; fehlt die
+        /// Ressource, bleibt der Wortlaut des Kerns.
+        /// </summary>
         internal static ZapfprofilMeldung Meldung(ZapfAblehnung a)
         {
             string schluessel = Schluessel(a.Grund);
             string grund = Text_(schluessel, a.Klartext);
+            string genauer = GenauerGrund(a, out string kennung);
+            if (genauer != null)
+            {
+                schluessel = kennung;
+                grund = genauer;
+            }
             string text = string.IsNullOrEmpty(a.Zone)
                 ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), grund)
                 : Format(Text_("ZPG_MSG_ZONE_TRAEGT_NULL", "Zone „{0}“ trägt 0: {1}"), a.Zone, grund);
@@ -964,7 +1148,32 @@ namespace WindowsFormsApplication1
             t.KennzahlGleichzeitigkeitVermerk = Text_("ZPG_KZ_GLEICHZEITIGKEIT_VERMERK", t.KennzahlGleichzeitigkeitVermerk);
             t.KennzahlAbgelehnt = Text_("ZPG_KZ_ABGELEHNT", t.KennzahlAbgelehnt);
 
+            t.GruppeStochastik = Text_("ZPG_GRP_STOCHASTIK", t.GruppeStochastik);
+            t.LabelRechenwegJahresreihe = Text_("ZPG_LBL_RECHENWEG_JAHRESREIHE", t.LabelRechenwegJahresreihe);
+            t.OptionDeterministisch = Text_("ZPG_OPT_DETERMINISTISCH", t.OptionDeterministisch);
+            t.OptionStochastisch = Text_("ZPG_OPT_STOCHASTISCH", t.OptionStochastisch);
+            t.HinweisRechenwegJahresreihe = Text_("ZPG_HINW_RECHENWEG_JAHRESREIHE", t.HinweisRechenwegJahresreihe);
+            t.LabelSeed = Text_("ZPG_LBL_SEED", t.LabelSeed);
+            t.HinweisSeed = Text_("ZPG_HINW_SEED", t.HinweisSeed);
+            t.LabelRealisierungen = Text_("ZPG_LBL_REALISIERUNGEN", t.LabelRealisierungen);
+            t.EinheitJahre = Text_("ZPG_EINHEIT_JAHRE", t.EinheitJahre);
+            t.HinweisRealisierungen = Text_("ZPG_HINW_REALISIERUNGEN", t.HinweisRealisierungen);
+            t.HinweisKonsistenzOrt = Text_("ZPG_HINW_KONSISTENZ_ORT", t.HinweisKonsistenzOrt);
+            t.HinweisVorschauDeterministisch = Text_("ZPG_HINW_VORSCHAU_DETERMINISTISCH", t.HinweisVorschauDeterministisch);
+            t.KennzahlStochastikGerechnet = Text_("ZPG_KZ_STOCHASTIK_GERECHNET", t.KennzahlStochastikGerechnet);
+            t.KennzahlStochastikLaeuft = Text_("ZPG_KZ_STOCHASTIK_LAEUFT", t.KennzahlStochastikLaeuft);
+            t.StatusJahresreiheLaeuft = Text_("ZPG_STATUS_JAHRESREIHE_LAEUFT", t.StatusJahresreiheLaeuft);
+            t.HinweisJahresreiheAbgebrochen = Text_("ZPG_HINW_JAHRESREIHE_ABGEBROCHEN", t.HinweisJahresreiheAbgebrochen);
+            t.HinweisJahresreiheDeterministisch = Text_("ZPG_HINW_JAHRESREIHE_DETERMINISTISCH", t.HinweisJahresreiheDeterministisch);
+            t.KennzahlStochastikJahresreihe = Text_("ZPG_KZ_STOCHASTIK_JAHRESREIHE", t.KennzahlStochastikJahresreihe);
+            t.KennzahlKonsistenz = Text_("ZPG_KZ_KONSISTENZ", t.KennzahlKonsistenz);
+            t.KennzahlKonsistenzVermerk = Text_("ZPG_KZ_KONSISTENZ_VERMERK", t.KennzahlKonsistenzVermerk);
+            t.KonsistenzErfuellt = Text_("ZPG_KZ_KONSISTENZ_ERFUELLT", t.KonsistenzErfuellt);
+            t.KonsistenzAbweichend = Text_("ZPG_KZ_KONSISTENZ_ABWEICHEND", t.KonsistenzAbweichend);
+            t.MeldungFehleingabe = Text_("ZPG_MSG_FEHLEINGABE", t.MeldungFehleingabe);
+
             t.KnopfStochastik = Text_("ZPG_BTN_STOCHASTIK", t.KnopfStochastik);
+            t.KnopfStochastikTitel = Text_("ZPG_BTN_STOCHASTIK_TITEL", t.KnopfStochastikTitel);
             t.KnopfAuslegung = Text_("ZPG_BTN_AUSLEGUNG", t.KnopfAuslegung);
             t.StatusAuslegung = Text_("ZPG_STATUS_AUSLEGUNG", t.StatusAuslegung);
             t.AuslegungOhnePunkt = Text_("ZPG_AUSLEGUNG_OHNE_PUNKT", t.AuslegungOhnePunkt);
@@ -1010,7 +1219,7 @@ namespace WindowsFormsApplication1
                 : "";
 
         /// <summary>Tag im Monat und Monat eines Jahrestags 1 … 365.</summary>
-        private static (int Tag, int Monat) TagUndMonat(int jahrestag)
+        internal static (int Tag, int Monat) TagUndMonat(int jahrestag)
         {
             int monat = Zapfkalender.Monat(jahrestag);
             int vorher = 0;
@@ -1030,6 +1239,24 @@ namespace WindowsFormsApplication1
                 sb.Append(char.ToUpperInvariant(c));
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Der Grund einer Ablehnung mit genauerer Kennung in der Oberflächensprache: der Text
+        /// <c>ZPG_EINGABE_</c> + Kennung, seine Platzhalter {0}, {1}, … aus den getrennten Werten der
+        /// Ablehnung (etwa Bezeichner und Katalogversion der Nutzungsart); <c>null</c> ohne Kennung
+        /// oder ohne Ressource — dann gilt der Wortlaut des Kerns.
+        /// </summary>
+        internal static string GenauerGrund(ZapfAblehnung a, out string schluessel)
+        {
+            schluessel = null;
+            if (a == null || string.IsNullOrEmpty(a.Kennung)) return null;
+            string genauer = "ZPG_EINGABE_" + a.Kennung;
+            string muster = Text_(genauer, null);
+            if (muster == null) return null;
+            schluessel = genauer;
+            object[] werte = (a.Argumente ?? new string[0]).Select(w => (object)(w ?? "")).ToArray();
+            return Format(muster, werte);
         }
 
         private static string Format(string muster, params object[] werte)

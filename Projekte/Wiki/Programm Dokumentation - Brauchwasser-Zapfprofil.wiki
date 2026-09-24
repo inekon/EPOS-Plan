@@ -53,6 +53,18 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 * {{Anker|ok}}''OK'' prüft, dass jede Zone einen eigenen Namen, eine Nutzungsart und eine Bezugsgröße größer 0 trägt; zwei Zonen dürfen nicht gleich heißen. Fehlt etwas, bleibt der Dialog offen, und ein Hinweis nennt die Zone. Sonst übernimmt ''OK'' die Zonen in den Bedarfsprofil-Dialog und stellt den Rechenweg auf ''Zapfprofil''. ''Abbrechen'', ✕ und ''Esc'' schließen ohne Übernahme.
 * ''Stochastisch rechnen'' in der Fußleiste ist gesperrt; sein Hinweis nennt den Grund. ''Auslegung…'' öffnet die [[#auslegung|Auslegung]].
 
+== Stochastik ==
+
+{{Anker|stochastik}}In der Stufe '''Experte''' trägt der Dialog die Gruppe '''Stochastik · Jahresreihe'''. Sie legt fest, wie die Jahresreihe des Brauchwassers entsteht:
+
+* '''Rechenweg''' – ''deterministisch'': die Stundenreihe aus Tagesgang, Wochenanteilen und Monatsfaktoren (Vorgabe). ''stochastisch'': das Programm zieht für jede Nutzungseinheit einzelne Zapfereignisse (Kategorien wie Kurzzapfung, Spüle, Dusche, Bad mit Volumenstrom, Dauer, Anteil und Streuung aus dem Katalog der Nutzungsart), verteilt sie nach dem Tagesgang und überlagert die Einheiten; die Gleichzeitigkeit entsteht dabei von selbst, Urlaube fallen je Einheit versetzt. In die Bilanz geht das Jahr zum Seed; sein Energieinhalt ist auf die deterministische Reihe abgeglichen. Die Vorschau zeigt stets den deterministischen Pfad; die stochastische Jahresreihe entsteht im Lauf.
+* '''Seed''' – die Startzahl der Ziehung (Vorgabe 1). Derselbe Seed liefert auf jedem Rechner dieselbe Reihe.
+* '''Realisierungen''' – wie viele Jahre für die Konsistenzprobe gezogen werden (Vorgabe 10, 1 bis 1000).
+
+Der Reiter ''Kennzahlen'' zeigt in der Stufe Experte je Zone die '''Konsistenzprobe''': die Abweichung des Mittels der gezogenen Jahre von der deterministischen Reihe, das Mittel, die Streuung s_R und die Toleranz; ✓ bedeutet erfüllt, ≠ abweichend. Eine Zone, deren Nutzungsart keine Zapfkategorien im Katalog hat, meldet das als Hinweis an der Zone und rechnet nicht stochastisch.
+
+Der Knopf '''Stochastisch rechnen''' in der Fußleiste zieht die Jahresreihe im Hintergrund (Fortschritt mit ''Abbrechen'', der Dialog bleibt bedienbar) und öffnet die Auslegung mit gesetztem Schalter (siehe [[#auslegung-stochastisch|Auslegung]]). Übersteigt die Zahl der Einheiten mal Realisierungen die Grenze des Programms, nennt der Dialog den Grund.
+
 == Auslegung ==
 
 {{Anker|auslegung}}''Auslegung…'' in der Fußleiste öffnet die Überlagerung '''Auslegung Brauchwasser'''. Sie rechnet aus den Zonen des Arbeitsstands den Auslegungspunkt für Speicher und Wärmeerzeuger. Die Zonen werden nach der Art ihrer Versorgung zu Gruppen zusammengefasst – ''Speicher'', ''Frischwasserstation'', ''Durchfluss'' oder ''Wohnungsstation'' –, und jede Gruppe erhält ihre eigene Auslegung. Die Kopfzeile nennt die Zahl der Zonen und die Stufe des Dialogs.
@@ -63,7 +75,8 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 ** ''Vorgaberegel'' – für Wohnen das Profil nach DIN 4708 aus der Bedarfskennzahl der Wohnungen, sonst ein konstruierter Tag. Gibt es noch keinen konstruierten Tag, öffnet sich der [[#konstruktor|Konstruktor]] von selbst.
 ** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; die Gruppe trägt deshalb den Hinweis ''Spitzen unterschätzt'', und ''OK'' fragt nach, bevor der Punkt übernommen wird.
 ** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
-** das ''Referenzprofil'' aus dem Katalog und das ''Ecodesign-Zapfprofil'' – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
+** das ''Referenzprofil'' aus dem Katalog – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
+** das ''Ecodesign-Zapfprofil'' – das Zapfprofil L der Verordnung (EU) Nr. 814/2013 (Einfamilienhaus, 24 Zapfungen, 11,655 kWh je Tag) aus dem Katalog; zur Plausibilisierung, nicht zur Auslegung von Mehrfamilienhäusern.
 ** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
 : Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
 * '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
@@ -75,6 +88,10 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 
 Jede Eingabe rechnet die Auslegung neu.
 
+* {{Anker|auslegung-stochastisch}}'''Stochastisch rechnen''' – zieht den Bedarfstag viele Male aus Zapfereignissen und legt auf ein Perzentil aus statt auf den einen Bedarfstag; die Rechnung läuft im Hintergrund mit Fortschritt und ''Abbrechen'' (ein Abbruch schaltet den Schalter aus). Mit dem Schalter erscheinen:
+** '''Perzentil''' – P95 oder P99: der Wert, den 95 % bzw. 99 % der gezogenen Tage nicht überschreiten.
+** '''Realisierungen''' – wie viele Tage gezogen werden; leer nimmt die Vorgabe des Programms (ein Vielfaches von 1/(1 − p), für P99 also mindestens einige Hundert). Liegt die Zahl unter 1/(1 − p), trägt das Ergebnis den Vermerk ''nicht belastbar''.
+
 === Ergebnis je Gruppe ===
 
 Jede Gruppe zeigt drei Karten nebeneinander:
@@ -84,6 +101,8 @@ Jede Gruppe zeigt drei Karten nebeneinander:
 * '''(c) Normvergleich''' – das Verfahren nach DIN 4708, nur für Wohnen mit Speicher: die Bedarfskennzahl und der Vergleichspunkt. Zonen außerhalb des Gültigkeitsbereichs nennt die Karte. Die Zeile ''Rohrnetz-Spitzendurchfluss'' nach DIN 1988-300 ist nachrichtlich; sie bleibt leer und nennt den Grund.
 
 Darunter steht der eine '''empfohlene Auslegungspunkt''' der Gruppe – Speichervolumen und Leistung, bei Speichern zusätzlich der nächstgrößere Nenninhalt. Die Marke ''Schnellauslegung'' zeigt, dass der Punkt mit den Vorgaben der Stufe ''Einfach'' gerechnet ist. Die zugrunde liegenden Rechenregeln liegen als Entwurf vor; ihre Anwendung ist besonders zu vereinbaren, die Überlagerung vermerkt das am Punkt. Kann kein Punkt gerechnet werden, nennt die Zeile den Grund.
+
+Mit ''Stochastisch rechnen'' zeigt die Karte (b) den Perzentilwert der Auslegungsgröße der Gruppe (Speicher: das erforderliche Volumen aus den Stundenwerten; Durchfluss, Frischwasser- und Wohnungsstation: die Minutenspitze), darunter das Streuband P50 · P90 · P95 · P99 mit Spannweite als Tabelle und die '''Gleichzeitigkeit''' als Ergebnis: GLF_V (Speicher) bzw. GLF_P (Durchfluss) ist das Verhältnis des Perzentils der Summe zur Summe der Perzentile je Einheit (Σ n_E). Bei Wohnungsstationen steht zusätzlich die Spitze je Station. Ein '''Konsistenzhinweis''' vergleicht die Stundenspitze des gezogenen Tags mit der Ladeleistung des Summenlinienpunkts; er entscheidet die Auslegung nicht. Lässt sich das Perzentil nicht bilden, zeigt die Karte ''entfällt'' mit dem Grund.
 
 === Verfahrensvergleich ===
 

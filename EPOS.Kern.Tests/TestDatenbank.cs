@@ -546,11 +546,11 @@ namespace EPOS.Kern.Tests
                 // dessen Typuebersetzung den Fremdschluessel verloere; wiederholbar, kein DML.
                 KuehlungSchema.ErzeugerspaltenAlle(null);
 
-                // Schritt 115 (Stufe KU2 Welle 3; Kuehlkonzept 6.1-6.4, 8.4; E34): die
+                // Schritt 119 (Stufe KU2 Welle 3; Kuehlkonzept 6.1-6.4, 8.4; E34): die
                 // Abrechnungsart des Kaeltestroms an Tab_Energieanlagen (0/1, nullbar) und die
                 // sieben Ergebnisspalten der Kaelteseite der Waermepumpe. Aus DERSELBEN Quelle
                 // wie Migration und Werkzeug; wiederholbar, kein DML.
-                KuehlungSchema.Schritt115Alle(null);
+                KuehlungSchema.Schritt119Alle(null);
 
                 // Schritt 111 (Schritt E, Entscheid A6, 20.09.2026): die nullbaren
                 // Kennzeichen ErsatzFuehren und RestwertAnsetzen an Tab_ProjektWerte und
@@ -572,6 +572,31 @@ namespace EPOS.Kern.Tests
                 // 24 auf kWh (E7c2-Q4). Reines DML aus DERSELBEN Quelle wie in der
                 // Migration; wiederholbar.
                 GaseNormkubikmeter.Ausfuehren();
+
+                // Schritt 115 (Umsetzungskonzept Zapfprofilgenerator 3.2, T2): die
+                // Zapfkategorien je Nutzungsart. Reines DDL aus DERSELBEN Quelle wie in der
+                // Migration und im Werkzeug (TwwSchema.AnweisungenT2); NACH 103, dessen
+                // Nutzungsarten sie verweist. CREATE … IF NOT EXISTS ist selbst wiederholbar.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
+                // Schritt 116 (Schritt B, Etappe E9a): der Szenariorahmen - Zeitraum und
+                // Mengenfaktor je Szenario an Tab_ProjektWirtschaftlichkeit. Wie in der
+                // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst
+                // "wie Erwartet".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                    SpalteSicherstellen(s);
+
+                // Schritt 117 (Schritt C, Etappe E9a): die Traegerpreise best/worst an
+                // energy_project_settings. Aus DERSELBEN Quelle; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                    SpalteSicherstellen(s);
+
+                // Schritt 118 (Schritt D, Etappe E9a): die Erloessaetze best/worst an
+                // Tab_ProjektWirtschaftlichkeit und Tab_ProjektPhotovoltaik. Aus DERSELBEN
+                // Quelle; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                    SpalteSicherstellen(s);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

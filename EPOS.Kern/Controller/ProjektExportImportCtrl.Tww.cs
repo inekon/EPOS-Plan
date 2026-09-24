@@ -19,8 +19,10 @@ namespace WindowsFormsApplication1
     /// Die Köpfe reisen unter <c>catalogs/</c> und werden am Ziel über ihren natürlichen
     /// Schlüssel wiedergefunden (<c>Bezeichner</c>, <c>Katalogversion</c>) bzw.
     /// (<c>Art</c>, <c>Schluessel</c>, <c>Katalogversion</c>). Zu jeder Nutzungsart reist
-    /// ihr Tagesgangsatz mit (er ist NOT NULL an ihr), und zu Tagesgangsatz und Bedarfstag
-    /// ihre Kindzeilen unter <c>catalogchildren/</c>.</para>
+    /// ihr Tagesgangsatz mit (er ist NOT NULL an ihr), und zu Tagesgangsatz, Bedarfstag und
+    /// Nutzungsart ihre Kindzeilen unter <c>catalogchildren/</c> — Tagesgänge, Ereignisse und
+    /// die Zapfkategorien (Schemaschritt T2). Eine Kindtabelle, die die Zieldatenbank nicht
+    /// führt (Stand vor 115), bleibt beim Import liegen.</para>
     ///
     /// <para><b>Fehlt die Zeile am Ziel, wird sie mitgenommen</b> — als EIGENE Zeile mit
     /// <c>Status = 'IMPORT'</c>, <c>ReadOnly = 0</c>, ohne <c>ID_Vorlage</c>, mit ihrem
@@ -73,7 +75,15 @@ namespace WindowsFormsApplication1
         {
             (TwwSchema.TAB_TWW_TAGESGANG_STAMM, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, "ID_Tagesgangsatz"),
             (TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "ID_Bedarfstag"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "ID_Nutzungsart"),
         };
+
+        /// <summary>
+        /// Die Verwaltungsspalten einer Kindzeile mit eigenem Stand (die Zapfkategorien): Sie
+        /// tragen den Inhalt nicht und werden bei der Mitnahme wie am Kopf gesetzt —
+        /// <c>Status = 'IMPORT'</c>, <c>ReadOnly = 0</c>.
+        /// </summary>
+        private static readonly string[] TWW_KIND_VERWALTUNG = { "Status", "ReadOnly" };
 
         /// <summary>Die Tww-Kataloge, die über den natürlichen Schlüssel reisen.</summary>
         private static readonly HashSet<string> TWW_KATALOGE = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -145,10 +155,13 @@ namespace WindowsFormsApplication1
         /// <see cref="KATALOG_NATURALKEY"/> tragen, eine Kindtabelle muss mit Name, Kopf und
         /// Verweisspalte in <see cref="TWW_KINDER"/> stehen. Die Bezeichner, die in SQL-Texte
         /// eingesetzt werden, kommen damit aus diesen festen Tabellen, nie aus dem Paket.
-        /// <paramref name="kinder"/> sind die festen Einträge der genannten Kindtabellen.
+        /// <paramref name="kinder"/> sind die festen Einträge der genannten Kindtabellen;
+        /// <paramref name="uebergangen"/> nimmt je Kindtabelle des Pakets, die diese Datenbank nicht
+        /// führt (die Zapfkategorien vor Schritt 115), eine Berichtszeile auf — der Import übergeht
+        /// sie benannt.
         /// </summary>
         private static bool TwwManifestPruefen(List<KatMeta> kataloge, List<KindMeta> manifestKinder,
-                                               out List<KindMeta> kinder, out string fehler)
+                                               out List<KindMeta> kinder, out string fehler, List<string> uebergangen)
         {
             kinder = new List<KindMeta>();
             fehler = null;
@@ -178,6 +191,15 @@ namespace WindowsFormsApplication1
                     return false;
                 }
                 if (kinder.Any(x => string.Equals(x.name, fest[0].Kind, StringComparison.OrdinalIgnoreCase))) continue;
+                // Eine Kindtabelle, die diese Datenbank noch nicht führt (die Zapfkategorien vor
+                // Schritt 115), kann weder verglichen noch eingespielt werden — sie bleibt liegen,
+                // und der Bericht nennt sie.
+                if (!DataRepository.TabelleVorhanden(fest[0].Kind))
+                {
+                    uebergangen?.Add("Die Kindzeilen " + fest[0].Kind + " des Pakets sind übergangen — diese Datenbank " +
+                                     "führt die Tabelle nicht (älterer Schemastand); das Projekt ist ohne sie importiert.");
+                    continue;
+                }
                 kinder.Add(new KindMeta { name = fest[0].Kind, parent = fest[0].Kopf, parentColumn = fest[0].Spalte, pk = "ID" });
             }
             return true;
@@ -283,6 +305,7 @@ namespace WindowsFormsApplication1
             foreach (var k in TWW_KINDER)
             {
                 if (!katalogRefs.TryGetValue(k.Kopf, out HashSet<long> koepfe) || koepfe.Count == 0) continue;
+                if (!DataRepository.TabelleVorhanden(k.Kind)) continue;   // Stand vor 115: keine Zapfkategorien
 
                 DataTable alle = null;
                 foreach (long id in koepfe.OrderBy(x => x))
@@ -483,7 +506,8 @@ namespace WindowsFormsApplication1
                     if (!c.ColumnName.Equals(km.pk, StringComparison.OrdinalIgnoreCase)
                         && !c.ColumnName.Equals(km.parentColumn, StringComparison.OrdinalIgnoreCase)
                         && !TWW_PROVENIENZ.IsMatch(c.ColumnName)
-                        && !TWW_INTERN.Contains(c.ColumnName, StringComparer.OrdinalIgnoreCase))
+                        && !TWW_INTERN.Contains(c.ColumnName, StringComparer.OrdinalIgnoreCase)
+                        && !TWW_KIND_VERWALTUNG.Contains(c.ColumnName, StringComparer.OrdinalIgnoreCase))
                         spalten.Add(c.ColumnName);
             spalten.Sort(StringComparer.OrdinalIgnoreCase);
 
@@ -529,9 +553,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Spielt die Kindzeilen (Tagesgänge, Ereignisse) der in diesem Import mitgenommenen
-        /// Köpfe ein, umgeschlüsselt auf den neuen Kopf. Kinder eines am Ziel GEFUNDENEN
-        /// Kopfs bleiben liegen — der Kopf bringt dort seine eigenen mit.
+        /// Spielt die Kindzeilen (Tagesgänge, Ereignisse, Zapfkategorien) der in diesem Import
+        /// mitgenommenen Köpfe ein, umgeschlüsselt auf den neuen Kopf. Kinder eines am Ziel
+        /// GEFUNDENEN Kopfs bleiben liegen — der Kopf bringt dort seine eigenen mit. Eine
+        /// Kindzeile mit eigenem Stand (Zapfkategorie) kommt wie ihr Kopf als
+        /// <c>Status = 'IMPORT'</c>, <c>ReadOnly = 0</c>, ohne internen Beleg.
         /// </summary>
         private void TwwKinderEinspielen(DbVorgang v, List<KindMeta> kinder,
             Dictionary<string, List<Dictionary<string, JsonElement>>> kindRows, Dictionary<string, long> katMap)
@@ -555,10 +581,14 @@ namespace WindowsFormsApplication1
                     var cps = new List<DbParam>();
                     for (int n = 0; n < cs.Count; n++)
                     {
-                        object wert = cs[n].Equals(k.parentColumn, StringComparison.OrdinalIgnoreCase)
-                            ? neuerKopf
-                            : JsonToObject(row[cs[n]]);
-                        cps.Add(MacheParam("@c" + n, wert, TypVon(zielTypen, cs[n])));
+                        string spalte = cs[n];
+                        object wert;
+                        if (spalte.Equals(k.parentColumn, StringComparison.OrdinalIgnoreCase)) wert = neuerKopf;
+                        else if (spalte.Equals("Status", StringComparison.OrdinalIgnoreCase)) wert = TwwSchema.STATUS_IMPORT;
+                        else if (spalte.Equals("ReadOnly", StringComparison.OrdinalIgnoreCase)) wert = 0L;
+                        else if (TWW_INTERN.Contains(spalte, StringComparer.OrdinalIgnoreCase)) wert = null;
+                        else wert = JsonToObject(row[spalte]);
+                        cps.Add(MacheParam("@c" + n, wert, TypVon(zielTypen, spalte)));
                     }
                     try
                     {

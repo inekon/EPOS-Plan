@@ -1,0 +1,5 @@
+Kategorie;Reihenfolge;Volumenstrom_l_min;Dauer_min;Anteil;Sigma;Kappung_l_min;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+Kurzzapfung;1;1;1;0.14;2;;Jordan/Vajen (IEA SHC Task 26);DHWcalc-Parametrik Einfamilienhaus, Modellannahme bis Z5;FREI-1;FREI;AUSLIEFERUNG;1
+Mittlere Zapfung;2;6;1;0.36;2;;Jordan/Vajen (IEA SHC Task 26);DHWcalc-Parametrik Einfamilienhaus, Modellannahme bis Z5;FREI-1;FREI;AUSLIEFERUNG;1
+Wannenbad;3;14;10;0.1;0.2;;Jordan/Vajen (IEA SHC Task 26);DHWcalc-Parametrik Einfamilienhaus, Modellannahme bis Z5;FREI-1;FREI;AUSLIEFERUNG;1
+Dusche;4;8;5;0.4;0.4;;Jordan/Vajen (IEA SHC Task 26);DHWcalc-Parametrik Einfamilienhaus, Modellannahme bis Z5;FREI-1;FREI;AUSLIEFERUNG;1

@@ -214,7 +214,7 @@ namespace WindowsFormsApplication1
         public double[] Deckung_Kanal = new double[Kanal.ANZAHL];
 
         /// <summary>
-        /// STUFE KU2 WELLE 3 (Schemaschritt 115; Kühlkonzept 6.4, 7.4, E21): die gedeckte Kälte aller
+        /// STUFE KU2 WELLE 3 (Schemaschritt 119; Kühlkonzept 6.4, 7.4, E21): die gedeckte Kälte aller
         /// Wärmepumpen [MWh/a] — Gegenstück zu <see cref="Waermeproduktion_WP"/>. <c>null</c> = keine
         /// Kälteerzeugung gerechnet (kein Kälteerzeuger im Lauf); Spalte <c>Kaelteproduktion_WP</c>.
         /// </summary>
@@ -240,7 +240,7 @@ namespace WindowsFormsApplication1
         public double Heizstab;           // MWh/a
         public double Betriebsstunden;    // h/a
 
-        // ---- Kälteseite (Schemaschritt 115; Kühlkonzept 6.1, 8.4; E34) - null = keine
+        // ---- Kälteseite (Schemaschritt 119; Kühlkonzept 6.1, 8.4; E34) - null = keine
         //      Kälteerzeugung gerechnet (kein Kälteerzeuger im Lauf).
 
         /// <summary>Gedeckte Kälte der Anlage [MWh/a] — Gegenstück zu <see cref="Waermeproduktion"/>.</summary>

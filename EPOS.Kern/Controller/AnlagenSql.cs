@@ -76,7 +76,7 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
-        /// Schemaschritt 115 (Kuehlkonzept 6.1, Entscheid E34) hat <c>Kuehl_EigenerZaehler</c>
+        /// Schemaschritt 119 (Kuehlkonzept 6.1, Entscheid E34) hat <c>Kuehl_EigenerZaehler</c>
         /// ergaenzt - die Abrechnungsart des Kaeltestroms bei abweichendem Kuehltraeger (NULL =
         /// anteilig am Netzbezug, 1 = eigener Zaehler). Eine MODELLspalte wie
         /// <c>Kuehl_ID_Carrier</c>, neben der sie steht: Der Erzeugerdialog schreibt sie, der
@@ -247,7 +247,7 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@kuehlcarrier", DbParamTyp.Integer,
                             TraegerVerweisOderNull(item.Kuehl_ID_Carrier, item.Bezeichner)),
 
-                        // --- Abrechnungsart des Kaeltestroms (Schritt 115; E34) ----------
+                        // --- Abrechnungsart des Kaeltestroms (Schritt 119; E34) ----------
                         // NULL = anteilig am Netzbezug (Vorgabe), 1 = eigener Zaehler. Nur 1
                         // wird geschrieben, alles andere als NULL - die Spalte kennt keine
                         // DDL-Vorgabe, und 0 hiesse dasselbe wie NULL.
@@ -308,7 +308,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Abrechnungsart des Kaeltestroms fuer das INSERT und fuer
-        /// <c>WErzeugerCtrl.KonfigurationSchreiben</c> (Schemaschritt 115; E34): <c>true</c> -&gt; 1
+        /// <c>WErzeugerCtrl.KonfigurationSchreiben</c> (Schemaschritt 119; E34): <c>true</c> -&gt; 1
         /// (eigener Zaehler), sonst NULL (anteilig am Netzbezug, die Vorgabe). Eine 0 schreibt der
         /// Speicherweg nie - sie hiesse dasselbe wie NULL.
         /// </summary>

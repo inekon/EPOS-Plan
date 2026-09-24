@@ -161,6 +161,7 @@ namespace KiKern
                 case KiParameterTyp.Wahrheitswert: return WandleWahrheit(p, roh, fehler);
                 case KiParameterTyp.Aufzaehlung: return WandleAufzaehlung(p, roh, fehler);
                 case KiParameterTyp.GanzzahlListe: return WandleListe(p, roh, fehler);
+                case KiParameterTyp.ZahlListe: return WandleZahlListe(p, roh, fehler);
                 default: throw new ArgumentOutOfRangeException(nameof(p));
             }
         }
@@ -285,6 +286,62 @@ namespace KiKern
             }
 
             foreach (long w in werte)
+                if (!BereichOk(p, w, fehler)) return null;
+
+            return werte.ToArray();
+        }
+
+        /// <summary>
+        /// Die Werte einer ZAHLENREIHE (Welle #458 Stufe 3b) - als <c>double[]</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Dieselben Regeln wie bei der Ganzzahlliste</b>: ein einzelner Skalar gilt als
+        /// einelementige Liste (der haeufige, harmlose Fehlgriff), eine leere Liste ist ein
+        /// Befund, und die Grenzen gelten je Glied.
+        /// </para>
+        /// <para>
+        /// <b>Ein Glied als Text wird INVARIANT gelesen</b> („1.5") - nie in der
+        /// Anwenderkultur (Kulturregel oben). Was hier ankommt, schreibt das Modell, und
+        /// dem ist der Punkt vorgeschrieben.
+        /// </para>
+        /// </remarks>
+        private static object? WandleZahlListe(KiParameter p, object? roh, List<string> fehler)
+        {
+            var werte = new List<double>();
+            IEnumerable? liste = (roh is IEnumerable folge && !(roh is string)) ? folge : null;
+
+            if (liste == null)
+            {
+                if (VersucheZahl(roh, out double einzeln)) werte.Add(einzeln);
+                else
+                {
+                    fehler.Add(string.Format(CultureInfo.InvariantCulture, KiTexte.KeineListe,
+                                             p.Anzeigename, Rohtext(roh)));
+                    return null;
+                }
+            }
+            else
+            {
+                foreach (object? glied in liste)
+                {
+                    if (!VersucheZahl(glied, out double wert))
+                    {
+                        fehler.Add(string.Format(CultureInfo.InvariantCulture, KiTexte.KeineListe,
+                                                 p.Anzeigename, Rohtext(roh)));
+                        return null;
+                    }
+                    werte.Add(wert);
+                }
+            }
+
+            if (werte.Count == 0)
+            {
+                fehler.Add(string.Format(CultureInfo.InvariantCulture, KiTexte.ListeLeer, p.Anzeigename));
+                return null;
+            }
+
+            foreach (double w in werte)
                 if (!BereichOk(p, w, fehler)) return null;
 
             return werte.ToArray();

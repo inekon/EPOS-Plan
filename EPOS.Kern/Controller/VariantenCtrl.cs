@@ -304,6 +304,12 @@ namespace WindowsFormsApplication1
                     // derselben Basis wie der Stamm. Ohne die Spalte wie bisher.
                     if (EnergietraegerPreisCtrl.PreisbasisSpalteVorhanden())
                         staffel += ", [" + SchemaKatalog.SPALTE_EPS_PREISBASIS + "]";
+                    // ETAPPE E9a (Schritt C, Schemaschritt 117): die Traegerpreise je Szenario
+                    // wandern mit - die Version erbt die Bandbreite ihrer Preise wie den
+                    // Erwartet-Preis. Ohne die Spalten wie bisher.
+                    if (EnergietraegerPreisCtrl.SzenarioSpaltenVorhanden())
+                        foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                            staffel += ", [" + s.Name + "]";
                     string sqlSettings =
                         "INSERT INTO energy_project_settings " +
                         "(ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, " +

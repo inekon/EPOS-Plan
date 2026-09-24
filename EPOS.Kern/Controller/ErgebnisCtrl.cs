@@ -94,7 +94,7 @@ namespace WindowsFormsApplication1
             StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
             StelleKanalSpaltenSicher();     // Ergebnisspalten je Kanal (Schritt 52, Paket E1)
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
-            StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 115, E34)
+            StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
@@ -258,7 +258,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a9", DbParamTyp.Double) { Wert = R(m.Waermepumpe.Vollbenutzungsstunden) });
                             p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
                             KanalParameter(p, m.Waermepumpe.Deckung_Kanal, kaelteErhoben);
-                            // Schritt 115: die Kaelteseite - NULL, solange keine Kaelteerzeugung gerechnet ist.
+                            // Schritt 119: die Kaelteseite - NULL, solange keine Kaelteerzeugung gerechnet ist.
                             p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Kaelteproduktion_WP) });
                             p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Stromverbrauch_Kuehlung) });
                             v.Ausfuehren(sql, p.ToArray());
@@ -267,7 +267,7 @@ namespace WindowsFormsApplication1
                         if (m.Waermepumpe.Module != null && m.Waermepumpe.Module.Count > 0)
                         {
                             int modId = NextId(v, TAB_WP_MODUL);
-                            // Schritt 115 (E34): die Kaelteseite je Anlage - Kaelte, Kaeltestrom, sein
+                            // Schritt 119 (E34): die Kaelteseite je Anlage - Kaelte, Kaeltestrom, sein
                             // Netzbezug, ein abweichender Kuehltraeger und die Abrechnungsart. NULL,
                             // solange keine Kaelteerzeugung gerechnet ist.
                             string sqlM = "INSERT INTO " + TAB_WP_MODUL + " (" +
@@ -898,7 +898,7 @@ namespace WindowsFormsApplication1
                 if (rw.Table.Columns.Contains("Bivalenzpunkt") && rw["Bivalenzpunkt"] != DBNull.Value)
                     w.Bivalenzpunkt = Convert.ToDouble(rw["Bivalenzpunkt"]);
                 DeckungLesen(rw, w.Deckung_Kanal);   // PAKET E1
-                // Schritt 115: die Kaelteseite - NULL bleibt null ("keine Kaelteerzeugung gerechnet").
+                // Schritt 119: die Kaelteseite - NULL bleibt null ("keine Kaelteerzeugung gerechnet").
                 w.Kaelteproduktion_WP = DN(rw, KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP);
                 w.Stromverbrauch_Kuehlung = DN(rw, KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG);
 
@@ -1795,7 +1795,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Rueckfallebene zu Schemaschritt 115 (Stufe KU2 Welle 3) nach demselben Muster: Die INSERT
+        /// Rueckfallebene zu Schemaschritt 119 (Stufe KU2 Welle 3) nach demselben Muster: Die INSERT
         /// der Waermepumpenzeile und ihrer Modulzeilen fuehren die sieben Spalten der Kaelteseite
         /// NAMENTLICH auf - fehlen sie, scheiterte die ganze Ergebniszeile. Die Namen kommen aus
         /// <see cref="KuehlungSchema.Kaelteerzeugerspalten"/>.

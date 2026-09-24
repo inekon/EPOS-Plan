@@ -535,7 +535,7 @@ namespace WindowsFormsApplication1
                 if (kaelte != null && kaelte.Gerechnet && kaelte.Kaskade != null)
                     w.Deckung_Kanal[Kanal.KUEHLUNG] = DeckungKuehlkanalProzent(kaelte);
 
-                // STUFE KU2 WELLE 3 (Schemaschritt 115; Kühlkonzept 6.1, 6.4, 8.4; E34): die
+                // STUFE KU2 WELLE 3 (Schemaschritt 119; Kühlkonzept 6.1, 6.4, 8.4; E34): die
                 // Kälteseite der Wärmepumpe - Kälte, Kältestrom und sein Netzbezug samt Kühlträger
                 // und Abrechnungsart. NUR mit gerechneter Kältekaskade; sonst bleiben die Felder
                 // null und die Spalten NULL - ein Projekt ohne Kälteerzeuger schreibt dieselben
@@ -1153,7 +1153,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Kälteseite EINER Modulzeile der Wärmepumpe (Schemaschritt 115; Kühlkonzept 6.1, 8.4;
+        /// Die Kälteseite EINER Modulzeile der Wärmepumpe (Schemaschritt 119; Kühlkonzept 6.1, 8.4;
         /// E34): Kälte, Kältestrom und dessen Netzbezug des Kälteerzeugers auf diesem Modulplatz, dazu
         /// ein abweichender Kühlträger samt Abrechnungsart. Ein Modul, das nicht kühlt, trägt 0 — die
         /// Kältekaskade hat gerechnet, dieses Gerät nur nicht gekühlt. Werte in MWh.

@@ -141,7 +141,7 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="KuehlEigenerZaehler">
         /// Die Abrechnungsart des Kaeltestroms (<c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c>,
-        /// Schemaschritt 115; E34). <c>null</c> heisst „nicht anfassen"; <b><c>true</c> = eigener
+        /// Schemaschritt 119; E34). <c>null</c> heisst „nicht anfassen"; <b><c>true</c> = eigener
         /// Zaehler</b> (geschrieben als 1), <b><c>false</c> = anteilig am Netzbezug</b>, die Vorgabe
         /// — geschrieben als NULL, nie als 0 (<see cref="AnlagenSql.EigenerZaehlerOderNull"/>).
         /// </param>
@@ -284,7 +284,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Abrechnungsart des Kaeltestroms fuer <see cref="KonfigurationSchreiben"/>
-        /// (Schemaschritt 115; E34): <c>null</c> = der gelesene Wert (NULL bleibt NULL), sonst 1 fuer
+        /// (Schemaschritt 119; E34): <c>null</c> = der gelesene Wert (NULL bleibt NULL), sonst 1 fuer
         /// den eigenen Zaehler und NULL fuer „anteilig" (<see cref="AnlagenSql.EigenerZaehlerOderNull"/>).
         /// </summary>
         private static object KuehlAbrechnung(bool? neu, DataRow satz)
@@ -588,7 +588,7 @@ namespace WindowsFormsApplication1
             // KU-S3 (Schemaschritt 114; K9, E33): der Stromtraeger der Kuehlung, NULL = wie
             // Heizbetrieb - ausdruecklich auch mit null; eine fehlende Spalte gilt wie NULL.
             item.Kuehl_ID_Carrier = Zahl(dt, row, KuehlungSchema.SPALTE_KUEHL_ID_CARRIER);
-            // Schemaschritt 115 (E34): die Abrechnungsart des Kaeltestroms, NULL = anteilig am
+            // Schemaschritt 119 (E34): die Abrechnungsart des Kaeltestroms, NULL = anteilig am
             // Netzbezug (Vorgabe) - NULL bleibt null, 1 wird true, 0 false; eine fehlende Spalte
             // gilt wie NULL.
             int? zaehler = Zahl(dt, row, KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER);

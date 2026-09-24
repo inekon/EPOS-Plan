@@ -7761,6 +7761,18 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_KERN_FELD_GUELTIG_BIS" xml:space="preserve">
     <value>Gültig bis</value>
   </data>
+  <data name="KI_KERN_REIHE_UMFANG" xml:space="preserve">
+    <value>{0} Werte, {1} bis {2}</value>
+  </data>
+  <data name="KI_KERN_REIHE_GEKUERZT" xml:space="preserve">
+    <value>… ({0} Werte)</value>
+  </data>
+  <data name="KI_KERN_REIHE_AENDERUNG" xml:space="preserve">
+    <value>{0} · {1} von {2} Werten ändern sich</value>
+  </data>
+  <data name="KI_KERN_REIHE_WEITERE" xml:space="preserve">
+    <value>… und {0} weitere</value>
+  </data>
   <data name="KI_AUS_KEIN_SCHREIBRECHT" xml:space="preserve">
     <value>Die Lizenz erlaubt derzeit kein Schreiben. Ansehen und Exportieren bleiben möglich, Änderungen sind gesperrt. {0}</value>
   </data>
@@ -8517,6 +8529,24 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
     <value>Zahl</value>
   </data>
+  <data name="KI_DLG_TYP_ZAHLENREIHE" xml:space="preserve">
+    <value>Zahlenreihe</value>
+  </data>
+  <data name="KI_DLG_REIHE_UMFANG" xml:space="preserve">
+    <value>Die Reihe trägt {0}.</value>
+  </data>
+  <data name="KI_DLG_BEREICH" xml:space="preserve">
+    <value>Zulässig: {0}.</value>
+  </data>
+  <data name="KI_DLG_REIHE_HINWEIS" xml:space="preserve">
+    <value>Zahlenreihe ({0}); gesetzt wird sie mit reihe_setzen.</value>
+  </data>
+  <data name="KI_DLG_REIHE_STUNDE" xml:space="preserve">
+    <value>Stunde {0}</value>
+  </data>
+  <data name="KI_DLG_REIHE_WOCHENSTUNDE" xml:space="preserve">
+    <value>{0}, Stunde {1}</value>
+  </data>
   <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
     <value>Text</value>
   </data>
@@ -8673,6 +8703,12 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
     <value>{0} Felder in „{1}“ gesetzt.</value>
   </data>
+  <data name="KI_DLG_REIHE_GESETZT" xml:space="preserve">
+    <value>„{0}“: {1} von {2} Werten gesetzt ({3} bis {4}).</value>
+  </data>
+  <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
+    <value>„{0}“ trägt diese Werte bereits; es gibt nichts zu ändern.</value>
+  </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>Der Knopf „{0}“ in „{1}“ wurde ausgelöst.</value>
   </data>
@@ -8693,6 +8729,9 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   </data>
   <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Trägt in mehrere Felder einer geöffneten Maske Werte ein - als ein einziger bestätigter Block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_REIHE_SETZEN" xml:space="preserve">
+    <value>Trägt in eine Zahlenreihe einer geöffneten Maske (Monats-, Stunden- oder Wochenwerte, Feldtyp ZahlListe) eine Liste von Zahlen ein - die ganze Reihe oder einen Ausschnitt ab einer Stelle.</value>
   </data>
   <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
     <value>Löst einen freigegebenen Knopf einer geöffneten Maske aus; die Prüfung der Maske läuft dabei wie bei einem Klick von Hand.</value>
@@ -8724,11 +8763,23 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_REG_ERL_WERTE" xml:space="preserve">
     <value>Zuweisungen „feld=wert“, mehrere durch Semikolon getrennt, z. B. „nutzungsdauer=20; raumbedarf=3“.</value>
   </data>
+  <data name="KI_REG_AB_NAME" xml:space="preserve">
+    <value>ab Stelle</value>
+  </data>
+  <data name="KI_REG_ERL_REIHENWERTE" xml:space="preserve">
+    <value>Die Zahlen in der Reihenfolge der Reihe, als Zahlenliste (Punkt als Dezimaltrenner). Ohne ‚ab‘ muss die Liste die ganze Reihe tragen, sonst den Ausschnitt ab dieser Stelle.</value>
+  </data>
+  <data name="KI_REG_ERL_AB" xml:space="preserve">
+    <value>Stelle des ersten Wertes, bei 1 beginnend - die Stellen nennt dialog_lesen (in einer Wochenreihe ist Dienstag, Stunde 1 die Stelle 25). Ohne Angabe beginnt die Liste bei Stelle 1 und muss vollständig sein.</value>
+  </data>
   <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
     <value>Logischer Name des Knopfes, wie ihn dialog_lesen nennt.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
     <value>Das Feld trägt danach den neuen Text. In die Datenbank kommt er erst, wenn der Aktionsknopf der Maske ausgelöst wird.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_REIHE_SETZEN" xml:space="preserve">
+    <value>Die Reihe trägt danach die neuen Werte; nicht genannte Stellen bleiben, wie sie sind. In die Datenbank kommt sie erst mit dem Speicherweg der Maske.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Die genannten Felder tragen danach die neuen Texte. In die Datenbank kommen sie erst, wenn der Aktionsknopf der Maske ausgelöst wird.</value>
@@ -15787,6 +15838,12 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
     <value>Trage bei Jahresarbeitszahl 3,8 ein.</value>
   </data>
+  <data name="KI_REG_TITEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Zahlenreihe der offenen Maske setzen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Setze die Monatswerte auf 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 und 11.</value>
+  </data>
   <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Mehrere Felder der offenen Maske ausfüllen</value>
   </data>
@@ -19162,6 +19219,30 @@ Möchten Sie das zulassen?</value>
   <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
     <value>Das Feld „{0}“ erwartet eine Zahl; „{1}“ ist keine.</value>
   </data>
+  <data name="KI_FELD_IST_REIHE" xml:space="preserve">
+    <value>„{0}“ ist eine Zahlenreihe mit {1} Werten; gesetzt wird sie mit reihe_setzen – ganz oder ab einer Stelle.</value>
+  </data>
+  <data name="KI_FELD_KEINE_REIHE" xml:space="preserve">
+    <value>„{0}“ ist keine Zahlenreihe; einen einzelnen Wert setzt feld_setzen.</value>
+  </data>
+  <data name="KI_FELD_REIHE_LAENGE" xml:space="preserve">
+    <value>„{0}“ hat {1} Werte, genannt sind {2}. Für einen Ausschnitt die erste Stelle mit ‚ab‘ angeben.</value>
+  </data>
+  <data name="KI_FELD_REIHE_UEBERLAUF" xml:space="preserve">
+    <value>„{0}“ hat {1} Werte; ab Stelle {2} passen höchstens {3}, genannt sind {4}.</value>
+  </data>
+  <data name="KI_FELD_BEREICH" xml:space="preserve">
+    <value>„{0}“: {1} liegt außerhalb des zulässigen Bereichs ({2}).</value>
+  </data>
+  <data name="KI_FELD_BEREICH_VON_BIS" xml:space="preserve">
+    <value>{0} bis {1}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_AB" xml:space="preserve">
+    <value>mindestens {0}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_BIS" xml:space="preserve">
+    <value>höchstens {0}</value>
+  </data>
   <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
     <value>Das Feld „{0}“ erwartet Ja oder Nein; „{1}“ ist keines von beiden.</value>
   </data>
@@ -21817,6 +21898,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
     <value>Das gespeicherte Quellprofil, das die Maske lädt. „Neues Profil“ beginnt einen leeren Satz; ein geladenes Profil bringt Betriebsart, Bezeichnung und Werte mit.</value>
   </data>
+  <data name="KI_DLG_QPROF_MONATSWERTE_ERL" xml:space="preserve">
+    <value>Die zwölf Monats-Mitteltemperaturen der Wärmequelle, Januar bis Dezember – nur in der Betriebsart „Monat“; jeder Wert ist Pflicht beim Speichern.</value>
+  </data>
+  <data name="KI_DLG_QPROF_NICHT_MONAT" xml:space="preserve">
+    <value>Die Monatswerte gelten in der Betriebsart „Monat“; gewählt ist „{0}“. Zuerst die Betriebsart umstellen.</value>
+  </data>
   <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
     <value>Der Pufferspeicher, den diese Senke lädt. Es gibt ihn nur, wenn das Ziel ein Pufferplatz ist; jeder Speicher darf nur einmal Ziel sein.</value>
   </data>
@@ -22072,6 +22159,36 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
     <value>Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist.</value>
   </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_NAME" xml:space="preserve">
+    <value>Randbedingung Bodenplatte</value>
+  </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_ERL" xml:space="preserve">
+    <value>Woran die Bodenplatte grenzt: Erdreich, Keller (dann mit Kellertemperatur) oder Außenluft.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME" xml:space="preserve">
+    <value>Ferien Anfang, Tag</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL" xml:space="preserve">
+    <value>Der Tag des Monats, an dem der Ferienzeitraum beginnt (1 bis 31).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME" xml:space="preserve">
+    <value>Ferien Anfang, Monat</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL" xml:space="preserve">
+    <value>Der Monat, in dem der Ferienzeitraum beginnt (1 bis 12).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME" xml:space="preserve">
+    <value>Ferien Ende, Tag</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL" xml:space="preserve">
+    <value>Der Tag des Monats, an dem der Ferienzeitraum endet (1 bis 31); die Winterferien gehen über die Jahresgrenze.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME" xml:space="preserve">
+    <value>Ferien Ende, Monat</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL" xml:space="preserve">
+    <value>Der Monat, in dem der Ferienzeitraum endet (1 bis 12).</value>
+  </data>
   <data name="KI_DLG_MASKE_GEBB" xml:space="preserve">
     <value>Wärmebedarf eines Gebäudes</value>
   </data>
@@ -22111,6 +22228,15 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar.</value>
   </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_NAME" xml:space="preserve">
+    <value>Stundenwerte der Kurve</value>
+  </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_ERL" xml:space="preserve">
+    <value>Die 24 Stundenwerte der gewählten Tageskurve im Arbeitsstand, Stunde 1 bis 24 – dieselben, die „Stundenwerte…“ zeigt. Geschrieben wird mit „Speichern“; solange geänderte Werte ungespeichert sind, hält die Maske den Kurvenwechsel an.</value>
+  </data>
+  <data name="KI_DLG_GTYP_OHNE_KURVE" xml:space="preserve">
+    <value>Der gewählte Gebäudetyp führt keine Tageskurve; zuerst einen Typ mit Kurven wählen.</value>
+  </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste.</value>
   </data>
@@ -22120,6 +22246,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_TPROF_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Der Freitext des geladenen Typs; er geht mit dem Speichern in die Datenbank.</value>
   </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Wochenwerte</value>
+  </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>Die 7 × 24 übernommenen Stundenwerte der Woche, Montag Stunde 1 bis Sonntag Stunde 24 – der Stand, den „Speichern in DB“ schreibt; die Felder des gezeigten Tages ziehen nach.</value>
+  </data>
   <data name="KI_DLG_TSTAMM_NAME_ERL" xml:space="preserve">
     <value>Der Bezeichner des Katalogsatzes; die Maske zeigt ihn gesperrt. Ein anderer Name entsteht über „Speichern unter“.</value>
   </data>
@@ -22128,6 +22260,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Freitext zum Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_MONATSWERTE_ERL" xml:space="preserve">
+    <value>Die zwölf Monatswerte, Januar bis Dezember; jeder ist Pflicht, bevor gespeichert werden kann.</value>
   </data>
   <data name="KI_DLG_MASKE_BPF" xml:space="preserve">
     <value>Bedarfsprofile im Projekt</value>
@@ -22170,6 +22305,114 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>Die Summe über alle Profile, die diesem Projekt zugeordnet sind.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Woher der Brauchwasserkanal der Simulation kommt: aus den Bestandsprofilen dieser Maske oder aus dem Zapfprofil des Projekts. Beim Umschalten bleiben die Zonen des Zapfprofils erhalten; „Zapfprofil“ braucht mindestens eine Zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>Den Rechenweg Brauchwasser gibt es nur in den Brauchwasserprofilen eines gespeicherten Projekts.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUR_MIT" xml:space="preserve">
+    <value>„{0}“ steht nur mit „{1}“ auf der Maske — bitte zuerst das wählen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZEILE_FEHLT" xml:space="preserve">
+    <value>Diese Zeile steht nicht mehr in der Liste.</value>
+  </data>
+  <data name="KI_DLG_ZPG_GESPERRT" xml:space="preserve">
+    <value>„{0}“ ist gesperrt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
+    <value>Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
+    <value>Die gewählte Zone der Zonenliste, nach Nummer oder Name; ihr Eingabeblock steht unter der Liste. Die Werte jeder Zone lassen sich auch ohne Wahl über die Spalten setzen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONENNAME_ERL" xml:space="preserve">
+    <value>Der Name der Zone; Pflichtfeld für OK. Er benennt die Zone in Liste, Vorschau und Meldungen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUTZUNGSART_ERL" xml:space="preserve">
+    <value>Die Nutzungsart der Zone aus dem Katalog; sie bestimmt Bezugsgröße, Tagesgang und den spezifischen Bedarf je Niveau. Pflichtfeld für OK; eine gesperrte Nutzungsart nennt ihren Grund.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>Die Menge der Zone in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NIVEAU_ERL" xml:space="preserve">
+    <value>Das Bedarfsniveau der Zone — niedrig, mittel oder hoch; es wählt den spezifischen Bedarf der Nutzungsart je Einheit und Tag.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESBEDARF_ERL" xml:space="preserve">
+    <value>Der Jahresbedarf der Zapfung der Zone aus der aktuellen Vorschau; „–“ ohne gerechnete Vorschau. Nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANSICHT_ERL" xml:space="preserve">
+    <value>Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Zonen oder eine Zone. Ändert nur die Anzeige.</value>
+  </data>
+  <data name="KI_DLG_ZPG_RECHENWEG_ERL" xml:space="preserve">
+    <value>Welche Jahresreihe in die Bilanz geht: die deterministische oder das stochastisch gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Steht ab der Stufe „Experte“; die Vorschau bleibt deterministisch.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SEED_ERL" xml:space="preserve">
+    <value>Die Zufallssaat, ganze Zahl ab 0; leer = Vorgabe. Derselbe Seed zieht dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung. Steht in der Stufe „Experte“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>Wie viele Jahre der stochastische Lauf zieht, um die Konsistenz zu prüfen; leer = Vorgabe. Steht in der Stufe „Experte“ beim Rechenweg „stochastisch“.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
+    <value>Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur des Speichers; leer = Vorgabe des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Leistung des Erzeugers am Speicher, nicht negativ; leer = angesetzte Ladeleistung. Die Nachweisleistung ist das Kleinere aus Erzeuger und Wärmeübertrager.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Leistung des Wärmeübertragers, nicht negativ; leer = aus U·A, Fläche oder der Schätzformel der Erzeugerart.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERART_ERL" xml:space="preserve">
+    <value>Ladespeicher oder gemischter Speicher — sie bestimmt die Summenlinie.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SENSORHOEHE_ERL" xml:space="preserve">
+    <value>Die Höhe des Temperaturfühlers als Anteil der Speicherhöhe, von 0 bis 1; leer = Vorgabe des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERART_ERL" xml:space="preserve">
+    <value>Die Erzeugerart am Speicher (Kessel oder Wärmepumpe) — eine Laufangabe für die Schätzung des Wärmeübertragers; sie wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_WERKSTOFF_ERL" xml:space="preserve">
+    <value>Der Werkstoff des Wärmeübertragers (Stahl oder Edelstahl) — eine Laufangabe; sie wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_STOCHASTISCH_ERL" xml:space="preserve">
+    <value>Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit; der Lauf rechnet nebenläufig. Eine Laufangabe; sie wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERZENTIL_ERL" xml:space="preserve">
+    <value>Das Auslegungsperzentil, P95 oder P99. Steht nur mit „Stochastisch rechnen“ auf der Maske.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>Wie viele Bedarfstage das Ensemble zieht; leer = Vorgabe des Kerns. Unter der Mindestzahl ist das Perzentil nicht belastbar. Steht nur mit „Stochastisch rechnen“ auf der Maske.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
+    <value>Der empfohlene Auslegungspunkt — beim Speicher Volumen und Leistung, sonst die Minutenspitze; OK übernimmt ihn in das Zapfprofil. Ergebnis, nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>Der Name des konstruierten Bedarfstags; Pflichtfeld, in der Katalogversion noch nicht vergeben.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>Der Beginn des Zeitfensters der Zeile in Stunden, von 0 bis 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>Das Ende des Zeitfensters der Zeile in Stunden, bis 24 und nach dem Beginn.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>Eine Zapfregel des Katalogs — dann zählt die Anzahl ihrer Vorgänge — oder „Volumen direkt“ mit Volumen und Zapftemperatur.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie oft die Zapfregel im Zeitfenster zapft, nicht negativ; nur mit einer Zapfregel.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>Das Volumen der Zeile in Litern, nicht negativ; nur bei „Volumen direkt“.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Zapftemperatur des Volumens; nur bei „Volumen direkt“.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>Ein neutraler Name der Zapfstelle („Küche“); er benennt die Zeile und rechnet nicht mit.</value>
   </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
@@ -22402,14 +22645,29 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
     <value>Zu welchem Energieträger die Reihe gehört — Anzeige.</value>
   </data>
+  <data name="KI_DLG_LPR_MONATSSAETZE_ERL" xml:space="preserve">
+    <value>Die zwölf Leistungspreis-Sätze des Jahres, Januar bis Dezember; „Übernehmen“ schreibt die Reihe.</value>
+  </data>
   <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Name des Kostenprofils. Unter ihm steht es im Katalog und in der Trägerkarte.</value>
   </data>
   <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
-    <value>Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen.</value>
+    <value>Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst stehen in der Zahlenreihe „Abweichung je Wochentag und Stunde“.</value>
   </data>
   <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
     <value>Die Einheit, in der die Monats- und Wochenwerte stehen — Anzeige.</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_NAME" xml:space="preserve">
+    <value>Preisniveau je Monat</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_ERL" xml:space="preserve">
+    <value>Die zwölf Monatsniveaus des Profils, Januar bis Dezember; die Stundenabweichungen werden zu ihnen addiert.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Abweichung je Wochentag und Stunde</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>Die 7 × 24 Abweichungen, Montag Stunde 1 bis Sonntag Stunde 24; sie werden zum Monatsniveau addiert und dürfen negativ sein.</value>
   </data>
   <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
     <value>Die Vorlagenvariante, deren Positionen die Tabelle zeigt — nur im Stammkontext. Sie zu wechseln lädt einen anderen Positionssatz und ist deshalb kein Feldwert; der Assistent nennt sie und die Alternativen, setzen lässt sie sich hier nicht.</value>
@@ -24203,7 +24461,7 @@ Möchten Sie das zulassen?</value>
     <value>Stochastik · noch nicht gerechnet</value>
   </data>
   <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
-    <value>„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte.</value>
+    <value>„Stochastisch rechnen“ in der Fußleiste zieht das Ensemble des Bedarfstags: P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung. Bei Rechenweg „stochastisch“ zieht es auch die Jahresreihe; ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf.</value>
   </data>
   <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>
@@ -24364,6 +24622,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar.</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
+    <value>Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen).</value>
+  </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
+    <value>Für die Nutzungsart „{0}“ (Katalogversion {1}) stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.</value>
+  </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>die Tabellen des Zapfprofils fehlen in dieser Datenbank.</value>
   </data>
@@ -24432,6 +24696,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed, auf die Jahresmenge gebracht; die gezogenen Jahre des Ensembles prüfen nur die Konsistenz.</value>
+  </data>
+  <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; das Jahr zum Seed ist auf die Jahresmenge gebracht.</value>
   </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche.</value>
@@ -25085,7 +25355,7 @@ Möchten Sie das zulassen?</value>
     <value>Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)</value>
   </data>
   <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
-    <value>Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.</value>
+    <value>Der Katalog führt das Ecodesign-Zapfprofil nicht; es kommt mit der Auslieferungsvorlage oder dem Katalogimport.</value>
   </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>
@@ -25184,7 +25454,7 @@ Möchten Sie das zulassen?</value>
     <value>Stochastisch superponierte Minutenlast</value>
   </data>
   <data name="ZPG_AUS_PERZENTIL_OFFEN" xml:space="preserve">
-    <value>noch nicht gerechnet — die Stochastik kommt mit einer späteren Fassung; die Empfehlung stützt sich auf (a) und (c).</value>
+    <value>noch nicht gerechnet — „Stochastisch rechnen“ in den Eingaben zieht das Ensemble; die Empfehlung stützt sich auf (a) und (c).</value>
   </data>
   <data name="ZPG_AUS_KARTE_NORM" xml:space="preserve">
     <value>(c) Normvergleich</value>
@@ -25349,7 +25619,7 @@ Möchten Sie das zulassen?</value>
     <value>Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft</value>
   </data>
   <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
-    <value>Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung.</value>
+    <value>Der Konsistenzhinweis braucht das Perzentil — „Stochastisch rechnen“ einschalten.</value>
   </data>
   <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
     <value>Hinweis</value>
@@ -25562,7 +25832,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Anlagenbestand nennt keinen Erzeuger.</value>
   </data>
   <data name="ZPG_AUS_STATUS_GERECHNET" xml:space="preserve">
-    <value>Auslegung gerechnet · deterministisch · Perzentil noch nicht gerechnet</value>
+    <value>Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“</value>
   </data>
   <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
     <value>Es ist keine Zone angelegt — ohne Zone keine Auslegung.</value>
@@ -25696,6 +25966,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUSHINW_NL_KRITERIUM" xml:space="preserve">
     <value>Kriterium N_L</value>
   </data>
+  <data name="ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR" xml:space="preserve">
+    <value>Perzentil nicht belastbar</value>
+  </data>
+  <data name="ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE" xml:space="preserve">
+    <value>Stochastische Spitze</value>
+  </data>
+  <data name="ZPG_AUSHINW_WURZEL_N_VERGLEICH" xml:space="preserve">
+    <value>Vergleich μ + z·σ/√N</value>
+  </data>
+  <data name="ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Stochastik nicht rechenbar</value>
+  </data>
   <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
     <value>Katalogparameter</value>
   </data>
@@ -25740,6 +26022,162 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
     <value>Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.</value>
+  </data>
+  <data name="ZPG_GRP_STOCHASTIK" xml:space="preserve">
+    <value>Stochastik · Jahresreihe</value>
+  </data>
+  <data name="ZPG_LBL_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Rechenweg der Jahresreihe</value>
+  </data>
+  <data name="ZPG_OPT_DETERMINISTISCH" xml:space="preserve">
+    <value>deterministisch</value>
+  </data>
+  <data name="ZPG_OPT_STOCHASTISCH" xml:space="preserve">
+    <value>stochastisch</value>
+  </data>
+  <data name="ZPG_HINW_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Wählt nur, welche Reihe in die Bilanz geht: bei „stochastisch“ das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Das Perzentil der Auslegung ist davon unabhängig.</value>
+  </data>
+  <data name="ZPG_LBL_SEED" xml:space="preserve">
+    <value>Zufallssaat (Seed)</value>
+  </data>
+  <data name="ZPG_HINW_SEED" xml:space="preserve">
+    <value>Ganze Zahl ab 0 · leer = Vorgabe {0}; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung.</value>
+  </data>
+  <data name="ZPG_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisierungen</value>
+  </data>
+  <data name="ZPG_EINHEIT_JAHRE" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="ZPG_HINW_REALISIERUNGEN" xml:space="preserve">
+    <value>Ganze Zahl von {0} bis {1} · leer = Vorgabe {2}; die gezogenen Jahre prüfen nur die Konsistenz.</value>
+  </data>
+  <data name="ZPG_HINW_KONSISTENZ_ORT" xml:space="preserve">
+    <value>Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_GERECHNET" xml:space="preserve">
+    <value>Stochastik · Jahresreihe zum Seed {0}, {1} Jahre gezogen</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_JAHRESREIHE" xml:space="preserve">
+    <value>Die Bilanzreihe ist das gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Die Konsistenzprobe zeigt die Stufe Experte.</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ" xml:space="preserve">
+    <value>Konsistenzprobe Energie · {0}</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_VERMERK" xml:space="preserve">
+    <value>Mittel der {0} Jahre {1} kWh/a gegen {2} kWh/a deterministisch · s_R {3} kWh/a · Toleranz ±{4} kWh/a</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ERFUELLT" xml:space="preserve">
+    <value>innerhalb der Toleranz</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ABWEICHEND" xml:space="preserve">
+    <value>außerhalb der Toleranz — das Jahr zum Seed ist auf die Jahresmenge gebracht</value>
+  </data>
+  <data name="ZPG_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Bitte die markierten Felder berichtigen: {0}.</value>
+  </data>
+  <data name="ZPG_BTN_STOCHASTIK_TITEL" xml:space="preserve">
+    <value>Zieht nebenläufig das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit (in der Auslegung) und bei Rechenweg „stochastisch“ die Jahre der Konsistenzprobe; beides lässt sich abbrechen.</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHAU_STOCHASTISCH" xml:space="preserve">
+    <value>Stochastik gerechnet · Seed {0} · {1} Jahre</value>
+  </data>
+  <data name="ZPG_MSG_SEED_UNGUELTIG" xml:space="preserve">
+    <value>Der Seed muss eine ganze Zahl ab 0 sein.</value>
+  </data>
+  <data name="ZPG_MSG_REALISIERUNGEN_UNGUELTIG" xml:space="preserve">
+    <value>Die Zahl der Realisierungen muss zwischen {0} und {1} liegen.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_STOCHASTISCH" xml:space="preserve">
+    <value>Stochastisch rechnen</value>
+  </data>
+  <data name="ZPG_AUS_HERL_STOCHASTISCH" xml:space="preserve">
+    <value>Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit — eine Laufangabe, sie wird nicht gespeichert.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERZENTIL" xml:space="preserve">
+    <value>Auslegungsperzentil</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERZENTIL" xml:space="preserve">
+    <value>P95 oder P99 · Vorgabe P{0}</value>
+  </data>
+  <data name="ZPG_AUS_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisierungen des Bedarfstags</value>
+  </data>
+  <data name="ZPG_AUS_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Bitte die markierten Felder berichtigen: {0}.</value>
+  </data>
+  <data name="ZPG_AUS_EINHEIT_TAGE" xml:space="preserve">
+    <value>Tage</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN" xml:space="preserve">
+    <value>Ganze Zahl von {0} bis {1} · leer = Vorgabe {2} (Vielfaches der Mindestzahl); unter {3} ist P{4} nicht belastbar.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN_OHNE" xml:space="preserve">
+    <value>Ganze Zahl von {0} bis {1} · leer = Vorgabe, hier nicht bestimmbar: {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAUF" xml:space="preserve">
+    <value>nach „Stochastisch rechnen“: Seed {0} · {1} Tage gezogen · maßgebender Tag {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN" xml:space="preserve">
+    <value>Volumen P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN_WERT" xml:space="preserve">
+    <value>{0} l bei {1} kW</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_MINUTENSPITZE" xml:space="preserve">
+    <value>Minutenspitze P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_NACHRICHTLICH" xml:space="preserve">
+    <value>nachrichtlich: Minutenspitze P{0} {1} kW · größte Stundenleistung P{0} {2} kW</value>
+  </data>
+  <data name="ZPG_AUS_NICHT_BELASTBAR" xml:space="preserve">
+    <value>nicht belastbar</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NICHT_BELASTBAR" xml:space="preserve">
+    <value>{0} Realisierungen; ein empirisches P{1} braucht mindestens {2} = 1/(1 − p).</value>
+  </data>
+  <data name="ZPG_AUS_STREUBAND" xml:space="preserve">
+    <value>Streuband über {0} Realisierungen</value>
+  </data>
+  <data name="ZPG_AUS_SP_PERZENTIL" xml:space="preserve">
+    <value>Perzentil</value>
+  </data>
+  <data name="ZPG_AUS_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_AUS_SPANNWEITE" xml:space="preserve">
+    <value>Spannweite (min – max)</value>
+  </data>
+  <data name="ZPG_AUS_OHNE_NACHWEIS" xml:space="preserve">
+    <value>{0} von {1} Realisierungen ohne Nachweis beim Φ_N (Volumen ∞)</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V" xml:space="preserve">
+    <value>Gleichzeitigkeit GLF_V</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V_BEZUG" xml:space="preserve">
+    <value>Ergebnis, kein Eingabefaktor: P{0} des Volumens der Gruppe ÷ Σ P{0} der Volumina je Einheit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P" xml:space="preserve">
+    <value>Gleichzeitigkeit GLF_P</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P_BEZUG" xml:space="preserve">
+    <value>Ergebnis, kein Eingabefaktor: P{0} der Minutenspitze der Gruppe ÷ Σ P{0} der Minutenspitze je Einheit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_WURZEL_N" xml:space="preserve">
+    <value>Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis)</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OK" xml:space="preserve">
+    <value>Konsistenzhinweis geprüft: Die größte Stundenleistung P{0} ({1} kW) liegt nicht über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW).</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_AUFFAELLIG" xml:space="preserve">
+    <value>Konsistenzhinweis: Die größte Stundenleistung P{0} ({1} kW) liegt über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW) — Bedarfstag und Summenlinie prüfen.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE" xml:space="preserve">
+    <value>Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH" xml:space="preserve">
+    <value>Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}</value>
   </data>
   <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
     <value>{0} gewählt</value>
@@ -26679,6 +27117,111 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMUEB_KAELTE_SP_TRAEGER" xml:space="preserve">
     <value>Stromträger</value>
+  </data>
+  <data name="WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Szenario-Leistungspreis des Energieträgers „{0}“ ohne Wirkung: Die gepflegte Leistungspreis-Staffel bzw. saisonale Leistungspreisreihe des Trägers gilt auch in diesem Szenario.</value>
+  </data>
+  <data name="WIRT_SZ_ROLLEN_STROMPREIS" xml:space="preserve">
+    <value>Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — Bezug, Reststrom und Einspeisung rechnen in allen Szenarien mit den Preisen des Tarifsatzes.</value>
+  </data>
+  <data name="WIRT_SZ_ROLLEN_EINSPEISUNG" xml:space="preserve">
+    <value>Szenario-Einspeisevergütung ohne Wirkung: Das Tarif-Rollenmodell bewertet die Einspeisung mit dem Einspeisetarif des Tarifsatzes.</value>
+  </data>
+  <data name="WIRT_SZ_PV_DIALOG_EINSPEISUNG" xml:space="preserve">
+    <value>Szenario-Einspeisevergütung (PV) ohne Wirkung: Die PV-Vergütung rechnet der Vergütungsdialog — dort gelten DV-Entgelt und PPA-Preis je Szenario.</value>
+  </data>
+  <data name="WIRT_SZ_TRAEGERPREISE" xml:space="preserve">
+    <value>Trägerpreise dieses Szenarios: {0}</value>
+  </data>
+  <data name="WIRT_SZ_TP_ARBEIT" xml:space="preserve">
+    <value>Arbeitspreis</value>
+  </data>
+  <data name="WIRT_SZ_TP_GRUND" xml:space="preserve">
+    <value>Grundpreis</value>
+  </data>
+  <data name="WIRT_SZ_TP_LEISTUNG" xml:space="preserve">
+    <value>Leistungspreis</value>
+  </data>
+  <data name="WIRT_FM_PARAM_MENGE" xml:space="preserve">
+    <value>Mengen — Änderung gegenüber Erwartet</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG" xml:space="preserve">
+    <value>Einspeisevergütung PV [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Einspeisevergütung KWK [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_ARBEIT" xml:space="preserve">
+    <value>Arbeitspreis {0} ({1}) je Abrechnungseinheit</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_GRUND" xml:space="preserve">
+    <value>Grundpreis {0} ({1}) [€/a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_LEISTUNG" xml:space="preserve">
+    <value>Leistungspreis {0} ({1})</value>
+  </data>
+  <data name="WIRT_ANN_MENGE" xml:space="preserve">
+    <value>Mengenänderung</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG" xml:space="preserve">
+    <value>Einspeisevergütung PV</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Einspeisevergütung KWK</value>
+  </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
+    <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>
+  </data>
+  <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
+    <value>Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_LAEUFT" xml:space="preserve">
+    <value>Stochastik · rechnet …</value>
+  </data>
+  <data name="ZPG_STATUS_JAHRESREIHE_LAEUFT" xml:space="preserve">
+    <value>Jahresreihe rechnet … · Seed {0} · {1} Jahre</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_ABGEBROCHEN" xml:space="preserve">
+    <value>Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_DETERMINISTISCH" xml:space="preserve">
+    <value>Bei Rechenweg „deterministisch“ zieht „Stochastisch rechnen“ keine Jahresreihe.</value>
+  </data>
+  <data name="ZPG_STATUS_OHNE_JAHRESREIHE" xml:space="preserve">
+    <value>Stochastik nicht gerechnet — {0}</value>
+  </data>
+  <data name="ZPG_MSG_JAHRESREIHE_UNERWARTET" xml:space="preserve">
+    <value>Die Jahresreihe konnte nicht gerechnet werden: {0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAEUFT" xml:space="preserve">
+    <value>rechnet … — das Ensemble des Bedarfstags wird gezogen.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_LAEUFT" xml:space="preserve">
+    <value>Auslegung rechnet … · Ensemble des Bedarfstags</value>
+  </data>
+  <data name="ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN" xml:space="preserve">
+    <value>Das Ensemble ist abgebrochen — „Stochastisch rechnen“ ist wieder aus.</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT" xml:space="preserve">
+    <value>Minutenspitze P{0} je Wohnungsstation</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
+    <value>Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“.</value>
+  </data>
+  <data name="ZPG_AUS_ENTFAELLT" xml:space="preserve">
+    <value>entfällt</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_ENTFAELLT" xml:space="preserve">
+    <value>Perzentilwert und Gleichzeitigkeit entfallen: Beim Φ_N {0} kW findet die Summenlinie für {1} von {2} Realisierungen keinen Nachweis.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_LAEUFT" xml:space="preserve">
+    <value>Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet …</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL" xml:space="preserve">
+    <value>Konsistenzhinweis entfällt — das Perzentil ist nicht rechenbar (Grund in Karte (b)).</value>
+  </data>
+  <data name="ZPG_AUS_DATUM" xml:space="preserve">
+    <value>{0}. {1}</value>
   </data>
   <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
     <value>Kenndaten der Wärmepumpe</value>

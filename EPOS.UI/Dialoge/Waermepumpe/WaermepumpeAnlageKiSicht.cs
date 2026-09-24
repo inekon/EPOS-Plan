@@ -1,5 +1,4 @@
-﻿using EPOS.UI.Dienste;
-using KiKern;
+﻿using KiKern;
 
 namespace EPOS.UI.Dialoge.Waermepumpe;
 
@@ -86,55 +85,43 @@ public sealed class WaermepumpeAnlageKiSicht
 
     // ---- Der Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, E15, E33, E34) -----
     //
-    // Die Regeln stehen EINMAL, in den statischen Wegen der Konfiguration
-    // (WaermepumpeKonfiguration): Sperrgrund, Abweichung des Kühlträgers, Rückfall der
-    // Abrechnungsart, Prozent und Anteil. Was die Maske als weiche Sperre zeigt, lehnt die
-    // Setzung hier benannt ab.
+    // Die Wege stehen EINMAL, in WaermepumpeKuehlKiWege (und deren Regeln in den statischen
+    // Wegen der Konfiguration) - dieselben für die Konfiguration der Simulation
+    // (KomponentenKonfigurationKiSicht). Was die Maske weich sperrt, lehnt die Setzung benannt ab.
 
     /// <summary>„Maschine auch zum Kühlen benutzen" — gesperrt ohne Kühlkennlinie oder mit Quellspeicher.</summary>
     public bool Kuehlbetrieb
     {
         get => D?.Kuehlbetrieb ?? false;
-        set
-        {
-            WaermepumpeAnlageDaten d = KuehlfeldSetzbar();
-            if (value && WaermepumpeKonfiguration.KuehlbetriebSperrgrund(d, G) is string grund)
-                throw new InvalidOperationException(grund);
-            d.Kuehlbetrieb = value;
-        }
+        set => WaermepumpeKuehlKiWege.KuehlbetriebSetzen(D, G, value);
     }
 
     /// <summary>Der Kühl-Vorlauf [°C] aus den Stützstellen; leer = kleinster Stützwert.</summary>
     public int? KuehlVorlauf
     {
         get => D?.KuehlVorlauf;
-        set => KuehlfeldSetzbar().KuehlVorlauf = value;
+        set => WaermepumpeKuehlKiWege.VorlaufSetzen(D, G, value);
     }
 
     /// <summary>Die Stützstellen der Kühlkennlinie, die die Maske zur Wahl stellt — ohne die gesperrten.</summary>
-    public IReadOnlyList<KiWahleintrag> KuehlVorlaufWahl
-        => D is { } d && G?.Vorlaeufe is { } vorlaeufe
-            ? KiMaskenanmeldung.Eintraege(vorlaeufe(d.IdWp).Where(e => e.Sperrgrund.Length == 0),
-                                          e => e.Vorlauf, e => e.Vorlauf + " °C")
-            : Array.Empty<KiWahleintrag>();
+    public IReadOnlyList<KiWahleintrag> KuehlVorlaufWahl => WaermepumpeKuehlKiWege.VorlaufWahl(D, G);
 
     /// <summary>Der Hilfsstromanteil in PROZENT, wie die Maske ihn zeigt; gespeichert wird der Anteil.</summary>
     public double? KuehlHilfsstromanteil
     {
-        get => WaermepumpeKonfiguration.AnteilAlsProzent(D?.KuehlHilfsstromanteil);
-        set => KuehlfeldSetzbar().KuehlHilfsstromanteil = WaermepumpeKonfiguration.ProzentAlsAnteil(value);
+        get => WaermepumpeKuehlKiWege.HilfsstromProzent(D);
+        set => WaermepumpeKuehlKiWege.HilfsstromSetzen(D, G, value);
     }
 
     /// <summary>Der Stromträger des Kältestroms; leer = wie Heizbetrieb.</summary>
     public int? KuehlCarrierId
     {
         get => D?.KuehlCarrierId;
-        set => WaermepumpeKonfiguration.KuehltraegerSetzen(KuehlfeldSetzbar(), value, G);
+        set => WaermepumpeKuehlKiWege.KuehltraegerSetzen(D, G, value);
     }
 
     /// <summary>Die Stromträger des Projekts, die die Maske für den Kältestrom zur Wahl stellt.</summary>
-    public IReadOnlyList<KiWahleintrag> KuehlCarrierIdWahl
-        => KiMaskenanmeldung.Eintraege(G?.Stromtraeger, e => e.Id, e => e.Text);
+    public IReadOnlyList<KiWahleintrag> KuehlCarrierIdWahl => WaermepumpeKuehlKiWege.TraegerWahl(G);
 
     /// <summary>
     /// Die Abrechnungsart des Kältestroms (E34): 0 = anteilig am Netzbezug, 1 = eigener Zähler —
@@ -142,41 +129,12 @@ public sealed class WaermepumpeAnlageKiSicht
     /// </summary>
     public int KuehlAbrechnung
     {
-        get => D is { } d ? WaermepumpeKonfiguration.AbrechnungWahl(d) : WaermepumpeKonfiguration.ABRECHNUNG_ANTEILIG;
-        set
-        {
-            WaermepumpeAnlageDaten d = KuehlfeldSetzbar();
-            if (value == WaermepumpeKonfiguration.ABRECHNUNG_ZAEHLER &&
-                !WaermepumpeKonfiguration.KuehltraegerWeichtAb(d, G))
-                throw new InvalidOperationException(
-                    WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER);
-            WaermepumpeKonfiguration.AbrechnungSetzen(d, value);
-        }
+        get => WaermepumpeKuehlKiWege.Abrechnung(D);
+        set => WaermepumpeKuehlKiWege.AbrechnungSetzen(D, G, value);
     }
 
     /// <summary>Die zwei Abrechnungsarten der Maske — dieselben Texte wie ihre Optionsgruppe.</summary>
-    public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl
-    {
-        get
-        {
-            var texte = new WaermepumpeKonfigurationTexte();
-            return KiMaskenanmeldung.Eintraege(
-                new[] { (WaermepumpeKonfiguration.ABRECHNUNG_ANTEILIG, texte.OptionAnteilig),
-                        (WaermepumpeKonfiguration.ABRECHNUNG_ZAEHLER, texte.OptionZaehler) },
-                e => e.Item1, e => e.Item2);
-        }
-    }
-
-    /// <summary>
-    /// Der Feldsatz, in den ein Kühlfeld geschrieben wird — oder die benannte Absage, wenn der
-    /// Wirt keinen Kühlbetrieb anbietet (keine Gaben) oder kein Feldsatz offen ist.
-    /// </summary>
-    private WaermepumpeAnlageDaten KuehlfeldSetzbar()
-    {
-        if (D is { } d && G is not null) return d;
-        throw new InvalidOperationException(
-            WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR);
-    }
+    public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl => WaermepumpeKuehlKiWege.AbrechnungWahl();
 
     // ---- Die Stammfelder des Geräts ---------------------------------------------
 

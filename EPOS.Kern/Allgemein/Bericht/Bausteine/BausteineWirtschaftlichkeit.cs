@@ -157,7 +157,7 @@ namespace WindowsFormsApplication1
             // Betriebskosten mit (G11). Ein Bericht, der nur eine der beiden Quellen
             // nennt, erklärt seine eigenen Zahlen nicht.
             k.HinweisRoh(MyResource.Resource.WIRT_SZ_QUELLEN);
-            SchreibeSzenarien(k, bewertung, p);
+            SchreibeSzenarien(k, bewertung, p, daten);
 
             // ---- ETAPPE W5‑B‑12 (VALERI-Lücke G6): die nicht monetären Wirkungen ----
             //
@@ -259,7 +259,11 @@ namespace WindowsFormsApplication1
 
             try
             {
-                return provider.BerechneVerlaufSzenarien(daten, p, p.Betrachtungszeitraum);
+                // ETAPPE E9a (Schritt B): jedes Szenario über SEINEN Betrachtungszeitraum —
+                // die Linie endet, wo ihr Kapitalwert steht, und die Gliederung der Brücke
+                // passt zum Ergebnis. Ohne gepflegten Zeitraum Zahl für Zahl der Verlauf
+                // über T.
+                return provider.BerechneVerlaufSzenarienJeZeitraum(daten, p);
             }
             catch { return null; }
         }
@@ -1072,7 +1076,7 @@ namespace WindowsFormsApplication1
         /// Hinweistext (U10), dann der Vorschlag derselben Bewertung.</para>
         /// </summary>
         private static void SchreibeSzenarien(WordKontext k, WirtschaftlichkeitBewertung bewertung,
-                                              WirtschaftlichkeitParameter p)
+                                              WirtschaftlichkeitParameter p, BerichtsDaten daten)
         {
             // ETAPPE E2 (G8/G9): die REFERENZ der Gruppe — in der Paarsicht der Stand A,
             // sonst die Gruppenreferenz, ohne Wahl der Stamm. Sie bekommt eine eigene
@@ -1174,7 +1178,7 @@ namespace WindowsFormsApplication1
             // Nutzungsdauer) und seine Herkunft: „Vorgaben", solange niemand ein Feld
             // gepflegt hat, sonst „gepflegte Werte". Dieselben Ressourcen wie Dialog und
             // Seite — drei Formulierungen derselben Auskunft wären drei Wahrheiten.
-            SchreibeSzenarioAnnahmen(k, p);
+            SchreibeSzenarioAnnahmen(k, p, daten);
 
             // ---- ETAPPE E5 (U10): der Hinweistext unter den Annahmen -------------------
             // Was ein Szenario heute variiert und was nicht — derselbe Text wie unter der
@@ -1206,7 +1210,8 @@ namespace WindowsFormsApplication1
         /// dieser Reihenfolge. Erwartet bekommt keine: Es IST der Projektparametersatz,
         /// und der steht bereits in „Parameter dieses Rechenlaufs".
         /// </summary>
-        private static void SchreibeSzenarioAnnahmen(WordKontext k, WirtschaftlichkeitParameter p)
+        private static void SchreibeSzenarioAnnahmen(WordKontext k, WirtschaftlichkeitParameter p,
+                                                     BerichtsDaten daten)
         {
             if (p == null) return;
             foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST,
@@ -1221,6 +1226,12 @@ namespace WindowsFormsApplication1
                               ? MyResource.Resource.WPAR_SZ_HERKUNFT_VORGABE
                               : MyResource.Resource.WPAR_SZ_HERKUNFT_GEPFLEGT;
                 k.HinweisRoh(string.Format(k.Kultur, muster, name, satz.Nachweis(p, k.Kultur)));
+
+                // ETAPPE E9a (Norm 9 c): die gepflegten Trägerpreise des Szenarios je Stand —
+                // nur, wo einer gepflegt ist; „wie Erwartet" wird nicht wiederholt.
+                string preise = daten != null
+                    ? TraegerpreisSzenario.Nachweiszeile(daten.Varianten, sz, k.Kultur) : null;
+                if (!string.IsNullOrEmpty(preise)) k.HinweisRoh(preise);
             }
         }
 

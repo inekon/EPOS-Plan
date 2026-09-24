@@ -23,14 +23,36 @@
    herbeifuehrt (KonstruktorOeffnen einer Gruppe), nicht nach jedem Abbrechen erneut. Ein Tag
    aus dem Stundenprofil traegt das Warnbanner "Spitzen unterschaetzt" (SpitzenUnterschaetzt).
 
-   BENANNT GESPERRT. Das Perzentil ("noch nicht gerechnet"), der Konsistenzhinweis (braucht
-   das Perzentil), der Rohrnetz-Spitzendurchfluss nach DIN 1988-300 (die Summe der
-   Entnahmearmaturen fehlt im Datenmodell), die Quellen A100-Referenzprofil (solange der
-   Katalog keine Zeile dieser Art traegt) und Ecodesign-Zapfprofil sowie "An
-   Speicherauslegung uebergeben..." kommen spaeter: Sie stehen da, gesperrt mit Grund.
+   STOCHASTIK (Stufe Z3, 4.5 b). Der Schalter "Stochastisch rechnen" (eine Laufangabe) zieht
+   je Topologiegruppe das Ensemble des Bedarfstags NEBENLAEUFIG (Delegat "StochastischRechnen":
+   Arbeitsfaden der Huelle, Abbruchmarke bis in den Kern; Fortschritt mit Abbrechen, Karte (b)
+   "rechnet ..." bis zum Ergebnis, das per InvokeAsync kommt; ein Abbruch schaltet ihn aus und
+   rechnet deterministisch nach; der Delegat "Rechnen" rechnet stets ohne Ensemble). Mit ihm
+   stehen das Auslegungsperzentil
+   (P95 | P99) und die Realisierungen des Bedarfstags (leer = Vorgabe des Kerns) in den
+   Eingaben. Die Karte (b) zeigt dann den Perzentilwert der Auslegungsgroesse (Speicher:
+   Volumen beim Phi_N des Summenlinienpunkts; sonst Minutenspitze), das Streuband P50 ... P99
+   samt Spannweite als Tabellenzeilen, die Gleichzeitigkeit als Ergebnis (GLF_V bzw. GLF_P mit
+   Bezug), den Vermerk "nicht belastbar" bei R < 1/(1 - p); die Speichergruppe traegt den
+   Konsistenzhinweis als Kohaerenzzeile. Ohne Schalter bleibt das Perzentil "noch nicht
+   gerechnet"; der Wirt oeffnet die Ueberlagerung mit eingeschaltetem Schalter ueber die
+   Eingaben (Knopf "Stochastisch rechnen" des Zapfprofils) - dann ohne Ergebnis, und genau ein
+   Lauf rechnet gleich nebenlaeufig mit Ensemble. Kein neues Bild.
+
+   BENANNT GESPERRT. Der Konsistenzhinweis vor dem Lauf (braucht das Perzentil), der
+   Rohrnetz-Spitzendurchfluss nach DIN 1988-300 (die Summe der Entnahmearmaturen fehlt im
+   Datenmodell), die Quellen A100-Referenzprofil und Ecodesign-Zapfprofil (solange der Katalog
+   keine Zeile ihrer Art traegt) sowie "An Speicherauslegung uebergeben..." stehen da,
+   gesperrt mit Grund.
 
    ENTPRELLT. Jede Eingabe rechnet neu, erst EntprellungMs nach der letzten (0 = sofort,
-   bunit). *@
+   bunit).
+
+   HILFE-ASSISTENT (Welle #458, Stufe 3a). Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.ZAPFPROFIL_AUSLEGUNG), solange sie offen steht - angemeldet sind ihre
+   Eingaben ueber ZapfprofilAuslegungKiSicht, gesetzt auf den Wegen der Eingabefelder (jede
+   Setzung rechnet neu), dazu der empfohlene Punkt nur lesbar. Pruefen ist der Befund des OK;
+   kein Speicherweg - OK bleibt beim Anwender. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -100,15 +122,36 @@
                     <Auswahlfeld Bezeichnung="@Texte.LabelWerkstoff" Eintraege="@Werkstoffe"
                                  Auswahl="@((int)_eingabe.Werkstoff)" AuswahlChanged="WerkstoffSetzen" />
                     <Herleitungszeile Text="@Laufangabe("")" />
+                    <Schalter Bezeichnung="@Texte.LabelStochastisch" Wert="@_eingabe.Stochastisch" WertChanged="StochastischSetzen" />
+                    <Herleitungszeile Text="@Texte.HerleitungStochastisch" />
+                    @if (_eingabe.Stochastisch)
+                    {
+                        if (Daten.Perzentile.Count > 0)
+                        {
+                            <Optionsgruppe Bezeichnung="@Texte.LabelPerzentil" Eintraege="@Perzentilwahl"
+                                           Auswahl="@PerzentilAuswahl" AuswahlChanged="PerzentilSetzen" />
+                            <Herleitungszeile Text="@Format(Texte.HerleitungPerzentil, Ganz(Daten.PerzentilVorgabe))" />
+                        }
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelRealisierungen" Feldname="@Texte.LabelRealisierungen"
+                                      Einheit="@Texte.EinheitTage" Min="@Daten.RealisierungenMindestens"
+                                      Max="@Daten.RealisierungenHoechstens"
+                                      Wert="@_eingabe.RealisierungenAuslegung" WertChanged="RealisierungenSetzen"
+                                      Platzhalter="@Klammer(RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
+                        <Herleitungszeile Text="@RealisierungenHerleitung" />
+                    }
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
+    @* Der nebenläufige Lauf des Ensembles (5.1): Status und Abbruch, nie im Zeichenfaden. *@
+    <Fortschritt Sichtbar="@EnsembleLaeuft" Text="@Texte.StatusEnsembleLaeuft"
+                 Abbrechen="@(EventCallback.Factory.Create(this, EnsembleAbbrechen))" />
+
     @* ------------------------------------------------ je Topologiegruppe ---------- *@
     @if (_ergebnis is null || _ergebnis.Zustand != ZapfprofilAuslegungZustand.Gerechnet)
     {
-        <p class="epos-leisezeile epos-zapfausl-ohne" role="status">@OhneGrund</p>
+        <p class="epos-leisezeile epos-zapfausl-ohne" role="status">@(EnsembleLaeuft && _ergebnis is null ? Texte.StatusEnsembleLaeuft : OhneGrund)</p>
     }
     else
     {
@@ -166,11 +209,91 @@
                             }
                         </section>
 
-                        @* (b) Perzentil - benannt gesperrt *@
+                        @* (b) Perzentil aus dem Ensemble des Bedarfstags (4.5 b) *@
                         <section class="epos-zapfausl-karte epos-zapfausl-karte--perzentil" aria-label="@Texte.KartePerzentil">
                             <h4>@Texte.KartePerzentil</h4>
                             <p class="epos-leisezeile">@Texte.KartePerzentilUnter</p>
-                            <p class="epos-leisezeile epos-zapfausl-perzentil" aria-disabled="true" title="@Texte.GrundNochNicht">@Texte.PerzentilOffen</p>
+                            @if (EnsembleLaeuft)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-laeuft" role="status">@Texte.PerzentilLaeuft</p>
+                            }
+                            else if (g.PerzentilErgebnis is { } pz)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-lauf">@Format(Texte.PerzentilLauf, pz.Seed, pz.Realisierungen, pz.Datum.Length > 0 ? pz.Datum : Ganz(pz.Tag))</p>
+                                @* P_p = ∞ (ohne Nachweis beim Φ_N): der Satz des Kerns und ein eigener „entfällt". *@
+                                if (g.Perzentil.Stand == ZapfprofilKartenstand.NichtRechenbar)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-perzentil-grund">@Standtext(g.Perzentil)</p>
+                                }
+                                if (PerzentilEntfaellt(pz))
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-perzentil-entfaellt">@Format(Texte.PerzentilEntfaellt, Zahl(pz.LeistungKw, "N1"), Ganz(pz.OhneNachweis), Ganz(pz.Realisierungen))</p>
+                                }
+                                <div class="epos-zapfausl-wert epos-zapfausl-perzentil-wert">
+                                    <span>@Format(pz.Volumen ? Texte.PerzentilVolumen : Texte.PerzentilMinutenspitze, pz.Perzentil)</span>
+                                    <b>@Perzentilhaupttext(pz)</b>
+                                    @if (!pz.Belastbar)
+                                    {
+                                        <span class="epos-zapfausl-marke epos-zapfausl-marke--warnung epos-zapfausl-nichtbelastbar"
+                                              title="@NichtBelastbarGrund(pz)">@Texte.NichtBelastbar</span>
+                                    }
+                                </div>
+                                if (!pz.Belastbar)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-nichtbelastbar-grund">@NichtBelastbarGrund(pz)</p>
+                                }
+                                @* Wohnungsstation (4.5, N10 (d)): die Auslegungsgröße je Einheit samt Zone. *@
+                                if (pz.SpitzeJeEinheitKw is double jeEinheit)
+                                {
+                                    <div class="epos-zapfausl-wert epos-zapfausl-je-einheit">
+                                        <span>@Format(Texte.SpitzeJeEinheit, pz.Perzentil)</span><b>@(Zahl(jeEinheit, "N1") + " kW")</b>
+                                    </div>
+                                    <p class="epos-leisezeile epos-zapfausl-je-einheit-zone">@Format(Texte.SpitzeJeEinheitZone, pz.SpitzeJeEinheitZone)</p>
+                                }
+                                <p class="epos-leisezeile">@Format(Texte.Streuband, pz.Realisierungen)</p>
+                                <table class="epos-raster epos-kennzahlen epos-zapfausl-streuband">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">@Texte.SpaltePerzentil</th>
+                                            <th scope="col">@Texte.SpalteWert</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (ZapfprofilPerzentilZeileDaten z in pz.Streuband)
+                                        {
+                                            <tr class="@(z.Perzentil == pz.Perzentil ? "epos-zeile--markiert" : null)">
+                                                <th scope="row">P@(z.Perzentil)</th>
+                                                <td class="epos-zahl">@Perzentilwerttext(pz, z.Wert)</td>
+                                            </tr>
+                                        }
+                                        <tr class="epos-zapfausl-spannweite">
+                                            <th scope="row">@Texte.Spannweite</th>
+                                            <td class="epos-zahl">@(Perzentilwerttext(pz, pz.Minimum) + " – " + Perzentilwerttext(pz, pz.Maximum))</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                if (pz.OhneNachweis > 0)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-ohnenachweis">@Format(Texte.OhneNachweis, pz.OhneNachweis, pz.Realisierungen)</p>
+                                }
+                                <div class="epos-zapfausl-wert epos-zapfausl-glf">
+                                    <span>@(pz.Volumen ? Texte.GlfV : Texte.GlfP)</span><b>@(pz.Gleichzeitigkeit is double glf ? Zahl(glf, "N2") : Texte.Entfaellt)</b>
+                                </div>
+                                <p class="epos-leisezeile epos-zapfausl-glf-bezug">@Format(pz.Volumen ? Texte.GlfVBezug : Texte.GlfPBezug, pz.Perzentil, pz.Einheiten)</p>
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-info">@Format(Texte.PerzentilNachrichtlich, pz.Perzentil, Zahl(pz.MinutenspitzeKw, "N1"), Zahl(pz.StundenspitzeKw, "N1"))</p>
+                                if (pz.WurzelNKw is double wurzelN)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-perzentil-info">@Format(Texte.WurzelN, Zahl(wurzelN, "N1"))</p>
+                                }
+                            }
+                            else if (g.Perzentil.Stand == ZapfprofilKartenstand.NichtRechenbar)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-grund">@Standtext(g.Perzentil)</p>
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-perzentil">@Texte.PerzentilOffen</p>
+                            }
                         </section>
 
                         @* (c) Normvergleich *@
@@ -311,7 +434,33 @@
                         }
                         @if (g.Speicher)
                         {
-                            <p class="epos-leisezeile epos-zapfausl-konsistenz" aria-disabled="true" title="@Texte.GrundKonsistenz">@Texte.Konsistenz — @Texte.GrundKonsistenz</p>
+                            if (g.PerzentilErgebnis is { } kz)
+                            {
+                                if (!kz.KonsistenzGeprueft)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-konsistenz">@Texte.KonsistenzOhneSchwelle</p>
+                                }
+                                else
+                                {
+                                    <div class="epos-zapfausl-konsistenz">
+                                        <Kohaerenzzeile Text="@Konsistenzsatz(kz)"
+                                                        Zustand="@(kz.KonsistenzAuffaellig ? KohaerenzZustand.Abweichend : KohaerenzZustand.Ok)" />
+                                    </div>
+                                }
+                            }
+                            else if (EnsembleLaeuft)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-konsistenz" role="status">@Texte.KonsistenzLaeuft</p>
+                            }
+                            else if (_eingabe.Stochastisch)
+                            {
+                                @* Der Schalter steht schon — kein Rat, ihn einzuschalten; das Perzentil fehlt aus seinem Grund (Karte (b)). *@
+                                <p class="epos-leisezeile epos-zapfausl-konsistenz">@Texte.KonsistenzOhnePerzentil</p>
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-konsistenz" aria-disabled="true" title="@Texte.GrundKonsistenz">@Texte.Konsistenz — @Texte.GrundKonsistenz</p>
+                            }
                         }
                     </section>
                 </KindInhalt>
@@ -379,8 +528,19 @@
     /// <summary>Die Beschriftungen (Textbündel).</summary>
     [Parameter] public ZapfprofilAuslegungTexte Texte { get; set; } = new();
 
-    /// <summary>Die Auslegung zu den Eingaben — der Delegat der Hülle. Kein Delegat = das Ergebnis bleibt beim Öffnen.</summary>
+    /// <summary>
+    /// Die Auslegung zu den Eingaben — der Delegat der Hülle, im Zeichenlauf und darum stets
+    /// deterministisch (der Dialog reicht die Eingaben ohne „Stochastisch rechnen"). Kein Delegat =
+    /// das Ergebnis bleibt beim Öffnen.
+    /// </summary>
     [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>? Rechnen { get; set; }
+
+    /// <summary>
+    /// Die Auslegung MIT dem Ensemble des Bedarfstags (4.5 b) — der Delegat der Hülle, der den Lauf
+    /// auf einen Arbeitsfaden legt und die Abbruchmarke an den Kern reicht (5.1). Kein Delegat =
+    /// „Stochastisch rechnen" zieht kein Ensemble, das Perzentil bleibt offen.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>? StochastischRechnen { get; set; }
 
     /// <summary>Der Konstruktor der Hülle; kein Delegat = kein Knopf „Bedarfstag konstruieren…".</summary>
     [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
@@ -418,8 +578,17 @@
     private string _hinweis = "";
     private CancellationTokenSource? _entprellung;
 
+    /// <summary>Die Abbruchmarke des laufenden Ensembles; <c>null</c>, solange keines läuft.</summary>
+    private CancellationTokenSource? _lauf;
+
+    /// <summary>Die Felder, deren Text gerade keine gültige Zahl ist (Feldname) — sie halten das OK an.</summary>
+    private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
+
     /// <summary>Die Eingaben — Prüfhilfe für die Tests.</summary>
     public ZapfprofilAuslegungEingabeDaten Eingabe => _eingabe;
+
+    /// <summary>Läuft das Ensemble des Bedarfstags gerade? Prüfhilfe für die Tests.</summary>
+    public bool EnsembleLaeuft => _lauf is not null;
 
     /// <summary>Das angezeigte Ergebnis — Prüfhilfe für die Tests.</summary>
     public ZapfprofilAuslegungDaten? AktuellesErgebnis => _ergebnis;
@@ -439,6 +608,14 @@
         _ergebnis = Daten.Ergebnis;
         _aktuell = _ergebnis is not null;
         _konstruktorOffen = KonstruktorFaellig(null, _ergebnis);
+        // „Stochastisch rechnen" des Zapfprofils: Der Schalter kommt mit den Eingaben, und ohne
+        // Ergebnis rechnet genau EIN Lauf — gleich nebenläufig mit Ensemble, kein
+        // deterministischer Vorlauf. Sein erstes Ergebnis darf den Konstruktor öffnen (4.5).
+        if (_ergebnis is null && _eingabe.Stochastisch) Neurechnen(konstruktorFolgen: true);
+
+        // Welle #458, Stufe 3a: die Ueberlagerung als EIGENE Maske - solange sie offen
+        // steht; ihr Dispose meldet sie ab.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, () => KiSicht(), KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -451,7 +628,12 @@
     }
 
     /// <inheritdoc/>
-    public void Dispose() => EntprellungAbbrechen();
+    public void Dispose()
+    {
+        _kiMaske?.Dispose();
+        EntprellungAbbrechen();
+        LaufVerwerfen();
+    }
 
     // =================================================================================
     // Anzeige
@@ -555,6 +737,70 @@
         ((int)ZapfprofilWerkstoff.Edelstahl, Texte.WerkstoffEdelstahl)
     };
 
+    // --- Stochastik (4.5 b) -------------------------------------------------------------
+
+    /// <summary>Die Wahl des Auslegungsperzentils aus der Wertemenge des Schemas: „P95", „P99".</summary>
+    private IReadOnlyList<(int Id, string Text)> Perzentilwahl
+        => Daten.Perzentile.Select(p => (p, "P" + p.ToString(CultureInfo.InvariantCulture))).ToArray();
+
+    /// <summary>Das gewählte Perzentil — die Eingabe, sonst die Vorgabe der DDL.</summary>
+    private int? PerzentilAuswahl => _eingabe.Perzentil ?? Daten.PerzentilVorgabe;
+
+    /// <summary>Die Vorgabe der Realisierungen zum gewählten Perzentil (Kern); <c>null</c>, wenn nicht bestimmbar.</summary>
+    private int? RealisierungenVorgabe
+        => PerzentilAuswahl is int p && Daten.RealisierungenVorgabe.TryGetValue(p, out int r) ? r : null;
+
+    /// <summary>Die Herleitung der Realisierungen: Grenzen, Vorgabe und ab wann das Perzentil belastbar ist.</summary>
+    private string RealisierungenHerleitung
+    {
+        get
+        {
+            string min = Ganz(Daten.RealisierungenMindestens), max = Ganz(Daten.RealisierungenHoechstens);
+            if (RealisierungenVorgabe is not int vorgabe || PerzentilAuswahl is not int p)
+                return Format(Texte.HerleitungRealisierungenOhne, min, max, Daten.RealisierungenVorgabeGrund);
+            return Format(Texte.HerleitungRealisierungen, min, max, Ganz(vorgabe),
+                          Ganz(Daten.Mindestzahl.TryGetValue(p, out int m) ? m : (int?)null), p.ToString(CultureInfo.InvariantCulture));
+        }
+    }
+
+    /// <summary>Der Perzentilwert der Karte (b): Speicher „V l bei Φ kW", sonst die Minutenspitze in kW.</summary>
+    private string Perzentilhaupttext(ZapfprofilPerzentilDaten pz)
+        => PerzentilEntfaellt(pz) ? Texte.Entfaellt
+         : pz.Volumen && !double.IsNaN(pz.Wert)
+            ? Format(Texte.PerzentilVolumenWert, Zahl(pz.Wert, "N0"), Zahl(pz.LeistungKw, "N1"))
+            : Perzentilwerttext(pz, pz.Wert);
+
+    /// <summary>
+    /// Der Satz des Konsistenzhinweises aus den Werten des Kerns (N11 (k)): P_p der größten
+    /// Stundenleistung gegen Schwelle · Φ_N — in der Sprache und Kultur der Oberfläche.
+    /// </summary>
+    private string Konsistenzsatz(ZapfprofilPerzentilDaten kz)
+        => Format(kz.KonsistenzAuffaellig ? Texte.KonsistenzAuffaellig : Texte.KonsistenzOk,
+                  kz.Perzentil.ToString(CultureInfo.InvariantCulture), Zahl(kz.KonsistenzSpitzeKw, "N1"),
+                  Zahl(kz.KonsistenzSchwelle, "0.##"), Zahl(kz.KonsistenzLeistungKw, "N1"));
+
+    /// <summary>Entfällt der Perzentilwert — ohne Nachweis beim Φ_N (P_p = ∞)?</summary>
+    private static bool PerzentilEntfaellt(ZapfprofilPerzentilDaten pz) => double.IsPositiveInfinity(pz.Wert);
+
+    /// <summary>Ein Wert des Streubands in seiner Einheit (l bzw. kW); ohne Nachweis „∞".</summary>
+    private static string Perzentilwerttext(ZapfprofilPerzentilDaten pz, double wert)
+    {
+        if (double.IsNaN(wert)) return "–";
+        if (double.IsPositiveInfinity(wert)) return "∞";
+        return pz.Volumen ? Zahl(wert, "N0") + " l" : Zahl(wert, "N1") + " kW";
+    }
+
+    /// <summary>Warum das Perzentil nicht belastbar ist: R gegen die Mindestzahl ⌈1/(1 − p)⌉.</summary>
+    private string NichtBelastbarGrund(ZapfprofilPerzentilDaten pz)
+        => Format(Texte.GrundNichtBelastbar, Ganz(pz.Realisierungen), pz.Perzentil.ToString(CultureInfo.InvariantCulture),
+                  Ganz(pz.Mindestzahl));
+
+    /// <summary>Eine Vorgabe als Platzhalter im leeren Feld: „(150)"; ohne Vorgabe leer.</summary>
+    private static string Klammer(int? wert) => wert is int w ? "(" + Ganz(w) + ")" : "";
+
+    /// <summary>Eine ganze Zahl für einen Satz; ohne Wert „–".</summary>
+    private static string Ganz(int? wert) => wert is int w ? w.ToString(CultureInfo.CurrentCulture) : "–";
+
     /// <summary>„Laufangabe — wird nicht gespeichert; …" ohne leeren Zusatz.</summary>
     private string Laufangabe(string zusatz)
     {
@@ -618,6 +864,7 @@
     {
         get
         {
+            if (EnsembleLaeuft) return Texte.StatusEnsembleLaeuft;
             if (_ergebnis is null) return "";
             if (_ergebnis.Zustand != ZapfprofilAuslegungZustand.Gerechnet) return _ergebnis.Status;
             ZapfprofilAuslegungsgruppeDaten? g = _ergebnis.Punktgruppe;
@@ -630,7 +877,7 @@
         if (_leiste is null || Status == _statusGezeigt) return;
         _statusGezeigt = Status;
         bool fehler = _ergebnis is not null && _ergebnis.Zustand == ZapfprofilAuslegungZustand.Abgebrochen;
-        _leiste.Zeigen(Status, fehler);
+        _leiste.Zeigen(Status, fehler && !EnsembleLaeuft);
     }
 
     private static string Zahl(double? wert, string format)
@@ -712,6 +959,38 @@
         Geaendert();
     }
 
+    /// <summary>„Stochastisch rechnen": zieht (bzw. verwirft) das Ensemble des Bedarfstags — eine Laufangabe.</summary>
+    private void StochastischSetzen(bool an)
+    {
+        if (_eingabe.Stochastisch == an) return;
+        _eingabe.Stochastisch = an;
+        // Nur das Feld, das verschwindet, nimmt seine Fehleingabe mit.
+        if (!an) _fehlfelder.Remove(Texte.LabelRealisierungen);
+        Geaendert();
+    }
+
+    private void PerzentilSetzen(int? id)
+    {
+        if (id is not int p || !Daten.Perzentile.Contains(p) || _eingabe.Perzentil == p) return;
+        _eingabe.Perzentil = p;
+        Geaendert();
+    }
+
+    /// <summary>Die Realisierungen des Bedarfstags; leer = die Vorgabe des Kerns (<c>null</c>).</summary>
+    private void RealisierungenSetzen(int? wert)
+    {
+        if (wert == _eingabe.RealisierungenAuslegung) return;
+        _eingabe.RealisierungenAuslegung = wert;
+        Geaendert();
+    }
+
+    /// <summary>Ein Feld meldet, ob sein Text gerade eine gültige Zahl ist — eine Fehleingabe hält das OK an.</summary>
+    private void FehlerZustandMelden((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlfelder.Add(f.Feld);
+        else _fehlfelder.Remove(f.Feld);
+    }
+
     /// <summary>Ein gesperrter Versuch (Übergabe): der Grund als leise Zeile.</summary>
     private void UebergabeGesperrt() => _hinweis = Texte.GrundUebergeben;
 
@@ -732,11 +1011,15 @@
         Geaendert();
     }
 
-    /// <summary>Eine Eingabe hat die Auslegung geändert: das Ergebnis ist überholt und wird entprellt neu gerechnet.</summary>
+    /// <summary>
+    /// Eine Eingabe hat die Auslegung geändert: das Ergebnis ist überholt und wird entprellt neu
+    /// gerechnet; ein laufendes Ensemble gehört zu den alten Eingaben und bricht ab.
+    /// </summary>
     private void Geaendert()
     {
         _hinweis = "";
         _aktuell = false;
+        LaufVerwerfen();
         EntprellungAbbrechen();
         if (Rechnen is null) return;
         if (EntprellungMs <= 0)
@@ -775,14 +1058,122 @@
         offen.Dispose();
     }
 
-    /// <summary>Rechnet über den Delegaten neu; führt das Ergebnis den Fall „ohne Tag" neu herbei, öffnet der Konstruktor.</summary>
+    /// <summary>
+    /// Rechnet neu; führt das Ergebnis den Fall „ohne Tag" neu herbei, öffnet der Konstruktor. Mit
+    /// „Stochastisch rechnen" läuft die Rechnung samt Ensemble NEBENLÄUFIG (5.1) — Karte (b) sagt
+    /// „rechnet …" bis zum Ergebnis; ohne Schalter rechnet der Delegat <see cref="Rechnen"/>
+    /// deterministisch im Zeichenlauf.
+    /// </summary>
     private void Neurechnen(bool konstruktorFolgen = true)
     {
+        if (_eingabe.Stochastisch && StochastischRechnen is not null)
+        {
+            EnsembleStarten(konstruktorFolgen);
+            return;
+        }
+        LaufVerwerfen();
+        DeterministischRechnen(konstruktorFolgen);
+    }
+
+    /// <summary>Die Rechnung im Zeichenlauf — ohne Ensemble, auch wenn der Schalter steht.</summary>
+    private void DeterministischRechnen(bool konstruktorFolgen)
+    {
         if (Rechnen is null) return;
+        ZapfprofilAuslegungEingabeDaten e = _eingabe.Kopie();
+        e.Stochastisch = false;
+        ErgebnisSetzen(Rechnen(e), konstruktorFolgen);
+    }
+
+    /// <summary>Ein neues Ergebnis: es gilt; führt es den Fall „ohne Tag" neu herbei, öffnet der Konstruktor.</summary>
+    private void ErgebnisSetzen(ZapfprofilAuslegungDaten? neu, bool konstruktorFolgen)
+    {
         ZapfprofilAuslegungDaten? vorher = _ergebnis;
-        _ergebnis = Rechnen(_eingabe.Kopie());
-        _aktuell = _ergebnis is not null;
-        if (konstruktorFolgen && KonstruktorFaellig(vorher, _ergebnis)) _konstruktorOffen = true;
+        _ergebnis = neu;
+        _aktuell = neu is not null;
+        if (konstruktorFolgen && KonstruktorFaellig(vorher, neu)) _konstruktorOffen = true;
+    }
+
+    // =================================================================================
+    // Das Ensemble des Bedarfstags: nebenläufig, mit Status und Abbruch (5.1)
+    // =================================================================================
+
+    /// <summary>Startet die Rechnung samt Ensemble zu den Eingaben; ein laufendes Ensemble endet vorher.</summary>
+    private void EnsembleStarten(bool konstruktorFolgen)
+    {
+        LaufVerwerfen();
+        var quelle = new CancellationTokenSource();
+        _lauf = quelle;
+        _aktuell = false;
+        _ = EnsembleLaufen(quelle, _eingabe.Kopie(), konstruktorFolgen);
+    }
+
+    /// <summary>
+    /// Der Lauf: Der Delegat der Hülle rechnet auf einem Arbeitsfaden; das Ergebnis kommt über
+    /// <c>InvokeAsync</c> in den Verteiler. Ein überholter Lauf hinterlässt nichts; ein
+    /// abgebrochener schaltet „Stochastisch rechnen" aus und rechnet deterministisch nach. Jede
+    /// Ausnahme bleibt hier — ein loser Task erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task EnsembleLaufen(CancellationTokenSource quelle, ZapfprofilAuslegungEingabeDaten kopie, bool konstruktorFolgen)
+    {
+        ZapfprofilAuslegungDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await StochastischRechnen!(kopie, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new ZapfprofilAuslegungDaten
+            {
+                Zustand = ZapfprofilAuslegungZustand.Abgebrochen,
+                Grund = ex.Message,
+                Status = Format(Texte.StatusOhne, ex.Message)
+            };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_lauf, quelle)) return;
+                _lauf = null;
+                if (abgebrochen) EnsembleAbgebrochen();
+                else ErgebnisSetzen(ergebnis, konstruktorFolgen);
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* die Überlagerung ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt: Das Ensemble endet zwischen zwei Realisierungen.</summary>
+    private void EnsembleAbbrechen()
+    {
+        try { _lauf?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>
+    /// Nach dem Abbruch: „Stochastisch rechnen" ist wieder aus (sein Feld verschwindet samt
+    /// Fehleingabe), eine leise Zeile sagt es, und die Karten rechnen deterministisch nach.
+    /// </summary>
+    private void EnsembleAbgebrochen()
+    {
+        _eingabe.Stochastisch = false;
+        _fehlfelder.Remove(Texte.LabelRealisierungen);
+        DeterministischRechnen(konstruktorFolgen: false);
+        _hinweis = Texte.HinweisEnsembleAbgebrochen;
+    }
+
+    /// <summary>Verwirft ein laufendes Ensemble — es gehört zu alten Eingaben.</summary>
+    private void LaufVerwerfen()
+    {
+        CancellationTokenSource? offen = _lauf;
+        _lauf = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
     }
 
     /// <summary>
@@ -795,6 +1186,124 @@
         => Konstruieren is not null && OhneTag(neu) && !OhneTag(vorher);
 
     private static bool OhneTag(ZapfprofilAuslegungDaten? d) => d is not null && d.Gruppen.Any(g => g.KonstruktorOeffnen);
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ZapfprofilAuslegungKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die EINGABEN der Auslegung und den empfohlenen Punkt.
+    /// Gesetzt wird auf den Wegen der Eingabefelder — jede Setzung rechnet die Karten
+    /// entprellt neu, mit „Stochastisch rechnen" nebenläufig samt Ensemble.
+    /// </summary>
+    private ZapfprofilAuslegungKiSicht KiSicht() => _kiSicht ??= new ZapfprofilAuslegungKiSicht
+    {
+        BedarfstagLesen = () => BedarfstagAuswahl,
+        BedarfstagSetzen = KiBedarfstag,
+        BedarfstagEintraege = () => KiMaskenanmeldung.Eintraege(Bedarfstagwahl, e => e.Id, e => e.Text),
+
+        SpeichertemperaturLesen = () => _eingabe.SpeicherC,
+        SpeichertemperaturSetzen = w => KiWeg(() => this.SpeicherCSetzen(w)),
+        ErzeugerleistungLesen = () => _eingabe.ErzeugerKw,
+        ErzeugerleistungSetzen = w => KiZahl(Texte.LabelErzeugerleistung, w, 0, null, () => this.ErzeugerSetzen(w)),
+        UebertragerleistungLesen = () => _eingabe.UebertragerKw,
+        UebertragerleistungSetzen = w => KiZahl(Texte.LabelUebertragerleistung, w, 0, null, () => this.UebertragerSetzen(w)),
+
+        SpeicherartLesen = () => (int)_eingabe.Speicherart,
+        SpeicherartSetzen = id => KiWeg(() => this.SpeicherartSetzen(id)),
+        SpeicherartEintraege = () => KiMaskenanmeldung.Eintraege(Speicherarten, e => e.Id, e => e.Text),
+        SensorhoeheLesen = () => _eingabe.SensorhoeheAnteil,
+        SensorhoeheSetzen = w => KiZahl(Texte.LabelSensorhoehe, w, 0, 1, () => this.SensorSetzen(w)),
+        ErzeugerartLesen = () => (int)_eingabe.Erzeugerart,
+        ErzeugerartSetzen = id => KiWeg(() => this.ErzeugerartSetzen(id)),
+        ErzeugerartEintraege = () => KiMaskenanmeldung.Eintraege(Erzeugerarten, e => e.Id, e => e.Text),
+        WerkstoffLesen = () => (int)_eingabe.Werkstoff,
+        WerkstoffSetzen = id => KiWeg(() => this.WerkstoffSetzen(id)),
+        WerkstoffEintraege = () => KiMaskenanmeldung.Eintraege(Werkstoffe, e => e.Id, e => e.Text),
+
+        StochastischLesen = () => _eingabe.Stochastisch,
+        StochastischSetzen = an => KiWeg(() => this.StochastischSetzen(an)),
+        PerzentilLesen = () => PerzentilAuswahl,
+        PerzentilSetzen = KiPerzentil,
+        PerzentilEintraege = () => KiMaskenanmeldung.Eintraege(Perzentilwahl, e => e.Id, e => e.Text),
+        RealisierungenLesen = () => _eingabe.RealisierungenAuslegung,
+        RealisierungenSetzen = KiRealisierungen,
+
+        PunktLesen = () => _ergebnis?.Punktgruppe is { } g ? Punkttext(g) : ""
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg</b> — „OK" übernimmt Eingaben und Punkt in das Zapfprofil, und
+    /// geschrieben wird mit dem OK der Bedarfsprofile; das bleibt der Klick des Anwenders.
+    /// <b>Prüfen</b> ist der Befund des OK: die Fehleingabe, die es anhält.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = OkBefund
+    };
+
+    /// <summary>Der Befund des OK: Ein Feld mit ungültigem Text hält es an; leer = in Ordnung.</summary>
+    private string OkBefund()
+        => _fehlfelder.Count > 0 ? Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder)) : "";
+
+    /// <summary>
+    /// Der Bedarfstag wie in der Auswahlliste; eine gesperrte Quelle nennt ihren Grund, statt
+    /// still nichts zu tun.
+    /// </summary>
+    private string? KiBedarfstag(int? id)
+    {
+        int wahl = id ?? WAHL_VORGABE;
+        if (Sperrgruende.TryGetValue(wahl, out string? grund))
+            return grund.Length > 0
+                ? grund
+                : ZapfprofilKiRegeln.Gesperrt(Bedarfstagwahl.FirstOrDefault(e => e.Id == wahl).Text ?? "");
+        BedarfstagWaehlen(wahl);
+        return null;
+    }
+
+    /// <summary>Das Perzentil — es steht nur mit „Stochastisch rechnen" auf der Maske.</summary>
+    private string? KiPerzentil(int? id)
+    {
+        if (!_eingabe.Stochastisch)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelPerzentil, Texte.LabelStochastisch);
+        PerzentilSetzen(id);
+        return null;
+    }
+
+    /// <summary>Die Realisierungen des Bedarfstags — nur mit „Stochastisch rechnen", in den Grenzen des Feldes.</summary>
+    private string? KiRealisierungen(int? wert)
+    {
+        if (!_eingabe.Stochastisch)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelRealisierungen, Texte.LabelStochastisch);
+        string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelRealisierungen, wert,
+                                                   Daten.RealisierungenMindestens, Daten.RealisierungenHoechstens);
+        if (grund is not null) return grund;
+        RealisierungenSetzen(wert);
+        return null;
+    }
+
+    /// <summary>Eine Zahl in den Grenzen des Eingabefeldes (<c>Min</c>/<c>Max</c>), dann ihr Weg.</summary>
+    private static string? KiZahl(string feld, double? wert, double? min, double? max, Action weg)
+    {
+        string? grund = ZapfprofilKiRegeln.Bereich(feld, wert, min, max);
+        if (grund is not null) return grund;
+        weg();
+        return null;
+    }
+
+    /// <summary>Ein Weg ohne eigene Ablehnung.</summary>
+    private static string? KiWeg(Action weg)
+    {
+        weg();
+        return null;
+    }
 
     // =================================================================================
     // Ergebnis
@@ -812,8 +1321,18 @@
             await Abbrechen();
             return;
         }
+        // Ein Feld mit ungültigem Text (Realisierungen) hielte sonst still den alten Wert.
+        string befund = OkBefund();
+        if (befund.Length > 0)
+        {
+            _hinweis = befund;
+            return;
+        }
+        // Der Punkt hängt nicht am Ensemble (4.5, Empfehlung aus (a)): Ein laufendes Ensemble endet,
+        // ein überholtes Ergebnis rechnet deterministisch nach — nie das Ensemble im Zeichenlauf.
         EntprellungAbbrechen();
-        if (!_aktuell) Neurechnen(konstruktorFolgen: false);
+        LaufVerwerfen();
+        if (!_aktuell) DeterministischRechnen(konstruktorFolgen: false);
         if (_eingabe.Quelle == ZapfprofilBedarfstagquelle.Stundenprofil && _ergebnis?.Punktgruppe is not null)
         {
             _rueckfrage = true;
@@ -841,6 +1360,7 @@
     private Task Abbrechen()
     {
         EntprellungAbbrechen();
+        LaufVerwerfen();
         return Geschlossen.InvokeAsync(null);
     }
 

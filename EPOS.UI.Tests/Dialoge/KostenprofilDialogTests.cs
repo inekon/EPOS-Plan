@@ -562,7 +562,63 @@ public class KostenprofilDialogTests : EposBunitContext
 
         Assert.Equal(1, Convert.ToInt32(tag.Lesen(), CultureInfo.InvariantCulture));
 
-        // Die 36 Zahlenfelder sind NICHT deklariert - eine Wertetafel.
+        // Die Zahlenfelder der Tafeln stehen nicht einzeln im Katalog - sie sind
+        // Zahlenreihen (Welle #458 Stufe 3b, siehe unten).
         Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.KOSTENPROFIL)!.FindeFeld("januar"));
+    }
+
+    // =====================================================================
+    //  Die Zahlenreihen „monatswerte" und „wochenwerte" (Welle #458 Stufe 3b)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Beide Wertetafeln sind Zahlenreihen:</b> die zwölf Monatsniveaus und die 7 × 24
+    /// Abweichungen — gelesen, ganz und ab einer Stelle gesetzt, und die Zahlenfelder der
+    /// Reiterblätter zeigen danach genau das. Die Abweichungen dürfen negativ sein.
+    /// </summary>
+    [Fact]
+    public void Die_Tafeln_liest_und_setzt_der_Assistent_als_Reihen()
+    {
+        var cut = Zeige();
+        const string maske = KiMaskennamen.KOSTENPROFIL;
+
+        Assert.All(Hilfe.KiReihenhilfe.Werte(maske, "monatswerte"), w => Assert.Equal(25.0, w));
+        Assert.Equal(168, Hilfe.KiReihenhilfe.Werte(maske, "wochenwerte").Length);
+
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "monatswerte", Hilfe.KiReihenhilfe.Folge(12, 2)));
+        // „Für alle Tage" als Aufruf: der Dienstag ab Stelle 25, hier nur seine erste Stunde.
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "wochenwerte", new[] { -1.5 }, ab: 25));
+        cut.Render();
+
+        Assert.Equal(24.0, cut.Instance.Monatsfelder[11]);
+        Assert.Equal(-1.5, cut.Instance.Wochenwert(1, 0));
+        Assert.Equal(0.0, cut.Instance.Wochenwert(0, 0));
+        Assert.Equal("24", Monatsfelder(cut)[11].GetAttribute("value"));
+
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatswerte", new double[13]));
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "wochenwerte", new double[2], ab: 168));
+    }
+
+    /// <summary>
+    /// <b>OK schreibt, was der Assistent gesetzt hat</b> — die Maske meldet keinen eigenen
+    /// Speicherweg an; der Knopf bleibt beim Anwender und nimmt die gesetzten Reihen mit.
+    /// </summary>
+    [Fact]
+    public void OK_schreibt_die_gesetzten_Reihen()
+    {
+        IReadOnlyList<double>? monate = null, woche = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Bezeichner, "Nachtstrom")
+            .Add(x => x.Speichern, (_, m, w) => { monate = m; woche = w; return true; }));
+
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(KiMaskennamen.KOSTENPROFIL, "wochenwerte",
+                                                        Hilfe.KiReihenhilfe.Folge(168, 0.25)));
+        cut.FindAll(".epos-dialog > .epos-leiste button").Last().Click();
+
+        Assert.NotNull(woche);
+        Assert.Equal(0.25, woche![0]);
+        Assert.Equal(42.0, woche[167]);
+        Assert.Equal(25.0, monate![0]);
+        Assert.Null(KiMaskenbruecke.Haken(KiMaskennamen.KOSTENPROFIL).Speichern);
     }
 }

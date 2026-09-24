@@ -187,7 +187,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Kälteerzeugertabelle (Kühlkonzept 8.4, #32) — je Wärmepumpe im Kühlbetrieb Kälte,
         /// Kältestrom, EER-Jahreswert, ihr Netzbezug und der Stromträger, der ihn bepreist (E34).
-        /// Aus den Modulzeilen des Ergebnisses (Schemaschritt 115); eine Wärmepumpe ohne Kälte steht
+        /// Aus den Modulzeilen des Ergebnisses (Schemaschritt 119); eine Wärmepumpe ohne Kälte steht
         /// nicht darin.
         /// </summary>
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp)

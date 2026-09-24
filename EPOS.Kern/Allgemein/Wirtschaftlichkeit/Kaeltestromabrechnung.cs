@@ -17,7 +17,7 @@ namespace WindowsFormsApplication1
     /// wirkt die Abrechnungsart (E34); ohne Kühlträger oder mit dem Träger des Projekts läuft der
     /// Kältestrom wie der Wärmepumpenstrom.</item>
     /// <item><b>Welche Mengen trägt welcher Kühlträger?</b> <see cref="Anteile"/> — aus dem
-    /// GESPEICHERTEN Ergebnis (Modulzeilen der Wärmepumpe, Schemaschritt 115), damit Kosten und
+    /// GESPEICHERTEN Ergebnis (Modulzeilen der Wärmepumpe, Schemaschritt 119), damit Kosten und
     /// Emissionen ohne frischen Lauf entstehen: anteilig am Netzbezug eine Teilmenge von
     /// <c>Stromrestbedarf</c>, mit eigenem Zähler eine Menge daneben.</item>
     /// </list>

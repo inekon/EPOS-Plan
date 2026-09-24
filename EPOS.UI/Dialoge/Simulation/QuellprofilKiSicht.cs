@@ -10,11 +10,12 @@ namespace EPOS.UI.Dialoge.Simulation;
 /// und die zwei Altwertreihen); was der Anwender bearbeitet, steht in den Feldern der
 /// Maske. Diese Klasse legt sich über sie.</para>
 ///
-/// <para><b>Nur der KOPF des Profils steht im Katalog.</b> Die zwölf Monatswerte und
-/// die 365 bzw. 8 760 Reihenwerte sind Zahlenfolgen ohne Zeilentyp — ein Katalogfeld
-/// trägt einen Wert, eine Katalogspalte braucht Zeilen mit benannten Eigenschaften
-/// (<c>KiFeldsammlung</c>). Gepflegt werden sie ohnehin über „Alle Werte gleich
-/// setzen…" und den CSV-Weg, nicht Zelle für Zelle.</para>
+/// <para><b>Der KOPF und die zwölf Monatswerte.</b> Die Monatswerte sind EINE
+/// Zahlenreihe (Welle #458 Stufe 3b, <see cref="Monatswerte"/>) — in der Betriebsart
+/// „Monat", in der die Maske sie zeigt; sonst liest die Reihe leer, und das Setzen lehnt
+/// mit Grund ab. Die 365 bzw. 8 760 Werte der Betriebsarten Tag und Stunde bleiben
+/// draußen: Sie sind Zeitreihen, gepflegt über „Alle Werte gleich setzen…" und den
+/// CSV-Weg.</para>
 /// </summary>
 public sealed class QuellprofilKiSicht
 {
@@ -33,6 +34,12 @@ public sealed class QuellprofilKiSicht
 
     public Func<int?>? ProfilLesen { get; init; }
     public Action<int?>? ProfilSetzen { get; init; }
+
+    /// <summary>Liest die zwölf Monatswerte; <c>null</c> außerhalb der Betriebsart „Monat".</summary>
+    public Func<double?[]?>? MonatswerteLesen { get; init; }
+
+    /// <summary>Schreibt die zwölf Monatswerte; außerhalb der Betriebsart „Monat" mit Grund abgelehnt.</summary>
+    public Action<double?[]>? MonatswerteSetzen { get; init; }
 
     // =====================================================================
     //  Die Einträge der beiden Wahlfelder (KI-F1b)
@@ -96,5 +103,15 @@ public sealed class QuellprofilKiSicht
     {
         get => ProfilLesen?.Invoke();
         set => ProfilSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Zahlenreihe der zwölf Monats-Mitteltemperaturen [°C] (Welle #458 Stufe 3b),
+    /// Januar bis Dezember.
+    /// </summary>
+    public double?[]? Monatswerte
+    {
+        get => MonatswerteLesen?.Invoke();
+        set { if (value is not null) MonatswerteSetzen?.Invoke(value); }
     }
 }

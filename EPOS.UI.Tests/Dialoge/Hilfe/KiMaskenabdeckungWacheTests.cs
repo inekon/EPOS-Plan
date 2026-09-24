@@ -125,7 +125,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
-        new("BedarfsProfileDialog", 3, "die Optionsgruppe „Rechenweg“ ist offen (#458 Stufe 3 nach Z3)"),
+        new("BedarfsProfileDialog", 3),
+        new("BedarfstagKonstruktor", 8),
         new("BerichtSeite", 2),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
@@ -144,7 +145,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeDialog", 4),
         new("GebaeudeKatalogDialog", 45),
         new("GebaeudeWohnflaecheDialog", 4),
-        new("GebaeudetypDialog", 6, "die Kurven des Gebäudetyps sind Zahlenfolgen (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
+        new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
         new("GesetzeskatalogZeileDialog", 7),
         new("HeizkesselReiter", 4),
@@ -156,9 +157,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),
         new("KostenfaktorKatalogDialog", 1),
-        new("KostenprofilDialog", 4, "die Stundenwerte des Profils sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
+        new("KostenprofilDialog", 4),
         new("LeistungspreisBlock", 2),
-        new("LeistungspreisReiheDialog", 2, "die Reihe selbst ist eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
+        new("LeistungspreisReiheDialog", 2),
         new("ModulKatalogDialog", 4, "der Feldsatz des Profils, gebaut über den RenderTreeBuilder"),
         new("NutzungsdauerDialog", 8),
         new("OptimierungBlock", 9),
@@ -173,7 +174,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("PvModellFelder", 3),
         new("QuelleErdreichDialog", 9),
         new("QuellePufferspeicherDialog", 8),
-        new("QuellprofilDialog", 6, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
+        new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
+            "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
         new("SimulationKonfigSeite", 3),
         new("SimulationSeite", 0),
         new("SolarganglinieDialog", 0),
@@ -192,7 +194,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("StromspeicherAuslegungSeite", 0),
         new("StromspeicherReiter", 2),
         new("TarifstrukturDialog", 13),
-        new("TypProfilDialog", 2, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
+        new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
         new("VorlagenZeile", 4),
@@ -204,7 +206,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermesenkeDialog", 9),
         new("WirtschaftlichkeitParameterDialog", 26),
         new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
-            "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen")
+            "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen"),
+        new("ZapfprofilAuslegungDialog", 11),
+        new("ZapfprofilDialog", 9)
     };
 
     /// <summary>
@@ -252,13 +256,10 @@ public sealed class KiMaskenabdeckungWacheTests
             ["GeraetAuswahl(s)"] =
                 "Wechselrichter je Strang — ein Verweis in den Gerätekatalog je Zeile; Mengen von Verweisen bleiben " +
                 "außen vor (KI‑D‑Q6)"
-        },
-        [KiMaskennamen.TYPSTAMM] = new()
-        {
-            ["Daten.Monat[monat]"] =
-                "die zwölf Monatswerte sind eine Zahlenfolge — sie braucht die Rahmenerweiterung für Zahlenfolgen " +
-                "(#458 Stufe 3 (Zahlenfolgen))"
         }
+
+        // Welle #458 Stufe 3b: Die zwölf Monatswerte des Bedarfskopfsatzes
+        // (Daten.Monat[monat]) stehen als Zahlenreihe „monatswerte" im Katalog.
     };
 
     // =====================================================================

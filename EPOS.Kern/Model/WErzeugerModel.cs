@@ -90,7 +90,7 @@
 
         /// <summary>
         /// <c>Kuehl_EigenerZaehler</c> - die Abrechnungsart des Kaeltestroms dieser Anlage bei einem
-        /// abweichenden Kuehltraeger (Schemaschritt 115; Entscheid E34):
+        /// abweichenden Kuehltraeger (Schemaschritt 119; Entscheid E34):
         /// <b><c>null</c> = anteilig am Netzbezug (Vorgabe)</b>, <c>true</c> = eigener Zaehler
         /// (der Kaeltestrom laeuft neben der Stufenrechnung und traegt ganz den Kuehltraeger);
         /// <c>false</c> liest sich wie <c>null</c>. Wirkungslos, solange

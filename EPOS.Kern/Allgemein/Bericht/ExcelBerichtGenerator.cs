@@ -436,7 +436,9 @@ namespace WindowsFormsApplication1
             // unmittelbar unter seiner Prosazeile — je Szenario ein Satz, die Spalte
             // „Erwartet" benannt. Alles darunter wandert um
             // ExcelFormelmappe.PARAMETERBLOCK_ZEILEN Zeilen; keine Zahl ändert sich.
-            r = ExcelFormelmappe.Parameterblock(ws, r, p);
+            // ETAPPE E9a: mit Zeitraum, Menge und Erlössätzen je Szenario und — nur wo
+            // gepflegt — den Trägerpreisen der Stände.
+            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten);
 
             if (!ausDiesemLauf)
             {
@@ -565,6 +567,17 @@ namespace WindowsFormsApplication1
                         name, satz.Nachweis(p, BerichtTexte.Kultur));
                     ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
                     r++;
+
+                    // ETAPPE E9a (Norm 9 c): die gepflegten Trägerpreise des Szenarios je
+                    // Stand — nur, wo einer gepflegt ist (sonst keine Zeile, das Blatt bleibt).
+                    string preise = TraegerpreisSzenario.Nachweiszeile(daten.Varianten, szenario,
+                                                                       BerichtTexte.Kultur);
+                    if (!string.IsNullOrEmpty(preise))
+                    {
+                        ws.Cell(r, 1).Value = preise;
+                        ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                        r++;
+                    }
                 }
 
                 int kopfZeile = r;
@@ -769,8 +782,10 @@ namespace WindowsFormsApplication1
                     // ETAPPE E6 (U13): alle drei Szenarien — drei vollständige Läufe ohne
                     // Speichern. Die Mehrjahrestabelle nimmt daraus den Erwartungsfall, Zahl
                     // für Zahl der bisherige Einzellauf.
+                    // ETAPPE E9a (Schritt B): jedes Szenario über SEINEN Betrachtungszeitraum;
+                    // die Tabelle läuft bis zum längsten, Jahre jenseits von T_s bleiben leer.
                     WirtschaftlichkeitVerlaufSzenarien drei =
-                        provider.BerechneVerlaufSzenarien(daten, p, p.Betrachtungszeitraum);
+                        provider.BerechneVerlaufSzenarienJeZeitraum(daten, p);
                     WirtschaftlichkeitVerlauf verlauf = drei.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
                     verlaufFuerMehrjahres = verlauf;   // E7: Grundlage der Mehrjahrestabelle
                     verlaufSzenarien = drei;           // E6: Grundlage des Blattes „Verlauf"
@@ -824,7 +839,9 @@ namespace WindowsFormsApplication1
                         ws.Range(r, 1, r, cv - 1).Style.Fill.BackgroundColor = KOPF;
                         r++;
 
-                        for (int t = 0; t <= verlauf.Jahre; t++)
+                        // ETAPPE E9a: bis zum längsten Zeitraum der drei Läufe — eine Zelle
+                        // jenseits des Zeitraums ihres Szenarios bleibt leer (Verlaufszelle).
+                        for (int t = 0; t <= drei.Jahre; t++)
                         {
                             ws.Cell(r, 1).Value = t;
                             cv = 2;

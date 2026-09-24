@@ -144,10 +144,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Dictionary<int, int> _eigenerStromtraeger;
 
-        private EndenergieAufloeser(int idProjekt, ErgebnisModel ergebnis)
+        /// <summary>ETAPPE E9a: das Szenario, dessen Trägerpreise dieser Auflöser liest
+        /// (<c>null</c>/ERWARTET = die Erwartet-Preise).</summary>
+        private readonly string _szenario;
+
+        private EndenergieAufloeser(int idProjekt, ErgebnisModel ergebnis, string szenario)
         {
             _idProjekt = idProjekt;
             _ergebnis = ergebnis;
+            _szenario = szenario;
         }
 
         /// <summary>
@@ -158,12 +163,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static EndenergieAufloeser FuerProjekt(int idProjekt)
         {
+            return FuerProjekt(idProjekt, null, 1.0);
+        }
+
+        /// <summary>
+        /// ETAPPE E9a (vollständige Szenarioabdeckung) — derselbe Auflöser für den
+        /// SZENARIOlauf: Die Mengen des Laufs tragen den Mengenfaktor des Szenarios
+        /// (<see cref="SzenarioMengen.Ergebnis"/>, E9a‑Q2) und die Preise die Trägerpreise
+        /// des Szenarios (<see cref="KostenEmissionRechner.ArbeitspreisJeKwh(int, int, string)"/>,
+        /// E9a‑Q3). So bemessen sich die Betriebskosten „% der Endenergie-, Brennstoff- oder
+        /// Stromkosten", „je Stunde" und „je kWh" an denselben Mengen und Preisen wie die
+        /// Energiekosten des Szenarios. <paramref name="mengenFaktor"/> = 1,0 und ERWARTET
+        /// sind der Weg von vor E9a.
+        /// </summary>
+        internal static EndenergieAufloeser FuerProjekt(int idProjekt, string szenario, double mengenFaktor)
+        {
             try
             {
                 ErgebnisModel erg = null;
                 try { erg = new ErgebnisCtrl().Load(idProjekt); } catch { }
+                erg = SzenarioMengen.Ergebnis(erg, mengenFaktor);
 
-                var a = new EndenergieAufloeser(idProjekt, erg);
+                var a = new EndenergieAufloeser(idProjekt, erg, szenario);
                 a.AnlagenNamenLaden();
                 a.ElektrokesselLaden();
                 try { a._eigenerStromtraeger = ProjektEnergietraegerCtrl.EigeneStromTraeger(idProjekt); }
@@ -186,7 +207,7 @@ namespace WindowsFormsApplication1
                     _strompreisErmittelt = true;
                     int carrier = KostenEmissionRechner.StromTraegerId(_idProjekt);
                     _strompreis = carrier > 0
-                        ? KostenEmissionRechner.ArbeitspreisJeKwh(_idProjekt, carrier)
+                        ? KostenEmissionRechner.ArbeitspreisJeKwh(_idProjekt, carrier, _szenario)
                         : null;
                 }
                 return _strompreis;
@@ -326,7 +347,7 @@ namespace WindowsFormsApplication1
         {
             double? p;
             if (_preisJeTraeger.TryGetValue(carrierId, out p)) return p;
-            p = KostenEmissionRechner.ArbeitspreisJeKwh(_idProjekt, carrierId);
+            p = KostenEmissionRechner.ArbeitspreisJeKwh(_idProjekt, carrierId, _szenario);
             _preisJeTraeger[carrierId] = p;
             return p;
         }

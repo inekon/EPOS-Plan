@@ -1138,4 +1138,106 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Equal(0, geschrieben);
         Assert.False(geschlossen);
     }
+
+    // =================================================================================
+    // Die Zapfprofil-Weiche beim Hilfe-Assistenten (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die Optionsgruppe „Rechenweg Brauchwasser" ist ein Feld der Maske</b>: Der
+    /// Assistent liest sie und stellt sie auf dem Weg des Klicks um — die Hülle erfährt den
+    /// Weg, die Optionsgruppe zeigt ihn.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_stellt_den_Rechenweg_Brauchwasser_um()
+    {
+        var gesetzt = new List<ZapfprofilWeg>();
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, zonen: 1, wegGesetzt: gesetzt.Add);
+
+        WindowsFormsApplication1.KiFeldzugang weg =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "rechenweg");
+        Assert.NotNull(weg);
+        Assert.True(weg.Setzbar);
+        Assert.True(weg.IstWahl);
+        Assert.Equal((int)ZapfprofilWeg.Bestand, weg.Lesen());
+        Assert.Equal(new[] { "Bestandsprofile", "Zapfprofil" }, weg.Wahleintraege().Select(e => e.Text).ToArray());
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(weg, "Zapfprofil");
+        Assert.True(u.Ok, u.Grund);
+        weg.Setzen(u.Wert);
+        cut.Render();
+
+        Assert.Equal(new[] { ZapfprofilWeg.Generator }, gesetzt);
+        Assert.Equal(ZapfprofilWeg.Generator, cut.Instance.Rechenweg);
+        Assert.True(Rechenweg(cut, "Zapfprofil").HasAttribute("checked"));
+        Assert.Equal((int)ZapfprofilWeg.Generator, weg.Lesen());
+    }
+
+    /// <summary>
+    /// „Zapfprofil" ohne Zone lehnt der Assistent ab wie der weich gesperrte Knopf — mit
+    /// dessen Grund; der Weg bleibt stehen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Zone_lehnt_der_Assistent_den_Zapfprofilweg_benannt_ab()
+    {
+        bool gesetzt = false;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, zonen: 0, wegGesetzt: _ => gesetzt = true);
+
+        WindowsFormsApplication1.KiFeldzugang weg =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "rechenweg");
+        var ex = Assert.Throws<InvalidOperationException>(() => weg.Setzen((int)ZapfprofilWeg.Generator));
+
+        Assert.Equal(new ZapfprofilEinstiegTexte().HinweisOhneZonen, ex.Message);
+        Assert.False(gesetzt);
+        Assert.Equal(ZapfprofilWeg.Bestand, cut.Instance.Rechenweg);
+    }
+
+    /// <summary>
+    /// Außerhalb des Brauchwassers steht keine Optionsgruppe: Das Feld ist leer, und das
+    /// Setzen nennt den Grund.
+    /// </summary>
+    [Fact]
+    public void Ausserhalb_des_Brauchwassers_nennt_der_Assistent_den_Grund()
+    {
+        Aufbauen(BedarfsArt.Prozesswaerme);
+
+        WindowsFormsApplication1.KiFeldzugang weg =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "rechenweg");
+        Assert.Null(weg.Lesen());
+        var ex = Assert.Throws<InvalidOperationException>(() => weg.Setzen((int)ZapfprofilWeg.Bestand));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_BPF_RECHENWEG_NUR_BW, ex.Message);
+    }
+
+    /// <summary>
+    /// <b>Die Überlagerung „Brauchwasser-Zapfprofil" ist eine EIGENE Maske</b> (Welle #458,
+    /// Stufe 3a): Solange sie offen steht, meint der Assistent sie; geht sie zu, meint er
+    /// wieder die Bedarfsprofile.
+    /// </summary>
+    [Fact]
+    public void Das_offene_Zapfprofil_ist_die_aktive_Maske_des_Assistenten()
+    {
+        KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete - ohne Reste anderer Fälle
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { });
+        Assert.Equal(KiMaskennamen.BEDARFSPROFILE, KiMaskenbruecke.AktiveMaske());
+
+        ZapfprofilKnopf(cut)!.Click();
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL));
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL, KiMaskenbruecke.AktiveMaske());
+
+        cut.FindAll(".epos-ueberlagerung-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL));
+        Assert.Equal(KiMaskennamen.BEDARFSPROFILE, KiMaskenbruecke.AktiveMaske());
+    }
+
+    /// <summary>Ohne gespeichertes Projekt nennt die Absage den Grund der Hülle (ZU10).</summary>
+    [Fact]
+    public void Ohne_gespeichertes_Projekt_nennt_der_Assistent_den_Grund_der_Huelle()
+    {
+        AufbauenZapfprofil(sperrgrund: "Das Zapfprofil braucht ein gespeichertes Projekt.");
+
+        WindowsFormsApplication1.KiFeldzugang weg =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "rechenweg");
+        var ex = Assert.Throws<InvalidOperationException>(() => weg.Setzen((int)ZapfprofilWeg.Generator));
+        Assert.Equal("Das Zapfprofil braucht ein gespeichertes Projekt.", ex.Message);
+    }
 }

@@ -567,16 +567,49 @@ namespace WindowsFormsApplication1
                 b.DauerWirksam.ToString(AENDERUNG, kultur) + " a",
                 w.NutzungsdauerAenderung.HasValue || b.NutzungsdauerAenderung.HasValue));
 
-            // Der Betrachtungszeitraum ist in allen drei Szenarien derselbe — er gehört in
-            // die Tafel, weil er die Frage beantwortet, die ein Leser als nächste stellt.
-            string t = p.Betrachtungszeitraum.ToString(CultureInfo.InvariantCulture) + " a";
+            // Der Betrachtungszeitraum gehört in die Tafel, weil er die Frage beantwortet, die
+            // ein Leser als nächste stellt. ETAPPE E9a (Schritt B): je Szenario der WIRKSAME —
+            // ohne Pflege in allen drei Szenarien der Projektwert (Herkunft wie bisher),
+            // mit gepflegtem Zeitraum eines Szenarios „gepflegt".
+            int tE = p.Betrachtungszeitraum;
+            bool zeitraumGepflegt = w.ZeitraumGepflegt(tE) || b.ZeitraumGepflegt(tE);
             liste.Add(new AnnahmeZeile
             {
                 Schluessel = AnnahmeZeile.ZEITRAUM,
                 Groesse = MyResource.Resource.WIRT_ANN_ZEITRAUM,
-                Unguenstig = t, Erwartet = t, Guenstig = t,
-                Herkunft = MyResource.Resource.WIRT_ANN_PROJEKTWERT
+                Unguenstig = w.ZeitraumWirksam(tE).ToString(CultureInfo.InvariantCulture) + " a",
+                Erwartet = tE.ToString(CultureInfo.InvariantCulture) + " a",
+                Guenstig = b.ZeitraumWirksam(tE).ToString(CultureInfo.InvariantCulture) + " a",
+                Herkunft = zeitraumGepflegt ? MyResource.Resource.WIRT_ANN_GEPFLEGT
+                                            : MyResource.Resource.WIRT_ANN_PROJEKTWERT,
+                Gepflegt = zeitraumGepflegt
             });
+
+            // ETAPPE E9a (Schritte B und D): Mengenänderung und Einspeisevergütungen stehen
+            // nur da, wenn ein Szenario sie gepflegt hat — „wie Erwartet" wird nicht
+            // wiederholt, und ohne Pflege bleibt die Tafel Zeile für Zeile die von vorher.
+            if (w.MengeGepflegt || b.MengeGepflegt)
+                liste.Add(Annahme(AnnahmeZeile.MENGE, MyResource.Resource.WIRT_ANN_MENGE,
+                    w.MengeWirksam.ToString(AENDERUNG, kultur) + " %",
+                    0.0.ToString(AENDERUNG, kultur) + " %",
+                    b.MengeWirksam.ToString(AENDERUNG, kultur) + " %",
+                    true));
+            const string VERGUETUNG = "0.000";
+            if (SzenarioSatz.Gepflegt(w.Einspeiseverguetung, p.Einspeiseverguetung) ||
+                SzenarioSatz.Gepflegt(b.Einspeiseverguetung, p.Einspeiseverguetung))
+                liste.Add(Annahme(AnnahmeZeile.VERGUETUNG, MyResource.Resource.WIRT_ANN_VERGUETUNG,
+                    w.EinspeiseverguetungWirksam(p.Einspeiseverguetung).ToString(VERGUETUNG, kultur) + " €/kWh",
+                    p.Einspeiseverguetung.ToString(VERGUETUNG, kultur) + " €/kWh",
+                    b.EinspeiseverguetungWirksam(p.Einspeiseverguetung).ToString(VERGUETUNG, kultur) + " €/kWh",
+                    true));
+            double kwkErwartet = p.EinspeiseverguetungKWK ?? 0.0;
+            if (SzenarioSatz.Gepflegt(w.EinspeiseverguetungKwk, kwkErwartet) ||
+                SzenarioSatz.Gepflegt(b.EinspeiseverguetungKwk, kwkErwartet))
+                liste.Add(Annahme(AnnahmeZeile.VERGUETUNG_KWK, MyResource.Resource.WIRT_ANN_VERGUETUNG_KWK,
+                    (w.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0).ToString(VERGUETUNG, kultur) + " €/kWh",
+                    kwkErwartet.ToString(VERGUETUNG, kultur) + " €/kWh",
+                    (b.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0).ToString(VERGUETUNG, kultur) + " €/kWh",
+                    true));
             return liste;
         }
 
@@ -775,8 +808,18 @@ namespace WindowsFormsApplication1
         /// <summary>Änderung der Nutzungsdauer.</summary>
         public const string DAUER = "DAUER";
 
-        /// <summary>Betrachtungszeitraum — in allen drei Szenarien gleich.</summary>
+        /// <summary>Betrachtungszeitraum — ohne Pflege in allen drei Szenarien gleich
+        /// (ETAPPE E9a: je Szenario pflegbar, Schritt B).</summary>
         public const string ZEITRAUM = "ZEITRAUM";
+
+        /// <summary>ETAPPE E9a: Mengenänderung je Szenario — nur, wenn gepflegt.</summary>
+        public const string MENGE = "MENGE";
+
+        /// <summary>ETAPPE E9a: Einspeisevergütung PV je Szenario — nur, wenn gepflegt.</summary>
+        public const string VERGUETUNG = "VERGUETUNG";
+
+        /// <summary>ETAPPE E9a: Einspeisevergütung KWK je Szenario — nur, wenn gepflegt.</summary>
+        public const string VERGUETUNG_KWK = "VERGUETUNG_KWK";
 
         /// <summary>Der sprachneutrale Schlüssel der Größe.</summary>
         public string Schluessel = "";

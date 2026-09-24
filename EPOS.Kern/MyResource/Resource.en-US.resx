@@ -7754,6 +7754,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_KERN_FELD_GUELTIG_BIS" xml:space="preserve">
     <value>Valid until</value>
   </data>
+  <data name="KI_KERN_REIHE_UMFANG" xml:space="preserve">
+    <value>{0} values, {1} to {2}</value>
+  </data>
+  <data name="KI_KERN_REIHE_GEKUERZT" xml:space="preserve">
+    <value>… ({0} values)</value>
+  </data>
+  <data name="KI_KERN_REIHE_AENDERUNG" xml:space="preserve">
+    <value>{0} · {1} of {2} values change</value>
+  </data>
+  <data name="KI_KERN_REIHE_WEITERE" xml:space="preserve">
+    <value>… and {0} more</value>
+  </data>
   <data name="KI_AUS_KEIN_SCHREIBRECHT" xml:space="preserve">
     <value>The licence currently does not permit writing. Viewing and exporting remain possible, changes are blocked. {0}</value>
   </data>
@@ -8510,6 +8522,24 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
     <value>number</value>
   </data>
+  <data name="KI_DLG_TYP_ZAHLENREIHE" xml:space="preserve">
+    <value>number series</value>
+  </data>
+  <data name="KI_DLG_REIHE_UMFANG" xml:space="preserve">
+    <value>The series carries {0}.</value>
+  </data>
+  <data name="KI_DLG_BEREICH" xml:space="preserve">
+    <value>Permitted: {0}.</value>
+  </data>
+  <data name="KI_DLG_REIHE_HINWEIS" xml:space="preserve">
+    <value>Number series ({0}); it is set with reihe_setzen.</value>
+  </data>
+  <data name="KI_DLG_REIHE_STUNDE" xml:space="preserve">
+    <value>hour {0}</value>
+  </data>
+  <data name="KI_DLG_REIHE_WOCHENSTUNDE" xml:space="preserve">
+    <value>{0}, hour {1}</value>
+  </data>
   <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
     <value>text</value>
   </data>
@@ -8666,6 +8696,12 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
     <value>{0} fields set in “{1}”.</value>
   </data>
+  <data name="KI_DLG_REIHE_GESETZT" xml:space="preserve">
+    <value>“{0}”: {1} of {2} values set ({3} to {4}).</value>
+  </data>
+  <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
+    <value>“{0}” already carries these values; there is nothing to change.</value>
+  </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>The button “{0}” in “{1}” has been released.</value>
   </data>
@@ -8686,6 +8722,9 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Enters values into several fields of an open form - as one single confirmed block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_REIHE_SETZEN" xml:space="preserve">
+    <value>Enters a list of numbers into a number series of an open form (monthly, hourly or weekly values, field type ZahlListe) - the whole series or a section from a given position.</value>
   </data>
   <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
     <value>Releases a released button of an open form; the form's own check runs just as with a click by hand.</value>
@@ -8717,11 +8756,23 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_REG_ERL_WERTE" xml:space="preserve">
     <value>Assignments “field=value”, several separated by semicolons, e.g. “nutzungsdauer=20; raumbedarf=3”.</value>
   </data>
+  <data name="KI_REG_AB_NAME" xml:space="preserve">
+    <value>from position</value>
+  </data>
+  <data name="KI_REG_ERL_REIHENWERTE" xml:space="preserve">
+    <value>The numbers in the order of the series, as a list of numbers (point as decimal separator). Without 'ab' the list must cover the whole series, otherwise the section starting at that position.</value>
+  </data>
+  <data name="KI_REG_ERL_AB" xml:space="preserve">
+    <value>Position of the first value, starting at 1 - dialog_lesen names the positions (in a weekly series Tuesday, hour 1 is position 25). If omitted, the list starts at position 1 and must be complete.</value>
+  </data>
   <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
     <value>Logical name of the button as named by dialog_lesen.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
     <value>Afterwards the field carries the new text. It reaches the database only when the form's action button is released.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_REIHE_SETZEN" xml:space="preserve">
+    <value>Afterwards the series carries the new values; positions not named stay as they are. It reaches the database only via the form's save path.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Afterwards the named fields carry the new texts. They reach the database only when the form's action button is released.</value>
@@ -15798,6 +15849,12 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
     <value>Enter 3.8 for the seasonal performance factor.</value>
   </data>
+  <data name="KI_REG_TITEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Set a number series of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Set the monthly values to 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 and 11.</value>
+  </data>
   <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Fill in several fields of the open form</value>
   </data>
@@ -19155,6 +19212,30 @@ Do you want to allow this?</value>
   <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
     <value>The field „{0}“ expects a number; „{1}“ is not one.</value>
   </data>
+  <data name="KI_FELD_IST_REIHE" xml:space="preserve">
+    <value>„{0}“ is a number series with {1} values; it is set with reihe_setzen – completely or from a position.</value>
+  </data>
+  <data name="KI_FELD_KEINE_REIHE" xml:space="preserve">
+    <value>„{0}“ is not a number series; a single value is set with feld_setzen.</value>
+  </data>
+  <data name="KI_FELD_REIHE_LAENGE" xml:space="preserve">
+    <value>„{0}“ has {1} values, {2} were given. For a section, give the first position with 'ab'.</value>
+  </data>
+  <data name="KI_FELD_REIHE_UEBERLAUF" xml:space="preserve">
+    <value>„{0}“ has {1} values; from position {2} at most {3} fit, {4} were given.</value>
+  </data>
+  <data name="KI_FELD_BEREICH" xml:space="preserve">
+    <value>„{0}“: {1} is outside the permitted range ({2}).</value>
+  </data>
+  <data name="KI_FELD_BEREICH_VON_BIS" xml:space="preserve">
+    <value>{0} to {1}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_AB" xml:space="preserve">
+    <value>at least {0}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_BIS" xml:space="preserve">
+    <value>at most {0}</value>
+  </data>
   <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
     <value>The field „{0}“ expects yes or no; „{1}“ is neither.</value>
   </data>
@@ -21810,6 +21891,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
     <value>The stored source profile the screen loads. “New profile” starts an empty set; a loaded profile brings along its operating mode, name and values.</value>
   </data>
+  <data name="KI_DLG_QPROF_MONATSWERTE_ERL" xml:space="preserve">
+    <value>The twelve monthly mean temperatures of the heat source, January to December – only in the “month” operating mode; each value is mandatory when saving.</value>
+  </data>
+  <data name="KI_DLG_QPROF_NICHT_MONAT" xml:space="preserve">
+    <value>The monthly values apply in the “month” operating mode; “{0}” is selected. Switch the operating mode first.</value>
+  </data>
   <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
     <value>The buffer tank this sink charges. It exists only if the target is a tank slot; each tank may be a target only once.</value>
   </data>
@@ -22065,6 +22152,36 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
     <value>Edit, New or catalogue management; the operating mode decides which of the two saving paths is available.</value>
   </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_NAME" xml:space="preserve">
+    <value>Boundary condition floor slab</value>
+  </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_ERL" xml:space="preserve">
+    <value>What the floor slab borders on: ground, basement (then with basement temperature) or outside air.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME" xml:space="preserve">
+    <value>Holiday start, day</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL" xml:space="preserve">
+    <value>The day of the month on which the holiday period starts (1 to 31).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME" xml:space="preserve">
+    <value>Holiday start, month</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL" xml:space="preserve">
+    <value>The month in which the holiday period starts (1 to 12).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME" xml:space="preserve">
+    <value>Holiday end, day</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL" xml:space="preserve">
+    <value>The day of the month on which the holiday period ends (1 to 31); the winter holidays cross the turn of the year.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME" xml:space="preserve">
+    <value>Holiday end, month</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL" xml:space="preserve">
+    <value>The month in which the holiday period ends (1 to 12).</value>
+  </data>
   <data name="KI_DLG_MASKE_GEBB" xml:space="preserve">
     <value>Heat demand of a building</value>
   </data>
@@ -22104,6 +22221,15 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>The free text of the loaded type; saved with “Save”. A delivered type is read-only.</value>
   </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_NAME" xml:space="preserve">
+    <value>Hourly values of the curve</value>
+  </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_ERL" xml:space="preserve">
+    <value>The 24 hourly values of the selected daily curve in the working state, hour 1 to 24 – the same that “Hourly values…” shows. “Save” writes them; while changed values are unsaved, the screen holds the curve change.</value>
+  </data>
+  <data name="KI_DLG_GTYP_OHNE_KURVE" xml:space="preserve">
+    <value>The selected building type has no daily curve; select a type with curves first.</value>
+  </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>The loaded type. Setting it loads its weekly profile — the same path as a click in the list.</value>
   </data>
@@ -22113,6 +22239,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_TPROF_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>The free text of the loaded type; it goes to the database when saving.</value>
   </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Weekly values</value>
+  </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>The 7 × 24 accepted hourly values of the week, Monday hour 1 to Sunday hour 24 – the state that “Save to DB” writes; the fields of the day shown follow.</value>
+  </data>
   <data name="KI_DLG_TSTAMM_NAME_ERL" xml:space="preserve">
     <value>The name of the catalogue record; the screen shows it locked. A different name is created with “Save as”.</value>
   </data>
@@ -22121,6 +22253,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Free text for the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_MONATSWERTE_ERL" xml:space="preserve">
+    <value>The twelve monthly values, January to December; each is mandatory before saving.</value>
   </data>
   <data name="KI_DLG_MASKE_BPF" xml:space="preserve">
     <value>Demand profiles in the project</value>
@@ -22163,6 +22298,114 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>The total over all profiles assigned to this project.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Where the domestic hot water channel of the simulation comes from: the existing profiles of this form or the project’s draw-off profile. Switching keeps the zones of the draw-off profile; “Draw-off profile” needs at least one zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>The DHW calculation method is only available in the domestic hot water profiles of a saved project.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUR_MIT" xml:space="preserve">
+    <value>“{0}” only appears with “{1}” — please select that first.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZEILE_FEHLT" xml:space="preserve">
+    <value>This row is no longer in the list.</value>
+  </data>
+  <data name="KI_DLG_ZPG_GESPERRT" xml:space="preserve">
+    <value>“{0}” is locked.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
+    <value>The depth of the dialog: “Basic” shows the zones, “Expert” also the stochastics of the annual series. The level only shows and hides fields, entered values are kept; “Extended” is locked in this version.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
+    <value>The selected zone of the zone list, by number or name; its input block is shown below the list. The values of every zone can also be set via the columns without selecting it.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONENNAME_ERL" xml:space="preserve">
+    <value>The name of the zone; required for OK. It names the zone in the list, the preview and the messages.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUTZUNGSART_ERL" xml:space="preserve">
+    <value>The type of use of the zone from the catalogue; it determines the reference quantity, the daily profile and the specific demand per level. Required for OK; a locked type of use names its reason.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>The quantity of the zone in the reference quantity of its type of use (persons, dwellings, beds, area …); required for OK, greater than 0.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NIVEAU_ERL" xml:space="preserve">
+    <value>The demand level of the zone — low, medium or high; it selects the specific demand of the type of use per unit and day.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESBEDARF_ERL" xml:space="preserve">
+    <value>The annual draw-off demand of the zone from the current preview; “–” without a calculated preview. Read-only.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANSICHT_ERL" xml:space="preserve">
+    <value>Which view the preview shows its charts and key figures for: the sum of all zones or one zone. Only changes the display.</value>
+  </data>
+  <data name="KI_DLG_ZPG_RECHENWEG_ERL" xml:space="preserve">
+    <value>Which annual series enters the balance: the deterministic one or the stochastically drawn year for the seed, scaled to the annual amount. Appears from level “Expert”; the preview stays deterministic.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SEED_ERL" xml:space="preserve">
+    <value>The random seed, whole number from 0; empty = default. The same seed draws the same series — for the annual series and the design ensemble. Appears in level “Expert”.</value>
+  </data>
+  <data name="KI_DLG_ZPG_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>How many years the stochastic run draws to check consistency; empty = default. Appears in level “Expert” with the “stochastic” method.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
+    <value>The design day of the cumulative curve: default rule, hourly profile of the zones, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>The storage temperature; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL" xml:space="preserve">
+    <value>The generator output at the storage, not negative; empty = assumed charging output. The verification output is the smaller of generator and heat exchanger.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL" xml:space="preserve">
+    <value>The heat exchanger output, not negative; empty = from U·A, area or the estimate for the generator type.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERART_ERL" xml:space="preserve">
+    <value>Charging storage or mixed storage — it determines the cumulative curve.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SENSORHOEHE_ERL" xml:space="preserve">
+    <value>The height of the temperature sensor as a share of the storage height, from 0 to 1; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERART_ERL" xml:space="preserve">
+    <value>The generator type at the storage (boiler or heat pump) — a run setting for estimating the heat exchanger; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_WERKSTOFF_ERL" xml:space="preserve">
+    <value>The heat exchanger material (steel or stainless steel) — a run setting; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_STOCHASTISCH_ERL" xml:space="preserve">
+    <value>Draws the ensemble of the design day per topology group for percentile, spread and simultaneity; the run calculates in the background. A run setting; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERZENTIL_ERL" xml:space="preserve">
+    <value>The design percentile, P95 or P99. Appears only with “Calculate stochastically”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>How many design days the ensemble draws; empty = default of the core. Below the minimum number the percentile is not reliable. Appears only with “Calculate stochastically”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
+    <value>The recommended design point — for storage volume and output, otherwise the minute peak; OK takes it over into the draw-off profile. Result, read-only.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>The name of the constructed design day; required, not yet used in the catalogue version.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>The start of the row’s time window in hours, from 0 to 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>The end of the row’s time window in hours, up to 24 and after the start.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>A draw-off rule from the catalogue — then the number of its draw-offs counts — or “Volume directly” with volume and draw-off temperature.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>How often the draw-off rule draws within the time window, not negative; only with a draw-off rule.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>The volume of the row in litres, not negative; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The draw-off temperature of the volume; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>A neutral name of the draw-off point (“Kitchen”); it names the row and does not enter the calculation.</value>
   </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>The marked catalogue record. Setting it selects it in the list and the record sheet follows; with unsaved changes, save or discard first.</value>
@@ -22395,14 +22638,29 @@ Do you want to allow this?</value>
   <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
     <value>Which energy carrier the series belongs to — display only.</value>
   </data>
+  <data name="KI_DLG_LPR_MONATSSAETZE_ERL" xml:space="preserve">
+    <value>The twelve capacity price rates of the year, January to December; “Apply” writes the series.</value>
+  </data>
   <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
     <value>The name of the cost profile. It appears under this name in the catalog and on the carrier card.</value>
   </data>
   <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
-    <value>The weekday whose 24 hourly values the "week" tab shows. Changing it shows a different daily curve; the values themselves are maintained with the mask's own controls.</value>
+    <value>The weekday whose 24 hourly values the "week" tab shows. Changing it shows a different daily curve; the values themselves are in the number series "Deviation per weekday and hour".</value>
   </data>
   <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
     <value>The unit the monthly and weekly values are given in — display only.</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_NAME" xml:space="preserve">
+    <value>Price level per month</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_ERL" xml:space="preserve">
+    <value>The twelve monthly levels of the profile, January to December; the hourly deviations are added to them.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Deviation per weekday and hour</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>The 7 × 24 deviations, Monday hour 1 to Sunday hour 24; they are added to the monthly level and may be negative.</value>
   </data>
   <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
     <value>The template variant whose positions the table shows — master context only. Switching it loads a different set of positions and is therefore not a field value; the assistant names it and the alternatives but cannot set it here.</value>
@@ -24196,7 +24454,7 @@ Do you want to allow this?</value>
     <value>Stochastics · not yet calculated</value>
   </data>
   <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
-    <value>“Calculate stochastically” in the footer draws the ensemble for percentiles and sizing; the balance series stays deterministic. The Expert level shows the individual values.</value>
+    <value>“Calculate stochastically” in the footer draws the design-day ensemble: P50 … P99 and the simultaneity appear in card (b) of the design. With the method “stochastic” it also draws the annual series; the Expert level shows its consistency check after the run.</value>
   </data>
   <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
     <value>Key figure</value>
@@ -24357,6 +24615,12 @@ Do you want to allow this?</value>
   <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>The draw-off profile generator is not available in this database.</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
+    <value>The data of the stochastic annual series are incomplete or invalid (draw-off categories, units, realisations).</value>
+  </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
+    <value>The catalogue holds no draw-off categories for the usage type “{0}” (catalogue version {1}) — the zone is not computed stochastically.</value>
+  </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>the draw-off profile tables are missing in this database.</value>
   </data>
@@ -24425,6 +24689,12 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>The project has network losses, and the draw-off profile calculates a circulation. If the network losses already contain the circulation losses, they are counted twice – then adjust the network losses or the circulation.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
+    <value>The annual draw-off series is stochastic: per zone the drawn year for the seed, scaled to the annual amount; the drawn years of the ensemble only check consistency.</value>
+  </data>
+  <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
+    <value>Zone “{0}”: the mean of the drawn years deviates from the annual amount by more than the tolerance; the year for the seed is scaled to the annual amount.</value>
   </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone “{0}” belongs to the circulation but carries no floor area.</value>
@@ -25078,7 +25348,7 @@ Do you want to allow this?</value>
     <value>Ecodesign tapping profile (single-family house only, for plausibility checks)</value>
   </data>
   <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
-    <value>The Ecodesign tapping profile comes with a later version.</value>
+    <value>The catalogue does not contain the Ecodesign tapping profile; it comes with the delivery template or the catalogue import.</value>
   </data>
   <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
     <value>{0} · {1}</value>
@@ -25177,7 +25447,7 @@ Do you want to allow this?</value>
     <value>Stochastically superposed minute load</value>
   </data>
   <data name="ZPG_AUS_PERZENTIL_OFFEN" xml:space="preserve">
-    <value>not yet calculated — stochastics come with a later version; the recommendation relies on (a) and (c).</value>
+    <value>not yet calculated — “Calculate stochastically” in the inputs draws the ensemble; the recommendation relies on (a) and (c).</value>
   </data>
   <data name="ZPG_AUS_KARTE_NORM" xml:space="preserve">
     <value>(c) Standard comparison</value>
@@ -25342,7 +25612,7 @@ Do you want to allow this?</value>
     <value>Consistency note (stochastic peak against the output of the cumulative-curve point): not yet checked</value>
   </data>
   <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
-    <value>The consistency note needs the percentile — both come with a later version.</value>
+    <value>The consistency note needs the percentile — switch on “Calculate stochastically”.</value>
   </data>
   <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
     <value>Note</value>
@@ -25555,7 +25825,7 @@ Do you want to allow this?</value>
     <value>The plant inventory names no generator.</value>
   </data>
   <data name="ZPG_AUS_STATUS_GERECHNET" xml:space="preserve">
-    <value>Design calculated · deterministic · percentile not yet calculated</value>
+    <value>Design calculated · deterministic · percentile only with “Calculate stochastically”</value>
   </data>
   <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
     <value>No zone has been created — no design without a zone.</value>
@@ -25689,6 +25959,18 @@ Do you want to allow this?</value>
   <data name="ZPG_AUSHINW_NL_KRITERIUM" xml:space="preserve">
     <value>Criterion N_L</value>
   </data>
+  <data name="ZPG_AUSHINW_PERZENTIL_NICHT_BELASTBAR" xml:space="preserve">
+    <value>Percentile not reliable</value>
+  </data>
+  <data name="ZPG_AUSHINW_KONSISTENZ_STOCHASTISCHE_SPITZE" xml:space="preserve">
+    <value>Stochastic peak</value>
+  </data>
+  <data name="ZPG_AUSHINW_WURZEL_N_VERGLEICH" xml:space="preserve">
+    <value>Comparison μ + z·σ/√N</value>
+  </data>
+  <data name="ZPG_AUSHINW_STOCHASTIK_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Stochastics not computable</value>
+  </data>
   <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
     <value>Catalogue parameter</value>
   </data>
@@ -25733,6 +26015,162 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
     <value>The zones have changed — the design point is outdated and will be discarded on saving. Open “Design…” and take it over again.</value>
+  </data>
+  <data name="ZPG_GRP_STOCHASTIK" xml:space="preserve">
+    <value>Stochastics · annual series</value>
+  </data>
+  <data name="ZPG_LBL_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Method of the annual series</value>
+  </data>
+  <data name="ZPG_OPT_DETERMINISTISCH" xml:space="preserve">
+    <value>deterministic</value>
+  </data>
+  <data name="ZPG_OPT_STOCHASTISCH" xml:space="preserve">
+    <value>stochastic</value>
+  </data>
+  <data name="ZPG_HINW_RECHENWEG_JAHRESREIHE" xml:space="preserve">
+    <value>Only selects which series enters the balance: with “stochastic” the drawn year for the seed, scaled to the annual amount. The percentile of the design does not depend on it.</value>
+  </data>
+  <data name="ZPG_LBL_SEED" xml:space="preserve">
+    <value>Random seed</value>
+  </data>
+  <data name="ZPG_HINW_SEED" xml:space="preserve">
+    <value>Whole number from 0 · empty = default {0}; the same seed draws the same series on every platform — for the annual series and the design ensemble.</value>
+  </data>
+  <data name="ZPG_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisations</value>
+  </data>
+  <data name="ZPG_EINHEIT_JAHRE" xml:space="preserve">
+    <value>years</value>
+  </data>
+  <data name="ZPG_HINW_REALISIERUNGEN" xml:space="preserve">
+    <value>Whole number from {0} to {1} · empty = default {2}; the drawn years only check consistency.</value>
+  </data>
+  <data name="ZPG_HINW_KONSISTENZ_ORT" xml:space="preserve">
+    <value>After the run, the consistency check is shown on the Key figures tab.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_GERECHNET" xml:space="preserve">
+    <value>Stochastics · annual series for seed {0}, {1} years drawn</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_JAHRESREIHE" xml:space="preserve">
+    <value>The balance series is the drawn year for the seed, scaled to the annual amount. The Expert level shows the consistency check.</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ" xml:space="preserve">
+    <value>Energy consistency check · {0}</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_VERMERK" xml:space="preserve">
+    <value>Mean of the {0} years {1} kWh/a against {2} kWh/a deterministic · s_R {3} kWh/a · tolerance ±{4} kWh/a</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ERFUELLT" xml:space="preserve">
+    <value>within tolerance</value>
+  </data>
+  <data name="ZPG_KZ_KONSISTENZ_ABWEICHEND" xml:space="preserve">
+    <value>outside tolerance — the year for the seed is scaled to the annual amount</value>
+  </data>
+  <data name="ZPG_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Please correct the marked fields: {0}.</value>
+  </data>
+  <data name="ZPG_BTN_STOCHASTIK_TITEL" xml:space="preserve">
+    <value>Draws in the background the design-day ensemble for percentile and simultaneity (in the design) and, with the method “stochastic”, the years of the consistency check; both can be cancelled.</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHAU_STOCHASTISCH" xml:space="preserve">
+    <value>Stochastics calculated · seed {0} · {1} years</value>
+  </data>
+  <data name="ZPG_MSG_SEED_UNGUELTIG" xml:space="preserve">
+    <value>The seed must be a whole number from 0.</value>
+  </data>
+  <data name="ZPG_MSG_REALISIERUNGEN_UNGUELTIG" xml:space="preserve">
+    <value>The number of realisations must lie between {0} and {1}.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_STOCHASTISCH" xml:space="preserve">
+    <value>Calculate stochastically</value>
+  </data>
+  <data name="ZPG_AUS_HERL_STOCHASTISCH" xml:space="preserve">
+    <value>Draws the design-day ensemble per topology group for percentile, spread and simultaneity — a run input, not saved.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_PERZENTIL" xml:space="preserve">
+    <value>Design percentile</value>
+  </data>
+  <data name="ZPG_AUS_HERL_PERZENTIL" xml:space="preserve">
+    <value>P95 or P99 · default P{0}</value>
+  </data>
+  <data name="ZPG_AUS_LBL_REALISIERUNGEN" xml:space="preserve">
+    <value>Realisations of the design day</value>
+  </data>
+  <data name="ZPG_AUS_MSG_FEHLEINGABE" xml:space="preserve">
+    <value>Please correct the marked fields: {0}.</value>
+  </data>
+  <data name="ZPG_AUS_EINHEIT_TAGE" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN" xml:space="preserve">
+    <value>Whole number from {0} to {1} · empty = default {2} (multiple of the minimum count); below {3}, P{4} is not reliable.</value>
+  </data>
+  <data name="ZPG_AUS_HERL_REALISIERUNGEN_OHNE" xml:space="preserve">
+    <value>Whole number from {0} to {1} · empty = default, not determinable here: {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAUF" xml:space="preserve">
+    <value>after “Calculate stochastically”: seed {0} · {1} days drawn · governing day {2}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN" xml:space="preserve">
+    <value>Volume P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_VOLUMEN_WERT" xml:space="preserve">
+    <value>{0} l at {1} kW</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_MINUTENSPITZE" xml:space="preserve">
+    <value>Minute peak P{0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_NACHRICHTLICH" xml:space="preserve">
+    <value>for information: minute peak P{0} {1} kW · largest hourly output P{0} {2} kW</value>
+  </data>
+  <data name="ZPG_AUS_NICHT_BELASTBAR" xml:space="preserve">
+    <value>not reliable</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NICHT_BELASTBAR" xml:space="preserve">
+    <value>{0} realisations; an empirical P{1} needs at least {2} = 1/(1 − p).</value>
+  </data>
+  <data name="ZPG_AUS_STREUBAND" xml:space="preserve">
+    <value>Spread over {0} realisations</value>
+  </data>
+  <data name="ZPG_AUS_SP_PERZENTIL" xml:space="preserve">
+    <value>Percentile</value>
+  </data>
+  <data name="ZPG_AUS_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPG_AUS_SPANNWEITE" xml:space="preserve">
+    <value>Range (min – max)</value>
+  </data>
+  <data name="ZPG_AUS_OHNE_NACHWEIS" xml:space="preserve">
+    <value>{0} of {1} realisations without proof at Φ_N (volume ∞)</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V" xml:space="preserve">
+    <value>Simultaneity GLF_V</value>
+  </data>
+  <data name="ZPG_AUS_GLF_V_BEZUG" xml:space="preserve">
+    <value>Result, not an input factor: P{0} of the group volume ÷ Σ P{0} of the volumes per unit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P" xml:space="preserve">
+    <value>Simultaneity GLF_P</value>
+  </data>
+  <data name="ZPG_AUS_GLF_P_BEZUG" xml:space="preserve">
+    <value>Result, not an input factor: P{0} of the group minute peak ÷ Σ P{0} of the minute peak per unit (Σ n_E = {1})</value>
+  </data>
+  <data name="ZPG_AUS_WURZEL_N" xml:space="preserve">
+    <value>Single statistics μ + z·σ/√N: {0} kW (note)</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OK" xml:space="preserve">
+    <value>Consistency note checked: the largest hourly output P{0} ({1} kW) does not exceed {2} times the output Φ_N of the cumulative-curve point ({3} kW).</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_AUFFAELLIG" xml:space="preserve">
+    <value>Consistency note: the largest hourly output P{0} ({1} kW) exceeds {2} times the output Φ_N of the cumulative-curve point ({3} kW) — check the design day and the cumulative curve.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE" xml:space="preserve">
+    <value>Consistency note omitted — the threshold is missing from the parameter set.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH" xml:space="preserve">
+    <value>Design calculated · stochastic · percentile P{0} · seed {1}</value>
   </data>
   <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
     <value>{0} selected</value>
@@ -26672,6 +27110,111 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMUEB_KAELTE_SP_TRAEGER" xml:space="preserve">
     <value>Electricity carrier</value>
+  </data>
+  <data name="WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Scenario demand charge of the energy carrier “{0}” without effect: the maintained demand-charge tiers or seasonal demand-charge series of the carrier also apply in this scenario.</value>
+  </data>
+  <data name="WIRT_SZ_ROLLEN_STROMPREIS" xml:space="preserve">
+    <value>Scenario electricity price without effect: the tariff role model is active — supply, residual supply and feed-in are calculated with the prices of the tariff set in all scenarios.</value>
+  </data>
+  <data name="WIRT_SZ_ROLLEN_EINSPEISUNG" xml:space="preserve">
+    <value>Scenario feed-in tariff without effect: the tariff role model values the feed-in with the feed-in tariff of the tariff set.</value>
+  </data>
+  <data name="WIRT_SZ_PV_DIALOG_EINSPEISUNG" xml:space="preserve">
+    <value>Scenario feed-in tariff (PV) without effect: the PV remuneration is calculated by the remuneration dialog — the direct-marketing fee and PPA price per scenario apply there.</value>
+  </data>
+  <data name="WIRT_SZ_TRAEGERPREISE" xml:space="preserve">
+    <value>Energy carrier prices of this scenario: {0}</value>
+  </data>
+  <data name="WIRT_SZ_TP_ARBEIT" xml:space="preserve">
+    <value>energy price</value>
+  </data>
+  <data name="WIRT_SZ_TP_GRUND" xml:space="preserve">
+    <value>standing charge</value>
+  </data>
+  <data name="WIRT_SZ_TP_LEISTUNG" xml:space="preserve">
+    <value>demand charge</value>
+  </data>
+  <data name="WIRT_FM_PARAM_MENGE" xml:space="preserve">
+    <value>Quantities — change against Expected</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG" xml:space="preserve">
+    <value>Feed-in tariff PV [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Feed-in tariff CHP [€/kWh]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_ARBEIT" xml:space="preserve">
+    <value>Energy price {0} ({1}) per billing unit</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_GRUND" xml:space="preserve">
+    <value>Standing charge {0} ({1}) [€/a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_TP_LEISTUNG" xml:space="preserve">
+    <value>Demand charge {0} ({1})</value>
+  </data>
+  <data name="WIRT_ANN_MENGE" xml:space="preserve">
+    <value>Change in quantities</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG" xml:space="preserve">
+    <value>Feed-in tariff PV</value>
+  </data>
+  <data name="WIRT_ANN_VERGUETUNG_KWK" xml:space="preserve">
+    <value>Feed-in tariff CHP</value>
+  </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
+    <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
+  </data>
+  <data name="ZPG_HINW_VORSCHAU_DETERMINISTISCH" xml:space="preserve">
+    <value>The preview shows the deterministic path; the annual series is only drawn stochastically in the run — with the same annual amount.</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_LAEUFT" xml:space="preserve">
+    <value>Stochastics · calculating …</value>
+  </data>
+  <data name="ZPG_STATUS_JAHRESREIHE_LAEUFT" xml:space="preserve">
+    <value>Annual series calculating … · seed {0} · {1} years</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_ABGEBROCHEN" xml:space="preserve">
+    <value>The annual series was cancelled — “Calculate stochastically” draws it again.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESREIHE_DETERMINISTISCH" xml:space="preserve">
+    <value>With the method “deterministic”, “Calculate stochastically” draws no annual series.</value>
+  </data>
+  <data name="ZPG_STATUS_OHNE_JAHRESREIHE" xml:space="preserve">
+    <value>Stochastics not calculated — {0}</value>
+  </data>
+  <data name="ZPG_MSG_JAHRESREIHE_UNERWARTET" xml:space="preserve">
+    <value>The annual series could not be calculated: {0}</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_LAEUFT" xml:space="preserve">
+    <value>calculating … — the design-day ensemble is being drawn.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_LAEUFT" xml:space="preserve">
+    <value>Design calculating … · design-day ensemble</value>
+  </data>
+  <data name="ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN" xml:space="preserve">
+    <value>The ensemble was cancelled — “Calculate stochastically” is off again.</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT" xml:space="preserve">
+    <value>Minute peak P{0} per apartment station</value>
+  </data>
+  <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
+    <value>Design value of each apartment station; the governing zone is “{0}”.</value>
+  </data>
+  <data name="ZPG_AUS_ENTFAELLT" xml:space="preserve">
+    <value>not applicable</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_ENTFAELLT" xml:space="preserve">
+    <value>Percentile value and simultaneity do not apply: at Φ_N {0} kW the cumulative curve finds no proof for {1} of {2} realisations.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_LAEUFT" xml:space="preserve">
+    <value>Consistency note: checked with the ensemble — calculating …</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL" xml:space="preserve">
+    <value>Consistency note omitted — the percentile is not calculable (reason in card (b)).</value>
+  </data>
+  <data name="ZPG_AUS_DATUM" xml:space="preserve">
+    <value>{1} {0}</value>
   </data>
   <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
     <value>Heat pump characteristics</value>

@@ -666,7 +666,8 @@
 
     /// <summary>
     /// Die Sicht des Assistenten auf die LEBENDEN Felder: die Anzeigeeinheit, den
-    /// neuen Jahresverbrauch und den Infoblock des markierten Profils.
+    /// neuen Jahresverbrauch, den Infoblock des markierten Profils und beim Brauchwasser
+    /// die Optionsgruppe „Rechenweg Brauchwasser".
     /// </summary>
     private BedarfsProfileKiSicht KiSicht()
     {
@@ -685,8 +686,32 @@
             BeschreibungLesen = () => _infoBeschreibung,
             JahresverbrauchLesen = () => Jahresverbrauch,
             SummeLesen = () => Gesamtsumme,
-            BedarfsartLesen = () => Art.ToString()
+            BedarfsartLesen = () => Art.ToString(),
+
+            RechenwegLesen = () => MitRechenweg ? (int)_rechenweg : null,
+            RechenwegSetzen = KiRechenweg,
+            RechenwegEintraege = () => KiMaskenanmeldung.Eintraege(
+                Rechenwege, e => e.Id, e => e.Text)
         };
+    }
+
+    /// <summary>
+    /// Die Optionsgruppe „Rechenweg Brauchwasser" über den Assistenten (Welle #458, Stufe 3a)
+    /// — derselbe Weg wie ein Klick (<see cref="RechenwegWaehlen"/>). Ohne Optionsgruppe
+    /// (andere Ausprägung, kein gespeichertes Projekt) und für „Zapfprofil" ohne Zone
+    /// nennt er den Grund, den die Maske selbst nennt.
+    /// </summary>
+    private string? KiRechenweg(int? id)
+    {
+        if (!MitRechenweg)
+            return Art == BedarfsArt.Brauchwasser && ZapfprofilSperrgrund.Length > 0
+                ? ZapfprofilSperrgrund
+                : Resource.KI_DLG_BPF_RECHENWEG_NUR_BW;
+        if (id == (int)ZapfprofilWeg.Generator && RechenwegGesperrt is not null)
+            return ZapfprofilEinstiegTexte.HinweisOhneZonen;
+
+        RechenwegWaehlen(id);
+        return null;
     }
 
     /// <summary>

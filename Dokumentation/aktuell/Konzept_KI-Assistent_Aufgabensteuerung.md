@@ -1264,6 +1264,7 @@ Damit altert der Katalog nicht stumm, wenn eine Maske umgebaut wird.
 | `dialog_parameter_erklaeren` | 1 | `maske`, `feld` | Erläuterung aus Katalog + Hilfetext (`WordPressHelpCatalog.Get` — `HelpCatalog.cs:194`); nennt Typ, Einheit, Leer-Regel |
 | `feld_setzen` | **2F** | `maske`, `feld`, `wert` | setzt genau ein Feld — mit Feldsicherung (11.5) |
 | `formular_ausfuellen` | **2F** | `maske`, `werte{}` | setzt mehrere Felder als **einen** bestätigten Block |
+| `reihe_setzen` | **2F** | `maske`, `feld`, `werte[]` (Zahlenliste), `ab` (optional) | setzt eine **Zahlenreihe** (Monats-, Stunden-, Wochenwerte) ganz oder ab einer Stelle — ein Block, gekürzt bestätigt (11.4a) |
 | `dialog_aktion_ausfuehren` | **2F** | `maske`, `knopf` | löst einen Knopf der Positivliste aus — die Knopfprüfung des Bestands läuft dabei wie bei einem Klick von Hand |
 
 **Stufe 2F** („schreibend in die Oberfläche") verhält sich im Riegel wie Stufe 2: nie ohne Bestätigung
@@ -1272,6 +1273,34 @@ den Aktionsknopf der Maske — und dort laufen die Bestandsprüfungen (11.2). De
 bisher auf den UI-Thread und setzt Control-Eigenschaften direkt (`TextBox.Text`, `CheckBox.Checked`,
 `ComboBox.SelectedItem`); `ReadOnly`- oder deaktivierte Felder werden mit Klartext abgelehnt, ebenso jedes Feld
 und jeder Knopf ohne Katalogeintrag.
+
+### 11.4a Feldtypen — Einzelwert, Spalte, Zahlenreihe (Welle #458 Stufe 3b)
+
+Ein Katalogfeld trägt seine Art aus `KiParameterTyp` — Zahl, Ganzzahl, Text, Wahrheitswert, Wahl und, als einzige
+Liste, die **Zahlenreihe** (`ZahlListe`). Drei Formen stehen damit zur Verfügung:
+
+- **Einzelwert** — ein Feld, ein Wert; gesetzt mit `feld_setzen` oder im Block mit `formular_ausfuellen`.
+- **Spalte** (`Typ.Zeilen[].Eigenschaft` mit Zeilenkennzeichen) — eine Tabelle mit benannten Zeilen; je Zeile ein
+  eigenes Feld (`ferien_beginn_tag_3` heißt „… (Sommer)"), gesetzt wie ein Einzelwert.
+- **Zahlenreihe** — eine gleichartige Folge von Zahlen fester Länge; EIN Feld mit der Form `KiZahlenreihe` (Länge und
+  Stellennamen aus dem Katalog: Monate, Stunden 1–24, Wochenstunden Montag Stunde 1 bis Sonntag Stunde 24). Gelesen
+  wird sie als eine Liste, gesetzt mit `reihe_setzen`.
+
+**Der Parametertyp.** `werte` ist ein JSON-Feld aus Zahlen (Schema `{"type":"array","items":{"type":"number"}}`);
+`KiPruefung` wandelt es in `double[]`, nimmt einen Skalar als einelementige Liste, weist eine leere Liste und jedes
+nicht numerische Glied ab und prüft deklarierte Grenzen je Glied. `ab` ist die Stelle des ersten Wertes (bei 1
+beginnend); ohne `ab` muss die Liste die ganze Reihe tragen. In der Werkzeugliste trennen Strichpunkt und Leerraum
+die Glieder — das Komma bleibt Dezimalzeichen.
+
+**Die Prüfung vor dem Setzen** (`KiFeldwandler.WandleReihe`): Länge bzw. Ausschnitt, endliche Zahlen und die
+Grenzen des Eingabefeldes (`KiDialogFeld.Min`/`Max` — nur wo die Maske sie am Zahlenfeld führt; dieselben Grenzen
+gelten seither auch für Einzel- und Spaltenfelder). Fachregeln darüber hinaus prüft der Dialog nach dem Setzen
+(Haken `Pruefen`), wie bei jeder Eingabe von Hand.
+
+**Bestätigung und Protokoll.** Der Vorschaublock (`KiFeldBlock.Reihe`) nennt die Zahl der geänderten Stellen und die
+ersten zwölf davon „Reihe (Stelle) · alt → neu"; die Angaben zeigen die Liste gekürzt. Die Protokollzeile trägt die
+volle Liste als Parameter. `feld_setzen` und `formular_ausfuellen` lehnen eine Zahlenreihe mit dem Hinweis auf
+`reihe_setzen` ab, `reihe_setzen` ein Einzelfeld mit dem Hinweis auf `feld_setzen`.
 
 ### 11.5 Die Feldsicherung — zusätzliche Bestätigung, entwicklerseitig abschaltbar
 

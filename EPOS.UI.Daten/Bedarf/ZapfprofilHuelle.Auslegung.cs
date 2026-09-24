@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -53,7 +56,8 @@ namespace WindowsFormsApplication1
             "GLF_GUELTIGKEITSGRENZE", "LADELEISTUNG_ZU_KLEIN", "MASSGEBEND_WOCHENENDE", "DEFIZIT_WAECHST",
             TwwSpeicherauslegung.DMAX_NULL, "SUMMENKONTROLLE", "SUMMENLINIE_AUSSERHALB_BAND", "KLASSISCH_WEIT_UEBER_BAND",
             "MEHRSPEICHER", "NENNINHALTE_FEHLEN", ZapfprofilCtrl.HINWEIS_NENNINHALTE_EINSTELLUNG,
-            ZapfprofilCtrl.HINWEIS_NENNINHALTE_PARAMETER, "NL_KRITERIUM", ZapfHinweis.PARAMETER_FEHLT
+            ZapfprofilCtrl.HINWEIS_NENNINHALTE_PARAMETER, "NL_KRITERIUM", ZapfHinweis.PARAMETER_FEHLT,
+            "PERZENTIL_NICHT_BELASTBAR", "KONSISTENZ_STOCHASTISCHE_SPITZE", "WURZEL_N_VERGLEICH", "STOCHASTIK_NICHT_RECHENBAR"
         };
 
         // =================================================================================
@@ -64,19 +68,25 @@ namespace WindowsFormsApplication1
         /// Der Parametersatz der Komponente <c>ZapfprofilAuslegungDialog.razor</c> zum
         /// Arbeitsstand <paramref name="eingabe"/> des Zapfprofil-Dialogs: <c>Daten</c>
         /// (<see cref="ZapfprofilAuslegungStartDaten"/>), <c>Texte</c>, <c>Rechnen</c>,
-        /// <c>Konstruieren</c>, <c>HilfeSchluessel</c>, <c>HilfeRechenweg</c>. Die Delegaten
-        /// rechnen gegen die Zonen, mit denen die Überlagerung öffnete.
+        /// <c>StochastischRechnen</c>, <c>Konstruieren</c>, <c>HilfeSchluessel</c>,
+        /// <c>HilfeRechenweg</c>. Die Delegaten rechnen gegen die Zonen, mit denen die Überlagerung
+        /// öffnete. <c>Rechnen</c> rechnet im Zeichenlauf und darum immer deterministisch — das
+        /// Ensemble des Bedarfstags zieht allein <c>StochastischRechnen</c>, nebenläufig auf einem
+        /// Arbeitsfaden mit Abbruchmarke (5.1).
         /// </summary>
         internal static IReadOnlyDictionary<string, object> AuslegungGaben(int idProjekt, ZapfprofilEingabeDaten eingabe,
-                                                                           ZapfprofilStand basis, ZapfprofilStufe stufe)
+                                                                           ZapfprofilStand basis, ZapfprofilStufe stufe,
+                                                                           bool stochastisch = false)
         {
             ZapfprofilEingabeDaten zonen = (eingabe ?? new ZapfprofilEingabeDaten()).Kopie();
             return new Dictionary<string, object>
             {
-                ["Daten"] = AuslegungStart(idProjekt, zonen, basis, stufe),
+                ["Daten"] = AuslegungStart(idProjekt, zonen, basis, stufe, stochastisch),
                 ["Texte"] = AuslegungTexte(),
                 ["Rechnen"] = new Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>(
-                    a => Auslegung(idProjekt, zonen, a, basis, stufe)),
+                    a => Auslegung(idProjekt, zonen, Deterministisch(a), basis, stufe)),
+                ["StochastischRechnen"] = new Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>(
+                    (a, abbruch) => Kulturweitergabe.Starten(() => Auslegung(idProjekt, zonen, a, basis, stufe, abbruch), abbruch)),
                 ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>(
                     BedarfstagKonstruieren),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
@@ -87,16 +97,23 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Stand der Überlagerung beim Öffnen: die Eingaben (die des Arbeitsstands, sonst aus
         /// den Projektgrößen), die Bedarfstage des Katalogs, die Zapfregeln samt Namensvorschlag,
-        /// die Verfügbarkeit und das erste Ergebnis.
+        /// die Verfügbarkeit und das erste Ergebnis. „Stochastisch rechnen" ist eine Laufangabe:
+        /// Sie kommt allein aus <paramref name="stochastisch"/> — „Auslegung…" öffnet mit dem
+        /// Schalter aus, der Fußknopf „Stochastisch rechnen" mit ihm an; ein Schalter aus einem
+        /// früheren OK gilt nicht mehr. Mit Schalter gibt es kein erstes Ergebnis — die Überlagerung
+        /// rechnet gleich EINEN nebenläufigen Lauf samt Ensemble, keinen deterministischen davor.
         /// </summary>
         internal static ZapfprofilAuslegungStartDaten AuslegungStart(int idProjekt, ZapfprofilEingabeDaten eingabe,
-                                                                     ZapfprofilStand basis, ZapfprofilStufe stufe)
+                                                                     ZapfprofilStand basis, ZapfprofilStufe stufe,
+                                                                     bool stochastisch = false)
         {
             eingabe ??= new ZapfprofilEingabeDaten();
+            ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
+            anfang.Stochastisch = stochastisch;
             var start = new ZapfprofilAuslegungStartDaten
             {
                 Stufe = stufe,
-                Eingabe = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis),
+                Eingabe = anfang,
                 Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Zonen · {0} Zonen · Stufe {1}"),
                                  eingabe.Zonen.Count.ToString(CultureInfo.CurrentCulture), Stufenname(stufe))
             };
@@ -107,6 +124,7 @@ namespace WindowsFormsApplication1
             if (!verfuegbar.Ja) return start;
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
+            StochastikRahmen(start);
             try
             {
                 Parametersatz ps = ZapfprofilCtrl.Parameter();
@@ -125,8 +143,40 @@ namespace WindowsFormsApplication1
             }
             catch (ParametersatzException) { /* das Ergebnis nennt den Grund */ }
 
-            start.Ergebnis = Auslegung(idProjekt, eingabe, start.Eingabe, basis, stufe);
+            // Das erste Ergebnis rechnet im Zeichenlauf — deterministisch; mit Schalter keines: Das
+            // Ensemble zieht die Überlagerung gleich nebenläufig (StochastischRechnen), ein Lauf.
+            if (!stochastisch) start.Ergebnis = Auslegung(idProjekt, eingabe, start.Eingabe, basis, stufe);
             return start;
+        }
+
+        /// <summary>
+        /// Die Stochastik der Überlagerung (4.4, 4.5 b; Stufe Z3): Wertemenge und Vorgabe des
+        /// Perzentils (Schema, DDL), die Grenzen der Realisierungen des Bedarfstags (Schema, Kern)
+        /// und je Perzentil die Mindestzahl ⌈1/(1 − p)⌉ und die Vorgabe ⌈Vielfaches · 1/(1 − p)⌉
+        /// aus dem Kern; ist die Vorgabe nicht bestimmbar, steht der Grund daneben.
+        /// </summary>
+        private static void StochastikRahmen(ZapfprofilAuslegungStartDaten start)
+        {
+            start.Perzentile = TwwSchema.Perzentile.ToList();
+            start.PerzentilVorgabe = ZapfprofilCtrl.ProjektVorgabe()?.Perzentil;
+            start.RealisierungenMindestens = TwwSchema.RealisierungenMindestens;
+            start.RealisierungenHoechstens = Zapfensemble.HOECHSTENS;
+            foreach (int p in TwwSchema.Perzentile) start.Mindestzahl[p] = Zapfensemble.Mindestzahl(p);
+            try
+            {
+                Parametersatz ps = ZapfprofilCtrl.Parameter();
+                foreach (int p in TwwSchema.Perzentile)
+                    start.RealisierungenVorgabe[p] = Zapfensemble.RealisierungenAuslegung(null, p, ps);
+            }
+            catch (ParametersatzException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
+            catch (ZapfAuslegungException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
+            catch (ZapfprofilEingabeException ex) { OhneVorgabe(start, Text_(Schluessel(ex.Fehler), ex.Message)); }
+        }
+
+        private static void OhneVorgabe(ZapfprofilAuslegungStartDaten start, string grund)
+        {
+            start.RealisierungenVorgabe.Clear();
+            start.RealisierungenVorgabeGrund = grund ?? "";
         }
 
         // =================================================================================
@@ -147,6 +197,16 @@ namespace WindowsFormsApplication1
         internal static ZapfprofilAuslegungDaten Auslegung(int idProjekt, ZapfprofilEingabeDaten eingabe,
                                                            ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
                                                            ZapfprofilStufe stufe)
+            => Auslegung(idProjekt, eingabe, auslegung, basis, stufe, CancellationToken.None);
+
+        /// <summary>
+        /// Dieselbe Auslegung mit Abbruchmarke — der nebenläufige Lauf „Stochastisch rechnen" der
+        /// Überlagerung (5.1): Die Marke beendet die Ziehung des Ensembles mit
+        /// <see cref="OperationCanceledException"/>; jede andere Ablehnung kommt benannt zurück.
+        /// </summary>
+        internal static ZapfprofilAuslegungDaten Auslegung(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                           ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
+                                                           ZapfprofilStufe stufe, CancellationToken abbruch)
         {
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneAuslegung(ZapfprofilAuslegungZustand.NichtGerechnet, "ZPG_AUS_MSG_KEINE_ZONE",
@@ -164,15 +224,20 @@ namespace WindowsFormsApplication1
             ZapfprofilEingabeDaten mit = eingabe.Kopie();
             mit.Auslegung = auslegung;
             Auslegungsrechnung r;
+            ProjektStand rechenprojekt;
             try
             {
                 // Der übernommene Punkt (Arbeitsstand oder gespeichert) bleibt draußen: Er ist das
-                // Ergebnis dieser Rechnung, nicht ihre Eingabe.
+                // Ergebnis dieser Rechnung, nicht ihre Eingabe. „Stochastisch rechnen" ist eine
+                // Laufangabe; Seed, Perzentil und Realisierungen stehen in den Projektgrößen.
                 ZapfprofilStand stand = AlsStand(mit, basis);
                 stand = stand with { Weg = BrauchwasserWeg.Generator, Projekt = OhnePunkt(stand.Projekt) };
+                rechenprojekt = stand.Projekt;
                 r = ZapfprofilCtrl.Auslegung(idProjekt, stand, jan1, we,
-                    new Auslegungslauf(AlsErzeugerart(auslegung.Erzeugerart), AlsWerkstoff(auslegung.Werkstoff)));
+                    new Auslegungslauf(AlsErzeugerart(auslegung.Erzeugerart), AlsWerkstoff(auslegung.Werkstoff),
+                                       auslegung.Stochastisch, abbruch));
             }
+            catch (OperationCanceledException) { throw; }
             catch (ZapfprofilEingabeException ex)
             {
                 return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
@@ -194,12 +259,33 @@ namespace WindowsFormsApplication1
                     Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
             }
 
-            try { return AlsAuslegung(r, stufe, auslegung); }
+            try
+            {
+                ZapfprofilAuslegungDaten d = AlsAuslegung(r, stufe, auslegung);
+                if (d.Stochastisch)
+                {
+                    // Derselbe Seed und dasselbe Perzentil wie im Eingang der Rechnung.
+                    ProjektStand p = rechenprojekt ?? ZapfprofilCtrl.ProjektVorgabe();
+                    d.Status = Format(Text_("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH",
+                                            "Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}"),
+                                      p?.Perzentil ?? 0, p?.Seed ?? 0);
+                }
+                return d;
+            }
             catch (Exception ex)
             {
                 return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
                     Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
             }
+        }
+
+        /// <summary>Die Eingaben ohne „Stochastisch rechnen" — der Weg im Zeichenlauf zieht nie ein Ensemble.</summary>
+        internal static ZapfprofilAuslegungEingabeDaten Deterministisch(ZapfprofilAuslegungEingabeDaten a)
+        {
+            if (a == null || !a.Stochastisch) return a;
+            ZapfprofilAuslegungEingabeDaten d = a.Kopie();
+            d.Stochastisch = false;
+            return d;
         }
 
         private static ZapfprofilAuslegungDaten OhneAuslegung(ZapfprofilAuslegungZustand zustand, string kennung, string grund,
@@ -225,7 +311,8 @@ namespace WindowsFormsApplication1
             var d = new ZapfprofilAuslegungDaten
             {
                 Zustand = ZapfprofilAuslegungZustand.Gerechnet,
-                Status = Text_("ZPG_AUS_STATUS_GERECHNET", "Auslegung gerechnet · deterministisch · Perzentil noch nicht gerechnet"),
+                Stochastisch = eingabe?.Stochastisch == true,
+                Status = Text_("ZPG_AUS_STATUS_GERECHNET", "Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“"),
                 ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart)
             };
 
@@ -276,6 +363,7 @@ namespace WindowsFormsApplication1
             if (dreier.Count > 0) d.Hauptwert = Karte(dreier[0]);
             if (dreier.Count > 1) d.Perzentil = Karte(dreier[1]);
             if (dreier.Count > 2) d.Normvergleich = Karte(dreier[2]);
+            d.PerzentilErgebnis = PerzentilDaten(g);
 
             Auslegungsempfehlung e = g.Empfehlung;
             if (e != null)
@@ -321,14 +409,93 @@ namespace WindowsFormsApplication1
             return d;
         }
 
+        /// <summary>Die Kennung des Konsistenzhinweises der Speichergruppe (4.7, N11 (f)).</summary>
+        internal const string HINWEIS_KONSISTENZ = "KONSISTENZ_STOCHASTISCHE_SPITZE";
+
+        /// <summary>
+        /// <b>Das Perzentil einer Gruppe als DTO</b> (4.5 b): bei Speicher die erforderlichen
+        /// Volumina beim Φ_N des Summenlinienpunkts, sonst die Minutenspitze; das Streuband P50 …
+        /// P99 samt Spannweite, die Gleichzeitigkeit als Ergebnis (GLF_V bzw. GLF_P) mit Σ n_E,
+        /// die Belastbarkeit gegen die Mindestzahl ⌈1/(1 − p)⌉ und — nur Speicher — der
+        /// Konsistenzhinweis als WERTE des Kerns: geprüft, solange der Parametersatz die Schwelle
+        /// trägt (sonst nennt die Warnliste den fehlenden Parameter), mit Stundenspitze P_p,
+        /// Schwelle und Φ_N — den Satz baut die Oberfläche in ihrer Sprache (N11 (k)). <c>null</c>
+        /// ohne Lauf „Stochastisch rechnen" oder wenn das Ensemble nicht rechenbar war. Die Hülle
+        /// rechnet nichts nach: jede Zahl kommt aus dem Kern.
+        /// </summary>
+        internal static ZapfprofilPerzentilDaten PerzentilDaten(Auslegungsgruppe g)
+        {
+            Perzentilergebnis p = g?.Perzentil;
+            if (p == null) return null;
+            bool speicher = g.Topologie == ZapfTopologie.Speicher;
+            bool volumen = speicher && p.VolumenL != null;
+            Perzentilwerte w = volumen ? p.VolumenL : p.MinutenspitzeKw;
+            var d = new ZapfprofilPerzentilDaten
+            {
+                Perzentil = p.Perzentil,
+                Seed = p.Seed,
+                Realisierungen = p.Realisierungen,
+                Mindestzahl = Zapfensemble.Mindestzahl(p.Perzentil),
+                Belastbar = p.Belastbar,
+                Tag = p.Tag,
+                Datum = Datum(p.Tag),
+                Volumen = volumen,
+                LeistungKw = volumen ? p.LeistungKw : null,
+                Minimum = w.Minimum,
+                Maximum = w.Maximum,
+                OhneNachweis = p.OhneNachweis,
+                MinutenspitzeKw = p.MinutenspitzeKw.Wert(p.Perzentil),
+                StundenspitzeKw = p.StundenspitzeKw.Wert(p.Perzentil),
+                Gleichzeitigkeit = volumen ? p.GleichzeitigkeitVolumen : p.GleichzeitigkeitLeistung,
+                Einheiten = p.Zonen.Sum(z => z.Einheiten),
+                WurzelNKw = p.WurzelNSchaetzungKw,
+                SpitzeJeEinheitKw = p.SpitzeJeEinheitKw,
+                SpitzeJeEinheitZone = p.SpitzeJeEinheitZone ?? ""
+            };
+            foreach (int stufe in Perzentilwerte.Stufen)
+                d.Streuband.Add(new ZapfprofilPerzentilZeileDaten(stufe, w.Wert(stufe)));
+            if (speicher && p.KonsistenzSchwelle.HasValue)
+            {
+                d.KonsistenzGeprueft = true;
+                d.KonsistenzAuffaellig = p.KonsistenzAuffaellig;
+                d.KonsistenzSpitzeKw = p.KonsistenzSpitzeKw;
+                d.KonsistenzSchwelle = p.KonsistenzSchwelle;
+                d.KonsistenzLeistungKw = p.LeistungKw;
+            }
+            return d;
+        }
+
+        /// <summary>
+        /// Ein Jahrestag 1 … 365 als Datum in der Oberflächensprache („17. Januar", „January 17") —
+        /// über das Rechenjahr ohne Schaltjahr (<see cref="Zapfkalender"/>), nie über ein
+        /// Kalenderjahr; außerhalb des Rasters leer.
+        /// </summary>
+        internal static string Datum(int jahrestag)
+        {
+            if (jahrestag < 1 || jahrestag > Zapfkalender.TAGE) return "";
+            (int tag, int monat) = TagUndMonat(jahrestag);
+            return Format(Text_("ZPG_AUS_DATUM", "{0}. {1}"), tag.ToString(CultureInfo.CurrentCulture), Monatsname(monat));
+        }
+
         private static ZapfprofilKarteDaten Karte(Auslegungswert w) => new ZapfprofilKarteDaten
         {
             Stand = (ZapfprofilKartenstand)(int)w.Status,
             VolumenL = w.VolumenL,
             LeistungKw = w.LeistungKw,
             Empfohlen = w.Empfohlen,
-            Text = w.Text ?? ""
+            Text = AblehnungsSatz(w.Ablehnung) ?? w.Text ?? ""
         };
+
+        /// <summary>
+        /// Der Satz einer benannten Ablehnung des Rechenwegs in der Oberflächensprache — mit der Zone,
+        /// wo sie eine trägt; <c>null</c> ohne Kennung oder ohne Ressource (dann gilt der Satz des Kerns).
+        /// </summary>
+        private static string AblehnungsSatz(ZapfAblehnung a)
+        {
+            string grund = GenauerGrund(a, out _);
+            if (grund == null) return null;
+            return string.IsNullOrEmpty(a.Zone) ? grund : Format(Text_("ZPG_MSG_ZONE", "Zone „{0}“: {1}"), a.Zone, grund);
+        }
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
@@ -388,7 +555,7 @@ namespace WindowsFormsApplication1
         {
             string kennung = AuslegungsHinweisSchluessel(h.Code);
             string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
-            return new ZapfprofilWarnDaten(kennung, titel, h.Text ?? "",
+            return new ZapfprofilWarnDaten(kennung, titel, AblehnungsSatz(h.Ablehnung) ?? h.Text ?? "",
                                            h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
         }
 
@@ -451,6 +618,10 @@ namespace WindowsFormsApplication1
                 a.SensorhoeheAnteil = p.SensorhoeheAnteil;
                 a.PunktVolumenL = p.AuslegungVolumenL;
                 a.PunktLeistungKw = p.AuslegungLeistungKw;
+                // Die Stochastik der Auslegung (Z3): Perzentil (nur aus der Wertemenge) und die
+                // Realisierungen des Bedarfstags; „Stochastisch rechnen" trägt keine Spalte.
+                a.Perzentil = TwwSchema.Perzentile.Contains(p.Perzentil) ? p.Perzentil : (int?)null;
+                a.RealisierungenAuslegung = p.RealisierungenAuslegung;
             }
             if (stand?.BedarfstagEntwurf != null)
             {
@@ -464,7 +635,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Projektgrößen mit den Eingaben der Überlagerung: Bedarfstag (Quelle und Katalogtag;
         /// beim Entwurf ohne Id), Speichertemperatur, Erzeuger- und Übertragerleistung, Speicherart,
-        /// Sensorhöhe und der übernommene Punkt. <c>null</c> bleibt <c>null</c>. Der Punkt gilt für
+        /// Sensorhöhe, der übernommene Punkt und — Stufe Z3 — Perzentil (<c>null</c> = der Wert
+        /// der Basis bleibt) und Realisierungen des Bedarfstags (<c>null</c> = Vorgabe). Sonst
+        /// bleibt <c>null</c> <c>null</c>. Der Punkt gilt für
         /// Übernahme und Speichern; der Rechenweg nimmt ihn mit <see cref="OhnePunkt"/> wieder heraus.
         /// </summary>
         internal static ProjektStand MitAuslegung(ProjektStand p, ZapfprofilAuslegungEingabeDaten a)
@@ -485,7 +658,9 @@ namespace WindowsFormsApplication1
                 Speicherart = (ZapfSpeicherart)(int)a.Speicherart,
                 SensorhoeheAnteil = a.SensorhoeheAnteil,
                 AuslegungVolumenL = a.PunktVolumenL,
-                AuslegungLeistungKw = a.PunktLeistungKw
+                AuslegungLeistungKw = a.PunktLeistungKw,
+                Perzentil = a.Perzentil ?? p.Perzentil,
+                RealisierungenAuslegung = a.RealisierungenAuslegung
             };
         }
 
@@ -729,6 +904,15 @@ namespace WindowsFormsApplication1
             t.HerleitungUebertrager = Text_("ZPG_AUS_HERL_UEBERTRAGER", t.HerleitungUebertrager);
             t.HerleitungSensorhoehe = Text_("ZPG_AUS_HERL_SENSORHOEHE", t.HerleitungSensorhoehe);
             t.HerleitungLaufangabe = Text_("ZPG_AUS_HERL_LAUFANGABE", t.HerleitungLaufangabe);
+            t.LabelStochastisch = Text_("ZPG_AUS_LBL_STOCHASTISCH", t.LabelStochastisch);
+            t.HerleitungStochastisch = Text_("ZPG_AUS_HERL_STOCHASTISCH", t.HerleitungStochastisch);
+            t.LabelPerzentil = Text_("ZPG_AUS_LBL_PERZENTIL", t.LabelPerzentil);
+            t.HerleitungPerzentil = Text_("ZPG_AUS_HERL_PERZENTIL", t.HerleitungPerzentil);
+            t.LabelRealisierungen = Text_("ZPG_AUS_LBL_REALISIERUNGEN", t.LabelRealisierungen);
+            t.EinheitTage = Text_("ZPG_AUS_EINHEIT_TAGE", t.EinheitTage);
+            t.HerleitungRealisierungen = Text_("ZPG_AUS_HERL_REALISIERUNGEN", t.HerleitungRealisierungen);
+            t.HerleitungRealisierungenOhne = Text_("ZPG_AUS_HERL_REALISIERUNGEN_OHNE", t.HerleitungRealisierungenOhne);
+            t.MeldungFehleingabe = Text_("ZPG_AUS_MSG_FEHLEINGABE", t.MeldungFehleingabe);
             t.GruppeTopologie = Text_("ZPG_AUS_GRP_TOPOLOGIE", t.GruppeTopologie);
             t.BedarfstagGruppe = Text_("ZPG_AUS_BEDARFSTAG_GRUPPE", t.BedarfstagGruppe);
             t.KarteSummenlinie = Text_("ZPG_AUS_KARTE_SUMMENLINIE", t.KarteSummenlinie);
@@ -738,6 +922,30 @@ namespace WindowsFormsApplication1
             t.KartePerzentil = Text_("ZPG_AUS_KARTE_PERZENTIL", t.KartePerzentil);
             t.KartePerzentilUnter = Text_("ZPG_AUS_KARTE_PERZENTIL_UNTER", t.KartePerzentilUnter);
             t.PerzentilOffen = Text_("ZPG_AUS_PERZENTIL_OFFEN", t.PerzentilOffen);
+            t.PerzentilLauf = Text_("ZPG_AUS_PERZENTIL_LAUF", t.PerzentilLauf);
+            t.Entfaellt = Text_("ZPG_AUS_ENTFAELLT", t.Entfaellt);
+            t.PerzentilEntfaellt = Text_("ZPG_AUS_PERZENTIL_ENTFAELLT", t.PerzentilEntfaellt);
+            t.PerzentilLaeuft = Text_("ZPG_AUS_PERZENTIL_LAEUFT", t.PerzentilLaeuft);
+            t.StatusEnsembleLaeuft = Text_("ZPG_AUS_STATUS_LAEUFT", t.StatusEnsembleLaeuft);
+            t.HinweisEnsembleAbgebrochen = Text_("ZPG_AUS_HINW_ENSEMBLE_ABGEBROCHEN", t.HinweisEnsembleAbgebrochen);
+            t.PerzentilVolumen = Text_("ZPG_AUS_PERZENTIL_VOLUMEN", t.PerzentilVolumen);
+            t.PerzentilVolumenWert = Text_("ZPG_AUS_PERZENTIL_VOLUMEN_WERT", t.PerzentilVolumenWert);
+            t.PerzentilMinutenspitze = Text_("ZPG_AUS_PERZENTIL_MINUTENSPITZE", t.PerzentilMinutenspitze);
+            t.PerzentilNachrichtlich = Text_("ZPG_AUS_PERZENTIL_NACHRICHTLICH", t.PerzentilNachrichtlich);
+            t.NichtBelastbar = Text_("ZPG_AUS_NICHT_BELASTBAR", t.NichtBelastbar);
+            t.GrundNichtBelastbar = Text_("ZPG_AUS_GRUND_NICHT_BELASTBAR", t.GrundNichtBelastbar);
+            t.Streuband = Text_("ZPG_AUS_STREUBAND", t.Streuband);
+            t.SpaltePerzentil = Text_("ZPG_AUS_SP_PERZENTIL", t.SpaltePerzentil);
+            t.SpalteWert = Text_("ZPG_AUS_SP_WERT", t.SpalteWert);
+            t.Spannweite = Text_("ZPG_AUS_SPANNWEITE", t.Spannweite);
+            t.OhneNachweis = Text_("ZPG_AUS_OHNE_NACHWEIS", t.OhneNachweis);
+            t.GlfV = Text_("ZPG_AUS_GLF_V", t.GlfV);
+            t.GlfVBezug = Text_("ZPG_AUS_GLF_V_BEZUG", t.GlfVBezug);
+            t.GlfP = Text_("ZPG_AUS_GLF_P", t.GlfP);
+            t.GlfPBezug = Text_("ZPG_AUS_GLF_P_BEZUG", t.GlfPBezug);
+            t.WurzelN = Text_("ZPG_AUS_WURZEL_N", t.WurzelN);
+            t.SpitzeJeEinheit = Text_("ZPG_AUS_SPITZE_JE_EINHEIT", t.SpitzeJeEinheit);
+            t.SpitzeJeEinheitZone = Text_("ZPG_AUS_SPITZE_JE_EINHEIT_ZONE", t.SpitzeJeEinheitZone);
             t.KarteNorm = Text_("ZPG_AUS_KARTE_NORM", t.KarteNorm);
             t.KarteNormUnter = Text_("ZPG_AUS_KARTE_NORM_UNTER", t.KarteNormUnter);
             t.GewaehlterPunkt = Text_("ZPG_AUS_GEWAEHLTER_PUNKT", t.GewaehlterPunkt);
@@ -793,6 +1001,11 @@ namespace WindowsFormsApplication1
             t.WarnlisteLeer = Text_("ZPG_AUS_WARNLISTE_LEER", t.WarnlisteLeer);
             t.Konsistenz = Text_("ZPG_AUS_KONSISTENZ", t.Konsistenz);
             t.GrundKonsistenz = Text_("ZPG_AUS_GRUND_KONSISTENZ", t.GrundKonsistenz);
+            t.KonsistenzOk = Text_("ZPG_AUS_KONSISTENZ_OK", t.KonsistenzOk);
+            t.KonsistenzAuffaellig = Text_("ZPG_AUS_KONSISTENZ_AUFFAELLIG", t.KonsistenzAuffaellig);
+            t.KonsistenzOhneSchwelle = Text_("ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE", t.KonsistenzOhneSchwelle);
+            t.KonsistenzLaeuft = Text_("ZPG_AUS_KONSISTENZ_LAEUFT", t.KonsistenzLaeuft);
+            t.KonsistenzOhnePerzentil = Text_("ZPG_AUS_KONSISTENZ_OHNE_PERZENTIL", t.KonsistenzOhnePerzentil);
             t.StufeHinweis = Text_("ZPG_AUS_STUFE_HINWEIS", t.StufeHinweis);
             t.StufeWarnung = Text_("ZPG_AUS_STUFE_WARNUNG", t.StufeWarnung);
             t.StatusPunkt = Text_("ZPG_AUS_STATUS_PUNKT", t.StatusPunkt);

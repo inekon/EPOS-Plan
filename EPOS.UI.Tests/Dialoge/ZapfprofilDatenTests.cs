@@ -85,6 +85,36 @@ public sealed class ZapfprofilDatenTests : IDisposable
         Assert.Equal(ZapfprofilNiveau.Hoch, e.Zonen[0].Kopie().Niveau);
     }
 
+    /// <summary>
+    /// Stufe Z3: Rechenweg, Seed und Realisierungen der Jahresreihe gehören zum Arbeitsstand und
+    /// gehen mit der Kopie; ohne Angabe steht der Stand des Kerns (<c>null</c>). Die
+    /// Konsistenzprobe nennt ihre relative Abweichung, ohne Jahresmenge keine.
+    /// </summary>
+    [Fact]
+    public void Die_Stochastik_des_Arbeitsstands_geht_mit_der_Kopie_und_die_Probe_nennt_ihre_Abweichung()
+    {
+        var leer = new ZapfprofilEingabeDaten();
+        Assert.False(leer.JahresreiheStochastisch);
+        Assert.Null(leer.Seed);
+        Assert.Null(leer.Realisierungen);
+        Assert.False(new ZapfprofilVorschauDaten().Stochastisch);
+        Assert.Empty(new ZapfprofilAnsichtDaten().Konsistenzen);
+
+        var e = new ZapfprofilEingabeDaten { JahresreiheStochastisch = true, Seed = 7, Realisierungen = 20 };
+        ZapfprofilEingabeDaten k = e.Kopie();
+        Assert.True(k.JahresreiheStochastisch);
+        Assert.Equal(7, k.Seed);
+        Assert.Equal(20, k.Realisierungen);
+        k.Seed = 8;
+        Assert.Equal(7, e.Seed);
+
+        // Die Abweichung rechnet der Kern — das DTO trägt sie nur (ohne Wert: keine).
+        Assert.Null(new ZapfprofilKonsistenzDaten { DeterministischKwh = 1000, MittelKwh = 990 }.Abweichung);
+        Assert.Equal(-0.01, new ZapfprofilKonsistenzDaten { Abweichung = -0.01 }.Abweichung);
+        Assert.Null(new ZapfprofilVorschauDaten().Seed);
+        Assert.Null(new ZapfprofilVorschauDaten().Realisierungen);
+    }
+
     [Fact]
     public void Das_Ergebnis_nimmt_den_Weg_aus_dem_Arbeitsstand_und_der_Zaehler_summiert_die_Zonen()
     {
@@ -95,12 +125,25 @@ public sealed class ZapfprofilDatenTests : IDisposable
 
         var daten = new ZapfprofilDaten
         {
+            SeedVorgabe = 1,
+            RealisierungenVorgabe = 10,
             Eingabe =
             {
                 Zonen = { new ZapfprofilZoneDaten { Ueberschrieben = 2 }, new ZapfprofilZoneDaten { Ueberschrieben = 3 } }
             }
         };
         Assert.Equal(5, daten.Ueberschrieben);
+
+        // Der Zähler steht EINMAL: Zonen und Stochastik — Rechenweg, Seed und Jahre abseits der Vorgabe.
+        ZapfprofilEingabeDaten arbeit = daten.Eingabe.Kopie();
+        arbeit.JahresreiheStochastisch = true;
+        arbeit.Seed = 1;                                                     // die Vorgabe: kein Zähler
+        arbeit.Realisierungen = 25;
+        Assert.Equal(7, daten.UeberschriebenIn(arbeit));
+        arbeit.Seed = 4;
+        Assert.Equal(8, daten.UeberschriebenIn(arbeit));
+        Assert.Equal(5, daten.Ueberschrieben);                             // der Stand beim Öffnen bleibt
+        Assert.Equal(0, daten.UeberschriebenIn(null));
     }
 
     /// <summary>Hausregel „kein vorbelegtes DTO als Ergebnis": ohne Rechnung keine Summe, aber ein Zustand.</summary>

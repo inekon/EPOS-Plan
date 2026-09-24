@@ -13,8 +13,10 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// die Kurven des vorigen. Dieselbe Lage bei der gewählten KURVE — sie ist eine
 /// Listenwahl der Komponente, kein Feld des Satzes.</para>
 ///
-/// <para><b>Die 24 Stundenwerte je Kurve bleiben draußen</b>: Sie sind ein Raster mit
-/// eigenem Editor. Gesetzt wird hier, WELCHE Kurve offen steht.</para>
+/// <para><b>Die 24 Stundenwerte der GEWÄHLTEN Kurve sind EINE Zahlenreihe</b> (Welle #458
+/// Stufe 3b, <see cref="Stundenwerte"/>): derselbe Arbeitsstand, in den „Übernehmen" der
+/// Überlagerung „Stundenwerte…" schreibt. Geschrieben wird mit „Speichern"; solange
+/// geänderte Werte ungespeichert sind, hält die Maske den Kurvenwechsel an.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
 /// Delegaten.</para>
@@ -38,6 +40,15 @@ public sealed class GebaeudetypKiSicht
     /// (<c>BeiBeschreibung</c>); gespeichert wird mit „Speichern".
     /// </summary>
     public Action<string>? BeschreibungSetzen { get; init; }
+
+    /// <summary>Liest die 24 Stundenwerte der gewählten Kurve; <c>null</c> = keine Kurve.</summary>
+    public Func<double?[]?>? StundenwerteLesen { get; init; }
+
+    /// <summary>
+    /// Legt die 24 Stundenwerte der gewählten Kurve in den Arbeitsstand; ohne Kurve oder
+    /// an einem Auslieferungstyp lehnt die Maske mit Grund ab.
+    /// </summary>
+    public Action<double?[]>? StundenwerteSetzen { get; init; }
 
     /// <summary>Liefert die Gebäudetypen, die die Liste der Maske führt.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? TypEintraege { get; init; }
@@ -86,5 +97,15 @@ public sealed class GebaeudetypKiSicht
     {
         get => BeschreibungLesen?.Invoke() ?? "";
         set => BeschreibungSetzen?.Invoke(value ?? "");
+    }
+
+    /// <summary>
+    /// Die Zahlenreihe der 24 Stundenwerte der gewählten Kurve (Welle #458 Stufe 3b),
+    /// Stunde 1 bis 24; <c>null</c>, solange kein Typ mit Kurven geladen ist.
+    /// </summary>
+    public double?[]? Stundenwerte
+    {
+        get => StundenwerteLesen?.Invoke();
+        set { if (value is not null) StundenwerteSetzen?.Invoke(value); }
     }
 }

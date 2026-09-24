@@ -1390,10 +1390,57 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
-            // ---- Schritt 115: die Abrechnungsart des Kaeltestroms und die Kaelteseite der
-            //      Waermepumpenergebnisse (Kuehlkonzept 6.1-6.4, 8.4; Stufe KU2 Welle 3; E34).
+            // ---- Schritt 115: die Zapfkategorien des Zapfprofilgenerators (Umsetzungskonzept
+            //      Zapfprofilgenerator 3.2, T2, Stufe Z3). REIN DDL aus TwwSchema.AnweisungenT2 -
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_115_Zapfkategorien
+            //      bedient. NACH 103, dessen Nutzungsarten die Tabelle verweist, und nach 114 (Kuehlung).
+            //
+            //      ERGEBNISNEUTRAL: Die Tabelle entsteht leer; den Testkatalog der Kategorien
+            //      spielt danach Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py ein.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 115, trocken);
+
+            // ---- Schritt 116: der Szenariorahmen (Schritt B des Analysepapiers, Etappe E9a der
+            //      vollstaendigen Szenarioabdeckung V-E). REIN DDL aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_116_SzenarioRahmen bedient
+            //      (SchemaKatalog.Schritt116_Szenariorahmen): Szen_Best/Worst_Zeitraum (ganze
+            //      Jahre) und Szen_Best/Worst_Menge (Prozent) an Tab_ProjektWirtschaftlichkeit,
+            //      nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 116, trocken);
+
+            // ---- Schritt 117: die Traegerpreise best/worst (Schritt C, Etappe E9a). REIN DDL
+            //      aus DERSELBEN Quelle wie SchemaMigration.Schritt_117_TraegerpreisSzenario
+            //      (SchemaKatalog.Schritt117_TraegerpreisSzenario): custom_price_work/base/
+            //      power_best/_worst an energy_project_settings, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 117, trocken);
+
+            // ---- Schritt 118: die Erloessaetze best/worst (Schritt D, Etappe E9a). REIN DDL aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_118_ErloessatzSzenario
+            //      (SchemaKatalog.Schritt118_ErloessatzSzenario): Einspeiseverguetung(_KWK)_Best/
+            //      _Worst an Tab_ProjektWirtschaftlichkeit, DvEntgelt_Best/_Worst und
+            //      PpaPreis_Best/_Worst an Tab_ProjektPhotovoltaik, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 118, trocken);
+
+            // ---- Schritt 119: die Abrechnungsart des Kaeltestroms und die Kaelteseite der
+            //      Waermepumpenergebnisse (Kuehlkonzept 6.1-6.4, 8.4; Stufe KU2 Welle 3; E34). NACH 118.
             //      REIN DDL aus DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_115_Kaeltestrom bedient (KuehlungSchema):
+            //      SchemaMigration.Schritt_119_Kaeltestrom bedient (KuehlungSchema):
             //      Tab_Energieanlagen.Kuehl_EigenerZaehler (0/1, nullbar, ohne Vorgabe) und sieben
             //      nullbare Ergebnisspalten an Tab_ErgebnisWaermepumpe und
             //      Tab_ErgebnisWaermepumpeModul.
@@ -1402,15 +1449,15 @@ namespace Testdatenbankschema
             //      nur bei abweichendem Kuehltraeger, die Ergebnisspalten schreibt nur ein Lauf mit
             //      Kaeltekaskade.
             Console.WriteLine();
-            Console.WriteLine("Schritt 115 - Abrechnungsart des Kaeltestroms und Kaelteseite der Ergebnisse: " +
-                              (KuehlungSchema.Schritt115Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            Console.WriteLine("Schritt 119 - Abrechnungsart des Kaeltestroms und Kaelteseite der Ergebnisse: " +
+                              (KuehlungSchema.Schritt119Vollstaendig() ? "stehen bereits" : "offen") + ".");
             if (!trocken)
             {
-                var bericht115 = new List<string>();
-                angelegt += KuehlungSchema.Schritt115Alle(bericht115);
-                foreach (string zeile in bericht115)
-                    Console.WriteLine("Schritt 115 - " + zeile + ".");
-                Console.WriteLine("Schritt 115 - vollstaendig: " + KuehlungSchema.Schritt115Vollstaendig() +
+                var bericht119 = new List<string>();
+                angelegt += KuehlungSchema.Schritt119Alle(bericht119);
+                foreach (string zeile in bericht119)
+                    Console.WriteLine("Schritt 119 - " + zeile + ".");
+                Console.WriteLine("Schritt 119 - vollstaendig: " + KuehlungSchema.Schritt119Vollstaendig() +
                                   " (erwartet True).");
             }
 

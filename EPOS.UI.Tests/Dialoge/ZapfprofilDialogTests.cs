@@ -31,6 +31,13 @@ public class ZapfprofilDialogTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
+    /// <summary>
+    /// Die Frist jedes Wartens auf einen gezeichneten Zustand nach dem Ende eines nebenläufigen
+    /// Laufs: großzügig, weil ein belasteter Läufer die Fortsetzung im Verteiler verzögert — gewartet
+    /// wird nur, bis der Zustand steht.
+    /// </summary>
+    private static readonly TimeSpan Frist = TimeSpan.FromSeconds(10);
+
     // =================================================================================
     // Prüfdaten (erfunden)
     // =================================================================================
@@ -116,7 +123,11 @@ public class ZapfprofilDialogTests : EposBunitContext
             Katalog = { Art(1, "Wohnen A"), Art(2, "Büro B"), Art(3, "Gesperrt C", waehlbar: false) },
             Eingabe = e,
             Vorschau = vorschau ?? Vorschau(e),
-            Verfuegbar = true
+            Verfuegbar = true,
+            SeedVorgabe = 1,
+            RealisierungenVorgabe = 10,
+            RealisierungenMindestens = 1,
+            RealisierungenHoechstens = 1000
         };
     }
 
@@ -125,11 +136,13 @@ public class ZapfprofilDialogTests : EposBunitContext
         Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>? vorschau = null,
         Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>? pruefen = null,
         Action<ZapfprofilErgebnisDaten?>? geschlossen = null,
-        bool titel = true)
+        bool titel = true,
+        Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>? jahresreihe = null)
         => Render<ZapfprofilDialog>(p => p
             .Add(x => x.Daten, daten ?? Daten())
             .Add(x => x.Texte, new ZapfprofilTexte())
             .Add(x => x.Vorschau, vorschau ?? (e => Vorschau(e)))
+            .Add(x => x.Jahresreihe, jahresreihe)
             .Add(x => x.Pruefen, pruefen ?? (_ => Array.Empty<ZapfprofilMeldung>()))
             .Add(x => x.EntprellungMs, 0)
             .Add(x => x.TitelAnzeigen, titel)
@@ -244,6 +257,9 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("600 h/a", texte[schwelle]);
         Assert.Contains("—", texte[gleichzeitigkeit]);
         Assert.StartsWith("„Stochastisch rechnen“ in der Fußleiste", texte[stochastik + 1]);
+        // Die Erklärung verspricht nur, was steht: P50 … P99 und Gleichzeitigkeit in Karte (b), die Probe in Experte.
+        Assert.Contains("P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung", texte[stochastik + 1]);
+        Assert.Contains("ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf", texte[stochastik + 1]);
         Assert.Equal(stochastik + 2, texte.Length);
 
         // Ohne Schwelle keine Zeile.
@@ -268,20 +284,26 @@ public class ZapfprofilDialogTests : EposBunitContext
     // Benannte Sperren
     // =================================================================================
 
+    /// <summary>Stufe Z3: Experte ist wählbar (Stochastik), Erweitert bleibt benannt gesperrt.</summary>
     [Fact]
-    public void Erweitert_und_Experte_sind_benannt_gesperrt()
+    public void Erweitert_ist_benannt_gesperrt_und_Experte_waehlbar()
     {
         var cut = Aufbauen();
 
         IElement erweitert = Option(cut, "Erweitert");
         Assert.Equal("true", erweitert.GetAttribute("aria-disabled"));
-        Assert.Equal("true", Option(cut, "Experte").GetAttribute("aria-disabled"));
+        Assert.Null(Option(cut, "Experte").GetAttribute("aria-disabled"));
         Assert.True(Option(cut, "Einfach").HasAttribute("checked"));
 
         erweitert.Change("1");
 
         Assert.Equal("In dieser Fassung noch nicht verfügbar.", cut.Instance.Hinweis);
         Assert.True(Option(cut, "Einfach").HasAttribute("checked"));
+
+        Option(cut, "Experte").Change("2");
+        Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
+        Assert.True(Option(cut, "Experte").HasAttribute("checked"));
+        Assert.Equal("", cut.Instance.Hinweis);
     }
 
     [Fact]
@@ -299,6 +321,444 @@ public class ZapfprofilDialogTests : EposBunitContext
         stochastik.Click();
 
         Assert.Equal("In dieser Fassung noch nicht verfügbar.", cut.Instance.Hinweis);
+    }
+
+    // =================================================================================
+    // Die Stochastik der Jahresreihe (Stufe Z3, Stufe Experte)
+    // =================================================================================
+
+    private static bool HatFeld(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
+        => cut.FindAll(".epos-feld-text").Any(t => t.TextContent.Trim() == bezeichnung);
+
+    /// <summary>
+    /// 5.3: Der Rechenweg der Jahresreihe steht erst in der Stufe Experte (Erweitert ist noch
+    /// gesperrt), dazu immer der Seed — er gilt auch für das Ensemble der Auslegung —, die
+    /// Realisierungen der Jahresreihe nur bei „stochastisch"; mit der Vorgabe als Platzhalter
+    /// und den Grenzen aus Schema und Kern. Die Stufe blendet nur aus: Zurück in Einfach bleibt
+    /// der Rechenweg, und der Zähler zählt ihn.
+    /// </summary>
+    [Fact]
+    public void Experte_zeigt_Rechenweg_und_Seed_und_bei_stochastisch_die_Realisierungen()
+    {
+        var gesehen = new List<ZapfprofilEingabeDaten>();
+        var cut = Aufbauen(vorschau: e => { gesehen.Add(e); return Vorschau(e); });
+
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe']"));
+        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
+
+        Option(cut, "Experte").Change("2");
+        Assert.Contains("Stochastik · Jahresreihe", cut.Markup);
+        Assert.Equal(new[] { "deterministisch", "stochastisch" },
+                     cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe'] .epos-feld-text").Select(x => x.TextContent).ToArray());
+        Assert.True(Option(cut, "deterministisch").HasAttribute("checked"));
+        Assert.Contains("Wählt nur, welche Reihe in die Bilanz geht", cut.Markup);
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));                  // der Seed auch deterministisch
+        Assert.Contains("— für die Jahresreihe und das Ensemble der Auslegung.", cut.Markup);
+        Assert.False(HatFeld(cut, "Realisierungen"));
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschau-deterministisch"));
+
+        Option(cut, "stochastisch").Change("1");
+        Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
+        Assert.True(gesehen.Last().JahresreiheStochastisch);             // der Arbeitsstand trägt ihn; die Hülle rechnet deterministisch
+        // 5.1: Die Vorschau bleibt deterministisch — eine leise Zeile sagt, wann die Jahresreihe entsteht.
+        Assert.Equal("Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — "
+                     + "mit derselben Jahresmenge.", cut.Find(".epos-zapfprofil-vorschau-deterministisch").TextContent);
+        Assert.Equal("(1)", Feld(cut, "Zufallssaat (Seed)").GetAttribute("placeholder"));
+        Assert.Equal("(10)", Feld(cut, "Realisierungen").GetAttribute("placeholder"));
+        Assert.Contains("Ganze Zahl ab 0 · leer = Vorgabe 1; derselbe Seed zieht auf jeder Plattform dieselbe Reihe — "
+                        + "für die Jahresreihe und das Ensemble der Auslegung.", cut.Markup);
+        Assert.Contains("Ganze Zahl von 1 bis 1000 · leer = Vorgabe 10; die gezogenen Jahre prüfen nur die Konsistenz.", cut.Markup);
+        Assert.Contains("Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.", cut.Markup);
+        Assert.Contains("3 Werte überschrieben", cut.Markup);            // 2 der Zone + der Rechenweg
+
+        // Zurück in Einfach: die Felder weg, der Rechenweg bleibt — und der Zähler sagt es.
+        Option(cut, "Einfach").Change("0");
+        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe']"));
+        Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
+        Assert.Contains("3 Werte überschrieben", cut.Markup);
+    }
+
+    [Fact]
+    public void Seed_und_Realisierungen_gehen_in_den_Arbeitsstand_und_das_OK_traegt_sie()
+    {
+        var gesehen = new List<ZapfprofilEingabeDaten>();
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(vorschau: e => { gesehen.Add(e); return Vorschau(e); }, geschlossen: x => ergebnis = x);
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+
+        Feld(cut, "Zufallssaat (Seed)").Input("7");
+        Feld(cut, "Realisierungen").Input("25");
+        Assert.Equal(7, cut.Instance.Eingabe.Seed);
+        Assert.Equal(25, cut.Instance.Eingabe.Realisierungen);
+        Assert.Equal(7, gesehen.Last().Seed);
+        Assert.Equal(25, gesehen.Last().Realisierungen);
+
+        // Geleert steht das Feld für die Vorgabe.
+        Feld(cut, "Zufallssaat (Seed)").Input("");
+        Assert.Equal(1, cut.Instance.Eingabe.Seed);
+        Feld(cut, "Zufallssaat (Seed)").Input("7");
+
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(ergebnis);
+        Assert.True(ergebnis!.Eingabe.JahresreiheStochastisch);
+        Assert.Equal(7, ergebnis.Eingabe.Seed);
+        Assert.Equal(25, ergebnis.Eingabe.Realisierungen);
+        Assert.Equal(ZapfprofilWeg.Generator, ergebnis.Weg);
+    }
+
+    [Fact]
+    public void Eine_Fehleingabe_haelt_das_OK_an_und_nennt_das_Feld()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(geschlossen: x => ergebnis = x);
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+
+        Feld(cut, "Realisierungen").Input("5000");                        // über der Obergrenze des Kerns
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Realisierungen").ClassName);
+        Assert.Null(cut.Instance.Eingabe.Realisierungen);                 // der Arbeitsstand bleibt
+        Knopf(cut, "OK").Click();
+        Assert.Null(ergebnis);
+        Assert.Equal("Bitte die markierten Felder berichtigen: Realisierungen.", cut.Instance.OkMeldung);
+        Assert.Contains("Bitte die markierten Felder berichtigen", cut.Find(".epos-warnbanner").TextContent);
+
+        Feld(cut, "Realisierungen").Input("20");
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(20, ergebnis!.Eingabe.Realisierungen);
+    }
+
+    /// <summary>
+    /// Umschalten leert nur die eigenen Fehlfelder: „deterministisch" nimmt die Realisierungen samt
+    /// Fehleingabe weg, der Seed bleibt stehen — seine Fehleingabe hält das OK weiter an.
+    /// </summary>
+    [Fact]
+    public void Der_Rechenweg_leert_nur_die_Fehleingabe_der_Realisierungen()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(geschlossen: x => ergebnis = x);
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+        Feld(cut, "Zufallssaat (Seed)").Input("-1");
+        Feld(cut, "Realisierungen").Input("5000");
+
+        Option(cut, "deterministisch").Change("0");
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Zufallssaat (Seed)").ClassName);
+        Knopf(cut, "OK").Click();
+        Assert.Null(ergebnis);
+        Assert.Equal("Bitte die markierten Felder berichtigen: Zufallssaat (Seed).", cut.Instance.OkMeldung);
+
+        Feld(cut, "Zufallssaat (Seed)").Input("4");
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(4, ergebnis!.Eingabe.Seed);
+    }
+
+    /// <summary>
+    /// Zurück in Einfach verschwinden Seed und Realisierungen — sie nehmen ihre Fehleingaben mit,
+    /// der Arbeitsstand trägt den letzten gültigen Wert, und das OK geht durch.
+    /// </summary>
+    [Fact]
+    public void Die_Stufe_Einfach_nimmt_die_Fehleingaben_ihrer_Felder_mit()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(geschlossen: x => ergebnis = x);
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+        Feld(cut, "Zufallssaat (Seed)").Input("9");
+        Feld(cut, "Zufallssaat (Seed)").Input("-1");
+        Feld(cut, "Realisierungen").Input("5000");
+
+        Option(cut, "Einfach").Change("0");
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(9, ergebnis!.Eingabe.Seed);
+        Assert.Null(ergebnis.Eingabe.Realisierungen);
+    }
+
+    /// <summary>Das Ergebnis eines Laufs der Jahresreihe (erfunden): stochastisch, Seed 3, vier Jahre.</summary>
+    private static ZapfprofilVorschauDaten Gezogen(ZapfprofilEingabeDaten e, params ZapfprofilMeldung[] meldungen)
+    {
+        ZapfprofilVorschauDaten v = Vorschau(e, meldungen);
+        v.Stochastisch = true;
+        v.Seed = 3;
+        v.Realisierungen = 4;
+        v.Status = "Stochastik gerechnet · Seed 3 · 4 Jahre";
+        return v;
+    }
+
+    /// <summary>
+    /// Nach dem Lauf „Stochastisch rechnen": Die Gruppe Stochastik nennt Seed und Jahre; die Stufe
+    /// Einfach erklärt, dass die Bilanzreihe das Jahr zum Seed ist, die Stufe Experte zeigt je
+    /// Zone die Konsistenzprobe — Energieabweichung, s_R, Toleranz und das Urteil grün (✓) bzw.
+    /// amber (≠) — als Textzeilen, kein Bild. Die Vorschau selbst bleibt deterministisch.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_stochastischen_Lauf_zeigt_Experte_die_Konsistenzprobe()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.JahresreiheStochastisch = true;
+        ZapfprofilVorschauDaten v = Gezogen(e);
+        var ok = new ZapfprofilKonsistenzDaten
+        {
+            Zone = "Zone 1", DeterministischKwh = 1000, MittelKwh = 990, StandardabweichungKwh = 12, Realisierungen = 4,
+            ToleranzKwh = 18, Erfuellt = true, Faktor = 1.01, Abweichung = -0.01
+        };
+        var abweichend = new ZapfprofilKonsistenzDaten
+        {
+            Zone = "Zone 2", Position = 1, DeterministischKwh = 2000, MittelKwh = 2100, StandardabweichungKwh = 30,
+            Realisierungen = 4, ToleranzKwh = 45, Erfuellt = false, Faktor = 0.95, Abweichung = 0.05
+        };
+        v.Ansichten[0].Konsistenzen.AddRange(new[] { ok, abweichend });
+        v.Ansichten[1].Konsistenzen.Add(ok);
+        var gezogen = new List<ZapfprofilEingabeDaten>();
+        var cut = Aufbauen(Daten(e), jahresreihe: (x, _) => { gezogen.Add(x); return Task.FromResult(v); });
+
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Assert.Contains("Stochastik · noch nicht gerechnet", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        Knopf(cut, "Stochastisch rechnen").Click();
+        Assert.True(Assert.Single(gezogen).JahresreiheStochastisch);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Same(v, cut.Instance.StochastikErgebnis);
+            Assert.Contains("Stochastik · Jahresreihe zum Seed 3", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        });
+        Assert.False(cut.Instance.AktuelleVorschau!.Stochastisch);                // die Vorschau bleibt deterministisch
+        string tabelle = cut.Find("table.epos-zapfprofil-kennzahlen").TextContent;
+        Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", tabelle);
+        Assert.Contains("Die Bilanzreihe ist das gezogene Jahr zum Seed", tabelle);
+        Assert.Empty(cut.FindAll("tr.epos-zapfprofil-konsistenz"));      // Einfach: keine Einzelwerte
+
+        Option(cut, "Experte").Change("2");
+        IElement[] zeilen = cut.FindAll("tr.epos-zapfprofil-konsistenz").ToArray();
+        Assert.Equal(2, zeilen.Length);
+        Assert.Equal("Konsistenzprobe Energie · Zone 1", zeilen[0].QuerySelector("th")!.TextContent);
+        Assert.Equal("−1,00 %", zeilen[0].QuerySelector("td.epos-zahl")!.TextContent);
+        Assert.Equal("Mittel der 4 Jahre 990 kWh/a gegen 1.000 kWh/a deterministisch · s_R 12 kWh/a · Toleranz ±18 kWh/a"
+                     + " · innerhalb der Toleranz", zeilen[0].QuerySelector(".epos-kohaerenz-text")!.TextContent);
+        Assert.NotNull(zeilen[0].QuerySelector(".epos-kohaerenz--ok"));
+        Assert.Equal("+5,00 %", zeilen[1].QuerySelector("td.epos-zahl")!.TextContent);
+        Assert.NotNull(zeilen[1].QuerySelector(".epos-kohaerenz--abweichend"));
+        Assert.Contains("außerhalb der Toleranz", zeilen[1].TextContent);
+        Assert.DoesNotContain("Die Bilanzreihe ist das gezogene Jahr zum Seed", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-kennzahlen svg"));
+
+        // Die Ansicht einer Zone zeigt nur ihre Probe.
+        cut.FindAll("select").Last().Change("1");
+        Assert.Single(cut.FindAll("tr.epos-zapfprofil-konsistenz"));
+    }
+
+    /// <summary>
+    /// Die Konsistenzzeile des Reiters Kennzahlen in der englischen Oberfläche: Beschriftung,
+    /// Vermerk und Urteil aus den englischen Ressourcen, Zahlen in der englischen Kultur, die
+    /// Abweichung so, wie der Kern sie rechnet.
+    /// </summary>
+    [Fact]
+    public void Die_Konsistenzzeile_steht_englisch_in_englischer_Kultur()
+    {
+        using var _ = new Kulturvorrichtung("en-US");
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.JahresreiheStochastisch = true;
+        ZapfprofilVorschauDaten v = Gezogen(e);
+        v.Ansichten[0].Konsistenzen.Add(new ZapfprofilKonsistenzDaten
+        {
+            Zone = "Zone 1", DeterministischKwh = 1000, MittelKwh = 990, StandardabweichungKwh = 12, Realisierungen = 4,
+            ToleranzKwh = 18, Erfuellt = true, Faktor = 1.01, Abweichung = -0.01
+        });
+        var texte = new ZapfprofilTexte
+        {
+            KennzahlKonsistenz = Resource.ZPG_KZ_KONSISTENZ,
+            KennzahlKonsistenzVermerk = Resource.ZPG_KZ_KONSISTENZ_VERMERK,
+            KonsistenzErfuellt = Resource.ZPG_KZ_KONSISTENZ_ERFUELLT,
+            KennzahlStochastikGerechnet = Resource.ZPG_KZ_STOCHASTIK_GERECHNET
+        };
+        var cut = Render<ZapfprofilDialog>(p => p
+            .Add(x => x.Daten, Daten(e))
+            .Add(x => x.Texte, texte)
+            .Add(x => x.Vorschau, x => Vorschau(x))
+            .Add(x => x.Jahresreihe, (_, _) => Task.FromResult(v))
+            .Add(x => x.EntprellungMs, 0));
+
+        Option(cut, "Experte").Change("2");
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Knopf(cut, "Stochastisch rechnen").Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("tr.epos-zapfprofil-konsistenz")));
+
+        IElement zeile = cut.Find("tr.epos-zapfprofil-konsistenz");
+        Assert.Equal("Energy consistency check · Zone 1", zeile.QuerySelector("th")!.TextContent);
+        Assert.Equal("−1.00 %", zeile.QuerySelector("td.epos-zahl")!.TextContent);
+        Assert.Equal("Mean of the 4 years 990 kWh/a against 1,000 kWh/a deterministic · s_R 12 kWh/a · tolerance ±18 kWh/a"
+                     + " · within tolerance", zeile.QuerySelector(".epos-kohaerenz-text")!.TextContent);
+        Assert.Contains("Stochastics · annual series for seed 3, 4 years drawn", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+    }
+
+    /// <summary>
+    /// Fehlen der Nutzungsart die Zapfkategorien, lehnt der Lauf der Jahresreihe die Zone benannt
+    /// ab — die Ablehnung steht mit der Nutzungsart an der Zone, wie jede Ablehnung (Muster Z1). Die
+    /// deterministische Vorschau braucht keine Kategorien; das Umschalten verwirft den Lauf.
+    /// </summary>
+    [Fact]
+    public void Fehlende_Zapfkategorien_stehen_benannt_an_der_Zone()
+    {
+        const string SATZ = "Zone „Zone 1“ trägt 0: Für die Nutzungsart „Wohnen A“ (Katalogversion TEST-1) stehen keine "
+                            + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.";
+        var ablehnung = new ZapfprofilMeldung("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", "Zone 1", SATZ,
+                                              ZapfprofilMeldungsart.Ablehnung, "Kernsatz", 0);
+        var cut = Aufbauen(jahresreihe: (e, _) => Task.FromResult(Gezogen(e, ablehnung)));
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));                     // die Vorschau zieht nichts
+        Knopf(cut, "Stochastisch rechnen").Click();
+        cut.WaitForAssertion(() => Assert.Contains(SATZ, cut.Find(".epos-blockspalte:first-child .epos-warnbanner").TextContent));
+
+        Option(cut, "deterministisch").Change("0");
+        Assert.Null(cut.Instance.StochastikErgebnis);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    /// <summary>
+    /// 5.1: „Stochastisch rechnen" läuft nebenläufig — der Dialog bleibt bedienbar, der Fortschritt
+    /// steht mit Abbrechen unter der Vorschau, die Fußleiste nennt „rechnet …". Abbrechen reicht
+    /// die Marke an den Lauf und sagt es als leise Zeile; eine Eingabe verwirft einen laufenden
+    /// Lauf samt spätem Ergebnis; OK beendet ihn; ein vollendeter Lauf kommt über InvokeAsync.
+    ///
+    /// <para>Deterministisch: Jeder Lauf hängt an einer <see cref="TaskCompletionSource{TResult}"/>,
+    /// die allein der Test freigibt (oder die Marke beendet) — „rechnet …" steht, bis dahin. Jedes
+    /// Ereignis geht über die <c>…Async</c>-Form und wird abgewartet: Das synchrone <c>Click()</c>
+    /// reiht es nur ein, solange die Fortsetzung eines beendeten Laufs den Verteiler noch belegt,
+    /// und der nächste Assert läse den Stand davor (EPOS.UI/CLAUDE.md, Tests). Auf das Ende eines
+    /// Laufs, das auf einem anderen Faden kommt, wartet <c>WaitForAssertion</c> mit
+    /// <see cref="Frist"/>.</para>
+    /// </summary>
+    [Fact]
+    public async Task Stochastisch_rechnen_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.JahresreiheStochastisch = true;
+        var laeufe = new List<(TaskCompletionSource<ZapfprofilVorschauDaten> Ende, CancellationToken Marke)>();
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(Daten(e), geschlossen: x => ergebnis = x, jahresreihe: (x, marke) =>
+        {
+            var ende = new TaskCompletionSource<ZapfprofilVorschauDaten>(TaskCreationOptions.RunContinuationsAsynchronously);
+            marke.Register(() => ende.TrySetCanceled(marke));
+            laeufe.Add((ende, marke));
+            return ende.Task;
+        });
+        await cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").ClickAsync(new());
+
+        // Der Lauf steht, bis der Test ihn freigibt: „rechnet …" ist kein verfliegender Zwischenstand.
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.Single(laeufe);
+        Assert.True(cut.Instance.JahresreiheLaeuft);
+        Assert.Equal("Jahresreihe rechnet … · Seed 1 · 10 Jahre", cut.Find(".epos-fortschritt-text").TextContent);
+        Assert.Contains("Stochastik · rechnet …", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        Assert.Contains("Wohnen A", cut.Find("table.epos-zapfprofil-zonen").TextContent);   // die Vorschau steht weiter
+
+        // Abbrechen am Fortschritt: die Marke erreicht den Lauf, eine leise Zeile nennt den Abbruch.
+        // Das Ende kommt auf einem anderen Faden: erst der gezeichnete Zustand zählt (EPOS.UI/CLAUDE.md, Tests).
+        await cut.Find(".epos-fortschritt-abbruch").ClickAsync(new());
+        Assert.True(laeufe[0].Marke.IsCancellationRequested);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.False(cut.Instance.JahresreiheLaeuft);
+            Assert.Equal("Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.",
+                         cut.Find(".epos-zapfprofil-hinweis").TextContent);
+            Assert.Empty(cut.FindAll(".epos-fortschritt"));
+        }, Frist);
+        Assert.Null(cut.Instance.StochastikErgebnis);
+
+        // Eine Eingabe während des Laufs verwirft ihn — sein spätes Ergebnis bleibt draußen.
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.Equal(2, laeufe.Count);
+        Assert.True(cut.Instance.JahresreiheLaeuft);
+        await Option(cut, "hoch").ChangeAsync("3");
+        Assert.True(laeufe[1].Marke.IsCancellationRequested);
+        Assert.False(cut.Instance.JahresreiheLaeuft);
+        Assert.Null(cut.Instance.StochastikErgebnis);
+
+        // Ein vollendeter Lauf: das Ergebnis per InvokeAsync, der Kopf nennt Seed und Jahre.
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.Equal(3, laeufe.Count);
+        Assert.True(cut.Instance.JahresreiheLaeuft);                      // der verworfene Lauf hinterließ nichts
+        laeufe[2].Ende.SetResult(Gezogen(cut.Instance.Eingabe));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.NotNull(cut.Instance.StochastikErgebnis);
+            Assert.False(cut.Instance.JahresreiheLaeuft);
+            Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        }, Frist);
+
+        // OK beendet einen laufenden Lauf; die Jahresreihe zieht der Lauf der Simulation.
+        await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
+        Assert.True(cut.Instance.JahresreiheLaeuft);
+        await Knopf(cut, "OK").ClickAsync(new());
+        Assert.True(laeufe[3].Marke.IsCancellationRequested);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(4, laeufe.Count);
+    }
+
+    /// <summary>
+    /// „Stochastisch rechnen" in der Fußleiste öffnet die Auslegung mit eingeschaltetem Schalter —
+    /// sie zieht das Ensemble; „Auslegung…" öffnet sie mit den Eingaben, wie sie sind.
+    /// </summary>
+    [Fact]
+    public void Stochastisch_rechnen_oeffnet_die_Auslegung_mit_eingeschaltetem_Schalter()
+    {
+        var geoeffnet = new List<ZapfprofilEingabeDaten>();
+        var schalter = new List<bool>();
+        var cut = MitAuslegung(geoeffnet, schalter: schalter);
+
+        IElement knopf = Knopf(cut, "Stochastisch rechnen");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Zieht nebenläufig das Ensemble des Bedarfstags", knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.True(cut.Instance.AuslegungOffen);
+        Assert.True(cut.Instance.AuslegungStochastisch);
+        Assert.True(cut.FindComponent<ZapfprofilAuslegungDialog>().Instance.Eingabe.Stochastisch);
+        Assert.Single(geoeffnet);
+
+        cut.Find(".epos-zapfausl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.AuslegungOffen);
+        Knopf(cut, "Auslegung…").Click();
+        Assert.False(cut.Instance.AuslegungStochastisch);
+        Assert.False(cut.FindComponent<ZapfprofilAuslegungDialog>().Instance.Eingabe.Stochastisch);
+        Assert.Equal(new[] { true, false }, schalter);                     // der Schalter reist über die Gaben
+    }
+
+    /// <summary>
+    /// Die Laufangabe „Stochastisch rechnen" bleibt nicht im Arbeitsstand: Nach einem OK mit
+    /// Schalter öffnet „Auslegung…" die Überlagerung wieder mit dem Schalter aus — sie rechnet
+    /// nicht sofort ein Ensemble; die übrigen Eingaben samt Punkt kommen mit.
+    /// </summary>
+    [Fact]
+    public void Nach_OK_mit_Schalter_oeffnet_Auslegung_wieder_ohne_ihn()
+    {
+        var geoeffnet = new List<ZapfprofilEingabeDaten>();
+        var schalter = new List<bool>();
+        var cut = MitAuslegung(geoeffnet, schalter: schalter);
+
+        Knopf(cut, "Stochastisch rechnen").Click();
+        IRenderedComponent<ZapfprofilAuslegungDialog> a = cut.FindComponent<ZapfprofilAuslegungDialog>();
+        Assert.True(a.Instance.Eingabe.Stochastisch);
+        Knopf(a, "OK").Click();
+        Assert.False(cut.Instance.AuslegungOffen);
+        Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.False(cut.Instance.Eingabe.Auslegung.Stochastisch);          // keine Laufangabe im Arbeitsstand
+
+        Knopf(cut, "Auslegung…").Click();
+        Assert.Equal(new[] { true, false }, schalter);
+        Assert.False(geoeffnet[1].Auslegung!.Stochastisch);
+        Assert.Equal(300, geoeffnet[1].Auslegung!.PunktVolumenL);
+        a = cut.FindComponent<ZapfprofilAuslegungDialog>();
+        Assert.False(a.Instance.Eingabe.Stochastisch);
+        Assert.False(a.Instance.EnsembleLaeuft);
+        Assert.False(a.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Stochastisch rechnen")
+                      .QuerySelector("input")!.HasAttribute("checked"));
     }
 
     // =================================================================================
@@ -327,20 +787,28 @@ public class ZapfprofilDialogTests : EposBunitContext
         }
     };
 
+    /// <summary>
+    /// Der Dialog mit dem Delegaten der Auslegung — er spielt die Hülle: Der Schalter „Stochastisch
+    /// rechnen" kommt allein aus dem Öffnen (<paramref name="schalter"/> hält ihn fest).
+    /// </summary>
     private IRenderedComponent<ZapfprofilDialog> MitAuslegung(List<ZapfprofilEingabeDaten> geoeffnet,
-                                                              Action<ZapfprofilErgebnisDaten?>? geschlossen = null)
+                                                              Action<ZapfprofilErgebnisDaten?>? geschlossen = null,
+                                                              List<bool>? schalter = null)
         => Render<ZapfprofilDialog>(p => p
             .Add(x => x.Daten, Daten())
             .Add(x => x.Texte, new ZapfprofilTexte())
             .Add(x => x.Vorschau, e => Vorschau(e))
             .Add(x => x.Pruefen, _ => Array.Empty<ZapfprofilMeldung>())
             .Add(x => x.EntprellungMs, 0)
-            .Add(x => x.AuslegungGaben, e =>
+            .Add(x => x.AuslegungGaben, (e, stochastisch) =>
             {
                 geoeffnet.Add(e);
+                schalter?.Add(stochastisch);
+                ZapfprofilAuslegungStartDaten start = AuslegungStart(e.Auslegung?.Kopie());
+                start.Eingabe.Stochastisch = stochastisch;
                 return new Dictionary<string, object>
                 {
-                    ["Daten"] = AuslegungStart(e.Auslegung),
+                    ["Daten"] = start,
                     ["Texte"] = new ZapfprofilAuslegungTexte(),
                     ["EntprellungMs"] = 0
                 };
@@ -736,6 +1204,159 @@ public class ZapfprofilDialogTests : EposBunitContext
 
         // Die eine Stelle, die „Trinkwarmwasser" ausschreibt; sonst heißt es Brauchwasser.
         Assert.Contains("Brauchwasser (Trinkwarmwasser)", vorgabe.HinweisRechenweg);
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    /// <summary>Der Feldzugang der Maske „Brauchwasser-Zapfprofil" an der Maskenbrücke.</summary>
+    private static WindowsFormsApplication1.KiFeldzugang Zugang(string feld)
+        => WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL, feld);
+
+    /// <summary>Setzt ein Feld wie der Assistent: Text des Modells → Wert der Eigenschaft → Setzweg.</summary>
+    private static void Setze(string feld, string text)
+    {
+        WindowsFormsApplication1.KiFeldzugang z = Zugang(feld);
+        Assert.NotNull(z);
+        WindowsFormsApplication1.KiFeldumsetzung u = WindowsFormsApplication1.KiFeldwandler.Wandle(z, text);
+        Assert.True(u.Ok, u.Grund);
+        z.Setzen(u.Wert);
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Überlagerung meldet ihren
+    /// Arbeitsstand über <c>ZapfprofilKiSicht</c> an: Die Zonen sind Spalten mit dem Zonennamen
+    /// als Kennzeichen, gesetzt wird auf den Wegen der Eingabefelder — die Vorschau rechnet neu,
+    /// ein übernommener Punkt wird überholt wie von Hand. Mit dem Dialog fällt die Anmeldung.
+    /// </summary>
+    [Fact]
+    public void Der_Dialog_meldet_Stufe_und_Zonen_an_und_setzt_auf_den_Wegen_der_Felder()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.Auslegung = new ZapfprofilAuslegungEingabeDaten { PunktVolumenL = 300, PunktLeistungKw = 25 };
+        int vorschauen = 0;
+        WindowsFormsApplication1.KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete
+        var cut = Aufbauen(Daten(e), vorschau: x => { vorschauen++; return Vorschau(x); });
+
+        Assert.True(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL));
+        Assert.Equal(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL, WindowsFormsApplication1.KiMaskenbruecke.AktiveMaske());
+
+        Assert.Equal((int)ZapfprofilStufe.Einfach, Zugang("stufe").Lesen());
+        Assert.Equal(1, Zugang("zone").Lesen());
+
+        // Zwei Zonen, die Spalten tragen den Zonennamen als Kennzeichen.
+        WindowsFormsApplication1.KiFeldzugang menge2 = Zugang("bezugsmenge_2");
+        Assert.NotNull(menge2);
+        Assert.Contains("Zone 2", menge2.Feld.Anzeigename, StringComparison.Ordinal);
+        Assert.Equal(50.0, menge2.Lesen());
+        Assert.Null(Zugang("bezugsmenge_3"));
+        Assert.False(Zugang("jahresbedarf_1").Setzbar);
+
+        // Die Bezugsgröße der Zone 2 — ohne sie zu wählen; die Vorschau rechnet neu, der Punkt ist überholt.
+        Setze("bezugsmenge_2", "60");
+        cut.Render();
+        Assert.Equal(60.0, cut.Instance.Eingabe.Zonen[1].Bezugsmenge);
+        Assert.Equal(1, vorschauen);
+        Assert.Equal(60000.0, cut.Instance.AktuelleVorschau!.Zonen[1].JahresbedarfZapfungKwh);
+        Assert.True(cut.Instance.Eingabe.PunktUeberholt);
+        Assert.Null(cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.Contains("60", Zugang("jahresbedarf_2").Lesen() as string, StringComparison.Ordinal);
+
+        // Nutzungsart und Niveau über ihre Wahl, der Name als Text.
+        Setze("nutzungsart_1", "Büro B");
+        Setze("niveau_1", "hoch");
+        Setze("zonenname_1", "Wohnen");
+        cut.Render();
+        Assert.Equal(2, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
+        Assert.Equal(ZapfprofilNiveau.Hoch, cut.Instance.Eingabe.Zonen[0].Niveau);
+        Assert.Equal("Wohnen", cut.Instance.Eingabe.Zonen[0].Name);
+        Assert.Contains("Wohnen", Zugang("zonenname_1").Feld.Anzeigename, StringComparison.Ordinal);
+
+        // Die Zone wählen wie ein Klick in die Liste: ihr Eingabeblock steht.
+        Setze("zone", "Zone 2");
+        cut.Render();
+        Assert.Equal(2, Zugang("zone").Lesen());
+        Assert.Equal("Zone 2", Feld(cut, "Zonenname").GetAttribute("value"));
+
+        // „Anzeigen für" wählt die Ansicht der Vorschau.
+        Setze("ansicht", "Wohnen");
+        Assert.Equal(1, Zugang("ansicht").Lesen());
+
+        cut.Instance.Dispose();
+        Assert.False(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL));
+    }
+
+    /// <summary>
+    /// <b>Was die Maske sperrt oder nicht zeigt, lehnt der Assistent benannt ab</b>: eine
+    /// gesperrte Nutzungsart mit ihrem Grund, die Stufe „Erweitert" mit dem ihren, Seed und
+    /// Realisierungen, solange Stufe bzw. Rechenweg sie nicht zeigen, und Werte außerhalb der
+    /// Grenzen des Feldes. In der Stufe Experte gehen sie durch.
+    /// </summary>
+    [Fact]
+    public void Gesperrtes_und_Verdecktes_lehnt_der_Assistent_benannt_ab()
+    {
+        var cut = Aufbauen();
+        var texte = new ZapfprofilTexte();
+
+        var gesperrt = Assert.Throws<InvalidOperationException>(() => Zugang("nutzungsart_1").Setzen(3));
+        Assert.Equal("Der Tagesgangsatz dieser Nutzungsart ist unvollständig.", gesperrt.Message);
+        Assert.Equal(1, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
+
+        var erweitert = Assert.Throws<InvalidOperationException>(() => Zugang("stufe").Setzen((int)ZapfprofilStufe.Erweitert));
+        Assert.Equal(texte.GrundNochNicht, erweitert.Message);
+
+        var seed = Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(42));
+        Assert.Contains(texte.LabelSeed, seed.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.StufeExperte, seed.Message, StringComparison.Ordinal);
+        Assert.Throws<InvalidOperationException>(() => Zugang("rechenweg_jahresreihe").Setzen(1));
+
+        Setze("stufe", "Experte");
+        cut.Render();
+        Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
+
+        Setze("seed", "42");
+        Assert.Equal(42, cut.Instance.Eingabe.Seed);
+        Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(-1));
+
+        var ohneStochastik = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(20));
+        Assert.Contains(texte.OptionStochastisch, ohneStochastik.Message, StringComparison.Ordinal);
+
+        Setze("rechenweg_jahresreihe", "stochastisch");
+        cut.Render();
+        Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
+
+        var zuViel = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(5000));
+        Assert.Contains("1000", zuViel.Message, StringComparison.Ordinal);
+        Setze("realisierungen", "20");
+        Assert.Equal(20, cut.Instance.Eingabe.Realisierungen);
+
+        // Ein geleertes Feld steht für die Vorgabe — wie von Hand.
+        Setze("seed", "");
+        Assert.Equal(1, cut.Instance.Eingabe.Seed);
+    }
+
+    /// <summary>
+    /// <b>Prüfen ist der Befund des OK</b> — dieselbe Pflichtprüfung, ohne dass sich etwas
+    /// schließt; <b>einen Speicherweg gibt es nicht</b>: OK bleibt beim Anwender, geschrieben
+    /// wird mit dem OK der Bedarfsprofile.
+    /// </summary>
+    [Fact]
+    public void Pruefen_ist_der_Befund_des_OK_und_speichern_gibt_es_nicht()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        bool geschlossen = false;
+        var meldung = new ZapfprofilMeldung("ZPG_EINGABE_BEZUG", "Zone 1", "Zone 1: Bezugsgröße fehlt.",
+                                            ZapfprofilMeldungsart.Fehler);
+        var cut = Aufbauen(pruefen: _ => new[] { meldung }, geschlossen: x => { geschlossen = true; ergebnis = x; });
+
+        WindowsFormsApplication1.KiMaskenhaken haken =
+            WindowsFormsApplication1.KiMaskenbruecke.Haken(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL);
+        Assert.Equal("Zone 1: Bezugsgröße fehlt.", haken.Befund());
+        Assert.Null(haken.Speichern);
+        Assert.False(haken.IstSchreibgeschuetzt());
+        Assert.False(geschlossen);
+        Assert.Null(ergebnis);
     }
 
     private static string Pfad(params string[] teile) => Path.Combine(new[] { Wurzel() }.Concat(teile).ToArray());

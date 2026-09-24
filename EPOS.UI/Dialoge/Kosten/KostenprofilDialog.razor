@@ -10,7 +10,9 @@
    DIE 36 LAUFZEITFELDER. Der Vorlaeufer baute die zwoelf Monats- und die 24
    Stundenfelder in Schleifen zur Laufzeit (MonatsRasterBauen,
    StundenRasterBauen) - in keiner Feldkarte stehen sie deshalb. Hier sind es
-   36 Zahlenfelder in zwei mitwachsenden Gittern.
+   36 Zahlenfelder in zwei mitwachsenden Gittern. Der Hilfe-Assistent fuehrt
+   beide Tafeln als ZAHLENREIHEN (Welle #458 Stufe 3b): je EIN Feld mit einer
+   Liste, nicht 180 Einzelfelder.
 
    DREI REITER - WIE IM VORLAEUFER (iU9-W5.0, Nachzug von A-17). Welle 3
    stellte Monat, Woche und Grafik als drei Gruppen untereinander, weil es
@@ -339,8 +341,9 @@
     private KostenprofilKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten: Bezeichner und Wochentag. Die 36 Zahlenfelder der
-    /// Monats- und Wochentafel bleiben draußen — siehe der Dateikopf oben.
+    /// Die Sicht des Assistenten: Bezeichner, Wochentag und die zwei Wertetafeln als
+    /// Zahlenreihen (Welle #458 Stufe 3b) — dieselben Felder, in die die Zahlenfelder
+    /// der Reiterblätter „Monat" und „Woche" schreiben.
     /// </summary>
     private KostenprofilKiSicht KiSicht()
     {
@@ -354,8 +357,42 @@
             TagEintraege = () => KiMaskenanmeldung.Eintraege(
                 Wochentage, z => z.Id, z => z.Text),
 
-            EinheitLesen = () => Einheit
+            EinheitLesen = () => Einheit,
+
+            MonatswerteLesen = () => (double?[])_monat.Clone(),
+            MonatswerteSetzen = KiMonatswerteSetzen,
+            WochenwerteLesen = KiWochenwerte,
+            WochenwerteSetzen = KiWochenwerteSetzen
         };
+    }
+
+    /// <summary>Die zwölf Monatsniveaus aus der Reihe — ein leeres Glied lässt das Feld stehen.</summary>
+    private void KiMonatswerteSetzen(double?[] werte)
+    {
+        for (int m = 0; m < 12 && m < werte.Length; m++) _monat[m] = werte[m] ?? _monat[m];
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Die 168 Abweichungen als Reihe, Montag Stunde 1 zuerst.</summary>
+    private double?[] KiWochenwerte()
+    {
+        var w = new double?[168];
+        for (int t = 0; t < 7; t++)
+            for (int h = 0; h < 24; h++)
+                w[t * 24 + h] = _woche[t, h];
+        return w;
+    }
+
+    /// <summary>Die 168 Abweichungen aus der Reihe — ein leeres Glied lässt das Feld stehen.</summary>
+    private void KiWochenwerteSetzen(double?[] werte)
+    {
+        for (int t = 0; t < 7; t++)
+            for (int h = 0; h < 24; h++)
+            {
+                int i = t * 24 + h;
+                if (i < werte.Length) _woche[t, h] = werte[i] ?? _woche[t, h];
+            }
+        Melden("", WarnStufe.Hinweis);
     }
 
     /// <summary>

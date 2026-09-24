@@ -130,6 +130,76 @@ namespace KiKern
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Der Block einer ZAHLENREIHE (Welle #458 Stufe 3b): Maskenkopf, eine Zeile
+        /// „Reihe · n von m Werten ändern sich" und je GEAENDERTER Stelle
+        /// „Reihe (Stelle) · alt → neu" - hoechstens <paramref name="hoechstens"/> solcher
+        /// Zeilen, der Rest als Zahl.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Gekuerzt, aber nie verschwiegen.</b> 168 Wochenwerte in 168 Zeilen waeren
+        /// eine Bestaetigung, die niemand liest. Gezeigt werden die ersten geaenderten
+        /// Stellen samt ihren Namen, und die Kopfzeile sagt, wie viele es insgesamt sind -
+        /// der Anwender weiss damit, was er freigibt. Unveraenderte Stellen stehen nicht
+        /// im Block: Sie sind nicht Gegenstand der Entscheidung.
+        /// </para>
+        /// <para>
+        /// <b>Reine Funktion wie der Feldblock</b>: Namen aus dem Katalog, Werte vom
+        /// UI-Thread, nie Modelltext.
+        /// </para>
+        /// </remarks>
+        /// <param name="maskenAnzeigename">Klartextname der Maske aus dem Katalog.</param>
+        /// <param name="feldAnzeigename">Klartextname der Reihe aus dem Katalog.</param>
+        /// <param name="reihe">Die Form der Reihe - sie nennt die Stellen.</param>
+        /// <param name="alt">Die Werte vor dem Setzen; ein fehlendes Glied gilt als leer.</param>
+        /// <param name="neu">Die Werte nach dem Setzen; ein fehlendes Glied gilt als leer.</param>
+        /// <param name="kultur">Kultur der Zahlen; <c>null</c> = die laufende.</param>
+        /// <param name="hoechstens">So viele geaenderte Stellen stehen einzeln da.</param>
+        public static string Reihe(string maskenAnzeigename, string feldAnzeigename, KiZahlenreihe reihe,
+                                   IReadOnlyList<double?> alt, IReadOnlyList<double?> neu,
+                                   CultureInfo? kultur = null, int hoechstens = KiZahlenreihe.Kurzlaenge)
+        {
+            if (reihe == null) throw new ArgumentNullException(nameof(reihe));
+            if (string.IsNullOrWhiteSpace(feldAnzeigename))
+                throw new ArgumentException("Der Reihenblock braucht den Anzeigenamen der Reihe.",
+                                            nameof(feldAnzeigename));
+
+            CultureInfo k = kultur ?? CultureInfo.CurrentCulture;
+
+            var geaendert = new List<int>();
+            for (int i = 0; i < reihe.Laenge; i++)
+                if (Glied(alt, i) != Glied(neu, i)) geaendert.Add(i);
+
+            // Dieselbe Regel wie beim Feldblock: ohne Aenderung kein Block.
+            if (geaendert.Count == 0)
+                throw new ArgumentException("Ein Reihenblock ohne Aenderung ist kein Block.", nameof(neu));
+
+            var sb = new StringBuilder();
+            Kopf(sb, maskenAnzeigename);
+            sb.Append(string.Format(k, KiTexte.ReiheAenderung, feldAnzeigename, geaendert.Count, reihe.Laenge))
+              .Append('\n');
+
+            if (hoechstens < 1) hoechstens = 1;
+            for (int n = 0; n < geaendert.Count && n < hoechstens; n++)
+            {
+                int i = geaendert[n];
+                sb.Append(Zeile(new KiFeldAenderung(feldAnzeigename + " (" + reihe.Stellen[i] + ")",
+                                                    KiZahlenreihe.Zahl(Glied(alt, i), k),
+                                                    KiZahlenreihe.Zahl(Glied(neu, i), k))))
+                  .Append('\n');
+            }
+
+            if (geaendert.Count > hoechstens)
+                sb.Append(string.Format(k, KiTexte.ReiheWeitere, geaendert.Count - hoechstens)).Append('\n');
+
+            return sb.ToString();
+        }
+
+        /// <summary>Das Glied an dieser Stelle; ausserhalb der Liste leer.</summary>
+        private static double? Glied(IReadOnlyList<double?> werte, int i)
+            => werte != null && i >= 0 && i < werte.Count ? werte[i] : null;
+
         /// <summary>Eine Zeile „Feld · alt → neu"; leere Werte werden benannt, nicht verschwiegen.</summary>
         public static string Zeile(KiFeldAenderung aenderung)
         {

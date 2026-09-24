@@ -18,8 +18,9 @@ namespace EPOS.UI.Dialoge.Simulation;
 /// <c>ParameterDaten</c> trägt öffentliche FELDER und keine Eigenschaften; die
 /// Maskenbrücke löst über <c>GetProperty</c> auf und fände dort nichts.</para>
 ///
-/// <para><b>Dieselben Felder dürfen zweimal im Katalog stehen.</b> Die sieben Werte der
-/// Wärmepumpen-Konfiguration sind auch unter <c>Form_WP_Anlage</c> deklariert — dort
+/// <para><b>Dieselben Felder dürfen zweimal im Katalog stehen.</b> Die Werte der
+/// Wärmepumpen-Konfiguration — samt der fünf Felder der Gruppe „Kühlbetrieb" (Stufe KU2 Welle 3) —
+/// sind auch unter <c>Form_WP_Anlage</c> deklariert — dort
 /// stehen sie im Anlagendialog, hier in der Konfiguration der Simulation. Eine Maske
 /// ist, was offen ist; welche das gerade ist, sagt die Anmeldung.</para>
 /// </summary>
@@ -43,6 +44,13 @@ public sealed class KomponentenKonfigurationKiSicht
     /// oder die Plattform stellt den Weg nicht — dann bleiben die sieben Felder leer.
     /// </summary>
     public Func<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten?>? AnlageLesen { get; init; }
+
+    /// <summary>
+    /// Die Kühlgaben des Dialogs — Stützstellen, Sperrgrund und Stromträger des Projekts (Stufe
+    /// KU2 Welle 3). <c>null</c> = die Maske zeigt keine Gruppe „Kühlbetrieb"; dann lehnt jede
+    /// Setzung eines Kühlfeldes benannt ab.
+    /// </summary>
+    public Func<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben?>? Kuehlgaben { get; init; }
 
     // =====================================================================
     //  Die Einträge der drei Wahlfelder (KI-F1b)
@@ -163,5 +171,61 @@ public sealed class KomponentenKonfigurationKiSicht
         set { if (Anlage is { } a) a.Abschaltpunkt = value; }
     }
 
+    // =====================================================================
+    //  Die Gruppe „Kühlbetrieb" DIESER Wärmepumpe (Stufe KU2 Welle 3)
+    // =====================================================================
+    //
+    // Dieselben fünf Felder und dieselben Wege wie unter Form_WP_Anlage
+    // (WaermepumpeKuehlKiWege): Was die Maske weich sperrt, lehnt die Setzung benannt ab.
+
+    /// <summary>„Maschine auch zum Kühlen benutzen" — gesperrt ohne Kühlkennlinie oder mit Quellspeicher.</summary>
+    public bool Kuehlbetrieb
+    {
+        get => Anlage?.Kuehlbetrieb ?? false;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehlbetriebSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Der Kühl-Vorlauf [°C] aus den Stützstellen; leer = kleinster Stützwert.</summary>
+    public int? KuehlVorlauf
+    {
+        get => Anlage?.KuehlVorlauf;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.VorlaufSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die Stützstellen der Kühlkennlinie, die die Maske zur Wahl stellt — ohne die gesperrten.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlVorlaufWahl
+        => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.VorlaufWahl(Anlage, Gaben);
+
+    /// <summary>Der Hilfsstromanteil in PROZENT, wie die Maske ihn zeigt; gespeichert wird der Anteil.</summary>
+    public double? KuehlHilfsstromanteil
+    {
+        get => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.HilfsstromProzent(Anlage);
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.HilfsstromSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Der Stromträger des Kältestroms; leer = wie Heizbetrieb.</summary>
+    public int? KuehlCarrierId
+    {
+        get => Anlage?.KuehlCarrierId;
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.KuehltraegerSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die Stromträger des Projekts, die die Maske für den Kältestrom zur Wahl stellt.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlCarrierIdWahl
+        => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.TraegerWahl(Gaben);
+
+    /// <summary>Die Abrechnungsart des Kältestroms (E34): 0 = anteilig am Netzbezug, 1 = eigener Zähler.</summary>
+    public int KuehlAbrechnung
+    {
+        get => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.Abrechnung(Anlage);
+        set => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.AbrechnungSetzen(Anlage, Gaben, value);
+    }
+
+    /// <summary>Die zwei Abrechnungsarten der Maske — dieselben Texte wie ihre Optionsgruppe.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl
+        => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlKiWege.AbrechnungWahl();
+
     private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? Anlage => AnlageLesen?.Invoke();
+
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? Gaben => Kuehlgaben?.Invoke();
 }

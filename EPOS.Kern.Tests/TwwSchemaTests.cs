@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 using Xunit;
@@ -8,10 +10,10 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// Die DDL des Zapfprofilgenerators (<see cref="TwwSchema"/>, Schemaschritt T1,
+    /// Die DDL des Zapfprofilgenerators (<see cref="TwwSchema"/>, Schemaschritte T1 und T2,
     /// Umsetzungskonzept Zapfprofilgenerator 3.1/3.2) gegen eine leere Datenbank im
-    /// Speicher: zehn Tabellen, STRICT, wiederholbar, Beziehungen über IDs, und die
-    /// Prüfungen greifen. Alle Werte sind erfunden (Konzept Kapitel 6 (a)) — die Fälle
+    /// Speicher: zehn Tabellen aus T1 und die Zapfkategorien aus T2 (Schritt 115), STRICT,
+    /// wiederholbar, Beziehungen über IDs, und die Prüfungen greifen. Alle Werte sind erfunden (Konzept Kapitel 6 (a)) — die Fälle
     /// prüfen Struktur, nie eine Normzahl.
     /// </summary>
     public sealed class TwwSchemaTests
@@ -29,6 +31,7 @@ namespace EPOS.Kern.Tests
             [TwwSchema.TAB_TWW_ZONE] = 45,
             [TwwSchema.TAB_TWW_WOHNUNGSTYP] = 7,
             [TwwSchema.TAB_TWW_PROJEKT] = 40,
+            [TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM] = 16,
         };
 
         [Fact]
@@ -39,7 +42,9 @@ namespace EPOS.Kern.Tests
             Anlegen(c);   // IF NOT EXISTS - der zweite Lauf tut nichts
 
             Assert.Equal(10, TwwSchema.Anweisungen.Count());
-            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+            Assert.Equal(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, Assert.Single(TwwSchema.AnweisungenT2).Key);
+            Assert.Equal(11, TwwSchema.AlleAnweisungen.Count());
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
             {
                 string sql = Skalar(c, "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = $n",
                                     ("$n", a.Key)) as string;
@@ -71,7 +76,7 @@ namespace EPOS.Kern.Tests
             Anlegen(c);
 
             // Jede Tabelle zaehlt ihre ID fort (Muster WechselrichterSchema).
-            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
                 Assert.Contains("\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,", a.Value, StringComparison.Ordinal);
 
             // Die hoechste Katalogzeile geht - die naechste bekommt trotzdem eine neue ID.
@@ -149,6 +154,15 @@ namespace EPOS.Kern.Tests
             (TwwSchema.TAB_TWW_PROJEKT, "Lade_Auto", "2"),
             (TwwSchema.TAB_TWW_PROJEKT, "Speicherart", "3"),
             (TwwSchema.TAB_TWW_PROJEKT, "Bedarfstag_Quelle", "6"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Volumenstrom_l_min", "-1.0"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Dauer_min", "0"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Dauer_min", "1441"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Anteil", "-0.5"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Sigma", "-1.0"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Kappung_l_min", "0.0"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Herkunftsart", "'GESCHAETZT'"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Status", "'FREMD'"),
+            (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "ReadOnly", "2"),
         };
 
         [Fact]
@@ -161,7 +175,7 @@ namespace EPOS.Kern.Tests
             // Die Liste deckt jede CHECK-Spalte der DDL.
             var geprueft = new HashSet<string>(Fremdwerte.Select(f => f.Tabelle + "." + f.Spalte), StringComparer.Ordinal);
             var fehlend = new List<string>();
-            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
                 foreach (System.Text.RegularExpressions.Match m in
                          System.Text.RegularExpressions.Regex.Matches(a.Value, "CHECK \\(\"([A-Za-z0-9_]+)\""))
                     if (!geprueft.Contains(a.Key + "." + m.Groups[1].Value)) fehlend.Add(a.Key + "." + m.Groups[1].Value);
@@ -179,6 +193,7 @@ namespace EPOS.Kern.Tests
                 Assert.True(Wirft(c, "UPDATE \"Tab_TwwBedarfstagEreignis_STAMM\" SET \"" + spalte + "\" = NULL"), spalte + " nimmt NULL an.");
 
             // Gegenprobe: die Grenzen selbst und NULL bei einer Ueberschreibung gehen durch.
+            Ausfuehren(c, "UPDATE \"Tab_TwwZapfkategorie_STAMM\" SET \"Dauer_min\" = 1440, \"Anteil\" = 0.0, \"Sigma\" = 0.0, \"Kappung_l_min\" = NULL");
             Ausfuehren(c, "UPDATE \"Tab_TwwZone\" SET \"Ferienbeginn_1\" = 0, \"Ferienende_1\" = 366, \"Ferienbeginn_2\" = NULL");
             Ausfuehren(c, "UPDATE \"Tab_TwwBedarfstagEreignis_STAMM\" SET \"Minute_Beginn\" = 1439");
             Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"Realisierungen\" = 1, \"Realisierungen_Auslegung\" = NULL");
@@ -220,9 +235,9 @@ namespace EPOS.Kern.Tests
             using SqliteConnection c = Datenbank();
             Anlegen(c);
 
-            var ziele = new HashSet<string>(TwwSchema.Anweisungen.Select(a => a.Key)) { "Tab_Projekt", "Tab_Gebaeude" };
+            var ziele = new HashSet<string>(TwwSchema.AlleAnweisungen.Select(a => a.Key)) { "Tab_Projekt", "Tab_Gebaeude" };
             int beziehungen = 0;
-            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
             {
                 foreach (object[] fk in Zeilen(c, "SELECT \"table\", \"from\", \"to\" FROM pragma_foreign_key_list($t)", ("$t", a.Key)))
                 {
@@ -232,8 +247,74 @@ namespace EPOS.Kern.Tests
                     Assert.StartsWith("ID_", (string)fk[1], StringComparison.Ordinal);
                 }
             }
-            // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2
-            Assert.Equal(12, beziehungen);
+            // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2, Zapfkategorie 1
+            Assert.Equal(13, beziehungen);
+        }
+
+        /// <summary>
+        /// Der Schemaschritt T2 (Schritt 115) auf einer Datenbank mit Stand 114: Die zehn Tabellen
+        /// aus T1 stehen samt einer Katalogkette, T2 legt die Zapfkategorien daneben — wiederholbar,
+        /// ohne eine Zeile zu berühren. Eine Kategorie gehört genau einer Nutzungsart: kein Verweis
+        /// ins Leere, kein Name doppelt je Nutzungsart, und sie geht mit ihrer Nutzungsart.
+        /// </summary>
+        [Fact]
+        public void Schritt_T2_legt_die_Zapfkategorien_auf_Stand_114_an()
+        {
+            using SqliteConnection c = Datenbank();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
+            foreach (KeyValuePair<string, string> i in TwwSchema.Indizes) Ausfuehren(c, i.Value);
+            Ausfuehren(c, Einfuegen(c, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
+            Ausfuehren(c, Einfuegen(c, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+            Assert.Null(Skalar(c, "SELECT name FROM sqlite_master WHERE name = $n", ("$n", TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM)));
+
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2) Ausfuehren(c, a.Value);
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2) Ausfuehren(c, a.Value);   // IF NOT EXISTS
+            Assert.Equal(1L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwNutzungsart_STAMM\""));
+            Assert.Equal(0L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwZapfkategorie_STAMM\""));
+
+            const string kategorie =
+                "INSERT INTO \"Tab_TwwZapfkategorie_STAMM\" (\"ID_Nutzungsart\", \"Kategorie\", \"Reihenfolge\", " +
+                "\"Volumenstrom_l_min\", \"Dauer_min\", \"Anteil\", \"Sigma\", \"Kappung_l_min\", \"Quelle\", " +
+                "\"Version\", \"Herkunftsart\", \"Status\") VALUES ($n, $k, 1, 4.0, 2, 0.5, 1.0, $kap, " +
+                "'Testkatalog (fiktiv)', 'V1', 'FIKTIV', 'EIGEN')";
+            Ausfuehren(c, kategorie, ("$n", 1L), ("$k", "A"), ("$kap", 8.0));
+            Ausfuehren(c, kategorie, ("$n", 1L), ("$k", "B"), ("$kap", DBNull.Value));
+            Assert.Null(Skalar(c, "SELECT \"Kappung_l_min\" FROM \"Tab_TwwZapfkategorie_STAMM\" WHERE \"Kategorie\" = 'B'"));
+            Assert.Equal(0L, Skalar(c, "SELECT \"ReadOnly\" FROM \"Tab_TwwZapfkategorie_STAMM\" WHERE \"Kategorie\" = 'A'"));
+
+            // Natürlicher Schlüssel (Nutzungsart, Kategorie) und Verweis nur auf eine vorhandene Nutzungsart.
+            Assert.True(Wirft(c, kategorie.Replace("$kap", "NULL"), ("$n", 1L), ("$k", "A")));
+            Assert.True(Wirft(c, kategorie.Replace("$kap", "NULL"), ("$n", 99L), ("$k", "C")));
+
+            // Die Nutzungsart nimmt ihre Kategorien mit.
+            Ausfuehren(c, "DELETE FROM \"Tab_TwwNutzungsart_STAMM\"");
+            Assert.Equal(0L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwZapfkategorie_STAMM\""));
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+        }
+
+        /// <summary>
+        /// Der Schritt 115 steht in der Migration der Schale NACH 114 (Kühlbetrieb am Erzeuger) und
+        /// bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT2"/>); das Ziel steht
+        /// mindestens auf 115. Gelesen wird der Quelltext — die Schale ist kein Teil des Kern-Filters.
+        /// </summary>
+        [Fact]
+        public void Schritt_115_steht_in_der_Migration_nach_114()
+        {
+            Assert.True(SchemaStand.Zielversion >= 115, "Zielstand " + SchemaStand.Zielversion + " liegt unter 115.");
+
+            string datei = Migrationsquelle();
+            if (datei == null) return;   // Quelle nicht im Baum: nichts zu pruefen
+            string text = File.ReadAllText(datei);
+
+            Assert.Contains("public const int SCHRITT_115_ZAPFKATEGORIEN = 115;", text, StringComparison.Ordinal);
+            int ort114 = text.IndexOf("new Schritt(SCHRITT_114_KUEHLUNG_ERZEUGER", StringComparison.Ordinal);
+            int ort115 = text.IndexOf("new Schritt(SCHRITT_115_ZAPFKATEGORIEN", StringComparison.Ordinal);
+            Assert.True(ort114 > 0 && ort115 > ort114, "Schritt 115 steht nicht nach 114 in der Schrittliste.");
+
+            int methode = text.IndexOf("private static bool Schritt_115_Zapfkategorien(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 115 fehlt.");
+            int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
+            Assert.Contains("TwwSchema.AnweisungenT2", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }
 
         [Fact]
@@ -327,7 +408,7 @@ namespace EPOS.Kern.Tests
 
         private static void Anlegen(SqliteConnection c)
         {
-            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen) Ausfuehren(c, a.Value);
             foreach (KeyValuePair<string, string> i in TwwSchema.Indizes) Ausfuehren(c, i.Value);
         }
 
@@ -339,17 +420,36 @@ namespace EPOS.Kern.Tests
         private static void Vollbelegen(SqliteConnection c)
         {
             Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
-            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, Einfuegen(c, a.Key));
+            foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen) Ausfuehren(c, Einfuegen(c, a.Key));
             Ausfuehren(c, "UPDATE \"Tab_TwwWohnungstyp\" SET \"ID_Ausstattung\" = 1");
             Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"ID_Bedarfstag\" = 1");
             Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
         }
 
         /// <summary>Ob die Anweisung mit einer <see cref="SqliteException"/> scheitert.</summary>
-        private static bool Wirft(SqliteConnection c, string sql)
+        private static bool Wirft(SqliteConnection c, string sql, params (string Name, object Wert)[] parameter)
         {
-            try { Ausfuehren(c, sql); return false; }
+            try { Ausfuehren(c, sql, parameter); return false; }
             catch (SqliteException) { return true; }
+        }
+
+        /// <summary><c>WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs</c>, aufwärts gesucht; sonst <c>null</c>.</summary>
+        private static string Migrationsquelle([CallerFilePath] string eigeneDatei = null)
+        {
+            var kandidaten = new List<string>();
+            if (!string.IsNullOrEmpty(eigeneDatei)) kandidaten.Add(Path.GetDirectoryName(eigeneDatei));
+            kandidaten.Add(AppContext.BaseDirectory);
+            foreach (string start in kandidaten)
+            {
+                DirectoryInfo d = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+                while (d != null)
+                {
+                    string p = Path.Combine(d.FullName, "WindowsFormsApplication1", "Allgemein", "Update", "SchemaMigration.cs");
+                    if (File.Exists(p)) return p;
+                    d = d.Parent;
+                }
+            }
+            return null;
         }
 
         /// <summary>

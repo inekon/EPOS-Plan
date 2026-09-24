@@ -20,7 +20,8 @@ namespace KiKern
     /// <c>long</c>, <see cref="KiParameterTyp.Zahl"/> als <c>double</c>,
     /// <see cref="KiParameterTyp.Text"/> und <see cref="KiParameterTyp.Aufzaehlung"/>
     /// als <c>string</c>, <see cref="KiParameterTyp.Wahrheitswert"/> als <c>bool</c>,
-    /// <see cref="KiParameterTyp.GanzzahlListe"/> als <c>long[]</c>.
+    /// <see cref="KiParameterTyp.GanzzahlListe"/> als <c>long[]</c>,
+    /// <see cref="KiParameterTyp.ZahlListe"/> als <c>double[]</c>.
     /// </para>
     /// </remarks>
     public sealed class KiAufruf
@@ -77,6 +78,13 @@ namespace KiKern
         /// <summary>Zahlenliste; leeres Feld, wenn der Parameter fehlt.</summary>
         public long[] GanzzahlListe(string parameter)
             => _werte.TryGetValue(parameter, out object? o) && o is long[] a ? a : Array.Empty<long>();
+
+        /// <summary>
+        /// Die Werte einer Zahlenreihe (<see cref="KiParameterTyp.ZahlListe"/>); leeres
+        /// Feld, wenn der Parameter fehlt.
+        /// </summary>
+        public double[] ZahlListe(string parameter)
+            => _werte.TryGetValue(parameter, out object? o) && o is double[] a ? a : Array.Empty<double>();
 
         /// <summary>Zahlenliste als <c>int</c>-Feld - der Regelfall fuer Projektlisten.</summary>
         public int[] IdListe(string parameter)

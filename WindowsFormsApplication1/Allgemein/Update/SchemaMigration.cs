@@ -3898,9 +3898,77 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_114_KUEHLUNG_ERZEUGER = 114;
 
         /// <summary>
-        /// Schritt 115 — <b>die Abrechnungsart des Kältestroms und die Kälteseite der
+        /// Schritt 115 — die <b>Zapfkategorien des Zapfprofilgenerators</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 3.1/3.2, Papiername T2, Stufe Z3): die Tabelle
+        /// <c>Tab_TwwZapfkategorie_STAMM</c> mit Volumenstrom, Streuung, Dauer, Anteil und
+        /// oberer Kappung je Nutzungsart. Er folgt auf <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/> ohne
+        /// Reihenfolgebedingung; er braucht <see cref="SCHRITT_103_ZAPFPROFIL_KATALOG"/>, dessen
+        /// Nutzungsarten er über <c>ID_Nutzungsart</c> (<c>ON DELETE CASCADE</c>) verweist.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="TwwSchema.AnweisungenT2"/>) — EINE
+        /// Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Kein Katalogwert kommt über den Schritt
+        /// herein — die Auslieferungswerte bringt das Katalogpaket (Konzept Kapitel 6 (b)). Die
+        /// Tabelle ist nach dem Schritt leer; nur der stochastische Rechenweg liest sie, und kein
+        /// Projekt steht auf dem Generator. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über <c>IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_115_ZAPFKATEGORIEN = 115;
+
+        /// <summary>
+        /// Schritt 116 — <b>der Szenariorahmen</b> (Schritt B des Analysepapiers § 6, Etappe
+        /// E9a der vollständigen Szenarioabdeckung V‑E, Konzept Wirtschaftlichkeit § 2.11.5).
+        /// Er folgt auf <see cref="SCHRITT_115_ZAPFKATEGORIEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// <c>Szen_Best_Zeitraum</c>, <c>Szen_Worst_Zeitraum</c> (ganze Jahre) und
+        /// <c>Szen_Best_Menge</c>, <c>Szen_Worst_Menge</c> (Prozent) — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>, EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; jede Zeile steht danach
+        /// leer, und der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene
+        /// Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_116_SZENARIO_RAHMEN = 116;
+
+        /// <summary>
+        /// Schritt 117 — <b>die Trägerpreise best/worst</b> (Schritt C des Analysepapiers § 6,
+        /// Etappe E9a). Er folgt auf <see cref="SCHRITT_116_SZENARIO_RAHMEN"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, sechs nullbare Spalten an <c>energy_project_settings</c>:
+        /// <c>custom_price_work_best</c>/<c>_worst</c>, <c>custom_price_base_best</c>/<c>_worst</c>
+        /// und <c>custom_price_power_best</c>/<c>_worst</c> — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_117_TRAEGERPREIS_SZENARIO = 117;
+
+        /// <summary>
+        /// Schritt 118 — <b>die Erlössätze best/worst</b> (Schritt D des Analysepapiers § 6,
+        /// Etappe E9a). Er folgt auf <see cref="SCHRITT_117_TRAEGERPREIS_SZENARIO"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, acht nullbare Spalten: <c>Einspeiseverguetung_Best</c>/
+        /// <c>_Worst</c> und <c>Einspeiseverguetung_KWK_Best</c>/<c>_Worst</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, <c>DvEntgelt_Best</c>/<c>_Worst</c> und
+        /// <c>PpaPreis_Best</c>/<c>_Worst</c> an <c>Tab_ProjektPhotovoltaik</c> — die Listen
+        /// stehen bei <see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_118_ERLOESSATZ_SZENARIO = 118;
+
+        /// <summary>
+        /// Schritt 119 — <b>die Abrechnungsart des Kältestroms und die Kälteseite der
         /// Wärmepumpenergebnisse</b> (Kühlkonzept 6.1–6.4, 8.4; Stufe KU2, Welle 3; Entscheid E34
-        /// vom 23.09.2026). Er folgt auf <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/> ohne
+        /// vom 23.09.2026). Er folgt auf <see cref="SCHRITT_118_ERLOESSATZ_SZENARIO"/> ohne
         /// Reihenfolgebedingung.
         ///
         /// <para><b>REIN DDL</b>, acht Spalten: <c>Tab_Energieanlagen.Kuehl_EigenerZaehler</c>
@@ -3910,7 +3978,7 @@ namespace WindowsFormsApplication1
         /// und <c>Tab_ErgebnisWaermepumpeModul</c> (<c>Kaelteproduktion</c>,
         /// <c>Stromverbrauch_Kuehlung</c>, <c>Kaeltestrom_Netzbezug</c>, <c>Kuehl_carrier_id</c>,
         /// <c>Kuehl_EigenerZaehler</c>). Die Definitionen stehen bei <see cref="KuehlungSchema"/>
-        /// (<see cref="KuehlungSchema.Schritt115Spalten"/>) — EINE Quelle für Migration,
+        /// (<see cref="KuehlungSchema.Schritt119Spalten"/>) — EINE Quelle für Migration,
         /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
         ///
         /// <para><b>Ergebnisneutral:</b> Alle Spalten stehen danach auf NULL; die Wahl wirkt nur bei
@@ -3918,7 +3986,7 @@ namespace WindowsFormsApplication1
         /// Der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird
         /// übergangen.</para>
         /// </summary>
-        public const int SCHRITT_115_KAELTESTROM = 115;
+        public const int SCHRITT_119_KAELTESTROM = 119;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5486,18 +5554,66 @@ namespace WindowsFormsApplication1
                         "bleiben leer, und kein Rechenweg liest sie.",
                         Schritt_114_KuehlungErzeuger),
 
+            // UMSETZUNGSKONZEPT ZAPFPROFILGENERATOR, Stufe Z3 (Papiername T2) - die
+            // Zapfkategorien je Nutzungsart. REIN DDL; die Quelle ist TwwSchema.AnweisungenT2.
+            // Er steht NACH 114 ohne Reihenfolgebedingung und braucht 103 (Fremdschluessel auf
+            // Tab_TwwNutzungsart_STAMM).
+            new Schritt(SCHRITT_115_ZAPFKATEGORIEN,
+                        "Zapfprofilgenerator: Zapfkategorien anlegen (Tab_TwwZapfkategorie_STAMM)",
+                        "Die stochastische Jahresreihe und das Auslegungsensemble des " +
+                        "Zapfprofilgenerators finden dann keine Zapfkategorien und lehnen jede " +
+                        "stochastisch gerechnete Zone benannt ab. Der deterministische Weg und der " +
+                        "Bestandsweg des Brauchwassers rechnen unveraendert.",
+                        Schritt_115_Zapfkategorien),
+
+            // ETAPPE E9a (Schritt B, vollstaendige Szenarioabdeckung V-E) - der
+            // Szenariorahmen: Betrachtungszeitraum und Mengenfaktor je Szenario. REIN DDL;
+            // die Quelle ist SchemaKatalog.Schritt116_Szenariorahmen. Er steht NACH 115 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_116_SZENARIO_RAHMEN,
+                        "Tab_ProjektWirtschaftlichkeit: Betrachtungszeitraum und Mengenfaktor " +
+                        "je Szenario (Best/Worst)",
+                        "Die Szenarien Guenstig und Unguenstig liessen sich nicht mit eigenem " +
+                        "Betrachtungszeitraum und eigenem Mengenfaktor rechnen. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
+                        Schritt_116_SzenarioRahmen),
+
+            // ETAPPE E9a (Schritt C) - die Traegerpreise best/worst an der
+            // Projektuebersteuerung. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt117_TraegerpreisSzenario. Er steht NACH 116 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_117_TRAEGERPREIS_SZENARIO,
+                        "energy_project_settings: Arbeits-, Grund- und Leistungspreis je Szenario " +
+                        "(Best/Worst)",
+                        "Die Energietraeger liessen sich nicht mit eigenen Preisen fuer die Szenarien " +
+                        "Guenstig und Unguenstig rechnen. KEIN Rechenergebnis aendert sich - die " +
+                        "Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
+                        Schritt_117_TraegerpreisSzenario),
+
+            // ETAPPE E9a (Schritt D) - die Erloessaetze best/worst: Einspeiseverguetung
+            // (PV und KWK) an der Parametertabelle, DV-Entgelt und PPA-Preis an der
+            // PV-Verguetung. REIN DDL; die Quelle ist SchemaKatalog.Schritt118_ErloessatzSzenario.
+            // Er steht NACH 117 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_118_ERLOESSATZ_SZENARIO,
+                        "Tab_ProjektWirtschaftlichkeit und Tab_ProjektPhotovoltaik: Erloessaetze " +
+                        "je Szenario (Best/Worst)",
+                        "Einspeiseverguetung, DV-Entgelt und PPA-Preis liessen sich nicht je Szenario " +
+                        "pflegen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, und " +
+                        "leer heisst 'wie Erwartet'.",
+                        Schritt_118_ErloessatzSzenario),
+
             // KUEHLKONZEPT 6.1-6.4 und 8.4 (Stufe KU2 Welle 3; Entscheid E34) - die
             // Abrechnungsart des Kaeltestroms und die Kaelteseite der Waermepumpenergebnisse.
-            // REIN DDL; die Quelle ist KuehlungSchema. Er steht NACH 114 ohne
+            // REIN DDL; die Quelle ist KuehlungSchema. Er steht NACH 118 ohne
             // Reihenfolgebedingung - er legt allein acht neue Spalten an.
-            new Schritt(SCHRITT_115_KAELTESTROM,
+            new Schritt(SCHRITT_119_KAELTESTROM,
                         "Tab_Energieanlagen: Abrechnungsart des Kaeltestroms; " +
                         "Tab_ErgebnisWaermepumpe(Modul): Kaelteerzeugung und Kaeltestrom",
                         "Der Kaeltestrom eines abweichenden Kuehltraegers liesse sich nicht ueber einen " +
                         "eigenen Zaehler abrechnen, und das Ergebnis truege Kaelteerzeugung und " +
                         "Kaeltestrom je Anlage nicht. KEIN Rechenergebnis aendert sich - alle Spalten " +
                         "bleiben leer, bis eine Waermepumpe kuehlt.",
-                        Schritt_115_Kaeltestrom),
+                        Schritt_119_Kaeltestrom),
         };
 
         /// <summary>
@@ -8688,23 +8804,151 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 115 - Abrechnungsart des Kaeltestroms und Kaelteseite der
+        // Schritt 115 - Zapfkategorien des Zapfprofilgenerators (T2, Stufe Z3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 115 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_115_ZAPFKATEGORIEN"/>. Dieselbe Schleife wie Schritt 103 über
+        /// <see cref="TwwSchema.AnweisungenT2"/>; <b>nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/></b>.
+        /// </summary>
+        private static bool Schritt_115_Zapfkategorien(Lauf l)
+        {
+            int angelegt = 0;
+            int gesamt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+            {
+                gesamt++;
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            l.Notiz("115: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) der " +
+                    "Zapfkategorien angelegt. KEIN DML: die Tabelle ist nach dem Schritt LEER, " +
+                    "kein Projekt steht auf dem Generator. KEIN Rechenergebnis aendert sich; " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 116 - der Szenariorahmen (Schritt B, Etappe E9a, V-E)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 116 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_116_SZENARIO_RAHMEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>. <b>Reines DDL</b>, dieselbe
+        /// Schleife wie bei Schritt 111: Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c> („LONG" → <c>INTEGER</c>, „DOUBLE" → <c>REAL</c>),
+        /// nullbar und ohne Vorgabe. <b>Wiederholbar</b>: Eine vorhandene Spalte wird
+        /// übergangen.
+        /// </summary>
+        private static bool Schritt_116_SzenarioRahmen(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("116: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt116_Szenariorahmen.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + " (ganze Jahre), " +
+                    SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + ", " + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE +
+                    " (Prozent) an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ". KEIN DML: Leer heisst " +
+                    "'wie Erwartet' - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 117 - die Traegerpreise best/worst (Schritt C, Etappe E9a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 117 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_117_TRAEGERPREIS_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>. <b>Reines DDL</b>,
+        /// dieselbe Schleife wie bei Schritt 116; „DOUBLE" wird <c>REAL</c> an der
+        /// STRICT-Tabelle, nullbar und ohne Vorgabe. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_117_TraegerpreisSzenario(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("117: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt117_TraegerpreisSzenario.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Arbeits-, Grund- und Leistungspreis je Best und Worst an " +
+                    SchemaKatalog.ENERGY_PROJECT_SETTINGS + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 118 - die Erloessaetze best/worst (Schritt D, Etappe E9a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 118 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_118_ERLOESSATZ_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>. <b>Reines DDL</b> an zwei
+        /// Tabellen, dieselbe Schleife wie bei Schritt 116. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_118_ErloessatzSzenario(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("118: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Einspeiseverguetung (PV, KWK) je Best und Worst an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ", DV-Entgelt und PPA-Preis je Best und Worst an " +
+                    SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 119 - Abrechnungsart des Kaeltestroms und Kaelteseite der
         // Waermepumpenergebnisse (Stufe KU2 Welle 3, E34)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 115 — Anlass und Wirkung stehen bei <see cref="SCHRITT_115_KAELTESTROM"/>, die
-        /// Spalten bei <see cref="KuehlungSchema.Schritt115Spalten"/>. Dieselbe Schleife wie Schritt
+        /// Schritt 119 — Anlass und Wirkung stehen bei <see cref="SCHRITT_119_KAELTESTROM"/>, die
+        /// Spalten bei <see cref="KuehlungSchema.Schritt119Spalten"/>. Dieselbe Schleife wie Schritt
         /// 110 über die Typübersetzung (<c>YESNO_NULL</c> wird <c>INTEGER CHECK (… IN (0,1))</c>
         /// ohne Vorgabe, <c>LONG</c> wird <c>INTEGER</c>, <c>DOUBLE</c> wird <c>REAL</c>);
         /// <b>wiederholbar</b>, eine vorhandene Spalte wird übergangen. Die Nachprobe fragt
-        /// <see cref="KuehlungSchema.Schritt115Vollstaendig"/>.
+        /// <see cref="KuehlungSchema.Schritt119Vollstaendig"/>.
         /// </summary>
-        private static bool Schritt_115_Kaeltestrom(Lauf l)
+        private static bool Schritt_119_Kaeltestrom(Lauf l)
         {
             int angelegt = 0, gesamt = 0;
 
-            foreach (SchemaSpalte s in KuehlungSchema.Schritt115Spalten())
+            foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
             {
                 gesamt++;
                 if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
@@ -8717,18 +8961,18 @@ namespace WindowsFormsApplication1
             using (DataRepository.EngineModus())
             {
                 DataRepository.StilleFehlerAbholen();
-                vollstaendig = KuehlungSchema.Schritt115Vollstaendig();
+                vollstaendig = KuehlungSchema.Schritt119Vollstaendig();
                 DataRepository.StilleFehlerAbholen();
             }
             if (!vollstaendig)
             {
                 l.LetzterFehler = "Die Spalten der Abrechnungsart des Kaeltestroms und der Kaelteseite " +
                                   "der Waermepumpenergebnisse stehen nach dem Schritt nicht auf dem Zielstand.";
-                l.Notiz("115: FEHLER - " + l.LetzterFehler);
+                l.Notiz("119: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("115: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+            l.Notiz("119: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
                     gesamt.ToString(CultureInfo.InvariantCulture) + " Spalte(n) angelegt - " +
                     SchemaKatalog.TAB_ENERGIEANLAGEN + "." + KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER +
                     " (0/1, nullbar, NULL = anteilig am Netzbezug), Kaelteproduktion_WP und " +

@@ -325,6 +325,10 @@
         BhkwLeistungsgrenzeSetzen = w => LeistungsgrenzeGesetzt(w),
         AnlageLesen = () => Anlage,
 
+        // Stufe KU2 Welle 3: die Kuehlgaben - mit ihnen loest die Sichtklasse die drei
+        // Wahlfelder der Gruppe „Kuehlbetrieb" auf und lehnt ab, was die Maske weich sperrt.
+        Kuehlgaben = () => Kuehlung,
+
         // KI-F1b: die drei Klapplisten der Maske. Ihre Eintraege stehen dort, wo auch
         // die Maske sie herholt - die zwei festen Listen im Dialog bzw. im Baustein,
         // der Traegerkatalog in der Huelle.

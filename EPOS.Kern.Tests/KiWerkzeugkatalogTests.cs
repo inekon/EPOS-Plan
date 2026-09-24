@@ -69,6 +69,7 @@ namespace EPOS.Kern.Tests
             ("dialog_parameter_erklaeren", "DIALOG_ERKLAEREN"),
             ("feld_setzen", "FELD_SETZEN"),
             ("formular_ausfuellen", "FORMULAR_AUSFUELLEN"),
+            ("reihe_setzen", "REIHE_SETZEN"),
             ("dialog_aktion_ausfuehren", "DIALOG_AKTION"),
             ("variante_anlegen", "VARIANTE_ANLEGEN"),
             ("speichervariante_aktiv_setzen", "SPEICHERVARIANTE_AKTIV"),

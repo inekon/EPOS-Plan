@@ -16,6 +16,13 @@
 //
 // WAS ER NICHT TUT: Er prueft keine Fachgrenzen. Ob 400 % Wirkungsgrad zulaessig sind,
 // entscheidet der DIALOG (KiMaskenhaken.Pruefen) - genauso wie bei einer Eingabe von Hand.
+// Geprueft wird allein die Grenze, die das EINGABEFELD selbst fuehrt (Min/Max am
+// Zahlenfeld der Maske, im Katalog als KiDialogFeld.Min/Max deklariert, Welle #458
+// Stufe 3b): Was der Anwender dort nicht eintippen kann, setzt auch der Assistent nicht.
+//
+// DIE ZAHLENREIHE (Welle #458 Stufe 3b) hat ihren eigenen Wandler (WandleReihe): Sie
+// nimmt keinen Text, sondern die gepruefte Zahlenliste aus reihe_setzen, legt sie auf
+// die Stellen ab der genannten und liefert die GANZE neue Reihe im Typ der Eigenschaft.
 
 using System;
 using System.Collections.Generic;
@@ -70,6 +77,14 @@ namespace WindowsFormsApplication1
             string roh = (text ?? "").Trim();
             Type ziel = Grundtyp(zugang.Werttyp);
             bool nullbar = Nullbar(zugang.Werttyp);
+
+            // ---- Eine ZAHLENREIHE nimmt keinen Einzeltext (Welle #458 Stufe 3b): Sie hat
+            //      ihren eigenen Weg mit Laengenpruefung und Reihenblock (reihe_setzen).
+            //      Die Absage nennt ihn, statt einen Text in eine Liste zu zwingen.
+            if (feld.IstReihe)
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_IST_REIHE,
+                                  feld.Anzeigename, feld.Reihe.Laenge));
 
             // ---- Leer: erlaubt oder nicht - und was "leer" fuer den Zieltyp heisst.
             if (roh.Length == 0)
@@ -127,9 +142,18 @@ namespace WindowsFormsApplication1
                         string.Format(CultureInfo.CurrentCulture,
                                       MyResource.Resource.KI_FELD_KEINE_ZAHL, feld.Anzeigename, roh));
 
+                string grenze = Bereichsgrund(feld, feld.Anzeigename, gerundet);
+                if (grenze != null) return KiFeldumsetzung.Schlecht(grenze);
+
                 if (ziel == typeof(int)) return KiFeldumsetzung.Gut((int)gerundet);
                 if (ziel == typeof(long)) return KiFeldumsetzung.Gut((long)gerundet);
                 return KiFeldumsetzung.Gut((short)gerundet);
+            }
+
+            if (ziel == typeof(decimal) || ziel == typeof(float) || ziel == typeof(double))
+            {
+                string grenze = Bereichsgrund(feld, feld.Anzeigename, zahl);
+                if (grenze != null) return KiFeldumsetzung.Schlecht(grenze);
             }
 
             if (ziel == typeof(decimal)) return KiFeldumsetzung.Gut((decimal)zahl);
@@ -261,6 +285,157 @@ namespace WindowsFormsApplication1
                    string.Format(CultureInfo.CurrentCulture,
                                  MyResource.Resource.KI_FELD_WAHL_SCHLUESSEL,
                                  feld.Anzeigename, text, schluessel));
+
+        // =====================================================================
+        // Die ZAHLENREIHE (Welle #458 Stufe 3b)
+        // =====================================================================
+
+        /// <summary>
+        /// Legt <paramref name="werte"/> ab Stelle <paramref name="ab"/> auf die Reihe
+        /// hinter <paramref name="zugang"/> und liefert die GANZE neue Reihe im Typ der
+        /// Eigenschaft - oder den Klartextgrund, warum nicht.
+        /// </summary>
+        /// <param name="zugang">Der Feldzugang einer Zahlenreihe.</param>
+        /// <param name="werte">Die gepruefte Zahlenliste aus dem Aufruf.</param>
+        /// <param name="ab">
+        /// Die Stelle des ersten Wertes, bei 1 beginnend; <c>0</c> = ohne Angabe - dann muss
+        /// die Liste die ganze Reihe tragen.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// <b>Ganz oder ab einer Stelle, nie still gestutzt.</b> Ohne Stelle muss die Zahl
+        /// der Werte die Laenge der Reihe treffen - elf Monatswerte fuer zwoelf Monate sind
+        /// ein Befund, kein Auftrag, den Dezember stehen zu lassen. Mit Stelle muss der
+        /// Ausschnitt in die Reihe passen; was nicht genannt ist, bleibt, wie es steht.
+        /// </para>
+        /// <para>
+        /// <b>Die Grenzen sind die des Eingabefeldes</b> (<see cref="KiDialogFeld.Min"/>,
+        /// <see cref="KiDialogFeld.Max"/>), geprueft je Wert und mit dem Namen der Stelle
+        /// in der Absage. Alles Weitere prueft der Dialog nach dem Setzen (Haken
+        /// <c>Pruefen</c>), wie bei jeder Eingabe von Hand.
+        /// </para>
+        /// <para>
+        /// <b>Der Zieltyp ist der der Eigenschaft</b> (<c>double?[]</c> oder <c>double[]</c>);
+        /// ein unbekannter wird <c>double?[]</c>. Ein leeres Glied der bisherigen Reihe
+        /// bleibt in einem <c>double[]</c> eine 0 - so zeigt es die Maske.
+        /// </para>
+        /// </remarks>
+        public static KiFeldumsetzung WandleReihe(KiFeldzugang zugang, IReadOnlyList<double> werte, int ab)
+        {
+            if (zugang == null) return KiFeldumsetzung.Schlecht("");
+
+            KiDialogFeld feld = zugang.Feld;
+            if (!feld.IstReihe)
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_KEINE_REIHE,
+                                  feld.Anzeigename));
+
+            KiZahlenreihe reihe = feld.Reihe;
+            int anzahl = werte == null ? 0 : werte.Count;
+            if (anzahl == 0)
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_REIHE_LAENGE,
+                                  feld.Anzeigename, reihe.Laenge, 0));
+
+            // ---- Ohne Stelle: die ganze Reihe; mit Stelle: ein Ausschnitt, der passt.
+            if (ab <= 0)
+            {
+                if (anzahl != reihe.Laenge)
+                    return KiFeldumsetzung.Schlecht(
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_REIHE_LAENGE,
+                                      feld.Anzeigename, reihe.Laenge, anzahl));
+                ab = 1;
+            }
+            else if (ab > reihe.Laenge || ab - 1 + anzahl > reihe.Laenge)
+            {
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_REIHE_UEBERLAUF,
+                                  feld.Anzeigename, reihe.Laenge, ab,
+                                  Math.Max(0, reihe.Laenge - ab + 1), anzahl));
+            }
+
+            // ---- Jeder Wert: eine endliche Zahl in den Grenzen des Eingabefeldes.
+            for (int i = 0; i < anzahl; i++)
+            {
+                double w = werte[i];
+                string stelle = feld.Anzeigename + " (" + reihe.Stellenname(ab + i) + ")";
+
+                if (double.IsNaN(w) || double.IsInfinity(w))
+                    return KiFeldumsetzung.Schlecht(
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_KEINE_ZAHL,
+                                      stelle, w.ToString(CultureInfo.InvariantCulture)));
+
+                string grenze = Bereichsgrund(feld, stelle, w);
+                if (grenze != null) return KiFeldumsetzung.Schlecht(grenze);
+            }
+
+            // ---- Die neue Reihe: die bisherige, und ab der Stelle die genannten Werte.
+            IReadOnlyList<double?> bisher = Reihenwerte(zugang);
+            var neu = new double?[reihe.Laenge];
+            for (int i = 0; i < reihe.Laenge; i++) neu[i] = i < bisher.Count ? bisher[i] : null;
+            for (int i = 0; i < anzahl; i++) neu[ab - 1 + i] = werte[i];
+
+            Type ziel = zugang.Werttyp;
+            if (ziel == typeof(double[]))
+            {
+                var dicht = new double[neu.Length];
+                for (int i = 0; i < neu.Length; i++) dicht[i] = neu[i] ?? 0.0;
+                return KiFeldumsetzung.Gut(dicht);
+            }
+
+            return KiFeldumsetzung.Gut(neu);
+        }
+
+        /// <summary>
+        /// Die Werte einer Reihe, wie sie JETZT in der Maske stehen; eine leere Liste, wenn
+        /// der Getter nichts oder etwas anderes liefert.
+        /// </summary>
+        public static IReadOnlyList<double?> Reihenwerte(KiFeldzugang zugang)
+        {
+            if (zugang == null) return Array.Empty<double?>();
+
+            object roh;
+            try { roh = zugang.Lesen(); }
+            catch (Exception) { return Array.Empty<double?>(); }
+
+            return KiZahlenreihe.Werte(roh) ?? Array.Empty<double?>();
+        }
+
+        /// <summary>
+        /// Warum <paramref name="wert"/> ausserhalb der Grenzen des Eingabefeldes liegt;
+        /// <c>null</c>, wenn er passt oder das Feld keine Grenze fuehrt.
+        /// </summary>
+        /// <param name="feld">Die Deklaration mit <c>Min</c>/<c>Max</c>.</param>
+        /// <param name="benennung">Der Name in der Absage - bei einer Reihe samt Stelle.</param>
+        /// <param name="wert">Der zu setzende Wert.</param>
+        internal static string Bereichsgrund(KiDialogFeld feld, string benennung, double wert)
+        {
+            if (feld == null || !feld.HatBereich) return null;
+
+            bool unten = feld.Min.HasValue && wert < feld.Min.Value;
+            bool oben = feld.Max.HasValue && wert > feld.Max.Value;
+            if (!unten && !oben) return null;
+
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_BEREICH,
+                                 benennung, wert.ToString(CultureInfo.CurrentCulture), Bereichstext(feld));
+        }
+
+        /// <summary>
+        /// Der zulaessige Bereich im Klartext - „0 bis 100000", „mindestens 0",
+        /// „höchstens 12"; leer, wenn das Feld keinen fuehrt.
+        /// </summary>
+        public static string Bereichstext(KiDialogFeld feld)
+        {
+            if (feld == null || !feld.HatBereich) return "";
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            if (feld.Min.HasValue && feld.Max.HasValue)
+                return string.Format(k, MyResource.Resource.KI_FELD_BEREICH_VON_BIS,
+                                     feld.Min.Value.ToString(k), feld.Max.Value.ToString(k));
+            if (feld.Min.HasValue)
+                return string.Format(k, MyResource.Resource.KI_FELD_BEREICH_AB, feld.Min.Value.ToString(k));
+            return string.Format(k, MyResource.Resource.KI_FELD_BEREICH_BIS, feld.Max.Value.ToString(k));
+        }
 
         /// <summary>
         /// Die Zahl aus dem Text — <b>dieselbe Regel wie jedes Eingabefeld des Hauses</b>.
