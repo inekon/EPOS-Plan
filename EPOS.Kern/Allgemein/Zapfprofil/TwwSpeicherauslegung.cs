@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Worauf sich der Füllstand der Stundenbilanz bezieht (4.7, N10 (k); wählbar nach N11 (d),
-    /// <c>Tab_TwwProjekt.Fuellstand_Bezug</c>). Die Zahlen sind die der Spalte.
+    /// <c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 120). Die Zahlen sind die der Spalte.
     /// </summary>
     internal enum ZapfFuellstandbezug
     {
@@ -158,16 +158,16 @@ namespace WindowsFormsApplication1
         public double? Personen { get; init; }
 
         /// <summary>
-        /// Die Personen des Verfahrensvergleichs auto/manuell (N11 (d), <c>Tab_TwwProjekt.Personen_Auto</c>):
+        /// Die Personen des Verfahrensvergleichs auto/manuell (N11 (d), <c>Tab_TwwProjekt.Personen_Auto</c>, Schritt 120):
         /// <c>true</c> = der Vorschlag <see cref="Personen"/> aus dem Mengengerüst.
         /// </summary>
         public bool PersonenAuto { get; init; } = true;
 
-        /// <summary>Der manuelle Wert der Personen (<c>Tab_TwwProjekt.Personen_Manuell</c>); wirkt nur bei <see cref="PersonenAuto"/> = false.</summary>
+        /// <summary>Der manuelle Wert der Personen (<c>Tab_TwwProjekt.Personen_Manuell</c>, Schritt 120); wirkt nur bei <see cref="PersonenAuto"/> = false.</summary>
         public double? PersonenManuell { get; init; }
 
         /// <summary>
-        /// Der gewählte Bezug des Füllstands (N11 (d), <c>Tab_TwwProjekt.Fuellstand_Bezug</c>);
+        /// Der gewählte Bezug des Füllstands (N11 (d), <c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 120);
         /// <c>null</c> = Vorgabe nach N10 (k). Ist der gewählte Bezug nicht bestimmbar, gilt die
         /// Vorgabe und ein Hinweis nennt es.
         /// </summary>

@@ -55,17 +55,6 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Die Auswertung der Bilanzreihen für die Vorschau</b> (Umsetzungskonzept
-    /// Zapfprofilgenerator 5.1, 5.6; Stufe Z1, Gruppe 3): größter Monat, mittlerer Tagesgang je
-    /// Tagtyp, Woche mit dem größten Tagesbedarf. Sie liest nur fertige
-    /// <see cref="Bilanzreihe"/>n und einen Kalender — sie rechnet keinen Bedarf und ändert keine
-    /// Reihe. Die Vorschau zeigt damit dieselbe Reihe, die der Lauf verbucht (2.4).
-    ///
-    /// <para><b>Regeln.</b> Gleichstände entscheidet der früheste Monat bzw. Tag (feste
-    /// Reihenfolge, wiederholbar). Ruhetage (Ferien einer Zone) gehen in keinen der drei
-    /// Tagesgänge ein. Ein Jahr ohne Zapfung nennt Januar bzw. Tag 1.</para>
-    /// </summary>
-    /// <summary>
     /// <b>Die Dauerlinie der Bilanz</b> (Reiter „Dauerlinie", 5.1, 5.6; Stufe Z4): die 8760
     /// Stundenwerte von Zapfung und Zirkulation [kW = kWh je Stunde], absteigend geordnet, die
     /// Marken der Perzentile P50, P90, P95 und P99 der Stundenwerte mit ihrem Rang auf der Linie und
@@ -121,6 +110,17 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>
+    /// <b>Die Auswertung der Bilanzreihen für die Vorschau</b> (Umsetzungskonzept
+    /// Zapfprofilgenerator 5.1, 5.6; Stufe Z1, Gruppe 3; Stufe Z4): größter Monat, mittlerer
+    /// Tagesgang je Tagtyp, Woche mit dem größten Tagesbedarf, Dauerlinie und Auslastung. Sie liest
+    /// nur fertige <see cref="Bilanzreihe"/>n und einen Kalender — sie rechnet keinen Bedarf und
+    /// ändert keine Reihe. Die Vorschau zeigt damit dieselbe Reihe, die der Lauf verbucht (2.4).
+    ///
+    /// <para><b>Regeln.</b> Gleichstände entscheidet der früheste Monat bzw. Tag (feste
+    /// Reihenfolge, wiederholbar). Ruhetage (Ferien einer Zone) gehen in keinen der drei
+    /// Tagesgänge ein. Ein Jahr ohne Zapfung nennt Januar bzw. Tag 1.</para>
+    /// </summary>
     internal static class Zapfauswertung
     {
         /// <summary>Die Perzentile der Dauerlinie (Mockup: P90, P95, P99; dazu der Median).</summary>
