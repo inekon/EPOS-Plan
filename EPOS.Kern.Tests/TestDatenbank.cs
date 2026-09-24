@@ -603,6 +603,12 @@ namespace EPOS.Kern.Tests
                 // (NutzungsdauerSaetze); wiederholbar - gesetzt wird nur, was leer ist.
                 NutzungsdauerSaetze.Ausfuehren();
 
+                // Schritt 121 (Welle #468): der Katalogverweis des Projektgebaeudes samt Index
+                // und Nachtrag, dazu die Reparatur der Sonstigen Flaeche ohne U-Wert. Aus
+                // DERSELBEN Quelle wie in der Migration und im Werkzeug
+                // (GebaeudeKatalogverweis); jeder Handgriff wiederholbar.
+                GebaeudeKatalogverweis.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
