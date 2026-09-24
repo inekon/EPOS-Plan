@@ -28713,4 +28713,400 @@ Do you want to allow this?</value>
   <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
     <value>Zone “{0}”: a factor of the utilisation profile is less than 0.</value>
   </data>
+  <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
+    <value>Technical values, daily profiles and seed are available at the Expert level.</value>
+  </data>
+  <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
+    <value>The duration curve is shown at the Extended level.</value>
+  </data>
+  <data name="ZPG_GRUND_FOLGT" xml:space="preserve">
+    <value>Follows with the next version of the dialog.</value>
+  </data>
+  <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
+    <value>Default · {0}</value>
+  </data>
+  <data name="ZPG_OPT_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="ZPG_OPT_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="ZPG_FELD_ZEILE" xml:space="preserve">
+    <value>{0}, row {1}</value>
+  </data>
+  <data name="ZPG_SP_TOPOLOGIE" xml:space="preserve">
+    <value>Topology</value>
+  </data>
+  <data name="ZPG_SP_ANTEIL" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="ZPG_SP_RECHENWEG" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="ZPG_RECHENWEG_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="ZPG_RECHENWEG_MANUELL" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="ZPG_RECHENWEG_MESSWERT" xml:space="preserve">
+    <value>Measured value</value>
+  </data>
+  <data name="ZPG_KAT_AUFGEKLAPPT" xml:space="preserve">
+    <value>Catalogue of types of use</value>
+  </data>
+  <data name="ZPG_SP_KALENDER" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Effective from the dwelling table: {0} {1} — OK adopts it as the reference quantity.</value>
+  </data>
+  <data name="ZPG_GRP_BELEGUNG" xml:space="preserve">
+    <value>Occupancy and system</value>
+  </data>
+  <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Dwelling table</value>
+  </data>
+  <data name="ZPG_LBL_ANZAHL" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="ZPG_LBL_RAUMZAHL" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="ZPG_LBL_PERSONEN" xml:space="preserve">
+    <value>Persons per dwelling</value>
+  </data>
+  <data name="ZPG_LBL_AUSSTATTUNG" xml:space="preserve">
+    <value>Equipment class</value>
+  </data>
+  <data name="ZPG_SP_AKTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="ZPG_BTN_WOHNUNG_NEU" xml:space="preserve">
+    <value>Add dwelling type</value>
+  </data>
+  <data name="ZPG_BTN_WOHNUNG_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ZPG_AUSSTATTUNG_VORGABE" xml:space="preserve">
+    <value>Default class</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Persons empty = occupancy by number of rooms from the catalogue, otherwise persons per dwelling unit; equipment empty = default class. With a table its quantity is the reference quantity.</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGSTABELLE_LEER" xml:space="preserve">
+    <value>No dwelling table — the reference quantity applies.</value>
+  </data>
+  <data name="ZPG_LBL_PERSONEN_JE_WE" xml:space="preserve">
+    <value>Persons per dwelling unit</value>
+  </data>
+  <data name="ZPG_EINHEIT_PERSONEN_JE_WE" xml:space="preserve">
+    <value>p/DU</value>
+  </data>
+  <data name="ZPG_HINW_PERSONEN_JE_WE" xml:space="preserve">
+    <value>Default · occupancy by dwelling size from the catalogue (method of DIN 4708-2).</value>
+  </data>
+  <data name="ZPG_LBL_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Living area per dwelling unit</value>
+  </data>
+  <data name="ZPG_HINW_WOHNFLAECHE_JE_WE" xml:space="preserve">
+    <value>Default · {0} m² (assumption); area formula of DIN V 18599-10.</value>
+  </data>
+  <data name="ZPG_LBL_TOPOLOGIE" xml:space="preserve">
+    <value>System topology</value>
+  </data>
+  <data name="ZPG_HINW_TOPOLOGIE" xml:space="preserve">
+    <value>Default · storage; affects only the design.</value>
+  </data>
+  <data name="ZPG_LBL_ZIRKULATION_VORHANDEN" xml:space="preserve">
+    <value>Circulation present</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_VORHANDEN" xml:space="preserve">
+    <value>Default · yes; “no” takes the zone out of the circulation share.</value>
+  </data>
+  <data name="ZPG_LBL_KALENDER" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="ZPG_KALENDER_NUTZUNGSART" xml:space="preserve">
+    <value>Calendar of the type of use · {0}</value>
+  </data>
+  <data name="ZPG_KALENDER_GEBAEUDE" xml:space="preserve">
+    <value>Holidays of building {0}</value>
+  </data>
+  <data name="ZPG_HINW_KALENDER" xml:space="preserve">
+    <value>Default · calendar of the type of use; a building only presets holidays and area — the zone's own holidays take precedence.</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN" xml:space="preserve">
+    <value>Holiday period {0}</value>
+  </data>
+  <data name="ZPG_LBL_BEGINN_TAG" xml:space="preserve">
+    <value>Start day</value>
+  </data>
+  <data name="ZPG_LBL_BEGINN_MONAT" xml:space="preserve">
+    <value>Start month</value>
+  </data>
+  <data name="ZPG_LBL_ENDE_TAG" xml:space="preserve">
+    <value>End day</value>
+  </data>
+  <data name="ZPG_LBL_ENDE_MONAT" xml:space="preserve">
+    <value>End month</value>
+  </data>
+  <data name="ZPG_HINW_FERIEN" xml:space="preserve">
+    <value>Empty = no holidays. A period over the turn of the year starts in December; without a start it runs from 1 January. Calculated in a year without leap day.</value>
+  </data>
+  <data name="ZPG_LBL_BUNDESLAND" xml:space="preserve">
+    <value>Federal state</value>
+  </data>
+  <data name="ZPG_BUNDESLAND_KLIMAREGION" xml:space="preserve">
+    <value>as climate region</value>
+  </data>
+  <data name="ZPG_GRUND_BUNDESLAND" xml:space="preserve">
+    <value>Takes effect only with a calendar table per federal state; until then weekends and holidays of the climate region apply.</value>
+  </data>
+  <data name="ZPG_LBL_JAHRESMESSWERT" xml:space="preserve">
+    <value>Measured annual value</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_EINHEIT" xml:space="preserve">
+    <value>Unit of the measured value</value>
+  </data>
+  <data name="ZPG_MESSWERT_KWH" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="ZPG_MESSWERT_M3" xml:space="preserve">
+    <value>m³/a</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_GRENZE" xml:space="preserve">
+    <value>Balance boundary of the measured value</value>
+  </data>
+  <data name="ZPG_GRENZE_ZAPFSTELLE" xml:space="preserve">
+    <value>at the draw-off point</value>
+  </data>
+  <data name="ZPG_GRENZE_VERTEILUNG" xml:space="preserve">
+    <value>including distribution and circulation loss</value>
+  </data>
+  <data name="ZPG_GRENZE_SPEICHER" xml:space="preserve">
+    <value>additionally including storage loss</value>
+  </data>
+  <data name="ZPG_LBL_SPEICHERVERLUST" xml:space="preserve">
+    <value>Storage loss</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_QUELLE" xml:space="preserve">
+    <value>Source of the measured value</value>
+  </data>
+  <data name="ZPG_LBL_MESSWERT_ZEITRAUM" xml:space="preserve">
+    <value>Period of the measured value</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESMESSWERT" xml:space="preserve">
+    <value>Empty = no measured value. A measured value scales the zone with a stated factor; a volume applies at the draw-off point and is converted via draw-off and cold water temperature.</value>
+  </data>
+  <data name="ZPG_GRP_SCHAETZHILFEN" xml:space="preserve">
+    <value>Daily demand, charging power, circulation</value>
+  </data>
+  <data name="ZPG_HINW_SCHAETZHILFEN" xml:space="preserve">
+    <value>Pattern auto/manual: proposal, manual value and the applied value that is used further. The applied value follows from the switch.</value>
+  </data>
+  <data name="ZPG_LBL_TAGESBEDARF" xml:space="preserve">
+    <value>Daily demand</value>
+  </data>
+  <data name="ZPG_LBL_TAGESBEDARF_MANUELL" xml:space="preserve">
+    <value>Daily demand manual</value>
+  </data>
+  <data name="ZPG_LBL_VORSCHLAG" xml:space="preserve">
+    <value>Proposal: {0} {1}</value>
+  </data>
+  <data name="ZPG_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Adopt as manual value</value>
+  </data>
+  <data name="ZPG_HINW_VORSCHLAG_OHNE" xml:space="preserve">
+    <value>The method yields no proposal — the calculation path names the reason.</value>
+  </data>
+  <data name="ZPG_HINW_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>A proposal is available only with a calculated preview.</value>
+  </data>
+  <data name="ZPG_HINW_MANUELL" xml:space="preserve">
+    <value>Takes effect only with “manual”.</value>
+  </data>
+  <data name="ZPG_LBL_ANGESETZT" xml:space="preserve">
+    <value>Applied: {0} {1} ({2})</value>
+  </data>
+  <data name="ZPG_ANGESETZT_KALIBRIERT" xml:space="preserve">
+    <value>calibrated to the measured annual value</value>
+  </data>
+  <data name="ZPG_LBL_RECHENWEG" xml:space="preserve">
+    <value>Calculation: {0}</value>
+  </data>
+  <data name="ZPG_LBL_LADELEISTUNG" xml:space="preserve">
+    <value>Charging power (building)</value>
+  </data>
+  <data name="ZPG_LBL_LADELEISTUNG_MANUELL" xml:space="preserve">
+    <value>Charging power manual</value>
+  </data>
+  <data name="ZPG_LBL_LADEFENSTER" xml:space="preserve">
+    <value>Charging window</value>
+  </data>
+  <data name="ZPG_LBL_LADEFENSTER_BEGINN" xml:space="preserve">
+    <value>Start of the charging window</value>
+  </data>
+  <data name="ZPG_HINW_LADEFENSTER" xml:space="preserve">
+    <value>Default · {0} h/d from {1} o'clock; effective charging time per day, blocking and heating times deducted.</value>
+  </data>
+  <data name="ZPG_HINW_LADELEISTUNG" xml:space="preserve">
+    <value>Affects only the design, never the balance series. The design calculates the proposal: largest daily demand including circulation ÷ charging window.</value>
+  </data>
+  <data name="ZPG_LADE_ANGESETZT_AUTO" xml:space="preserve">
+    <value>Applied: proposal of the design (auto)</value>
+  </data>
+  <data name="ZPG_LADE_ANGESETZT_MANUELL" xml:space="preserve">
+    <value>Applied: {0} kW (manual)</value>
+  </data>
+  <data name="ZPG_LBL_ZIRKULATION" xml:space="preserve">
+    <value>Circulation (building)</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_MANUELL" xml:space="preserve">
+    <value>Circulation manual</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_METHODE" xml:space="preserve">
+    <value>Circulation method</value>
+  </data>
+  <data name="ZPG_ZIRK_METHODE_LAENGE" xml:space="preserve">
+    <value>Pipe length × specific loss</value>
+  </data>
+  <data name="ZPG_ZIRK_METHODE_ANTEIL" xml:space="preserve">
+    <value>Share of daily demand</value>
+  </data>
+  <data name="ZPG_ZIRK_METHODE_FLAECHE" xml:space="preserve">
+    <value>Area-related value</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_LAENGE" xml:space="preserve">
+    <value>Pipe length</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_VERLUST" xml:space="preserve">
+    <value>Specific loss</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_ANTEIL" xml:space="preserve">
+    <value>Share of daily demand</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_LAGE" xml:space="preserve">
+    <value>Position of the pipe</value>
+  </data>
+  <data name="ZPG_LAGE_INNEN" xml:space="preserve">
+    <value>inside the thermal envelope</value>
+  </data>
+  <data name="ZPG_LAGE_AUSSEN" xml:space="preserve">
+    <value>outside the thermal envelope</value>
+  </data>
+  <data name="ZPG_HINW_ZIRK_VORGABEN" xml:space="preserve">
+    <value>Empty = default · {0} W/m or share {1}.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION" xml:space="preserve">
+    <value>Separate channel next to the draw-off profile, never included in the profile; value, area and running time are shown at the Expert level.</value>
+  </data>
+  <data name="ZPG_LBL_LEITUNGSINHALT" xml:space="preserve">
+    <value>Pipe content</value>
+  </data>
+  <data name="ZPG_HINW_LEITUNGSINHALT" xml:space="preserve">
+    <value>Water content of the pipes between heater and most remote draw-off point; it helps decide a large system according to DVGW W 551.</value>
+  </data>
+  <data name="ZPG_GRP_FACHWERTE" xml:space="preserve">
+    <value>Technical values · {0}</value>
+  </data>
+  <data name="ZPG_LBL_BEDARF_SPEZ" xml:space="preserve">
+    <value>Specific demand</value>
+  </data>
+  <data name="ZPG_HINW_BEDARF_SPEZ" xml:space="preserve">
+    <value>Empty = catalogue value of the level ({0} kWh/({1}·d)).</value>
+  </data>
+  <data name="ZPG_LBL_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Draw-off temperature</value>
+  </data>
+  <data name="ZPG_HINW_ZAPFTEMPERATUR" xml:space="preserve">
+    <value>Empty = reference temperature of the catalogue ({0} °C); a large system expects the minimum temperature according to DVGW W 551.</value>
+  </data>
+  <data name="ZPG_LBL_KALTWASSER_MITTEL" xml:space="preserve">
+    <value>Cold water annual mean</value>
+  </data>
+  <data name="ZPG_LBL_KALTWASSER_AMPLITUDE" xml:space="preserve">
+    <value>Cold water amplitude</value>
+  </data>
+  <data name="ZPG_HINW_KALTWASSER" xml:space="preserve">
+    <value>Empty = convention {0} °C ± {1} K, sinusoidal over the year (balance only).</value>
+  </data>
+  <data name="ZPG_LBL_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Utilisation profile</value>
+  </data>
+  <data name="ZPG_HINW_AUSLASTUNGSGANG" xml:space="preserve">
+    <value>Twelve monthly factors; empty = catalogue factor (grey in the field).</value>
+  </data>
+  <data name="ZPG_LBL_TAGESGANGSATZ" xml:space="preserve">
+    <value>Daily profile set</value>
+  </data>
+  <data name="ZPG_TAGESGANGSATZ_VORGABE" xml:space="preserve">
+    <value>Set of the type of use</value>
+  </data>
+  <data name="ZPG_HINW_TAGESGANGSATZ" xml:space="preserve">
+    <value>Default · the set of the type of use; an incomplete set is locked.</value>
+  </data>
+  <data name="ZPG_BTN_TAGESGANG" xml:space="preserve">
+    <value>Edit daily profile…</value>
+  </data>
+  <data name="ZPG_BTN_KATEGORIEN" xml:space="preserve">
+    <value>Draw-off categories and spread…</value>
+  </data>
+  <data name="ZPG_GRP_FACHWERTE_GEBAEUDE" xml:space="preserve">
+    <value>Technical values · building</value>
+  </data>
+  <data name="ZPG_LBL_KALTWASSER_AUSLEGUNG" xml:space="preserve">
+    <value>Cold water of the design</value>
+  </data>
+  <data name="ZPG_HINW_KALTWASSER_AUSLEGUNG" xml:space="preserve">
+    <value>Empty = {0} °C; applies to all days of the design.</value>
+  </data>
+  <data name="ZPG_LBL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Storage temperature</value>
+  </data>
+  <data name="ZPG_HINW_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Empty = {0} °C; a large system takes the minimum temperature according to DVGW W 551.</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_KENNWERT" xml:space="preserve">
+    <value>Circulation loss (value)</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_FLAECHE" xml:space="preserve">
+    <value>Circulation area</value>
+  </data>
+  <data name="ZPG_LBL_ZIRK_LAUFZEIT" xml:space="preserve">
+    <value>Circulation running time</value>
+  </data>
+  <data name="ZPG_HINW_ZIRK_EXPERTE" xml:space="preserve">
+    <value>Empty = value by position ({0} or {1} kWh/(m²·a), method of DIN V 4701-10), area from living area per dwelling unit or building, running time {2} h/d according to DVGW W 551.</value>
+  </data>
+  <data name="ZPG_LBL_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Temperature of the litre display</value>
+  </data>
+  <data name="ZPG_LBL_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Threshold of the hour count</value>
+  </data>
+  <data name="ZPG_HINW_ANZEIGE" xml:space="preserve">
+    <value>Only for the key figures, not saved; empty = setting, otherwise {0} °C or {1} kW.</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_DAUERLINIE" xml:space="preserve">
+    <value>Sorted hourly values of the balance series (draw-off and circulation) — balance values, not a design quantity.</value>
+  </data>
+  <data name="ZPG_DAUERLINIE_MARKE" xml:space="preserve">
+    <value>P{0} · {1} kW (rank {2})</value>
+  </data>
+  <data name="ZPG_DAUERLINIE_SCHWELLE" xml:space="preserve">
+    <value>{0} hours above {1} kW</value>
+  </data>
+  <data name="ZPG_DAUERLINIE_OHNE" xml:space="preserve">
+    <value>The zone carries 0 — no duration curve.</value>
+  </data>
+  <data name="ZPG_GRP_WARNLISTE" xml:space="preserve">
+    <value>Notes of the balance</value>
+  </data>
+  <data name="ZPG_WARNLISTE_UNTER" xml:space="preserve">
+    <value>Not blocking; the notes of a zone are also shown at its input block.</value>
+  </data>
+  <data name="ZPG_WARNLISTE_LEER" xml:space="preserve">
+    <value>No notes.</value>
+  </data>
 </root>
