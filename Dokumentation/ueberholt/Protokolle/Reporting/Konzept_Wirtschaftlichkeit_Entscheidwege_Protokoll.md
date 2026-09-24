@@ -1281,7 +1281,7 @@ jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`),
 `09037a32`, der Merge `704356a4` samt den Papieren zu #454), in § 8.17 und § 8.18 **vor #460** (Stand `9ab55946`, der
 Merge #460 über den Entscheid-Papieren zu E8b, `46023235`), in § 8.19 und § 8.20 **vor #461** (Stand `62613292`, der
 Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460), in § 8.21 und § 8.22 **vor #462** (Stand
-`NACHTRAG-462-MERGE`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
+`75d45630`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
 Papieren zu #461) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
@@ -2123,14 +2123,14 @@ mit ihr ist E9 abgeschlossen.
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **E9 Teil b** (#462, Merge `NACHTRAG-462-MERGE`) | V‑E in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV und KWK, an DV-Entgelt und PPA-Preis; der Hinweistext entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert"; 38 Ressourcenschlüssel neu, 1 entfallen, 2 geändert; kein Schemaschritt | **keine ohne Pflege** — die Rechenwege stehen seit E9a; Anker unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich; erstes Gate auf `9fbac8c6` grün, zweites Gate NACHTRAG-462-GATE2 |
+| **E9 Teil b** (#462, Merge `75d45630`) | V‑E in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV und KWK, an DV-Entgelt und PPA-Preis; der Hinweistext entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert"; 38 Ressourcenschlüssel neu, 1 entfallen, 2 geändert; kein Schemaschritt | **keine ohne Pflege** — die Rechenwege stehen seit E9a; Anker unverändert, Referenzlauf gegen R13 13/13, 387/387 byte-gleich; erstes Gate auf `9fbac8c6` grün, zweites Gate NACHTRAG-462-GATE2 |
 
 *Kopf (Z. 3):*
 
 > **Stand 24.09.2026** · Codestand `62613292` · `SchemaStand.Zielversion` = 118 · Schemaschritte 90–118 vergeben
 > (116–118 die Schritte B, C und D der Etappe E9a) · …
 
-**Umgesetzt mit E9b (#462):** Codestand `NACHTRAG-462-MERGE`, Zielversion 119 und „90–119 vergeben" (119 die Kühlung
+**Umgesetzt mit E9b (#462):** Codestand `75d45630`, Zielversion 119 und „90–119 vergeben" (119 die Kühlung
 KU2, unter den fremden Schritten), dazu „E9b ohne Schritt".
 
 *§ 2.11.2, die Zeile V-G5 der Gap-Tafel (Z. 776), Spalte „Lücke / Behandlung":*
@@ -2210,11 +2210,11 @@ Speicherflotte, voraussichtlich #463) nach dem eigenen Entscheid zu ND‑S3; off
 
 ### 8.22 Berichtigungen im gültigen Stand (#462)
 
-Die Stellen, die mit E9b veraltet sind; „vorher" ist der Wortlaut vor #462 (Stand `NACHTRAG-462-MERGE`). Je Stelle eine Zeile:
+Die Stellen, die mit E9b veraltet sind; „vorher" ist der Wortlaut vor #462 (Stand `75d45630`). Je Stelle eine Zeile:
 
 | Stelle im Konzept | vorher | nachher |
 |---|---|---|
-| Kopf | Codestand `62613292`, Zielversion 118, „90–118 vergeben" | Codestand `NACHTRAG-462-MERGE`, Zielversion 119, „90–119 vergeben"; 119 (Kühlung KU2) unter den fremden Schritten; „E9b ohne Schritt" |
+| Kopf | Codestand `62613292`, Zielversion 118, „90–118 vergeben" | Codestand `75d45630`, Zielversion 119, „90–119 vergeben"; 119 (Kühlung KU2) unter den fremden Schritten; „E9b ohne Schritt" |
 | § 2.11.2 | V‑G5 „Stand: teilweise gebaut #461"; Wortlaut in § 8.21 | „Stand: gebaut #461/#462" |
 | § 2.11.4 | V‑E: Wortlaut in § 8.21; Fußnote „… und E9 Teil a (#461)" | V‑E mit Teil b gebaut #462, Stand „E9 abgeschlossen"; Fußnote „… und E9 (#461, #462)" |
 | § 2.11.5 | Spalte „Stand" und die Regel „Pflege": Wortlaut in § 8.21 | „gebaut #461/#462" mit dem Ort der Pflege je Zeile; „Pflege" mit Baustein, Orten und Szenariotafel; neue Regel „Ausweis „n von m Parametern szenariert"" mit Zählregel und Lesart |
@@ -2222,4 +2222,4 @@ Die Stellen, die mit E9b veraltet sind; „vorher" ist der Wortlaut vor #462 (St
 | § 2.13 (5) | „Vorschlag, Hinweistext, Verlauf, Sensitivität" | „Vorschlag, Ausweis der Szenarioabdeckung (an der Stelle des Hinweistexts, #462), Verlauf, Sensitivität" |
 | § 6.1 | Kurztafel bis E9a (#461) | Zeile „E9b Szenarioabdeckung, Teil b" (#462) |
 | § 6.2 | endete mit „… E9a bewegt keinen Anker." | dazu `SzenarioAbdeckungTests` (15), `EnergietraegerSzenarioHuelleTests` (6) und der Satz „E9b bewegt keinen Anker" |
-| § 7 und Anhang | § 7: Wortlaut in § 8.21, dazu die Aufzählung „… E8 Teil b (#455) und E9 Teil a (#461)" und „E7 und E8 sind damit abgeschlossen"; Kürzeltafel „V-E Teil a = **#461**" und „Teil b mit E9b", Mockup-Anhang „U15 teilweise #461 (Kern; Dialog mit E9b)"; Etappenzeile „E9 Teil b … E12 — nächste Etappe: E9b (voraussichtlich #462)" | § 7 mit E9 Teil b (#462), „E7, E8 und E9 sind damit abgeschlossen", als Nächstes E10, offen dazu die fünf Fragen aus E9b; Kürzeltafel „V-E = **#461**/**#462**", neue Zeile V‑E Teil b = #462, „U15 erledigt #461/#462, U10 entfallen #462"; Etappenzeilen „E9 Teil b — V‑E in den Dialogen" = #462 (Merge `NACHTRAG-462-MERGE`) und „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)" |
+| § 7 und Anhang | § 7: Wortlaut in § 8.21, dazu die Aufzählung „… E8 Teil b (#455) und E9 Teil a (#461)" und „E7 und E8 sind damit abgeschlossen"; Kürzeltafel „V-E Teil a = **#461**" und „Teil b mit E9b", Mockup-Anhang „U15 teilweise #461 (Kern; Dialog mit E9b)"; Etappenzeile „E9 Teil b … E12 — nächste Etappe: E9b (voraussichtlich #462)" | § 7 mit E9 Teil b (#462), „E7, E8 und E9 sind damit abgeschlossen", als Nächstes E10, offen dazu die fünf Fragen aus E9b; Kürzeltafel „V-E = **#461**/**#462**", neue Zeile V‑E Teil b = #462, „U15 erledigt #461/#462, U10 entfallen #462"; Etappenzeilen „E9 Teil b — V‑E in den Dialogen" = #462 (Merge `75d45630`) und „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)" |
