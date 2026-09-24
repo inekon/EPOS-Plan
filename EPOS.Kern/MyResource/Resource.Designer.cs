@@ -20076,6 +20076,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeliste wurde nicht gespeichert: Das Gebäude „{0}“ ist im Gebäudekatalog nicht mehr zu finden. Das Projekt behält seine bisherigen Gebäude. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LISTE_KATALOGSATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LISTE_KATALOGSATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeliste wurde nicht gespeichert. Das Projekt behält seine bisherigen Gebäude. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LISTE_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LISTE_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll {0} wirklich gelöscht werden ? ähnelt.
         /// </summary>
         public static string GEB_MSG_LOESCHFRAGE {

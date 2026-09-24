@@ -2624,29 +2624,202 @@ namespace WindowsFormsApplication1
 
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (var item in list)
-            {
-                // 1) Projekt-Zuordnung (Z_ProjektGebaeude) mit eigener ID anlegen.
-                int zID = DataRepository.GetMaxID("Z_ProjektGebaeude") + 1;
-                string sqlZ = "INSERT INTO Z_ProjektGebaeude (ID, ID_Projekt, Wohnflaeche_Waermebedarf, " +
-                    "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, dezWarmwasserbereitung) VALUES (?,?,?,?,?,?)";
-                DbParam[] psZ = {
-                    new DbParam("@id", DbParamTyp.Integer) { Wert = zID },
-                    new DbParam("@pid", DbParamTyp.Integer) { Wert = projektID },
-                    new DbParam("@fl", DbParamTyp.Double) { Wert = item.Wohnflaeche },
-                    new DbParam("@Einheit", DbParamTyp.VarWChar) { Wert = (object)(item.Einheit ?? "") },
-                    new DbParam("@jng", DbParamTyp.Double) { Wert = item.Jahresnutzungsgrad },
-                    new DbParam("@dez", DbParamTyp.Boolean) { Wert = item.DezentralWarmwasser }
-                };
-                if (!DataRepository.ExecuteSQL(sqlZ, psZ)) return false;
+                if (!GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm)) return false;
+            return true;
+        }
 
-                // 2) Gebaeude-Stammdatensatz in die Projekt-Tabelle Tab_Gebaeude kopieren
-                //    (setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude = zID).
-                //    Gesucht wird ueber den Katalogverweis der Zeile (Schemaschritt 121);
-                //    der Name ist nur der Rueckfall fuer Altbestand ohne Verweis - so
-                //    uebersteht das Neuschreiben eine Umbenennung im Katalog.
-                if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return false;
+        /// <summary>
+        /// EINE neue Gebäudezuordnung: die Zeile in <c>Z_ProjektGebaeude</c> und die
+        /// Projektkopie aus dem Katalog (<c>Tab_Gebaeude</c>). Gemeinsamer Schritt von
+        /// <see cref="Add_Projekt_ZuordungGebäude"/> und
+        /// <see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>;
+        /// läuft in der Klammer des Aufrufers.
+        /// </summary>
+        private static bool GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm)
+        {
+            // 1) Projekt-Zuordnung (Z_ProjektGebaeude) mit eigener ID anlegen.
+            int zID = DataRepository.GetMaxID("Z_ProjektGebaeude") + 1;
+            string sqlZ = "INSERT INTO Z_ProjektGebaeude (ID, ID_Projekt, Wohnflaeche_Waermebedarf, " +
+                "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, dezWarmwasserbereitung) VALUES (?,?,?,?,?,?)";
+            DbParam[] psZ = {
+                new DbParam("@id", DbParamTyp.Integer) { Wert = zID },
+                new DbParam("@pid", DbParamTyp.Integer) { Wert = projektID },
+                new DbParam("@fl", DbParamTyp.Double) { Wert = item.Wohnflaeche },
+                new DbParam("@Einheit", DbParamTyp.VarWChar) { Wert = (object)(item.Einheit ?? "") },
+                new DbParam("@jng", DbParamTyp.Double) { Wert = item.Jahresnutzungsgrad },
+                new DbParam("@dez", DbParamTyp.Boolean) { Wert = item.DezentralWarmwasser }
+            };
+            if (!DataRepository.ExecuteSQL(sqlZ, psZ)) return false;
+
+            // 2) Gebaeude-Stammdatensatz in die Projekt-Tabelle Tab_Gebaeude kopieren
+            //    (setzt ID_Projekt und die Verknuepfung ID_ProjektGebaeude = zID).
+            //    Gesucht wird ueber den Katalogverweis der Zeile (Schemaschritt 121);
+            //    der Name ist nur der Rueckfall fuer Altbestand ohne Verweis - so
+            //    uebersteht das Neuschreiben eine Umbenennung im Katalog.
+            if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Die Gebäudeliste eines Projekts SCHREIBEN, ohne unveränderte Kopien anzutasten</b>
+        /// — der Weg von Startseite (<see cref="Speichere_Projekt_Gebaeudeliste"/>) und
+        /// Assistent im BEARBEITEN-Zweig (Konzept Administrationsdialoge 7.1 (a)).
+        ///
+        /// <para><b>Abgleich statt Neuaufbau.</b> Eine Zeile der Liste, deren
+        /// <see cref="Z_ProjGebModel.ID_Z"/> eine Zuordnung DIESES Projekts mit genau einer
+        /// Projektkopie trifft und deren Katalogverweis unverändert ist (dieselbe
+        /// <c>ID_Gebaeude_Stamm</c>, ohne Verweis derselbe Gebäudename), BLEIBT: Nur ihre
+        /// Zuordnungswerte (Fläche/Verbrauch, Einheit, Jahresnutzungsgrad, dezentrales
+        /// Warmwasser) werden fortgeschrieben. Die Projektkopie in <c>Tab_Gebaeude</c> —
+        /// samt allem, was per Feld-Übernahme nur dort geändert wurde, ihrer
+        /// Tagesverteilung und den Verweisen darauf (Trinkwarmwasserzonen) — steht
+        /// unverändert. Zuordnungen, die in der Liste fehlen, werden gelöscht
+        /// (<see cref="Del_Projekt_ZuordungGebäude(int, int, DbVorgang)"/>); jede übrige
+        /// Zeile entsteht neu aus dem Katalog wie beim ersten Übernehmen.</para>
+        ///
+        /// <para><b>Veraltung.</b> Das Änderungsdatum des Projekts wird gesetzt wie auf jedem
+        /// anderen Schreibweg (<see cref="MerkmalUebernahmeCtrl.MarkiereProjektGeaendert"/>);
+        /// damit gilt das letzte Ergebnis als veraltet — genau wie beim bisherigen Löschen und
+        /// Neuanlegen.</para>
+        ///
+        /// <para><b>Kein eigener Vorgang.</b> Wer allein ruft, schreibt je Anweisung; die
+        /// Klammer bringt der Aufrufer (Assistent) oder
+        /// <see cref="Speichere_Projekt_Gebaeudeliste"/> mit. <paramref name="fehlgebaeude"/>
+        /// nennt die Zeile, deren Katalogsatz sich nicht fand; <c>null</c> bei Erfolg oder
+        /// einem Fehlschlag ohne Gebäudebezug.</para>
+        /// </summary>
+        public bool Schreibe_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list,
+                                                      DbVorgang vorgang, out string fehlgebaeude)
+        {
+            fehlgebaeude = null;
+
+            // Der hereingereichte Vorgang gilt fuer ALLES, was dieser Schritt schreibt und
+            // liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
+            // 1) Der Bestand: jede Zuordnung des Projekts mit Zahl, Katalogverweis und Namen
+            //    ihrer Projektkopie. Nur eine Zuordnung mit GENAU EINER Kopie kann bleiben.
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT z.ID, COUNT(g.ID) AS Kopien, MIN(g.ID_Gebaeude_Stamm) AS Stamm, " +
+                "MIN(g.Gebaeudename) AS Name FROM Z_ProjektGebaeude z " +
+                "LEFT JOIN Tab_Gebaeude g ON g.ID_ProjektGebaeude = z.ID " +
+                "WHERE z.ID_Projekt = ? GROUP BY z.ID",
+                new DbParam("@pID", projektID));
+            if (dt == null) return false;
+
+            var bestand = new Dictionary<int, (long Kopien, int? Stamm, string Name)>();
+            foreach (DataRow r in dt.Rows)
+                bestand[Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture)] = (
+                    r["Kopien"] == DBNull.Value ? 0L : Convert.ToInt64(r["Kopien"], CultureInfo.InvariantCulture),
+                    Z_ProjGebCtrl.Verweis(r, "Stamm"),
+                    r["Name"] == DBNull.Value ? "" : r["Name"].ToString());
+
+            // 2) Die Liste zuordnen: bleibt oder entsteht neu.
+            var bleiben = new Dictionary<int, Z_ProjGebModel>();
+            var neu = new List<Z_ProjGebModel>();
+            foreach (Z_ProjGebModel item in list ?? new List<Z_ProjGebModel>())
+            {
+                if (item == null) continue;
+                if (bestand.TryGetValue(item.ID_Z, out var b) && !bleiben.ContainsKey(item.ID_Z)
+                    && b.Kopien == 1 && GleicherKatalogsatz(item, b.Stamm, b.Name))
+                    bleiben[item.ID_Z] = item;
+                else
+                    neu.Add(item);
+            }
+
+            // 3) Was nicht bleibt, geht - Zuordnung, Kopie und deren Tagesverteilung.
+            foreach (int idZ in bestand.Keys)
+                if (!bleiben.ContainsKey(idZ) && !Del_Projekt_ZuordungGebäude(projektID, idZ, vorgang))
+                    return false;
+
+            // 4) Die bleibenden: nur die Zuordnungswerte fortschreiben.
+            foreach (KeyValuePair<int, Z_ProjGebModel> paar in bleiben)
+            {
+                Z_ProjGebModel item = paar.Value;
+                if (!DataRepository.ExecuteSQL(
+                        "UPDATE Z_ProjektGebaeude SET Wohnflaeche_Waermebedarf = ?, " +
+                        "Einheit_Waermebedarf_Wohnflaeche = ?, Jahresnutzungsgrad = ?, " +
+                        "dezWarmwasserbereitung = ? WHERE ID = ? AND ID_Projekt = ?",
+                        new DbParam("@fl", DbParamTyp.Double) { Wert = item.Wohnflaeche },
+                        new DbParam("@Einheit", DbParamTyp.VarWChar) { Wert = (object)(item.Einheit ?? "") },
+                        new DbParam("@jng", DbParamTyp.Double) { Wert = item.Jahresnutzungsgrad },
+                        new DbParam("@dez", DbParamTyp.Boolean) { Wert = item.DezentralWarmwasser },
+                        new DbParam("@id", DbParamTyp.Integer) { Wert = paar.Key },
+                        new DbParam("@pid", DbParamTyp.Integer) { Wert = projektID }))
+                    return false;
+            }
+
+            // 5) Die neuen: aus dem Katalog wie beim ersten Uebernehmen.
+            GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
+            foreach (Z_ProjGebModel item in neu)
+            {
+                if (!GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm))
+                {
+                    fehlgebaeude = item.Gebaeudename ?? "";
+                    return false;
+                }
             }
             return true;
+        }
+
+        /// <summary>
+        /// <see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>
+        /// ohne den Namen der Fehlzeile — die Form der übrigen Schreibschritte des Assistenten.
+        /// </summary>
+        public bool Schreibe_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list, DbVorgang vorgang = null)
+            => Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang, out _);
+
+        /// <summary>
+        /// Zeigt die Listenzeile noch auf denselben Katalogsatz wie die vorhandene Kopie?
+        /// Mit Verweis auf beiden Seiten entscheidet die Id; ohne Verweis auf beiden Seiten
+        /// der Gebäudename (Altbestand). Ein Verweis nur auf einer Seite gilt als geändert.
+        /// </summary>
+        private static bool GleicherKatalogsatz(Z_ProjGebModel item, int? stammKopie, string nameKopie)
+        {
+            int? stammZeile = item.ID_Gebaeude_Stamm.HasValue && item.ID_Gebaeude_Stamm.Value > 0
+                ? item.ID_Gebaeude_Stamm : null;
+            if (stammZeile.HasValue || stammKopie.HasValue)
+                return stammZeile == stammKopie;
+            return string.Equals(item.Gebaeudename ?? "", nameKopie ?? "", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Der Speicherweg der Startseite</b> (Kachel „Gebäude"): die Gebäudeliste in EINEM
+        /// Datenbankvorgang schreiben
+        /// (<see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>).
+        /// Scheitert ein Schritt oder wirft er, rollt alles zurück — das Projekt behält seine
+        /// bisherigen Gebäude —, und der Ausgang nennt den Grund als Meldungstext für den
+        /// Anwender.
+        /// </summary>
+        public (bool Gelungen, string Meldung) Speichere_Projekt_Gebaeudeliste(int projektID, List<Z_ProjGebModel> list)
+        {
+            string fehlgebaeude = null;
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                bool gelungen;
+                try
+                {
+                    gelungen = Schreibe_Projekt_ZuordungGebäude(projektID, list, vorgang, out fehlgebaeude);
+                    if (gelungen) vorgang.Commit();
+                    else vorgang.Rollback();
+                }
+                catch (Exception)
+                {
+                    try { vorgang.Rollback(); } catch { /* der Vorgang ist ohnehin verloren */ }
+                    gelungen = false;
+                    fehlgebaeude = null;
+                }
+
+                if (gelungen) return (true, "");
+            }
+
+            string meldung = string.IsNullOrEmpty(fehlgebaeude)
+                ? MyResource.Resource.GEB_MSG_LISTE_NICHT_GESPEICHERT
+                : string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.GEB_MSG_LISTE_KATALOGSATZ_FEHLT, fehlgebaeude);
+            return (false, meldung);
         }
 
         public bool Add_Projekt(ref int projektID, ProjektModel model, DbVorgang vorgang = null)

@@ -13778,6 +13778,12 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_LOESCHFRAGE" xml:space="preserve">
     <value>Soll {0} wirklich gelöscht werden ?</value>
   </data>
+  <data name="GEB_MSG_LISTE_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Gebäudeliste wurde nicht gespeichert. Das Projekt behält seine bisherigen Gebäude.</value>
+  </data>
+  <data name="GEB_MSG_LISTE_KATALOGSATZ_FEHLT" xml:space="preserve">
+    <value>Die Gebäudeliste wurde nicht gespeichert: Das Gebäude „{0}“ ist im Gebäudekatalog nicht mehr zu finden. Das Projekt behält seine bisherigen Gebäude.</value>
+  </data>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Suche, z. B. Haus*_1990*</value>
   </data>

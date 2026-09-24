@@ -33,7 +33,9 @@ des Katalogeditors auf demselben Arbeitsstand, und beim Hilfe-Assistenten ist si
 (7.1 a und e erledigt). **Mit #468 (24.09.2026) erkennt die Löschsperre ein benutztes Gebäude über
 den Katalogverweis** `Tab_Gebaeude.ID_Gebaeude_Stamm` (Schemaschritt 121) und erst ohne ihn über den
 Namen (7.1 a); **mit #473 (24.09.2026)** legt auch das Neuschreiben der Gebäudeliste eines Projekts die
-Kopien über diesen Verweis an (7.1 a).
+Kopien über diesen Verweis an (7.1 a); **mit #475 (24.09.2026)** behält das Speichern der Gebäudeliste
+jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schreibt in einem Vorgang
+(7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -619,16 +621,28 @@ nicht über die Paketgrenze mit und trägt ihn am Ziel über den Namen nach; der
 Katalogsatzes (über den Verweis) und nur eine Kopie ohne Verweis unter ihrem eigenen Namen;
 `Loeschsperre` nennt die Projekte, und `Loeschen` lehnt einen benutzten Satz auch im Kern ab. Damit hält
 die Sperre, wenn der Katalogsatz oder die Kopie umbenannt wird. ✔ **Neuanlage über den Verweis —
-erledigt mit #473 (24.09.2026):** Speichert der Anwender die Gebäudeliste eines Projekts neu (Assistent,
-Startseite), löschen beide Wege die Kopien und legen sie neu an — über den Verweis: Die Liste führt ihn
-(`Z_ProjGebModel.ID_Gebaeude_Stamm`, `GebaeudeProjektZeile.IdKatalog`, gelesen von
-`Z_ProjGebCtrl.LiesProjekt`, gesetzt beim Übernehmen aus dem Katalog), und
-`GebaeudeStammCtrl.CopyFromStamm(Id, Name, …)` sucht den Katalogsatz zuerst über die Id; der Name ist
-nur der Rückfall für eine Zeile ohne Verweis oder mit einem Verweis ins Leere. Nach einer Umbenennung im
-Katalog gelingt das Neuschreiben damit, und die neue Kopie trägt den neuen Namen. Unverändert gilt:
-Das Neuschreiben übernimmt die Gebäudewerte des Katalogsatzes neu — eine Feld-Übernahme in die Kopie
-(`MerkmalUebernahmeCtrl`) geht dabei verloren —, die Zuordnungswerte (Fläche oder Verbrauch, Einheit,
-Jahresnutzungsgrad, dezentrales Warmwasser) bleiben. Dieselbe Transferregel gilt für den Verweis der
+erledigt mit #473 (24.09.2026):** Jede Kopie, die beim Speichern der Gebäudeliste eines Projekts neu
+entsteht, entsteht über den Verweis: Die Liste führt ihn (`Z_ProjGebModel.ID_Gebaeude_Stamm`,
+`GebaeudeProjektZeile.IdKatalog`, gelesen von `Z_ProjGebCtrl.LiesProjekt`, gesetzt beim Übernehmen aus
+dem Katalog), und `GebaeudeStammCtrl.CopyFromStamm(Id, Name, …)` sucht den Katalogsatz zuerst über die
+Id; der Name ist nur der Rückfall für eine Zeile ohne Verweis oder mit einem Verweis ins Leere.
+✔ **Abgleich statt Neuaufbau — erledigt mit #475 (24.09.2026):** Assistent (Betriebsart Bearbeiten) und
+Startseite schreiben die Gebäudeliste über dieselbe Kernmethode `WizardCtrl.Schreibe_Projekt_ZuordungGebäude`.
+Eine Zeile, deren Zuordnungs-Id (`ID_Z`) eine Zuordnung dieses Projekts mit genau einer Kopie trifft
+und deren Katalogverweis unverändert ist (dieselbe Id; ohne Verweis derselbe Name), **behält ihre
+Projektkopie** — mit allem, was per Feld-Übernahme (`MerkmalUebernahmeCtrl`) nur dort geändert wurde,
+ihrer Tagesverteilung und den Verweisen darauf (Trinkwarmwasserzonen, Gebäudeergebnis); nur ihre
+Zuordnungswerte (Fläche oder Verbrauch, Einheit, Jahresnutzungsgrad, dezentrales Warmwasser) werden
+fortgeschrieben. Eine Zuordnung, die in der Liste fehlt, wird samt Kopie gelöscht; jede übrige Zeile
+(neu übernommen oder mit geändertem Verweis) entsteht neu aus dem Katalog. Eine Umbenennung im Katalog
+berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts wird wie auf jedem
+Schreibweg gesetzt, das letzte Ergebnis gilt damit als veraltet. Die Startseite schreibt in **einem**
+Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
+Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
+Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
+`GEB_MSG_LISTE_NICHT_GESPEICHERT`); der Assistent läuft ohnehin in seinem Vorgang. Nachweis:
+`GebaeudelisteAbgleichTests`, `StartseiteTests.Der_Fehlerhinweis_steht_als_Fehlerbanner_ohne_Verfall`.
+Dieselbe Transferregel gilt für den Verweis der
 Wärmepumpen-Projektkopie `Tab_WP.ID_Stamm` (Schritt 80): Er reist nicht, der Wärmepumpenkatalog wird am
 Ziel nicht unter der Original-Id aufgefüllt, und der Import trägt den Verweis über den eindeutigen
 Bezeichner nach (sonst NULL). **`SET NULL` statt `RESTRICT`:** Die

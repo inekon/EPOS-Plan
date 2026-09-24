@@ -13771,6 +13771,12 @@ Please check all entries!</value>
   <data name="GEB_MSG_LOESCHFRAGE" xml:space="preserve">
     <value>Do you really want to delete {0}?</value>
   </data>
+  <data name="GEB_MSG_LISTE_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The building list was not saved. The project keeps its previous buildings.</value>
+  </data>
+  <data name="GEB_MSG_LISTE_KATALOGSATZ_FEHLT" xml:space="preserve">
+    <value>The building list was not saved: the building "{0}" can no longer be found in the building catalogue. The project keeps its previous buildings.</value>
+  </data>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Search, e.g. house*_1990*</value>
   </data>
