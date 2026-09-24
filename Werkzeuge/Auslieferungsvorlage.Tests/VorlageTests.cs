@@ -160,10 +160,14 @@ namespace Auslieferungsvorlage.Tests
             // 132 seit Schemaschritt 127 (E17, nicht monetarisierbare Wirkungen der
             // Wirtschaftlichkeit): Tab_ProjektWirkung, STRICT von ihrer ersten Zeile an.
             //
-            // 140 seit den Schritten S-A bis S-C der Gebaeudesimulation (Stufe G3, Welle B):
+            // 133 seit Schemaschritt 131 (Zapfprofilgenerator T3 "Typtage", Stufe Z4b):
+            // Tab_TwwTyptag_IMPORT, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der
+            // Vorlage LEER - sie nimmt die Typtage des lizenzierten Anwenders auf, nie eine
+            // Auslieferungszeile.
+            // 141 seit den Schritten S-A bis S-C der Gebaeudesimulation (Stufe G3, Welle B):
             // Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Bauteilschicht(_STAMM),
             // Tab_Zone und Tab_Bauteil - acht Tabellen, alle STRICT von ihrer ersten Zeile an.
-            Assert.Equal(140, befund.Strict);
+            Assert.Equal(141, befund.Strict);
         }
 
         // =============================================================================

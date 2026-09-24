@@ -1683,6 +1683,31 @@ namespace Testdatenbankschema
                                   GebaeudeAnschlusslaengenReparatur.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 131: die eingespielten Typtage des lizenzierten Anwenders
+            //      (Zapfprofilgenerator Stufe Z4b, Schemaschritt T3 "Typtage"). NACH dem Schritt
+            //      der Anschlusslaengen. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_131_ZapfprofilTyptage
+            //      bedient (TwwSchema.AnweisungenT3Typtage und TwwSchema.SpaltenT3Typtage):
+            //      Tab_TwwTyptag_IMPORT und an Tab_TwwProjekt die Wahl des Typtagwegs
+            //      (Typtage_Aktiv 0/1 mit Vorgabe 0, Typtage_Klimazone, Typtage_Gebaeudeart).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabelle entsteht LEER und bleibt es,
+            //      die Wahl steht auf "aus". Das Repositorium bringt keine Typtage mit (Konzept
+            //      Kapitel 6); eingespielt werden sie allein beim lizenzierten Anwender.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 131, trocken);
+            Console.WriteLine("Schritt 131 - Wahl des Typtagwegs je Projekt: " +
+                              (TwwSchema.T3TyptageVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht131 = new List<string>();
+                angelegt += TwwSchema.T3TyptageAlle(bericht131);
+                foreach (string zeile in bericht131)
+                    Console.WriteLine("Schritt 131 - " + zeile + ".");
+                Console.WriteLine("Schritt 131 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritte S-A, S-B, S-C (Gebaeudesimulation Stufe G3, Welle B;
             //      Softwarearchitektur 2.2/2.4, W1): Baustoffkatalog samt Norm- und Herstellersaat, Bauteilaufbauten
             //      mit Schichten, Zonen und Bauteile - acht STRICT-Tabellen aus DENSELBEN Quellen, aus

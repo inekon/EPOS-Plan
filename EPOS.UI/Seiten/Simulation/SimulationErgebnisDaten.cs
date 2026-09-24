@@ -211,6 +211,14 @@ public sealed class ParameterDaten
     /// </summary>
     public bool Kuehlbetrieb;
 
+    // ---- Anlagenkopplung (Konzept Anlagenkopplung 9.4, AK1 Welle 3) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Anlagenkopplung" (<c>Tab_Einstellungen.Anlagenkopplung</c>) als
+    /// Steuerwert (<c>DbWerte.ANLAGENKOPPLUNG_*</c>); <c>null</c> = aus (NULL in der Spalte).
+    /// </summary>
+    public string? Anlagenkopplung;
+
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
     /// (Anwenderwunsch 16.09.2026, <c>KomponentenKonfigurationDialog</c>).
@@ -228,7 +236,8 @@ public sealed class ParameterDaten
         UntersteLeistungsgrenze = UntersteLeistungsgrenze,
         Speicher = Speicher,
         Bereitschaft = Bereitschaft,
-        Kuehlbetrieb = Kuehlbetrieb
+        Kuehlbetrieb = Kuehlbetrieb,
+        Anlagenkopplung = Anlagenkopplung
     };
 }
 

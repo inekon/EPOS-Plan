@@ -112,6 +112,22 @@
             </div>
         </KindInhalt>
     </Gruppenkopf>
+
+    @* ---- Anlagenkopplung AK1 (Konzept 9.4, 12.1): zwei Kennzahlkacheln des Heizkreises -
+       die Mittel von Vorlauf und Ruecklauf ueber die Heizstunden und die Stunden, in denen die
+       Uebergabe die Grenze war. Nur fuer ein gekoppelt gerechnetes Gebaeude. *@
+    @if (Daten.IstGekoppelt)
+    {
+        <div class="gebb-heizkreis">
+            <Kachelraster>
+                <KindInhalt>
+                    <Kennzahlkachel Titel="@KachelVorlaufRuecklauf" Wert="@VorlaufRuecklaufWert"
+                                    Quelle="@Daten.Heizkreiszeile" />
+                    <Kennzahlkachel Titel="@KachelBegrenzt" Wert="@BegrenztWert" Quelle="@QuelleBegrenzt" />
+                </KindInhalt>
+            </Kachelraster>
+        </div>
+    }
     </section>
 
     @* ---- Vergleich alt/neu (Konzept 8.2, Umsetzungskonzept 2.7; bis Stufe GA) ---- *@
@@ -191,6 +207,19 @@
                      FarbwahlErlaubt="@Farbwahl"
                      FarbeGewaehlt="FarbeUebernehmen"
                      FarbeZurueckgesetzt="FarbeVerwerfen" />
+    }
+
+    @* ---- Vorlauf und Ruecklauf (Anlagenkopplung AK1, Konzept 9.4): nur gekoppelt. Stunden ohne
+       Heizbetrieb sind Luecken der Linie - dort gibt es keinen Vorlauf, und das Bild erfindet keinen. *@
+    @if (BildauftragVorlauf is not null)
+    {
+        <DiagrammSvg Modell="@Vorlaufmodell" Kennung="gebaeude-vorlauf" Bezeichnung="@BildtextVorlauf"
+                     PlatzhalterText="@PlatzhalterBild" Einheit="°C"
+                     Palette="@Farbpalette.Aktuell"
+                     FarbwahlErlaubt="@Farbwahl"
+                     FarbeGewaehlt="FarbeUebernehmen"
+                     FarbeZurueckgesetzt="FarbeVerwerfen" />
+        <Herleitungszeile Text="@HinweisVorlaufLuecken" />
     }
 
     @* ---- Kaeltebedarf (Stufe KU1; Kuehlkonzept 8.4; E21, F-K18, K5, K6) ----
@@ -338,6 +367,31 @@
     /// Sollwertband, gezeichnet im Kern. <c>null</c> = kein Bild (Tagesbilanz-Weg).
     /// </summary>
     [Parameter] public Func<Zeichenmodell?>? BildauftragRaumtemperatur { get; set; }
+
+    // --- Anlagenkopplung AK1 (Konzept Anlagenkopplung 9.4, 12.1) ---------------------
+
+    /// <summary>
+    /// Liefert das Bild „Vorlauf und Rücklauf" — gezeichnet im Kern, nur für ein gekoppelt
+    /// gerechnetes Gebäude. <c>null</c> = kein Bild.
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell?>? BildauftragVorlauf { get; set; }
+
+    /// <summary><c>GEBB_BILD_VORLAUF_RUECKLAUF</c></summary>
+    [Parameter] public string BildtextVorlauf { get; set; } = "Vorlauf und Rücklauf";
+
+    /// <summary><c>GEBB_KACHEL_VORLAUF_RUECKLAUF</c></summary>
+    [Parameter] public string KachelVorlaufRuecklauf { get; set; } = "Vorlauf / Rücklauf";
+
+    /// <summary><c>GEBB_KACHEL_BEGRENZT</c></summary>
+    [Parameter] public string KachelBegrenzt { get; set; } = "Stunden mit begrenzter Übergabe";
+
+    /// <summary><c>GEBB_KACHEL_BEGRENZT_QUELLE</c></summary>
+    [Parameter] public string QuelleBegrenzt { get; set; } =
+        "Stunden, in denen die Übergabe weniger lieferte, als der Sollwert verlangte";
+
+    /// <summary><c>GEBB_HRL_VORLAUF_LUECKEN</c></summary>
+    [Parameter] public string HinweisVorlaufLuecken { get; set; } =
+        "Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf.";
 
     /// <summary>
     /// Liefert das Bild der Kältelast (Stufe KU1, Kühlkonzept 8.4) — Parameter die
@@ -619,6 +673,37 @@
             Zeichenmodell? neu = Bildauftrag(_sortiert);
             _modelle[_sortiert] = neu;
             return neu;
+        }
+    }
+
+    /// <summary>„35,3 / 32,1 °C" — die beiden Mittel des Heizkreises; ohne Heizstunde der Leertext.</summary>
+    private string VorlaufRuecklaufWert
+        => Daten.VorlaufMittelC is double v && Daten.RuecklaufMittelC is double r
+            ? v.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " / "
+              + r.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " °C"
+            : LeerText;
+
+    /// <summary>„211 h" — die Stunden mit begrenzter Übergabe, auf ganze Stunden.</summary>
+    private string BegrenztWert
+        => Daten.UebergabeBegrenztStundenH is double h
+            ? h.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) + " " + EinheitStundenZahl
+            : LeerText;
+
+    /// <summary>Das Bild „Vorlauf und Rücklauf" — einmal gerechnet, damit der Zoom stehen bleibt.</summary>
+    private Zeichenmodell? _vorlaufmodell;
+    private bool _vorlaufmodellGerechnet;
+
+    private Zeichenmodell? Vorlaufmodell
+    {
+        get
+        {
+            if (BildauftragVorlauf is null) return null;
+            if (!_vorlaufmodellGerechnet)
+            {
+                _vorlaufmodell = BildauftragVorlauf();
+                _vorlaufmodellGerechnet = true;
+            }
+            return _vorlaufmodell;
         }
     }
 

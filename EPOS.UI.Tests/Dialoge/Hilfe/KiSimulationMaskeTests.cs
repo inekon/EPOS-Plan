@@ -206,9 +206,12 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>Welle #458: sechsundvierzig — der Kühlschalter von Schritt ① und die
     /// fünf Felder JE ANLAGE (Anlage, Wärmequelle, konstante Quelltemperatur,
     /// WP-Priorität, Betriebsmodus).</para>
+    ///
+    /// <para>Anlagenkopplung AK1 Welle 3: siebenundvierzig — die Projekteinstellung
+    /// „Anlagenkopplung" von Schritt ① (Konzept Anlagenkopplung 9.4).</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_sechsundvierzig_Felder_an()
+    public void Die_Ansicht_meldet_siebenundvierzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -217,7 +220,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(46, felder.Count);
+        Assert.Equal(47, felder.Count);
     }
 
     [Fact]
@@ -380,7 +383,7 @@ public class KiSimulationMaskeTests : IDisposable
         {
             "reiter",
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "kuehlbetrieb", "quellanlage", "waermequelle",
+            "kessel_bereitschaft", "kuehlbetrieb", "anlagenkopplung", "quellanlage", "waermequelle",
             "quelltemperatur_konstant", "wp_prioritaet", "wp_betriebsmodus",
             "autarkie_speicher", "lesepunkt_davor",
             "speicher_soc_min", "speicher_soc_max", "speicher_ladeleistung",

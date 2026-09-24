@@ -173,14 +173,16 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Die Werkzeug-Wache des Schritts.</b> Migration der Schale, Werkzeug
         /// <c>Testdatenbankschema</c> und Nachzieh-Liste der Tests führen ihn; die Nummer steht
-        /// als Zahl allein bei <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/> und ist
-        /// der Zielstand. Die REPO-Datei trägt kein Bild mehr und die berichtigten Werte (nur
-        /// lesend geöffnet).
+        /// als Zahl allein bei <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/> und liegt
+        /// nicht über dem Zielstand — der ist inzwischen weitergezogen (Schritt 131, die
+        /// eingespielten Typtage der Stufe Z4b). Die REPO-Datei trägt kein Bild mehr und die
+        /// berichtigten Werte (nur lesend geöffnet).
         /// </summary>
         [Fact]
         public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt()
         {
-            Assert.True(SchemaStand.Zielversion >= GebaeudeAnschlusslaengenReparatur.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= GebaeudeAnschlusslaengenReparatur.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter dem Schritt der Anschlusslaengen.");
             Assert.True(GebaeudeAnschlusslaengenReparatur.SCHRITT > WiederholperiodeSchema.SCHRITT);
 
             string wurzel = Repowurzel();
@@ -198,8 +200,8 @@ namespace EPOS.Kern.Tests
             string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
             Assert.Contains("GebaeudeAnschlusslaengenReparatur.Ausfuehren()", vorrichtung);
             string stand = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Update", "SchemaStand.cs"));
-            // Der Zielstand ist spaeter weitergezogen (Gebaeudesimulation G3, Schritte S-A bis S-C);
-            // SchemaStand nennt den Schritt weiter in seiner Chronik.
+            // Der Zielstand ist spaeter weitergezogen (die eingespielten Typtage, Stufe Z4b);
+            // SchemaStand nennt den Schritt weiter in seiner Chronik - Muster der E16-Wache.
             Assert.Contains("<see cref=\"GebaeudeAnschlusslaengenReparatur.SCHRITT\"/>", stand, StringComparison.Ordinal);
 
             string pfad = Path.Combine(wurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");

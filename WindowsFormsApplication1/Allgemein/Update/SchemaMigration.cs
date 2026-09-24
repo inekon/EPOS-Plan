@@ -4211,6 +4211,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN = GebaeudeAnschlusslaengenReparatur.SCHRITT;
 
+        /// <summary>
+        /// Schritt 131 — <b>die eingespielten Typtage des lizenzierten Anwenders</b>
+        /// (Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Schemaschritt T3 „Typtage", Stufe
+        /// Z4b). Er folgt auf <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/> (130) ohne
+        /// Reihenfolgebedingung und braucht keinen früheren Schritt — die Tabelle steht für
+        /// sich, ohne Fremdschlüssel.
+        ///
+        /// <para><b>REIN DDL</b>, eine Tabelle und drei Spalten: <c>Tab_TwwTyptag_IMPORT</c> (STRICT,
+        /// elf Spalten, eine Zeile je Wert, natürlicher Schlüssel
+        /// Art/Klimazone/Gebaeudeart/Typtag/Zeilenindex, kein <c>Status</c>, kein <c>ReadOnly</c>)
+        /// und an <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt — <c>Typtage_Aktiv</c>
+        /// (0/1, Vorgabe 0), <c>Typtage_Klimazone</c> und <c>Typtage_Gebaeudeart</c> (beide NULL =
+        /// keine Wahl). Die Definitionen stehen bei <see cref="TwwSchema.AnweisungenT3Typtage"/> und
+        /// <see cref="TwwSchema.SpaltenT3Typtage"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis. Die Wahl steht im SELBEN Schritt
+        /// wie die Tabelle: Beide gehören zusammen, und der Schritt war noch nicht ausgerollt
+        /// (Nachtrag N14, Folge (b)).</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabelle entsteht LEER; das Repositorium bringt keine
+        /// Zeile mit (Konzept Kapitel 6: kein VDI-Wert im Produkt, in der Auslieferung, im
+        /// Repositorium oder in der CI), und ohne eingespielte Typtage ist der Typtagweg benannt
+        /// nicht verfügbar. Der Referenzlauf bleibt byte-gleich. <b>Wiederholbar</b> über
+        /// <c>CREATE TABLE IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_131_ZAPFPROFIL_TYPTAGE = 131;
+
         // ---- Gebäudesimulation Stufe G3, Welle B: die Schritte S-A, S-B, S-C --------------
 
         /// <summary>
@@ -6019,6 +6045,20 @@ namespace WindowsFormsApplication1
                         "Fenster, Dachkante 7 879 m bei 1 469 m2 Dach). KEIN Rechenergebnis eines Projekts " +
                         "aendert sich - Projektkopien bleiben, wie sie sind.",
                         Schritt_GebaeudeAnschlusslaengen),
+
+            // ZAPFPROFILGENERATOR Z4b (Schemaschritt T3 "Typtage") - die eingespielten Typtage
+            // des lizenzierten Anwenders: Tab_TwwTyptag_IMPORT. REIN DDL; die Quelle ist
+            // TwwSchema.AnweisungenT3Typtage. Er steht NACH 130 ohne Reihenfolgebedingung und
+            // braucht keinen frueheren Schritt (kein Fremdschluessel).
+            new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE,
+                        "Zapfprofilgenerator: die eingespielten Typtage des Anwenders " +
+                        "(Tab_TwwTyptag_IMPORT) und die Wahl des Typtagwegs je Projekt",
+                        "Der Anwender koennte seine eigenen Typtage nicht einspielen, und der " +
+                        "Typtagweg des Jahresgangs bliebe ohne Datenablage und ohne gespeicherte " +
+                        "Wahl. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, die " +
+                        "Wahl steht auf 'aus', und ohne eingespielte Typtage ist der Typtagweg " +
+                        "benannt nicht verfuegbar.",
+                        Schritt_131_ZapfprofilTyptage),
 
             // GEBAEUDESIMULATION STUFE G3, WELLE B (Softwarearchitektur 2.2/2.4, W1) - die
             // Schritte S-A, S-B, S-C in fester Reihenfolge. Die Quellen sind BaustoffSchema,
@@ -9884,6 +9924,62 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
                     "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 131 - die eingespielten Typtage des Anwenders
+        // (Zapfprofilgenerator Stufe Z4b, T3 "Typtage")
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 131 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_131_ZAPFPROFIL_TYPTAGE"/>, die DDL bei
+        /// <see cref="TwwSchema.AnweisungenT3Typtage"/>. <b>Nur <see cref="SqliteDdl"/></b>;
+        /// <b>wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c>. <b>Kein DML</b> — die
+        /// Tabelle bleibt leer.
+        /// </summary>
+        private static bool Schritt_131_ZapfprofilTyptage(Lauf l)
+        {
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+            {
+                bool stand = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!stand) angelegt++;
+            }
+
+            // Die WAHL des Typtagwegs je Projekt - dieselbe Quelle, derselbe Schritt
+            // (TwwSchema.SpaltenT3Typtage): Tabelle und Wahl gehoeren zusammen.
+            int spalten = 0;
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, s.Definition)) return false;
+                spalten++;
+            }
+
+            bool vollstaendig = true;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+                vollstaendig &= SqliteTabelleVorhanden(a.Key);
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+                vollstaendig &= SqliteSpalteVorhanden(s.Tabelle, s.Name);
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle der eingespielten Typtage oder die Wahl des Typtagwegs " +
+                                  "steht nach dem Schritt nicht.";
+                l.Notiz("131: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("131: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+                    spalten.ToString(CultureInfo.InvariantCulture) + " von " +
+                    TwwSchema.SpaltenT3Typtage.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + TwwSchema.TAB_TWW_TYPTAG_IMPORT +
+                    " (eine Zeile je Wert, kein Status, kein ReadOnly) und die Wahl des Typtagwegs an " +
+                    TwwSchema.TAB_TWW_PROJEKT + ". KEIN DML: Die Tabelle bleibt LEER - das Repositorium " +
+                    "bringt keine Typtage mit -, die Wahl steht auf 'aus', und ohne eingespielte Typtage " +
+                    "ist der Typtagweg benannt nicht verfuegbar; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

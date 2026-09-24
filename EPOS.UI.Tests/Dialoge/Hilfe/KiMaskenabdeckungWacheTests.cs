@@ -110,7 +110,13 @@ public sealed class KiMaskenabdeckungWacheTests
 
         // Welle #465: Hülle, Fenster, Kenngrößen und „Alle Daten" des Gebäude-Stammblatts -
         // die Felder des Katalogeditors; die Verwaltung meldet sie als Form_Gebaeude_Admin an.
-        new("GebaeudeStammblattFelder",       "GebaeudeAdminDialog",         KiMaskennamen.GEBAEUDE_ADMIN)
+        new("GebaeudeStammblattFelder",       "GebaeudeAdminDialog",         KiMaskennamen.GEBAEUDE_ADMIN),
+
+        // Anlagenkopplung AK1 Welle 3 (Konzept 9.1): die Gruppe „Wärmeübergabe" - ein Baustein,
+        // zwei Wirte: der Katalogeditor (Form_Gebaeude1) und über GebaeudeStammblattFelder das
+        // Stammblatt der Verwaltung (Form_Gebaeude_Admin); beide melden dieselben dreizehn Felder
+        // über GebaeudeKatalogKiSicht an. Die Tabelle führt je Kind EINEN Wirt.
+        new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG)
     };
 
     // =====================================================================
@@ -187,6 +193,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GebaeudeKatalogDialog", 45),
         new("GebaeudeStammblattFelder", 36, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
             "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
+        new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
+            "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),
         new("GebaeudeWohnflaecheDialog", 4),
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
@@ -218,7 +226,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
-        new("SimulationKonfigSeite", 3),
+        new("SimulationKonfigSeite", 4),
         new("SimulationSeite", 0),
         new("SolarganglinieDialog", 0),
         new("SolarthermieReiter", 3),
@@ -244,6 +252,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Bilanzgrenze, Kalender, Ferienfaktor und Monatsfaktoren (Schleifen je einmal gezählt).
         new("TwwNutzungsartAdminDialog", 0),
         new("TwwNutzungsartEditor", 13),
+        // Zapfprofil Z4b, Gruppe 2: der Dialog der eingespielten VDI-4655-Typtage zeigt den Stand
+        // und den Pruefbericht; die Paketwahl ist ein Dateidialog, Einspielen und Loeschen sind
+        // Handlungen - kein Einstellwert.
+        new("TwwTyptagImportDialog", 0),
         new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
         // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
@@ -263,8 +275,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
-        new("ZapfprofilDialog", 55, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
-            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht")
+        new("ZapfprofilDialog", 58, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht. " +
+            "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart")
     };
 
     /// <summary>

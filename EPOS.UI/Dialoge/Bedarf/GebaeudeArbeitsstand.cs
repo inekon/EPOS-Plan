@@ -68,19 +68,26 @@ public sealed class GebaeudeArbeitsstand
         Stand = (satz ?? new GebaeudeKatalogDaten()).Kopie();
         ModellBeimLaden = Stand.Modell;
         RandBeimLaden = Stand.GrundflaecheRandbedingung;
+        ArtBeimLaden = Stand.UebergabeArt;
+        BandBeimLaden = Stand.ReglerProportionalband;
+        BandFrei = false;
         BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
         Fehlerfelder.Clear();
+        _uebergabeFehlerfelder.Clear();
         FerienZerlegen();
+        ProfilLesen();
     }
 
     /// <summary>
     /// Nach einem gelungenen Schreiben: Was geschrieben ist, ist der neue Ausgangspunkt der
-    /// beiden Schalter, die zu ihrem geladenen Wert zurückkehren.
+    /// Wahlen, die zu ihrem geladenen Wert zurückkehren.
     /// </summary>
     public void Geschrieben()
     {
         ModellBeimLaden = Stand.Modell;
         RandBeimLaden = Stand.GrundflaecheRandbedingung;
+        ArtBeimLaden = Stand.UebergabeArt;
+        BandBeimLaden = Stand.ReglerProportionalband;
     }
 
     private void FerienZerlegen()
@@ -221,6 +228,194 @@ public sealed class GebaeudeArbeitsstand
     }
 
     // =====================================================================
+    //  Die Wärmeübergabe (Stufe AK1; Anlagenkopplung 8.1, 9.1, 9.2; H1, H10, H12, E25)
+    // =====================================================================
+
+    /// <summary>Die Übergabeart beim Laden — „ideal" bleibt NULL, wenn es NULL war.</summary>
+    public string? ArtBeimLaden { get; private set; }
+
+    /// <summary>Das Proportionalband beim Laden — die Vorgabe bleibt NULL, wenn es NULL war.</summary>
+    public double? BandBeimLaden { get; private set; }
+
+    /// <summary>Hat der Anwender in der Schnellwahl „frei" gewählt? Dann steht das freie Feld.</summary>
+    public bool BandFrei { get; private set; }
+
+    /// <summary>Die 168 Werte des gespeicherten Zeitprogramms; <c>null</c> ohne gültiges Profil.</summary>
+    public double[]? ProfilWerte { get; private set; }
+
+    /// <summary>Was der strenge Leser im gespeicherten Zeitprogramm gefunden hat (H-F10).</summary>
+    public AnlagenkopplungSchema.WochenprofilBefund ProfilBefund { get; private set; }
+
+    private int _profilGefunden, _profilStelle;
+
+    /// <summary>Die Fehlerfelder der Gruppe — sie fallen, sobald die Gruppe ihre Felder nicht mehr zeigt.</summary>
+    private readonly HashSet<string> _uebergabeFehlerfelder = new();
+
+    /// <summary>Rechnet die gewählte Art eine Übergabe (Radiator, Flächenheizung, Konvektor)?</summary>
+    public bool ArtRechnet => Waermeuebergabevorgaben.ArtRechnet(Stand.UebergabeArt);
+
+    /// <summary>Stehen die Felder der Übergabe da? Haken gesetzt UND eine rechnende Art.</summary>
+    public bool UebergabeAktiv => Stand.HeizkreisAktiv && ArtRechnet;
+
+    /// <summary>Ein Feld der Gruppe meldet seinen Fehlerzustand — gemerkt für das Ausblenden.</summary>
+    public void UebergabeFehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        FehlerMelden(e);
+        if (e.Fehlerhaft) _uebergabeFehlerfelder.Add(e.Feld); else _uebergabeFehlerfelder.Remove(e.Feld);
+    }
+
+    private void UebergabeFehlerfelderLeeren()
+    {
+        foreach (string f in _uebergabeFehlerfelder) Fehlerfelder.Remove(f);
+        _uebergabeFehlerfelder.Clear();
+    }
+
+    /// <summary>
+    /// Der Haken „Übergabe rechnen". Beim ersten Einschalten (noch keine rechnende Art) schlägt
+    /// der Dialog die Heizkurve vor (8.1: „die Heizkurve schlägt erst der Dialog vor, sobald jemand
+    /// den Heizkreis einschaltet"). Ohne Haken bleiben alle Werte im Stand; eine Fehleingabe in
+    /// einem ausgeblendeten Feld hält den Speicherweg nicht mehr an.
+    /// </summary>
+    public void HeizkreisSetzen(bool wert)
+    {
+        Stand.HeizkreisAktiv = wert;
+        if (wert && !ArtRechnet && !Stand.HeizkurveAktiv) Stand.HeizkurveAktiv = true;
+        if (!wert) UebergabeFehlerfelderLeeren();
+    }
+
+    /// <summary>
+    /// Die Übergabeart über ihren Listenplatz in <see cref="Waermeuebergabevorgaben.Arten"/>
+    /// (0 = ideal). „ideal" und NULL sind dasselbe: War beim Laden NULL, bleibt es NULL.
+    /// </summary>
+    public void ArtWaehlen(int? index)
+    {
+        if (index is null || index.Value < 0 || index.Value >= Waermeuebergabevorgaben.Arten.Count) return;
+        string gewaehlt = Waermeuebergabevorgaben.Arten[index.Value];
+        if (gewaehlt == DbWerte.UEBERGABE_IDEAL)
+        {
+            bool geladenIdeal = ArtBeimLaden is null || ArtBeimLaden == DbWerte.UEBERGABE_IDEAL;
+            Stand.UebergabeArt = geladenIdeal ? ArtBeimLaden : null;
+            UebergabeFehlerfelderLeeren();
+            return;
+        }
+        Stand.UebergabeArt = gewaehlt;
+    }
+
+    /// <summary>Der Listenplatz der Übergabeart; NULL = ideal (0); eine unbekannte Art = −1.</summary>
+    public int Artindex
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Stand.UebergabeArt)) return 0;
+            for (int i = 0; i < Waermeuebergabevorgaben.Arten.Count; i++)
+                if (Waermeuebergabevorgaben.Arten[i] == Stand.UebergabeArt) return i;
+            return -1;
+        }
+    }
+
+    /// <summary>
+    /// Der Platz der Schnellwahl des Proportionalbands (E25): 0 = 0,5 K, 1 = 1 K, 2 = 2 K, 3 =
+    /// frei. Leer gilt die Vorgabe (1 K); ein Wert ohne Schnellwahl zeigt „frei".
+    /// </summary>
+    public int BandIndex
+    {
+        get
+        {
+            if (BandFrei) return 3;
+            double wert = Stand.ReglerProportionalband ?? Waermeuebergabevorgaben.Proportionalband;
+            for (int i = 0; i < Waermeuebergabevorgaben.ProportionalbandSchnellwahl.Count; i++)
+                if (Waermeuebergabevorgaben.ProportionalbandSchnellwahl[i] == wert) return i;
+            return 3;
+        }
+    }
+
+    /// <summary>
+    /// Die Schnellwahl: 0,5 / 1 / 2 K setzen den Wert — die Vorgabe (1 K) bleibt NULL, wenn es
+    /// NULL war —, „frei" zeigt das freie Feld mit dem bisherigen Wert.
+    /// </summary>
+    public void BandWaehlen(int? index)
+    {
+        if (index is null) return;
+        IReadOnlyList<double> schnell = Waermeuebergabevorgaben.ProportionalbandSchnellwahl;
+        if (index.Value < 0 || index.Value >= schnell.Count)
+        {
+            BandFrei = true;
+            return;
+        }
+        BandFrei = false;
+        double wert = schnell[index.Value];
+        Stand.ReglerProportionalband = wert == Waermeuebergabevorgaben.Proportionalband && BandBeimLaden is null
+            ? null : wert;
+    }
+
+    /// <summary>Der freie Wert des Proportionalbands [K]; leer = Vorgabe.</summary>
+    public void BandSetzen(double? wert) => Stand.ReglerProportionalband = wert;
+
+    /// <summary>Liest das gespeicherte Zeitprogramm streng (H-F10) — Werte oder ein benannter Befund.</summary>
+    private void ProfilLesen()
+    {
+        AnlagenkopplungSchema.Wochenprofil p = AnlagenkopplungSchema.WochenprofilLesen(Stand.Sollwertprofil);
+        ProfilBefund = p.Befund;
+        ProfilWerte = p.Befund == AnlagenkopplungSchema.WochenprofilBefund.Gelesen ? p.Werte : null;
+        _profilGefunden = p.Gefunden;
+        _profilStelle = p.Stelle;
+    }
+
+    /// <summary>
+    /// Das Zeitprogramm aus dem Wochenraster: 168 Werte werden im Format des Kerns geschrieben
+    /// (<see cref="AnlagenkopplungSchema.WochenprofilSchreiben"/>, zwei Nachkommastellen);
+    /// <c>null</c> verwirft es — dann gelten wieder die Bestandssollwerte.
+    /// </summary>
+    public void ProfilSetzen(double[]? werte)
+    {
+        Stand.Sollwertprofil = werte is null ? null : AnlagenkopplungSchema.WochenprofilSchreiben(werte);
+        ProfilLesen();
+    }
+
+    /// <summary>Die Bestandssollwerte als Woche — was ohne Zeitprogramm gilt (Kern-Regel).</summary>
+    public double[] Bestandswoche
+        => Waermeuebergabevorgaben.Bestandswoche(Stand.SollTag ?? 0, Stand.NachtAbsenkung ?? 0,
+                                                 Stand.WochenendAbsenkung ?? 0);
+
+    /// <summary>Die Auslegungs-Raumtemperatur, die gilt: das Feld, sonst das Soll am Tag.</summary>
+    public double AuslegungRaumWirksam => Stand.AuslegungRaumtemperatur ?? Stand.SollTag ?? 0;
+
+    /// <summary>
+    /// Der Stand, wie der Schreibweg ihn ablegte — eine Kopie mit der nachgeführten Bauweise und
+    /// der Summe Ost + West. Aus ihm leitet die Hülle Nennleistung und Außentemperatur her.
+    /// </summary>
+    public GebaeudeKatalogDaten Probestand()
+    {
+        GebaeudeKatalogDaten k = Stand.Kopie();
+        if (BauweiseNachfuehren)
+            k.Bauweise = Gebaeudebauweise.BauweiseAusBauart(Stand.Bauart, Stand.WohnflaecheGesamt ?? 0);
+        k.FensterflaecheOstWest = SummeOstWest ?? 0;
+        return k;
+    }
+
+    /// <summary>
+    /// Der Abdruck des Stands für die Herleitung — ändert er sich, ist die hergeleitete Zahl
+    /// neu zu bilden. Er umfasst jede Eigenschaft des Feldsatzes samt der Ferienfelder.
+    /// </summary>
+    public string Abdruck()
+    {
+        var sb = new System.Text.StringBuilder(1024);
+        foreach (System.Reflection.PropertyInfo p in AbdruckEigenschaften)
+        {
+            object? w = p.GetValue(Stand);
+            if (w is int[] feld) sb.Append(string.Join(",", feld));
+            else if (w is IFormattable f) sb.Append(f.ToString(null, CultureInfo.InvariantCulture));
+            else sb.Append(w);
+            sb.Append('|');
+        }
+        sb.Append(BauweiseNachfuehren ? '1' : '0');
+        return sb.ToString();
+    }
+
+    private static readonly System.Reflection.PropertyInfo[] AbdruckEigenschaften =
+        typeof(GebaeudeKatalogDaten).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+    // =====================================================================
     //  Abgeleitet — gerechnet im Kern, hier nur zusammengesetzt
     // =====================================================================
 
@@ -328,6 +523,99 @@ public sealed class GebaeudeArbeitsstand
                              Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0),
                              Zahl(HoechsterHeizsollwert, 1),
                              Zahl(maxTemperatur, 1));
+    }
+
+    // ---- Wärmeübergabe (9.1: „Jede Vorgabe steht als Zahl in der Herleitungszeile") ----
+
+    /// <summary>Die Zeile unter Haken und Art: ohne Haken, „ideal" oder die Vorgaben der Art mit Zahlen.</summary>
+    public string UebergabeArtZeile(GebaeudeHuelleTexte t)
+    {
+        WaermeuebergabeTexte u = t.Uebergabe;
+        if (!Stand.HeizkreisAktiv) return u.ZeileAus;
+        if (!ArtRechnet) return u.ZeileIdeal;
+        string art = Stand.UebergabeArt!;
+        return string.Format(u.ZeileArt, u.Artname(art),
+                             Zahl(Waermeuebergabevorgaben.Exponent(art), 2),
+                             Zahl(Waermeuebergabevorgaben.Vorlauf(art), 0),
+                             Zahl(Waermeuebergabevorgaben.Ruecklauf(art), 0),
+                             Zahl(Waermeuebergabevorgaben.Strahlungsanteil(art), 2));
+    }
+
+    /// <summary>Die Zeile der Auslegungs-Raumtemperatur: leer gilt das Soll am Tag.</summary>
+    public string UebergabeRaumZeile(GebaeudeHuelleTexte t)
+        => string.Format(t.Uebergabe.ZeileRaum, Zahl(Stand.SollTag ?? 0, 1));
+
+    /// <summary>Die Zeile der Auslegungs-Außentemperatur — mit der hergeleiteten Zahl, wo es eine gibt.</summary>
+    public string UebergabeAussenZeile(GebaeudeHuelleTexte t, UebergabeHerleitungDaten? h)
+        => h?.AuslegungAussenC is double a
+            ? string.Format(t.Uebergabe.ZeileAussen, Zahl(a, 0))
+            : t.Uebergabe.ZeileAussenOhne;
+
+    /// <summary>
+    /// Die Zeile der Nennleistung — die hergeleitete Auslegungsheizlast mit ihrem Auslegungspunkt,
+    /// sonst die Regel ohne Zahl bzw. der Grund, warum der Kern keine Zahl liefert.
+    /// </summary>
+    public string UebergabeNennleistungZeile(GebaeudeHuelleTexte t, UebergabeHerleitungDaten? h)
+    {
+        WaermeuebergabeTexte u = t.Uebergabe;
+        if (h is not null && !string.IsNullOrEmpty(h.Befund)) return string.Format(u.ZeileHerleitungBefund, h.Befund);
+        if (h?.AuslegungsheizlastKw is double kw)
+        {
+            double aussen = Stand.AuslegungAussentemperatur ?? h.AuslegungAussenC ?? double.NaN;
+            return string.Format(u.ZeileNennleistung, Zahl(kw, 1), Zahl(aussen, 0), Zahl(AuslegungRaumWirksam, 1));
+        }
+        return u.ZeileNennleistungOhne;
+    }
+
+    /// <summary>Die Zeile der Heizkurve: an mit dem Auslegungspunkt, aus mit dem festen Vorlauf.</summary>
+    public string UebergabeHeizkurveZeile(GebaeudeHuelleTexte t, UebergabeHerleitungDaten? h)
+    {
+        WaermeuebergabeTexte u = t.Uebergabe;
+        if (!Stand.HeizkurveAktiv) return u.ZeileHeizkurveAus;
+        double vorlauf = Stand.AuslegungVorlauf ?? Waermeuebergabevorgaben.Vorlauf(Stand.UebergabeArt) ?? double.NaN;
+        double? aussen = Stand.AuslegungAussentemperatur ?? h?.AuslegungAussenC;
+        return string.Format(u.ZeileHeizkurveAn, Zahl(vorlauf, 0),
+                             aussen.HasValue ? Zahl(aussen.Value, 0) : u.VorgabeHergeleitet,
+                             Zahl(Waermeuebergabevorgaben.HeizkurveNiveau, 1),
+                             Zahl(Waermeuebergabevorgaben.HeizkurveSteilheit, 2));
+    }
+
+    /// <summary>Die Zeile des Proportionalbands (E25).</summary>
+    public static string UebergabeBandZeile(GebaeudeHuelleTexte t)
+        => string.Format(t.Uebergabe.ZeileBand, Zahl(Waermeuebergabevorgaben.Proportionalband, 1),
+                         Zahl(Waermeuebergabevorgaben.BAND_MAX, 0));
+
+    /// <summary>Die Zeile des Zeitprogramms: mit oder ohne Profil.</summary>
+    public string UebergabeProfilZeile(GebaeudeHuelleTexte t)
+        => ProfilWerte is not null ? t.Uebergabe.ZeileProfilMit : t.Uebergabe.ZeileProfilOhne;
+
+    /// <summary>Der Platzhalter eines Feldes mit einer Vorgabe der Art (Exponent, Vorlauf, Rücklauf).</summary>
+    public static string UebergabeVorgabe(double? wert, GebaeudeHuelleTexte t)
+        => wert.HasValue ? Vorgabe(wert.Value, t) : "";
+
+    /// <summary>Der Platzhalter eines hergeleiteten Feldes: die Zahl, sonst „Vorgabe: hergeleitet".</summary>
+    public static string UebergabeHergeleitet(double? wert, GebaeudeHuelleTexte t)
+        => wert.HasValue ? Vorgabe(wert.Value, t) : t.Uebergabe.VorgabeHergeleitet;
+
+    /// <summary>Die Einträge der Übergabeart: die vier Arten — eine unbekannte gespeicherte Art vorangestellt.</summary>
+    public IReadOnlyList<(int Id, string Text)> Arteintraege(GebaeudeHuelleTexte t)
+    {
+        var l = new List<(int, string)>();
+        if (Artindex < 0) l.Add((-1, Stand.UebergabeArt ?? ""));
+        for (int i = 0; i < Waermeuebergabevorgaben.Arten.Count; i++)
+            l.Add((i, t.Uebergabe.Artname(Waermeuebergabevorgaben.Arten[i])));
+        return l;
+    }
+
+    /// <summary>Die vier Einträge der Schnellwahl des Proportionalbands.</summary>
+    public static IReadOnlyList<(int Id, string Text)> Bandeintraege(GebaeudeHuelleTexte t)
+    {
+        var l = new List<(int, string)>();
+        IReadOnlyList<double> schnell = Waermeuebergabevorgaben.ProportionalbandSchnellwahl;
+        for (int i = 0; i < schnell.Count; i++)
+            l.Add((i, schnell[i].ToString("0.0##", CultureInfo.CurrentCulture) + " K"));
+        l.Add((schnell.Count, t.Uebergabe.BandFrei));
+        return l;
     }
 
     /// <summary>Die Herleitungszeile des Luftwechsels: Wert und Herkunft.</summary>
@@ -464,6 +752,13 @@ public sealed class GebaeudeArbeitsstand
                 return Kuehlung(t.MeldungKuehlleistung);
         }
 
+        // Stufe AK1 (Anlagenkopplung 9.1, 9.5): die Regeln der Gruppe „Wärmeübergabe" - nur mit
+        // Haken und rechnender Art, mit DENSELBEN Grenzen, an denen der Eingangsbauer des Kerns
+        // hart abbricht (Waermeuebergabevorgaben). Ein leeres Feld ist erlaubt: Es gilt die
+        // Vorgabe, und die Zusammenhangsregeln rechnen mit ihr.
+        GebaeudePruefbefund? uebergabe = UebergabePruefen(t);
+        if (uebergabe is not null) return uebergabe;
+
         string? regel = Ferienzeit.Pruefen(Ferienbeginne(), Ferienenden());
         if (regel is not null) return new GebaeudePruefbefund(p.Ferienmeldung(regel), GebaeudePruefbereich.Ferien);
 
@@ -473,6 +768,67 @@ public sealed class GebaeudeArbeitsstand
     private static GebaeudePruefbefund Huelle(string meldung) => new(meldung, GebaeudePruefbereich.Huelle);
 
     private static GebaeudePruefbefund Kuehlung(string meldung) => new(meldung, GebaeudePruefbereich.Kuehlung);
+
+    private static GebaeudePruefbefund Uebergabe(string meldung) => new(meldung, GebaeudePruefbereich.Waermeuebergabe);
+
+    /// <summary>
+    /// Die Regeln der Gruppe „Wärmeübergabe" (9.1, 9.5): Bereiche der Felder, die Zusammenhänge
+    /// des Auslegungspunkts (Vorlauf über Raum, Rücklauf dazwischen, außen unter Raum) mit den
+    /// Werten, die gelten — leeres Feld = Vorgabe der Art bzw. Soll am Tag —, und das
+    /// Zeitprogramm streng (H-F10). Ohne Haken oder mit „ideal" gilt keine.
+    /// </summary>
+    private GebaeudePruefbefund? UebergabePruefen(GebaeudeHuelleTexte t)
+    {
+        if (!Stand.HeizkreisAktiv) return null;
+        WaermeuebergabeTexte u = t.Uebergabe;
+        if (Artindex < 0) return Uebergabe(string.Format(u.MeldungArtUnbekannt, Stand.UebergabeArt));
+        if (!ArtRechnet) return null;
+
+        GebaeudePruefbefund? Bereich(double? wert, string label, double min, double max)
+            => wert is double w && (w < min || w > max)
+                ? Uebergabe(string.Format(u.MeldungBereich, Feld(label), Zahl(min, 1), Zahl(max, 1)))
+                : null;
+
+        GebaeudePruefbefund? b =
+            Bereich(Stand.UebergabeExponent, u.LabelExponent, Waermeuebergabevorgaben.EXPONENT_MIN, Waermeuebergabevorgaben.EXPONENT_MAX)
+            ?? Bereich(Stand.AuslegungVorlauf, u.LabelAuslegungVorlauf, Waermeuebergabevorgaben.VORLAUF_MIN, Waermeuebergabevorgaben.VORLAUF_MAX)
+            ?? Bereich(Stand.AuslegungRaumtemperatur, u.LabelAuslegungRaum, Waermeuebergabevorgaben.RAUM_MIN, Waermeuebergabevorgaben.RAUM_MAX)
+            ?? Bereich(Stand.AuslegungAussentemperatur, u.LabelAuslegungAussen, Waermeuebergabevorgaben.AUSSEN_MIN, Waermeuebergabevorgaben.AUSSEN_MAX)
+            ?? Bereich(Stand.ReglerProportionalband, u.LabelProportionalband, Waermeuebergabevorgaben.BAND_MIN, Waermeuebergabevorgaben.BAND_MAX);
+        if (b is not null) return b;
+        if (Stand.HeizkurveAktiv)
+        {
+            b = Bereich(Stand.HeizkurveNiveau, u.LabelHeizkurveNiveau, Waermeuebergabevorgaben.NIVEAU_MIN, Waermeuebergabevorgaben.NIVEAU_MAX)
+                ?? Bereich(Stand.HeizkurveSteilheit, u.LabelHeizkurveSteilheit, Waermeuebergabevorgaben.STEILHEIT_MIN, Waermeuebergabevorgaben.STEILHEIT_MAX);
+            if (b is not null) return b;
+        }
+        if (Stand.UebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Uebergabe(u.MeldungNennleistung);
+
+        string art = Stand.UebergabeArt!;
+        double vorlauf = Stand.AuslegungVorlauf ?? Waermeuebergabevorgaben.Vorlauf(art)!.Value;
+        double ruecklauf = Stand.AuslegungRuecklauf ?? Waermeuebergabevorgaben.Ruecklauf(art)!.Value;
+        double raum = AuslegungRaumWirksam;
+        if (!(vorlauf > raum)) return Uebergabe(string.Format(u.MeldungVorlaufRaum, Zahl(vorlauf, 1), Zahl(raum, 1)));
+        if (!(ruecklauf > raum) || !(ruecklauf < vorlauf))
+            return Uebergabe(string.Format(u.MeldungRuecklauf, Zahl(ruecklauf, 1), Zahl(raum, 1), Zahl(vorlauf, 1)));
+        if (Stand.AuslegungAussentemperatur is double aussen && !(aussen < raum))
+            return Uebergabe(string.Format(u.MeldungAussenRaum, Zahl(aussen, 1), Zahl(raum, 1)));
+
+        switch (ProfilBefund)
+        {
+            case AnlagenkopplungSchema.WochenprofilBefund.FalscheWertzahl:
+                return Uebergabe(string.Format(u.MeldungProfilWertzahl, _profilGefunden, AnlagenkopplungSchema.WOCHENWERTE));
+            case AnlagenkopplungSchema.WochenprofilBefund.KeineZahl:
+                return Uebergabe(string.Format(u.MeldungProfilKeineZahl, _profilStelle));
+        }
+        if (ProfilWerte is not null)
+            for (int i = 0; i < ProfilWerte.Length; i++)
+                if (ProfilWerte[i] < Waermeuebergabevorgaben.SOLLWERT_MIN || ProfilWerte[i] > Waermeuebergabevorgaben.SOLLWERT_MAX)
+                    return Uebergabe(string.Format(u.MeldungProfilWert, i + 1, Zahl(ProfilWerte[i], 1),
+                                                   Zahl(Waermeuebergabevorgaben.SOLLWERT_MIN, 0),
+                                                   Zahl(Waermeuebergabevorgaben.SOLLWERT_MAX, 0)));
+        return null;
+    }
 
     /// <summary>
     /// <b>Die Ableitungen des Vorläufers</b> (<c>btn_Speichern_Click</c> der zweiten Maske) und
@@ -565,6 +921,15 @@ public sealed class GebaeudeArbeitsstand
         B(a.KuehlungAktiv, g.KuehlungAktiv); Z(a.KuehlSollwert, g.KuehlSollwert);
         Z(a.KuehlleistungMax, g.KuehlleistungMax);
 
+        // Stufe AK1: die dreizehn Felder der Wärmeübergabe (das Zeitprogramm als EIN Feld).
+        B(a.HeizkreisAktiv, g.HeizkreisAktiv); T(a.UebergabeArt, g.UebergabeArt);
+        Z(a.UebergabeExponent, g.UebergabeExponent); Z(a.UebergabeLeistungNennKw, g.UebergabeLeistungNennKw);
+        Z(a.AuslegungVorlauf, g.AuslegungVorlauf); Z(a.AuslegungRuecklauf, g.AuslegungRuecklauf);
+        Z(a.AuslegungRaumtemperatur, g.AuslegungRaumtemperatur); Z(a.AuslegungAussentemperatur, g.AuslegungAussentemperatur);
+        B(a.HeizkurveAktiv, g.HeizkurveAktiv); Z(a.HeizkurveNiveau, g.HeizkurveNiveau);
+        Z(a.HeizkurveSteilheit, g.HeizkurveSteilheit); Z(a.ReglerProportionalband, g.ReglerProportionalband);
+        T(a.Sollwertprofil, g.Sollwertprofil);
+
         for (int i = 0; i < 4; i++)
         {
             (int? bt, int? bm) = Ferienzeit.TagUndMonat(g.Ferienbeginn[i]);
@@ -639,8 +1004,56 @@ public sealed class GebaeudeArbeitsstand
             RandbedingungLesen = () => Randindex,
             RandbedingungSetzen = RandbedingungWaehlen,
             RandbedingungEintraege = wege.RandbedingungEintraege,
-            FerienLesen = () => _kiFerien ??= KiFerien(wege.Ferienname)
+            FerienLesen = () => _kiFerien ??= KiFerien(wege.Ferienname),
+
+            // Stufe AK1: die Gruppe „Wärmeübergabe" über die Wege der Bedienelemente.
+            HeizkreisSetzen = HeizkreisSetzen,
+            UebergabeArtSetzen = w => KiArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
+            UebergabeArtEintraege = () => KiArteintraege(wege.Texte ?? new GebaeudeHuelleTexte()),
+            SollwertprofilSetzen = w => KiProfilSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte())
         };
+    }
+
+    /// <summary>Die Übergabeart des Assistenten: der Steuerwert über denselben Weg wie die Klappliste.</summary>
+    private string? KiArtSetzen(string wert, GebaeudeHuelleTexte t)
+    {
+        string gesucht = (wert ?? "").Trim();
+        if (gesucht.Length == 0) gesucht = DbWerte.UEBERGABE_IDEAL;
+        for (int i = 0; i < Waermeuebergabevorgaben.Arten.Count; i++)
+            if (string.Equals(Waermeuebergabevorgaben.Arten[i], gesucht, StringComparison.OrdinalIgnoreCase))
+            {
+                ArtWaehlen(i);
+                return null;
+            }
+        return string.Format(t.Uebergabe.MeldungArtUnbekannt, gesucht);
+    }
+
+    private static IReadOnlyList<KiWahleintrag> KiArteintraege(GebaeudeHuelleTexte t)
+        => Waermeuebergabevorgaben.Arten.Select(a => new KiWahleintrag(a, t.Uebergabe.Artname(a))).ToList();
+
+    /// <summary>
+    /// Das Zeitprogramm des Assistenten — DERSELBE strenge Leser wie der Kern (H-F10): 168 Werte
+    /// oder eine benannte Ablehnung; leer verwirft das Zeitprogramm.
+    /// </summary>
+    private string? KiProfilSetzen(string text, GebaeudeHuelleTexte t)
+    {
+        WaermeuebergabeTexte u = t.Uebergabe;
+        if (string.IsNullOrWhiteSpace(text)) { ProfilSetzen(null); return null; }
+
+        AnlagenkopplungSchema.Wochenprofil p = AnlagenkopplungSchema.WochenprofilLesen(text);
+        switch (p.Befund)
+        {
+            case AnlagenkopplungSchema.WochenprofilBefund.FalscheWertzahl:
+                return string.Format(u.MeldungProfilWertzahl, p.Gefunden, AnlagenkopplungSchema.WOCHENWERTE);
+            case AnlagenkopplungSchema.WochenprofilBefund.KeineZahl:
+                return string.Format(u.MeldungProfilKeineZahl, p.Stelle);
+        }
+        for (int i = 0; i < p.Werte.Length; i++)
+            if (p.Werte[i] < Waermeuebergabevorgaben.SOLLWERT_MIN || p.Werte[i] > Waermeuebergabevorgaben.SOLLWERT_MAX)
+                return string.Format(u.MeldungProfilWert, i + 1, Zahl(p.Werte[i], 1),
+                                     Zahl(Waermeuebergabevorgaben.SOLLWERT_MIN, 0), Zahl(Waermeuebergabevorgaben.SOLLWERT_MAX, 0));
+        ProfilSetzen(p.Werte);
+        return null;
     }
 
     private IReadOnlyList<GebaeudeFerienKiZeile>? _kiFerien;
@@ -705,6 +1118,9 @@ public enum GebaeudePruefbereich
     /// <summary>Die Gruppe „Kühlung" (erster Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
     Kuehlung,
 
+    /// <summary>Die Gruppe „Wärmeübergabe" (erster Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
+    Waermeuebergabe,
+
     /// <summary>Die Ferien (zweiter Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
     Ferien
 }
@@ -753,6 +1169,9 @@ public sealed class GebaeudeKiWege
 
     /// <summary>Der Name des Ferienzeitraums je Zeile (Winter, Ostern, Sommer, Herbst).</summary>
     public Func<int, string>? Ferienname { get; init; }
+
+    /// <summary>Die Texte der VDI-Struktur — für die Namen der Übergabearten und die Ablehnungen der Wärmeübergabe.</summary>
+    public GebaeudeHuelleTexte? Texte { get; init; }
 }
 
 /// <summary>

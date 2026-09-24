@@ -4646,12 +4646,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
     <value>Sales margin</value>
   </data>
-  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
-    <value>2.05</value>
-  </data>
-  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
-    <value>0.05</value>
-  </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Sum of the components: {0} ct/kWh</value>
   </data>
@@ -27762,6 +27756,12 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
     <value>Calendar, cold water factor or temperature difference of zone “{0}” do not have the annual grid.</value>
   </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE" xml:space="preserve">
+    <value>Zone “{0}”: the type-day input of the drawn annual series does not carry 365 finite, non-negative daily amounts with usable daily profiles.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB" xml:space="preserve">
+    <value>Zone “{0}”: on the type-day path the annual series draws over the daily amounts of the type days — decoupling of holidays does not apply there.</value>
+  </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
     <value>The holiday offset is not within 0 … 364 days.</value>
   </data>
@@ -28854,11 +28854,374 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZAPFKATEGORIE_STAMM" xml:space="preserve">
     <value>catalogue of draw-off categories</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTYPTAG_IMPORT" xml:space="preserve">
+    <value>imported type days</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
+    <value>transition</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_2" xml:space="preserve">
+    <value>summer</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_3" xml:space="preserve">
+    <value>winter</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_1" xml:space="preserve">
+    <value>working day</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_2" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_0" xml:space="preserve">
+    <value>without distinction</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_1" xml:space="preserve">
+    <value>clear</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_2" xml:space="preserve">
+    <value>cloudy</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PAKET_UNLESBAR" xml:space="preserve">
+    <value>The type-day package cannot be read: {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_DATEI_FEHLT" xml:space="preserve">
+    <value>The type-day package is missing the file "{0}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_KOPFZEILE" xml:space="preserve">
+    <value>The file "{0}" has no header row.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SPALTE_FEHLT" xml:space="preserve">
+    <value>The file "{0}" is missing the column "{1}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SPALTE_UNBEKANNT" xml:space="preserve">
+    <value>The file "{0}" carries the unknown column "{1}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SPALTE_DOPPELT" xml:space="preserve">
+    <value>The file "{0}" carries the column "{1}" twice.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_FELDZAHL" xml:space="preserve">
+    <value>{0}, line {1}: {2} fields instead of {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_FELD_LEER" xml:space="preserve">
+    <value>{0}, line {1}: the field "{2}" is empty.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KEINE_ZAHL" xml:space="preserve">
+    <value>{0}, line {1}: "{3}" is not a number in column "{2}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KEINE_GANZE_ZAHL" xml:space="preserve">
+    <value>{0}, line {1}: "{3}" is not an integer in column "{2}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIE_UNBEKANNT" xml:space="preserve">
+    <value>{0}, line {1}: "{3}" is not a known value in column "{2}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_TYPTAG_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: the package already carries the type day "{2}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_TYPTAG_UNBEKANNT" xml:space="preserve">
+    <value>{0}, line {1}: the package's type-day table does not name "{2}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZONE_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: the package already carries climate zone {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZONE_UNBEKANNT" xml:space="preserve">
+    <value>{0}, line {1}: the package's zone table does not name climate zone {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZEILE_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: this entry is already in the package.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ANZAHL_UNGUELTIG" xml:space="preserve">
+    <value>{0}, line {1}: {2} is not a possible number of calendar days.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_FAKTOR_UNGUELTIG" xml:space="preserve">
+    <value>{0}, line {1}: the factor is not a finite number.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_SUMME_TAGE" xml:space="preserve">
+    <value>Climate zone {0}, building type "{1}": the type days count {2} calendar days instead of {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Climate zone {0}, building type "{1}": an entry is missing for these type days: {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_TYPTAGE" xml:space="preserve">
+    <value>The package names no type day.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_ZONEN" xml:space="preserve">
+    <value>The package names no climate zone.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_OHNE_WERTE" xml:space="preserve">
+    <value>The package carries complete values for no climate zone and building type.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_QUELLE_FEHLT" xml:space="preserve">
+    <value>The package does not name its source (characteristic value "quelle").</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KENNWERT_FEHLT" xml:space="preserve">
+    <value>The package is missing the characteristic value "{0}".</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_LUECKE" xml:space="preserve">
+    <value>The package names no type day for {0} and {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_MERKMALE_DOPPELT" xml:space="preserve">
+    <value>{0}, line {1}: type day "{2}" carries the same characteristics as an earlier one ({3}, {4}, {5}) — the triple is the key of the assignment and must be unique.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PAKET_ZU_GROSS" xml:space="preserve">
+    <value>The type-day package is too large: {0} entries (at most {1}) and {2} bytes unpacked (at most {3}).</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_KATEGORIEN_BEWOELKUNG" xml:space="preserve">
+    <value>For {0} and {1} the package carries {2} type days: it needs either one without distinction or one clear and one cloudy.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG" xml:space="preserve">
+    <value>{0}, line {1}: {2} minutes do not divide the day without remainder, are neither a divisor nor a multiple of 60 minutes, or differ from the type day's resolution.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_INDEX_ZEILE" xml:space="preserve">
+    <value>{0}, line {1}: the time step {2} lies outside the day.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_INDEX" xml:space="preserve">
+    <value>Building type "{0}", type day "{1}": the daily profile needs {2} time steps without a gap, the package carries {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_SUMME" xml:space="preserve">
+    <value>Building type "{0}", type day "{1}": the shares of the daily profile sum to {2:0.######} instead of 1.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GANG_ANTEIL" xml:space="preserve">
+    <value>{0}, line {1}: the share is negative or not a finite number.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_GAENGE_UEBERGANGEN" xml:space="preserve">
+    <value>{0} line(s) of the daily profiles name a type day the package does not carry — they were skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PRUEFSUMME_OHNE_TOLERANZ" xml:space="preserve">
+    <value>The package names no tolerance "{0}" — the check sum of the factors remains unchecked.</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_PRUEFSUMME" xml:space="preserve">
+    <value>Climate zone {0}, building type "{1}": the check sum of the factors is {2:0.###E+0} instead of 0 (tolerance {3:0.###E+0}).</value>
+  </data>
+  <data name="ZPG_SATZ_NORMVEKTOR_ZONE_OHNE_WERTE" xml:space="preserve">
+    <value>Climate zone {0} is in the package but carries no values.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>the annual profile from type days is not available: no type days are imported.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_ZONE_FEHLT" xml:space="preserve">
+    <value>the imported type days do not carry climate zone {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_GEBAEUDEART_FEHLT" xml:space="preserve">
+    <value>the imported type days do not carry the building type "{0}".</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>the imported type days are incomplete for climate zone {0} and building type "{1}": {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_KENNWERT_FEHLT" xml:space="preserve">
+    <value>the imported type days are missing the characteristic value "{0}".</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR" xml:space="preserve">
+    <value>the annual profile from type days needs {0} daily mean outdoor temperatures.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR_TAG" xml:space="preserve">
+    <value>the daily mean outdoor temperature of day {0} is not a finite number.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_FEHLT" xml:space="preserve">
+    <value>the imported type days distinguish by cloud cover — the annual profile needs {0} daily mean cloud cover values for that.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_TAG" xml:space="preserve">
+    <value>the daily mean cloud cover of day {0} is not a finite number.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_KATEGORIE_FEHLT" xml:space="preserve">
+    <value>the imported type days name no type day for {0}, {1} and {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_FAKTOR_FEHLT" xml:space="preserve">
+    <value>the factor for climate zone {1} and building type "{2}" is missing for type day "{0}".</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_BEZUGSART" xml:space="preserve">
+    <value>the annual profile from type days applies to residential buildings only — it does not carry the reference quantity {0}.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_EINHEITEN" xml:space="preserve">
+    <value>the units of the zone ({0:0.###}) are not a positive number.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_TYPTAGE_KEINE_VERTEILUNG" xml:space="preserve">
+    <value>the type days of zone "{0}" distribute no draw-off: every daily amount is 0.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL" xml:space="preserve">
+    <value>Zone "{0}": the project's weather assigns {1} type-day categor(y/ies) differently than the imported table; furthest "{2}" with {3} instead of {4} calendar days.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>Zone "{0}": for {1} type day(s) and thus {2} calendar day(s) the daily demand would be negative — their factor is set to 0 and the day carries the annual mean.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG" xml:space="preserve">
+    <value>Zone "{0}": the daily amounts of the type days were scaled by {1:0.######} to the annual amount.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN" xml:space="preserve">
+    <value>Zone "{0}": on the type-day path the holiday windows have no effect — a holiday remains a working day or Sunday of its season.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
+    <value>The imported type days carry no daily profiles for the building type "{0}" — the daily shape comes from the zone's daily profile set.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT" xml:space="preserve">
+    <value>This database does not carry {0} — the type days cannot be imported.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The type days could not be written: {0}. The earlier state is unchanged.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
+    <value>The package file “{0}” could not be read: {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE" xml:space="preserve">
+    <value>the climate zone of the type days</value>
+  </data>
+  <data name="ZPGT_TITEL" xml:space="preserve">
+    <value>VDI 4655 type days</value>
+  </data>
+  <data name="ZPGT_HINWEIS_LIZENZ" xml:space="preserve">
+    <value>The program ships no values of the guideline. The licensed user imports the type days from his own package; they stay in this database and go neither into the delivery template nor into a project transfer.</value>
+  </data>
+  <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
+    <value>A package is a ZIP archive or a folder holding six CSV files: type days, climate zones, calendar days per zone, factors of the daily energy, characteristic values of the method and, optionally, daily profiles — header row with column names, separator semicolon or comma, numbers with a point.</value>
+  </data>
+  <data name="ZPGT_GRP_STAND" xml:space="preserve">
+    <value>Imported state</value>
+  </data>
+  <data name="ZPGT_GRP_PRUEFUNG" xml:space="preserve">
+    <value>Check of the package</value>
+  </data>
+  <data name="ZPGT_LEER" xml:space="preserve">
+    <value>No type days are imported — without them the type day path of the annual profile is not available.</value>
+  </data>
+  <data name="ZPGT_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ZPGT_LBL_AUSGABE" xml:space="preserve">
+    <value>Edition</value>
+  </data>
+  <data name="ZPGT_LBL_DATUM" xml:space="preserve">
+    <value>Imported on</value>
+  </data>
+  <data name="ZPGT_LBL_ZONEN" xml:space="preserve">
+    <value>Climate zones</value>
+  </data>
+  <data name="ZPGT_LBL_GEBAEUDEARTEN" xml:space="preserve">
+    <value>Building types</value>
+  </data>
+  <data name="ZPGT_LBL_TYPTAGE" xml:space="preserve">
+    <value>Type days</value>
+  </data>
+  <data name="ZPGT_LBL_AUFLOESUNG" xml:space="preserve">
+    <value>Time resolution of the daily profiles</value>
+  </data>
+  <data name="ZPGT_LBL_ZEILEN" xml:space="preserve">
+    <value>Rows</value>
+  </data>
+  <data name="ZPGT_SP_ANGABE" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ZPGT_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE" xml:space="preserve">
+    <value>not stated</value>
+  </data>
+  <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
+    <value>none — the daily shape comes from the daily profile set of the zone</value>
+  </data>
+  <data name="ZPGT_BTN_PAKET" xml:space="preserve">
+    <value>Choose package…</value>
+  </data>
+  <data name="ZPGT_BTN_EINSPIELEN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ZPGT_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ZPGT_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ZPGT_DATEIFILTER" xml:space="preserve">
+    <value>Type day package (*.zip;*.csv)|*.zip;*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="ZPGT_WAHL_TITEL" xml:space="preserve">
+    <value>Choose the package of the type days</value>
+  </data>
+  <data name="ZPGT_KEIN_PAKET" xml:space="preserve">
+    <value>No package is chosen.</value>
+  </data>
+  <data name="ZPGT_ABBRUCH" xml:space="preserve">
+    <value>The package is rejected: {0}</value>
+  </data>
+  <data name="ZPGT_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>The package holds {0} climate zone(s), {1} building type(s) and {2} type day(s) — {3} row(s).</value>
+  </data>
+  <data name="ZPGT_HINWEISE" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="ZPGT_FRAGE_ERSETZEN" xml:space="preserve">
+    <value>A package is already imported ({0} rows). The new one replaces it completely. Import?</value>
+  </data>
+  <data name="ZPGT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>The imported type days are removed; afterwards the type day path is no longer available. Delete?</value>
+  </data>
+  <data name="ZPGT_MSG_EINGESPIELT" xml:space="preserve">
+    <value>{0} row(s) imported, {1} replaced.</value>
+  </data>
+  <data name="ZPGT_MSG_GELOESCHT" xml:space="preserve">
+    <value>{0} row(s) removed.</value>
+  </data>
+  <data name="ZPGT_MSG_STAND_NEU" xml:space="preserve">
+    <value>The imported set of type days is now a different one.</value>
+  </data>
+  <data name="ZPGT_MSG_NICHTS" xml:space="preserve">
+    <value>There was nothing to delete.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_QUELLE_ERL" xml:space="preserve">
+    <value>The source stated by the imported package. Display only; empty = nothing is imported.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_AUSGABE_ERL" xml:space="preserve">
+    <value>The edition stated by the imported package. Display only; empty = not stated.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_DATUM_ERL" xml:space="preserve">
+    <value>The day the package was imported. Display only.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZONEN_ERL" xml:space="preserve">
+    <value>The climate zones carried by the imported package. Display only; in the tapping profile the user chooses one of them.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ARTEN_ERL" xml:space="preserve">
+    <value>The building types carried by the imported package. Display only; in the tapping profile the user chooses one of them.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_ZEILEN_ERL" xml:space="preserve">
+    <value>The number of imported rows. Display only; 0 = nothing is imported.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_NAME" xml:space="preserve">
+    <value>Reason for the lock</value>
+  </data>
+  <data name="KI_DLG_ZPGT_GRUND_ERL" xml:space="preserve">
+    <value>Why the type day path is not available. Display only; empty = it is available.</value>
+  </data>
+  <data name="KI_DLG_ZPGT_BERICHT_ERL" xml:space="preserve">
+    <value>What the check of the chosen package returned — the rejection with file and line, or the summary. Display only; empty = nothing was checked.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGEWEG_ERL" xml:space="preserve">
+    <value>Does the annual profile of every zone use the imported type days instead of the factors of the catalogue? A setting of the project, expert level only; rejected without imported type days.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGZONE_ERL" xml:space="preserve">
+    <value>The climate zone of the imported package the project computes with. Only a number carried by the package; expert level.</value>
+  </data>
+  <data name="KI_DLG_ZPG_TYPTAGART_ERL" xml:space="preserve">
+    <value>The building type of the imported package the project computes with. Only one carried by the package; expert level.</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
     <value>The circulation loses {0:0} kWh per year, {1:0.##} times the draw-off ({2:0} kWh/a); the catalogue flags this from {3:0.##} times. This is usual in small multi-family houses — otherwise check the circulation method and its characteristic values.</value>
   </data>
   <data name="ZPG_WARN_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Circulation large compared with draw-off</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_ANZAHL" xml:space="preserve">
+    <value>number of type days differs</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
+    <value>type day factor set to 0</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_SKALIERUNG" xml:space="preserve">
+    <value>daily amounts scaled to the annual amount</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>holiday windows without effect</value>
+  </data>
+  <data name="ZPG_WARN_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
+    <value>type days without daily profile</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
     <value>The display temperature ({1:0.#} °C) is not above the mean cold-water temperature of zone “{0}” ({2:0.#} °C) — the zone shows no litres.</value>
@@ -29333,6 +29696,27 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_LBL_TAGESGANGSATZ" xml:space="preserve">
     <value>Daily profile set</value>
+  </data>
+  <data name="ZPG_GRP_TYPTAGE" xml:space="preserve">
+    <value>VDI 4655 type days</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_AKTIV" xml:space="preserve">
+    <value>Compute type days after VDI 4655</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_ZONE" xml:space="preserve">
+    <value>Climate zone</value>
+  </data>
+  <data name="ZPG_LBL_TYPTAGE_GEBAEUDEART" xml:space="preserve">
+    <value>Building type</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE" xml:space="preserve">
+    <value>A setting of the project: the annual profile of every zone then arises from the type days of the imported package and the weather of the climate region. The sizing stays untouched.</value>
+  </data>
+  <data name="ZPG_HINW_TYPTAGE_OHNE" xml:space="preserve">
+    <value>Without imported type days this path is not available — “VDI 4655 type days…” imports a package.</value>
+  </data>
+  <data name="ZPG_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI 4655 type days…</value>
   </data>
   <data name="ZPG_TAGESGANGSATZ_VORGABE" xml:space="preserve">
     <value>Set of the type of use</value>
@@ -30132,6 +30516,9 @@ Do you want to allow this?</value>
   <data name="ZPGK_BTN_IMPORT" xml:space="preserve">
     <value>Import…</value>
   </data>
+  <data name="ZPGK_BTN_TYPTAGE" xml:space="preserve">
+    <value>VDI 4655 type days…</value>
+  </data>
   <data name="ZPGK_BTN_BEENDEN" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -30588,6 +30975,309 @@ Do you want to allow this?</value>
   <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
     <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
   </data>
+  <data name="SIMKONF_GRP_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling</value>
+  </data>
+  <data name="SIMKONF_LBL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling:</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
+    <value>off</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
+    <value>Heating circuit (AK1)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK2" xml:space="preserve">
+    <value>Operating schedule (AK2)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_AK3" xml:space="preserve">
+    <value>Closed loop (AK3)</value>
+  </data>
+  <data name="SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>not yet available</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
+    <value>Off: every building is calculated with ideal control; the heat emission inputs of the buildings are inactive. The setting applies to the whole project.</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
+    <value>Heating circuit (AK1): buildings with heat emission switched on calculate flow, return and the limit of the heat emitter; the heat pump chooses its characteristic curve at the calculated flow temperature. The setting applies to the whole project.</value>
+  </data>
+  <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT" xml:space="preserve">
+    <value>The stored level is “{0}” — this level is not yet available; the run calculates the heating circuit (AK1) and says so.</value>
+  </data>
+  <data name="SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER" xml:space="preserve">
+    <value>The system coupling level could not be saved.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
+    <value>Project setting system coupling: AUS (ideal control) or AK1 (heating circuit as boundary condition); AK2 and AK3 are not yet available. Saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
+    <value>The level “{0}” does not exist; known levels are AUS, AK1, AK2 and AK3.</value>
+  </data>
+  <data name="GEBK_GRP_WAERMEUEBERGABE" xml:space="preserve">
+    <value>Heat emission</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKREIS_AKTIV" xml:space="preserve">
+    <value>Calculate heat emission (instead of ideal control)</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_ART" xml:space="preserve">
+    <value>Heat emitter type :</value>
+  </data>
+  <data name="GEBK_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>ideal (no heat emitter)</value>
+  </data>
+  <data name="GEBK_UEBERGABE_RADIATOR" xml:space="preserve">
+    <value>Radiator</value>
+  </data>
+  <data name="GEBK_UEBERGABE_FLAECHE" xml:space="preserve">
+    <value>Panel heating</value>
+  </data>
+  <data name="GEBK_UEBERGABE_KONVEKTOR" xml:space="preserve">
+    <value>Convector</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Exponent :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design flow temperature :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design return temperature :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Design room temperature :</value>
+  </data>
+  <data name="GEBK_LBL_AUSLEGUNG_AUSSEN" xml:space="preserve">
+    <value>Design outdoor temperature :</value>
+  </data>
+  <data name="GEBK_LBL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nominal output of the heat emitter :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_AKTIV" xml:space="preserve">
+    <value>Use heating curve</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_NIVEAU" xml:space="preserve">
+    <value>Heating curve offset :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZKURVE_STEILHEIT" xml:space="preserve">
+    <value>Heating curve slope :</value>
+  </data>
+  <data name="GEBK_LBL_PROPORTIONALBAND" xml:space="preserve">
+    <value>Proportional band of the room controller :</value>
+  </data>
+  <data name="GEBK_BAND_FREI" xml:space="preserve">
+    <value>custom</value>
+  </data>
+  <data name="GEBK_LBL_BAND_FREI" xml:space="preserve">
+    <value>Proportional band (custom) :</value>
+  </data>
+  <data name="GEBK_VORGABE_HERGELEITET" xml:space="preserve">
+    <value>Default: derived</value>
+  </data>
+  <data name="GEBK_LBL_SOLLWERTPROFIL" xml:space="preserve">
+    <value>Set point schedule</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_AUS" xml:space="preserve">
+    <value>Without the tick the building is calculated with ideal control as before.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_IDEAL" xml:space="preserve">
+    <value>Heat emitter type “ideal”: the building is calculated with ideal control, as without the tick. Heat emission is calculated with radiator, panel heating or convector.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_ART" xml:space="preserve">
+    <value>Defaults of the heat emitter type {0}: exponent {1}, design {2}/{3} °C, radiant share of heating {4} (applies when the field is empty) — EPOS-Plan defaults, not standard values; each field overrides them.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Design room temperature empty: the day set point, {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_AUSSEN" xml:space="preserve">
+    <value>Design outdoor temperature empty: the coldest daily mean of the project's climate series, rounded down — {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSLEGUNG_AUSSEN_OHNE" xml:space="preserve">
+    <value>Design outdoor temperature empty: the coldest daily mean of the project's climate series, rounded down; the number appears here once the building is opened in a project with a climate region.</value>
+  </data>
+  <data name="GEBK_ZEILE_NENNLEISTUNG" xml:space="preserve">
+    <value>Nominal output empty: the steady-state heat load of this building at {1} °C outdoors and {2} °C indoors — {0} kW. Not a verification to DIN EN 12831; in the project it scales with the building.</value>
+  </data>
+  <data name="GEBK_ZEILE_NENNLEISTUNG_OHNE" xml:space="preserve">
+    <value>Nominal output empty: the steady-state heat load of the building at the design point, not a verification to DIN EN 12831; the number appears here once the building is opened in a project with a climate region.</value>
+  </data>
+  <data name="GEBK_ZEILE_HERLEITUNG_BEFUND" xml:space="preserve">
+    <value>No derived number: {0}</value>
+  </data>
+  <data name="GEBK_ZEILE_HEIZKURVE_AN" xml:space="preserve">
+    <value>Heating curve: the flow temperature follows the outdoor temperature through the design point ({0} °C at {1} °C); the offset shifts and the slope tilts the curve (default {2} K and {3}).</value>
+  </data>
+  <data name="GEBK_ZEILE_HEIZKURVE_AUS" xml:space="preserve">
+    <value>Without a heating curve the building runs a fixed flow temperature: the highest planned flow temperature of the heat generators of the heating channel, without such a plant the design flow temperature.</value>
+  </data>
+  <data name="GEBK_ZEILE_PROPORTIONALBAND" xml:space="preserve">
+    <value>Proportional band: quick choice 0.5 / 1 / 2 K or custom from 0 to {1} K; 0 K is ideal control with a limit. Empty means the default {0} K.</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
+    <value>Heat emission is only calculated in projects with the project setting system coupling “Heating circuit (AK1)” (simulation configuration).</value>
+  </data>
+  <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
+    <value>The daily balance (legacy method) does not calculate system coupling — these inputs take effect once the building is calculated to VDI 6007.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLLWERTPROFIL_OHNE" xml:space="preserve">
+    <value>Without a schedule the building's set points apply (day, night, weekend); the grid shows them. Holidays apply on top in both cases.</value>
+  </data>
+  <data name="GEBK_ZEILE_SOLLWERTPROFIL_MIT" xml:space="preserve">
+    <value>The schedule applies per hour of the week (Monday 00:00 to Sunday 23:00); holiday periods apply on top with the holiday set point.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_BEREICH" xml:space="preserve">
+    <value>{0} must lie between {1} and {2}.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_ART_UNBEKANNT" xml:space="preserve">
+    <value>The heat emitter type “{0}” is unknown; please choose radiator, panel heating, convector or ideal.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_NENNLEISTUNG" xml:space="preserve">
+    <value>The nominal output of the heat emitter must be greater than 0.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_VORLAUF_RAUM" xml:space="preserve">
+    <value>The design flow temperature {0} °C is not above the design room temperature {1} °C — the heat emitter would not deliver any heat.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_RUECKLAUF" xml:space="preserve">
+    <value>The design return temperature {0} °C must lie between the design room temperature {1} °C and the design flow temperature {2} °C.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_AUSSEN_RAUM" xml:space="preserve">
+    <value>The design outdoor temperature {0} °C must be below the design room temperature {1} °C.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_WERTZAHL" xml:space="preserve">
+    <value>The set point schedule has {0} values instead of {1}.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_KEINE_ZAHL" xml:space="preserve">
+    <value>The set point schedule contains no number at position {0}.</value>
+  </data>
+  <data name="GEBK_MSG_UEB_PROFIL_WERT" xml:space="preserve">
+    <value>The set point schedule has the value {1} °C at position {0}; permitted are {2} to {3} °C.</value>
+  </data>
+  <data name="WRASTER_TAGE" xml:space="preserve">
+    <value>Mon;Tue;Wed;Thu;Fri;Sat;Sun</value>
+  </data>
+  <data name="WRASTER_KOPF_TAG" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="WRASTER_ZELLE" xml:space="preserve">
+    <value>{0} {1}:00</value>
+  </data>
+  <data name="WRASTER_LBL_ZEILE" xml:space="preserve">
+    <value>Row :</value>
+  </data>
+  <data name="WRASTER_LBL_ZEILENWERT" xml:space="preserve">
+    <value>Value for the whole row :</value>
+  </data>
+  <data name="WRASTER_BTN_ZEILE_SETZEN" xml:space="preserve">
+    <value>Set row</value>
+  </data>
+  <data name="WRASTER_BTN_WERKTAGE" xml:space="preserve">
+    <value>copy to Mon–Fri</value>
+  </data>
+  <data name="WRASTER_BTN_WOCHENENDE" xml:space="preserve">
+    <value>copy to Sat–Sun</value>
+  </data>
+  <data name="WRASTER_BTN_ALLE" xml:space="preserve">
+    <value>copy to all days</value>
+  </data>
+  <data name="WRASTER_BTN_ANLEGEN" xml:space="preserve">
+    <value>Edit as schedule</value>
+  </data>
+  <data name="WRASTER_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard schedule</value>
+  </data>
+  <data name="WRASTER_ZEILE_VORGABE" xml:space="preserve">
+    <value>No schedule yet — the grid shows what applies without one.</value>
+  </data>
+  <data name="WRASTER_BILD_TITEL" xml:space="preserve">
+    <value>The week</value>
+  </data>
+  <data name="WRASTER_BILD_X" xml:space="preserve">
+    <value>Hour of the week (1..168)</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL" xml:space="preserve">
+    <value>Calculate heat emission instead of ideal control (system coupling AK1); effective only with a heat emitter type and in a project with system coupling AK1. When first switched on the dialog proposes the heating curve.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Heat emitter type: IDEAL (no heat emitter), RADIATOR, FLAECHE (panel heating) or KONVEKTOR; the type brings exponent, design point and radiant share as defaults.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Exponent of the heat emission equation, 1.0 to 1.6; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Nominal output of the heat emitter at the design point in kW; empty = derived from the building's steady-state heat load (not a standard verification).</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_VORLAUF_ERL" xml:space="preserve">
+    <value>Design flow temperature in °C, 25 to 90; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Design return temperature in °C, between design room temperature and design flow temperature; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_RAUM_ERL" xml:space="preserve">
+    <value>Room temperature at the design point in °C, 15 to 26; empty = day set point.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSLEGUNG_AUSSEN_ERL" xml:space="preserve">
+    <value>Design outdoor temperature in °C, −30 to 5; empty = coldest daily mean of the project's climate series, rounded down.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_AKTIV_ERL" xml:space="preserve">
+    <value>Use the heating curve (flow temperature from the outdoor temperature); otherwise the plant's fixed flow temperature.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_NIVEAU_ERL" xml:space="preserve">
+    <value>Heating curve offset in K, −10 to 10; empty = 0.</value>
+  </data>
+  <data name="KI_DLG_GEBK_HEIZKURVE_STEILHEIT_ERL" xml:space="preserve">
+    <value>Heating curve slope, 0.2 to 3; empty = 1.0 (curve through the design point).</value>
+  </data>
+  <data name="KI_DLG_GEBK_PROPORTIONALBAND_ERL" xml:space="preserve">
+    <value>Proportional band of the room controller in K, 0 to 5 (0 = ideal control with a limit); empty = 1 K.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLLWERTPROFIL_ERL" xml:space="preserve">
+    <value>Set point schedule: exactly 168 values in °C (0 to 30), Monday 00:00 to Sunday 23:00, separated by “;”, decimal point; empty = the building's set points. A wrong number of values is rejected, not padded.</value>
+  </data>
+  <data name="GEB_RECHENWEG_GEKOPPELT" xml:space="preserve">
+    <value>coupled (AK1)</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow / return</value>
+  </data>
+  <data name="GEBB_KACHEL_VORLAUF_QUELLE" xml:space="preserve">
+    <value>Mean over the hours with heating — {0}, design {1}/{2} °C</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT" xml:space="preserve">
+    <value>Hours with limited heat emission</value>
+  </data>
+  <data name="GEBB_KACHEL_BEGRENZT_QUELLE" xml:space="preserve">
+    <value>Hours in which the heat emitter delivered less than the set point required</value>
+  </data>
+  <data name="GEBB_BILD_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow and return temperature</value>
+  </data>
+  <data name="GEBB_REIHE_VORLAUF" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="GEBB_REIHE_RUECKLAUF" xml:space="preserve">
+    <value>Return</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design flow</value>
+  </data>
+  <data name="GEBB_REIHE_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design return</value>
+  </data>
+  <data name="GEBB_HRL_VORLAUF_LUECKEN" xml:space="preserve">
+    <value>Hours without heating stay empty in the chart — there is no flow temperature then.</value>
+  </data>
+  <data name="GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Heat emission, heating curve and room controller of the system coupling are extensions of EPOS-Plan, not part of VDI 6007.</value>
+  </data>
+  <data name="ABW_MERKMAL_HEIZKREIS" xml:space="preserve">
+    <value>Calculate heat emission</value>
+  </data>
+  <data name="ABW_MERKMAL_UEBERGABEART" xml:space="preserve">
+    <value>Heat emitter type</value>
+  </data>
+  <data name="ABW_MERKMAL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>System coupling</value>
+  </data>
   <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
     <value>every {0} years from year {1}</value>
   </data>
@@ -30611,5 +31301,413 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
     <value>Items every n years with p_E [€/a]</value>
+  </data>
+  <data name="GIMP_BELEG_BAUART_VORGABE" xml:space="preserve">
+    <value>Default value without usable layers ({0} of {1} constructions complete)</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_AUS_BAUART" xml:space="preserve">
+    <value>derived by the building editor from the construction type</value>
+  </data>
+  <data name="GIMP_BELEG_FENSTER_SEKTOR" xml:space="preserve">
+    <value>{0} windows</value>
+  </data>
+  <data name="GIMP_BELEG_FENSTER_SUMME" xml:space="preserve">
+    <value>Sum of the four orientations</value>
+  </data>
+  <data name="GIMP_BELEG_FLAECHE" xml:space="preserve">
+    <value>{0} building components</value>
+  </data>
+  <data name="GIMP_BELEG_FLAECHE_NETTO" xml:space="preserve">
+    <value>{0} building components: gross {1} m² minus windows and doors {2} m²</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_VORSCHLAG" xml:space="preserve">
+    <value>Suggestion {0} W: design power of lighting and equipment from {1} spaces — not a time-averaged gain, not imported</value>
+  </data>
+  <data name="GIMP_BELEG_KLASSE_ANWENDER" xml:space="preserve">
+    <value>Entered in the dialog</value>
+  </data>
+  <data name="GIMP_BELEG_LAENGE_LEER" xml:space="preserve">
+    <value>not in the file — please enter the junction length</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL" xml:space="preserve">
+    <value>volume-weighted from {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL_FLAECHE" xml:space="preserve">
+    <value>area-weighted from {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL_MITTEL" xml:space="preserve">
+    <value>mean of {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_NUTZERLUEFTUNG_LEER" xml:space="preserve">
+    <value>stays empty — the air change rate of the file is assigned entirely to infiltration</value>
+  </data>
+  <data name="GIMP_BELEG_PERSONEN" xml:space="preserve">
+    <value>{0} people in {1} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_RAEUME" xml:space="preserve">
+    <value>Sum of {0} heated spaces</value>
+  </data>
+  <data name="GIMP_BELEG_RANDBEDINGUNG" xml:space="preserve">
+    <value>Ground {0} m², unheated {1} m²</value>
+  </data>
+  <data name="GIMP_BELEG_RAUMHOEHE" xml:space="preserve">
+    <value>Volume {0} m³ ÷ usable area {1} m²</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT" xml:space="preserve">
+    <value>Design heating temperature of the zones of {0} spaces</value>
+  </data>
+  <data name="GIMP_BELEG_U_GEWICHTET" xml:space="preserve">
+    <value>area-weighted from {0} building components ({1} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_U_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>File: {1} area-weighted, but no value for {0} % of the area — default of the building age class</value>
+  </data>
+  <data name="GIMP_BELEG_VORGABE_KLASSE" xml:space="preserve">
+    <value>Building age class {0}, median of {1} entries of the building catalogue</value>
+  </data>
+  <data name="GIMP_FELD_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Building age class</value>
+  </data>
+  <data name="GIMP_FELD_BAUART" xml:space="preserve">
+    <value>Construction type</value>
+  </data>
+  <data name="GIMP_FELD_BAUWEISE" xml:space="preserve">
+    <value>Thermal mass</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_GESAMT" xml:space="preserve">
+    <value>Total window area</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_NORD" xml:space="preserve">
+    <value>Window area north</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_OST" xml:space="preserve">
+    <value>Window area east</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_SUED" xml:space="preserve">
+    <value>Window area south</value>
+  </data>
+  <data name="GIMP_FELD_FENSTER_WEST" xml:space="preserve">
+    <value>Window area west</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_AUSSENWAND" xml:space="preserve">
+    <value>Area of external wall</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_DACH" xml:space="preserve">
+    <value>Roof area</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_GRUND" xml:space="preserve">
+    <value>Ground floor area</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_JE_NUTZER" xml:space="preserve">
+    <value>Area per user</value>
+  </data>
+  <data name="GIMP_FELD_FLAECHE_SONSTIGE" xml:space="preserve">
+    <value>Other areas</value>
+  </data>
+  <data name="GIMP_FELD_GRUND_RANDBEDINGUNG" xml:space="preserve">
+    <value>Boundary condition ground floor area</value>
+  </data>
+  <data name="GIMP_FELD_G_WERT" xml:space="preserve">
+    <value>Window transmittance (g-value)</value>
+  </data>
+  <data name="GIMP_FELD_INNERE_GEWINNE" xml:space="preserve">
+    <value>Internal heat gains</value>
+  </data>
+  <data name="GIMP_FELD_LAENGE_AUSSENWAND_KELLER" xml:space="preserve">
+    <value>Length of junction external wall–basement</value>
+  </data>
+  <data name="GIMP_FELD_LAENGE_FENSTER_WAND" xml:space="preserve">
+    <value>Length of junction window–wall</value>
+  </data>
+  <data name="GIMP_FELD_LAENGE_WAND_DACH" xml:space="preserve">
+    <value>Length of junction wall–roof</value>
+  </data>
+  <data name="GIMP_FELD_LUFTWECHSEL_INFILTRATION" xml:space="preserve">
+    <value>Infiltration</value>
+  </data>
+  <data name="GIMP_FELD_LUFTWECHSEL_NUTZER" xml:space="preserve">
+    <value>Occupant ventilation</value>
+  </data>
+  <data name="GIMP_FELD_NUTZFLAECHE" xml:space="preserve">
+    <value>Usable area</value>
+  </data>
+  <data name="GIMP_FELD_PSI_AUSSENWAND_KELLER" xml:space="preserve">
+    <value>ψ junction external wall–basement</value>
+  </data>
+  <data name="GIMP_FELD_PSI_FENSTER_WAND" xml:space="preserve">
+    <value>ψ junction window–wall</value>
+  </data>
+  <data name="GIMP_FELD_PSI_WAND_DACH" xml:space="preserve">
+    <value>ψ junction wall–roof</value>
+  </data>
+  <data name="GIMP_FELD_RAUMHOEHE" xml:space="preserve">
+    <value>Room height</value>
+  </data>
+  <data name="GIMP_FELD_SOLL_TAG" xml:space="preserve">
+    <value>Daytime heating setpoint</value>
+  </data>
+  <data name="GIMP_FELD_U_AUSSENWAND" xml:space="preserve">
+    <value>U-value external wall</value>
+  </data>
+  <data name="GIMP_FELD_U_DACH" xml:space="preserve">
+    <value>U-value roof</value>
+  </data>
+  <data name="GIMP_FELD_U_FENSTER" xml:space="preserve">
+    <value>U-value window</value>
+  </data>
+  <data name="GIMP_FELD_U_GRUND" xml:space="preserve">
+    <value>U-value ground floor area</value>
+  </data>
+  <data name="GIMP_FELD_U_SONSTIGE" xml:space="preserve">
+    <value>U-value other areas</value>
+  </data>
+  <data name="GIMP_FELD_VOLUMEN" xml:space="preserve">
+    <value>Volume (check value)</value>
+  </data>
+  <data name="GIMP_GRP_AUSSENWAND" xml:space="preserve">
+    <value>External wall</value>
+  </data>
+  <data name="GIMP_GRP_DACH" xml:space="preserve">
+    <value>Roof</value>
+  </data>
+  <data name="GIMP_GRP_FENSTER" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="GIMP_GRP_GRUND" xml:space="preserve">
+    <value>Ground floor area</value>
+  </data>
+  <data name="GIMP_GRP_KENNGROESSEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="GIMP_GRP_LUEFTUNG" xml:space="preserve">
+    <value>Ventilation</value>
+  </data>
+  <data name="GIMP_GRP_SOLLWERTE" xml:space="preserve">
+    <value>Setpoints</value>
+  </data>
+  <data name="GIMP_GRP_SONSTIGE" xml:space="preserve">
+    <value>Other areas</value>
+  </data>
+  <data name="GIMP_GRP_WAERMEBRUECKEN" xml:space="preserve">
+    <value>Thermal bridges</value>
+  </data>
+  <data name="GIMP_HERKUNFT_GBXML" xml:space="preserve">
+    <value>gbXML file</value>
+  </data>
+  <data name="GIMP_HERKUNFT_IFC" xml:space="preserve">
+    <value>IFC file</value>
+  </data>
+  <data name="GIMP_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="GIMP_HERKUNFT_LEER" xml:space="preserve">
+    <value>Empty</value>
+  </data>
+  <data name="GIMP_HERKUNFT_MANUELL" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="GIMP_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="GIMP_KOPF" xml:space="preserve">
+    <value>{0} · building "{1}" · building age class {2} · {3} values from the file, {4} default values, {5} empty</value>
+  </data>
+  <data name="GIMP_SCHEMA_GBXML" xml:space="preserve">
+    <value>gbXML version {0}</value>
+  </data>
+  <data name="GIMP_WERT_LEER" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="GIMP_ZEILE" xml:space="preserve">
+    <value>{0} · {1}: {2} {3} ({4})</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUFBAU_MASSELOS" xml:space="preserve">
+    <value>Construction {0}: at least one layer with an R-value only — U-value from the layers, no thermal mass.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUFBAU_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Construction {0}: at least one layer lacks a thermal resistance — neither U-value nor thermal mass from the layers.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>The unit "{1}" of {0} is unknown or missing — the value stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
+    <value>Component {0}: neither rectangular nor usable polygon geometry — the area stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
+    <value>The file contains no constructions — the U-values are taken from the building age class.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEIN_CAMPUS" xml:space="preserve">
+    <value>The file contains no building (root "{0}" without Campus and Building) — it is not imported.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>The file states no north direction (CADModelAzimuth) — 0° is assumed.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KENNUNG_GEKUERZT" xml:space="preserve">
+    <value>The identifier of a {0} has {2} characters, more than 64, and is stored as "{1}".</value>
+  </data>
+  <data name="IMP_GBXML_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The gbXML file could not be read: {0}</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
+    <value>Surface {0}: the adjacent space "{1}" is not in the file — the surface is treated as adjoining an unheated space.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV" xml:space="preserve">
+    <value>Surface {0}: windows and doors ({2} m²) are larger than the wall ({1} m²) — the net area becomes 0.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NORDDREHUNG" xml:space="preserve">
+    <value>The file rotates the model by {0}° against north (CADModelAzimuth) — the value is not applied; please check the window orientations.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OHNE_AUFBAU" xml:space="preserve">
+    <value>{0} surfaces without a reference to a construction (e.g. {1}) — area and orientation only, no layers.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OHNE_NACHBAR" xml:space="preserve">
+    <value>Surface {0} ({1}) names no adjacent space — it is not assigned to any building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE" xml:space="preserve">
+    <value>Material {0}: {1} = {2} is not a valid value (≤ 0) — it stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TRENNFLAECHE_UNGLEICH" xml:space="preserve">
+    <value>The separating surface between {0} and {1} differs between the two sides ({2} m² and {3} m²) — the larger one counts.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TYP_UNBEKANNT" xml:space="preserve">
+    <value>Unknown type "{0}" at {1} — not counted.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UEBERGANGEN" xml:space="preserve">
+    <value>{1} surfaces or openings of type "{0}" skipped — they are not part of the building envelope.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_UNBEHEIZT_NAME" xml:space="preserve">
+    <value>Space {0} "{1}" is treated as unheated because of its name ("{2}").</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERSION_UNBEKANNT" xml:space="preserve">
+    <value>The version value "{0}" is not in the gbXML version list — noted only, the file is read anyway.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERWEIS_LEER" xml:space="preserve">
+    <value>The reference {0} = "{1}" (at {2}) points to nothing — the chain stops there, the rest is read.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZAHL_UNLESBAR" xml:space="preserve">
+    <value>{0} = "{1}" (at {2}) is not a number — the value stays empty.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONENVORSCHLAG" xml:space="preserve">
+    <value>The file suggests zoning rule {0} ({2} zones, {3} spaces, {4} storeys) — it is imported with {1}, one zone per building.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The file is {0} bytes, larger than the limit of {1} bytes — it is not read.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>The zoning rule would produce {0} zones — more than {1} are not imported.</value>
+  </data>
+  <data name="IMP_GEB_PROT_BODEN_AUSSENLUFT" xml:space="preserve">
+    <value>{0} floors facing outdoor air ({1} m²) count as other areas.</value>
+  </data>
+  <data name="IMP_GEB_PROT_BODEN_GEGEN_UNBEHEIZT" xml:space="preserve">
+    <value>{0} floors above unheated spaces ({1} m²) count as ground floor area with the boundary condition unheated basement.</value>
+  </data>
+  <data name="IMP_GEB_PROT_DECKE_GEGEN_UNBEHEIZT" xml:space="preserve">
+    <value>{0} ceilings below unheated spaces ({1} m²) count as roof and are calculated against outdoor air.</value>
+  </data>
+  <data name="IMP_GEB_PROT_ERDREICH_ZUR_GRUNDFLAECHE" xml:space="preserve">
+    <value>{0} walls or ceilings against the ground ({1} m²) count as ground floor area — only it is calculated against the ground.</value>
+  </data>
+  <data name="IMP_GEB_PROT_FENSTER_OHNE_AZIMUT" xml:space="preserve">
+    <value>{0} windows ({1} m²) without orientation — distributed evenly to north, east, south and west.</value>
+  </data>
+  <data name="IMP_GEB_PROT_FLAECHEN" xml:space="preserve">
+    <value>Reading surfaces ({0} of {1}) …</value>
+  </data>
+  <data name="IMP_GEB_PROT_FLAECHE_GEGEN_UNBEHEIZT" xml:space="preserve">
+    <value>{0} surfaces facing unheated spaces ({1} m²) count as other areas and are calculated against outdoor air.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GELESEN" xml:space="preserve">
+    <value>{0} buildings read.</value>
+  </data>
+  <data name="IMP_GEB_PROT_G_AUSSERHALB" xml:space="preserve">
+    <value>The g-value {0} is not in the range above 0 up to 1.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Without a building age class there are no default values for U-values, g-value and thermal bridges.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KEINE_BEHEIZTEN_RAEUME" xml:space="preserve">
+    <value>Building "{0}" has no heated space — usable area and envelope stay empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_KLASSE_OHNE_VORGABE" xml:space="preserve">
+    <value>The building catalogue holds no entry for building age class {0} — its default values stay empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_LESEN" xml:space="preserve">
+    <value>Reading building file {0} …</value>
+  </data>
+  <data name="IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} heated spaces state an air change rate, {1} do not — infiltration stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_PERSONEN_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0} heated spaces state a number of people, {1} do not — the area per user stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_PFLICHT_FEHLT" xml:space="preserve">
+    <value>{0} is missing or not greater than zero — nothing is imported without this value.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RANDBEDINGUNG_GEMISCHT" xml:space="preserve">
+    <value>The ground floor area adjoins partly the ground ({0} m²), partly unheated spaces ({1} m²) — the larger one is used: {2}.</value>
+  </data>
+  <data name="IMP_GEB_PROT_RAUMFLAECHE_FEHLT" xml:space="preserve">
+    <value>{0} heated spaces have no area ({1}) — the usable area stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_SCHICHTEN_AUSSERHALB" xml:space="preserve">
+    <value>Construction {0}: the layers are outside the plausibility range ({1}) — no U-value from the layers.</value>
+  </data>
+  <data name="IMP_GEB_PROT_SOLLWERT_UNEINHEITLICH" xml:space="preserve">
+    <value>The heating setpoints of the zones are not uniform ({0} to {1} °C; {2} spaces with, {3} without a value) — the daytime heating setpoint stays empty.</value>
+  </data>
+  <data name="IMP_GEB_PROT_U_AUSSERHALB" xml:space="preserve">
+    <value>{0} = {1} W/(m²K) is outside {2} … {3} W/(m²K).</value>
+  </data>
+  <data name="IMP_GEB_PROT_U_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>{0}: the value is missing for {1} % of the area — the default of the building age class applies.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VOLUMEN_ABWEICHUNG" xml:space="preserve">
+    <value>The volume {0} m³ deviates by more than 20 % from usable area × room height ({1} m³).</value>
+  </data>
+  <data name="IMP_GEB_PROT_ZEILE_FEHLER" xml:space="preserve">
+    <value>{0} is marked as faulty — please correct it or clear the tick.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ERFASST" xml:space="preserve">
+    <value>Electricity tax share recorded in the electricity price "{0}": {1} ct/kWh ({2}).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="BHW_S_STANTEIL_INAKTIV" xml:space="preserve">
+    <value>switched off</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEINER" xml:space="preserve">
+    <value>No electricity tax share is recorded in the electricity price "{0}".</value>
+  </data>
+  <data name="BHW_S_STANTEIL_KEIN_TRAEGER" xml:space="preserve">
+    <value>No electricity energy carrier is assigned to the project — no electricity tax share is recorded.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_NICHT_LESBAR" xml:space="preserve">
+    <value>The recorded electricity tax share could not be read: {0}</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REGEL" xml:space="preserve">
+    <value>This is the standard rate {0} ({1} ct/kWh, § 3 StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_REDUZIERT" xml:space="preserve">
+    <value>This is the reduced rate {0} ({1} ct/kWh, § 9b StromStG).</value>
+  </data>
+  <data name="BHW_S_STANTEIL_ABWEICHEND" xml:space="preserve">
+    <value>This is neither the standard rate ({0} ct/kWh) nor the reduced rate ({1} ct/kWh) of the year {2}.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REGEL" xml:space="preserve">
+    <value>standard rate</value>
+  </data>
+  <data name="BHW_S_STANTEIL_SATZ_REDUZIERT" xml:space="preserve">
+    <value>reduced rate</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PASST" xml:space="preserve">
+    <value>Matches the company type: it suggests the {0}.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_VORSCHLAG" xml:space="preserve">
+    <value>The company type suggests the {0} — the share is maintained under "Electricity price details" of the energy carrier; it is shown here for reference only.</value>
+  </data>
+  <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
+    <value>The share is maintained under "Electricity price details" of the energy carrier; it is shown here for reference only.</value>
   </data>
 </root>

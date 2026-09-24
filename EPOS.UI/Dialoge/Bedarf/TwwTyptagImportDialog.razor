@@ -1,0 +1,431 @@
+﻿@* Der DIALOG „VDI-4655-Typtage" (Umsetzungskonzept Zapfprofilgenerator 4.2, 5.8, Kapitel 6;
+   Stufe Z4b, Gruppe 2) - die Ueberlagerung hinter dem Knopf „VDI-4655-Typtage…" im Katalogdialog
+   „Brauchwasser-Nutzungsarten" und in der Stufe Experte des Zapfprofil-Dialogs.
+
+   WAS ER TUT. Er zeigt den eingespielten Stand (Quelle, Ausgabe, Tag des Einspielens, Klimazonen,
+   Gebaeudearten, Typtage, Zeitraster der Tagesgaenge, Zeilen), waehlt ein Paket ueber
+   Dienste.Datei (ZIP-Archiv oder eine Datei des Paketordners), PRUEFT es sofort ohne
+   Schreibzugriff und zeigt den Bericht - entweder die Ablehnung mit Datei und Zeile oder, was ein
+   Einspielen ablegen wuerde, samt Hinweisen. „Einspielen" ersetzt den Stand vollstaendig (es gibt
+   nur EINEN Satz je Datenbank) und fragt vorher zurueck, wenn schon etwas steht; „Loeschen"
+   entfernt ihn nach einer Rueckfrage.
+
+   ANWENDERLOKAL (Konzept Kapitel 6). Das Programm bringt keine Werte der Richtlinie mit: Der
+   lizenzierte Anwender spielt sie selbst ein, und sie bleiben in seiner Datenbank - weder die
+   Auslieferungsvorlage noch ein Projekttransfer traegt sie. Zwei Herleitungszeilen sagen das im
+   Dialog; ein Projekt traegt nur die WAHL.
+
+   KEIN ARBEITSSTAND. Einspielen und Loeschen schreiben sofort in EINER Transaktion des Kerns; es
+   gibt nichts zu verwerfen. „Beenden", das Kreuz und Esc schliessen den Dialog und melden dem
+   Wirt, ob sich der Stand geaendert hat - er liest dann seine Wahllisten neu.
+
+   HILFE-ASSISTENT. Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.BRAUCHWASSER_TYPTAGE): die Anzeigen des Stands ueber TwwTyptagImportKiSicht.
+   Einspielen und Loeschen legen Zeilen an oder nehmen sie weg und bleiben Klicks des Anwenders. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-tww-typtage" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.Titel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Beenden" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_stufe" Text="@_meldung" />
+    }
+
+    <Herleitungszeile Text="@Texte.HinweisLizenz" />
+    <Herleitungszeile Text="@Texte.HinweisFormat" />
+
+    @* --- Der eingespielte Stand ---------------------------------------------------- *@
+    <Gruppenkopf Titel="@Texte.GruppeStand">
+        <KindInhalt>
+            @if (!_stand.Vorhanden)
+            {
+                <p class="epos-leisezeile epos-tww-typtage-leer">@(_stand.Grund.Length > 0 ? _stand.Grund : Texte.Leer)</p>
+            }
+            else
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-tww-typtage-stand">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteAngabe</th>
+                                <th>@Texte.SpalteWert</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (TwwTyptagAngabeDaten z in Standzeilen())
+                            {
+                                <tr>
+                                    <td>@z.Bezeichnung</td>
+                                    <td>@z.Wert</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Paketwahl und Pruefung ----------------------------------------------------- *@
+    <Gruppenkopf Titel="@Texte.GruppePruefung">
+        <KindInhalt>
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Dateiwahl Bezeichnung="" KnopfText="@Texte.KnopfPaket" Filter="@Texte.Dateifilter"
+                               Pfad="@_pfad" Waehlen="@PaketWahl" PfadChanged="BeiPaket" />
+                </KindInhalt>
+            </Formularraster>
+
+            @if (_bericht is not null)
+            {
+                @if (_bericht.Abgebrochen)
+                {
+                    <Warnbanner Stufe="WarnStufe.Fehler" Text="@_bericht.Abbruch" />
+                }
+                else
+                {
+                    <p class="epos-leisezeile epos-tww-typtage-summe" role="status">@_bericht.Zusammenfassung</p>
+                    <div class="epos-raster-huelle">
+                        <table class="epos-raster epos-tww-typtage-pruefung">
+                            <thead>
+                                <tr>
+                                    <th>@Texte.SpalteAngabe</th>
+                                    <th>@Texte.SpalteWert</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (TwwTyptagAngabeDaten z in _bericht.Angaben)
+                                {
+                                    <tr>
+                                        <td>@z.Bezeichnung</td>
+                                        <td>@z.Wert</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                @if (_bericht.Hinweise.Count > 0)
+                {
+                    <Gruppenkopf Titel="@Texte.Hinweise">
+                        <KindInhalt>
+                            @foreach (string h in _bericht.Hinweise)
+                            {
+                                <p class="epos-leisezeile epos-tww-typtage-hinweis">@h</p>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+                }
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Rueckfragen ---------------------------------------------------------------- *@
+    <Rueckfrage Offen="@_frageOffen" Frage="@_frage" TitelText="@Texte.Titel" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
+
+    @* --- Die Fussleiste ------------------------------------------------------------- *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Loeschen is not null)
+        {
+            <button type="button" class="epos-knopf epos-tww-typtage-loeschen"
+                    aria-disabled="@(_stand.Vorhanden ? null : "true")"
+                    title="@(_stand.Vorhanden ? null : Texte.Leer)"
+                    @onclick="LoeschenFragen">@Texte.KnopfLoeschen</button>
+        }
+        @if (Einspielen is not null)
+        {
+            <button type="button" class="epos-knopf epos-tww-typtage-einspielen"
+                    aria-disabled="@(Einspielbar ? null : "true")"
+                    title="@(Einspielbar ? null : Texte.KeinPaket)"
+                    @onclick="EinspielenFragen">@Texte.KnopfEinspielen</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-tww-typtage-beenden"
+                @onclick="Beenden">@Texte.KnopfBeenden</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Hülle (ZapfprofilHuelle.TyptagGaben)
+    // =====================================================================
+
+    /// <summary>Der eingespielte Stand (<c>TwwTyptagCtrl.Stand</c>).</summary>
+    [Parameter] public Func<TwwTyptagStandDaten>? Stand { get; set; }
+
+    /// <summary>Die Paketwahl der Plattform (<c>Dienste.Datei</c>, hinter dem Ereignis); <c>""</c> = abgebrochen.</summary>
+    [Parameter] public Func<string, Task<string>>? PaketWaehlen { get; set; }
+
+    /// <summary>Die Prüfung eines Pakets OHNE Schreibzugriff (<c>TwwTyptagCtrl.Pruefen</c>).</summary>
+    [Parameter] public Func<string, TwwTyptagPruefberichtDaten>? Pruefen { get; set; }
+
+    /// <summary>Das Einspielen (<c>TwwTyptagCtrl.Importieren</c>); ohne Delegat steht der Knopf nicht da.</summary>
+    [Parameter] public Func<string, TwwTyptagErgebnisDaten>? Einspielen { get; set; }
+
+    /// <summary>Das Löschen (<c>TwwTyptagCtrl.Loeschen</c>); ohne Delegat steht der Knopf nicht da.</summary>
+    [Parameter] public Func<TwwTyptagErgebnisDaten>? Loeschen { get; set; }
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public TwwTyptagImportTexte Texte { get; set; } = new();
+
+    /// <summary>Hilfeschlüssel des Dialogs (5.8).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Brauchwasser_Typtage.btn_Help";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    /// <summary>
+    /// Der Dialog ist zu Ende; <c>true</c> = der eingespielte Stand hat sich geändert — der Wirt
+    /// liest dann seine Wahllisten neu.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private TwwTyptagStandDaten _stand = new();
+    private string _pfad = "";
+    private TwwTyptagPruefberichtDaten? _bericht;
+    private string _meldung = "";
+    private WarnStufe _stufe = WarnStufe.Warnung;
+    private string _status = "";
+    private bool _geaendert;
+
+    private bool _frageOffen;
+    private string _frage = "";
+    private bool _frageLoeschen;
+
+    /// <summary>Der angezeigte Stand (Prüfhilfe für Tests).</summary>
+    public TwwTyptagStandDaten Standanzeige => _stand;
+
+    /// <summary>Der Bericht der letzten Prüfung (Prüfhilfe für Tests); <c>null</c> = keiner.</summary>
+    public TwwTyptagPruefberichtDaten? Bericht => _bericht;
+
+    /// <summary>Die Statuszeile (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Das Warnband (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht eine Rückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool FrageOffen => _frageOffen;
+
+    /// <summary>Lässt sich einspielen? Ein Paket ist gewählt und die Prüfung hat es nicht abgelehnt.</summary>
+    private bool Einspielbar => _pfad.Length > 0 && _bericht is not null && !_bericht.Abgebrochen;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        StandLaden();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BRAUCHWASSER_TYPTAGE, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    private void StandLaden() => _stand = Stand?.Invoke() ?? new TwwTyptagStandDaten();
+
+    // =====================================================================
+    // Paketwahl und Prüfung
+    // =====================================================================
+
+    /// <summary>Die Paketwahl der Plattform — über den Delegaten der Hülle, erwartet (nie synchron).</summary>
+    private async Task<string?> PaketWahl(string filter)
+        => PaketWaehlen is null ? null : await PaketWaehlen(filter);
+
+    /// <summary>Ein neues Paket: Es wird SOFORT geprüft — ohne Schreibzugriff.</summary>
+    private void BeiPaket(string pfad)
+    {
+        _pfad = pfad ?? "";
+        _meldung = "";
+        _bericht = _pfad.Length == 0 || Pruefen is null ? null : Pruefen(_pfad);
+    }
+
+    // =====================================================================
+    // Einspielen und Löschen — beides mit Rückfrage
+    // =====================================================================
+
+    private void EinspielenFragen()
+    {
+        if (Einspielen is null) return;
+        if (!Einspielbar)
+        {
+            _meldung = _pfad.Length == 0 ? Texte.KeinPaket : _bericht?.Abbruch ?? Texte.KeinPaket;
+            _stufe = WarnStufe.Warnung;
+            return;
+        }
+        if (!_stand.Vorhanden)
+        {
+            EinspielenAusfuehren();
+            return;
+        }
+        _frageLoeschen = false;
+        _frage = Format(Texte.FrageErsetzen, _stand.Zeilen.ToString(CultureInfo.CurrentCulture));
+        _frageOffen = true;
+    }
+
+    private void LoeschenFragen()
+    {
+        if (Loeschen is null) return;
+        if (!_stand.Vorhanden)
+        {
+            _meldung = Texte.Leer;
+            _stufe = WarnStufe.Warnung;
+            return;
+        }
+        _frageLoeschen = true;
+        _frage = Texte.FrageLoeschen;
+        _frageOffen = true;
+    }
+
+    private void FrageBeantwortet(bool? antwort)
+    {
+        _frageOffen = false;
+        if (antwort != true) return;
+        if (_frageLoeschen) LoeschenAusfuehren();
+        else EinspielenAusfuehren();
+    }
+
+    private void EinspielenAusfuehren()
+    {
+        if (Einspielen is null) return;
+        TwwTyptagErgebnisDaten e = Einspielen(_pfad);
+        Uebernehmen(e);
+        if (!e.Ok) return;
+        _pfad = "";
+        // Der Bericht bleibt stehen, solange er Hinweise des gelungenen Einspielens traegt.
+        if (e.Hinweise.Count == 0) _bericht = null;
+    }
+
+    private void LoeschenAusfuehren()
+    {
+        if (Loeschen is null) return;
+        Uebernehmen(Loeschen());
+    }
+
+    /// <summary>Das Ergebnis eines Schreibwegs: Stand, Statuszeile, Banner und Hinweise.</summary>
+    private void Uebernehmen(TwwTyptagErgebnisDaten e)
+    {
+        _stand = e.Stand ?? new TwwTyptagStandDaten();
+        if (e.Ok)
+        {
+            _geaendert = true;
+            _status = e.Meldung;
+            _meldung = "";
+            if (e.Hinweise.Count > 0)
+            {
+                _bericht = new TwwTyptagPruefberichtDaten { Zusammenfassung = e.Meldung };
+                _bericht.Hinweise.AddRange(e.Hinweise);
+            }
+        }
+        else
+        {
+            _meldung = e.Meldung;
+            _stufe = WarnStufe.Fehler;
+        }
+    }
+
+    // =====================================================================
+    // Anzeige des Stands
+    // =====================================================================
+
+    /// <summary>Die Zeilen der Standanzeige — Beschriftung und fertiger Text, nie ein Wert der Richtlinie.</summary>
+    private IReadOnlyList<TwwTyptagAngabeDaten> Standzeilen()
+    {
+        var liste = new List<TwwTyptagAngabeDaten>(8)
+        {
+            new(Texte.LabelQuelle, _stand.Quelle.Length > 0 ? _stand.Quelle : Texte.WertOhne),
+            new(Texte.LabelAusgabe, _stand.Ausgabe.Length > 0 ? _stand.Ausgabe : Texte.WertOhne),
+            new(Texte.LabelDatum, _stand.DatumImport.Length > 0 ? _stand.DatumImport : Texte.WertOhne),
+            new(Texte.LabelZonen, Liste(_stand.Klimazonen.Select(z => z.ToString(CultureInfo.CurrentCulture)))),
+            new(Texte.LabelGebaeudearten, Liste(_stand.Gebaeudearten)),
+            new(Texte.LabelTyptage, Liste(_stand.Typtage)),
+            new(Texte.LabelAufloesung, _stand.AufloesungenMin.Count == 0 ? Texte.WertOhneGaenge
+                : Liste(_stand.AufloesungenMin.Select(a => a.ToString(CultureInfo.CurrentCulture)))),
+            new(Texte.LabelZeilen, _stand.Zeilen.ToString(CultureInfo.CurrentCulture))
+        };
+        return liste;
+    }
+
+    private string Liste(IEnumerable<string> werte)
+    {
+        string text = string.Join(", ", werte);
+        return text.Length > 0 ? text : Texte.WertOhne;
+    }
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    // =====================================================================
+    // Beenden und Tastatur
+    // =====================================================================
+
+    private Task Beenden() => Geschlossen.InvokeAsync(_geaendert);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (_frageOffen || e.Key != "Escape") return Task.CompletedTask;
+        return Beenden();
+    }
+
+    // =====================================================================
+    // Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TwwTyptagImportKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Anzeigen des eingespielten Stands.</summary>
+    private TwwTyptagImportKiSicht KiSicht() => _kiSicht ??= new TwwTyptagImportKiSicht
+    {
+        QuelleLesen = () => _stand.Vorhanden ? _stand.Quelle : "",
+        AusgabeLesen = () => _stand.Vorhanden ? _stand.Ausgabe : "",
+        DatumLesen = () => _stand.Vorhanden ? _stand.DatumImport : "",
+        ZonenLesen = () => Liste(_stand.Klimazonen.Select(z => z.ToString(CultureInfo.InvariantCulture))),
+        GebaeudeartenLesen = () => Liste(_stand.Gebaeudearten),
+        ZeilenLesen = () => _stand.Zeilen,
+        GrundLesen = () => _stand.Vorhanden ? "" : (_stand.Grund.Length > 0 ? _stand.Grund : Texte.Leer),
+        BerichtLesen = () => _bericht is null ? "" : (_bericht.Abgebrochen ? _bericht.Abbruch : _bericht.Zusammenfassung)
+    };
+
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+}

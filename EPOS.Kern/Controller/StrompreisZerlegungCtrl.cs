@@ -141,6 +141,83 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // Der erfasste Stromsteueranteil (roh)
+        // =====================================================================
+
+        /// <summary>
+        /// Der ROHE Stromsteueranteil aus <c>energy_project_settings</c> [ct/kWh];
+        /// <c>null</c> = nie gepflegt (oder Spalte/Zeile fehlt).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum nicht über <see cref="Read"/>.</b> Dessen Leseweg lässt den
+        /// Vorschlagssatz als ZAHL im Feld stehen
+        /// (<c>StrompreisZerlegungModel.STROMSTEUER_REGELFALL</c> = 2,05 ct/kWh), auch wenn
+        /// ihn niemand erfasst hat; rechnen tut er dort erst mit gesetztem
+        /// Aktiv-Schalter. Für den Satzvergleich (Kohärenz Fall 4) und die Anzeige des
+        /// erfassten Anteils hilft das nicht: Der Rückfallwert IST der Katalogsatz, der
+        /// Vergleich wäre zirkulär. Hier zählt allein, ob die Spalte einen Wert trägt.</para>
+        ///
+        /// <para>Über den strengen Leseweg und ohne eigenes <c>try</c> (ETAPPE E7c3, B‑6):
+        /// Ein Lesefehler steigt auf — die Kohärenzprüfung macht daraus die Zeile „nicht
+        /// ausführbar", die Anzeige den Zustand „nicht lesbar". ETAPPE E18 (E18‑Q6 a): aus
+        /// <c>KohaerenzPruefung</c> hierher verschoben, damit beide denselben Weg lesen.</para>
+        /// </remarks>
+        public static double? StromsteuerRoh(int idProjekt, int carrierId)
+        {
+            DataTable dt = StilleDb.TabelleStreng(
+                "SELECT * FROM [" + TABLE + "] " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@proj", idProjekt),
+                new DbParam("@eid", carrierId));
+
+            if (dt == null || dt.Rows.Count == 0) return null;
+            if (!dt.Columns.Contains(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER)) return null;
+
+            object v = dt.Rows[0][SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER];
+            return (v == null || v == DBNull.Value) ? (double?)null : Convert.ToDouble(v);
+        }
+
+        /// <summary>
+        /// ETAPPE E18 (Konzept § 6.3 Nr. 16, E18‑Q4/Q5 a) — der Stromsteueranteil, den der
+        /// Anwender im Strompreis des Projekts erfasst hat, für die reine ANZEIGE dort, wo
+        /// die Unternehmensart gepflegt wird. Gepflegt wird er ausschließlich in
+        /// „Strompreis Details" des Energieträgerdialogs; dieser Weg schreibt nichts.
+        /// </summary>
+        /// <remarks>
+        /// Nie eine Ausnahme: Ein Lesefehler kommt als <see cref="StromsteueranteilStand.Lesbar"/>
+        /// = <c>false</c> mit Grund zurück. Der Träger ist derselbe, den Preis, Anteile und
+        /// Kohärenz lesen (<see cref="StromCarrierId"/>).
+        /// </remarks>
+        public static StromsteueranteilStand StromsteuerErfasst(int idProjekt)
+        {
+            var s = new StromsteueranteilStand();
+            try
+            {
+                int carrier = StromCarrierId(idProjekt);
+                if (carrier <= 0) return s;
+
+                s.TraegerId = carrier;
+                object name = StilleDb.ScalarStreng(
+                    "SELECT [name] FROM energy_carrier WHERE id = ?",
+                    new DbParam("@id", carrier));
+                string text = (name == null || name == DBNull.Value) ? "" : Convert.ToString(name).Trim();
+                s.TraegerName = text.Length > 0
+                    ? text
+                    : "#" + carrier.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                s.WertCtKwh = StromsteuerRoh(idProjekt, carrier);
+                if (s.WertCtKwh.HasValue)
+                    s.Aktiv = new StrompreisZerlegungCtrl().Read(idProjekt, carrier).Stromsteuer_Aktiv;
+            }
+            catch (Exception ex)
+            {
+                s.Lesbar = false;
+                s.Grund = ex.Message;
+            }
+            return s;
+        }
+
+        // =====================================================================
         // Lesen
         // =====================================================================
 
@@ -352,5 +429,34 @@ namespace WindowsFormsApplication1
             if (v == null || v == DBNull.Value) return;
             ziel = Convert.ToBoolean(v);
         }
+    }
+
+    /// <summary>
+    /// ETAPPE E18 — der erfasste Stromsteueranteil eines Projekts, wie ihn
+    /// <see cref="StrompreisZerlegungCtrl.StromsteuerErfasst"/> liefert. Reiner Lesestand,
+    /// ohne Anzeigetext (die Oberfläche formuliert ihn aus ihren Ressourcen).
+    /// </summary>
+    public sealed class StromsteueranteilStand
+    {
+        /// <summary>Strom-Energieträger des Projekts; 0 = keiner zugeordnet.</summary>
+        public int TraegerId { get; set; }
+
+        /// <summary>Anzeigename des Trägers (oder „#Id"); leer ohne Träger.</summary>
+        public string TraegerName { get; set; } = "";
+
+        /// <summary>Der erfasste Anteil [ct/kWh]; <c>null</c> = nie erfasst.</summary>
+        public double? WertCtKwh { get; set; }
+
+        /// <summary>Aktiv-Schalter des Anteils (nur mit erfasstem Wert bedeutsam).</summary>
+        public bool Aktiv { get; set; }
+
+        /// <summary><c>false</c>, wenn der Leseweg gescheitert ist; dann steht der Grund in <see cref="Grund"/>.</summary>
+        public bool Lesbar { get; set; } = true;
+
+        /// <summary>Grund eines gescheiterten Lesewegs; sonst leer.</summary>
+        public string Grund { get; set; } = "";
+
+        /// <summary>Ein Strom-Energieträger ist zugeordnet.</summary>
+        public bool HatTraeger => TraegerId > 0;
     }
 }

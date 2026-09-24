@@ -172,7 +172,35 @@ namespace WindowsFormsApplication1
             new Merkmal("Gebäude", "Tab_Gebaeude", "Wohnflaeche_gesamt", "Wohn-/Nutzfläche", "m²", 0),
             new Merkmal("Gebäude", "Tab_Gebaeude", "WW_Bedarf",          "Warmwasserbedarf", "kWh/a", 0),
             new Merkmal("Gebäude", "Tab_Gebaeude", "Luftwechselrate",    "Luftwechselrate", "1/h", 2),
+
+            // Anlagenkopplung AK1 (Konzept 9.4): die Kopplungsstufe des Projekts und die Wärmeübergabe
+            // des ersten Gebäudes - sonst sähe ein Vergleich zweier Varianten mit verschiedener
+            // Kopplung wie ein Modellwechsel aus. Gezeigt und verglichen wird der Anzeigename
+            // (Anzeigenamen unten): NULL heißt „aus" bzw. „ideal".
+            new Merkmal("Gebäude", "Tab_Einstellungen", "Anlagenkopplung", "Anlagenkopplung", "", TEXT,
+                        "ABW_MERKMAL_ANLAGENKOPPLUNG"),
+            new Merkmal("Gebäude", "Tab_Gebaeude", "Heizkreis_Aktiv",    "Übergabe rechnen", "", JN,
+                        "ABW_MERKMAL_HEIZKREIS"),
+            new Merkmal("Gebäude", "Tab_Gebaeude", "Uebergabe_Art",      "Übergabeart", "", TEXT,
+                        "ABW_MERKMAL_UEBERGABEART"),
         };
+
+        /// <summary>
+        /// <b>Anzeigenamen der Steuerwerte</b> (Drei-Schichten-Regel): Die Datenbank führt deutsche,
+        /// eingefrorene Schlüssel (<c>RADIATOR</c>, <c>AK1</c>); der Vergleich ZEIGT den Anzeigenamen
+        /// und VERGLEICHT ihn auch — NULL und „AUS" heißen dasselbe, und ein Unterschied zwischen
+        /// ihnen ist keiner. Schlüssel ist „Tabelle.Spalte".
+        /// </summary>
+        private static readonly Dictionary<string, Func<string, string>> Anzeigenamen =
+            new Dictionary<string, Func<string, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Tab_Einstellungen.Anlagenkopplung", Waermeuebergabevorgaben.Stufenname },
+                { "Tab_Gebaeude.Uebergabe_Art", Waermeuebergabevorgaben.Anzeigename },
+            };
+
+        /// <summary>Der Anzeigeweg eines Textmerkmals mit Steuerwerten; <c>null</c> = der Wert, wie er ist.</summary>
+        private static Func<string, string> Anzeige(Merkmal f)
+            => f != null && Anzeigenamen.TryGetValue(f.Tabelle + "." + f.Spalte, out Func<string, string> a) ? a : null;
 
         private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
@@ -268,6 +296,8 @@ namespace WindowsFormsApplication1
                 return ErsteEchteAnlage(d);
             if (f.Tabelle == "Tab_Gebaeude")
                 return (d.Gebaeude != null && d.Gebaeude.Rows.Count > 0) ? d.Gebaeude.Rows[0] : null;
+            if (f.Tabelle == "Tab_Einstellungen")
+                return (d.Einstellungen != null && d.Einstellungen.Rows.Count > 0) ? d.Einstellungen.Rows[0] : null;
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
                 if (g.Value == f.Tabelle)
                     return d.Komponenten.ContainsKey(g.Key) ? d.Komponenten[g.Key] : null;
@@ -372,9 +402,15 @@ namespace WindowsFormsApplication1
         private static bool WerteGleich(DataRow a, DataRow b, Merkmal f)
         {
             if (f.Dez == TEXT)
+            {
+                Func<string, string> anzeige = Anzeige(f);
+                if (anzeige != null)
+                    return string.Equals(anzeige(ProjektDetails.S(a, f.Spalte).Trim()),
+                                         anzeige(ProjektDetails.S(b, f.Spalte).Trim()), StringComparison.Ordinal);
                 return string.Equals(ProjektDetails.S(a, f.Spalte).Trim(),
                                      ProjektDetails.S(b, f.Spalte).Trim(),
                                      StringComparison.OrdinalIgnoreCase);
+            }
             if (f.Dez == JN)
             {
                 bool? x = ProjektDetails.B(a, f.Spalte), y = ProjektDetails.B(b, f.Spalte);
@@ -393,6 +429,8 @@ namespace WindowsFormsApplication1
             if (f.Dez == TEXT)
             {
                 string s = ProjektDetails.S(r, f.Spalte).Trim();
+                Func<string, string> anzeige = Anzeige(f);
+                if (anzeige != null) return anzeige(s);
                 return s.Length == 0 ? "—" : s;
             }
             if (f.Dez == JN)

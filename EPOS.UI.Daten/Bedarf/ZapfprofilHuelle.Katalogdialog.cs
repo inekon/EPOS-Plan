@@ -57,6 +57,8 @@ namespace WindowsFormsApplication1
                 ["KategorienGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(KategorienGaben),
                 ["PaketWaehlen"] = new Func<string, Task<string>>(PaketWaehlen),
                 ["Importieren"] = new Func<string, TwwImportberichtDaten>(KatalogImportieren),
+                // "VDI-4655-Typtage..." (Stufe Z4b): derselbe Dialog wie im Zapfprofil.
+                ["TyptagGaben"] = new Func<IReadOnlyDictionary<string, object>>(TyptagGaben),
                 ["Texte"] = KatalogTexte(),
                 ["HilfeSchluessel"] = HILFE_KATALOG
             };
@@ -549,6 +551,7 @@ namespace WindowsFormsApplication1
             t.KnopfSpeichernUnter = Text_("ZPGK_BTN_SPEICHERN_UNTER", t.KnopfSpeichernUnter);
             t.KnopfLoeschen = Text_("ZPGK_BTN_LOESCHEN", t.KnopfLoeschen);
             t.KnopfImport = Text_("ZPGK_BTN_IMPORT", t.KnopfImport);
+            t.KnopfTyptage = Text_("ZPGK_BTN_TYPTAGE", t.KnopfTyptage);
             t.KnopfBeenden = Text_("ZPGK_BTN_BEENDEN", t.KnopfBeenden);
             t.GrundAuslieferung = Text_("ZPGK_GRUND_AUSLIEFERUNG", t.GrundAuslieferung);
             t.GrundBenutzt = Text_("ZPGK_GRUND_BENUTZT", t.GrundBenutzt);

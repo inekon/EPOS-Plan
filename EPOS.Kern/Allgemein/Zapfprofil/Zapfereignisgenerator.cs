@@ -26,6 +26,20 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private Tageszeitdichte(double[] stundenanteile)
+        {
+            double summe = 0.0;
+            _letzte = -1;
+            for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+            {
+                double a = stundenanteile[h];
+                if (double.IsNaN(a) || double.IsInfinity(a) || a < 0) a = 0.0;
+                summe += a;
+                _kumuliert[h] = summe;
+                if (a > 0) _letzte = h;
+            }
+        }
+
         /// <summary>Die Dichte des Tagtyps <paramref name="typ"/> aus der normierten Zeitstruktur der Zone.</summary>
         internal static Tageszeitdichte Aus(Zeitstruktur s, ZapfTagtyp typ)
         {
@@ -33,6 +47,20 @@ namespace WindowsFormsApplication1
             int t = (int)typ - 1;
             if (t < 0 || t >= Tagesgangsatz.TAGTYPEN) throw new ArgumentOutOfRangeException(nameof(typ));
             return new Tageszeitdichte(s, t);
+        }
+
+        /// <summary>
+        /// Die Dichte aus 24 Stundenanteilen — die Tagesform eines eingespielten Typtags
+        /// (<see cref="Typtaggang.Stundenanteile"/>, Stufe Z4b): Auf dem Typtagweg trägt der
+        /// Tagesgang des Pakets auch die gezogene Jahresreihe. Ein nicht endlicher oder negativer
+        /// Anteil zählt als 0; trägt keiner etwas, ist die Dichte <see cref="Leer"/>.
+        /// </summary>
+        internal static Tageszeitdichte Aus(double[] stundenanteile)
+        {
+            if (stundenanteile == null) throw new ArgumentNullException(nameof(stundenanteile));
+            if (stundenanteile.Length != Zapfkalender.STUNDEN_TAG)
+                throw new ArgumentOutOfRangeException(nameof(stundenanteile), "Ein Tagesgang hat 24 Stundenanteile.");
+            return new Tageszeitdichte(stundenanteile);
         }
 
         /// <summary>Trägt der Tagesgang keine Zapfung?</summary>

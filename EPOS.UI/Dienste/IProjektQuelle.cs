@@ -42,6 +42,8 @@ public sealed record ProjektZeile(int Id, string Name, string Klimazone, string 
 /// <param name="ErgebnisseLaden">Der gebuchte Ergebnisstand aus der Datenbank.</param>
 /// <param name="SpeichereAnlage">Schreibt EINE Anlagenzeile; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
 /// <param name="SpeichereVorgaben">Schreibt die Projektvorgaben; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
+/// <param name="Stromsteueranteil">Der im Strompreis erfasste Stromsteueranteil
+/// (<c>StrompreisZerlegungCtrl.StromsteuerErfasst</c>), nur Anzeige; <c>null</c> = keine Zeile.</param>
 public sealed record BhkwDialogDaten(
     int IdStamm,
     string StammName,
@@ -52,7 +54,8 @@ public sealed record BhkwDialogDaten(
     Func<string, int, GesetzParameter>? Katalog,
     Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>? ErgebnisseLaden,
     Func<KwkgAnlagenAngabe, bool>? SpeichereAnlage,
-    Func<WirtschaftlichkeitParameter, bool>? SpeichereVorgaben);
+    Func<WirtschaftlichkeitParameter, bool>? SpeichereVorgaben,
+    StromsteueranteilStand? Stromsteueranteil = null);
 
 /// <summary>
 /// Die zweite Aussenschnittstelle von EPOS.UI neben <see cref="IHilfeDienst"/>:

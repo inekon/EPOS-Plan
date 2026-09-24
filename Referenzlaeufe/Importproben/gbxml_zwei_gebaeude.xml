@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EPOS-Plan Importprobe (selbst erzeugt): zwei Gebaeude in einer Datei - eines je Lauf -->
+<gbXML xmlns="http://www.gbxml.org/schema" version="0.37" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true">
+  <Campus id="campus-1">
+    <Location><ZipcodeOrPostalCode>00000</ZipcodeOrPostalCode><CADModelAzimuth>0</CADModelAzimuth></Location>
+    <Building id="geb-a" buildingType="SingleFamily"><Name>Haus A</Name>
+      <Space id="raum-a" conditionType="Heated"><Name>Wohnen A</Name><Area>100</Area><Volume>250</Volume></Space>
+    </Building>
+    <Building id="geb-b" buildingType="SingleFamily"><Name>Haus B</Name>
+      <Space id="raum-b" conditionType="Heated"><Name>Wohnen B</Name><Area>50</Area><Volume>150</Volume></Space>
+    </Building>
+    <Surface id="aw-a-sued" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-a"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>10</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach-a" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-a"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>10</Width><Height>10</Height></RectangularGeometry></Surface>
+    <Surface id="aw-b-sued" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-b"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry></Surface>
+    <Surface id="dach-b" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-b"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>5</Width><Height>10</Height></RectangularGeometry></Surface>
+  </Campus>
+</gbXML>

@@ -42,6 +42,12 @@ namespace WindowsFormsApplication1
         /// <summary>Anlagenkonfiguration (Tab_Energieanlagen; null/leer möglich).</summary>
         public DataTable Anlagen;
 
+        /// <summary>
+        /// Die Projekteinstellungen (Tab_Einstellungen; null/leer möglich) — für die Kopplungsstufe
+        /// im Variantenvergleich (Anlagenkopplung AK1, Konzept 9.4).
+        /// </summary>
+        public DataTable Einstellungen;
+
         /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
         public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
 
@@ -71,6 +77,7 @@ namespace WindowsFormsApplication1
 
             d.Gebaeude = LadeTabelle("Tab_Gebaeude", idProjekt);
             d.Anlagen = LadeTabelle("Tab_Energieanlagen", idProjekt);
+            d.Einstellungen = LadeTabelle("Tab_Einstellungen", idProjekt);
 
             foreach (KeyValuePair<string, string> g in GewerkTabellen)
             {

@@ -604,6 +604,26 @@ public sealed class ZapfprofilEingabeDaten
     /// </summary>
     public bool JahresreiheStochastisch { get; set; }
 
+    /// <summary>
+    /// <b>Rechnet der Jahresgang über die eingespielten Typtage?</b> (Stufe Experte, 4.2;
+    /// <c>Tab_TwwProjekt.Typtage_Aktiv</c>, Stufe Z4b) <c>false</c> = der Formvektor wie im Bestand
+    /// (Monats-, Wochen- und Tagesfaktoren des Katalogs). Eine Größe des PROJEKTS, nicht einer
+    /// Zone. Ohne eingespielte Typtage ist der Schalter gesperrt.
+    /// </summary>
+    public bool TyptageAktiv { get; set; }
+
+    /// <summary>
+    /// Die gewählte Klimazone des eingespielten Pakets (<c>Tab_TwwProjekt.Typtage_Klimazone</c>);
+    /// <c>null</c> = keine Wahl — dann lehnt der Rechenweg die Zonen benannt ab.
+    /// </summary>
+    public int? TyptageKlimazone { get; set; }
+
+    /// <summary>
+    /// Die gewählte Gebäudeart des eingespielten Pakets
+    /// (<c>Tab_TwwProjekt.Typtage_Gebaeudeart</c>); leer = keine Wahl.
+    /// </summary>
+    public string TyptageGebaeudeart { get; set; } = "";
+
     /// <summary>Der Seed des Zufalls (ganze Zahl ≥ 0, <c>Tab_TwwProjekt.Seed</c>); <c>null</c> = der Stand bleibt, wie er ist.</summary>
     public int? Seed { get; set; }
 
@@ -647,6 +667,9 @@ public sealed class ZapfprofilEingabeDaten
         Auslegung = Auslegung?.Kopie(),
         PunktUeberholt = PunktUeberholt,
         JahresreiheStochastisch = JahresreiheStochastisch,
+        TyptageAktiv = TyptageAktiv,
+        TyptageKlimazone = TyptageKlimazone,
+        TyptageGebaeudeart = TyptageGebaeudeart,
         Seed = Seed,
         Realisierungen = Realisierungen,
         AnzeigetemperaturC = AnzeigetemperaturC,
@@ -1042,6 +1065,13 @@ public sealed class ZapfprofilDaten
     /// <summary>Die zwölf Monatsnamen in der Oberflächensprache (Auslastungsgang); leer = die Nummern.</summary>
     public List<string> Monatsnamen { get; set; } = new();
 
+    /// <summary>
+    /// <b>Der eingespielte Stand der Typtage</b> (Stufe Z4b): Er trägt die Wahllisten der Klimazone
+    /// und der Gebäudeart und den Grund, aus dem der Schalter gesperrt ist, solange nichts
+    /// eingespielt ist. Nie ein Wert der Richtlinie (Konzept Kapitel 6).
+    /// </summary>
+    public TwwTyptagStandDaten Typtagstand { get; set; } = new();
+
     /// <summary>Wie viele Werte der Arbeitsstand beim Öffnen überschreibt (<see cref="UeberschriebenIn"/>).</summary>
     public int Ueberschrieben => UeberschriebenIn(Eingabe);
 
@@ -1060,6 +1090,7 @@ public sealed class ZapfprofilDaten
         int n = eingabe.Zonen.Sum(z => z.UeberschriebenZahl(Katalog.FirstOrDefault(a => a.Id == z.IdNutzungsart)?.Wohnen == true));
         if (eingabe.Gebaeude is { } g) n += g.Ueberschrieben(GebaeudeVorgabe);
         if (eingabe.JahresreiheStochastisch) n++;
+        if (eingabe.TyptageAktiv) n++;
         if (eingabe.Seed is int seed && SeedVorgabe is int sv && seed != sv) n++;
         if (eingabe.Realisierungen is int r && RealisierungenVorgabe is int rv && r != rv) n++;
         return n;

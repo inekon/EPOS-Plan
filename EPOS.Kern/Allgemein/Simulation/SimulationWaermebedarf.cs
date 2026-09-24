@@ -838,6 +838,24 @@ namespace WindowsFormsApplication1
         /// <returns><c>false</c>, wenn eine Vorbedingung des gewählten Rechenwegs fehlt
         /// (Tagesbilanz: keine Tagesverteilung zum Gebäudetyp) — der Lauf bricht dann ab,
         /// wie bisher.</returns>
+        /// <summary>
+        /// <b>Der Eingang eines gekoppelten Gebäudes, ohne Jahreslauf</b> (Anlagenkopplung 8.4, H10) —
+        /// die Auskunft der hergeleiteten Vorgaben für den Gebäudedialog
+        /// (<see cref="UebergabeHerleitungsquelle"/>). Gebaut wird mit DEMSELBEN Eingangsbauer und
+        /// demselben Klimakalender wie im Lauf, mit Stufe AK1 und hergeleiteter Nennleistung; der
+        /// Aufrufer setzt Schalter und Übergabeart am Gebäude. Voraussetzung ist
+        /// <see cref="KlimakalenderLesen"/>. Schreibt nichts.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung des Eingangsbauers.</exception>
+        internal GebaeudeModellEingang UebergabeEingang(ProjektGebaeudeModel item)
+        {
+            KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
+            return GebaeudeModellEingang.Bauen(item, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                                               gemeinsam.Laengengrad, gemeinsam.Breitengrad, _vdi6007.Zeitbezug,
+                                               KuehlbetriebProjekt, DbWerte.ANLAGENKOPPLUNG_AK1,
+                                               double.NaN, double.NaN);
+        }
+
         internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, double[] ziel)
         {
             // 1. Der modellfreie Vorbereitungsschritt.

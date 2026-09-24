@@ -89,7 +89,7 @@ namespace Auslieferungsvorlage
         };
 
         /// <summary>Die Typtag-Ablage des lizenzierten Anwenders (Schritt T3) — nie in der Vorlage.</summary>
-        internal const string TAB_TYPTAG_IMPORT = "Tab_TwwTyptag_IMPORT";
+        internal const string TAB_TYPTAG_IMPORT = TwwSchema.TAB_TWW_TYPTAG_IMPORT;
 
         /// <summary>Die lokalen Normdaten (ZU11) — keine Eingabe des Laufs darf dort liegen.</summary>
         internal const string NORMZAHLEN = "Referenzlaeufe/Normzahlen/";

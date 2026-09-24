@@ -60,6 +60,11 @@ namespace WindowsFormsApplication1
                     GebaeudeKatalogHuelle.Schreiben),
                 ["HuellTexte"] = GebaeudeKatalogHuelle.Texte(),
                 ["Prueftexte"] = GebaeudeKatalogHuelle.Prueftexte(),
+                // Stufe AK1 (Anlagenkopplung 8.4, 9.1): die hergeleiteten Vorgaben der
+                // Waermeuebergabe - mit der Klimareihe des geoeffneten Projekts; ohne Projekt
+                // steht die Regel ohne Zahl - und das Vorschaubild des Zeitprogramms.
+                ["UebergabeHerleitung"] = GebaeudeKatalogHuelle.Herleitungsweg(Dienste.Projekt.Id),
+                ["WochenVorschau"] = GebaeudeKatalogHuelle.Wochenvorschau(),
                 ["Loeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),
                 // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
