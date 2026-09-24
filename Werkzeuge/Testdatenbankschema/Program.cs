@@ -1662,6 +1662,27 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + WiederholperiodeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
                                   " - vollstaendig: " + WiederholperiodeSchema.Vollstaendig() + " (erwartet True).");
 
+            // ---- Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT: die Anschlusslaengen im
+            //      Gebaeudekatalog (Welle #493, Konzept Administrationsdialoge 7.1 (a)). NACH der
+            //      Wiederholperiode. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeAnschlusslaengen bedient
+            //      (GebaeudeAnschlusslaengenReparatur): Krankenhaussatz (Fenster-Wand,
+            //      Aussenwandflaeche) und die sechs Saetze mit 243,7 / 7 879 / 1 392,8 m - je Satz,
+            //      Spalte und Schadensbild.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrAnschluss = GebaeudeAnschlusslaengenReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAnschluss + " - Anschlusslaengen im Gebaeudekatalog, offen vorher: " +
+                              GebaeudeAnschlusslaengenReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeAnschlusslaengenReparatur.Bericht berichtAnschluss = GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrAnschluss + " - " + berichtAnschluss.Text() + "; offen: " +
+                                  GebaeudeAnschlusslaengenReparatur.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
