@@ -17,10 +17,18 @@
    benannt. "Entfernen" der letzten Zeile ist weich gesperrt: der Versuch nennt den Grund.
 
    WAS ER NICHT TUT. Er rechnet keine Energie selbst. Abbrechen, Esc und das Kreuz der
-   Ueberlagerung verwerfen (null). *@
+   Ueberlagerung verwerfen (null).
+
+   HILFE-ASSISTENT (Welle #458, Stufe 3a). Der Konstruktor meldet sich als EIGENE Maske an
+   (KiMaskennamen.BEDARFSTAG_KONSTRUKTOR), solange er offen steht - angemeldet sind der Name
+   und die Zeilen als Spalten ueber BedarfstagKonstruktorKiSicht; gesetzt wird wie in den
+   Feldern (Anzahl nur mit Zapfregel, Volumen und Temperatur nur ohne, Grenzen der Felder).
+   Pruefen ist der Befund des OK; kein Speicherweg - OK bleibt beim Anwender. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-zapfausl-konstruktor" tabindex="-1" @onkeydown="BeiTaste">
 
@@ -184,6 +192,93 @@
         _name = Name ?? "";
         if (Startzeilen is { Count: > 0 }) _zeilen.AddRange(Startzeilen.Select(z => z.Kopie()));
         else _zeilen.Add(new ZapfprofilKonstruktorZeileDaten { Regel = Regeln.Count > 0 ? Regeln[0].Name : "" });
+
+        // Welle #458, Stufe 3a: die Ueberlagerung als EIGENE Maske - solange sie offen
+        // steht; ihr Dispose meldet sie ab.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, () => KiSicht(), KiHaken());
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BedarfstagKonstruktorKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf den Arbeitsstand: der Name und die Zeilen als Spalten.
+    /// Gesetzt wird wie in den Feldern der Zeile.
+    /// </summary>
+    private BedarfstagKonstruktorKiSicht KiSicht() => _kiSicht ??= new BedarfstagKonstruktorKiSicht
+    {
+        NameLesen = () => _name,
+        NameSetzen = w =>
+        {
+            _name = w ?? string.Empty;
+            return null;
+        },
+        ZeilenLesen = () => _zeilen.Select(KiZeile).ToList(),
+        RegelEintraege = () => KiMaskenanmeldung.Eintraege(Regelwahl, e => e.Id, e => e.Text)
+    };
+
+    /// <summary>
+    /// Eine Zeile als Zeile der Sicht: Anzahl nur mit Zapfregel, Volumen und Zapftemperatur
+    /// nur bei „Volumen direkt" — wie die Felder, die dann bedienbar sind —, Zahlen in den
+    /// Grenzen der Felder.
+    /// </summary>
+    private BedarfstagKonstruktorKiZeile KiZeile(ZapfprofilKonstruktorZeileDaten z) => new(z)
+    {
+        BeginnSetzen = w => KiZahl(z, SPALTE_BEGINN, w, 0, 24, () => z.BeginnH = w),
+        EndeSetzen = w => KiZahl(z, SPALTE_ENDE, w, 0, 24, () => z.EndeH = w),
+        RegelLesen = () => RegelIndex(z),
+        RegelSetzen = id => KiInZeile(z, () => RegelSetzen(z, id)),
+        AnzahlSetzen = w => z.Regel.Length == 0
+            ? ZapfprofilKiRegeln.NurMit(Texte.KonstruktorAnzahl, Texte.KonstruktorRegel)
+            : KiZahl(z, SPALTE_ANZAHL, w, 0, null, () => z.Anzahl = w),
+        VolumenSetzen = w => z.Regel.Length > 0
+            ? ZapfprofilKiRegeln.NurMit(Texte.KonstruktorVolumen, Texte.KonstruktorRegelFrei)
+            : KiZahl(z, SPALTE_VOLUMEN, w, 0, null, () => z.VolumenL = w),
+        TemperaturSetzen = w => z.Regel.Length > 0
+            ? ZapfprofilKiRegeln.NurMit(Texte.KonstruktorTemperatur, Texte.KonstruktorRegelFrei)
+            : KiZahl(z, SPALTE_TEMPERATUR, w, null, null, () => z.ZapftemperaturC = w),
+        VerbraucherSetzen = w => KiInZeile(z, () => z.Verbraucher = w ?? string.Empty)
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg</b> — „OK" gibt den gebauten Tag an die Auslegung; das bleibt der
+    /// Klick des Anwenders. <b>Prüfen</b> ist der Befund des OK (Fehleingaben, dann die benannte
+    /// Prüfung der Hülle), ohne dass sich etwas schließt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => string.Join(" ", Befund().Meldungen.Select(m => m.Text))
+    };
+
+    /// <summary>Eine Zahl einer Zeile in den Grenzen ihres Feldes, dann ihr Weg.</summary>
+    private string? KiZahl(ZapfprofilKonstruktorZeileDaten z, int spalte, double? wert, double? min, double? max,
+                           Action weg)
+    {
+        int index = _zeilen.IndexOf(z);
+        if (index < 0) return ZapfprofilKiRegeln.ZeileFehlt;
+        string? grund = ZapfprofilKiRegeln.Bereich(Feld(spalte, index), wert, min, max);
+        if (grund is not null) return grund;
+        weg();
+        return null;
+    }
+
+    /// <summary>Ein Weg einer Zeile — nur, solange sie in der Tabelle steht.</summary>
+    private string? KiInZeile(ZapfprofilKonstruktorZeileDaten z, Action weg)
+    {
+        if (!_zeilen.Contains(z)) return ZapfprofilKiRegeln.ZeileFehlt;
+        weg();
+        return null;
     }
 
     /// <summary>Die Beschriftung eines Feldes: „Spalte, Zeile n".</summary>
@@ -283,17 +378,7 @@
         }
         if (Konstruieren is null) return;
         _hinweis = "";
-        List<string> falsch = FehlerhafteFelder();
-        if (falsch.Count > 0)
-        {
-            _meldungen = new List<ZapfprofilMeldung>
-            {
-                new("ZPG_AUS_KON_FEHLEINGABE", "", Format(Texte.KonstruktorFehleingabe, string.Join(", ", falsch)),
-                    ZapfprofilMeldungsart.Fehler)
-            };
-            return;
-        }
-        ZapfprofilKonstruktorErgebnis e = Konstruieren(_zeilen.Select(z => z.Kopie()).ToList(), _name);
+        ZapfprofilKonstruktorErgebnis e = Befund();
         if (e.Tag is null)
         {
             _meldungen = e.Meldungen.ToList();
@@ -301,6 +386,24 @@
         }
         _meldungen = new List<ZapfprofilMeldung>();
         await Geschlossen.InvokeAsync(e.Tag);
+    }
+
+    /// <summary>
+    /// Der Befund des OK: eine Fehleingabe in einem Feld, das die Zeile braucht, als Meldung —
+    /// sonst das Ergebnis des Delegaten (Ablehnungen oder der gebaute Tag); ohne Delegat
+    /// nichts. Dieselbe Prüfung am Knopf und beim Assistenten (<see cref="KiHaken"/>).
+    /// </summary>
+    private ZapfprofilKonstruktorErgebnis Befund()
+    {
+        List<string> falsch = FehlerhafteFelder();
+        if (falsch.Count > 0)
+            return new ZapfprofilKonstruktorErgebnis(null, new List<ZapfprofilMeldung>
+            {
+                new("ZPG_AUS_KON_FEHLEINGABE", "", Format(Texte.KonstruktorFehleingabe, string.Join(", ", falsch)),
+                    ZapfprofilMeldungsart.Fehler)
+            });
+        return Konstruieren?.Invoke(_zeilen.Select(z => z.Kopie()).ToList(), _name)
+               ?? new ZapfprofilKonstruktorErgebnis(null, Array.Empty<ZapfprofilMeldung>());
     }
 
     private Task Abbrechen() => Geschlossen.InvokeAsync(null);

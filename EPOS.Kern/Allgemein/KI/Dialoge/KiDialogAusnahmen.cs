@@ -135,8 +135,6 @@ namespace WindowsFormsApplication1
     /// </remarks>
     public static class KiDialogAusnahmen
     {
-        private const string STUFE_3 = "#458 Stufe 3 nach Z3";
-
         /// <summary>Die Einträge der Ausnahmeliste.</summary>
         public static IReadOnlyList<KiAusnahme> Alle { get; } = new[]
         {
@@ -207,18 +205,11 @@ namespace WindowsFormsApplication1
             new KiAusnahme("SpeicherFlottenErgebnisAnsicht", KiAusnahmegrund.Anzeige,
                            "Die Schalter stellen nur das Ergebnisbild der Flotte ein."),
             new KiAusnahme("SpeicherFlottenGroessenAnsicht", KiAusnahmegrund.Anzeige,
-                           "Die Wahl stellt nur das Bild der Größenrechnung ein."),
+                           "Die Wahl stellt nur das Bild der Größenrechnung ein.")
 
-            // ---- Offen: Stufe 3 (nach dem Merge der Zapfprofil-Sitzung) --------------
-            new KiAusnahme("ZapfprofilDialog", KiAusnahmegrund.Offen,
-                           "Der Zapfprofilgenerator wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,
-                           hilfeschluessel: "Form_Zapfprofil.btn_Help"),
-            new KiAusnahme("ZapfprofilAuslegungDialog", KiAusnahmegrund.Offen,
-                           "Die Zapfprofilauslegung wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,
-                           hilfeschluessel: "Form_Zapfprofil.btn_Help"),
-            new KiAusnahme("BedarfstagKonstruktor", KiAusnahmegrund.Offen,
-                           "Der Bedarfstag-Konstruktor wird in der Zapfprofil-Sitzung umgebaut.", STUFE_3,
-                           hilfeschluessel: "Form_Zapfprofil_Berechnung")
+            // ---- Offen ----------------------------------------------------------------
+            // Eine Maske mit Einstellwerten, die noch nicht angebunden ist, steht hier als
+            // KiAusnahmegrund.Offen mit dem Auftrag, der sie anbindet.
         };
 
         /// <summary>Der Eintrag zu einer Komponente; <c>null</c> = sie steht nicht auf der Liste.</summary>
@@ -279,9 +270,14 @@ namespace WindowsFormsApplication1
         /// Eine <see cref="KiAusnahmegrund.Offen"/>-Maske ist nicht BEWUSST ausgenommen,
         /// sondern noch nicht angebunden; ihre Absage sagt das.
         /// </remarks>
-        public static string Absage(string hilfeschluessel)
+        public static string Absage(string hilfeschluessel) => AbsageFuer(FuerHilfeschluessel(hilfeschluessel));
+
+        /// <summary>
+        /// Die Absage zu einem Eintrag — derselbe Satz wie über seinen Hilfeschlüssel;
+        /// <c>null</c> ohne Eintrag.
+        /// </summary>
+        public static string AbsageFuer(KiAusnahme a)
         {
-            KiAusnahme a = FuerHilfeschluessel(hilfeschluessel);
             if (a == null) return null;
 
             string vorlage = a.Grund == KiAusnahmegrund.Offen

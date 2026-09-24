@@ -22171,6 +22171,114 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>Die Summe über alle Profile, die diesem Projekt zugeordnet sind.</value>
   </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Woher der Brauchwasserkanal der Simulation kommt: aus den Bestandsprofilen dieser Maske oder aus dem Zapfprofil des Projekts. Beim Umschalten bleiben die Zonen des Zapfprofils erhalten; „Zapfprofil“ braucht mindestens eine Zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>Den Rechenweg Brauchwasser gibt es nur in den Brauchwasserprofilen eines gespeicherten Projekts.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUR_MIT" xml:space="preserve">
+    <value>„{0}“ steht nur mit „{1}“ auf der Maske — bitte zuerst das wählen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZEILE_FEHLT" xml:space="preserve">
+    <value>Diese Zeile steht nicht mehr in der Liste.</value>
+  </data>
+  <data name="KI_DLG_ZPG_GESPERRT" xml:space="preserve">
+    <value>„{0}“ ist gesperrt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
+    <value>Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
+    <value>Die gewählte Zone der Zonenliste, nach Nummer oder Name; ihr Eingabeblock steht unter der Liste. Die Werte jeder Zone lassen sich auch ohne Wahl über die Spalten setzen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONENNAME_ERL" xml:space="preserve">
+    <value>Der Name der Zone; Pflichtfeld für OK. Er benennt die Zone in Liste, Vorschau und Meldungen.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUTZUNGSART_ERL" xml:space="preserve">
+    <value>Die Nutzungsart der Zone aus dem Katalog; sie bestimmt Bezugsgröße, Tagesgang und den spezifischen Bedarf je Niveau. Pflichtfeld für OK; eine gesperrte Nutzungsart nennt ihren Grund.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>Die Menge der Zone in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NIVEAU_ERL" xml:space="preserve">
+    <value>Das Bedarfsniveau der Zone — niedrig, mittel oder hoch; es wählt den spezifischen Bedarf der Nutzungsart je Einheit und Tag.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESBEDARF_ERL" xml:space="preserve">
+    <value>Der Jahresbedarf der Zapfung der Zone aus der aktuellen Vorschau; „–“ ohne gerechnete Vorschau. Nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANSICHT_ERL" xml:space="preserve">
+    <value>Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Zonen oder eine Zone. Ändert nur die Anzeige.</value>
+  </data>
+  <data name="KI_DLG_ZPG_RECHENWEG_ERL" xml:space="preserve">
+    <value>Welche Jahresreihe in die Bilanz geht: die deterministische oder das stochastisch gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Steht ab der Stufe „Experte“; die Vorschau bleibt deterministisch.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SEED_ERL" xml:space="preserve">
+    <value>Die Zufallssaat, ganze Zahl ab 0; leer = Vorgabe. Derselbe Seed zieht dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung. Steht in der Stufe „Experte“.</value>
+  </data>
+  <data name="KI_DLG_ZPG_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>Wie viele Jahre der stochastische Lauf zieht, um die Konsistenz zu prüfen; leer = Vorgabe. Steht in der Stufe „Experte“ beim Rechenweg „stochastisch“.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
+    <value>Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur des Speichers; leer = Vorgabe des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Leistung des Erzeugers am Speicher, nicht negativ; leer = angesetzte Ladeleistung. Die Nachweisleistung ist das Kleinere aus Erzeuger und Wärmeübertrager.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Leistung des Wärmeübertragers, nicht negativ; leer = aus U·A, Fläche oder der Schätzformel der Erzeugerart.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERART_ERL" xml:space="preserve">
+    <value>Ladespeicher oder gemischter Speicher — sie bestimmt die Summenlinie.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SENSORHOEHE_ERL" xml:space="preserve">
+    <value>Die Höhe des Temperaturfühlers als Anteil der Speicherhöhe, von 0 bis 1; leer = Vorgabe des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERART_ERL" xml:space="preserve">
+    <value>Die Erzeugerart am Speicher (Kessel oder Wärmepumpe) — eine Laufangabe für die Schätzung des Wärmeübertragers; sie wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_WERKSTOFF_ERL" xml:space="preserve">
+    <value>Der Werkstoff des Wärmeübertragers (Stahl oder Edelstahl) — eine Laufangabe; sie wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_STOCHASTISCH_ERL" xml:space="preserve">
+    <value>Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit; der Lauf rechnet nebenläufig. Eine Laufangabe; sie wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERZENTIL_ERL" xml:space="preserve">
+    <value>Das Auslegungsperzentil, P95 oder P99. Steht nur mit „Stochastisch rechnen“ auf der Maske.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>Wie viele Bedarfstage das Ensemble zieht; leer = Vorgabe des Kerns. Unter der Mindestzahl ist das Perzentil nicht belastbar. Steht nur mit „Stochastisch rechnen“ auf der Maske.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
+    <value>Der empfohlene Auslegungspunkt — beim Speicher Volumen und Leistung, sonst die Minutenspitze; OK übernimmt ihn in das Zapfprofil. Ergebnis, nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>Der Name des konstruierten Bedarfstags; Pflichtfeld, in der Katalogversion noch nicht vergeben.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>Der Beginn des Zeitfensters der Zeile in Stunden, von 0 bis 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>Das Ende des Zeitfensters der Zeile in Stunden, bis 24 und nach dem Beginn.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>Eine Zapfregel des Katalogs — dann zählt die Anzahl ihrer Vorgänge — oder „Volumen direkt“ mit Volumen und Zapftemperatur.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie oft die Zapfregel im Zeitfenster zapft, nicht negativ; nur mit einer Zapfregel.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>Das Volumen der Zeile in Litern, nicht negativ; nur bei „Volumen direkt“.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Zapftemperatur des Volumens; nur bei „Volumen direkt“.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>Ein neutraler Name der Zapfstelle („Küche“); er benennt die Zeile und rechnet nicht mit.</value>
+  </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
   </data>

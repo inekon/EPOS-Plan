@@ -22164,6 +22164,114 @@ Do you want to allow this?</value>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>The total over all profiles assigned to this project.</value>
   </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Where the domestic hot water channel of the simulation comes from: the existing profiles of this form or the project’s draw-off profile. Switching keeps the zones of the draw-off profile; “Draw-off profile” needs at least one zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>The DHW calculation method is only available in the domestic hot water profiles of a saved project.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUR_MIT" xml:space="preserve">
+    <value>“{0}” only appears with “{1}” — please select that first.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZEILE_FEHLT" xml:space="preserve">
+    <value>This row is no longer in the list.</value>
+  </data>
+  <data name="KI_DLG_ZPG_GESPERRT" xml:space="preserve">
+    <value>“{0}” is locked.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
+    <value>The depth of the dialog: “Basic” shows the zones, “Expert” also the stochastics of the annual series. The level only shows and hides fields, entered values are kept; “Extended” is locked in this version.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
+    <value>The selected zone of the zone list, by number or name; its input block is shown below the list. The values of every zone can also be set via the columns without selecting it.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONENNAME_ERL" xml:space="preserve">
+    <value>The name of the zone; required for OK. It names the zone in the list, the preview and the messages.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUTZUNGSART_ERL" xml:space="preserve">
+    <value>The type of use of the zone from the catalogue; it determines the reference quantity, the daily profile and the specific demand per level. Required for OK; a locked type of use names its reason.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>The quantity of the zone in the reference quantity of its type of use (persons, dwellings, beds, area …); required for OK, greater than 0.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NIVEAU_ERL" xml:space="preserve">
+    <value>The demand level of the zone — low, medium or high; it selects the specific demand of the type of use per unit and day.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESBEDARF_ERL" xml:space="preserve">
+    <value>The annual draw-off demand of the zone from the current preview; “–” without a calculated preview. Read-only.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANSICHT_ERL" xml:space="preserve">
+    <value>Which view the preview shows its charts and key figures for: the sum of all zones or one zone. Only changes the display.</value>
+  </data>
+  <data name="KI_DLG_ZPG_RECHENWEG_ERL" xml:space="preserve">
+    <value>Which annual series enters the balance: the deterministic one or the stochastically drawn year for the seed, scaled to the annual amount. Appears from level “Expert”; the preview stays deterministic.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SEED_ERL" xml:space="preserve">
+    <value>The random seed, whole number from 0; empty = default. The same seed draws the same series — for the annual series and the design ensemble. Appears in level “Expert”.</value>
+  </data>
+  <data name="KI_DLG_ZPG_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>How many years the stochastic run draws to check consistency; empty = default. Appears in level “Expert” with the “stochastic” method.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
+    <value>The design day of the cumulative curve: default rule, hourly profile of the zones, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>The storage temperature; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL" xml:space="preserve">
+    <value>The generator output at the storage, not negative; empty = assumed charging output. The verification output is the smaller of generator and heat exchanger.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL" xml:space="preserve">
+    <value>The heat exchanger output, not negative; empty = from U·A, area or the estimate for the generator type.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERART_ERL" xml:space="preserve">
+    <value>Charging storage or mixed storage — it determines the cumulative curve.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SENSORHOEHE_ERL" xml:space="preserve">
+    <value>The height of the temperature sensor as a share of the storage height, from 0 to 1; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERART_ERL" xml:space="preserve">
+    <value>The generator type at the storage (boiler or heat pump) — a run setting for estimating the heat exchanger; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_WERKSTOFF_ERL" xml:space="preserve">
+    <value>The heat exchanger material (steel or stainless steel) — a run setting; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_STOCHASTISCH_ERL" xml:space="preserve">
+    <value>Draws the ensemble of the design day per topology group for percentile, spread and simultaneity; the run calculates in the background. A run setting; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERZENTIL_ERL" xml:space="preserve">
+    <value>The design percentile, P95 or P99. Appears only with “Calculate stochastically”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>How many design days the ensemble draws; empty = default of the core. Below the minimum number the percentile is not reliable. Appears only with “Calculate stochastically”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
+    <value>The recommended design point — for storage volume and output, otherwise the minute peak; OK takes it over into the draw-off profile. Result, read-only.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>The name of the constructed design day; required, not yet used in the catalogue version.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>The start of the row’s time window in hours, from 0 to 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>The end of the row’s time window in hours, up to 24 and after the start.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>A draw-off rule from the catalogue — then the number of its draw-offs counts — or “Volume directly” with volume and draw-off temperature.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>How often the draw-off rule draws within the time window, not negative; only with a draw-off rule.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>The volume of the row in litres, not negative; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The draw-off temperature of the volume; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>A neutral name of the draw-off point (“Kitchen”); it names the row and does not enter the calculation.</value>
+  </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>The marked catalogue record. Setting it selects it in the list and the record sheet follows; with unsaved changes, save or discard first.</value>
   </data>

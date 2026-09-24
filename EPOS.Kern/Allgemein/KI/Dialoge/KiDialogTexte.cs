@@ -1137,6 +1137,95 @@
         internal static string BpfSummeName => MyResource.Resource.BPF_LBL_SUMME_PROZ;
         internal static string BpfSummeErl => MyResource.Resource.KI_DLG_BPF_SUMME_ERL;
 
+        /// <summary>Die Optionsgruppe „Rechenweg Brauchwasser" (Welle #458, Stufe 3a).</summary>
+        internal static string BpfRechenwegName => MyResource.Resource.BPF_LBL_RECHENWEG_BW;
+        internal static string BpfRechenwegErl => MyResource.Resource.KI_DLG_BPF_RECHENWEG_ERL;
+
+        // =========== Brauchwasser-Zapfprofil und seine Ueberlagerungen (Welle #458, Stufe 3a)
+        //
+        // Die Anzeigenamen sind die Beschriftungen der Masken (ZPG_*); nur die
+        // Erlaeuterungen sind eigene Texte des Assistenten.
+
+        /// <summary>Der Dialog „Brauchwasser-Zapfprofil".</summary>
+        internal static string MaskeZapfprofil => MyResource.Resource.ZPG_TITEL;
+
+        /// <summary>Die Ueberlagerung „Auslegung Brauchwasser".</summary>
+        internal static string MaskeZapfprofilAuslegung => MyResource.Resource.ZPG_AUS_TITEL;
+
+        /// <summary>Einheit der Realisierungen der Jahresreihe — ein Wort, darum aus der Ressource.</summary>
+        internal static string ZpgEinheitJahre => MyResource.Resource.ZPG_EINHEIT_JAHRE;
+
+        /// <summary>Einheit der Realisierungen des Bedarfstags — ein Wort, darum aus der Ressource.</summary>
+        internal static string ZpgaEinheitTage => MyResource.Resource.ZPG_AUS_EINHEIT_TAGE;
+
+        internal static string ZpgStufeName => MyResource.Resource.ZPG_LBL_STUFE;
+        internal static string ZpgStufeErl => MyResource.Resource.KI_DLG_ZPG_STUFE_ERL;
+        internal static string ZpgZoneName => MyResource.Resource.ZPG_SP_ZONE;
+        internal static string ZpgZoneErl => MyResource.Resource.KI_DLG_ZPG_ZONE_ERL;
+        internal static string ZpgZonennameName => MyResource.Resource.ZPG_LBL_ZONENNAME;
+        internal static string ZpgZonennameErl => MyResource.Resource.KI_DLG_ZPG_ZONENNAME_ERL;
+        internal static string ZpgNutzungsartName => MyResource.Resource.ZPG_LBL_NUTZUNGSART;
+        internal static string ZpgNutzungsartErl => MyResource.Resource.KI_DLG_ZPG_NUTZUNGSART_ERL;
+        internal static string ZpgBezugsmengeName => MyResource.Resource.ZPG_LBL_BEZUGSMENGE;
+        internal static string ZpgBezugsmengeErl => MyResource.Resource.KI_DLG_ZPG_BEZUGSMENGE_ERL;
+        internal static string ZpgNiveauName => MyResource.Resource.ZPG_LBL_NIVEAU;
+        internal static string ZpgNiveauErl => MyResource.Resource.KI_DLG_ZPG_NIVEAU_ERL;
+        internal static string ZpgJahresbedarfName => MyResource.Resource.ZPG_KZ_ZAPFUNG;
+        internal static string ZpgJahresbedarfErl => MyResource.Resource.KI_DLG_ZPG_JAHRESBEDARF_ERL;
+        internal static string ZpgAnsichtName => MyResource.Resource.ZPG_LBL_ANZEIGEN_FUER;
+        internal static string ZpgAnsichtErl => MyResource.Resource.KI_DLG_ZPG_ANSICHT_ERL;
+        internal static string ZpgRechenwegName => MyResource.Resource.ZPG_LBL_RECHENWEG_JAHRESREIHE;
+        internal static string ZpgRechenwegErl => MyResource.Resource.KI_DLG_ZPG_RECHENWEG_ERL;
+        internal static string ZpgSeedName => MyResource.Resource.ZPG_LBL_SEED;
+        internal static string ZpgSeedErl => MyResource.Resource.KI_DLG_ZPG_SEED_ERL;
+        internal static string ZpgRealisierungenName => MyResource.Resource.ZPG_LBL_REALISIERUNGEN;
+        internal static string ZpgRealisierungenErl => MyResource.Resource.KI_DLG_ZPG_REALISIERUNGEN_ERL;
+
+        internal static string ZpgaBedarfstagName => MyResource.Resource.ZPG_AUS_LBL_BEDARFSTAG;
+        internal static string ZpgaBedarfstagErl => MyResource.Resource.KI_DLG_ZPGA_BEDARFSTAG_ERL;
+        internal static string ZpgaSpeichertemperaturName => MyResource.Resource.ZPG_AUS_LBL_SPEICHERTEMPERATUR;
+        internal static string ZpgaSpeichertemperaturErl => MyResource.Resource.KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL;
+        internal static string ZpgaErzeugerleistungName => MyResource.Resource.ZPG_AUS_LBL_ERZEUGERLEISTUNG;
+        internal static string ZpgaErzeugerleistungErl => MyResource.Resource.KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL;
+        internal static string ZpgaUebertragerleistungName => MyResource.Resource.ZPG_AUS_LBL_UEBERTRAGERLEISTUNG;
+        internal static string ZpgaUebertragerleistungErl => MyResource.Resource.KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL;
+        internal static string ZpgaSpeicherartName => MyResource.Resource.ZPG_AUS_LBL_SPEICHERART;
+        internal static string ZpgaSpeicherartErl => MyResource.Resource.KI_DLG_ZPGA_SPEICHERART_ERL;
+        internal static string ZpgaSensorhoeheName => MyResource.Resource.ZPG_AUS_LBL_SENSORHOEHE;
+        internal static string ZpgaSensorhoeheErl => MyResource.Resource.KI_DLG_ZPGA_SENSORHOEHE_ERL;
+        internal static string ZpgaErzeugerartName => MyResource.Resource.ZPG_AUS_LBL_ERZEUGERART;
+        internal static string ZpgaErzeugerartErl => MyResource.Resource.KI_DLG_ZPGA_ERZEUGERART_ERL;
+        internal static string ZpgaWerkstoffName => MyResource.Resource.ZPG_AUS_LBL_WERKSTOFF;
+        internal static string ZpgaWerkstoffErl => MyResource.Resource.KI_DLG_ZPGA_WERKSTOFF_ERL;
+        internal static string ZpgaStochastischName => MyResource.Resource.ZPG_AUS_LBL_STOCHASTISCH;
+        internal static string ZpgaStochastischErl => MyResource.Resource.KI_DLG_ZPGA_STOCHASTISCH_ERL;
+        internal static string ZpgaPerzentilName => MyResource.Resource.ZPG_AUS_LBL_PERZENTIL;
+        internal static string ZpgaPerzentilErl => MyResource.Resource.KI_DLG_ZPGA_PERZENTIL_ERL;
+        internal static string ZpgaRealisierungenName => MyResource.Resource.ZPG_AUS_LBL_REALISIERUNGEN;
+        internal static string ZpgaRealisierungenErl => MyResource.Resource.KI_DLG_ZPGA_REALISIERUNGEN_ERL;
+        internal static string ZpgaPunktName => MyResource.Resource.ZPG_AUS_GEWAEHLTER_PUNKT;
+        internal static string ZpgaPunktErl => MyResource.Resource.KI_DLG_ZPGA_PUNKT_ERL;
+
+        /// <summary>Die Ueberlagerung „Bedarfstag konstruieren".</summary>
+        internal static string MaskeBedarfstagKonstruktor => MyResource.Resource.ZPG_AUS_KON_TITEL;
+
+        internal static string ZpgkNameName => MyResource.Resource.ZPG_AUS_KON_LBL_NAME;
+        internal static string ZpgkNameErl => MyResource.Resource.KI_DLG_ZPGK_NAME_ERL;
+        internal static string ZpgkBeginnName => MyResource.Resource.ZPG_AUS_KON_SP_BEGINN;
+        internal static string ZpgkBeginnErl => MyResource.Resource.KI_DLG_ZPGK_BEGINN_ERL;
+        internal static string ZpgkEndeName => MyResource.Resource.ZPG_AUS_KON_SP_ENDE;
+        internal static string ZpgkEndeErl => MyResource.Resource.KI_DLG_ZPGK_ENDE_ERL;
+        internal static string ZpgkRegelName => MyResource.Resource.ZPG_AUS_KON_SP_REGEL;
+        internal static string ZpgkRegelErl => MyResource.Resource.KI_DLG_ZPGK_REGEL_ERL;
+        internal static string ZpgkAnzahlName => MyResource.Resource.ZPG_AUS_KON_SP_ANZAHL;
+        internal static string ZpgkAnzahlErl => MyResource.Resource.KI_DLG_ZPGK_ANZAHL_ERL;
+        internal static string ZpgkVolumenName => MyResource.Resource.ZPG_AUS_KON_SP_VOLUMEN;
+        internal static string ZpgkVolumenErl => MyResource.Resource.KI_DLG_ZPGK_VOLUMEN_ERL;
+        internal static string ZpgkTemperaturName => MyResource.Resource.ZPG_AUS_KON_SP_TEMPERATUR;
+        internal static string ZpgkTemperaturErl => MyResource.Resource.KI_DLG_ZPGK_TEMPERATUR_ERL;
+        internal static string ZpgkVerbraucherName => MyResource.Resource.ZPG_AUS_KON_SP_VERBRAUCHER;
+        internal static string ZpgkVerbraucherErl => MyResource.Resource.KI_DLG_ZPGK_VERBRAUCHER_ERL;
+
         internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
         internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;
         internal static string BadmTypName => MyResource.Resource.BADM_LBL_TYP;

@@ -443,11 +443,18 @@ namespace EPOS.Kern.Tests
         /// Eine OFFENE Ausnahme sagt „noch nicht", nicht „bewusst nicht" — sie ist nicht
         /// ausgenommen, sondern noch nicht angebunden.
         /// </summary>
+        /// <remarks>
+        /// Die Liste muss keinen offenen Eintrag führen (Welle #458 hat die letzten
+        /// angebunden); der Fall baut ihn deshalb selbst und nimmt denselben Satzweg wie
+        /// der Hilfeschlüssel.
+        /// </remarks>
         [Fact]
         public void Eine_offene_Ausnahme_sagt_noch_nicht_statt_bewusst_nicht()
         {
-            string offen = KiDialogAusnahmen.Absage("Form_Zapfprofil.btn_Help");
+            string offen = KiDialogAusnahmen.AbsageFuer(
+                new KiAusnahme("GibtEsNicht", KiAusnahmegrund.Offen, "Probe.", "#0", "GibtEsNicht.btn_Help"));
             string bewusst = KiDialogAusnahmen.Absage("Form_KiChat.btn_Help");
+            Assert.Equal(bewusst, KiDialogAusnahmen.AbsageFuer(KiDialogAusnahmen.FuerHilfeschluessel("Form_KiChat.btn_Help")));
 
             Assert.NotNull(offen);
             Assert.NotNull(bewusst);

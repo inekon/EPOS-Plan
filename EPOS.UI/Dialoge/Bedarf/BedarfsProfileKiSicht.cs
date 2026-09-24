@@ -7,8 +7,9 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// (Welle KI‑F3).
 ///
 /// <para><b>Warum ein Sichtmodell und nicht <c>BedarfsProfilZeile</c>.</b> Die Maske
-/// führt zwei Listen; was der Anwender hier EINSTELLT, sind die Anzeigeeinheit und der
-/// neue Jahresverbrauch — beide liegen in ihren lebenden Feldern, und der Infoblock
+/// führt zwei Listen; was der Anwender hier EINSTELLT, sind die Anzeigeeinheit, der
+/// neue Jahresverbrauch und beim Brauchwasser der Rechenweg (Welle #458, Stufe 3a) —
+/// alle drei liegen in ihren lebenden Feldern, und der Infoblock
 /// daneben ist ein formatierter Stand, kein Satz. Ein an der Zeile angemeldeter Katalog
 /// hätte weder das eine noch das andere geführt.</para>
 ///
@@ -45,6 +46,21 @@ public sealed class BedarfsProfileKiSicht
     public IReadOnlyList<KiWahleintrag> EinheitWahl
         => EinheitEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
+    public Func<int?>? RechenwegLesen { get; init; }
+
+    /// <summary>
+    /// Stellt die Optionsgruppe „Rechenweg Brauchwasser" um — derselbe Weg wie ein Klick;
+    /// Rückgabe: der Grund einer Ablehnung, leer = umgestellt.
+    /// </summary>
+    public Func<int?, string?>? RechenwegSetzen { get; init; }
+
+    /// <summary>Liefert die zwei Wege der Optionsgruppe.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? RechenwegEintraege { get; init; }
+
+    /// <summary>Die Wege der Optionsgruppe: Bestandsprofile oder Zapfprofil.</summary>
+    public IReadOnlyList<KiWahleintrag> RechenwegWahl
+        => RechenwegEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     // =====================================================================
     //  Die Felder der Maske
     // =====================================================================
@@ -67,6 +83,24 @@ public sealed class BedarfsProfileKiSicht
     {
         get => NeuerWertLesen?.Invoke();
         set => NeuerWertSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Der Rechenweg des Brauchwasserkanals (Optionsgruppe „Rechenweg Brauchwasser",
+    /// Zapfprofil‑Weiche): Bestandsprofile oder Zapfprofil. Er steht nur in der Ausprägung
+    /// Brauchwasser eines gespeicherten Projekts — sonst ist er leer, und das Setzen nennt
+    /// den Grund. „Zapfprofil" ohne Zone lehnt die Maske ab wie der gesperrte Knopf.
+    /// </summary>
+    public int? Rechenweg
+    {
+        get => RechenwegLesen?.Invoke();
+        set
+        {
+            string? grund = RechenwegSetzen is null
+                ? WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG
+                : RechenwegSetzen(value);
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
     }
 
     /// <summary>Der Bezeichner des markierten Profils.</summary>

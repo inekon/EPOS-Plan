@@ -60,7 +60,14 @@
    ohne Wartezeit (bunit).
 
    TASTATUR. Esc schliesst wie Abbrechen - solange die Auslegung offen ist, schliesst Esc
-   nur sie; Enter bleibt unbelegt. *@
+   nur sie; Enter bleibt unbelegt.
+
+   HILFE-ASSISTENT (Welle #458, Stufe 3a). Der Dialog meldet sich als EIGENE Maske an
+   (KiMaskennamen.ZAPFPROFIL), solange er offen steht - angemeldet ist sein Arbeitsstand
+   ueber ZapfprofilKiSicht: Stufe, Zonenwahl, die Zonen als Spalten, "Anzeigen fuer" und
+   die Stochastik der Stufe Experte, gesetzt auf den Wegen der Eingabefelder (Vorschau,
+   ueberholter Punkt). Pruefen ist der Befund des OK; kein Speicherweg - OK bleibt beim
+   Anwender, geschrieben wird mit dem OK der Bedarfsprofile. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -551,6 +558,10 @@
         _vorschau = Daten.Vorschau;
         _vorschauAktuell = _vorschau is not null;
         _wahl = _eingabe.Zonen.Count > 0 ? 0 : -1;
+
+        // Welle #458, Stufe 3a: die Ueberlagerung als EIGENE Maske - solange sie offen
+        // steht; ihr Dispose meldet sie ab.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZAPFPROFIL, () => KiSicht(), KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -564,6 +575,7 @@
     /// <inheritdoc/>
     public void Dispose()
     {
+        _kiMaske?.Dispose();
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
     }
@@ -990,31 +1002,51 @@
 
     private void NameSetzen(string name)
     {
-        if (Gewaehlte is not { } z) return;
-        z.Name = name ?? "";
-        Geaendert();
+        if (Gewaehlte is { } z) ZonennameSetzen(z, name);
     }
 
     private void NutzungsartSetzen(int? id)
     {
-        if (Gewaehlte is not { } z) return;
+        if (Gewaehlte is { } z) ZonenNutzungsartSetzen(z, id);
+    }
+
+    private void BezugsmengeSetzen(double? wert)
+    {
+        if (Gewaehlte is { } z) ZonenBezugsmengeSetzen(z, wert);
+    }
+
+    private void NiveauSetzen(int? id)
+    {
+        if (Gewaehlte is { } z) ZonenNiveauSetzen(z, id);
+    }
+
+    // Der Weg der Eingabefelder fuer EINE Zone - von Hand ueber die gewaehlte, vom
+    // Assistenten ueber ihre Zeile (ZapfprofilZoneKiZeile). Der Name aendert die
+    // Auslegung nicht; Nutzungsart, Bezugsmenge und Niveau machen ihren Punkt ueberholt.
+
+    private void ZonennameSetzen(ZapfprofilZoneDaten z, string name)
+    {
+        z.Name = name ?? "";
+        Geaendert();
+    }
+
+    private void ZonenNutzungsartSetzen(ZapfprofilZoneDaten z, int? id)
+    {
         if (z.IdNutzungsart != (id ?? 0)) PunktUeberholen();
         z.IdNutzungsart = id ?? 0;
         Geaendert();
     }
 
-    private void BezugsmengeSetzen(double? wert)
+    private void ZonenBezugsmengeSetzen(ZapfprofilZoneDaten z, double? wert)
     {
-        if (Gewaehlte is not { } z) return;
         if (z.Bezugsmenge != wert) PunktUeberholen();
         z.Bezugsmenge = wert;
         Geaendert();
     }
 
-    private void NiveauSetzen(int? id)
+    private void ZonenNiveauSetzen(ZapfprofilZoneDaten z, int? id)
     {
-        if (Gewaehlte is not { } z || id is not int n) return;
-        if (!Enum.IsDefined(typeof(ZapfprofilNiveau), n)) return;
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilNiveau), n)) return;
         if (z.Niveau != (ZapfprofilNiveau)n) PunktUeberholen();
         z.Niveau = (ZapfprofilNiveau)n;
         Geaendert();
@@ -1129,20 +1161,11 @@
             return;
         }
 
-        // Ein Feld mit ungültigem Text (Seed, Realisierungen) hielte sonst still den alten Wert.
-        if (_fehlfelder.Count > 0)
+        (string befund, string? kennung) = OkBefund();
+        if (befund.Length > 0)
         {
-            _okMeldung = Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder));
-            _okKennung = "ZPG_MSG_FEHLEINGABE";
-            return;
-        }
-
-        IReadOnlyList<ZapfprofilMeldung> fehler = (Pruefen?.Invoke(_eingabe) ?? Array.Empty<ZapfprofilMeldung>())
-            .Where(m => m.Art == ZapfprofilMeldungsart.Fehler).ToList();
-        if (fehler.Count > 0)
-        {
-            _okMeldung = string.Join(" ", fehler.Select(m => m.Text));
-            _okKennung = fehler[0].Kennung;
+            _okMeldung = befund;
+            _okKennung = kennung;
             return;
         }
 
@@ -1165,6 +1188,166 @@
     /// <summary>Esc schließt nur, wenn keine Überlagerung offen ist — sonst schließt sie sich selbst.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
         => e.Key == "Escape" && _auslegungGaben is null ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>
+    /// Der Befund des OK — eine Fehleingabe (Seed, Realisierungen) oder die Fehler der
+    /// Pflichtprüfung der Hülle; leer = in Ordnung. Dieselbe Prüfung am Knopf und beim
+    /// Assistenten (<see cref="KiHaken"/>).
+    /// </summary>
+    private (string Text, string? Kennung) OkBefund()
+    {
+        // Ein Feld mit ungültigem Text (Seed, Realisierungen) hielte sonst still den alten Wert.
+        if (_fehlfelder.Count > 0)
+            return (Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder)), "ZPG_MSG_FEHLEINGABE");
+
+        IReadOnlyList<ZapfprofilMeldung> fehler = (Pruefen?.Invoke(_eingabe) ?? Array.Empty<ZapfprofilMeldung>())
+            .Where(m => m.Art == ZapfprofilMeldungsart.Fehler).ToList();
+        return fehler.Count > 0
+            ? (string.Join(" ", fehler.Select(m => m.Text)), fehler[0].Kennung)
+            : ("", null);
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ZapfprofilKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf den ARBEITSSTAND: Stufe, Zonenwahl, die Zonen als
+    /// Spalten, die Ansicht der Vorschau und die Stochastik der Stufe Experte. Gesetzt wird
+    /// auf den Wegen der Eingabefelder — die Vorschau rechnet entprellt neu wie nach einer
+    /// Eingabe von Hand.
+    /// </summary>
+    private ZapfprofilKiSicht KiSicht() => _kiSicht ??= new ZapfprofilKiSicht
+    {
+        StufeLesen = () => (int)_stufe,
+        StufeSetzen = KiStufe,
+        StufeEintraege = () => KiMaskenanmeldung.Eintraege(Stufen, e => e.Id, e => e.Text),
+
+        ZoneLesen = () => _wahl >= 0 && _wahl < _eingabe.Zonen.Count ? _wahl + 1 : null,
+        ZoneSetzen = KiZoneWaehlen,
+        ZoneEintraege = () => KiMaskenanmeldung.Eintraege(
+            Enumerable.Range(0, _eingabe.Zonen.Count), i => i + 1, i => _eingabe.Zonen[i].Name),
+
+        ZonenLesen = () => _eingabe.Zonen.Select(KiZeile).ToList(),
+        NutzungsartEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Katalog, n => n.Id, n => n.Name),
+        NiveauEintraege = () => KiMaskenanmeldung.Eintraege(Niveaus, e => e.Id, e => e.Text),
+
+        AnsichtLesen = () => Ansicht is null ? null
+                           : _ansicht >= 0 && _ansicht < _vorschau!.Ansichten.Count ? _ansicht : 0,
+        AnsichtSetzen = KiAnsicht,
+        AnsichtEintraege = () => KiMaskenanmeldung.Eintraege(
+            Ansicht is null ? Array.Empty<(int Id, string Text)>() : Ansichtswahl, e => e.Id, e => e.Text),
+
+        RechenwegLesen = () => _eingabe.JahresreiheStochastisch ? RECHENWEG_STOCHASTISCH : RECHENWEG_DETERMINISTISCH,
+        RechenwegSetzen = KiRechenweg,
+        RechenwegEintraege = () => KiMaskenanmeldung.Eintraege(Rechenwege, e => e.Id, e => e.Text),
+
+        SeedLesen = () => _eingabe.Seed,
+        SeedSetzen = KiSeed,
+        RealisierungenLesen = () => _eingabe.Realisierungen,
+        RealisierungenSetzen = KiRealisierungen
+    };
+
+    /// <summary>Eine Zone als Zeile der Sicht — ihre Setzer nehmen den Weg der Eingabefelder.</summary>
+    private ZapfprofilZoneKiZeile KiZeile(ZapfprofilZoneDaten z) => new(z)
+    {
+        ZonennameSetzen = w => KiInZone(z, () => ZonennameSetzen(z, w)),
+        NutzungsartSetzen = id => KiNutzungsart(z, id),
+        BezugsmengeSetzen = w => KiInZone(z, () => ZonenBezugsmengeSetzen(z, w)),
+        NiveauSetzen = id => KiInZone(z, () => ZonenNiveauSetzen(z, id)),
+        JahresbedarfLesen = () => Zonenwert(_eingabe.Zonen.IndexOf(z))
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg</b> — „OK" gibt den Arbeitsstand an die Bedarfsprofile zurück,
+    /// und geschrieben wird mit deren OK; beides bleibt der Klick des Anwenders
+    /// (<c>dialog_speichern</c> lehnt benannt ab). <b>Prüfen</b> ist der Befund des OK.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => OkBefund().Text
+    };
+
+    /// <summary>Die Stufe wie in der Optionsgruppe; „Erweitert" ist gesperrt und nennt den Grund.</summary>
+    private string? KiStufe(int? id)
+    {
+        if (id == (int)ZapfprofilStufe.Erweitert) return Texte.GrundNochNicht;
+        StufeWaehlen(id);
+        return null;
+    }
+
+    /// <summary>Die Zone wählen wie ein Klick in die Liste — nach ihrer Nummer (ab 1).</summary>
+    private string? KiZoneWaehlen(int? nummer)
+    {
+        if (nummer is not int n || n < 1 || n > _eingabe.Zonen.Count) return ZapfprofilKiRegeln.ZeileFehlt;
+        ZoneWaehlen(n - 1);
+        return null;
+    }
+
+    /// <summary>Ein Setzweg einer Zone — nur, solange die Zone in der Liste steht.</summary>
+    private string? KiInZone(ZapfprofilZoneDaten z, Action weg)
+    {
+        if (!_eingabe.Zonen.Contains(z)) return ZapfprofilKiRegeln.ZeileFehlt;
+        weg();
+        return null;
+    }
+
+    /// <summary>Die Nutzungsart einer Zone; eine gesperrte nennt ihren Grund wie die Auswahlliste.</summary>
+    private string? KiNutzungsart(ZapfprofilZoneDaten z, int? id)
+    {
+        if (id is int n && Nutzungsart(n) is { Waehlbar: false } art)
+            return art.Sperrgrund.Length > 0 ? art.Sperrgrund : ZapfprofilKiRegeln.Gesperrt(art.Name);
+        return KiInZone(z, () => ZonenNutzungsartSetzen(z, id));
+    }
+
+    /// <summary>„Anzeigen für" — nur mit gerechneter Vorschau; sonst ihr Grund.</summary>
+    private string? KiAnsicht(int? id)
+    {
+        if (Ansicht is null) return VorschauGrund;
+        AnsichtWaehlen(id);
+        return null;
+    }
+
+    /// <summary>Der Rechenweg der Jahresreihe — er steht ab der Stufe Experte auf der Maske.</summary>
+    private string? KiRechenweg(int? id)
+    {
+        if (_stufe == ZapfprofilStufe.Einfach)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelRechenwegJahresreihe, Texte.StufeExperte);
+        RechenwegSetzen(id);
+        return null;
+    }
+
+    /// <summary>Der Seed — Stufe Experte, ganze Zahl ab 0; leer = Vorgabe.</summary>
+    private string? KiSeed(int? wert)
+    {
+        if (_stufe != ZapfprofilStufe.Experte)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelSeed, Texte.StufeExperte);
+        string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelSeed, wert, 0, null);
+        if (grund is not null) return grund;
+        SeedSetzen(wert);
+        return null;
+    }
+
+    /// <summary>Die Realisierungen — Stufe Experte beim Rechenweg „stochastisch", in den Grenzen des Feldes.</summary>
+    private string? KiRealisierungen(int? wert)
+    {
+        if (_stufe != ZapfprofilStufe.Experte)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelRealisierungen, Texte.StufeExperte);
+        if (!_eingabe.JahresreiheStochastisch)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelRealisierungen, Texte.OptionStochastisch);
+        string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelRealisierungen, wert,
+                                                   Daten.RealisierungenMindestens, Daten.RealisierungenHoechstens);
+        if (grund is not null) return grund;
+        RealisierungenSetzen(wert);
+        return null;
+    }
 
     // =================================================================================
     // Auslegung (Stufe Z2)
