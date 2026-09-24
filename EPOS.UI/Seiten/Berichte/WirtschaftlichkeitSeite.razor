@@ -408,8 +408,9 @@
                 {
                     @* null statt "" - so laesst Blazor das title-Attribut ganz weg, und der
                        leere Zustand traegt auch keinen leeren Tooltip. *@
-                    bool ausweisZeigen = !_bewertungOffen && !string.IsNullOrWhiteSpace(_stand.NichtMonetaer);
-                    string? ausweis = ausweisZeigen ? _stand.NichtMonetaer.Trim() : null;
+                    string gepflegt = NichtMonetaereWirkungen.Kurztext(_stand.Wirkungen);
+                    bool ausweisZeigen = !_bewertungOffen && gepflegt.Length > 0;
+                    string? ausweis = ausweisZeigen ? gepflegt : null;
 
                     <button type="button" class="epos-modulparameter-knopf"
                             aria-expanded="@(_bewertungOffen ? "true" : "false")"
@@ -436,15 +437,20 @@
                         }
                         @if (WirkungSpeichern is not null)
                         {
-                            <Formularraster>
-                                <KindInhalt>
-                                    <Textfeld Bezeichnung="@NichtMonetaerText" Mehrzeilig="true" Zeilen="5"
-                                              Platzhalter="@NichtMonetaerPlatz" NurLesen="@_laeuft"
-                                              Wert="@_nichtMonetaer"
-                                              WertChanged="@(w => _nichtMonetaer = w)" />
-                                </KindInhalt>
-                            </Formularraster>
+                            @* ETAPPE E17 (V-G11, DIN EN 17463 6.1/8.2): die LISTE der Wirkungen an
+                               der Stelle des Freitexts - je Wirkung Kategorie, Beschreibung, Dauer
+                               und drei Wirkungsgrade, die Beurteilung als Anzeige. Der Freitext
+                               bleibt als Altfeld lesbar, gekennzeichnet, ohne Eingabe. *@
+                            <p class="epos-feld-text">@NichtMonetaerText
+                                <InfoKnopf Schluessel="@WirkungenHilfeSchluessel" /></p>
+                            <WirkungenListe Zeilen="@_wirkungen" NurLesen="@_laeuft"
+                                            Platzhalter="@NichtMonetaerPlatz"
+                                            Geaendert="@(() => StateHasChanged())" />
                             <Herleitungszeile Text="@NichtMonetaerHinweis" />
+                            @if (!string.IsNullOrWhiteSpace(_stand.NichtMonetaer))
+                            {
+                                <Herleitungszeile Text="@string.Format(Resource.WIRT_NM_ALTFELD, _stand.NichtMonetaer.Trim())" />
+                            }
                             @* KEIN .epos-leiste um diesen einen Knopf: Die Fussleiste der
                                Seite ist genau eine. Ein einzelner Knopf steht ohne Wirt -
                                wie "Vorgaben" im Parameterdialog. *@
@@ -543,9 +549,10 @@
                         <Herleitungszeile Text="@deklaration" />
                     }
                 </div>
-                @if (!string.IsNullOrWhiteSpace(_stand.NichtMonetaer))
+                @* ETAPPE E17 (V-G11): die Zeile nennt die Wirkungen der Liste. *@
+                @if (NichtMonetaereWirkungen.Benannt(_stand.Wirkungen))
                 {
-                    <Herleitungszeile Text="@string.Format(Texte.NichtMonetaerZeile, _stand.NichtMonetaer.Trim())" />
+                    <Herleitungszeile Text="@string.Format(Texte.NichtMonetaerZeile, NichtMonetaereWirkungen.Kurztext(_stand.Wirkungen))" />
                 }
                 @if (!string.IsNullOrEmpty(_stand.Ansicht.Nachweiszeile))
                 {
@@ -776,11 +783,11 @@
     /// Hülle); <c>true</c> = geschrieben. <b>Kein Delegat, kein Knopf</b> — ohne ihn
     /// erscheint der Bewertungsblock gar nicht.
     ///
-    /// <para>Es ist derselbe Speicherweg auf dieselbe Modelleigenschaft
-    /// (<c>Parameter.NichtMonetaer</c>), den bis zu diesem Auftrag der
-    /// Parameterdialog nahm — nur die Eingabestelle ist eine andere.</para>
+    /// <para><b>ETAPPE E17 (V‑G11):</b> Geschrieben wird die LISTE der Wirkungen
+    /// (<c>ProjektWirkungCtrl.Speichern</c> über die Hülle, <c>Tab_ProjektWirkung</c>) in der
+    /// Reihenfolge der Seite; das Freitextfeld bleibt unberührt (Altfeld).</para>
     /// </summary>
-    [Parameter] public Func<string, bool>? WirkungSpeichern { get; set; }
+    [Parameter] public Func<IReadOnlyList<ProjektWirkung>, bool>? WirkungSpeichern { get; set; }
 
     /// <summary>
     /// ETAPPE E13 (E7c3‑Q6 a): der Grund, aus dem <see cref="WirkungSpeichern"/> zuletzt
@@ -821,6 +828,9 @@
 
     /// <summary>Hilfeschlüssel — der der alten Maske.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "UcWirtschaftlichkeit.btn_Help";
+
+    /// <summary>ETAPPE E17: der Hilfeschlüssel der Wirkungsliste (Anker <c>nicht-monetaer</c>).</summary>
+    [Parameter] public string WirkungenHilfeSchluessel { get; set; } = "UcWirtschaftlichkeit.btn_Help_Wirkungen";
 
     // ---- Texte ----------------------------------------------------------
 
@@ -936,9 +946,9 @@
             "z. B. Versorgungssicherheit, Arbeitssicherheit, Komfort, Außenwirkung, "
             + "Erfüllung einer Auflage");
 
-    /// <summary>Herleitungszeile unter dem Feld (<c>WPAR_NICHT_MONETAER_HINWEIS</c>).</summary>
-    [Parameter] public string NichtMonetaerHinweis { get; set; }
-        = BhwTexte.T("WPAR_NICHT_MONETAER_HINWEIS", "");
+    /// <summary>Herleitungszeile unter der Liste. ETAPPE E17: <c>WIRT_NM_LISTE_HINWEIS</c> — die
+    /// Skalen, die Beurteilungsregel und „fließt nicht in den Kapitalwert".</summary>
+    [Parameter] public string NichtMonetaerHinweis { get; set; } = Resource.WIRT_NM_LISTE_HINWEIS;
 
     /// <summary>Beschriftung des Schreibknopfs (<c>ADM_BTN_SPEICHERN</c>).</summary>
     [Parameter] public string BewertungSpeichernText { get; set; }
@@ -995,9 +1005,14 @@
     /// eines <c>&lt;details&gt;</c>.</summary>
     private bool _bewertungOffen;
 
-    /// <summary>Der Arbeitsstand des Freitextes (AUFTRAG #325). Geschrieben wird er
-    /// erst auf Zuruf; bis dahin bleibt der geladene Stand unangetastet.</summary>
-    private string _nichtMonetaer = "";
+    /// <summary>Der Arbeitsstand der Wirkungen (AUFTRAG #325, ETAPPE E17: die Liste statt
+    /// des Freitexts) — Kopien der geladenen Zeilen. Geschrieben wird er erst auf Zuruf;
+    /// bis dahin bleibt der geladene Stand unangetastet.</summary>
+    private List<ProjektWirkung> _wirkungen = new();
+
+    /// <summary>Kopien der Zeilen — der Arbeitsstand verändert den geladenen Stand nicht.</summary>
+    private static List<ProjektWirkung> Kopien(IEnumerable<ProjektWirkung>? zeilen)
+        => zeilen is null ? new List<ProjektWirkung>() : zeilen.Select(z => z.Kopie()).ToList();
 
     /// <summary>ETAPPE E5 (U44): welche Rückfrage des Berichtsknopfs offen ist.</summary>
     private enum Berichtsfrage { Keine, Start, Oeffnen }
@@ -1021,8 +1036,11 @@
     /// <summary>Steht der Bewertungsblock offen? (Prüfhilfe)</summary>
     public bool BewertungOffen => _bewertungOffen;
 
-    /// <summary>Der Arbeitsstand des Freitextes (Prüfhilfe).</summary>
-    public string NichtMonetaer => _nichtMonetaer;
+    /// <summary>Die Beschreibungen des Arbeitsstands, mit „; " verbunden (Prüfhilfe).</summary>
+    public string NichtMonetaer => NichtMonetaereWirkungen.Kurztext(_wirkungen);
+
+    /// <summary>Der Arbeitsstand der Wirkungen (Prüfhilfe, ETAPPE E17).</summary>
+    public IReadOnlyList<ProjektWirkung> Wirkungen => _wirkungen;
 
     /// <summary>Die Warnungen des Bandes (Prüfhilfe).</summary>
     public IReadOnlyList<string> Warnungen => _warnungen;
@@ -1098,8 +1116,13 @@
             BEintraege = () => KiMaskenanmeldung.Eintraege(
                 EintraegeB, z => z.Id, z => z.Text),
 
-            WirkungLesen = () => _nichtMonetaer,
-            WirkungSetzen = wert => _nichtMonetaer = wert ?? "",
+            // ETAPPE E17 (V-G11): die Wirkungsliste - Zeilen des Arbeitsstands, geschrieben
+            // erst mit „Speichern". Die Zahl legt Zeilen an oder nimmt sie vom Ende; beides
+            // oeffnet den Block, damit der Anwender sieht, was der Assistent tut.
+            WirkungenLesen = () => _wirkungen
+                .Select((z, i) => new WirkungKiZeile(z, i + 1, () => _ = InvokeAsync(StateHasChanged)))
+                .ToList(),
+            WirkungsanzahlSetzen = KiWirkungsanzahl,
 
             // Block 2 „Zahlungsreihen": zwei Anzeigewahlen. Gelesen wird die GEZEIGTE
             // Tafel (mit ihrem Rückfall), gesetzt durch dieselben Rückrufe wie die
@@ -1126,6 +1149,23 @@
             VerlaufschalterLesen = () => _verlauf?.KiSchalter
                                          ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>()
         };
+    }
+
+    /// <summary>
+    /// ETAPPE E17: die Zahl der Wirkungen setzen — leere Zeilen „sonstig" anhängen oder
+    /// Zeilen vom Ende nehmen. Ohne Schreibweg oder während eines Laufs abgelehnt; der
+    /// Block geht auf, damit die Änderung zu sehen ist.
+    /// </summary>
+    private void KiWirkungsanzahl(int anzahl)
+    {
+        if (WirkungSpeichern is null || _laeuft)
+            throw new InvalidOperationException(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", BewertungTitel));
+        if (!_bewertungOffen) BewertungUmschalten();
+        while (_wirkungen.Count < anzahl)
+            _wirkungen.Add(new ProjektWirkung { Kategorie = NichtMonetaereWirkungen.SONSTIG });
+        while (_wirkungen.Count > anzahl)
+            _wirkungen.RemoveAt(_wirkungen.Count - 1);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Der Abschnitt „Verlauf" — der Wirt meldet seine Felder an (Welle #458, Stufe 2).</summary>
@@ -1187,7 +1227,7 @@
         // Projekt und nicht an Szenario oder Vergleichswahl. Ein OFFENER Block mit
         // ungeschriebener Eingabe behält sie: Auffrischen läuft auch nach jedem
         // Unterdialog, und der Anwender soll seinen halben Satz nicht dabei verlieren.
-        if (!_bewertungOffen) _nichtMonetaer = _stand.NichtMonetaer ?? "";
+        if (!_bewertungOffen) _wirkungen = Kopien(_stand.Wirkungen);
 
         // AUFTRAG #267: Warnband und Rechenweg folgen dem frisch gelesenen Stand.
         // Das Warnzeichen der Statuszeile ist die EINE Marke, mit der die Hülle
@@ -1907,12 +1947,12 @@
     private void BewertungUmschalten()
     {
         _bewertungOffen = !_bewertungOffen;
-        if (_bewertungOffen) _nichtMonetaer = _stand.NichtMonetaer ?? "";
+        if (_bewertungOffen) _wirkungen = Kopien(_stand.Wirkungen);
     }
 
     /// <summary>
-    /// Schreibt den Freitext fort — derselbe Weg, den bis zu diesem Auftrag der
-    /// Parameterdialog nahm. Danach frischt die Seite auf, damit der Ausweis im Kopf
+    /// Schreibt die Wirkungsliste fort (ETAPPE E17; bis dahin den Freitext). Danach
+    /// frischt die Seite auf, damit der Ausweis im Kopf
     /// des Blocks dem folgt, was gerade geschrieben wurde — sichtbar wird er
     /// allerdings erst beim Zuklappen, denn offen trägt der Kopf nur seinen Titel.
     ///
@@ -1924,8 +1964,10 @@
     {
         if (_laeuft || WirkungSpeichern is null) return;
 
-        string text = _nichtMonetaer;
-        if (!WirkungSpeichern(text))
+        // ETAPPE E17: geschrieben wird die Liste in der Reihenfolge der Seite; leere
+        // Zeilen lässt der Kern fallen, ein Prüfbefund kommt als Speicherfehlerzeile zurück.
+        List<ProjektWirkung> liste = _wirkungen;
+        if (!WirkungSpeichern(liste))
         {
             _fehler = BewertungFehlerText;
             // ETAPPE E13 (E7c3‑Q6 a): der Grund des Kerns, einmal, in der Statuszeile.
@@ -1935,9 +1977,11 @@
         }
 
         _fehler = "";
-        _stand.NichtMonetaer = text;
+        List<ProjektWirkung> gespeichert = liste.Where(z => !NichtMonetaereWirkungen.IstLeer(z))
+                                                .Select(z => z.Kopie()).ToList();
+        _stand.Wirkungen = gespeichert;
         Auffrischen();
-        _nichtMonetaer = text;
+        _wirkungen = Kopien(gespeichert);
         _status = BewertungGespeichertText;
     }
 

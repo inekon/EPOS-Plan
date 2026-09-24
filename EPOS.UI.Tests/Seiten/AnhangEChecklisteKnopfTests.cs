@@ -69,17 +69,37 @@ public class AnhangEChecklisteKnopfTests : EposBunitContext
         Assert.Empty(cut.FindAll("table.epos-wirt-checkliste"));
     }
 
+    /// <summary>
+    /// ETAPPE E17 (V‑G11): 2b und 3b folgen der Wirkungsliste — ohne Wirkung „offen" (auch mit
+    /// Altfeld), beschrieben „teilweise", mindestens eine beurteilt „erfüllt".
+    /// </summary>
     [Fact]
-    public void Gepflegte_nicht_monetaere_Wirkungen_heben_2b_und_3b_auf_teilweise()
+    public void Gepflegte_nicht_monetaere_Wirkungen_heben_2b_und_3b_auf_teilweise_und_erfuellt()
     {
-        var ohne = Zeige(new WirtschaftlichkeitStand());
+        var ohne = Zeige(new WirtschaftlichkeitStand { NichtMonetaer = "nur Altfeld" });
         ohne.Find("button.epos-wirt-checklistenknopf").Click();
         Assert.StartsWith(Resource.WIRT_AE_STAND_OFFEN, Punktzeile(ohne, "2b").QuerySelectorAll("td")[4].TextContent);
 
-        var mit = Zeige(new WirtschaftlichkeitStand { NichtMonetaer = "Versorgungssicherheit" });
+        var mit = Zeige(new WirtschaftlichkeitStand
+        {
+            Wirkungen = new List<WindowsFormsApplication1.ProjektWirkung> { new() { Beschreibung = "Versorgungssicherheit" } }
+        });
         mit.Find("button.epos-wirt-checklistenknopf").Click();
         Assert.StartsWith(Resource.WIRT_AE_STAND_TEILWEISE, Punktzeile(mit, "2b").QuerySelectorAll("td")[4].TextContent);
         Assert.StartsWith(Resource.WIRT_AE_STAND_TEILWEISE, Punktzeile(mit, "3b").QuerySelectorAll("td")[4].TextContent);
+
+        var beurteilt = Zeige(new WirtschaftlichkeitStand
+        {
+            Wirkungen = new List<WindowsFormsApplication1.ProjektWirkung>
+            {
+                new() { Beschreibung = "Versorgungssicherheit" },
+                new() { Beschreibung = "Komfort", Dauer = 3, WirkungMitarbeiter = 2 }
+            }
+        });
+        beurteilt.Find("button.epos-wirt-checklistenknopf").Click();
+        Assert.StartsWith(Resource.WIRT_AE_STAND_ERFUELLT, Punktzeile(beurteilt, "2b").QuerySelectorAll("td")[4].TextContent);
+        Assert.StartsWith(Resource.WIRT_AE_STAND_ERFUELLT, Punktzeile(beurteilt, "3b").QuerySelectorAll("td")[4].TextContent);
+        Assert.Contains(Resource.WIRT_AE_NM_ERFUELLT, Punktzeile(beurteilt, "3b").QuerySelectorAll("td")[4].TextContent);
     }
 
     [Fact]

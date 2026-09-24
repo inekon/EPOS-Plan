@@ -1,0 +1,143 @@
+﻿@* Die Liste der nicht monetarisierbaren Wirkungen (Etappe E17, Konzept Wirtschaftlichkeit
+   § 2.11.2 V-G11; DIN EN 17463 6.1 und 8.2). Ein Baustein der Wirtschaftlichkeitsseite, im
+   Bewertungsblock „Bewertung nach DIN EN 17463" an der Stelle des frueheren Freitexts.
+
+   JE WIRKUNG EINE ZEILE: Kategorie (Energiefluss, finanziell, sonstig), Beschreibung, Dauer
+   (kurz, mittel, lang) und die Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis
+   stark) als Wahlfelder, dahinter die BEURTEILUNG als Anzeige - Dauer x staerkste Wirkung,
+   gerechnet von NichtMonetaereWirkungen.Beurteilung im Kern, nie hier und nie gespeichert.
+   Ein leeres Wahlfeld heisst „nicht beurteilt".
+
+   DER BAUSTEIN HAELT KEINEN STAND: Er bearbeitet die Liste, die ihm die Seite gibt (den
+   Arbeitsstand des Blocks), und meldet jede Aenderung ueber Geaendert. Geschrieben wird von
+   der Seite auf Zuruf - wie beim Freitext.
+
+   DIE FELDER MELDET DER WIRT AN (WirtschaftlichkeitSeite, Maske Wirtschaftlichkeitsseite,
+   Spalten wirkung_*): ein Baustein ohne eigene Anmeldung. *@
+@using WindowsFormsApplication1
+
+<div class="epos-wirt-wirkungen">
+    @if (Zeilen.Count == 0)
+    {
+        <p class="epos-herleitung epos-wirt-wirkungen-leer">@Resource.WIRT_NM_LEER</p>
+    }
+    else
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-wirt-wirkungen-tabelle">
+                <thead>
+                    <tr>
+                        <th>@Resource.WIRT_NM_SP_KATEGORIE</th>
+                        <th>@Resource.WIRT_NM_SP_BESCHREIBUNG</th>
+                        <th>@Resource.WIRT_NM_SP_DAUER</th>
+                        <th>@Resource.WIRT_NM_SP_ORGANISATION</th>
+                        <th>@Resource.WIRT_NM_SP_MITARBEITER</th>
+                        <th>@Resource.WIRT_NM_SP_UMWELT</th>
+                        <th>@Resource.WIRT_NM_SP_BEURTEILUNG</th>
+                        <th>@Resource.WIRT_NM_SP_ENTFERNEN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Zeilen.Count; i++)
+                    {
+                        int nr = i + 1;
+                        ProjektWirkung z = Zeilen[i];
+                        <tr @key="z">
+                            <td><Auswahlfeld Kurzname="@Name(Resource.WIRT_NM_SP_KATEGORIE, nr)" Aktiv="@(!NurLesen)"
+                                             Eintraege="@KATEGORIEWAHL" Auswahl="@KategorieIndex(z)"
+                                             AuswahlChanged="v => KategorieSetzen(z, v)" /></td>
+                            <td><Textfeld Titel="@Name(Resource.WIRT_NM_SP_BESCHREIBUNG, nr)" NurLesen="@NurLesen"
+                                          Platzhalter="@Platzhalter"
+                                          Wert="@z.Beschreibung" WertChanged="v => Setzen(() => z.Beschreibung = v ?? string.Empty)" /></td>
+                            <td><Auswahlfeld Kurzname="@Name(Resource.WIRT_NM_SP_DAUER, nr)" Aktiv="@(!NurLesen)"
+                                             Platzhalter="@Leerwahl" Eintraege="@DAUERWAHL" Auswahl="@z.Dauer"
+                                             AuswahlChanged="v => Setzen(() => z.Dauer = v)" /></td>
+                            <td><Auswahlfeld Kurzname="@Name(Resource.WIRT_NM_SP_ORGANISATION, nr)" Aktiv="@(!NurLesen)"
+                                             Platzhalter="@Leerwahl" Eintraege="@WIRKUNGSWAHL" Auswahl="@z.WirkungOrganisation"
+                                             AuswahlChanged="v => Setzen(() => z.WirkungOrganisation = v)" /></td>
+                            <td><Auswahlfeld Kurzname="@Name(Resource.WIRT_NM_SP_MITARBEITER, nr)" Aktiv="@(!NurLesen)"
+                                             Platzhalter="@Leerwahl" Eintraege="@WIRKUNGSWAHL" Auswahl="@z.WirkungMitarbeiter"
+                                             AuswahlChanged="v => Setzen(() => z.WirkungMitarbeiter = v)" /></td>
+                            <td><Auswahlfeld Kurzname="@Name(Resource.WIRT_NM_SP_UMWELT, nr)" Aktiv="@(!NurLesen)"
+                                             Platzhalter="@Leerwahl" Eintraege="@WIRKUNGSWAHL" Auswahl="@z.WirkungUmwelt"
+                                             AuswahlChanged="v => Setzen(() => z.WirkungUmwelt = v)" /></td>
+                            <td class="epos-wirt-wirkungen-beurteilung">@NichtMonetaereWirkungen.BeurteilungText(z)</td>
+                            <td>
+                                <button type="button" class="epos-knopf epos-wirt-wirkungen-loeschen" disabled="@NurLesen"
+                                        title="@Name(Resource.WIRT_NM_ZEILE_LOESCHEN, nr)"
+                                        aria-label="@Name(Resource.WIRT_NM_ZEILE_LOESCHEN, nr)"
+                                        @onclick="() => Entfernen(z)">✕</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <button type="button" class="epos-knopf epos-wirt-wirkungen-neu" disabled="@NurLesen"
+            @onclick="Hinzufuegen">@Resource.WIRT_NM_ZEILE_NEU</button>
+</div>
+
+@code {
+    /// <summary>Die Wirkungen — der Arbeitsstand der Seite; der Baustein ändert ihn an Ort und Stelle.</summary>
+    [Parameter, EditorRequired] public List<ProjektWirkung> Zeilen { get; set; } = new();
+
+    /// <summary>Während eines Laufs oder ohne Schreibweg nur lesbar.</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Platzhalter der leeren Beschreibung.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>Jede Änderung der Liste (Wert, Zeile hinzu, Zeile weg).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die leere Wahl der Dauer und der Wirkungsgrade — „nicht beurteilt".</summary>
+    private static string Leerwahl => "—";
+
+    private static IReadOnlyList<(int Id, string Text)> KATEGORIEWAHL
+        => NichtMonetaereWirkungen.Kategorien().Select(k => (k.Key, k.Value)).ToList();
+
+    private static IReadOnlyList<(int Id, string Text)> DAUERWAHL
+        => NichtMonetaereWirkungen.Dauerstufen().Select(k => (k.Key, k.Value)).ToList();
+
+    private static IReadOnlyList<(int Id, string Text)> WIRKUNGSWAHL
+        => NichtMonetaereWirkungen.Wirkungsgrade().Select(k => (k.Key, k.Value)).ToList();
+
+    private static string Name(string spalte, int nr)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.WIRT_NM_FELD, spalte, nr);
+
+    /// <summary>Der Listenplatz der Kategorie in der Wahl; ein fremder Schlüssel zeigt keine Wahl.</summary>
+    internal static int? KategorieIndex(ProjektWirkung z)
+    {
+        for (int i = 0; i < NichtMonetaereWirkungen.KATEGORIEN.Count; i++)
+            if (string.Equals(NichtMonetaereWirkungen.KATEGORIEN[i], z.Kategorie, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    private Task KategorieSetzen(ProjektWirkung z, int? index)
+    {
+        if (index is int i && i >= 0 && i < NichtMonetaereWirkungen.KATEGORIEN.Count)
+            z.Kategorie = NichtMonetaereWirkungen.KATEGORIEN[i];
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Setzen(Action setzer)
+    {
+        setzer();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Hinzufuegen()
+    {
+        if (NurLesen) return Task.CompletedTask;
+        Zeilen.Add(new ProjektWirkung { Kategorie = NichtMonetaereWirkungen.SONSTIG });
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Entfernen(ProjektWirkung z)
+    {
+        if (NurLesen) return Task.CompletedTask;
+        Zeilen.Remove(z);
+        return Geaendert.InvokeAsync();
+    }
+}
