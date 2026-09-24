@@ -1931,6 +1931,16 @@
         internal static string WpaSzMengeErl => MyResource.Resource.KI_DLG_WPA_SZ_MENGE_ERL;
         // ---- Ende ETAPPE E9b ----
 
+        // ---- ETAPPE E15 (V-G7): die Gruppe "Risiko" ----
+        internal static string WpaRisikoArtName => MyResource.Resource.WPAR_RISIKO_ART;
+        internal static string WpaRisikoArtErl => MyResource.Resource.KI_DLG_WPA_RISIKO_ART_ERL;
+        internal static string WpaRisikoZuschlagName => MyResource.Resource.WPAR_RISIKO_ZUSCHLAG;
+        internal static string WpaRisikoZuschlagErl => MyResource.Resource.KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL;
+        internal static string WpaRisikoVerlustName => MyResource.Resource.WPAR_RISIKO_VERLUST;
+        internal static string WpaRisikoVerlustErl => MyResource.Resource.KI_DLG_WPA_RISIKO_VERLUST_ERL;
+        internal static string WpaRisikoPName => MyResource.Resource.WPAR_RISIKO_P;
+        internal static string WpaRisikoPErl => MyResource.Resource.KI_DLG_WPA_RISIKO_P_ERL;
+
         // ---- Form_BhkwWirtschaftlichkeit
         internal static string MaskeBhkwWirtschaft => MyResource.Resource.KI_DLG_MASKE_BHW;
         internal static string BhwModulName => MyResource.Resource.BHW_SP_ANLAGE;

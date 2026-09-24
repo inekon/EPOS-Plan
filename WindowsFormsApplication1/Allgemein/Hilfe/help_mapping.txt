@@ -355,6 +355,10 @@ Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit#parameter
 # behaelt Form_CaseEingabe; das Szenariopaar zeigt den Abschnitt "Weitere Werte je
 # Szenario" der Seite Wirtschaftlichkeit.
 Form_WirtschaftlichkeitSzenariowerte.btn_Help = Wirtschaftlichkeit#szenariowerte
+# ETAPPE E15 (V-G7): die Gruppe "Risiko (DIN EN 17463, 6.5)" des Parameterdialogs -
+# Zinszuschlag oder Zahlungsstromabzug R_loss x p_loss; der Anker traegt den
+# Abschnitt der Seite Wirtschaftlichkeit.
+Form_WirtschaftlichkeitParameter.btn_Help_Risiko = Wirtschaftlichkeit#risiko
 # W-E2: Der Dialog "BHKW-Wirtschaftlichkeit" hatte ueberhaupt keine Zeile - sein
 # Infoknopf fiel auf den Rubrikkopf zurueck. Der Anker traegt den Abschnitt mit
 # den Angaben je Anlage, den projektweiten KWK-Angaben und den Steuern.

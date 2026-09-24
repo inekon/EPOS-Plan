@@ -132,7 +132,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Betrachtungszeitraum und Mengenänderung je Best/Worst, vier Eingabestellen —, und
         // die Feldkarte (KiDialoge, Maske Form_WirtschaftlichkeitParameter) führt sie mit
         // (best_zeitraum, worst_zeitraum, best_menge, worst_menge): 26 → 30.
-        new("WirtschaftlichkeitParameterDialog", 30),
+        // ETAPPE E15 (V-G7): die Gruppe „Risiko" - Art, Zinszuschlag, R_loss und p_loss,
+        // vier Eingabestellen, die Feldkarte führt sie mit (risiko_art,
+        // risiko_zinszuschlag, risiko_verlust, risiko_wahrscheinlichkeit): 30 → 34.
+        new("WirtschaftlichkeitParameterDialog", 34),
         // ---- Ende ETAPPE E9b ----
 
         // ---- ETAPPE E10 (Nutzungsdauer Stufe S3) ----

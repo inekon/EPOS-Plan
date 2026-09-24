@@ -43,6 +43,9 @@ public sealed class WirtschaftlichkeitParameterKiSicht
     public Func<IReadOnlyList<KiWahleintrag>>? MethodeEintraege { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? BiomasseEintraege { get; init; }
 
+    /// <summary>ETAPPE E15 (V‑G7): die Arten der Risikoberücksichtigung.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? RisikoEintraege { get; init; }
+
     /// <summary>Die Maske zeichnet neu — nach jedem Setzen.</summary>
     public Action? Nachziehen { get; init; }
 
@@ -89,6 +92,11 @@ public sealed class WirtschaftlichkeitParameterKiSicht
     /// <summary>Die Biomasse-Konventionen — Schlüssel ist ihr Steuerwert.</summary>
     public IReadOnlyList<KiWahleintrag> BiomassekonventionWahl
         => BiomasseEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>ETAPPE E15: die Arten der Risikoberücksichtigung — Schlüssel ist ihr
+    /// Steuerwert (leer = aus, ZINS, ABZUG).</summary>
+    public IReadOnlyList<KiWahleintrag> RisikoArtWahl
+        => RisikoEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Allgemein
@@ -180,6 +188,38 @@ public sealed class WirtschaftlichkeitParameterKiSicht
     {
         get => P?.NachhaltigkeitsnachweisBiomasse ?? false;
         set => Setze(p => p.NachhaltigkeitsnachweisBiomasse = value);
+    }
+
+    // =====================================================================
+    //  Risiko (ETAPPE E15, V-G7) — DIN EN 17463, 6.5 und Anhang F
+    // =====================================================================
+
+    /// <summary>Die Art der Risikoberücksichtigung: leer = aus, ZINS, ABZUG.</summary>
+    public string RisikoArt
+    {
+        get => Risikoart.Normiert(P?.RisikoArt) ?? "";
+        set => Setze(p => p.RisikoArt = Risikoart.Normiert(value));
+    }
+
+    /// <summary>Der Zinszuschlag [%-Punkte]; wirkt nur bei Art ZINS.</summary>
+    public double? RisikoZinszuschlag
+    {
+        get => P?.RisikoZinszuschlag;
+        set => Setze(p => p.RisikoZinszuschlag = value);
+    }
+
+    /// <summary>Die Rückflusseinbuße R_loss [€ je Periode]; wirkt nur bei Art ABZUG.</summary>
+    public double? RisikoVerlust
+    {
+        get => P?.RisikoVerlust;
+        set => Setze(p => p.RisikoVerlust = value);
+    }
+
+    /// <summary>Die Eintrittswahrscheinlichkeit p_loss [%]; wirkt nur bei Art ABZUG.</summary>
+    public double? RisikoWahrscheinlichkeit
+    {
+        get => P?.RisikoWahrscheinlichkeit;
+        set => Setze(p => p.RisikoWahrscheinlichkeit = value);
     }
 
     // =====================================================================
