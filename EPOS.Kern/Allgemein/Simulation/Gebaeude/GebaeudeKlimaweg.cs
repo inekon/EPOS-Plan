@@ -167,8 +167,33 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        //  Beliebige Flächen (Stufe G3, Bauteilweg) — noch ohne Verdrahtung im Eingangsbauer
+        //  Beliebige Flächen (Stufe G3, Bauteilweg) — gerufen vom Eingangsbauer
         // =====================================================================
+
+        /// <summary>
+        /// Die Einstrahlung auf ein Bauteil je Stunde [W/m²], Ortszeit — die Regel des
+        /// Bauteilwegs (Stufe G3) an einer Stelle: <b>Eine waagerecht nach oben weisende Fläche
+        /// (Neigung 0°) bekommt die gemessene Globalstrahlung</b>, nie negativ — dieselbe
+        /// benannte Festlegung wie das Dach des Klassenwegs (Rechenschritte E5); die
+        /// Horizontale ist die Messebene, eine Transposition brächte nur die Zerlegung der
+        /// Klimareihe in Direkt- und Diffusanteil hinein. Jede andere Neigung, auch 180°
+        /// (Unterseite, nur Bodenreflexion), rechnet nach Hay-Davies über
+        /// <see cref="Einstrahlung"/>; der Azimut ist dort gleichgültig, wo die Fläche
+        /// waagerecht liegt.
+        /// </summary>
+        /// <param name="azimutGrad">Azimut in der Konvention des Klimawegs [°] (Süd 0°); NaN nur bei waagerechten Flächen.</param>
+        /// <param name="neigungGrad">Neigung der Fläche [°]: 0° waagerecht nach oben, 90° senkrecht, 180° waagerecht nach unten.</param>
+        internal static double[] EinstrahlungBauteil(IReadOnlyList<SolardatenModel> zeilen, double laengengrad, double breitengrad,
+                                                     double azimutGrad, double neigungGrad, Zeitbezug bezug)
+        {
+            if (neigungGrad == 0.0)
+            {
+                var e = new double[8760];
+                for (int h = 0; h < 8760; h++) e[h] = Math.Max(zeilen[h].Globalstrahlung, 0.0);
+                return e;
+            }
+            return Einstrahlung(zeilen, laengengrad, breitengrad, double.IsNaN(azimutGrad) ? 0.0 : azimutGrad, neigungGrad, bezug);
+        }
 
         /// <summary>
         /// Die Einstrahlung auf eine beliebige Fläche je Stunde [W/m²], Ortszeit — dieselbe
