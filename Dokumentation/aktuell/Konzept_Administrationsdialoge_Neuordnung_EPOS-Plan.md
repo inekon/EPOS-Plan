@@ -29,7 +29,9 @@ allen zehn Verwaltungen über die Auswahlleiste aufheben und wieder setzen, nach
 am 23.09.2026 (Welle #459; Kern `Auslieferungskennzeichen`, Baustein `Schlossumschaltung`; 3.4, 6.2).
 **Mit #465 (24.09.2026) ist die Gebäudeverwaltung (A9) nachgezogen:** Ihr Stammblatt führt jedes Feld
 des Katalogeditors auf demselben Arbeitsstand, und beim Hilfe-Assistenten ist sie eine eigene Maske
-(7.1 a und e erledigt; die Löschsperre bleibt beim Namen, Schemavorschlag in 7.1 a).
+(7.1 a und e erledigt). **Mit #468 (24.09.2026) erkennt die Löschsperre ein benutztes Gebäude über
+den Katalogverweis** `Tab_Gebaeude.ID_Gebaeude_Stamm` (Schemaschritt 121) und erst ohne ihn über den
+Namen (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -597,13 +599,22 @@ Verbrauchsrückrechnung, Jahresnutzungsgrad) und dem Kühlbetrieb des Projekts; 
 Klimaregion-Vorgabe" bräuchte einen zweiten, projektfreien Rechenweg mit erfundenen Annahmen und ein
 Stundenmodell über 8 760 Stunden je Zeilenwahl — eine Zahl, die kein Projekt wiedergäbe. Die
 klimafreien Kennzahlen stehen im Blatt (H_ges im Kopf, H_T, H_ve und H_ges unter dem Hüll-Raster); den
-Wärmebedarf zeigt der Gebäudedialog des Projekts („Simulation…"). **Die Löschsperre erkennt eine
-Nutzung weiter am Namen:** `Z_ProjektGebaeude` führt keinen Katalogverweis, und die Projektkopie
-`Tab_Gebaeude` nur `ID_ProjektGebaeude` und `ID_Projekt`. Ein Verweis über die ID bräuchte einen
-Schemaschritt — Vorschlag (nicht angelegt, Nummer 122): Spalte `Tab_Gebaeude.ID_Gebaeude_Stamm`
-(`INTEGER`, Verweis auf `Tab_Gebaeude_STAMM(ID)`, `ON DELETE SET NULL`), gefüllt beim Übernehmen
-(`GebaeudeStammCtrl.CopyFromStamm`) und im Schritt einmalig über den Namen nachgetragen;
-`Projektverwendung` fragte dann die ID ab und nur ohne Verweis den Namen. (b)
+Wärmebedarf zeigt der Gebäudedialog des Projekts („Simulation…"). ✔ **Die Löschsperre erkennt eine
+Nutzung über die ID — erledigt mit #468 (24.09.2026), Schemaschritt 121:** Die Projektkopie trägt den
+Katalogverweis `Tab_Gebaeude.ID_Gebaeude_Stamm` (`INTEGER`, Verweis auf `Tab_Gebaeude_STAMM(ID)`,
+`ON DELETE SET NULL`, Index; Quelle `GebaeudeKatalogverweis`). Gefüllt wird er beim Übernehmen
+(`GebaeudeStammCtrl.CopyFromStamm` — der einzige Weg Katalog → Projekt, für Assistent und
+Projekt-Gebäudedialog), Duplizieren und Varianten kopieren ihn unversetzt, der Projekttransfer nimmt ihn
+nicht über die Paketgrenze mit und trägt ihn am Ziel über den Namen nach; der Schritt hat ihn einmalig
+über den eindeutigen Namen nachgetragen. `Projektverwendung` führt jede Kopie unter dem Namen ihres
+Katalogsatzes (über den Verweis) und nur eine Kopie ohne Verweis unter ihrem eigenen Namen;
+`Loeschsperre` nennt die Projekte, und `Loeschen` lehnt einen benutzten Satz auch im Kern ab. Damit hält
+die Sperre, wenn der Katalogsatz oder die Kopie umbenannt wird. **`SET NULL` statt `RESTRICT`:** Die
+Kopie trägt alle Werte selbst und rechnet ohne den Katalogsatz; die Sperre ist die weiche der
+Verwaltung, und ein harter Datenbankfehler träfe jeden anderen Löschweg (Dublettenbereinigung,
+„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). Mit demselben Schritt tragen vier
+Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert); der
+Krankenhaussatz mit dem U-Wert Fenster 0,09 bleibt dem Anwender vorgelegt. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; ob CSV-Export und „In Variante
