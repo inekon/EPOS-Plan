@@ -67,9 +67,9 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
             Assert.Contains("ok      keine Zeile aus einem Normimport", e.Ausgabe);
             Assert.Contains("ok      keine Eingabe aus den lokalen Normdaten (ZU11, Referenzlaeufe/Normzahlen/", e.Ausgabe);
-            // Satz und Nutzungsart der Quelle, dazu der freie Paketteil: acht Parameter, ein Bedarfstag und
+            // Satz und Nutzungsart der Quelle, dazu der freie Paketteil: dreizehn Parameter, ein Bedarfstag und
             // der Vorgabesatz der vier Zapfkategorien an der Nutzungsart ohne eigene Kategorien.
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 15", e.Ausgabe);
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 20", e.Ausgabe);
             // Die Nutzungsart kam mit ReadOnly 0 — die Vorlage sperrt sie (Auslieferung ist unveraenderlich).
             Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
@@ -114,9 +114,9 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv  ->  1 Zeile(n)", e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + ".csv  ->  4 Zeile(n)", e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ".csv  ->  2 Zeile(n)", e.Ausgabe);
-            // Die fuenf Zeilen des Pakets, dazu der freie Paketteil (acht Parameter, ein Bedarfstag); der
+            // Die fuenf Zeilen des Pakets, dazu der freie Paketteil (dreizehn Parameter, ein Bedarfstag); der
             // Vorgabesatz der Kategorien tritt zurueck — die Nutzungsart 60 fuehrt eigene.
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 14", e.Ausgabe);
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 19", e.Ausgabe);
             Assert.Contains("Zapfkategorien (Vorgabesatz, 4 Zeile(n)): an 0 Nutzungsart(en)", e.Ausgabe);
 
             Lesen(ziel, () =>
@@ -177,8 +177,8 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      nur Status AUSLIEFERUNG", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
             // Satz, Nutzungsart und die eine Kategorie (sie kam mit ReadOnly 0), dazu der freie Paketteil
-            // (acht Parameter, ein Bedarfstag); die Nutzungsart fuehrt eine Kategorie, der Vorgabesatz tritt zurueck.
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 12", e.Ausgabe);
+            // (dreizehn Parameter, ein Bedarfstag); die Nutzungsart fuehrt eine Kategorie, der Vorgabesatz tritt zurueck.
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 17", e.Ausgabe);
             Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
 
             Lesen(ziel, () =>
