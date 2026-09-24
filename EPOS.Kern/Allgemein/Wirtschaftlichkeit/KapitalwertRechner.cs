@@ -386,6 +386,21 @@ namespace WindowsFormsApplication1
             /// die Fortschreibung nur im ersten Fall als Formel (Konzept § 2.11.6, Stufe 1).
             /// </summary>
             public bool BehgFortgeschrieben;
+
+            // ---- ETAPPE E15 — der Risikoabzug (V‑G7, DIN EN 17463 Anhang F) ----
+
+            /// <summary>
+            /// ETAPPE E15 — der Zahlungsstromabzug für das Risiko je Jahr [€], positiv
+            /// (Index 1…T; Index 0 bleibt 0 — kein Abzug im Jahr 0). <c>null</c> = kein Abzug;
+            /// dann ist jede Reihe dieses Bildes Zeichen für Zeichen die von vorher. Er steckt
+            /// in <see cref="NominalReihe"/> und <see cref="BarwertReihe"/>, NICHT in
+            /// <see cref="BarwertAusgaben"/> und nicht im Restwert.
+            /// </summary>
+            public double[] RisikoJeJahr;
+
+            /// <summary>ETAPPE E15 — der Barwert des Risikoabzugs [€], positiv; im
+            /// <see cref="Kapitalwert"/> abgezogen. 0 = kein Abzug.</summary>
+            public double BarwertRisiko;
         }
 
         /// <summary>Annuitätenfaktor a(i,n); i als Dezimalzahl (0,03), n in Jahren.</summary>
@@ -638,6 +653,14 @@ namespace WindowsFormsApplication1
         /// und nicht weiter reicht der Entscheid zu G2. Welcher Satz je Szenario gilt
         /// (Erwartet, Best, Worst), entscheidet der Aufrufer.</para>
         /// </param>
+        /// <param name="risikoAbzugJahr">
+        /// ETAPPE E15 (V‑G7, DIN EN 17463 6.5 und Anhang F): der <b>Risikoabzug</b> je Periode
+        /// [€/a], positiv — R_loss × p_loss / 100 (<see cref="RisikoModul.AbzugJeJahr"/>). Er
+        /// mindert die Nettozahlung jedes Jahres t = 1…T, nicht das Jahr 0 und nicht den
+        /// Restwert. <b>0 = kein Abzug</b>: dann bleibt jeder Ausdruck Zeichen für Zeichen der
+        /// von vorher. Welcher Stand ihn trägt, entscheidet der Aufrufer
+        /// (<see cref="RisikoModul.AbzugFuerStand"/>).
+        /// </param>
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
@@ -649,7 +672,8 @@ namespace WindowsFormsApplication1
                                           IList<KeyValuePair<double, int>> betriebAbJahr = null,
                                           double endenergieJahr = 0,
                                           IList<KeyValuePair<double, int>> endenergieAbJahr = null,
-                                          double preisstInvestProzent = 0)
+                                          double preisstInvestProzent = 0,
+                                          double risikoAbzugJahr = 0)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
@@ -677,7 +701,9 @@ namespace WindowsFormsApplication1
                 // ETAPPE E8b — Ausweis für die Formelmappe (rein additiv).
                 BetriebBasisJeJahr = new double[T + 1],
                 EndenergieBasisJeJahr = new double[T + 1],
-                BehgFortgeschrieben = behgJeJahr == null
+                BehgFortgeschrieben = behgJeJahr == null,
+                // ETAPPE E15 — nur mit Abzug eine Reihe; ohne bleibt das Feld null.
+                RisikoJeJahr = risikoAbzugJahr != 0 ? new double[T + 1] : null
             };
 
             // ---------------- Investition t=0 + Ersatzbeschaffungen + Restwert ----------------
@@ -824,13 +850,28 @@ namespace WindowsFormsApplication1
 
                 z.BarwertAusgaben += ausgaben * faktor;
                 z.BarwertEinnahmen += einnahmen * faktor;
-                z.BarwertReihe[t] = (einnahmen - ausgaben) * faktor;
-                z.NominalReihe[t] = einnahmen - ausgaben;
+                if (risikoAbzugJahr != 0)
+                {
+                    // ETAPPE E15 (V‑G7, Anhang F): der Risikoabzug je Periode t ≥ 1 auf die
+                    // Nettozahlung — nie im Jahr 0 (die Schleife beginnt bei 1), nie auf den
+                    // Restwert (der steht unten getrennt). Eigener Zweig, damit der Regellauf
+                    // ohne Abzug denselben Ausdruck durchläuft wie vorher.
+                    z.RisikoJeJahr[t] = risikoAbzugJahr;
+                    z.BarwertRisiko += risikoAbzugJahr * faktor;
+                    z.BarwertReihe[t] = (einnahmen - ausgaben - risikoAbzugJahr) * faktor;
+                    z.NominalReihe[t] = einnahmen - ausgaben - risikoAbzugJahr;
+                }
+                else
+                {
+                    z.BarwertReihe[t] = (einnahmen - ausgaben) * faktor;
+                    z.NominalReihe[t] = einnahmen - ausgaben;
+                }
             }
 
             z.RestwertNominal = restwertT;
             z.RestwertBarwert = restwertT * Math.Pow(1.0 + i, -T);
             z.Kapitalwert = -z.Investition - z.BarwertAusgaben + z.BarwertEinnahmen + z.RestwertBarwert;
+            if (risikoAbzugJahr != 0) z.Kapitalwert -= z.BarwertRisiko;   // E15, sonst unberührt
             return z;
         }
 

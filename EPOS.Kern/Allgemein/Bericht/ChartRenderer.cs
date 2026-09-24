@@ -1907,7 +1907,8 @@ namespace WindowsFormsApplication1
                 var liste = new List<Brueckenschritt>();
                 Zahlungsgliederung d = Zahlungsgliederung.Differenz(stand, referenz);
                 if (d == null) return liste;
-                foreach (string s in Zahlungsgliederung.Reihenfolge)
+                // ETAPPE E15: mit Risikoabzug ein siebter Schritt vor dem Restwert.
+                foreach (string s in d.Schluessel)
                     liste.Add(new Brueckenschritt { Name = Zahlungsgliederung.Titel(s), Wert = d.Bestandteil(s).Barwert });
                 return liste;
             }

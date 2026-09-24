@@ -11,7 +11,7 @@ namespace EPOS.Kern.Tests
     /// <b>Das Ergebnis der Anlagenkopplung je Gebäude</b> (AK1 Welle 3; Konzept Anlagenkopplung
     /// 8.3, 9.4, 12.1; Muster E30) — auf einer Arbeitskopie der Testdatenbank, Projekt 1045 (ein
     /// Gebäude auf dem VDI-Weg): Der gekoppelte Lauf legt den Heizkreis je Gebäude nach
-    /// <c>Tab_ErgebnisGebaeude</c> (Schritt 125), <c>Load</c> liest dieselben Zahlen, und ein
+    /// <c>Tab_ErgebnisGebaeude</c> (Schritt 128), <c>Load</c> liest dieselben Zahlen, und ein
     /// Lauf ohne Kopplung schreibt dort NULL.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -55,7 +55,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Schritt 125: der Heizkreis je Gebäude in Tab_ErgebnisGebaeude
+        //  Schritt 128: der Heizkreis je Gebäude in Tab_ErgebnisGebaeude
         // =====================================================================
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
         public void Der_Lauf_legt_den_Heizkreis_je_Gebaeude_ab_und_Load_liest_ihn()
         {
             if (!_db.Vorhanden) return;
-            Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig(), "Die Testdatenbank steht nicht auf Schritt 125.");
+            Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig(), "Die Testdatenbank steht nicht auf Schritt " + ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS + ".");
 
             Rechne(PROJEKT);
             DataRow ohne = Gebaeudezeile(PROJEKT, GEBAEUDE);
@@ -102,11 +102,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Vor Schritt 125</b> (die vier Spalten fehlen) schreibt der Lauf die Zeile des
+        /// <b>Vor Schritt 128</b> (die vier Spalten fehlen) schreibt der Lauf die Zeile des
         /// Schritts 107 — gespeichert wird trotzdem, und <c>Load</c> liest „nicht gekoppelt".
         /// </summary>
         [Fact]
-        public void Vor_Schritt_125_speichert_der_Lauf_ohne_die_Spalten_des_Heizkreises()
+        public void Vor_Schritt_128_speichert_der_Lauf_ohne_die_Spalten_des_Heizkreises()
         {
             if (!_db.Vorhanden) return;
             foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)

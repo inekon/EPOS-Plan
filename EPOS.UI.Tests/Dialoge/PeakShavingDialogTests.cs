@@ -137,6 +137,16 @@ public class PeakShavingDialogTests : EposBunitContext
     private static IElement Werkzeugknopf(IRenderedComponent<PeakShavingDialog> cut, string text)
         => Werkzeugknoepfe(cut).Single(b => b.TextContent.Trim() == text);
 
+    /// <summary>
+    /// Dieselben Handlungen im KOPF DES STAMMBLATTS — im schmalen Fenster verdeckt das Blatt
+    /// die Werkzeugleiste (Konzept Administrationsdialoge 7.1 c).
+    /// </summary>
+    private static IReadOnlyList<IElement> Kopfknoepfe(IRenderedComponent<PeakShavingDialog> cut)
+        => cut.FindAll(".epos-stammblatt-kopf .epos-stammblatt-kopfzeile .epos-werkzeughandlungen button");
+
+    private static IElement Kopfknopf(IRenderedComponent<PeakShavingDialog> cut, string text)
+        => Kopfknoepfe(cut).Single(b => b.TextContent.Trim() == text);
+
     // =====================================================================
     // Gerüst und Feldbestand
     // =====================================================================
@@ -553,6 +563,100 @@ public class PeakShavingDialogTests : EposBunitContext
         cut.InvokeAsync(() => lauf.SetResult(ergebnis)).Wait();
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Kennzahlen));
         Assert.All(Werkzeugknoepfe(cut), b => Assert.False(b.HasAttribute("disabled")));
+    }
+
+    /// <summary>
+    /// <b>Schmal zusätzlich im Stammblattkopf</b> (Konzept Administrationsdialoge 7.1 c):
+    /// Unter 900 px liegt das Blatt über Werkzeugleiste und Liste; „CSV-Export" und „In
+    /// Variante übernehmen" stehen deshalb auch in der Kopfzeile neben „‹ Liste" — dieselben
+    /// Rückrufe, dieselben Sperren: ohne Ergebnis „Bitte zuerst rechnen.", im Lauf gesperrt,
+    /// danach frei und wirksam.
+    /// </summary>
+    [Fact]
+    public void Schmal_stehen_CSV_und_Variante_auch_im_Stammblattkopf()
+    {
+        var lauf = new TaskCompletionSource<PeakShavingErgebnis>();
+        double[]? reiheImLauf = null;
+        PeakShavingEingaben? eingabenImLauf = null;
+        int csvGeschrieben = 0;
+        double? uebernommen = null;
+        var cut = Zeige(csv: r => { csvGeschrieben++; return Task.FromResult(true); },
+                        variante: (ziel, adaptiv) => { uebernommen = ziel; return Task.FromResult(true); },
+                        rechnen: (reihe, e) => { reiheImLauf = reihe; eingabenImLauf = e; return lauf.Task; });
+
+        // Schmal: über "Stammblatt ›" steht das Blatt an der Stelle der Liste.
+        cut.FindAll(".epos-auswahlleiste button").Single(b => b.TextContent.Trim() == "Stammblatt ›").Click();
+
+        Assert.Equal(new[] { "CSV-Export", "In Variante übernehmen" },
+                     Kopfknoepfe(cut).Select(b => b.TextContent.Trim()).ToArray());
+        IElement zeile = cut.Find(".epos-stammblatt-kopf > .epos-stammblatt-kopfzeile");
+        Assert.Contains("epos-nur-schmal", zeile.ClassName ?? "");
+        Assert.NotNull(zeile.QuerySelector(".epos-stammblatt-zurliste"));
+        Assert.All(Kopfknoepfe(cut), b => Assert.DoesNotContain("epos-knopf--primaer", b.ClassName ?? ""));
+
+        // Ohne Ergebnis: derselbe Sperrgrund wie in der Werkzeugleiste.
+        Kopfknopf(cut, "CSV-Export").Click();
+        Assert.Equal(0, csvGeschrieben);
+        Assert.Contains("Bitte zuerst rechnen", cut.Instance.Meldung);
+        Kopfknopf(cut, "In Variante übernehmen").Click();
+        Assert.Null(uebernommen);
+        Assert.Contains("Bitte zuerst rechnen", cut.Instance.Meldung);
+
+        // Im Lauf gesperrt - in Kopf UND Werkzeugleiste.
+        Rechenknopf(cut).Click();
+        Assert.All(Kopfknoepfe(cut), b => Assert.True(b.HasAttribute("disabled")));
+        Assert.All(Werkzeugknoepfe(cut), b => Assert.True(b.HasAttribute("disabled")));
+
+        PeakShavingErgebnis ergebnis = Rechnen(reiheImLauf!, eingabenImLauf!).Result;
+        cut.InvokeAsync(() => lauf.SetResult(ergebnis)).Wait();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Kennzahlen));
+        Assert.All(Kopfknoepfe(cut), b => Assert.False(b.HasAttribute("disabled")));
+
+        // Danach wirken sie wie die Knöpfe der Werkzeugleiste.
+        Kopfknopf(cut, "CSV-Export").Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, csvGeschrieben));
+        // Ohne Wirt der Berechnungsart meldet "In Variante übernehmen" hier wie dort dasselbe.
+        Kopfknopf(cut, "In Variante übernehmen").Click();
+        string? ausDemKopf = cut.Instance.Meldung;
+        Assert.DoesNotContain("Bitte zuerst rechnen", ausDemKopf ?? "");
+        Werkzeugknopf(cut, "In Variante übernehmen").Click();
+        Assert.Equal(ausDemKopf, cut.Instance.Meldung);
+        Assert.Null(uebernommen);
+    }
+
+    /// <summary>
+    /// <b>Breit nur in der Werkzeugleiste:</b> Die Kopfzeile trägt <c>epos-nur-schmal</c>, die
+    /// Werkzeugleiste nicht, und das Stilblatt blendet <c>epos-nur-schmal</c> ab 900 px
+    /// Rahmenbreite aus — keine Doppelanzeige (die Messung im Browser steht in der Katalogprobe).
+    /// Ohne beide Delegaten gibt es auch die Kopfzeile nicht.
+    /// </summary>
+    [Fact]
+    public void Breit_stehen_CSV_und_Variante_nur_in_der_Werkzeugleiste()
+    {
+        var cut = Zeige(csv: r => Task.FromResult(true), variante: (ziel, adaptiv) => Task.FromResult(true));
+
+        Assert.All(Werkzeugknoepfe(cut), b => Assert.Null(b.Closest(".epos-nur-schmal")));
+        Assert.All(Kopfknoepfe(cut), b => Assert.NotNull(b.Closest(".epos-nur-schmal")));
+        Assert.Equal(2, Kopfknoepfe(cut).Count);
+
+        string css = Stilblatt();
+        int breit = css.IndexOf("@container epos-katalograhmen (min-width: 900px)", StringComparison.Ordinal);
+        Assert.True(breit >= 0, "Die Breitenabfrage des Katalograhmens fehlt.");
+        string rumpf = css.Substring(breit, css.IndexOf("\n}", breit, StringComparison.Ordinal) - breit);
+        Assert.Matches(@"\.epos-katalograhmen \.epos-nur-schmal\s*\{\s*display:\s*none;", rumpf);
+
+        var ohne = Zeige();
+        Assert.Empty(ohne.FindAll(".epos-stammblatt-kopfzeile"));
+        Assert.Single(ohne.FindAll(".epos-stammblatt-zurliste"));
+    }
+
+    private static string Stilblatt()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+        return System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
     }
 
     /// <summary>

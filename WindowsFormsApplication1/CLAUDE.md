@@ -26,8 +26,7 @@ dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x64
   `wwwroot`** (kein `index.html`, `_content`, `_framework/blazor.webview.js`), und jeder
   Blazor-Dialog bliebe beim Anwender leer.
 - **x64**, kein AnyCPU: native 64-Bit-Anteile (OR-Tools über `SpeicherPlanung`,
-  ONNX-Laufzeit, SkiaSharp) und die 64-Bit-Engine des eingefrorenen Übernahmezweigs der
-  Schemapflege.
+  ONNX-Laufzeit, SkiaSharp).
 - Ergebnis: `bin\x64\Debug\net10.0-windows\EPOS_Plan.exe`. Laufende Anwendung oder offenes
   Visual Studio sperren den Ordner (Regel in der Wurzel-`CLAUDE.md`) — Verifikations-Builds
   dann mit `-p:OutDir=<Ordner außerhalb>` umleiten, der Compile-Beweis bleibt vollwertig.
@@ -186,7 +185,7 @@ Nur, was die Schale selbst braucht; alles Übrige kommt über `EPOS.Kern`.
 - `System.Security.Cryptography.ProtectedData` — DPAPI hinter `Dienste.Lizenzablage`.
 - `System.Configuration.ConfigurationManager` — `Properties.Settings` hinter
   `SettingsEinstellungen`.
-- `Microsoft.Data.Sqlite` — dieselbe Fassung wie im Übernahmewerkzeug.
+- `Microsoft.Data.Sqlite` — die Fassung steht zentral in `Directory.Packages.props`.
 - `Google.OrTools` hängt am Projekt `SpeicherPlanung`, das nur von hier referenziert wird;
   ohne die registrierte Fabrik sind `PvPlanung`, `Arbitrage`, `MultiUse` nicht verfügbar.
 - `SixLabors.Fonts` bewusst auf 1.0.x gepinnt — ab 2.x gilt die Six Labors Split License.

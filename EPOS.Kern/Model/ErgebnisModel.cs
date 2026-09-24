@@ -111,7 +111,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die obere Raumtemperatur, gegen die die Überhitzung gezählt ist [°C]; nur VDI-Weg.</summary>
         public double? ObereRaumtemperaturC;
 
-        // ---- Anlagenkopplung (AK1): der Heizkreis je Gebäude (Schemaschritt 125) -----------
+        // ---- Anlagenkopplung (AK1): der Heizkreis je Gebäude (Schemaschritt 128) -----------
         //
         // Die drei Größen der Projektzeile (Schritt 123) je Gebäude — gebildet aus dem
         // Heizkreis des Gebäudes — und die Übergabeart, mit der es gekoppelt gerechnet hat.

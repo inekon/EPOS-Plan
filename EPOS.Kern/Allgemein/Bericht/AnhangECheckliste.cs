@@ -71,8 +71,14 @@ namespace WindowsFormsApplication1
         /// <summary>Mindestens ein Stand trägt im Szenario „Erwartet" einen Kapitalwert.</summary>
         public bool Gerechnet;
 
-        /// <summary>Nicht monetäre Wirkungen sind als Text gepflegt.</summary>
+        /// <summary>Nicht monetäre Wirkungen sind erfasst — ETAPPE E17: mindestens eine Wirkung
+        /// der Liste trägt eine Beschreibung.</summary>
         public bool NichtMonetaerErfasst;
+
+        /// <summary>ETAPPE E17 (V‑G11): mindestens eine Wirkung ist nach DIN EN 17463 8.2
+        /// beurteilt (Dauer und ein Wirkungsgrad) — die Punkte 2b und 3b stehen dann auf
+        /// „erfüllt".</summary>
+        public bool NichtMonetaerBeurteilt;
 
         /// <summary>Der Betrachtungszeitraum ist gegen die Nutzungsdauern abgeglichen.</summary>
         public bool ZeitraumBegruendet;
@@ -104,6 +110,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Szenarioabdeckung = "";
 
+        /// <summary>
+        /// ETAPPE E15 (V‑G7): die Kurzfassung des gepflegten Risikos
+        /// (<see cref="RisikoModul.Kurz"/>); leer = kein Risiko angesetzt. Punkt 6 nennt es.
+        /// </summary>
+        public string Risiko = "";
+
         /// <summary>Die Lage eines Berichtslaufs — aus seiner Bewertung und dem Parametersatz.</summary>
         public static ChecklistenLage AusBericht(IList<WirtschaftlichkeitErgebnis> alle,
                                                  WirtschaftlichkeitParameter p,
@@ -113,8 +125,18 @@ namespace WindowsFormsApplication1
             {
                 Gerechnet = alle != null && alle.Any(e => e != null &&
                             e.Szenario == WirtschaftlichkeitSzenario.ERWARTET && e.Kapitalwert.HasValue),
-                NichtMonetaerErfasst = p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer)
+                NichtMonetaerErfasst = p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer),
+                // ETAPPE E15: das gepflegte Risiko (leer ohne Pflege).
+                Risiko = RisikoModul.Kurz(p, BerichtTexte.Kultur)
             };
+            // ETAPPE E17 (V‑G11): Trägt die Bewertung die Wirkungsliste, gilt sie — erfasst
+            // heißt „eine Wirkung beschrieben", beurteilt „eine Wirkung nach 8.2 beurteilt".
+            // Ohne Liste (Bewertung ohne Berichtslauf) bleibt der Freitext die Quelle.
+            if (bewertung != null && bewertung.Wirkungen != null)
+            {
+                lage.NichtMonetaerErfasst = NichtMonetaereWirkungen.Benannt(bewertung.Wirkungen);
+                lage.NichtMonetaerBeurteilt = NichtMonetaereWirkungen.Beurteilt(bewertung.Wirkungen);
+            }
             if (bewertung != null)
             {
                 NutzungsdauerHinweise nd = bewertung.Nutzungsdauer;
@@ -179,17 +201,13 @@ namespace WindowsFormsApplication1
                 Punkt("2a", gA, MyResource.Resource.WIRT_AE_2A_THEMA, MyResource.Resource.WIRT_AE_2A_ANF,
                       MyResource.Resource.WIRT_AE_2A_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_2A_STAND),
                 Punkt("2b", gA, MyResource.Resource.WIRT_AE_2B_THEMA, MyResource.Resource.WIRT_AE_2B_ANF,
-                      MyResource.Resource.WIRT_AE_2B_STELLE,
-                      lage.NichtMonetaerErfasst ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
-                      lage.NichtMonetaerErfasst ? MyResource.Resource.WIRT_AE_NM_TEILWEISE : MyResource.Resource.WIRT_AE_NM_OFFEN),
+                      MyResource.Resource.WIRT_AE_2B_STELLE, NmStand(lage), NmStandText(lage)),
                 Punkt("3a", gA, MyResource.Resource.WIRT_AE_3A_THEMA, MyResource.Resource.WIRT_AE_3A_ANF,
                       MyResource.Resource.WIRT_AE_3A_STELLE,
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.Gerechnet ? MyResource.Resource.WIRT_AE_3A_STAND : ohneRechnung),
                 Punkt("3b", gA, MyResource.Resource.WIRT_AE_3B_THEMA, MyResource.Resource.WIRT_AE_3B_ANF,
-                      MyResource.Resource.WIRT_AE_2B_STELLE,
-                      lage.NichtMonetaerErfasst ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
-                      lage.NichtMonetaerErfasst ? MyResource.Resource.WIRT_AE_NM_TEILWEISE : MyResource.Resource.WIRT_AE_NM_OFFEN),
+                      MyResource.Resource.WIRT_AE_2B_STELLE, NmStand(lage), NmStandText(lage)),
                 // Die Zeitpunkte der Zahlungen zeigt erst die Mehrjahrestabelle eines Laufs.
                 Punkt("4", gA, MyResource.Resource.WIRT_AE_4_THEMA, MyResource.Resource.WIRT_AE_4_ANF,
                       MyResource.Resource.WIRT_AE_4_STELLE,
@@ -201,8 +219,13 @@ namespace WindowsFormsApplication1
                           ? MyResource.Resource.WIRT_AE_4_ERFUELLT : MyResource.Resource.WIRT_AE_4_TEILWEISE),
                 Punkt("5", gA, MyResource.Resource.WIRT_AE_5_THEMA, MyResource.Resource.WIRT_AE_5_ANF,
                       MyResource.Resource.WIRT_AE_5_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_5_STAND),
+                // ETAPPE E15 (V‑G7): Mit gepflegtem Risiko nennt der Stand, wie es angesetzt ist;
+                // „teilweise" bleibt, weil die Degradation weiter nicht gerechnet wird (A5).
                 Punkt("6", gA, MyResource.Resource.WIRT_AE_6_THEMA, MyResource.Resource.WIRT_AE_6_ANF,
-                      MyResource.Resource.WIRT_AE_6_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_6_STAND),
+                      MyResource.Resource.WIRT_AE_6_STELLE, ChecklistenStand.Teilweise,
+                      string.IsNullOrEmpty(lage.Risiko)
+                          ? MyResource.Resource.WIRT_AE_6_STAND
+                          : string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_AE_6_STAND_RISIKO, lage.Risiko)),
                 Punkt("7", gB, MyResource.Resource.WIRT_AE_7_THEMA, MyResource.Resource.WIRT_AE_7_ANF,
                       MyResource.Resource.WIRT_AE_7_STELLE,
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
@@ -266,6 +289,21 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// ETAPPE E17 (V‑G11): der Stand der Punkte 2b und 3b — „erfüllt", sobald mindestens
+        /// eine Wirkung nach 8.2 beurteilt ist, „teilweise", wenn Wirkungen nur beschrieben
+        /// sind, sonst „offen".
+        /// </summary>
+        private static ChecklistenStand NmStand(ChecklistenLage lage)
+            => lage.NichtMonetaerErfasst && lage.NichtMonetaerBeurteilt ? ChecklistenStand.Erfuellt
+             : lage.NichtMonetaerErfasst ? ChecklistenStand.Teilweise
+             : ChecklistenStand.Offen;
+
+        private static string NmStandText(ChecklistenLage lage)
+            => lage.NichtMonetaerErfasst && lage.NichtMonetaerBeurteilt ? MyResource.Resource.WIRT_AE_NM_ERFUELLT
+             : lage.NichtMonetaerErfasst ? MyResource.Resource.WIRT_AE_NM_TEILWEISE
+             : MyResource.Resource.WIRT_AE_NM_OFFEN;
+
         /// <summary>Die Punkte eines Berichtslaufs — Quelle wie im Baustein „Wirtschaftlichkeit":
         /// die Ergebnisse DIESES Laufs, ersatzweise der gespeicherte Stand.</summary>
         public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten)
@@ -281,7 +319,15 @@ namespace WindowsFormsApplication1
                 try { bewertung = WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur); }
                 catch { bewertung = null; }   // ohne Bewertung bleiben die Punkte „offen"
             }
-            return Punkte(ChecklistenLage.AusBericht(alle, p, bewertung));
+            ChecklistenLage lage = ChecklistenLage.AusBericht(alle, p, bewertung);
+            if (bewertung == null || bewertung.Wirkungen == null)
+            {
+                // ETAPPE E17: auch ohne Bewertung zählt die Wirkungsliste, nicht der Freitext.
+                List<ProjektWirkung> wirkungen = new ProjektWirkungCtrl().Laden(daten.IdStamm);
+                lage.NichtMonetaerErfasst = NichtMonetaereWirkungen.Benannt(wirkungen);
+                lage.NichtMonetaerBeurteilt = NichtMonetaereWirkungen.Beurteilt(wirkungen);
+            }
+            return Punkte(lage);
         }
 
         // =====================================================================

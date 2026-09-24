@@ -27,8 +27,9 @@ namespace WindowsFormsApplication1
     // arbeitet unveraendert: dieselbe Positionsnummerierung, dieselbe Normalisierung.
     // Mit iU6-T3b ist die Uebergangsbruecke aus DbParam ausgezogen; ein Access-Gegenstueck
     // gibt es nicht mehr. Weder EPOS.Kern noch die Windows-Schale nennen
-    // System.Data.OleDb - weder im Quelltext noch als PackageReference. Altbestaende hebt
-    // allein das Hauswerkzeug EposSqliteMigrator.
+    // System.Data.OleDb - weder im Quelltext noch als PackageReference. Altbestaende aus
+    // Access werden nicht mehr uebernommen: Das Hauswerkzeug EposSqliteMigrator ist am
+    // 13.09.2026 aus dem Repository entfernt, die Uebernahme am 24.09.2026 eingestellt.
     // =====================================================================================
 
     public static class DataRepository

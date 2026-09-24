@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -34,17 +35,48 @@ namespace EPOS.Kern.Tests
         private static string Paketordner() => Path.Combine(ZapfZufallTests.Probenordner(), "Katalogpaket");
 
         /// <summary>Das Probepaket als Dateien — über den Leseweg des Kerns (Ordner).</summary>
+        /// <remarks>Die Probendateien liegen im Arbeitsbaum mit dem Zeilenende des Auscheckens
+        /// (CRLF unter Windows mit <c>core.autocrlf</c>, LF auf einem Linux-Läufer ohne — beide
+        /// über <c>text=auto</c> gültig); die Mutationen der Fälle unten gehen von CRLF aus, also
+        /// wird hier einmal auf CRLF vereinheitlicht, unabhängig vom Auscheck-Zeilenende.</remarks>
         private static List<TwwPaketdatei> Paket()
         {
             IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(Paketordner(), out ZapfSatz fehler);
             Assert.Null(fehler);
-            return d.ToList();
+            return d.Select(x => x with { Inhalt = AufCrLf(x.Inhalt) }).ToList();
         }
+
+        private static string AufCrLf(string text) => text == null ? text : Regex.Replace(text, "\r\n|\r|\n", "\r\n");
 
         /// <summary>Das Paket mit einer Datei, deren Text <paramref name="aendern"/> umschreibt.</summary>
         private static List<TwwPaketdatei> PaketMit(string tabelle, Func<string, string> aendern)
             => Paket().Select(d => string.Equals(d.Name, tabelle + ".csv", StringComparison.OrdinalIgnoreCase)
                                    ? d with { Inhalt = aendern(d.Inhalt) } : d).ToList();
+
+        /// <summary>
+        /// Das Paket mit dem Zeilenende des Falls in jeder Datei: <c>LF</c> (Linux, macOS, iOS),
+        /// <c>CRLF</c> (Windows), <c>CR</c> (älteres Excel für Mac) oder <c>gemischt</c> (reihum CRLF,
+        /// LF, CR). Auch ein Umbruch in einem Feld in Anführungszeichen bekommt es — so schreibt ihn ein
+        /// Editor, so checkt ihn Git aus.
+        /// </summary>
+        private static List<TwwPaketdatei> MitZeilenende(IEnumerable<TwwPaketdatei> paket, string zeilenende)
+        {
+            string[] enden;
+            switch (zeilenende)
+            {
+                case "LF": enden = new[] { "\n" }; break;
+                case "CRLF": enden = new[] { "\r\n" }; break;
+                case "CR": enden = new[] { "\r" }; break;
+                default: enden = new[] { "\r\n", "\n", "\r" }; break;
+            }
+            return paket.Select(d =>
+            {
+                string[] z = Regex.Split(d.Inhalt, "\r\n|\r|\n");
+                var s = new StringBuilder(z[0]);
+                for (int i = 1; i < z.Length; i++) s.Append(enden[(i - 1) % enden.Length]).Append(z[i]);
+                return d with { Inhalt = s.ToString() };
+            }).ToList();
+        }
 
         private static long Zahl(string sql, params DbParam[] p)
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql, p) ?? 0L, CultureInfo.InvariantCulture);
@@ -417,24 +449,73 @@ namespace EPOS.Kern.Tests
             finally { try { File.Delete(zip); } catch { } }
         }
 
-        [Fact]
-        public void Komma_als_Trenner_und_Felder_in_Anfuehrungszeichen_nach_RFC_4180()
+        /// <summary>
+        /// Komma als Trenner, Felder in Anführungszeichen mit Trenner, Anführungszeichen und
+        /// Zeilenumbruch — mit jedem Zeilenende. Der Umbruch im Feld kommt als LF an, gleich woher das
+        /// Paket stammt; bei CR allein stünde sonst das ganze Paket in der Kopfzeile, und das „;" im
+        /// Bezeichner wählte den falschen Trenner.
+        /// </summary>
+        [Theory]
+        [InlineData("LF")]
+        [InlineData("CRLF")]
+        [InlineData("CR")]
+        public void Komma_als_Trenner_und_Felder_in_Anfuehrungszeichen_nach_RFC_4180(string zeilenende)
         {
             using var db = new TwwTestdatenbank();
             const string NAME = "Probe; \"zitiert\" (erfunden)";
-            List<TwwPaketdatei> p = Paket().Select(d =>
+            const string QUELLE = "Probepaket\n(erfunden)";
+            List<TwwPaketdatei> p = MitZeilenende(Paket().Select(d =>
             {
-                // Aus „;" wird „,"; der Bezeichner mit Trenner und Anführungszeichen steht in Anführungszeichen.
+                // Aus „;" wird „,"; der Bezeichner mit Trenner und Anführungszeichen steht in Anführungszeichen,
+                // die Quelle des Bedarfs mit dem Zeilenumbruch auch.
                 string t = d.Inhalt.Replace(";", ",");
                 if (d.Name.StartsWith(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, StringComparison.Ordinal))
-                    t = t.Replace("10," + A + ",", "10,\"" + NAME.Replace("\"", "\"\"") + "\",");
+                    t = t.Replace("10," + A + ",PROBE-1,1,1,2,3,1.5,2.5,Probepaket (erfunden),",
+                                  "10,\"" + NAME.Replace("\"", "\"\"") + "\",PROBE-1,1,1,2,3,1.5,2.5,\"" + QUELLE + "\",");
                 return d with { Inhalt = t };
-            }).ToList();
+            }), zeilenende);
 
             TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
             Assert.Null(b.Abbruch);
             Assert.Equal(new[] { NAME, B }, b.Zeilen.Select(z => z.Katalogname).ToArray());
             Assert.Equal(NAME, TwwNutzungsartCtrl.Lies(b.NeueIds[0]).Name);
+            Assert.Equal(QUELLE, Zeile(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, b.NeueIds[0])["Bedarf_Quelle"]);
+        }
+
+        /// <summary>
+        /// Ein Paket aus Windows (CRLF), aus Linux, macOS oder iOS (LF), aus einem älteren Excel für Mac
+        /// (CR) oder mit gemischten Zeilenenden liest sich gleich: dieselben Nutzungsarten mit denselben
+        /// Werten, dieselben Zeilen im Bericht und beim Formfehler; ein zweiter Import mit anderem
+        /// Zeilenende findet alles gleich vorhanden.
+        /// </summary>
+        [Theory]
+        [InlineData("LF")]
+        [InlineData("CRLF")]
+        [InlineData("CR")]
+        [InlineData("gemischt")]
+        public void Jedes_Zeilenende_liest_dasselbe_Paket(string zeilenende)
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(MitZeilenende(Paket(), zeilenende));
+            Assert.Null(b.Abbruch);
+            Assert.Empty(b.Hinweise);
+            Assert.Equal(new[] { A, B }, b.Zeilen.Select(z => z.Katalogname).ToArray());
+            Assert.Equal(new[] { 2, 3 }, b.Zeilen.Select(z => z.Zeile).ToArray());
+            Nutzungsart na = TwwNutzungsartCtrl.Lies(b.NeueIds[0]);
+            Assert.Equal(new[] { 1.0, 2.0, 3.0 }, na.BedarfJeNiveauKwhJeEinheitTag);
+            Assert.True(na.Tagesgaenge.Vollstaendig);
+            Assert.Equal(0.5, na.Tagesgaenge.Anteile[3, 19]);
+            Assert.Equal(new[] { "Kurz (erfunden)", "Lang (erfunden)" },
+                         TwwNutzungsartCtrl.KategorienLesen(b.NeueIds[0]).Kategorien.Select(k => k.Name).ToArray());
+            Assert.Equal(20.0, Assert.Single(TwwNutzungsartCtrl.KategorienLesen(b.NeueIds[1]).Kategorien).KappungLJeMin);
+
+            TwwKatalogimportBericht zweit = TwwNutzungsartCtrl.Importieren(MitZeilenende(Paket(), zeilenende == "CRLF" ? "LF" : "CRLF"));
+            Assert.All(zweit.Zeilen, z => Assert.Equal("KATALOGIMPORT_GLEICH_VORHANDEN", z.Grund?.Kennung));
+
+            ZapfSatz abbruch = TwwNutzungsartCtrl.Importieren(MitZeilenende(
+                PaketMit(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, t => t.Replace("\r\n11;", "\r\n10;")), zeilenende)).Abbruch;
+            Assert.Equal("KATALOGIMPORT_ID_DOPPELT", abbruch?.Kennung);
+            Assert.Equal(3, abbruch.Werte[1]);
         }
 
         [Fact]

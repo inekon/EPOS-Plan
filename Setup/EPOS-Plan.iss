@@ -211,8 +211,8 @@ english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed
 ; Die Uebernahme-Seite (UebernahmeTitel/Kopf/Text) und die drei ACE-Meldungen
 ; (AceInstallieren, Office32Hinweis, AceFehlt) sind mit dem Anwenderentscheid
 ; #157-E-1 (Weg W3, 09.09.2026) ENTFALLEN: Access wurde beim Kunden nie
-; produktiv eingesetzt, die Uebernahme eines Altbestands ist ein Hauswerkzeug
-; (EposSqliteMigrator) und kein Kundenweg. Das Setup liefert stattdessen
+; produktiv eingesetzt, die Uebernahme eines Altbestands war danach ein Hauswerkzeug
+; (EposSqliteMigrator) und ist seit dem 24.09.2026 eingestellt. Das Setup liefert stattdessen
 ; {app}\Vorlage\Kenndaten.sqlite aus.
 
 ; Seit Auftrag #161 (09.09.2026): Die Rückfrage zeigt den tatsächlichen, seit

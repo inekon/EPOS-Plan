@@ -103,18 +103,18 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             // Die Messlatte traegt die Tabelle des Schritts 107 und dahinter die vier Spalten des
-            // Schritts 125 (SQLite schreibt ein ADD COLUMN in den gespeicherten Text).
+            // Schritts 128 (SQLite schreibt ein ADD COLUMN in den gespeicherten Text).
             string soll = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@n", ErgebnisGebaeudeSchema.TAB)));
             string kopf107 = ErgebnisGebaeudeSchema.SQL_CREATE.Replace("CREATE TABLE IF NOT EXISTS", "CREATE TABLE");
             kopf107 = kopf107.Substring(0, kopf107.LastIndexOf("\n) STRICT", StringComparison.Ordinal));
             Assert.StartsWith(kopf107, soll, StringComparison.Ordinal);
             Assert.EndsWith(") STRICT", soll, StringComparison.Ordinal);
-            Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= 125);
+            Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS);
             Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
             Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_HEIZKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
-            // Vorzustand herstellen, Schritt 107 fahren, zweimal - dann Schritt 125, zweimal.
+            // Vorzustand herstellen, Schritt 107 fahren, zweimal - dann Schritt 128, zweimal.
             DataRepository.ExecuteNonQuery("DROP TABLE " + ErgebnisGebaeudeSchema.TAB);
             Assert.False(ErgebnisGebaeudeSchema.Vorhanden());
             Assert.False(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
@@ -135,12 +135,43 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Schritt 125 — der Heizkreis je Gebäude</b> (Anlagenkopplung AK1 Welle 3): vier
+        /// <b>Die Nummer steht an EINER Stelle</b> (<see cref="ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS"/>):
+        /// Migration, Werkzeug und Nachzieh-Liste der Testkopie bedienen sich aus derselben Quelle,
+        /// der Schritt steht in der Migration NACH 127 (Risikomodul 125, Katalogreparatur 126,
+        /// Wirkungen 127 waren beim Merge belegt), und der Zielstand reicht bis zu ihm.
+        /// </summary>
+        [Fact]
+        public void Schritt_128_steht_nach_127_in_Migration_Werkzeug_und_Testkopie()
+        {
+            Assert.Equal(128, ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS);
+            Assert.True(SchemaStand.Zielversion >= ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS);
+            Assert.True(ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS > ProjektWirkungSchema.SCHRITT);
+
+            string wurzel = null;
+            for (DirectoryInfo d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
+                if (File.Exists(Path.Combine(d.FullName, "WP-Plan.sln"))) { wurzel = d.FullName; break; }
+            if (wurzel == null) return;
+
+            string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
+                                                             "Update", "SchemaMigration.cs"));
+            Assert.Contains("SCHRITT_128_ERGEBNIS_HEIZKREIS = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS", migration);
+            int ort127 = migration.IndexOf("new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN", StringComparison.Ordinal);
+            int ort128 = migration.IndexOf("new Schritt(SCHRITT_128_ERGEBNIS_HEIZKREIS", StringComparison.Ordinal);
+            Assert.True(ort127 > 0 && ort128 > ort127, "Der Schritt 128 steht nicht nach 127.");
+
+            string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
+            Assert.Contains("ErgebnisGebaeudeSchema.HeizkreisAlle(", werkzeug);
+            string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
+            Assert.Contains("ErgebnisGebaeudeSchema.HeizkreisAlle(null)", vorrichtung);
+        }
+
+        /// <summary>
+        /// <b>Schritt 128 — der Heizkreis je Gebäude</b> (Anlagenkopplung AK1 Welle 3): vier
         /// nullbare Spalten, die Prüfungen der Übergabeart und der Stunden, und NULL heißt „nicht
         /// gekoppelt gerechnet" — eine Zeile ohne Kopplung bleibt, wie sie war.
         /// </summary>
         [Fact]
-        public void Schritt_125_haengt_den_Heizkreis_an_und_prueft_Art_und_Stunden()
+        public void Schritt_128_haengt_den_Heizkreis_an_und_prueft_Art_und_Stunden()
         {
             using SqliteConnection c = Leer();
             Anlegen(c);
@@ -226,7 +257,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(vdi.Ueberhitzungsstunden, Convert.ToInt32(r["Ueberhitzungsstunden_H"]));
                 Assert.Equal(vdi.StundenMitSommerlueftung, Convert.ToInt32(r["Sommerlueftungsstunden_H"]));
                 Assert.Equal(vdi.ThetaMax, (double)r["ObereRaumtemperatur_C"]);
-                // Schritt 125: ohne Kopplung tragen die vier Spalten des Heizkreises NULL.
+                // Schritt 128: ohne Kopplung tragen die vier Spalten des Heizkreises NULL.
                 Assert.Null(vdi.Heizkreis);
                 Assert.False(m.IstGekoppelt);
                 foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)

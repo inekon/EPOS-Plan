@@ -103,10 +103,10 @@ namespace WindowsFormsApplication1
         // Programm gerade arbeitet" - und duerfen dafuer auf nichts anderes umgebogen
         // werden.
         //
-        // EIN ACCESS-GEGENSTUECK GIBT ES NICHT MEHR. Einen Altbestand hebt allein das
-        // Hauswerkzeug EposSqliteMigrator (eigene Projektmappe); auf den Freeze-Stand 61
-        // bringt ihn zuvor die letzte Access-Fassung von EPOS-Plan (Git-Zweig
-        // version_august_2026). Siehe BETRIEB_SQLITE.md 1.1 und 7.
+        // EIN ACCESS-GEGENSTUECK GIBT ES NICHT MEHR, und auch keine Uebernahme eines
+        // Access-Altbestands: Das Hauswerkzeug EposSqliteMigrator ist am 13.09.2026 aus dem
+        // Repository entfernt, die Uebernahme aus Access am 24.09.2026 eingestellt.
+        // Siehe BETRIEB_SQLITE.md 1.1 und 7.
         // =========================================================================
 
         /// <summary>Name der Markerspalte in Tab_Applikation.</summary>

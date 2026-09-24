@@ -104,6 +104,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite: Zeitraum und Haken.
         new("KapitalwertVerlaufAbschnitt",    "WirtschaftlichkeitSeite",     KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE),
 
+        // ETAPPE E17 (V-G11): die Liste der nicht monetarisierbaren Wirkungen im Bewertungsblock -
+        // Spalten wirkung_* der Maske Wirtschaftlichkeitsseite.
+        new("WirkungenListe",                 "WirtschaftlichkeitSeite",     KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE),
+
         // Welle #465: Hülle, Fenster, Kenngrößen und „Alle Daten" des Gebäude-Stammblatts -
         // die Felder des Katalogeditors; die Verwaltung meldet sie als Form_Gebaeude_Admin an.
         new("GebaeudeStammblattFelder",       "GebaeudeAdminDialog",         KiMaskennamen.GEBAEUDE_ADMIN)
@@ -132,7 +136,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Betrachtungszeitraum und Mengenänderung je Best/Worst, vier Eingabestellen —, und
         // die Feldkarte (KiDialoge, Maske Form_WirtschaftlichkeitParameter) führt sie mit
         // (best_zeitraum, worst_zeitraum, best_menge, worst_menge): 26 → 30.
-        new("WirtschaftlichkeitParameterDialog", 30),
+        // ETAPPE E15 (V-G7): die Gruppe „Risiko" - Art, Zinszuschlag, R_loss und p_loss,
+        // vier Eingabestellen, die Feldkarte führt sie mit (risiko_art,
+        // risiko_zinszuschlag, risiko_verlust, risiko_wahrscheinlichkeit): 30 → 34.
+        new("WirtschaftlichkeitParameterDialog", 34),
         // ---- Ende ETAPPE E9b ----
 
         // ---- ETAPPE E10 (Nutzungsdauer Stufe S3) ----
@@ -142,6 +149,16 @@ public sealed class KiMaskenabdeckungWacheTests
         // neue_wartung, die Spalten instandsetzung und wartung (8 -> 12).
         new("NutzungsdauerDialog", 12),
         // ---- Ende ETAPPE E10 ----
+
+        // ---- ETAPPE E17 (V-G11, nicht monetarisierbare Wirkungen) ----
+        // Der Freitext der Seite (ein mehrzeiliges Textfeld) weicht der Liste im Baustein
+        // WirkungenListe: je Zeile Kategorie, Beschreibung, Dauer und drei Wirkungsgrade -
+        // sechs Eingabestellen im Markup. Die Feldkarte (KiDialoge, Maske
+        // Wirtschaftlichkeitsseite) fuehrt sie als Spalten wirkung_kategorie ...
+        // wirkung_umwelt, dazu wirkung_anzahl und die Anzeige wirkung_beurteilung
+        // (WirtschaftlichkeitSeite 9 -> 8).
+        new("WirkungenListe", 6),
+        // ---- Ende ETAPPE E17 ----
 
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
@@ -238,7 +255,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
-        new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
+        new("WirtschaftlichkeitSeite", 8, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
             "Stand und Szenario der Zahlungsreihen (Block 2, ETAPPE E8a) führt die Feldkarte als Anzeigewahlen"),
         // Zapfprofil Z4, Gruppe 2b: der Kategorien-Editor (Katalogversion und sechs Spalten des Rasters)
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).

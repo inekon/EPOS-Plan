@@ -47,6 +47,22 @@ namespace WindowsFormsApplication1
         /// <summary>Preissteigerung Investition/Ersatz p_I als Dezimalzahl (wirksam).</summary>
         internal const string PREIS_I = "p_I";
 
+        /// <summary>ETAPPE E15 — mit Zinszuschlag: der Kalkulationszins OHNE Risiko; der Name
+        /// <see cref="ZINS"/> trägt dann die Summe Basis + Zuschlag.</summary>
+        internal const string ZINS_BASIS = "Zins_Basis";
+
+        /// <summary>ETAPPE E15 — der Risikozuschlag auf den Zins als Dezimalzahl.</summary>
+        internal const string RISIKO_ZUSCHLAG = "Risiko_Zuschlag";
+
+        /// <summary>ETAPPE E15 — die Rückflusseinbuße R_loss [€ je Periode].</summary>
+        internal const string RISIKO_VERLUST = "Risiko_Verlust";
+
+        /// <summary>ETAPPE E15 — die Eintrittswahrscheinlichkeit p_loss als Dezimalzahl.</summary>
+        internal const string RISIKO_P = "Risiko_p";
+
+        /// <summary>ETAPPE E15 — der Risikoabzug je Periode [€] = R_loss × p_loss.</summary>
+        internal const string RISIKO_ABZUG = "Risiko_Abzug";
+
         /// <summary>Anhang der Namen für die Spalten der beiden anderen Szenarien.</summary>
         internal const string ANHANG_GUENSTIG = "_Guenstig";
 
@@ -87,6 +103,23 @@ namespace WindowsFormsApplication1
         internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
                                            IEnumerable<VariantenDaten> staende)
         {
+            return Parameterblock(ws, r, p, staende, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E15 (V‑G7) — derselbe Parameterblock mit den <b>Risikozeilen</b>, nur wenn ein
+        /// Risiko gepflegt ist (<see cref="RisikoModul.Gepflegt"/>): beim Zinszuschlag heißt die
+        /// Zeile „Kalkulationszins" <see cref="ZINS_BASIS"/>, darunter stehen der Zuschlag
+        /// (<see cref="RISIKO_ZUSCHLAG"/>) und der Zins mit Zuschlag als Formel — er trägt den
+        /// Namen <see cref="ZINS"/>, auf den jede Barwertformel der Mappe zeigt. Beim Abzug
+        /// folgen R_loss, p_loss und der Abzug je Periode als Formel
+        /// (<see cref="RISIKO_ABZUG"/>). Ohne Risiko ist der Block Zelle für Zelle der von vorher.
+        /// </summary>
+        /// <param name="register">Das Formelregister der Mappe; <c>null</c> = die Risikoformeln
+        /// werden ohne zwischengespeicherten Wert geschrieben (Excel rechnet beim Öffnen).</param>
+        internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
+                                           IEnumerable<VariantenDaten> staende, Formelregister register)
+        {
             SzenarioSatz best = p.SatzFuer(WirtschaftlichkeitSzenario.BEST)
                                 ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
             SzenarioSatz worst = p.SatzFuer(WirtschaftlichkeitSzenario.WORST)
@@ -104,10 +137,32 @@ namespace WindowsFormsApplication1
             // Die Sätze als Dezimalzahl — derselbe Ausdruck „Prozent / 100", mit dem der
             // Rechenkern sie liest (KapitalwertRechner.Rechne); eine Formel auf diese Zelle
             // rechnet deshalb mit dem Bit, mit dem der Lauf gerechnet hat.
-            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZINS, ZINS, FORMAT_SATZ,
+            bool zinsRisiko = RisikoModul.ZinsAktiv(p);
+            int zeileZins = r;
+            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZINS, zinsRisiko ? ZINS_BASIS : ZINS, FORMAT_SATZ,
                       p.Zinssatz / 100.0,
                       best.ZinsWirksam(p.Zinssatz) / 100.0,
                       worst.ZinsWirksam(p.Zinssatz) / 100.0);
+            if (zinsRisiko)
+            {
+                // ETAPPE E15 (V‑G7, 6.5): Zuschlag und Zins mit Zuschlag — in allen drei
+                // Szenarien derselbe Zuschlag (E15‑Q1 a). Die Summe trägt den Namen Zins_i, damit
+                // jede Barwertformel der Mappe unverändert auf den gerechneten Zins zeigt; ihre
+                // Werte sind die Zinssätze, mit denen der Lauf gerechnet hat (FuerSzenario).
+                double zuschlag = RisikoModul.Zinszuschlag(p) / 100.0;
+                int zeileZuschlag = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_ZUSCHLAG, RISIKO_ZUSCHLAG, FORMAT_SATZ,
+                          zuschlag, zuschlag, zuschlag);
+                Satzzeile(ws, r, MyResource.Resource.WIRT_FM_PARAM_ZINS_RISIKO, ZINS, FORMAT_SATZ,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.ERWARTET).Zinssatz / 100.0,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.BEST).Zinssatz / 100.0,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.WORST).Zinssatz / 100.0);
+                for (int c = 2; c <= 4; c++)
+                    Parameterformel(ws.Cell(r, c), Bezug(zeileZins, c) + "+" + Bezug(zeileZuschlag, c),
+                                    ws.Cell(zeileZins, c).GetDouble() + ws.Cell(zeileZuschlag, c).GetDouble(),
+                                    register);
+                r++;
+            }
             // ETAPPE E9a (Schritt B): der Zeitraum JE SZENARIO — ohne Pflege dreimal T.
             Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZEITRAUM, ZEITRAUM, "0",
                       p.Betrachtungszeitraum,
@@ -148,6 +203,27 @@ namespace WindowsFormsApplication1
                       p.EinspeiseverguetungKWK ?? 0.0,
                       best.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0,
                       worst.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0);
+
+            // ETAPPE E15 (V‑G7, Anhang F): der Zahlungsstromabzug — R_loss, p_loss und der Abzug
+            // je Periode als Formel; in allen drei Szenarien gleich (E15‑Q1 a).
+            if (RisikoModul.AbzugAktiv(p))
+            {
+                double verlust = p.RisikoVerlust.Value;
+                double wahrsch = RisikoModul.Wahrscheinlichkeit(p) / 100.0;
+                int zeileVerlust = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_VERLUST, RISIKO_VERLUST, "#,##0",
+                          verlust, verlust, verlust);
+                int zeileP = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_P, RISIKO_P, FORMAT_SATZ,
+                          wahrsch, wahrsch, wahrsch);
+                double abzug = RisikoModul.AbzugJeJahr(p);
+                Satzzeile(ws, r, MyResource.Resource.WIRT_FM_PARAM_RISIKO_ABZUG, RISIKO_ABZUG, "#,##0.00",
+                          abzug, abzug, abzug);
+                for (int c = 2; c <= 4; c++)
+                    Parameterformel(ws.Cell(r, c), Bezug(zeileVerlust, c) + "*" + Bezug(zeileP, c),
+                                    verlust * wahrsch, register);
+                r++;
+            }
 
             // ETAPPE E9a (Schritt C): gepflegte Trägerpreise — je Stand, Träger und Preisart
             // eine Zeile mit den wirksamen Preisen der drei Szenarien.
@@ -196,6 +272,19 @@ namespace WindowsFormsApplication1
                               le ?? 0.0, lb ?? 0.0, lw ?? 0.0);
             }
             return r;
+        }
+
+        /// <summary>
+        /// ETAPPE E15 — eine Formel im Parameterblock: über das Register, wenn es eines gibt
+        /// (dann trägt die Zelle Formel UND den Wert, der dort stand); sonst bleibt der Wert
+        /// stehen, und die Formel kommt dazu.
+        /// </summary>
+        private static void Parameterformel(IXLCell zelle, string formel, double nachgerechnet,
+                                            Formelregister register)
+        {
+            double wert = zelle.GetDouble();
+            if (register != null) register.Formel(zelle, formel, wert, nachgerechnet);
+            else zelle.FormulaA1 = formel;
         }
 
         /// <summary>Eine Zeile des Parameterblocks: Bezeichnung, Erwartet, Günstig,
@@ -263,23 +352,32 @@ namespace WindowsFormsApplication1
         /// (<see cref="Formelregister.Abweichungen"/>).</para>
         /// </summary>
         /// <param name="kopfZeile">Die Zeile der Spaltenköpfe (Jahr 0 steht darunter).</param>
-        /// <param name="p">Der Parametersatz des Laufs — derselbe, aus dem der
-        /// Parameterblock steht und mit dem die Tabelle gerechnet wurde.</param>
+        /// <param name="ps">Der Parametersatz DES SZENARIOS — derselbe, mit dem der Lauf die
+        /// Tabelle gerechnet hat (<see cref="WirtschaftlichkeitParameter.FuerSzenario"/>; für
+        /// „Erwartet" der Projektsatz selbst) und dessen Spalte der Parameterblock trägt.</param>
+        /// <param name="szenario">Das Szenario der Tabelle; es wählt die Namen der Formeln
+        /// (<see cref="Name"/>: Erwartet ohne Anhang, Günstig/Ungünstig mit).</param>
+        /// <param name="jahreTabelle">ETAPPE E14 (E14‑Q1 a): die Zahl der Jahreszeilen — der
+        /// längste Betrachtungszeitraum der drei Szenarien. Jahre jenseits von T_s tragen in
+        /// den Summenspalten nur die Schutzformel <c>IF(Jahr&lt;=T_s;…;"")</c>.</param>
         /// <returns>Die Lage der Tabelle; <c>null</c>, wenn es kein Zahlungsbild gibt.</returns>
         internal static MehrjahresTafel Mehrjahrestabelle(IXLWorksheet ws, int kopfZeile,
-            int idProjekt, Mehrjahresbild bild, VerlaufSerie serie, WirtschaftlichkeitParameter p,
-            Formelregister register)
+            int idProjekt, Mehrjahresbild bild, VerlaufSerie serie, WirtschaftlichkeitParameter ps,
+            string szenario, int jahreTabelle, Formelregister register)
         {
             KapitalwertRechner.Zahlungsbild zb = serie != null ? serie.Bild : null;
-            if (ws == null || bild == null || zb == null || p == null || register == null) return null;
+            if (ws == null || bild == null || zb == null || ps == null || register == null) return null;
 
+            int zeilenJahre = Math.Max(bild.Jahre, jahreTabelle);
             var tafel = new MehrjahresTafel
             {
                 IdProjekt = idProjekt,
+                Szenario = szenario ?? WirtschaftlichkeitSzenario.ERWARTET,
                 KopfZeile = kopfZeile,
                 Jahr0Zeile = kopfZeile + 1,
                 Jahre = bild.Jahre,
-                AbschlussZeile = kopfZeile + 1 + bild.Jahre + 1,
+                JahreTabelle = zeilenJahre,
+                AbschlussZeile = kopfZeile + 1 + zeilenJahre + 1,
                 Tabelle = bild,
                 Bild = zb,
                 SpalteNetto = SpalteVon(bild, "NETTO"),
@@ -291,13 +389,29 @@ namespace WindowsFormsApplication1
             if (tafel.SpalteNetto < 0 || tafel.SpalteBarwert < 0 || tafel.SpalteKumuliert < 0 || T < 1)
                 return tafel;
 
-            double i = p.Zinssatz / 100.0;
-            double pE = p.PreissteigerungEnergie / 100.0;
-            double pB = p.PreissteigerungBetrieb / 100.0;
+            double i = ps.Zinssatz / 100.0;
+            double pE = ps.PreissteigerungEnergie / 100.0;
+            double pB = ps.PreissteigerungBetrieb / 100.0;
+
+            // ETAPPE E14: die Namen DES SZENARIOS — Erwartet „Zins_i", Günstig „Zins_i_Guenstig" …
+            string zins = Name(ZINS, tafel.Szenario);
+            string nameE = Name(PREIS_E, tafel.Szenario);
+            string nameB = Name(PREIS_B, tafel.Szenario);
+            string zeitraum = Name(ZEITRAUM, tafel.Szenario);
+
+            // ---- ETAPPE E15 (V‑G7, Anhang F): der Risikoabzug als Bezug auf den Parameterblock ----
+            int cRisiko = SpalteVon(bild, Mehrjahresbild.RISIKO);
+            if (cRisiko > 0 && zb.RisikoJeJahr != null)
+            {
+                MehrjahresSpalte risiko = bild.Spalten[cRisiko - 2];
+                for (int t = 1; t <= T; t++)
+                    register.Formel(ws.Cell(tafel.Zeile(t), cRisiko), "-" + Name(RISIKO_ABZUG, tafel.Szenario),
+                                    risiko.Wert(t), -RisikoModul.AbzugJeJahr(ps));
+            }
 
             // ---- Energie und CO₂-Abgabe (Rückfallzweig): Fortschreibung ab Jahr 2 ----
-            Fortschreibung(ws, tafel, bild, "ENERGIE", pE, register);
-            if (zb.BehgFortgeschrieben) Fortschreibung(ws, tafel, bild, "BEHG", pE, register);
+            Fortschreibung(ws, tafel, bild, "ENERGIE", nameE, pE, register);
+            if (zb.BehgFortgeschrieben) Fortschreibung(ws, tafel, bild, "BEHG", nameE, pE, register);
 
             // ---- Betrieb als zwei Terme über Hilfsspalten ----
             int cBetrieb = SpalteVon(bild, "BETRIEB");
@@ -321,9 +435,9 @@ namespace WindowsFormsApplication1
 
                     string jahr = Bezug(r, 1);
                     string formel = hE > 0
-                        ? "-(" + Bezug(r, hB) + "*(1+" + PREIS_B + ")^(" + jahr + "-1)+" +
-                          Bezug(r, hE) + "*(1+" + PREIS_E + ")^(" + jahr + "-1))"
-                        : "-" + Bezug(r, hB) + "*(1+" + PREIS_B + ")^(" + jahr + "-1)";
+                        ? "-(" + Bezug(r, hB) + "*(1+" + nameB + ")^(" + jahr + "-1)+" +
+                          Bezug(r, hE) + "*(1+" + nameE + ")^(" + jahr + "-1))"
+                        : "-" + Bezug(r, hB) + "*(1+" + nameB + ")^(" + jahr + "-1)";
                     double nach = -(zb.BetriebBasisJeJahr[t] * Math.Pow(1.0 + pB, t - 1) +
                                     (hE > 0 ? zb.EndenergieBasisJeJahr[t] * Math.Pow(1.0 + pE, t - 1) : 0.0));
                     register.Formel(ws.Cell(r, cBetrieb), formel, betrieb.Wert(t), nach);
@@ -348,7 +462,7 @@ namespace WindowsFormsApplication1
 
                 double barwertNach = netto.Wert(t) * Math.Pow(1.0 + i, -t);
                 register.Formel(ws.Cell(r, tafel.SpalteBarwert),
-                    Bezug(r, tafel.SpalteNetto) + "*(1+" + ZINS + ")^(-" + Bezug(r, 1) + ")",
+                    Bezug(r, tafel.SpalteNetto) + "*(1+" + zins + ")^(-" + Bezug(r, 1) + ")",
                     barwert.Wert(t), barwertNach);
 
                 kum = t == 0 ? barwert.Wert(0) : kum + barwert.Wert(t);
@@ -358,13 +472,31 @@ namespace WindowsFormsApplication1
                     kumuliert.Wert(t), kum);
             }
 
+            // ---- ETAPPE E14 (E14‑Q1 a): Jahre jenseits von T_s — die Schutzformel ----
+            // Die Tabelle läuft bis zum längsten Zeitraum der drei Szenarien; ein Szenario mit
+            // kürzerem T_s trägt dort keine Zahlung. Die Summenspalten bekommen dieselbe Formel
+            // wie in den Jahren davor, eingefasst in IF(Jahr<=T_s;…;"") — ihr Ergebnis ist leer.
+            for (int t = T + 1; t <= tafel.JahreTabelle; t++)
+            {
+                int r = tafel.Zeile(t);
+                string bedingung = Bezug(r, 1) + "<=" + zeitraum;
+                if (letztePosition >= 2)
+                    register.FormelText(ws.Cell(r, tafel.SpalteNetto),
+                        Schutz(bedingung, "SUM(" + Bezug(r, 2) + ":" + Bezug(r, letztePosition) + ")"), "");
+                register.FormelText(ws.Cell(r, tafel.SpalteBarwert),
+                    Schutz(bedingung, Bezug(r, tafel.SpalteNetto) + "*(1+" + zins + ")^(-" + Bezug(r, 1) + ")"), "");
+                register.FormelText(ws.Cell(r, tafel.SpalteKumuliert),
+                    Schutz(bedingung, Bezug(r - 1, tafel.SpalteKumuliert) + "+" + Bezug(r, tafel.SpalteBarwert)), "");
+            }
+
             // ---- Abschlusszeile: nominaler Restwert, sein Barwert, der Nettobarwert ----
+            // Der Restwert steht am Ende von T_s (E9a‑Q4 a) — abgezinst über das Jahr T_s.
             int rA = tafel.AbschlussZeile;
             Zahl(ws.Cell(rA, tafel.SpalteNetto), zb.RestwertNominal);
             ws.Cell(rA, tafel.SpalteNetto).Style.Font.Bold = true;
             ws.Cell(rA, tafel.SpalteNetto).Style.Fill.BackgroundColor = ExcelBerichtGenerator.STAMM;
             register.Formel(ws.Cell(rA, tafel.SpalteBarwert),
-                Bezug(rA, tafel.SpalteNetto) + "*(1+" + ZINS + ")^(-" + Bezug(tafel.Zeile(T), 1) + ")",
+                Bezug(rA, tafel.SpalteNetto) + "*(1+" + zins + ")^(-" + Bezug(tafel.Zeile(T), 1) + ")",
                 bild.RestwertBarwert, zb.RestwertNominal * Math.Pow(1.0 + i, -T));
             register.Formel(ws.Cell(rA, tafel.SpalteKumuliert),
                 Bezug(tafel.Zeile(T), tafel.SpalteKumuliert) + "+" + Bezug(rA, tafel.SpalteBarwert),
@@ -373,11 +505,14 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        //  Stufe 2 — die Kennzahlen des Szenarios „Erwartet"
+        //  Stufe 2 — die Kennzahlen je Szenario
         // =====================================================================
 
         /// <summary>
-        /// Stufe 2 (Konzept § 2.11.6): die Kennzahlen des Szenarios „Erwartet" in Formeln.
+        /// Stufe 2 (Konzept § 2.11.6): die Kennzahlen EINES Szenarios in Formeln — auf die
+        /// Mehrjahrestabellen desselben Szenarios und mit den Namen seiner Spalte im
+        /// Parameterblock (ETAPPE E14: für Erwartet, Günstig und Ungünstig; E14‑Q2 a ersetzt
+        /// E8b‑Q1 a „Werte").
         ///
         /// <list type="bullet">
         ///   <item><description><b>Nettobarwert</b> je Stand über NBW (Excel: <c>NPV</c>) auf
@@ -397,19 +532,24 @@ namespace WindowsFormsApplication1
         /// <para><b>Nur wo die Formel dieselbe Zahl liefert:</b> Jede Kennzahl wird in C#
         /// gegengerechnet (dieselben Rechenkern-Methoden wie der Lauf: Differenzreihe,
         /// Vorzeichenzähler, Zinsfuß, Amortisation). Ein mehrdeutiger Zinsfuß (mehr als ein
-        /// Vorzeichenwechsel) bleibt ein Wert — die Zinsfußgleichung hat dann mehrere
-        /// Lösungen, und welche Excel fände, ist nicht die, die der Bericht nennt. Die
-        /// Szenarien „Günstig" und „Ungünstig" haben keine Mehrjahrestabelle; ihre Kennzahlen
-        /// bleiben Werte.</para>
+        /// Vorzeichenwechsel) trägt als Ergebnis den Text „nicht eindeutig" (E14‑Q3 a) — die
+        /// Zinsfußgleichung hat dann mehrere Lösungen, und welche Excel fände, ist nicht die,
+        /// die der Bericht nennt; die Zahl der Wechsel zählt die Hilfsspalte der
+        /// Differenzreihe.</para>
         /// </summary>
+        /// <param name="ps">Der Parametersatz des Szenarios (<see cref="WirtschaftlichkeitParameter.FuerSzenario"/>):
+        /// i und T_s, mit denen der Lauf Kapitalwert und Annuität gerechnet hat.</param>
         internal static void Kennzahlen(IXLWorksheet ws, KennzahlBlock block, List<MehrjahresTafel> tafeln,
             WirtschaftlichkeitVerlauf verlauf, List<WirtschaftlichkeitErgebnis> alle,
-            WirtschaftlichkeitParameter p, Formelregister register)
+            WirtschaftlichkeitParameter ps, string szenario, Formelregister register)
         {
             if (ws == null || block == null || tafeln == null || verlauf == null || alle == null ||
-                p == null || register == null) return;
-            double i = p.Zinssatz / 100.0;
-            int T = p.Betrachtungszeitraum;
+                ps == null || register == null) return;
+            szenario = szenario ?? WirtschaftlichkeitSzenario.ERWARTET;
+            double i = ps.Zinssatz / 100.0;
+            int T = ps.Betrachtungszeitraum;
+            string zins = Name(ZINS, szenario);
+            string zeitraum = Name(ZEITRAUM, szenario);
 
             // ---- Nettobarwert je Stand über NPV ----
             bool mitNbw = block.Zeilen.TryGetValue("NETTOBARWERT", out int zNbw);
@@ -417,7 +557,7 @@ namespace WindowsFormsApplication1
                 foreach (MehrjahresTafel tafel in tafeln)
                 {
                     int c;
-                    WirtschaftlichkeitErgebnis e = Erwartet(alle, tafel.IdProjekt);
+                    WirtschaftlichkeitErgebnis e = Ergebnis(alle, tafel.IdProjekt, szenario);
                     if (!tafel.Vollstaendig || tafel.Jahre != T || e == null || !e.Kapitalwert.HasValue ||
                         !block.Spalten.TryGetValue(tafel.IdProjekt, out c)) continue;
 
@@ -426,7 +566,7 @@ namespace WindowsFormsApplication1
                     double npv = 0;
                     for (int t = 1; t <= T; t++) npv += netto.Wert(t) / Math.Pow(1.0 + i, t);
                     nach += npv;
-                    string formel = "NPV(" + ZINS + "," + Bezug(tafel.Zeile(1), tafel.SpalteNetto) + ":" +
+                    string formel = "NPV(" + zins + "," + Bezug(tafel.Zeile(1), tafel.SpalteNetto) + ":" +
                                     Bezug(tafel.Zeile(T), tafel.SpalteNetto) + ")+" +
                                     Bezug(tafel.Zeile(0), tafel.SpalteNetto) + "+" +
                                     Bezug(tafel.AbschlussZeile, tafel.SpalteBarwert);
@@ -436,7 +576,7 @@ namespace WindowsFormsApplication1
             // ---- Die Referenz: ihre Tabelle und ihre Spalte im Block ----
             int idRef = verlauf.IdReferenz;
             MehrjahresTafel refTafel = tafeln.FirstOrDefault(x => x.IdProjekt == idRef);
-            WirtschaftlichkeitErgebnis refErg = Erwartet(alle, idRef);
+            WirtschaftlichkeitErgebnis refErg = Ergebnis(alle, idRef, szenario);
             int cRef;
             bool refImBlock = block.Spalten.TryGetValue(idRef, out cRef);
             string refName = RefName(verlauf);
@@ -444,7 +584,7 @@ namespace WindowsFormsApplication1
             foreach (MehrjahresTafel tafel in tafeln)
             {
                 if (tafel.IdProjekt == idRef) continue;
-                WirtschaftlichkeitErgebnis e = Erwartet(alle, tafel.IdProjekt);
+                WirtschaftlichkeitErgebnis e = Ergebnis(alle, tafel.IdProjekt, szenario);
                 int c;
                 bool imBlock = block.Spalten.TryGetValue(tafel.IdProjekt, out c);
 
@@ -460,13 +600,13 @@ namespace WindowsFormsApplication1
                 if (diffFormel && e.AnnuitaetKW.HasValue && block.Zeilen.TryGetValue("ANNUITAET", out zAnn) &&
                     block.Zeilen.TryGetValue("KAPITALWERT_DIFF", out zDiff))
                     register.Formel(ws.Cell(zAnn, c),
-                        "PMT(" + ZINS + "," + ZEITRAUM + ",-" + Bezug(zDiff, c) + ")",
+                        "PMT(" + zins + "," + zeitraum + ",-" + Bezug(zDiff, c) + ")",
                         e.AnnuitaetKW.Value, e.KapitalwertDiff.Value * KapitalwertRechner.Annuitaet(i, T));
 
                 // ---- Die Differenzreihe rechts der Tabelle ----
                 if (refTafel == null || !tafel.Vollstaendig || !refTafel.Vollstaendig ||
                     tafel.Jahre != refTafel.Jahre) continue;
-                if (!Differenzspalten(ws, tafel, refTafel, refName, register)) continue;
+                if (!Differenzspalten(ws, tafel, refTafel, refName, zeitraum, register)) continue;
 
                 // ---- Amortisation über die Hilfsspalte, Zinsfuß über IRR ----
                 int zAmo, zIrr;
@@ -479,10 +619,38 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static WirtschaftlichkeitErgebnis Erwartet(List<WirtschaftlichkeitErgebnis> alle, int idProjekt)
+        /// <summary>Das Ergebnis eines Standes im Szenario <paramref name="szenario"/>.</summary>
+        private static WirtschaftlichkeitErgebnis Ergebnis(List<WirtschaftlichkeitErgebnis> alle, int idProjekt,
+                                                           string szenario)
         {
             return alle.FirstOrDefault(x => x.IdProjekt == idProjekt &&
-                                            x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                                            string.Equals(x.Szenario, szenario, StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// ETAPPE E14 — der Anhang der Namen eines Szenarios: Erwartet ohne, Günstig
+        /// <see cref="ANHANG_GUENSTIG"/>, Ungünstig <see cref="ANHANG_UNGUENSTIG"/> — dieselbe
+        /// Regel, nach der der Parameterblock die Zellen benennt (<c>Satzzeile</c>).
+        /// </summary>
+        internal static string Anhang(string szenario)
+        {
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal)) return ANHANG_GUENSTIG;
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal)) return ANHANG_UNGUENSTIG;
+            return "";
+        }
+
+        /// <summary>ETAPPE E14 — der Name einer Größe des Parameterblocks im Szenario
+        /// (<c>Zins_i</c>, <c>Zins_i_Guenstig</c>, <c>Zins_i_Unguenstig</c>).</summary>
+        internal static string Name(string basis, string szenario)
+        {
+            return basis + Anhang(szenario);
+        }
+
+        /// <summary>ETAPPE E14 (E14‑Q1 a) — die Schutzformel eines Jahres jenseits von T_s:
+        /// <c>IF(Bedingung,Ausdruck,"")</c>.</summary>
+        private static string Schutz(string bedingung, string ausdruck)
+        {
+            return "IF(" + bedingung + "," + ausdruck + ",\"\")";
         }
 
         /// <summary>Der Name der Referenz, wie ihre Linie im Verlauf ihn trägt.</summary>
@@ -499,23 +667,33 @@ namespace WindowsFormsApplication1
         /// für diese Variante keine Kennzahlformeln aus der Reihe.
         /// </summary>
         private static bool Differenzspalten(IXLWorksheet ws, MehrjahresTafel tafel, MehrjahresTafel refTafel,
-                                             string refName, Formelregister register)
+                                             string refName, string zeitraum, Formelregister register)
         {
             double[] fluss = KapitalwertRechner.Differenzreihe(tafel.Bild, refTafel.Bild);
             int T = tafel.Jahre;
             if (fluss == null || fluss.Length != T + 1) return false;
 
-            int cN = tafel.FreieSpalte, cB = cN + 1, cK = cN + 2, cH = cN + 3;
+            int cN = tafel.FreieSpalte, cB = cN + 1, cK = cN + 2, cH = cN + 3, cV = cN + 4, cW = cN + 5;
             tafel.Referenz = refTafel;
             tafel.SpalteDeltaNominal = cN;
             tafel.SpalteDeltaBarwert = cB;
             tafel.SpalteDeltaKumuliert = cK;
             tafel.SpalteAmortHilfe = cH;
-            tafel.FreieSpalte = cH + 1;
+            tafel.SpalteVorzeichen = cV;
+            tafel.SpalteWechsel = cW;
+            tafel.FreieSpalte = cW + 1;
             Kopf(ws, tafel.KopfZeile, cN, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_NOMINAL, refName));
             Kopf(ws, tafel.KopfZeile, cB, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_BARWERT, refName));
             Kopf(ws, tafel.KopfZeile, cK, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_KUMULIERT, refName));
             Kopf(ws, tafel.KopfZeile, cH, MyResource.Resource.WIRT_FM_MJ_AMORT_HILFE);
+            Kopf(ws, tafel.KopfZeile, cV, MyResource.Resource.WIRT_FM_MJ_VORZEICHEN);
+            Kopf(ws, tafel.KopfZeile, cW, MyResource.Resource.WIRT_FM_MJ_WECHSEL);
+
+            // ETAPPE E14 (E14‑Q3 a): Vorzeichen der nominalen Differenz, fortgeschrieben über
+            // Nullwerte (|Δ| ≤ Nullgrenze), und die Zahl der Wechsel bis zum Jahr — dieselbe
+            // Zählregel wie KapitalwertRechner.Vorzeichenwechsel; der Zinsfuß liest den Endstand.
+            string grenze = GrenzeText();
+            int vorzeichen = 0, wechsel = 0;
 
             MehrjahresSpalte netto = tafel.Tabelle.Spalten[tafel.SpalteNetto - 2];
             MehrjahresSpalte nettoRef = refTafel.Tabelle.Spalten[refTafel.SpalteNetto - 2];
@@ -539,6 +717,27 @@ namespace WindowsFormsApplication1
                 }
                 alle &= Setze(ws.Cell(r, cN), fN, fluss[t], nachN, register);
 
+                // Vorzeichen (fortgeschrieben) und Wechsel bis hier
+                double d = fluss[t];
+                int neu = double.IsNaN(d) || Math.Abs(d) <= KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR
+                        ? vorzeichen : Math.Sign(d);
+                string zN = Bezug(r, cN);
+                string fV = "IF(ABS(" + zN + ")<=" + grenze + "," + (t == 0 ? "0" : Bezug(r - 1, cV)) +
+                            ",SIGN(" + zN + "))";
+                alle &= Setze(ws.Cell(r, cV), fV, neu, neu, register);
+                if (t == 0)
+                {
+                    ws.Cell(r, cW).Value = 0;
+                }
+                else
+                {
+                    if (vorzeichen != 0 && neu != vorzeichen) wechsel++;
+                    string fW = Bezug(r - 1, cW) + "+IF(AND(" + Bezug(r - 1, cV) + "<>0," + Bezug(r, cV) + "<>" +
+                                Bezug(r - 1, cV) + "),1,0)";
+                    alle &= Setze(ws.Cell(r, cW), fW, wechsel, wechsel, register);
+                }
+                vorzeichen = neu;
+
                 // Barwert ohne Restwert und Laufsumme — die Reihe der Amortisation
                 double dBw = tafel.Bild.BarwertReihe[t] - refTafel.Bild.BarwertReihe[t];
                 alle &= Setze(ws.Cell(r, cB), Bezug(r, tafel.SpalteBarwert) + "-" + Bezug(rr, refTafel.SpalteBarwert),
@@ -561,6 +760,20 @@ namespace WindowsFormsApplication1
                     }
                     else register.FormelText(ws.Cell(r, cH), fH, "");
                 }
+            }
+
+            // ETAPPE E14 (E14‑Q1 a): jenseits von T_s die Schutzformel — dieselben Ausdrücke,
+            // ihr Ergebnis ist leer, solange das Jahr hinter dem Zeitraum des Szenarios liegt.
+            for (int t = T + 1; t <= Math.Min(tafel.JahreTabelle, refTafel.JahreTabelle); t++)
+            {
+                int r = tafel.Zeile(t), rr = refTafel.Zeile(t);
+                string bedingung = Bezug(r, 1) + "<=" + zeitraum;
+                register.FormelText(ws.Cell(r, cN),
+                    Schutz(bedingung, Bezug(r, tafel.SpalteNetto) + "-" + Bezug(rr, refTafel.SpalteNetto)), "");
+                register.FormelText(ws.Cell(r, cB),
+                    Schutz(bedingung, Bezug(r, tafel.SpalteBarwert) + "-" + Bezug(rr, refTafel.SpalteBarwert)), "");
+                register.FormelText(ws.Cell(r, cK),
+                    Schutz(bedingung, Bezug(r - 1, cK) + "+" + Bezug(r, cB)), "");
             }
             return alle;
         }
@@ -601,41 +814,84 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der interne Zinsfuß einer Variante über IRR auf die nominale Differenzreihe,
         /// gerundet wie im Rechenkern (zwei Nachkommastellen in Prozent); der Wert des Laufs
-        /// ist der Startwert. Ohne Vorzeichenwechsel der benannte Leerwert. Mehrdeutig (mehr als
-        /// ein Wechsel) bleibt die Zelle ein Wert.
+        /// ist der Startwert. Die Zahl der Vorzeichenwechsel liest die Formel aus der
+        /// Hilfsspalte (ETAPPE E14): keiner — der benannte Leerwert „kein Zinsfuß
+        /// bestimmbar"; mehr als einer — der Text „nicht eindeutig" (E14‑Q3 a; die
+        /// Zinsfußgleichung hat dann mehrere Lösungen); genau einer — IRR.
         /// </summary>
         private static void ZinsfussFormel(IXLCell zelle, MehrjahresTafel tafel, MehrjahresTafel refTafel,
                                            WirtschaftlichkeitErgebnis e, Formelregister register)
         {
             int? wechsel = KapitalwertRechner.Vorzeichenwechsel(tafel.Bild, refTafel.Bild);
-            if (!wechsel.HasValue || wechsel != e.IrrVorzeichenwechsel) return;
+            if (!wechsel.HasValue || wechsel != e.IrrVorzeichenwechsel || tafel.SpalteWechsel < 0) return;
             string reihe = Bezug(tafel.Zeile(0), tafel.SpalteDeltaNominal) + ":" +
                            Bezug(tafel.Zeile(tafel.Jahre), tafel.SpalteDeltaNominal);
-            string leer = MyResource.Resource.WIRT_IZF_KEIN_WERT.Replace("\"", "\"\"");
-            string grenze = KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR.ToString("0E0", CultureInfo.InvariantCulture);
+            string zahl = Bezug(tafel.Zeile(tafel.Jahre), tafel.SpalteWechsel);
+            string kein = MyResource.Resource.WIRT_IZF_KEIN_WERT.Replace("\"", "\"\"");
+            string mehrdeutig = MyResource.Resource.WIRT_FM_IZF_NICHT_EINDEUTIG.Replace("\"", "\"\"");
+            string irr = e.IRR.HasValue
+                ? "ROUND(IRR(" + reihe + "," + Math.Round(e.IRR.Value / 100.0, 6).ToString("R", CultureInfo.InvariantCulture) + ")*100,2)"
+                : "ROUND(IRR(" + reihe + ")*100,2)";
+            string formel = "IF(" + zahl + "=0,\"" + kein + "\",IF(" + zahl + ">1,\"" + mehrdeutig + "\"," + irr + "))";
 
             if (wechsel == 1 && e.IRR.HasValue)
             {
                 double? nach = KapitalwertRechner.InternerZinsfuss(tafel.Bild, refTafel.Bild);
                 if (!nach.HasValue) return;
-                string start = Math.Round(e.IRR.Value / 100.0, 6).ToString("R", CultureInfo.InvariantCulture);
-                string formel = "IF(AND(COUNTIF(" + reihe + ",\">" + grenze + "\")>0,COUNTIF(" + reihe +
-                                ",\"<-" + grenze + "\")>0),ROUND(IRR(" + reihe + "," + start + ")*100,2),\"" +
-                                leer + "\")";
                 register.Formel(zelle, formel, e.IRR.Value, nach.Value);
             }
             else if (wechsel == 0 && !e.IRR.HasValue)
-            {
-                string formel = "IF(AND(COUNTIF(" + reihe + ",\">" + grenze + "\")>0,COUNTIF(" + reihe +
-                                ",\"<-" + grenze + "\")>0),ROUND(IRR(" + reihe + ")*100,2),\"" + leer + "\")";
                 register.FormelText(zelle, formel, MyResource.Resource.WIRT_IZF_KEIN_WERT);
-            }
+            else if (wechsel > 1)
+                register.FormelText(zelle, formel, MyResource.Resource.WIRT_FM_IZF_NICHT_EINDEUTIG);
+        }
+
+        /// <summary>Die Nullgrenze der Vorzeichenzählung als Formeltext („1E-6").</summary>
+        private static string GrenzeText()
+        {
+            return KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR.ToString("0E0", CultureInfo.InvariantCulture);
         }
 
         /// <summary>Das Zahlungsbild der Referenz einer Tabelle mit Differenzspalten.</summary>
         private static KapitalwertRechner.Zahlungsbild RefBild(MehrjahresTafel tafel)
         {
             return tafel.Referenz != null ? tafel.Referenz.Bild : null;
+        }
+
+        /// <summary>
+        /// ETAPPE E14 (Stufe 2) — eine Zeile der <b>Bandbreitentafel</b> in Formeln: ΔKW
+        /// Ungünstig / Erwartet / Günstig (Spalten B, C, D) als Zellbezug auf die Zeile
+        /// „Kapitalwert gegenüber Referenz" des jeweiligen Szenarioblocks, die Spanne (E) als
+        /// <c>MAX(B:D)−MIN(B:D)</c> — dieselbe Regel wie <see cref="BandbreitenZeile.Spanne"/>
+        /// (leere Zellen zählen nicht). Nur, wo der Block dieselbe Zahl trägt; sonst bleibt der Wert.
+        /// </summary>
+        internal static void Bandbreitenzeile(IXLWorksheet ws, int r, BandbreitenZeile z,
+                                              Dictionary<string, KennzahlBlock> lagen, Formelregister register)
+        {
+            if (ws == null || z == null || lagen == null || register == null) return;
+            string[] szenarien = { WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.ERWARTET,
+                                   WirtschaftlichkeitSzenario.BEST };
+            double?[] werte = { z.Worst, z.Erwartet, z.Best };
+            for (int k = 0; k < 3; k++)
+            {
+                KennzahlBlock lage;
+                int zDiff, c;
+                double blockwert;
+                if (!werte[k].HasValue || !lagen.TryGetValue(szenarien[k], out lage) ||
+                    !lage.Zeilen.TryGetValue("KAPITALWERT_DIFF", out zDiff) ||
+                    !lage.Spalten.TryGetValue(z.IdProjekt, out c) ||
+                    !lage.Werte.TryGetValue((zDiff, c), out blockwert)) continue;
+                register.Formel(ws.Cell(r, 2 + k), Bezug(zDiff, c), werte[k].Value, blockwert);
+            }
+            if (z.Spanne.HasValue)
+            {
+                double gross = double.MinValue, klein = double.MaxValue;
+                foreach (double? w in werte)
+                    if (w.HasValue) { gross = Math.Max(gross, w.Value); klein = Math.Min(klein, w.Value); }
+                string bereich = Bezug(r, 2) + ":" + Bezug(r, 4);
+                register.Formel(ws.Cell(r, 5), "MAX(" + bereich + ")-MIN(" + bereich + ")",
+                                z.Spanne.Value, gross - klein);
+            }
         }
 
         private static void ZahlFormat(IXLCell zelle)
@@ -731,15 +987,14 @@ namespace WindowsFormsApplication1
             return format + "\" " + einheit.Replace("\"", "") + "\"";
         }
 
-        /// <summary>Fortschreibung einer Spalte ab Jahr 2: Jahr 1 × (1+p)^(t−1).</summary>
+        /// <summary>Fortschreibung einer Spalte ab Jahr 2: Jahr 1 × (1+p)^(t−1) — mit dem
+        /// Namen <paramref name="name"/> des Satzes im Szenario der Tabelle.</summary>
         private static void Fortschreibung(IXLWorksheet ws, MehrjahresTafel tafel, Mehrjahresbild bild,
-                                           string schluessel, double satz, Formelregister register)
+                                           string schluessel, string name, double satz, Formelregister register)
         {
             int c = SpalteVon(bild, schluessel);
             if (c < 0) return;
             MehrjahresSpalte s = bild.Spalten[c - 2];
-            string name = string.Equals(schluessel, "ENERGIE", StringComparison.Ordinal) ||
-                          string.Equals(schluessel, "BEHG", StringComparison.Ordinal) ? PREIS_E : PREIS_B;
             string jahr1 = Bezug(tafel.Zeile(1), c, true);
             for (int t = 2; t <= tafel.Jahre; t++)
             {
@@ -801,9 +1056,19 @@ namespace WindowsFormsApplication1
     internal sealed class MehrjahresTafel
     {
         internal int IdProjekt;
+
+        /// <summary>ETAPPE E14 — das Szenario der Tabelle (<see cref="WirtschaftlichkeitSzenario"/>);
+        /// es wählt die Namen, auf die ihre Formeln rechnen.</summary>
+        internal string Szenario = WirtschaftlichkeitSzenario.ERWARTET;
         internal int KopfZeile;
         internal int Jahr0Zeile;
+
+        /// <summary>Der Betrachtungszeitraum T_s des Szenarios [a] — die Jahre mit Zahlungen.</summary>
         internal int Jahre;
+
+        /// <summary>ETAPPE E14 (E14‑Q1 a) — die Zahl der Jahreszeilen: der längste Zeitraum
+        /// der drei Szenarien (≥ <see cref="Jahre"/>); dahinter steht die Abschlusszeile.</summary>
+        internal int JahreTabelle;
         internal int AbschlussZeile;
         internal int SpalteNetto = -1;
         internal int SpalteBarwert = -1;
@@ -825,6 +1090,11 @@ namespace WindowsFormsApplication1
         internal int SpalteDeltaKumuliert = -1;
         internal int SpalteAmortHilfe = -1;
 
+        /// <summary>ETAPPE E14 (E14‑Q3 a): Vorzeichen der nominalen Differenz und die Zahl
+        /// der Vorzeichenwechsel bis zum Jahr — die Grundlage des Zinsfußes.</summary>
+        internal int SpalteVorzeichen = -1;
+        internal int SpalteWechsel = -1;
+
         /// <summary>Die Zeile des Jahres <paramref name="jahr"/> (0…T).</summary>
         internal int Zeile(int jahr) { return Jahr0Zeile + jahr; }
 
@@ -844,6 +1114,10 @@ namespace WindowsFormsApplication1
     {
         internal readonly Dictionary<string, int> Zeilen = new Dictionary<string, int>(StringComparer.Ordinal);
         internal readonly Dictionary<int, int> Spalten = new Dictionary<int, int>();
+
+        /// <summary>ETAPPE E14 — die Zahl, die der Block in eine Zelle (Zeile, Spalte)
+        /// geschrieben hat; die Bandbreitentafel verweist nur auf Zellen, deren Zahl sie trägt.</summary>
+        internal readonly Dictionary<(int, int), double> Werte = new Dictionary<(int, int), double>();
     }
 
     /// <summary>

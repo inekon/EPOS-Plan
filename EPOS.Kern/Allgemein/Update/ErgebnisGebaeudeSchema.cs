@@ -30,11 +30,11 @@ namespace WindowsFormsApplication1
     /// Referenzlauf exportiert sie nicht — die Kennzahlen stehen dort schon als Skalare
     /// <c>Geb[i].*</c> (<see cref="GebaeudeErgebnisexport"/>).</para>
     ///
-    /// <para><b>Schritt 125</b> (Anlagenkopplung AK1, Welle 3) hängt vier nullbare Spalten des
+    /// <para><b>Schritt 128</b> (<see cref="SCHRITT_HEIZKREIS"/>; Anlagenkopplung AK1, Welle 3) hängt vier nullbare Spalten des
     /// Heizkreises an (<see cref="SpaltenHeizkreis"/>): Übergabeart, mittlerer Vor- und
     /// Rücklauf und die Stunden mit begrenzter Übergabe — NULL heißt „nicht gekoppelt
     /// gerechnet". Die Tabelle aus <see cref="SQL_CREATE"/> bleibt die des Schritts 107; ihr
-    /// Stand nach 125 hat <see cref="SPALTENZAHL_MIT_HEIZKREIS"/> Spalten.</para>
+    /// Stand nach 128 hat <see cref="SPALTENZAHL_MIT_HEIZKREIS"/> Spalten.</para>
     /// </summary>
     public static class ErgebnisGebaeudeSchema
     {
@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        //  Schritt 125 — der Heizkreis je Gebäude (Anlagenkopplung AK1, Welle 3)
+        //  Schritt 128 — der Heizkreis je Gebäude (Anlagenkopplung AK1, Welle 3)
         // =====================================================================
         //
         // Die drei Größen der Projektzeile (Schritt 123, Tab_ErgebnisEnergiebedarf) JE GEBÄUDE
@@ -115,11 +115,18 @@ namespace WindowsFormsApplication1
         /// <summary><c>UebergabeBegrenzt_H</c> — Stunden, in denen die Übergabe die Grenze war [h], Summe der Zeitanteile; NULL ohne Kopplung.</summary>
         public const string SPALTE_UEBERGABE_BEGRENZT = "UebergabeBegrenzt_H";
 
-        /// <summary>Spaltenzahl der Tabelle nach Schritt 125 (Nachweis in den Tests).</summary>
+        /// <summary>
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: Migration
+        /// (<c>SchemaMigration.SCHRITT_128_ERGEBNIS_HEIZKREIS</c>), Werkzeug und Nachweis lesen sie
+        /// hier. Vergeben beim Merge mit origin am 24.09.2026 (125 bis 127 waren belegt).
+        /// </summary>
+        public const int SCHRITT_HEIZKREIS = 128;
+
+        /// <summary>Spaltenzahl der Tabelle nach Schritt 128 (Nachweis in den Tests).</summary>
         public const int SPALTENZAHL_MIT_HEIZKREIS = SPALTENZAHL + 4;
 
         /// <summary>
-        /// <b>Die vier Spalten von Schritt 125</b> in Anlegereihenfolge: Name und SQLite-Definition
+        /// <b>Die vier Spalten von Schritt 128</b> in Anlegereihenfolge: Name und SQLite-Definition
         /// (STRICT-Typ samt <c>CHECK</c>), <b>nullbar, ohne Vorgabe und ohne Nachtrag</b> — jede
         /// vorhandene Ergebniszeile ist eine Zeile ohne Kopplung. Die Wertliste der Übergabeart
         /// kommt aus <c>DbWerte</c>, die Stunden sind eine Summe von Zeitanteilen und deshalb
@@ -140,12 +147,12 @@ namespace WindowsFormsApplication1
         public static string SpalteAnlegen(KeyValuePair<string, string> spalte)
             => "ALTER TABLE \"" + TAB + "\" ADD COLUMN \"" + spalte.Key + "\" " + spalte.Value;
 
-        /// <summary>Steht Schritt 125? Die Tabelle steht und trägt alle vier Spalten des Heizkreises.</summary>
+        /// <summary>Steht Schritt 128? Die Tabelle steht und trägt alle vier Spalten des Heizkreises.</summary>
         public static bool HeizkreisVollstaendig()
             => Vorhanden() && SpaltenHeizkreis.All(s => DataRepository.SpalteVorhanden(TAB, s.Key));
 
         /// <summary>
-        /// Führt Schritt 125 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
+        /// Führt Schritt 128 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
         /// <c>EPOS.Kern.Tests</c>; die Migration der Schale geht denselben Weg über ihre eigenen
         /// Helfer. <b>Wiederholbar</b>, <b>kein DML</b>; ohne die Tabelle (Stand vor 107) tut er nichts.
         /// </summary>

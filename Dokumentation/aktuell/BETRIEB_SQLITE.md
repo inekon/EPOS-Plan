@@ -1,13 +1,14 @@
 # Betrieb: die SQLite-Datenbank von EPOS-Plan
 
-**Stand:** 11.09.2026 · Arbeitspaket S8 des
+**Stand:** 24.09.2026 · Arbeitspaket S8 des
 [`Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md`](../ueberholt/Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md)
-(dort Abschnitt 8), Abschnitt 1 neu nach dem Anwenderentscheid `#157‑E‑1` (Weg W3)
+(dort Abschnitt 8), Abschnitt 1 neu nach dem Anwenderentscheid `#157‑E‑1` (Weg W3),
+Abschnitte 1.1 und 7 nach der Einstellung der Access-Übernahme (24.09.2026)
 
 EPOS-Plan hält seine Daten in **einer** SQLite-Datei. **Access und die ACE-Engine kommen
 im Programm nicht mehr vor** (Weg W3, 09.09.2026): Eine Neuinstallation bekommt ihre
-Datenbank aus der ausgelieferten Vorlage (Abschnitt 1); die Übernahme eines
-`.accdb`-Altbestands ist ein Hauswerkzeug (Abschnitt 1.1 und 7).
+Datenbank aus der ausgelieferten Vorlage (Abschnitt 1); eine Übernahme eines
+`.accdb`-Altbestands gibt es nicht mehr (Abschnitt 1.1 und 7).
 
 | | |
 |---|---|
@@ -75,31 +76,25 @@ mitgelieferte `Kenndaten.sqlite` beim ersten Start aus dem (schreibgeschützten)
 Anwendungspaket in die Sandbox — dieselbe Regel „liegt sie schon da, ist nichts zu tun",
 derselbe Ordnername `EPOS_PLAN`.
 
-### 1.1 Übernahme eines Access-Altbestands — Hauswerkzeug, kein Kundenweg
+### 1.1 Übernahme eines Access-Altbestands — eingestellt
 
 **Rahmen (Anwender, 09.09.2026):** Access wurde beim Kunden **nie produktiv eingesetzt**.
 Mit dem Entscheid `#157‑E‑1` (Weg W3) sind deshalb **gefallen**: der Übernahme-Assistent
 im Programmstart, die Access-Engine im Setup und die `.accdb`-Vorlage. In der
 Anwenderdokumentation kommt Access nicht mehr vor.
 
-Wer trotzdem einen `.accdb`-Bestand übernehmen muss — eingeschickte Datenbanken,
-Prüfläufe, Wiederholungen —, nimmt das **Hauswerkzeug**: die Konsolenfassung
-`EposSqliteMigrator.exe` (Abschnitt 7). Sie enthält denselben Migrationskern, den der
-frühere Assistent benutzte, und braucht die 64-Bit-ACE-Engine auf dem Rechner, auf dem
-sie läuft.
+**Seit dem 24.09.2026 gibt es auch das Hauswerkzeug nicht mehr** (Anwenderentscheid
+24.09.2026): Die Konsolenfassung `EposSqliteMigrator.exe`, die einen `.accdb`-Bestand auf
+Schemastand 61 nach SQLite übertrug, ist am 13.09.2026 aus dem Repository entfernt worden
+(Sync-Commit `43aaf985`; letzter Stand mit dem Werkzeug: `b0647c7e`), und die Übernahme aus
+Access ist damit endgültig eingestellt — weder Kundenweg noch Hausweg. Es gibt keinen
+Kundenbestand in Access, und die Hausbestände sind umgestellt. Was für einen dennoch
+auftauchenden `.accdb`-Bestand bliebe, steht in Abschnitt 7.
 
-**Die Quelle muss auf Schemastand 61 stehen.** Die Hebung dorthin leistet die letzte
-Access-Fassung von EPOS-Plan (Auslieferung August 2026, Git-Zweig
-`version_august_2026`): Sie wird auf die `.accdb` gestartet und fährt die Schritte 1
-bis 61. Im heutigen Programm gibt es keinen Access-Zweig mehr — weder die Alt-Hebung
-noch `System.Data.OleDb`; Access lebt allein im `EposSqliteMigrator`.
-
-**Was der frühere Assistent tat**, ist als Ablauf unverändert im Werkzeug abgebildet:
-Übertragung aller Tabellen mit Zeilen- und Prüfsummenvergleich, `integrity_check` und
-`foreign_key_check`, Migrationsbericht daneben; die Zieldatei entsteht erst nach
-nachgewiesenem Erfolg, die `.accdb` bleibt das Rollback. Der Schritt, den es NICHT mehr
-gibt, ist das automatische Umbenennen in `Kenndaten.vor-sqlite.accdb` beim
-Programmstart.
+**Was das Programm mit einer Datei unterhalb Stand 61 tut:** Es weist sie im
+Migrationsbericht ab und sperrt die Simulation; gehoben wird sie nicht. Die Schritte 1
+bis 61 stehen nicht im Programm, und im heutigen Programm gibt es keinen Access-Zweig
+mehr — weder die Alt-Hebung noch `System.Data.OleDb`.
 
 ---
 
@@ -443,60 +438,35 @@ Nachziehen des Schemas ersetzt es nicht — es setzt es voraus.
 
 ---
 
-## 7. Kundenbestände: das Hauswerkzeug
+## 7. Kundenbestände: keine Übernahme aus Access mehr
 
-**Seit Weg W3 (09.09.2026) ist das der EINZIGE Weg**, einen `.accdb`-Altbestand zu
-übernehmen — im Programm gibt es ihn nicht mehr (Abschnitt 1.1). Das Konsolenwerkzeug
-trägt denselben Migrationskern, den der frühere Erststart-Assistent benutzte:
+**Seit dem 24.09.2026 gibt es keinen Weg mehr, einen `.accdb`-Altbestand zu übernehmen.**
+Weg W3 (09.09.2026) hatte die Übernahme aus dem Programm genommen und auf das Hauswerkzeug
+`EposSqliteMigrator.exe` verlegt; das Werkzeug ist am 13.09.2026 aus dem Repository
+entfernt (Sync-Commit `43aaf985`) und die Übernahme am 24.09.2026 vom Anwender endgültig
+eingestellt worden (Abschnitt 1.1).
 
-```bash
-EposSqliteMigrator.exe --ziel D:\Uebernahme\Kenndaten.sqlite ^
-                       --quelle D:\Uebernahme\Kenndaten.accdb ^
-                       [--orphanPolicy Abbruch|AlsProtokollAussetzen] ^
-                       [--bericht D:\Uebernahme\Bericht.md]
-```
+**Was gilt:**
 
-Gebaut wird es aus `EposSqliteMigrator\` (eigene Projektmappe); das Ergebnis liegt unter
-`EposSqliteMigrator\Konsole\bin\x64\Release\net8.0\win-x64\EposSqliteMigrator.exe`.
+* Jeder Bestand ist eine `Kenndaten.sqlite` auf Schemastand 61 oder höher; die Schemapflege
+  des Programmstarts bringt ihn auf den Zielstand (Abschnitt 1).
+* Eine Datei ohne Schemamarker oder unterhalb Stand 61 weist das Programm ab
+  (Migrationsbericht, Simulation gesperrt). Sie ist kein Bestand von EPOS-Plan; einen Weg,
+  sie zu heben, gibt es nicht mehr.
+* Eine **Auslieferungsvorlage** entsteht aus einem gepflegten Katalogstand über
+  `Werkzeuge/Auslieferungsvorlage` und enthält keine Kundenprojekte
+  (`Setup/build-setup.ps1`, Parameter `-Quelldatenbank`).
 
-* `--quelle` ohne Angabe: `C:\ProgramData\EPOS_PLAN\Kenndaten.accdb`
-* `--bericht` ohne Angabe: `Migrationsbericht_<Quellname>_<Zeit>.md` neben dem Ziel
-* **`--orphanPolicy`** entscheidet über verwaiste Fremdschlüssel:
-  * `Abbruch` (Vorgabe) — jede Verletzung beendet den Lauf, die Zieldatei wird gelöscht,
-    die Liste steht im Bericht.
-  * `AlsProtokollAussetzen` — die Zieldatei bleibt erhalten. **Der Fremdschlüssel bleibt
-    dabei bestehen**; die vorhandene Verletzung wird ausgehalten und namentlich
-    protokolliert. Nur mit Blick in den Bericht verwenden.
-
-**Voraussetzungen und Zusicherungen**
-
-* Die Quelle muss auf **Schemastand 61** stehen. Sonst bricht der Lauf ab mit dem
-  Hinweis, zuerst die letzte Access-Fassung von EPOS-Plan zu starten. Genau die leistet
-  die Hebung dorthin: Auslieferung August 2026, Git-Zweig `version_august_2026`. Das
-  heutige Programm hat keinen Access-Zweig mehr.
-* Liegt eine `.laccdb` neben der Quelle, ist der Bestand geöffnet — der Lauf bricht ab.
-  EPOS-Plan und Access schließen, auch auf anderen Rechnern.
-* Die `.accdb` wird **ausschließlich gelesen** (nur `SELECT`, nach Möglichkeit sogar
-  `Mode=Read`). Sie bleibt das Rollback.
-* Eine bereits vorhandene Zieldatei wird **nie** überschrieben.
-* Bei jedem Fehler löscht das Werkzeug die selbst angelegte Zieldatei.
-* Es braucht die **64-Bit-ACE-Engine** (`Microsoft.ACE.OLEDB.12.0`) auf dem Rechner, auf
-  dem es läuft.
-
-**Rückgabewerte:** `0` Erfolg · `1` Fehler · `2` Quelle geöffnet (`.laccdb`) ·
-`3` Fremdschlüsselverletzungen bei `orphanPolicy=Abbruch` · `4` Datenbeweis
-fehlgeschlagen.
-
-**Der Bericht ist die Abnahme**, nicht der Rückgabewert allein: Kopfdaten, Zeilenzahlen
-und Prüfsummen je Tabelle, nicht migrierte Quelltabellen, Autowert-Stände,
-`integrity_check`, `foreign_key_check` und der Case-Drift-Messlauf. Ein Lauf gilt als
-sauber, wenn dort **„Datenbeweis bestanden"** steht.
-
-**Cutover je Rechner getrennt.** Jeder Bestand bekommt seinen eigenen Migrationslauf und
-seinen eigenen Bericht — eine an einem Rechner erzeugte `.sqlite` ist keine Vorlage für
-einen anderen. **Und sie ist erst recht keine AUSLIEFERUNGSVORLAGE:** Die entsteht aus
-einem gepflegten Katalogstand über `Werkzeuge/Auslieferungsvorlage` und enthält keine
-Kundenprojekte (`Setup/build-setup.ps1`, Parameter `-Quelldatenbank`).
+**Falls doch einmal ein `.accdb`-Bestand auftaucht** — Geschichte, kein Betriebsweg: Das
+Werkzeug samt Aufruf, Rückgabewerten und Berichtsformat liegt im Git-Stand `b0647c7e`
+(13.09.2026) unter `EposSqliteMigrator/` und baut auch heute gegen die Paketfassungen des
+Repositoriums (geprüft am 24.09.2026). Die Quelle müsste auf Schemastand 61 stehen, was die
+letzte Access-Fassung von EPOS-Plan leistet (Git-Zweig `version_august_2026`); das Werkzeug
+braucht die 64-Bit-ACE-Engine. Bauplan und Betriebsablauf stehen im
+[`Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md`](../ueberholt/Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md)
+(Abschnitt 4) und im
+[`S7_Protokoll_2026-09-02.md`](../ueberholt/Protokolle/sql/S7_Protokoll_2026-09-02.md).
+Die Windows-Suite `Referenzlauf/` (Modus `migration`) ist davon unabhängig.
 
 ---
 

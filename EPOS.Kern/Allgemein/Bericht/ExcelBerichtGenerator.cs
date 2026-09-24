@@ -438,7 +438,8 @@ namespace WindowsFormsApplication1
             // ExcelFormelmappe.PARAMETERBLOCK_ZEILEN Zeilen; keine Zahl ändert sich.
             // ETAPPE E9a: mit Zeitraum, Menge und Erlössätzen je Szenario und — nur wo
             // gepflegt — den Trägerpreisen der Stände.
-            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten);
+            // ETAPPE E15 (V‑G7): mit Risiko die Risikozeilen, ihre Formeln über das Register.
+            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten, formeln);
 
             if (!ausDiesemLauf)
             {
@@ -533,7 +534,7 @@ namespace WindowsFormsApplication1
 
             // ETAPPE E8b, Stufe 2: die Lage des Blocks „Erwartet" (Zeile je Kennzahl, Spalte je
             // Stand) — seine Kennzahlen bekommen nach den Mehrjahrestabellen ihre Formeln.
-            KennzahlBlock erwartetBlock = null;
+            var lagen = new Dictionary<string, KennzahlBlock>(StringComparer.Ordinal);
 
             foreach (string szenario in new[] { WirtschaftlichkeitSzenario.ERWARTET,
                                                 WirtschaftlichkeitSzenario.BEST,
@@ -541,8 +542,9 @@ namespace WindowsFormsApplication1
             {
                 var block = alle.Where(x => x.Szenario == szenario).ToList();
                 if (block.Count == 0) continue;
-                KennzahlBlock lage = szenario == WirtschaftlichkeitSzenario.ERWARTET
-                                   ? (erwartetBlock = new KennzahlBlock()) : null;
+                // ETAPPE E14 (E14‑Q2 a): jeder Block merkt sich seine Lage — auch Günstig und
+                // Ungünstig bekommen ihre Kennzahlen als Formeln auf die Tabellen ihres Szenarios.
+                KennzahlBlock lage = lagen[szenario] = new KennzahlBlock();
 
                 // E5‑Q2: der Anzeigename des Szenarios (Ungünstig / Erwartet / Günstig),
                 // nicht der gespeicherte Schlüssel.
@@ -640,6 +642,7 @@ namespace WindowsFormsApplication1
                             {
                                 ws.Cell(r, c).Value = wert.Value;
                                 ws.Cell(r, c).Style.NumberFormat.Format = z.ExcelFormat;
+                                if (lage != null) lage.Werte[(r, c)] = wert.Value;   // E14: Bandbreite
                             }
                         }
                         c++;
@@ -672,7 +675,7 @@ namespace WindowsFormsApplication1
             // wird nichts Neues. ETAPPE E5 Teil b: Die Tafel liest die Bandbreite der
             // Bewertung — Spanne als Betrag aus größtem und kleinstem Wert (Q4), die
             // Einstufungen wie auf den Karten, in Sicht 2 gegen A (Q6).
-            r = BandbreitenTafel(ws, r, bewertung);
+            r = BandbreitenTafel(ws, r, bewertung, lagen, formeln);
 
             // ---------------- ETAPPE W5‑B‑11 (G9): Vorschlag zur Entscheidung ----------
             //
@@ -696,13 +699,12 @@ namespace WindowsFormsApplication1
             // Überschrift + Absatz nach dem Vorschlag). Ohne gepflegten Text entfällt
             // sie ganz: Eine Zeile „Nicht monetäre Wirkungen:" ohne Inhalt wäre die
             // Behauptung, es gäbe keine.
-            if (p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer))
-            {
-                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur,
-                    MyResource.Resource.WIRT_NM_ZEILE, p.NichtMonetaer.Trim());
-                ws.Cell(r, 1).Style.Alignment.WrapText = true;
-                r += 2;
-            }
+            //
+            // ETAPPE E17 (V‑G11, DIN EN 17463 6.1 und 8.2): statt der Freitextzelle die TABELLE
+            // „Nicht monetarisierbare Wirkungen" an derselben Stelle — Titelzeile, Kopf, je
+            // Wirkung eine Zeile. Reine Werte, keine Formel: Die Beurteilung ist Anzeige, sie
+            // fließt in keine Zelle der Rechnung.
+            r = NichtMonetaereWirkungenTafel(ws, r, bewertung.Wirkungen);
 
             // ---------------- Hinweise dieses Laufs (ETAPPE E7, Divergenz D2) ----------------
             //
@@ -765,7 +767,7 @@ namespace WindowsFormsApplication1
                                     KwkgAktivierung.IstAktiv(daten.IdStamm,
                                         daten.Varianten.Select(x => x.IdProjekt));
             int rStart = r;
-            WirtschaftlichkeitVerlauf verlaufFuerMehrjahres = null;
+            // E7/E14: der Verlauf je Zeitraum ist zugleich die Grundlage der Mehrjahrestabellen.
             WirtschaftlichkeitVerlaufSzenarien verlaufSzenarien = null;
             try
             {
@@ -787,8 +789,7 @@ namespace WindowsFormsApplication1
                     WirtschaftlichkeitVerlaufSzenarien drei =
                         provider.BerechneVerlaufSzenarienJeZeitraum(daten, p);
                     WirtschaftlichkeitVerlauf verlauf = drei.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
-                    verlaufFuerMehrjahres = verlauf;   // E7: Grundlage der Mehrjahrestabelle
-                    verlaufSzenarien = drei;           // E6: Grundlage des Blattes „Verlauf"
+                    verlaufSzenarien = drei;           // E6: Grundlage des Blattes „Verlauf" und (E7/E14) der Mehrjahrestabellen
                     var mitReihe = verlauf.Absolut.Where(s => s.Kumuliert != null).ToList();
                     var mitDiff = verlauf.Differenz.Where(x => x.Kumuliert != null).ToList();
                     if (mitReihe.Count > 0)
@@ -874,23 +875,42 @@ namespace WindowsFormsApplication1
                 try { ws.Range(rStart, 1, r + 1, 6 * daten.Varianten.Count + 1).Clear(XLClearOptions.All); }
                 catch { }
                 r = rStart;
-                verlaufFuerMehrjahres = null;
                 verlaufSzenarien = null;
             }
 
             // ---------------- Mehrjahresübersicht der Zahlungsströme (E7) ----------------
             // ETAPPE E8b, Stufe 1: Die Tabellen rechnen in Formeln auf den Parameterblock;
             // ihre Lage merkt sich die Liste — die Kennzahlen der Stufe 2 beziehen sich darauf.
-            var tafeln = new List<MehrjahresTafel>();
-            r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r, p, formeln, tafeln);
+            // ETAPPE E14 (E14‑Q1 a): je Szenario eine Tabelle je Stand — Erwartet an seiner
+            // Stelle, darunter Günstig und Ungünstig, jede mit den Eingangswerten ihres Laufs
+            // (Verlauf je Zeitraum) und den Namen ihrer Spalte im Parameterblock; die Jahreszeilen
+            // reichen in allen drei bis zum längsten Zeitraum.
+            var tafelnJeSzenario = new Dictionary<string, List<MehrjahresTafel>>(StringComparer.Ordinal);
+            if (verlaufSzenarien != null)
+                foreach (string szenario in new[] { WirtschaftlichkeitSzenario.ERWARTET,
+                                                    WirtschaftlichkeitSzenario.BEST,
+                                                    WirtschaftlichkeitSzenario.WORST })
+                {
+                    WirtschaftlichkeitVerlauf lauf = verlaufSzenarien.Lauf(szenario);
+                    if (lauf == null) continue;
+                    var tafeln = new List<MehrjahresTafel>();
+                    r = BlattMehrjahres(ws, daten, lauf, alle, r, p.FuerSzenario(szenario), szenario,
+                                        verlaufSzenarien.Jahre, formeln, tafeln);
+                    tafelnJeSzenario[szenario] = tafeln;
+                }
 
-            // ETAPPE E8b, Stufe 2 (Konzept § 2.11.6): die Kennzahlen des Szenarios „Erwartet"
-            // in Formeln — Nettobarwert über NBW, Differenz als Zellbezug, Annuität über RMZ
-            // auf die Tabellen; interner Zinsfuß (IKV) und Amortisation über die
-            // Differenzreihe Variante − Referenz, die jede Tabelle einer Variante rechts
-            // bekommt. Gegen dieselbe Referenz wie der Verlauf, aus dem die Tabellen stehen.
-            if (erwartetBlock != null && verlaufFuerMehrjahres != null)
-                ExcelFormelmappe.Kennzahlen(ws, erwartetBlock, tafeln, verlaufFuerMehrjahres, alle, p, formeln);
+            // ETAPPE E8b, Stufe 2 (Konzept § 2.11.6): die Kennzahlen in Formeln — Nettobarwert
+            // über NBW, Differenz als Zellbezug, Annuität über RMZ auf die Tabellen; interner
+            // Zinsfuß (IKV) und Amortisation über die Differenzreihe Variante − Referenz, die
+            // jede Tabelle einer Variante rechts bekommt. Gegen dieselbe Referenz wie der
+            // Verlauf, aus dem die Tabellen stehen.
+            foreach (KeyValuePair<string, List<MehrjahresTafel>> kv in tafelnJeSzenario)
+            {
+                KennzahlBlock lageS;
+                if (!lagen.TryGetValue(kv.Key, out lageS)) continue;
+                ExcelFormelmappe.Kennzahlen(ws, lageS, kv.Value, verlaufSzenarien.Lauf(kv.Key), alle,
+                                            p.FuerSzenario(kv.Key), kv.Key, formeln);
+            }
 
             // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
             // ETAPPE E5 Teil b (V‑A, V‑G6): die Zeilen der Bewertung dieses Laufs (in
@@ -1153,18 +1173,38 @@ namespace WindowsFormsApplication1
         private static int BlattMehrjahres(IXLWorksheet ws, BerichtsDaten daten,
                                            WirtschaftlichkeitVerlauf verlauf,
                                            List<WirtschaftlichkeitErgebnis> alle, int r,
-                                           WirtschaftlichkeitParameter p, Formelregister formeln,
-                                           List<MehrjahresTafel> tafeln)
+                                           WirtschaftlichkeitParameter ps, string szenario, int jahreTabelle,
+                                           Formelregister formeln, List<MehrjahresTafel> tafeln)
         {
             if (verlauf == null || verlauf.Absolut.All(s => s.Bild == null)) return r;
+            bool erwartet = string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal);
 
-            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_TITEL;
-            ws.Cell(r, 1).Style.Font.Bold = true;
-            ws.Range(r, 1, r, 14).Style.Fill.BackgroundColor = GRUPPE;
-            r++;
-            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_HINWEIS;
-            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
-            r += 2;
+            if (erwartet)
+            {
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_TITEL;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 14).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_HINWEIS;
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r += 2;
+            }
+            else
+            {
+                // ETAPPE E14 (E14‑Q1 a): dieselbe Tabelle je Stand für Günstig und Ungünstig —
+                // Eingangswerte aus dem Lauf des Szenarios, Formeln auf seine Spalte des
+                // Parameterblocks, Zeilen bis zum längsten Zeitraum der drei Szenarien.
+                string name = VerlaufZeilen.Szenarioname(szenario);
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_SZENARIO_TITEL,
+                                                    name, ps.Betrachtungszeitraum);
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 14).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_SZENARIO_HINWEIS,
+                                                    name, ExcelFormelmappe.Anhang(szenario), ps.Betrachtungszeitraum);
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r += 2;
+            }
 
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -1191,9 +1231,13 @@ namespace WindowsFormsApplication1
                 ws.Range(r, 1, r, 1 + spalten).Style.Fill.BackgroundColor = KOPF;
                 r++;
 
-                for (int jahr = 0; jahr <= bild.Jahre; jahr++)
+                // ETAPPE E14 (E14‑Q1 a): Jahreszeilen bis zum längsten Zeitraum der drei
+                // Szenarien; jenseits von T_s bleiben die Positionen leer.
+                int zeilenJahre = Math.Max(bild.Jahre, jahreTabelle);
+                for (int jahr = 0; jahr <= zeilenJahre; jahr++)
                 {
                     ws.Cell(r, 1).Value = jahr;
+                    if (jahr > bild.Jahre) { r++; continue; }
                     for (int i = 0; i < spalten; i++)
                     {
                         ws.Cell(r, 2 + i).Value = bild.Spalten[i].Wert(jahr);
@@ -1226,7 +1270,8 @@ namespace WindowsFormsApplication1
                 // Netto als Zeilensumme, Barwert, Laufsumme, Abschluss. Die Zellen tragen
                 // danach die Formel UND (über das Register) die Zahl, die hier stand.
                 MehrjahresTafel tafel = ExcelFormelmappe.Mehrjahrestabelle(ws, kopfZeile, v.IdProjekt,
-                                                                           bild, serie, p, formeln);
+                                                                           bild, serie, ps, szenario,
+                                                                           zeilenJahre, formeln);
                 if (tafel != null) tafeln.Add(tafel);
 
                 ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_MJ_PROBE,
@@ -1241,7 +1286,8 @@ namespace WindowsFormsApplication1
                 // Zeile wäre eine Doppelzählung.
                 WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
                     x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                bool vermieden = e != null &&
+                // ETAPPE E14: der Nachweisblock steht einmal, beim Erwartungsfall.
+                bool vermieden = erwartet && e != null &&
                                  (e.VermiedenGesamtJahr != 0 || e.VermiedenArbeitJahr != 0);
                 if (vermieden)
                 {
@@ -1270,6 +1316,61 @@ namespace WindowsFormsApplication1
             return r;
         }
 
+        // ------------------------------------- Nicht monetarisierbare Wirkungen (E17)
+
+        /// <summary>
+        /// ETAPPE E17 (V‑G11) — die Tafel „Nicht monetarisierbare Wirkungen": Titelzeile
+        /// (<c>WIRT_NM_TITEL</c>, fett), Hinweis, Kopf (Kategorie, Beschreibung, Dauer,
+        /// Organisation, Mitarbeiter, Umwelt, Beurteilung), je Wirkung eine Zeile; die
+        /// Beurteilung als Zahl (leer = nicht beurteilt). Ohne benannte Wirkung entfällt die
+        /// Tafel. Rückgabe: die nächste freie Zeile (eine Leerzeile Abstand).
+        /// </summary>
+        internal static int NichtMonetaereWirkungenTafel(IXLWorksheet ws, int r, IReadOnlyList<ProjektWirkung> wirkungen)
+        {
+            List<ProjektWirkung> zeilen = (wirkungen ?? new List<ProjektWirkung>())
+                .Where(w => w != null && !string.IsNullOrWhiteSpace(w.Beschreibung)).ToList();
+            if (zeilen.Count == 0) return r;
+
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_NM_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = GRUPPE;
+            r++;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_NM_TABELLE_HINWEIS;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r++;
+
+            string[] kopf =
+            {
+                MyResource.Resource.WIRT_NM_SP_KATEGORIE, MyResource.Resource.WIRT_NM_SP_BESCHREIBUNG,
+                MyResource.Resource.WIRT_NM_SP_DAUER, MyResource.Resource.WIRT_NM_SP_ORGANISATION,
+                MyResource.Resource.WIRT_NM_SP_MITARBEITER, MyResource.Resource.WIRT_NM_SP_UMWELT,
+                MyResource.Resource.WIRT_NM_SP_BEURTEILUNG
+            };
+            for (int c = 0; c < kopf.Length; c++)
+            {
+                ws.Cell(r, c + 1).Value = kopf[c];
+                ws.Cell(r, c + 1).Style.Font.Bold = true;
+                ws.Cell(r, c + 1).Style.Fill.BackgroundColor = KOPF;
+            }
+            r++;
+
+            foreach (ProjektWirkung z in zeilen)
+            {
+                ws.Cell(r, 1).Value = NichtMonetaereWirkungen.KategorieText(z.Kategorie);
+                ws.Cell(r, 2).Value = z.Beschreibung.Trim();
+                ws.Cell(r, 2).Style.Alignment.WrapText = true;
+                ws.Cell(r, 3).Value = NichtMonetaereWirkungen.DauerText(z.Dauer);
+                ws.Cell(r, 4).Value = NichtMonetaereWirkungen.WirkungText(z.WirkungOrganisation);
+                ws.Cell(r, 5).Value = NichtMonetaereWirkungen.WirkungText(z.WirkungMitarbeiter);
+                ws.Cell(r, 6).Value = NichtMonetaereWirkungen.WirkungText(z.WirkungUmwelt);
+                int? b = z.Beurteilung;
+                if (b.HasValue) ws.Cell(r, 7).Value = b.Value;
+                else ws.Cell(r, 7).Value = MyResource.Resource.WIRT_NM_NICHT_BEURTEILT;
+                r++;
+            }
+            return r + 1;
+        }
+
         // ------------------------------------------------- Bandbreite (E2, G8)
 
         /// <summary>
@@ -1292,7 +1393,8 @@ namespace WindowsFormsApplication1
         /// bilden — dieselben Zeilen, Spannen und Einstufungen wie Seite und Wortbericht.
         /// Unter dem Fußtext steht der Hinweistext der Szenarien (U10).</para>
         /// </summary>
-        private static int BandbreitenTafel(IXLWorksheet ws, int r, WirtschaftlichkeitBewertung bewertung)
+        private static int BandbreitenTafel(IXLWorksheet ws, int r, WirtschaftlichkeitBewertung bewertung,
+                                            Dictionary<string, KennzahlBlock> lagen, Formelregister formeln)
         {
             WirtschaftlichkeitBandbreite band = bewertung.Bandbreite ?? new WirtschaftlichkeitBandbreite();
             if (band.Leer) return r;
@@ -1332,6 +1434,10 @@ namespace WindowsFormsApplication1
                 Betrag(ws, r, 3, z.Erwartet);
                 Betrag(ws, r, 4, z.Best);
                 Betrag(ws, r, 5, z.Spanne);
+
+                // ETAPPE E14 (Stufe 2): ΔKW je Szenario als Zellbezug auf die Kennzahltafel des
+                // Szenarios, die Spanne als MAX − MIN der drei — gegengerechnet wie jede Formel.
+                ExcelFormelmappe.Bandbreitenzeile(ws, r, z, lagen, formeln);
 
                 if (z.AmortisationJahre.HasValue)
                 {

@@ -96,8 +96,8 @@ namespace WindowsFormsApplication1
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
             StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
-            // Schritt 125 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
-            // ebenso vor der Transaktion gefragt; vor 125 bleibt die Zeile die des Schritts 107.
+            // Schritt 128 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
+            // ebenso vor der Transaktion gefragt; vor 128 bleibt die Zeile die des Schritts 107.
             bool heizkreisSpalten = gebaeudeTabelle && ErgebnisGebaeudeSchema.HeizkreisVollstaendig();
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
@@ -792,7 +792,7 @@ namespace WindowsFormsApplication1
                     if (m.Gebaeude != null && m.Gebaeude.Count > 0 && gebaeudeTabelle)
                     {
                         int gId = NextId(v, TAB_GEB);
-                        // Schritt 125: die vier Spalten des Heizkreises nur, wo die Datenbank sie
+                        // Schritt 128: die vier Spalten des Heizkreises nur, wo die Datenbank sie
                         // traegt - ein Gebaeude ohne Kopplung schreibt dort NULL.
                         string sqlG = "INSERT INTO " + TAB_GEB + " (" +
                             "ID, ID_Ergebnis, ID_Gebaeude, Merkplatz, Gebaeudename, Rechenweg, " +
@@ -1257,7 +1257,7 @@ namespace WindowsFormsApplication1
                     g.UeberhitzungsstundenH = GanzOderNull(rg, "Ueberhitzungsstunden_H");
                     g.SommerlueftungsstundenH = GanzOderNull(rg, "Sommerlueftungsstunden_H");
                     g.ObereRaumtemperaturC = DN(rg, "ObereRaumtemperatur_C");
-                    // Schritt 125 (Anlagenkopplung AK1): NULL bleibt null - "nicht gekoppelt".
+                    // Schritt 128 (Anlagenkopplung AK1): NULL bleibt null - "nicht gekoppelt".
                     string art = S(rg, ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_ART);
                     g.UebergabeArt = art.Length > 0 ? art : null;
                     g.VorlaufMittelC = DN(rg, ErgebnisGebaeudeSchema.SPALTE_VORLAUF_MITTEL);

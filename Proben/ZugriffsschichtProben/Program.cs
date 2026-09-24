@@ -71,6 +71,14 @@ namespace ZugriffsschichtProben
             // Anwenders anzufassen (Haken aus S4a).
             DataRepository.PfadUeberschreibung = kopie;
 
+            // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+            // ausdruecklich und nicht durch Auslassen. Die Proben laufen ohne Lizenz und
+            // SCHREIBEN auf der Arbeitskopie; ohne die Freigabe wirft jeder schreibende
+            // Zugriff eine LesemodusException, und die Migrationsfaelle 13 und 14 koennten
+            // den Schemastand der Kopie nicht setzen (seit iF30 blieben sie deshalb rot).
+            Schreibnaht.WerkzeugFreigabe("ZugriffsschichtProben (Proben ohne Lizenz auf der Arbeitskopie)");
+            Console.WriteLine("Schreibnaht  : freigegeben fuer " + Schreibnaht.WerkzeugGrund);
+
             // Durchgaengig dialogfrei: sonst blockierte die erste FehlerMelden-MessageBox
             // den unbeaufsichtigten Lauf bis zum Timeout.
             using (DataRepository.EngineModus())
@@ -99,9 +107,9 @@ namespace ZugriffsschichtProben
 
                 // Die Anwendung uebernimmt keinen Access-Altbestand: Weder der
                 // Erststart-Assistent (Fall 16) noch die Alt-Hebung (Fall 15) stehen
-                // noch im Programm. Die Uebernahme ist ein Hauswerkzeug - die letzte
-                // Access-Fassung hebt auf Stand 61, der EposSqliteMigrator uebernimmt
-                // nach SQLite; beide haben ihre eigenen Nachweise.
+                // noch im Programm. Die Uebernahme aus Access ist seit dem 24.09.2026
+                // ganz eingestellt; das Hauswerkzeug EposSqliteMigrator (Stand 61 nach
+                // SQLite) ist aus dem Repository entfernt, letzter Stand b0647c7e.
 
                 DataRepository.PfadUeberschreibung = kopie;
 
@@ -546,8 +554,8 @@ namespace ZugriffsschichtProben
                               "Stand 60 wurde als erfolgreiche Migration gewertet");
                     fall.Muss(bericht.IndexOf("Freeze-Stand 61", StringComparison.Ordinal) >= 0,
                               "Stand 60: der Bericht nennt den Freeze-Stand nicht: " + Erste(bericht));
-                    fall.Muss(bericht.IndexOf("EposSqliteMigrator", StringComparison.Ordinal) >= 0,
-                              "Stand 60: der Bericht nennt den Weg zur Erstmigration nicht");
+                    fall.Muss(bericht.IndexOf("aus Access ist eingestellt", StringComparison.Ordinal) >= 0,
+                              "Stand 60: der Bericht sagt nicht, dass die Uebernahme aus Access eingestellt ist");
                     fall.Muss(SchemaMigration.SimulationGesperrt(out grund),
                               "Stand 60: die Simulation ist NICHT gesperrt");
 

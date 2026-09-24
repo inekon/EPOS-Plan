@@ -5,8 +5,10 @@ Kenndaten-Datenbank angelegt wurde, wie die Werte entstanden sind, womit sie sic
 lassen und was noch zu entscheiden ist. Die Zahlen stehen vollständig hier, damit ohne
 Datenbankzugriff damit gearbeitet werden kann.
 
-> **Vor jeder Änderung am Katalog Abschnitt 6 lesen.** Das Migrationsskript löscht den neuen
-> Katalog beim nächsten Lauf — das ist die wichtigste offene Baustelle.
+> **Abschnitt 6 ist Geschichte.** Das Access-Migrationsskript, das den neuen Katalog beim nächsten
+> Lauf gelöscht hätte, ist mit der Einstellung der Access-Übernahme am 24.09.2026 aus dem Repository
+> entfernt; einen Migrationslauf, der den Katalog anfasst, gibt es nicht mehr. Was bleibt, ist die
+> Regel `ReadOnly` = Auslieferungssatz (ADR-001).
 
 **Kurzfassung:** In `Tab_Brauchwassertyp_STAMM` liegen 11 Wochen-Stundenprofile (ID 99–109),
 in `Tab_Brauchwasser_STAMM` 13 Monatswertsätze (ID 97–109). Vier Typen stammen unmittelbar aus
@@ -165,11 +167,18 @@ neuer Dateien, nicht das Ändern vorhandener. Eine vom Installer angelegte `Kenn
 dadurch schreibgeschützt — Access meldet das beim Öffnen. Nach „Komprimieren und reparieren"
 gehört die Datei dem angemeldeten Benutzer und ist beschreibbar.
 
-## 6. Kritisch: die Migration löscht den neuen Katalog
+## 6. Geschichte: die Access-Migration hätte den neuen Katalog gelöscht (überholt seit 24.09.2026)
 
-`migration.manuell.sql` (Repo-Wurzel, wird von der Migrations-GUI im Auto-Modus **mit Vorrang**
-verwendet) folgt in Teil A der Regel „Zeilen mit `ReadOnly = TRUE` bleiben aus der **Vorlage**
-erhalten, alles Übrige kommt aus der **Quelle**". Für den Brauchwasserpfad ist diese Regel aber
+> **Überholt.** `migration.manuell.sql` und `migration.config.json` (Skripte der Access-nach-Access-
+> Übernahme, Leser: Werkzeug `AccessMigration` im Ordner `DB_Migration` neben dem Repo) sind am
+> 24.09.2026 mit der Einstellung der Access-Übernahme aus dem Repository entfernt worden (letzter
+> Stand: Commit `6d022f6d`). Die Punkte 1 und 3 unten sind damit gegenstandslos; Punkt 2 — `ReadOnly`
+> heißt „gehört zur Auslieferung" — gilt unabhängig vom Skript (ADR-001, Entscheid AD-Q15).
+> Der Befund bleibt als Geschichte stehen:
+
+`migration.manuell.sql` (damals Repo-Wurzel, von der Migrations-GUI im Auto-Modus **mit Vorrang**
+verwendet) folgte in Teil A der Regel „Zeilen mit `ReadOnly = TRUE` bleiben aus der **Vorlage**
+erhalten, alles Übrige kommt aus der **Quelle**". Für den Brauchwasserpfad war diese Regel aber
 nur halb umgesetzt:
 
 ```sql
@@ -229,8 +238,8 @@ der Insert mit den erhalten gebliebenen Vorlagenzeilen.
 
 | Pfad | Rolle |
 |---|---|
-| `migration.manuell.sql` | Migrationsskript, Teil A Zeilen 50/51 und 123–131 betreffen den Brauchwasserkatalog |
-| `migration.config.json` | `excludeTables` des Auto-Generators; das manuelle Skript hat Vorrang |
+| `migration.manuell.sql` | Migrationsskript der Access-Übernahme, Teil A Zeilen 50/51 und 123–131 betrafen den Brauchwasserkatalog — am 24.09.2026 entfernt, letzter Stand Commit `6d022f6d` |
+| `migration.config.json` | `excludeTables` des Auto-Generators; das manuelle Skript hatte Vorrang — am 24.09.2026 entfernt |
 | `WindowsFormsApplication1/Controller/BrauchwasserStammCtrl.cs` | Katalog lesen/schreiben, `CopyFromStamm()` Stamm → Projekt |
 | `WindowsFormsApplication1/Controller/BrauchwasserCtrl.cs` | Projekttabellen, enthält den `M1…M12`-Bug |
 | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingBrauchwasserTyp.cs` | Maske „Brauchwassertypen Stundenverteilung", schreibt Spalten `1`…`168` einzeln per UPDATE |

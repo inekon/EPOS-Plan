@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -1284,8 +1284,11 @@ Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460), in § 8.
 `75d45630`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
 Papieren zu #461), in § 8.23 und § 8.24 **vor #463** (Stand `94521f2e`, der Merge #463 über `502fea3c` = Dialog
 Design #466 samt den Papieren zu #462), in § 8.25 und § 8.26 **vor #474** (Stand `4b50b77b`, der erste Merge #474 über
-`3ff9840b` = Anlagenkopplung AK1 samt den Papieren zu #463 und #470 und den Entscheid-Papieren vom 24.09.2026) —, nicht
-vor dem Schnitt.*
+`3ff9840b` = Anlagenkopplung AK1 samt den Papieren zu #463 und #470 und den Entscheid-Papieren vom 24.09.2026), in § 8.27
+und § 8.28 **vor #477** (Stand `61efa054`, der Anwender-Merge der Anlagenkopplung AK1, Welle 2, samt den Papieren zu
+#474 und #476), in § 8.29 und § 8.30 **vor #478** (Stand `6d022f6d` = #477 samt seinen Papieren; der erste Merge #478,
+`d176b378`, lässt die Papiere unberührt), in § 8.31 und § 8.32 **vor #479** (Stand `c99c4c7a` = #478 samt seinen Papieren
+und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2413,3 +2416,128 @@ Die Stellen, die mit E13 veraltet sind; „vorher" ist der Wortlaut vor #474 (St
 | § 6.3 Nr. 9h (Z. 2754–2755) | „offen bleibt allein der Halbsatz aus A8 zur Speichervariante (Positionsarten 20/21)" | „der Halbsatz … ist erledigt mit E13 (#474)" |
 | § 6.5, Nutzungsdauer an zwei Orten (Z. 2853) | „(der Halbsatz aus A8 ist offen)" | „eine neue Variante bekommt sie aus der Zeile „Stromspeicher · Batterie" (Halbsatz aus A8, #474)" |
 | § 7 und Anhang | § 7: Wortlaut in § 8.25; Mockup-Zeile „U12 und U43 erledigt #455"; Etappenzeile „E11 … E12 — nächste Etappe: E12 …; Bau offen: E9b‑Q5 b, E7c3‑Q6 a" | § 7 „Alle Fragen sind entschieden", E13 (#474); Kürzeltafel mit der Zeile der Welle (#474) und „U43 … (Punkt 9 „erfüllt" #474)"; Etappenzeilen „E11 … E12 — E12 vorbereitet #470, Sammel-Upload 26.09.2026 …; gebaut mit E13 (#474) …; alle Fragen entschieden" und „E13 — kleine Bauwelle" = #474 |
+
+### 8.27 E14 — Formelmappe je Szenario: Stufen 1 und 2 für Günstig und Ungünstig (#477)
+
+Protokoll [`E14_Formelmappe_je_Szenario_Protokoll.md`](E14_Formelmappe_je_Szenario_Protokoll.md); der Stand von E8b‑Q1
+(R‑E8b, abgelöst), der Befund 1 aus E9a (R‑E9a, erledigt) und die neue Familie R‑E14 im Register. Die Welle folgt dem
+Befund 1 aus E9a („Formelmappe Stufe 1 und 2 rechnen nur Erwartet") auf den Auftrag des Anwenders vom 24.09.2026, 18:35
+(„Formelmappe und Befund aus E9a: Auftrag"); sie ergänzt V‑D (E8 Teil b) und ist keine eigene Etappe des Plans E0–E12.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E14** (#477, erster Merge `f3f071d2` über `61efa054`, der Baum gleich `f6727fdd`; End-Merge `b9c660b9`) | Stufe 1 je Szenario: unter den Tabellen von Erwartet je Stand eine Tabelle Günstig und Ungünstig aus dem Lauf des Szenarios, Formeln auf seine Spalte im Parameterblock, bis zum längsten Zeitraum, jenseits von T_s leer über eine Schutzformel, der Restwert am Ende von T_s (E14‑Q1 a); Stufe 2 je Szenario: Nettobarwert, Annuität, Differenzreihe, Amortisation, zwei Hilfsspalten für Vorzeichen und Wechsel, der Zinsfuß „nicht eindeutig" bei mehreren Wechseln (E14‑Q3 a, auch bei Erwartet), die Bandbreite als Zellbezug mit `MAX-MIN` (E14‑Q2 a löst E8b‑Q1 a ab); Punkt 11 der Checkliste „alle drei Szenarien formelbasiert"; 5 Ressourcenschlüssel neu, 3 neu gefasst | **keine** — Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich (394/394 CSV, 4.207.049 Werte), kein Schemaschritt; Wertfassung = Formelfassung in 16 Prüfgruppen (Excel 16 und ClosedXML abweichend 0, OpenXML 0 Fehler); voller Lauf auf `f6727fdd` 12.967 bestanden / 0 Fehler / 1 übersprungen; Gate auf `f3f071d2`: Kern-Filter 0 Fehler, ChartProben 151/151 gleich der Windows-Messlatte, voller Lauf 12.967 / 0 / 1, Dokumentationswachen 29/29 |
+
+*§ 2.11.6, Stufe 0, der Schluss (Z. 994–996):*
+
+> drei Sätze der Grenze. Die Formeln rechnen mit der Spalte Erwartet: Wer dort einen Satz ändert, sieht
+> Mehrjahrestabellen und Kennzahlen des Erwartungsfalls mitziehen; die Jahreszeilen stehen fest — ein anderer
+> Betrachtungszeitraum verlangt einen neuen Bericht.
+
+**Umgesetzt mit E14 (#477):** Die Formeln rechnen je Szenario mit seiner Spalte; die Jahreszeilen reichen bis zum
+längsten Zeitraum der drei Szenarien, Jahre nach T_s eines Szenarios bleiben leer — ein längerer Zeitraum verlangt
+einen neuen Bericht.
+
+*§ 2.11.6, Stufe 2, der Schluss (Z. 1006–1008):*
+
+> Ein mehrdeutiger Zinsfuß und die
+> Kennzahlen der Blöcke Günstig und Ungünstig bleiben Werte — für sie gibt es keine Mehrjahrestabelle (E8b‑Q1,
+> → Register R‑E8b).
+
+**Umgesetzt mit E14 (#477):** Die Blöcke Günstig und Ungünstig rechnen auf ihre eigenen Tabellen in Formeln
+(E14‑Q2 a); ein mehrdeutiger Zinsfuß steht in allen drei Szenarien als Text „nicht eindeutig" (E14‑Q3 a).
+
+### 8.28 Berichtigungen im gültigen Stand (#477)
+
+Die Stellen, die mit E14 veraltet sind; „vorher" ist der Wortlaut vor #477 (Stand `61efa054`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `c71addf5`, „E13 ohne Schritt" | Codestand `b9c660b9`, „E13 und E14 ohne Schritt" |
+| § 2.11.2, Zeile V‑G10 (Z. 792) | „Stand: gebaut #455 … die Kennzahlen des Szenarios Erwartet in Formeln …" | dazu „Ergänzt #477 (E14): Stufe 1 und 2 rechnen alle drei Szenarien formelbasiert" |
+| § 2.11.4, Zeile V‑D (Z. 846) und Fußnote (Z. 852) | „… die Kennzahlen von Günstig und Ungünstig bleiben Werte (E8b‑Q1, → Register R‑E8b)"; Stand „E8 Teil b — gebaut"; Fußnote bis E9 (#461, #462) | „Ergänzt #477 (E14, nach dem Befund 1 aus E9a)" mit Tabellen, Kennzahlen, Zinsfuß und Bandbreite je Szenario, 16 Prüfgruppen, E14‑Q2 a löst E8b‑Q1 a ab; Stand „… gebaut; ergänzt #477 (E14)"; Fußnote „außerhalb des Plans E13 (#474) und E14 (#477)" |
+| § 2.11.6, Einleitung (Z. 974–975) | „Gebaut sind alle vier Stufen mit #455 …" | dazu „mit #477 (E14) rechnen die Stufen 1 und 2 alle drei Szenarien formelbasiert" |
+| § 2.11.6, „Was die Mappe trägt", Stufen 0, 1, 2, 3 (Z. 994–1015) | Stufe 0 und 2: Wortlaut in § 8.27; Stufe 1 ohne Szenarien; Stufe 3 ohne Szenarioangabe | Stufe 0 und 2 wie in § 8.27; Stufe 1 mit dem Absatz „Je Szenario (#477, E14‑Q1 a)" — Eingangswerte, Energiespalte ohne Zerlegung Menge × Preis, Schutzformel, Restwert, Nachweisblock nur bei Erwartet; Stufe 3 „gilt für das Szenario Erwartet" |
+| § 2.11.6, Gegenrechnung (Z. 1017–1018) | „in allen 13 Prüfgruppen … (mit #460 über 15 Prüfgruppen nachgemessen …)" | dazu „mit #477 über 16 Prüfgruppen für alle drei Szenarien — Excel 16 und die ClosedXML-Nachrechnung abweichend 0" |
+| § 2.11.6, „Dauerhaft Werte bleiben" und „EPOS trägt die Werte ein" (Z. 1041–1043) | Liste ohne Satz zu Günstig/Ungünstig; „EPOS trägt die Werte ein, Excel rechnet neu." | dazu „Die Kennzahlen der Szenarien Günstig und Ungünstig gehören nicht dazu …"; „… Excel rechnet neu — in allen drei Szenarien." |
+| § 6.1 | Kurztafel bis E13 (#474) | Zeile „E14 Formelmappe je Szenario" (#477) |
+| § 6.2 | endete mit „… E13 bewegt keinen Anker." | dazu die zwei Wachfälle in `BerichtBlattstrukturWacheTests`, `Punkt_11_nennt_alle_drei_Szenarien_formelbasiert` und „E14 bewegt keinen Anker" |
+| § 7 und Anhang | § 7: „Alle Fragen sind entschieden: …" (Z. 2899), der Absatz endete mit „… nicht gebaut). Aus der" (Z. 2904); Kürzeltafel bis #474; Mockup-Zeile „U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474)"; Etappenzeilen bis „E13 — kleine Bauwelle" | § 7 „Alle Fragen der Etappen bis E10 sind entschieden", dazu E14 (#477) mit drei offenen Fragen und die freigegebenen Aufträge E15, E16, E17; Kürzeltafel mit der Zeile der Welle (#477); „… Günstig und Ungünstig in Formeln, Punkt 11 #477"; Etappenzeile „E14 — Formelmappe je Szenario" = #477, die Zeile „E11 … E12" mit „E8b‑Q1 abgelöst … alle Fragen bis E10 entschieden" |
+
+### 8.29 E15 — Risikomodul nach DIN EN 17463: Zinszuschlag oder Zahlungsstromabzug, Schemaschritt 125 (#478)
+
+Protokoll [`E15_Risikomodul_Protokoll.md`](E15_Risikomodul_Protokoll.md); im Register die Zeile V‑G7 in R‑V, der
+Vermerk zu E9a‑Q6 (R‑E9a) und die neue Familie R‑E15. Die Welle folgt dem Auftrag des Anwenders vom 24.09.2026 („V‑G7
+Risiko: eigener kleiner Auftrag ausführen"); sie baut die Lücke V‑G7, die die Zeile V‑E mitnennt und E9 nicht gebaut
+hat (E9a‑Q6 a), und ist keine eigene Etappe des Plans E0–E12.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E15** (#478, erster Merge `d176b378` über `6d022f6d`, der Baum gleich `5eaed19c`; End-Merge `dedfc760`) | Schemaschritt 125 mit `Risiko_Art`, `Risiko_Zinszuschlag`, `Risiko_Verlust` und `Risiko_Wahrscheinlichkeit` an `Tab_ProjektWirtschaftlichkeit` (reines DDL, Testdatenbank 125); `RisikoModul` als eine Stelle der Regeln: Zinszuschlag in allen drei Szenarien über `FuerSzenario` (E15‑Q1 a) oder Zahlungsstromabzug R_loss × p_loss / 100 je Periode ab Jahr 1, nicht Jahr 0 und nicht der Restwert, als Bestandteil RISIKO (E15‑Q2 a) für jeden Stand außer der Referenz (E15‑Q4 a); Gruppe „Risiko (DIN EN 17463, 6.5)" im Parameterdialog mit Infoknopf auf `Wirtschaftlichkeit#risiko`, KI-Feldkarte; Ausweis nur bei Pflege (E15‑Q3 a) — Nachweiszeile, Annahmentafel, Deklaration 6.5, Punkt 6 der Checkliste, Gliederung, Mehrjahrestabelle, Risikozeilen der Formelmappe | ja, je Pflege; Vorgabe aus — ohne Pflege bitgleich (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich); A/B: Zuschlag 1 %-Punkt an 1030 wie ein Lauf mit i + 1 (−31.141.243 → −28.306.379 €), Abzug 1.000 €/a an 1030 −14.877 € im Erwartungsfall, 1024 gegen den Stamm −1.807.372 → −1.822.250 € |
+
+*§ 2.11.2, Gap-Tabelle, Zeile V‑G7 (Z. 789):*
+
+> | V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
+
+**Umgesetzt mit E15 (#478):** „gebaut #478 (E15, Schemaschritt 125)" mit den vier Spalten, den zwei Wegen, dem Ausweis
+und der Lesart der Norm — Anhang F, Tabelle F.2 rechnet R_loss als Prozent des Nettorückflusses, gebaut ist ein
+Betrag in € je Periode (die Prozentlesart als E15‑Q4 c).
+
+*§ 2.11.4, Zeile V‑E, der Schluss der Spalte „geliefert durch" (Z. 847):*
+
+> Risiko (V-G7) und n-jährliche Zeitpunkte (V-G3) baut E9 nicht (E9a‑Q6, → Register R‑E9a)
+
+**Umgesetzt mit E15 (#478):** das Risiko gebaut mit dem eigenen Auftrag E15; V‑G3 offen, Auftrag E16.
+
+### 8.30 Berichtigungen im gültigen Stand (#478)
+
+Die Stellen, die mit E15 veraltet sind; „vorher" ist der Wortlaut vor #478 (Stand `6d022f6d`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) und Schrittabsatz (Z. 34) | Codestand `b9c660b9`, Zielversion 124, „Schemaschritte 90–124 vergeben"; der Absatz endete mit dem Schritt 120 der Etappe E10 | Codestand `dedfc760`, Zielversion 125, „90–125 vergeben … 125 das Risikomodul, Etappe E15"; dazu der Schritt **125** (`SCHRITT_125_RISIKOMODUL`) mit seinen vier Spalten |
+| § 2.11.2, Zeile V‑G7 (Z. 789) | „fehlt" | Wortlaut in § 8.29; „gebaut #478" samt der Lesart R_loss in € je Periode |
+| § 2.11.4, Zeile V‑E (Z. 847) und Fußnote (Z. 853) | Wortlaut in § 8.29; Stand „E9 — gebaut … E9 abgeschlossen"; Fußnote „… E13 (#474) und die Formelmappe je Szenario E14 (#477, ergänzt V‑D)" | „Risiko (V‑G7) gebaut #478 … V‑G3 offen — der Auftrag E16"; Stand dazu „Risiko gebaut #478 (E15), V‑G3 offen (E16)"; Fußnote mit „das Risikomodul E15 (#478, V‑G7 aus V‑E, Schemaschritt 125)" |
+| § 2.11.5, „Ausweis im Bericht" (Z. 930) | endete mit „… Einspeisevergütungen nur bei Pflege." | dazu der Absatz „Risiko (umgesetzt #478, V‑G7, E15‑Q3 a)" — Nachweiszeile, Annahmentafel, Deklaration, Punkt 6, Parameterblock; kein Szenariowert, zählt nicht im Ausweis „n von m" |
+| § 2.11.6, „Was die Mappe trägt", Stufe 0 (Z. 999) und Stufe 1 (Z. 1012) | ohne Risiko | Stufe 0 mit den Risikozeilen (`Zins_Basis`, `Risiko_Zuschlag`, `Zins_i` als Formel bzw. `Risiko_Verlust`, `Risiko_p`, `Risiko_Abzug`); Stufe 1 mit der Spalte „Risikoabzug" als `=-Risiko_Abzug` je Szenario und dem Bestandteil RISIKO der Gliederung |
+| § 6.1 | Kurztafel bis E14 (#477) | Zeile „E15 Risikomodul" (#478) mit Schemaschritt 125 |
+| § 6.2 (Z. 2722) | endete mit „… E14 bewegt keinen Anker." | dazu `RisikoModulTests` (25) und fünf Dialogproben; „E15 bewegt keinen Anker" |
+| § 7 (Z. 2930–2932) | „Freigegeben und im Bau sind die Lücken V‑G7 (Risikomodul, E15) und V‑G11 (…, E17); V‑G3 (…, E16) folgt nach E15" | „Die Lücke V‑G7 ist mit E15 (#478) gebaut … vier Fragen offen (→ Register R‑E15). Freigegeben und im Bau ist V‑G11 (E17); V‑G3 (E16) folgt nach E15" |
+| Anhang (Z. 2976, 2993, 3019) | Zeile V‑A…V‑E ohne Risiko; Mockup-Zeile „… Punkt 11 #477"; Etappenzeilen bis „E14 — Formelmappe je Szenario" | „aus V-E das Risiko V‑G7 = E15 (gebaut #478), V‑G3 = E16 (offen)"; „… Punkt 6 mit dem Risiko und die Risikozeilen der Mappe #478"; Kürzelzeile der Welle (#478) und Etappenzeile „E15 — Risikomodul (V‑G7)" = #478 |
+
+### 8.31 E17 — Nicht monetarisierbare Wirkungen: Kategorie und Beurteilung, Schemaschritt 127 (#479)
+
+Protokoll [`E17_Nicht_monetaere_Wirkungen_Protokoll.md`](E17_Nicht_monetaere_Wirkungen_Protokoll.md); im Register die
+Zeile V‑G11 in R‑V und die neue Familie R‑E17. Die Welle folgt dem Auftrag des Anwenders vom 24.09.2026 („V‑G11 …
+kleiner Dialog-und-Bericht-Auftrag ohne Rechenwirkung"); sie ergänzt den Freitext aus W5‑B‑12 um Kategorie und
+Beurteilung und ist keine eigene Etappe des Plans E0–E12. Der Schritt heißt 127; 126 ist die Reparatur der
+Gebäude-Katalogsätze (Dialog Design, #485).
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E17** (#479, erster Merge `0462f92e` über `c99c4c7a`, der Baum gleich `079de7d7`; End-Merge `52614c33` nach dem Nachzug auf #485) | Schemaschritt 127 mit der Tabelle `Tab_ProjektWirkung` (STRICT, Fremdschlüssel auf `Tab_Projekt` mit Weitergabe; Kategorie, Beschreibung, Dauer 1–3, drei Wirkungsgrade 0–3) und der Übernahme eines gepflegten Freitexts als Wirkung SONSTIG ohne Beurteilung (E17‑Q1 a, E17‑Q3 a; Testdatenbank 127); die Beurteilung nach 8.2 als Dauer × stärkste Wirkung, 0 bis 9, an einer Stelle (`NichtMonetaereWirkungen`, E17‑Q2 a); der Baustein `WirkungenListe` im Bewertungsblock statt des Freitexts (Altfeld nur lesbar), Infoknopf auf `Wirtschaftlichkeit#nicht-monetaer`, KI-Sicht `wirkung_*`; die Tabelle in Wort- und Tabellenbericht, die Punkte 2b und 3b der Anhang-E-Checkliste „erfüllt"/„teilweise"/„offen" | keine — kein Rechenweg liest die Tabelle (Anker „keine Rechenwirkung" bitgleich, Referenzlauf 13/13 gegen R14 byte-gleich) |
+
+*§ 2.11.2, Gap-Tabelle, Zeile V‑G11 (Z. 795):*
+
+> | V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | **Freitext umgesetzt** (W5‑B‑12/G6 des Szenarienkonzepts) | es fehlen **Kategorie und Beurteilung** nach Dauer × Wirkung; fließt nie in den NPV, immer in den Bericht |
+
+**Umgesetzt mit E17 (#479):** „gebaut #479 (E17, Schemaschritt 127)" mit der Tabelle, den Skalen, der Regel der
+Beurteilung, dem Altfeld und dem Ausweis in Bericht und Checkliste.
+
+### 8.32 Berichtigungen im gültigen Stand (#479)
+
+Die Stellen, die mit E17 veraltet sind; „vorher" ist der Wortlaut vor #479 (Stand `c99c4c7a` = #478 samt seinen Papieren
+und #482). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) und Schrittabsatz (Z. 36) | Codestand `dedfc760`, Zielversion 125, „Schemaschritte 90–125 vergeben"; der Absatz endete mit dem Schritt 125 der Etappe E15 | Codestand `52614c33`, Zielversion 127, „90–127 vergeben … 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17"; dazu der Schritt **127** (`SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN`) mit Tabelle und Freitext-Übernahme |
+| § 2.11.2, Zuordnungstafel V‑G ↔ G (Z. 781) | „… der Freitext ist mit W5‑B‑12/G6 gebaut" | dazu „die Liste mit Kategorie und Beurteilung mit E17 (#479)" |
+| § 2.11.2, Zeile V‑G11 (Z. 795) | Wortlaut in § 8.31 | „gebaut #479 (E17, Schemaschritt 127)" samt Stand |
+| § 2.11.2, Zeile V‑G12 (Z. 796) | endete mit Punkt 9 | dazu „Punkte 2b und 3b …, gebaut #479" — erfüllt, teilweise, offen; der Freitext zählt nicht mehr |
+| § 2.11.4, Zeile V‑E (Z. 849) und Fußnote (Z. 855) | endete mit „V‑G3 offen — der Auftrag E16"; Fußnote „… und das Risikomodul E15 (#478, …)" | dazu „Den Freitext aus W5‑B‑12 löst E17 (#479) ab … nur noch V‑G3 offen (→ E16)"; Fußnote mit „die nicht monetarisierbaren Wirkungen E17 (#479, V‑G11, Schemaschritt 127)" |
+| § 2.11.6, „Dauerhaft Werte bleiben" (Z. 1069) | „… Empfehlungssatz, nicht monetäre Wirkungen)" | dazu „mit #479 die Tafel der Wirkungen, die Beurteilung als Zahl, keine Formel" |
+| § 6.1 | Kurztafel bis E15 (#478) | Zeile „E17 Nicht monetarisierbare Wirkungen" (#479) mit Schemaschritt 127 |
+| § 6.2 (Z. 2747) | endete mit „… E15 bewegt keinen Anker." | dazu `NichtMonetaereWirkungenTests`, `WirkungenListeTests` und zwei Fälle der Blattstruktur-Wache; „E17 bewegt keinen Anker" |
+| § 7 (Z. 2957–2958) | „Freigegeben und im Bau ist V‑G11 (nicht monetarisierbare Wirkungen, E17); V‑G3 (…, E16) folgt nach E15" | „Die Lücke V‑G11 ist mit E17 (#479) gebaut … vier Fragen offen (→ Register R‑E17). Aus der Gap-Tafel … ist nur noch V‑G3 (…, E16, #484) offen" |
+| Anhang (Z. 3002, 3018, 3020, 3047) | Zeile V‑A…V‑E ohne V‑G11; Kürzelzeilen bis #478; Mockup-Zeile „… Risikozeilen der Mappe #478"; Etappenzeilen bis „E15 — Risikomodul (V‑G7)" | „der Freitext aus W5‑B‑12 abgelöst durch V‑G11 = E17 (gebaut #479)"; Kürzelzeile der Welle (#479); „… Punkte 2b und 3b mit der Wirkungsliste #479"; Etappenzeile „E17 — Nicht monetarisierbare Wirkungen (V‑G11)" = #479 |

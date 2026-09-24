@@ -1095,19 +1095,27 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     };
 
     /// <summary>
-    /// Block 5 nennt die nicht monetären Wirkungen, wenn ein Text gepflegt ist — mit der
-    /// Zeilenform des Berichts.
+    /// Block 5 nennt die nicht monetären Wirkungen, wenn welche gepflegt sind — mit der
+    /// Zeilenform des Berichts. ETAPPE E17: die Beschreibungen der Liste; das Altfeld allein
+    /// nennt keine.
     /// </summary>
     [Fact]
     public void Block_5_nennt_die_gepflegten_nicht_monetaeren_Wirkungen()
     {
         WirtschaftlichkeitStand stand = Voll();
-        stand.NichtMonetaer = "Versorgungssicherheit";
+        stand.Wirkungen = new List<WindowsFormsApplication1.ProjektWirkung>
+        {
+            new() { Beschreibung = "Versorgungssicherheit" },
+            new() { Beschreibung = "Komfort", Dauer = 2, WirkungMitarbeiter = 1 }
+        };
+        stand.NichtMonetaer = "Altfeld-Text";
         stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
         var cut = Zeige(stand);
 
         Assert.Contains(Abschnitt(cut, 4).QuerySelectorAll(".epos-herleitung-text"),
-                        e => e.TextContent == "Nicht monetäre Wirkungen: Versorgungssicherheit");
+                        e => e.TextContent == "Nicht monetäre Wirkungen: Versorgungssicherheit; Komfort");
+        Assert.DoesNotContain(Abschnitt(cut, 4).QuerySelectorAll(".epos-herleitung-text"),
+                              e => e.TextContent.Contains("Altfeld-Text"));
     }
 
     // =====================================================================
