@@ -3527,7 +3527,7 @@ Zuordnung der Zeilen
         <div class="f-spalten">
           <div>
             <div class="f-zeile eng"><label>Kalkulationszins</label><span class="f-eingabe num" title="Kalkulationszins">3,00</span><span class="f-einheit">%</span></div>
-            <div class="f-zeile eng"><label>Betrachtungszeitraum</label><span class="f-eingabe num" title="Betrachtungszeitraum">20</span><span class="f-einheit">a — in allen Szenarien gleich</span></div>
+            <div class="f-zeile eng"><label>Betrachtungszeitraum</label><span class="f-eingabe num" title="Betrachtungszeitraum">20</span><span class="f-einheit">a — Erwartet; je Szenario in Zeile 8 der Tafel</span></div>
           </div>
           <div>
             <div class="f-zeile eng"><label>Energie p<sub>E</sub></label><span class="f-eingabe num">0,00</span><span class="f-einheit">%/a</span></div>
@@ -3544,6 +3544,12 @@ Zuordnung der Zeilen
         <div class="f-info" style="margin-top:0">Gepflegt heißt: der Szenariowert weicht um mehr als
         1e−9 vom Erwartungswert ab. Dann wird für diese Größe <b>jede</b> Ableitung übersprungen —
         der gepflegte Wert gilt unverändert.</div>
+        <div class="f-info">Die Tafel führt neun Zeilen mit den Spalten Erwartet, Best und Worst: Kalkulationszins,
+        die drei Preissteigerungen, Investition, Erträge und Nutzungsdauer — ein leeres Feld folgt der Vorgabe —, dazu
+        Zeile 8 <b>Betrachtungszeitraum</b> (ganze Jahre, Platzhalter T) und Zeile 9 <b>Mengenänderung</b> (%, Platzhalter
+        0) ohne Vorgabe: leer heißt „wie Erwartet". „Vorgaben" leert alle achtzehn Felder und lässt die
+        Einspeisevergütungen stehen; ihr Paar trägt der ±-Knopf an ihrem Feld in der Gruppe „Strom", die KWK-Vergütung
+        im Dialog „BHKW-Wirtschaftlichkeit".</div>
       </div>
       <div class="f-info"><b>Ausschnitt:</b> Der Dialog führt sechs Gruppen mit zwanzig Zahlenfeldern, drei
       Klapplisten und einem Schalter (Strom, BHKW, Brennstoff, Bilanz je eigene Gruppe); gezeichnet sind die
@@ -4281,17 +4287,26 @@ Zuordnung der Zeilen
   <div class="zone" id="valeri-f4">Was ist angenommen?</div>
   <p class="eng">Je Größe der wirksame Wert in allen drei Szenarien und die Herkunft — „Vorgabe" heißt,
   dass niemand das Feld angefasst hat und es einer geänderten Projektangabe automatisch folgt.</p>
-  <p class="eng"><b>Die vollständige Szenarioabdeckung im Kern — gebaut #461 (E9a), die Pflege im Dialog mit E9b
-  (U15).</b> Günstig und Ungünstig können zusätzlich einen eigenen Betrachtungszeitraum, eine Mengenänderung, eigene
+  <p class="eng"><b>Die vollständige Szenarioabdeckung — im Kern gebaut #461 (E9a), in den Dialogen gebaut #462 (E9b;
+  U15).</b> Günstig und Ungünstig können zusätzlich einen eigenen Betrachtungszeitraum, eine Mengenänderung, eigene
   Trägerpreise (Arbeits-, Grund- und Leistungspreis je Träger) und eigene Erlössätze (Einspeisevergütung PV und KWK,
-  DV-Entgelt, PPA-Preis) tragen; leer heißt „wie Erwartet", eine Vorgabe gibt es für diese Größen nicht. Die Tafel
-  nennt den Betrachtungszeitraum je Szenario mit seinem wirksamen Wert (Herkunft „gepflegt", wo ein Szenario einen
-  eigenen trägt) und führt die Zeilen „Mengenänderung", „Einspeisevergütung PV" und „Einspeisevergütung KWK" nur, wenn
-  ein Szenario sie pflegt — ohne Pflege bleibt sie, wie gezeichnet. Die <b>Nachweiszeile je Szenario</b> (Szenariozeile
-  der Seite, Herleitungszeile des Parameterdialogs, Annahmenzeilen der Berichte) nennt den Zeitraum („T = 20 a") und
-  die Einspeisevergütung immer, Mengenänderung und Trägerpreise nur, wenn sie gepflegt sind; der <b>Parameterblock</b>
-  der Formelmappe hat 15 Zeilen — dazu Mengenänderung, Einspeisevergütung PV und KWK — und je gepflegtem Trägerpreis
-  eine Zeile mehr. Der Hinweistext unter der Tafel bleibt bis E9b und stimmt nur für Projekte ohne diese Pflege.</p>
+  DV-Entgelt, PPA-Preis) tragen; leer heißt „wie Erwartet", eine Vorgabe gibt es für diese Größen nicht.
+  <b>Gepflegt</b> werden Zeitraum und Menge in den Zeilen 8 und 9 der Szenariotafel des Dialogs „Parameter" (Zone
+  „Dialog — Parameter"), die übrigen mit dem <b>±-Knopf an drei Orten</b>: je Preis an der Trägerkarte im Projekt, an
+  den Einspeisevergütungen — PV im Parameterdialog, KWK im Dialog „BHKW-Wirtschaftlichkeit" — und an DV-Entgelt und
+  PPA-Preis im PV-Vergütungsdialog; ein Punkt am Knopf zeigt ein gepflegtes Paar, ⚠ einen Szenariopreis ohne
+  Erwartet-Preis. Die Tafel nennt den Betrachtungszeitraum je Szenario mit seinem wirksamen Wert (Herkunft „gepflegt",
+  wo ein Szenario einen eigenen trägt) und führt die Zeilen „Mengenänderung", „Einspeisevergütung PV" und
+  „Einspeisevergütung KWK" nur, wenn ein Szenario sie pflegt — ohne Pflege bleibt sie, wie gezeichnet. Die
+  <b>Nachweiszeile je Szenario</b> (Szenariozeile der Seite, Herleitungszeile des Parameterdialogs, Annahmenzeilen der
+  Berichte) nennt den Zeitraum („T = 20 a") und die Einspeisevergütung immer, Mengenänderung und Trägerpreise nur, wenn
+  sie gepflegt sind; der <b>Parameterblock</b> der Formelmappe hat 15 Zeilen — dazu Mengenänderung, Einspeisevergütung
+  PV und KWK — und je gepflegtem Trägerpreis eine Zeile mehr. <b>Unter der Tafel</b> steht statt des Hinweistexts der
+  <b>Ausweis „n von m Parametern szenariert"</b> — ohne Pflege nur die Zählung, sonst dahinter die gepflegten Größen.
+  m zählt die sieben Größen der Tafel, Zeitraum, Menge, die zwei Einspeisevergütungen, DV-Entgelt und PPA-Preis je
+  PV-Vergütung eines Standes mit PV-Anlage und je Träger mit Verbrauch Arbeits- und Grundpreis, den Leistungspreis beim
+  Stromträger immer; n die Größen mit gepflegter Abweichung. Derselbe Satz steht in Block 4, im Wort- und im
+  Tabellenbericht und in Punkt 9 der Anhang-E-Checkliste.</p>
 
   <div class="seite">
     <div class="s-band">Annahmen und ihre Herkunft
@@ -4322,14 +4337,10 @@ Zuordnung der Zeilen
         </tbody>
       </table>
       </div>
-      <div class="s-warn"><b>Was ein Szenario variiert — und was nicht.</b> Ungünstig und Günstig
-      verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie,
-      Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert
-      (±10 %), die Erträge aus Einspeisung und Photovoltaik-Vergütung (±10 %) und die Nutzungsdauer der
-      Positionen ohne eigenen Szenariowert (±2 a). In allen drei Szenarien gleich bleiben der
-      Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Einspeisevergütung,
-      Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen Sätze. Trägt das Projekt
-      gepflegte Sätze, nennt der Hinweis die gepflegten Werte statt der Vorgaben.</div>
+      <div class="s-herleitung" style="margin-top:9px">0 von m Parametern szenariert</div>
+      <div class="s-info">An der Stelle des Hinweistexts steht der Ausweis. Gezeichnet ohne Pflege; m zählt die
+      Parameter der Vergleichsgruppe nach der Regel oben. Mit einer Pflege folgen die Größen, etwa „2 von 16
+      Parametern szenariert: Betrachtungszeitraum, Arbeitspreis Erdgas E" (ein Stand mit Strom und Erdgas).</div>
 
       <div class="zone" style="margin:18px 0 10px;color:#5A5A5A">Was daraus im Lauf wird</div>
       <div class="s-scroll">
@@ -4575,7 +4586,7 @@ Einstufung
         <tr><td>Blatt „Verlauf": Name, Titel, Zeilen „Nulldurchgang (dynamische Amortisation) [a]" · „Restwert-Barwert am Horizontende [€]" · „Kapitalwertdifferenz = Endwert + Restwert-Barwert [€]"</td><td class="rs">WIRT_VERL_BLATT · WIRT_VERL_BLATT_TITEL · WIRT_VERL_ZEILE_NULL · WIRT_VERL_ZEILE_RESTWERT · WIRT_VERL_ZEILE_KW</td><td>Tabellenbericht, „Verlauf nach Excel…"</td></tr>
         <tr><td>Sensitivitätstafel: Titel, Spalten „Einflussgröße · bei −Δ [€] · Basis [€] · bei +Δ [€] · Steigung · Einheit", Einheiten „€/%-Pkt." · „€/%"</td><td class="rs">WIRT_SENS_TITEL · WIRT_SENS_SP_PARAMETER · WIRT_SENS_SP_MINUS · WIRT_SENS_SP_BASIS · WIRT_SENS_SP_PLUS · WIRT_SENS_SP_STEIGUNG · WIRT_SENS_SP_EINHEIT · WIRT_SENS_EINHEIT_PUNKT · WIRT_SENS_EINHEIT_PROZENT</td><td>„Wie sicher ist das?", Block 4; Steigung und Einheit auch in Wort- und Tabellenbericht</td></tr>
         <tr><td>Annahmentafel: Titel „Annahmen und ihre Herkunft", Spalte „Herkunft", Zeile „Betrachtungszeitraum", Herkunft „Vorgabe" · „gepflegt" · „Projektwert — in allen drei Szenarien gleich"</td><td class="rs">WIRT_ANN_TITEL · WIRT_ANN_SP_HERKUNFT · WIRT_ANN_ZEITRAUM · WIRT_ANN_VORGABE · WIRT_ANN_GEPFLEGT · WIRT_ANN_PROJEKTWERT</td><td>„Was ist angenommen?"</td></tr>
-        <tr><td>Hinweistext „Was ein Szenario variiert"</td><td class="rs">WIRT_SZEN_HINWEIS</td><td>unter der Annahmentafel, Block 4, Wort- und Tabellenbericht</td></tr>
+        <tr><td>Ausweis „{0} von {1} Parametern szenariert", mit gepflegten Größen „{0} von {1} Parametern szenariert: {2}" — an der Stelle des Hinweistexts „Was ein Szenario variiert" (<span class="mono">WIRT_SZEN_HINWEIS</span> gestrichen #462) <b>neu #462</b></td><td class="rs">WIRT_SZ_ABDECKUNG · WIRT_SZ_ABDECKUNG_LISTE</td><td>unter der Annahmentafel, Block 4, Wort- und Tabellenbericht; Punkt 9 der Checkliste</td></tr>
         <tr><td>Kennzeichnung „Nachweis liegt mit der nächsten Rechnung vor"</td><td class="rs">WIRT_NACHWEIS_NAECHSTE_RECHNUNG</td><td>„Was ist angenommen?", Block 5, Wort- und Tabellenbericht</td></tr>
         <tr><td>Hinweis „Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell …" und Tarifnachweis „Zeitzonentarif (HT/NT) entfällt — Preise des Stromträgers aus der Kostenverwaltung" — nur, wo ein Satz den Schemaschritt nicht durchlaufen hat</td><td class="rs">WIRT_HINWEIS_ZEITZONENTARIF · WIRT_TARIF_NACHWEIS_ZONEN</td><td>Hinweisband; Tarifnachweis im Nachweisblock und im Bericht</td></tr>
         <tr><td>Deklarationszeilen, ohne gepflegten Text „nicht monetäre Wirkungen: keine benannt"</td><td class="rs">WIRT_DEKL_NOMINAL · WIRT_DEKL_STEUERN · WIRT_DEKL_RESTWERT · WIRT_DEKL_RISIKO · WIRT_DEKL_RISIKO_OHNE_NM</td><td>Klappblock, Block 5, Wort- und Tabellenbericht</td></tr>
@@ -4585,12 +4596,13 @@ Einstufung
         <tr><td>Zahlungsstrombild: Titel „Zahlungsstrom je Jahr", Unterzeile „{0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert", Schlüssel „Ersatzjahr", Leerhinweis <b>neu #454</b></td><td class="rs">WIRT_ZS_TITEL · WIRT_ZS_UNTER · WIRT_ZS_ERSATZJAHR · WIRT_ZS_LEER</td><td>Block 2 unter der Jahrestafel; Wortbericht über jeder Mehrjahrestafel</td></tr>
         <tr><td>Gliederung des Kapitalwerts: Titel „Gliederung des Kapitalwerts — Szenario {0}", Unterzeile „Barwert, darunter die Nominalsumme · i = {0} % · T = {1} a", Kopf „Bestandteil", die sechs Bestandteile „Investition I₀" · „Betriebskosten" · „Energiekosten" · „Erlöse" · „Ersatzbeschaffungen" · „Restwert am Ende" mit den Unterzeilen „nach Zuschussabzug" · „einschließlich CO₂-Abgabe" · „zahlungswirksam — Block A", Zeile „Nettobarwert", „nominal {0}", Spalte „Differenz {0} − {1}", Hinweis ohne Jahresreihen <b>neu #454</b></td><td class="rs">WIRT_GL_TITEL · WIRT_GL_UNTER · WIRT_GL_BESTANDTEIL · WIRT_GL_INVESTITION · WIRT_GL_BETRIEB · WIRT_GL_ENERGIE · WIRT_GL_ERLOESE · WIRT_GL_ERSATZ · WIRT_GL_RESTWERT · WIRT_GL_INVESTITION_UNTER · WIRT_GL_ENERGIE_UNTER · WIRT_GL_ERLOESE_UNTER · WIRT_GL_NETTOBARWERT · WIRT_GL_NOMINAL · WIRT_GL_DIFFERENZ · WIRT_GL_NICHT_GERECHNET</td><td>„Woraus entsteht die Zahl?"; die Bestandteile auch in Block 2</td></tr>
         <tr><td>Brückenbild: Titel „Von der Investition zur Kapitalwertdifferenz", Unterzeile „{0} gegenüber {1} · Barwerte · Szenario {2}", Fuß „Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a", Ergebnissäule „ΔKW", Legende „mindert die Differenz" · „mehrt die Differenz" · „Ergebnis", Leerhinweis <b>neu #454</b></td><td class="rs">WIRT_BR_TITEL · WIRT_BR_UNTER · WIRT_BR_FUSS · WIRT_BR_ERGEBNIS · WIRT_BR_LEG_MINDERT · WIRT_BR_LEG_MEHRT · WIRT_BR_LEG_ERGEBNIS · WIRT_BR_LEER</td><td>„Woraus entsteht die Zahl?" unter der Gliederung; Wortbericht</td></tr>
-        <tr><td>Tafel „Was daraus im Lauf wird": Titel, Kopf „Wirkung auf {0}", Zeilen „Ersatzbeschaffungen fällig im Jahr" · „Restwert am Ende, nominal", ohne Ersatz „keine" <b>neu #454</b></td><td class="rs">WIRT_LW_TITEL · WIRT_LW_KOPF · WIRT_LW_ERSATZJAHRE · WIRT_LW_RESTWERT · WIRT_LW_KEINE</td><td>„Was ist angenommen?" unter dem Hinweistext</td></tr>
+        <tr><td>Tafel „Was daraus im Lauf wird": Titel, Kopf „Wirkung auf {0}", Zeilen „Ersatzbeschaffungen fällig im Jahr" · „Restwert am Ende, nominal", ohne Ersatz „keine" <b>neu #454</b></td><td class="rs">WIRT_LW_TITEL · WIRT_LW_KOPF · WIRT_LW_ERSATZJAHRE · WIRT_LW_RESTWERT · WIRT_LW_KEINE</td><td>„Was ist angenommen?" unter dem Ausweis der Szenarioabdeckung</td></tr>
         <tr><td>Fußzeile „Drei Szenarien gerechnet" · „{0} von drei Szenarien gerechnet" · „Noch kein Szenario gerechnet" · „Annahmen aus Vorgaben, nichts gepflegt" · „Annahmen gepflegt: {0}" <b>neu #454</b></td><td class="rs">WIRT_FUSS_DREI · WIRT_FUSS_TEIL · WIRT_FUSS_KEINE · WIRT_FUSS_VORGABEN · WIRT_FUSS_GEPFLEGT</td><td>Fuß von „Was ist angenommen?"</td></tr>
         <tr><td>Formelmappe, Parameterblock: Titel „Parameter der Rechnung (je Szenario)", Spalte „Name in den Formeln", Zeilen „Kalkulationszins i" · „Betrachtungszeitraum T [a]" · „Preissteigerung Energie p_E (je Jahr)" · „Preissteigerung Betrieb p_B (je Jahr)" · „Preissteigerung Investition/Ersatz p_I (je Jahr)" · „Investition — Änderung gegenüber Erwartet" · „Erträge — Änderung gegenüber Erwartet" · „Nutzungsdauer — Änderung gegenüber Erwartet [a]", Hinweis zu den Formeln, Grenze der Mappe <b>neu #455</b></td><td class="rs">WIRT_FM_PARAM_TITEL · WIRT_FM_PARAM_NAME · WIRT_FM_PARAM_ZINS · WIRT_FM_PARAM_ZEITRAUM · WIRT_FM_PARAM_PREIS_E · WIRT_FM_PARAM_PREIS_B · WIRT_FM_PARAM_PREIS_I · WIRT_FM_PARAM_INVEST · WIRT_FM_PARAM_ERTRAG · WIRT_FM_PARAM_DAUER · WIRT_FM_PARAM_HINWEIS · WIRT_FM_GRENZE</td><td>Tabellenbericht, Blatt „Wirtschaftlichkeit" unter dem Parameternachweis</td></tr>
         <tr><td>Formelmappe, Mehrjahrestabellen und Betriebskosten: Hilfsspalten „Basis Betrieb mit p_B [€/a]" · „Basis Betrieb mit p_E [€/a]", Differenzreihe „Δ nominal gegenüber {0} (in T mit Restwert)" · „Δ Barwert gegenüber {0}" · „Δ kumuliert gegenüber {0}", Hilfsspalte „Nulldurchgang in diesem Jahr [a]", Spalten „Menge" · „Satz" <b>neu #455</b></td><td class="rs">WIRT_FM_MJ_BASIS_PB · WIRT_FM_MJ_BASIS_PE · WIRT_FM_MJ_DELTA_NOMINAL · WIRT_FM_MJ_DELTA_BARWERT · WIRT_FM_MJ_DELTA_KUMULIERT · WIRT_FM_MJ_AMORT_HILFE · WIRT_FM_BK_MENGE · WIRT_FM_BK_SATZ</td><td>Tabellenbericht, rechts neben den Mehrjahrestabellen; „Betriebskosten nach Kostenarten"</td></tr>
         <tr><td>Betriebskostentabelle „Betriebskosten nach Kostenarten": Spalte „Bemessung" mit dem Text des Bemessungskatalogs — die fünf eigenen Texte „fester Betrag" · „% der Investition" · „je Betriebsstunde" · „je kWh" · „% der Brennstoffkosten" sind gestrichen —, Zusatz „ab Jahr {0}" in der Herleitungsspalte, Warnung „⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.", Hinweistext über der Tabelle mit dem Satz zum Startjahr <b>neu #460</b> (je Sprache 8.709 Einträge)</td><td class="rs">BM_* (Bemessungskatalog, unverändert) · WIRT_BK_AB_JAHR (neu) · WIRT_BK_ABWEICHUNG · WIRT_BK_HINWEIS (neu gefasst); gestrichen BEMESSUNG_BETRAG · BEMESSUNG_PROZENT_INVESTITION · BEMESSUNG_EUR_PRO_H · BEMESSUNG_EUR_PRO_KWH · BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN</td><td>Wort- und Tabellenbericht, „Betriebskosten nach Kostenarten"</td></tr>
         <tr><td>Vollständige Szenarioabdeckung im Kern (U15): Kohärenzzeilen „Szenario-Leistungspreis des Energieträgers „{0}" ohne Wirkung: …" (neben Staffel oder Saisonreihe) · „Szenario-Strompreis ohne Wirkung: Das Tarif-Rollenmodell ist aktiv — …" · „Szenario-Einspeisevergütung ohne Wirkung: …" (Rollenmodell) · „Szenario-Einspeisevergütung (PV) ohne Wirkung: …" (PV-Vergütungsdialog); Nachweiszeile „Trägerpreise dieses Szenarios: {0}" mit „Arbeitspreis" · „Grundpreis" · „Leistungspreis"; Parameterblock der Formelmappe „Mengen — Änderung gegenüber Erwartet" · „Einspeisevergütung PV [€/kWh]" · „Einspeisevergütung KWK [€/kWh]" · „Arbeitspreis {0} ({1}) je Abrechnungseinheit" · „Grundpreis {0} ({1}) [€/a]" · „Leistungspreis {0} ({1})"; Annahmentafel „Mengenänderung" · „Einspeisevergütung PV" · „Einspeisevergütung KWK" (nur bei Pflege) <b>neu #461</b> (17 Schlüssel; je Sprache 8.848 Einträge)</td><td class="rs">WIRT_SZ_LEISTUNGSPREIS_OHNE_WIRKUNG · WIRT_SZ_ROLLEN_STROMPREIS · WIRT_SZ_ROLLEN_EINSPEISUNG · WIRT_SZ_PV_DIALOG_EINSPEISUNG · WIRT_SZ_TRAEGERPREISE · WIRT_SZ_TP_ARBEIT · WIRT_SZ_TP_GRUND · WIRT_SZ_TP_LEISTUNG · WIRT_FM_PARAM_MENGE · WIRT_FM_PARAM_VERGUETUNG · WIRT_FM_PARAM_VERGUETUNG_KWK · WIRT_FM_PARAM_TP_ARBEIT · WIRT_FM_PARAM_TP_GRUND · WIRT_FM_PARAM_TP_LEISTUNG · WIRT_ANN_MENGE · WIRT_ANN_VERGUETUNG · WIRT_ANN_VERGUETUNG_KWK</td><td>Kohärenzzeilen der Ergebnisseite und beider Berichte; Annahmenzeilen in Wort- und Tabellenbericht; Parameterblock der Formelmappe; Annahmentafel „Was ist angenommen?"</td></tr>
+        <tr><td>Szenarioabdeckung in den Dialogen (U15): Szenariotafel „Betrachtungszeitraum" · „Mengenänderung" samt den Erläuterungen des Assistenten; der Knopf-Dialog der Szenariowerte „Szenariowerte — {0}", „Erwartet: {0} {1}" · „Erwartet: kein Wert gepflegt", „Best (Günstig):" · „Worst (Ungünstig):", „Eingabe in % vom Erwartet-Wert" · „Eingabe absolut [{0}]" · „ergibt: Best {0} · Worst {1}", „Leer oder 0 heißt „wie Erwartet" …" · „wie Erwartet" · „gepflegt", am Knopf „Szenariowerte Best/Worst pflegen" · „Szenariowerte gepflegt — Best {0} · Worst {1}", Warnung „Kein Erwartet-Wert gepflegt: …" · „ohne Erwartet-Wert", die Kohärenzzeilen des PV-Vergütungsdialogs, die Absage des Assistenten an Nutzungsdauer, Startjahr und Zuschuss; an der Trägerkarte „Szenariopreise Best/Worst", Hinweis, „{0}: Szenariopreis ohne Erwartet-Preis — …", Speicherfehler; Annahmen „DV-Entgelt" · „PPA-Preis"; Punkt 9 der Checkliste „drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}." <b>neu #462</b> (38 Schlüssel mit den zwei des Ausweises oben; <span class="mono">WIRT_SZEN_HINWEIS</span> gestrichen, <span class="mono">WPAR_SZ_HINWEIS</span> und <span class="mono">WIRT_AE_9_TEILWEISE</span> neu gefasst; je Sprache 8.971 Einträge)</td><td class="rs">WPAR_SZ_ZEITRAUM · WPAR_SZ_MENGE · KI_DLG_WPA_SZ_ZEITRAUM_ERL · KI_DLG_WPA_SZ_MENGE_ERL · KI_DLG_CSE_GROESSE_NAME · KI_DLG_CSE_GROESSE_ERL · KI_DLG_CSE_ERWARTET_NAME · KI_DLG_CSE_ERWARTET_ERL · KI_DLG_CSE_EINHEIT_NAME · KI_DLG_CSE_EINHEIT_ERL · KI_DLG_CSE_NUR_KOSTEN · SZP_TITEL · SZP_ERWARTET · SZP_ERWARTET_LEER · SZP_LABEL_BEST · SZP_LABEL_WORST · SZP_PROZENT · SZP_ABSOLUT · SZP_UMRECHNUNG · SZP_LEER · SZP_WIE_ERWARTET · SZP_GEPFLEGT · SZP_KNOPF_KURZ · SZP_KNOPF_GEPFLEGT · SZP_OHNE_ERWARTET · SZP_OHNE_ERWARTET_KURZ · SZP_PV_INAKTIV · SZP_PV_DV_OHNE_WIRKUNG · SZP_PV_PPA_OHNE_WIRKUNG · ETV_SZ_TITEL · ETV_SZ_HINWEIS · ETV_SZ_OHNE_ERWARTET · ETV_SZ_SPEICHERFEHLER · WIRT_ANN_DV_ENTGELT · WIRT_ANN_PPA_PREIS · WIRT_AE_9_ABDECKUNG</td><td>Dialog „Parameter" (Szenariotafel), Knopf-Dialog der Szenariowerte an Trägerkarte, Parameterdialog, Dialog „BHKW-Wirtschaftlichkeit" und PV-Vergütungsdialog; Annahmentafel; Anhang-E-Checkliste</td></tr>
         <tr><td>Anhang-E-Checkliste: Titel „Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)", Blatt „Checkliste Anhang E", Knopf „Anhang-E-Checkliste…", Hinweis, Spalten „Nr." · „Thema" · „Anforderung" · „Stelle im Bericht" · „Stand in EPOS" · „Beurteilung 1–5", Fehlermeldung der Notenspalte, Stände „erfüllt" · „teilweise" · „offen", Gruppen „Gegenstand der Bewertung" · „A · Aufbau des Modells" · „B · Berechnung" · „C · Auswertung" · „D · Berichterstattung", „keine Wirtschaftlichkeit gerechnet — erst berechnen." <b>neu #455</b></td><td class="rs">WIRT_AE_TITEL · WIRT_AE_BLATT · WIRT_AE_KNOPF · WIRT_AE_HINWEIS · WIRT_AE_SP_NR · WIRT_AE_SP_THEMA · WIRT_AE_SP_ANFORDERUNG · WIRT_AE_SP_STELLE · WIRT_AE_SP_STAND · WIRT_AE_SP_NOTE · WIRT_AE_NOTE_FEHLER · WIRT_AE_STAND_ERFUELLT · WIRT_AE_STAND_TEILWEISE · WIRT_AE_STAND_OFFEN · WIRT_AE_GRUPPE_0 · WIRT_AE_GRUPPE_A · WIRT_AE_GRUPPE_B · WIRT_AE_GRUPPE_C · WIRT_AE_GRUPPE_D · WIRT_AE_OHNE_RECHNUNG</td><td>Fuß von „Was ist angenommen?" und Block 5 (Knopf, Überlagerung); Abschlussseite des Wortberichts; letztes Blatt der Mappe</td></tr>
         <tr><td>Die 15 Punkte der Checkliste (0.1, 0.2, 1, 2a, 2b, 3a, 3b, 4 bis 11): je Punkt Thema, Anforderung, Stelle im Bericht und die Standtexte je Lage <b>neu #455</b></td><td class="rs">WIRT_AE_‹Nr›_THEMA · WIRT_AE_‹Nr›_ANF je Punkt, ‹Nr› = 01 · 02 · 1 · 2A · 2B · 3A · 3B · 4 … 11 · WIRT_AE_‹Nr›_STELLE (ohne 3B — Punkt 3b nimmt die Stelle von 2b) · WIRT_AE_01_STAND · WIRT_AE_02_STAND · WIRT_AE_1_STAND · WIRT_AE_2A_STAND · WIRT_AE_3A_STAND · WIRT_AE_5_STAND · WIRT_AE_6_STAND · WIRT_AE_7_STAND · WIRT_AE_11_STAND · WIRT_AE_4_ERFUELLT · WIRT_AE_4_TEILWEISE · WIRT_AE_8_TEILWEISE · WIRT_AE_8_OFFEN · WIRT_AE_9_TEILWEISE · WIRT_AE_9_OFFEN · WIRT_AE_10_ERFUELLT · WIRT_AE_10_OFFEN · WIRT_AE_NM_TEILWEISE · WIRT_AE_NM_OFFEN (Punkte 2b und 3b)</td><td>Überlagerung, Abschlussseite des Wortberichts, Blatt „Checkliste Anhang E"</td></tr>
         <tr><td>Warnzeile an jeder Ergebniszeile des Projekts, wenn eine Rechenstufe nicht ausführbar ist: „Rechenstufe „{0}" nicht ausführbar: {1}" mit Parameter des Projekts, Stromtarif, Anlagen, elektrische Leistung der BHKW, Energieträger, Heizölprüfung der BHKW, Betriebskosten, Gesetzeskatalog, Kohärenzprüfung, KWKG-Satzherleitung, Speichern und Laden der Ergebnisse <b>neu #452</b></td><td class="rs">WIRT_STUFE_NICHT_AUSFUEHRBAR · WIRT_STUFE_PARAMETER · WIRT_STUFE_TARIF · WIRT_STUFE_ANLAGEN · WIRT_STUFE_LEISTUNG · WIRT_STUFE_TRAEGER · WIRT_STUFE_HEIZOEL · WIRT_STUFE_BETRIEBSKOSTEN · WIRT_STUFE_KATALOG · WIRT_STUFE_KOHAERENZ · WIRT_STUFE_SATZHERLEITUNG · WIRT_STUFE_SPEICHERN · WIRT_STUFE_LADEN</td><td>Kohärenzzeilen der Ergebnisseite, Wort- und Tabellenbericht</td></tr>
@@ -4706,9 +4718,15 @@ Einstufung
   Szenario nennt Zeitraum und Einspeisevergütung, der Parameterblock der Formelmappe hat drei Zeilen mehr (Zone „Was
   ist angenommen?", Zone „Bericht und Ausgabe"). Die Ressourcentafel der Kategorie 8 nennt die 17 neuen Schlüssel — je
   Sprache 8.848 Einträge (8.770 beim ersten Nachzug über #460, dazu 78 der Zapfprofil-Stufe Z3). Das Schema steht bei
-  118 (115 die Zapfprofil-Stufe Z3). Die nächste Welle ist <b>E9b</b>: der ±-Knopf an Trägerpreisen, Erlössätzen und
-  Rahmen, die Zeilen 8 und 9 der Szenariotafel, der Hinweistext entfällt, der Ausweis „n von m Parametern
-  szenariert" — damit wäre U15 erledigt.</p>
+  118 (115 die Zapfprofil-Stufe Z3). <b>E9b (#462) erledigt U15, U10 entfällt</b> — die Pflege in den Dialogen:
+  die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel (Zone „Dialog — Parameter"), der
+  ±-Knopf an Trägerpreisen und Erlössätzen, die Rahmen-Gruppe über die Tafel; unter der Annahmentafel steht statt des
+  Hinweistexts der Ausweis „n von m Parametern szenariert", ebenso in Block 4, in beiden Berichten und in Punkt 9 der
+  Checkliste (Zone „Was ist angenommen?"). Die Ressourcentafel der Kategorie 8 nennt die 38 neuen Schlüssel, den
+  gestrichenen <span class="mono">WIRT_SZEN_HINWEIS</span> und die zwei neu gefassten — je Sprache 8.971 Einträge
+  (8.934 nach Dialog Design #458 Stufe 3a/3b). Einen Schemaschritt bringt E9b nicht, das Schema steht bei 118. E9 ist
+  damit abgeschlossen; die nächste Etappe ist <b>E10</b> (Nutzungsdauer S3 und Speicherflotte) — sie betrifft den
+  Rest von U39.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4733,16 +4751,6 @@ Einstufung
               Randfälle: Referenz ohne Ergebnis, gelöschte Referenz</td>
             <td>Konzept § 2.9</td>
             <td>Prüffall: gelöschte Referenz fällt auf die Unterlassensalternative zurück</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · teilweise #461 (Kern) · Dialog mit E9b</span></td><td class="mono">U15</td><td class="num">8</td>
-            <td>Vollständige Szenarioabdeckung — Trägerpreise, Erlössätze und ein Mengenfaktor je
-              Szenario; bis dahin gilt der Hinweistext unter der Annahmentafel. <b>Teilweise erledigt mit E9a (#461):</b>
-              die Schemaschritte 116 bis 118 und der Kern, der Betrachtungszeitraum, Mengenänderung, Trägerpreise und
-              Erlössätze je Szenario liest (leer = wie Erwartet), samt Nachweiszeile und Parameterblock je Szenario;
-              A/B-Nachweis über neun Größen, Erwartet bitgleich. Offen: die Pflege in den Dialogen (±-Knopf an
-              Trägerpreisen, Erlössätzen und Rahmen, Zeilen 8 und 9 der Szenariotafel), der Wegfall des Hinweistexts
-              und der Ausweis „n von m Parametern szenariert" — E9b. Sieben Fragen aus E9a: Entscheid ausstehend</td>
-            <td>Konzept § 2.11.5</td>
-            <td>A/B-Nachweis: je Szenario ein vollständiger Parametersatz, Kapitalwerte gegenübergestellt</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U25</td><td class="num">5</td>
             <td>Zwei Anzeigen bei der gewählten Anlage, die der Dialog nicht führt: die Staffelzeile unter dem
               Jahresdeckel (3.300 · 3.100 · 2.900 · 2.700 · ab 2030 2.500 h/a aus dem Katalog) und das Warnband zum
@@ -4865,10 +4873,10 @@ Einstufung
               WERT statt an einer Merkspalte. <b>Offen bleibt U39</b> — Entkopplung von Ersatz und Restwert,
               geräteeigene Dauerspalten, Speicherflotte und die plattformfreie Hinweiszeile der
               Ergebnisseite</td></tr>
-        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U10</td><td class="num">8</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">entfallen #462</span></td><td class="mono">U10</td><td class="num">8</td>
             <td>Der Hinweistext „Was ein Szenario variiert" als Ressource in beiden Sprachen</td>
             <td>Konzept § 2.11.7 · <span class="mono">WIRT_SZEN_HINWEIS</span></td>
-            <td class="grund"><b>erledigt mit E5 (#434):</b> <span class="mono">WIRT_SZEN_HINWEIS</span> in beiden Sprachen, Wortlaut der Konzeptfassung ohne den Roadmap-Satz (A14) — der Titel sagt „Was ein Szenario heute variiert", und der Schlusssatz dieser Seite zu den gepflegten Werten entfällt, weil der Text die wirksamen Werte selbst einsetzt: ohne Pflege die Vorgaben ±10 %, ±10 %, ±2 a, sonst die gepflegten Sätze. Er steht unter der Annahmentafel, in Block 4 der Darstellung „ValERI-Bewertung" und in Wort- und Tabellenbericht. Ressourcenwache: Schlüssel in beiden Sprachen</td></tr>
+            <td class="grund"><b>erledigt mit E5 (#434):</b> <span class="mono">WIRT_SZEN_HINWEIS</span> in beiden Sprachen, Wortlaut der Konzeptfassung ohne den Roadmap-Satz (A14) — der Titel sagt „Was ein Szenario heute variiert", und der Schlusssatz dieser Seite zu den gepflegten Werten entfällt, weil der Text die wirksamen Werte selbst einsetzt: ohne Pflege die Vorgaben ±10 %, ±10 %, ±2 a, sonst die gepflegten Sätze. Er steht unter der Annahmentafel, in Block 4 der Darstellung „ValERI-Bewertung" und in Wort- und Tabellenbericht. Ressourcenwache: Schlüssel in beiden Sprachen. <b>Entfallen mit E9b (#462):</b> Der Hinweis entfällt mit der Etappe, die ihn überflüssig macht (Konzept § 2.11.7) — <span class="mono">WIRT_SZEN_HINWEIS</span> ist aus Seite, Block 4, Wort- und Tabellenbericht und beiden Ressourcen entfernt; an seiner Stelle steht der Ausweis „n von m Parametern szenariert" (U15). Der U10-Kommentar in <span class="mono">WirtschaftlichkeitBewertung</span> ist nachgezogen</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U12</td><td class="num">8</td>
             <td>Excel-Formelmappe, Stufen 0 bis 3: Der Generator schreibt keine einzige Formel, und
               keine Zahl des Parametersatzes erreicht eine Zelle. Offen ist zudem, ob die Mappe Formeln
@@ -4880,6 +4888,11 @@ Einstufung
               Excel-Blatt des Verlaufs (je Jahr eine Zeile, je Variante und Szenario eine Spalte)</td>
             <td>Konzept § 2.13 (5)</td>
             <td class="grund"><b>erledigt mit E6 (#436):</b> Der Tabellenbericht führt im Block „Kapitalwert-Verlauf" des Blattes „Wirtschaftlichkeit" je Szenario eine Spaltengruppe (Ungünstig · Erwartet · Günstig, je Projekt und Differenz; der Δ-Kopf nennt die Referenz) und hängt das Blatt „Verlauf" an (<span class="mono">VerlaufExcel</span>: je Jahr eine Zeile, je Version und Szenario eine Spalte in einer Spaltengruppe je Szenario, darunter Nulldurchgang, Restwert-Barwert und Kapitalwertdifferenz); dasselbe Blatt schreibt der Knopf „Verlauf nach Excel…" als eigene Mappe über <span class="mono">Dienste.Datei</span>. Im Wortbericht tritt das Dreierbild an die Stelle des Differenzbildes im Erwartungsfall, darunter Nulldurchgänge und Restwerte; das Bild „Kumulierte Barwerte je Version" (U18) bleibt. Die Überschrift der Szenarienübersicht kommt aus <span class="mono">WIRT_SZ_UEBERSCHRIFT</span> mit den Szenarionamen, die Szenarientafel und die Excel-Blöcke heißen „Ungünstig"/„Günstig". Blattstruktur-Wache nachgezogen (sechs Blätter)</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U15</td><td class="num">8</td>
+            <td>Vollständige Szenarioabdeckung — Trägerpreise, Erlössätze und ein Mengenfaktor je
+              Szenario; bis dahin gilt der Hinweistext unter der Annahmentafel</td>
+            <td>Konzept § 2.11.5</td>
+            <td class="grund"><b>erledigt mit E9 — Teil a (#461) im Kern, Teil b (#462) in den Dialogen:</b> Die Schemaschritte 116 bis 118 und der Kern lesen Betrachtungszeitraum, Mengenänderung, Trägerpreise und Erlössätze je Szenario (leer = wie Erwartet), samt Nachweiszeile und Parameterblock je Szenario; A/B-Nachweis über neun Größen, Erwartet bitgleich (#461). Gepflegt werden Zeitraum und Menge in den Zeilen 8 und 9 der Szenariotafel, Trägerpreise und Erlössätze mit dem ±-Knopf an drei Orten — Trägerkarte je Preis, Einspeisevergütungen (Parameterdialog, Dialog „BHKW-Wirtschaftlichkeit"), DV-Entgelt und PPA-Preis (PV-Vergütungsdialog) —, die Rahmen-Gruppe über die Tafel; der Hinweistext ist entfallen (U10), an seiner Stelle steht der Ausweis „n von m Parametern szenariert" (#462). Ohne Pflege keine Rechenwirkung: Anker und Referenzlauf unverändert. Abnahme am Gerät A‑E9‑1 offen; fünf Fragen aus E9b und sieben aus E9a: Entscheid ausstehend</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U16</td><td class="num">4</td>
             <td>Vorschlagswerte für die Anteile KWKG-Umlage, Offshore-Netzumlage und § 19 StromNEV
               sind im Katalog nicht hinterlegt</td>
