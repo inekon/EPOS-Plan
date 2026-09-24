@@ -28736,6 +28736,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässig: {0}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit der Energiemengen; sie wirkt auf alle drei Reiterblätter zugleich. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_EINHEIT_ERL {
@@ -29353,6 +29362,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BPF_PROFIL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BPF_PROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Brauchwasserkanal der Simulation kommt: aus den Bestandsprofilen dieser Maske oder aus dem Zapfprofil des Projekts. Beim Umschalten bleiben die Zonen des Zapfprofils erhalten; „Zapfprofil“ braucht mindestens eine Zone. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_RECHENWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_RECHENWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Rechenweg Brauchwasser gibt es nur in den Brauchwasserprofilen eines gespeicherten Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_RECHENWEG_NUR_BW {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_RECHENWEG_NUR_BW", resourceCulture);
             }
         }
         
@@ -30653,6 +30680,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, in dem der Ferienzeitraum beginnt (1 bis 12). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Anfang, Monat ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tag des Monats, an dem der Ferienzeitraum beginnt (1 bis 31). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Anfang, Tag ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, in dem der Ferienzeitraum endet (1 bis 12). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Ende, Monat ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tag des Monats, an dem der Ferienzeitraum endet (1 bis 31); die Winterferien gehen über die Jahresgrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien Ende, Tag ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Norden. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_FF_NORD_ERL {
@@ -30829,6 +30928,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_RAHMENANTEIL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_RAHMENANTEIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woran die Bodenplatte grenzt: Erdreich, Keller (dann mit Kellertemperatur) oder Außenluft. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RANDBEDINGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RANDBEDINGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung Bodenplatte ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RANDBEDINGUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RANDBEDINGUNG_NAME", resourceCulture);
             }
         }
         
@@ -31297,6 +31414,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GTYP_KURVE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GTYP_KURVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Gebäudetyp führt keine Tageskurve; zuerst einen Typ mit Kurven wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_OHNE_KURVE {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_OHNE_KURVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die 24 Stundenwerte der gewählten Tageskurve im Arbeitsstand, Stunde 1 bis 24 – dieselben, die „Stundenwerte…“ zeigt. Geschrieben wird mit „Speichern“; solange geänderte Werte ungespeichert sind, hält die Maske den Kurvenwechsel an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_STUNDENWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_STUNDENWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte der Kurve ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_STUNDENWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_STUNDENWERTE_NAME", resourceCulture);
             }
         }
         
@@ -31913,11 +32057,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Monatsniveaus des Profils, Januar bis Dezember; die Stundenabweichungen werden zu ihnen addiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_MONATSWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_MONATSWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisniveau je Monat ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_MONATSWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_MONATSWERTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst stehen in der Zahlenreihe „Abweichung je Wochentag und Stunde“. ähnelt.
         /// </summary>
         public static string KI_DLG_KPR_WOCHENTAG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_KPR_WOCHENTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die 7 × 24 Abweichungen, Montag Stunde 1 bis Sonntag Stunde 24; sie werden zum Monatsniveau addiert und dürfen negativ sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_WOCHENWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_WOCHENWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung je Wochentag und Stunde ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_WOCHENWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_WOCHENWERTE_NAME", resourceCulture);
             }
         }
         
@@ -32215,6 +32395,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_LPR_KONTEXT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_LPR_KONTEXT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Leistungspreis-Sätze des Jahres, Januar bis Dezember; „Übernehmen“ schreibt die Reihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LPR_MONATSSAETZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_LPR_MONATSSAETZE_ERL", resourceCulture);
             }
         }
         
@@ -34352,6 +34541,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Monats-Mitteltemperaturen der Wärmequelle, Januar bis Dezember – nur in der Betriebsart „Monat“; jeder Wert ist Pflicht beim Speichern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_MONATSWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_MONATSWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Monatswerte gelten in der Betriebsart „Monat“; gewählt ist „{0}“. Zuerst die Betriebsart umstellen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_NICHT_MONAT {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_NICHT_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das gespeicherte Quellprofil, das die Maske lädt. „Neues Profil“ beginnt einen leeren Satz; ein geladenes Profil bringt Betriebsart, Bezeichnung und Werte mit. ähnelt.
         /// </summary>
         public static string KI_DLG_QPROF_PROFIL_ERL {
@@ -34438,6 +34645,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_QPUF_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QPUF_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} von {2} Werten gesetzt ({3} bis {4}). ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlenreihe ({0}); gesetzt wird sie mit reihe_setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ trägt diese Werte bereits; es gibt nichts zu ändern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_OHNE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_STUNDE {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe trägt {0}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_UMFANG {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_UMFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Stunde {1} ähnelt.
+        /// </summary>
+        public static string KI_DLG_REIHE_WOCHENSTUNDE {
+            get {
+                return ResourceManager.GetString("KI_DLG_REIHE_WOCHENSTUNDE", resourceCulture);
             }
         }
         
@@ -36719,11 +36980,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die 7 × 24 übernommenen Stundenwerte der Woche, Montag Stunde 1 bis Sonntag Stunde 24 – der Stand, den „Speichern in DB“ schreibt; die Felder des gezeigten Tages ziehen nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_WOCHENWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_WOCHENWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenwerte ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_WOCHENWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_WOCHENWERTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Katalogsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_TSTAMM_BESCHREIBUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_TSTAMM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwölf Monatswerte, Januar bis Dezember; jeder ist Pflicht, bevor gespeichert werden kann. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_MONATSWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_MONATSWERTE_ERL", resourceCulture);
             }
         }
         
@@ -36787,6 +37075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_TYP_ZAHL {
             get {
                 return ResourceManager.GetString("KI_DLG_TYP_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlenreihe ähnelt.
+        /// </summary>
+        public static string KI_DLG_TYP_ZAHLENREIHE {
+            get {
+                return ResourceManager.GetString("KI_DLG_TYP_ZAHLENREIHE", resourceCulture);
             }
         }
         
@@ -37943,6 +38240,312 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_BEDARFSTAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_BEDARFSTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Erzeugerart am Speicher (Kessel oder Wärmepumpe) — eine Laufangabe für die Schätzung des Wärmeübertragers; sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_ERZEUGERART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_ERZEUGERART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistung des Erzeugers am Speicher, nicht negativ; leer = angesetzte Ladeleistung. Die Nachweisleistung ist das Kleinere aus Erzeuger und Wärmeübertrager. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Auslegungsperzentil, P95 oder P99. Steht nur mit „Stochastisch rechnen“ auf der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_PERZENTIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_PERZENTIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der empfohlene Auslegungspunkt — beim Speicher Volumen und Leistung, sonst die Minutenspitze; OK übernimmt ihn in das Zapfprofil. Ergebnis, nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_PUNKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_PUNKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Bedarfstage das Ensemble zieht; leer = Vorgabe des Kerns. Unter der Mindestzahl ist das Perzentil nicht belastbar. Steht nur mit „Stochastisch rechnen“ auf der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_REALISIERUNGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_REALISIERUNGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe des Temperaturfühlers als Anteil der Speicherhöhe, von 0 bis 1; leer = Vorgabe des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_SENSORHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_SENSORHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladespeicher oder gemischter Speicher — sie bestimmt die Summenlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_SPEICHERART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_SPEICHERART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur des Speichers; leer = Vorgabe des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieht je Topologiegruppe das Ensemble des Bedarfstags für Perzentil, Streuband und Gleichzeitigkeit; der Lauf rechnet nebenläufig. Eine Laufangabe; sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_STOCHASTISCH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_STOCHASTISCH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistung des Wärmeübertragers, nicht negativ; leer = aus U·A, Fläche oder der Schätzformel der Erzeugerart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Werkstoff des Wärmeübertragers (Stahl oder Edelstahl) — eine Laufangabe; sie wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGA_WERKSTOFF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGA_WERKSTOFF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie oft die Zapfregel im Zeitfenster zapft, nicht negativ; nur mit einer Zapfregel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Beginn des Zeitfensters der Zeile in Stunden, von 0 bis 24. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_BEGINN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_BEGINN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ende des Zeitfensters der Zeile in Stunden, bis 24 und nach dem Beginn. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_ENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_ENDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des konstruierten Bedarfstags; Pflichtfeld, in der Katalogversion noch nicht vergeben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zapfregel des Katalogs — dann zählt die Anzahl ihrer Vorgänge — oder „Volumen direkt“ mit Volumen und Zapftemperatur. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_REGEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_REGEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur des Volumens; nur bei „Volumen direkt“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein neutraler Name der Zapfstelle („Küche“); er benennt die Zeile und rechnet nicht mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_VERBRAUCHER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_VERBRAUCHER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Zeile in Litern, nicht negativ; nur bei „Volumen direkt“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_VOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Zonen oder eine Zone. Ändert nur die Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ANSICHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ANSICHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Menge der Zone in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_BEZUGSMENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_BEZUGSMENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresbedarf der Zapfung der Zone aus der aktuellen Vorschau; „–“ ohne gerechnete Vorschau. Nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_JAHRESBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_JAHRESBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bedarfsniveau der Zone — niedrig, mittel oder hoch; es wählt den spezifischen Bedarf der Nutzungsart je Einheit und Tag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_NIVEAU_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_NIVEAU_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht nur mit „{1}“ auf der Maske — bitte zuerst das wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_NUR_MIT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_NUR_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart der Zone aus dem Katalog; sie bestimmt Bezugsgröße, Tagesgang und den spezifischen Bedarf je Niveau. Pflichtfeld für OK; eine gesperrte Nutzungsart nennt ihren Grund. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_NUTZUNGSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_NUTZUNGSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Jahre der stochastische Lauf zieht, um die Konsistenz zu prüfen; leer = Vorgabe. Steht in der Stufe „Experte“ beim Rechenweg „stochastisch“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_REALISIERUNGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_REALISIERUNGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Jahresreihe in die Bilanz geht: die deterministische oder das stochastisch gezogene Jahr zum Seed, auf die Jahresmenge gebracht. Steht ab der Stufe „Experte“; die Vorschau bleibt deterministisch. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_RECHENWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_RECHENWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zufallssaat, ganze Zahl ab 0; leer = Vorgabe. Derselbe Seed zieht dieselbe Reihe — für die Jahresreihe und das Ensemble der Auslegung. Steht in der Stufe „Experte“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_SEED_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_SEED_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_STUFE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_STUFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Zeile steht nicht mehr in der Liste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZEILE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZEILE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Zone; Pflichtfeld für OK. Er benennt die Zone in Liste, Vorschau und Meldungen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZONENNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZONENNAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Zone der Zonenliste, nach Nummer oder Name; ihr Eingabeblock steht unter der Liste. Die Werte jeder Zone lassen sich auch ohne Wahl über die Spalten setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_ZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_ZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_EINST_BTN_ABBRECHEN {
@@ -38078,11 +38681,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} liegt außerhalb des zulässigen Bereichs ({2}). ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mindestens {0} ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH_AB {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die höchstens {0} ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH_BIS {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} bis {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_BEREICH_VON_BIS {
+            get {
+                return ResourceManager.GetString("KI_FELD_BEREICH_VON_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske meldet dazu: {0} ähnelt.
         /// </summary>
         public static string KI_FELD_DIALOGBEFUND {
             get {
                 return ResourceManager.GetString("KI_FELD_DIALOGBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist eine Zahlenreihe mit {1} Werten; gesetzt wird sie mit reihe_setzen – ganz oder ab einer Stelle. ähnelt.
+        /// </summary>
+        public static string KI_FELD_IST_REIHE {
+            get {
+                return ResourceManager.GetString("KI_FELD_IST_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Zahlenreihe; einen einzelnen Wert setzt feld_setzen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_KEINE_REIHE {
+            get {
+                return ResourceManager.GetString("KI_FELD_KEINE_REIHE", resourceCulture);
             }
         }
         
@@ -38137,6 +38794,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_NICHT_SETZBAR {
             get {
                 return ResourceManager.GetString("KI_FELD_NICHT_SETZBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ hat {1} Werte, genannt sind {2}. Für einen Ausschnitt die erste Stelle mit ‚ab‘ angeben. ähnelt.
+        /// </summary>
+        public static string KI_FELD_REIHE_LAENGE {
+            get {
+                return ResourceManager.GetString("KI_FELD_REIHE_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ hat {1} Werte; ab Stelle {2} passen höchstens {3}, genannt sind {4}. ähnelt.
+        /// </summary>
+        public static string KI_FELD_REIHE_UEBERLAUF {
+            get {
+                return ResourceManager.GetString("KI_FELD_REIHE_UEBERLAUF", resourceCulture);
             }
         }
         
@@ -39053,6 +39728,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} von {2} Werten ändern sich ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … ({0} Werte) ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_GEKUERZT {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_GEKUERZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte, {1} bis {2} ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_UMFANG {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_UMFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … und {0} weitere ähnelt.
+        /// </summary>
+        public static string KI_KERN_REIHE_WEITERE {
+            get {
+                return ResourceManager.GetString("KI_KERN_REIHE_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion „{0}“ gehört zu {1} und ist in dieser Ausbaustufe noch nicht freigegeben. ähnelt.
         /// </summary>
         public static string KI_KERN_RIEGEL_STUFE_GESPERRT {
@@ -39332,6 +40043,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab Stelle ähnelt.
+        /// </summary>
+        public static string KI_REG_AB_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_AB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Änderungsdatum von Projekt {0} konnte nicht gesetzt werden. ähnelt.
         /// </summary>
         public static string KI_REG_AENDERUNGSDATUM_FEHLT {
@@ -39575,6 +40295,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setze die Monatswerte auf 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 und 11. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_REIHE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernimm 12 kWh und 5 kW als Speicherauslegung. ähnelt.
         /// </summary>
         public static string KI_REG_BEISPIEL_SPEICHERAUSLEGUNG {
@@ -39742,6 +40471,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ERGEBNISSE_KEINE {
             get {
                 return ResourceManager.GetString("KI_REG_ERGEBNISSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stelle des ersten Wertes, bei 1 beginnend - die Stellen nennt dialog_lesen (in einer Wochenreihe ist Dienstag, Stunde 1 die Stelle 25). Ohne Angabe beginnt die Liste bei Stelle 1 und muss vollständig sein. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_AB {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_AB", resourceCulture);
             }
         }
         
@@ -40003,6 +40741,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ERL_QUELLPROJEKT {
             get {
                 return ResourceManager.GetString("KI_REG_ERL_QUELLPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlen in der Reihenfolge der Reihe, als Zahlenliste (Punkt als Dezimaltrenner). Ohne ‚ab‘ muss die Liste die ganze Reihe tragen, sonst den Ausschnitt ab dieser Stelle. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_REIHENWERTE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_REIHENWERTE", resourceCulture);
             }
         }
         
@@ -41204,6 +41951,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlenreihe der offenen Maske setzen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_REIHE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung übernehmen ähnelt.
         /// </summary>
         public static string KI_REG_TITEL_SPEICHERAUSLEGUNG {
@@ -41522,6 +42278,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe trägt danach die neuen Werte; nicht genannte Stellen bleiben, wie sie sind. In die Datenbank kommt sie erst mit dem Speicherweg der Maske. ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_REIHE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Stromspeicher des Projekts trägt danach die genannten Werte. Nachgerechnet wird nichts — die Simulation startet der Anwender selbst. ähnelt.
         /// </summary>
         public static string KI_REG_WIRKUNG_SPEICHERAUSLEGUNG {
@@ -41770,6 +42535,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ZWECK_PROJEKT_SUCHEN {
             get {
                 return ResourceManager.GetString("KI_REG_ZWECK_PROJEKT_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt in eine Zahlenreihe einer geöffneten Maske (Monats-, Stunden- oder Wochenwerte, Feldtyp ZahlListe) eine Liste von Zahlen ein - die ganze Reihe oder einen Ausschnitt ab einer Stelle. ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_REIHE_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_REIHE_SETZEN", resourceCulture);
             }
         }
         

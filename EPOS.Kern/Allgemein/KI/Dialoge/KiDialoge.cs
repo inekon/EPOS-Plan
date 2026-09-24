@@ -217,6 +217,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string BEDARFSPROFILE = "Form_Prozesswaerme";
 
+        // Die ZAPFPROFIL-Masken (Welle #458, Stufe 3a) sind Ueberlagerungen der
+        // Bedarfsprofile in der Auspraegung Brauchwasser. Eine WinForms-Fassung gab es
+        // nie: Der Generator traegt den Namen seines Hilfeschluessels
+        // (Form_Zapfprofil.btn_Help), Auslegung und Konstruktor sprechende Namen ohne
+        // Vorsilbe.
+
+        /// <summary>
+        /// Der Dialog „Brauchwasser-Zapfprofil" (<c>ZapfprofilDialog</c>) — eine
+        /// Ueberlagerung der Bedarfsprofile; angemeldet, solange er offen steht.
+        /// </summary>
+        public const string ZAPFPROFIL = "Form_Zapfprofil";
+
+        /// <summary>
+        /// Die Ueberlagerung „Auslegung Brauchwasser" des Zapfprofils
+        /// (<c>ZapfprofilAuslegungDialog</c>).
+        /// </summary>
+        public const string ZAPFPROFIL_AUSLEGUNG = "ZapfprofilAuslegung";
+
+        /// <summary>
+        /// Die Ueberlagerung „Bedarfstag konstruieren" der Auslegung
+        /// (<c>BedarfstagKonstruktor</c>).
+        /// </summary>
+        public const string BEDARFSTAG_KONSTRUKTOR = "BedarfstagKonstruktor";
+
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
         // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
@@ -660,6 +684,9 @@ namespace WindowsFormsApplication1
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
+                Zapfprofil(),
+                ZapfprofilAuslegung(),
+                BedarfstagKonstruktor(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -2811,15 +2838,15 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die saisonalen Leistungspreis-Saetze — drei Felder aus
+        /// Die saisonalen Leistungspreis-Saetze — vier Felder aus
         /// <c>EPOS.UI.Dialoge.Kosten.LeistungspreisReiheKiSicht</c>.
         /// </summary>
         /// <remarks>
-        /// <b>Die zwoelf Monatssaetze bleiben draussen.</b> Sie stehen als Schleife
-        /// ueber ihren Index im Markup und sind damit eine WERTETAFEL - dieselbe
-        /// Regel, mit der die Welle KI-F3 die zwoelf Monatssummen des
-        /// Gebaeudebedarfs ausgelassen hat. Das JAHR dagegen ist der Einstellwert,
-        /// der die ganze Reihe traegt.
+        /// <b>Die zwoelf Monatssaetze sind EINE ZAHLENREIHE</b> (Welle #458 Stufe 3b):
+        /// ein Feld <c>monatssaetze</c> mit zwoelf Werten, Januar bis Dezember, gesetzt
+        /// mit <c>reihe_setzen</c> ganz oder ab einem Monat. Ihre Grenzen sind die der
+        /// zwoelf Eingabefelder (0 bis 100 000). Das JAHR ist der Einstellwert, der die
+        /// ganze Reihe traegt.
         /// </remarks>
         private static KiDialog Leistungspreisreihe()
         {
@@ -2838,7 +2865,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kontext", "LeistungspreisReiheKiSicht.Kontext",
                                      KiDialogTexte.LprKontextName, KiParameterTyp.Text,
                                      KiDialogTexte.LprKontextErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("monatssaetze", "LeistungspreisReiheKiSicht.Monatssaetze",
+                                     KiDialogTexte.LprMonatssaetzeName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.LprMonatssaetzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_MONAT,
+                                     reihe: KiZahlenreihen.Monate(), min: 0, max: 100000)
                 },
                 knoepfe: new[]
                 {
@@ -2853,16 +2885,23 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Kostenprofil eines Stromtraegers — drei Felder aus
+        /// Das Kostenprofil eines Stromtraegers — fuenf Felder aus
         /// <c>EPOS.UI.Dialoge.Kosten.KostenprofilKiSicht</c>.
         /// </summary>
         /// <remarks>
-        /// <b>Die 36 Zahlenfelder bleiben draussen.</b> Zwoelf Monatswerte und
-        /// 7 × 24 Wochenstunden entstehen aus einer Schleife ueber ihren Index, und
-        /// die Maske pflegt sie mit eigenen Griffen („Jan.-Wert in alle Monate",
-        /// „Tag kopieren", „Tag einfuegen"); der Dateikopf des Dialogs weist sie
-        /// ausdruecklich als nicht feldkartenfaehig aus. Einstellwerte sind der
-        /// BEZEICHNER und der Wochentag, dessen Stundenkurve dasteht.
+        /// <para>
+        /// <b>Die zwei Wertetafeln sind ZAHLENREIHEN</b> (Welle #458 Stufe 3b): die
+        /// zwoelf Monatsniveaus (<c>monatswerte</c>) und die 7 × 24 Abweichungen je
+        /// Wochentag und Stunde (<c>wochenwerte</c>, Montag Stunde 1 bis Sonntag Stunde
+        /// 24). Einzeln waeren es 180 Felder; als Reihe ist jede EIN Feld, gesetzt mit
+        /// <c>reihe_setzen</c> ganz oder ab einer Stelle - „Dienstag" ist die Stelle 25.
+        /// Die Griffe der Maske („Jan.-Wert in alle Monate", „Tag kopieren", „Für alle
+        /// Tage") sind damit ein Aufruf mit der passenden Liste.
+        /// </para>
+        /// <para>
+        /// Einstellwerte daneben sind der BEZEICHNER und der Wochentag, dessen
+        /// Stundenkurve dasteht.
+        /// </para>
         /// </remarks>
         private static KiDialog Kostenprofil()
         {
@@ -2880,7 +2919,17 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("einheit", "KostenprofilKiSicht.Einheit",
                                      KiDialogTexte.KprEinheitName, KiParameterTyp.Text,
                                      KiDialogTexte.KprEinheitErl,
-                                     leerErlaubt: true, nurLesen: true)
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("monatswerte", "KostenprofilKiSicht.Monatswerte",
+                                     KiDialogTexte.KprMonatswerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.KprMonatswerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH,
+                                     reihe: KiZahlenreihen.Monate()),
+                    new KiDialogFeld("wochenwerte", "KostenprofilKiSicht.Wochenwerte",
+                                     KiDialogTexte.KprWochenwerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.KprWochenwerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH,
+                                     reihe: KiZahlenreihen.Wochenstunden())
                 },
                 knoepfe: new[]
                 {
@@ -3066,7 +3115,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Bedarfsprofile eines Projekts — acht Felder aus
+        /// Die Bedarfsprofile eines Projekts — neun Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3075,6 +3124,14 @@ namespace WindowsFormsApplication1
         /// rechts der Katalog; eingestellt wird der JAHRESVERBRAUCH der markierten
         /// Zuordnung, und der Knopf „Uebernehmen" schreibt ihn in die Zeile. Die
         /// ANZEIGEEINHEIT gilt dabei fuer Eingabe und Infoblock zugleich.
+        /// </para>
+        /// <para>
+        /// <b>Die Zapfprofil-Weiche</b> (Welle #458, Stufe 3a): Beim Brauchwasser eines
+        /// gespeicherten Projekts steht die Optionsgruppe „Rechenweg Brauchwasser"
+        /// (Bestandsprofile oder Zapfprofil); gesetzt wird sie ueber den Weg des Klicks,
+        /// „Zapfprofil" ohne Zone lehnt die Maske benannt ab. In den anderen
+        /// Auspraegungen ist das Feld leer und das Setzen nennt den Grund. Geschrieben
+        /// wird die Weiche mit dem OK dieser Maske, im selben Vorgang wie das Zapfprofil.
         /// </para>
         /// <para>
         /// <b>EINE Maske, DREI Auspraegungen</b> (Prozesswaerme, Stromverbraucher,
@@ -3101,6 +3158,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("neuer_wert", "BedarfsProfileKiSicht.NeuerWert",
                                      KiDialogTexte.BpfNeuerWertName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BpfNeuerWertErl, leerErlaubt: true),
+                    new KiDialogFeld("rechenweg", "BedarfsProfileKiSicht.Rechenweg",
+                                     KiDialogTexte.BpfRechenwegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfRechenwegErl),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,
@@ -3129,6 +3189,278 @@ namespace WindowsFormsApplication1
                 {
                     new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
                                       KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Zapfprofil  ->  Dialoge.Bedarf.ZapfprofilDialog   (Welle #458, Stufe 3a)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse des Zapfprofils
+        /// (<c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>).
+        /// </summary>
+        private const string ZAPFPROFIL_SICHT = "ZapfprofilKiSicht";
+
+        /// <summary>
+        /// Das Brauchwasser-Zapfprofil — elf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>, fuenf davon SPALTEN der Zonenliste.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung mit eigenem Arbeitsstand</b> — dieselbe Bauart wie
+        /// <see cref="Kennlinien"/>: Der Dialog bearbeitet eine KOPIE der Zonen, „OK" gibt sie
+        /// an die Bedarfsprofile zurueck, geschrieben wird mit deren OK. Angemeldet sind
+        /// Auffrischen und Pruefen (dieselbe Pruefung wie am OK: Fehleingabe, Pflichtfelder
+        /// je Zone), KEIN Speicherweg — <c>dialog_speichern</c> lehnt benannt ab.
+        /// </para>
+        /// <para>
+        /// <b>Die Zonen sind SPALTEN</b> mit dem Zonennamen als Kennzeichen: Name,
+        /// Nutzungsart (Wahl aus dem Katalog; eine gesperrte nennt ihren Grund),
+        /// Bezugsgroesse, Bedarfsniveau und — nur lesbar — der Jahresbedarf der Vorschau.
+        /// Gesetzt wird auf den Wegen der Eingabefelder: Die Vorschau rechnet entprellt neu,
+        /// und eine Aenderung, die die Auslegung aendert, macht deren Punkt ueberholt — wie
+        /// von Hand. Die Wahl der Zone zeigt deren Eingabeblock (Satzwahl), „Anzeigen fuer"
+        /// waehlt die Ansicht der Vorschau.
+        /// </para>
+        /// <para>
+        /// <b>Die Stochastik der Stufe Experte</b> (Rechenweg der Jahresreihe, Seed,
+        /// Realisierungen) ist nur setzbar, solange sie auf der Maske steht; sonst nennt die
+        /// Absage die Stufe bzw. den Rechenweg, der sie zeigt. Die Stufe „Erweitert" ist
+        /// gesperrt und nennt ihren Grund. Neu, Duplizieren und Entfernen einer Zone,
+        /// „Auslegung…" und „Stochastisch rechnen" bleiben Klicks des Anwenders.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Zapfprofil()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.ZAPFPROFIL,
+                anzeigename: KiDialogTexte.MaskeZapfprofil,
+                felder: new[]
+                {
+                    new KiDialogFeld("stufe", ZAPFPROFIL_SICHT + ".Stufe",
+                                     KiDialogTexte.ZpgStufeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgStufeErl),
+                    new KiDialogFeld("zone", ZAPFPROFIL_SICHT + ".Zone",
+                                     KiDialogTexte.ZpgZoneName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgZoneErl, satzwahl: true),
+
+                    // ---- Die Zonen: SPALTEN mit dem Zonennamen als Kennzeichen -------
+                    new KiDialogFeld("zonenname", ZAPFPROFIL_SICHT + ".Zonen[].Zonenname",
+                                     KiDialogTexte.ZpgZonennameName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgZonennameErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("nutzungsart", ZAPFPROFIL_SICHT + ".Zonen[].Nutzungsart",
+                                     KiDialogTexte.ZpgNutzungsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgNutzungsartErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("bezugsmenge", ZAPFPROFIL_SICHT + ".Zonen[].Bezugsmenge",
+                                     KiDialogTexte.ZpgBezugsmengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgBezugsmengeErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("niveau", ZAPFPROFIL_SICHT + ".Zonen[].Niveau",
+                                     KiDialogTexte.ZpgNiveauName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgNiveauErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("jahresbedarf", ZAPFPROFIL_SICHT + ".Zonen[].Jahresbedarf",
+                                     KiDialogTexte.ZpgJahresbedarfName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgJahresbedarfErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen", nurLesen: true),
+
+                    new KiDialogFeld("ansicht", ZAPFPROFIL_SICHT + ".Ansicht",
+                                     KiDialogTexte.ZpgAnsichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgAnsichtErl),
+
+                    // ---- Die Stochastik der Jahresreihe (Stufe Experte) --------------
+                    new KiDialogFeld("rechenweg_jahresreihe", ZAPFPROFIL_SICHT + ".Rechenweg",
+                                     KiDialogTexte.ZpgRechenwegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgRechenwegErl),
+                    new KiDialogFeld("seed", ZAPFPROFIL_SICHT + ".Seed",
+                                     KiDialogTexte.ZpgSeedName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgSeedErl, leerErlaubt: true),
+                    new KiDialogFeld("realisierungen", ZAPFPROFIL_SICHT + ".Realisierungen",
+                                     KiDialogTexte.ZpgRealisierungenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgRealisierungenErl,
+                                     einheit: KiDialogTexte.ZpgEinheitJahre, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // ZapfprofilAuslegung  ->  Dialoge.Bedarf.ZapfprofilAuslegungDialog   (Welle #458, Stufe 3a)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse der Auslegung
+        /// (<c>EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht</c>).
+        /// </summary>
+        private const string AUSLEGUNG_SICHT = "ZapfprofilAuslegungKiSicht";
+
+        /// <summary>
+        /// Die Auslegung Brauchwasser — zwoelf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung des Zapfprofils mit eigenem Arbeitsstand</b>: „OK" legt die
+        /// Eingaben samt dem EINEN empfohlenen Punkt in den Arbeitsstand des Zapfprofils,
+        /// geschrieben wird mit dem OK der Bedarfsprofile. Angemeldet sind Auffrischen und
+        /// Pruefen (die Fehleingabe, die das OK anhaelt), KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Gesetzt wird auf den Wegen der Eingabefelder</b>, und jede Setzung rechnet die
+        /// Karten entprellt neu (mit „Stochastisch rechnen" nebenlaeufig samt Ensemble). Der
+        /// Bedarfstag ist eine Wahl aus Quelle UND Katalogtag in einem; gesperrte Quellen
+        /// nennen ihren Grund. Perzentil und Realisierungen stehen nur mit „Stochastisch
+        /// rechnen" auf der Maske und sind nur dann setzbar. Der empfohlene Punkt ist
+        /// Ergebnis und nur lesbar.
+        /// </para>
+        /// <para>
+        /// <b>„Bedarfstag konstruieren…" und „An Speicherauslegung uebergeben…" bleiben
+        /// Klicks des Anwenders</b> — das eine oeffnet eine eigene Ueberlagerung, das andere
+        /// ist gesperrt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog ZapfprofilAuslegung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.ZAPFPROFIL_AUSLEGUNG,
+                anzeigename: KiDialogTexte.MaskeZapfprofilAuslegung,
+                felder: new[]
+                {
+                    new KiDialogFeld("bedarfstag", AUSLEGUNG_SICHT + ".Bedarfstag",
+                                     KiDialogTexte.ZpgaBedarfstagName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaBedarfstagErl),
+                    new KiDialogFeld("speichertemperatur", AUSLEGUNG_SICHT + ".Speichertemperatur",
+                                     KiDialogTexte.ZpgaSpeichertemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaSpeichertemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("erzeugerleistung", AUSLEGUNG_SICHT + ".Erzeugerleistung",
+                                     KiDialogTexte.ZpgaErzeugerleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaErzeugerleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("uebertragerleistung", AUSLEGUNG_SICHT + ".Uebertragerleistung",
+                                     KiDialogTexte.ZpgaUebertragerleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaUebertragerleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("speicherart", AUSLEGUNG_SICHT + ".Speicherart",
+                                     KiDialogTexte.ZpgaSpeicherartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaSpeicherartErl),
+                    new KiDialogFeld("sensorhoehe", AUSLEGUNG_SICHT + ".Sensorhoehe",
+                                     KiDialogTexte.ZpgaSensorhoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgaSensorhoeheErl, leerErlaubt: true),
+                    new KiDialogFeld("erzeugerart", AUSLEGUNG_SICHT + ".Erzeugerart",
+                                     KiDialogTexte.ZpgaErzeugerartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaErzeugerartErl),
+                    new KiDialogFeld("werkstoff", AUSLEGUNG_SICHT + ".Werkstoff",
+                                     KiDialogTexte.ZpgaWerkstoffName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaWerkstoffErl),
+
+                    // ---- Die Stochastik des Bedarfstags (4.5 b) ------------------------
+                    new KiDialogFeld("stochastisch", AUSLEGUNG_SICHT + ".Stochastisch",
+                                     KiDialogTexte.ZpgaStochastischName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.ZpgaStochastischErl),
+                    new KiDialogFeld("perzentil", AUSLEGUNG_SICHT + ".Perzentil",
+                                     KiDialogTexte.ZpgaPerzentilName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgaPerzentilErl),
+                    new KiDialogFeld("realisierungen", AUSLEGUNG_SICHT + ".Realisierungen",
+                                     KiDialogTexte.ZpgaRealisierungenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgaRealisierungenErl,
+                                     einheit: KiDialogTexte.ZpgaEinheitTage, leerErlaubt: true),
+
+                    // ---- Das Ergebnis, das OK uebernimmt --------------------------------
+                    new KiDialogFeld("punkt", AUSLEGUNG_SICHT + ".Punkt",
+                                     KiDialogTexte.ZpgaPunktName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgaPunktErl, leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // BedarfstagKonstruktor  ->  Dialoge.Bedarf.BedarfstagKonstruktor   (Welle #458, Stufe 3a)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse des Konstruktors
+        /// (<c>EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht</c>).
+        /// </summary>
+        private const string KONSTRUKTOR_SICHT = "BedarfstagKonstruktorKiSicht";
+
+        /// <summary>
+        /// Der Konstruktor eines Bedarfstags nach A100 — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht</c>, sieben davon SPALTEN
+        /// der Zeilentabelle.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung der Auslegung mit eigenem Arbeitsstand</b>: „OK" baut den
+        /// Tag ueber den Delegaten der Huelle und gibt ihn als Entwurf in die Auslegung —
+        /// geschrieben wird nichts. Angemeldet sind Auffrischen und Pruefen: dieselbe Pruefung
+        /// wie am OK (Fehleingaben, dann die benannte Pruefung der Huelle), ohne dass sich
+        /// etwas schliesst; KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Die Zeilen sind SPALTEN</b> mit dem Zeitfenster samt Verbraucher als
+        /// Kennzeichen. Anzahl steht nur mit einer Zapfregel, Volumen und Zapftemperatur nur
+        /// bei „Volumen direkt" auf der Maske — sonst nennt die Absage, was sie bedienbar
+        /// macht. Zeitfenster und Mengen tragen die Grenzen ihrer Felder. Eine Zeile legt
+        /// der Anwender an oder entfernt sie.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BedarfstagKonstruktor()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,
+                anzeigename: KiDialogTexte.MaskeBedarfstagKonstruktor,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", KONSTRUKTOR_SICHT + ".Name",
+                                     KiDialogTexte.ZpgkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkNameErl),
+
+                    // ---- Die Zeilen: SPALTEN mit Zeitfenster und Verbraucher -----------
+                    new KiDialogFeld("beginn", KONSTRUKTOR_SICHT + ".Zeilen[].Beginn",
+                                     KiDialogTexte.ZpgkBeginnName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkBeginnErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("ende", KONSTRUKTOR_SICHT + ".Zeilen[].Ende",
+                                     KiDialogTexte.ZpgkEndeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkEndeErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("regel", KONSTRUKTOR_SICHT + ".Zeilen[].Regel",
+                                     KiDialogTexte.ZpgkRegelName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgkRegelErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("anzahl", KONSTRUKTOR_SICHT + ".Zeilen[].Anzahl",
+                                     KiDialogTexte.ZpgkAnzahlName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkAnzahlErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("volumen", KONSTRUKTOR_SICHT + ".Zeilen[].Volumen",
+                                     KiDialogTexte.ZpgkVolumenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkVolumenErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("temperatur", KONSTRUKTOR_SICHT + ".Zeilen[].Temperatur",
+                                     KiDialogTexte.ZpgkTemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkTemperaturErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("verbraucher", KONSTRUKTOR_SICHT + ".Zeilen[].Verbraucher",
+                                     KiDialogTexte.ZpgkVerbraucherName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkVerbraucherErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen")
+                },
+                knoepfe: new[]
+                {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
                 });
@@ -3352,7 +3684,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Gebaeudetypen-Verwaltung — drei Felder aus
+        /// Die Gebaeudetypen-Verwaltung — vier Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3363,8 +3695,12 @@ namespace WindowsFormsApplication1
         /// Stundenwerte gerade dastehen.
         /// </para>
         /// <para>
-        /// <b>Die 24 Stundenwerte je Kurve bleiben draussen:</b> ein Raster mit eigenem
-        /// Editor. Gepflegt werden sie Feld fuer Feld und gespeichert als Kurve.
+        /// <b>Die 24 Stundenwerte der GEWAEHLTEN Kurve sind EINE ZAHLENREIHE</b>
+        /// (Welle #458 Stufe 3b, <c>stundenwerte</c>, Stunde 1 bis 24): dieselben Zahlen,
+        /// die „Stundenwerte…" zeigt und „Übernehmen" in den Arbeitsstand legt. Eine
+        /// andere Kurve ist ein anderer Stand - die Maske haelt den Kurvenwechsel an,
+        /// solange geaenderte Werte ungespeichert sind, und der Assistent folgt ihr:
+        /// setzen, speichern, dann die naechste Kurve waehlen.
         /// </para>
         /// </remarks>
         private static KiDialog Gebaeudetyp()
@@ -3386,7 +3722,11 @@ namespace WindowsFormsApplication1
                     // ueber Schreibgeschuetzt geschuetzt.
                     new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
                                      KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.GtypBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("stundenwerte", "GebaeudetypKiSicht.Stundenwerte",
+                                     KiDialogTexte.GtypStundenwerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.GtypStundenwerteErl,
+                                     reihe: KiZahlenreihen.Stunden())
                 },
                 knoepfe: new[]
                 {
@@ -3400,7 +3740,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Wochen-Stundenprofil eines Bedarfstyps — drei Felder aus
+        /// Das Wochen-Stundenprofil eines Bedarfstyps — vier Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -3410,8 +3750,11 @@ namespace WindowsFormsApplication1
         /// welche 24 Felder gerade dastehen.
         /// </para>
         /// <para>
-        /// <b>Die 7 x 24 Wochenwerte bleiben draussen:</b> ein Raster mit eigenem
-        /// Editor samt Kopierweg von Tag zu Tag.
+        /// <b>Die 7 x 24 UEBERNOMMENEN Wochenwerte sind EINE ZAHLENREIHE</b> (Welle #458
+        /// Stufe 3b, <c>wochenwerte</c>, Montag Stunde 1 bis Sonntag Stunde 24): der
+        /// Stand, den „Speichern in DB" schreibt. Gesetzt wird er so, wie „Änderungen
+        /// Übernehmen" ihn setzt; die 24 Felder des gezeigten Tages ziehen nach. Ein Tag
+        /// ist ein Ausschnitt ab seiner ersten Stunde (Dienstag = Stelle 25).
         /// </para>
         /// </remarks>
         private static KiDialog Typprofil()
@@ -3429,7 +3772,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TprofWochentagErl, leerErlaubt: true),
                     new KiDialogFeld("beschreibung", "TypProfilKiSicht.Beschreibung",
                                      KiDialogTexte.TprofBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.TprofBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.TprofBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("wochenwerte", "TypProfilKiSicht.Wochenwerte",
+                                     KiDialogTexte.TprofWochenwerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.TprofWochenwerteErl,
+                                     reihe: KiZahlenreihen.Wochenstunden())
                 },
                 knoepfe: new[]
                 {
@@ -3443,7 +3790,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Kopfsatz eines Bedarfskatalogs — drei Felder an
+        /// Der Kopfsatz eines Bedarfskatalogs — vier Felder an
         /// <c>EPOS.UI.Dialoge.Bedarf.TypStammDaten</c>.
         /// </summary>
         /// <remarks>
@@ -3459,10 +3806,10 @@ namespace WindowsFormsApplication1
         /// Dialog; er reicht sie beim Anmelden als Lieferant herein.
         /// </para>
         /// <para>
-        /// <b>Draussen bleiben die zwoelf MONATSWERTE:</b> eine Zahlenfolge ohne
-        /// Zeilentyp — ein Katalogfeld traegt EINEN Wert, eine Katalogspalte braucht
-        /// Zeilen mit benannten Eigenschaften. Die Pflichtpruefung ueber alle zwoelf
-        /// steht dem Assistenten trotzdem offen: Sie ist der Haken „Pruefen".
+        /// <b>Die zwoelf MONATSWERTE sind EINE ZAHLENREIHE</b> (Welle #458 Stufe 3b):
+        /// das Feld <c>monatswerte</c> an <c>TypStammDaten.Monat</c>, derselben Liste,
+        /// an der die zwoelf Eingabefelder haengen. Die Pflichtpruefung ueber alle zwoelf
+        /// bleibt die des Dialogs - der Haken „Pruefen" meldet einen leeren Monat.
         /// </para>
         /// </remarks>
         private static KiDialog Typstamm()
@@ -3481,7 +3828,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.TstammTypErl, leerErlaubt: true),
                     new KiDialogFeld("beschreibung", "TypStammDaten.Beschreibung",
                                      KiDialogTexte.TstammBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.TstammBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.TstammBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("monatswerte", "TypStammDaten.Monat",
+                                     KiDialogTexte.TstammMonatswerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.TstammMonatswerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH,
+                                     reihe: KiZahlenreihen.Monate())
                 },
                 knoepfe: new[]
                 {
@@ -3652,8 +4004,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Gebaeude-Katalogeditor — 51 Felder (darunter die vierzehn Modellparameter
-        /// VDI 6007 der Stufen G1 und G2 samt Rechenweg) aus
+        /// Der Gebaeude-Katalogeditor — 59 Deklarationen (darunter die vierzehn
+        /// Modellparameter VDI 6007 der Stufen G1 und G2 samt Rechenweg, die drei der
+        /// Kuehlung, die Randbedingung der Bodenplatte und die Ferien als vier Spalten) aus
         /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht</c>: die groesste Maske des
         /// Katalogs.
         /// </summary>
@@ -3673,12 +4026,27 @@ namespace WindowsFormsApplication1
         /// die Bauweise nach — derselbe Weg, den die Klappliste geht.
         /// </para>
         /// <para>
-        /// <b>Draussen bleiben die sechzehn FERIENZAHLEN</b> (je vier Zeitraeume Beginn
-        /// und Ende, Tag und Monat): Sie sind zwei Zahlenfolgen ohne Zeilentyp, und ein
-        /// Katalogfeld traegt EINEN Wert. Geprueft werden sie ohnehin nur im Verbund —
-        /// vier Regeln ueber alle acht Paare. Ebenso draussen: die BAUWEISE, die aus
-        /// Bauart und Wohnflaeche gerechnet wird, und die Liste der
-        /// Brauchwasserprofile, die eine eigene Maske pflegt.
+        /// <b>Die sechzehn FERIENZAHLEN sind eine TABELLE</b> (Welle #458 Stufe 3b): vier
+        /// Zeitraeume mit Namen (Winter, Ostern, Sommer, Herbst) und je Beginn und Ende,
+        /// Tag und Monat. Das ist die Spaltenform mit dem Zeitraum als Zeilenkennzeichen
+        /// (<c>ferien_beginn_tag_3</c> heisst „… (Sommer)"), keine Zahlenreihe: Die Zeilen
+        /// tragen Namen, und ein Zeitraum ist mit <c>formular_ausfuellen</c> in einem
+        /// Block gesetzt. Die Grenzen sind die der Eingabefelder (Tag 1 bis 31, Monat 1
+        /// bis 12); die vier Regeln ueber alle acht Paare prueft der Dialog (Haken
+        /// „Pruefen").
+        /// </para>
+        /// <para>
+        /// <b>Das HUELL-RASTER</b> (Bauteil, Kennwert, Groesse, Randbedingung) ist kein
+        /// eigenes Raster fuer den Assistenten: Kennwert und Groesse jeder Zeile binden an
+        /// die Felder <c>u_*</c>, <c>flaeche_*</c>, <c>wbvk_*</c> und <c>anschluss_*</c>
+        /// dieser Liste - eine Spalte daneben waere derselbe Wert unter zweitem Namen. Die
+        /// Groesse der Fensterzeile wird gerechnet (Nord + Sued + Ost + West). Neu ist die
+        /// RANDBEDINGUNG der Bodenplatte, ein Wahlfeld (Erdreich, Keller, Aussenluft) auf
+        /// dem Weg der Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben</b> die BAUWEISE, die aus Bauart und Wohnflaeche gerechnet
+        /// wird, und die Liste der Brauchwasserprofile, die eine eigene Maske pflegt.
         /// </para>
         /// </remarks>
         private static KiDialog GebaeudeKatalog()
@@ -3897,6 +4265,27 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkKellertemperaturName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkKellertemperaturErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    // ---- Huell-Raster: die Randbedingung der Bodenplatte (Welle #458 3b) --
+                    new KiDialogFeld("randbedingung", "GebaeudeKatalogKiSicht.Randbedingung",
+                                     KiDialogTexte.GebkRandbedingungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkRandbedingungErl),
+                    // ---- Ferien: vier Zeitraeume als Spalten (Welle #458 Stufe 3b) ---------
+                    new KiDialogFeld("ferien_beginn_tag", "GebaeudeKatalogKiSicht.Ferien[].BeginnTag",
+                                     KiDialogTexte.GebkFerienBeginnTagName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienBeginnTagErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 31),
+                    new KiDialogFeld("ferien_beginn_monat", "GebaeudeKatalogKiSicht.Ferien[].BeginnMonat",
+                                     KiDialogTexte.GebkFerienBeginnMonatName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienBeginnMonatErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 12),
+                    new KiDialogFeld("ferien_ende_tag", "GebaeudeKatalogKiSicht.Ferien[].EndeTag",
+                                     KiDialogTexte.GebkFerienEndeTagName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienEndeTagErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 31),
+                    new KiDialogFeld("ferien_ende_monat", "GebaeudeKatalogKiSicht.Ferien[].EndeMonat",
+                                     KiDialogTexte.GebkFerienEndeMonatName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkFerienEndeMonatErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Zeitraum", min: 1, max: 12),
                     // ---- Kuehlung (Stufe KU1, Kuehlkonzept 8.1) ----------------------------
                     new KiDialogFeld("kuehlung_aktiv", "GebaeudeKatalogKiSicht.KuehlungAktiv",
                                      KiDialogTexte.GebkKuehlungAktivName, KiParameterTyp.Wahrheitswert,
@@ -4036,16 +4425,18 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der KOPF eines Quellprofils — vier Felder aus
+        /// Ein Quellprofil — der Kopf und die zwoelf Monatswerte, fuenf Felder aus
         /// <c>EPOS.UI.Dialoge.Simulation.QuellprofilKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Nur der Kopf, und das ist die Aussage.</b> Die zwoelf Monatswerte und die
-        /// 365 bzw. 8 760 Reihenwerte sind Zahlenfolgen ohne Zeilentyp: Ein Katalogfeld
-        /// traegt EINEN Wert, eine Katalogspalte braucht Zeilen mit benannten
-        /// Eigenschaften (<c>KiFeldsammlung</c>). Gepflegt werden sie ohnehin ueber
-        /// „Alle Werte gleich setzen…" und den CSV-Weg und nicht Zelle fuer Zelle.
+        /// <b>Die zwoelf MONATSWERTE sind EINE ZAHLENREIHE</b> (Welle #458 Stufe 3b,
+        /// <c>monatswerte</c>, Januar bis Dezember, °C) - in der Betriebsart „Monat", in
+        /// der die Maske sie zeigt. Steht eine andere Betriebsart, liest die Reihe leer
+        /// und das Setzen lehnt benannt ab. Die 365 bzw. 8 760 Werte der Betriebsarten
+        /// Tag und Stunde bleiben draussen: Sie sind Zeitreihen, gepflegt ueber „Alle
+        /// Werte gleich setzen…" und den CSV-Weg, und keine Stelle traegt einen Namen,
+        /// den der Anwender auf der Maske liest.
         /// </para>
         /// <para>
         /// <b>Das gewaehlte PROFIL ist ein WAHLFELD</b> (KI-F1b, KI-D-Q6): Seine
@@ -4077,7 +4468,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.QprofBetriebsartErl, leerErlaubt: true),
                     new KiDialogFeld("profil", "QuellprofilKiSicht.Profil",
                                      KiDialogTexte.QprofProfilName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.QprofProfilErl, leerErlaubt: true)
+                                     KiDialogTexte.QprofProfilErl, leerErlaubt: true),
+                    new KiDialogFeld("monatswerte", "QuellprofilKiSicht.Monatswerte",
+                                     KiDialogTexte.QprofMonatswerteName, KiParameterTyp.ZahlListe,
+                                     KiDialogTexte.QprofMonatswerteErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C,
+                                     reihe: KiZahlenreihen.Monate())
                 },
                 knoepfe: new[]
                 {

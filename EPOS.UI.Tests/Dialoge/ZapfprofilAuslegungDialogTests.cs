@@ -1226,4 +1226,253 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Knopf(cut, "OK").Click();
         Assert.Equal(1, gerufen);
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 3a)
+    // =================================================================================
+
+    /// <summary>Der Feldzugang der Überlagerung „Auslegung Brauchwasser" an der Maskenbrücke.</summary>
+    private static KiFeldzugang Zugang(string feld)
+        => KiMaskenbruecke.Feldzugang(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, feld);
+
+    /// <summary>Setzt ein Feld wie der Assistent: Text des Modells → Wert der Eigenschaft → Setzweg.</summary>
+    private static void Setze(string feld, string text)
+    {
+        KiFeldzugang z = Zugang(feld);
+        Assert.NotNull(z);
+        KiFeldumsetzung u = KiFeldwandler.Wandle(z, text);
+        Assert.True(u.Ok, u.Grund);
+        z.Setzen(u.Wert);
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Überlagerung meldet ihre
+    /// Eingaben über <c>ZapfprofilAuslegungKiSicht</c> an; gesetzt wird auf den Wegen der
+    /// Eingabefelder, und jede Setzung rechnet die Karten neu. Der Bedarfstag ist EINE Wahl aus
+    /// Quelle und Katalogtag, der empfohlene Punkt nur lesbar. Mit der Überlagerung fällt die
+    /// Anmeldung.
+    /// </summary>
+    [Fact]
+    public void Die_Auslegung_meldet_ihre_Eingaben_an_und_rechnet_je_Setzung_neu()
+    {
+        var gerechnet = new List<ZapfprofilAuslegungEingabeDaten>();
+        KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete
+        var cut = Aufbauen(StartMitStochastik(), rechnen: e => { gerechnet.Add(e); return ErgebnisZu(e); });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG));
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+        Assert.Equal(60.0, Zugang("speichertemperatur").Lesen());
+        Assert.Equal(25.0, Zugang("erzeugerleistung").Lesen());
+        Assert.Contains("300", Zugang("punkt").Lesen() as string, StringComparison.Ordinal);
+        Assert.False(Zugang("punkt").Setzbar);
+
+        Setze("speichertemperatur", "55");
+        Assert.Equal(55.0, cut.Instance.Eingabe.SpeicherC);
+        Assert.Equal(55.0, Assert.Single(gerechnet).SpeicherC);
+
+        Setze("speicherart", "gemischter Speicher");
+        Setze("erzeugerart", "Wärmepumpe");
+        Setze("werkstoff", "Edelstahl");
+        Setze("sensorhoehe", "0,6");
+        Setze("uebertragerleistung", "30");
+        cut.Render();
+        Assert.Equal(ZapfprofilSpeicherart.GemischterSpeicher, cut.Instance.Eingabe.Speicherart);
+        Assert.Equal(ZapfprofilErzeugerart.Waermepumpe, cut.Instance.Eingabe.Erzeugerart);
+        Assert.Equal(ZapfprofilWerkstoff.Edelstahl, cut.Instance.Eingabe.Werkstoff);
+        Assert.Equal(0.6, cut.Instance.Eingabe.SensorhoeheAnteil);
+        Assert.Equal(30.0, cut.Instance.Eingabe.UebertragerKw);
+        Assert.Equal(6, gerechnet.Count);
+
+        // Der Bedarfstag ist EINE Wahl: der Katalogtag setzt Quelle und Id zugleich.
+        Setze("bedarfstag", "Tag A");
+        Assert.Equal(5, cut.Instance.Eingabe.IdBedarfstag);
+        Assert.Equal(ZapfprofilBedarfstagquelle.Konstruktor, cut.Instance.Eingabe.Quelle);
+        Setze("bedarfstag", "Stundenprofil der Zonen");
+        Assert.Equal(ZapfprofilBedarfstagquelle.Stundenprofil, cut.Instance.Eingabe.Quelle);
+        Assert.Null(cut.Instance.Eingabe.IdBedarfstag);
+
+        // Mit „Stochastisch rechnen" stehen Perzentil und Realisierungen auf der Maske.
+        Setze("stochastisch", "ja");
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.EnsembleLaeuft), Frist);
+        Setze("perzentil", "P95");
+        Setze("realisierungen", "40");
+        Assert.Equal(95, cut.Instance.Eingabe.Perzentil);
+        Assert.Equal(40, cut.Instance.Eingabe.RealisierungenAuslegung);
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG));
+    }
+
+    /// <summary>
+    /// <b>Was die Maske sperrt oder nicht zeigt, lehnt der Assistent benannt ab</b>: ein
+    /// gesperrter Katalogtag und eine gesperrte Quelle mit ihrem Grund, Perzentil und
+    /// Realisierungen ohne „Stochastisch rechnen" und Zahlen außerhalb der Grenzen des Feldes.
+    /// Die Eingaben bleiben dabei stehen.
+    /// </summary>
+    [Fact]
+    public void Gesperrtes_und_Verdecktes_lehnt_die_Auslegung_benannt_ab()
+    {
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu);
+        var texte = new ZapfprofilAuslegungTexte();
+
+        var normtag = Assert.Throws<InvalidOperationException>(() => Zugang("bedarfstag").Setzen(6));
+        Assert.Equal("Das DIN-4708-Profil rechnet der Kern aus der Kennzahl.", normtag.Message);
+        var a100 = Assert.Throws<InvalidOperationException>(() => Zugang("bedarfstag").Setzen(-2));
+        Assert.Equal(texte.GrundA100, a100.Message);
+        Assert.Equal(ZapfprofilBedarfstagquelle.Vorgaberegel, cut.Instance.Eingabe.Quelle);
+
+        var perzentil = Assert.Throws<InvalidOperationException>(() => Zugang("perzentil").Setzen(95));
+        Assert.Contains(texte.LabelPerzentil, perzentil.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.LabelStochastisch, perzentil.Message, StringComparison.Ordinal);
+        Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(40));
+
+        Assert.Throws<InvalidOperationException>(() => Zugang("sensorhoehe").Setzen(1.5));
+        var negativ = Assert.Throws<InvalidOperationException>(() => Zugang("erzeugerleistung").Setzen(-5.0));
+        Assert.Contains(texte.LabelErzeugerleistung, negativ.Message, StringComparison.Ordinal);
+        Assert.Equal(25.0, cut.Instance.Eingabe.ErzeugerKw);
+        Assert.Null(cut.Instance.Eingabe.SensorhoeheAnteil);
+    }
+
+    /// <summary>
+    /// <b>Prüfen ist der Befund des OK</b> (die Fehleingabe, die es anhält);
+    /// <b>einen Speicherweg gibt es nicht</b> — OK übernimmt in das Zapfprofil, und das bleibt
+    /// der Klick des Anwenders.
+    /// </summary>
+    [Fact]
+    public void Pruefen_nennt_die_Fehleingabe_und_speichern_gibt_es_nicht()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu, geschlossen: _ => gerufen++);
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG);
+        Assert.Equal("", haken.Befund());
+        Assert.Null(haken.Speichern);
+
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Feld(cut, "Realisierungen des Bedarfstags").Input("0");
+
+        Assert.Equal("Bitte die markierten Felder berichtigen: Realisierungen des Bedarfstags.", haken.Befund());
+        Assert.Equal(0, gerufen);
+    }
+
+    // ---------------------------------------------------------------------------------
+    //  Der Konstruktor beim Hilfe-Assistenten
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>Der Feldzugang der Überlagerung „Bedarfstag konstruieren" an der Maskenbrücke.</summary>
+    private static KiFeldzugang KonstruktorZugang(string feld)
+        => KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, feld);
+
+    /// <summary>Setzt ein Feld des Konstruktors wie der Assistent.</summary>
+    private static void KonstruktorSetze(string feld, string text)
+    {
+        KiFeldzugang z = KonstruktorZugang(feld);
+        Assert.NotNull(z);
+        KiFeldumsetzung u = KiFeldwandler.Wandle(z, text);
+        Assert.True(u.Ok, u.Grund);
+        z.Setzen(u.Wert);
+    }
+
+    /// <summary>Der Konstruktor, unmittelbar gezeichnet — die Regeln des Stands, erfundene Zeilen.</summary>
+    private IRenderedComponent<BedarfstagKonstruktor> Konstruktor(
+        Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? konstruieren = null)
+        => Render<BedarfstagKonstruktor>(p => p
+            .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
+            .Add(x => x.Regeln, Start().Regeln)
+            .Add(x => x.Name, "Eigener Tag")
+            .Add(x => x.Startzeilen, new List<ZapfprofilKonstruktorZeileDaten>
+            {
+                new() { BeginnH = 6, EndeH = 8, Regel = "Dusche", Anzahl = 2, Verbraucher = "Bad" },
+                new() { BeginnH = 18, EndeH = 19, VolumenL = 40, ZapftemperaturC = 45, Verbraucher = "Küche" }
+            })
+            .Add(x => x.Konstruieren, konstruieren)
+            .Add(x => x.TitelAnzeigen, false));
+
+    /// <summary>
+    /// <b>Der ZEUGE des Konstruktors an der Maskenbrücke.</b> Er meldet Name und Zeilen über
+    /// <c>BedarfstagKonstruktorKiSicht</c> an; die Zeilen sind Spalten mit Zeitfenster und
+    /// Verbraucher als Kennzeichen. Was die Zeile nicht bedienbar zeigt (Anzahl ohne Zapfregel,
+    /// Volumen mit einer) und Zeiten außerhalb des Tages lehnt er benannt ab.
+    /// </summary>
+    [Fact]
+    public void Der_Konstruktor_meldet_Name_und_Zeilen_an_und_setzt_wie_die_Felder()
+    {
+        KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete
+        var k = Konstruktor();
+        var texte = new ZapfprofilAuslegungTexte();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
+        Assert.Equal(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, KiMaskenbruecke.AktiveMaske());
+
+        Assert.Equal("Eigener Tag", KonstruktorZugang("name").Lesen());
+        KonstruktorSetze("name", "Tag B");
+        k.Render();
+        Assert.Equal("Tag B", Feld(k, "Name des Bedarfstags").GetAttribute("value"));
+
+        Assert.Contains("6–8 h · Bad", KonstruktorZugang("anzahl_1").Feld.Anzeigename, StringComparison.Ordinal);
+        Assert.Equal(1, KonstruktorZugang("regel_1").Lesen());
+        KonstruktorSetze("anzahl_1", "3");
+        Assert.Equal(3.0, k.Instance.Zeilen[0].Anzahl);
+
+        // Zeile 2 rechnet mit „Volumen direkt": Anzahl steht dort nicht bedienbar.
+        var ohneRegel = Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("anzahl_2").Setzen(1.0));
+        Assert.Contains(texte.KonstruktorRegel, ohneRegel.Message, StringComparison.Ordinal);
+        KonstruktorSetze("volumen_2", "50");
+        KonstruktorSetze("temperatur_2", "42");
+        Assert.Equal(50.0, k.Instance.Zeilen[1].VolumenL);
+        Assert.Equal(42.0, k.Instance.Zeilen[1].ZapftemperaturC);
+
+        // Mit einer Zapfregel sind Volumen und Temperatur nicht bedienbar; zurück auf „Volumen direkt".
+        KonstruktorSetze("regel_2", "Wanne");
+        Assert.Equal("Wanne", k.Instance.Zeilen[1].Regel);
+        var mitRegel = Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("volumen_2").Setzen(60.0));
+        Assert.Contains(texte.KonstruktorRegelFrei, mitRegel.Message, StringComparison.Ordinal);
+        KonstruktorSetze("regel_2", "Volumen direkt");
+        Assert.Equal("", k.Instance.Zeilen[1].Regel);
+
+        // Das Zeitfenster trägt die Grenzen seines Feldes.
+        var spaet = Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("ende_1").Setzen(25.0));
+        Assert.Contains("24", spaet.Message, StringComparison.Ordinal);
+        Assert.Equal(8.0, k.Instance.Zeilen[0].EndeH);
+
+        KonstruktorSetze("verbraucher_2", "Spüle");
+        Assert.Equal("Spüle", k.Instance.Zeilen[1].Verbraucher);
+
+        k.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
+    }
+
+    /// <summary>
+    /// <b>Prüfen ist der Befund des OK</b> — die benannte Prüfung der Hülle, ohne dass sich
+    /// etwas schließt; <b>einen Speicherweg gibt es nicht</b>. Aus der Auslegung geöffnet, ist
+    /// der Konstruktor die aktive Maske, und nach dem Schließen wieder die Auslegung.
+    /// </summary>
+    [Fact]
+    public void Der_Konstruktor_prueft_wie_sein_OK_und_ist_offen_die_aktive_Maske()
+    {
+        int gebaut = 0;
+        var k = Konstruktor((_, _) =>
+        {
+            gebaut++;
+            return new ZapfprofilKonstruktorErgebnis(null, new[]
+            {
+                new ZapfprofilMeldung("ZPG_AUS_KON_ZEILE", "", "Zeile 1: Anzahl fehlt.", ZapfprofilMeldungsart.Fehler)
+            });
+        });
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR);
+        Assert.Equal("Zeile 1: Anzahl fehlt.", haken.Befund());
+        Assert.Equal(1, gebaut);
+        Assert.Null(haken.Speichern);
+        Assert.Empty(k.Instance.Meldungen);
+        k.Instance.Dispose();
+
+        KiMaskenbruecke.Leeren();
+        var cut = Aufbauen(rechnen: _ => Ergebnis(Speichergruppe()), konstruieren: Bauen);
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        Assert.Equal(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, KiMaskenbruecke.AktiveMaske());
+        Knopf(cut.FindComponent<BedarfstagKonstruktor>(), "Abbrechen").Click();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+    }
 }

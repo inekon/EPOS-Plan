@@ -106,6 +106,25 @@ public class KiFeldwerteTests : EposBunitContext
         Assert.Null(zugang.Lesen());
     }
 
+    /// <summary>
+    /// <b>Eine ZAHLENREIHE geht als EINE Zeile in den Feldblock</b> (Welle #458 Stufe 3b):
+    /// alle zwölf Werte, Strichpunkt getrennt, ein leerer Monat benannt — nicht zwölf
+    /// Zeilen und kein „System.Double[]".
+    /// </summary>
+    [Fact]
+    public void Eine_Zahlenreihe_geht_als_Liste_in_den_Feldblock()
+    {
+        var daten = new EPOS.UI.Dialoge.Bedarf.TypStammDaten { Name = "Halle 1" };
+        for (int m = 0; m < 11; m++) daten.Monat[m] = m + 1.5;
+
+        using KiMaskenanmeldung anmeldung =
+            KiMaskenanmeldung.Fuer(KiMaskennamen.TYPSTAMM, () => daten);
+
+        KiDialogdaten block = KiMaskenbruecke.Dialogdaten(KiMaskennamen.TYPSTAMM)!;
+        Assert.Contains(": 1,5; 2,5; 3,5; 4,5; 5,5; 6,5; 7,5; 8,5; 9,5; 10,5; 11,5; (leer)", block.Text);
+        Assert.DoesNotContain("System.Double", block.Text);
+    }
+
     [Fact]
     public void Der_gezeichnete_Dialog_meldet_seine_Maske_an()
     {
@@ -142,6 +161,11 @@ public class KiFeldwerteTests : EposBunitContext
     [InlineData(typeof(EPOS.UI.Seiten.Assistent.ProjektKopfSeite))]
     [InlineData(typeof(EPOS.UI.Seiten.Start.Startseite))]
     [InlineData(typeof(EPOS.UI.Dialoge.Admin.EinstellungenDialog))]
+    // Welle #458, Stufe 3a: die Ueberlagerungen des Zapfprofils melden sich nur an,
+    // solange sie offen stehen.
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilDialog))]
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungDialog))]
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktor))]
     public void Jede_angemeldete_Komponente_kann_sich_abmelden(Type komponente)
     {
         // Ohne IDisposable käme das Abmelden nie — die Anmeldung überlebte den Dialog,

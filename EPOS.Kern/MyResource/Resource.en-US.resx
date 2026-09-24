@@ -7754,6 +7754,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_KERN_FELD_GUELTIG_BIS" xml:space="preserve">
     <value>Valid until</value>
   </data>
+  <data name="KI_KERN_REIHE_UMFANG" xml:space="preserve">
+    <value>{0} values, {1} to {2}</value>
+  </data>
+  <data name="KI_KERN_REIHE_GEKUERZT" xml:space="preserve">
+    <value>… ({0} values)</value>
+  </data>
+  <data name="KI_KERN_REIHE_AENDERUNG" xml:space="preserve">
+    <value>{0} · {1} of {2} values change</value>
+  </data>
+  <data name="KI_KERN_REIHE_WEITERE" xml:space="preserve">
+    <value>… and {0} more</value>
+  </data>
   <data name="KI_AUS_KEIN_SCHREIBRECHT" xml:space="preserve">
     <value>The licence currently does not permit writing. Viewing and exporting remain possible, changes are blocked. {0}</value>
   </data>
@@ -8510,6 +8522,24 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_TYP_ZAHL" xml:space="preserve">
     <value>number</value>
   </data>
+  <data name="KI_DLG_TYP_ZAHLENREIHE" xml:space="preserve">
+    <value>number series</value>
+  </data>
+  <data name="KI_DLG_REIHE_UMFANG" xml:space="preserve">
+    <value>The series carries {0}.</value>
+  </data>
+  <data name="KI_DLG_BEREICH" xml:space="preserve">
+    <value>Permitted: {0}.</value>
+  </data>
+  <data name="KI_DLG_REIHE_HINWEIS" xml:space="preserve">
+    <value>Number series ({0}); it is set with reihe_setzen.</value>
+  </data>
+  <data name="KI_DLG_REIHE_STUNDE" xml:space="preserve">
+    <value>hour {0}</value>
+  </data>
+  <data name="KI_DLG_REIHE_WOCHENSTUNDE" xml:space="preserve">
+    <value>{0}, hour {1}</value>
+  </data>
   <data name="KI_DLG_TYP_TEXT" xml:space="preserve">
     <value>text</value>
   </data>
@@ -8666,6 +8696,12 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_FELDER_GESETZT" xml:space="preserve">
     <value>{0} fields set in “{1}”.</value>
   </data>
+  <data name="KI_DLG_REIHE_GESETZT" xml:space="preserve">
+    <value>“{0}”: {1} of {2} values set ({3} to {4}).</value>
+  </data>
+  <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
+    <value>“{0}” already carries these values; there is nothing to change.</value>
+  </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>The button “{0}” in “{1}” has been released.</value>
   </data>
@@ -8686,6 +8722,9 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="KI_REG_ZWECK_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Enters values into several fields of an open form - as one single confirmed block.</value>
+  </data>
+  <data name="KI_REG_ZWECK_REIHE_SETZEN" xml:space="preserve">
+    <value>Enters a list of numbers into a number series of an open form (monthly, hourly or weekly values, field type ZahlListe) - the whole series or a section from a given position.</value>
   </data>
   <data name="KI_REG_ZWECK_DIALOG_AKTION" xml:space="preserve">
     <value>Releases a released button of an open form; the form's own check runs just as with a click by hand.</value>
@@ -8717,11 +8756,23 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_REG_ERL_WERTE" xml:space="preserve">
     <value>Assignments “field=value”, several separated by semicolons, e.g. “nutzungsdauer=20; raumbedarf=3”.</value>
   </data>
+  <data name="KI_REG_AB_NAME" xml:space="preserve">
+    <value>from position</value>
+  </data>
+  <data name="KI_REG_ERL_REIHENWERTE" xml:space="preserve">
+    <value>The numbers in the order of the series, as a list of numbers (point as decimal separator). Without 'ab' the list must cover the whole series, otherwise the section starting at that position.</value>
+  </data>
+  <data name="KI_REG_ERL_AB" xml:space="preserve">
+    <value>Position of the first value, starting at 1 - dialog_lesen names the positions (in a weekly series Tuesday, hour 1 is position 25). If omitted, the list starts at position 1 and must be complete.</value>
+  </data>
   <data name="KI_REG_ERL_KNOPF" xml:space="preserve">
     <value>Logical name of the button as named by dialog_lesen.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FELD_SETZEN" xml:space="preserve">
     <value>Afterwards the field carries the new text. It reaches the database only when the form's action button is released.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_REIHE_SETZEN" xml:space="preserve">
+    <value>Afterwards the series carries the new values; positions not named stay as they are. It reaches the database only via the form's save path.</value>
   </data>
   <data name="KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Afterwards the named fields carry the new texts. They reach the database only when the form's action button is released.</value>
@@ -15798,6 +15849,12 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
     <value>Enter 3.8 for the seasonal performance factor.</value>
   </data>
+  <data name="KI_REG_TITEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Set a number series of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_REIHE_SETZEN" xml:space="preserve">
+    <value>Set the monthly values to 12, 10, 9, 7, 5, 3, 2, 2, 4, 7, 9 and 11.</value>
+  </data>
   <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
     <value>Fill in several fields of the open form</value>
   </data>
@@ -19152,6 +19209,30 @@ Do you want to allow this?</value>
   <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
     <value>The field „{0}“ expects a number; „{1}“ is not one.</value>
   </data>
+  <data name="KI_FELD_IST_REIHE" xml:space="preserve">
+    <value>„{0}“ is a number series with {1} values; it is set with reihe_setzen – completely or from a position.</value>
+  </data>
+  <data name="KI_FELD_KEINE_REIHE" xml:space="preserve">
+    <value>„{0}“ is not a number series; a single value is set with feld_setzen.</value>
+  </data>
+  <data name="KI_FELD_REIHE_LAENGE" xml:space="preserve">
+    <value>„{0}“ has {1} values, {2} were given. For a section, give the first position with 'ab'.</value>
+  </data>
+  <data name="KI_FELD_REIHE_UEBERLAUF" xml:space="preserve">
+    <value>„{0}“ has {1} values; from position {2} at most {3} fit, {4} were given.</value>
+  </data>
+  <data name="KI_FELD_BEREICH" xml:space="preserve">
+    <value>„{0}“: {1} is outside the permitted range ({2}).</value>
+  </data>
+  <data name="KI_FELD_BEREICH_VON_BIS" xml:space="preserve">
+    <value>{0} to {1}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_AB" xml:space="preserve">
+    <value>at least {0}</value>
+  </data>
+  <data name="KI_FELD_BEREICH_BIS" xml:space="preserve">
+    <value>at most {0}</value>
+  </data>
   <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
     <value>The field „{0}“ expects yes or no; „{1}“ is neither.</value>
   </data>
@@ -21807,6 +21888,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
     <value>The stored source profile the screen loads. “New profile” starts an empty set; a loaded profile brings along its operating mode, name and values.</value>
   </data>
+  <data name="KI_DLG_QPROF_MONATSWERTE_ERL" xml:space="preserve">
+    <value>The twelve monthly mean temperatures of the heat source, January to December – only in the “month” operating mode; each value is mandatory when saving.</value>
+  </data>
+  <data name="KI_DLG_QPROF_NICHT_MONAT" xml:space="preserve">
+    <value>The monthly values apply in the “month” operating mode; “{0}” is selected. Switch the operating mode first.</value>
+  </data>
   <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
     <value>The buffer tank this sink charges. It exists only if the target is a tank slot; each tank may be a target only once.</value>
   </data>
@@ -22062,6 +22149,36 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
     <value>Edit, New or catalogue management; the operating mode decides which of the two saving paths is available.</value>
   </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_NAME" xml:space="preserve">
+    <value>Boundary condition floor slab</value>
+  </data>
+  <data name="KI_DLG_GEBK_RANDBEDINGUNG_ERL" xml:space="preserve">
+    <value>What the floor slab borders on: ground, basement (then with basement temperature) or outside air.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_NAME" xml:space="preserve">
+    <value>Holiday start, day</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_TAG_ERL" xml:space="preserve">
+    <value>The day of the month on which the holiday period starts (1 to 31).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_NAME" xml:space="preserve">
+    <value>Holiday start, month</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_BEGINN_MONAT_ERL" xml:space="preserve">
+    <value>The month in which the holiday period starts (1 to 12).</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_NAME" xml:space="preserve">
+    <value>Holiday end, day</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_TAG_ERL" xml:space="preserve">
+    <value>The day of the month on which the holiday period ends (1 to 31); the winter holidays cross the turn of the year.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_NAME" xml:space="preserve">
+    <value>Holiday end, month</value>
+  </data>
+  <data name="KI_DLG_GEBK_FERIEN_ENDE_MONAT_ERL" xml:space="preserve">
+    <value>The month in which the holiday period ends (1 to 12).</value>
+  </data>
   <data name="KI_DLG_MASKE_GEBB" xml:space="preserve">
     <value>Heat demand of a building</value>
   </data>
@@ -22101,6 +22218,15 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>The free text of the loaded type; saved with “Save”. A delivered type is read-only.</value>
   </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_NAME" xml:space="preserve">
+    <value>Hourly values of the curve</value>
+  </data>
+  <data name="KI_DLG_GTYP_STUNDENWERTE_ERL" xml:space="preserve">
+    <value>The 24 hourly values of the selected daily curve in the working state, hour 1 to 24 – the same that “Hourly values…” shows. “Save” writes them; while changed values are unsaved, the screen holds the curve change.</value>
+  </data>
+  <data name="KI_DLG_GTYP_OHNE_KURVE" xml:space="preserve">
+    <value>The selected building type has no daily curve; select a type with curves first.</value>
+  </data>
   <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
     <value>The loaded type. Setting it loads its weekly profile — the same path as a click in the list.</value>
   </data>
@@ -22110,6 +22236,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_TPROF_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>The free text of the loaded type; it goes to the database when saving.</value>
   </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Weekly values</value>
+  </data>
+  <data name="KI_DLG_TPROF_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>The 7 × 24 accepted hourly values of the week, Monday hour 1 to Sunday hour 24 – the state that “Save to DB” writes; the fields of the day shown follow.</value>
+  </data>
   <data name="KI_DLG_TSTAMM_NAME_ERL" xml:space="preserve">
     <value>The name of the catalogue record; the screen shows it locked. A different name is created with “Save as”.</value>
   </data>
@@ -22118,6 +22250,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Free text for the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_MONATSWERTE_ERL" xml:space="preserve">
+    <value>The twelve monthly values, January to December; each is mandatory before saving.</value>
   </data>
   <data name="KI_DLG_MASKE_BPF" xml:space="preserve">
     <value>Demand profiles in the project</value>
@@ -22160,6 +22295,114 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
     <value>The total over all profiles assigned to this project.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_ERL" xml:space="preserve">
+    <value>Where the domestic hot water channel of the simulation comes from: the existing profiles of this form or the project’s draw-off profile. Switching keeps the zones of the draw-off profile; “Draw-off profile” needs at least one zone.</value>
+  </data>
+  <data name="KI_DLG_BPF_RECHENWEG_NUR_BW" xml:space="preserve">
+    <value>The DHW calculation method is only available in the domestic hot water profiles of a saved project.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUR_MIT" xml:space="preserve">
+    <value>“{0}” only appears with “{1}” — please select that first.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZEILE_FEHLT" xml:space="preserve">
+    <value>This row is no longer in the list.</value>
+  </data>
+  <data name="KI_DLG_ZPG_GESPERRT" xml:space="preserve">
+    <value>“{0}” is locked.</value>
+  </data>
+  <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
+    <value>The depth of the dialog: “Basic” shows the zones, “Expert” also the stochastics of the annual series. The level only shows and hides fields, entered values are kept; “Extended” is locked in this version.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
+    <value>The selected zone of the zone list, by number or name; its input block is shown below the list. The values of every zone can also be set via the columns without selecting it.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ZONENNAME_ERL" xml:space="preserve">
+    <value>The name of the zone; required for OK. It names the zone in the list, the preview and the messages.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NUTZUNGSART_ERL" xml:space="preserve">
+    <value>The type of use of the zone from the catalogue; it determines the reference quantity, the daily profile and the specific demand per level. Required for OK; a locked type of use names its reason.</value>
+  </data>
+  <data name="KI_DLG_ZPG_BEZUGSMENGE_ERL" xml:space="preserve">
+    <value>The quantity of the zone in the reference quantity of its type of use (persons, dwellings, beds, area …); required for OK, greater than 0.</value>
+  </data>
+  <data name="KI_DLG_ZPG_NIVEAU_ERL" xml:space="preserve">
+    <value>The demand level of the zone — low, medium or high; it selects the specific demand of the type of use per unit and day.</value>
+  </data>
+  <data name="KI_DLG_ZPG_JAHRESBEDARF_ERL" xml:space="preserve">
+    <value>The annual draw-off demand of the zone from the current preview; “–” without a calculated preview. Read-only.</value>
+  </data>
+  <data name="KI_DLG_ZPG_ANSICHT_ERL" xml:space="preserve">
+    <value>Which view the preview shows its charts and key figures for: the sum of all zones or one zone. Only changes the display.</value>
+  </data>
+  <data name="KI_DLG_ZPG_RECHENWEG_ERL" xml:space="preserve">
+    <value>Which annual series enters the balance: the deterministic one or the stochastically drawn year for the seed, scaled to the annual amount. Appears from level “Expert”; the preview stays deterministic.</value>
+  </data>
+  <data name="KI_DLG_ZPG_SEED_ERL" xml:space="preserve">
+    <value>The random seed, whole number from 0; empty = default. The same seed draws the same series — for the annual series and the design ensemble. Appears in level “Expert”.</value>
+  </data>
+  <data name="KI_DLG_ZPG_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>How many years the stochastic run draws to check consistency; empty = default. Appears in level “Expert” with the “stochastic” method.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
+    <value>The design day of the cumulative curve: default rule, hourly profile of the zones, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
+    <value>The storage temperature; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERLEISTUNG_ERL" xml:space="preserve">
+    <value>The generator output at the storage, not negative; empty = assumed charging output. The verification output is the smaller of generator and heat exchanger.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_UEBERTRAGERLEISTUNG_ERL" xml:space="preserve">
+    <value>The heat exchanger output, not negative; empty = from U·A, area or the estimate for the generator type.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SPEICHERART_ERL" xml:space="preserve">
+    <value>Charging storage or mixed storage — it determines the cumulative curve.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_SENSORHOEHE_ERL" xml:space="preserve">
+    <value>The height of the temperature sensor as a share of the storage height, from 0 to 1; empty = default of the catalogue.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_ERZEUGERART_ERL" xml:space="preserve">
+    <value>The generator type at the storage (boiler or heat pump) — a run setting for estimating the heat exchanger; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_WERKSTOFF_ERL" xml:space="preserve">
+    <value>The heat exchanger material (steel or stainless steel) — a run setting; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_STOCHASTISCH_ERL" xml:space="preserve">
+    <value>Draws the ensemble of the design day per topology group for percentile, spread and simultaneity; the run calculates in the background. A run setting; it is not saved.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PERZENTIL_ERL" xml:space="preserve">
+    <value>The design percentile, P95 or P99. Appears only with “Calculate stochastically”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_REALISIERUNGEN_ERL" xml:space="preserve">
+    <value>How many design days the ensemble draws; empty = default of the core. Below the minimum number the percentile is not reliable. Appears only with “Calculate stochastically”.</value>
+  </data>
+  <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
+    <value>The recommended design point — for storage volume and output, otherwise the minute peak; OK takes it over into the draw-off profile. Result, read-only.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>The name of the constructed design day; required, not yet used in the catalogue version.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>The start of the row’s time window in hours, from 0 to 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>The end of the row’s time window in hours, up to 24 and after the start.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>A draw-off rule from the catalogue — then the number of its draw-offs counts — or “Volume directly” with volume and draw-off temperature.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>How often the draw-off rule draws within the time window, not negative; only with a draw-off rule.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>The volume of the row in litres, not negative; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The draw-off temperature of the volume; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>A neutral name of the draw-off point (“Kitchen”); it names the row and does not enter the calculation.</value>
   </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>The marked catalogue record. Setting it selects it in the list and the record sheet follows; with unsaved changes, save or discard first.</value>
@@ -22392,14 +22635,29 @@ Do you want to allow this?</value>
   <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
     <value>Which energy carrier the series belongs to — display only.</value>
   </data>
+  <data name="KI_DLG_LPR_MONATSSAETZE_ERL" xml:space="preserve">
+    <value>The twelve capacity price rates of the year, January to December; “Apply” writes the series.</value>
+  </data>
   <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
     <value>The name of the cost profile. It appears under this name in the catalog and on the carrier card.</value>
   </data>
   <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
-    <value>The weekday whose 24 hourly values the "week" tab shows. Changing it shows a different daily curve; the values themselves are maintained with the mask's own controls.</value>
+    <value>The weekday whose 24 hourly values the "week" tab shows. Changing it shows a different daily curve; the values themselves are in the number series "Deviation per weekday and hour".</value>
   </data>
   <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
     <value>The unit the monthly and weekly values are given in — display only.</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_NAME" xml:space="preserve">
+    <value>Price level per month</value>
+  </data>
+  <data name="KI_DLG_KPR_MONATSWERTE_ERL" xml:space="preserve">
+    <value>The twelve monthly levels of the profile, January to December; the hourly deviations are added to them.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_NAME" xml:space="preserve">
+    <value>Deviation per weekday and hour</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENWERTE_ERL" xml:space="preserve">
+    <value>The 7 × 24 deviations, Monday hour 1 to Sunday hour 24; they are added to the monthly level and may be negative.</value>
   </data>
   <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
     <value>The template variant whose positions the table shows — master context only. Switching it loads a different set of positions and is therefore not a field value; the assistant names it and the alternatives but cannot set it here.</value>

@@ -428,8 +428,63 @@ public class LeistungspreisReiheDialogTests : BunitContext
 
         Assert.Equal(2027, Convert.ToInt32(jahr.Lesen(), CultureInfo.InvariantCulture));
 
-        // Die zwoelf Monatssaetze sind NICHT deklariert - eine Wertetafel.
+        // Die zwoelf Monatssaetze stehen nicht einzeln im Katalog - sie sind EINE
+        // Zahlenreihe (Welle #458 Stufe 3b, siehe unten).
         Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.LEISTUNGSPREISREIHE)!
                               .FindeFeld("januar"));
+    }
+
+    // =====================================================================
+    //  Die Zahlenreihe „monatssaetze" (Welle #458 Stufe 3b)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die zwölf Monatssätze sind EINE Zahlenreihe</b> mit den Grenzen ihrer
+    /// Eingabefelder (0 bis 100 000): gelesen, ganz und je Monat gesetzt; ein negativer
+    /// Satz und eine falsche Länge werden abgelehnt, die Felder bleiben.
+    /// </summary>
+    [Fact]
+    public void Die_Monatssaetze_liest_und_setzt_der_Assistent_als_Reihe()
+    {
+        var cut = Zeige(p => p.Add(x => x.Werte, Hilfe.KiReihenhilfe.Folge(12)));
+        const string maske = KiMaskennamen.LEISTUNGSPREISREIHE;
+
+        Assert.Equal(Hilfe.KiReihenhilfe.Folge(12).Select(w => (double?)w),
+                     Hilfe.KiReihenhilfe.Werte(maske, "monatssaetze"));
+
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "monatssaetze", Hilfe.KiReihenhilfe.Gleich(12, 4.2)));
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(maske, "monatssaetze", new[] { 9.9 }, ab: 7));
+        cut.Render();
+
+        Assert.Equal(4.2, cut.Instance.Felder[0]);
+        Assert.Equal(9.9, cut.Instance.Felder[6]);
+
+        double[] negativ = Hilfe.KiReihenhilfe.Gleich(12, 1.0);
+        negativ[3] = -5;
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatssaetze", negativ));
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatssaetze", new[] { 100001.0 }, ab: 1));
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatssaetze", new double[12], ab: 2));
+        Assert.Equal(4.2, cut.Instance.Felder[3]);
+    }
+
+    /// <summary>
+    /// <b>„Übernehmen" schreibt die gesetzte Reihe</b> — der Knopf bleibt beim Anwender;
+    /// die Maske meldet keinen eigenen Speicherweg an.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_schreibt_die_gesetzten_Monatssaetze()
+    {
+        IReadOnlyList<double>? geschrieben = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Jahr, 2026)
+            .Add(x => x.Uebernehmen, (_, w) => { geschrieben = w; return true; }));
+
+        cut.InvokeAsync(() => Hilfe.KiReihenhilfe.Setze(KiMaskennamen.LEISTUNGSPREISREIHE, "monatssaetze",
+                                                        Hilfe.KiReihenhilfe.Folge(12, 1.5)));
+        cut.FindAll(".epos-leiste button").Last().Click();
+
+        Assert.NotNull(geschrieben);
+        Assert.Equal(Hilfe.KiReihenhilfe.Folge(12, 1.5), geschrieben);
+        Assert.Null(KiMaskenbruecke.Haken(KiMaskennamen.LEISTUNGSPREISREIHE).Speichern);
     }
 }

@@ -153,6 +153,15 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.BEDARFSPROFILE,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht) },
 
+        // Welle #458, Stufe 3a: die Ueberlagerungen des Zapfprofils - je eine
+        // Sichtklasse auf ihren Arbeitsstand (Zonen als Spalten, Eingaben der Auslegung).
+        { KiMaskennamen.ZAPFPROFIL,
+          typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht) },
+        { KiMaskennamen.ZAPFPROFIL_AUSLEGUNG,
+          typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht) },
+        { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht) },
+
         // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
         // Brauchwasser sind drei Katalogschluessel derselben Komponente.
         { KiMaskennamen.PROZESSWAERME_ADMIN,
@@ -377,7 +386,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_zweiundsiebzig_Masken()
+    public void Der_Katalog_fuehrt_fuenfundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
@@ -386,8 +395,9 @@ public class KiDialogkatalogTests : IDisposable
         // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
         // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
         // Kennlinieneditor, der Projektkopf des Assistenten, die Startseite und die
-        // Programmeinstellungen.
-        Assert.Equal(72, katalog.Anzahl);
+        // Programmeinstellungen. Welle #458, Stufe 3a: das Zapfprofil, seine Auslegung
+        // und deren Bedarfstag-Konstruktor.
+        Assert.Equal(75, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1029,6 +1039,100 @@ public class KiDialogkatalogTests : IDisposable
         Assert.NotNull(d.FindeKnopf("speichern"));
     }
 
+    // ---------------------------------------------------------------------
+    //  Die ZAHLENREIHEN (Welle #458 Stufe 3b)
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Die Zahlenfolgen der Masken sind Zahlenreihen</b> — je EIN setzbares Feld mit
+    /// fester Länge und benannten Stellen; die Feldzahl der Maske steht dabei fest.
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.TYPPROFIL, "wochenwerte", 168, 4)]
+    [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 4)]
+    [InlineData(KiMaskennamen.GEBAEUDETYP, "stundenwerte", 24, 4)]
+    [InlineData(KiMaskennamen.KOSTENPROFIL, "monatswerte", 12, 5)]
+    [InlineData(KiMaskennamen.KOSTENPROFIL, "wochenwerte", 168, 5)]
+    [InlineData(KiMaskennamen.LEISTUNGSPREISREIHE, "monatssaetze", 12, 4)]
+    [InlineData(KiMaskennamen.QUELLPROFIL, "monatswerte", 12, 5)]
+    public void Die_Zahlenfolgen_der_Masken_sind_Zahlenreihen(string maske, string feld, int laenge, int felder)
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(maske)!;
+        Assert.Equal(felder, d.Felder.Count);
+
+        KiDialogFeld reihe = d.FindeFeld(feld)!;
+        Assert.NotNull(reihe);
+        Assert.True(reihe.IstReihe);
+        Assert.Equal(KiParameterTyp.ZahlListe, reihe.Typ);
+        Assert.Equal(laenge, reihe.Reihe!.Laenge);
+        Assert.False(reihe.NurLesen);
+        Assert.All(reihe.Reihe.Stellen, s => Assert.False(string.IsNullOrWhiteSpace(s)));
+    }
+
+    /// <summary>
+    /// <b>Die Zählliste der Zahlenreihen:</b> genau diese sieben Reihen an sechs Masken.
+    /// Eine neue Reihe erzwingt einen Blick hierher — und in die Tests ihrer Maske.
+    /// </summary>
+    [Fact]
+    public void Genau_sieben_Zahlenreihen_stehen_im_Katalog()
+    {
+        string[] reihen = KiDialoge.Katalog.Alle
+            .SelectMany(d => d.Felder.Where(f => f.IstReihe).Select(f => d.Maskenname + "." + f.Name))
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(new[]
+        {
+            KiMaskennamen.TYPSTAMM + ".monatswerte",
+            KiMaskennamen.TYPPROFIL + ".wochenwerte",
+            KiMaskennamen.GEBAEUDETYP + ".stundenwerte",
+            KiMaskennamen.KOSTENPROFIL + ".monatswerte",
+            KiMaskennamen.KOSTENPROFIL + ".wochenwerte",
+            KiMaskennamen.LEISTUNGSPREISREIHE + ".monatssaetze",
+            KiMaskennamen.QUELLPROFIL + ".monatswerte"
+        }.OrderBy(s => s, StringComparer.Ordinal), reihen);
+    }
+
+    /// <summary>
+    /// <b>Der Gebäudekatalog führt die Randbedingung des Hüll-Rasters und die Ferien als
+    /// TABELLE</b> — Spalten mit dem Zeitraum als Zeilenkennzeichen und den Grenzen der
+    /// Eingabefelder, keine Zahlenreihe; Kennwert und Größe der Rasterzeilen sind die
+    /// Felder der U-Werte und Flächen.
+    /// </summary>
+    [Fact]
+    public void Der_Gebaeudekatalog_fuehrt_Randbedingung_und_Ferientabelle()
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
+
+        // 54 bis Stufe 3b, dazu die Randbedingung und die vier Ferienspalten.
+        Assert.Equal(59, d.Felder.Count);
+        Assert.DoesNotContain(d.Felder, f => f.IstReihe);
+        Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
+
+        foreach ((string name, double max) in new[]
+                 {
+                     ("ferien_beginn_tag", 31.0), ("ferien_beginn_monat", 12.0),
+                     ("ferien_ende_tag", 31.0), ("ferien_ende_monat", 12.0)
+                 })
+        {
+            KiDialogFeld spalte = d.FindeFeld(name)!;
+            Assert.True(spalte.IstSpalte, name);
+            Assert.Equal("Zeitraum", spalte.Zeilenkennzeichen);
+            Assert.Equal(KiParameterTyp.Ganzzahl, spalte.Typ);
+            Assert.Equal(1.0, spalte.Min);
+            Assert.Equal(max, spalte.Max);
+        }
+
+        foreach (string bauteil in new[]
+                 {
+                     "u_aussenwand", "flaeche_aussenwand", "u_fenster", "u_dachflaeche", "dachflaeche",
+                     "u_grundflaeche", "grundflaeche", "u_sonstiges", "sonstige_flaechen",
+                     "wbvk_fenster_wand", "anschluss_fenster_wand", "wbvk_aussenwand_keller",
+                     "anschluss_aussenwand_keller", "wbvk_wand_dach", "anschluss_wand_dach"
+                 })
+            Assert.True(d.KenntFeld(bauteil), bauteil);
+    }
+
     /// <summary>
     /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
     /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
@@ -1256,8 +1360,21 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",
         [KiMaskennamen.BEDARFSPROFILE] =
-            "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock und " +
-            "Verbrauchseingabe; Zeuge ist BedarfsProfileDialogTests",
+            "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock, " +
+            "Verbrauchseingabe und die Optionsgruppe „Rechenweg Brauchwasser“; Zeuge ist " +
+            "BedarfsProfileDialogTests",
+        [KiMaskennamen.ZAPFPROFIL] =
+            "bindet über die Sichtklasse ZapfprofilKiSicht auf den Arbeitsstand der " +
+            "Überlagerung: Stufe, Zonenwahl, die Zonen als Spalten (Zeilen mit den Wegen der " +
+            "Eingabefelder), Ansicht und Stochastik; Zeuge ist ZapfprofilDialogTests",
+        [KiMaskennamen.ZAPFPROFIL_AUSLEGUNG] =
+            "bindet über die Sichtklasse ZapfprofilAuslegungKiSicht: Bedarfstag als eine Wahl " +
+            "aus Quelle und Katalogtag, drei Aufzählungen, jede Eingabe rechnet neu; Zeuge ist " +
+            "ZapfprofilAuslegungDialogTests",
+        [KiMaskennamen.BEDARFSTAG_KONSTRUKTOR] =
+            "bindet über die Sichtklasse BedarfstagKonstruktorKiSicht: der Name und die Zeilen " +
+            "als Spalten, die Zapfregel als Platz der Regelwahl, Anzahl bzw. Volumen und " +
+            "Temperatur nur, wo die Zeile sie bedienbar zeigt; Zeuge ist ZapfprofilAuslegungDialogTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",

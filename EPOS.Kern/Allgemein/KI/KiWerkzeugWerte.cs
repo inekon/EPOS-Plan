@@ -27,6 +27,12 @@ namespace WindowsFormsApplication1
         private static readonly char[] TRENNER = { ',', ';', ' ', '\t' };
 
         /// <summary>
+        /// Trennzeichen einer ZAHLENREIHE (Welle #458 Stufe 3b) - OHNE Komma: Das ist in
+        /// de-DE das Dezimalzeichen („12,5; 13"), und je Glied gilt die Kulturgrenze unten.
+        /// </summary>
+        private static readonly char[] REIHENTRENNER = { ';', ' ', '\t', '\r', '\n' };
+
+        /// <summary>
         /// Sammelt die Werte je Parameter der Aktion.
         /// </summary>
         /// <param name="aktion">Die gewaehlte Aktion; ihre Parameter geben die Typen vor.</param>
@@ -60,6 +66,12 @@ namespace WindowsFormsApplication1
                 if (p.Typ == KiParameterTyp.GanzzahlListe)
                 {
                     werte[p.Name] = text.Split(TRENNER, StringSplitOptions.RemoveEmptyEntries);
+                }
+                else if (p.Typ == KiParameterTyp.ZahlListe)
+                {
+                    string[] glieder = text.Split(REIHENTRENNER, StringSplitOptions.RemoveEmptyEntries);
+                    for (int i = 0; i < glieder.Length; i++) glieder[i] = glieder[i].Replace(",", ".");
+                    werte[p.Name] = glieder;
                 }
                 else if (p.Typ == KiParameterTyp.Zahl || p.Typ == KiParameterTyp.Ganzzahl)
                 {

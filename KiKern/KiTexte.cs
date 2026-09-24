@@ -285,6 +285,27 @@ namespace KiKern
         /// </summary>
         public static string WertLeer => Hole(Vorsatz + "WERT_LEER", "(leer)");
 
+        // ------------------------------------ Zahlenreihen (Welle #458 Stufe 3b)
+
+        /// <summary>
+        /// Der Umfang einer Zahlenreihe. {0} = Zahl der Werte, {1} = erste Stelle,
+        /// {2} = letzte Stelle.
+        /// </summary>
+        public static string ReiheUmfang => Hole(Vorsatz + "REIHE_UMFANG", "{0} Werte, {1} bis {2}");
+
+        /// <summary>Das Ende einer gekuerzten Reihe. {0} = Zahl aller Werte.</summary>
+        public static string ReiheGekuerzt => Hole(Vorsatz + "REIHE_GEKUERZT", "… ({0} Werte)");
+
+        /// <summary>
+        /// Die Kopfzeile eines Reihenblocks. {0} = Reihe, {1} = geaenderte Stellen,
+        /// {2} = Laenge der Reihe.
+        /// </summary>
+        public static string ReiheAenderung => Hole(Vorsatz + "REIHE_AENDERUNG",
+            "{0} · {1} von {2} Werten ändern sich");
+
+        /// <summary>Die Schlusszeile eines gekuerzten Reihenblocks. {0} = nicht gezeigte Stellen.</summary>
+        public static string ReiheWeitere => Hole(Vorsatz + "REIHE_WEITERE", "… und {0} weitere");
+
         /// <summary>Ein Knopf der Maske wird ausgeloest. {0} = Beschriftung des Knopfes.</summary>
         public static string KnopfWirdAusgeloest => Hole(Vorsatz + "KNOPF_WIRD_AUSGELOEST",
             "Knopf ‚{0}' wird ausgelöst");

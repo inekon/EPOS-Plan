@@ -491,4 +491,63 @@ public class TypStammDialogTests : EposBunitContext
 
         Assert.Equal("Wohnen", daten.Typ);
     }
+
+    // =====================================================================
+    //  Die Zahlenreihe „monatswerte" (Welle #458 Stufe 3b)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die zwölf Monatswerte sind EINE Zahlenreihe</b> an <c>TypStammDaten.Monat</c>:
+    /// gelesen als Liste, gesetzt ganz und je Monat — und die zwölf Felder zeigen danach
+    /// genau das. Eine falsche Länge wird abgelehnt, der Satz bleibt unberührt.
+    /// </summary>
+    [Fact]
+    public void Die_Monatswerte_liest_und_setzt_der_Assistent_als_Reihe()
+    {
+        TypStammDaten daten = Daten(BedarfsArt.Stromverbraucher);
+        var cut = Aufbauen(daten);
+        const string maske = KiMaskennamen.TYPSTAMM;
+
+        Assert.Equal(Hilfe.KiReihenhilfe.Folge(12).Select(w => (double?)w),
+                     Hilfe.KiReihenhilfe.Werte(maske, "monatswerte"));
+
+        Hilfe.KiReihenhilfe.Setze(maske, "monatswerte", Hilfe.KiReihenhilfe.Folge(12, 10));
+        cut.Render();
+        Assert.Equal(120.0, daten.Monat[11]);
+        Assert.Contains(cut.FindAll("input"), e => e.GetAttribute("value") == "120,0000");
+
+        Hilfe.KiReihenhilfe.Setze(maske, "monatswerte", new[] { 7.5 }, ab: 3);
+        Assert.Equal(new double?[] { 10, 20, 7.5, 40, 50, 60, 70, 80, 90, 100, 110, 120 }, daten.Monat);
+
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatswerte", new double[11]));
+        Assert.NotNull(Hilfe.KiReihenhilfe.Grund(maske, "monatswerte", new double[2], ab: 12));
+        Assert.Equal(7.5, daten.Monat[2]);
+    }
+
+    /// <summary>
+    /// <b>Der Speicherweg ist der der Maske:</b> Die Pflichtprüfung meldet einen leeren
+    /// Monat, und erst die vollständig gesetzte Reihe geht über „Überschreiben" in den
+    /// Satz.
+    /// </summary>
+    [Fact]
+    public async Task Die_gesetzte_Reihe_geht_ueber_den_Speicherweg_der_Maske_in_den_Satz()
+    {
+        double[]? geschrieben = null;
+        var cut = Aufbauen(Daten(BedarfsArt.Stromverbraucher, mitWerten: false),
+                           speichern: (d, _, n) =>
+                           {
+                               geschrieben = d.MonatWerte();
+                               return new KatalogSpeicherErgebnis(true, "", n);
+                           });
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.TYPSTAMM);
+
+        Assert.NotEqual("", haken.Befund());                       // zwölf leere Monate
+
+        Hilfe.KiReihenhilfe.Setze(KiMaskennamen.TYPSTAMM, "monatswerte", Hilfe.KiReihenhilfe.Folge(12, 2.5));
+        Assert.Equal("", haken.Befund());
+
+        KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => haken.Speichern());
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.Equal(Hilfe.KiReihenhilfe.Folge(12, 2.5), geschrieben);
+    }
 }

@@ -9,12 +9,10 @@
 /// <c>Werte</c> sind nur der Anfangsstand, und einen Ergebnis-Record gibt es
 /// nicht — geschrieben wird über den Delegaten <c>Uebernehmen</c>.</para>
 ///
-/// <para><b>Die zwölf Monatssätze bleiben draußen.</b> Sie stehen als Schleife über
-/// ihren Index im Markup (<c>Monatsname(m)</c>) und sind damit eine WERTETAFEL wie
-/// die Monats- und Wochenraster des Kostenprofils — dieselbe Regel, mit der die
-/// Welle KI‑F3 die zwölf Monatssummen des Gebäudebedarfs ausgelassen hat. Das JAHR
-/// dagegen ist der Einstellwert, der die ganze Reihe trägt: Er sagt, für welches
-/// Jahr die Sätze gelten.</para>
+/// <para><b>Die zwölf Monatssätze sind EINE Zahlenreihe</b> (Welle #458 Stufe 3b,
+/// <see cref="Monatssaetze"/>): Januar bis Dezember, mit den Grenzen der zwölf
+/// Eingabefelder. Das JAHR ist der Einstellwert, der die ganze Reihe trägt: Er sagt,
+/// für welches Jahr die Sätze gelten.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff
 /// ihren Delegaten.</para>
@@ -30,6 +28,12 @@ public sealed class LeistungspreisReiheKiSicht
 
     public Func<string>? EinheitLesen { get; init; }
     public Func<string>? KontextLesen { get; init; }
+
+    /// <summary>Liest die zwölf Monatssätze.</summary>
+    public Func<double?[]?>? MonatssaetzeLesen { get; init; }
+
+    /// <summary>Schreibt die zwölf Monatssätze in die Felder der Maske.</summary>
+    public Action<double?[]>? MonatssaetzeSetzen { get; init; }
 
     // =====================================================================
     //  Die Felder der Maske
@@ -47,4 +51,14 @@ public sealed class LeistungspreisReiheKiSicht
 
     /// <summary>Zu welchem Energieträger die Reihe gehört — Anzeige.</summary>
     public string Kontext => KontextLesen?.Invoke() ?? "";
+
+    /// <summary>
+    /// Die Zahlenreihe der zwölf Monatssätze (Welle #458 Stufe 3b), Januar bis Dezember;
+    /// die Grenzen (0 bis 100 000) sind die der zwölf Eingabefelder.
+    /// </summary>
+    public double?[]? Monatssaetze
+    {
+        get => MonatssaetzeLesen?.Invoke();
+        set { if (value is not null) MonatssaetzeSetzen?.Invoke(value); }
+    }
 }

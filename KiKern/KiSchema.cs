@@ -115,6 +115,7 @@ namespace KiKern
                     knoten["type"] = "string";
                     break;
                 case KiParameterTyp.GanzzahlListe:
+                case KiParameterTyp.ZahlListe:
                     knoten["type"] = "array";
                     break;
                 default:
@@ -132,6 +133,10 @@ namespace KiKern
 
             if (p.Typ == KiParameterTyp.GanzzahlListe)
                 knoten["items"] = new JsonObject { ["type"] = "integer" };
+
+            // Die Glieder einer Zahlenreihe (Welle #458 Stufe 3b): Gleitkomma, invariant.
+            if (p.Typ == KiParameterTyp.ZahlListe)
+                knoten["items"] = new JsonObject { ["type"] = "number" };
 
             return knoten;
         }
@@ -223,6 +228,14 @@ namespace KiKern
                         foreach (long v in feld) f.Add(JsonValue.Create(v));
                         return f;
                     }
+                // Die Zahlenreihe geht VOLLSTAENDIG ins Protokoll - gekuerzt wird nur
+                // die Anzeige (WertAlsText); wer nachliest, soll jeden Wert finden.
+                case double[] reihe:
+                    {
+                        var f = new JsonArray();
+                        foreach (double v in reihe) f.Add(JsonValue.Create(v));
+                        return f;
+                    }
                 default:
                     return JsonValue.Create(Convert.ToString(wert, CultureInfo.InvariantCulture));
             }
@@ -250,6 +263,12 @@ namespace KiKern
                         foreach (long v in feld) teile.Add(v.ToString(kultur));
                         return string.Join(", ", teile);
                     }
+                // Eine Zahlenreihe steht in der Bestaetigung GEKUERZT (168 Wochenwerte
+                // waeren eine Wand); was sich aendert, zeigt die Vorschau Stelle fuer
+                // Stelle (KiFeldBlock.Reihe). Getrennt wird mit Strichpunkt - das Komma
+                // ist in de-DE das Dezimalzeichen.
+                case double[] reihe:
+                    return KiZahlenreihe.Kurz(KiZahlenreihe.Werte(reihe), kultur);
                 default:
                     return Convert.ToString(wert, kultur) ?? "";
             }

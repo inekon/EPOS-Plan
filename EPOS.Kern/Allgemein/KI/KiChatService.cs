@@ -732,6 +732,11 @@ namespace WindowsFormsApplication1
                               "dialog_oeffnen fuer sie auf (das aendert nichts und braucht keine " +
                               "Bestaetigung) und sage dem Anwender, dass er dort den Satz auswaehlen " +
                               "muss, bevor du die Werte setzen kannst.");
+                // Welle #458 Stufe 3b: Eine Zahlenreihe ist EIN Feld mit einer Liste -
+                // Stelle fuer Stelle ueber formular_ausfuellen waere der falsche Weg.
+                sb.AppendLine("Ein Feld vom Typ ZahlListe ist eine Zahlenreihe (Monats-, Stunden- oder " +
+                              "Wochenwerte): Setze sie mit reihe_setzen - die ganze Reihe als Zahlenliste " +
+                              "oder einen Ausschnitt mit 'ab' (Stelle des ersten Wertes, bei 1 beginnend).");
                 sb.AppendLine("Behaupte NIE, ein Projekt gebe es nicht, nur weil sein Name in Platzhalterzeilen nicht auftaucht.");
             }
             else

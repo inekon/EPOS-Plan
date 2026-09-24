@@ -362,6 +362,15 @@ namespace WindowsFormsApplication1
                 // brauchen ein offenes Projekt.
                 { KiMaskennamen.BEDARFSPROFILE, STARTSEITE },
 
+                // Das ZAPFPROFIL, seine Auslegung und deren Konstruktor sind Ueberlagerungen der
+                // Brauchwasserprofile (Knopf „Zapfprofil erzeugen…") und brauchen ein
+                // gespeichertes Projekt; kontextfrei gibt es sie nicht. Ihr Ziel ist
+                // deshalb das der Bedarfsprofile - dieselbe Bauart wie der
+                // Kennlinieneditor, der ueber seine Verwaltung aufgeht.
+                { KiMaskennamen.ZAPFPROFIL,           STARTSEITE },
+                { KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, STARTSEITE },
+                { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, STARTSEITE },
+
                 // Die drei KATALOGVERWALTUNGEN sind selbst Navigationsziele des
                 // Menues - hier fallen Katalogschluessel und Navigationsschluessel
                 // zusammen, wie bei der Waermepumpenverwaltung.
@@ -576,6 +585,13 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.GEBAEUDE_WOHNFLAECHE,     REITER_WAERMEBEDARF },
                 { KiMaskennamen.GEBAEUDE_BEDARF,          REITER_WAERMEBEDARF },
                 { KiMaskennamen.WAERMEBEDARF_EXTERN,      REITER_WAERMEBEDARF },
+
+                // Anders als die Bedarfsprofile hat das ZAPFPROFIL einen Platz: Es geht
+                // nur aus den Brauchwasserprofilen auf, und die haengen allein an der
+                // Kachel „Brauchwasser" auf Reiter 2.
+                { KiMaskennamen.ZAPFPROFIL,               REITER_WAERMEBEDARF },
+                { KiMaskennamen.ZAPFPROFIL_AUSLEGUNG,     REITER_WAERMEBEDARF },
+                { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,   REITER_WAERMEBEDARF },
 
                 // KiMaskennamen.BEDARFSPROFILE steht hier BEWUSST NICHT: Dieselbe
                 // Maske geht aus den Kacheln ZWEIER Reiter auf („Waermebedarf" mit
