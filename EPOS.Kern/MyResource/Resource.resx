@@ -31288,4 +31288,127 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_S_STANTEIL_PFLEGE" xml:space="preserve">
     <value>Gepflegt wird der Anteil unter „Strompreis Details" des Energieträgers; hier steht er nur zur Ansicht.</value>
   </data>
+  <data name="IMP_IFC_PROT_ZU_GROSS" xml:space="preserve">
+    <value>Die Datei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZU_GROSS_ENTPACKT" xml:space="preserve">
+    <value>Der IFC-Eintrag des Behälters ist entpackt {0} Byte groß und damit größer als die Grenze von {1} Byte — er wird weder entpackt noch gelesen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_LESEFEHLER" xml:space="preserve">
+    <value>Die IFC-Datei konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHEMA_UNBEKANNT" xml:space="preserve">
+    <value>Das Schema „{0}“ wird nicht unterstützt; gelesen werden IFC2x3, IFC4 und IFC4x3.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Die Datei enthält kein Gebäude (IfcBuilding).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEINE_RAEUME" xml:space="preserve">
+    <value>Gebäude {0}: kein Raum mit Mengenangaben gefunden ({1} Räume) — Nutzfläche und Raumhöhe bleiben leer.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
+    <value>{0} Bauteile ohne Mengenangaben (Qto_…); ihre Flächen fehlen ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEIN_UWERT" xml:space="preserve">
+    <value>Gruppe {0}: für {1} % der Fläche fehlt der U-Wert; es gilt die Vorgabe.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>Die Datei nennt keine Nordrichtung (TrueNorth); angenommen wird die Schemavorgabe (+y = Nord). Ein falsch genordetes Modell vertauscht die Fensterflächen der Himmelsrichtungen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_MAPCONVERSION" xml:space="preserve">
+    <value>Die Datei trägt eine Koordinatenumrechnung (IfcMapConversion); die Himmelsrichtungen folgen deren Drehung, TrueNorth ist dort nur informativ.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EINHEIT" xml:space="preserve">
+    <value>Unerwartete Einheit „{0}“; gerechnet wird mit {1}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_MEHRSCHALIG" xml:space="preserve">
+    <value>{0} Wände konnten nicht zu einem Bauteil zusammengefasst werden (mehrschalig); die Außenwandfläche kann zu groß sein.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_TEXT" xml:space="preserve">
+    <value>Baujahr aus „{0}“ gelesen: {1}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GELESEN" xml:space="preserve">
+    <value>{0} Gebäude, {1} Räume, {2} Bauteile gelesen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_SEITE_UNBESTIMMT" xml:space="preserve">
+    <value>{0} Außenwände ohne auswertbare Raumgrenze: Ihre Außenseite und damit die Himmelsrichtung sind nicht zu bestimmen — ihre Fensterflächen werden gleichmäßig verteilt ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLATZIERUNGSART" xml:space="preserve">
+    <value>{0} Bauteile mit der Platzierung {1} werden ohne Himmelsrichtung übernommen; ausgewertet wird nur IfcLocalPlacement.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EIGENSCHAFTSART" xml:space="preserve">
+    <value>Die Eigenschaft {1} ist als {0} angegeben; gelesen werden Einzel- und Bereichswerte — sie wird übergangen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_FLAECHENART_GEMISCHT" xml:space="preserve">
+    <value>Die Räume tragen teils Netto-, teils nur Bruttoflächen ({0} netto, {1} nur brutto, {2} ohne) — eine gemischte Summe wird nicht gebildet, die Nutzfläche bleibt leer.</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHAELTER_UNLESBAR" xml:space="preserve">
+    <value>Der IFC-ZIP-Behälter ist nicht lesbar: {0}</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHAELTER_OHNE_IFC" xml:space="preserve">
+    <value>Der ZIP-Behälter enthält keine IFC-Datei (.ifc oder .ifcxml).</value>
+  </data>
+  <data name="IMP_IFC_PROT_BEHAELTER_MEHRERE" xml:space="preserve">
+    <value>Der Behälter enthält {0} IFC-Dateien; gelesen wird „{1}“.</value>
+  </data>
+  <data name="IMP_IFC_PROT_FORMAT_UNBEKANNT" xml:space="preserve">
+    <value>Die Datei ist weder IFC-STEP (ISO 10303-21) noch ifcXML noch ein IFC-ZIP-Behälter.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ENTITAETEN_VERLOREN" xml:space="preserve">
+    <value>Beim Lesen gingen {0} Entitäten verloren ({1} nicht angelegt, {2} Verweise ins Leere) — die Datei ist unvollständig gelesen und darf nicht angereichert zurückgegeben werden. Erste Meldung: {3}</value>
+  </data>
+  <data name="IMP_IFC_PROT_EINHEIT_FEHLT" xml:space="preserve">
+    <value>Die Datei erklärt keine {0}; angenommen wird {1}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EINHEIT_ABGELEITET" xml:space="preserve">
+    <value>Die Datei erklärt keine {0}; sie wird aus der Längeneinheit abgeleitet (Faktor {1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_NORDDREHUNG" xml:space="preserve">
+    <value>Das Modell ist um {0}° gegen Nord gedreht; die Himmelsrichtungen der Bauteile sind entsprechend gedreht.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
+    <value>{0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OHNE_GEBAEUDE" xml:space="preserve">
+    <value>{0} Bauteile lassen sich keinem Gebäude zuordnen und zählen nirgends ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_UNBEHEIZT_NAME" xml:space="preserve">
+    <value>Raum {0} „{1}“ gilt nach seinem Namen („{2}“) als unbeheizt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZONEN_UEBERGANGEN" xml:space="preserve">
+    <value>Die Datei trägt {0} Zonen (IfcZone); sie werden nicht gelesen — die Räume hängen am Geschoss (Einzonenrechnung).</value>
+  </data>
+  <data name="IMP_IFC_PROT_BAUJAHR_UNLESBAR" xml:space="preserve">
+    <value>Aus „{0}“ lässt sich kein Baujahr lesen; die Baualtersklasse wählt der Anwender.</value>
+  </data>
+  <data name="IMP_IFC_PROT_FORTSCHRITT" xml:space="preserve">
+    <value>Die IFC-Datei wird gelesen: {0} %</value>
+  </data>
+  <data name="IMP_IFC_PROT_ABBILD" xml:space="preserve">
+    <value>Das Gebäudemodell wird aufgebaut …</value>
+  </data>
+  <data name="IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH" xml:space="preserve">
+    <value>Die Trennfläche zwischen {0} und {1} ist von beiden Seiten verschieden groß ({2} m² und {3} m²) — die größere zählt.</value>
+  </data>
+  <data name="IMP_IFC_PROT_NETTOFLAECHE_NEGATIV" xml:space="preserve">
+    <value>Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0.</value>
+  </data>
+  <data name="IMP_IFC_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
+    <value>Die Zonenregel ergäbe {0} Zonen — mehr als {1} werden nicht übernommen.</value>
+  </data>
+  <data name="IMP_GEB_PROT_NETTOFLAECHE_RUECKFALL" xml:space="preserve">
+    <value>Bauteil {0}: Fenster und Türen ({2} m²) sind größer als die Bruttofläche ({1} m²) — es gilt die Nettofläche der Datei ({3} m²).</value>
+  </data>
+  <data name="GIMP_BELEG_RAUMHOEHE_GEWICHTET" xml:space="preserve">
+    <value>Raumhöhe von {0} Räumen, flächengewichtet über {1} m²</value>
+  </data>
+  <data name="GIMP_BELEG_KLASSE_BAUJAHR" xml:space="preserve">
+    <value>aus dem Baujahr {0} („{1}“)</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSEL_VORGABE" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe des Stundenmodells</value>
+  </data>
+  <data name="GIMP_SCHEMA_IFC" xml:space="preserve">
+    <value>IFC-Schema {0}</value>
+  </data>
 </root>
