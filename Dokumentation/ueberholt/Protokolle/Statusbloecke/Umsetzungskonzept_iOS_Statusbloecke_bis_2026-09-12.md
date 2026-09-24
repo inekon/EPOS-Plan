@@ -10308,3 +10308,100 @@ Anlagenänderung; (b) Id-Nachzug der Zuordnungen nicht gebaut; (c)
 veraltete Listen nach Projektwechsel ohne Neuladen (Bestand); (d)
 Feld-für-Feld-Nachweis am Windows-Gerät `Referenzlauf.exe projekt`
 (R-W16-6) steht aus.
+
+## #493 — Gebäudekatalog: Anschlusslängen berichtigt, Schemaschritt 130 (24.09.2026)
+
+Anwenderentscheid 24.09.2026 wörtlich: „Entscheide zu Satz 79 und
+Nebenbefund zu den Sätzen 80 bis 83, 37 und 77: Ersetzt durch
+plausible Werte.“ Basis `fbc4e536`; Commits (Opus 5.5) `d0ba9300`
+(Schritt, Verdrahtung, Testdatenbank), `d52a7c2c` (Tests), `ea2df60f`
+(Papiere); Merge `1214d417` auf `c58e2b92`.
+
+**Umnummerierung.** Zunächst als Schritt 131 gebaut; nach der Regel „wer zuerst pusht“
+stand `origin` schon auf 129 mit dem Zapfprofil-Schritt Z4b auf 131 —
+Schritt 130 übernommen, Z4b bleibt auf 131. Gepusht als `247e2091`.
+
+**Schritt 130.** `EPOS.Kern/Allgemein/Update/GebaeudeAnschlusslaengenReparatur.cs`
+(Konstante `SCHRITT`, `SchemaStand.Zielversion`; `SchemaMigration.cs`
+`SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN` nach `SCHRITT_WIEDERHOLPERIODE`,
+Methode `Schritt_GebaeudeAnschlusslaengen`; Werkzeug und
+Nachzieh-Liste lesen die Konstante). Trifft nur Bezeichner und
+unplausiblen Wert (±0,05 Toleranz), je Spalte ein Handgriff, nichts
+gelöscht, Projektkopien unberührt, idempotent (offen vorher 20,
+berichtigt 20, danach 0).
+
+**Berichtigungen `Tab_Gebaeude_STAMM` (20 Zellen).**
+
+| Satz | Spalte | Vorher | Nachher | Herleitung |
+|---|---|---|---|---|
+| 79 `Krankenhaus_92-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 1 800 m | 4 812,0 m | Verhältnis Satz 78: 7 655,75/3 016,3 = 2,5381 m je m² × 1 895,9 m² |
+| 79 | `Flaeche_Außenwand` | 12 094 m² | 13 214,4 m² | Hüllfläche 15 110,3 − Fenster 1 895,9; Ost/West bleibt 400 |
+| 80–83 `KrankenH-F-*`, 37 `gr_Hotel-G-134` | Fenster–Wand | 243,7 m | 7 879,0 m | Tausch mit der Dachkante; 7 879/3 062,3 = 2,573 m je m² (Satz 78: 2,538) |
+| 80–83, 37 | Wand–Dach | 7 879 m | 313,8 m | Umfang der Grundfläche 1 469 m², wie Satz 78 |
+| 80–83, 37 | Außenwand–Kellerdecke | 1 392,8 m | 313,8 m | wie Satz 78 |
+| 77 `Kaufhaus` | Fenster–Wand | 243,7 m | 5 820,8 m | Verhältnis der F-Sätze 2,5729 × 2 262,36 m² (Tausch mit der Dachkante hätte 3,48 m je m² ergeben) |
+| 77 | Wand–Dach | 7 879 m | 313,8 m | wie Satz 78 |
+| 77 | Außenwand–Kellerdecke | 1 392,78 m | 313,8 m | wie Satz 78 |
+
+Nur die Laibung wird getauscht, nicht als Dachkante übernommen: mit
+243,7 m als Dachkante trüge die Geometrie nicht (13 156,3 m²/243,7 m =
+54,0 m Höhe = 4,40 m je Geschoss bei Raumhöhe 2,55 m); mit 313,8 m
+sind es 3,42 m (Satz 78: 3,54 m, `gr_Hotel-80-EnEV2016` gerundet 300
+m). Wirkung auf H_T: F-Sätze 675 → 3 584 W/K (+2 909 W/K, ψ
+Fenster–Wand 0,44), Kaufhaus +2 004 W/K, Satz 79 +271 W/K (Laibung)
+und +202 W/K (Außenwand). Kein weiterer Satz im Katalog trägt 243,7/7
+879/1 392,8.
+
+**Testdatenbank.** LFS
+`f8fe1b763d0f58bdf17ae8e6bc1d2c5e8878e7046a3f56bd7b55dcd5eefcbe34`, 67
+796 992 Byte; Zellvergleich gegen Schritt 129 (`4c546a7c…`): 21 Zellen
+(`SchemaVersion` 129 → 130 plus die 20 Berichtigungen), Schema gleich,
+`integrity_check` ok, `foreign_key_check` leer. Einfrierregel: keiner
+der sieben Sätze (79, 80–83, 37, 77) läuft in einem der 13
+Referenzprojekte (Referenzsätze 125, 129, 142–146, 233, 56) — die
+Basis bleibt.
+
+**Katalogweiter Scan (nur berichtet, nicht angefasst).** Kriterien: Laibung < 0,3 m je m² Fenster (L), Dachkante >
+16·√Dachfläche (D).
+
+| Muster | Sätze | Kennzahl |
+|---|---|---|
+| Laibung 185 m, Dachkante 985 m, Keller 0 m bei 545 m² Fenster, 540 m² Dach | 2, 4, 5, 7, 9, 10 (Alten-/Pflegeheim), 92, 94, 96 (Schule) | — |
+| dieselbe Kennlinie, 1 100 m² Dach | 17, 20 (Hallenbad) | 7,4-fach |
+| Laibung 515,2 m, Dachkante 5 380,8 m, Keller 40 m | 54, 69, 71 (`Hotel-F-228`) | 61,8-fach |
+| Laibung 86,6 m, Dachkante 295,5 m, Keller 14,6 m | 84, 85 (L 0,28), 42, 72, 134 (L 0,36) | — |
+| nur Laibung 0 m | 6, 15, 43, 64, 105, 106, 107, 117, 207 | — |
+| nur Laibung, gerundete EnEV-Werte | 23 (0,12), 34 (0,25), 108 (0,18) | — |
+| nur Dachkante, vermutlich geneigte Dächer | 35, 39–41, 47–49, 52, 55, 58, 61, 63, 66, 67, 112–114, 127, 128, 130, 144–146, 151, 169, 173, 189–191, 195–197, 205, 206, 209–213, 274 | 4,7–8-fach |
+
+Darunter die eingefrorenen Referenzsätze 145 und 146 (Dachkante) —
+bleiben unverändert. Kellerkante ungleich Umfang trifft fast den
+gesamten Katalog (systematisch klein oder 0); das Kriterium sagt hier
+nichts. Restbefund Kaufhaus: Außenwand 10 094 m² ist von den F-Sätzen
+übernommen; Nutzfläche 4 201 m² und Raumhöhe 4,55 m ergäben rund 950 m
+Umfang — nicht Teil dieses Entscheids.
+
+**Tests.** Neu `GebaeudeAnschlusslaengenReparaturTests` (Schrittprobe:
+vorher/nachher je Satz, abweichender Satz bleibt, Projektkopie bleibt,
+Idempotenz, Werkzeug-Wache); Editor-Wächter in
+`GebaeudeKatalogverweisTests` um die fünf weiteren Sätze ergänzt;
+`WiederholperiodeTests` prüft den Zielstand jetzt über den `cref`
+statt wörtlich (sonst rot nach der Umnummerierung); gezielter Lauf
+187/187.
+
+**Gate (Merge-Stand `247e2091`, inkl. G3 und #490).** Kern-Filter 0 Fehler; Tests EPOS.Kern 6.143, EPOS.UI 6.020, KiKern
+549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 30/30; Windows-Schale Debug x64 0 Fehler;
+Referenzlauf 13/13 GESAMT PASS gegen `2026-09-24_R14_Kaelteerzeuger`
+(4 207 049 Werte); SqlDialektPruefer 1 830 Texte, 0 Fundstellen (die
+vier UPDATE-Anweisungen zusätzlich per EXPLAIN geprüft).
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand 130, Nachtrag #493 mit
+Herleitungstabelle), Konzept Administrationsdialoge 7.1 (a) berichtigt
+(weitere auffällige Sätze nicht Teil des Entscheids).
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #493“).** (a) Scan-Kandidaten (oben) als mögliche Folgewelle, nur auf Zuruf; (b)
+Restbefund Kaufhaus Außenwand 10 094 m²; (c) Referenzsätze 145/146 mit
+hoher Dachkante bleiben eingefroren (Einfrierregel Gebäudedaten).

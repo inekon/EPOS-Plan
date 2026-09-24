@@ -58301,11 +58301,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Bauteil an Außenluft mit der Neigung {1}° hat keinen Azimut; ohne Azimut dürfen nur waagerechte Flächen (0° oder 180°) stehen. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_AZIMUT_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_AZIMUT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} = {2} liegt außerhalb des zulässigen Bereichs {3}. ähnelt.
         /// </summary>
         public static string SIMENG_G3_BAUTEIL_BEREICH {
             get {
                 return ResourceManager.GetString("SIMENG_G3_BAUTEIL_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Speichermasse je Nutzfläche {1} Wh/(m²K) liegt nicht in {2} … {3} Wh/(m²K); eine Bauteilgruppe ohne Schichten nimmt ihre Kapazität aus der Bauweise. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_BAUWEISE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_BAUWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Bauteilsatz hat kein opakes Außenbauteil; der Wandzweig trägt die Kapazität der Außenbauteilgruppe. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_KEINE_AUSSENBAUTEILE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_KEINE_AUSSENBAUTEILE", resourceCulture);
             }
         }
         
@@ -58328,6 +58355,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} = {2} ist nicht größer null; der Bauteilweg braucht diese Größe. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_PFLICHT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Randbedingung Nachbarzone ist im Einzonenmodell nicht abgebildet; sie kommt mit dem Mehrzonenmodell (Stufe G6b). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_RAND_ZONE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_RAND_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Reduktion des Schichtaufbaus nach VDI 6007 Blatt 1 Gl. (12)–(17) liefert keinen endlichen, positiven Wert (R_1 = {1} K/W, C_1 = {2} J/K); ein Aufbau ohne wirksame Speichermasse ist als masseloses Bauteil zu führen. ähnelt.
         /// </summary>
         public static string SIMENG_G3_REDUKTION_UNGUELTIG {
@@ -58342,6 +58387,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G3_SCHICHT_STOFFWERT {
             get {
                 return ResourceManager.GetString("SIMENG_G3_SCHICHT_STOFFWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Ein Fenster oder eine Vorhangfassade liegt an Außenluft oder an einem unbeheizten Raum, nicht an „{1}“. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_TRANSPARENT_RAND {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_TRANSPARENT_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Ein Fenster oder eine Vorhangfassade rechnet nach VDI 6007 Blatt 1 Gl. (25)/(26) aus dem U-Wert; ein Schichtaufbau ist dafür nicht vorgesehen. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_TRANSPARENT_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_TRANSPARENT_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der eingetragene U-Wert {1} W/(m²K) weicht vom aus den Schichten gerechneten {2} W/(m²K) um {3} % ab; in der Rechnung gilt der eingetragene. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_UWERT_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_UWERT_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der U-Wert {1} W/(m²K) liegt nicht in {2} … {3} W/(m²K). ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_UWERT_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_UWERT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Bauteil hat weder einen U-Wert noch einen Schichtaufbau. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_UWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_UWERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Widerstand R = {1} K/W nach VDI 6007 Blatt 1 Gl. (26) ist nicht positiv (U = {2} W/(m²K)); dafür setzt EPOS keinen Wert. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_WIDERSTAND_GL26 {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_WIDERSTAND_GL26", resourceCulture);
             }
         }
         
