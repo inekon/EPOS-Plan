@@ -89,7 +89,9 @@
             PositionenOhneNutzungsdauer = s.Nutzungsdauerhinweise.Count > 0,
             SensitivitaetGerechnet = s.Ansicht.Sensitivitaet.Zeilen.Count > 0,
             SzenarienGerechnet = BeideSzenarien(s.Ansicht.Bandbreite),
-            VorschlagVorhanden = !string.IsNullOrEmpty(s.Ansicht.Empfehlungszeile)
+            VorschlagVorhanden = !string.IsNullOrEmpty(s.Ansicht.Empfehlungszeile),
+            // ETAPPE E9b: Punkt 9 nennt den Ausweis „n von m Parametern szenariert".
+            Szenarioabdeckung = s.Szenarioabdeckung
         };
     }
 

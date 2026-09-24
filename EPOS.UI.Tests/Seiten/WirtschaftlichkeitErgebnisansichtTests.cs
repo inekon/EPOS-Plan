@@ -14,7 +14,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf (U2), die vier Abschnitte, die
 /// Empfehlungskarten je Version (U5), die Bandbreite nebeneinander (U4) mit der
 /// Klappliste, die nur die Tafeln darunter steuert, die Sensitivität mit Steigung, der
-/// Hinweistext unter der Annahmentafel (U10), die Deklarationen als Klappblock, die
+/// Ausweis „n von m Parametern szenariert" unter der Annahmentafel (U10, seit ETAPPE E9b
+/// an der Stelle des Hinweistexts), die Deklarationen als Klappblock, die
 /// Nutzungsdauer- und die Nr.-31-Zeile, „— ‹Grund›" statt einer Null (Q16), der Knopf
 /// „Bericht erzeugen" (U44) und die ValERI-Ansicht mit den fünf Blöcken — Block 2 mit den
 /// Zahlungsreihen oder, ohne Lauf, seiner benannten Hinweiszeile (E8a).
@@ -139,7 +140,7 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Parameterzeile = "Parameter: 20 a, 3,0 %",
         Zeitraumzeile = "Betrachtungszeitraum T = 20 a · Nutzungsdauern 15 bis 25 a",
         Nutzungsdauerhinweise = new[] { "Stamm, WP klein: 1 von 4 Positionen ohne Nutzungsdauer (Planung, 21.888 €)" },
-        Szenariohinweis = "Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern …",
+        Szenarioabdeckung = "3 von 16 Parametern szenariert: Betrachtungszeitraum, Mengenänderung, Arbeitspreis Erdgas E",
         Deklarationen = new[]
         {
             "Rechnung nominal",
@@ -673,11 +674,12 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// U10: Der Hinweistext steht UNMITTELBAR unter der Annahmentafel, beide im
-    /// Abschnitt „Was ist angenommen?".
+    /// U10 (ETAPPE E9b, E9b‑Q3): UNMITTELBAR unter der Annahmentafel steht der Ausweis
+    /// „n von m Parametern szenariert" — an der Stelle des Hinweistexts, den es nicht mehr
+    /// gibt —, beide im Abschnitt „Was ist angenommen?".
     /// </summary>
     [Fact]
-    public void Der_Hinweistext_steht_unter_der_Annahmentafel()
+    public void Der_Ausweis_steht_unter_der_Annahmentafel()
     {
         var cut = Zeige();
 
@@ -690,18 +692,21 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         IElement huelle = tafel.Closest(".epos-raster-huelle")!;
         IElement? danach = huelle.NextElementSibling;
         Assert.NotNull(danach);
-        Assert.Contains("epos-wirt-szenariohinweis", danach!.ClassList);
-        Assert.StartsWith("Was ein Szenario heute variiert", danach.TextContent.Trim());
+        Assert.Contains("epos-wirt-szenarioabdeckung", danach!.ClassList);
+        Assert.StartsWith("3 von 16 Parametern szenariert", danach.TextContent.Trim());
+        Assert.DoesNotContain("Was ein Szenario heute variiert", cut.Markup);
+        Assert.Empty(cut.FindAll(".epos-wirt-szenariohinweis"));
     }
 
     /// <summary>
-    /// ETAPPE E8a (U47): <b>„Was daraus im Lauf wird"</b> steht UNTER dem Hinweistext in
+    /// ETAPPE E8a (U47): <b>„Was daraus im Lauf wird"</b> steht UNTER dem Ausweis (seit E9b
+    /// an der Stelle des Hinweistexts) in
     /// „Was ist angenommen?" — je Szenario in der Reihenfolge der Bandbreite (Ungünstig ·
     /// Erwartet · Günstig) die Investition I₀, die fälligen Ersatzbeschaffungen und der
     /// Restwert am Ende. Ohne Jahresreihen steht keine Tafel.
     /// </summary>
     [Fact]
-    public void Was_daraus_im_Lauf_wird_steht_unter_dem_Hinweistext()
+    public void Was_daraus_im_Lauf_wird_steht_unter_dem_Ausweis()
     {
         WirtschaftlichkeitStand stand = Voll();
         stand.Ansicht.Laufwirkung = new ErgebnisMatrix
@@ -717,7 +722,7 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         var cut = Zeige(stand);
 
         IElement annahmen = Abschnitt(cut, 3);
-        IElement hinweis = annahmen.QuerySelector(".epos-wirt-szenariohinweis")!;
+        IElement hinweis = annahmen.QuerySelector(".epos-wirt-szenarioabdeckung")!;
         IElement? teil = hinweis.NextElementSibling;
         Assert.NotNull(teil);
         Assert.Contains("epos-wirt-laufwirkung-teil", teil!.ClassList);
@@ -732,10 +737,10 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.Equal(bandbreite.Skip(1).Take(3), koepfe.Skip(1));
         Assert.Equal(new[] { "12 · 15" }, new[] { Zellen(tafel.QuerySelectorAll("tbody tr")[1])[1] });
 
-        // Ohne Jahresreihen: keine Tafel, der Hinweistext bleibt.
+        // Ohne Jahresreihen: keine Tafel, der Ausweis bleibt.
         var ohne = Zeige();
         Assert.Empty(Abschnitt(ohne, 3).QuerySelectorAll(".epos-wirt-laufwirkung"));
-        Assert.NotNull(Abschnitt(ohne, 3).QuerySelector(".epos-wirt-szenariohinweis"));
+        Assert.NotNull(Abschnitt(ohne, 3).QuerySelector(".epos-wirt-szenarioabdeckung"));
     }
 
     /// <summary>
@@ -900,12 +905,13 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.Contains(b3.QuerySelectorAll(".epos-herleitung-text"),
                         e => e.TextContent.StartsWith("Maß der Vorteilhaftigkeit ist allein der Kapitalwert"));
 
-        // Block 4: Bandbreite, Vorschlag, Hinweistext, Sensitivität — und seit E8a (E6‑Q1)
-        // die Stellen von Spannenbild und Verlauf (ohne Datenseite mit Platzhalter).
+        // Block 4: Bandbreite, Vorschlag, der Ausweis der Szenarioabdeckung (seit E9b an
+        // der Stelle des Hinweistexts), Sensitivität — und seit E8a (E6‑Q1) die Stellen
+        // von Spannenbild und Verlauf (ohne Datenseite mit Platzhalter).
         IElement b4 = Abschnitt(cut, 3);
         Assert.NotNull(b4.QuerySelector(".epos-wirt-bandbreite"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-sensitivitaet"));
-        Assert.NotNull(b4.QuerySelector(".epos-wirt-szenariohinweis"));
+        Assert.NotNull(b4.QuerySelector(".epos-wirt-szenarioabdeckung"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-spanne-teil"));
         Assert.NotNull(b4.QuerySelector(".epos-wirt-verlauf-teil .epos-chartbild-platzhalter"));
 

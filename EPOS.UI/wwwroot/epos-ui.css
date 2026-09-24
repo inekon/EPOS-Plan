@@ -652,9 +652,10 @@ body {
     border-top: 2px solid var(--epos-rahmen);
 }
 
-/* Der Hinweistext unter der Annahmentafel (U10) und die Luecke an der Stelle von
-   Block 2: je ein leiser Kasten, damit der Absatz als Hinweis lesbar bleibt. */
-.epos-wirt-szenariohinweis,
+/* Der Ausweis der Szenarioabdeckung unter der Annahmentafel (U10; seit E9b an der
+   Stelle des Hinweistexts) und die Luecke an der Stelle von Block 2: je ein leiser
+   Kasten, damit der Absatz als Hinweis lesbar bleibt. */
+.epos-wirt-szenarioabdeckung,
 .epos-wirt-block-luecke {
     margin-top: var(--epos-rand);
     padding: 6px 10px;

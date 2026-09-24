@@ -6880,7 +6880,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
-    <value>drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert.</value>
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz.</value>
   </data>
   <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
     <value>keine Bandbreite gerechnet.</value>
@@ -16692,9 +16692,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
     <value>Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt.</value>
-  </data>
-  <data name="WIRT_SZEN_HINWEIS" xml:space="preserve">
-    <value>Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Einspeisevergütung, Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen Sätze.</value>
   </data>
   <data name="WIRT_DEKL_NOMINAL" xml:space="preserve">
     <value>Rechnung nominal</value>
@@ -26886,6 +26883,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SZP_PV_PPA_OHNE_WIRKUNG" xml:space="preserve">
     <value>PPA-Preis je Szenario ohne Wirkung: Er gilt nur für die sonstige Direktvermarktung (PPA).</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG" xml:space="preserve">
+    <value>{0} von {1} Parametern szenariert</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG_LISTE" xml:space="preserve">
+    <value>{0} von {1} Parametern szenariert: {2}</value>
+  </data>
+  <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
+    <value>drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}.</value>
   </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>Die stochastische Jahresreihe zöge {0} Einheitentage (Realisierungen × Einheiten × 365); höchstens {1} sind zulässig — bitte weniger Realisierungen wählen.</value>

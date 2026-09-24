@@ -75,7 +75,8 @@ public sealed class WirtschaftlichkeitSeiteTexte
 
     /// <summary>WIRT_ANN_TITEL</summary>
     public string AnnahmenTitel { get; set; } = T("WIRT_ANN_TITEL", "Annahmen und ihre Herkunft");
-    /// <summary>WIRT_LW_TITEL — die Tafel unter dem Hinweistext (ETAPPE E8a, U47).</summary>
+    /// <summary>WIRT_LW_TITEL — die Tafel unter dem Ausweis der Szenarioabdeckung
+    /// (ETAPPE E8a, U47; der Ausweis steht seit E9b an der Stelle des Hinweistexts).</summary>
     public string LaufwirkungTitel { get; set; } = T("WIRT_LW_TITEL", "Was daraus im Lauf wird");
 
     // ---- „Bericht erzeugen" (U44) ------------------------------------------------

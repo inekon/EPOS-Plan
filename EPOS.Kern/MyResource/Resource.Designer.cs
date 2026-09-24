@@ -68173,6 +68173,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe, je Szenario mit eigenem Parametersatz; {0}. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_ABDECKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_ABDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein ungünstiger und ein günstiger Fall sind vollständig durchgerechnet. ähnelt.
         /// </summary>
         public static string WIRT_AE_9_ANF {
@@ -68200,7 +68209,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe, je Szenario mit eigenem Parametersatz. ähnelt.
         /// </summary>
         public static string WIRT_AE_9_TEILWEISE {
             get {
@@ -71854,20 +71863,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Eins [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
-        /// </summary>
-        public static string WIRT_SZEN_HINWEIS {
-            get {
-                return ResourceManager.GetString("WIRT_SZEN_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ungünstig ähnelt.
         /// </summary>
         public static string WIRT_SZEN_WORST {
             get {
                 return ResourceManager.GetString("WIRT_SZEN_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Parametern szenariert ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ABDECKUNG {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ABDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Parametern szenariert: {2} ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ABDECKUNG_LISTE {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ABDECKUNG_LISTE", resourceCulture);
             }
         }
         

@@ -6864,7 +6864,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Word report: scenarios Unfavourable / Expected / Favourable · Workbook: blocks “Favourable” and “Unfavourable”, range, sheet “Profile”</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
-    <value>three complete runs with changed rates, price changes, investments, revenues and service lives; evaluation period and quantities stay unchanged.</value>
+    <value>three complete runs, each scenario with its own parameter set.</value>
   </data>
   <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
     <value>no range calculated.</value>
@@ -16703,9 +16703,6 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
     <value>The self-consumption rate and the feed-in share of the photovoltaic system are derived from the hourly simulation, not set as an assumption.</value>
-  </data>
-  <data name="WIRT_SZEN_HINWEIS" xml:space="preserve">
-    <value>What a scenario currently varies — and what it does not. Compared with expected, the unfavourable and the favourable scenario change the discount rate, the three price escalation rates (energy, operation, investment and replacement), the investment of the items without their own scenario value ({0} %), the revenues from feed-in and photovoltaic remuneration ({1} %) and the service life of the items without their own scenario value ({2} yrs). The review period, the energy prices per carrier, the revenue rates (feed-in tariff, direct marketing), the quantities from the simulation and all statutory rates remain the same in all three scenarios.</value>
   </data>
   <data name="WIRT_DEKL_NOMINAL" xml:space="preserve">
     <value>Nominal calculation</value>
@@ -26879,6 +26876,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SZP_PV_PPA_OHNE_WIRKUNG" xml:space="preserve">
     <value>PPA price per scenario without effect: it only applies to other direct marketing (PPA).</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG" xml:space="preserve">
+    <value>{0} of {1} parameters with scenario values</value>
+  </data>
+  <data name="WIRT_SZ_ABDECKUNG_LISTE" xml:space="preserve">
+    <value>{0} of {1} parameters with scenario values: {2}</value>
+  </data>
+  <data name="WIRT_AE_9_ABDECKUNG" xml:space="preserve">
+    <value>three complete runs, each scenario with its own parameter set; {0}.</value>
   </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
