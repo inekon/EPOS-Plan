@@ -6,7 +6,7 @@ namespace EPOS.UI.Dialoge.Kosten;
 /// Das FLACHE Abbild der Maske „Nutzungsdauern (AfA)" für den Hilfe-Assistenten
 /// (Welle KI‑F4).
 ///
-/// <para><b>Kopffelder und SPALTEN.</b> Der Kopf trägt den Filter und die vier
+/// <para><b>Kopffelder und SPALTEN.</b> Der Kopf trägt den Filter und die sechs
 /// Felder der Neuzeile; die Tabelle darunter wird an Ort und Stelle bearbeitet und
 /// kommt deshalb als Spalten in den Katalog — dieselbe Bauart wie das
 /// Positionsraster der Kostenverwaltung. Aus jeder Spaltendeklaration wird je
@@ -39,6 +39,13 @@ public sealed class NutzungsdauerKiSicht
 
     public Func<double?>? AfaLesen { get; init; }
     public Action<double?>? AfaSetzen { get; init; }
+
+    // ETAPPE E10 (Stufe S3): die zwei Sätze der Neuzeile.
+    public Func<double?>? InstandsetzungLesen { get; init; }
+    public Action<double?>? InstandsetzungSetzen { get; init; }
+
+    public Func<double?>? WartungLesen { get; init; }
+    public Action<double?>? WartungSetzen { get; init; }
 
     /// <summary>Die lebenden Zeilen des Dialogs — die Spalten lösen über sie auf.</summary>
     public Func<IReadOnlyList<NutzungsdauerZeileAnzeige>>? ZeilenLesen { get; init; }
@@ -84,6 +91,20 @@ public sealed class NutzungsdauerKiSicht
     {
         get => AfaLesen?.Invoke();
         set => AfaSetzen?.Invoke(value);
+    }
+
+    /// <summary>ETAPPE E10: der Instandsetzungssatz der Neuzeile [%/a].</summary>
+    public double? NeueInstandsetzung
+    {
+        get => InstandsetzungLesen?.Invoke();
+        set => InstandsetzungSetzen?.Invoke(value);
+    }
+
+    /// <summary>ETAPPE E10: der Wartungssatz der Neuzeile [%/a].</summary>
+    public double? NeueWartung
+    {
+        get => WartungLesen?.Invoke();
+        set => WartungSetzen?.Invoke(value);
     }
 
     /// <summary>Die Zeilen der Tabelle — Grundlage der Spaltenfelder.</summary>

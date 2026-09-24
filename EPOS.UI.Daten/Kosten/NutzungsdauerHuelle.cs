@@ -22,8 +22,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     public sealed class NutzungsdauerHuelle
     {
-        /// <summary>Breite des Windows-Fensters — sechs Spalten, zwei davon Text.</summary>
-        public const int FENSTER_BREITE = 1040;
+        /// <summary>Breite des Windows-Fensters — acht Spalten, zwei davon Text (Etappe E10:
+        /// die zwei Satzspalten Instandsetzung und Wartung kamen dazu).</summary>
+        public const int FENSTER_BREITE = 1240;
 
         /// <summary>Höhe des Windows-Fensters — 28 Auslieferungszeilen plus Neuzeile.</summary>
         public const int FENSTER_HOEHE = 760;
@@ -61,6 +62,10 @@ namespace WindowsFormsApplication1
                         fach.Positionsart = z.Positionsart;
                         fach.Nutzungsdauer = z.Nutzungsdauer;
                         fach.AfaSteuerlich = z.AfaSteuerlich;
+                        // ETAPPE E10 (Stufe S3): die zwei Saetze sind jetzt sichtbar und
+                        // werden wie jedes andere Feld der Zeile geschrieben.
+                        fach.InstandsetzungProzent = z.InstandsetzungProzent;
+                        fach.WartungProzent = z.WartungProzent;
                         fach.Quelle = z.Quelle;
 
                         string grund;
@@ -79,6 +84,7 @@ namespace WindowsFormsApplication1
                     string grund;
                     int id = NutzungsdauerCtrl.Neu(e.TechnikId, e.Positionsart,
                                                    e.Nutzungsdauer, e.AfaSteuerlich,
+                                                   e.InstandsetzungProzent, e.WartungProzent,
                                                    Text("ND_QUELLE_EIGEN", "eigener Wert"),
                                                    out grund);
                     if (id <= 0) return string.IsNullOrEmpty(grund) ? "" : grund;
@@ -121,6 +127,8 @@ namespace WindowsFormsApplication1
                     IstStandard = z.IstStandard,
                     Nutzungsdauer = z.Nutzungsdauer,
                     AfaSteuerlich = z.AfaSteuerlich,
+                    InstandsetzungProzent = z.InstandsetzungProzent,
+                    WartungProzent = z.WartungProzent,
                     Quelle = z.Quelle ?? "",
                     Auslieferung = z.NurLesen,
                 });
@@ -150,6 +158,12 @@ namespace WindowsFormsApplication1
                 SpaltePositionsart = Text("ND_SP_POSITIONSART", "Positionsart"),
                 SpalteNutzungsdauer = Text("ND_SP_NUTZUNGSDAUER", "Nutzungsdauer [a]"),
                 SpalteAfa = Text("ND_SP_AFA", "AfA steuerlich [a]"),
+                SpalteInstandsetzung = Text("ND_SP_INSTANDSETZUNG", "Instandsetzung [%/a]"),
+                SpalteWartung = Text("ND_SP_WARTUNG", "Wartung [%/a]"),
+                SaetzeHinweis = Text("ND_SAETZE_HINWEIS",
+                    "Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, " +
+                    "Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ " +
+                    "ohne eigenen Satz; eine leere Zelle heißt „kein Satz“."),
                 SpalteQuelle = Text("ND_SP_QUELLE", "Quelle"),
                 SpalteAktionen = Text("ND_SP_AKTIONEN", "Aktionen"),
                 Suche = Text("ND_SUCHE", "Suchen"),

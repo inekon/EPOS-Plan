@@ -33362,6 +33362,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_INST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_INST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_INST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_INST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die steuerliche Abschreibungsdauer des neuen Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen. ähnelt.
         /// </summary>
         public static string KI_DLG_NUD_NEUAFA_ERL {
@@ -33376,6 +33394,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NUD_NEUAFA_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_NUD_NEUAFA_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Instandsetzungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUINST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUINST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUINST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUINST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wartungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUWART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUWART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUWART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUWART_NAME", resourceCulture);
             }
         }
         
@@ -33439,6 +33493,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NUD_TECHNIK_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_NUD_TECHNIK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_WART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_WART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_WART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_WART_NAME", resourceCulture);
             }
         }
         
@@ -47313,6 +47385,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_HINWEIS {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die AfA steuerlich [a] ähnelt.
         /// </summary>
         public static string ND_SP_AFA {
@@ -47327,6 +47408,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_SP_AKTIONEN {
             get {
                 return ResourceManager.GetString("ND_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung [%/a] ähnelt.
+        /// </summary>
+        public static string ND_SP_INSTANDSETZUNG {
+            get {
+                return ResourceManager.GetString("ND_SP_INSTANDSETZUNG", resourceCulture);
             }
         }
         
@@ -47363,6 +47453,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_SP_TECHNIK {
             get {
                 return ResourceManager.GetString("ND_SP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung [%/a] ähnelt.
+        /// </summary>
+        public static string ND_SP_WARTUNG {
+            get {
+                return ResourceManager.GetString("ND_SP_WARTUNG", resourceCulture);
             }
         }
         

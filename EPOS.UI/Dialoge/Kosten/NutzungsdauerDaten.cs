@@ -31,6 +31,16 @@ public sealed class NutzungsdauerZeileAnzeige
     /// <summary>Steuerliche Nutzungsdauer [a] — nur Anzeige.</summary>
     public double? AfaSteuerlich { get; set; }
 
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): der Instandsetzungssatz [% der Investition je Jahr] nach
+    /// VDI 2067 Blatt 1, Tabelle A2; <c>null</c> = kein Satz.
+    /// </summary>
+    public double? InstandsetzungProzent { get; set; }
+
+    /// <summary>ETAPPE E10 (Stufe S3): der Wartungssatz [% der Investition je Jahr];
+    /// <c>null</c> = kein Satz.</summary>
+    public double? WartungProzent { get; set; }
+
     /// <summary>Quelle des Werts, als Text.</summary>
     public string Quelle { get; set; } = "";
 
@@ -49,6 +59,8 @@ public sealed class NutzungsdauerZeileAnzeige
             IstStandard = IstStandard,
             Nutzungsdauer = Nutzungsdauer,
             AfaSteuerlich = AfaSteuerlich,
+            InstandsetzungProzent = InstandsetzungProzent,
+            WartungProzent = WartungProzent,
             Quelle = Quelle,
             Auslieferung = Auslieferung,
         };
@@ -60,6 +72,8 @@ public sealed class NutzungsdauerZeileAnzeige
         if (andere is null) return true;
         return Nutzungsdauer != andere.Nutzungsdauer
             || AfaSteuerlich != andere.AfaSteuerlich
+            || InstandsetzungProzent != andere.InstandsetzungProzent
+            || WartungProzent != andere.WartungProzent
             || !string.Equals(Positionsart, andere.Positionsart, System.StringComparison.Ordinal)
             || !string.Equals(Quelle, andere.Quelle, System.StringComparison.Ordinal);
     }
@@ -70,9 +84,13 @@ public sealed class NutzungsdauerZeileAnzeige
 /// <param name="Positionsart">Positionsart, Pflichtangabe.</param>
 /// <param name="Nutzungsdauer">Nutzungsdauer [a]; <c>null</c> = wie die Standardzeile.</param>
 /// <param name="AfaSteuerlich">Steuerliche Nutzungsdauer [a]; <c>null</c> = keine.</param>
+/// <param name="InstandsetzungProzent">ETAPPE E10: Instandsetzungssatz [%/a]; <c>null</c> = keiner.</param>
+/// <param name="WartungProzent">ETAPPE E10: Wartungssatz [%/a]; <c>null</c> = keiner.</param>
 public readonly record struct NutzungsdauerNeuEingabe(int? TechnikId, string Positionsart,
                                                       double? Nutzungsdauer,
-                                                      double? AfaSteuerlich);
+                                                      double? AfaSteuerlich,
+                                                      double? InstandsetzungProzent = null,
+                                                      double? WartungProzent = null);
 
 /// <summary>
 /// Das Ergebnis des Dialogs: Wurde mit OK geschlossen, und hat sich etwas geändert?
@@ -107,6 +125,18 @@ public sealed class NutzungsdauerTexte
 
     /// <summary><c>ND_SP_AFA</c></summary>
     public string SpalteAfa { get; set; } = "AfA steuerlich [a]";
+
+    /// <summary><c>ND_SP_INSTANDSETZUNG</c> (Etappe E10, Stufe S3)</summary>
+    public string SpalteInstandsetzung { get; set; } = "Instandsetzung [%/a]";
+
+    /// <summary><c>ND_SP_WARTUNG</c> (Etappe E10, Stufe S3)</summary>
+    public string SpalteWartung { get; set; } = "Wartung [%/a]";
+
+    /// <summary><c>ND_SAETZE_HINWEIS</c> — die Herkunft der zwei Satzspalten (Etappe E10).</summary>
+    public string SaetzeHinweis { get; set; } =
+        "Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). " +
+        "Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; " +
+        "eine leere Zelle heißt „kein Satz“.";
 
     /// <summary><c>ND_SP_QUELLE</c></summary>
     public string SpalteQuelle { get; set; } = "Quelle";

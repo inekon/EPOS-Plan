@@ -30,10 +30,13 @@ namespace WindowsFormsApplication1
         /// <summary>Steuerliche Nutzungsdauer [a] — nur Anzeige (ND-Q1).</summary>
         public double? AfaSteuerlich;
 
-        /// <summary>Instandsetzungssatz [%] — angelegt mit S1, sichtbar ab S3 (ND-Q6).</summary>
+        /// <summary>Instandsetzungssatz [% der Investition je Jahr] nach VDI 2067 Blatt 1,
+        /// Tabelle A2 — Stufe S3 (ND-Q6): im Dialog „Nutzungsdauern (AfA)" sichtbar und
+        /// gepflegt. <c>null</c> = kein Satz.</summary>
         public double? InstandsetzungProzent;
 
-        /// <summary>Wartungssatz [%] — angelegt mit S1, sichtbar ab S3 (ND-Q6).</summary>
+        /// <summary>Wartungssatz [% der Investition je Jahr] — wie
+        /// <see cref="InstandsetzungProzent"/>.</summary>
         public double? WartungProzent;
 
         public string Quelle = "";
@@ -334,6 +337,19 @@ namespace WindowsFormsApplication1
         public static int Neu(int? komponentenId, string positionsart, double? nutzungsdauer,
                               double? afa, string quelle, out string grund)
         {
+            return Neu(komponentenId, positionsart, nutzungsdauer, afa, null, null, quelle,
+                       out grund);
+        }
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3): dieselbe Neuanlage MIT den beiden Sätzen — Instandsetzung
+        /// und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2);
+        /// <c>null</c> heißt „kein Satz".
+        /// </summary>
+        public static int Neu(int? komponentenId, string positionsart, double? nutzungsdauer,
+                              double? afa, double? instandsetzungProzent, double? wartungProzent,
+                              string quelle, out string grund)
+        {
             grund = "";
             if (!TabelleVorhanden())
             {
@@ -364,14 +380,18 @@ namespace WindowsFormsApplication1
                 NutzungsdauerSchema.SPALTE_IST_STANDARD + "], [" +
                 NutzungsdauerSchema.SPALTE_NUTZUNGSDAUER + "], [" +
                 NutzungsdauerSchema.SPALTE_AFA + "], [" +
+                NutzungsdauerSchema.SPALTE_INSTANDSETZUNG + "], [" +
+                NutzungsdauerSchema.SPALTE_WARTUNG + "], [" +
                 NutzungsdauerSchema.SPALTE_QUELLE + "], [" +
                 NutzungsdauerSchema.SPALTE_READONLY + "], [" +
-                NutzungsdauerSchema.SPALTE_SORTIERUNG + "]) VALUES (?, ?, ?, 0, ?, ?, ?, 0, ?)",
+                NutzungsdauerSchema.SPALTE_SORTIERUNG + "]) VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?, 0, ?)",
                 new DbParam("@id", id),
                 NutzungsdauerSchema.Ganz("@kid", komponentenId),
                 new DbParam("@art", art),
                 NutzungsdauerSchema.Wert("@nd", nutzungsdauer),
                 NutzungsdauerSchema.Wert("@afa", afa),
+                NutzungsdauerSchema.Wert("@in", instandsetzungProzent),
+                NutzungsdauerSchema.Wert("@wa", wartungProzent),
                 new DbParam("@q", quelle ?? ""),
                 new DbParam("@so", NaechsteSortierung(komponentenId)));
             return n == 1 ? id : 0;

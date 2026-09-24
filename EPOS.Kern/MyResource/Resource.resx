@@ -20074,6 +20074,15 @@ Möchten Sie das zulassen?</value>
   <data name="ND_SP_AFA" xml:space="preserve">
     <value>AfA steuerlich [a]</value>
   </data>
+  <data name="ND_SP_INSTANDSETZUNG" xml:space="preserve">
+    <value>Instandsetzung [%/a]</value>
+  </data>
+  <data name="ND_SP_WARTUNG" xml:space="preserve">
+    <value>Wartung [%/a]</value>
+  </data>
+  <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
+    <value>Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“.</value>
+  </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
   </data>
@@ -22800,6 +22809,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
     <value>Woher die Dauer stammt (VDI 2067, AfA-Tabelle, Herstellerangabe, eigene Festlegung).</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_NAME" xml:space="preserve">
+    <value>Instandsetzung der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_ERL" xml:space="preserve">
+    <value>Der Instandsetzungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_NAME" xml:space="preserve">
+    <value>Wartung der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_ERL" xml:space="preserve">
+    <value>Der Wartungssatz des neuen Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2; leer heißt „kein Satz“.</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_NAME" xml:space="preserve">
+    <value>Instandsetzung</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_ERL" xml:space="preserve">
+    <value>Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt.</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_NAME" xml:space="preserve">
+    <value>Wartung</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_ERL" xml:space="preserve">
+    <value>Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt.</value>
   </data>
   <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
     <value>Kostenposition bearbeiten</value>

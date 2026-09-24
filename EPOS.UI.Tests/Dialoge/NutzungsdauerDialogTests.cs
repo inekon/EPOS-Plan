@@ -14,7 +14,8 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Technik und Positionsart", Stufe S1, Abschnitt 2.5).
 ///
 /// <para>Soll ist die Feldkarte: Kopf mit Kontextzeile, Suchfeld und
-/// Wiederherstellen-Knopf, das nach Technik gruppierte Raster mit sechs Spalten,
+/// Wiederherstellen-Knopf, das nach Technik gruppierte Raster mit acht Spalten (Etappe
+/// E10: dazu Instandsetzung und Wartung),
 /// die Neuzeile und die Schlussleiste. Dazu die drei Regeln, die dieser Dialog
 /// mehr trägt als ein gewöhnlicher: Eine Auslieferungszeile ist im Wert änderbar
 /// und NICHT löschbar (ND‑Q5), das Wiederherstellen fragt zurück, und eine
@@ -104,9 +105,12 @@ public class NutzungsdauerDialogTests : EposBunitContext
         Assert.Equal("Nutzungsdauern (AfA)", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("Ersatzbeschaffung", cut.Find(".epos-kontextzeile").TextContent);
         Assert.Single(cut.FindAll(".epos-raster"));
-        Assert.Equal(6, cut.FindAll(".epos-raster thead th").Count);
+        // ETAPPE E10 (Stufe S3): zwei Spalten mehr — Instandsetzung und Wartung (6 → 8).
+        Assert.Equal(8, cut.FindAll(".epos-raster thead th").Count);
         Assert.Contains("Nutzungsdauer [a]", cut.Markup);
         Assert.Contains("AfA steuerlich [a]", cut.Markup);
+        Assert.Contains("Instandsetzung [%/a]", cut.Markup);
+        Assert.Contains("Wartung [%/a]", cut.Markup);
         Assert.Contains("Auslieferungswerte wiederherstellen", cut.Markup);
         Assert.Single(cut.FindAll(".epos-leiste"));
     }
@@ -349,7 +353,7 @@ public class NutzungsdauerDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
-    /// Sichtklasse <c>NutzungsdauerKiSicht</c>: fünf Kopffelder und drei SPALTEN
+    /// Sichtklasse <c>NutzungsdauerKiSicht</c>: sieben Kopffelder und fünf SPALTEN
     /// über die lebende Zeilenliste — je Zeile wird aus einer Spaltendeklaration ein
     /// gewöhnliches Feld, benannt nach der Positionsart.
     /// </summary>

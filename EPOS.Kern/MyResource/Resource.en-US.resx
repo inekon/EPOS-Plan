@@ -20067,6 +20067,15 @@ Do you want to allow this?</value>
   <data name="ND_SP_AFA" xml:space="preserve">
     <value>Tax depreciation [y]</value>
   </data>
+  <data name="ND_SP_INSTANDSETZUNG" xml:space="preserve">
+    <value>Repair [%/y]</value>
+  </data>
+  <data name="ND_SP_WARTUNG" xml:space="preserve">
+    <value>Maintenance [%/y]</value>
+  </data>
+  <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
+    <value>Repair and maintenance as a percentage of the investment per year (VDI 2067 Part 1, Table A2). They apply to operating cost items “% of investment” without their own rate; an empty cell means “no rate”.</value>
+  </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Source</value>
   </data>
@@ -22793,6 +22802,30 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
     <value>Where the period comes from (VDI 2067, depreciation table, manufacturer data, own decision).</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_NAME" xml:space="preserve">
+    <value>Repair rate of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUINST_ERL" xml:space="preserve">
+    <value>The repair rate of the new record as a percentage of the investment per year under VDI 2067 Part 1, Table A2; empty means “no rate”.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_NAME" xml:space="preserve">
+    <value>Maintenance rate of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWART_ERL" xml:space="preserve">
+    <value>The maintenance rate of the new record as a percentage of the investment per year under VDI 2067 Part 1, Table A2; empty means “no rate”.</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_NAME" xml:space="preserve">
+    <value>Repair</value>
+  </data>
+  <data name="KI_DLG_NUD_INST_ERL" xml:space="preserve">
+    <value>The repair rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. An operating cost item “Instandhaltung …” measured as “% of investment” without its own rate uses it.</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_NAME" xml:space="preserve">
+    <value>Maintenance</value>
+  </data>
+  <data name="KI_DLG_NUD_WART_ERL" xml:space="preserve">
+    <value>The maintenance rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. An operating cost item “Wartung …” measured as “% of investment” without its own rate uses it.</value>
   </data>
   <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
     <value>Edit cost position</value>
