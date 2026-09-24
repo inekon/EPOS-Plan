@@ -531,9 +531,9 @@ Lauf rechnet sie neu. Die Liste der Speicher-Nenninhalte ist keine Tabelle, sond
 **erst nach Entscheid A6**.
 
 `Tab_TwwTyptag_IMPORT` (T3) ist **umgesetzt** — Schritt 125 mit elf Spalten, Einzelheiten in
-**N14 (c)**; nie `ReadOnly`, nie in der Auslieferungsvorlage. Offen bleiben allein die drei
-Projektspalten an `Tab_TwwProjekt` für die Wahl des Anwenders (Typtagweg, Klimazone,
-Gebäudeart) — ein eigener Schemaschritt der Gruppe 2 (N14, Folge (b)).
+**N14 (c)**; nie `ReadOnly`, nie in der Auslieferungsvorlage — samt der drei Projektspalten an
+`Tab_TwwProjekt` für die Wahl des Anwenders (Typtagweg, Klimazone, Gebäudeart) im selben
+Schritt (N14, Ergänzung).
 
 ### 3.2 Schemaschritte
 
