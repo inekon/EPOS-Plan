@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -29,6 +30,56 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gilt der manuelle Wert?</summary>
         internal bool IstManuell => !Auto && Manuell.HasValue;
+
+        /// <summary>Hat das Verfahren einen Vorschlag (sonst ist <see cref="Vorschlag"/> NaN)?</summary>
+        internal bool HatVorschlag => !double.IsNaN(Vorschlag);
+
+        /// <summary>Die Einheit einer Bezugsart als Begriff (<c>BEGRIFF_EINHEIT_1</c> … <c>_7</c>) — für Rechenwege und Hinweise.</summary>
+        internal static ZapfSatz Einheitbegriff(ZapfBezugsart b)
+            => ZapfSatz.Neu("BEGRIFF_EINHEIT_" + ((int)b).ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Die Schätzhilfe des Tagesbedarfs einer Zone (4.1, 5.3): Vorschlag = Jahresenergie des
+        /// Katalogwegs ÷ 365 (vor einer Kalibrierung), angesetzt der manuelle Wert, wenn die Zone auf
+        /// „manuell" steht und einen trägt. Rechenweg <c>Bezugsmenge × spezifischer Bedarf × f_θ</c>;
+        /// ist der Katalogweg nicht rechenbar (<paramref name="vorschlag"/> <c>null</c>), gibt es keinen
+        /// Vorschlag (NaN) und der Rechenweg sagt das.
+        /// </summary>
+        internal static Schaetzhilfe Tagesbedarf(bool auto, double? manuellKwh, Mengenergebnis vorschlag, ZapfBezugsart bezug)
+        {
+            double v = vorschlag != null ? vorschlag.JahresenergieKwh / Zapfkalender.TAGE : double.NaN;
+            bool manuell = !auto && manuellKwh.HasValue;
+            double angesetzt = manuell ? manuellKwh.Value : v;
+            ZapfSatz art = ZapfSatz.Neu(manuell ? "BEGRIFF_MANUELL" : "BEGRIFF_AUTO");
+            ZapfSatz weg;
+            if (vorschlag == null)
+                weg = ZapfSatz.Neu("SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG", angesetzt, art);
+            else
+            {
+                double nenner = Zapfkalender.TAGE * vorschlag.Bezugsmenge * vorschlag.Temperaturfaktor;
+                double spez = nenner > 0 ? vorschlag.JahresenergieKwh / nenner : 0.0;
+                weg = ZapfSatz.Neu("SCHAETZ_TAGESBEDARF", vorschlag.Bezugsmenge, Einheitbegriff(bezug), spez,
+                                   vorschlag.Temperaturfaktor, v, angesetzt, art);
+            }
+            return new Schaetzhilfe(TAGESBEDARF, auto, v, manuellKwh, angesetzt, "kWh/d", weg);
+        }
+
+        /// <summary>
+        /// Die Schätzhilfe der Zirkulation (4.3, 5.3): Vorschlag = Leistung der gewählten Methode
+        /// (<paramref name="vorschlag"/>, auch bei „manuell" gerechnet), angesetzt die Leistung des
+        /// Laufs. Rechenweg: der Weg der Methode, dann Laufzeit und Jahresverlust; ohne Vorschlag
+        /// (die Methode ist nicht rechenbar) NaN und der Satz ohne Vorschlag.
+        /// </summary>
+        internal static Schaetzhilfe Zirkulation(bool auto, double? manuellKw, double angesetztKw, Zirkulationsansatz vorschlag)
+        {
+            double v = vorschlag != null ? vorschlag.LeistungKw : double.NaN;
+            ZapfSatz art = ZapfSatz.Neu(!auto && manuellKw.HasValue ? "BEGRIFF_MANUELL" : "BEGRIFF_AUTO");
+            ZapfSatz weg = vorschlag?.Rechenweg == null
+                ? ZapfSatz.Neu("SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG", angesetztKw, art)
+                : ZapfSatz.Neu("SCHAETZ_ZIRKULATION", vorschlag.Rechenweg, vorschlag.LaufzeitH,
+                               vorschlag.JahresverlustVorKalibrierungKwh, angesetztKw, art);
+            return new Schaetzhilfe(ZIRKULATION, auto, v, manuellKw, angesetztKw, "kW", weg);
+        }
 
         /// <summary>
         /// Die Schätzhilfe der Ladeleistung (4.7): <c>P_lade = (Q_d,max + P_zirk · t_Lauf) / t_F</c>

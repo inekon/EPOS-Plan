@@ -63,6 +63,9 @@ namespace WindowsFormsApplication1
             katalog ??= Katalog();
 
             IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog);
+            var vorhinweise = new List<ZapfHinweis>();
+            double? anzeigeC = stand.Anzeige?.AnzeigetemperaturC ?? EinstellungZahl(EINSTELLUNG_ANZEIGETEMPERATUR, vorhinweise);
+            double? schwelleKw = stand.Anzeige?.SchwelleKw ?? EinstellungZahl(EINSTELLUNG_STUNDENSCHWELLE, vorhinweise);
 
             return new Zapfprofileingang
             {
@@ -74,8 +77,42 @@ namespace WindowsFormsApplication1
                 Tagesgangsaetze = EigeneSaetze(zonen),
                 BelegungJeRaumzahl = Belegung(ps.Katalogversion),
                 NetzverlusteProjekt = Netzverluste(idProjekt),
-                Zapfkategorien = Zapfkategorien(NutzungsartenDerZonen(zonen))
+                Zapfkategorien = Zapfkategorien(NutzungsartenDerZonen(zonen)),
+                AnzeigetemperaturC = anzeigeC,
+                SchwelleKw = schwelleKw,
+                Vorhinweise = vorhinweise.AsReadOnly()
             };
+        }
+
+        /// <summary>
+        /// Die Einstellung der Temperatur der Literanzeige θ_Anzeige [°C] (4.0: „Einstellung,
+        /// INEKON-Setzung", N9 (h)) — nur für die Kennzahlen, nie für die Reihe. Ohne Einstellung
+        /// und ohne Laufangabe des Dialogs (<see cref="ZapfprofilStand.Anzeige"/>) keine Literanzeige.
+        /// </summary>
+        internal const string EINSTELLUNG_ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
+
+        /// <summary>Die Einstellung der Schwelle der Stundenzählung [kW] (4.6, N9 (h)); ohne sie keine Zählung.</summary>
+        internal const string EINSTELLUNG_STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
+
+        /// <summary>Kennung des Hinweises: Eine Einstellung der Anzeige ist keine gültige Zahl — sie gilt nicht.</summary>
+        internal const string HINWEIS_EINSTELLUNG_UNGUELTIG = "EINSTELLUNG_UNGUELTIG";
+
+        /// <summary>
+        /// Eine Zahl aus den Einstellungen (<see cref="Dienste.Einstellungen"/>, invariante Kultur,
+        /// endlich); leer = <c>null</c>, eine ungültige Angabe benannt verworfen (Hinweis).
+        /// </summary>
+        private static double? EinstellungZahl(string schluessel, ICollection<ZapfHinweis> hinweise)
+        {
+            string text = null;
+            try { text = Dienste.Einstellungen.Lies(schluessel, null); }
+            catch (Exception) { return null; }
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            if (double.TryParse(text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double w)
+                && !double.IsNaN(w) && !double.IsInfinity(w))
+                return w;
+            hinweise.Add(new ZapfHinweis("", HINWEIS_EINSTELLUNG_UNGUELTIG,
+                ZapfSatz.Neu("HINWEIS_EINSTELLUNG_UNGUELTIG", schluessel, text.Trim())));
+            return null;
         }
 
         /// <summary>Die Nutzungsarten der Zonen, je Id einmal.</summary>

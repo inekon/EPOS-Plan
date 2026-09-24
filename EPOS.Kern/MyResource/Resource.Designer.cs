@@ -81252,6 +81252,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_1 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WE ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_2 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bett ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_3 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dusche ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platz ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_5 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Besch. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_6 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die m² ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_EINHEIT_7 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_EINHEIT_7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieumrechnung ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_ENERGIEUMRECHNUNG {
@@ -82710,6 +82773,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsmenge der Zone „{0}“ ({1:0.##}) weicht von ihrer Wohnungstabelle ab ({2:0.##} {3}); es gilt die Wohnungstabelle. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einstellung „{0}“ ist keine gültige Zahl („{1}“) — sie gilt nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed {0}, auf die Jahresmenge des Mengengerüsts gebracht; die Konsistenzprobe prüft es an {1} gezogenen Jahren. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_JAHRESREIHE_STOCHASTISCH {
@@ -82805,6 +82886,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zirkulation verliert im Jahr {0:0} kWh und damit mehr, als gezapft wird ({1:0} kWh/a) — Methode und Kennwerte der Zirkulation prüfen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG", resourceCulture);
             }
         }
         
@@ -82976,6 +83066,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_SCHAETZ_LADELEISTUNG {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — angesetzt: {5:0.#} kWh/d ({6}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_TAGESBEDARF {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_TAGESBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Vorschlag des Katalogs — angesetzt: {0:0.#} kWh/d ({1}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}; × {1:0.#} h/d × 365 d = {2:0} kWh/a — angesetzt: {3:0.###} kW ({4}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Vorschlag der Methode — angesetzt: {0:0.###} kW ({1}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:0.###} × Tagesbedarf {1:0.#} kWh/d ÷ {2:0.#} h = {3:0.###} kW ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_ZIRK_ANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_ZIRK_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:0.###} × {1:0.#} kWh/(m²·a) × {2:0.#} m² ÷ (365 d × {3:0.#} h) = {4:0.###} kW ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_ZIRK_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_ZIRK_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die α {0:0.###} × {1:0.#} m × {2:0.#} W/m ÷ 1000 = {3:0.###} kW ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_SCHAETZ_ZIRK_LEITUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_SCHAETZ_ZIRK_LEITUNG", resourceCulture);
             }
         }
         

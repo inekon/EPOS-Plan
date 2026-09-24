@@ -363,5 +363,26 @@ namespace EPOS.Kern.Tests
             Zapfprofileingang e = Eingang() with { Parameter = Auslegungssatz(null, ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG) };
             Assert.Throws<ParametersatzException>(() => ZapfprofilAuslegung.Rechnen(e, new[] { Wohnen, Buero }, Zusatz()));
         }
+
+        /// <summary>
+        /// N11 (c), Stufe Z4: Die Marke „Schnellauslegung" setzt der Kern je Stufe — in der Stufe
+        /// Einfach trägt jeder rechenbare Punkt sie, in Erweitert und Experte nur der Schnellpfad;
+        /// ohne Stufe (Lauf ohne Dialog) ebenso nur der Schnellpfad.
+        /// </summary>
+        [Fact]
+        public void Die_Stufe_Einfach_markiert_jeden_Punkt_als_Schnellauslegung()
+        {
+            Auslegungsempfehlung Speicher(ZapfStufe? stufe)
+                => ZapfprofilAuslegung.Rechnen(Eingang(), new[] { Wohnen, Buero }, Zusatz() with { Stufe = stufe })
+                                      .Gruppen.Single(g => g.Topologie == ZapfTopologie.Speicher).Empfehlung;
+
+            Auslegungsempfehlung einfach = Speicher(ZapfStufe.Einfach);
+            Assert.True(einfach.Rechenbar);
+            Assert.True(einfach.Schnellauslegung);
+            Assert.Contains(einfach.Vermerke, v => v.Kennung == "AUSTEXT_VERMERK_SCHNELLAUSLEGUNG");
+            Assert.False(Speicher(ZapfStufe.Erweitert).Schnellauslegung);
+            Assert.False(Speicher(ZapfStufe.Experte).Schnellauslegung);
+            Assert.False(Speicher(null).Schnellauslegung);
+        }
     }
 }

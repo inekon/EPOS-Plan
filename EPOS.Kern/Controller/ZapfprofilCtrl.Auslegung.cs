@@ -46,10 +46,13 @@ namespace WindowsFormsApplication1
     /// Dazu „Stochastisch rechnen" (4.5 b, Stufe Z3): zieht je Topologiegruppe das Ensemble des
     /// Bedarfstags (<see cref="Auslegungseingang.Stochastisch"/>); Seed, Perzentil und
     /// Realisierungen kommen aus den Projektgrößen des Stands. Die Abbruchmarke des nebenläufigen
-    /// Laufs (5.1) reicht bis in die Ziehung (<see cref="Auslegungseingang.Abbruch"/>).
+    /// Laufs (5.1) reicht bis in die Ziehung (<see cref="Auslegungseingang.Abbruch"/>). Die Stufe des
+    /// Dialogs (Z4, N11 (c)) setzt im Kern die Marke „Schnellauslegung" (<see cref="Auslegungseingang.Stufe"/>);
+    /// <c>null</c> = ein Lauf ohne Dialog.
     /// </summary>
     internal sealed record Auslegungslauf(ZapfErzeugerart? Erzeugerart, ZapfUebertragerwerkstoff? Werkstoff,
-                                          bool Stochastisch = false, CancellationToken Abbruch = default);
+                                          bool Stochastisch = false, CancellationToken Abbruch = default,
+                                          ZapfStufe? Stufe = null);
 
     /// <summary>
     /// Das Ergebnis eines Auslegungslaufs samt den Angaben, aus denen er rechnete: Nenninhalte,
@@ -303,7 +306,8 @@ namespace WindowsFormsApplication1
                 Erzeugerart = art,
                 Uebertragerwerkstoff = lauf?.Werkstoff,
                 Stochastisch = lauf?.Stochastisch == true,
-                Abbruch = lauf?.Abbruch ?? CancellationToken.None
+                Abbruch = lauf?.Abbruch ?? CancellationToken.None,
+                Stufe = lauf?.Stufe
             };
             Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(e, katalog, a);
             if (nenn.Hinweis != null)

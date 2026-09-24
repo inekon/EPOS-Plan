@@ -34,7 +34,14 @@ namespace WindowsFormsApplication1
         double Gewicht,
         double JahresverlustVorKalibrierungKwh,
         IReadOnlyList<double> AnteilJeZoneKwh,
-        double RestKwh);
+        double RestKwh)
+    {
+        /// <summary>
+        /// Der Rechenweg der Leistung nach der Methode (Schätzhilfe, 5.3) als Satz — Kennung und
+        /// Werte; <c>null</c> bei „manuell".
+        /// </summary>
+        public ZapfSatz Rechenweg { get; init; }
+    }
 
     /// <summary>
     /// <b>Schicht S5 — der Zirkulationskanal</b> (Umsetzungskonzept Zapfprofilgenerator 2.1,
@@ -119,6 +126,7 @@ namespace WindowsFormsApplication1
 
             ZapfZirkulationsmethode? methode;
             double leistung;
+            ZapfSatz weg = null;
             if (!p.ZirkAuto)
             {
                 methode = null;
@@ -178,6 +186,7 @@ namespace WindowsFormsApplication1
                                                               ps, prot, ZapfFeld.ZIRKULATION_VERLUST_JE_METER, "W/m");
                         NichtNegativ(qStrich, ZapfSatz.Neu("BEGRIFF_ZIRK_VERLUST_JE_METER"));
                         leistung = alpha * laenge * qStrich / W_JE_KW;
+                        weg = ZapfSatz.Neu("SCHAETZ_ZIRK_LEITUNG", alpha, laenge, qStrich, leistung);
                         break;
                     }
                     case ZapfZirkulationsmethode.Anteil:
@@ -187,6 +196,7 @@ namespace WindowsFormsApplication1
                         NichtNegativ(a, ZapfSatz.Neu("BEGRIFF_ZIRK_ANTEIL"));
                         double tagesbedarfZ1 = summeZ1 / Zapfkalender.TAGE;
                         leistung = a * tagesbedarfZ1 / laufzeit;
+                        weg = ZapfSatz.Neu("SCHAETZ_ZIRK_ANTEIL", a, tagesbedarfZ1, laufzeit, leistung);
                         break;
                     }
                     case ZapfZirkulationsmethode.Flaechenkennwert:
@@ -198,6 +208,7 @@ namespace WindowsFormsApplication1
                                                         ZapfFeld.ZIRKULATION_KENNWERT, "kWh/(m²·a)");
                         NichtNegativ(k, ZapfSatz.Neu("BEGRIFF_ZIRK_KENNWERT"));
                         leistung = gewichtFlaeche * k * flaecheN / (Zapfkalender.TAGE * laufzeit);
+                        weg = ZapfSatz.Neu("SCHAETZ_ZIRK_FLAECHE", gewichtFlaeche, k, flaecheN, laufzeit, leistung);
                         break;
                     }
                     default:
@@ -235,7 +246,23 @@ namespace WindowsFormsApplication1
                     hinweise?.Add(new ZapfHinweis(z.Zone, "ZIRKULATION_NICHT_IN_Z1",
                         ZapfSatz.Neu("HINWEIS_ZIRKULATION_NICHT_IN_Z1", z.Zone)));
 
-            return new Zirkulationsansatz(methode, leistung, laufzeit, alpha, jahresverlust, Array.AsReadOnly(anteile), rest);
+            return new Zirkulationsansatz(methode, leistung, laufzeit, alpha, jahresverlust, Array.AsReadOnly(anteile), rest)
+            {
+                Rechenweg = weg
+            };
+        }
+
+        /// <summary>
+        /// Der Vorschlag der Methode, wenn die Zirkulation auf „manuell" steht (Schätzhilfe, 5.3):
+        /// derselbe Ansatz mit „auto" — ohne Protokoll und ohne Hinweise; <c>null</c>, wenn die
+        /// Methode mit den Angaben nicht rechenbar ist.
+        /// </summary>
+        internal static Zirkulationsansatz Vorschlag(ProjektStand p, IReadOnlyList<Zonenanteil> zonen, Parametersatz ps)
+        {
+            if (p == null) return null;
+            try { return Ansetzen(p with { ZirkAuto = true }, zonen, ps, null, null); }
+            catch (ZapfprofilEingabeException) { return null; }
+            catch (ParametersatzException) { return null; }
         }
 
         /// <summary>

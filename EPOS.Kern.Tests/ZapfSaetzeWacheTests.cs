@@ -14,8 +14,8 @@ namespace EPOS.Kern.Tests
     /// <b>Wache der Sätze des Zapfprofilgenerators</b> (Umsetzungskonzept Zapfprofilgenerator,
     /// N11 (k); Stufe Z4): Jede Ablehnung, jeder Hinweis und jede Warnung des Kerns ist ein
     /// <see cref="ZapfSatz"/> — Kennung und Werte, kein fertiger Satz. Gelesen aus dem QUELLTEXT
-    /// des Kerns (<c>ZapfSatz.Neu(…)</c>: Literale, benannte Konstanten, die drei Begriffsfamilien
-    /// Tagtyp, Füllstand und Bezugsart), damit eine neue Kennung auffällt:
+    /// des Kerns (<c>ZapfSatz.Neu(…)</c>: Literale, benannte Konstanten, die vier Begriffsfamilien
+    /// Tagtyp, Füllstand, Bezugsart und Einheit), damit eine neue Kennung auffällt:
     /// <list type="bullet">
     /// <item>jede Kennung hat ihr Muster <c>ZPG_SATZ_…</c> in BEIDEN Sprachen mit denselben
     /// Platzhaltern samt Zahlformat;</item>
@@ -37,7 +37,9 @@ namespace EPOS.Kern.Tests
             ["BEGRIFF_FUELLSTAND_"] = Enum.GetValues(typeof(ZapfFuellstandbezug)).Cast<ZapfFuellstandbezug>()
                                          .Select(b => TwwSpeicherauslegung.Fuellstandbegriff(b).Kennung).ToArray(),
             ["BEGRIFF_BEZUGSART_"] = Enum.GetValues(typeof(ZapfBezugsart)).Cast<ZapfBezugsart>()
-                                        .Select(b => ZapfprofilAuslegung.Bezugsartbegriff(b).Kennung).ToArray()
+                                        .Select(b => ZapfprofilAuslegung.Bezugsartbegriff(b).Kennung).ToArray(),
+            ["BEGRIFF_EINHEIT_"] = Enum.GetValues(typeof(ZapfBezugsart)).Cast<ZapfBezugsart>()
+                                      .Select(b => Schaetzhilfe.Einheitbegriff(b).Kennung).ToArray()
         };
 
         [Fact]

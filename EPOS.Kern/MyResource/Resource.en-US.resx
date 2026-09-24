@@ -28134,4 +28134,55 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_KATEGORIE_SUMME_NORMIERT" xml:space="preserve">
     <value>The shares of the draw-off categories sum to {0:0.###} instead of 1; the calculation normalises them.</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_1" xml:space="preserve">
+    <value>pers.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_2" xml:space="preserve">
+    <value>DU</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_3" xml:space="preserve">
+    <value>bed</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_4" xml:space="preserve">
+    <value>shower</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_5" xml:space="preserve">
+    <value>seat</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_6" xml:space="preserve">
+    <value>empl.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_EINHEIT_7" xml:space="preserve">
+    <value>m²</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF" xml:space="preserve">
+    <value>{0:0.##} {1} × {2:0.###} kWh/({1}·d) × f_θ {3:0.###} = {4:0.#} kWh/d — applied: {5:0.#} kWh/d ({6}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_TAGESBEDARF_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>No catalogue proposal — applied: {0:0.#} kWh/d ({1}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRK_LEITUNG" xml:space="preserve">
+    <value>α {0:0.###} × {1:0.#} m × {2:0.#} W/m ÷ 1000 = {3:0.###} kW</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRK_ANTEIL" xml:space="preserve">
+    <value>{0:0.###} × daily demand {1:0.#} kWh/d ÷ {2:0.#} h = {3:0.###} kW</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRK_FLAECHE" xml:space="preserve">
+    <value>{0:0.###} × {1:0.#} kWh/(m²·a) × {2:0.#} m² ÷ (365 d × {3:0.#} h) = {4:0.###} kW</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRKULATION" xml:space="preserve">
+    <value>{0}; × {1:0.#} h/d × 365 d = {2:0} kWh/a — applied: {3:0.###} kW ({4}).</value>
+  </data>
+  <data name="ZPG_SATZ_SCHAETZ_ZIRKULATION_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>No proposal of the method — applied: {0:0.###} kW ({1}).</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_UEBER_ZAPFUNG" xml:space="preserve">
+    <value>The circulation loses {0:0} kWh per year, more than is drawn off ({1:0} kWh/a) — check the circulation method and its characteristic values.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>The reference quantity of zone “{0}” ({1:0.##}) differs from its dwelling table ({2:0.##} {3}); the dwelling table applies.</value>
+  </data>
+  <data name="ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>The setting “{0}” is not a valid number (“{1}”) — it does not apply.</value>
+  </data>
 </root>

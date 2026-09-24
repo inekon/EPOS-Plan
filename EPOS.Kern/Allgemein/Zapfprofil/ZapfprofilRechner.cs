@@ -53,6 +53,7 @@ namespace WindowsFormsApplication1
             internal int Index;
             internal Bilanzreihe Deterministisch;
             internal Jahreskonsistenz Konsistenz;
+            internal Schaetzhilfe Tagesbedarf;
         }
 
         /// <summary>
@@ -75,6 +76,7 @@ namespace WindowsFormsApplication1
 
             var prot = new Herkunftsprotokoll();
             var hinweise = new List<ZapfHinweis>();
+            if (e.Vorhinweise != null) hinweise.AddRange(e.Vorhinweise);
             var ablehnungen = new List<ZapfAblehnung>();
             IReadOnlyList<ZonenStand> zonen = e.Zonen ?? new ZonenStand[0];
             var arbeit = new List<Zonenarbeit>(zonen.Count);
@@ -103,6 +105,9 @@ namespace WindowsFormsApplication1
                     a.Temperaturen = Mengengeruest.Temperaturen(z, a.Art, e.Parameter, prot);
                     a.Menge = Mengengeruest.JahresenergieKwh(z, a.Art, a.Temperaturen, e.Parameter,
                                                              e.BelegungJeRaumzahl, prot, hinweise);
+                    a.Tagesbedarf = Schaetzhilfe.Tagesbedarf(z.TagesbedarfAuto, z.TagesbedarfManuellKwh,
+                        Mengengeruest.Vorschlag(z, a.Art, a.Temperaturen, e.Parameter, e.BelegungJeRaumzahl, a.Menge),
+                        a.Art.Bezug);
                     a.Struktur = Formvektor.Bilden(z, a.Art, satz, e.Parameter, prot, hinweise);
                     a.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(a.Temperaturen, a.Name);
                     a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, e.We, Zapfkalender.FensterDerZone(z));
@@ -130,10 +135,13 @@ namespace WindowsFormsApplication1
                 anteilIndex.Add(a);
             }
             Zirkulationsansatz ansatz = null;
+            Schaetzhilfe zirkulationshilfe = null;
             try
             {
                 ansatz = Zirkulationskanal.Ansetzen(e.Projekt, anteile, e.Parameter, prot, hinweise);
                 for (int i = 0; i < anteilIndex.Count; i++) anteilIndex[i].ZirkulationKwh = ansatz.AnteilJeZoneKwh[i];
+                zirkulationshilfe = Schaetzhilfe.Zirkulation(e.Projekt.ZirkAuto, e.Projekt.ZirkManuellKw, ansatz.LeistungKw,
+                    e.Projekt.ZirkAuto ? ansatz : Zirkulationskanal.Vorschlag(e.Projekt, anteile, e.Parameter));
             }
             catch (ZapfprofilEingabeException ex)
             {
@@ -178,7 +186,7 @@ namespace WindowsFormsApplication1
                                              a.Messwert.SpeicherverlustKwhJeJahr ?? 0.0)));
                         if (rueckfrage.HasValue && Math.Abs(k.Faktor - 1.0) > rueckfrage.Value)
                             hinweise.Add(new ZapfHinweis(a.Name, "MESSWERT_ABWEICHUNG",
-                                ZapfSatz.Neu("HINWEIS_MESSWERT_ABWEICHUNG", a.Name, k.Faktor, rueckfrage.Value)));
+                                ZapfSatz.Neu("HINWEIS_MESSWERT_ABWEICHUNG", a.Name, k.Faktor, rueckfrage.Value)) { Warnung = true });
                     }
                     double[] tage = Formvektor.Tagesmengen(a.ZapfungKwh, a.Struktur, a.Kalender, e.WochentagJan1,
                                                            a.Kaltwasserfaktor, a.Name);
@@ -252,7 +260,10 @@ namespace WindowsFormsApplication1
                     Temperaturfaktor = a.Menge.Temperaturfaktor,
                     Kalibrierfaktor = a.Kalibrierfaktor,
                     Kalender = Array.AsReadOnly(a.Kalender),
-                    Konsistenz = a.Konsistenz
+                    Konsistenz = a.Konsistenz,
+                    SchaetzhilfeTagesbedarf = a.Tagesbedarf,
+                    Auslastung = Zapfauswertung.Auslastung(a.Zapfreihe, e.WochentagJan1),
+                    Auslastungsgang = Formvektor.Auslastungsgang(a.Stand, a.Art)
                 });
             }
             if (rest != null) zirkreihen.Add(rest);
@@ -266,7 +277,15 @@ namespace WindowsFormsApplication1
             if (e.NetzverlusteProjekt > 0.0 && zirkulation.JahressummeKwh > 0.0
                 && arbeit.Exists(a => !a.Abgelehnt && a.Stand.Zirkulation))
                 hinweise.Add(new ZapfHinweis("", HINWEIS_NETZVERLUST,
-                    ZapfSatz.Neu("HINWEIS_NETZVERLUST_UND_ZIRKULATION", zirkulation.JahressummeKwh)));
+                    ZapfSatz.Neu("HINWEIS_NETZVERLUST_UND_ZIRKULATION", zirkulation.JahressummeKwh)) { Warnung = true });
+
+            // --- 6. Warnlogik (Z4): Zirkulation größer als die Zapfung ---------------------
+            // Ohne Schwelle aus dem Katalog: Verliert die Zirkulation mehr, als gezapft wird, ist
+            // ein Kennwert oder die Methode fraglich — eine Warnung, die die Rechnung nicht ändert.
+            if (zapfung.JahressummeKwh > 0.0 && zirkulation.JahressummeKwh > zapfung.JahressummeKwh)
+                hinweise.Add(new ZapfHinweis("", HINWEIS_ZIRKULATION_UEBER_ZAPFUNG,
+                    ZapfSatz.Neu("HINWEIS_ZIRKULATION_UEBER_ZAPFUNG", zirkulation.JahressummeKwh, zapfung.JahressummeKwh))
+                    { Warnung = true });
 
             return new ZapfprofilErgebnis
             {
@@ -277,6 +296,8 @@ namespace WindowsFormsApplication1
                 Zirkulationsansatz = ansatz,
                 Laufzeitfenster = fenster != null ? Array.AsReadOnly(fenster) : null,
                 Kennzahlen = Kennzahlen(zapfung, zirkulation, jeZone, e.SchwelleKw),
+                Dauerlinie = Zapfauswertung.Dauerlinie(zapfung, zirkulation, e.SchwelleKw),
+                SchaetzhilfeZirkulation = zirkulationshilfe,
                 Herkunft = prot.Abschrift(),
                 Hinweise = hinweise.AsReadOnly(),
                 Ablehnungen = ablehnungen.AsReadOnly()
@@ -337,6 +358,9 @@ namespace WindowsFormsApplication1
         /// Konzept 9, Risiko 8) — ein Eintrag der Warnliste des Zapfprofils (N9 (g)).
         /// </summary>
         internal const string HINWEIS_NETZVERLUST = "NETZVERLUST_UND_ZIRKULATION";
+
+        /// <summary>Kennung der Warnung: Die Zirkulation verliert im Jahr mehr, als gezapft wird (Warnlogik Z4).</summary>
+        internal const string HINWEIS_ZIRKULATION_UEBER_ZAPFUNG = "ZIRKULATION_UEBER_ZAPFUNG";
 
         /// <summary>
         /// Kennung der Ablehnung „zu viele Einheitentage" der Jahresreihe
@@ -410,7 +434,8 @@ namespace WindowsFormsApplication1
             Bilanzreihe bilanz = ensemble.Bilanz(k);
             if (!k.Erfuellt)
                 hinweise.Add(new ZapfHinweis(a.Name, HINWEIS_ENERGIEPROBE,
-                    ZapfSatz.Neu("HINWEIS_STOCHASTIK_ENERGIEPROBE", a.Name, k.MittelKwh, k.ToleranzKwh, k.DeterministischKwh)));
+                    ZapfSatz.Neu("HINWEIS_STOCHASTIK_ENERGIEPROBE", a.Name, k.MittelKwh, k.ToleranzKwh, k.DeterministischKwh))
+                    { Warnung = true });
             a.Deterministisch = a.Zapfreihe;
             a.Konsistenz = k;
             a.Zapfreihe = bilanz;

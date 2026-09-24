@@ -54,19 +54,10 @@ namespace WindowsFormsApplication1
                     ZapfSatz.Neu("FOLGE_SUMMEN_NICHT_GEPRUEFT")));
 
             // --- Monate: Katalog, je Monat überschreibbar durch den Auslastungsgang ------------
-            double[] monateKatalog = Raster(n.Monatsfaktoren, Zapfkalender.MONATE, zone, ZapfSatz.Neu("BEGRIFF_MONATSFAKTOREN"));
+            Auslastungsgang gang = Auslastungsgang(z, n);
             var monate = new double[Zapfkalender.MONATE];
-            bool ueberschrieben = false;
-            for (int m = 0; m < Zapfkalender.MONATE; m++)
-            {
-                double? a = z.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
-                if (a.HasValue)
-                {
-                    monate[m] = NichtNegativ(a.Value, zone, ZapfSatz.Neu("BEGRIFF_AUSLASTUNGSGANG"));
-                    ueberschrieben = true;
-                }
-                else monate[m] = monateKatalog[m];
-            }
+            for (int m = 0; m < Zapfkalender.MONATE; m++) monate[m] = gang.Wirksam[m];
+            bool ueberschrieben = gang.Ueberschrieben;
             p?.Vermerken(zone, ZapfFeld.MONATSFAKTOREN, null, "-",
                          ueberschrieben ? Wertstatus.Ueberschrieben : Wertstatus.Vorgabe,
                          ueberschrieben ? null : n.Herkunft?.Jahresgang,
@@ -119,6 +110,31 @@ namespace WindowsFormsApplication1
                          satz.JeTagtyp[0], satz.Bezeichner);
 
             return new Zeitstruktur(monate, wocheNormiert, ferien, gaenge, leer);
+        }
+
+        /// <summary>
+        /// <b>Der Auslastungsgang einer Zone</b> (Experte, 3.1 <c>Auslastung_01</c> … <c>_12</c>, 4.2):
+        /// je Monat der Faktor der Zone, sonst der des Katalogs; geprüft wie im Formvektor (zwölf
+        /// Werte, endlich, nicht negativ — sonst benannte Ablehnung). Dieselbe Regel für Rechnung und
+        /// Anzeige.
+        /// </summary>
+        internal static Auslastungsgang Auslastungsgang(ZonenStand z, Nutzungsart n)
+        {
+            string zone = z?.Name ?? "";
+            double[] katalog = Raster(n.Monatsfaktoren, Zapfkalender.MONATE, zone, ZapfSatz.Neu("BEGRIFF_MONATSFAKTOREN"));
+            var wirksam = new double[Zapfkalender.MONATE];
+            var zoneWert = new bool[Zapfkalender.MONATE];
+            for (int m = 0; m < Zapfkalender.MONATE; m++)
+            {
+                double? a = z?.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
+                if (a.HasValue)
+                {
+                    wirksam[m] = NichtNegativ(a.Value, zone, ZapfSatz.Neu("BEGRIFF_AUSLASTUNGSGANG"));
+                    zoneWert[m] = true;
+                }
+                else wirksam[m] = katalog[m];
+            }
+            return new Auslastungsgang(Array.AsReadOnly(wirksam), Array.AsReadOnly(katalog), Array.AsReadOnly(zoneWert));
         }
 
         /// <summary>Das Tagesgewicht w_T(d) nach Tagtyp (4.2).</summary>

@@ -247,6 +247,7 @@ namespace WindowsFormsApplication1
         {
             string zone = z.Name ?? "";
             double bezugsmenge = BezugsmengeWirksam(z, n, belegungJeRaumzahl, p);
+            WohnungstabellePruefen(z, n, bezugsmenge, hinweise);
             double? flaeche = FlaecheM2(z, n, bezugsmenge, ps, p, hinweise);
             double tage = Zapfkalender.TAGE;
 
@@ -259,6 +260,11 @@ namespace WindowsFormsApplication1
                         ZapfSatz.Neu("EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG", zone));
                 double qd = z.TagesbedarfManuellKwh.Value;
                 double qaManuell = qd * tage;
+                // Plausibilitätsband auch für den manuellen Wert: auf die Bezugstemperaturen des
+                // Katalogs zurückgerechnet. Sind die Temperaturen nicht umrechenbar, entfällt die Prüfung.
+                double? fManuell = TemperaturfaktorOderNull(t, n, zone);
+                if (fManuell.HasValue && fManuell.Value > 0 && bezugsmenge > 0)
+                    BandbreitePruefen(qd / (bezugsmenge * fManuell.Value), z, n, hinweise);
                 p?.Vermerken(zone, ZapfFeld.TAGESBEDARF, qd, "kWh/d", Wertstatus.Ueberschrieben, null);
                 p?.Vermerken(zone, ZapfFeld.JAHRESENERGIE, qaManuell, "kWh/a", Wertstatus.Ueberschrieben, null,
                              "Tagesbedarf manuell · 365");
@@ -538,6 +544,44 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung des Hinweises: ein spezifischer Bedarf außerhalb der Bandbreite des Niveaus (Warnliste, 4.1).</summary>
         internal const string HINWEIS_BANDBREITE = "BEDARF_AUSSERHALB_BANDBREITE";
 
+        /// <summary>Kennung des Hinweises: Die Bezugsmenge der Zone weicht von ihrer Wohnungstabelle ab (Warnlogik Z4).</summary>
+        internal const string HINWEIS_WOHNUNGSTABELLE = "BEZUGSMENGE_WOHNUNGSTABELLE";
+
+        /// <summary>
+        /// Hinweis, wenn eine Zone mit Wohnungstabelle (Bezugsart Wohneinheiten oder Personen) eine
+        /// eigene Bezugsmenge trägt, die von der wirksamen aus der Tabelle abweicht — es gilt die
+        /// Tabelle (<see cref="BezugsmengeWirksam"/>); die Zahl im Feld wäre sonst still wirkungslos.
+        /// </summary>
+        internal static void WohnungstabellePruefen(ZonenStand z, Nutzungsart n, double wirksam, ICollection<ZapfHinweis> hinweise)
+        {
+            if (hinweise == null || z.Wohnungen == null || z.Wohnungen.Count == 0) return;
+            if (n.Bezug != ZapfBezugsart.Wohneinheiten && n.Bezug != ZapfBezugsart.Personen) return;
+            if (!(z.Bezugsmenge > 0) || Math.Abs(z.Bezugsmenge - wirksam) <= 1e-9 * Math.Max(1.0, Math.Abs(wirksam))) return;
+            hinweise.Add(new ZapfHinweis(z.Name ?? "", HINWEIS_WOHNUNGSTABELLE,
+                ZapfSatz.Neu("HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE", z.Name ?? "", z.Bezugsmenge, wirksam,
+                             Schaetzhilfe.Einheitbegriff(n.Bezug))));
+        }
+
+        /// <summary>
+        /// Der Vorschlag des Katalogs für den Tagesbedarf (Schätzhilfe, 5.3): bei „auto" das
+        /// Mengengerüst selbst, sonst dasselbe Mengengerüst mit „auto" — ohne Protokoll und ohne
+        /// Hinweise; <c>null</c>, wenn der Katalogweg für die Zone nicht rechenbar ist.
+        /// </summary>
+        internal static Mengenergebnis Vorschlag(ZonenStand z, Nutzungsart n, Zonentemperaturen t, Parametersatz ps,
+                                                 IReadOnlyDictionary<string, double> belegungJeRaumzahl, Mengenergebnis angesetzt)
+        {
+            if (z.TagesbedarfAuto) return angesetzt;
+            try { return JahresenergieKwh(z with { TagesbedarfAuto = true }, n, t, ps, belegungJeRaumzahl, null, null); }
+            catch (ZapfprofilEingabeException) { return null; }
+            catch (ParametersatzException) { return null; }
+        }
+
+        private static double? TemperaturfaktorOderNull(Zonentemperaturen t, Nutzungsart n, string zone)
+        {
+            try { return Temperaturfaktor(t.ZapfC, t.KaltwasserMittelC, n.Bezugstemperaturen, zone); }
+            catch (ZapfprofilEingabeException) { return null; }
+        }
+
         /// <summary>
         /// Hinweis, wenn ein spezifischer Bedarf <paramref name="q"/> [kWh je Einheit und Tag] außerhalb
         /// der Bandbreite des Niveaus der Zone im Katalog liegt (Plausibilitätsband der Nutzungsart, 4.1).
@@ -552,7 +596,8 @@ namespace WindowsFormsApplication1
             if ((min.HasValue && q < min.Value) || (max.HasValue && q > max.Value))
                 hinweise.Add(new ZapfHinweis(z.Name ?? "", HINWEIS_BANDBREITE,
                     ZapfSatz.Neu("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", z.Name ?? "", q,
-                                 min.HasValue ? (object)min.Value : "–", max.HasValue ? (object)max.Value : "–")));
+                                 min.HasValue ? (object)min.Value : "–", max.HasValue ? (object)max.Value : "–"))
+                    { Warnung = true });
         }
 
         private static double ZoneOderParameter(double? zonenwert, string schluessel, Parametersatz ps,

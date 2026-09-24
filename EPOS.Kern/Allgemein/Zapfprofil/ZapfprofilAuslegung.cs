@@ -465,15 +465,16 @@ namespace WindowsFormsApplication1
                 ZapfSatz slGrund = speicherGrund ?? lauf?.Grund ?? tagGrund;
                 if (sl != null)
                 {
+                    // Schnellauslegung (N11 (c)): der Schnellpfad des Vereinfachungsverfahrens oder die Stufe Einfach.
+                    bool schnell = sl.Schnellpfad || a.Stufe == ZapfStufe.Einfach;
                     var vermerke = new List<ZapfSatz> { ZapfSatz.Neu(Summenlinie.VERMERK_ENTWURF) };
-                    if (sl.Schnellpfad) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SCHNELLAUSLEGUNG"));
+                    if (schnell) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SCHNELLAUSLEGUNG"));
                     if (tag.SpitzenUnterschaetzt) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SPITZEN"));
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.Gerechnet, sl.Punkt.VolumenL,
                         sl.Punkt.LeistungKw, true,
                         ZapfSatz.Neu("AUSTEXT_SUMMENLINIE", sl.Punkt.VolumenL, sl.Punkt.LeistungKw, sl.Punkt.LadezeitH));
                     empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, true, sl.Punkt.VolumenL,
-                        sl.Punkt.LeistungKw, lauf.NenninhaltL, sl.Schnellpfad || a.Stufe == ZapfStufe.Einfach,
-                        vermerke.AsReadOnly(), null);
+                        sl.Punkt.LeistungKw, lauf.NenninhaltL, schnell, vermerke.AsReadOnly(), null);
                 }
                 else
                 {
@@ -499,9 +500,12 @@ namespace WindowsFormsApplication1
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Minutenspitze, Auslegungsstatus.Gerechnet, null,
                         tag.GroessteMinutenleistungKw, true,
                         ZapfSatz.Neu("AUSTEXT_MINUTENSPITZE", tag.GroessteMinutenleistungKw, tag.GroessteStundenleistungKw));
+                    bool einfach = a.Stufe == ZapfStufe.Einfach;
+                    var vermerke = new List<ZapfSatz>();
+                    if (einfach) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SCHNELLAUSLEGUNG"));
+                    if (tag.SpitzenUnterschaetzt) vermerke.Add(ZapfSatz.Neu("AUSTEXT_VERMERK_SPITZEN"));
                     empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Minutenspitze, true, null,
-                        tag.GroessteMinutenleistungKw, null, a.Stufe == ZapfStufe.Einfach,
-                        tag.SpitzenUnterschaetzt ? new[] { ZapfSatz.Neu("AUSTEXT_VERMERK_SPITZEN") } : new ZapfSatz[0], null);
+                        tag.GroessteMinutenleistungKw, null, einfach, vermerke.AsReadOnly(), null);
                 }
                 else
                 {

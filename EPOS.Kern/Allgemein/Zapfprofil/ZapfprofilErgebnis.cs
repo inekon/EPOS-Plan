@@ -69,6 +69,19 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
 
         /// <summary>
+        /// Die Schätzhilfe des Tagesbedarfs der Zone (Stufe Erweitert, 5.3): Vorschlag des Katalogs
+        /// (Mengengerüst vor der Kalibrierung), manueller Wert, angesetzter Wert, Rechenweg;
+        /// <c>null</c> bei einer abgelehnten Zone.
+        /// </summary>
+        public Schaetzhilfe SchaetzhilfeTagesbedarf { get; init; }
+
+        /// <summary>Die Auslastung der Zapfung nach Monat, Wochentag und Tagesstunde (Mittel 1); <c>null</c> bei einer abgelehnten Zone.</summary>
+        public Zapfauslastung Auslastung { get; init; }
+
+        /// <summary>Der Auslastungsgang der Zone: wirksame Monatsfaktoren, Katalogwerte und welche die Zone überschreibt (Experte).</summary>
+        public Auslastungsgang Auslastungsgang { get; init; }
+
+        /// <summary>
         /// Die Konsistenzprobe der stochastischen Jahresreihe (4.4) — Mittel der R Jahre gegen den
         /// deterministischen Pfad mit Toleranz, dazu der Faktor der Energieprobe, der die Realisierung
         /// zum Seed (die Zapfreihe der Zone) auf die Jahresmenge bringt; <c>null</c> auf dem
@@ -151,6 +164,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Kennzahlen (4.6).</summary>
         public Zapfkennzahlen Kennzahlen { get; init; }
+
+        /// <summary>Die Dauerlinie von Zapfung und Zirkulation samt Perzentilmarken (Reiter „Dauerlinie", Z4).</summary>
+        public Zapfdauerlinie Dauerlinie { get; init; }
+
+        /// <summary>
+        /// Die Schätzhilfe der Zirkulation (Stufe Erweitert, 5.3): Vorschlag der Methode, manueller
+        /// Wert, angesetzte Leistung, Rechenweg; <c>null</c>, wenn die Zirkulation abgelehnt ist.
+        /// </summary>
+        public Schaetzhilfe SchaetzhilfeZirkulation { get; init; }
 
         /// <summary>Das Herkunftsprotokoll je Wert.</summary>
         public IReadOnlyList<Herkunftseintrag> Herkunft { get; init; } = new Herkunftseintrag[0];

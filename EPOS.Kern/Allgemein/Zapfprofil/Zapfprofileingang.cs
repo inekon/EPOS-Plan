@@ -107,6 +107,14 @@ namespace WindowsFormsApplication1
         public string Text => Satz?.Klartext ?? "";
 
         /// <summary>
+        /// Stufe der Warnlogik (Z4): <c>true</c> = Warnung — ein Befund, der das Ergebnis fraglich
+        /// macht (Doppelzählung ZU5, Bedarf außerhalb der Bandbreite, Messwert weit ab,
+        /// Zirkulation größer als die Zapfung, Energieprobe); <c>false</c> = Hinweis. Entscheidet die
+        /// Rechnung nie.
+        /// </summary>
+        public bool Warnung { get; init; }
+
+        /// <summary>
         /// Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt: Er nennt den
         /// Schlüssel und die Folge; ein Rückfallwert wird nicht gesetzt (Konzept 2.1, N7).
         /// </summary>
@@ -219,6 +227,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Schwelle für „Stunden über" [kW]; <c>null</c> = keine Zählung.</summary>
         public double? SchwelleKw { get; init; }
+
+        /// <summary>
+        /// Hinweise, die schon der Eingang kennt (etwa eine ungültige Einstellung der Anzeige, Z4) —
+        /// der Rechenweg stellt sie seinen eigenen voran.
+        /// </summary>
+        public IReadOnlyList<ZapfHinweis> Vorhinweise { get; init; } = new ZapfHinweis[0];
 
         /// <summary>
         /// Die Netzverluste des Projekts (Einstellungen, in % oder kWh/a — hier zählt nur, ob sie

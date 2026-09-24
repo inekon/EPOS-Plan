@@ -120,6 +120,52 @@ namespace ChartProben
             // Der Jahresgang ist ein Monatsstapel und damit ein reines Pixelbild (Gruppe (c)).
             SvgPixelbildprobe("zapfprofil_jahresgang",
                 () => ZapfprofilBilder.JahresgangModell(monate, monateZirk, "MWh", texte));
+
+            // ---- Stufe Z4: die Dauerlinie ------------------------------------------
+            (double[] linie, int[] perz, int[] raenge, double[] werte) = Dauerlinienprobe(woche, wocheZirk);
+
+            // 8760 geordnete Stunden als Fläche, vier Perzentilmarken, die Vergleichslinie gestrichelt.
+            Pruefe(ziel, "zapfprofil_dauerlinie", 1244, 524,
+                   new[] { ZPG_ZAPFUNG, ZPG_VERSORGUNG },
+                   () => ZapfprofilBilder.Dauerlinie(linie, perz, raenge, werte, 9.0, "Ladeleistung", texte));
+
+            // Gegenprobe: dieselbe Linie mit und ohne Perzentilmarken.
+            Unterschiedlich("zapfprofil_dauerlinie_marken_wirken",
+                () => ZapfprofilBilder.Dauerlinie(linie, perz, raenge, werte, null, null, texte),
+                () => ZapfprofilBilder.Dauerlinie(linie, null, null, null, null, null, texte));
+
+            // Gegenprobe: die Vergleichslinie wird gezeichnet.
+            Unterschiedlich("zapfprofil_dauerlinie_vergleich_wirkt",
+                () => ZapfprofilBilder.Dauerlinie(linie, perz, raenge, werte, 9.0, "Ladeleistung", texte),
+                () => ZapfprofilBilder.Dauerlinie(linie, perz, raenge, werte, null, null, texte));
+
+            SvgModellprobe("zapfprofil_dauerlinie",
+                () => ZapfprofilBilder.DauerlinieModell(linie, perz, raenge, werte, 9.0, "Ladeleistung", texte));
+        }
+
+        /// <summary>
+        /// Eine Dauerlinie aus 8760 Stunden: die Probewoche samt Zirkulation, über das Jahr
+        /// wiederholt und absteigend geordnet; die Marken P50, P90, P95, P99 nach dem Rangverfahren
+        /// (aufsteigend Rang ⌈p/100 · 8760⌉), ihr Rang auf der absteigenden Linie.
+        /// </summary>
+        private static (double[] Linie, int[] Perzentile, int[] Raenge, double[] Werte) Dauerlinienprobe(double[] woche,
+                                                                                                         double[] zirk)
+        {
+            const int N = 8760;
+            var werte = new double[N];
+            for (int h = 0; h < N; h++) werte[h] = woche[h % 168] + zirk[h % 168];
+            Array.Sort(werte);
+            int[] perz = { 50, 90, 95, 99 };
+            var raenge = new int[perz.Length];
+            var marke = new double[perz.Length];
+            for (int i = 0; i < perz.Length; i++)
+            {
+                int rang = (int)Math.Ceiling(perz[i] / 100.0 * N);
+                marke[i] = werte[rang - 1];
+                raenge[i] = N - rang + 1;
+            }
+            Array.Reverse(werte);
+            return (werte, perz, raenge, marke);
         }
 
         /// <summary>Ein Tagesgang: Grundlast plus zwei Glocken um <paramref name="morgen"/> und <paramref name="abend"/> Uhr [kW].</summary>
