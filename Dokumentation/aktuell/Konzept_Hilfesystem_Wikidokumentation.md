@@ -796,6 +796,10 @@ rundet und benennt um.
 - Seiten ohne Repo-Quelle (Grundlagen, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
   die Orchestrierung vor jedem Upload mit derselben Liste.
 
+Dieselbe Regel gilt für Beispieldaten, die aus `Dokumentation/aktuell/Mockups/*.html` in eine
+`*.wiki`-Datei übernommen werden — vor der Übernahme neutralisieren, der Wächter prüft Mockups
+nicht.
+
 ### 13.3 Veröffentlichung höchstens einmal je Woche
 
 **Regel:** Die Repo-Quellen der Wiki-Seiten werden mit jedem Auftrag fortgeschrieben und von den
