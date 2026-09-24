@@ -67,6 +67,27 @@ namespace EPOS.Kern.Tests
                 string.Join("\n", fehler));
         }
 
+        /// <summary>
+        /// Der Hilfeknopf der Nutzflächen-/Verbrauchsangabe (<c>GebaeudeWohnflaecheDialog</c>,
+        /// Schlüssel <c>Form_GebWohnflaeche.btn_Help</c>) springt auf den Abschnitt
+        /// „Verbrauch" der Seite Gebäude.
+        /// </summary>
+        [Fact]
+        public void Die_Nutzflaechenangabe_springt_auf_den_Abschnitt_Verbrauch()
+        {
+            string mapping = Path.Combine(Arbeitsbaum(), "WindowsFormsApplication1", "Allgemein", "Hilfe", "help_mapping.txt");
+
+            var ziele = new List<string>();
+            foreach (string roh in File.ReadAllLines(mapping))
+            {
+                Match m = ZuordnungRegex.Match(roh.TrimEnd());
+                if (m.Success && string.Equals(m.Groups[1].Value.Trim(), "Form_GebWohnflaeche.btn_Help", StringComparison.Ordinal))
+                    ziele.Add(m.Groups[2].Value.Trim());
+            }
+
+            Assert.Equal(new[] { "Gebäude#verbrauch" }, ziele);
+        }
+
         private static Dictionary<string, HashSet<string>> LadeWikiOrdner(string ordner, string praefix)
         {
             var ergebnis = new Dictionary<string, HashSet<string>>();
