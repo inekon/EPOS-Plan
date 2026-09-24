@@ -447,6 +447,10 @@
         internal static string WpaModulkostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
         internal static string WpaModulkostenErl => MyResource.Resource.KI_DLG_WPA_MODULKOSTEN_ERL;
 
+        // Welle #458: die Projekteinstellung neben der Auslegung.
+        internal static string WpaExtrapolationName => MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER;
+        internal static string WpaExtrapolationErl => MyResource.Resource.KI_DLG_WPA_EXTRAPOLATION_ERL;
+
         // =================================================================== Feldarten
 
         internal static string TypGanzzahl => MyResource.Resource.KI_DLG_TYP_GANZZAHL;
@@ -625,6 +629,15 @@
         internal static string SimSchrittErl => MyResource.Resource.KI_DLG_SIM_SCHRITT_ERL;
         internal static string SimReiterName => MyResource.Resource.KI_DLG_SIM_REITER_NAME;
         internal static string SimReiterErl => MyResource.Resource.KI_DLG_SIM_REITER_ERL;
+        internal static string SimAnzeigeName => MyResource.Resource.KI_DLG_SIM_ANZEIGE_NAME;
+        internal static string SimAnzeigeErl => MyResource.Resource.KI_DLG_SIM_ANZEIGE_ERL;
+
+        // ---- Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite (Welle #458, Stufe 2)
+        internal static string WseVerlaufZeitraumName
+            => (MyResource.Resource.WVERL_LBL_ZEITRAUM ?? "").TrimEnd(' ', ':');
+        internal static string WseVerlaufZeitraumErl => MyResource.Resource.KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL;
+        internal static string WseVerlaufAnzeigeName => MyResource.Resource.KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME;
+        internal static string WseVerlaufAnzeigeErl => MyResource.Resource.KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL;
         internal static string SimKaskadeName => MyResource.Resource.KI_DLG_SIM_KASKADE_NAME;
         internal static string SimKaskadeErl => MyResource.Resource.KI_DLG_SIM_KASKADE_ERL;
         internal static string SimOhnePlatzName => MyResource.Resource.KI_DLG_SIM_OHNE_PLATZ_NAME;
@@ -666,6 +679,21 @@
 
         internal static string SimLesepunktName => MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER;
         internal static string SimLesepunktErl => MyResource.Resource.KI_DLG_SIM_LESEPUNKT_ERL;
+
+        // ---- Kuehlschalter und Werte je Anlage von Schritt ① (Welle #458) --------
+
+        internal static string SimKuehlbetriebName => MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB;
+        internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
+        internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
+        internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
+        internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;
+        internal static string SimQuelleErl => MyResource.Resource.KI_DLG_SIM_QUELLE_ERL;
+        internal static string SimQuelltempName => MyResource.Resource.KI_DLG_SIM_QUELLTEMP_NAME;
+        internal static string SimQuelltempErl => MyResource.Resource.KI_DLG_SIM_QUELLTEMP_ERL;
+        internal static string SimPrioritaetName => MyResource.Resource.KI_DLG_SIM_PRIORITAET_NAME;
+        internal static string SimPrioritaetErl => MyResource.Resource.KI_DLG_SIM_PRIORITAET_ERL;
+        internal static string SimBetriebsmodusName => MyResource.Resource.KI_DLG_SIM_BETRIEBSMODUS_NAME;
+        internal static string SimBetriebsmodusErl => MyResource.Resource.KI_DLG_SIM_BETRIEBSMODUS_ERL;
         internal static string SimSpSocMinName => MyResource.Resource.SP_PARAM_LABEL_SOC_MIN;
         internal static string SimSpSocMinErl => MyResource.Resource.KI_DLG_SIM_SP_SOCMIN_ERL;
         internal static string SimSpSocMaxName => MyResource.Resource.SP_PARAM_LABEL_SOC_MAX;
@@ -1657,6 +1685,10 @@
         internal static string WseBErl => MyResource.Resource.KI_DLG_WSE_B_ERL;
         internal static string WseWirkungName => MyResource.Resource.WPAR_NICHT_MONETAER;
         internal static string WseWirkungErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ERL;
+        internal static string WseZrStandName => MyResource.Resource.KI_DLG_WSE_ZR_STAND_NAME;
+        internal static string WseZrStandErl => MyResource.Resource.KI_DLG_WSE_ZR_STAND_ERL;
+        internal static string WseZrSzenarioName => MyResource.Resource.KI_DLG_WSE_ZR_SZENARIO_NAME;
+        internal static string WseZrSzenarioErl => MyResource.Resource.KI_DLG_WSE_ZR_SZENARIO_ERL;
 
         // ============================================== Einheiten der Welle KI-F5
 
@@ -2350,5 +2382,91 @@
         internal static string BadmMonatErl(int monat)
             => string.Format(System.Globalization.CultureInfo.CurrentCulture,
                              MyResource.Resource.KI_DLG_BADM_MONAT_ERL, Monat(monat));
+
+        // ============================================== Welle #458, Stufe 2
+        //
+        // Die Anzeigenamen stehen wo immer moeglich unter dem Schluessel der Maske
+        // selbst; eigene Namen nur, wo die Maske zwei Felder gleich beschriftet (die
+        // Stuetzstelle im Raster und die neue darunter).
+
+        // ---- Der Kennlinieneditor der Waermepumpe (Kenndaten)
+        internal static string MaskeKennlinien => MyResource.Resource.KI_DLG_MASKE_WPKL;
+        internal static string WpklVorlaufName => MyResource.Resource.KI_DLG_WPKL_VORLAUF_NAME;
+        internal static string WpklVorlaufErl => MyResource.Resource.KI_DLG_WPKL_VORLAUF_ERL;
+        internal static string WpklNeuerVorlaufName => MyResource.Resource.WPKL_LBL_NEUVORLAUF;
+        internal static string WpklNeuerVorlaufErl => MyResource.Resource.KI_DLG_WPKL_NEUVORLAUF_ERL;
+        internal static string WpklTemperaturName => MyResource.Resource.WPKL_LBL_TEMPERATUR;
+        internal static string WpklTemperaturErl => MyResource.Resource.KI_DLG_WPKL_TEMPERATUR_ERL;
+        internal static string WpklCopName => MyResource.Resource.WPKL_LBL_COP;
+        internal static string WpklCopErl => MyResource.Resource.KI_DLG_WPKL_COP_ERL;
+        internal static string WpklPthermName => MyResource.Resource.WPKL_LBL_PTHERM;
+        internal static string WpklPthermErl => MyResource.Resource.KI_DLG_WPKL_PTHERM_ERL;
+
+        /// <summary>„Neue Stützstelle: Temperatur" — Gruppe und Beschriftung der Maske.</summary>
+        internal static string WpklNeuTemperaturName
+            => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_TEMPERATUR;
+        internal static string WpklNeuTemperaturErl => MyResource.Resource.KI_DLG_WPKL_NEU_TEMPERATUR_ERL;
+        internal static string WpklNeuCopName
+            => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_COP;
+        internal static string WpklNeuCopErl => MyResource.Resource.KI_DLG_WPKL_NEU_COP_ERL;
+        internal static string WpklNeuPthermName
+            => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_PTHERM;
+        internal static string WpklNeuPthermErl => MyResource.Resource.KI_DLG_WPKL_NEU_PTHERM_ERL;
+
+        // ---- Der Projektkopf des Assistenten „Neues Projekt" (Wizard_Projekt)
+        internal static string MaskeProjektkopf => MyResource.Resource.KI_DLG_MASKE_PKOPF;
+        internal static string PkopfNameName => MyResource.Resource.PKOPF_LBL_NAME;
+        internal static string PkopfNameErl => MyResource.Resource.KI_DLG_PKOPF_NAME_ERL;
+        internal static string PkopfKlimaName => MyResource.Resource.PKOPF_LBL_KLIMA;
+        internal static string PkopfKlimaErl => MyResource.Resource.KI_DLG_PKOPF_KLIMA_ERL;
+        internal static string PkopfKundeName => MyResource.Resource.PKOPF_LBL_KUNDE;
+        internal static string PkopfKundeErl => MyResource.Resource.KI_DLG_PKOPF_KUNDE_ERL;
+        internal static string PkopfBearbeiterName => MyResource.Resource.PKOPF_LBL_BEARBEITER;
+        internal static string PkopfBearbeiterErl => MyResource.Resource.KI_DLG_PKOPF_BEARBEITER_ERL;
+        internal static string PkopfBeschreibungName => MyResource.Resource.PKOPF_LBL_BESCHREIBUNG;
+        internal static string PkopfBeschreibungErl => MyResource.Resource.KI_DLG_PKOPF_BESCHREIBUNG_ERL;
+
+        /// <summary>„Weiter ▶" des Assistenten.</summary>
+        internal static string KnopfWeiter => MyResource.Resource.WIZ_BTN_WEITER;
+
+        // ---- Die Startseite (Form_Start)
+        internal static string MaskeStartseite => MyResource.Resource.KI_DLG_MASKE_START;
+
+        /// <summary>„Klimaregion" — das Wort des Projektkopfs; das Kopfband fragt „auswählen:".</summary>
+        internal static string StartKlimaName => MyResource.Resource.PKOPF_LBL_KLIMA;
+        internal static string StartKlimaErl => MyResource.Resource.KI_DLG_START_KLIMA_ERL;
+        internal static string StartSolarartName => MyResource.Resource.KI_DLG_START_SOLARART_NAME;
+        internal static string StartSolarartErl => MyResource.Resource.KI_DLG_START_SOLARART_ERL;
+
+        // ---- Die Programmeinstellungen (Form_AdminSettings)
+        internal static string MaskeEinstellungen => MyResource.Resource.KI_DLG_MASKE_ADMSET;
+
+        /// <summary>Die Beschriftung der Maske ohne den Doppelpunkt am Ende.</summary>
+        private static string OhneDoppelpunkt(string text) => (text ?? "").TrimEnd(' ', ':');
+
+        internal static string AdmsetWikiName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_WORDPRESS);
+        internal static string AdmsetWikiErl => MyResource.Resource.KI_DLG_ADMSET_WIKI_ERL;
+        internal static string AdmsetGeokodierungName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_GEOKODIERUNG);
+        internal static string AdmsetGeokodierungErl => MyResource.Resource.KI_DLG_ADMSET_GEOKODIERUNG_ERL;
+        internal static string AdmsetPvgisName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_PVGIS);
+        internal static string AdmsetPvgisErl => MyResource.Resource.KI_DLG_ADMSET_PVGIS_ERL;
+        internal static string AdmsetTryPortalName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_TRY_PORTAL);
+        internal static string AdmsetTryPortalErl => MyResource.Resource.KI_DLG_ADMSET_TRY_PORTAL_ERL;
+        internal static string AdmsetTryRegionalName => OhneDoppelpunkt(MyResource.Resource.ADM_SET_LBL_TRY_REGIONAL);
+        internal static string AdmsetTryRegionalErl => MyResource.Resource.KI_DLG_ADMSET_TRY_REGIONAL_ERL;
+        internal static string AdmsetKuehlungName => MyResource.Resource.ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG;
+        internal static string AdmsetKuehlungErl => MyResource.Resource.KI_DLG_ADMSET_KUEHLUNG_ERL;
+
+        // ---- „Alle Daten" der Erzeugermasken des Projekts
+
+        /// <summary>Der Anzeigename eines Feldes des Aufklappers: „Vorlauf (Alle Daten)".</summary>
+        internal static string AlleDatenName(string feldname)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_ALLE_DATEN_NAME, feldname ?? "");
+
+        /// <summary>Die Erlaeuterung eines Farbfeldes: Rolle und Gruppe, wie die Rubrik sie zeigt.</summary>
+        internal static string AdmsetFarbeErl(string rolle, string gruppe)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_ADMSET_FARBE_ERL, rolle ?? "", gruppe ?? "");
     }
 }

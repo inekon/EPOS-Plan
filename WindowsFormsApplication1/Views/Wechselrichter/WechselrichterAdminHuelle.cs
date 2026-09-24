@@ -60,7 +60,9 @@ namespace WindowsFormsApplication1
                 Loeschen = Loeschen,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
-                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(WechselrichterStammCtrl.Duplizieren(id, name))
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(WechselrichterStammCtrl.Duplizieren(id, name)),
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                Schloss = Schlosswege.Aus(WechselrichterStammCtrl.SchlossSetzen)
             };
             return gaben;
         }

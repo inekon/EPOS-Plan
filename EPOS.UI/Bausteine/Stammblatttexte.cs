@@ -36,6 +36,12 @@ public sealed class Stammblatttexte
     /// </summary>
     public string NurLesen { get; set; } = Resource.ADM_SB_NUR_LESEN;
 
+    /// <summary>
+    /// Das Band eines Satzes, dessen Schloss in dieser Sitzung aufgehoben wurde (AD-Q15) —
+    /// <c>ADM_SB_ENTSPERRT</c>, am Platz von <see cref="NurLesen"/>.
+    /// </summary>
+    public string Entsperrt { get; set; } = Resource.ADM_SB_ENTSPERRT;
+
     /// <summary>Kopf des Vergleichs — <c>KFLT_VERGLEICH_TITEL</c>.</summary>
     public string VergleichTitel { get; set; } = Resource.KFLT_VERGLEICH_TITEL;
 

@@ -1326,4 +1326,75 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE)!
                               .FindeFeld("gewaehlte_varianten"));
     }
+
+    /// <summary>
+    /// ETAPPE E8a, KI‑D‑Q11: Die zwei Klapplisten von Block 2 („Zahlungsreihen") sind
+    /// ANZEIGEWAHLEN und stehen in der Feldkarte. Gelesen wird die GEZEIGTE Tafel
+    /// (Vorgabe: die Leitversion im Erwartungsfall, samt Rückfall); gesetzt wird durch
+    /// dieselben Rückrufe wie die Klapplisten — ohne neuen Stand aus der Hülle.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_Stand_und_Szenario_der_Zahlungsreihen()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = 1031;
+        stand.Ansicht.Zahlungsstaende = new[] { (1030, "Stamm"), (1031, "WP klein") };
+        stand.Ansicht.Zahlungsreihen = new[]
+        {
+            Zahlungstafel(1030, 0, "S0"), Zahlungstafel(1031, 0, "W0"), Zahlungstafel(1031, 2, "W2")
+        };
+        var cut = Zeige(stand: stand);
+        int geladen = _geladen;
+
+        KiFeldzugang standFeld = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, "zahlungsreihen_stand");
+        KiFeldzugang szenarioFeld = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, "zahlungsreihen_szenario");
+        Assert.NotNull(standFeld);
+        Assert.NotNull(szenarioFeld);
+        Assert.True(standFeld.Setzbar);
+        Assert.True(szenarioFeld.Setzbar);
+        Assert.Equal(new[] { "Stamm", "WP klein" },
+                     standFeld.Wahleintraege().Select(e => e.Text).ToArray());
+
+        // Gelesen wird, was die Seite zeigt: die Leitversion im Erwartungsfall.
+        Assert.Equal("1031", Convert.ToString(standFeld.Lesen(), CultureInfo.InvariantCulture));
+        Assert.Equal("0", Convert.ToString(szenarioFeld.Lesen(), CultureInfo.InvariantCulture));
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(szenarioFeld, "Worst Case");
+        Assert.True(wahl.Ok, wahl.Grund);
+        szenarioFeld.Setzen(wahl.Wert);
+        cut.Render();
+        Assert.Equal("W2", cut.Find(".epos-wirt-zahlungsreihen tbody tr td").TextContent.Trim());
+        Assert.Equal("2", Convert.ToString(szenarioFeld.Lesen(), CultureInfo.InvariantCulture));
+
+        // Der Stamm trägt kein „Worst Case": Die Seite fällt auf den Erwartungsfall
+        // zurück, und so liest ihn auch der Assistent.
+        wahl = KiFeldwandler.Wandle(standFeld, "Stamm");
+        Assert.True(wahl.Ok, wahl.Grund);
+        standFeld.Setzen(wahl.Wert);
+        cut.Render();
+        Assert.Equal("S0", cut.Find(".epos-wirt-zahlungsreihen tbody tr td").TextContent.Trim());
+        Assert.Equal(1030, cut.Instance.GezeigteZahlungsreihe!.IdStand);
+        Assert.Equal("0", Convert.ToString(szenarioFeld.Lesen(), CultureInfo.InvariantCulture));
+
+        // Eine Anzeigewahl: Die Seite holt dafür keinen neuen Stand und lässt das
+        // Szenario der Kennzahlen stehen.
+        Assert.Equal(geladen, _geladen);
+        Assert.Equal(0, _stand.SzenarioId);
+    }
+
+    /// <summary>Eine Probetafel der Zahlungsreihen: eine Jahreszeile, deren erste Zelle
+    /// <paramref name="kennung"/> trägt.</summary>
+    private static ZahlungsreihenTafel Zahlungstafel(int stand, int szenario, string kennung) => new ZahlungsreihenTafel
+    {
+        IdStand = stand,
+        Szenario = szenario,
+        Tafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Jahr", "Netto nominal" },
+            Zeilen = new[] { new MatrixZeile { Titel = "0", Zellen = new[] { kennung } } }
+        }
+    };
 }

@@ -23,7 +23,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
-@inherits Farbwahlwirt
+@inherits Ergebnisblattwirt
 
 <div class="epos-simerg-block">
 
@@ -91,7 +91,10 @@
     private Ganglinienstand _stand = new Ganglinienstand();
 
     protected override void OnInitialized()
-        => _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.STROMGANG);
+    {
+        _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.STROMGANG);
+        base.OnInitialized();   // meldet die Anzeigeschalter an (Ergebnisblattwirt)
+    }
 
     private List<Ganglinienreihe> Vorhandene
     {
@@ -183,4 +186,24 @@
         Modell?.Invoke(new Bildauftrag(Bilder.Stromgang, _sortiert, -1, Schluessel()));
 
     private Task CsvGewuenscht() => Csv.InvokeAsync(Schluessel());
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>„sortiert" und je vorhandener Reihe ein Schalter der Serienauswahl.</summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+    {
+        var liste = new List<Anzeigeschalter>
+        {
+            Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => { _sortiert = w; Merken(); })
+        };
+        foreach ((int Id, string Text) e in Eintraege)
+        {
+            int platz = e.Id;
+            liste.Add(Umschalter(e.Text, () => _gewaehlt.Contains(platz),
+                                 an => { _gewaehlt = MitPlatz(_gewaehlt, platz, an); Merken(); }));
+        }
+        return liste;
+    }
 }

@@ -82,6 +82,9 @@ namespace WindowsFormsApplication1
                     name => Task.FromResult(new WaermebedarfStammCtrl().HatProjektzuordnung(name))),
                 ["Loeschen"] = new Func<string, Task<bool>>(
                     name => Task.FromResult(new WaermebedarfStammCtrl().Delete(name))),
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.Waermebedarf, ids, gesperrt)),
                 // Neuordnung Stufe 4: das Stammblatt mit Jahresverlauf und Kennzahlen und
                 // die weiche Loeschsperre mit dem Projektnamen - plattformfrei in
                 // EPOS.UI.Daten, dieselben Wege wie bei der Solar- und Stromganglinie.

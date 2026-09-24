@@ -514,10 +514,29 @@
         // "Uebernehmen" traegt ihn in die Zeile; eine Setzung in die Zeile bliebe auf
         // der Maske unsichtbar. Ohne gewaehlte Zeile gibt es die Kollektorgruppe nicht,
         // dann sind die Felder leer.
+        // Welle #458, Stufe 2: angemeldet ist seither die SICHTKLASSE - sie reicht den
+        // Arbeitsstand durch und traegt den Aufklapper „Alle Daten" als Feldtafel.
         _kiMaske = KiMaskenanmeldung.Fuer(
-            KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
-            () => _projektZeile is null ? null : _eingaben, KiHaken());
+            KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, () => KiSicht(), KiHaken());
     }
+
+    private SolarkollektorenKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: der Arbeitsstand der Kollektorgruppe (nur mit gewählter
+    /// Projektzeile) und der Aufklapper „Alle Daten" des gewählten Katalogsatzes.
+    /// </summary>
+    private SolarkollektorenKiSicht KiSicht() => _kiSicht ??= new SolarkollektorenKiSicht
+    {
+        Eingabenquelle = () => _projektZeile is null ? null : _eingaben,
+        AlleDaten = new AlleDatenTafel
+        {
+            Felder = () => _parameterOffen ? _felder : null,
+            Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
+                                                    _katalogZeile?.Geschuetzt == true),
+            Gesetzt = () => _felderGeaendert = true
+        }
+    };
 
     // =================================================================================
     // Der Hilfe-Assistent liest und setzt die Kollektorgruppe (Welle KI-F1)
@@ -551,8 +570,24 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
-        Speichern = () => Task.FromResult(KiUebernehmen())
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>
+    /// „Speichern" des Assistenten: Trägt der Aufklapper „Alle Daten" Änderungen, geht
+    /// er den Weg SEINES Knopfes (<see cref="FelderSpeichern"/>) — sonst wird die
+    /// Kollektorgruppe übernommen wie bisher (Welle #458, Stufe 2).
+    /// </summary>
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (!_felderGeaendert) return KiUebernehmen();
+
+        FelderSpeichern();
+        return _felderGeaendert
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
+                  : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+    }
 
     private KiKern.KiErgebnis KiUebernehmen()
     {

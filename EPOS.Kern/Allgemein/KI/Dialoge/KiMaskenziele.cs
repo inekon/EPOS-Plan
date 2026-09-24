@@ -201,6 +201,19 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string PROJEKT_VARIANTE = "PROJEKT_ALS_VARIANTE";
 
+        /// <summary>
+        /// Der Seitenschluessel der PROGRAMMEINSTELLUNGEN (Welle #458, Stufe 2).
+        /// </summary>
+        /// <remarks>
+        /// Derselbe Menueweg wie bei <see cref="KLIMADATEN"/>: Unter Windows reicht
+        /// <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
+        /// Hauptfensterhuelle weiter, der das Fenster des Menuepunkts oeffnet. Auf iOS
+        /// fuehrt die <c>AppWurzel</c> die Einstellungen nicht; <c>dialog_oeffnen</c>
+        /// lehnt dort benannt ab. Ein Waechter in <c>EPOS.UI.Tests</c> haelt die
+        /// Zeichenkette gegen <c>Seitenschluessel.Einstellungen</c>.
+        /// </remarks>
+        public const string EINSTELLUNGEN = "EINSTELLUNGEN";
+
         // =================================================================
         //  Die ARGUMENTE - zweite Datenspalte neben dem Ziel (KI-D-Q8)
         // =================================================================
@@ -501,7 +514,29 @@ namespace WindowsFormsApplication1
 
                 // „Als Variante speichern" haengt am Menuepunkt „Projekt → Als
                 // Variante speichern…" - siehe PROJEKT_VARIANTE.
-                { KiMaskennamen.PROJEKT_VARIANTE, PROJEKT_VARIANTE }
+                { KiMaskennamen.PROJEKT_VARIANTE, PROJEKT_VARIANTE },
+
+                // ---- Welle #458, Stufe 2 --------------------------------------
+                //
+                // Der KENNLINIENEDITOR geht als Ueberlagerung aus der
+                // Waermepumpen-Verwaltung und aus der Waermepumpen-Anlage auf und
+                // braucht eine gewaehlte Waermepumpe; kontextfrei gibt es ihn nicht.
+                // Sein Ziel ist deshalb die Verwaltung - dieselbe Bauart wie die
+                // Ueberlagerung „Anlagenwerte" der Photovoltaik.
+                { KiMaskennamen.KENNLINIEN, Masken.WpAdministration },
+
+                // Der PROJEKTKOPF ist Schritt 1 des Assistenten „Neues Projekt" -
+                // Masken.Assistent ohne Argument oeffnet ihn in der Betriebsart Neu
+                // (AssistentCtrl.BETRIEBSART_NEU = 0), dem Weg des Menues.
+                { KiMaskennamen.PROJEKTKOPF, Masken.Assistent },
+
+                // Die STARTSEITE ist ihr eigenes Ziel; ohne Argument entscheidet sie
+                // selbst, welcher Reiter vorn steht.
+                { KiMaskennamen.STARTSEITE, STARTSEITE },
+
+                // Die PROGRAMMEINSTELLUNGEN haengen am Menuepunkt „Administration →
+                // Einstellungen" - siehe EINSTELLUNGEN.
+                { KiMaskennamen.EINSTELLUNGEN, EINSTELLUNGEN }
             };
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Bausteine;
 using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Erzeuger;
@@ -96,6 +97,13 @@ public sealed class ModulKatalogWege
     /// <c>…StammCtrl.Duplizieren</c>. Ohne ihn steht der Knopf nicht da.
     /// </summary>
     public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; init; }
+
+    /// <summary>
+    /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): das
+    /// Auslieferungskennzeichen der gewählten Sätze umschalten — <c>…StammCtrl.SchlossSetzen</c>
+    /// über <c>Schlosswege.Aus</c>. Ohne ihn steht die Handlung nicht da.
+    /// </summary>
+    public Schlossweg? Schloss { get; init; }
 
     /// <summary>
     /// <b>„Import…"</b> der PV-Module und Wechselrichter (Konzept Administrationsdialoge

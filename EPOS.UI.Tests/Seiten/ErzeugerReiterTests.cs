@@ -142,6 +142,50 @@ public class ErzeugerReiterTests : EposBunitContext
         new Brennstoffzeile("Pellets:", 0.0, false)
     ];
 
+    /// <summary>
+    /// <b>Der ZEUGE der Anzeigeschalter</b> (Welle #458, Stufe 2): Das Blatt meldet seine
+    /// Schalter beim Register der Seite an — in der Reihenfolge der Schalterzeilen —,
+    /// ein Setzen geht denselben Weg wie der Schalter, und mit dem Blatt fällt die
+    /// Anmeldung.
+    /// </summary>
+    [Fact]
+    public void Das_Blatt_meldet_seine_Anzeigeschalter_beim_Register_der_Seite_an()
+    {
+        var anzeige = new Ergebnisanzeige();
+        var seite = Render<HeizkesselReiter>(p => p
+            .AddCascadingValue(anzeige)
+            .Add(x => x.Daten, Kessel())
+            .Add(x => x.Brennstoffe, Kesselbrennstoffe())
+            .Add(x => x.BedarfVorhanden, true)
+            .Add(x => x.Modell, Modell));
+
+        Assert.Equal(new[]
+                     {
+                         Resource.SIM_CHK_SORTIERT, Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
+                         Resource.CHART_SEGMENT_RESTWAERME, Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT
+                     },
+                     anzeige.Schalter.Select(s => s.Name).ToArray());
+
+        anzeige.Schalter[0].An = true;
+        seite.WaitForAssertion(() => Assert.True(seite.Instance.Sortiert));
+
+        seite.Instance.Dispose();
+        Assert.Empty(anzeige.Schalter);
+    }
+
+    /// <summary>Ohne Ergebnis zeichnet das Blatt keine Schalter — und meldet auch keine an.</summary>
+    [Fact]
+    public void Ohne_Ergebnis_meldet_das_Blatt_keine_Anzeigeschalter_an()
+    {
+        var anzeige = new Ergebnisanzeige();
+        Render<HeizkesselReiter>(p => p
+            .AddCascadingValue(anzeige)
+            .Add(x => x.Daten, (SimulationErgebnisCtrl.HeizkesselErgebnis?)null)
+            .Add(x => x.Modell, Modell));
+
+        Assert.Empty(anzeige.Schalter);
+    }
+
     private IRenderedComponent<HeizkesselReiter> KesselZeichnen(
         SimulationErgebnisCtrl.HeizkesselErgebnis? erg, bool bedarf = true, Action? csv = null,
         IReadOnlyList<Brennstoffzeile>? brennstoffe = null,

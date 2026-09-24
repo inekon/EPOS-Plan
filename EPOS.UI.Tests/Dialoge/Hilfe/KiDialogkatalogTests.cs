@@ -55,9 +55,9 @@ public class KiDialogkatalogTests : IDisposable
     /// <summary>Die Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
     /// <remarks>
     /// <b>Ein Daten-Objekt darf MEHRERE Masken tragen.</b> Die Erzeugermasken des
-    /// Projekts (Welle KI‑F1) melden alle dieselbe <c>ErzeugerZeile</c> an — die
-    /// gewählte Zeile ihrer Projektliste; welche Felder daran hängen, sagt der
-    /// Katalogeintrag und nicht der Typ.
+    /// Projekts (Welle KI‑F1) melden alle dieselbe Sichtklasse an
+    /// (<c>ErzeugerProjektKiSicht</c> um die gewählte Zeile ihrer Projektliste); welche
+    /// Felder daran hängen, sagt der Katalogeintrag und nicht der Typ.
     /// </remarks>
     public static TheoryData<string, Type> Masken() => new()
     {
@@ -94,19 +94,27 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteKiSicht) },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
-        // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
-        { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerZeile) },
-        { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerZeile) },
-        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerZeile) },
-        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerZeile) },
+        // Zeile ihrer Projektliste an - seit Welle #458 (Stufe 2) ueber die
+        // Sichtklasse ErzeugerProjektKiSicht, die die Zeile durchreicht und den
+        // Aufklapper „Alle Daten" als FELDTAFEL traegt. Die benannten Felder behalten
+        // ihre Namen und damit ihre Markup-Probe; die Tafelfelder haelt
+        // Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil.
+        { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerProjektKiSicht) },
+        { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerProjektKiSicht) },
+        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerProjektKiSicht) },
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerProjektKiSicht) },
 
         // Die Solarkollektoren melden den ARBEITSSTAND der Kollektorgruppe an und
         // nicht die Zeile: Ihre fuenf Zahlen gehen erst mit „Uebernehmen" dorthin.
+        // Dieselbe Bauart mit Feldtafel.
         { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
-          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben) },
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenKiSicht) },
 
         // Die Waermepumpen-ANLAGE - ein Feldsatz fuer alle drei Bloecke der Maske.
-        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageDaten) },
+        // Welle #458: Angemeldet ist seither eine SICHTKLASSE - sie reicht den Feldsatz
+        // durch und traegt die Projekteinstellung „Extrapolation" (siehe
+        // OhneMarkupprobe).
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageKiSicht) },
 
         // Welle KI-F2: die Masken der SIMULATIONSKONFIGURATION. Sie melden je eine
         // SICHTKLASSE an - siehe OhneMarkupprobe.
@@ -248,7 +256,26 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.PROJEKT_KOPIE,
           typeof(EPOS.UI.Dialoge.Projekt.ProjektKopieKiSicht) },
         { KiMaskennamen.PROJEKT_VARIANTE,
-          typeof(EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht) }
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht) },
+
+        // Welle #458, Stufe 2: die uebrigen Masken mit Einstellwerten. Die
+        // Ueberlagerung „Kenndaten" meldet ihren Arbeitsstand ueber eine Sichtklasse
+        // an - die Stuetzstellen sind Spalten der gewaehlten Vorlaufstufe.
+        { KiMaskennamen.KENNLINIEN, typeof(KennlinienKiSicht) },
+
+        // Der Projektkopf des Assistenten und die Startseite: je eine Sichtklasse
+        // ueber die Wege der Seite (Klimaregion samt Name, Name im Bearbeiten-Modus
+        // fest; Klimaregion und Weiche der Solarthermiekachel).
+        { KiMaskennamen.PROJEKTKOPF,
+          typeof(EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht) },
+        { KiMaskennamen.STARTSEITE,
+          typeof(EPOS.UI.Seiten.Start.StartseiteKiSicht) },
+
+        // Die Programmeinstellungen: sechs benannte Werte und die Diagrammfarben als
+        // FELDTAFEL - hier greift fuer die Farben nur die Typprobe vor dem Punkt, den
+        // Feldbestand haelt Die_Einstellungen_fuehren_je_Farbrolle_ein_Feld.
+        { KiMaskennamen.EINSTELLUNGEN,
+          typeof(EPOS.UI.Dialoge.Admin.EinstellungenKiSicht) }
     };
 
     /// <summary>
@@ -350,15 +377,17 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_achtundsechzig_Masken()
+    public void Der_Katalog_fuehrt_zweiundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
         // VIERUNDSECHZIG seit der Welle KI-F7: Die Ueberlagerung „Anlagenwerte" der
         // Photovoltaik hat einen eigenen Schluessel bekommen (Anwenderentscheid
         // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
-        // Verwaltungen der Erzeugerkataloge (KI-D-Q11).
-        Assert.Equal(68, katalog.Anzahl);
+        // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
+        // Kennlinieneditor, der Projektkopf des Assistenten, die Startseite und die
+        // Programmeinstellungen.
+        Assert.Equal(72, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -547,8 +576,13 @@ public class KiDialogkatalogTests : IDisposable
         // Die zwei AUSLEGUNGSTEMPERATUREN des Projekts stehen im Strangabschnitt und
         // fehlten dem Katalog, weil sie nicht an der Anlagenzeile haengen
         // (Anwenderentscheid 21.09.2026, KI-D-Q7).
+        //
+        // Welle #458, Stufe 2: Dazu kommen bei der Photovoltaik die Felder des
+        // Aufklappers „Alle Daten" - so viele, wie das Profil des Modulkatalogs fuehrt
+        // (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
+                             .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
@@ -743,6 +777,36 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.NUTZUNGSDAUER_VERWALTUNG);
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Gesetzeskatalog,
                      KiMaskenziele.GESETZESKATALOG);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Einstellungen,
+                     KiMaskenziele.EINSTELLUNGEN);
+    }
+
+    /// <summary>
+    /// <b>Die Programmeinstellungen führen je Farbrolle ein Feld</b> (Welle #458,
+    /// Stufe 2) — erzeugt aus derselben Rollenliste, aus der die Hülle die Rubrik
+    /// „Diagramme" füllt (<c>Diagrammfarben.Gruppen</c>): Name mit Vorsilbe, Pfad der
+    /// Feldtafel, Anzeigename der Rolle, setzbar. Er ersetzt für die Farben die
+    /// Reflection-Probe, die eine Feldtafel nicht leisten kann.
+    /// </summary>
+    [Fact]
+    public void Die_Einstellungen_fuehren_je_Farbrolle_ein_Feld()
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.EINSTELLUNGEN)!;
+        Assert.NotNull(d);
+
+        var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
+        Assert.Equal(6 + rollen.Count, d.Felder.Count);
+
+        foreach (WindowsFormsApplication1.Zeichnung.Farbrolle rolle in rollen)
+        {
+            KiDialogFeld? f = d.FindeFeld(KiDialoge.FARBFELD_VORSILBE + rolle.Name.ToLowerInvariant());
+            Assert.True(f is not null, "Die Farbrolle " + rolle.Name + " fehlt im Katalog.");
+            Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + "." + rolle.Name, f!.Eigenschaftspfad);
+            Assert.Equal(WindowsFormsApplication1.Zeichnung.Diagrammfarben.Anzeigename(rolle), f.Anzeigename);
+            Assert.False(f.NurLesen, rolle.Name);
+        }
+
+        Assert.Equal(nameof(EPOS.UI.Dialoge.Admin.EinstellungenKiSicht), KiDialoge.EINSTELLUNGEN_SICHT);
     }
 
     /// <summary>
@@ -1102,13 +1166,9 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
           "EPOS.UI/Dialoge/Solarthermie/SolarkollektorenDialog.razor" },
 
-        // DREI Dateien: Der Anlagendialog zeichnet die Auslegung selbst und bettet
-        // die Konfiguration und den Stammfeldblock ein - jedes Feld steht damit vor
-        // dem Anwender, nur eben teils in einer Kinddatei.
-        { KiMaskennamen.WAERMEPUMPE_ANLAGE,
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor;" +
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor;" +
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
+        // Form_WP_Anlage steht seit der Welle #458 in OhneMarkupprobe: Der
+        // Extrapolationsschalter gehoert dem PROJEKT und haengt an keiner Bindung des
+        // Feldsatzes (Muster Form_PV, KI-F7).
 
         // Welle KI-F3: der Kopfsatz eines Bedarfskatalogs - die einzige Maske der
         // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
@@ -1270,7 +1330,9 @@ public class KiDialogkatalogTests : IDisposable
             "der Seite; Zeuge ist KostenSeiteTests",
         [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
             "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
-            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests",
+            "Wahlwege, den Freitext, die zwei Anzeigewahlen der Zahlungsreihen und " +
+            "Zeitraum und Haken des Verlaufs (KapitalwertVerlaufAbschnitt); Zeugen " +
+            "sind WirtschaftlichkeitSeiteTests und KapitalwertVerlaufAbschnittTests",
 
         // Welle KI-F5: die drei Ausprägungen des Modulkatalogs. Ihre Felder stehen
         // NICHT im Markup — es zeichnet eine Schleife über den Feldsatz, den das
@@ -1343,11 +1405,35 @@ public class KiDialogkatalogTests : IDisposable
             "sie an die gewählte ErzeugerZeile durch, die zwei Auslegungstemperaturen " +
             "gehören dem PROJEKT (Tab_Einstellungen) und stehen in den lebenden " +
             "Feldern des Strangbausteins; Zeuge ist PhotovoltaikDialogTests",
+        [KiMaskennamen.WAERMEPUMPE_ANLAGE] =
+            "bindet über die Sichtklasse WaermepumpeAnlageKiSicht: den Feldsatz " +
+            "WaermepumpeAnlageDaten reicht sie unverändert durch, der Schalter " +
+            "„Extrapolation der WP-Kennlinie erlauben“ gehört dem PROJEKT und schreibt " +
+            "über ExtrapolationSchreiben; Zeuge ist WaermepumpeAnlageDialogTests",
         [KiMaskennamen.KOSTENVERWALTUNG] =
             "bindet über die Sichtklasse KostenKomponenteKiSicht: den Arbeitsstand " +
             "samt Raster reicht sie unverändert durch, dazu die Komponentenwahl aus " +
             "einem privaten Feld des Dialogs und die PV-Wahl samt PV-Projekt aus dem " +
-            "Baustein ErtragBonus; Zeuge ist KostenKomponenteDialogTests"
+            "Baustein ErtragBonus; Zeuge ist KostenKomponenteDialogTests",
+
+        // Welle #458, Stufe 2
+        [KiMaskennamen.KENNLINIEN] =
+            "bindet über die Sichtklasse KennlinienKiSicht auf den Arbeitsstand der " +
+            "Überlagerung: Stufenwahl, die Zeilen der gewählten Stufe als Spalten und " +
+            "die Felder der neuen Stützstelle; Zeuge ist KennlinienEditorDialogTests",
+        [KiMaskennamen.PROJEKTKOPF] =
+            "bindet über die Sichtklasse ProjektKopfKiSicht: drei Texte reicht sie an " +
+            "ProjektKopfDaten durch, die Klimaregion geht über den Weg der Seite (Id und " +
+            "Name zugleich), der Name steht im Bearbeiten-Modus fest; Zeuge ist " +
+            "ProjektKopfSeiteTests",
+        [KiMaskennamen.STARTSEITE] =
+            "bindet über die Sichtklasse StartseiteKiSicht auf die privaten Felder der " +
+            "Seite (Klimaregion des Kopfbandes, Weiche der Solarthermiekachel); Zeuge ist " +
+            "StartseiteTests",
+        [KiMaskennamen.EINSTELLUNGEN] =
+            "bindet über die Sichtklasse EinstellungenKiSicht: der Wertesatz führt Felder " +
+            "statt Eigenschaften, die Diagrammfarben stehen als Feldtafel je Farbrolle; " +
+            "Zeugen sind EinstellungenDialogTests und der Rollenwächter"
     };
 
     /// <summary>
@@ -1387,6 +1473,11 @@ public class KiDialogkatalogTests : IDisposable
         {
             string eigenschaft = KiEigenschaftspfad.Eigenschaft(f.Eigenschaftspfad);
             Assert.NotEqual("", eigenschaft);
+
+            // Ein Feld der FELDTAFEL hat keine Bindung mit Namen — es steht als Daten
+            // eines Profils in einer Schleife (Katalogfelder). Seinen Bestand hält der
+            // Profilwächter (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
+            if (IstTafelfeld(maske, f)) continue;
 
             if (!StehtImMarkup(markup, eigenschaft))
                 fehlt.Add(f.Name + " → " + f.Eigenschaftspfad);
@@ -1481,10 +1572,117 @@ public class KiDialogkatalogTests : IDisposable
         //
         // Mit der Welle KI-F7 verliert die Probe die Felder von Form_PV und der
         // Kostenverwaltung (beide binden jetzt ueber eine Sichtklasse) und gewinnt die
-        // vier der Ueberlagerung „Anlagenwerte". Die Schranke sagt weiterhin nur, dass
-        // die Probe nicht ins Leere greift.
+        // vier der Ueberlagerung „Anlagenwerte". Mit der Welle #458 geht auch die
+        // Waermepumpen-Anlage auf eine Sichtklasse ueber. Die Schranke sagt weiterhin
+        // nur, dass die Probe nicht ins Leere greift.
         Assert.True(felder >= 65, "Nur " + felder + " Feldpfade geprüft.");
     }
+
+    // ---------------------------------------------------------------------
+    //  Die FELDTAFEL „Alle Daten" der Projektmasken (Welle #458, Stufe 2)
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Die sechs Erzeugermasken des Projekts führen „Alle Daten" GENAU nach dem
+    /// Profil</b>, aus dem die Hülle den Aufklapper füllt — Heizkessel, BHKW,
+    /// Pufferspeicher und Solarkollektoren nach dem <c>KatalogBrowserProfil</c>.
+    /// </summary>
+    /// <remarks>
+    /// Er ersetzt für die Tafelfelder die Markup-Probe (eine Schleife hat keine Bindung
+    /// mit Namen) und die Reflection-Probe (eine Tafel hat keine Eigenschaft je Feld):
+    /// Name und Pfad mit Vorsilbe, Anzeigename „… (Alle Daten)", Feldtyp, Einheit und
+    /// die Sperre eines nicht editierbaren Feldes.
+    /// </remarks>
+    [Theory]
+    [InlineData(KiMaskennamen.HEIZKESSEL_PROJEKT, KatalogBrowserArt.Heizkessel)]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT, KatalogBrowserArt.Bhkw)]
+    [InlineData(KiMaskennamen.PUFFERSPEICHER_PROJEKT, KatalogBrowserArt.Pufferspeicher)]
+    [InlineData(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, KatalogBrowserArt.Solarkollektoren)]
+    public void Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil(string maske, KatalogBrowserArt art)
+    {
+        KatalogBrowserProfil profil =
+            KatalogBrowserProfil.Finde(art, s => Resource.ResourceManager.GetString(s) ?? s);
+
+        AlleDatenPruefen(maske, profil.Detailfelder
+            .Select(p => (p.Schluessel, p.Feldname, p.Einheit, p.Art, !p.Editierbar)).ToList());
+    }
+
+    /// <summary>
+    /// Dasselbe für Photovoltaik und Stromspeicher nach dem <c>ModulKatalogProfil</c> —
+    /// nicht setzbar ist, was die Brücke des Aufklappers nicht zurückschreibt: der
+    /// gesperrte Bezeichner und ein Auswahlfeld (<c>ModulFeldwertBruecke</c>).
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.PHOTOVOLTAIK, ModulKatalogArt.Photovoltaik)]
+    [InlineData(KiMaskennamen.STROMSPEICHER_PROJEKT, ModulKatalogArt.Stromspeicher)]
+    public void Die_Modulmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil(string maske, ModulKatalogArt art)
+    {
+        ModulKatalogProfil profil =
+            ModulKatalogProfil.Finde(art, s => Resource.ResourceManager.GetString(s) ?? s);
+
+        AlleDatenPruefen(maske, profil.Felder
+            .Select(p => (p.Schluessel, p.Feldname, p.Einheit, p.Art,
+                          p.Gesperrt || p.Art == BrowserFeldArt.Auswahl)).ToList());
+    }
+
+    private static void AlleDatenPruefen(
+        string maske, List<(string Schluessel, string Feldname, string Einheit, BrowserFeldArt Art, bool NurLesen)> profil)
+    {
+        KiDialog dialog = KiDialoge.Katalog.Finde(maske)!;
+        Assert.NotNull(dialog);
+
+        Type? typ = Datentyp(maske);
+        Assert.NotNull(typ);
+        Assert.True(typeof(IKiFeldtafel).IsAssignableFrom(typ), typ!.Name + " ist keine Feldtafel.");
+
+        Assert.Equal(profil.Count, dialog.Felder.Count(IstAlleDaten));
+
+        foreach (var p in profil)
+        {
+            string name = (KiDialoge.KATALOGFELD_VORSILBE + p.Schluessel).ToLowerInvariant();
+            KiDialogFeld? k = dialog.FindeFeld(name);
+            Assert.True(k is not null, "Das Profilfeld " + p.Schluessel + " fehlt in " + maske + ".");
+
+            Assert.Equal(typ.Name + "." + KiDialoge.KATALOGFELD_VORSILBE + p.Schluessel, k!.Eigenschaftspfad);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Resource.KI_DLG_ALLE_DATEN_NAME, p.Feldname),
+                         k.Anzeigename);
+            Assert.Equal(p.Einheit ?? "", k.Einheit);
+            Assert.Equal(KiDialoge.Feldtyp(p.Art), k.Typ);
+            Assert.Equal(p.NurLesen, k.NurLesen);
+            Assert.True(IstTafelfeld(maske, k), name);
+            Assert.False(string.IsNullOrWhiteSpace(k.Erlaeuterung), name);
+        }
+    }
+
+    /// <summary>Ein Feld des Aufklappers „Alle Daten" — erkannt an der Vorsilbe im Pfad.</summary>
+    private static bool IstAlleDaten(KiDialogFeld f)
+        => f.Eigenschaft.StartsWith(KiDialoge.KATALOGFELD_VORSILBE, StringComparison.Ordinal);
+
+    /// <summary>Das Daten-Objekt einer Maske aus <see cref="Masken"/>; <c>null</c> = keins.</summary>
+    private static Type? Datentyp(string maske)
+    {
+        foreach (object[] zeile in Masken())
+            if ((string)zeile[0] == maske) return (Type)zeile[1];
+        return null;
+    }
+
+    /// <summary>
+    /// Ist dieses Feld ein Feld der FELDTAFEL seiner Maske — das Daten-Objekt ist eine
+    /// <see cref="IKiFeldtafel"/> und führt KEINE Eigenschaft dieses Namens?
+    /// </summary>
+    public static bool IstTafelfeld(string maske, KiDialogFeld feld)
+    {
+        Type? typ = Datentyp(maske);
+        return typ is not null && typeof(IKiFeldtafel).IsAssignableFrom(typ) && !feld.IstSpalte &&
+               typ.GetProperty(feld.Eigenschaft) is null;
+    }
+
+    /// <summary>
+    /// Führt die Maske eine FELDTAFEL — dann ist ihr Baustein <c>Katalogfelder</c> über das
+    /// Profil gedeckt und nicht über eine Bindung mit Namen (Eingabebilanz des Wächters).
+    /// </summary>
+    public static bool FuehrtFeldtafel(string maske)
+        => KiDialoge.Katalog.Finde(maske)?.Felder.Any(f => IstTafelfeld(maske, f)) == true;
 
     // ---------------------------------------------------------------------
     //  Hilfen der Markup-Probe

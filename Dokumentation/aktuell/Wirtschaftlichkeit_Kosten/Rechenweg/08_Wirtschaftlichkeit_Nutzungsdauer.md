@@ -174,12 +174,12 @@ Barwert der Differenz vor Restwert am Horizontende 1.564.393 / 1.744.663 / 1.929
 | V-G3 | Zeitpunkt „alle n Jahre" | fehlt | kleiner Ausbau der Bemessung |
 | V-G4 | kein Restwertverfahren | Restwert linear | dokumentierte Abweichung, Deklarationszeile |
 | V-G5 | Szenarien = alle Parameter gleichzeitig | nur Betragsspalten | **entschieden 31.08.2026:** vollständige Abdeckung (§ 2.11.5), Etappe V-E |
-| V-G6 | Sensitivität mit Steigung €/% und Diagramm | 5 Fälle, ohne Steigung | Spalte und Diagramm ergänzen |
+| V-G6 | Sensitivität mit Steigung €/% und Diagramm | 5 Fälle; Steigungsspalte gebaut #434 (Seite, Wort- und Tabellenbericht) | T-Variation, Endzahlungen und Diagramm offen |
 | V-G7 | Risiko: Zinszuschlag oder Abzug R_loss × p_loss | fehlt | optionales Modul, Vorgabe aus |
-| V-G8 | IZF/Amortisation nur nachrichtlich, Mehrdeutigkeitswarnung | gleichrangig | Label + Warnung |
-| V-G9 | Steuerdeklaration Pflicht | fehlt | zweiteilige Deklarationszeile |
+| V-G8 | IZF/Amortisation nur nachrichtlich, Mehrdeutigkeitswarnung | gebaut #434 | Marke „nachrichtlich (Anhang C)" an Amortisation und Zinsfuß, Warnung bei mehr als einem Vorzeichenwechsel, ohne Wechsel „kein Zinsfuß bestimmbar" |
+| V-G9 | Steuerdeklaration Pflicht | gebaut #434 | zweiteilige Deklarationszeile (`WIRT_DEKL_STEUERN`) auf der Seite und in beiden Berichten |
 | V-G10 | Bericht mit editierbarer XLSX mit Formeln (Anhang A) | Formelmappe in den Stufen 0 bis 3 (gebaut #455) | der ganze Bericht formelbasiert, soweit ableitbar (Konzept § 2.11.6) — EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu |
-| V-G11 | nicht monetarisierbare Wirkungen | fehlt | Freitext + Kategorie + Beurteilung, nie im NPV |
+| V-G11 | nicht monetarisierbare Wirkungen | Freitext gebaut (W5‑B‑12), auf der Seite in Block 5 und in beiden Berichten | Kategorie und Beurteilung nach Dauer × Wirkung offen; nie im NPV |
 | V-G12 | Anhang-E-Checkliste (15 Punkte) | gebaut #455 | Abschlussseite beider Berichte, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" |
 
 Externe Gegenprobe der Etappe: Anhang D der Norm (BHKW 90 kW_th, 18 Jahre, NPV 64.480 €, Worst

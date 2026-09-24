@@ -46,6 +46,9 @@ namespace WindowsFormsApplication1
                 ["Katalogprofil"] = Katalogfilterprofil.FuerZeitreihe(
                     Zeitreihenart.Stromganglinie, Katalogtexte.Fuer),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
+                // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.Stromganglinie, ids, gesperrt)),
                 // Neuordnung Stufe 4: das Stammblatt mit Jahresverlauf und Kennzahlen,
                 // die weiche Loeschsperre mit dem Projektnamen - und als letzte Pruefung
                 // vor dem Loeschen die Zuordnung (neu fuer die Stromganglinie).

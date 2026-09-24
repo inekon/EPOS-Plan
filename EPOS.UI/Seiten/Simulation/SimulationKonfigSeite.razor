@@ -814,10 +814,19 @@
     {
         if (idAnlage <= 0) return;
 
+        KarteMarkieren(idAnlage);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Der Kern von <see cref="KarteHervorheben"/> ohne das Zeichnen — der Assistent
+    /// ruft ihn und lässt über den Verteiler zeichnen (Welle #458).
+    /// </summary>
+    private void KarteMarkieren(int idAnlage)
+    {
         _auswahl = PRAEFIX_ERZEUGER + idAnlage;
         _verfuegbareZeigen = true;
         AnsichtszustandAnwenden();
-        StateHasChanged();
     }
 
     // =====================================================================
@@ -1816,4 +1825,260 @@
         // ausserdem Senken der Anlagen betreffen (ReferenzenLoesen).
         Neuladen();
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle #458): die Werte JE ANLAGE
+    // =====================================================================
+    //
+    // WARUM HIER. Quelle, Quelltemperatur, WP-Priorität und Betriebsmodus setzt der
+    // Anwender über Überlagerungen dieser Seite (Quellenwahl, WertAbfrage,
+    // BetriebsmodusDialog); ihre Schreibwege liegen in SimulationKonfigDienste und
+    // ihre Vorprüfungen HIER (BetriebsmodusBearbeiten, WaermequelleBearbeiten …).
+    // Die Sichtklasse der Simulationsansicht (SimulationKiSicht) ruft deshalb diese
+    // Methoden und keinen zweiten Weg - dieselben Prüfungen, dieselben Delegaten,
+    // dasselbe Neuladen danach.
+    //
+    // WELCHE ANLAGE. Die GEWÄHLTE Karte (_auswahl) - dieselbe, die der Anwender mit
+    // einem Klick hervorhebt. Der Assistent wählt sie über KiAnlageWaehlen, also über
+    // KarteHervorheben; eine Karte ohne Quellenwahl (BHKW, PV …) ist keine Anlage im
+    // Sinne dieser Felder.
+    //
+    // RÜCKGABE: null = geschrieben; sonst der Satz, warum nicht - die Sichtklasse
+    // wirft ihn als benannte Absage weiter.
+
+    /// <summary>Die Karten, deren Quelle sich wählen lässt (Wärmepumpen, Heizkessel).</summary>
+    public IReadOnlyList<ErzeugerZeile> KiAnlagen
+    {
+        get
+        {
+            var liste = new List<ErzeugerZeile>();
+            var gesehen = new HashSet<int>();
+
+            foreach (KachelGruppe g in _daten.Gruppen)
+                foreach (ErzeugerZeile z in g.Zeilen)
+                    if (z.IdAnlage > 0 && z.QuellenwahlMoeglich && gesehen.Add(z.IdAnlage))
+                        liste.Add(z);
+
+            return liste;
+        }
+    }
+
+    /// <summary>Die gewählte Karte, sofern sie eine Quellenwahl kennt; <c>null</c> = keine.</summary>
+    public ErzeugerZeile? KiAnlage
+    {
+        get
+        {
+            int id = IdAusSchluessel(_auswahl, PRAEFIX_ERZEUGER);
+            if (id == 0) id = IdAusSchluessel(_auswahl, PRAEFIX_QUELLE);
+            if (id == 0) return null;
+
+            foreach (ErzeugerZeile z in KiAnlagen)
+                if (z.IdAnlage == id) return z;
+            return null;
+        }
+    }
+
+    /// <summary>Wählt die Karte einer Anlage — derselbe Weg wie der Knopf an einer Meldung.</summary>
+    public string? KiAnlageWaehlen(int idAnlage)
+    {
+        if (_daten.Gesperrt) return KiSperrgrund();
+
+        foreach (ErzeugerZeile z in KiAnlagen)
+            if (z.IdAnlage == idAnlage)
+            {
+                KarteMarkieren(idAnlage);
+                KiZeichnen();
+                return null;
+            }
+
+        return string.Format(Resource.KI_SIM_ANLAGE_UNBEKANNT, idAnlage);
+    }
+
+    /// <summary>Die Quelltypen der gewählten Anlage (Steuerwert, Anzeigetext).</summary>
+    public IReadOnlyList<Quellentyp> KiQuellentypen()
+    {
+        ErzeugerZeile? z = KiAnlage;
+        return z is null
+            ? Array.Empty<Quellentyp>()
+            : Dienste?.Quellentypen?.Invoke(z.IdType) ?? Array.Empty<Quellentyp>();
+    }
+
+    /// <summary>Der gespeicherte Quelltyp der gewählten Anlage; leer = keine Anlage gewählt.</summary>
+    public string KiQuelle()
+    {
+        ErzeugerZeile? z = KiAnlage;
+        return z is null ? "" : Dienste?.QuelleTyp?.Invoke(z.IdAnlage) ?? "";
+    }
+
+    /// <summary>Die gespeicherte Quelltemperatur der gewählten Anlage [°C]; 0 = keine Anlage.</summary>
+    public double KiQuelltemperatur()
+    {
+        ErzeugerZeile? z = KiAnlage;
+        return z is null ? 0.0 : Dienste?.QuelleTemperatur?.Invoke(z.IdAnlage) ?? 0.0;
+    }
+
+    /// <summary>
+    /// Setzt die Quelle der gewählten Anlage — die Zweige von <c>QuelleGewaehlt</c>:
+    /// Systemrücklauf und Außenluft schreiben sofort, „Konstant" schreibt mit der
+    /// gespeicherten Temperatur (die Zahl setzt danach <see cref="KiQuelltemperaturSetzen"/>),
+    /// Pufferspeicher, Quellprofil und Erdreich öffnen ihren Dialog wie am Bildschirm, und
+    /// eine Datei wählt der Anwender selbst.
+    /// </summary>
+    public string? KiQuelleSetzen(string typ)
+    {
+        string? grund = KiVorpruefung(nurWaermepumpe: false, out ErzeugerZeile? zeile);
+        if (grund is not null || zeile is null) return grund;
+
+        if (zeile.IstWaermepumpe && zeile.BauartGebunden)
+            return string.Format(MsgLuftWasser, zeile.WpTypAnzeige);
+
+        Quellentyp? gewaehlt = null;
+        foreach (Quellentyp q in KiQuellentypen())
+            if (string.Equals(q.Wert, typ, StringComparison.Ordinal)) gewaehlt = q;
+        if (gewaehlt is null) return string.Format(Resource.KI_SIM_WERT_UNBEKANNT, typ);
+
+        if (typ == SteuerwertQuelleCsv)
+            return string.Format(Resource.KI_SIM_QUELLE_DATEI, gewaehlt.Text);
+
+        if (typ == SteuerwertQuellePuffer || typ == SteuerwertQuellprofil || typ == SteuerwertQuelleErdreich)
+        {
+            // Derselbe Weg wie am Bildschirm: Der Unterdialog geht auf, geschrieben wird
+            // mit seinem OK. Der Assistent sagt das, statt „gesetzt" zu melden.
+            _zeile = zeile;
+            QuelleGewaehlt(typ);
+            KiZeichnen();
+
+            string titel = typ == SteuerwertQuellePuffer ? QuellePufferTitel
+                         : typ == SteuerwertQuellprofil ? QuellprofilTitel
+                         : ErdreichTitel;
+            return string.Format(Resource.KI_SIM_QUELLE_DIALOG, gewaehlt.Text, titel);
+        }
+
+        double temperatur = typ == SteuerwertQuelleKonstant
+            ? Dienste?.QuelleTemperatur?.Invoke(zeile.IdAnlage) ?? 10.0
+            : 0.0;
+
+        if (Dienste?.QuelleEinfachSchreiben is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+        Dienste.QuelleEinfachSchreiben(zeile.IdAnlage, typ, temperatur);
+        Neuladen();
+        KiZeichnen();
+        return null;
+    }
+
+    /// <summary>Setzt die konstante Quelltemperatur — nur, wenn die Quelle „Konstant" ist.</summary>
+    public string? KiQuelltemperaturSetzen(double temperatur)
+    {
+        string? grund = KiVorpruefung(nurWaermepumpe: false, out ErzeugerZeile? zeile);
+        if (grund is not null || zeile is null) return grund;
+
+        if (!string.Equals(KiQuelle(), SteuerwertQuelleKonstant, StringComparison.Ordinal))
+        {
+            string text = SteuerwertQuelleKonstant;
+            foreach (Quellentyp q in KiQuellentypen())
+                if (q.Wert == SteuerwertQuelleKonstant) text = q.Text;
+            return string.Format(Resource.KI_SIM_QUELLTEMP_NUR_KONSTANT, text);
+        }
+
+        if (Dienste?.QuelleEinfachSchreiben is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+        Dienste.QuelleEinfachSchreiben(zeile.IdAnlage, SteuerwertQuelleKonstant, temperatur);
+        Neuladen();
+        KiZeichnen();
+        return null;
+    }
+
+    /// <summary>Setzt die Einsatzreihenfolge der gewählten Wärmepumpe — Werte ab 1 (wie <c>PrioBeantwortet</c>).</summary>
+    public string? KiPrioritaetSetzen(int prioritaet)
+    {
+        string? grund = KiVorpruefung(nurWaermepumpe: true, out ErzeugerZeile? zeile);
+        if (grund is not null || zeile is null) return grund;
+
+        if (prioritaet <= 0) return Resource.KI_SIM_PRIORITAET_POSITIV;
+        if (Dienste?.PrioritaetSchreiben is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+
+        Dienste.PrioritaetSchreiben(zeile.IdAnlage, prioritaet);
+        Neuladen();
+        KiZeichnen();
+        return null;
+    }
+
+    /// <summary>
+    /// Die drei Betriebsmodi (Steuerwert, Anzeigetext) und der gespeicherte der gewählten
+    /// Wärmepumpe — aus denselben Gaben, die der <c>BetriebsmodusDialog</c> bekommt.
+    /// </summary>
+    public (IReadOnlyList<(string Wert, string Text)> Modi, string Aktuell) KiBetriebsmodi()
+    {
+        ErzeugerZeile? z = KiAnlage;
+        if (z is null || !z.IstWaermepumpe) return (Array.Empty<(string, string)>(), "");
+
+        IReadOnlyDictionary<string, object>? g = Dienste?.BetriebsmodusGaben?.Invoke(z.IdAnlage);
+        if (g is null) return (Array.Empty<(string, string)>(), "");
+
+        string Text(string schluessel) => g.TryGetValue(schluessel, out object? o) ? o as string ?? "" : "";
+
+        var modi = new List<(string, string)>
+        {
+            (Text("SteuerwertLaufzeit"), Text("RbLaufzeit")),
+            (Text("SteuerwertLeistung"), Text("RbLeistung")),
+            (Text("SteuerwertPv"), Text("RbPv"))
+        };
+
+        // Die Rueckfallregel des Dialogs: leer oder unbekannt heisst laufzeitoptimiert.
+        string aktuell = Text("AktuellerModus");
+        if (aktuell != Text("SteuerwertLeistung") && aktuell != Text("SteuerwertPv"))
+            aktuell = Text("SteuerwertLaufzeit");
+
+        return (modi, aktuell);
+    }
+
+    /// <summary>Setzt den Betriebsmodus der gewählten Wärmepumpe — der Weg von <c>ModusFertig</c>.</summary>
+    public string? KiBetriebsmodusSetzen(string modus)
+    {
+        string? grund = KiVorpruefung(nurWaermepumpe: true, out ErzeugerZeile? zeile);
+        if (grund is not null || zeile is null) return grund;
+
+        bool bekannt = false;
+        foreach ((string wert, string _) in KiBetriebsmodi().Modi)
+            if (string.Equals(wert, modus, StringComparison.Ordinal)) bekannt = true;
+        if (!bekannt) return string.Format(Resource.KI_SIM_WERT_UNBEKANNT, modus);
+
+        if (Dienste?.BetriebsmodusSchreiben is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+
+        Dienste.BetriebsmodusSchreiben(zeile.IdAnlage, modus);
+
+        // Der PV-Hinweis wie im OK-Weg der Ueberlagerung.
+        if (string.Equals(modus, SteuerwertPv, StringComparison.Ordinal) && !_daten.PvGewaehlt)
+            Melden(MsgPvAuswahl, WarnStufe.Hinweis);
+
+        Neuladen();
+        KiZeichnen();
+        return null;
+    }
+
+    /// <summary>
+    /// Die Vorprüfung der Werte je Anlage: gesperrte Seite, offene Überlagerung (sie hielte
+    /// einen Stand von vorhin und schriebe ihn mit OK zurück), keine gewählte Anlage, und
+    /// für Priorität und Betriebsmodus die Wärmepumpe.
+    /// </summary>
+    private string? KiVorpruefung(bool nurWaermepumpe, out ErzeugerZeile? zeile)
+    {
+        zeile = KiAnlage;
+
+        if (_daten.Gesperrt) return KiSperrgrund();
+        if (_ebene1 != Editor.Keine || _ebene2 != Editor.Keine) return Resource.KI_SIM_UEBERLAGERUNG_OFFEN;
+        if (zeile is null) return Resource.KI_SIM_ANLAGE_FEHLT;
+
+        if (nurWaermepumpe && !zeile.IstWaermepumpe)
+            return string.Format(Resource.KI_SIM_NUR_WP, zeile.Bezeichner);
+
+        return null;
+    }
+
+    /// <summary>
+    /// Zeichnet über den Verteiler — der Assistent setzt nicht zwingend auf dem Faden der
+    /// Oberfläche, und der Haken „Auffrischen" läuft nach einer Absage nicht.
+    /// </summary>
+    private void KiZeichnen() => _ = InvokeAsync(StateHasChanged);
+
+    private string KiSperrgrund()
+        => string.IsNullOrWhiteSpace(_daten.Sperrgrund) ? Resource.KI_SIM_KEIN_SCHREIBWEG : _daten.Sperrgrund;
 }

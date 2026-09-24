@@ -24,6 +24,9 @@ Stufe 5"). Die Auswahlleiste steht im breiten Fenster über dem Stammblatt statt
 Abweichung vom Schema, Begründung in 3.6 Punkt 7. Das Schema (Abschnitt 3) gilt als umgesetzter Stand
 für alle elf Komponenten des Geltungsbereichs, mit den in 3.6 genannten Abweichungen. Der Ablauf aller
 fünf Stufen steht in Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnitt 8 zusammen.
+**Mit AD-Q15 (23.09.2026) ist AD-Q11 abgelöst:** Das Schloss eines Auslieferungssatzes lässt sich in
+allen zehn Verwaltungen über die Auswahlleiste aufheben und wieder setzen, nach Rückfrage — umgesetzt
+am 23.09.2026 (Welle #459; Kern `Auslieferungskennzeichen`, Baustein `Schlossumschaltung`; 3.4, 6.2).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -253,8 +256,9 @@ Fenster.
   damit die Liste nicht springt.
 - **Rückmeldung:** Gelungenes meldet die Statuszeile der Fußleiste („Profil Wohnen 2 dupliziert als
   …", „12 Sätze eingelesen"). Ein Warnband erst nach einem gescheiterten Versuch, mit `Verfaellt`
-  (Hausregel „Zustand, Meldung, Leerzustand"). Eine **Rückfrage** gibt es nur vor dem Löschen — und nur,
-  wenn gelöscht werden kann.
+  (Hausregel „Zustand, Meldung, Leerzustand"). Eine **Rückfrage** gibt es vor dem Löschen — nur, wenn
+  gelöscht werden kann — und vor dem Umschalten des Schlosses in beiden Richtungen, dort mit „Nein"
+  als Vorgabe (AD-Q15).
 - **Ungespeicherte Felder:** Solange das Stammblatt geänderte Felder trägt, hält ein Zeilenwechsel die
   Wahl fest, und sein Fuß sagt „Speichern oder Verwerfen" (Muster: `WaermepumpenDialog` prüft vor dem
   Zeilenwechsel und hält die Wahl). Beenden meldet dasselbe im Warnband und bleibt offen.
@@ -267,11 +271,33 @@ Fenster.
 
 Ein Auslieferungssatz (`ReadOnly`, bei den Gebäudetypen „nicht veränderbar") trägt hinter dem
 Bezeichner ein kleines Schloss ohne Wort (AD-Q13). Der Kurztext am Zeichen sagt „Auslieferungssatz –
-nur lesen, Duplizieren erlaubt", in Klimadaten und den drei Zeitreihen, die kein Duplizieren kennen,
-„Auslieferungssatz – nur lesen". Dasselbe Zeichen steht im Kopf des Stammblatts vor der Herkunft; weil
-ein Kurztext auf Berührungsgeräten nicht erreichbar ist, sagt der Fuß des Stammblatts dasselbe in
-Worten. Die Legende des Mockups und die Hilfeseite erklären das Zeichen einmal; unter 900 px bleibt es,
-wie es ist.
+nur lesen, Duplizieren oder Schloss aufheben erlaubt", in Klimadaten und den drei Zeitreihen, die kein
+Duplizieren kennen, „Auslieferungssatz – nur lesen". Dasselbe Zeichen steht im Kopf des Stammblatts vor
+der Herkunft; weil ein Kurztext auf Berührungsgeräten nicht erreichbar ist, sagt der Kopf des
+Stammblatts dasselbe in Worten („… Zum Ändern in der Auswahlleiste duplizieren oder das Schloss
+aufheben."). Die Legende des Mockups und die Hilfeseite erklären das Zeichen einmal; unter 900 px bleibt
+es, wie es ist.
+
+**Das Schloss ist umschaltbar (AD-Q15).** Die Auswahlleiste trägt in allen zehn Verwaltungen zwischen
+„Duplizieren…" und „Löschen" die Handlung „Schloss aufheben…" bzw. „Schloss setzen…": Enthält die
+Auswahl gesperrte Sätze, heißt sie „Schloss aufheben…" und wirkt nur auf diese, sonst „Schloss
+setzen…"; der Knopf hält die Breite der längeren Beschriftung, damit die Leiste nicht anders umbricht.
+Sie fragt in beiden Richtungen zurück (Vorgabe „Nein"), schaltet danach nur das Kennzeichen des
+Kopfsatzes in einer Transaktion (`Auslieferungskennzeichen`, Tabelle aus der `KatalogRegistry`), liest
+die Liste neu und meldet das Ergebnis in der Statuszeile. Kein Wert ändert sich, auch nicht beim
+Setzen. Ein Satz, dessen Schloss in dieser Sitzung aufgehoben wurde, trägt am Platz des
+Auslieferungshinweises das Band „Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als
+eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her." (die Verwaltung merkt sich
+die IDs, solange sie offen ist; kein Schemaschritt). Im Lesemodus der Lizenz und bei `NurLesen` ist die
+Handlung hart gesperrt; einen Weg für den Hilfe-Assistenten gibt es nicht (wie beim Löschen).
+Besonderheiten: Beim Gebäudetyp schaltet sie `ReadOnly` und `Veraenderbar`; das Schloss eines
+Brauchwasser-, Prozess- oder Verbrauchertyps bleibt getrennt (die Rückfrage nennt es); die
+Tww-Kataloge, deren Kennzeichen ihrem Freigabestatus folgt, und Tabellen ohne Kennzeichen lehnt der
+Kern benannt ab. **Update-Verhalten:** Setup, Erstbereitstellung und Schemamigration überschreiben
+Katalogsätze nie und säen die Kataloge der Verwaltungen nicht nach (ADR-001) — ein entsperrter,
+geänderter Satz bleibt, wie er ist; erneutes Sperren ändert nur das Kennzeichen; die ausgelieferten Werte
+gibt es danach nur noch in einer Datenbanksicherung. Nach dem Aufheben ist Löschen möglich und
+endgültig (samt Kindzeilen); die Löschrückfrage bleibt, wie sie ist.
 
 Weitere Kennzeichen führen die Verwaltungen nicht: „im Projekt" (✓) fällt mit den Projektdialogen,
 „Hauptposition" mit dem Kostenfaktorenkatalog (Abschnitt 8). Dass ein Projekt einen Satz verwendet, ist
@@ -351,6 +377,9 @@ die Auswahlleiste des schmalen Fensters (V3) werden eins. *Betroffen:* alle elf 
 *Aufwand:* M. *Abhängig:* V4, V6, `Zeilenmarkierung`; AD-Q9.
 **Umgesetzt (23.09.2026)** in A1 bis A3 und A5; steht dort breit über dem Stammblatt statt über der
 Liste (Abweichung, 3.6 Punkt 7). A4, A6 bis A8 und A9 bis A11 stehen noch aus.
+**Fortgeschrieben mit AD-Q15 (23.09.2026):** In allen zehn Verwaltungen kommt zwischen Duplizieren…
+und Löschen die Handlung „Schloss aufheben…"/„Schloss setzen…" hinzu (Baustein `Schlossumschaltung`);
+die `Auswahlhandlung` trägt dafür einen Kurztext (`title`) und eine Breitenvorlage (3.4).
 
 **V9 — Stammblatt mit steckbaren Gruppen.** *Was:* Baustein `Stammblatt` mit Kopf (Name, Herkunft samt
 Schloss, drei Kennzahlen), festen Gruppen „Kenndaten" (`Formularraster`), „Kosten", „Alle Daten"
@@ -405,6 +434,9 @@ wertet `ReadOnly` nicht aus). *Betroffen:* A1 bis A10 (die Lastspitzenkappung pf
 **Umgesetzt (23.09.2026)** in A1 bis A3 und A5: Duplizieren, weich gesperrtes Löschen mit Rückfrage,
 Hinweistext im Stammblattkopf. Offen bleibt, die Felder eines Auslieferungssatzes als Text statt als
 gesperrte Eingaben zu zeigen (Nach #447).
+**Fortgeschrieben mit AD-Q15 (23.09.2026):** „Nicht überschreiben" gilt, solange das Schloss steht —
+der Anwender kann es in allen zehn Verwaltungen aufheben und wieder setzen (3.4); Duplizieren bleibt
+der Weg zu einer Kopie neben dem Auslieferungssatz.
 
 **V14 — Import als Handlung im Schema.** *Was:* „Import…" bzw. „Daten einlesen…" steht links in der
 Fußleiste und öffnet die vorhandene Einlesekette als Überlagerung — `GanglinienImportLauf` für
@@ -477,7 +509,7 @@ Die Fragen AD-Q1 bis AD-Q8 sind am **22.09.2026** entschieden: nach Empfehlung, 
 bei AD-Q5. AD-Q12 bis AD-Q14 sind die Rückmeldung des Anwenders zum Schema-Mockup vom selben Tag.
 Hier stehen die Entscheide, die für die Verwaltungen gelten; die nur für die Projektdialoge gefallenen
 (AD-Q2 bis AD-Q5, AD-Q7) und die dort offene AD-Q10 stehen in Abschnitt 8. Den Grundsatzentscheid für
-Variante B nennt 6.1, AD-Q9 (entschieden: Ja) und die offene AD-Q11 stehen in 6.2.
+Variante B nennt 6.1, AD-Q9 (entschieden: Ja), AD-Q11 (abgelöst) und AD-Q15 stehen in 6.2.
 
 | Kennung | Frage | Empfehlung | Entscheid |
 |---|---|---|---|
@@ -503,7 +535,8 @@ Auswahlleiste und trägt alle Zeilenhandlungen; der Vergleich im Stammblatt wird
 | Kennung | Frage | Variante (a) | Variante (b) | Empfehlung |
 |---|---|---|---|---|
 | **AD-Q9** | Löscht „Löschen…" in der Auswahlleiste auch mehrere gewählte Zeilen auf einmal? | **Ja:** eine Rückfrage nennt alle gewählten Zeilen und die, die stehen bleiben (Schloss, in Verwendung); gelöscht wird der Rest, die Statuszeile nennt beide Zahlen | **Nein:** Löschen nur bei genau einer Zeile, sonst weich gesperrt mit Grund | **(a)** — nach einem Herstellerimport mit Hunderten Sätzen ist Aufräumen Zeile für Zeile keine Bedienung; die Rückfrage bleibt die einzige des Schemas — **Entscheid 22.09.2026: Ja, Variante (a).** |
-| **AD-Q11** | Darf ein Auslieferungssatz (`ReadOnly`) in der Verwaltung überschrieben werden? | **Nein:** nur lesbar; „Duplizieren" legt den eigenen Satz an (so hält es die Wärmepumpe) | **Ja, nach Rückfrage** (so hält es das BHKW) | **(a)** — eine Regel für alle, eine Rückfrage weniger, und die Auslieferung bleibt Bezug. Folge: Beim BHKW (in der Testdatenbank 79 von 79 Sätzen `ReadOnly`) beginnt jede Änderung mit Duplizieren. **Entscheid 23.09.2026: (a).** **Umgesetzt (23.09.2026)** — Kern `Katalogkopie.Duplizieren` in allen acht Stamm-Controllern, die BHKW-Rückfrage „Trotzdem überschreiben?" entfällt |
+| **AD-Q11** | Darf ein Auslieferungssatz (`ReadOnly`) in der Verwaltung überschrieben werden? | **Nein:** nur lesbar; „Duplizieren" legt den eigenen Satz an (so hält es die Wärmepumpe) | **Ja, nach Rückfrage** (so hält es das BHKW) | **(a)** — eine Regel für alle, eine Rückfrage weniger, und die Auslieferung bleibt Bezug. Folge: Beim BHKW (in der Testdatenbank 79 von 79 Sätzen `ReadOnly`) beginnt jede Änderung mit Duplizieren. **Entscheid 23.09.2026: (a).** **Umgesetzt (23.09.2026)** — Kern `Katalogkopie.Duplizieren` in allen acht Stamm-Controllern, die BHKW-Rückfrage „Trotzdem überschreiben?" entfällt. **Abgelöst durch AD-Q15 (23.09.2026):** Der Anwender kann das Schloss selbst aufheben |
+| **AD-Q15** | Darf der Anwender das Auslieferungskennzeichen selbst umschalten — einen Auslieferungssatz änderbar machen und einen Satz zum Auslieferungssatz erklären? | **Ja:** ein Kennzeichen, in beide Richtungen, über die Auswahlleiste für die gewählten Sätze, nach Rückfrage, in allen zehn Verwaltungen | **Nein:** weiter nur Duplizieren (AD-Q11) | **(a)** — Anwender 23.09.2026 zur Administration Brauchwasser: „Die Auslieferungssätze sollten auch auf änderbar (vom Nutzer) gesetzt werden können (ohne Schloss)", „Es sollen Datensätze als Auslieferungssätze gesetzt werden können.", „Beim Ändern eines Auslieferungsdatensatzes sollte ein Hinweis erscheinen". **Entscheid 23.09.2026: (a), löst AD-Q11 ab** — Beschriftung nach der Auswahl, Rückfrage in beiden Richtungen (Vorgabe Nein), Band im Stammblatt für in dieser Sitzung entsperrte Sätze, Werte bleiben beim Setzen, Gebäudetyp schaltet `ReadOnly` und `Veraenderbar`, Tww und Tabellen ohne Kennzeichen benannt abgelehnt, Typ-Schloss der Bedarfsprofile getrennt, kein KI-Weg (3.4). **Umgesetzt (23.09.2026, Welle #459)** |
 
 
 ## 7 Reihenfolge und Abnahme
@@ -560,6 +593,11 @@ geschützt, die Absage nennt „Duplizieren…"; Neu…, Duplizieren…, Lösche
 Assistenten, A6 und A7 führen keine Einstellwerte. Offen bleibt die Gebäude-Verwaltung (A9): Die
 KI-Maske GEBAEUDE teilen sich Projekt- und Verwaltungsdialog, und die Verwaltung bleibt für den
 Assistenten offen, solange ihre Hülle nur liest.
+(f) Schloss (AD-Q15): Das Band „Schloss aufgehoben" kennt nur die Verwaltung, in
+der das Schloss aufgehoben wurde, solange sie offen ist (die Datenbank führt nur das Kennzeichen); im
+schmalen Fenster (400 × 624) bricht die Auswahlleiste mit vier Handlungen in drei statt zwei Zeilen um —
+die Liste verliert 50 px (Katalogprobe); breit rückt das Stammblatt beim ersten Kästchen um eine Zeile,
+wenn der Löschknopf einen langen Text trägt (Stromverbraucher).
 
 
 ## 8 Außerhalb des Geltungsbereichs (Entscheid 22.09.2026)

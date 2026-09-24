@@ -25,12 +25,19 @@
    NameAenderbar des DTO, gesetzt VOR Bestuecken.
 
    KEINE DATENBANK (Hausregel EPOS.UI): Die Klimaregionen und der Projektkopf
-   kommen fertig aus der Huelle. *@
+   kommen fertig aus der Huelle.
+
+   HILFE-ASSISTENT (Welle #458, Stufe 2): Die Seite meldet ihre fuenf Felder
+   selbst an (KiMaskennamen.PROJEKTKOPF, Sichtklasse ProjektKopfKiSicht) - der
+   Rahmen des Assistenten zeichnet sie als DynamicComponent und kennt ihren
+   Stand nicht. Die Kopfregeln sind die Pruefung; einen Speicherweg gibt es
+   nicht, "Fertig" bleibt beim Anwender. *@
 
 @namespace EPOS.UI.Seiten.Assistent
 
 @using EPOS.UI.Bausteine
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite epos-projektkopf">
 
@@ -168,6 +175,48 @@
             ? Klimaregionen.FirstOrDefault(k => k.Id == id.Value).Text ?? ""
             : "";
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ProjektKopfKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PROJEKTKOPF, () => KiSicht(), KiHaken());
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf den Kopf: dieselben Wege wie von Hand — die
+    /// Klimaregion über <see cref="KlimaGewaehlt"/>, der Name nur, wo die Seite ihn
+    /// ändern lässt.
+    /// </summary>
+    private ProjektKopfKiSicht KiSicht() => _kiSicht ??= new ProjektKopfKiSicht
+    {
+        Kopf = () => Daten,
+        KlimaLesen = () => KlimaAuswahl,
+        KlimaSetzen = KlimaGewaehlt,
+        Klimaregionen = () => Klimaregionen,
+        NameFestGrund = () => Resource.KI_DLG_PKOPF_NAME_FEST
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und die Kopfregeln
+    /// prüfen lassen — DIESELBE Regel wie der Hinweis unter den Feldern und das Veto
+    /// beim Verlassen der Seite (<c>ProjektKopfRegeln.Pruefe</c>).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg:</b> Das Projekt entsteht mit „Fertig" am Ende des
+    /// Assistenten; <c>dialog_speichern</c> lehnt benannt ab.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Hinweis
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// A-9: Das Datum folgt der PROGRAMMSPRACHE. Der Vorläufer schrieb an vier

@@ -43,6 +43,7 @@
             <KlimadatenDialog Regionen="@KlimaRegionen" Ansicht="@KlimaAnsicht"
                               Filterstandvorgabe="@_filterstand"
                               Importieren="@KlimaImport" Loeschen="@(n => Task.FromResult(true))"
+                              Schloss="@ProbeSchloss"
                               Ortsvorschlaege="@_orte" Geschlossen="@(b => { })" />
             break;
 
@@ -55,6 +56,7 @@
                                Jahressumme="@(n => n.Length > 0 ? "123,45" : "")"
                                Loeschen="@(_ => BedarfLoeschAusgang.Geloescht)"
                                Exists="@(_ => false)"
+                               Schloss="@ProbeSchloss"
                                TitelText="Stromverbraucher Verwaltung"
                                LabelKatalog="Datenbank Stromverbraucher"
                                LabelJahressumme="jährlicher Strombedarf:" EinheitText="MWh"
@@ -80,6 +82,7 @@
                                      Filterstandvorgabe="@_filterstand"
                                      HatProjektzuordnung="@(_ => Task.FromResult(false))"
                                      Loeschen="@(_ => Task.FromResult(true))"
+                                     Schloss="@ProbeSchloss"
                                      Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
                                      Einlesen="@((_, _, _) => Task.FromResult(new GanglinienImportErgebnis()))"
                                      DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
@@ -93,6 +96,7 @@
                                        Filterstandvorgabe="@_filterstand"
                                        HatProjektzuordnung="@(_ => Task.FromResult(false))"
                                        Loeschen="@(_ => Task.FromResult(true))"
+                                       Schloss="@ProbeSchloss"
                                        Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
                                        Einlesen="@((_, _) => Task.FromResult(new EPOS.UI.Dialoge.Solarthermie.SolarganglinieImportErgebnis()))"
                                        DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
@@ -120,6 +124,7 @@
                                        Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, Uebersetzt)"
                                        Filterstandvorgabe="@_filterstand"
                                        Loeschen="@(_ => Task.FromResult(true))"
+                                       Schloss="@ProbeSchloss"
                                        Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
                                        Einlesen="@((_, _, _) => Task.FromResult(new GanglinienImportErgebnis()))"
                                        DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
@@ -147,6 +152,7 @@
                                     GesperrtDurch="@(_ => null)"
                                     Loeschen="@(_ => true)"
                                     Duplizieren="@((id, n) => new KatalogSpeicherErgebnis(true, "", n))"
+                                    Schloss="@ProbeSchloss"
                                     ImportGaben="@(() => KatalogImport(KatalogImportArt.Waermepumpe))"
                                     Geschlossen="@(b => { })" />
             break;
@@ -215,6 +221,7 @@
                                  Speichern="@(d => new KatalogSpeicherErgebnis(true, "", d.Name))"
                                  Loeschen="@(_ => true)"
                                  Duplizieren="@((id, n) => new KatalogSpeicherErgebnis(true, "", n))"
+                                 Schloss="@ProbeSchloss"
                                  Exists="@(_ => false)"
                                  GebaeudetypGaben="@(() => GebaeudetypGaben)"
                                  Geschlossen="@(b => { })" />
@@ -472,6 +479,8 @@
         // Stufe 2 (AD-Q11): mit dem Knopf "Duplizieren..." - die Fussleiste
         // traegt dann ihre volle Belegung und muss auch bei 400 px frei stehen.
         Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n),
+        // AD-Q15: die vierte Handlung der Auswahlleiste.
+        Schloss = ProbeSchloss,
         // Block 4 (Konzept 7.1 d): "Import..." - mit ihm ist die Fussleiste voll.
         ModulImportGaben = _modulArt == ModulKatalogArt.Stromspeicher ? null : ModulImport,
         KatalogImportGaben = _modulArt == ModulKatalogArt.Stromspeicher
@@ -555,6 +564,7 @@
         Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
         Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
         Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n),
+        Schloss = ProbeSchloss,
         // Block 4 (Konzept 7.1 d): "Import..." wie im Verwaltungsfenster der
         // Windows-Schale - das BHKW hat keinen Herstellerimport.
         ImportGaben = _browserArt switch
@@ -678,6 +688,13 @@
 
     private Zeichenmodell? _tagesbild;
 
+    /// <summary>
+    /// „Schloss setzen…" / „Schloss aufheben…" (AD-Q15) in jeder Verwaltung - die vierte
+    /// Handlung der Auswahlleiste; die Probe misst, dass sie die Liste nicht springen laesst.
+    /// </summary>
+    private static readonly Schlossweg ProbeSchloss =
+        new((ids, _) => new SchlossErgebnis(true, "") { Geaendert = ids });
+
     /// <summary>Der Parametersatz der Gebaeudetypen - fuer den eigenen Fall und die Ueberlagerung der Gebaeude.</summary>
     private IReadOnlyDictionary<string, object> GebaeudetypGaben => new Dictionary<string, object>
     {
@@ -690,6 +707,7 @@
         ["Anlegen"] = new Func<string, string, int, int>((_, _, _) => 99),
         ["Loeschen"] = new Func<int, bool>(_ => true),
         ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>((_, n) => new KatalogSpeicherErgebnis(true, "", n)),
+        ["Schloss"] = ProbeSchloss,
         ["Verwendung"] = new Func<IReadOnlyDictionary<string, int>>(() => new Dictionary<string, int>()),
         ["Bild"] = new Func<double[], Zeichenmodell?>(w => _tagesbild ??=
             ChartRenderer.StundenprofilModell("", w, 2, "Stunde des Tages", "Tagesverteilung"))

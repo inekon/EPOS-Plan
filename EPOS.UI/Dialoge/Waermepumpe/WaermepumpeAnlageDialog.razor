@@ -1102,8 +1102,17 @@
         // KI-F1b: Die fünf Klapplisten der Maske sind WAHLFELDER. Ihre Einträge stehen
         // dort, wo auch die Maske sie herholt — der Trägerkatalog kommt aus der Hülle,
         // die vier festen Listen aus den Bausteinen.
+        // Welle #458: Angemeldet ist eine SICHTKLASSE - sie reicht Daten unveraendert
+        // durch und traegt dazu die Projekteinstellung „Extrapolation der WP-Kennlinie
+        // erlauben", die nicht am Feldsatz haengt (Muster PhotovoltaikKiSicht, KI-F7).
+        _kiSicht = new WaermepumpeAnlageKiSicht
+        {
+            Datenquelle = () => Daten,
+            ExtrapolationLesen = () => _extrapolation,
+            ExtrapolationSetzen = KiExtrapolationSetzen
+        };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
-                                          () => Daten, KiHaken(),
+                                          () => _kiSicht, KiHaken(),
                                           ("energietraeger", Traegereintraege),
                                           ("betriebsart", Betriebsarteintraege),
                                           ("typ", () => KiMaskenanmeldung.Eintraege(
@@ -1141,6 +1150,20 @@
     /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
     /// </remarks>
     private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>Die Sicht des Assistenten auf Daten und Extrapolationsschalter (Welle #458).</summary>
+    private WaermepumpeAnlageKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Der Assistent legt den Extrapolationsschalter — derselbe Weg wie der Schalter
+    /// (<see cref="ExtrapolationUebernehmen"/>); Rückgabe: der Grund, warum nichts
+    /// geschrieben wurde, sonst <c>null</c>.
+    /// </summary>
+    private string? KiExtrapolationSetzen(bool wert)
+    {
+        if (ExtrapolationSchreiben is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+        return ExtrapolationUebernehmen(wert) ? null : WarnungExtrapolation;
+    }
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
@@ -1358,17 +1381,21 @@
     /// W10b‑B‑3: schreibt die Projekteinstellung sofort; bei Fehlschlag bleibt der Schalter,
     /// wie er war, und das Band bei den Kennlinien sagt es.
     /// </summary>
-    private void ExtrapolationGesetzt(bool wert)
+    private void ExtrapolationGesetzt(bool wert) => ExtrapolationUebernehmen(wert);
+
+    /// <summary>Der Schreibweg des Schalters — für ihn und den Assistenten; <c>true</c> = geschrieben.</summary>
+    private bool ExtrapolationUebernehmen(bool wert)
     {
-        if (ExtrapolationSchreiben is null) return;
+        if (ExtrapolationSchreiben is null) return false;
         if (ExtrapolationSchreiben(wert))
         {
             _extrapolation = wert;
-            return;
+            return true;
         }
         _extrapolationSchluessel++;                 // der Schalter zeigt wieder den gespeicherten Stand
         _kennlinienMeldung = WarnungExtrapolation;
         _kennlinienStufe = WarnStufe.Fehler;
+        return false;
     }
 
     // ---------------------------------------------------------------------------------

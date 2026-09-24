@@ -583,11 +583,12 @@ namespace WindowsFormsApplication1
         /// Stufe 3 (Konzept § 2.11.6): eine BEMESSENE Betriebskostenposition bekommt Menge
         /// und Satz in eigene Spalten, der Betrag wird ihr Produkt — bei einer
         /// Prozentbemessung geteilt durch 100, bei einer Erlösposition negativ. Welche
-        /// Rechnung gilt, sagt <see cref="BetriebskostenCtrl.Betrag"/> selbst (derselbe
-        /// Rechenweg, keine zweite Liste der Bemessungsarten): Er rechnet für Menge 1 und
-        /// Satz 1 genau 0,01 (Prozent) oder 1 (Satz je Einheit). Feste Beträge,
-        /// Jahresbeträge, szenariogepflegte und unvollständige Positionen bleiben Werte —
-        /// für sie trägt die Spalte „Herleitung" die Erklärung.
+        /// Rechnung gilt, sagt der Rechenweg selbst (derselbe Rechenweg, keine zweite Liste
+        /// der Bemessungsarten): <see cref="BetriebskostenCtrl.Bemessungsfaktor"/> ist 0,01
+        /// (Prozent) oder 1 (Satz je Einheit) — für jede der sechzehn bemessenen Arten; ETAPPE
+        /// E8c fragt dort auch die Herleitungsspalte. Feste Beträge, Jahresbeträge,
+        /// szenariogepflegte und unvollständige Positionen bleiben Werte — für sie trägt die
+        /// Spalte „Herleitung" die Erklärung.
         /// </summary>
         /// <returns><c>true</c>, wenn die Zeile eine Formel bekam.</returns>
         internal static bool Betriebskostenzeile(IXLWorksheet ws, int r, KostenPositionNachweis n,
@@ -595,9 +596,9 @@ namespace WindowsFormsApplication1
         {
             if (ws == null || n == null || register == null || n.SzenarioGepflegt ||
                 !n.Menge.HasValue || !n.Einheitpreis.HasValue) return false;
-            double faktor = BetriebskostenCtrl.Betrag(n.Bemessung, 0.0, 1.0, 1.0, false);
-            bool prozent = Math.Abs(faktor - 0.01) < 1e-15;
-            if (!prozent && faktor != 1.0) return false;
+            double? faktor = BetriebskostenCtrl.Bemessungsfaktor(n.Bemessung);
+            if (!faktor.HasValue) return false;
+            bool prozent = faktor.Value != 1.0;
 
             ws.Cell(r, BK_SPALTE_MENGE).Value = n.Menge.Value;
             ws.Cell(r, BK_SPALTE_MENGE).Style.NumberFormat.Format =
