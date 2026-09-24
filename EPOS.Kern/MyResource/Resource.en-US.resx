@@ -20172,6 +20172,30 @@ Do you want to allow this?</value>
   <data name="ND_VORBELEGEN_FRAGE" xml:space="preserve">
     <value>{0} item(s) already carry a service life. Should these be overwritten from the depreciation table as well?</value>
   </data>
+  <data name="ND_SAETZE_VORBELEGEN_BTN" xml:space="preserve">
+    <value>Preset rates…</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_STATUS" xml:space="preserve">
+    <value>{0} rate(s) (repair, maintenance) preset from the service life table.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_KEINE" xml:space="preserve">
+    <value>There is nothing to preset: every item “Instandhaltung …” or “Wartung …” measured as “% of investment” carries a rate, or the service life table has none for this technology.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_FRAGE" xml:space="preserve">
+    <value>{0} item(s) already carry a different rate. Should these be overwritten from the service life table as well?</value>
+  </data>
+  <data name="ND_SATZ_HERLEITUNG" xml:space="preserve">
+    <value>{0} % · rate from the service life table: {1} · {2} ({3})</value>
+  </data>
+  <data name="ND_SATZ_HERKUNFT" xml:space="preserve">
+    <value>rate from the service life table</value>
+  </data>
+  <data name="ND_SATZART_INSTANDSETZUNG" xml:space="preserve">
+    <value>repair</value>
+  </data>
+  <data name="ND_SATZART_WARTUNG" xml:space="preserve">
+    <value>maintenance</value>
+  </data>
   <data name="ND_TAFEL_TITEL" xml:space="preserve">
     <value>Replacement and residual value</value>
   </data>

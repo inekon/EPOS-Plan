@@ -119,6 +119,10 @@ namespace WindowsFormsApplication1
                 ? DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI
                 : DbWerte.KOSTEN_GRUPPE_ALLGEMEIN;
 
+            // ETAPPE E10 (Stufe S3): der Lesestand der Nutzungsdauertabelle — höchstens
+            // EINMAL je Übernahme, und nur, wenn eine Position ihn braucht.
+            NutzungsdauerSatztafel satztafel = null;
+
             foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(vorlage.Id))
             {
                 if (nurPflicht && !p.IstPflicht) continue;   // H3: Auto-Anlage legt nur Pflicht an
@@ -169,7 +173,8 @@ namespace WindowsFormsApplication1
                         ? DbWerte.BEMESSUNG_BETRAG : p.Bemessung,
                     IstErloes = p.IstErloes,
                     Menge = null,
-                    Einheitpreis = absolut ? (double?)null : p.Satz,
+                    Einheitpreis = absolut ? (double?)null
+                                           : SatzOderTabelle(vorlage, p, ref satztafel),
                 };
                 if (!KostenPositionCtrl.SetzeBetragMitZusatz(id, startBetrag, zusatz))
                 {
@@ -207,9 +212,13 @@ namespace WindowsFormsApplication1
         /// <para>Aufgerufen aus <c>WizardCtrl.Add_WP_Waermeerzeuger</c> NACH
         /// <c>ZuordnungReparieren</c>/<c>AnkerNachziehen</c>: Erst dann hängen die
         /// Bestandspositionen wieder an den neuen Anlagen-Ids des
-        /// Del+Add-Speicherwegs, und der Check erkennt sie. ERGEBNISNEUTRAL:
-        /// Vorlagen tragen keine Sätze (KL-Regel „Struktur, nicht Preise") — jede
-        /// neue Zeile steht auf 0 €/a, bis der Anwender pflegt.</para>
+        /// Del+Add-Speicherwegs, und der Check erkennt sie. Vorlagen tragen keine Sätze
+        /// (KL-Regel „Struktur, nicht Preise") — eine neue Zeile steht auf 0 €/a, bis der
+        /// Anwender pflegt. <b>Ausnahme seit Etappe E10 (Stufe S3):</b> Eine
+        /// Pflichtposition „Instandhaltung …" mit „% der Investition" bekommt den Satz der
+        /// Nutzungsdauertabelle ihrer Technik (<see cref="SatzOderTabelle"/>), sofern die
+        /// Tabelle einen führt — derselbe Satz, den der Rechenweg einer leeren Zeile
+        /// ohnehin ansetzte.</para>
         ///
         /// <para>Referenzanlagen (ID_Type 5–9) bekommen bewusst KEINE Positionen —
         /// die Kostenvorlagen gehören zu den sieben Projekt-Komponenten (Ä7).</para>
@@ -551,6 +560,26 @@ namespace WindowsFormsApplication1
             if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
                 KostenProjektPositionenCtrl.NutzungsdauerVorbelegen(
                     positionsId, komponentenId, nutzungsdauerId);
+        }
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3, Empfehlung E10‑Q1 (a)): der Satz, mit dem eine Position in
+        /// die FRISCHE Projektzeile geht — der der Vorlage, sonst bei einer
+        /// Betriebsposition „Instandhaltung …"/„Wartung …" mit „% der Investition" der Satz
+        /// der Nutzungsdauertabelle für ihre Technik
+        /// (<see cref="NutzungsdauerSatzCtrl"/>). Ohne Satz dort bleibt die Zeile leer —
+        /// es wird nichts erfunden. Nichts Gespeichertes wird angefasst: Geschrieben wird
+        /// nur in die Zeile, die die Übernahme gerade angelegt hat.
+        /// </summary>
+        private static double? SatzOderTabelle(KostenVorlageKopf vorlage, KostenVorlagenPosition p,
+                                               ref NutzungsdauerSatztafel tafel)
+        {
+            if (p.Satz.HasValue) return p.Satz;
+            if (vorlage.KategorieId != DbWerte.KOSTEN_KATEGORIE_BETRIEB) return null;
+            if (!NutzungsdauerSatzCtrl.Satzfaehig(p.Bemessung, p.Bezeichnung)) return null;
+
+            if (tafel == null) tafel = NutzungsdauerSatzCtrl.Tafel();
+            return tafel.Vorgabe(vorlage.KomponentenId, p.Bezeichnung).Satz;
         }
 
         /// <summary>Feldwert 1:1 als typisierter Parameter (NULL bleibt NULL).</summary>

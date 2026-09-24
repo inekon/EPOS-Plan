@@ -20179,6 +20179,30 @@ Möchten Sie das zulassen?</value>
   <data name="ND_VORBELEGEN_FRAGE" xml:space="preserve">
     <value>{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese aus der AfA-Tabelle überschrieben werden?</value>
   </data>
+  <data name="ND_SAETZE_VORBELEGEN_BTN" xml:space="preserve">
+    <value>Sätze vorbelegen…</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_STATUS" xml:space="preserve">
+    <value>{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_KEINE" xml:space="preserve">
+    <value>Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt für diese Technik keinen.</value>
+  </data>
+  <data name="ND_SAETZE_VORBELEGEN_FRAGE" xml:space="preserve">
+    <value>{0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der Nutzungsdauertabelle überschrieben werden?</value>
+  </data>
+  <data name="ND_SATZ_HERLEITUNG" xml:space="preserve">
+    <value>{0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3})</value>
+  </data>
+  <data name="ND_SATZ_HERKUNFT" xml:space="preserve">
+    <value>Satz aus Nutzungsdauertabelle</value>
+  </data>
+  <data name="ND_SATZART_INSTANDSETZUNG" xml:space="preserve">
+    <value>Instandsetzung</value>
+  </data>
+  <data name="ND_SATZART_WARTUNG" xml:space="preserve">
+    <value>Wartung</value>
+  </data>
   <data name="ND_TAFEL_TITEL" xml:space="preserve">
     <value>Ersatz und Restwert</value>
   </data>

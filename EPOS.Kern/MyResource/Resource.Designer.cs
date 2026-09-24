@@ -47394,6 +47394,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sätze vorbelegen… ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_BTN {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der Nutzungsdauertabelle überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt für diese Technik keinen. ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_KEINE {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt. ähnelt.
+        /// </summary>
+        public static string ND_SAETZE_VORBELEGEN_STATUS {
+            get {
+                return ResourceManager.GetString("ND_SAETZE_VORBELEGEN_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung ähnelt.
+        /// </summary>
+        public static string ND_SATZART_INSTANDSETZUNG {
+            get {
+                return ResourceManager.GetString("ND_SATZART_INSTANDSETZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wartung ähnelt.
+        /// </summary>
+        public static string ND_SATZART_WARTUNG {
+            get {
+                return ResourceManager.GetString("ND_SATZART_WARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz aus Nutzungsdauertabelle ähnelt.
+        /// </summary>
+        public static string ND_SATZ_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ND_SATZ_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3}) ähnelt.
+        /// </summary>
+        public static string ND_SATZ_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("ND_SATZ_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die AfA steuerlich [a] ähnelt.
         /// </summary>
         public static string ND_SP_AFA {

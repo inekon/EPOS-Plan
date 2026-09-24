@@ -244,6 +244,17 @@ namespace WindowsFormsApplication1
                 ["VorbelegenFrage"] = T("ND_VORBELEGEN_FRAGE",
                     "{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese "
                     + "aus der AfA-Tabelle überschrieben werden?"),
+                // ETAPPE E10 (Stufe S3): derselbe Knopf auf der Betriebsseite — die Sätze.
+                ["SaetzeVorbelegenText"] = T("ND_SAETZE_VORBELEGEN_BTN", "Sätze vorbelegen…"),
+                ["SaetzeVorbelegenStatus"] = T("ND_SAETZE_VORBELEGEN_STATUS",
+                    "{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt."),
+                ["SaetzeVorbelegenKeine"] = T("ND_SAETZE_VORBELEGEN_KEINE",
+                    "Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ "
+                    + "mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt "
+                    + "für diese Technik keinen."),
+                ["SaetzeVorbelegenFrage"] = T("ND_SAETZE_VORBELEGEN_FRAGE",
+                    "{0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der "
+                    + "Nutzungsdauertabelle überschrieben werden?"),
                 ["HinweisEndenergie"] = T("KDLG_HINWEIS_ENDENERGIE",
                     "Diese Mengen sind die Bezugsgrößen der Bemessungen "
                     + "„% des Endenergiebedarfs\" und „% der Endenergiekosten\"."),
@@ -525,6 +536,9 @@ namespace WindowsFormsApplication1
             stand.ErsatzRestwertHinweis = "";
             stand.SpalteRestwert = "";
             stand.NutzungsdauerVorbelegbar = _invest && stand.PositionNeuMoeglich;
+            // ETAPPE E10 (Stufe S3): Auf der Betriebsseite belegt derselbe Knopf die Sätze
+            // „Instandhaltung …"/„Wartung …" aus der Nutzungsdauertabelle vor.
+            stand.SaetzeVorbelegbar = !_invest && stand.PositionNeuMoeglich;
             if (!_invest || !ProjektModus) return;
 
             WirtschaftlichkeitParameter p = Parameter();
@@ -603,7 +617,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private NutzungsdauerVorbelegung NutzungsdauerVorbelegen(bool ueberschreiben)
         {
-            if (!_invest) return new NutzungsdauerVorbelegung(0, 0);
+            if (!_invest) return SaetzeVorbelegen(ueberschreiben);
 
             int gefuellt = 0, belegt = 0;
             foreach (KostenPositionZeile z in _zeilen)
@@ -625,6 +639,52 @@ namespace WindowsFormsApplication1
                 gefuellt++;
             }
             return new NutzungsdauerVorbelegung(gefuellt, belegt);
+        }
+
+        /// <summary>
+        /// ETAPPE E10 (Stufe S3, Empfehlung E10‑Q1 (a)): „Sätze vorbelegen" auf der
+        /// BETRIEBSSEITE — dieselbe Regel wie oben, für die Sätze.
+        ///
+        /// <para>Sie füllt die LEEREN Satzfelder der Positionen „Instandhaltung …"/
+        /// „Wartung …" mit „% der Investition" aus der Nutzungsdauertabelle
+        /// (<see cref="NutzungsdauerSatzCtrl"/>, derselbe Satz, den der Rechenweg einer
+        /// leeren Zeile ansetzt) und meldet, wie viele Positionen einen ANDEREN Satz tragen —
+        /// die bleiben stehen, bis der Anwender das Überschreiben bestätigt. Ein Satz 0 gilt
+        /// als gepflegt. Geschrieben wird erst mit „Speichern".</para>
+        /// </summary>
+        private NutzungsdauerVorbelegung SaetzeVorbelegen(bool ueberschreiben)
+        {
+            int gefuellt = 0, belegt = 0;
+            NutzungsdauerSatztafel tafel = Satztafel();
+            foreach (KostenPositionZeile z in _zeilen)
+            {
+                Bindung b;
+                if (!z.Schreibbar || !_bindungen.TryGetValue(z, out b)) continue;
+                KostenVorlagenPosition p = b.Position;
+                if (!NutzungsdauerSatzCtrl.Satzfaehig(p.Bemessung, p.Bezeichnung)) continue;
+
+                BetriebssatzVorgabe v = tafel.Vorgabe(KomponentenId, p.Bezeichnung);
+                if (!v.Satz.HasValue) continue;
+
+                bool leer = !z.Satz.HasValue;
+                if (!leer && Math.Abs(z.Satz.Value - v.Satz.Value) < 1e-9) continue;
+
+                if (!leer && !ueberschreiben) { belegt++; continue; }
+
+                z.Satz = v.Satz;
+                Nachziehen(z);
+                gefuellt++;
+            }
+            return new NutzungsdauerVorbelegung(gefuellt, belegt);
+        }
+
+        /// <summary>ETAPPE E10: Der Lesestand der Nutzungsdauertabelle — einmal je
+        /// Rasteraufbau gelesen, nicht je Zeile und je Tastendruck.</summary>
+        private NutzungsdauerSatztafel _satztafel;
+
+        private NutzungsdauerSatztafel Satztafel()
+        {
+            return _satztafel ?? (_satztafel = NutzungsdauerSatzCtrl.Tafel());
         }
 
         /// <summary>
@@ -659,6 +719,7 @@ namespace WindowsFormsApplication1
         /// <summary>Stammkontext: Varianten laden und das Raster daraus bauen.</summary>
         private void VorlagenRasterAufbauen(KostenKomponenteStand stand, int? varianteId)
         {
+            _satztafel = null;      // E10: je Aufbau frisch gelesen
             _varianten = KostenVorlagenCtrl.Vorlagen(KomponentenId, KategorieId);
 
             var eintraege = new List<ValueTuple<int, string>>();
@@ -693,6 +754,7 @@ namespace WindowsFormsApplication1
         /// <summary>Projektzweig (KD6a) — wortgleich aus <c>ProjektRasterAufbauen</c>.</summary>
         private void ProjektRasterAufbauen(KostenKomponenteStand stand)
         {
+            _satztafel = null;      // E10: je Aufbau frisch gelesen
             stand.Varianten = Array.Empty<ValueTuple<int, string>>();
             stand.VarianteId = null;
             stand.PositionNeuMoeglich = KomponentenId > 0;
@@ -782,6 +844,16 @@ namespace WindowsFormsApplication1
             z.NutzungsdauerHerleitung = _invest && p != null
                 ? NutzungsdauerCtrl.Herleitungszeile(KomponentenId, p.NutzungsdauerId,
                                                      p.Nutzungsdauer)
+                : "";
+
+            // ETAPPE E10 (Stufe S3): WOHER der Satz einer Betriebsposition
+            // „Instandhaltung …"/„Wartung …" mit „% der Investition" kommt — „2 % · Satz aus
+            // Nutzungsdauertabelle: Heizkessel · Wärmeerzeuger". Den Satz baut der Kern
+            // (NutzungsdauerSatzCtrl); die Investitionsseite kennt keinen solchen Satz.
+            z.SatzHerleitung = !_invest && p != null &&
+                               NutzungsdauerSatzCtrl.Satzfaehig(p.Bemessung, p.Bezeichnung)
+                ? NutzungsdauerSatzCtrl.Herleitungszeile(
+                      Satztafel().Vorgabe(KomponentenId, p.Bezeichnung), p.Satz)
                 : "";
         }
 
@@ -939,8 +1011,20 @@ namespace WindowsFormsApplication1
             // Kaskade beim Laden ausgewiesen hat.
             if (info != null && info.Absolut) p.BetragNetto = p.Satz;
             else if (ProjektModus && b.Projektzeile != null)
+            {
+                // ETAPPE E10 (Stufe S3): Ein LEERES Satzfeld einer Position „Instandhaltung …"/
+                // „Wartung …" mit „% der Investition" rechnet im Kern mit dem Satz der
+                // Nutzungsdauertabelle — der Dialog zeigt denselben Betrag, über dieselbe Regel
+                // (NutzungsdauerSatzCtrl.WirksamerSatz; erfasster Betrag 0, wie ihn der
+                // Speicherweg für eine bemessene Zeile schreibt).
+                NutzungsdauerSatztafel tafel = Satztafel();
+                BetriebssatzVorgabe herkunft;
+                double? satz = _invest ? p.Satz
+                    : NutzungsdauerSatzCtrl.WirksamerSatz(p.Bemessung, p.Satz, 0.0, KomponentenId,
+                                                          p.Bezeichnung, ref tafel, out herkunft);
                 p.BetragNetto = BetriebskostenCtrl.Betrag(
-                    p.Bemessung, 0, b.Projektzeile.Basis, p.Satz, p.IstErloes);
+                    p.Bemessung, 0, b.Projektzeile.Basis, satz, p.IstErloes);
+            }
             else p.BetragNetto = null;
 
             KopplungAnwenden(z, p, info, b.Projektzeile);

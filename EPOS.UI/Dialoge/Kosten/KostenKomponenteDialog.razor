@@ -154,6 +154,7 @@
                                Herleitung="@zeile.Herleitung"
                                EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
                                EmpfehlungZeile="@zeile.EmpfehlungZeile"
+                               SatzHerleitung="@zeile.SatzHerleitung"
                                VorlagenHinweis="@zeile.VorlagenHinweis"
                                VorlagenUebernehmenText="@VorlageUebernehmenText"
                                VorlagenUebernehmenKurztext="@VorlageUebernehmenKurztext"
@@ -313,10 +314,15 @@
            Bedienung, die es dort nicht gibt. Ein gesperrtes Bedienelement bleibt nur
            stehen, wo es seinen Grund erklaeren kann; hier ist der Grund der
            Kontext, und der steht im Reiter. *@
-        @if (NutzungsdauerVorbelegen is not null && _stand.NutzungsdauerVorbelegbar)
+        @* ETAPPE E10 (Stufe S3): Auf der BETRIEBSSEITE wirkt derselbe Knopf jetzt auch -
+           als "Saetze vorbelegen...": Er fuellt die leeren Saetze der Positionen
+           "Instandhaltung ..."/"Wartung ..." mit "% der Investition" aus der
+           Nutzungsdauertabelle. Dieselbe Bedienung, dieselbe Rueckfrage, eigene Texte. *@
+        @if (NutzungsdauerVorbelegen is not null &&
+             (_stand.NutzungsdauerVorbelegbar || _stand.SaetzeVorbelegbar))
         {
             <button type="button" class="epos-knopf"
-                    @onclick="VorbelegenAngefordert">@VorbelegenText</button>
+                    @onclick="VorbelegenAngefordert">@(_stand.SaetzeVorbelegbar ? SaetzeVorbelegenText : VorbelegenText)</button>
         }
     </div>
 
@@ -652,6 +658,26 @@
     [Parameter] public string VorbelegenFrage { get; set; }
         = "{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese aus "
         + "der AfA-Tabelle überschrieben werden?";
+
+    /// <summary>ETAPPE E10: Beschriftung desselben Knopfes auf der Betriebsseite.</summary>
+    [Parameter] public string SaetzeVorbelegenText { get; set; } = "Sätze vorbelegen…";
+
+    /// <summary>ETAPPE E10: Bericht in der Statuszeile nach dem Vorbelegen der Sätze
+    /// ({0} = Anzahl).</summary>
+    [Parameter] public string SaetzeVorbelegenStatus { get; set; }
+        = "{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt.";
+
+    /// <summary>ETAPPE E10: Meldung, wenn es keinen Satz vorzubelegen gibt.</summary>
+    [Parameter] public string SaetzeVorbelegenKeine { get; set; }
+        = "Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ "
+        + "mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt "
+        + "für diese Technik keinen.";
+
+    /// <summary>ETAPPE E10: Die Rückfrage vor dem Überschreiben gepflegter Sätze
+    /// ({0} = Anzahl).</summary>
+    [Parameter] public string SaetzeVorbelegenFrage { get; set; }
+        = "{0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der "
+        + "Nutzungsdauertabelle überschrieben werden?";
 
     /// <summary>U31: Wozu die Gruppe da ist — die Bemessungen, die an ihr hängen.</summary>
     [Parameter] public string HinweisEndenergie { get; set; }
@@ -1136,29 +1162,36 @@
     {
         if (NutzungsdauerVorbelegen is null) return;
 
+        // ETAPPE E10 (Stufe S3): Auf der Betriebsseite belegt derselbe Weg die SÄTZE vor —
+        // mit eigenen Texten; Ablauf und Rückfrage bleiben dieselben.
+        bool saetze = _stand.SaetzeVorbelegbar;
+        string status = saetze ? SaetzeVorbelegenStatus : VorbelegenStatus;
+        string keine = saetze ? SaetzeVorbelegenKeine : VorbelegenKeine;
+        string frage = saetze ? SaetzeVorbelegenFrage : VorbelegenFrage;
+
         NutzungsdauerVorbelegung ergebnis = NutzungsdauerVorbelegen(false);
         SummenNachziehen();
 
         if (ergebnis.Gefuellt == 0 && ergebnis.Belegt == 0)
         {
-            Melden(VorbelegenKeine, WarnStufe.Hinweis);
+            Melden(keine, WarnStufe.Hinweis);
             return;
         }
 
         Melden("");
         if (ergebnis.Gefuellt > 0)
-            StatusSetzen(string.Format(VorbelegenStatus, ergebnis.Gefuellt));
+            StatusSetzen(string.Format(status, ergebnis.Gefuellt));
 
         if (ergebnis.Belegt == 0) return;
 
-        _frage = string.Format(VorbelegenFrage, ergebnis.Belegt);
+        _frage = string.Format(frage, ergebnis.Belegt);
         _frageJa = () =>
         {
             if (NutzungsdauerVorbelegen is not null)
             {
                 NutzungsdauerVorbelegung zweiter = NutzungsdauerVorbelegen(true);
                 SummenNachziehen();
-                StatusSetzen(string.Format(VorbelegenStatus,
+                StatusSetzen(string.Format(status,
                                            ergebnis.Gefuellt + zweiter.Gefuellt));
             }
             return Task.CompletedTask;
