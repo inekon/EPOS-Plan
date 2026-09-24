@@ -6,7 +6,7 @@ Kühlung KU1; 111–113 = die Schritte E, F, G, #446; 114 = Kühlung KU2; 115 = 
 KU2 Welle 3, E34), **116–118 = die Schritte B, C, D, gebaut #461 (E9a); E9b (#462) ohne Schritt; 120 = die Sätze der
 Nutzungsdauertabelle, gebaut #463 (E10)** · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
-mit den Nebenkonzepten [Nutzungsdauer/AfA](../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md),
+mit den Nebenkonzepten [Nutzungsdauer/AfA](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (seit #474 unter `ueberholt/`),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
 [Grundlagen KWKG/Energiesteuer/Stromsteuer](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md), gemessen am
 Codestand nach dem Zusammenführen vom Abend (`SchemaStand.Zielversion = 96`, nächster freier Schemaschritt

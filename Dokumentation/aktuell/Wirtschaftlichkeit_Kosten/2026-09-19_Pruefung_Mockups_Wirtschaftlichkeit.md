@@ -284,7 +284,7 @@ Konzept § 2.13 und Statuseintrag „Nach #344". Kein Test bricht (`02/§4.1`). 
 | [`Rechenweg/02_Betriebskosten_BHKW.md`](Rechenweg/02_Betriebskosten_BHKW.md), [`05_Verguetungen_BHKW.md`](Rechenweg/05_Verguetungen_BHKW.md) | Brennwertmenge 4.797,0 MWh bzw. Faktor „11,6 ÷ 10,5"; Beträge § 53a/§ 53/§ 54 ungerundet | `01/B4` | gering |
 | [`Rechenweg/04_Energiekosten.md`](Rechenweg/04_Energiekosten.md) | BEHG 56.701,38 € oder Rundung nennen; 181,4 g/kWh als Katalogwert | `01/B7, B10` | gering |
 | [`Rechenweg/07_Erloesrubrik.md`](Rechenweg/07_Erloesrubrik.md) | Leistungsanteil: Menge, Satz und Rechnung (nach Q4) | `01/B2` | mittel |
-| [`../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) § 2 | „Zielversion 74" → 94 oder streichen | `02/b‑5` | mittel |
+| [`../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) § 2 | „Zielversion 74" → 94 oder streichen | `02/b‑5` | mittel |
 | [`../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) § 10.3 | „Zielstand dieser Etappe" | `02/b‑6` | gering |
 | [`../Konzept_Katalogfilter_EPOS-Plan.md`](../Konzept_Katalogfilter_EPOS-Plan.md) Z. 7–12 | Kopfblock: S1–S3 umgesetzt (wie Kap. 9) | `02/f‑6, j‑2` | hoch |
 | [`../Konzept_Wechselrichter_EPOS-Plan.md`](../Konzept_Wechselrichter_EPOS-Plan.md) Z. 26–27 | „S2 und S3 sind es nicht" berichtigen (Kap. 8: umgesetzt) | `02/f‑7` | hoch |

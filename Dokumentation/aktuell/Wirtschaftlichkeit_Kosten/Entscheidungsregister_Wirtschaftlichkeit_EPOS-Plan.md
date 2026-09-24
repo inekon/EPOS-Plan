@@ -262,7 +262,7 @@ bis VV‑Q7: Empfehlung")".
 
 ## R‑ND — ND‑Q1…Q8: Nutzungsdauer und AfA
 
-Quelle: [Nutzungsdauer-Konzept](../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) § 4 („Entscheid
+Quelle: [Nutzungsdauer-Konzept](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) § 4 („Entscheid
 14.09.2026: alle acht Fragen nach Empfehlung"). Die Spalte *Frage* nennt die Optionen der Quelle mit.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |

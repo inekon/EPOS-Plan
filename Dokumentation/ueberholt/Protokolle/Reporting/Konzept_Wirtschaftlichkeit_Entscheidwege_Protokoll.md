@@ -608,7 +608,7 @@ des § 6.3 steht in § 3.4.
 ### 3.10 Nutzungsdauern S2 (#357)
 
 Statuszeile #357; die Regeln stehen im
-[Nutzungsdauer-Konzept](../../../aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md).
+[Nutzungsdauer-Konzept](../../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md).
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|

@@ -1,14 +1,22 @@
 # Konzept: Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle
 
+> **Überholt seit #474, S1–S3 gebaut (#269, #357, #463), A8-Halbsatz #474.** Dieses Konzept liegt als Geschichte
+> unter `ueberholt/` (Regel der Statusdatei, Nach #264: „Konzept wandert nach `ueberholt/`, sobald S3 abgeschlossen
+> ist"). Was gilt, steht im
+> [Konzept Wirtschaftlichkeit](../aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
+> (§ 2.13 (3), § 3.4, § 6.5) und im Register (R‑ND, R‑A A8, R‑E10); der Text unten ist der Stand vom 24.09.2026 vor der
+> Verschiebung, nachgezogen allein um diesen Kopf, die Verweise und die Zeilen zu E10 und A8.
+
 Stand 24.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1, S2 und
 S3 sind umgesetzt** — S3 (Instandsetzung, Wartung, Gerätekataloge, dazu Speicherflotte und Kennzeichnung der
 Gerätespalten) mit **#463**, der Etappe **E10** des Etappenplans E0–E12 im Analysepapier
-[`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
+[`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](../aktuell/Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 Den eigenen Entscheid zu S3 vertreten die Fragen E10‑Q1 bis E10‑Q7 im
-[Entscheidungsregister](Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (R‑E10): gebaut
-ist jeweils die Empfehlung, sechs sind beim Anwender offen. Codestand `94521f2e`, `SchemaStand.Zielversion` = **120**
-(Schritt 120 sät die Instandsetzungssätze der Tabelle). Dieses Konzept wandert nach `ueberholt/`, sobald die Fragen
-aus E10 entschieden sind.
+[Entscheidungsregister](../aktuell/Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (R‑E10): gebaut
+ist jeweils die Empfehlung, **entschieden am 24.09.2026 nach Empfehlung** (E10‑Q5 erledigt). Der Halbsatz aus A8 — eine
+neue Speichervariante nimmt die Nutzungsdauer der Standardzeile „Stromspeicher · Batterie" — ist mit **#474** (E13)
+gebaut, nur als Vorgabe neuer Einträge. Codestand `4b50b77b`, `SchemaStand.Zielversion` = **123** (Schritt 120 sät die
+Instandsetzungssätze der Tabelle; 121 bis 123 gehören anderen Feldern).
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
 soll die Nutzungsdauer nach Technik/Kategorie standardmäßig vorbelegt werden können. Grundlage ist eine
@@ -275,7 +283,10 @@ jetzt** abgekündigt, sondern nur **gekennzeichnet**; die Speichervariante sollt
 20/21 lesen. Ein Schemaschritt dafür (vormals „104") bekommt seine Nummer erst bei der Umsetzung. **Umgesetzt mit
 S3 (#463):** A7 — die Speicherflotte hängt an der Tabelle (Abschnitt 3), ohne Neueinfrieren, weil der Referenzlauf
 keine Flottenwirtschaftlichkeit führt und byte-gleich blieb; A8 — die Spalten von BHKW und Heizkessel sind als
-„Nutzungsdauer (Gerätedaten)" gekennzeichnet, kein Schemaschritt; offen bleibt der Halbsatz zur Speichervariante.
+„Nutzungsdauer (Gerätedaten)" gekennzeichnet, kein Schemaschritt. **Der Halbsatz zur Speichervariante ist erledigt
+mit #474** (E13/4): Eine neu angelegte Speichervariante — eine neue Speicheranlage im Anlagendialog oder „Speichervariante
+anlegen" des Hilfe-Assistenten — nimmt die Nutzungsdauer der Standardzeile „Stromspeicher · Batterie", ohne Tabelle,
+Zeile oder brauchbaren Wert (< 1 a) 20 a; bestehende Varianten und der Rückfall des Rechenwegs (20) bleiben.
 Die Entkopplung von Ersatz und Restwert ist mit **A6** entschieden (Kennzeichen je **Position**,
 nullbar, NULL = wie bisher) und **umgesetzt #446** (E7c2, Schemaschritt 111): `ErsatzFuehren` und
 `RestwertAnsetzen` an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, gepflegt im Zeileneditor
@@ -312,5 +323,5 @@ gerechnet wird mit dem Satz der Position.
 |---|---|---|
 | A (Stufe S1) — **umgesetzt** | Schema-Schritt mit `Tab_Nutzungsdauer`, Saat nach Tabelle 2.6, Spalten `NutzungsdauerID` in Vorlagen- und Projektposition mit Saat-Zuordnung, `NutzungsdauerCtrl`, Vorbelegung beim Anlegen und Übernehmen im Kern, Administrationsdialog mit plattformfreier Hülle, Menüpunkt, Ressourcen, Testdatenbank, Auslieferungsvorlage | nächster freier Schema-Schritt |
 | B (Stufe S2) — **umgesetzt** | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Herleitung je Zeile, Tafel „Ersatz und Restwert" mit Hinweis; Wiki „Programm Dokumentation/Kosten". Die Hülle der Kostenverwaltung liegt seit **E3 (#431)** plattformfrei in `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs` mit Fenster-Adapter `KostenKomponenteFenster` | nach A |
-| S3 (Etappe E10) — **umgesetzt #463** | Instandsetzung/Wartung (Satzspalten im Dialog, Schemaschritt 120, Vorbelegung über Kostenvorlage und „Sätze vorbelegen…", Herkunft am Satz), Gerätekataloge (neue Kesseleinträge in %/a, Kennzeichnung A8), Speicherflotte (A7) | eigener Entscheid — vertreten durch E10‑Q1 bis E10‑Q7 (R‑E10; gebaut ist jeweils die Empfehlung, sechs offen) |
+| S3 (Etappe E10) — **umgesetzt #463** | Instandsetzung/Wartung (Satzspalten im Dialog, Schemaschritt 120, Vorbelegung über Kostenvorlage und „Sätze vorbelegen…", Herkunft am Satz), Gerätekataloge (neue Kesseleinträge in %/a, Kennzeichnung A8), Speicherflotte (A7) | eigener Entscheid — vertreten durch E10‑Q1 bis E10‑Q7 (R‑E10; gebaut ist jeweils die Empfehlung, entschieden 24.09.2026 nach Empfehlung); der Halbsatz aus A8 zur Speichervariante mit #474 |
 
