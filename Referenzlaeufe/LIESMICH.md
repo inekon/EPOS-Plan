@@ -297,7 +297,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `769143e4…`, Nachträge 114 bis 120 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
+**113**, LFS-SHA-256 `769143e4…`, Nachträge 114 bis 121 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
 kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
@@ -484,6 +484,27 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Referenz bewegt sich nicht (dritte Einfrierregel, Absatz „Anschluss an die Nutzungsdauertabelle").
 > Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
 > byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
+
+> **Nachtrag #468: Schemastand 121 (Katalogverweis des Projektgebäudes), die Basis bleibt.**
+> Migrationsschritt **121** (`SCHRITT_121_GEBAEUDE_KATALOGVERWEIS`, Konzept Administrationsdialoge
+> 7.1 (a), Quelle `GebaeudeKatalogverweis`): `Tab_Gebaeude.ID_Gebaeude_Stamm` (`INTEGER`, nullbar,
+> `REFERENCES Tab_Gebaeude_STAMM(ID) ON DELETE SET NULL`) samt Index `Tab_Gebaeude_ID_Gebaeude_Stamm`,
+> einmalig über den eindeutigen Gebäudenamen nachgetragen — alle **26** Projektgebäude der Testdatenbank
+> tragen danach den Verweis auf den Katalogsatz ihres Namens, keines bleibt ohne. Dazu die Reparatur
+> nach Schadensbild im Katalog (`GebaeudeSonstigeFlaeche`): Wo `Sonstige_Flaechen` > 0 bei U-Wert
+> „Sonstiges" 0 steht, wird die Fläche 0 — U · A war 0 und bleibt 0. Getroffen sind die vier
+> Katalogsätze 1 `AltenH-95-EnEV2016` und 6 `Pflegeheim-122-EnEV2016` (je 4,0 m²), 100
+> `SpH-Umkl-287-EnEV2016` und 103 `SpH-Umkl-NE` (je 2,2 m²); **keiner ist einem Projekt zugeordnet**.
+> Der fünfte regelwidrige Satz, 79 `Krankenhaus_92-EnEV2016` (U-Wert Fenster 0,09 bei 11 646 m²
+> Fensterfläche), ist nicht nach Schadensbild herzuleiten und bleibt unverändert. Mit
+> `Werkzeuge/Testdatenbankschema` auf der Fassung 120 nachgezogen; ein zweiter Lauf findet nichts offen.
+> Zellvergleich aller 132 Tabellen gegen die Fassung 120: `SchemaVersion` 120 → 121, die neue Spalte
+> (26/26 gesetzt), der neue Index und die vier Zellen `Sonstige_Flaechen`, sonst nichts; 14 Sichten
+> unverändert. `integrity_check` ok, `foreign_key_check` leer, 131 von 131 Fachtabellen STRICT, Größe
+> 67 792 896 Byte (LFS-SHA-256 `00fbbb8b…`). **Keine Einfrierregel ist berührt:** Der Verweis trägt keinen
+> Rechenwert und kein Rechenweg liest ihn; die geänderten Katalogflächen nutzt kein Referenzprojekt.
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
+> byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und

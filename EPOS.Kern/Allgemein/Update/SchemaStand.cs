@@ -470,11 +470,20 @@ namespace WindowsFormsApplication1
         /// gesetzt wird nur, was leer ist. <b>Ergebnisneutral:</b> Ein Satz der Tabelle rechnet
         /// erst, wenn die Vorbelegung ihn in eine Position schreibt; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit dem KATALOGVERWEIS DES PROJEKTGEBÄUDES (Schritt 121, Welle #468; Konzept
+        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf <b>121</b>:
+        /// <c>Tab_Gebaeude.ID_Gebaeude_Stamm</c> (nullbar, Verweis auf
+        /// <c>Tab_Gebaeude_STAMM</c> mit <c>ON DELETE SET NULL</c>) samt Index, einmalig über
+        /// den eindeutigen Namen nachgetragen; dazu die Reparatur der Katalogsätze, deren
+        /// „Sonstige Fläche" keinen U-Wert trägt (Fläche → 0, <c>H_T</c> unverändert) — beides
+        /// bei <see cref="GebaeudeKatalogverweis"/>. <b>Ergebnisneutral:</b> Kein Rechenweg liest
+        /// den Verweis, und die reparierten Sätze nutzt kein Referenzprojekt; der Referenzlauf
+        /// bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 120;
+        public const int Zielversion = 121;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
