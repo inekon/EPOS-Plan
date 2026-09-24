@@ -4736,6 +4736,135 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     margin-top: 4px;
 }
 
+/* ==================================================================== */
+/* GEBAEUDEIMPORT (Stufe G4c, Welle 2) - der Zuordnungsdialog            */
+/* GebaeudeImportDialog: Kopf als Beschriftung/Wert-Raster, Raumliste    */
+/* und Zeilenliste als bearbeitbare Raster in je einem Rollrahmen, die   */
+/* Markierung der Zeilen (gelb/rot) und die Herkunft je Feld.            */
+/*                                                                      */
+/* Die Felder der Zeilentabellen tragen ihre Beschriftung ("Nutzflaeche",*/
+/* "Uebernehmen: Nutzflaeche") fuer Sprachausgabe und Pruefung; sichtbar */
+/* steht sie einmal im Tabellenkopf - dieselbe Regel wie beim Konstruktor*/
+/* des Zapfprofils, samt positioniertem Vorfahren. Ein Zahlenfeld ist so */
+/* breit wie seine Zahl, Beleg, Grund und Meldungstext brechen um.       */
+/* Farben nur aus den Tokens: Warnflaeche und Ampelrot fuer die Zeilen,  */
+/* Quellblau und leiser Text fuer die Herkunft, die Stufenfarben fuer die*/
+/* Meldungen - alle ueber 4,5:1 auf ihrer Flaeche.                       */
+/* ==================================================================== */
+.epos-gebimport-kopf {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 2px 12px;
+    margin: 4px 0 8px;
+}
+
+.epos-gebimport-kopf dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-gebimport-kopf dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-gebimport-zeilen .epos-feld-text,
+.epos-gebimport-raeume .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.epos-gebimport-zeilen .epos-feld,
+.epos-gebimport-raeume .epos-feld {
+    position: relative;
+}
+
+.epos-gebimport-zeilen input.epos-eingabe {
+    flex: 0 0 auto;
+    width: 7em;
+    min-width: 0;
+}
+
+.epos-gebimport-zeilen td.epos-gebimport-beleg,
+.epos-gebimport-raeume td.epos-gebimport-grund,
+.epos-gebimport-meldungen td.epos-gebimport-meldungstext {
+    white-space: normal;
+    min-width: 14em;
+}
+
+.epos-gebimport-zeilen td.epos-gebimport-zahl,
+.epos-gebimport-zeilen th.epos-gebimport-zahl,
+.epos-gebimport-raeume td.epos-gebimport-zahl,
+.epos-gebimport-raeume th.epos-gebimport-zahl {
+    text-align: right;
+}
+
+.epos-gebimport-zeilen td.epos-gebimport-gruppe {
+    font-weight: 600;
+}
+
+/* Die Markierung: gelb = auffaellig, rot = Fehler (sperrt mit Haken). Neben der
+   Flaeche traegt die erste Zelle einen Randstreifen - im Kontrastmodus fallen die
+   Flaechen weg, dort bleibt der Streifen, gestrichelt fuer gelb und durchgezogen
+   fuer rot: zwei Zustaende, sichtbar verschieden. */
+.epos-gebimport-zeile--gelb > td {
+    background: var(--epos-warn-flaeche);
+}
+
+.epos-gebimport-zeile--gelb > td:first-child {
+    border-left: 4px dashed var(--epos-warn-rahmen);
+}
+
+.epos-gebimport-zeile--rot > td {
+    background: var(--epos-ampel-rot-flaeche);
+}
+
+.epos-gebimport-zeile--rot > td:first-child {
+    border-left: 4px solid var(--epos-stufe-fehler);
+}
+
+@media (forced-colors: active) {
+    .epos-gebimport-zeile--gelb > td:first-child { border-left: 4px dashed CanvasText; }
+    .epos-gebimport-zeile--rot > td:first-child { border-left: 4px solid CanvasText; }
+}
+
+/* Die Herkunft je Feld (Datenaustauschkonzept 2.2): aus der Datei im Quellblau,
+   Vorgabe und Katalog leise und kursiv, manuell fett, leer leise. Die Klasse ist
+   der sprachneutrale Herkunftsschluessel der Zeile. */
+.epos-gebimport-herkunft--gbxml,
+.epos-gebimport-herkunft--ifc {
+    color: var(--epos-quelle-text);
+}
+
+.epos-gebimport-herkunft--vorgabe,
+.epos-gebimport-herkunft--katalog {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-gebimport-herkunft--manuell {
+    font-weight: 600;
+}
+
+.epos-gebimport-herkunft--leer {
+    color: var(--epos-text-leise);
+}
+
+.epos-gebimport-raum--umgestellt td.epos-gebimport-grund {
+    font-weight: 600;
+}
+
+.epos-gebimport-meldung--fehler > td {
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-gebimport-meldung--warnung > td {
+    color: var(--epos-stufe-warnung);
+}
+
 /* ------------------------------------------------------------------ */
 /* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
 /*                                                                     */
@@ -11513,133 +11642,4 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-speicheropt-suchraum .epos-formularraster {
         grid-template-columns: minmax(0, 1fr);
     }
-}
-
-/* ==================================================================== */
-/* GEBAEUDEIMPORT (Stufe G4c, Welle 2) - der Zuordnungsdialog            */
-/* GebaeudeImportDialog: Kopf als Beschriftung/Wert-Raster, Raumliste    */
-/* und Zeilenliste als bearbeitbare Raster in je einem Rollrahmen, die   */
-/* Markierung der Zeilen (gelb/rot) und die Herkunft je Feld.            */
-/*                                                                      */
-/* Die Felder der Zeilentabellen tragen ihre Beschriftung ("Nutzflaeche",*/
-/* "Uebernehmen: Nutzflaeche") fuer Sprachausgabe und Pruefung; sichtbar */
-/* steht sie einmal im Tabellenkopf - dieselbe Regel wie beim Konstruktor*/
-/* des Zapfprofils, samt positioniertem Vorfahren. Ein Zahlenfeld ist so */
-/* breit wie seine Zahl, Beleg, Grund und Meldungstext brechen um.       */
-/* Farben nur aus den Tokens: Warnflaeche und Ampelrot fuer die Zeilen,  */
-/* Quellblau und leiser Text fuer die Herkunft, die Stufenfarben fuer die*/
-/* Meldungen - alle ueber 4,5:1 auf ihrer Flaeche.                       */
-/* ==================================================================== */
-.epos-gebimport-kopf {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    gap: 2px 12px;
-    margin: 4px 0 8px;
-}
-
-.epos-gebimport-kopf dt {
-    color: var(--epos-text-leise);
-}
-
-.epos-gebimport-kopf dd {
-    margin: 0;
-    overflow-wrap: anywhere;
-}
-
-.epos-gebimport-zeilen .epos-feld-text,
-.epos-gebimport-raeume .epos-feld-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-}
-
-.epos-gebimport-zeilen .epos-feld,
-.epos-gebimport-raeume .epos-feld {
-    position: relative;
-}
-
-.epos-gebimport-zeilen input.epos-eingabe {
-    flex: 0 0 auto;
-    width: 7em;
-    min-width: 0;
-}
-
-.epos-gebimport-zeilen td.epos-gebimport-beleg,
-.epos-gebimport-raeume td.epos-gebimport-grund,
-.epos-gebimport-meldungen td.epos-gebimport-meldungstext {
-    white-space: normal;
-    min-width: 14em;
-}
-
-.epos-gebimport-zeilen td.epos-gebimport-zahl,
-.epos-gebimport-zeilen th.epos-gebimport-zahl,
-.epos-gebimport-raeume td.epos-gebimport-zahl,
-.epos-gebimport-raeume th.epos-gebimport-zahl {
-    text-align: right;
-}
-
-.epos-gebimport-zeilen td.epos-gebimport-gruppe {
-    font-weight: 600;
-}
-
-/* Die Markierung: gelb = auffaellig, rot = Fehler (sperrt mit Haken). Neben der
-   Flaeche traegt die erste Zelle einen Randstreifen - im Kontrastmodus fallen die
-   Flaechen weg, dort bleibt der Streifen, gestrichelt fuer gelb und durchgezogen
-   fuer rot: zwei Zustaende, sichtbar verschieden. */
-.epos-gebimport-zeile--gelb > td {
-    background: var(--epos-warn-flaeche);
-}
-
-.epos-gebimport-zeile--gelb > td:first-child {
-    border-left: 4px dashed var(--epos-warn-rahmen);
-}
-
-.epos-gebimport-zeile--rot > td {
-    background: var(--epos-ampel-rot-flaeche);
-}
-
-.epos-gebimport-zeile--rot > td:first-child {
-    border-left: 4px solid var(--epos-stufe-fehler);
-}
-
-@media (forced-colors: active) {
-    .epos-gebimport-zeile--gelb > td:first-child { border-left: 4px dashed CanvasText; }
-    .epos-gebimport-zeile--rot > td:first-child { border-left: 4px solid CanvasText; }
-}
-
-/* Die Herkunft je Feld (Datenaustauschkonzept 2.2): aus der Datei im Quellblau,
-   Vorgabe und Katalog leise und kursiv, manuell fett, leer leise. Die Klasse ist
-   der sprachneutrale Herkunftsschluessel der Zeile. */
-.epos-gebimport-herkunft--gbxml,
-.epos-gebimport-herkunft--ifc {
-    color: var(--epos-quelle-text);
-}
-
-.epos-gebimport-herkunft--vorgabe,
-.epos-gebimport-herkunft--katalog {
-    color: var(--epos-text-leise);
-    font-style: italic;
-}
-
-.epos-gebimport-herkunft--manuell {
-    font-weight: 600;
-}
-
-.epos-gebimport-herkunft--leer {
-    color: var(--epos-text-leise);
-}
-
-.epos-gebimport-raum--umgestellt td.epos-gebimport-grund {
-    font-weight: 600;
-}
-
-.epos-gebimport-meldung--fehler > td {
-    color: var(--epos-stufe-fehler);
-}
-
-.epos-gebimport-meldung--warnung > td {
-    color: var(--epos-stufe-warnung);
 }

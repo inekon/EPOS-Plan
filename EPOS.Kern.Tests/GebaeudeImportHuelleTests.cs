@@ -165,7 +165,7 @@ namespace EPOS.Kern.Tests
         {
             (GebaeudeImportHuelle h, IReadOnlyDictionary<string, object> gaben, GebaeudeImportStand stand) = await Probenhaus();
 
-            Assert.Empty(Pruefen(gaben)(Ergebnis(stand)).Where(m => m.Stufe == WarnStufe.Fehler));
+            Assert.DoesNotContain(Pruefen(gaben)(Ergebnis(stand)), m => m.Stufe == WarnStufe.Fehler);
 
             // Raumhöhe von Hand geleert, U-Wert Dach von Hand gesetzt, Name leer.
             var zeilen = stand.Zeilen.Select(z => z.Zielfeld switch
