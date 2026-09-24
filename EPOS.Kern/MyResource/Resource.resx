@@ -26869,6 +26869,9 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
     <value>Die Einheit der zwei Wertfelder im Absolutmodus („€“ bei einer Kostenposition, sonst die Einheit des Preises oder Satzes). Nur Anzeige.</value>
   </data>
+  <data name="KI_DLG_CSE_NUR_KOSTEN" xml:space="preserve">
+    <value>Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr noch Zuschuss — sie pflegt nur den Best- und den Worst-Wert.</value>
+  </data>
   <data name="WIRT_ANN_DV_ENTGELT" xml:space="preserve">
     <value>DV-Entgelt</value>
   </data>

@@ -26862,6 +26862,9 @@ Do you want to allow this?</value>
   <data name="KI_DLG_CSE_EINHEIT_ERL" xml:space="preserve">
     <value>The unit of the two value fields in absolute mode (“€” for a cost item, otherwise the unit of the price or rate). Display only.</value>
   </data>
+  <data name="KI_DLG_CSE_NUR_KOSTEN" xml:space="preserve">
+    <value>In a scenario pair the form has no service life, start year or subsidy — it only maintains the best and the worst value.</value>
+  </data>
   <data name="WIRT_ANN_DV_ENTGELT" xml:space="preserve">
     <value>DM fee</value>
   </data>

@@ -160,7 +160,7 @@
                        Szenariopreise stehen an der Projektuebersteuerung. *@
                     @if (Stand.MitSzenario && SzenarioPflegen.HasDelegate)
                     {
-                        <div class="epos-leiste epos-szenarioleiste" role="group" aria-label="@TitelSzenario">
+                        <div class="epos-szenarioleiste" role="group" aria-label="@TitelSzenario">
                             <SzenarioKnopf Text="@LabelArbeitspreis" Gepflegt="@Stand.SzenarioArbeitGepflegt"
                                            Warnung="@(Stand.SzenarioArbeitGepflegt && Stand.SzenarioArbeitOhneErwartet)"
                                            Kurztext="@SzenarioKurztext(PREIS_ARBEIT)"

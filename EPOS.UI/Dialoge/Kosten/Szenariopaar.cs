@@ -184,6 +184,12 @@ public sealed class SzenariopaarTexte
     /// <summary>SZP_OHNE_ERWARTET_KURZ — das Wort im aria-label bei gesetzter Warnung.</summary>
     public string OhneErwartetKurz { get; } = T("SZP_OHNE_ERWARTET_KURZ", "ohne Erwartet-Wert");
 
+    /// <summary>KI_DLG_CSE_NUR_KOSTEN — der Grund, mit dem der Assistent im Szenariopaar
+    /// Nutzungsdauer, Startjahr und Zuschuss nicht setzt.</summary>
+    public string NurKosten { get; } = T("KI_DLG_CSE_NUR_KOSTEN",
+        "Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr noch Zuschuss — " +
+        "sie pflegt nur den Best- und den Worst-Wert.");
+
     /// <summary>ALLG_BTN_OK — der Hausknopf.</summary>
     public string Ok { get; } = T("ALLG_BTN_OK", "OK");
 

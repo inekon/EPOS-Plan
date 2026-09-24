@@ -29537,6 +29537,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr noch Zuschuss — sie pflegt nur den Best- und den Worst-Wert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_NUR_KOSTEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_NUR_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer der Position im ungünstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird. ähnelt.
         /// </summary>
         public static string KI_DLG_CSE_WORSTDAUER_ERL {

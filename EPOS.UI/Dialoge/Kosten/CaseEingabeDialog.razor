@@ -406,9 +406,10 @@
     private CaseEingabeKiSicht? _kiSicht;
 
     /// <summary>
-    /// Die Sicht des Assistenten: die sieben lebenden Felder. Ein Daten-Objekt gibt
-    /// es nicht — <c>CaseEingabeErgebnis</c> entsteht erst beim OK und trägt die
-    /// Beträge dann immer in Euro.
+    /// Die Sicht des Assistenten: die sieben lebenden Felder und — ETAPPE E9b — drei
+    /// Auskunftsfelder (Größe, Erwartet-Wert, Einheit). Ein Daten-Objekt gibt es
+    /// nicht — <c>CaseEingabeErgebnis</c> entsteht erst beim OK und trägt die Beträge
+    /// dann immer in der Einheit der Maske (Kostenposition: Euro).
     /// </summary>
     /// <remarks>
     /// Der PROZENTMODUS läuft über denselben Weg wie die Optionsgruppe der Maske:
@@ -419,8 +420,10 @@
     private CaseEingabeKiSicht KiSicht()
     {
         // ETAPPE E9b: Im Szenariopaar führt die Maske weder Nutzungsdauer noch Startjahr
-        // noch Zuschuss — ihre Setzwege bleiben dann leer (gesetzt wird nichts), und die
-        // zwei Auskunftsfelder sagen, WAS gepflegt wird und gegen welchen Erwartet-Wert.
+        // noch Zuschuss — ihre Setzwege lehnen dann MIT GRUND ab (der Assistent meldet
+        // ihn, statt einen Wert zu bestätigen, der nirgends ankommt), gelesen wird 0 bzw.
+        // „nein". Die drei Auskunftsfelder sagen, WAS gepflegt wird, gegen welchen
+        // Erwartet-Wert und in welcher Einheit.
         bool kosten = !Szenariopaar;
         return _kiSicht ??= new CaseEingabeKiSicht
         {
@@ -433,15 +436,15 @@
             WorstSetzen = w => _worst = w,
 
             BestDauerLesen = () => kosten ? _bestNutzung : 0,
-            BestDauerSetzen = kosten ? new Action<double>(w => _bestNutzung = w) : null,
+            BestDauerSetzen = kosten ? new Action<double>(w => _bestNutzung = w) : NurKosten<double>(),
             WorstDauerLesen = () => kosten ? _worstNutzung : 0,
-            WorstDauerSetzen = kosten ? new Action<double>(w => _worstNutzung = w) : null,
+            WorstDauerSetzen = kosten ? new Action<double>(w => _worstNutzung = w) : NurKosten<double>(),
 
             JahrLesen = () => kosten ? _startJahr : 0,
-            JahrSetzen = kosten ? new Action<int>(w => _startJahr = w) : null,
+            JahrSetzen = kosten ? new Action<int>(w => _startJahr = w) : NurKosten<int>(),
 
             ZuschussLesen = () => kosten && _istZuschuss,
-            ZuschussSetzen = kosten ? new Action<bool>(w => _istZuschuss = w) : null,
+            ZuschussSetzen = kosten ? new Action<bool>(w => _istZuschuss = w) : NurKosten<bool>(),
 
             GroesseLesen = () => Szenariopaar && !string.IsNullOrEmpty(Groesse)
                                  ? Groesse : LabelKosten.TrimEnd(':', ' '),
@@ -449,6 +452,14 @@
             EinheitLesen = () => Einheit
         };
     }
+
+    /// <summary>
+    /// ETAPPE E9b: der Setzweg eines Feldes, das es im Szenariopaar nicht gibt —
+    /// BENANNT ABGELEHNT statt still übergangen: Die Ausnahme trägt den Grund
+    /// (<c>KI_DLG_CSE_NUR_KOSTEN</c>), der Assistent meldet ihn.
+    /// </summary>
+    private static Action<T> NurKosten<T>()
+        => _ => throw new InvalidOperationException(new SzenariopaarTexte().NurKosten);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).

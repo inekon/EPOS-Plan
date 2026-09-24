@@ -2281,6 +2281,18 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    gepflegt, steht dahinter ein Punkt in der Hausfarbe; fehlt der Erwartet-Wert
    zu einem gepflegten Paar (E9b-Q4), ein Warnzeichen. Beides ist Beiwerk: Die
    Aussage traegt das aria-label bzw. der Kurztext. */
+/* Die Zeile der ±-Knöpfe (ETAPPE E9b) unter ihrem Feld: eine Bedienzeile im
+   Feldblock, KEINE Knopfleiste des Dialogs - deshalb nicht epos-leiste, die als
+   Fussleiste des Hauses gilt (Wache KnopfleistenWacheTests, Leistenzugriffe der
+   Dialogproben). Das Mass ist dasselbe. */
+.epos-szenarioleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: var(--epos-rand);
+}
+
 .epos-szenarioknopf {
     display: inline-flex;
     align-items: center;
@@ -2306,8 +2318,7 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     }
 
     .epos-szenarioknopf-warnung {
-        forced-color-adjust: none;
-        color: rgb(138, 91, 0);
+        color: LinkText;
     }
 }
 

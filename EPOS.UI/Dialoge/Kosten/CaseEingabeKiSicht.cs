@@ -22,8 +22,9 @@
 /// Auskunftsfelder sagen dem Assistenten, WAS gepflegt wird (<see cref="Groesse"/>),
 /// gegen welchen Erwartet-Wert (<see cref="Erwartet"/>) und in welcher Einheit
 /// (<see cref="Einheit"/>). Im Szenariopaar führt die Maske weder Nutzungsdauer noch
-/// Startjahr noch Zuschuss: Ihre Setzwege bleiben dann leer — gesetzt wird nichts, und
-/// gelesen wird 0 bzw. „nein".</para>
+/// Startjahr noch Zuschuss: Ihre Setzwege lehnen dann mit Grund ab (eine Ausnahme mit
+/// dem Text <c>KI_DLG_CSE_NUR_KOSTEN</c>, die der Assistent meldet), und gelesen wird
+/// 0 bzw. „nein".</para>
 /// </summary>
 public sealed class CaseEingabeKiSicht
 {
