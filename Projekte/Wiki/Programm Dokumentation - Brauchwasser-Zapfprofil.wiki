@@ -18,11 +18,11 @@ Gespeichert werden Zapfprofil und Wahl zusammen mit den Profilzuordnungen, mit '
 
 == Eingaben ==
 
-Die Kopfzeile nennt Projekt, Klimaregion, den Kalender des Jahres und die Bilanzgrenze: Gerechnet wird die Zapfenergie an der Zapfstelle, die Zirkulation als eigene Teilreihe. Daneben steht der Umschalter der Stufen ''Einfach · Erweitert · Experte''; bedienbar ist die Stufe ''Einfach'', die beiden anderen sind gesperrt, und ihr Hinweis nennt den Grund.
+Die Kopfzeile nennt Projekt, Klimaregion, den Kalender des Jahres und die Bilanzgrenze: Gerechnet wird die Zapfenergie an der Zapfstelle, die Zirkulation als eigene Teilreihe. {{Anker|stufen}}Daneben steht der Umschalter der Stufen ''Einfach · Erweitert · Experte''. Die Stufe blendet nur Felder ein und aus: Was in einer höheren Stufe eingegeben ist, bleibt beim Zurückschalten erhalten und rechnet weiter; die Zeile ''n Werte überschrieben'' zählt alle Angaben, die von ihrer Vorgabe abweichen. ''Einfach'' zeigt je Zone vier Felder, ''Erweitert'' dazu Belegung und Anlage, Jahresmesswert, die Schätzhilfen und den Rechenweg der Jahresreihe, ''Experte'' dazu die Fachwerte, Seed und Realisierungen.
 
 === Nutzungszonen ===
 
-* {{Anker|zonen}}'''Nutzungszonen''' – die Liste führt je Zone Name, Nutzungsart, Bezugsgröße und den Jahresbedarf der Zapfung in MWh/a, darunter die Summe. Die markierte Zone bestimmt, was der Eingabeblock darunter zeigt.
+* {{Anker|zonen}}'''Nutzungszonen''' – die Liste führt je Zone Name, Nutzungsart, Bezugsgröße und den Jahresbedarf der Zapfung in MWh/a, darunter die Summe. Ab der Stufe ''Erweitert'' stehen dazu die Topologie, der Anteil der Zone an der Zapfung und der Rechenweg ihrer Menge (''Katalog'', ''manuell'', ''Messwert'' oder „trägt 0“). Die markierte Zone bestimmt, was die Eingabeblöcke darunter zeigen.
 * '''Zone hinzufügen…''' legt eine neue Zone an, '''Duplizieren''' kopiert die markierte Zone samt ihren Angaben, '''Entfernen''' nimmt sie heraus. Alle drei wirken im Arbeitsstand des Dialogs; übernommen wird er erst mit ''OK''.
 
 === Angaben je Zone ===
@@ -32,7 +32,32 @@ Die Kopfzeile nennt Projekt, Klimaregion, den Kalender des Jahres und die Bilanz
 * {{Anker|bezugsgroesse}}'''Bezugsgröße''' – die Menge, auf die sich der Bedarf der Nutzungsart bezieht, etwa 20 Wohneinheiten oder 50 Beschäftigte. Die Einheit kommt aus dem Katalog der Nutzungsart.
 * {{Anker|niveau}}'''Bedarfsniveau''' – ''niedrig'', ''mittel'' oder ''hoch''; Vorgabe ist ''mittel''. Die Zeile darunter nennt den spezifischen Bedarf, den der Katalog für das gewählte Niveau vorsieht.
 
-Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
+In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eintrag stehen Bezugsart, Kalender, Herkunft, Status und Katalogversion, und ein Klick auf die Zeile wählt die Nutzungsart. Die weiteren Angaben stehen in den Gruppen der höheren Stufen; solange sie leer sind, gelten die Vorgaben des Katalogs.
+
+=== Belegung und Anlage ===
+
+{{Anker|belegung}}Die Gruppe steht ab der Stufe ''Erweitert'' und gilt der markierten Zone.
+
+* '''Wohnungstabelle''' – nur bei einer Nutzungsart für Wohnen: je Wohnungstyp ''Anzahl'', ''Raumzahl'', ''Personen je Wohnung'' und ''Ausstattungsklasse''. Ohne Personenangabe gilt die Belegung nach der Raumzahl aus dem Katalog, ohne Ausstattung die Vorgabeklasse. Trägt die Zone eine Tabelle, bestimmt sie die Bezugsgröße: Unter dem Feld steht die wirksame Menge, und ''OK'' übernimmt sie.
+* '''Personen je Wohneinheit''' und '''Wohnfläche je Wohneinheit''' – leer gelten die Vorgaben des Katalogs.
+* '''Anlagentopologie''' – ''Speicher'', ''Frischwasserstation'', ''Durchfluss'' oder ''Wohnungsstation''; sie wirkt nur auf die [[#auslegung|Auslegung]].
+* '''Zirkulation vorhanden''' – ''nein'' nimmt die Zone aus dem Zirkulationsanteil.
+* '''Kalender''' – der Kalender der Nutzungsart oder die Ferien eines Gebäudes des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor; eigene Ferien der Zone gehen vor.
+* '''Ferienzeitraum 1 bis 4''' – Beginn und Ende als Tag und Monat. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an.
+* '''Bundesland''' – gesperrt: Es wirkt erst mit einer Kalendertabelle je Bundesland; ohne sie gelten Wochenende und Feiertage der Klimaregion.
+* '''Jahresmesswert''' – ein gemessener Jahresverbrauch der Zone in kWh/a oder m³/a mit Bilanzgrenze (an der Zapfstelle, mit Verteil- und Zirkulationsverlust oder zusätzlich mit Speicherverlust, dann mit dem Speicherverlust in kWh/a), Quelle und Zeitraum. Der Messwert skaliert die Zone mit einem ausgewiesenen Faktor.
+
+=== Tagesbedarf, Ladeleistung, Zirkulation ===
+
+{{Anker|schaetzhilfen}}Die drei Größen folgen dem Muster ''auto/manuell'': Der '''Vorschlag''' kommt aus dem Rechenweg, ''Als manuellen Wert übernehmen'' setzt ihn als manuellen Wert, und '''Angesetzt''' nennt den Wert, der weitergeht, samt Rechenweg.
+
+* '''Tagesbedarf''' der markierten Zone – ''auto'' aus Bezugsgröße und Katalog, ''manuell'' mit eigenem Wert in kWh/d; ein Jahresmesswert setzt den Tagesbedarf über die Kalibrierung.
+* '''Ladeleistung (Gebäude)''' – mit Ladezeitfenster und dessen Beginn; sie wirkt nur auf die Auslegung, nie auf die Bilanzreihe. Den Vorschlag rechnet die Auslegung.
+* '''Zirkulation (Gebäude)''' – Methode ''Leitungslänge × spezifischer Verlust'', ''Anteil am Tagesbedarf'' oder ''Flächenkennwert'' mit der Lage der Leitung, dazu der manuelle Wert und der '''Leitungsinhalt''', der mit über die Großanlage nach DVGW W 551 entscheidet. Die Zirkulation bleibt eine eigene Teilreihe.
+
+=== Fachwerte ===
+
+{{Anker|fachwerte}}Die Stufe ''Experte'' zeigt je Zone den spezifischen Bedarf, die Zapftemperatur, Jahresmittel und Amplitude des Kaltwassers, den Tagesgangsatz und den '''Auslastungsgang''' mit zwölf Monatsfaktoren; leer gilt jeweils der Wert des Katalogs, der grau im Feld steht. Für das Gebäude stehen das Kaltwasser der Auslegung, die Speichertemperatur, Kennwert, Fläche und Laufzeit der Zirkulation sowie die Temperatur der Literanzeige und die Schwelle der Stundenzählung für die Kennzahlen. ''Tagesgang bearbeiten…'' und ''Zapfkategorien und Streuung…'' sind gesperrt; ihr Hinweis nennt den Grund.
 
 == Vorschau ==
 
@@ -41,21 +66,23 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 * '''Tagesgang''' – die mittlere Stundenleistung eines Werktags, eines Samstags und eines Sonn- oder Feiertags im Monat mit dem größten Bedarf, dazu die Zirkulation. Ferientage einer Zone gehen in keinen Tagtyp ein; in der Summe fehlen die Ferientage aller Zonen.
 * '''Wochenprofil''' – die 168 Stunden der Woche mit dem größten Tagesbedarf des Jahres.
 * '''Jahresgang''' – zwölf Monatssäulen, gestapelt aus Zapfung und Zirkulation, darunter der Anteil der Zirkulation.
-* '''Dauerlinie''' – gesperrt; der Hinweis am Reiter nennt den Grund.
+* {{Anker|dauerlinie}}'''Dauerlinie''' – ab der Stufe ''Erweitert'': die Stundenwerte von Zapfung und Zirkulation absteigend sortiert, mit den Perzentilen P50, P90, P95 und P99 und, wenn eine Schwelle gesetzt ist, der Zahl der Stunden darüber. Die Werte sind Bilanzwerte, keine Auslegungsgrößen.
 * {{Anker|kennzahlen}}'''Kennzahlen''' – Jahresbedarf der Zapfung, Zirkulation, Brauchwasser gesamt samt Zirkulationsanteil, Tagesmittel der Zapfung, in der Ansicht einer Zone der spezifische Jahresbedarf je Bezugseinheit, dazu Volllaststunden und der größte Stundenwert. Der größte Stundenwert ist ein Bilanzwert aus der Jahresreihe und keine Größe für die Auslegung von Speicher oder Wärmeerzeuger; die Tabelle vermerkt das neben dem Wert. Die Gruppe ''Stochastik'' erklärt, was ''Stochastisch rechnen'' liefert.
+
+{{Anker|warnliste-bilanz}}Unter den Reitern steht die Liste '''Hinweise der Bilanz''': je Hinweis des Rechenwegs seine Stufe (''Warnung'' oder ''Hinweis''), ein Titel und ein Satz mit den eingesetzten Zahlen. Keiner blockiert ''OK''.
 
 == Hinweise und Prüfung ==
 
-* Hinweise des Rechenwegs – etwa ein Bedarf außerhalb der Bandbreite des Katalogs – stehen am Eingabeblock der betroffenen Zone und blockieren nicht.
+* Hinweise des Rechenwegs – etwa ein Bedarf außerhalb der Bandbreite des Katalogs – stehen am Eingabeblock der betroffenen Zone und in der Liste ''Hinweise der Bilanz''; sie blockieren nicht.
 * Kann eine Zone nicht gerechnet werden, trägt sie 0; die Liste vermerkt „trägt 0“, und eine Meldung nennt Zone und Grund. Die übrigen Zonen rechnen weiter.
 * Fehlen dem Projekt die Voraussetzungen für die Rechnung, etwa eine Klimaregion, zeigt die Vorschau statt der Zahlen den Grund.
 * Trägt das Projekt Netzverluste und rechnet das Zapfprofil eine Zirkulation, weist ein Hinweis darauf hin, dass derselbe Verlust doppelt zählen kann, wenn die Netzverluste die Zirkulation schon enthalten. Er blockiert nicht.
-* {{Anker|ok}}''OK'' prüft, dass jede Zone einen eigenen Namen, eine Nutzungsart und eine Bezugsgröße größer 0 trägt; zwei Zonen dürfen nicht gleich heißen. Fehlt etwas, bleibt der Dialog offen, und ein Hinweis nennt die Zone. Sonst übernimmt ''OK'' die Zonen in den Bedarfsprofil-Dialog und stellt den Rechenweg auf ''Zapfprofil''. ''Abbrechen'', ✕ und ''Esc'' schließen ohne Übernahme.
-* ''Stochastisch rechnen'' in der Fußleiste ist gesperrt; sein Hinweis nennt den Grund. ''Auslegung…'' öffnet die [[#auslegung|Auslegung]].
+* {{Anker|ok}}''OK'' prüft, dass jede Zone einen eigenen Namen, eine Nutzungsart und eine Bezugsgröße größer 0 trägt; zwei Zonen dürfen nicht gleich heißen. Dazu prüft es die Angaben der höheren Stufen: je Wohnungstyp eine Anzahl, vollständige Ferienzeiträume und zu einem Jahresmesswert Einheit, Bilanzgrenze und gegebenenfalls den Speicherverlust. Fehlt etwas, bleibt der Dialog offen, und ein Hinweis nennt die Zone. Sonst übernimmt ''OK'' die Zonen in den Bedarfsprofil-Dialog und stellt den Rechenweg auf ''Zapfprofil''. ''Abbrechen'', ✕ und ''Esc'' schließen ohne Übernahme.
+* ''Stochastisch rechnen'' in der Fußleiste zieht die [[#stochastik|Stochastik]], ''Auslegung…'' öffnet die [[#auslegung|Auslegung]].
 
 == Stochastik ==
 
-{{Anker|stochastik}}In der Stufe '''Experte''' trägt der Dialog die Gruppe '''Stochastik · Jahresreihe'''. Sie legt fest, wie die Jahresreihe des Brauchwassers entsteht:
+{{Anker|stochastik}}Ab der Stufe '''Erweitert''' trägt der Dialog die Gruppe '''Stochastik · Jahresreihe''' mit dem Rechenweg; Seed und Realisierungen zeigt die Stufe '''Experte'''. Die Gruppe legt fest, wie die Jahresreihe des Brauchwassers entsteht:
 
 * '''Rechenweg''' – ''deterministisch'': die Stundenreihe aus Tagesgang, Wochenanteilen und Monatsfaktoren (Vorgabe). ''stochastisch'': das Programm zieht für jede Nutzungseinheit einzelne Zapfereignisse (Kategorien wie Kurzzapfung, Spüle, Dusche, Bad mit Volumenstrom, Dauer, Anteil und Streuung aus dem Katalog der Nutzungsart), verteilt sie nach dem Tagesgang und überlagert die Einheiten; die Gleichzeitigkeit entsteht dabei von selbst, Urlaube fallen je Einheit versetzt. In die Bilanz geht das Jahr zum Seed; sein Energieinhalt ist auf die deterministische Reihe abgeglichen. Die Vorschau zeigt stets den deterministischen Pfad; die stochastische Jahresreihe entsteht im Lauf.
 * '''Seed''' – die Startzahl der Ziehung (Vorgabe 1). Derselbe Seed liefert auf jedem Rechner dieselbe Reihe.

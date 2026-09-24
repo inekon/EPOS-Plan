@@ -11139,6 +11139,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     margin-block-start: var(--epos-abstand);
 }
 
+/* Der Infoknopf einer Gruppe steht rechts in ihrer ersten Zeile - bei der Warnliste
+   neben ihrer Ueberschrift. */
+.epos-zapfprofil-gruppenhilfe {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--epos-abstand);
+}
+
+.epos-zapfprofil-gruppenhilfe > h4 {
+    margin-inline-end: auto;
+}
+
 @media (forced-colors: active) {
     .epos-zapfausl-stufe--warnung,
     .epos-zapfausl-empfehlung,

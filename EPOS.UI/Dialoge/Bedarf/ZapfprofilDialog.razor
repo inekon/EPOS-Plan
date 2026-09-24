@@ -323,6 +323,10 @@
                     @* ---- Belegung und Anlage (5.3, Stufe Erweitert) ---------------------- *@
                     <Gruppenkopf @key="@("belegung-" + _wahl)" Titel="@Texte.GruppeBelegung" Summe="@Texte.StufeErweitert">
                         <KindInhalt>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <InfoKnopf Schluessel="@HILFE_BELEGUNG" StandardKurztext="@Texte.GruppeBelegung"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
                             @if (art?.Wohnen == true)
                             {
                                 <p class="epos-zapfprofil-untertitel">@Texte.LabelWohnungstabelle</p>
@@ -461,6 +465,10 @@
                     @* ---- Tagesbedarf, Ladeleistung, Zirkulation (5.3, Stufe Erweitert) ------ *@
                     <Gruppenkopf @key="@("schaetz-" + _wahl)" Titel="@Texte.GruppeSchaetzhilfen" Summe="@Texte.StufeErweitert">
                         <KindInhalt>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <InfoKnopf Schluessel="@HILFE_SCHAETZHILFEN" StandardKurztext="@Texte.GruppeSchaetzhilfen"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
                             <p class="epos-leisezeile">@Texte.HinweisSchaetzhilfen</p>
                             <Formularraster>
                                 <KindInhalt>
@@ -584,6 +592,10 @@
                     @* ---- Fachwerte der Zone (5.3, Stufe Experte) -------------------------- *@
                     <Gruppenkopf @key="@("fachwerte-" + _wahl)" Titel="@Format(Texte.GruppeFachwerte, zone.Name)" Summe="@Texte.StufeExperte">
                         <KindInhalt>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Format(Texte.GruppeFachwerte, zone.Name)"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
                             <Formularraster>
                                 <KindInhalt>
                                     <Zahlenfeld Bezeichnung="@Texte.LabelBedarfSpez" Feldname="@Texte.LabelBedarfSpez"
@@ -680,6 +692,10 @@
             {
                 <Gruppenkopf Titel="@Texte.GruppeFachwerteGebaeude" Summe="@Texte.StufeExperte">
                     <KindInhalt>
+                        <div class="epos-zapfprofil-gruppenhilfe">
+                            <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Texte.GruppeFachwerteGebaeude"
+                                       Dialogname="@Texte.Titel" />
+                        </div>
                         <Formularraster>
                             <KindInhalt>
                                 <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserAuslegung" Feldname="@Texte.LabelKaltwasserAuslegung"
@@ -843,7 +859,11 @@
 
                         @* Die Warnliste der Bilanz (Warnlogik Z4): Stufe, Titel und Satz des Kerns - nie blockierend. *@
                         <section class="epos-zapfausl-warnungen epos-zapfprofil-warnliste" aria-label="@Texte.GruppeWarnliste">
-                            <h4>@Texte.GruppeWarnliste</h4>
+                            <div class="epos-zapfprofil-gruppenhilfe">
+                                <h4>@Texte.GruppeWarnliste</h4>
+                                <InfoKnopf Schluessel="@HILFE_WARNLISTE" StandardKurztext="@Texte.GruppeWarnliste"
+                                           Dialogname="@Texte.Titel" />
+                            </div>
                             <p class="epos-leisezeile">@Texte.WarnlisteUnter</p>
                             @if (Warnliste.Count == 0)
                             {
@@ -943,6 +963,13 @@
 
     /// <summary>Der Eintrag „Kalender der Nutzungsart" der Kalenderwahl (kein Gebäude gebunden).</summary>
     private const int KALENDER_NUTZUNGSART = 0;
+
+    // Die Hilfeschluessel der Gruppen der hoeheren Stufen (5.8; help_mapping.txt: Anker der Bedienseite
+    // „Brauchwasser-Zapfprofil"); ihre Infoknoepfe bieten wie jeder Infoknopf den Assistenten an.
+    private const string HILFE_BELEGUNG = "Form_Zapfprofil.grp_Belegung";
+    private const string HILFE_SCHAETZHILFEN = "Form_Zapfprofil.grp_Schaetzhilfen";
+    private const string HILFE_FACHWERTE = "Form_Zapfprofil.grp_Fachwerte";
+    private const string HILFE_WARNLISTE = "Form_Zapfprofil.grp_Warnliste";
 
     // --- Parameter (Schluessel wie ZapfprofilHuelle.Gaben) -------------------------
 

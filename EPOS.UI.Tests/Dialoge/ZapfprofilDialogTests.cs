@@ -1154,7 +1154,8 @@ public class ZapfprofilDialogTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
-        Assert.Equal(2, cut.FindAll(".epos-infoknopf").Count);
+        // Der Kopf trägt Bedienung und Rechenweg; die Warnliste der Vorschau ihren eigenen Infoknopf.
+        Assert.Equal(2, cut.FindAll(".epos-dialog-kopf .epos-infoknopf").Count);
     }
 
     [Fact]
