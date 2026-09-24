@@ -285,7 +285,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `769143e4…`, Nachträge 114, 115 und 119 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
+**113**, LFS-SHA-256 `769143e4…`, Nachträge 114, 115, 119 und 120 in diesem Abschnitt; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
 kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
@@ -433,6 +433,23 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Spalten tragen keinen gesäten Wert; die Ergebnisspalten schreibt nur ein Lauf mit Kältekaskade, und kein
 > Referenzprojekt kühlt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis
 > (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `6259b348…`).
+
+> **Nachtrag: Schemastand 120 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3), die Basis bleibt.**
+> Migrationsschritt **120** (`SCHRITT_120_ZAPFPROFIL_LAUFANGABEN`; Quelle `TwwSchema.SpaltenT3`, die
+> Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an `Tab_TwwProjekt` die Laufangaben
+> der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2), `Personen_Auto` (0/1, Vorgabe 1),
+> `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an `Tab_TwwBedarfstag_STAMM` die
+> `Bezugsart` (1 bis 7, nullbar) — alle mit `CHECK`, sonst nullbar. Nachgezogen auf der Fassung **119**
+> (Nachtrag oben) mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`,
+> danach [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py): Es führt am
+> Ecodesign-Zapfprofil L des freien Paketteils die Bezugsart 2 (Wohneinheiten) nach (0 angelegt,
+> 1 nachgeführt); ein zweiter Lauf meldet 0/0. Zellvergleich aller 132 Tabellen gegen die Fassung 119
+> (10 498 997 Zellen): `SchemaVersion` 119 → 120, die sechs neuen Spalten — `Tab_TwwProjekt` ohne Zeile,
+> die Bezugsart allein am Ecodesign-Tag gesetzt, an den drei fiktiven Tagen NULL —, sonst nichts; die
+> 14 Sichten und alle 208 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer, 131 von
+> 131 Fachtabellen STRICT, Größe unverändert 67 784 704 Byte. **Keine Einfrierregel ist berührt:** Kein
+> Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
+> Basis (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `e9c9cac3…`).
 
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
