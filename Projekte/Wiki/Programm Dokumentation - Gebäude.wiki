@@ -1,0 +1,165 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gebäude
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gebäude.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Gebäude''' sind die Grundlage der Heizwärmeberechnung. EPOS-Plan führt sie an zwei Stellen: im '''Gebäudekatalog''', der Geometrie, Hülle, Nutzungsrandbedingungen, Ferienzeiten, Modellparameter und Kühlung eines Gebäudes enthält, und im '''Projekt''', das ein Gebäude aus dem Katalog übernimmt und dazu nur die Bezugsgröße – Nutzfläche oder Verbrauch – und den Jahresnutzungsgrad pflegt. Den Katalog bearbeiten Sie in der '''Verwaltung Gebäude''', die Zuordnung zum Projekt im Dialog '''Eingabe der Gebäudedaten'''.
+
+== Aufruf ==
+{{Anker|aufruf}}
+
+* '''Verwaltung Gebäude''' – Menü ''Administration'' › ''Gebäude'' › ''Bearbeiten''. Sie braucht kein offenes Projekt.
+* '''Gebäudetypen''' – Menü ''Administration'' › ''Gebäude'' › ''Gebäudetypen''; dieselbe Verwaltung öffnet sich auch aus beiden Gebäudedialogen (siehe [[#gebaeudetypen|Gebäudetypen]]).
+* '''Eingabe der Gebäudedaten''' – im offenen Projekt auf der Startseite im Reiter ''Wärmebedarf'' und im Assistenten beim Schritt der Gebäude.
+
+== Die Gebäude des Projekts ==
+{{Anker|projektdialog}}
+
+Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte Gebäude im Projekt'', rechts den Katalog ''Gebäude in DB'' und dazwischen die beiden Knöpfe ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen''. Auf einem schmalen Bildschirm stehen die beiden Listen untereinander. Darunter steht der Detailblock ''Gebäude: Verbrauch'' zur markierten Zeile.
+
+=== Die Liste des Projekts ===
+
+* {{Anker|projektgebaeude}}'''ausgewählte Gebäude im Projekt''' – je Gebäude der Name und der ''Rechenweg'', mit dem es gerechnet wird (VDI 6007 oder Tagesbilanz). Ein Klick in die Spalte ''Wahl'' markiert die Zeile; ihr Detailblock zeigt dann die Angaben des Projekts. Dasselbe Gebäude darf mehrfach im Projekt stehen.
+* '''Aus dem Projekt entfernen''' – nimmt genau die markierte Zeile aus der Liste.
+
+=== Der Katalog ===
+
+* {{Anker|katalogfilter|gebaeudekatalog}}'''Filter Gebäude DB''' – ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Gebäudeart'' und ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40"), dazu ein Textfilter mit Platzhaltern, etwa ''Haus*_1990*''. Die Liste ''Gebäude in DB'' darunter zeigt Name, Gebäudeart und Wohnfläche der Sätze, die der Filter übrig lässt; ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock.
+* '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage; ein Satz der Auslieferung bleibt stehen. Ob ein Projekt das Gebäude führt, prüft das Löschen in der [[#loeschen|Verwaltung]].
+
+=== Übernahme ins Projekt ===
+{{Anker|uebernahme}}
+
+''In das Projekt übernehmen'' setzt den markierten Katalogsatz als neue Zeile in die Projektliste, vorbelegt mit der Art der Angabe ''Wohnfläche [m²]'', der Wohnfläche des Katalogsatzes und dem Jahresnutzungsgrad 1. Übernommen wird mit ''OK''; ''Abbrechen'' verwirft die Änderungen der Liste.
+
+Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts neu: Jede Kopie entsteht dabei frisch aus ihrem Katalogsatz, und die Angaben des Projekts – Art der Angabe, Nutzfläche bzw. Verbrauch, Jahresnutzungsgrad und dezentrale Warmwasserbereitung – bleiben erhalten. Was Sie am Katalogsatz ändern, gelangt so mit dem nächsten ''OK'' in das Projekt.
+
+=== Gebäude: Verbrauch ===
+
+* {{Anker|verbrauch}}'''Gebäude: Verbrauch''' – der Detailblock nennt Gebäudename, Gebäudeart, Beschreibung, Wohn-/Nutzfläche, ''Art der Angabe'', den Wärmeleitwert ''H_ges'' und den Rechenweg der markierten Zeile. Das kleine i am Kopf des Blocks führt zum Rechenweg des Wärmebedarfs.
+* '''Ändern''' – öffnet für die markierte Projektzeile die Eingabe der Nutzfläche bzw. des Verbrauchs. Unter ''Bedarfsart'' wählen Sie ''Wohnfläche [m²]'' oder einen Verbrauch – Öl in Litern, Gas in Kubikmetern oder MWh, Brennstoff oder allgemeinen Verbrauch in MWh je Jahr – und tragen den Wert ein. Bei einem Verbrauch gehört der '''Jahresnutzungsgrad''' der bestehenden Anlage dazu, etwa 0,85 für 85 %: Damit rechnet EPOS-Plan den Verbrauch in Nutzwärme um und skaliert das Gebäudemodell auf diesen Bedarf. Der Schalter ''Dezentrale Warmwasserbereitung'' gehört ebenfalls zu den Angaben des Projekts.
+* {{Anker|waermebedarf}}'''Simulation…''' – rechnet den Wärmebedarf genau des markierten Gebäudes und zeigt ihn in der Überlagerung ''Wärmebedarf Gebäude'': Kennzahlen, Jahresganglinie und – auf dem Rechenweg VDI 6007 – den Vergleich der Rechenwege, den Verlauf der Raumtemperatur und den Kältebedarf. Dafür muss das Projekt gespeichert sein und eine Klimaregion führen; sonst sagt eine Meldung, was fehlt. Die Kennzahlen beschreibt die Seite [[Programm Dokumentation/Gebäudemodell VDI 6007#ergebnisse|Gebäudemodell VDI 6007]].
+* '''Gebäudetyp in DB ändern…''' – öffnet die Verwaltung der [[#gebaeudetypen|Gebäudetypen]].
+
+Die Fußleiste trägt ''Ändern'', ''Simulation…'', ''Gebäudetyp in DB ändern…'', ''OK'' und ''Abbrechen''. Im Assistenten stehen die beiden Listen, die Leiste unter dem Katalog und der Detailblock ohne diese Fußleiste; weiter geht es mit der Leiste des Assistenten.
+
+== Der Katalogeditor ==
+{{Anker|katalogeditor}}
+
+Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…''. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben.
+
+=== Reiter „Gebäude und Hülle" ===
+
+* {{Anker|kenngroessen|luftwechsel}}'''Kenngrößen''' – Name, Beschreibung, Verwendung, Gebäudeart, Baujahr (Baualtersklasse) und Bauart, dazu Nutzfläche, Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad und die Luftwechselrate in 1/h, die die Lüftungsverluste bestimmt. Die Bauart – leicht, schwer oder sehr schwer – bestimmt die Speicherfähigkeit des Gebäudes aus der Nutzfläche.
+* {{Anker|flaechen|u-werte}}'''Hülle: Transmission je Bauteil''' – eine Tabelle der acht Bauteile: Außenwand, Fenster, Dach, Bodenplatte und Sonstiges mit U-Wert in W/(m²·K) und Fläche in m², dazu die drei Wärmebrücken Fenster–Wand, Wand–Dach und Außenwand–Keller (siehe unten). Die Fensterfläche ist die Summe der vier Himmelsrichtungen. Für die Bodenplatte wählen Sie die ''Randbedingung'' Erdreich, Keller (unbeheizt) oder Außenluft; beim Keller kommt die Kellertemperatur dazu. Ein U-Wert liegt zwischen 0,1 und 6 W/(m²·K).
+* {{Anker|waermebruecken|anschlussmasse}}'''Wärmebrücken''' – je Anschluss der Verlustkoeffizient ψ in W/(m·K) und die Anschlusslänge in m; erst aus beiden ergibt sich der Wärmebrückenzuschlag.
+* '''Wärmeleitwerte''' – die gerechneten Leitwerte ''H_T'' (Transmission), ''H_ve'' (Lüftung) und ''H_ges''.
+* '''Fenster nach Orientierung''' – die Fensterflächen Nord, Süd, Ost und West in m²; Ost und West tragen Sie beide ein oder lassen beide leer.
+* '''Modellparameter (VDI 6007)''', '''Rechenweg''' und '''Kühlung''' – beschrieben auf den Seiten [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Kühlung|Kühlung]]. Ein leeres Modellfeld rechnet mit seiner Vorgabe. Auf dem Rechenweg ''Tagesbilanz'' erscheint zusätzlich der Abschnitt ''Tagesbilanz (Bestandsweg)'' mit dem [[#gebaeudetypen|Gebäudetyp]].
+
+=== Reiter „Temperaturen und Ferien" ===
+
+* {{Anker|raumtemperaturen}}'''Raumtemperaturen''' – Soll am Tag, Nachtabsenkung auf, Wochenendabsenkung, Soll in Ferien und Maximalraumtemperatur, jeweils in °C. Sie steuern die Absenkungen im Jahresgang.
+* {{Anker|ferienzeiten}}'''Ferien Anfang''' und '''Ferien Ende''' – vier Zeiträume für Winter, Ostern, Sommer und Herbst, je mit Tag und Monat. Die Winterferien reichen über den Jahreswechsel. In diesen Zeiträumen gilt die Ferien-Solltemperatur.
+* '''Brauchwasser…''' – öffnet in der Gruppe ''Sonstiges'' die Brauchwasserprofile des offenen Projekts.
+
+== Die Verwaltung Gebäude ==
+{{Anker|verwaltung}}
+
+Die '''Verwaltung Gebäude''' pflegt den Gebäudekatalog. Sie ist aufgebaut wie die übrigen Verwaltungen des Programms (siehe [[Programm Dokumentation/Gerätekataloge#aufbau|Gerätekataloge]]): links die Liste der Katalogsätze, rechts das Stammblatt des gewählten Satzes, darunter die Fußleiste. In einem schmalen Fenster schiebt sich das Stammblatt als Blatt über die Liste; ''‹ Liste'' führt zurück.
+
+=== Die Liste ===
+{{Anker|liste}}
+
+Die Liste zeigt je Gebäude ''Name'', ''Gebäudeart'', ''Verwendung'', ''Baujahr'' und ''Fläche'' in m². Über ihr steht das Suchfeld über alle Spalten; ''Gebäudeart'', ''Verwendung'' und ''Baujahr'' tragen einen Trichter im Spaltenkopf, jede Spalte den Sortierpfeil. Über der Liste steht, wie viele Sätze die Einengung übrig lässt. Ein Satz der Auslieferung trägt hinter seinem Namen ein Schloss. Ein Klick auf eine Zeile wählt den Satz, auch mit den Pfeiltasten.
+
+=== Die Auswahlleiste ===
+{{Anker|auswahlleiste}}
+
+Ein Kästchen je Zeile erlaubt die Mehrfachwahl, das Kästchen im Spaltenkopf wählt alle sichtbaren Sätze. Die Auswahlleiste darüber nennt, wie viele Sätze gewählt sind, und führt die Handlungen für sie:
+
+* {{Anker|vergleichen}}'''Vergleichen''' – ab zwei gewählten Sätzen: Das Stammblatt stellt Gebäudetyp, Gebäudeart, Baujahr, Verwendung, Wohn-/Nutzfläche, ''H_ges'', Rechenweg, die Bauteile der Hülle und die Herkunft nebeneinander. Der Vergleich ist nur lesbar; ''‹ Stammblatt von …'' kehrt zum gewählten Satz zurück.
+* {{Anker|duplizieren}}'''Duplizieren…''' – für genau einen Satz: Das Programm fragt den Namen der Kopie ab, vorbelegt mit dem Namen und dem Zusatz „(Kopie)" – aus ''Gebäude 1'' wird ''Gebäude 1 (Kopie)''. Die Kopie ist ein eigener Satz mit allen Werten und ist danach gewählt. So entsteht auch ein Satz unter einem anderen Namen, denn der Name selbst lässt sich im Stammblatt nicht ändern.
+* '''Schloss aufheben…''' bzw. '''Schloss setzen…''' – siehe [[#schloss|Schloss der Auslieferungssätze]].
+* {{Anker|loeschen}}'''Löschen''' – entfernt die gewählten Sätze nach einer Rückfrage, ohne Wahl den Satz im Stammblatt. Gesperrt ist das Löschen für Sätze der Auslieferung und für Gebäude, die ein Projekt führt: Der Kurztext am Knopf nennt dann das Projekt, etwa „In Projekten verwendet (Projekt 1) – Löschen gesperrt; dort zuerst entfernen." Erkannt wird die Nutzung an der Kopie im Projekt, die sich ihren Katalogsatz merkt – auch nach einer Umbenennung. Sind nur einige der gewählten Sätze gesperrt, nennt die Rückfrage die Sätze, die stehen bleiben, und die Statuszeile zählt danach gelöschte und stehen gebliebene Sätze.
+
+''Auswahl aufheben'' leert die Wahl.
+
+=== Das Stammblatt ===
+{{Anker|stammblatt}}
+
+Der Kopf des Stammblatts nennt den Namen des Satzes und darunter Gebäudeart, Verwendung, Baujahr und ob es ein Satz der Auslieferung oder ein eigener Satz ist. Drei Kennzahlen stehen daneben: ''Wohn-/Nutzfläche'', der Wärmeleitwert ''H_ges'' in W/K und der ''Rechenweg''. Fehlt ein Wert, steht ein Strich.
+
+Alle Felder des Stammblatts sind direkt bearbeitbar:
+
+* {{Anker|kenndaten}}'''Kenndaten''' – Name (nur lesbar), Gebäudetyp, Gebäudeart, Baujahr, Verwendung, Wohn-/Nutzfläche, Bauart und Beschreibung. Wohn-/Nutzfläche und Bauart bestimmen die Speicherfähigkeit des Gebäudes mit. Der Knopf ''Gebäudetypen…'' im Kopf der Gruppe öffnet die [[#gebaeudetypen|Gebäudetypen]].
+* {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''U bzw. ψ'' und Größe ''A bzw. L''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten.
+* {{Anker|fenster}}'''Fenster nach Orientierung''' – Nord, Süd, Ost und West in m²; Summe Ost + West und gesamte Fensterfläche sind gerechnet.
+* '''Kenngrößen''' – Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad (etwa 0,4) und Luftwechselrate.
+* {{Anker|alle-daten}}'''Alle Daten''' – aufklappbar: Raumtemperaturen, Ferien Anfang und Ende, die Modellparameter (VDI 6007) samt Rechenweg und die Kühlung. Die Felder sind dieselben wie im [[#katalogeditor|Katalogeditor]].
+
+Ein Beispiel: Für ''Gebäude 1'' mit 150 m² Nutzfläche tragen Sie unter ''Hülle'' für die Außenwand einen U-Wert von 0,3 W/(m²·K) und eine Fläche von 200 m² ein und unter ''Fenster nach Orientierung'' im Süden 20 m²; die Fensterzeile der Hülle zeigt danach die neue Summe.
+
+Ein Satz der Auslieferung zeigt Kenndaten, Hülle und ''Alle Daten'' als Text; ändern lässt er sich erst als eigener Satz (siehe [[#schloss|Schloss]]).
+
+=== Speichern und Verwerfen ===
+{{Anker|speichern}}
+
+Im Fuß des Stammblatts steht, wie viele Felder vom gespeicherten Satz abweichen. '''Speichern''' in der Fußleiste prüft den ganzen Satz mit denselben Regeln wie der Katalogeditor, leitet die abhängigen Werte ab und schreibt ihn; die Statuszeile meldet die Uhrzeit, und die Liste liest die Spalten neu. Verletzt ein Feld eine Regel, nennt das Warnband das Feld; steht es unter ''Alle Daten'', klappt die Gruppe dabei auf. '''Verwerfen''' holt die gespeicherten Werte zurück.
+
+Solange Felder vom gespeicherten Satz abweichen, halten Zeilenwechsel, ''Neu…'', ''Duplizieren…'', das Schloss und ''Beenden'' an: Das Warnband bittet, zu speichern oder zu verwerfen.
+
+=== Neu… ===
+{{Anker|neu}}
+
+'''Neu…''' in der Fußleiste öffnet den [[#katalogeditor|Katalogeditor]] für einen neuen Satz. Nach ''OK'' ist der neue Satz in der Liste gewählt, und die Statuszeile nennt ihn. Bearbeitet wird er danach im Stammblatt.
+
+=== Schloss der Auslieferungssätze ===
+{{Anker|schloss}}
+
+Die Sätze der Auslieferung sind schreibgeschützt und tragen ein Schloss: Ihre Felder stehen als Text da, ''Speichern'' und ''Löschen'' sind gesperrt, und der Kurztext nennt die zwei Wege zu einem eigenen Satz.
+
+* '''Duplizieren…''' legt eine eigene Kopie an; der Satz der Auslieferung bleibt, wie er ist.
+* '''Schloss aufheben…''' macht die gewählten Sätze nach einer Rückfrage zu eigenen Sätzen, die sich ändern und löschen lassen. Ein Programm-Update ändert sie danach nicht mehr und stellt sie nicht wieder her; die ausgelieferten Werte gibt es dann nur noch in einer Datenbanksicherung.
+* '''Schloss setzen…''' sperrt eigene Sätze nach einer Rückfrage als Auslieferungssätze: nur lesbar, nicht löschbar.
+
+Die Rückfrage steht in beiden Richtungen auf ''Nein''. Die Werte des Satzes bleiben beim Umschalten, wie sie sind; die Beschriftung des Knopfs folgt der Wahl.
+
+=== Die Fußleiste ===
+{{Anker|fussleiste}}
+
+Die Fußleiste trägt ''Speichern'' und ''Verwerfen'' (beide nur bei abweichenden Feldern), die Statuszeile, ''Neu…'' und ''Beenden''. ''Beenden'', das Kreuz und Esc schließen die Verwaltung; Esc schließt zuerst eine offene Überlagerung und im schmalen Fenster das Blatt. ''Duplizieren…'', das Schloss und ''Löschen'' stehen in der Auswahlleiste, ''Gebäudetypen…'' im Kopf der Kenndaten.
+
+=== Der Hilfe-Assistent in der Verwaltung ===
+{{Anker|assistent}}
+
+Der [[Programm Dokumentation/Hilfe-Assistent#setzen-und-rechnen|Hilfe-Assistent]] arbeitet in der Verwaltung am gewählten Satz. Er liest und setzt jede Angabe des Stammblatts – von den Kenndaten über die Hülle und die Fenster bis zu Raumtemperaturen, Ferien, Modellparametern, Rechenweg und Kühlung –, Auswahlfelder über den angezeigten Text. Einen anderen Satz wählt er auf Wunsch so, wie ein Klick in die Liste es tut; hat das Stammblatt ungespeicherte Änderungen, wechselt er nicht, sondern bittet, erst zu speichern oder zu verwerfen. Er prüft und speichert, wenn Sie ihn darum bitten, mit denselben Regeln wie der Knopf ''Speichern''.
+
+Ein Satz der Auslieferung bleibt auch für den Assistenten unverändert; er nennt dann die Wege über ''Duplizieren…'' und ''Schloss aufheben…''. ''Neu…'', ''Duplizieren…'', das Schloss und ''Löschen'' bleiben Ihr Klick.
+
+=== Grenzen ===
+{{Anker|grenzen}}
+
+* Die Verwaltung zeigt '''keinen Wärmebedarf'''. Er hängt an der Klimaregion, am Kalender und an den Angaben des Projekts – Nutzfläche oder Verbrauch, Jahresnutzungsgrad, Kühlung – und steht im Projektdialog unter [[#waermebedarf|Simulation…]].
+* Der '''Name''' eines Satzes lässt sich im Stammblatt nicht ändern; ein Satz unter anderem Namen entsteht über ''Duplizieren…''.
+* Ein Projekt rechnet mit seiner eigenen Kopie. Eine Änderung am Katalogsatz erreicht das Projekt erst, wenn seine Gebäudeliste mit ''OK'' neu geschrieben wird (siehe [[#uebernahme|Übernahme ins Projekt]]).
+
+== Gebäudetypen ==
+{{Anker|gebaeudetypen}}
+
+Der '''Gebäudetyp''' eines Satzes benennt die Tagesverteilungskurven, mit denen der Rechenweg ''Tagesbilanz'' den Tageswert auf die Stunden verteilt. Die Verwaltung ''Gebäudetypen'' führt je Typ seine Stundenprofile und öffnet sich aus dem Menü ''Administration'' › ''Gebäude'' › ''Gebäudetypen'', aus der Verwaltung Gebäude über ''Gebäudetypen…'' und aus dem Projektdialog über ''Gebäudetyp in DB ändern…''. Nach dem Schließen liest die Auswahl ''Gebäudetyp'' die Typen neu.
+
+== Berechnung ==
+{{Anker|berechnung}}
+
+Die Heizlast eines Gebäudes entsteht aus den U-Werten, den Wärmebrücken, dem Luftwechsel, den solaren und internen Gewinnen und der Speicherfähigkeit des Gebäudes. Den Rechenweg beschreiben die Seiten [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Gebäudemodell VDI 6007]] – das stündliche Gebäudemodell und seine Eingaben
+* [[Programm Dokumentation/Kühlung]] – Kühlung je Projekt und Gebäude
+* [[Programm Dokumentation/Gerätekataloge]] – Aufbau der Verwaltungen, Schreibschutz und Löschen
+* [[Programm Dokumentation/Hilfe-Assistent]] – was der Assistent in den Masken setzt
+* [[Gebäude und Gebäudetypen]] – Katalog, Projektzuordnung und Tagesverteilungskurven
+* [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren hinter dem Jahresgang
+
+[[Kategorie:Programm Dokumentation]]

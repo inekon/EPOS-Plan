@@ -252,9 +252,16 @@ Form_DBBHKW.btn_Help = BHKW
 Form_Brauchwasser_Admin.btn_Help = Brauchwasser
 Form_EingBrauchwasserTyp.btn_Help = Brauchwasser
 Form_ErgBrauchwasserwaerme.btn_Help = Brauchwasser
-Form_EingGebTyp.btn_Help = Gebäude
-Form_Gebaeude1.btn_Help = Gebäude
-Form_Gebaeude2.btn_Help = Gebäude
+# Gebaeude: Die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm
+# Dokumentation - Gebäude.wiki). Katalogeditor und Gebaeudetypen springen auf
+# ihren Abschnitt; der Schluessel Form_Gebaeude.btn_Help (Projektdialog,
+# Waermebedarf des Gebaeudes und die Verwaltung Gebaeude) zeigt weiter auf die
+# Seite als Ganzes. Die Nutzflaechen-/Verbrauchsangabe (Form_GebWohnflaeche)
+# hat noch keine Zeile: ihr Praefix braucht zuerst einen Bereich in
+# KiChatKontext.BEREICH_JE_HILFEPRAEFIX; ihr Ziel waere Gebäude#verbrauch.
+Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
+Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
+Form_Gebaeude2.btn_Help = Gebäude#katalogeditor
 Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel
