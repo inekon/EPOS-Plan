@@ -278,6 +278,35 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
                         StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// ETAPPE E10 (Empfehlung E10‑Q3 a): Unter „Ersatz und Restwert" sagen zwei leise
+    /// Zeilen, was ein Intervall 0 bedeutet — die Nutzungsdauer der Nutzungsdauertabelle,
+    /// mit ihrer Zahl, wenn der Wirt sie kennt — und dass der feste Restwert
+    /// Gerätedaten ist, die nicht mehr rechnen.
+    /// </summary>
+    [Fact]
+    public void Ersatz_und_Restwert_nennen_Tabelle_und_Altfeld()
+    {
+        var mitZahl = Render<SpeicherFlottenEditor>(p => p
+            .Add(x => x.Wert, KonfigurationMitEinheit())
+            .Add(x => x.ErsatzintervallVorgabeJahre, 10));
+        Assert.Equal("Ersatzintervall 0: Es gilt die Nutzungsdauer der Nutzungsdauertabelle für Stromspeicher " +
+                     "(10 Jahre). Aus dem Intervall folgen Ersatz und linearer Restwert.",
+                     mitZahl.Find("p.epos-flotte-ersatzvorgabe").TextContent.Trim());
+        Assert.Contains("Gerätedaten, nicht mehr rechenwirksam",
+                        mitZahl.Find("p.epos-flotte-restwert-altfeld").TextContent);
+
+        var ohneTabelle = Render<SpeicherFlottenEditor>(p => p
+            .Add(x => x.Wert, KonfigurationMitEinheit())
+            .Add(x => x.ErsatzintervallVorgabeJahre, 0));
+        Assert.Contains("keine Nutzungsdauer", ohneTabelle.Find("p.epos-flotte-ersatzvorgabe").TextContent);
+
+        var ohneWirt = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, KonfigurationMitEinheit()));
+        string text = ohneWirt.Find("p.epos-flotte-ersatzvorgabe").TextContent;
+        Assert.Contains("Nutzungsdauertabelle", text);
+        Assert.DoesNotContain("Jahre)", text);
+    }
+
     private static FlottenStudieKonfiguration KonfigurationMitEinheit()
     {
         var einheit = new FlottenEinheit

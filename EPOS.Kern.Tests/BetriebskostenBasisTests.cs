@@ -87,7 +87,20 @@ namespace EPOS.Kern.Tests
 
             Setze(B_P2, 0.0, DbWerte.BEMESSUNG_PROZENT_INVESTITION, SATZ_BETRIEB,
                   DbWerte.KOSTENART_BETRIEBSGEBUNDEN);
+
+            // ETAPPE E10 (Stufe S3): Die drei übrigen Zeilen „Instandhaltung …" der Anlage
+            // (Wärmezentrale, bauliche Anlagen, Stromeinspeisung) tragen in der Testdatenbank
+            // weder Satz noch Betrag. Seit S3 nähmen sie den Satz der Nutzungsdauertabelle
+            // (2 %, 1,25 %, 2 % — gehalten in NutzungsdauerS3Tests); dieses Beispiel prüft
+            // die BASIS der einen Zeile. Die drei bekommen deshalb den gepflegten Satz 0 — ein
+            // gepflegter Satz hat Vorrang —, und jede Zahl unten bleibt, was sie war.
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_ProjektWerte SET Einheitpreis = 0 WHERE ID IN (" +
+                string.Join(", ", B_OHNE_EIGENEN_SATZ) + ")");
         }
+
+        /// <summary>ETAPPE E10: die drei Zeilen „Instandhaltung …" ohne eigenen Satz.</summary>
+        private static readonly int[] B_OHNE_EIGENEN_SATZ = { 101600557, 101600558, 101600559 };
 
         private static void Setze(int id, double wert, string bemessung, double? satz, string kostenart)
         {

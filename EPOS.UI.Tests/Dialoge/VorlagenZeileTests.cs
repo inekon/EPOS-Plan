@@ -75,6 +75,21 @@ public class VorlagenZeileTests : BunitContext
         Assert.Equal("0", cut.Find("select").GetAttribute("value") ?? "0");
     }
 
+    /// <summary>
+    /// ETAPPE E10 (Stufe S3): Die Herkunftszeile unter dem Satzfeld steht nur, wenn der
+    /// Wirt einen Text reicht — dann wortgleich.
+    /// </summary>
+    [Fact]
+    public void Die_Herkunftszeile_des_Satzes_steht_nur_mit_Text()
+    {
+        Assert.Empty(Zeige().FindAll(".epos-zr-satzherkunft"));
+
+        const string herkunft =
+            "2 % · Satz aus Nutzungsdauertabelle: Heizkessel · Wärmeerzeuger (Instandsetzung)";
+        var cut = Zeige(p => p.Add(x => x.SatzHerleitung, herkunft));
+        Assert.Equal(herkunft, cut.Find(".epos-zr-satzherkunft").TextContent);
+    }
+
     [Fact]
     public void Ohne_Investitionskosten_gibt_es_kein_Nutzungsdauerfeld()
     {
