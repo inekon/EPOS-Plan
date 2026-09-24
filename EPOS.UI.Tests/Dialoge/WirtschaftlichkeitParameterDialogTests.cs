@@ -1184,9 +1184,10 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     {
         var cut = Aufbauen(Satz());
 
-        Assert.Contains(cut.FindAll(".epos-infoknopf"),
-                        k => k.GetAttribute("title") != null);
-        Assert.Contains("Form_WirtschaftlichkeitParameter.btn_Help_Risiko", cut.Markup);
+        // Der Schlüssel steht nicht im Markup, sondern am Baustein.
+        var knoepfe = cut.FindComponents<EPOS.UI.Bausteine.InfoKnopf>();
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Contains(knoepfe, k => k.Instance.Schluessel == "Form_WirtschaftlichkeitParameter.btn_Help_Risiko");
     }
 
     /// <summary>
