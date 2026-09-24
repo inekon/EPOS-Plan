@@ -87,7 +87,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("WiederholperiodeSchema.Spalten", vorrichtung, StringComparison.Ordinal);
 
             string stand = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Update", "SchemaStand.cs"));
-            Assert.Contains("public const int Zielversion = WiederholperiodeSchema.SCHRITT;", stand, StringComparison.Ordinal);
+            // Der Zielstand ist spaeter weitergezogen (Anschlusslaengen im Gebaeudekatalog);
+            // SchemaStand nennt den Schritt weiter in seiner Chronik.
+            Assert.Contains("<see cref=\"WiederholperiodeSchema.SCHRITT\"/>", stand, StringComparison.Ordinal);
         }
 
         /// <summary>

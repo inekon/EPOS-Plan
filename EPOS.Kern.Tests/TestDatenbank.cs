@@ -651,6 +651,11 @@ namespace EPOS.Kern.Tests
                     SpalteSicherstellen(s);
                 WiederholperiodeSchema.SpaltenStandVergessen();
 
+                // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT (Welle #493): die
+                // Anschlusslaengen im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
