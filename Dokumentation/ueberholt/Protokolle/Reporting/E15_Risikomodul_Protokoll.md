@@ -14,7 +14,7 @@ Vorgänger: [`E14_Formelmappe_je_Szenario_Protokoll.md`](E14_Formelmappe_je_Szen
 (E15/1), `e111f7ee` (E15/2), `fe795e10` (E15/3), `a40c9b3c` (E15/4), `a8a82d0c` (E15/5) in Phase 1; in Phase 2 die
 Zusammenführung `8494f244` mit `origin` = `6d022f6d` (#477 E14 samt Papieren) und `5eaed19c` (E15/6). Erster Merge
 `d176b378` („Merge e15: Risikomodul nach DIN EN 17463 - Zinszuschlag oder Zahlungsstromabzug, Schritt 125 (#478)")
-über `6d022f6d`, der Baum byte-gleich mit `5eaed19c`; End-Merge `NACHTRAG-478-MERGE2`. Basis
+über `6d022f6d`, der Baum byte-gleich mit `5eaed19c`; End-Merge `dedfc760`. Basis
 `2026-09-24_R14_Kaelteerzeuger`. **Schemaschritt 125, optional, Vorgabe aus** — ohne Pflege rechnet alles wie vorher,
 die Basis bleibt.
 
