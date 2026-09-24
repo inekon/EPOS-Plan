@@ -118,32 +118,37 @@ Dateien der Wärmepumpe und 42 Skalare kommen dazu; 1 689 Werte außerhalb der T
 Protokoll nach `Dokumentation/ueberholt/Referenzbasen/` gewandert, der Ordner entfernt; der Basisname
 steht in `CLAUDE.md`, `kern.yml`, `ios.yml` und den Papieren mit „aktuell"-Verweis.
 
-## 6 Prüfungen — und was aussteht
+**Zusammenführung mit den Schemaschritten 120 und 121.** Nach dem Einfrieren ist origin zusammengeführt
+worden (E10 #463: Sätze der Nutzungsdauertabelle; #468: `Tab_Gebaeude.ID_Gebaeude_Stamm`). Die
+Testdatenbank ist die Fassung von origin (Schemastand 121, LFS-SHA-256 `00fbbb8b…`), auf die
+`kaelteerzeuger_1017_referenzprojekt.py` erneut angewandt ist; die Saaten von KU1 und die Korrektur von
+10612/233 standen schon darin (die Skripte finden nichts zu tun). Zellvergleich aller 132 Tabellen gegen die
+Fassung von origin (10 499 019 Zellen): genau die vier Zellen, zehn Zeilen und die Sequenzzeile der
+vierten Welle; 14 Sichten und 209 Indizes gleich, `integrity_check` ok, `foreign_key_check` leer,
+67 792 896 Byte, LFS-SHA-256 `9acda529…`. **R14 rechnet darauf unverändert:** 13/13 Projekte, 394/394
+CSV byte-gleich zur Basis — die Basis bleibt. Die Nachträge von origin zum R13-Abschnitt (Schritte 116
+bis 118, 120, 121) stehen wortgleich im archivierten R13-Abschnitt.
 
-Die Arbeit ist am 24.09.2026 nach dem Einfrieren pausiert worden. **Die volle Abnahme auf dem
-Einfrierstand steht aus.** Gelaufen ist:
+## 6 Abnahme (nach der letzten Änderung)
 
-| Prüfung | Stand | Ergebnis |
-|---|---|---|
-| Test-Gate | vor dem Zusammenführen mit E9b (#462), auf dem Stand des Referenzprojekts | Kern 5 650, UI 5 827, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün |
-| `Auslieferungsvorlage.Tests` | ebenda | 30 grün |
-| Windows-Schale | nach E35, in einen Ordner außerhalb des Repositoriums | 0 Fehler |
-| SqlDialektPruefer | nach E35 | 1 765 SQL-Texte, 0 Fundstellen |
-| ChartProben | vor dem Zusammenführen | 161 Bilder, 0 Verstöße |
-| Normfälle (lokal, AixLib) | vor dem Zusammenführen | 11 von 12 im Band, Fall 11 unverändert |
-| Bau des Kern-Filters und des Referenzlaufs | nach dem Zusammenführen, der Code des Einfrierstands | 0 Fehler |
-| Referenzlauf der dreizehn Projekte gegen R13 | nach dem Zusammenführen | allein 1017 weicht ab, zwölf byte-gleich; byte-gleich zum Lauf vor dem Zusammenführen |
-| Referenzlauf gegen R14 | nach dem Einfrieren | zweiter Lauf 394/394 CSV byte-gleich, GESAMT: PASS (4 207 049 Werte) |
-| Doku-Wächter (`DokumentationLinkWache`, `RepositoryOrdnungWache`, `WikiProduktdatenWache`) und `GebaeudeRueckwegTests` | Einfrierstand | grün |
+Die Arbeit ist nach dem Einfrieren kurz pausiert worden; danach ist origin mit den Schemaschritten 120
+(E10, #463) und 121 (#468) zusammengeführt worden (Abschnitt 5). Die Abnahme lief auf diesem Stand:
 
-**Aussteht** auf dem Einfrierstand: Bau von Kern-Filter und Windows-Schale, das volle Test-Gate, der
-Referenzlauf der fünf CI-Projekte und aller dreizehn gegen R14 samt zweitem Lauf, SqlDialektPruefer,
-`Auslieferungsvorlage.Tests` und ChartProben.
+| Prüfung | Ergebnis |
+|---|---|
+| Bau des Kern-Filters | 0 Fehler |
+| Windows-Schale | in einen Ordner außerhalb des Repositoriums gebaut, 0 Fehler |
+| Test-Gate | Kern 5 778, UI 5 906, KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin die Doku-Wächter, `GebaeudeRueckwegTests` und die Normfälle (lokal, AixLib; 11 von 12 im Band, Fall 11 unverändert) |
+| `Auslieferungsvorlage.Tests` | 30 grün |
+| ChartProben | 161 Bilder, 0 Verstöße; kein neues Bild |
+| Referenzlauf gegen R14 | fünf CI-Projekte GESAMT: PASS (1 805 429 Werte), alle dreizehn GESAMT: PASS (4 207 049 Werte); je zweiter Lauf byte-gleich |
+| SqlDialektPruefer | 1 772 SQL-Texte, 0 Fundstellen |
+
+Vor dem Einfrieren (auf dem Stand vor dem ersten Zusammenführen) lief das Gate ebenfalls grün (Kern
+5 650, UI 5 827), dazu `Auslieferungsvorlage.Tests` 30, SqlDialektPruefer 1 765 Texte und ChartProben.
 
 ## 7 Offen
 
-- **Die volle Abnahme auf dem Einfrierstand** (Abschnitt 6); danach die Statuszeile KU2 auf
-  „abgeschlossen".
 - **Für KU3:** Kältemaschine als eigener Erzeugertyp samt Rückkühlung, freie Kühlung, Kältespeicher (K7),
   Kühlung je Zone (G6), Kühlsollwert Nacht, Export nach IFC und gbXML (Kühlkonzept 11.1); dazu die
   Erdreichregeneration durch Rückkühlung (K8c) und ein gemeinsamer Zähler mehrerer Anlagen, falls er

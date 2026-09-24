@@ -103,7 +103,8 @@
 > nachgezogen: der Preis des vermiedenen Bezugs (Projektträger statt irgendeines Stromträgers), die
 > Bemessungsmenge nach § 9b StromStG (eigener Zähler genau einmal) und das Mengenszenario (Kälteseite
 > samt Kühlträger). Geprüft und benannt: die Wahl des Projektträgers bei mehreren Stromträgern ohne
-> Anlagenwahl (6.1–6.3).
+> Anlagenwahl (6.1–6.3). Das Referenzprojekt 1017 kühlt mit seiner Wärmepumpe, die Basis ist
+> `2026-09-24_R14_Kaelteerzeuger`, und KU2 ist abgeschlossen (10.4, 10.5, 11.1).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -138,7 +139,7 @@ Bedarf wird durch Kälteerzeuger gedeckt
   anlegt, in die Löschliste der Stufe GA einzutragen (10.5, 11.2;
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.31).
 
-**Stand:** 24.09.2026 (Stufe KU2 umgesetzt — E35, Referenzprojekt 1017 mit Kälteerzeuger, Basis `2026-09-24_R14_Kaelteerzeuger`, die Abnahme auf dem Einfrierstand steht aus; Stufe KU1 abgeschlossen). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
+**Stand:** 24.09.2026 (Stufe KU2 abgeschlossen — E35, Referenzprojekt 1017 mit Kälteerzeuger, Basis `2026-09-24_R14_Kaelteerzeuger`; Stufe KU1 abgeschlossen). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
 Rev. 3 trug E20, E21 und E23, Rev. 2 war aus drei Blickwinkeln gegengelesen (Bestand, Konsistenz,
 Entscheid E15).
 
@@ -2779,7 +2780,9 @@ geplant ein Projekt (K19).** 1017 bekommt seinen Kälteerzeuger (10.4): Die Wär
 die sieben Dateien der Wärmepumpe und 42 Skalare (`Kaelte.*`, `Waermepumpe.*`, `WaermepumpeModul[0].*`,
 Vektorsummen) — 394 CSV, 2 249 Skalare. **Die übrigen zwölf Projekte sind in allen Dateien byte-gleich zu
 R13**, auch nach dem Zusammenführen mit der Szenariopflege E9b; E35 und die Reste von E34 ändern Kosten,
-nicht die Simulation. Die Tabelle steht in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md).
+nicht die Simulation. Nach dem Zusammenführen mit den Schemaschritten 120 und 121 (Testdatenbank
+`9acda529…`, die Saat der vierten Welle erneut angewandt) rechnet R14 unverändert, 394/394 CSV
+byte-gleich. Die Tabelle steht in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md).
 
 **Was das Einfrieren erzwingt, ist allein die Datei.** Und weil KU1 sie erzeugt, während G1 + G2
 ohnehin alle dreizehn Projekte bewegen: **Getrennt gefahren kostet dasselbe Ergebnis zwei
@@ -2869,12 +2872,11 @@ in Heizlage und mit vertauschten Achsen (K22). **KU2 Welle 3 ist umgesetzt (24.0
 Aufteilung des Netzbezugs im Lauf, Kosten und Emissionen des Kältestroms genau einmal (6.1–6.3), die
 Kennzahlen der Gruppe „Kälte" samt `kaelte.deckungsgrad` (6.4), die Gruppe „Kühlbetrieb" im
 Erzeugerdialog (8.2), die Kältedeckung in Übersicht und Bericht (8.4), die Wiki-Quellen (11.3); der
-Import der Kühlsollwerte ist auf G4 verschoben (9.1). **KU2 ist umgesetzt (24.09.2026)** — mit der
+Import der Kühlsollwerte ist auf G4 verschoben (9.1). **KU2 ist abgeschlossen (24.09.2026)** — mit der
 vierten Welle: E35 (ein eigener Zähler trägt Grund- und Leistungspreis seines Kühlträgers; 6.1–6.3), die
 Reste von E34 (Preis des vermiedenen Bezugs, Bemessungsmenge nach § 9b, Mengenszenario), das
 Referenzprojekt 1017 mit Kälteerzeuger samt Rechenprobe je Vorlauf (10.3, 10.4) und die neue Basis
-`2026-09-24_R14_Kaelteerzeuger` (10.5). Offen sind die volle Abnahme auf dem Einfrierstand (die Arbeit
-ist am 24.09.2026 nach dem Einfrieren pausiert) und aus 11.3 der Upload der Wiki-Seiten.
+`2026-09-24_R14_Kaelteerzeuger` (10.5). Offen bleibt aus 11.3 der Upload der Wiki-Seiten.
 
 **Warum KU2 gegenüber Rev. 1 wächst (14–22 → 16–26 in Rev. 2).** Drei Posten kamen aus dem
 Gegenlesen hinzu: der **Kühl-Vorlauf** als Kennlinienwahl samt Auswahlfeld und
