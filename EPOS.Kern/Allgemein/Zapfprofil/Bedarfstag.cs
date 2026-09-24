@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
         public bool ReadOnly { get; init; }
 
         /// <summary>
-        /// Die Bezugsart der <see cref="Bezugsmenge"/> (<c>Tab_TwwBedarfstag_STAMM.Bezugsart</c>, Schritt 120;
+        /// Die Bezugsart der <see cref="Bezugsmenge"/> (<c>Tab_TwwBedarfstag_STAMM.Bezugsart</c>, Schritt 121;
         /// N10 (j)): Skaliert wird nur auf eine Menge derselben Bezugsart. <c>null</c> = ohne Angabe (ein
         /// Tag ohne Bezugsmenge wird nie skaliert; ein Tag mit Bezugsmenge ohne Bezugsart skaliert auf
         /// die eine Bezugsart der Gruppe).

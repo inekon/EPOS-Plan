@@ -6,15 +6,15 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Schreibwege des Schemaschritts 120</b> (Umsetzungskonzept Zapfprofilgenerator N10 (i)/(j),
+    /// <b>Die Schreibwege des Schemaschritts 121</b> (Umsetzungskonzept Zapfprofilgenerator N10 (i)/(j),
     /// N11 (d)/(i)/(j); Stufe Z4): Die Laufangaben der Auslegung — Erzeugerart, Werkstoff, Personen
     /// auto/manuell, Bezug des Füllstands — sind Projektgrößen in <c>Tab_TwwProjekt</c>, der
     /// Konstruktor legt seinen Tag samt Bezugsmenge und Bezugsart ab, die Wertemengen der DDL gelten
-    /// auch im Schreibweg, und eine Datenbank vor 120 lehnt eine gesetzte Angabe benannt ab, statt sie
+    /// auch im Schreibweg, und eine Datenbank vor 121 lehnt eine gesetzte Angabe benannt ab, statt sie
     /// still fallen zu lassen. Werte erfunden.
     /// </summary>
     [Collection("Testdatenbank")]
-    public sealed class ZapfprofilSchritt120Tests
+    public sealed class ZapfprofilSchritt121Tests
     {
         private const int PROJEKT = 1006;
 
@@ -77,10 +77,10 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Vor_Schritt_120_laeuft_der_Schreibweg_ohne_Angabe_und_lehnt_eine_Angabe_benannt_ab()
+        public void Vor_Schritt_121_laeuft_der_Schreibweg_ohne_Angabe_und_lehnt_eine_Angabe_benannt_ab()
         {
             using var db = new TwwTestdatenbank(mitTwwSchema: false);
-            TwwTestdatenbank.SchemaAnlegen(mitT2: false);   // Stand vor 115 und vor 120
+            TwwTestdatenbank.SchemaAnlegen(mitT2: false);   // Stand vor 115 und vor 121
             Assert.False(TwwSchema.T3Vollstaendig());
 
             ZapfprofilCtrl.Speichern(1, new ZapfprofilStand(BrauchwasserWeg.Generator, new ZonenStand[0], ZapfprofilCtrl.ProjektVorgabe()));

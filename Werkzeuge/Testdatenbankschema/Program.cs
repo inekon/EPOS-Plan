@@ -1482,7 +1482,7 @@ namespace Testdatenbankschema
 
             // ---- Schritt 121: die Laufangaben der Zapfprofil-Auslegung und die Bezugsart am
             //      Bedarfstag (Zapfprofilgenerator Stufe Z4, T3). NACH 120. REIN DDL aus
-            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_120_ZapfprofilLaufangaben
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_121_ZapfprofilLaufangaben
             //      bedient (TwwSchema.SpaltenT3): Erzeugerart, Uebertrager_Werkstoff, Personen_Auto
             //      (0/1, Vorgabe 1), Personen_Manuell, Fuellstand_Bezug an Tab_TwwProjekt und
             //      Bezugsart an Tab_TwwBedarfstag_STAMM.

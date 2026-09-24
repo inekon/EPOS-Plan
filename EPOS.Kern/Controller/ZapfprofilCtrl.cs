@@ -422,7 +422,7 @@ namespace WindowsFormsApplication1
         {
             int? lage = GanzOderNull(r, "Zirk_Lage");
             int? quelle = GanzOderNull(r, "Bedarfstag_Quelle");
-            // Schritt 120 (T3): Vor dem Schritt fehlen die Spalten — dann gelten die DDL-Vorgaben.
+            // Schritt 121 (T3): Vor dem Schritt fehlen die Spalten — dann gelten die DDL-Vorgaben.
             int? erzeuger = SpalteDa(r, TwwSchema.SPALTE_ERZEUGERART) ? GanzOderNull(r, TwwSchema.SPALTE_ERZEUGERART) : null;
             int? werkstoff = SpalteDa(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF)
                 ? GanzOderNull(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF) : null;

@@ -311,12 +311,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Schemaschritt 120: Die Laufangaben der Projektzeile reisen mit (Erzeugerart, Personen);
-        /// in eine Datenbank VOR 120 (ohne die Spalten) läuft der Import durch, und der Bericht
+        /// Schemaschritt 121: Die Laufangaben der Projektzeile reisen mit (Erzeugerart, Personen);
+        /// in eine Datenbank VOR 121 (ohne die Spalten) läuft der Import durch, und der Bericht
         /// nennt je Spalte die Werte, die liegen bleiben — benannt, nie still.
         /// </summary>
         [Fact]
-        public void Transfer_traegt_die_Laufangaben_und_nennt_sie_vor_120()
+        public void Transfer_traegt_die_Laufangaben_und_nennt_sie_vor_121()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -328,28 +328,28 @@ namespace EPOS.Kern.Tests
                 "UPDATE Tab_TwwProjekt SET Erzeugerart = 2, Personen_Auto = 0, Personen_Manuell = 30.0 WHERE ID_Projekt = ?",
                 new DbParam("@p", quelle));
 
-            string paket = ordner.Datei("tww120.wpx");
+            string paket = ordner.Datei("tww121.wpx");
             var io = new ProjektExportImportCtrl();
             Assert.True(io.Exportieren(PROJEKT, paket));
 
-            // Rundreise auf Stand 120: die Werte kommen an.
-            int gleich = io.Importieren(paket, "Tww 120", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f1);
+            // Rundreise auf Stand 121: die Werte kommen an.
+            int gleich = io.Importieren(paket, "Tww 121", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f1);
             Assert.True(gleich > 0, "Import fehlgeschlagen: " + f1);
             ProjektStand p = ZapfprofilCtrl.Lies(gleich).Projekt;
             Assert.Equal(ZapfErzeugerart.Waermepumpe, p.Erzeugerart);
             Assert.False(p.PersonenAuto);
             Assert.Equal(30.0, p.PersonenManuell);
-            Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("Schemastand vor 120", StringComparison.Ordinal));
+            Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("Schemastand vor 121", StringComparison.Ordinal));
 
-            // Das Ziel steht vor 120: Erzeugerart fehlt dort.
+            // Das Ziel steht vor 121: Erzeugerart fehlt dort.
             DataRepository.ExecuteNonQuery("ALTER TABLE Tab_TwwProjekt DROP COLUMN Erzeugerart");
             io = new ProjektExportImportCtrl();          // frischer Typenspeicher fuer das geaenderte Ziel
-            int alt = io.Importieren(paket, "Tww vor 120", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f2);
+            int alt = io.Importieren(paket, "Tww vor 121", ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string f2);
             Assert.True(alt > 0, "Import fehlgeschlagen: " + f2);
             Assert.Equal(1, Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", alt))));
             Assert.Contains(io.LetzterBericht, b => b.Contains("Tab_TwwProjekt.Erzeugerart", StringComparison.Ordinal)
-                                                    && b.Contains("Schemastand vor 120", StringComparison.Ordinal));
+                                                    && b.Contains("Schemastand vor 121", StringComparison.Ordinal));
             Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("Personen_Manuell", StringComparison.Ordinal));
         }
 

@@ -4027,7 +4027,7 @@ namespace WindowsFormsApplication1
         /// kein Projekt steht auf dem Generator. Der Referenzlauf bleibt byte-gleich.
         /// <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
         /// </summary>
-        public const int SCHRITT_120_ZAPFPROFIL_LAUFANGABEN = 121;
+        public const int SCHRITT_121_ZAPFPROFIL_LAUFANGABEN = 121;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5671,14 +5671,14 @@ namespace WindowsFormsApplication1
             // (Erzeugerart, Werkstoff, Personen, Bezug des Fuellstands) an Tab_TwwProjekt und
             // die Bezugsart am Bedarfstag. REIN DDL; die Quelle ist TwwSchema.SpaltenT3. Er
             // steht NACH 120 ohne Reihenfolgebedingung und braucht 103.
-            new Schritt(SCHRITT_120_ZAPFPROFIL_LAUFANGABEN,
+            new Schritt(SCHRITT_121_ZAPFPROFIL_LAUFANGABEN,
                         "Zapfprofilgenerator: Laufangaben der Auslegung (Tab_TwwProjekt) und " +
                         "Bezugsart am Bedarfstag (Tab_TwwBedarfstag_STAMM)",
                         "Erzeugerart, Werkstoff des Uebertragers, Personen und Bezug des Fuellstands " +
                         "der Zapfprofil-Auslegung liessen sich nicht speichern, und ein Bedarfstag " +
                         "truege keine Bezugsart. KEIN Rechenergebnis aendert sich - die Spalten stehen " +
                         "auf 'keine Angabe' bzw. Personen automatisch.",
-                        Schritt_120_ZapfprofilLaufangaben),
+                        Schritt_121_ZapfprofilLaufangaben),
         };
 
         /// <summary>
@@ -9090,13 +9090,13 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Schritt 121 — Anlass und Wirkung stehen bei <see cref="SCHRITT_120_ZAPFPROFIL_LAUFANGABEN"/>,
+        /// Schritt 121 — Anlass und Wirkung stehen bei <see cref="SCHRITT_121_ZAPFPROFIL_LAUFANGABEN"/>,
         /// die Spalten bei <see cref="TwwSchema.SpaltenT3"/>. Die SQLite-Definition steht dort
         /// fertig (STRICT-Typ samt CHECK); <b>nur <see cref="SqliteSpalteAnlegen"/></b>.
         /// <b>Wiederholbar</b>, eine vorhandene Spalte wird übergangen; die Nachprobe fragt
         /// <see cref="TwwSchema.T3Vollstaendig"/>.
         /// </summary>
-        private static bool Schritt_120_ZapfprofilLaufangaben(Lauf l)
+        private static bool Schritt_121_ZapfprofilLaufangaben(Lauf l)
         {
             int angelegt = 0, gesamt = 0;
 

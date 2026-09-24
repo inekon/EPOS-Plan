@@ -318,14 +318,14 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schemaschritt T3 (Schritt 120) auf einer Datenbank mit Stand 119: Die Tabellen aus T1
+        /// Der Schemaschritt T3 (Schritt 121) auf einer Datenbank mit Stand 120: Die Tabellen aus T1
         /// stehen samt einer Projekt- und einer Bedarfstagzeile, T3 legt die sechs Spalten daneben —
         /// wiederholbar, ohne eine Zeile zu ändern: die vorhandene Projektzeile rechnet mit
         /// <c>Personen_Auto</c> = 1 und sonst NULL. Die CHECK-Klauseln kommen aus den Wertemengen
         /// von <see cref="TwwSchema"/>, derselben Quelle wie der Schreibweg.
         /// </summary>
         [Fact]
-        public void Schritt_T3_legt_die_Laufangaben_und_die_Bezugsart_auf_Stand_119_an()
+        public void Schritt_T3_legt_die_Laufangaben_und_die_Bezugsart_auf_Stand_120_an()
         {
             using SqliteConnection c = Datenbank();
             foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
@@ -370,25 +370,25 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt 120 steht in der Migration der Schale NACH 119 und bedient sich derselben Quelle
-        /// (<see cref="TwwSchema.SpaltenT3"/>); das Ziel steht auf mindestens 120.
+        /// Der Schritt 121 steht in der Migration der Schale NACH 120 (E10) und bedient sich derselben Quelle
+        /// (<see cref="TwwSchema.SpaltenT3"/>); das Ziel steht auf mindestens 121.
         /// </summary>
         [Fact]
-        public void Schritt_120_steht_in_der_Migration_nach_119()
+        public void Schritt_121_steht_in_der_Migration_nach_120()
         {
-            Assert.True(SchemaStand.Zielversion >= 120, "Zielstand " + SchemaStand.Zielversion + " liegt unter 120.");
+            Assert.True(SchemaStand.Zielversion >= 121, "Zielstand " + SchemaStand.Zielversion + " liegt unter 121.");
 
             string datei = Migrationsquelle();
             if (datei == null) return;
             string text = File.ReadAllText(datei);
 
-            Assert.Contains("public const int SCHRITT_120_ZAPFPROFIL_LAUFANGABEN = 120;", text, StringComparison.Ordinal);
-            int ort119 = text.IndexOf("new Schritt(SCHRITT_119_KAELTESTROM", StringComparison.Ordinal);
-            int ort120 = text.IndexOf("new Schritt(SCHRITT_120_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
-            Assert.True(ort119 > 0 && ort120 > ort119, "Schritt 120 steht nicht nach 119 in der Schrittliste.");
+            Assert.Contains("public const int SCHRITT_121_ZAPFPROFIL_LAUFANGABEN = 121;", text, StringComparison.Ordinal);
+            int ort120 = text.IndexOf("new Schritt(SCHRITT_120_NUTZUNGSDAUER_SAETZE", StringComparison.Ordinal);
+            int ort121 = text.IndexOf("new Schritt(SCHRITT_121_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
+            Assert.True(ort120 > 0 && ort121 > ort120, "Schritt 121 steht nicht nach 120 in der Schrittliste.");
 
-            int methode = text.IndexOf("private static bool Schritt_120_ZapfprofilLaufangaben(Lauf l)", StringComparison.Ordinal);
-            Assert.True(methode > 0, "Die Methode des Schrittes 120 fehlt.");
+            int methode = text.IndexOf("private static bool Schritt_121_ZapfprofilLaufangaben(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 121 fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
             Assert.Contains("TwwSchema.SpaltenT3", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }

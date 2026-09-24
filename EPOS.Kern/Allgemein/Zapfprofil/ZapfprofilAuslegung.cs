@@ -810,7 +810,7 @@ namespace WindowsFormsApplication1
                                      bezugsmengen.Keys.Select(Bezugsartbegriff).ToArray()));
                 foreach (KeyValuePair<ZapfBezugsart, double> m in bezugsmengen)
                 {
-                    // Die Bezugsart des Tages (Schemaschritt 120, N10 (j)): Skaliert wird nur auf eine
+                    // Die Bezugsart des Tages (Schemaschritt 121, N10 (j)): Skaliert wird nur auf eine
                     // Menge derselben Bezugsart; ein Tag ohne Bezugsart gilt wie bisher für jede.
                     if (zeile.Bezugsart.HasValue && zeile.Bezugsart.Value != m.Key)
                         throw new ZapfAuslegungException(ZapfAuslegungsfehler.BedarfstagUngueltig,

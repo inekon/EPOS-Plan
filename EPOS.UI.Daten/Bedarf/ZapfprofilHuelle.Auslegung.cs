@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
     /// des Bedarfsprofil-Dialogs schreibt sie im gemeinsamen Vorgang über
     /// <see cref="AuslegungSpeichern"/> — Projektgrößen in <c>Tab_TwwProjekt</c>, ein
     /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart, Werkstoff, Personen und Bezug des
-    /// Füllstands stehen ab Schritt 120 als Projektgrößen darin; der Vorschlag des
+    /// Füllstands stehen ab Schritt 121 als Projektgrößen darin; der Vorschlag des
     /// Anlagenbestands bleibt ein Vorschlag (N10 (i)).</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
@@ -605,7 +605,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Eingaben der Überlagerung aus dem Stand des Kerns: Projektgrößen (nullbar =
         /// Vorgabe) und ein noch ungespeicherter Entwurf; Erzeugerart und Werkstoff aus der
-        /// gespeicherten Wahl (Schritt 120), sonst „keine Angabe".
+        /// gespeicherten Wahl (Schritt 121), sonst „keine Angabe".
         /// </summary>
         internal static ZapfprofilAuslegungEingabeDaten AuslegungAusStand(ZapfprofilStand stand)
         {
@@ -629,7 +629,7 @@ namespace WindowsFormsApplication1
                 a.Perzentil = TwwSchema.Perzentile.Contains(p.Perzentil) ? p.Perzentil : (int?)null;
                 a.RealisierungenAuslegung = p.RealisierungenAuslegung;
                 // Der Verfahrensvergleich (4.7; Stufe Z4): Ladeleistung, Ladefenster, Nutzanteil und
-                // Zuschlag, Personen und Bezug des Füllstands aus den Projektgrößen (Schritt 120).
+                // Zuschlag, Personen und Bezug des Füllstands aus den Projektgrößen (Schritt 121).
                 a.LadeAuto = p.LadeAuto;
                 a.LadeManuellKw = p.LadeManuellKw;
                 a.LadefensterH = p.LadefensterH;

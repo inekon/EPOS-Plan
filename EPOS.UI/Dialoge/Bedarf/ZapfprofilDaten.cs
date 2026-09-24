@@ -652,7 +652,7 @@ public enum ZapfprofilBedarfstagquelle
     Ecodesign = 5
 }
 
-/// <summary>Die Erzeugerart am Speicher — die Wahl des Anwenders, gespeichert ab Schritt 120 (N10 (i)).</summary>
+/// <summary>Die Erzeugerart am Speicher — die Wahl des Anwenders, gespeichert ab Schritt 121 (N10 (i)).</summary>
 public enum ZapfprofilErzeugerart
 {
     KeineAngabe = 0,
@@ -660,7 +660,7 @@ public enum ZapfprofilErzeugerart
     Waermepumpe = 2
 }
 
-/// <summary>Der Werkstoff des Übertragers — gespeichert ab Schritt 120 (N10 (i)).</summary>
+/// <summary>Der Werkstoff des Übertragers — gespeichert ab Schritt 121 (N10 (i)).</summary>
 public enum ZapfprofilWerkstoff
 {
     KeineAngabe = 0,

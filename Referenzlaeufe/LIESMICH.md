@@ -486,7 +486,7 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
 
 > **Nachtrag: Schemastand 121 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3), die Basis bleibt.**
-> Migrationsschritt **121** (`SCHRITT_120_ZAPFPROFIL_LAUFANGABEN`; Quelle `TwwSchema.SpaltenT3`, die
+> Migrationsschritt **121** (`SCHRITT_121_ZAPFPROFIL_LAUFANGABEN`; Quelle `TwwSchema.SpaltenT3`, die
 > Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an `Tab_TwwProjekt` die Laufangaben
 > der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2), `Personen_Auto` (0/1, Vorgabe 1),
 > `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an `Tab_TwwBedarfstag_STAMM` die

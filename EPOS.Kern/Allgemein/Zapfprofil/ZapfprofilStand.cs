@@ -190,26 +190,26 @@ namespace WindowsFormsApplication1
         public string Aenderungsdatum { get; init; }
 
         /// <summary>
-        /// Die gewählte Erzeugerart am Speicher (<c>Tab_TwwProjekt.Erzeugerart</c>, Schritt 120;
+        /// Die gewählte Erzeugerart am Speicher (<c>Tab_TwwProjekt.Erzeugerart</c>, Schritt 121;
         /// N10 (i), N11 (i)); <c>null</c> = keine Angabe — dann gilt der Vorschlag des
         /// Anlagenbestands, wenn er eindeutig ist. Der Vorschlag wird nie gespeichert.
         /// </summary>
         public ZapfErzeugerart? Erzeugerart { get; init; }
 
-        /// <summary>Der Werkstoff des Übertragers (<c>Tab_TwwProjekt.Uebertrager_Werkstoff</c>, Schritt 120); <c>null</c> = keine Angabe.</summary>
+        /// <summary>Der Werkstoff des Übertragers (<c>Tab_TwwProjekt.Uebertrager_Werkstoff</c>, Schritt 121); <c>null</c> = keine Angabe.</summary>
         public ZapfUebertragerwerkstoff? UebertragerWerkstoff { get; init; }
 
         /// <summary>
         /// Die Personen des Verfahrensvergleichs auto/manuell (<c>Tab_TwwProjekt.Personen_Auto</c>,
-        /// Schritt 120; N11 (d)): <c>true</c> = aus dem Mengengerüst. Ohne Projektzeile oder vor
-        /// Schritt 120 gilt die DDL-Vorgabe (1).
+        /// Schritt 121; N11 (d)): <c>true</c> = aus dem Mengengerüst. Ohne Projektzeile oder vor
+        /// Schritt 121 gilt die DDL-Vorgabe (1).
         /// </summary>
         public bool PersonenAuto { get; init; } = true;
 
         /// <summary>Der manuelle Wert der Personen (<c>Tab_TwwProjekt.Personen_Manuell</c>); wirkt nur bei <see cref="PersonenAuto"/> = false.</summary>
         public double? PersonenManuell { get; init; }
 
-        /// <summary>Der Bezug des Füllstands (<c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 120; N10 (k), N11 (d)); <c>null</c> = Vorgabe.</summary>
+        /// <summary>Der Bezug des Füllstands (<c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 121; N10 (k), N11 (d)); <c>null</c> = Vorgabe.</summary>
         public ZapfFuellstandbezug? FuellstandBezug { get; init; }
     }
 

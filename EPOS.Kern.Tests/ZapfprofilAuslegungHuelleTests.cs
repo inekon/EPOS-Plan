@@ -180,7 +180,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(58.0, zurueck.SpeicherC);
             Assert.Equal(ZapfprofilSpeicherart.GemischterSpeicher, zurueck.Speicherart);
             Assert.Equal(370.0, zurueck.PunktVolumenL);
-            // Erzeugerart und Werkstoff sind Projektgrößen (Schritt 120) — sie kommen zurück.
+            // Erzeugerart und Werkstoff sind Projektgrößen (Schritt 121) — sie kommen zurück.
             Assert.Equal(ZapfErzeugerart.Waermepumpe, p.Erzeugerart);
             Assert.Equal(ZapfUebertragerwerkstoff.Edelstahl, p.UebertragerWerkstoff);
             Assert.Equal(ZapfprofilErzeugerart.Waermepumpe, zurueck.Erzeugerart);
