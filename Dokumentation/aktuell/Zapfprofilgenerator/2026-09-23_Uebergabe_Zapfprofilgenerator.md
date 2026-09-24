@@ -444,3 +444,75 @@ ausgeführt (von `ffc27d18`, 49 eigene Commits bis `ea6f8608`, gepusht am 24.09.
   OpenDHW-Muster, Kategorien als Katalogpflege. **Schemaschritt T3:** Nummer erst bei der Vergabe
   messen (`git fetch origin`, `SchemaStand.Zielversion` auf `origin` und allen lokalen Zweigen); heute
   ist 115 die höchste, Wirtschaftlichkeit nimmt ab 116.
+
+## 11 Nachtrag 24.09.2026 — Stufe Z4 umgesetzt
+
+Nach Abschnitt 10 wurde die Stufe Z4 am 24.09.2026 auf dem Zweig `z4` ausgeführt (von `b7572d42`,
+48 eigene Commits bis `8cddb04a`, Merges von `origin` `48d8836d`, `4a9d7449` und
+`3ff9840b`) und mit dem Stand von `ios_migration_september` zusammengeführt; der Übertrag setzt
+nach Push und Sichtabnahme bei Z4b bzw. Z5 an. Der Anwender bestellte Z4 ohne Sichtabnahme der Z3
+(„Fahre fort"); ab 16:00 liefen Nachbesserungen und Abschluss mit Sonnet, weil das
+Opus-Wochenkontingent erschöpft war (Rücksetzung 29.09.).
+
+- **Ergebnis Gruppe 1 (Kern und Controller):** Schemaschritt **124** (`Tab_TwwProjekt`:
+  Erzeugerart, Übertrager-Werkstoff, Personen auto/manuell, Füllstand-Bezug; `Tab_TwwBedarfstag_STAMM`:
+  Bezugsart), Schreibwege, Transfer, Paketteil; Kategorien als Katalogkopie im Controller; Warnlogik
+  (Warnung/Hinweis, Zirkulation als Hinweis mit Katalogverhältnis), Schätzhilfen; Dauerlinie und
+  Auslastungsgang mit neuem Bild; Anzeigetemperatur und Stundenschwelle als Parameter; `ZapfSatz`
+  (Kennung und Werte, 385 Muster, Wache); Nachtrag N13.
+- **Ergebnis Gruppe 2a (Zapfprofil-Dialog):** Stufen Erweitert und Experte, Zonenliste mit Summenfuß,
+  Eingabeblöcke nach 5.3 (Wohnungstabelle, Kalender und Ferien, Jahresmesswert, Schätzhilfen,
+  Fachwerte), fünf Reiter mit Dauerlinie, Warnliste, KiSicht und Hilfeschlüssel.
+- **Ergebnis Gruppe 2b (Editoren, Auslegung, Konstruktor):** Tagesgang-Editor (Herkunft unveränderter
+  Reihen bleibt erhalten), Kategorien-Editor, Verfahrensvergleich-Felder und Erzeugerart/Werkstoff in der
+  Auslegung, Konstruktor mit Bezugsart, Hilfe und Wiki.
+- **Ergebnis Gruppe 3 (Katalogdialog):** Untermenü Brauchwasser, `TwwNutzungsartAdminDialog` mit
+  Editor, Katalogimport (Paketformat N2), Wachen auf Katalogtexte, Rasterprobe (drei Verstöße behoben).
+- **Statuszeile und Protokoll:** #464, Protokoll
+  [`2026-09-24_Z4_Oberflaeche.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-24_Z4_Oberflaeche.md).
+- **Gate im Worktree (nach dem Merge):** Kern-Filter 0 Fehler; voller Testlauf 12 893 grün, 0 rot, 1 übersprungen; ChartProben 165 Bilder ohne Verstoß; SQL-Dialekt-Prüfer 1 803 Texte ohne Fund; Auslieferungsvorlage 30/30; Windows-Schale 0 Fehler; Referenzlauf 13/13 gegen R14 PASS, byte-gleich; Rasterprobe 0 Verstöße (Gruppe 3).
+- **Gegenprüfungen:** je Gruppe eine, zusammen 31 Befunde (Gruppe 1: 10, drei mittel; 2a: 10, drei
+  mittel; 2b: 9, ein hoher; 3: 2, ein hoher); alle hohen und mittleren behoben, die geringen als Folgen
+  im Nachtrag N13.
+- **Anwenderentscheide dieser Stufe:** keine neuen; offen: Fachentscheid Ecodesign-Profil L nach
+  Wohneinheiten skalieren, ZU20, ZU21 (um Zirkulations-Hinweisverhältnis 1,5, Anzeigetemperatur 45 °C,
+  Stundenschwelle 0,1 kW erweitert), K8/ZU15, Versionsnummer für die Logbuch-Sätze (Z3 drei, Z4
+  drei).
+- **Sichtabnahme unter Windows** (Bedarfsprofil Brauchwasser → „Zapfprofil erzeugen…" und
+  Administration → Brauchwasser → Nutzungsarten; zusätzlich zu den Listen der Abschnitte 8–10):
+  1. Stufenwechsel Einfach → Erweitert → Experte und zurück: Eingaben bleiben, die Zeile „n Werte
+     überschrieben" zählt ein auto/manuell-Paar einmal; die leise Zeile verweist auf die nächste Stufe.
+  2. Zonenliste ab Erweitert mit Topologie, Anteil und Rechenweg; Zone hinzufügen und entfernen; der
+     Summenfuß steht bündig.
+  3. Wohnungstabelle nur bei Bezugsart Wohneinheiten/Personen; Zeilen anlegen und entfernen ohne
+     Querrollen; die wirksame Menge steht unter der Bezugsgröße; bei anderer Bezugsart hält keine
+     verdeckte Zeile das OK an.
+  4. Kalender, vier Ferienzeiträume, Bundesland gesperrt mit Grund; Jahresmesswert: bei m³ verschwindet
+     die Bilanzgrenze, der Speicherverlust nur bei der passenden Grenze.
+  5. Schätzhilfen Tagesbedarf, Zirkulation, Ladeleistung: Vorschlag, „Übernehmen", „angesetzt"; ein
+     manueller Wert ohne Zahl färbt sich bei OK rot.
+  6. Experte: Fachwerte, zwölf Monatsfelder des Auslastungsgangs, Anzeigetemperatur und
+     Stundenschwelle mit Vorgabe.
+  7. Reiter Dauerlinie ab Erweitert mit P50/P90/P95/P99 und Schwelle; Warnliste mit Kennzeichen
+     Warnung/Hinweis; Hilfeknöpfe öffnen den richtigen Wiki-Anker.
+  8. „Tagesgang bearbeiten…": Stundenraster je Tagtyp, Summenzeile, Normieren, Tag kopieren/einfügen,
+     Vorlage laden; OK ohne Änderung an einer Auslieferungs-Nutzungsart erzeugt keine Kopie; eine
+     Änderung an einer gesperrten Nutzungsart erzeugt „…-E1"; Esc schließt erst den Editor.
+  9. „Zapfkategorien und Streuung…": Raster ohne Querrollen, Schloss und Grund bei gesperrtem Satz,
+     Hinweis bei Anteilsumme ≠ 1, Kappung nur > 0.
+  10. Auslegung: Gruppe „Eingaben des Verfahrensvergleichs", Erzeugerart mit „Vorschlag wählen",
+     Werte überdauern das Speichern; Konstruktor mit Bezugsart und Bezugsmenge, Zeilen kommen nach
+     Schließen und Wiederöffnen zurück.
+  11. Menü Administration → Brauchwasser klappt auf (zwei Punkte); Katalogdialog: Liste ohne
+     Querrollen mit Schloss, Stammblatt mit Bildern, „Ändern…" an einer Auslieferungszeile öffnet als
+     „Speichern unter", „Löschen" gesperrt mit Grund, „Import…" mit Bericht (angelegt, übersprungen,
+     abgelehnt), „Grafik…".
+  12. Englische Oberfläche: Menütext „Domestic hot water", alle neuen Texte vollständig.
+- **Koordination:** Statusnummer #464 und die Schemanummern mit den Sitzungen Wirtschaftlichkeit und
+  Dialog Design abgestimmt; zweimal umnummeriert (120 → 121 → 124); Regel seither: wer zuerst
+  pusht, hat die Nummer, der andere rückt, niemand wartet.
+- **Nächster Auftrag:** Z4b (VDI-4655-Import mit Typtagzuordnung, T3 `Tab_TwwTyptag_IMPORT`,
+  `Normformvektorleser`, `Typtagzuordnung`, Importdialog; Testdaten erfunden, Auslieferungsvorlage
+  leert die Tabelle; abgeleitete VDI-4655-Werte nur unter ZU19) und Z5 (Kalibrierung und Validierung,
+  Nichtwohn-Kategorien, Katalogausbau, Konstruktorzeilen in der Datenbank, Folgen aus N13).
+  **Schemaschritt:** Nummer erst beim Merge messen; heute ist 124 die höchste.
