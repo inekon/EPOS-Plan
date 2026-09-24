@@ -9445,3 +9445,87 @@ reist beim Transfer weiter unter der Original-Id mit; der Testdatenbank-Hash
 KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
 Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
 Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 121.
+
+## #469 — Kleine Folgeaufträge: KI-Zielmaske nur über Schlüssel, Katalogliste rollt nach dem Import zur Fokuszeile, Aufräumen (24.09.2026)
+
+Anwenderentscheid „Kleine Folgeaufträge: ausführen“ zu drei offenen Punkten:
+der KI-Zielmaske-Toleranz (Fund am Beispiel
+`ladeleistung`/`speicher_ladeleistung`), dem Rollen der `Katalogliste` nach
+einem Import (Nach #466 (a)) und Aufräumen (Feld `verwaltung`, BOM in sieben
+Markdown-Papieren unter `aktuell/`, Kommentare an den KI-Haken). Commits (Zweig
+`worktree-agent-ab4b2df8a49023c62`, Basis `4a9d7449`): `a7678ceb` Zielmaske;
+`b67f24ea` Rollen nach Import; `86c15a78` Aufräumen; `0f4aaae0` Papiere. Merge
+in den Hauptbaum `eba29636`, konfliktfrei.
+
+**Befund und Umsetzung, Punkt 1 (KI-Zielmaske nur über Schlüssel).** Ursache:
+`KiAktionenDialog.ZielFuehrtFeld` suchte an der Zielmaske auch tolerant über
+deren Schlüssel (KiWahl-Stufen „Anfang“/„enthaltener Teil“, Unterstriche
+entfernt); `ladeleistung` traf `speicher_ladeleistung`, `wirkungsgrad` traf
+`wr_wirkungsgrad`. Behebung: die Zielmaske zählt nur bei gleichem Schlüssel
+oder ausdrücklich zugeordnetem Gegenstück (`KiDialoge.Zielfeldname`: Tabelle
+`VERWALTUNGSFELDER` und neu die Vorsilbe `katalog_` der „Alle Daten“-Felder;
+`katalog_breite` → `breite` war der einzige gewollte Toleranzfall); die
+Nachsicht für den Wortlaut des Modells bleibt an der gemeinten und an der
+offenen Maske. Ergebnis: die drei gemeldeten Fälle (`ladeleistung`,
+`wr_wirkungsgrad`, `ersatz_fuehren`) und zwei weitere (`quelltemperatur` traf
+`quelltemperatur_konstant`, `positionsart` traf `position`) nennen jetzt die
+richtige Maske; Abzug über alle Feldschlüssel/Anzeigenamen de/en: 7 Änderungen,
+alle Korrekturen.
+
+**Befund und Umsetzung, Punkt 2 (Katalogliste rollt nach dem Import zur
+Fokuszeile).** `Zeilenauswahl` zählt `Uebernahmen` (nur bei `Uebernommen`); die
+drei Import-Wirte (Katalogbrowser, Modulkatalog, Wärmepumpen-Stamm) reichen den
+Zähler als neuen Parameter `Zeigeanlass` an die `Katalogliste`; bei Wechsel
+rollt sie über denselben `zeileZeigen`-Aufruf wie bei Tastaturschritten (erster
+Wert rollt nicht); JS, Zeilenhöhe und Abstandshalter unverändert.
+
+**Befund und Umsetzung, Punkt 3 (Aufräumen).** (a) Feld `verwaltung` der
+KI-Maske `Form_Gebaeude` entfernt (Eigenschaft/Lesedelegat in
+`GebaeudeKiSicht`, zwei Texte in `KiDialogTexte`,
+`KI_DLG_GEB_VERWALTUNG_NAME/_ERL` beide Sprachen; Designer 9 043 Einträge,
+wiederholbar; `Form_Gebaeude` jetzt neun Felder). (b) BOM: 60 Markdown-Papiere
+tragen eins — bereinigt die 7 unter `aktuell/`
+(Konzept_KI-Assistent_Dialogintegration, Doku_PV_Strangauslegung,
+Doku_Simulationsergebnis_Darstellung, Konzept_Einheiten,
+Konzept_KI-Assistent_Aufgabensteuerung, Konzept_Simulationsablauf,
+Umsetzung_iU10_Nachweise), die 53 unter `ueberholt/` nicht. (c) Kommentare an
+den KI-Haken von Kostenprofil und Leistungspreisreihe berichtigt
+(OK/„Übernehmen“ klickt der Anwender, `dialog_speichern` lehnt benannt ab).
+
+**Messung.** Rasterprobe vorher/nachher mit Playwright im echten Chromium (Node
+aus dem NuGet-Paket Microsoft.Playwright 1.58, Chromium 1208; vorübergehende
+Hülle unter `Proben/Rasterprobe/node_modules/playwright`, gelöscht):
+Rasterprobe 0 (13 Fälle), Katalogprobe 0 (60 Fälle), Katalogprobe byte-gleich;
+Fall J/K (6 654 Zeilen): Ende → Zeile 6653 sichtbar, Pos1 → 0. Einschränkung:
+der Rollweg nach echtem Import ist nur per bunit belegt.
+
+**Tests.** `KiMaskenwegTests`: Theorie über die fünf Fälle de-DE/en-US,
+Gegenprobe `katalog_breite`, Wächter über den Katalog (genannte Maske führt das
+Feld oder sein Gegenstück); `KiKatalogKulturTests` grün. bunit:
+`ZeileIstWahlTests` (neuer Anlass → `zeileZeigen` mit Stelle und 46 px;
+gleicher Anlass rollt nicht), `KatalogBrowserDialogTests`, Modulkatalog,
+Wärmepumpe, `KaestchenTests`. Im Worktree Kern 5 757, UI 5 904, KiKern 542,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot; Kern-Filter und
+Windows-Schale 0 Fehler.
+
+**Papiere.** Konzept Dialogintegration Abschnitt 4 „Die Namensregel und der Weg
+zur Maske“ (KI‑D‑Q6 verweist darauf), Abschnitt „Stand der Abdeckung“:
+`Form_Gebaeude` neun Felder. Kein Logbuch-Eintrag (Kleinigkeiten).
+
+**Was offen bleibt.** Der tolerante Durchgang ohne offene Maske kann bei
+Anzeigenamen noch fremd treffen (Beispiele: en „With PV surplus“ → Simulation,
+„Position ist ein Erlös“ → Kostenverwaltung, „Außenwand“ →
+Wirtschaftlichkeitsseite, „Fensterfläche Ost + West“ → Quelle Erdreich;
+Vorschlag Folgewelle: beste KiWahl-Stufe über alle Masken, bei Mehrdeutigkeit
+absagen — braucht Stufenangabe in `KiWahltreffer`); dieselbe falsche Aussage
+„läuft über dialog_speichern“ in sechs weiteren Dialogen ohne Speicher-Haken
+(EnergietraegerVariante, KostenfaktorKatalog, BhkwWirtschaftlichkeit,
+PhotovoltaikVerguetung, Tarifstruktur, WirtschaftlichkeitParameter; berufen
+sich teils auf KI‑D‑Q4); Klimadaten und die drei Zeitreihen wählen nach dem
+Einlesen einen neuen Satz, gehen aber nicht über `Uebernommen` (rollen?); 53
+BOM-Dateien unter `ueberholt/`.
+
+**Gate nach Merge auf `eba29636`.** Kern-Filter 0 Fehler; Kern 5 769, UI 5 906,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 121.
