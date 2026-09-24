@@ -90171,6 +90171,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messreihe „{0}“ trägt den Beginn „{1}“, der kein Zeitpunkt ist. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_BEGINN_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_BEGINN_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gleichnamige Messreihe „{0}“ mit {1} Zeitschritten ist ersetzt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messreihe konnte nicht eingespielt werden: {0}. Nichts ist geändert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine Messreihe „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne gelesene Messreihe ist nichts einzuspielen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_OHNE_REIHE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_OHNE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt {0} gibt es nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_PROJEKT_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_PROJEKT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank führt {0} noch nicht; der Schemaschritt steht aus. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messreihe „{0}“ hat eine Lücke im Zeilenindex bei {1}; sie wäre zeitlich verschoben. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_ZEILENINDEX_LUECKE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_ZEILENINDEX_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der kleinste Abstand zweier Zeitstempel ist {1:0.###} min — zugelassen sind {2} min. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT {

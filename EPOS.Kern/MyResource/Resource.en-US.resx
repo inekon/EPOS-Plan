@@ -30990,4 +30990,28 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN" xml:space="preserve">
     <value>{0}: more time steps than allowed — {1} instead of at most {2}.</value>
   </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_BEGINN_UNGUELTIG" xml:space="preserve">
+    <value>The measured series “{0}” carries the start “{1}”, which is not a point in time.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_ERSETZT" xml:space="preserve">
+    <value>The measured series “{0}” of the same name with {1} time steps has been replaced.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The measured series could not be imported: {0}. Nothing has been changed.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The project carries no measured series “{0}”.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_OHNE_REIHE" xml:space="preserve">
+    <value>Without a series that has been read there is nothing to import.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_PROJEKT_FEHLT" xml:space="preserve">
+    <value>Project {0} does not exist.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The database does not yet carry {0}; the schema step is pending.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_ZEILENINDEX_LUECKE" xml:space="preserve">
+    <value>The measured series “{0}” has a gap in its row index at {1}; it would be shifted in time.</value>
+  </data>
 </root>
