@@ -77841,7 +77841,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Stochastisch rechnen“ in der Fußleiste zieht das Ensemble für Perzentile und Auslegung; die Bilanzreihe bleibt deterministisch. Die Einzelwerte zeigt die Stufe Experte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Stochastisch rechnen“ in der Fußleiste zieht das Ensemble des Bedarfstags: P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung. Bei Rechenweg „stochastisch“ zieht es auch die Jahresreihe; ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf. ähnelt.
         /// </summary>
         public static string ZPG_KZ_STOCHASTIK_ERKLAERUNG {
             get {

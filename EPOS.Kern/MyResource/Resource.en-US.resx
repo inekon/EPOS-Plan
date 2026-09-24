@@ -24210,7 +24210,7 @@ Do you want to allow this?</value>
     <value>Stochastics · not yet calculated</value>
   </data>
   <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
-    <value>“Calculate stochastically” in the footer draws the ensemble for percentiles and sizing; the balance series stays deterministic. The Expert level shows the individual values.</value>
+    <value>“Calculate stochastically” in the footer draws the design-day ensemble: P50 … P99 and the simultaneity appear in card (b) of the design. With the method “stochastic” it also draws the annual series; the Expert level shows its consistency check after the run.</value>
   </data>
   <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
     <value>Key figure</value>

@@ -250,6 +250,9 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("600 h/a", texte[schwelle]);
         Assert.Contains("—", texte[gleichzeitigkeit]);
         Assert.StartsWith("„Stochastisch rechnen“ in der Fußleiste", texte[stochastik + 1]);
+        // Die Erklärung verspricht nur, was steht: P50 … P99 und Gleichzeitigkeit in Karte (b), die Probe in Experte.
+        Assert.Contains("P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung", texte[stochastik + 1]);
+        Assert.Contains("ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf", texte[stochastik + 1]);
         Assert.Equal(stochastik + 2, texte.Length);
 
         // Ohne Schwelle keine Zeile.
