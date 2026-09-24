@@ -359,6 +359,56 @@ namespace Auslieferungsvorlage.Tests
             });
         }
 
+        /// <summary>
+        /// <b>T12 (Stufe Z4b):</b> Die eingespielten Typtage des Anwenders
+        /// (<c>Tab_TwwTyptag_IMPORT</c>, Schemaschritt T3 „Typtage") fallen aus der Vorlage —
+        /// unabhängig von <c>--kataloge</c> —, der Bericht nennt es, und der Prüfposten
+        /// „keine Zeile aus einem Normimport" bleibt grün. Die Zeilen der Quelle sind erfunden.
+        /// </summary>
+        [Fact]
+        public void T12_Die_eingespielten_Typtage_fallen_aus_der_Vorlage()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Bearbeiten(quelle, () =>
+            {
+                long satz = SatzAnlegen("Probe Satz", TwwSchema.STATUS_AUSLIEFERUNG);
+                NutzungAnlegen("Probe Nutzung", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1);
+
+                // Drei erfundene Zeilen der eingespielten Typtage: Systematik, Anzahl, Kennwert.
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwTyptag_IMPORT (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex, Wert, " +
+                    "Quelle, Datum_Import) VALUES (?, 0, '', 'PT1', 0, 1.0, 'Anwenderpaket (erfunden)', '2026-09-24')",
+                    new DbParam("?", TwwSchema.TYPTAG_ART_KATEGORIE)));
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwTyptag_IMPORT (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex, Wert, " +
+                    "Quelle, Datum_Import) VALUES (?, 3, 'probehaus', 'PT1', 0, 365.0, 'Anwenderpaket (erfunden)', '2026-09-24')",
+                    new DbParam("?", TwwSchema.TYPTAG_ART_ANZAHL)));
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwTyptag_IMPORT (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex, Wert, " +
+                    "Quelle, Datum_Import) VALUES (?, 0, '', 'wintergrenze', 0, 5.0, 'Anwenderpaket (erfunden)', '2026-09-24')",
+                    new DbParam("?", TwwSchema.TYPTAG_ART_KENNWERT)));
+            });
+
+            Lesen(quelle, () => Assert.Equal(3L, Zahl(TwwSchema.TAB_TWW_TYPTAG_IMPORT)));
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Tab_TwwTyptag_IMPORT geleert (Typtage des lizenzierten Anwenders, nie in der Vorlage)", e.Ausgabe);
+            Assert.Contains("ok      keine Zeile aus einem Normimport", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(0L, Zahl(TwwSchema.TAB_TWW_TYPTAG_IMPORT));
+                // Die Tabelle bleibt im Schema — geleert, nicht entfernt.
+                Assert.True(DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TYPTAG_IMPORT));
+            });
+        }
+
         [Fact]
         public void T3_Ein_Katalogpaket_mit_Status_EIGEN_wird_benannt_abgelehnt()
         {
