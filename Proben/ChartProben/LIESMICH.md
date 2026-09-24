@@ -304,6 +304,32 @@ wie die Bilder der Etappe E6: alle alten Zeilen gleich, zehn neu, keines geände
 
 ---
 
+## Zapfprofilgenerator (Stufe Z4): die Dauerlinie der Bilanz
+
+`ZapfprofilBilder.Dauerlinie` zeichnet den Reiter „Dauerlinie" des Zapfprofils über das
+`ChartRenderer.SummenlinieModell` der Stufe Z2: die 8 760 Stundenwerte von Zapfung und Zirkulation
+absteigend geordnet über dem Rang 1 … 8 760, je Perzentil P50, P90, P95 und P99 eine beschriftete
+Strecke an seinem Rang (ganzzahlig ⌈p · 8 760 / 100⌉ wie `Zapfauswertung.Dauerlinie`) und wahlweise
+eine waagerechte Vergleichslinie, etwa die Ladeleistung, gestrichelt. Die Probereihe ist die
+Probewoche des Wochenprofils samt Zirkulation, über das Jahr wiederholt (`Dauerlinienprobe` in
+`Program.Zapfprofil.cs`); die Texte sind die deutsche Vorgabe (`ZapfprofilBildtexte`).
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `zapfprofil_dauerlinie` | 8 760 Ränge mit vier Perzentilmarken und Vergleichslinie, 1244 × 524, Zapfung (`WARMWASSER`) und Vergleich (`SPEICHERLADUNG`) |
+| Gegenprobe | `zapfprofil_dauerlinie_marken_wirken` | dieselbe Linie mit und ohne Perzentilmarken |
+| Gegenprobe | `zapfprofil_dauerlinie_vergleich_wirkt` | dieselbe Linie mit und ohne Vergleichslinie |
+| SVG-Probe | `svg_zapfprofil_dauerlinie` | Modellprobe der Gruppe (a): die Linie als `path.epos-reihe` |
+
+Das sind vier Proben — eine Maßprobe, zwei Gegenproben und eine SVG-Probe — und **5 neue Bilder**.
+Kein Bild von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Stufe
+(`48d8836d`) gemessen, alle 146 Hashes des Vorstands gleich, 5 neu (151 Zeilen; 165 Proben, 0
+Verstöße). Die fünf Bilder stehen noch nicht in der Messlatte; sie kommen mit dem nächsten Einfrieren
+auf dem Linux-Läufer dazu, nach derselben Regel wie die Bilder der Etappe E6: alle alten Zeilen
+gleich, fünf neu, keines geändert.
+
+---
+
 ## Etappe E8a der Wirtschaftlichkeit: Brückenbild und Zahlungsstrombild
 
 ### Das Brückenbild
