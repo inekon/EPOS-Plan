@@ -235,6 +235,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ZAPFPROFIL_AUSLEGUNG = "ZapfprofilAuslegung";
 
+        /// <summary>
+        /// Die Ueberlagerung „Bedarfstag konstruieren" der Auslegung
+        /// (<c>BedarfstagKonstruktor</c>).
+        /// </summary>
+        public const string BEDARFSTAG_KONSTRUKTOR = "BedarfstagKonstruktor";
+
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
         // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
@@ -680,6 +686,7 @@ namespace WindowsFormsApplication1
                 Bedarfsprofile(),
                 Zapfprofil(),
                 ZapfprofilAuslegung(),
+                BedarfstagKonstruktor(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -3294,6 +3301,85 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("punkt", AUSLEGUNG_SICHT + ".Punkt",
                                      KiDialogTexte.ZpgaPunktName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgaPunktErl, leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // BedarfstagKonstruktor  ->  Dialoge.Bedarf.BedarfstagKonstruktor   (Welle #458, Stufe 3a)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse des Konstruktors
+        /// (<c>EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht</c>).
+        /// </summary>
+        private const string KONSTRUKTOR_SICHT = "BedarfstagKonstruktorKiSicht";
+
+        /// <summary>
+        /// Der Konstruktor eines Bedarfstags nach A100 — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht</c>, sieben davon SPALTEN
+        /// der Zeilentabelle.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung der Auslegung mit eigenem Arbeitsstand</b>: „OK" baut den
+        /// Tag ueber den Delegaten der Huelle und gibt ihn als Entwurf in die Auslegung —
+        /// geschrieben wird nichts. Angemeldet sind Auffrischen und Pruefen: dieselbe Pruefung
+        /// wie am OK (Fehleingaben, dann die benannte Pruefung der Huelle), ohne dass sich
+        /// etwas schliesst; KEIN Speicherweg.
+        /// </para>
+        /// <para>
+        /// <b>Die Zeilen sind SPALTEN</b> mit dem Zeitfenster samt Verbraucher als
+        /// Kennzeichen. Anzahl steht nur mit einer Zapfregel, Volumen und Zapftemperatur nur
+        /// bei „Volumen direkt" auf der Maske — sonst nennt die Absage, was sie bedienbar
+        /// macht. Zeitfenster und Mengen tragen die Grenzen ihrer Felder. Eine Zeile legt
+        /// der Anwender an oder entfernt sie.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BedarfstagKonstruktor()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,
+                anzeigename: KiDialogTexte.MaskeBedarfstagKonstruktor,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", KONSTRUKTOR_SICHT + ".Name",
+                                     KiDialogTexte.ZpgkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkNameErl),
+
+                    // ---- Die Zeilen: SPALTEN mit Zeitfenster und Verbraucher -----------
+                    new KiDialogFeld("beginn", KONSTRUKTOR_SICHT + ".Zeilen[].Beginn",
+                                     KiDialogTexte.ZpgkBeginnName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkBeginnErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("ende", KONSTRUKTOR_SICHT + ".Zeilen[].Ende",
+                                     KiDialogTexte.ZpgkEndeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkEndeErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("regel", KONSTRUKTOR_SICHT + ".Zeilen[].Regel",
+                                     KiDialogTexte.ZpgkRegelName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgkRegelErl,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("anzahl", KONSTRUKTOR_SICHT + ".Zeilen[].Anzahl",
+                                     KiDialogTexte.ZpgkAnzahlName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkAnzahlErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("volumen", KONSTRUKTOR_SICHT + ".Zeilen[].Volumen",
+                                     KiDialogTexte.ZpgkVolumenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkVolumenErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("temperatur", KONSTRUKTOR_SICHT + ".Zeilen[].Temperatur",
+                                     KiDialogTexte.ZpgkTemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgkTemperaturErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("verbraucher", KONSTRUKTOR_SICHT + ".Zeilen[].Verbraucher",
+                                     KiDialogTexte.ZpgkVerbraucherName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgkVerbraucherErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen")
                 },
                 knoepfe: new[]
                 {

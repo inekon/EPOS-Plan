@@ -126,6 +126,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
         new("BedarfsProfileDialog", 3),
+        new("BedarfstagKonstruktor", 8),
         new("BerichtSeite", 2),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),

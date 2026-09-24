@@ -37952,6 +37952,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie oft die Zapfregel im Zeitfenster zapft, nicht negativ; nur mit einer Zapfregel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Beginn des Zeitfensters der Zeile in Stunden, von 0 bis 24. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_BEGINN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_BEGINN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ende des Zeitfensters der Zeile in Stunden, bis 24 und nach dem Beginn. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_ENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_ENDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des konstruierten Bedarfstags; Pflichtfeld, in der Katalogversion noch nicht vergeben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zapfregel des Katalogs — dann zählt die Anzahl ihrer Vorgänge — oder „Volumen direkt“ mit Volumen und Zapftemperatur. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_REGEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_REGEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur des Volumens; nur bei „Volumen direkt“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein neutraler Name der Zapfstelle („Küche“); er benennt die Zeile und rechnet nicht mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_VERBRAUCHER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_VERBRAUCHER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen der Zeile in Litern, nicht negativ; nur bei „Volumen direkt“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGK_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGK_VOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Zonen oder eine Zone. Ändert nur die Anzeige. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ANSICHT_ERL {

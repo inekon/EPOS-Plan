@@ -1206,6 +1206,26 @@
         internal static string ZpgaPunktName => MyResource.Resource.ZPG_AUS_GEWAEHLTER_PUNKT;
         internal static string ZpgaPunktErl => MyResource.Resource.KI_DLG_ZPGA_PUNKT_ERL;
 
+        /// <summary>Die Ueberlagerung „Bedarfstag konstruieren".</summary>
+        internal static string MaskeBedarfstagKonstruktor => MyResource.Resource.ZPG_AUS_KON_TITEL;
+
+        internal static string ZpgkNameName => MyResource.Resource.ZPG_AUS_KON_LBL_NAME;
+        internal static string ZpgkNameErl => MyResource.Resource.KI_DLG_ZPGK_NAME_ERL;
+        internal static string ZpgkBeginnName => MyResource.Resource.ZPG_AUS_KON_SP_BEGINN;
+        internal static string ZpgkBeginnErl => MyResource.Resource.KI_DLG_ZPGK_BEGINN_ERL;
+        internal static string ZpgkEndeName => MyResource.Resource.ZPG_AUS_KON_SP_ENDE;
+        internal static string ZpgkEndeErl => MyResource.Resource.KI_DLG_ZPGK_ENDE_ERL;
+        internal static string ZpgkRegelName => MyResource.Resource.ZPG_AUS_KON_SP_REGEL;
+        internal static string ZpgkRegelErl => MyResource.Resource.KI_DLG_ZPGK_REGEL_ERL;
+        internal static string ZpgkAnzahlName => MyResource.Resource.ZPG_AUS_KON_SP_ANZAHL;
+        internal static string ZpgkAnzahlErl => MyResource.Resource.KI_DLG_ZPGK_ANZAHL_ERL;
+        internal static string ZpgkVolumenName => MyResource.Resource.ZPG_AUS_KON_SP_VOLUMEN;
+        internal static string ZpgkVolumenErl => MyResource.Resource.KI_DLG_ZPGK_VOLUMEN_ERL;
+        internal static string ZpgkTemperaturName => MyResource.Resource.ZPG_AUS_KON_SP_TEMPERATUR;
+        internal static string ZpgkTemperaturErl => MyResource.Resource.KI_DLG_ZPGK_TEMPERATUR_ERL;
+        internal static string ZpgkVerbraucherName => MyResource.Resource.ZPG_AUS_KON_SP_VERBRAUCHER;
+        internal static string ZpgkVerbraucherErl => MyResource.Resource.KI_DLG_ZPGK_VERBRAUCHER_ERL;
+
         internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
         internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;
         internal static string BadmTypName => MyResource.Resource.BADM_LBL_TYP;

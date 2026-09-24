@@ -146,6 +146,7 @@ public class KiFeldwerteTests : EposBunitContext
     // solange sie offen stehen.
     [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilDialog))]
     [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungDialog))]
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktor))]
     public void Jede_angemeldete_Komponente_kann_sich_abmelden(Type komponente)
     {
         // Ohne IDisposable käme das Abmelden nie — die Anmeldung überlebte den Dialog,

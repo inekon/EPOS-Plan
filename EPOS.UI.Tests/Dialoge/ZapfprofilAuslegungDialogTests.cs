@@ -1353,4 +1353,126 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Equal("Bitte die markierten Felder berichtigen: Realisierungen des Bedarfstags.", haken.Befund());
         Assert.Equal(0, gerufen);
     }
+
+    // ---------------------------------------------------------------------------------
+    //  Der Konstruktor beim Hilfe-Assistenten
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>Der Feldzugang der Überlagerung „Bedarfstag konstruieren" an der Maskenbrücke.</summary>
+    private static KiFeldzugang KonstruktorZugang(string feld)
+        => KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, feld);
+
+    /// <summary>Setzt ein Feld des Konstruktors wie der Assistent.</summary>
+    private static void KonstruktorSetze(string feld, string text)
+    {
+        KiFeldzugang z = KonstruktorZugang(feld);
+        Assert.NotNull(z);
+        KiFeldumsetzung u = KiFeldwandler.Wandle(z, text);
+        Assert.True(u.Ok, u.Grund);
+        z.Setzen(u.Wert);
+    }
+
+    /// <summary>Der Konstruktor, unmittelbar gezeichnet — die Regeln des Stands, erfundene Zeilen.</summary>
+    private IRenderedComponent<BedarfstagKonstruktor> Konstruktor(
+        Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? konstruieren = null)
+        => Render<BedarfstagKonstruktor>(p => p
+            .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
+            .Add(x => x.Regeln, Start().Regeln)
+            .Add(x => x.Name, "Eigener Tag")
+            .Add(x => x.Startzeilen, new List<ZapfprofilKonstruktorZeileDaten>
+            {
+                new() { BeginnH = 6, EndeH = 8, Regel = "Dusche", Anzahl = 2, Verbraucher = "Bad" },
+                new() { BeginnH = 18, EndeH = 19, VolumenL = 40, ZapftemperaturC = 45, Verbraucher = "Küche" }
+            })
+            .Add(x => x.Konstruieren, konstruieren)
+            .Add(x => x.TitelAnzeigen, false));
+
+    /// <summary>
+    /// <b>Der ZEUGE des Konstruktors an der Maskenbrücke.</b> Er meldet Name und Zeilen über
+    /// <c>BedarfstagKonstruktorKiSicht</c> an; die Zeilen sind Spalten mit Zeitfenster und
+    /// Verbraucher als Kennzeichen. Was die Zeile nicht bedienbar zeigt (Anzahl ohne Zapfregel,
+    /// Volumen mit einer) und Zeiten außerhalb des Tages lehnt er benannt ab.
+    /// </summary>
+    [Fact]
+    public void Der_Konstruktor_meldet_Name_und_Zeilen_an_und_setzt_wie_die_Felder()
+    {
+        KiMaskenbruecke.Leeren();   // die aktive Maske ist die zuletzt angemeldete
+        var k = Konstruktor();
+        var texte = new ZapfprofilAuslegungTexte();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
+        Assert.Equal(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, KiMaskenbruecke.AktiveMaske());
+
+        Assert.Equal("Eigener Tag", KonstruktorZugang("name").Lesen());
+        KonstruktorSetze("name", "Tag B");
+        k.Render();
+        Assert.Equal("Tag B", Feld(k, "Name des Bedarfstags").GetAttribute("value"));
+
+        Assert.Contains("6–8 h · Bad", KonstruktorZugang("anzahl_1").Feld.Anzeigename, StringComparison.Ordinal);
+        Assert.Equal(1, KonstruktorZugang("regel_1").Lesen());
+        KonstruktorSetze("anzahl_1", "3");
+        Assert.Equal(3.0, k.Instance.Zeilen[0].Anzahl);
+
+        // Zeile 2 rechnet mit „Volumen direkt": Anzahl steht dort nicht bedienbar.
+        var ohneRegel = Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("anzahl_2").Setzen(1.0));
+        Assert.Contains(texte.KonstruktorRegel, ohneRegel.Message, StringComparison.Ordinal);
+        KonstruktorSetze("volumen_2", "50");
+        KonstruktorSetze("temperatur_2", "42");
+        Assert.Equal(50.0, k.Instance.Zeilen[1].VolumenL);
+        Assert.Equal(42.0, k.Instance.Zeilen[1].ZapftemperaturC);
+
+        // Mit einer Zapfregel sind Volumen und Temperatur nicht bedienbar; zurück auf „Volumen direkt".
+        KonstruktorSetze("regel_2", "Wanne");
+        Assert.Equal("Wanne", k.Instance.Zeilen[1].Regel);
+        var mitRegel = Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("volumen_2").Setzen(60.0));
+        Assert.Contains(texte.KonstruktorRegelFrei, mitRegel.Message, StringComparison.Ordinal);
+        KonstruktorSetze("regel_2", "Volumen direkt");
+        Assert.Equal("", k.Instance.Zeilen[1].Regel);
+
+        // Das Zeitfenster trägt die Grenzen seines Feldes.
+        var spaet = Assert.Throws<InvalidOperationException>(() => KonstruktorZugang("ende_1").Setzen(25.0));
+        Assert.Contains("24", spaet.Message, StringComparison.Ordinal);
+        Assert.Equal(8.0, k.Instance.Zeilen[0].EndeH);
+
+        KonstruktorSetze("verbraucher_2", "Spüle");
+        Assert.Equal("Spüle", k.Instance.Zeilen[1].Verbraucher);
+
+        k.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
+    }
+
+    /// <summary>
+    /// <b>Prüfen ist der Befund des OK</b> — die benannte Prüfung der Hülle, ohne dass sich
+    /// etwas schließt; <b>einen Speicherweg gibt es nicht</b>. Aus der Auslegung geöffnet, ist
+    /// der Konstruktor die aktive Maske, und nach dem Schließen wieder die Auslegung.
+    /// </summary>
+    [Fact]
+    public void Der_Konstruktor_prueft_wie_sein_OK_und_ist_offen_die_aktive_Maske()
+    {
+        int gebaut = 0;
+        var k = Konstruktor((_, _) =>
+        {
+            gebaut++;
+            return new ZapfprofilKonstruktorErgebnis(null, new[]
+            {
+                new ZapfprofilMeldung("ZPG_AUS_KON_ZEILE", "", "Zeile 1: Anzahl fehlt.", ZapfprofilMeldungsart.Fehler)
+            });
+        });
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR);
+        Assert.Equal("Zeile 1: Anzahl fehlt.", haken.Befund());
+        Assert.Equal(1, gebaut);
+        Assert.Null(haken.Speichern);
+        Assert.Empty(k.Instance.Meldungen);
+        k.Instance.Dispose();
+
+        KiMaskenbruecke.Leeren();
+        var cut = Aufbauen(rechnen: _ => Ergebnis(Speichergruppe()), konstruieren: Bauen);
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        Assert.Equal(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR, KiMaskenbruecke.AktiveMaske());
+        Knopf(cut.FindComponent<BedarfstagKonstruktor>(), "Abbrechen").Click();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
+        Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+    }
 }

@@ -159,6 +159,8 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht) },
         { KiMaskennamen.ZAPFPROFIL_AUSLEGUNG,
           typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht) },
+        { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht) },
 
         // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
         // Brauchwasser sind drei Katalogschluessel derselben Komponente.
@@ -384,7 +386,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_vierundsiebzig_Masken()
+    public void Der_Katalog_fuehrt_fuenfundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
@@ -393,9 +395,9 @@ public class KiDialogkatalogTests : IDisposable
         // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
         // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
         // Kennlinieneditor, der Projektkopf des Assistenten, die Startseite und die
-        // Programmeinstellungen. Welle #458, Stufe 3a: das Zapfprofil und seine
-        // Auslegung.
-        Assert.Equal(74, katalog.Anzahl);
+        // Programmeinstellungen. Welle #458, Stufe 3a: das Zapfprofil, seine Auslegung
+        // und deren Bedarfstag-Konstruktor.
+        Assert.Equal(75, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1275,6 +1277,10 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse ZapfprofilAuslegungKiSicht: Bedarfstag als eine Wahl " +
             "aus Quelle und Katalogtag, drei Aufzählungen, jede Eingabe rechnet neu; Zeuge ist " +
             "ZapfprofilAuslegungDialogTests",
+        [KiMaskennamen.BEDARFSTAG_KONSTRUKTOR] =
+            "bindet über die Sichtklasse BedarfstagKonstruktorKiSicht: der Name und die Zeilen " +
+            "als Spalten, die Zapfregel als Platz der Regelwahl, Anzahl bzw. Volumen und " +
+            "Temperatur nur, wo die Zeile sie bedienbar zeigt; Zeuge ist ZapfprofilAuslegungDialogTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",

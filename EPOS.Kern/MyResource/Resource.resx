@@ -22255,6 +22255,30 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
     <value>Der empfohlene Auslegungspunkt — beim Speicher Volumen und Leistung, sonst die Minutenspitze; OK übernimmt ihn in das Zapfprofil. Ergebnis, nur lesbar.</value>
   </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>Der Name des konstruierten Bedarfstags; Pflichtfeld, in der Katalogversion noch nicht vergeben.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>Der Beginn des Zeitfensters der Zeile in Stunden, von 0 bis 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>Das Ende des Zeitfensters der Zeile in Stunden, bis 24 und nach dem Beginn.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>Eine Zapfregel des Katalogs — dann zählt die Anzahl ihrer Vorgänge — oder „Volumen direkt“ mit Volumen und Zapftemperatur.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie oft die Zapfregel im Zeitfenster zapft, nicht negativ; nur mit einer Zapfregel.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>Das Volumen der Zeile in Litern, nicht negativ; nur bei „Volumen direkt“.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Zapftemperatur des Volumens; nur bei „Volumen direkt“.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>Ein neutraler Name der Zapfstelle („Küche“); er benennt die Zeile und rechnet nicht mit.</value>
+  </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
   </data>

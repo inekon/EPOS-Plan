@@ -22248,6 +22248,30 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ZPGA_PUNKT_ERL" xml:space="preserve">
     <value>The recommended design point — for storage volume and output, otherwise the minute peak; OK takes it over into the draw-off profile. Result, read-only.</value>
   </data>
+  <data name="KI_DLG_ZPGK_NAME_ERL" xml:space="preserve">
+    <value>The name of the constructed design day; required, not yet used in the catalogue version.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_BEGINN_ERL" xml:space="preserve">
+    <value>The start of the row’s time window in hours, from 0 to 24.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ENDE_ERL" xml:space="preserve">
+    <value>The end of the row’s time window in hours, up to 24 and after the start.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_REGEL_ERL" xml:space="preserve">
+    <value>A draw-off rule from the catalogue — then the number of its draw-offs counts — or “Volume directly” with volume and draw-off temperature.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_ANZAHL_ERL" xml:space="preserve">
+    <value>How often the draw-off rule draws within the time window, not negative; only with a draw-off rule.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VOLUMEN_ERL" xml:space="preserve">
+    <value>The volume of the row in litres, not negative; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The draw-off temperature of the volume; only with “Volume directly”.</value>
+  </data>
+  <data name="KI_DLG_ZPGK_VERBRAUCHER_ERL" xml:space="preserve">
+    <value>A neutral name of the draw-off point (“Kitchen”); it names the row and does not enter the calculation.</value>
+  </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
     <value>The marked catalogue record. Setting it selects it in the list and the record sheet follows; with unsaved changes, save or discard first.</value>
   </data>
