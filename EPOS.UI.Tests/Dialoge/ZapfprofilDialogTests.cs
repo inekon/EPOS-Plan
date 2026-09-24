@@ -450,6 +450,28 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(4, ergebnis!.Eingabe.Seed);
     }
 
+    /// <summary>
+    /// Zurück in Einfach verschwinden Seed und Realisierungen — sie nehmen ihre Fehleingaben mit,
+    /// der Arbeitsstand trägt den letzten gültigen Wert, und das OK geht durch.
+    /// </summary>
+    [Fact]
+    public void Die_Stufe_Einfach_nimmt_die_Fehleingaben_ihrer_Felder_mit()
+    {
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(geschlossen: x => ergebnis = x);
+        Option(cut, "Experte").Change("2");
+        Option(cut, "stochastisch").Change("1");
+        Feld(cut, "Zufallssaat (Seed)").Input("9");
+        Feld(cut, "Zufallssaat (Seed)").Input("-1");
+        Feld(cut, "Realisierungen").Input("5000");
+
+        Option(cut, "Einfach").Change("0");
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(9, ergebnis!.Eingabe.Seed);
+        Assert.Null(ergebnis.Eingabe.Realisierungen);
+    }
+
     /// <summary>Das Ergebnis eines Laufs der Jahresreihe (erfunden): stochastisch, Seed 3, vier Jahre.</summary>
     private static ZapfprofilVorschauDaten Gezogen(ZapfprofilEingabeDaten e, params ZapfprofilMeldung[] meldungen)
     {
@@ -476,12 +498,12 @@ public class ZapfprofilDialogTests : EposBunitContext
         var ok = new ZapfprofilKonsistenzDaten
         {
             Zone = "Zone 1", DeterministischKwh = 1000, MittelKwh = 990, StandardabweichungKwh = 12, Realisierungen = 4,
-            ToleranzKwh = 18, Erfuellt = true, Faktor = 1.01
+            ToleranzKwh = 18, Erfuellt = true, Faktor = 1.01, Abweichung = -0.01
         };
         var abweichend = new ZapfprofilKonsistenzDaten
         {
             Zone = "Zone 2", Position = 1, DeterministischKwh = 2000, MittelKwh = 2100, StandardabweichungKwh = 30,
-            Realisierungen = 4, ToleranzKwh = 45, Erfuellt = false, Faktor = 0.95
+            Realisierungen = 4, ToleranzKwh = 45, Erfuellt = false, Faktor = 0.95, Abweichung = 0.05
         };
         v.Ansichten[0].Konsistenzen.AddRange(new[] { ok, abweichend });
         v.Ansichten[1].Konsistenzen.Add(ok);
@@ -520,6 +542,50 @@ public class ZapfprofilDialogTests : EposBunitContext
         // Die Ansicht einer Zone zeigt nur ihre Probe.
         cut.FindAll("select").Last().Change("1");
         Assert.Single(cut.FindAll("tr.epos-zapfprofil-konsistenz"));
+    }
+
+    /// <summary>
+    /// Die Konsistenzzeile des Reiters Kennzahlen in der englischen Oberfläche: Beschriftung,
+    /// Vermerk und Urteil aus den englischen Ressourcen, Zahlen in der englischen Kultur, die
+    /// Abweichung so, wie der Kern sie rechnet.
+    /// </summary>
+    [Fact]
+    public void Die_Konsistenzzeile_steht_englisch_in_englischer_Kultur()
+    {
+        using var _ = new Kulturvorrichtung("en-US");
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.JahresreiheStochastisch = true;
+        ZapfprofilVorschauDaten v = Gezogen(e);
+        v.Ansichten[0].Konsistenzen.Add(new ZapfprofilKonsistenzDaten
+        {
+            Zone = "Zone 1", DeterministischKwh = 1000, MittelKwh = 990, StandardabweichungKwh = 12, Realisierungen = 4,
+            ToleranzKwh = 18, Erfuellt = true, Faktor = 1.01, Abweichung = -0.01
+        });
+        var texte = new ZapfprofilTexte
+        {
+            KennzahlKonsistenz = Resource.ZPG_KZ_KONSISTENZ,
+            KennzahlKonsistenzVermerk = Resource.ZPG_KZ_KONSISTENZ_VERMERK,
+            KonsistenzErfuellt = Resource.ZPG_KZ_KONSISTENZ_ERFUELLT,
+            KennzahlStochastikGerechnet = Resource.ZPG_KZ_STOCHASTIK_GERECHNET
+        };
+        var cut = Render<ZapfprofilDialog>(p => p
+            .Add(x => x.Daten, Daten(e))
+            .Add(x => x.Texte, texte)
+            .Add(x => x.Vorschau, x => Vorschau(x))
+            .Add(x => x.Jahresreihe, (_, _) => Task.FromResult(v))
+            .Add(x => x.EntprellungMs, 0));
+
+        Option(cut, "Experte").Change("2");
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Knopf(cut, "Stochastisch rechnen").Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("tr.epos-zapfprofil-konsistenz")));
+
+        IElement zeile = cut.Find("tr.epos-zapfprofil-konsistenz");
+        Assert.Equal("Energy consistency check · Zone 1", zeile.QuerySelector("th")!.TextContent);
+        Assert.Equal("−1.00 %", zeile.QuerySelector("td.epos-zahl")!.TextContent);
+        Assert.Equal("Mean of the 4 years 990 kWh/a against 1,000 kWh/a deterministic · s_R 12 kWh/a · tolerance ±18 kWh/a"
+                     + " · within tolerance", zeile.QuerySelector(".epos-kohaerenz-text")!.TextContent);
+        Assert.Contains("Stochastics · annual series for seed 3, 4 years drawn", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
     }
 
     /// <summary>

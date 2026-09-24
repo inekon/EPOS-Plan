@@ -45,7 +45,14 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record Jahreskonsistenz(double DeterministischKwh, double MittelKwh, double StandardabweichungKwh,
                                             int Realisierungen, double ToleranzKwh, bool Erfuellt, double JahrZumSeedKwh,
-                                            double Faktor, double TagesgangAbweichung);
+                                            double Faktor, double TagesgangAbweichung)
+    {
+        /// <summary>
+        /// Die relative Abweichung des Mittels der R Jahre vom deterministischen Pfad
+        /// <c>Ē / E_det − 1</c> [-]; <c>null</c> ohne Jahresmenge (E_det = 0).
+        /// </summary>
+        internal double? Abweichung => DeterministischKwh != 0 ? MittelKwh / DeterministischKwh - 1.0 : (double?)null;
+    }
 
     /// <summary>
     /// <b>Das Ensemble der Jahresreihe</b> („stochastisch", Bilanz; Umsetzungskonzept

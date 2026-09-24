@@ -9,7 +9,8 @@
    WAS ER TUT. Links die Nutzungszonen (Liste mit eigener Listenleiste, darunter der
    Eingabeblock der gewaehlten Zone: Zonenname, Nutzungsart aus dem Katalog samt Herkunft
    und Status, Bezugsgroesse, Bedarfsniveau), rechts die Vorschau ueber den Delegaten der
-   Huelle - derselbe Generatoraufruf wie der Lauf -, mit den Reitern Tagesgang,
+   Huelle - derselbe Generatoraufruf wie der Lauf, live auf dem deterministischen Pfad -,
+   mit den Reitern Tagesgang,
    Wochenprofil, Jahresgang und Kennzahlen. Der Dialog RECHNET NICHTS: Zahlen, Bilder und
    Meldungen kommen fertig aus der Huelle (ZapfprofilHuelle.Vorschau).
 
@@ -89,9 +90,9 @@
         <Optionsgruppe Bezeichnung="@Texte.LabelStufe" Eintraege="@Stufen"
                        Auswahl="@((int)_stufe)" AuswahlChanged="StufeWaehlen"
                        WeichGesperrt="@StufenGesperrt" Verweigert="_ => NochNicht()" />
-        @if (Ueberschrieben > 0)
+        @if (Daten.UeberschriebenIn(_eingabe) is > 0 and var ueberschrieben)
         {
-            <span class="epos-leisezeile epos-zapfprofil-ueberschrieben">@Format(Texte.KontextUeberschrieben, Ueberschrieben)</span>
+            <span class="epos-leisezeile epos-zapfprofil-ueberschrieben">@Format(Texte.KontextUeberschrieben, ueberschrieben)</span>
         }
     </div>
 
@@ -586,23 +587,6 @@
         }
     }
 
-    /// <summary>
-    /// Der Zähler „n Werte überschrieben": die Größen der höheren Stufen je Zone und die der
-    /// Stochastik — der Rechenweg „stochastisch", ein Seed oder eine Zahl der Realisierungen
-    /// abseits der Vorgabe. Die Stufe blendet nur aus, die Überschreibung bleibt.
-    /// </summary>
-    private int Ueberschrieben
-    {
-        get
-        {
-            int n = _eingabe.Zonen.Sum(z => z.Ueberschrieben);
-            if (_eingabe.JahresreiheStochastisch) n++;
-            if (_eingabe.Seed is int seed && Daten.SeedVorgabe is int sv && seed != sv) n++;
-            if (_eingabe.Realisierungen is int r && Daten.RealisierungenVorgabe is int rv && r != rv) n++;
-            return n;
-        }
-    }
-
     private IReadOnlyList<(int Id, string Text)> Stufen => new[]
     {
         ((int)ZapfprofilStufe.Einfach, Texte.StufeEinfach),
@@ -917,7 +901,12 @@
         if (id is not int n || (n != (int)ZapfprofilStufe.Einfach && n != (int)ZapfprofilStufe.Experte)) return;
         _stufe = (ZapfprofilStufe)n;
         _hinweis = "";
-        if (_stufe != ZapfprofilStufe.Experte) _fehlfelder.Clear();
+        if (_stufe != ZapfprofilStufe.Experte)
+        {
+            // Nur die Felder, die verschwinden, nehmen ihre Fehleingabe mit.
+            _fehlfelder.Remove(Texte.LabelSeed);
+            _fehlfelder.Remove(Texte.LabelRealisierungen);
+        }
     }
 
     /// <summary>Die Optionsgruppe „Rechenweg der Jahresreihe": deterministisch oder stochastisch (die Vorschau bleibt deterministisch).</summary>

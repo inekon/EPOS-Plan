@@ -170,6 +170,18 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
+        /// Die Konsistenzprobe rechnet ihre relative Abweichung selbst (Kern, nicht die Oberfläche):
+        /// <c>Ē / E_det − 1</c>; ohne Jahresmenge keine.
+        /// </summary>
+        [Fact]
+        public void Die_Konsistenzprobe_rechnet_ihre_Abweichung()
+        {
+            var k = new Jahreskonsistenz(1000.0, 990.0, 12.0, 4, 18.0, true, 1000.0, 1.0, 0.0);
+            Assert.Equal(-0.01, k.Abweichung.Value, 12);
+            Assert.Null((k with { DeterministischKwh = 0.0 }).Abweichung);
+        }
+
+        /// <summary>
         /// Der nebenläufige Lauf der Oberfläche (5.1): Eine gesetzte Abbruchmarke beendet beide
         /// Ensembles — parallel und seriell — mit <see cref="OperationCanceledException"/>, ohne
         /// halbes Ergebnis; ohne Marke rechnen dieselben Aufrufe durch.

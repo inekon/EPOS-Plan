@@ -108,9 +108,11 @@ public sealed class ZapfprofilDatenTests : IDisposable
         k.Seed = 8;
         Assert.Equal(7, e.Seed);
 
-        var probe = new ZapfprofilKonsistenzDaten { DeterministischKwh = 1000, MittelKwh = 990 };
-        Assert.Equal(-0.01, probe.Abweichung!.Value, 12);
-        Assert.Null(new ZapfprofilKonsistenzDaten { MittelKwh = 5 }.Abweichung);
+        // Die Abweichung rechnet der Kern — das DTO trägt sie nur (ohne Wert: keine).
+        Assert.Null(new ZapfprofilKonsistenzDaten { DeterministischKwh = 1000, MittelKwh = 990 }.Abweichung);
+        Assert.Equal(-0.01, new ZapfprofilKonsistenzDaten { Abweichung = -0.01 }.Abweichung);
+        Assert.Null(new ZapfprofilVorschauDaten().Seed);
+        Assert.Null(new ZapfprofilVorschauDaten().Realisierungen);
     }
 
     [Fact]
@@ -123,12 +125,25 @@ public sealed class ZapfprofilDatenTests : IDisposable
 
         var daten = new ZapfprofilDaten
         {
+            SeedVorgabe = 1,
+            RealisierungenVorgabe = 10,
             Eingabe =
             {
                 Zonen = { new ZapfprofilZoneDaten { Ueberschrieben = 2 }, new ZapfprofilZoneDaten { Ueberschrieben = 3 } }
             }
         };
         Assert.Equal(5, daten.Ueberschrieben);
+
+        // Der Zähler steht EINMAL: Zonen und Stochastik — Rechenweg, Seed und Jahre abseits der Vorgabe.
+        ZapfprofilEingabeDaten arbeit = daten.Eingabe.Kopie();
+        arbeit.JahresreiheStochastisch = true;
+        arbeit.Seed = 1;                                                     // die Vorgabe: kein Zähler
+        arbeit.Realisierungen = 25;
+        Assert.Equal(7, daten.UeberschriebenIn(arbeit));
+        arbeit.Seed = 4;
+        Assert.Equal(8, daten.UeberschriebenIn(arbeit));
+        Assert.Equal(5, daten.Ueberschrieben);                             // der Stand beim Öffnen bleibt
+        Assert.Equal(0, daten.UeberschriebenIn(null));
     }
 
     /// <summary>Hausregel „kein vorbelegtes DTO als Ergebnis": ohne Rechnung keine Summe, aber ein Zustand.</summary>

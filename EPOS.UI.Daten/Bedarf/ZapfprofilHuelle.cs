@@ -23,7 +23,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Die Vorschau ruft den Lauf.</b> <see cref="Vorschau"/> geht über
     /// <see cref="BedarfsVorschauCtrl.ProjektVorschau"/> mit dem Arbeitsstand, also über
-    /// denselben Generatoraufruf, den der Lauf nimmt (2.4); die Reihen für Tagesgang und Woche
+    /// denselben Generatoraufruf, den der Lauf nimmt (2.4) — live auf dem deterministischen Pfad
+    /// (5.1); die stochastische Jahresreihe zieht allein <see cref="Jahresreihe"/>, nebenläufig
+    /// mit Abbruchmarke (Delegat <c>Jahresreihe</c>). Die Reihen für Tagesgang und Woche
     /// wertet der Kern aus (<see cref="Zapfauswertung"/>), die Bilder zeichnen die
     /// Zeichenbausteine des Kerns (<see cref="ZapfprofilBilder"/>). Die Hülle rechnet keinen
     /// Bedarf.</para>
@@ -596,7 +598,8 @@ namespace WindowsFormsApplication1
                 Realisierungen = k.Realisierungen,
                 ToleranzKwh = k.ToleranzKwh,
                 Erfuellt = k.Erfuellt,
-                Faktor = k.Faktor
+                Faktor = k.Faktor,
+                Abweichung = k.Abweichung
             };
 
         /// <summary>Zonenname → Position, nur für Namen, die genau einmal vorkommen.</summary>

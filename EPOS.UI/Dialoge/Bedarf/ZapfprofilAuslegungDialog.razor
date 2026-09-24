@@ -953,7 +953,8 @@
     {
         if (_eingabe.Stochastisch == an) return;
         _eingabe.Stochastisch = an;
-        if (!an) _fehlfelder.Clear();
+        // Nur das Feld, das verschwindet, nimmt seine Fehleingabe mit.
+        if (!an) _fehlfelder.Remove(Texte.LabelRealisierungen);
         Geaendert();
     }
 

@@ -1172,6 +1172,26 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.All(imZeichenlauf, e => Assert.False(e.Stochastisch));
     }
 
+    /// <summary>
+    /// Die Grenze der Realisierungen des Bedarfstags ist die Obergrenze des Kerns für das
+    /// Auslegungsensemble (100 000) — nicht die der Jahresreihe (1000): 5000 gilt, 100 001 färbt.
+    /// </summary>
+    [Fact]
+    public void Die_Realisierungen_des_Bedarfstags_reichen_bis_zur_Kernobergrenze()
+    {
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu);
+        Feld(cut, "Stochastisch rechnen").Change(true);
+
+        Feld(cut, "Realisierungen des Bedarfstags").Input("5000");
+        Assert.DoesNotContain("epos-fehleingabe", Feld(cut, "Realisierungen des Bedarfstags").ClassName);
+        Assert.Equal(5000, cut.Instance.Eingabe.RealisierungenAuslegung);
+
+        Feld(cut, "Realisierungen des Bedarfstags").Input("100001");
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Realisierungen des Bedarfstags").ClassName);
+        Assert.Equal(5000, cut.Instance.Eingabe.RealisierungenAuslegung);
+        Assert.Contains("Ganze Zahl von 1 bis 100000", cut.Markup);
+    }
+
     [Fact]
     public void Eine_Fehleingabe_der_Realisierungen_haelt_das_OK_an()
     {

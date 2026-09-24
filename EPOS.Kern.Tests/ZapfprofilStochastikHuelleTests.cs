@@ -391,7 +391,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, k.Position);
             Assert.Equal(4, k.Realisierungen);
             Assert.True(k.ToleranzKwh > 0 && k.StandardabweichungKwh >= 0 && k.Faktor > 0);
-            Assert.NotNull(k.Abweichung);
+            Assert.Equal(k.MittelKwh / k.DeterministischKwh - 1.0, k.Abweichung!.Value, 12);   // wie der Kern sie rechnet
 
             ZapfprofilVorschauDaten d = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
             double det = d.Summe.Kennzahlen.JahresbedarfZapfungKwh;
@@ -527,6 +527,53 @@ namespace EPOS.Kern.Tests
             Assert.False(wieder.Vorschau.Stochastisch);
         }
 
+        /// <summary>
+        /// Perzentil und Realisierungen des Bedarfstags allein — sonst nichts — gehen mit dem OK
+        /// des Zapfprofils (samt OK der Auslegung) in den Behälter, werden im Vorgang des
+        /// Bedarfsprofil-Dialogs geschrieben, stehen danach in den Projektgrößen und setzen
+        /// <c>Tab_Projekt.Aenderungsdatum</c>.
+        /// </summary>
+        [Fact]
+        public void Perzentil_und_Realisierungen_des_Bedarfstags_allein_gehen_ueber_den_Behaelter()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator,
+                new[] { new ZonenStand { Name = "Zone Probe", IdNutzungsart = Nutzungsart(ABGELEITET), Bezugsmenge = 10 } }, null));
+            ProjektStand vorher = ZapfprofilCtrl.Lies(PROJEKT).Projekt ?? ZapfprofilCtrl.ProjektVorgabe();
+            int anderes = TwwSchema.Perzentile.First(p => p != vorher.Perzentil);
+
+            var aenderungen = new Action<ZapfprofilAuslegungEingabeDaten>[]
+            {
+                a => a.Perzentil = anderes,
+                a => a.RealisierungenAuslegung = 40
+            };
+            foreach (Action<ZapfprofilAuslegungEingabeDaten> aendern in aenderungen)
+            {
+                DatumZuruecksetzen();
+                var behaelter = new ZapfprofilBehaelter(PROJEKT);
+                ZapfprofilEinstieg einstieg = ZapfprofilHuelle.Einstieg(PROJEKT, behaelter.Wege());
+                var daten = (ZapfprofilDaten)einstieg.Gaben()["Daten"];
+                ZapfprofilEingabeDaten e = daten.Eingabe.Kopie();
+                e.Auslegung = e.Auslegung?.Kopie() ?? ZapfprofilHuelle.AuslegungAusStand(ZapfprofilCtrl.Lies(PROJEKT));
+                aendern(e.Auslegung);
+                einstieg.Uebernommen(new ZapfprofilErgebnisDaten(e));
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    ZapfprofilSpeicherergebnis ok = behaelter.Schreiben(v);
+                    Assert.True(ok.Erfolg, ok.Meldung?.Text);
+                    v.Commit();
+                }
+                Assert.True(MerkmalUebernahmeCtrl.NachStandGeaendert(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT)));
+            }
+
+            ProjektStand p = ZapfprofilCtrl.Lies(PROJEKT).Projekt;
+            Assert.Equal(anderes, p.Perzentil);
+            Assert.Equal(40, p.RealisierungenAuslegung);
+            Assert.Equal(vorher.Seed, p.Seed);                                  // sonst nichts
+            Assert.Equal(vorher.JahresreiheStochastisch, p.JahresreiheStochastisch);
+        }
+
         // =================================================================================
         // Auf der Testdatenbank: Auslegung („Stochastisch rechnen", Karte (b))
         // =================================================================================
@@ -543,6 +590,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfprofilCtrl.ProjektVorgabe().Perzentil, s.PerzentilVorgabe);
             Assert.Equal(TwwSchema.RealisierungenMindestens, s.RealisierungenMindestens);
             Assert.Equal(Zapfensemble.HOECHSTENS, s.RealisierungenHoechstens);
+            Assert.Equal(100000, s.RealisierungenHoechstens);                // die Grenze des Auslegungsensembles,
+            Assert.NotEqual(Jahresensemble.HOECHSTENS, s.RealisierungenHoechstens);   // nicht die der Jahresreihe
             Assert.Equal(20, s.Mindestzahl[95]);
             Assert.Equal(100, s.Mindestzahl[99]);
             Parametersatz ps = ZapfprofilCtrl.Parameter();

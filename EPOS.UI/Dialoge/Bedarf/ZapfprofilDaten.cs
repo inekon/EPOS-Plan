@@ -395,8 +395,11 @@ public sealed class ZapfprofilKonsistenzDaten
     /// <summary>Der Faktor der Energieprobe, der das Jahr zum Seed auf die Jahresmenge bringt [-].</summary>
     public double Faktor { get; set; }
 
-    /// <summary>Die relative Abweichung des Mittels vom deterministischen Pfad [-]; <c>null</c> ohne Jahresmenge.</summary>
-    public double? Abweichung => DeterministischKwh != 0 ? MittelKwh / DeterministischKwh - 1.0 : null;
+    /// <summary>
+    /// Die relative Abweichung des Mittels vom deterministischen Pfad [-], wie der Kern sie
+    /// rechnet (<c>Jahreskonsistenz.Abweichung</c>); <c>null</c> ohne Jahresmenge.
+    /// </summary>
+    public double? Abweichung { get; set; }
 }
 
 /// <summary>Der Jahreswert einer Zone für die Spalte „MWh/a" der Zonenliste.</summary>
@@ -514,8 +517,24 @@ public sealed class ZapfprofilDaten
     /// <summary>Die Obergrenze der Realisierungen der Jahresreihe (Kern); <c>null</c> = keine bekannt.</summary>
     public int? RealisierungenHoechstens { get; set; }
 
-    /// <summary>Wie viele Größen der höheren Stufen der Arbeitsstand überschreibt (Summe der Zonen).</summary>
-    public int Ueberschrieben => Eingabe.Zonen.Sum(z => z.Ueberschrieben);
+    /// <summary>Wie viele Werte der Arbeitsstand beim Öffnen überschreibt (<see cref="UeberschriebenIn"/>).</summary>
+    public int Ueberschrieben => UeberschriebenIn(Eingabe);
+
+    /// <summary>
+    /// <b>Der Zähler „n Werte überschrieben"</b> — an EINER Stelle: die Größen der höheren Stufen
+    /// je Zone (die Hülle zählt sie je Zone) und die der Stochastik — der Rechenweg
+    /// „stochastisch", ein Seed oder eine Zahl der Realisierungen abseits der Vorgabe. Die Stufe
+    /// blendet nur aus, die Überschreibung bleibt.
+    /// </summary>
+    public int UeberschriebenIn(ZapfprofilEingabeDaten? eingabe)
+    {
+        if (eingabe is null) return 0;
+        int n = eingabe.Zonen.Sum(z => z.Ueberschrieben);
+        if (eingabe.JahresreiheStochastisch) n++;
+        if (eingabe.Seed is int seed && SeedVorgabe is int sv && seed != sv) n++;
+        if (eingabe.Realisierungen is int r && RealisierungenVorgabe is int rv && r != rv) n++;
+        return n;
+    }
 }
 
 /// <summary>
