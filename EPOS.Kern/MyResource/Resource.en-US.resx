@@ -3184,6 +3184,24 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
     <value>Heat demand, building "{0}": holiday period {1} (day {2} to {3}) has no effect — start and end do not yield a single holiday day.</value>
   </data>
+  <data name="SIMENG_G3_NEIGUNG" xml:space="preserve">
+    <value>{0}: the inclination {1}° is outside 0 … 180° (0° = horizontal facing up, 90° = vertical, 180° = horizontal facing down).</value>
+  </data>
+  <data name="SIMENG_G3_AUFBAU_LEER" xml:space="preserve">
+    <value>{0}: the layer build-up has no layer.</value>
+  </data>
+  <data name="SIMENG_G3_LUFTSCHICHT_DICKE" xml:space="preserve">
+    <value>{0}, layer {1}: the unventilated air layer is {2} m thick; DIN EN ISO 6946 table 8 applies up to {3} m.</value>
+  </data>
+  <data name="SIMENG_G3_SCHICHT_STOFFWERT" xml:space="preserve">
+    <value>{0}, layer {1}: {2} = {3} {4} is outside {5} … {6} {4}; a material value outside the plausibility range is not a value.</value>
+  </data>
+  <data name="SIMENG_G3_REDUKTION_UNGUELTIG" xml:space="preserve">
+    <value>{0}: reducing the layer build-up according to VDI 6007 part 1 eq. (12)–(17) yields no finite, positive value (R_1 = {1} K/W, C_1 = {2} J/K); a build-up without effective thermal mass has to be treated as a massless element.</value>
+  </data>
+  <data name="SIMENG_G3_BAUTEIL_BEREICH" xml:space="preserve">
+    <value>{0}: {1} = {2} is outside the permitted range {3}.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>

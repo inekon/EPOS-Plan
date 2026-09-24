@@ -170,6 +170,44 @@ namespace WindowsFormsApplication1
         /// Wochentag zuordnen (Anlagenkopplung 4.3, H-F10). Kein Auffüllen, kein Abschneiden.
         /// </summary>
         SollwertprofilUngueltig,
+
+        // ---- Stufe G3: der Bauteilweg (Mehrzonenkonzept 3.1–3.6, Rechenschritte Kapitel 3) ----
+
+        /// <summary>
+        /// Eine Schicht ist unbrauchbar: Dicke, Wärmeleitfähigkeit, Rohdichte oder spezifische
+        /// Wärmekapazität außerhalb des Plausibilitätsbands (Mehrzonenkonzept 3.5; λ ≤ 0 gehört
+        /// dazu), eine ruhende Luftschicht dicker als nach DIN EN ISO 6946 Tabelle 8 zulässig,
+        /// oder ein Aufbau ohne Schicht. Ein Stoffwert außerhalb des Bands ist kein Wert.
+        /// </summary>
+        SchichtUngueltig,
+
+        /// <summary>
+        /// Die Reduktion eines Schichtaufbaus nach VDI 6007 Blatt 1 Gl. (12)–(17) liefert keinen
+        /// endlichen, positiven Ersatzwert — ein Aufbau ohne wirksame Speichermasse, der als
+        /// masseloses Bauteil zu führen ist.
+        /// </summary>
+        BauteilreduktionUngueltig,
+
+        /// <summary>
+        /// Ein Bauteil ist unbrauchbar: Fläche, Neigung, Azimut, g-Wert, Rahmenanteil,
+        /// Verschattung, Übergangskoeffizient oder Wärmebrückenleitwert außerhalb des Bereichs,
+        /// kein U-Wert ohne Schichten, ein Fenster mit Schichtaufbau oder an falscher
+        /// Randbedingung, ein nicht positiver Widerstand nach Gl. (26), oder kein opakes
+        /// Außenbauteil im Satz.
+        /// </summary>
+        BauteilUngueltig,
+
+        /// <summary>
+        /// Ein geneigtes Bauteil an Außenluft hat keinen Azimut; ohne Azimut dürfen nur
+        /// waagerechte Flächen (Neigung 0° oder 180°) stehen.
+        /// </summary>
+        AzimutFehlt,
+
+        /// <summary>
+        /// Die Randbedingung „Nachbarzone" ist im Einzonenmodell nicht abgebildet; sie kommt mit
+        /// Stufe G6b (Mehrzonenkonzept 2.3). Kein stilles Umdeuten auf eine andere Randbedingung.
+        /// </summary>
+        RandbedingungNichtAbgebildet,
     }
 
     /// <summary>
