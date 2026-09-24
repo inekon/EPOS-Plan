@@ -129,11 +129,13 @@ public class ZapfprofilDialogTests : EposBunitContext
         Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>? vorschau = null,
         Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>? pruefen = null,
         Action<ZapfprofilErgebnisDaten?>? geschlossen = null,
-        bool titel = true)
+        bool titel = true,
+        Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>? jahresreihe = null)
         => Render<ZapfprofilDialog>(p => p
             .Add(x => x.Daten, daten ?? Daten())
             .Add(x => x.Texte, new ZapfprofilTexte())
             .Add(x => x.Vorschau, vorschau ?? (e => Vorschau(e)))
+            .Add(x => x.Jahresreihe, jahresreihe)
             .Add(x => x.Pruefen, pruefen ?? (_ => Array.Empty<ZapfprofilMeldung>()))
             .Add(x => x.EntprellungMs, 0)
             .Add(x => x.TitelAnzeigen, titel)
@@ -415,21 +417,29 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(20, ergebnis!.Eingabe.Realisierungen);
     }
 
+    /// <summary>Das Ergebnis eines Laufs der Jahresreihe (erfunden): stochastisch, Seed 3, vier Jahre.</summary>
+    private static ZapfprofilVorschauDaten Gezogen(ZapfprofilEingabeDaten e, params ZapfprofilMeldung[] meldungen)
+    {
+        ZapfprofilVorschauDaten v = Vorschau(e, meldungen);
+        v.Stochastisch = true;
+        v.Seed = 3;
+        v.Realisierungen = 4;
+        v.Status = "Stochastik gerechnet · Seed 3 · 4 Jahre";
+        return v;
+    }
+
     /// <summary>
-    /// Nach einem stochastischen Lauf: Die Gruppe Stochastik nennt Seed und Jahre; die Stufe
+    /// Nach dem Lauf „Stochastisch rechnen": Die Gruppe Stochastik nennt Seed und Jahre; die Stufe
     /// Einfach erklärt, dass die Bilanzreihe das Jahr zum Seed ist, die Stufe Experte zeigt je
     /// Zone die Konsistenzprobe — Energieabweichung, s_R, Toleranz und das Urteil grün (✓) bzw.
-    /// amber (≠) — als Textzeilen, kein Bild.
+    /// amber (≠) — als Textzeilen, kein Bild. Die Vorschau selbst bleibt deterministisch.
     /// </summary>
     [Fact]
     public void Nach_dem_stochastischen_Lauf_zeigt_Experte_die_Konsistenzprobe()
     {
         ZapfprofilEingabeDaten e = Eingabe();
         e.JahresreiheStochastisch = true;
-        ZapfprofilVorschauDaten v = Vorschau(e);
-        v.Stochastisch = true;
-        v.Seed = 3;
-        v.Realisierungen = 4;
+        ZapfprofilVorschauDaten v = Gezogen(e);
         var ok = new ZapfprofilKonsistenzDaten
         {
             Zone = "Zone 1", DeterministischKwh = 1000, MittelKwh = 990, StandardabweichungKwh = 12, Realisierungen = 4,
@@ -442,9 +452,15 @@ public class ZapfprofilDialogTests : EposBunitContext
         };
         v.Ansichten[0].Konsistenzen.AddRange(new[] { ok, abweichend });
         v.Ansichten[1].Konsistenzen.Add(ok);
-        var cut = Aufbauen(Daten(e, v), vorschau: _ => v);
+        var gezogen = new List<ZapfprofilEingabeDaten>();
+        var cut = Aufbauen(Daten(e), jahresreihe: (x, _) => { gezogen.Add(x); return Task.FromResult(v); });
 
         cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Assert.Contains("Stochastik · noch nicht gerechnet", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        Knopf(cut, "Stochastisch rechnen").Click();
+        Assert.True(Assert.Single(gezogen).JahresreiheStochastisch);
+        cut.WaitForAssertion(() => Assert.Same(v, cut.Instance.StochastikErgebnis));
+        Assert.False(cut.Instance.AktuelleVorschau!.Stochastisch);                // die Vorschau bleibt deterministisch
         string tabelle = cut.Find("table.epos-zapfprofil-kennzahlen").TextContent;
         Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", tabelle);
         Assert.Contains("Die Bilanzreihe ist das gezogene Jahr zum Seed", tabelle);
@@ -470,9 +486,9 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Fehlen der Nutzungsart die Zapfkategorien und rechnet die Zone stochastisch, steht die
-    /// benannte Ablehnung mit der Nutzungsart an der Zone — wie jede Ablehnung (Muster Z1); auf dem
-    /// deterministischen Weg fällt sie weg.
+    /// Fehlen der Nutzungsart die Zapfkategorien, lehnt der Lauf der Jahresreihe die Zone benannt
+    /// ab — die Ablehnung steht mit der Nutzungsart an der Zone, wie jede Ablehnung (Muster Z1). Die
+    /// deterministische Vorschau braucht keine Kategorien; das Umschalten verwirft den Lauf.
     /// </summary>
     [Fact]
     public void Fehlende_Zapfkategorien_stehen_benannt_an_der_Zone()
@@ -481,16 +497,76 @@ public class ZapfprofilDialogTests : EposBunitContext
                             + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.";
         var ablehnung = new ZapfprofilMeldung("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", "Zone 1", SATZ,
                                               ZapfprofilMeldungsart.Ablehnung, "Kernsatz", 0);
-        var cut = Aufbauen(vorschau: e => e.JahresreiheStochastisch ? Vorschau(e, ablehnung) : Vorschau(e));
+        var cut = Aufbauen(jahresreihe: (e, _) => Task.FromResult(Gezogen(e, ablehnung)));
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
 
         Option(cut, "Experte").Change("2");
         Option(cut, "stochastisch").Change("1");
-        IElement banner = cut.Find(".epos-blockspalte:first-child .epos-warnbanner");
-        Assert.Contains(SATZ, banner.TextContent);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));                     // die Vorschau zieht nichts
+        Knopf(cut, "Stochastisch rechnen").Click();
+        cut.WaitForAssertion(() => Assert.Contains(SATZ, cut.Find(".epos-blockspalte:first-child .epos-warnbanner").TextContent));
 
         Option(cut, "deterministisch").Change("0");
+        Assert.Null(cut.Instance.StochastikErgebnis);
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    /// <summary>
+    /// 5.1: „Stochastisch rechnen" läuft nebenläufig — der Dialog bleibt bedienbar, der Fortschritt
+    /// steht mit Abbrechen unter der Vorschau, die Fußleiste nennt „rechnet …". Abbrechen reicht
+    /// die Marke an den Lauf und sagt es als leise Zeile; eine Eingabe verwirft einen laufenden
+    /// Lauf samt spätem Ergebnis; OK beendet ihn; ein vollendeter Lauf kommt über InvokeAsync.
+    /// </summary>
+    [Fact]
+    public void Stochastisch_rechnen_laeuft_nebenlaeufig_mit_Status_und_Abbruch()
+    {
+        ZapfprofilEingabeDaten e = Eingabe();
+        e.JahresreiheStochastisch = true;
+        var laeufe = new List<(TaskCompletionSource<ZapfprofilVorschauDaten> Ende, CancellationToken Marke)>();
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = Aufbauen(Daten(e), geschlossen: x => ergebnis = x, jahresreihe: (x, marke) =>
+        {
+            var ende = new TaskCompletionSource<ZapfprofilVorschauDaten>(TaskCreationOptions.RunContinuationsAsynchronously);
+            marke.Register(() => ende.TrySetCanceled(marke));
+            laeufe.Add((ende, marke));
+            return ende.Task;
+        });
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+
+        Knopf(cut, "Stochastisch rechnen").Click();
+        Assert.True(cut.Instance.JahresreiheLaeuft);
+        Assert.Equal("Jahresreihe rechnet … · Seed 1 · 10 Jahre", cut.Find(".epos-fortschritt-text").TextContent);
+        Assert.Contains("Stochastik · rechnet …", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+        Assert.Contains("Wohnen A", cut.Find("table.epos-zapfprofil-zonen").TextContent);   // die Vorschau steht weiter
+
+        // Abbrechen am Fortschritt: die Marke erreicht den Lauf, eine leise Zeile nennt den Abbruch.
+        cut.Find(".epos-fortschritt-abbruch").Click();
+        Assert.True(laeufe[0].Marke.IsCancellationRequested);
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.JahresreiheLaeuft));
+        Assert.Equal("Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.", cut.Instance.Hinweis);
+        Assert.Null(cut.Instance.StochastikErgebnis);
+        Assert.Empty(cut.FindAll(".epos-fortschritt"));
+
+        // Eine Eingabe während des Laufs verwirft ihn — sein spätes Ergebnis bleibt draußen.
+        Knopf(cut, "Stochastisch rechnen").Click();
+        Option(cut, "hoch").Change("3");
+        Assert.True(laeufe[1].Marke.IsCancellationRequested);
+        Assert.False(cut.Instance.JahresreiheLaeuft);
+        Assert.Null(cut.Instance.StochastikErgebnis);
+
+        // Ein vollendeter Lauf: das Ergebnis per InvokeAsync, der Kopf nennt Seed und Jahre.
+        Knopf(cut, "Stochastisch rechnen").Click();
+        laeufe[2].Ende.SetResult(Gezogen(cut.Instance.Eingabe));
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.StochastikErgebnis));
+        Assert.False(cut.Instance.JahresreiheLaeuft);
+        Assert.Contains("Stochastik · Jahresreihe zum Seed 3, 4 Jahre gezogen", cut.Find("table.epos-zapfprofil-kennzahlen").TextContent);
+
+        // OK beendet einen laufenden Lauf; die Jahresreihe zieht der Lauf der Simulation.
+        Knopf(cut, "Stochastisch rechnen").Click();
+        Knopf(cut, "OK").Click();
+        Assert.True(laeufe[3].Marke.IsCancellationRequested);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(4, laeufe.Count);
     }
 
     /// <summary>
@@ -505,7 +581,7 @@ public class ZapfprofilDialogTests : EposBunitContext
 
         IElement knopf = Knopf(cut, "Stochastisch rechnen");
         Assert.Null(knopf.GetAttribute("aria-disabled"));
-        Assert.StartsWith("Öffnet die Auslegung und zieht das Ensemble", knopf.GetAttribute("title"));
+        Assert.StartsWith("Zieht nebenläufig das Ensemble des Bedarfstags", knopf.GetAttribute("title"));
         knopf.Click();
         Assert.True(cut.Instance.AuslegungOffen);
         Assert.True(cut.Instance.AuslegungStochastisch);

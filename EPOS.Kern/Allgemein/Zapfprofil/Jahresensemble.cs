@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -188,9 +189,12 @@ namespace WindowsFormsApplication1
         /// <b>Zieht R Jahre einer Zone</b> (Formel oben). Seed je Realisierung, Zone und Einheit
         /// (<see cref="ZapfZufall.Realisierungsseed"/>, <see cref="ZapfZufall.Kindseed"/>); ein
         /// ungültiger Eingang oder R außerhalb 1 … <see cref="HOECHSTENS"/> wird benannt abgelehnt
-        /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>).
+        /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>). Mit <paramref name="abbruch"/> endet
+        /// die Ziehung je Einheit mit <see cref="OperationCanceledException"/> — der nebenläufige Lauf
+        /// der Oberfläche (5.1) bricht ab, ohne ein halbes Ensemble zu liefern.
         /// </summary>
-        internal static Jahresensemble Ziehen(Jahreszone z, long seed, int realisierungen, bool parallel = true)
+        internal static Jahresensemble Ziehen(Jahreszone z, long seed, int realisierungen, bool parallel = true,
+                                              CancellationToken abbruch = default)
         {
             if (z == null) throw new ArgumentNullException(nameof(z));
             string zone = z.Zone ?? "";
@@ -216,7 +220,7 @@ namespace WindowsFormsApplication1
                 int anzahl = Math.Min(BLOCK, realisierungen - start);
                 var teil = new Bilanzreihe[anzahl];
                 // Parallel oder seriell; eine Ausnahme eines Fadens kommt ausgepackt heraus (benannt, nicht als AggregateException).
-                Zapfensemble.Lauf(anzahl, parallel, i => teil[i] = Realisierung(z, vorbereitung, seed, start + i));
+                Zapfensemble.Lauf(anzahl, parallel, i => teil[i] = Realisierung(z, vorbereitung, seed, start + i, abbruch), abbruch);
                 // Feste Folge r = 0, 1, … — unabhängig von der Reihenfolge der Fäden; die Reihen des Blocks verfallen danach.
                 for (int i = 0; i < anzahl; i++)
                 {
@@ -249,7 +253,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static Bilanzreihe Realisierung(Jahreszone z, Vorbereitung v, long seed, int r)
+        private static Bilanzreihe Realisierung(Jahreszone z, Vorbereitung v, long seed, int r, CancellationToken abbruch)
         {
             const int minutenJahr = Zapfkalender.TAGE * Bedarfstag.MINUTEN;
             var stunden = new double[Bilanzreihe.STUNDEN];
@@ -257,6 +261,7 @@ namespace WindowsFormsApplication1
             ulong zs = ZapfZufall.Kindseed(ZapfZufall.Realisierungsseed(seed, r), z.Index);
             for (int u = 0; u < z.Einheiten; u++)
             {
+                abbruch.ThrowIfCancellationRequested();
                 var zufall = new ZapfZufall(ZapfZufall.Kindseed(zs, u));
                 ZapfTagtyp[] kalender = z.Kalender;
                 double[] tage = v.GemeinsamKwh;

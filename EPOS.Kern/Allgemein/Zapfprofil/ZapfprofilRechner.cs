@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -54,8 +55,14 @@ namespace WindowsFormsApplication1
             internal Jahreskonsistenz Konsistenz;
         }
 
-        /// <summary>Rechnet die Bilanz. Kalender, Projektgrößen und Parametersatz sind Pflicht.</summary>
-        internal static ZapfprofilErgebnis Rechnen(Zapfprofileingang e, IReadOnlyList<Nutzungsart> katalog)
+        /// <summary>
+        /// Rechnet die Bilanz. Kalender, Projektgrößen und Parametersatz sind Pflicht. Mit
+        /// <paramref name="abbruch"/> endet die Ziehung der stochastischen Jahresreihe mit
+        /// <see cref="OperationCanceledException"/> (der nebenläufige Lauf der Oberfläche, 5.1);
+        /// der deterministische Weg zieht nichts und bleibt davon unberührt.
+        /// </summary>
+        internal static ZapfprofilErgebnis Rechnen(Zapfprofileingang e, IReadOnlyList<Nutzungsart> katalog,
+                                                   CancellationToken abbruch = default)
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
             Zapfkalender.Pruefen(e.WochentagJan1, e.We);
@@ -177,7 +184,7 @@ namespace WindowsFormsApplication1
                     double[] tage = Formvektor.Tagesmengen(a.ZapfungKwh, a.Struktur, a.Kalender, e.WochentagJan1,
                                                            a.Kaltwasserfaktor, a.Name);
                     a.Zapfreihe = new Bilanzreihe(Formvektor.Stundenreihe(tage, a.Struktur, a.Kalender));
-                    if (e.Projekt.JahresreiheStochastisch) Stochastisch(a, e, hinweise);
+                    if (e.Projekt.JahresreiheStochastisch) Stochastisch(a, e, hinweise, abbruch);
                 }
                 catch (ZapfprofilEingabeException ex)
                 {
@@ -376,7 +383,8 @@ namespace WindowsFormsApplication1
         /// Laufzeitfenster und die Probe. Die Urlaube werden bei Kalenderart Wohnen je Einheit
         /// versetzt, wenn die Zone Ferien trägt (Parameter <see cref="ZapfStochastikParameter.URLAUBSVERSATZ"/>).
         /// </summary>
-        private static void Stochastisch(Zonenarbeit a, Zapfprofileingang e, ICollection<ZapfHinweis> hinweise)
+        private static void Stochastisch(Zonenarbeit a, Zapfprofileingang e, ICollection<ZapfHinweis> hinweise,
+                                         CancellationToken abbruch)
         {
             IReadOnlyList<Ferienfenster> ferien = Zapfkalender.FensterDerZone(a.Stand);
             bool entkoppeln = a.Art.Kalender == ZapfKalenderart.Wohnen && ferien.Count > 0;
@@ -403,7 +411,7 @@ namespace WindowsFormsApplication1
                 Kaltwasserfaktor = a.Kaltwasserfaktor, SpreizungJeMonatK = spreizung,
                 WochentagJan1 = e.WochentagJan1, We = e.We, Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz
             };
-            Jahresensemble ensemble = Jahresensemble.Ziehen(zone, e.Projekt.Seed, e.Projekt.Realisierungen);
+            Jahresensemble ensemble = Jahresensemble.Ziehen(zone, e.Projekt.Seed, e.Projekt.Realisierungen, abbruch: abbruch);
             Jahreskonsistenz k = ensemble.Pruefen(a.Zapfreihe);
             Bilanzreihe bilanz = ensemble.Bilanz(k);
             if (!k.Erfuellt)

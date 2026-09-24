@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -31,7 +34,7 @@ namespace WindowsFormsApplication1
     /// des Kerns steht daneben (<c>Klartext</c>).</para>
     ///
     /// <para><b>Der Parametersatz</b> (<see cref="Gaben"/>) trägt die Schlüssel
-    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Pruefen</c>, <c>AuslegungGaben</c>,
+    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Jahresreihe</c>, <c>Pruefen</c>, <c>AuslegungGaben</c>,
     /// <c>HilfeSchluessel</c> und <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
     /// <c>ZapfprofilDialog.razor</c>. <c>AuslegungGaben</c> baut je Öffnen den Parametersatz der
     /// Überlagerung „Auslegung" zum Arbeitsstand des Dialogs (<see cref="AuslegungGaben"/>).</para>
@@ -89,6 +92,10 @@ namespace WindowsFormsApplication1
                 ["Daten"] = Laden(idProjekt, basis),
                 ["Texte"] = Texte(),
                 ["Vorschau"] = new Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>(e => Vorschau(idProjekt, e, basis)),
+                // Die stochastische Jahresreihe nebenläufig (5.1): auf einem Arbeitsfaden mit der Kultur
+                // des Aufrufers, abbrechbar — nie im Zeichenfaden.
+                ["Jahresreihe"] = new Func<ZapfprofilEingabeDaten, CancellationToken, Task<ZapfprofilVorschauDaten>>(
+                    (e, abbruch) => Kulturweitergabe.Starten(() => Jahresreihe(idProjekt, e, basis, abbruch), abbruch)),
                 ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
                 ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>(
                     e => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach)),
@@ -435,6 +442,82 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex) { return Unerwartet(ex.Message); }
         }
+
+        /// <summary>
+        /// <b>Die stochastische Jahresreihe</b> zum Arbeitsstand (4.4; „Stochastisch rechnen" des
+        /// Dialogs, 5.1): derselbe Generatorweg wie der Lauf (<see cref="ZapfprofilCtrl.Rechnen(int, ZapfprofilStand, int, bool[], CancellationToken)"/>)
+        /// mit dem Rechenweg, dem Seed und den Realisierungen des Arbeitsstands — in der Bilanz das
+        /// Jahr zum Seed, je Zone die Konsistenzprobe aus den R Jahren. Läuft nebenläufig (der
+        /// Delegat <c>Jahresreihe</c> legt sie auf einen Arbeitsfaden); <paramref name="abbruch"/>
+        /// beendet sie mit <see cref="OperationCanceledException"/>, jede andere Ablehnung kommt
+        /// benannt als Zustand <see cref="ZapfprofilVorschauZustand.Abgebrochen"/> zurück — auch die
+        /// Schranke der Einheitentage, mit Kennung und Werten in der Oberflächensprache.
+        /// </summary>
+        internal static ZapfprofilVorschauDaten Jahresreihe(int idProjekt, ZapfprofilEingabeDaten eingabe, ZapfprofilStand basis,
+                                                            CancellationToken abbruch)
+        {
+            if (eingabe == null || eingabe.Zonen.Count == 0)
+                return OhneJahresreihe(ZapfprofilVorschauZustand.NichtGerechnet, "ZPG_MSG_KEINE_ZONE",
+                                       Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt."), "");
+
+            ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
+            if (!verfuegbar.Ja)
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
+                                       Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+            if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, "ZPG_MSG_KEINE_KLIMAREGION",
+                                       Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau."), "");
+
+            ZapfprofilStand stand = AlsStand(eingabe, basis) with { Weg = BrauchwasserWeg.Generator };
+            ZapfprofilErgebnis e;
+            try
+            {
+                e = ZapfprofilCtrl.Rechnen(idProjekt, stand, jan1, we, abbruch);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (ZapfprofilEingabeException ex)
+            {
+                string grund = GenauerGrund(ZapfAblehnung.Aus(ex.Zone, ex), out string kennung);
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, kennung ?? Schluessel(ex.Fehler),
+                                       grund ?? Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (ParametersatzException ex)
+            {
+                return OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, Schluessel(ex.Fehler),
+                                       Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (Exception ex) { return JahresreiheUnerwartet(ex.Message); }
+
+            try
+            {
+                ZapfprofilVorschauDaten d = AlsVorschau(e, jan1, we, eingabe);
+                if (d.Stochastisch)
+                {
+                    // Derselbe Seed und dieselbe Zahl der Jahre wie im Eingang der Rechnung.
+                    ProjektStand p = stand.Projekt ?? ZapfprofilCtrl.ProjektVorgabe();
+                    d.Seed = p?.Seed;
+                    d.Realisierungen = p?.Realisierungen;
+                    d.Status = Format(Text_("ZPG_STATUS_VORSCHAU_STOCHASTISCH", "Stochastik gerechnet · Seed {0} · {1} Jahre"),
+                                      d.Seed ?? 0, d.Realisierungen ?? 0);
+                }
+                return d;
+            }
+            catch (Exception ex) { return JahresreiheUnerwartet(ex.Message); }
+        }
+
+        /// <summary>Die Jahresreihe ohne Ergebnis: Zustand, Grund und Meldung wie die Vorschau, der Status nennt die Stochastik.</summary>
+        private static ZapfprofilVorschauDaten OhneJahresreihe(ZapfprofilVorschauZustand zustand, string kennung, string grund,
+                                                              string klartext)
+        {
+            ZapfprofilVorschauDaten d = OhneVorschau(zustand, kennung, grund, klartext);
+            d.Status = Format(Text_("ZPG_STATUS_OHNE_JAHRESREIHE", "Stochastik nicht gerechnet — {0}"), grund ?? "");
+            return d;
+        }
+
+        private static ZapfprofilVorschauDaten JahresreiheUnerwartet(string klartext)
+            => OhneJahresreihe(ZapfprofilVorschauZustand.Abgebrochen, "ZPG_MSG_JAHRESREIHE_UNERWARTET",
+                   Format(Text_("ZPG_MSG_JAHRESREIHE_UNERWARTET", "Die Jahresreihe konnte nicht gerechnet werden: {0}"), klartext ?? ""),
+                   klartext);
 
         /// <summary>
         /// Das Ergebnis des Generators als Vorschau-DTO: die Summe und je Zone eine Ansicht, die
@@ -1074,6 +1157,10 @@ namespace WindowsFormsApplication1
             t.HinweisKonsistenzOrt = Text_("ZPG_HINW_KONSISTENZ_ORT", t.HinweisKonsistenzOrt);
             t.HinweisVorschauDeterministisch = Text_("ZPG_HINW_VORSCHAU_DETERMINISTISCH", t.HinweisVorschauDeterministisch);
             t.KennzahlStochastikGerechnet = Text_("ZPG_KZ_STOCHASTIK_GERECHNET", t.KennzahlStochastikGerechnet);
+            t.KennzahlStochastikLaeuft = Text_("ZPG_KZ_STOCHASTIK_LAEUFT", t.KennzahlStochastikLaeuft);
+            t.StatusJahresreiheLaeuft = Text_("ZPG_STATUS_JAHRESREIHE_LAEUFT", t.StatusJahresreiheLaeuft);
+            t.HinweisJahresreiheAbgebrochen = Text_("ZPG_HINW_JAHRESREIHE_ABGEBROCHEN", t.HinweisJahresreiheAbgebrochen);
+            t.HinweisJahresreiheDeterministisch = Text_("ZPG_HINW_JAHRESREIHE_DETERMINISTISCH", t.HinweisJahresreiheDeterministisch);
             t.KennzahlStochastikJahresreihe = Text_("ZPG_KZ_STOCHASTIK_JAHRESREIHE", t.KennzahlStochastikJahresreihe);
             t.KennzahlKonsistenz = Text_("ZPG_KZ_KONSISTENZ", t.KennzahlKonsistenz);
             t.KennzahlKonsistenzVermerk = Text_("ZPG_KZ_KONSISTENZ_VERMERK", t.KennzahlKonsistenzVermerk);

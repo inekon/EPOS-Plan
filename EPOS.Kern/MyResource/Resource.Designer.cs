@@ -77031,7 +77031,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Auslegung und zieht das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit; die Bilanzreihe wählt der Rechenweg der Jahresreihe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieht nebenläufig das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit (in der Auslegung) und bei Rechenweg „stochastisch“ die Jahre der Konsistenzprobe; beides lässt sich abbrechen. ähnelt.
         /// </summary>
         public static string ZPG_BTN_STOCHASTIK_TITEL {
             get {
@@ -77414,6 +77414,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_BEZUGSMENGE_EINHEIT {
             get {
                 return ResourceManager.GetString("ZPG_HINW_BEZUGSMENGE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESREIHE_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESREIHE_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei Rechenweg „deterministisch“ zieht „Stochastisch rechnen“ keine Jahresreihe. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESREIHE_DETERMINISTISCH {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESREIHE_DETERMINISTISCH", resourceCulture);
             }
         }
         
@@ -77823,6 +77841,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik · rechnet … ähnelt.
+        /// </summary>
+        public static string ZPG_KZ_STOCHASTIK_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_KZ_STOCHASTIK_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden über Schwelle {0} kW ähnelt.
         /// </summary>
         public static string ZPG_KZ_STUNDEN_UEBER_SCHWELLE {
@@ -77999,6 +78026,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_MSG_FEHLEINGABE {
             get {
                 return ResourceManager.GetString("ZPG_MSG_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe konnte nicht gerechnet werden: {0} ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_JAHRESREIHE_UNERWARTET {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_JAHRESREIHE_UNERWARTET", resourceCulture);
             }
         }
         
@@ -78561,6 +78597,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihe rechnet … · Seed {0} · {1} Jahre ähnelt.
+        /// </summary>
+        public static string ZPG_STATUS_JAHRESREIHE_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_STATUS_JAHRESREIHE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik nicht gerechnet — {0} ähnelt.
+        /// </summary>
+        public static string ZPG_STATUS_OHNE_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_STATUS_OHNE_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Vorschau — {0} ähnelt.
         /// </summary>
         public static string ZPG_STATUS_OHNE_VORSCHAU {
@@ -78579,7 +78633,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau aktuell · stochastisch · Seed {0} · {1} Jahre ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik gerechnet · Seed {0} · {1} Jahre ähnelt.
         /// </summary>
         public static string ZPG_STATUS_VORSCHAU_STOCHASTISCH {
             get {

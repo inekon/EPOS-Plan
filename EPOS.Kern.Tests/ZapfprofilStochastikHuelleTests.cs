@@ -15,8 +15,9 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Hüllen der Stochastik</b> (Umsetzungskonzept Zapfprofilgenerator 4.4, 4.5 b, 5.3, 5.5;
     /// Stufe Z3, Gruppe 3): Rechenweg, Seed und Realisierungen der Jahresreihe gehen zwischen
-    /// Arbeitsstand und DTO hin und zurück, die Pflichtprüfung hält ihre Grenzen, die Vorschau trägt
-    /// nach einem stochastischen Lauf die Konsistenzprobe je Zone, und die Überlagerung „Auslegung"
+    /// Arbeitsstand und DTO hin und zurück, die Pflichtprüfung hält ihre Grenzen, die Vorschau bleibt
+    /// deterministisch, der nebenläufige Lauf der Jahresreihe trägt die Konsistenzprobe je Zone, und
+    /// die Überlagerung „Auslegung"
     /// reicht „Stochastisch rechnen", Perzentil und Realisierungen des Bedarfstags an den Kern und
     /// baut aus dem Perzentil des Kerns die Zeilen der Karte (b): Wert, Streuband, Gleichzeitigkeit,
     /// Belastbarkeit und Konsistenzhinweis.
@@ -309,6 +310,127 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(v.Meldungen, x => x.Art != ZapfprofilMeldungsart.Hinweis);
             Assert.Equal(d.Summe.WocheZapfungKw, v.Summe.WocheZapfungKw);
             Assert.Equal(d.Summe.Kennzahlen.JahresbedarfZapfungKwh, v.Summe.Kennzahlen.JahresbedarfZapfungKwh);
+        }
+
+        /// <summary>
+        /// „Stochastisch rechnen" (5.1): Der Delegat <c>Jahresreihe</c> der Gaben zieht nebenläufig
+        /// denselben Weg wie der Lauf — in der Bilanz das Jahr zum Seed, auf die Jahresmenge
+        /// gebracht —, nennt Seed und Jahre im Status und trägt je Zone die Konsistenzprobe (an der
+        /// Zone und in der Summe). Die Jahresmenge gleicht der deterministischen Vorschau, die
+        /// Stunden nicht. Eine gesetzte Abbruchmarke beendet den Lauf ohne Ergebnis.
+        /// </summary>
+        [Fact]
+        public async System.Threading.Tasks.Task Die_Jahresreihe_zieht_nebenlaeufig_das_Jahr_zum_Seed_samt_Konsistenzprobe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var eingabe = new ZapfprofilEingabeDaten
+            {
+                JahresreiheStochastisch = true, Seed = 3, Realisierungen = 4,
+                Zonen = { new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = Nutzungsart(ABGELEITET), Bezugsmenge = 20 } }
+            };
+            var lauf = (Func<ZapfprofilEingabeDaten, System.Threading.CancellationToken, System.Threading.Tasks.Task<ZapfprofilVorschauDaten>>)
+                       ZapfprofilHuelle.Gaben(PROJEKT, ZapfprofilCtrl.Lies(PROJEKT))["Jahresreihe"];
+            ZapfprofilVorschauDaten v = await lauf(eingabe, System.Threading.CancellationToken.None);
+
+            Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
+            Assert.DoesNotContain(v.Meldungen, x => x.Art != ZapfprofilMeldungsart.Hinweis);
+            Assert.True(v.Stochastisch);
+            Assert.Equal(3, v.Seed);
+            Assert.Equal(4, v.Realisierungen);
+            Assert.Equal("Stochastik gerechnet · Seed 3 · 4 Jahre", v.Status);
+            ZapfprofilKonsistenzDaten k = Assert.Single(v.Summe.Konsistenzen);
+            Assert.Same(k, Assert.Single(v.Ansichten[1].Konsistenzen));
+            Assert.Equal("Wohnen", k.Zone);
+            Assert.Equal(0, k.Position);
+            Assert.Equal(4, k.Realisierungen);
+            Assert.True(k.ToleranzKwh > 0 && k.StandardabweichungKwh >= 0 && k.Faktor > 0);
+            Assert.NotNull(k.Abweichung);
+
+            ZapfprofilVorschauDaten d = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
+            double det = d.Summe.Kennzahlen.JahresbedarfZapfungKwh;
+            Assert.InRange(Math.Abs(v.Summe.Kennzahlen.JahresbedarfZapfungKwh / det - 1.0), 0.0, 1e-9);
+            Assert.InRange(Math.Abs(k.DeterministischKwh / det - 1.0), 0.0, 1e-9);
+            Assert.NotEqual(d.Summe.WocheZapfungKw, v.Summe.WocheZapfungKw);
+
+            using var marke = new System.Threading.CancellationTokenSource();
+            marke.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => lauf(eingabe, marke.Token));
+            Assert.ThrowsAny<OperationCanceledException>(
+                () => ZapfprofilHuelle.Jahresreihe(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT), marke.Token));
+        }
+
+        /// <summary>
+        /// Trägt die Nutzungsart einer stochastisch gerechneten Zone keine Zapfkategorien, lehnt die
+        /// Jahresreihe die Zone benannt ab — mit der Nutzungsart im Satz, am Ort der Zone, wie jede
+        /// Ablehnung —; die andere Zone rechnet weiter und trägt ihre Konsistenzprobe.
+        /// </summary>
+        [Fact]
+        public void Ohne_Zapfkategorien_lehnt_die_Jahresreihe_die_Zone_benannt_mit_ihrer_Nutzungsart_ab()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            int ohne = Nutzungsart(TESTNUTZUNG);
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ?", new DbParam("?", ohne));
+
+            var eingabe = new ZapfprofilEingabeDaten
+            {
+                JahresreiheStochastisch = true, Realisierungen = 2,
+                Zonen =
+                {
+                    new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = Nutzungsart(ABGELEITET), Bezugsmenge = 20 },
+                    new ZapfprofilZoneDaten { Name = "Probe", IdNutzungsart = ohne, Bezugsmenge = 8 }
+                }
+            };
+            ZapfprofilVorschauDaten v = ZapfprofilHuelle.Jahresreihe(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT),
+                                                                     System.Threading.CancellationToken.None);
+
+            Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
+            ZapfprofilMeldung m = Assert.Single(v.Meldungen, x => x.Art == ZapfprofilMeldungsart.Ablehnung);
+            Assert.Equal("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
+            Assert.Equal("Probe", m.Zone);
+            Assert.Equal(1, m.Position);
+            Assert.Equal("Zone „Probe“ trägt 0: Für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
+                         + ") stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.", m.Text);
+            Assert.True(v.Zonen[1].Abgelehnt);
+            Assert.False(v.Zonen[0].Abgelehnt);
+            Assert.Equal("Wohnen", Assert.Single(v.Summe.Konsistenzen).Zone);
+            Assert.Empty(v.Ansichten[2].Konsistenzen);
+        }
+
+        /// <summary>
+        /// Die Schranke der Einheitentage (4.4): 1000 Jahre zu 40 Einheiten zögen 14 600 000
+        /// Einheitentage — die Jahresreihe lehnt benannt ab, bevor ein Jahr gezogen ist, mit den
+        /// Werten im Satz der Oberflächensprache (de und en) und im Status.
+        /// </summary>
+        [Fact]
+        public void Zu_viele_Einheitentage_nennt_die_Jahresreihe_mit_Werten()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var eingabe = new ZapfprofilEingabeDaten
+            {
+                JahresreiheStochastisch = true, Realisierungen = Jahresensemble.HOECHSTENS,
+                Zonen = { new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = Nutzungsart(ABGELEITET), Bezugsmenge = 40 } }
+            };
+            ZapfprofilVorschauDaten v = ZapfprofilHuelle.Jahresreihe(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT),
+                                                                     System.Threading.CancellationToken.None);
+            Assert.Equal(ZapfprofilVorschauZustand.Abgebrochen, v.Zustand);
+            const string SATZ = "Die stochastische Jahresreihe zöge 14600000 Einheitentage (Realisierungen × Einheiten × 365); "
+                                + "höchstens 10000000 sind zulässig — bitte weniger Realisierungen wählen.";
+            Assert.Equal(SATZ, v.Grund);
+            Assert.Equal("Stochastik nicht gerechnet — " + SATZ, v.Status);
+            ZapfprofilMeldung m = Assert.Single(v.Meldungen);
+            Assert.Equal("ZPG_EINGABE_" + ZapfprofilRechner.KENNUNG_EINHEITSTAGE, m.Kennung);
+            Assert.Equal(ZapfprofilMeldungsart.Fehler, m.Art);
+
+            CultureInfo.CurrentUICulture = EN;
+            ZapfprofilVorschauDaten e = ZapfprofilHuelle.Jahresreihe(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT),
+                                                                     System.Threading.CancellationToken.None);
+            Assert.StartsWith("The stochastic annual series would draw 14600000 unit-days", e.Grund);
+            Assert.StartsWith("Stochastics not calculated — ", e.Status);
         }
 
         /// <summary>

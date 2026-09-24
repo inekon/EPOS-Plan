@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -140,10 +141,19 @@ namespace WindowsFormsApplication1
         /// (Stand des Dialogs). Der Katalog wird einmal gelesen.
         /// </summary>
         internal static ZapfprofilErgebnis Rechnen(int idProjekt, ZapfprofilStand stand, int wochentagJan1, bool[] we)
+            => Rechnen(idProjekt, stand, wochentagJan1, we, CancellationToken.None);
+
+        /// <summary>
+        /// Derselbe Generatorweg mit Abbruchmarke — der nebenläufige Lauf „Stochastisch rechnen"
+        /// des Dialogs (5.1): Die Ziehung der stochastischen Jahresreihe endet auf
+        /// <paramref name="abbruch"/> mit <see cref="OperationCanceledException"/>.
+        /// </summary>
+        internal static ZapfprofilErgebnis Rechnen(int idProjekt, ZapfprofilStand stand, int wochentagJan1, bool[] we,
+                                                   CancellationToken abbruch)
         {
             IReadOnlyList<Nutzungsart> katalog = Katalog();
             Zapfprofileingang e = Eingang(idProjekt, stand, wochentagJan1, we, katalog);
-            return ZapfprofilRechner.Rechnen(e, katalog);
+            return ZapfprofilRechner.Rechnen(e, katalog, abbruch);
         }
 
         // =================================================================================

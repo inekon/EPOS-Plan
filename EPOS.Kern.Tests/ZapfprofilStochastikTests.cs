@@ -207,6 +207,22 @@ namespace EPOS.Kern.Tests
             Assert.True(ZapfprofilRechner.Rechnen(Eingang(Projekt() with { Realisierungen = 548 }), Katalog).Vollstaendig);
         }
 
+        /// <summary>
+        /// Der nebenläufige Lauf der Oberfläche (5.1): Eine gesetzte Abbruchmarke beendet die Ziehung
+        /// der Jahresreihe mit <see cref="OperationCanceledException"/> — ohne halbes Ergebnis. 547
+        /// Jahre liegen gerade unter der Schranke der Einheitentage (9 982 750): der Lauf erreicht die
+        /// Ziehung und bricht dort ab. Der deterministische Weg zieht nichts und rechnet trotz Marke.
+        /// </summary>
+        [Fact]
+        public void Eine_Abbruchmarke_beendet_die_Ziehung_der_Jahresreihe()
+        {
+            using var marke = new System.Threading.CancellationTokenSource();
+            marke.Cancel();
+            Assert.ThrowsAny<OperationCanceledException>(
+                () => ZapfprofilRechner.Rechnen(Eingang(Stochastisch(realisierungen: 547)), Katalog, marke.Token));
+            Assert.True(ZapfprofilRechner.Rechnen(Eingang(Projekt()), Katalog, marke.Token).Vollstaendig);
+        }
+
         // =================================================================================
         // Perzentil der Auslegung
         // =================================================================================

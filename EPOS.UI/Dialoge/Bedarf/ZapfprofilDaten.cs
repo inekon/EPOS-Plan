@@ -442,14 +442,18 @@ public sealed class ZapfprofilVorschauDaten
     /// <summary>Der Statustext der Fußleiste.</summary>
     public string Status { get; set; } = "";
 
-    /// <summary>Ist die Jahresreihe stochastisch gerechnet (Rechenweg „stochastisch", 4.4)?</summary>
+    /// <summary>
+    /// Ist die Jahresreihe stochastisch gerechnet (Rechenweg „stochastisch", 4.4)? Nur das Ergebnis
+    /// des Laufs „Stochastisch rechnen" (Delegat <c>Jahresreihe</c>) — die Vorschau bleibt
+    /// deterministisch (5.1).
+    /// </summary>
     public bool Stochastisch { get; set; }
 
-    /// <summary>Der Seed des Laufs — nur bei <see cref="Stochastisch"/>.</summary>
-    public int Seed { get; set; }
+    /// <summary>Der Seed des Laufs — nur bei <see cref="Stochastisch"/>, sonst <c>null</c>.</summary>
+    public int? Seed { get; set; }
 
-    /// <summary>Die Zahl der gezogenen Jahre — nur bei <see cref="Stochastisch"/>.</summary>
-    public int Realisierungen { get; set; }
+    /// <summary>Die Zahl der gezogenen Jahre — nur bei <see cref="Stochastisch"/>, sonst <c>null</c>.</summary>
+    public int? Realisierungen { get; set; }
 
     /// <summary>Die Ansicht der Summe; <c>null</c> ohne Rechnung.</summary>
     public ZapfprofilAnsichtDaten? Summe => Ansichten.Count > 0 ? Ansichten[0] : null;

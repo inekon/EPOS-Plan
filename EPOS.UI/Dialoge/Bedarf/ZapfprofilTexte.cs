@@ -301,6 +301,18 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_VORSCHAU_DETERMINISTISCH</c></summary>
     public string HinweisVorschauDeterministisch { get; set; } = "Die Vorschau zeigt den deterministischen Pfad; die Jahresreihe entsteht erst im Lauf stochastisch — mit derselben Jahresmenge.";
 
+    /// <summary><c>ZPG_KZ_STOCHASTIK_LAEUFT</c></summary>
+    public string KennzahlStochastikLaeuft { get; set; } = "Stochastik · rechnet …";
+
+    /// <summary><c>ZPG_STATUS_JAHRESREIHE_LAEUFT</c></summary>
+    public string StatusJahresreiheLaeuft { get; set; } = "Jahresreihe rechnet … · Seed {0} · {1} Jahre";
+
+    /// <summary><c>ZPG_HINW_JAHRESREIHE_ABGEBROCHEN</c></summary>
+    public string HinweisJahresreiheAbgebrochen { get; set; } = "Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut.";
+
+    /// <summary><c>ZPG_HINW_JAHRESREIHE_DETERMINISTISCH</c></summary>
+    public string HinweisJahresreiheDeterministisch { get; set; } = "Bei Rechenweg „deterministisch“ zieht „Stochastisch rechnen“ keine Jahresreihe.";
+
     /// <summary><c>ZPG_KZ_STOCHASTIK_GERECHNET</c></summary>
     public string KennzahlStochastikGerechnet { get; set; } = "Stochastik · Jahresreihe zum Seed {0}, {1} Jahre gezogen";
 
@@ -328,7 +340,7 @@ public sealed class ZapfprofilTexte
     public string KnopfStochastik { get; set; } = "Stochastisch rechnen";
 
     /// <summary><c>ZPG_BTN_STOCHASTIK_TITEL</c></summary>
-    public string KnopfStochastikTitel { get; set; } = "Öffnet die Auslegung und zieht das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit; die Bilanzreihe wählt der Rechenweg der Jahresreihe.";
+    public string KnopfStochastikTitel { get; set; } = "Zieht nebenläufig das Ensemble des Bedarfstags für Perzentil und Gleichzeitigkeit (in der Auslegung) und bei Rechenweg „stochastisch“ die Jahre der Konsistenzprobe; beides lässt sich abbrechen.";
 
     /// <summary><c>ZPG_BTN_AUSLEGUNG</c></summary>
     public string KnopfAuslegung { get; set; } = "Auslegung…";

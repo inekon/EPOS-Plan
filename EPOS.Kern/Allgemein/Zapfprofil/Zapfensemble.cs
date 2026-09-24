@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WindowsFormsApplication1
 {
@@ -632,17 +634,25 @@ namespace WindowsFormsApplication1
         /// <b>ausgepackt</b> heraus, nicht als <see cref="AggregateException"/>, damit die Fassaden sie
         /// benannt fangen; werfen mehrere Pakete, gilt die erste benannte
         /// (<see cref="ZapfprofilEingabeException"/>, <see cref="ZapfAuslegungException"/>), sonst die erste.
+        /// Mit <paramref name="abbruch"/> endet der Lauf zwischen zwei Paketen mit
+        /// <see cref="OperationCanceledException"/> (der nebenläufige Lauf der Oberfläche, 5.1).
         /// </summary>
-        internal static void Lauf(int anzahl, bool parallel, Action<int> arbeit)
+        internal static void Lauf(int anzahl, bool parallel, Action<int> arbeit, CancellationToken abbruch = default)
         {
+            abbruch.ThrowIfCancellationRequested();
             if (!parallel || anzahl <= 1)
             {
-                for (int i = 0; i < anzahl; i++) arbeit(i);
+                for (int i = 0; i < anzahl; i++)
+                {
+                    abbruch.ThrowIfCancellationRequested();
+                    arbeit(i);
+                }
                 return;
             }
             try
             {
-                SpeicherEngine.Kulturweitergabe.For(0, anzahl, null, arbeit);
+                SpeicherEngine.Kulturweitergabe.For(0, anzahl,
+                    abbruch.CanBeCanceled ? new ParallelOptions { CancellationToken = abbruch } : null, arbeit);
             }
             catch (AggregateException ex)
             {
