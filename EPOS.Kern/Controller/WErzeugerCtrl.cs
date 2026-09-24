@@ -682,6 +682,40 @@ namespace WindowsFormsApplication1
         public sealed record AnlagenZeile(int Id, string Bezeichner);
 
         /// <summary>
+        /// <b>Der projektierte Vorlauf des Heizkanals</b> [°C] (Anlagenkopplung AK1, 3.4 Punkt 4,
+        /// N-A8) — der feste Vorlauf eines gekoppelten Gebäudes ohne Heizkurve: der HÖCHSTE
+        /// <c>Tab_Energieanlagen.Vorlauf</c> unter den Wärmeerzeugern des Projekts
+        /// (Wärmepumpe, Heizkessel, BHKW), deren Wärmesenke Heizwärme bedient (<c>WS_Typ</c>
+        /// leer, „Beides" oder „Heizung") und die einen Vorlauf größer null führen. Benannte
+        /// Regel: Der Heizkreis bekommt, was der wärmste Erzeuger anbietet; ein Erzeuger nur für
+        /// Warmwasser zählt nicht. NaN, wenn keiner — dann rechnet das Gebäude mit seinem
+        /// Auslegungsvorlauf und sagt es. Dialogfrei; NaN bei jedem Fehler.
+        /// </summary>
+        public static double VorlaufDesHeizkanals(int idProjekt)
+        {
+            if (idProjekt <= 0) return double.NaN;
+            object v = StilleDb.Scalar(
+                "SELECT MAX(Vorlauf) FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (?, ?, ?) AND Vorlauf > 0 " +
+                "AND (WS_Typ IS NULL OR WS_Typ = '' OR WS_Typ = ? OR WS_Typ = ?)",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@wp", DbParamTyp.Integer, WizardItemClass.WP_TYP),
+                StilleDb.Par("@kessel", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP),
+                StilleDb.Par("@bhkw", DbParamTyp.Integer, WizardItemClass.BHKW_TYP),
+                StilleDb.Par("@beides", DbParamTyp.VarWChar, DbWerte.WS_TYP_BEIDES),
+                StilleDb.Par("@heizung", DbParamTyp.VarWChar, DbWerte.WS_TYP_HEIZUNG));
+            if (v == null || v == DBNull.Value) return double.NaN;
+            try
+            {
+                return Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                return double.NaN;
+            }
+        }
+
+        /// <summary>
         /// Alle Anlagenzeilen EINES Projekts von EINEM Typ, in Anlagenreihenfolge
         /// (iU9-W11a.2).
         ///

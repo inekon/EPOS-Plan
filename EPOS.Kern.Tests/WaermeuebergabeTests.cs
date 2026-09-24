@@ -317,5 +317,38 @@ namespace EPOS.Kern.Tests
             g.Uebergabe_Art = null;
             Assert.False(Waermeuebergabe.KopplungWirksamFuer(g, DbWerte.ANLAGENKOPPLUNG_AK1));
         }
+
+        [Fact]
+        public void Die_Stuetzstelle_ist_die_naechstgelegene_bei_Gleichstand_die_hoehere()
+        {
+            int[] vorlaeufe = { 35, 45, 55, 65 };
+            Assert.Equal(0, SimulationWaermepumpe.StuetzstelleWaehlen(vorlaeufe, 30.0));
+            Assert.Equal(0, SimulationWaermepumpe.StuetzstelleWaehlen(vorlaeufe, 39.9));
+            Assert.Equal(1, SimulationWaermepumpe.StuetzstelleWaehlen(vorlaeufe, 40.0));   // Gleichstand: die höhere
+            Assert.Equal(1, SimulationWaermepumpe.StuetzstelleWaehlen(vorlaeufe, 44.03));
+            Assert.Equal(2, SimulationWaermepumpe.StuetzstelleWaehlen(vorlaeufe, 50.0));
+            Assert.Equal(3, SimulationWaermepumpe.StuetzstelleWaehlen(vorlaeufe, 70.0));
+            Assert.Equal(0, SimulationWaermepumpe.StuetzstelleWaehlen(new[] { 45 }, 20.0));
+        }
+
+        /// <summary>
+        /// Die Regel des Bestands am gerechneten Vorlauf, zweiseitig (F-A8, benannte Lesart):
+        /// darunter die unterste Kennlinie mit Hinweis, auch bei verbotener Extrapolation;
+        /// darüber die Extrapolationsregel — erlaubt die oberste Kennlinie, verboten der Abbruch.
+        /// </summary>
+        [Fact]
+        public void Die_Regel_ausserhalb_der_Stuetzstellen_ist_zweiseitig_wie_im_Bestand()
+        {
+            int[] vorlaeufe = { 35, 45, 55 };
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Innerhalb, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 44.0, false, out int s1));
+            Assert.Equal(1, s1);
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Innerhalb, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 55.0, false, out _));
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Darunter, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 25.0, false, out int s2));
+            Assert.Equal(0, s2);
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Darunter, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 25.0, true, out _));
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Darueber, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 58.0, true, out int s3));
+            Assert.Equal(2, s3);
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Verboten, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 58.0, false, out _));
+        }
     }
 }

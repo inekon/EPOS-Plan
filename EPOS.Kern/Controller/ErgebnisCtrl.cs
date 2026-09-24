@@ -208,8 +208,11 @@ namespace WindowsFormsApplication1
                             KuehlungSchema.SPALTE_BEDARF_KUEHLUNG + ", " +
                             KuehlungSchema.SPALTE_KAELTEBEDARF_GESAMT + ", " +
                             KuehlungSchema.SPALTE_KAELTELAST_MAX + ", " +
-                            KuehlungSchema.SPALTE_KAELTERESTBEDARF + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?)";
+                            KuehlungSchema.SPALTE_KAELTERESTBEDARF + ", " +
+                            AnlagenkopplungSchema.SPALTE_VORLAUF_MITTEL + ", " +
+                            AnlagenkopplungSchema.SPALTE_RUECKLAUF_MITTEL + ", " +
+                            AnlagenkopplungSchema.SPALTE_UEBERGABE_BEGRENZT_STUNDEN + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -224,6 +227,10 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaeltebedarf_Gesamt) });
                             p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaeltelast_Max) });
                             p.Add(new DbParam("@c3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaelterestbedarf) });
+                            // Schritt 123 (AK-S3, Waermeteil): NULL, solange kein Gebaeude gekoppelt rechnet.
+                            p.Add(new DbParam("@h1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.VorlaufMittelC) });
+                            p.Add(new DbParam("@h2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.RuecklaufMittelC) });
+                            p.Add(new DbParam("@h3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.UebergabeBegrenztStundenH) });
                             v.Ausfuehren(sql, p.ToArray());
                         }
                     }
@@ -876,6 +883,10 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Kaeltebedarf_Gesamt = DN(re, KuehlungSchema.SPALTE_KAELTEBEDARF_GESAMT);
                 m.Energiebedarf.Kaeltelast_Max = DN(re, KuehlungSchema.SPALTE_KAELTELAST_MAX);
                 m.Energiebedarf.Kaelterestbedarf = DN(re, KuehlungSchema.SPALTE_KAELTERESTBEDARF);
+                // Schritt 123 (AK-S3, Waermeteil): NULL bleibt null - "nicht erhoben".
+                m.Energiebedarf.VorlaufMittelC = DN(re, AnlagenkopplungSchema.SPALTE_VORLAUF_MITTEL);
+                m.Energiebedarf.RuecklaufMittelC = DN(re, AnlagenkopplungSchema.SPALTE_RUECKLAUF_MITTEL);
+                m.Energiebedarf.UebergabeBegrenztStundenH = DN(re, AnlagenkopplungSchema.SPALTE_UEBERGABE_BEGRENZT_STUNDEN);
             }
 
             // Detail: Waermepumpe (+ Module).
