@@ -574,17 +574,27 @@ namespace WindowsFormsApplication1
             int T = tafel.Jahre;
             if (fluss == null || fluss.Length != T + 1) return false;
 
-            int cN = tafel.FreieSpalte, cB = cN + 1, cK = cN + 2, cH = cN + 3;
+            int cN = tafel.FreieSpalte, cB = cN + 1, cK = cN + 2, cH = cN + 3, cV = cN + 4, cW = cN + 5;
             tafel.Referenz = refTafel;
             tafel.SpalteDeltaNominal = cN;
             tafel.SpalteDeltaBarwert = cB;
             tafel.SpalteDeltaKumuliert = cK;
             tafel.SpalteAmortHilfe = cH;
-            tafel.FreieSpalte = cH + 1;
+            tafel.SpalteVorzeichen = cV;
+            tafel.SpalteWechsel = cW;
+            tafel.FreieSpalte = cW + 1;
             Kopf(ws, tafel.KopfZeile, cN, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_NOMINAL, refName));
             Kopf(ws, tafel.KopfZeile, cB, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_BARWERT, refName));
             Kopf(ws, tafel.KopfZeile, cK, string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_FM_MJ_DELTA_KUMULIERT, refName));
             Kopf(ws, tafel.KopfZeile, cH, MyResource.Resource.WIRT_FM_MJ_AMORT_HILFE);
+            Kopf(ws, tafel.KopfZeile, cV, MyResource.Resource.WIRT_FM_MJ_VORZEICHEN);
+            Kopf(ws, tafel.KopfZeile, cW, MyResource.Resource.WIRT_FM_MJ_WECHSEL);
+
+            // ETAPPE E14 (E14‑Q3 a): Vorzeichen der nominalen Differenz, fortgeschrieben über
+            // Nullwerte (|Δ| ≤ Nullgrenze), und die Zahl der Wechsel bis zum Jahr — dieselbe
+            // Zählregel wie KapitalwertRechner.Vorzeichenwechsel; der Zinsfuß liest den Endstand.
+            string grenze = GrenzeText();
+            int vorzeichen = 0, wechsel = 0;
 
             MehrjahresSpalte netto = tafel.Tabelle.Spalten[tafel.SpalteNetto - 2];
             MehrjahresSpalte nettoRef = refTafel.Tabelle.Spalten[refTafel.SpalteNetto - 2];
@@ -607,6 +617,27 @@ namespace WindowsFormsApplication1
                     nachN = nachN + tafel.Bild.RestwertNominal - refTafel.Bild.RestwertNominal;
                 }
                 alle &= Setze(ws.Cell(r, cN), fN, fluss[t], nachN, register);
+
+                // Vorzeichen (fortgeschrieben) und Wechsel bis hier
+                double d = fluss[t];
+                int neu = double.IsNaN(d) || Math.Abs(d) <= KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR
+                        ? vorzeichen : Math.Sign(d);
+                string zN = Bezug(r, cN);
+                string fV = "IF(ABS(" + zN + ")<=" + grenze + "," + (t == 0 ? "0" : Bezug(r - 1, cV)) +
+                            ",SIGN(" + zN + "))";
+                alle &= Setze(ws.Cell(r, cV), fV, neu, neu, register);
+                if (t == 0)
+                {
+                    ws.Cell(r, cW).Value = 0;
+                }
+                else
+                {
+                    if (vorzeichen != 0 && neu != vorzeichen) wechsel++;
+                    string fW = Bezug(r - 1, cW) + "+IF(AND(" + Bezug(r - 1, cV) + "<>0," + Bezug(r, cV) + "<>" +
+                                Bezug(r - 1, cV) + "),1,0)";
+                    alle &= Setze(ws.Cell(r, cW), fW, wechsel, wechsel, register);
+                }
+                vorzeichen = neu;
 
                 // Barwert ohne Restwert und Laufsumme — die Reihe der Amortisation
                 double dBw = tafel.Bild.BarwertReihe[t] - refTafel.Bild.BarwertReihe[t];
@@ -684,41 +715,84 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der interne Zinsfuß einer Variante über IRR auf die nominale Differenzreihe,
         /// gerundet wie im Rechenkern (zwei Nachkommastellen in Prozent); der Wert des Laufs
-        /// ist der Startwert. Ohne Vorzeichenwechsel der benannte Leerwert. Mehrdeutig (mehr als
-        /// ein Wechsel) bleibt die Zelle ein Wert.
+        /// ist der Startwert. Die Zahl der Vorzeichenwechsel liest die Formel aus der
+        /// Hilfsspalte (ETAPPE E14): keiner — der benannte Leerwert „kein Zinsfuß
+        /// bestimmbar"; mehr als einer — der Text „nicht eindeutig" (E14‑Q3 a; die
+        /// Zinsfußgleichung hat dann mehrere Lösungen); genau einer — IRR.
         /// </summary>
         private static void ZinsfussFormel(IXLCell zelle, MehrjahresTafel tafel, MehrjahresTafel refTafel,
                                            WirtschaftlichkeitErgebnis e, Formelregister register)
         {
             int? wechsel = KapitalwertRechner.Vorzeichenwechsel(tafel.Bild, refTafel.Bild);
-            if (!wechsel.HasValue || wechsel != e.IrrVorzeichenwechsel) return;
+            if (!wechsel.HasValue || wechsel != e.IrrVorzeichenwechsel || tafel.SpalteWechsel < 0) return;
             string reihe = Bezug(tafel.Zeile(0), tafel.SpalteDeltaNominal) + ":" +
                            Bezug(tafel.Zeile(tafel.Jahre), tafel.SpalteDeltaNominal);
-            string leer = MyResource.Resource.WIRT_IZF_KEIN_WERT.Replace("\"", "\"\"");
-            string grenze = KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR.ToString("0E0", CultureInfo.InvariantCulture);
+            string zahl = Bezug(tafel.Zeile(tafel.Jahre), tafel.SpalteWechsel);
+            string kein = MyResource.Resource.WIRT_IZF_KEIN_WERT.Replace("\"", "\"\"");
+            string mehrdeutig = MyResource.Resource.WIRT_FM_IZF_NICHT_EINDEUTIG.Replace("\"", "\"\"");
+            string irr = e.IRR.HasValue
+                ? "ROUND(IRR(" + reihe + "," + Math.Round(e.IRR.Value / 100.0, 6).ToString("R", CultureInfo.InvariantCulture) + ")*100,2)"
+                : "ROUND(IRR(" + reihe + ")*100,2)";
+            string formel = "IF(" + zahl + "=0,\"" + kein + "\",IF(" + zahl + ">1,\"" + mehrdeutig + "\"," + irr + "))";
 
             if (wechsel == 1 && e.IRR.HasValue)
             {
                 double? nach = KapitalwertRechner.InternerZinsfuss(tafel.Bild, refTafel.Bild);
                 if (!nach.HasValue) return;
-                string start = Math.Round(e.IRR.Value / 100.0, 6).ToString("R", CultureInfo.InvariantCulture);
-                string formel = "IF(AND(COUNTIF(" + reihe + ",\">" + grenze + "\")>0,COUNTIF(" + reihe +
-                                ",\"<-" + grenze + "\")>0),ROUND(IRR(" + reihe + "," + start + ")*100,2),\"" +
-                                leer + "\")";
                 register.Formel(zelle, formel, e.IRR.Value, nach.Value);
             }
             else if (wechsel == 0 && !e.IRR.HasValue)
-            {
-                string formel = "IF(AND(COUNTIF(" + reihe + ",\">" + grenze + "\")>0,COUNTIF(" + reihe +
-                                ",\"<-" + grenze + "\")>0),ROUND(IRR(" + reihe + ")*100,2),\"" + leer + "\")";
                 register.FormelText(zelle, formel, MyResource.Resource.WIRT_IZF_KEIN_WERT);
-            }
+            else if (wechsel > 1)
+                register.FormelText(zelle, formel, MyResource.Resource.WIRT_FM_IZF_NICHT_EINDEUTIG);
+        }
+
+        /// <summary>Die Nullgrenze der Vorzeichenzählung als Formeltext („1E-6").</summary>
+        private static string GrenzeText()
+        {
+            return KapitalwertRechner.VORZEICHEN_NULLGRENZE_EUR.ToString("0E0", CultureInfo.InvariantCulture);
         }
 
         /// <summary>Das Zahlungsbild der Referenz einer Tabelle mit Differenzspalten.</summary>
         private static KapitalwertRechner.Zahlungsbild RefBild(MehrjahresTafel tafel)
         {
             return tafel.Referenz != null ? tafel.Referenz.Bild : null;
+        }
+
+        /// <summary>
+        /// ETAPPE E14 (Stufe 2) — eine Zeile der <b>Bandbreitentafel</b> in Formeln: ΔKW
+        /// Ungünstig / Erwartet / Günstig (Spalten B, C, D) als Zellbezug auf die Zeile
+        /// „Kapitalwert gegenüber Referenz" des jeweiligen Szenarioblocks, die Spanne (E) als
+        /// <c>MAX(B:D)−MIN(B:D)</c> — dieselbe Regel wie <see cref="BandbreitenZeile.Spanne"/>
+        /// (leere Zellen zählen nicht). Nur, wo der Block dieselbe Zahl trägt; sonst bleibt der Wert.
+        /// </summary>
+        internal static void Bandbreitenzeile(IXLWorksheet ws, int r, BandbreitenZeile z,
+                                              Dictionary<string, KennzahlBlock> lagen, Formelregister register)
+        {
+            if (ws == null || z == null || lagen == null || register == null) return;
+            string[] szenarien = { WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.ERWARTET,
+                                   WirtschaftlichkeitSzenario.BEST };
+            double?[] werte = { z.Worst, z.Erwartet, z.Best };
+            for (int k = 0; k < 3; k++)
+            {
+                KennzahlBlock lage;
+                int zDiff, c;
+                double blockwert;
+                if (!werte[k].HasValue || !lagen.TryGetValue(szenarien[k], out lage) ||
+                    !lage.Zeilen.TryGetValue("KAPITALWERT_DIFF", out zDiff) ||
+                    !lage.Spalten.TryGetValue(z.IdProjekt, out c) ||
+                    !lage.Werte.TryGetValue((zDiff, c), out blockwert)) continue;
+                register.Formel(ws.Cell(r, 2 + k), Bezug(zDiff, c), werte[k].Value, blockwert);
+            }
+            if (z.Spanne.HasValue)
+            {
+                double gross = double.MinValue, klein = double.MaxValue;
+                foreach (double? w in werte)
+                    if (w.HasValue) { gross = Math.Max(gross, w.Value); klein = Math.Min(klein, w.Value); }
+                string bereich = Bezug(r, 2) + ":" + Bezug(r, 4);
+                register.Formel(ws.Cell(r, 5), "MAX(" + bereich + ")-MIN(" + bereich + ")",
+                                z.Spanne.Value, gross - klein);
+            }
         }
 
         private static void ZahlFormat(IXLCell zelle)
@@ -917,6 +991,11 @@ namespace WindowsFormsApplication1
         internal int SpalteDeltaKumuliert = -1;
         internal int SpalteAmortHilfe = -1;
 
+        /// <summary>ETAPPE E14 (E14‑Q3 a): Vorzeichen der nominalen Differenz und die Zahl
+        /// der Vorzeichenwechsel bis zum Jahr — die Grundlage des Zinsfußes.</summary>
+        internal int SpalteVorzeichen = -1;
+        internal int SpalteWechsel = -1;
+
         /// <summary>Die Zeile des Jahres <paramref name="jahr"/> (0…T).</summary>
         internal int Zeile(int jahr) { return Jahr0Zeile + jahr; }
 
@@ -936,6 +1015,10 @@ namespace WindowsFormsApplication1
     {
         internal readonly Dictionary<string, int> Zeilen = new Dictionary<string, int>(StringComparer.Ordinal);
         internal readonly Dictionary<int, int> Spalten = new Dictionary<int, int>();
+
+        /// <summary>ETAPPE E14 — die Zahl, die der Block in eine Zelle (Zeile, Spalte)
+        /// geschrieben hat; die Bandbreitentafel verweist nur auf Zellen, deren Zahl sie trägt.</summary>
+        internal readonly Dictionary<(int, int), double> Werte = new Dictionary<(int, int), double>();
     }
 
     /// <summary>

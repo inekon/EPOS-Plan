@@ -71674,6 +71674,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_IZF_NICHT_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_IZF_NICHT_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang in diesem Jahr [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_MJ_AMORT_HILFE {
@@ -71742,6 +71751,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_FM_MJ_SZENARIO_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_FM_MJ_SZENARIO_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_VORZEICHEN {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_VORZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorzeichenwechsel bis hier ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_WECHSEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_WECHSEL", resourceCulture);
             }
         }
         

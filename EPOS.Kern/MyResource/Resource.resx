@@ -6666,6 +6666,15 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_FM_MJ_SZENARIO_TITEL" xml:space="preserve">
     <value>Mehrjahresübersicht der Zahlungsströme — Szenario „{0}“ (T = {1} a)</value>
   </data>
+  <data name="WIRT_FM_MJ_VORZEICHEN" xml:space="preserve">
+    <value>Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht)</value>
+  </data>
+  <data name="WIRT_FM_MJ_WECHSEL" xml:space="preserve">
+    <value>Vorzeichenwechsel bis hier</value>
+  </data>
+  <data name="WIRT_FM_IZF_NICHT_EINDEUTIG" xml:space="preserve">
+    <value>nicht eindeutig — die Differenzreihe wechselt mehrfach das Vorzeichen (Anhang C)</value>
+  </data>
   <data name="WIRT_FM_MJ_SZENARIO_HINWEIS" xml:space="preserve">
     <value>Nominale Zahlungen je Jahr im Szenario „{0}“, in €: die Eingangswerte aus dem Lauf dieses Szenarios, die Formeln rechnen mit seiner Spalte im Parameterblock (Namen mit dem Anhang {1}). Jahre nach T = {2} a tragen keine Zahlung; ihre Formeln bleiben leer.</value>
   </data>

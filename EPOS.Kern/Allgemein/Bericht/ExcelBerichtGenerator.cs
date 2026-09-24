@@ -541,8 +541,9 @@ namespace WindowsFormsApplication1
             {
                 var block = alle.Where(x => x.Szenario == szenario).ToList();
                 if (block.Count == 0) continue;
-                KennzahlBlock lage = null;
-                if (szenario == WirtschaftlichkeitSzenario.ERWARTET) lagen[szenario] = lage = new KennzahlBlock();
+                // ETAPPE E14 (E14‑Q2 a): jeder Block merkt sich seine Lage — auch Günstig und
+                // Ungünstig bekommen ihre Kennzahlen als Formeln auf die Tabellen ihres Szenarios.
+                KennzahlBlock lage = lagen[szenario] = new KennzahlBlock();
 
                 // E5‑Q2: der Anzeigename des Szenarios (Ungünstig / Erwartet / Günstig),
                 // nicht der gespeicherte Schlüssel.
@@ -640,6 +641,7 @@ namespace WindowsFormsApplication1
                             {
                                 ws.Cell(r, c).Value = wert.Value;
                                 ws.Cell(r, c).Style.NumberFormat.Format = z.ExcelFormat;
+                                if (lage != null) lage.Werte[(r, c)] = wert.Value;   // E14: Bandbreite
                             }
                         }
                         c++;
@@ -672,7 +674,7 @@ namespace WindowsFormsApplication1
             // wird nichts Neues. ETAPPE E5 Teil b: Die Tafel liest die Bandbreite der
             // Bewertung — Spanne als Betrag aus größtem und kleinstem Wert (Q4), die
             // Einstufungen wie auf den Karten, in Sicht 2 gegen A (Q6).
-            r = BandbreitenTafel(ws, r, bewertung);
+            r = BandbreitenTafel(ws, r, bewertung, lagen, formeln);
 
             // ---------------- ETAPPE W5‑B‑11 (G9): Vorschlag zur Entscheidung ----------
             //
@@ -1336,7 +1338,8 @@ namespace WindowsFormsApplication1
         /// bilden — dieselben Zeilen, Spannen und Einstufungen wie Seite und Wortbericht.
         /// Unter dem Fußtext steht der Hinweistext der Szenarien (U10).</para>
         /// </summary>
-        private static int BandbreitenTafel(IXLWorksheet ws, int r, WirtschaftlichkeitBewertung bewertung)
+        private static int BandbreitenTafel(IXLWorksheet ws, int r, WirtschaftlichkeitBewertung bewertung,
+                                            Dictionary<string, KennzahlBlock> lagen, Formelregister formeln)
         {
             WirtschaftlichkeitBandbreite band = bewertung.Bandbreite ?? new WirtschaftlichkeitBandbreite();
             if (band.Leer) return r;
@@ -1376,6 +1379,10 @@ namespace WindowsFormsApplication1
                 Betrag(ws, r, 3, z.Erwartet);
                 Betrag(ws, r, 4, z.Best);
                 Betrag(ws, r, 5, z.Spanne);
+
+                // ETAPPE E14 (Stufe 2): ΔKW je Szenario als Zellbezug auf die Kennzahltafel des
+                // Szenarios, die Spanne als MAX − MIN der drei — gegengerechnet wie jede Formel.
+                ExcelFormelmappe.Bandbreitenzeile(ws, r, z, lagen, formeln);
 
                 if (z.AmortisationJahre.HasValue)
                 {

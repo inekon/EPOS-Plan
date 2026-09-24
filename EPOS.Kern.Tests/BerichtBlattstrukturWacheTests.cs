@@ -655,8 +655,19 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("PMT(Zins_i,Zeitraum_T,-C" + diff + ")", w.Cell(ann, 3).FormulaA1);
                 Assert.StartsWith("IF(I" + j0 + ">=0,IF(I" + jT + ">=0,0,", w.Cell(amo, 3).FormulaA1);
                 Assert.Contains("MIN(J" + (j0 + 1) + ":J" + jT + ")", w.Cell(amo, 3).FormulaA1);
-                Assert.StartsWith("IF(AND(COUNTIF(G" + j0 + ":G" + jT + ",\">1E-6\")>0,COUNTIF(G" + j0 + ":G" + jT +
-                                  ",\"<-1E-6\")>0),ROUND(IRR(G" + j0 + ":G" + jT + ",", w.Cell(irr, 3).FormulaA1);
+                // ETAPPE E14 (E14‑Q3 a): Die Zahl der Vorzeichenwechsel steht in der Hilfsspalte L
+                // (Vorzeichen in K, über Nullwerte fortgeschrieben); der Zinsfuß liest ihren Endstand.
+                Assert.Equal(R.WIRT_FM_MJ_VORZEICHEN, w.Cell(kopf, 11).GetString());
+                Assert.Equal(R.WIRT_FM_MJ_WECHSEL, w.Cell(kopf, 12).GetString());
+                Assert.Equal("IF(ABS(G" + j0 + ")<=1E-6,0,SIGN(G" + j0 + "))", w.Cell(j0, 11).FormulaA1);
+                Assert.Equal("IF(ABS(G" + (j0 + 1) + ")<=1E-6,K" + j0 + ",SIGN(G" + (j0 + 1) + "))",
+                             w.Cell(j0 + 1, 11).FormulaA1);
+                Assert.Equal("L" + j0 + "+IF(AND(K" + j0 + "<>0,K" + (j0 + 1) + "<>K" + j0 + "),1,0)",
+                             w.Cell(j0 + 1, 12).FormulaA1);
+                Assert.Equal(1.0, w.Cell(jT, 12).GetDouble(), 6);
+                Assert.StartsWith("IF(L" + jT + "=0,\"" + R.WIRT_IZF_KEIN_WERT + "\",IF(L" + jT + ">1,\"" +
+                                  R.WIRT_FM_IZF_NICHT_EINDEUTIG + "\",ROUND(IRR(G" + j0 + ":G" + jT + ",",
+                                  w.Cell(irr, 3).FormulaA1);
 
                 // Die Zahlen sind die des Rechenlaufs — Zelle für Zelle der Kennzahlen.
                 WirtschaftlichkeitErgebnis a = daten.Wirtschaftlichkeit.First(
