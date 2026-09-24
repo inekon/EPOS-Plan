@@ -127,6 +127,16 @@ public class PeakShavingDialogTests : EposBunitContext
     private static IElement Fussleiste(IRenderedComponent<PeakShavingDialog> cut)
         => cut.FindAll(".epos-dialog > .epos-leiste").Last();
 
+    /// <summary>
+    /// Die Handlungen am Ergebnis in der WERKZEUGLEISTE — der Suchzeile der Liste, im
+    /// Schlitz <c>Werkzeug</c> (Konzept Administrationsdialoge 7.1 c).
+    /// </summary>
+    private static IReadOnlyList<IElement> Werkzeugknoepfe(IRenderedComponent<PeakShavingDialog> cut)
+        => cut.FindAll(".epos-katalog-suchzeile .epos-katalog-werkzeug .epos-werkzeughandlungen button");
+
+    private static IElement Werkzeugknopf(IRenderedComponent<PeakShavingDialog> cut, string text)
+        => Werkzeugknoepfe(cut).Single(b => b.TextContent.Trim() == text);
+
     // =====================================================================
     // Gerüst und Feldbestand
     // =====================================================================
@@ -187,19 +197,25 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.Equal("G0", cut.Instance.Gewaehlt);
     }
 
-    /// <summary>Ohne Wähler kein „Lastgang aus Datei…", ohne CSV-Delegat kein CSV-Knopf.</summary>
+    /// <summary>
+    /// Ohne Wähler kein „Lastgang aus Datei…", ohne CSV-Delegat kein CSV-Knopf — und ohne
+    /// beide Ergebnis-Delegaten trägt die Werkzeugleiste keine leere Zelle.
+    /// </summary>
     [Fact]
     public void Ohne_Delegat_bleibt_der_Knopf_weg()
     {
         var cut = Zeige();
         Assert.Empty(cut.FindAll("button.epos-importknopf"));
         Assert.Single(Fussleiste(cut).QuerySelectorAll("button"));   // nur "Beenden"
+        Assert.Empty(cut.FindAll(".epos-katalog-werkzeug"));
 
         var mit = Zeige(waehlen: p => Task.FromResult<string?>(""),
                         einlesen: (p, r) => Task.FromResult(new GanglinienImportErgebnis()),
                         csv: r => Task.FromResult(true));
         Assert.Single(mit.FindAll("button.epos-importknopf"));
-        Assert.Equal(3, Fussleiste(mit).QuerySelectorAll("button").Length);
+        Assert.Equal(2, Fussleiste(mit).QuerySelectorAll("button").Length);   // Datei, Beenden
+        Assert.Equal(new[] { "CSV-Export" },
+                     Werkzeugknoepfe(mit).Select(b => b.TextContent.Trim()).ToArray());
     }
 
     /// <summary>Die Vorbelegung steht in den Feldern, die Herkunftszeile nennt den Speicher.</summary>
@@ -407,7 +423,7 @@ public class PeakShavingDialogTests : EposBunitContext
         bool geschrieben = false;
         var cut = Zeige(csv: r => { geschrieben = true; return Task.FromResult(true); });
 
-        Fussleiste(cut).QuerySelector("button")!.Click();
+        Werkzeugknopf(cut, "CSV-Export").Click();
 
         Assert.False(geschrieben);
         Assert.Contains("Bitte zuerst rechnen", cut.Instance.Meldung);
@@ -471,11 +487,12 @@ public class PeakShavingDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die Fußleiste läuft <b>Lastgang aus Datei… · CSV-Export · In Variante übernehmen ·
-    /// Füller · Beenden</b>; „Beenden" ist der letzte und der EINZIGE primäre Knopf der Maske.
+    /// Die Fußleiste trägt nur, was das Gerüst vorsieht: <b>Lastgang aus Datei… ·
+    /// Füller/Statuszeile · Beenden</b>; „Beenden" ist der letzte und der EINZIGE primäre
+    /// Knopf der Maske. CSV-Export und „In Variante übernehmen" stehen nicht mehr hier.
     /// </summary>
     [Fact]
-    public void Die_Fussleiste_laeuft_Datei_CSV_Variante_Fueller_Beenden()
+    public void Die_Fussleiste_laeuft_Datei_Fueller_Beenden()
     {
         var cut = Zeige(waehlen: f => Task.FromResult<string?>(null),
                         einlesen: (p, r) => Task.FromResult(new GanglinienImportErgebnis()),
@@ -484,7 +501,7 @@ public class PeakShavingDialogTests : EposBunitContext
 
         IElement fuss = Fussleiste(cut);
 
-        Assert.Equal(new[] { "Lastgang aus Datei…", "CSV-Export", "In Variante übernehmen", "Beenden" },
+        Assert.Equal(new[] { "Lastgang aus Datei…", "Beenden" },
                      fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
         Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
 
@@ -493,6 +510,49 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.Equal("Beenden", primaer[0].TextContent.Trim());
         Assert.Same(fuss.QuerySelectorAll("button").Last(), primaer[0]);
         Assert.Single(cut.FindAll(".epos-dialog button.epos-knopf--primaer"));
+    }
+
+    /// <summary>
+    /// <b>Die Handlungen am Ergebnis stehen in der Werkzeugleiste</b> (Konzept
+    /// Administrationsdialoge 7.1 c): „CSV-Export" und „In Variante übernehmen" im Schlitz
+    /// <c>Werkzeug</c> der Suchzeile, NACH dem Suchfeld (Tabulatorfolge Suche → CSV-Export →
+    /// In Variante übernehmen → Liste), keiner primär, keiner in der Fußleiste. Die
+    /// Sperre bleibt, wie sie war: Solange gerechnet wird, sind beide gesperrt; danach frei.
+    /// </summary>
+    [Fact]
+    public void CSV_und_Variante_stehen_in_der_Werkzeugleiste_und_sperren_im_Lauf()
+    {
+        var lauf = new TaskCompletionSource<PeakShavingErgebnis>();
+        double[]? reiheImLauf = null;
+        PeakShavingEingaben? eingabenImLauf = null;
+        var cut = Zeige(csv: r => Task.FromResult(true),
+                        variante: (ziel, adaptiv) => Task.FromResult(true),
+                        rechnen: (reihe, e) => { reiheImLauf = reihe; eingabenImLauf = e; return lauf.Task; });
+
+        Assert.Equal(new[] { "CSV-Export", "In Variante übernehmen" },
+                     Werkzeugknoepfe(cut).Select(b => b.TextContent.Trim()).ToArray());
+        Assert.All(Werkzeugknoepfe(cut), b =>
+        {
+            Assert.DoesNotContain("epos-knopf--primaer", b.ClassName ?? "");
+            Assert.Null(b.Closest(".epos-dialog > .epos-leiste"));
+            Assert.False(b.HasAttribute("disabled"));
+        });
+
+        // In der Suchzeile steht zuerst das Suchfeld, dann die Werkzeugleiste.
+        string zeile = cut.Find(".epos-katalog-suchzeile").InnerHtml;
+        Assert.True(zeile.IndexOf("epos-katalog-suchfeld", StringComparison.Ordinal)
+                    < zeile.IndexOf("epos-werkzeughandlungen", StringComparison.Ordinal));
+        Assert.DoesNotContain(Fussleiste(cut).QuerySelectorAll("button"),
+                              b => b.TextContent.Trim() is "CSV-Export" or "In Variante übernehmen");
+
+        // Im Lauf gesperrt, danach wieder frei.
+        Rechenknopf(cut).Click();
+        Assert.All(Werkzeugknoepfe(cut), b => Assert.True(b.HasAttribute("disabled")));
+
+        PeakShavingErgebnis ergebnis = Rechnen(reiheImLauf!, eingabenImLauf!).Result;
+        cut.InvokeAsync(() => lauf.SetResult(ergebnis)).Wait();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Kennzahlen));
+        Assert.All(Werkzeugknoepfe(cut), b => Assert.False(b.HasAttribute("disabled")));
     }
 
     /// <summary>
