@@ -28989,6 +28989,9 @@ Do you want to allow this?</value>
   <data name="ZPGT_MSG_GELOESCHT" xml:space="preserve">
     <value>{0} row(s) removed.</value>
   </data>
+  <data name="ZPGT_MSG_STAND_NEU" xml:space="preserve">
+    <value>The imported set of type days is now a different one.</value>
+  </data>
   <data name="ZPGT_MSG_NICHTS" xml:space="preserve">
     <value>There was nothing to delete.</value>
   </data>

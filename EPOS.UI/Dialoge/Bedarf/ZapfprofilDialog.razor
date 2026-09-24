@@ -1634,13 +1634,16 @@
     {
         _typtagGaben = null;
         if (!geaendert) return;
+        bool vorher = _eingabe.TyptageAktiv;
         KatalogNeuLesen();
         if (!TyptageDa && _eingabe.TyptageAktiv)
         {
             _eingabe.TyptageAktiv = false;
             _editorStatus = Texte.HinweisTyptageOhne;
         }
-        PunktUeberholen();
+        // Der Punkt der Auslegung ist nur ueberholt, wenn der Typtagweg den Jahresgang traegt —
+        // vorher oder nachher; ein Einspielen ohne gewaehlten Typtagweg laesst ihn stehen.
+        if (vorher || _eingabe.TyptageAktiv) PunktUeberholen();
         GeaendertNachEditor();
     }
 

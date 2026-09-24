@@ -79884,6 +79884,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der eingespielte Stand der Typtage ist jetzt ein anderer. ähnelt.
+        /// </summary>
+        public static string ZPGT_MSG_STAND_NEU {
+            get {
+                return ResourceManager.GetString("ZPGT_MSG_STAND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Angabe ähnelt.
         /// </summary>
         public static string ZPGT_SP_ANGABE {

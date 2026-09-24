@@ -13,8 +13,8 @@ namespace WindowsFormsApplication1
     /// sie nicht, rechnet er wie im Bestand über den Formvektor (die Weiche, 2.2).
     ///
     /// <para><b>Nur Daten.</b> Kein Feld kennt eine Datenbank oder einen Dienst; die
-    /// Tagesmittelwerte liest der Controller aus <c>Tab_Solar</c> (Temperatur) bzw. dem
-    /// Bedeckungsgrad in Achteln.</para>
+    /// Tagesmittel der Außentemperatur liest der Controller aus <c>Tab_Klimadaten.Temperatur</c>,
+    /// den Bedeckungsgrad in Achteln aus <c>Tab_Solar.Bedeckungsgrad</c>.</para>
     /// </summary>
     internal sealed record Typtaganbindung
     {

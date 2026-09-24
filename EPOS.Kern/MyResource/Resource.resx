@@ -28996,6 +28996,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPGT_MSG_GELOESCHT" xml:space="preserve">
     <value>{0} Zeile(n) entfernt.</value>
   </data>
+  <data name="ZPGT_MSG_STAND_NEU" xml:space="preserve">
+    <value>Der eingespielte Stand der Typtage ist jetzt ein anderer.</value>
+  </data>
   <data name="ZPGT_MSG_NICHTS" xml:space="preserve">
     <value>Es war nichts zu löschen.</value>
   </data>
