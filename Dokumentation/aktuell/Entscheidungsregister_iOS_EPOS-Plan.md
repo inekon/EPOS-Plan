@@ -358,9 +358,10 @@ Die 36 Objektinitialisierer waren der einzige Fall, den die Vermessung nicht gel
 Lauf erneut geprüft — **0 Stellen**. Von Hand nachgearbeitet wurde nichts.
 
 **Was von OleDb übrig ist: nichts.** In der Anwendung gibt es weder eine `OleDb`-Verwendung noch
-das Paket `System.Data.OleDb`. Access lebt allein im Hauswerkzeug `EposSqliteMigrator/` mit eigener
-Projektmappe und eigener Paketreferenz; das Referenzlaufwerkzeug `Referenzlauf/` führt für seinen
-Modus `migration` eine eigene.
+das Paket `System.Data.OleDb`. Access lebte danach allein im Hauswerkzeug `EposSqliteMigrator/` mit
+eigener Projektmappe und eigener Paketreferenz — bis zu dessen Entfernung am 13.09.2026 und der
+Einstellung der Access-Übernahme am 24.09.2026; das Referenzlaufwerkzeug `Referenzlauf/` führt für
+seinen Modus `migration` eine eigene.
 
 **`EPOS.Daten` entsteht nicht.** Der Vertrag ist ein Interface und eine Klasse. Ein eigenes Projekt
 hätte den Kern von seiner Zugriffsschicht getrennt, ohne dass ein zweiter Anbieter in Sicht wäre —

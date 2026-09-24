@@ -499,6 +499,42 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> NULL bzw. <c>Personen_Auto</c> = 1 rechnen wie ohne
         /// Spalte, und kein Referenzprojekt steht auf dem Generator; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit dem RISIKOMODUL (Schritt 125, Etappe E15, V‑G7; DIN EN 17463 6.5 und Anhang F)
+        /// steht das Ziel auf <b>125</b>: <c>Risiko_Art</c>, <c>Risiko_Zinszuschlag</c>,
+        /// <c>Risiko_Verlust</c> und <c>Risiko_Wahrscheinlichkeit</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> (<see cref="SchemaKatalog.RisikomodulSpalten"/>).
+        /// <b>Reines DDL, ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „kein Risiko
+        /// angesetzt"; der Referenzlauf bleibt byte-gleich.
+        /// Mit der REPARATUR DER GEBÄUDE-KATALOGSÄTZE (Schritt
+        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/>, Welle #485; Konzept
+        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf <b>126</b>: der Krankenhaussatz
+        /// mit U-Wert Fenster 0,09 und 10 000 m² Nordfenster, vier Sätze ohne „Fläche je Nutzer"
+        /// und acht unbenutzte Testreste — je Satz nach Bezeichner und Schadensbild, bei
+        /// <see cref="GebaeudeKatalogReparatur"/>. <b>Ergebnisneutral:</b> Keinen der Sätze führt
+        /// ein Referenzprojekt; der Referenzlauf bleibt byte-gleich.
+        /// Mit der LISTE DER NICHT MONETARISIERBAREN WIRKUNGEN (Schritt 127, Etappe E17; Konzept
+        /// Wirtschaftlichkeit § 2.11.2 V‑G11, DIN EN 17463 6.1 und 8.2) steht das Ziel auf
+        /// <b>127</b>: die STRICT-Tabelle <c>Tab_ProjektWirkung</c> (Kategorie, Beschreibung,
+        /// Dauer und drei Wirkungsgrade je Wirkung, Fremdschlüssel auf <c>Tab_Projekt</c>),
+        /// dazu die Übernahme eines gepflegten Freitexts als eine Wirkung der Kategorie
+        /// SONSTIG ohne Beurteilung (<see cref="ProjektWirkungSchema"/>); er folgt auf die
+        /// Gebäude-Katalogreparatur (126). <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; der Referenzlauf
+        /// bleibt byte-gleich.
+        /// Mit dem HEIZKREIS JE GEBÄUDE (Schritt <see cref="ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS"/>, Anlagenkopplung AK1 Welle 3; Konzept
+        /// Anlagenkopplung 8.3, 9.4, Muster E30) steht das Ziel auf <b>128</b>:
+        /// <c>Uebergabe_Art</c>, <c>VorlaufMittel_C</c>, <c>RuecklaufMittel_C</c> und
+        /// <c>UebergabeBegrenzt_H</c> an <c>Tab_ErgebnisGebaeude</c>
+        /// (<see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/>), nullbar, NULL = nicht gekoppelt
+        /// gerechnet. <b>Reines DDL, ergebnisneutral:</b> Kein Referenzprojekt rechnet gekoppelt, und
+        /// der Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich.
+        /// Mit der WIEDERHOLPERIODE JE KOSTENPOSITION (Schritt
+        /// <see cref="WiederholperiodeSchema.SCHRITT"/>, Etappe E16; Konzept Wirtschaftlichkeit
+        /// § 2.11.2 V‑G3, DIN EN 17463 6.3.1 „alle n Jahre") steht das Ziel auf diesem Schritt:
+        /// die nullbare Spalte <c>Wiederholperiode_a</c> an <c>Tab_ProjektWerte</c> und
+        /// <c>Tab_KostenVorlagePosition</c> (<see cref="WiederholperiodeSchema.Spalten"/>); er
+        /// folgt auf den Heizkreis (128). Die Nummer steht allein bei <see cref="WiederholperiodeSchema.SCHRITT"/>.
+        /// <b>Reines DDL, ergebnisneutral bis zur ersten Pflege:</b> NULL, 0 und 1 heißen
+        /// „jährlich wie bisher"; der Referenzlauf bleibt byte-gleich.
         /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 125, Zapfprofilgenerator Stufe
         /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>125</b>: die Tabelle
         /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein
@@ -513,7 +549,7 @@ namespace WindowsFormsApplication1
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 125;
+        public const int Zielversion = WiederholperiodeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

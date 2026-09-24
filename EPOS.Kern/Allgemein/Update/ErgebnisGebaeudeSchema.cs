@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -27,6 +29,12 @@ namespace WindowsFormsApplication1
     /// <para><b>Ergebnisneutral.</b> Reines DDL; kein Rechenweg liest die Tabelle, und der
     /// Referenzlauf exportiert sie nicht — die Kennzahlen stehen dort schon als Skalare
     /// <c>Geb[i].*</c> (<see cref="GebaeudeErgebnisexport"/>).</para>
+    ///
+    /// <para><b>Schritt 128</b> (<see cref="SCHRITT_HEIZKREIS"/>; Anlagenkopplung AK1, Welle 3) hängt vier nullbare Spalten des
+    /// Heizkreises an (<see cref="SpaltenHeizkreis"/>): Übergabeart, mittlerer Vor- und
+    /// Rücklauf und die Stunden mit begrenzter Übergabe — NULL heißt „nicht gekoppelt
+    /// gerechnet". Die Tabelle aus <see cref="SQL_CREATE"/> bleibt die des Schritts 107; ihr
+    /// Stand nach 128 hat <see cref="SPALTENZAHL_MIT_HEIZKREIS"/> Spalten.</para>
     /// </summary>
     public static class ErgebnisGebaeudeSchema
     {
@@ -80,6 +88,109 @@ namespace WindowsFormsApplication1
         public static bool Vorhanden()
         {
             return DataRepository.TabelleVorhanden(TAB);
+        }
+
+        // =====================================================================
+        //  Schritt 128 — der Heizkreis je Gebäude (Anlagenkopplung AK1, Welle 3)
+        // =====================================================================
+        //
+        // Die drei Größen der Projektzeile (Schritt 123, Tab_ErgebnisEnergiebedarf) JE GEBÄUDE
+        // — nach dem Muster E30: Der Lauf schreibt, der Bericht liest und rechnet nichts nach.
+        // Dazu die Übergabeart, mit der das Gebäude gekoppelt gerechnet hat: Sie ist zugleich
+        // die Kennung „gekoppelt" der Zeile, und der Bericht nennt die Art des LAUFS, nicht die
+        // einer später geänderten Eingabe.
+
+        /// <summary>
+        /// <c>Uebergabe_Art</c> — die Übergabeart des gekoppelt gerechneten Gebäudes
+        /// (<c>DbWerte.UEBERGABE_*</c> ohne „ideal"); <b>NULL heißt „nicht gekoppelt gerechnet"</b>.
+        /// </summary>
+        public const string SPALTE_UEBERGABE_ART = "Uebergabe_Art";
+
+        /// <summary><c>VorlaufMittel_C</c> — heizzeitgewichtetes Mittel des gefahrenen Vorlaufs [°C]; NULL ohne Kopplung oder ohne Heizstunde.</summary>
+        public const string SPALTE_VORLAUF_MITTEL = "VorlaufMittel_C";
+
+        /// <summary><c>RuecklaufMittel_C</c> — dasselbe für den Rücklauf [°C].</summary>
+        public const string SPALTE_RUECKLAUF_MITTEL = "RuecklaufMittel_C";
+
+        /// <summary><c>UebergabeBegrenzt_H</c> — Stunden, in denen die Übergabe die Grenze war [h], Summe der Zeitanteile; NULL ohne Kopplung.</summary>
+        public const string SPALTE_UEBERGABE_BEGRENZT = "UebergabeBegrenzt_H";
+
+        /// <summary>
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: Migration
+        /// (<c>SchemaMigration.SCHRITT_128_ERGEBNIS_HEIZKREIS</c>), Werkzeug und Nachweis lesen sie
+        /// hier. Vergeben beim Merge mit origin am 24.09.2026 (125 bis 127 waren belegt).
+        /// </summary>
+        public const int SCHRITT_HEIZKREIS = 128;
+
+        /// <summary>Spaltenzahl der Tabelle nach Schritt 128 (Nachweis in den Tests).</summary>
+        public const int SPALTENZAHL_MIT_HEIZKREIS = SPALTENZAHL + 4;
+
+        /// <summary>
+        /// <b>Die vier Spalten von Schritt 128</b> in Anlegereihenfolge: Name und SQLite-Definition
+        /// (STRICT-Typ samt <c>CHECK</c>), <b>nullbar, ohne Vorgabe und ohne Nachtrag</b> — jede
+        /// vorhandene Ergebniszeile ist eine Zeile ohne Kopplung. Die Wertliste der Übergabeart
+        /// kommt aus <c>DbWerte</c>, die Stunden sind eine Summe von Zeitanteilen und deshalb
+        /// <c>REAL</c> (0 … 8 760).
+        /// </summary>
+        public static readonly IReadOnlyList<KeyValuePair<string, string>> SpaltenHeizkreis = new[]
+        {
+            new KeyValuePair<string, string>(SPALTE_UEBERGABE_ART,
+                "TEXT CHECK (\"" + SPALTE_UEBERGABE_ART + "\" IN ('" + DbWerte.UEBERGABE_RADIATOR + "','" +
+                DbWerte.UEBERGABE_FLAECHE + "','" + DbWerte.UEBERGABE_KONVEKTOR + "'))"),
+            new KeyValuePair<string, string>(SPALTE_VORLAUF_MITTEL, "REAL"),
+            new KeyValuePair<string, string>(SPALTE_RUECKLAUF_MITTEL, "REAL"),
+            new KeyValuePair<string, string>(SPALTE_UEBERGABE_BEGRENZT,
+                "REAL CHECK (\"" + SPALTE_UEBERGABE_BEGRENZT + "\" BETWEEN 0 AND 8760)"),
+        };
+
+        /// <summary>Die Anweisung, die eine Spalte von <see cref="SpaltenHeizkreis"/> anlegt (<c>ALTER TABLE … ADD COLUMN</c>).</summary>
+        public static string SpalteAnlegen(KeyValuePair<string, string> spalte)
+            => "ALTER TABLE \"" + TAB + "\" ADD COLUMN \"" + spalte.Key + "\" " + spalte.Value;
+
+        /// <summary>Steht Schritt 128? Die Tabelle steht und trägt alle vier Spalten des Heizkreises.</summary>
+        public static bool HeizkreisVollstaendig()
+            => Vorhanden() && SpaltenHeizkreis.All(s => DataRepository.SpalteVorhanden(TAB, s.Key));
+
+        /// <summary>
+        /// Führt Schritt 128 in EINEM Vorgang aus — für <c>Werkzeuge/Testdatenbankschema</c> und
+        /// <c>EPOS.Kern.Tests</c>; die Migration der Schale geht denselben Weg über ihre eigenen
+        /// Helfer. <b>Wiederholbar</b>, <b>kein DML</b>; ohne die Tabelle (Stand vor 107) tut er nichts.
+        /// </summary>
+        /// <param name="bericht">Nimmt eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (höchstens vier).</returns>
+        public static int HeizkreisAlle(IList<string> bericht)
+        {
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen Verbindung
+            // und saehe die offene Transaktion nicht.
+            if (!Vorhanden())
+            {
+                bericht?.Add(TAB + " fehlt (Stand vor Schritt 107) - nichts angelegt");
+                return 0;
+            }
+            var fehlend = SpaltenHeizkreis.Where(s => !DataRepository.SpalteVorhanden(TAB, s.Key)).ToList();
+
+            int angelegt = 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    foreach (KeyValuePair<string, string> s in fehlend)
+                    {
+                        v.Ausfuehren(SpalteAnlegen(s));
+                        angelegt++;
+                    }
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                         SpaltenHeizkreis.Count.ToString(CultureInfo.InvariantCulture) +
+                         " Spalte(n) des Heizkreises an " + TAB + " angelegt");
+            return angelegt;
         }
     }
 }

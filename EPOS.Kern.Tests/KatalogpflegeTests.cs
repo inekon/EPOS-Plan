@@ -204,7 +204,9 @@ namespace EPOS.Kern.Tests
         [InlineData("WECHSELRICHTER", 1, 0, 0)]
         [InlineData("BHKW", 79, 0, 1)]
         [InlineData("STROMSPEICHER", 5, 0, 0)]
-        [InlineData("GEBAEUDE", 277, 0, 10)]
+        // Welle #485 (Schritt GebaeudeKatalogReparatur.SCHRITT): acht Testreste geloescht -
+        // 269 Saetze, und die Inhaltsgruppe der inhaltsgleichen Testreste "Z2-EFH-A-S*" faellt.
+        [InlineData("GEBAEUDE", 269, 0, 9)]
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
@@ -261,7 +263,7 @@ namespace EPOS.Kern.Tests
         [InlineData("HEIZKESSEL", 63)]
         [InlineData("BHKW", 79)]
         [InlineData("PV", 6)]
-        [InlineData("GEBAEUDE", 277)]
+        [InlineData("GEBAEUDE", 269)]
         public void VergebeneNamenZaehltJedenSatz(string schluessel, int anzahl)
         {
             if (!_db.Vorhanden) return;

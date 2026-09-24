@@ -47,6 +47,22 @@ namespace WindowsFormsApplication1
         /// <summary>Preissteigerung Investition/Ersatz p_I als Dezimalzahl (wirksam).</summary>
         internal const string PREIS_I = "p_I";
 
+        /// <summary>ETAPPE E15 — mit Zinszuschlag: der Kalkulationszins OHNE Risiko; der Name
+        /// <see cref="ZINS"/> trägt dann die Summe Basis + Zuschlag.</summary>
+        internal const string ZINS_BASIS = "Zins_Basis";
+
+        /// <summary>ETAPPE E15 — der Risikozuschlag auf den Zins als Dezimalzahl.</summary>
+        internal const string RISIKO_ZUSCHLAG = "Risiko_Zuschlag";
+
+        /// <summary>ETAPPE E15 — die Rückflusseinbuße R_loss [€ je Periode].</summary>
+        internal const string RISIKO_VERLUST = "Risiko_Verlust";
+
+        /// <summary>ETAPPE E15 — die Eintrittswahrscheinlichkeit p_loss als Dezimalzahl.</summary>
+        internal const string RISIKO_P = "Risiko_p";
+
+        /// <summary>ETAPPE E15 — der Risikoabzug je Periode [€] = R_loss × p_loss.</summary>
+        internal const string RISIKO_ABZUG = "Risiko_Abzug";
+
         /// <summary>Anhang der Namen für die Spalten der beiden anderen Szenarien.</summary>
         internal const string ANHANG_GUENSTIG = "_Guenstig";
 
@@ -87,6 +103,23 @@ namespace WindowsFormsApplication1
         internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
                                            IEnumerable<VariantenDaten> staende)
         {
+            return Parameterblock(ws, r, p, staende, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E15 (V‑G7) — derselbe Parameterblock mit den <b>Risikozeilen</b>, nur wenn ein
+        /// Risiko gepflegt ist (<see cref="RisikoModul.Gepflegt"/>): beim Zinszuschlag heißt die
+        /// Zeile „Kalkulationszins" <see cref="ZINS_BASIS"/>, darunter stehen der Zuschlag
+        /// (<see cref="RISIKO_ZUSCHLAG"/>) und der Zins mit Zuschlag als Formel — er trägt den
+        /// Namen <see cref="ZINS"/>, auf den jede Barwertformel der Mappe zeigt. Beim Abzug
+        /// folgen R_loss, p_loss und der Abzug je Periode als Formel
+        /// (<see cref="RISIKO_ABZUG"/>). Ohne Risiko ist der Block Zelle für Zelle der von vorher.
+        /// </summary>
+        /// <param name="register">Das Formelregister der Mappe; <c>null</c> = die Risikoformeln
+        /// werden ohne zwischengespeicherten Wert geschrieben (Excel rechnet beim Öffnen).</param>
+        internal static int Parameterblock(IXLWorksheet ws, int r, WirtschaftlichkeitParameter p,
+                                           IEnumerable<VariantenDaten> staende, Formelregister register)
+        {
             SzenarioSatz best = p.SatzFuer(WirtschaftlichkeitSzenario.BEST)
                                 ?? SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
             SzenarioSatz worst = p.SatzFuer(WirtschaftlichkeitSzenario.WORST)
@@ -104,10 +137,32 @@ namespace WindowsFormsApplication1
             // Die Sätze als Dezimalzahl — derselbe Ausdruck „Prozent / 100", mit dem der
             // Rechenkern sie liest (KapitalwertRechner.Rechne); eine Formel auf diese Zelle
             // rechnet deshalb mit dem Bit, mit dem der Lauf gerechnet hat.
-            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZINS, ZINS, FORMAT_SATZ,
+            bool zinsRisiko = RisikoModul.ZinsAktiv(p);
+            int zeileZins = r;
+            Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZINS, zinsRisiko ? ZINS_BASIS : ZINS, FORMAT_SATZ,
                       p.Zinssatz / 100.0,
                       best.ZinsWirksam(p.Zinssatz) / 100.0,
                       worst.ZinsWirksam(p.Zinssatz) / 100.0);
+            if (zinsRisiko)
+            {
+                // ETAPPE E15 (V‑G7, 6.5): Zuschlag und Zins mit Zuschlag — in allen drei
+                // Szenarien derselbe Zuschlag (E15‑Q1 a). Die Summe trägt den Namen Zins_i, damit
+                // jede Barwertformel der Mappe unverändert auf den gerechneten Zins zeigt; ihre
+                // Werte sind die Zinssätze, mit denen der Lauf gerechnet hat (FuerSzenario).
+                double zuschlag = RisikoModul.Zinszuschlag(p) / 100.0;
+                int zeileZuschlag = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_ZUSCHLAG, RISIKO_ZUSCHLAG, FORMAT_SATZ,
+                          zuschlag, zuschlag, zuschlag);
+                Satzzeile(ws, r, MyResource.Resource.WIRT_FM_PARAM_ZINS_RISIKO, ZINS, FORMAT_SATZ,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.ERWARTET).Zinssatz / 100.0,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.BEST).Zinssatz / 100.0,
+                          p.FuerSzenario(WirtschaftlichkeitSzenario.WORST).Zinssatz / 100.0);
+                for (int c = 2; c <= 4; c++)
+                    Parameterformel(ws.Cell(r, c), Bezug(zeileZins, c) + "+" + Bezug(zeileZuschlag, c),
+                                    ws.Cell(zeileZins, c).GetDouble() + ws.Cell(zeileZuschlag, c).GetDouble(),
+                                    register);
+                r++;
+            }
             // ETAPPE E9a (Schritt B): der Zeitraum JE SZENARIO — ohne Pflege dreimal T.
             Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_ZEITRAUM, ZEITRAUM, "0",
                       p.Betrachtungszeitraum,
@@ -148,6 +203,27 @@ namespace WindowsFormsApplication1
                       p.EinspeiseverguetungKWK ?? 0.0,
                       best.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0,
                       worst.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0);
+
+            // ETAPPE E15 (V‑G7, Anhang F): der Zahlungsstromabzug — R_loss, p_loss und der Abzug
+            // je Periode als Formel; in allen drei Szenarien gleich (E15‑Q1 a).
+            if (RisikoModul.AbzugAktiv(p))
+            {
+                double verlust = p.RisikoVerlust.Value;
+                double wahrsch = RisikoModul.Wahrscheinlichkeit(p) / 100.0;
+                int zeileVerlust = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_VERLUST, RISIKO_VERLUST, "#,##0",
+                          verlust, verlust, verlust);
+                int zeileP = r;
+                Satzzeile(ws, r++, MyResource.Resource.WIRT_FM_PARAM_RISIKO_P, RISIKO_P, FORMAT_SATZ,
+                          wahrsch, wahrsch, wahrsch);
+                double abzug = RisikoModul.AbzugJeJahr(p);
+                Satzzeile(ws, r, MyResource.Resource.WIRT_FM_PARAM_RISIKO_ABZUG, RISIKO_ABZUG, "#,##0.00",
+                          abzug, abzug, abzug);
+                for (int c = 2; c <= 4; c++)
+                    Parameterformel(ws.Cell(r, c), Bezug(zeileVerlust, c) + "*" + Bezug(zeileP, c),
+                                    verlust * wahrsch, register);
+                r++;
+            }
 
             // ETAPPE E9a (Schritt C): gepflegte Trägerpreise — je Stand, Träger und Preisart
             // eine Zeile mit den wirksamen Preisen der drei Szenarien.
@@ -198,6 +274,19 @@ namespace WindowsFormsApplication1
             return r;
         }
 
+        /// <summary>
+        /// ETAPPE E15 — eine Formel im Parameterblock: über das Register, wenn es eines gibt
+        /// (dann trägt die Zelle Formel UND den Wert, der dort stand); sonst bleibt der Wert
+        /// stehen, und die Formel kommt dazu.
+        /// </summary>
+        private static void Parameterformel(IXLCell zelle, string formel, double nachgerechnet,
+                                            Formelregister register)
+        {
+            double wert = zelle.GetDouble();
+            if (register != null) register.Formel(zelle, formel, wert, nachgerechnet);
+            else zelle.FormulaA1 = formel;
+        }
+
         /// <summary>Eine Zeile des Parameterblocks: Bezeichnung, Erwartet, Günstig,
         /// Ungünstig — und, wenn <paramref name="name"/> gesetzt ist, die Namen der drei
         /// Zellen (Erwartet ohne Anhang).</summary>
@@ -231,6 +320,48 @@ namespace WindowsFormsApplication1
 
         /// <summary>Überschrift der Hilfsspalte „Basis des Endenergie-Topfes".</summary>
         private static string KopfBasisPE { get { return MyResource.Resource.WIRT_FM_MJ_BASIS_PE; } }
+
+        /// <summary>ETAPPE E16: Überschrift der Hilfsspalte „Positionen alle n Jahre" im
+        /// Betriebs-Topf (p_B).</summary>
+        private static string KopfWiederholtPB { get { return MyResource.Resource.WIRT_FM_MJ_WDH_PB; } }
+
+        /// <summary>ETAPPE E16: dieselbe Hilfsspalte im Endenergie-Topf (p_E).</summary>
+        private static string KopfWiederholtPE { get { return MyResource.Resource.WIRT_FM_MJ_WDH_PE; } }
+
+        /// <summary>
+        /// ETAPPE E16 (V‑G3): der Betrag der Positionen „alle n Jahre", die im Jahr
+        /// <paramref name="t"/> zahlen [€/a], Preisstand Jahr 1 — dieselbe Regel wie der
+        /// Rechenkern (<see cref="KapitalwertRechner.ZahltImJahr"/>) und in derselben
+        /// Reihenfolge summiert.
+        /// </summary>
+        internal static double WiederholtImJahr(IList<KapitalwertRechner.Wiederholposten> liste, int t)
+        {
+            double s = 0;
+            if (liste != null)
+                foreach (KapitalwertRechner.Wiederholposten w in liste)
+                    if (w != null && KapitalwertRechner.ZahltImJahr(w.StartJahr, w.Periode, t)) s += w.Betrag;
+            return s;
+        }
+
+        /// <summary>
+        /// ETAPPE E16 (V‑G3): die Formel einer Zelle „Positionen alle n Jahre" — je Position
+        /// die Schutzformel <c>IF(AND(Jahr&gt;=s,MOD(Jahr-s,n)=0),Betrag,0)</c>, summiert. Sie
+        /// rechnet dieselben Zahlungsjahre wie <see cref="KapitalwertRechner.ZahltImJahr"/>.
+        /// </summary>
+        /// <param name="jahr">Der Bezug auf die Jahreszelle der Zeile.</param>
+        internal static string WiederholFormel(IList<KapitalwertRechner.Wiederholposten> liste, string jahr)
+        {
+            var teile = new List<string>();
+            foreach (KapitalwertRechner.Wiederholposten w in liste)
+            {
+                if (w == null) continue;
+                string s = (w.StartJahr > 1 ? w.StartJahr : 1).ToString(CultureInfo.InvariantCulture);
+                string n = Math.Max(1, w.Periode).ToString(CultureInfo.InvariantCulture);
+                teile.Add("IF(AND(" + jahr + ">=" + s + ",MOD(" + jahr + "-" + s + "," + n + ")=0)," +
+                          w.Betrag.ToString("R", CultureInfo.InvariantCulture) + ",0)");
+            }
+            return teile.Count == 0 ? "0" : string.Join("+", teile);
+        }
 
         /// <summary>
         /// Stufe 1 (Konzept § 2.11.6): legt die Formeln über die fertig geschriebene
@@ -310,6 +441,16 @@ namespace WindowsFormsApplication1
             string nameB = Name(PREIS_B, tafel.Szenario);
             string zeitraum = Name(ZEITRAUM, tafel.Szenario);
 
+            // ---- ETAPPE E15 (V‑G7, Anhang F): der Risikoabzug als Bezug auf den Parameterblock ----
+            int cRisiko = SpalteVon(bild, Mehrjahresbild.RISIKO);
+            if (cRisiko > 0 && zb.RisikoJeJahr != null)
+            {
+                MehrjahresSpalte risiko = bild.Spalten[cRisiko - 2];
+                for (int t = 1; t <= T; t++)
+                    register.Formel(ws.Cell(tafel.Zeile(t), cRisiko), "-" + Name(RISIKO_ABZUG, tafel.Szenario),
+                                    risiko.Wert(t), -RisikoModul.AbzugJeJahr(ps));
+            }
+
             // ---- Energie und CO₂-Abgabe (Rückfallzweig): Fortschreibung ab Jahr 2 ----
             Fortschreibung(ws, tafel, bild, "ENERGIE", nameE, pE, register);
             if (zb.BehgFortgeschrieben) Fortschreibung(ws, tafel, bild, "BEHG", nameE, pE, register);
@@ -322,23 +463,58 @@ namespace WindowsFormsApplication1
                 bool mitEndenergie = false;
                 for (int t = 1; t <= T; t++) if (zb.EndenergieBasisJeJahr[t] != 0) mitEndenergie = true;
 
+                // ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Positionen „alle n Jahre" je Topf.
+                // Sie bekommen je Topf eine EIGENE Hilfsspalte, deren Zelle die Periode als
+                // Formel trägt — je Position IF(AND(Jahr>=s,MOD(Jahr-s,n)=0),Betrag,0) —, und die
+                // Basisspalte des Topfes trägt nur noch den jährlichen Rest. Ohne solche
+                // Positionen entsteht keine Spalte, und jede Zelle ist die von vorher.
+                var wdhB = new List<KapitalwertRechner.Wiederholposten>();
+                var wdhE = new List<KapitalwertRechner.Wiederholposten>();
+                if (zb.Wiederholt != null)
+                    foreach (KapitalwertRechner.Wiederholposten w in zb.Wiederholt)
+                        if (w != null) (w.Endenergie ? wdhE : wdhB).Add(w);
+                if (wdhE.Count > 0) mitEndenergie = true;
+
                 int hB = tafel.FreieSpalte++;
+                int hWB = wdhB.Count > 0 ? tafel.FreieSpalte++ : -1;
                 int hE = mitEndenergie ? tafel.FreieSpalte++ : -1;
+                int hWE = wdhE.Count > 0 ? tafel.FreieSpalte++ : -1;
                 Kopf(ws, kopfZeile, hB, KopfBasisPB);
+                if (hWB > 0) Kopf(ws, kopfZeile, hWB, KopfWiederholtPB);
                 if (hE > 0) Kopf(ws, kopfZeile, hE, KopfBasisPE);
+                if (hWE > 0) Kopf(ws, kopfZeile, hWE, KopfWiederholtPE);
                 MehrjahresSpalte betrieb = bild.Spalten[cBetrieb - 2];
 
                 for (int t = 1; t <= T; t++)
                 {
                     int r = tafel.Zeile(t);
-                    Zahl(ws.Cell(r, hB), zb.BetriebBasisJeJahr[t]);
-                    if (hE > 0) Zahl(ws.Cell(r, hE), zb.EndenergieBasisJeJahr[t]);
-
                     string jahr = Bezug(r, 1);
+
+                    // Die Basis je Topf: ohne Positionen „alle n Jahre" die Zahl von vorher,
+                    // mit ihnen der jährliche Rest (Basis − Wiederholanteil des Jahres).
+                    double wB = WiederholtImJahr(wdhB, t);
+                    double wE = WiederholtImJahr(wdhE, t);
+                    Zahl(ws.Cell(r, hB), hWB > 0 ? zb.BetriebBasisJeJahr[t] - wB : zb.BetriebBasisJeJahr[t]);
+                    if (hE > 0) Zahl(ws.Cell(r, hE), hWE > 0 ? zb.EndenergieBasisJeJahr[t] - wE : zb.EndenergieBasisJeJahr[t]);
+                    if (hWB > 0)
+                    {
+                        Zahl(ws.Cell(r, hWB), wB);
+                        register.Formel(ws.Cell(r, hWB), WiederholFormel(wdhB, jahr), wB, wB);
+                    }
+                    if (hWE > 0)
+                    {
+                        Zahl(ws.Cell(r, hWE), wE);
+                        register.Formel(ws.Cell(r, hWE), WiederholFormel(wdhE, jahr), wE, wE);
+                    }
+
+                    string basisB = hWB > 0 ? "(" + Bezug(r, hB) + "+" + Bezug(r, hWB) + ")" : Bezug(r, hB);
+                    string basisE = hE > 0
+                        ? (hWE > 0 ? "(" + Bezug(r, hE) + "+" + Bezug(r, hWE) + ")" : Bezug(r, hE))
+                        : "";
                     string formel = hE > 0
-                        ? "-(" + Bezug(r, hB) + "*(1+" + nameB + ")^(" + jahr + "-1)+" +
-                          Bezug(r, hE) + "*(1+" + nameE + ")^(" + jahr + "-1))"
-                        : "-" + Bezug(r, hB) + "*(1+" + nameB + ")^(" + jahr + "-1)";
+                        ? "-(" + basisB + "*(1+" + nameB + ")^(" + jahr + "-1)+" +
+                          basisE + "*(1+" + nameE + ")^(" + jahr + "-1))"
+                        : "-" + basisB + "*(1+" + nameB + ")^(" + jahr + "-1)";
                     double nach = -(zb.BetriebBasisJeJahr[t] * Math.Pow(1.0 + pB, t - 1) +
                                     (hE > 0 ? zb.EndenergieBasisJeJahr[t] * Math.Pow(1.0 + pE, t - 1) : 0.0));
                     register.Formel(ws.Cell(r, cBetrieb), formel, betrieb.Wert(t), nach);

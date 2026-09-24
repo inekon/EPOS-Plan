@@ -622,6 +622,34 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
                 TwwSchema.T3Alle(null);
 
+                // Schritt 125 (Etappe E15, V-G7): das Risikomodul an Tab_ProjektWirtschaftlichkeit.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+                    SpalteSicherstellen(s);
+
+                // Schritt GebaeudeKatalogReparatur.SCHRITT (Welle #485): die Reparatur der
+                // Gebaeude-Katalogsaetze nach Bezeichner und Schadensbild. Aus DERSELBEN Quelle
+                // wie Migration und Werkzeug; NACH 125, braucht 121; wiederholbar.
+                GebaeudeKatalogReparatur.Ausfuehren();
+
+                // Schritt 127 (Etappe E17, V-G11): die Liste der nicht monetarisierbaren Wirkungen
+                // (Tab_ProjektWirkung) samt Uebernahme des gepflegten Freitexts als Wirkung SONSTIG.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug (ProjektWirkungSchema); wiederholbar.
+                ProjektWirkungSchema.Ausfuehren();
+
+                // Schritt ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS (128; Anlagenkopplung AK1 Welle 3,
+                // Muster E30): der Heizkreis je Gebaeude an Tab_ErgebnisGebaeude - vier nullbare
+                // Spalten. Aus DERSELBEN Quelle wie Migration und Werkzeug
+                // (ErgebnisGebaeudeSchema.SpaltenHeizkreis); NACH 127, braucht 107; kein DML.
+                ErgebnisGebaeudeSchema.HeizkreisAlle(null);
+
+                // Schritt WiederholperiodeSchema.SCHRITT (Etappe E16, V-G3): die Wiederholperiode
+                // je Kostenposition an Tab_ProjektWerte und Tab_KostenVorlagePosition. Wie in der
+                // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst
+                // "jaehrlich wie bisher".
+                foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+                    SpalteSicherstellen(s);
+                WiederholperiodeSchema.SpaltenStandVergessen();
                 // Schritt 125 (Zapfprofilgenerator Stufe Z4b, T3 "Typtage"): die eingespielten
                 // Typtage des Anwenders. Reines DDL aus DERSELBEN Quelle wie Migration und
                 // Werkzeug (TwwSchema.AnweisungenT3Typtage); CREATE ... IF NOT EXISTS ist selbst

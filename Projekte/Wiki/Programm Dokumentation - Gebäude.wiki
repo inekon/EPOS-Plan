@@ -23,14 +23,14 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 === Der Katalog ===
 
 * {{Anker|katalogfilter|gebaeudekatalog}}'''Filter Gebäude DB''' – ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Gebäudeart'' und ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40"), dazu ein Textfilter mit Platzhaltern, etwa ''Haus*_1990*''. Die Liste ''Gebäude in DB'' darunter zeigt Name, Gebäudeart und Wohnfläche der Sätze, die der Filter übrig lässt; ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock.
-* '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage; ein Satz der Auslieferung bleibt stehen. Ob ein Projekt das Gebäude führt, prüft das Löschen in der [[#loeschen|Verwaltung]].
+* '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage. Gesperrt ist es wie in der [[#loeschen|Verwaltung]] für Sätze der Auslieferung und für Gebäude, die ein Projekt führt; statt der Rückfrage steht dann der Grund im Dialog, bei einem benutzten Gebäude mit den Projekten.
 
 === Übernahme ins Projekt ===
 {{Anker|uebernahme}}
 
 ''In das Projekt übernehmen'' setzt den markierten Katalogsatz als neue Zeile in die Projektliste, vorbelegt mit der Art der Angabe ''Wohnfläche [m²]'', der Wohnfläche des Katalogsatzes und dem Jahresnutzungsgrad 1. Übernommen wird mit ''OK''; ''Abbrechen'' verwirft die Änderungen der Liste.
 
-Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts fort: Eine unveränderte Zeile bleibt mit ihrem ganzen Stand erhalten, auch mit projekteigenen Werten aus Feldübernahmen und der Tagesverteilung. Nur entfernte Zeilen werden gelöscht und neu hinzugekommene Katalogsätze neu angelegt; die Zuordnungswerte jeder Zeile – Fläche bzw. Verbrauch, ihre Einheit, der Jahresnutzungsgrad und die dezentrale Warmwasserbereitung – aktualisiert EPOS-Plan dabei aus dem Katalogsatz. Schlägt das Speichern fehl, etwa weil der Katalogsatz eines Altbestands ohne Verweis umbenannt wurde, bleibt der Stand des Projekts unverändert, und die Startseite zeigt eine Meldung.
+Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts fort: Eine unveränderte Zeile bleibt mit ihrem ganzen Stand erhalten, auch mit projekteigenen Werten aus Feldübernahmen und der Tagesverteilung. Nur entfernte Zeilen werden gelöscht und neu hinzugekommene Katalogsätze neu angelegt; die Zuordnungswerte einer bleibenden Zeile – Fläche bzw. Verbrauch, ihre Einheit, der Jahresnutzungsgrad und die dezentrale Warmwasserbereitung – übernimmt EPOS-Plan aus der Projektliste, so wie sie im Dialog stehen. Der Katalogsatz liefert nur die Kopie eines neu hinzugekommenen Gebäudes. Schlägt das Speichern fehl, etwa weil der Katalogsatz eines Altbestands ohne Verweis umbenannt wurde, bleibt der Stand des Projekts unverändert, und die Startseite zeigt eine Meldung.
 
 === Gebäude: Verbrauch ===
 
@@ -140,7 +140,7 @@ Ein Satz der Auslieferung bleibt auch für den Assistenten unverändert; er nenn
 
 * Die Verwaltung zeigt '''keinen Wärmebedarf'''. Er hängt an der Klimaregion, am Kalender und an den Angaben des Projekts – Nutzfläche oder Verbrauch, Jahresnutzungsgrad, Kühlung – und steht im Projektdialog unter [[#waermebedarf|Simulation…]].
 * Der '''Name''' eines Satzes lässt sich im Stammblatt nicht ändern; ein Satz unter anderem Namen entsteht über ''Duplizieren…''.
-* Ein Projekt rechnet mit seiner eigenen Kopie. Eine Änderung am Katalogsatz erreicht das Projekt erst, wenn seine Gebäudeliste mit ''OK'' neu geschrieben wird (siehe [[#uebernahme|Übernahme ins Projekt]]).
+* Ein Projekt rechnet mit seiner eigenen Kopie. Eine spätere Änderung am Katalogsatz erreicht eine Zeile, die in der Projektliste bleibt, nicht; dafür wird die Zeile entfernt und der Katalogsatz neu übernommen (siehe [[#uebernahme|Übernahme ins Projekt]]).
 
 == Gebäudetypen ==
 {{Anker|gebaeudetypen}}

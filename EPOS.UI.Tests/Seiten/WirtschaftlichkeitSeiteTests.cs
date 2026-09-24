@@ -490,8 +490,9 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     /// <summary>
     /// <b>Der Block steht unter der Kennzahltabelle und ist zugeklappt.</b>
     /// Anwenderentscheid 17.09.2026: „heraus nehmen aus Parameter Dialog: 1.
-    /// Bewertung nach DIN EN 17463" — in die Wirtschaftlichkeitsseite, weil der Text
-    /// dort steht, wo auch der Kapitalwert steht.
+    /// Bewertung nach DIN EN 17463" — in die Wirtschaftlichkeitsseite, weil die Wirkungen
+    /// dort stehen, wo auch der Kapitalwert steht. ETAPPE E17: aufgeklappt trägt er die
+    /// LISTE der Wirkungen statt des Freitextfelds.
     ///
     /// <para>Kein Delegat, kein Knopf: Ohne Schreibweg gibt es den Block nicht.</para>
     /// </summary>
@@ -501,74 +502,120 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         var ohne = Zeige();
         Assert.Empty(ohne.FindAll("button.epos-modulparameter-knopf"));
 
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true));
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true));
 
         IElement knopf = cut.Find("button.epos-modulparameter-knopf");
         Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
         Assert.Contains("Bewertung nach DIN EN 17463", knopf.TextContent);
 
-        // Zugeklappt steht das Feld nicht da.
-        Assert.Empty(cut.FindAll("textarea"));
+        // Zugeklappt steht die Liste nicht da.
+        Assert.Empty(cut.FindAll(".epos-wirt-wirkungen"));
         Assert.False(cut.Instance.BewertungOffen);
 
         knopf.Click();
 
         Assert.Equal("true", cut.Find("button.epos-modulparameter-knopf").GetAttribute("aria-expanded"));
-        Assert.Single(cut.FindAll("textarea"));
+        Assert.Single(cut.FindAll(".epos-wirt-wirkungen"));
+        Assert.Empty(cut.FindAll("textarea"));   // der Freitext ist keine Eingabe mehr
         Assert.True(cut.Instance.BewertungOffen);
     }
 
     /// <summary>
-    /// <b>Der Block zeigt den gepflegten Text und schreibt ihn auf Zuruf fort.</b>
-    /// Geschrieben wird über denselben Weg, den bis zu diesem Auftrag der
-    /// Parameterdialog nahm (<c>WirtschaftlichkeitCtrl.SpeichereParameter</c> in der
-    /// Hülle) — und erst auf Knopfdruck, nicht bei jedem Tastendruck.
+    /// ETAPPE E17 (V‑G11): <b>Der Block zeigt die gepflegten Wirkungen und schreibt die Liste
+    /// auf Zuruf fort</b> — Beschreibung, Kategorie, Dauer und Wirkungsgrade als Wahlfelder,
+    /// geschrieben erst mit „Speichern", und die Beurteilung folgt der Wahl sofort.
     /// </summary>
     [Fact]
-    public void Der_Bewertungsblock_zeigt_den_gepflegten_Text_und_schreibt_ihn_fort()
+    public void Der_Bewertungsblock_zeigt_die_Wirkungen_und_schreibt_die_Liste_fort()
     {
         WirtschaftlichkeitStand stand = Standard();
-        stand.NichtMonetaer = "Versorgungssicherheit";
-
-        string? geschrieben = null;
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string t) =>
+        stand.Wirkungen = new List<ProjektWirkung>
         {
-            geschrieben = t;
+            new() { Kategorie = NichtMonetaereWirkungen.SONSTIG, Beschreibung = "Versorgungssicherheit" }
+        };
+
+        IReadOnlyList<ProjektWirkung>? geschrieben = null;
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> l) =>
+        {
+            geschrieben = l.Select(w => w.Kopie()).ToList();
             return true;
         }), stand: stand);
 
         cut.Find("button.epos-modulparameter-knopf").Click();
-        Assert.Equal("Versorgungssicherheit", cut.Find("textarea").TextContent);
+        Assert.Equal("Versorgungssicherheit",
+                     cut.Find(".epos-wirt-wirkungen input.epos-eingabe").GetAttribute("value"));
+        Assert.Contains("nicht beurteilt", cut.Find(".epos-wirt-wirkungen-beurteilung").TextContent);
 
-        cut.Find("textarea").Input("Versorgungssicherheit, Arbeitsschutz");
+        // Dauer lang (3), Umwelt mittel (2): Beurteilung 3 × 2 = 6.
+        IReadOnlyList<IElement> wahl = cut.FindAll(".epos-wirt-wirkungen select");
+        Assert.Equal(5, wahl.Count);    // Kategorie, Dauer, Organisation, Mitarbeiter, Umwelt
+        wahl[1].Change("3");
+        cut.FindAll(".epos-wirt-wirkungen select")[4].Change("2");
+        cut.FindAll(".epos-wirt-wirkungen select")[0].Change("0");   // Energiefluss
+        Assert.Equal("6 von 9", cut.Find(".epos-wirt-wirkungen-beurteilung").TextContent.Trim());
 
         // Bis zum Knopfdruck ist nichts geschrieben.
         Assert.Null(geschrieben);
 
         Speichernknopf(cut).Click();
 
-        Assert.Equal("Versorgungssicherheit, Arbeitsschutz", geschrieben);
+        Assert.NotNull(geschrieben);
+        ProjektWirkung w = Assert.Single(geschrieben!);
+        Assert.Equal(NichtMonetaereWirkungen.ENERGIEFLUSS, w.Kategorie);
+        Assert.Equal(3, w.Dauer);
+        Assert.Equal(2, w.WirkungUmwelt);
+        Assert.Null(w.WirkungOrganisation);
+        Assert.Equal(6, w.Beurteilung);
         Assert.Contains("gespeichert", cut.Instance.Status);
+
+        // Nach dem Schreiben trägt der Arbeitsstand die geschriebene Liste.
+        Assert.Equal(3, cut.Instance.Wirkungen[0].Dauer);
     }
 
     /// <summary>
-    /// <b>Nach erneutem Laden steht der Text wieder da.</b> Der Prüffall geht den
-    /// ganzen Weg: eingeben, speichern, den Stand neu aus der Quelle lesen lassen
-    /// (wie nach einem Seitenwechsel) und wieder aufklappen.
+    /// ETAPPE E17: <b>Zeilen hinzufügen und entfernen</b> — „Wirkung hinzufügen" hängt eine
+    /// leere Zeile „sonstig" an, das Kreuz nimmt genau ihre Zeile weg.
     /// </summary>
     [Fact]
-    public void Ein_gespeicherter_Text_steht_nach_erneutem_Laden_wieder_da()
+    public void Wirkungen_lassen_sich_hinzufuegen_und_entfernen()
+    {
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true));
+        cut.Find("button.epos-modulparameter-knopf").Click();
+
+        Assert.Single(cut.FindAll(".epos-wirt-wirkungen-leer"));
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+
+        Assert.Equal(2, cut.Instance.Wirkungen.Count);
+        Assert.All(cut.Instance.Wirkungen, w => Assert.Equal(NichtMonetaereWirkungen.SONSTIG, w.Kategorie));
+        Assert.Equal(2, cut.FindAll(".epos-wirt-wirkungen tbody tr").Count);
+
+        cut.FindAll(".epos-wirt-wirkungen input.epos-eingabe")[1].Input("Komfort");
+        cut.FindAll(".epos-wirt-wirkungen-loeschen")[0].Click();
+
+        ProjektWirkung rest = Assert.Single(cut.Instance.Wirkungen);
+        Assert.Equal("Komfort", rest.Beschreibung);
+    }
+
+    /// <summary>
+    /// <b>Nach erneutem Laden stehen die Wirkungen wieder da.</b> Der Prüffall geht den
+    /// ganzen Weg: eingeben, speichern, den Stand neu aus der Quelle lesen lassen (wie nach
+    /// einem Seitenwechsel) und wieder aufklappen.
+    /// </summary>
+    [Fact]
+    public void Gespeicherte_Wirkungen_stehen_nach_erneutem_Laden_wieder_da()
     {
         WirtschaftlichkeitStand stand = Standard();
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string t) =>
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> l) =>
         {
-            // Die Hülle schreibt und liefert den Wert beim nächsten Laden zurück.
-            stand.NichtMonetaer = t;
+            // Die Hülle schreibt und liefert die Liste beim nächsten Laden zurück.
+            stand.Wirkungen = l.Select(w => w.Kopie()).ToList();
             return true;
         }), stand: stand);
 
         cut.Find("button.epos-modulparameter-knopf").Click();
-        cut.Find("textarea").Input("Erfüllung einer Auflage");
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+        cut.Find(".epos-wirt-wirkungen input.epos-eingabe").Input("Erfüllung einer Auflage");
         Speichernknopf(cut).Click();
 
         // Zuklappen und die Seite frisch laden lassen — wie nach einem Seitenwechsel.
@@ -576,21 +623,23 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         cut.InvokeAsync(() => cut.Instance.Auffrischen());
         cut.Find("button.epos-modulparameter-knopf").Click();
 
-        Assert.Equal("Erfüllung einer Auflage", cut.Find("textarea").TextContent);
+        Assert.Equal("Erfüllung einer Auflage",
+                     cut.Find(".epos-wirt-wirkungen input.epos-eingabe").GetAttribute("value"));
         Assert.Equal("Erfüllung einer Auflage", cut.Instance.NichtMonetaer);
     }
 
     /// <summary>
     /// <b>Ein gescheitertes Schreiben SAGT es und behält die Eingabe.</b> Ein stiller
-    /// Fehlschlag wäre die Behauptung, der Text stünde in der Datenbank.
+    /// Fehlschlag wäre die Behauptung, die Liste stünde in der Datenbank.
     /// </summary>
     [Fact]
     public void Ein_gescheitertes_Schreiben_meldet_und_behaelt_die_Eingabe()
     {
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => false));
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => false));
 
         cut.Find("button.epos-modulparameter-knopf").Click();
-        cut.Find("textarea").Input("Komfort");
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+        cut.Find(".epos-wirt-wirkungen input.epos-eingabe").Input("Komfort");
         Speichernknopf(cut).Click();
 
         Assert.Single(cut.FindAll(".epos-warnbanner"));
@@ -607,11 +656,12 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     {
         const string zeile = "Speichern gescheitert: SqliteException: SQLite Error 19: 'E13-Probe'.";
         var cut = Zeige(p => p
-            .Add(x => x.WirkungSpeichern, (string _) => false)
+            .Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => false)
             .Add(x => x.Speicherfehlerzeile, () => zeile));
 
         cut.Find("button.epos-modulparameter-knopf").Click();
-        cut.Find("textarea").Input("Komfort");
+        cut.Find(".epos-wirt-wirkungen-neu").Click();
+        cut.Find(".epos-wirt-wirkungen input.epos-eingabe").Input("Komfort");
         Speichernknopf(cut).Click();
 
         Assert.Equal(zeile, cut.Instance.Status);
@@ -640,47 +690,49 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>AUFTRAG #328: Der Text steht je Zustand an genau EINER Stelle.</b>
-    /// Zugeklappt weist der Kopf des Blocks ihn aus — mit dem vollen Text im
-    /// <c>title</c>, damit er auch dann ganz lesbar ist, wenn der Browser
-    /// abgeschnitten hat. Aufgeklappt trägt der Kopf nur seinen Titel, weil der
-    /// Text dann zwei Zeilen tiefer im Feld steht.
+    /// <b>AUFTRAG #328: Die Wirkungen stehen je Zustand an genau EINER Stelle.</b>
+    /// Zugeklappt weist der Kopf des Blocks sie aus (ETAPPE E17: die Beschreibungen der
+    /// Liste, mit „; " verbunden) — mit dem vollen Text im <c>title</c>. Aufgeklappt trägt
+    /// der Kopf nur seinen Titel, weil die Wirkungen dann in der Liste darunter stehen.
     /// </summary>
     [Fact]
-    public void Der_Ausweis_steht_im_Kopf_und_weicht_dem_offenen_Feld()
+    public void Der_Ausweis_steht_im_Kopf_und_weicht_der_offenen_Liste()
     {
         WirtschaftlichkeitStand stand = Standard();
-        stand.NichtMonetaer = "Netzstabilität, Imagegewinn";
+        stand.Wirkungen = new List<ProjektWirkung>
+        {
+            new() { Beschreibung = "Netzstabilität" },
+            new() { Beschreibung = "Imagegewinn", Kategorie = NichtMonetaereWirkungen.FINANZIELL }
+        };
 
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true), stand: stand);
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true), stand: stand);
 
-        // ZUGEKLAPPT MIT TEXT: Titel und Ausweis nebeneinander, voller Text im Tooltip.
+        // ZUGEKLAPPT: Titel und Ausweis nebeneinander, voller Text im Tooltip.
         IElement knopf = cut.Find("button.epos-modulparameter-knopf");
         Assert.Contains("Bewertung nach DIN EN 17463", knopf.TextContent);
-        Assert.Equal("Netzstabilität, Imagegewinn",
-                     cut.Find(".epos-modulparameter-ausweis").TextContent);
-        Assert.Equal("Netzstabilität, Imagegewinn", knopf.GetAttribute("title"));
+        Assert.Equal("Netzstabilität; Imagegewinn", cut.Find(".epos-modulparameter-ausweis").TextContent);
+        Assert.Equal("Netzstabilität; Imagegewinn", knopf.GetAttribute("title"));
 
-        // OFFEN: nur der Titel im Kopf, der volle Text im Feld.
+        // OFFEN: nur der Titel im Kopf, die Wirkungen in der Liste.
         knopf.Click();
 
         Assert.Empty(cut.FindAll(".epos-modulparameter-ausweis"));
         Assert.Null(cut.Find("button.epos-modulparameter-knopf").GetAttribute("title"));
-        Assert.Equal("Netzstabilität, Imagegewinn", cut.Find("textarea").TextContent);
+        Assert.Equal(2, cut.FindAll(".epos-wirt-wirkungen tbody tr").Count);
     }
 
     /// <summary>
-    /// <b>AUFTRAG #328: Leer bleibt leer.</b> Ohne gepflegten Text trägt der Kopf nur
-    /// seinen Titel — kein „—", kein leeres <c>span</c> und kein leerer Tooltip. Eine
-    /// leere Angabe wäre die Behauptung, es gäbe keine nicht monetären Wirkungen.
+    /// <b>AUFTRAG #328: Leer bleibt leer.</b> Ohne gepflegte Wirkung trägt der Kopf nur
+    /// seinen Titel — kein „—", kein leeres <c>span</c> und kein leerer Tooltip. Eine Zeile
+    /// ohne Beschreibung ist nichts Erfasstes.
     /// </summary>
     [Fact]
-    public void Ohne_gepflegten_Text_traegt_der_Kopf_nur_seinen_Titel()
+    public void Ohne_gepflegte_Wirkung_traegt_der_Kopf_nur_seinen_Titel()
     {
         WirtschaftlichkeitStand stand = Standard();
-        stand.NichtMonetaer = "   ";           // auch Leerraum ist nichts Erfasstes
+        stand.Wirkungen = new List<ProjektWirkung> { new() { Beschreibung = "   " } };
 
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true), stand: stand);
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true), stand: stand);
 
         IElement knopf = cut.Find("button.epos-modulparameter-knopf");
         Assert.Empty(cut.FindAll(".epos-modulparameter-ausweis"));
@@ -692,19 +744,43 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>AUFTRAG #328: Im Nachweisblock steht der Text nicht mehr.</b> Er hatte dort
-    /// seine fertig formulierte Zeile („Nicht monetäre Wirkungen: …"); die ist
-    /// entfallen, damit derselbe Satz nicht zweimal auf einem Bildschirm steht. Die
-    /// übrigen Nachweiszeilen bleiben unberührt.
+    /// ETAPPE E17 (E17‑Q3 a): <b>Das Altfeld bleibt lesbar und ist gekennzeichnet</b> — der
+    /// Freitext steht aufgeklappt als Herleitungszeile „Altfeld …", ohne Eingabe; ohne Text
+    /// fehlt die Zeile.
+    /// </summary>
+    [Fact]
+    public void Das_Altfeld_steht_gekennzeichnet_und_nur_lesbar_da()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.NichtMonetaer = "Versorgungssicherheit, Arbeitsschutz";
+
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true), stand: stand);
+        cut.Find("button.epos-modulparameter-knopf").Click();
+
+        string[] herleitungen = cut.FindAll("p.epos-herleitung").Select(e => e.TextContent).ToArray();
+        Assert.Contains(herleitungen, t => t.StartsWith("Altfeld", StringComparison.Ordinal)
+                                            && t.Contains("Versorgungssicherheit, Arbeitsschutz"));
+        Assert.Empty(cut.FindAll("textarea"));
+
+        var ohne = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true));
+        ohne.Find("button.epos-modulparameter-knopf").Click();
+        Assert.DoesNotContain(ohne.FindAll("p.epos-herleitung"), e => e.TextContent.StartsWith("Altfeld", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>AUFTRAG #328: Im Nachweisblock stehen die Wirkungen nicht.</b> Er hatte dort
+    /// seine fertig formulierte Zeile („Nicht monetäre Wirkungen: …"); die ist entfallen,
+    /// damit derselbe Satz nicht zweimal auf einem Bildschirm steht. Die übrigen
+    /// Nachweiszeilen bleiben unberührt.
     /// </summary>
     [Fact]
     public void Der_Nachweisblock_zeigt_die_Wirkungszeile_nicht_mehr()
     {
         WirtschaftlichkeitStand stand = Standard();
-        stand.NichtMonetaer = "Netzstabilität, Imagegewinn";
+        stand.Wirkungen = new List<ProjektWirkung> { new() { Beschreibung = "Netzstabilität, Imagegewinn" } };
         stand.Vereinfachungszeile = "Vereinfachungen: pauschal.";
 
-        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true), stand: stand);
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (IReadOnlyList<ProjektWirkung> _) => true), stand: stand);
 
         string[] herleitungen = cut.FindAll("p.epos-herleitung")
                                    .Select(e => e.TextContent).ToArray();
@@ -1358,9 +1434,10 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Equal(szenario.Wahleintraege()[1].Schluessel,
                      Convert.ToString(szenario.Lesen(), CultureInfo.InvariantCulture));
 
-        // Der Freitext der nicht monetaeren Wirkungen ist ein Feld dieser Seite.
+        // Die nicht monetarisierbaren Wirkungen sind Felder dieser Seite (ETAPPE E17: die
+        // Zahl der Zeilen und je Zeile die Spalten wirkung_*).
         KiFeldzugang wirkung = KiMaskenbruecke.Feldzugang(
-            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, "nicht_monetaer");
+            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, "wirkung_anzahl");
         Assert.NotNull(wirkung);
         Assert.True(wirkung.Setzbar);
 

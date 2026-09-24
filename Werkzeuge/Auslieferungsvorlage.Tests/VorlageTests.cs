@@ -157,6 +157,8 @@ namespace Auslieferungsvorlage.Tests
             // 131 seit Schemaschritt 115 (Zapfprofilgenerator T2): Tab_TwwZapfkategorie_STAMM,
             // STRICT von ihrer ersten Zeile an.
             //
+            // 132 seit Schemaschritt 127 (E17, nicht monetarisierbare Wirkungen der
+            // Wirtschaftlichkeit): Tab_ProjektWirkung, STRICT von ihrer ersten Zeile an.
             // 132 seit Schemaschritt 125 (Zapfprofilgenerator T3 "Typtage", Stufe Z4b):
             // Tab_TwwTyptag_IMPORT, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der
             // Vorlage LEER - sie nimmt die Typtage des lizenzierten Anwenders auf, nie eine

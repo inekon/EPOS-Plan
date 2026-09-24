@@ -489,7 +489,26 @@ namespace WindowsFormsApplication1
         /// keine benannt.</param>
         public static IReadOnlyList<ValeriDeklaration> Deklarationen(string nichtMonetaer)
         {
+            return Deklarationen(nichtMonetaer, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E15 (V‑G7) — dieselben Deklarationen mit dem Risikomodul: Ist ein Risiko
+        /// gepflegt (<see cref="RisikoModul.Gepflegt"/>), sagt die Risikozeile, WIE es angesetzt
+        /// ist (<c>WIRT_DEKL_RISIKO_ANGESETZT*</c>); sonst bleibt sie „nicht angesetzt (6.5
+        /// optional)" wie vorher.
+        /// </summary>
+        /// <param name="p">Der Parametersatz der Gruppe; <c>null</c> = kein Risiko.</param>
+        public static IReadOnlyList<ValeriDeklaration> Deklarationen(string nichtMonetaer,
+                                                                     WirtschaftlichkeitParameter p)
+        {
             bool benannt = !string.IsNullOrWhiteSpace(nichtMonetaer);
+            string risiko = RisikoModul.Gepflegt(p) ? RisikoModul.Kurz(p, CultureInfo.CurrentCulture) : null;
+            string risikoText = risiko == null
+                ? (benannt ? MyResource.Resource.WIRT_DEKL_RISIKO : MyResource.Resource.WIRT_DEKL_RISIKO_OHNE_NM)
+                : string.Format(CultureInfo.CurrentCulture,
+                                benannt ? MyResource.Resource.WIRT_DEKL_RISIKO_ANGESETZT
+                                        : MyResource.Resource.WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM, risiko);
             return new List<ValeriDeklaration>
             {
                 new ValeriDeklaration { Schluessel = ValeriDeklaration.NOMINAL,
@@ -499,8 +518,7 @@ namespace WindowsFormsApplication1
                 new ValeriDeklaration { Schluessel = ValeriDeklaration.RESTWERT,
                                         Text = MyResource.Resource.WIRT_DEKL_RESTWERT },
                 new ValeriDeklaration { Schluessel = ValeriDeklaration.RISIKO,
-                                        Text = benannt ? MyResource.Resource.WIRT_DEKL_RISIKO
-                                                       : MyResource.Resource.WIRT_DEKL_RISIKO_OHNE_NM }
+                                        Text = risikoText }
             };
         }
 
@@ -610,6 +628,14 @@ namespace WindowsFormsApplication1
                     kwkErwartet.ToString(VERGUETUNG, kultur) + " €/kWh",
                     (b.EinspeiseverguetungKwkWirksam(p.EinspeiseverguetungKWK) ?? 0.0).ToString(VERGUETUNG, kultur) + " €/kWh",
                     true));
+
+            // ETAPPE E15 (V‑G7): das Risiko nur, wenn es gepflegt ist — in allen drei Szenarien
+            // derselbe Ansatz (E15‑Q1 a); ohne Pflege bleibt die Tafel Zeile für Zeile die von vorher.
+            if (RisikoModul.Gepflegt(p))
+            {
+                string r = RisikoModul.Kurz(p, kultur);
+                liste.Add(Annahme(AnnahmeZeile.RISIKO, MyResource.Resource.WIRT_ANN_RISIKO, r, r, r, true));
+            }
             return liste;
         }
 
@@ -786,6 +812,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>ETAPPE E9a: Einspeisevergütung KWK je Szenario — nur, wenn gepflegt.</summary>
         public const string VERGUETUNG_KWK = "VERGUETUNG_KWK";
+
+        /// <summary>ETAPPE E15 (V‑G7): das Risiko nach DIN EN 17463, 6.5 — nur bei Pflege.</summary>
+        public const string RISIKO = "RISIKO";
 
         /// <summary>Der sprachneutrale Schlüssel der Größe.</summary>
         public string Schluessel = "";

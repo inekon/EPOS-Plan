@@ -115,11 +115,11 @@
 
     <!-- EposSqliteMigrator.Kern ist mit W3 (#157-E-1, 09.09.2026) NICHT MEHR
          referenziert: Der Erststart-Assistent aus S8 ist gefallen, die Anwendung
-         uebernimmt keinen Access-Altbestand mehr. Die Uebernahme ist seither ein
-         HAUSWERKZEUG - die Konsolenfassung EposSqliteMigrator.exe aus der eigenen
-         Projektmappe EposSqliteMigrator\ (sie bleibt in WP-Plan.sln und wird
-         weitergebaut). Wer sie wieder in die Anwendung holt, holt sich die
-         ACE-Engine als Laufzeitvoraussetzung zurueck. -->
+         uebernimmt keinen Access-Altbestand mehr. Das Hauswerkzeug EposSqliteMigrator
+         (eigene Projektmappe) ist am 13.09.2026 aus dem Repository entfernt und die
+         Uebernahme aus Access am 24.09.2026 eingestellt worden; letzter Stand mit dem
+         Werkzeug ist Commit b0647c7e. Wer die Uebernahme wieder in die Anwendung holt,
+         holt sich die ACE-Engine als Laufzeitvoraussetzung zurueck. -->
 
     <!-- DIE OBERFLAECHENBIBLIOTHEK (iU8). Razor-Komponenten ohne WinForms,
          ohne System.Drawing und ohne Datenbank; sie laufen hier in einer
@@ -147,8 +147,8 @@
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="SixLabors.Fonts" />
 
-    <!-- Datenzugriff: SQLite (Arbeitspaket S4a). Gleiche Version wie der
-         EposSqliteMigrator - beide muessen dieselbe SQLite-Engine mitbringen. -->
+    <!-- Datenzugriff: SQLite (Arbeitspaket S4a); die Fassung steht zentral in
+         Directory.Packages.props. -->
     <PackageReference Include="Microsoft.Data.Sqlite" />
 
     <!-- Konfiguration / Settings -->

@@ -26,7 +26,7 @@ Sicherung — wird **in demselben Auftrag** entfernt, der es überflüssig macht
 | `EPOS.Kern`, `EPOS.UI`, `EPOS.UI.Daten`, `KiKern`, `SpeicherEngine`, `SpeicherPlanung`, `EPOS.Referenzlauf`, `Referenzlauf`, `WindowsFormsApplication1`, `EPOS.iOS` und ihre Testprojekte | Programm | ~33 MB | Projektmappen, CI | bleibt |
 | `Referenzlaeufe/` | Basis R7 (346 Dateien), `Kenndaten_Test.sqlite` (67,5 MB), Importproben, Skripte | 114 MB | Gate, `kern.yml`, 13 Testklassen | bleibt; die 24 historischen Basen sind seit 11.09. aus dem Arbeitsbaum (SYNC‑Q1) und seit 12.09. aus der Geschichte (AUF‑Q1, Stufe 4) — ihre Protokolle unter `Dokumentation/ueberholt/Referenzbasen/` |
 | `VDI-3805-Daten/` | Auslieferung der Herstellerdaten (Setup-Komponente, W6‑O‑9), CEC-Listen, bslib | 186 MB | Setup, Importe, 40 Verweise | bleibt |
-| `Werkzeuge/`, `Proben/`, `Setup/`, `sql/` (Schema- und Reparaturskripte), `EposSqliteMigrator/` | Hauswerkzeuge | 5 MB | CLAUDE.md-Werkzeugtabelle, Setup, Gate | bleibt |
+| `Werkzeuge/`, `Proben/`, `Setup/`, `sql/` (Schema- und Reparaturskripte) | Hauswerkzeuge | 5 MB | CLAUDE.md-Werkzeugtabelle, Setup, Gate | bleibt |
 | `Projekte/` | Konzepte (→ Dokumentation seit #241), Wiki-Quellen, Referenzpaket `Speichersimulation/`, fünf docx, Mockup, `.wpx` | 9 MB | Konzepte, Wiki-Upload; docx nach SP‑O‑9 | bleibt |
 | `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
 | `Lizenzserver/` | WordPress-Plugin 1.4.1 + Einbauanleitung | 268 KB | Lizenzkonzept | bleibt; die vier `*.original-2026-08-19` gehen (Stufe 1) |
@@ -138,10 +138,13 @@ Zeile im Dokumentationsindex, wohl aber diese Erwähnung).
 - **Fremdquellen sammeln — entschieden 12.09.2026 (AUF‑Q3 „Empfehlung umsetzen"), umgesetzt #243 (Stufe 3).** `BHKWPlan/`,
   `PV-Konzept_PV-Now/` und `VALERI/` sind unter `Quellen/` gezogen (dort lagen die Emissionsfaktoren schon), `Dokumentation/aktuell/Mockups/` ist
   die eine Adresse für Entwürfe. Reine Verschiebung, Verweise nachgezogen.
-- **Access im Code.** Der einzige Ort ist das Hauswerkzeug `EposSqliteMigrator/` mit eigener Projektmappe und eigener
-  `System.Data.OleDb`-Referenz. Entscheid: behalten, solange ein Altbestand denkbar ist (BETRIEB_SQLITE 1.1/7: Übernahme eines
-  Altbestands). Die Windows-Schale führt weder einen Access-Zweig noch das OleDb-Paket; die Hebung einer `.accdb` auf Schemastand 61
-  leistet die letzte Access-Fassung von EPOS-Plan (Git-Zweig `version_august_2026`).
+- **Access im Code.** Das Hauswerkzeug `EposSqliteMigrator/` (eigene Projektmappe, eigene `System.Data.OleDb`-Referenz) ist am
+  13.09.2026 aus dem Repository entfernt worden (Sync-Commit `43aaf985`, letzter Stand `b0647c7e`); der Entscheid „behalten, solange
+  ein Altbestand denkbar ist" ist am 24.09.2026 durch den Anwenderentscheid „Übernahme aus Access endgültig eingestellt" abgelöst
+  (BETRIEB_SQLITE 1.1/7). Mit ihm sind `migration.config.json` und `migration.manuell.sql` (Access-nach-Access-Skripte des Werkzeugs
+  `AccessMigration` im Ordner `DB_Migration` neben dem Repo) aus der Wurzel entfernt. Access spricht im Repository nur noch die
+  Windows-Suite `Referenzlauf/` (Modus `migration`, eigene OleDb-Referenz); die Windows-Schale führt weder einen Access-Zweig noch das
+  OleDb-Paket.
 - **Fernzweige.** Zehn Zweige ohne Bewegung seit August bzw. dem Zweigwechsel (`Pufferspeicher`, `b5b_lokal`, `kostenformulare`,
   `lokal_dirk`, `pv-ertragsmodell-rechner2`, `sicherung-lokal`, `sqlite`, `version_august_2026`, `ios_migration`, zwei `claude/`-Zweige):
   vorerst nicht (Anwender 12.09.2026).

@@ -438,7 +438,8 @@ namespace WindowsFormsApplication1
             // ExcelFormelmappe.PARAMETERBLOCK_ZEILEN Zeilen; keine Zahl ändert sich.
             // ETAPPE E9a: mit Zeitraum, Menge und Erlössätzen je Szenario und — nur wo
             // gepflegt — den Trägerpreisen der Stände.
-            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten);
+            // ETAPPE E15 (V‑G7): mit Risiko die Risikozeilen, ihre Formeln über das Register.
+            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten, formeln);
 
             if (!ausDiesemLauf)
             {
@@ -698,13 +699,12 @@ namespace WindowsFormsApplication1
             // Überschrift + Absatz nach dem Vorschlag). Ohne gepflegten Text entfällt
             // sie ganz: Eine Zeile „Nicht monetäre Wirkungen:" ohne Inhalt wäre die
             // Behauptung, es gäbe keine.
-            if (p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer))
-            {
-                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur,
-                    MyResource.Resource.WIRT_NM_ZEILE, p.NichtMonetaer.Trim());
-                ws.Cell(r, 1).Style.Alignment.WrapText = true;
-                r += 2;
-            }
+            //
+            // ETAPPE E17 (V‑G11, DIN EN 17463 6.1 und 8.2): statt der Freitextzelle die TABELLE
+            // „Nicht monetarisierbare Wirkungen" an derselben Stelle — Titelzeile, Kopf, je
+            // Wirkung eine Zeile. Reine Werte, keine Formel: Die Beurteilung ist Anzeige, sie
+            // fließt in keine Zelle der Rechnung.
+            r = NichtMonetaereWirkungenTafel(ws, r, bewertung.Wirkungen);
 
             // ---------------- Hinweise dieses Laufs (ETAPPE E7, Divergenz D2) ----------------
             //
@@ -1314,6 +1314,61 @@ namespace WindowsFormsApplication1
                 r++;
             }
             return r;
+        }
+
+        // ------------------------------------- Nicht monetarisierbare Wirkungen (E17)
+
+        /// <summary>
+        /// ETAPPE E17 (V‑G11) — die Tafel „Nicht monetarisierbare Wirkungen": Titelzeile
+        /// (<c>WIRT_NM_TITEL</c>, fett), Hinweis, Kopf (Kategorie, Beschreibung, Dauer,
+        /// Organisation, Mitarbeiter, Umwelt, Beurteilung), je Wirkung eine Zeile; die
+        /// Beurteilung als Zahl (leer = nicht beurteilt). Ohne benannte Wirkung entfällt die
+        /// Tafel. Rückgabe: die nächste freie Zeile (eine Leerzeile Abstand).
+        /// </summary>
+        internal static int NichtMonetaereWirkungenTafel(IXLWorksheet ws, int r, IReadOnlyList<ProjektWirkung> wirkungen)
+        {
+            List<ProjektWirkung> zeilen = (wirkungen ?? new List<ProjektWirkung>())
+                .Where(w => w != null && !string.IsNullOrWhiteSpace(w.Beschreibung)).ToList();
+            if (zeilen.Count == 0) return r;
+
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_NM_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = GRUPPE;
+            r++;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_NM_TABELLE_HINWEIS;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r++;
+
+            string[] kopf =
+            {
+                MyResource.Resource.WIRT_NM_SP_KATEGORIE, MyResource.Resource.WIRT_NM_SP_BESCHREIBUNG,
+                MyResource.Resource.WIRT_NM_SP_DAUER, MyResource.Resource.WIRT_NM_SP_ORGANISATION,
+                MyResource.Resource.WIRT_NM_SP_MITARBEITER, MyResource.Resource.WIRT_NM_SP_UMWELT,
+                MyResource.Resource.WIRT_NM_SP_BEURTEILUNG
+            };
+            for (int c = 0; c < kopf.Length; c++)
+            {
+                ws.Cell(r, c + 1).Value = kopf[c];
+                ws.Cell(r, c + 1).Style.Font.Bold = true;
+                ws.Cell(r, c + 1).Style.Fill.BackgroundColor = KOPF;
+            }
+            r++;
+
+            foreach (ProjektWirkung z in zeilen)
+            {
+                ws.Cell(r, 1).Value = NichtMonetaereWirkungen.KategorieText(z.Kategorie);
+                ws.Cell(r, 2).Value = z.Beschreibung.Trim();
+                ws.Cell(r, 2).Style.Alignment.WrapText = true;
+                ws.Cell(r, 3).Value = NichtMonetaereWirkungen.DauerText(z.Dauer);
+                ws.Cell(r, 4).Value = NichtMonetaereWirkungen.WirkungText(z.WirkungOrganisation);
+                ws.Cell(r, 5).Value = NichtMonetaereWirkungen.WirkungText(z.WirkungMitarbeiter);
+                ws.Cell(r, 6).Value = NichtMonetaereWirkungen.WirkungText(z.WirkungUmwelt);
+                int? b = z.Beurteilung;
+                if (b.HasValue) ws.Cell(r, 7).Value = b.Value;
+                else ws.Cell(r, 7).Value = MyResource.Resource.WIRT_NM_NICHT_BEURTEILT;
+                r++;
+            }
+            return r + 1;
         }
 
         // ------------------------------------------------- Bandbreite (E2, G8)

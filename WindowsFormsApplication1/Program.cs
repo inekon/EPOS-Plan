@@ -226,7 +226,8 @@ namespace WindowsFormsApplication1
             //
             // Der Access-Weg (Übernahme-Assistent, ACE-Engine) ist mit W3 GEFALLEN: Access
             // wurde beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands
-            // ist seither ein Hauswerkzeug (EposSqliteMigrator), kein Kundenweg.
+            // war seither ein Hauswerkzeug (EposSqliteMigrator) und ist seit dem 24.09.2026
+            // eingestellt.
             if (!DataRepository.DatenbankVorhanden())
             {
                 if (!DatenbankBereitstellen()) return;
@@ -445,9 +446,9 @@ namespace WindowsFormsApplication1
         /// <b>Der Access-Weg ist mit W3 gefallen.</b> Bis dahin stand hier der
         /// Übernahme-Assistent aus Arbeitspaket S8: Lag im Datenordner eine
         /// <c>Kenndaten.accdb</c>, wurde sie einmalig nach SQLite umgestellt. Access wurde
-        /// beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands ist
-        /// seither ein <b>Hauswerkzeug</b> (<c>EposSqliteMigrator</c>) und läuft nicht mehr
-        /// im Programmstart.
+        /// beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands war
+        /// seither ein <b>Hauswerkzeug</b> (<c>EposSqliteMigrator</c>) und ist seit dem
+        /// 24.09.2026 eingestellt.
         /// </para>
         /// <para>
         /// <b>Der Kern entscheidet, die Hülle meldet.</b> Kopieren, Prüfen und Aufräumen

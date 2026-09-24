@@ -1517,7 +1517,7 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse NutzungsdauerKiSicht auf Kopffelder und die " +
             "lebende Zeilenliste; Zeuge ist NutzungsdauerDialogTests",
         [KiMaskennamen.VORLAGENPOSITION] =
-            "bindet über die Sichtklasse VorlagenPositionKiSicht auf die acht " +
+            "bindet über die Sichtklasse VorlagenPositionKiSicht auf die neun " +
             "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",
         [KiMaskennamen.CASE_EINGABE] =
             "bindet über die Sichtklasse CaseEingabeKiSicht auf die sieben lebenden " +
@@ -1548,9 +1548,10 @@ public class KiDialogkatalogTests : IDisposable
             "der Seite; Zeuge ist KostenSeiteTests",
         [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
             "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
-            "Wahlwege, den Freitext, die zwei Anzeigewahlen der Zahlungsreihen und " +
+            "Wahlwege, die Liste der nicht monetarisierbaren Wirkungen (WirkungenListe, " +
+            "ETAPPE E17), die zwei Anzeigewahlen der Zahlungsreihen und " +
             "Zeitraum und Haken des Verlaufs (KapitalwertVerlaufAbschnitt); Zeugen " +
-            "sind WirtschaftlichkeitSeiteTests und KapitalwertVerlaufAbschnittTests",
+            "sind WirtschaftlichkeitSeiteTests, WirkungenListeTests und KapitalwertVerlaufAbschnittTests",
 
         // Welle KI-F5: die drei Ausprägungen des Modulkatalogs. Ihre Felder stehen
         // NICHT im Markup — es zeichnet eine Schleife über den Feldsatz, den das

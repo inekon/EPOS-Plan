@@ -386,6 +386,92 @@ namespace WindowsFormsApplication1
             /// die Fortschreibung nur im ersten Fall als Formel (Konzept § 2.11.6, Stufe 1).
             /// </summary>
             public bool BehgFortgeschrieben;
+
+            // ---- ETAPPE E15 — der Risikoabzug (V‑G7, DIN EN 17463 Anhang F) ----
+
+            /// <summary>
+            /// ETAPPE E15 — der Zahlungsstromabzug für das Risiko je Jahr [€], positiv
+            /// (Index 1…T; Index 0 bleibt 0 — kein Abzug im Jahr 0). <c>null</c> = kein Abzug;
+            /// dann ist jede Reihe dieses Bildes Zeichen für Zeichen die von vorher. Er steckt
+            /// in <see cref="NominalReihe"/> und <see cref="BarwertReihe"/>, NICHT in
+            /// <see cref="BarwertAusgaben"/> und nicht im Restwert.
+            /// </summary>
+            public double[] RisikoJeJahr;
+
+            /// <summary>ETAPPE E15 — der Barwert des Risikoabzugs [€], positiv; im
+            /// <see cref="Kapitalwert"/> abgezogen. 0 = kein Abzug.</summary>
+            public double BarwertRisiko;
+
+            // ---- ETAPPE E16 — die Positionen „alle n Jahre" (V‑G3, DIN EN 17463 6.3.1) ----
+
+            /// <summary>
+            /// ETAPPE E16 — die Betriebspositionen mit einer Wiederholperiode n ≥ 2, wie sie
+            /// hereingereicht wurden (<see cref="Wiederholposten"/>); <c>null</c> = keine. Sie
+            /// stecken in <see cref="BetriebBasisJeJahr"/> bzw. <see cref="EndenergieBasisJeJahr"/>
+            /// ihrer Zahlungsjahre; die Formelmappe liest sie, um die Periode als Formel zu
+            /// zeigen. <b>Reiner Ausweis</b> — nichts in diesem Bild wird aus ihm gerechnet.
+            /// </summary>
+            public IList<Wiederholposten> Wiederholt;
+        }
+
+        /// <summary>
+        /// ETAPPE E16 (Konzept Wirtschaftlichkeit § 2.11.2 V‑G3, DIN EN 17463 6.3.1) — eine
+        /// Betriebskostenposition, die nur <b>alle n Jahre</b> zahlt: im Startjahr und danach
+        /// in jedem n-ten Jahr bis zum Ende des Betrachtungszeitraums
+        /// (<see cref="ZahltImJahr"/>). Der Betrag ist wie jeder Betriebsbetrag ein
+        /// Jahr-1-Preisstand; fortgeschrieben wird er im Zahlungsjahr mit p_B bzw. — im
+        /// Endenergie-Topf — mit p_E, genau wie eine jährliche Position desselben Topfes.
+        ///
+        /// <para><b>Warum eine eigene Liste und kein Feld an den (Betrag, Startjahr)-Paaren.</b>
+        /// Die jährlichen Positionen laufen weiter Zeichen für Zeichen den Weg von vorher; die
+        /// Liste ist leer, solange keine Periode gepflegt ist, und dann berührt sie keinen
+        /// einzigen Summanden (Anker und Referenzlauf bleiben bitgleich).</para>
+        /// </summary>
+        public sealed class Wiederholposten
+        {
+            /// <summary>Jahresbetrag je Zahlung [€], Preisstand Jahr 1; negativ = Erlös.</summary>
+            public double Betrag;
+
+            /// <summary>Erstes Zahlungsjahr (≥ 1): die Vorgabe 1 oder das Startjahr (KD6).</summary>
+            public int StartJahr = 1;
+
+            /// <summary>Die Wiederholperiode n [a], ≥ 2 (1 wäre jährlich und gehört nicht hierher).</summary>
+            public int Periode = 2;
+
+            /// <summary>true = die Position liegt im Endenergie-Topf (p_E, FX3), sonst im
+            /// Betriebs-Topf (p_B).</summary>
+            public bool Endenergie;
+
+            /// <summary>true = die Position ist an der Investitionssumme bemessen (FX5-a) — der
+            /// Sensitivitätsausschlag „Investition ±10 %" zieht sie mit.</summary>
+            public bool InvestGekoppelt;
+
+            /// <summary>Eine flache Kopie mit anderem Betrag (Sensitivität).</summary>
+            public Wiederholposten MitBetrag(double betrag)
+            {
+                return new Wiederholposten
+                {
+                    Betrag = betrag, StartJahr = StartJahr, Periode = Periode,
+                    Endenergie = Endenergie, InvestGekoppelt = InvestGekoppelt
+                };
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E16 — <b>die EINE Regel der Zahlungsjahre</b> einer Position „alle n Jahre"
+        /// (E16‑Q1 a): Sie zahlt ab ihrem Startjahr s in den Jahren s, s + n, s + 2n … Ein
+        /// Startjahr ≤ 1 heißt s = 1; eine Periode ≤ 1 heißt jährlich (jedes Jahr ab s). Das
+        /// Ende T prüft der Aufrufer — die Regel selbst kennt keinen Zeitraum.
+        /// Rechenkern, Nachweis, Herleitung und Formelmappe fragen dieselbe Regel.
+        /// </summary>
+        /// <param name="startJahr">Startjahr der Position; ≤ 1 = ab dem ersten Jahr.</param>
+        /// <param name="periode">Wiederholperiode n [a]; ≤ 1 = jährlich.</param>
+        /// <param name="t">Das Jahr, nach dem gefragt wird (1…T).</param>
+        public static bool ZahltImJahr(int startJahr, int periode, int t)
+        {
+            int s = startJahr > 1 ? startJahr : 1;
+            if (t < s) return false;
+            return periode <= 1 || (t - s) % periode == 0;
         }
 
         /// <summary>Annuitätenfaktor a(i,n); i als Dezimalzahl (0,03), n in Jahren.</summary>
@@ -638,6 +724,22 @@ namespace WindowsFormsApplication1
         /// und nicht weiter reicht der Entscheid zu G2. Welcher Satz je Szenario gilt
         /// (Erwartet, Best, Worst), entscheidet der Aufrufer.</para>
         /// </param>
+        /// <param name="risikoAbzugJahr">
+        /// ETAPPE E15 (V‑G7, DIN EN 17463 6.5 und Anhang F): der <b>Risikoabzug</b> je Periode
+        /// [€/a], positiv — R_loss × p_loss / 100 (<see cref="RisikoModul.AbzugJeJahr"/>). Er
+        /// mindert die Nettozahlung jedes Jahres t = 1…T, nicht das Jahr 0 und nicht den
+        /// Restwert. <b>0 = kein Abzug</b>: dann bleibt jeder Ausdruck Zeichen für Zeichen der
+        /// von vorher. Welcher Stand ihn trägt, entscheidet der Aufrufer
+        /// (<see cref="RisikoModul.AbzugFuerStand"/>).
+        /// </param>
+        /// <param name="wiederholt">
+        /// ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Betriebspositionen <b>„alle n Jahre"</b>
+        /// (<see cref="Wiederholposten"/>). Jede zählt nur in ihren Zahlungsjahren
+        /// (<see cref="ZahltImJahr"/>, t ≤ T) zur Basis ihres Topfes und wird dort wie eine
+        /// jährliche Position mit p_B bzw. p_E fortgeschrieben. Jahr 0 und Investitionen
+        /// bleiben unberührt. <b><c>null</c> oder leer = keine</b>: Dann wird der Zweig nicht
+        /// betreten, und jeder Ausdruck ist Zeichen für Zeichen der von vorher.
+        /// </param>
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
@@ -649,7 +751,9 @@ namespace WindowsFormsApplication1
                                           IList<KeyValuePair<double, int>> betriebAbJahr = null,
                                           double endenergieJahr = 0,
                                           IList<KeyValuePair<double, int>> endenergieAbJahr = null,
-                                          double preisstInvestProzent = 0)
+                                          double preisstInvestProzent = 0,
+                                          double risikoAbzugJahr = 0,
+                                          IList<Wiederholposten> wiederholt = null)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
@@ -677,8 +781,13 @@ namespace WindowsFormsApplication1
                 // ETAPPE E8b — Ausweis für die Formelmappe (rein additiv).
                 BetriebBasisJeJahr = new double[T + 1],
                 EndenergieBasisJeJahr = new double[T + 1],
-                BehgFortgeschrieben = behgJeJahr == null
+                BehgFortgeschrieben = behgJeJahr == null,
+                // ETAPPE E15 — nur mit Abzug eine Reihe; ohne bleibt das Feld null.
+                RisikoJeJahr = risikoAbzugJahr != 0 ? new double[T + 1] : null,
+                // ETAPPE E16 — die Positionen „alle n Jahre" als Ausweis (Formelmappe).
+                Wiederholt = wiederholt != null && wiederholt.Count > 0 ? wiederholt : null
             };
+            bool mitWiederholung = wiederholt != null && wiederholt.Count > 0;
 
             // ---------------- Investition t=0 + Ersatzbeschaffungen + Restwert ----------------
             double[] ersatzJeJahr = new double[T + 1];
@@ -792,6 +901,20 @@ namespace WindowsFormsApplication1
                 if (endenergieAbJahr != null)
                     foreach (KeyValuePair<double, int> ve in endenergieAbJahr)
                         if (t >= ve.Value) endenergieT += ve.Key;
+
+                // ETAPPE E16 (V‑G3, DIN EN 17463 6.3.1): die Positionen „alle n Jahre" zählen
+                // nur in ihren Zahlungsjahren zur Basis ihres Topfes — danach läuft die
+                // Fortschreibung (1+p)^(t−1) unverändert darüber, wie für jede jährliche
+                // Position. Ohne solche Position wird der Zweig nicht betreten: betriebT und
+                // endenergieT bleiben bitgleich die von vorher.
+                if (mitWiederholung)
+                    foreach (Wiederholposten w in wiederholt)
+                    {
+                        if (w == null || !ZahltImJahr(w.StartJahr, w.Periode, t)) continue;
+                        if (w.Endenergie) endenergieT += w.Betrag;
+                        else betriebT += w.Betrag;
+                    }
+
                 double endenergieAusgabe = endenergieT != 0
                     ? endenergieT * Math.Pow(1.0 + pE, t - 1)
                     : 0.0;
@@ -824,13 +947,28 @@ namespace WindowsFormsApplication1
 
                 z.BarwertAusgaben += ausgaben * faktor;
                 z.BarwertEinnahmen += einnahmen * faktor;
-                z.BarwertReihe[t] = (einnahmen - ausgaben) * faktor;
-                z.NominalReihe[t] = einnahmen - ausgaben;
+                if (risikoAbzugJahr != 0)
+                {
+                    // ETAPPE E15 (V‑G7, Anhang F): der Risikoabzug je Periode t ≥ 1 auf die
+                    // Nettozahlung — nie im Jahr 0 (die Schleife beginnt bei 1), nie auf den
+                    // Restwert (der steht unten getrennt). Eigener Zweig, damit der Regellauf
+                    // ohne Abzug denselben Ausdruck durchläuft wie vorher.
+                    z.RisikoJeJahr[t] = risikoAbzugJahr;
+                    z.BarwertRisiko += risikoAbzugJahr * faktor;
+                    z.BarwertReihe[t] = (einnahmen - ausgaben - risikoAbzugJahr) * faktor;
+                    z.NominalReihe[t] = einnahmen - ausgaben - risikoAbzugJahr;
+                }
+                else
+                {
+                    z.BarwertReihe[t] = (einnahmen - ausgaben) * faktor;
+                    z.NominalReihe[t] = einnahmen - ausgaben;
+                }
             }
 
             z.RestwertNominal = restwertT;
             z.RestwertBarwert = restwertT * Math.Pow(1.0 + i, -T);
             z.Kapitalwert = -z.Investition - z.BarwertAusgaben + z.BarwertEinnahmen + z.RestwertBarwert;
+            if (risikoAbzugJahr != 0) z.Kapitalwert -= z.BarwertRisiko;   // E15, sonst unberührt
             return z;
         }
 

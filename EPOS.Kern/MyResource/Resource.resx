@@ -6793,10 +6793,10 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“</value>
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
-    <value>als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen.</value>
+    <value>beschrieben; noch keine Wirkung nach Dauer und Wirkung beurteilt (8.2).</value>
   </data>
   <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
     <value>nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen.</value>
@@ -23288,7 +23288,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Stand B der Paarsicht. Die Liste führt A nicht — so sind A und B ohne Meldung verschieden.</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
-    <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
+    <value>Die Beschreibung einer nicht monetarisierbaren Wirkung nach DIN EN 17463 — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Geschrieben wird auf Zuruf („Speichern“), nicht bei jedem Zeichen; im Bericht steht sie unverändert.</value>
   </data>
   <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
     <value>Zahlungsreihen: Stand</value>
@@ -30603,5 +30603,236 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Zwölf Monatsfaktoren Januar bis Dezember; beim Speichern auf das Mittel 1 normiert.</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ZINS" xml:space="preserve">
+    <value>Zinszuschlag {0} %-Punkte</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ABZUG" xml:space="preserve">
+    <value>Abzug R_loss × p_loss = {0} € × {1} % = {2} € je Periode ab Jahr 1</value>
+  </data>
+  <data name="WIRT_RISIKO_NACHWEIS" xml:space="preserve">
+    <value>Risiko (DIN EN 17463, 6.5): {0}</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_AUS" xml:space="preserve">
+    <value>Kein Risiko angesetzt (Vorgabe) — gerechnet wird mit dem Kalkulationszins und den Zahlungen, wie sie sind.</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ZINS" xml:space="preserve">
+    <value>Gerechnet wird in allen drei Szenarien mit dem Kalkulationszins plus Zuschlag: {0} % + {1} %-Punkte = {2} % im Erwartungsfall (Kapitalwert, Annuität, Amortisation, Zinsfuß).</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ABZUG" xml:space="preserve">
+    <value>Abzug je Periode ab Jahr 1: {0} € × {1} % = {2} € — nicht im Jahr 0, nicht auf den Restwert; in allen drei Szenarien für jeden Stand außer der Referenz (rechnet die Gruppe nur einen Stand, trägt er den Abzug).</value>
+  </data>
+  <data name="WIRT_ANN_RISIKO" xml:space="preserve">
+    <value>Risiko (DIN EN 17463, 6.5)</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT" xml:space="preserve">
+    <value>Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen benannt</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM" xml:space="preserve">
+    <value>Risiko angesetzt (6.5): {0} · nicht monetäre Wirkungen: keine benannt</value>
+  </data>
+  <data name="WIRT_MJ_RISIKO" xml:space="preserve">
+    <value>Risikoabzug</value>
+  </data>
+  <data name="WIRT_GL_RISIKO" xml:space="preserve">
+    <value>Risikoabzug (Anhang F)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Risikozuschlag auf den Zins (6.5)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS_RISIKO" xml:space="preserve">
+    <value>Kalkulationszins mit Risikozuschlag</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_VERLUST" xml:space="preserve">
+    <value>Rückflusseinbuße R_loss [€ je Periode]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_P" xml:space="preserve">
+    <value>Eintrittswahrscheinlichkeit p_loss</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ABZUG" xml:space="preserve">
+    <value>Risikoabzug je Periode ab Jahr 1 [€]</value>
+  </data>
+  <data name="WPAR_G_RISIKO" xml:space="preserve">
+    <value>Risiko (DIN EN 17463, 6.5)</value>
+  </data>
+  <data name="WPAR_RISIKO_ART" xml:space="preserve">
+    <value>Art der Risikoberücksichtigung:</value>
+  </data>
+  <data name="WPAR_RISIKO_AUS" xml:space="preserve">
+    <value>aus — kein Risiko angesetzt</value>
+  </data>
+  <data name="WPAR_RISIKO_ZINS" xml:space="preserve">
+    <value>Zinszuschlag</value>
+  </data>
+  <data name="WPAR_RISIKO_ABZUG" xml:space="preserve">
+    <value>Zahlungsstromabzug R_loss × p_loss (Anhang F)</value>
+  </data>
+  <data name="WPAR_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Zinszuschlag [%-Punkte]:</value>
+  </data>
+  <data name="WPAR_RISIKO_VERLUST" xml:space="preserve">
+    <value>Rückflusseinbuße R_loss [€ je Periode]:</value>
+  </data>
+  <data name="WPAR_RISIKO_P" xml:space="preserve">
+    <value>Eintrittswahrscheinlichkeit p_loss [%]:</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ART_ERL" xml:space="preserve">
+    <value>Art der Risikoberücksichtigung nach DIN EN 17463 (6.5): leer = aus (Vorgabe), ZINS = Zinszuschlag auf den Kalkulationszins, ABZUG = Zahlungsstromabzug R_loss × p_loss je Periode ab Jahr 1.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Zuschlag in Prozentpunkten auf den Kalkulationszins aller drei Szenarien; wirkt nur bei Art ZINS.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_VERLUST_ERL" xml:space="preserve">
+    <value>Quantifizierte Rückflusseinbuße R_loss in Euro je Periode; wirkt nur bei Art ABZUG.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_P_ERL" xml:space="preserve">
+    <value>Eintrittswahrscheinlichkeit p_loss in Prozent; der Abzug je Periode ist R_loss × p_loss / 100, nur bei Art ABZUG.</value>
+  </data>
+  <data name="WIRT_AE_6_STAND_RISIKO" xml:space="preserve">
+    <value>drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risiko angesetzt: {0}; Degradation nicht gerechnet — deklariert.</value>
+  </data>
+  <data name="WIRT_NM_KAT_ENERGIEFLUSS" xml:space="preserve">
+    <value>Energiefluss</value>
+  </data>
+  <data name="WIRT_NM_KAT_FINANZIELL" xml:space="preserve">
+    <value>Finanziell</value>
+  </data>
+  <data name="WIRT_NM_KAT_SONSTIG" xml:space="preserve">
+    <value>Sonstig</value>
+  </data>
+  <data name="WIRT_NM_DAUER_1" xml:space="preserve">
+    <value>kurz</value>
+  </data>
+  <data name="WIRT_NM_DAUER_2" xml:space="preserve">
+    <value>mittel</value>
+  </data>
+  <data name="WIRT_NM_DAUER_3" xml:space="preserve">
+    <value>lang</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_0" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_1" xml:space="preserve">
+    <value>gering</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_2" xml:space="preserve">
+    <value>mittel</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_3" xml:space="preserve">
+    <value>stark</value>
+  </data>
+  <data name="WIRT_NM_NICHT_BEURTEILT" xml:space="preserve">
+    <value>nicht beurteilt</value>
+  </data>
+  <data name="WIRT_NM_BEURTEILUNG_WERT" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_KATEGORIE" xml:space="preserve">
+    <value>Unbekannte Kategorie einer nicht monetarisierbaren Wirkung: „{0}“.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_BESCHREIBUNG" xml:space="preserve">
+    <value>Jede nicht monetarisierbare Wirkung braucht eine Beschreibung.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_DAUER" xml:space="preserve">
+    <value>Die Dauer einer Wirkung liegt zwischen 1 (kurz) und 3 (lang).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_WIRKUNG" xml:space="preserve">
+    <value>Ein Wirkungsgrad liegt zwischen 0 (keine) und 3 (stark).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_PROJEKT" xml:space="preserve">
+    <value>Die nicht monetarisierbaren Wirkungen brauchen ein Stammprojekt.</value>
+  </data>
+  <data name="WIRT_NM_SP_KATEGORIE" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="WIRT_NM_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="WIRT_NM_SP_DAUER" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="WIRT_NM_SP_ORGANISATION" xml:space="preserve">
+    <value>Organisation</value>
+  </data>
+  <data name="WIRT_NM_SP_MITARBEITER" xml:space="preserve">
+    <value>Mitarbeiter</value>
+  </data>
+  <data name="WIRT_NM_SP_UMWELT" xml:space="preserve">
+    <value>Umwelt</value>
+  </data>
+  <data name="WIRT_NM_SP_BEURTEILUNG" xml:space="preserve">
+    <value>Beurteilung</value>
+  </data>
+  <data name="WIRT_NM_LEER" xml:space="preserve">
+    <value>Noch keine Wirkung erfasst.</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_NEU" xml:space="preserve">
+    <value>Wirkung hinzufügen</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_LOESCHEN" xml:space="preserve">
+    <value>Wirkung entfernen</value>
+  </data>
+  <data name="WIRT_NM_FELD" xml:space="preserve">
+    <value>{0}, Wirkung {1}</value>
+  </data>
+  <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
+    <value>Wirkung {0}: {1}</value>
+  </data>
+  <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
+    <value>DIN EN 17463 verlangt zu jeder Bewertung, was sich nicht in Euro fassen lässt (6.1, 8.2): je Wirkung die Kategorie, die Dauer (kurz, mittel, lang) und die Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark). Die Beurteilung ist Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen gehören zur Maßnahme als Ganzes, stehen im Bericht und fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_NM_ALTFELD" xml:space="preserve">
+    <value>Altfeld Freitext (nur lesbar, nicht mehr gepflegt): {0}</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_NAME" xml:space="preserve">
+    <value>Zahl der Wirkungen</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>Wie viele nicht monetarisierbare Wirkungen die Liste trägt. Eine größere Zahl hängt leere Zeilen der Kategorie „sonstig“ an, eine kleinere nimmt Zeilen vom Ende; geschrieben wird erst mit „Speichern“, leere Zeilen werden nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL" xml:space="preserve">
+    <value>Die Kategorie der Wirkung nach DIN EN 17463, 6.1: Energiefluss, finanziell oder sonstig.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_DAUER_ERL" xml:space="preserve">
+    <value>Wie lange die Wirkung anhält: kurz, mittel oder lang; leer = nicht beurteilt.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_GRAD_ERL" xml:space="preserve">
+    <value>Wie stark die Wirkung auf diesen Bereich ist: keine, gering, mittel oder stark; leer = nicht beurteilt.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL" xml:space="preserve">
+    <value>Die Beurteilung nach DIN EN 17463, 8.2: Dauer × stärkste der drei Wirkungen (0 bis 9); nur Anzeige, sie wird nicht gespeichert und fließt nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_NM_SP_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="WIRT_NM_TABELLE_HINWEIS" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen nach DIN EN 17463 (6.1, 8.2): Kategorie, Dauer (kurz, mittel, lang) und Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark); Beurteilung = Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
+    <value>nach Kategorie erfasst und nach Dauer und Wirkung beurteilt (8.2); sie fließen nicht in den Kapitalwert.</value>
+  </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>alle {0} Jahre ab Jahr {1}</value>
+  </data>
+  <data name="WDH_LBL_PERIODE" xml:space="preserve">
+    <value>Zahlung alle:</value>
+  </data>
+  <data name="WDH_EINHEIT" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="WDH_INFO" xml:space="preserve">
+    <value>1 = jährlich. Ab 2 zahlt die Position im Startjahr und danach alle n Jahre (DIN EN 17463, 6.3.1).</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_NAME" xml:space="preserve">
+    <value>Zahlung alle … Jahre</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
+    <value>Wiederholperiode einer Betriebsposition in Jahren: 1 = jährlich, n = die Position zahlt im Startjahr und danach alle n Jahre. Nur auf der Betriebsseite.</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Positionen alle n Jahre mit p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Positionen alle n Jahre mit p_E [€/a]</value>
   </data>
 </root>

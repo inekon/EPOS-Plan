@@ -21,7 +21,8 @@ A1 bis A3. **Stufe 5 ist umgesetzt** (23.09.2026, Commits `9cb41354`, `7e7ecb9c`
 Gerüst mit Liste und Stammblatt —, dazu der Zweitweg von V14 bei A1 bis A3 (7.1 d, „Import…" in den
 Gerätekatalogen). **Damit sind alle fünf Stufen umgesetzt**; einzelne Reste stehen in 7.1 („Offen nach
 Stufe 5"), die Import-Reste (d) sind am 24.09.2026 erledigt (Welle #466), ebenso die Frage (c) der
-Lastspitzenkappung: Entscheid „Werkzeugleiste", umgesetzt mit Welle #467. Die Auswahlleiste steht im breiten Fenster über dem Stammblatt statt über der Liste —
+Lastspitzenkappung: Entscheid „Werkzeugleiste", umgesetzt mit Welle #467; mit #483 stehen die beiden
+Knöpfe im schmalen Fenster zusätzlich im Kopf des Stammblatts. Die Auswahlleiste steht im breiten Fenster über dem Stammblatt statt über der Liste —
 Abweichung vom Schema, Begründung in 3.6 Punkt 7. Das Schema (Abschnitt 3) gilt als umgesetzter Stand
 für alle elf Komponenten des Geltungsbereichs, mit den in 3.6 genannten Abweichungen. Der Ablauf aller
 fünf Stufen steht in Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnitt 8 zusammen.
@@ -35,7 +36,10 @@ den Katalogverweis** `Tab_Gebaeude.ID_Gebaeude_Stamm` (Schemaschritt 121) und er
 Namen (7.1 a); **mit #473 (24.09.2026)** legt auch das Neuschreiben der Gebäudeliste eines Projekts die
 Kopien über diesen Verweis an (7.1 a); **mit #475 (24.09.2026)** behält das Speichern der Gebäudeliste
 jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schreibt in einem Vorgang
-(7.1 a).
+(7.1 a); **mit #485 (24.09.2026)** berichtigt Schemaschritt 126 die vorgelegten Gebäude-Katalogsätze
+(7.1 a); **mit #487 (24.09.2026)** tragen gespeicherte Zeilen der Gebäudeliste ihre echte Id, das
+Änderungsdatum folgt nur einer echten Änderung, und „Gebäude in DB löschen" des Projektdialogs hält
+die Löschsperre der Verwaltung (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -247,9 +251,12 @@ Reihenfolge und ihr Verhalten sind überall gleich. Mockup:
 Ein Rechenwerkzeug (die Lastspitzenkappung, 3.6 Punkt 6) hat dazu **Handlungen am Ergebnis** — die
 Ausgabe als CSV und die Übernahme in die Speichervariante. Sie wirken weder auf Zeilen noch auf Felder
 noch auf den Dialog und stehen in der **Werkzeugleiste** (Zone 2) nach der Suche, nicht in der
-Fußleiste (7.1 c).
+Fußleiste (7.1 c). Im schmalen Fenster (unter 900 px Rahmenbreite) verdeckt das Stammblatt die
+Werkzeugleiste; dort stehen dieselben Knöpfe zusätzlich im Kopf des Stammblatts, in einer Zeile mit
+„‹ Liste" (`Stammblatt.Kopfhandlungen`, dasselbe Fragment wie im Schlitz `Werkzeug`).
 
-Keine Handlung steht an zwei Orten. Aus der heutigen Fußleiste wandern dafür Speichern ins Stammblatt,
+Keine Handlung steht an zwei Orten, die zugleich sichtbar sind — die Kopfhandlungen des schmalen
+Stammblatts erscheinen nur, solange es die Werkzeugleiste verdeckt. Aus der heutigen Fußleiste wandern dafür Speichern ins Stammblatt,
 Löschen und Duplizieren in die Auswahlleiste; „Bearbeiten…" entfällt (AD-Q6). Knöpfe, die eine Gruppe
 vertiefen (Kennliniendaten…, Stundenwerte…, Wochenprofil bearbeiten…, Monatsverlauf…,
 Originaldatei…, Gebäudetypen…), stehen im Kopf ihrer Gruppe und öffnen eine Überlagerung im selben
@@ -339,7 +346,7 @@ AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Absch
 | A8 | `StromganglinieAdminDialog` (Stromganglinie) | Zeitreihen (3) | 4: Bezeichner, Zeitintervall, Jahresarbeit, Spitze | kein Diagramm; Zeitintervall und Dateiwahl als Einleseblock | Löschen · Füller · OK; Einlesen über die Dateiwahl | `GanglinienImportLauf` mit drei Überlagerungen; `ReadOnly`-Sperre und Rückfrage | Ganglinie, Herkunft | trägt den `Katalograhmen` bereits seit Stufe 1 (vorgezogen); Stufe 4 setzt Einlesen als Überlagerung und OK/Beenden um; die Dateiwahl setzt nur den Pfad, „Datei einlesen…" startet den Import |
 | A9 | `GebaeudeDialog`, Betriebsart Verwaltung (Gebäude → Bearbeiten) | Gebäude (277) | eigene Tabelle: Name, „Typ/Wohnfläche"; vier Vorfilter darüber (Verwendung, Gebäudeart, Baujahr, Suche) | Gruppe „Gebäude: Verbrauch", lesend (Name, Gebäudeart, Beschreibung, Wohnfläche, Art der Angabe) | Gebäude in DB neu… · ändern… · löschen · Gebäudetyp in DB ändern… · Füller · Beenden | Katalogeditor mit zwei Reitern (Kenngrößen; Flächen, U-Werte, Raumtemperaturen, Ferien, Anschlussmaße) und Gebäudetypen-Verwaltung als Überlagerungen; dieselbe Komponente dient Projekt und Assistent | Kenndaten, Hülle, Alle Daten | **größte Abweichung**: Stufe 5 setzt V16 um — eigene Tabelle und Vorfilter → `Katalogliste` mit Profil `FuerGebaeude`, Name, Gebäudeart, Verwendung und Baujahr als Trichter; der Katalogeditor ist in Stammblattgruppen (Kenndaten, Hülle, Alle Daten) zerfallen; „Gebäudetyp in DB ändern…" ist „Gebäudetypen…" im Kopf der Gruppe Kenndaten; keine Kosten, kein Import; Projekt und Assistent behalten ihre Anordnung (3.6); seit #465 jedes Feld des Editors im Stammblatt bedienbar, der Editor nur noch für „Neu…", eigene KI-Maske `Form_Gebaeude_Admin` (7.1 a, e) |
 | A10 | `GebaeudetypDialog` (Gebäudetypen) | Typen (12) mit je fünf oder acht Tageskurven zu 24 Stunden | eine Spalte (Name) mit rundem Wahlknopf; daneben die Kurvenliste als zweite Liste | Beschreibung lesend, 24 Stundenfelder und das Tagesbild (`DiagrammSvg`) unter den Listen | Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden | Kopf-Detail-Modell; der Kurvenwechsel überträgt die 24 Felder still; ein Typ, der nicht „Veränderbar" ist, sperrt „Typ speichern" und sagt es in einer Herleitungszeile; Löschen fragt zurück | Tagesprofil, Kenndaten | **kein Gerätekatalog**: Stufe 5 setzt V16 um — die Kurvenliste ist die Klappliste „Kurve" der Gruppe Tagesprofil geworden, die 24 Felder öffnen als Überlagerung „Stundenwerte…", ein Kurvenwechsel mit Änderungen hält an; Schloss statt Herleitungszeile; Neu… fragt Name, Beschreibung und Kurvenzahl; keine Kosten, kein Import, kein „Alle Daten"; Reste in 7.1 |
-| A11 | `PeakShavingDialog` (Lastspitzenkappung) | Lastgänge: Stromganglinien aus Stamm und Projekt oder eine Datei, die nicht abgelegt wird | keine Liste: Optionsgruppe „Vorhandene Ganglinie \| Datei importieren", Klappliste, Dateiwahl | Parameterblock (Speicher, Zielschwelle mit „Minimale haltbare Schwelle ermitteln", Leistungs- und Bezugspreis, Kompatibilitätsmodus, fünf Wirtschaftlichkeitsfelder), darunter „Berechnen" und das Ergebnis in drei Reitern (Kennzahlen, Lastgang vorher/nachher, Monatsspitzen) | CSV-Export · In Variante übernehmen · Füller · Beenden | Rechenwerkzeug, legt nichts ab, braucht kein offenes Projekt; der Rechenlauf läuft nebenher mit Fortschritt; die Importkette zeigt Optionen und Protokoll als Überlagerungen | Speicher, Schwelle, Kosten, Ergebnis | **Rechenwerkzeug statt Katalog**: Stufe 5 setzt V16 um — die Liste zeigt die Lastgänge mit Quelle, Intervall und Jahresmaximum; die Datei kommt über „Lastgang aus Datei…" an der Stelle von Import…; „Berechnen" bleibt im Blatt zwischen Parametern und Ergebnis, der Stammblattfuß trägt keinen Knopf; Vergleichen rechnet über zwei bis drei Lastgänge; kein Neu…, Duplizieren, Löschen, kein Schloss; CSV-Export und „In Variante übernehmen" stehen in der Werkzeugleiste, die Fußleiste trägt „Lastgang aus Datei…", Statuszeile und Beenden (7.1 c); Reste in 7.1 |
+| A11 | `PeakShavingDialog` (Lastspitzenkappung) | Lastgänge: Stromganglinien aus Stamm und Projekt oder eine Datei, die nicht abgelegt wird | keine Liste: Optionsgruppe „Vorhandene Ganglinie \| Datei importieren", Klappliste, Dateiwahl | Parameterblock (Speicher, Zielschwelle mit „Minimale haltbare Schwelle ermitteln", Leistungs- und Bezugspreis, Kompatibilitätsmodus, fünf Wirtschaftlichkeitsfelder), darunter „Berechnen" und das Ergebnis in drei Reitern (Kennzahlen, Lastgang vorher/nachher, Monatsspitzen) | CSV-Export · In Variante übernehmen · Füller · Beenden | Rechenwerkzeug, legt nichts ab, braucht kein offenes Projekt; der Rechenlauf läuft nebenher mit Fortschritt; die Importkette zeigt Optionen und Protokoll als Überlagerungen | Speicher, Schwelle, Kosten, Ergebnis | **Rechenwerkzeug statt Katalog**: Stufe 5 setzt V16 um — die Liste zeigt die Lastgänge mit Quelle, Intervall und Jahresmaximum; die Datei kommt über „Lastgang aus Datei…" an der Stelle von Import…; „Berechnen" bleibt im Blatt zwischen Parametern und Ergebnis, der Stammblattfuß trägt keinen Knopf; Vergleichen rechnet über zwei bis drei Lastgänge; kein Neu…, Duplizieren, Löschen, kein Schloss; CSV-Export und „In Variante übernehmen" stehen in der Werkzeugleiste, im schmalen Fenster zusätzlich im Stammblattkopf, die Fußleiste trägt „Lastgang aus Datei…", Statuszeile und Beenden (7.1 c); Reste in 7.1 |
 
 ### 3.6 Wo das Schema nicht passt — und wie es sich hilft
 
@@ -373,8 +380,8 @@ AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Absch
    Lesefluss Parameter → Rechnen → Ergebnis aus dem Entscheid DL-Q2 zu den Knopfleisten bleibt —, und
    der Fuß des Blatts trägt keinen Knopf, weil nichts abgelegt wird. Kein Neu…, kein Duplizieren, kein
    Löschen, kein Schloss; Stromganglinien pflegt die Verwaltung Stromganglinie. Die Handlungen am
-   Ergebnis — CSV-Export und „In Variante übernehmen" — stehen in der Werkzeugleiste nach der Suche; die
-   Fußleiste trägt nur „Lastgang aus Datei…" (an der Stelle von Import…), Statuszeile und Beenden (7.1 c).
+   Ergebnis — CSV-Export und „In Variante übernehmen" — stehen in der Werkzeugleiste nach der Suche, im
+   schmalen Fenster zusätzlich im Kopf des Stammblatts neben „‹ Liste"; die Fußleiste trägt nur „Lastgang aus Datei…" (an der Stelle von Import…), Statuszeile und Beenden (7.1 c).
 7. **Die Auswahlleiste steht im breiten Fenster über dem Stammblatt, nicht über der Liste**
    (Abweichung von 3.1 Zone 4, gültiger Stand seit der Umsetzung 23.09.2026). Grund: Die Liste soll bei
    1 088 × 624 CSS-Pixeln ihre acht Zeilen behalten (Suchzeile 44 px, Spaltenkopf 53 px); eine
@@ -574,7 +581,7 @@ Menüpunkte, und Schloss, Vergleich und Import lassen sich an ihr zuerst zeigen.
 | 2 | ✔ **umgesetzt 23.09.2026** (Commits `5767e273`, `e2fbb829`, Merge `f6290028`) — V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` in den acht Verwaltungen; dazu V10 (Schloss) und V15 (Fußleiste); AD-Q11 mit `Katalogkopie.Duplizieren` | M + M + S + S | Stufe 1 |
 | 3 | ✔ **umgesetzt 23.09.2026** (Commits `d0660247`, `d8660fde`, Merge `f3957840`) — V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, dieselbe Komponente für BHKW, Wärmepumpen, Solarkollektoren, Pufferspeicher (A1, A3), PV-Module, Wechselrichter, Stromspeicher (A2) und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5); dazu aus Stufe 2 zurückgestellt: V6 (Leertaste und Kästchen der Mehrfachwahl), das weiche Sperren beim Löschen eines Auslieferungssatzes, Duplizieren für die Bedarfsprofile und die Änderungserkennung der Wärmepumpenverwaltung | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
 | 4 | ✔ **umgesetzt 23.09.2026** (Commits `5a46b0b1`, `b1569752`, Merge `df78272c`) — V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 trägt den `Katalograhmen` schon seit Stufe 1); dazu aus Stufe 3 zurückgestellt und erledigt: Schalter „nur mit Kühlfunktion" in der Werkzeugleiste der Wärmepumpenverwaltung, direkt bedienbare Bedarfsfelder statt „Ändern…" (A5), eigene Kostengruppe bei der Wärmepumpe, die Felder eines Auslieferungssatzes als Text statt als gesperrte Eingaben (V13); offen bleibt „Import…" in der Fußleiste der Gerätekataloge (Zweitweg zu V14 bei A1 bis A3, siehe 7.1) | M | Stufe 3 |
-| 5 | ✔ **umgesetzt 23.09.2026** (Commits `9cb41354`, `7e7ecb9c`, `c938ed32`, Merge `b3fa8658`) — V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) im Gerüst mit Liste und Stammblatt; dazu 7.1 d erledigt — „Import…" als Zweitweg zu V14 in den Gerätekatalogen (A1 bis A3, nicht beim BHKW) über den neuen Baustein `ImportUeberlagerung`; **Nachtrag #465 (24.09.2026):** 7.1 (a) und (e) erledigt — das Stammblatt der Gebäudeverwaltung führt jedes Feld des Katalogeditors auf demselben Arbeitsstand und Schreibweg, die Verwaltung ist beim Assistenten eine eigene Maske; **Nachtrag #467 (24.09.2026):** 7.1 (c) erledigt — CSV-Export und „In Variante übernehmen" der Lastspitzenkappung stehen in der Werkzeugleiste | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
+| 5 | ✔ **umgesetzt 23.09.2026** (Commits `9cb41354`, `7e7ecb9c`, `c938ed32`, Merge `b3fa8658`) — V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) im Gerüst mit Liste und Stammblatt; dazu 7.1 d erledigt — „Import…" als Zweitweg zu V14 in den Gerätekatalogen (A1 bis A3, nicht beim BHKW) über den neuen Baustein `ImportUeberlagerung`; **Nachtrag #465 (24.09.2026):** 7.1 (a) und (e) erledigt — das Stammblatt der Gebäudeverwaltung führt jedes Feld des Katalogeditors auf demselben Arbeitsstand und Schreibweg, die Verwaltung ist beim Assistenten eine eigene Maske; **Nachtrag #467 (24.09.2026):** 7.1 (c) erledigt — CSV-Export und „In Variante übernehmen" der Lastspitzenkappung stehen in der Werkzeugleiste; **Nachtrag #483 (24.09.2026):** im schmalen Fenster zusätzlich im Stammblattkopf | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
 
 **Warum diese Folge:** Die Gerätekataloge teilen sich zwei Komponenten (A1, A2) und gewinnen am
 meisten durch die Spaltenränge; die Profile folgen, weil ihr Stammblatt nur eine Gruppe hinzubekommt;
@@ -635,8 +642,16 @@ ihrer Tagesverteilung und den Verweisen darauf (Trinkwarmwasserzonen, Gebäudeer
 Zuordnungswerte (Fläche oder Verbrauch, Einheit, Jahresnutzungsgrad, dezentrales Warmwasser) werden
 fortgeschrieben. Eine Zuordnung, die in der Liste fehlt, wird samt Kopie gelöscht; jede übrige Zeile
 (neu übernommen oder mit geändertem Verweis) entsteht neu aus dem Katalog. Eine Umbenennung im Katalog
-berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts wird wie auf jedem
-Schreibweg gesetzt, das letzte Ergebnis gilt damit als veraltet. Die Startseite schreibt in **einem**
+berührt eine bestehende Kopie damit nicht mehr. Das Änderungsdatum des Projekts — und damit die
+Veraltung des letzten Ergebnisses — wird nur gesetzt, wenn der Abgleich tatsächlich geschrieben hat
+(eine Zuordnung entfernt oder neu angelegt, Zuordnungswerte einer bleibenden geändert); eine bleibende
+Zeile mit unveränderten Werten wird nicht geschrieben (#487). Nach dem Festschreiben trägt jede neu
+angelegte Zeile der Liste ihre echte Zuordnungs-Id statt der vorläufigen ab 100000
+(`WizardCtrl.EchteIdsUebernehmen`, im Assistenten nach dem Festschreiben seines Vorgangs; die Hülle
+`GebaeudeHuelle` zieht sie in die Anzeigezeile nach) — ein zweites Speichern derselben Liste legt
+nichts neu an, und eine Feld-Übernahme dazwischen bleibt stehen (#487; Nachweis
+`GebaeudelisteAbgleichTests`). Der Assistent setzt im Bearbeiten-Zweig das Änderungsdatum weiterhin
+bei jedem Speichern, weil er die übrigen Gewerke neu schreibt. Die Startseite schreibt in **einem**
 Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
 Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
 Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
@@ -648,11 +663,32 @@ Ziel nicht unter der Original-Id aufgefüllt, und der Import trägt den Verweis 
 Bezeichner nach (sonst NULL). **`SET NULL` statt `RESTRICT`:** Die
 Kopie trägt alle Werte selbst und rechnet ohne den Katalogsatz; die Sperre ist die weiche der
 Verwaltung, und ein harter Datenbankfehler träfe jeden anderen Löschweg (Dublettenbereinigung,
-„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). Mit demselben Schritt tragen vier
-Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert); der
-Krankenhaussatz mit dem U-Wert Fenster 0,09 bleibt dem Anwender vorgelegt, ebenso (#473) die zwölf
-Katalogsätze ohne „Fläche je Nutzer" (von keinem Projekt benutzt; bei allen übrigen 265 Sätzen gilt
-Fläche je Nutzer = Wohnfläche / Bewohner). (b)
+„Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). ✔ **Die Löschsperre gilt auf
+beiden Wegen (#487):** „Gebäude in DB löschen" im Projekt-Gebäudedialog fragt vor der Rückfrage
+`GebaeudeStammCtrl.Loeschsperrgrund` — dieselbe Wahrheit wie die Verwaltung (`Loeschsperre` über
+Verweis und Namen, dazu `ReadOnly`) — und nennt einen gesperrten Satz benannt als Warnung
+(`ADM_AW_LOESCHEN_VERWENDET` mit den Projekten bzw. `BADM_MSG_SCHREIBGESCHUETZT` für einen
+Auslieferungssatz), ohne nachzufragen; gelöscht wird über `GebaeudeStammCtrl.Loeschen`, das die Sperre
+im Kern noch einmal hält, eine Ablehnung steht als Absage im Dialog. Mit demselben Schritt tragen vier
+Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert). ✔ **Die
+dem Anwender vorgelegten Sätze sind erledigt** (Anwenderentscheid „Empfehlung übernehmen", Welle #485,
+Schemaschritt 126, `GebaeudeKatalogReparatur`): Der Krankenhaussatz trägt U-Wert Fenster 1,3 statt 0,09
+und 250 statt 10 000 m² Nordfenster (gesamte Fensterfläche neu gebildet); die vier Sätze ohne „Fläche
+je Nutzer" (`EFH-BZ2`, `KrankenH-F-U-400`, `KMEH-M-U-54`, `Z-EFH-A-S-126`) tragen Wohnfläche /
+Bewohner; die acht Testreste (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) sind gelöscht. Der Schritt trifft je Satz
+nur Bezeichner UND Schadensbild — ein schon berichtigter oder anderer Satz einer Kundendatenbank bleibt,
+ein benutzter Testrest ebenso (Protokoll). Alle 269 Katalogsätze bestehen jetzt die Prüfung des
+Editors (Wächter `GebaeudeKatalogverweisTests`, Nachweis `GebaeudeKatalogReparaturTests`). ✔ **Der Satz
+`Krankenhaus_92-EnEV2016` ist ganz durchgesehen — geprüft, keine weitere Berichtigung (#491):** Jede
+Spalte steht gegen `KrankenH_NE` und die `KrankenH-F-*`-Sätze. Die übrigen Abweichungen sind die Werte
+der EnEV-2016-Nichtwohngebäude des Katalogs (U-Werte Wand/Dach/Boden 0,18/0,15/0,20, ψ 0,09/0,18/0,30,
+Baualtersklasse Q, verkleinerte Fensterfläche mit gerundeter Anschlusslänge; ebenso
+`gr_Hotel-80-EnEV2016`), die Raumhöhe 3,5 m passt zur Geometrie (Hüllfläche des Ausgangssatzes / Umfang
+313,8 m / 13,6 Geschosse ≈ 3,5 m). Nicht entscheidbar und dem Anwender vorgelegt: die Anschlusslänge
+Fenster–Wand 1 800 m (0,95 m je m² Fenster, Ausgangssatz 2,54; physikalisch möglich, die Untergrenze für
+Fensterbänder ist 2 · 1 895,9 m² / 3,5 m ≈ 1 083 m) und die Außenwand von 12 094 m², die nicht um die
+1 120,4 m² gewachsen ist, um die Ost/West kleiner ist als beim Ausgangssatz (Hüllfläche 13 989,9 statt
+15 110,3 m²). (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im
@@ -667,9 +703,19 @@ bei 1 088 × 624 steht die Werkzeugleiste in einer Zeile — das Suchfeld der La
 dafür mit 16rem statt 22rem (Eingabe 124 statt 309 px breit) —, die Liste behält 426 px und acht Zeilen,
 die Fußleiste eine Zeile; bei 400 × 624 läuft die Suchzeile in drei statt zwei Zeilen (Suche ·
 Handlungen · Trefferzahl), die Fußleiste in einer statt zwei, die Liste hat 283 statt 281 px;
-Katalogprobe 0 (60 Fälle). *Bleibt offen:* Im schmalen Fenster liegt das Stammblatt als Blatt über
-Werkzeugleiste und Liste — wer dort rechnet, erreicht die beiden Knöpfe erst über „‹ Liste" (das
-Ergebnis bleibt stehen). Ist ein Spaltenfilter gesetzt, rückt „Filter zurücksetzen" bei 1 088 px in eine
+Katalogprobe 0 (60 Fälle). *Schmales Fenster:* ✔ **entschieden und umgesetzt 24.09.2026** (Welle
+#483): Das Stammblatt liegt dort als Blatt über Werkzeugleiste und Liste; damit, wer im Blatt rechnet,
+die beiden Knöpfe nicht erst über „‹ Liste" erreicht, stehen sie zusätzlich im Kopf des Stammblatts,
+rechts in der Zeile von „‹ Liste" (`Stammblatt.Kopfhandlungen`, Klasse `.epos-stammblatt-kopfzeile`
+mit `epos-nur-schmal`). Eine Wahrheit: Der Dialog reicht dasselbe Fragment wie in den Schlitz
+`Werkzeug` — dieselben Rückrufe, dieselben Sperren („Bitte zuerst rechnen.", gesperrt während der
+Rechnung). Ab 900 px Rahmenbreite weicht die Kopfzeile, die Knöpfe stehen nur in der Werkzeugleiste.
+*Gemessen* im Wirt der Rasterprobe: bei 400 × 624 nach „Stammblatt ›" steht die Kopfzeile in einer
+Zeile (44 px; „‹ Liste" links, CSV-Export und „In Variante übernehmen" rechts), der Stammblattkopf ist
+mit 158 px so hoch wie mit „‹ Liste" allein, Blatt, Inhalt und Seite rollen nicht quer (0 px), sichtbar
+ist jeder Knopf genau einmal (im Kopf); bei 1 088 × 624 steht keine Kopfzeile, die beiden Knöpfe stehen
+genau einmal in der Werkzeugleiste, der Stammblattkopf bleibt 112 px hoch; Katalogprobe 0 (62 Fälle).
+Ist ein Spaltenfilter gesetzt, rückt „Filter zurücksetzen" bei 1 088 px in eine
 zweite Zeile der Werkzeugleiste (sie wird dann 54 px höher). (d) Import: ✔ **erledigt 24.09.2026**
 (Welle #466, Commits `d515b7fe`, `d614c3e7`). *Wahl nach der Übernahme:* Nach „Import…" in A1 bis A3
 sind die neuen Sätze die Auswahl (`Zeilenauswahl.Uebernommen`) — ab zweien stehen ihre Kästchen, die

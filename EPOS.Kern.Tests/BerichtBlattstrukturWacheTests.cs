@@ -1183,6 +1183,106 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  ETAPPE E17 (V-G11): die Tabelle „Nicht monetarisierbare Wirkungen"
+        // =====================================================================
+
+        /// <summary>Zwei Wirkungen am Stammprojekt 1040 — eine beurteilt (lang × mittel = 6),
+        /// eine nur beschrieben. Auf der Arbeitskopie.</summary>
+        private static void WirkungenAmStamm()
+        {
+            Assert.True(new ProjektWirkungCtrl().Speichern(1040, new[]
+            {
+                new ProjektWirkung { Kategorie = NichtMonetaereWirkungen.ENERGIEFLUSS, Beschreibung = "Versorgungssicherheit",
+                                     Dauer = 3, WirkungOrganisation = 2, WirkungUmwelt = 1 },
+                new ProjektWirkung { Kategorie = NichtMonetaereWirkungen.SONSTIG, Beschreibung = "Außenwirkung" }
+            }), "Die Wirkungen der Prüfgruppe wurden nicht gespeichert.");
+        }
+
+        /// <summary>
+        /// ETAPPE E17 — der Wortbericht trägt den Abschnitt „Nicht monetäre Wirkungen" NACH der
+        /// Szenarienübersicht mit der Tabelle Kategorie · Beschreibung · Dauer · Organisation ·
+        /// Mitarbeiter · Umwelt · Beurteilung, je Wirkung eine Zeile; die Beurteilung „6 von 9"
+        /// bzw. „nicht beurteilt".
+        /// </summary>
+        [Fact]
+        public void Word_traegt_die_Tabelle_der_nicht_monetarisierbaren_Wirkungen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                WirkungenAmStamm();
+                string ziel = Path.Combine(ordner, "wirkungen.docx");
+                new WordBerichtGenerator().Erzeuge(Gruppe1040MitSaetzen(), VolleKonfiguration(), ziel);
+
+                using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                Body body = doc.MainDocumentPart.Document.Body;
+
+                List<string> abschnitte = AbschnitteDesKapitels(body, "Wirtschaftlichkeit").ToList();
+                int nm = abschnitte.IndexOf(R.WIRT_NM_TITEL);
+                Assert.True(nm >= 0, "Der Abschnitt „" + R.WIRT_NM_TITEL + "“ fehlt: " + string.Join(" | ", abschnitte));
+                Assert.True(nm > abschnitte.FindIndex(a => a.StartsWith("Szenarien", StringComparison.Ordinal)));
+
+                Table t = body.Descendants<Table>().Single(x => Kopf(x).FirstOrDefault() == R.WIRT_NM_SP_KATEGORIE);
+                Assert.Equal(new[] { R.WIRT_NM_SP_KATEGORIE, R.WIRT_NM_SP_BESCHREIBUNG, R.WIRT_NM_SP_DAUER,
+                                     R.WIRT_NM_SP_ORGANISATION, R.WIRT_NM_SP_MITARBEITER, R.WIRT_NM_SP_UMWELT,
+                                     R.WIRT_NM_SP_BEURTEILUNG }, Kopf(t));
+                List<string[]> zeilen = t.Elements<TableRow>().Skip(1)
+                    .Select(r => r.Elements<TableCell>().Select(c => c.InnerText).ToArray()).ToList();
+                Assert.Equal(2, zeilen.Count);
+                Assert.Equal(new[] { R.WIRT_NM_KAT_ENERGIEFLUSS, "Versorgungssicherheit", R.WIRT_NM_DAUER_3,
+                                     R.WIRT_NM_WIRKUNG_2, "", R.WIRT_NM_WIRKUNG_1, "6 von 9" }, zeilen[0]);
+                Assert.Equal(R.WIRT_NM_NICHT_BEURTEILT, zeilen[1][6]);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E17 — das Blatt „Wirtschaftlichkeit" trägt die Tafel „Nicht monetäre
+        /// Wirkungen" unter dem Vorschlag: Titel, Hinweis, Kopf, je Wirkung eine Zeile; die
+        /// Beurteilung als Zahl (leer beurteilt = „nicht beurteilt"), keine Formel. Die
+        /// Checkliste steht für 2b und 3b auf „erfüllt".
+        /// </summary>
+        [Fact]
+        public void Excel_traegt_die_Tafel_der_nicht_monetarisierbaren_Wirkungen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                WirkungenAmStamm();
+                string ziel = Path.Combine(ordner, "wirkungen.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(Gruppe1040MitSaetzen(), VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                int titel = ZeileMitText(w, R.WIRT_NM_TITEL);
+                Assert.True(titel > 0, "Die Tafel der nicht monetarisierbaren Wirkungen fehlt.");
+                Assert.Equal(R.WIRT_NM_TABELLE_HINWEIS, w.Cell(titel + 1, 1).GetString());
+                Zeile(w, titel + 2, R.WIRT_NM_SP_KATEGORIE, R.WIRT_NM_SP_BESCHREIBUNG, R.WIRT_NM_SP_DAUER,
+                      R.WIRT_NM_SP_ORGANISATION, R.WIRT_NM_SP_MITARBEITER, R.WIRT_NM_SP_UMWELT,
+                      R.WIRT_NM_SP_BEURTEILUNG);
+                Zeile(w, titel + 3, R.WIRT_NM_KAT_ENERGIEFLUSS, "Versorgungssicherheit", R.WIRT_NM_DAUER_3,
+                      R.WIRT_NM_WIRKUNG_2, "", R.WIRT_NM_WIRKUNG_1);
+                Assert.Equal(6.0, w.Cell(titel + 3, 7).GetDouble(), 12);
+                Assert.False(w.Cell(titel + 3, 7).HasFormula);
+                Assert.Equal(R.WIRT_NM_NICHT_BEURTEILT, w.Cell(titel + 4, 7).GetString());
+
+                IXLWorksheet c = wb.Worksheet(AnhangECheckliste.Blattname);
+                int p2b = ZeileMitText(c, "2b");
+                int p3b = ZeileMitText(c, "3b");
+                Assert.True(p2b > 0 && p3b > 0, "Die Punkte 2b und 3b fehlen in der Checkliste.");
+                Assert.StartsWith(R.WIRT_AE_STAND_ERFUELLT, c.Cell(p2b, 5).GetString());
+                Assert.Equal(R.WIRT_AE_STAND_ERFUELLT + ": " + R.WIRT_AE_NM_ERFUELLT, c.Cell(p3b, 5).GetString());
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

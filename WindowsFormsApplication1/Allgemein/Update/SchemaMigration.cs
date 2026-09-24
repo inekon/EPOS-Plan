@@ -17,12 +17,12 @@ namespace WindowsFormsApplication1
     /// (<see cref="SCHRITTE_SQLITE"/>).</para>
     ///
     /// <para><b>Die Schritte 1 bis 61 stehen nicht in diesem Programm.</b> Sie sind der
-    /// Freeze-Stand, den eine Quelle mitbringen muss: Auf ihn hebt die letzte
-    /// Access-Fassung von EPOS-Plan (Auslieferung August 2026, Git-Zweig
-    /// <c>version_august_2026</c>), nach SQLite übernimmt danach das Hauswerkzeug
-    /// <c>EposSqliteMigrator</c> (BETRIEB_SQLITE.md 1.1 und 7). Ihre Nummern bleiben hier
-    /// als Konstanten stehen, weil sie den Schemastand benennen, den eine Datei
-    /// führt.</para>
+    /// Freeze-Stand, den eine Quelle mitbringen muss. Den Weg dorthin — die letzte
+    /// Access-Fassung von EPOS-Plan (Git-Zweig <c>version_august_2026</c>) auf der
+    /// <c>.accdb</c>, danach das Hauswerkzeug <c>EposSqliteMigrator</c> nach SQLite — gibt
+    /// es seit dem 24.09.2026 nicht mehr: Die Übernahme aus Access ist eingestellt
+    /// (BETRIEB_SQLITE.md 1.1 und 7). Ihre Nummern bleiben hier als Konstanten stehen,
+    /// weil sie den Schemastand benennen, den eine Datei führt.</para>
     ///
     /// Ablauf:
     ///   1. Alle registrierten Schritte mit Nummer &gt; gespeicherter Version in
@@ -108,8 +108,9 @@ namespace WindowsFormsApplication1
         public const int ZIEL_VERSION = SchemaStand.Zielversion;
 
         /// <summary>
-        /// Der <b>Freeze-Stand</b>: der Schemastand, den der <c>EposSqliteMigrator</c>
-        /// fertig abliefert und den eine Quelle mitbringen muss (Schritte 1 bis 61).
+        /// Der <b>Freeze-Stand</b>: der Schemastand, den das frühere Hauswerkzeug
+        /// <c>EposSqliteMigrator</c> fertig ablieferte und den eine Quelle mitbringen muss
+        /// (Schritte 1 bis 61).
         ///
         /// <para><b>Er ist NICHT dasselbe wie <see cref="ZIEL_VERSION"/></b>, und genau
         /// dafür gibt es ihn: Mit dem ersten eigenen Schritt (<see
@@ -702,8 +703,10 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Die Tabelle kann FEHLEN — der Sonderfall dieses Schritts.</b>
         /// <c>energy_conversion</c> wird von keinem Migrationsschritt und von keinem
-        /// Controller angelegt; sie stammt aus der ausgelieferten
-        /// <c>Kenndaten.accdb</c> bzw. aus <c>migration.manuell.sql</c>. Fehlt sie,
+        /// Controller angelegt; sie stammte aus der ausgelieferten
+        /// <c>Kenndaten.accdb</c> bzw. aus dem früheren Handskript
+        /// <c>migration.manuell.sql</c> (Access-Datenübernahme, aus dem Repository
+        /// entfernt). Fehlt sie,
         /// meldete <see cref="SpaltenAnlegen"/> nur „Tabelle nicht lesbar" und der
         /// Schritt scheiterte — für immer, denn der Marker bliebe stehen. 25a legt sie
         /// deshalb mit dem Spaltensatz des Handskripts an
@@ -4098,6 +4101,96 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_124_ZAPFPROFIL_LAUFANGABEN = 124;
 
         /// <summary>
+        /// Schritt 125 — <b>das Risikomodul</b> (V‑G7, DIN EN 17463 Abschnitt 6.5 und Anhang F;
+        /// Etappe E15, Konzept Wirtschaftlichkeit § 2.11.2). Er folgt auf
+        /// <see cref="SCHRITT_124_ZAPFPROFIL_LAUFANGABEN"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// <c>Risiko_Art</c> (leer = kein Risiko, <c>ZINS</c>, <c>ABZUG</c>),
+        /// <c>Risiko_Zinszuschlag</c> [%-Punkte], <c>Risiko_Verlust</c> [€ je Periode, R_loss]
+        /// und <c>Risiko_Wahrscheinlichkeit</c> [%, p_loss] — die Liste steht bei
+        /// <see cref="SchemaKatalog.RisikomodulSpalten"/>, EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Leer heißt „kein Risiko angesetzt"; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_125_RISIKOMODUL = 125;
+
+        /// <summary>
+        /// Schritt <see cref="GebaeudeKatalogReparatur.SCHRITT"/> — <b>die Reparatur der
+        /// Gebäude-Katalogsätze</b> (Welle #485, Konzept Administrationsdialoge 7.1 (a)). Er folgt
+        /// auf <see cref="SCHRITT_125_RISIKOMODUL"/> ohne Reihenfolgebedingung; er
+        /// braucht <see cref="SCHRITT_121_GEBAEUDE_KATALOGVERWEIS"/>, dessen Verweis die
+        /// Nutzungsprüfung der Testreste fragt.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz nach
+        /// Bezeichner UND Schadensbild: Krankenhaussatz U-Wert Fenster 0,09 → 1,3 und Nordfenster
+        /// 10 000 → 250 m² (gesamte Fensterfläche neu gebildet), vier Sätze ohne „Fläche je Nutzer"
+        /// (= Wohnfläche / Bewohner), acht Testreste gelöscht, sofern keine Projektkopie sie über
+        /// Verweis oder Namen führt. Die Nummer steht allein bei
+        /// <see cref="GebaeudeKatalogReparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Ein Satz ohne sein Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_KATALOGREPARATUR = GebaeudeKatalogReparatur.SCHRITT;
+
+        /// <summary>
+        /// Schritt 127 — <b>die nicht monetarisierbaren Wirkungen als Liste je Projekt</b>
+        /// (Etappe E17; Konzept Wirtschaftlichkeit § 2.11.2 V‑G11, DIN EN 17463 6.1 und 8.2).
+        /// Er folgt auf <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/> (126) ohne
+        /// Reihenfolgebedingung und braucht Schritt 72 (die Freitextspalte).
+        ///
+        /// <para><b>DDL und DML:</b> die STRICT-Tabelle <c>Tab_ProjektWirkung</c> samt Index,
+        /// dann je Projekt mit gepflegtem Freitext und ohne eigene Wirkung EINE Wirkung der
+        /// Kategorie SONSTIG ohne Beurteilung. Die Anweisungen stehen bei
+        /// <see cref="ProjektWirkungSchema"/> — EINE Quelle für Migration, Werkzeug und
+        /// Testvorrichtung. Das Freitextfeld bleibt stehen (Altfeld, nur lesbar).</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN = ProjektWirkungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS"/> (128) — <b>der Heizkreis
+        /// je Gebäude im Ergebnis</b> (Konzept Anlagenkopplung 8.3 und 9.4, Muster E30; Stufe AK1
+        /// Welle 3). Er folgt auf <see cref="SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN"/> (127) ohne
+        /// Reihenfolgebedingung; er braucht <see cref="SCHRITT_107_ERGEBNIS_GEBAEUDE"/>, dessen
+        /// Tabelle er erweitert.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ErgebnisGebaeude</c>:
+        /// <c>Uebergabe_Art</c> (CHECK der drei Übergabearten), <c>VorlaufMittel_C</c>,
+        /// <c>RuecklaufMittel_C</c> und <c>UebergabeBegrenzt_H</c> (0 … 8 760) — NULL heißt „nicht
+        /// gekoppelt gerechnet". Die Definitionen stehen bei
+        /// <see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis; die Nummer steht allein bei
+        /// <see cref="ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet gekoppelt, und der
+        /// Referenzlauf exportiert die Tabelle nicht; er bleibt byte-gleich. <b>Wiederholbar:</b>
+        /// Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_128_ERGEBNIS_HEIZKREIS = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS;
+
+        /// Schritt <see cref="WiederholperiodeSchema.SCHRITT"/> — <b>die Wiederholperiode je
+        /// Kostenposition</b> (Etappe E16; Konzept Wirtschaftlichkeit § 2.11.2 V‑G3, DIN EN 17463
+        /// 6.3.1 „alle n Jahre"). Er folgt auf <see cref="SCHRITT_128_ERGEBNIS_HEIZKREIS"/> (128)
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL:</b> die nullbare Spalte <c>Wiederholperiode_a</c> (INTEGER, Jahre)
+        /// an <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c> — die Liste steht bei
+        /// <see cref="WiederholperiodeSchema.Spalten"/>, die Nummer allein bei
+        /// <see cref="WiederholperiodeSchema.SCHRITT"/>: EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und die Testvorrichtung.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL, 0 und 1 heißen „jährlich wie bisher"; der
+        /// Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_WIEDERHOLPERIODE = WiederholperiodeSchema.SCHRITT;
         /// Schritt 125 — <b>die eingespielten Typtage des lizenzierten Anwenders</b>
         /// (Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Schemaschritt T3 „Typtage", Stufe
         /// Z4b). Er folgt auf <see cref="SCHRITT_124_ZAPFPROFIL_LAUFANGABEN"/> ohne
@@ -4641,11 +4734,11 @@ namespace WindowsFormsApplication1
         //                                    Bootstrap - die Markerspalte bringt die
         //                                    Erstmigration mit.
         //
-        // Eine Datei UNTERHALB Stand 61 weist dieser Lauf ab, statt sie zu heben: Auf den
-        // Freeze-Stand hebt die letzte Access-Fassung von EPOS-Plan (Auslieferung
-        // August 2026, Git-Zweig version_august_2026), nach SQLite uebernimmt danach das
-        // Hauswerkzeug EposSqliteMigrator (BETRIEB_SQLITE.md 1.1 und 7). Im Programm gibt
-        // es keinen Access-Weg mehr und keine ACE-Verbindung.
+        // Eine Datei UNTERHALB Stand 61 weist dieser Lauf ab, statt sie zu heben: Die
+        // Schritte 1 bis 61 gehoeren dem Access-Zweig, und die Uebernahme aus Access ist
+        // seit dem 24.09.2026 eingestellt - das Hauswerkzeug EposSqliteMigrator ist aus dem
+        // Repository entfernt (BETRIEB_SQLITE.md 1.1 und 7). Im Programm gibt es keinen
+        // Access-Weg mehr und keine ACE-Verbindung.
 
         /// <summary>
         /// Führt alle noch ausstehenden Migrationsschritte des SQLITE-Zweigs aus
@@ -4834,12 +4927,12 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Seit iU9‑W14c nicht mehr leer:</b> Der erste Eintrag ist
         /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die Altbereinigung der verwaisten
-        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kommt
-        /// weiterhin fertig aus dem <c>EposSqliteMigrator</c>; was danach kommt, steht
-        /// hier.</para>
+        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kam
+        /// fertig aus dem <c>EposSqliteMigrator</c> (Werkzeug entfernt, Übernahme aus
+        /// Access eingestellt); was danach kommt, steht hier.</para>
         ///
         /// <para><b>Seither sind Freeze-Stand und Ziel zweierlei:</b>
-        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator liefert),
+        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator lieferte),
         /// <see cref="ZIEL_VERSION"/> stand damit auf 62. Wer beide verwechselt, weist eine
         /// frisch migrierte Datei als „nicht auf Freeze-Stand" ab.</para>
         ///
@@ -5812,6 +5905,68 @@ namespace WindowsFormsApplication1
                         "auf 'keine Angabe' bzw. Personen automatisch.",
                         Schritt_124_ZapfprofilLaufangaben),
 
+            // ETAPPE E15 (V-G7, DIN EN 17463 6.5 und Anhang F) - das Risikomodul: Art,
+            // Zinszuschlag, Rueckflusseinbusse und Eintrittswahrscheinlichkeit an der
+            // Parametertabelle. REIN DDL; die Quelle ist SchemaKatalog.RisikomodulSpalten. Er
+            // steht NACH 124 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_125_RISIKOMODUL,
+                        "Tab_ProjektWirtschaftlichkeit: Risikomodul (Zinszuschlag oder " +
+                        "Zahlungsstromabzug R_loss x p_loss)",
+                        "Ein Risiko nach DIN EN 17463 (6.5, Anhang F) liesse sich nicht ansetzen. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten bleiben leer, und leer heisst " +
+                        "'kein Risiko angesetzt'.",
+                        Schritt_Risikomodul),
+
+            // WELLE #485 (Konzept Administrationsdialoge 7.1 (a)) - die Reparatur der
+            // Gebaeude-Katalogsaetze nach Bezeichner und Schadensbild: Krankenhaussatz (U-Wert
+            // Fenster, Nordfenster), vier Saetze ohne Flaeche je Nutzer, acht unbenutzte
+            // Testreste. REIN DML; die Quelle ist GebaeudeKatalogReparatur. Er steht NACH 125
+            // ohne Reihenfolgebedingung und braucht 121.
+            new Schritt(SCHRITT_GEBAEUDE_KATALOGREPARATUR,
+                        "Tab_Gebaeude_STAMM: Krankenhaussatz (U-Wert Fenster, Nordfenster), Flaeche " +
+                        "je Nutzer von vier Saetzen, unbenutzte Testreste geloescht",
+                        "Die Saetze liessen sich im Gebaeudekatalog nicht speichern (U-Wert unter 0,1, " +
+                        "Flaeche je Nutzer leer), und der Krankenhaussatz rechnete mit 10 000 m2 " +
+                        "Nordfenster. KEIN Rechenergebnis eines Projekts aendert sich - Projektkopien " +
+                        "bleiben, wie sie sind.",
+                        Schritt_GebaeudeKatalogreparatur),
+
+            // ETAPPE E17 (V-G11, DIN EN 17463 6.1/8.2) - die nicht monetarisierbaren Wirkungen
+            // als Liste je Projekt; der gepflegte Freitext wird eine Wirkung SONSTIG ohne
+            // Beurteilung. Die Quelle ist ProjektWirkungSchema. Er steht NACH 126 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN,
+                        "Tab_ProjektWirkung: nicht monetarisierbare Wirkungen je Projekt (Kategorie, " +
+                        "Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt); der Freitext wird " +
+                        "eine Wirkung der Kategorie 'sonstig'",
+                        "Die Wirkungen liessen sich weder einordnen noch beurteilen. KEIN Rechenergebnis " +
+                        "aendert sich - die Wirkungen fliessen nicht in den Kapitalwert.",
+                        Schritt_127_NichtMonetaereWirkungen),
+
+            // KONZEPT ANLAGENKOPPLUNG 8.3/9.4 (Stufe AK1 Welle 3, Muster E30) - der Heizkreis je
+            // Gebaeude: Uebergabeart, mittlerer Vor- und Ruecklauf, Stunden mit begrenzter
+            // Uebergabe an Tab_ErgebnisGebaeude. REIN DDL; die Quelle ist
+            // ErgebnisGebaeudeSchema.SpaltenHeizkreis. Er steht NACH 127 ohne
+            // Reihenfolgebedingung und braucht 107.
+            new Schritt(SCHRITT_128_ERGEBNIS_HEIZKREIS,
+                        "Tab_ErgebnisGebaeude: Heizkreis je Gebaeude (Uebergabeart, mittlerer Vor- und " +
+                        "Ruecklauf, Stunden mit begrenzter Uebergabe)",
+                        "Der Bericht faende die Kennzahlen des Heizkreises je Gebaeude nicht. KEIN " +
+                        "Rechenergebnis aendert sich - die Spalten bleiben leer, bis ein Lauf die " +
+                        "Uebergabe rechnet.",
+                        Schritt_128_ErgebnisHeizkreis),
+
+            // ETAPPE E16 (V-G3, DIN EN 17463 6.3.1) - die Wiederholperiode je Kostenposition
+            // ("alle n Jahre") an Tab_ProjektWerte und Tab_KostenVorlagePosition. REIN DDL; die
+            // Quelle ist WiederholperiodeSchema (Spalten und Nummer). Er steht NACH 128 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_WIEDERHOLPERIODE,
+                        "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die Wiederholperiode " +
+                        "Wiederholperiode_a (alle n Jahre)",
+                        "Eine Kostenposition, die nur alle n Jahre anfaellt (z. B. Dichtheitspruefung alle " +
+                        "2 Jahre), liesse sich nicht fuehren. KEIN Rechenergebnis aendert sich - alle " +
+                        "Zeilen stehen auf leer, und leer heisst 'jaehrlich wie bisher'.",
+                        Schritt_Wiederholperiode),
             // ZAPFPROFILGENERATOR Z4b (Schemaschritt T3 "Typtage") - die eingespielten Typtage
             // des lizenzierten Anwenders: Tab_TwwTyptag_IMPORT. REIN DDL; die Quelle ist
             // TwwSchema.AnweisungenT3Typtage. Er steht NACH 124 ohne Reihenfolgebedingung und
@@ -5897,23 +6052,23 @@ namespace WindowsFormsApplication1
             // --- Zwei Abbruchgründe, die KEINE Migration sind, sondern eine falsche Datei -
             if (version <= 0)
             {
-                l.Zeile("Die Datenbank führt keine Schemaversion - Erstmigration nötig.");
+                l.Zeile("Die Datenbank führt keine Schemaversion - kein Bestand von EPOS-Plan.");
                 l.Zeile("        In Tab_Applikation fehlt der Schemamarker (Spalte, Zeile oder " +
                         "die Tabelle selbst). Eine so beschaffene Datei ist kein migrierter " +
-                        "Bestand; sie ist mit dem EposSqliteMigrator aus der Access-Datenbank " +
-                        "zu erzeugen.");
+                        "Bestand, und die Übernahme aus Access ist eingestellt " +
+                        "(BETRIEB_SQLITE.md 1.1 und 7).");
                 return false;
             }
 
             if (version < FREEZE_VERSION)
             {
                 l.Zeile("Bestand ist nicht auf Freeze-Stand " + FREEZE_VERSION +
-                        " - bitte Erstmigration mit EposSqliteMigrator fahren.");
+                        " - die Übernahme aus Access ist eingestellt.");
                 l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
                         FREEZE_VERSION + " lassen sich auf einer SQLite-Datei nicht " +
-                        "nachspielen. Der Weg führt über den Altbestand: erst die letzte " +
-                        "Access-Fassung von EPOS-Plan (Auslieferung August 2026) auf der " +
-                        ".accdb, dann der EposSqliteMigrator.");
+                        "nachspielen, und den Weg über den Access-Altbestand (letzte " +
+                        "Access-Fassung von EPOS-Plan, dann EposSqliteMigrator) gibt es " +
+                        "nicht mehr (BETRIEB_SQLITE.md 1.1 und 7).");
                 return false;
             }
 
@@ -9442,6 +9597,190 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // Schritt 125 - das Risikomodul (Etappe E15, V-G7)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 125 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_125_RISIKOMODUL"/> und bei
+        /// <see cref="SchemaKatalog.RisikomodulSpalten"/>. <b>Reines DDL</b>, dieselbe Schleife
+        /// wie bei Schritt 116. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Risikomodul(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz(SCHRITT_125_RISIKOMODUL.ToString(CultureInfo.InvariantCulture) + ": " +
+                    angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust und " +
+                    "Risiko_Wahrscheinlichkeit an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT +
+                    ". KEIN DML: Leer heisst 'kein Risiko angesetzt' - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeKatalogReparatur.SCHRITT - die Gebaeude-Katalogsaetze (Welle #485)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Reparatur der Gebäude-Katalogsätze — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_KATALOGREPARATUR"/>, die Anweisungen und Schadensbilder
+        /// bei <see cref="GebaeudeKatalogReparatur"/>. Dieselbe Bauart wie Schritt 120: der
+        /// ganze Schritt aus dem Kern, danach die Nachprobe
+        /// (<see cref="GebaeudeKatalogReparatur.Offen"/>). Ein benutzter Testrest bleibt mit
+        /// Absicht stehen und steht im Protokoll.
+        /// </summary>
+        private static bool Schritt_GebaeudeKatalogreparatur(Lauf l)
+        {
+            string nr = GebaeudeKatalogReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeKatalogReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeKatalogReparatur.Ausfuehren();
+                offen = GebaeudeKatalogReparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Befund(e) im Gebaeudekatalog stehen nach dem Schritt weiter offen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 127 - die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17, V-G11)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 127 — Anlass und Wirkung stehen bei <see cref="SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN"/>,
+        /// die Anweisungen bei <see cref="ProjektWirkungSchema"/>. <b>Wiederholbar</b>; die
+        /// Nachprobe fragt <see cref="ProjektWirkungSchema.Vollstaendig"/> (Tabelle da, kein
+        /// Freitext mehr offen).
+        /// </summary>
+        private static bool Schritt_127_NichtMonetaereWirkungen(Lauf l)
+        {
+            ProjektWirkungSchema.Bericht bericht;
+            bool vollstaendig;
+            try
+            {
+                using (DataRepository.EngineModus())
+                {
+                    DataRepository.StilleFehlerAbholen();
+                    bericht = ProjektWirkungSchema.Ausfuehren();
+                    vollstaendig = ProjektWirkungSchema.Vollstaendig();
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz("127: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle " + ProjektWirkungSchema.TABELLE + " fehlt nach dem Schritt, " +
+                                  "oder ein gepflegter Freitext wurde nicht uebernommen.";
+                l.Notiz("127: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("127: " + bericht.Zeile() + ". Das Freitextfeld bleibt stehen (Altfeld); KEIN " +
+                    "Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 128 - der Heizkreis je Gebaeude im Ergebnis (Anlagenkopplung AK1 Welle 3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 128 — Anlass und Wirkung stehen bei <see cref="SCHRITT_128_ERGEBNIS_HEIZKREIS"/>,
+        /// die Spalten bei <see cref="ErgebnisGebaeudeSchema.SpaltenHeizkreis"/>. Die SQLite-Definition
+        /// steht dort fertig (STRICT-Typ samt CHECK); <b>nur <see cref="SqliteSpalteAnlegen"/></b>.
+        /// <b>Wiederholbar</b>, eine vorhandene Spalte wird übergangen. Fehlt die Tabelle (Schritt 107
+        /// ist nicht gelaufen), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_128_ErgebnisHeizkreis(Lauf l)
+        {
+            if (!SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB))
+            {
+                l.LetzterFehler = "Die Tabelle " + ErgebnisGebaeudeSchema.TAB + " fehlt; Schritt 107 ist nicht gelaufen.";
+                l.Notiz("128: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> s in ErgebnisGebaeudeSchema.SpaltenHeizkreis)
+            {
+                if (SqliteSpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key)) continue;
+                if (!SqliteSpalteAnlegen(l, ErgebnisGebaeudeSchema.TAB, s.Key, s.Value)) return false;
+                angelegt++;
+            }
+
+            l.Notiz("128: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    ErgebnisGebaeudeSchema.SpaltenHeizkreis.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) des Heizkreises an " + ErgebnisGebaeudeSchema.TAB + " angelegt - " +
+                    "Uebergabe_Art, VorlaufMittel_C, RuecklaufMittel_C, UebergabeBegrenzt_H, alle nullbar. " +
+                    "KEIN DML: NULL heisst 'nicht gekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt WiederholperiodeSchema.SCHRITT - die Wiederholperiode je Kostenposition (E16)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Wiederholperiode je Kostenposition — Anlass, Spalten und Ergebnisneutralität
+        /// stehen bei <see cref="SCHRITT_WIEDERHOLPERIODE"/> und bei
+        /// <see cref="WiederholperiodeSchema"/>. <b>Reines DDL</b>, dieselbe Schleife wie bei
+        /// Schritt 111. <b>Wiederholbar.</b> Danach vergisst der Kern seinen gemerkten
+        /// Spaltenstand, damit derselbe Prozess die Periode sofort liest.
+        /// </summary>
+        private static bool Schritt_Wiederholperiode(Lauf l)
+        {
+            string nr = SCHRITT_WIEDERHOLPERIODE.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+            WiederholperiodeSchema.SpaltenStandVergessen();
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    WiederholperiodeSchema.Spalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + WiederholperiodeSchema.SPALTE + " (nullbar, Jahre) an " +
+                    SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                    ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
+                    "bisher; der Referenzlauf bleibt byte-gleich.");
         // Schritt 125 - die eingespielten Typtage des Anwenders
         // (Zapfprofilgenerator Stufe Z4b, T3 "Typtage")
         // =================================================================================

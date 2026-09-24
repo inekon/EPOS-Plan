@@ -400,7 +400,9 @@ namespace EPOS.Kern.Tests
             // Betriebskostenposition; auch das ändert an den Vorzeichenwechseln nichts.
             // E10 (Stufe S3): alt 9, neu 10 — Fassung 10 trägt zusätzlich die Herkunft des
             // Satzes je Betriebskostenposition (Satz aus der Nutzungsdauertabelle).
-            Assert.Equal(10, ErgebnisNachweisUmschlag.FASSUNG);
+            // E16 (V‑G3): alt 10, neu 11 — Fassung 11 trägt zusätzlich die Wiederholperiode
+            // je Betriebskostenposition („alle n Jahre").
+            Assert.Equal(11, ErgebnisNachweisUmschlag.FASSUNG);
 
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(

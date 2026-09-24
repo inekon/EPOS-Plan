@@ -1571,6 +1571,97 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt 125: das Risikomodul (V-G7, DIN EN 17463 6.5 und Anhang F, Etappe
+            //      E15). NACH 124. REIN DDL aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Risikomodul (SchemaKatalog.RisikomodulSpalten):
+            //      Risiko_Art, Risiko_Zinszuschlag, Risiko_Verlust, Risiko_Wahrscheinlichkeit an
+            //      Tab_ProjektWirtschaftlichkeit, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "kein Risiko angesetzt".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 125, trocken);
+
+            // ---- Schritt GebaeudeKatalogReparatur.SCHRITT: die Reparatur der Gebaeude-
+            //      Katalogsaetze (Welle #485, Konzept Administrationsdialoge 7.1 (a)). NACH 125,
+            //      braucht 121. REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeKatalogreparatur bedient
+            //      (GebaeudeKatalogReparatur): Krankenhaussatz (U-Wert Fenster, Nordfenster),
+            //      vier Saetze ohne Flaeche je Nutzer, acht Testreste - je Satz nach Bezeichner und
+            //      Schadensbild; ein Testrest nur, wenn keine Projektkopie ihn fuehrt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrReparatur = GebaeudeKatalogReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrReparatur + " - Reparatur der Gebaeude-Katalogsaetze, offen vorher: " +
+                              GebaeudeKatalogReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeKatalogReparatur.Bericht berichtReparatur = GebaeudeKatalogReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrReparatur + " - " + berichtReparatur.Text() + "; offen: " +
+                                  GebaeudeKatalogReparatur.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 127: die nicht monetarisierbaren Wirkungen je Projekt (Etappe E17,
+            //      V-G11). NACH 126 (GebaeudeKatalogReparatur).
+            //      DDL und DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_127_NichtMonetaereWirkungen bedient
+            //      (ProjektWirkungSchema): Tab_ProjektWirkung STRICT samt Index, dann je Projekt
+            //      mit gepflegtem Freitext eine Wirkung SONSTIG ohne Beurteilung.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabelle.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 127 - nicht monetarisierbare Wirkungen: " +
+                              (ProjektWirkungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                ProjektWirkungSchema.Bericht bericht127 = ProjektWirkungSchema.Ausfuehren();
+                if (bericht127.TabelleAngelegt) tabellen++;
+                Console.WriteLine("Schritt 127 - " + bericht127.Zeile() + ".");
+                Console.WriteLine("Schritt 127 - vollstaendig: " + ProjektWirkungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS (128): der Heizkreis je Gebaeude
+            //      im Ergebnis (Anlagenkopplung AK1 Welle 3, Muster E30). NACH 127, braucht 107.
+            //      REIN DDL aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_128_ErgebnisHeizkreis bedient
+            //      (ErgebnisGebaeudeSchema.SpaltenHeizkreis): Uebergabe_Art, VorlaufMittel_C,
+            //      RuecklaufMittel_C, UebergabeBegrenzt_H an Tab_ErgebnisGebaeude, alle nullbar.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - NULL heisst "nicht gekoppelt gerechnet";
+            //      kein Referenzprojekt rechnet gekoppelt, und der Export liest die Tabelle nicht.
+            string nrHeizkreis = ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHeizkreis + " - Heizkreis je Gebaeude im Ergebnis: " +
+                              (ErgebnisGebaeudeSchema.HeizkreisVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtHeizkreis = new List<string>();
+                angelegt += ErgebnisGebaeudeSchema.HeizkreisAlle(berichtHeizkreis);
+                foreach (string zeile in berichtHeizkreis)
+                    Console.WriteLine("Schritt " + nrHeizkreis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHeizkreis + " - vollstaendig: " + ErgebnisGebaeudeSchema.HeizkreisVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt WiederholperiodeSchema.SCHRITT: die Wiederholperiode je
+            //      Kostenposition (Etappe E16, V-G3, DIN EN 17463 6.3.1 "alle n Jahre"). NACH
+            //      128 (Heizkreis). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Wiederholperiode bedient (WiederholperiodeSchema):
+            //      Wiederholperiode_a (INTEGER, nullbar) an Tab_ProjektWerte und
+            //      Tab_KostenVorlagePosition.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "jaehrlich wie bisher".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in WiederholperiodeSchema.Spalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition),
+                                                WiederholperiodeSchema.SCHRITT, trocken);
+            if (!trocken)
+                Console.WriteLine("Schritt " + WiederholperiodeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
+                                  " - vollstaendig: " + WiederholperiodeSchema.Vollstaendig() + " (erwartet True).");
+
             // ---- Schritt 125: die eingespielten Typtage des lizenzierten Anwenders
             //      (Zapfprofilgenerator Stufe Z4b, Schemaschritt T3 "Typtage"). NACH 124. REIN DDL
             //      aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_125_ZapfprofilTyptage

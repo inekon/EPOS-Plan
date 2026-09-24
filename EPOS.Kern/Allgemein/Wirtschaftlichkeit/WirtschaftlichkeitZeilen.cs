@@ -2018,6 +2018,10 @@ namespace WindowsFormsApplication1
             if (n == null) return "";
             string text = Herleitung(n, kultur);
             if (text.Length == 0 && n.SzenarioGepflegt) text = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+            // ETAPPE E16 (V‑G3): Eine Position „alle n Jahre" sagt es in derselben Spalte —
+            // „alle n Jahre ab Jahr X" statt „ab Jahr X"; X ist ohne Startjahr das Jahr 1.
+            string alle = Wiederholperiode.Herleitung(n.Wiederholperiode, n.StartJahr, kultur);
+            if (alle.Length > 0) return text.Length == 0 ? alle : text + " · " + alle;
             if (LaeuftImErstenJahr(n)) return text;
             string ab = string.Format(kultur, MyResource.Resource.WIRT_BK_AB_JAHR, n.StartJahr.Value);
             return text.Length == 0 ? ab : text + " · " + ab;
@@ -2078,6 +2082,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     public sealed class Mehrjahresbild
     {
+        /// <summary>ETAPPE E15 — Schlüssel der Spalte „Risikoabzug" (nur mit Abzug belegt).</summary>
+        public const string RISIKO = "RISIKO";
+
         /// <summary>Betrachtungszeitraum T [a].</summary>
         public int Jahre;
 
@@ -2166,6 +2173,12 @@ namespace WindowsFormsApplication1
             // Positionsspalten aber nur −I₀.
             m.ReiheAbJahr0(b, KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE,
                            MyResource.Resource.WIRT_REIHE_KWKG_PAUSCHALE, T);
+
+            // ETAPPE E15 (V‑G7, Anhang F): der Risikoabzug je Periode ab Jahr 1 — er steckt in
+            // „Netto nominal", also braucht er eine Spalte, sonst ginge die Selbstprüfung um
+            // genau diesen Betrag daneben. Ohne Abzug entsteht keine Spalte (Nimm).
+            if (b.RisikoJeJahr != null)
+                m.Nimm(RISIKO, MyResource.Resource.WIRT_MJ_RISIKO, Negativ(b.RisikoJeJahr, T));
 
             m.Summe("NETTO", MyResource.Resource.WIRT_MJ_NETTO, Kopie(b.NominalReihe, T));
             m.Summe("BARWERT", MyResource.Resource.WIRT_MJ_BARWERT, Kopie(b.BarwertReihe, T));

@@ -53,8 +53,12 @@ namespace WindowsFormsApplication1
         /// <para><b>Fassung 10 (Etappe E10, Stufe S3):</b> Jede Betriebskostenposition trägt
         /// die Herkunft ihres Satzes (<c>KostenPositionNachweis.SatzHerkunft</c>), geschrieben
         /// nur, wo der Satz aus der Nutzungsdauertabelle kam. Einer älteren Fassung fehlt sie;
-        /// ihre Positionen lesen sich „Satz der Zeile" — die Aussage des damaligen Laufs.</para></summary>
-        public const int FASSUNG = 10;
+        /// ihre Positionen lesen sich „Satz der Zeile" — die Aussage des damaligen Laufs.</para>
+        /// <para><b>Fassung 11 (Etappe E16, V‑G3):</b> Jede Betriebskostenposition trägt ihre
+        /// Wiederholperiode (<c>KostenPositionNachweis.Wiederholperiode</c>), geschrieben nur
+        /// bei n ≥ 2. Einer älteren Fassung fehlt sie; ihre Positionen lesen sich „jährlich" —
+        /// die Aussage des damaligen Laufs.</para></summary>
+        public const int FASSUNG = 11;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>

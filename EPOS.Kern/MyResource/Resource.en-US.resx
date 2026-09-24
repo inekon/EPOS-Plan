@@ -6777,10 +6777,10 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Effects without a quantity are described and their significance is assessed.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Word report: “Economic evaluation” › “Non-monetary effects” · Workbook: sheet “Economic evaluation”, line “Non-monetary effects”</value>
+    <value>Word report: “Economic evaluation” › “Non-monetary effects” (table) · Workbook: sheet “Economic evaluation”, table “Non-monetary effects”</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
-    <value>described as text; classification by type and assessment by duration and effect are missing.</value>
+    <value>described; no effect assessed by duration and effect yet (8.2).</value>
   </data>
   <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
     <value>not recorded — enter them in the evaluation block of the results page.</value>
@@ -23281,7 +23281,7 @@ Do you want to allow this?</value>
     <value>State B of the pair view. The list does not contain A — so A and B differ without any message.</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
-    <value>The non-monetary effects under DIN EN 17463 as free text — security of supply, comfort, emissions, operating effort. It is saved on request, not on every keystroke; the report shows it unchanged.</value>
+    <value>The description of a non-monetisable effect under DIN EN 17463 — security of supply, comfort, emissions, operating effort. It is saved on request (“Save”), not on every keystroke; the report shows it unchanged.</value>
   </data>
   <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
     <value>Cash flow series: version</value>
@@ -30596,5 +30596,236 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZPGKE_MONATSFAKTOREN_ERL" xml:space="preserve">
     <value>Twelve monthly factors January to December; normalised to the mean 1 when saving.</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ZINS" xml:space="preserve">
+    <value>interest surcharge {0} percentage points</value>
+  </data>
+  <data name="WIRT_RISIKO_KURZ_ABZUG" xml:space="preserve">
+    <value>deduction R_loss × p_loss = €{0} × {1} % = €{2} per period from year 1</value>
+  </data>
+  <data name="WIRT_RISIKO_NACHWEIS" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5): {0}</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_AUS" xml:space="preserve">
+    <value>No risk applied (default) — the calculation uses the discount rate and the payments as they are.</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ZINS" xml:space="preserve">
+    <value>All three scenarios use the discount rate plus surcharge: {0} % + {1} percentage points = {2} % in the expected case (net present value, annuity, payback, internal rate of return).</value>
+  </data>
+  <data name="WIRT_RISIKO_HERLEITUNG_ABZUG" xml:space="preserve">
+    <value>Deduction per period from year 1: €{0} × {1} % = €{2} — not in year 0, not on the residual value; in all three scenarios for every version except the reference (if the group has only one version, it carries the deduction).</value>
+  </data>
+  <data name="WIRT_ANN_RISIKO" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5)</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT" xml:space="preserve">
+    <value>Risk applied (6.5): {0} · non-monetary effects named</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_ANGESETZT_OHNE_NM" xml:space="preserve">
+    <value>Risk applied (6.5): {0} · non-monetary effects: none named</value>
+  </data>
+  <data name="WIRT_MJ_RISIKO" xml:space="preserve">
+    <value>Risk deduction</value>
+  </data>
+  <data name="WIRT_GL_RISIKO" xml:space="preserve">
+    <value>Risk deduction (Annex F)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Risk surcharge on the rate (6.5)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS_RISIKO" xml:space="preserve">
+    <value>Discount rate including risk surcharge</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_VERLUST" xml:space="preserve">
+    <value>Loss of return R_loss [€ per period]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_P" xml:space="preserve">
+    <value>Probability of occurrence p_loss</value>
+  </data>
+  <data name="WIRT_FM_PARAM_RISIKO_ABZUG" xml:space="preserve">
+    <value>Risk deduction per period from year 1 [€]</value>
+  </data>
+  <data name="WPAR_G_RISIKO" xml:space="preserve">
+    <value>Risk (EN 17463, 6.5)</value>
+  </data>
+  <data name="WPAR_RISIKO_ART" xml:space="preserve">
+    <value>Risk treatment:</value>
+  </data>
+  <data name="WPAR_RISIKO_AUS" xml:space="preserve">
+    <value>off — no risk applied</value>
+  </data>
+  <data name="WPAR_RISIKO_ZINS" xml:space="preserve">
+    <value>Interest surcharge</value>
+  </data>
+  <data name="WPAR_RISIKO_ABZUG" xml:space="preserve">
+    <value>Cash-flow deduction R_loss × p_loss (Annex F)</value>
+  </data>
+  <data name="WPAR_RISIKO_ZUSCHLAG" xml:space="preserve">
+    <value>Interest surcharge [percentage points]:</value>
+  </data>
+  <data name="WPAR_RISIKO_VERLUST" xml:space="preserve">
+    <value>Loss of return R_loss [€ per period]:</value>
+  </data>
+  <data name="WPAR_RISIKO_P" xml:space="preserve">
+    <value>Probability of occurrence p_loss [%]:</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ART_ERL" xml:space="preserve">
+    <value>Risk treatment per EN 17463 (6.5): empty = off (default), ZINS = surcharge on the discount rate, ABZUG = cash-flow deduction R_loss × p_loss per period from year 1.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_ZUSCHLAG_ERL" xml:space="preserve">
+    <value>Surcharge in percentage points on the discount rate of all three scenarios; applies only with type ZINS.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_VERLUST_ERL" xml:space="preserve">
+    <value>Quantified loss of return R_loss in euros per period; applies only with type ABZUG.</value>
+  </data>
+  <data name="KI_DLG_WPA_RISIKO_P_ERL" xml:space="preserve">
+    <value>Probability of occurrence p_loss in percent; the deduction per period is R_loss × p_loss / 100, only with type ABZUG.</value>
+  </data>
+  <data name="WIRT_AE_6_STAND_RISIKO" xml:space="preserve">
+    <value>three price change rates (energy, operation, investment/replacement); risk applied: {0}; no degradation — declared.</value>
+  </data>
+  <data name="WIRT_NM_KAT_ENERGIEFLUSS" xml:space="preserve">
+    <value>Energy flow</value>
+  </data>
+  <data name="WIRT_NM_KAT_FINANZIELL" xml:space="preserve">
+    <value>Financial</value>
+  </data>
+  <data name="WIRT_NM_KAT_SONSTIG" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="WIRT_NM_DAUER_1" xml:space="preserve">
+    <value>short</value>
+  </data>
+  <data name="WIRT_NM_DAUER_2" xml:space="preserve">
+    <value>medium</value>
+  </data>
+  <data name="WIRT_NM_DAUER_3" xml:space="preserve">
+    <value>long</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_0" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_1" xml:space="preserve">
+    <value>low</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_2" xml:space="preserve">
+    <value>medium</value>
+  </data>
+  <data name="WIRT_NM_WIRKUNG_3" xml:space="preserve">
+    <value>strong</value>
+  </data>
+  <data name="WIRT_NM_NICHT_BEURTEILT" xml:space="preserve">
+    <value>not assessed</value>
+  </data>
+  <data name="WIRT_NM_BEURTEILUNG_WERT" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_KATEGORIE" xml:space="preserve">
+    <value>Unknown category of a non-monetisable effect: “{0}”.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_BESCHREIBUNG" xml:space="preserve">
+    <value>Every non-monetisable effect needs a description.</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_DAUER" xml:space="preserve">
+    <value>The duration of an effect lies between 1 (short) and 3 (long).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_WIRKUNG" xml:space="preserve">
+    <value>An effect level lies between 0 (none) and 3 (strong).</value>
+  </data>
+  <data name="WIRT_NM_FEHLER_PROJEKT" xml:space="preserve">
+    <value>The non-monetisable effects need a master project.</value>
+  </data>
+  <data name="WIRT_NM_SP_KATEGORIE" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="WIRT_NM_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="WIRT_NM_SP_DAUER" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="WIRT_NM_SP_ORGANISATION" xml:space="preserve">
+    <value>Organisation</value>
+  </data>
+  <data name="WIRT_NM_SP_MITARBEITER" xml:space="preserve">
+    <value>Employees</value>
+  </data>
+  <data name="WIRT_NM_SP_UMWELT" xml:space="preserve">
+    <value>Environment</value>
+  </data>
+  <data name="WIRT_NM_SP_BEURTEILUNG" xml:space="preserve">
+    <value>Assessment</value>
+  </data>
+  <data name="WIRT_NM_LEER" xml:space="preserve">
+    <value>No effect recorded yet.</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_NEU" xml:space="preserve">
+    <value>Add effect</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_LOESCHEN" xml:space="preserve">
+    <value>Remove effect</value>
+  </data>
+  <data name="WIRT_NM_FELD" xml:space="preserve">
+    <value>{0}, effect {1}</value>
+  </data>
+  <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
+    <value>Effect {0}: {1}</value>
+  </data>
+  <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
+    <value>DIN EN 17463 requires every assessment to state what cannot be expressed in euros (6.1, 8.2): for each effect its category, its duration (short, medium, long) and its effect on the organisation, employees and environment (none to strong). The assessment is duration × strongest effect (0 to 9). The effects belong to the measure as a whole, appear in the report and do not enter the net present value.</value>
+  </data>
+  <data name="WIRT_NM_ALTFELD" xml:space="preserve">
+    <value>Legacy free-text field (read only, no longer maintained): {0}</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_NAME" xml:space="preserve">
+    <value>Number of effects</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>How many non-monetisable effects the list holds. A larger number appends empty rows of category “other”, a smaller one removes rows from the end; nothing is written before “Save”, and empty rows are not saved.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL" xml:space="preserve">
+    <value>The category of the effect according to DIN EN 17463, 6.1: energy flow, financial or other.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_DAUER_ERL" xml:space="preserve">
+    <value>How long the effect lasts: short, medium or long; empty = not assessed.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_GRAD_ERL" xml:space="preserve">
+    <value>How strongly the effect acts on this area: none, low, medium or strong; empty = not assessed.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL" xml:space="preserve">
+    <value>The assessment according to DIN EN 17463, 8.2: duration × strongest of the three effects (0 to 9); display only, it is not saved and does not enter the net present value.</value>
+  </data>
+  <data name="WIRT_NM_SP_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="WIRT_NM_TABELLE_HINWEIS" xml:space="preserve">
+    <value>Non-monetisable effects according to DIN EN 17463 (6.1, 8.2): category, duration (short, medium, long) and effect on the organisation, employees and environment (none to strong); assessment = duration × strongest effect (0 to 9). The effects do not enter the net present value.</value>
+  </data>
+  <data name="WIRT_AE_NM_ERFUELLT" xml:space="preserve">
+    <value>recorded by category and assessed by duration and effect (8.2); they do not enter the net present value.</value>
+  </data>
+  <data name="WIRT_BK_ALLE_N_JAHRE" xml:space="preserve">
+    <value>every {0} years from year {1}</value>
+  </data>
+  <data name="WDH_LBL_PERIODE" xml:space="preserve">
+    <value>Payment every:</value>
+  </data>
+  <data name="WDH_EINHEIT" xml:space="preserve">
+    <value>years</value>
+  </data>
+  <data name="WDH_INFO" xml:space="preserve">
+    <value>1 = every year. From 2 on, the item pays in its start year and every n years after that (EN 17463, 6.3.1).</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_NAME" xml:space="preserve">
+    <value>Payment every … years</value>
+  </data>
+  <data name="KI_DLG_VOP_WDH_ERL" xml:space="preserve">
+    <value>Repeat period of an operating cost item in years: 1 = every year, n = the item pays in its start year and every n years after that. Operating side only.</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PB" xml:space="preserve">
+    <value>Items every n years with p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_WDH_PE" xml:space="preserve">
+    <value>Items every n years with p_E [€/a]</value>
   </data>
 </root>

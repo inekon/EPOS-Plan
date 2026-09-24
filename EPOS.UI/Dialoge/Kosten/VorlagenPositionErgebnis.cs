@@ -30,6 +30,9 @@
 /// in das Kennzeichen macht der Aufrufer.</param>
 /// <param name="RestwertAuswahl">ETAPPE E7c (Schritt E): dasselbe fuer
 /// „Restwert ansetzen".</param>
+/// <param name="Wiederholperiode">ETAPPE E16 (V‑G3): die Periode „alle … Jahre" [a] —
+/// 1 = jaehrlich; <c>null</c>, wenn der Dialog das Feld nicht zeigt (Investitionsseite,
+/// Datenbank ohne die Spalte). Das Schreiben (1 = leer) macht der Aufrufer.</param>
 public sealed record VorlagenPositionErgebnis(
     string Bezeichnung,
     int KostenartId,
@@ -38,4 +41,5 @@ public sealed record VorlagenPositionErgebnis(
     double? EmpfehlungBis,
     int? PositionsartId = null,
     int? ErsatzAuswahl = null,
-    int? RestwertAuswahl = null);
+    int? RestwertAuswahl = null,
+    int? Wiederholperiode = null);
