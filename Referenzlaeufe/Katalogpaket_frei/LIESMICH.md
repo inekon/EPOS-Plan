@@ -2,7 +2,8 @@
 
 Die freien Katalogdaten des Zapfprofilgenerators — Daten, die im Repositorium stehen dürfen
 (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6, Zeile „frei") und ohne die eine Auslieferung
-weder stochastisch rechnet noch die Bedarfstag-Quelle (5) anbietet. Sie stehen **einmal** hier:
+weder stochastisch rechnet noch die Bedarfstag-Quelle (5) anbietet, weder Liter noch Stunden über
+der Schwelle anzeigt noch eine große Zirkulation nennt. Sie stehen **einmal** hier:
 
 - [`Werkzeuge/Auslieferungsvorlage`](../../Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs) spielt den
   Ordner in **jede** Vorlage ein (`PaketteilEinspielen`), nach dem externen `--katalogpaket`;
@@ -37,7 +38,7 @@ Katalogpaket; der Prüfbericht meldet die Schlüsselgleichheit.
 |---|---|---|---|
 | `Tab_TwwBedarfstag_STAMM.csv` | 1 | Ecodesign-Zapfprofil L, Bedarfstag der Art 5, Bezugsart Wohneinheiten (2, ab Schemastand 120: das Lastprofil beschreibt einen Haushalt), ohne Bezugsmenge (nicht skaliert) | Verordnung (EU) Nr. 814/2013 der Kommission, Anhang III, Tabelle 1, Lastprofil L (ABl. L 239 vom 6.9.2013) — EU-Recht |
 | `Tab_TwwBedarfstagEreignis_STAMM.csv` | 24 | die 24 Zapfungen: Beginn, Dauer, Energie Q_tap; Tagessumme = Q_ref | wie oben; die Dauer ist eine Setzung der Umsetzung (siehe unten) |
-| `Tab_TwwParameter_STAMM.csv` | 5 | `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99 | Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
+| `Tab_TwwParameter_STAMM.csv` | 8 | `Zapfprofil.Stochastik.*`: Urlaubsversatz, Vielfaches der Mindestzahl, Konsistenzschwelle, Quantile P95 und P99; `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (Hinweis, wenn die Zirkulation mehr als das 1,5-Fache der Zapfung verliert); `Zapfprofil.Anzeigetemperatur` (45 °C, Literanzeige) und `Zapfprofil.Stundenschwelle` (0,1 kW, Stunden über der Schwelle) — die Vorgaben der Anzeige, wenn weder Dialog noch Einstellung eine nennen | Quantile: Standardnormalverteilung; die übrigen: Setzungen des Zapfprofilgenerators (Umsetzungskonzept 4.4, 4.0, 4.6 und Warnlogik der Stufe Z4; Konsistenzschwelle nach der Warnlogik des Konzepts TWW-Zapfprofile) |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 4 | Kurzzapfung, mittlere Zapfung, Wannenbad, Dusche: mittlerer Volumenstrom, Dauer, Anteil, Streuung | Jordan/Vajen, IEA SHC Task 26 — die Parametrik des Einfamilienhauses, wie sie das Protokoll der DHWcalc-Referenzdatei [im Testordner](../../EPOS.Kern.Tests/Proben/Zapfprofil/OpenDHW/LIESMICH.md) ausweist; **Modellannahme bis Z5** |
 
 **Dauer der Ecodesign-Zapfungen.** Die Tabelle der Verordnung nennt Energie, Volumenstrom und
@@ -49,5 +50,12 @@ unverändert.
 **Zapfkategorien.** Eine Kategorie ohne obere Kappung (`Kappung_l_min` leer); die Streuung je
 Kategorie wie im DHWcalc-Protokoll. Eigene Kategorien für Nichtwohnen (Konzept 4.4) folgen mit der
 Kalibrierung (Stufe Z5).
+
+**Setzungen zur Bestätigung (ZU21).** Urlaubsversatz, Vielfaches, Konsistenzschwelle, das
+Hinweisverhältnis der Zirkulation, die Anzeigetemperatur und die Stundenschwelle sind Setzungen
+von INEKON; der Anwender bestätigt oder ändert sie vor der ersten Auslieferung. Ohne
+Hinweisverhältnis entfällt der Hinweis zur Zirkulation; ohne Anzeigetemperatur bzw. Stundenschwelle
+entfällt die Literanzeige bzw. die Zählung, sofern weder der Dialog noch die Einstellung einen Wert
+nennt.
 
 Keine Normzahl, kein Hersteller- oder Produktwert.

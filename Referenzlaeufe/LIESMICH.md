@@ -451,6 +451,16 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
 > Basis (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `e9c9cac3…`).
 
+> **Nachtrag: drei Setzungen des freien Paketteils (Zapfprofilgenerator, Stufe Z4), Schemastand 120,
+> die Basis bleibt.** [`Katalogpaket_frei/Tab_TwwParameter_STAMM.csv`](Katalogpaket_frei/LIESMICH.md) trägt
+> `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (1,5), `Zapfprofil.Anzeigetemperatur` (45 °C) und
+> `Zapfprofil.Stundenschwelle` (0,1 kW) — Setzungen von INEKON zur Bestätigung (ZU21);
+> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) hat sie nach der Regel der
+> Testdatenbank eingespielt (3 angelegt, 0 nachgeführt; ein zweiter Lauf meldet 0/0). Zellvergleich aller
+> 132 Tabellen gegen die Fassung `e9c9cac3…`: allein die drei Zeilen in `Tab_TwwParameter_STAMM` (samt
+> `sqlite_sequence`). `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 784 704 Byte.
+> **Keine Einfrierregel ist berührt:** Kein Referenzprojekt steht auf dem Generator (LFS-SHA-256 `17cf3fc7…`).
+
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
 > den Nachträgen zu den Schemaständen 104 bis 113 und zum Zapfprofil-Testkatalog steht in

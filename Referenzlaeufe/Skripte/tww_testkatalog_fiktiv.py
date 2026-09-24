@@ -41,8 +41,9 @@ FIKTIV-Zeile fallen sie deshalb in der Auslieferungsvorlage (TwwKataloge.Bereini
 solange die Frage ZU20 (abgeleitete Werte in der Auslieferung?) beim Anwender offen ist.
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26; Modellannahme
-bis Z5), die fuenf Parameter Zapfprofil.Stochastik.* und das Ecodesign-Zapfprofil L (Verordnung
-(EU) Nr. 814/2013 Anhang III) sind freie Daten. Sie stehen EINMAL im Repositorium, als CSV-Dateien
+bis Z5), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
+(Zapfprofil.Zirkulation.Hinweisverhaeltnis, Zapfprofil.Anzeigetemperatur, Zapfprofil.Stundenschwelle)
+und das Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) sind freie Daten. Sie stehen EINMAL im Repositorium, als CSV-Dateien
 im Paketformat N2 unter Referenzlaeufe/Katalogpaket_frei/ (Aufbau und Quellen in dessen
 LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vorlage ein. Dieses
 Skript liest dieselben Dateien und schreibt ihre Zeilen in die Testdatenbank - Herkunftsart
