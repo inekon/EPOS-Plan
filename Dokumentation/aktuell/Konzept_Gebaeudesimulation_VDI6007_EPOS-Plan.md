@@ -52,6 +52,10 @@ Kältestroms trägt zusätzlich **Grund- und Leistungspreis seines Stromträgers
 einen Grundpreis und den Leistungspreis auf die eigene Spitze des Kältestroms der Anlage; anteilig am
 Netzbezug bleibt es bei E34; umgesetzt mit der vierten Welle von KU2, das Register zählt weiter 11
 offene Punkte.
+Nachgezogen am 24.09.2026 mit **E36** (N1.41): Die Rechenzeit der Anlagenkopplung (N-A4) gilt nur
+bei **wirksamer Kopplung** und lautet dann **höchstens 100 ms je Gebäude und Jahr** — gemessen 21 bis
+31 ms; Gebäude ohne Kopplung bleiben beim Bestand. Nachgezogen mit der dritten Welle von AK1, das
+Register zählt weiter 11 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3541,3 +3545,42 @@ des Anschlusses.
 (E35) und 2 (KU2); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter K9,
 Kopf); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 6.1, 6.2, 6.3 und 11.1; die
 Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.41 Entscheid E36 — Die Rechenzeit der Anlagenkopplung: höchstens 100 ms je gekoppeltem Gebäude und Jahr
+
+**Entscheid E36 (Anwender, 24.09.2026).** Die Anforderung **N-A4** der
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) (2.2) verlangte für AK1
+höchstens 20 % mehr Rechenzeit als der Bestand. Die zweite Welle von AK1 hat gemessen, dass das mit
+dem Fallsystem je Abschnitt (Schritt H: Übergabe begrenzt, gesättigt oder im Regelbereich, bis zu
+zwei Umschaltzeitpunkte je Stunde) nicht zu halten ist: je gekoppeltem Gebäude und Jahr **21 bis
+31 ms** statt **7 ms** ohne Kopplung. Der Anwender entscheidet:
+
+1. **N-A4 gilt nur bei wirksamer Kopplung** — Projektstufe AK1 oder höher, Haken „Übergabe rechnen"
+   und eine Übergabeart ungleich ideal — und lautet dann: **höchstens 100 ms je Gebäude und Jahr**.
+2. **Gebäude ohne wirksame Kopplung bleiben unverändert** — sie rechnen auf dem Bestandszweig
+   (Grenzfall A der Anlagenkopplung, 3.7) byte-gleich und so schnell wie bisher (rund 5 ms je Zone und
+   Jahr, 4.8 und 5.13).
+
+**Was damit gilt.**
+
+| Fall | Grenze | Gemessen |
+|---|---|---|
+| Gebäude ohne wirksame Kopplung | unverändert: der Bestand (4.8, 5.13) | 7 ms je Gebäude und Jahr |
+| Gebäude mit wirksamer Kopplung (AK1) | höchstens **100 ms** je Gebäude und Jahr | 21 bis 31 ms |
+| AK3 (Iteration je Stunde) | wird vor der Abnahme an einem Mehrzonengebäude gemessen und fortgeschrieben (Anlagenkopplung 6.3) | — |
+
+**Die Probe berichtet, sie richtet nicht.** Die Läufer der CI sind verschieden schnell; eine harte
+Schwelle von 100 ms wäre eine Aussage über den Läufer, nicht über den Rechenweg. Die Messprobe des
+gekoppelten Jahreslaufs (`AnlagenkopplungEingangTests`) gibt die Zeit aus und scheitert erst beim
+**Fünffachen** der Grenze (500 ms) — dann ist am Rechenweg etwas grundsätzlich falsch, nicht der
+Läufer langsam.
+
+**Was offen bleibt.** Das Register zählt weiter **11 offene Punkte**; E36 beantwortet die Frage, die
+die zweite Welle von AK1 zu N-A4 an den Anwender gestellt hatte, und öffnet keine.
+
+**Betroffene Stufen:** AK1 (Welle 3: Anforderung und Messprobe); AK3 (Messung vor der Abnahme,
+unverändert).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1
+(E36) und 2 (AK1); [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) Kopf und
+2.2 (N-A4); die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
