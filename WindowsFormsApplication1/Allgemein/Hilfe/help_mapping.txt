@@ -189,6 +189,9 @@ Form_Simulation_Config.btn_Help     = Simulation
 # traegt seither die Razor-Komponente WirtschaftlichkeitSeite (ihr Infoknopf
 # fragt IHilfeDienst mit genau diesem Text).
 UcWirtschaftlichkeit.btn_Help       = Wirtschaftlichkeit
+# E17 (V-G11): der Infoknopf der Wirkungsliste im Bewertungsblock springt auf den
+# Abschnitt "Bewertung nach DIN EN 17463" (Anker nicht-monetaer).
+UcWirtschaftlichkeit.btn_Help_Wirkungen = Wirtschaftlichkeit#nicht-monetaer
 
 # --- Projekt --------------------------------------------------------------
 Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung

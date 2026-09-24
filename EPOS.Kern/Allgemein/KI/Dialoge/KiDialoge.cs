@@ -1609,7 +1609,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Reiterblatt „Wirtschaftlichkeit" — zehn Felder aus
+        /// Das Reiterblatt „Wirtschaftlichkeit" — siebzehn Felder aus
         /// <c>EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1617,7 +1617,9 @@ namespace WindowsFormsApplication1
         /// <b>Diese Seite traegt Einstellwerte und ist deshalb drin.</b> Sie
         /// entscheidet, WELCHE Staende gegeneinander gerechnet werden
         /// (Vergleichssicht, Referenz, Paar A und B), unter WELCHEM Szenario - und sie
-        /// pflegt den Freitext der nicht monetaeren Wirkungen nach DIN EN 17463.
+        /// pflegt die nicht monetarisierbaren Wirkungen nach DIN EN 17463 (ETAPPE E17:
+        /// als Liste mit Kategorie, Beschreibung, Dauer und drei Wirkungsgraden je Zeile,
+        /// dazu die Zahl der Zeilen und die Beurteilung als Anzeige).
         /// </para>
         /// <para>
         /// <b>Jedes dieser Felder ist an der Seite ein WEG und kein Wert</b>: Die
@@ -1666,10 +1668,49 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("stand_b", "WirtschaftlichkeitSeiteKiSicht.StandB",
                                      KiDialogTexte.WseBName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WseBErl, leerErlaubt: true),
-                    new KiDialogFeld("nicht_monetaer",
-                                     "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
+                    // ---- ETAPPE E17 (V-G11): die nicht monetarisierbaren Wirkungen als
+                    //      Liste - die Zahl legt Zeilen an oder nimmt sie vom Ende, je Zeile
+                    //      Kategorie, Beschreibung, Dauer und drei Wirkungsgrade; die
+                    //      Beurteilung ist Anzeige. Geschrieben wird mit „Speichern".
+                    new KiDialogFeld("wirkung_anzahl",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungsanzahl",
+                                     KiDialogTexte.WseWirkungAnzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WseWirkungAnzahlErl, min: 0),
+                    new KiDialogFeld("wirkung_kategorie",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Kategorie",
+                                     KiDialogTexte.WseWirkungKategorieName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseWirkungKategorieErl,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN),
+                    new KiDialogFeld("wirkung_beschreibung",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Beschreibung",
                                      KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
-                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true),
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN),
+                    new KiDialogFeld("wirkung_dauer",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Dauer",
+                                     KiDialogTexte.WseWirkungDauerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseWirkungDauerErl, leerErlaubt: true,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN),
+                    new KiDialogFeld("wirkung_organisation",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Organisation",
+                                     KiDialogTexte.WseWirkungOrganisationName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseWirkungGradErl, leerErlaubt: true,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN),
+                    new KiDialogFeld("wirkung_mitarbeiter",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Mitarbeiter",
+                                     KiDialogTexte.WseWirkungMitarbeiterName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseWirkungGradErl, leerErlaubt: true,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN),
+                    new KiDialogFeld("wirkung_umwelt",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Umwelt",
+                                     KiDialogTexte.WseWirkungUmweltName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseWirkungGradErl, leerErlaubt: true,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN),
+                    new KiDialogFeld("wirkung_beurteilung",
+                                     "WirtschaftlichkeitSeiteKiSicht.Wirkungen[].Beurteilung",
+                                     KiDialogTexte.WseWirkungBeurteilungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WseWirkungBeurteilungErl, leerErlaubt: true,
+                                     zeilenkennzeichen: WIRKUNGSKENNZEICHEN, nurLesen: true),
                     new KiDialogFeld("zahlungsreihen_stand",
                                      "WirtschaftlichkeitSeiteKiSicht.ZahlungsreihenStand",
                                      KiDialogTexte.WseZrStandName, KiParameterTyp.Wahl,
@@ -6166,6 +6207,12 @@ namespace WindowsFormsApplication1
         /// seine Nummer zurueck - so, wie ihn auch die Maske zeigt.
         /// </summary>
         private const string STRANGKENNZEICHEN = "Bezeichner";
+
+        /// <summary>
+        /// ETAPPE E17 (V‑G11): das Kennzeichen einer Zeile der Wirkungsliste — „Wirkung 2:
+        /// Komfort" (<c>WirkungKiZeile.Kennzeichen</c>, Nummer und Beschreibung).
+        /// </summary>
+        private const string WIRKUNGSKENNZEICHEN = "Kennzeichen";
 
         // =====================================================================
         // Form_Heizkessel_Bearbeiten  ->  HeizkesselKatalogDialog

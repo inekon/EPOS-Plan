@@ -23266,7 +23266,7 @@ Do you want to allow this?</value>
     <value>State B of the pair view. The list does not contain A — so A and B differ without any message.</value>
   </data>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
-    <value>The non-monetary effects under DIN EN 17463 as free text — security of supply, comfort, emissions, operating effort. It is saved on request, not on every keystroke; the report shows it unchanged.</value>
+    <value>The description of a non-monetisable effect under DIN EN 17463 — security of supply, comfort, emissions, operating effort. It is saved on request (“Save”), not on every keystroke; the report shows it unchanged.</value>
   </data>
   <data name="KI_DLG_WSE_ZR_STAND_NAME" xml:space="preserve">
     <value>Cash flow series: version</value>
@@ -30164,5 +30164,65 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_NM_FEHLER_PROJEKT" xml:space="preserve">
     <value>The non-monetisable effects need a master project.</value>
+  </data>
+  <data name="WIRT_NM_SP_KATEGORIE" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="WIRT_NM_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="WIRT_NM_SP_DAUER" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="WIRT_NM_SP_ORGANISATION" xml:space="preserve">
+    <value>Organisation</value>
+  </data>
+  <data name="WIRT_NM_SP_MITARBEITER" xml:space="preserve">
+    <value>Employees</value>
+  </data>
+  <data name="WIRT_NM_SP_UMWELT" xml:space="preserve">
+    <value>Environment</value>
+  </data>
+  <data name="WIRT_NM_SP_BEURTEILUNG" xml:space="preserve">
+    <value>Assessment</value>
+  </data>
+  <data name="WIRT_NM_LEER" xml:space="preserve">
+    <value>No effect recorded yet.</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_NEU" xml:space="preserve">
+    <value>Add effect</value>
+  </data>
+  <data name="WIRT_NM_ZEILE_LOESCHEN" xml:space="preserve">
+    <value>Remove effect</value>
+  </data>
+  <data name="WIRT_NM_FELD" xml:space="preserve">
+    <value>{0}, effect {1}</value>
+  </data>
+  <data name="WIRT_NM_KENNZEICHEN" xml:space="preserve">
+    <value>Effect {0}: {1}</value>
+  </data>
+  <data name="WIRT_NM_LISTE_HINWEIS" xml:space="preserve">
+    <value>DIN EN 17463 requires every assessment to state what cannot be expressed in euros (6.1, 8.2): for each effect its category, its duration (short, medium, long) and its effect on the organisation, employees and environment (none to strong). The assessment is duration × strongest effect (0 to 9). The effects belong to the measure as a whole, appear in the report and do not enter the net present value.</value>
+  </data>
+  <data name="WIRT_NM_ALTFELD" xml:space="preserve">
+    <value>Legacy free-text field (read only, no longer maintained): {0}</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_NAME" xml:space="preserve">
+    <value>Number of effects</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ANZAHL_ERL" xml:space="preserve">
+    <value>How many non-monetisable effects the list holds. A larger number appends empty rows of category “other”, a smaller one removes rows from the end; nothing is written before “Save”, and empty rows are not saved.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL" xml:space="preserve">
+    <value>The category of the effect according to DIN EN 17463, 6.1: energy flow, financial or other.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_DAUER_ERL" xml:space="preserve">
+    <value>How long the effect lasts: short, medium or long; empty = not assessed.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_GRAD_ERL" xml:space="preserve">
+    <value>How strongly the effect acts on this area: none, low, medium or strong; empty = not assessed.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL" xml:space="preserve">
+    <value>The assessment according to DIN EN 17463, 8.2: duration × strongest of the three effects (0 to 9); display only, it is not saved and does not enter the net present value.</value>
   </data>
 </root>

@@ -2098,8 +2098,22 @@
         internal static string WseAErl => MyResource.Resource.KI_DLG_WSE_A_ERL;
         internal static string WseBName => MyResource.Resource.WIRT_SICHT_B;
         internal static string WseBErl => MyResource.Resource.KI_DLG_WSE_B_ERL;
-        internal static string WseWirkungName => MyResource.Resource.WPAR_NICHT_MONETAER;
+        // ETAPPE E17 (V-G11): die Spalten der Wirkungsliste - die Namen sind die Spaltenkoepfe
+        // der Liste (WIRT_NM_SP_*), damit Seite und Assistent dieselbe Groesse gleich nennen.
+        internal static string WseWirkungName => MyResource.Resource.WIRT_NM_SP_BESCHREIBUNG;
         internal static string WseWirkungErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ERL;
+        internal static string WseWirkungAnzahlName => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ANZAHL_NAME;
+        internal static string WseWirkungAnzahlErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ANZAHL_ERL;
+        internal static string WseWirkungKategorieName => MyResource.Resource.WIRT_NM_SP_KATEGORIE;
+        internal static string WseWirkungKategorieErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL;
+        internal static string WseWirkungDauerName => MyResource.Resource.WIRT_NM_SP_DAUER;
+        internal static string WseWirkungDauerErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_DAUER_ERL;
+        internal static string WseWirkungOrganisationName => MyResource.Resource.WIRT_NM_SP_ORGANISATION;
+        internal static string WseWirkungMitarbeiterName => MyResource.Resource.WIRT_NM_SP_MITARBEITER;
+        internal static string WseWirkungUmweltName => MyResource.Resource.WIRT_NM_SP_UMWELT;
+        internal static string WseWirkungGradErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_GRAD_ERL;
+        internal static string WseWirkungBeurteilungName => MyResource.Resource.WIRT_NM_SP_BEURTEILUNG;
+        internal static string WseWirkungBeurteilungErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL;
         internal static string WseZrStandName => MyResource.Resource.KI_DLG_WSE_ZR_STAND_NAME;
         internal static string WseZrStandErl => MyResource.Resource.KI_DLG_WSE_ZR_STAND_ERL;
         internal static string WseZrSzenarioName => MyResource.Resource.KI_DLG_WSE_ZR_SZENARIO_NAME;

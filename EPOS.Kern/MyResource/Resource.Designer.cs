@@ -38456,11 +38456,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele nicht monetarisierbare Wirkungen die Liste trägt. Eine größere Zahl hängt leere Zeilen der Kategorie „sonstig“ an, eine kleinere nimmt Zeilen vom Ende; geschrieben wird erst mit „Speichern“, leere Zeilen werden nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Wirkungen ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_ANZAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_ANZAHL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beurteilung nach DIN EN 17463, 8.2: Dauer × stärkste der drei Wirkungen (0 bis 9); nur Anzeige, sie wird nicht gespeichert und fließt nicht in den Kapitalwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_BEURTEILUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie lange die Wirkung anhält: kurz, mittel oder lang; leer = nicht beurteilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_DAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_DAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung einer nicht monetarisierbaren Wirkung nach DIN EN 17463 — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Geschrieben wird auf Zuruf („Speichern“), nicht bei jedem Zeichen; im Bericht steht sie unverändert. ähnelt.
         /// </summary>
         public static string KI_DLG_WSE_WIRKUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie stark die Wirkung auf diesen Bereich ist: keine, gering, mittel oder stark; leer = nicht beurteilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_GRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_GRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kategorie der Wirkung nach DIN EN 17463, 6.1: Energiefluss, finanziell oder sonstig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_KATEGORIE_ERL", resourceCulture);
             }
         }
         
@@ -73339,6 +73393,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Altfeld Freitext (nur lesbar, nicht mehr gepflegt): {0} ähnelt.
+        /// </summary>
+        public static string WIRT_NM_ALTFELD {
+            get {
+                return ResourceManager.GetString("WIRT_NM_ALTFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
         /// </summary>
         public static string WIRT_NM_BEURTEILUNG_WERT {
@@ -73420,6 +73483,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Wirkung {1} ähnelt.
+        /// </summary>
+        public static string WIRT_NM_FELD {
+            get {
+                return ResourceManager.GetString("WIRT_NM_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen gespeichert. ähnelt.
         /// </summary>
         public static string WIRT_NM_GESPEICHERT {
@@ -73456,11 +73528,101 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung {0}: {1} ähnelt.
+        /// </summary>
+        public static string WIRT_NM_KENNZEICHEN {
+            get {
+                return ResourceManager.GetString("WIRT_NM_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Wirkung erfasst. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_NM_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN EN 17463 verlangt zu jeder Bewertung, was sich nicht in Euro fassen lässt (6.1, 8.2): je Wirkung die Kategorie, die Dauer (kurz, mittel, lang) und die Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark). Die Beurteilung ist Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen gehören zur Maßnahme als Ganzes, stehen im Bericht und fließen nicht in den Kapitalwert. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_LISTE_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_NM_LISTE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht beurteilt ähnelt.
         /// </summary>
         public static string WIRT_NM_NICHT_BEURTEILT {
             get {
                 return ResourceManager.GetString("WIRT_NM_NICHT_BEURTEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beurteilung ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_BEURTEILUNG {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_BEURTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauer ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_DAUER {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_KATEGORIE {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_KATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mitarbeiter ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_MITARBEITER {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_MITARBEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Organisation ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_ORGANISATION {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_ORGANISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umwelt ähnelt.
+        /// </summary>
+        public static string WIRT_NM_SP_UMWELT {
+            get {
+                return ResourceManager.GetString("WIRT_NM_SP_UMWELT", resourceCulture);
             }
         }
         
@@ -73515,6 +73677,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_NM_ZEILE {
             get {
                 return ResourceManager.GetString("WIRT_NM_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung entfernen ähnelt.
+        /// </summary>
+        public static string WIRT_NM_ZEILE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("WIRT_NM_ZEILE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung hinzufügen ähnelt.
+        /// </summary>
+        public static string WIRT_NM_ZEILE_NEU {
+            get {
+                return ResourceManager.GetString("WIRT_NM_ZEILE_NEU", resourceCulture);
             }
         }
         

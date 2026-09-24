@@ -11459,3 +11459,35 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ==================================================================== */
+/* Die nicht monetarisierbaren Wirkungen (Etappe E17, V-G11): die Liste */
+/* im Bewertungsblock der Wirtschaftlichkeitsseite. Die Beschreibung    */
+/* nimmt den Platz, die Wahlfelder stehen schmal, die Beurteilung       */
+/* rechtsbuendig als Zahl; der Knopf „Wirkung hinzufuegen" darunter.    */
+/* ==================================================================== */
+.epos-wirt-wirkungen {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 4px 0 8px;
+}
+
+.epos-wirt-wirkungen .epos-raster-huelle {
+    align-self: stretch;
+}
+
+.epos-wirt-wirkungen-tabelle td:nth-child(2) {
+    min-width: 16em;
+}
+
+.epos-wirt-wirkungen-tabelle td:nth-child(2) .epos-feld,
+.epos-wirt-wirkungen-tabelle td:nth-child(2) input.epos-eingabe {
+    width: 100%;
+}
+
+.epos-wirt-wirkungen-beurteilung {
+    text-align: right;
+    white-space: nowrap;
+}

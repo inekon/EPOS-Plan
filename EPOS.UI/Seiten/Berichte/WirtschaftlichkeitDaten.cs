@@ -527,8 +527,21 @@ public sealed class WirtschaftlichkeitStand
     /// steht er im Feld darunter; eine zweite, fertig formulierte Zeile im
     /// Nachweisblock gibt es nicht mehr. Der Bericht ist davon unberührt — Word und
     /// Excel lesen <c>WirtschaftlichkeitParameter.NichtMonetaer</c> selbst.</para>
+    ///
+    /// <para><b>ETAPPE E17 (V‑G11): das ALTFELD.</b> Die Wirkungen stehen seither als Liste
+    /// (<see cref="Wirkungen"/>); der Freitext bleibt lesbar und wird auf der Seite nur noch
+    /// gekennzeichnet angezeigt („Altfeld"), nicht mehr geschrieben. Schemaschritt 126 hat
+    /// ihn als eine Wirkung der Kategorie „sonstig" in die Liste übernommen.</para>
     /// </summary>
     public string NichtMonetaer { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E17 (V‑G11, DIN EN 17463 6.1 und 8.2): die nicht monetarisierbaren Wirkungen
+    /// des Stammprojekts — je Wirkung Kategorie, Beschreibung, Dauer und die drei
+    /// Wirkungsgrade (<c>ProjektWirkungCtrl.Laden</c>). Die Beurteilung rechnet die Zeile
+    /// selbst (<c>ProjektWirkung.Beurteilung</c>). Keine Rechenwirkung.
+    /// </summary>
+    public List<WindowsFormsApplication1.ProjektWirkung> Wirkungen { get; set; } = new();
 
     /// <summary>Die Kennzahlen und die Tabelle des vorgewählten Szenarios.</summary>
     public ErgebnisAnsicht Ansicht { get; set; } = new();
