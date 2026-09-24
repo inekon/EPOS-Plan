@@ -9529,3 +9529,87 @@ BOM-Dateien unter `ueberholt/`.
 KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
 Windows-Schale 0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
 Basisprojekte PASS (4 145 687 Werte in Toleranz), Schemastand 121.
+
+## #473 — Gebäudeliste über den Katalogverweis, Wärmepumpen-Verweis beim Projekttransfer, BOM unter ueberholt/, Befund zu zwölf Katalogsätzen (24.09.2026)
+
+Folgeaufträge aus #468/#469, Anwenderentscheid „Kleine Folgeaufträge:
+ausführen“. Commits (Zweig `worktree-agent-a851d0af57684486c`, Basis
+`65cfa844`): `078b1d15` BOM aus 53 Papieren unter `ueberholt/`; `31ac2ee1`
+Gebäudeliste über den Katalogverweis; `197e3512` WP-Verweis beim Transfer;
+`1132a542` Papiere. Merge in den Hauptbaum `8d08091b`, konfliktfrei.
+
+**Punkt 1 — Gebäudeliste über den Katalogverweis.** `Z_ProjGebModel.ID_Gebaeude_Stamm`
+und `GebaeudeProjektZeile.IdKatalog` (int?) tragen den Verweis; gelesen in
+`Z_ProjGebCtrl.LiesProjekt`, `GebaeudeHuelle` reicht ihn durch und setzt ihn
+bei „◀“; neue Überladung `GebaeudeStammCtrl.CopyFromStamm(int? idStamm, name,
+projekt, idZ)` sucht zuerst über die Id, Name nur ohne Verweis oder bei
+gelöschtem Satz; `WizardCtrl.Add_Projekt_ZuordungGebäude` ruft sie;
+`AssistentCtrl.LadeGebaeude` liest über `LiesProjekt`. **Befund:** Neuschreiben
+(Assistent und Startseite) löschte schon vorher alle Kopien und kopierte neu —
+Feld-Übernahmen in die Kopie gehen dabei verloren (Bestand), Zuordnungswerte
+bleiben.
+
+**Punkt 2 — WP-Verweis beim Projekttransfer.** Export legt `Tab_WP_STAMM`
+nicht mehr unter `fill/` bei; `Umschluessele` setzt `Tab_WP.ID_Stamm` NULL;
+nach dem Import trägt `VerweiseNachtragen` mit
+`WaermepumpeKatalogverweis.SqlNachtragProjekt()` über den Bezeichner nach (nur
+eindeutiger Treffer, sonst NULL); `FuelleKatalog` legt keine Gebäude-/
+WP-Katalogsätze mehr an, auch nicht aus Altpaketen; FK `ON DELETE SET NULL`
+geprüft.
+
+**Punkt 3 — BOM.** 53 Papiere unter `Dokumentation/ueberholt/` je drei Bytes
+entfernt, CRLF erhalten, Wachen grün.
+
+**Punkt 4 — Befund, keine Änderung.** Zwölf `Tab_Gebaeude_STAMM`-Sätze mit
+leerem `Flaeche_Nutzer`, alle `ReadOnly = 0`, von keinem Projekt benutzt;
+Regel im Bestand: Fläche je Nutzer = Wohnfläche gesamt ÷ Bewohner.
+
+| Satz | Bezeichner | Wohnfläche/Bewohner | Fläche je Nutzer | Vergleich |
+|---|---|---|---|---|
+| 11 | `EFH-BZ2` | 240/6 | 40,0 | EFH-BZ 40,5 |
+| 82 | `KrankenH-F-U-400` | 18 012/360 | 50,03 | Geschwister 50,0 |
+| 187 | `KMEH-M-U-54` | 572/18 | 31,78 | Typ-Mittel 38,8 |
+| 274 | `Z-EFH-A-S-126` | 201/7 | 28,71 | — |
+| 275–281 | sieben `Z2-EFH-A-S*` | 201/7 | 28,71 | Namen deuten auf Testreste, Löschkandidaten |
+| 282 | „EFH-BZ2 XXX“ | 240/5,93 | 40,5 | Testrest? |
+
+Editor-Regel sinnvoll: Die Simulation braucht den Wert, der VDI-6007-Weg lehnt
+≤ 0 ab, `CopyFromStamm` macht NULL zu 0 → eine Projektkopie würde scheitern.
+**Nebenbefund:** `GebaeudeKatalogHuelle.Schreiben` ersetzt 0 still durch 35.
+**Krankenhaus 79** (von keinem Projekt benutzt): U-Wert Fenster 0,09
+(Geschwister 1,1–2,8), Nord 10 000 m² (Geschwister 250/296), Ost/West 400
+(Geschwister 1 520,4), gesamt 11 645,9 m² (Geschwister rund 3 016–3 062 m²) —
+vermutlich ein Tippfehler, Kandidaten U 0,9 oder 1,3, Nord 250; Entscheid beim
+Anwender.
+
+**Tests.** `GebaeudeKatalogverweisTests` Abschnitt 7 (Umbenennung →
+Neuschreiben gelingt, Altbestand ohne Verweis → Name, gelöschter Satz → Name,
+`GebaeudeHuelle` reicht durch); `AssistentCtrlTests` (Speichern nach
+Umbenennung über die Id); Rücknahme-Test angepasst; bunit `GebaeudeDialogTests`;
+`ProjekttransferTests` P14 (Projekt 1007: andere Katalog-Id und ein fremder
+Satz unter der Original-Id → Verweis auf den neuen Satz, Name unbekannt →
+NULL, Altpaket mit `fill/Tab_WP_STAMM.json` → kein neuer Katalogsatz, Katalog
+wächst nie).
+
+**Papiere.** Konzept Administrationsdialoge (Kopf, 7.1 (a): Neuanlage über
+Verweis, Überschreibverhalten, Transferregel `Tab_WP.ID_Stamm`); vorgelegte
+Sätze Krankenhaus 79 und die zwölf; `BETRIEB_SQLITE.md` und Wiki unverändert;
+kein Logbuch-Eintrag.
+
+**Was offen bleibt.** Anwenderentscheid zu den zwölf Katalogsätzen und zu
+Krankenhaus 79 (die Einfrierregel gilt auch ohne Referenznutzung);
+`StartseiteHuelle.Gebaeude` ruft Del/Add ohne Vorgang und wertet die Rückgabe
+nicht aus (bei Altbestand ohne Verweis und Umbenennung stünde das Projekt ohne
+Gebäude; der Assistent nimmt den Fall über seinen Vorgang zurück); Neuschreiben
+verwirft Feld-Übernahmen in die Kopie (Bestand).
+
+**Gate im Worktree des Umsetzungsagenten.** Kern 5 790, UI 5 907, KiKern 542,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot; Builds 0
+Fehler; Referenzlauf 1030 und 1045 PASS gegen `2026-09-24_R14_Kaelteerzeuger`;
+SQL-Prüfer 1 773 Texte, 0 Fundstellen.
+
+**Gate nach Merge auf `8d08091b`.** Kern-Filter 0 Fehler; Kern 5 790, UI 5 907,
+KiKern 542, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), 0 rot;
+Windows-Schale 0 Fehler; Referenzlauf 13/13 PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte in Toleranz), Schemastand
+121.
