@@ -28882,6 +28882,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
     <value>Die Typtage ließen sich nicht schreiben: {0}. Der frühere Stand ist unverändert.</value>
   </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
+    <value>Die Paketdatei „{0}“ ließ sich nicht lesen: {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE" xml:space="preserve">
+    <value>die Klimazone der Typtage</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_GROSS" xml:space="preserve">
     <value>Die Zirkulation verliert im Jahr {0:0} kWh, das {1:0.##}-Fache der Zapfung ({2:0} kWh/a); der Katalog nennt das ab dem {3:0.##}-Fachen. In kleinen Mehrfamilienhäusern ist das üblich — sonst Methode und Kennwerte der Zirkulation prüfen.</value>
   </data>

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 
 namespace WindowsFormsApplication1
 {
@@ -15,7 +17,48 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed record TwwTyptagstand(bool Vorhanden, int Zeilen, IReadOnlyList<int> Klimazonen,
                                           IReadOnlyList<string> Gebaeudearten, IReadOnlyList<string> Typtage,
-                                          bool MitTagesgaengen, string Quelle, string Ausgabe, string DatumImport);
+                                          bool MitTagesgaengen, string Quelle, string Ausgabe, string DatumImport,
+                                          IReadOnlyList<int> AufloesungenMin);
+
+    /// <summary>
+    /// <b>Was die Prüfung eines Pakets ergibt — ohne dass etwas geschrieben wird</b> (der Knopf
+    /// „Prüfen" des Importdialogs, Stufe Z4b, Gruppe 2): Entweder nennt <see cref="Abbruch"/>
+    /// benannt, warum das Paket nicht taugt (mit Datei und Zeile), oder die übrigen Angaben
+    /// beschreiben, was ein Einspielen ablegen würde. <see cref="Hinweise"/> trägt die benannten
+    /// Hinweise des Lesers — nie still.
+    /// </summary>
+    internal sealed class TwwTyptagpruefung
+    {
+        /// <summary>Taugt das Paket?</summary>
+        internal bool Ok => Abbruch == null;
+
+        /// <summary>Der Grund der Ablehnung; <c>null</c> = das Paket taugt.</summary>
+        internal ZapfSatz Abbruch { get; set; }
+
+        /// <summary>Die benannten Hinweise des Lesers.</summary>
+        internal List<ZapfSatz> Hinweise { get; } = new List<ZapfSatz>();
+
+        /// <summary>Die Quelle, die das Paket nennt (Kennwert <c>quelle</c>).</summary>
+        internal string Quelle { get; set; } = "";
+
+        /// <summary>Die Ausgabe, die das Paket nennt (Kennwert <c>ausgabe</c>); leer = ohne Angabe.</summary>
+        internal string Ausgabe { get; set; } = "";
+
+        /// <summary>Die Klimazonen des Pakets.</summary>
+        internal IReadOnlyList<int> Klimazonen { get; set; } = new int[0];
+
+        /// <summary>Die Gebäudearten des Pakets.</summary>
+        internal IReadOnlyList<string> Gebaeudearten { get; set; } = new string[0];
+
+        /// <summary>Die Typtagcodes des Pakets.</summary>
+        internal IReadOnlyList<string> Typtage { get; set; } = new string[0];
+
+        /// <summary>Die Zeitraster der Tagesgänge [min]; leer = das Paket führt keine.</summary>
+        internal IReadOnlyList<int> AufloesungenMin { get; set; } = new int[0];
+
+        /// <summary>Die Zahl der Zeilen, die ein Einspielen ablegen würde.</summary>
+        internal int Zeilen { get; set; }
+    }
 
     /// <summary>
     /// Was ein Einspielen der Typtage zurückgibt: Zahl der geschriebenen Zeilen, der Stand
@@ -88,17 +131,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static TwwTyptagstand Stand()
         {
-            var leer = new TwwTyptagstand(false, 0, new int[0], new string[0], new string[0], false, "", "", "");
+            var leer = new TwwTyptagstand(false, 0, new int[0], new string[0], new string[0], false, "", "", "", new int[0]);
             if (!TabelleVorhanden()) return leer;
 
             DataTable t = DataRepository.GetDataTable(
-                "SELECT \"Art\", \"Klimazone\", \"Gebaeudeart\", \"Typtag\", \"Quelle\", \"Ausgabe\", \"Datum_Import\" " +
-                "FROM \"" + TwwSchema.TAB_TWW_TYPTAG_IMPORT + "\"");
+                "SELECT \"Art\", \"Klimazone\", \"Gebaeudeart\", \"Typtag\", \"Aufloesung_min\", \"Quelle\", " +
+                "\"Ausgabe\", \"Datum_Import\" FROM \"" + TwwSchema.TAB_TWW_TYPTAG_IMPORT + "\"");
             if (t == null || t.Rows.Count == 0) return leer;
 
             var zonen = new SortedSet<int>();
             var arten = new SortedSet<string>(StringComparer.Ordinal);
             var typtage = new SortedSet<string>(StringComparer.Ordinal);
+            var raster = new SortedSet<int>();
             bool gaenge = false;
             string quelle = "", ausgabe = "", datum = "";
             foreach (DataRow r in t.Rows)
@@ -109,13 +153,18 @@ namespace WindowsFormsApplication1
                 string gebaeudeart = Text(r, "Gebaeudeart");
                 if (gebaeudeart.Length > 0) arten.Add(gebaeudeart);
                 if (string.Equals(art, TwwSchema.TYPTAG_ART_KATEGORIE, StringComparison.Ordinal)) typtage.Add(Text(r, "Typtag"));
-                if (string.Equals(art, TwwSchema.TYPTAG_ART_GANG, StringComparison.Ordinal)) gaenge = true;
+                if (string.Equals(art, TwwSchema.TYPTAG_ART_GANG, StringComparison.Ordinal))
+                {
+                    gaenge = true;
+                    int a = Ganz(r, "Aufloesung_min");
+                    if (a > 0) raster.Add(a);
+                }
                 if (quelle.Length == 0) quelle = Text(r, "Quelle");
                 if (ausgabe.Length == 0) ausgabe = Text(r, "Ausgabe");
                 if (datum.Length == 0) datum = Text(r, "Datum_Import");
             }
             return new TwwTyptagstand(true, t.Rows.Count, zonen.ToList(), arten.ToList(), typtage.ToList(),
-                                      gaenge, quelle, ausgabe, datum);
+                                      gaenge, quelle, ausgabe, datum, raster.ToList());
         }
 
         // =================================================================================
@@ -267,6 +316,110 @@ namespace WindowsFormsApplication1
                 new DbParam("@quelle", quelle ?? ""),
                 new DbParam("@ausgabe", DbParamTyp.VarWChar) { Wert = ausgabe },
                 new DbParam("@datum", datum ?? ""));
+        }
+
+        // =================================================================================
+        //  Paket lesen und prüfen (ohne zu schreiben)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Dateien eines Pakets aus einem Pfad</b> (Muster
+        /// <c>TwwNutzungsartCtrl.PaketLesen</c>): ein ZIP-Archiv, ein Ordner oder EINE Datei des
+        /// Paketordners — dann werden alle <c>*.csv</c> ihres Ordners gelesen, denn ein Paket
+        /// besteht aus sechs Dateien. Gelesen wird UTF-8 (BOM erlaubt); die Reihenfolge ist die des
+        /// Namens, damit ein Lauf wiederholbar ist. Eine unlesbare Datei ist eine benannte
+        /// Ablehnung (<paramref name="fehler"/>), keine halbe Liste.
+        ///
+        /// <para><b>Die Datei wählt die Hülle</b> — über <c>Dienste.Datei</c>, nie der Kern; hier
+        /// steht allein das Lesen.</para>
+        /// </summary>
+        internal static IReadOnlyList<TwwPaketdatei> PaketLesen(string pfad, out ZapfSatz fehler)
+        {
+            fehler = null;
+            var dateien = new List<TwwPaketdatei>();
+            string name = Path.GetFileName(pfad ?? "");
+            try
+            {
+                if (Directory.Exists(pfad))
+                {
+                    foreach (string d in Directory.GetFiles(pfad, "*.csv").OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                        dateien.Add(new TwwPaketdatei(Path.GetFileName(d), Lesen(d)));
+                }
+                else if (string.Equals(Path.GetExtension(pfad), ".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    using (ZipArchive zip = ZipFile.OpenRead(pfad))
+                        foreach (ZipArchiveEntry e in zip.Entries.OrderBy(x => x.FullName, StringComparer.OrdinalIgnoreCase))
+                        {
+                            if (!string.Equals(Path.GetExtension(e.Name), ".csv", StringComparison.OrdinalIgnoreCase)) continue;
+                            using (var s = new StreamReader(e.Open(), Encoding.UTF8, true))
+                                dateien.Add(new TwwPaketdatei(e.Name, s.ReadToEnd()));
+                        }
+                }
+                else
+                {
+                    string ordner = Path.GetDirectoryName(Path.GetFullPath(pfad)) ?? "";
+                    foreach (string d in Directory.GetFiles(ordner, "*.csv").OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                        dateien.Add(new TwwPaketdatei(Path.GetFileName(d), Lesen(d)));
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is InvalidDataException
+                                       || ex is NotSupportedException || ex is ArgumentException)
+            {
+                fehler = ZapfSatz.Neu("TYPTAGIMPORT_DATEI_UNLESBAR", name, ex.Message);
+                return new TwwPaketdatei[0];
+            }
+            return dateien;
+        }
+
+        private static string Lesen(string datei) => File.ReadAllText(datei, Encoding.UTF8);
+
+        /// <summary>
+        /// <b>Prüft ein Paket, ohne die Datenbank anzufassen</b> (Stufe Z4b, Gruppe 2): Gelesen
+        /// wird mit demselben <see cref="Normformvektorleser"/> wie beim Einspielen — dieselben
+        /// Ablehnungen, dieselben Hinweise. Zurück kommt, was ein Einspielen ablegen würde: Quelle,
+        /// Ausgabe, Zonen, Gebäudearten, Typtage, die Zeitraster der Tagesgänge und die Zahl der
+        /// Zeilen. <b>Kein Schreibzugriff, kein Vorgang</b> — der eingespielte Stand bleibt, wie er
+        /// ist.
+        /// </summary>
+        internal static TwwTyptagpruefung Pruefen(IReadOnlyList<TwwPaketdatei> dateien)
+        {
+            var p = new TwwTyptagpruefung();
+            var hinweise = new List<ZapfSatz>();
+            Normformvektorsatz satz = Normformvektorleser.AusDateien(dateien, out ZapfSatz fehler, hinweise);
+            p.Hinweise.AddRange(hinweise);
+            if (satz == null)
+            {
+                p.Abbruch = fehler ?? ZapfSatz.Neu("NORMVEKTOR_OHNE_WERTE");
+                return p;
+            }
+            p.Quelle = satz.Quelle;
+            p.Ausgabe = satz.Ausgabe;
+            p.Klimazonen = satz.Klimazonen;
+            p.Gebaeudearten = satz.Gebaeudearten;
+            p.Typtage = satz.Kategorien.Select(k => k.Code).ToList();
+            p.AufloesungenMin = satz.Gaenge.Select(g => g.AufloesungMin).Distinct().OrderBy(x => x).ToList();
+            p.Zeilen = Zeilenzahl(satz);
+            return p;
+        }
+
+        /// <summary>
+        /// Die Zahl der Zeilen, die <see cref="Schreiben"/> aus dem Satz ablegt — dieselbe Zählung,
+        /// nur ohne Datenbank: drei Zeilen je Kategorie, je Zone und Gebäudeart eine Zeile je
+        /// vorhandener Anzahl und je vorhandenem Faktor, ein Wert je Abschnitt eines Tagesgangs und
+        /// eine Zeile je Kennwert.
+        /// </summary>
+        private static int Zeilenzahl(Normformvektorsatz satz)
+        {
+            int n = 3 * satz.Kategorien.Count;
+            foreach (string art in satz.Gebaeudearten)
+                foreach (int zone in satz.Klimazonen)
+                    foreach (Typtagkategorie k in satz.Kategorien)
+                    {
+                        if (satz.Anzahl(zone, art, k.Code).HasValue) n++;
+                        if (satz.Faktor(zone, art, k.Code).HasValue) n++;
+                    }
+            foreach (Typtaggang g in satz.Gaenge) n += g.Anteile.Length;
+            return n + satz.Kennwerte.Count;
         }
 
         // =================================================================================

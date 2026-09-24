@@ -72,10 +72,11 @@ namespace WindowsFormsApplication1
             double? schwelleKw = stand.Anzeige?.SchwelleKw ?? EinstellungZahl(EINSTELLUNG_STUNDENSCHWELLE, vorhinweise)
                                  ?? Vorgabe(ps, ZapfParameter.STUNDENSCHWELLE);
 
+            ProjektStand projekt = stand.Projekt ?? ProjektVorgabe();
             return new Zapfprofileingang
             {
                 Zonen = zonen,
-                Projekt = stand.Projekt ?? ProjektVorgabe(),
+                Projekt = projekt,
                 WochentagJan1 = wochentagJan1,
                 We = we,
                 Parameter = ps,
@@ -85,8 +86,118 @@ namespace WindowsFormsApplication1
                 Zapfkategorien = Zapfkategorien(NutzungsartenDerZonen(zonen)),
                 AnzeigetemperaturC = anzeigeC,
                 SchwelleKw = schwelleKw,
+                Typtage = Typtagweg(idProjekt, projekt),
                 Vorhinweise = vorhinweise.AsReadOnly()
             };
+        }
+
+        // =================================================================================
+        // Die Weiche auf die eingespielten Typtage (T3 „Typtage", Stufe Z4b, Gruppe 2)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Weiche des Jahresgangs auf die eingespielten Typtage</b> (Konzept 4.2, 5.3;
+        /// N14 (i)): <c>null</c>, solange das Projekt den Typtagweg nicht gewählt hat
+        /// (<c>Tab_TwwProjekt.Typtage_Aktiv</c> = 0, auch der Stand vor Schritt 125) — dann rechnet
+        /// der Jahresgang wie im Bestand über den Formvektor.
+        ///
+        /// <para><b>Ist die Wahl gesetzt, entsteht die Anbindung IMMER</b> — mit dem eingespielten
+        /// Satz (<see cref="TwwTyptagCtrl.Lesen"/>), der gewählten Zone und Gebäudeart und dem
+        /// Wetter des Projekts. Ist nichts eingespielt, führt das Paket die Zone oder die
+        /// Gebäudeart nicht, fehlt ein Kennwert oder das Wetter, lehnt der Rechenweg je Zone
+        /// BENANNT ab (<see cref="ZapfEingabefehler.TyptageUngueltig"/>): Es gibt keinen stillen
+        /// Rückfall auf den Bestandsweg.</para>
+        /// </summary>
+        internal static Typtaganbindung Typtagweg(int idProjekt, ProjektStand projekt)
+        {
+            if (projekt == null || !projekt.TyptageAktiv) return null;
+            Wetterlesen(idProjekt, out double[] tagesmittelC, out double[] bedeckungAchtel);
+            return new Typtaganbindung
+            {
+                Daten = TwwTyptagCtrl.Lesen(),
+                Klimazone = projekt.TyptageKlimazone ?? 0,
+                Gebaeudeart = projekt.TyptageGebaeudeart ?? "",
+                TagesmittelC = tagesmittelC,
+                BedeckungAchtel = bedeckungAchtel
+            };
+        }
+
+        /// <summary>
+        /// <b>Das Wetter des Projekts für die Typtagzuordnung</b> (4.2, N14 (d)): die 365
+        /// Tagesmittel der Außentemperatur aus <c>Tab_Klimadaten.Temperatur</c> — dieselben Zeilen
+        /// wie der Kalender (<c>SimulationWaermebedarf.ZapfprofilKalenderLesen</c>) — und, wenn die
+        /// Klimareihe ihn führt, die 365 Tagesmittel des Bedeckungsgrads aus
+        /// <c>Tab_Solar.Bedeckungsgrad</c> (8760 Stundenwerte, je Tag gemittelt).
+        ///
+        /// <para>Fehlt eine Reihe ganz oder auch nur ein Wert, bleibt sie <c>null</c> — die
+        /// Zuordnung lehnt dann benannt ab, statt mit einer halben Reihe zu rechnen. Der
+        /// Bedeckungsgrad ist nur für ein Paket nötig, das nach Bewölkung unterscheidet.</para>
+        /// </summary>
+        private static void Wetterlesen(int idProjekt, out double[] tagesmittelC, out double[] bedeckungAchtel)
+        {
+            tagesmittelC = null;
+            bedeckungAchtel = null;
+            var projekt = new ProjektCtrl();
+            if (idProjekt > 0) projekt.ReadSingle(idProjekt);
+            int region = projekt.m_ID_Klimaregion;
+            if (region <= 0) return;
+
+            if (DataRepository.TabelleVorhanden(TAB_KLIMADATEN))
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Temperatur FROM " + TAB_KLIMADATEN + " WHERE ID_Klimaregion = ? ORDER BY ID",
+                    new DbParam("@region", region));
+                if (dt != null && dt.Rows.Count >= Zapfkalender.TAGE)
+                {
+                    var t = new double[Zapfkalender.TAGE];
+                    bool voll = true;
+                    for (int d = 0; d < t.Length && voll; d++)
+                    {
+                        double? w = ZahlOderNull(dt.Rows[d], "Temperatur");
+                        voll = w.HasValue;
+                        if (voll) t[d] = w.Value;
+                    }
+                    if (voll) tagesmittelC = t;
+                }
+            }
+            bedeckungAchtel = BedeckungTagesmittel(region);
+        }
+
+        /// <summary>Die Projekttabelle der Klimadaten — 365 Tageszeilen je Klimaregion.</summary>
+        private const string TAB_KLIMADATEN = "Tab_Klimadaten";
+
+        /// <summary>Die Projekttabelle der Solar- und Wetterstundenreihe — 8760 Zeilen je Klimaregion.</summary>
+        private const string TAB_SOLAR = "Tab_Solar";
+
+        /// <summary>
+        /// Die 365 Tagesmittel des Bedeckungsgrads [Achtel] aus den 8760 Stundenwerten der
+        /// Klimaregion; <c>null</c>, wenn die Tabelle, die Spalte, die vollen 8760 Zeilen oder ein
+        /// einzelner Wert fehlen (NULL heißt dort „nicht verfügbar" — PVGIS liefert den
+        /// Bedeckungsgrad nicht).
+        /// </summary>
+        private static double[] BedeckungTagesmittel(int idKlimaregion)
+        {
+            if (!DataRepository.TabelleVorhanden(TAB_SOLAR)
+                || !DataRepository.SpalteVorhanden(TAB_SOLAR, SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD)) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bedeckungsgrad FROM " + TAB_SOLAR + " WHERE ID_Klimaregion = ? ORDER BY ID",
+                new DbParam("@region", idKlimaregion));
+            if (dt == null || dt.Rows.Count < Zapfkalender.STUNDEN_JAHR) return null;
+
+            var n = new double[Zapfkalender.TAGE];
+            for (int d = 0; d < n.Length; d++)
+            {
+                double summe = 0.0;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                {
+                    double? w = ZahlOderNull(dt.Rows[d * Zapfkalender.STUNDEN_TAG + h],
+                                             SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD);
+                    if (!w.HasValue || double.IsNaN(w.Value) || double.IsInfinity(w.Value)) return null;
+                    summe += w.Value;
+                }
+                n[d] = summe / Zapfkalender.STUNDEN_TAG;
+            }
+            return n;
         }
 
         /// <summary>

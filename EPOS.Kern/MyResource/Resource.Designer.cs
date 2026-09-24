@@ -86922,6 +86922,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Klimazone der Typtage ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAGE_KLIMAZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Unterscheidung ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_0 {
@@ -89330,6 +89339,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Paketdatei „{0}“ ließ sich nicht lesen: {1}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_DATEI_UNLESBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_DATEI_UNLESBAR", resourceCulture);
             }
         }
         

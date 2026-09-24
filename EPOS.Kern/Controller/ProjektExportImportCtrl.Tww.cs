@@ -65,6 +65,13 @@ namespace WindowsFormsApplication1
     /// beides. Eine Auslieferungszeile ist eine unveränderliche Version und wird nicht
     /// verglichen.</para>
     ///
+    /// <para><b>Schemaschritt 125 (T3 „Typtage").</b> Die WAHL des Typtagwegs an
+    /// <c>Tab_TwwProjekt</c> (<c>Typtage_Aktiv</c>, <c>Typtage_Klimazone</c>,
+    /// <c>Typtage_Gebaeudeart</c>) reist mit der Projektzeile — die eingespielten Typtage selbst
+    /// NIE: <c>Tab_TwwTyptag_IMPORT</c> führt kein <c>ID_Projekt</c>, endet nicht auf <c>_STAMM</c>
+    /// und bleibt anwenderlokal (Konzept Kapitel 6). Führt die Zieldatenbank die Spalten noch
+    /// nicht, nennt der Bericht je Spalte, wie viele Werte liegen bleiben.</para>
+    ///
     /// <para><b>Schemaschritt 124 (T3).</b> Die Laufangaben der Auslegung an <c>Tab_TwwProjekt</c>
     /// (Erzeugerart, Werkstoff, Personen, Bezug des Füllstands) und die Bezugsart am Bedarfstag
     /// reisen mit ihrer Zeile — Projektzeile bzw. Katalogkopf — und zählen im Inhaltsvergleich.
@@ -238,20 +245,44 @@ namespace WindowsFormsApplication1
         {
             var quellen = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>>(baeume ?? Enumerable.Empty<Dictionary<string, List<Dictionary<string, JsonElement>>>>());
             if (katalogzeilen != null) quellen.Add(katalogzeilen);
-            foreach (TwwSpalte s in TwwSchema.SpaltenT3)
+            TwwSpaltenschrittMelden(quellen, TwwSchema.SpaltenT3, 124);
+            // Schritt 125 (T3 "Typtage", Stufe Z4b): die WAHL des Typtagwegs reist mit der
+            // Projektzeile - die eingespielten Typtage selbst NIE (Konzept Kapitel 6).
+            TwwSpaltenschrittMelden(quellen, TwwSchema.SpaltenT3Typtage, 125);
+        }
+
+        /// <summary>
+        /// Meldet je Spalte eines Schemaschritts, die das Paket mit einem Wert trägt, die
+        /// Zieldatenbank aber nicht führt, eine Berichtszeile. Die DDL-Vorgabe einer Spalte
+        /// (<c>Personen_Auto</c> = 1, <c>Typtage_Aktiv</c> = 0) zählt nicht als Wert, der verloren
+        /// ginge.
+        /// </summary>
+        private void TwwSpaltenschrittMelden(List<Dictionary<string, List<Dictionary<string, JsonElement>>>> quellen,
+                                             IReadOnlyList<TwwSpalte> spalten, int schritt)
+        {
+            foreach (TwwSpalte s in spalten)
             {
                 int belegt = 0;
                 foreach (var baum in quellen)
                     if (baum != null && baum.TryGetValue(s.Tabelle, out List<Dictionary<string, JsonElement>> zeilen) && zeilen != null)
                         belegt += zeilen.Count(z => z.TryGetValue(s.Name, out JsonElement w) && w.ValueKind != JsonValueKind.Null
-                                                    && !(s.Name == TwwSchema.SPALTE_PERSONEN_AUTO && w.ValueKind == JsonValueKind.Number
-                                                         && w.TryGetInt64(out long a) && a == 1));
+                                                    && !Vorgabewert(s.Name, w));
                 if (belegt == 0) continue;
                 HashSet<string> ziel = ZielSpalten(s.Tabelle);
                 if (ziel == null || ziel.Contains(s.Name)) continue;
-                _twwBericht.Add("Die Zieldatenbank fuehrt " + s.Tabelle + "." + s.Name + " noch nicht (Schemastand vor 124): " +
+                _twwBericht.Add("Die Zieldatenbank fuehrt " + s.Tabelle + "." + s.Name + " noch nicht (Schemastand vor " +
+                                schritt.ToString(CultureInfo.InvariantCulture) + "): " +
                                 belegt.ToString(CultureInfo.InvariantCulture) + " Wert(e) bleiben beim Import liegen.");
             }
+        }
+
+        /// <summary>Trägt das Feld genau die DDL-Vorgabe der Spalte (dann geht mit ihm nichts verloren)?</summary>
+        private static bool Vorgabewert(string spalte, JsonElement w)
+        {
+            if (w.ValueKind != JsonValueKind.Number || !w.TryGetInt64(out long a)) return false;
+            if (string.Equals(spalte, TwwSchema.SPALTE_PERSONEN_AUTO, StringComparison.Ordinal)) return a == 1;
+            if (string.Equals(spalte, TwwSchema.SPALTE_TYPTAGE_AKTIV, StringComparison.Ordinal)) return a == 0;
+            return false;
         }
 
         /// <summary>Entfernt die internen Spalten (<see cref="TWW_INTERN"/>) aus einer Tww-Katalogtabelle vor dem Schreiben.</summary>

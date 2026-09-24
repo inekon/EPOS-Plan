@@ -211,6 +211,28 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Bezug des Füllstands (<c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 124; N10 (k), N11 (d)); <c>null</c> = Vorgabe.</summary>
         public ZapfFuellstandbezug? FuellstandBezug { get; init; }
+
+        /// <summary>
+        /// <b>Rechnet der Jahresgang über die eingespielten Typtage?</b>
+        /// (<c>Tab_TwwProjekt.Typtage_Aktiv</c>, Schritt 125; Konzept 4.2, N14 (i), Stufe Z4b)
+        /// <c>false</c> = der Formvektor wie im Bestand. Ohne Projektzeile oder vor Schritt 125
+        /// gilt die DDL-Vorgabe (0) — der Bestandsweg.
+        /// </summary>
+        public bool TyptageAktiv { get; init; }
+
+        /// <summary>
+        /// Die gewählte Klimazone des eingespielten Pakets
+        /// (<c>Tab_TwwProjekt.Typtage_Klimazone</c>, Schritt 125); <c>null</c> = keine Wahl. Die
+        /// Nummer ist die des Pakets, nicht eine Kennung der Datenbank (N14 (d)).
+        /// </summary>
+        public int? TyptageKlimazone { get; init; }
+
+        /// <summary>
+        /// Die gewählte Gebäudeart des eingespielten Pakets
+        /// (<c>Tab_TwwProjekt.Typtage_Gebaeudeart</c>, Schritt 125); <c>null</c> oder leer = keine
+        /// Wahl.
+        /// </summary>
+        public string TyptageGebaeudeart { get; init; }
     }
 
     /// <summary>

@@ -427,6 +427,10 @@ namespace WindowsFormsApplication1
             int? werkstoff = SpalteDa(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF)
                 ? GanzOderNull(r, TwwSchema.SPALTE_UEBERTRAGER_WERKSTOFF) : null;
             int? bezug = SpalteDa(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) ? GanzOderNull(r, TwwSchema.SPALTE_FUELLSTAND_BEZUG) : null;
+            // Schritt 125 (T3 „Typtage"): die Wahl des Typtagwegs - vor dem Schritt fehlen die
+            // Spalten, dann gelten die DDL-Vorgaben (aus, keine Angabe).
+            int? typtagzone = SpalteDa(r, TwwSchema.SPALTE_TYPTAGE_KLIMAZONE)
+                ? GanzOderNull(r, TwwSchema.SPALTE_TYPTAGE_KLIMAZONE) : null;
 
             return new ProjektStand
             {
@@ -473,7 +477,11 @@ namespace WindowsFormsApplication1
                 UebertragerWerkstoff = werkstoff.HasValue ? (ZapfUebertragerwerkstoff)werkstoff.Value : (ZapfUebertragerwerkstoff?)null,
                 PersonenAuto = !SpalteDa(r, TwwSchema.SPALTE_PERSONEN_AUTO) || Wahr(r, TwwSchema.SPALTE_PERSONEN_AUTO),
                 PersonenManuell = SpalteDa(r, TwwSchema.SPALTE_PERSONEN_MANUELL) ? ZahlOderNull(r, TwwSchema.SPALTE_PERSONEN_MANUELL) : null,
-                FuellstandBezug = bezug.HasValue ? (ZapfFuellstandbezug)bezug.Value : (ZapfFuellstandbezug?)null
+                FuellstandBezug = bezug.HasValue ? (ZapfFuellstandbezug)bezug.Value : (ZapfFuellstandbezug?)null,
+                TyptageAktiv = SpalteDa(r, TwwSchema.SPALTE_TYPTAGE_AKTIV) && Wahr(r, TwwSchema.SPALTE_TYPTAGE_AKTIV),
+                TyptageKlimazone = typtagzone,
+                TyptageGebaeudeart = SpalteDa(r, TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART)
+                    ? TextOderNull(r, TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART) : null
             };
         }
 
