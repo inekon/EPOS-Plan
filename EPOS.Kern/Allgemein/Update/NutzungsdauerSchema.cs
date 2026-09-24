@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
     // ====================================================================================
     // Die NUTZUNGSDAUERTABELLE - Migrationsschritt 75, Stufe S1 des Konzepts
     // "Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle"
-    // (Dokumentation/aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md, Anwenderentscheid
+    // (Dokumentation/ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md, Anwenderentscheid
     // vom 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung).
     //
     // WOZU. Die Nutzungsdauer ist heute ein freies Feld je Kostenposition; die

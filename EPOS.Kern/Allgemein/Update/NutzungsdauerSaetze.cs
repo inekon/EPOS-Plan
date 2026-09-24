@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
     // ====================================================================================
     // DIE SÄTZE DER NUTZUNGSDAUERTABELLE - Etappe E10, Stufe S3 des Konzepts
     // "Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle"
-    // (Dokumentation/aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md, § 3 und ND-Q6).
+    // (Dokumentation/ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md, § 3 und ND-Q6).
     //
     // WOZU. Tab_Nutzungsdauer führt seit Schritt 75 die zwei Satzspalten
     // Instandsetzung_Prozent und Wartung_Prozent (VDI 2067 Blatt 1, Tabelle A2) - angelegt,
