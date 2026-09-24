@@ -2163,12 +2163,14 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.True(cut.Instance.EinspeisungKwkSzenarioGepflegt);
         Assert.Contains("epos-szenarioknopf--gepflegt",
                         Koerper(cut, 2).QuerySelector("button.epos-szenarioknopf")!.ClassName);
-        Assert.Null(satz.SatzBest);                          // bis zum OK unberührt
+        // Der Parametersatz trägt seine zwei Sätze von Anfang an (lauter Vorgaben) — und
+        // bis zum OK unberührt.
+        Assert.Null(satz.SatzBest.EinspeiseverguetungKwk);
 
         OkKnopf(cut).Click();
 
-        Assert.Equal(0.11, satz.SatzBest!.EinspeiseverguetungKwk);
-        Assert.Null(satz.SatzWorst!.EinspeiseverguetungKwk);
+        Assert.Equal(0.11, satz.SatzBest.EinspeiseverguetungKwk);
+        Assert.Null(satz.SatzWorst.EinspeiseverguetungKwk);
         Assert.Equal(0.09, satz.EinspeiseverguetungKWK);     // der Erwartet-Wert bleibt
         Assert.Contains("Vorgaben", zaehler.Wege);
     }
@@ -2187,7 +2189,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         AbbrechenKnopf(cut).Click();
 
-        Assert.Null(satz.SatzWorst);
+        Assert.Null(satz.SatzWorst.EinspeiseverguetungKwk);
         Assert.Equal(0, zaehler.Zugriffe);
     }
 
