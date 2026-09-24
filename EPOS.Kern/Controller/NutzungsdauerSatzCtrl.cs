@@ -89,20 +89,28 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Die Sätze der Nutzungsdauertabelle im Rechenweg und in der Vorbelegung</b>
-    /// (Etappe E10, Stufe S3; Empfehlung E10‑Q1 (a)).
+    /// <b>Die Sätze der Nutzungsdauertabelle in Vorbelegung und Anzeige</b> (Etappe E10,
+    /// Stufe S3; Empfehlung E10‑Q1 (a) in der Fassung E10/9).
     ///
-    /// <para><b>Die Regel, EINMAL:</b> Ein gepflegter Satz der Position hat Vorrang. Trägt
-    /// sie keinen (NULL) und auch keinen erfassten Betrag, und ist sie „% der Investition"
-    /// und eine Instandsetzungs- oder Wartungsposition (<see cref="NutzungsdauerSaetze.Zuordnungen"/>),
-    /// gilt der Satz der Tabelle für ihre Technik. Sonst bleibt es beim Bestandsweg — kein
-    /// Satz, Betrag wie erfasst bzw. 0 (Anwenderentscheid I‑2: ein erfasster Betrag
-    /// verschwindet nicht wortlos, deshalb schlägt auch er die Tabelle).</para>
+    /// <para><b>Die Tabelle rechnet nicht selbst.</b> Der Rechenweg liest den Satz der
+    /// Position, wie er gepflegt ist — ohne Satz ihren Betrag (ein Betrag bleibt ein Betrag),
+    /// sonst 0. Ein Satz der Tabelle wirkt allein, wenn er AUSDRÜCKLICH in die Position
+    /// geschrieben wird: bei der Vorlagenübernahme für eine neue Position, deren Vorlage keinen
+    /// Satz trägt, und über den Knopf „Sätze vorbelegen…" der Kostenverwaltung für bestehende —
+    /// die bewusste Handlung des Anwenders. So ändert nichts eine gerechnete Wirtschaftlichkeit
+    /// ohne sein Zutun (Anwenderentscheid ND‑Q4).</para>
     ///
-    /// <para><b>Wer fragt:</b> die zwei Leseschleifen der Betriebskosten
-    /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c>, <c>…Positionen</c>) — über
-    /// <see cref="WirksamerSatz"/> —, die Vorlagenübernahme, der Knopf „Sätze vorbelegen…"
-    /// und die Herkunftszeile des Kostendialogs. Eine zweite Formel gibt es nicht.</para>
+    /// <para><b>Die Regel, EINMAL</b> (<see cref="WirksamerSatz"/>): Ein gepflegter Satz
+    /// bleibt, was er ist. Eine Position „% der Investition" mit Zuordnung
+    /// (<see cref="NutzungsdauerSaetze.Zuordnungen"/>) und OHNE Satz bekommt den Satz der
+    /// Tabelle ihrer Technik — als Wert, den die Vorbelegung schreibt. Ist ein gepflegter
+    /// Satz genau der der Tabelle, trägt er ihre HERKUNFT: Herkunftszeile im Dialog,
+    /// Herleitung und Formelmappe nennen sie.</para>
+    ///
+    /// <para><b>Wer fragt:</b> die Vorlagenübernahme, der Knopf „Sätze vorbelegen…", die
+    /// Herkunftszeile des Kostendialogs und — allein für die Herkunft
+    /// (<see cref="AusTabelle"/>) — die Nachweisliste der Betriebskosten
+    /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenPositionen</c>).</para>
     /// </summary>
     public static class NutzungsdauerSatzCtrl
     {
@@ -137,46 +145,65 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der Rechenweg:</b> der WIRKSAME Satz einer Betriebsposition — der gepflegte, sonst
-        /// der der Tabelle, sonst <c>null</c> wie bisher (Regel im Klassenkopf).
+        /// <b>Der Satz für Vorbelegung und Anzeige</b> (Regel im Klassenkopf): der gepflegte,
+        /// sonst — bei einer satzfähigen Position — der der Tabelle, sonst <c>null</c>. Der
+        /// Rechenweg ruft diese Funktion NICHT für seinen Betrag; er rechnet mit dem Satz, der in
+        /// der Zeile steht.
         /// </summary>
         /// <param name="bemessung">Die Bemessung der Position.</param>
-        /// <param name="satz">Der gepflegte Satz (<c>Tab_ProjektWerte.Einheitpreis</c>).</param>
-        /// <param name="eingegeben">Der erfasste Betrag (<c>EingegebenerWert</c>).</param>
+        /// <param name="satz">Der gepflegte Satz (<c>Einheitpreis</c>); <c>null</c> = keiner.</param>
         /// <param name="komponentenId">Die Komponente der Position.</param>
         /// <param name="bezeichnung">Der Positionsschlüssel.</param>
         /// <param name="tafel">Der Lesestand; wird beim ersten Bedarf gelesen.</param>
-        /// <param name="herkunft">Die Vorgabe, wenn der Satz aus der Tabelle kam; sonst <c>null</c>.</param>
-        public static double? WirksamerSatz(string bemessung, double? satz, double eingegeben,
-                                            int komponentenId, string bezeichnung,
-                                            ref NutzungsdauerSatztafel tafel,
+        /// <param name="herkunft">Die Vorgabe der Tabelle, wenn der Rückgabewert ihr Satz ist —
+        /// für eine leere Position vorgeschlagen oder als gepflegter Satz gleich; sonst
+        /// <c>null</c>.</param>
+        public static double? WirksamerSatz(string bemessung, double? satz, int komponentenId,
+                                            string bezeichnung, ref NutzungsdauerSatztafel tafel,
                                             out BetriebssatzVorgabe herkunft)
         {
             herkunft = null;
-            if (satz.HasValue) return satz;
-            if (Math.Abs(eingegeben) > 1e-9) return null;
-            if (!Satzfaehig(bemessung, bezeichnung)) return null;
+            if (!Satzfaehig(bemessung, bezeichnung)) return satz;
 
             if (tafel == null) tafel = Tafel();
             BetriebssatzVorgabe v = tafel.Vorgabe(komponentenId, bezeichnung);
-            if (!v.Satz.HasValue) return null;
+            if (!v.Satz.HasValue) return satz;
 
+            if (satz.HasValue)
+            {
+                if (Math.Abs(satz.Value - v.Satz.Value) < 1e-9) herkunft = v;
+                return satz;
+            }
             herkunft = v;
             return v.Satz;
         }
 
         /// <summary>
+        /// Stammt ein GEPFLEGTER Satz aus der Tabelle — ist er genau ihr Satz für diese
+        /// Position? Die Nachweisliste fragt so nach der Herkunft, ohne je einen Satz zu
+        /// setzen. Ohne gepflegten Satz: nein.
+        /// </summary>
+        public static bool AusTabelle(string bemessung, double? satz, int komponentenId,
+                                      string bezeichnung, ref NutzungsdauerSatztafel tafel)
+        {
+            if (!satz.HasValue) return false;
+            WirksamerSatz(bemessung, satz, komponentenId, bezeichnung, ref tafel,
+                          out BetriebssatzVorgabe herkunft);
+            return herkunft != null;
+        }
+
+        /// <summary>
         /// Die Herkunftszeile unter dem Satzfeld des Kostendialogs: „2 % · Satz aus
-        /// Nutzungsdauertabelle: Heizkessel · Wärmeerzeuger" — wenn der Satz aus der Tabelle
-        /// KOMMT (Feld leer) oder ihr ENTSPRICHT (gemessen am Wert, wie bei der
-        /// Nutzungsdauer, <see cref="NutzungsdauerCtrl.Herkunft"/>). Leer bei einem eigenen
-        /// Satz und dort, wo die Tabelle nichts anbietet.
+        /// Nutzungsdauertabelle: Heizkessel · Wärmeerzeuger (Instandsetzung)" — wenn der
+        /// gepflegte Satz dem der Tabelle ENTSPRICHT (gemessen am Wert, wie bei der
+        /// Nutzungsdauer, <see cref="NutzungsdauerCtrl.Herkunft"/>). Leer bei einem leeren
+        /// Feld — das rechnet mit nichts, bis „Sätze vorbelegen…" den Satz einträgt —, bei einem
+        /// eigenen Satz und dort, wo die Tabelle nichts anbietet.
         /// </summary>
         public static string Herleitungszeile(BetriebssatzVorgabe v, double? gepflegterSatz)
         {
-            if (v == null || !v.Satz.HasValue) return "";
-            if (gepflegterSatz.HasValue && Math.Abs(gepflegterSatz.Value - v.Satz.Value) > 1e-9) return "";
-            return v.Herleitung;
+            if (v == null || !v.Satz.HasValue || !gepflegterSatz.HasValue) return "";
+            return Math.Abs(gepflegterSatz.Value - v.Satz.Value) < 1e-9 ? v.Herleitung : "";
         }
 
         /// <summary>Der Klartext der Herkunft — EINE Formulierung für Dialog und Bericht.</summary>

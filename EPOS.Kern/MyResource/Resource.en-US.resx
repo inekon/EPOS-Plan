@@ -20074,7 +20074,7 @@ Do you want to allow this?</value>
     <value>Maintenance [%/y]</value>
   </data>
   <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
-    <value>Repair and maintenance as a percentage of the investment per year (VDI 2067 Part 1, Table A2). They apply to operating cost items “% of investment” without their own rate; an empty cell means “no rate”. The delivered rates are the middle of the cost template's recommended range, where it has one.</value>
+    <value>Repair and maintenance as a percentage of the investment per year (VDI 2067 Part 1, Table A2). Cost management enters them into operating cost items “% of investment” with “Preset rates…”, as does adopting a cost template; the calculation uses the item's rate. An empty cell means “no rate”. The delivered rates are the middle of the cost template's recommended range, where it has one.</value>
   </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Source</value>
@@ -20179,10 +20179,10 @@ Do you want to allow this?</value>
     <value>{0} rate(s) (repair, maintenance) preset from the service life table.</value>
   </data>
   <data name="ND_SAETZE_VORBELEGEN_KEINE" xml:space="preserve">
-    <value>There is nothing to preset: every item “Instandhaltung …” or “Wartung …” measured as “% of investment” carries a rate, or the service life table has none for this technology.</value>
+    <value>There is nothing to preset: every item “Instandhaltung …” or “Wartung …” measured as “% of investment” already carries the service life table's rate, or the table has none for this technology.</value>
   </data>
   <data name="ND_SAETZE_VORBELEGEN_FRAGE" xml:space="preserve">
-    <value>{0} item(s) already carry a different rate. Should these be overwritten from the service life table as well?</value>
+    <value>{0} item(s) already carry a different rate or an entered amount. Should these be overwritten with the service life table's rate as well?</value>
   </data>
   <data name="ND_SATZ_HERLEITUNG" xml:space="preserve">
     <value>{0} % · rate from the service life table: {1} · {2} ({3})</value>
@@ -22843,13 +22843,13 @@ Do you want to allow this?</value>
     <value>Repair</value>
   </data>
   <data name="KI_DLG_NUD_INST_ERL" xml:space="preserve">
-    <value>The repair rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. An operating cost item “Instandhaltung …” measured as “% of investment” without its own rate uses it.</value>
+    <value>The repair rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. “Preset rates…” in cost management enters it into an operating cost item “Instandhaltung …” measured as “% of investment”, as does adopting a cost template.</value>
   </data>
   <data name="KI_DLG_NUD_WART_NAME" xml:space="preserve">
     <value>Maintenance</value>
   </data>
   <data name="KI_DLG_NUD_WART_ERL" xml:space="preserve">
-    <value>The maintenance rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. An operating cost item “Wartung …” measured as “% of investment” without its own rate uses it.</value>
+    <value>The maintenance rate of this record as a percentage of the investment per year under VDI 2067 Part 1, Table A2. “Preset rates…” in cost management enters it into an operating cost item “Wartung …” measured as “% of investment”, as does adopting a cost template.</value>
   </data>
   <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
     <value>Edit cost position</value>

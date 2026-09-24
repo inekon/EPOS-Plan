@@ -4001,10 +4001,10 @@ namespace WindowsFormsApplication1
         /// Stromeinspeisung). Die Quelle ist <see cref="NutzungsdauerSaetze"/> — EINE Quelle
         /// für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
         ///
-        /// <para><b>Wirkung:</b> Der Schritt selbst setzt nur Tabellenwerte; rechenwirksam wird
-        /// ein Satz über die Satzermittlung der Betriebskosten, an einer Position „% der
-        /// Investition" ohne eigenen Satz und ohne erfassten Betrag (Etappe E10). Der
-        /// Referenzlauf bleibt byte-gleich — er führt keine Wirtschaftlichkeitsgröße.
+        /// <para><b>Wirkung:</b> Der Schritt setzt nur Tabellenwerte und ist ergebnisneutral;
+        /// rechenwirksam wird ein Satz erst, wenn die Vorbelegung ihn ausdrücklich in eine
+        /// Position schreibt („Sätze vorbelegen…", Übernahme einer Kostenvorlage — Etappe E10,
+        /// Fassung E10/9). Der Referenzlauf bleibt byte-gleich.
         /// <b>Wiederholbar:</b> Gesetzt wird nur, was leer ist.</para>
         /// </summary>
         public const int SCHRITT_120_NUTZUNGSDAUER_SAETZE = 120;

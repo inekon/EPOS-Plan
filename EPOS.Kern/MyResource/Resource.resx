@@ -20081,7 +20081,7 @@ Möchten Sie das zulassen?</value>
     <value>Wartung [%/a]</value>
   </data>
   <data name="ND_SAETZE_HINWEIS" xml:space="preserve">
-    <value>Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.</value>
+    <value>Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Die Kostenverwaltung trägt sie mit „Sätze vorbelegen…“ in Betriebskostenpositionen „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage; gerechnet wird mit dem Satz der Position. Eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.</value>
   </data>
   <data name="ND_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
@@ -20186,10 +20186,10 @@ Möchten Sie das zulassen?</value>
     <value>{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt.</value>
   </data>
   <data name="ND_SAETZE_VORBELEGEN_KEINE" xml:space="preserve">
-    <value>Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt für diese Technik keinen.</value>
+    <value>Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt bereits den Satz der Nutzungsdauertabelle, oder die Tabelle führt für diese Technik keinen.</value>
   </data>
   <data name="ND_SAETZE_VORBELEGEN_FRAGE" xml:space="preserve">
-    <value>{0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der Nutzungsdauertabelle überschrieben werden?</value>
+    <value>{0} Position(en) tragen bereits einen anderen Satz oder einen erfassten Betrag. Sollen auch diese mit dem Satz der Nutzungsdauertabelle überschrieben werden?</value>
   </data>
   <data name="ND_SATZ_HERLEITUNG" xml:space="preserve">
     <value>{0} % · Satz aus Nutzungsdauertabelle: {1} · {2} ({3})</value>
@@ -22850,13 +22850,13 @@ Möchten Sie das zulassen?</value>
     <value>Instandsetzung</value>
   </data>
   <data name="KI_DLG_NUD_INST_ERL" xml:space="preserve">
-    <value>Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt.</value>
+    <value>Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage.</value>
   </data>
   <data name="KI_DLG_NUD_WART_NAME" xml:space="preserve">
     <value>Wartung</value>
   </data>
   <data name="KI_DLG_NUD_WART_ERL" xml:space="preserve">
-    <value>Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt.</value>
+    <value>Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage.</value>
   </data>
   <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
     <value>Kostenposition bearbeiten</value>

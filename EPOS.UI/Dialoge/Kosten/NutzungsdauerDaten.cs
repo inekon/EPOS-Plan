@@ -135,9 +135,10 @@ public sealed class NutzungsdauerTexte
     /// <summary><c>ND_SAETZE_HINWEIS</c> — die Herkunft der zwei Satzspalten (Etappe E10).</summary>
     public string SaetzeHinweis { get; set; } =
         "Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). " +
-        "Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; " +
-        "eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des " +
-        "Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.";
+        "Die Kostenverwaltung trägt sie mit „Sätze vorbelegen…“ in Betriebskostenpositionen " +
+        "„% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage; gerechnet wird mit " +
+        "dem Satz der Position. Eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte " +
+        "des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt.";
 
     /// <summary><c>ND_SP_QUELLE</c></summary>
     public string SpalteQuelle { get; set; } = "Quelle";

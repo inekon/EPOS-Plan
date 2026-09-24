@@ -127,9 +127,9 @@ public sealed class KostenPositionZeile
     /// ETAPPE E10 (Stufe S3): Die HERKUNFTSZEILE unter dem Satzfeld einer
     /// Betriebsposition „Instandhaltung …"/„Wartung …" mit „% der Investition" —
     /// „2 % · Satz aus Nutzungsdauertabelle: Heizkessel · Wärmeerzeuger (Instandsetzung)".
-    /// Sie steht, wenn das Feld leer ist (dann rechnet der Satz der Tabelle) oder den
-    /// Satz der Tabelle trägt; fertig aus dem Kern
-    /// (<c>NutzungsdauerSatzCtrl.Herleitungszeile</c>), leer heißt keine Zeile.
+    /// Sie steht, wenn das Feld den Satz der Tabelle trägt (vorbelegt oder mit der Vorlage
+    /// übernommen); ein leeres Feld rechnet mit nichts und bekommt keine Zeile. Fertig aus
+    /// dem Kern (<c>NutzungsdauerSatzCtrl.Herleitungszeile</c>), leer heißt keine Zeile.
     /// </summary>
     public string SatzHerleitung { get; set; } = "";
 

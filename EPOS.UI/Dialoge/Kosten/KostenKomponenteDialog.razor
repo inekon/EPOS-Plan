@@ -670,14 +670,14 @@
     /// <summary>ETAPPE E10: Meldung, wenn es keinen Satz vorzubelegen gibt.</summary>
     [Parameter] public string SaetzeVorbelegenKeine { get; set; }
         = "Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ "
-        + "mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt "
-        + "für diese Technik keinen.";
+        + "mit „% der Investition“ trägt bereits den Satz der Nutzungsdauertabelle, oder die "
+        + "Tabelle führt für diese Technik keinen.";
 
     /// <summary>ETAPPE E10: Die Rückfrage vor dem Überschreiben gepflegter Sätze
     /// ({0} = Anzahl).</summary>
     [Parameter] public string SaetzeVorbelegenFrage { get; set; }
-        = "{0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der "
-        + "Nutzungsdauertabelle überschrieben werden?";
+        = "{0} Position(en) tragen bereits einen anderen Satz oder einen erfassten Betrag. "
+        + "Sollen auch diese mit dem Satz der Nutzungsdauertabelle überschrieben werden?";
 
     /// <summary>U31: Wozu die Gruppe da ist — die Bemessungen, die an ihr hängen.</summary>
     [Parameter] public string HinweisEndenergie { get; set; }

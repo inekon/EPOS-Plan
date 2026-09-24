@@ -33407,7 +33407,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Instandsetzungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Instandhaltung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage. ähnelt.
         /// </summary>
         public static string KI_DLG_NUD_INST_ERL {
             get {
@@ -33542,7 +33542,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. Ihn nimmt eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“, die keinen eigenen Satz trägt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wartungssatz dieses Satzes in % der Investition je Jahr nach VDI 2067 Blatt 1, Tabelle A2. „Sätze vorbelegen…“ der Kostenverwaltung trägt ihn in eine Betriebskostenposition „Wartung …“ mit der Bemessung „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage. ähnelt.
         /// </summary>
         public static string KI_DLG_NUD_WART_ERL {
             get {
@@ -47430,7 +47430,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Sie gelten für Betriebskostenpositionen „% der Investition“ ohne eigenen Satz; eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instandsetzung und Wartung in % der Investition je Jahr (VDI 2067 Blatt 1, Tabelle A2). Die Kostenverwaltung trägt sie mit „Sätze vorbelegen…“ in Betriebskostenpositionen „% der Investition“ ein, ebenso die Übernahme einer Kostenvorlage; gerechnet wird mit dem Satz der Position. Eine leere Zelle heißt „kein Satz“. Ausgeliefert ist die Mitte des Empfehlungsbereichs der Kostenvorlage, wo sie einen kennt. ähnelt.
         /// </summary>
         public static string ND_SAETZE_HINWEIS {
             get {
@@ -47448,7 +47448,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der Nutzungsdauertabelle überschrieben werden? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) tragen bereits einen anderen Satz oder einen erfassten Betrag. Sollen auch diese mit dem Satz der Nutzungsdauertabelle überschrieben werden? ähnelt.
         /// </summary>
         public static string ND_SAETZE_VORBELEGEN_FRAGE {
             get {
@@ -47457,7 +47457,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt für diese Technik keinen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ mit „% der Investition“ trägt bereits den Satz der Nutzungsdauertabelle, oder die Tabelle führt für diese Technik keinen. ähnelt.
         /// </summary>
         public static string ND_SAETZE_VORBELEGEN_KEINE {
             get {

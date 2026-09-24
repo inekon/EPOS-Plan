@@ -250,11 +250,11 @@ namespace WindowsFormsApplication1
                     "{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt."),
                 ["SaetzeVorbelegenKeine"] = T("ND_SAETZE_VORBELEGEN_KEINE",
                     "Es gibt nichts vorzubelegen: Jede Position „Instandhaltung …“ oder „Wartung …“ "
-                    + "mit „% der Investition“ trägt einen Satz, oder die Nutzungsdauertabelle führt "
-                    + "für diese Technik keinen."),
+                    + "mit „% der Investition“ trägt bereits den Satz der Nutzungsdauertabelle, oder "
+                    + "die Tabelle führt für diese Technik keinen."),
                 ["SaetzeVorbelegenFrage"] = T("ND_SAETZE_VORBELEGEN_FRAGE",
-                    "{0} Position(en) tragen bereits einen anderen Satz. Sollen auch diese aus der "
-                    + "Nutzungsdauertabelle überschrieben werden?"),
+                    "{0} Position(en) tragen bereits einen anderen Satz oder einen erfassten Betrag. "
+                    + "Sollen auch diese mit dem Satz der Nutzungsdauertabelle überschrieben werden?"),
                 ["HinweisEndenergie"] = T("KDLG_HINWEIS_ENDENERGIE",
                     "Diese Mengen sind die Bezugsgrößen der Bemessungen "
                     + "„% des Endenergiebedarfs\" und „% der Endenergiekosten\"."),
@@ -642,15 +642,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E10 (Stufe S3, Empfehlung E10‑Q1 (a)): „Sätze vorbelegen" auf der
-        /// BETRIEBSSEITE — dieselbe Regel wie oben, für die Sätze.
+        /// ETAPPE E10 (Stufe S3, Empfehlung E10‑Q1 (a) in der Fassung E10/9): „Sätze
+        /// vorbelegen" auf der BETRIEBSSEITE — dieselbe Regel wie oben, für die Sätze, und
+        /// der EINZIGE Weg, auf dem ein Satz der Nutzungsdauertabelle in eine bestehende
+        /// Position kommt: die bewusste Handlung des Anwenders.
         ///
         /// <para>Sie füllt die LEEREN Satzfelder der Positionen „Instandhaltung …"/
         /// „Wartung …" mit „% der Investition" aus der Nutzungsdauertabelle
-        /// (<see cref="NutzungsdauerSatzCtrl"/>, derselbe Satz, den der Rechenweg einer
-        /// leeren Zeile ansetzt) und meldet, wie viele Positionen einen ANDEREN Satz tragen —
-        /// die bleiben stehen, bis der Anwender das Überschreiben bestätigt. Ein Satz 0 gilt
-        /// als gepflegt. Geschrieben wird erst mit „Speichern".</para>
+        /// (<see cref="NutzungsdauerSatzCtrl.WirksamerSatz"/>) und meldet, wie viele Positionen
+        /// einen ANDEREN Satz — oder ohne Satz einen erfassten Betrag — tragen: Die bleiben
+        /// stehen, bis der Anwender das Überschreiben bestätigt (ein Betrag bleibt ein Betrag,
+        /// ND‑Q4 (b)). Ein Satz 0 gilt als gepflegt. Geschrieben wird erst mit „Speichern";
+        /// dann rechnet die Position mit dem Satz, und ihre Herkunft steht unter dem
+        /// Satzfeld, in der Herleitung und in der Formelmappe.</para>
         /// </summary>
         private NutzungsdauerVorbelegung SaetzeVorbelegen(bool ueberschreiben)
         {
@@ -661,17 +665,20 @@ namespace WindowsFormsApplication1
                 Bindung b;
                 if (!z.Schreibbar || !_bindungen.TryGetValue(z, out b)) continue;
                 KostenVorlagenPosition p = b.Position;
-                if (!NutzungsdauerSatzCtrl.Satzfaehig(p.Bemessung, p.Bezeichnung)) continue;
 
-                BetriebssatzVorgabe v = tafel.Vorgabe(KomponentenId, p.Bezeichnung);
-                if (!v.Satz.HasValue) continue;
+                // Der Satz der Tabelle für diese Position — derselbe Kern wie Übernahme und
+                // Herkunftszeile; ohne Zuordnung oder ohne Tabellensatz: nichts.
+                double? vorschlag = NutzungsdauerSatzCtrl.WirksamerSatz(
+                    p.Bemessung, null, KomponentenId, p.Bezeichnung, ref tafel, out _);
+                if (!vorschlag.HasValue) continue;
 
-                bool leer = !z.Satz.HasValue;
-                if (!leer && Math.Abs(z.Satz.Value - v.Satz.Value) < 1e-9) continue;
+                if (z.Satz.HasValue && Math.Abs(z.Satz.Value - vorschlag.Value) < 1e-9) continue;
 
+                bool betrag = b.Projektzeile != null && Math.Abs(b.Projektzeile.Eingegeben) > 1e-9;
+                bool leer = !z.Satz.HasValue && !betrag;
                 if (!leer && !ueberschreiben) { belegt++; continue; }
 
-                z.Satz = v.Satz;
+                z.Satz = vorschlag;
                 Nachziehen(z);
                 gefuellt++;
             }
@@ -1009,22 +1016,13 @@ namespace WindowsFormsApplication1
             // damit auch aus dem Summenfuß zu fallen). Gerechnet wird mit demselben
             // BetriebskostenCtrl.Betrag wie im Rechenkern, auf der Basis, die die
             // Kaskade beim Laden ausgewiesen hat.
+            // ETAPPE E10/9: Der Betrag folgt dem Satz, der IN DER ZEILE steht — ein leeres
+            // Satzfeld rechnet wie im Kern mit nichts. Die Nutzungsdauertabelle wirkt allein
+            // über „Sätze vorbelegen…", das ihren Satz ausdrücklich in die Zeile schreibt.
             if (info != null && info.Absolut) p.BetragNetto = p.Satz;
             else if (ProjektModus && b.Projektzeile != null)
-            {
-                // ETAPPE E10 (Stufe S3): Ein LEERES Satzfeld einer Position „Instandhaltung …"/
-                // „Wartung …" mit „% der Investition" rechnet im Kern mit dem Satz der
-                // Nutzungsdauertabelle — der Dialog zeigt denselben Betrag, über dieselbe Regel
-                // (NutzungsdauerSatzCtrl.WirksamerSatz; erfasster Betrag 0, wie ihn der
-                // Speicherweg für eine bemessene Zeile schreibt).
-                NutzungsdauerSatztafel tafel = Satztafel();
-                BetriebssatzVorgabe herkunft;
-                double? satz = _invest ? p.Satz
-                    : NutzungsdauerSatzCtrl.WirksamerSatz(p.Bemessung, p.Satz, 0.0, KomponentenId,
-                                                          p.Bezeichnung, ref tafel, out herkunft);
                 p.BetragNetto = BetriebskostenCtrl.Betrag(
-                    p.Bemessung, 0, b.Projektzeile.Basis, satz, p.IstErloes);
-            }
+                    p.Bemessung, 0, b.Projektzeile.Basis, p.Satz, p.IstErloes);
             else p.BetragNetto = null;
 
             KopplungAnwenden(z, p, info, b.Projektzeile);

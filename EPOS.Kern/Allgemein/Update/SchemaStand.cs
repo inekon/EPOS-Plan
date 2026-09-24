@@ -467,8 +467,9 @@ namespace WindowsFormsApplication1
         /// <c>Instandsetzung_Prozent</c>/<c>Wartung_Prozent</c> der Standardzeilen bekommen die
         /// Mitte des Empfehlungsbereichs der Betriebsvorlagen-Saat
         /// (<see cref="NutzungsdauerSaetze"/>). <b>Reines DML</b> an <c>Tab_Nutzungsdauer</c>;
-        /// gesetzt wird nur, was leer ist. Der Referenzlauf bleibt byte-gleich — er fuehrt keine
-        /// Wirtschaftlichkeitsgroesse.
+        /// gesetzt wird nur, was leer ist. <b>Ergebnisneutral:</b> Ein Satz der Tabelle rechnet
+        /// erst, wenn die Vorbelegung ihn in eine Position schreibt; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>

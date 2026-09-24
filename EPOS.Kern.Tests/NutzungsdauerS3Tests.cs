@@ -16,10 +16,12 @@ namespace EPOS.Kern.Tests
     /// <para><b>Was hier gehalten wird.</b> Die Saat der zwei Satzspalten aus den Konstanten
     /// der Betriebsvorlagen (keine erfundene Normzahl, ND‑Q8) und ihr Schemaschritt 120
     /// samt Werkzeug und Repo-Datei; der Lese- und Schreibweg der Sätze in Controller und
-    /// Hülle des Dialogs „Nutzungsdauern (AfA)"; die Regel des wirksamen Satzes
-    /// (gepflegter Satz &gt; Satz der Tabelle &gt; nichts, ein erfasster Betrag schlägt die
-    /// Tabelle — I‑2); die Vorbelegung (Vorlagenübernahme, Knopf „Sätze vorbelegen…",
-    /// neuer Kesseleintrag in %/a); und der Rechenweg samt Herleitung und Formelmappe
+    /// Hülle des Dialogs „Nutzungsdauern (AfA)"; die Regel für Vorbelegung und Anzeige
+    /// (gepflegter Satz vor dem Satz der Tabelle); dass die Tabelle NICHT selbst rechnet
+    /// (Fassung E10/9, Anwenderentscheid ND‑Q4) — ihre Sätze wirken allein über die
+    /// ausdrückliche Vorbelegung (Vorlagenübernahme, Knopf „Sätze vorbelegen…"; die
+    /// Pflichtanlage des Wizards bleibt ergebnisneutral); der neue Kesseleintrag in %/a; und
+    /// der Rechenweg eines vorbelegten Satzes samt Herkunft, Herleitung und Formelmappe
     /// (Stufe 3) an Projekt 1018.</para>
     ///
     /// <para><b>Der Träger der Rechenfälle</b> ist das BHKW des Projekts 1018 (Anlage
@@ -298,50 +300,55 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Der wirksame Satz — gepflegt > Tabelle > nichts
+        //  Der Satz für Vorbelegung und Anzeige — gepflegt vor Tabelle
         // =====================================================================
 
         /// <summary>
-        /// Die Regel an einem Lesestand ohne Datenbank: Ein gepflegter Satz hat Vorrang,
-        /// ein erfasster Betrag schlägt die Tabelle (I‑2), und nur eine Position
-        /// „% der Investition" mit Zuordnung nimmt den Satz der Tabelle.
+        /// Die Regel an einem Lesestand ohne Datenbank (Fassung E10/9): Ein gepflegter Satz
+        /// bleibt — auch 0; eine leere, satzfähige Position bekommt den Satz der Tabelle als
+        /// Wert der Vorbelegung; ist der gepflegte Satz genau der der Tabelle, trägt er ihre
+        /// Herkunft. Andere Bemessung oder keine Zuordnung: kein Tabellensatz.
         /// </summary>
         [Fact]
-        public void Der_wirksame_Satz_folgt_dem_Vorrang_gepflegt_Tabelle_nichts()
+        public void Der_Satz_fuer_Vorbelegung_und_Anzeige_folgt_gepflegt_vor_Tabelle()
         {
             NutzungsdauerSatztafel tafel = Probetafel();
             string pinv = DbWerte.BEMESSUNG_PROZENT_INVESTITION;
             string bhkw = DbWerte.VDI_POS_INSTANDHALTUNG_BHKW;
 
-            // Gepflegt schlägt die Tabelle — auch ein gepflegter Satz 0.
-            Assert.Equal(3.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, 3.0, 0.0, BHKW, bhkw,
+            // Gepflegt bleibt — ohne Herkunft, wo er von der Tabelle abweicht.
+            Assert.Equal(3.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, 3.0, BHKW, bhkw,
                                                                   ref tafel, out BetriebssatzVorgabe h1));
             Assert.Null(h1);
-            Assert.Equal(0.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, 0.0, 0.0, BHKW, bhkw,
-                                                                  ref tafel, out _));
+            Assert.Equal(0.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, 0.0, BHKW, bhkw, ref tafel, out _));
 
-            // Leer → die Tabelle, mit Herkunft.
-            Assert.Equal(6.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, null, 0.0, BHKW, bhkw,
+            // Gepflegt GLEICH der Tabelle → mit Herkunft.
+            Assert.Equal(6.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, 6.0, BHKW, bhkw,
                                                                   ref tafel, out BetriebssatzVorgabe h2));
-            Assert.NotNull(h2);
-            Assert.Equal(Satzart.Instandsetzung, h2.Art);
             Assert.Equal(ZEILE_BHKW, h2.Quellzeile.Id);
 
-            // I‑2: Ein erfasster Betrag gilt, die Tabelle greift nicht.
-            Assert.Null(NutzungsdauerSatzCtrl.WirksamerSatz(pinv, null, 250.0, BHKW, bhkw,
-                                                            ref tafel, out BetriebssatzVorgabe h3));
-            Assert.Null(h3);
+            // Leer → der Satz der Tabelle, den die Vorbelegung schreibt.
+            Assert.Equal(6.0, NutzungsdauerSatzCtrl.WirksamerSatz(pinv, null, BHKW, bhkw,
+                                                                  ref tafel, out BetriebssatzVorgabe h3));
+            Assert.Equal(Satzart.Instandsetzung, h3.Art);
 
-            // Andere Bemessung oder keine Zuordnung → nichts, wie vor S3.
-            Assert.Null(NutzungsdauerSatzCtrl.WirksamerSatz(DbWerte.BEMESSUNG_BETRAG, null, 0.0, BHKW, bhkw,
+            // Andere Bemessung oder keine Zuordnung → kein Tabellensatz.
+            Assert.Null(NutzungsdauerSatzCtrl.WirksamerSatz(DbWerte.BEMESSUNG_BETRAG, null, BHKW, bhkw,
                                                             ref tafel, out _));
-            Assert.Null(NutzungsdauerSatzCtrl.WirksamerSatz(pinv, null, 0.0, BHKW, "Personalkosten",
+            Assert.Null(NutzungsdauerSatzCtrl.WirksamerSatz(pinv, null, BHKW, "Personalkosten",
                                                             ref tafel, out _));
 
             // Technikübergreifende Position: „Instandhaltung Wärmezentrale" in der BHKW-Vorlage
             // nimmt den Satz der Wärmezentrale, nicht den des Moduls.
             Assert.Equal(2.0, NutzungsdauerSatzCtrl.WirksamerSatz(
-                pinv, null, 0.0, BHKW, DbWerte.VDI_POS_INSTANDHALTUNG_WAERMEZENTRALE, ref tafel, out _));
+                pinv, null, BHKW, DbWerte.VDI_POS_INSTANDHALTUNG_WAERMEZENTRALE, ref tafel, out _));
+
+            // Die Herkunft, nach der die Nachweisliste fragt: nur ein gepflegter Satz, der
+            // genau der der Tabelle ist.
+            Assert.True(NutzungsdauerSatzCtrl.AusTabelle(pinv, 6.0, BHKW, bhkw, ref tafel));
+            Assert.False(NutzungsdauerSatzCtrl.AusTabelle(pinv, 4.0, BHKW, bhkw, ref tafel));
+            Assert.False(NutzungsdauerSatzCtrl.AusTabelle(pinv, null, BHKW, bhkw, ref tafel));
+            Assert.False(NutzungsdauerSatzCtrl.AusTabelle(pinv, 6.0, BHKW, "Personalkosten", ref tafel));
         }
 
         /// <summary>
@@ -370,7 +377,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Herkunftszeile nennt Satz, Technik, Positionsart und Satzart; sie steht nur,
-        /// solange der Satz der Position der der Tabelle ist.
+        /// wenn der gepflegte Satz der der Tabelle ist — ein leeres Feld rechnet mit nichts und
+        /// bekommt keine Zeile (Fassung E10/9).
         /// </summary>
         [Fact]
         public void Die_Herkunftszeile_nennt_die_Tabelle()
@@ -381,8 +389,8 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal("6 % · Satz aus Nutzungsdauertabelle: Blockheizkraftwerk · Modul (Instandsetzung)",
                          v.Herleitung);
-            Assert.Equal(v.Herleitung, NutzungsdauerSatzCtrl.Herleitungszeile(v, null));
             Assert.Equal(v.Herleitung, NutzungsdauerSatzCtrl.Herleitungszeile(v, 6.0));
+            Assert.Equal("", NutzungsdauerSatzCtrl.Herleitungszeile(v, null));
             Assert.Equal("", NutzungsdauerSatzCtrl.Herleitungszeile(v, 4.0));
             Assert.Equal("Satz aus Nutzungsdauertabelle", NutzungsdauerSatzCtrl.HerkunftKurz());
         }
@@ -418,17 +426,45 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Betriebsseite der Kostenverwaltung nennt die Herkunft unter dem leeren
-        /// Satzfeld, und „Sätze vorbelegen…" füllt die vier leeren Sätze der BHKW-Anlage —
-        /// geschrieben wird erst mit „Speichern".
+        /// Die Pflichtanlage des Wizards (<c>PflichtpositionenSicherstellen</c>) läuft ohne
+        /// Zutun des Anwenders und bleibt ergebnisneutral: Auch ihre Zeile „Instandhaltung
+        /// Heizkessel" bekommt KEINEN Satz der Tabelle (Fassung E10/9). Projekt 1027 trägt
+        /// einen Kessel und eine Wärmepumpe, aber keine einzige Kostenzeile.
         /// </summary>
         [Fact]
-        public void Die_Betriebsseite_zeigt_die_Herkunft_und_belegt_die_Saetze_vor()
+        public void Die_Pflichtanlage_schreibt_keinen_Satz_der_Tabelle()
+        {
+            const int projekt = 1027;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            NutzungsdauerCtrl.ProbeVergessen();
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + projekt));
+
+            Assert.True(KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen(projekt) > 0);
+
+            Assert.True(Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte AS w INNER JOIN Tab_Kostenfaktor AS k " +
+                             "ON k.StammID = w.StammID WHERE w.ProjektID = " + projekt +
+                             " AND k.Bezeichnung = 'Instandhaltung Heizkessel'") == 1);
+            Assert.Null(SatzDerPosition(projekt, DbWerte.VDI_POS_INSTANDHALTUNG_KESSEL));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + projekt +
+                                 " AND Einheitpreis IS NOT NULL"));
+        }
+
+        /// <summary>
+        /// <b>Die bewusste Handlung:</b> Auf der Betriebsseite der Kostenverwaltung steht unter
+        /// dem LEEREN Satzfeld keine Herkunft — es rechnet mit nichts. „Sätze vorbelegen…"
+        /// füllt die vier leeren Sätze der BHKW-Anlage, die Herkunftszeile erscheint, und
+        /// gerechnet wird erst, wenn „Speichern" sie geschrieben hat.
+        /// </summary>
+        [Fact]
+        public void Erst_Vorbelegen_und_Speichern_lassen_die_Saetze_der_Tabelle_rechnen()
         {
             using var _ = new Kulturvorrichtung();
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             NutzungsdauerCtrl.ProbeVergessen();
+            double basis = BetriebskostenCtrl.InvestSummeFuer(PROJEKT, BHKW, ANLAGE).Value;
+            double vorher = WirtschaftlichkeitCtrl.LiesBetriebskosten(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET);
 
             IReadOnlyDictionary<string, object> gaben =
                 KostenKomponenteHuelle.GabenProjekt(PROJEKT, "", null, true, ANLAGE);
@@ -438,14 +474,31 @@ namespace EPOS.Kern.Tests
             Assert.True(stand.SaetzeVorbelegbar);
             KostenPositionZeile bhkw = stand.Zeilen.Single(z => z.Bezeichnung == DbWerte.VDI_POS_INSTANDHALTUNG_BHKW);
             Assert.Null(bhkw.Satz);
-            Assert.Contains("Satz aus Nutzungsdauertabelle", bhkw.SatzHerleitung);
+            Assert.Equal("", bhkw.SatzHerleitung);
 
             var vorbelegen = (Func<bool, NutzungsdauerVorbelegung>)gaben["NutzungsdauerVorbelegen"];
             NutzungsdauerVorbelegung v = vorbelegen(false);
             Assert.Equal(4, v.Gefuellt);
             Assert.Equal(0, v.Belegt);
             Assert.Equal(6.0, bhkw.Satz);
-            Assert.Null(SatzDerZeile(B_BHKW));                 // noch nicht geschrieben
+            Assert.Contains("Satz aus Nutzungsdauertabelle", bhkw.SatzHerleitung);
+
+            // Noch nichts geschrieben — die Wirtschaftlichkeit steht, wo sie stand.
+            Assert.Null(SatzDerZeile(B_BHKW));
+            Assert.Equal(vorher, WirtschaftlichkeitCtrl.LiesBetriebskosten(
+                PROJEKT, WirtschaftlichkeitSzenario.ERWARTET), 6);
+
+            var speichern = (Func<bool>)gaben["Speichern"];
+            Assert.True(speichern());
+
+            Assert.Equal(6.0, SatzDerZeile(B_BHKW));
+            Dictionary<int, KostenPositionNachweis> n = Nachweise();
+            Pruefe(n[B_BHKW], 6.0, basis);
+            Pruefe(n[B_WAERMEZENTRALE], 2.0, basis);
+            Pruefe(n[B_BAULICH], 1.25, basis);
+            Pruefe(n[B_STROMEINSPEISUNG], 2.0, basis);
+            Assert.Equal(vorher + basis * 11.25 / 100.0, WirtschaftlichkeitCtrl.LiesBetriebskosten(
+                PROJEKT, WirtschaftlichkeitSzenario.ERWARTET), 6);
         }
 
         /// <summary>
@@ -499,81 +552,88 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Projekt 1018 wie ausgeliefert: Die vier Zeilen „Instandhaltung …" ohne Satz und
-        /// ohne Betrag rechnen mit dem Satz ihrer Technik auf der Basis der Anlage
-        /// (H4a), „Personalkosten" bleibt 0. Nachweis und Summenschleife tragen dieselbe
-        /// Zahl (Probe E7), und die Herleitung nennt die Tabelle.
+        /// <b>Die Tabelle rechnet nicht selbst</b> (Fassung E10/9, Anwenderentscheid ND‑Q4):
+        /// Projekt 1018 wie ausgeliefert — die vier Zeilen „Instandhaltung …" ohne Satz und
+        /// ohne Betrag rechnen wie vor S3 mit nichts und tragen keine Herkunft. Nachweis und
+        /// Summenschleife tragen dieselbe Zahl (Probe E7).
         /// </summary>
         [Fact]
-        public void Ohne_eigenen_Satz_rechnet_die_Position_mit_dem_Satz_der_Tabelle()
+        public void Ohne_eigenen_Satz_rechnet_die_Position_wie_bisher_mit_nichts()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            NutzungsdauerCtrl.ProbeVergessen();
+
+            Dictionary<int, KostenPositionNachweis> n = Nachweise();
+            foreach (int id in new[] { B_BHKW, B_WAERMEZENTRALE, B_BAULICH, B_STROMEINSPEISUNG, B_PERSONAL })
+            {
+                Assert.Null(n[id].Einheitpreis);
+                Assert.Equal(0.0, n[id].BetragJahr, 9);
+                Assert.Null(n[id].SatzHerkunft);
+            }
+
+            WirtschaftlichkeitCtrl.BetriebsTopfe t =
+                WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET);
+            Assert.Equal(n.Values.Sum(x => x.BetragJahr), t.Gesamt, 6);
+        }
+
+        /// <summary>
+        /// Ein Satz, der IN DER ZEILE steht, rechnet — gleich woher. Ist er genau der der
+        /// Tabelle (vorbelegt oder übernommen), nennen Nachweis, Herleitung und Formelmappe
+        /// die Herkunft; ein eigener Satz rechnet ohne sie, ein Betrag bleibt ein Betrag, und
+        /// führt die Tabelle keinen Satz mehr, rechnet der gepflegte weiter — ohne Herkunft.
+        /// </summary>
+        [Fact]
+        public void Ein_gepflegter_Satz_rechnet_und_nennt_die_Tabelle_nur_wenn_er_ihr_entspricht()
         {
             using var _ = new Kulturvorrichtung();
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             NutzungsdauerCtrl.ProbeVergessen();
-
             double basis = BetriebskostenCtrl.InvestSummeFuer(PROJEKT, BHKW, ANLAGE).Value;
             Assert.True(basis > 0);
 
-            Dictionary<int, KostenPositionNachweis> n = Nachweise();
-            Pruefe(n[B_BHKW], 6.0, basis);
-            Pruefe(n[B_WAERMEZENTRALE], 2.0, basis);
-            Pruefe(n[B_BAULICH], 1.25, basis);
-            Pruefe(n[B_STROMEINSPEISUNG], 2.0, basis);
-
-            Assert.Equal(0.0, n[B_PERSONAL].BetragJahr, 9);
-            Assert.Null(n[B_PERSONAL].SatzHerkunft);
-
-            // Probe E7: Summenschleife und Nachweisliste gehen denselben Weg.
-            WirtschaftlichkeitCtrl.BetriebsTopfe t =
-                WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET);
-            Assert.Equal(n.Values.Sum(x => x.BetragJahr), t.Gesamt, 6);
+            // Der Satz der Tabelle, ausdrücklich in der Zeile.
+            SetzeSatz(B_BHKW, 6.0);
+            KostenPositionNachweis tabelle = Nachweise()[B_BHKW];
+            Pruefe(tabelle, 6.0, basis);
 
             // Herleitung (Wort, Tabelle, Spalte „Herleitung" der Formelmappe).
-            string herleitung = WirtschaftlichkeitZeilen.Herleitung(n[B_BHKW], System.Globalization.CultureInfo.CurrentCulture);
+            string herleitung = WirtschaftlichkeitZeilen.Herleitung(tabelle, System.Globalization.CultureInfo.CurrentCulture);
             Assert.EndsWith(" · Satz aus Nutzungsdauertabelle", herleitung);
             Assert.Contains("6,000", herleitung);
 
-            // Formelmappe Stufe 3: Menge × Satz / 100 besteht die Gegenrechnung — die Zelle
-            // rechnet denselben Betrag wie der Rechenweg.
-            Assert.Equal(n[B_BHKW].BetragJahr,
-                BetriebskostenCtrl.Betrag(n[B_BHKW].Bemessung, 0.0, n[B_BHKW].Menge,
-                                          n[B_BHKW].Einheitpreis, n[B_BHKW].IstErloes), 6);
-        }
+            // Formelmappe Stufe 3: Menge × Satz / 100 besteht die Gegenrechnung.
+            Assert.Equal(tabelle.BetragJahr,
+                BetriebskostenCtrl.Betrag(tabelle.Bemessung, 0.0, tabelle.Menge,
+                                          tabelle.Einheitpreis, tabelle.IstErloes), 6);
 
-        /// <summary>
-        /// Der Vorrang an der Datenbank: Ein gepflegter Satz schlägt die Tabelle, ein
-        /// erfasster Betrag schlägt sie auch (I‑2), und eine leere Tabellenzelle lässt die
-        /// Position bei 0 — wie vor S3.
-        /// </summary>
-        [Fact]
-        public void Gepflegter_Satz_und_erfasster_Betrag_schlagen_die_Tabelle()
-        {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
-            NutzungsdauerCtrl.ProbeVergessen();
-            double basis = BetriebskostenCtrl.InvestSummeFuer(PROJEKT, BHKW, ANLAGE).Value;
+            // Probe E7 auch mit Satz: Summenschleife und Nachweisliste gehen denselben Weg.
+            Dictionary<int, KostenPositionNachweis> alle = Nachweise();
+            Assert.Equal(alle.Values.Sum(x => x.BetragJahr),
+                         WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET).Gesamt, 6);
 
-            // Gepflegt 4 %.
+            // Ein eigener Satz rechnet — ohne Herkunft.
             SetzeSatz(B_BHKW, 4.0);
-            KostenPositionNachweis gepflegt = Nachweise()[B_BHKW];
-            Assert.Equal(basis * 0.04, gepflegt.BetragJahr, 6);
-            Assert.Null(gepflegt.SatzHerkunft);
+            KostenPositionNachweis eigen = Nachweise()[B_BHKW];
+            Assert.Equal(basis * 0.04, eigen.BetragJahr, 6);
+            Assert.Null(eigen.SatzHerkunft);
 
-            // Erfasster Betrag, kein Satz.
+            // Ein Betrag bleibt ein Betrag.
             SetzeSatz(B_BHKW, null);
             DataRepository.ExecuteNonQuery("UPDATE Tab_ProjektWerte SET EingegebenerWert = 500 WHERE ID = " + B_BHKW);
             KostenPositionNachweis erfasst = Nachweise()[B_BHKW];
             Assert.Equal(500.0, erfasst.BetragJahr, 6);
             Assert.Null(erfasst.SatzHerkunft);
 
-            // Kein Betrag, und die Tabelle führt keinen Satz → 0.
+            // Führt die Tabelle keinen Satz mehr, rechnet der gepflegte weiter — ohne Herkunft.
             DataRepository.ExecuteNonQuery("UPDATE Tab_ProjektWerte SET EingegebenerWert = 0 WHERE ID = " + B_BHKW);
+            SetzeSatz(B_BHKW, 6.0);
             DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_Nutzungsdauer SET Instandsetzung_Prozent = NULL WHERE ID = " + ZEILE_BHKW);
-            KostenPositionNachweis leer = Nachweise()[B_BHKW];
-            Assert.Equal(0.0, leer.BetragJahr, 9);
-            Assert.Null(leer.SatzHerkunft);
+            KostenPositionNachweis ohneTabelle = Nachweise()[B_BHKW];
+            Assert.Equal(basis * 0.06, ohneTabelle.BetragJahr, 6);
+            Assert.Null(ohneTabelle.SatzHerkunft);
         }
 
         // =====================================================================

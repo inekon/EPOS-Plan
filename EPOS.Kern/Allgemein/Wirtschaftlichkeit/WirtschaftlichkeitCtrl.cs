@@ -7376,10 +7376,6 @@ namespace WindowsFormsApplication1
                     felder += ", KomponentenID";
                     if (AnlagenSpalteVorhanden())
                         felder += ", [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]";
-                    // ETAPPE E10 (Stufe S3): der Positionsschlüssel — über ihn nimmt eine
-                    // leere Zeile „Instandhaltung …"/„Wartung …" den Satz der
-                    // Nutzungsdauertabelle. Eine Spalte mehr, keine Zeile mehr.
-                    felder += ", StammID";
                 }
                 if (StartjahrSpalteVorhanden())
                     felder += ", [" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
@@ -7399,11 +7395,6 @@ namespace WindowsFormsApplication1
                 // W5‑B‑8: die Investitionskaskade des Projekts — höchstens EINMAL je
                 // Leseschleife, und nur, wenn eine Zeile sie wirklich braucht.
                 Dictionary<KeyValuePair<int, int>, double> investSummen = null;
-                // ETAPPE E10 (Stufe S3): Lesestand der Nutzungsdauertabelle und die
-                // Positionsnamen — beide höchstens EINMAL je Leseschleife und nur, wenn eine
-                // leere Zeile „% der Investition" sie braucht.
-                NutzungsdauerSatztafel satztafel = null;
-                Dictionary<int, string> positionsnamen = null;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -7466,18 +7457,10 @@ namespace WindowsFormsApplication1
                                 if (frisch.HasValue) menge = frisch;
                             }
 
-                            // ETAPPE E10 (Stufe S3, E10‑Q1 a): der WIRKSAME Satz — gepflegt
-                            // vor Tabelle vor nichts (NutzungsdauerSatzCtrl.WirksamerSatz).
-                            // Ohne Leerstelle ist er Zeichen für Zeichen der gepflegte.
-                            BetriebssatzVorgabe satzHerkunft;
-                            double? satzWirksam = WirksamerBetriebssatz(
-                                r, bem, erwartet, null, ref positionsnamen, ref satztafel,
-                                out satzHerkunft);
-
                             beitrag = szenarioGepflegt
                                 ? (erloes && wert > 0 ? -wert : wert)
                                 : BetriebskostenCtrl.Betrag(bem, erwartet, menge,
-                                                            satzWirksam,
+                                                            D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS),
                                                             erloes);
                         }
                     }
@@ -7602,10 +7585,9 @@ namespace WindowsFormsApplication1
                 bool endenergieVersucht = false;
                 // W5‑B‑8: dieselbe Kaskade wie in der Summenschleife, einmal je Lesepass.
                 Dictionary<KeyValuePair<int, int>, double> investSummen = null;
-                // ETAPPE E10 (Stufe S3): derselbe Lesestand der Nutzungsdauertabelle wie in
-                // der Summenschleife — einmal je Lesepass.
+                // ETAPPE E10 (Stufe S3): Lesestand der Nutzungsdauertabelle — nur für die
+                // HERKUNFT eines gepflegten Satzes, einmal je Lesepass und nur bei Bedarf.
                 NutzungsdauerSatztafel satztafel = null;
-                Dictionary<int, string> positionsnamen = null;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -7638,13 +7620,13 @@ namespace WindowsFormsApplication1
                     // Summenschleife — 0 heißt „ab dem ersten Jahr".
                     int start = StartJahrDerZeile(r);
 
-                    // ETAPPE E10 (Stufe S3): derselbe WIRKSAME Satz wie in der Summenschleife
-                    // (gepflegt vor Tabelle vor nichts); kam er aus der Tabelle, trägt die
-                    // Zeile seine Herkunft — Herleitung und Formelmappe nennen sie.
-                    BetriebssatzVorgabe satzHerkunft;
-                    double? satzWirksam = WirksamerBetriebssatz(
-                        r, bem, erwartet, Text(r, "Bezeichnung"), ref positionsnamen,
-                        ref satztafel, out satzHerkunft);
+                    // ETAPPE E10 (Stufe S3, Fassung E10/9): gerechnet wird mit dem Satz der
+                    // Zeile, wie er gepflegt ist — die Nutzungsdauertabelle rechnet nicht
+                    // selbst. Ist der gepflegte Satz GENAU der der Tabelle (vorbelegt oder
+                    // übernommen), trägt die Zeile ihre Herkunft; Herleitung und Formelmappe
+                    // nennen sie.
+                    double? satzDerZeile = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
+                    bool satzAusTabelle = SatzAusTabelle(r, bem, satzDerZeile, ref satztafel);
 
                     var n = new KostenPositionNachweis
                     {
@@ -7659,9 +7641,8 @@ namespace WindowsFormsApplication1
                         Kostenart = Text(r, SchemaKatalog.SPALTE_PW_KOSTENART),
                         Bemessung = bem,
                         Menge = menge,
-                        Einheitpreis = satzWirksam,
-                        SatzHerkunft = satzHerkunft != null
-                            ? NutzungsdauerSatzCtrl.HERKUNFT_TABELLE : null,
+                        Einheitpreis = satzDerZeile,
+                        SatzHerkunft = satzAusTabelle ? NutzungsdauerSatzCtrl.HERKUNFT_TABELLE : null,
                         IstErloes = erloes,
                         SzenarioGepflegt = szenarioGepflegt,
                         StartJahr = start > 1 ? start : (int?)null
@@ -7685,57 +7666,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E10 (Stufe S3, Empfehlung E10‑Q1 (a)) — der WIRKSAME Satz einer
-        /// Betriebszeile, EINE Stelle für Summen- und Nachweisschleife. Die Regel steht im
-        /// Kern bei <see cref="NutzungsdauerSatzCtrl.WirksamerSatz"/>: gepflegter Satz vor dem
-        /// Satz der Nutzungsdauertabelle (nur „% der Investition", nur „Instandhaltung …"/
-        /// „Wartung …", nur ohne erfassten Betrag) vor keinem.
+        /// ETAPPE E10 (Stufe S3, Fassung E10/9) — die HERKUNFT des Satzes einer Betriebszeile,
+        /// allein für den Nachweis: Trägt eine Position „Instandhaltung …"/„Wartung …" mit
+        /// „% der Investition" GENAU den Satz der Nutzungsdauertabelle ihrer Technik, stammt er
+        /// aus ihr — vorbelegt über „Sätze vorbelegen…" oder übernommen mit der Vorlage
+        /// (<see cref="NutzungsdauerSatzCtrl.AusTabelle"/>).
         ///
-        /// <para><b>Bitgleich, wo gepflegt:</b> Trägt die Zeile einen Satz, ist die Antwort
-        /// derselbe Wert wie bisher, ohne dass Tabelle oder Positionsname gelesen werden. Den
-        /// Namen holt die Summenschleife (sie liest ohne den Verbund mit
-        /// <c>Tab_Kostenfaktor</c>) erst für eine leere Zeile „% der Investition" über ihre
-        /// <c>StammID</c>.</para>
+        /// <para><b>Rechnet nichts.</b> Summen- und Nachweisschleife rechnen mit dem Satz der
+        /// Zeile, wie er steht; eine leere Zeile bleibt leer (Anwenderentscheid ND‑Q4: nichts
+        /// ändert eine gerechnete Wirtschaftlichkeit ohne Zutun). Ohne gepflegten Satz wird
+        /// die Tabelle gar nicht erst gelesen.</para>
         /// </summary>
-        /// <param name="bezeichnung">Der Positionsschlüssel, wenn die Leseschleife ihn schon
-        /// hat; <c>null</c> = über <c>StammID</c> nachschlagen.</param>
-        private static double? WirksamerBetriebssatz(DataRow r, string bem, double erwartet,
-                                                     string bezeichnung,
-                                                     ref Dictionary<int, string> positionsnamen,
-                                                     ref NutzungsdauerSatztafel satztafel,
-                                                     out BetriebssatzVorgabe herkunft)
+        private static bool SatzAusTabelle(DataRow r, string bem, double? satz,
+                                           ref NutzungsdauerSatztafel satztafel)
         {
-            herkunft = null;
-            double? gepflegt = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
-            if (gepflegt.HasValue || !IstProzentInvest(bem) || Math.Abs(erwartet) > 1e-9)
-                return gepflegt;
-
-            string name = bezeichnung ?? Positionsname(r, ref positionsnamen);
+            if (!satz.HasValue || !IstProzentInvest(bem)) return false;
             int komponente = r.Table.Columns.Contains("KomponentenID") && r["KomponentenID"] != DBNull.Value
                 ? Convert.ToInt32(r["KomponentenID"], System.Globalization.CultureInfo.InvariantCulture) : 0;
-            return NutzungsdauerSatzCtrl.WirksamerSatz(bem, null, erwartet, komponente, name,
-                                                       ref satztafel, out herkunft);
-        }
-
-        /// <summary>
-        /// ETAPPE E10: der Positionsschlüssel einer Zeile ohne Verbund — über ihre
-        /// <c>StammID</c> aus <c>Tab_Kostenfaktor</c>, je Leseschleife einmal je Schlüssel
-        /// gefragt. Leer, wo es keinen gibt.
-        /// </summary>
-        private static string Positionsname(DataRow r, ref Dictionary<int, string> namen)
-        {
-            if (!r.Table.Columns.Contains("StammID") || r["StammID"] == DBNull.Value) return "";
-            int stammId = Convert.ToInt32(r["StammID"], System.Globalization.CultureInfo.InvariantCulture);
-            if (namen == null) namen = new Dictionary<int, string>();
-            string name;
-            if (namen.TryGetValue(stammId, out name)) return name;
-
-            object o = DataRepository.ExecuteScalar(
-                "SELECT Bezeichnung FROM Tab_Kostenfaktor WHERE StammID = ?",
-                new DbParam("@s", stammId));
-            name = (o == null || o == DBNull.Value) ? "" : (Convert.ToString(o) ?? "");
-            namen[stammId] = name;
-            return name;
+            return NutzungsdauerSatzCtrl.AusTabelle(bem, satz, komponente, Text(r, "Bezeichnung"),
+                                                    ref satztafel);
         }
 
         /// <summary>

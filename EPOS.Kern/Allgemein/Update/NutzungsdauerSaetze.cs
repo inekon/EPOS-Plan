@@ -13,7 +13,9 @@ namespace WindowsFormsApplication1
     // Instandsetzung_Prozent und Wartung_Prozent (VDI 2067 Blatt 1, Tabelle A2) - angelegt,
     // aber leer, ungezeigt und ungelesen. Mit S3 werden sie gesät, gezeigt und gelesen:
     // Eine Betriebskostenposition "Instandhaltung …" bzw. "Wartung …" mit der Bemessung
-    // "% der Investition", die keinen eigenen Satz trägt, nimmt den Satz ihrer Technik.
+    // "% der Investition" bekommt den Satz ihrer Technik, wenn der Anwender ihn einträgt -
+    // über "Sätze vorbelegen…" der Kostenverwaltung oder die Übernahme einer Kostenvorlage.
+    // Die Tabelle rechnet nicht selbst (Fassung E10/9, Anwenderentscheid ND-Q4).
     //
     // WOHER DIE SÄTZE KOMMEN (ND-Q8: Normwerte werden nicht erfunden). Aus den
     // KONSTANTEN, die das Haus schon führt: den Empfehlungsbereichen der
@@ -42,9 +44,9 @@ namespace WindowsFormsApplication1
     //
     // WAS DER SCHRITT ANFASST. Allein leere Satzzellen (NULL) der Zeilen, für die die Saat
     // einen Satz führt - gesetzt wird nur, was leer ist; ein zweiter Lauf ändert nichts.
-    // Keine Positionszeile, kein Katalog, kein Projekt wird berührt. Rechenwirksam wird ein
-    // Satz allein über die Satzermittlung der Betriebskosten (NutzungsdauerSatzCtrl) - an
-    // einer Position "% der Investition" ohne eigenen Satz und ohne erfassten Betrag.
+    // Keine Positionszeile, kein Katalog, kein Projekt wird berührt, und keine gerechnete
+    // Wirtschaftlichkeit ändert sich: Rechenwirksam wird ein Satz erst, wenn die Vorbelegung
+    // (NutzungsdauerSatzCtrl) ihn ausdrücklich in eine Position schreibt.
     // ====================================================================================
 
     /// <summary>
