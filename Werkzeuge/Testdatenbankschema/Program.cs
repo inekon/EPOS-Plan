@@ -1708,6 +1708,42 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 131 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritte S-A, S-B, S-C (Gebaeudesimulation Stufe G3, Welle B;
+            //      Softwarearchitektur 2.2/2.4, W1): Baustoffkatalog samt Norm- und Herstellersaat, Bauteilaufbauten
+            //      mit Schichten, Zonen und Bauteile - acht STRICT-Tabellen aus DENSELBEN Quellen, aus
+            //      denen sich SchemaMigration.Schritt_BaustoffKatalog, Schritt_Bauteilaufbau und
+            //      Schritt_Zonen bedienen (BaustoffSchema, BauteilaufbauSchema, ZonenSchema).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabellen; kein Projekt fuehrt
+            //      eine Zone.
+            string nrBaustoff = BaustoffSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrAufbau = BauteilaufbauSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrZonen = ZonenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBaustoff + " - Baustoffkatalog: " +
+                              (BaustoffSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrAufbau + " - Bauteilaufbauten: " +
+                              (BauteilaufbauSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrZonen + " - Zonen und Bauteile: " +
+                              (ZonenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                BaustoffSchema.Bericht berichtBaustoff = BaustoffSchema.Ausfuehren();
+                tabellen += berichtBaustoff.TabellenAngelegt;
+                Console.WriteLine("Schritt " + nrBaustoff + " - " + berichtBaustoff.Zeile() + ".");
+                Console.WriteLine("Schritt " + nrBaustoff + " - vollstaendig: " + BaustoffSchema.Vollstaendig() + " (erwartet True).");
+
+                int aufbau = BauteilaufbauSchema.Ausfuehren();
+                tabellen += aufbau;
+                Console.WriteLine("Schritt " + nrAufbau + " - " + aufbau + " von 4 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + BauteilaufbauSchema.Vollstaendig() + " (erwartet True).");
+
+                int zonen = ZonenSchema.Ausfuehren();
+                tabellen += zonen;
+                Console.WriteLine("Schritt " + nrZonen + " - " + zonen + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + ZonenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

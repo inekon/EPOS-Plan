@@ -77,6 +77,11 @@
 --   Achtung: Tab_ProjektWerte verknuepft ueber die Spalte ProjektID, nicht
 --   ID_Projekt - als einzige der neunzehn.
 --
+--   Gebaeudesimulation Stufe G3 (Schritte S-A/S-B): die zwei Projektkataloge der
+--   Gebaeudehuelle tragen ihren Fremdschluessel auf Tab_Projekt von Anfang an
+--   (Hausregel seit Schemaschritt 96) und gehoeren damit ebenfalls hierher:
+--     Tab_Baustoff                Tab_Bauteilaufbau (Schichten ueber ihre Kaskade)
+--
 -- Stufe 1b - dieselben 19 Tabellen noch einmal explizit (Sicherheitsnetz, falls
 --   PRAGMA foreign_keys nicht greift). In einer intakten Datenbank mit
 --   eingeschalteten Fremdschluesseln treffen diese Anweisungen keine Zeile mehr.
@@ -141,6 +146,11 @@
 --     Tab_StromspeicherVariante-> Tab_Energieanlagen.ID   (ID_Energieanlage)
 --     Z_AnlagePufferVerbund    -> Tab_Energieanlagen.ID   (ID_Anlage)
 --     Z_AnlageSenke            -> Tab_Energieanlagen.ID   (ID_Anlage)
+--     Tab_Zone                 -> Tab_Gebaeude.ID         (ID_Gebaeude)   Stufe G3
+--     Tab_Bauteil              -> Tab_Zone.ID             (ID_Zone)       Stufe G3
+--     Tab_Bauteilschicht       -> Tab_Bauteilaufbau.ID    (ID_Aufbau)     Stufe G3
+--   Zone und Bauteil fuehren bewusst KEIN ID_Projekt (Vorbild Tab_DBTagVDaten); die
+--   Schicht haengt am Aufbau, nicht am Projekt (Berichtigung zu Mehrzonenkonzept 4.4).
 --   Von diesen Verweisspalten tragen genau zwei ein DEFAULT 0
 --   (Tab_DBTagV.ID_Gebaeude, Tab_Kenndaten.ID_WP); dort bedeutet 0 "kein
 --   Bezug" und wird wie NULL geschont. Alle uebrigen sind ohne DEFAULT.
@@ -285,6 +295,10 @@ DELETE FROM "energy_price"                 WHERE "ID_Projekt" IS NOT NULL AND "I
 DELETE FROM "energy_project_settings"      WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 -- Einzige der neunzehn mit abweichendem Spaltennamen:
 DELETE FROM "Tab_ProjektWerte"             WHERE "ProjektID"  IS NOT NULL AND "ProjektID"  <> 0 AND "ProjektID"  NOT IN (SELECT "ID" FROM behalten);
+-- Gebaeudesimulation G3 (S-A, S-B): die zwei Projektkataloge der Gebaeudehuelle. Die
+-- Schichten gehen ueber ihre Kaskade mit; Stufe 3 raeumt sie zusaetzlich ab.
+DELETE FROM "Tab_Bauteilaufbau"            WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
+DELETE FROM "Tab_Baustoff"                 WHERE "ID_Projekt" IS NOT NULL AND "ID_Projekt" <> 0 AND "ID_Projekt" NOT IN (SELECT "ID" FROM behalten);
 
 
 -- ============================================================================
@@ -367,6 +381,13 @@ DELETE FROM "Tab_PreisreiheDaten"     WHERE "ID_Preisreihe"  IS NOT NULL AND "ID
 -- und wird deshalb - wie bei ID_Projekt - geschont.
 DELETE FROM "Tab_DBTagV"      WHERE "ID_Gebaeude" IS NOT NULL AND "ID_Gebaeude" <> 0 AND "ID_Gebaeude" NOT IN (SELECT "ID" FROM "Tab_Gebaeude");
 DELETE FROM "Tab_DBTagVDaten" WHERE "ID_TagV"     IS NOT NULL AND "ID_TagV"     NOT IN (SELECT "ID" FROM "Tab_DBTagV");
+
+-- --- Gebaeudesimulation G3: Gebaeude -> Zone -> Bauteil, Aufbau -> Schicht ---
+-- Ueber den Unterausdruck auf die Eltern, nicht ueber ID_Projekt - keine der drei
+-- Tabellen fuehrt eines (W16). Eltern zuerst.
+DELETE FROM "Tab_Zone"           WHERE "ID_Gebaeude" IS NOT NULL AND "ID_Gebaeude" NOT IN (SELECT "ID" FROM "Tab_Gebaeude");
+DELETE FROM "Tab_Bauteil"        WHERE "ID_Zone"     IS NOT NULL AND "ID_Zone"     NOT IN (SELECT "ID" FROM "Tab_Zone");
+DELETE FROM "Tab_Bauteilschicht" WHERE "ID_Aufbau"   IS NOT NULL AND "ID_Aufbau"   NOT IN (SELECT "ID" FROM "Tab_Bauteilaufbau");
 
 -- --- Waermepumpen-Kennfelder ------------------------------------------------
 -- Tab_Kenndaten.ID_WP ist NOT NULL DEFAULT 0 - 0 wird geschont;

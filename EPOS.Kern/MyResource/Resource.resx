@@ -8433,6 +8433,132 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
     <value>Gebäudetypen (Tagesverläufe)</value>
   </data>
+  <data name="ADM_KATALOG_BAUSTOFF" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="ADM_KATALOG_BAUTEILAUFBAU" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
+  <data name="KFLT_SP_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="KFLT_SP_LAMBDA" xml:space="preserve">
+    <value>λ</value>
+  </data>
+  <data name="KFLT_SP_RHO" xml:space="preserve">
+    <value>Rohdichte</value>
+  </data>
+  <data name="KFLT_SP_CP" xml:space="preserve">
+    <value>Wärmekapazität</value>
+  </data>
+  <data name="KFLT_SP_BAUTEILART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="KFLT_SP_SCHICHTEN" xml:space="preserve">
+    <value>Schichten</value>
+  </data>
+  <data name="KFLT_SP_DICKE" xml:space="preserve">
+    <value>Dicke</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NAME_LEER" xml:space="preserve">
+    <value>Der Baustoff braucht einen Namen.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Den Baustoff „{0}“ gibt es bereits (gleicher Name und Hersteller).</value>
+  </data>
+  <data name="BAUSTOFF_MSG_TEXT_LANG" xml:space="preserve">
+    <value>{0} ist länger als {1} Zeichen.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_WERT_BAND" xml:space="preserve">
+    <value>{0} = {1} liegt außerhalb des zulässigen Bereichs {2} bis {3}.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Der Baustoff „{0}“ gehört zur Auslieferung und ist schreibgeschützt. Duplizieren Sie ihn, um ihn zu ändern.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_VERWENDET" xml:space="preserve">
+    <value>Der Baustoff „{0}“ wird in {1} Schicht(en) verwendet und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Den Baustoff mit der Kennung {0} gibt es nicht.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Baustoff konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="BAUTEIL_FELD_QUELLKENNUNG" xml:space="preserve">
+    <value>Quellkennung</value>
+  </data>
+  <data name="BAUTEIL_MSG_HERKUNFT" xml:space="preserve">
+    <value>Die Herkunft „{0}“ ist kein gültiger Wert.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BAUTEILART" xml:space="preserve">
+    <value>Die Bauteilart „{0}“ ist kein gültiger Wert.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NAME_LEER" xml:space="preserve">
+    <value>Der Bauteilaufbau braucht einen Namen.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NAME_VERGEBEN" xml:space="preserve">
+    <value>Den Bauteilaufbau „{0}“ gibt es bereits.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Der Bauteilaufbau „{0}“ gehört zur Auslieferung und ist schreibgeschützt. Duplizieren Sie ihn, um ihn zu ändern.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_VERWENDET" xml:space="preserve">
+    <value>Der Bauteilaufbau „{0}“ wird von {1} Bauteil(en) verwendet und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Den Bauteilaufbau mit der Kennung {0} gibt es nicht.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Bauteilaufbau konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_DICKE" xml:space="preserve">
+    <value>Schicht {0}: Die Dicke muss größer als null sein.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_BAUSTOFF" xml:space="preserve">
+    <value>Schicht {0}: Den Baustoff mit der Kennung {1} gibt es in dieser Ablage nicht.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_WERT" xml:space="preserve">
+    <value>Schicht {0}: {1}</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_LEER" xml:space="preserve">
+    <value>Zone „{0}“: Ein Bauteil braucht einen Namen.</value>
+  </data>
+  <data name="BAUTEIL_MSG_FLAECHE" xml:space="preserve">
+    <value>Bauteil „{0}“: Die Fläche muss größer als null sein.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AZIMUT_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“: Ein geneigtes Außenbauteil braucht einen Azimut; er wird nicht auf Nord vorbelegt.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RANDBEDINGUNG" xml:space="preserve">
+    <value>Bauteil „{0}“: Die Randbedingung „{1}“ ist kein gültiger Wert.</value>
+  </data>
+  <data name="BAUTEIL_MSG_AUFBAU_FREMD" xml:space="preserve">
+    <value>Bauteil „{0}“: Den Aufbau mit der Kennung {1} gibt es in diesem Projekt nicht.</value>
+  </data>
+  <data name="BAUTEIL_MSG_FREMD" xml:space="preserve">
+    <value>Zone „{0}“: Das Bauteil mit der Kennung {1} gehört zu keiner Zone dieses Gebäudes.</value>
+  </data>
+  <data name="BAUTEIL_MSG_WERT" xml:space="preserve">
+    <value>Bauteil „{0}“: {1}</value>
+  </data>
+  <data name="ZONE_MSG_NAME_LEER" xml:space="preserve">
+    <value>Zone {0}: Die Zone braucht einen Namen.</value>
+  </data>
+  <data name="ZONE_MSG_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>Das Projektgebäude mit der Kennung {0} gibt es nicht.</value>
+  </data>
+  <data name="ZONE_MSG_FREMD" xml:space="preserve">
+    <value>Die Zone mit der Kennung {0} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERGABEART" xml:space="preserve">
+    <value>Zone „{0}“: Die Übergabeart „{1}“ ist kein gültiger Wert.</value>
+  </data>
+  <data name="ZONE_MSG_WERT" xml:space="preserve">
+    <value>Zone „{0}“: {1}</value>
+  </data>
+  <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Zonen des Gebäudes konnten nicht gespeichert werden: {0}</value>
+  </data>
   <data name="LIZ_TITEL" xml:space="preserve">
     <value>Lizenz</value>
   </data>

@@ -573,6 +573,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SpJahresmaximumKw = "JAHRESMAXIMUM";
 
+        // ---- Gebaeudesimulation G3 (Welle B): Baustoffe und Bauteilaufbauten -------------
+
+        /// <summary>Die Ordnungsgruppe eines Baustoffs (Mauerwerk, Beton, Dämmstoffe, …).</summary>
+        public const string SpGruppe = "GRUPPE";
+
+        /// <summary>Die Wärmeleitfähigkeit λ eines Baustoffs in W/(m·K).</summary>
+        public const string SpLambda = "LAMBDA";
+
+        /// <summary>Die Rohdichte ρ eines Baustoffs in kg/m³.</summary>
+        public const string SpRho = "RHO";
+
+        /// <summary>Die spezifische Wärmekapazität c eines Baustoffs in J/(kg·K).</summary>
+        public const string SpCp = "CP";
+
+        /// <summary>Die Bauteilart eines Aufbaus als Persistenzwert (<c>DbWerte.BAUTEILART_*</c>); leer = für jede.</summary>
+        public const string SpBauteilart = "BAUTEILART";
+
+        /// <summary>Die Zahl der Schichten eines Aufbaus.</summary>
+        public const string SpSchichten = "SCHICHTEN";
+
+        /// <summary>Die Gesamtdicke eines Aufbaus in m.</summary>
+        public const string SpDicke = "DICKE";
+
         /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
         /// die sechs Kataloge der Stufe S3 (Bedarf, Zeitreihen) sind keine Anlagen und
@@ -1023,6 +1046,70 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpIntervallMin, t("KFLT_SP_INTERVALL"), "min", Katalogspaltenart.Zahl,
                                       rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpJahresmaximumKw, t("KFLT_SP_JAHRESMAXIMUM"), "kW", Katalogspaltenart.Zahl)
+                }
+            };
+        }
+
+        // ==================================================================
+        // Gebaeudesimulation G3 (Welle B) - Baustoffe und Bauteilaufbauten
+        // ==================================================================
+
+        /// <summary>Der Schluessel des Filterstands des Baustoffkatalogs (Registerschluessel <c>BAUSTOFF</c>).</summary>
+        public const string SCHLUESSEL_BAUSTOFF = "BAUSTOFF";
+
+        /// <summary>Der Schluessel des Filterstands des Aufbaukatalogs (Registerschluessel <c>BAUTEILAUFBAU</c>, W21).</summary>
+        public const string SCHLUESSEL_BAUTEILAUFBAU = "BAUTEILAUFBAU";
+
+        /// <summary>
+        /// <b>Der Baustoffkatalog</b> (Schritt S-A) — sieben Spalten: Name, Gruppe, Hersteller, λ,
+        /// ρ, c und Quelle. Die Zeilen liefert <c>BaustoffCtrl.Katalogfilterzeilen</c>; ein Satz
+        /// der Auslieferung traegt das Schloss.
+        ///
+        /// <para><b>Rang:</b> Name und λ stehen immer — λ ist die Zahl, nach der ein Anwender
+        /// einen Stoff waehlt; Gruppe, ρ und c bei Platz; Hersteller und Quelle weichen als erste
+        /// (herstellerneutral ist die Saat, die Quelle nennt das Stammblatt).</para>
+        /// </summary>
+        public static Katalogfilterprofil FuerBaustoff(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_BAUSTOFF,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
+                    new Katalogspalte(SpGruppe, t("KFLT_SP_GRUPPE"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.Breit),
+                    new Katalogspalte(SpLambda, t("KFLT_SP_LAMBDA"), "W/(m·K)", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpRho, t("KFLT_SP_RHO"), "kg/m³", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpCp, t("KFLT_SP_CP"), "J/(kg·K)", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpQuelle, t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.Breit)
+                }
+            };
+        }
+
+        /// <summary>
+        /// <b>Der Aufbaukatalog</b> (Schritt S-B) — Name, Bauteilart, Zahl der Schichten,
+        /// Gesamtdicke und Herkunft. Die Zeilen liefert <c>BauteilaufbauCtrl.Katalogfilterzeilen</c>.
+        /// </summary>
+        public static Katalogfilterprofil FuerBauteilaufbau(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_BAUTEILAUFBAU,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
+                    new Katalogspalte(SpBauteilart, t("KFLT_SP_BAUTEILART"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpSchichten, t("KFLT_SP_SCHICHTEN"), "", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpDicke, t("KFLT_SP_DICKE"), "m", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpHerkunft, t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.Breit)
                 }
             };
         }

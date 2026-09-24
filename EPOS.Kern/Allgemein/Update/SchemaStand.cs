@@ -537,14 +537,14 @@ namespace WindowsFormsApplication1
         /// „jährlich wie bisher"; der Referenzlauf bleibt byte-gleich.
         /// Mit der BERICHTIGUNG DER ANSCHLUSSLÄNGEN IM GEBÄUDEKATALOG (Schritt
         /// <see cref="GebaeudeAnschlusslaengenReparatur.SCHRITT"/>, Welle #493; Konzept
-        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf diesem Schritt: der Krankenhaussatz
+        /// Administrationsdialoge 7.1 (a)) stand das Ziel auf <b>130</b>: der Krankenhaussatz
         /// (Anschlusslänge Fenster–Wand 1 800 → 4 812 m, Außenwand 12 094 → 13 214,4 m²) und die
         /// sechs Sätze mit den Längen 243,7 / 7 879 / 1 392,8 m (Fenster–Wand, Wand–Dach,
         /// Außenwand–Keller) — je Satz, Spalte und Schadensbild bei
         /// <see cref="GebaeudeAnschlusslaengenReparatur"/>. <b>Ergebnisneutral:</b> Keinen der
         /// Sätze führt ein Referenzprojekt; der Referenzlauf bleibt byte-gleich.
         /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 131, Zapfprofilgenerator Stufe
-        /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>131</b>: die Tabelle
+        /// Z4b, Schemaschritt T3 „Typtage") stand das Ziel auf <b>131</b>: die Tabelle
         /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein
         /// <c>ReadOnly</c>) — <see cref="TwwSchema.AnweisungenT3Typtage"/> — und an
         /// <c>Tab_TwwProjekt</c> die WAHL des Typtagwegs je Projekt (<c>Typtage_Aktiv</c> 0/1 mit
@@ -553,11 +553,20 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> Die Tabelle entsteht LEER, das Repositorium bringt
         /// keine Zeile mit (Konzept Kapitel 6), und ohne eingespielte Typtage ist der
         /// Typtagweg benannt nicht verfügbar; der Referenzlauf bleibt byte-gleich.
+        /// Mit der STUFE G3 DER GEBÄUDESIMULATION (Schritte S-A bis S-C; Softwarearchitektur
+        /// Gebäudesimulation 2.2 und 2.4, W1) steht das Ziel auf <see cref="ZonenSchema.SCHRITT"/>:
+        /// der Baustoffkatalog samt Projektkopie und Norm- und Herstellersaat (<see cref="BaustoffSchema.SCHRITT"/>,
+        /// <see cref="BaustoffSchema"/>), Bauteilaufbauten und Schichten
+        /// (<see cref="BauteilaufbauSchema.SCHRITT"/>, <see cref="BauteilaufbauSchema"/>) und Zonen
+        /// und Bauteile (<see cref="ZonenSchema.SCHRITT"/>, <see cref="ZonenSchema"/>) — acht
+        /// STRICT-Tabellen. Die Nummern stehen allein bei den drei Schema-Klassen.
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
+        /// Zone; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 131;
+        public const int Zielversion = ZonenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
