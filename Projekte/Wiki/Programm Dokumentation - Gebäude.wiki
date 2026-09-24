@@ -23,7 +23,7 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 === Der Katalog ===
 
 * {{Anker|katalogfilter|gebaeudekatalog}}'''Filter Gebäude DB''' – ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Gebäudeart'' und ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40"), dazu ein Textfilter mit Platzhaltern, etwa ''Haus*_1990*''. Die Liste ''Gebäude in DB'' darunter zeigt Name, Gebäudeart und Wohnfläche der Sätze, die der Filter übrig lässt; ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock.
-* '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage; ein Satz der Auslieferung bleibt stehen. Ob ein Projekt das Gebäude führt, prüft das Löschen in der [[#loeschen|Verwaltung]].
+* '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage. Gesperrt ist es wie in der [[#loeschen|Verwaltung]] für Sätze der Auslieferung und für Gebäude, die ein Projekt führt; statt der Rückfrage steht dann der Grund im Dialog, bei einem benutzten Gebäude mit den Projekten.
 
 === Übernahme ins Projekt ===
 {{Anker|uebernahme}}

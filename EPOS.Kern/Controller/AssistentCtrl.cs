@@ -157,6 +157,13 @@ namespace WindowsFormsApplication1
         /// <summary>Hat der letzte Speicherlauf geschrieben?</summary>
         public bool Gespeichert { get; private set; }
 
+        /// <summary>
+        /// Die im laufenden Speicherlauf neu angelegten Gebäudezeilen samt ihrer echten
+        /// Zuordnungs-Id — eingetragen erst nach dem Festschreiben
+        /// (<see cref="WizardCtrl.EchteIdsUebernehmen"/>).
+        /// </summary>
+        private IReadOnlyDictionary<Z_ProjGebModel, int> _neueGebaeudeIds;
+
         private readonly bool[] _seiteAktiv = new bool[SEITEN];
 
         /// <summary>
@@ -721,6 +728,7 @@ namespace WindowsFormsApplication1
             Projekt.m_ID_Klimaregion = 0;
 
             Gespeichert = false;
+            _neueGebaeudeIds = null;
 
             // ===== DIE KLAMMER (W16a-O-1) ====================================
             // EIN Vorgang ueber den GANZEN Lauf. Festgeschrieben wird nur, wenn der
@@ -763,6 +771,12 @@ namespace WindowsFormsApplication1
                     vorgang.Rollback();
                     return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Commit");
                 }
+
+                // Erst NACH dem Festschreiben: Neu angelegte Gebaeudezeilen tragen ab jetzt
+                // ihre echte Zuordnungs-Id statt der vorlaeufigen - ein zweites Speichern
+                // desselben Laufs erkennt sie als bleibend und legt keine zweite Kopie an.
+                WizardCtrl.EchteIdsUebernehmen(_neueGebaeudeIds);
+                _neueGebaeudeIds = null;
 
                 return ergebnis;
             }
@@ -853,7 +867,8 @@ namespace WindowsFormsApplication1
             // Die Gebaeudeliste wird ABGEGLICHEN, nicht neu aufgebaut (Konzept
             // Administrationsdialoge 7.1 (a)): Unveraenderte Zuordnungen behalten ihre
             // Projektkopie samt Feld-Uebernahmen - derselbe Weg wie die Startseite.
-            if (!ctrl.Schreibe_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
+            // Die echten Ids der neuen Zeilen traegt Speichern erst nach dem Festschreiben ein.
+            if (!ctrl.Schreibe_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang, out _, out _neueGebaeudeIds))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Schreibe_Projekt_ZuordungGebaeude");
 
             if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))

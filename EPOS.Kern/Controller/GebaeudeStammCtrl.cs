@@ -917,6 +917,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Warum ein Katalogsatz nicht gelöscht wird</b> — der benannte Sperrgrund für
+        /// „Gebäude in DB löschen" des Projekt-Gebäudedialogs, aus derselben Wahrheit wie die
+        /// Gebäudeverwaltung: ein Auslieferungssatz (<c>ReadOnly</c>) oder ein Satz, den ein
+        /// Projekt führt (<see cref="Loeschsperre"/>, der Text nennt die Projekte). Leer, wenn
+        /// der Satz gelöscht werden darf (oder kein Name gewählt ist).
+        /// </summary>
+        public static string Loeschsperrgrund(string bezeichner)
+        {
+            if (string.IsNullOrWhiteSpace(bezeichner)) return "";
+            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner))
+                return MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT;
+            IReadOnlyList<string> projekte = Loeschsperre(bezeichner);
+            return projekte.Count > 0
+                ? string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                MyResource.Resource.ADM_AW_LOESCHEN_VERWENDET,
+                                string.Join(", ", projekte))
+                : "";
+        }
+
+        /// <summary>
         /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
         /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze und
         /// benutzte Gebaeude weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
