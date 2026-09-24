@@ -35,6 +35,9 @@ namespace WindowsFormsApplication1
         private const string P = IfcImportProfil.MELDUNGSPRAEFIX;
         private const int BEISPIELE = 5;
 
+        /// <summary>Der Eigenschaftssatz der Raumsollwerte — in IFC4X3 entfallen (3.5 Nr. 7).</summary>
+        internal const string PSET_SOLLWERTE = "Pset_SpaceThermalRequirements";
+
         /// <summary>Größter Abstand zweier Wandachsen gleicher Richtung und gleicher Räume [m], den die Mehrschalenprobe noch als eine Wand liest.</summary>
         internal const double SCHALENABSTAND_MAX_M = 0.6;
 
@@ -327,12 +330,11 @@ namespace WindowsFormsApplication1
         private double? Sollwert(IIfcSpace s)
         {
             if (_abbild.SchemaStand == IfcSchemaStand.Ifc4x3) return null;
-            const string satz = "Pset_SpaceThermalRequirements";
-            bool vorhanden = IfcEigenschaften.HatSatz(s, satz);
+            bool vorhanden = IfcEigenschaften.HatSatz(s, PSET_SOLLWERTE);
             if (vorhanden) _abbild.ZahlSollwertsaetze++;
             foreach (string name in new[] { "SpaceTemperatureWinter", "SpaceTemperatureWinterMin", "SpaceTemperatureMin", "SpaceTemperature" })
             {
-                IfcFund f = IfcEigenschaften.Finden(s, satz, name);
+                IfcFund f = IfcEigenschaften.Finden(s, PSET_SOLLWERTE, name);
                 double? w = f == null ? null : Zahl(f, untereGrenzeZuerst: true);
                 if (w.HasValue) return _einheiten.NachCelsius(w.Value);
             }
