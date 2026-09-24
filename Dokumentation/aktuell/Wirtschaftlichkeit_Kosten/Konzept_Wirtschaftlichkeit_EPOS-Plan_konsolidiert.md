@@ -1,8 +1,8 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 24.09.2026** · Codestand `94521f2e` · `SchemaStand.Zielversion` = 120 · Schemaschritte 90–120 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 24.09.2026** · Codestand `NACHTRAG-474-MERGE2` · `SchemaStand.Zielversion` = 124 · Schemaschritte 90–124 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
-Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115 und 119 gehören nicht diesem Feld: **97**
+Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119 und 121 bis 124 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
 BW‑1), **99** die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1), **100** die
 Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten der Gebäudesimulation
@@ -12,8 +12,10 @@ Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426), **101** die Gebäudespalten
 KU1 (108 KU-S1 `SCHRITT_108_KUEHLUNG_GEBAEUDE`, 109 KU-S2 `SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG`, 110 KU-S4
 `SCHRITT_110_KUEHLUNG_ERGEBNIS`), **114** der Kühlbetrieb am Erzeuger, Stufe KU2 (KU-S3
 `SCHRITT_114_KUEHLUNG_ERZEUGER`), **115** die Zapfkategorien des Zapfprofilgenerators, Stufe Z3 (T2,
-`SCHRITT_115_ZAPFKATEGORIEN`, `Tab_TwwZapfkategorie_STAMM`, #453), und **119** die Abrechnungsart des Kältestroms und
-die Kälteseite der Wärmepumpenergebnisse, Stufe KU2 Welle 3 (`SCHRITT_119_KAELTESTROM`, Entscheid E34). An Tabellen
+`SCHRITT_115_ZAPFKATEGORIEN`, `Tab_TwwZapfkategorie_STAMM`, #453), **119** die Abrechnungsart des Kältestroms und
+die Kälteseite der Wärmepumpenergebnisse, Stufe KU2 Welle 3 (`SCHRITT_119_KAELTESTROM`, Entscheid E34), **121** der
+Katalogverweis des Projektgebäudes (#468), **122** und **123** die Wärmeübergabe und die Ergebnisspalten der
+Anlagenkopplung, Stufe AK1 (AK-S1, AK-S3), und **124** die Laufangaben der Zapfprofil-Auslegung, Stufe Z4 (T3, #464). An Tabellen
 dieses Feldes,
 aber nicht aus seinem Etappenplan:
 **106** — fremde Ergebnisverweise der Wirtschaftlichkeit werden NULL, eine Datenbereinigung der Welle #444
@@ -789,7 +791,7 @@ die `V-G`-Nummern; die Tafel übersetzt:
 | V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt". **Stand: gebaut #434** (V‑A) — `WIRT_DEKL_STEUERN` in der Deklarationsliste auf Seite und in beiden Berichten |
 | V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1. **Stand: gebaut #455** (V‑D, E8 Teil b) — die Stufen 0 bis 3 nach § 2.11.6: Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und die Kennzahlen des Szenarios Erwartet in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug; EPOS trägt zu jeder Formel den Wert ein, Excel rechnet beim Öffnen neu |
 | V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | **Freitext umgesetzt** (W5‑B‑12/G6 des Szenarienkonzepts) | es fehlen **Kategorie und Beurteilung** nach Dauer × Wirkung; fließt nie in den NPV, immer in den Bericht |
-| V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe. **Stand: gebaut #455** (V‑D, U43) — 15 Punkte in fünf Gruppen mit Anforderung, Stelle im Bericht und Stand aus dem Lauf (`AnhangECheckliste`); Abschlussseite des Wortberichts, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" auf der Ergebnisseite |
+| V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe. **Stand: gebaut #455** (V‑D, U43) — 15 Punkte in fünf Gruppen mit Anforderung, Stelle im Bericht und Stand aus dem Lauf (`AnhangECheckliste`); Abschlussseite des Wortberichts, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" auf der Ergebnisseite. **Punkt 9 (Szenarioanalyse), gebaut #474** (E9b‑Q5 b, → Register R‑E9b): „erfüllt", sobald Günstig und Ungünstig mit Kapitalwert gerechnet sind — auch ohne gepflegten Parameter; „teilweise" bei nur Erwartet oder nur einem Szenario; „offen" ohne Lauf; der Ausweis „n von m Parametern szenariert" steht als Beleg im Punkt (§ 2.11.5) |
 
 **Anhang D der Norm ist eine BHKW-Fallstudie** (90 kW_th, 18 Jahre, NPV 64.480 €, Worst −202.802 €,
 Best +598.320 €) — sie dient der Etappe als **externe Gegenprobe**: EPOS muss mit denselben
@@ -911,7 +913,8 @@ Preise, Laufzeit und Zins — genau die stehen oben.
   mehr als 1e−9 vom Erwartet-Wert abweicht — bei den sieben Größen zählt nur ein eingetragenes Feld, die
   Vorgabe nicht. **Lesart:** Ohne Pflege steht „0 von m", obwohl die Vorgaben der Tafel Günstig und
   Ungünstig verschieben; die Einspeisevergütung KWK zählt auch ohne BHKW (beides zum Mitentscheiden,
-  E9b‑Q2).
+  E9b‑Q2). In Punkt 9 der Anhang-E-Checkliste ist der Ausweis Beleg, nicht Bedingung: Der Punkt steht auf
+  „erfüllt", sobald Günstig und Ungünstig gerechnet sind (E9b‑Q5 b, gebaut #474; § 2.11.2, V‑G12).
 - **Ausweis im Bericht** (Norm 9c): Die Kalkulationstabelle je Szenario nennt die
   Parametereinstellungen vollständig — die Szenariospalten der Rahmenzeile erscheinen im
   Parameterblock des XLSX-Blatts. **Umgesetzt #455 und #461:** Die Nachweiszeile je Szenario
@@ -1242,7 +1245,9 @@ die Spalten nicht, stehen die Klapplisten nicht im Editor.
    Hilfe-Assistent und die Parameterverwendung tragen denselben Vermerk; entfernt ist keine Spalte (E10‑Q4, → Register
    R‑E10). `Tab_StromspeicherVariante` führt ihre Nutzungsdauer weiter selbst, denn sie rechnet in
    Speicherwirtschaftlichkeit und Peak-Shaving; der Halbsatz aus A8, sie solle die Positionsarten 20/21 lesen, ist
-   offen;
+   **erledigt mit #474** als Vorgabe neuer Einträge: Eine neu angelegte Speichervariante (neue Speicheranlage im
+   Anlagendialog, „Speichervariante anlegen" des Hilfe-Assistenten) nimmt die Nutzungsdauer der Standardzeile
+   „Stromspeicher · Batterie", ohne brauchbaren Wert 20 a; bestehende Varianten und der Rückfall des Rechenwegs bleiben;
 2. die **Speicherflotte** hängt an der Tabelle (A7): Die Wirtschaftlichkeit der Flottenstudie rechnet den **Restwert
    je Einheit linear** aus ihrer Nutzungsdauer — dem Ersatzintervall — auf der Ersatzkette der Flotte
    (`FlottenWirtschaftlichkeit.LinearerRestwert`: Betrag der letzten Beschaffung × Restdauer ÷ n; ersetzt wird in
@@ -1261,7 +1266,7 @@ nicht gab, gibt es damit jetzt. **Das Einsammeln der Positionen im Kern ist umge
 (`NutzungsdauerHinweisCtrl`: Zeitraumzeile und je Stand und Technik „k von n", der Satz aus
 `ErsatzRestwertTafel.Hinweis`); die Hinweiszeile steht auf der Seite und in Wort- und Tabellenbericht,
 die Hülle sammelt nicht mehr selbst. Die Entkopplung von Ersatz und Restwert ist umgesetzt #446, die zwei Stücke
-oben #463 — U39 ist damit erledigt; offen bleibt allein der Halbsatz aus A8 zur Speichervariante.
+oben #463 — U39 ist damit erledigt; der Halbsatz aus A8 zur Speichervariante ist mit #474 gebaut.
 
 *Entscheid A1 (Umzug vor der Ergebnisansicht) und sein Weg: → Register R‑A (A1), → Protokoll § 5.5.*
 
@@ -2388,8 +2393,17 @@ weiterreicht (E7c3‑Q4, → Register R‑E7c3). Die Emissionsbilanz nennt eine 
 („Emissionsbilanz — Stufe „X" nicht ausführbar: ‹Grund›"), die Herkunft eines Emissionsfaktors einen Lesefehler
 („… — Brennstoffkatalog nicht lesbar: ‹Grund›"). Gründe ohne eigene Zeile tragen die Eigenschaften `Lesefehler`
 (Parametersatz, Tarif, Emissionsfaktoren, Gesetzeskatalog), `LetzterFehler` (Pflegewege des Gesetzeskatalogs),
-`Katalogfehler` (Kraftwerksparks), `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` (Wirtschaftlichkeit); die
-letzten drei zeigt die Oberfläche nicht (E7c3‑Q6, offen). Ein nicht lesbarer Tarif gilt als nicht aktiv. Ohne
+`Katalogfehler` (Kraftwerksparks), `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` (Wirtschaftlichkeit). Die
+letzten drei zeigt die Oberfläche (E7c3‑Q6 a, gebaut #474, → Register R‑E7c3): `Fehlergrund.Anzeigezeilen` bildet je
+Grund eine Zeile — Laden, Speichern, Vorsorge —, derselbe Grund aus zwei Quellen ist eine Zeile, der Text ist der des
+Kerns ohne Stapel und ohne „neu berechnen"-Hinweis. Die **Statuszeile der Ergebnisseite** nennt beim Laden den
+`Ladefehler` von `LadeErgebnisse`/`LadeSensitivitaet` und die `Vorsorgewarnung`, einen Speicherfehler der Referenzwahl
+einmal beim folgenden Laden und den der nicht monetären Wirkungen beim Schreiben; der **Dialog BHKW-Wirtschaftlichkeit**
+zeigt Lade- und Vorsorgegrund als Warnband (es entfällt, wenn eine Kohärenzzeile denselben Grund nennt) und hängt einen
+Speicherfehler an die Fehlermeldung von „OK". Einen Datenbankfehler beim Schreiben meldet `DataRepository` selbst,
+einmal; `Speicherfehler` trägt nur Fehler außerhalb der Datenbankanweisung, und nach einem gescheiterten UPDATE folgt
+kein INSERT mehr. `StelleTabellenSicher` setzt die `Vorsorgewarnung` zu Beginn zurück. Ein nicht lesbarer Tarif gilt
+als nicht aktiv. Ohne
 Fehler steht keine dieser Zeilen; die dreizehn Basisprojekte sind Zeile für Zeile unverändert.
 
 ## 3.10 Rechenreihenfolge
@@ -2650,6 +2664,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E9a Szenarioabdeckung, Teil a** (V‑E, § 2.11.5) | Schemaschritt 116 (`Szen_Best/Worst_Zeitraum` in ganzen Jahren und `Szen_Best/Worst_Menge` in Prozent an `Tab_ProjektWirtschaftlichkeit`), 117 (`custom_price_work/base/power_best/_worst` an `energy_project_settings`) und 118 (`Einspeiseverguetung_Best/_Worst` und `Einspeiseverguetung_KWK_Best/_Worst` an `Tab_ProjektWirtschaftlichkeit`, `DvEntgelt_Best/_Worst` und `PpaPreis_Best/_Worst` an `Tab_ProjektPhotovoltaik`), reines DDL, 18 nullbare Spalten; der Kern liest die Paare — Zeitraum, Mengenfaktor, Trägerpreise, Einspeisevergütungen, DV-Entgelt und PPA-Preis je Szenario an je einer Stelle; Nachweiszeile, Parameterblock und Verlauf je Szenario — rechenwirksam je Pflege, ohne Pflege bitgleich (Anker, Referenzlauf 13/13); die Dialoge mit E9b. | #461 |
 | **E9b Szenarioabdeckung, Teil b** (V‑E, § 2.11.5, § 2.11.7) | Die Pflege in den Dialogen: die Zeilen 8 (Betrachtungszeitraum) und 9 (Mengenänderung) der Szenariotafel, „Vorgaben" leert 18 Felder; der ±-Knopf — der `CaseEingabeDialog` als allgemeiner Baustein mit dem Knopf `SzenarioKnopf` — an Arbeits-, Grund- und Leistungspreis der Trägerkarte, an der Einspeisevergütung PV (Parameterdialog) und KWK (Dialog „BHKW-Wirtschaftlichkeit"), an DV-Entgelt und PPA-Preis (PV-Vergütungsdialog), mit Kohärenzzeilen und Warnzeichen ohne Erwartet-Preis; der Hinweistext `WIRT_SZEN_HINWEIS` entfällt, an seiner Stelle der Ausweis „n von m Parametern szenariert" (`SzenarioAbdeckung`) auf der Seite, in beiden Berichten und in Punkt 9 der Anhang-E-Checkliste — kein Schemaschritt, ohne Pflege keine Rechenwirkung (Anker, Referenzlauf 13/13); E9 ist damit abgeschlossen. | #462 |
 | **E10 Nutzungsdauer S3 und Speicherflotte** (A7, A8, § 2.13 (3), § 3.4) | Schemaschritt 120 sät die Instandsetzungssätze der Nutzungsdauertabelle (fünf Standardzeilen, die Mitte der Vorlagenbereiche), der Dialog „Nutzungsdauern (AfA)" zeigt Instandsetzung und Wartung; die Sätze wirken nur über die ausdrückliche Vorbelegung — Übernahme einer Kostenvorlage oder „Sätze vorbelegen…" —, die Herkunft steht am Satz, in Herleitung und Formelmappe (Nachweisfassung 10); ein neuer Kesseleintrag in %/a übernimmt den Wartungssatz; die Flottenstudie rechnet den Restwert je Einheit linear aus der Nutzungsdauer, ohne eigenes Intervall aus der Batteriezeile, der feste Restwert der Einheit ist Altfeld; die Nutzungsdauer von Kessel und BHKW ist als Gerätedaten gekennzeichnet — ohne Zutun keine Rechenwirkung auf die Projektwirtschaftlichkeit (Anker unverändert, Referenzlauf 13/13 byte-gleich, keine neue Basis). | #463 |
+| **E13 Checkliste Punkt 9, Fehlergründe, A8-Halbsatz** (E9b‑Q5, E7c3‑Q6, A8, § 2.11.2, § 3.9) | Punkt 9 der Anhang-E-Checkliste „erfüllt", sobald Günstig und Ungünstig gerechnet sind; Lade-, Speicher- und Vorsorgegrund des Kerns in der Statuszeile der Ergebnisseite und im Dialog BHKW-Wirtschaftlichkeit, je Grund einmal, einen Datenbankfehler meldet die Anwendung selbst; eine neue Speichervariante nimmt die Nutzungsdauer der Zeile „Stromspeicher · Batterie"; die Hilfe von Zeileneditor und Saisonreihe des Leistungspreises auf ihren Abschnitt der Seite Kosten — ohne Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), kein Schemaschritt. | #474 |
 
 ## 6.2 Regressionsanker
 
@@ -2677,7 +2692,10 @@ Nutzungsdauer S3 (#463) halten `NutzungsdauerS3Tests` (16: Saat aus den Vorlagen
 Wiederholbarkeit, Werkzeug-Wache, Vorrang des gepflegten Satzes, Herkunft nur bei Gleichheit, Vorlagenübernahme,
 „Sätze vorbelegen" an 1018, Formelmappe, Kessel in %/a — die Tabelle rechnet nicht selbst),
 `SpeicherFlottenNutzungsdauerTests` (9: linearer Restwert je Einheit, Altfeld, Intervall-Vorgabe aus der Batteriezeile,
-1046 vorher/nachher) und `NutzungsdauerKennzeichnungTests` (4); E10 bewegt keinen Anker.
+1046 vorher/nachher) und `NutzungsdauerKennzeichnungTests` (4); E10 bewegt keinen Anker. E13 (#474) ergänzt
+`AnhangEChecklisteTests` (Punkt 9 offen, teilweise, erfüllt; das Blatt der Mappe mit demselben Stand), `RobustheitB6Tests`
+(+4 und der Datenbankfehler der Referenzwahl einmal) und `SpeichervarianteSicherstellenTests` (die Nutzungsdauer der
+Tabelle für eine neue Variante); E13 bewegt keinen Anker.
 
 | Anker | Wert | Herkunft |
 |---|---|---|
@@ -2751,8 +2769,8 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 **Aus der Anwenderdurchsicht der Ergebnisansicht (§ 2.13)**
 
 9h. ~~**Nutzungsdauer, Ersatz, Restwert — zwei fehlende Stücke (Mockup-Anhang U39)**~~ — erledigt mit E10 (#463),
-    siehe Protokoll; die Regel steht in § 2.13 (3); offen bleibt allein der Halbsatz aus A8 zur Speichervariante
-    (Positionsarten 20/21)
+    siehe Protokoll; die Regel steht in § 2.13 (3); der Halbsatz aus A8 zur Speichervariante (Positionsarten 20/21)
+    ist erledigt mit E13 (#474)
 9i. ~~**Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
     Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.~~ — erledigt mit E4/3 (#432, U6; Q15, A12), siehe Protokoll; offen bleibt Nr. 32
 9j. ~~**Verlauf mit drei Szenarien**~~ — erledigt mit E6 (#436), siehe Protokoll
@@ -2850,7 +2868,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | Zwei Lesewege auf die Kostenposition | der direkte Zugriff ist der Normalfall; daneben die gespeicherte **Sicht** `Abfrage_Kostenfaktoren` (`sql/schema/002_views.sql`) — kein Access-Artefakt mehr, sie liegt im Repo, kennt die neuen Spalten nicht und ließe sich erweitern; beim Tabellenumbau wird sie eigens behandelt (`ProjektWerteLoeschschutz`) |
 | ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
 | Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |
-| Nutzungsdauer an zwei Orten — `Tab_Nutzungsdauer` gegen die Gerätespalten `Tab_BHKW.Nutzungsdauer`, `Tab_Heizkessel.Nutzungsdauer` und `Tab_StromspeicherVariante.Nutzungsdauer`; dazu der feste Restwert je Flotteneinheit | **benannt, nicht gekoppelt** (A8, #463): Die Spalten von BHKW und Kessel heißen „Nutzungsdauer (Gerätedaten)" und rechnen nicht; die Speichervariante rechnet mit ihrer eigenen Spalte (der Halbsatz aus A8 ist offen); `RestwertEuro` der Flotteneinheit ist Altfeld, gerechnet wird linear aus dem Ersatzintervall (§ 2.13 (3)) |
+| Nutzungsdauer an zwei Orten — `Tab_Nutzungsdauer` gegen die Gerätespalten `Tab_BHKW.Nutzungsdauer`, `Tab_Heizkessel.Nutzungsdauer` und `Tab_StromspeicherVariante.Nutzungsdauer`; dazu der feste Restwert je Flotteneinheit | **benannt, nicht gekoppelt** (A8, #463): Die Spalten von BHKW und Kessel heißen „Nutzungsdauer (Gerätedaten)" und rechnen nicht; die Speichervariante rechnet mit ihrer eigenen Spalte, eine neue Variante bekommt sie aus der Zeile „Stromspeicher · Batterie" (Halbsatz aus A8, #474); `RestwertEuro` der Flotteneinheit ist Altfeld, gerechnet wird linear aus dem Ersatzintervall (§ 2.13 (3)) |
 | ~~Die gespeicherte Access-Abfrage kennt die neuen Spalten nicht~~ | **überholt**: Access ist abgelöst; die gespeicherten Abfragen sind Altbestand des eingefrorenen Access-Zweigs |
 | ~~Kennzahlenliste dreifach~~ | aufgelöst mit W4 E7 (vor #300; nicht E7 des Etappenplans) — `WirtschaftlichkeitZeilen` führt sie einmal |
 
@@ -2876,14 +2894,14 @@ Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts (§ 2.1
 Speicherflotte, #463) ist gebaut: die Instandsetzungs- und Wartungssätze der Nutzungsdauertabelle mit Schemaschritt
 120, wirksam nur über die ausdrückliche Vorbelegung (§ 3.4, § 2.8), die Speicherflotte an der Tabelle und die
 Kennzeichnung der geräteeigenen Spalten (§ 2.13 (3)); den eigenen Entscheid zu ND‑S3 vertreten die Fragen aus E10.
-**E12** (Wiki-Runden) ist mit **#470** vorbereitet — der Sammel-Upload selbst steht nach Freigabe
-des Anwenders aus; E11 entfällt — damit ist der Etappenplan E0–E12 bis auf den Upload
-abgearbeitet. Offen
-sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a
-(→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs der sieben aus E10 (→ Register R‑E10; E10‑Q5 ist
-erledigt); die sechs aus E8b sind entschieden (23.09.2026, nach Empfehlung, → Register R‑E8b). Nach dem Entscheid aus E7c3 kommen der Rest von B‑6
-(E7c3‑Q5) und die Anzeige der drei Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6)
-dazu. Aus der
+**E12** (Wiki-Runden) ist mit **#470** vorbereitet — der Sammel-Upload ist für den 26.09.2026 freigegeben (Version
+1.2.0.4); E11 entfällt — damit ist der Etappenplan E0–E12 bis auf den Upload
+abgearbeitet. **Alle Fragen sind entschieden:** die aus E7c3 (→ Register R‑E7c3), E8b (→ Register R‑E8b), E8c
+(→ Register R‑E8c), E9a (→ Register R‑E9a), E9b (→ Register R‑E9b) und E10 (→ Register R‑E10; E10‑Q5 erledigt), zuletzt
+am 24.09.2026 nach Empfehlung. Die zwei daraus offenen Bauten sind als kleine Bauwelle **E13 (#474)** gebaut —
+Punkt 9 der Anhang-E-Checkliste (E9b‑Q5 b, § 2.11.2) und die Anzeige der drei Kerneigenschaften `Ladefehler`,
+`Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6 a, § 3.9) —, dazu der Halbsatz aus A8 zur Speichervariante (§ 2.13 (3)).
+Aus E7c3 bleibt der Rest von B‑6 (E7c3‑Q5 a: eine eigene kleine Etappe, nicht gebaut). Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -2941,8 +2959,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **V-E** Teil a (§ 2.11.4, § 2.11.5) · V‑G5 im Kern · Schritte **B**, **C**, **D** · E9a‑Q1…Q7 | Fortsetzung von W5‑B‑9 | — | **#461** | E9 Teil a: Schemaschritte 116, 117 und 118, der Kern liest Zeitraum, Mengenfaktor, Trägerpreise, Einspeisevergütungen, DV-Entgelt und PPA-Preis je Szenario; Nachweiszeile, Parameterblock und Verlauf je Szenario; Testdatenbank 118 |
 | **V-E** Teil b (§ 2.11.5, § 2.11.7) · V‑G5 in den Dialogen · V‑4 · A14 (Hinweistext entfallen) · U10, U15 · E9b‑Q1…Q5 | Fortsetzung von W5‑B‑9 | — | **#462** | E9 Teil b: Zeilen 8 und 9 der Szenariotafel, ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), Ausweis „n von m Parametern szenariert" an der Stelle des Hinweistexts, Punkt 9 der Checkliste nennt ihn |
 | A7 · A8 · § 3.4 · § 6.3 Nr. 9h und Nr. 19 · U39 · ND‑Q6 · ND‑Q7 · E10‑Q1…Q7 | — | **S3** | **#463** | E10: Schemaschritt 120 (Sätze der Nutzungsdauertabelle), die Vorbelegung über Kostenvorlage und „Sätze vorbelegen…" mit der Herkunft am Satz (Nachweisfassung 10), neue Kesseleinträge in %/a, die Speicherflotte mit linearem Restwert je Einheit, die Kennzeichnung „Nutzungsdauer (Gerätedaten)" |
+| E9b‑Q5 b · V‑G12 Punkt 9 (U43) · E7c3‑Q6 a (§ 3.9) · A8-Halbsatz · zwei Hilfe-Anker aus E12 | — | — | **#474** | E13: Punkt 9 „erfüllt" mit beiden Szenarien, Lade-, Speicher- und Vorsorgegrund in Statuszeile und BHKW-Dialog, eine neue Speichervariante mit der Nutzungsdauer der Tabelle, `Form_VorlagenPosition` und `Form_LeistungspreisReihe` auf ihren Abschnitt der Seite Kosten |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 = **#463** (**E10**) | AfA-Tabelle |
-| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455, U15 erledigt #461/#462, U10 entfallen #462 |
+| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474), U15 erledigt #461/#462, U10 entfallen #462 |
 
 **Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
 
@@ -2966,7 +2985,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E9** Teil a — V‑E im Kern | die Schemaschritte 116 (Szenariorahmen), 117 (Trägerpreise best/worst) und 118 (Erlössätze best/worst), der Kern liest die Paare, `SzenarioParameterTests`, A/B über neun Größen, Testdatenbank 118 | **#461** (Merge `62613292`) |
 | **E9** Teil b — V‑E in den Dialogen | die Zeilen 8 und 9 der Szenariotafel, der ±-Knopf an Trägerpreisen und Erlössätzen (`CaseEingabeDialog` als Baustein), der Ausweis „n von m Parametern szenariert" statt des Hinweistexts, `SzenarioAbdeckungTests` — E9 abgeschlossen | **#462** (Merge `75d45630`) |
 | **E10** — Nutzungsdauer S3 und Speicherflotte | Schemaschritt 120 (Sätze der Nutzungsdauertabelle), die Sätze wirksam nur über die ausdrückliche Vorbelegung, die Herkunft am Satz (Nachweisfassung 10), neue Kesseleinträge in %/a, die Speicherflotte an der Tabelle (linearer Restwert je Einheit, `RestwertEuro` der Einheit Altfeld), die Kennzeichnung A8, `NutzungsdauerS3Tests`, Testdatenbank 120, Referenzlauf byte-gleich ohne neue Basis — E10 abgeschlossen | **#463** (Merge `94521f2e`) |
-| **E11** … **E12** | Wiki-Runden (E11 entfällt) | **nächste Etappe: E12**; die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs aus E10 (→ Register R‑E10) **entschieden 24.09.2026, nach Empfehlung; Bau offen: E9b‑Q5 b, E7c3‑Q6 a**; E8b entschieden und gebaut (→ Register R‑E8b) |
+| **E11** … **E12** | Wiki-Runden (E11 entfällt) | **E12 vorbereitet #470**, Sammel-Upload 26.09.2026 (Version 1.2.0.4); die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs aus E10 (→ Register R‑E10) **entschieden 24.09.2026, nach Empfehlung; gebaut mit E13 (#474): E9b‑Q5 b, E7c3‑Q6 a**; E8b entschieden und gebaut (→ Register R‑E8b) — **alle Fragen entschieden** |
+| **E13** — kleine Bauwelle | Punkt 9 der Anhang-E-Checkliste „erfüllt" mit beiden Szenarien (E9b‑Q5 b), Lade-, Speicher- und Vorsorgegrund in der Oberfläche (E7c3‑Q6 a), der Halbsatz aus A8 zur Speichervariante, zwei Hilfe-Anker der Seite Kosten; ohne Rechenwirkung, kein Schemaschritt | **#474** (Merge `NACHTRAG-474-MERGE2`) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -220,7 +220,7 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 4–9 | erledigt mit B6 bzw. schon vorher | § 3.2 |
 | 9a–9d | erledigt mit E4, B7P, U17 (#346) | § 3.3 |
 | 9e–9g, 9l, 9m | erledigt mit BK1a, U17 (#346), BK1b; 9m ist die abgenommene Ausnahme und steht weiter im Konzept | § 3.4 |
-| 9h–9k | 9i und 9k erledigt; 9h erledigt mit E10 (#463), der Wortlaut vor #463 und der Grund in § 8.23 — vorher zum Teil (#357, #434, dazu die Entkopplung von Ersatz und Restwert mit E7c2 (#446), der Wortlaut vor #446 und der Grund in § 8.9; mit E7c3 (#452) gemessen, der Wortlaut vor #452 in § 8.11); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1, § 8.9, § 8.11, § 8.23 |
+| 9h–9k | 9i und 9k erledigt; 9h erledigt mit E10 (#463), der Wortlaut vor #463 und der Grund in § 8.23, der Halbsatz aus A8 zur Speichervariante mit E13 (#474), § 8.25 — vorher zum Teil (#357, #434, dazu die Entkopplung von Ersatz und Restwert mit E7c2 (#446), der Wortlaut vor #446 und der Grund in § 8.9; mit E7c3 (#452) gemessen, der Wortlaut vor #452 in § 8.11); 9j erledigt mit E6 (#436), der Grund in § 8.1 | § 3.7, § 8.1, § 8.9, § 8.11, § 8.23 |
 | 21 | erledigt mit #333 und E1 (#380); offen allein die Betriebskosten von 1030 | § 3.6 |
 | 30–32 | 31 erledigt mit E5 (#434); 32 erledigt und 30 zum Teil erledigt mit E7a (#437), der Wortlaut vor #437 und der Grund in § 8.3; 30 ganz erledigt mit E7c1 (#440), der Wortlaut vor #440 und der Grund in § 8.7 | § 5.1, § 8.3, § 8.7 |
 | R4 | erledigt mit E1 (#380) | § 5.2 |
@@ -1283,7 +1283,9 @@ Merge #460 über den Entscheid-Papieren zu E8b, `46023235`), in § 8.19 und § 8
 Merge #461 über `8793591b` = Zapfprofil Z3 samt den Papieren zu #460), in § 8.21 und § 8.22 **vor #462** (Stand
 `75d45630`, der Merge #462 über `f06c8c9e` = Kühlung KU2 Welle 3 über Dialog Design #458 Stufe 3b samt den
 Papieren zu #461), in § 8.23 und § 8.24 **vor #463** (Stand `94521f2e`, der Merge #463 über `502fea3c` = Dialog
-Design #466 samt den Papieren zu #462) —, nicht vor dem Schnitt.*
+Design #466 samt den Papieren zu #462), in § 8.25 und § 8.26 **vor #474** (Stand `4b50b77b`, der erste Merge #474 über
+`3ff9840b` = Anlagenkopplung AK1 samt den Papieren zu #463 und #470 und den Entscheid-Papieren vom 24.09.2026) —, nicht
+vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2360,3 +2362,54 @@ Die Stellen, die mit E10 veraltet sind; „vorher" ist der Wortlaut vor #463 (St
 | § 6.3 Nr. 19 | „Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"" | „dokumentiert mit E10 (#463)" mit der Beschreibung; der Punkt bleibt offen |
 | § 6.5 | — | neue Zeile „Nutzungsdauer an zwei Orten … — benannt, nicht gekoppelt (A8, #463)" |
 | § 7 und Anhang | § 7: Wortlaut in § 8.23, dazu „… E9 Teil a (#461) und E9 Teil b (#462)" und „E7, E8 und E9 sind damit abgeschlossen"; Kürzeltafel „S3 offen (E10)", „U39 teilweise (Nr. 9h gemessen #452, der Rest mit ND‑S3)"; Etappenzeile „E10 … E12 — nächste Etappe: E10 (voraussichtlich #463)" | § 7 mit E10 (#463), „E7, E8, E9 und E10 sind damit abgeschlossen", als Nächstes E12, offen dazu sechs Fragen aus E10; Kürzeltafel „S3 = #463", neue Zeile der Welle, „U39 erledigt #446 und #463"; Etappenzeilen „E10 — Nutzungsdauer S3 und Speicherflotte" = #463 (Merge `94521f2e`) und „E11 … E12 — nächste Etappe: E12" |
+
+### 8.25 E13 — Checkliste Punkt 9, Fehlergründe in der Oberfläche, A8-Halbsatz, zwei Hilfe-Anker (#474)
+
+Protokoll [`E13_Checkliste_Fehlergruende_Protokoll.md`](E13_Checkliste_Fehlergruende_Protokoll.md); der Stand von E9b‑Q5
+(R‑E9b), E7c3‑Q6 (R‑E7c3) und A8 (R‑A) im Register. Die Welle ist die kleine Bauwelle nach den Anwenderentscheiden vom
+24.09.2026 („Freigabe für: kleine Bauwelle für E9b‑Q5 (b) und E7c3‑Q6 (a)"), erweitert um den Halbsatz aus A8 und zwei
+der vier Anker-Kandidaten aus E12; keine Etappe des Plans E0–E12, keine offene Frage.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E13** (#474, erster Merge `4b50b77b`, End-Merge `NACHTRAG-474-MERGE2`) | Punkt 9 der Anhang-E-Checkliste „erfüllt", sobald Günstig und Ungünstig gerechnet sind, „teilweise" bei nur Erwartet oder einem Szenario, „offen" ohne Lauf (E9b‑Q5 b); `Fehlergrund.Anzeigezeilen` und die Gründe `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` in der Statuszeile der Ergebnisseite und im Dialog BHKW-Wirtschaftlichkeit, je Grund einmal; einen Datenbankfehler beim Schreiben meldet die Anwendung selbst, `Speicherfehler` trägt nur Fehler außerhalb der Datenbankanweisung, nach einem gescheiterten UPDATE kein INSERT (E7c3‑Q6 a, E13/6); eine neue Speichervariante nimmt die Nutzungsdauer der Zeile „Stromspeicher · Batterie" (A8); `Form_VorlagenPosition` und `Form_LeistungspreisReihe` auf ihren Abschnitt der Seite Kosten; 5 Ressourcenschlüssel neu, 2 neu gefasst | **keine** — Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich (394/394 CSV, 4.207.049 Werte), kein Schemaschritt; Gate auf `4b50b77b`: Kern-Filter 0 Fehler, ChartProben 146/146 gleich der Windows-Messlatte, voller Lauf 12.714 bestanden / 0 Fehler / 1 übersprungen, Dokumentationswachen 26/26 |
+
+*§ 3.9, der Schluss des Absatzes zu B‑6 (Z. 2391–2392):*
+
+> `Katalogfehler` (Kraftwerksparks), `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` (Wirtschaftlichkeit); die
+> letzten drei zeigt die Oberfläche nicht (E7c3‑Q6, offen). Ein nicht lesbarer Tarif gilt als nicht aktiv.
+
+**Umgesetzt mit E13 (#474):** Die letzten drei zeigt die Oberfläche (E7c3‑Q6 a): je Grund eine Zeile, Statuszeile der
+Ergebnisseite und Dialog BHKW-Wirtschaftlichkeit, der Datenbankfehler einmal als Meldung der Anwendung,
+`StelleTabellenSicher` setzt die `Vorsorgewarnung` zurück.
+
+*§ 7, die Sätze zu den offenen Fragen (Z. 2879–2885):*
+
+> **E12** (Wiki-Runden) ist mit **#470** vorbereitet — der Sammel-Upload selbst steht nach Freigabe
+> des Anwenders aus; E11 entfällt — damit ist der Etappenplan E0–E12 bis auf den Upload
+> abgearbeitet. Offen
+> sind die acht Fragen aus E7c3 (→ Register R‑E7c3), die zwei aus E8c (→ Register R‑E8c), die sieben aus E9a
+> (→ Register R‑E9a), die fünf aus E9b (→ Register R‑E9b) und sechs der sieben aus E10 (→ Register R‑E10; E10‑Q5 ist
+> erledigt); … Nach dem Entscheid aus E7c3 kommen der Rest von B‑6 (E7c3‑Q5) und die Anzeige der drei
+> Kerneigenschaften `Ladefehler`, `Speicherfehler`, `Vorsorgewarnung` (E7c3‑Q6) dazu.
+
+**Umgesetzt mit E13 (#474):** „Alle Fragen sind entschieden"; die zwei offenen Bauten und der Halbsatz aus A8 sind mit
+E13 gebaut; aus E7c3 bleibt der Rest von B‑6 (E7c3‑Q5 a, eine eigene kleine Etappe); der Sammel-Upload ist für den
+26.09.2026 freigegeben.
+
+### 8.26 Berichtigungen im gültigen Stand (#474)
+
+Die Stellen, die mit E13 veraltet sind; „vorher" ist der Wortlaut vor #474 (Stand `4b50b77b`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `94521f2e`, Zielversion 120, „90–120 vergeben"; fremde Schritte bis 119 | Codestand `NACHTRAG-474-MERGE2`, Zielversion 124, „90–124 vergeben (…; 121–124 anderen Feldern; E13 ohne Schritt)"; fremd dazu 121 (Katalogverweis, #468), 122/123 (Anlagenkopplung AK1), 124 (Zapfprofil Z4, #464) |
+| § 2.11.2, Zeile V‑G12 (Z. 792) | „Stand: gebaut #455 … Knopf „Anhang-E-Checkliste…" auf der Ergebnisseite" | dazu „Punkt 9 (Szenarioanalyse), gebaut #474": erfüllt / teilweise / offen, der Ausweis als Beleg |
+| § 2.11.5, Ausweis (Z. 914) | endete mit „(beides zum Mitentscheiden, E9b‑Q2)." | dazu „In Punkt 9 der Anhang-E-Checkliste ist der Ausweis Beleg, nicht Bedingung" (E9b‑Q5 b) |
+| § 2.13 (3) (Z. 1244–1245, 1264) | „der Halbsatz aus A8, sie solle die Positionsarten 20/21 lesen, ist offen"; „offen bleibt allein der Halbsatz aus A8 zur Speichervariante" | „erledigt mit #474 als Vorgabe neuer Einträge" mit den zwei Wegen; „der Halbsatz aus A8 zur Speichervariante ist mit #474 gebaut" |
+| § 3.9 (Z. 2391–2392) | Wortlaut in § 8.25 | die Anzeige der drei Gründe (E7c3‑Q6 a, #474) |
+| § 6.1 | Kurztafel bis E10 (#463) | Zeile „E13 Checkliste Punkt 9, Fehlergründe, A8-Halbsatz" (#474) |
+| § 6.2 | endete mit „… E10 bewegt keinen Anker." | dazu die Ergänzungen an `AnhangEChecklisteTests`, `RobustheitB6Tests`, `SpeichervarianteSicherstellenTests` und „E13 bewegt keinen Anker" |
+| § 6.3 Nr. 9h (Z. 2754–2755) | „offen bleibt allein der Halbsatz aus A8 zur Speichervariante (Positionsarten 20/21)" | „der Halbsatz … ist erledigt mit E13 (#474)" |
+| § 6.5, Nutzungsdauer an zwei Orten (Z. 2853) | „(der Halbsatz aus A8 ist offen)" | „eine neue Variante bekommt sie aus der Zeile „Stromspeicher · Batterie" (Halbsatz aus A8, #474)" |
+| § 7 und Anhang | § 7: Wortlaut in § 8.25; Mockup-Zeile „U12 und U43 erledigt #455"; Etappenzeile „E11 … E12 — nächste Etappe: E12 …; Bau offen: E9b‑Q5 b, E7c3‑Q6 a" | § 7 „Alle Fragen sind entschieden", E13 (#474); Kürzeltafel mit der Zeile der Welle (#474) und „U43 … (Punkt 9 „erfüllt" #474)"; Etappenzeilen „E11 … E12 — E12 vorbereitet #470, Sammel-Upload 26.09.2026 …; gebaut mit E13 (#474) …; alle Fragen entschieden" und „E13 — kleine Bauwelle" = #474 |
