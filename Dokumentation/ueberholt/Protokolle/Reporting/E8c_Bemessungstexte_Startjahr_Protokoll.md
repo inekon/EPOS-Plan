@@ -167,8 +167,9 @@ Lücke. (5) Englisch („per hour", „% of fuel costs", „from year …").
 - **Rechenweg 08:** Die Gap-Kurztafel stand in den Zeilen V‑G6, V‑G8, V‑G9 und V‑G11 auf dem Stand vor #434 — mit den
   Papieren zu #460 nachgezogen.
 - **Nachweisumschlag im Mockup:** Der Kasten „Der Nachweisumschlag und seine Grenzen" nannte Fassung 3 mit vier Listen
-  und sieben Skalaren — mit den Papieren zu #460 auf Fassung 9 berichtigt. Die Wiki-Quelle nennt keine Fassung; dort
-  ist der Absatz über die gespeicherten Herleitungen um das Startjahr ergänzt.
+  und sieben Skalaren — mit den Papieren zu #460 auf Fassung 9 berichtigt. Die Wiki-Quelle nennt keine Fassung des
+  Umschlags, dort war nichts zu berichtigen; die Betriebskostentabelle beschreibt dort der neue Punkt
+  `bericht-betriebskosten`.
 - **CI-Nachweise** der Pushes vor dieser Welle: zu `fbe93de6` Kern-Lauf `main` 35923242428 und Windows-Lauf `main`
   35923242569 grün, der Kern-Lauf `ios_migration_september` 35923217641 abgebrochen — überholt durch den Push
   `c65aefe4` (Merge der Kühlungssitzung), dessen Lauf 35923955544 grün ist und `fbe93de6` einschließt; zu `46023235`
