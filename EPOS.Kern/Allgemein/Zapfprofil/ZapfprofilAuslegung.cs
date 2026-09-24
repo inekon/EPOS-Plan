@@ -638,7 +638,15 @@ namespace WindowsFormsApplication1
                     double? schwelle = ZapfAuslegungParameter.Wahlweise(ps, ZapfStochastikParameter.KONSISTENZSCHWELLE,
                         "Der Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts) entfällt.", h);
                     double spitze = ens.StundenspitzeKw.Wert(perzentil);
-                    if (schwelle.HasValue && spitze > schwelle.Value * phi)
+                    // Die Probe als Werte (N11 (k)): die Oberfläche baut ihren Satz daraus, nicht aus dem Satz des Kerns.
+                    bool auffaellig = schwelle.HasValue && spitze > schwelle.Value * phi;
+                    if (schwelle.HasValue)
+                        ergebnis = ergebnis with
+                        {
+                            KonsistenzSchwelle = schwelle.Value, KonsistenzSpitzeKw = spitze,
+                            KonsistenzGrenzeKw = schwelle.Value * phi, KonsistenzAuffaellig = auffaellig
+                        };
+                    if (auffaellig)
                         h.Add(new Auslegungshinweis("KONSISTENZ_STOCHASTISCHE_SPITZE",
                             "Die stochastische Spitze (" + pp + " der größten Stundenleistung " + Auslegungstext.Z(spitze)
                             + " kW) liegt über dem " + Auslegungstext.Z(schwelle.Value) + "-Fachen der Leistung des Summenlinienpunkts "

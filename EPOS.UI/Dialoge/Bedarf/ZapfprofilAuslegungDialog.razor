@@ -437,7 +437,7 @@
                                 else
                                 {
                                     <div class="epos-zapfausl-konsistenz">
-                                        <Kohaerenzzeile Text="@(kz.KonsistenzAuffaellig ? Format(Texte.KonsistenzAuffaellig, kz.KonsistenzText) : Texte.KonsistenzOk)"
+                                        <Kohaerenzzeile Text="@Konsistenzsatz(kz)"
                                                         Zustand="@(kz.KonsistenzAuffaellig ? KohaerenzZustand.Abweichend : KohaerenzZustand.Ok)" />
                                     </div>
                                 }
@@ -758,6 +758,15 @@
          : pz.Volumen && !double.IsNaN(pz.Wert)
             ? Format(Texte.PerzentilVolumenWert, Zahl(pz.Wert, "N0"), Zahl(pz.LeistungKw, "N1"))
             : Perzentilwerttext(pz, pz.Wert);
+
+    /// <summary>
+    /// Der Satz des Konsistenzhinweises aus den Werten des Kerns (N11 (k)): P_p der größten
+    /// Stundenleistung gegen Schwelle · Φ_N — in der Sprache und Kultur der Oberfläche.
+    /// </summary>
+    private string Konsistenzsatz(ZapfprofilPerzentilDaten kz)
+        => Format(kz.KonsistenzAuffaellig ? Texte.KonsistenzAuffaellig : Texte.KonsistenzOk,
+                  kz.Perzentil.ToString(CultureInfo.InvariantCulture), Zahl(kz.KonsistenzSpitzeKw, "N1"),
+                  Zahl(kz.KonsistenzSchwelle, "0.##"), Zahl(kz.KonsistenzLeistungKw, "N1"));
 
     /// <summary>Entfällt der Perzentilwert — ohne Nachweis beim Φ_N (P_p = ∞)?</summary>
     private static bool PerzentilEntfaellt(ZapfprofilPerzentilDaten pz) => double.IsPositiveInfinity(pz.Wert);

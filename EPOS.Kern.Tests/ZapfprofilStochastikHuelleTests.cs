@@ -166,7 +166,14 @@ namespace EPOS.Kern.Tests
                 WurzelNSchaetzungKw = 27.5
             };
 
-            var speicher = new Auslegungsgruppe { Topologie = ZapfTopologie.Speicher, Perzentil = Ergebnis(ZapfTopologie.Speicher, false) };
+            var speicher = new Auslegungsgruppe
+            {
+                Topologie = ZapfTopologie.Speicher,
+                Perzentil = Ergebnis(ZapfTopologie.Speicher, false) with
+                {
+                    KonsistenzSchwelle = 1.8, KonsistenzSpitzeKw = 10.0, KonsistenzGrenzeKw = 45.0, KonsistenzAuffaellig = false
+                }
+            };
             ZapfprofilPerzentilDaten s = ZapfprofilHuelle.PerzentilDaten(speicher);
             Assert.True(s.Volumen);
             Assert.Equal(95, s.Perzentil);
@@ -186,21 +193,28 @@ namespace EPOS.Kern.Tests
             Assert.Equal(26.0, s.MinutenspitzeKw);
             Assert.Equal(10.0, s.StundenspitzeKw);
             Assert.Equal(27.5, s.WurzelNKw);
+            // Der Konsistenzhinweis als Werte des Kerns (N11 (k)) — kein Satz, keine Textsuche.
             Assert.True(s.KonsistenzGeprueft);
             Assert.False(s.KonsistenzAuffaellig);
+            Assert.Equal(10.0, s.KonsistenzSpitzeKw);
+            Assert.Equal(1.8, s.KonsistenzSchwelle);
+            Assert.Equal(25.0, s.KonsistenzLeistungKw);
 
-            // Auffällig: der Satz des Kerns; ohne Schwelle im Parametersatz: nicht geprüft.
+            // Auffällig nach dem Urteil des Kerns; ohne Schwelle nicht geprüft — auch wenn ein Satz
+            // mit dem Schlüssel in der Warnliste stünde.
             ZapfprofilPerzentilDaten auffaellig = ZapfprofilHuelle.PerzentilDaten(speicher with
             {
-                Hinweise = new[] { new Auslegungshinweis(ZapfprofilHuelle.HINWEIS_KONSISTENZ, "Satz des Kerns.", true) }
+                Perzentil = speicher.Perzentil with { KonsistenzAuffaellig = true }
             });
             Assert.True(auffaellig.KonsistenzAuffaellig);
-            Assert.Equal("Satz des Kerns.", auffaellig.KonsistenzText);
             ZapfprofilPerzentilDaten ohneSchwelle = ZapfprofilHuelle.PerzentilDaten(speicher with
             {
-                Hinweise = new[] { Auslegungshinweis.ParameterFehlt(ZapfStochastikParameter.KONSISTENZSCHWELLE, "entfällt.") }
+                Perzentil = speicher.Perzentil with { KonsistenzSchwelle = null, KonsistenzSpitzeKw = null, KonsistenzGrenzeKw = null },
+                Hinweise = new[] { new Auslegungshinweis(ZapfprofilHuelle.HINWEIS_KONSISTENZ, "Satz mit " + ZapfStochastikParameter.KONSISTENZSCHWELLE, true) }
             });
             Assert.False(ohneSchwelle.KonsistenzGeprueft);
+            Assert.False(ohneSchwelle.KonsistenzAuffaellig);
+            Assert.Null(ohneSchwelle.KonsistenzSpitzeKw);
 
             var durchfluss = new Auslegungsgruppe { Topologie = ZapfTopologie.Durchfluss, Perzentil = Ergebnis(ZapfTopologie.Durchfluss, true) };
             ZapfprofilPerzentilDaten d = ZapfprofilHuelle.PerzentilDaten(durchfluss);
@@ -565,6 +579,9 @@ namespace EPOS.Kern.Tests
             Assert.True(p.Gleichzeitigkeit > 0);
             Assert.True(p.Einheiten > 0);
             Assert.True(p.KonsistenzGeprueft);
+            Assert.Equal(p.StundenspitzeKw, p.KonsistenzSpitzeKw);            // die verglichene Größe: P_p der Stundenspitze
+            Assert.Equal(p.LeistungKw, p.KonsistenzLeistungKw);              // gegen Schwelle · Φ_N
+            Assert.True(p.KonsistenzSchwelle > 0);
             Assert.Equal("Auslegung gerechnet · stochastisch · Perzentil P" + p.Perzentil + " · Seed " + p.Seed, d.Status);
 
             // Zu wenige Realisierungen: nicht belastbar, mit dem Hinweis der Warnliste.

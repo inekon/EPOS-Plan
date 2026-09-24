@@ -1029,8 +1029,17 @@ public sealed class ZapfprofilPerzentilDaten
     /// <summary>Liegt die stochastische Spitze über der Schwelle zur Leistung des Summenlinienpunkts?</summary>
     public bool KonsistenzAuffaellig { get; set; }
 
-    /// <summary>Der Satz des Kerns zum auffälligen Konsistenzhinweis; leer sonst.</summary>
-    public string KonsistenzText { get; set; } = "";
+    /// <summary>
+    /// Die Werte der Probe, wie der Kern sie ausweist — der Satz der Oberfläche entsteht aus ihnen
+    /// (N11 (k)): die verglichene Größe, das Perzentil p der größten Stundenleistung [kW] …
+    /// </summary>
+    public double? KonsistenzSpitzeKw { get; set; }
+
+    /// <summary>… die Schwelle aus dem Parametersatz [-] …</summary>
+    public double? KonsistenzSchwelle { get; set; }
+
+    /// <summary>… und die Leistung Φ_N des Summenlinienpunkts, auf die sie sich bezieht [kW]; je <c>null</c> ohne Probe.</summary>
+    public double? KonsistenzLeistungKw { get; set; }
 
     /// <summary>Der Wert des gewählten Perzentils; +∞ = ohne Nachweis, NaN ohne Streuband.</summary>
     public double Wert => Streuband.FirstOrDefault(z => z.Perzentil == Perzentil)?.Wert ?? double.NaN;

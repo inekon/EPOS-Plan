@@ -400,15 +400,25 @@ namespace EPOS.Kern.Tests
             Auslegungsgruppe g = Gruppe(ZapfprofilAuslegung.Rechnen(Eingang(Projekt(), Auslegungssatz(klein)), Katalog, Zusatz()),
                                         ZapfTopologie.Speicher);
             Assert.Contains(g.Hinweise, h => h.Code == "KONSISTENZ_STOCHASTISCHE_SPITZE" && h.Warnung);
+            // Die Probe steht als Werte im Perzentil (N11 (k)): P_p der Stundenspitze gegen Schwelle · Φ_N.
+            Assert.True(g.Perzentil.KonsistenzAuffaellig);
+            Assert.Equal(0.01, g.Perzentil.KonsistenzSchwelle);
+            Assert.Equal(g.Perzentil.StundenspitzeKw.P99, g.Perzentil.KonsistenzSpitzeKw);
+            Assert.Equal(0.01 * g.Summenlinie.Punkt.LeistungKw, g.Perzentil.KonsistenzGrenzeKw.Value, 12);
             Dictionary<string, double> gross = Stochastikwerte();
             gross[ZapfStochastikParameter.KONSISTENZSCHWELLE] = 1000.0;
             g = Gruppe(ZapfprofilAuslegung.Rechnen(Eingang(Projekt(), Auslegungssatz(gross)), Katalog, Zusatz()), ZapfTopologie.Speicher);
             Assert.DoesNotContain(g.Hinweise, h => h.Code == "KONSISTENZ_STOCHASTISCHE_SPITZE");
-            // Ohne Schwelle: nur „Parameter fehlt", keine Prüfung.
+            Assert.False(g.Perzentil.KonsistenzAuffaellig);
+            Assert.Equal(1000.0, g.Perzentil.KonsistenzSchwelle);
+            // Ohne Schwelle: nur „Parameter fehlt", keine Prüfung — und keine Werte.
             g = Gruppe(ZapfprofilAuslegung.Rechnen(Eingang(Projekt(), Satz(ZapfStochastikParameter.KONSISTENZSCHWELLE)), Katalog, Zusatz()),
                        ZapfTopologie.Speicher);
             Assert.DoesNotContain(g.Hinweise, h => h.Code == "KONSISTENZ_STOCHASTISCHE_SPITZE");
             Assert.Contains(g.Hinweise, h => h.Code == ZapfHinweis.PARAMETER_FEHLT && h.Text.Contains(ZapfStochastikParameter.KONSISTENZSCHWELLE));
+            Assert.Null(g.Perzentil.KonsistenzSchwelle);
+            Assert.Null(g.Perzentil.KonsistenzSpitzeKw);
+            Assert.False(g.Perzentil.KonsistenzAuffaellig);
         }
     }
 }

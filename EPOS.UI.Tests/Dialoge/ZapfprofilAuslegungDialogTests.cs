@@ -724,7 +724,10 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Gleichzeitigkeit = volumen ? 0.62 : 0.41,
         Einheiten = 40,
         WurzelNKw = 28.5,
-        KonsistenzGeprueft = volumen
+        KonsistenzGeprueft = volumen,
+        KonsistenzSpitzeKw = volumen ? 11 : null,
+        KonsistenzSchwelle = volumen ? 1.5 : null,
+        KonsistenzLeistungKw = volumen ? 25 : null
     };
 
     /// <summary>Der Stand beim Öffnen samt Wertemenge, Grenzen und Vorgaben der Stochastik (erfunden).</summary>
@@ -863,7 +866,36 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         IElement konsistenz = cut.Find(".epos-zapfausl-konsistenz");
         Assert.Null(konsistenz.GetAttribute("aria-disabled"));
         Assert.NotNull(konsistenz.QuerySelector(".epos-kohaerenz--ok"));
-        Assert.Contains("Konsistenzhinweis geprüft", konsistenz.TextContent);
+        // Der Satz entsteht aus den Werten (N11 (k)) und nennt die verglichene Größe.
+        Assert.Equal("Konsistenzhinweis geprüft: Die größte Stundenleistung P99 (11,0 kW) liegt nicht über dem 1,5-Fachen "
+                     + "der Leistung Φ_N des Summenlinienpunkts (25,0 kW).", konsistenz.QuerySelector(".epos-kohaerenz-text")!.TextContent);
+    }
+
+    /// <summary>
+    /// Die Konsistenzzeile in der englischen Oberfläche (N11 (k)): Satz und Zahlen in Sprache und
+    /// Kultur der Oberfläche — kein deutscher Satz des Kerns.
+    /// </summary>
+    [Fact]
+    public void Die_Konsistenzzeile_steht_englisch_in_englischer_Kultur()
+    {
+        using var _ = new Kulturvorrichtung("en-US");
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.PerzentilErgebnis = PerzentilErgebnis();
+        var texte = new ZapfprofilAuslegungTexte
+        {
+            KonsistenzOk = WindowsFormsApplication1.MyResource.Resource.ZPG_AUS_KONSISTENZ_OK,
+            KonsistenzAuffaellig = WindowsFormsApplication1.MyResource.Resource.ZPG_AUS_KONSISTENZ_AUFFAELLIG
+        };
+        var cut = Render<ZapfprofilAuslegungDialog>(p => p.Add(x => x.Daten, StartMitStochastik(Ergebnis(g))).Add(x => x.Texte, texte));
+        Assert.Equal("Consistency note checked: the largest hourly output P99 (11.0 kW) does not exceed 1.5 times the output Φ_N "
+                     + "of the cumulative-curve point (25.0 kW).", cut.Find(".epos-zapfausl-konsistenz .epos-kohaerenz-text").TextContent);
+
+        g.PerzentilErgebnis.KonsistenzAuffaellig = true;
+        g.PerzentilErgebnis.KonsistenzSpitzeKw = 1234.5;
+        cut = Render<ZapfprofilAuslegungDialog>(p => p.Add(x => x.Daten, StartMitStochastik(Ergebnis(g))).Add(x => x.Texte, texte));
+        Assert.Equal("Consistency note: the largest hourly output P99 (1,234.5 kW) exceeds 1.5 times the output Φ_N of the "
+                     + "cumulative-curve point (25.0 kW) — check the design day and the cumulative curve.",
+                     cut.Find(".epos-zapfausl-konsistenz .epos-kohaerenz-text").TextContent);
     }
 
     [Fact]
@@ -939,11 +971,13 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
         g.PerzentilErgebnis = PerzentilErgebnis();
         g.PerzentilErgebnis.KonsistenzAuffaellig = true;
-        g.PerzentilErgebnis.KonsistenzText = "Die stochastische Spitze liegt über der Schwelle.";
+        g.PerzentilErgebnis.KonsistenzSpitzeKw = 44;
         var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
         IElement k = cut.Find(".epos-zapfausl-konsistenz");
         Assert.NotNull(k.QuerySelector(".epos-kohaerenz--abweichend"));
-        Assert.Contains("Konsistenzhinweis: Die stochastische Spitze liegt über der Schwelle.", k.TextContent);
+        Assert.Equal("Konsistenzhinweis: Die größte Stundenleistung P99 (44,0 kW) liegt über dem 1,5-Fachen der Leistung Φ_N "
+                     + "des Summenlinienpunkts (25,0 kW) — Bedarfstag und Summenlinie prüfen.",
+                     k.QuerySelector(".epos-kohaerenz-text")!.TextContent);
 
         g.PerzentilErgebnis.KonsistenzAuffaellig = false;
         g.PerzentilErgebnis.KonsistenzGeprueft = false;

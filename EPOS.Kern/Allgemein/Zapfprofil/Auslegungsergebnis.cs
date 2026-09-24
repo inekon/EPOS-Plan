@@ -157,6 +157,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zone der Spitze je Einheit; leer ohne sie.</summary>
         public string SpitzeJeEinheitZone { get; init; } = "";
+
+        /// <summary>
+        /// Der Konsistenzhinweis der Speichergruppe (4.5, N11 (f)): die Schwelle aus dem
+        /// Parametersatz (<see cref="ZapfStochastikParameter.KONSISTENZSCHWELLE"/>); <c>null</c> =
+        /// ohne Schwelle nicht geprüft oder keine Speichergruppe.
+        /// </summary>
+        public double? KonsistenzSchwelle { get; init; }
+
+        /// <summary>Die verglichene Größe: das Perzentil p der größten Stundenleistung der Gruppe [kW] (mit Schwelle).</summary>
+        public double? KonsistenzSpitzeKw { get; init; }
+
+        /// <summary>Die Grenze der Probe: Schwelle · Φ_N des Summenlinienpunkts [kW] (mit Schwelle).</summary>
+        public double? KonsistenzGrenzeKw { get; init; }
+
+        /// <summary>Liegt die stochastische Spitze über der Grenze? Nur mit Schwelle je <c>true</c>.</summary>
+        public bool KonsistenzAuffaellig { get; init; }
     }
 
     /// <summary>

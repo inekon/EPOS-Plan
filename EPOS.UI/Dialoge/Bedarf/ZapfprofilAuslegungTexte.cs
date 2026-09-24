@@ -433,10 +433,10 @@ public sealed class ZapfprofilAuslegungTexte
     public string GrundKonsistenz { get; set; } = "Der Konsistenzhinweis braucht das Perzentil — „Stochastisch rechnen“ einschalten.";
 
     /// <summary><c>ZPG_AUS_KONSISTENZ_OK</c></summary>
-    public string KonsistenzOk { get; set; } = "Konsistenzhinweis geprüft: Die stochastische Spitze liegt nicht über der Schwelle zur Leistung des Summenlinienpunkts.";
+    public string KonsistenzOk { get; set; } = "Konsistenzhinweis geprüft: Die größte Stundenleistung P{0} ({1} kW) liegt nicht über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW).";
 
     /// <summary><c>ZPG_AUS_KONSISTENZ_AUFFAELLIG</c></summary>
-    public string KonsistenzAuffaellig { get; set; } = "Konsistenzhinweis: {0}";
+    public string KonsistenzAuffaellig { get; set; } = "Konsistenzhinweis: Die größte Stundenleistung P{0} ({1} kW) liegt über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW) — Bedarfstag und Summenlinie prüfen.";
 
     /// <summary><c>ZPG_AUS_KONSISTENZ_LAEUFT</c></summary>
     public string KonsistenzLaeuft { get; set; } = "Konsistenzhinweis: wird mit dem Ensemble geprüft — rechnet …";

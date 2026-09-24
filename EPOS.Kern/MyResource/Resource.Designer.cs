@@ -75735,7 +75735,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis: Die größte Stundenleistung P{0} ({1} kW) liegt über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW) — Bedarfstag und Summenlinie prüfen. ähnelt.
         /// </summary>
         public static string ZPG_AUS_KONSISTENZ_AUFFAELLIG {
             get {
@@ -75771,7 +75771,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis geprüft: Die stochastische Spitze liegt nicht über der Schwelle zur Leistung des Summenlinienpunkts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konsistenzhinweis geprüft: Die größte Stundenleistung P{0} ({1} kW) liegt nicht über dem {2}-Fachen der Leistung Φ_N des Summenlinienpunkts ({3} kW). ähnelt.
         /// </summary>
         public static string ZPG_AUS_KONSISTENZ_OK {
             get {

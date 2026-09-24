@@ -417,8 +417,9 @@ namespace WindowsFormsApplication1
         /// Volumina beim Φ_N des Summenlinienpunkts, sonst die Minutenspitze; das Streuband P50 …
         /// P99 samt Spannweite, die Gleichzeitigkeit als Ergebnis (GLF_V bzw. GLF_P) mit Σ n_E,
         /// die Belastbarkeit gegen die Mindestzahl ⌈1/(1 − p)⌉ und — nur Speicher — der
-        /// Konsistenzhinweis: geprüft, solange der Parametersatz die Schwelle trägt (sonst nennt
-        /// die Warnliste den fehlenden Parameter), auffällig mit dem Satz des Kerns. <c>null</c>
+        /// Konsistenzhinweis als WERTE des Kerns: geprüft, solange der Parametersatz die Schwelle
+        /// trägt (sonst nennt die Warnliste den fehlenden Parameter), mit Stundenspitze P_p,
+        /// Schwelle und Φ_N — den Satz baut die Oberfläche in ihrer Sprache (N11 (k)). <c>null</c>
         /// ohne Lauf „Stochastisch rechnen" oder wenn das Ensemble nicht rechenbar war. Die Hülle
         /// rechnet nichts nach: jede Zahl kommt aus dem Kern.
         /// </summary>
@@ -452,14 +453,13 @@ namespace WindowsFormsApplication1
             };
             foreach (int stufe in Perzentilwerte.Stufen)
                 d.Streuband.Add(new ZapfprofilPerzentilZeileDaten(stufe, w.Wert(stufe)));
-            if (speicher)
+            if (speicher && p.KonsistenzSchwelle.HasValue)
             {
-                Auslegungshinweis auffaellig = g.Hinweise.FirstOrDefault(h => h.Code == HINWEIS_KONSISTENZ);
-                d.KonsistenzAuffaellig = auffaellig != null;
-                d.KonsistenzText = auffaellig?.Text ?? "";
-                d.KonsistenzGeprueft = auffaellig != null
-                    || !g.Hinweise.Any(h => h.Code == ZapfHinweis.PARAMETER_FEHLT
-                                            && (h.Text ?? "").Contains(ZapfStochastikParameter.KONSISTENZSCHWELLE, StringComparison.Ordinal));
+                d.KonsistenzGeprueft = true;
+                d.KonsistenzAuffaellig = p.KonsistenzAuffaellig;
+                d.KonsistenzSpitzeKw = p.KonsistenzSpitzeKw;
+                d.KonsistenzSchwelle = p.KonsistenzSchwelle;
+                d.KonsistenzLeistungKw = p.LeistungKw;
             }
             return d;
         }

@@ -25917,10 +25917,10 @@ Do you want to allow this?</value>
     <value>Single statistics μ + z·σ/√N: {0} kW (note)</value>
   </data>
   <data name="ZPG_AUS_KONSISTENZ_OK" xml:space="preserve">
-    <value>Consistency note checked: the stochastic peak does not exceed the threshold relative to the output of the cumulative-curve point.</value>
+    <value>Consistency note checked: the largest hourly output P{0} ({1} kW) does not exceed {2} times the output Φ_N of the cumulative-curve point ({3} kW).</value>
   </data>
   <data name="ZPG_AUS_KONSISTENZ_AUFFAELLIG" xml:space="preserve">
-    <value>Consistency note: {0}</value>
+    <value>Consistency note: the largest hourly output P{0} ({1} kW) exceeds {2} times the output Φ_N of the cumulative-curve point ({3} kW) — check the design day and the cumulative curve.</value>
   </data>
   <data name="ZPG_AUS_KONSISTENZ_OHNE_SCHWELLE" xml:space="preserve">
     <value>Consistency note omitted — the threshold is missing from the parameter set.</value>
