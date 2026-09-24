@@ -11101,7 +11101,8 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    der Zeilentabelle traegt seine Beschriftung ("Beginn [h], Zeile 2") fuer
    Sprachausgabe und Sammelmeldung; sichtbar steht sie einmal im Tabellenkopf. */
 .epos-zapfausl-konstruktorzeilen .epos-feld-text,
-.epos-zapfprofil-wohnungen .epos-feld-text {
+.epos-zapfprofil-wohnungen .epos-feld-text,
+.epos-zapfprofil-kategorienraster .epos-feld-text {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -11150,6 +11151,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-zapfprofil-gruppenhilfe > h4 {
     margin-inline-end: auto;
+}
+
+/* Die Editoren der Stufe Experte (Z4, Gruppe 2b): Die Reihenfolge einer Zapfkategorie
+   steht als Nummer mit den Knoepfen "Nach oben"/"Nach unten" in EINER Zeile - der
+   Flexkasten liegt IN der Zelle, nicht auf ihr. */
+.epos-zapfprofil-reihenfolge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-zapfprofil-reihenfolge > .epos-zahl {
+    min-width: 1.5rem;
 }
 
 @media (forced-colors: active) {

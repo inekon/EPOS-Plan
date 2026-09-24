@@ -1173,6 +1173,15 @@ public sealed class ZapfprofilBedarfstagDaten
     /// <summary>Die größte Minutenleistung [kW].</summary>
     public double MinutenspitzeKw { get; set; }
 
+    /// <summary>
+    /// Die Bezugsmenge des Tages in seiner <see cref="Bezugsart"/> (Schritt 121, N10 (j)); <c>null</c> =
+    /// ohne Bezug — der Tag gilt, wie er ist, und wird nie skaliert.
+    /// </summary>
+    public double? Bezugsmenge { get; set; }
+
+    /// <summary>Die Bezugsart der Bezugsmenge als Zahl des Kerns (1 Personen … 7 Fläche); <c>null</c> ohne Bezug.</summary>
+    public int? Bezugsart { get; set; }
+
     /// <summary>Eine unabhängige Kopie samt Ereignissen.</summary>
     public ZapfprofilBedarfstagDaten Kopie() => new()
     {
@@ -1186,7 +1195,9 @@ public sealed class ZapfprofilBedarfstagDaten
         Ereignisse = Ereignisse.ToList(),
         Konstruktorzeilen = Konstruktorzeilen.Select(z => z.Kopie()).ToList(),
         TagessummeKwh = TagessummeKwh,
-        MinutenspitzeKw = MinutenspitzeKw
+        MinutenspitzeKw = MinutenspitzeKw,
+        Bezugsmenge = Bezugsmenge,
+        Bezugsart = Bezugsart
     };
 }
 
@@ -1680,6 +1691,12 @@ public sealed class ZapfprofilAuslegungDaten
     public string ErzeugerartHerkunft { get; set; } = "";
 
     /// <summary>
+    /// Der Vorschlag der Erzeugerart aus dem Projekt (Anlagenbestand, eindeutig);
+    /// <see cref="ZapfprofilErzeugerart.KeineAngabe"/> ohne oder bei mehrdeutigem Bestand (N10 (i)).
+    /// </summary>
+    public ZapfprofilErzeugerart ErzeugerartVorschlag { get; set; }
+
+    /// <summary>
     /// Die Gruppe des EINEN Punkts, den OK übernimmt: die erste Speichergruppe mit rechenbarer
     /// Empfehlung, sonst die erste Gruppe mit rechenbarer Empfehlung; <c>null</c> ohne Punkt.
     /// </summary>
@@ -1740,5 +1757,17 @@ public sealed class ZapfprofilAuslegungStartDaten
 
     /// <summary>Je Perzentil die Mindestzahl ⌈1/(1 − p)⌉ — darunter ist das Perzentil „nicht belastbar".</summary>
     public Dictionary<int, int> Mindestzahl { get; set; } = new();
+
+    /// <summary>
+    /// Die Bezugsarten eines konstruierten Tags (Wertemenge des Schemas,
+    /// <c>Tab_TwwBedarfstag_STAMM.Bezugsart</c>) mit ihrem Namen in der Oberflächensprache.
+    /// </summary>
+    public List<ZapfprofilKatalogeintragDaten> Bezugsarten { get; set; } = new();
+
+    /// <summary>
+    /// Die Bezüge des Füllstands (Wertemenge des Schemas, <c>Tab_TwwProjekt.Fuellstand_Bezug</c>) mit ihrem
+    /// Namen; die Vorgabe (0) steht nicht darin — sie nennt der Dialog selbst.
+    /// </summary>
+    public List<ZapfprofilKatalogeintragDaten> Fuellstandbezuege { get; set; } = new();
 }
 

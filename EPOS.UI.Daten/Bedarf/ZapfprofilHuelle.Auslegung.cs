@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
                     a => Auslegung(idProjekt, zonen, Deterministisch(a), basis, stufe)),
                 ["StochastischRechnen"] = new Func<ZapfprofilAuslegungEingabeDaten, CancellationToken, Task<ZapfprofilAuslegungDaten>>(
                     (a, abbruch) => Kulturweitergabe.Starten(() => Auslegung(idProjekt, zonen, a, basis, stufe, abbruch), abbruch)),
-                ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>(
+                ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>(
                     BedarfstagKonstruieren),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
@@ -130,6 +130,15 @@ namespace WindowsFormsApplication1
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
             StochastikRahmen(start);
+            // Die Wertemengen des Schemas (Schritt 121): Bezugsart eines konstruierten Tags, Bezug des Füllstands.
+            start.Bezugsarten = TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE)
+                .Select(b => new ZapfprofilKatalogeintragDaten { Id = b, Name = Bezugsgroesse((ZapfBezugsart)b) }).ToList();
+            start.Fuellstandbezuege = TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE)
+                .Select(b => new ZapfprofilKatalogeintragDaten
+                {
+                    Id = b,
+                    Name = Satztext(TwwSpeicherauslegung.Fuellstandbegriff((ZapfFuellstandbezug)b))
+                }).ToList();
             try
             {
                 Parametersatz ps = ZapfprofilCtrl.Parameter();
@@ -312,7 +321,10 @@ namespace WindowsFormsApplication1
                 Zustand = ZapfprofilAuslegungZustand.Gerechnet,
                 Stochastisch = eingabe?.Stochastisch == true,
                 Status = Text_("ZPG_AUS_STATUS_GERECHNET", "Auslegung gerechnet · deterministisch · Perzentil erst mit „Stochastisch rechnen“"),
-                ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart)
+                ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart),
+                // Der Vorschlag des Projekts (N10 (i)): der eindeutige Anlagenbestand — eine Wahl, die der
+                // Anwender übernimmt; gespeichert wird sie erst mit ihr (Schritt 121).
+                ErzeugerartVorschlag = AlsErzeugerart(r.Bestand?.Vorschlag)
             };
 
             if (eingabe != null && eingabe.Erzeugerart != ZapfprofilErzeugerart.KeineAngabe)
@@ -733,12 +745,15 @@ namespace WindowsFormsApplication1
         {
             if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return null;
             ZapfprofilBedarfstagDaten t = a.Entwurf;
+            // Bezugsmenge und Bezugsart gehen mit dem Tag (Schritt 121, N10 (j)) — nur zusammen.
+            bool mitBezug = t.Bezugsmenge.HasValue && t.Bezugsart.HasValue;
             return new BedarfstagKatalogzeile(ZapfprofilCtrl.ENTWURF_ID, (t.Bezeichner ?? "").Trim(), t.Katalogversion ?? "",
-                ZapfBedarfstagquelle.Konstruktor, null,
+                ZapfBedarfstagquelle.Konstruktor, mitBezug ? t.Bezugsmenge : null,
                 new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, t.Katalogversion ?? "", Herkunftsart.Eigenkonstruktion),
                 t.Ereignisse.Select(e => new Zapfereignis(e.MinuteBeginn, e.DauerMin, e.EnergieKwh)).ToArray())
             {
-                Status = ZapfKatalogstatus.Eigen
+                Status = ZapfKatalogstatus.Eigen,
+                Bezugsart = mitBezug ? (ZapfBezugsart)t.Bezugsart.Value : (ZapfBezugsart?)null
             };
         }
 
@@ -755,7 +770,9 @@ namespace WindowsFormsApplication1
                 Bezeichner = t.Bezeichner ?? "",
                 Quelle = (ZapfprofilBedarfstagquelle)(int)t.QuelleArt,
                 Herkunft = Herkunft(t.Herkunft),
-                Katalogversion = t.Katalogversion ?? ""
+                Katalogversion = t.Katalogversion ?? "",
+                Bezugsmenge = t.Bezugsmenge,
+                Bezugsart = t.Bezugsart.HasValue ? (int)t.Bezugsart.Value : (int?)null
             };
             if (entwurf)
                 d.Ereignisse = t.Ereignisse.Select(e => new ZapfprofilEreignisDaten(e.MinuteBeginn, e.DauerMin, e.EnergieKwh)).ToList();
@@ -804,9 +821,16 @@ namespace WindowsFormsApplication1
         /// Namen prüft er schon hier LESEND gegen die Katalogversion
         /// (<see cref="ZapfprofilCtrl.FreierBedarfstagname"/>) und nennt einen freien; der
         /// Schreibweg prüft ihn erneut.
+        ///
+        /// <para><b>Bezugsart und Bezugsmenge</b> (Schritt 121, N10 (j); Stufe Z4, Gruppe 2b) gehen
+        /// nur zusammen mit dem Tag: beide leer = ein Tag des Projekts, der nie skaliert wird; eine
+        /// Menge größer 0 samt Bezugsart aus der Wertemenge des Schemas = ein Tag, den die Auslegung
+        /// auf die Bezugsmenge einer Gruppe derselben Bezugsart skaliert. Eine halbe Angabe lehnt der
+        /// Konstruktor benannt ab (<c>ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG</c>).</para>
         /// </summary>
         internal static ZapfprofilKonstruktorErgebnis BedarfstagKonstruieren(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen,
-                                                                            string bezeichner)
+                                                                            string bezeichner, double? bezugsmenge = null,
+                                                                            int? bezugsart = null)
         {
             var meldungen = new List<ZapfprofilMeldung>();
             string name = (bezeichner ?? "").Trim();
@@ -814,6 +838,12 @@ namespace WindowsFormsApplication1
                 meldungen.Add(Fehler("ZPG_AUS_KON_OHNE_NAME", "", Text_("ZPG_AUS_KON_OHNE_NAME", "Bitte einen Namen für den Bedarfstag eingeben.")));
             if (zeilen == null || zeilen.Count == 0)
                 meldungen.Add(Fehler("ZPG_AUS_KON_OHNE_ZEILE", "", Text_("ZPG_AUS_KON_OHNE_ZEILE", "Mindestens eine Zeile eintragen.")));
+            bool bezugGueltig = bezugsmenge.HasValue == bezugsart.HasValue
+                                && (!bezugsmenge.HasValue || (bezugsmenge.Value > 0 && !double.IsInfinity(bezugsmenge.Value)))
+                                && (!bezugsart.HasValue || TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE).Contains(bezugsart.Value));
+            if (!bezugGueltig)
+                meldungen.Add(Fehler("ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG", "", Text_("ZPG_AUS_KON_BEZUG_UNVOLLSTAENDIG",
+                    "Bezugsart und Bezugsmenge (größer 0) gehören zusammen.")));
 
             Parametersatz ps;
             try { ps = ZapfprofilCtrl.Parameter(); }
@@ -879,7 +909,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                BedarfstagKatalogzeile t = ZapfprofilCtrl.BedarfstagKonstruieren(kern, name, ps);
+                BedarfstagKatalogzeile t = ZapfprofilCtrl.BedarfstagKonstruieren(kern, name, ps, bezugsmenge,
+                    bezugsart.HasValue ? (ZapfBezugsart)bezugsart.Value : (ZapfBezugsart?)null);
                 ZapfprofilBedarfstagDaten tag = AlsBedarfstag(t, true);
                 tag.Konstruktorzeilen = zeilen.Select(z => z.Kopie()).ToList();
                 return new ZapfprofilKonstruktorErgebnis(tag, new ZapfprofilMeldung[0]);
@@ -952,7 +983,6 @@ namespace WindowsFormsApplication1
             t.HerleitungErzeuger = Text_("ZPG_AUS_HERL_ERZEUGER", t.HerleitungErzeuger);
             t.HerleitungUebertrager = Text_("ZPG_AUS_HERL_UEBERTRAGER", t.HerleitungUebertrager);
             t.HerleitungSensorhoehe = Text_("ZPG_AUS_HERL_SENSORHOEHE", t.HerleitungSensorhoehe);
-            t.HerleitungLaufangabe = Text_("ZPG_AUS_HERL_LAUFANGABE", t.HerleitungLaufangabe);
             t.LabelStochastisch = Text_("ZPG_AUS_LBL_STOCHASTISCH", t.LabelStochastisch);
             t.HerleitungStochastisch = Text_("ZPG_AUS_HERL_STOCHASTISCH", t.HerleitungStochastisch);
             t.LabelPerzentil = Text_("ZPG_AUS_LBL_PERZENTIL", t.LabelPerzentil);
@@ -1083,6 +1113,35 @@ namespace WindowsFormsApplication1
             t.KonstruktorFeld = Text_("ZPG_AUS_KON_FELD", t.KonstruktorFeld);
             t.KonstruktorFehleingabe = Text_("ZPG_AUS_KON_FEHLEINGABE", t.KonstruktorFehleingabe);
             t.KonstruktorGrundLetzteZeile = Text_("ZPG_AUS_KON_GRUND_LETZTE_ZEILE", t.KonstruktorGrundLetzteZeile);
+            // Eingaben des Verfahrensvergleichs, Laufangaben, Konstruktor (Z4, Gruppe 2b)
+            t.GruppeVergleichEingaben = Text_("ZPG_AUS_GRP_VERGLEICH_EINGABEN", t.GruppeVergleichEingaben);
+            t.HinweisVergleichEingaben = Text_("ZPG_AUS_HINW_VERGLEICH_EINGABEN", t.HinweisVergleichEingaben);
+            t.LabelLadeleistung = Text_("ZPG_AUS_LBL_LADELEISTUNG", t.LabelLadeleistung);
+            t.LabelLadeManuell = Text_("ZPG_AUS_LBL_LADE_MANUELL", t.LabelLadeManuell);
+            t.LabelLadefenster = Text_("ZPG_AUS_LBL_LADEFENSTER", t.LabelLadefenster);
+            t.LabelLadefensterBeginn = Text_("ZPG_AUS_LBL_LADEFENSTER_BEGINN", t.LabelLadefensterBeginn);
+            t.LabelNutzanteil = Text_("ZPG_AUS_LBL_NUTZANTEIL", t.LabelNutzanteil);
+            t.LabelZuschlag = Text_("ZPG_AUS_LBL_ZUSCHLAG", t.LabelZuschlag);
+            t.LabelPersonen = Text_("ZPG_AUS_LBL_PERSONEN", t.LabelPersonen);
+            t.LabelPersonenManuell = Text_("ZPG_AUS_LBL_PERSONEN_MANUELL", t.LabelPersonenManuell);
+            t.LabelFuellstandBezug = Text_("ZPG_AUS_LBL_FUELLSTAND_BEZUG", t.LabelFuellstandBezug);
+            t.FuellstandVorgabe = Text_("ZPG_AUS_FUELLSTAND_VORGABE", t.FuellstandVorgabe);
+            t.KnopfVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG", t.KnopfVorschlag);
+            t.LabelVorschlag = Text_("ZPG_AUS_LBL_VORSCHLAG", t.LabelVorschlag);
+            t.HerleitungLade = Text_("ZPG_AUS_HERL_LADE", t.HerleitungLade);
+            t.HerleitungLadeOhne = Text_("ZPG_AUS_HERL_LADE_OHNE", t.HerleitungLadeOhne);
+            t.HerleitungLadefenster = Text_("ZPG_AUS_HERL_LADEFENSTER", t.HerleitungLadefenster);
+            t.HerleitungPersonen = Text_("ZPG_AUS_HERL_PERSONEN", t.HerleitungPersonen);
+            t.HerleitungAngesetzt = Text_("ZPG_AUS_HERL_ANGESETZT", t.HerleitungAngesetzt);
+            t.HerleitungFuellstand = Text_("ZPG_AUS_HERL_FUELLSTAND", t.HerleitungFuellstand);
+            t.HerleitungGespeichert = Text_("ZPG_AUS_HERL_GESPEICHERT", t.HerleitungGespeichert);
+            t.HerleitungWerkstoff = Text_("ZPG_AUS_HERL_WERKSTOFF", t.HerleitungWerkstoff);
+            t.KnopfErzeugerVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG_WAEHLEN", t.KnopfErzeugerVorschlag);
+            t.LabelErzeugerVorschlag = Text_("ZPG_AUS_ERZEUGERART_VORSCHLAG", t.LabelErzeugerVorschlag);
+            t.KonstruktorLabelBezugsart = Text_("ZPG_AUS_KON_LBL_BEZUGSART", t.KonstruktorLabelBezugsart);
+            t.KonstruktorOhneBezug = Text_("ZPG_AUS_KON_OHNE_BEZUG", t.KonstruktorOhneBezug);
+            t.KonstruktorLabelBezugsmenge = Text_("ZPG_AUS_KON_LBL_BEZUGSMENGE", t.KonstruktorLabelBezugsmenge);
+            t.KonstruktorHinweisBezug = Text_("ZPG_AUS_KON_HINW_BEZUG", t.KonstruktorHinweisBezug);
             return t;
         }
 

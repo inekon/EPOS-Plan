@@ -255,7 +255,7 @@ public class ZapfprofilDialogStufenTests : EposBunitContext
     }
 
     [Fact]
-    public void Experte_zeigt_Fachwerte_Auslastungsgang_und_die_gesperrten_Knoepfe_mit_Grund()
+    public void Experte_zeigt_Fachwerte_Auslastungsgang_und_ohne_Delegat_die_gesperrten_Editoren_mit_Grund()
     {
         var cut = Aufbauen();
         Stufe(cut, "Experte");
@@ -280,11 +280,13 @@ public class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.True(halb.HasAttribute("disabled"));
         Assert.Equal("unvollständig", halb.GetAttribute("title"));
 
+        // Ohne Delegat der Hülle stehen die Editoren weich gesperrt mit Grund (Z4, Gruppe 2b).
         IElement editor = Knopf(cut, "Tagesgang bearbeiten…");
         Assert.Equal("true", editor.GetAttribute("aria-disabled"));
-        Assert.Equal("Folgt mit der nächsten Fassung des Dialogs.", editor.GetAttribute("title"));
+        Assert.Equal("In dieser Fassung noch nicht verfügbar.", editor.GetAttribute("title"));
         editor.Click();
-        Assert.Equal("Folgt mit der nächsten Fassung des Dialogs.", cut.Instance.Hinweis);
+        Assert.Equal("In dieser Fassung noch nicht verfügbar.", cut.Instance.Hinweis);
+        Assert.False(cut.Instance.TagesgangOffen);
         Assert.Equal("true", Knopf(cut, "Zapfkategorien und Streuung…").GetAttribute("aria-disabled"));
         Assert.Null(cut.FindAll(".epos-zapfprofil-weitere").FirstOrDefault());
     }

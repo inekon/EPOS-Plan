@@ -166,6 +166,11 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.ZapfprofilAuslegungKiSicht) },
         { KiMaskennamen.BEDARFSTAG_KONSTRUKTOR,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfstagKonstruktorKiSicht) },
+        // Zapfprofil Z4, Gruppe 2b: die Editoren der Stufe Experte (Tagesgang, Zapfkategorien).
+        { KiMaskennamen.TAGESGANG_EDITOR,
+          typeof(EPOS.UI.Dialoge.Bedarf.TagesgangEditorKiSicht) },
+        { KiMaskennamen.ZAPFKATEGORIEN,
+          typeof(EPOS.UI.Dialoge.Bedarf.ZapfkategorienEditorKiSicht) },
 
         // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
         // Brauchwasser sind drei Katalogschluessel derselben Komponente.
@@ -391,7 +396,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sechsundsiebzig_Masken()
+    public void Der_Katalog_fuehrt_achtundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
@@ -401,8 +406,9 @@ public class KiDialogkatalogTests : IDisposable
         // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
         // Kennlinieneditor, der Projektkopf des Assistenten, die Startseite und die
         // Programmeinstellungen. Welle #458, Stufe 3a: das Zapfprofil, seine Auslegung
-        // und deren Bedarfstag-Konstruktor. Welle #465: die Gebaeudeverwaltung.
-        Assert.Equal(76, katalog.Anzahl);
+        // und deren Bedarfstag-Konstruktor. Welle #465: die Gebaeudeverwaltung. Zapfprofil Z4,
+        // Gruppe 2b: die Editoren Tagesgang und Zapfkategorien.
+        Assert.Equal(78, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1064,6 +1070,8 @@ public class KiDialogkatalogTests : IDisposable
     [InlineData(KiMaskennamen.KOSTENPROFIL, "wochenwerte", 168, 5)]
     [InlineData(KiMaskennamen.LEISTUNGSPREISREIHE, "monatssaetze", 12, 4)]
     [InlineData(KiMaskennamen.QUELLPROFIL, "monatswerte", 12, 5)]
+    [InlineData(KiMaskennamen.TAGESGANG_EDITOR, "stunden", 24, 5)]
+    [InlineData(KiMaskennamen.TAGESGANG_EDITOR, "wochenfaktoren", 7, 5)]
     public void Die_Zahlenfolgen_der_Masken_sind_Zahlenreihen(string maske, string feld, int laenge, int felder)
     {
         KiDialog d = KiDialoge.Katalog.Finde(maske)!;
@@ -1079,12 +1087,13 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die Zählliste der Zahlenreihen:</b> genau diese acht Reihen an sieben Masken — der
-    /// Auslastungsgang des Zapfprofils (Stufe Z4) ist die achte.
+    /// <b>Die Zählliste der Zahlenreihen:</b> genau diese zehn Reihen an acht Masken — der
+    /// Auslastungsgang des Zapfprofils (Stufe Z4) ist die achte, Stundenanteile und Wochenfaktoren
+    /// des Tagesgang-Editors (Z4, Gruppe 2b) die neunte und zehnte.
     /// Eine neue Reihe erzwingt einen Blick hierher — und in die Tests ihrer Maske.
     /// </summary>
     [Fact]
-    public void Genau_acht_Zahlenreihen_stehen_im_Katalog()
+    public void Genau_zehn_Zahlenreihen_stehen_im_Katalog()
     {
         string[] reihen = KiDialoge.Katalog.Alle
             .SelectMany(d => d.Felder.Where(f => f.IstReihe).Select(f => d.Maskenname + "." + f.Name))
@@ -1100,7 +1109,9 @@ public class KiDialogkatalogTests : IDisposable
             KiMaskennamen.KOSTENPROFIL + ".wochenwerte",
             KiMaskennamen.LEISTUNGSPREISREIHE + ".monatssaetze",
             KiMaskennamen.QUELLPROFIL + ".monatswerte",
-            KiMaskennamen.ZAPFPROFIL + ".auslastungsgang"
+            KiMaskennamen.ZAPFPROFIL + ".auslastungsgang",
+            KiMaskennamen.TAGESGANG_EDITOR + ".stunden",
+            KiMaskennamen.TAGESGANG_EDITOR + ".wochenfaktoren"
         }.OrderBy(s => s, StringComparer.Ordinal), reihen);
     }
 
@@ -1432,6 +1443,14 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse BedarfstagKonstruktorKiSicht: der Name und die Zeilen " +
             "als Spalten, die Zapfregel als Platz der Regelwahl, Anzahl bzw. Volumen und " +
             "Temperatur nur, wo die Zeile sie bedienbar zeigt; Zeuge ist ZapfprofilAuslegungDialogTests",
+        [KiMaskennamen.TAGESGANG_EDITOR] =
+            "bindet über die Sichtklasse TagesgangEditorKiSicht: Tagtyp als Wahl, die 24 Stundenanteile " +
+            "des gezeigten Tagtyps und die Wochenfaktoren als Zahlenreihen, Vorlage und Katalogversion " +
+            "nur, wo die Maske sie bedienbar zeigt; Zeuge ist TagesgangEditorTests",
+        [KiMaskennamen.ZAPFKATEGORIEN] =
+            "bindet über die Sichtklasse ZapfkategorienEditorKiSicht: die Kategorien als Spalten des " +
+            "Rasters (Grenzen der Felder, nur bedienbar gesetzt) und die Katalogversion der Kopie; " +
+            "Zeuge ist ZapfkategorienEditorTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",

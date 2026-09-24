@@ -57,10 +57,21 @@
    gesperrt mit Grund, Jahresmesswert) und die Schaetzhilfen Tagesbedarf, Ladeleistung und
    Zirkulation (auto/manuell, Vorschlag als Knopf am Feld, angesetzter Wert, Rechenweg - alles aus
    der Vorschau des Kerns), dazu den Rechenweg der Jahresreihe (N12 (s)) und die Dauerlinie.
-   Experte zeigt die Fachwerte der Zone und des Gebaeudes, Seed und Realisierungen; Tagesgang-Editor
-   und Zapfkategorien stehen weich gesperrt mit Grund "folgt". Jede Angabe, die die Auslegung
-   aendert, macht deren Punkt ueberholt. Die wirksame Bezugsmenge einer Wohnungstabelle uebernimmt
-   das OK aus der Vorschau des Kerns in die Bezugsgroesse.
+   Experte zeigt die Fachwerte der Zone und des Gebaeudes, Seed und Realisierungen. Jede Angabe, die
+   die Auslegung aendert, macht deren Punkt ueberholt. Die wirksame Bezugsmenge einer
+   Wohnungstabelle uebernimmt das OK aus der Vorschau des Kerns in die Bezugsgroesse. Die
+   Schaetzhilfe der Ladeleistung zeigt den Vorschlag der Auslegung (Delegat "Ladevorschlag",
+   deterministisch, entprellt mit der Vorschau, nur ab Erweitert).
+
+   EDITOREN DER STUFE EXPERTE (Z4, Gruppe 2b). "Tagesgang bearbeiten..." und "Zapfkategorien und
+   Streuung..." oeffnen je eine Ueberlagerung zur Nutzungsart der gewaehlten Zone (TagesgangEditor,
+   ZapfkategorienEditor; Parametersatz ueber die Delegaten TagesgangGaben und KategorienGaben).
+   Die Editoren gehoeren zum KATALOG, nicht zum Arbeitsstand: Ihr OK schreibt sofort (eine
+   Transaktion); ist die Nutzungsart gesperrt, entsteht eine neue Katalogversion. Danach liest der
+   Dialog den Katalog neu (Delegat "Katalogstand"), stellt die Zone auf die Nutzungsart, die jetzt
+   die Werte traegt (eine Expertenwahl des Satzes folgt dem geschriebenen Satz), rechnet die
+   Vorschau neu und nennt es in einer leisen Zeile; ein uebernommener Punkt ist ueberholt. Ohne
+   Delegat oder ohne Nutzungsart stehen die Knoepfe weich gesperrt mit Grund.
 
    BENANNT GESPERRT. Ohne Delegat der Auslegung steht "Auslegung..." weich gesperrt (aria-disabled +
    Grund als title), ohne Auslegung und Jahresreihe "Stochastisch rechnen"; der Versuch meldet den
@@ -71,8 +82,8 @@
    fragt keine Datenbank"), sofort beim Oeffnen (die Huelle bringt sie mit) und bei 0
    ohne Wartezeit (bunit).
 
-   TASTATUR. Esc schliesst wie Abbrechen - solange die Auslegung offen ist, schliesst Esc
-   nur sie; Enter bleibt unbelegt.
+   TASTATUR. Esc schliesst wie Abbrechen - solange eine Ueberlagerung (Auslegung, Tagesgang,
+   Zapfkategorien) offen ist, schliesst Esc nur sie; Enter bleibt unbelegt.
 
    HILFE-ASSISTENT (Welle #458, Stufe 3a; Z4). Der Dialog meldet sich als EIGENE Maske an
    (KiMaskennamen.ZAPFPROFIL), solange er offen steht - angemeldet ist sein Arbeitsstand
@@ -271,7 +282,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (ZapfprofilNutzungsartDaten n in Daten.Katalog)
+                                        @foreach (ZapfprofilNutzungsartDaten n in Katalogliste)
                                         {
                                             ZapfprofilNutzungsartDaten eintrag = n;
                                             <tr @key="eintrag.Id" class="@(eintrag.Id == zone.IdNutzungsart ? "epos-zeile--markiert" : null)"
@@ -505,6 +516,18 @@
                                             <Optionsgruppe Bezeichnung="@Texte.LabelLadeleistung" Eintraege="@AutoManuell"
                                                            Auswahl="@(G.LadeAuto ? AUTO : MANUELL)"
                                                            AuswahlChanged="id => Gebaeudeangabe(x => x.LadeAuto = id != MANUELL)" />
+                                            @* Der Vorschlag der Ladeleistung (4.7): aus dem Verfahrensvergleich der
+                                               deterministischen Auslegung zum Arbeitsstand, entprellt mit der Vorschau. *@
+                                            @if (Ladehilfe is { } lh)
+                                            {
+                                                <Vorschlagszeile Text="@Vorschlagstext(lh)" Knopftext="@Texte.KnopfVorschlag"
+                                                                 Erlaubt="@lh.Vorschlag.HasValue" Sperrgrund="@Texte.HinweisVorschlagOhne"
+                                                                 Uebernommen="() => LadeleistungUebernehmen(lh.Vorschlag)" />
+                                            }
+                                            else
+                                            {
+                                                <Herleitungszeile Text="@Texte.HinweisOhneVorschlag" />
+                                            }
                                             <Zahlenfeld Bezeichnung="@Texte.LabelLadeleistungManuell" Feldname="@Texte.LabelLadeleistungManuell"
                                                         Einheit="kW" Min="0" Wert="@G.LadeManuellKw"
                                                         WertChanged="w => Gebaeudeangabe(x => x.LadeManuellKw = w)"
@@ -518,7 +541,15 @@
                                                         WertChanged="w => Gebaeudeangabe(x => x.LadefensterBeginnH = w)"
                                                         FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert, zone: false)" />
                                             <Herleitungszeile Text="@Format(Texte.HinweisLadefenster, Wert(Daten.Vorgaben.LadefensterH), Wert(Daten.Vorgaben.LadefensterBeginnH))" />
-                                            <Herleitungszeile Text="@LadeAngesetzt" />
+                                            @if (Ladehilfe is { } la)
+                                            {
+                                                <Herleitungszeile Text="@Angesetzt(la)" />
+                                                <Herleitungszeile Text="@Format(Texte.LabelRechenweg, la.Rechenweg)" />
+                                            }
+                                            else
+                                            {
+                                                <Herleitungszeile Text="@LadeAngesetzt" />
+                                            }
                                             <Herleitungszeile Text="@Texte.HinweisLadeleistung" />
                                         </KindInhalt>
                                     </Formulargruppe>
@@ -637,12 +668,23 @@
                                     </Formulargruppe>
                                 </KindInhalt>
                             </Formularraster>
+                            @* Die Editoren der Stufe Experte (Z4, Gruppe 2b): Tagesgang und Zapfkategorien der
+                               Nutzungsart der Zone - Katalog, nicht Arbeitsstand; ohne Delegat oder ohne
+                               Nutzungsart weich gesperrt mit Grund. *@
                             <div class="epos-leiste epos-zapfprofil-expertenleiste">
-                                <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundFolgt"
-                                        @onclick="Folgt">@Texte.KnopfTagesgang</button>
-                                <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundFolgt"
-                                        @onclick="Folgt">@Texte.KnopfKategorien</button>
+                                <button type="button" class="epos-knopf epos-zapfprofil-tagesgangknopf"
+                                        aria-disabled="@(EditorGrund(TagesgangGaben is not null, zone) is null ? null : "true")"
+                                        title="@EditorGrund(TagesgangGaben is not null, zone)"
+                                        @onclick="() => TagesgangOeffnen(zone)">@Texte.KnopfTagesgang</button>
+                                <button type="button" class="epos-knopf epos-zapfprofil-kategorienknopf"
+                                        aria-disabled="@(EditorGrund(KategorienGaben is not null, zone) is null ? null : "true")"
+                                        title="@EditorGrund(KategorienGaben is not null, zone)"
+                                        @onclick="() => KategorienOeffnen(zone)">@Texte.KnopfKategorien</button>
                             </div>
+                            @if (_editorStatus.Length > 0)
+                            {
+                                <p class="epos-leisezeile epos-zapfprofil-editorstatus" role="status">@_editorStatus</p>
+                            }
                         </KindInhalt>
                     </Gruppenkopf>
                 }
@@ -940,6 +982,27 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- Ueberlagerungen der Stufe Experte (Z4, Gruppe 2b): Tagesgang und Zapfkategorien ---- *@
+    <Ueberlagerung Offen="@(_tagesgangGaben is not null)" Titel="@Texte.TgeTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _tagesgangGaben = null">
+        <KindInhalt>
+            @if (_tagesgangGaben is not null)
+            {
+                <TagesgangEditor @attributes="_tagesgangGaben" TitelAnzeigen="false" Geschlossen="TagesgangGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_kategorienGaben is not null)" Titel="@Texte.KatTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _kategorienGaben = null">
+        <KindInhalt>
+            @if (_kategorienGaben is not null)
+            {
+                <ZapfkategorienEditor @attributes="_kategorienGaben" TitelAnzeigen="false" Geschlossen="KategorienGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -1016,6 +1079,30 @@
     /// </summary>
     [Parameter] public Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
 
+    /// <summary>
+    /// Der Parametersatz des Tagesgang-Editors zur Nutzungsart der Zone und ihrem Satz (Experte;
+    /// <c>null</c> = der Satz der Nutzungsart) — der Delegat der Hülle. Kein Delegat = der Knopf
+    /// „Tagesgang bearbeiten…" steht weich gesperrt mit Grund.
+    /// </summary>
+    [Parameter] public Func<int, int?, IReadOnlyDictionary<string, object>>? TagesgangGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Kategorien-Editors zur Nutzungsart der Zone; kein Delegat = weich gesperrt.</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>>? KategorienGaben { get; set; }
+
+    /// <summary>
+    /// Der Katalog nach einem Schreibweg der Editoren (Nutzungsarten, Tagesgangsätze) — der Delegat
+    /// der Hülle; kein Delegat = der Katalog beim Öffnen bleibt (eine neue Katalogversion steht dann
+    /// als Id in der Auswahl).
+    /// </summary>
+    [Parameter] public Func<ZapfprofilKatalogstandDaten>? Katalogstand { get; set; }
+
+    /// <summary>
+    /// Der Vorschlag der Ladeleistung zum Arbeitsstand (Schätzhilfe, 5.3/4.7) — der Delegat der Hülle,
+    /// der die Auslegung deterministisch rechnet; entprellt mit der Vorschau, nur ab der Stufe
+    /// Erweitert. Kein Delegat = kein Vorschlag, die leise Zeile nennt den Grund.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten?>? Ladevorschlag { get; set; }
+
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
@@ -1043,6 +1130,22 @@
     private IReadOnlyDictionary<string, object>? _auslegungGaben;
     private bool _auslegungStochastisch;
 
+    /// <summary>Die Parametersätze der offenen Editoren (Experte); <c>null</c>, solange keiner steht.</summary>
+    private IReadOnlyDictionary<string, object>? _tagesgangGaben;
+    private IReadOnlyDictionary<string, object>? _kategorienGaben;
+
+    /// <summary>Die Zone, für die ein Editor offen steht — sein Ergebnis gilt ihr, auch wenn die Wahl inzwischen wechselte.</summary>
+    private ZapfprofilZoneDaten? _editorZone;
+
+    /// <summary>Die leise Zeile nach einem Schreibweg der Editoren („… gespeichert — die Zone rechnet mit …").</summary>
+    private string _editorStatus = "";
+
+    /// <summary>Der Katalog nach einem Schreibweg der Editoren; <c>null</c> = der Katalog beim Öffnen.</summary>
+    private ZapfprofilKatalogstandDaten? _katalogstand;
+
+    /// <summary>Der Vorschlag der Ladeleistung zum Arbeitsstand der Vorschau; <c>null</c> ohne Vorschlag.</summary>
+    private ZapfprofilSchaetzhilfeDaten? _ladehilfe;
+
     /// <summary>Das Ergebnis des letzten Laufs der Jahresreihe zum aktuellen Arbeitsstand; <c>null</c> ohne Lauf.</summary>
     private ZapfprofilVorschauDaten? _stochastik;
 
@@ -1054,6 +1157,15 @@
 
     /// <summary>Steht die Überlagerung „Auslegung"? Prüfhilfe für die Tests.</summary>
     public bool AuslegungOffen => _auslegungGaben is not null;
+
+    /// <summary>Steht der Tagesgang-Editor? Prüfhilfe für die Tests.</summary>
+    public bool TagesgangOffen => _tagesgangGaben is not null;
+
+    /// <summary>Steht der Kategorien-Editor? Prüfhilfe für die Tests.</summary>
+    public bool KategorienOffen => _kategorienGaben is not null;
+
+    /// <summary>Der Katalog, den der Dialog zeigt — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZapfprofilNutzungsartDaten> KatalogAktuell => Katalogliste;
 
     /// <summary>Öffnete die Überlagerung mit „Stochastisch rechnen"? Prüfhilfe für die Tests.</summary>
     public bool AuslegungStochastisch => _auslegungStochastisch;
@@ -1157,7 +1269,13 @@
         => _wahl >= 0 && _wahl < _eingabe.Zonen.Count ? _eingabe.Zonen[_wahl] : null;
 
     private ZapfprofilNutzungsartDaten? Nutzungsart(int id)
-        => id > 0 ? Daten.Katalog.FirstOrDefault(n => n.Id == id) : null;
+        => id > 0 ? Katalogliste.FirstOrDefault(n => n.Id == id) : null;
+
+    /// <summary>Die Nutzungsarten des Katalogs — nach einem Schreibweg der Editoren der neu gelesene Stand.</summary>
+    private List<ZapfprofilNutzungsartDaten> Katalogliste => _katalogstand?.Katalog ?? Daten.Katalog;
+
+    /// <summary>Die Tagesgangsätze des Katalogs — nach einem Schreibweg der Editoren der neu gelesene Stand.</summary>
+    private List<ZapfprofilKatalogeintragDaten> Tagesgangsatzliste => _katalogstand?.Tagesgangsaetze ?? Daten.Tagesgangsaetze;
 
     /// <summary>
     /// Die Einträge der Katalogauswahl: Name und Bezugsgröße. Eine Zone, deren Nutzungsart
@@ -1168,7 +1286,7 @@
     {
         get
         {
-            var liste = Daten.Katalog
+            var liste = Katalogliste
                 .Select(n => (n.Id, string.IsNullOrEmpty(n.Bezugsgroesse) ? n.Name : n.Name + " · " + n.Bezugsgroesse))
                 .ToList();
             ZapfprofilZoneDaten? z = Gewaehlte;
@@ -1179,10 +1297,10 @@
     }
 
     private IReadOnlyCollection<int> GesperrteNutzungsarten
-        => Daten.Katalog.Where(n => !n.Waehlbar).Select(n => n.Id).ToList();
+        => Katalogliste.Where(n => !n.Waehlbar).Select(n => n.Id).ToList();
 
     private string SperrhinweisNutzungsart
-        => Daten.Katalog.FirstOrDefault(n => !n.Waehlbar && n.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
+        => Katalogliste.FirstOrDefault(n => !n.Waehlbar && n.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
 
     private string NutzungsartName(int id) => Nutzungsart(id)?.Name ?? "";
 
@@ -1342,17 +1460,17 @@
     /// <summary>Die Tagesgangsätze des Katalogs; ein unbekannter Wert bleibt als Eintrag.</summary>
     private IReadOnlyList<(int Id, string Text)> Tagesgangsatzwahl(ZapfprofilZonenangabenDaten a)
     {
-        var liste = Daten.Tagesgangsaetze.Select(s => (s.Id, s.Name)).ToList();
+        var liste = Tagesgangsatzliste.Select(s => (s.Id, s.Name)).ToList();
         if (a.IdTagesgangsatz is int id && liste.All(e => e.Id != id))
             liste.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
         return liste;
     }
 
     private IReadOnlyCollection<int> GesperrteTagesgangsaetze
-        => Daten.Tagesgangsaetze.Where(s => !s.Waehlbar).Select(s => s.Id).ToList();
+        => Tagesgangsatzliste.Where(s => !s.Waehlbar).Select(s => s.Id).ToList();
 
     private IReadOnlyDictionary<int, string> TagesgangsatzGruende
-        => Daten.Tagesgangsaetze.Where(s => !s.Waehlbar).ToDictionary(s => s.Id, s => s.Sperrgrund);
+        => Tagesgangsatzliste.Where(s => !s.Waehlbar).ToDictionary(s => s.Id, s => s.Sperrgrund);
 
     /// <summary>Die Beschriftung eines Feldes der Wohnungstabelle: „Anzahl, Zeile 2".</summary>
     private string WohnFeld(string spalte, ZapfprofilZonenangabenDaten a, ZapfprofilWohnungDaten w)
@@ -1409,6 +1527,38 @@
         => Format(Texte.LabelAngesetzt, Zahl(h.Angesetzt, "N1"), h.Einheit,
                   h.Kalibriert ? Texte.AngesetztKalibriert
                   : !h.Auto && h.Manuell.HasValue ? Texte.OptionManuell : Texte.OptionAuto);
+
+    /// <summary>Der Vorschlag der Ladeleistung zum aktuellen Arbeitsstand; <c>null</c> ohne Delegat, ohne Speichergruppe oder veraltet.</summary>
+    private ZapfprofilSchaetzhilfeDaten? Ladehilfe => _ladehilfeAktuell ? _ladehilfe : null;
+
+    /// <summary>Gehört <see cref="_ladehilfe"/> zum aktuellen Arbeitsstand?</summary>
+    private bool _ladehilfeAktuell;
+
+    /// <summary>
+    /// Rechnet den Vorschlag der Ladeleistung (die Auslegung deterministisch, Hülle) — nur ab der
+    /// Stufe Erweitert, wo die Schätzhilfe steht; die teure Stufe läuft mit der Vorschau entprellt.
+    /// </summary>
+    private void LadehilfeRechnen()
+    {
+        if (Ladevorschlag is null || !AbErweitert)
+        {
+            _ladehilfeAktuell = false;
+            return;
+        }
+        _ladehilfe = Ladevorschlag(MitStufe());
+        _ladehilfeAktuell = true;
+    }
+
+    /// <summary>„Als manuellen Wert übernehmen" an der Ladeleistung.</summary>
+    private void LadeleistungUebernehmen(double? vorschlag)
+    {
+        if (vorschlag is not double v) return;
+        Gebaeudeangabe(x =>
+        {
+            x.LadeManuellKw = v;
+            x.LadeAuto = false;
+        });
+    }
 
     /// <summary>Die angesetzte Ladeleistung: der Vorschlag der Auslegung (auto) oder der manuelle Wert.</summary>
     private string LadeAngesetzt
@@ -1651,14 +1801,101 @@
         }
         FehlfelderRaeumen(art => art.Stufe > _stufe);
         if (_stufe == ZapfprofilStufe.Einfach && _reiter == REITER_DAUER) _reiter = REITER_TAG;
+        // Der Vorschlag der Ladeleistung steht ab Erweitert — zum Stand der aktuellen Vorschau einmal rechnen.
+        if (AbErweitert && _vorschauAktuell && !_ladehilfeAktuell) LadehilfeRechnen();
     }
 
     /// <summary>Ein gesperrter Reiter meldet seinen Grund als leise Zeile.</summary>
     private void ReiterGesperrt(string reiter)
         => _hinweis = reiter == REITER_DAUER ? Texte.GrundDauerlinie : Texte.GrundNochNicht;
 
-    /// <summary>Ein Knopf, der mit der nächsten Fassung kommt (Tagesgang-Editor, Zapfkategorien): der Grund als leise Zeile.</summary>
-    private void Folgt() => _hinweis = Texte.GrundFolgt;
+    // --- Die Editoren der Stufe Experte (Z4, Gruppe 2b) ----------------------------------
+
+    /// <summary>Warum ein Editor nicht aufgeht — ohne Delegat oder ohne Nutzungsart der Zone; <c>null</c>, wenn er aufgeht.</summary>
+    private string? EditorGrund(bool delegat, ZapfprofilZoneDaten zone)
+        => !delegat ? Texte.GrundNochNicht : zone.IdNutzungsart <= 0 ? Texte.GrundOhneNutzungsart : null;
+
+    /// <summary>„Tagesgang bearbeiten…": die Überlagerung zur Nutzungsart der Zone und ihrem Satz; gesperrt nennt die leise Zeile den Grund.</summary>
+    private void TagesgangOeffnen(ZapfprofilZoneDaten zone)
+    {
+        if (EditorGrund(TagesgangGaben is not null, zone) is { } grund)
+        {
+            _hinweis = grund;
+            return;
+        }
+        _hinweis = "";
+        _editorStatus = "";
+        _editorZone = zone;
+        _tagesgangGaben = TagesgangGaben!(zone.IdNutzungsart, zone.Angaben?.IdTagesgangsatz);
+    }
+
+    /// <summary>„Zapfkategorien und Streuung…": die Überlagerung zur Nutzungsart der Zone.</summary>
+    private void KategorienOeffnen(ZapfprofilZoneDaten zone)
+    {
+        if (EditorGrund(KategorienGaben is not null, zone) is { } grund)
+        {
+            _hinweis = grund;
+            return;
+        }
+        _hinweis = "";
+        _editorStatus = "";
+        _editorZone = zone;
+        _kategorienGaben = KategorienGaben!(zone.IdNutzungsart);
+    }
+
+    /// <summary>
+    /// Der Tagesgang ist geschrieben (Katalog, eine Transaktion): Der Katalog wird neu gelesen, die
+    /// Zone rechnet mit der Nutzungsart, die jetzt die Werte trägt — eine neue Katalogversion ersetzt
+    /// die gesperrte —, und eine Expertenwahl des Satzes folgt dem geschriebenen Satz. Die Vorschau
+    /// rechnet neu; ein übernommener Punkt ist überholt. Abbrechen (<c>null</c>) lässt alles, wie es war.
+    /// </summary>
+    private void TagesgangGeschlossen(ZapfprofilTagesgangErgebnis? e)
+    {
+        _tagesgangGaben = null;
+        ZapfprofilZoneDaten? zone = _editorZone;
+        _editorZone = null;
+        if (e is not { Ok: true } || zone is null || !_eingabe.Zonen.Contains(zone)) return;
+        KatalogNeuLesen();
+        zone.IdNutzungsart = e.IdNutzungsart;
+        if (zone.Angaben?.IdTagesgangsatz is not null && e.IdTagesgangsatz > 0) zone.Angaben.IdTagesgangsatz = e.IdTagesgangsatz;
+        _editorStatus = Format(Texte.TgeStatusGespeichert, zone.Name, NutzungsartKurz(e.IdNutzungsart));
+        PunktUeberholen();
+        GeaendertNachEditor();
+    }
+
+    /// <summary>Die Kategorien sind geschrieben: Katalog neu, die Zone auf die Nutzungsart, die sie jetzt trägt.</summary>
+    private void KategorienGeschlossen(ZapfprofilKategorienErgebnis? e)
+    {
+        _kategorienGaben = null;
+        ZapfprofilZoneDaten? zone = _editorZone;
+        _editorZone = null;
+        if (e is not { Ok: true } || zone is null || !_eingabe.Zonen.Contains(zone)) return;
+        KatalogNeuLesen();
+        zone.IdNutzungsart = e.IdNutzungsart;
+        _editorStatus = Format(Texte.KatStatusGespeichert, zone.Name, NutzungsartKurz(e.IdNutzungsart));
+        PunktUeberholen();
+        GeaendertNachEditor();
+    }
+
+    /// <summary>Der Katalog nach dem Schreibweg — über den Delegaten der Hülle; ohne ihn bleibt der Stand beim Öffnen.</summary>
+    private void KatalogNeuLesen()
+    {
+        if (Katalogstand is not null) _katalogstand = Katalogstand();
+    }
+
+    /// <summary>Die Nutzungsart als Kurztext „Name · Katalogversion"; unbekannt ihre Id.</summary>
+    private string NutzungsartKurz(int id)
+        => Nutzungsart(id) is { } n
+            ? (string.IsNullOrEmpty(n.Katalogversion) ? n.Name : n.Name + " · " + n.Katalogversion)
+            : "#" + id.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Wie <see cref="Geaendert"/>, aber die leise Zeile des Editors bleibt stehen.</summary>
+    private void GeaendertNachEditor()
+    {
+        string status = _editorStatus;
+        Geaendert();
+        _editorStatus = status;
+    }
 
     // --- Fehleingaben der hoeheren Stufen ------------------------------------------------
 
@@ -1980,7 +2217,9 @@
         _okMeldung = "";
         _okKennung = null;
         _hinweis = "";
+        _editorStatus = "";
         _vorschauAktuell = false;
+        _ladehilfeAktuell = false;
         JahresreiheVerwerfen();
         if (ansichtZuruecksetzen) _ansicht = 0;
         VorschauEntprellen();
@@ -2037,6 +2276,7 @@
         _vorschau = Vorschau(_eingabe.Kopie());
         _vorschauAktuell = _vorschau is not null;
         if (_vorschau is not null && _ansicht >= _vorschau.Ansichten.Count) _ansicht = 0;
+        LadehilfeRechnen();
     }
 
     // =================================================================================
@@ -2106,7 +2346,8 @@
 
     /// <summary>Esc schließt nur, wenn keine Überlagerung offen ist — sonst schließt sie sich selbst.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" && _auslegungGaben is null ? Abbrechen() : Task.CompletedTask;
+        => e.Key == "Escape" && _auslegungGaben is null && _tagesgangGaben is null && _kategorienGaben is null
+            ? Abbrechen() : Task.CompletedTask;
 
     /// <summary>
     /// Der Befund des OK — eine Fehleingabe (Seed, Realisierungen) oder die Fehler der
@@ -2151,7 +2392,7 @@
             Enumerable.Range(0, _eingabe.Zonen.Count), i => i + 1, i => _eingabe.Zonen[i].Name),
 
         ZonenLesen = () => _eingabe.Zonen.Select(KiZeile).ToList(),
-        NutzungsartEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Katalog, n => n.Id, n => n.Name),
+        NutzungsartEintraege = () => KiMaskenanmeldung.Eintraege(Katalogliste, n => n.Id, n => n.Name),
         NiveauEintraege = () => KiMaskenanmeldung.Eintraege(Niveaus, e => e.Id, e => e.Text),
 
         AnsichtLesen = () => Ansicht is null ? null
@@ -2507,7 +2748,7 @@
         Zone(nameof(ZapfprofilKiSicht.Tagesgangsatz), X, Texte.LabelTagesgangsatz, a => a.IdTagesgangsatz,
              (z, w) =>
              {
-                 if (w is int id && Daten.Tagesgangsaetze.FirstOrDefault(s => s.Id == id) is { Waehlbar: false } s)
+                 if (w is int id && Tagesgangsatzliste.FirstOrDefault(s => s.Id == id) is { Waehlbar: false } s)
                      return s.Sperrgrund.Length > 0 ? s.Sperrgrund : ZapfprofilKiRegeln.Gesperrt(s.Name);
                  return KiWahl(Texte.LabelTagesgangsatz, w, Tagesgangsatzwahl(AngabenVon(z)), true,
                                v => Angabe(z, x => x.IdTagesgangsatz = v));

@@ -8,8 +8,13 @@
    Auslegung des Katalogs baut; eine Ablehnung steht als Banner da, der Konstruktor bleibt
    offen. Geschrieben wird nichts - der Tag geht als Entwurf mit dem Arbeitsstand.
 
-   ERNEUT GEOEFFNET beginnt er mit den Zeilen des Entwurfs (Startzeilen, Kopien). Den Namen
-   prueft die Huelle schon beim OK lesend gegen den Katalog.
+   ERNEUT GEOEFFNET beginnt er mit den Zeilen des Entwurfs (Startzeilen, Kopien) und seinem
+   Bezug. Den Namen prueft die Huelle schon beim OK lesend gegen den Katalog.
+
+   BEZUG (Schritt 121, N10 (j); Z4, Gruppe 2b). Bezugsart (Wertemenge des Schemas, "ohne Bezug"
+   voran) und Bezugsmenge gehoeren zusammen und gehen mit dem Tag: Mit Bezug skaliert die
+   Auslegung den Tag auf die Bezugsmenge einer Gruppe derselben Bezugsart, ohne Bezug gilt er,
+   wie er ist. Die Menge ist nur mit Bezugsart bedienbar; "ohne Bezug" nimmt sie weg.
 
    FELDER. Jedes Feld der Zeilentabelle traegt seine Beschriftung "Spalte, Zeile n" -
    sichtbar steht sie im Tabellenkopf (CSS), die Sprachausgabe und die Sammelmeldung nennen
@@ -62,6 +67,14 @@
     <Formularraster>
         <KindInhalt>
             <Textfeld Bezeichnung="@Texte.KonstruktorName" Wert="@_name" WertChanged="v => _name = v ?? string.Empty" />
+            @* Der Bezug des Tags (Schritt 121, N10 (j)): Bezugsart aus der Wertemenge des Schemas und
+               Bezugsmenge gehoeren zusammen; ohne Bezug gilt der Tag, wie er ist. *@
+            <Auswahlfeld Bezeichnung="@Texte.KonstruktorLabelBezugsart" Eintraege="@Bezugsartwahl"
+                         Auswahl="@(_bezugsart ?? OHNE_BEZUG)" AuswahlChanged="BezugsartSetzen" />
+            <Zahlenfeld Bezeichnung="@Texte.KonstruktorLabelBezugsmenge" Feldname="@Texte.KonstruktorLabelBezugsmenge"
+                        Einheit="@Bezugseinheit" Min="0" Aktiv="@(_bezugsart is not null)" Wert="@_bezugsmenge"
+                        WertChanged="v => _bezugsmenge = v" FehlerZustand="f => _bezugsmengeFehlerhaft = f.Fehlerhaft" />
+            <Herleitungszeile Text="@Texte.KonstruktorHinweisBezug" />
         </KindInhalt>
     </Formularraster>
 
@@ -149,8 +162,17 @@
     /// </summary>
     [Parameter] public IReadOnlyList<ZapfprofilKonstruktorZeileDaten>? Startzeilen { get; set; }
 
-    /// <summary>Der Konstruktor der Hülle — prüft und baut den Tag; kein Delegat = OK gesperrt.</summary>
-    [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
+    /// <summary>Der Konstruktor der Hülle — prüft und baut den Tag samt Bezug; kein Delegat = OK gesperrt.</summary>
+    [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
+
+    /// <summary>Die Bezugsarten eines Tags (Wertemenge des Schemas, Schritt 121) mit ihrem Namen.</summary>
+    [Parameter] public IReadOnlyList<ZapfprofilKatalogeintragDaten> Bezugsarten { get; set; } = Array.Empty<ZapfprofilKatalogeintragDaten>();
+
+    /// <summary>Die Bezugsart, mit der der Konstruktor öffnet (die des Entwurfs); <c>null</c> = ohne Bezug.</summary>
+    [Parameter] public int? Bezugsart { get; set; }
+
+    /// <summary>Die Bezugsmenge, mit der der Konstruktor öffnet; <c>null</c> = ohne Bezug.</summary>
+    [Parameter] public double? Bezugsmenge { get; set; }
 
     /// <summary>Hilfeschlüssel des Rechenwegs.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil_Berechnung";
@@ -170,7 +192,13 @@
     private const int SPALTE_VOLUMEN = 3;
     private const int SPALTE_TEMPERATUR = 4;
 
+    /// <summary>Der Eintrag „ohne Bezug" der Bezugsartwahl.</summary>
+    private const int OHNE_BEZUG = 0;
+
     private string _name = "";
+    private int? _bezugsart;
+    private double? _bezugsmenge;
+    private bool _bezugsmengeFehlerhaft;
     private readonly List<ZapfprofilKonstruktorZeileDaten> _zeilen = new();
     private List<ZapfprofilMeldung> _meldungen = new();
     private string _hinweis = "";
@@ -187,9 +215,17 @@
     /// <summary>Die leise Zeile nach einem gesperrten Versuch — Prüfhilfe für die Tests.</summary>
     public string Hinweis => _hinweis;
 
+    /// <summary>Die Bezugsart (<c>null</c> = ohne Bezug) — Prüfhilfe für die Tests.</summary>
+    public int? GewaehlteBezugsart => _bezugsart;
+
+    /// <summary>Die Bezugsmenge — Prüfhilfe für die Tests.</summary>
+    public double? GewaehlteBezugsmenge => _bezugsmenge;
+
     protected override void OnInitialized()
     {
         _name = Name ?? "";
+        _bezugsart = Bezugsart is int b && b != OHNE_BEZUG ? b : null;
+        _bezugsmenge = _bezugsart is null ? null : Bezugsmenge;
         if (Startzeilen is { Count: > 0 }) _zeilen.AddRange(Startzeilen.Select(z => z.Kopie()));
         else _zeilen.Add(new ZapfprofilKonstruktorZeileDaten { Regel = Regeln.Count > 0 ? Regeln[0].Name : "" });
 
@@ -221,7 +257,26 @@
             return null;
         },
         ZeilenLesen = () => _zeilen.Select(KiZeile).ToList(),
-        RegelEintraege = () => KiMaskenanmeldung.Eintraege(Regelwahl, e => e.Id, e => e.Text)
+        RegelEintraege = () => KiMaskenanmeldung.Eintraege(Regelwahl, e => e.Id, e => e.Text),
+
+        // Der Bezug des Tags (Schritt 121): Bezugsart als Wahl, Menge nur mit Bezugsart (wie das Feld).
+        BezugsartLesen = () => _bezugsart ?? OHNE_BEZUG,
+        BezugsartSetzen = id =>
+        {
+            if (id is int a && Bezugsartwahl.All(e => e.Id != a)) return ZapfprofilKiRegeln.Gesperrt(Texte.KonstruktorLabelBezugsart);
+            this.BezugsartSetzen(id);
+            return null;
+        },
+        BezugsartEintraege = () => KiMaskenanmeldung.Eintraege(Bezugsartwahl, e => e.Id, e => e.Text),
+        BezugsmengeLesen = () => _bezugsmenge,
+        BezugsmengeSetzen = w =>
+        {
+            if (_bezugsart is null) return ZapfprofilKiRegeln.NurMit(Texte.KonstruktorLabelBezugsmenge, Texte.KonstruktorLabelBezugsart);
+            string? grund = ZapfprofilKiRegeln.Bereich(Texte.KonstruktorLabelBezugsmenge, w, 0, null);
+            if (grund is not null) return grund;
+            _bezugsmenge = w;
+            return null;
+        }
     };
 
     /// <summary>
@@ -315,6 +370,33 @@
         return namen;
     }
 
+    /// <summary>Die Einträge der Bezugsartwahl: „ohne Bezug" und die Bezugsarten des Schemas; eine unbekannte bleibt als Eintrag.</summary>
+    private IReadOnlyList<(int Id, string Text)> Bezugsartwahl
+    {
+        get
+        {
+            var liste = new List<(int Id, string Text)> { (OHNE_BEZUG, Texte.KonstruktorOhneBezug) };
+            liste.AddRange(Bezugsarten.Select(b => (b.Id, b.Name)));
+            if (_bezugsart is int a && liste.All(e => e.Id != a))
+                liste.Add((a, "#" + a.ToString(CultureInfo.InvariantCulture)));
+            return liste;
+        }
+    }
+
+    /// <summary>Die Einheit der Bezugsmenge: der Name der gewählten Bezugsart.</summary>
+    private string Bezugseinheit => _bezugsart is int a ? Bezugsarten.FirstOrDefault(b => b.Id == a)?.Name ?? "" : "";
+
+    /// <summary>Die Bezugsart; „ohne Bezug" nimmt auch die Menge weg (sie gehören zusammen).</summary>
+    private void BezugsartSetzen(int? id)
+    {
+        _bezugsart = id is int a && a != OHNE_BEZUG ? a : null;
+        if (_bezugsart is null)
+        {
+            _bezugsmenge = null;
+            _bezugsmengeFehlerhaft = false;
+        }
+    }
+
     /// <summary>Die Einträge der Regelwahl: 0 = Volumen direkt, 1 … n = die Regeln des Katalogs.</summary>
     private IReadOnlyList<(int Id, string Text)> Regelwahl
     {
@@ -396,13 +478,17 @@
     private ZapfprofilKonstruktorErgebnis Befund()
     {
         List<string> falsch = FehlerhafteFelder();
+        if (_bezugsart is not null && _bezugsmengeFehlerhaft) falsch.Insert(0, Texte.KonstruktorLabelBezugsmenge);
         if (falsch.Count > 0)
             return new ZapfprofilKonstruktorErgebnis(null, new List<ZapfprofilMeldung>
             {
                 new("ZPG_AUS_KON_FEHLEINGABE", "", Format(Texte.KonstruktorFehleingabe, string.Join(", ", falsch)),
                     ZapfprofilMeldungsart.Fehler)
             });
-        return Konstruieren?.Invoke(_zeilen.Select(z => z.Kopie()).ToList(), _name)
+        // Bezugsart und Bezugsmenge gehen nur zusammen; ohne Bezugsart keine Menge (die Hülle lehnt
+        // eine halbe Angabe benannt ab).
+        return Konstruieren?.Invoke(_zeilen.Select(z => z.Kopie()).ToList(), _name,
+                                    _bezugsart is null ? null : _bezugsmenge, _bezugsart)
                ?? new ZapfprofilKonstruktorErgebnis(null, Array.Empty<ZapfprofilMeldung>());
     }
 

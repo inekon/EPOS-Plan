@@ -41,12 +41,7 @@ namespace WindowsFormsApplication1
                                                                         IReadOnlyList<ZapfprofilKategorieDaten> kategorien,
                                                                         string katalogversion)
         {
-            List<Zapfkategorie> kern = (kategorien ?? new ZapfprofilKategorieDaten[0])
-                .Select(k => new Zapfkategorie(idNutzungsart, (k?.Name ?? "").Trim(), k?.VolumenstromLJeMin ?? double.NaN,
-                                               k?.StreuungLJeMin ?? double.NaN, k?.DauerMin ?? 0, k?.Anteil ?? double.NaN, null)
-                {
-                    KappungLJeMin = k?.KappungLJeMin
-                }).ToList();
+            List<Zapfkategorie> kern = AlsKernkategorien(idNutzungsart, kategorien);
             TwwKategorienErgebnis e = TwwNutzungsartCtrl.KategorienSpeichern(idNutzungsart, kern, katalogversion);
             if (e.Ok) return new ZapfprofilKategorienErgebnis(true, e.IdNutzungsart, e.NeueZeile, null);
 

@@ -30,6 +30,30 @@ public sealed class BedarfstagKonstruktorKiSicht
     /// <summary>„Volumen direkt" und die Zapfregeln — die Wahl der Spalte „Zapfregel".</summary>
     public IReadOnlyList<KiWahleintrag> RegelWahl => RegelEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
+    // Der Bezug des Tags (Schritt 121, N10 (j); Zapfprofil Z4, Gruppe 2b)
+    public Func<int?>? BezugsartLesen { get; init; }
+    public Func<int?, string?>? BezugsartSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? BezugsartEintraege { get; init; }
+    public Func<double?>? BezugsmengeLesen { get; init; }
+    public Func<double?, string?>? BezugsmengeSetzen { get; init; }
+
+    /// <summary>„ohne Bezug" (0) und die Bezugsarten des Schemas.</summary>
+    public IReadOnlyList<KiWahleintrag> BezugsartWahl => BezugsartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Bezugsart des Tags; 0 = ohne Bezug (dann fällt auch die Menge weg).</summary>
+    public int? Bezugsart
+    {
+        get => BezugsartLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(BezugsartSetzen, value);
+    }
+
+    /// <summary>Die Bezugsmenge des Tags (größer 0) — nur mit einer Bezugsart.</summary>
+    public double? Bezugsmenge
+    {
+        get => BezugsmengeLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(BezugsmengeSetzen, value);
+    }
+
     /// <summary>Der Name des Bedarfstags.</summary>
     public string Name
     {

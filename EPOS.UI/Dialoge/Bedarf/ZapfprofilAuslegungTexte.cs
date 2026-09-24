@@ -128,9 +128,6 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_HERL_SENSORHOEHE</c></summary>
     public string HerleitungSensorhoehe { get; set; } = "leer = Vorgabe des Katalogs";
 
-    /// <summary><c>ZPG_AUS_HERL_LAUFANGABE</c></summary>
-    public string HerleitungLaufangabe { get; set; } = "Laufangabe — wird nicht gespeichert; {0}";
-
     // ------------------------------------------------------------ Stochastik (Z3)
 
     /// <summary><c>ZPG_AUS_LBL_STOCHASTISCH</c></summary>
@@ -534,4 +531,90 @@ public sealed class ZapfprofilAuslegungTexte
 
     /// <summary><c>ZPG_AUS_KON_GRUND_LETZTE_ZEILE</c></summary>
     public string KonstruktorGrundLetzteZeile { get; set; } = "Die letzte Zeile bleibt — ein Bedarfstag braucht mindestens eine Zeile.";
+
+    // ------------------------------------------------------------ Eingaben des Verfahrensvergleichs, Laufangaben, Konstruktor (Z4, Gruppe 2b)
+
+    /// <summary><c>ZPG_AUS_GRP_VERGLEICH_EINGABEN</c></summary>
+    public string GruppeVergleichEingaben { get; set; } = "Eingaben des Verfahrensvergleichs";
+
+    /// <summary><c>ZPG_AUS_HINW_VERGLEICH_EINGABEN</c></summary>
+    public string HinweisVergleichEingaben { get; set; } = "Sie wirken nur auf den Verfahrensvergleich (nachrichtlich), nicht auf den empfohlenen Punkt, und werden mit dem Projekt gespeichert.";
+
+    /// <summary><c>ZPG_AUS_LBL_LADELEISTUNG</c></summary>
+    public string LabelLadeleistung { get; set; } = "Ladeleistung";
+
+    /// <summary><c>ZPG_AUS_LBL_LADE_MANUELL</c></summary>
+    public string LabelLadeManuell { get; set; } = "Ladeleistung manuell";
+
+    /// <summary><c>ZPG_AUS_LBL_LADEFENSTER</c></summary>
+    public string LabelLadefenster { get; set; } = "Ladezeitfenster";
+
+    /// <summary><c>ZPG_AUS_LBL_LADEFENSTER_BEGINN</c></summary>
+    public string LabelLadefensterBeginn { get; set; } = "Beginn des Ladezeitfensters";
+
+    /// <summary><c>ZPG_AUS_LBL_NUTZANTEIL</c></summary>
+    public string LabelNutzanteil { get; set; } = "Nutzbarer Anteil";
+
+    /// <summary><c>ZPG_AUS_LBL_ZUSCHLAG</c></summary>
+    public string LabelZuschlag { get; set; } = "Zuschlag";
+
+    /// <summary><c>ZPG_AUS_LBL_PERSONEN</c></summary>
+    public string LabelPersonen { get; set; } = "Personen";
+
+    /// <summary><c>ZPG_AUS_LBL_PERSONEN_MANUELL</c></summary>
+    public string LabelPersonenManuell { get; set; } = "Personen manuell";
+
+    /// <summary><c>ZPG_AUS_LBL_FUELLSTAND_BEZUG</c></summary>
+    public string LabelFuellstandBezug { get; set; } = "Bezug des Füllstands";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE</c></summary>
+    public string FuellstandVorgabe { get; set; } = "Vorgabe: Nenninhalt des Punkts, sonst der Punkt";
+
+    /// <summary><c>ZPG_AUS_BTN_VORSCHLAG</c></summary>
+    public string KnopfVorschlag { get; set; } = "Als manuellen Wert übernehmen";
+
+    /// <summary><c>ZPG_AUS_LBL_VORSCHLAG</c></summary>
+    public string LabelVorschlag { get; set; } = "Vorschlag: {0} {1}";
+
+    /// <summary><c>ZPG_AUS_HERL_LADE</c></summary>
+    public string HerleitungLade { get; set; } = "Angesetzt: {0} kW ({1}) · {2}";
+
+    /// <summary><c>ZPG_AUS_HERL_LADE_OHNE</c></summary>
+    public string HerleitungLadeOhne { get; set; } = "Einen Vorschlag gibt es erst mit einer gerechneten Speichergruppe.";
+
+    /// <summary><c>ZPG_AUS_HERL_LADEFENSTER</c></summary>
+    public string HerleitungLadefenster { get; set; } = "leer = Vorgabe des Katalogs; dieselben Werte wie „Ladezeitfenster“ im Zapfprofil";
+
+    /// <summary><c>ZPG_AUS_HERL_PERSONEN</c></summary>
+    public string HerleitungPersonen { get; set; } = "auto = aus dem Mengengerüst der Zonen: {0}; angesetzt: {1}";
+
+    /// <summary><c>ZPG_AUS_HERL_ANGESETZT</c></summary>
+    public string HerleitungAngesetzt { get; set; } = "leer = Vorgabe des Katalogs; angesetzt: {0}";
+
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND</c></summary>
+    public string HerleitungFuellstand { get; set; } = "Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0}";
+
+    /// <summary><c>ZPG_AUS_HERL_GESPEICHERT</c></summary>
+    public string HerleitungGespeichert { get; set; } = "wird mit dem Projekt gespeichert; {0}";
+
+    /// <summary><c>ZPG_AUS_HERL_WERKSTOFF</c></summary>
+    public string HerleitungWerkstoff { get; set; } = "kein Vorschlag aus dem Projekt; ohne Angabe braucht die Summenlinie U·A, die Fläche oder die Übertragerleistung";
+
+    /// <summary><c>ZPG_AUS_BTN_VORSCHLAG_WAEHLEN</c></summary>
+    public string KnopfErzeugerVorschlag { get; set; } = "Vorschlag wählen";
+
+    /// <summary><c>ZPG_AUS_ERZEUGERART_VORSCHLAG</c></summary>
+    public string LabelErzeugerVorschlag { get; set; } = "Vorschlag aus dem Projekt: {0}";
+
+    /// <summary><c>ZPG_AUS_KON_LBL_BEZUGSART</c></summary>
+    public string KonstruktorLabelBezugsart { get; set; } = "Bezugsart";
+
+    /// <summary><c>ZPG_AUS_KON_OHNE_BEZUG</c></summary>
+    public string KonstruktorOhneBezug { get; set; } = "ohne Bezug — der Tag gilt, wie er ist";
+
+    /// <summary><c>ZPG_AUS_KON_LBL_BEZUGSMENGE</c></summary>
+    public string KonstruktorLabelBezugsmenge { get; set; } = "Bezugsmenge";
+
+    /// <summary><c>ZPG_AUS_KON_HINW_BEZUG</c></summary>
+    public string KonstruktorHinweisBezug { get; set; } = "Mit Bezug skaliert die Auslegung den Tag auf die Bezugsmenge einer Gruppe derselben Bezugsart; beides wird mit dem Tag gespeichert.";
 }

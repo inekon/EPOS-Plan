@@ -106,6 +106,13 @@ namespace WindowsFormsApplication1
                 // nur in der Stufe Einfach).
                 ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>(
                     (e, stochastisch) => AuslegungGaben(idProjekt, e, basis, e?.Stufe ?? ZapfprofilStufe.Einfach, stochastisch)),
+                // Die Editoren der Stufe Experte (Z4, Gruppe 2b) gehören zum Katalog: Ihr OK schreibt sofort,
+                // danach liest der Dialog den Katalog neu. Der Ladeleistungs-Vorschlag rechnet die Auslegung
+                // deterministisch zum Arbeitsstand (entprellt wie die Vorschau).
+                ["TagesgangGaben"] = new Func<int, int?, IReadOnlyDictionary<string, object>>(TagesgangGaben),
+                ["KategorienGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(KategorienGaben),
+                ["Katalogstand"] = new Func<ZapfprofilKatalogstandDaten>(Katalogstand),
+                ["Ladevorschlag"] = new Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten>(e => Ladevorschlag(idProjekt, e, basis)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };
@@ -1636,7 +1643,6 @@ namespace WindowsFormsApplication1
             t.StatusOhneVorschau = Text_("ZPG_STATUS_OHNE_VORSCHAU", t.StatusOhneVorschau);
             t.HinweisWeitereExperte = Text_("ZPG_HINW_WEITERE_EXPERTE", t.HinweisWeitereExperte);
             t.GrundDauerlinie = Text_("ZPG_GRUND_DAUERLINIE", t.GrundDauerlinie);
-            t.GrundFolgt = Text_("ZPG_GRUND_FOLGT", t.GrundFolgt);
             t.VorgabeEintrag = Text_("ZPG_VORGABE_EINTRAG", t.VorgabeEintrag);
             t.OptionAuto = Text_("ZPG_AUS_AUTO", t.OptionAuto);
             t.OptionManuell = Text_("ZPG_AUS_MANUELL", t.OptionManuell);
@@ -1774,6 +1780,61 @@ namespace WindowsFormsApplication1
             t.WarnlisteLeer = Text_("ZPG_WARNLISTE_LEER", t.WarnlisteLeer);
             t.StufeWarnung = Text_("ZPG_AUS_STUFE_WARNUNG", t.StufeWarnung);
             t.StufeHinweis = Text_("ZPG_AUS_STUFE_HINWEIS", t.StufeHinweis);
+            // Editoren Tagesgang und Zapfkategorien (Z4, Gruppe 2b)
+            t.GrundOhneNutzungsart = Text_("ZPG_GRUND_OHNE_NUTZUNGSART", t.GrundOhneNutzungsart);
+            t.TagtypRuhetag = Text_("ZPG_TAGTYP_RUHETAG", t.TagtypRuhetag);
+            t.TgeTitel = Text_("ZPG_TGE_TITEL", t.TgeTitel);
+            t.TgeKontext = Text_("ZPG_TGE_KONTEXT", t.TgeKontext);
+            t.TgeGruppeTagesgang = Text_("ZPG_TGE_GRP_TAGESGANG", t.TgeGruppeTagesgang);
+            t.TgeLabelTagtyp = Text_("ZPG_TGE_LBL_TAGTYP", t.TgeLabelTagtyp);
+            t.TgeFeldStunde = Text_("ZPG_TGE_FELD_STUNDE", t.TgeFeldStunde);
+            t.TgeHerkunft = Text_("ZPG_TGE_HERKUNFT", t.TgeHerkunft);
+            t.SummeOk = Text_("ZPG_TGE_SUMME_OK", t.SummeOk);
+            t.SummeAbweichend = Text_("ZPG_TGE_SUMME_ABWEICHEND", t.SummeAbweichend);
+            t.SummeNull = Text_("ZPG_TGE_SUMME_NULL", t.SummeNull);
+            t.TgeVorschauNormiert = Text_("ZPG_TGE_VORSCHAU_NORMIERT", t.TgeVorschauNormiert);
+            t.KnopfNormieren = Text_("ZPG_TGE_BTN_NORMIEREN", t.KnopfNormieren);
+            t.KnopfTagKopieren = Text_("ZPG_TGE_BTN_TAG_KOPIEREN", t.KnopfTagKopieren);
+            t.KnopfTagEinfuegen = Text_("ZPG_TGE_BTN_TAG_EINFUEGEN", t.KnopfTagEinfuegen);
+            t.TgeGrundEinfuegen = Text_("ZPG_TGE_GRUND_EINFUEGEN", t.TgeGrundEinfuegen);
+            t.TgeGruppeWoche = Text_("ZPG_TGE_GRP_WOCHE", t.TgeGruppeWoche);
+            t.TgeHinweisWoche = Text_("ZPG_TGE_HINW_WOCHE", t.TgeHinweisWoche);
+            t.TgeGruppeVorlage = Text_("ZPG_TGE_GRP_VORLAGE", t.TgeGruppeVorlage);
+            t.TgeLabelVorlage = Text_("ZPG_TGE_LBL_VORLAGE", t.TgeLabelVorlage);
+            t.TgeKnopfVorlage = Text_("ZPG_TGE_BTN_VORLAGE", t.TgeKnopfVorlage);
+            t.TgeHinweisVorlage = Text_("ZPG_TGE_HINW_VORLAGE", t.TgeHinweisVorlage);
+            t.TgeGrundVorlage = Text_("ZPG_TGE_GRUND_VORLAGE", t.TgeGrundVorlage);
+            t.TgeStatusGespeichert = Text_("ZPG_TGE_STATUS_GESPEICHERT", t.TgeStatusGespeichert);
+            t.KnopfZuruecksetzen = Text_("ZPG_BTN_ZURUECKSETZEN", t.KnopfZuruecksetzen);
+            t.KnopfKopie = Text_("ZPG_BTN_KOPIE", t.KnopfKopie);
+            t.LabelKatalogversion = Text_("ZPG_LBL_KATALOGVERSION_KOPIE", t.LabelKatalogversion);
+            t.HinweisKopie = Text_("ZPG_HINW_KOPIE", t.HinweisKopie);
+            t.HinweisFrei = Text_("ZPG_HINW_FREI", t.HinweisFrei);
+            t.HinweisNurLesen = Text_("ZPG_HINW_NUR_LESEN", t.HinweisNurLesen);
+            t.KatTitel = Text_("ZPG_KATEG_TITEL", t.KatTitel);
+            t.KatKontext = Text_("ZPG_KATEG_KONTEXT", t.KatKontext);
+            t.KatHinweisRegeln = Text_("ZPG_KATEG_HINW_REGELN", t.KatHinweisRegeln);
+            t.KatSpalteReihenfolge = Text_("ZPG_KATEG_SP_REIHENFOLGE", t.KatSpalteReihenfolge);
+            t.KatSpalteName = Text_("ZPG_KATEG_SP_NAME", t.KatSpalteName);
+            t.KatSpalteVolumenstrom = Text_("ZPG_KATEG_SP_VOLUMENSTROM", t.KatSpalteVolumenstrom);
+            t.KatSpalteDauer = Text_("ZPG_KATEG_SP_DAUER", t.KatSpalteDauer);
+            t.KatSpalteAnteil = Text_("ZPG_KATEG_SP_ANTEIL", t.KatSpalteAnteil);
+            t.KatSpalteStreuung = Text_("ZPG_KATEG_SP_STREUUNG", t.KatSpalteStreuung);
+            t.KatSpalteKappung = Text_("ZPG_KATEG_SP_KAPPUNG", t.KatSpalteKappung);
+            t.KatSpalteHerkunft = Text_("ZPG_KATEG_SP_HERKUNFT", t.KatSpalteHerkunft);
+            t.KatKappungKeine = Text_("ZPG_KATEG_KAPPUNG_KEINE", t.KatKappungKeine);
+            t.KatKnopfNeu = Text_("ZPG_KATEG_BTN_NEU", t.KatKnopfNeu);
+            t.KatKnopfEntfernen = Text_("ZPG_KATEG_BTN_ENTFERNEN", t.KatKnopfEntfernen);
+            t.KatKnopfHoch = Text_("ZPG_KATEG_BTN_HOCH", t.KatKnopfHoch);
+            t.KatKnopfRunter = Text_("ZPG_KATEG_BTN_RUNTER", t.KatKnopfRunter);
+            t.KatGrundLetzte = Text_("ZPG_KATEG_GRUND_LETZTE", t.KatGrundLetzte);
+            t.KatGrundRand = Text_("ZPG_KATEG_GRUND_RAND", t.KatGrundRand);
+            t.KatKnopfVorgabe = Text_("ZPG_KATEG_BTN_VORGABE", t.KatKnopfVorgabe);
+            t.KatHinweisVorgabe = Text_("ZPG_KATEG_HINW_VORGABE", t.KatHinweisVorgabe);
+            t.KatGrundOhneVorgabe = Text_("ZPG_KATEG_GRUND_OHNE_VORGABE", t.KatGrundOhneVorgabe);
+            t.KatNeuName = Text_("ZPG_KATEG_NEU_NAME", t.KatNeuName);
+            t.KatLeer = Text_("ZPG_KATEG_LEER", t.KatLeer);
+            t.KatStatusGespeichert = Text_("ZPG_KATEG_STATUS_GESPEICHERT", t.KatStatusGespeichert);
             return t;
         }
 

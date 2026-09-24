@@ -371,9 +371,6 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_GRUND_DAUERLINIE</c></summary>
     public string GrundDauerlinie { get; set; } = "Die Dauerlinie zeigt die Stufe Erweitert.";
 
-    /// <summary><c>ZPG_GRUND_FOLGT</c></summary>
-    public string GrundFolgt { get; set; } = "Folgt mit der nächsten Fassung des Dialogs.";
-
     /// <summary><c>ZPG_VORGABE_EINTRAG</c></summary>
     public string VorgabeEintrag { get; set; } = "Vorgabe · {0}";
 
@@ -796,4 +793,168 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_AUS_STUFE_HINWEIS</c></summary>
     public string StufeHinweis { get; set; } = "Hinweis";
+
+    // ------------------------------------------------------------ Editoren Tagesgang und Zapfkategorien (Z4, Gruppe 2b)
+
+    /// <summary><c>ZPG_GRUND_OHNE_NUTZUNGSART</c></summary>
+    public string GrundOhneNutzungsart { get; set; } = "Zuerst eine Nutzungsart wählen.";
+
+    /// <summary><c>ZPG_TAGTYP_RUHETAG</c></summary>
+    public string TagtypRuhetag { get; set; } = "Ruhetag";
+
+    /// <summary><c>ZPG_TGE_TITEL</c></summary>
+    public string TgeTitel { get; set; } = "Tagesgang bearbeiten";
+
+    /// <summary><c>ZPG_TGE_KONTEXT</c></summary>
+    public string TgeKontext { get; set; } = "Nutzungsart {0} · Tagesgangsatz {1}";
+
+    /// <summary><c>ZPG_TGE_GRP_TAGESGANG</c></summary>
+    public string TgeGruppeTagesgang { get; set; } = "Tagesgang je Tagtyp [%]";
+
+    /// <summary><c>ZPG_TGE_LBL_TAGTYP</c></summary>
+    public string TgeLabelTagtyp { get; set; } = "Tagtyp";
+
+    /// <summary><c>ZPG_TGE_FELD_STUNDE</c></summary>
+    public string TgeFeldStunde { get; set; } = "{0} · Stunde {1}";
+
+    /// <summary><c>ZPG_TGE_HERKUNFT</c></summary>
+    public string TgeHerkunft { get; set; } = "Herkunft: {0}";
+
+    /// <summary><c>ZPG_TGE_SUMME_OK</c></summary>
+    public string SummeOk { get; set; } = "summiert zu 100 %";
+
+    /// <summary><c>ZPG_TGE_SUMME_ABWEICHEND</c></summary>
+    public string SummeAbweichend { get; set; } = "Summe {0} % — korrigieren oder normieren; „OK“ normiert auf 100 %.";
+
+    /// <summary><c>ZPG_TGE_SUMME_NULL</c></summary>
+    public string SummeNull { get; set; } = "Summe 0 % — ohne Anteile lässt sich nichts normieren.";
+
+    /// <summary><c>ZPG_TGE_VORSCHAU_NORMIERT</c></summary>
+    public string TgeVorschauNormiert { get; set; } = "Nach der Normierung: {0}";
+
+    /// <summary><c>ZPG_TGE_BTN_NORMIEREN</c></summary>
+    public string KnopfNormieren { get; set; } = "Normieren";
+
+    /// <summary><c>ZPG_TGE_BTN_TAG_KOPIEREN</c></summary>
+    public string KnopfTagKopieren { get; set; } = "Tag kopieren";
+
+    /// <summary><c>ZPG_TGE_BTN_TAG_EINFUEGEN</c></summary>
+    public string KnopfTagEinfuegen { get; set; } = "Tag einfügen";
+
+    /// <summary><c>ZPG_TGE_GRUND_EINFUEGEN</c></summary>
+    public string TgeGrundEinfuegen { get; set; } = "Zuerst einen Tag kopieren.";
+
+    /// <summary><c>ZPG_TGE_GRP_WOCHE</c></summary>
+    public string TgeGruppeWoche { get; set; } = "Wochenfaktoren Mo–So [%]";
+
+    /// <summary><c>ZPG_TGE_HINW_WOCHE</c></summary>
+    public string TgeHinweisWoche { get; set; } = "Anteil jedes Wochentags an der Wochenmenge (Σ 100 %); Sonn- und Feiertage rechnen mit dem Sonntag.";
+
+    /// <summary><c>ZPG_TGE_GRP_VORLAGE</c></summary>
+    public string TgeGruppeVorlage { get; set; } = "Vorlage aus dem Katalog";
+
+    /// <summary><c>ZPG_TGE_LBL_VORLAGE</c></summary>
+    public string TgeLabelVorlage { get; set; } = "Tagesgangsatz";
+
+    /// <summary><c>ZPG_TGE_BTN_VORLAGE</c></summary>
+    public string TgeKnopfVorlage { get; set; } = "Vorlage laden";
+
+    /// <summary><c>ZPG_TGE_HINW_VORLAGE</c></summary>
+    public string TgeHinweisVorlage { get; set; } = "„Vorlage laden“ übernimmt die vier Tagesgänge des gewählten Satzes, die Wochenfaktoren bleiben; „Zurücksetzen“ stellt die Werte beim Öffnen wieder her.";
+
+    /// <summary><c>ZPG_TGE_GRUND_VORLAGE</c></summary>
+    public string TgeGrundVorlage { get; set; } = "Zuerst einen Tagesgangsatz wählen.";
+
+    /// <summary><c>ZPG_TGE_STATUS_GESPEICHERT</c></summary>
+    public string TgeStatusGespeichert { get; set; } = "Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+
+    /// <summary><c>ZPG_BTN_ZURUECKSETZEN</c></summary>
+    public string KnopfZuruecksetzen { get; set; } = "Zurücksetzen";
+
+    /// <summary><c>ZPG_BTN_KOPIE</c></summary>
+    public string KnopfKopie { get; set; } = "Als eigene Kopie bearbeiten…";
+
+    /// <summary><c>ZPG_LBL_KATALOGVERSION_KOPIE</c></summary>
+    public string LabelKatalogversion { get; set; } = "Katalogversion der Kopie";
+
+    /// <summary><c>ZPG_HINW_KOPIE</c></summary>
+    public string HinweisKopie { get; set; } = "„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist.";
+
+    /// <summary><c>ZPG_HINW_FREI</c></summary>
+    public string HinweisFrei { get; set; } = "„OK“ schreibt an Ort und Stelle in den Katalog — in einer Transaktion; der Freigabevermerk der Nutzungsart entfällt.";
+
+    /// <summary><c>ZPG_HINW_NUR_LESEN</c></summary>
+    public string HinweisNurLesen { get; set; } = "Nur lesbar — bearbeiten lässt sich eine eigene Kopie.";
+
+    /// <summary><c>ZPG_KATEG_TITEL</c></summary>
+    public string KatTitel { get; set; } = "Zapfkategorien und Streuung";
+
+    /// <summary><c>ZPG_KATEG_KONTEXT</c></summary>
+    public string KatKontext { get; set; } = "Nutzungsart {0} · {1} Kategorien · Σ Anteile {2}";
+
+    /// <summary><c>ZPG_KATEG_HINW_REGELN</c></summary>
+    public string KatHinweisRegeln { get; set; } = "μ und σ ≥ 0 l/min, Dauer 1 … 1440 min, Anteil ≥ 0 mit Σ > 0 (die Rechnung normiert auf 1), Kappung > 0 oder leer; jeder Name einmal.";
+
+    /// <summary><c>ZPG_KATEG_SP_REIHENFOLGE</c></summary>
+    public string KatSpalteReihenfolge { get; set; } = "Reihenfolge";
+
+    /// <summary><c>ZPG_KATEG_SP_NAME</c></summary>
+    public string KatSpalteName { get; set; } = "Kategorie";
+
+    /// <summary><c>ZPG_KATEG_SP_VOLUMENSTROM</c></summary>
+    public string KatSpalteVolumenstrom { get; set; } = "Volumenstrom μ [l/min]";
+
+    /// <summary><c>ZPG_KATEG_SP_DAUER</c></summary>
+    public string KatSpalteDauer { get; set; } = "Dauer [min]";
+
+    /// <summary><c>ZPG_KATEG_SP_ANTEIL</c></summary>
+    public string KatSpalteAnteil { get; set; } = "Anteil [–]";
+
+    /// <summary><c>ZPG_KATEG_SP_STREUUNG</c></summary>
+    public string KatSpalteStreuung { get; set; } = "Streuung σ [l/min]";
+
+    /// <summary><c>ZPG_KATEG_SP_KAPPUNG</c></summary>
+    public string KatSpalteKappung { get; set; } = "Kappung [l/min]";
+
+    /// <summary><c>ZPG_KATEG_SP_HERKUNFT</c></summary>
+    public string KatSpalteHerkunft { get; set; } = "Herkunft";
+
+    /// <summary><c>ZPG_KATEG_KAPPUNG_KEINE</c></summary>
+    public string KatKappungKeine { get; set; } = "keine";
+
+    /// <summary><c>ZPG_KATEG_BTN_NEU</c></summary>
+    public string KatKnopfNeu { get; set; } = "Kategorie hinzufügen";
+
+    /// <summary><c>ZPG_KATEG_BTN_ENTFERNEN</c></summary>
+    public string KatKnopfEntfernen { get; set; } = "Entfernen";
+
+    /// <summary><c>ZPG_KATEG_BTN_HOCH</c></summary>
+    public string KatKnopfHoch { get; set; } = "Nach oben";
+
+    /// <summary><c>ZPG_KATEG_BTN_RUNTER</c></summary>
+    public string KatKnopfRunter { get; set; } = "Nach unten";
+
+    /// <summary><c>ZPG_KATEG_GRUND_LETZTE</c></summary>
+    public string KatGrundLetzte { get; set; } = "Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch.";
+
+    /// <summary><c>ZPG_KATEG_GRUND_RAND</c></summary>
+    public string KatGrundRand { get; set; } = "Die Kategorie steht schon am Rand der Liste.";
+
+    /// <summary><c>ZPG_KATEG_BTN_VORGABE</c></summary>
+    public string KatKnopfVorgabe { get; set; } = "Vorgabesatz laden";
+
+    /// <summary><c>ZPG_KATEG_HINW_VORGABE</c></summary>
+    public string KatHinweisVorgabe { get; set; } = "Der Vorgabesatz sind die frei dokumentierten Kategorien des Katalogs (Modellannahme); er ersetzt die Zeilen im Editor.";
+
+    /// <summary><c>ZPG_KATEG_GRUND_OHNE_VORGABE</c></summary>
+    public string KatGrundOhneVorgabe { get; set; } = "Der Katalog führt keinen Vorgabesatz der Zapfkategorien.";
+
+    /// <summary><c>ZPG_KATEG_NEU_NAME</c></summary>
+    public string KatNeuName { get; set; } = "Kategorie {0}";
+
+    /// <summary><c>ZPG_KATEG_LEER</c></summary>
+    public string KatLeer { get; set; } = "Die Nutzungsart führt keine Zapfkategorien — „Vorgabesatz laden“ oder „Kategorie hinzufügen“.";
+
+    /// <summary><c>ZPG_KATEG_STATUS_GESPEICHERT</c></summary>
+    public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
 }

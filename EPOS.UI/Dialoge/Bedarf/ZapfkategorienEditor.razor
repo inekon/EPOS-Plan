@@ -1,0 +1,546 @@
+﻿@* Die Ueberlagerung "ZAPFKATEGORIEN UND STREUUNG" des Zapfprofils (Umsetzungskonzept
+   Zapfprofilgenerator 4.4, 5.3 Zeile "Zapfkategorien / Streuung - als Katalogkopie
+   bearbeitbar"; Stufe Z4, Gruppe 2b).
+
+   WO SIE STEHT. Im Zapfprofil-Dialog ueber den Knopf "Zapfkategorien und Streuung..." der
+   Gruppe "Fachwerte" (Stufe Experte), je gewaehlter Zone; eingebettet traegt die
+   Ueberlagerung Titel und Kreuz, der Wirt setzt TitelAnzeigen="false".
+
+   WAS SIE TUT. Die Kategorien der Nutzungsart der Zone als Raster: Reihenfolge (mit "Nach
+   oben"/"Nach unten"), Kategorie, Volumenstrom mu, Dauer, Anteil, Streuung sigma, Kappung
+   (leer = keine) und die Herkunft als Kurztext. Die Regeln kommen aus dem Kern (Delegat
+   "Pruefen", ohne Datenbank, je Eingabe): ein Verstoss steht als Banner da und haelt "OK" an;
+   Anteile, die nicht zu 1 summieren, nennt eine leise Zeile - die Rechnung normiert sie, das
+   ist kein Verstoss. "Vorgabesatz laden" setzt die frei dokumentierten Kategorien des Katalogs
+   ein, "Zuruecksetzen" die Kategorien beim Oeffnen.
+
+   KATALOG, NICHT ARBEITSSTAND (5.1). "OK" schreibt in EINER Transaktion ueber den Delegaten
+   der Huelle (TwwNutzungsartCtrl.KategorienSpeichern). Ist die Nutzungsart gesperrt
+   (Auslieferung, auch ueber eine ausgelieferte Kategorie, oder benutzt), stehen die Zeilen nur
+   lesbar da, mit Schloss und Grund; "Als eigene Kopie bearbeiten..." gibt sie frei und fragt
+   die Katalogversion der Kopie - "OK" legt eine neue Katalogversion an (Status eigen), und der
+   Wirt stellt die Zone auf sie um. Eine Ablehnung steht benannt als Banner da, die
+   Ueberlagerung bleibt offen. Ohne Aenderung schreibt "OK" nichts.
+
+   FELDER. Jedes Feld des Rasters traegt "Spalte, Zeile n" als Beschriftung (sichtbar steht sie
+   im Tabellenkopf). Die letzte Kategorie bleibt: "Entfernen" ist dann weich gesperrt.
+
+   TASTATUR. Esc wirkt wie Abbrechen; Enter bleibt unbelegt (OK schreibt).
+
+   HILFE-ASSISTENT. Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.ZAPFKATEGORIEN): die Kategorien als Spalten und die Katalogversion der Kopie
+   ueber ZapfkategorienEditorKiSicht - gesetzt auf den Wegen der Felder, nur wo sie bedienbar
+   sind. Pruefen ist der Befund des OK; kein Speicherweg - OK bleibt beim Anwender. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-zapfprofil-kategorien" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.KatTitel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.KatTitel" Dialogname="@Texte.KatTitel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    <p class="epos-kontextzeile">@Format(Texte.KatKontext, Daten.Nutzungsart, _zeilen.Count, Zahl(Pruefung.SummeAnteil, "0.###"))</p>
+
+    @if (!Daten.Verfuegbar)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Daten.Grund" />
+    }
+    else if (!Daten.Stand.Frei && !_kopie)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-editorsperre">
+            <Kennzeichen Kurztext="@Texte.HinweisNurLesen" /> @Daten.Stand.Sperrgrund
+        </p>
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-zapfprofil-kopie" @onclick="KopieBearbeiten">@Texte.KnopfKopie</button>
+        </div>
+    }
+    else if (!Daten.Stand.Frei)
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Textfeld Bezeichnung="@Texte.LabelKatalogversion" Wert="@_version" WertChanged="v => _version = v ?? string.Empty" />
+                <Herleitungszeile Text="@Texte.HinweisKopie" />
+            </KindInhalt>
+        </Formularraster>
+    }
+    else
+    {
+        <p class="epos-leisezeile">@Texte.HinweisFrei</p>
+    }
+
+    @if (_meldung is not null)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung.Text" Kennung="@_meldung.Kennung" />
+    }
+    else if (Bearbeitbar && Pruefung.Ablehnung is { } verstoss)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-kategorienverstoss" role="status" data-kennung="@verstoss.Kennung">@verstoss.Text</p>
+    }
+    @if (Pruefung.Hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-kategorienhinweis">@Pruefung.Hinweis</p>
+    }
+    @if (_hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-editorhinweis" role="status">@_hinweis</p>
+    }
+
+    <Gruppenkopf Titel="@Texte.KatTitel">
+        <KindInhalt>
+            @if (_zeilen.Count == 0)
+            {
+                <p class="epos-leisezeile epos-zapfprofil-kategorienleer">@Texte.KatLeer</p>
+            }
+            else if (Bearbeitbar)
+            {
+                <div class="epos-zapfprofil-kategorienraster">
+                    <Raster TZeile="ZapfprofilKategorieDaten" Zeilen="@_zeilen.AsQueryable()" Bearbeitbar="true" Begrenzt="false">
+                        <KindInhalt>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteReihenfolge">
+                                <div class="epos-zapfprofil-reihenfolge">
+                                    <span class="epos-zahl">@(Position(context) + 1)</span>
+                                    <button type="button" class="epos-knopf" aria-label="@Feld(Texte.KatKnopfHoch, context)"
+                                            aria-disabled="@(Position(context) == 0 ? "true" : null)"
+                                            title="@(Position(context) == 0 ? Texte.KatGrundRand : Texte.KatKnopfHoch)"
+                                            @onclick="() => Verschieben(context, -1)"><span aria-hidden="true">▲</span></button>
+                                    <button type="button" class="epos-knopf" aria-label="@Feld(Texte.KatKnopfRunter, context)"
+                                            aria-disabled="@(Position(context) == _zeilen.Count - 1 ? "true" : null)"
+                                            title="@(Position(context) == _zeilen.Count - 1 ? Texte.KatGrundRand : Texte.KatKnopfRunter)"
+                                            @onclick="() => Verschieben(context, 1)"><span aria-hidden="true">▼</span></button>
+                                </div>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteName">
+                                <Textfeld Bezeichnung="@Feld(Texte.KatSpalteName, context)" Wert="@context.Name"
+                                          WertChanged="w => Setzen(context, k => k.Name = w ?? string.Empty)" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteVolumenstrom">
+                                <Zahlenfeld Bezeichnung="@Feld(Texte.KatSpalteVolumenstrom, context)" Feldname="@Feld(Texte.KatSpalteVolumenstrom, context)"
+                                            Min="0" Wert="@context.VolumenstromLJeMin"
+                                            WertChanged="w => Setzen(context, k => k.VolumenstromLJeMin = w)" FehlerZustand="FehlerZustandMelden" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteDauer">
+                                <Ganzzahlfeld Bezeichnung="@Feld(Texte.KatSpalteDauer, context)" Feldname="@Feld(Texte.KatSpalteDauer, context)"
+                                              Min="1" Max="1440" Wert="@context.DauerMin"
+                                              WertChanged="w => Setzen(context, k => k.DauerMin = w)" FehlerZustand="FehlerZustandMelden" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteAnteil">
+                                <Zahlenfeld Bezeichnung="@Feld(Texte.KatSpalteAnteil, context)" Feldname="@Feld(Texte.KatSpalteAnteil, context)"
+                                            Min="0" Wert="@context.Anteil"
+                                            WertChanged="w => Setzen(context, k => k.Anteil = w)" FehlerZustand="FehlerZustandMelden" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteStreuung">
+                                <Zahlenfeld Bezeichnung="@Feld(Texte.KatSpalteStreuung, context)" Feldname="@Feld(Texte.KatSpalteStreuung, context)"
+                                            Min="0" Wert="@context.StreuungLJeMin"
+                                            WertChanged="w => Setzen(context, k => k.StreuungLJeMin = w)" FehlerZustand="FehlerZustandMelden" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteKappung">
+                                <Zahlenfeld Bezeichnung="@Feld(Texte.KatSpalteKappung, context)" Feldname="@Feld(Texte.KatSpalteKappung, context)"
+                                            Min="0" Wert="@context.KappungLJeMin" Platzhalter="@Texte.KatKappungKeine"
+                                            WertChanged="w => Setzen(context, k => k.KappungLJeMin = w)" FehlerZustand="FehlerZustandMelden" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteHerkunft">
+                                @context.Herkunft
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.SpalteAktion">
+                                <button type="button" class="epos-knopf epos-zapfprofil-kategorie-entfernen"
+                                        aria-disabled="@(_zeilen.Count <= 1 ? "true" : null)"
+                                        title="@(_zeilen.Count <= 1 ? Texte.KatGrundLetzte : null)"
+                                        @onclick="() => Entfernen(context)">@Texte.KatKnopfEntfernen</button>
+                            </TemplateColumn>
+                        </KindInhalt>
+                    </Raster>
+                </div>
+            }
+            else
+            {
+                <div class="epos-zapfprofil-kategorienraster">
+                    <Raster TZeile="ZapfprofilKategorieDaten" Zeilen="@_zeilen.AsQueryable()" Begrenzt="false">
+                        <KindInhalt>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteReihenfolge">
+                                <span class="epos-zahl">@(Position(context) + 1)</span>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteName">
+                                @context.Name <Kennzeichen Kurztext="@Texte.HinweisNurLesen" />
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteVolumenstrom">
+                                <span class="epos-zahl">@Zahl(context.VolumenstromLJeMin, "0.###")</span>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteDauer">
+                                <span class="epos-zahl">@(context.DauerMin?.ToString(CultureInfo.CurrentCulture) ?? "–")</span>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteAnteil">
+                                <span class="epos-zahl">@Zahl(context.Anteil, "0.###")</span>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteStreuung">
+                                <span class="epos-zahl">@Zahl(context.StreuungLJeMin, "0.###")</span>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteKappung">
+                                <span class="epos-zahl">@(context.KappungLJeMin is double kap ? Zahl(kap, "0.###") : Texte.KatKappungKeine)</span>
+                            </TemplateColumn>
+                            <TemplateColumn TGridItem="ZapfprofilKategorieDaten" Title="@Texte.KatSpalteHerkunft">
+                                @context.Herkunft
+                            </TemplateColumn>
+                        </KindInhalt>
+                    </Raster>
+                </div>
+            }
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" aria-disabled="@(Bearbeitbar ? null : "true")"
+                        title="@(Bearbeitbar ? null : Texte.HinweisNurLesen)" @onclick="Neu">@Texte.KatKnopfNeu</button>
+                <button type="button" class="epos-knopf" aria-disabled="@(VorgabeLadbar ? null : "true")"
+                        title="@(VorgabeLadbar ? Texte.KatHinweisVorgabe : VorgabeGrund)" @onclick="VorgabeLaden">@Texte.KatKnopfVorgabe</button>
+                <button type="button" class="epos-knopf" aria-disabled="@(Bearbeitbar ? null : "true")"
+                        title="@(Bearbeitbar ? null : Texte.HinweisNurLesen)" @onclick="Zuruecksetzen">@Texte.KnopfZuruecksetzen</button>
+            </div>
+            <Herleitungszeile Text="@Texte.KatHinweisRegeln" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // --- Parameter (Schluessel wie ZapfprofilHuelle.KategorienGaben) --------------------
+
+    /// <summary>Der Stand beim Öffnen: Kategorien, Summe, Sperre, Vorgabesatz, Vorschlag der Katalogversion.</summary>
+    [Parameter] public ZapfprofilKategorienEditorDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen (Textbündel des Zapfprofils).</summary>
+    [Parameter] public ZapfprofilTexte Texte { get; set; } = new();
+
+    /// <summary>Die Regeln des Kerns je Eingabe (ohne Datenbank); kein Delegat = keine Prüfung vor dem Schreibweg.</summary>
+    [Parameter] public Func<IReadOnlyList<ZapfprofilKategorieDaten>, ZapfprofilKategorienPruefungDaten>? Pruefen { get; set; }
+
+    /// <summary>Der Schreibweg der Hülle — eine Transaktion; kein Delegat = „OK" schreibt nichts.</summary>
+    [Parameter] public Func<IReadOnlyList<ZapfprofilKategorieDaten>, string, ZapfprofilKategorienErgebnis>? Speichern { get; set; }
+
+    /// <summary>Hilfeschlüssel des Editors.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.grp_Kategorien";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Das Ergebnis: geschrieben (mit der Nutzungsart, die jetzt die Kategorien trägt) bei OK, <c>null</c> bei Abbruch oder ohne Änderung.</summary>
+    [Parameter] public EventCallback<ZapfprofilKategorienErgebnis?> Geschlossen { get; set; }
+
+    // --- Stand -----------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private List<ZapfprofilKategorieDaten> _zeilen = new();
+    private List<ZapfprofilKategorieDaten> _start = new();
+    private bool _kopie;
+    private string _version = "";
+    private string _hinweis = "";
+    private ZapfprofilMeldung? _meldung;
+    private ZapfprofilKategorienPruefungDaten _pruefung = new();
+    private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
+
+    /// <summary>Die Zeilen des Editors — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZapfprofilKategorieDaten> Zeilen => _zeilen;
+
+    /// <summary>Die Meldung eines abgelehnten OK — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilMeldung? Meldung => _meldung;
+
+    /// <summary>Die leise Zeile nach einem gesperrten Versuch — Prüfhilfe für die Tests.</summary>
+    public string Hinweis => _hinweis;
+
+    /// <summary>Die Prüfung des Kerns zum Stand — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilKategorienPruefungDaten Pruefung => _pruefung;
+
+    protected override void OnInitialized()
+    {
+        _start = (Daten.Stand?.Kategorien ?? new List<ZapfprofilKategorieDaten>()).Select(k => k.Kopie()).ToList();
+        _zeilen = _start.Select(k => k.Kopie()).ToList();
+        _version = Daten.KatalogversionVorschlag ?? "";
+        Pruefen_();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZAPFKATEGORIEN, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    /// <summary>Sind die Zeilen bedienbar? Frei, oder als eigene Kopie freigegeben — nie ohne Verfügbarkeit.</summary>
+    private bool Bearbeitbar => Daten.Verfuegbar && (Daten.Stand.Frei || _kopie);
+
+    private bool VorgabeLadbar => Bearbeitbar && Daten.Stand.Vorgabe.Count > 0;
+
+    private string VorgabeGrund => !Bearbeitbar ? Texte.HinweisNurLesen : Texte.KatGrundOhneVorgabe;
+
+    private int Position(ZapfprofilKategorieDaten k) => _zeilen.IndexOf(k);
+
+    /// <summary>Die Beschriftung eines Feldes: „Kategorie, Zeile 2".</summary>
+    private string Feld(string spalte, ZapfprofilKategorieDaten k) => Format(Texte.FeldZeile, spalte, Position(k) + 1);
+
+    /// <summary>Weicht der Stand vom Öffnen ab (Namen, Werte, Reihenfolge)?</summary>
+    private bool Geaendert
+    {
+        get
+        {
+            if (_zeilen.Count != _start.Count) return true;
+            for (int i = 0; i < _zeilen.Count; i++)
+            {
+                ZapfprofilKategorieDaten a = _zeilen[i], b = _start[i];
+                if (!string.Equals((a.Name ?? "").Trim(), (b.Name ?? "").Trim(), StringComparison.Ordinal)
+                    || a.VolumenstromLJeMin != b.VolumenstromLJeMin || a.StreuungLJeMin != b.StreuungLJeMin
+                    || a.DauerMin != b.DauerMin || a.Anteil != b.Anteil || a.KappungLJeMin != b.KappungLJeMin) return true;
+            }
+            return false;
+        }
+    }
+
+    private static string Zahl(double? wert, string format)
+        => wert is double w ? w.ToString(format, CultureInfo.CurrentCulture) : "–";
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    // =================================================================================
+    // Bedienung
+    // =================================================================================
+
+    /// <summary>Die Regeln des Kerns zum aktuellen Stand — ohne Datenbank, je Eingabe.</summary>
+    private void Pruefen_() => _pruefung = Pruefen?.Invoke(_zeilen.Select(k => k.Kopie()).ToList()) ?? new ZapfprofilKategorienPruefungDaten
+    {
+        SummeAnteil = _zeilen.Sum(k => k.Anteil ?? 0.0)
+    };
+
+    /// <summary>Eine Eingabe: Meldung und leise Zeile fallen weg, die Prüfung läuft neu.</summary>
+    private void Geaendert_()
+    {
+        _meldung = null;
+        _hinweis = "";
+        Pruefen_();
+    }
+
+    private void Setzen(ZapfprofilKategorieDaten k, Action<ZapfprofilKategorieDaten> setzen)
+    {
+        if (!Bearbeitbar || !_zeilen.Contains(k)) return;
+        setzen(k);
+        Geaendert_();
+    }
+
+    private void KopieBearbeiten()
+    {
+        _kopie = true;
+        _hinweis = "";
+    }
+
+    private void Neu()
+    {
+        if (!Bearbeitbar)
+        {
+            _hinweis = Texte.HinweisNurLesen;
+            return;
+        }
+        int n = _zeilen.Count + 1;
+        string name = Format(Texte.KatNeuName, n);
+        while (_zeilen.Any(k => string.Equals(k.Name, name, StringComparison.Ordinal))) name = Format(Texte.KatNeuName, ++n);
+        _zeilen.Add(new ZapfprofilKategorieDaten { Name = name });
+        FehlfelderRaeumen();
+        Geaendert_();
+    }
+
+    private void Entfernen(ZapfprofilKategorieDaten k)
+    {
+        if (!Bearbeitbar)
+        {
+            _hinweis = Texte.HinweisNurLesen;
+            return;
+        }
+        if (_zeilen.Count <= 1)
+        {
+            _hinweis = Texte.KatGrundLetzte;
+            return;
+        }
+        _zeilen.Remove(k);
+        FehlfelderRaeumen();
+        Geaendert_();
+    }
+
+    /// <summary>„Nach oben" (−1) oder „Nach unten" (+1); am Rand nennt die leise Zeile den Grund.</summary>
+    private void Verschieben(ZapfprofilKategorieDaten k, int richtung)
+    {
+        if (!Bearbeitbar) return;
+        int i = _zeilen.IndexOf(k), j = i + richtung;
+        if (i < 0 || j < 0 || j >= _zeilen.Count)
+        {
+            _hinweis = Texte.KatGrundRand;
+            return;
+        }
+        _zeilen.RemoveAt(i);
+        _zeilen.Insert(j, k);
+        FehlfelderRaeumen();
+        Geaendert_();
+    }
+
+    private void VorgabeLaden()
+    {
+        if (!VorgabeLadbar)
+        {
+            _hinweis = VorgabeGrund;
+            return;
+        }
+        _zeilen = Daten.Stand.Vorgabe.Select(k => k.Kopie()).ToList();
+        FehlfelderRaeumen();
+        Geaendert_();
+    }
+
+    private void Zuruecksetzen()
+    {
+        if (!Bearbeitbar)
+        {
+            _hinweis = Texte.HinweisNurLesen;
+            return;
+        }
+        _zeilen = _start.Select(k => k.Kopie()).ToList();
+        FehlfelderRaeumen();
+        Geaendert_();
+    }
+
+    /// <summary>Die Felder heißen nach ihrer Zeile — nach einer Zeilenaktion fallen ihre Fehleingaben weg.</summary>
+    private void FehlfelderRaeumen() => _fehlfelder.Clear();
+
+    /// <summary>Ein Feld meldet, ob sein Text gerade eine gültige Zahl ist — eine Fehleingabe hält das OK an.</summary>
+    private void FehlerZustandMelden((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlfelder.Add(f.Feld);
+        else _fehlfelder.Remove(f.Feld);
+    }
+
+    // =================================================================================
+    // Ergebnis
+    // =================================================================================
+
+    /// <summary>
+    /// Der Befund des OK: eine Fehleingabe, sonst der erste Verstoß gegen die Regeln des Kerns; leer
+    /// = in Ordnung. Dieselbe Prüfung am Knopf und beim Assistenten.
+    /// </summary>
+    private ZapfprofilMeldung? Befund()
+    {
+        if (_fehlfelder.Count > 0)
+            return new ZapfprofilMeldung("ZPG_MSG_FEHLEINGABE", "", Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder)),
+                                         ZapfprofilMeldungsart.Fehler);
+        return Bearbeitbar && Geaendert ? _pruefung.Ablehnung : null;
+    }
+
+    /// <summary>
+    /// „OK": ohne Änderung nichts zu schreiben; ein Verstoß hält an und steht als Banner da; sonst
+    /// schreibt der Weg der Hülle in EINER Transaktion. Eine Ablehnung bleibt als Banner, die
+    /// Überlagerung offen.
+    /// </summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Abbrechen();
+            return;
+        }
+        ZapfprofilMeldung? befund = Befund();
+        if (befund is not null)
+        {
+            _meldung = befund;
+            return;
+        }
+        if (!Bearbeitbar || !Geaendert)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+        if (Speichern is null) return;
+
+        ZapfprofilKategorienErgebnis e = Speichern(_zeilen.Select(k => k.Kopie()).ToList(), Daten.Stand.Frei ? "" : _version.Trim());
+        if (!e.Ok)
+        {
+            _meldung = e.Meldung;
+            return;
+        }
+        await Geschlossen.InvokeAsync(e);
+    }
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+
+    // =================================================================================
+    // Der Hilfe-Assistent
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ZapfkategorienEditorKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Kategorien als Spalten und die Katalogversion der Kopie.</summary>
+    private ZapfkategorienEditorKiSicht KiSicht() => _kiSicht ??= new ZapfkategorienEditorKiSicht
+    {
+        ZeilenLesen = () => _zeilen.Select(KiZeile).ToList(),
+        KatalogversionLesen = () => Daten.Stand.Frei ? "" : _version,
+        KatalogversionSetzen = v =>
+        {
+            if (Daten.Stand.Frei || !_kopie) return ZapfprofilKiRegeln.NurMit(Texte.LabelKatalogversion, Texte.KnopfKopie);
+            _version = v ?? "";
+            return null;
+        }
+    };
+
+    /// <summary>Eine Kategorie als Zeile der Sicht — gesetzt wie in den Feldern, in den Grenzen der Felder.</summary>
+    private ZapfkategorienKiZeile KiZeile(ZapfprofilKategorieDaten k) => new(k)
+    {
+        NameSetzen = w => KiInZeile(k, () => Setzen(k, x => x.Name = w ?? string.Empty)),
+        VolumenstromSetzen = w => KiZahl(k, Texte.KatSpalteVolumenstrom, w, 0, null, () => Setzen(k, x => x.VolumenstromLJeMin = w)),
+        DauerSetzen = w => KiZahl(k, Texte.KatSpalteDauer, w, 1, 1440, () => Setzen(k, x => x.DauerMin = w)),
+        AnteilSetzen = w => KiZahl(k, Texte.KatSpalteAnteil, w, 0, null, () => Setzen(k, x => x.Anteil = w)),
+        StreuungSetzen = w => KiZahl(k, Texte.KatSpalteStreuung, w, 0, null, () => Setzen(k, x => x.StreuungLJeMin = w)),
+        KappungSetzen = w => KiZahl(k, Texte.KatSpalteKappung, w, 0, null, () => Setzen(k, x => x.KappungLJeMin = w))
+    };
+
+    private string? KiInZeile(ZapfprofilKategorieDaten k, Action weg)
+    {
+        if (!Bearbeitbar) return Daten.Verfuegbar ? ZapfprofilKiRegeln.NurMit(Texte.KatTitel, Texte.KnopfKopie) : Daten.Grund;
+        if (!_zeilen.Contains(k)) return ZapfprofilKiRegeln.ZeileFehlt;
+        weg();
+        return null;
+    }
+
+    private string? KiZahl(ZapfprofilKategorieDaten k, string spalte, double? wert, double? min, double? max, Action weg)
+    {
+        string? grund = ZapfprofilKiRegeln.Bereich(Feld(spalte, k), wert, min, max);
+        return grund ?? KiInZeile(k, weg);
+    }
+
+    /// <summary>Was der Assistent über die Feldwerte hinaus darf: auffrischen und prüfen — kein Speicherweg.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Befund()?.Text ?? ""
+    };
+}
