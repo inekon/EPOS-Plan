@@ -32,7 +32,8 @@ am 23.09.2026 (Welle #459; Kern `Auslieferungskennzeichen`, Baustein `Schlossums
 des Katalogeditors auf demselben Arbeitsstand, und beim Hilfe-Assistenten ist sie eine eigene Maske
 (7.1 a und e erledigt). **Mit #468 (24.09.2026) erkennt die Löschsperre ein benutztes Gebäude über
 den Katalogverweis** `Tab_Gebaeude.ID_Gebaeude_Stamm` (Schemaschritt 121) und erst ohne ihn über den
-Namen (7.1 a).
+Namen (7.1 a); **mit #473 (24.09.2026)** legt auch das Neuschreiben der Gebäudeliste eines Projekts die
+Kopien über diesen Verweis an (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -617,12 +618,27 @@ nicht über die Paketgrenze mit und trägt ihn am Ziel über den Namen nach; der
 über den eindeutigen Namen nachgetragen. `Projektverwendung` führt jede Kopie unter dem Namen ihres
 Katalogsatzes (über den Verweis) und nur eine Kopie ohne Verweis unter ihrem eigenen Namen;
 `Loeschsperre` nennt die Projekte, und `Loeschen` lehnt einen benutzten Satz auch im Kern ab. Damit hält
-die Sperre, wenn der Katalogsatz oder die Kopie umbenannt wird. **`SET NULL` statt `RESTRICT`:** Die
+die Sperre, wenn der Katalogsatz oder die Kopie umbenannt wird. ✔ **Neuanlage über den Verweis —
+erledigt mit #473 (24.09.2026):** Speichert der Anwender die Gebäudeliste eines Projekts neu (Assistent,
+Startseite), löschen beide Wege die Kopien und legen sie neu an — über den Verweis: Die Liste führt ihn
+(`Z_ProjGebModel.ID_Gebaeude_Stamm`, `GebaeudeProjektZeile.IdKatalog`, gelesen von
+`Z_ProjGebCtrl.LiesProjekt`, gesetzt beim Übernehmen aus dem Katalog), und
+`GebaeudeStammCtrl.CopyFromStamm(Id, Name, …)` sucht den Katalogsatz zuerst über die Id; der Name ist
+nur der Rückfall für eine Zeile ohne Verweis oder mit einem Verweis ins Leere. Nach einer Umbenennung im
+Katalog gelingt das Neuschreiben damit, und die neue Kopie trägt den neuen Namen. Unverändert gilt:
+Das Neuschreiben übernimmt die Gebäudewerte des Katalogsatzes neu — eine Feld-Übernahme in die Kopie
+(`MerkmalUebernahmeCtrl`) geht dabei verloren —, die Zuordnungswerte (Fläche oder Verbrauch, Einheit,
+Jahresnutzungsgrad, dezentrales Warmwasser) bleiben. Dieselbe Transferregel gilt für den Verweis der
+Wärmepumpen-Projektkopie `Tab_WP.ID_Stamm` (Schritt 80): Er reist nicht, der Wärmepumpenkatalog wird am
+Ziel nicht unter der Original-Id aufgefüllt, und der Import trägt den Verweis über den eindeutigen
+Bezeichner nach (sonst NULL). **`SET NULL` statt `RESTRICT`:** Die
 Kopie trägt alle Werte selbst und rechnet ohne den Katalogsatz; die Sperre ist die weiche der
 Verwaltung, und ein harter Datenbankfehler träfe jeden anderen Löschweg (Dublettenbereinigung,
 „Gebäude in DB löschen" des Projektdialogs, Auslieferungsvorlage). Mit demselben Schritt tragen vier
 Katalogsätze, deren „Sonstige Fläche" keinen U-Wert hatte, die Fläche 0 (`H_T` unverändert); der
-Krankenhaussatz mit dem U-Wert Fenster 0,09 bleibt dem Anwender vorgelegt. (b)
+Krankenhaussatz mit dem U-Wert Fenster 0,09 bleibt dem Anwender vorgelegt, ebenso (#473) die zwölf
+Katalogsätze ohne „Fläche je Nutzer" (von keinem Projekt benutzt; bei allen übrigen 265 Sätzen gilt
+Fläche je Nutzer = Wohnfläche / Bewohner). (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im
