@@ -464,9 +464,13 @@
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
     /// </summary>
     /// <remarks>
-    /// <b>Kein Speicherweg.</b> „Speichern" schreibt die Tarifstruktur in die
-    /// Datenbank; das läuft über <c>dialog_speichern</c> samt Rückfrage und
-    /// Sicherungspunkt.
+    /// <b>Kein Speicherweg — mit Absicht.</b> Das OK schreibt die Tarifstruktur in die
+    /// Datenbank und schließt den Dialog — nach einer Warnung erst beim zweiten Klick,
+    /// den der Anwender als Bestätigung gibt. Schreiben und Schließen sind EIN Knopf,
+    /// wie bei den Überlagerungen mit eigenem Arbeitsstand (Konzept Dialogintegration,
+    /// Abschnitt 4). Der Assistent füllt die Felder, OK klickt der Anwender;
+    /// <c>dialog_speichern</c> lehnt hier benannt ab (<c>KI_AKTION_SPEICHERN_KEIN_WEG</c>).
+    /// KI‑D‑Q4 erlaubt das Speichern über den Speicherweg einer Maske — diese hat keinen.
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {

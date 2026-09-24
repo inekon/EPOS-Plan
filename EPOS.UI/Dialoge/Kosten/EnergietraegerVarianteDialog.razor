@@ -159,9 +159,11 @@
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
     /// </summary>
     /// <remarks>
-    /// <b>Kein Speicherweg.</b> Das OK legt einen neuen Katalogsatz an; das ist
-    /// datenbankwirksam und gehört über <c>dialog_speichern</c> samt Rückfrage und
-    /// Sicherungspunkt, nicht als Formularaktion (Anwenderentscheid KI‑D‑Q4).
+    /// <b>Kein Speicherweg — mit Absicht.</b> Das OK legt einen neuen Katalogsatz an und
+    /// schließt den Dialog; ein neuer Satz ist ein „Neu…", und das bleibt beim Anwender
+    /// (wie in den Verwaltungen). Der Assistent füllt die Felder, OK klickt der Anwender;
+    /// <c>dialog_speichern</c> lehnt hier benannt ab (<c>KI_AKTION_SPEICHERN_KEIN_WEG</c>).
+    /// KI‑D‑Q4 erlaubt das Speichern über den Speicherweg einer Maske — diese hat keinen.
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
