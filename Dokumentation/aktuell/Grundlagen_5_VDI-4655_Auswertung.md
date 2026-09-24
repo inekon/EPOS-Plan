@@ -4,6 +4,8 @@
 **Quelle:** `/root/.claude/uploads/abe216b5-16df-50de-9ac2-cba4717d4cac/c2b17d98-VDI_4655__VDI_e.V_.pdf` (52 Seiten, vollständig gelesen in 3 Leseoperationen)
 **Stand:** 29.07.2026
 
+> **Zahlenwerte dieses Papiers (Anwenderentscheid ZU23):** Alle Zahlenwerte in diesem Papier sind nach Anwenderentscheid ZU23 geringfügig von der Richtlinie abgeleitet (Regel ZU19, Skript `Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py`, Ausgabe `Referenzlaeufe/Skripte/vdi4655_abgeleitet.json`); die Originale liegen nur lokal (gitignoriert unter `Referenzlaeufe/Normzahlen/vdi4655/`). **Für die Rechnung zählt allein das vom Anwender eingespielte Paket.** Die Fundstellen (Abschnitt, Tabelle, Seite) sind unverändert und nennen keinen Wert. Struktur- und Geltungsangaben – Zahl der Klimazonen und Typtagkategorien, Personen- und Wohneinheitengrenzen, Zeitauflösungen, Bezugskalenderjahr, 365 Tage – sind keine Messwerte und stehen unverändert, ebenso die Prozentsätze, die dieses Papier selbst aus den abgeleiteten Werten rechnet.
+
 ---
 
 ## 0. Urheberrechtshinweis (bitte zuerst lesen)
@@ -56,20 +58,20 @@ Ferner Vorbemerkung (S. 2): „Alle Rechte, insbesondere die des Nachdrucks, der
 
 | Begriff | Definition laut Norm |
 |---|---|
-| Bestandsgebäude | Gebäude mit einer Heizgrenztemperatur von **15 °C** |
-| Niedrigenergiehaus (NEH) | Gebäude mit einer Heizgrenztemperatur von **12 °C** |
+| Bestandsgebäude | Gebäude mit einer Heizgrenztemperatur von **14,6 °C** |
+| Niedrigenergiehaus (NEH) | Gebäude mit einer Heizgrenztemperatur von **12,6 °C** |
 | Heizgrenztemperatur (HG) | Tagesmitteltemperatur, ab der ein Gebäude beheizt werden muss |
 | **Sommertag** | Tag mit einer Tagesmitteltemperatur **über der Heizgrenztemperatur** |
-| **Übergangstag** | Tag mit einer Tagesmitteltemperatur **zwischen 5 °C und der Heizgrenztemperatur** |
-| **Wintertag** | Tag mit einer Tagesmitteltemperatur **unter 5 °C** |
+| **Übergangstag** | Tag mit einer Tagesmitteltemperatur **zwischen 4,8 °C und der Heizgrenztemperatur** |
+| **Wintertag** | Tag mit einer Tagesmitteltemperatur **unter 4,8 °C** |
 | Tagesmitteltemperatur | Mittelwert der Temperatur über 24 h; maßgeblich Lufttemperatur 2 m über Erdboden nach DIN 4710 |
-| **bewölkt (B)** | Bedeckungsgrad, dessen Tagesmittel über 24 h (DWD) **≥ 5/8** |
-| **heiter (H)** | Bedeckungsgrad, dessen Tagesmittel über 24 h (DWD) **< 5/8** |
+| **bewölkt (B)** | Bedeckungsgrad, dessen Tagesmittel über 24 h (DWD) **≥ 5,15/8** |
+| **heiter (H)** | Bedeckungsgrad, dessen Tagesmittel über 24 h (DWD) **< 5,15/8** |
 | **Werktag (W)** | Montag bis Samstag, solange diese Tage nicht auf einen gesetzlichen Feiertag fallen |
 | **Sonntag (S)** | der letzte Tag der Woche. **Anmerkung 2: „Auch alle gesetzlichen Feiertage werden als Sonntage in der Richtlinie betrachtet."** |
 | Sieben-Tage-Mittel | gleitender arithmetischer Mittelwert der Außentemperatur über den betreffenden Tag + die sechs vorhergehenden Tage. Anmerkung: „Mit diesem Wert wird der Einfluss der thermischen Trägheit der Gebäudehülle berücksichtigt." |
 | **Referenzlastprofil** | „typischer Verlauf der energetischen Lastgänge aller Tage einer Typtagkategorie" |
-| Urlaubstag | Tag mit konstantem Strombedarf i.H.v. **50 %** des Tagesbedarfs eines normal bewohnten Tages gleicher Typtagkategorie; **kein Warmwasserbedarf**; Heizwärme Übergangs-/Winter-Urlaubstag konstant bei **80 %**; Sommer-Urlaubstag kein Heizwärmebedarf |
+| Urlaubstag | Tag mit konstantem Strombedarf i.H.v. **52 %** des Tagesbedarfs eines normal bewohnten Tages gleicher Typtagkategorie; **kein Warmwasserbedarf**; Heizwärme Übergangs-/Winter-Urlaubstag konstant bei **77 %**; Sommer-Urlaubstag kein Heizwärmebedarf |
 
 **Zentrale, für die WP-Plan-Bewertung entscheidende Anmerkung (S. 4, Begriff „Referenzlastprofil", Anmerkung 1):**
 
@@ -96,52 +98,52 @@ Anmerkung 1 zu Tabelle 1: „Für die Sommertyptage ist keine Unterscheidung nac
 
 | Zone | Bezeichnung | Station | ϑm,e [°C] |
 |---|---|---|---|
-| 1 | Nordseeküste | Bremerhaven | 9,0 |
-| 2 | Ostseeküste | Rostock-Warnemünde | 8,4 |
-| 3 | Nordwestdeutsches Tiefland | Hamburg-Fuhlsbüttel | 8,5 |
-| 4 | Nordostdeutsches Tiefland | Potsdam | 9,5 |
-| 5 | Nordrhein-westfälische Bucht und Emsland | Essen | 8,1 |
-| 6 | Nördliche und westliche Mittelgebirge, Randgebiete | Bad Marienberg | 6,8 |
-| 7 | Nördliche und westliche Mittelgebirge, zentrale Bereiche | Kassel | 8,8 |
-| 8 | Oberharz und Schwarzwald (mittlere Lage) | Braunlage | 6,0 |
-| 9 | Thüringer Becken und sächsisches Hügelland | Chemnitz | 7,9 |
-| 10 | Südöstliche Mittelgebirge bis 1000 m | Hof | 6,3 |
-| 11 | Erzgebirge, Böhmer- und Schwarzwald oberhalb 1000 m | Fichtelberg | 3,0 |
-| 12 | Oberrheingraben und unteres Neckartal | Mannheim | 10,2 |
-| 13 | Schwäbisch-fränkisches Stufenland und Alpenvorland | Passau | 7,9 |
-| 14 | Schwäbische Alb und Baar | Stötten | 6,8 |
-| 15 | Alpenrand und Täler | Garmisch-Partenkirchen | 6,8 |
+| 1 | Nordseeküste | Bremerhaven | 9,4 |
+| 2 | Ostseeküste | Rostock-Warnemünde | 8,7 |
+| 3 | Nordwestdeutsches Tiefland | Hamburg-Fuhlsbüttel | 8,9 |
+| 4 | Nordostdeutsches Tiefland | Potsdam | 9,1 |
+| 5 | Nordrhein-westfälische Bucht und Emsland | Essen | 8,3 |
+| 6 | Nördliche und westliche Mittelgebirge, Randgebiete | Bad Marienberg | 6,5 |
+| 7 | Nördliche und westliche Mittelgebirge, zentrale Bereiche | Kassel | 9,2 |
+| 8 | Oberharz und Schwarzwald (mittlere Lage) | Braunlage | 5,8 |
+| 9 | Thüringer Becken und sächsisches Hügelland | Chemnitz | 8,3 |
+| 10 | Südöstliche Mittelgebirge bis 1000 m | Hof | 6,5 |
+| 11 | Erzgebirge, Böhmer- und Schwarzwald oberhalb 1000 m | Fichtelberg | 3,1 |
+| 12 | Oberrheingraben und unteres Neckartal | Mannheim | 9,69 |
+| 13 | Schwäbisch-fränkisches Stufenland und Alpenvorland | Passau | 7,7 |
+| 14 | Schwäbische Alb und Baar | Stötten | 6,6 |
+| 15 | Alpenrand und Täler | Garmisch-Partenkirchen | 7,1 |
 
 - **Wichtiger normativer Hinweis (S. 10/13):** „Der DWD hat das Konzept der Einteilung Deutschlands in 15 TRY-Klimazonen mit je einer Repräsentanzstation … aufgegeben. Anstelle der Datensätze für 15 TRY-Klimazonen stellt der DWD in der aktualisierten Version TRY-Datensätze für jeden km² … zur Verfügung." Und weiter: „Für die vergleichende Betrachtung von Anlagen nach VDI 4655 wird jedoch das Verfahren mit 15 TRY-Klimazonen beibehalten, weil es den Einfluss des Gebäudestandorts mit hinreichender Genauigkeit abbildet." Ausdrücklich eingeräumt: „Für die Planung und Auslegung von heiz- und raumlufttechnische Anlagen sowie für energetische Bilanzierungen bietet das Verfahren der Aufteilung Deutschlands in km²-große Flächen eine höhere Genauigkeit."
-- **Standortzuordnung** über Ort/PLZ: **Tabelle A1 (S. 44–50)**, „Einordnung einiger Städte in die einzelnen Klimazonen (in Anlehnung an DIN EN 12831 Beiblatt 1)" – ca. 700 Orte mit PLZ → Zonennummer. Städte mit mehreren PLZ sind mit der niedrigsten PLZ und einem `*` eingetragen. Für nicht gelistete Orte: Zuordnung über die nächstgelegene gelistete Stadt (Beispiel Abschnitt 8.3, S. 26: Wetter/58300 → über Hagen 6 km und Witten 8 km → TRY05).
+- **Standortzuordnung** über Ort/PLZ: **Tabelle A1 (S. 44–50)**, „Einordnung einiger Städte in die einzelnen Klimazonen (in Anlehnung an DIN EN 12831 Beiblatt 1)" – ca. 700 Orte mit PLZ → Zonennummer. Städte mit mehreren PLZ sind mit der niedrigsten PLZ und einem `*` eingetragen. Für nicht gelistete Orte: Zuordnung über die nächstgelegene gelistete Stadt (Beispiel Abschnitt 8.3, S. 26: Wetter/58300 → über die nächstgelegenen gelisteten Städte Hagen und Witten → TRY05).
 
 ### 2.4 Anzahl Typtage je Zone
 
 Randbedingungen aller Verteilungen (Abschnitte 5.1/5.2, S. 13):
 - TRY-Datensatz: **TRY2017**
 - **Kalenderjahr (Wochentagzuordnung): 2014** → 365 Tage, **kein Schaltjahr**
-- Grenze Sommer–Übergang = Heizgrenztemperatur: **15 °C** (Bestand) bzw. **12 °C** (NEH)
-- Grenze Übergang–Winter: **5 °C**
+- Grenze Sommer–Übergang = Heizgrenztemperatur: **14,6 °C** (Bestand) bzw. **12,6 °C** (NEH)
+- Grenze Übergang–Winter: **4,8 °C**
 
 **Tabelle 4 (S. 14) – Anzahl Typtage, Bestandsgebäude:**
 
 | Zone | ÜWH | ÜWB | ÜSH | ÜSB | SWX | SSX | WWH | WWB | WSH | WSB | Heiztage |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| TRY01 | 47 | 74 | 13 | 13 | 95 | 17 | 17 | 71 | 3 | 15 | 253 |
-| TRY02 | 56 | 64 | 16 | 13 | 82 | 13 | 30 | 71 | 6 | 14 | 270 |
-| TRY03 | 50 | 78 | 12 | 14 | 81 | 16 | 30 | 65 | 6 | 13 | 268 |
-| TRY04 | 35 | 63 | 11 | 12 | 99 | 19 | 31 | 75 | 10 | 10 | 247 |
-| TRY05 | 39 | 95 | 6 | 21 | 98 | 20 | 12 | 58 | 3 | 13 | 247 |
-| TRY06 | 55 | 84 | 11 | 19 | 50 | 11 | 23 | 90 | 6 | 16 | 304 |
-| TRY07 | 40 | 90 | 12 | 14 | 78 | 17 | 18 | 77 | 4 | 15 | 270 |
-| TRY08 | 40 | 86 | 8 | 19 | 47 | 7 | 24 | 107 | 8 | 19 | 311 |
-| TRY09 | 55 | 64 | 8 | 18 | 71 | 16 | 28 | 84 | 4 | 17 | 278 |
-| TRY10 | 47 | 65 | 16 | 12 | 56 | 9 | 32 | 101 | 8 | 19 | 300 |
-| TRY11 | 53 | 86 | 10 | 18 | 20 | 4 | 39 | 104 | 11 | 20 | 341 |
-| TRY12 | 50 | 70 | 8 | 18 | 110 | 21 | 21 | 50 | 7 | 10 | 234 |
-| TRY13 | 41 | 70 | 13 | 13 | 78 | 14 | 29 | 83 | 3 | 21 | 273 |
-| TRY14 | 47 | 66 | 10 | 19 | 71 | 11 | 30 | 87 | 5 | 19 | 283 |
-| TRY15 | 42 | 71 | 6 | 18 | 62 | 14 | 49 | 77 | 10 | 16 | 289 |
+| TRY01 | 49 | 72 | 14 | 12 | 97 | 16 | 18 | 69 | 4 | 14 | 252 |
+| TRY02 | 58 | 62 | 17 | 12 | 86 | 12 | 31 | 67 | 7 | 13 | 267 |
+| TRY03 | 53 | 75 | 13 | 13 | 83 | 15 | 32 | 62 | 7 | 12 | 267 |
+| TRY04 | 36 | 61 | 12 | 11 | 102 | 18 | 32 | 73 | 11 | 9 | 245 |
+| TRY05 | 40 | 92 | 7 | 20 | 103 | 19 | 13 | 55 | 4 | 12 | 243 |
+| TRY06 | 58 | 83 | 12 | 18 | 52 | 10 | 24 | 86 | 7 | 15 | 303 |
+| TRY07 | 42 | 87 | 13 | 13 | 80 | 16 | 19 | 76 | 5 | 14 | 269 |
+| TRY08 | 41 | 85 | 9 | 18 | 49 | 6 | 25 | 105 | 9 | 18 | 310 |
+| TRY09 | 58 | 61 | 9 | 17 | 74 | 15 | 29 | 81 | 5 | 16 | 276 |
+| TRY10 | 49 | 63 | 17 | 11 | 58 | 8 | 33 | 99 | 9 | 18 | 299 |
+| TRY11 | 55 | 85 | 11 | 17 | 21 | 3 | 40 | 102 | 12 | 19 | 341 |
+| TRY12 | 53 | 67 | 9 | 17 | 112 | 20 | 22 | 48 | 8 | 9 | 233 |
+| TRY13 | 43 | 68 | 14 | 12 | 80 | 13 | 30 | 81 | 4 | 20 | 272 |
+| TRY14 | 48 | 65 | 11 | 18 | 75 | 10 | 31 | 83 | 6 | 18 | 280 |
+| TRY15 | 44 | 68 | 7 | 17 | 64 | 13 | 51 | 75 | 11 | 15 | 288 |
 
 Prüfsumme: Zeilensumme = 365; Heiztage = Summe ohne SWX/SSX (verifiziert für TRY01).
 
@@ -149,21 +151,21 @@ Prüfsumme: Zeilensumme = 365; Heiztage = Summe ohne SWX/SSX (verifiziert für T
 
 | Zone | ÜWH | ÜWB | ÜSH | ÜSB | SWX | SSX | WWH | WWB | WSH | WSB | Heiztage |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| TRY01 | 28 | 57 | 10 | 7 | 131 | 26 | 17 | 71 | 3 | 15 | 208 |
-| TRY02 | 43 | 31 | 9 | 9 | 128 | 24 | 30 | 71 | 6 | 14 | 213 |
-| TRY03 | 33 | 48 | 9 | 7 | 128 | 26 | 30 | 65 | 6 | 13 | 211 |
-| TRY04 | 19 | 49 | 7 | 9 | 129 | 26 | 31 | 75 | 10 | 10 | 210 |
-| TRY05 | 27 | 67 | 2 | 17 | 138 | 28 | 12 | 58 | 3 | 13 | 199 |
-| TRY06 | 34 | 56 | 10 | 13 | 99 | 18 | 23 | 90 | 6 | 16 | 248 |
-| TRY07 | 23 | 58 | 10 | 7 | 127 | 26 | 18 | 77 | 4 | 15 | 212 |
-| TRY08 | 28 | 62 | 5 | 13 | 83 | 16 | 24 | 107 | 8 | 19 | 266 |
-| TRY09 | 29 | 41 | 7 | 13 | 120 | 22 | 28 | 84 | 4 | 17 | 223 |
-| TRY10 | 28 | 37 | 11 | 6 | 103 | 20 | 32 | 101 | 8 | 19 | 242 |
-| TRY11 | 31 | 58 | 7 | 14 | 70 | 11 | 39 | 104 | 11 | 20 | 284 |
-| TRY12 | 31 | 49 | 5 | 11 | 150 | 31 | 21 | 50 | 7 | 10 | 184 |
-| TRY13 | 23 | 39 | 8 | 7 | 127 | 25 | 29 | 83 | 3 | 21 | 213 |
-| TRY14 | 35 | 44 | 9 | 10 | 105 | 21 | 30 | 87 | 5 | 19 | 239 |
-| TRY15 | 24 | 39 | 5 | 10 | 112 | 23 | 49 | 77 | 10 | 16 | 230 |
+| TRY01 | 29 | 55 | 11 | 6 | 134 | 25 | 18 | 69 | 4 | 14 | 206 |
+| TRY02 | 44 | 29 | 10 | 8 | 133 | 23 | 31 | 67 | 7 | 13 | 209 |
+| TRY03 | 35 | 46 | 10 | 6 | 130 | 25 | 32 | 62 | 7 | 12 | 210 |
+| TRY04 | 20 | 48 | 8 | 8 | 131 | 25 | 32 | 73 | 11 | 9 | 209 |
+| TRY05 | 28 | 64 | 3 | 16 | 143 | 27 | 13 | 55 | 4 | 12 | 195 |
+| TRY06 | 36 | 54 | 11 | 12 | 103 | 17 | 24 | 86 | 7 | 15 | 245 |
+| TRY07 | 24 | 56 | 11 | 6 | 130 | 25 | 19 | 75 | 5 | 14 | 210 |
+| TRY08 | 29 | 61 | 6 | 12 | 87 | 15 | 25 | 103 | 9 | 18 | 263 |
+| TRY09 | 30 | 39 | 8 | 12 | 124 | 21 | 29 | 81 | 5 | 16 | 220 |
+| TRY10 | 29 | 36 | 12 | 5 | 106 | 19 | 33 | 98 | 9 | 18 | 240 |
+| TRY11 | 32 | 55 | 8 | 13 | 74 | 10 | 40 | 102 | 12 | 19 | 281 |
+| TRY12 | 33 | 47 | 6 | 10 | 152 | 30 | 22 | 48 | 8 | 9 | 183 |
+| TRY13 | 24 | 38 | 9 | 6 | 129 | 24 | 30 | 81 | 4 | 20 | 212 |
+| TRY14 | 36 | 42 | 10 | 9 | 110 | 20 | 31 | 83 | 6 | 18 | 235 |
+| TRY15 | 25 | 37 | 6 | 9 | 115 | 22 | 51 | 74 | 11 | 15 | 228 |
 
 Zusätzlich: **Tabelle 9** (Bestand mit PV, 12 Kategorien, S. 22) und **Tabelle 11** (NEH mit PV, S. 23); **Tabellen 5, 7, 10, 12** enthalten die zugehörigen mittleren Außentemperaturen (Sieben-Tage-Mittel) je Typtag und Zone.
 
@@ -246,13 +248,13 @@ Vergleich Heizwärme (S. 9): „Eingeschlossen ist der gesamte Heizwärmebedarf 
 
 ### 3.2 Jahres-TWW-Bedarf (Abschnitt 6.2.3, S. 17)
 
-> „Für die Ermittlung des Energiebedarfs für die Trinkwassererwärmung kann die EnEV … herangezogen werden. **Aus den Auswertungen der für diese Richtlinie zugrunde gelegten Messdaten hat sich für den Jahresbedarf ergeben:**
-> - **500 kWh/Pers im Einfamilienhaus**
-> - **1000 kWh/WE im Mehrfamilienhaus**"
+Die Richtlinie verweist für die Ermittlung des Energiebedarfs für die Trinkwassererwärmung auf die EnEV und nennt aus den Auswertungen der zugrunde gelegten Messdaten je einen Jahresbedarf für Ein- und Mehrfamilienhäuser (Abschnitt 6.2.3, S. 17). Abgeleitet (ZU23):
+- **520 kWh/Pers im Einfamilienhaus**
+- **970 kWh/WE im Mehrfamilienhaus**
 
 Abgeleitete Tagesmittelwerte (eigene Rechnung, 1/365):
-- EFH: **1,370 kWh/(Pers·d)**
-- MFH: **2,740 kWh/(WE·d)**
+- EFH: **1,425 kWh/(Pers·d)**
+- MFH: **2,658 kWh/(WE·d)**
 
 **Bemerkenswert:** Der MFH-Wert ist **personenzahl-unabhängig** je WE definiert. Eine WE zählt damit implizit wie 2 Personen. Es gibt **keine** Differenzierung nach Wohnungsgröße, Belegung, Zirkulationssystem oder Baualter.
 
@@ -265,63 +267,63 @@ Quelle: Tabellen 17–31 (Bestand, S. 29–36) bzw. Tabellen 32–46 (NEH, S. 36
 
 | Zone | ÜWH | ÜWB | ÜSH | ÜSB | SWX | SSX | WWH | WWB | WSH | WSB |
 |---|---|---|---|---|---|---|---|---|---|---|
-| TRY01 | 4,9168E-06 | 2,0373E-05 | 3,1152E-04 | −1,2077E-05 | −1,6449E-04 | −2,8687E-05 | −4,4219E-07 | 9,0113E-05 | 1,8521E-04 | 2,3578E-04 |
-| TRY02 | −4,2261E-06 | 1,1178E-05 | 3,0136E-04 | −2,1163E-05 | −1,7307E-04 | −3,7718E-05 | −9,5672E-06 | 8,0686E-05 | 1,7547E-04 | 2,2586E-04 |
-| TRY03 | 4,1789E-07 | 1,5848E-05 | 3,0652E-04 | −1,6548E-05 | −1,6871E-04 | −3,3130E-05 | −4,9323E-06 | 8,5475E-05 | 1,8042E-04 | 2,3090E-04 |
-| TRY04 | 8,0425E-06 | 2,3516E-05 | 3,1500E-04 | −8,9703E-06 | −1,6156E-04 | −2,5599E-05 | 2,6774E-06 | 9,3336E-05 | 1,8854E-04 | 2,3916E-04 |
-| TRY05 | 1,6241E-05 | 3,1761E-05 | 3,2411E-04 | −8,2218E-07 | −1,5386E-04 | −1,7501E-05 | 1,0860E-05 | 1,0179E-04 | 1,9728E-04 | 2,4805E-04 |
-| TRY06 | −2,1242E-05 | −5,9336E-06 | 2,8244E-04 | −3,8074E-05 | −1,8903E-04 | −5,4525E-05 | −2,6550E-05 | 6,3142E-05 | 1,5733E-04 | 2,0742E-04 |
-| TRY07 | −4,6280E-06 | 1,0774E-05 | 3,0091E-04 | −2,1562E-05 | −1,7345E-04 | −3,8114E-05 | −9,9683E-06 | 8,0272E-05 | 1,7504E-04 | 2,2543E-04 |
-| TRY08 | −2,7287E-05 | −1,2012E-05 | 2,7572E-04 | −4,4081E-05 | −1,9471E-04 | −6,0496E-05 | −3,2583E-05 | 5,6910E-05 | 1,5089E-04 | 2,0086E-04 |
-| TRY09 | −6,0655E-06 | 9,3286E-06 | 2,9931E-04 | −2,2991E-05 | −1,7479E-04 | −3,9534E-05 | −1,1403E-05 | 7,8790E-05 | 1,7351E-04 | 2,2387E-04 |
-| TRY10 | −2,7558E-05 | −1,2285E-05 | 2,7542E-04 | −4,4350E-05 | −1,9496E-04 | −6,0764E-05 | −3,2854E-05 | 5,6630E-05 | 1,5060E-04 | 2,0057E-04 |
-| TRY11 | −4,2589E-05 | −2,7400E-05 | 2,5871E-04 | −5,9288E-05 | −2,0906E-04 | −7,5610E-05 | −4,7855E-05 | 4,1133E-05 | 1,3458E-04 | 1,8427E-04 |
-| TRY12 | 2,3149E-05 | 3,8708E-05 | 3,3179E-04 | 6,0427E-06 | −1,4738E-04 | −1,0678E-05 | 1,7754E-05 | 1,0891E-04 | 2,0464E-04 | 2,5554E-04 |
-| TRY13 | −9,4502E-06 | 5,9248E-06 | 2,9555E-04 | −2,6355E-05 | −1,7797E-04 | −4,2878E-05 | −1,4781E-05 | 7,5300E-05 | 1,6990E-04 | 2,2020E-04 |
-| TRY14 | −1,0638E-05 | 4,7308E-06 | 2,9423E-04 | −2,7535E-05 | −1,7908E-04 | −4,4050E-05 | −1,5966E-05 | 7,4076E-05 | 1,6863E-04 | 2,1891E-04 |
-| TRY15 | −9,4072E-06 | 5,9680E-06 | 2,9560E-04 | −2,6312E-05 | −1,7793E-04 | −4,2835E-05 | −1,4738E-05 | 7,5344E-05 | 1,6995E-04 | 2,2025E-04 |
+| TRY01 | 5,1135E-06 | 1,9762E-05 | 3,2710E-04 | −1,1594E-05 | −1,6942E-04 | −2,7253E-05 | −4,5988E-07 | 8,7410E-05 | 1,9447E-04 | 2,2635E-04 |
+| TRY02 | −4,3529E-06 | 1,0619E-05 | 3,1341E-04 | −2,0528E-05 | −1,8172E-04 | −3,6209E-05 | −9,8542E-06 | 7,6652E-05 | 1,8249E-04 | 2,1908E-04 |
+| TRY03 | 4,3878E-07 | 1,5214E-05 | 3,1572E-04 | −1,5721E-05 | −1,7546E-04 | −3,2136E-05 | −5,1789E-06 | 8,2056E-05 | 1,8583E-04 | 2,1935E-04 |
+| TRY04 | 8,3642E-06 | 2,2811E-05 | 3,3075E-04 | −8,6115E-06 | −1,6641E-04 | −2,4319E-05 | 2,7845E-06 | 9,0536E-05 | 1,9797E-04 | 2,2959E-04 |
+| TRY05 | 1,6728E-05 | 3,0173E-05 | 3,3707E-04 | −7,9751E-07 | −1,6155E-04 | −1,6801E-05 | 1,1186E-05 | 9,6701E-05 | 2,0517E-04 | 2,4061E-04 |
+| TRY06 | −2,2304E-05 | −5,6963E-06 | 2,9091E-04 | −3,6170E-05 | −1,9659E-04 | −5,2889E-05 | −2,7877E-05 | 6,0616E-05 | 1,6205E-04 | 1,9705E-04 |
+| TRY07 | −4,8131E-06 | 1,0451E-05 | 3,1596E-04 | −2,0700E-05 | −1,7865E-04 | −3,6208E-05 | −1,0367E-05 | 7,7864E-05 | 1,8379E-04 | 2,1641E-04 |
+| TRY08 | −2,8106E-05 | −1,1411E-05 | 2,8675E-04 | −4,2759E-05 | −2,0445E-04 | −5,8076E-05 | −3,3560E-05 | 5,4064E-05 | 1,5693E-04 | 1,9483E-04 |
+| TRY09 | −6,3688E-06 | 8,9555E-06 | 3,0829E-04 | −2,1841E-05 | −1,8178E-04 | −3,8348E-05 | −1,1973E-05 | 7,5638E-05 | 1,7872E-04 | 2,1268E-04 |
+| TRY10 | −2,8660E-05 | −1,1916E-05 | 2,8919E-04 | −4,2576E-05 | −2,0081E-04 | −5,7726E-05 | −3,4168E-05 | 5,4931E-05 | 1,5813E-04 | 1,9255E-04 |
+| TRY11 | −4,3867E-05 | −2,6030E-05 | 2,6906E-04 | −5,7509E-05 | −2,1951E-04 | −7,2586E-05 | −4,9291E-05 | 3,9076E-05 | 1,3996E-04 | 1,7874E-04 |
+| TRY12 | 2,4306E-05 | 3,7160E-05 | 3,4174E-04 | 5,7406E-06 | −1,5328E-04 | −1,0358E-05 | 1,8642E-05 | 1,0455E-04 | 2,1078E-04 | 2,4276E-04 |
+| TRY13 | −9,8282E-06 | 5,7471E-06 | 3,1033E-04 | −2,5301E-05 | −1,8331E-04 | −4,0734E-05 | −1,5372E-05 | 7,3041E-05 | 1,7840E-04 | 2,1139E-04 |
+| TRY14 | −1,0957E-05 | 4,4943E-06 | 3,0600E-04 | −2,6709E-05 | −1,8803E-04 | −4,2288E-05 | −1,6445E-05 | 7,0372E-05 | 1,7538E-04 | 2,1234E-04 |
+| TRY15 | −9,8776E-06 | 5,7293E-06 | 3,0447E-04 | −2,4996E-05 | −1,8505E-04 | −4,1550E-05 | −1,5475E-05 | 7,2330E-05 | 1,7505E-04 | 2,0924E-04 |
 
 #### 3.3.2 F_TWE,TT — **MFH Bestand** (Tabellen 17–31, jeweils unterer Block)
 
 | Zone | ÜWH | ÜWB | ÜSH | ÜSB | SWX | SSX | WWH | WWB | WSH | WSB |
 |---|---|---|---|---|---|---|---|---|---|---|
-| TRY01 | 1,8209E-05 | 9,2697E-06 | 9,2697E-06 | 2,2184E-05 | −4,8345E-05 | −3,9405E-05 | 3,4104E-05 | 3,3110E-05 | 2,6157E-05 | 2,0197E-05 |
-| TRY02 | 1,4390E-05 | 5,4628E-06 | 5,4628E-06 | 1,8359E-05 | −5,2072E-05 | −4,3145E-05 | 3,0263E-05 | 2,9270E-05 | 2,2327E-05 | 1,6375E-05 |
-| TRY03 | 1,5169E-05 | 6,2391E-06 | 6,2391E-06 | 1,9139E-05 | −5,1312E-05 | −4,2382E-05 | 3,1046E-05 | 3,0053E-05 | 2,3108E-05 | 1,7154E-05 |
-| TRY04 | 1,8048E-05 | 9,1085E-06 | 9,1085E-06 | 2,2022E-05 | −4,8503E-05 | −3,9563E-05 | 3,3941E-05 | 3,2948E-05 | 2,5995E-05 | 2,0035E-05 |
-| TRY05 | 2,0260E-05 | 1,1314E-05 | 1,1314E-05 | 2,4237E-05 | −4,6344E-05 | −3,7397E-05 | 3,6166E-05 | 3,5172E-05 | 2,8214E-05 | 2,2249E-05 |
-| TRY06 | 8,0501E-06 | −8,5675E-07 | −8,5675E-07 | 1,2010E-05 | −5,8260E-05 | −4,9352E-05 | 2,3886E-05 | 2,2896E-05 | 1,5969E-05 | 1,0030E-05 |
-| TRY07 | 1,5139E-05 | 6,2092E-06 | 6,2092E-06 | 1,9109E-05 | −5,1342E-05 | −4,2411E-05 | 3,1016E-05 | 3,0023E-05 | 2,3078E-05 | 1,7124E-05 |
-| TRY08 | 6,0528E-06 | −2,8477E-06 | −2,8477E-06 | 1,0010E-05 | −6,0209E-05 | −5,1308E-05 | 2,1877E-05 | 2,0888E-05 | 1,3965E-05 | 8,0312E-06 |
-| TRY09 | 1,2185E-05 | 3,2642E-06 | 3,2642E-06 | 1,6150E-05 | −5,4225E-05 | −4,5304E-05 | 2,8044E-05 | 2,7053E-05 | 2,0115E-05 | 1,4167E-05 |
-| TRY10 | 7,6613E-06 | −1,2443E-06 | −1,2443E-06 | 1,1620E-05 | −5,8639E-05 | −4,9733E-05 | 2,3495E-05 | 2,2505E-05 | 1,5579E-05 | 9,6409E-06 |
-| TRY11 | 1,4024E-07 | −8,7410E-06 | −8,7410E-06 | 4,0885E-06 | −6,5979E-05 | −5,7097E-05 | 1,5930E-05 | 1,4943E-05 | 8,0358E-06 | 2,1144E-06 |
-| TRY12 | 2,1954E-05 | 1,3002E-05 | 1,3002E-05 | 2,5934E-05 | −4,4691E-05 | −3,5739E-05 | 3,7870E-05 | 3,6875E-05 | 2,9913E-05 | 2,3944E-05 |
-| TRY13 | 1,3470E-05 | 4,5454E-06 | 4,5454E-06 | 1,7437E-05 | −5,2971E-05 | −4,4046E-05 | 2,9337E-05 | 2,8345E-05 | 2,1404E-05 | 1,5454E-05 |
-| TRY14 | 1,1238E-05 | 2,3211E-06 | 2,3211E-06 | 1,5203E-05 | −5,5148E-05 | −4,6231E-05 | 2,7092E-05 | 2,6101E-05 | 1,9166E-05 | 1,3220E-05 |
-| TRY15 | 9,5929E-06 | 6,8103E-07 | 6,8103E-07 | 1,3555E-05 | −5,6754E-05 | −4,7842E-05 | 2,5438E-05 | 2,4447E-05 | 1,7516E-05 | 1,1574E-05 |
+| TRY01 | 1,8937E-05 | 8,9916E-06 | 9,7332E-06 | 2,1297E-05 | −4,9795E-05 | −3,7435E-05 | 3,5468E-05 | 3,2117E-05 | 2,7465E-05 | 1,9389E-05 |
+| TRY02 | 1,4822E-05 | 5,1897E-06 | 5,6813E-06 | 1,7808E-05 | −5,4676E-05 | −4,1419E-05 | 3,1171E-05 | 2,7806E-05 | 2,3220E-05 | 1,5884E-05 |
+| TRY03 | 1,5927E-05 | 5,9895E-06 | 6,4263E-06 | 1,8182E-05 | −5,3364E-05 | −4,1111E-05 | 3,2598E-05 | 2,8851E-05 | 2,3801E-05 | 1,6296E-05 |
+| TRY04 | 1,8770E-05 | 8,8352E-06 | 9,5639E-06 | 2,1141E-05 | −4,9958E-05 | −3,7585E-05 | 3,5299E-05 | 3,1960E-05 | 2,7295E-05 | 1,9234E-05 |
+| TRY05 | 2,0868E-05 | 1,0748E-05 | 1,1767E-05 | 2,3510E-05 | −4,8661E-05 | −3,5901E-05 | 3,7251E-05 | 3,3413E-05 | 2,9343E-05 | 2,1582E-05 |
+| TRY06 | 8,4526E-06 | −8,2248E-07 | −8,8245E-07 | 1,1409E-05 | −6,0590E-05 | −4,7871E-05 | 2,5080E-05 | 2,1980E-05 | 1,6448E-05 | 9,5285E-06 |
+| TRY07 | 1,5745E-05 | 6,0229E-06 | 6,5197E-06 | 1,8345E-05 | −5,2882E-05 | −4,0290E-05 | 3,2257E-05 | 2,9122E-05 | 2,4232E-05 | 1,6439E-05 |
+| TRY08 | 6,2344E-06 | −2,7053E-06 | −2,9616E-06 | 9,7097E-06 | −6,3219E-05 | −4,9256E-05 | 2,2533E-05 | 1,9844E-05 | 1,4524E-05 | 7,7903E-06 |
+| TRY09 | 1,2794E-05 | 3,1336E-06 | 3,3621E-06 | 1,5343E-05 | −5,6394E-05 | −4,3945E-05 | 2,9446E-05 | 2,5971E-05 | 2,0718E-05 | 1,3459E-05 |
+| TRY10 | 7,9678E-06 | −1,2070E-06 | −1,3065E-06 | 1,1155E-05 | −6,0398E-05 | −4,7246E-05 | 2,4435E-05 | 2,1830E-05 | 1,6358E-05 | 9,2553E-06 |
+| TRY11 | 1,4445E-07 | −8,3040E-06 | −9,0906E-06 | 3,9658E-06 | −6,9278E-05 | −5,4813E-05 | 1,6408E-05 | 1,4196E-05 | 8,3572E-06 | 2,0510E-06 |
+| TRY12 | 2,3052E-05 | 1,2482E-05 | 1,3392E-05 | 2,4637E-05 | −4,6479E-05 | −3,4667E-05 | 3,9763E-05 | 3,5400E-05 | 3,0810E-05 | 2,2747E-05 |
+| TRY13 | 1,4009E-05 | 4,4090E-06 | 4,7727E-06 | 1,6740E-05 | −5,4560E-05 | −4,1844E-05 | 3,0510E-05 | 2,7495E-05 | 2,2474E-05 | 1,4836E-05 |
+| TRY14 | 1,1575E-05 | 2,2050E-06 | 2,4139E-06 | 1,4747E-05 | −5,7905E-05 | −4,4382E-05 | 2,7905E-05 | 2,4796E-05 | 1,9933E-05 | 1,2823E-05 |
+| TRY15 | 1,0073E-05 | 6,5379E-07 | 7,0146E-07 | 1,2877E-05 | −5,9024E-05 | −4,6407E-05 | 2,6710E-05 | 2,3469E-05 | 1,8041E-05 | 1,0995E-05 |
 
-**⚠ Auffälligkeit:** In allen 15 MFH-Blöcken sind **F_TWE,ÜWB und F_TWE,ÜSH exakt identisch**. Analog sind in den MFH-Blöcken **F_el,ÜSH und F_el,ÜSB identisch** (z.B. TRY01: beide −9,6069E-06). Der Normtext erläutert diese Kopplung **nicht**. Mögliche Ursachen: identische Referenztage, oder ein Satz-/Datenfehler. **Vor produktiver Nutzung gegen die CD-ROM-Datensätze (Ordner C2) verifizieren.**
+**⚠ Auffälligkeit:** In allen 15 MFH-Blöcken sind **F_TWE,ÜWB und F_TWE,ÜSH exakt identisch**. Analog sind in den MFH-Blöcken **F_el,ÜSH und F_el,ÜSB identisch** (in jedem Block paarweise gleich; die Strom-Faktoren selbst führt dieses Papier nicht). Der Normtext erläutert diese Kopplung **nicht**. Mögliche Ursachen: identische Referenztage, oder ein Satz-/Datenfehler. **Vor produktiver Nutzung gegen die CD-ROM-Datensätze (Ordner C2) verifizieren.**
 
 #### 3.3.3 F_TWE,TT — **EFH Niedrigenergiehaus** (Tabellen 32–46)
 
 | Zone | ÜWH | ÜWB | ÜSH | ÜSB | SWX | SSX | WWH | WWB | WSH | WSB |
 |---|---|---|---|---|---|---|---|---|---|---|
-| TRY01 | −4,5942E-05 | 5,0101E-05 | 5,7314E-04 | 3,3132E-04 | −2,3693E-04 | −4,4451E-06 | 2,4406E-04 | 1,2888E-04 | 5,2760E-04 | 4,4338E-04 |
-| TRY02 | −5,4347E-05 | 4,1397E-05 | 5,6281E-04 | 3,2174E-04 | −2,4474E-04 | −1,2979E-05 | 2,3476E-04 | 1,1993E-04 | 5,1740E-04 | 4,3345E-04 |
-| TRY03 | −5,2801E-05 | 4,2998E-05 | 5,6471E-04 | 3,2350E-04 | −2,4330E-04 | −1,1409E-05 | 2,3647E-04 | 1,2158E-04 | 5,1928E-04 | 4,3527E-04 |
-| TRY04 | −5,8913E-05 | 3,6667E-05 | 5,5719E-04 | 3,1653E-04 | −2,4898E-04 | −1,7616E-05 | 2,2970E-04 | 1,1507E-04 | 5,1187E-04 | 4,2805E-04 |
-| TRY05 | −2,9205E-05 | 6,7435E-05 | 5,9373E-04 | 3,5040E-04 | −2,2138E-04 | 1,2550E-05 | 2,6260E-04 | 1,4671E-04 | 5,4790E-04 | 4,6315E-04 |
-| TRY06 | −8,6324E-05 | 8,2794E-06 | 5,2348E-04 | 2,8528E-04 | −2,7445E-04 | −4,5449E-05 | 1,9934E-04 | 8,5881E-05 | 4,7862E-04 | 3,9566E-04 |
-| TRY07 | −5,3390E-05 | 4,2387E-05 | 5,6399E-04 | 3,2283E-04 | −2,4385E-04 | −1,2008E-05 | 2,3582E-04 | 1,2095E-04 | 5,1856E-04 | 4,3458E-04 |
-| TRY08 | −1,0277E-04 | −8,7504E-06 | 5,0326E-04 | 2,6654E-04 | −2,8973E-04 | −6,2146E-05 | 1,8112E-04 | 6,8370E-05 | 4,5867E-04 | 3,7623E-04 |
-| TRY09 | −6,6843E-05 | 2,8455E-05 | 5,4744E-04 | 3,0749E-04 | −2,5635E-04 | −2,5668E-05 | 2,2091E-04 | 1,0663E-04 | 5,0225E-04 | 4,1868E-04 |
-| TRY10 | −9,3155E-05 | 1,2041E-06 | 5,1508E-04 | 2,7749E-04 | −2,8080E-04 | −5,2386E-05 | 1,9177E-04 | 7,8605E-05 | 4,7033E-04 | 3,8759E-04 |
-| TRY11 | −1,2717E-04 | −3,4024E-05 | 4,7325E-04 | 2,3872E-04 | −3,1240E-04 | −8,6925E-05 | 1,5409E-04 | 4,2382E-05 | 4,2907E-04 | 3,4739E-04 |
-| TRY12 | −2,3014E-05 | 7,3847E-05 | 6,0134E-04 | 3,5746E-04 | −2,1563E-04 | 1,8836E-05 | 2,6946E-04 | 1,5330E-04 | 5,5541E-04 | 4,7047E-04 |
-| TRY13 | −6,2725E-05 | 3,2719E-05 | 5,5250E-04 | 3,1219E-04 | −2,5252E-04 | −2,1487E-05 | 2,2547E-04 | 1,1101E-04 | 5,0724E-04 | 4,2354E-04 |
-| TRY14 | −8,2332E-05 | 1,2413E-05 | 5,2839E-04 | 2,8983E-04 | −2,7074E-04 | −4,1396E-05 | 2,0376E-04 | 9,0131E-05 | 4,8346E-04 | 4,0038E-04 |
-| TRY15 | −8,4823E-05 | 9,8331E-06 | 5,2533E-04 | 2,8699E-04 | −2,7305E-04 | −4,3925E-05 | 2,0100E-04 | 8,7478E-05 | 4,8044E-04 | 3,9743E-04 |
+| TRY01 | −4,7780E-05 | 4,8598E-05 | 6,0180E-04 | 3,1807E-04 | −2,4404E-04 | −4,2228E-06 | 2,5382E-04 | 1,2501E-04 | 5,5398E-04 | 4,2564E-04 |
+| TRY02 | −5,5977E-05 | 3,9327E-05 | 5,8532E-04 | 3,1209E-04 | −2,5698E-04 | −1,2460E-05 | 2,4180E-04 | 1,1393E-04 | 5,3810E-04 | 4,2045E-04 |
+| TRY03 | −5,5441E-05 | 4,1278E-05 | 5,8165E-04 | 3,0733E-04 | −2,5303E-04 | −1,1067E-05 | 2,4829E-04 | 1,1672E-04 | 5,3486E-04 | 4,1351E-04 |
+| TRY04 | −6,1270E-05 | 3,5567E-05 | 5,8505E-04 | 3,0387E-04 | −2,5645E-04 | −1,6735E-05 | 2,3889E-04 | 1,1162E-04 | 5,3746E-04 | 4,1093E-04 |
+| TRY05 | −3,0081E-05 | 6,4063E-05 | 6,1748E-04 | 3,3989E-04 | −2,3245E-04 | 1,2048E-05 | 2,7048E-04 | 1,3937E-04 | 5,6982E-04 | 4,4926E-04 |
+| TRY06 | −9,0640E-05 | 7,9482E-06 | 5,3918E-04 | 2,7102E-04 | −2,8543E-04 | −4,4086E-05 | 2,0931E-04 | 8,2446E-05 | 4,9298E-04 | 3,7588E-04 |
+| TRY07 | −5,5526E-05 | 4,1115E-05 | 5,9219E-04 | 3,0992E-04 | −2,5117E-04 | −1,1408E-05 | 2,4525E-04 | 1,1732E-04 | 5,4449E-04 | 4,1720E-04 |
+| TRY08 | −1,0585E-04 | −8,3129E-06 | 5,2339E-04 | 2,5854E-04 | −3,0422E-04 | −5,9660E-05 | 1,8655E-04 | 6,4952E-05 | 4,7702E-04 | 3,6494E-04 |
+| TRY09 | −7,0185E-05 | 2,7317E-05 | 5,6386E-04 | 2,9212E-04 | −2,6660E-04 | −2,4898E-05 | 2,3196E-04 | 1,0236E-04 | 5,1732E-04 | 3,9775E-04 |
+| TRY10 | −9,6881E-05 | 1,1680E-06 | 5,4083E-04 | 2,6639E-04 | −2,8922E-04 | −4,9767E-05 | 1,9944E-04 | 7,6247E-05 | 4,9385E-04 | 3,7209E-04 |
+| TRY11 | −1,3099E-04 | −3,2323E-05 | 4,9218E-04 | 2,3156E-04 | −3,2802E-04 | −8,3448E-05 | 1,5871E-04 | 4,0263E-05 | 4,4623E-04 | 3,3697E-04 |
+| TRY12 | −2,4165E-05 | 7,0893E-05 | 6,1938E-04 | 3,3959E-04 | −2,2426E-04 | 1,8271E-05 | 2,8293E-04 | 1,4717E-04 | 5,7207E-04 | 4,4695E-04 |
+| TRY13 | −6,5234E-05 | 3,1737E-05 | 5,8013E-04 | 2,9970E-04 | −2,6010E-04 | −2,0413E-05 | 2,3449E-04 | 1,0768E-04 | 5,3260E-04 | 4,0660E-04 |
+| TRY14 | −8,4802E-05 | 1,1792E-05 | 5,4953E-04 | 2,8114E-04 | −2,8428E-04 | −3,9740E-05 | 2,0987E-04 | 8,5624E-05 | 5,0280E-04 | 3,8837E-04 |
+| TRY15 | −8,9064E-05 | 9,4398E-06 | 5,4109E-04 | 2,7264E-04 | −2,8397E-04 | −4,2607E-05 | 2,1105E-04 | 8,3979E-05 | 4,9485E-04 | 3,7756E-04 |
 
 Der zuvor hier vermerkte Verdachtsfall TRY14 / ÜWH war ein Übertragungsfehler; der Wert ist gegen das PDF (Tabelle 45, S. 41) geprüft und in der Tabelle berichtigt (Vermerk in 3.3.4).
 
@@ -334,38 +336,35 @@ Aus dem Aufbau der Gleichungen (1)–(3) und der Aussage in 6.5 („Die Summe al
 Σ_TT ( n_TT · F_TWE,TT )  = 0     (analog F_el,TT)
 ```
 
-Verifiziert an TRY05:
-- **F_Heiz, EFH Bestand:** Σ n_TT·F_Heiz,TT = **1,0000003** ✓
-- **F_TWE, EFH Bestand:** Σ n_TT·F_TWE,TT = **+4,2E-07**; bei N_Pers = 3 entspricht das **+1,3E-06** (+0,0001 %) Abweichung von 1 → reiner Rundungsrest ✓
-- **F_TWE, MFH Bestand:** Σ n_TT·F_TWE,TT = **+2,6E-08**; bei N_WE = 25 → **+6,5E-07** (+0,0001 %) ✓
+**Die Prüfsummen gelten für die Werte der Richtlinie, nicht für die abgeleiteten Zahlen dieses Papiers.** Gegen das lizenzierte Exemplar sind sie für alle 45 Blöcke nachgerechnet und erfüllt: der Rest bleibt in der Größenordnung des Rundungsrests der abgedruckten fünf signifikanten Stellen, und die Beispielrechnung des Abschnitts 8 wird von den Faktoren auf die angegebene Stellenzahl getroffen. Die Faktoren und Typtagzahlen in 3.3 und 2.4 sind nach ZU23 einzeln gestört und ausdrücklich **nicht** nachnormiert – mit ihnen läuft Σ n_TT·F_TWE,TT nicht mehr gegen null.
 
-→ Diese Prüfsummen eignen sich als **automatischer Unit-Test** beim Einlesen der Faktoren in WP-Plan (Toleranz |Σ n_TT·F_TWE,TT| < 1E-06; mit den geprüften Werten liegt der Betrag in allen 45 Blöcken unter 6E-07). Sie melden Übertragungsfehler einzelner Werte ab etwa der zweiten signifikanten Stelle – den früheren TRY14/ÜWH-Verdachtsfall mit Σ = +2,4E-03 deutlich – und sichern gegen Zeilen-/Spaltenvertauschungen; ein Fehler in der letzten Ziffer bleibt unter der Schwelle.
+→ Diese Prüfsummen eignen sich als **automatischer Unit-Test** beim Einlesen der Faktoren in WP-Plan – geprüft wird das vom Anwender eingespielte Normpaket, nicht dieses Papier (Toleranz |Σ n_TT·F_TWE,TT| < 1E-06). Sie melden Übertragungsfehler einzelner Werte ab etwa der zweiten signifikanten Stelle – den früheren TRY14/ÜWH-Verdachtsfall um Größenordnungen deutlich – und sichern gegen Zeilen-/Spaltenvertauschungen; ein Fehler in der letzten Ziffer bleibt unter der Schwelle.
 
-**Berichtigung 2026-09-22 (gegen das PDF geprüft):** Die drei Prüfsummen für TRY05 waren falsch gerechnet und sind mit den Typtagzahlen aus Tabelle 4 neu bestimmt. Zugleich wurden in 3.3 vier Einzelwerte F_TWE,ÜWH nach der Textschicht des lizenzierten PDF berichtigt: MFH Bestand TRY03 (Tabelle 19, S. 30, letzte Ziffer) und TRY08 (Tabelle 24, S. 32), EFH NEH TRY13 (Tabelle 44, S. 40) und TRY14 (Tabelle 45, S. 41, der frühere Verdachtsfall). Drei der vier alten Werte verletzten die Prüfsumme deutlich (TRY08: +2,4E-05; TRY13: −2,3E-04; TRY14: +2,4E-03); nur der Letztzifferfehler bei TRY03 blieb unter der Schwelle.
+**Berichtigung 2026-09-22 (gegen das PDF geprüft):** Die drei Prüfsummen für TRY05 waren falsch gerechnet und sind mit den Typtagzahlen aus Tabelle 4 neu bestimmt. Zugleich wurden in 3.3 vier Einzelwerte F_TWE,ÜWH nach der Textschicht des lizenzierten PDF berichtigt: MFH Bestand TRY03 (Tabelle 19, S. 30, letzte Ziffer) und TRY08 (Tabelle 24, S. 32), EFH NEH TRY13 (Tabelle 44, S. 40) und TRY14 (Tabelle 45, S. 41, der frühere Verdachtsfall). Drei der vier alten Werte verletzten die Prüfsumme um Größenordnungen; nur der Letztzifferfehler bei TRY03 blieb unter der Schwelle.
 
 ### 3.4 Verhältnis TWW zu Heizung in den Typtagprofilen
 
-Beispielrechnung der Norm (Abschnitt 8, S. 25–27): EFH Bestand, 110 m², **3 Personen**, Wetter/58300 → TRY05; Q_Heiz,a = 8250 kWh; W_a = 3 · 1650 = **4950 kWh**; Q_TWE,a = 3 · 500 = **1500 kWh**.
+Beispielrechnung der Norm (Abschnitt 8, S. 25–27): EFH Bestand, 113 m², **3 Personen**, Wetter/58300 → TRY05; Q_Heiz,a = 7838 kWh; W_a = 3 · 1584 = **4752 kWh**; Q_TWE,a = 3 · 520 = **1560 kWh**.
 
 **Tabelle 16 (S. 27) – Tagesenergiebedarfe des Beispielgebäudes:**
 
 | Typtag | Q_Heiz,TT [kWh] | W_TT [kWh] | Q_TWE,TT [kWh] | TWW-Anteil an (Heiz+TWW) |
 |---|---|---|---|---|
-| ÜWH | 20,46 | 12,93 | 4,18 | 17 % |
-| ÜWB | 25,44 | 13,73 | 4,25 | 14 % |
-| ÜSH | 11,08 | 15,22 | 5,57 | 33 % |
-| ÜSB | 26,94 | 15,59 | 4,11 | 13 % |
-| **SWX** | **0** | 11,64 | 3,42 | **100 %** |
-| **SSX** | **0** | 14,75 | 4,03 | **100 %** |
-| WWH | 52,62 | 13,72 | 4,16 | 7,3 % |
-| WWB | 51,70 | 14,67 | 4,57 | 8,1 % |
-| WSH | 53,71 | 16,55 | 5,00 | 8,5 % |
-| WSB | 47,05 | 17,05 | 5,23 | 10,0 % |
+| ÜWH | 21,28 | 13,32 | 4,35 | 17,0 % |
+| ÜWB | 24,68 | 13,04 | 4,42 | 15,2 % |
+| ÜSH | 11,63 | 15,83 | 5,85 | 33,5 % |
+| ÜSB | 25,86 | 15,12 | 4,27 | 14,2 % |
+| **SWX** | **0** | 12,22 | 3,52 | **100,0 %** |
+| **SSX** | **0** | 14,16 | 4,20 | **100,0 %** |
+| WWH | 54,72 | 14,13 | 4,33 | 7,3 % |
+| WWB | 50,15 | 13,94 | 4,73 | 8,6 % |
+| WSH | 56,40 | 17,21 | 5,234 | 8,5 % |
+| WSB | 45,17 | 16,54 | 5,40 | 10,7 % |
 
 **Kernbefunde:**
 - An **Sommertagen ist der Heizwärmebedarf exakt null** (F_Heiz,SWX = F_Heiz,SSX = 0,0000E+00 in allen 45 Faktortabellen). Der Wärmeerzeuger deckt im Sommer ausschließlich TWW.
-- Im Winter macht TWW nur **7–10 %** der Tageswärme aus, im Übergang **13–33 %**.
-- **Die TWW-Tagesenergie schwankt über alle zehn Typtage nur zwischen 3,42 und 5,57 kWh** – das sind **−17 % bis +36 %** um den Jahresmittelwert von 1500/365 = 4,11 kWh. Zum Vergleich: der Heizwärmebedarf schwankt zwischen 0 und 53,71 kWh (Faktor ∞ bzw. 0…13× Mittelwert).
+- Im Winter macht TWW nur **7–11 %** der Tageswärme aus, im Übergang **14–34 %**.
+- **Die TWW-Tagesenergie schwankt über alle zehn Typtage nur zwischen 3,52 und 5,85 kWh** – das sind **−18 % bis +37 %** um den Jahresmittelwert von 1560/365 = 4,27 kWh. Zum Vergleich: der Heizwärmebedarf schwankt zwischen 0 und 56,40 kWh (Faktor ∞ bzw. 0…13× Mittelwert).
 
 → **Der deterministische VDI-4655-Pfad bildet für TWW praktisch keine Tagesenergie-Streuung ab.** Reale Tag-zu-Tag-Streuungen im TWW-Bedarf eines EFH liegen deutlich darüber. Das ist der quantitativ belastbarste Beleg dafür, dass VDI 4655 für TWW **bilanz-, nicht bemessungsorientiert** ist.
 
@@ -384,7 +383,7 @@ Der **Formvektor F_TWE,n,TT(t) ist unabhängig von N_WE**. Damit skaliert die mo
 
 **c) Grenzen der WE-Zahl:** Ja – **3 bis 25 WE** (Abschnitte 1 und 6.1). Über 25 WE hinaus ist die Richtlinie nicht anwendbar. Eine Begründung für diese Grenze wird nicht gegeben; es ist naheliegend (aber **Vermutung**), dass sie den Bereich der Messobjekte abdeckt.
 
-**d) Sind die Profile Mittelwerte?** **Nein, ausdrücklich nicht.** S. 4, Anmerkung 1 zu „Referenzlastprofil": Auswahl eines realen Tages, „damit die Charakteristika eines Profils erhalten bleiben und nicht durch Mittelwertbildung und die damit verbundene Glättung verloren gehen." Sichtbar wird das in **Bild 4 (S. 28)**, dem kumulierten Referenzlastprofil EFH ÜWH: die TWE-Kurve verläuft als **ausgeprägte Treppenfunktion** – (grafisch abgelesen, daher ±) ein Sprung von ca. 0,04 auf ca. 0,55 zwischen etwa 05:30 und 06:30 Uhr, ein zweiter Sprung auf ca. 0,77 gegen 12:00 Uhr, weitere Stufen bis 1,0 gegen 22:00 Uhr. **Rund 50 % der Tages-TWW-Energie entfallen im EFH-Referenztag auf einen einzigen Morgenblock.**
+**d) Sind die Profile Mittelwerte?** **Nein, ausdrücklich nicht.** S. 4, Anmerkung 1 zu „Referenzlastprofil": Auswahl eines realen Tages, „damit die Charakteristika eines Profils erhalten bleiben und nicht durch Mittelwertbildung und die damit verbundene Glättung verloren gehen." Sichtbar wird das in **Bild 4 (S. 28)**, dem kumulierten Referenzlastprofil EFH ÜWH: die TWE-Kurve verläuft als **ausgeprägte Treppenfunktion** – ein deutlicher Sprung im frühen Morgen, ein zweiter gegen Mittag, weitere Stufen bis zum späten Abend (grafisch abgelesen; Stufenhöhen nennt dieses Papier nicht). **Ein erheblicher Teil der Tages-TWW-Energie entfällt im EFH-Referenztag auf einen einzigen Morgenblock.**
 → Für **EFH** ist der Formvektor also durchaus „spitzig" (Einzelzapfungen eines realen Hauses). Für **MFH** wird diese Spitzigkeit durch die **15-min-Mittelung der Rohdaten** systematisch gedämpft – eine 5-Minuten-Duschspitze ist in einem 15-min-Mittelwert prinzipiell nicht abbildbar.
 
 **e) Streuung / Einzeltagesspitzen:** Die Norm enthält **keinerlei** statistische Angaben – keine Standardabweichungen, keine Perzentile, keine Extremwert- oder Häufigkeitsbetrachtungen, keine Angaben zur Bandbreite zwischen den Messobjekten. Es wird ausschließlich **ein** Referenztag je Typtagkategorie geliefert.
@@ -406,14 +405,14 @@ Das ist die **einzige** explizite Selbstabgrenzung der Norm im TWW-Kontext – u
 
 | EFH – Personenzahl | Jahresstrombedarf |
 |---|---|
-| 1 Person | 2350 kWh (absolut) |
-| 2 Personen | 2020 kWh/Pers → 4040 kWh |
-| 3 Personen | 1650 kWh/Pers → 4950 kWh |
-| 4 Personen | 1500 kWh/Pers → 6000 kWh |
-| 5 Personen | 1400 kWh/Pers → 7000 kWh |
-| 6 Personen | 1350 kWh/Pers → 8100 kWh |
+| 1 Person | 2280 kWh (absolut) |
+| 2 Personen | 2121 kWh/Pers → 4242 kWh |
+| 3 Personen | 1584 kWh/Pers → 4752 kWh |
+| 4 Personen | 1545 kWh/Pers → 6180 kWh |
+| 5 Personen | 1330 kWh/Pers → 6650 kWh |
+| 6 Personen | 1310 kWh/Pers → 7860 kWh |
 
-**MFH: 3000 kWh/WE, unabhängig von der Personenzahl.**
+**MFH: 2910 kWh/WE, unabhängig von der Personenzahl.**
 Für Bestandsgebäude: „kann der Verbrauchswert des Vorjahres zum Vergleich herangezogen werden."
 
 **Für WP-Plan besonders relevant (Abschnitt 4, „Sonderfälle", S. 9/10):**
@@ -424,7 +423,7 @@ Weitere Sonderfälle: PV-Anlage und Batteriespeicher verändern das Strom-Refere
 
 **Zusätzlicher Faktor bei NEH:** In den Tabellen 32–46 existiert eine vierte Zeile **F_el,vent,TT** (nur NEH). Dieses Formelzeichen ist **weder in Abschnitt 3 (Formelzeichen/Indizes) noch in Abschnitt 6.4 definiert oder erläutert**. Naheliegende, aber **unbelegte Vermutung**: Faktor für den Strombedarf der Lüftungsanlage (Bezug zu 6.2.2 „ggf. Lüftungsanlagen"). Vor Nutzung klären.
 
-**PV (Abschnitt 7, S. 21; Tabelle 13, Bild 3):** Erzeugungsprofile normiert auf die **Peakleistung** in **kW/kWp**, zugeordnet zu den **12** Typtagkategorien der Tabelle 2. Bild 3 (S. 26) zeigt den Typtag ÜSB mit stark fluktuierendem Verlauf und Spitzen bis ca. 0,9 kW/kWp gegen 12:30 Uhr.
+**PV (Abschnitt 7, S. 21; Tabelle 13, Bild 3):** Erzeugungsprofile normiert auf die **Peakleistung** in **kW/kWp**, zugeordnet zu den **12** Typtagkategorien der Tabelle 2. Bild 3 (S. 26) zeigt den Typtag ÜSB mit stark fluktuierendem Verlauf und Spitzen nahe der Peakleistung gegen Mittag.
 
 ---
 
@@ -471,7 +470,7 @@ Die einzigen expliziten Ausschlüsse und Grenzen sind:
 | Indiz | Beleg 2021 | Bewertung |
 |---|---|---|
 | **Nomenklatur `TWW` vs. `TWE`** | Die Ausgabe 2021 verwendet **durchgängig und ausschließlich den Index `TWE` (Trinkwassererwärmung)** – Abkürzungsverzeichnis S. 7, alle Gleichungen (1)–(6), alle Tabellen 8, 17–46, CD-ROM-Ordnerbezeichnungen. `TWW` wird 2021 nur im **Titel** und im Bilanzgrenzen-Bild als Sachbegriff „Trinkwarmwasser" verwendet, **nie als Formelindex**. demandlib nutzt `Q_TWW_a` / `F_TWW_TT` als Formelindex. | **Starkes Indiz** für Ausgabe 2008 (die Umbenennung TWW→TWE ist plausibel Teil der Neufassung – dies ist jedoch **Vermutung**, da mir die 2008er Nomenklatur nicht im Original vorliegt) |
-| **NEH-Datensätze** | 2021 erstmals vorhanden (Abschnitte 5.2, 9.2, Tab. 32–46, CD-ROM D2). Aus der Einleitung geht hervor, dass sie über NOVAREF (2014–2016) neu hinzukamen. | Wenn demandlib **keine** NEH-/Heizgrenze-12-°C-Variante kennt → Ausgabe 2008 |
+| **NEH-Datensätze** | 2021 erstmals vorhanden (Abschnitte 5.2, 9.2, Tab. 32–46, CD-ROM D2). Aus der Einleitung geht hervor, dass sie über NOVAREF (2014–2016) neu hinzukamen. | Wenn demandlib **keine** NEH-/Heizgrenze-12,6-°C-Variante kennt → Ausgabe 2008 |
 | **PV-Profile / 12 Typtage** | 2021 neu (Abschnitt 7, Tab. 2, 9–13, CD-ROM E). | Wenn demandlib nur 10 Typtagkategorien kennt → Ausgabe 2008 |
 | **TRY2017 + Kalenderjahr 2014** | 2021 explizit (Abschnitte 5.1/5.2). | Die Typtag-Anzahlen je Zone (Tab. 4/6) sind ausgabespezifisch. Wenn demandlib abweichende Zahlen mitbringt → andere Ausgabe |
 | **2-s-Auflösung** | 2021 neu für EFH (Anhang D1/D2). | Wenn demandlib nur 1 min und 15 min kennt → Ausgabe 2008 |
@@ -486,10 +485,10 @@ Die einzigen expliziten Ausschlüsse und Grenzen sind:
 
 ### 6.3 Konkreter Prüfplan (empfohlen, geringer Aufwand, hoher Erkenntniswert)
 
-1. **Typtaganzahlen:** demandlib-Tabelle für TRY05 gegen Tabelle 4 dieses Berichts prüfen (erwartet 39/95/6/21/98/20/12/58/3/13, Σ = 365). Abweichung ⇒ andere Ausgabe.
-2. **F-Faktoren:** demandlib `F_TWW_TT` für TRY05/EFH gegen Abschnitt 3.3.1 dieses Berichts prüfen (ÜWH = 1,6241E-05 …). Abweichung ⇒ andere Ausgabe.
-3. **Jahres-TWW-Defaults:** Prüfen, ob demandlib 500 kWh/Pers (EFH) und 1000 kWh/WE (MFH) verwendet.
-4. **Strom-Defaults:** Prüfen gegen 2350/2020/1650/1500/1400/1350 kWh/Pers bzw. 3000 kWh/WE.
+1. **Typtaganzahlen:** demandlib-Tabelle für TRY05 gegen Tabelle 4 dieses Berichts prüfen (erwartet 40/92/7/20/103/19/13/55/4/12, Σ = 365 – abgeleitete Zahlen, der Vergleich läuft gegen das Normpaket). Abweichung ⇒ andere Ausgabe.
+2. **F-Faktoren:** demandlib `F_TWW_TT` für TRY05/EFH gegen Abschnitt 3.3.1 dieses Berichts prüfen (ÜWH = 1,6728E-05 …). Abweichung ⇒ andere Ausgabe.
+3. **Jahres-TWW-Defaults:** Prüfen, ob demandlib die Jahres-TWW-Kennwerte der Richtlinie verwendet (abgeleitet: 520 kWh/Pers im EFH, 970 kWh/WE im MFH).
+4. **Strom-Defaults:** Prüfen gegen die Reihe der Jahresstrombedarfe (abgeleitet: 2280/2121/1584/1545/1330/1310 kWh/Pers bzw. 2910 kWh/WE).
 5. **NEH/PV:** Existenz prüfen. Fehlen beide ⇒ sehr starkes Indiz für 2008.
 6. **SWX-Klemmung:** Prüfen, ob `max(F_TWE,SWX, 0)` implementiert ist.
 
@@ -504,12 +503,12 @@ Die einzigen expliziten Ausschlüsse und Grenzen sind:
 **Pro:**
 - Die Norm liefert genau das, was S2 braucht: **normierte, dimensionslose Tagesformvektoren** F_TWE,n,TT(t) plus eine saubere Trennung von *Jahresmenge* (Q_TWE,a) × *Tagesanteil* (1/365 + N·F) × *Tagesform* (Gl. 6). Das ist strukturell identisch zum Konzept-V1.1-Ansatz „Jahresmenge → Tagesenergie → Formvektor".
 - Die Formvektoren sind **reale, nicht geglättete Einzeltage** (S. 4, Anm. 1) – für EFH damit realistisch strukturiert (deutliche Morgen-/Mittags-/Abendblöcke, Bild 4).
-- Die Anker **500 kWh/(Pers·a)** bzw. **1000 kWh/(WE·a)** sind messdatengestützt und für den Bilanzpfad direkt verwendbar.
+- Die Anker **520 kWh/(Pers·a)** bzw. **970 kWh/(WE·a)** sind messdatengestützt und für den Bilanzpfad direkt verwendbar.
 - **Zwingende Randbedingung ist berücksichtigt:** SWX kann negative Tagesenergie ergeben → `F_TWE,SWX = 0` klemmen (S. 18).
 
 **Contra / Auflagen:**
 - **MFH-Formvektoren nur in 15-min-Auflösung.** Für ein Zapfprofil-Modul, das intern feiner rechnet, muss die Auflösung entweder beibehalten oder die Interpolation als solche gekennzeichnet werden. Eine 1-min-Interpolation eines 15-min-MFH-Profils erzeugt **keine** zusätzliche Information über Zapfspitzen.
-- **Nur 10 Tagesformen für 365 Tage.** Jeder Typtag wird 3- bis 150-mal identisch wiederholt (Tab. 4). Die resultierende Jahresdauerlinie ist stufig; das Maximum tritt nicht einmal, sondern n_TT-mal auf.
+- **Nur 10 Tagesformen für 365 Tage.** Jeder Typtag wird 3- bis 152-mal identisch wiederholt (Tab. 4/6). Die resultierende Jahresdauerlinie ist stufig; das Maximum tritt nicht einmal, sondern n_TT-mal auf.
 - Kein NEH-Datensatz für MFH – für MFH-Neubau/Effizienzhaus fehlt die Datenbasis.
 - **Lizenz:** siehe 7.6.
 
@@ -519,7 +518,7 @@ Die einzigen expliziten Ausschlüsse und Grenzen sind:
 
 Das ist der Bereich, in dem VDI 4655 dem bisherigen Konzept **echten Mehrwert** liefert, ohne Spitzenlastrisiken zu erzeugen:
 
-- **Vollständig spezifizierte Zuordnungsregel** aus drei Merkmalen: Jahreszeit (Tagesmitteltemperatur gegen HG 15 °C / 12 °C und 5 °C), Bewölkung (DWD-Bedeckungsgrad-Tagesmittel ≥/< 5/8), Wochentag (Werktag Mo–Sa / Sonntag, **Feiertage = Sonntag**).
+- **Vollständig spezifizierte Zuordnungsregel** aus drei Merkmalen: Jahreszeit (Tagesmitteltemperatur gegen HG 14,6 °C / 12,6 °C und 4,8 °C), Bewölkung (DWD-Bedeckungsgrad-Tagesmittel ≥/< 5,15/8), Wochentag (Werktag Mo–Sa / Sonntag, **Feiertage = Sonntag**).
 - **Fertige Standortzuordnung** über PLZ → Klimazone (Tabelle A1, ca. 700 Orte) und 15 Repräsentanzstationen mit TRY2017.
 - **Fertige Jahresverteilungen** (Tab. 4/6/9/11) inkl. Reihenfolge der Typtage auf CD-ROM (Ordner B1–B4) – d.h. ein Jahresgang lässt sich ohne eigene Wetterdatenverarbeitung erzeugen.
 - Die **Sieben-Tage-Mitteltemperatur** als Trägheitsmaß ist ein methodisch sauberer, direkt übernehmbarer Baustein.
@@ -532,11 +531,11 @@ Das ist der Bereich, in dem VDI 4655 dem bisherigen Konzept **echten Mehrwert** 
 
 Vorschlag für konkrete Validierungsanker im WP-Plan-Testsuite:
 
-1. **Jahresenergie:** Ein stochastisch erzeugtes WP-Plan-Zapfprofil für ein EFH mit N Personen muss über das Jahr auf 500·N kWh (± definierte Toleranz) laufen; MFH auf 1000·N_WE kWh — **bei angeglichener Bilanzgrenze** (Verteil-/Zirkulationsverluste inkludiert, Speicherverluste exkludiert).
+1. **Jahresenergie:** Ein stochastisch erzeugtes WP-Plan-Zapfprofil für ein EFH mit N Personen muss über das Jahr auf 520·N kWh (± definierte Toleranz) laufen; MFH auf 970·N_WE kWh — **bei angeglichener Bilanzgrenze** (Verteil-/Zirkulationsverluste inkludiert, Speicherverluste exkludiert).
 2. **Sommer-Nulllast Heizung:** F_Heiz,SWX = F_Heiz,SSX = 0 ⇒ die Sommer-Erzeugerlast in WP-Plan muss reines TWW sein. Guter Test für den Sommer-Betriebspunkt der WP (Taktung, JAZ-Beitrag).
-3. **Tagesenergie-Bandbreite:** Der VDI-Bereich (Beispiel Tab. 16: 3,42–5,57 kWh bei 4,11 kWh Mittel) ist die **untere** Plausibilitätsgrenze der Streuung. Ein stochastisches WP-Plan-Modell **soll** breiter streuen; wenn es enger streut, ist es zu deterministisch.
+3. **Tagesenergie-Bandbreite:** Der VDI-Bereich (Beispiel Tab. 16: 3,52–5,85 kWh bei 4,27 kWh Mittel) ist die **untere** Plausibilitätsgrenze der Streuung. Ein stochastisches WP-Plan-Modell **soll** breiter streuen; wenn es enger streut, ist es zu deterministisch.
 4. **Prüfsummen** Σ n_TT·F_Heiz,TT = 1 und Σ n_TT·F_TWE,TT ≈ 0 als Unit-Test des Faktor-Imports (siehe 3.3.4).
-5. **Beispielrechnung Abschnitt 8** (EFH 110 m², 3 Pers., Wetter/58300 → TRY05, Q_Heiz,a 8250 kWh, W_a 4950 kWh, Q_TWE,a 1500 kWh → Tabelle 16) als **normbelegter Regressionstest** für die Implementierung der Gl. (1)–(6).
+5. **Beispielrechnung Abschnitt 8** (EFH 113 m², 3 Pers., Wetter/58300 → TRY05, Q_Heiz,a 7838 kWh, W_a 4752 kWh, Q_TWE,a 1560 kWh → Tabelle 16) als **normbelegter Regressionstest** – gegen das Normpaket des Anwenders, nicht gegen die abgeleiteten Zahlen dieses Papiers für die Implementierung der Gl. (1)–(6).
 
 ### 7.4 (d) NICHT für Auslegungsspitzen — **Bestätigt, aber die Begründung muss umformuliert werden**
 
@@ -546,7 +545,7 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 2. **Ausdrückliche Selbstabgrenzung:** „Die Lastprofile für Trinkwassererwärmung (TWE) sind nicht identisch mit genormten Profilen, z.B. nach DIN EN 15450." (S. 4)
 3. **MFH-Rohdaten sind 15-Minuten-Mittelwerte** (S. 2) und die MFH-Profile liegen **ausschließlich** in 15 min vor (S. 19, Anhang D3). Eine Zapfspitze im Minutenbereich ist darin physikalisch nicht enthalten.
 4. **Skalierung ist strikt linear in N_WE** (Gl. 3/6), der Formvektor ist von N_WE unabhängig. Es gibt **keine** Gleichzeitigkeitsfunktion. Die Gleichzeitigkeit des Referenz-MFH wird unverändert auf 3 bis 25 WE übertragen. **Die WE-Zahl der Messobjekte ist in der Norm nicht angegeben** – die implizite Gleichzeitigkeit ist damit unbekannt und nicht prüfbar. (Falls das Referenz-MFH klein war, folgt daraus systematische Überschätzung bei großen Zielgebäuden – das ist die technisch korrekte Fassung des bisherigen „100-%-Gleichzeitigkeits"-Arguments.)
-5. **Nur 10 Tagesformen für 365 Tage.** Das Tagesmaximum eines Typtags wiederholt sich n_TT-mal (bis über 100-mal). Eine daraus konstruierte Jahresdauerlinie ist im oberen Bereich **stufig und zu flach**; ihr Maximum ist kein seltenes Ereignis, sondern ein häufig wiederholtes. Genau dieses Verhalten erklärt den Vorprojekt-Befund „Messspitze ≈ P90 der synthetischen Dauerlinie".
+5. **Nur 10 Tagesformen für 365 Tage.** Das Tagesmaximum eines Typtags wiederholt sich n_TT-mal (bis über hundertmal). Eine daraus konstruierte Jahresdauerlinie ist im oberen Bereich **stufig und zu flach**; ihr Maximum ist kein seltenes Ereignis, sondern ein häufig wiederholtes. Genau dieses Verhalten erklärt den Vorprojekt-Befund „Messspitze ≈ P90 der synthetischen Dauerlinie".
 6. **Keine Streuungs-/Extremwertangaben** in der gesamten Richtlinie. Ein Bemessungswert braucht ein Überschreitungskriterium; die Norm liefert keines.
 
 **Empfohlene Formulierung im Konzept V1.2:** „VDI 4655:2021 wird als Formvektor- und Jahresgangquelle für den deterministischen Bilanzpfad Wohnen sowie als Validierungsreferenz genutzt. Für die Bemessung von Erzeuger-/Speicher-Zapfspitzen ist sie **nicht** vorgesehen: die Richtlinie beansprucht dies nicht, grenzt ihre TWE-Profile ausdrücklich von genormten Zapfprofilen (DIN EN 15450) ab, liefert MFH-Profile nur als 15-Minuten-Mittelwerte, skaliert linear in der Wohneinheitenzahl ohne Gleichzeitigkeitsansatz und macht keinerlei Angaben zu Streuung oder Überschreitungshäufigkeiten."
@@ -560,9 +559,9 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 | „VDI-4655-Profile sind Mittelwertprofile" | **Falsch für diese Ausgabe.** S. 4 Anm. 1: Auswahl eines realen Einzeltages, ausdrücklich **um Glättung durch Mittelwertbildung zu vermeiden**. | **Zu korrigieren** |
 | „implizite 100-%-Gleichzeitigkeit" | Die Norm sagt dazu nichts. Faktisch: **lineare Skalierung mit N_WE ohne Gleichzeitigkeitsfunktion**, Formvektor N_WE-unabhängig. Ob das 100 % entspricht, hängt von der (unbekannten) Größe der Referenz-MFH ab. | **Präzisieren:** „lineare, gleichzeitigkeitsfreie WE-Skalierung mit unbekannter impliziter Gleichzeitigkeit" |
 | „Lastspitze bei MFH ~2,4× überschätzt" | Durch die Norm **weder bestätigt noch widerlegt** (keine Streuungs-/Spitzenlastaussagen). Plausibel erklärbar durch: 15-min-Mittelung der MFH-Rohdaten (dämpfend), lineare WE-Skalierung (verstärkend bei großem Zielgebäude), nur 10 wiederholte Tagesformen (verstärkend im oberen Dauerlinienbereich). | **Beibehalten als eigener empirischer Befund**, klar als solcher gekennzeichnet – nicht als Normaussage |
-| „Messspitze ≈ P90 der synthetischen Jahresdauerlinie" | Methodisch konsistent mit dem Aufbau der Norm: eine aus 10 Tagesformen mit Wiederholungshäufigkeiten 3…150 zusammengesetzte Dauerlinie hat im obersten Perzentilbereich systematisch zu wenig Auflösung. | **Konsistent** |
+| „Messspitze ≈ P90 der synthetischen Jahresdauerlinie" | Methodisch konsistent mit dem Aufbau der Norm: eine aus 10 Tagesformen mit Wiederholungshäufigkeiten 3…152 zusammengesetzte Dauerlinie hat im obersten Perzentilbereich systematisch zu wenig Auflösung. | **Konsistent** |
 
-**Zusätzliches, neues Argument aus dieser Auswertung:** Die **TWW-Tagesenergie** schwankt in VDI 4655 nur um **−17 % / +36 %** um den Jahresmittelwert (Tab. 16). Der deterministische Pfad kann also **weder die Tag-zu-Tag-Streuung noch – über 15-min-MFH-Vektoren – die Intra-Tages-Spitzen** eines MFH abbilden. Beide Effekte fehlen; die Richtung ihres Netto-Einflusses auf die Jahresspitze ist ohne Messvergleich nicht vorherzusagen. Der INEKON-Vorprojektbefund ist damit ein **notwendiger empirischer Beitrag**, den die Norm nicht liefert.
+**Zusätzliches, neues Argument aus dieser Auswertung:** Die **TWW-Tagesenergie** schwankt in VDI 4655 nur um **−18 % / +37 %** um den Jahresmittelwert (Tab. 16, abgeleitete Zahlen nach ZU23). Der deterministische Pfad kann also **weder die Tag-zu-Tag-Streuung noch – über 15-min-MFH-Vektoren – die Intra-Tages-Spitzen** eines MFH abbilden. Beide Effekte fehlen; die Richtung ihres Netto-Einflusses auf die Jahresspitze ist ohne Messvergleich nicht vorherzusagen. Der INEKON-Vorprojektbefund ist damit ein **notwendiger empirischer Beitrag**, den die Norm nicht liefert.
 
 ### 7.6 Verhältnis zu DIN EN 12831-3 / A100 und DIN V 18599-10
 
@@ -583,8 +582,8 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 - **Achtung Bilanzgrenze:** VDI 4655 Q_TWE enthält **Zirkulationsverluste**. Wird der VDI-Wert unreflektiert als „Nutzenergie" in eine 12831-3-Rechnung gegeben, die Zirkulation separat aufschlägt, entsteht **Doppelzählung**.
 
 **Verhältnis zu DIN V 18599-10 (Bedarfskennwerte / Nutzungsrandbedingungen):**
-- **Ergänzung, kein Widerspruch – aber nicht direkt vergleichbar.** 18599-10 liefert **flächenbezogene** Nutzungsrandbedingungen/Bedarfskennwerte auf Nutzenergieebene; VDI 4655 liefert **personen-/WE-bezogene** Jahreswerte (500 kWh/Pers, 1000 kWh/WE) auf einer Bilanzebene **inkl. Verteil-, Leitungs- und Zirkulationsverlusten, exkl. Speicherverlusten** (S. 9).
-- **Vor jedem Zahlenvergleich ist die Bilanzgrenze anzugleichen.** Ein direkter Vergleich „500 kWh/Pers vs. X kWh/(m²·a)" ohne Verlustbereinigung und ohne Flächen-/Belegungsannahme ist methodisch unzulässig. *(Ich nenne hier bewusst keine 18599-10-Zahlenwerte – die Norm liegt mir nicht vor; jede konkrete Gegenüberstellung ist mit dem Originaltext zu belegen.)*
+- **Ergänzung, kein Widerspruch – aber nicht direkt vergleichbar.** 18599-10 liefert **flächenbezogene** Nutzungsrandbedingungen/Bedarfskennwerte auf Nutzenergieebene; VDI 4655 liefert **personen-/WE-bezogene** Jahreswerte (520 kWh/Pers, 970 kWh/WE) auf einer Bilanzebene **inkl. Verteil-, Leitungs- und Zirkulationsverlusten, exkl. Speicherverlusten** (S. 9).
+- **Vor jedem Zahlenvergleich ist die Bilanzgrenze anzugleichen.** Ein direkter Vergleich „Kennwert je Person vs. X kWh/(m²·a)" ohne Verlustbereinigung und ohne Flächen-/Belegungsannahme ist methodisch unzulässig. *(Ich nenne hier bewusst keine 18599-10-Zahlenwerte – die Norm liegt mir nicht vor; jede konkrete Gegenüberstellung ist mit dem Originaltext zu belegen.)*
 - VDI 4655 selbst verweist für die Jahresenergiebedarfe auf **DIN V 4701-10 oder DIN V 18599** (Abschnitte 6.2, 6.2.1) und für TWW alternativ auf EnEV/GEG (Abschnitt 6.2.3). Die Norm sieht sich also **nicht** als Konkurrenz zu 18599, sondern nutzt sie als Eingangsgröße. **Das ist die natürliche Kopplung für WP-Plan:** Jahresmenge aus 18599 (oder aus dem WP-Plan-eigenen Bedarfsmodell), Zeitstruktur aus VDI 4655.
 
 ### 7.7 Lizenz- und Produktrisiko (bitte vor Implementierung entscheiden)
@@ -598,8 +597,8 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 | Rolle | Empfehlung | Begründung |
 |---|---|---|
 | (a) Formvektor-/Typtagquelle für S2 (Bilanzpfad Wohnen) | **Ja, als wählbare Quelle** – EFH mit 1-min-Vektoren; MFH nur mit ausdrücklichem 15-min-Vorbehalt | Norm liefert genau die Struktur; MFH-Auflösung begrenzt |
-| (b) Jahresgang-/Wetterkopplung | **Ja, mit hoher Priorität** – Typtagsystematik, HG 15/12 °C, 5-°C-Grenze, Bewölkung 5/8, Feiertag=Sonntag, 15 TRY-Zonen, PLZ-Tabelle A1 | Bestdokumentierter, unmittelbar nutzbarer Beitrag; Klärung Tagesmittel vs. 7-Tage-Mittel offen |
-| (c) Validierungsreferenz | **Ja** – Jahresanker 500/1000 kWh, Prüfsummen, Beispielrechnung Abschnitt 8 als Regressionstest | Normbelegt und reproduzierbar |
+| (b) Jahresgang-/Wetterkopplung | **Ja, mit hoher Priorität** – Typtagsystematik, HG 14,6/12,6 °C, 4,8-°C-Grenze, Bewölkung 5,15/8, Feiertag=Sonntag, 15 TRY-Zonen, PLZ-Tabelle A1 | Bestdokumentierter, unmittelbar nutzbarer Beitrag; Klärung Tagesmittel vs. 7-Tage-Mittel offen |
+| (c) Validierungsreferenz | **Ja** – Jahresanker je Person und je Wohneinheit, Prüfsummen, Beispielrechnung Abschnitt 8 als Regressionstest | Normbelegt und reproduzierbar |
 | (d) Auslegungsspitzen | **Nein** – strikt ausschließen | Norm beansprucht es nicht; 15-min-MFH-Daten; lineare WE-Skalierung ohne Gleichzeitigkeit; keine Streuungsangaben; ausdrückliche Abgrenzung von DIN EN 15450 |
 | Stromseite WP-Plan | **Ja** – Haushaltsstromprofile + Jahreswerte nutzbar; **WP-Strom und E-Mobilität müssen additiv modelliert werden** (Norm schließt sie explizit aus) | Abschnitt 4, 6.2.2 |
 
@@ -614,6 +613,6 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 5. **⚠ Zuordnungsgröße für die Typtagkategorie**: Tagesmitteltemperatur (Begriffsdefinition) vs. Sieben-Tage-Mittel (Tabellenangaben, CD-ROM-Ordner B). Nicht eindeutig aus dem gedruckten Text ableitbar.
 6. **⚠ Anzahl und Größe der vermessenen Gebäude** (außer 5 EFH-Bestand + 5 NEH aus NOVAREF) sind im Normtext **nicht angegeben**; für MFH fehlen Anzahl der Objekte und deren WE-Zahl vollständig. Quelle wäre [2] Dubielzig et al., Fortschr.-Ber. VDI Reihe 6 Nr. 560 (2007) – nicht Bestandteil dieses PDF.
 7. **⚠ Alle Aussagen zu demandlib 0.2.2** in Abschnitt 6 sind Indizienschlüsse ohne Codeeinsicht. Ebenso ist der Vergleich mit der Ausgabe 2008-05 nicht am Original erfolgt.
-8. **⚠ Bild 4 (kumuliertes EFH-ÜWH-Profil)** wurde grafisch abgelesen; die genannten Stufenhöhen (~0,55 nach dem Morgenblock, ~0,77 nach 12 Uhr) sind Schätzwerte aus der Abbildung, keine Tabellenwerte.
+8. **⚠ Bild 4 (kumuliertes EFH-ÜWH-Profil)** wurde grafisch abgelesen; der Verlauf ist qualitativ beschrieben, Stufenhöhen nennt dieses Papier nicht (Schätzwerte aus einer Abbildung, keine Tabellenwerte).
 9. **CD-ROM nicht vorhanden:** Der ausgewertete PDF-Auszug enthält den Datenträgerinhalt nicht (S. 51: „Hier ist ein Datenträger eingeklebt."). Sämtliche Formvektoren F_*,n,TT(t), die Typtag-Reihenfolgen und die PV-Profile fehlen damit für die Implementierung.
 10. **DIN EN 12831-3 und DIN V 18599-10 lagen für diesen Bericht nicht vor.** Die Aussagen in 7.6 zum Verhältnis beruhen auf dem, was die VDI 4655 selbst zitiert bzw. nicht zitiert, sowie auf allgemeiner Normkenntnis; konkrete Zahlenvergleiche wurden bewusst unterlassen.

@@ -176,6 +176,9 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.TwwNutzungsartAdminKiSicht) },
         { KiMaskennamen.TWW_NUTZUNGSART_EDITOR,
           typeof(EPOS.UI.Dialoge.Bedarf.TwwNutzungsartEditorKiSicht) },
+        // Zapfprofil Z4b, Gruppe 2: der Dialog der eingespielten VDI-4655-Typtage.
+        { KiMaskennamen.BRAUCHWASSER_TYPTAGE,
+          typeof(EPOS.UI.Dialoge.Bedarf.TwwTyptagImportKiSicht) },
 
         // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
         // Brauchwasser sind drei Katalogschluessel derselben Komponente.
@@ -413,8 +416,9 @@ public class KiDialogkatalogTests : IDisposable
         // Programmeinstellungen. Welle #458, Stufe 3a: das Zapfprofil, seine Auslegung
         // und deren Bedarfstag-Konstruktor. Welle #465: die Gebaeudeverwaltung. Zapfprofil Z4,
         // Gruppe 2b: die Editoren Tagesgang und Zapfkategorien. Zapfprofil Z4, Gruppe 3: der Katalog
-        // der Brauchwasser-Nutzungsarten und sein Editor.
-        Assert.Equal(80, katalog.Anzahl);
+        // der Brauchwasser-Nutzungsarten und sein Editor. Zapfprofil Z4b, Gruppe 2: der Dialog der
+        // eingespielten VDI-4655-Typtage.
+        Assert.Equal(81, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1468,6 +1472,10 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse TwwNutzungsartEditorKiSicht: die Zahlenfelder über ihren " +
             "Namen, vier Wahlen und die Monatsfaktoren als Zahlenreihe (Grenzen der Felder); Zeuge " +
             "ist TwwNutzungsartAdminDialogTests",
+        [KiMaskennamen.BRAUCHWASSER_TYPTAGE] =
+            "bindet über die Sichtklasse TwwTyptagImportKiSicht: acht Anzeigen des eingespielten " +
+            "Stands und des Prüfberichts, kein Einstellwert — die Paketwahl ist ein Dateidialog, " +
+            "Einspielen und Löschen bleiben Klicks; Zeuge ist TwwTyptagImportDialogTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",

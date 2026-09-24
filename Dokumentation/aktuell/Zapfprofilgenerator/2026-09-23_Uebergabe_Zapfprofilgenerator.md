@@ -516,3 +516,52 @@ Opus-Wochenkontingent erschöpft war (Rücksetzung 29.09.).
   leert die Tabelle; abgeleitete VDI-4655-Werte nur unter ZU19) und Z5 (Kalibrierung und Validierung,
   Nichtwohn-Kategorien, Katalogausbau, Konstruktorzeilen in der Datenbank, Folgen aus N13).
   **Schemaschritt:** Nummer erst beim Merge messen; heute ist 124 die höchste.
+
+## 12 Nachtrag 24.09.2026 — Stufe Z4b umgesetzt
+
+Nach Abschnitt 11 wurde die Stufe Z4b am 24.09.2026 auf dem Zweig `z4b` ausgeführt (von `6d022f6d`,
+34 eigene Commits bis `6989234d`, Merge von `origin` `315665f4`) und mit dem Stand von
+`ios_migration_september` zusammengeführt; der Übertrag setzt nach Push und Sichtabnahme bei Z5 an.
+
+- **Ergebnis Gruppe 1 (Kern):** Schemaschritt **131** `Tab_TwwTyptag_IMPORT` (elf Spalten mit
+  `Art`, anwenderlokal, nie in Vorlage oder Transfer); `Normformvektorleser` (ZIP oder CSV-Dateien,
+  Struktur- und Summenprüfung, 38 benannte Ablehnungen); `TwwTyptagCtrl` (Einspielen ersetzt, Löschen,
+  Rollback); `Typtagzuordnung` (365 Tage, Jahreszeit und Bewölkung nach Kennwerten des Pakets,
+  Feiertag als Sonntag, Energieerhaltung); Weiche `Zapfprofileingang.Typtage`; abgeleitete Testdaten
+  `Referenzlaeufe/Skripte/vdi4655_abgeleitet.json` (ZU19) mit Wache gegen die lokalen Originale;
+  Nachtrag N14 mit den Antworten auf die Vorfragen 4.2.
+- **Ergebnis Gruppe 2 (Dialog und Projektwahl):** Projektwahl (Typtagweg, Klimazone, Gebäudeart) im
+  selben Schritt mit Schreibwegen und Transfer; Importdialog `TwwTyptagImportDialog` (Stand, Prüfbericht,
+  Einspielen, Löschen) aus Katalogdialog und Zapfprofil-Experte; Wahl „Typtage nach VDI 4655" im
+  Zapfprofil-Dialog; Wiki-Abschnitt und Hilfeanker; KI-Feldkarten.
+- **ZU23:** Das Grundlagenpapier `Grundlagen_5_VDI-4655_Auswertung.md` trägt nur noch abgeleitete
+  Zahlen (795 ersetzt, Nachweis 0 Originaltreffer); Regel in `Referenzlaeufe/LIESMICH.md` und N14.
+- **Statuszeile und Protokoll:** #486, Protokoll
+  [`2026-09-24_Z4b_Typtage.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-24_Z4b_Typtage.md).
+- **Gate im Worktree (nach dem Merge):** Kern-Filter 0 Fehler; voller Testlauf 13 257 grün, 0 rot, 1 übersprungen; ChartProben 165 Bilder ohne Verstoß; SQL-Dialekt-Prüfer 1 836 Texte ohne Fund; Auslieferungsvorlage 31/31; Windows-Schale 0 Fehler; Referenzlauf 5/5 gegen R14 PASS.
+- **Gegenprüfungen:** je Gruppe eine (20 Befunde, ein hoher — behoben); geringe Befunde als
+  Folgen in N14.
+- **Anwenderentscheide dieser Stufe:** ZU23 (umgesetzt); offen: **ZU22** (Auslieferung der abgeleiteten
+  VDI-4655-Werte; VDI 4655 untersagt innerbetriebliche Kopien — mit K3a/K8), ZU20, ZU21, Versionsnummer
+  für die Logbuch-Sätze (Z3 drei, Z4 drei, Z4b einen).
+- **Sichtabnahme unter Windows** (Administration → Brauchwasser → Nutzungsarten → „VDI-4655-Typtage…";
+  Zapfprofil → Experte):
+  1. Katalog „Brauchwasser-Nutzungsarten" → Fußleiste „VDI-4655-Typtage…" öffnet die Überlagerung mit
+     Lizenz- und Formathinweis und „Es sind keine Typtage eingespielt".
+  2. „Paket wählen…" öffnet den Dateiwähler im gemerkten Ordner und prüft sofort; ein unvollständiges Paket
+     nennt Datei und Zeile, „Einspielen" bleibt gesperrt.
+  3. „Einspielen" zeigt danach die Standzeilen samt Hinweisen; eine zweite Runde fragt „ersetzt vollständig";
+     „Löschen" fragt zurück, danach Leersatz; der Katalogdialog meldet den neuen Stand.
+  4. Zapfprofil → Experte → Fachwerte: Schalter „Typtage nach VDI 4655" grau mit Grund ohne Daten, nach dem
+     Einspielen bedienbar, Klimazone und Gebäudeart vorbelegt bei nur einer Wahl.
+  5. Vorschau rechnet nach dem Einschalten weiter (Jahresenergie gleich, Monatsverteilung anders) und zeigt
+     die Typtag-Hinweise in der Warnliste; Rechenweg „stochastisch" rechnet über die Typtagmengen.
+  6. OK → erneut öffnen: die Wahl steht noch; ein Projekt ohne Wahl bleibt unverändert.
+  7. Infoknöpfe der Gruppe und des Dialogs springen auf den Wiki-Anker „typtage".
+  8. Englische Oberfläche: alle Texte des Importdialogs und der Gruppe vollständig.
+- **Nächster Auftrag:** Stufe Z5 nach Kapitel 7 — Messdatenimport, Vergleichsbericht, Validierung gegen
+  freie Messreihen und freigegebene INEKON-Projekte (Messspitze im P85–P95-Band der Dauerlinie,
+  √N-Skalierung, Formabgleich), Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25 bis 27
+  Typen, Nichtwohn-Kategorien; dazu die Folgen aus N13 und N14 (Konstruktorzeilen in der Datenbank,
+  Herkunftsprotokoll als Sätze, Referenzfall der Wetterkopplung mit TRY-Import). **Schemaschritt:**
+  Nummer erst beim Merge messen; heute ist 131 die höchste.

@@ -171,6 +171,11 @@ Form_Zapfprofil.grp_Kategorien      = Brauchwasser-Zapfprofil#kategorien
 Form_Brauchwasser_Nutzungsarten.btn_Help   = Brauchwasser-Zapfprofil#katalog
 Form_Brauchwasser_Nutzungsarten.grp_Editor = Brauchwasser-Zapfprofil#katalog-editor
 Form_Brauchwasser_Nutzungsarten.grp_Import = Brauchwasser-Zapfprofil#katalog-import
+# Die Typtage nach VDI 4655: die Ueberlagerung "VDI-4655-Typtage" mit dem
+# eingespielten Satz, Pruefen, Einspielen und Loeschen, und der Schalter im
+# Zapfprofil, der eine Zone auf den Typtagweg stellt - beide derselbe Anker.
+Form_Brauchwasser_Typtage.btn_Help         = Brauchwasser-Zapfprofil#typtage
+Form_Zapfprofil.grp_Typtage                = Brauchwasser-Zapfprofil#typtage
 
 # --- Strombedarf ----------------------------------------------------------
 Form_Stromverbraucher.btn_Help      = Stromverbraucher

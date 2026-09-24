@@ -134,6 +134,10 @@
         {
             <button type="button" class="epos-knopf epos-importknopf" @onclick="ImportOeffnen">@Texte.KnopfImport</button>
         }
+        @if (TyptagGaben is not null)
+        {
+            <button type="button" class="epos-knopf epos-tww-typtagknopf" @onclick="TyptageOeffnen">@Texte.KnopfTyptage</button>
+        }
         @if (EditorLaden is not null && Speichern is not null)
         {
             <button type="button" class="epos-knopf epos-tww-neu" @onclick="BeiNeu">@Texte.KnopfNeu</button>
@@ -191,6 +195,17 @@
                                  Bezeichnung="@Texte.BildJahresgang" PlatzhalterText="@Texte.KeinBild" />
                     <Herleitungszeile Text="@Texte.GrafikHinweis" />
                 </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: die eingespielten VDI-4655-Typtage (Stufe Z4b) -------------- *@
+    <Ueberlagerung Offen="@(_typtagGaben is not null)" Titel="@Resource.ZPGT_TITEL"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _typtagGaben = null">
+        <KindInhalt>
+            @if (_typtagGaben is not null)
+            {
+                <TwwTyptagImportDialog @attributes="_typtagGaben" TitelAnzeigen="false" Geschlossen="TyptageGeschlossen" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -308,6 +323,12 @@
     /// <summary>Der Katalogimport (<c>TwwNutzungsartCtrl.Importieren</c>). Ohne ihn steht „Import…" nicht da.</summary>
     [Parameter] public Func<string, TwwImportberichtDaten>? Importieren { get; set; }
 
+    /// <summary>
+    /// Der Parametersatz des Dialogs „VDI-4655-Typtage" (<c>ZapfprofilHuelle.TyptagGaben</c>, Stufe
+    /// Z4b); ohne ihn steht der Knopf nicht da.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? TyptagGaben { get; set; }
+
     /// <summary>Die Beschriftungen des Dialogs, des Editors, der Vorschau und des Imports.</summary>
     [Parameter] public TwwNutzungsartAdminTexte Texte { get; set; } = new();
 
@@ -348,6 +369,7 @@
     private bool _importOffen;
     private string _pfad = "";
     private TwwImportberichtDaten? _bericht;
+    private IReadOnlyDictionary<string, object>? _typtagGaben;
 
     private EventCallback _speichernUnterWeg;
     private EventCallback _loeschenWeg;
@@ -607,6 +629,26 @@
     {
         _importOffen = false;
         _bericht = null;
+    }
+
+    /// <summary>„VDI-4655-Typtage…": die Überlagerung des Importdialogs der Typtage (Stufe Z4b).</summary>
+    private void TyptageOeffnen()
+    {
+        if (TyptagGaben is null) return;
+        _meldung = "";
+        _typtagGaben = TyptagGaben();
+    }
+
+    /// <summary>
+    /// Der Dialog der Typtage ist zu. Der Katalog selbst ändert sich davon nicht — die Typtage
+    /// stehen in ihrer eigenen Tabelle; die Statuszeile nennt, dass der Stand sich geändert hat.
+    /// </summary>
+    private void TyptageGeschlossen(bool geaendert)
+    {
+        _typtagGaben = null;
+        // Der KATALOG aendert sich davon nicht - die Typtage stehen in ihrer eigenen Tabelle;
+        // die Statuszeile nennt nur, dass der eingespielte Stand jetzt ein anderer ist.
+        if (geaendert) _status = Resource.ZPGT_MSG_STAND_NEU;
     }
 
     /// <summary>Die Paketwahl der Plattform — über den Delegaten der Hülle, erwartet (nie synchron).</summary>

@@ -159,7 +159,12 @@ namespace Auslieferungsvorlage.Tests
             //
             // 132 seit Schemaschritt 127 (E17, nicht monetarisierbare Wirkungen der
             // Wirtschaftlichkeit): Tab_ProjektWirkung, STRICT von ihrer ersten Zeile an.
-            Assert.Equal(132, befund.Strict);
+            //
+            // 133 seit Schemaschritt 131 (Zapfprofilgenerator T3 "Typtage", Stufe Z4b):
+            // Tab_TwwTyptag_IMPORT, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der
+            // Vorlage LEER - sie nimmt die Typtage des lizenzierten Anwenders auf, nie eine
+            // Auslieferungszeile.
+            Assert.Equal(133, befund.Strict);
         }
 
         // =============================================================================

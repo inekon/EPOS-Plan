@@ -1514,6 +1514,33 @@
         internal static string ZpgkSperrgrundName => MyResource.Resource.KI_DLG_ZPGK_SPERRGRUND_NAME;
         internal static string ZpgkSperrgrundErl => MyResource.Resource.KI_DLG_ZPGK_SPERRGRUND_ERL;
 
+        /// <summary>Der Dialog „VDI-4655-Typtage" (Zapfprofilgenerator 4.2, Stufe Z4b).</summary>
+        internal static string MaskeBrauchwasserTyptage => MyResource.Resource.ZPGT_TITEL;
+
+        internal static string ZpgtQuelleName => MyResource.Resource.ZPGT_LBL_QUELLE;
+        internal static string ZpgtQuelleErl => MyResource.Resource.KI_DLG_ZPGT_QUELLE_ERL;
+        internal static string ZpgtAusgabeName => MyResource.Resource.ZPGT_LBL_AUSGABE;
+        internal static string ZpgtAusgabeErl => MyResource.Resource.KI_DLG_ZPGT_AUSGABE_ERL;
+        internal static string ZpgtDatumName => MyResource.Resource.ZPGT_LBL_DATUM;
+        internal static string ZpgtDatumErl => MyResource.Resource.KI_DLG_ZPGT_DATUM_ERL;
+        internal static string ZpgtZonenName => MyResource.Resource.ZPGT_LBL_ZONEN;
+        internal static string ZpgtZonenErl => MyResource.Resource.KI_DLG_ZPGT_ZONEN_ERL;
+        internal static string ZpgtArtenName => MyResource.Resource.ZPGT_LBL_GEBAEUDEARTEN;
+        internal static string ZpgtArtenErl => MyResource.Resource.KI_DLG_ZPGT_ARTEN_ERL;
+        internal static string ZpgtZeilenName => MyResource.Resource.ZPGT_LBL_ZEILEN;
+        internal static string ZpgtZeilenErl => MyResource.Resource.KI_DLG_ZPGT_ZEILEN_ERL;
+        internal static string ZpgtGrundName => MyResource.Resource.KI_DLG_ZPGT_GRUND_NAME;
+        internal static string ZpgtGrundErl => MyResource.Resource.KI_DLG_ZPGT_GRUND_ERL;
+        internal static string ZpgtBerichtName => MyResource.Resource.ZPGT_GRP_PRUEFUNG;
+        internal static string ZpgtBerichtErl => MyResource.Resource.KI_DLG_ZPGT_BERICHT_ERL;
+
+        internal static string ZpgTyptagewegName => MyResource.Resource.ZPG_LBL_TYPTAGE_AKTIV;
+        internal static string ZpgTyptagewegErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGEWEG_ERL;
+        internal static string ZpgTyptagzoneName => MyResource.Resource.ZPG_LBL_TYPTAGE_ZONE;
+        internal static string ZpgTyptagzoneErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGZONE_ERL;
+        internal static string ZpgTyptagartName => MyResource.Resource.ZPG_LBL_TYPTAGE_GEBAEUDEART;
+        internal static string ZpgTyptagartErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGART_ERL;
+
         /// <summary>Der Editor einer Nutzungsart (Überlagerung des Katalogdialogs).</summary>
         internal static string MaskeTwwNutzungsartEditor => MyResource.Resource.KI_DLG_ZPGK_EDITOR;
 

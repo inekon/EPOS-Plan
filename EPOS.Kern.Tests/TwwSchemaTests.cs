@@ -32,6 +32,7 @@ namespace EPOS.Kern.Tests
             [TwwSchema.TAB_TWW_WOHNUNGSTYP] = 7,
             [TwwSchema.TAB_TWW_PROJEKT] = 40,
             [TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM] = 16,
+            [TwwSchema.TAB_TWW_TYPTAG_IMPORT] = 11,
         };
 
         [Fact]
@@ -43,7 +44,8 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(10, TwwSchema.Anweisungen.Count());
             Assert.Equal(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, Assert.Single(TwwSchema.AnweisungenT2).Key);
-            Assert.Equal(11, TwwSchema.AlleAnweisungen.Count());
+            Assert.Equal(TwwSchema.TAB_TWW_TYPTAG_IMPORT, Assert.Single(TwwSchema.AnweisungenT3Typtage).Key);
+            Assert.Equal(12, TwwSchema.AlleAnweisungen.Count());
             foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
             {
                 string sql = Skalar(c, "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = $n",
@@ -163,6 +165,11 @@ namespace EPOS.Kern.Tests
             (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Herkunftsart", "'GESCHAETZT'"),
             (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Status", "'FREMD'"),
             (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Art", "'FREMD'"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Klimazone", "-1"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Aufloesung_min", "0"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Aufloesung_min", "1441"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Zeilenindex", "-1"),
         };
 
         [Fact]
@@ -394,6 +401,117 @@ namespace EPOS.Kern.Tests
             Assert.Contains("TwwSchema.SpaltenT3", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Der Schritt 131 (T3 „Typtage", Stufe Z4b) steht in der Migration der Schale NACH dem
+        /// letzten fremden Schritt (130, die Anschlusslängen im Gebäudekatalog)
+        /// und bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT3Typtage"/>); das
+        /// Ziel steht auf mindestens 131.
+        /// </summary>
+        [Fact]
+        public void Schritt_131_steht_in_der_Migration_nach_130()
+        {
+            Assert.True(SchemaStand.Zielversion >= 131, "Zielstand " + SchemaStand.Zielversion + " liegt unter 131.");
+
+            string datei = Migrationsquelle();
+            if (datei == null) return;
+            string text = File.ReadAllText(datei);
+
+            Assert.Contains("public const int SCHRITT_131_ZAPFPROFIL_TYPTAGE = 131;", text, StringComparison.Ordinal);
+            int ort130 = text.IndexOf("new Schritt(SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN", StringComparison.Ordinal);
+            int ort131 = text.IndexOf("new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
+            Assert.True(ort130 > 0 && ort131 > ort130, "Schritt 131 steht nicht nach 130 in der Schrittliste.");
+
+            int methode = text.IndexOf("private static bool Schritt_131_ZapfprofilTyptage(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 131 fehlt.");
+            int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
+            string rumpf = text.Substring(methode, ende - methode);
+            Assert.Contains("TwwSchema.AnweisungenT3Typtage", rumpf, StringComparison.Ordinal);
+            // Die WAHL des Typtagwegs steht im SELBEN Schritt (Gruppe 2, N14 Folge (b)):
+            // ein zweiter Schemaschritt fuer drei Spalten waere einer zu viel.
+            Assert.Contains("TwwSchema.SpaltenT3Typtage", rumpf, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Die Wahl des Typtagwegs</b> (Schritt 131, Stufe Z4b, Gruppe 2) auf einer Datenbank mit
+        /// Stand 124: Die drei Spalten entstehen an <c>Tab_TwwProjekt</c> neben der vorhandenen
+        /// Projektzeile — wiederholbar, ohne eine Zeile zu ändern. Nach dem Schritt steht
+        /// <c>Typtage_Aktiv</c> auf 0 und beide Angaben auf NULL: Das Projekt rechnet genau wie
+        /// vorher über den Formvektor. Die CHECK-Klauseln greifen (0/1, Zone &gt; 0), und STRICT
+        /// weist einen Text in der Zonenspalte ab.
+        /// </summary>
+        [Fact]
+        public void Schritt_131_legt_die_Wahl_des_Typtagwegs_an()
+        {
+            using SqliteConnection c = Datenbank();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen) Ausfuehren(c, a.Value);
+            Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwProjekt\" (\"ID_Projekt\") VALUES (1)");
+            foreach (TwwSpalte s in TwwSchema.SpaltenT3) Ausfuehren(c, TwwSchema.SpalteAnlegen(s));
+            int vorher = Spalten(c, TwwSchema.TAB_TWW_PROJEKT).Count;
+
+            Assert.Equal(3, TwwSchema.SpaltenT3Typtage.Count);
+            Assert.All(TwwSchema.SpaltenT3Typtage, s => Assert.Equal(TwwSchema.TAB_TWW_PROJEKT, s.Tabelle));
+            for (int lauf = 0; lauf < 2; lauf++)
+                foreach (TwwSpalte s in TwwSchema.SpaltenT3Typtage)
+                    if (!Spalten(c, s.Tabelle).Contains(s.Name)) Ausfuehren(c, TwwSchema.SpalteAnlegen(s));
+
+            Assert.Equal(vorher + 3, Spalten(c, TwwSchema.TAB_TWW_PROJEKT).Count);
+            Assert.Equal(0L, Skalar(c, "SELECT \"Typtage_Aktiv\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Typtage_Klimazone\" FROM \"Tab_TwwProjekt\""));
+            Assert.Null(Skalar(c, "SELECT \"Typtage_Gebaeudeart\" FROM \"Tab_TwwProjekt\""));
+
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Aktiv\" = 2"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Aktiv\" = NULL"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Klimazone\" = 0"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Klimazone\" = 'drei'"));   // STRICT
+            Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"Typtage_Aktiv\" = 1, \"Typtage_Klimazone\" = 3, " +
+                          "\"Typtage_Gebaeudeart\" = 'probehaus'");
+            Assert.Equal(3L, Skalar(c, "SELECT \"Typtage_Klimazone\" FROM \"Tab_TwwProjekt\""));
+            Assert.Equal("probehaus", Skalar(c, "SELECT \"Typtage_Gebaeudeart\" FROM \"Tab_TwwProjekt\""));
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+        }
+
+        /// <summary>
+        /// Die eingespielten Typtage (T3 „Typtage", Stufe Z4b) tragen weder <c>Status</c> noch
+        /// <c>ReadOnly</c> noch eine Provenienzgruppe, führen kein <c>ID_Projekt</c> und keinen
+        /// Fremdschlüssel — damit wandern sie weder in eine Projektkopie noch in ein
+        /// <c>.wpx</c>-Paket (Konzept 3.1, Kapitel 6) —, und ihr natürlicher Schlüssel ist
+        /// (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex).
+        /// </summary>
+        [Fact]
+        public void Die_eingespielten_Typtage_sind_anwenderlokal()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+
+            List<string> spalten = Spalten(c, TwwSchema.TAB_TWW_TYPTAG_IMPORT);
+            Assert.Equal(new[] { "ID", "Art", "Klimazone", "Gebaeudeart", "Typtag", "Aufloesung_min",
+                                 "Zeilenindex", "Wert", "Quelle", "Ausgabe", "Datum_Import" }, spalten);
+            foreach (string verboten in new[] { "Status", "ReadOnly", "ID_Projekt", "Herkunftsart", "Version", "Katalogversion" })
+                Assert.DoesNotContain(verboten, spalten);
+            Assert.Empty(Zeilen(c, "SELECT \"from\" FROM pragma_foreign_key_list($t)", ("$t", TwwSchema.TAB_TWW_TYPTAG_IMPORT)));
+            Assert.DoesNotContain("_STAMM", TwwSchema.TAB_TWW_TYPTAG_IMPORT);
+
+            // Der natuerliche Schluessel: zweimal dieselbe Zeile geht nicht, ein anderer Zeilenindex schon.
+            const string neu = "INSERT INTO \"Tab_TwwTyptag_IMPORT\" (\"Art\", \"Klimazone\", \"Gebaeudeart\", " +
+                               "\"Typtag\", \"Zeilenindex\", \"Wert\", \"Quelle\", \"Datum_Import\") " +
+                               "VALUES ($a, 3, 'probehaus', 'PT1', $i, 0.25, 'Probe (erfunden)', '2026-09-24')";
+            Ausfuehren(c, neu, ("$a", TwwSchema.TYPTAG_ART_GANG), ("$i", 0));
+            Assert.True(Wirft(c, neu, ("$a", TwwSchema.TYPTAG_ART_GANG), ("$i", 0)));
+            Ausfuehren(c, neu, ("$a", TwwSchema.TYPTAG_ART_GANG), ("$i", 1));
+            Assert.Equal(2L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwTyptag_IMPORT\""));
+
+            // Ein Faktor darf negativ sein (Schwankung um den Jahresmittelwert, Konzept 4.2).
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwTyptag_IMPORT\" (\"Art\", \"Klimazone\", \"Gebaeudeart\", " +
+                          "\"Typtag\", \"Zeilenindex\", \"Wert\", \"Quelle\", \"Datum_Import\") " +
+                          "VALUES ($a, 3, 'probehaus', 'PT1', 0, -0.0001, 'Probe (erfunden)', '2026-09-24')",
+                      ("$a", TwwSchema.TYPTAG_ART_FAKTOR));
+
+            // Die fuenf Satzarten der Konstanten sind genau die der Wertemenge.
+            Assert.Equal(TwwSchema.TyptagArten, TwwSchema.TYPTAG_ART_WERTE.Split(',').Select(s => s.Trim('\'')).ToList());
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwTyptag_IMPORT\" SET \"Wert\" = 'viel'"));   // STRICT
+        }
+
         [Fact]
         public void Die_Pruefungen_weisen_ungueltige_Werte_ab()
         {
@@ -550,7 +668,9 @@ namespace EPOS.Kern.Tests
                     "REAL" => "1.0",
                     _ => name == "Status" ? "'" + TwwSchema.STATUS_EIGEN + "'"
                        : name.EndsWith("Herkunftsart", StringComparison.Ordinal) ? "'" + TwwSchema.HERKUNFT_FIKTIV + "'"
-                       : name == "Art" ? "'" + TwwSchema.DIN4708_ART_AUSSTATTUNG + "'"
+                       : name == "Art" ? (tabelle == TwwSchema.TAB_TWW_TYPTAG_IMPORT
+                                              ? "'" + TwwSchema.TYPTAG_ART_KENNWERT + "'"
+                                              : "'" + TwwSchema.DIN4708_ART_AUSSTATTUNG + "'")
                        : "'Probe'",
                 });
             }
