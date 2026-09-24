@@ -499,11 +499,18 @@ namespace WindowsFormsApplication1
         /// <b>Reines DDL, ergebnisneutral:</b> NULL bzw. <c>Personen_Auto</c> = 1 rechnen wie ohne
         /// Spalte, und kein Referenzprojekt steht auf dem Generator; der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit den EINGESPIELTEN TYPTAGEN DES ANWENDERS (Schritt 125, Zapfprofilgenerator Stufe
+        /// Z4b, Schemaschritt T3 „Typtage") steht das Ziel auf <b>125</b>: die Tabelle
+        /// <c>Tab_TwwTyptag_IMPORT</c> (STRICT, eine Zeile je Wert, kein <c>Status</c> und kein
+        /// <c>ReadOnly</c>) — <see cref="TwwSchema.AnweisungenT3Typtage"/>.
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Tabelle entsteht LEER, das Repositorium bringt
+        /// keine Zeile mit (Konzept Kapitel 6), und ohne eingespielte Typtage ist der
+        /// Typtagweg benannt nicht verfügbar; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 124;
+        public const int Zielversion = 125;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

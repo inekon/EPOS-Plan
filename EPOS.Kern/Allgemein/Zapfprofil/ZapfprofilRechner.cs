@@ -55,6 +55,7 @@ namespace WindowsFormsApplication1
             internal Jahreskonsistenz Konsistenz;
             internal Schaetzhilfe Tagesbedarf;
             internal Mengenergebnis TagesbedarfVorschlag;
+            internal Typtagjahr Typtagjahr;
         }
 
         /// <summary>
@@ -192,9 +193,28 @@ namespace WindowsFormsApplication1
                             hinweise.Add(new ZapfHinweis(a.Name, "MESSWERT_ABWEICHUNG",
                                 ZapfSatz.Neu("HINWEIS_MESSWERT_ABWEICHUNG", a.Name, k.Faktor, rueckfrage.Value)) { Warnung = true });
                     }
-                    double[] tage = Formvektor.Tagesmengen(a.ZapfungKwh, a.Struktur, a.Kalender, e.WochentagJan1,
-                                                           a.Kaltwasserfaktor, a.Name);
-                    a.Zapfreihe = new Bilanzreihe(Formvektor.Stundenreihe(tage, a.Struktur, a.Kalender));
+                    // DIE WEICHE DES JAHRESGANGS (4.2, 5.3; Stufe Z4b): Ohne eingespielte Typtage
+                    // rechnet der Formvektor wie im Bestand; mit ihnen trägt der Typtagweg die
+                    // Tagesmengen (Jahreszeit, Tagart, Bewölkung) und - wenn das Paket Tagesgänge
+                    // führt - auch die Tagesform. Kein stiller Rückfall: Was der Typtagweg nicht
+                    // rechnen kann, lehnt er benannt ab.
+                    double[] tage;
+                    double[] stunden = null;
+                    if (e.Typtage != null)
+                    {
+                        a.Typtagjahr = Typtagzuordnung.Zuordnen(e.Typtage, e.WochentagJan1, e.We, a.Name,
+                                                               Zapfkalender.FensterDerZone(a.Stand), hinweise);
+                        tage = Typtagzuordnung.Tagesmengen(a.ZapfungKwh,
+                                   Typtagzuordnung.Einheiten(a.Art, a.Menge, a.Name), a.Typtagjahr, a.Name, hinweise);
+                        stunden = Typtagzuordnung.Stundenreihe(tage, a.Typtagjahr, e.Typtage.Daten,
+                                                              e.Typtage.Gebaeudeart, a.Name, hinweise);
+                    }
+                    else
+                    {
+                        tage = Formvektor.Tagesmengen(a.ZapfungKwh, a.Struktur, a.Kalender, e.WochentagJan1,
+                                                      a.Kaltwasserfaktor, a.Name);
+                    }
+                    a.Zapfreihe = new Bilanzreihe(stunden ?? Formvektor.Stundenreihe(tage, a.Struktur, a.Kalender));
                     if (e.Projekt.JahresreiheStochastisch) Stochastisch(a, e, hinweise, abbruch);
                 }
                 catch (ZapfprofilEingabeException ex)

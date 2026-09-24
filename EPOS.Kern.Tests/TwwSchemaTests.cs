@@ -32,6 +32,7 @@ namespace EPOS.Kern.Tests
             [TwwSchema.TAB_TWW_WOHNUNGSTYP] = 7,
             [TwwSchema.TAB_TWW_PROJEKT] = 40,
             [TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM] = 16,
+            [TwwSchema.TAB_TWW_TYPTAG_IMPORT] = 11,
         };
 
         [Fact]
@@ -43,7 +44,8 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(10, TwwSchema.Anweisungen.Count());
             Assert.Equal(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, Assert.Single(TwwSchema.AnweisungenT2).Key);
-            Assert.Equal(11, TwwSchema.AlleAnweisungen.Count());
+            Assert.Equal(TwwSchema.TAB_TWW_TYPTAG_IMPORT, Assert.Single(TwwSchema.AnweisungenT3Typtage).Key);
+            Assert.Equal(12, TwwSchema.AlleAnweisungen.Count());
             foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
             {
                 string sql = Skalar(c, "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = $n",
@@ -163,6 +165,11 @@ namespace EPOS.Kern.Tests
             (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Herkunftsart", "'GESCHAETZT'"),
             (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "Status", "'FREMD'"),
             (TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "ReadOnly", "2"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Art", "'FREMD'"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Klimazone", "-1"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Aufloesung_min", "0"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Aufloesung_min", "1441"),
+            (TwwSchema.TAB_TWW_TYPTAG_IMPORT, "Zeilenindex", "-1"),
         };
 
         [Fact]
@@ -394,6 +401,72 @@ namespace EPOS.Kern.Tests
             Assert.Contains("TwwSchema.SpaltenT3", text.Substring(methode, ende - methode), StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Der Schritt 125 (T3 „Typtage", Stufe Z4b) steht in der Migration der Schale NACH 124
+        /// und bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT3Typtage"/>); das
+        /// Ziel steht auf mindestens 125.
+        /// </summary>
+        [Fact]
+        public void Schritt_125_steht_in_der_Migration_nach_124()
+        {
+            Assert.True(SchemaStand.Zielversion >= 125, "Zielstand " + SchemaStand.Zielversion + " liegt unter 125.");
+
+            string datei = Migrationsquelle();
+            if (datei == null) return;
+            string text = File.ReadAllText(datei);
+
+            Assert.Contains("public const int SCHRITT_125_ZAPFPROFIL_TYPTAGE = 125;", text, StringComparison.Ordinal);
+            int ort124 = text.IndexOf("new Schritt(SCHRITT_124_ZAPFPROFIL_LAUFANGABEN", StringComparison.Ordinal);
+            int ort125 = text.IndexOf("new Schritt(SCHRITT_125_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
+            Assert.True(ort124 > 0 && ort125 > ort124, "Schritt 125 steht nicht nach 124 in der Schrittliste.");
+
+            int methode = text.IndexOf("private static bool Schritt_125_ZapfprofilTyptage(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes 125 fehlt.");
+            int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
+            Assert.Contains("TwwSchema.AnweisungenT3Typtage", text.Substring(methode, ende - methode), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Die eingespielten Typtage (T3 „Typtage", Stufe Z4b) tragen weder <c>Status</c> noch
+        /// <c>ReadOnly</c> noch eine Provenienzgruppe, führen kein <c>ID_Projekt</c> und keinen
+        /// Fremdschlüssel — damit wandern sie weder in eine Projektkopie noch in ein
+        /// <c>.wpx</c>-Paket (Konzept 3.1, Kapitel 6) —, und ihr natürlicher Schlüssel ist
+        /// (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex).
+        /// </summary>
+        [Fact]
+        public void Die_eingespielten_Typtage_sind_anwenderlokal()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+
+            List<string> spalten = Spalten(c, TwwSchema.TAB_TWW_TYPTAG_IMPORT);
+            Assert.Equal(new[] { "ID", "Art", "Klimazone", "Gebaeudeart", "Typtag", "Aufloesung_min",
+                                 "Zeilenindex", "Wert", "Quelle", "Ausgabe", "Datum_Import" }, spalten);
+            foreach (string verboten in new[] { "Status", "ReadOnly", "ID_Projekt", "Herkunftsart", "Version", "Katalogversion" })
+                Assert.DoesNotContain(verboten, spalten);
+            Assert.Empty(Zeilen(c, "SELECT \"from\" FROM pragma_foreign_key_list($t)", ("$t", TwwSchema.TAB_TWW_TYPTAG_IMPORT)));
+            Assert.DoesNotContain("_STAMM", TwwSchema.TAB_TWW_TYPTAG_IMPORT);
+
+            // Der natuerliche Schluessel: zweimal dieselbe Zeile geht nicht, ein anderer Zeilenindex schon.
+            const string neu = "INSERT INTO \"Tab_TwwTyptag_IMPORT\" (\"Art\", \"Klimazone\", \"Gebaeudeart\", " +
+                               "\"Typtag\", \"Zeilenindex\", \"Wert\", \"Quelle\", \"Datum_Import\") " +
+                               "VALUES ($a, 3, 'probehaus', 'PT1', $i, 0.25, 'Probe (erfunden)', '2026-09-24')";
+            Ausfuehren(c, neu, ("$a", TwwSchema.TYPTAG_ART_GANG), ("$i", 0));
+            Assert.True(Wirft(c, neu, ("$a", TwwSchema.TYPTAG_ART_GANG), ("$i", 0)));
+            Ausfuehren(c, neu, ("$a", TwwSchema.TYPTAG_ART_GANG), ("$i", 1));
+            Assert.Equal(2L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwTyptag_IMPORT\""));
+
+            // Ein Faktor darf negativ sein (Schwankung um den Jahresmittelwert, Konzept 4.2).
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwTyptag_IMPORT\" (\"Art\", \"Klimazone\", \"Gebaeudeart\", " +
+                          "\"Typtag\", \"Zeilenindex\", \"Wert\", \"Quelle\", \"Datum_Import\") " +
+                          "VALUES ($a, 3, 'probehaus', 'PT1', 0, -0.0001, 'Probe (erfunden)', '2026-09-24')",
+                      ("$a", TwwSchema.TYPTAG_ART_FAKTOR));
+
+            // Die fuenf Satzarten der Konstanten sind genau die der Wertemenge.
+            Assert.Equal(TwwSchema.TyptagArten, TwwSchema.TYPTAG_ART_WERTE.Split(',').Select(s => s.Trim('\'')).ToList());
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwTyptag_IMPORT\" SET \"Wert\" = 'viel'"));   // STRICT
+        }
+
         [Fact]
         public void Die_Pruefungen_weisen_ungueltige_Werte_ab()
         {
@@ -550,7 +623,9 @@ namespace EPOS.Kern.Tests
                     "REAL" => "1.0",
                     _ => name == "Status" ? "'" + TwwSchema.STATUS_EIGEN + "'"
                        : name.EndsWith("Herkunftsart", StringComparison.Ordinal) ? "'" + TwwSchema.HERKUNFT_FIKTIV + "'"
-                       : name == "Art" ? "'" + TwwSchema.DIN4708_ART_AUSSTATTUNG + "'"
+                       : name == "Art" ? (tabelle == TwwSchema.TAB_TWW_TYPTAG_IMPORT
+                                              ? "'" + TwwSchema.TYPTAG_ART_KENNWERT + "'"
+                                              : "'" + TwwSchema.DIN4708_ART_AUSSTATTUNG + "'")
                        : "'Probe'",
                 });
             }

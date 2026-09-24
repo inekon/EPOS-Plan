@@ -622,6 +622,14 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug (TwwSchema.SpaltenT3); NACH 103; wiederholbar, kein DML.
                 TwwSchema.T3Alle(null);
 
+                // Schritt 125 (Zapfprofilgenerator Stufe Z4b, T3 "Typtage"): die eingespielten
+                // Typtage des Anwenders. Reines DDL aus DERSELBEN Quelle wie Migration und
+                // Werkzeug (TwwSchema.AnweisungenT3Typtage); CREATE ... IF NOT EXISTS ist selbst
+                // wiederholbar. Die Tabelle bleibt LEER - das Repositorium bringt keine Typtage
+                // mit (Konzept Kapitel 6).
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

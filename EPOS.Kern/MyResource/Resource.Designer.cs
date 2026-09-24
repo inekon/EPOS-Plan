@@ -86823,6 +86823,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingespielte Typtage ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWTYPTAG_IMPORT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWTYPTAG_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungstabellen der Zonen ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP {
@@ -86909,6 +86918,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_TAGTYP_4 {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TAGTYP_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Unterscheidung ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_0 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die heiter ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_1 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bewölkt ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_2 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_BEWOELKUNG_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergang ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommer ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_2 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Winter ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_3 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_1 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonntag ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_2 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TYPTAG_TAGART_2", resourceCulture);
             }
         }
         
@@ -87642,6 +87723,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die eingespielten Typtage unterscheiden nach Bewölkung — dafür braucht der Jahresgang {0} Tagesmittel des Bedeckungsgrads. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Tagesmittel des Bedeckungsgrads des Tages {0} ist keine endliche Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_TAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_BEDECKUNG_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Jahresgang über Typtage gilt nur für Wohngebäude — die Bezugsart {0} trägt er nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_BEZUGSART {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_BEZUGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Einheiten der Zone ({0:0.###}) sind keine positive Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_EINHEITEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zum Typtag „{0}“ fehlt der Faktor der Klimazone {1} und Gebäudeart „{2}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_FAKTOR_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_FAKTOR_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die eingespielten Typtage führen die Gebäudeart „{0}“ nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_GEBAEUDEART_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_GEBAEUDEART_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die eingespielten Typtage nennen zu {0}, {1} und {2} keinen Typtag. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_KATEGORIE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_KATEGORIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Typtage der Zone „{0}“ verteilen keine Zapfung: Jede Tagesmenge ist 0. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_KEINE_VERTEILUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_KEINE_VERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die den eingespielten Typtagen fehlt der Kennwert „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_KENNWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_KENNWERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Jahresgang über Typtage ist nicht verfügbar: Es sind keine Typtage eingespielt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_NICHT_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Jahresgang über Typtage braucht {0} Tagesmittel der Außentemperatur. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Tagesmittel der Außentemperatur des Tages {0} ist keine endliche Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR_TAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_TEMPERATUR_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die eingespielten Typtage sind zu Klimazone {0} und Gebäudeart „{1}“ unvollständig: {2}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die eingespielten Typtage führen die Klimazone {0} nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_TYPTAGE_ZONE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_TYPTAGE_ZONE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Urlaubsversatz liegt nicht in 0 … 364 Tagen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH {
@@ -88007,6 +88214,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HINWEIS_TAGESGANG_LEER {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TAGESGANG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Wetter des Projekts ordnet {1} Typtagkategorie(n) anders zu als die eingespielte Tabelle; am weitesten „{2}“ mit {3} statt {4} Kalendertagen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Auf dem Typtagweg wirken die Ferienfenster nicht — ein Ferientag bleibt Werktag oder Sonntag seiner Jahreszeit. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: An {1} Tag(en) war die Tagesmenge negativ und wurde auf 0 gesetzt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_TYPTAGE_KLEMMUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_KLEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielten Typtage führen zur Gebäudeart „{0}“ keine Tagesgänge — die Tagesform kommt aus dem Tagesgangsatz der Zone. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_TYPTAGE_OHNE_TAGESGANG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_OHNE_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Tagesmengen der Typtage wurden mit {1:0.######} auf die Jahresmenge skaliert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG", resourceCulture);
             }
         }
         
@@ -88443,6 +88695,330 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} ist keine mögliche Zahl von Kalendertagen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_ANZAHL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_ANZAHL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Paket der Typtage fehlt die Datei „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Faktor ist keine endliche Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_FAKTOR_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_FAKTOR_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Felder statt {3}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_FELDZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_FELDZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Das Feld „{2}“ ist leer. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_FELD_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_FELD_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeile(n) der Tagesgänge nennen einen Typtag, den das Paket nicht führt — sie sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_GAENGE_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_GAENGE_UEBERGANGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Anteil ist negativ oder keine endliche Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_GANG_ANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_GANG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: {2} Minuten teilen den Tag nicht ohne Rest oder weichen von der Auflösung des Typtags ab. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_GANG_AUFLOESUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart „{0}“, Typtag „{1}“: Der Tagesgang braucht {2} Zeitabschnitte ohne Lücke, das Paket führt {3}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_GANG_INDEX {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_GANG_INDEX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Der Zeitabschnitt {2} liegt außerhalb des Tages. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_GANG_INDEX_ZEILE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_GANG_INDEX_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart „{0}“, Typtag „{1}“: Die Anteile des Tagesgangs summieren sich auf {2:0.######} statt 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_GANG_SUMME {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_GANG_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu {0} und {1} führt das Paket {2} Typtage: Es braucht entweder einen ohne Unterscheidung oder je einen heiteren und einen bewölkten. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_KATEGORIEN_BEWOELKUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_KATEGORIEN_BEWOELKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket nennt zu {0} und {1} keinen Typtag. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_KATEGORIEN_LUECKE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_KATEGORIEN_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: „{3}“ ist in der Spalte „{2}“ kein bekannter Wert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_KATEGORIE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_KATEGORIE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: „{3}“ ist in der Spalte „{2}“ keine ganze Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_KEINE_GANZE_ZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_KEINE_GANZE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: „{3}“ ist in der Spalte „{2}“ keine Zahl. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Paket fehlt der Kennwert „{0}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_KENNWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_KENNWERT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat keine Kopfzeile. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_OHNE_KOPFZEILE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_OHNE_KOPFZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket nennt keinen Typtag. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_OHNE_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_OHNE_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt zu keiner Klimazone und Gebäudeart vollständige Werte. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket nennt keine Klimazone. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_OHNE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_OHNE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket der Typtage lässt sich nicht lesen: {0}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_PAKET_UNLESBAR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_PAKET_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazone {0}, Gebäudeart „{1}“: Die Prüfsumme der Faktoren beträgt {2:0.###E+0} statt 0 (Toleranz {3:0.###E+0}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_PRUEFSUMME {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_PRUEFSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket nennt keine Toleranz „{0}“ — die Prüfsumme der Faktoren bleibt ungeprüft. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_PRUEFSUMME_OHNE_TOLERANZ {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_PRUEFSUMME_OHNE_TOLERANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket nennt seine Quelle nicht (Kennwert „quelle“). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ führt die Spalte „{1}“ zweimal. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_SPALTE_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_SPALTE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Datei „{0}“ fehlt die Spalte „{1}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_SPALTE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_SPALTE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ führt die unbekannte Spalte „{1}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_SPALTE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_SPALTE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazone {0}, Gebäudeart „{1}“: Die Typtage zählen {2} Kalendertage statt {3}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_SUMME_TAGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_SUMME_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Den Typtag „{2}“ führt das Paket schon. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_TYPTAG_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_TYPTAG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Den Typtag „{2}“ nennt die Typtagtabelle des Pakets nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_TYPTAG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_TYPTAG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazone {0}, Gebäudeart „{1}“: Zu diesen Typtagen fehlt eine Angabe: {2}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Diese Angabe steht im Paket schon. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_ZEILE_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_ZEILE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Die Klimazone {2} führt das Paket schon. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_ZONE_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_ZONE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimazone {0} steht im Paket, führt aber keine Werte. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_ZONE_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_ZONE_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Die Klimazone {2} nennt die Zonentabelle des Pakets nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_NORMVEKTOR_ZONE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_NORMVEKTOR_ZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion „{0}“ trägt keine Brauchwasserparameter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER {
@@ -88754,6 +89330,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Typtage ließen sich nicht schreiben: {0}. Der frühere Stand ist unverändert. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt {0} nicht — die Typtage lassen sich nicht einspielen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT", resourceCulture);
             }
         }
         

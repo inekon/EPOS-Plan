@@ -9,7 +9,11 @@ namespace WindowsFormsApplication1
     /// (<c>Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c>,
     /// Abschnitte 3.1 und 3.2, Stufe Z0), Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
     /// Schritt 115, <see cref="AnweisungenT2"/>) und Schemaschritt T3 „Laufangaben der Auslegung
-    /// und Bezugsart am Bedarfstag" (Stufe Z4, Schritt 124, <see cref="SpaltenT3"/>).
+    /// und Bezugsart am Bedarfstag" (Stufe Z4, Schritt 124, <see cref="SpaltenT3"/>) und
+    /// Schemaschritt T3 „Typtage" (Stufe Z4b, Schritt 125,
+    /// <see cref="AnweisungenT3Typtage"/>): Den Papiernamen T3 des Konzepts 3.2 trägt im
+    /// Bestand schon Schritt 124 — gemeint ist dort die Spaltenerweiterung, hier die Tabelle
+    /// der Typtage (Nachtrag N14).
     ///
     /// <para><b>Eine Quelle für Migration und Testdatenbank.</b> Dieselben zehn Tabellen
     /// legen <c>SchemaMigration</c> beim Programmstart und <c>Werkzeuge/Testdatenbankschema</c>
@@ -93,6 +97,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string TAB_TWW_ZAPFKATEGORIE_STAMM = "Tab_TwwZapfkategorie_STAMM";
 
+        /// <summary>
+        /// Die eingespielten Typtage des lizenzierten Anwenders (Schemaschritt T3 „Typtage",
+        /// Konzept 3.1 und 3.2, Stufe Z4b) — <b>anwenderlokal</b>: Sie kommen allein aus einem
+        /// Normformvektorpaket des Anwenders (<c>Normformvektorleser</c>), tragen kein
+        /// <c>ReadOnly</c> und keinen <c>Status</c>, wandern nicht in eine Projektkopie oder ein
+        /// <c>.wpx</c>-Paket und werden von der Auslieferungsvorlage geleert (Konzept 3.2, 6).
+        /// </summary>
+        public const string TAB_TWW_TYPTAG_IMPORT = "Tab_TwwTyptag_IMPORT";
+
         // =================================================================
         //  Die Wertemengen der Textspalten mit CHECK
         // =================================================================
@@ -163,6 +176,58 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wertemenge von <c>Tab_TwwBedarfstag_STAMM.Bezugsart</c> (siehe <see cref="ERZEUGERART_WERTE"/>).</summary>
         public const string BEZUGSART_WERTE = "1,2,3,4,5,6,7";
+
+        // -----------------------------------------------------------------
+        //  Die Satzarten der eingespielten Typtage (T3 „Typtage", Z4b)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// <c>Art</c> = Kategoriezeile: <c>Typtag</c> ist der Code der Typtagkategorie,
+        /// <c>Zeilenindex</c> 0 die Jahreszeit, 1 die Tagart, 2 die Bewölkung und <c>Wert</c>
+        /// die Zahl der jeweiligen Aufzählung (<c>Typtagjahreszeit</c>,
+        /// <c>Typtagart</c>, <c>Typtagbewoelkung</c>). Drei Zeilen je Kategorie;
+        /// <c>Klimazone</c> = 0 und <c>Gebaeudeart</c> = "" — die Systematik gilt für jede
+        /// Zone und Gebäudeart.
+        /// </summary>
+        public const string TYPTAG_ART_KATEGORIE = "KATEGORIE";
+
+        /// <summary>
+        /// <c>Art</c> = Zahl der Kalendertage einer Typtagkategorie je Klimazone und Gebäudeart
+        /// (<c>Zeilenindex</c> 0, <c>Wert</c> ganzzahlig ≥ 0, Summe je Zone und Gebäudeart 365).
+        /// </summary>
+        public const string TYPTAG_ART_ANZAHL = "ANZAHL";
+
+        /// <summary>
+        /// <c>Art</c> = Faktor der Tagesenergie je Klimazone, Gebäudeart und Typtag
+        /// (<c>Zeilenindex</c> 0). Er ist eine Schwankung um den Jahresmittelwert und darf
+        /// negativ sein; positiv bleibt allein die Tagesmenge (Klemmung, Konzept 4.2).
+        /// </summary>
+        public const string TYPTAG_ART_FAKTOR = "FAKTOR";
+
+        /// <summary>
+        /// <c>Art</c> = normierter Tagesgang einer Typtagkategorie: <c>Aufloesung_min</c> das
+        /// Zeitraster, <c>Zeilenindex</c> 0 … 1440/<c>Aufloesung_min</c> − 1 der Zeitabschnitt,
+        /// <c>Wert</c> sein Anteil (Σ = 1, jeder ≥ 0); <c>Klimazone</c> = 0 (zonenunabhängig).
+        /// Wahlfrei — ohne diese Zeilen trägt der Tagesgangsatz der Zone die Tagesform.
+        /// </summary>
+        public const string TYPTAG_ART_GANG = "GANG";
+
+        /// <summary>
+        /// <c>Art</c> = Kennwert des Verfahrens: <c>Typtag</c> trägt den Schlüssel (etwa die
+        /// Heizgrenze einer Gebäudeart), <c>Wert</c> seinen Zahlenwert; <c>Klimazone</c> = 0 und
+        /// <c>Zeilenindex</c> = 0. Die Werte stehen NIE im Quelltext — sie kommen aus dem Paket
+        /// des Anwenders (Konzept Kapitel 6 (a)).
+        /// </summary>
+        public const string TYPTAG_ART_KENNWERT = "KENNWERT";
+
+        /// <summary>Wertemenge von <c>Tab_TwwTyptag_IMPORT.Art</c> als SQL-Liste für den CHECK.</summary>
+        public const string TYPTAG_ART_WERTE = "'KATEGORIE','ANZAHL','FAKTOR','GANG','KENNWERT'";
+
+        /// <summary>Die Satzarten der eingespielten Typtage in der Reihenfolge von <see cref="TYPTAG_ART_WERTE"/>.</summary>
+        public static readonly IReadOnlyList<string> TyptagArten = new[]
+        {
+            TYPTAG_ART_KATEGORIE, TYPTAG_ART_ANZAHL, TYPTAG_ART_FAKTOR, TYPTAG_ART_GANG, TYPTAG_ART_KENNWERT
+        };
 
         /// <summary>Eine Wertemenge als Zahlen — für die Prüfung des Schreibwegs.</summary>
         public static IReadOnlyList<int> Werte(string wertemenge)
@@ -537,6 +602,64 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  Schemaschritt T3 „Typtage" (Schritt 125, Stufe Z4b): die
+        //  eingespielten Typtage des lizenzierten Anwenders
+        // =================================================================
+
+        /// <summary>
+        /// <c>CREATE TABLE IF NOT EXISTS Tab_TwwTyptag_IMPORT</c> — 11 Spalten (Konzept 3.1,
+        /// Schemaschritt T3 „Typtage", Stufe Z4b).
+        ///
+        /// <para><b>Eine Zeile je Wert</b> (Konzept 3.1 „Werte als Zeilen"): <c>Art</c> sagt,
+        /// was die Zeile trägt (<see cref="TYPTAG_ART_KATEGORIE"/>,
+        /// <see cref="TYPTAG_ART_ANZAHL"/>, <see cref="TYPTAG_ART_FAKTOR"/>,
+        /// <see cref="TYPTAG_ART_GANG"/>, <see cref="TYPTAG_ART_KENNWERT"/>), und (<c>Art</c>,
+        /// <c>Klimazone</c>, <c>Gebaeudeart</c>, <c>Typtag</c>, <c>Zeilenindex</c>) ist ihr
+        /// natürlicher Schlüssel. <c>Klimazone</c> = 0 heißt „für jede Zone",
+        /// <c>Gebaeudeart</c> = "" „für jede Gebäudeart".</para>
+        ///
+        /// <para><b>Kein <c>Status</c>, kein <c>ReadOnly</c>, keine Provenienzgruppe</b> (Konzept
+        /// 3.1): Jede Zeile ist eingespielt — <c>Quelle</c> und <c>Ausgabe</c> nennen die
+        /// Richtlinie des Anwenders, <c>Datum_Import</c> den Tag des Einspielens. Die Tabelle
+        /// gehört nie zur Auslieferung: <c>Werkzeuge/Auslieferungsvorlage</c> leert sie, und der
+        /// Projekttransfer trägt sie nicht (sie führt kein <c>ID_Projekt</c> und endet nicht auf
+        /// <c>_STAMM</c>).</para>
+        ///
+        /// <para><b>Keine Werte im Quelltext.</b> Die DDL beschreibt allein die Struktur; jeder
+        /// Wert kommt aus dem Paket des Anwenders (Konzept Kapitel 6).</para>
+        /// </summary>
+        public const string SQL_CREATE_TYPTAG_IMPORT =
+            "CREATE TABLE IF NOT EXISTS \"Tab_TwwTyptag_IMPORT\" (\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "    \"Art\" TEXT NOT NULL CHECK (\"Art\" IN (" + TYPTAG_ART_WERTE + ")),\n" +
+            "    \"Klimazone\" INTEGER NOT NULL CHECK (\"Klimazone\" >= 0),\n" +
+            "    \"Gebaeudeart\" TEXT NOT NULL,\n" +
+            "    \"Typtag\" TEXT NOT NULL,\n" +
+            "    \"Aufloesung_min\" INTEGER CHECK (\"Aufloesung_min\" BETWEEN 1 AND 1440),\n" +
+            "    \"Zeilenindex\" INTEGER NOT NULL CHECK (\"Zeilenindex\" >= 0),\n" +
+            "    \"Wert\" REAL NOT NULL,\n" +
+            "    \"Quelle\" TEXT NOT NULL,\n" +
+            "    \"Ausgabe\" TEXT,\n" +
+            "    \"Datum_Import\" TEXT NOT NULL,\n" +
+            "    UNIQUE (\"Art\", \"Klimazone\", \"Gebaeudeart\", \"Typtag\", \"Zeilenindex\")\n" +
+            ") STRICT";
+
+        /// <summary>
+        /// Die Anweisungen des Schemaschritts T3 „Typtage" (Schritt 125, Stufe Z4b): die
+        /// eingespielten Typtage. Die Tabelle steht für sich — kein Fremdschlüssel, kein Verweis
+        /// auf einen Katalog —, sie darf deshalb vor oder nach den übrigen entstehen. Reines DDL,
+        /// wiederholbar über <c>IF NOT EXISTS</c>; nach dem Schritt ist sie leer, und kein
+        /// Rechenweg findet Typtage (der Weg ist benannt nicht verfügbar).
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> AnweisungenT3Typtage
+        {
+            get
+            {
+                yield return new KeyValuePair<string, string>(TAB_TWW_TYPTAG_IMPORT, SQL_CREATE_TYPTAG_IMPORT);
+            }
+        }
+
+        // =================================================================
         //  Schemaschritt T3 (Schritt 124, Stufe Z4): Laufangaben der Auslegung
         //  und Bezugsart am Bedarfstag
         // =================================================================
@@ -633,13 +756,14 @@ namespace WindowsFormsApplication1
             return angelegt;
         }
 
-        /// <summary>Alle Tww-Tabellen der Schritte T1 und T2 in Anlegereihenfolge.</summary>
+        /// <summary>Alle Tww-Tabellen der Schritte T1, T2 und T3 „Typtage" in Anlegereihenfolge.</summary>
         public static IEnumerable<KeyValuePair<string, string>> AlleAnweisungen
         {
             get
             {
                 foreach (KeyValuePair<string, string> a in Anweisungen) yield return a;
                 foreach (KeyValuePair<string, string> a in AnweisungenT2) yield return a;
+                foreach (KeyValuePair<string, string> a in AnweisungenT3Typtage) yield return a;
             }
         }
 

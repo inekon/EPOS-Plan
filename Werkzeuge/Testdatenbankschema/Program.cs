@@ -1571,6 +1571,18 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 124 - vollstaendig: " + TwwSchema.T3Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt 125: die eingespielten Typtage des lizenzierten Anwenders
+            //      (Zapfprofilgenerator Stufe Z4b, Schemaschritt T3 "Typtage"). NACH 124. REIN DDL
+            //      aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_125_ZapfprofilTyptage
+            //      bedient (TwwSchema.AnweisungenT3Typtage): Tab_TwwTyptag_IMPORT.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabelle entsteht LEER und bleibt es.
+            //      Das Repositorium bringt keine Typtage mit (Konzept Kapitel 6); eingespielt
+            //      werden sie allein beim lizenzierten Anwender.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT3Typtage)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 125, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
