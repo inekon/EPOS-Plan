@@ -79,14 +79,20 @@ namespace WindowsFormsApplication1
             d.WochengangHerkunft = Herkunft(n.Herkunft?.Wochengang);
 
             // Der Satz der Zone: ihre Expertenwahl, sonst der Satz der Nutzungsart.
-            Tagesgangsatz satz = idSatz.HasValue ? saetze.FirstOrDefault(s => s.Id == idSatz.Value) : null;
-            satz ??= n.Tagesgaenge;
+            Tagesgangsatz expertenwahl = idSatz.HasValue ? saetze.FirstOrDefault(s => s.Id == idSatz.Value) : null;
+            bool expertenwahlAbweichend = expertenwahl != null && n.Tagesgaenge != null && expertenwahl.Id != n.Tagesgaenge.Id;
+            Tagesgangsatz satz = expertenwahl ?? n.Tagesgaenge;
             d.Satz = satz != null ? AlsTagesgangsatzMitWerten(satz) : new ZapfprofilTagesgangsatzDaten();
 
             // Eine Expertenwahl, die nicht der Satz der Nutzungsart ist, geht als geänderter Tagesgang
-            // an die Nutzungsart — die Sperre gilt dann wie bei jeder Änderung.
-            d.Kopie = sperre != TwwKatalogAusgang.Ausgefuehrt;
-            d.Sperrgrund = d.Kopie ? Tagesganggrund(sperre) : "";
+            // an die Nutzungsart — die Sperre gilt dann wie bei jeder Änderung; den Satz der
+            // Nutzungsart überschreibt „OK" dabei NIE, sondern erzwingt eine Kopie (Z4, Gruppe 2b
+            // Punkt 3), auch wenn der Satz der Nutzungsart selbst frei wäre.
+            d.Kopie = expertenwahlAbweichend || sperre != TwwKatalogAusgang.Ausgefuehrt;
+            d.Sperrgrund = !d.Kopie ? ""
+                : sperre != TwwKatalogAusgang.Ausgefuehrt ? Tagesganggrund(sperre)
+                : Text_("ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND",
+                        "Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.");
             d.KatalogversionVorschlag = d.Kopie ? TwwNutzungsartCtrl.FreieKopieversion(idNutzungsart) : "";
             return d;
         }
@@ -135,7 +141,8 @@ namespace WindowsFormsApplication1
             }
             if (!gueltig) return TagesgangAbgelehnt(e.IdNutzungsart, TwwKatalogAusgang.RasterUngueltig);
 
-            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(e.IdNutzungsart, gaenge, woche, e.Katalogversion, e.Vorlage);
+            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(e.IdNutzungsart, gaenge, woche, e.Katalogversion,
+                                                                             e.Vorlage, e.AngezeigterSatz);
             if (!erg.Ok) return TagesgangAbgelehnt(e.IdNutzungsart, erg.Ausgang);
             return new ZapfprofilTagesgangErgebnis(true, erg.IdNutzungsart, erg.IdTagesgangsatz, erg.IdNutzungsart != e.IdNutzungsart, null);
         }

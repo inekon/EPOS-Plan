@@ -88830,6 +88830,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion. ähnelt.
+        /// </summary>
+        public static string ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Datenbank hat die Änderung nicht angenommen. ähnelt.
         /// </summary>
         public static string ZPG_TGE_GRUND_FEHLGESCHLAGEN {

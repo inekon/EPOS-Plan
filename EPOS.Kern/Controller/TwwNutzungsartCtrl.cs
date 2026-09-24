@@ -438,7 +438,11 @@ namespace WindowsFormsApplication1
         /// <c>EIGEN</c>) samt vier Tagesgängen — die unveränderten mit ihrer Provenienz, die
         /// geänderten als Eigenkonstruktion, außer eine geänderte Reihe ist bitgleich (Toleranz
         /// <see cref="GLEICH_TOLERANZ"/>) einer Reihe des Satzes <paramref name="idVorlageSatz"/>
-        /// (Editor „Vorlage laden") — dann trägt sie dessen Provenienz. Ist die <b>Nutzungsart</b> gesperrt (ReadOnly oder
+        /// (Editor „Vorlage laden") — dann trägt sie dessen Provenienz. <b>Zeigte der Editor einen
+        /// ANDEREN Satz als den der Nutzungsart</b> (<paramref name="idAngezeigterSatz"/>, eine Zone
+        /// mit Expertenwahl), gilt der Satz der Nutzungsart ebenso als gesperrt wie ein benutzter —
+        /// ein geänderter Tagesgang überschreibt ihn NIE, sondern erzwingt eine Kopie. Ist die
+        /// <b>Nutzungsart</b> gesperrt (ReadOnly oder
         /// von einer Zone benutzt), entsteht sie per „Speichern unter" neu (Katalogversion
         /// <paramref name="katalogversion"/>, <c>ID_Vorlage</c> auf die alte) und trägt Satz,
         /// Wochenfaktoren und die Zapfkategorien der alten (Status <c>EIGEN</c>, <c>ReadOnly = 0</c>);
@@ -452,7 +456,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static TwwTagesgangErgebnis TagesgangSpeichern(int idNutzungsart, IReadOnlyList<double[]> tagesgaenge,
                                                                 double[] wochenfaktoren, string katalogversion = null,
-                                                                int? idVorlageSatz = null)
+                                                                int? idVorlageSatz = null, int? idAngezeigterSatz = null)
         {
             if (!TabellenVorhanden() || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANG_STAMM))
                 return new TwwTagesgangErgebnis(TwwKatalogAusgang.TabellenFehlen, idNutzungsart, 0);
@@ -503,7 +507,10 @@ namespace WindowsFormsApplication1
                         : Eigenkonstruktion(version);
 
                 bool nutzungsartGesperrt = Sperre(v, idNutzungsart) != TwwKatalogAusgang.Ausgefuehrt;
-                bool satzGesperrt = nutzungsartGesperrt
+                // Der Editor zeigte einen ANDEREN Satz als den der Nutzungsart (Zone, Expertenwahl):
+                // der Satz der Nutzungsart gilt dann ebenso als gesperrt — nie überschreiben.
+                bool satzAbweichend = idAngezeigterSatz.HasValue && idAngezeigterSatz.Value > 0 && idAngezeigterSatz.Value != satz;
+                bool satzGesperrt = nutzungsartGesperrt || satzAbweichend
                     || ZapfprofilCtrl.Wahr(kopf.Rows[0], "ReadOnly")
                     || Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID_Tagesgangsatz = ?", satz) > 0
                     || Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +

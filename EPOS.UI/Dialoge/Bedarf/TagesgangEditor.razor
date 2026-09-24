@@ -535,6 +535,7 @@
             WochenfaktorenProzent = _woche.Select(w => w ?? 0.0).ToArray(),
             WochenfaktorenOriginal = WocheUnveraendert() ? Daten.Wochenfaktoren : null,
             Vorlage = _vorlage,
+            AngezeigterSatz = Daten.Satz?.Id,
             Katalogversion = Daten.Kopie ? _version.Trim() : ""
         };
         ZapfprofilTagesgangErgebnis e = Speichern(eingabe);

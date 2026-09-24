@@ -29491,6 +29491,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_TGE_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
     <value>Eine Zone oder eine andere Nutzungsart benutzt den Tagesgang — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
   </data>
+  <data name="ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND" xml:space="preserve">
+    <value>Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.</value>
+  </data>
   <data name="ZPG_TGE_GRUND_NAME_BELEGT" xml:space="preserve">
     <value>die Nutzungsart oder ihr Tagesgangsatz steht in dieser Katalogversion schon.</value>
   </data>

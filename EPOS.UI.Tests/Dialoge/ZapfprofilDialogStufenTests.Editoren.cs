@@ -139,6 +139,27 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Equal(2, cut.Instance.Eingabe.Zonen[1].IdNutzungsart);
     }
 
+    /// <summary>
+    /// Z4, Gruppe 2b Punkt 3: Eine Zone mit Expertenwahl (eigener Satz statt dem der Nutzungsart)
+    /// folgt nach einem geschriebenen Tagesgang dem NEUEN Satz — der Editor zeigte ihren Satz X;
+    /// „OK" darf nie den Satz der Nutzungsart überschreiben, sondern erzeugt einen neuen, und die
+    /// Zone rechnet ab da mit ihm.
+    /// </summary>
+    [Fact]
+    public void Eine_Zone_mit_Expertenwahl_folgt_nach_OK_dem_neu_geschriebenen_Satz()
+    {
+        ZapfprofilEingabeDaten eingabe = Eingabe();
+        eingabe.Zonen[0].Angaben!.IdTagesgangsatz = 1;             // Expertenwahl: eigener Satz statt dem der Nutzungsart
+        var cut = MitEditoren(Daten(eingabe));
+        Stufe(cut, "Experte");
+        Knopf(cut, "Tagesgang bearbeiten…").Click();
+        Assert.Equal((1, (int?)1), _tagesgangGeoeffnet);           // der Editor bekommt die Expertenwahl (Satz 1)
+        cut.FindAll(".epos-zapfprofil-tagesgangraster input")[0].Input("5");
+        cut.Find(".epos-zapfprofil-tagesgang").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal(5, cut.Instance.Eingabe.Zonen[0].Angaben!.IdTagesgangsatz);   // folgt dem geschriebenen Satz
+    }
+
     [Fact]
     public void Die_Zapfkategorien_oeffnen_zur_Zone_und_der_Schreibweg_stellt_die_Zone_um()
     {

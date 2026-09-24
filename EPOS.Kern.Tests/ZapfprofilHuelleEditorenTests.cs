@@ -250,6 +250,52 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Der Tagesgangsatz führt nicht alle vier Tagtypen.", halb.Sperrgrund);
         }
 
+        /// <summary>
+        /// Z4, Gruppe 2b Punkt 3: Zeigt der Editor den Satz X der Zone (Expertenwahl) und ist X
+        /// ≠ Satz Y der Nutzungsart, erzwingt „OK" eine Kopie — selbst wenn Y für sich genommen
+        /// FREI wäre. Ohne die Sperre schriebe „OK" die (an X orientierten) Werte in Y hinein und
+        /// überschriebe ihn damit, obwohl der Anwender ihn nie gesehen hat.
+        /// </summary>
+        [Fact]
+        public void Eine_Expertenwahl_ungleich_dem_Satz_der_Nutzungsart_erzwingt_eine_Kopie_obwohl_beide_frei_sind()
+        {
+            using var db = new TwwTestdatenbank();
+            int satzY = TwwTestdatenbank.TagesgangsatzAnlegen("Satz Y", "T1");
+            int satzX = TwwTestdatenbank.TagesgangsatzAnlegen("Satz X", "T1");
+            // X unterscheidet sich inhaltlich von Y (sonst wäre "nichts geändert" — auch das ein gültiger Fall).
+            string spalten = string.Join(", ", Enumerable.Range(1, 24).Select(h => "\"Anteil_" + h.ToString("00") + "\" = " + (h == 10 ? "1.0" : "0.0")));
+            DataRepository.ExecuteNonQuery("UPDATE \"Tab_TwwTagesgang_STAMM\" SET " + spalten +
+                                           " WHERE \"ID_Tagesgangsatz\" = ? AND \"Tagtyp\" = 1", new DbParam("@id", satzX));
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung", "T1", satzY);       // Y frei: keine Zone, kein Teiler
+
+            ZapfprofilTagesgangDaten d = ZapfprofilHuelle.TagesgangLaden(id, satzX);
+            Assert.True(d.Kopie);
+            Assert.Equal(satzX, d.Satz.Id);
+            Assert.Equal("Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.",
+                         d.Sperrgrund);
+            Assert.Equal("T1" + TwwNutzungsartCtrl.KOPIEVERSION_ZUSATZ + "1", d.KatalogversionVorschlag);
+
+            // "OK": die (an X orientierten) Werte unverändert übernommen — Y darf dabei nie berührt werden.
+            var e = new ZapfprofilTagesgangEingabeDaten
+            {
+                IdNutzungsart = id,
+                TagesgaengeProzent = d.Satz.Anteile.Select(r => r.Select(a => a * 100.0).ToArray()).ToArray(),
+                WochenfaktorenProzent = d.Wochenfaktoren.Select(w => w * 100.0).ToArray(),
+                AngezeigterSatz = d.Satz.Id,
+                Katalogversion = d.KatalogversionVorschlag
+            };
+            ZapfprofilTagesgangErgebnis erg = ZapfprofilHuelle.TagesgangSpeichern(e);
+            Assert.True(erg.Ok, erg.Meldung?.Text);
+            Assert.Equal(id, erg.IdNutzungsart);                    // die Nutzungsart selbst ist frei: keine neue Zeile nötig
+            Assert.NotEqual(satzY, erg.IdTagesgangsatz);
+            Assert.NotEqual(satzX, erg.IdTagesgangsatz);            // ein neuer Satz — weder Y noch X überschrieben
+
+            Tagesgangsatz y = ZapfprofilCtrl.Tagesgangsaetze().Single(s => s.Id == satzY);
+            Tagesgangsatz x = ZapfprofilCtrl.Tagesgangsaetze().Single(s => s.Id == satzX);
+            Assert.Equal(0.5, y.Anteile[0, 6]);                      // Y unverändert
+            Assert.Equal(1.0, x.Anteile[0, 9]);                      // X unverändert
+        }
+
         // =================================================================================
         // Zapfkategorien
         // =================================================================================

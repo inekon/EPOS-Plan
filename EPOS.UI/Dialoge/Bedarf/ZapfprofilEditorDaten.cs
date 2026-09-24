@@ -138,6 +138,14 @@ public sealed class ZapfprofilTagesgangEingabeDaten
     /// </summary>
     public int? Vorlage { get; set; }
 
+    /// <summary>
+    /// Der Satz, den der Editor beim Öffnen zeigte (<c>ZapfprofilTagesgangDaten.Satz.Id</c>) — die
+    /// Expertenwahl einer Zone, sonst der Satz der Nutzungsart. Weicht er vom (aktuellen) Satz der
+    /// Nutzungsart ab, überschreibt „OK" ihn NIE: die Hülle erzwingt eine Kopie, selbst wenn der
+    /// Satz der Nutzungsart für sich genommen frei wäre (Z4, Gruppe 2b Punkt 3).
+    /// </summary>
+    public int? AngezeigterSatz { get; set; }
+
     /// <summary>Die Katalogversion einer neuen Zeile; leer, wenn an Ort und Stelle geschrieben wird.</summary>
     public string Katalogversion { get; set; } = "";
 }

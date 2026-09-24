@@ -29484,6 +29484,9 @@ Do you want to allow this?</value>
   <data name="ZPG_TGE_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
     <value>A zone or another type of use uses the daily profile — a changed daily profile is created as a new catalogue version.</value>
   </data>
+  <data name="ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND" xml:space="preserve">
+    <value>The zone uses a different daily profile set than the type of use — a changed daily profile is created as a new catalogue version.</value>
+  </data>
   <data name="ZPG_TGE_GRUND_NAME_BELEGT" xml:space="preserve">
     <value>the type of use or its daily profile set already exists in this catalogue version.</value>
   </data>
