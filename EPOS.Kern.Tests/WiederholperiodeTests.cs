@@ -63,7 +63,8 @@ namespace EPOS.Kern.Tests
         /// DIE WERKZEUG-WACHE (Quelle): Migration, Werkzeug und Nachzieh-Liste der
         /// Testvorrichtung ziehen den Schritt aus DERSELBEN Quelle, die Nummer steht allein bei
         /// <see cref="WiederholperiodeSchema.SCHRITT"/>, und in der Schrittliste der Schale
-        /// steht der Schritt nach dem Heizkreis (128).
+        /// steht der Schritt nach dem Heizkreis (128). Das ZIEL nennt inzwischen einen spaeteren
+        /// Schritt (130, die eingespielten Typtage) und liegt darum nur noch darueber.
         /// </summary>
         [Fact]
         public void Migration_Werkzeug_und_Testdatenbank_ziehen_den_Schritt_aus_einer_Quelle()
@@ -87,7 +88,13 @@ namespace EPOS.Kern.Tests
             Assert.Contains("WiederholperiodeSchema.Spalten", vorrichtung, StringComparison.Ordinal);
 
             string stand = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Update", "SchemaStand.cs"));
-            Assert.Contains("public const int Zielversion = WiederholperiodeSchema.SCHRITT;", stand, StringComparison.Ordinal);
+            // Die Zielversion nennt den LETZTEN Schritt; das ist nicht mehr dieser, sondern der
+            // Schritt 130 (die eingespielten Typtage, Stufe Z4b). Die Nummer DIESES Schritts steht
+            // weiterhin allein bei WiederholperiodeSchema.SCHRITT - sie darf in SchemaStand.cs nicht
+            // als zweite Zahl auftauchen.
+            Assert.DoesNotContain("Zielversion = 129", stand, StringComparison.Ordinal);
+            Assert.True(SchemaStand.Zielversion >= WiederholperiodeSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter dem Schritt der Wiederholperiode.");
         }
 
         /// <summary>
