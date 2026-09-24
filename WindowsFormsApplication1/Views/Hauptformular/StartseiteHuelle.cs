@@ -46,6 +46,9 @@ namespace WindowsFormsApplication1
         /// <summary>Ein einmaliger Kurzhinweis für die Seite; leer = keiner.</summary>
         private string _kurzhinweis = "";
 
+        /// <summary>Ein einmaliger Fehlerhinweis für die Seite (Fehlerbanner); leer = keiner.</summary>
+        private string _fehlerhinweis = "";
+
         /// <summary>
         /// Die zwei Bedarfsrechnungen des offenen Projekts (Befund W16-B29,
         /// Entscheid E-5). <c>Form_Start</c> besaß sie als zwei Felder und reichte
@@ -104,6 +107,7 @@ namespace WindowsFormsApplication1
                 ["Bericht"] = new Func<Zusammenfassung>(Zusammenfassen),
                 ["SolarartGewaehlt"] = new Action<bool>(an => _solarGanglinie = an),
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
+                ["Fehlerhinweis"] = new Func<string>(FehlerhinweisAbholen),
                 ["BerichteGaben"] = BerichteGaben(),
 
                 // AUFTRAG #207: Hier standen die zwei Simulationsgaben (E-5) - die
@@ -368,6 +372,13 @@ namespace WindowsFormsApplication1
         {
             string satz = _kurzhinweis;
             _kurzhinweis = "";
+            return satz;
+        }
+
+        private string FehlerhinweisAbholen()
+        {
+            string satz = _fehlerhinweis;
+            _fehlerhinweis = "";
             return satz;
         }
 
@@ -863,16 +874,17 @@ namespace WindowsFormsApplication1
 
         private void Gebaeude(IWin32Window wirt)
         {
-            // Woertlich pBox_Gebaude_Click (:264-287).
-            WizardCtrl wizctrl = new WizardCtrl();
-
             List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(_kontext.Id);
 
-            if (GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
-            {
-                wizctrl.Del_Projekt_ZuordungGebäude(_kontext.Id);
-                wizctrl.Add_Projekt_ZuordungGebäude(_kontext.Id, liste);
-            }
+            if (!GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
+
+            // Abgleich in EINEM Vorgang (Konzept Administrationsdialoge 7.1 (a)):
+            // unveraenderte Zuordnungen behalten ihre Projektkopie, ein Fehlschlag rollt
+            // alles zurueck. Der Grund kommt als Fehlerbanner auf die Seite; das
+            // Auffrischen am Ende von KachelwegJetzt holt ihn ab.
+            (bool gelungen, string meldung) =
+                new WizardCtrl().Speichere_Projekt_Gebaeudeliste(_kontext.Id, liste);
+            if (!gelungen) _fehlerhinweis = meldung ?? "";
         }
 
         private void WaermebedarfDaten(IWin32Window wirt)
