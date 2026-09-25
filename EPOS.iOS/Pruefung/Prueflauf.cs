@@ -109,6 +109,19 @@ internal static class Prueflauf
             log.Roh(ex.StackTrace ?? "");
         }
 
+        // DIE IMPORTPROBE (G4-8) - nur auf Zuruf (EPOS_PRUEFLAUF_IMPORT) und nur mit den
+        // Proben im Paket (-p:Importproben=true). Ausserhalb des Blocks oben, damit sie auch
+        // dann laeuft, wenn der Rechennachweis abbricht; sie wirft nicht, und ihre Zeilen
+        // stehen VOR der Fertigmarke im Protokoll. Im Bau ohne xBIM (-p:OhneXbim=true, nur fuer
+        // den Groessenvergleich des Geraetebaus) gibt es sie nicht.
+#if !OHNE_XBIM
+        if (Importprobe.Angefordert)
+        {
+            log.Leerzeile();
+            Importprobe.Ausfuehren(log.Zeile, Paketdatei);
+        }
+#endif
+
         TimeSpan dauer = DateTime.Now - start;
         log.Leerzeile();
         log.Zeile("Fertig. " + dateien + " Dateien in " + dauer.ToString(@"hh\:mm\:ss"));
@@ -176,6 +189,16 @@ internal static class Prueflauf
         {
             log.FehlerZeile("Assistent: " + ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Oeffnet eine Datei des App-Pakets (MauiAsset) - derselbe Weg wie
+    /// <c>MauiProgram.Paketdatei</c> fuer die Seed-Datenbank; <c>null</c>, wenn sie fehlt.
+    /// </summary>
+    private static Stream? Paketdatei(string name)
+    {
+        try { return Microsoft.Maui.Storage.FileSystem.OpenAppPackageFileAsync(name).GetAwaiter().GetResult(); }
+        catch { return null; }
     }
 
     /// <summary>Der Projektname zur Nummer; leer, wenn unbekannt.</summary>

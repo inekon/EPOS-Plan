@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 25.09.2026** · Codestand `31a0b085` · `SchemaStand.Zielversion` = 141 · Schemaschritte 90–141 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); E19 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 25.09.2026** · Codestand `e7c2f8f7` · `SchemaStand.Zielversion` = 141 · Schemaschritte 90–141 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); E19 und E21 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R15_Anlagenkopplung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -739,7 +739,7 @@ sichtbar, bezahlt wird sie genau einmal, nämlich im Netzbezug (Regel **E1**).
 |---|---|
 | Auswahl | je Vergleichsgruppe **ein** Referenzprojekt: Stamm **oder** eine beliebige Variante der Gruppe |
 | Vorgabe | **Stamm** — damit ist die Umstellung für jede Bestandsrechnung ergebnisneutral |
-| Persistenz | `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` (LONG, nullable; NULL = Stamm). Die Spalte gehört an die Rahmenzeile, weil die Referenz wie Zins und Zeitraum **je Gruppe** gilt (R-1) — und wie bei jeder Spalte dieser Tabelle an **beide** DDL-Orte (SchemaMigration **und** `StelleTabellenSicher`) |
+| Persistenz | `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` (LONG, nullable; NULL = Stamm). Die Spalte gehört an die Rahmenzeile, weil die Referenz wie Zins und Zeitraum **je Gruppe** gilt (R-1) — ihr einziger DDL-Ort ist der Schemaschritt (SchemaMigration) |
 | Rechenwirkung | alle Differenzkennzahlen (KW-Differenz, Annuität, Amortisation, IZF, Sensitivität der Differenz) rechnen gegen die gewählte Referenz; die Referenz selbst erhält **keine** Differenzkennzahlen |
 | Anzeige | Referenzspalte der Vergleichstabelle markiert; in der Variantenliste (eine `Optionsgruppe` je Zeile, kein ListView) ist die **gewählte** Referenz nicht abwählbar (heute: der Stamm); Nachweiszeile nennt die Referenz beim Namen („Referenz: ‹Variantenname›") statt der festen Formel |
 | Bericht | Word und Excel übernehmen die Benennung aus derselben Zeilendefinition (`WirtschaftlichkeitZeilen`) — keine dritte Wahrheit |
@@ -1592,7 +1592,7 @@ Einordnung der Etappe: → Protokoll § 4.2.*
 |---|---|
 | Auswahl | je **Variante** eine Wahl: **„vom Stammprojekt übernehmen"** (Vorgabe) oder **„eigene Vergütung"**; der Stamm führt immer eigene Werte |
 | Vorgabe | **übernehmen** — ergebnisneutral für jede neue Variante; für den Bestand leitet ein Schemaschritt die Wahl aus den Daten ab (Randfälle) |
-| Persistenz | eine Spalte `Tab_ProjektPhotovoltaik.Uebernahme_Stamm` (INTEGER, `CHECK (Uebernahme_Stamm IN (0,1))`, nullbar): 1 = übernommen, 0 = eigene Werte; **keine Zeile** = übernommen (Vorgabe jeder neuen Variante). Die Zeile der Variante bleibt bei „übernehmen" stehen — sie ist der Rückweg zu den eigenen Werten. Kein DDL-DEFAULT (Hausregel der Tabelle); die Spalte steht an beiden DDL-Orten (SchemaMigration **und** `StelleTabellenSicher`) |
+| Persistenz | eine Spalte `Tab_ProjektPhotovoltaik.Uebernahme_Stamm` (INTEGER, `CHECK (Uebernahme_Stamm IN (0,1))`, nullbar): 1 = übernommen, 0 = eigene Werte; **keine Zeile** = übernommen (Vorgabe jeder neuen Variante). Die Zeile der Variante bleibt bei „übernehmen" stehen — sie ist der Rückweg zu den eigenen Werten. Kein DDL-DEFAULT (Hausregel der Tabelle); ihr einziger DDL-Ort ist der Schemaschritt (SchemaMigration) |
 | Warum nicht „NULL je Spalte = übernommen" | die Spalten der Tabelle bedeuten mit NULL schon „nicht gepflegt / Rückfall" (DV-Entgelt, Ausfallanteil, Marktwert); ein zweiter NULL-Sinn wäre eine Zweideutigkeit je Feld. Und eine Vergütung ist ein Block: Vermarktungsform, anzulegender Wert, Inbetriebnahme und § 51 gehören zusammen — Felder aus zwei Projekten zu mischen ergäbe eine Vergütung, die niemand eingegeben hat (VV‑Q2) |
 | Auflösung | eine Methode `ProjektPhotovoltaikCtrl.LiesAufgeloest(idProjekt)` → (Modell, Herkunft): Stamm → eigene Zeile; Variante mit `Uebernahme_Stamm = 0` → eigene Zeile; sonst → Zeile des Stamms (`VariantenCtrl.StammRefDerVariante`), Herkunft „übernommen von ‹Stamm›". Fehlt auch dem Stamm die Zeile, gilt der Flat-Pfad wie heute |
 | Rechenwirkung | `RechnePvVerguetung` liest die aufgelöste Zeile statt `Lies(v.IdProjekt)`; `PvErloesRechner`, `SkaliereErtraege` und der Flat-Pfad bleiben unverändert; der Stamm rechnet wie heute. Der flache Satz `Einspeiseverguetung` bleibt in der Rahmenzeile je Gruppe (VV‑Q5) |
@@ -2849,7 +2849,7 @@ Kern Zeichen für Zeichen den Weg von vorher.
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
-| Referenzbasis | `Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-25_R15_Anlagenkopplung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2865,7 +2865,7 @@ E7c2 (#446) und E7c3 (#452) haben keinen Anker bewegt.
 
 1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`) und seit
 #380 auch im Kapitalwert; **die Betriebskosten von 1030 tragen weiterhin keinen Anker.** Die Projekte
-1007, 1017, 1045 und 1046 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
+1007, 1017, 1045, 1046 und 1047 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
 Kategorie‑1-Zeilen — ihre absoluten Anker fallen an, sobald die nächste Basis einen führt (#380).
 
 ## 6.3 Offene Punkte
@@ -2991,9 +2991,13 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
 21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-24_R14_Kaelteerzeuger`); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
-23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
+23. ~~resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie~~ — erledigt mit E21 (#506), siehe Protokoll
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
-    WP-Kennlinie 1024 ohne HT-Stützstellen
+    WP-Kennlinie 1024 ohne HT-Stützstellen — **gemessen 25.09.2026, benannt:** 1018 (Kessel ohne Energieträger, Puffer
+    ohne Temperaturpaar) und 1023 (Kessel ohne Energieträger, keine eps-Zeile Erdgas) sind Kandidaten für die nächste
+    Neueinfrierung nach R15; 1024 (WP-Kennlinie endet beim Herstellerkatalog bei 20 °C) ist kein Datenfehler, der Kern
+    kappt statt zu extrapolieren; 1030 bleibt Anker, nicht angefasst; 1026 ist ein gewollter Prüffall ohne
+    Stromträger; keine Datenpflege, siehe Protokoll E21
 
 ## 6.4 Fallstricke zur Wiederverwendung
 
@@ -3026,7 +3030,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` und `STROMST_REDUZIERT_SATZ` gegen die `const double` in `StrompreisZerlegungModel` | wertgleich und **gekoppelt durch zwei Wachen** (E18, #492): `StrompreisZerlegungTests` hält die Konstanten gegen die älteste Zeile je Schlüssel in der Saat (`GesetzKatalog.Vorbelegung`) und im Katalog der Testdatenbank (`Tab_Gesetzesparameter`: `STROMST_REGELSATZ`, `STROMST_REDUZIERT_SATZ`, dazu die drei Umlagen); rot nennt die Meldung die drei nachzuziehenden Orte. Eine Novelle ist eine spätere Jahreszeile und lässt die Rückfallebene stehen; die Konstante greift nur für Jahre vor 2026 oder ohne Katalogzeile (§ 6.3 Nr. 14) |
 | „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre; ohne BHKW steht die Unternehmensart mit derselben Anzeige im Parameterdialog, Gruppe Strom (E19, #498, § 2.4) — je Projektlage eine Pflegestelle; gekoppelt ist weiterhin nichts |
 | BHKW-Einspeisevergütung an **drei** Orten | aktiver Tarif (`Tab_ProjektTarif.Einsp_Arbeit`) · Projektparameter (`Einspeiseverguetung_KWK`) · Anlage (`KWKG_Satz_Einspeisung`); Vorrang eindeutig (aktiver Tarif schlägt Parameterwert). Der vierte Ort (`energy_project_settings.Verguetung_BHKW`) ist mit Schritt 84/85 entfallen |
-| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | **fünf** Tabellen mit eigenem `CREATE TABLE` (`Tab_ProjektWirtschaftlichkeit`, `Tab_ErgebnisWirtschaftlichkeit`, `Tab_ErgebnisWirtSensitivitaet`, `Tab_ProjektTarif`, `Tab_ErgebnisStromMatrix`), dazu 55 `SpalteSicher` auf sechs Tabellen; die `CREATE` tragen weder `STRICT` noch Fremdschlüssel (ADR-001 Option B). Neue Spalten gehören an beide Stellen |
+| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | aufgelöst bis auf drei Ergebnisspalten: die fünf Tabellen stehen im Grundschema (STRICT, Fremdschlüssel auf `Tab_Projekt`), jede Eingabespalte allein in ihrem Schemaschritt; `StelleTabellenSicher` zieht nur noch `StromsteuerBefreiungModus`, `ErsatzBarwert` und `Nachweis_Json` nach, bis ein Schemaschritt sie führt (Wache `WirtschaftlichkeitCtrlTabellenTests`). Neue Eingabespalten gehören allein in den Schemaschritt |
 | Zwei Lesewege auf die Kostenposition | der direkte Zugriff ist der Normalfall; daneben die gespeicherte **Sicht** `Abfrage_Kostenfaktoren` (`sql/schema/002_views.sql`) — kein Access-Artefakt mehr, sie liegt im Repo, kennt die neuen Spalten nicht und ließe sich erweitern; beim Tabellenumbau wird sie eigens behandelt (`ProjektWerteLoeschschutz`) |
 | ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
 | Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |

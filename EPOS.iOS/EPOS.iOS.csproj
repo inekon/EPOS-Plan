@@ -58,7 +58,19 @@
     <!-- 17.0: von SkiaSharp.NativeAssets.iOS 3.119 (net8.0-ios17.0) erzwungen;
          MAUI 10 selbst kaeme mit 15.0 aus (iF28 - iPads ab 2018). -->
     <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
-    <RuntimeIdentifiers>iossimulator-arm64;ios-arm64</RuntimeIdentifiers>
+    <!-- KEIN RuntimeIdentifiers HIER. Die Kennung kommt je Bau mit -r:
+         iossimulator-arm64 (Simulator, ios.yml) oder ios-arm64 (Geraet); ohne -r
+         waehlt das SDK den Simulator der Rechnerarchitektur. Eine Liste
+         "iossimulator-arm64;ios-arm64" machte den Geraetebau zum Simulatorbau:
+         Xamarin.Shared.Sdk.props setzt _SdkIsSimulator, sobald RuntimeIdentifier
+         ODER RuntimeIdentifiers "simulator" enthaelt, und das VOR der Stelle
+         (Xamarin.Shared.Sdk.DefaultItems.targets), an der ein -r die Liste
+         verwirft. Folge mit -r ios-arm64: Link gegen das Simulator-SDK, kein AOT,
+         ComputedPlatform=iPhoneSimulator - und SQLitePCLRaw.lib.e_sqlite3.ios
+         haengt die Geraete-e_sqlite3.a (RuntimeIdentifier=ios-arm64) UND die des
+         Simulators (ComputedPlatform) an; ld bricht an der Geraetebibliothek ab.
+         Ohne -r waere die gemischte Liste ein Fehler des SDK (Geraet und
+         Simulator in einem Bau). -->
 
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -114,13 +126,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Seed-Datenbank und Berichtsvorlage liegen als Anwendungsbestand im
+    <!-- Seed-Datenbank und Berichtsvorlagen liegen als Anwendungsbestand im
          Paket; gelesen werden sie ueber FileSystem.OpenAppPackageFileAsync.
-         Die Vorlage traegt denselben Unterordner, unter dem
-         WordBerichtGenerator.FindeVorlage sie sucht. -->
+         Die Vorlagen tragen denselben Unterordner Vorlagen\ wie unter Windows
+         (Lieferweg dort: WindowsFormsApplication1.csproj; Konzept
+         Berichtsvorlagen 6.3 und 8.4; die Wache
+         EPOS.Kern.Tests/AuslieferungsvorlagenWacheTests haelt beide Lieferwege).
+         Berichtsvorlage.docx ist die Stilvorlage des WordBerichtGenerator, die
+         FindeVorlage unter Vorlagen\ sucht, und bleibt als Rueckfall des Codes
+         ausgeliefert.
+         Berichtsvorlage_Standard.docx ist die Standardvorlage mit Platzhaltern
+         in der Stufe mit dem Sammelanker {{bericht.inhalt}}.
+         Berichtsvorlage_Beispiel.docx (voller Aufbau, Anschauung) wird nicht
+         ausgeliefert, bis sie in BV-E2 zur Standardvorlage wird. -->
     <MauiAsset Include="$(SeedDb)" LogicalName="Kenndaten.sqlite" />
     <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx"
                LogicalName="Vorlagen\Berichtsvorlage.docx" />
+    <MauiAsset Include="..\WindowsFormsApplication1\Allgemein\Bericht\Vorlagen\Berichtsvorlage_Standard.docx"
+               LogicalName="Vorlagen\Berichtsvorlage_Standard.docx" />
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0F1F3D" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F4EF" BaseSize="128,128" />
@@ -154,6 +177,39 @@
   <ItemGroup>
     <Compile Include="..\Referenzlauf\Ergebnisexport.cs" Link="Pruefung\Ergebnisexport.cs" />
     <Compile Include="..\Referenzlauf\Protokoll.cs" Link="Pruefung\Protokoll.cs" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- IMPORTPROBE (G4-8, Umsetzungskonzept Gebaeudesimulation 3.6)        -->
+  <!--                                                                    -->
+  <!-- Vier kleine Proben (zusammen rund 80 KB) fuer den Gebaeudeimport im -->
+  <!-- Pruefmodus (Pruefung/Importprobe.cs). Sie kommen NUR mit            -->
+  <!-- -p:Importproben=true ins Paket - so baut der Abnahmeweg von ios.yml -->
+  <!-- (Eingang abnahme_g4a); jeder andere Bau, auch der gewoehnliche      -->
+  <!-- Rauchtest, bleibt ohne sie. Flache Namen im Paketstamm, gelesen ueber -->
+  <!-- FileSystem.OpenAppPackageFileAsync wie die Seed-Datenbank.          -->
+  <!-- ================================================================== -->
+  <ItemGroup Condition="'$(Importproben)' == 'true'">
+    <MauiAsset Include="..\Referenzlaeufe\Importproben\gbxml_haus_si.xml" LogicalName="importprobe_gbxml_haus_si.xml" />
+    <MauiAsset Include="..\Referenzlaeufe\Importproben\ifc4_haus.ifc" LogicalName="importprobe_ifc4_haus.ifc" />
+    <MauiAsset Include="..\Referenzlaeufe\Importproben\ifc4_haus.ifczip" LogicalName="importprobe_ifc4_haus.ifczip" />
+    <MauiAsset Include="..\Referenzlaeufe\Importproben\ifc2x3_haus.ifc" LogicalName="importprobe_ifc2x3_haus.ifc" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- BAU OHNE xBIM (-p:OhneXbim=true; ADR-003 Aufgabe 7)                 -->
+  <!--                                                                    -->
+  <!-- Nur fuer den Groessenvergleich des Geraetebaus in ios.yml: Der Kern -->
+  <!-- baut dann ohne die Paketzeile Xbim.IO.MemoryModel (siehe            -->
+  <!-- EPOS.Kern.csproj), und die Importprobe faellt mit ihr weg - sie     -->
+  <!-- misst ueber Importmessung auch xBIM. Die Eigenschaft gilt als       -->
+  <!-- globale Eigenschaft des Aufrufs fuer alle referenzierten Projekte.  -->
+  <!-- ================================================================== -->
+  <PropertyGroup Condition="'$(OhneXbim)' == 'true'">
+    <DefineConstants>$(DefineConstants);OHNE_XBIM</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(OhneXbim)' == 'true'">
+    <Compile Remove="Pruefung\Importprobe.cs;Pruefung\Prozessspeicher.cs" />
   </ItemGroup>
 
 </Project>

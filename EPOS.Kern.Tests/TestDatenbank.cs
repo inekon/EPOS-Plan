@@ -707,6 +707,11 @@ namespace EPOS.Kern.Tests
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
                 GebaeudeAnschlusslaengenFolgereparatur.Ausfuehren();
 
+                // Schritt GebaeudeAnschlusslaengenDritteReparatur.SCHRITT (Welle #505): die dritte
+                // Berichtigung der Anschlusslaengen nach Satz, Spalte und Schadensbild. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                GebaeudeAnschlusslaengenDritteReparatur.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

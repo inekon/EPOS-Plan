@@ -166,17 +166,29 @@ Quellenverweis begrenzt.
 
 ## Aufgaben
 
-1. [ ] `Xbim.IO.MemoryModel` in `Directory.Packages.props` aufnehmen; Lizenzhinweisseite im
+> **Stand 25.09.2026 (Umsetzung G4, [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)):**
+> Aufgaben 1 bis 3 sind umgesetzt — das Gerüst heißt formatfrei `GebaeudeImportAblauf`/`-Profil`/`-Satz`
+> (`EPOS.Kern/Allgemein/Import/Gebaeude/`), der Leser `IfcLeser`, die Zuordnung liegt in Schemaschritt 138.
+> Aufgabe 5: Der eine iOS-Lauf (E38) hat den Import unter Trimming und AOT im Simulator nachgewiesen
+> (xBIM-Metadaten vollständig, 0 IL-Warnungen, kein Deskriptor nötig) und die iOS-Grenzen gemessen
+> (Protokoll G4, Abschnitt 10). Aufgabe 7 bleibt offen: Der Gerätebau `ios-arm64` trimmte ohne Warnung,
+> lief aber wegen der Simulatorkennung in `RuntimeIdentifiers` der iOS-Schale als Simulatorbau und brach
+> am Linken der Geräte-SQLite ab — nicht an xBIM (Protokoll G4, Abschnitt 11; behoben, Nachweis im
+> nächsten iOS-Lauf). Im getrimmten Simulatorpaket tragen die fünf xBIM-DLLs zusammen 7,4 MB. Für die
+> Messung baut der Gerätejob von `ios.yml` zweimal, der zweite Bau mit `-p:OhneXbim=true` ohne die
+> Paketzeile.
+
+1. [x] `Xbim.IO.MemoryModel` in `Directory.Packages.props` aufnehmen; Lizenzhinweisseite im
        Setup (Frage U10).
-2. [ ] `IfcImportAblauf`/`IfcImportProfil`/`IfcImportSatz` nach Befund N mit den
+2. [x] `IfcImportAblauf`/`IfcImportProfil`/`IfcImportSatz` nach Befund N mit den
        Korrekturen des Gegenlesens (Typ-Eigenschaften, Einheiten, Außennormale, Schemafall
        `Ifc4x1`, `.ifczip`-Größe).
-3. [ ] Zuordnungstabelle und Herkunftsspalten (Datenaustauschkonzept, Kapitel 7).
+3. [x] Zuordnungstabelle und Herkunftsspalten (Datenaustauschkonzept, Kapitel 7).
 4. [ ] Export S1 nach Befund S; S2 und S3 erst nach den Fragen des Datenaustauschkonzepts zum
        **Empfänger** (**D6**, 11.1) und zur **vertraglichen Zulässigkeit der Rückgabe** (**D11**,
        11.1); die **Zurückstellung von S2** steht als **D7** in 11.2 — dort beantwortet das Papier
        selbst, der Anwender kann widersprechen.
-5. [ ] iOS-Nachweis (Gerätebau, Trimming, Größenlimit) nach Rückfrage.
+5. [x] iOS-Nachweis (Gerätebau, Trimming, Größenlimit) nach Rückfrage.
 6. [ ] **Zonengeometrie-Modell und Gebäudeansicht nach E11:** Modell im Kern und 2D-Grundriss im
        Zuordnungsdialog mit G6c, schematische Körper mit G7b; three.js lokal unter
        `EPOS.UI/wwwroot` und auf die Lizenzhinweisseite (Frage U10).

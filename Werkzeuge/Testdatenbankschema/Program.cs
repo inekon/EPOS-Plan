@@ -315,9 +315,9 @@ namespace Testdatenbankschema
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 88, trocken);
 
             // ---- Schritt 88, zweiter Teil: die KONSERVENSPALTE des Ergebnisses.
-            //      Tab_ErgebnisWirtschaftlichkeit ist keine Schematabelle - sie entsteht
-            //      und waechst ueber WirtschaftlichkeitCtrl.SpalteSicher, also erst beim
-            //      ersten Lauf der Anwendung. Fuer die REPO-Testdatenbank reicht das
+            //      Tab_ErgebnisWirtschaftlichkeit steht im Grundschema; ihre Ergebnisspalten
+            //      ohne Schemaschritt zieht WirtschaftlichkeitCtrl.SpalteSicher nach, also
+            //      erst beim ersten Lauf der Anwendung. Fuer die REPO-Testdatenbank reicht das
             //      nicht: Sie ist die Messlatte des SqlDialektpruefers, und der loest
             //      das INSERT des Ergebnisses gegen genau diese Datei auf. Ohne die
             //      Spalte meldete er eine Fundstelle, die in der Anwendung keine ist.
@@ -327,8 +327,9 @@ namespace Testdatenbankschema
                                             "TEXT", 88, trocken);
 
             // ---- Etappe B7P: die KONSERVENSPALTE des Nachweisumschlags. KEIN eigener
-            //      Schritt - Tab_ErgebnisWirtschaftlichkeit ist keine Schematabelle, und
-            //      die Zielversion bleibt 89. Wortgleiche Begruendung wie oben: Der
+            //      Schritt - die Spalte gehoert zu den Ergebnisspalten, die allein
+            //      WirtschaftlichkeitCtrl.SpalteSicher nachzieht; die Zielversion bleibt 89.
+            //      Wortgleiche Begruendung wie oben: Der
             //      SqlDialektpruefer loest das INSERT des Ergebnisses gegen diese Datei
             //      auf und meldete ohne die Spalte eine Fundstelle, die in der
             //      Anwendung keine ist. Die Quelle ist dieselbe Konstante, die auch der
@@ -1874,6 +1875,26 @@ namespace Testdatenbankschema
                 GebaeudeAnschlusslaengenReparatur.Bericht berichtFolge = GebaeudeAnschlusslaengenFolgereparatur.Ausfuehren();
                 Console.WriteLine("Schritt " + nrFolge + " - " + berichtFolge.Text() + "; offen: " +
                                   GebaeudeAnschlusslaengenFolgereparatur.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt GebaeudeAnschlusslaengenDritteReparatur.SCHRITT: die dritte Berichtigung
+            //      der Anschlusslaengen (Welle #505, Anwenderentscheid 25.09.2026). NACH 141.
+            //      REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeDritteReparatur bedient
+            //      (GebaeudeAnschlusslaengenDritteReparatur): Laibungen 0 m oder leer, gerundete
+            //      EnEV-Laibungen, Kellerkanten 14,6 m, Kanten von Industrie_ne_81.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrDritte = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDritte + " - dritte Berichtigung der Anschlusslaengen, offen vorher: " +
+                              GebaeudeAnschlusslaengenDritteReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeAnschlusslaengenReparatur.Bericht berichtDritte = GebaeudeAnschlusslaengenDritteReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrDritte + " - " + berichtDritte.Text() + "; offen: " +
+                                  GebaeudeAnschlusslaengenDritteReparatur.Offen() + " (erwartet 0).");
             }
 
             Console.WriteLine();
