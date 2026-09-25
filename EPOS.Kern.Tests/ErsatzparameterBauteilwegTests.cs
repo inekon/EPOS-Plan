@@ -409,7 +409,7 @@ namespace EPOS.Kern.Tests
     public class ErsatzparameterBauteilwegDatenbankTests : IClassFixture<TestDatenbank>
     {
         private static readonly int[] Projekte =
-            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046 };
+            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047 };
 
         private readonly TestDatenbank _db;
         private readonly ITestOutputHelper _ausgabe;

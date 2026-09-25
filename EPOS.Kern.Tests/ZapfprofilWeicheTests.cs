@@ -388,7 +388,7 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// Kein Projekt der Referenzbasis — die fünf der CI und die übrigen, deren Ordner
+        /// Kein Projekt der Referenzbasis — die sechs der CI und die übrigen, deren Ordner
         /// <c>Projekt_*</c> unter <c>Referenzlaeufe/</c> liegen — trägt eine Zeile in
         /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4). Gelesen wird eine Arbeitskopie.
         /// </summary>
@@ -398,7 +398,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            var projekte = new SortedSet<int> { 1030, 1007, 1017, 1045, 1046 };
+            var projekte = new SortedSet<int> { 1030, 1007, 1017, 1045, 1046, 1047 };
             string wurzel = Repowurzel();
             if (wurzel != null)
                 foreach (string ordner in Directory.GetDirectories(Path.Combine(wurzel, "Referenzlaeufe")))

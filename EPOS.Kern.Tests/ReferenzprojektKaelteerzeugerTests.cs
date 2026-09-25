@@ -44,6 +44,9 @@ namespace EPOS.Kern.Tests
         }
 
         private const int PROJEKT = 1017, WP = 1017033, ANLAGE = 10211, KATALOGSATZ = 33, VORLAUF = 18;
+
+        /// <summary>Das Projektgerät der Kopie im Referenzprojekt der Anlagenkopplung 1047.</summary>
+        private const int WP_KOPIE = 1672046;
         private const double HILFSSTROM = 0.05;
 
         /// <summary>Die gesäte Kühlkennlinie (dieselben Zahlen wie das Skript).</summary>
@@ -83,10 +86,15 @@ namespace EPOS.Kern.Tests
             Assert.True(Leer(Skalar("SELECT Kuehl_EigenerZaehler FROM Tab_Energieanlagen WHERE ID = 10211")));
             Assert.True(Leer(Skalar("SELECT WQ_Typ FROM Tab_Energieanlagen WHERE ID = 10211")));
 
-            // Die einzige Kühlkennlinie der Projektseite - die Saat.
-            Assert.Equal(10L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
+            // Die Kühlkennlinien der Projektseite - die Saat an 1017 und ihre Kopie im Referenzprojekt
+            // der Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py), sonst keine.
+            Assert.Equal(20L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
+            Assert.Equal(10L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = " + WP)));
             List<KuehlkennlinienZeile> zeilen = KenndatenKuehlungCtrl.ZeilenProjekt(WP);
             Assert.Equal(10, zeilen.Count);
+            List<KuehlkennlinienZeile> kopie = KenndatenKuehlungCtrl.ZeilenProjekt(WP_KOPIE);
+            Assert.Equal(zeilen.Select(z => (z.Vorlauf, z.Temperatur, z.Eer, z.Pkuehl, z.Last)).OrderBy(t => t),
+                         kopie.Select(z => (z.Vorlauf, z.Temperatur, z.Eer, z.Pkuehl, z.Last)).OrderBy(t => t));
             foreach (KuehlkennlinienZeile z in zeilen)
             {
                 int i = Array.IndexOf(TEMPERATUREN, z.Temperatur);
