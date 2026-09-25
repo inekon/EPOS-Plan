@@ -23712,7 +23712,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Zone rechnet das Gebäude mit der Nutzfläche seiner Zone; Fläche oder Verbrauch skalieren nicht mehr. Die Zone entfernen im Gebäudedialog unter „Hülle und Zonen…“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Zone rechnet das Gebäude mit der Nutzfläche seiner Zone; Fläche oder Verbrauch skalieren nicht mehr. Die Zone entfernen im Gebäudedialog unter „Gebäude im Projekt bearbeiten…“. ähnelt.
         /// </summary>
         public static string GEBW_SPERRE_ZONE {
             get {
@@ -23784,7 +23784,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle und Zonen… ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude im Projekt bearbeiten… ähnelt.
         /// </summary>
         public static string GEBZ_BTN_PROJEKT {
             get {
@@ -24198,7 +24198,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Hülle und Zonen…“ im Gebäudedialog). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Gebäude im Projekt bearbeiten…“ im Gebäudedialog). ähnelt.
         /// </summary>
         public static string GEBZ_ZEILE_KATALOG {
             get {
@@ -24477,7 +24477,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche und Verbrauch… ähnelt.
         /// </summary>
         public static string GEB_BTN_AENDERN {
             get {
@@ -66455,7 +66455,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Hülle und Zonen…“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Gebäude im Projekt bearbeiten…“). ähnelt.
         /// </summary>
         public static string SIMENG_G3_MEHRERE_ZONEN {
             get {
