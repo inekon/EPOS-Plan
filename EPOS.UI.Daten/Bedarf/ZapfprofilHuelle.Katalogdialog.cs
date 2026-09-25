@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
                 ["TagesgangGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(id => TagesgangGaben(id, null)),
                 ["KategorienGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(KategorienGaben),
                 ["PaketWaehlen"] = new Func<string, Task<string>>(PaketWaehlen),
-                ["Importieren"] = new Func<string, TwwImportberichtDaten>(KatalogImportieren),
+                ["Importieren"] = new Func<string, bool, TwwImportberichtDaten>(KatalogImportieren),
                 // "VDI-4655-Typtage..." (Stufe Z4b): derselbe Dialog wie im Zapfprofil.
                 ["TyptagGaben"] = new Func<IReadOnlyDictionary<string, object>>(TyptagGaben),
                 ["Texte"] = KatalogTexte(),
@@ -435,10 +435,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Katalogimport</b>: Paket lesen (ZIP, Ordner, eine Datei des Paketordners), im Kern
-        /// einspielen (<see cref="TwwNutzungsartCtrl.Importieren"/>) und den Bericht in der
+        /// einspielen (<c>TwwNutzungsartCtrl.Importieren</c>) und den Bericht in der
         /// Oberflächensprache zurückgeben; der Ordner wird für die nächste Wahl gemerkt.
+        ///
+        /// <para><paramref name="pruefen"/> = <c>true</c> ist der <b>Prüflauf</b>: derselbe Bericht,
+        /// nichts geschrieben — die Zeilen sagen dann „würde ersetzen" statt „ersetzt".</para>
         /// </summary>
-        internal static TwwImportberichtDaten KatalogImportieren(string pfad)
+        internal static TwwImportberichtDaten KatalogImportieren(string pfad, bool pruefen = false)
         {
             TwwNutzungsartAdminTexte t = KatalogTexte();
             var d = new TwwImportberichtDaten();
@@ -463,14 +466,14 @@ namespace WindowsFormsApplication1
             }
             catch { /* ein nicht gemerkter Ordner ist kein Importfehler */ }
 
-            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(dateien);
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(dateien, pruefen);
             return AlsBericht(b, t);
         }
 
         /// <summary>Der Bericht des Kerns in der Oberflächensprache.</summary>
         internal static TwwImportberichtDaten AlsBericht(TwwKatalogimportBericht b, TwwNutzungsartAdminTexte t)
         {
-            var d = new TwwImportberichtDaten();
+            var d = new TwwImportberichtDaten { Pruefmodus = b.Pruefmodus };
             d.Hinweise.AddRange(b.Hinweise.Select(Satztext));
             if (b.Abbruch != null)
             {
@@ -484,13 +487,24 @@ namespace WindowsFormsApplication1
                             : z.Katalogversion.Length == 0 ? z.Nutzungsart : z.Nutzungsart + TRENNER + z.Katalogversion;
                 (TwwImportausgangDaten a, string text) = z.Ausgang switch
                 {
-                    TwwImportausgang.Angelegt => (TwwImportausgangDaten.Angelegt, t.ImportAngelegt),
-                    TwwImportausgang.Uebersprungen => (TwwImportausgangDaten.Uebersprungen, t.ImportUebersprungen),
-                    _ => (TwwImportausgangDaten.Abgelehnt, t.ImportAbgelehnt)
+                    TwwImportausgang.Angelegt => (TwwImportausgangDaten.Angelegt,
+                                                  b.Pruefmodus ? t.ImportWuerdeAnlegen : t.ImportAngelegt),
+                    TwwImportausgang.Ersetzt => (TwwImportausgangDaten.Ersetzt,
+                                                 b.Pruefmodus ? t.ImportWuerdeErsetzen : t.ImportErsetzt),
+                    TwwImportausgang.Uebersprungen => (TwwImportausgangDaten.Uebersprungen,
+                                                       b.Pruefmodus ? t.ImportWuerdeUeberspringen : t.ImportUebersprungen),
+                    _ => (TwwImportausgangDaten.Abgelehnt,
+                          b.Pruefmodus ? t.ImportWuerdeAblehnen : t.ImportAbgelehnt)
                 };
-                d.Zeilen.Add(new TwwImportzeileDaten(name, a, text, Satztext(z.Grund), z.IdNeu));
+                var bereich = z.Bereich switch
+                {
+                    TwwImportbereich.Bedarfstag => TwwImportbereichDaten.Bedarfstag,
+                    TwwImportbereich.Parameter => TwwImportbereichDaten.Parameter,
+                    _ => TwwImportbereichDaten.Nutzungsart
+                };
+                d.Zeilen.Add(new TwwImportzeileDaten(name, a, text, Satztext(z.Grund), z.IdNeu) { Bereich = bereich });
             }
-            d.Zusammenfassung = Format(t.ImportZusammenfassung, b.Angelegt, b.Uebersprungen, b.Abgelehnt);
+            d.Zusammenfassung = Format(t.ImportZusammenfassung, b.Angelegt, b.Ersetzt, b.Uebersprungen, b.Abgelehnt);
             return d;
         }
 
@@ -587,6 +601,18 @@ namespace WindowsFormsApplication1
             t.ImportSpalteGrund = Text_("ZPGK_IMPORT_SP_GRUND", t.ImportSpalteGrund);
             t.ImportAbbruch = Text_("ZPGK_IMPORT_ABBRUCH", t.ImportAbbruch);
             t.ImportHinweise = Text_("ZPGK_IMPORT_HINWEISE", t.ImportHinweise);
+            t.ImportErsetzt = Text_("ZPGK_IMPORT_ERSETZT", t.ImportErsetzt);
+            t.ImportWuerdeAnlegen = Text_("ZPGK_IMPORT_W_ANGELEGT", t.ImportWuerdeAnlegen);
+            t.ImportWuerdeErsetzen = Text_("ZPGK_IMPORT_W_ERSETZT", t.ImportWuerdeErsetzen);
+            t.ImportWuerdeUeberspringen = Text_("ZPGK_IMPORT_W_UEBERSPRUNGEN", t.ImportWuerdeUeberspringen);
+            t.ImportWuerdeAblehnen = Text_("ZPGK_IMPORT_W_ABGELEHNT", t.ImportWuerdeAblehnen);
+            t.ImportGruppeBedarfstage = Text_("ZPGK_IMPORT_GRP_BEDARFSTAGE", t.ImportGruppeBedarfstage);
+            t.ImportGruppeParameter = Text_("ZPGK_IMPORT_GRP_PARAMETER", t.ImportGruppeParameter);
+            t.ImportGruppeNutzungsarten = Text_("ZPGK_IMPORT_GRP_NUTZUNGSARTEN", t.ImportGruppeNutzungsarten);
+            t.ImportSpalteBedarfstag = Text_("ZPGK_IMPORT_SP_BEDARFSTAG", t.ImportSpalteBedarfstag);
+            t.ImportSpalteParameter = Text_("ZPGK_IMPORT_SP_PARAMETER", t.ImportSpalteParameter);
+            t.ImportPruefen = Text_("ZPGK_IMPORT_PRUEFEN", t.ImportPruefen);
+            t.ImportPruefhinweis = Text_("ZPGK_IMPORT_PRUEFHINWEIS", t.ImportPruefhinweis);
             t.EditorTitelNeu = Text_("ZPGK_ED_TITEL_NEU", t.EditorTitelNeu);
             t.EditorTitelAendern = Text_("ZPGK_ED_TITEL_AENDERN", t.EditorTitelAendern);
             t.EditorTitelSpeichernUnter = Text_("ZPGK_ED_TITEL_SPEICHERN_UNTER", t.EditorTitelSpeichernUnter);

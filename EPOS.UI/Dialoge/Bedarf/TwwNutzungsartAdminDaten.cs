@@ -199,12 +199,23 @@ public sealed class TwwNutzungsartEditorDaten
 /// </summary>
 public sealed record TwwNutzungsartSpeicherErgebnis(bool Ok, int Id, string Meldung, string Kennung);
 
-/// <summary>Wie eine Nutzungsart des Pakets im Import ausging.</summary>
+/// <summary>Wie ein Eintrag des Pakets im Import ausging.</summary>
 public enum TwwImportausgangDaten
 {
     Angelegt = 0,
     Uebersprungen = 1,
-    Abgelehnt = 2
+    Abgelehnt = 2,
+
+    /// <summary>Die vorhandene Zeile trägt jetzt die Werte des Pakets (Bedarfstag, Parameter).</summary>
+    Ersetzt = 3
+}
+
+/// <summary>Zu welcher Tabelle eine Zeile des Importberichts gehört — der Bericht zeigt sie in Gruppen.</summary>
+public enum TwwImportbereichDaten
+{
+    Nutzungsart = 0,
+    Bedarfstag = 1,
+    Parameter = 2
 }
 
 /// <summary>Eine Zeile des Importberichts — fertig formatiert.</summary>
@@ -212,14 +223,19 @@ public enum TwwImportausgangDaten
 /// <param name="Ausgang">Der Ausgang.</param>
 /// <param name="Ausgangstext">Der Ausgang in der Oberflächensprache.</param>
 /// <param name="Grund">Der benannte Grund; leer bei „angelegt" unter eigenem Namen.</param>
-/// <param name="IdNeu">Die Id der angelegten Zeile; 0 sonst.</param>
+/// <param name="IdNeu">Die Id der angelegten oder ersetzten Zeile; 0 sonst.</param>
 public sealed record TwwImportzeileDaten(string Nutzungsart, TwwImportausgangDaten Ausgang, string Ausgangstext,
-                                         string Grund, int IdNeu);
+                                         string Grund, int IdNeu)
+{
+    /// <summary>Die Tabelle, zu der die Zeile gehört (Vorgabe: die Nutzungsarten).</summary>
+    public TwwImportbereichDaten Bereich { get; init; }
+}
 
 /// <summary>
-/// <b>Der Bericht eines Katalogimports</b>: die Zusammenfassung, je Nutzungsart eine Zeile, die
-/// Hinweise (übergangene Dateien und Zeilen) und — wenn das Paket als Ganzes abgelehnt ist — der
-/// Grund; dann ist nichts geändert.
+/// <b>Der Bericht eines Katalogimports</b>: die Zusammenfassung, je Eintrag eine Zeile in ihrer
+/// Gruppe (Bedarfstage, Parameter, Nutzungsarten), die
+/// Hinweise (übergangene Dateien und Zeilen, Ersetzungen) und — wenn das Paket als Ganzes
+/// abgelehnt ist — der Grund; dann ist nichts geändert.
 /// </summary>
 public sealed class TwwImportberichtDaten
 {
@@ -229,6 +245,15 @@ public sealed class TwwImportberichtDaten
     public List<TwwImportzeileDaten> Zeilen { get; set; } = new();
     public List<string> Hinweise { get; set; } = new();
 
+    /// <summary>War es ein Prüflauf? Dann ist nichts geschrieben, und die Zeilen sagen „würde …".</summary>
+    public bool Pruefmodus { get; set; }
+
     /// <summary>Die Ids der angelegten Nutzungsarten — die erste wird nach dem Import gewählt.</summary>
-    public IReadOnlyList<int> NeueIds => Zeilen.Where(z => z.Ausgang == TwwImportausgangDaten.Angelegt).Select(z => z.IdNeu).ToList();
+    public IReadOnlyList<int> NeueIds => Zeilen
+        .Where(z => z.Ausgang == TwwImportausgangDaten.Angelegt && z.Bereich == TwwImportbereichDaten.Nutzungsart)
+        .Select(z => z.IdNeu).ToList();
+
+    /// <summary>Die Zeilen einer Gruppe, in ihrer Reihenfolge.</summary>
+    public IReadOnlyList<TwwImportzeileDaten> ZeilenVon(TwwImportbereichDaten bereich)
+        => Zeilen.Where(z => z.Bereich == bereich).ToList();
 }
