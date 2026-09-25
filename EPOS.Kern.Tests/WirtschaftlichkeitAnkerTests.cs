@@ -107,12 +107,12 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT_KASKADE = 1042;
 
         /// <summary>
-        /// Die fünf Projekte, die die CI im Referenzlauf rechnet. Sie tragen in der
+        /// Die sechs Projekte, die die CI im Referenzlauf rechnet. Sie tragen in der
         /// Testdatenbank KEINEN gebuchten Ergebnisstand (der Referenzlauf simuliert
         /// sie je Lauf frisch) und keine Kostenzeilen — siehe
         /// <see cref="Referenzprojekte_der_CI_tragen_keinen_gebuchten_Stand"/>.
         /// </summary>
-        private static readonly int[] CI_PROJEKTE = { 1030, 1007, 1017, 1045, 1046 };
+        private static readonly int[] CI_PROJEKTE = { 1030, 1007, 1017, 1045, 1046, 1047 };
 
         // =====================================================================
         //  Der Rechenweg — dieselbe Kette wie in der Schale

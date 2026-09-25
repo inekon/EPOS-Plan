@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 25.09.2026** · Codestand `e7c2f8f7` · `SchemaStand.Zielversion` = 141 · Schemaschritte 90–141 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); E19 und E21 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-24_R14_Kaelteerzeuger` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 25.09.2026** · Codestand `e7c2f8f7` · `SchemaStand.Zielversion` = 141 · Schemaschritte 90–141 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); E19 und E21 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R15_Anlagenkopplung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -2849,7 +2849,7 @@ Kern Zeichen für Zeichen den Weg von vorher.
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
-| Referenzbasis | `Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-25_R15_Anlagenkopplung` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2865,7 +2865,7 @@ E7c2 (#446) und E7c3 (#452) haben keinen Anker bewegt.
 
 1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`) und seit
 #380 auch im Kapitalwert; **die Betriebskosten von 1030 tragen weiterhin keinen Anker.** Die Projekte
-1007, 1017, 1045 und 1046 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
+1007, 1017, 1045, 1046 und 1047 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
 Kategorie‑1-Zeilen — ihre absoluten Anker fallen an, sobald die nächste Basis einen führt (#380).
 
 ## 6.3 Offene Punkte

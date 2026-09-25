@@ -45,6 +45,13 @@
     <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
+  <!-- Die Plausibilitaetspruefung des Referenzlaufs ("pruefen") - VERLINKT, wie
+       EPOS.Referenzlauf sie verlinkt: eine Fassung, hier nur geprueft
+       (ReferenzlaufPlausibilitaetTests, Lueckenreihen der Anlagenkopplung). -->
+  <ItemGroup>
+    <Compile Include="..\Referenzlauf\Plausibilitaet.cs" Link="Referenzlauf\Plausibilitaet.cs" />
+  </ItemGroup>
+
   <!-- ================================================================== -->
   <!-- DIAGRAMME (iU7-8)                                                   -->
   <!--                                                                    -->
