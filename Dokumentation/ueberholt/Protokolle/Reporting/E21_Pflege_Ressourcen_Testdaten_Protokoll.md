@@ -107,7 +107,7 @@ jeweils der Entscheid (→ Register R‑E21).
   EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen); Testhost-Regel eingehalten
   (vor dem gefilterten Lauf zwei fremde Testhosts abgewartet).
 - **Merge** `36a3fc89` auf `pm21` über `b5cc1a61` ohne Konflikt; Designer 11.006, wiederholbar (+0).
-- **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte, voller Lauf 14.060 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 6.855 und 1 übersprungen, EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE501.log`, 25.09.2026 09:18–09:26 Uhr, auf `36a3fc89`).
+- **Gate:** NACHTRAG-506-GATE.
 - **CI:** steht aus (Beobachtung nach dem Push).
 
 ## Logbuch
