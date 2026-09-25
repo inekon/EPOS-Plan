@@ -242,7 +242,7 @@ namespace EPOS.Kern.Tests
         private const double KATALOGFENSTER_UNTEN = 0.90, KATALOGFENSTER_OBEN = 1.15;
 
         /// <summary>
-        /// Die dreizehn Referenzprojekte der Basis. 1009 stand hier als Fall des Datenfehlers
+        /// Die vierzehn Referenzprojekte der Basis. 1009 stand hier als Fall des Datenfehlers
         /// „Bauweise 50 Wh/K auf 304 m²"; seit der Korrektur vom 23.09.2026
         /// (<c>Referenzlaeufe/Skripte/gebaeude_10612_233_bauweise.py</c>) rechnet es, und die
         /// benannte Ablehnung prüft <see cref="Der_Rechenweg_legt_das_Ergebnis_ab_und_meldet_Fehler_ohne_Ausnahme"/>.
@@ -250,7 +250,7 @@ namespace EPOS.Kern.Tests
         /// Tagesbilanz-Weg vergrößert dort die Fläche, nicht aber die absolute Bauweise.
         /// </summary>
         private static readonly int[] Projekte =
-            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046 };
+            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047 };
 
         /// <summary>
         /// Jahreswerte gegenüber dem Tagesbilanz-Weg; ein Gebäude mit unplausibler Bauweise

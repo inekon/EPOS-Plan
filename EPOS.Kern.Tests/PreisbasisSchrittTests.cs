@@ -46,10 +46,12 @@ namespace EPOS.Kern.Tests
                                  "WHERE name = 'Preisbasis'"));
             Assert.Equal(0, PreisbasisUebernahme.Offen());
 
-            Assert.Equal(6, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
+            // Mit dem Referenzprojekt der Anlagenkopplung 1047 (Kopie von 1017) zwei Zeilen „kWh"
+            // und eine „kg" mehr - die drei Trägerzeilen von 1017.
+            Assert.Equal(8, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
             Assert.Equal(17, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
-            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
+            Assert.Equal(2, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 
             // Die Regel nach kWh (51: kWh → kWh am Stromträger) trägt „kWh", die
             // Identitätsregel des Erdgases die Abrechnungseinheit.

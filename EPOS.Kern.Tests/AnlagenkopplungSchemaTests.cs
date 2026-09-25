@@ -304,10 +304,14 @@ namespace EPOS.Kern.Tests
         //  Teil 2 - die Testdatenbank auf Stand 123
         // =============================================================================
 
+        /// <summary>Das Referenzprojekt der Anlagenkopplung und sein Gebäude (Kopie von 1017 bzw. 10599).</summary>
+        private const int PROJEKT_REFERENZ_KOPPLUNG = 1047, GEBAEUDE_REFERENZ_KOPPLUNG = 10653;
+
         /// <summary>
         /// Alle Strukturen stehen, die Sicht ist die geltende, und alle neuen Spalten sind leer
-        /// (die Schalter 0) — die Testdatenbank trägt keine gesäten Übergabedaten. Die
-        /// angefassten Tabellen bleiben STRICT.
+        /// (die Schalter 0) — bis auf die gesäten Übergabedaten des Referenzprojekts der
+        /// Anlagenkopplung 1047 (Stufe AK1; Gebäude 10653 mit Heizkreis, Radiator und Heizkurve,
+        /// sonst leer). Die angefassten Tabellen bleiben STRICT.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_steht_auf_123_und_alle_neuen_Spalten_sind_leer()
@@ -328,12 +332,34 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
             Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SichtSpalten().Take(90));
 
+            // Gesät ist allein das Referenzprojekt der Anlagenkopplung 1047 (Einfrierregel „gesäte
+            // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py): die Stufe AK1
+            // und am Gebäude 10653 Heizkreis, Radiator und Heizkurve, alles Übrige leer.
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {
+                string ausser = s.Tabelle == "Tab_Gebaeude"
+                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture)
+                    : s.Tabelle == "Tab_Einstellungen"
+                        ? " AND ID_Projekt <> " + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture)
+                        : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
-                                      s.Name + "] <> 0"));
+                                      s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.UEBERGABE_SCHALTER.Contains(s.Name))
-                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL"));
+                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
+            }
+            Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Anlagenkopplung FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                new DbParam("?", PROJEKT_REFERENZ_KOPPLUNG)), CultureInfo.InvariantCulture));
+            DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
+                                                           new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows[0];
+            foreach (SchemaSpalte s in GebaeudeSchema.Uebergabespalten.Where(x => x.Tabelle == "Tab_Gebaeude"))
+            {
+                if (GebaeudeSchema.UEBERGABE_SCHALTER.Contains(s.Name))
+                    Assert.Equal(1L, Convert.ToInt64(referenz[s.Name], CultureInfo.InvariantCulture));
+                else if (s.Name == "Uebergabe_Art")
+                    Assert.Equal(DbWerte.UEBERGABE_RADIATOR, Convert.ToString(referenz[s.Name], CultureInfo.InvariantCulture));
+                else
+                    Assert.Equal(DBNull.Value, referenz[s.Name]);
             }
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Gebaeude") > 0);
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Einstellungen") > 0);
