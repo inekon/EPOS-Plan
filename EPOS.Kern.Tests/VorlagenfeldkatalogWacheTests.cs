@@ -366,13 +366,28 @@ namespace EPOS.Kern.Tests
             Assert.Contains(musterId, Vorlagenfeldkatalog.Musterschluessel);
         }
 
+        /// <summary>
+        /// Den Bedarf (Konzept 5.1, Etappe BV-E3) tragen die Kältestunden (gezählt an der Kanalreihe des
+        /// Laufs) und die Kapitel, deren Baustein mehr als den Regellauf liest: die Ergebnisse je Variante
+        /// die Stundenreihen (Ganglinien), die Wirtschaftlichkeit Verlauf und Emissionsbilanz — und der
+        /// Sammelanker alle drei. Jedes Kapitel führt genau den Bedarf seines Bausteins.
+        /// </summary>
         [Fact]
-        public void Nur_die_Kaeltestunden_brauchen_die_Zeitreihen()
+        public void Den_Bedarf_tragen_die_Kaeltestunden_und_die_Kapitel_der_Bausteine()
         {
             List<string> mitBedarf = Vorlagenfeldkatalog.Alle.Where(f => f.Bedarf != Vorlagenbedarf.Keiner)
                 .Select(f => f.Schluessel).ToList();
-            Assert.Equal(new[] { "stamm.kennzahl." + KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN }, mitBedarf);
-            Assert.Equal(Vorlagenbedarf.Zeitreihen, Vorlagenfeldkatalog.Finde(mitBedarf[0]).Bedarf);
+            string stunden = "stamm.kennzahl." + KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN;
+            Assert.Equal(new[] { "bericht.inhalt", "kapitel.ergebnisse", "kapitel.wirtschaftlichkeit", stunden }, mitBedarf);
+
+            Assert.Equal(Vorlagenbedarf.Zeitreihen, Vorlagenfeldkatalog.Finde(stunden).Bedarf);
+            Assert.Equal(Vorlagenbedarf.Zeitreihen, Vorlagenfeldkatalog.Finde("kapitel.ergebnisse").Bedarf);
+            Assert.Equal(Vorlagenbedarf.Verlauf | Vorlagenbedarf.Emissionsbilanz,
+                         Vorlagenfeldkatalog.Finde("kapitel.wirtschaftlichkeit").Bedarf);
+            Assert.Equal(Vorlagenbedarf.Zeitreihen | Vorlagenbedarf.Verlauf | Vorlagenbedarf.Emissionsbilanz,
+                         Vorlagenfeldkatalog.Finde("bericht.inhalt").Bedarf);
+            foreach (Berichtskapitel k in Berichtskapitel.Alle)
+                Assert.Equal(k.Bedarf, Vorlagenfeldkatalog.Finde(k.Schluessel).Bedarf);
         }
 
         [Fact]
