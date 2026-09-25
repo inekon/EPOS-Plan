@@ -74,6 +74,17 @@ namespace WindowsFormsApplication1
         private const string SPALTEN = "\"ID_Projekt\", \"Bezeichnung\", \"Groesse\", \"Aufloesung_min\", " +
                                        "\"Beginn\", \"Zeilenindex\", \"Wert\", \"Quelle\", \"Datum_Import\"";
 
+        /// <summary>
+        /// Die Vorbelegung des Zeilenindex im vorbereiteten INSERT — <b>als Feld, nicht als
+        /// Konstante im Aufruf</b>: Ein konstanter Ausdruck mit dem Wert 0 geht implizit in jeden
+        /// Aufzählungstyp über, Roslyn wählte dann <c>DbParam(string, DbParamTyp)</c> und bände
+        /// DBNull statt einer Zahl (Wache <c>DbParamNullkonstanteWacheTests</c>).
+        /// </summary>
+        private static readonly int ERSTER_INDEX = 0;
+
+        /// <summary>Die Vorbelegung des Werts im vorbereiteten INSERT — aus demselben Grund ein Feld.</summary>
+        private static readonly double ERSTER_WERT = 0.0;
+
         /// <summary>Das Format des Beginns in der Ablage: ISO mit Uhrzeit, invariant.</summary>
         internal const string FORMAT_BEGINN = "yyyy-MM-ddTHH:mm";
 
@@ -362,8 +373,13 @@ namespace WindowsFormsApplication1
                                        new DbParam("@groesse", groesse),
                                        new DbParam("@aufloesung", reihe.AufloesungMin),
                                        new DbParam("@beginn", beginn),
-                                       new DbParam("@index", 0),
-                                       new DbParam("@wert", 0.0),
+                                       // NICHT die Konstanten 0 und 0.0: Roslyn waehlt dann die
+                                       // Ueberladung DbParam(string, DbParamTyp) und bindet DBNull
+                                       // (Wache DbParamNullkonstanteWacheTests). Die beiden Werte
+                                       // werden je Zeile ohnehin neu belegt; hier zaehlt allein der
+                                       // TYP, den das vorbereitete Kommando bekommt.
+                                       new DbParam("@index", (object)ERSTER_INDEX),
+                                       new DbParam("@wert", (object)ERSTER_WERT),
                                        new DbParam("@quelle", reihe.Quelle),
                                        new DbParam("@datum", datum)
                                    }))
