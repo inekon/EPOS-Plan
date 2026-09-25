@@ -46,6 +46,10 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_zwei_gebaeude.ifc` | zwei Gebäude, eines je Lauf (U13) | selbst erzeugt | eigenes Werk |
 | `ifc4_ohne_mengen.ifc` | Raum und Außenwände ohne jeden Mengensatz — Meldung statt Geometrieableitung | selbst erzeugt | eigenes Werk |
 | `ifc4_mapconversion.ifc` | Kontext mit TrueNorth UND `IfcMapConversion` (90°) — die Umrechnung gilt, TrueNorth wird nicht addiert | selbst erzeugt | eigenes Werk |
+| `ifc4_schichten.ifc` | Schichtenhaus: ein beheizter Raum, vier Außenwände, Dach- und Bodenplatte ohne U-Werte, aber mit `IfcMaterialLayerSetUsage` und Stoffwerten in `Pset_MaterialThermal`/`Pset_MaterialCommon`; zwei Wände zählen innen zuerst gegen die Achse (`NEGATIVE`), zwei außen zuerst längs der Achse (`POSITIVE`) — Bauart aus den raumseitigen Schichten und Schichtfolge aus der Nutzung | selbst erzeugt | eigenes Werk |
+| `ifc4_schichten_nullwerte.ifc` | dasselbe Haus, die Dämmung mit ρ = 0 und c = 0 — Stoffwerte ≤ 0 als Fehlstelle | selbst erzeugt | eigenes Werk |
+| `ifc2x3_schichten.ifc` | dasselbe Haus in IFC2X3 mit `IfcThermalMaterialProperties`, `IfcGeneralMaterialProperties` und einem `IfcExtendedMaterialProperties` — die Stoffwerte werden benannt nicht gelesen | selbst erzeugt | eigenes Werk |
+| `ifc4_rueckfaelle.ifc` | zwei Geschosse, Räume ohne Höhe und Volumen, Dach- und Bodenplatte ohne Mengen, keine Tür, Obergeschoss mit `GrossFloorArea` — die Vorgabe-Rückfälle für Raumhöhe, Dach-, Grund- und sonstige Fläche | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
 
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte
