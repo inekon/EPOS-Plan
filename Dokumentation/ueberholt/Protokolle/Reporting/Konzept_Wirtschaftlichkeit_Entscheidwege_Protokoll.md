@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479, #484, #492), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455, #460, #461, #462, #463, #474, #477, #478, #479, #484, #492, #498), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -228,6 +228,8 @@ des § 3.6 (Z. 1973–1975) in § 2.5.
 | 20 | entfällt (22.09.2026) | § 6.4 |
 | 12, 14, 17 | erledigt bzw. überholt; 14 ganz erledigt mit E18 (#492) — die Wache Konstante gegen Katalog —, der Wortlaut vor #492 und der Grund in § 8.35 | § 7.1, § 8.35 |
 | 16 | erledigt mit E18 (#492), der Wortlaut vor #492 und der Grund in § 8.35; Nr. 18 mit E18 nachgemessen und wieder offen, ebenda | § 8.35 |
+| 15, 33 | 15 überholt durch die Schalentrennung, mit Wache (E19, #498); 33 erledigt mit E19 (#498) — der Wortlaut vor #498 und der Grund in § 8.37 | § 8.37 |
+| 11, 13 | geschlossen nach den Anwenderentscheiden vom 25.09.2026 (11 nicht nachziehen, 13 nur Volumen), der Wortlaut vor #498 und der Grund in § 8.39; dort auch die Entscheide zu Nr. 10, 18 und 19, die offen bzw. dokumentiert bleiben | § 8.39 |
 | Q11 (ohne Nummer) | erledigt mit E7b (#439); stand vorher nicht in § 6.3, der Grund in § 8.5 | § 8.5 |
 
 ### 0.6 Umgebogene Verweise
@@ -1293,7 +1295,8 @@ und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt), in �
 `c778ab12` = #479 samt seinen Papieren, #488, die Anlagenkopplung AK1 Welle 3 und die Entscheid-Papiere vom
 24.09.2026; der Merge #484, `ae7b0ed0`, lässt die Papiere unberührt), in § 8.35 und § 8.36 **vor #492** (Stand `247e2091` = #493 mit
 Schemaschritt 130 samt den Papieren zu #484, #489, #490, #491 und #493; der Merge #492, `e79bffb1`, lässt die Papiere
-unberührt) —, nicht vor dem Schnitt.*
+unberührt), in § 8.37 bis § 8.39 **vor #498** (Stand `f55a4cd5` = #496 mit Schemaschritt 141 samt den Papieren zu
+#492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2651,3 +2654,117 @@ Die Stellen, die mit E18 veraltet sind; „vorher" ist der Wortlaut vor #492 (St
 | § 6.5, Zeile „Energieintensiv" an drei Orten (Z. 2963) | „seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; gekoppelt ist weiterhin nichts" | dazu „umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre" |
 | § 7 (Z. 3011) | endete mit „Damit ist die Gap-Tafel des § 2.11.2 geschlossen." | dazu der Satz zu E18 (#492): Nr. 14 und 16 erledigt, Nr. 18 offen, Nr. 33 neu, sechs Fragen entschieden (→ Register R‑E18) |
 | Anhang (Z. 3073, 3104) | Kürzelzeilen bis #484; Etappenzeilen bis „E16 — Wiederholperiode je Kostenposition (V‑G3)" | Kürzelzeile der Welle (#492); Etappenzeile „E18 — Restpunkte Stromsteuer (§ 6.3 Nr. 14, 16, 18)" = #492 |
+
+### 8.37 E19 — Restpunkte der Wirtschaftlichkeit: Nr. 15 überholt, Unternehmensart ohne BHKW im Parameterdialog (#498)
+
+Protokoll [`E19_Unternehmensart_ohne_BHKW_Protokoll.md`](E19_Unternehmensart_ohne_BHKW_Protokoll.md); im Register die
+neue Familie R‑E19. Die Welle folgt dem „fahre fort“ des Anwenders vom 25.09.2026 nach dem Statusbericht, auf den
+Vorschlag des Orchestrators als nächste kleine Welle; sie ist keine Etappe des Plans E0–E12 und kommt ohne Schemaschritt
+aus (140 ist Z5 #495, 141 die Folgeberichtigung der Anschlusslängen #496). Die Fragen E19‑Q1…Q6 hat der Orchestrator am
+25.09.2026 (08:20) mit der Baufreigabe nach Empfehlung entschieden — Q4 b, die übrigen a.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E19** (#498, Merge `31a0b085` über `f55a4cd5`, Zweig `e19` = `bfa2c9e5` von `a0bbc633`) | Nr. 15 als überholt geschlossen, Wache `KatalogjahrJeOeffnungTests` (E19‑Q1 a); `WirtschaftlichkeitParameterHuelle` mit `Stromsteueranteil` und `Katalog`; die Unternehmensart ohne BHKW im Parameterdialog, Gruppe Strom, mit der Anzeige des erfassten Stromsteueranteils live und der § 9b-Erklärzeile, mit BHKW nur der Verweis (Q2 a, Q3 a, Q6 a: ein neuer Schlüssel `WPAR_UA_9B_HINWEIS`); das Bilanzjahr bleibt in der Gruppe Brennstoff (Q4 b); KI-Feld `unternehmensart` mit Sperre bei BHKW, Maskenwache 35 (Q5 a) | **nein** — Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich; § 9b ohne BHKW erreichbar, der Kapitalwert ändert sich nur mit einer gewählten Unternehmensart |
+
+*§ 6.3 Nr. 15 (Z. 2901):*
+
+> 15. Bilanzjahr und Unternehmensart wirken erst beim nächsten Dialog-Öffnen
+
+**Überholt, geschlossen mit E19 (#498):** Der Punkt stammt aus der Grenze 2 des B4-Protokolls — der WinForms-Trägerdialog
+las Bilanzjahr und Unternehmensart beim Blockaufbau. Seit der Schalentrennung liest die Hülle der
+Energieträgerverwaltung beide Werte bei jeder Öffnung (`EnergietraegerHuelle.Gaben`; jede Öffnung eine neue Hülle —
+Windows das modale `EnergietraegerFenster`, die Kostenseite `KostenSeiteGaben.TraegerGaben`); aus dem Trägerdialog führt
+kein Weg in Parameter- oder BHKW-Dialog; die Wirtschaftlichkeitsseite frischt nach jedem Unterdialog auf; die Anzeige des
+Stromsteueranteils folgt im BHKW- und jetzt im Parameterdialog live. Kohärenzzeilen, Vorschau, Ergebnis und
+§ 9b-Betrag gelten bewusst erst nach einem Rechenlauf. Die Wache `KatalogjahrJeOeffnungTests` hält fest: nach dem
+Speichern von produzierendem Gewerbe und Bilanzjahr 2025 empfiehlt die nächste Öffnung den reduzierten Satz des Jahres
+2025.
+
+*§ 6.3 Nr. 33 (Z. 2945–2950):*
+
+> **Aus Etappe E18 (#492)**
+>
+> 33. **Unternehmensart ohne BHKW nicht pflegbar** (E18‑Q7, → Register R‑E18): Die Unternehmensart steht nur im Dialog
+>     „BHKW-Wirtschaftlichkeit", und die Wirtschaftlichkeitsseite bietet ihn nur an, wenn die Vergleichsgruppe ein BHKW
+>     führt (`WirtschaftlichkeitSeite.razor`, `_stand.MitBhkw`). Für Projekte ohne BHKW sind damit die Wahl für § 9b und
+>     die Anzeige des erfassten Stromsteueranteils (Nr. 16, § 2.2 Gruppe 4) nicht erreichbar — offen
+
+**Erledigt mit E19 (#498):** Ohne BHKW pflegt der Parameterdialog in der Gruppe Strom die Unternehmensart samt der
+Anzeige des erfassten Stromsteueranteils und einer § 9b-Erklärzeile; mit BHKW bleibt der Dialog
+„BHKW-Wirtschaftlichkeit“ die Pflegestelle, die KI lehnt dort benannt ab (E19‑Q2, Q3, Q5, Q6 a). Kein Schema, kein
+Kern-Umbau — § 9b ohne BHKW rechnet der Kern seit E5, er war über die Oberfläche nur nicht erreichbar. Benannte Grenze
+(E19‑Q4 b): Das Bilanzjahr bleibt in der Gruppe Brennstoff; ohne Kessel und BHKW gilt der Rückfall 2026, nur für
+Katalogjahr und Anzeige. Nebenbefund: 1017 führt ein BHKW, der Vorbehalt in A‑E18‑1 ist gegenstandslos.
+
+*§ 2.2, Gruppe 4, letzter Satz des Absatzes „Erfasster Stromsteueranteil“ (Z. 323–324):*
+
+> allein in „Strompreis Details" (§ 6.5); Entscheide E18‑Q4 und E18‑Q5 (→ Register R‑E18). Die Unternehmensart ist nur
+> erreichbar, wenn die Vergleichsgruppe ein BHKW führt (§ 6.3 Nr. 33).
+
+**Berichtigt mit E19 (#498):** Ohne BHKW pflegt der Parameterdialog die Unternehmensart in der Gruppe Strom mit
+derselben Anzeige (§ 2.4).
+
+### 8.38 Berichtigungen im gültigen Stand (#498)
+
+Die Stellen, die mit E19 veraltet sind; „vorher“ ist der Wortlaut vor #498 (Stand `f55a4cd5`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3), Liste der fremden Schritte (Z. 5, Z. 18–20) und Schrittabsatz (Z. 45–46) | Codestand `e79bffb1`, Zielversion 130, „Schemaschritte 90–130 vergeben … E18 ohne Schritt“; „… 128 und 130 gehören nicht diesem Feld“; der Absatz endete mit „… und 130 … gehören nicht diesem Feld; die Etappe E18 (#492) kommt ohne Schritt aus“ | Codestand `31a0b085`, Zielversion 141, „90–141 vergeben … 131 Z4b, 132–139 G3/G4/AK1, 140 Z5, 141 die Folgeberichtigung; E19 ohne Schritt“; 131 bis 141 in der Liste der fremden Schritte; „… und 131 bis 141 … gehören nicht diesem Feld; die Etappen E18 (#492) und E19 (#498) kommen ohne Schritt aus“ |
+| § 2.2, Gruppe 4 (Z. 323–324) | Wortlaut in § 8.37 | „Führt die Vergleichsgruppe kein BHKW, pflegt der Parameterdialog die Unternehmensart in der Gruppe Strom mit derselben Anzeige (§ 2.4; gebaut #498, E19; § 6.3 Nr. 33).“ |
+| § 2.4 (nach Z. 382) | — | neuer Absatz „Unternehmensart ohne BHKW (gebaut #498, E19; § 6.3 Nr. 33)“: Ort, Wahlen, Anzeige, § 9b-Erklärzeile, eine Pflegestelle je Projektlage, KI-Sperre, Grenze Bilanzjahr |
+| § 3.8 (nach Z. 2428) | — | neuer Absatz „§ 9b ist ohne BHKW erreichbar“: Bedingung, Pflegestellen, Nachweis an 1041 |
+| § 6.1 (Z. 2762) | Kurztafel bis E18 (#492) | Zeile „E19 Restpunkte Unternehmensart“ (#498), ohne Schemaschritt |
+| § 6.3 Nr. 15 und 33 (Z. 2901, 2945–2950) | Wortlaut in § 8.37 | Nr. 15 durchgestrichen, „überholt durch die Schalentrennung, Wache mit E19 (#498)“; Nr. 33 durchgestrichen, „erledigt mit E19 (#498)“ mit der Grenze Bilanzjahr; der Block heißt „Aus Etappe E18 (#492) — geschlossen“ |
+| § 6.3 Nr. 10, 11, 13, 18, 19 (Z. 2896, 2897, 2899, 2904–2910, 2911–2914) | Wortlaut in § 8.39 | die Anwenderentscheide vom 25.09.2026 (→ Register R‑Rest): Nr. 10 präzisiert, offen; Nr. 11 und 13 geschlossen; Nr. 18 gemessen, offen; Nr. 19 belassen |
+| § 6.5, Zeile „Energieintensiv“ an drei Orten (Z. 2990) | endete mit „… — ein Hinweis ohne Sperre; gekoppelt ist weiterhin nichts“ | dazu „ohne BHKW steht die Unternehmensart mit derselben Anzeige im Parameterdialog, Gruppe Strom (E19, #498, § 2.4) — je Projektlage eine Pflegestelle“ |
+| § 7 (Z. 3042) | endete mit dem Satz zu E18 (#492) | dazu die Sätze zu E19 (#498) und zu den Anwenderentscheiden vom 25.09.2026 (→ Register R‑E19, R‑Rest) |
+| Anhang (Z. 3105, 3137) | Kürzelzeilen bis #492; Etappenzeilen bis „E18 — Restpunkte Stromsteuer“ | Kürzelzeile der Welle (#498); Etappenzeile „E19 — Restpunkte Unternehmensart (§ 6.3 Nr. 15, 33)“ = #498 |
+
+### 8.39 Anwenderentscheide vom 25.09.2026 zu § 6.3 Nr. 10, 11, 13, 18 und 19 (nachgetragen mit #498)
+
+Der Anwender hat am 25.09.2026 zu fünf offenen Punkten des § 6.3 entschieden; der Orchestrator hat die Entscheide mit
+den Papieren zu #498 nachgetragen (→ Register R‑Rest, eine neue Familie in der Folge von R‑NR). Kein Bau mit dieser
+Statuszeile. Der Wortlaut vor #498 und der Entscheid:
+
+*§ 6.3 Nr. 10 (Z. 2896):*
+
+> 10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b)
+
+**Präzisiert, offen:** „Wärmepumpe beides“ nur bei den Investitionskosten nach kW elektrisch und kW thermisch — die
+kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind Energiekosten. Eine kleine Bauwelle folgt.
+
+*§ 6.3 Nr. 11 (Z. 2897):*
+
+> 11. Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option
+
+**Geschlossen:** „nicht nachziehen“ — die Auto-Anlage deckt die Bestandsprojekte, eine Nachzieh-Migration wird nicht
+gebaut.
+
+*§ 6.3 Nr. 13 (Z. 2899):*
+
+> 13. Pufferkapazität bleibt null — bewusste Grenze
+
+**Geschlossen:** „nur Volumen“ — die Grenze ist bestätigt.
+
+*§ 6.3 Nr. 18 (Z. 2904–2910):*
+
+> 18. Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) — **offen**, nachgemessen mit E18 (#492): Die fünf Rechenweg-Leser
+>     `SimulationControl` (`WP_Liste_Laden`, `QuellbezuegeAufbauen`, `SenkenPufferDerAnlagen`) und `WaermesenkeClass`
+>     (`SenkenLaden`, `SenkenlistenLaden`) sortieren `ORDER BY Prioritaet, ID` und damit ungepflegt (NULL) vor gepflegt;
+>     48 von 60 Wärmeerzeugern der Testdatenbank tragen keine Priorität. Die 99er-Regel der Anzeige
+>     (`Ladeordnung.SqlAnlagenprio`) änderte die Reihenfolge in 5 von 13 Referenzprojekten (1030, 1040, 1041, 1042, 1045;
+>     in 1042 die Modulreihenfolge der Wärmepumpen) — der Umbau ist eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a,
+>     → Register R‑E18); die fünf Stellen tragen im Code den Vermerk „HB1-O1, offen"
+
+**Offen, nach Empfehlung:** zuerst eine Messwelle, danach der Entscheid über den Umbau. Gemessen 25.09.2026 (Probeumbau der fünf Rechenweg-Sortierungen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert; kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus.
+
+*§ 6.3 Nr. 19 (Z. 2911–2914):*
+
+> 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel" — **dokumentiert mit E10 (#463)** (E10‑Q6, Lesart a,
+>     → Register R‑E10): Der Kessel führt seine Wartung je Katalogeintrag in €/a, €/kWh oder %/a, und ein neuer Eintrag
+>     in %/a übernimmt den Wartungssatz der Nutzungsdauertabelle; das BHKW führt sie fest in €/kWh el
+>     (`Wartungskosten_kwhel`) und bekommt keine Vorbelegung. Behoben ist die Asymmetrie nicht.
+
+**Belassen:** E10‑Q6 a ist bestätigt — €/kWh el. ist beim BHKW die übliche Vertragsform.
