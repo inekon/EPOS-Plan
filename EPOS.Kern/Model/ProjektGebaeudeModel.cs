@@ -189,6 +189,19 @@ namespace WindowsFormsApplication1
         public int? Baujahr;
 
         // =====================================================================
+        //  Die Nachtzeit (E43, N1.48; sechster Sichtneubau) — NULL-ERHALTEND.
+        //  Beide null = die Vorgabe 22 bis 6 Uhr; der Eingangsbauer des
+        //  VDI-Wegs prüft das Paar (Nachtzeit.Pruefen), der Tagesbilanz-Weg liest
+        //  es nicht.
+        // =====================================================================
+
+        /// <summary>Beginn der Nachtabsenkung [Stunde des Tages 0 … 23]; null = Vorgabe.</summary>
+        public int? Nachtabsenkung_Beginn;
+
+        /// <summary>Ende der Nachtabsenkung [Stunde des Tages 0 … 23], ausschließlich; null = Vorgabe.</summary>
+        public int? Nachtabsenkung_Ende;
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel

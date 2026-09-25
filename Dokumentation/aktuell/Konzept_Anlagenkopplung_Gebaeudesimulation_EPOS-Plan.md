@@ -590,7 +590,8 @@ Ein Gebäude führt heute **vier** Raumsollwerte und zwei Schalter:
 `Raumsolltemperatur_Ferien` (`sql/schema/001_grundschema.sql:1147-1150`), dazu
 `Maximaleraumtemperatur` (`:1151`), die Schalter `Wochenende` und `Ferien` (`:1171-1172`) und vier
 Ferienzeiträume als Tagesindizes (`:1173-1180`). Der VDI-Weg übernimmt diesen Fahrplan unverändert:
-Stunden 7 bis 22 der Tagwert, sonst die Nachtabsenkung, an Wochenendtagen der Wochenendwert (wenn
+Stunden 7 bis 22 der Tagwert (die Nachtzeit ist je Gebäude einstellbar, leer = diese Stunden; E43 der
+Gebäudesimulation), sonst die Nachtabsenkung, an Wochenendtagen der Wochenendwert (wenn
 der Schalter gesetzt und der Wert größer 5 ist), in Ferienzeiträumen der Ferienwert
 ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4.4).
 
