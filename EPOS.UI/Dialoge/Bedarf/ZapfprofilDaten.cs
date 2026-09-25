@@ -967,6 +967,13 @@ public sealed class ZapfprofilVorschauDaten
     /// </summary>
     public List<ZapfprofilWarnDaten> Warnliste { get; set; } = new();
 
+    /// <summary>
+    /// <b>Das Herkunftsprotokoll des Laufs</b> (Karte „Herkunft", N19): je Wert eine Zeile in der
+    /// Reihenfolge, in der der Rechenweg ihn festlegt — fertige Texte der Oberflächensprache. Die
+    /// Liste ist immer gefüllt; ob die Karte steht, entscheidet die Stufe des Dialogs.
+    /// </summary>
+    public List<ZapfprofilHerkunftZeile> Herkunft { get; set; } = new();
+
     /// <summary>Die Schätzhilfe der Zirkulation (Stufe Erweitert, 5.3); <c>null</c>, wenn die Zirkulation abgelehnt ist.</summary>
     public ZapfprofilSchaetzhilfeDaten? Zirkulation { get; set; }
 
@@ -1577,6 +1584,21 @@ public sealed record ZapfprofilKategorienErgebnis(bool Ok, int IdNutzungsart, bo
 /// <summary>Ein Eintrag der Warnliste: Kennung (Ressourcenschlüssel), Titel, Satz des Kerns, Stufe.</summary>
 public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Text, ZapfprofilWarnstufe Stufe);
 
+/// <summary>
+/// <b>Eine Zeile der Karte „Herkunft"</b> (Herkunftsprotokoll des Kerns, N19): welche Größe
+/// welcher Zone welchen Wert trägt, welchen Stand er hat, woher er kommt und was dabei geschah.
+/// Alles fertige Texte der Oberflächensprache — <see cref="Vermerk"/> ist der Satz des Kerns,
+/// <see cref="Stand"/> und <see cref="Quelle"/> sind die übersetzten Aufzählungen.
+///
+/// <para><b><see cref="Groesse"/> ist der Feldname des Protokolls als DATEN</b> — der Bezeichner
+/// des Rechenwegs (<c>Tagesbedarf</c>, <c>Zirkulation.Laufzeit</c>, <c>Auslegung.ErzeugerKw</c>),
+/// in beiden Sprachen derselbe, wie ein Zonen- oder Katalogname. Das Protokoll ist der
+/// Rechennachweis: Seine Feldnamen stehen ebenso in Kern, Tests und Referenzlauf, und eine
+/// Namenstafel wäre eine zweite Quelle der Wahrheit.</para>
+/// </summary>
+public sealed record ZapfprofilHerkunftZeile(string Groesse, string Zone, string Wert, string Stand,
+                                            string Quelle, string Vermerk);
+
 /// <summary>Das Ergebnis einer Topologiegruppe (Zonen gleicher Topologie).</summary>
 public sealed class ZapfprofilAuslegungsgruppeDaten
 {
@@ -1747,6 +1769,19 @@ public sealed class ZapfprofilAuslegungDaten
 
     /// <summary>Abgelehnte Zonen und allgemeine Hinweise.</summary>
     public List<ZapfprofilMeldung> Meldungen { get; set; } = new();
+
+    /// <summary>
+    /// <b>Das Herkunftsprotokoll der Auslegung</b> (Karte „Herkunft", N19): je Wert eine Zeile in
+    /// der Reihenfolge des Rechenwegs, fertige Texte der Oberflächensprache.
+    /// </summary>
+    public List<ZapfprofilHerkunftZeile> Herkunft { get; set; } = new();
+
+    /// <summary>
+    /// Steht die Karte „Herkunft"? Die Überlagerung führt keine eigene Stufe, deshalb entscheidet
+    /// die Hülle: ab Stufe Erweitert ja, in der Stufe Einfach nein (N19). Leer und sichtbar heißt
+    /// „nichts zu vermerken" — benannt, nicht still.
+    /// </summary>
+    public bool HerkunftSichtbar { get; set; }
 
     /// <summary>Die angesetzte Erzeugerart und woher sie kommt (Eingabe, Anlagenbestand, keine).</summary>
     public ZapfprofilErzeugerart ErzeugerartAngesetzt { get; set; }

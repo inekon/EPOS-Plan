@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -483,6 +484,171 @@ namespace WindowsFormsApplication1
             {
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_NICHT_GESPEICHERT, ex.Message));
             }
+        }
+
+        // =================================================================
+        //  Schreiben — der Bauteilvorschlag eines Imports (G4b)
+        // =================================================================
+
+        /// <summary>
+        /// Was das Schreiben eines Bauteilvorschlags ergeben hat.
+        /// </summary>
+        /// <param name="Ok">Ist alles geschrieben?</param>
+        /// <param name="Befund">Der Grund, wenn nicht — Schlüssel und Werte (<c>IMP_BAUTEIL_PROT_*</c> oder die
+        /// erste Fehlermeldung des Vorschlags); <c>null</c> bei Erfolg.</param>
+        /// <param name="Meldung">Der Text des Befunds in der Anzeigekultur; leer bei Erfolg.</param>
+        /// <param name="IdZone">Die Kennung der neuen Zone (<c>Tab_Zone.ID</c>); 0 ohne.</param>
+        /// <param name="Zuordnungen">Die Paarungen Quellentität ↔ neue Zeile mit Ziel-Id — beheizte Räume auf
+        /// die Zone, Flächen und Öffnungen auf ihre Bauteile, Konstruktionen auf ihre Aufbauten; der
+        /// Eingang von <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>. Leer bei einem Fehler.</param>
+        /// <param name="Zone">Die geschriebene Zone mit endgültigen Ids samt Bauteilen; <c>null</c> bei einem Fehler.</param>
+        /// <param name="Aufbauten">Die geschriebenen Aufbauten mit endgültigen Ids und freien Namen; leer bei einem Fehler.</param>
+        internal sealed record Vorschlagsergebnis(bool Ok, PruefMeldung Befund, string Meldung, int IdZone,
+                                                  IReadOnlyList<GebaeudeQuellzuordnung> Zuordnungen, ZoneModel Zone,
+                                                  IReadOnlyList<BauteilaufbauModel> Aufbauten)
+        {
+            internal static Vorschlagsergebnis Fehler(PruefMeldung befund)
+                => new Vorschlagsergebnis(false, befund, GebaeudeZuordnungsModell.MeldungText(befund), 0,
+                                          Array.Empty<GebaeudeQuellzuordnung>(), null, Array.Empty<BauteilaufbauModel>());
+
+            internal static Vorschlagsergebnis Fehler(string schluessel, params string[] werte)
+                => Fehler(new PruefMeldung(PruefStufe.Fehler, schluessel, werte));
+        }
+
+        /// <summary>
+        /// <b>Schreibt einen Bauteilvorschlag für ein vorhandenes Projektgebäude</b> (Stufe G4b;
+        /// <see cref="GebaeudeBauteilvorschlag"/>) — in EINEM Vorgang: die Aufbauten samt Schichten als
+        /// Projektkopien (Namen im Projekt frei gemacht), die Zone, die Bauteile mit den abgebildeten
+        /// <c>ID_Aufbau</c>. Nur über <see cref="DataRepository"/> mit <c>?</c>-Parametern; bei einem
+        /// Fehler ist nichts geschrieben. Der Vorschlag selbst bleibt unverändert (es wird eine Kopie
+        /// geschrieben).
+        ///
+        /// <para><b>Benannt abgelehnt, bevor etwas geschrieben ist:</b> ein abgelehnter Vorschlag (seine
+        /// erste Fehlermeldung), ein Prüfbefund der Zeilen (<see cref="Pruefen"/>,
+        /// <see cref="BauteilaufbauCtrl.Pruefen"/>), ein Gebäude, das es nicht gibt oder das keine
+        /// Projektkopie ist, und <b>ein Gebäude, das schon eine Zone trägt</b> — G3 rechnet genau eine
+        /// Zone je Gebäude (Konzept N1.46, 13); ersetzt wird nichts.</para>
+        ///
+        /// <para>Die Paarungen für <c>Tab_Importzuordnung</c> schreibt diese Methode NICHT — sie gibt
+        /// sie mit den neuen Kennungen zurück (<see cref="Vorschlagsergebnis.Zuordnungen"/>); die
+        /// Herkunft schreibt <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>. Mit
+        /// <paramref name="vorgang"/> läuft das Schreiben im Vorgang des Aufrufers (als
+        /// Sicherungspunkt, Muster <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>) — so schreibt
+        /// der Aufrufer Vorschlag und Herkunft in EINEM Vorgang.</para>
+        /// </summary>
+        /// <param name="idGebaeude">Die Projektkopie (<c>Tab_Gebaeude.ID</c>).</param>
+        /// <param name="vorschlag">Der Vorschlag.</param>
+        /// <param name="vorgang">Der Vorgang des Aufrufers; <c>null</c> = ein eigener.</param>
+        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null)
+        {
+            if (vorschlag == null) throw new ArgumentNullException(nameof(vorschlag));
+            if (vorschlag.Abgelehnt)
+                return Vorschlagsergebnis.Fehler(vorschlag.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler)
+                    ?? new PruefMeldung(PruefStufe.Fehler, GebaeudeBauteilvorschlag.KEIN_GEBAEUDE, "", ""));
+
+            // Arbeitskopien: der Vorschlag bleibt, wie er ist.
+            ZoneModel zone = vorschlag.Zone.Kopie();
+            List<BauteilaufbauModel> aufbauten = vorschlag.Aufbauten.Select(a => a.Aufbau.Kopie()).ToList();
+            string fehler = Pruefen(new List<ZoneModel> { zone });
+            foreach (BauteilaufbauModel a in aufbauten) fehler ??= BauteilaufbauCtrl.Pruefen(a);
+            if (fehler != null) return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.NICHT_GESCHRIEBEN, fehler);
+
+            IReadOnlyList<string> kuehl = Kuehlspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(kuehl).ToList();
+            string id = idGebaeude.ToString(CultureInfo.InvariantCulture);
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    DataTable geb = v.Lese("SELECT \"ID_Projekt\" FROM \"Tab_Gebaeude\" WHERE \"ID\" = ?", new DbParam("@g", idGebaeude));
+                    if (geb.Rows.Count == 0)
+                    {
+                        v.Rollback();
+                        return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.GEBAEUDE_FEHLT, id);
+                    }
+                    int idProjekt = geb.Rows[0][0] is DBNull ? 0 : Convert.ToInt32(geb.Rows[0][0], CultureInfo.InvariantCulture);
+                    if (idProjekt <= 0)
+                    {
+                        v.Rollback();
+                        return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.KEINE_PROJEKTKOPIE, id);
+                    }
+                    long vorhanden = Convert.ToInt64(v.Skalar(
+                        "SELECT COUNT(*) FROM \"" + ZonenSchema.TAB_ZONE + "\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude)),
+                        CultureInfo.InvariantCulture);
+                    if (vorhanden > 0)
+                    {
+                        v.Rollback();
+                        return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.ZONE_VORHANDEN, id,
+                                                         vorhanden.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    // 1) Die Aufbauten samt Schichten — Namen, die das Projekt schon führt, werden ergänzt.
+                    var vergeben = new HashSet<string>(v.Lese(
+                        "SELECT \"Bezeichner\" FROM \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" WHERE \"ID_Projekt\" = ?",
+                        new DbParam("@p", idProjekt)).Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture)),
+                        StringComparer.Ordinal);
+                    var aufbauJeVorlaeufig = new Dictionary<int, int>();
+                    foreach (BauteilaufbauModel a in aufbauten)
+                    {
+                        int vorlaeufig = a.ID;
+                        a.Bezeichner = BauteilaufbauCtrl.FreierName(vergeben, a.Bezeichner);
+                        aufbauJeVorlaeufig[vorlaeufig] = BauteilaufbauCtrl.ProjektaufbauEinfuegen(v, idProjekt, a);
+                    }
+
+                    // 2) Die Zone.
+                    zone.ID_Gebaeude = idGebaeude;
+                    zone.Rang = 1;
+                    zone.Bezeichner = zone.Bezeichner.Trim();
+                    IEnumerable<DbParam> werte = kuehl.Count > 0 ? Zonenwerte(zone).Concat(Kuehlwerte(zone)) : Zonenwerte(zone);
+                    zone.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_ZONE + "\" (" +
+                                               string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                               ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")", werte.ToArray());
+
+                    // 3) Die Bauteile, der Aufbau über seine vorläufige Id abgebildet.
+                    int rang = 0;
+                    foreach (BauteilModel b in zone.Bauteile)
+                    {
+                        b.ID_Zone = zone.ID;
+                        b.Rang = ++rang;
+                        b.Bezeichner = b.Bezeichner.Trim();
+                        if (b.ID_Aufbau.HasValue)
+                        {
+                            if (!aufbauJeVorlaeufig.TryGetValue(b.ID_Aufbau.Value, out int echt))
+                                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture,
+                                    "Das Bauteil {0} zeigt auf den Aufbau {1}, den der Vorschlag nicht führt.", b.Bezeichner, b.ID_Aufbau.Value));
+                            b.ID_Aufbau = echt;
+                        }
+                        b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
+                                                string.Join(", ", ZonenSchema.Bauteilspalten.Select(s => "\"" + s + "\"")) +
+                                                ") VALUES (" + BaustoffCtrl.Fragezeichen(ZonenSchema.Bauteilspalten.Count) + ")",
+                                                Bauteilwerte(b).ToArray());
+                    }
+
+                    v.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.NICHT_GESCHRIEBEN, ex.Message);
+            }
+
+            // Die Paarungen mit den neuen Kennungen (Tab_Importzuordnung schreibt GebaeudeImportCtrl).
+            var zuordnungen = new List<GebaeudeQuellzuordnung>();
+            foreach (GebaeudeQuellzuordnung r in vorschlag.Raeume)
+                zuordnungen.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Quellkennung, ImportZiel.Zone, zone.ID));
+            for (int i = 0; i < vorschlag.Zeilen.Count; i++)
+            {
+                GebaeudeBauteilzeile z = vorschlag.Zeilen[i];
+                if (z.Quelltyp != null)
+                    zuordnungen.Add(new GebaeudeQuellzuordnung(z.Quelltyp, z.Kennung, ImportZiel.Bauteil, zone.Bauteile[i].ID));
+            }
+            for (int j = 0; j < vorschlag.Aufbauten.Count; j++)
+            {
+                GebaeudeAufbauzeile a = vorschlag.Aufbauten[j];
+                zuordnungen.Add(new GebaeudeQuellzuordnung(a.Quelltyp, a.Kennung, ImportZiel.Aufbau, aufbauten[j].ID));
+            }
+            return new Vorschlagsergebnis(true, null, "", zone.ID, zuordnungen.AsReadOnly(), zone, aufbauten.AsReadOnly());
         }
 
         // =================================================================
