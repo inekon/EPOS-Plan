@@ -10513,3 +10513,82 @@ Vorschlägen; (b) Laibung 0 m und gerundete EnEV-Laibungen mit
 Vorschlägen; (c) Nebenbefunde 46, 57, 120, 14 ohne Vorschlag; (d) „Nur
 D“-Kandidaten 145/146 bleiben eingefroren — alles nur auf
 Anwenderentscheid.
+
+## #497 — Projektassistent: Trägersätze heilen, echte Ids, Ablehnung bei Projektwechsel, Nachweis R-W16-6 (25.09.2026)
+
+Anwenderauftrag 25.09.2026 „setze um: … die vier Punkte aus „Nach
+#490““; Basis `b5a2e389`; Commits (Opus 5.5) `4ad2b137` (a),
+`27b903c0` (b), `8e8426df` (c), `45eeeead` Tests (a)–(c), `f0b4ca40`
+(d) + Klassenkopf `AssistentCtrl` + Konzept 7.1 (a); Merges `e6a4b04c`
+(auf #496-Stand `cf8cb414`) und `513e20e6` (auf origin `cbed6dba` =
+#498 E19). Nummernabstimmung: Assistent = #497, E19 = #498.
+
+**(a) Trägersätze heilen.**
+`TraegerSatzAnlegen`/`Add_Projekt_Energietraeger` melden per `out`,
+wie viele Sätze angelegt wurden; neu
+`WizardCtrl.Projekt_Energietraeger_Heilen` legt nur fehlende an,
+`MarkiereProjektGeaendert` nur bei tatsächlicher Anlage;
+`AssistentCtrl.Fortschreiben` ruft es im Zweig eines unveränderten
+Erzeugers, die Zahl steht in `GeheilteTraegersaetze`. Test: gelöschter
+Trägersatz im Kesselsatz von 1041 → Speichern ohne Änderung legt genau
+ihn an und stempelt; zweites Speichern schreibt nichts.
+
+**(b) Id-Nachzug.** Neu `WizardCtrl.IdNachzug`; `Add_Projekt_Prozess`,
+`Add_Projekt_Stromverbraucher`, `Add_WaermebedarfExtern`,
+`Add_Stromganglinie` (liest die AUTOINCREMENT-Id über
+`ExecuteInsertAndGetId`) merken je Zeile Zuordnungs-Id, Projekt-Id und
+bei Ganglinien den Verweis auf die Projektkopie vor;
+`AssistentCtrl.Speichern` trägt sie nach dem Festschreiben ein,
+verwirft sie beim Rückzug, nimmt danach den Abdruck. Test: vorläufige
+Ids ≥ 100000 in allen vier Listen → nach dem Speichern (Id, Verweis)
+gleich der Datenbank, keine Id ≥ 100000, zweites Speichern schreibt
+nichts.
+
+**(c) Projektwechsel.** Benannte Ablehnung statt Zwangs-Neuladen
+(Neuladen verwürfe Eingaben). Neu `AssistentCtrl.ListenProjektId`
+(gesetzt in `Laden` und nach jedem gelungenen Speichern, verfällt
+nicht mit `BereitsGeladen = false`); der Bearbeiten-Zweig ergibt
+`AssistentAusgang.ProjektGewechselt`, wenn die Listen einem anderen
+Projekt gehören oder nie geladen wurden; dann wird nichts geschrieben.
+Einzige sichtbare Änderung: die Meldung „Anderes Projekt gewählt“
+(`WIZ_PROJEKT_GEWECHSELT` + `_TITEL`, beide Sprachen, Designer neu
+erzeugt). Tests: Laden 1041, Speichern für 1030 → `ProjektGewechselt`,
+Abbild und Datum beider Projekte unverändert; ohne geladene Listen
+ebenfalls abgelehnt.
+
+**(d) Nachweis R-W16-6.** Der Modus `projekt` ist der Kindprozess von
+`lauf`; Rezept aus dem W16a-Protokoll auf einer Kopie der
+Testdatenbank: `Referenzlauf.exe lauf --projekte 1041` vor dem
+Speichern, Speicherprobe (Bearbeiten-Lauf mit Laden, Seitenschaltung,
+Speichern ohne Änderung; Konsolenprogramm im Scratchpad, nicht im
+Repo), Lauf danach, `vergleich`: GESAMT PASS, 29 Dateien, 298 005
+Werte, 0 Abweichungen, byte-gleich; danach gegen die Basis R14 (1041)
+ebenfalls PASS. Das Speichern schrieb nur den fehlenden
+Stromträgersatz (Träger 60) in
+`energy_price`/`energy_project_settings` (Heilung aus (a), ohne
+Rechenwirkung); ein zweites Speichern schrieb 0 Zeilen. Offen bleibt
+der Nachweis für ein über den Assistenten neu angelegtes Projekt.
+
+**Gate (losgelöster Worktree, Stand `e6a4b04c` = #496 + #497, danach
+Nachgate auf `513e20e6` mit E19).** Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6 823 (1 übersprungen), EPOS.UI 6 237, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 34/34; Windows-Schale Debug x64 0 Fehler;
+Referenzlauf 13/13 GESAMT PASS gegen `2026-09-24_R14_Kaelteerzeuger`
+(4 207 049 Werte); SqlDialektPruefer 1 911 Texte, 0 Fundstellen
+(Agent, Stand `b5a2e389`).
+
+**Papiere.** Konzept Administrationsdialoge 7.1 (a) samt Kopfzeile;
+Klassenkopf `AssistentCtrl`. Wiki unverändert.
+
+**Logbuch.** Satz vorgeschlagen (Version 1.2.0.4, Sammel-Upload): „Ein
+Speichern im Projektassistenten ohne inhaltliche Änderung lässt das
+Änderungsdatum und das Simulationsergebnis unberührt; gehören die
+Eingaben zu einem anderen als dem gewählten Projekt, speichert er
+nicht und weist darauf hin.“
+
+**Offen (in „Nach #497“).** (a) Nachweis R-W16-6 für ein über den
+Assistenten neu angelegtes Projekt steht aus (bisher nur für 1041
+geführt); (b) `Add_Projekt_Prozess`/`Add_Projekt_Stromverbraucher`
+setzen den Verweis auf die Projektkopie vor dem Festschreiben
+(folgenlos nach Rückzug, weil der Abdruck ihn nicht vergleicht).

@@ -1769,7 +1769,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Wirtschaftlichkeits-Parameter — 30 Felder aus
+        /// Die Wirtschaftlichkeits-Parameter — 35 Felder aus
         /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.WirtschaftlichkeitParameterKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1835,6 +1835,13 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaEinspName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaEinspErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+                    // ETAPPE E19 (Konzept § 6.3 Nr. 33, E19‑Q5 a): die Unternehmensart nach
+                    // StromStG — im Dialog nur ohne BHKW sichtbar; mit BHKW lehnt der Setzer
+                    // benannt ab und nennt den Dialog „BHKW-Wirtschaftlichkeit".
+                    new KiDialogFeld("unternehmensart",
+                                     "WirtschaftlichkeitParameterKiSicht.Unternehmensart",
+                                     KiDialogTexte.BhwUaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwUaErl, leerErlaubt: true),
                     new KiDialogFeld("co2_preis", "WirtschaftlichkeitParameterKiSicht.Co2Preis",
                                      KiDialogTexte.WpaCo2Name, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaCo2Erl,
