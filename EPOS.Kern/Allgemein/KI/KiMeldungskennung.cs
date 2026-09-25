@@ -20,6 +20,7 @@
 // KI_FRAGE_<KENNUNG>; wer eine Kennung aendert, aendert den Ressourcenschluessel mit.
 
 using System;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -116,11 +117,185 @@ namespace WindowsFormsApplication1
         /// <summary>Der Kopf der TRY-Datei nennt keinen lesbaren Standort.</summary>
         public const string KLIMA_TRY_STANDORT_UNLESBAR = "KLIMA_TRY_STANDORT_UNLESBAR";
 
+        // ------------------------------------------------------------------
+        //  Berichtsvorlagen: Vorpruefung, Vorlagenwahl, Laufmeldung (BV-E1)
+        // ------------------------------------------------------------------
+        //
+        // SIE HEISSEN WIE IHR RESSOURCENSCHLUESSEL - wie KLIMA_TRY_*. Eine
+        // Pruefmeldung traegt die Kennung schon (Pruefmeldung.Kennung ist der
+        // Ressourcenschluessel ihres Texts, VF_PRUEF_* und BV_VORLAGEN_*), die
+        // Laufmeldung und die Rueckfrage vor dem Start ebenso (Berichtsmeldung.
+        // Kennung, BV_LAUF_* und BV_START_*). Die Liste Berichtsvorlagen haelt der
+        // Waechter BerichtKiKennungenTests gegen den Quelltext des Pruefers.
+
+        /// <summary>Die Vorlage kann nicht gelesen werden.</summary>
+        public const string VF_PRUEF_UNLESBAR = nameof(MyResource.Resource.VF_PRUEF_UNLESBAR);
+
+        /// <summary>Das Dateiformat der Vorlage wird nicht unterstützt.</summary>
+        public const string VF_PRUEF_FORMAT = nameof(MyResource.Resource.VF_PRUEF_FORMAT);
+
+        /// <summary>Die Vorlage ist zu groß.</summary>
+        public const string VF_PRUEF_GROESSE = nameof(MyResource.Resource.VF_PRUEF_GROESSE);
+
+        /// <summary>Die Vorlage ist entpackt zu groß.</summary>
+        public const string VF_PRUEF_GROESSE_ENTPACKT = nameof(MyResource.Resource.VF_PRUEF_GROESSE_ENTPACKT);
+
+        /// <summary>Die Vorlage enthält Makros.</summary>
+        public const string VF_PRUEF_MAKROS = nameof(MyResource.Resource.VF_PRUEF_MAKROS);
+
+        /// <summary>Nachverfolgte Änderungen in der Vorlage.</summary>
+        public const string VF_PRUEF_AENDERUNGEN = nameof(MyResource.Resource.VF_PRUEF_AENDERUNGEN);
+
+        /// <summary>Der Verweis auf die Dokumentvorlage wird entfernt.</summary>
+        public const string VF_PRUEF_VORLAGENVERWEIS = nameof(MyResource.Resource.VF_PRUEF_VORLAGENVERWEIS);
+
+        /// <summary>Verknüpfte Inhalte werden entfernt.</summary>
+        public const string VF_PRUEF_EXTERN = nameof(MyResource.Resource.VF_PRUEF_EXTERN);
+
+        /// <summary>Überschriftenstile fehlen oder tragen keine Gliederungsebene.</summary>
+        public const string VF_PRUEF_UEBERSCHRIFTEN = nameof(MyResource.Resource.VF_PRUEF_UEBERSCHRIFTEN);
+
+        /// <summary>Platzhalter nicht erkannt.</summary>
+        public const string VF_PRUEF_KLAMMER_OFFEN = nameof(MyResource.Resource.VF_PRUEF_KLAMMER_OFFEN);
+
+        /// <summary>Unbekannte Marke in doppelten Klammern.</summary>
+        public const string VF_PRUEF_MARKE_UNBEKANNT = nameof(MyResource.Resource.VF_PRUEF_MARKE_UNBEKANNT);
+
+        /// <summary>Unbekannter Platzhalter.</summary>
+        public const string VF_PRUEF_UNBEKANNT = nameof(MyResource.Resource.VF_PRUEF_UNBEKANNT);
+
+        /// <summary>Platzhalter in abweichender Schreibweise.</summary>
+        public const string VF_PRUEF_NORMALFORM = nameof(MyResource.Resource.VF_PRUEF_NORMALFORM);
+
+        /// <summary>Wert je Variante wird noch nicht gefüllt.</summary>
+        public const string VF_PRUEF_KONTEXT_STAND = nameof(MyResource.Resource.VF_PRUEF_KONTEXT_STAND);
+
+        /// <summary>Wert je Gebäude wird noch nicht gefüllt.</summary>
+        public const string VF_PRUEF_KONTEXT_GEBAEUDE = nameof(MyResource.Resource.VF_PRUEF_KONTEXT_GEBAEUDE);
+
+        /// <summary>Platzhalter an einer Stelle, an der er nicht stehen kann.</summary>
+        public const string VF_PRUEF_ORT = nameof(MyResource.Resource.VF_PRUEF_ORT);
+
+        /// <summary>Unbekannte Formatangabe.</summary>
+        public const string VF_PRUEF_ANGABE_UNBEKANNT = nameof(MyResource.Resource.VF_PRUEF_ANGABE_UNBEKANNT);
+
+        /// <summary>Formatangabe passt nicht zur Art des Platzhalters.</summary>
+        public const string VF_PRUEF_ANGABE_UNPASSEND = nameof(MyResource.Resource.VF_PRUEF_ANGABE_UNPASSEND);
+
+        /// <summary>Unbekannter Wiederholbereich.</summary>
+        public const string VF_PRUEF_BLOCK_BEREICH = nameof(MyResource.Resource.VF_PRUEF_BLOCK_BEREICH);
+
+        /// <summary>Block wird noch nicht unterstützt.</summary>
+        public const string VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT = nameof(MyResource.Resource.VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT);
+
+        /// <summary>Bedingung ohne Schalter.</summary>
+        public const string VF_PRUEF_WENN_OHNE_SCHALTER = nameof(MyResource.Resource.VF_PRUEF_WENN_OHNE_SCHALTER);
+
+        /// <summary>Bedingung mit einem Wert statt eines Schalters.</summary>
+        public const string VF_PRUEF_WENN_KEIN_SCHALTER = nameof(MyResource.Resource.VF_PRUEF_WENN_KEIN_SCHALTER);
+
+        /// <summary>Blockmarke im Satz.</summary>
+        public const string VF_PRUEF_BLOCK_ALLEIN = nameof(MyResource.Resource.VF_PRUEF_BLOCK_ALLEIN);
+
+        /// <summary>Block in der dritten Ebene.</summary>
+        public const string VF_PRUEF_BLOCK_TIEFE = nameof(MyResource.Resource.VF_PRUEF_BLOCK_TIEFE);
+
+        /// <summary>Blockende ohne Anfang.</summary>
+        public const string VF_PRUEF_BLOCK_ENDE = nameof(MyResource.Resource.VF_PRUEF_BLOCK_ENDE);
+
+        /// <summary>Block wird nicht geschlossen.</summary>
+        public const string VF_PRUEF_BLOCK_OFFEN = nameof(MyResource.Resource.VF_PRUEF_BLOCK_OFFEN);
+
+        /// <summary>Verbundene Zellen in der Wiederholzeile.</summary>
+        public const string VF_PRUEF_BLOCK_VERBUNDEN = nameof(MyResource.Resource.VF_PRUEF_BLOCK_VERBUNDEN);
+
+        /// <summary>Block reicht über eine Tabellengrenze.</summary>
+        public const string VF_PRUEF_BLOCK_TABELLE = nameof(MyResource.Resource.VF_PRUEF_BLOCK_TABELLE);
+
+        /// <summary>Datumsfeld zeigt das Datum des Öffnens.</summary>
+        public const string VF_PRUEF_DATUMSFELD = nameof(MyResource.Resource.VF_PRUEF_DATUMSFELD);
+
+        /// <summary>Kommentare der Vorlage.</summary>
+        public const string VF_PRUEF_KOMMENTARE = nameof(MyResource.Resource.VF_PRUEF_KOMMENTARE);
+
+        /// <summary>Vorlage ohne Platzhalter.</summary>
+        public const string VF_PRUEF_OHNE_PLATZHALTER = nameof(MyResource.Resource.VF_PRUEF_OHNE_PLATZHALTER);
+
+        /// <summary>Die Sprache der Vorlage weicht ab.</summary>
+        public const string VF_PRUEF_SPRACHE = nameof(MyResource.Resource.VF_PRUEF_SPRACHE);
+
+        /// <summary>Vorlage aus einer älteren Katalogfassung.</summary>
+        public const string VF_PRUEF_FASSUNG_ALT = nameof(MyResource.Resource.VF_PRUEF_FASSUNG_ALT);
+
+        /// <summary>Neues Kapitel, in der Vorlage nicht enthalten.</summary>
+        public const string VF_PRUEF_KAPITEL_NEU = nameof(MyResource.Resource.VF_PRUEF_KAPITEL_NEU);
+
+        /// <summary>Vorlage aus einer neueren Katalogfassung.</summary>
+        public const string VF_PRUEF_FASSUNG_NEU = nameof(MyResource.Resource.VF_PRUEF_FASSUNG_NEU);
+
+        /// <summary>Gültigkeitshinweise fehlen.</summary>
+        public const string VF_PRUEF_GUELTIGKEIT = nameof(MyResource.Resource.VF_PRUEF_GUELTIGKEIT);
+
+        /// <summary>Die Vorlagendatei kann nicht gelesen werden.</summary>
+        public const string BV_VORLAGEN_NICHT_LESBAR = nameof(MyResource.Resource.BV_VORLAGEN_NICHT_LESBAR);
+
+        /// <summary>Die Vorlage ist nicht vorhanden.</summary>
+        public const string BV_VORLAGEN_FEHLT = nameof(MyResource.Resource.BV_VORLAGEN_FEHLT);
+
+        /// <summary>Die Vorlage ist in Word geöffnet.</summary>
+        public const string BV_VORLAGEN_IN_WORD = nameof(MyResource.Resource.BV_VORLAGEN_IN_WORD);
+
+        /// <summary>Welche Word-Vorlage der Bericht nimmt.</summary>
+        public const string BV_LAUF_VORLAGE = nameof(MyResource.Resource.BV_LAUF_VORLAGE);
+
+        /// <summary>Rückfall bei der Vorlagenwahl.</summary>
+        public const string BV_LAUF_RUECKFALL = nameof(MyResource.Resource.BV_LAUF_RUECKFALL);
+
+        /// <summary>Nicht ersetzte Platzhalter, gelb markiert.</summary>
+        public const string BV_LAUF_UNBEKANNT = nameof(MyResource.Resource.BV_LAUF_UNBEKANNT);
+
+        /// <summary>Platzhalter ohne Wert.</summary>
+        public const string BV_LAUF_LEER = nameof(MyResource.Resource.BV_LAUF_LEER);
+
+        /// <summary>Kommentare der Vorlage entfernt.</summary>
+        public const string BV_LAUF_KOMMENTARE = nameof(MyResource.Resource.BV_LAUF_KOMMENTARE);
+
+        /// <summary>Warnungen beim Füllen der Vorlage.</summary>
+        public const string BV_LAUF_WARNUNGEN = nameof(MyResource.Resource.BV_LAUF_WARNUNGEN);
+
+        /// <summary>Die Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1.</summary>
+        public const string BV_START_SICHT = nameof(MyResource.Resource.BV_START_SICHT);
+
+        /// <summary>Vorlage ohne Wirtschaftlichkeit.</summary>
+        public const string BV_START_OHNE_WIRTSCHAFT = nameof(MyResource.Resource.BV_START_OHNE_WIRTSCHAFT);
+
+        /// <summary>
+        /// Die Kennungen der Berichtsvorlagen: die Regeln des Vorlagenprüfers, die
+        /// Prüfmeldungen des Vorlagen-Controllers, die Abschnitte der Laufmeldung und die
+        /// Befunde der Rückfrage vor dem Start. Steht VOR <see cref="Alle"/> — statische
+        /// Felder werden in der Folge des Quelltexts belegt.
+        /// </summary>
+        public static readonly string[] Berichtsvorlagen =
+        {
+            VF_PRUEF_UNLESBAR, VF_PRUEF_FORMAT, VF_PRUEF_GROESSE, VF_PRUEF_GROESSE_ENTPACKT, VF_PRUEF_MAKROS,
+            VF_PRUEF_AENDERUNGEN, VF_PRUEF_VORLAGENVERWEIS, VF_PRUEF_EXTERN, VF_PRUEF_UEBERSCHRIFTEN,
+            VF_PRUEF_KLAMMER_OFFEN, VF_PRUEF_MARKE_UNBEKANNT, VF_PRUEF_UNBEKANNT, VF_PRUEF_NORMALFORM,
+            VF_PRUEF_KONTEXT_STAND, VF_PRUEF_KONTEXT_GEBAEUDE, VF_PRUEF_ORT, VF_PRUEF_ANGABE_UNBEKANNT,
+            VF_PRUEF_ANGABE_UNPASSEND, VF_PRUEF_BLOCK_BEREICH, VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT,
+            VF_PRUEF_WENN_OHNE_SCHALTER, VF_PRUEF_WENN_KEIN_SCHALTER, VF_PRUEF_BLOCK_ALLEIN,
+            VF_PRUEF_BLOCK_TIEFE, VF_PRUEF_BLOCK_ENDE, VF_PRUEF_BLOCK_OFFEN, VF_PRUEF_BLOCK_VERBUNDEN,
+            VF_PRUEF_BLOCK_TABELLE, VF_PRUEF_DATUMSFELD, VF_PRUEF_KOMMENTARE, VF_PRUEF_OHNE_PLATZHALTER,
+            VF_PRUEF_SPRACHE, VF_PRUEF_FASSUNG_ALT, VF_PRUEF_KAPITEL_NEU, VF_PRUEF_FASSUNG_NEU,
+            VF_PRUEF_GUELTIGKEIT, BV_VORLAGEN_NICHT_LESBAR, BV_VORLAGEN_FEHLT, BV_VORLAGEN_IN_WORD,
+            BV_LAUF_VORLAGE, BV_LAUF_RUECKFALL, BV_LAUF_UNBEKANNT, BV_LAUF_LEER, BV_LAUF_KOMMENTARE,
+            BV_LAUF_WARNUNGEN, BV_START_SICHT, BV_START_OHNE_WIRTSCHAFT
+        };
+
         /// <summary>
         /// Alle Kennungen dieser Klasse — für den Nachweis, dass jede einen
         /// Wissensabschnitt und eine Ressource <c>KI_FRAGE_&lt;Kennung&gt;</c> hat.
         /// </summary>
-        public static readonly string[] Alle =
+        public static readonly string[] Alle = new[]
         {
             FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM, FLOTTE_PEAKZIEL_UEBER_REFERENZSPITZE,
             FLOTTE_BETRIEBSKOSTEN_SEHR_NIEDRIG, FLOTTE_START_SOC_AUF_MINIMUM,
@@ -130,7 +305,7 @@ namespace WindowsFormsApplication1
             PV_STRANG_P5, PV_STRANG_P6, PV_STRANG_P7, PV_STRANG_P8,
             KLIMA_TRY_KEIN_BEREICH, KLIMA_TRY_AUSSERHALB, KLIMA_TRY_FORMATFEHLER,
             KLIMA_TRY_STANDORT_UNLESBAR
-        };
+        }.Concat(Berichtsvorlagen).ToArray();
 
         /// <summary>
         /// Die Kennung zu einem Prüfhinweis der Speicherflotte. Eine unbekannte

@@ -2816,6 +2816,9 @@
         internal static string BkbVariantenErl => MyResource.Resource.KI_DLG_BKB_VARIANTEN_ERL;
         internal static string BkbBausteineName => MyResource.Resource.BK_BER_LBL_BAUSTEINE;
         internal static string BkbBausteineErl => MyResource.Resource.KI_DLG_BKB_BAUSTEINE_ERL;
+        // BV-E1: die Word-Vorlage (KiDialoge.BerichtVorlagenfeld, angemeldet mit der Hülle)
+        internal static string BkbVorlageName => MyResource.Resource.KI_DLG_BKB_VORLAGE_NAME;
+        internal static string BkbVorlageErl => MyResource.Resource.KI_DLG_BKB_VORLAGE_ERL;
 
         // ---- „Projekt speichern unter"
         internal static string PrkQuelleName => MyResource.Resource.PRJ_KOPIE_LBL_AUSWAHL;
