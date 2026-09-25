@@ -24,6 +24,10 @@ namespace EPOS.UI.Dialoge.Admin;
 /// Datenbank (ein Datenbankwechsel beim nächsten Start) und der Abschalter des
 /// Assistenten selbst.</para>
 ///
+/// <para><b>BV-E1:</b> Firma und Vorlagenordner des Abschnitts „Bericht" gehen über
+/// <see cref="BerichtFirma"/> und <see cref="BerichtVorlagenordner"/> — an den Arbeitsstand
+/// des Dialogs, nicht an den Wertesatz.</para>
+///
 /// <para><b>Sie hält keinen Zustand</b>: Jeder Zugriff ruft die Delegaten des Dialogs.</para>
 /// </summary>
 public sealed class EinstellungenKiSicht : IKiFeldtafel
@@ -87,6 +91,49 @@ public sealed class EinstellungenKiSicht : IKiFeldtafel
         if (satz is null) return;
         weg(satz);
         Gesetzt?.Invoke();
+    }
+
+    // =====================================================================
+    //  BV-E1: der Abschnitt „Bericht" (Konzept Berichtsvorlagen 10.3)
+    //
+    //  Beide Werte stehen NICHT im Wertesatz des Kerns, sondern im eigenen Arbeitsstand
+    //  des Dialogs; hinaus gehen sie im OK-Weg wie die übrigen. Ein Setzen, das der
+    //  Anwender nicht könnte (Abschnitt fehlt, Ordnerwahl gesperrt), lehnt der Dialog
+    //  benannt ab. Die Feldkarte des Kerns zieht die zwei Felder nach.
+    // =====================================================================
+
+    /// <summary>Liest die Firma aus dem Arbeitsstand.</summary>
+    public Func<string>? BerichtFirmaLesen { get; init; }
+
+    /// <summary>Setzt die Firma im Arbeitsstand; wirft mit Grund, wo es nicht geht.</summary>
+    public Action<string>? BerichtFirmaSetzen { get; init; }
+
+    /// <summary>Liest den Vorlagenordner aus dem Arbeitsstand.</summary>
+    public Func<string>? BerichtVorlagenordnerLesen { get; init; }
+
+    /// <summary>Setzt den Vorlagenordner im Arbeitsstand; wirft mit Grund, wo die Wahl gesperrt ist.</summary>
+    public Action<string>? BerichtVorlagenordnerSetzen { get; init; }
+
+    /// <summary>Die Firma für <c>{{ersteller.firma}}</c> im Bericht.</summary>
+    public string BerichtFirma
+    {
+        get => BerichtFirmaLesen?.Invoke() ?? "";
+        set
+        {
+            BerichtFirmaSetzen?.Invoke(value ?? "");
+            Gesetzt?.Invoke();
+        }
+    }
+
+    /// <summary>Der Ordner der eigenen Berichtsvorlagen.</summary>
+    public string BerichtVorlagenordner
+    {
+        get => BerichtVorlagenordnerLesen?.Invoke() ?? "";
+        set
+        {
+            BerichtVorlagenordnerSetzen?.Invoke(value ?? "");
+            Gesetzt?.Invoke();
+        }
     }
 
     // =====================================================================

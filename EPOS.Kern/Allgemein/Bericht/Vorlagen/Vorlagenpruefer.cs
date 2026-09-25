@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using R = WindowsFormsApplication1.MyResource.Resource;
+using W = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WindowsFormsApplication1
 {
@@ -545,37 +546,37 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Überschrift 1 bis 3 wie in der Engine (Konzept 6.2): über <c>w:name</c> „heading n“ ohne
-            /// Rücksicht auf Groß- und Kleinschreibung, sonst über die ID <c>Heading n</c> — ein deutsches
-            /// Word übersetzt nur die ID. „Fehlt“ heißt: weder Name noch ID; „ohne Gliederungsebene“ heißt:
-            /// der gefundene Stil trägt kein <c>w:outlineLvl</c>. Geprüft nur, wenn die Vorlage Kapitel
-            /// einsetzt oder gar keinen Platzhalter hat (dann hängt die Engine den Sammelanker an) — sonst
-            /// setzt EPOS-Plan keine Überschrift in sie.
+            /// Überschrift 1 bis 3 GENAU wie in der Engine (Konzept 6.2): gesucht wird über
+            /// <see cref="WordVorlagenstile.Finde"/>, dieselbe Rollenauflösung, die beim Füllen die
+            /// Kapitelüberschriften setzt — über <c>w:name</c> „heading n“ ohne Rücksicht auf Groß- und
+            /// Kleinschreibung, sonst über die ID <c>Heading n</c> (ein deutsches Word übersetzt nur die
+            /// ID). Eine zweite Suche hier liefe der Engine davon: Was der Prüfer fände, die Engine aber
+            /// nicht, legte sie beim Füllen neu an, und die Prüfzeile hätte geschwiegen. „Fehlt“ heißt:
+            /// die Engine findet den Stil nicht und legt ihn an; „ohne Gliederungsebene“ heißt: der
+            /// gefundene Stil trägt kein <c>w:outlineLvl</c>. Geprüft nur, wenn die Vorlage Kapitel
+            /// einsetzt oder gar keinen Platzhalter hat (dann hängt die Engine den Sammelanker an) —
+            /// sonst setzt EPOS-Plan keine Überschrift in sie.
             /// </summary>
             public void PruefeUeberschriften(WordprocessingDocument doc)
             {
                 List<Vorlagenfund> gezaehlt = Gezaehlt;
                 if (!(HatKapitel(gezaehlt) || gezaehlt.Count == 0)) return;
+                MainDocumentPart main = doc.MainDocumentPart;
+                if (main == null) return;
 
-                OpenXmlElement wurzel = doc.MainDocumentPart?.StyleDefinitionsPart?.RootElement;
-                List<OpenXmlElement> stile = wurzel == null ? new List<OpenXmlElement>()
-                    : wurzel.ChildElements.Where(e => Vorlagenteile.IstW(e, "style") &&
-                        (Vorlagenteile.Attribut(e, "type", Vorlagenteile.NS_W) ?? "paragraph") == "paragraph").ToList();
+                // Nur lesen: Finde legt nichts an (das tut allein Id beim Füllen).
+                var rollen = new WordVorlagenstile(main);
+                List<W.Style> stile = main.StyleDefinitionsPart?.Styles?.Elements<W.Style>().ToList() ?? new List<W.Style>();
+                string[] ueberschriften = { WordVorlagenstile.UEBERSCHRIFT1, WordVorlagenstile.UEBERSCHRIFT2, WordVorlagenstile.UEBERSCHRIFT3 };
                 var befunde = new List<string>();
-                for (int n = 1; n <= 3; n++)
+                for (int n = 1; n <= ueberschriften.Length; n++)
                 {
-                    string zahl = n.ToString(CultureInfo.InvariantCulture);
-                    OpenXmlElement stil =
-                        stile.FirstOrDefault(e => string.Equals(
-                            (Vorlagenteile.Attribut(Vorlagenteile.KindW(e, "name"), "val", Vorlagenteile.NS_W) ?? "").Trim(),
-                            "heading " + zahl, StringComparison.OrdinalIgnoreCase)) ??
-                        stile.FirstOrDefault(e => string.Equals(
-                            (Vorlagenteile.Attribut(e, "styleId", Vorlagenteile.NS_W) ?? "").Trim(),
-                            "Heading" + zahl, StringComparison.OrdinalIgnoreCase));
+                    string id = rollen.Finde(ueberschriften[n - 1]);
+                    W.Style stil = id == null ? null : stile.FirstOrDefault(s => string.Equals(s.StyleId?.Value, id, StringComparison.Ordinal));
                     string bezeichnung = T(nameof(R.VF_PRUEF_STIL_UEBERSCHRIFT), n);
                     if (stil == null)
                         befunde.Add(T(nameof(R.VF_PRUEF_STIL_FEHLT), bezeichnung));
-                    else if (Vorlagenteile.KindW(Vorlagenteile.KindW(stil, "pPr"), "outlineLvl") == null)
+                    else if (stil.StyleParagraphProperties?.OutlineLevel == null)
                         befunde.Add(T(nameof(R.VF_PRUEF_STIL_OHNE_EBENE), bezeichnung));
                 }
                 if (befunde.Count > 0)

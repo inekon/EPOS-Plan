@@ -19392,6 +19392,147 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
     <value>Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein?</value>
   </data>
+  <data name="KI_FRAGE_VF_PRUEF_UNLESBAR" xml:space="preserve">
+    <value>Die Berichtsvorlage kann nicht gelesen werden. Was bedeutet das, und wie mache ich sie wieder nutzbar?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_FORMAT" xml:space="preserve">
+    <value>Das Dateiformat meiner Berichtsvorlage wird nicht unterstützt. Welches Format braucht EPOS-Plan?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_GROESSE" xml:space="preserve">
+    <value>Meine Berichtsvorlage ist zu groß. Wie verkleinere ich sie?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_GROESSE_ENTPACKT" xml:space="preserve">
+    <value>Meine Berichtsvorlage ist entpackt zu groß. Was heißt das, und was kann ich tun?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MAKROS" xml:space="preserve">
+    <value>Meine Berichtsvorlage enthält Makros. Warum wird sie nicht verwendet?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_AENDERUNGEN" xml:space="preserve">
+    <value>Die Berichtsvorlage enthält nachverfolgte Änderungen. Was muss ich tun?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_VORLAGENVERWEIS" xml:space="preserve">
+    <value>Warum entfernt EPOS-Plan den Verweis auf die Dokumentvorlage meiner Berichtsvorlage?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_EXTERN" xml:space="preserve">
+    <value>Warum werden verknüpfte Inhalte meiner Berichtsvorlage entfernt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_UEBERSCHRIFTEN" xml:space="preserve">
+    <value>Die Prüfung meldet fehlende Überschriftenstile. Was muss meine Berichtsvorlage enthalten?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
+    <value>Ein Platzhalter meiner Berichtsvorlage wird nicht erkannt. Woran liegt das?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MARKE_UNBEKANNT" xml:space="preserve">
+    <value>Die Prüfung meldet eine unbekannte Marke in doppelten Klammern. Was bedeutet das?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_UNBEKANNT" xml:space="preserve">
+    <value>Die Prüfung meldet einen unbekannten Platzhalter. Wie finde ich den richtigen?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_NORMALFORM" xml:space="preserve">
+    <value>Was bedeutet der Hinweis auf die Normalform eines Platzhalters in meiner Berichtsvorlage?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
+    <value>Warum wird ein Wert je Variante in meiner Berichtsvorlage nicht gefüllt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>Warum wird ein Wert je Gebäude in meiner Berichtsvorlage nicht gefüllt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ORT" xml:space="preserve">
+    <value>Die Prüfung sagt, ein Platzhalter passt nicht an diese Stelle. Wohin gehört er?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ANGABE_UNBEKANNT" xml:space="preserve">
+    <value>Die Prüfung meldet eine unbekannte Formatangabe. Welche Angaben gibt es?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ANGABE_UNPASSEND" xml:space="preserve">
+    <value>Warum passt eine Formatangabe nicht zu meinem Platzhalter?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_BEREICH" xml:space="preserve">
+    <value>Die Prüfung meldet einen unbekannten Wiederholbereich. Was bedeutet das?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
+    <value>Warum wird ein Block in meiner Berichtsvorlage nicht unterstützt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
+    <value>Die Prüfung meldet eine Bedingung ohne Schalter. Was fehlt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_WENN_KEIN_SCHALTER" xml:space="preserve">
+    <value>Warum taugt mein Platzhalter nicht als Bedingung?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_ALLEIN" xml:space="preserve">
+    <value>Warum darf eine Blockmarke nicht im Satz stehen?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_TIEFE" xml:space="preserve">
+    <value>Wie tief dürfen Blöcke in meiner Berichtsvorlage verschachtelt sein?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_ENDE" xml:space="preserve">
+    <value>Die Prüfung meldet ein Blockende ohne Anfang. Was ist zu tun?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
+    <value>Die Prüfung meldet einen Block, der nicht geschlossen wird. Was fehlt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_VERBUNDEN" xml:space="preserve">
+    <value>Warum stören verbundene Zellen in der Wiederholzeile?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_TABELLE" xml:space="preserve">
+    <value>Die Prüfung meldet einen Block über eine Tabellengrenze. Wie setze ich ihn richtig?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_DATUMSFELD" xml:space="preserve">
+    <value>Warum soll ich statt des Datumsfelds einen Platzhalter verwenden?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KOMMENTARE" xml:space="preserve">
+    <value>Was geschieht mit den Kommentaren meiner Berichtsvorlage?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>Meine Berichtsvorlage enthält keinen Platzhalter. Wo erscheint dann der Bericht?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_SPRACHE" xml:space="preserve">
+    <value>Die Sprache meiner Berichtsvorlage weicht ab. Was bedeutet das für den Bericht?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_FASSUNG_ALT" xml:space="preserve">
+    <value>Meine Berichtsvorlage stammt aus einer älteren Katalogfassung. Muss ich etwas ändern?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_NEU" xml:space="preserve">
+    <value>Die Prüfung nennt ein neues Kapitel. Wie nehme ich es in meine Vorlage auf?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_FASSUNG_NEU" xml:space="preserve">
+    <value>Meine Berichtsvorlage stammt aus einer neueren Katalogfassung. Was kann ich tun?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_GUELTIGKEIT" xml:space="preserve">
+    <value>Die Prüfung meldet fehlende Gültigkeitshinweise. Was muss in meine Vorlage?</value>
+  </data>
+  <data name="KI_FRAGE_BV_VORLAGEN_NICHT_LESBAR" xml:space="preserve">
+    <value>Meine Berichtsvorlage kann nicht gelesen werden. Woran kann das liegen?</value>
+  </data>
+  <data name="KI_FRAGE_BV_VORLAGEN_FEHLT" xml:space="preserve">
+    <value>Meine gewählte Berichtsvorlage ist nicht vorhanden. Was macht EPOS-Plan dann?</value>
+  </data>
+  <data name="KI_FRAGE_BV_VORLAGEN_IN_WORD" xml:space="preserve">
+    <value>Meine Berichtsvorlage ist in Word geöffnet. Welcher Stand wird verwendet?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_VORLAGE" xml:space="preserve">
+    <value>Nach welcher Regel wählt EPOS-Plan die Word-Vorlage meines Berichts?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_RUECKFALL" xml:space="preserve">
+    <value>Die Laufmeldung nennt einen Rückfall bei der Vorlagenwahl. Was ist passiert?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_UNBEKANNT" xml:space="preserve">
+    <value>Im Bericht stehen gelb markierte Platzhalter. Was bedeutet das?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_LEER" xml:space="preserve">
+    <value>Die Laufmeldung nennt Platzhalter ohne Wert. Warum sind sie leer?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_KOMMENTARE" xml:space="preserve">
+    <value>Warum fehlen die Kommentare meiner Vorlage im Bericht?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_WARNUNGEN" xml:space="preserve">
+    <value>Die Laufmeldung nennt Warnungen beim Füllen der Vorlage. Was ist zu tun?</value>
+  </data>
+  <data name="KI_FRAGE_BV_START_SICHT" xml:space="preserve">
+    <value>Die Vorprüfung meldet, dass meine Vorlage den Paarvergleich nutzt. Was muss ich einstellen?</value>
+  </data>
+  <data name="KI_FRAGE_BV_START_OHNE_WIRTSCHAFT" xml:space="preserve">
+    <value>Warum bietet mir EPOS-Plan für den Wirtschaftlichkeitsbericht die Standardvorlage an?</value>
+  </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Feldwerte mitsenden</value>
   </data>
@@ -24599,6 +24740,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_BKB_BAUSTEINE_ERL" xml:space="preserve">
     <value>Die gewählten Bausteine als Aufstellung — die Kapitel, die der Bericht trägt.</value>
+  </data>
+  <data name="KI_DLG_BKB_VORLAGE_NAME" xml:space="preserve">
+    <value>Word-Vorlage</value>
+  </data>
+  <data name="KI_DLG_BKB_VORLAGE_ERL" xml:space="preserve">
+    <value>Die Word-Vorlage des Berichts, gewählt über ihre Kennung aus der Vorlagenliste: „standard“ für die Standardvorlage (EPOS-Plan), „eigen:“ mit dem Dateinamen für eine eigene Vorlage im Vorlagenordner. Die Wahl gilt für dieses Stammprojekt; fehlt die Datei später, nimmt der Bericht die Vorgabe bzw. die Standardvorlage und nennt das.</value>
   </data>
   <data name="KI_DLG_PRK_QUELLE_ERL" xml:space="preserve">
     <value>Das Projekt, das kopiert wird; es zu wechseln belegt Beschreibung, Kunde und Bearbeiter aus ihm vor.</value>
@@ -34373,6 +34520,78 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
     <value>„{0}“ liegt bereits im Vorlagenordner</value>
+  </data>
+  <data name="BV_LAUF_VORLAGE" xml:space="preserve">
+    <value>Word-Vorlage: „{0}“ ({1})</value>
+  </data>
+  <data name="BV_LAUF_RUECKFALL" xml:space="preserve">
+    <value>Rückfall bei der Vorlagenwahl:</value>
+  </data>
+  <data name="BV_LAUF_UNBEKANNT" xml:space="preserve">
+    <value>Nicht ersetzte Platzhalter, im Bericht gelb markiert: {0}</value>
+  </data>
+  <data name="BV_LAUF_LEER" xml:space="preserve">
+    <value>Platzhalter ohne Wert, mit dem Leerwert gefüllt: {0}</value>
+  </data>
+  <data name="BV_LAUF_KOMMENTARE" xml:space="preserve">
+    <value>Kommentare der Vorlage entfernt: {0}</value>
+  </data>
+  <data name="BV_LAUF_WARNUNGEN" xml:space="preserve">
+    <value>Warnungen beim Füllen der Vorlage: {0}</value>
+  </data>
+  <data name="BV_LAUF_PUNKT_UNBEKANNT" xml:space="preserve">
+    <value>{0} – {1}; {2}</value>
+  </data>
+  <data name="BV_LAUF_PUNKT_LEER" xml:space="preserve">
+    <value>{0}: leer bei {1} von {2} Stellen</value>
+  </data>
+  <data name="BV_LAUF_PUNKT_LEER_EINE" xml:space="preserve">
+    <value>{0}: leer</value>
+  </data>
+  <data name="BV_LAUF_WEITERE" xml:space="preserve">
+    <value>… und {0} weitere</value>
+  </data>
+  <data name="BV_LAUF_EINGEBAUT" xml:space="preserve">
+    <value>Eingebaute Formate</value>
+  </data>
+  <data name="BV_LAUF_NICHT_LESBAR" xml:space="preserve">
+    <value>„{0}“ ließ sich nicht lesen: {1}</value>
+  </data>
+  <data name="BV_LAUF_NICHT_FUELLBAR" xml:space="preserve">
+    <value>„{0}“ ließ sich nicht füllen: {1}</value>
+  </data>
+  <data name="BV_LAUF_ERSETZT" xml:space="preserve">
+    <value>„{0}“ für diesen Bericht durch „{1}“ ersetzt</value>
+  </data>
+  <data name="BV_START_KOPF" xml:space="preserve">
+    <value>Für diesen Bericht werden {0} Projekt(e) neu simuliert und in die Word-Vorlage „{1}“ gefüllt.</value>
+  </data>
+  <data name="BV_START_BEFUNDE" xml:space="preserve">
+    <value>Die Vorprüfung meldet:</value>
+  </data>
+  <data name="BV_START_PUNKT" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="BV_START_SICHT" xml:space="preserve">
+    <value>Die Vorlage nutzt den Paarvergleich (stand.a, stand.b), gewählt ist Sicht 1</value>
+  </data>
+  <data name="BV_START_OHNE_WIRTSCHAFT" xml:space="preserve">
+    <value>Die Vorlage „{0}“ enthält keinen Platzhalter der Wirtschaftlichkeit – für diesen Bericht wird die Standardvorlage angeboten</value>
+  </data>
+  <data name="BV_START_GELB" xml:space="preserve">
+    <value>„Mit meiner Vorlage“: Nicht erkannte Platzhalter bleiben gelb markiert im Bericht stehen.</value>
+  </data>
+  <data name="BV_START_FRAGE" xml:space="preserve">
+    <value>Wie soll der Bericht entstehen?</value>
+  </data>
+  <data name="BV_START_WEG_EIGENE" xml:space="preserve">
+    <value>Mit meiner Vorlage</value>
+  </data>
+  <data name="BV_START_WEG_STANDARD" xml:space="preserve">
+    <value>Mit Standardvorlage</value>
+  </data>
+  <data name="BV_START_WEG_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
   </data>
   <data name="BV_TEXT_SEITE" xml:space="preserve">
     <value>Seite</value>

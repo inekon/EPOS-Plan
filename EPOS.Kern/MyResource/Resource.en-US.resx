@@ -19385,6 +19385,147 @@ Please go through the project page again so that the data of the selected projec
   <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
     <value>The header of the TRY file does not name a readable location. What does that mean and how do I enter the location?</value>
   </data>
+  <data name="KI_FRAGE_VF_PRUEF_UNLESBAR" xml:space="preserve">
+    <value>The report template cannot be read. What does that mean and how do I make it usable again?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_FORMAT" xml:space="preserve">
+    <value>The file format of my report template is not supported. Which format does EPOS-Plan need?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_GROESSE" xml:space="preserve">
+    <value>My report template is too large. How do I make it smaller?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_GROESSE_ENTPACKT" xml:space="preserve">
+    <value>My report template is too large when unpacked. What does that mean and what can I do?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MAKROS" xml:space="preserve">
+    <value>My report template contains macros. Why is it not used?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_AENDERUNGEN" xml:space="preserve">
+    <value>The report template contains tracked changes. What do I need to do?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_VORLAGENVERWEIS" xml:space="preserve">
+    <value>Why does EPOS-Plan remove the reference to the document template of my report template?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_EXTERN" xml:space="preserve">
+    <value>Why are linked contents of my report template removed?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_UEBERSCHRIFTEN" xml:space="preserve">
+    <value>The check reports missing heading styles. What must my report template contain?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
+    <value>A placeholder in my report template is not recognised. Why?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_MARKE_UNBEKANNT" xml:space="preserve">
+    <value>The check reports an unknown marker in double braces. What does that mean?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_UNBEKANNT" xml:space="preserve">
+    <value>The check reports an unknown placeholder. How do I find the right one?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_NORMALFORM" xml:space="preserve">
+    <value>What does the note about the normal form of a placeholder in my report template mean?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
+    <value>Why is a per-variant value in my report template not filled?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>Why is a per-building value in my report template not filled?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ORT" xml:space="preserve">
+    <value>The check says a placeholder does not fit this position. Where does it belong?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ANGABE_UNBEKANNT" xml:space="preserve">
+    <value>The check reports an unknown format option. Which options exist?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ANGABE_UNPASSEND" xml:space="preserve">
+    <value>Why does a format option not fit my placeholder?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_BEREICH" xml:space="preserve">
+    <value>The check reports an unknown repeat range. What does that mean?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
+    <value>Why is a block in my report template not supported?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
+    <value>The check reports a condition without a switch. What is missing?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_WENN_KEIN_SCHALTER" xml:space="preserve">
+    <value>Why can my placeholder not be used as a condition?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_ALLEIN" xml:space="preserve">
+    <value>Why must a block marker not stand inside a sentence?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_TIEFE" xml:space="preserve">
+    <value>How deeply may blocks be nested in my report template?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_ENDE" xml:space="preserve">
+    <value>The check reports a block end without a start. What should I do?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
+    <value>The check reports a block that is not closed. What is missing?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_VERBUNDEN" xml:space="preserve">
+    <value>Why do merged cells in the repeat row cause a problem?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_BLOCK_TABELLE" xml:space="preserve">
+    <value>The check reports a block crossing a table boundary. How do I place it correctly?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_DATUMSFELD" xml:space="preserve">
+    <value>Why should I use a placeholder instead of the date field?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KOMMENTARE" xml:space="preserve">
+    <value>What happens to the comments in my report template?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>My report template contains no placeholder. Where does the report appear then?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_SPRACHE" xml:space="preserve">
+    <value>The language of my report template differs. What does that mean for the report?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_FASSUNG_ALT" xml:space="preserve">
+    <value>My report template comes from an older catalogue version. Do I need to change anything?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_NEU" xml:space="preserve">
+    <value>The check names a new chapter. How do I add it to my template?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_FASSUNG_NEU" xml:space="preserve">
+    <value>My report template comes from a newer catalogue version. What can I do?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_GUELTIGKEIT" xml:space="preserve">
+    <value>The check reports missing validity notes. What must go into my template?</value>
+  </data>
+  <data name="KI_FRAGE_BV_VORLAGEN_NICHT_LESBAR" xml:space="preserve">
+    <value>My report template cannot be read. What could be the reason?</value>
+  </data>
+  <data name="KI_FRAGE_BV_VORLAGEN_FEHLT" xml:space="preserve">
+    <value>My chosen report template is missing. What does EPOS-Plan do then?</value>
+  </data>
+  <data name="KI_FRAGE_BV_VORLAGEN_IN_WORD" xml:space="preserve">
+    <value>My report template is open in Word. Which version is used?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_VORLAGE" xml:space="preserve">
+    <value>By which rule does EPOS-Plan choose the Word template of my report?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_RUECKFALL" xml:space="preserve">
+    <value>The run message reports a fallback in the template choice. What happened?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_UNBEKANNT" xml:space="preserve">
+    <value>There are placeholders highlighted yellow in the report. What does that mean?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_LEER" xml:space="preserve">
+    <value>The run message lists placeholders without a value. Why are they blank?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_KOMMENTARE" xml:space="preserve">
+    <value>Why are the comments of my template missing in the report?</value>
+  </data>
+  <data name="KI_FRAGE_BV_LAUF_WARNUNGEN" xml:space="preserve">
+    <value>The run message lists warnings while filling the template. What should I do?</value>
+  </data>
+  <data name="KI_FRAGE_BV_START_SICHT" xml:space="preserve">
+    <value>The pre-check reports that my template uses the pair comparison. What do I need to set?</value>
+  </data>
+  <data name="KI_FRAGE_BV_START_OHNE_WIRTSCHAFT" xml:space="preserve">
+    <value>Why does EPOS-Plan offer me the standard template for the economic-analysis report?</value>
+  </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Send field values</value>
   </data>
@@ -24592,6 +24733,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_BKB_BAUSTEINE_ERL" xml:space="preserve">
     <value>The selected building blocks as a listing — the chapters the report carries.</value>
+  </data>
+  <data name="KI_DLG_BKB_VORLAGE_NAME" xml:space="preserve">
+    <value>Word template</value>
+  </data>
+  <data name="KI_DLG_BKB_VORLAGE_ERL" xml:space="preserve">
+    <value>The Word template of the report, chosen by its identifier from the template list: “standard” for the standard template (EPOS-Plan), “eigen:” followed by the file name for a template of your own in the template folder. The choice applies to this base project; if the file is missing later, the report uses the default or the standard template and says so.</value>
   </data>
   <data name="KI_DLG_PRK_QUELLE_ERL" xml:space="preserve">
     <value>The project that is copied; changing it pre-fills description, customer and editor from it.</value>
@@ -34366,6 +34513,78 @@ Do you want to allow this?</value>
   </data>
   <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
     <value>“{0}” is already in the template folder</value>
+  </data>
+  <data name="BV_LAUF_VORLAGE" xml:space="preserve">
+    <value>Word template: “{0}” ({1})</value>
+  </data>
+  <data name="BV_LAUF_RUECKFALL" xml:space="preserve">
+    <value>Fallback in the template choice:</value>
+  </data>
+  <data name="BV_LAUF_UNBEKANNT" xml:space="preserve">
+    <value>Placeholders not replaced, highlighted yellow in the report: {0}</value>
+  </data>
+  <data name="BV_LAUF_LEER" xml:space="preserve">
+    <value>Placeholders without a value, filled with the blank value: {0}</value>
+  </data>
+  <data name="BV_LAUF_KOMMENTARE" xml:space="preserve">
+    <value>Template comments removed: {0}</value>
+  </data>
+  <data name="BV_LAUF_WARNUNGEN" xml:space="preserve">
+    <value>Warnings while filling the template: {0}</value>
+  </data>
+  <data name="BV_LAUF_PUNKT_UNBEKANNT" xml:space="preserve">
+    <value>{0} – {1}; {2}</value>
+  </data>
+  <data name="BV_LAUF_PUNKT_LEER" xml:space="preserve">
+    <value>{0}: blank at {1} of {2} places</value>
+  </data>
+  <data name="BV_LAUF_PUNKT_LEER_EINE" xml:space="preserve">
+    <value>{0}: blank</value>
+  </data>
+  <data name="BV_LAUF_WEITERE" xml:space="preserve">
+    <value>… and {0} more</value>
+  </data>
+  <data name="BV_LAUF_EINGEBAUT" xml:space="preserve">
+    <value>Built-in formats</value>
+  </data>
+  <data name="BV_LAUF_NICHT_LESBAR" xml:space="preserve">
+    <value>“{0}” could not be read: {1}</value>
+  </data>
+  <data name="BV_LAUF_NICHT_FUELLBAR" xml:space="preserve">
+    <value>“{0}” could not be filled: {1}</value>
+  </data>
+  <data name="BV_LAUF_ERSETZT" xml:space="preserve">
+    <value>“{0}” replaced by “{1}” for this report</value>
+  </data>
+  <data name="BV_START_KOPF" xml:space="preserve">
+    <value>For this report, {0} project(s) will be simulated again and filled into the Word template “{1}”.</value>
+  </data>
+  <data name="BV_START_BEFUNDE" xml:space="preserve">
+    <value>The pre-check reports:</value>
+  </data>
+  <data name="BV_START_PUNKT" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="BV_START_SICHT" xml:space="preserve">
+    <value>The template uses the pair comparison (stand.a, stand.b), but view 1 is selected</value>
+  </data>
+  <data name="BV_START_OHNE_WIRTSCHAFT" xml:space="preserve">
+    <value>The template “{0}” contains no economic-analysis placeholder – the standard template is offered for this report</value>
+  </data>
+  <data name="BV_START_GELB" xml:space="preserve">
+    <value>“With my template”: unrecognised placeholders remain in the report, highlighted yellow.</value>
+  </data>
+  <data name="BV_START_FRAGE" xml:space="preserve">
+    <value>How should the report be created?</value>
+  </data>
+  <data name="BV_START_WEG_EIGENE" xml:space="preserve">
+    <value>With my template</value>
+  </data>
+  <data name="BV_START_WEG_STANDARD" xml:space="preserve">
+    <value>With the standard template</value>
+  </data>
+  <data name="BV_START_WEG_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
   </data>
   <data name="BV_TEXT_SEITE" xml:space="preserve">
     <value>Page</value>
