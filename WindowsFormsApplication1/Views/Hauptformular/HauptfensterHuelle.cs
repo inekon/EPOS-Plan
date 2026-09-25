@@ -125,6 +125,15 @@ namespace WindowsFormsApplication1
                 ["SimulationGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(_simulation.AnsichtGaben),
 
+                // DIE ZWEI KATALOGE DER GEBAEUDESIMULATION (Stufe G3, Architektur 3.1) als
+                // freie Ansichten der Wurzel - kein Fenster in der Schale. Die Huellen liegen
+                // plattformfrei in EPOS.UI.Daten; iOS nimmt dieselben ueber die Projektquelle.
+                // Ein Delegat je Betreten: Die Verwaltung liest ihren Katalog beim Oeffnen.
+                ["BaustoffKatalogGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BaustoffKatalogHuelle.Gaben),
+                ["BauteilaufbauKatalogGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BauteilaufbauHuelle.Gaben),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname

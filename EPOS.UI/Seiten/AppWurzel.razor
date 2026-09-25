@@ -180,6 +180,21 @@ else if (_ansicht == Seitenschluessel.Gesetzeskatalog && _gesetzeskatalog is not
     <EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog @attributes="_gesetzeskatalog"
                                                               Geschlossen="BeiGesetzeskatalogFertig" />
 }
+@* DIE ZWEI KATALOGE DER GEBAEUDESIMULATION (Stufe G3, Softwarearchitektur 3.1): Baustoffe
+   und Bauteilaufbauten sind freie Ansichten auf BEIDEN Plattformen - die ersten
+   Katalogeditoren ohne Fenster in der Schale. Unter Windows reicht die Hauptfensterhuelle
+   ihren Parametersatz als Delegat herein, auf iOS die Projektquelle; die Huelle dahinter
+   ist dieselbe (EPOS.UI.Daten). *@
+else if (_ansicht == Seitenschluessel.BaustoffKatalog && _baustoffKatalog is not null)
+{
+    <EPOS.UI.Dialoge.Bedarf.BaustoffKatalogDialog @attributes="_baustoffKatalog"
+                                                  Geschlossen="BeiBaustoffKatalogFertig" />
+}
+else if (_ansicht == Seitenschluessel.BauteilaufbauKatalog && _bauteilaufbauKatalog is not null)
+{
+    <EPOS.UI.Dialoge.Bedarf.BauteilaufbauDialog @attributes="_bauteilaufbauKatalog"
+                                                Geschlossen="BeiBauteilaufbauKatalogFertig" />
+}
 else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not null)
 {
     <EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitDialog
@@ -388,6 +403,10 @@ else
     private IReadOnlyDictionary<string, object>? _kostenverwaltung;
     private IReadOnlyDictionary<string, object>? _nutzungsdauern;
     private IReadOnlyDictionary<string, object>? _gesetzeskatalog;
+
+    // Die ZWEI Kataloge der Gebaeudesimulation (G3). Derselbe Lebenslauf.
+    private IReadOnlyDictionary<string, object>? _baustoffKatalog;
+    private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -583,6 +602,23 @@ else
     /// (<c>_ergebnisGueltig = false</c>) die Hülle, die Schritt ③ danach zeigt.</para>
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Baustoffe", wenn ihn die Hülle stellt (Windows:
+    /// <c>BaustoffKatalogHuelle.Gaben</c> über <c>HauptfensterHuelle</c>). Ohne ihn fragt die
+    /// Wurzel <c>IProjektQuelle.BaustoffKatalogGaben</c> — der iOS-Weg.
+    ///
+    /// <para><b>Ein Delegat je Betreten</b>: Die Verwaltung liest ihren Katalog beim Öffnen;
+    /// ein fertiges Wörterbuch hielte den Stand des Programmstarts.</para>
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BaustoffKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Bauteilaufbauten" — dieselbe Form wie
+    /// <see cref="BaustoffKatalogGaben"/>; ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.BauteilaufbauKatalogGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
 
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
@@ -1156,6 +1192,25 @@ else
             return true;
         }
 
+        // ---- Die ZWEI Kataloge der Gebaeudesimulation (G3) ---------------------
+        // Der Delegat der Huelle hat Vorrang (Windows), sonst die Quelle (iOS); ohne beide
+        // bleibt die Ansicht stehen und sagt warum.
+        if (maske == Seitenschluessel.BaustoffKatalog)
+        {
+            _baustoffKatalog = BaustoffKatalogGaben?.Invoke() ?? Quelle.BaustoffKatalogGaben();
+            if (_baustoffKatalog is null) { _statuszeile = KeinBaustoffKatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.BauteilaufbauKatalog)
+        {
+            _bauteilaufbauKatalog = BauteilaufbauKatalogGaben?.Invoke() ?? Quelle.BauteilaufbauKatalogGaben();
+            if (_bauteilaufbauKatalog is null) { _statuszeile = KeinBauteilaufbauKatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.BhkwWirtschaftlichkeit)
         {
             _bhkw = Quelle.BhkwDaten(_projekt?.Id ?? 0);
@@ -1344,6 +1399,10 @@ else
         _kostenverwaltung = null;
         _nutzungsdauern = null;
         _gesetzeskatalog = null;
+
+        // Und fuer die zwei Kataloge der Gebaeudesimulation (G3).
+        _baustoffKatalog = null;
+        _bauteilaufbauKatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
 
@@ -1401,6 +1460,14 @@ else
 
     /// <summary>Der Gesetzeskatalog ist zu.</summary>
     private void BeiGesetzeskatalogFertig(bool ok) => ZurueckZurListe();
+
+    // ---- Rueckwege der zwei Kataloge der Gebaeudesimulation (G3) ------------
+
+    /// <summary>Die Baustoffverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
+    private void BeiBaustoffKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
+    private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// „Als Variante speichern" ist zu. <c>null</c> = abgebrochen; sonst geht die
@@ -1686,7 +1753,12 @@ else
                     // zu erreichen.
                     || maske == Seitenschluessel.Kostenverwaltung
                     || maske == Seitenschluessel.NutzungsdauerVerwaltung
-                    || maske == Seitenschluessel.Gesetzeskatalog;
+                    || maske == Seitenschluessel.Gesetzeskatalog
+
+                    // Die zwei Kataloge der Gebaeudesimulation (G3) - Menue und
+                    // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
+                    || maske == Seitenschluessel.BaustoffKatalog
+                    || maske == Seitenschluessel.BauteilaufbauKatalog;
 
         if (!bekannt) return false;
 
@@ -1889,4 +1961,12 @@ else
     /// <summary>Meldung, wenn der Gesetzeskatalog nicht aufzubauen ist.</summary>
     [Parameter] public string KeinGesetzeskatalogText { get; set; } =
         "Der Gesetzeskatalog steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    // ---- Die zwei Kataloge der Gebaeudesimulation (G3) ------------------
+
+    /// <summary>Meldung, wenn die Baustoffverwaltung nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinBaustoffKatalogText { get; set; } = Resource.BST_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Aufbauverwaltung nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinBauteilaufbauKatalogText { get; set; } = Resource.BTA_KEINE_ANSICHT;
 }

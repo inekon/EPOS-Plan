@@ -634,11 +634,73 @@ public class AppWurzelTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Alle ACHT Ablehnungen sind voneinander verschieden</b> — die fünf aus
-    /// KI‑D‑Q8 und die drei aus E3/8.
+    /// <b>Die zwei Kataloge der Gebäudesimulation</b> (G3) sind freie Ansichten auf BEIDEN
+    /// Plattformen: Mit dem Parametersatz der Quelle (iOS) zeichnet die Wurzel die Verwaltung,
+    /// der Rückweg führt zur Startansicht.
+    /// </summary>
+    [Theory]
+    [InlineData(Seitenschluessel.BaustoffKatalog, "epos-baustoff-admin")]
+    [InlineData(Seitenschluessel.BauteilaufbauKatalog, "epos-bauteilaufbau-admin")]
+    public void Mit_Parametersatz_zeichnet_die_Wurzel_die_Kataloge_der_Gebaeudehuelle(string schluessel, string klasse)
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            BaustoffKatalog = new Dictionary<string, object>(),
+            BauteilaufbauKatalog = new Dictionary<string, object>()
+        };
+        var cut = Aufbauen(quelle);
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-seite"));
+        Assert.Single(cut.FindAll("." + klasse));
+
+        cut.Find(".epos-dialog-kopf .epos-dialog-zu").Click();       // Kreuz = Beenden
+        Assert.Single(cut.FindAll(".epos-seite"));
+    }
+
+    /// <summary>
+    /// Unter Windows reicht die Hülle den Parametersatz als DELEGAT herein (über das
+    /// Hauptfenster); er hat Vorrang vor der Quelle.
     /// </summary>
     [Fact]
-    public void Die_acht_Ablehnungen_sind_voneinander_verschieden()
+    public void Der_Delegat_der_Huelle_hat_Vorrang_vor_der_Quelle()
+    {
+        int gerufen = 0;
+        Services.AddSingleton<IProjektQuelle>(new TestProjektquelle(ZweiProjekte));
+        var cut = Render<AppWurzel>(ps => ps
+            .Add(p => p.BaustoffKatalogGaben, () => { gerufen++; return new Dictionary<string, object>(); }));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BaustoffKatalog));
+        cut.Render();
+
+        Assert.Equal(1, gerufen);
+        Assert.Single(cut.FindAll(".epos-baustoff-admin"));
+    }
+
+    /// <summary>Ohne Parametersatz bleiben die zwei Kataloge zu und sagen warum.</summary>
+    [Theory]
+    [InlineData(Seitenschluessel.BaustoffKatalog)]
+    [InlineData(Seitenschluessel.BauteilaufbauKatalog)]
+    public void Ohne_Parametersatz_bleiben_die_Kataloge_der_Gebaeudehuelle_zu(string schluessel)
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-dialog"));
+        Assert.NotEmpty(cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Alle ZEHN Ablehnungen sind voneinander verschieden</b> — die fünf aus
+    /// KI‑D‑Q8, die drei aus E3/8 und die zwei der Gebäudehülle (G3).
+    /// </summary>
+    [Fact]
+    public void Die_zehn_Ablehnungen_sind_voneinander_verschieden()
     {
         AppWurzel wurzel = Aufbauen(new TestProjektquelle(ZweiProjekte)).Instance;
 
@@ -651,7 +713,9 @@ public class AppWurzelTests : EposBunitContext
             wurzel.KeineStromganglinienText,
             wurzel.KeineKostenverwaltungText,
             wurzel.KeineNutzungsdauernText,
-            wurzel.KeinGesetzeskatalogText
+            wurzel.KeinGesetzeskatalogText,
+            wurzel.KeinBaustoffKatalogText,
+            wurzel.KeinBauteilaufbauKatalogText
         };
 
         Assert.DoesNotContain(gruende, g => string.IsNullOrWhiteSpace(g));

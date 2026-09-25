@@ -286,6 +286,13 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.Startseite:
                     return AnsichtZeigen(maske, Marke(argumente));
 
+                // Die zwei KATALOGE der Gebaeudesimulation (Stufe G3) sind freie Ansichten der
+                // Wurzel - derselbe Weg wie oben, ohne Argument. So erreicht auch der Assistent
+                // (KiMaskenziele.BAUSTOFF_KATALOG, …BAUTEILAUFBAU_KATALOG) die Verwaltungen.
+                case Seitenschluessel.BaustoffKatalog:
+                case Seitenschluessel.BauteilaufbauKatalog:
+                    return AnsichtZeigen(maske, "");
+
             }
 
             return false;

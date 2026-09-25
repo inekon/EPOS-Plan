@@ -557,6 +557,22 @@ public sealed class IosProjektQuelle : IProjektQuelle
         catch (Exception ex) { Console.WriteLine("Gesetzeskatalog: " + ex.Message); return null; }
     }
 
+    /// <inheritdoc />
+    /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (Gebäudesimulation G3).</remarks>
+    public IReadOnlyDictionary<string, object>? BaustoffKatalogGaben()
+    {
+        try { return BaustoffKatalogHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Baustoffe: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (Gebäudesimulation G3).</remarks>
+    public IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben()
+    {
+        try { return BauteilaufbauHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Bauteilaufbauten: " + ex.Message); return null; }
+    }
+
     // =====================================================================
 
     private static int Zahl(object wert)
