@@ -35,7 +35,7 @@
         public const double KELVIN_JE_FAHRENHEIT = 5.0 / 9.0;
 
         /// <summary>Die Personenangabe als Anzahl (<c>PeopleNumber unit="NumberOfPeople"</c>).</summary>
-        public const string PERSONEN_ANZAHL = "NumberOfPeople";
+        public const string PERSONEN_ANZAHL = GbxmlVokabular.NumberOfPeople;
 
         /// <summary>Länge in Meter (<c>lengthUnitEnum</c>).</summary>
         public static double? Laenge(double wert, string einheit)
@@ -65,7 +65,7 @@
         {
             switch (einheit)
             {
-                case "C": return wert;
+                case GbxmlVokabular.Celsius: return wert;
                 case "F": return (wert - 32.0) * KELVIN_JE_FAHRENHEIT;
                 case "K": return wert - 273.15;
                 case "R": return (wert - 491.67) * KELVIN_JE_FAHRENHEIT;
@@ -78,7 +78,7 @@
         {
             switch (einheit)
             {
-                case "WPerMeterK": return wert;
+                case GbxmlVokabular.WPerMeterK: return wert;
                 case "WPerCmC": return wert * 100.0;
                 case "BtuPerHourFtF": return wert * BTU_J / 3600.0 / FUSS_M / KELVIN_JE_FAHRENHEIT;
                 default: return null;
@@ -90,7 +90,7 @@
         {
             switch (einheit)
             {
-                case "KgPerCubicM": return wert;
+                case GbxmlVokabular.KgPerCubicM: return wert;
                 case "KgPerCubicCm": return wert * 1.0e6;
                 case "LbsPerCubicFt": return wert * PFUND_KG / (FUSS_M * FUSS_M * FUSS_M);
                 case "LbsPerCubicIn": return wert * PFUND_KG / (ZOLL_M * ZOLL_M * ZOLL_M);
@@ -103,7 +103,7 @@
         {
             switch (einheit)
             {
-                case "JPerKgK": return wert;
+                case GbxmlVokabular.JPerKgK: return wert;
                 case "BTUPerLbF": return wert * BTU_J / PFUND_KG / KELVIN_JE_FAHRENHEIT;
                 default: return null;
             }
@@ -114,7 +114,7 @@
         {
             switch (einheit)
             {
-                case "WPerSquareMeterK": return wert;
+                case GbxmlVokabular.WPerSquareMeterK: return wert;
                 case "BtuPerHourSquareFtF": return wert * BTU_J / 3600.0 / (FUSS_M * FUSS_M) / KELVIN_JE_FAHRENHEIT;
                 default: return null;
             }
@@ -125,7 +125,7 @@
         {
             switch (einheit)
             {
-                case "SquareMeterKPerW": return wert;
+                case GbxmlVokabular.SquareMeterKPerW: return wert;
                 case "HrSquareFtFPerBTU": return wert * (FUSS_M * FUSS_M) * KELVIN_JE_FAHRENHEIT / (BTU_J / 3600.0);
                 default: return null;
             }
@@ -136,7 +136,7 @@
         {
             switch (einheit)
             {
-                case "WattPerSquareMeter": return wert;
+                case GbxmlVokabular.WattPerSquareMeter: return wert;
                 case "WattPerSquareFoot": return wert / (FUSS_M * FUSS_M);
                 default: return null;
             }
@@ -151,7 +151,7 @@
         {
             switch (einheit)
             {
-                case "SquareMPerPerson": return wert;
+                case GbxmlVokabular.SquareMPerPerson: return wert;
                 case "SquareFtPerPerson": return wert * FUSS_M * FUSS_M;
                 default: return null;
             }
@@ -159,14 +159,14 @@
 
         /// <summary>Ist die Einheit einer Personenangabe eine der drei bekannten?</summary>
         public static bool PersonenEinheitBekannt(string einheit)
-            => einheit == PERSONEN_ANZAHL || einheit == "SquareMPerPerson" || einheit == "SquareFtPerPerson";
+            => einheit == PERSONEN_ANZAHL || einheit == GbxmlVokabular.SquareMPerPerson || einheit == "SquareFtPerPerson";
 
         /// <summary>Anteil [–] (<c>SolarHeatGainCoeff</c>, <c>Transmittance</c>: <c>Fraction</c> oder <c>Percent</c>).</summary>
         public static double? Anteil(double wert, string einheit)
         {
             switch (einheit)
             {
-                case "Fraction": return wert;
+                case GbxmlVokabular.Fraction: return wert;
                 case "Percent": return wert / 100.0;
                 default: return null;
             }
@@ -176,7 +176,7 @@
         {
             switch (einheit)
             {
-                case "Meters": return 1.0;
+                case GbxmlVokabular.Meters: return 1.0;
                 case "Millimeters": return 0.001;
                 case "Centimeters": return 0.01;
                 case "Kilometers": return 1000.0;
