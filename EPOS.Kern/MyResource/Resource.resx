@@ -35133,4 +35133,13 @@ Möchten Sie das zulassen?</value>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>Was tun: {0}</value>
   </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>Das Typtagpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen.</value>
+  </data>
 </root>

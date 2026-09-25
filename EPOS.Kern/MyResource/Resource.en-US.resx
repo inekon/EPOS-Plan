@@ -35126,4 +35126,13 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>What to do: {0}</value>
   </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>The type-day package is too large: {0} entries (at most {1}), {2} bytes when unpacked (at most {3}). It is not read.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>The package file “{0}” is too large: {1} bytes (at most {2}). It is not read.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>The archive entry “{0}” points outside the package (“..”, root or drive). The package is not read.</value>
+  </data>
 </root>

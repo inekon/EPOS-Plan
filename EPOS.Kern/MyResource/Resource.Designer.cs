@@ -102881,6 +102881,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Typtage ließen sich nicht schreiben: {0}. Der frühere Stand ist unverändert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN {
@@ -102890,11 +102899,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt {0} nicht — die Typtage lassen sich nicht einspielen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Typtagpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS", resourceCulture);
             }
         }
         
