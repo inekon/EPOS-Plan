@@ -3263,6 +3263,30 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg.</value>
   </data>
+  <data name="SIMENG_G3_ZONE_WER" xml:space="preserve">
+    <value>Zone „{0}“</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_BAUTEILART" xml:space="preserve">
+    <value>{0}: Die Bauteilart „{1}“ ist keine der neun Bauteilarten ({2}).</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_RANDBEDINGUNG" xml:space="preserve">
+    <value>{0}: Die Randbedingung „{1}“ ist keine der vier Randbedingungen ({2}); leer heißt Außenluft, an Innenwand und Decke „innerhalb der Zone“.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_AUFBAU_FEHLT" xml:space="preserve">
+    <value>{0}: Der Aufbau {1} gehört nicht zum Projekt des Gebäudes.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE" xml:space="preserve">
+    <value>{0}, Schicht {1}: {2} fehlt; eine Schicht, die keine Luftschicht ist, rechnet mit ihrer Wertekopie von λ, ρ und c_p.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_INNEN" xml:space="preserve">
+    <value>{0}: „Innerhalb der Zone“ steht in der Zonentabelle nur an einer Innenwand oder Decke (Randbedingung leer), nicht an der Bauteilart „{1}“.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHTEN" xml:space="preserve">
+    <value>{0}: Das Bauteil trägt einen Schichtaufbau; die Übernahme schreibt Bauteile ohne Aufbau.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_ALPHA" xml:space="preserve">
+    <value>{0}: Das Bauteil trägt einen eigenen Übergangskoeffizienten α_kon; die Zonentabelle führt keinen.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>
