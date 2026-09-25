@@ -263,7 +263,7 @@ namespace WindowsFormsApplication1
                 int extra = mitDelta ? 1 : 0;
 
                 int wLabel = 3100;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / (spalten.Count + extra);
+                int wCol = (k.Inhaltsbreite - wLabel) / (spalten.Count + extra);
                 var w = new List<int> { wLabel };
                 for (int i = 0; i < spalten.Count + extra; i++) w.Add(wCol);
 
@@ -303,7 +303,7 @@ namespace WindowsFormsApplication1
                     t.Append(tr);
                 }
                 k.Fuege(t);
-                k.Beschriftung(" ");
+                k.Abstand();
             }
         }
 
@@ -315,7 +315,7 @@ namespace WindowsFormsApplication1
             if (keys.Count == 0) return;
 
             int wLabel = 2600;
-            int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / keys.Count;
+            int wCol = (k.Inhaltsbreite - wLabel) / keys.Count;
             var w = new List<int> { wLabel };
             for (int i = 0; i < keys.Count; i++) w.Add(wCol);
 
