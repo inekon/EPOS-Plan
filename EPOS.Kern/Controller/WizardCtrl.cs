@@ -2624,9 +2624,17 @@ namespace WindowsFormsApplication1
 
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (var item in list)
-                if (GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm) <= 0) return false;
+                if (GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm, out _) <= 0) return false;
             return true;
         }
+
+        /// <summary>
+        /// Warum das letzte Schreiben der Gebäudeliste an der HERKUNFT eines Gebäudeimports
+        /// scheiterte (<see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>, Stufe G4); <c>null</c>, wenn
+        /// es daran nicht lag. <see cref="Speichere_Projekt_Gebaeudeliste"/> nennt den Grund in seiner
+        /// Meldung.
+        /// </summary>
+        internal string Herkunftsfehler { get; private set; }
 
         /// <summary>
         /// EINE neue Gebäudezuordnung: die Zeile in <c>Z_ProjektGebaeude</c> und die
@@ -2634,10 +2642,20 @@ namespace WindowsFormsApplication1
         /// <see cref="Add_Projekt_ZuordungGebäude"/> und
         /// <see cref="Schreibe_Projekt_ZuordungGebäude(int, List{Z_ProjGebModel}, DbVorgang, out string)"/>;
         /// läuft in der Klammer des Aufrufers.
+        ///
+        /// <para><b>Stufe G4, Welle 4:</b> Trägt die Zeile die ausstehende Herkunft eines
+        /// Gebäudeimports (<see cref="Z_ProjGebModel.Importherkunft"/>), schreibt sie
+        /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/> NACH <c>CopyFromStamm</c> an die neue
+        /// Projektkopie — im selben Vorgang (als Sicherungspunkt darin). Scheitert das, scheitert die
+        /// Zuordnung wie jeder andere Schritt: 0 zurück, <paramref name="herkunftsfehler"/> nennt den
+        /// Grund, und der Vorgang des Aufrufers rollt alles zurück — keine halbe Zeile.</para>
         /// </summary>
         /// <returns>Die Id der neuen Zuordnung (<c>Z_ProjektGebaeude.ID</c>); 0 bei einem Fehlschlag.</returns>
-        private static int GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm)
+        private static int GebaeudeZuordnungAnlegen(int projektID, Z_ProjGebModel item, GebaeudeStammCtrl ctrlStamm,
+                                                    out string herkunftsfehler)
         {
+            herkunftsfehler = null;
+
             // 1) Projekt-Zuordnung (Z_ProjektGebaeude) mit eigener ID anlegen.
             int zID = DataRepository.GetMaxID("Z_ProjektGebaeude") + 1;
             string sqlZ = "INSERT INTO Z_ProjektGebaeude (ID, ID_Projekt, Wohnflaeche_Waermebedarf, " +
@@ -2657,7 +2675,21 @@ namespace WindowsFormsApplication1
             //    Gesucht wird ueber den Katalogverweis der Zeile (Schemaschritt 121);
             //    der Name ist nur der Rueckfall fuer Altbestand ohne Verweis - so
             //    uebersteht das Neuschreiben eine Umbenennung im Katalog.
-            if (ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID) <= 0) return 0;
+            int idKopie = ctrlStamm.CopyFromStamm(item.ID_Gebaeude_Stamm, item.Gebaeudename, projektID, zID);
+            if (idKopie <= 0) return 0;
+
+            // 3) Stufe G4: die ausstehende Herkunft eines Gebaeudeimports an die NEUE Kopie -
+            //    im Vorgang des Aufrufers (SchreibeHerkunft legt darin einen Sicherungspunkt an).
+            if (item.Importherkunft != null)
+            {
+                GebaeudeImportCtrl.Ergebnis herkunft = new GebaeudeImportCtrl().SchreibeHerkunft(
+                    idKopie, item.Importherkunft.Quelle, item.Importherkunft.Paarungen, Vorgangsklammer.Aktueller);
+                if (!herkunft.Ok)
+                {
+                    herkunftsfehler = herkunft.Meldung ?? "";
+                    return 0;
+                }
+            }
             return zID;
         }
 
@@ -2703,6 +2735,7 @@ namespace WindowsFormsApplication1
                                                       out IReadOnlyDictionary<Z_ProjGebModel, int> neueIds)
         {
             fehlgebaeude = null;
+            Herkunftsfehler = null;
             var angelegt = new Dictionary<Z_ProjGebModel, int>(ReferenceEqualityComparer.Instance);
             neueIds = angelegt;
 
@@ -2780,14 +2813,17 @@ namespace WindowsFormsApplication1
                 geschrieben = true;
             }
 
-            // 5) Die neuen: aus dem Katalog wie beim ersten Uebernehmen.
+            // 5) Die neuen: aus dem Katalog wie beim ersten Uebernehmen - eine Zeile aus dem
+            //    Gebaeudeimport samt ihrer Herkunft (Stufe G4). Eine BLEIBENDE Zeile schreibt
+            //    keine Herkunft neu: Sie steht oben unter 4) und kommt hier nicht an.
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (Z_ProjGebModel item in neu)
             {
-                int zID = GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm);
+                int zID = GebaeudeZuordnungAnlegen(projektID, item, ctrlStamm, out string herkunftsfehler);
                 if (zID <= 0)
                 {
-                    fehlgebaeude = item.Gebaeudename ?? "";
+                    if (herkunftsfehler != null) Herkunftsfehler = herkunftsfehler;
+                    else fehlgebaeude = item.Gebaeudename ?? "";
                     return false;
                 }
                 angelegt[item] = zID;
@@ -2890,10 +2926,12 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            string meldung = string.IsNullOrEmpty(fehlgebaeude)
-                ? MyResource.Resource.GEB_MSG_LISTE_NICHT_GESPEICHERT
-                : string.Format(CultureInfo.CurrentCulture,
-                                MyResource.Resource.GEB_MSG_LISTE_KATALOGSATZ_FEHLT, fehlgebaeude);
+            string meldung = !string.IsNullOrEmpty(Herkunftsfehler)
+                ? MyResource.Resource.GEB_MSG_LISTE_NICHT_GESPEICHERT + " " + Herkunftsfehler
+                : string.IsNullOrEmpty(fehlgebaeude)
+                    ? MyResource.Resource.GEB_MSG_LISTE_NICHT_GESPEICHERT
+                    : string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.GEB_MSG_LISTE_KATALOGSATZ_FEHLT, fehlgebaeude);
             return (false, meldung);
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -17,8 +18,11 @@ namespace WindowsFormsApplication1
     /// Aufzählungswerte nehmen die Schlüssel des Gebäudeeditors (<c>GEBK_BAUART_*</c>,
     /// <c>GEBK_RAND_*</c>, <c>GEB_BAK_*</c>), damit derselbe Begriff nicht zwei Texte bekommt.</para>
     ///
-    /// <para><b>Zahlen</b> zeigt <see cref="WertText"/> in der Anzeigekultur; Belege und Meldungen
-    /// tragen ihre Werte invariant (Muster <see cref="PruefMeldung"/>).</para>
+    /// <para><b>Zahlen</b> zeigt <see cref="WertText"/> in der Anzeigekultur. Belege und Meldungen
+    /// TRAGEN ihre Werte invariant (Muster <see cref="PruefMeldung"/>) — gespeichert und verglichen
+    /// wird so; erst <see cref="BelegText"/> und <see cref="MeldungText"/> setzen eine Dezimalzahl
+    /// darin in die Anzeigekultur (<see cref="AnzeigeWert"/>, de-DE: Komma). Das gilt nur hier, nicht
+    /// global an <see cref="PruefMeldung"/>.</para>
     /// </summary>
     internal static class GebaeudeZuordnungsModell
     {
@@ -90,23 +94,68 @@ namespace WindowsFormsApplication1
                                WertText(zeile), einheit, HerkunftText(zeile.Herkunft)).Trim();
         }
 
-        /// <summary>Der Text eines Belegs; ohne Beleg leer. Fehlt der Schlüssel, die sprachneutrale Kurzfassung.</summary>
+        /// <summary>
+        /// Der Text eines Belegs; ohne Beleg leer. Fehlt der Schlüssel, die sprachneutrale Kurzfassung.
+        /// Dezimalzahlen unter den Werten erscheinen in der Anzeigekultur (<see cref="AnzeigeWert"/>).
+        /// </summary>
         public static string BelegText(GebaeudeBeleg beleg)
         {
             if (beleg == null) return "";
             string vorlage = Ressource(beleg.Schluessel);
             if (vorlage == null) return beleg.ToString();
-            return beleg.Werte.Length == 0 ? vorlage : Formatieren(vorlage, beleg.Werte);
+            if (beleg.Werte.Length == 0) return vorlage;
+            var werte = new object[beleg.Werte.Length];
+            for (int i = 0; i < werte.Length; i++) werte[i] = AnzeigeWert(beleg.Werte[i]);
+            return Formatieren(vorlage, werte);
         }
+
+        /// <summary>
+        /// <b>Ein Beleg- oder Meldungswert in der Anzeigekultur.</b> Eine invariant geschriebene
+        /// Dezimalzahl (<c>18.37</c>, <c>-0.5</c>, <c>1E-05</c>) bekommt Dezimal- und Minuszeichen
+        /// der aktuellen Kultur (de-DE: <c>18,37</c>); ihre Ziffern bleiben, wie sie sind. Ganzzahlen
+        /// (Baujahr, Anzahl, Byte), Kennungen, Dateinamen und Texte bleiben unverändert — auch ohne
+        /// Tausendertrennzeichen, damit aus dem Baujahr 2024 nicht „2.024" wird.
+        /// </summary>
+        public static string AnzeigeWert(string wert)
+        {
+            if (string.IsNullOrEmpty(wert)) return wert ?? "";
+            Match m = Dezimalzahl.Match(wert);
+            if (!m.Success || (!m.Groups["bruch"].Success && !m.Groups["exponent"].Success)) return wert;
+
+            NumberFormatInfo nf = NumberFormatInfo.CurrentInfo;
+            if (m.Groups["exponent"].Success)
+                return double.TryParse(wert, NumberStyles.Float, CultureInfo.InvariantCulture, out double d)
+                    ? d.ToString("0.###############", CultureInfo.CurrentCulture)
+                    : wert;
+            return (m.Groups["minus"].Success ? nf.NegativeSign : "") + m.Groups["ganz"].Value
+                   + nf.NumberDecimalSeparator + m.Groups["bruch"].Value;
+        }
+
+        /// <summary>Eine invariant geschriebene Zahl: Vorzeichen, Ganzteil, Nachkommastellen, Exponent.</summary>
+        private static readonly Regex Dezimalzahl = new Regex(
+            @"^(?<minus>-)?(?<ganz>\d+)(?:\.(?<bruch>\d+))?(?<exponent>[eE][+-]?\d+)?$",
+            RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Meldungen, deren Werte zwar wie Zahlen aussehen, aber keine sind — der Versionswert einer
+        /// Datei („0.37") bleibt, wie er in der Datei steht.
+        /// </summary>
+        private static readonly HashSet<string> OhneZahlwerte = new HashSet<string>(StringComparer.Ordinal)
+        {
+            GbxmlImportProfil.MELDUNGSPRAEFIX + "VERSION_UNBEKANNT",
+            IfcImportProfil.MELDUNGSPRAEFIX + "SCHEMA_UNBEKANNT",
+        };
 
         /// <summary>
         /// Der Text einer Meldung — derselbe Weg wie im Ganglinienimport, mit einem Zusatz: Ein Wert,
         /// der ein Zielfeldschlüssel (<c>U_AUSSENWAND</c>) oder ein Randbedingungswert
-        /// (<c>KELLER</c>) ist, erscheint mit seiner Beschriftung statt als Schlüssel.
+        /// (<c>KELLER</c>) ist, erscheint mit seiner Beschriftung statt als Schlüssel, und eine
+        /// Dezimalzahl in der Anzeigekultur (<see cref="AnzeigeWert"/>).
         /// </summary>
         public static string MeldungText(PruefMeldung meldung)
         {
             if (meldung == null) return "";
+            bool zahlen = !OhneZahlwerte.Contains(meldung.Schluessel ?? "");
             var werte = new string[meldung.Werte.Length];
             for (int i = 0; i < werte.Length; i++)
             {
@@ -114,7 +163,7 @@ namespace WindowsFormsApplication1
                 werte[i] = GebaeudeZielfelder.Finde(w) != null ? FeldText(w)
                          : w == DbWerte.GRUND_ERDREICH || w == DbWerte.GRUND_KELLER || w == DbWerte.GRUND_AUSSENLUFT
                              ? TextwertText(GebaeudeZielfelder.GRUND_RANDBEDINGUNG, w)
-                             : w;
+                             : zahlen ? AnzeigeWert(w) : w;
             }
             return GanglinienProtokollText.Text(new PruefMeldung(meldung.Stufe, meldung.Schluessel, werte));
         }

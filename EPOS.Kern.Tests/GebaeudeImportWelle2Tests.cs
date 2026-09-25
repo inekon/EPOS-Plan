@@ -193,8 +193,9 @@ namespace EPOS.Kern.Tests
             Assert.False(bauweise.Uebernehmen);
             Assert.Equal("GIMP_BELEG_BAUWEISE_SCHICHTEN", bauweise.Beleg.Schluessel);
             Assert.Equal(Z(Math.Round(jeM2 * 50.0)), bauweise.Beleg.Werte[0]);   // Nutzfläche 50 m²
-            // Belegwerte stehen invariant (Hausregel PruefMeldung) — auch im deutschen Text mit Punkt.
-            Assert.Equal("aus den Schichten 919 Wh/K (18.37 Wh/(m²K)) — der Gebäudeeditor bildet die Bauweise aus der Bauart",
+            // Belegwerte stehen invariant (Hausregel PruefMeldung); der Text zeigt sie in der
+            // Anzeigekultur (G4 Welle 4) — de-DE mit Komma.
+            Assert.Equal("aus den Schichten 919 Wh/K (18,37 Wh/(m²K)) — der Gebäudeeditor bildet die Bauweise aus der Bauart",
                          GebaeudeZuordnungsModell.BelegText(bauweise.Beleg));
             Assert.DoesNotContain(s.Meldungen, m => m.Schluessel == G + "BAUWEISE_AUSSERHALB");
         }

@@ -110,6 +110,33 @@ namespace WindowsFormsApplication1
             return n != null && n != DBNull.Value && Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0;
         }
 
+        /// <summary>
+        /// <b>Welche Gebäude DIESES PROJEKTS stammen schon aus derselben Datei</b> (gleicher SHA-256)?
+        /// Die Frage des Zuordnungsdialogs nach dem Lesen — je Treffer die Projektkopie, ihr Name und
+        /// der Zeitpunkt des Imports, der jüngste zuerst; nie <c>null</c>. Gesperrt wird damit nichts
+        /// (Softwarearchitektur 2.7): Der Dialog zeigt einen leisen Hinweis.
+        /// </summary>
+        public List<ImportTreffer> ImporteImProjekt(int idProjekt, string hash)
+        {
+            var liste = new List<ImportTreffer>();
+            string h = (hash ?? "").Trim().ToLowerInvariant();
+            if (idProjekt <= 0 || h.Length != ImportzuordnungSchema.HASH_LAENGE) return liste;
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT g.\"ID\", g.\"Gebaeudename\", q.\"Zeitpunkt\" FROM \"" + ImportzuordnungSchema.TAB_QUELLE + "\" q " +
+                "INNER JOIN \"Tab_Gebaeude\" g ON g.\"ID\" = q.\"ID_Gebaeude\" " +
+                "WHERE g.\"ID_Projekt\" = ? AND q.\"Hash\" = ? ORDER BY q.\"ID\" DESC",
+                new DbParam("@p", idProjekt), new DbParam("@h", h));
+            if (t == null) return liste;
+            foreach (DataRow r in t.Rows)
+                liste.Add(new ImportTreffer(Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture),
+                                            BaustoffCtrl.TextAus(r, "Gebaeudename") ?? "",
+                                            BaustoffCtrl.TextAus(r, "Zeitpunkt") ?? ""));
+            return liste;
+        }
+
+        /// <summary>Ein Gebäude des Projekts, das schon aus einer Datei stammt — Projektkopie, Name, Zeitpunkt (ISO 8601).</summary>
+        public sealed record ImportTreffer(int IdGebaeude, string Gebaeudename, string Zeitpunkt);
+
         // =================================================================
         //  Prüfen
         // =================================================================
@@ -358,4 +385,15 @@ namespace WindowsFormsApplication1
             return liste;
         }
     }
+
+    /// <summary>
+    /// <b>Die AUSSTEHENDE Herkunft eines Gebäudeimports</b> (Stufe G4, Welle 4): Quelle und
+    /// Paarungen des Einzonenwegs, die an einer NEUEN Zeile der Projektliste reisen, bis die Liste
+    /// gespeichert wird. Erst dann gibt es die Projektkopie, an die
+    /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/> sie im selben Vorgang schreibt
+    /// (<c>WizardCtrl.GebaeudeZuordnungAnlegen</c>). Unveränderlich; ohne Datenbank.
+    /// </summary>
+    /// <param name="Quelle">Die Quelle des Laufs (Dateiname, SHA-256, Größe, Format …).</param>
+    /// <param name="Paarungen">Die Paarungen — im Einzonenweg allein Gebäude ↔ Gebäudekennung der Datei.</param>
+    internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen);
 }

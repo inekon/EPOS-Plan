@@ -30,6 +30,51 @@ namespace WindowsFormsApplication1
         /// <summary>Obergrenze der Zonenzahl je Gebäude (Mehrzonenkonzept 6.1, Frage M12).</summary>
         public const int MAX_ZONEN = 50;
 
+        /// <summary>
+        /// Der Hilfeschlüssel des Zuordnungsdialogs — beide Formate zeigen auf dieselbe Wiki-Seite
+        /// „Gebäudeimport" (Zeile in <c>help_mapping.txt</c>, Wache <c>HelpMappingAnkerWacheTests</c>).
+        /// </summary>
+        public const string HILFE_ZUORDNUNG = "Form_GebaeudeImport.btn_Help";
+
+        /// <summary>
+        /// <b>Der gemeinsame Dateifilter</b> des Einstiegs im Gebäudedialog: EINE Dateiwahl für beide
+        /// Formate; das Profil folgt danach aus der Endung (<see cref="FuerDatei"/>).
+        /// </summary>
+        public const string DATEIFILTER_ALLE =
+            "gbXML, IFC (*.xml;*.gbxml;*.ifc;*.ifcxml;*.ifczip)|*.xml;*.gbxml;*.ifc;*.ifcxml;*.ifczip";
+
+        /// <summary>
+        /// <b>Das Profil einer Datei nach ihrer Endung</b> — <c>.ifc</c>, <c>.ifcxml</c> und
+        /// <c>.ifczip</c> sind IFC, <c>.xml</c> und <c>.gbxml</c> gbXML, Groß- und Kleinschreibung
+        /// gleich; ein Pfadanteil zählt nicht. Jede andere Endung ergibt <c>null</c> — der Aufrufer
+        /// lehnt dann benannt ab („Dateiart nicht unterstützt"). Das neue Profil trägt die
+        /// Windows-Grenze; die Hülle belegt sie danach je Plattform
+        /// (<see cref="GrenzeFuerPlattform"/>).
+        /// </summary>
+        public static GebaeudeImportProfil FuerDatei(string dateiname)
+        {
+            switch (Endung(dateiname))
+            {
+                case ".ifc":
+                case ".ifcxml":
+                case ".ifczip":
+                    return new IfcImportProfil();
+                case ".xml":
+                case ".gbxml":
+                    return new GbxmlImportProfil();
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>Die Endung eines Dateinamens klein und mit Punkt (<c>.ifc</c>); ohne Endung leer.</summary>
+        public static string Endung(string dateiname)
+        {
+            string name = GebaeudeQuelle.NurName(dateiname);
+            int punkt = name.LastIndexOf('.');
+            return punkt < 0 ? "" : name.Substring(punkt).ToLowerInvariant();
+        }
+
         /// <summary>Legt ein Profil an.</summary>
         protected GebaeudeImportProfil(string format, string dateifilter, long maxBytes,
                                        IReadOnlyList<string> zonierungsregeln, string hilfeSchluessel,
