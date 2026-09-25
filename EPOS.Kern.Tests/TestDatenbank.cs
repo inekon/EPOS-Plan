@@ -702,6 +702,11 @@ namespace EPOS.Kern.Tests
                 // schneidet. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
                 BaujahrSchema.Alle(null);
 
+                // Schritt GebaeudeAnschlusslaengenFolgereparatur.SCHRITT (Welle #496): die
+                // Folgeberichtigung im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                GebaeudeAnschlusslaengenFolgereparatur.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
