@@ -53,7 +53,7 @@
 >
 > **Nachzug 25.09.2026 — AK1 Welle 5, die Stufe AK1 ist abgenommen:** Das Referenzprojekt mit Kopplung
 > steht — **1047**, eine Kopie von 1017 mit Heizkreis (Radiator, gefahrene Heizkurve) und Kühlübergabe
-> (Kühldecke), alle Auslegungswerte als Vorgaben der Art; die Einfrierregel **„gesäte Auslegungsdaten der
+> (Kühldecke), alle Auslegungswerte als Vorgaben der Art, die Wärmepumpe vor dem Elektrokessel; die Einfrierregel **„gesäte Auslegungsdaten der
 > Übergabe"** ist umgesetzt und umfasst neben `AK-S1` auch die Spalten aus `KAK-S1` (11.4); die Basis ist
 > `2026-09-25_R15_Anlagenkopplung` mit vierzehn Projekten, und die CI rechnet 1047 als sechstes Projekt mit
 > (11.5).
@@ -2110,15 +2110,17 @@ Regel ändert die erste Saatkorrektur die Ergebnisse still.
 Anlagenkopplung AK1"**, eine Kopie des Kühlreferenzprojekts 1017 (Einzelgebäude, reversible
 Wärmepumpe) auf dem Kopierweg des Programms — so trägt es beide Seiten: Projektstufe AK1, am Gebäude
 der Heizkreis (Radiator, gefahrene Heizkurve) und die Kühlübergabe (Kühldecke, E37), alle übrigen
-Übergabespalten leer, also die Vorgaben der Art (8.4); 1017 bleibt ungekoppelt und ist der
-Vergleichsfall „ideal". Die Einfrierregel **„gesäte Auslegungsdaten der Übergabe"** steht in der
+Übergabespalten leer, also die Vorgaben der Art (8.4); die Wärmepumpe steht vor dem Elektrokessel, damit
+die Kennlinienwahl am gerechneten Vorlauf (6.1) auf ein Ergebnis der Basis wirkt (Jahresarbeitszahl im
+Heizbetrieb 3,84, in der Gegenprobe ohne Kopplung an der Kennlinie des Anlagenvorlaufs 3,05); 1017 bleibt
+ungekoppelt und ist der Vergleichsfall „ideal". Die Einfrierregel **„gesäte Auslegungsdaten der Übergabe"** steht in der
 Wurzel-`CLAUDE.md` und in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md): die
 Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung` eines Referenzprojekts, am Gebäude
 `Heizkreis_Aktiv` und alle Übergabespalten aus `AK-S1` (Art, Exponent, Nennleistung, Auslegungspunkt,
 Heizkurve, `Regler_Proportionalband`, `Sollwertprofil`), alle Spalten aus `KAK-S1`
-(`Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_*`, `Kuehl_Auslegung_*`, `Kuehl_Vorlaufgrenze`) und das
-Anlegen oder Entfernen eines gekoppelten Referenzprojekts; das Zeitprogramm ist das
-`Sollwertprofil`. Eingefroren als `2026-09-25_R15_Anlagenkopplung` (vierzehn Projekte, die dreizehn
+(`Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_*`, `Kuehl_Auslegung_*`, `Kuehl_Vorlaufgrenze`), die Kaskade
+eines gekoppelten Referenzprojekts und das Anlegen oder Entfernen eines gekoppelten Referenzprojekts; das
+Zeitprogramm ist das `Sollwertprofil`. Eingefroren als `2026-09-25_R15_Anlagenkopplung` (vierzehn Projekte, die dreizehn
 alten byte-gleich); gegen 1017 sinken Heizwärme um 8,3 % und Kältebedarf um 7,5 %, 1 108 Stunden mit
 begrenzter Wärmeübergabe, Überhitzungsstunden 306 → 327 — die Zahlen und ihre Erklärung stehen im
 Abschnitt „Aktuelle Basis" von [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Mit AK2

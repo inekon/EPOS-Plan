@@ -1,11 +1,11 @@
-﻿# Referenzlauf (Kern) vom 25.09.2026 06:36
+﻿# Referenzlauf (Kern) vom 25.09.2026 08:22
 
 Quelle:        C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Kenndaten_Test.sqlite
 Arbeitskopie:  C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
 Kultur:        de-DE
 Zielordner:    Referenzlaeufe/2026-09-25_R15_Anlagenkopplung
 Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047
-Dauer:         00:00:09
+Dauer:         00:00:14
 
 ## Ablauf
 
@@ -62,25 +62,25 @@ Gewaehlte Referenzprojekte (14):
       Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
       Grund:       per --projekte vorgegeben
   - Projekt 1047 "Referenz Anlagenkopplung AK1"
-      Ausstattung: Tools: BHKW, Heizkessel, Wärmepumpe, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Ausstattung: Tools: BHKW, Wärmepumpe, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
       Grund:       per --projekte vorgegeben
 
 Projekt 1007 "Laurentiuskirche" wird gerechnet ...
 Simulation startet fuer Projekt 1007 ...
 Simulation beendet, Ergebnis-Kopf-ID 213.
 Projekt 1007: 35 CSV-Dateien, 149 Skalare.
-  OK - 35 Dateien in 00:01
+  OK - 35 Dateien in 00:03
 Projekt 1008 "Heinestr 15" wird gerechnet ...
 Simulation startet fuer Projekt 1008 ...
 Simulation beendet, Ergebnis-Kopf-ID 214.
 Projekt 1008: 29 CSV-Dateien, 161 Skalare.
-  OK - 29 Dateien in 00:00
+  OK - 29 Dateien in 00:01
 Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
 Simulation startet fuer Projekt 1017 ...
 Simulation beendet, Ergebnis-Kopf-ID 215.
 Projekt 1017: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
 Projekt 1017: 32 CSV-Dateien, 186 Skalare.
-  OK - 32 Dateien in 00:00
+  OK - 32 Dateien in 00:01
 Projekt 1018 "BHKW Test München" wird gerechnet ...
 Simulation startet fuer Projekt 1018 ...
 Simulation beendet, Ergebnis-Kopf-ID 216.
@@ -138,6 +138,6 @@ Projekt 1047: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feu
 Projekt 1047: 38 CSV-Dateien, 198 Skalare.
   OK - 38 Dateien in 00:00
 
-Fertig. Gesamtdauer 00:00:09
+Fertig. Gesamtdauer 00:00:14
 Erfolgreich: 14 von 14
 ```
