@@ -39,9 +39,13 @@ dieses Protokoll hält den Ablauf und die Nachweise.
 4. **Tests** (`692f321a`): Probepaket um die drei Dateien ergänzt, je Regel ein Fall,
    Testhelfer `TwwTestdatenbank.BedarfstagAnlegen`.
 5. **Wiki-Quelle und Paketvorlage** (`5750316f`).
-6. **Merge** `d323d42f` von `origin/ios_migration_september` (`bf129170`); Konflikte allein in den
-   beiden `.resx` (beide Seiten hatten am Ende angefügt — beide Blöcke übernommen), Designer neu
-   erzeugt.
+6. **Zwei Merges von `origin/ios_migration_september`:** `d323d42f` (`bf129170`) vor den Papieren —
+   Konflikte allein in den beiden `.resx`, weil beide Seiten am Ende angefügt hatten (beide Blöcke
+   übernommen, Designer neu erzeugt) —, und `8c0f3724` (`9e356b89`) danach, als der parallele Posten
+   #516 gepusht war: dort dazu die vier Papiere, alle inhaltlich zusammengeführt (Nachtrag N19 vor
+   N20, Kapitel-9-Zeilen ZU25–ZU29 vor ZU30–ZU33, Statuszeile #517 hinter #516, Protokollzahl des
+   Index auf 11, Logbuch-Satz hinter dem von #516). Die Wiki-Quelle der Seite führte beide
+   Abschnitte von selbst zusammen (35 Anker).
 
 ## 3 Gates
 
@@ -49,7 +53,7 @@ dieses Protokoll hält den Ablauf und die Nachweise.
 |---|---|
 | `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler (vor und nach dem Merge) |
 | `dotnet test WP-Plan.Kern.slnf -c Release` (voller Lauf, xUnit seriell) | 0 Fehler, 14 643 erfolgreich, 2 übersprungen |
-| gefilterte Tests nach dem Merge (Katalogimport, Tww, Zapfprofil, Parameter, Auslieferung, Vorlage, KiMasken, Doku- und Wiki-Wachen, Nachtzeit, ZapfSätze) | 0 Fehler, 1 876 erfolgreich |
+| gefilterte Tests nach beiden Merges (Katalogimport, Tww, Zapfprofil, Parameter, Auslieferung, Vorlage, KiMasken, Doku- und Wiki-Wachen, Nachtzeit, ZapfSätze) | 0 Fehler, 1 876 bzw. 1 932 erfolgreich |
 | Windows-Schale `-p:EnableWindowsTargeting=true` | 0 Fehler |
 | `Werkzeuge/SqlDialektPruefer` gegen `Kenndaten_Test.sqlite` | 1 932 SQL-Texte, **0 Fundstellen** |
 | `Werkzeuge/Auslieferungsvorlage.Tests` | 0 Fehler, 36 erfolgreich |
