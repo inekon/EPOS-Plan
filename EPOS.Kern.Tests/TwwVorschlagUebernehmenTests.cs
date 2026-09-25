@@ -260,5 +260,45 @@ namespace EPOS.Kern.Tests
                     Assert.Equal(soll[h], mittel[h] / summe, 9);
             }
         }
+
+        /// <summary>
+        /// <b>Die Quelle der kalibrierten Wertgruppen</b>: Sie nennt die Messreihe, bleibt in der
+        /// Länge begrenzt (<see cref="TwwNutzungsartCtrl.QUELLE_LAENGE"/>) und wird sichtbar mit
+        /// einem Auslassungszeichen geschlossen — nie still abgehackt. <b>Beschnitten wird an einer
+        /// Zeichengrenze</b>: Ein Ersatzzeichenpaar bleibt ganz oder fällt ganz weg, eine halbe
+        /// UTF-16-Einheit entsteht nicht. Ohne Datenbank.
+        /// </summary>
+        [Fact]
+        public void Die_Kalibrierquelle_nennt_die_Reihe_und_kappt_an_einer_Zeichengrenze()
+        {
+            // (a) Kurz: unveraendert, mit getrimmter Bezeichnung; ohne Bezeichnung bleibt der Rumpf.
+            Assert.Equal(string.Format(CultureInfo.InvariantCulture, TwwNutzungsartCtrl.QUELLE_KALIBRIERT, "Messung A"),
+                         TwwNutzungsartCtrl.Kalibrierquelle("  Messung A  "));
+            Assert.Equal(string.Format(CultureInfo.InvariantCulture, TwwNutzungsartCtrl.QUELLE_KALIBRIERT, ""),
+                         TwwNutzungsartCtrl.Kalibrierquelle(null));
+
+            string rumpf = string.Format(CultureInfo.InvariantCulture, TwwNutzungsartCtrl.QUELLE_KALIBRIERT, "");
+            int platz = TwwNutzungsartCtrl.QUELLE_LAENGE - rumpf.Length;
+            Assert.True(platz > 4, "Die Laengengrenze laesst keinen Platz fuer eine Bezeichnung.");
+
+            // (b) Genau auf der Grenze: noch ungekappt.
+            string voll = TwwNutzungsartCtrl.Kalibrierquelle(new string('A', platz));
+            Assert.Equal(TwwNutzungsartCtrl.QUELLE_LAENGE, voll.Length);
+            Assert.DoesNotContain("…", voll);
+
+            // (c) Ein Zeichen zu lang: gekappt und sichtbar geschlossen.
+            string lang = TwwNutzungsartCtrl.Kalibrierquelle(new string('A', platz + 1));
+            Assert.Equal(TwwNutzungsartCtrl.QUELLE_LAENGE, lang.Length);
+            Assert.EndsWith("…", lang);
+            Assert.StartsWith(rumpf, lang);
+
+            // (d) Ein Ersatzzeichenpaar auf der Schnittstelle: Es bleibt ganz oder faellt ganz weg.
+            //     Ein Wassertropfen (U+1F4A7) ist EIN Zeichen aus ZWEI UTF-16-Einheiten; ein einzeln
+            //     stehengebliebenes Surrogat ergibt beim Lesen das Ersatzzeichen.
+            string paar = TwwNutzungsartCtrl.Kalibrierquelle(new string('A', platz - 2) + "\U0001F4A7\U0001F4A7");
+            Assert.EndsWith("…", paar);
+            Assert.True(paar.Length <= TwwNutzungsartCtrl.QUELLE_LAENGE);
+            Assert.DoesNotContain(System.Text.Rune.ReplacementChar, paar.EnumerateRunes().ToArray());
+        }
     }
 }

@@ -59,11 +59,29 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Quelle einer kalibrierten Wertgruppe aus der Bezeichnung <paramref name="bezeichnung"/>,
         /// auf <see cref="QUELLE_LAENGE"/> Zeichen beschnitten (<see cref="QUELLE_KALIBRIERT"/>).
+        ///
+        /// <para><b>Beschnitten wird an einer Zeichengrenze</b>: Die Bezeichnung kommt vom Anwender
+        /// und kann ein Ersatzzeichenpaar (ein Emoji) oder ein Grundzeichen mit Zusatzzeichen tragen.
+        /// Mitten hindurch zu schneiden hinterließe eine halbe UTF-16-Einheit — ein Zeichen, das
+        /// keines ist, in jedem Katalogpaket. Gezählt wird deshalb in Textelementen
+        /// (<see cref="StringInfo"/>), begrenzt bleibt die Länge in Zeichen (die Spalte zählt so).</para>
         /// </summary>
         internal static string Kalibrierquelle(string bezeichnung)
         {
             string t = string.Format(CultureInfo.InvariantCulture, QUELLE_KALIBRIERT, (bezeichnung ?? "").Trim());
-            return t.Length <= QUELLE_LAENGE ? t : t.Substring(0, QUELLE_LAENGE - 1) + "…";
+            if (t.Length <= QUELLE_LAENGE) return t;
+            // Ein Zeichen bleibt fuer das Auslassungszeichen; genommen wird das letzte Textelement,
+            // das noch ganz davor endet.
+            int grenze = QUELLE_LAENGE - 1;
+            int ende = 0;
+            TextElementEnumerator e = StringInfo.GetTextElementEnumerator(t);
+            while (e.MoveNext())
+            {
+                int bis = e.ElementIndex + ((string)e.Current).Length;
+                if (bis > grenze) break;
+                ende = bis;
+            }
+            return t.Substring(0, ende) + "…";
         }
 
         /// <summary>
