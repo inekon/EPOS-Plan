@@ -229,7 +229,9 @@ und CO₂ — und lässt Dateien und Schlüssel im Export entstehen oder verschw
 > Dieselben Kältedaten trägt Projekt 1047, die Kopie von 1017 aus
 > [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py)
 > (Gebäude 10653, Wärmepumpe als Anlage 14946 mit Projektgerät 1672046 und den zehn Zeilen der
-> Kühlkennlinie als eigene Kopie); sie gelten dort ebenso als gesät.
+> Kühlkennlinie als eigene Kopie); sie gelten dort ebenso als gesät — mit einem Unterschied: In 1047
+> steht die Wärmepumpe auf **Kaskadenplatz 2**, vor dem Elektrokessel (Regel „gesäte Auslegungsdaten der
+> Übergabe" unten).
 > Die übrigen zwölf Referenzprojekte stehen auf 0; ihre Gebäude laufen frei, keine ihrer
 > Wärmepumpen kühlt.
 >
@@ -260,13 +262,17 @@ entstehen oder verschwinden.
 > `KAK-S1` — `Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`,
 > `Kuehl_Uebergabe_Leistung_Nenn`, `Kuehl_Auslegung_Vorlauf`, `Kuehl_Auslegung_Ruecklauf`,
 > `Kuehl_Auslegung_Raumtemperatur` und `Kuehl_Vorlaufgrenze`; sobald eine Zone rechnet, ebenso deren
-> Übergabespalten in `Tab_Zone`. Ebenso betroffen ist das Anlegen oder Entfernen eines gekoppelten
-> Referenzprojekts.
+> Übergabespalten in `Tab_Zone`. Betroffen ist außerdem die **Kaskade** eines gekoppelten
+> Referenzprojekts (`Tab_Einstellungen.Tool_1` bis `Tool_4`): Sie entscheidet, ob die Wärmepumpe Wärme
+> liefert und damit, ob die Kennlinienwahl am gerechneten Vorlauf (Anlagenkopplung 6.1) auf ein Ergebnis
+> wirkt; für den Platz der Wärmepumpe gilt zugleich die Regel „gesäte Kältedaten". Ebenso betroffen ist
+> das Anlegen oder Entfernen eines gekoppelten Referenzprojekts.
 >
 > **Rechenwirkung hat allein Projekt 1047 „Referenz Anlagenkopplung AK1"**, die Kopie von 1017:
 > Kopplungsstufe „AK1", Gebäude 10653 mit Heizkreis (Radiator, Heizkurve gefahren) und Kühlübergabe
-> (Kühldecke), alle übrigen Übergabespalten leer, also die EPOS-Vorgaben der Art — sieben Zellen samt
-> der Kopie aus [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py).
+> (Kühldecke), alle übrigen Übergabespalten leer, also die EPOS-Vorgaben der Art, und die Kaskade BHKW,
+> Wärmepumpe, Elektrokessel (in 1017: BHKW, Elektrokessel, Wärmepumpe) — neun Zellen samt der Kopie aus
+> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py).
 > Eine leere Spalte ist hier eine Setzung wie eine gefüllte: Wer eine Vorgabe von Hand einträgt, ändert
 > die Basis. Die übrigen dreizehn Referenzprojekte stehen ohne Kopplungsstufe und ohne Haken; ihre
 > Gebäude rechnen ideal.

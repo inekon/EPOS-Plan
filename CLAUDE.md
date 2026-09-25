@@ -176,8 +176,9 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   eines Referenzprojekts, an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
   Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Regler_Proportionalband`,
   `Sollwertprofil`), `Kuehluebergabe_Aktiv`, die Spalten `Kuehl_Uebergabe_*` und
-  `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, dazu das Anlegen oder Entfernen eines
-  gekoppelten Referenzprojekts.
+  `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, die Kaskade eines gekoppelten Referenzprojekts
+  (`Tab_Einstellungen.Tool_1` bis `Tool_4`, sie entscheidet, ob die Wärmepumpe am gerechneten
+  Vorlauf Wärme liefert), dazu das Anlegen oder Entfernen eines gekoppelten Referenzprojekts.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
