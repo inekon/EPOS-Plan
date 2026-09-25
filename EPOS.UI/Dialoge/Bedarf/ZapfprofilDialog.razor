@@ -2424,13 +2424,20 @@
             setzen(x.Ferien[k] ??= new ZapfprofilFerienDaten());
         });
 
-    /// <summary>Der Jahresmesswert; der erste Wert ohne Einheit nimmt die Vorgabe kWh/a.</summary>
+    /// <summary>
+    /// Der Jahresmesswert; der erste Wert ohne Einheit nimmt die Vorgabe kWh/a. Eine EIGENE
+    /// Eingabe nimmt die Hinweise der Kalibrierung weg: Sie gehörten dem Wert, der jetzt nicht
+    /// mehr da steht — ein Hinweis zu einem überschriebenen Wert wäre falsch.
+    /// </summary>
     private void MesswertSetzen(ZapfprofilZoneDaten z, double? wert)
-        => Angabe(z, x =>
+    {
+        _kalibrierung = null;
+        Angabe(z, x =>
         {
             x.Jahresmesswert = wert;
             if (wert.HasValue && !x.JahresmesswertEinheit.HasValue) x.JahresmesswertEinheit = ZapfprofilMesswerteinheit.KwhJeJahr;
         });
+    }
 
     /// <summary>Die Einheit des Messwerts; ein Volumen gilt an der Zapfstelle — seine Grenze fällt weg.</summary>
     private void MesswertEinheitSetzen(ZapfprofilZoneDaten z, int? id)
