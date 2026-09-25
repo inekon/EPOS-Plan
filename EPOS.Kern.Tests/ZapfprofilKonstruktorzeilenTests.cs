@@ -176,6 +176,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Huelle_fuehrt_die_gespeicherten_Zeilen_an_den_Konstruktor()
         {
+            // Die Projektvorgaben kommen aus der DDL der Datenbank: eine eigene leere Tww-Datenbank,
+            // nie die des Rechners (auf dem CI-Laeufer gibt es keine; ProjektVorgabe() waere null).
+            using var db = new TwwTestdatenbank();
             var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new ZonenStand[0],
                                             ZapfprofilCtrl.ProjektVorgabe() with
                                             {
