@@ -10,6 +10,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using WindowsFormsApplication1;
 using Xunit;
 using Xunit.Abstractions;
+using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using R = WindowsFormsApplication1.MyResource.Resource;
 using TX = WindowsFormsApplication1.WordVorlagentexte;
@@ -21,14 +22,15 @@ namespace EPOS.Kern.Tests
     /// 6; Etappe BV-E1 Teil A2): <see cref="WordVorlagenfueller"/> über
     /// <see cref="WordBerichtGenerator.ErzeugeMitVorlage"/>.
     ///
-    /// <para><b>(a) Standardvorlage gegen die Messlatte.</b> Die Standardvorlage
-    /// (<c>{{bericht.inhalt}}</c> im Rumpf, Platzhalter in Kopf- und Fußzeile) ergibt für 1030 und
-    /// die Gruppe denselben RUMPF wie der Bausteinweg mit der Stilvorlage
-    /// (<c>Messlatten/Bericht_Word_*.txt</c>) — die Kopfzeile ebenso, die Fußzeile trägt Firma,
-    /// Berichtsdatum statt DATE-Feld und „Seite“. (b) Beispielvorlage: Deckblatt gefüllt, die
-    /// <c>{{kapitel.*}}</c> (Katalog v1 kennt sie nicht) bleiben gelb und stehen im Ergebnis.
-    /// (c) Schmutzige Vorlagen, hier per SDK gebaut. (d) Leerwerte und Ausnahmen. (e) Kapitel an
-    /// der falschen Stelle.</para>
+    /// <para><b>(a) Standardvorlage.</b> Die Standardvorlage im vollen Aufbau (BV-E2: Deckblatt aus
+    /// Platzhaltern, Kapitel einzeln unter Kapitelköpfen) füllt für 1030 und die Gruppe jede Stelle; den
+    /// Rumpf Zeile für Zeile hält die Messlatte des Vorlagenwegs (<see cref="BerichtVorlagenMesslatteTests"/>),
+    /// die Fußzeile trägt Firma, Berichtsdatum statt DATE-Feld und „Seite“. (b) Beispielvorlage: Deckblatt
+    /// gefüllt, Kapitel ohne Häkchen entfallen samt Kapitelkopf. (c) Schmutzige Vorlagen, hier per SDK
+    /// gebaut. (d) Leerwerte und Ausnahmen. (e) Kapitel an der falschen Stelle. (f) Kapitel einzeln:
+    /// Folge, Entfall, doppelt, <c>|ohne titel</c>, <c>|ebene n</c>, Umbruch vor dem Kapitelkopf des
+    /// Anhangs E, Sammelanker ohne die einzeln geführten, Stellen der Anhang-E-Checkliste. (g) Das Logo
+    /// als Bildplatzhalter (Anwenderentscheid BV-E2-1).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WordVorlagenfuellerTests : IDisposable
@@ -54,14 +56,17 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die Standardvorlage über die Engine: Validator in allen Fassungen ohne Fehler, der Rumpf
-        /// Zeile für Zeile gleich der Messlatte des Bausteinwegs, Kopf- und Fußzeile gefüllt, kein
-        /// <c>{{</c> mehr, nichts hinter der letzten Abschnittsangabe, Bildkennungen eindeutig.
+        /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3) über die Engine: Validator in allen
+        /// Fassungen ohne Fehler, kein <c>{{</c> mehr, keine gelbe Stelle, nichts hinter der letzten
+        /// Abschnittsangabe, Bildkennungen eindeutig; die Kopfzeile trägt das Programm wie bisher, die
+        /// Fußzeile Firma, Berichtsdatum statt DATE-Feld und „Seite“. Die Stellen der Kapitel sind ihre
+        /// Kapitelköpfe, das Deckblatt steht aus Platzhaltern. Den Rumpf Zeile für Zeile hält die
+        /// Messlatte des Vorlagenwegs (<see cref="BerichtVorlagenMesslatteTests"/>).
         /// </summary>
         [Theory]
         [InlineData(BerichtVorlagenMesslatteTests.PROBE_1030)]
         [InlineData(BerichtVorlagenMesslatteTests.PROBE_GRUPPE)]
-        public void Standardvorlage_trifft_die_Messlatte_im_Rumpf_und_fuellt_Kopf_und_Fusszeile(string probe)
+        public void Standardvorlage_fuellt_Deckblatt_Kapitel_Kopf_und_Fusszeile(string probe)
         {
             byte[] vorlage = Repovorlage(BerichtsvorlageDateiWacheTests.STANDARD);
             if (vorlage == null) return;
@@ -69,33 +74,20 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             string ziel = Ziel("standard_" + probe + ".docx");
+            BerichtsDaten daten = BerichtVorlagenMesslatteTests.Probe(probe);
             Fuellergebnis ergebnis = new WordBerichtGenerator().ErzeugeMitVorlage(
-                BerichtVorlagenMesslatteTests.Probe(probe), Berichtsdatenproben.VolleKonfiguration(),
-                vorlage, new Erstellerangaben { Firma = FIRMA }, ziel);
+                daten, Berichtsdatenproben.VolleKonfiguration(), vorlage, new Erstellerangaben { Firma = FIRMA }, ziel);
 
             Assert.Equal(ziel, ergebnis.Zieldatei);
             Assert.Empty(Validierungsfehler(ziel));
 
-            // Rumpf gegen die Messlatte, Zeile für Zeile.
+            // Kopfzeile wie bisher bis auf das Logo (ohne eingestelltes Logo entfällt das Platzhalterbild);
+            // Fußzeile mit Firma, Berichtsdatum statt DATE-Feld und „Seite“.
             List<string> struktur = Berichtsstruktur.Word(ziel);
             List<string> messlatte = Messlatte("Bericht_Word_" + probe + ".txt");
-            List<string> rumpfSoll = messlatte.SkipWhile(z => z != "## Rumpf").ToList();
-            List<string> rumpfIst = struktur.SkipWhile(z => z != "## Rumpf").ToList();
-            if (!rumpfSoll.SequenceEqual(rumpfIst, StringComparer.Ordinal))
-            {
-                string ablage = Path.Combine(AppContext.BaseDirectory, "Messlatten", "WordVorlagenfueller_" + probe + ".txt");
-                Directory.CreateDirectory(Path.GetDirectoryName(ablage));
-                File.WriteAllText(ablage, string.Join("\r\n", struktur) + "\r\n", new UTF8Encoding(false));
-                int i = 0;
-                while (i < rumpfSoll.Count && i < rumpfIst.Count && rumpfSoll[i] == rumpfIst[i]) i++;
-                Assert.Fail("Rumpf weicht ab der Zeile " + (i + 1) + " ab — Messlatte: " +
-                            (i < rumpfSoll.Count ? rumpfSoll[i] : "(Ende)") + " | Lauf: " +
-                            (i < rumpfIst.Count ? rumpfIst[i] : "(Ende)") + ". Liste: " + ablage);
-            }
-
-            // Kopfzeile wie bisher; Fußzeile mit Firma, Berichtsdatum statt DATE-Feld und „Seite“.
-            Assert.Equal(messlatte.Where(z => z.StartsWith("Kopfzeile ", StringComparison.Ordinal)),
-                         struktur.Where(z => z.StartsWith("Kopfzeile ", StringComparison.Ordinal)));
+            string kopfSoll = messlatte.Single(z => z.StartsWith("Kopfzeile ", StringComparison.Ordinal));
+            kopfSoll = kopfSoll.Substring(0, kopfSoll.IndexOf('⇥') + 1);
+            Assert.StartsWith(kopfSoll, struktur.Single(z => z.StartsWith("Kopfzeile ", StringComparison.Ordinal)), StringComparison.Ordinal);
             string fussSoll = messlatte.Single(z => z.StartsWith("Fußzeile ", StringComparison.Ordinal))
                                        .Replace("{DATE \\@ \"dd.MM.yyyy\"}", Berichtsstruktur.DATUM);
             Assert.Equal("Fußzeile default: Absatz [—] " + FIRMA + "⇥" + Berichtsstruktur.DATUM + "⇥" + R.BV_TEXT_SEITE +
@@ -107,17 +99,26 @@ namespace EPOS.Kern.Tests
                 Assert.DoesNotContain("{{", AllerText(doc));
                 Body rumpf = doc.MainDocumentPart.Document.Body;
                 Assert.Empty(rumpf.Elements<SectionProperties>().Last().ElementsAfter());
+                Assert.Empty(rumpf.Descendants<Run>().Where(IstGelb));
                 AssertBildkennungenEindeutig(doc);
                 Assert.NotNull(doc.MainDocumentPart.DocumentSettingsPart?.Settings?.GetFirstChild<UpdateFieldsOnOpen>());
                 Assert.Null(doc.MainDocumentPart.WordprocessingCommentsPart);
+                Assert.Equal(daten.Stammprojektname, ErsterMitStil(rumpf, "Title"));
             }
 
-            // Fünf Platzhalter: Programm, Firma, Datum, „Seite“, der Sammelanker.
-            Assert.Equal(5, ergebnis.Ersetzt);
             Assert.Empty(ergebnis.Unbekannte);
             Assert.Empty(ergebnis.Fehler);
             Assert.False(ergebnis.OhnePlatzhalter);
             Assert.Empty(ergebnis.Hinweise.Where(h => h.Contains("angelegt", StringComparison.Ordinal)));
+
+            // Die Stellen: die Kapitelköpfe der Vorlage, das Inhaltsverzeichnis mit eigener Überschrift, das
+            // Deckblatt aus Platzhaltern.
+            Assert.Equal("Deckblatt", ergebnis.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+            Assert.Equal("Inhalt", ergebnis.Kapitelstellen[BerichtsKonfiguration.B_INHALT]);
+            Assert.Equal("Projektbeschreibung", ergebnis.Kapitelstellen[BerichtsKonfiguration.B_PROJEKT]);
+            Assert.Equal("Berechnungsergebnisse je Variante", ergebnis.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
+            Assert.Equal("Wirtschaftlichkeit", ergebnis.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal(R.WIRT_AE_TITEL, ergebnis.Kapitelstellen[Berichtskapitel.ANHANG_E]);
             foreach (string zeile in ergebnis.Meldungen()) _ausgabe.WriteLine(zeile);
         }
 
@@ -126,12 +127,12 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die Beispielvorlage: jeder Einzelplatzhalter des Deckblatts gefüllt; die acht
-        /// <c>{{kapitel.*}}</c> kennt Katalog v1 nicht — sie bleiben gelb hervorgehoben stehen und
-        /// stehen mit Fundort im Ergebnis. Die zwei Kommentare der Vorlage sind entfernt.
+        /// Die Beispielvorlage (voller Aufbau, Katalog v2 kennt ihre Kapitel): jeder Einzelplatzhalter des
+        /// Deckblatts gefüllt, keine Stelle bleibt gelb. Ohne gesetztes Häkchen entfällt jedes Kapitel samt
+        /// seinem Kapitelkopf — keine verwaiste Überschrift. Die Kommentare der Vorlage sind entfernt.
         /// </summary>
         [Fact]
-        public void Beispielvorlage_fuellt_das_Deckblatt_und_laesst_die_Kapitel_gelb_stehen()
+        public void Beispielvorlage_fuellt_das_Deckblatt_und_laesst_Kapitel_ohne_Haekchen_entfallen()
         {
             byte[] vorlage = Repovorlage(BerichtsvorlageDateiWacheTests.BEISPIEL);
             if (vorlage == null) return;
@@ -139,7 +140,7 @@ namespace EPOS.Kern.Tests
             BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(2);
             daten.ErstelltAm = new DateTime(2026, 9, 25);
             string ziel = Ziel("beispiel.docx");
-            Fuellergebnis e = Fuelle(vorlage, daten, Berichtsdatenproben.VolleKonfiguration(), ziel);
+            Fuellergebnis e = Fuelle(vorlage, daten, Konfig(), ziel);
 
             Assert.Empty(Validierungsfehler(ziel));
             using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
@@ -162,26 +163,58 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", hinweise[0]);   // Gebäudemodell „leer statt strich“
             Assert.StartsWith(R.BV_TEXT_ERSTELLT_MIT + " EPOS-Plan ", hinweise[1]);
 
-            // Die Kapitel: gelb, im Ergebnis, und sonst kein Platzhalter mehr im Dokument.
-            List<Run> gelb = body.Descendants<Run>().Where(IstGelb).ToList();
-            Assert.Equal(8, gelb.Count);
-            Assert.All(gelb, r => Assert.StartsWith("{{kapitel.", r.InnerText, StringComparison.Ordinal));
-            Assert.Equal(8, e.Unbekannte.Count);
-            Assert.All(e.Unbekannte, b =>
-            {
-                Assert.Equal(Fuellbefundart.Unbekannt, b.Art);
-                Assert.StartsWith("{{kapitel.", b.Normalform, StringComparison.Ordinal);
-                Assert.StartsWith("Rumpf, Absatz ", b.Fundort, StringComparison.Ordinal);
-            });
-            Assert.Contains(e.Unbekannte, b => b.Normalform == "{{kapitel.projekt|ohne titel}}");
-            Assert.Equal(8, Vorkommen(AllerText(doc), "{{"));
+            // Kein Häkchen: kein Kapitel, kein Kapitelkopf, keine gelbe Stelle, kein Platzhalter.
+            Assert.Empty(body.Descendants<Paragraph>().Where(p => p.ParagraphProperties?.ParagraphStyleId?.Val?.Value == "EPOSKapitelkopf"));
+            Assert.Empty(body.Descendants<Run>().Where(IstGelb));
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(e.Fehler);
+            Assert.DoesNotContain("{{", AllerText(doc));
+            Assert.All(Berichtskapitel.Alle.Where(k => k.Name != Berichtskapitel.DECKBLATT),
+                       k => Assert.Null(e.Kapitelstellen[k.Stellenschluessel]));
+            Assert.Equal("Deckblatt", e.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
 
-            Assert.Equal(2, e.EntfernteKommentare);
-            Assert.Contains(TX.F(false, TX.KOMMENTARE, 2), e.Hinweise);
             Assert.Null(doc.MainDocumentPart.WordprocessingCommentsPart);
             Assert.Empty(body.Descendants<CommentRangeStart>());
-            Assert.Empty(body.Descendants<CommentRangeEnd>());
             Assert.Empty(body.Descendants<CommentReference>());
+
+            // Ohne eingestelltes Logo entfällt der Bildplatzhalter der Kopfzeile samt Bildteil (BV-E2-1);
+            // das Programm davor bleibt.
+            Assert.Equal(1, e.Leere[Vorlagenfeldkatalog.LOGO]);
+            Assert.All(doc.MainDocumentPart.HeaderParts, h => Assert.Empty(h.Header.Descendants<Drawing>()));
+            Assert.Empty(doc.MainDocumentPart.HeaderParts.SelectMany(h => h.ImageParts));
+            Assert.Contains(doc.MainDocumentPart.HeaderParts, h => h.Header.InnerText.StartsWith("EPOS-Plan", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Das Logo in der Standardvorlage (Entscheid BV-E2-1): Die Engine setzt das eingestellte Logo in den
+        /// Rahmen des Bildplatzhalters der Kopfzeile (857250 × 466725 EMU) — seitentreu, ein Logo 3 : 1 füllt
+        /// die Breite; der Alternativtext wird der Dateiname, das Platzhalterbild verschwindet aus dem Paket,
+        /// die Bildkennungen bleiben eindeutig.
+        /// </summary>
+        [Fact]
+        public void Standardvorlage_setzt_das_Logo_seitentreu_in_den_Rahmen_der_Kopfzeile()
+        {
+            byte[] vorlage = Repovorlage(BerichtsvorlageDateiWacheTests.STANDARD);
+            if (vorlage == null) return;
+            byte[] logo = Png(300, 100);
+            string ziel = Ziel("standard_logo.docx");
+            Fuellergebnis e = FuelleMit(vorlage, Berichtsdatenproben.Gruppendaten(2), Konfig(),
+                                        new Erstellerangaben { Firma = FIRMA, Logo = logo, LogoDateiname = "firma.png" }, ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Empty(e.Warnungen);
+            Assert.False(e.Leere.ContainsKey(Vorlagenfeldkatalog.LOGO));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            HeaderPart kopf = Assert.Single(doc.MainDocumentPart.HeaderParts, h => h.Header.Descendants<DW.Extent>().Any());
+            DW.Extent ausdehnung = kopf.Header.Descendants<DW.Extent>().Single();
+            Assert.Equal(857250L, ausdehnung.Cx.Value);
+            Assert.Equal(285750L, ausdehnung.Cy.Value);
+            Assert.Equal("firma.png", kopf.Header.Descendants<DW.DocProperties>().Single().Description.Value);
+            var teil = (ImagePart)kopf.GetPartById(kopf.Header.Descendants<A.Blip>().Single().Embed.Value);
+            Assert.Equal("image/png", teil.ContentType);
+            using (Stream s = teil.GetStream()) Assert.Equal(logo.Length, s.Length);
+            Assert.DoesNotContain(doc.GetAllParts(),
+                                  p => p.Uri.OriginalString.EndsWith("logoplatzhalter.png", StringComparison.OrdinalIgnoreCase));
             AssertBildkennungenEindeutig(doc);
         }
 
@@ -999,6 +1032,353 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  (f) Kapitel einzeln, Folge, Entfall, Kapitelformat (BV-E2)
+        // =====================================================================
+
+        /// <summary>
+        /// Konzept 5.3: Die Vorlage bestimmt die Folge — hier der Anhang vor der Projektbeschreibung. Mit
+        /// <c>|ohne titel</c> steht der Kapitelkopf der Vorlage an der Stelle der eigenen Überschrift; ohne
+        /// die Angabe schreibt das Kapitel seine eigene unter den Kapitelkopf. Die Stellen der Kapitel sind
+        /// ihre Kapitelköpfe, das Deckblatt steht aus dem Platzhalter <c>{{bericht.titel}}</c>, ein Kapitel,
+        /// das die Vorlage nicht führt, steht nicht im Bericht.
+        /// </summary>
+        [Fact]
+        public void Kapitel_einzeln_in_der_Folge_der_Vorlage_mit_und_ohne_eigene_Ueberschrift()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] v = KapitelVorlage(TextAbsatz("{{bericht.titel}}"), KopfAbsatz("Zuerst der Anhang"),
+                                      TextAbsatz("{{kapitel.anhang|ohne titel}}"), KopfAbsatz("Dann das Projekt"),
+                                      TextAbsatz("{{kapitel.projekt}}"));
+            string ziel = Ziel("kapitel_folge.docx");
+            Fuellergebnis e = Fuelle(v, Berichtsdatenproben.Gruppendaten(),
+                                     Konfig(BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_ANHANG), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Empty(e.Unbekannte);
+            Assert.Equal(3, e.Ersetzt);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<string> ueberschriften = Gliederung(doc)
+                .Where(z => z.StartsWith("EPOS Kapitelkopf:", StringComparison.Ordinal) || z.StartsWith("heading ", StringComparison.Ordinal))
+                .ToList();
+            int anhang = ueberschriften.IndexOf("EPOS Kapitelkopf: Zuerst der Anhang");
+            int projekt = ueberschriften.IndexOf("EPOS Kapitelkopf: Dann das Projekt");
+            Assert.True(anhang == 0 && projekt > anhang, string.Join(" | ", ueberschriften));
+            Assert.Equal("heading 2: Simulationsstände", ueberschriften[anhang + 1]);   // ohne titel: kein „Anhang“
+            Assert.Equal("heading 1: Projektbeschreibung", ueberschriften[projekt + 1]);   // eigene Überschrift unter dem Kopf
+            Assert.DoesNotContain("heading 1: Anhang", ueberschriften);
+            Assert.DoesNotContain("{{", AllerText(doc));
+
+            Assert.Equal("Zuerst der Anhang", e.Kapitelstellen[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Equal("Dann das Projekt", e.Kapitelstellen[BerichtsKonfiguration.B_PROJEKT]);
+            Assert.Equal("Deckblatt", e.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+            Assert.Null(e.Kapitelstellen[BerichtsKonfiguration.B_VERGLEICH]);
+            Assert.Null(e.Kapitelstellen[Berichtskapitel.ANHANG_E]);
+        }
+
+        /// <summary>
+        /// Konzept 5.3 „Entfall“: Ein Kapitel mit abgewähltem Häkchen liefert nichts, und der unmittelbar
+        /// davor stehende Kapitelkopf entfällt mit — keine verwaiste Überschrift. Der Platzhalter zählt als
+        /// leer; im Bericht steht das Kapitel nicht.
+        /// </summary>
+        [Fact]
+        public void Abgewaehltes_Haekchen_laesst_Kapitel_und_Kapitelkopf_entfallen()
+        {
+            byte[] v = KapitelVorlage(TextAbsatz("Vorwort"), KopfAbsatz("Anhang der Vorlage"),
+                                      TextAbsatz("{{kapitel.anhang|ohne titel}}"), TextAbsatz("Nachwort"));
+            string ziel = Ziel("kapitel_entfall.docx");
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(BerichtsKonfiguration.B_PROJEKT), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            Assert.Equal(new[] { "—: Vorwort", "—: Nachwort" }, Gliederung(doc));
+            Assert.Equal(1, e.Leere["kapitel.anhang"]);
+            Assert.Null(e.Kapitelstellen[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(e.Fehler);
+        }
+
+        /// <summary>
+        /// Ein Kapitel zweimal in der Vorlage: Die erste Stelle wird gefüllt, die zweite bleibt gelb stehen
+        /// und steht als Fehler im Ergebnis (Konzept 5.3) — das Kapitel erscheint genau einmal.
+        /// </summary>
+        [Fact]
+        public void Kapitel_doppelt_fuellt_die_erste_Stelle_und_laesst_die_zweite_gelb()
+        {
+            byte[] v = KapitelVorlage(TextAbsatz("{{kapitel.anhang}}"), TextAbsatz("Zwischentext"),
+                                      TextAbsatz("{{kapitel.anhang|ebene 2}}"));
+            string ziel = Ziel("kapitel_doppelt.docx");
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(BerichtsKonfiguration.B_ANHANG), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<string> gliederung = Gliederung(doc);
+            Assert.Single(gliederung, z => z == "heading 1: Anhang");
+            Assert.Single(gliederung, z => z == "heading 2: Simulationsstände");
+            Assert.True(gliederung.IndexOf("—: Zwischentext") < gliederung.IndexOf("—: {{kapitel.anhang|ebene 2}}"),
+                        string.Join(" | ", gliederung));
+            Run gelb = Assert.Single(doc.MainDocumentPart.Document.Body.Descendants<Run>().Where(IstGelb));
+            Assert.Equal("{{kapitel.anhang|ebene 2}}", gelb.InnerText);
+
+            Fuellbefund befund = Assert.Single(e.Unbekannte);
+            Assert.Equal(Fuellbefundart.Doppelt, befund.Art);
+            Assert.Equal(TX.T(TX.GRUND_DOPPELT, false), befund.Grund);
+            string fehler = Assert.Single(e.Fehler);
+            Assert.StartsWith("{{kapitel.anhang|ebene 2}}: Das Kapitel steht schon an einer früheren Stelle der Vorlage",
+                              fehler, StringComparison.Ordinal);
+            Assert.Equal(1, e.Ersetzt);
+        }
+
+        /// <summary>
+        /// Konzept 4.8: <c>|ebene n</c> rückt jede Überschrift des Kapitels um n − 1 Ebenen tiefer — fehlende
+        /// Überschriftenstile (hier Überschrift 4) legt die Engine mit ihrer Gliederungsebene an und nennt
+        /// sie; mit <c>|ohne titel</c> entfällt die Kapitelüberschrift trotzdem. Der Sammelanker nimmt die
+        /// Angabe für seine Kapitel und setzt den einzeln geführten Anhang nicht noch einmal ein.
+        /// </summary>
+        [Fact]
+        public void Ebene_rueckt_die_Ueberschriften_tiefer_und_legt_fehlende_Stile_an()
+        {
+            byte[] v = KapitelVorlage(KopfAbsatz("Kopf"), TextAbsatz("{{kapitel.anhang|ohne titel|ebene 3}}"),
+                                      TextAbsatz("{{bericht.inhalt|ebene 2}}"));
+            string ziel = Ziel("kapitel_ebene.docx");
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(BerichtsKonfiguration.B_ANHANG, BerichtsKonfiguration.B_INHALT), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Empty(e.Unbekannte);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<string> gliederung = Gliederung(doc);
+            Assert.Contains("heading 4: Simulationsstände", gliederung);
+            Assert.Contains("heading 4: Datengrundlage und Methodik", gliederung);
+            Assert.DoesNotContain(gliederung, z => z.EndsWith(": Anhang", StringComparison.Ordinal));
+            Assert.Single(gliederung, z => z.EndsWith(": Simulationsstände", StringComparison.Ordinal));
+            Assert.Contains("heading 2: Inhalt", gliederung);
+
+            Style h4 = doc.MainDocumentPart.StyleDefinitionsPart.Styles.Elements<Style>()
+                          .Single(s => s.StyleName?.Val?.Value == "heading 4");
+            Assert.Equal(3, h4.StyleParagraphProperties?.OutlineLevel?.Val?.Value);
+            Assert.Contains(TX.F(false, TX.STIL_ANGELEGT, "heading 4"), e.Hinweise);
+        }
+
+        /// <summary>
+        /// Anhang E mit <c>|ohne titel</c> unter einem Kapitelkopf: Den Seitenumbruch, den der Baustein vor
+        /// seine Überschrift schreibt, setzt die Engine VOR den Kapitelkopf — sonst hinge die Überschrift
+        /// allein am Seitenende. Der Kapitelkopf <c>{{text.kapitel_anhang_e}}</c> ist aufgelöst. Die Spalte
+        /// „Stelle“ nennt die Überschriften DIESES Berichts: den umbenannten Kapitelkopf der
+        /// Wirtschaftlichkeit, „nicht im Bericht“ für die Kapitel, die die Vorlage nicht führt.
+        /// </summary>
+        [Fact]
+        public void Anhang_E_setzt_den_Umbruch_vor_den_Kapitelkopf_und_nennt_die_Stellen_der_Vorlage()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] v = KapitelVorlage(KopfAbsatz("5 Wirtschaftliche Bewertung"), TextAbsatz("{{kapitel.wirtschaftlichkeit|ohne titel}}"),
+                                      KopfAbsatz("{{text.kapitel_anhang_e}}"), TextAbsatz("{{kapitel.anhang_e|ohne titel}}"));
+            string ziel = Ziel("anhang_e.docx");
+            Fuellergebnis e = Fuelle(v, BerichtVorlagenMesslatteTests.Probe(BerichtVorlagenMesslatteTests.PROBE_GRUPPE),
+                                     Konfig(BerichtsKonfiguration.B_WIRTSCHAFT), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Empty(e.Unbekannte);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<string> gliederung = Gliederung(doc);
+            int kopf = gliederung.IndexOf("EPOS Kapitelkopf: " + R.WIRT_AE_TITEL);
+            Assert.True(kopf > 0, string.Join(" | ", gliederung));
+            Assert.Equal("Seitenumbruch", gliederung[kopf - 1]);
+            Assert.EndsWith(": " + R.WIRT_AE_HINWEIS, gliederung[kopf + 1], StringComparison.Ordinal);
+            Assert.DoesNotContain(gliederung, z => z.StartsWith("heading 1:", StringComparison.Ordinal));
+            Assert.Equal("EPOS Kapitelkopf: 5 Wirtschaftliche Bewertung", gliederung[0]);
+
+            Assert.Equal("5 Wirtschaftliche Bewertung", e.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal(R.WIRT_AE_TITEL, e.Kapitelstellen[Berichtskapitel.ANHANG_E]);
+            Assert.Null(e.Kapitelstellen[BerichtsKonfiguration.B_PROJEKT]);
+
+            Table checkliste = doc.MainDocumentPart.Document.Body.Elements<Table>().Last();
+            string Stelle(string nummer) => checkliste.Elements<TableRow>()
+                .Select(r => r.Elements<TableCell>().Select(c => c.InnerText).ToList())
+                .Single(z => z[0] == nummer)[3];
+            Assert.Equal("Wortbericht: „5 Wirtschaftliche Bewertung“ › „Kennzahlen im Szenario „Erwartet““ · " +
+                         "Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“", Stelle("1"));
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“", Stelle("0.1"));
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“", Stelle("0.2"));
+            Assert.Equal("Wortbericht: „5 Wirtschaftliche Bewertung“ · Tabellenbericht: Formelmappe (Parameterblock, " +
+                         "Mehrjahrestabellen, Kennzahlen)", Stelle("11"));
+        }
+
+        /// <summary>
+        /// Der Sammelanker setzt die angehakten Kapitel OHNE die einzeln geführten (Konzept 5.3): Der Anhang
+        /// steht einmal, an seiner eigenen Stelle unter dem Kapitelkopf <c>{{text.kapitel_anhang}}</c>; der
+        /// Sammelanker bringt danach das Inhaltsverzeichnis.
+        /// </summary>
+        [Fact]
+        public void Sammelanker_setzt_die_einzeln_gefuehrten_Kapitel_nicht_noch_einmal()
+        {
+            byte[] v = KapitelVorlage(KopfAbsatz("{{text.kapitel_anhang}}"), TextAbsatz("{{kapitel.anhang|ohne titel}}"),
+                                      TextAbsatz("{{bericht.inhalt}}"));
+            string ziel = Ziel("sammelanker_rest.docx");
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(BerichtsKonfiguration.B_ANHANG, BerichtsKonfiguration.B_INHALT), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<string> gliederung = Gliederung(doc);
+            Assert.Equal("EPOS Kapitelkopf: Anhang", gliederung[0]);
+            Assert.Single(gliederung, z => z == "heading 2: Simulationsstände");
+            Assert.True(gliederung.IndexOf("heading 1: Inhalt") > gliederung.IndexOf("heading 2: Simulationsstände"),
+                        string.Join(" | ", gliederung));
+            Assert.Equal("Anhang", e.Kapitelstellen[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Equal("Inhalt", e.Kapitelstellen[BerichtsKonfiguration.B_INHALT]);
+            Assert.Null(e.Kapitelstellen[BerichtsKonfiguration.B_VERGLEICH]);   // über den Sammelanker, aber ohne Häkchen
+        }
+
+        /// <summary>
+        /// Kapitel nur im Rumpf oder im Block-Steuerelement (Konzept 4.3): das Steuerelement mit dem Tag
+        /// <c>kapitel.anhang</c> wird gefüllt und ausgepackt; ein Kapitel in einer Tabellenzelle bleibt gelb
+        /// stehen und steht nicht im Bericht.
+        /// </summary>
+        [Fact]
+        public void Kapitel_im_Block_Steuerelement_wird_gefuellt_in_der_Zelle_bleibt_es_stehen()
+        {
+            byte[] v = KapitelVorlage(
+                "<w:sdt><w:sdtPr><w:tag w:val=\"kapitel.anhang\"/><w:id w:val=\"31\"/></w:sdtPr><w:sdtContent>" +
+                "<w:p><w:r><w:t>Anhang hierhin</w:t></w:r></w:p></w:sdtContent></w:sdt>",
+                "<w:tbl><w:tblPr><w:tblW w:w=\"5000\" w:type=\"dxa\"/></w:tblPr><w:tblGrid><w:gridCol w:w=\"5000\"/></w:tblGrid>" +
+                "<w:tr><w:tc><w:tcPr><w:tcW w:w=\"5000\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t>{{kapitel.projekt}}</w:t></w:r></w:p>" +
+                "</w:tc></w:tr></w:tbl>",
+                TextAbsatz("Ende"));
+            string ziel = Ziel("kapitel_sdt_zelle.docx");
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(BerichtsKonfiguration.B_ANHANG, BerichtsKonfiguration.B_PROJEKT), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            Body body = doc.MainDocumentPart.Document.Body;
+            Assert.Empty(body.Descendants<SdtBlock>());
+            Assert.Contains("heading 1: Anhang", Gliederung(doc));
+            Assert.Equal("{{kapitel.projekt}}", Assert.Single(body.Descendants<Run>().Where(IstGelb)).InnerText);
+            Assert.Equal(Fuellbefundart.FalscheStelle, Assert.Single(e.Unbekannte).Art);
+            Assert.Equal("Anhang", e.Kapitelstellen[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Null(e.Kapitelstellen[BerichtsKonfiguration.B_PROJEKT]);
+        }
+
+        // =====================================================================
+        //  (g) Logo als Bildplatzhalter (Anwenderentscheid BV-E2-1)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Logo der Einstellungen im Platzhalterbild der Kopfzeile: neuer Bildteil mit dem Inhaltstyp der
+        /// Datei, das Platzhalterbild ist fort; mit seinem Seitenverhältnis in den Rahmen eingepasst
+        /// (quadratisch: die Höhe begrenzt, breit: die Breite); Alternativtext der Dateiname; Text und
+        /// Lage bleiben; gültig in allen Fassungen.
+        /// </summary>
+        [Theory]
+        [InlineData(true, 40, 40, 476250L, 476250L, "image/png")]
+        [InlineData(false, 200, 50, 952500L, 238125L, "image/jpeg")]
+        public void Logo_wird_mit_seinem_Seitenverhaeltnis_in_den_Rahmen_eingepasst(bool png, int breite, int hoehe,
+                                                                                   long cx, long cy, string typ)
+        {
+            byte[] logo = png ? Png(breite, hoehe) : Jpeg(breite, hoehe);
+            string datei = png ? "firma.png" : "firma.jpg";
+            string ziel = Ziel("logo.docx");
+            Fuellergebnis e = FuelleMit(LogoVorlage(), Gruppe(), Konfig(),
+                                        new Erstellerangaben { Firma = FIRMA, Logo = logo, LogoDateiname = datei }, ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(e.Warnungen);
+            Assert.Equal(3, e.Ersetzt);   // Titel, Programm, Logo
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            HeaderPart kopf = doc.MainDocumentPart.HeaderParts.Single();
+            DW.Extent ausdehnung = kopf.Header.Descendants<DW.Extent>().Single();
+            Assert.Equal(cx, ausdehnung.Cx.Value);
+            Assert.Equal(cy, ausdehnung.Cy.Value);
+            A.Extents xfrm = kopf.Header.Descendants<A.Extents>().Single();
+            Assert.Equal(cx, xfrm.Cx.Value);
+            Assert.Equal(cy, xfrm.Cy.Value);
+
+            A.Blip blip = kopf.Header.Descendants<A.Blip>().Single();
+            var teil = (ImagePart)kopf.GetPartById(blip.Embed.Value);
+            Assert.Equal(typ, teil.ContentType);
+            Assert.Single(kopf.ImageParts);
+            using (Stream s = teil.GetStream()) Assert.Equal(logo.Length, s.Length);
+            Assert.Equal(datei, kopf.Header.Descendants<DW.DocProperties>().Single().Description.Value);
+            Assert.StartsWith("EPOS-Plan", kopf.Header.InnerText, StringComparison.Ordinal);
+            AssertBildkennungenEindeutig(doc);
+        }
+
+        /// <summary>
+        /// Ohne Logo entfällt das Platzhalterbild samt Lauf und Bildteil (Konzept 4.10: kein Bild statt
+        /// eines fremden): Steht es allein in der Kopfzeile, bleibt ihr leerer Absatz; steht Text daneben,
+        /// bleibt der Text; ein danach leerer Absatz im Rumpf entfällt. Die Warnung der Erstellerangaben
+        /// („Logo nicht gefunden: …“) steht einmal im Ergebnis; jede Stelle zählt als leer.
+        /// </summary>
+        [Fact]
+        public void Ohne_Logo_entfaellt_das_Platzhalterbild_und_die_Warnung_nennt_die_Datei()
+        {
+            byte[] v = Vorlage(main =>
+            {
+                HeaderPart kopf = main.AddNewPart<HeaderPart>();
+                kopf.Header = new Header("<w:hdr " + NS + "><w:p>" +
+                    Logobild(kopf.GetIdOfPart(Einpixel(kopf.AddImagePart(ImagePartType.Png))), 1, 952500, 476250,
+                             "{{bild.ersteller.logo}}") + "</w:p></w:hdr>");
+                FooterPart fuss = main.AddNewPart<FooterPart>();
+                fuss.Footer = new Footer("<w:ftr " + NS + "><w:p><w:r><w:t xml:space=\"preserve\">Firma </w:t></w:r>" +
+                    Logobild(fuss.GetIdOfPart(Einpixel(fuss.AddImagePart(ImagePartType.Png))), 2, 952500, 476250,
+                             "bild.ersteller.logo") + "</w:p></w:ftr>");
+                string rumpfbild = main.GetIdOfPart(Einpixel(main.AddImagePart(ImagePartType.Png)));
+                return TextAbsatz("Vor dem Logo") + "<w:p>" + Logobild(rumpfbild, 3, 952500, 476250, "{{bild.ersteller.logo}}") + "</w:p>" +
+                       TextAbsatz("Nach dem Logo") +
+                       "<w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + main.GetIdOfPart(kopf) + "\"/>" +
+                       "<w:footerReference w:type=\"default\" r:id=\"" + main.GetIdOfPart(fuss) + "\"/>" + SEITE + "</w:sectPr>";
+            });
+            const string warnung = "Logo nicht gefunden: C:\\fehlt\\logo.png";
+            string ziel = Ziel("ohne_logo.docx");
+            Fuellergebnis e = FuelleMit(v, Gruppe(), Konfig(), new Erstellerangaben { Firma = FIRMA, LogoWarnung = warnung }, ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Equal(new[] { warnung }, e.Warnungen);
+            Assert.Equal(3, e.Leere[Vorlagenfeldkatalog.LOGO]);
+            Assert.Empty(e.Unbekannte);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            MainDocumentPart main = doc.MainDocumentPart;
+            Assert.Empty(main.ImageParts);
+            Assert.Empty(main.HeaderParts.Single().ImageParts);
+            Assert.Empty(main.FooterParts.Single().ImageParts);
+            Assert.Equal("", Assert.Single(main.HeaderParts.Single().Header.Elements<Paragraph>()).InnerText);
+            Assert.Equal("Firma ", Assert.Single(main.FooterParts.Single().Footer.Elements<Paragraph>()).InnerText);
+            Assert.Equal(new[] { "Vor dem Logo", "Nach dem Logo" }, main.Document.Body.Elements<Paragraph>().Select(p => p.InnerText));
+            Assert.Empty(main.Document.Body.Descendants<Drawing>());
+        }
+
+        /// <summary>
+        /// Das Logo im Rumpf, eingepasst in einen breiten Rahmen; ein Bild mit einem unbekannten Bildschlüssel
+        /// bleibt, wie es ist, und steht im Ergebnis.
+        /// </summary>
+        [Fact]
+        public void Logo_im_Rumpf_und_ein_unbekannter_Bildschluessel()
+        {
+            byte[] v = Vorlage(main =>
+            {
+                string logo = main.GetIdOfPart(Einpixel(main.AddImagePart(ImagePartType.Png)));
+                string fremd = main.GetIdOfPart(Einpixel(main.AddImagePart(ImagePartType.Png)));
+                return "<w:p>" + Logobild(logo, 1, 1905000, 952500, "{{bild.ersteller.logo}}") + "</w:p>" +
+                       "<w:p>" + Logobild(fremd, 2, 952500, 952500, "{{bild.gibt.es.nicht}}") + "</w:p>" + ABSCHNITT;
+            });
+            string ziel = Ziel("logo_rumpf.docx");
+            Fuellergebnis e = FuelleMit(v, Gruppe(), Konfig(),
+                                        new Erstellerangaben { Firma = FIRMA, Logo = Png(100, 100), LogoDateiname = "logo.png" }, ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Fuellbefund fremdbefund = Assert.Single(e.Unbekannte);
+            Assert.Equal("{{bild.gibt.es.nicht}}", fremdbefund.Normalform);
+            Assert.Equal(Fuellbefundart.Unbekannt, fremdbefund.Art);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<DW.Extent> ausdehnungen = doc.MainDocumentPart.Document.Body.Descendants<DW.Extent>().ToList();
+            Assert.Equal(952500L, ausdehnungen[0].Cx.Value);   // 200 × 100 px Rahmen, quadratisches Logo: 100 × 100 px
+            Assert.Equal(952500L, ausdehnungen[0].Cy.Value);
+            Assert.Equal(952500L, ausdehnungen[1].Cx.Value);   // das fremde Bild bleibt
+            Assert.Equal(2, doc.MainDocumentPart.ImageParts.Count());
+            Assert.Equal("{{bild.gibt.es.nicht}}", doc.MainDocumentPart.Document.Body.Descendants<DW.DocProperties>().Last().Description.Value);
+        }
+
+        // =====================================================================
         //  Normalisierer und Texte
         // =====================================================================
 
@@ -1128,10 +1508,126 @@ namespace EPOS.Kern.Tests
 
         private Fuellergebnis Fuelle(byte[] vorlage, BerichtsDaten daten, BerichtsKonfiguration konfig, string ziel)
         {
-            Fuellergebnis e = new WordBerichtGenerator().ErzeugeMitVorlage(daten, konfig, vorlage,
-                                                                           new Erstellerangaben { Firma = FIRMA }, ziel);
+            return FuelleMit(vorlage, daten, konfig, new Erstellerangaben { Firma = FIRMA }, ziel);
+        }
+
+        private Fuellergebnis FuelleMit(byte[] vorlage, BerichtsDaten daten, BerichtsKonfiguration konfig,
+                                        Erstellerangaben ersteller, string ziel)
+        {
+            Fuellergebnis e = new WordBerichtGenerator().ErzeugeMitVorlage(daten, konfig, vorlage, ersteller, ziel);
             foreach (string zeile in e.Meldungen()) _ausgabe.WriteLine(zeile);
             return e;
+        }
+
+        /// <summary>Das Absatzformat „EPOS Kapitelkopf“, wie die mitgelieferten Vorlagen es führen (gefunden über den Namen).</summary>
+        private static Style KapitelkopfStil()
+        {
+            return new Style(new StyleName { Val = WordVorlagenstile.NAME_KAPITELKOPF })
+            { Type = StyleValues.Paragraph, StyleId = "EPOSKapitelkopf", CustomStyle = true };
+        }
+
+        /// <summary>Ein Absatz im Format „EPOS Kapitelkopf“.</summary>
+        private static string KopfAbsatz(string text)
+        {
+            return "<w:p><w:pPr><w:pStyle w:val=\"EPOSKapitelkopf\"/></w:pPr><w:r><w:t xml:space=\"preserve\">" + text +
+                   "</w:t></w:r></w:p>";
+        }
+
+        /// <summary>Ein Absatz ohne Format mit einem Text.</summary>
+        private static string TextAbsatz(string text)
+        {
+            return "<w:p><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:p>";
+        }
+
+        /// <summary>Eine Vorlage aus Rumpfteilen, deren einziger Stil der Kapitelkopf ist; A4 hoch.</summary>
+        private static byte[] KapitelVorlage(params string[] teile)
+        {
+            return Vorlage(main =>
+            {
+                main.AddNewPart<StyleDefinitionsPart>().Styles = new Styles(KapitelkopfStil());
+                return string.Concat(teile) + ABSCHNITT;
+            });
+        }
+
+        /// <summary>
+        /// Die Kinder des Rumpfs als „Stilname: Text“ — der Stilname über <c>w:name</c> („heading 2“, „EPOS
+        /// Kapitelkopf“), ohne Stil „—“; ein Absatz nur mit Seitenumbruch als „Seitenumbruch“, eine Tabelle als „Tabelle“.
+        /// </summary>
+        private static List<string> Gliederung(WordprocessingDocument doc)
+        {
+            var namen = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (Style s in doc.MainDocumentPart.StyleDefinitionsPart?.Styles?.Elements<Style>() ?? Enumerable.Empty<Style>())
+                if (s.StyleId?.Value != null && !namen.ContainsKey(s.StyleId.Value))
+                    namen[s.StyleId.Value] = s.StyleName?.Val?.Value ?? s.StyleId.Value;
+
+            var liste = new List<string>();
+            foreach (OpenXmlElement e in doc.MainDocumentPart.Document.Body.ChildElements)
+            {
+                if (e is Table) liste.Add("Tabelle");
+                if (!(e is Paragraph p)) continue;
+                bool umbruch = p.Descendants<Break>().Any(b => b.Type?.Value == BreakValues.Page);
+                if (umbruch && p.InnerText.Length == 0) { liste.Add("Seitenumbruch"); continue; }
+                string id = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                string stil = id == null ? "—" : namen.TryGetValue(id, out string name) ? name : id;
+                liste.Add(stil + ": " + p.InnerText);
+            }
+            return liste;
+        }
+
+        /// <summary>Ein PNG in der Größe <paramref name="breite"/> × <paramref name="hoehe"/> Bildpunkte.</summary>
+        internal static byte[] Png(int breite, int hoehe) { return Kodiere(breite, hoehe, SkiaSharp.SKEncodedImageFormat.Png); }
+
+        /// <summary>Ein JPEG in der Größe <paramref name="breite"/> × <paramref name="hoehe"/> Bildpunkte.</summary>
+        internal static byte[] Jpeg(int breite, int hoehe) { return Kodiere(breite, hoehe, SkiaSharp.SKEncodedImageFormat.Jpeg); }
+
+        private static byte[] Kodiere(int breite, int hoehe, SkiaSharp.SKEncodedImageFormat format)
+        {
+            using var bild = new SkiaSharp.SKBitmap(breite, hoehe);
+            using (var leinwand = new SkiaSharp.SKCanvas(bild)) leinwand.Clear(SkiaSharp.SKColors.SteelBlue);
+            using SkiaSharp.SKImage abbild = SkiaSharp.SKImage.FromBitmap(bild);
+            using SkiaSharp.SKData daten = abbild.Encode(format, 90);
+            return daten.ToArray();
+        }
+
+        /// <summary>Füllt einen Bildteil mit einem PNG von 1 × 1 Bildpunkt.</summary>
+        private static ImagePart Einpixel(ImagePart teil)
+        {
+            using (var s = new MemoryStream(Convert.FromBase64String(PNG_1X1))) teil.FeedData(s);
+            return teil;
+        }
+
+        /// <summary>Ein Bild (Inline-Zeichnung) mit Rahmen <paramref name="cx"/> × <paramref name="cy"/> EMU und Alternativtext.</summary>
+        private static string Logobild(string embed, int kennung, long cx, long cy, string beschreibung)
+        {
+            string x = cx.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = cy.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return "<w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">" +
+                   "<wp:extent cx=\"" + x + "\" cy=\"" + y + "\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" +
+                   "<wp:docPr id=\"" + kennung + "\" name=\"Logo " + kennung + "\" descr=\"" + beschreibung + "\"/>" +
+                   "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect=\"1\"/></wp:cNvGraphicFramePr>" +
+                   "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">" +
+                   "<pic:pic><pic:nvPicPr><pic:cNvPr id=\"0\" name=\"Logo.png\"/><pic:cNvPicPr/></pic:nvPicPr>" +
+                   "<pic:blipFill><a:blip r:embed=\"" + embed + "\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>" +
+                   "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"" + x + "\" cy=\"" + y + "\"/></a:xfrm>" +
+                   "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>" +
+                   "</wp:inline></w:drawing></w:r>";
+        }
+
+        /// <summary>
+        /// Eine Vorlage mit Kopfzeile wie die Standardvorlage: Programm, Tabulator und rechts das Platzhalterbild
+        /// des Logos (Rahmen 100 × 50 Bildpunkte, Alternativtext <c>{{bild.ersteller.logo}}</c>); im Rumpf der Titel.
+        /// </summary>
+        private static byte[] LogoVorlage()
+        {
+            return Vorlage(main =>
+            {
+                HeaderPart kopf = main.AddNewPart<HeaderPart>();
+                string platzhalter = kopf.GetIdOfPart(Einpixel(kopf.AddImagePart(ImagePartType.Png)));
+                kopf.Header = new Header("<w:hdr " + NS + "><w:p><w:r><w:t>{{ersteller.programm}}</w:t></w:r><w:r><w:tab/></w:r>" +
+                                         Logobild(platzhalter, 1, 952500, 476250, "{{bild.ersteller.logo}}") + "</w:p></w:hdr>");
+                return TextAbsatz("{{bericht.titel}}") +
+                       "<w:sectPr><w:headerReference w:type=\"default\" r:id=\"" + main.GetIdOfPart(kopf) + "\"/>" + SEITE + "</w:sectPr>";
+            });
         }
 
         /// <summary>Die synthetische Gruppe ohne Wirtschaftlichkeit: Stamm „Stammprojekt“, eine Variante A.</summary>

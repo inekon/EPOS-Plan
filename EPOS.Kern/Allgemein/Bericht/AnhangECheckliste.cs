@@ -179,10 +179,38 @@ namespace WindowsFormsApplication1
         /// <summary>Name des Blattes in der Mappe (höchstens 31 Zeichen).</summary>
         public static string Blattname { get { return MyResource.Resource.WIRT_AE_BLATT; } }
 
-        /// <summary>Die 15 Punkte mit ihrem Stand in dieser Lage.</summary>
+        /// <summary>
+        /// Die Kapitel, auf die die Checkliste in ihrer Spalte „Stelle“ verweist, als
+        /// <see cref="Berichtskapitel.Stellenschluessel"/>: Deckblatt, Projektbeschreibung, Komponenten,
+        /// Ergebnisse, Vergleich, Wirtschaftlichkeit, Anhang. Führt eine Vorlage mit Anhang E eines davon
+        /// nicht, meldet der Vorlagenprüfer „Anhang E ohne Stelle“.
+        /// </summary>
+        public static readonly IReadOnlyList<string> Kapitelbezuege = new[]
+        {
+            BerichtsKonfiguration.B_DECKBLATT, BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_KOMPONENTEN,
+            BerichtsKonfiguration.B_ERGEBNISSE, BerichtsKonfiguration.B_VERGLEICH, BerichtsKonfiguration.B_WIRTSCHAFT,
+            BerichtsKonfiguration.B_ANHANG,
+        };
+
+        /// <summary>Die 15 Punkte mit ihrem Stand in dieser Lage; die Stellen nennen die eigenen Überschriften der Kapitel.</summary>
         public static List<ChecklistenPunkt> Punkte(ChecklistenLage lage)
         {
+            return Punkte(lage, null);
+        }
+
+        /// <summary>
+        /// Die 15 Punkte mit ihrem Stand in dieser Lage. Die Spalte „Stelle“ nennt im Wortbericht die
+        /// TATSÄCHLICHE Überschrift jedes Kapitels (Konzept Berichtsvorlagen 11 Nr. 3):
+        /// <paramref name="kapitelstellen"/> je <see cref="Berichtskapitel.Stellenschluessel"/> — aus der
+        /// gefüllten Vorlage (<see cref="WordKontext.Kapitelstellen"/>) oder vorab aus der gewählten
+        /// (<see cref="BerichtCtrl.KapitelstellenDerVorlage"/>); <c>null</c> als Wert heißt „nicht im
+        /// Bericht“, <c>null</c> als Verzeichnis die eigenen Überschriften aller Kapitel.
+        /// </summary>
+        public static List<ChecklistenPunkt> Punkte(ChecklistenLage lage, IReadOnlyDictionary<string, string> kapitelstellen)
+        {
             lage = lage ?? new ChecklistenLage();
+            IReadOnlyDictionary<string, string> st = kapitelstellen ?? Berichtskapitel.EigeneStellen(null, BerichtTexte.Englisch);
+            string w = BerichtsKonfiguration.B_WIRTSCHAFT;
             string g0 = MyResource.Resource.WIRT_AE_GRUPPE_0, gA = MyResource.Resource.WIRT_AE_GRUPPE_A,
                    gB = MyResource.Resource.WIRT_AE_GRUPPE_B, gC = MyResource.Resource.WIRT_AE_GRUPPE_C,
                    gD = MyResource.Resource.WIRT_AE_GRUPPE_D;
@@ -191,26 +219,26 @@ namespace WindowsFormsApplication1
             var l = new List<ChecklistenPunkt>
             {
                 Punkt("0.1", g0, MyResource.Resource.WIRT_AE_01_THEMA, MyResource.Resource.WIRT_AE_01_ANF,
-                      MyResource.Resource.WIRT_AE_01_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_01_STAND),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_01_STELLE), null, st, BerichtsKonfiguration.B_DECKBLATT), ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_01_STAND),
                 Punkt("0.2", g0, MyResource.Resource.WIRT_AE_02_THEMA, MyResource.Resource.WIRT_AE_02_ANF,
-                      MyResource.Resource.WIRT_AE_02_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_02_STAND),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_02_STELLE), null, st, BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_KOMPONENTEN), ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_02_STAND),
                 Punkt("1", gA, MyResource.Resource.WIRT_AE_1_THEMA, MyResource.Resource.WIRT_AE_1_ANF,
-                      MyResource.Resource.WIRT_AE_1_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_1_STELLE), nameof(MyResource.Resource.WIRT_AE_1_STELLE_WORT), st, w),
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.Gerechnet ? MyResource.Resource.WIRT_AE_1_STAND : ohneRechnung),
                 Punkt("2a", gA, MyResource.Resource.WIRT_AE_2A_THEMA, MyResource.Resource.WIRT_AE_2A_ANF,
-                      MyResource.Resource.WIRT_AE_2A_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_2A_STAND),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_2A_STELLE), null, st, BerichtsKonfiguration.B_ERGEBNISSE, BerichtsKonfiguration.B_VERGLEICH), ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_2A_STAND),
                 Punkt("2b", gA, MyResource.Resource.WIRT_AE_2B_THEMA, MyResource.Resource.WIRT_AE_2B_ANF,
-                      MyResource.Resource.WIRT_AE_2B_STELLE, NmStand(lage), NmStandText(lage)),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_2B_STELLE), nameof(MyResource.Resource.WIRT_AE_2B_STELLE_WORT), st, w), NmStand(lage), NmStandText(lage)),
                 Punkt("3a", gA, MyResource.Resource.WIRT_AE_3A_THEMA, MyResource.Resource.WIRT_AE_3A_ANF,
-                      MyResource.Resource.WIRT_AE_3A_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_3A_STELLE), nameof(MyResource.Resource.WIRT_AE_3A_STELLE_WORT), st, w),
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.Gerechnet ? MyResource.Resource.WIRT_AE_3A_STAND : ohneRechnung),
                 Punkt("3b", gA, MyResource.Resource.WIRT_AE_3B_THEMA, MyResource.Resource.WIRT_AE_3B_ANF,
-                      MyResource.Resource.WIRT_AE_2B_STELLE, NmStand(lage), NmStandText(lage)),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_2B_STELLE), nameof(MyResource.Resource.WIRT_AE_2B_STELLE_WORT), st, w), NmStand(lage), NmStandText(lage)),
                 // Die Zeitpunkte der Zahlungen zeigt erst die Mehrjahrestabelle eines Laufs.
                 Punkt("4", gA, MyResource.Resource.WIRT_AE_4_THEMA, MyResource.Resource.WIRT_AE_4_ANF,
-                      MyResource.Resource.WIRT_AE_4_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_4_STELLE), nameof(MyResource.Resource.WIRT_AE_4_STELLE_WORT), st, w),
                       !lage.Gerechnet ? ChecklistenStand.Offen
                       : lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
                           ? ChecklistenStand.Erfuellt : ChecklistenStand.Teilweise,
@@ -218,32 +246,32 @@ namespace WindowsFormsApplication1
                       : lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
                           ? MyResource.Resource.WIRT_AE_4_ERFUELLT : MyResource.Resource.WIRT_AE_4_TEILWEISE),
                 Punkt("5", gA, MyResource.Resource.WIRT_AE_5_THEMA, MyResource.Resource.WIRT_AE_5_ANF,
-                      MyResource.Resource.WIRT_AE_5_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_5_STAND),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_5_STELLE), nameof(MyResource.Resource.WIRT_AE_5_STELLE_WORT), st, w), ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_5_STAND),
                 // ETAPPE E15 (V‑G7): Mit gepflegtem Risiko nennt der Stand, wie es angesetzt ist;
                 // „teilweise" bleibt, weil die Degradation weiter nicht gerechnet wird (A5).
                 Punkt("6", gA, MyResource.Resource.WIRT_AE_6_THEMA, MyResource.Resource.WIRT_AE_6_ANF,
-                      MyResource.Resource.WIRT_AE_6_STELLE, ChecklistenStand.Teilweise,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_6_STELLE), nameof(MyResource.Resource.WIRT_AE_6_STELLE_WORT), st, w), ChecklistenStand.Teilweise,
                       string.IsNullOrEmpty(lage.Risiko)
                           ? MyResource.Resource.WIRT_AE_6_STAND
                           : string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_AE_6_STAND_RISIKO, lage.Risiko)),
                 Punkt("7", gB, MyResource.Resource.WIRT_AE_7_THEMA, MyResource.Resource.WIRT_AE_7_ANF,
-                      MyResource.Resource.WIRT_AE_7_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_7_STELLE), nameof(MyResource.Resource.WIRT_AE_7_STELLE_WORT), st, w),
                       lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.Gerechnet ? MyResource.Resource.WIRT_AE_7_STAND : ohneRechnung),
                 Punkt("8", gB, MyResource.Resource.WIRT_AE_8_THEMA, MyResource.Resource.WIRT_AE_8_ANF,
-                      MyResource.Resource.WIRT_AE_8_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_8_STELLE), nameof(MyResource.Resource.WIRT_AE_8_STELLE_WORT), st, w),
                       lage.SensitivitaetGerechnet ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
                       lage.SensitivitaetGerechnet ? MyResource.Resource.WIRT_AE_8_TEILWEISE : MyResource.Resource.WIRT_AE_8_OFFEN),
                 Punkt("9", gB, MyResource.Resource.WIRT_AE_9_THEMA, MyResource.Resource.WIRT_AE_9_ANF,
-                      MyResource.Resource.WIRT_AE_9_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_9_STELLE), nameof(MyResource.Resource.WIRT_AE_9_STELLE_WORT), st, w),
                       StandPunkt9(lage), StandTextPunkt9(lage)),
                 Punkt("10", gC, MyResource.Resource.WIRT_AE_10_THEMA, MyResource.Resource.WIRT_AE_10_ANF,
-                      MyResource.Resource.WIRT_AE_10_STELLE,
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_10_STELLE), nameof(MyResource.Resource.WIRT_AE_10_STELLE_WORT), st, w),
                       lage.VorschlagVorhanden && lage.SzenarienGerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
                       lage.VorschlagVorhanden && lage.SzenarienGerechnet
                           ? MyResource.Resource.WIRT_AE_10_ERFUELLT : MyResource.Resource.WIRT_AE_10_OFFEN),
                 Punkt("11", gD, MyResource.Resource.WIRT_AE_11_THEMA, MyResource.Resource.WIRT_AE_11_ANF,
-                      MyResource.Resource.WIRT_AE_11_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_11_STAND),
+                      Stelle(nameof(MyResource.Resource.WIRT_AE_11_STELLE), nameof(MyResource.Resource.WIRT_AE_11_STELLE_WORT), st, w, BerichtsKonfiguration.B_ANHANG), ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_11_STAND),
             };
             return l;
         }
@@ -279,6 +307,46 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Stelle eines Punkts: das Muster <paramref name="muster"/> („Wortbericht: {0} · Tabellenbericht:
+        /// …“) mit dem Wortteil als {0}. Der Wortteil nennt die Überschriften der <paramref name="kapitel"/>
+        /// im Bericht — in <paramref name="wort"/> eingesetzt, wenn es alle gibt; sonst die vorhandenen,
+        /// durch Komma getrennt; ohne jedes „nicht im Bericht“. Ein Wortteil ohne {0} (ein Abschnitt im
+        /// Kapitel) steht, solange sein Kapitel im Bericht ist. Das Deckblatt steht ohne Anführungszeichen —
+        /// es hat keine Überschrift.
+        /// </summary>
+        private static string Stelle(string muster, string wort, IReadOnlyDictionary<string, string> stellen,
+                                     params string[] kapitel)
+        {
+            var namen = new List<string>();
+            foreach (string k in kapitel)
+            {
+                if (!stellen.TryGetValue(k, out string ueberschrift) || string.IsNullOrWhiteSpace(ueberschrift)) continue;
+                namen.Add(k == BerichtsKonfiguration.B_DECKBLATT
+                    ? ueberschrift
+                    : Format(MyResource.Resource.WIRT_AE_STELLE_KAPITEL, ueberschrift));
+            }
+
+            string format = wort == null ? null : Ressource(wort);
+            string wortteil;
+            if (namen.Count == 0) wortteil = MyResource.Resource.WIRT_AE_STELLE_NICHT_IM_BERICHT;
+            else if (format != null && namen.Count == kapitel.Length) wortteil = Format(format, namen.ToArray());
+            else if (format != null && !format.Contains("{0}", StringComparison.Ordinal)) wortteil = format;
+            else wortteil = string.Join(", ", namen);
+            return Format(Ressource(muster), wortteil);
+        }
+
+        private static string Ressource(string schluessel)
+        {
+            return MyResource.Resource.ResourceManager.GetString(schluessel, MyResource.Resource.Culture) ?? schluessel;
+        }
+
+        private static string Format(string muster, params object[] werte)
+        {
+            try { return string.Format(BerichtTexte.Kultur, muster, werte); }
+            catch (FormatException) { return muster; }
+        }
+
         private static ChecklistenPunkt Punkt(string nummer, string gruppe, string thema, string anforderung,
                                               string stelle, ChecklistenStand stand, string standText)
         {
@@ -308,6 +376,16 @@ namespace WindowsFormsApplication1
         /// die Ergebnisse DIESES Laufs, ersatzweise der gespeicherte Stand.</summary>
         public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten)
         {
+            return AusBericht(daten, null);
+        }
+
+        /// <summary>
+        /// Die Punkte eines Berichtslaufs mit den Stellen der Kapitel in DIESEM Bericht
+        /// (<see cref="Punkte(ChecklistenLage, IReadOnlyDictionary{string, string})"/>); <c>null</c> = die
+        /// eigenen Überschriften.
+        /// </summary>
+        public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten, IReadOnlyDictionary<string, string> kapitelstellen)
+        {
             var provider = new WirtschaftlichkeitCtrl();
             List<WirtschaftlichkeitErgebnis> alle = daten.Wirtschaftlichkeit.Count > 0
                 ? daten.Wirtschaftlichkeit
@@ -327,7 +405,7 @@ namespace WindowsFormsApplication1
                 lage.NichtMonetaerErfasst = NichtMonetaereWirkungen.Benannt(wirkungen);
                 lage.NichtMonetaerBeurteilt = NichtMonetaereWirkungen.Beurteilt(wirkungen);
             }
-            return Punkte(lage);
+            return Punkte(lage, kapitelstellen);
         }
 
         // =====================================================================
@@ -415,7 +493,9 @@ namespace WindowsFormsApplication1
 
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
-            List<ChecklistenPunkt> punkte = AnhangECheckliste.AusBericht(daten);
+            // Die Stellen nennen die Überschriften der Kapitel in DIESEM Bericht (Vorlagenweg); der
+            // bisherige Weg führt keine — dann die eigenen Überschriften.
+            List<ChecklistenPunkt> punkte = AnhangECheckliste.AusBericht(daten, k.Kapitelstellen);
             if (punkte.Count == 0) return;
 
             k.Seitenumbruch();

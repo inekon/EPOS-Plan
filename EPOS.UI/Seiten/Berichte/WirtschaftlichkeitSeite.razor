@@ -821,6 +821,13 @@
     [Parameter] public Func<string, Task>? DateiOeffnen { get; set; }
 
     /// <summary>
+    /// BV-E2 (Konzept Berichtsvorlagen 9.5): die Stellen der Anhang-E-Checkliste in der gewählten
+    /// Word-Vorlage — die Überlagerung „Anhang-E-Checkliste…" holt sie beim Öffnen. Ohne Delegat nennt
+    /// sie die Stellen der Standardvorlage („bezogen auf die Standardvorlage").
+    /// </summary>
+    [Parameter] public Func<AnhangEStellen?>? AnhangEStellenLaden { get; set; }
+
+    /// <summary>
     /// ETAPPE E5 Teil b: die Beschriftungen der Ergebnisansicht als BÜNDEL — es füllt sich
     /// selbst aus <c>MyResource</c>; die Hülle muss nichts beisteuern.
     /// </summary>
@@ -1662,7 +1669,7 @@
         {
             <p class="epos-status epos-wirt-szenariofuss">@fusszeile</p>
         }
-        <AnhangEChecklisteKnopf Stand="@_stand" Gesperrt="@_laeuft" />
+        <AnhangEChecklisteKnopf Stand="@_stand" Gesperrt="@_laeuft" StellenLaden="@AnhangEStellenLaden" />
         @if (BerichtErzeugen is not null)
         {
             <button type="button" class="epos-knopf epos-wirt-berichtknopf" disabled="@_laeuft"

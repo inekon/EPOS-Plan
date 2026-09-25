@@ -8826,7 +8826,7 @@ namespace WindowsFormsApplication1
         public const string FARBFELD_VORSILBE = "farbe_";
 
         /// <summary>
-        /// Die Programmeinstellungen — acht benannte Werte und je Farbrolle der
+        /// Die Programmeinstellungen — neun benannte Werte und je Farbrolle der
         /// Diagramme ein Feld der FELDTAFEL.
         /// </summary>
         /// <remarks>
@@ -8834,7 +8834,8 @@ namespace WindowsFormsApplication1
         /// <b>Setzbar sind die Adressen</b> (Wiki, Geokodierung, PVGIS, DWD-Portal,
         /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b>, <b>die Rubrik
         /// „Bericht"</b> (Firma und Vorlagenordner der Berichtsvorlagen, BV-E1 — der
-        /// Ordner wird erst im OK-Weg geprueft und nur bestehend uebernommen) und <b>die
+        /// Ordner wird erst im OK-Weg geprueft und nur bestehend uebernommen —, dazu das
+        /// Firmenlogo der Kopfzeile, BV-E2) und <b>die
         /// Diagrammfarben</b>. Die Farbfelder ENTSTEHEN aus der Rollenliste
         /// (<see cref="Zeichnung.Diagrammfarben.Gruppen"/>) — derselben, aus der die Huelle
         /// die Rubrik „Diagramme" fuellt; eine zweite Liste gibt es nicht. Feldname =
@@ -8881,7 +8882,12 @@ namespace WindowsFormsApplication1
                                  KiDialogTexte.AdmsetBerichtFirmaErl, leerErlaubt: true),
                 new KiDialogFeld("bericht_vorlagenordner", EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
                                  KiDialogTexte.AdmsetBerichtOrdnerName, KiParameterTyp.Text,
-                                 KiDialogTexte.AdmsetBerichtOrdnerErl, leerErlaubt: true)
+                                 KiDialogTexte.AdmsetBerichtOrdnerErl, leerErlaubt: true),
+
+                // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile - ein Dateipfad, leer = ohne Logo.
+                new KiDialogFeld("bericht_logo", EINSTELLUNGEN_SICHT + ".BerichtLogo",
+                                 KiDialogTexte.AdmsetBerichtLogoName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetBerichtLogoErl, leerErlaubt: true)
             };
 
             foreach (Zeichnung.Rollengruppe gruppe in Zeichnung.Diagrammfarben.Gruppen)

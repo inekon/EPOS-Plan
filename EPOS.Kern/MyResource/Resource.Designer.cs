@@ -6742,6 +6742,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anhang ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_ANHANG {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_ANHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckblatt ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_DECKBLATT {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_DECKBLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse je Variante ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhaltsverzeichnis ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_INHALTSVERZEICHNIS {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_INHALTSVERZEICHNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten &amp; Varianten ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektbeschreibung ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_PROJEKTBESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_PROJEKTBESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_VERGLEICH {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT {
+            get {
+                return ResourceManager.GetString("BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string BK_BER_BTN_ABBRECHEN {
@@ -7095,6 +7167,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckblatt kommt aus der Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ ersetzen ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_DLG_ERSETZEN {
@@ -7203,6 +7284,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_INHALT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_INHALT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage: ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_LBL_WORD {
@@ -7230,11 +7320,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist in Word geöffnet – nach dem Speichern in Word hier „Prüfen“ wählen. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_MSG_IN_WORD {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_MSG_IN_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist in dieser Vorlage nicht enthalten – das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN", resourceCulture);
             }
         }
         
@@ -7352,6 +7460,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_NEU_TITEL {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in dieser Vorlage nicht enthalten ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NICHT_ENTHALTEN", resourceCulture);
             }
         }
         
@@ -11228,6 +11345,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Logo eingestellt ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEIN_LOGO {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEIN_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kein Stammprojekt ähnelt.
         /// </summary>
         public static string BV_GRUND_KEIN_STAMM {
@@ -11674,6 +11800,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_IN_WORD_TUN {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_IN_WORD_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo nicht gefunden: {0} ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_LOGO_FEHLT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_LOGO_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo ist kein PNG- oder JPEG-Bild: {0} ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_LOGO_FORMAT {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_LOGO_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo zu groß: {0} ({1} MB, höchstens {2} MB) ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_LOGO_GROSS {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_LOGO_GROSS", resourceCulture);
             }
         }
         
@@ -13217,6 +13370,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_BTN_LOGO_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_BTN_LOGO_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo wählen ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_DLG_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_DLG_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Steht im Bericht an der Stelle {{ersteller.firma}}; vorbelegt aus der Lizenz. ähnelt.
         /// </summary>
         public static string EIN_BERICHT_HINT_FIRMA {
@@ -13231,6 +13402,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EIN_BERICHT_HINT_GEMEINSAM {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_HINT_GEMEINSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firmenlogo für die Kopfzeile des Berichts – eine PNG- oder JPEG-Datei; leer heißt ohne Logo. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_LOGO", resourceCulture);
             }
         }
         
@@ -13262,11 +13442,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Logo: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_LOGO {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlagenordner: ähnelt.
         /// </summary>
         public static string EIN_BERICHT_LBL_VORLAGENORDNER {
             get {
                 return ResourceManager.GetString("EIN_BERICHT_LBL_VORLAGENORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei nicht gefunden. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LOGO_FEHLT {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LOGO_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilder (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LOGO_FILTER {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LOGO_FILTER", resourceCulture);
             }
         }
         
@@ -35315,6 +35522,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_LOGO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_LOGO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner der eigenen Berichtsvorlagen; übernommen wird nur ein bestehender, erreichbarer Ordner. Auf einem Gerät ohne Ordnerwahl liegt er fest in der App. ähnelt.
         /// </summary>
         public static string KI_DLG_ADMSET_BERICHT_ORDNER_ERL {
@@ -47915,6 +48131,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet Anhang E ohne Stelle für ein Kapitel. Was fehlt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_ANHANG_E_STELLE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_ANHANG_E_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Warum darf eine Blockmarke nicht im Satz stehen? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_BLOCK_ALLEIN {
@@ -48059,6 +48284,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet ein Kapitel doppelt. Welche Stelle gilt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung nennt ein neues Kapitel. Wie nehme ich es in meine Vorlage auf? ähnelt.
         /// </summary>
         public static string KI_FRAGE_VF_PRUEF_KAPITEL_NEU {
@@ -48145,6 +48379,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_VF_PRUEF_ORT {
             get {
                 return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung sagt, ein Platzhalter wirke erst in einer späteren Programmfassung. Was heißt das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_SPAETER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_SPAETER", resourceCulture);
             }
         }
         
@@ -78127,6 +78370,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Anhang“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__ANHANG {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__ANHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Deckblatt“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__DECKBLATT {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__DECKBLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Ergebnisse je Variante“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Inhaltsverzeichnis“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__INHALT {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__INHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Komponenten &amp; Varianten“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Projektbeschreibung“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__PROJEKT {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Variantenvergleich“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__VERGLEICH {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter: ja, wenn das Häkchen „Wirtschaftlichkeit“ gesetzt ist; nur als Bedingung in {{#wenn …}}. ähnelt.
+        /// </summary>
+        public static string VF_BAUSTEIN__WIRTSCHAFTLICHKEIT {
+            get {
+                return ResourceManager.GetString("VF_BAUSTEIN__WIRTSCHAFTLICHKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erstellungsdatum des Berichts, nach der Sprache des Berichts formatiert; in Excel ein echtes Datum. ähnelt.
         /// </summary>
         public static string VF_BERICHT__DATUM {
@@ -78208,6 +78523,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firmenlogo des Erstellers aus den Einstellungen (Rubrik „Bericht“) — als Alternativtext eines Bildes; ohne Logo entfällt das Bild. ähnelt.
+        /// </summary>
+        public static string VF_BILD__ERSTELLER__LOGO {
+            get {
+                return ResourceManager.GetString("VF_BILD__ERSTELLER__LOGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Firma, die den Bericht erstellt: die Einstellung des Berichts, sonst die Firma der Lizenz; leer, wenn beides fehlt. ähnelt.
         /// </summary>
         public static string VF_ERSTELLER__FIRMA {
@@ -78231,6 +78555,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_ERSTELLER__VERSION {
             get {
                 return ResourceManager.GetString("VF_ERSTELLER__VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Anhang“: Simulationsstände, Datengrundlage und die Hinweise des Berichtslaufs. Folgt dem Häkchen „Anhang“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__ANHANG {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__ANHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)“: die Checkliste für den Bewertungsbericht nach DIN EN 17463, Anhang E, mit der Stelle jedes Punkts im Bericht. Folgt dem Häkchen „Wirtschaftlichkeit“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__ANHANG_E {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__ANHANG_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Deckblatt“: Titel, Untertitel und die Tabelle mit Projekt, Kunde, Bearbeiter, Varianten, Berichtsdatum und Programmfassung, wie der Bericht sie ohne Vorlage schreibt. Folgt dem Häkchen „Deckblatt“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__DECKBLATT {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__DECKBLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Berechnungsergebnisse je Variante“: Kennzahlen und Ganglinien je Stand. Folgt dem Häkchen „Ergebnisse je Variante“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Inhaltsverzeichnis“: die Überschrift „Inhalt“ und das Verzeichnis als Word-Feld, das Word beim Öffnen aktualisiert. Folgt dem Häkchen „Inhaltsverzeichnis“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__INHALT {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__INHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Komponenten &amp; Varianten“: Komponentenübersicht, Kenndaten je Gewerk und die Abweichungen der Varianten. Folgt dem Häkchen „Komponenten &amp; Varianten“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Projektbeschreibung“: Stammdaten, Gebäude, Energiebedarf und Deckungsgrade des Stammprojekts. Folgt dem Häkchen „Projektbeschreibung“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__PROJEKT {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Variantenvergleich“: Kennzahlentabellen je Gruppe, Abweichungen zum Stamm, Diagramme, Erzeuger und Brennstoffmengen. Folgt dem Häkchen „Variantenvergleich“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__VERGLEICH {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel „Wirtschaftlichkeit“: Kapitalwertmethode mit Kennzahlen, Verlauf, Szenarien und Tabellen. Folgt dem Häkchen „Wirtschaftlichkeit“. ähnelt.
+        /// </summary>
+        public static string VF_KAPITEL__WIRTSCHAFTLICHKEIT {
+            get {
+                return ResourceManager.GetString("VF_KAPITEL__WIRTSCHAFTLICHKEIT", resourceCulture);
             }
         }
         
@@ -78703,6 +79108,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anhang E ohne Stelle für Kapitel „{0}“ – die Checkliste nennt dort „nicht im Bericht“ ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_ANHANG_E_STELLE {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_ANHANG_E_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kapitel mit {0} in die Vorlage aufnehmen, wenn der Bewertungsbericht es zeigen soll. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_ANHANG_E_STELLE_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_ANHANG_E_STELLE_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bild ähnelt.
         /// </summary>
         public static string VF_PRUEF_ART_BILD {
@@ -79153,6 +79576,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel {0} steht mehrfach in der Vorlage – gefüllt wird nur die erste Stelle ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KAPITEL_DOPPELT {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KAPITEL_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die weitere Stelle entfernen; im Bericht bleibt sie gelb markiert stehen. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KAPITEL_DOPPELT_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KAPITEL_DOPPELT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neues Kapitel {0} – in dieser Vorlage nicht enthalten ähnelt.
         /// </summary>
         public static string VF_PRUEF_KAPITEL_NEU {
@@ -79509,6 +79950,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_ORT_ZELLE_LEER {
             get {
                 return ResourceManager.GetString("VF_PRUEF_ORT_ZELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: erst in einer späteren Programmfassung ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_SPAETER {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_SPAETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bild einfügen und {0} als Alternativtext eintragen – so füllt EPOS-Plan die Stelle schon jetzt. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_SPAETER_TUN_BILD {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Schalter vorerst entfernen; bis dahin bleibt er im Bericht gelb markiert stehen. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_SPAETER_TUN_SCHALTER {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_SPAETER_TUN_SCHALTER", resourceCulture);
             }
         }
         
@@ -79905,6 +80373,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_TEXT__ERSTELLT_MIT {
             get {
                 return ResourceManager.GetString("VF_TEXT__ERSTELLT_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Anhang“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_ANHANG {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_ANHANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_ANHANG_E {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_ANHANG_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Berechnungsergebnisse je Variante“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Komponenten &amp; Varianten“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Projektbeschreibung“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_PROJEKT {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Variantenvergleich“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_VERGLEICH {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschrift des Kapitels „Wirtschaftlichkeit“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage. ähnelt.
+        /// </summary>
+        public static string VF_TEXT__KAPITEL_WIRTSCHAFTLICHKEIT {
+            get {
+                return ResourceManager.GetString("VF_TEXT__KAPITEL_WIRTSCHAFTLICHKEIT", resourceCulture);
             }
         }
         
@@ -80395,7 +80926,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Übersicht“ ähnelt.
         /// </summary>
         public static string WIRT_AE_01_STELLE {
             get {
@@ -80431,7 +80962,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Projektbeschreibung“, „Komponenten &amp; Varianten“ · Tabellenbericht: Blatt „Übersicht“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Übersicht“ ähnelt.
         /// </summary>
         public static string WIRT_AE_02_STELLE {
             get {
@@ -80476,11 +81007,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Vorschlag zur Entscheidung unter der Bandbreite · Tabellenbericht: Vorschlagszeile unter der Bandbreite ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Vorschlagszeile unter der Bandbreite ähnelt.
         /// </summary>
         public static string WIRT_AE_10_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_10_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung unter der Bandbreite ähnelt.
+        /// </summary>
+        public static string WIRT_AE_10_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_10_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80512,11 +81052,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen) ähnelt.
         /// </summary>
         public static string WIRT_AE_11_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_11_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel {0} und {1} ähnelt.
+        /// </summary>
+        public static string WIRT_AE_11_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_11_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80548,11 +81097,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“ ähnelt.
         /// </summary>
         public static string WIRT_AE_1_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_1_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} › „Kennzahlen im Szenario „Erwartet““ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80584,7 +81142,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten ähnelt.
         /// </summary>
         public static string WIRT_AE_2A_STELLE {
             get {
@@ -80611,11 +81169,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“ ähnelt.
         /// </summary>
         public static string WIRT_AE_2B_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_2B_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} › „Nicht monetäre Wirkungen“ (Tabelle) ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2B_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2B_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80647,11 +81214,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Mehrjahresübersicht der Zahlungsströme“ · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“ ähnelt.
         /// </summary>
         public static string WIRT_AE_3A_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_3A_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Mehrjahresübersicht der Zahlungsströme“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3A_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3A_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80701,11 +81277,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Parameterzeile und Zeitraumhinweis im Kapitel „Wirtschaftlichkeit“ · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen ähnelt.
         /// </summary>
         public static string WIRT_AE_4_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_4_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameterzeile und Zeitraumhinweis im Kapitel {0} ähnelt.
+        /// </summary>
+        public static string WIRT_AE_4_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_4_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80746,11 +81331,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Parameterzeile · Tabellenbericht: Parameterblock (Zins_i) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Parameterblock (Zins_i) ähnelt.
         /// </summary>
         public static string WIRT_AE_5_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_5_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameterzeile ähnelt.
+        /// </summary>
+        public static string WIRT_AE_5_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_5_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80791,11 +81385,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“ ähnelt.
         /// </summary>
         public static string WIRT_AE_6_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_6_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_6_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_6_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80827,11 +81430,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln) ähnelt.
         /// </summary>
         public static string WIRT_AE_7_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_7_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Kennzahlen im Szenario „Erwartet““ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80863,11 +81475,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Sensitivitätsanalyse ähnelt.
         /// </summary>
         public static string WIRT_AE_8_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_8_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Sensitivitätsanalyse“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_8_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_8_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80926,11 +81547,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: {0} · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“ ähnelt.
         /// </summary>
         public static string WIRT_AE_9_STELLE {
             get {
                 return ResourceManager.GetString("WIRT_AE_9_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Szenarien Ungünstig / Erwartet / Günstig“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_STELLE_WORT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_STELLE_WORT", resourceCulture);
             }
         }
         
@@ -80958,6 +81588,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_9_THEMA {
             get {
                 return ResourceManager.GetString("WIRT_AE_9_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stellen im Bericht sind bezogen auf die Standardvorlage. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_BEZUG_STANDARD {
+            get {
+                return ResourceManager.GetString("WIRT_AE_BEZUG_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stellen im Bericht nennen die Kapitel der Vorlage „{0}“. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_BEZUG_VORLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_BEZUG_VORLAGE", resourceCulture);
             }
         }
         
@@ -81156,6 +81804,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_STAND_TEILWEISE {
             get {
                 return ResourceManager.GetString("WIRT_AE_STAND_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STELLE_KAPITEL {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STELLE_KAPITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht im Bericht ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STELLE_NICHT_IM_BERICHT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STELLE_NICHT_IM_BERICHT", resourceCulture);
             }
         }
         

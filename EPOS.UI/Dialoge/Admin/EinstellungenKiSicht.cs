@@ -26,7 +26,7 @@ namespace EPOS.UI.Dialoge.Admin;
 ///
 /// <para><b>BV-E1:</b> Firma und Vorlagenordner des Abschnitts „Bericht" gehen über
 /// <see cref="BerichtFirma"/> und <see cref="BerichtVorlagenordner"/> — an den Arbeitsstand
-/// des Dialogs, nicht an den Wertesatz.</para>
+/// des Dialogs, nicht an den Wertesatz; BV-E2 dazu das Logo über <see cref="BerichtLogo"/>.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jeder Zugriff ruft die Delegaten des Dialogs.</para>
 /// </summary>
@@ -132,6 +132,23 @@ public sealed class EinstellungenKiSicht : IKiFeldtafel
         set
         {
             BerichtVorlagenordnerSetzen?.Invoke(value ?? "");
+            Gesetzt?.Invoke();
+        }
+    }
+
+    /// <summary>BV-E2: Liest das Logo (Dateipfad) aus dem Arbeitsstand.</summary>
+    public Func<string>? BerichtLogoLesen { get; init; }
+
+    /// <summary>BV-E2: Setzt das Logo im Arbeitsstand; wirft mit Grund, wo es das Feld nicht gibt.</summary>
+    public Action<string>? BerichtLogoSetzen { get; init; }
+
+    /// <summary>Das Firmenlogo für die Kopfzeile des Berichts — der Pfad einer PNG- oder JPEG-Datei, leer = ohne Logo.</summary>
+    public string BerichtLogo
+    {
+        get => BerichtLogoLesen?.Invoke() ?? "";
+        set
+        {
+            BerichtLogoSetzen?.Invoke(value ?? "");
             Gesetzt?.Invoke();
         }
     }

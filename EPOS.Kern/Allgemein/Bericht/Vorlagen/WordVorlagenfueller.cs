@@ -6,7 +6,9 @@ using System.Text;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using T = WindowsFormsApplication1.WordVorlagentexte;
 
 namespace WindowsFormsApplication1
@@ -22,13 +24,20 @@ namespace WindowsFormsApplication1
     /// eigene Absätze. (2) Kommentare und externe Beziehungen entfernen und melden
     /// (<see cref="WordVorlagenbereinigung"/>). (3) Zerlegte Platzhalter im Speicher in einen Run
     /// ziehen (<see cref="WordVorlagennormalisierer"/>). (4) Trägt die Vorlage keinen Platzhalter,
-    /// kommt <c>{{bericht.inhalt}}</c> ans Ende des Rumpfs. (5) Ersetzen nach Art: Text, Zahl,
-    /// Datum im Satz (Zeilenumbrüche als <c>w:br</c>); Liste und Kapitel nur allein im Absatz, der
-    /// Absatz wird ersetzt — die Liste durch Absätze in seinem Format (im Satz mit „; “
-    /// verbunden), das Kapitel durch die angehakten Bausteine, die über den
-    /// <see cref="WordKontext"/> an den <see cref="Einfuegeanker"/> schreiben. (6) Inhaltssteuer-
-    /// elemente mit einem Schlüssel als <c>w:tag</c> werden gefüllt und ausgepackt. (7) Felder:
-    /// <c>w:updateFields</c> nur bei TOC, PAGEREF, REF, SEQ, DOCPROPERTY. (8) <c>docPr/@id</c> in
+    /// kommt <c>{{bericht.inhalt}}</c> ans Ende des Rumpfs. (5) Die Kapitelstellen sammeln: Je
+    /// Kapitel gilt die erste gültige Stelle (getippte Platzhalter vor Inhaltssteuerelementen, je in
+    /// Dokumentfolge); jede weitere bleibt gelb stehen, der Sammelanker setzt die einzeln geführten
+    /// Kapitel nicht noch einmal ein, und die Überschrift vor jedem Anker ist die Stelle der
+    /// Anhang-E-Checkliste. (6) Ersetzen nach Art: Text, Zahl, Datum im Satz (Zeilenumbrüche als
+    /// <c>w:br</c>); Liste und Kapitel nur allein im Absatz, der Absatz wird ersetzt — die Liste
+    /// durch Absätze in seinem Format (im Satz mit „; “ verbunden), das Kapitel durch die angehakten
+    /// Bausteine, die über den <see cref="WordKontext"/> an den <see cref="Einfuegeanker"/> schreiben,
+    /// mit <c>|ohne titel</c> und <c>|ebene n</c> (Konzept 4.8). Liefert ein Kapitel nichts, entfällt
+    /// ein unmittelbar davor stehender „EPOS Kapitelkopf“ mit (5.3). (7) Inhaltssteuerelemente mit
+    /// einem Schlüssel als <c>w:tag</c> werden gefüllt und ausgepackt. (8) Bilder mit einem Schlüssel
+    /// im Alternativtext: <c>bild.ersteller.logo</c> bekommt das Logo der Einstellungen, eingepasst in
+    /// den Rahmen des Platzhalterbildes; ohne Logo entfällt das Bild. (9) Felder:
+    /// <c>w:updateFields</c> nur bei TOC, PAGEREF, REF, SEQ, DOCPROPERTY. (10) <c>docPr/@id</c> in
     /// allen Teilen neu und eindeutig.</para>
     ///
     /// <para><b>Fehlverhalten</b> (Konzept 4.10): Ein unbekannter Schlüssel, ein Block, ein
@@ -198,7 +207,26 @@ namespace WindowsFormsApplication1
             internal Entscheidart Art;
             internal string Text = "";
             internal IReadOnlyList<string> Zeilen = Array.Empty<string>();
+
+            /// <summary>Die Namen der Kapitel (<see cref="Berichtskapitel.Name"/>), die an die Stelle kommen.</summary>
             internal IReadOnlyList<string> Kapitel = Array.Empty<string>();
+
+            /// <summary>Die Formatangaben des Kapitelplatzhalters (<c>|ohne titel</c>, <c>|ebene n</c>).</summary>
+            internal IReadOnlyList<Formatangabe> Angaben = Array.Empty<Formatangabe>();
+
+            /// <summary>Ein einzelnes Kapitel (<c>kapitel.&lt;name&gt;</c>), nicht der Sammelanker.</summary>
+            internal bool Einzeln;
+        }
+
+        /// <summary>Ein Bild, dessen Alternativtext ein Platzhalter ist (Konzept 4.2, 6.5).</summary>
+        private sealed class Bildstelle
+        {
+            internal Bildstelle(DW.DocProperties docPr, Teilinfo teil, Platzhalter marke)
+            { DocPr = docPr; Teil = teil; Marke = marke; }
+
+            internal DW.DocProperties DocPr { get; }
+            internal Teilinfo Teil { get; }
+            internal Platzhalter Marke { get; }
         }
 
         /// <summary>Ein Stück des neuen Textes: Wortlaut (Vorlage oder Wert) oder ein stehen gebliebener Platzhalter.</summary>
@@ -224,6 +252,21 @@ namespace WindowsFormsApplication1
             private readonly HashSet<OpenXmlElement> _sdtMenge = new HashSet<OpenXmlElement>();
             private readonly Dictionary<Paragraph, int> _absatzNummer = new Dictionary<Paragraph, int>();
             private readonly Dictionary<Table, int> _tabellenNummer = new Dictionary<Table, int>();
+            private readonly List<Bildstelle> _bildstellen = new List<Bildstelle>();
+
+            /// <summary>Je Kapitel (Name) die Stelle, die es füllt — die erste gültige (Konzept 5.3).</summary>
+            private readonly Dictionary<string, OpenXmlElement> _kapitelOrt = new Dictionary<string, OpenXmlElement>(StringComparer.Ordinal);
+
+            /// <summary>Je Kapitel (Name) seine Marke an dieser Stelle (Formatangaben).</summary>
+            private readonly Dictionary<string, Platzhalter> _kapitelMarke = new Dictionary<string, Platzhalter>(StringComparer.Ordinal);
+
+            /// <summary>Die Stelle, die der Sammelanker füllt; <c>null</c> ohne.</summary>
+            private OpenXmlElement _sammelOrt;
+
+            /// <summary>Die Überschrift vor jedem Kapitel im Bericht (Stelle der Anhang-E-Checkliste).</summary>
+            private IReadOnlyDictionary<string, string> _kapitelstellen;
+
+            private bool _logoGewarnt;
             private Berichtswerte _werte;
 
             internal Lauf(WordprocessingDocument doc, BerichtsDaten daten, BerichtsKonfiguration konfig,
@@ -260,8 +303,14 @@ namespace WindowsFormsApplication1
                 Nummeriere();
                 _werte = Berichtswerte.Aus(_daten, _konfig, _englisch, _ersteller);
 
-                foreach (Textstelle stelle in SammleTextstellen()) Ersetze(stelle);
+                List<Textstelle> stellen = SammleTextstellen();
+                SammleBildstellen();
+                SammleKapitelstellen(stellen);
+                _ergebnis.Kapitelstellen = _kapitelstellen;
+
+                foreach (Textstelle stelle in stellen) Ersetze(stelle);
                 foreach (Sdtstelle stelle in _sdts) FuelleSdt(stelle);
+                foreach (Bildstelle stelle in _bildstellen) FuelleBild(stelle);
 
                 foreach (string name in _stile.Angelegt) _ergebnis.Hinweis(T.F(_englisch, T.STIL_ANGELEGT, name));
                 PruefeFelder();
@@ -363,11 +412,120 @@ namespace WindowsFormsApplication1
 
             // ------------------------------------------------------------- Ohne Platzhalter
 
+            /// <summary>Trägt die Vorlage einen Platzhalter — im Text, als Tag oder im Alternativtext eines
+            /// Bildes (wie der Prüfer zählt)?</summary>
             private bool HatPlatzhalter()
             {
                 if (_sdts.Count > 0) return true;
                 return _teile.Any(ti => ti.Wurzel.Descendants<Paragraph>()
-                    .Any(p => Platzhaltersyntax.EnthaeltPlatzhalter(p.InnerText)));
+                                          .Any(p => Platzhaltersyntax.EnthaeltPlatzhalter(p.InnerText)) ||
+                                        ti.Wurzel.Descendants<DW.DocProperties>()
+                                          .Any(d => Vorlagenpruefer.IstBildschluessel(d.Description?.Value)));
+            }
+
+            // ------------------------------------------------------------- Kapitelstellen (Konzept 5.3)
+
+            /// <summary>
+            /// Sammelt die Stellen der Kapitel VOR dem Füllen: Je Kapitel gilt die erste gültige Stelle —
+            /// allein im Absatz des Rumpfs oder als Inhaltssteuerelement auf Blockebene, nicht in Zelle
+            /// oder Textfeld; getippte Platzhalter in Dokumentfolge, danach die Steuerelemente. Jede
+            /// weitere Stelle desselben Kapitels bleibt beim Füllen gelb stehen. Danach die Überschrift
+            /// vor jedem Anker (<see cref="BerechneKapitelstellen"/>).
+            /// </summary>
+            private void SammleKapitelstellen(List<Textstelle> stellen)
+            {
+                foreach (Textstelle s in stellen)
+                {
+                    if (s.Teil.Art != Teilart.Rumpf || s.Marken.Count != 1) continue;
+                    if (!OrtVon(s.Absatz, s.Teil).ErlaubtKapitel || !IstAllein(s.Absatz, s.Marken[0])) continue;
+                    Beanspruche(s.Marken[0], s.Absatz);
+                }
+                foreach (Sdtstelle s in _sdts)
+                    if (s.Sdt is SdtBlock && s.Teil.Art == Teilart.Rumpf && OrtVon(s.Sdt, s.Teil).ErlaubtKapitel)
+                        Beanspruche(s.Marke, s.Sdt);
+                _kapitelstellen = BerechneKapitelstellen();
+            }
+
+            private void Beanspruche(Platzhalter m, OpenXmlElement bezug)
+            {
+                if (m == null || m.Art != Platzhalterart.Feld) return;
+                Vorlagenfeld feld = Vorlagenfeldkatalog.Finde(m.Schluessel);
+                if (feld == null || feld.Art != Vorlagenfeldart.Kapitel) return;
+                if (feld.Schluessel == SAMMELANKER)
+                {
+                    _sammelOrt ??= bezug;
+                    return;
+                }
+                Berichtskapitel k = Berichtskapitel.Finde(feld.Schluessel);
+                if (k == null || _kapitelOrt.ContainsKey(k.Name)) return;
+                _kapitelOrt[k.Name] = bezug;
+                _kapitelMarke[k.Name] = m;
+            }
+
+            /// <summary>Füllt diese Stelle ihr Kapitel — oder steht dasselbe Kapitel schon früher?</summary>
+            private bool IstBeansprucht(Vorlagenfeld feld, OpenXmlElement bezug)
+            {
+                if (feld.Schluessel == SAMMELANKER) return ReferenceEquals(_sammelOrt, bezug);
+                Berichtskapitel k = Berichtskapitel.Finde(feld.Schluessel);
+                return k != null && _kapitelOrt.TryGetValue(k.Name, out OpenXmlElement ort) && ReferenceEquals(ort, bezug);
+            }
+
+            /// <summary>
+            /// <b>Die Stelle jedes Kapitels im Bericht</b> (Konzept 11 Nr. 3), je
+            /// <see cref="Berichtskapitel.Stellenschluessel"/>: der Kapitelkopf unmittelbar vor dem Anker
+            /// (mit <c>|ohne titel</c> sonst die nächste Überschrift davor), ohne ihn die eigene
+            /// Überschrift des Bausteins; über den Sammelanker die eigene Überschrift. <c>null</c>, wenn
+            /// die Vorlage das Kapitel nicht führt oder sein Häkchen fehlt. Das Deckblatt steht auch dann
+            /// im Bericht, wenn die Vorlage Deckblattangaben aus Platzhaltern trägt.
+            /// </summary>
+            private IReadOnlyDictionary<string, string> BerechneKapitelstellen()
+            {
+                string kopfstil = _stile.Finde(WordVorlagenstile.KAPITELKOPF);
+                HashSet<string> ueberschriften = Berichtskapitel.UeberschriftIds(_stile);
+                var stellen = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (Berichtskapitel k in Berichtskapitel.Alle)
+                {
+                    string text = null;
+                    if (k.IstAktiv(_konfig))
+                    {
+                        if (_kapitelOrt.TryGetValue(k.Name, out OpenXmlElement bezug))
+                            text = Kopftext(k, bezug, _kapitelMarke[k.Name], kopfstil, ueberschriften);
+                        else if (_sammelOrt != null)
+                            text = k.Ueberschrift(_englisch);
+                    }
+                    if (text == null && k.Name == Berichtskapitel.DECKBLATT && DeckblattImRumpf())
+                        text = k.Ueberschrift(_englisch);
+                    stellen[k.Stellenschluessel] = text;
+                }
+                return stellen;
+            }
+
+            /// <summary>Die Überschrift vor dem Anker eines einzeln geführten Kapitels.</summary>
+            private string Kopftext(Berichtskapitel k, OpenXmlElement bezug, Platzhalter m, string kopfstil,
+                                    HashSet<string> ueberschriften)
+            {
+                OpenXmlElement kopf = Berichtskapitel.KapitelkopfVor(bezug, kopfstil);
+                if (kopf == null && m.Angaben.Any(a => a.Art == Formatangabeart.OhneTitel))
+                    kopf = Berichtskapitel.UeberschriftVor(bezug, ueberschriften);
+                if (kopf is Paragraph p)
+                {
+                    string text = Vorlagenfeldkatalog.LoeseImText(string.Concat(EigeneTexte(p).Select(t => t.Text)), _werte).Trim();
+                    if (text.Length > 0) return text;
+                }
+                return k.Ueberschrift(_englisch);
+            }
+
+            /// <summary>Trägt der Rumpf Deckblattangaben aus Platzhaltern (was das Kapitel Deckblatt deckt)?</summary>
+            private bool DeckblattImRumpf()
+            {
+                ISet<string> angaben = Vorlagenfeldkatalog.Deckblattangaben;
+                Teilinfo rumpf = _teile[0];
+                foreach (Paragraph p in rumpf.Wurzel.Descendants<Paragraph>())
+                    foreach (Platzhalter m in Platzhaltersyntax.Finde(p.InnerText))
+                        if (m.Art == Platzhalterart.Feld && angaben.Contains(Vorlagenfeldkatalog.Finde(m.Schluessel)?.Schluessel ?? ""))
+                            return true;
+                return _sdts.Any(s => s.Teil.Art == Teilart.Rumpf && s.Marke.Art == Platzhalterart.Feld &&
+                                      angaben.Contains(Vorlagenfeldkatalog.Finde(s.Marke.Schluessel)?.Schluessel ?? ""));
             }
 
             /// <summary>Konzept 6.1: ohne jeden Platzhalter kommen die Kapitel ans Ende des Rumpfs, vor
@@ -428,7 +586,7 @@ namespace WindowsFormsApplication1
                             Entbinde(huellen);
                             return;
                         case Entscheidart.Kapitel:
-                            FuelleKapitel(s.Absatz, s.Teil, e.Kapitel);
+                            FuelleKapitel(s.Absatz, s.Teil, e);
                             Entbinde(huellen);
                             return;
                         default:
@@ -508,9 +666,15 @@ namespace WindowsFormsApplication1
                         {
                             if (form == SdtForm.ImSatz) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.SDT_IM_SATZ);
                             if (!allein || !ort.ErlaubtKapitel) return Stehen(m, Fuellbefundart.FalscheStelle, bezug, ti, T.KAPITEL_ORT);
+                            // Ein Kapitel zweimal: die erste Stelle gilt, jede weitere bleibt gelb stehen.
+                            if (!IstBeansprucht(feld, bezug)) return Stehen(m, Fuellbefundart.Doppelt, bezug, ti, T.KAPITEL_DOPPELT);
                             Platzhalterwert w = Loese(feld, m);
                             _ergebnis.Ersetzt++;
-                            return new Entscheid { Art = Entscheidart.Kapitel, Kapitel = w.Kapitel };
+                            bool einzeln = feld.Schluessel != SAMMELANKER;
+                            // Der Sammelanker setzt die angehakten Kapitel ohne die einzeln geführten ein.
+                            IReadOnlyList<string> kapitel = einzeln ? w.Kapitel
+                                : w.Kapitel.Where(n => !_kapitelOrt.ContainsKey(n)).ToList();
+                            return new Entscheid { Art = Entscheidart.Kapitel, Kapitel = kapitel, Angaben = m.Angaben, Einzeln = einzeln };
                         }
 
                     default:
@@ -531,6 +695,7 @@ namespace WindowsFormsApplication1
                 string fundort = Fundort(bezug, ti);
                 string grund = art == Fuellbefundart.Unbekannt ? T.GRUND_UNBEKANNT
                              : art == Fuellbefundart.NichtUnterstuetzt ? T.GRUND_NICHT_UNTERSTUETZT
+                             : art == Fuellbefundart.Doppelt ? T.GRUND_DOPPELT
                              : T.GRUND_FALSCHE_STELLE;
                 _ergebnis.Unbekannt(new Fuellbefund(m.Normalform, fundort, art, T.T(grund, _englisch)));
                 if (fehlermuster != null) _ergebnis.Fehlermeldung(T.F(_englisch, fehlermuster, m.Normalform, fundort));
@@ -677,23 +842,42 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Das Kapitel am Anker: die angehakten Bausteine in Berichtsreihenfolge schreiben über den
-            /// <see cref="WordKontext"/> vor <paramref name="bezug"/>; danach entfällt der Bezug. Schreibt
-            /// kein Baustein etwas, entfällt ein unmittelbar davor stehender „EPOS Kapitelkopf“ mit.
+            /// Das Kapitel am Anker (Konzept 4.8, 5.3): die Kapitel in Berichtsreihenfolge schreiben je über
+            /// einen eigenen <see cref="WordKontext"/> vor <paramref name="bezug"/>; danach entfällt der
+            /// Bezug. <c>|ohne titel</c> unterdrückt die eigene Überschrift des Bausteins, <c>|ebene n</c>
+            /// rückt seine Überschriften tiefer. Steht ein einzelnes Kapitel mit <c>|ohne titel</c> unter
+            /// einem Kapitelkopf, kommt, was der Baustein VOR seine Überschrift schreibt — der Seitenumbruch
+            /// des Anhangs E —, vor den Kapitelkopf. Schreibt kein Baustein etwas (Häkchen ab, keine Daten),
+            /// entfällt ein unmittelbar davor stehender „EPOS Kapitelkopf“ mit.
             /// </summary>
-            private void FuelleKapitel(OpenXmlElement bezug, Teilinfo ti, IReadOnlyList<string> kapitel)
+            private void FuelleKapitel(OpenXmlElement bezug, Teilinfo ti, Entscheid e)
             {
-                var kontext = new WordKontext(_main, Einfuegeanker.Vor(bezug, ti.Teil), _stile);
-                OpenXmlElement vorher = bezug.PreviousSibling();
-                foreach (IBerichtsBaustein baustein in WordBerichtGenerator.AktiveBausteine(_konfig))
-                    if (kapitel.Contains(baustein.Schluessel)) baustein.SchreibeWord(kontext, _daten, _konfig);
+                bool ohneTitel = e.Angaben.Any(a => a.Art == Formatangabeart.OhneTitel);
+                int ebene = e.Angaben.Where(a => a.Art == Formatangabeart.Ebene && a.Zahl.HasValue)
+                                     .Select(a => a.Zahl.Value).DefaultIfEmpty(1).First();
+                OpenXmlElement kopf = Berichtskapitel.KapitelkopfVor(bezug, _stile.Finde(WordVorlagenstile.KAPITELKOPF));
 
-                if (ReferenceEquals(bezug.PreviousSibling(), vorher) && vorher is Paragraph kopf)
+                int geschrieben = 0;
+                var vorspann = new List<OpenXmlElement>();
+                foreach (Berichtskapitel k in Berichtskapitel.Alle.Where(k => e.Kapitel.Contains(k.Name)))
                 {
-                    string kopfstil = _stile.Finde(WordVorlagenstile.KAPITELKOPF);
-                    if (kopfstil != null && kopf.ParagraphProperties?.SectionProperties == null &&
-                        string.Equals(kopf.ParagraphProperties?.ParagraphStyleId?.Val?.Value, kopfstil, StringComparison.Ordinal))
-                        kopf.Remove();
+                    var kontext = new WordKontext(_main, Einfuegeanker.Vor(bezug, ti.Teil), _stile)
+                    {
+                        OhneTitel = ohneTitel,
+                        Ebenenversatz = Math.Max(0, ebene - 1),
+                        Kapitelstellen = _kapitelstellen,
+                        Vorspann = e.Einzeln && ohneTitel && kopf != null ? Einfuegeanker.Vor(kopf, ti.Teil) : null,
+                    };
+                    k.NeuerBaustein().SchreibeWord(kontext, _daten, _konfig);
+                    kontext.Abschliessen();
+                    geschrieben += kontext.AmAnkerGeschrieben;
+                    vorspann.AddRange(kontext.ImVorspann);
+                }
+
+                if (geschrieben == 0 && kopf != null)
+                {
+                    foreach (OpenXmlElement v in vorspann) v.Remove();
+                    kopf.Remove();
                 }
                 ErsetzeAbsatz(bezug, new List<OpenXmlElement>());
             }
@@ -788,7 +972,7 @@ namespace WindowsFormsApplication1
                             else if (e.Art == Entscheidart.Liste)
                                 ErsetzeAbsatz(block, Listenabsaetze(block, SdtFormat(block), e.Zeilen));
                             else if (e.Art == Entscheidart.Kapitel)
-                                FuelleKapitel(block, s.Teil, e.Kapitel);
+                                FuelleKapitel(block, s.Teil, e);
                             break;
                         }
                     case SdtRun imSatz:
@@ -844,6 +1028,223 @@ namespace WindowsFormsApplication1
                 Style stil = _main.StyleDefinitionsPart?.Styles?.Elements<Style>()
                     .FirstOrDefault(s => string.Equals(s.StyleId?.Value, stilId, StringComparison.Ordinal));
                 return string.Equals(stil?.StyleName?.Val?.Value, "Placeholder Text", StringComparison.OrdinalIgnoreCase);
+            }
+
+            // ------------------------------------------------------------- Bildplatzhalter (Konzept 4.2, 6.5)
+
+            /// <summary>Der Namensraum der Beziehungen (<c>r:embed</c>, <c>r:link</c>, <c>r:id</c>).</summary>
+            private const string NS_BEZIEHUNG = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+
+            /// <summary>Der Namensraum von <c>mc:AlternateContent</c>.</summary>
+            private const string NS_MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
+            /// <summary>
+            /// Die Bilder, deren Alternativtext (<c>wp:docPr/@descr</c>) ein Platzhalter ist — in allen
+            /// Teilen, gesammelt vor den Kapiteln (deren Bilder tragen keinen).
+            /// </summary>
+            private void SammleBildstellen()
+            {
+                foreach (Teilinfo ti in _teile)
+                    foreach (DW.DocProperties d in ti.Wurzel.Descendants<DW.DocProperties>())
+                    {
+                        string beschreibung = d.Description?.Value;
+                        if (!Vorlagenpruefer.IstBildschluessel(beschreibung)) continue;
+                        string t = beschreibung.Trim();
+                        Platzhalter marke = t.StartsWith("{{", StringComparison.Ordinal)
+                            ? Platzhaltersyntax.Finde(t).FirstOrDefault()
+                            : Platzhaltersyntax.Lies(t);
+                        if (marke != null) _bildstellen.Add(new Bildstelle(d, ti, marke));
+                    }
+            }
+
+            /// <summary>
+            /// Füllt ein Platzhalterbild. <c>bild.ersteller.logo</c> bekommt das Logo der Einstellungen
+            /// (Anwenderentscheid BV-E2-1), eingepasst in den Rahmen des Bildes; Lage, Umbruch und Rahmen
+            /// bleiben. Ohne Logo entfällt das Bild samt Lauf — ein danach leerer Absatz auch, außer er
+            /// steht allein in seinem Teil. Andere Bildschlüssel füllt eine spätere Etappe: Das Bild
+            /// bleibt und steht im Ergebnis.
+            /// </summary>
+            private void FuelleBild(Bildstelle b)
+            {
+                if (!Haengt(b.DocPr, b.Teil.Wurzel)) return;
+                Platzhalter m = b.Marke;
+                if (m.IstBlockmarke || m.Art != Platzhalterart.Feld)
+                {
+                    Stehen(m, Fuellbefundart.Unbekannt, b.DocPr, b.Teil, null);
+                    return;
+                }
+                Vorlagenfeld feld = Vorlagenfeldkatalog.Finde(m.Schluessel);
+                if (feld == null)
+                {
+                    Stehen(m, IstSpaeterBereich(m.Schluessel) ? Fuellbefundart.NichtUnterstuetzt : Fuellbefundart.Unbekannt,
+                           b.DocPr, b.Teil, null);
+                    return;
+                }
+                if (feld.Art != Vorlagenfeldart.Bild || (feld.Ausgaben & Vorlagenausgabe.Word) == 0)
+                {
+                    Stehen(m, Fuellbefundart.FalscheStelle, b.DocPr, b.Teil, null);
+                    return;
+                }
+                if (b.Teil.Art == Teilart.Fussnoten || b.Teil.Art == Teilart.Endnoten)
+                {
+                    Stehen(m, Fuellbefundart.FalscheStelle, b.DocPr, b.Teil, T.BILD_ORT);
+                    return;
+                }
+                if (!string.Equals(feld.Schluessel, Vorlagenfeldkatalog.LOGO, StringComparison.Ordinal))
+                {
+                    Stehen(m, Fuellbefundart.NichtUnterstuetzt, b.DocPr, b.Teil, null);
+                    return;
+                }
+
+                Platzhalterwert w = Loese(feld, m);
+                if (w.Bild != null)
+                {
+                    if (!SetzeBild(b, w.Bild))
+                    {
+                        Stehen(m, Fuellbefundart.FalscheStelle, b.DocPr, b.Teil, T.BILD_OHNE_BILD);
+                        return;
+                    }
+                }
+                else
+                {
+                    EntferneBild(b);
+                    string warnung = _werte.Ersteller?.LogoWarnung;
+                    if (!string.IsNullOrWhiteSpace(warnung) && !_logoGewarnt)
+                    {
+                        _logoGewarnt = true;
+                        _ergebnis.Warnung(warnung);
+                    }
+                }
+                _ergebnis.Ersetzt++;
+            }
+
+            /// <summary>
+            /// Setzt das Bild in den Rahmen des Platzhalterbildes: neuer Bildteil am Teil des Bildes, die
+            /// Maße mit dem Seitenverhältnis des Bildes in Breite und Höhe des Rahmens eingepasst, der
+            /// Alternativtext der Dateiname. Der alte Bildteil entfällt, wenn ihn nichts mehr nennt.
+            /// <c>false</c>, wenn der Alternativtext an einer Form ohne Bild steht.
+            /// </summary>
+            private bool SetzeBild(Bildstelle b, Bildinhalt bild)
+            {
+                OpenXmlElement rahmen = b.DocPr.Parent;
+                DW.Extent ausdehnung = rahmen?.GetFirstChild<DW.Extent>();
+                A.Blip blip = rahmen?.Descendants<A.Blip>().FirstOrDefault();
+                if (ausdehnung == null || blip == null) return false;
+
+                ImagePart teil;
+                switch (b.Teil.Teil)
+                {
+                    case MainDocumentPart haupt: teil = haupt.AddImagePart(Bildtyp(bild)); break;
+                    case HeaderPart kopf: teil = kopf.AddImagePart(Bildtyp(bild)); break;
+                    case FooterPart fuss: teil = fuss.AddImagePart(Bildtyp(bild)); break;
+                    default: return false;
+                }
+                using (var strom = new MemoryStream(bild.Daten)) teil.FeedData(strom);
+
+                var alt = new List<string>(Beziehungen(blip));
+                blip.Embed = b.Teil.Teil.GetIdOfPart(teil);
+                blip.Link = null;
+                blip.RemoveAllChildren<A.BlipExtensionList>();   // die SVG-Fassung des Platzhalterbildes
+
+                (long breite, long hoehe) = Eingepasst(ausdehnung.Cx?.Value ?? 0L, ausdehnung.Cy?.Value ?? 0L, bild);
+                ausdehnung.Cx = breite;
+                ausdehnung.Cy = hoehe;
+                foreach (A.Extents x in rahmen.Descendants<A.Extents>())
+                {
+                    x.Cx = breite;
+                    x.Cy = hoehe;
+                }
+
+                SetzeAlternativtext(b.DocPr, rahmen, bild.Dateiname);
+                foreach (string id in alt.Distinct()) EntferneTeilWennFrei(b.Teil, id);
+                return true;
+            }
+
+            /// <summary>Der Alternativtext nach dem Füllen: der Dateiname, ohne ihn keiner.</summary>
+            private static void SetzeAlternativtext(DW.DocProperties docPr, OpenXmlElement rahmen, string dateiname)
+            {
+                string text = string.IsNullOrWhiteSpace(dateiname) ? null : dateiname;
+                docPr.Description = text;
+                foreach (PIC.NonVisualDrawingProperties nv in rahmen.Descendants<PIC.NonVisualDrawingProperties>())
+                    if (Vorlagenpruefer.IstBildschluessel(nv.Description?.Value)) nv.Description = text;
+            }
+
+            private static PartTypeInfo Bildtyp(Bildinhalt bild)
+            {
+                return bild.Format == Bildformat.Png ? ImagePartType.Png : ImagePartType.Jpeg;
+            }
+
+            /// <summary>
+            /// Breite und Höhe in EMU: das Bild mit seinem Seitenverhältnis so groß wie möglich in den
+            /// Rahmen (<paramref name="breite"/> × <paramref name="hoehe"/>). Fehlt ein Maß des Rahmens,
+            /// gilt das andere; fehlen beide, die Bildpunkte bei 96 dpi.
+            /// </summary>
+            internal static (long Breite, long Hoehe) Eingepasst(long breite, long hoehe, Bildinhalt bild)
+            {
+                const long EMU_JE_PIXEL = 9525L;
+                double b = Math.Max(1, bild.Breite), h = Math.Max(1, bild.Hoehe);
+                if (breite <= 0 && hoehe <= 0) return ((long)(b * EMU_JE_PIXEL), (long)(h * EMU_JE_PIXEL));
+                double faktor = breite <= 0 ? hoehe / h
+                              : hoehe <= 0 ? breite / b
+                              : Math.Min(breite / b, hoehe / h);
+                return (Math.Max(1L, (long)Math.Round(b * faktor, MidpointRounding.AwayFromZero)),
+                        Math.Max(1L, (long)Math.Round(h * faktor, MidpointRounding.AwayFromZero)));
+            }
+
+            /// <summary>
+            /// Ohne Logo entfällt das Platzhalterbild: die Zeichnung (in <c>mc:AlternateContent</c> samt
+            /// ihrer Ersatzfassung), ein danach leerer Lauf, der nicht mehr genannte Bildteil — und ein
+            /// danach leerer Absatz, außer er ist der einzige seines Teils oder trägt einen Abschnitt.
+            /// </summary>
+            private void EntferneBild(Bildstelle b)
+            {
+                OpenXmlElement weg = b.DocPr.Ancestors<Drawing>().FirstOrDefault();
+                OpenXmlElement alternativ = weg?.Ancestors()
+                    .FirstOrDefault(e => e.LocalName == "AlternateContent" && e.NamespaceUri == NS_MC);
+                if (alternativ != null && alternativ.Parent is Run) weg = alternativ;
+                if (weg == null) return;
+
+                List<string> ids = weg.Descendants().SelectMany(Beziehungen).Distinct().ToList();
+                Run lauf = weg.Parent as Run;
+                Paragraph absatz = weg.Ancestors<Paragraph>().FirstOrDefault();
+                weg.Remove();
+                if (lauf != null && lauf.ChildElements.All(c => c is RunProperties)) lauf.Remove();
+                foreach (string id in ids) EntferneTeilWennFrei(b.Teil, id);
+
+                if (absatz == null || absatz.ParagraphProperties?.SectionProperties != null) return;
+                bool leer = absatz.Descendants<Run>().All(r => r.ChildElements.All(c => c is RunProperties)) &&
+                            !absatz.Descendants<SimpleField>().Any();
+                OpenXmlElement eltern = absatz.Parent;
+                bool allein = eltern == null || !eltern.ChildElements.Any(c =>
+                    !ReferenceEquals(c, absatz) && (c is Paragraph || c is Table || c is SdtBlock || c is CustomXmlBlock));
+                if (leer && !allein) absatz.Remove();
+            }
+
+            /// <summary>Die Beziehungskennungen, die ein Element nennt (<c>r:embed</c>, <c>r:link</c>, <c>r:id</c> …).</summary>
+            private static IEnumerable<string> Beziehungen(OpenXmlElement e)
+            {
+                foreach (OpenXmlAttribute a in e.GetAttributes())
+                    if (a.NamespaceUri == NS_BEZIEHUNG && !string.IsNullOrEmpty(a.Value)) yield return a.Value;
+                foreach (OpenXmlElement kind in e.Descendants())
+                    foreach (OpenXmlAttribute a in kind.GetAttributes())
+                        if (a.NamespaceUri == NS_BEZIEHUNG && !string.IsNullOrEmpty(a.Value)) yield return a.Value;
+            }
+
+            /// <summary>Löscht den Teil zur Beziehung <paramref name="id"/>, wenn nichts im Teil ihn mehr nennt.</summary>
+            private static void EntferneTeilWennFrei(Teilinfo ti, string id)
+            {
+                if (string.IsNullOrEmpty(id)) return;
+                bool genannt = ti.Wurzel.Descendants().Any(e => e.GetAttributes()
+                    .Any(a => a.NamespaceUri == NS_BEZIEHUNG && string.Equals(a.Value, id, StringComparison.Ordinal)));
+                if (genannt) return;
+                try
+                {
+                    if (ti.Teil.Parts.Any(p => p.RelationshipId == id)) ti.Teil.DeletePart(id);
+                }
+                catch (Exception)
+                {
+                    // Ein Teil, der sich nicht löschen lässt, bleibt ungenannt im Paket — das Dokument ist trotzdem gültig.
+                }
             }
 
             // ------------------------------------------------------------- Felder, Bildkennungen

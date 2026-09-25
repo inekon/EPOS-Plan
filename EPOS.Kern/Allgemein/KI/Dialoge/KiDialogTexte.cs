@@ -3125,6 +3125,9 @@
         internal static string AdmsetBerichtFirmaErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_FIRMA_ERL;
         internal static string AdmsetBerichtOrdnerName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_VORLAGENORDNER);
         internal static string AdmsetBerichtOrdnerErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_ORDNER_ERL;
+        // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile
+        internal static string AdmsetBerichtLogoName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_LOGO);
+        internal static string AdmsetBerichtLogoErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_LOGO_ERL;
 
         // ---- „Alle Daten" der Erzeugermasken des Projekts
 

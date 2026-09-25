@@ -70,6 +70,9 @@ namespace WindowsFormsApplication1
         /// <summary>Grund: die Art passt nicht an die Stelle (Konzept 4.3).</summary>
         public const string GRUND_FALSCHE_STELLE = "passt nicht an diese Stelle";
 
+        /// <summary>Grund: dasselbe Kapitel steht schon an einer früheren Stelle der Vorlage (Konzept 5.3).</summary>
+        public const string GRUND_DOPPELT = "Kapitel steht schon an einer früheren Stelle";
+
         // ------------------------------------------------------------- Meldungen
 
         /// <summary>Warnung: die Vorlage trägt keinen Platzhalter (Konzept 6.1).</summary>
@@ -119,6 +122,18 @@ namespace WindowsFormsApplication1
         public const string SDT_ZEILE =
             "{0}: Inhaltssteuerelemente um Tabellenzeilen oder -zellen werden nicht gefüllt — es bleibt stehen ({1}).";
 
+        /// <summary>Fehler: ein Kapitel steht mehrfach in der Vorlage — nur die erste Stelle wird gefüllt (Konzept 5.3).</summary>
+        public const string KAPITEL_DOPPELT =
+            "{0}: Das Kapitel steht schon an einer früheren Stelle der Vorlage — diese Stelle bleibt stehen ({1}).";
+
+        /// <summary>Fehler: ein Bildplatzhalter in einer Fuß- oder Endnote (Konzept 4.3).</summary>
+        public const string BILD_ORT =
+            "{0}: Ein Bild steht im Rumpf, in einer Tabellenzelle, einem Inhaltssteuerelement, einer Kopf- oder Fußzeile oder einem Textfeld — das Bild bleibt stehen ({1}).";
+
+        /// <summary>Fehler: der Bildschlüssel steht im Alternativtext einer Form ohne Bild.</summary>
+        public const string BILD_OHNE_BILD =
+            "{0}: Der Alternativtext gehört zu einer Form ohne Bild — sie bleibt stehen ({1}).";
+
         /// <summary>Ausnahme: leere Vorlage.</summary>
         public const string VORLAGE_LEER = "Die Berichtsvorlage ist leer.";
 
@@ -134,9 +149,10 @@ namespace WindowsFormsApplication1
             FUNDORT_RUMPF, FUNDORT_KOPF, FUNDORT_KOPF_ERSTE, FUNDORT_KOPF_GERADE, FUNDORT_KOPF_OHNE,
             FUNDORT_FUSS, FUNDORT_FUSS_ERSTE, FUNDORT_FUSS_GERADE, FUNDORT_FUSS_OHNE,
             FUNDORT_FUSSNOTEN, FUNDORT_ENDNOTEN, FUNDORT_TABELLE, FUNDORT_TEXTFELD, FUNDORT_SDT, FUNDORT_AUSZUG,
-            GRUND_UNBEKANNT, GRUND_NICHT_UNTERSTUETZT, GRUND_FALSCHE_STELLE,
+            GRUND_UNBEKANNT, GRUND_NICHT_UNTERSTUETZT, GRUND_FALSCHE_STELLE, GRUND_DOPPELT,
             OHNE_PLATZHALTER, AUSNAHME, VERKNUEPFTES_BILD, VERKNUEPFUNG, DOKUMENTVORLAGE, STIL_ANGELEGT,
             KOMMENTARE, DATUMSFELD, DOTX, LEER, KAPITEL_ORT, LISTE_ORT, SDT_IM_SATZ, SDT_ZEILE,
+            KAPITEL_DOPPELT, BILD_ORT, BILD_OHNE_BILD,
             VORLAGE_LEER, VORLAGE_UNLESBAR, VORLAGE_MAKROS,
         };
 

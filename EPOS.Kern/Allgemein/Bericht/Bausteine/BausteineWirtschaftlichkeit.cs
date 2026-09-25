@@ -22,9 +22,13 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_WIRTSCHAFT; } }
         public string Titel { get { return "Wirtschaftlichkeit"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
+        public const string UEBERSCHRIFT = "Wirtschaftlichkeit";
+
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
-            k.Ueberschrift1("Wirtschaftlichkeit");
+            k.Ueberschrift1(UEBERSCHRIFT);
 
             var provider = new WirtschaftlichkeitCtrl();
             List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();

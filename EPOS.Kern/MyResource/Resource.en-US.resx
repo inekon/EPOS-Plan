@@ -6810,7 +6810,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The measure is named and the date of the evaluation is fixed.</value>
   </data>
   <data name="WIRT_AE_01_STELLE" xml:space="preserve">
-    <value>Word report: title page · Workbook: sheet “Overview”</value>
+    <value>Word report: {0} · Workbook: sheet “Overview”</value>
   </data>
   <data name="WIRT_AE_01_STAND" xml:space="preserve">
     <value>project, variants and report date are stated in the report.</value>
@@ -6822,7 +6822,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The measure is described so that a third party understands what it is about.</value>
   </data>
   <data name="WIRT_AE_02_STELLE" xml:space="preserve">
-    <value>Word report: “Project description”, “Components &amp; variants” · Workbook: sheet “Overview”</value>
+    <value>Word report: {0} · Workbook: sheet “Overview”</value>
   </data>
   <data name="WIRT_AE_02_STAND" xml:space="preserve">
     <value>plants and deviations per variant from the project data; EPOS does not record a short verbal description of the measure.</value>
@@ -6834,7 +6834,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>All effects that follow from the investment decision are recorded.</value>
   </data>
   <data name="WIRT_AE_1_STELLE" xml:space="preserve">
-    <value>Word report: “Economic evaluation” › key figures of the scenario “Expected” · Workbook: sheet “Economic evaluation”, block “Expected”</value>
+    <value>Word report: {0} · Workbook: sheet “Economic evaluation”, block “Expected”</value>
   </data>
   <data name="WIRT_AE_1_STAND" xml:space="preserve">
     <value>investment, operating and energy costs, revenues and benefits, replacement and residual value per case.</value>
@@ -6846,7 +6846,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Every measurable effect is stated as a quantity.</value>
   </data>
   <data name="WIRT_AE_2A_STELLE" xml:space="preserve">
-    <value>Word report: “Results per variant”, “Comparison of variants” · Workbook: sheet “Comparison”, sheets of the variants</value>
+    <value>Word report: {0} · Workbook: sheet “Comparison”, sheets of the variants</value>
   </data>
   <data name="WIRT_AE_2A_STAND" xml:space="preserve">
     <value>energy quantities from the hourly simulation per case.</value>
@@ -6858,7 +6858,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Effects without a quantity are described and their significance is assessed.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Word report: “Economic evaluation” › “Non-monetary effects” (table) · Workbook: sheet “Economic evaluation”, table “Non-monetary effects”</value>
+    <value>Word report: {0} · Workbook: sheet “Economic evaluation”, table “Non-monetary effects”</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
     <value>described; no effect assessed by duration and effect yet (8.2).</value>
@@ -6873,7 +6873,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The cash flows are complete, only real cash flows are included, and each is explained.</value>
   </data>
   <data name="WIRT_AE_3A_STELLE" xml:space="preserve">
-    <value>Word report: “Multi-year overview of cash flows” · Workbook: multi-year tables, “Operating costs by cost type”</value>
+    <value>Word report: {0} · Workbook: multi-year tables, “Operating costs by cost type”</value>
   </data>
   <data name="WIRT_AE_3A_STAND" xml:space="preserve">
     <value>cash flows per year and item; avoided costs only as evidence, no depreciation as a cash flow.</value>
@@ -6891,7 +6891,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The evaluation period is chosen appropriately and the timing of the cash flows is determined.</value>
   </data>
   <data name="WIRT_AE_4_STELLE" xml:space="preserve">
-    <value>Word report: parameter line and period note in the chapter “Economic evaluation” · Workbook: parameter block, period note, multi-year tables</value>
+    <value>Word report: {0} · Workbook: parameter block, period note, multi-year tables</value>
   </data>
   <data name="WIRT_AE_4_ERFUELLT" xml:space="preserve">
     <value>period checked against the service lives; replacement and residual value per year.</value>
@@ -6906,7 +6906,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The rate is derived traceably from equity and debt and is explained.</value>
   </data>
   <data name="WIRT_AE_5_STELLE" xml:space="preserve">
-    <value>Word report: parameter line · Workbook: parameter block (Zins_i)</value>
+    <value>Word report: {0} · Workbook: parameter block (Zins_i)</value>
   </data>
   <data name="WIRT_AE_5_STAND" xml:space="preserve">
     <value>rate stated and varied per scenario; EPOS does not record its derivation.</value>
@@ -6918,7 +6918,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Risks are applied or described, different price changes are considered, loss of performance is taken into account.</value>
   </data>
   <data name="WIRT_AE_6_STELLE" xml:space="preserve">
-    <value>Word report: declarations, scenarios Unfavourable / Expected / Favourable · Workbook: parameter block (p_E, p_B, p_I), “Evaluation according to DIN EN 17463”</value>
+    <value>Word report: {0} · Workbook: parameter block (p_E, p_B, p_I), “Evaluation according to DIN EN 17463”</value>
   </data>
   <data name="WIRT_AE_6_STAND" xml:space="preserve">
     <value>three price change rates (energy, operation, investment/replacement); no risk premium and no degradation — both declared.</value>
@@ -6930,7 +6930,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The evaluation covers all benefits and burdens with a monetary value.</value>
   </data>
   <data name="WIRT_AE_7_STELLE" xml:space="preserve">
-    <value>Word report: key figures of the scenario “Expected” · Workbook: block “Expected” (key figures as formulas)</value>
+    <value>Word report: {0} · Workbook: block “Expected” (key figures as formulas)</value>
   </data>
   <data name="WIRT_AE_7_STAND" xml:space="preserve">
     <value>net present value per case and as the difference to the reference; annuity, payback and internal rate of return for information.</value>
@@ -6942,7 +6942,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>The influencing factors are varied one at a time and their effect on the net present value is shown.</value>
   </data>
   <data name="WIRT_AE_8_STELLE" xml:space="preserve">
-    <value>Word report: “Sensitivity analysis” · Workbook: sensitivity analysis</value>
+    <value>Word report: {0} · Workbook: sensitivity analysis</value>
   </data>
   <data name="WIRT_AE_8_TEILWEISE" xml:space="preserve">
     <value>discount rate, energy price change, investment, energy costs and CHP surcharge with slope; lifetime, end payments and chart are missing.</value>
@@ -6957,7 +6957,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>An unfavourable and a favourable case are fully calculated.</value>
   </data>
   <data name="WIRT_AE_9_STELLE" xml:space="preserve">
-    <value>Word report: scenarios Unfavourable / Expected / Favourable · Workbook: blocks “Favourable” and “Unfavourable”, range, sheet “Profile”</value>
+    <value>Word report: {0} · Workbook: blocks “Favourable” and “Unfavourable”, range, sheet “Profile”</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
     <value>only Expected or only one of the scenarios Favourable and Unfavourable calculated with a net present value.</value>
@@ -6972,7 +6972,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>A conclusion with a recommendation exists and takes the scenarios and the sensitivity into account.</value>
   </data>
   <data name="WIRT_AE_10_STELLE" xml:space="preserve">
-    <value>Word report: recommendation below the range · Workbook: recommendation line below the range</value>
+    <value>Word report: {0} · Workbook: recommendation line below the range</value>
   </data>
   <data name="WIRT_AE_10_ERFUELLT" xml:space="preserve">
     <value>recommendation with range and rating per variant.</value>
@@ -6987,7 +6987,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Calculation and results are presented so that a third party can follow them.</value>
   </data>
   <data name="WIRT_AE_11_STELLE" xml:space="preserve">
-    <value>Word report: chapters “Economic evaluation” and “Annex” · Workbook: formula workbook (parameter block, multi-year tables, key figures)</value>
+    <value>Word report: {0} · Workbook: formula workbook (parameter block, multi-year tables, key figures)</value>
   </data>
   <data name="WIRT_AE_11_STAND" xml:space="preserve">
     <value>declarations in the report; the workbook calculates all three scenarios with formulas — visible formulas on their column in the parameter block.</value>
@@ -34196,6 +34196,186 @@ Do you want to allow this?</value>
   <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
     <value>The unit of the key figure “{0}”.</value>
   </data>
+  <data name="BK_BER_BAUSTEIN_DECKBLATT" xml:space="preserve">
+    <value>Title page</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_INHALTSVERZEICHNIS" xml:space="preserve">
+    <value>Table of contents</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_PROJEKTBESCHREIBUNG" xml:space="preserve">
+    <value>Project description</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_KOMPONENTEN" xml:space="preserve">
+    <value>Components &amp; variants</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_ERGEBNISSE" xml:space="preserve">
+    <value>Results per variant</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_VERGLEICH" xml:space="preserve">
+    <value>Variant comparison</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Economic viability</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_ANHANG" xml:space="preserve">
+    <value>Appendix</value>
+  </data>
+  <data name="VF_KAPITEL__DECKBLATT" xml:space="preserve">
+    <value>Chapter “Title page”: title, subtitle and the table with project, customer, editor, variants, report date and program version, as the report writes them without a template. Follows the tick “Title page”.</value>
+  </data>
+  <data name="VF_KAPITEL__INHALT" xml:space="preserve">
+    <value>Chapter “Table of contents”: the heading “Contents” and the table of contents as a Word field that Word updates when opening. Follows the tick “Table of contents”.</value>
+  </data>
+  <data name="VF_KAPITEL__PROJEKT" xml:space="preserve">
+    <value>Chapter “Project description”: master data, buildings, energy demand and coverage ratios of the base project. Follows the tick “Project description”.</value>
+  </data>
+  <data name="VF_KAPITEL__KOMPONENTEN" xml:space="preserve">
+    <value>Chapter “Components &amp; variants”: component overview, characteristics per trade and the deviations of the variants. Follows the tick “Components &amp; variants”.</value>
+  </data>
+  <data name="VF_KAPITEL__ERGEBNISSE" xml:space="preserve">
+    <value>Chapter “Results per variant”: key figures and load curves per version. Follows the tick “Results per variant”.</value>
+  </data>
+  <data name="VF_KAPITEL__VERGLEICH" xml:space="preserve">
+    <value>Chapter “Variant comparison”: key figure tables per group, deviations from the base, charts, generators and fuel quantities. Follows the tick “Variant comparison”.</value>
+  </data>
+  <data name="VF_KAPITEL__WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Chapter “Economic viability”: net present value method with key figures, profile, scenarios and tables. Follows the tick “Economic viability”.</value>
+  </data>
+  <data name="VF_KAPITEL__ANHANG" xml:space="preserve">
+    <value>Chapter “Appendix”: simulation timestamps, data basis and the notes of the report run. Follows the tick “Appendix”.</value>
+  </data>
+  <data name="VF_KAPITEL__ANHANG_E" xml:space="preserve">
+    <value>Chapter “Checklist for the evaluation report (DIN EN 17463, Annex E)”: the checklist for the evaluation report according to DIN EN 17463, Annex E, with the place of each item in the report. Follows the tick “Economic viability”.</value>
+  </data>
+  <data name="VF_BAUSTEIN__DECKBLATT" xml:space="preserve">
+    <value>Switch: yes if the tick “Title page” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__INHALT" xml:space="preserve">
+    <value>Switch: yes if the tick “Table of contents” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__PROJEKT" xml:space="preserve">
+    <value>Switch: yes if the tick “Project description” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__KOMPONENTEN" xml:space="preserve">
+    <value>Switch: yes if the tick “Components &amp; variants” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__ERGEBNISSE" xml:space="preserve">
+    <value>Switch: yes if the tick “Results per variant” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__VERGLEICH" xml:space="preserve">
+    <value>Switch: yes if the tick “Variant comparison” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Switch: yes if the tick “Economic viability” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__ANHANG" xml:space="preserve">
+    <value>Switch: yes if the tick “Appendix” is set; only as a condition in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_PROJEKT" xml:space="preserve">
+    <value>Heading of the chapter “Project description” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_KOMPONENTEN" xml:space="preserve">
+    <value>Heading of the chapter “Components &amp; variants” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_ERGEBNISSE" xml:space="preserve">
+    <value>Heading of the chapter “Results per variant” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_VERGLEICH" xml:space="preserve">
+    <value>Heading of the chapter “Variant comparison” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Heading of the chapter “Economic viability” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_ANHANG" xml:space="preserve">
+    <value>Heading of the chapter “Appendix” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_ANHANG_E" xml:space="preserve">
+    <value>Heading of the chapter “Checklist for the evaluation report (DIN EN 17463, Annex E)” in the report language — the chapter head of the standard template.</value>
+  </data>
+  <data name="VF_BILD__ERSTELLER__LOGO" xml:space="preserve">
+    <value>Company logo of the creator from the settings (section “Report”) — as the alternative text of a picture; without a logo the picture is removed.</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
+    <value>Chapter {0} appears more than once in the template – only the first position is filled</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_DOPPELT_TUN" xml:space="preserve">
+    <value>Remove the further position; in the report it remains highlighted in yellow.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER" xml:space="preserve">
+    <value>{0}: only in a later program version</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_SCHALTER" xml:space="preserve">
+    <value>Remove the switch for now; until then it remains highlighted in yellow in the report.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_BILD" xml:space="preserve">
+    <value>Insert a picture and enter {0} as its alternative text – that way EPOS-Plan fills the place already now.</value>
+  </data>
+  <data name="VF_PRUEF_ANHANG_E_STELLE" xml:space="preserve">
+    <value>Annex E without a place for chapter “{0}” – the checklist says “not in the report” there</value>
+  </data>
+  <data name="VF_PRUEF_ANHANG_E_STELLE_TUN" xml:space="preserve">
+    <value>Add the chapter with {0} to the template if the evaluation report is to show it.</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
+    <value>The check reports a chapter twice. Which position counts?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_SPAETER" xml:space="preserve">
+    <value>The check says a placeholder only takes effect in a later program version. What does that mean?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ANHANG_E_STELLE" xml:space="preserve">
+    <value>The check reports Annex E without a place for a chapter. What is missing?</value>
+  </data>
+  <data name="BV_VORLAGEN_LOGO_FEHLT" xml:space="preserve">
+    <value>Logo not found: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_LOGO_GROSS" xml:space="preserve">
+    <value>Logo too large: {0} ({1} MB, at most {2} MB)</value>
+  </data>
+  <data name="BV_VORLAGEN_LOGO_FORMAT" xml:space="preserve">
+    <value>Logo is not a PNG or JPEG image: {0}</value>
+  </data>
+  <data name="BV_GRUND_KEIN_LOGO" xml:space="preserve">
+    <value>no logo set</value>
+  </data>
+  <data name="WIRT_AE_STELLE_KAPITEL" xml:space="preserve">
+    <value>“{0}”</value>
+  </data>
+  <data name="WIRT_AE_STELLE_NICHT_IM_BERICHT" xml:space="preserve">
+    <value>not in the report</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT" xml:space="preserve">
+    <value>{0} › key figures of the scenario “Expected”</value>
+  </data>
+  <data name="WIRT_AE_2B_STELLE_WORT" xml:space="preserve">
+    <value>{0} › “Non-monetary effects” (table)</value>
+  </data>
+  <data name="WIRT_AE_3A_STELLE_WORT" xml:space="preserve">
+    <value>“Multi-year overview of cash flows”</value>
+  </data>
+  <data name="WIRT_AE_4_STELLE_WORT" xml:space="preserve">
+    <value>parameter line and period note in the chapter {0}</value>
+  </data>
+  <data name="WIRT_AE_5_STELLE_WORT" xml:space="preserve">
+    <value>parameter line</value>
+  </data>
+  <data name="WIRT_AE_6_STELLE_WORT" xml:space="preserve">
+    <value>declarations, scenarios Unfavourable / Expected / Favourable</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT" xml:space="preserve">
+    <value>key figures of the scenario “Expected”</value>
+  </data>
+  <data name="WIRT_AE_8_STELLE_WORT" xml:space="preserve">
+    <value>“Sensitivity analysis”</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT" xml:space="preserve">
+    <value>scenarios Unfavourable / Expected / Favourable</value>
+  </data>
+  <data name="WIRT_AE_10_STELLE_WORT" xml:space="preserve">
+    <value>recommendation below the range</value>
+  </data>
+  <data name="WIRT_AE_11_STELLE_WORT" xml:space="preserve">
+    <value>chapters {0} and {1}</value>
+  </data>
   <data name="VF_PRUEF_UNBEKANNT" xml:space="preserve">
     <value>Unknown placeholder {0}</value>
   </data>
@@ -35368,5 +35548,47 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
     <value>{0} {1} is not a full hour from {2} to {3}.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
+    <value>not contained in this template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN" xml:space="preserve">
+    <value>“{0}” is not contained in this template – the tick is kept and takes effect again as soon as a template contains the chapter.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_INHALT_AUS_VORLAGE" xml:space="preserve">
+    <value>The template determines the content – it holds single placeholders but no chapter.</value>
+  </data>
+  <data name="WIRT_AE_BEZUG_STANDARD" xml:space="preserve">
+    <value>The places in the report refer to the standard template.</value>
+  </data>
+  <data name="WIRT_AE_BEZUG_VORLAGE" xml:space="preserve">
+    <value>The places in the report name the chapters of the template “{0}”.</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_LOGO" xml:space="preserve">
+    <value>Logo:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_LOGO" xml:space="preserve">
+    <value>Company logo for the header of the report – a PNG or JPEG file; empty means no logo.</value>
+  </data>
+  <data name="EIN_BERICHT_BTN_LOGO_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FEHLT" xml:space="preserve">
+    <value>File not found.</value>
+  </data>
+  <data name="EIN_BERICHT_DLG_LOGO" xml:space="preserve">
+    <value>Choose logo</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FILTER" xml:space="preserve">
+    <value>Images (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
+    <value>The company logo for the header of the report: the path of a PNG or JPEG file; empty means no logo. A file that does not exist is accepted anyway – the section says so below the field.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>Title page comes from the template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>“{0}” comes from the template – it carries the title page itself; the tick is kept and takes effect again as soon as a template contains the chapter.</value>
   </data>
 </root>

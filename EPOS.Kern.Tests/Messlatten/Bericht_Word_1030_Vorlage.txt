@@ -1,0 +1,92 @@
+# Strukturmesslatte BV-E2 (BerichtVorlagenMesslatteTests, Vorlagenweg mit der Standardvorlage) — Bericht_Word_1030_Vorlage.txt
+## Rumpf
+Absatz [Title] Referenzprojekt 1030
+Absatz [Subtitle] Variantenvergleich — Energie- und Wärmeversorgung
+Tabelle 2 Sp. × 5 Z. | Kopf: Kunde | 
+Absatz [Hinweis] (leer)
+Absatz [Hinweis] Erstellt mit EPOS-Plan 9.9.9.9
+Absatz [Heading1] Inhalt
+TOC-Feld TOC \o "1-3" \h \z \u
+Seitenumbruch
+Absatz [EPOSKapitelkopf] Projektbeschreibung
+Tabelle 2 Sp. × 8 Z. | Kopf: Projektname | Referenzprojekt #
+Absatz [Heading2] Energiebedarf (Simulationsergebnis Stamm)
+Tabelle 2 Sp. × 7 Z. | Kopf: Wärmebedarf gesamt | # MWh/a
+Absatz [Heading2] Deckungsgrade je Bedarfsart
+Tabelle 2 Sp. × 3 Z. | Kopf: Deckungsgrad Heizung | —
+Absatz [Heading2] Speichertemperaturen (Schichtmodell)
+Tabelle 3 Sp. × 2 Z. | Kopf: Speicher | T oben Mittel [°C] | T oben Minimum [°C]
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)
+Absatz [EPOSKapitelkopf] Komponenten & Varianten
+Absatz [Heading2] Komponentenübersicht
+Tabelle 2 Sp. × 8 Z. | Kopf: Gewerk | Stamm
+Absatz [Beschriftung] (leer)
+Absatz [EPOSKapitelkopf] Berechnungsergebnisse je Variante
+Absatz [Heading2] Stamm — Stamm
+Absatz [Hinweis] Simulationsstand: —
+Absatz [Normal] Keine Kennzahlen verfügbar.
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)
+Bild 620×260 px, SVG ja
+Absatz [Beschriftung] Speicherverlauf in charakteristischen Wochen (Winter/Übergang/Sommer)
+Absatz [EPOSKapitelkopf] Variantenvergleich
+Absatz [Hinweis] Es wurden keine Varianten ausgewählt — die Tabellen zeigen nur das Stammprojekt.
+Absatz [Heading2] Deckungsdiagramme
+Absatz [Hinweis] Anteile an der Wärme- bzw. Stromdeckung je Projekt (aus den Deckungsgraden der Erzeuger; der Rest ist ungedeckte Wärme bzw. Netzbezug).
+Absatz [Heading3] Stamm — Stamm
+Bild 420×262 px, SVG ja
+Bild 420×262 px, SVG ja
+Absatz [Heading2] Erzeuger — Einzelauflistung je Projekt
+Absatz [Hinweis] Je Projekt eine Zeile pro Gerät (Modul) mit erzeugter Energie; bei BHKW/Kessel der Brennstoff, bei der Wärmepumpe Strom (inkl. Heizstab).
+Absatz [Heading3] Stamm — Stamm
+Tabelle 5 Sp. × 4 Z. | Kopf: Erzeuger | Wärme [MWh/a] | Strom [MWh/a] | Energieträger | Verbrauch [MWh/a]
+Absatz [EPOSKapitelkopf] Wirtschaftlichkeit
+Absatz [Normal] Bewertung nach der Kapitalwertmethode in Anlehnung an DIN EN 17463 (ValERI): alle Zahlungsströme der Projekte werden über den Betrachtungszeitraum auf den Entscheidungszeitpunkt abgezinst. Referenz (Unterlassensalternative) ist das Stammprojekt — der Kapitalwert einer Variante ist der Barwert der Differenz-Zahlungsströme Variante − Stamm; ein positiver Wert bedeutet: die Variante ist über den Betrachtungszeitraum wirtschaftlicher als der Stamm.
+Absatz [Hinweis] Parameter dieses Rechenlaufs: i = 3,0 % · T = 20 a · Preissteigerung Energie 2,0 %/a, Betrieb 1,5 %/a, Investition/Ersatz 1,5 %/a (wie Betrieb) · Einspeisevergütung 0,000 €/kWh · CO₂ (BEHG) 55 €/t · KWKG (Sätze je Anlage, Stichtag <datum>, Förderbeginn <datum>) · Tarifstruktur inaktiv (Flat-Preise der Kostenmaske) · Emissionsbilanz: Bilanzjahr 2026 (nicht gepflegt) · KWK-Strom mit Stromgutschrift über den Kraftwerkspark (nach Katalog, Verdrängungsstrommix gültig ab 2020) · Biomasse biogenes Verbrennungs-CO₂ mit null (GEG/GModG, UBA-Emissionsbilanz, BAFA) · Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor · Restwert linear · Ersatzbeschaffungen preisindiziert mit p_I (VDI 2067). Energie-/Strompreise aus der Kostenmaske des jeweiligen Projekts; Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). Rechenstand: <datum>.
+Absatz [Hinweis] Betrachtungszeitraum T = 20 a · Nutzungsdauern 15 bis 25 a · T liegt unter der längsten Nutzungsdauer — Restwert am Ende angesetzt. T liegt über der kürzesten Nutzungsdauer — Ersatzbeschaffung im Jahr 15.
+Absatz [Hinweis] Vereinfachungen (VALERI): kein Endjahr je Kostenposition; keine Degradation außer beim PV-Ertrag; Energiekosten als Gesamtrechnung des Simulationslaufs ab Jahr 1 (FK10).
+Absatz [Hinweis] Rechnung nominal · Energie- und Stromsteuerentlastungen berücksichtigt · Ertragsteuern nicht berücksichtigt · keine Abschreibungen als Zahlung · Restwert linear — dokumentierte Abweichung von 6.4 · Risikozuschlag nicht angesetzt (6.5 optional) · nicht monetäre Wirkungen benannt
+Absatz [Heading2] Kennzahlen im Szenario „Erwartet“
+Absatz [Hinweis] Alle Beträge in €/a sind Werte des ersten Betrachtungsjahres; ihre Entwicklung über den Betrachtungszeitraum steht in der Mehrjahresübersicht.
+Tabelle 2 Sp. × 30 Z. | Kopf: Kennzahl | Stamm
+Absatz [Beschriftung] (leer)
+Absatz [Heading2] KWK-Zuschlag je Modul
+Absatz [Hinweis] Der Zuschlag entsteht als eine Reihe je Anlage: eigener Satz, eigenes Inbetriebnahmejahr, eigener Jahresdeckel, eigenes Vollbenutzungsstunden-Kontingent. Die Sätze folgen § 7 KWKG 2025 als Tranchenstaffel, nicht als Leistungsklasse — die Herleitung unter der Tabelle nennt deshalb die Tranchen.
+Absatz [Heading3] Stamm — Stamm
+Tabelle 11 Sp. × 3 Z. | Kopf: Modul | el. Leistung [kW] | Vbh [h/a] | Satz Eigenstrom [ct/kWh] | Satz Einspeisung [ct/kWh] | Satz aus | Jahresdeckel [h/a] | Kontingent [h] | Förderbeginn | Zuschlag Jahr 1 [€/a] | Kontingent erschöpft ab Jahr
+Absatz [Hinweis] BHKW EW M 50 S [K] Erdgas — Eigenstrom: 50,0 kW und damit bis 50 kW, neue Anlage → 8,0000 ct/kWh (§ 7 Abs. 3a KWKG 2025, Stand 2027); die Sonderregel geht den Leistungsanteilen vor. · Einspeisung: 50,0 kW und damit bis 50 kW, neue Anlage → 16,0000 ct/kWh (§ 7 Abs. 3a KWKG 2025, Stand 2027); die Sonderregel geht den Leistungsanteilen vor.
+Absatz [Hinweis] EC-POWER XRGI 9 — Eigenstrom: 9,0 kW und damit bis 50 kW, neue Anlage → 8,0000 ct/kWh (§ 7 Abs. 3a KWKG 2025, Stand 2027); die Sonderregel geht den Leistungsanteilen vor. · Einspeisung: 9,0 kW und damit bis 50 kW, neue Anlage → 16,0000 ct/kWh (§ 7 Abs. 3a KWKG 2025, Stand 2027); die Sonderregel geht den Leistungsanteilen vor.
+Absatz [Beschriftung] (leer)
+Absatz [Heading2] Betriebskosten nach Kostenarten
+Absatz [Hinweis] Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.
+Absatz [Heading3] Stamm — Stamm
+Tabelle 5 Sp. × 18 Z. | Kopf: Position | Gruppe | Bemessung | Herleitung | Betrag [€/a]
+Absatz [Beschriftung] (leer)
+Absatz [Heading2] Szenarien Ungünstig / Erwartet / Günstig
+Absatz [Hinweis] Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.
+Absatz [Hinweis] Keine Varianten ausgewählt — die Szenarienübersicht entfällt.
+Absatz [Heading2] Nicht monetäre Wirkungen
+Absatz [Hinweis] Nicht monetarisierbare Wirkungen nach DIN EN 17463 (6.1, 8.2): Kategorie, Dauer (kurz, mittel, lang) und Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark); Beurteilung = Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen fließen nicht in den Kapitalwert.
+Tabelle 7 Sp. × 3 Z. | Kopf: Kategorie | Beschreibung | Dauer | Organisation | Mitarbeiter | Umwelt | Beurteilung
+Absatz [Hinweis] ⚠ Stamm: Energiekosten nicht bestimmbar — Arbeitspreise/Träger in der Kostenmaske (Energiekosten) prüfen.
+Absatz [Hinweis] ⚠ Stamm: KWKG: Für „BHKW EW M 50 S [K] Erdgas“ ist kein Tatbestand nach § 6 Abs. 3 erfasst — die Voraussetzung des Zuschlags auf selbst genutzten Strom (§ 7 Abs. 2) ist ungeprüft; gerechnet wird mit dem eingetragenen Satz. | KWKG: Für „EC-POWER XRGI 9“ ist kein Tatbestand nach § 6 Abs. 3 erfasst — die Voraussetzung des Zuschlags auf selbst genutzten Strom (§ 7 Abs. 2) ist ungeprüft; gerechnet wird mit dem eingetragenen Satz. | KWKG: Zuschlag je BHKW-Modul gerechnet — BHKW EW M 50 S [K] Erdgas (50 kW, 7.476 h/a, 4,0000/8,0000 ct/kWh, 30.000 h); EC-POWER XRGI 9 (9 kW, 6.502 h/a, 4,0000/8,0000 ct/kWh, 30.000 h). | Energiesteuer: keine Entlastung gewählt — § 53 oder § 53a EnergieStG im Parameterdialog festlegen; Gutschrift = 0. | Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: Hocheffizienz nicht nachgewiesen — Angabe im Parameterdialog; Befreiung = 0. | Stromsteuer § 9b StromStG: weder produzierendes Gewerbe noch Land- und Forstwirtschaft — Unternehmensart im Parameterdialog erfassen; Entlastung = 0.
+Absatz [EPOSKapitelkopf] Anhang
+Absatz [Heading2] Simulationsstände
+Tabelle 4 Sp. × 2 Z. | Kopf: Projekt | Rolle | Simulation vom | Hinweis
+Absatz [Heading2] Datengrundlage und Methodik
+Absatz [Normal] Für diesen Bericht wurde jedes aufgeführte Projekt neu simuliert (stündliche Jahresrechnung) und anschließend wirtschaftlich bewertet; die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.
+Absatz [Normal] Grundlage sind die je Projekt gespeicherten Simulationsergebnisse der EPOS-Plan-Simulation (stündliche Jahresrechnung). Varianten sind eigenständige Projektkopien, verknüpft über die Variantenliste des Stammprojekts.
+Absatz [Normal] Herstellerdaten stammen aus den hinterlegten Katalogen oder manuellen Eingaben. Klimadaten aus der dem Projekt zugeordneten Klimaregion.
+Absatz [Hinweis] Emissionsfaktoren und Energiepreise werden mit den Kennzahlgruppen Emissionen und Kosten ausgewiesen, sobald deren Verrechnung aktiv ist (Ausbaustufe).
+Absatz [Heading2] Hinweise dieses Berichtslaufs
+Absatz [Hinweis] • Die Referenz „Stamm“ konnte nicht gerechnet werden (Energiekosten nicht bestimmbar — Arbeitspreise/Träger in der Kostenmaske (Energiekosten) prüfen.) — ohne sie gibt es keine Differenzkennzahlen.
+Seitenumbruch
+Absatz [EPOSKapitelkopf] Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)
+Absatz [Hinweis] Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer.
+Tabelle 6 Sp. × 21 Z. | Kopf: Nr. | Thema | Anforderung | Stelle im Bericht | Stand in EPOS | Beurteilung 1–5
+Abschnitt 11906×16838 hoch · Ränder o/r/u/l 1133/1133/1020/1417 · Kopf default · Fuß default
