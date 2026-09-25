@@ -147,18 +147,50 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<(int Id, string Name)> KlimaregionenMitId()
         {
             var liste = new List<(int Id, string Name)>();
+            foreach ((int Id, string Name, string Anzeige) e in KlimaregionAuswahlzeilen())
+                liste.Add((e.Id, e.Anzeige));
+            return liste;
+        }
 
+        /// <summary>
+        /// <b>Die EINE Quelle jeder Klimaregion-Klappliste</b> — Stamm-Id, blanker Name
+        /// und Anzeigetext („Heidelberg (TRY 2045 sommerwarm)"), nach Namen sortiert
+        /// (<c>KlimaregionStammCtrl.Auswahlzeilen</c>).
+        ///
+        /// <para>Die Kopfleiste der Startseite nimmt daraus (Id, Anzeige)
+        /// (<see cref="KlimaregionenMitId"/>), der Projektassistent dieselben Paare und
+        /// dazu den blanken Namen, mit dem sein Speicherweg die Region in das Projekt
+        /// kopiert. Zwei Klapplisten, ein Aufbau.</para>
+        ///
+        /// <para>Eine unlesbare Liste ist leer, kein Dialog.</para>
+        /// </summary>
+        public static IReadOnlyList<(int Id, string Name, string Anzeige)> KlimaregionAuswahlzeilen()
+        {
             try
             {
-                foreach ((int Id, string Name, string Anzeige) e
-                         in KlimaregionStammCtrl.Auswahlzeilen())
-                    liste.Add((e.Id, e.Anzeige));
+                return KlimaregionStammCtrl.Auswahlzeilen();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Klimaregionen konnten nicht gelesen werden: " + ex.Message);
+                return Array.Empty<(int, string, string)>();
             }
-            return liste;
+        }
+
+        /// <summary>
+        /// Die <b>STAMM-Id</b> der Klimaregion eines Projekts; <c>0</c>, wenn es keine
+        /// führt oder ihr Name im Katalog fehlt.
+        ///
+        /// <para><c>Tab_Projekt.ID_Klimaregion</c> trägt die Id der PROJEKTKOPIE — ein
+        /// anderer Schlüsselraum als die Einträge der Klapplisten. Der Weg zurück führt
+        /// über den Bezeichner der Kopie (<see cref="ProjektKlimazone"/>), der der
+        /// eindeutige Stammname ist (<see cref="KlimaregionStammId"/>) — derselbe Weg,
+        /// auf dem die Kopfleiste ihre Wahl zeigt.</para>
+        /// </summary>
+        public static int ProjektKlimaregionStammId(int idProjekt)
+        {
+            string name = ProjektKlimazone(idProjekt);
+            return name.Length == 0 ? 0 : KlimaregionStammId(name);
         }
 
         /// <summary>
@@ -279,51 +311,87 @@ namespace WindowsFormsApplication1
                 int idRegion = Convert.ToInt32(v);
                 if (idRegion == 0) return null;
 
-                bool mitHerkunft =
-                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
-                                                   SchemaKatalog.SPALTE_KR_QUELLE) &&
-                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
-                                                   SchemaKatalog.SPALTE_KR_IMPORTDATUM);
-
-                // Schemaschritt 97 wird eigens gefragt - eine Datenbank kann auf 95
-                // stehen und dann Quelle und Importdatum fuehren, aber kein Szenario.
-                bool mitSzenario =
-                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
-                                                   SchemaKatalog.SPALTE_KR_SZENARIO) &&
-                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
-                                                   SchemaKatalog.SPALTE_KR_BEZUGSJAHR);
-
-                string felder = "Bezeichner, Longitude, Latitude, Details";
-                if (mitHerkunft)
-                    felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE +
-                              ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM;
-                if (mitSzenario)
-                    felder += ", " + SchemaKatalog.SPALTE_KR_SZENARIO +
-                              ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR;
-
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT " + felder + " FROM " + KlimaregionStammCtrl.TAB_REGION_PROJEKT +
-                    " WHERE ID = ?",
-                    new DbParam("@idRegion", idRegion));
-
-                if (dt == null || dt.Rows.Count == 0) return null;
-                DataRow r = dt.Rows[0];
-
-                return new KlimaHerkunft(
-                    mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "",
-                    Katalogfeld.Text(r, "Bezeichner"),
-                    KlimaregionStammCtrl.Standorttext(Katalogfeld.Text(r, "Details"),
-                                                      Katalogfeld.Zahl(r, "Longitude") ?? 0,
-                                                      Katalogfeld.Zahl(r, "Latitude") ?? 0),
-                    mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "",
-                    mitSzenario ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_SZENARIO) : "",
-                    mitSzenario ? Katalogfeld.Ganzzahl(r, SchemaKatalog.SPALTE_KR_BEZUGSJAHR) : 0);
+                return HerkunftLesen(KlimaregionStammCtrl.TAB_REGION_PROJEKT, "ID", "Bezeichner", idRegion);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Herkunft der Klimadaten konnte nicht gelesen werden: " + ex.Message);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// <b>Woher die Klimadaten eines KATALOGSATZES stammen</b> — dieselbe Auskunft
+        /// wie <see cref="KlimaHerkunft"/>, gelesen aus <c>Tab_Klimaregion_STAMM</c>
+        /// über die Stamm-Id; <c>null</c>, wenn es die Id nicht gibt.
+        ///
+        /// <para>Gebraucht vom Projektassistenten: Dort gibt es noch keine Projektkopie,
+        /// nur die Wahl in der Klappliste. Beim Anlegen wird genau dieser Satz kopiert
+        /// (<c>KlimaregionStammCtrl.CopyRegionToProjekt</c>, samt Quelle, Importdatum,
+        /// Szenario und Bezugsjahr) — die Zeile im Assistenten sagt also dasselbe, was
+        /// danach die Kopfleiste über die Kopie sagt.</para>
+        /// </summary>
+        public static KlimaHerkunft KlimaHerkunftStamm(int stammId)
+        {
+            if (stammId <= 0) return null;
+
+            try
+            {
+                return HerkunftLesen(KlimaregionStammCtrl.TAB_REGION_STAMM, "ID_Klimaregion", "Name", stammId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Herkunft der Klimadaten konnte nicht gelesen werden: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Liest die Herkunft EINER Regionszeile — Projektkopie oder Katalogsatz; beide
+        /// Tabellen führen dieselben Spalten, nur Schlüssel und Namensspalte heißen
+        /// anders.
+        ///
+        /// <para><b>Tolerant ohne Schemaschritt 95/97</b> (Muster
+        /// <c>KostenVorlagenCtrl.PflichtSpalteVorhanden</c>): Fehlen die Spalten, bleiben
+        /// die Angaben leer — die Zeile nennt dann Bezeichner und Standort.</para>
+        /// </summary>
+        private static KlimaHerkunft HerkunftLesen(string tabelle, string idSpalte,
+                                                   string nameSpalte, int id)
+        {
+            bool mitHerkunft =
+                DataRepository.SpalteVorhanden(tabelle, SchemaKatalog.SPALTE_KR_QUELLE) &&
+                DataRepository.SpalteVorhanden(tabelle, SchemaKatalog.SPALTE_KR_IMPORTDATUM);
+
+            // Schemaschritt 97 wird eigens gefragt - eine Datenbank kann auf 95
+            // stehen und dann Quelle und Importdatum fuehren, aber kein Szenario.
+            bool mitSzenario =
+                DataRepository.SpalteVorhanden(tabelle, SchemaKatalog.SPALTE_KR_SZENARIO) &&
+                DataRepository.SpalteVorhanden(tabelle, SchemaKatalog.SPALTE_KR_BEZUGSJAHR);
+
+            string felder = nameSpalte + ", Longitude, Latitude, Details";
+            if (mitHerkunft)
+                felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE +
+                          ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM;
+            if (mitSzenario)
+                felder += ", " + SchemaKatalog.SPALTE_KR_SZENARIO +
+                          ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + felder + " FROM " + tabelle + " WHERE " + idSpalte + " = ?",
+                new DbParam("@idRegion", id));
+
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow r = dt.Rows[0];
+
+            return new KlimaHerkunft(
+                mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "",
+                Katalogfeld.Text(r, nameSpalte),
+                KlimaregionStammCtrl.Standorttext(Katalogfeld.Text(r, "Details"),
+                                                  Katalogfeld.Zahl(r, "Longitude") ?? 0,
+                                                  Katalogfeld.Zahl(r, "Latitude") ?? 0),
+                mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "",
+                mitSzenario ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_SZENARIO) : "",
+                mitSzenario ? Katalogfeld.Ganzzahl(r, SchemaKatalog.SPALTE_KR_BEZUGSJAHR) : 0);
         }
 
         // =====================================================================
