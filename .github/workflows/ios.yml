@@ -171,7 +171,11 @@ jobs:
           # Der Pruefmodus wird ueber eine Umgebungsvariable geschaltet - eine
           # iOS-App bekommt keine Befehlszeile. simctl reicht Variablen mit dem
           # Praefix SIMCTL_CHILD_ in den Kindprozess durch.
-          SIMCTL_CHILD_EPOS_PRUEFLAUF=1 \
+          # Der zweite Schalter haengt die KATALOGPROBE (ZU26) hinter den Rechennachweis:
+          # das Probepaket der Brauchwasser-Nutzungsarten als ZIP-Archiv, erst im Prueflauf,
+          # dann wirklich eingespielt (Pruefung/Katalogprobe.cs). Sie braucht kein xBIM und
+          # keinen eigenen Bau - das Probepaket liegt in jedem Paket.
+          SIMCTL_CHILD_EPOS_PRUEFLAUF=1 SIMCTL_CHILD_EPOS_PRUEFLAUF_KATALOGIMPORT=1 \
             xcrun simctl launch --console-pty "${{ steps.sim.outputs.udid }}" "$BUNDLE" \
             > artifacts/ios/start.log 2>&1 &
 
@@ -218,6 +222,36 @@ jobs:
           echo "STRICT-Tabellen: erwartet mindestens $ERWARTET (Seed), gemeldet ${IST:-keine}"
           test -n "$IST" && test "$IST" -ge "$ERWARTET"
           test -f artifacts/ios/pruefung/fertig.txt
+
+      # =================================================================================
+      # DIE KATALOGPROBE (Anwenderentscheid ZU26): Der Katalog der Brauchwasser-Nutzungsarten
+      # ist der EINZIGE Katalog, der auf iOS aufgeht, und sein Import nimmt dort ein
+      # ZIP-Archiv. Dieser Schritt liest die Zeilen der Probe aus dem Startprotokoll und
+      # faellt rot, wenn das Paket abgelehnt wurde, ein Eintrag abgelehnt wurde, Prueflauf
+      # und Import verschieden gezaehlt haben oder die Schlusszeile fehlt.
+      # =================================================================================
+      - name: Katalogprobe auswerten
+        run: |
+          Z=artifacts/ios/katalogzeilen.txt
+          tr -d '\r' < artifacts/ios/start.log | grep -E "KATALOGPROBE" > "$Z" || true
+          echo "--- Zeilen der Katalogprobe ---"
+          cat "$Z" || true
+          grep -q "KATALOGPROBE dateifilter.*ordnerwahl=NEIN" "$Z" \
+            || { echo "FEHLER: Dateifilter-Zeile fehlt oder die Huelle meldet eine Ordnerwahl."; exit 1; }
+          grep -q "KATALOGPROBE paket ergebnis=GELESEN" "$Z" \
+            || { echo "FEHLER: Das ZIP-Paket wurde nicht gelesen."; exit 1; }
+          grep -q "KATALOGPROBE lauf=pruefung ergebnis=OK" "$Z" \
+            || { echo "FEHLER: Der Prueflauf ist nicht durchgelaufen."; exit 1; }
+          grep -q "KATALOGPROBE lauf=import ergebnis=OK" "$Z" \
+            || { echo "FEHLER: Der Import ist nicht durchgelaufen."; exit 1; }
+          grep -q "KATALOGPROBE vergleich ergebnis=GLEICH" "$Z" \
+            || { echo "FEHLER: Prueflauf und Import haben verschieden gezaehlt."; exit 1; }
+          if grep -q "abgelehnt bereich=" "$Z"; then
+            echo "FEHLER: Das Probepaket enthaelt abgelehnte Eintraege."; exit 1
+          fi
+          grep -q "KATALOGPROBE ende ergebnis=OK befunde=0" "$Z" \
+            || { echo "FEHLER: Die Katalogprobe meldet Befunde oder ist nicht zu Ende gelaufen."; exit 1; }
+          echo "Katalogprobe in Ordnung."
 
       # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml
       # (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den Job rot.
