@@ -639,6 +639,68 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Legt einen PROJEKTaufbau samt Schichten im Vorgang des Aufrufers an</b> — der Weg des
+        /// Bauteilvorschlags eines Imports (Stufe G4b, <c>GebaeudeZonenCtrl.VorschlagSchreiben</c>):
+        /// Aufbau, Zone und Bauteile entstehen in EINEM Vorgang. Ohne Namensprüfung und ohne
+        /// Baustoffabgleich — der Aufrufer vergibt einen im Projekt freien Namen
+        /// (<see cref="FreierName"/>) und hat den Aufbau geprüft (<see cref="Pruefen"/>); die Stoffwerte
+        /// der Schichten sind Kopien, <c>ID_Baustoff</c> bleibt, wie er ist. Setzt Id, Projekt und
+        /// Reihenfolge am Modell und liefert die neue Id.
+        /// </summary>
+        internal static int ProjektaufbauEinfuegen(DbVorgang v, int idProjekt, BauteilaufbauModel m)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            int id = v.EinfuegenUndId(
+                "INSERT INTO \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" (\"ID_Projekt\", \"Bezeichner\", \"Beschreibung\", " +
+                "\"Bauteilart\", \"Quelle\", \"Herkunft\", \"Quellkennung\") VALUES (?, ?, ?, ?, ?, ?, ?)",
+                new[]
+                {
+                    new DbParam("@p", idProjekt),
+                    new DbParam("@b", m.Bezeichner.Trim()),
+                    BaustoffCtrl.Text("@be", m.Beschreibung),
+                    BaustoffCtrl.Text("@art", m.Bauteilart),
+                    BaustoffCtrl.Text("@q", m.Quelle),
+                    BaustoffCtrl.Text("@h", m.Herkunft),
+                    BaustoffCtrl.Text("@qk", m.Quellkennung)
+                });
+            m.ID = id;
+            m.ID_Projekt = idProjekt;
+            m.Bezeichner = m.Bezeichner.Trim();
+            m.Schichten = (m.Schichten ?? new List<BauteilschichtModel>()).Where(x => x != null).ToList();
+            int rang = 0;
+            foreach (BauteilschichtModel s in m.Schichten)
+                s.ID = SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, id, ++rang, s);
+            return id;
+        }
+
+        /// <summary>
+        /// Ein Aufbauname, der unter <paramref name="vergeben"/> noch frei ist — sonst mit „ (2)",
+        /// „ (3)" … ergänzt, höchstens <see cref="BaustoffSchema.LAENGE_BEZEICHNER"/> Zeichen. Der
+        /// gewählte Name wird in die Menge aufgenommen. Der Vergleich ist ordinal, wie die Namensprobe
+        /// von <see cref="ProjektSpeichern"/> in SQL.
+        /// </summary>
+        internal static string FreierName(ISet<string> vergeben, string name)
+        {
+            if (vergeben == null) throw new ArgumentNullException(nameof(vergeben));
+            string basis = Laengenrecht((name ?? "").Trim(), BaustoffSchema.LAENGE_BEZEICHNER);
+            string kandidat = basis;
+            for (int n = 2; !vergeben.Add(kandidat); n++)
+            {
+                string zusatz = " (" + n.ToString(CultureInfo.InvariantCulture) + ")";
+                kandidat = Laengenrecht(basis, BaustoffSchema.LAENGE_BEZEICHNER - zusatz.Length) + zusatz;
+            }
+            return kandidat;
+        }
+
+        private static string Laengenrecht(string text, int laenge)
+        {
+            if (text.Length <= laenge) return text;
+            int n = char.IsHighSurrogate(text[laenge - 1]) ? laenge - 1 : laenge;
+            return text.Substring(0, n);
+        }
+
         /// <summary>Legt eine Schicht an; setzt Aufbau und Reihenfolge am Modell und liefert die neue Id.</summary>
         private static int SchichtEinfuegen(DbVorgang v, string tabelle, int idAufbau, int reihenfolge, BauteilschichtModel s)
         {
