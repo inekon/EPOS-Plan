@@ -184,9 +184,9 @@ Nach der Messwelle (→ Register R‑Rest; der Weg im Protokoll der Entscheidweg
   (`AnlagenprioRechenwegTests` und `GebaeudeRueckwegTests` grün mit R16); SqlDialektPruefer 0 Fundstellen;
   Referenzlauf 14/14 gegen R16 PASS (4 610 207 Werte, 432/432 CSV byte-gleich); Testhost-Regel eingehalten.
 - **Merge** `76f8661d` auf `pm24` über `origin` = `f83ce27d`.
-- **Gate:** NACHTRAG-503-GATE — dazu der Referenzlauf aller vierzehn Projekte gegen R16 aus dem Bau: 14/14 PASS
+- **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte, voller Lauf 14.295 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 7.090 und 1 übersprungen, EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE503.log`, 25.09.2026 11:43–11:56 Uhr, auf `76f8661d` = Merge e22 über den Push #502 `f83ce27d`); auf dem End-Merge mit #504 (`7901dd4e`, Testdatenbank `22eeb75c…`) Build 0 Fehler, Schema- und Dokumentationswachen samt `AnlagenprioRechenwegTests` und `GebaeudeRueckwegTests` grün und Referenzlauf 14/14 gegen R16 PASS (4.610.207 Werte) — dazu der Referenzlauf aller vierzehn Projekte gegen R16 aus dem Bau: 14/14 PASS
   (4 610 207 Werte, 432/432 CSV byte-gleich).
-- **CI:** NACHTRAG-503-CI — die CI muss gegen R16 laufen (`kern.yml` mit dem Basispfad R16 und den sechs Projekten).
+- **CI:** steht aus (Beobachtung nach dem Push) — die CI muss gegen R16 laufen (`kern.yml` mit dem Basispfad R16 und den sechs Projekten).
 
 ## Abnahme am Gerät (A‑E22‑1, Windows)
 
