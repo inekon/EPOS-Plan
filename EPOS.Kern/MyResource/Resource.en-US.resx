@@ -35156,4 +35156,31 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_NACHT_ENDE_ERL" xml:space="preserve">
     <value>The full hour at which the night setback ends and the daytime setpoint applies again (0 to 23). Empty together with the start means the default 6 o'clock; only one of the two or both equal is an input error.</value>
   </data>
+  <data name="GIMP_FELD_SOLL_NACHT" xml:space="preserve">
+    <value>Night-time heating setpoint</value>
+  </data>
+  <data name="GIMP_FELD_NACHT_BEGINN" xml:space="preserve">
+    <value>Night setback from</value>
+  </data>
+  <data name="GIMP_FELD_NACHT_ENDE" xml:space="preserve">
+    <value>Night setback until</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_JE_FLAECHE" xml:space="preserve">
+    <value>not in the file — default {0} W/m² × {1} m² usable area = {2} W</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG" xml:space="preserve">
+    <value>Default {0} W/m² × {1} m² usable area = {2} W; suggestion {3} W: design power of lighting and equipment from {4} spaces — not a time-averaged gain, not imported</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT_VORGABE" xml:space="preserve">
+    <value>not in the file — default {0} °C</value>
+  </data>
+  <data name="GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG" xml:space="preserve">
+    <value>not in the file — default {0} °C, at most the daytime setpoint: {1} °C</value>
+  </data>
+  <data name="GIMP_BELEG_NACHTZEIT_VORGABE" xml:space="preserve">
+    <value>not in the file — default {0} o'clock (night from {1} to {2} o'clock)</value>
+  </data>
+  <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
+    <value>{0} {1} is not a full hour from {2} to {3}.</value>
+  </data>
 </root>

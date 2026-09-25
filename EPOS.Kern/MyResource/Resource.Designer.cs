@@ -24771,6 +24771,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_JE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_JE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W; Vorschlag {3} W: Auslegungsleistung für Licht und Geräte aus {4} Räumen — kein zeitlich gemittelter Gewinn, nicht übernommen ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — {0} W wie bei einem neuen Gebäude ähnelt.
         /// </summary>
         public static string GIMP_BELEG_GEWINNE_VORGABE {
@@ -24888,6 +24906,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} Uhr (Nacht von {1} bis {2} Uhr) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_NACHTZEIT_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_NACHTZEIT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bleibt leer — der Luftwechsel der Datei steht ganz bei der Infiltration ähnelt.
         /// </summary>
         public static string GIMP_BELEG_NUTZERLUEFTUNG_LEER {
@@ -24965,6 +24992,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_SOLLWERT {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLLWERT_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLLWERT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C, höchstens der Tagsollwert: {1} °C ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG", resourceCulture);
             }
         }
         
@@ -25626,6 +25671,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_NACHT_BEGINN {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_NACHT_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung bis ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_NACHT_ENDE {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_NACHT_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche ähnelt.
         /// </summary>
         public static string GIMP_FELD_NUTZFLAECHE {
@@ -25667,6 +25730,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FELD_RAUMHOEHE {
             get {
                 return ResourceManager.GetString("GIMP_FELD_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert in der Nacht ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_SOLL_NACHT {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_SOLL_NACHT", resourceCulture);
             }
         }
         
@@ -28457,6 +28529,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} ist keine volle Stunde von {2} bis {3}. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_NACHTZEIT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_NACHTZEIT_UNGUELTIG", resourceCulture);
             }
         }
         

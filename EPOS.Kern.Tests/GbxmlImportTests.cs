@@ -96,14 +96,14 @@ namespace EPOS.Kern.Tests
             Assert.False(s.Zeile(GebaeudeZielfelder.VOLUMEN).Uebernehmen);   // nur Prüfgröße
 
             // Innere Gewinne: die Auslegungsleistung ist kein mittlerer Gewinn — sie steht nur als Vorschlag
-            // im Beleg; übernommen wird die ausgewiesene Vorgabe eines neuen Gebäudes (0 W).
+            // im Beleg; übernommen wird die ausgewiesene Vorgabe 5 W/m² × 120 m² (E43).
             GebaeudeFeldzeile gewinne = s.Zeile(GebaeudeZielfelder.INNERE_GEWINNE);
-            Assert.Equal(0.0, gewinne.Wert);
+            Assert.Equal(600.0, gewinne.Wert);
             Assert.Equal(Importherkunft.Vorgabe, gewinne.Herkunft);
             Assert.True(gewinne.Uebernehmen);
-            Assert.Equal("GIMP_BELEG_GEWINNE_VORSCHLAG", gewinne.Beleg.Schluessel);
-            Assert.Equal("600", gewinne.Beleg.Werte[0]);
-            Assert.Equal("GIMP_BELEG_GEWINNE_VORGABE", gewinne.VorgabeBeleg.Schluessel);
+            Assert.Equal("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG", gewinne.Beleg.Schluessel);
+            Assert.Equal(new[] { "5", "120", "600", "600", "3" }, gewinne.Beleg.Werte);
+            Assert.Equal("GIMP_BELEG_GEWINNE_JE_FLAECHE", gewinne.VorgabeBeleg.Schluessel);
 
             // Außenwand: 170 m² brutto − 23 m² Fenster − 2 m² Außentür (U14).
             GebaeudeFeldzeile wand = s.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND);

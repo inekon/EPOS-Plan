@@ -127,6 +127,22 @@ namespace WindowsFormsApplication1
         public const double FLAECHE_JE_NUTZER_VORGABE = 35.0;
 
         /// <summary>
+        /// Die inneren Wärmegewinne je m² Nutzfläche [W/m²], die der Gebäudeimport als ausgewiesene,
+        /// änderbare Vorgabe setzt (Entscheid E43: ein Wert für alle Gebäudearten) —
+        /// <c>Interne_Waermegewinne = 5 W/m² × Nutzfläche</c>. Die eine Stelle der Zahl.
+        /// </summary>
+        public const double INNERE_GEWINNE_JE_M2_VORGABE = 5.0;
+
+        /// <summary>Der Heizsollwert am Tag [°C], den der Gebäudeimport vorgibt, wenn die Datei keinen trägt (E43).</summary>
+        public const double SOLLTEMPERATUR_TAG_VORGABE = 20.0;
+
+        /// <summary>
+        /// Der Heizsollwert der Nachtabsenkung [°C], den der Gebäudeimport vorgibt (E43) — höchstens
+        /// der Tagsollwert. Die Nachtzeit dazu ist <see cref="Nachtzeit.Vorgabe"/> (22 bis 6 Uhr).
+        /// </summary>
+        public const double SOLLTEMPERATUR_NACHT_VORGABE = 18.0;
+
+        /// <summary>
         /// Die 21 Baualtersklassen in ihrer festen Reihenfolge — Index 0 ist <c>'A'</c>,
         /// Index 20 ist <c>'U'</c> (<c>Form_Gebaeude.list_geb</c>:14 und
         /// <c>Form_Gebaeude1.list_geb</c>:9, dort zweimal wortgleich).

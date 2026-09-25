@@ -35163,4 +35163,31 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_NACHT_ENDE_ERL" xml:space="preserve">
     <value>Die volle Stunde, zu der die Nachtabsenkung endet und wieder der Tagsollwert gilt (0 bis 23). Leer zusammen mit dem Beginn heißt die Vorgabe 6 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler.</value>
   </data>
+  <data name="GIMP_FELD_SOLL_NACHT" xml:space="preserve">
+    <value>Heizsollwert in der Nacht</value>
+  </data>
+  <data name="GIMP_FELD_NACHT_BEGINN" xml:space="preserve">
+    <value>Nachtabsenkung von</value>
+  </data>
+  <data name="GIMP_FELD_NACHT_ENDE" xml:space="preserve">
+    <value>Nachtabsenkung bis</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_JE_FLAECHE" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG" xml:space="preserve">
+    <value>Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W; Vorschlag {3} W: Auslegungsleistung für Licht und Geräte aus {4} Räumen — kein zeitlich gemittelter Gewinn, nicht übernommen</value>
+  </data>
+  <data name="GIMP_BELEG_SOLLWERT_VORGABE" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe {0} °C</value>
+  </data>
+  <data name="GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe {0} °C, höchstens der Tagsollwert: {1} °C</value>
+  </data>
+  <data name="GIMP_BELEG_NACHTZEIT_VORGABE" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe {0} Uhr (Nacht von {1} bis {2} Uhr)</value>
+  </data>
+  <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
+    <value>{0} {1} ist keine volle Stunde von {2} bis {3}.</value>
+  </data>
 </root>
