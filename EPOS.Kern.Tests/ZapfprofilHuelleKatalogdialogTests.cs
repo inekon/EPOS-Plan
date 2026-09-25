@@ -254,16 +254,29 @@ namespace EPOS.Kern.Tests
             using var db = new TwwTestdatenbank();
             string paket = Path.Combine(ZapfZufallTests.Probenordner(), "Katalogpaket", TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
 
+            // Der gewaehlte Pfad ist EINE Datei des Paketordners - gelesen wird der ganze Ordner, also
+            // auch die drei wahlfreien Dateien (zwei Bedarfstage, zwei Parameter; ZU30 bis ZU32).
             TwwImportberichtDaten b = ZapfprofilHuelle.KatalogImportieren(paket);
             Assert.False(b.Abgebrochen, b.Abbruch);
-            Assert.Equal("2 angelegt · 0 übersprungen · 0 abgelehnt", b.Zusammenfassung);
+            Assert.False(b.Pruefmodus);
+            Assert.Equal("6 angelegt · 0 ersetzt · 0 übersprungen · 0 abgelehnt", b.Zusammenfassung);
             Assert.All(b.Zeilen, z => Assert.Equal("angelegt", z.Ausgangstext));
-            Assert.Equal("Probenutzung A (erfunden) · PROBE-1", b.Zeilen[0].Nutzungsart);
-            Assert.Equal(2, b.NeueIds.Count);
+            Assert.Equal("Probenutzung A (erfunden) · PROBE-1",
+                         b.ZeilenVon(TwwImportbereichDaten.Nutzungsart)[0].Nutzungsart);
+            Assert.Equal("Probetag A (erfunden) · PROBE-1",
+                         b.ZeilenVon(TwwImportbereichDaten.Bedarfstag)[0].Nutzungsart);
+            Assert.Equal(2, b.ZeilenVon(TwwImportbereichDaten.Parameter).Count);
+            Assert.Equal(2, b.NeueIds.Count);      // allein die Nutzungsarten werden gewaehlt
 
             TwwImportberichtDaten zweit = ZapfprofilHuelle.KatalogImportieren(paket);
-            Assert.Equal("0 angelegt · 2 übersprungen · 0 abgelehnt", zweit.Zusammenfassung);
-            Assert.Equal("Der Katalog führt sie schon mit gleichem Inhalt.", zweit.Zeilen[0].Grund);
+            Assert.Equal("0 angelegt · 0 ersetzt · 6 übersprungen · 0 abgelehnt", zweit.Zusammenfassung);
+            Assert.Equal("Der Katalog führt sie schon mit gleichem Inhalt.",
+                         zweit.ZeilenVon(TwwImportbereichDaten.Nutzungsart)[0].Grund);
+
+            // Der Pruefmodus: dieselben Zeilen, nichts geschrieben - die Texte sagen „würde …".
+            TwwImportberichtDaten pruef = ZapfprofilHuelle.KatalogImportieren(paket, true);
+            Assert.True(pruef.Pruefmodus);
+            Assert.All(pruef.Zeilen, z => Assert.Equal("würde überspringen", z.Ausgangstext));
 
             TwwImportberichtDaten leer = ZapfprofilHuelle.KatalogImportieren("");
             Assert.True(leer.Abgebrochen);

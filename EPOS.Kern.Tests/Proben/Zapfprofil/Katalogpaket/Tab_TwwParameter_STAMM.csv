@@ -1,0 +1,3 @@
+Schluessel;Wert;Einheit;Katalogversion;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+Zapfprofil.Anzeigetemperatur;40;°C;PROBE-1;Probepaket (erfunden);;PROBE-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Stundenschwelle;0.5;kW;PROBE-1;Probepaket (erfunden);;PROBE-1;FIKTIV;AUSLIEFERUNG;1

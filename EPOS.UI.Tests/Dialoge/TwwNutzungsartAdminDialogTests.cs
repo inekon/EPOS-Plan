@@ -135,16 +135,32 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
             return new(true, id, "gelöscht", "");
         }
 
-        internal TwwImportberichtDaten Importieren(string pfad)
+        /// <summary>
+        /// Der Katalogimport der Prüfhilfe: drei Nutzungsarten, ein ersetzter Bedarfstag und ein
+        /// ersetzter Parameter — so trägt der Bericht alle drei Gruppen (ZU32). Ein Prüflauf
+        /// (<paramref name="pruefen"/>) legt nichts in den Katalog.
+        /// </summary>
+        internal TwwImportberichtDaten Importieren(string pfad, bool pruefen)
         {
             Importiert.Add(pfad);
-            Zeilen.Add((20, "Import A", false, ""));
+            if (!pruefen) Zeilen.Add((20, "Import A", false, ""));
             return new TwwImportberichtDaten
             {
-                Zusammenfassung = "1 angelegt · 1 übersprungen · 1 abgelehnt",
+                Pruefmodus = pruefen,
+                Zusammenfassung = pruefen
+                    ? "1 angelegt · 2 ersetzt · 1 übersprungen · 1 abgelehnt (Prüflauf)"
+                    : "1 angelegt · 2 ersetzt · 1 übersprungen · 1 abgelehnt",
                 Zeilen =
                 {
-                    new("Import A · P-1", TwwImportausgangDaten.Angelegt, "angelegt", "", 20),
+                    new("Probetag · P-1", TwwImportausgangDaten.Ersetzt,
+                        pruefen ? "würde ersetzen" : "ersetzt",
+                        "Der vorhandene Bedarfstag trägt jetzt die Werte des Pakets.", 7)
+                        { Bereich = TwwImportbereichDaten.Bedarfstag },
+                    new("Probe.Parameter · P-1", TwwImportausgangDaten.Ersetzt,
+                        pruefen ? "würde ersetzen" : "ersetzt",
+                        "Der Parameter trägt jetzt 2 statt 1 [-].", 9)
+                        { Bereich = TwwImportbereichDaten.Parameter },
+                    new("Import A · P-1", TwwImportausgangDaten.Angelegt, pruefen ? "würde anlegen" : "angelegt", "", 20),
                     new("Import B · P-1", TwwImportausgangDaten.Uebersprungen, "übersprungen", "Der Katalog führt sie schon mit gleichem Inhalt.", 0),
                     new("Import C · P-1", TwwImportausgangDaten.Abgelehnt, "abgelehnt", "Die Angabe Bezug_Kaltwasser fehlt.", 0)
                 },
@@ -412,7 +428,10 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
         Knopf(cut, "Importieren").Click();
 
         Assert.Equal(new[] { "C:/paket/Tab_TwwNutzungsart_STAMM.csv" }, k.Importiert);
-        Assert.Equal(3, cut.FindAll(".epos-tww-importbericht tbody tr").Count);
+        // Drei Gruppen mit eigener Überschrift (ZU32): ein Bedarfstag, ein Parameter, drei Nutzungsarten.
+        Assert.Equal(3, cut.FindAll(".epos-tww-importbericht").Count);
+        Assert.Equal(5, cut.FindAll(".epos-tww-importbericht tbody tr").Count);
+        Assert.Equal(2, cut.FindAll(".epos-tww-import-ersetzt").Count);
         Assert.Contains("Die Angabe Bezug_Kaltwasser fehlt.", cut.Find(".epos-tww-import-abgelehnt").TextContent);
         Assert.Contains("übersprungen", cut.Find(".epos-tww-import-uebersprungen").TextContent);
         Assert.Contains("notizen.csv", cut.Find(".epos-tww-import-hinweis").TextContent);
@@ -421,6 +440,32 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
 
         Knopf(cut, "Abbrechen").Click();
         Assert.False(cut.Instance.ImportOffen);
+    }
+
+    /// <summary>
+    /// <b>Der Prüflauf</b> (ZU32): Steht der Schalter „Nur prüfen, nichts schreiben", geht er an den
+    /// Import weiter, die Zeilen sagen „würde …", der Katalog wird nicht neu geladen und die
+    /// Statuszeile bleibt leer.
+    /// </summary>
+    [Fact]
+    public void Der_Pruefmodus_geht_an_den_Import_weiter_und_laedt_den_Katalog_nicht_neu()
+    {
+        var k = new Pruefkatalog();
+        IRenderedComponent<TwwNutzungsartAdminDialog> cut = Aufbauen(k);
+        Knopf(cut, "Import…").Click();
+        Knopf(cut, "Paket wählen…").Click();
+        cut.WaitForAssertion(() => Assert.Null(Knopf(cut, "Importieren").GetAttribute("aria-disabled")));
+        int vorher = cut.Instance.GewaehltId;
+
+        // Der Schalter der Überlagerung ist der einzige Ankreuzer der Importüberlagerung.
+        cut.FindAll("input[type=checkbox]")[0].Change(true);
+        Knopf(cut, "Importieren").Click();
+
+        Assert.True(cut.Instance.Bericht!.Pruefmodus);
+        Assert.Equal(5, cut.FindAll(".epos-tww-importbericht tbody tr").Count);
+        Assert.Contains("würde ersetzen", cut.Find(".epos-tww-import-ersetzt").TextContent);
+        Assert.Equal(vorher, cut.Instance.GewaehltId);      // nichts geschrieben, die Wahl bleibt
+        Assert.Equal("", cut.Instance.Status);
     }
 
     // =================================================================================

@@ -56,7 +56,11 @@ namespace EPOS.Kern.Tests
             // Das Auslegungsensemble (Bedarfstag, Perzentile, Gleichzeitigkeit) — die Zapfensemble-Auswertung der Invariante 2.4.
             "Zapfensemble.cs",
             // Stufe Z4: die Sätze des Kerns und die Schätzhilfen dienen beiden Produkten und halten die strengere Regel.
-            "ZapfSatz.cs", "Schaetzhilfe.cs"
+            "ZapfSatz.cs", "Schaetzhilfe.cs",
+            // Die Liste der gelesenen Parameterschlüssel (ZU31) führt die Schlüssel BEIDER Produkte
+            // — Bilanz und Auslegung — und hält deshalb die strengere Regel: Sie trägt keinen Wert,
+            // keine Reihe und keine Zahlenliste, nur Schlüssel, Einheit und Bereich.
+            "TwwParameterschluessel.cs"
         };
 
         /// <summary>Die Dateien der Bilanz (Stufe Z1) — jede Datei des Ordners gehört zu genau einer Liste.</summary>

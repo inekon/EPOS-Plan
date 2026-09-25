@@ -234,10 +234,10 @@ public sealed class TwwNutzungsartAdminTexte
     public string ImportTitel { get; set; } = "Katalog importieren";
 
     /// <summary><c>ZPGK_IMPORT_HINWEIS</c></summary>
-    public string ImportHinweis { get; set; } = "Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.";
+    public string ImportHinweis { get; set; } = "Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.";
 
     /// <summary><c>ZPGK_IMPORT_HERKUNFT</c></summary>
-    public string ImportHerkunft { get; set; } = "Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Vorhandene Zeilen bleiben unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“.";
+    public string ImportHerkunft { get; set; } = "Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Eine vorhandene Nutzungsart bleibt unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. Ein Bedarfstag und ein Parameter werden dagegen ersetzt — auch eine Zeile der Auslieferung; der Bericht nennt jede Ersetzung.";
 
     /// <summary><c>ZPGK_IMPORT_DATEI</c></summary>
     public string ImportDatei { get; set; } = "Paket wählen…";
@@ -252,7 +252,7 @@ public sealed class TwwNutzungsartAdminTexte
     public string ImportKeinPaket { get; set; } = "Bitte zuerst ein Paket wählen.";
 
     /// <summary><c>ZPGK_IMPORT_ZUSAMMENFASSUNG</c></summary>
-    public string ImportZusammenfassung { get; set; } = "{0} angelegt · {1} übersprungen · {2} abgelehnt";
+    public string ImportZusammenfassung { get; set; } = "{0} angelegt · {1} ersetzt · {2} übersprungen · {3} abgelehnt";
 
     /// <summary><c>ZPGK_IMPORT_ANGELEGT</c></summary>
     public string ImportAngelegt { get; set; } = "angelegt";
@@ -280,6 +280,42 @@ public sealed class TwwNutzungsartAdminTexte
 
     /// <summary><c>ZPGK_IMPORT_HINWEISE</c></summary>
     public string ImportHinweise { get; set; } = "Hinweise";
+
+    /// <summary><c>ZPGK_IMPORT_ERSETZT</c></summary>
+    public string ImportErsetzt { get; set; } = "ersetzt";
+
+    /// <summary><c>ZPGK_IMPORT_W_ANGELEGT</c></summary>
+    public string ImportWuerdeAnlegen { get; set; } = "würde anlegen";
+
+    /// <summary><c>ZPGK_IMPORT_W_ERSETZT</c></summary>
+    public string ImportWuerdeErsetzen { get; set; } = "würde ersetzen";
+
+    /// <summary><c>ZPGK_IMPORT_W_UEBERSPRUNGEN</c></summary>
+    public string ImportWuerdeUeberspringen { get; set; } = "würde überspringen";
+
+    /// <summary><c>ZPGK_IMPORT_W_ABGELEHNT</c></summary>
+    public string ImportWuerdeAblehnen { get; set; } = "würde ablehnen";
+
+    /// <summary><c>ZPGK_IMPORT_GRP_BEDARFSTAGE</c></summary>
+    public string ImportGruppeBedarfstage { get; set; } = "Bedarfstage";
+
+    /// <summary><c>ZPGK_IMPORT_GRP_PARAMETER</c></summary>
+    public string ImportGruppeParameter { get; set; } = "Parameter";
+
+    /// <summary><c>ZPGK_IMPORT_GRP_NUTZUNGSARTEN</c></summary>
+    public string ImportGruppeNutzungsarten { get; set; } = "Nutzungsarten";
+
+    /// <summary><c>ZPGK_IMPORT_SP_BEDARFSTAG</c></summary>
+    public string ImportSpalteBedarfstag { get; set; } = "Bedarfstag";
+
+    /// <summary><c>ZPGK_IMPORT_SP_PARAMETER</c></summary>
+    public string ImportSpalteParameter { get; set; } = "Schlüssel";
+
+    /// <summary><c>ZPGK_IMPORT_PRUEFEN</c></summary>
+    public string ImportPruefen { get; set; } = "Nur prüfen, nichts schreiben";
+
+    /// <summary><c>ZPGK_IMPORT_PRUEFHINWEIS</c></summary>
+    public string ImportPruefhinweis { get; set; } = "Der Prüflauf ändert nichts; die Spalte „Ergebnis“ sagt, was ein Import täte.";
 
     // ------------------------------------------------------------ Editor
 
