@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,7 +18,8 @@ namespace EPOS.Kern.Tests
     /// (BV-Q1 c)", 13 „Bausteintitel nach MyResource"): der Kapitelstand aus der Schnellprüfung der
     /// gewählten Vorlage (<see cref="Pruefbefund.Bausteine"/>, <see cref="Pruefbefund.HatKapitel"/>) —
     /// als Regel und über echte Vorlagen —, sein Platz im Parametersatz und im Nachladen, und die
-    /// Einträge der Seite mit Titel aus <c>MyResource</c> (mit Rückfall) und Excel-Kennung.
+    /// Einträge der Seite mit Titel aus dem Kern (<see cref="BerichtsKonfiguration.BausteinDef.TitelIn"/>)
+    /// und Excel-Kennung.
     ///
     /// <para><b>Rahmen</b> wie <see cref="BerichtsvorlagenHuelleTests"/>: die Standardvorlage als Kopie
     /// aus dem Repositorium in einem Temp-Ordner, Pfade und Einstellungen hereingereicht, die
@@ -173,63 +175,17 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Die Einträge: Titel aus MyResource, Excel-Kennung
+        //  Die Einträge: Titel aus dem Kern, Excel-Kennung
         // =====================================================================
 
         /// <summary>
-        /// Der Titel eines Bausteins ist die Ressource <c>BK_BER_BAUSTEIN_&lt;SCHLÜSSEL&gt;</c>; fehlt sie,
-        /// ist sie leer oder wirft das Lesen, gilt der Titel des Katalogs.
+        /// <c>Laden</c> liefert je Baustein des Katalogs einen Eintrag mit der Excel-Kennung (<c>NurWord</c> =
+        /// nein) und dem Titel aus dem Kern (<see cref="BerichtsKonfiguration.BausteinDef.TitelIn"/>,
+        /// <c>BK_BER_BAUSTEIN_&lt;SCHLÜSSEL&gt;</c>) in der Sprache der Oberfläche — die Hülle sucht keine
+        /// Ressource selbst.
         /// </summary>
         [Fact]
-        public void Der_Titel_kommt_aus_der_Ressource_mit_dem_Katalogtitel_als_Rueckfall()
-        {
-            var gefragt = new List<string>();
-            string Lies(string schluessel)
-            {
-                gefragt.Add(schluessel);
-                if (schluessel == "BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT") return "Wirtschaftliche Bewertung";
-                if (schluessel == "BK_BER_BAUSTEIN_ANHANG") return "   ";
-                if (schluessel == "BK_BER_BAUSTEIN_DECKBLATT") throw new InvalidOperationException("kaputt");
-                return null;
-            }
-
-            foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
-            {
-                string titel = BerichtSeiteGaben.Bausteintitel(b, Lies);
-                Assert.Equal(b.Schluessel == BerichtsKonfiguration.B_WIRTSCHAFT ? "Wirtschaftliche Bewertung" : b.Titel, titel);
-            }
-
-            Assert.Equal(new[]
-            {
-                "BK_BER_BAUSTEIN_DECKBLATT", "BK_BER_BAUSTEIN_INHALTSVERZEICHNIS", "BK_BER_BAUSTEIN_PROJEKTBESCHREIBUNG",
-                "BK_BER_BAUSTEIN_KOMPONENTEN", "BK_BER_BAUSTEIN_ERGEBNISSE", "BK_BER_BAUSTEIN_VERGLEICH",
-                "BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT", "BK_BER_BAUSTEIN_ANHANG"
-            }, gefragt);
-
-            Assert.Equal("Wirtschaftliche Bewertung", BerichtSeiteGaben.Bausteintitel(BerichtsKonfiguration.B_WIRTSCHAFT, Lies));
-            Assert.Equal("gibt-es-nicht", BerichtSeiteGaben.Bausteintitel("gibt-es-nicht", Lies));
-        }
-
-        /// <summary>
-        /// Ohne Prüfstand liest der Titel <c>MyResource</c>: mit Schlüssel dessen Text, ohne ihn der
-        /// Titel des Katalogs — beides gilt vor und nach dem Anlegen der Schlüssel.
-        /// </summary>
-        [Fact]
-        public void Ohne_Pruefstand_liest_der_Titel_MyResource()
-        {
-            foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
-            {
-                string text = R.ResourceManager.GetString(BerichtSeiteGaben.BausteintitelSchluessel(b.Schluessel));
-                Assert.Equal(string.IsNullOrWhiteSpace(text) ? b.Titel : text, BerichtSeiteGaben.Bausteintitel(b));
-            }
-        }
-
-        /// <summary>
-        /// <c>Laden</c> liefert je Baustein des Katalogs einen Eintrag mit Titel aus der Ressource und
-        /// der Excel-Kennung (<c>NurWord</c> = nein).
-        /// </summary>
-        [Fact]
-        public void Laden_liefert_die_Eintraege_mit_Titel_und_Excel_Kennung()
+        public void Laden_liefert_die_Eintraege_mit_Titel_aus_dem_Kern_und_Excel_Kennung()
         {
             if (_standard == null) return;
             using var db = new TestDatenbank();
@@ -244,8 +200,26 @@ namespace EPOS.Kern.Tests
             foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
             {
                 BausteinZeile z = stand.Bausteine.Single(x => x.Schluessel == b.Schluessel);
-                Assert.Equal(BerichtSeiteGaben.Bausteintitel(b), z.Titel);
+                Assert.Equal(b.TitelIn(false), z.Titel);
                 Assert.Equal(!b.NurWord, z.InExcel);
+            }
+            Assert.Equal("Deckblatt", stand.Bausteine[0].Titel);
+
+            int vorher = Sprache.Nummer;
+            try
+            {
+                using var englischeKultur = new Kulturvorrichtung("en-US");
+                Sprache.Nummer = 1;
+                BerichtStand englisch = laden();
+                foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
+                    Assert.Equal(b.TitelIn(true), englisch.Bausteine.Single(x => x.Schluessel == b.Schluessel).Titel);
+                Assert.Equal(R.ResourceManager.GetString("BK_BER_BAUSTEIN_DECKBLATT", CultureInfo.GetCultureInfo("en-US")),
+                             englisch.Bausteine[0].Titel);
+                Assert.NotEqual("Deckblatt", englisch.Bausteine[0].Titel);
+            }
+            finally
+            {
+                Sprache.Nummer = vorher;
             }
         }
 

@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
     /// aus dem Auftrag bildet.</para>
     ///
     /// <para><b>BV-E2 (Konzept 10.2, „Häkchen (BV-Q1 c)"; 13 „Bausteintitel nach MyResource"):</b> Die
-    /// Häkchen tragen ihren Titel aus <c>MyResource</c> (<see cref="Bausteintitel(BerichtsKonfiguration.BausteinDef, Func{string, string})"/>)
+    /// Häkchen tragen ihren Titel aus <c>MyResource</c> über den Kern (<see cref="BerichtsKonfiguration.BausteinDef.TitelIn"/>)
     /// und sagen, ob die Excel-Mappe sie führt (<see cref="BausteinZeile.InExcel"/>); welche die
     /// gewählte Vorlage führt, liefert der Kapitelstand der Gruppe (<see cref="BerichtsvorlagenGaben.Kapitel(Pruefbefund)"/>).</para>
     /// </summary>
@@ -190,9 +190,9 @@ namespace WindowsFormsApplication1
             var aktiv = new List<string>();
             foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
             {
-                // BV-E2: der Titel in der Sprache der Oberfläche (BK_BER_BAUSTEIN_*, Rückfall der Titel
-                // des Katalogs) und ob die Excel-Mappe den Baustein führt (NurWord = nein).
-                bausteine.Add(new BausteinZeile { Schluessel = b.Schluessel, Titel = Bausteintitel(b), InExcel = !b.NurWord });
+                // BV-E2: der Titel in der Sprache der Oberfläche aus dem Kern (BK_BER_BAUSTEIN_*, Rückfall
+                // der deutsche Titel des Katalogs) und ob die Excel-Mappe den Baustein führt (NurWord = nein).
+                bausteine.Add(new BausteinZeile { Schluessel = b.Schluessel, Titel = b.TitelIn(BerichtTexte.Englisch), InExcel = !b.NurWord });
                 bool an = konfig.AktiveBausteine.Count > 0 ? konfig.IstAktiv(b.Schluessel) : b.Standard;
                 if (an) aktiv.Add(b.Schluessel);
             }
@@ -568,47 +568,6 @@ namespace WindowsFormsApplication1
                 return string.IsNullOrEmpty(t) ? rueckfall : t;
             }
             catch { return rueckfall; }
-        }
-
-        // =====================================================================
-        // BV-E2 — die Titel der Bausteine (Konzept 13, „Bausteintitel nach MyResource")
-        // =====================================================================
-
-        /// <summary>Vorsilbe der Ressourcenschlüssel der Bausteintitel: <c>BK_BER_BAUSTEIN_</c> + Schlüssel in Großbuchstaben.</summary>
-        internal const string BAUSTEINTITEL_VORSILBE = "BK_BER_BAUSTEIN_";
-
-        /// <summary>Der Ressourcenschlüssel des Titels eines Bausteins, etwa <c>BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT</c>.</summary>
-        internal static string BausteintitelSchluessel(string baustein)
-        {
-            return BAUSTEINTITEL_VORSILBE + (baustein ?? "").ToUpperInvariant();
-        }
-
-        /// <summary>
-        /// Der Anzeigetitel eines Bausteins in der Sprache der Oberfläche: die Ressource
-        /// <see cref="BausteintitelSchluessel"/>, solange sie fehlt oder leer ist der deutsche Titel des
-        /// Katalogs (<see cref="BerichtsKonfiguration.BausteinDef.Titel"/>). <paramref name="lies"/>
-        /// reicht ein Prüfstand herein; <c>null</c> = <c>MyResource</c>. Eine Ausnahme beim Lesen ist
-        /// ein fehlender Schlüssel.
-        /// </summary>
-        internal static string Bausteintitel(BerichtsKonfiguration.BausteinDef b, Func<string, string> lies = null)
-        {
-            if (b == null) return "";
-            string text;
-            try
-            {
-                string schluessel = BausteintitelSchluessel(b.Schluessel);
-                text = lies != null ? lies(schluessel) : MyResource.Resource.ResourceManager.GetString(schluessel);
-            }
-            catch (Exception) { text = null; }
-            return string.IsNullOrWhiteSpace(text) ? (b.Titel ?? "") : text;
-        }
-
-        /// <summary>Der Anzeigetitel zu einem Bausteinschlüssel (<c>BerichtsKonfiguration.B_*</c>); unbekannt = der Schlüssel selbst.</summary>
-        internal static string Bausteintitel(string baustein, Func<string, string> lies = null)
-        {
-            foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
-                if (string.Equals(b.Schluessel, baustein, StringComparison.Ordinal)) return Bausteintitel(b, lies);
-            return baustein ?? "";
         }
     }
 }
