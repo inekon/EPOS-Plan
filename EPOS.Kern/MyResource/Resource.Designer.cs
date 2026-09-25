@@ -96725,6 +96725,384 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Bedarfstagfaktor ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Erzeugerleistung ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_ERZEUGER_KW {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_ERZEUGER_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Kaltwasserfaktor ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_KALTWASSERFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_KALTWASSERFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Kaltwassertemperatur ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_KALTWASSER_C {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_KALTWASSER_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Ladefenster ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_LADEFENSTER {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_LADEFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Beginn des Ladefensters ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_LADEFENSTER_BEGINN {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_LADEFENSTER_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Nutzanteil ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_NUTZANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_NUTZANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Sensorhöhe ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_SENSORHOEHE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_SENSORHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Speichertemperatur ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_SPEICHER_C {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_SPEICHER_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Übertragerfläche ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_UEBERTRAGERFLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_UEBERTRAGERFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Übertrager-U-Wert ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_UEBERTRAGER_U {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_UEBERTRAGER_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Zuschlag ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_ZUSCHLAG {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_ZUSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spezifischer Bedarf ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_BEDARF_SPEZ {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_BEDARF_SPEZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsmenge ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_BEZUGSMENGE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_BEZUGSMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienfaktor ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_FERIENFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_FERIENFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenkennwert ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_FLAECHENKENNWERT {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_FLAECHENKENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresenergie ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_JAHRESENERGIE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_JAHRESENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalibrierfaktor ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_KALIBRIERFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_KALIBRIERFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser, Amplitude ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_KALTWASSER_AMPLITUDE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_KALTWASSER_AMPLITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser, Mittel ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_KALTWASSER_MITTEL {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_KALTWASSER_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser, wärmster Monat ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_KALTWASSER_MONAT_MAXIMUM {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_KALTWASSER_MONAT_MAXIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Messwert ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_MESSWERT {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_MESSWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsfaktoren ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_MONATSFAKTOREN {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_MONATSFAKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_TAGESBEDARF {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_TAGESBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgangsatz ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_TAGESGANGSATZ {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_TAGESGANGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturfaktor ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_TEMPERATURFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_TEMPERATURFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenfaktoren ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_WOCHENFAKTOREN {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_WOCHENFAKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnfläche je Wohneinheit ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_WOHNFLAECHE_JE_WE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_WOHNFLAECHE_JE_WE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapftemperatur ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZAPFTEMPERATUR {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZAPFTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Anteil ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_ANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Bezugsfläche ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Gewichtung ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_GEWICHT {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_GEWICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Jahresverlust ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_JAHRESVERLUST {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_JAHRESVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Kennwert ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_KENNWERT {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_KENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Leitungslänge ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_LAENGE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Leitungslage ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_LAGE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_LAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Laufzeit ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Leistung ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_LEISTUNG {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Verfahren ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_METHODE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_METHODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Verlust je Meter ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_VERLUST_JE_METER {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_VERLUST_JE_METER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Zonenanteil ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZIRKULATION_ZONENANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZIRKULATION_ZONENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenfläche ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_ZONENFLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_ZONENFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Belegung und Anlage ähnelt.
         /// </summary>
         public static string ZPG_GRP_BELEGUNG {
@@ -101329,6 +101707,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWDIN4708WERT_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen des Bedarfstag-Konstruktors ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE", resourceCulture);
             }
         }
         

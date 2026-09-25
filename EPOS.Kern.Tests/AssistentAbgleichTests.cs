@@ -165,6 +165,65 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// #527: Der Kopf eines bestehenden Projekts trägt die Klimaregion als STAMM-Id
+        /// (<c>ProjektCtrl.Kopf</c>) — dieselbe Id wie die Klappliste. Wechselt der
+        /// Anwender dort die Region, schreibt der Bearbeiten-Zweig den Projektsatz und
+        /// stempelt das Datum; die Kopfleiste liest danach die neue Region. Wählt er die
+        /// bisherige erneut, bleibt alles stehen.
+        /// </summary>
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Ein_Regionswechsel_wird_geschrieben_die_gleiche_Region_nicht(bool wechseln)
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    // Derselbe Ausgangsstand wie die Faelle ohne Aenderung: Ein Speichern
+                    // ohne Eingabe schreibt dann nichts (#490).
+                    string name = SechsGewerkeVorbereiten();
+                    int bisher = StartseiteCtrl.ProjektKlimaregionStammId(ID);
+                    Assert.True(bisher > 0, "Projekt " + ID + " fuehrt keine Klimaregion.");
+
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl a = Bearbeitenlauf(name);
+                    Assert.Equal(bisher, a.Kopf[0].IdKlimaregion);
+                    a.ZustandMerken();
+                    SeitenBetreten(a);
+
+                    DateTime? alt = DatumSetzen();
+
+                    // So schreibt ProjektKopfSeite.KlimaGewaehlt: Stamm-Id und Stammname.
+                    int ziel = wechseln ? KlimaregionStammCtrl.IdVonName("Berlin") : bisher;
+                    Assert.True(ziel > 0);
+                    if (wechseln) Assert.NotEqual(bisher, ziel);
+                    a.Kopf[0].IdKlimaregion = ziel;
+                    a.Kopf[0].Klimaname = KlimaregionStammCtrl.NameVonId(ziel);
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+                    Assert.Empty(a.GeschriebeneGewerke);
+                    Assert.Equal(wechseln, a.KopfGeschrieben);
+
+                    DateTime? neu = MerkmalUebernahmeCtrl.Aenderungsdatum(ID);
+                    if (wechseln)
+                        Assert.True(neu.HasValue && neu.Value > alt.Value.AddDays(1),
+                                    "Das Aenderungsdatum wurde nicht gesetzt: " + neu);
+                    else
+                        Assert.Equal(alt, neu);
+
+                    Assert.Equal(ziel, StartseiteCtrl.ProjektKlimaregionStammId(ID));
+                    Assert.Equal(ziel, ProjektCtrl.Kopf(name).IdKlimaregion);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        /// <summary>
         /// Eine Wärmepumpenzeile, deren Seite NIE gezeigt wurde, schreibt ihre Stammfelder
         /// nicht leer in die Projektkopie: Laden füllt sie wie die Seite (#490). Geändert
         /// wird dafür nur der Vorlauf des Kessels — die Wärmepumpe läuft mit.

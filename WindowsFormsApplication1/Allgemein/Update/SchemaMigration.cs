@@ -4463,6 +4463,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_NACHTZEIT = NachtzeitSchema.SCHRITT;
 
+        // ---- Anwenderentscheid ZU25 (Zapfprofilgenerator, Nachtrag N21): die Zeilen des
+        //      Bedarfstag-Konstruktors und das Ende des redundanten T4-Index ----------------
+
+        /// <summary>
+        /// Schritt <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/> — <b>die Zeilen des
+        /// Bedarfstag-Konstruktors und das Ende des redundanten Index auf
+        /// <c>Tab_TwwMessreihe.ID_Projekt</c></b> (Anwenderentscheid ZU25, Zapfprofilgenerator 4.5
+        /// Quelle (4), Nachtrag N21). Er folgt auf <see cref="SCHRITT_NACHTZEIT"/> ohne
+        /// Reihenfolgebedingung; er braucht allein <c>Tab_TwwProjekt</c> aus
+        /// <see cref="SCHRITT_103_ZAPFPROFIL_KATALOG"/>.
+        ///
+        /// <para><b>REIN DDL</b>, eine Tabelle und ein weggeworfener Index:
+        /// <c>Tab_TwwKonstruktorzeile</c> (STRICT, zehn Spalten, eine Zeile je Konstruktorzeile,
+        /// natürlicher Schlüssel ID_TwwProjekt/Reihenfolge, <c>ID_TwwProjekt</c> mit
+        /// <c>ON DELETE CASCADE</c>, kein <c>Status</c>, kein <c>ReadOnly</c>, kein eigener Index —
+        /// der UNIQUE-Index trägt die Spalte an führender Stelle) und <c>DROP INDEX</c> des
+        /// redundanten Index, den <see cref="SCHRITT_140_ZAPFPROFIL_MESSREIHEN"/> neben demselben
+        /// UNIQUE-Index angelegt hat. Die Definitionen stehen bei
+        /// <see cref="TwwSchema.AnweisungenT5Konstruktor"/> und
+        /// <see cref="TwwSchema.AufraeumenT5Index"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabelle entsteht LEER; das Repositorium bringt keine
+        /// Zeile mit, und kein Rechenweg liest eine Konstruktorzeile — der Bedarfstag rechnet aus
+        /// seinen Ereignissen. Ein Index ändert kein Ergebnis, nur den Weg dorthin. Der
+        /// Referenzlauf bleibt byte-gleich. <b>Wiederholbar</b> über
+        /// <c>CREATE TABLE IF NOT EXISTS</c> und <c>DROP INDEX IF EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6375,6 +6405,25 @@ namespace WindowsFormsApplication1
                         "jedes Gebaeude rechnete weiter mit 22 bis 6 Uhr. KEIN Rechenergebnis aendert sich - die " +
                         "Spalten bleiben leer, und leer heisst die Vorgabe.",
                         Schritt_Nachtzeit),
+
+            // ANWENDERENTSCHEID ZU25 (Zapfprofilgenerator, Nachtrag N21) - die Zeilen des
+            // Bedarfstag-Konstruktors: Tab_TwwKonstruktorzeile am Auslegungssatz Tab_TwwProjekt,
+            // und im SELBEN Schritt das DROP INDEX des redundanten Index auf
+            // Tab_TwwMessreihe.ID_Projekt. REIN DDL; die Quelle ist
+            // TwwSchema.AnweisungenT5Konstruktor und TwwSchema.AufraeumenT5Index, die Nummer steht
+            // allein bei TwwSchema.SCHRITT_T5_KONSTRUKTOR. Er steht NACH 144 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR,
+                        "Zapfprofilgenerator: die Zeilen des Bedarfstag-Konstruktors " +
+                        "(Tab_TwwKonstruktorzeile am Auslegungssatz) und das Ende des redundanten " +
+                        "Index auf Tab_TwwMessreihe.ID_Projekt",
+                        "Die Zapfungen eines selbst konstruierten Bedarfstags haetten keinen Ort: Das " +
+                        "Speichern der Auslegung liesse sie fallen, und ein erneut geoeffneter " +
+                        "Konstruktor begaenne mit einer leeren Zeile. Der redundante Index kostete " +
+                        "weiter je Messwert einen Eintrag, den niemand liest. KEIN Rechenergebnis " +
+                        "aendert sich - die Tabelle entsteht LEER, kein Rechenweg liest eine " +
+                        "Konstruktorzeile, und ein Index aendert kein Ergebnis.",
+                        Schritt_145_ZapfprofilKonstruktor),
         };
 
         /// <summary>
@@ -10778,6 +10827,59 @@ namespace WindowsFormsApplication1
                     "Repositorium bringt keine Messreihe mit (Konzept Kapitel 9 K5) -, und ohne " +
                     "eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar; der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 145 - die Zeilen des Bedarfstag-Konstruktors und das Ende des
+        // redundanten T4-Index (Zapfprofilgenerator, Anwenderentscheid ZU25)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 145 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_145_ZAPFPROFIL_KONSTRUKTOR"/>, die DDL bei
+        /// <see cref="TwwSchema.AnweisungenT5Konstruktor"/> und
+        /// <see cref="TwwSchema.AufraeumenT5Index"/>. <b>Nur <see cref="SqliteDdl"/></b>;
+        /// <b>wiederholbar</b> über <c>IF NOT EXISTS</c> und <c>IF EXISTS</c>. <b>Kein DML</b> —
+        /// die Tabelle bleibt leer.
+        /// </summary>
+        private static bool Schritt_145_ZapfprofilKonstruktor(Lauf l)
+        {
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT5Konstruktor)
+            {
+                bool stand = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!stand) angelegt++;
+            }
+
+            // Danach der redundante Index von Schritt 140 - er braucht nichts als sich selbst.
+            int geworfen = 0;
+            foreach (KeyValuePair<string, string> i in TwwSchema.AufraeumenT5Index)
+            {
+                if (!SqliteDdl(l, i.Value, "Index " + i.Key + " verworfen")) return false;
+                geworfen++;
+            }
+
+            bool vollstaendig = true;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT5Konstruktor)
+                vollstaendig &= SqliteTabelleVorhanden(a.Key);
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle der Konstruktorzeilen steht nach dem Schritt nicht.";
+                l.Notiz("145: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("145: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) angelegt und " +
+                    geworfen.ToString(CultureInfo.InvariantCulture) + " Index(e) verworfen - " +
+                    TwwSchema.TAB_TWW_KONSTRUKTORZEILE + " (eine Zeile je Konstruktorzeile, " +
+                    "ID_TwwProjekt mit ON DELETE CASCADE, natuerlicher Schluessel " +
+                    "ID_TwwProjekt/Reihenfolge, kein eigener Index) und " +
+                    TwwSchema.IndexT4MessreiheProjekt + " weg (redundant neben dem UNIQUE-Index). " +
+                    "KEIN DML: Die Tabelle bleibt LEER - das Repositorium bringt keine " +
+                    "Konstruktorzeile mit -, und kein Rechenweg liest eine; der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

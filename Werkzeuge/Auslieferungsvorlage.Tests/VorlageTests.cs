@@ -177,7 +177,12 @@ namespace Auslieferungsvorlage.Tests
             // Tab_TwwMessreihe, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der Vorlage
             // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
             // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).
-            Assert.Equal(144, befund.Strict);
+            //
+            // 145 seit Schemaschritt 145 (Zapfprofilgenerator T5 "Konstruktor",
+            // Anwenderentscheid ZU25): Tab_TwwKonstruktorzeile, STRICT von ihrer ersten Zeile an.
+            // Die Tabelle ist in der Vorlage LEER - TwwKataloge leert sie ausdruecklich, auch fuer
+            // ein Beispielprojekt, weil der konstruierte Bedarfstag selbst als EIGEN faellt.
+            Assert.Equal(145, befund.Strict);
         }
 
         // =============================================================================

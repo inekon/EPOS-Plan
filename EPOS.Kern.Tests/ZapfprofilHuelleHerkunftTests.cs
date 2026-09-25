@@ -13,9 +13,9 @@ namespace EPOS.Kern.Tests
     /// Der Kern hält das Protokoll als Kennung und Werte (<see cref="ZapfSatz"/>), die Hülle baut
     /// daraus die Sätze der Oberflächensprache — wie bei jedem Hinweis.
     ///
-    /// <para><b>Was übersetzt wird:</b> der Vermerk (Satz des Kerns), der Stand
-    /// (<see cref="Wertstatus"/>) und die Herkunftsart. <b>Was Daten bleibt:</b> der Feldname der
-    /// Größe, der Zonenname, Regelwerk, Ausgabe und Katalogfassung.</para>
+    /// <para><b>Was übersetzt wird:</b> die Größe (Namenstafel <c>ZPG_GROESSE_…</c>, ZU25), der
+    /// Vermerk (Satz des Kerns), der Stand (<see cref="Wertstatus"/>) und die Herkunftsart.
+    /// <b>Was Daten bleibt:</b> der Zonenname, Regelwerk, Ausgabe und Katalogfassung.</para>
     ///
     /// <para>Ohne Datenbank: geprüft wird allein die Übersetzung. Werte erfunden.</para>
     /// </summary>
@@ -50,9 +50,12 @@ namespace EPOS.Kern.Tests
             List<ZapfprofilHerkunftZeile> zeilen = ZapfprofilHuelle.Herkunftszeilen(Protokoll().Abschrift());
 
             Assert.Equal(5, zeilen.Count);
+            // Die Groesse traegt ihre Beschriftung aus der Namenstafel (ZU25), nicht den Feldnamen.
             Assert.Equal(new[] { ZapfFeld.BEZUGSMENGE, ZapfFeld.TAGESBEDARF, ZapfFeld.KALIBRIERFAKTOR,
-                                 ZapfFeld.ZIRKULATION_JAHRESVERLUST, ZapfFeld.MONATSFAKTOREN },
+                                 ZapfFeld.ZIRKULATION_JAHRESVERLUST, ZapfFeld.MONATSFAKTOREN }
+                         .Select(ZapfprofilHuelle.Groessenname).ToArray(),
                          zeilen.Select(z => z.Groesse).ToArray());
+            Assert.Equal("Zirkulation, Jahresverlust", zeilen[3].Groesse);
 
             Assert.Equal("20 P", zeilen[0].Wert);
             Assert.Equal("Wohnen", zeilen[0].Zone);
@@ -100,8 +103,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Project", englisch[3].Zone);
             Assert.NotEqual(deutsch[1].Vermerk, englisch[1].Vermerk);
 
-            // Der Feldname ist DATEN - in beiden Sprachen derselbe.
-            Assert.Equal(deutsch.Select(z => z.Groesse), englisch.Select(z => z.Groesse));
+            // Die Groesse traegt ihre Beschriftung (ZU25, Namenstafel) - in jeder Sprache ihre eigene.
+            Assert.Equal("Bezugsmenge", deutsch[0].Groesse);
+            Assert.Equal("Reference quantity", englisch[0].Groesse);
+            Assert.NotEqual(deutsch.Select(z => z.Groesse), englisch.Select(z => z.Groesse));
         }
 
         /// <summary>Kein Protokoll und ein leeres Protokoll geben eine leere Liste — keine Ausnahme.</summary>
