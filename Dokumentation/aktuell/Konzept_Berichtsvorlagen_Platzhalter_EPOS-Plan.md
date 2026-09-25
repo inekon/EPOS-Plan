@@ -1,6 +1,6 @@
 # Konzept Berichtsvorlagen mit Platzhaltern — Word- und Excel-Bericht aus einer Vorlage (EPOS-Plan)
 
-Stand 26.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 4 — BV-E2 umgesetzt (#520, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`): Entscheid BV-E2-1 und gebauter Stand eingearbeitet (4.8, 5.3, 6.3, 6.5, 10.2, 10.3, 11, 13, 14, 15.2, Anhang A, Anhang B.3); Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
+Stand 26.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 5 — BV-E3 umgesetzt (#NNN, Protokoll `../ueberholt/Protokolle/Bericht/BV_E3_Wertesatz_Protokoll.md`): Wertesatz `BerichtsDaten.Wirtschaft`, Bedarf des Laufs und Regel der besten Variante eingearbeitet (2.4, 5.1, 8.5, 9.5, 12, 13, 15.2, Anhang A); Rev. 4 — BV-E2 umgesetzt (#520, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`): Entscheid BV-E2-1 und gebauter Stand eingearbeitet (4.8, 5.3, 6.3, 6.5, 10.2, 10.3, 11, 13, 14, 15.2, Anhang A, Anhang B.3); Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
 
 **Geltungsbereich.** Das Papier legt fest, wie EPOS-Plan den Word- und den Excel-Bericht künftig
 aus einer Vorlage füllt, die der Anwender in Word bzw. Excel selbst pflegt, und wie er in der App
@@ -16,8 +16,8 @@ Dazu der Nachtrag desselben Tages, mit einem Bildschirmfoto der heutigen Bericht
 > Berichtsrelevanter Varianten zuvor ausgeführt. Start in Bereich Berichte&Kosten
 
 Am 25.09.2026 hat der Anwender die Entscheidfragen BV-Q1 bis BV-Q19 entschieden — nach Empfehlung, mit fünf
-Änderungen (Abschnitt 14) — und BV-E0 gestartet. BV-E0 ist mit #500 umgesetzt, BV-E1 mit #512, BV-E2 mit #520
-(Abschnitt 13); für BV-E1 gilt der Entscheid BV-E1-1 (Auftraggeber, vom Anwender am 26.09.2026 bestätigt): Die Stilvorlage `Berichtsvorlage.docx` bleibt neben der
+Änderungen (Abschnitt 14) — und BV-E0 gestartet. BV-E0 ist mit #500 umgesetzt, BV-E1 mit #512, BV-E2 mit #520,
+BV-E3 mit #NNN (Abschnitt 13); für BV-E1 gilt der Entscheid BV-E1-1 (Auftraggeber, vom Anwender am 26.09.2026 bestätigt): Die Stilvorlage `Berichtsvorlage.docx` bleibt neben der
 Standardvorlage `Berichtsvorlage_Standard.docx`, eine Übernahme der Altdatei gibt es nicht (6.3, 10.3). Für BV-E2 gilt der
 Anwenderentscheid BV-E2-1 vom 26.09.2026: Das Logo der Kopfzeile ist ein Bildplatzhalter, gefüllt aus der Einstellung
 `BerichtLogo` (6.5, 14).
@@ -112,7 +112,8 @@ Die Wirkungstafel wird mit `k.Body.Append(t)` statt `k.Fuege(t)` eingefügt (BW:
 hinter der `sectPr` (in BV-E0 behoben). Zweiter Befund aus BV-E0: `SetzeUpdateFields` stellte
 `w:updateFields` mit `PrependChild` vor `w:displayBackgroundShape` der Vorlage — in jeder Office-Fassung
 ungültig, ohne Vorlage nie aufgefallen (behoben mit `AddChild` an der Schemastelle). Feste Stil-IDs, DATE-Feld, `docPr/@id` ab 1, feste Breite und Datenbankzugriffe der
-Bausteine (2.1) treffen jede fremde Vorlage; die Abschnitte 5, 6 und 11 lösen sie.
+Bausteine (2.1) treffen jede fremde Vorlage; die Abschnitte 5, 6 und 11 lösen sie. Die Datenbankzugriffe der
+Bausteine sind mit BV-E3 gelöst: Die Schreiber lesen den Wertesatz des Sammlers (5.1).
 
 
 ## 3 Zielbild
@@ -313,11 +314,40 @@ Warnungen immer.
 `KATALOGFASSUNG` steigt mit jeder Etappe, die Einträge hinzufügt. Der Kern führt **keine Orte der Oberfläche**;
 er kann Razor-Seiten und `EPOS.UI/Seiten/Seitenschluessel.cs` nicht referenzieren (9.6).
 
-`Berichtswerte` entsteht nach `SammleFuerBericht`; beim Auflösen wird die Datenbank nicht berührt. Zugriffe und
-Nebenrechnungen des Wirtschaftlichkeitsbausteins und von Anhang E wandern in BV-E3 als
-`BerichtsDaten.Wirtschaft` in den Sammler, der dieselben Rechenwege ruft (`EPOS.Kern/CLAUDE.md:209-217`). Die
-Auswahl der „besten Variante“ (heute Hülle, `WirtschaftlichkeitSeiteGaben.cs:1433-1442`) wandert in den Kern,
-damit Kachel und `wirtschaft.beste.*` gleich rechnen. Bis BV-E3 führt der Katalog nur rein vorliegende Werte.
+`Berichtswerte` entsteht nach `SammleFuerBericht`; beim Auflösen wird die Datenbank nicht berührt. **Gebaut mit
+BV-E3 (#NNN):** Zugriffe und Nebenrechnungen des Wirtschaftlichkeitsbausteins, von Anhang E, des Tabellenberichts, der
+Formelmappe und der Kälteerzeugertafel stehen im Wertesatz `BerichtsDaten.Wirtschaft` (`WirtschaftsBerichtswerte`,
+`EPOS.Kern/Allgemein/Bericht/WirtschaftsBerichtswerte.cs`). Der Sammler ermittelt ihn einmal nach der
+Wirtschaftlichkeitsrechnung (`Ermittle(daten, bedarf)`) über dieselben Rechenwege — jeder Teil ist genau der Aufruf,
+den die Schreiber vorher selbst taten (`EPOS.Kern/CLAUDE.md`, „Eine Auskunft ruft den Rechenweg des Laufs“):
+Ergebnisse, Parameter, Tarif, Bewertung, Wirkungen, Nachweiszeile der Parameter je Kultur, Bilanzkonvention, Erzeuger,
+Aktualität, Zeilen der Kennzahltafel, KWKG-Lage samt Konsistenz-Gate des Verlaufs, Kapitalwertverlauf, Strommatrix,
+Referenzkessel, Emissionsbilanz, Trägerpreiszeilen, Trägerpreise der Formelmappe (`Traegerpreissatz.Lies`, aus der
+Formelmappe ausgegliedert) und Trägernamen. Word und Excel lesen denselben Satz, der Kapitalwertverlauf läuft einmal je
+Lauf. Ein Baum ohne Sammler (Proben, Prüfstände) bekommt über `Von(daten)` einen Satz, der jeden Teil beim ersten Lesen
+rechnet — der Weg vor BV-E3; liest ein Schreiber einen Teil, den der Sammler nicht gerechnet hat, rechnet der Teil nach
+und steht in `Nachgeholt`.
+
+**Bedarf** (`Berichtsbedarf` mit den Flags `Zeitreihen`, `Verlauf`, `Emissionsbilanz` des Katalogs): Simulation und
+Wirtschaftlichkeitsrechnung laufen immer, die drei nur, wenn der Bericht sie zeigt. Die Kapitel tragen den Bedarf ihres
+Bausteins (`Berichtskapitel.Bedarf`: Ergebnisse Zeitreihen, Wirtschaftlichkeit Verlauf und Emissionsbilanz, die übrigen
+keinen), `bericht.inhalt` alle drei, `stamm.kennzahl.kaelte.stunden` die Zeitreihen. `Vorgabe(konfig)` vereinigt über
+die angehakten Kapitel — das Verhalten ohne Vorlage und der Bedarf der Mappe; `AusVorlage(befund, konfig)` vereinigt die
+genutzten Schlüssel einer geprüften Vorlage, `kapitel.*` nur mit gesetztem Häkchen; Sammelanker, Vorlage ohne
+Platzhalter, unlesbare Vorlage und Rückfall gelten wie die Vorgabe. **Zusatzregel:** Zeigt die Vorlage ein Kapitel am
+Häkchen „Wirtschaftlichkeit“ (Wirtschaftlichkeit, Anhang E), erhebt der Lauf die Stundenreihen wie ohne Vorlage nach dem
+Häkchen „Ergebnisse je Variante“ — die Zahlen der Wirtschaftlichkeit hängen an den Reihen; die Vorlage bestimmt, was der
+Bericht zeigt, nicht, wie eine gezeigte Zahl entsteht. `BerichtCtrl.PruefeVorStart` legt den Bedarf der Vorlage in
+`Startbefund.Bedarf`, `Berichtsbedarf.FuerLauf(konfig, start, weg, mitExcel)` bildet daraus den Bedarf des Laufs (mit
+Mappe vereinigt mit der Vorgabe; Weg „Mit Standardvorlage“ und Rückfall: die Vorgabe), die Hülle reicht ihn an den
+Sammler. Die Stundenreihen, die die Rechnung braucht (gepflegter Strom-Leistungspreis), ergänzt der Sammler unabhängig
+vom Bedarf.
+
+**Beste Variante:** Die Auswahl liegt im Kern (`BesteVariante.Waehle`,
+`EPOS.Kern/Allgemein/Wirtschaftlichkeit/BesteVariante.cs`, Regel in 9.5); die Kacheln der Wirtschaftlichkeitsseite
+rufen sie, `wirtschaft.beste.*` ruft sie ab BV-E4 — Kachel und Platzhalter rechnen gleich. Bis BV-E4 führt der Katalog
+nur rein vorliegende Werte; BV-E3 fügt keine Einträge hinzu, die Katalogfassung bleibt 2. Neue `wirtschaft.*`-Schlüssel
+tragen ihren Bedarf (BV-E4).
 
 ### 5.2 Erzeugte Einträge
 
@@ -649,9 +679,13 @@ BV-Q18), in der Hülle `Berichtsvorlagenwege` (10.3). Was eine Plattform nicht k
   Registrierung von `Vorlagenfeldansicht` und Adapter `IZwischenablage` (BV-E6); jede im Protokoll benannt, ein
   iOS-Lauf nur nach Rückfrage.
 - **Aufwand:** Simulation und Wirtschaftlichkeit laufen immer; Zeitreihen, Verlauf, Emissionsbilanz nach
-  `Bedarf` oder BSG:207-209. Das Füllen malt alle Bilder (mit sieben Varianten über 50, PNG doppelt aufgelöst
-  plus SVG). BV-E0 misst den heutigen Lauf (1030 und sieben Varianten, Windows und Linux-CI); **Ziel: heute plus
-  höchstens 10 %**. Anhang E wird in einem Durchgang gefüllt, die Checkliste zuletzt.
+  `Bedarf` — gebaut mit BV-E3 (`Berichtsbedarf`, 5.1), vorher nach den Häkchen (BSG:207-209). Das Füllen malt alle
+  Bilder (mit sieben Varianten über 50, PNG doppelt aufgelöst plus SVG). BV-E0 misst den heutigen Lauf (1030 und
+  sieben Varianten, Windows und Linux-CI); **Ziel: heute plus höchstens 10 %**. Anhang E wird in einem Durchgang
+  gefüllt, die Checkliste zuletzt. **BV-E3 hält das Ziel** (Median dreier Läufe): Messlatte ohne Sammler 1030 Word
+  628 → 622 ms, Excel 301 → 251 ms, Gruppe mit sieben Ständen Word 3.871 → 3.711 ms, Excel 611 → 584 ms; Betriebsweg
+  mit Wertesatz, Word und Excel zusammen, 1030 475 → 396 ms, Gruppe 2.922 → 2.377 ms — der Kapitalwertverlauf läuft
+  einmal statt zweimal.
 - **Sicherheit:** Vor dem Öffnen summiert der Prüfer die unkomprimierten Größen per `ZipArchive` (Vorgabe
   100 MB unkomprimiert, 20 MB Datei) und setzt für Word `OpenSettings.MaxCharactersInPart`; das schützt auch
   vor Jetsam auf dem iPad (Umsetzung_iU10_Nachweise Z. 753-754).
@@ -701,9 +735,14 @@ Vorlagenautors, in der man nicht erst überfahren muss.
 ### 9.5 Abdeckung und Kontextregel
 
 **Regel: Eine Marke nennt nur einen Schlüssel, der genau den angezeigten Wert erzeugt.** Die Kacheln der
-Wirtschaftlichkeitsseite zeigen die beste Variante, ohne Variante den Stamm
-(`WirtschaftlichkeitSeiteGaben.cs:1433-1442`): Marken `wirtschaft.beste.anzeige`,
-`wirtschaft.beste.kapitalwert_diff` usw. Die Kostenkacheln zeigen „Stamm oder Variante“
+Wirtschaftlichkeitsseite zeigen die beste Variante, ohne Variante den Stamm; die Regel steht im Kern
+(`BesteVariante.Waehle`, gebaut mit BV-E3, 5.1): Maßgeblich ist der Erwartungsfall; es zählen die gewählten Stände in
+ihrer Reihenfolge, je Stand das erste Ergebnis; Kriterium ist die größte Kapitalwertdifferenz unter den Ergebnissen ohne den
+Merker `IstStamm` — die Referenz nimmt nie teil, auch eine negative Differenz gewinnt —, bei Gleichstand der erste
+Stand; ohne Variante mit Differenz steht das Ergebnis des Stamms, sonst keins. Marken `wirtschaft.beste.anzeige`,
+`wirtschaft.beste.kapitalwert_diff` usw.; im Stammfall zeigt die Karte „Kapitalwert ggü. Stamm“ den Nettobarwert des
+Stamms, den `wirtschaft.beste.kapitalwert_diff` nicht trifft — die Marke dieses Falls klären BV-E4 und BV-E6. Die
+Kostenkacheln zeigen „Stamm oder Variante“
 (`KostenSeiteGaben.cs:60`): beim Stamm `stamm.wirtschaft.investition`, bei einer Variante
 `stand.wirtschaft.investition` mit Blockhinweis (für Investition und Betrieb gibt es keine Kennzahl). Die
 Ergebnisansicht der Simulation ebenso: Stamm → `stamm.kennzahl.*`, Variante → `stand.kennzahl.*`. Zeigt die App
@@ -901,7 +940,8 @@ Assistenten und die Zeile „Excel-Vorlage“ (BV-E7).
 | Excel | Paketvergleich je Testvorlage; Standardvorlage mit `B_WIRTSCHAFT` aus, leerem Verlauf, null Varianten; Diagramme (BV-E8): die über das SDK angelegten Diagramme der Standardmappe bestehen den Validator, die Diagramme einer Testvorlage auf `EPOS_<name>` und `EPOS.reihe.*` zeigen nach dem Füllen die neuen Bereiche |
 | Oberfläche | bunit (aus = kein DOM, beide Wurzelarten, Kopieren über Prüfadapter und ohne Adapter, ausgegraute Häkchen, gesperrter Eintrag, Wahl des Vorlagenordners samt benannter Ablehnung, wo die Plattform keine Ordnerwahl hat); Abdeckungswache; „Anzeigewert = Katalogwert“ für 1030; `StilblattTests`, `SchliesskreuzWacheTests`, `KnopfleistenWacheTests`, `KiMaskenabdeckungWacheTests`; Browserprobe nach `Proben/Rasterprobe` (Trefferflächen bei 1280 px, zehn Varianten, iPad hoch); **Rasterprobe** selbst, weil Marken an `.epos-raster`-Tabellen ansetzen |
 | Produktdaten | Kurzbericht und Baukasten neutral, geprüft wie `WikiProduktdatenWacheTests` |
-| ChartProben, Referenzlauf | ChartProben unberührt bis Bildgröße Stufe 2 (BV-E5); Referenzlauf GESAMT: PASS in BV-E3; nichts wird eingefroren |
+| Schreiber ohne Datenbank | nach dem Sammler entstehen Word (bisheriger Weg und Vorlagenweg) und Excel mit werfendem `IDatenzugriff` und Datenbankpfad ins Leere: 0 Zugriffe, nichts nachgeholt (`BerichtWertesatzTests`, BV-E3); Word gegen Excel an der Kennzahltafel, die Proben mit und ohne Sammler gegen die eingefrorenen Messlatten; dauerhaft hält die Wache `BerichtSchreiberOhneDatenbankWacheTests` die Schreiber frei von eigenen Datenbankwegen (Regelzeile in `EPOS.Kern/CLAUDE.md`, Abschnitt „Bericht“) |
+| ChartProben, Referenzlauf | ChartProben unberührt bis Bildgröße Stufe 2 (BV-E5); Referenzlauf GESAMT: PASS in BV-E3 — erbracht mit #NNN (14 Projekte gegen R19, 4.610.207 Werte); nichts wird eingefroren |
 | Gate | `kern.yml`; bei Hüllen Linux-Bau der Windows-Schale (`-p:EnableWindowsTargeting=true`); `designer_neu.py` nach neuen Ressourcen; `SqlDialektPruefer` nur bei neuem SQL (keines geplant) |
 | Papiere | je Etappe Statuszeile in [Status_iOS_Migration.md](Status_iOS_Migration.md) und Protokollblock unter `Dokumentation/ueberholt/Protokolle/` (Merge → Gate → Statuszeile und Protokoll → Push); Indexzeile dieses Papiers in [../LIESMICH.md](../LIESMICH.md) |
 | Wiki | neue Repo-Quelle `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` mit Kopfkommentar, Abschnitt „Bericht“ in `Programm Dokumentation - Wirtschaftlichkeit.wiki`; Anker in `help_mapping` erhalten (`HelpMappingAnkerWacheTests.cs:35-65`); „Upload ausstehend“ in der Statusdatei; Logbuch nur für sichtbare Änderungen (BV-E1, E2, E4 bis E7), ein Satz je Version ([Konzept_Hilfesystem_Wikidokumentation.md](Konzept_Hilfesystem_Wikidokumentation.md), 13.3, 13.4) |
@@ -911,15 +951,15 @@ Assistenten und die Zeile „Excel-Vorlage“ (BV-E7).
 
 Aufwand geschätzt in Personentagen; Grundlage ist der Technikbefund (Word 15–18 PT, Excel 6–10 PT) zuzüglich
 Katalog, Oberfläche, Migration und Tests. BV-E6 kann ab BV-E2 parallel laufen; BV-E4 setzt E2 und E3 voraus,
-BV-E7 setzt E3 voraus. BV-E0 (#500), BV-E1 (#512) und BV-E2 (#520) sind umgesetzt (Entscheide in Abschnitt 14, BV-E1-1
-in 10.3, BV-E2-1 in 6.5); nach diesem Plan folgt BV-E3, BV-E6 kann parallel laufen.
+BV-E7 setzt E3 voraus. BV-E0 (#500), BV-E1 (#512), BV-E2 (#520) und BV-E3 (#NNN) sind umgesetzt (Entscheide in
+Abschnitt 14, BV-E1-1 in 10.3, BV-E2-1 in 6.5); nach diesem Plan folgt BV-E4; BV-E6 und BV-E7 können parallel laufen.
 
 | Etappe | Ziel | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|---|
 | **BV-E0 Grundlagen, Messlatte, Messproben, Beispielvorlage** | Fehlerquellen schließen, Maßstab festlegen, Vorlage zeigen | BW:678 beheben; Test mit echter Vorlage; Strukturmesslatte; doppelte Stile bereinigen; Ad-hoc-DDL und veraltete Kommentare (10.3); Laufzeit heute messen. Beispielvorlage aus dem bisherigen Bericht über `Werkzeuge/Berichtsvorlage` (6.3, Anhang B.3). Messproben als Tests: Excel-Namen mit Punkt, ClosedXML-Rundlauf (Diagramm samt Reihenbezügen auf einer wachsenden Tabelle, Tabelle, Name, berechnete Spalten), Excel-Diagramm über das OpenXML SDK anlegen (BV-Q11), `.xltx`, `<v>` einer in Excel gespeicherten Vorlagenformel, SDT und Alternativtext, Vorlage aus deutschem Word 365, Tippprobe. Geräteprobe iPad notieren (BV-Q16) | Gate grün; Validator grün mit Vorlage; Beispielvorlage: Validator grün, Anwender hat sie in Word gesehen; Messbefunde im Protokoll; Mockup angenommen (BV-Q9 c, 25.09.2026); kein Logbucheintrag | 4–5 — **umgesetzt 25.09.2026 (#500)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`; offen: Tippprobe, echtes Word 365, iPad |
 | **BV-E1 Vorlagenwahl und Textplatzhalter** | eigenes Deckblatt, Kopf- und Fußzeile; übriger Bericht wie heute | Katalog v1 (`bericht.*`, `text.*`, `ersteller.*` mit `ersteller.programm` und `ersteller.version`, `projekt.*`, `stamm.kennzahl.*`, `kennzahl.*`, `bericht.inhalt`); Engine mit Normalisierer, allen Teilen, Einfügeanker, Rollenauflösung, Inhaltsbreite, Kommentarentfernung; Standardvorlage `Berichtsvorlage_Standard.docx` aus der Beispielvorlage in der Stufe mit `{{bericht.inhalt}}` in beiden Lieferwegen, die Stilvorlage bleibt (6.3), `IPfade.Berichtsvorlagen` in `StandardPfade` und `IosPfade` statt `AppDomain.BaseDirectory` in `FindeVorlage` (8.4); kein Übernahmeschritt und kein `[InstallDelete]` (Entscheid BV-E1-1, 10.3); `BerichtsvorlagenCtrl`, `BerichtsvorlagenGaben`, `Berichtsvorlagenwege`; Vorlagenordner wählbar mit Vorgabe (Einstellung `BerichtVorlagenordner`, 10.3), „Neue Vorlage…“, „Hinzufügen…“, Vorgabe; Vorlagengruppe, Prüfzeile, `BerichtSeiteVorlagentexte`; Prüfer beider Stufen, Vorprüfung, erweiterte Rückfrage; Abschnitt „Bericht“ im Einstellungsdialog mit „Firma“ und „Vorlagenordner“; iOS-Dateifilter `.dotx`; KI-Anmeldung samt Eingabebilanz (`KiMaskenabdeckungWacheTests.cs:131, :168`) | Messlatte, Validator, schmutzige Vorlagen (auch deutsches Word) grün; Wache der Auslieferungsdateien grün (12); Katalogwachen und `designer_neu.py` prüfend grün; bunit grün; Schale baut auf Linux; Setup-Lauf nach Rückfrage (Standardvorlage in `{app}\Vorlagen`); Anwenderprobe mit `{{ersteller.firma}}` und gewähltem Vorlagenordner (das Logo der Kopfzeile folgt mit BV-E2); Änderungen an `EPOS.iOS/` (MauiAsset, `IosPfade.Berichtsvorlagen`, Dateifilter) im Protokoll | 6–8 — **umgesetzt 26.09.2026 (#512)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`; offen: Anwenderprobe, Setup-Lauf, iOS-Lauf, Wiki-Upload, Tippprobe |
 | **BV-E2 Kapitel und Häkchen** | Vorlage bestimmt Reihenfolge und Umfang | `kapitel.*` einzeln, Standardvorlage im vollen Aufbau der Beispielvorlage (Anhang B.3); `\|ohne titel`, `\|ebene 2`, Entfall des Kapitelkopfs; Häkchen mit ausgegrauten Einträgen; Abweichung je Stammprojekt; `custom.xml` mit Fassung; `Deckt`; Bausteintitel nach MyResource; zweiter Einstieg; Stelle in der Anhang-E-Überlagerung; Logo der Kopfzeile als Bildplatzhalter mit der Einstellung `BerichtLogo` (BV-Q8, Entscheid BV-E2-1, 6.5) | Word-Wachen grün auf dem Vorlagenweg; Deckungswache Kapitel; bunit Häkchenliste; Linux-Bau der Schale; Anwendervorlage mit umgestellter Folge und abgewähltem Häkchen ohne verwaiste Überschrift | 3–4 — **umgesetzt 26.09.2026 (#520)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md`; offen: Anwenderprobe, Regel „Deckblatt aus Platzhaltern“ schärfen, Setup- und iOS-Lauf nach Rückfrage, Wiki-Upload |
-| **BV-E3 Reiner Wertesatz** | Auflösen ohne Datenbank, gleiche Zahlen in Word und Excel | Zugriffe und Nebenrechnungen nach `BerichtsDaten.Wirtschaft` über dieselben Rechenwege; beste Variante in den Kern; `Bedarf` steuert Zeitreihen, Verlauf, Emissionsbilanz | Messlatte unverändert; Wirtschaftlichkeits- und Anhang-E-Tests grün; Test mit werfendem `IDatenzugriff` beim Füllen; Word gegen Excel für alle `stand.wirtschaft.*`; Probe gegen heutigen Bausteinweg; Referenzlauf GESAMT: PASS; kein Logbucheintrag | 3–5 |
+| **BV-E3 Reiner Wertesatz** | Auflösen ohne Datenbank, gleiche Zahlen in Word und Excel | Zugriffe und Nebenrechnungen nach `BerichtsDaten.Wirtschaft` über dieselben Rechenwege; beste Variante in den Kern; `Bedarf` steuert Zeitreihen, Verlauf, Emissionsbilanz | Messlatte unverändert; Wirtschaftlichkeits- und Anhang-E-Tests grün; Test mit werfendem `IDatenzugriff` beim Füllen; Word gegen Excel für alle `stand.wirtschaft.*`; Probe gegen heutigen Bausteinweg; Referenzlauf GESAMT: PASS; kein Logbucheintrag | 3–5 — **umgesetzt 26.09.2026 (#NNN)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E3_Wertesatz_Protokoll.md`; Word gegen Excel geprüft an der Kennzahltafel (die Schlüssel `stand.wirtschaft.*` kommen mit BV-E4); offen: Anwenderentscheid zum Speichertemperaturbild der Projektbeschreibung, Regel der Leitversion und Stammfall von `wirtschaft.beste.*` (BV-E4), Bedarf der neuen `wirtschaft.*`-Schlüssel (BV-E4) |
 | **BV-E4 Blöcke, Schalter, Standwerte** | Werte je Variante und bedingte Abschnitte | `je stand`, `je variante`, `je gebaeude`, `wenn`, `hat.*`, Standschalter (4.11); Zeilenwiederholung, SDT-Wiederholabschnitt mit Auspacken; `stand.*`-Werte, `stand.a/b`, `vergleich.*`, `wirtschaft.*` samt `beste`, Parametern, Szenarien; Warnlisten und Gültigkeitsregel | 0, 1, 3, 7 Varianten und Paarsicht; verschachtelte Blöcke; Leerfälle; Prüfer meldet offene Blöcke und Kontextverstöße | 4–6 |
 | **BV-E5 Tabellen und Bilder** | Kurzberichte ohne ganze Kapitel | `Berichtstabelle`, Strukturtabellen mit Tabellenformatvorlage und Mustertabelle, Breite in Prozent; Bildplatzhalter, Bildgröße Stufe 2; vollständiger Baukasten; Kurzbericht je Sprache als Datei in beiden Lieferwegen | Validator und SVG-Wache grün; ChartProben mit neuen Größen grün; Kurzbericht mit 1030; Leistungstest 60 Seiten innerhalb „heute + 10 %“ | 5–7 |
 | **BV-E6 Kennzeichnung in der App** | Platzhalter am Ort erkennen | `Vorlagenfeldknopf`, `Vorlagenfeldansicht`, `IZwischenablage` mit Adaptern, Umschalter (9.4), Katalog mit „In der App zeigen“, Parameter an den Bausteinen, `Vorlagenfeldorte`, Ressourcen; nur Schlüssel mit `Seit` ≤ Fassung | bunit, Abdeckungswache, „Anzeigewert = Katalogwert“, Stilblatt- und Schließkreuz-Wache grün; Browserprobe 1280 px, zehn Varianten, iPad; Rasterprobe grün (Zeilenhöhe in allen Stellungen gleich); `EPOS.iOS/` benannt, iOS-Lauf nach Rückfrage; Anwenderabnahme | 5–7 |
@@ -978,8 +1018,8 @@ Entscheid im Wortlaut:
 
 ### 15.2 Offene Punkte
 
-Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500), BV-E1 (#512) und BV-E2 (#520)
-sind umgesetzt, für BV-E1 gilt der Entscheid BV-E1-1 (10.3), für BV-E2 der Anwenderentscheid BV-E2-1 (Logo als
+Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500), BV-E1 (#512), BV-E2 (#520)
+und BV-E3 (#NNN) sind umgesetzt, für BV-E1 gilt der Entscheid BV-E1-1 (10.3), für BV-E2 der Anwenderentscheid BV-E2-1 (Logo als
 Bildplatzhalter, 6.5). Offen sind aus BV-E0 die Tippprobe, der Nachweis mit echtem Word 365 und Excel und die Geräteprobe
 iPad (iU13, BV-Q16); aus BV-E1 die Anwenderprobe unter Windows, der Setup- und der iOS-Lauf (je nach Rückfrage), der
 Wiki-Upload der Seite „Berichtsvorlagen“, die Zeile „Original geändert – übernehmen?“, eine Bedienung der Vorgabe
@@ -989,10 +1029,15 @@ Anhang-E-Überlagerung), die Schärfung der Regel „Deckblatt aus Platzhaltern�
 Deckblattangabe im Rumpf, etwa nur `{{bericht.datum}}` (5.3) —, die Bezugszeile der Überlagerung bei unlesbarer eigener
 Vorlage (sie nennt die eigene, die Stellen stammen aus der Standardvorlage), die in der Hülle ungenutzte Logo-Prüfung des
 Kerns (`BerichtsvorlagenCtrl.LogoVorhanden()`) und die Frage, ob die Beispielvorlage, die sich von der Standardvorlage nur
-noch durch ihre Kommentare unterscheidet, neben dem Kurzbericht (BV-E5) bleibt. Einzelheiten stehen in den Protokollen
-`../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md` und
-`../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md` (je Abschnitt 8) und unter „Nach #512“ und „Nach #520“ in
-der Statusdatei. Nach dem Plan (Abschnitt 13) folgt BV-E3; BV-E6 kann parallel laufen.
+noch durch ihre Kommentare unterscheidet, neben dem Kurzbericht (BV-E5) bleibt; aus BV-E3 der Anwenderentscheid, ob die
+Projektbeschreibung für ihr Speichertemperaturbild die Stundenreihen erhebt (eine eigene Vorlage nur mit
+`{{kapitel.projekt}}` zeigt es nicht, 5.1), die Regel der Leitversion (`Zahlungsgliederungen.Leitversion` schließt die
+Referenz statt des Stamms aus) und der Stammfall von `wirtschaft.beste.*` (9.5) — beide in BV-E4 —, der Bedarf der neuen
+`wirtschaft.*`-Schlüssel (BV-E4) und ein Nachholen im Wertesatz, das die Laufmeldung nicht nennt. Einzelheiten stehen in
+den Protokollen `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`,
+`../ueberholt/Protokolle/Bericht/BV_E2_Kapitel_Protokoll.md` und `../ueberholt/Protokolle/Bericht/BV_E3_Wertesatz_Protokoll.md`
+(je Abschnitt 8) und unter „Nach #512“, „Nach #520“ und „Nach #NNN“ in der Statusdatei. Nach dem Plan (Abschnitt 13)
+folgt BV-E4; BV-E6 und BV-E7 können parallel laufen.
 
 ### 15.3 Verworfene Lösungen mit Grund
 
@@ -1066,7 +1111,7 @@ SEH = `SimulationErgebnisHuelle.Bilder.cs`. „entspricht“/„ähnlich“: Stu
 | `stand.wirtschaft.erl_<block>_k_<komponente>`, `…_teil_…`, `vermieden_herleitung_<komponente>` | Zahl (Muster) | WZ:1237, 1262, 844; Konstanten WZ:143-153 | – | Werte aufgezählt; E4 |
 | `stand.wirtschaft.<zeile>.grund` | Text | Fehlgrund der Zelle (`ErgebnisansichtTests.cs:585`) | – | E4 |
 | `wirtschaft.warnungen`, `stand.wirtschaft.warnungen` | Liste | BW:39-54, 107-117, 217-225, 908-917; EBG:434-510 | Hinweise der Wirtschaftlichkeitsseite (ähnlich) | E4 |
-| `wirtschaft.beste.anzeige`, `wirtschaft.beste.<zeile>` | Text, Zahl | Auswahl aus `WirtschaftlichkeitSeiteGaben.cs:1433-1442`, in den Kern verlegt | Kacheln WS:247 (entspricht) | ohne Variante der Stamm; E4 |
+| `wirtschaft.beste.anzeige`, `wirtschaft.beste.<zeile>` | Text, Zahl | Regel `BesteVariante.Waehle` im Kern (BV-E3, 9.5): Erwartungsfall, größte Kapitalwertdifferenz unter den Varianten, ohne Variante der Stamm | Kacheln WS:247 (entspricht) | Stammfall: Die Karte zeigt den Nettobarwert des Stamms, `.kapitalwert_diff` trifft ihn nicht — Marke in E4/E6 klären; den Anzeigenamen löst noch die Hülle auf; E4 |
 | `stand.bandbreite.unguenstig`, `.erwartet`, `.guenstig`, `.spanne`, `.amortisation`, `.einstufung` | Zahl/Text | `BandbreitenZeile` BW:1182-1212 | Szenarientafel WS:264 (entspricht) | E4 |
 | `wirtschaft.referenzname`, `.rechenstand` | Text, Datum | BW:1172; `Zeitstempel` EBG:431 | Wirtschaftlichkeitsseite (entspricht) | E4 |
 | `wirtschaft.methodik`, `wirtschaft.parameternachweis` | Text | BW:66-71; BW:76-89, EBG:420-432 | – | Methodik in der Standardvorlage Platzhalter; Nachweis datenbankfrei ab E3; E4 |
