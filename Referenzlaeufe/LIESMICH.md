@@ -382,7 +382,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-25_R18_PvAusweis`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-25_R19_BhkwNetzbezug`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -393,11 +393,11 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio` und `2026-09-25_R17_Datenpflege` am 25.09.2026** (35 Basen,
-alle elf Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung`, `2026-09-25_R16_Anlagenprio`, `2026-09-25_R17_Datenpflege` und `2026-09-25_R18_PvAusweis` am 25.09.2026** (36 Basen,
+alle zwölf Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 35 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 36 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -407,66 +407,63 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-25_R18_PvAusweis/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+**`2026-09-25_R19_BhkwNetzbezug/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
-LFS-SHA-256 `b68638da…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
-Datei wie R17; danach änderte Schemaschritt 144 nur das Schema (vier leere Spalten der Nachtzeit), ohne
-Referenzwirkung, zusammengeführt mit der Datenpflege E24, und das Prüfprojekt „PV mit Preisen“ kam ohne
-Referenzrolle hinzu (Nachträge unten)). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich
-für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
-**einzige** Basis im Arbeitsbaum.
+LFS-SHA-256 `b68638da…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
+der Datenpflege E24 und noch ohne das Prüfprojekt „PV mit Preisen“, das ohne Referenzrolle hinzukam und
+keine Basis bewegt (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
+1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
+im Arbeitsbaum.
 
-> **Nachtrag Prüfprojekt 1048 (ohne Referenzrolle), die Basis bleibt.** Auf der Fassung `19a7b632…`
-> (Schemastand 144, mit den Zellen der Datenpflege E24) hat
-> `dotnet run Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> das Projekt 1048 „Prüfprojekt PV mit Preisen“ angelegt (Aufbau im Abschnitt „Das Prüfprojekt 1048“
-> weiter unten). Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `19a7b632…`: Schema gleich
-> (145 Tabellen), **keine bestehende Zeile entfernt oder geändert**, 44 537 neue Zeilen in 30 Tabellen
-> (davon 35 040 Viertelstundenwerte der Stromganglinie, 8 760 Solarwerte, 365 Klimatage), dazu 25 fortgeschriebene
-> Zähler in `sqlite_sequence`; `integrity_check` ok, `foreign_key_check` leer; ein zweiter Lauf findet
-> nichts zu tun. Größe 70 680 576 Byte (kein `VACUUM`), LFS-SHA-256 `b68638da…`. **Keine Einfrierregel
-> ist berührt** — 1048 ist kein Referenzprojekt, und die Vorlage 1040 bleibt Zelle für Zelle.
-> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte), 432/432 CSV
-> byte-gleich.
-
-> **Anlass: der PV-Ausweis** (Anwender 25.09.2026, Etappe E26, Befund N1 aus E25, Entscheide E26‑Q1 … Q7
-> nach Empfehlung). `Ergebnis.Photovoltaik.Stromproduktion` führte die Summe der Direktverbrauchsreihe
-> (`SimulationPV.Stromproduktion`, der genutzte Anteil), obwohl Modell und Leser die Erzeugung der Module
-> erwarten; der Ausweis „PV: vermiedener Bezug" (Erzeugung − Einspeisung) zog den Überschuss damit ein
-> zweites Mal ab. Das Feld ist jetzt die Erzeugung nach Wechselrichter und Clipping
-> (`Stromproduktion_Theoretisch`, gleich der Summe der Modulzeilen). Die Testdatenbank ist unverändert, kein
-> Schemaschritt; die Reihe `pv_produktion.csv` bleibt der Direktverbrauch.
+> **Anlass: der Netzbezug ist nie negativ** (Anwender 25.09.2026, Etappe E27, Befund N5 aus E26,
+> Entscheide E27‑Q1 … Q8 nach Empfehlung). Die Kaskade zieht die BHKW-Erzeugung ungeklemmt vom
+> Reststrom ab, damit spätere Verbraucher derselben Viertelstunde und die Photovoltaik den Überschuss
+> sehen. Folgte keine klemmende Stufe (Photovoltaik, Stromspeicher), blieb der Überschuss negativ im
+> Vektor und minderte Netzbezug, Stromkosten und CO₂ — obwohl der KWK-Split ihn schon als Einspeisung
+> führt. Der Lauf setzt jetzt am Ende jeden Wert unter 0 auf 0 (`SimulationControl.NetzbezugGeklemmt`,
+> nicht bei der Speicherflotte); der Reststrombedarf der BHKW-Zeile ist je Stunde geklemmt. Jeder
+> nichtnegative Wert bleibt bitgleich. Die Testdatenbank ist unverändert, kein Schemaschritt.
 >
-> **A/B gegen R17** (14 Projekte): **10/14 PASS und byte-gleich**, 428/432 CSV byte-gleich; 1007, 1040, 1045
-> und 1046 FAIL mit je **einem** Wert in `aggregate.csv`, alle Zeitreihen byte-gleich:
+> **A/B gegen R18** (14 Projekte): **12/14 PASS und byte-gleich**, 428/432 CSV byte-gleich; 1018 und 1030
+> FAIL mit `aggregate.csv` und `reststrom_viertelstunde.csv`, alle übrigen Zeitreihen byte-gleich:
 >
-> | Projekt, `aggregate.csv` | R17 | R18 | Erzeugung = genutzt + Überschuss |
-> |---|---|---|---|
-> | 1007 `Photovoltaik.Stromproduktion` | 5,08 | 6,01 | `pv_produktion_theoretisch` 6 014,3 kWh |
-> | 1040 `Photovoltaik.Stromproduktion` | 4,44 | 6,71 | 6 713,5 kWh = 4 440,7 + 2 272,7 |
-> | 1045 `Photovoltaik.Stromproduktion` | 2,74 | 3,55 | 3 545,5 kWh |
-> | 1046 `Photovoltaik.Stromproduktion` | 5,08 | 6,01 | 6 014,3 kWh |
+> | Projekt, Datei, Größe | R18 | R19 |
+> |---|---|---|
+> | 1018 `aggregate.csv` `Sim.Reststrom` | −27,4575103 | 0 |
+> | 1018 `aggregate.csv` `Energiebedarf.Stromrestbedarf` | −27,46 | 0 |
+> | 1018 `aggregate.csv` `BHKW.Reststrombedarf` | −27,46 | 0 |
+> | 1018 `aggregate.csv` `Vektor.reststrom_viertelstunde.Summe` | −109 830,041 | 0 |
+> | 1018 `reststrom_viertelstunde.csv` | 14 004 Werte < 0 | 0 |
+> | 1030 `aggregate.csv` `Sim.Reststrom` | 4 357,78079 | 4 358,17279 |
+> | 1030 `aggregate.csv` `Energiebedarf.Stromrestbedarf` | 4 357,78 | 4 358,17 |
+> | 1030 `aggregate.csv` `BHKW.Reststrombedarf` | 4 357,78 | 4 358,17 |
+> | 1030 `aggregate.csv` `Vektor.reststrom_viertelstunde.Summe` | 17 431 123,2 | 17 432 691,2 |
+> | 1030 `reststrom_viertelstunde.csv` | 48 Werte < 0 (12 Stunden) | 0 |
 >
-> 1041 und 1042 führen eine Photovoltaik ohne Ertrag (0 → 0). **Der Strommatrix-Bedarf (Befund N3,
-> dieselbe Etappe) wirkt nicht auf die Basis:** `aggregate.csv` führt keine Wirtschaftlichkeitsgröße, und die
-> neue Reihe `STROMBEDARF_GESAMT` entsteht nur im Zeitreihensatz des Berichts. Die Kapitalwerte bleiben
-> bitgleich; Nachweis im Test: `EPOS.Kern.Tests/PvAusweisStromMatrixTests`.
+> Die Toleranz meldet 1018 mit 14 008 und 1030 mit 48 Abweichungen. Die BHKW-Erzeugung
+> (`bhkw_strom.csv`) und der KWK-Split bleiben gleich (1018 Einspeisung 27,4575 MWh, 1030 0,392 MWh);
+> Kapitalwerte und CO₂ hält `EPOS.Kern.Tests/BhkwNetzbezugKlemmeTests` samt den neu gesetzten Ankern
+> von 1030 in `PvAusweisStromMatrixTests`.
 >
 > **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
-> Vorlauf- und Rücklaufreihen von 1047 (wie in R17).
+> Vorlauf- und Rücklaufreihen von 1047 (wie in R18).
 >
 > **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **14/14 byte-gleich** (432/432 CSV)
 > und untereinander **GESAMT: PASS** (4 610 207 Werte); der Einfrierlauf ist mit beiden byte-gleich.
 >
 > ```bash
-> dotnet run --project EPOS.Referenzlauf -c Release -- lauf >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 >   --ziel Referenzlaeufe/2026-09-25_R18_PvAusweis
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
+>   --ziel Referenzlaeufe/2026-09-25_R19_BhkwNetzbezug
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Nachtrag Schemastand 144 (Nachtzeit je Gebäude, E43), die Basis bleibt.** Migrationsschritt
+> **Übernommen aus R18: Schemastand 144 (Nachtzeit je Gebäude, E43) und Datenpflege E24.** R19 ist
+> auf dieser Fassung eingefroren; der Nachtrag beschreibt, wie sie entstand. Migrationsschritt
 > **144** (`SCHRITT_NACHTZEIT`; die Nummer steht allein bei `NachtzeitSchema.SCHRITT`, der Quelle für
 > Migration, Werkzeug und Testvorrichtung; er folgt auf die Herkunft der Rohdichte, 143) legt an
 > `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` je zwei nullbare Spalten `Nachtabsenkung_Beginn` und
@@ -496,9 +493,23 @@ für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Pr
 > Ergebnis Schemastand 144 mit den gepflegten Zellen, 68 714 496 Byte, LFS-SHA-256 `19a7b632…`. Gegen
 > R18 bleibt der Referenzlauf 14/14 PASS byte-gleich (Nachweis im Gate der Statuszeile #518).
 
-> **Die Vorgängerbasis `2026-09-25_R17_Datenpflege`**, die Basis der Datenpflege nach Konzept
-> Wirtschaftlichkeit § 6.3 Nr. 24 (Kesselträger von 1018 und 1023), ist mit dieser Einfrierung aus dem
-> Arbeitsbaum gefallen; ihr Protokoll samt Pflegetafel und A/B-Tafel gegen R16 steht in
+> **Nachtrag Prüfprojekt 1048 (ohne Referenzrolle), die Basis bleibt.** Auf der Fassung `19a7b632…`
+> (Schemastand 144, mit den Zellen der Datenpflege E24) hat
+> `dotnet run Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> das Projekt 1048 „Prüfprojekt PV mit Preisen“ angelegt (Aufbau im Abschnitt „Das Prüfprojekt 1048“
+> weiter unten). Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `19a7b632…`: Schema gleich
+> (145 Tabellen), **keine bestehende Zeile entfernt oder geändert**, 44 537 neue Zeilen in 30 Tabellen
+> (davon 35 040 Viertelstundenwerte der Stromganglinie, 8 760 Solarwerte, 365 Klimatage), dazu 25 fortgeschriebene
+> Zähler in `sqlite_sequence`; `integrity_check` ok, `foreign_key_check` leer; ein zweiter Lauf findet
+> nichts zu tun. Größe 70 680 576 Byte (kein `VACUUM`), LFS-SHA-256 `b68638da…`. **Keine Einfrierregel
+> ist berührt** — 1048 ist kein Referenzprojekt, und die Vorlage 1040 bleibt Zelle für Zelle.
+> Referenzlauf aller vierzehn Projekte gegen R18 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
+> 432/432 CSV byte-gleich; gegen R19 nach der Zusammenführung mit E27 erneut 14/14 (Nachweis in der
+> Statuszeile #521).
+
+> **Die Vorgängerbasis `2026-09-25_R18_PvAusweis`**, die Basis des PV-Ausweises (Stromproduktion der
+> Photovoltaik ist die Erzeugung der Module, E26), ist mit dieser Einfrierung aus dem Arbeitsbaum
+> gefallen; ihr Protokoll samt A/B-Tafel gegen R17 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -695,7 +706,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-25_R18_PvAusweis`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-25_R19_BhkwNetzbezug`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell
