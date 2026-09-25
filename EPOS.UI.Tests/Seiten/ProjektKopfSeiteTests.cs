@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -44,6 +45,19 @@ public class ProjektKopfSeiteTests : EposBunitContext
         NameAenderbar = false
     };
 
+    /// <summary>Die Textfelder ohne die Klimaregion (die Suchauswahl ist auch ein Textfeld).</summary>
+    private const string TEXTFELDER = "input[type=text]:not([role=combobox])";
+
+    /// <summary>Das Eingabefeld der Klimaregion (Suchauswahl).</summary>
+    private const string KLIMAFELD = "input[role=combobox]";
+
+    /// <summary>Wählt einen Eintrag der Klappliste wie der Anwender: aufklappen, anklicken.</summary>
+    private static void Waehlen(IRenderedComponent<ProjektKopfSeite> cut, string text)
+    {
+        cut.Find(KLIMAFELD).Click();
+        cut.FindAll("li[role=option]").First(li => li.TextContent.Trim() == text).Click();
+    }
+
     private IRenderedComponent<ProjektKopfSeite> Aufbauen(ProjektKopfDaten daten)
         => Render<ProjektKopfSeite>(p => p
             .Add(x => x.Daten, daten)
@@ -55,10 +69,12 @@ public class ProjektKopfSeiteTests : EposBunitContext
         var cut = Aufbauen(Satz());
 
         // Projektname, Kunde, Bearbeiter + die zwei gesperrten Datumsfelder;
-        // Beschreibung ist ein textarea, Klimaregion ein select.
-        Assert.Equal(5, cut.FindAll("input[type=text]").Count);
+        // Beschreibung ist ein textarea, Klimaregion die durchsuchbare Auswahl der
+        // Kopfleiste (#527, Suchauswahl statt select).
+        Assert.Equal(5, cut.FindAll(TEXTFELDER).Count);
         Assert.Single(cut.FindAll("textarea"));
-        Assert.Single(cut.FindAll("select"));
+        Assert.Empty(cut.FindAll("select"));
+        Assert.Single(cut.FindAll(KLIMAFELD));
 
         Assert.Contains("Projektkonfiguration", cut.Find(".epos-gruppenkopf").TextContent);
         Assert.Contains("administrativen Projektdaten", cut.Markup);
@@ -106,7 +122,7 @@ public class ProjektKopfSeiteTests : EposBunitContext
         daten.NameAenderbar = true;
         var cut = Aufbauen(daten);
 
-        var felder = cut.FindAll("input[type=text]:not([readonly])");
+        var felder = cut.FindAll(TEXTFELDER + ":not([readonly])");
         felder[0].Input("Neuer Name");                   // Projektname
         felder[1].Input("Neuer Kunde");                  // Kunde
         felder[2].Input("Neuer Bearbeiter");             // Bearbeiter
@@ -124,7 +140,7 @@ public class ProjektKopfSeiteTests : EposBunitContext
         ProjektKopfDaten daten = Satz();
         var cut = Aufbauen(daten);
 
-        cut.Find("select").Change("5");
+        Waehlen(cut, "Region 05 Hamburg");
 
         Assert.Equal(5, daten.IdKlimaregion);
         Assert.Equal("Region 05 Hamburg", daten.Klimaname);
@@ -141,11 +157,7 @@ public class ProjektKopfSeiteTests : EposBunitContext
 
         var cut = Aufbauen(daten);
 
-        var gewaehlt = cut.FindAll("select option")
-                          .Cast<AngleSharp.Html.Dom.IHtmlOptionElement>()
-                          .FirstOrDefault(o => o.IsSelected);
-        Assert.NotNull(gewaehlt);
-        Assert.Equal("5", gewaehlt!.Value);
+        Assert.Equal("Region 05 Hamburg", cut.Find(KLIMAFELD).GetAttribute("value"));
     }
 
     [Fact]
@@ -154,11 +166,8 @@ public class ProjektKopfSeiteTests : EposBunitContext
         var daten = new ProjektKopfDaten();
         var cut = Aufbauen(daten);
 
-        Assert.Equal("", cut.FindAll("input[type=text]:not([readonly])")[0].GetAttribute("value"));
-        Assert.DoesNotContain(cut.FindAll("select option")
-                                 .Cast<AngleSharp.Html.Dom.IHtmlOptionElement>()
-                                 .Where(o => o.IsSelected),
-                              o => o.Value == "12" || o.Value == "5");
+        Assert.Equal("", cut.FindAll(TEXTFELDER + ":not([readonly])")[0].GetAttribute("value"));
+        Assert.Equal("", cut.Find(KLIMAFELD).GetAttribute("value") ?? "");
     }
 
     // =====================================================================
@@ -181,11 +190,11 @@ public class ProjektKopfSeiteTests : EposBunitContext
         Assert.Contains("Projektnamen", cut.Find(".epos-projektkopf-hinweis").TextContent);
         Assert.Contains("Projektname *", cut.Markup);
 
-        cut.FindAll("input[type=text]:not([readonly])")[0].Input("speicherhaus");
+        cut.FindAll(TEXTFELDER + ":not([readonly])")[0].Input("speicherhaus");
         Assert.Equal(ProjektKopfBefund.NameVorhanden, cut.Instance.Befund);
         Assert.Contains("existiert bereits", cut.Find(".epos-projektkopf-hinweis").TextContent);
 
-        cut.FindAll("input[type=text]:not([readonly])")[0].Input("Neubau Ost");
+        cut.FindAll(TEXTFELDER + ":not([readonly])")[0].Input("Neubau Ost");
         Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
         Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
     }
@@ -201,7 +210,8 @@ public class ProjektKopfSeiteTests : EposBunitContext
             .Add(x => x.Klimaregionen, REGIONEN));
 
         Assert.Equal(ProjektKopfBefund.KlimaLeer, cut.Instance.Befund);
-        cut.Find("select").Change("5");
+        Assert.Contains("Klimaregion", cut.Find(".epos-projektkopf-hinweis").TextContent);
+        Waehlen(cut, "Region 05 Hamburg");
         Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
         Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
     }
@@ -301,5 +311,108 @@ public class ProjektKopfSeiteTests : EposBunitContext
         Assert.Equal("Laurentiuskirche", daten.Name);
 
         cut.Instance.Dispose();
+    }
+
+    // =====================================================================
+    //  #527: die Klappliste der Kopfleiste
+    // =====================================================================
+
+    /// <summary>Einträge in der Kurzform der Kopfleiste; die blanken Stammnamen daneben.</summary>
+    private static readonly (int Id, string Text)[] KURZFORM =
+    {
+        (17, "Berlin (TRY 2045 sommerwarm)"),
+        (47, "München (PVGIS)")
+    };
+
+    private static readonly Dictionary<int, string> STAMMNAMEN = new()
+    {
+        [17] = "Berlin",
+        [47] = "München"
+    };
+
+    private IRenderedComponent<ProjektKopfSeite> MitKurzform(ProjektKopfDaten daten,
+                                                             Func<int, EPOS.UI.Seiten.Start.KlimaHerkunftGaben?>? herkunft = null)
+        => Render<ProjektKopfSeite>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Klimaregionen, KURZFORM)
+            .Add(x => x.Klimanamen, STAMMNAMEN)
+            .Add(x => x.KlimaHerkunft, herkunft)
+            .Add(x => x.PflichtMarke, " *"));
+
+    /// <summary>
+    /// Die Klappliste ist gefüllt — mit den Einträgen der Kopfleiste in ihrer
+    /// Reihenfolge und Kurzform —, und die Wahl trägt die Stamm-Id und den BLANKEN
+    /// Stammnamen, nicht den Anzeigetext mit der Klammer (der Speicherweg sucht mit ihm).
+    /// </summary>
+    [Fact]
+    public void Die_Klappliste_zeigt_die_Kurzform_und_die_Wahl_traegt_den_Stammnamen()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.IdKlimaregion = 0;
+        daten.Klimaname = "";
+        var cut = MitKurzform(daten);
+
+        cut.Find(KLIMAFELD).Click();
+        Assert.Equal(new[] { "Berlin (TRY 2045 sommerwarm)", "München (PVGIS)" },
+                     cut.FindAll("li[role=option]").Select(li => li.TextContent.Trim()).ToArray());
+        Assert.Equal("Region auswählen", cut.Find(KLIMAFELD).GetAttribute("placeholder"));
+        Assert.Contains("Klimaregion *", cut.Markup);
+
+        cut.FindAll("li[role=option]").First(li => li.TextContent.Contains("Berlin")).Click();
+
+        Assert.Equal(17, daten.IdKlimaregion);
+        Assert.Equal("Berlin", daten.Klimaname);
+        Assert.Equal("Berlin (TRY 2045 sommerwarm)", cut.Find(KLIMAFELD).GetAttribute("value"));
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+    }
+
+    /// <summary>
+    /// Ein Kopf, der nur den blanken NAMEN führt, wird über die Stammnamen zugeordnet —
+    /// der Anzeigetext mit der Klammer träfe ihn nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_Kopf_nur_mit_Stammnamen_findet_seinen_Eintrag()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.IdKlimaregion = 0;
+        daten.Klimaname = "München";
+        var cut = MitKurzform(daten);
+
+        Assert.Equal("München (PVGIS)", cut.Find(KLIMAFELD).GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Unter der Klappliste steht die Herkunftszeile der Wahl — derselbe Satz wie in der
+    /// Kopfleiste; ohne Wahl keine Zeile, und sie folgt einem Wechsel.
+    /// </summary>
+    [Fact]
+    public void Unter_der_Klappliste_steht_die_Herkunft_der_Wahl()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.IdKlimaregion = 0;
+        daten.Klimaname = "";
+        var gefragt = new List<int>();
+        var cut = MitKurzform(daten, id =>
+        {
+            gefragt.Add(id);
+            return id == 17
+                ? new EPOS.UI.Seiten.Start.KlimaHerkunftGaben("TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm",
+                                                              "Berlin", "Berlin", "21.09.2026")
+                : new EPOS.UI.Seiten.Start.KlimaHerkunftGaben("", "München", "11,5000° / 48,1000°", "");
+        });
+
+        Assert.DoesNotContain("Klimadaten:", cut.Markup);
+
+        Waehlen(cut, "Berlin (TRY 2045 sommerwarm)");
+        Assert.Contains("Klimadaten: TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm · Berlin · Berlin · Import 21.09.2026",
+                        cut.Markup);
+
+        // Ein Tastendruck in einem anderen Feld fragt die Herkunft nicht neu.
+        int vorher = gefragt.Count;
+        cut.FindAll(TEXTFELDER + ":not([readonly])")[0].Input("Kunde X");
+        Assert.Equal(vorher, gefragt.Count);
+
+        Waehlen(cut, "München (PVGIS)");
+        Assert.Contains("Klimadaten: München · 11,5000° / 48,1000°", cut.Markup);
     }
 }

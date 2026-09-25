@@ -806,7 +806,10 @@ namespace WindowsFormsApplication1
             WizardCtrl ctrl = WizardCtrl.Aktueller;
             if (ctrl == null) return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "WizardCtrl");
 
-            ctrl.Klimazone = Kopf[0].Klimaname ?? "";
+            // #527: Die Region ist der Stammname zur gewaehlten Stamm-Id (die Id fuehrt,
+            // AssistentAbgleich.Regionsname) - nicht der Anzeigetext der Klappliste.
+            string region = AssistentAbgleich.Regionsname(Kopf[0]);
+            ctrl.Klimazone = region;
             ctrl.Projektname = Kopf[0].Name ?? "";
             ctrl.speichern = false;
 
@@ -827,7 +830,7 @@ namespace WindowsFormsApplication1
             ProjektkopfUebernehmen();
             // Nur den NAMEN der Klimaregion fuehren; die korrekte ID_Klimaregion
             // (Projekt-Kopie) setzt WizardCtrl.Add_Projekt/Update_Projekt.
-            Projekt.m_szKlimaregion = Kopf[0].Klimaname ?? "";
+            Projekt.m_szKlimaregion = region;
             Projekt.m_ID_Klimaregion = 0;
 
             Gespeichert = false;
@@ -1082,7 +1085,7 @@ namespace WindowsFormsApplication1
             Projekt.m_szBearbeiter = Kopf[0].Bearbeiter ?? "";
             Projekt.m_szKunde = Kopf[0].Kunde ?? "";
             Projekt.m_szBeschreibung = Kopf[0].Beschreibung ?? "";
-            Projekt.m_szKlimaregion = Kopf[0].Klimaname ?? "";
+            Projekt.m_szKlimaregion = AssistentAbgleich.Regionsname(Kopf[0]);
 
             // Der Projektsatz nur, wenn der Kopf sich von der Datenbank unterscheidet -
             // Update_Projekt setzt das Aenderungsdatum immer auf jetzt. Hat ein Gewerk

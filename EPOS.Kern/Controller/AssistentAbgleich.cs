@@ -123,6 +123,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Klimaregion des Kopfes als Stammname</b> — der Schlüssel, mit dem der
+        /// Speicherweg sie in das Projekt kopiert (<c>ApplyRegionByNameToProjekt</c>) und
+        /// mit dem <see cref="KopfGleichGespeichert"/> vergleicht.
+        ///
+        /// <para><b>Die Id führt</b> (Hausregel „Beziehungen über Ids"): Die Klappliste
+        /// meldet die Stamm-Id (<see cref="ProjektKopfDaten.IdKlimaregion"/>); trifft sie
+        /// einen Katalogsatz, gilt dessen Name. Nur ohne gültige Id zählt
+        /// <see cref="ProjektKopfDaten.Klimaname"/> — ein Kopf, den ein Aufrufer allein
+        /// über den Namen füllt. Beide bezeichnen denselben Satz, der Stammname ist
+        /// eindeutig (<c>UX_Tab_Klimaregion_STAMM_Name</c>).</para>
+        /// </summary>
+        public static string Regionsname(ProjektKopfDaten kopf)
+        {
+            if (kopf == null) return "";
+
+            if (kopf.IdKlimaregion > 0)
+            {
+                string ausId = KlimaregionStammCtrl.NameVonId(kopf.IdKlimaregion);
+                if (ausId.Length > 0) return ausId;
+            }
+            return kopf.Klimaname ?? "";
+        }
+
+        /// <summary>
         /// Steht der Projektkopf in der Datenbank schon so, wie
         /// <c>WizardCtrl.Update_Projekt</c> ihn schreiben würde? Verglichen werden die
         /// geschriebenen Felder — Name, Bearbeiter, Kunde, Beschreibung und die
@@ -157,7 +181,7 @@ namespace WindowsFormsApplication1
                     Convert.ToInt32(eigen, CultureInfo.InvariantCulture) == 0) return false;
 
                 string name = KlimaregionStammCtrl.NameZuProjektregion(idRegion, idProjekt);
-                return string.Equals(name ?? "", kopf.Klimaname ?? "", StringComparison.Ordinal);
+                return string.Equals(name ?? "", Regionsname(kopf), StringComparison.Ordinal);
             }
             catch (Exception)
             {

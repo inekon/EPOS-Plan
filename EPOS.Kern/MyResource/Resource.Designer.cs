@@ -24693,6 +24693,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude gelöscht! ähnelt.
         /// </summary>
         public static string GEB_MSG_GELOESCHT {
@@ -25851,6 +25860,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Baujahr {0} der Datei ermittelt – eine andere Wahl ersetzt sie. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_KLASSE_AUS_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_KLASSE_AUS_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse steuert alle Vorgaben: U-Werte, g-Wert und Wärmebrücken. ähnelt.
         /// </summary>
         public static string GIMP_DLG_KLASSE_HINWEIS {
@@ -25865,6 +25883,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_KLASSE_KEINE {
             get {
                 return ResourceManager.GetString("GIMP_DLG_KLASSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von den {1} Werten, die eine Baualtersklasse vorgibt (U-Werte, g-Wert, Wärmebrücken), trägt die Datei {2} selbst; die Klasse füllt {0}. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_KLASSE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_KLASSE_WIRKUNG", resourceCulture);
             }
         }
         

@@ -83,6 +83,8 @@ Im Stammblatt zeigt die Gruppe ''Herkunft'' Quelle, Importdatum, Standort, Läng
 
 Auf der Übersicht wählen Sie die Klimaregion des Projekts aus einem '''durchsuchbaren''' Feld: Tippen engt die Liste ein, die Pfeiltasten wandern darin, Enter übernimmt. Jeder Eintrag nennt in Klammern, welche Daten die Region trägt – etwa „Musterort (TRY 2045 sommerwarm)“ oder „Musterstadt (PVGIS)“; gesucht wird über den ganzen Eintrag, also auch über das Bezugsjahr. Darunter steht eine Zeile, die Quelle samt Bezugsjahr und Szenario, Bezeichnung, Standort und Importdatum der Region nennt, mit der das offene Projekt rechnet.
 
+Dasselbe Feld mit denselben Einträgen steht im Projektassistenten im Schritt ''Projektkonfiguration''; darunter nennt eine Zeile ebenso die Herkunft der gewählten Region. Die dort gewählte Klimaregion erhält das Projekt beim Anlegen bzw. Speichern.
+
 == Hinweise zu den Quellen ==
 {{Anker|quellen}}
 
