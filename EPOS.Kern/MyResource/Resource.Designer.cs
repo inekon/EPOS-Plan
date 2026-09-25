@@ -7032,6 +7032,456 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anzeigen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_BTN_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_BTN_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinzufügen… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_BTN_HINZUFUEGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_BTN_HINZUFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_BTN_MENUE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_BTN_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Vorlage… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_BTN_NEU {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_BTN_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_BTN_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_BTN_PRUEFEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_BTN_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlagen (*.docx;*.dotx)|*.docx;*.dotx ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ ersetzen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_DLG_ERSETZEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_DLG_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage hinzufügen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_DLG_HINZUFUEGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_DLG_HINZUFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_FRAGE_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_FRAGE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage wird gerade bearbeitet – bitte einen Moment. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_GESPERRT_BESCHAEFTIGT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_GESPERRT_BESCHAEFTIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Während ein Bericht entsteht, bleibt die Vorlage, wie sie ist. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_GESPERRT_LAUF {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_GESPERRT_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_GRUPPE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersetzen… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_ERSETZEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Ordner zeigen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_ORDNER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützt öffnen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teilen… ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_TEILEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_TEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Word öffnen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_HANDLUNG_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_HANDLUNG_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_LBL_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_LBL_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Handlungen zur gewählten Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MENUE_KURZTEXT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MENUE_KURZTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mitgelieferte Vorlage – nur lesen; eine eigene entsteht über „Neue Vorlage…“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MITGELIEFERT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MITGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist in Word geöffnet – nach dem Speichern in Word hier „Prüfen“ wählen. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_IN_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_IN_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlagenwahl ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner {0} ließ sich nicht zeigen. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_ORDNER_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_ORDNER_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist schreibgeschützt geöffnet – Änderungen werden nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ließ sich nicht weitergeben. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_TEILEN_FEHLER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_TEILEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Vorlagenordner gibt es schon „{0}“ – die neue Vorlage heißt „{1}“. Ersetzen geht über „…“ › „Ersetzen…“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_UMBENANNT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_UMBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Vorlage ist nicht mehr im Vorlagenordner – die Liste ist neu geladen. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ließ sich nicht in Word öffnen – Word wurde auf diesem Rechner nicht gefunden. Die Datei liegt unter {1}. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_WORD_FEHLT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_WORD_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Vorlage „{0}“ gibt es schon im Vorlagenordner. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NAME_VORHANDEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NAME_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name darf diese Zeichen nicht enthalten: &lt; &gt; : &quot; / \ | ? * ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NAME_ZEICHEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NAME_ZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der neuen Vorlage: ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_FRAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die neue Vorlage ist eine Kopie der Standardvorlage im Vorlagenordner; bearbeitet wird sie in Word. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen für die Vorlage eingeben. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_LEER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NEU_TITEL {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Vorlage ist nicht wählbar. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NICHT_WAEHLBAR {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NICHT_WAEHLBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt die Vorlage in den Unterordner „Entfernt“ des Vorlagenordners. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersetzt die Vorlage durch eine andere Datei mit derselben Endung. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_ERSETZEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_ERSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_HINZUFUEGEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_HINZUFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine Kopie der Standardvorlage im Vorlagenordner an – der erste Schritt zu einer eigenen Vorlage. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_NEU {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Vorlage im Vorlagenordner. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_ORDNER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt alle Platzhalter, die eine Vorlage tragen kann, mit ihrer Schreibweise. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die gewählte Vorlage vollständig: Platzhalter, Orte, Formatvorlagen und Bildrahmen. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_PRUEFEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Änderungen werden nicht gespeichert – eine eigene Vorlage entsteht über „Neue Vorlage…“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gibt die Vorlage an eine andere App weiter, etwa an Word. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_TEILEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_TEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Vorlage in Word zum Bearbeiten; danach „Prüfen“. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_TIP_WORD {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_TIP_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_WEG_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_WEG_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit meiner Vorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_WEG_EIGENE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_WEG_EIGENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Standardvorlage ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_WEG_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_WEG_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BK_BTN_ANLEGEN {
@@ -10814,11 +11264,227 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingebaute Formate ähnelt.
+        /// </summary>
+        public static string BV_LAUF_EINGEBAUT {
+            get {
+                return ResourceManager.GetString("BV_LAUF_EINGEBAUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ für diesen Bericht durch „{1}“ ersetzt ähnelt.
+        /// </summary>
+        public static string BV_LAUF_ERSETZT {
+            get {
+                return ResourceManager.GetString("BV_LAUF_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kommentare der Vorlage entfernt: {0} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_KOMMENTARE {
+            get {
+                return ResourceManager.GetString("BV_LAUF_KOMMENTARE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter ohne Wert, mit dem Leerwert gefüllt: {0} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_LEER {
+            get {
+                return ResourceManager.GetString("BV_LAUF_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ließ sich nicht füllen: {1} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_NICHT_FUELLBAR {
+            get {
+                return ResourceManager.GetString("BV_LAUF_NICHT_FUELLBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ließ sich nicht lesen: {1} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("BV_LAUF_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: leer bei {1} von {2} Stellen ähnelt.
+        /// </summary>
+        public static string BV_LAUF_PUNKT_LEER {
+            get {
+                return ResourceManager.GetString("BV_LAUF_PUNKT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: leer ähnelt.
+        /// </summary>
+        public static string BV_LAUF_PUNKT_LEER_EINE {
+            get {
+                return ResourceManager.GetString("BV_LAUF_PUNKT_LEER_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – {1}; {2} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_PUNKT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("BV_LAUF_PUNKT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall bei der Vorlagenwahl: ähnelt.
+        /// </summary>
+        public static string BV_LAUF_RUECKFALL {
+            get {
+                return ResourceManager.GetString("BV_LAUF_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht ersetzte Platzhalter, im Bericht gelb markiert: {0} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("BV_LAUF_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage: „{0}“ ({1}) ähnelt.
+        /// </summary>
+        public static string BV_LAUF_VORLAGE {
+            get {
+                return ResourceManager.GetString("BV_LAUF_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warnungen beim Füllen der Vorlage: {0} ähnelt.
+        /// </summary>
+        public static string BV_LAUF_WARNUNGEN {
+            get {
+                return ResourceManager.GetString("BV_LAUF_WARNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … und {0} weitere ähnelt.
+        /// </summary>
+        public static string BV_LAUF_WEITERE {
+            get {
+                return ResourceManager.GetString("BV_LAUF_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die — (nur Stammprojekt) ähnelt.
         /// </summary>
         public static string BV_NUR_STAMMPROJEKT {
             get {
                 return ResourceManager.GetString("BV_NUR_STAMMPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorprüfung meldet: ähnelt.
+        /// </summary>
+        public static string BV_START_BEFUNDE {
+            get {
+                return ResourceManager.GetString("BV_START_BEFUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie soll der Bericht entstehen? ähnelt.
+        /// </summary>
+        public static string BV_START_FRAGE {
+            get {
+                return ResourceManager.GetString("BV_START_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Mit meiner Vorlage“: Nicht erkannte Platzhalter bleiben gelb markiert im Bericht stehen. ähnelt.
+        /// </summary>
+        public static string BV_START_GELB {
+            get {
+                return ResourceManager.GetString("BV_START_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bericht werden {0} Projekt(e) neu simuliert und in die Word-Vorlage „{1}“ gefüllt. ähnelt.
+        /// </summary>
+        public static string BV_START_KOPF {
+            get {
+                return ResourceManager.GetString("BV_START_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage „{0}“ enthält keinen Platzhalter der Wirtschaftlichkeit – für diesen Bericht wird die Standardvorlage angeboten ähnelt.
+        /// </summary>
+        public static string BV_START_OHNE_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("BV_START_OHNE_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
+        /// </summary>
+        public static string BV_START_PUNKT {
+            get {
+                return ResourceManager.GetString("BV_START_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage nutzt den Paarvergleich (stand.a, stand.b), gewählt ist Sicht 1 ähnelt.
+        /// </summary>
+        public static string BV_START_SICHT {
+            get {
+                return ResourceManager.GetString("BV_START_SICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string BV_START_WEG_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("BV_START_WEG_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit meiner Vorlage ähnelt.
+        /// </summary>
+        public static string BV_START_WEG_EIGENE {
+            get {
+                return ResourceManager.GetString("BV_START_WEG_EIGENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Standardvorlage ähnelt.
+        /// </summary>
+        public static string BV_START_WEG_STANDARD {
+            get {
+                return ResourceManager.GetString("BV_START_WEG_STANDARD", resourceCulture);
             }
         }
         
@@ -11089,6 +11755,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORLAGEN_ORDNER_VORHANDEN {
             get {
                 return ResourceManager.GetString("BV_VORLAGEN_ORDNER_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, 1 Befund ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_PRUEFZEILE_BEFUND {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_PRUEFZEILE_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, {1} Befunde ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_PRUEFZEILE_BEFUNDE {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_PRUEFZEILE_BEFUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, keine Befunde ähnelt.
+        /// </summary>
+        public static string BV_VORLAGEN_PRUEFZEILE_OK {
+            get {
+                return ResourceManager.GetString("BV_VORLAGEN_PRUEFZEILE_OK", resourceCulture);
             }
         }
         
@@ -12520,6 +13213,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_WARMWASSER {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht im Bericht an der Stelle {{ersteller.firma}}; vorbelegt aus der Lizenz. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_FIRMA {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auch ein gemeinsamer Ordner des Büros ist möglich – dann arbeiten alle mit denselben Vorlagen. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_GEMEINSAM {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_GEMEINSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hier liegen die eigenen Berichtsvorlagen. Die Datenbanksicherung nimmt den Ordner nicht mit. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINT_VORLAGENORDNER {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINT_VORLAGENORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben für Berichte aus Word-Vorlagen – für alle Projekte dieses Anwenders. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_HINWEIS {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firma: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_FIRMA {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlagenordner: ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_LBL_VORLAGENORDNER {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_LBL_VORLAGENORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Abschnitt „Bericht“ steht in diesem Dialog nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_NICHT_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf diesem Gerät liegt der Vorlagenordner fest in der App; eigene Vorlagen kommen über „Hinzufügen…“ auf der Berichtsseite hinein. ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_ORDNER_FEST {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_ORDNER_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
+        /// </summary>
+        public static string EIN_BERICHT_RUBRIK {
+            get {
+                return ResourceManager.GetString("EIN_BERICHT_RUBRIK", resourceCulture);
             }
         }
         
@@ -34334,6 +35108,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Firma, die im Bericht an der Stelle {{ersteller.firma}} steht; vorbelegt aus der Lizenz. Leer bleibt die Stelle im Bericht leer. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner der eigenen Berichtsvorlagen; übernommen wird nur ein bestehender, erreichbarer Ordner. Auf einem Gerät ohne Ordnerwahl liegt er fest in der App. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_BERICHT_ORDNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_BERICHT_ORDNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Farbe der Größe „{0}“ (Gruppe „{1}“) in allen Diagrammen und Berichten, als Farbton #RRGGBB; die Deckung bleibt die des Bildes. ähnelt.
         /// </summary>
         public static string KI_DLG_ADMSET_FARBE_ERL {
@@ -35041,6 +35833,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKB_VARIANTEN_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BKB_VARIANTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Word-Vorlage des Berichts für dieses Stammprojekt, gewählt aus der Vorlagenliste der Seite: die Standardvorlage (EPOS-Plan) oder eine eigene Vorlage aus dem Vorlagenordner. Eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste; der Bericht nimmt dann die Vorgabe bzw. die Standardvorlage und nennt das. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_VORLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_VORLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_VORLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_VORLAGE_NAME", resourceCulture);
             }
         }
         
@@ -46556,6 +47366,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum fehlen die Kommentare meiner Vorlage im Bericht? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_KOMMENTARE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_KOMMENTARE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufmeldung nennt Platzhalter ohne Wert. Warum sind sie leer? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_LEER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufmeldung nennt einen Rückfall bei der Vorlagenwahl. Was ist passiert? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_RUECKFALL {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Bericht stehen gelb markierte Platzhalter. Was bedeutet das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach welcher Regel wählt EPOS-Plan die Word-Vorlage meines Berichts? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_VORLAGE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufmeldung nennt Warnungen beim Füllen der Vorlage. Was ist zu tun? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_WARNUNGEN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_WARNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum bietet mir EPOS-Plan für den Wirtschaftlichkeitsbericht die Standardvorlage an? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_START_OHNE_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_START_OHNE_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorprüfung meldet, dass meine Vorlage den Paarvergleich nutzt. Was muss ich einstellen? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_START_SICHT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_START_SICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine gewählte Berichtsvorlage ist nicht vorhanden. Was macht EPOS-Plan dann? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_VORLAGEN_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_VORLAGEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage ist in Word geöffnet. Welcher Stand wird verwendet? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_VORLAGEN_IN_WORD {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_VORLAGEN_IN_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage kann nicht gelesen werden. Woran kann das liegen? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_VORLAGEN_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_VORLAGEN_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherflotte hat im ganzen Zeitraum weder geladen noch entladen. Woran kann das liegen, und wie bekomme ich einen brauchbaren Lauf? ähnelt.
         /// </summary>
         public static string KI_FRAGE_FLOTTE_ARBEITSLOS {
@@ -46759,6 +47668,330 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_SIMULATION_KONFIG {
             get {
                 return ResourceManager.GetString("KI_FRAGE_SIMULATION_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Berichtsvorlage enthält nachverfolgte Änderungen. Was muss ich tun? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_AENDERUNGEN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_AENDERUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet eine unbekannte Formatangabe. Welche Angaben gibt es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_ANGABE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_ANGABE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum passt eine Formatangabe nicht zu meinem Platzhalter? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_ANGABE_UNPASSEND {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_ANGABE_UNPASSEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum darf eine Blockmarke nicht im Satz stehen? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_ALLEIN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_ALLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet einen unbekannten Wiederholbereich. Was bedeutet das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet ein Blockende ohne Anfang. Was ist zu tun? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_ENDE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Block in meiner Berichtsvorlage nicht unterstützt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet einen Block, der nicht geschlossen wird. Was fehlt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet einen Block über eine Tabellengrenze. Wie setze ich ihn richtig? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_TABELLE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie tief dürfen Blöcke in meiner Berichtsvorlage verschachtelt sein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_TIEFE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_TIEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum stören verbundene Zellen in der Wiederholzeile? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_BLOCK_VERBUNDEN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_BLOCK_VERBUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum soll ich statt des Datumsfelds einen Platzhalter verwenden? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_DATUMSFELD {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_DATUMSFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum werden verknüpfte Inhalte meiner Berichtsvorlage entfernt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_EXTERN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_EXTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage stammt aus einer älteren Katalogfassung. Muss ich etwas ändern? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_FASSUNG_ALT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_FASSUNG_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage stammt aus einer neueren Katalogfassung. Was kann ich tun? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_FASSUNG_NEU {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_FASSUNG_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Dateiformat meiner Berichtsvorlage wird nicht unterstützt. Welches Format braucht EPOS-Plan? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_FORMAT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage ist zu groß. Wie verkleinere ich sie? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_GROESSE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage ist entpackt zu groß. Was heißt das, und was kann ich tun? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_GROESSE_ENTPACKT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_GROESSE_ENTPACKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet fehlende Gültigkeitshinweise. Was muss in meine Vorlage? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_GUELTIGKEIT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_GUELTIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung nennt ein neues Kapitel. Wie nehme ich es in meine Vorlage auf? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KAPITEL_NEU {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KAPITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Platzhalter meiner Berichtsvorlage wird nicht erkannt. Woran liegt das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KLAMMER_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KLAMMER_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was geschieht mit den Kommentaren meiner Berichtsvorlage? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KOMMENTARE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KOMMENTARE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Wert je Gebäude in meiner Berichtsvorlage nicht gefüllt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KONTEXT_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum wird ein Wert je Variante in meiner Berichtsvorlage nicht gefüllt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_KONTEXT_STAND {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_KONTEXT_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage enthält Makros. Warum wird sie nicht verwendet? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_MAKROS {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_MAKROS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet eine unbekannte Marke in doppelten Klammern. Was bedeutet das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_MARKE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_MARKE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was bedeutet der Hinweis auf die Normalform eines Platzhalters in meiner Berichtsvorlage? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_NORMALFORM {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_NORMALFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meine Berichtsvorlage enthält keinen Platzhalter. Wo erscheint dann der Bericht? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_OHNE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_OHNE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung sagt, ein Platzhalter passt nicht an diese Stelle. Wohin gehört er? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_ORT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Sprache meiner Berichtsvorlage weicht ab. Was bedeutet das für den Bericht? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_SPRACHE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet fehlende Überschriftenstile. Was muss meine Berichtsvorlage enthalten? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_UEBERSCHRIFTEN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_UEBERSCHRIFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet einen unbekannten Platzhalter. Wie finde ich den richtigen? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Berichtsvorlage kann nicht gelesen werden. Was bedeutet das, und wie mache ich sie wieder nutzbar? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_UNLESBAR {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum entfernt EPOS-Plan den Verweis auf die Dokumentvorlage meiner Berichtsvorlage? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_VORLAGENVERWEIS {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_VORLAGENVERWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warum taugt mein Platzhalter nicht als Bedingung? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_WENN_KEIN_SCHALTER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_WENN_KEIN_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung meldet eine Bedingung ohne Schalter. Was fehlt? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER", resourceCulture);
             }
         }
         
@@ -76759,6 +77992,303 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Platzhalter ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ANZAHL {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Platzhaltern ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ANZAHL_GEFILTERT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ANZAHL_GEFILTERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_BILD {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blatt ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_BLATT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_DATUM {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitel ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_KAPITEL {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_KAPITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_LISTE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schalter ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_SCHALTER {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_TABELLE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Text ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_TEXT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ART_ZAHL {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ART_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispiel: {0} ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_BEISPIEL {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_BEISPIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Platzhalter ist markiert – kopieren und an der gewünschten Stelle der Vorlage einfügen. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_HINT_SCHREIBWEISE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_HINT_SCHREIBWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Platzhalter, die eine Word-Vorlage tragen kann. Eine Zeile wählen: Darunter steht der Platzhalter in der Schreibweise der Vorlage. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_HINWEIS {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Platzhalter passt zur Suche. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KEIN_TREFFER {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KEIN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KONTEXT_BERICHT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KONTEXT_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Gebäude ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KONTEXT_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KONTEXT_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichsgruppe ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KONTEXT_GRUPPE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KONTEXT_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Installation ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KONTEXT_INSTALLATION {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KONTEXT_INSTALLATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KONTEXT_STAMM {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KONTEXT_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Stand ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_KONTEXT_STAND {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_KONTEXT_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibweise in der Vorlage: ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_LBL_SCHREIBWEISE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_LBL_SCHREIBWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche: ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_LBL_SUCHE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_LBL_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog ist leer. ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_LISTE {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_SP_ART {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_SP_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_SP_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_SP_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_SP_KONTEXT {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_SP_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_SP_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_SP_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel oder Beschreibung ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_SUCHE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_SUCHE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalterkatalog ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_TITEL {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter {0} wählen ähnelt.
+        /// </summary>
+        public static string VF_KATALOG_ZEILE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("VF_KATALOG_ZEILE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschriftung der Kennzahl „{0}“ in der Sprache des Berichts. ähnelt.
         /// </summary>
         public static string VF_MUSTER_KENNZAHL_BESCHRIFTUNG {
@@ -77164,6 +78694,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld {0} zeigt das Datum des Öffnens, nicht das des Berichts ähnelt.
         /// </summary>
         public static string VF_PRUEF_DATUMSFELD {
@@ -77272,6 +78811,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fundort: {0} ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_FUNDORT {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_FUNDORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage ist zu groß: {0} MB, erlaubt sind {1} MB ähnelt.
         /// </summary>
         public static string VF_PRUEF_GROESSE {
@@ -77317,6 +78865,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler ({0}) ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_GRUPPE_FEHLER {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_GRUPPE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ({0}) ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_GRUPPE_HINWEIS {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_GRUPPE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warnungen ({0}) ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_GRUPPE_WARNUNG {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_GRUPPE_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gültigkeitshinweise fehlen: die Vorlage nutzt Werte der Wirtschaftlichkeit ohne Warnliste ähnelt.
         /// </summary>
         public static string VF_PRUEF_GUELTIGKEIT {
@@ -77349,6 +78924,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_KAPITEL_NEU_TUN {
             get {
                 return ResourceManager.GetString("VF_PRUEF_KAPITEL_NEU_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Befunde – die Vorlage lässt sich füllen. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KEINE_BEFUNDE {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KEINE_BEFUNDE", resourceCulture);
             }
         }
         
@@ -77412,6 +78996,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_KONTEXT_TUN {
             get {
                 return ResourceManager.GetString("VF_PRUEF_KONTEXT_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geprüft: {0} Platzhalter, Vorlage „{1}“ ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KOPF {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geprüft: {0} Platzhalter ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_KOPF_OHNE_NAME {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_KOPF_OHNE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldungen der Prüfung ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_LISTE {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_LISTE", resourceCulture);
             }
         }
         
@@ -77893,6 +79504,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfliste der Vorlage ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_TITEL {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überschriftenstile fehlen oder tragen keine Gliederungsebene: {0} ähnelt.
         /// </summary>
         public static string VF_PRUEF_UEBERSCHRIFTEN {
@@ -77970,6 +79590,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_PRUEF_VORSCHLAG_TUN {
             get {
                 return ResourceManager.GetString("VF_PRUEF_VORSCHLAG_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was tun: {0} ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_WAS_TUN {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_WAS_TUN", resourceCulture);
             }
         }
         

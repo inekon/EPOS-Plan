@@ -902,6 +902,7 @@ Aufträgen #203 und #207):
 | `Programm Dokumentation/Kühlung` | `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki` (noch nicht hochgeladen) |
 | `Programm Dokumentation/Gebäude` | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` (aus dem Live-Stand angelegt, fortgeschrieben, noch nicht hochgeladen) |
 | `Programm Dokumentation/Baustoffe und Bauteilaufbauten` | `Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki` (noch nicht hochgeladen) — Hilfeschlüssel `BaustoffKatalog.btn_Help` → `#baustoffe`, `Bauteilaufbau.btn_Help` → `#bauteilaufbauten` |
+| `Programm Dokumentation/Berichtsvorlagen` | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` (noch nicht hochgeladen, Neuanlage beim Upload) — Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`; Hilfeschlüssel `UcBericht.btn_Help_Pruefliste` → `#pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` → `#platzhalterkatalog`, `Form_AdminSettings.btn_Help_Bericht` → `#einstellungen`; die Seite `Wirtschaftlichkeit` verweist im Abschnitt „Bericht“ (Anker `bericht-vorlage`) hierher |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,

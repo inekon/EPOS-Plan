@@ -21,7 +21,27 @@ namespace WindowsFormsApplication1
     // Gelesen wird über Namen und Namensräume, nicht über die Typen des SDK: Was Word
     // in einen Zweig von mc:AlternateContent schreibt, kommt je nach Fassung als
     // bekanntes oder unbekanntes Element an; der Durchlauf sieht beides gleich.
-    // Kommentare werden nicht durchlaufen (Konzept 6.7) — nur gezählt.
+    // Kommentare werden nicht durchlaufen (Konzept 6.7) — nur gezählt, und zwar mit
+    // Kommentarzahl, der EINEN Zählung, die auch die Engine beim Entfernen nennt.
+    //
+    // ZWEI WEGE MIT ABSICHT (BV-E1 B1a). Dieser Durchlauf ist der Weg des PRÜFERS: Er
+    // liest nur und ändert nichts, auch nicht im Speicher. Die Engine füllt über den
+    // WordVorlagennormalisierer: Er arbeitet auf den typisierten Elementen des SDK und
+    // ZIEHT zerlegte Runs zusammen, weil die Engine den Text an Ort und Stelle ersetzt —
+    // das kann ein Leseweg nicht, und ein Prüfer, der die Vorlage umbaut, prüfte nicht
+    // mehr die Bytes, die gefüllt werden. Gemeinsam ist die Erkennungsregel: Tabulator,
+    // Umbruch, Feldzeichen, Symbol, Bild und jede Behältergrenze trennen, Rechtschreib-,
+    // Text- und Kommentarmarken nicht. Wo die beiden sich unterscheiden:
+    //   * mc:AlternateContent: Der Durchlauf zählt im Satz nur den ersten Zweig (die
+    //     übrigen sind Doppel derselben Stelle), die Engine füllt jeden Zweig.
+    //   * w:smartTag und w:fldSimple liest der Durchlauf als Behälter mit; der
+    //     Normalisierer steigt nur in die Behälter, die er typisiert kennt (Hyperlink,
+    //     Einfügung, customXml, bdo, dir, Inhaltssteuerelement im Satz). Ein Platzhalter
+    //     in EINEM Run wird dort gefüllt, einer über mehrere Runs bleibt stehen.
+    //   * w:bdo und w:dir sind für den Durchlauf keine Grenze, für den Normalisierer
+    //     schon.
+    // Die beiden letzten Fälle sind selten (w:smartTag stammt aus älteren Word-Fassungen);
+    // sie sind benannt, damit niemand den zweiten Weg für einen Fehler hält.
     // ---------------------------------------------------------------------------
 
     /// <summary>Die Teile einer Word-Vorlage, in denen Platzhalter stehen können (Konzept 4.3).</summary>
@@ -452,11 +472,21 @@ namespace WindowsFormsApplication1
             Noten(laeufer, main.FootnotesPart, "footnote", Vorlagenteilart.Fussnote);
             Noten(laeufer, main.EndnotesPart, "endnote", Vorlagenteilart.Endnote);
 
-            int kommentare = 0;
-            OpenXmlElement kommentarwurzel = main.WordprocessingCommentsPart?.RootElement;
-            if (kommentarwurzel != null) kommentare = kommentarwurzel.ChildElements.Count(e => IstW(e, "comment"));
+            return laeufer.Ergebnis(Kommentarzahl(main), kopf, fuss);
+        }
 
-            return laeufer.Ergebnis(kommentare, kopf, fuss);
+        /// <summary>
+        /// <b>Die Zahl der Kommentare einer Vorlage</b> — die EINE Zählung für Prüfer und Engine
+        /// (Konzept 6.7): die Einträge <c>w:comment</c> des Kommentarteils. Die Prüfzeile
+        /// (<see cref="Pruefbefund.Kommentare"/>) und die Laufmeldung
+        /// (<see cref="Fuellergebnis.EntfernteKommentare"/>) nennen deshalb dieselbe Zahl. Bereichsmarken
+        /// und Verweise ohne Eintrag im Kommentarteil zeigt Word nicht als Kommentar; die Engine entfernt
+        /// sie mit, zählt sie aber nicht.
+        /// </summary>
+        public static int Kommentarzahl(MainDocumentPart main)
+        {
+            OpenXmlElement wurzel = main?.WordprocessingCommentsPart?.RootElement;
+            return wurzel == null ? 0 : wurzel.ChildElements.Count(e => IstW(e, "comment"));
         }
 
         // =====================================================================

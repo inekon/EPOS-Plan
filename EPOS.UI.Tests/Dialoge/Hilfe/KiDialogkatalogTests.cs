@@ -852,8 +852,13 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.EINSTELLUNGEN)!;
         Assert.NotNull(d);
 
+        // Sechs Werte der Anwendung und — Berichtsvorlagen BV-E1 — Firma und Vorlagenordner
+        // der Rubrik „Bericht", dazu je Farbrolle ein Feld.
         var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
-        Assert.Equal(6 + rollen.Count, d.Felder.Count);
+        Assert.Equal(8 + rollen.Count, d.Felder.Count);
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtFirma", d.FindeFeld("bericht_firma")!.Eigenschaftspfad);
+        Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
+                     d.FindeFeld("bericht_vorlagenordner")!.Eigenschaftspfad);
 
         foreach (WindowsFormsApplication1.Zeichnung.Farbrolle rolle in rollen)
         {
@@ -899,17 +904,18 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 5, 5 und 4 Felder.</b>
+    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 6, 5 und 4 Felder.</b>
     /// </summary>
     /// <remarks>
     /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
-    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" zwei
-    /// Einstellwerte und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
+    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" drei
+    /// Einstellwerte (Ausgabe, Zielordner und — Berichtsvorlagen BV-E1 — die Word-Vorlage
+    /// als Wahl) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
     /// <para>„Projekt speichern unter" führt fünf Verwaltungsangaben, „Als Variante
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
     [Fact]
-    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_5_5_und_4_Felder()
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_6_5_und_4_Felder()
     {
         KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
         KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
@@ -917,7 +923,9 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
         Assert.Equal(6, ueb.Felder.Count);
-        Assert.Equal(5, ber.Felder.Count);
+        Assert.Equal(6, ber.Felder.Count);
+        Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("vorlage")!.Typ);
+        Assert.Equal("BerichtSeiteKiSicht.Vorlage", ber.FindeFeld("vorlage")!.Eigenschaftspfad);
         Assert.Equal(5, kop.Felder.Count);
         Assert.Equal(4, var.Felder.Count);
 
@@ -1650,7 +1658,8 @@ public class KiDialogkatalogTests : IDisposable
             "Hülle. Zeuge ist UebersichtSeiteTests",
         [KiMaskennamen.BERICHTSEITE] =
             "bindet über die Sichtklasse BerichtSeiteKiSicht auf Ausgabeform, " +
-            "Zielordner und die zwei Aufstellungen; Zeuge ist BerichtSeiteTests",
+            "Zielordner, die Vorlagenwahl der Gruppe „Vorlage“ (Ids der Hülle) und die zwei " +
+            "Aufstellungen; Zeugen sind BerichtSeiteTests und BerichtSeiteVorlagenTests",
         [KiMaskennamen.PROJEKT_KOPIE] =
             "bindet über die Sichtklasse ProjektKopieKiSicht auf die sieben privaten " +
             "Felder der Maske; Zeuge ist ProjektKopieDialogTests",

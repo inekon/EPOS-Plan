@@ -1,0 +1,247 @@
+﻿@* Die Ueberlagerung "Pruefliste" der Berichtsvorlagen (BV-E1, Konzept 6.8 und 9.7).
+
+   WAS SIE ZEIGT. Die Meldungen des Vorlagenpruefers zur gewaehlten Word-Vorlage,
+   GRUPPIERT nach Stufe - Fehler, Warnungen, Hinweise, in dieser Folge -, je Gruppe mit
+   Zeichen und Zahl, je Meldung der Text, der menschliche Fundort und "Was tun". Eine
+   Meldung mit Kennung (KiMeldungskennung) traegt "erklaeren lassen" wie ein Warnbanner.
+   Darueber die leise Kopfzeile "Geprueft: n Platzhalter, Vorlage <Name>".
+
+   DAS ZEICHEN TRAEGT DIE STUFE MIT - Farbe allein traegt keine Aussage (Muster
+   Hinweiszeilen: ✖ Fehler, ⚠ Warnung, ℹ Hinweis); die Gruppenkoepfe nennen die Stufe im
+   Wort.
+
+   KEIN ARBEITSSTAND. Die Liste nimmt nichts auf und schreibt nichts - deshalb EIN primaerer
+   Knopf "Schliessen" statt OK und Abbrechen (Konzept 9.7). "Meldungen kopieren" kommt mit
+   der Zwischenablage (BV-E6); eine Probefuellung gibt es nicht (BV-Q12 b).
+
+   TITEL UND KREUZ. Allein gezeigt traegt der Dialog beides; in der Ueberlagerung der
+   Berichtsseite setzt der Wirt TitelAnzeigen="false", dann traegt die Ueberlagerung Titel
+   und Kreuz (Hausregel "Ein Titel, eine Stelle"). Esc und Kreuz wirken wie "Schliessen".
+
+   DIE DATENSEITE liegt in der Huelle (EPOS.UI.Daten): Sie formt die Befunde des Pruefers in
+   Pruefmeldungszeilen um; der Dialog kennt keine Fachklasse des Kerns. *@
+
+@namespace EPOS.UI.Dialoge.Berichte
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-vorlage-pruefliste" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.Titel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    @if (Kopfzeile.Length > 0)
+    {
+        <p class="epos-leisezeile epos-vorlage-pruefkopf">@Kopfzeile</p>
+    }
+
+    @if (Gruppen.Count == 0)
+    {
+        <p class="epos-leisezeile epos-vorlage-pruefleer">@Texte.KeineBefunde</p>
+    }
+    else
+    {
+        @* Die Liste steht im festen Rahmen mit Rollbalken (Hausregel: .epos-raster-huelle);
+           der Rahmen ist fokussierbar, damit er sich auch mit der Tastatur rollen laesst. *@
+        <div class="epos-raster-huelle epos-vorlage-meldungsrahmen" role="region"
+             aria-label="@Texte.Liste" tabindex="0">
+            @foreach (Meldungsgruppe g in Gruppen)
+            {
+                <section class="@("epos-vorlage-meldungsgruppe epos-vorlage-meldungsgruppe--" + g.Stufe)">
+                    <h3 class="epos-vorlage-meldungskopf">
+                        <span class="epos-vorlage-meldungszeichen" aria-hidden="true">@Zeichen(g.Stufe)</span>
+                        <span>@g.Kopf</span>
+                    </h3>
+                    <ul class="epos-vorlage-meldungen">
+                        @foreach (Pruefmeldungszeile m in g.Zeilen)
+                        {
+                            <li class="epos-vorlage-meldung">
+                                <span class="epos-vorlage-meldungszeichen" aria-hidden="true">@Zeichen(g.Stufe)</span>
+                                <span class="epos-vorlage-meldungsrumpf">
+                                    <span class="epos-vorlage-meldungstext">@m.Text</span>
+                                    @if (!string.IsNullOrWhiteSpace(m.Fundort))
+                                    {
+                                        <span class="epos-vorlage-fundort">@Format(Texte.Fundort, m.Fundort)</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(m.WasTun))
+                                    {
+                                        <span class="epos-vorlage-wastun">@Format(Texte.WasTun, m.WasTun)</span>
+                                    }
+                                </span>
+                                @if (ErklaerenMoeglich && !string.IsNullOrWhiteSpace(m.Kennung))
+                                {
+                                    <button type="button" class="epos-warnbanner-erklaeren epos-vorlage-erklaeren"
+                                            title="@Texte.ErklaerenKurztext"
+                                            @onclick="() => Erklaeren(m)">@Texte.Erklaeren</button>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+        </div>
+    }
+
+    @* --- Die EINE Fussleiste: Fueller · Schliessen (primaer) ------------------------ *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller epos-status" role="status"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-vorlage-schliessen"
+                @onclick="Schliessen">@Texte.Schliessen</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle
+    // =====================================================================
+
+    /// <summary>Die Meldungen des Prüfers; leer = keine Befunde.</summary>
+    [Parameter] public IReadOnlyList<Pruefmeldungszeile> Meldungen { get; set; }
+        = Array.Empty<Pruefmeldungszeile>();
+
+    /// <summary>Der Name der geprüften Vorlage für die Kopfzeile; leer = ohne Namen.</summary>
+    [Parameter] public string Vorlagenname { get; set; } = "";
+
+    /// <summary>Die Zahl der erkannten Platzhalter; <c>null</c> = keine Kopfzeile.</summary>
+    [Parameter] public int? Platzhalterzahl { get; set; }
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public PrueflisteTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Hilfeschlüssel (Muster <c>&lt;Maske&gt;.btn_Help_&lt;Teil&gt;</c>): die Berichtsseite
+    /// <c>UcBericht</c>, Teil Prüfliste — der Assistent findet daraus den Bereich Bericht.
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "UcBericht.btn_Help_Pruefliste";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Der Dialog ist zu Ende — „Schließen", Kreuz oder Esc; es gibt kein Ergebnis.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    /// <summary>Eine Stufe mit ihren Meldungen und ihrem fertigen Kopf.</summary>
+    private sealed record Meldungsgruppe(string Stufe, string Kopf, IReadOnlyList<Pruefmeldungszeile> Zeilen);
+
+    private IReadOnlyList<Meldungsgruppe> _gruppen = Array.Empty<Meldungsgruppe>();
+    private IReadOnlyList<Pruefmeldungszeile>? _gruppiertAus;
+    private PrueflisteTexte? _gruppiertMit;
+
+    /// <summary>
+    /// Die Gruppen in der Folge Fehler, Warnungen, Hinweise — nur die, die Meldungen tragen.
+    /// Gebaut wird neu, wenn Liste ODER Textbündel wechseln (kein Zeichenlauf rechnet, was
+    /// sich nicht geändert hat).
+    /// </summary>
+    private IReadOnlyList<Meldungsgruppe> Gruppen
+    {
+        get
+        {
+            if (ReferenceEquals(_gruppiertAus, Meldungen) && ReferenceEquals(_gruppiertMit, Texte)) return _gruppen;
+
+            var liste = new List<Meldungsgruppe>(3);
+            IReadOnlyList<Pruefmeldungszeile> alle = Meldungen ?? Array.Empty<Pruefmeldungszeile>();
+            foreach (string stufe in Pruefstufe.Reihenfolge)
+            {
+                var zeilen = new List<Pruefmeldungszeile>();
+                foreach (Pruefmeldungszeile m in alle)
+                    if (m is not null && Pruefstufe.Normalform(m.Stufe) == stufe) zeilen.Add(m);
+                if (zeilen.Count > 0)
+                    liste.Add(new Meldungsgruppe(stufe, Format(Kopfmuster(stufe), zeilen.Count), zeilen));
+            }
+
+            _gruppen = liste;
+            _gruppiertAus = Meldungen;
+            _gruppiertMit = Texte;
+            return _gruppen;
+        }
+    }
+
+    /// <summary>Die Zahl der Meldungen je Stufe (Prüfhilfe für Tests).</summary>
+    public IReadOnlyDictionary<string, int> Zahlen
+        => Gruppen.ToDictionary(g => g.Stufe, g => g.Zeilen.Count, StringComparer.Ordinal);
+
+    /// <summary>Die Kopfzeile „Geprüft: n Platzhalter, Vorlage …"; leer ohne Platzhalterzahl.</summary>
+    private string Kopfzeile
+    {
+        get
+        {
+            if (!Platzhalterzahl.HasValue) return "";
+            string zahl = Platzhalterzahl.Value.ToString(CultureInfo.CurrentCulture);
+            return string.IsNullOrWhiteSpace(Vorlagenname)
+                ? Format(Texte.KopfOhneName, zahl)
+                : Format(Texte.Kopf, zahl, Vorlagenname);
+        }
+    }
+
+    private string Kopfmuster(string stufe) => stufe switch
+    {
+        Pruefstufe.Fehler => Texte.GruppeFehler,
+        Pruefstufe.Warnung => Texte.GruppeWarnung,
+        _ => Texte.GruppeHinweis
+    };
+
+    /// <summary>Das Zeichen trägt die Stufe MIT — Farbe allein trägt keine Aussage.</summary>
+    private static string Zeichen(string stufe) => stufe switch
+    {
+        Pruefstufe.Fehler => "✖",
+        Pruefstufe.Warnung => "⚠",
+        _ => "ℹ"
+    };
+
+    /// <summary>Steht „erklären lassen"? Nur, wo der Assistent auf dieser Installation möglich ist.</summary>
+    private static bool ErklaerenMoeglich => KiAssistentWeg.Moeglich;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // „erklären lassen", Schließen und Tastatur
+    // =====================================================================
+
+    /// <summary>
+    /// Öffnet den Assistenten mit der Kennung und der vorbelegten Frage — derselbe Weg wie am
+    /// Warnbanner; der Bereich folgt aus dem Hilfeschlüssel.
+    /// </summary>
+    private void Erklaeren(Pruefmeldungszeile m)
+    {
+        string kennung = (m.Kennung ?? "").Trim();
+        if (kennung.Length == 0) return;
+        KiAssistentWeg.AusMeldung(kennung, KiMeldungskennung.Frage(kennung, m.Text),
+                                  HilfeSchluessel, Texte.Titel);
+    }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync();
+
+    /// <summary>Esc schließt; Enter bleibt unbelegt.</summary>
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Schliessen() : Task.CompletedTask;
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return (muster ?? "") + " " + string.Join(" ", werte); }
+    }
+}

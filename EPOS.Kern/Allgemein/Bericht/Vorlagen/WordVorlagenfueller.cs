@@ -243,6 +243,8 @@ namespace WindowsFormsApplication1
             {
                 SammleTeile();
 
+                // Gezählt wie im Prüfer (Vorlagenteile.Kommentarzahl) — Prüfzeile und Laufmeldung nennen
+                // dieselbe Zahl.
                 int kommentare = WordVorlagenbereinigung.EntferneKommentare(_main, _teile.Select(t => t.Wurzel));
                 _ergebnis.EntfernteKommentare = kommentare;
                 if (kommentare > 0) _ergebnis.Hinweis(T.F(_englisch, T.KOMMENTARE, kommentare));
@@ -551,6 +553,7 @@ namespace WindowsFormsApplication1
                     w = Platzhalterwert.Leer(feld.Art, Vorlagenfeld.STRICH,
                                              _werte.Text(nameof(MyResource.Resource.BV_GRUND_AUSNAHME)), ex.Message);
                 }
+                _ergebnis.Aufgeloest(feld.Schluessel);
                 if (w.IstLeer) _ergebnis.Leer(feld.Schluessel);
                 if (w.Ausnahme != null) _ergebnis.Warnung(T.F(_englisch, T.AUSNAHME, feld.Schluessel, w.Ausnahme));
                 return w;

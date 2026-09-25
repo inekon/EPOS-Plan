@@ -554,6 +554,47 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Stammprojekt", "Text" }, body.Elements<Paragraph>().Select(p => p.InnerText));
         }
 
+        /// <summary>
+        /// BV-E1 B1a: Engine und Prüfer zählen Kommentare mit EINER Zählung
+        /// (<see cref="Vorlagenteile.Kommentarzahl"/>) — die Prüfzeile und die Laufmeldung nennen
+        /// dieselbe Zahl. Die Probe trägt zwei Einträge im Kommentarteil und drei Bereichsmarken; die
+        /// dritte Marke ohne Eintrag entfällt beim Füllen mit, zählt aber nicht (Word zeigt sie nicht
+        /// als Kommentar). Gegenprobe: die Beispielvorlage des Repositoriums.
+        /// </summary>
+        [Fact]
+        public void Kommentare_zaehlen_in_Engine_und_Pruefer_gleich()
+        {
+            byte[] v = Vorlage(main =>
+            {
+                WordprocessingCommentsPart teil = main.AddNewPart<WordprocessingCommentsPart>();
+                teil.Comments = new Comments(
+                    new Comment(new Paragraph(new Run(new Text("Erster")))) { Id = "0", Author = "EPOS-Plan", Initials = "EP" },
+                    new Comment(new Paragraph(new Run(new Text("Zweiter")))) { Id = "1", Author = "EPOS-Plan", Initials = "EP" });
+                return "<w:p><w:commentRangeStart w:id=\"0\"/><w:r><w:t>{{bericht.titel}}</w:t></w:r><w:commentRangeEnd w:id=\"0\"/>" +
+                       "<w:r><w:commentReference w:id=\"0\"/></w:r></w:p>" +
+                       "<w:p><w:commentRangeStart w:id=\"1\"/><w:r><w:t>Text</w:t></w:r><w:commentRangeEnd w:id=\"1\"/>" +
+                       "<w:r><w:commentReference w:id=\"1\"/></w:r></w:p>" +
+                       "<w:p><w:commentRangeStart w:id=\"2\"/><w:r><w:t>Ohne Eintrag</w:t></w:r><w:commentRangeEnd w:id=\"2\"/>" +
+                       "<w:r><w:commentReference w:id=\"2\"/></w:r></w:p>" + ABSCHNITT;
+            });
+            Pruefbefund befund = Vorlagenpruefer.Pruefe(v, Pruefstufe.Schnell, null);
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(), Ziel("kommentare_zaehlung.docx"));
+
+            Assert.Equal(2, befund.Kommentare);
+            Assert.Equal(befund.Kommentare, e.EntfernteKommentare);
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(e.Zieldatei, false))
+            {
+                Body body = doc.MainDocumentPart.Document.Body;
+                Assert.Empty(body.Descendants<CommentRangeStart>());
+                Assert.Empty(body.Descendants<CommentReference>());
+            }
+
+            byte[] beispiel = Repovorlage(BerichtsvorlageDateiWacheTests.BEISPIEL);
+            if (beispiel == null) return;
+            Fuellergebnis b = Fuelle(beispiel, Gruppe(), Konfig(), Ziel("beispiel_zaehlung.docx"));
+            Assert.Equal(Vorlagenpruefer.Pruefe(beispiel, Pruefstufe.Schnell, null).Kommentare, b.EntfernteKommentare);
+        }
+
         /// <summary>Konzept 6.1: ein verknüpftes Bild wird entfernt und als Warnung gemeldet, der Verweis
         /// auf die Dokumentvorlage als Hinweis; keine externe Beziehung bleibt, Hyperlinks bleiben.</summary>
         [Fact]
@@ -729,6 +770,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, e.Leere["stamm.kennzahl.eff.jaz"]);
             Assert.Equal(1, e.Leere["projekt.kunde"]);
             Assert.Equal(1, e.Leere["projekt.klimaregion"]);
+            // Die Stellen zählen jede Auflösung — Grundlage von „leer bei 2 von 2 Stellen“ (BV-E1 B1a).
+            Assert.Equal(2, e.Stellen["stamm.kennzahl.eff.jaz"]);
+            Assert.Equal(1, e.Stellen["projekt.kunde"]);
+            Assert.Equal(e.Ersetzt, e.Stellen.Values.Sum());
             Assert.Equal(2, e.Warnungen.Count(w => w.StartsWith("stamm.kennzahl.eff.jaz: ", StringComparison.Ordinal)));
             Assert.Contains(e.Meldungen(), m => m == TX.F(false, TX.LEER, "stamm.kennzahl.eff.jaz", 2));
             Assert.Equal(4, e.Ersetzt);

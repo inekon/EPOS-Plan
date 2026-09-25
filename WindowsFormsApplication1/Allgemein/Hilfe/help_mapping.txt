@@ -427,6 +427,13 @@ Form_WP_einlesen.btn_Help               = Gerätekataloge#import
 Form_Stromspeicher_einlesen.btn_Help    = Gerätekataloge#import
 Main_PV_Test.btn_Help                   = Gerätekataloge#import
 Form_WechselrichterImport.btn_Help      = Gerätekataloge#import
+# Berichtsvorlagen (BV-E1): Die Ueberlagerungen "Pruefliste" und "Platzhalterkatalog"
+# der Berichtsseite und der Abschnitt "Bericht" der Programmeinstellungen fuehren
+# auf die Seite Berichtsvorlagen (Repo-Quelle Projekte/Wiki/Programm Dokumentation -
+# Berichtsvorlagen.wiki); dort steht die Vorlagenwahl der Berichtsseite unter #vorlage.
+UcBericht.btn_Help_Pruefliste          = Berichtsvorlagen#pruefliste
+UcBericht.btn_Help_Platzhalterkatalog  = Berichtsvorlagen#platzhalterkatalog
+Form_AdminSettings.btn_Help_Bericht    = Berichtsvorlagen#einstellungen
 
 # ===========================================================================
 # Feldgenaue Hilfe (H12)

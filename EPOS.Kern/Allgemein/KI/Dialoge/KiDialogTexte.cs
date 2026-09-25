@@ -2818,6 +2818,9 @@
         internal static string BkbVariantenErl => MyResource.Resource.KI_DLG_BKB_VARIANTEN_ERL;
         internal static string BkbBausteineName => MyResource.Resource.BK_BER_LBL_BAUSTEINE;
         internal static string BkbBausteineErl => MyResource.Resource.KI_DLG_BKB_BAUSTEINE_ERL;
+        // BV-E1: die Word-Vorlage (KiDialoge.BerichtVorlagenfeld, angemeldet in KiDialoge.Berichtseite)
+        internal static string BkbVorlageName => MyResource.Resource.KI_DLG_BKB_VORLAGE_NAME;
+        internal static string BkbVorlageErl => MyResource.Resource.KI_DLG_BKB_VORLAGE_ERL;
 
         // ---- „Projekt speichern unter"
         internal static string PrkQuelleName => MyResource.Resource.PRJ_KOPIE_LBL_AUSWAHL;
@@ -3113,6 +3116,11 @@
         internal static string AdmsetTryRegionalErl => MyResource.Resource.KI_DLG_ADMSET_TRY_REGIONAL_ERL;
         internal static string AdmsetKuehlungName => MyResource.Resource.ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG;
         internal static string AdmsetKuehlungErl => MyResource.Resource.KI_DLG_ADMSET_KUEHLUNG_ERL;
+        // BV-E1 (Konzept Berichtsvorlagen 10.3): die Rubrik „Bericht"
+        internal static string AdmsetBerichtFirmaName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_FIRMA);
+        internal static string AdmsetBerichtFirmaErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_FIRMA_ERL;
+        internal static string AdmsetBerichtOrdnerName => OhneDoppelpunkt(MyResource.Resource.EIN_BERICHT_LBL_VORLAGENORDNER);
+        internal static string AdmsetBerichtOrdnerErl => MyResource.Resource.KI_DLG_ADMSET_BERICHT_ORDNER_ERL;
 
         // ---- „Alle Daten" der Erzeugermasken des Projekts
 

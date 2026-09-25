@@ -20,9 +20,56 @@ namespace EPOS.UI.Seiten.Berichte;
 /// <para><b>Kein Speicherweg.</b> „Erstellen" rechnet und schreibt eine Datei —
 /// eine Aktion der Stufen 2 und 3 mit eigener Rückfrage, kein Speichern der
 /// Maske.</para>
+///
+/// <para><b>BV-E1 (Konzept 10.2): die Gruppe „Vorlage".</b> Die Vorlagenwahl ist ein
+/// Wahlfeld (<see cref="Vorlage"/> mit <see cref="VorlageWahl"/>) — gesetzt wird sie über
+/// denselben Weg wie das Auswahlfeld, ein gesperrter Eintrag und ein laufender Bericht
+/// lehnen benannt ab. Die Prüfzeile ist eine Anzeige, die Suche des Platzhalterkatalogs
+/// (<see cref="Katalogsuche"/>) ein Einstellwert: Der Katalog steht als Überlagerung IN
+/// dieser Seite, und der Wirt meldet an, nicht das Blatt darin. Die Feldkarte des Kerns
+/// (<c>KiDialoge</c>, Maske Berichtsseite) zieht die drei Felder nach.</para>
 /// </summary>
 public sealed class BerichtSeiteKiSicht
 {
+    /// <summary>Liest die gewählte Word-Vorlage (<c>Vorlagenzeile.Id</c>); <c>null</c> = keine.</summary>
+    public Func<int?>? VorlageLesen { get; init; }
+
+    /// <summary>Setzt die Word-Vorlage — derselbe Weg wie das Auswahlfeld; wirft mit Grund, wo es nicht geht.</summary>
+    public Action<int?>? VorlageSetzen { get; init; }
+
+    /// <summary>Die Vorlagen der Liste als Wahleinträge.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? VorlageEintraege { get; init; }
+
+    /// <summary>Liest die Prüfzeile als Text.</summary>
+    public Func<string>? PruefzeileLesen { get; init; }
+
+    /// <summary>Liest die Suche des Platzhalterkatalogs.</summary>
+    public Func<string>? KatalogsucheLesen { get; init; }
+
+    /// <summary>Setzt die Suche des Platzhalterkatalogs.</summary>
+    public Action<string>? KatalogsucheSetzen { get; init; }
+
+    /// <summary>Die Vorlagen der Liste.</summary>
+    public IReadOnlyList<KiWahleintrag> VorlageWahl
+        => VorlageEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Mit welcher Word-Vorlage der Bericht entsteht.</summary>
+    public int? Vorlage
+    {
+        get => VorlageLesen?.Invoke();
+        set => VorlageSetzen?.Invoke(value);
+    }
+
+    /// <summary>Was die Prüfung der gewählten Vorlage sagt — Anzeige.</summary>
+    public string Pruefzeile => PruefzeileLesen?.Invoke() ?? "";
+
+    /// <summary>Wonach der Platzhalterkatalog filtert (Schlüssel und Beschreibung).</summary>
+    public string Katalogsuche
+    {
+        get => KatalogsucheLesen?.Invoke() ?? "";
+        set => KatalogsucheSetzen?.Invoke(value ?? "");
+    }
+
     /// <summary>Liest das gewählte Ausgabeformat (0 = Word, 1 = Excel, 2 = beide).</summary>
     public Func<int?>? AusgabeLesen { get; init; }
 
