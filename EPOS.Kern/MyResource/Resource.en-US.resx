@@ -35135,4 +35135,19 @@ Do you want to allow this?</value>
   <data name="BK_BER_VORLAGE_INHALT_AUS_VORLAGE" xml:space="preserve">
     <value>The template determines the content – it holds single placeholders but no chapter.</value>
   </data>
+  <data name="WIRT_AE_BEZUG_STANDARD" xml:space="preserve">
+    <value>The places in the report refer to the standard template.</value>
+  </data>
+  <data name="WIRT_AE_BEZUG_VORLAGE" xml:space="preserve">
+    <value>The places in the report name the chapters of the template “{0}”; the line below gives the place in the standard template.</value>
+  </data>
+  <data name="WIRT_AE_STELLE_KAPITEL" xml:space="preserve">
+    <value>“{0}”</value>
+  </data>
+  <data name="WIRT_AE_STELLE_FEHLT" xml:space="preserve">
+    <value>“{0}” not in the report</value>
+  </data>
+  <data name="WIRT_AE_NICHT_IM_BERICHT" xml:space="preserve">
+    <value>not in the report</value>
+  </data>
 </root>

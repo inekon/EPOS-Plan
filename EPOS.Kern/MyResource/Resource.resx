@@ -35142,4 +35142,19 @@ Möchten Sie das zulassen?</value>
   <data name="BK_BER_VORLAGE_INHALT_AUS_VORLAGE" xml:space="preserve">
     <value>Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.</value>
   </data>
+  <data name="WIRT_AE_BEZUG_STANDARD" xml:space="preserve">
+    <value>Die Stellen im Bericht sind bezogen auf die Standardvorlage.</value>
+  </data>
+  <data name="WIRT_AE_BEZUG_VORLAGE" xml:space="preserve">
+    <value>Die Stellen im Bericht nennen die Kapitel der Vorlage „{0}“; die Zeile darunter nennt die Stelle in der Standardvorlage.</value>
+  </data>
+  <data name="WIRT_AE_STELLE_KAPITEL" xml:space="preserve">
+    <value>„{0}“</value>
+  </data>
+  <data name="WIRT_AE_STELLE_FEHLT" xml:space="preserve">
+    <value>„{0}“ nicht im Bericht</value>
+  </data>
+  <data name="WIRT_AE_NICHT_IM_BERICHT" xml:space="preserve">
+    <value>nicht im Bericht</value>
+  </data>
 </root>
