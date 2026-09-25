@@ -456,11 +456,32 @@ namespace WindowsFormsApplication1
         /// <b>Der vorbelegte Satz des Gebäudeeditors im Modus Neu</b>: <see cref="NachKatalogdaten"/>
         /// auf den Vorgabedaten eines neuen Gebäudes — denselben, mit denen der Editor im Modus Neu
         /// öffnet (<c>GebaeudeKatalogHuelle.AusModell(new GebaeudeModel())</c>) —, dazu die
-        /// Herleitungszeile.
+        /// Herleitungszeile samt den übernommenen Vorgaben (<see cref="Vorgabentext"/>): Der Editor
+        /// zeigt keine Herkunft je Feld, an dieser Zeile bleibt eine Vorgabe als Vorgabe erkennbar.
         /// </summary>
         internal GebaeudeVorbelegung Vorbelegung(GebaeudeImportErgebnis ergebnis)
-            => new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
-                                       Vorbelegungstext);
+        {
+            string vorgaben = Vorgabentext(ergebnis);
+            return new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
+                                           vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben);
+        }
+
+        /// <summary>
+        /// Die übernommenen Vorgaben eines Ergebnisses als ein Satz: „Vorgaben, nicht aus der Datei:
+        /// Luftwechselrate 0,7 1/h; …" — jede Zeile mit Haken und Herkunft Vorgabe, mit Feld, Wert und
+        /// Einheit in der Anzeigekultur; ohne solche Zeile leer.
+        /// </summary>
+        internal static string Vorgabentext(GebaeudeImportErgebnis ergebnis)
+        {
+            string vorgabe = GebaeudeZuordnungsModell.HerkunftSchluessel(Importherkunft.Vorgabe);
+            List<string> teile = (ergebnis?.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
+                .Where(z => z != null && z.Haken && z.HerkunftSchluessel == vorgabe)
+                .Select(z => z.Textwert != null
+                    ? z.Feld + " (" + z.WertText + ")"
+                    : (z.Feld + " " + GebaeudeZuordnungsModell.ZahlText(z.Wert) + " " + z.Einheit).Trim())
+                .ToList();
+            return teile.Count == 0 ? "" : Formatieren(MyResource.Resource.GIMP_VORBELEGT_VORGABEN, string.Join("; ", teile));
+        }
 
         // =================================================================================
         // Der Weg „als Katalogsatz ablegen" — Abbildung auf den Gebäudeeditor
@@ -541,6 +562,7 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.LAENGE_AUSSENWAND_KELLER: d.AnschlussAussenwandKeller = w; break;
 
                     // ---- Lüftung (D12) und Sollwert
+                    case GebaeudeZielfelder.LUFTWECHSELRATE: d.Luftwechselrate = w; break;
                     case GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION: d.LuftwechselInfiltration = w; break;
                     case GebaeudeZielfelder.LUFTWECHSEL_NUTZER: d.LuftwechselNutzer = w; break;
                     case GebaeudeZielfelder.SOLL_TAG: d.SollTag = w; break;

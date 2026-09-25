@@ -55,7 +55,7 @@ Die Tabelle ''Zuordnung'' hat je Feld des Gebäudeeditors eine Zeile, geordnet n
 
 * '''Wert''' und '''Einheit''' – die Zahl, die übernommen wird. Ein Zahlenfeld lässt sich ändern.
 * '''Beleg''' – woraus der Wert stammt, etwa „Summe aus 3 beheizten Räumen" oder das flächengewichtete Mittel der U-Werte mehrerer Bauteile.
-* '''Vorgabe''' – der Wert der Baualtersklasse, auch wenn die Datei eine eigene Zahl liefert.
+* '''Vorgabe''' – der Wert, der ohne Zahl aus der Datei gilt: der Wert der Baualtersklasse, auch wenn die Datei eine eigene Zahl liefert, oder eine feste Vorgabe von EPOS-Plan (siehe [[#nicht-aus-der-datei|Was nicht aus der Datei kommt]]).
 * '''Herkunft''' – siehe unten.
 * '''Übernehmen''' – der Haken. Ohne Haken bleibt das Feld des neuen Gebäudes so, wie der Editor es für ein neues Gebäude vorsieht.
 
@@ -69,7 +69,7 @@ Eine gelb markierte Zeile verdient einen Blick, etwa bei fehlender Geometrie, ei
 Die Spalte ''Herkunft'' sagt für jedes Feld, woher sein Wert kommt:
 
 * '''gbXML-Datei''' bzw. '''IFC-Datei''' – gelesen aus der Datei.
-* '''Vorgabe''' – aus der gewählten Baualtersklasse, weil die Datei keinen Wert liefert.
+* '''Vorgabe''' – aus der gewählten Baualtersklasse oder eine feste Vorgabe von EPOS-Plan, weil die Datei keinen Wert liefert; der Beleg nennt die Quelle der Zahl.
 * '''Manuell''' – von Ihnen im Dialog eingetragen. Ein eingetragener Wert setzt den Haken; Beleg und Markierung der Zeile entfallen.
 * '''Leer''' – weder die Datei noch die Klasse liefert einen Wert.
 
@@ -78,10 +78,17 @@ Die Herkunft je Feld gilt für diesen Dialog. Im Projekt merkt sich EPOS-Plan di
 === Was nicht aus der Datei kommt ===
 {{Anker|nicht-aus-der-datei}}
 
+Was der Katalogeditor für jedes neue Gebäude verlangt, die Datei aber nicht liefert, steht als '''Vorgabe''' in der Zuordnung – mit Haken, und der Beleg nennt die Quelle der Zahl:
+
+* '''Luftwechselrate''' – immer 0,7 1/h, die Summe der Vorgaben für Infiltration (0,3 1/h) und Nutzerlüftung (0,4 1/h). Das Gebäudemodell rechnet mit Infiltration und Nutzerlüftung, solange eines der beiden Felder gefüllt ist; der Beleg nennt den Luftwechsel, mit dem gerechnet wird.
+* '''Fläche je Nutzer''' – aus den Personenzahlen, wenn die Datei sie für jeden beheizten Raum nennt; sonst 35 m², der Wert, mit dem EPOS-Plan ein Gebäude ohne diese Angabe speichert.
+* '''Innere Gewinne''' – 0 W wie bei einem neuen Gebäude. Eine Datei nennt Auslegungsleistungen für Beleuchtung und Geräte, die zu Zeitplänen gehören; ihre Summe steht nur als Vorschlag im Beleg.
+
+Für U-Werte, g-Wert und Wärmebrückenkoeffizienten gibt es Vorgaben nur aus der Baualtersklasse; ohne Klasse bleiben diese Zeilen leer, wenn die Datei keinen Wert liefert. Weiter gilt:
+
 * '''Wärmebrücken''' – die Verlustkoeffizienten ψ sind die Vorgabe der Baualtersklasse; die '''Anschlusslängen''' bleiben leer, weil eine Gebäudedatei sie nicht als solche führt. Tragen Sie die Längen im Katalogeditor ein, wenn der Wärmebrückenzuschlag gerechnet werden soll.
-* '''Innere Gewinne''' bleiben leer. Eine Datei nennt Auslegungsleistungen für Beleuchtung und Geräte, die zu Zeitplänen gehören; ihre Summe steht nur als Vorschlag im Beleg.
 * '''Bauart''' – wo die Datei Schichtaufbauten mit Stoffwerten führt, leitet EPOS-Plan sie aus den raumseitigen Schichten der Bauteile ab; sonst gilt die Bauart eines neuen Gebäudes. Der Editor bildet daraus die Speicherfähigkeit wie bei jedem neuen Gebäude.
-* '''Luftwechsel''' – übernommen wird nur die Infiltration, und nur, wenn die Datei sie für jeden beheizten Raum nennt; die Nutzerlüftung bleibt leer und rechnet mit ihrer Vorgabe.
+* '''Luftwechsel''' – übernommen wird nur die Infiltration, und nur, wenn die Datei sie für jeden beheizten Raum nennt; die Nutzerlüftung bleibt dann leer und rechnet mit ihrer Vorgabe. Nennt die Datei keinen Luftwechsel, stehen beide auf ihrer Vorgabe.
 * '''Soll am Tag''' – übernommen, wenn die Datei für alle beheizten Räume dieselbe Heiz-Solltemperatur nennt.
 
 === Meldungen ===
@@ -97,7 +104,7 @@ Der Abschnitt ''Meldungen'' sammelt, was beim Lesen und Zuordnen aufgefallen ist
 == Der vorbelegte Katalogeditor ==
 {{Anker|editor}}
 
-Nach dem ''OK'' öffnet sich der [[Programm Dokumentation/Gebäude#katalogeditor|Katalogeditor]] für ein '''neues Gebäude''', vorbelegt mit den übernommenen Werten und dem Namen aus dem Zuordnungsdialog. Eine leise Zeile unter dem Kopf nennt Datei und Format, aus denen er vorbelegt ist. Alle übrigen Felder stehen wie bei ''Gebäude in DB neu…''. Sie können jedes Feld noch ändern und ergänzen, etwa die Anschlusslängen der Wärmebrücken, die Raumtemperaturen oder die Ferienzeiten.
+Nach dem ''OK'' öffnet sich der [[Programm Dokumentation/Gebäude#katalogeditor|Katalogeditor]] für ein '''neues Gebäude''', vorbelegt mit den übernommenen Werten und dem Namen aus dem Zuordnungsdialog. Eine leise Zeile unter dem Kopf nennt Datei und Format, aus denen er vorbelegt ist, und jede übernommene Vorgabe mit ihrem Wert, etwa „Luftwechselrate 0,7 1/h“. Alle übrigen Felder stehen wie bei ''Gebäude in DB neu…''. Sie können jedes Feld noch ändern und ergänzen, etwa die Anschlusslängen der Wärmebrücken, die Raumtemperaturen oder die Ferienzeiten.
 
 ''OK'' im Editor prüft und legt den Katalogsatz an, wie bei jedem neuen Gebäude. ''Abbrechen'', das Kreuz und Esc schließen den Editor, ohne etwas anzulegen; der Import ist dann verworfen.
 

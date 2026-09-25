@@ -289,11 +289,37 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Importherkunft.Leer, nutzer.Herkunft);
             Assert.False(nutzer.Uebernehmen);
 
+            // Die Luftwechselrate bleibt die ausgewiesene Vorgabe 0,3 + 0,4 — gerechnet wird mit der
+            // gelesenen Infiltration und der Vorgabe der Nutzerlüftung, so sagt es der Beleg.
+            LuftwechselrateIstVorgabe(s, "GIMP_BELEG_LUFTWECHSELRATE_VORGABE", 0.7 + GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER);
+
             // Nennt ein beheizter Raum keinen Luftwechsel, bleibt die Infiltration leer.
             string teilweise = Raum("raum-1", "Heated", 40, 100, "<AirChangesPerHour>0.4</AirChangesPerHour>") + Raum("raum-2", "Heated", 120, 300);
             GebaeudeImportSatz t = Satz(Klein.Wand("aw-1", 0, Masse(10, 2.5)), raeume: teilweise);
             Assert.Null(t.Zeile(GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION).Wert);
             Assert.Contains(t.Meldungen, m => m.Schluessel == G + "LUFTWECHSEL_UNVOLLSTAENDIG");
+            // Infiltration und Nutzerlüftung leer: dann rechnet das Modell mit der Luftwechselrate selbst.
+            LuftwechselrateIstVorgabe(t, "GIMP_BELEG_LUFTWECHSELRATE_VORGABE_WIRKT",
+                GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION + GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER);
+        }
+
+        /// <summary>
+        /// Die Luftwechselrate ist die Vorgabe Infiltration + Nutzerlüftung des Stundenmodells, und der
+        /// Luftwechsel, mit dem gerechnet wird, ist der von <see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?)"/>.
+        /// </summary>
+        private static void LuftwechselrateIstVorgabe(GebaeudeImportSatz s, string beleg, double wirksam)
+        {
+            GebaeudeFeldzeile rate = s.Zeile(GebaeudeZielfelder.LUFTWECHSELRATE);
+            double vorgabe = GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION + GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER;
+            Assert.Equal(vorgabe, rate.Wert);
+            Assert.Equal(vorgabe, rate.VorgabeWert);
+            Assert.Equal(Importherkunft.Vorgabe, rate.Herkunft);
+            Assert.True(rate.Uebernehmen);
+            Assert.Equal(beleg, rate.Beleg.Schluessel);
+            Nah(wirksam, Gebaeudemodellvorgaben.WirksamerLuftwechsel(rate.Wert,
+                s.Zeile(GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION).Wert, s.Zeile(GebaeudeZielfelder.LUFTWECHSEL_NUTZER).Wert));
+            if (rate.Beleg.Werte.Length > 3)
+                Nah(wirksam, double.Parse(rate.Beleg.Werte[3], System.Globalization.CultureInfo.InvariantCulture));
         }
 
         // ==================================================================

@@ -185,7 +185,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("geb-1", p.Quellkennung);
 
             GebaeudeVorbelegung v = h.Vorbelegung(Ergebnis(stand, name: "Neubau A"));
-            Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML.", v.Herleitung);
+            // Die Herleitungszeile nennt Datei und Format und danach jede übernommene Vorgabe.
+            Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML. Vorgaben, nicht aus der Datei: "
+                         + "Interne Wärmegewinne 0 W; ψ Anschluss Fenster–Wand 0,09 W/(mK); ψ Anschluss Wand–Dach 0,3 W/(mK); "
+                         + "ψ Anschluss Außenwand–Keller 0,6 W/(mK); Luftwechselrate 0,7 1/h.", v.Herleitung);
             Assert.Equal("Neubau A", v.Daten.Name);
             Assert.Equal(120.0, v.Daten.WohnflaecheGesamt);
             // Was nicht aus der Datei kommt, steht wie im Modus Neu des Editors.
@@ -419,7 +422,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(120.0, d.WohnflaecheGesamt);
             Assert.Equal(2.5, d.Raumhoehe);
             Assert.Equal(24.0, d.FlaecheNutzer);
-            Assert.Null(d.Waermegewinne);                         // innere Gewinne: nur Vorschlag im Beleg
+            Assert.Equal(0.0, d.Waermegewinne);                   // innere Gewinne: Vorgabe eines neuen Gebäudes, der Vorschlag nur im Beleg
             Assert.Equal(4, d.Baualtersklasse);                   // E
             Assert.Equal(Gebaeudebauweise.SCHWER, d.Bauart);
             Assert.Equal(120.0 * 50, d.Bauweise);                 // Nutzfläche × 50 — die Rechnung des Editors
@@ -447,6 +450,8 @@ namespace EPOS.Kern.Tests
             Assert.Null(d.AnschlussAussenwandKeller);
             Assert.Equal(0.5, d.LuftwechselInfiltration);
             Assert.Null(d.LuftwechselNutzer);                     // D12
+            Assert.Equal(GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION + GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER,
+                         d.Luftwechselrate);                      // die Pflichtangabe des Editors: Vorgabe 0,7 1/h
             Assert.Equal(20.0, d.SollTag);
             Assert.Equal("Wohngebaeude", d.Verwendung);           // kein Zielfeld — bleibt
 

@@ -34,6 +34,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
         public int EditorGaben { get; set; }
         public int Aufgenommen { get; set; }
         public List<(string Name, bool Neu)> Gespeichert { get; } = new();
+        public List<GebaeudeKatalogDaten> GespeicherteDaten { get; } = new();
         public int Geaendert { get; set; }
         public List<bool> Geschlossen { get; } = new();
     }
@@ -93,35 +94,90 @@ public class GebaeudeDialogImportTests : EposBunitContext
             () =>
             {
                 p.EditorGaben++;
-                return new Dictionary<string, object>
-                {
-                    ["Daten"] = Satz(p.Uebernommen.Last().Gebaeudename),
-                    ["Modus"] = GebaeudeKatalogModus.Neu,
-                    ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => new[] { "Einfamilienhaus" }),
-                    ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => new[] { "Einfamilienhaus" }),
-                    ["Baualtersklassen"] = (IReadOnlyList<string>)KLASSEN,
-                    ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>((d, neu, _) =>
-                    {
-                        p.Gespeichert.Add((d.Name, neu));
-                        return new GebaeudeKatalogErgebnis(true, "");
-                    }),
-                    ["Vorbelegung"] = "Vorbelegt aus dem Import: Datei haus.alpha, Format Alpha.",
-                    ["EntprellungMs"] = 0,
-                };
+                return EditorGaben(p, Satz(p.Uebernommen.Last().Gebaeudename),
+                                   "Vorbelegt aus dem Import: Datei haus.alpha, Format Alpha.");
             },
-            () =>
-            {
-                p.Aufgenommen++;
-                return new GebaeudeProjektZeile
-                {
-                    IdZ = 100001, IdGebaeude = 77, IdKatalog = 77, Name = p.Gespeichert.Last().Name,
-                    Einheit = "Wohnfläche [m²]", Wohnflaeche = 120, Jahresnutzungsgrad = 1,
-                    Herkunftsschluessel = "import-probe",
-                };
-            });
+            () => Aufnehmen(p));
     }
 
-    private IRenderedComponent<GebaeudeDialog> Aufbauen(Protokoll p, List<GebaeudeProjektZeile> zeilen, bool mitImport = true)
+    /// <summary>
+    /// Der Parametersatz des vorbelegten Editors im Modus Neu — die Wege zur Datenbank (Typen, Arten,
+    /// Speichern) sind Proben; <paramref name="daten"/> und <paramref name="herleitung"/> sind die Vorbelegung.
+    /// </summary>
+    private static Dictionary<string, object> EditorGaben(Protokoll p, GebaeudeKatalogDaten daten, string herleitung) => new()
+    {
+        ["Daten"] = daten,
+        ["Modus"] = GebaeudeKatalogModus.Neu,
+        ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => new[] { "Einfamilienhaus" }),
+        ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => new[] { "Einfamilienhaus" }),
+        ["Baualtersklassen"] = (IReadOnlyList<string>)KLASSEN,
+        ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>((d, neu, _) =>
+        {
+            p.Gespeichert.Add((d.Name, neu));
+            p.GespeicherteDaten.Add(d.Kopie());
+            return new GebaeudeKatalogErgebnis(true, "");
+        }),
+        ["Vorbelegung"] = herleitung,
+        ["EntprellungMs"] = 0,
+    };
+
+    /// <summary>Die neue Projektzeile nach dem Speichern im Editor.</summary>
+    private static GebaeudeProjektZeile Aufnehmen(Protokoll p)
+    {
+        p.Aufgenommen++;
+        return new GebaeudeProjektZeile
+        {
+            IdZ = 100001, IdGebaeude = 77, IdKatalog = 77, Name = p.Gespeichert.Last().Name,
+            Einheit = "Wohnfläche [m²]", Wohnflaeche = 120, Jahresnutzungsgrad = 1,
+            Herkunftsschluessel = "import-probe",
+        };
+    }
+
+    /// <summary>
+    /// Der Weg eines Imports mit der ECHTEN Hülle (<c>EPOS.UI.Daten</c>): Profil, Lesen, Zuordnen und
+    /// Prüfen aus ihrem Parametersatz, der vorbelegte Editor aus <c>GebaeudeImportHuelle.Vorbelegung</c>
+    /// (<c>NachKatalogdaten</c> auf einem neuen Gebäude). Ersetzt sind nur die Dateiwahl — sie liefert die
+    /// Probe aus <c>Referenzlaeufe/Importproben</c> — und die Wege des Editors zur Datenbank.
+    /// </summary>
+    private static GebaeudeImportweg EchterWeg(Protokoll p, string probe, int? klasse)
+    {
+        var huelle = new WindowsFormsApplication1.GebaeudeImportHuelle(ios: false);
+        string pfad = Probe(probe);
+        var gaben = new Dictionary<string, object>(huelle.Gaben(e =>
+        {
+            p.Uebernommen.Add(e);
+            return Task.FromResult<string>(null!);
+        }))
+        {
+            ["DateiWaehlen"] = new Func<string, Task<GebaeudeDateiwahl?>>(_ => Task.FromResult<GebaeudeDateiwahl?>(
+                new GebaeudeDateiwahl(pfad, Path.GetFileName(pfad), new FileInfo(pfad).Length))),
+        };
+        if (klasse.HasValue) gaben["BaualtersklasseVorgabe"] = klasse.Value;
+
+        return new GebaeudeImportweg(
+            gaben,
+            () =>
+            {
+                p.EditorGaben++;
+                var v = huelle.Vorbelegung(p.Uebernommen.Last());
+                return EditorGaben(p, v.Daten, v.Herleitung);
+            },
+            () => Aufnehmen(p));
+    }
+
+    /// <summary>Eine Probe aus <c>Referenzlaeufe/Importproben</c>, vom Laufordner aufwärts gesucht.</summary>
+    private static string Probe(string name)
+    {
+        for (DirectoryInfo? d = new(AppContext.BaseDirectory); d is not null; d = d.Parent)
+        {
+            string pfad = Path.Combine(d.FullName, "Referenzlaeufe", "Importproben", name);
+            if (File.Exists(pfad)) return pfad;
+        }
+        throw new FileNotFoundException("Die Probe fehlt: Referenzlaeufe/Importproben/" + name);
+    }
+
+    private IRenderedComponent<GebaeudeDialog> Aufbauen(Protokoll p, List<GebaeudeProjektZeile> zeilen, bool mitImport = true,
+                                                        Func<GebaeudeImportweg>? weg = null)
         => Render<GebaeudeDialog>(c => c
             .Add(x => x.Zeilen, zeilen)
             .Add(x => x.Katalogzeilen, () => new[]
@@ -134,7 +190,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new WindowsFormsApplication1.Katalogfilterstand())
             .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "", "150,00"))
             .Add(x => x.KatalogGaben, _ => new Dictionary<string, object>())
-            .Add(x => x.ImportGaben, mitImport ? () => Weg(p) : null)
+            .Add(x => x.ImportGaben, mitImport ? weg ?? (() => Weg(p)) : null)
             .Add(x => x.Geaendert, () => p.Geaendert++)
             .Add(x => x.Geschlossen, b => p.Geschlossen.Add(b)));
 
@@ -281,5 +337,54 @@ public class GebaeudeDialogImportTests : EposBunitContext
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Gebäude in DB neu...").Click();
         Assert.True(cut.Instance.KatalogeditorOffen);
         Assert.False(cut.Instance.ImportLaeuft);
+    }
+
+    // =================================================================================
+    // Mit der echten Hülle: der vorbelegte Editor schließt mit OK (Befund der Sichtprobe)
+    // =================================================================================
+
+    /// <summary>
+    /// Der Befund der Gebäudeimport-Sichtprobe: Der vorbelegte Editor hielt sein OK an, weil die
+    /// Abbildung Luftwechselrate und Fläche je Nutzer auf der 0 eines neuen Gebäudes ließ. Mit der
+    /// echten Hülle — Lesen, Zuordnen, Prüfen, <c>Vorbelegung</c> — schließt der Editor jetzt mit OK,
+    /// legt an, und die neue Zeile steht markiert in der Projektliste; die Herleitungszeile nennt die
+    /// übernommenen Vorgaben.
+    /// </summary>
+    [Theory]
+    [InlineData("gbxml_haus_si.xml", 4)]
+    [InlineData("gbxml_haus_si.xml", null)]
+    [InlineData("ifc4_haus.ifc", 4)]
+    [InlineData("ifc4_haus.ifc", null)]
+    [InlineData("gbxml_ohne_konstruktionen.xml", 4)]
+    public void Mit_der_echten_Huelle_schliesst_der_vorbelegte_Editor_mit_OK(string probe, int? klasse)
+    {
+        var p = new Protokoll();
+        var zeilen = EineZeile();
+        var cut = Aufbauen(p, zeilen, weg: () => EchterWeg(p, probe, klasse));
+
+        // Die Hülle liest im Arbeitsfaden: OK ist erst nach dem Lesen frei.
+        IRenderedComponent<GebaeudeImportDialog> imp = ImportEinlesen(cut);
+        imp.WaitForAssertion(() => Assert.False(imp.Find(".epos-leiste button.epos-knopf--primaer").HasAttribute("disabled")));
+        imp.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        GebaeudeImportErgebnis ergebnis = Assert.Single(p.Uebernommen);
+        Assert.Equal(klasse, ergebnis.Baualtersklasse);
+        Assert.True(cut.Instance.KatalogeditorOffen);
+
+        IRenderedComponent<GebaeudeKatalogDialog> editor = cut.FindComponent<GebaeudeKatalogDialog>();
+        Assert.Contains(editor.FindAll(".epos-herleitung-text").Select(e => e.TextContent),
+                        t => t.StartsWith("Vorbelegt aus dem Import: Datei " + probe, StringComparison.Ordinal)
+                             && t.Contains("Luftwechselrate 0,7 1/h", StringComparison.Ordinal));
+        editor.Find(".epos-leiste button.epos-knopf--primaer").Click();
+
+        // Kein Befund des Editors: angelegt, geschlossen, die neue Zeile markiert in der Liste.
+        Assert.False(cut.Instance.KatalogeditorOffen, cut.Instance.KatalogeditorOffen ? editor.Instance.Meldung : "");
+        Assert.Equal((ergebnis.Gebaeudename, true), Assert.Single(p.Gespeichert));
+        GebaeudeKatalogDaten gespeichert = Assert.Single(p.GespeicherteDaten);
+        Assert.Equal(0.7, gespeichert.Luftwechselrate!.Value, 12);
+        Assert.True(gespeichert.FlaecheNutzer > 0);
+        Assert.Equal(1, p.Aufgenommen);
+        Assert.Equal(2, zeilen.Count);
+        Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
+        Assert.Contains("steht jetzt im Katalog und in der Projektliste", cut.Instance.Meldung);
     }
 }

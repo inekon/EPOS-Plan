@@ -697,8 +697,13 @@ Kultur wechselt).
 
 **Selbstprüfung vom 25.09.2026** (integrierter Browser, Wirt auf Port 5299): Lesen, Zuordnen, OK
 und Übernahme in beiden Fällen, `kultur=en-US` in Dialog und Übernahme, `ios=1` in der
-Grenzzeile; im Protokoll des Wirtes kein Datenbankzugriff. **Befund:** Der vorbelegte Editor hält
-sein OK an — ohne Baualtersklasse mit „Die Fläche je Nutzer muss größer als 0 sein", mit Klasse E
-(Fläche je Nutzer 24 m² aus der Vorgabe) mit „Die Luftwechselrate muss größer als 0 sein": Die
-Abbildung setzt `LuftwechselInfiltration`, die Pflichtangabe `Luftwechselrate` des Editors bleibt
-die 0 eines neuen Gebäudes.
+Grenzzeile; im Protokoll des Wirtes kein Datenbankzugriff. **Befund:** Der vorbelegte Editor hielt
+sein OK an. „Die Luftwechselrate muss größer als 0 sein" galt für jede Probe: Die Abbildung kannte die
+Pflichtangabe `Luftwechselrate` nicht (ein gelesener Luftwechsel geht nach D12 auf die Infiltration),
+sie blieb die 0 eines neuen Gebäudes. „Die Fläche je Nutzer muss größer als 0 sein" folgt nicht der
+Baualtersklasse, sondern der Datei: Das Probenhaus nennt 5 Personen (24 m² je Nutzer), der IFC-Leser und
+`gbxml_ohne_konstruktionen.xml` nennen keine, und ein Keller, der in der Raumliste als beheizt gilt,
+macht die Angabe unvollständig. **Behebung:** Luftwechselrate (0,7 1/h), Fläche je Nutzer (35 m²) und
+innere Gewinne (0 W) tragen, wo die Datei sie nicht liefert, eine ausgewiesene Vorgabe; die
+Herleitungszeile des Editors nennt jede übernommene Vorgabe. Wächter: `GebaeudeImportEditorabschlussTests`
+und der bunit-Fall `GebaeudeDialogImportTests.Mit_der_echten_Huelle_schliesst_der_vorbelegte_Editor_mit_OK`.
