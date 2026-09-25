@@ -3239,10 +3239,10 @@ Both point to {0} "{1}".</value>
     <value>{0}: the building has {1} zones; EPOS computes several zones with stage G6. Until then a building is computed without a zone (class method) or with exactly one zone (building-element method).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>VDI 6007 building model: {0} uses the building-element method with the zone “{1}” and {2} building elements, {3} of them with a layer build-up; set points, ventilation, internal gains and usable floor area come from the building record.</value>
+    <value>VDI 6007 building model: {0} uses the building-element method with the zone “{1}” and {2} building elements, {3} of them with a layer build-up; air volume, thermal mass of the construction type and internal gains follow the usable floor area of the zone (area key), set points, room height and ventilation come from the building record.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
-    <value>VDI 6007 building model: {0} is computed with its zone and its building elements (actual envelope). The entry {1} {2} is neither back-calculated nor applied as a scaling factor — scaling factor 1, reference area {3} m² (usable floor area of the building).</value>
+    <value>VDI 6007 building model: {0} is computed with its zone and its building elements (actual envelope). The entry {1} {2} is neither back-calculated nor applied as a scaling factor — scaling factor 1, reference area {3} m² (usable floor area of the zone).</value>
   </data>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} is computed on the daily-balance path; its zone is not used there — only the VDI 6007 path computes the building-element method.</value>
@@ -32729,5 +32729,38 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
     <value>For {0} envelope components the position of the layers cannot be determined (no IfcMaterialLayerSetUsage or no room side) — assumed: first layer outside ({1}).</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_NUTZFLAECHE" xml:space="preserve">
+    <value>The usable floor area of the zone “{0}” is {1} m² and not greater than zero; the building-element method needs it as reference area.</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
+    <value>The zone “{0}” has its own usable floor area, but the usable floor area of the building is {1} m²; without it thermal mass and internal gains cannot be apportioned to the zone.</value>
+  </data>
+  <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
+    <value>Zone “{0}”: the usable floor area must be greater than zero.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
+    <value>Without a project with a climate region the scaling factor cannot be determined – please save the project and select a climate region.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_FAKTOR" xml:space="preserve">
+    <value>The calculation yields no scaling factor for this building.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_OHNE_KOPIE" xml:space="preserve">
+    <value>The building has no project copy yet – save the project first; the copy then carries a zone.</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>The building element needs a name.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BEREICH" xml:space="preserve">
+    <value>Building element “{0}”: {1} = {2} is outside {3}.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RAND_ZONE" xml:space="preserve">
+    <value>Building element “{0}”: EPOS computes the boundary condition “adjacent zone” only with several zones (stage G6).</value>
+  </data>
+  <data name="BAUTEIL_MSG_FENSTER_RAND" xml:space="preserve">
+    <value>Building element “{0}”: a window or curtain wall faces outdoor air or an unheated space.</value>
+  </data>
+  <data name="BAUTEIL_MSG_UWERT_FEHLT" xml:space="preserve">
+    <value>Building element “{0}”: it needs a U-value or a build-up – a window or curtain wall always needs a U-value.</value>
   </data>
 </root>

@@ -19,7 +19,9 @@ namespace WindowsFormsApplication1
     /// G3. Mit genau einer Zone rechnet der Bauteilweg: Ersatzparameter aus den Bauteilen
     /// (<see cref="ErsatzparameterRC.AusBauteilweg(GebaeudeModellEingang, IReadOnlyList{BauteilEingang})"/>),
     /// solare Gewinne und äquivalente Außentemperatur je Bauteil
-    /// (<see cref="BauteilwegAussenseite"/>); alles Übrige — Sollwerte, Lüftung, innere Gewinne,
+    /// (<see cref="BauteilwegAussenseite"/>); die Nutzfläche der Zone mit ihrem Flächenschlüssel
+    /// (<see cref="Flaechenschluessel"/>: Luftvolumen, Speichermasse der Bauweise, innere
+    /// Gewinne, f_IW·A_f); alles Übrige — Sollwerte, Raumhöhe, Luftwechsel, Leistungsgrenzen,
     /// Kühlung, Übergabe — bleibt das der Gebäudezeile.</para>
     ///
     /// <para><b>Vorgaben bei NULL</b> sind die des Eingangsbauers (Rechenschritte 1.1), nicht
@@ -46,11 +48,11 @@ namespace WindowsFormsApplication1
         /// <summary>Bezeichnung des Gebäudes für Meldungen.</summary>
         internal string Bezeichnung { get; private set; }
 
-        /// <summary>Nutzfläche des Katalogbaus A_f [m²] (E13).</summary>
+        /// <summary>Nutzfläche A_f [m²] (E13): des Katalogbaus, mit Zone die der Zone (<see cref="Flaechenschluessel"/>).</summary>
         internal double Nutzflaeche_M2 { get; private set; }
         /// <summary>Raumhöhe H [m].</summary>
         internal double Raumhoehe_M { get; private set; }
-        /// <summary>Speichermasse C_ges [Wh/K] (<c>Bauweise</c>).</summary>
+        /// <summary>Speichermasse C_ges [Wh/K] (<c>Bauweise</c>); mit Zone nach dem Flächenschlüssel.</summary>
         internal double Bauweise_WhK { get; private set; }
 
         /// <summary>U-Wert Außenwand [W/(m²K)].</summary>
@@ -106,7 +108,7 @@ namespace WindowsFormsApplication1
         /// <see cref="Luftwechselrate_h"/> auf 2,0 1/h, (2,0 − n)·A_f·H·c·ρ, nie negativ.
         /// </summary>
         internal double SommerlueftungZusatzleitwertWK { get; private set; }
-        /// <summary>Innere Wärmegewinne des Katalogbaus [W], zeitlich konstant (G1).</summary>
+        /// <summary>Innere Wärmegewinne [W], zeitlich konstant (G1): des Katalogbaus, mit Zone nach dem Flächenschlüssel.</summary>
         internal double InnereGewinne_W { get; private set; }
 
         /// <summary>Tagsollwert [°C].</summary>
@@ -302,8 +304,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zone, mit der das Gebäude den Bauteilweg rechnet (Stufe G3, A14/E27); <c>null</c> =
-        /// keine Zone, Klassenweg. G3 liest von ihr nur die Bauteile — Sollwerte, Flächen,
-        /// Lüftung und Gewinne bleiben die der Gebäudezeile (<see cref="GebaeudeZonensatz"/>).
+        /// keine Zone, Klassenweg. G3 liest von ihr die Bauteile und die Nutzfläche, der die
+        /// flächenbezogenen Größen des Gebäudes folgen (<see cref="Flaechenschluessel"/>);
+        /// Sollwerte, Raumhöhe, Luftwechsel und Leistungsgrenzen bleiben die der Gebäudezeile
+        /// (<see cref="GebaeudeZonensatz"/>).
         /// </summary>
         internal GebaeudeZonensatz Zone { get; private set; }
 
@@ -317,6 +321,55 @@ namespace WindowsFormsApplication1
 
         /// <summary>Rechnet das Gebäude den Bauteilweg (genau eine Zone)?</summary>
         internal bool Bauteilweg => Zone != null;
+
+        /// <summary>
+        /// Der Flächenschlüssel der Zone (Stufe G3, Mehrzonenkonzept 4.2): Nutzfläche der Zone /
+        /// Nutzfläche des Gebäudes; 1 im Klassenweg und für eine Zone ohne eigene Nutzfläche.
+        /// </summary>
+        internal double Flaechenanteil { get; private set; } = 1.0;
+
+        /// <summary>
+        /// <b>Der Flächenschlüssel</b> (Stufe G3, Anwenderentscheid vom 25.09.2026 „Hochrechnen“;
+        /// Mehrzonenkonzept 4.2: NULL = anteilig aus dem Gebäude). Mit einer Zone ist ihre
+        /// Nutzfläche die Bezugsfläche A_f (<see cref="GebaeudeZonensatz.Bezugsflaeche"/>), und die
+        /// flächenbezogenen Größen des Gebäudes folgen ihr im Verhältnis A_Zone / A_Gebäude:
+        /// <list type="bullet">
+        /// <item>das Luftvolumen A_f·H (H_ve und der Zusatzleitwert der Sommerlüftung, H = Raumhöhe
+        /// des Gebäudes) und f_IW·A_f — beide über <see cref="Nutzflaeche_M2"/>;</item>
+        /// <item>die Speichermasse der Bauweise, die im Bauteilweg eine Gruppe ohne Schichten trägt
+        /// (Bauweise je m² × Zonenfläche);</item>
+        /// <item>die inneren Gewinne — <c>Interne_Waermegewinne</c> führt der Katalog ABSOLUT in W,
+        /// also anteilig; die Bewohner sind je m² gebildet (Nutzfläche / Fläche je Nutzer) und
+        /// entstehen in der Fassade aus der Zonenfläche.</item>
+        /// </list>
+        /// Nicht geschlüsselt sind die Leistungsgrenzen <c>Heizleistung_Max</c> und
+        /// <c>Kuehlleistung_Max</c> (Eingaben in kW, sie gelten der Zone, wie sie stehen) und die
+        /// übrigen Spalten der Zone (G6). Eine Zone ohne eigene Nutzfläche rechnet bitgleich wie
+        /// vorher: Der Anteil ist dann genau 1, und es wird nichts umgerechnet.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.PflichtgroesseFehlt"/>,
+        /// wenn die Nutzfläche der Zone oder — für den Schlüssel — die des Gebäudes nicht größer null ist.</exception>
+        private void Flaechenschluessel(ProjektGebaeudeModel g)
+        {
+            double aGebaeude = g.Nutzflaeche;
+            double aZone = Zone.Bezugsflaeche(g);
+            if (!(aZone > 0.0) || double.IsInfinity(aZone))
+                Fehler(GebaeudeModellFehler.PflichtgroesseFehlt,
+                       string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_ZONE_NUTZFLAECHE,
+                                     Zone.Bezeichnung, Text(aZone)));
+            if (aZone == aGebaeude) return;
+            if (!(aGebaeude > 0.0) || double.IsInfinity(aGebaeude))
+                Fehler(GebaeudeModellFehler.PflichtgroesseFehlt,
+                       string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_ZONE_SCHLUESSEL,
+                                     Zone.Bezeichnung, Text(aGebaeude)));
+
+            double anteil = aZone / aGebaeude;
+            Flaechenanteil = anteil;
+            Nutzflaeche_M2 = aZone;
+            Bauweise_WhK = g.Bauweise * anteil;
+            InnereGewinne_W = g.Interne_Waermegewinne * anteil;
+            SommerlueftungBilden();
+        }
 
         /// <summary>Der Zeitbezug, mit dem die Fassadenstrahlung gerechnet ist (U6).</summary>
         internal Zeitbezug Zeitbezug { get; private set; }
@@ -454,6 +507,7 @@ namespace WindowsFormsApplication1
                 e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
             else
             {
+                e.Flaechenschluessel(gebaeude);
                 e.Bauteile = e.BauteileMitGebaeudewerten(e.Zone.Bauteile);
                 e.Parameter = ErsatzparameterRC.AusBauteilweg(e, e.Bauteile);
             }
@@ -1363,10 +1417,7 @@ namespace WindowsFormsApplication1
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Infiltration " + Text(nInf) + " 1/h ist nicht größer null.");
             if (g.Luftwechsel_Nutzer is double nNutz && (!Endlich(nNutz) || nNutz < 0.0))
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Nutzerlüftung " + Text(nNutz) + " 1/h ist negativ oder nicht endlich.");
-            double zusatzN = GebaeudeFestwerte.SOMMERLUEFTUNG_LUFTWECHSEL - e.Luftwechselrate_h;
-            e.SommerlueftungZusatzleitwertWK = e.Sommerlueftung && zusatzN > 0.0 && Endlich(zusatzN)
-                ? zusatzN * e.Nutzflaeche_M2 * e.Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
-                : 0.0;
+            e.SommerlueftungBilden();
 
             // Ost/West: die NULL-Vorgabe aus dem Bestandsfeld bildet der Vorbereitungsschritt.
             GebaeudeVorbereitung.FensterflaechenOstWest(g, out double ost, out double west);
@@ -1381,6 +1432,18 @@ namespace WindowsFormsApplication1
             e.Pruefen(g);
             e.Ferientage = Ferienfahrplan(g, e.Bezeichnung);
             return e;
+        }
+
+        /// <summary>
+        /// Der Zusatzleitwert der Sommerlüftung aus Luftwechsel, Bezugsfläche und Raumhöhe — nach
+        /// <see cref="Daten"/> und, mit Zone, nach dem Flächenschlüssel gebildet.
+        /// </summary>
+        private void SommerlueftungBilden()
+        {
+            double zusatzN = GebaeudeFestwerte.SOMMERLUEFTUNG_LUFTWECHSEL - Luftwechselrate_h;
+            SommerlueftungZusatzleitwertWK = Sommerlueftung && zusatzN > 0.0 && Endlich(zusatzN)
+                ? zusatzN * Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
+                : 0.0;
         }
 
         // =====================================================================

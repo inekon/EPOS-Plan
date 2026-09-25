@@ -18,11 +18,15 @@ namespace WindowsFormsApplication1
     /// (<see cref="GebaeudeModellFehler.MehrereZonen"/>) — mehrere Zonen rechnet EPOS mit
     /// Stufe G6. Die Regel steht an einer Stelle: <see cref="EineZone"/>.</para>
     ///
-    /// <para><b>Was G3 von der Zone liest: nur die Bauteile.</b> Die Parameterspalten einer
-    /// Zone (Fläche, Höhe, Sollwerte, Luftwechsel, innere Gewinne …) liest G3 nicht; es gelten
-    /// die Werte der Gebäudezeile, wie sie der Eingangsbauer auflöst (Nutzfläche, Raumhöhe,
-    /// Bauweise, Lüftung, Sollwertfahrplan, Kühl- und Übergabeeingaben). Die Zonenwerte
-    /// gehen mit Stufe G6 ein.</para>
+    /// <para><b>Was G3 von der Zone liest: die Bauteile und die Nutzfläche</b> (Anwenderentscheid
+    /// vom 25.09.2026 „Hochrechnen“). Die Nutzfläche der Zone (<c>Tab_Zone.Nutzflaeche</c>, NULL =
+    /// Nutzfläche des Gebäudes) ist die Bezugsfläche A_f des Bauteilwegs; über den
+    /// <b>Flächenschlüssel</b> (Mehrzonenkonzept 4.2: NULL = anteilig aus dem Gebäude) folgen ihr
+    /// die flächenbezogenen Größen des Gebäudes — Luftvolumen, Speichermasse der Bauweise, innere
+    /// Gewinne, f_IW·A_f (<see cref="GebaeudeModellEingang"/>) und die Bezugsfläche der Fassade.
+    /// Alle übrigen Parameterspalten einer Zone (Raumhöhe, Volumen, Sollwerte, Luftwechsel,
+    /// Leistungsgrenzen, Kühl- und Übergabeeingaben, eigene innere Gewinne und Bewohner) liest G3
+    /// nicht; es gelten die Werte der Gebäudezeile. Sie gehen mit Stufe G6 ein.</para>
     ///
     /// <para><b>Eine unlesbare Zone</b> (<see cref="Unlesbar"/>) trägt statt ihrer Bauteile den
     /// benannten Fehler ihrer Abbildung (<see cref="GebaeudeZonenabbildung"/>): Das Lesen bleibt
@@ -36,12 +40,28 @@ namespace WindowsFormsApplication1
         /// <param name="zonenId">Die Kennung der Zone (<c>Tab_Zone.ID</c>); 0 = noch nicht gespeichert.</param>
         /// <param name="bezeichnung">Die Bezeichnung für Meldungen.</param>
         /// <param name="bauteile">Die Bauteile der Zone; <c>null</c> = keine.</param>
-        internal GebaeudeZonensatz(int zonenId, string bezeichnung, IReadOnlyList<BauteilEingang> bauteile)
+        /// <param name="nutzflaecheM2">Die Nutzfläche der Zone [m²]; NaN = die des Gebäudes.</param>
+        internal GebaeudeZonensatz(int zonenId, string bezeichnung, IReadOnlyList<BauteilEingang> bauteile,
+                                   double nutzflaecheM2 = double.NaN)
         {
             ZonenId = zonenId;
             Bezeichnung = bezeichnung ?? "";
             Bauteile = bauteile ?? Array.Empty<BauteilEingang>();
+            Nutzflaeche_M2 = nutzflaecheM2;
         }
+
+        /// <summary>
+        /// Die Nutzfläche der Zone [m²] (<c>Tab_Zone.Nutzflaeche</c>); NaN = die Nutzfläche des
+        /// Gebäudes. Geprüft wird im Eingangsbauer (<see cref="GebaeudeModellEingang"/>), nicht hier.
+        /// </summary>
+        internal double Nutzflaeche_M2 { get; }
+
+        /// <summary>
+        /// Die Bezugsfläche dieser Zone für das Gebäude <paramref name="g"/> [m²]: die eigene
+        /// Nutzfläche, ohne Angabe (NaN) die des Gebäudes.
+        /// </summary>
+        internal double Bezugsflaeche(ProjektGebaeudeModel g)
+            => double.IsNaN(Nutzflaeche_M2) ? (g?.Nutzflaeche ?? double.NaN) : Nutzflaeche_M2;
 
         /// <summary>Die Kennung der Zone (<c>Tab_Zone.ID</c>); 0 = noch nicht gespeichert.</summary>
         internal int ZonenId { get; }

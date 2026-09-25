@@ -2987,6 +2987,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: {1} = {2} liegt nicht in {3}. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_BEREICH {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder an einen unbeheizten Raum. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_FENSTER_RAND {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_FENSTER_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Fläche muss größer als null sein. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_FLAECHE {
@@ -3032,6 +3050,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bauteil braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_NAME_FEHLT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Bauteil braucht einen Namen. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_NAME_LEER {
@@ -3046,6 +3073,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BAUTEIL_MSG_RANDBEDINGUNG {
             get {
                 return ResourceManager.GetString("BAUTEIL_MSG_RANDBEDINGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Die Randbedingung „Nachbarzone“ rechnet EPOS erst mit mehreren Zonen (Stufe G6). ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_RAND_ZONE {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_RAND_ZONE", resourceCulture);
             }
         }
         
@@ -3109,6 +3145,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BAUTEIL_MSG_SCHICHT_WERT {
             get {
                 return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Es braucht einen U-Wert oder einen Aufbau – ein Fenster oder eine Vorhangfassade immer einen U-Wert. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_UWERT_FEHLT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_UWERT_FEHLT", resourceCulture);
             }
         }
         
@@ -62459,7 +62504,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche des Gebäudes). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche der Zone). ähnelt.
         /// </summary>
         public static string SIMENG_G3_ANGABE_NICHT_SKALIERT {
             get {
@@ -62486,7 +62531,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Sollwerte, Lüftung, innere Gewinne und Nutzfläche kommen aus der Gebäudezeile. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile. ähnelt.
         /// </summary>
         public static string SIMENG_G3_BAUTEILWEG {
             get {
@@ -62707,6 +62752,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_G3_ZONE_ALTWEG {
             get {
                 return ResourceManager.GetString("SIMENG_G3_ZONE_ALTWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzfläche der Zone „{0}“ ist {1} m² und nicht größer null; der Bauteilweg braucht sie als Bezugsfläche. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZONE_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZONE_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt eine eigene Nutzfläche, die Nutzfläche des Gebäudes ist aber {1} m²; ohne sie lassen sich Speichermasse und innere Gewinne nicht anteilig auf die Zone schlüsseln. ähnelt.
+        /// </summary>
+        public static string SIMENG_G3_ZONE_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("SIMENG_G3_ZONE_SCHLUESSEL", resourceCulture);
             }
         }
         
@@ -85032,11 +85095,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Nutzfläche muss größer als null sein. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Übergabeart „{1}“ ist kein gültiger Wert. ähnelt.
         /// </summary>
         public static string ZONE_MSG_UEBERGABEART {
             get {
                 return ResourceManager.GetString("ZONE_MSG_UEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Berechnung liefert für dieses Gebäude keinen Hochrechnungsfaktor. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_UEBERNAHME_KEIN_FAKTOR {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_UEBERNAHME_KEIN_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Projekt mit Klimaregion lässt sich der Hochrechnungsfaktor nicht bestimmen – bitte das Projekt speichern und eine Klimaregion wählen. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_UEBERNAHME_KEIN_KLIMA {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_UEBERNAHME_KEIN_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat noch keine Projektkopie – erst das Projekt speichern, dann trägt sie eine Zone. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_UEBERNAHME_OHNE_KOPIE {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_UEBERNAHME_OHNE_KOPIE", resourceCulture);
             }
         }
         
