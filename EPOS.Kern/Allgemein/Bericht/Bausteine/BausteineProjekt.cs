@@ -195,7 +195,7 @@ namespace WindowsFormsApplication1
             var zeilen = wp.Module.Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
             if (zeilen.Count == 0) return;
 
-            int[] b = { 2600, 1200, 1300, 1000, 1300, WordBerichtGenerator.INHALT_B - 7400 };
+            int[] b = { 2600, 1200, 1300, 1000, 1300, k.Inhaltsbreite - 7400 };
             Table t = k.NeueTabelle(b);
             var kopf = new TableRow();
             string[] titel = { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
@@ -345,7 +345,7 @@ namespace WindowsFormsApplication1
             List<ErgebnisGebaeudeModel> gekoppelt = zeilen.Where(g => g.IstGekoppelt).ToList();
             if (gekoppelt.Count == 0) return;
 
-            int[] b = { 2300, 2000, 2000, 1200, 1200, WordBerichtGenerator.INHALT_B - 8700 };
+            int[] b = { 2300, 2000, 2000, 1200, 1200, k.Inhaltsbreite - 8700 };
             Table t = k.NeueTabelle(b);
             var kopf = new TableRow();
             string[] titel = { "Gebäude", "Übergabe (Auslegung)", "Heizkurve", "Vorlauf Mittel [°C]",
@@ -403,7 +403,7 @@ namespace WindowsFormsApplication1
             List<ErgebnisGebaeudeModel> gekoppelt = zeilen.Where(g => g.IstKuehlgekoppelt).ToList();
             if (gekoppelt.Count == 0) return;
 
-            int[] b = { 2300, 2000, 1500, 1300, 1300, WordBerichtGenerator.INHALT_B - 8400 };
+            int[] b = { 2300, 2000, 1500, 1300, 1300, k.Inhaltsbreite - 8400 };
             Table t = k.NeueTabelle(b);
             var kopf = new TableRow();
             string[] titel = { "Gebäude", "Kühlübergabe (Auslegung)", "Vorlaufgrenze [°C]", "Kühlvorlauf Mittel [°C]",
@@ -618,7 +618,7 @@ namespace WindowsFormsApplication1
                 spalten.AddRange(block);
 
                 int wLabel = 2600;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / Math.Max(spalten.Count, 1);
+                int wCol = (k.Inhaltsbreite - wLabel) / Math.Max(spalten.Count, 1);
                 var w = new List<int> { wLabel };
                 for (int i = 0; i < spalten.Count; i++) w.Add(wCol);
 
@@ -645,7 +645,7 @@ namespace WindowsFormsApplication1
                     t.Append(tr);
                 }
                 k.Fuege(t);
-                k.Beschriftung(" ");
+                k.Abstand();
             }
 
             // ---------------- Kenndaten je Gewerk (deklarative Feldliste) ----------------
@@ -665,7 +665,7 @@ namespace WindowsFormsApplication1
                     spalten.AddRange(block);
 
                     int wLabel = 2600;
-                    int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / Math.Max(spalten.Count, 1);
+                    int wCol = (k.Inhaltsbreite - wLabel) / Math.Max(spalten.Count, 1);
                     var w = new List<int> { wLabel };
                     for (int i = 0; i < spalten.Count; i++) w.Add(wCol);
 
@@ -693,7 +693,7 @@ namespace WindowsFormsApplication1
                         t.Append(tr);
                     }
                     k.Fuege(t);
-                    k.Beschriftung(" ");
+                    k.Abstand();
                 }
             }
 

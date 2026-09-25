@@ -418,7 +418,7 @@ namespace WindowsFormsApplication1
                 if (strom != null) k.Bild(strom, 620, strom.Hoehe / 2);
 
                 int wJahr = 620;
-                int wCol = (WordBerichtGenerator.INHALT_B - wJahr) / bild.Spalten.Count;
+                int wCol = (k.Inhaltsbreite - wJahr) / bild.Spalten.Count;
                 var w = new List<int> { wJahr };
                 for (int i = 0; i < bild.Spalten.Count; i++) w.Add(wCol);
 
@@ -495,7 +495,7 @@ namespace WindowsFormsApplication1
             k.Ueberschrift3Roh(MyResource.Resource.WIRT_MJ_NACHWEIS_TITEL);
             k.HinweisRoh(MyResource.Resource.WIRT_MJ_NACHWEIS_HINWEIS);
 
-            int wLabel = 5200, wWert = WordBerichtGenerator.INHALT_B - wLabel;
+            int wLabel = 5200, wWert = k.Inhaltsbreite - wLabel;
             Table t = k.NeueTabelle(new[] { wLabel, wWert });
             Action<string, double> zeile = (label, wert) =>
             {
@@ -513,7 +513,7 @@ namespace WindowsFormsApplication1
                 zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, e.VermiedenGesamtJahr);
             }
             k.Fuege(t);
-            k.Beschriftung(" ");
+            k.Abstand();
         }
 
         // ------------------------------------------------------- KWK-Zuschlag je Modul (E7)
@@ -549,7 +549,7 @@ namespace WindowsFormsApplication1
                 bool mitFall2 = KwkgFall2Spalten.Noetig(e.KwkgModule);
                 int spalten = mitFall2 ? 16 : 11;
                 int wName = mitFall2 ? 1255 : 1655;
-                int wCol = (WordBerichtGenerator.INHALT_B - wName) / (spalten - 1);
+                int wCol = (k.Inhaltsbreite - wName) / (spalten - 1);
                 var w = new List<int> { wName };
                 for (int i = 0; i < spalten - 1; i++) w.Add(wCol);
 
@@ -615,7 +615,7 @@ namespace WindowsFormsApplication1
                         k.HinweisRoh(string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_ZEILE,
                                                    m.Bezeichner, m.HerleitungEigen,
                                                    m.HerleitungEinspeisung));
-                k.Beschriftung(" ");
+                k.Abstand();
             }
         }
 
@@ -641,7 +641,7 @@ namespace WindowsFormsApplication1
             k.HinweisRoh(MyResource.Resource.WIRT_NM_TABELLE_HINWEIS);
 
             int wKat = 1300, wDauer = 900, wGrad = 1150, wBeurt = 1200;
-            int wBeschr = WordBerichtGenerator.INHALT_B - wKat - wDauer - 3 * wGrad - wBeurt;
+            int wBeschr = k.Inhaltsbreite - wKat - wDauer - 3 * wGrad - wBeurt;
             int[] w = { wKat, wBeschr, wDauer, wGrad, wGrad, wGrad, wBeurt };
             string[] kopfTexte =
             {
@@ -693,7 +693,7 @@ namespace WindowsFormsApplication1
             k.HinweisRoh(MyResource.Resource.WIRT_BK_HINWEIS);
 
             int wPos = 2700, wGruppe = 1500, wBem = 1600, wHerl = 2400;
-            int wBetrag = WordBerichtGenerator.INHALT_B - wPos - wGruppe - wBem - wHerl;
+            int wBetrag = k.Inhaltsbreite - wPos - wGruppe - wBem - wHerl;
             int[] w = { wPos, wGruppe, wBem, wHerl, wBetrag };
 
             foreach (VariantenDaten v in daten.Varianten)
@@ -790,7 +790,7 @@ namespace WindowsFormsApplication1
                 string abweichung = WirtschaftlichkeitZeilen.GliederungAbweichung(
                     summeErstesJahr, e.BetriebskostenJahr, k.Kultur);
                 if (abweichung.Length > 0) k.HinweisRoh(abweichung);
-                k.Beschriftung(" ");
+                k.Abstand();
             }
         }
 
@@ -857,7 +857,7 @@ namespace WindowsFormsApplication1
                                ? v.IdProjekt == daten.IdGruppenreferenz : v.IstStamm))));
 
                 int wLabel = 3100;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / spalten.Count;
+                int wCol = (k.Inhaltsbreite - wLabel) / spalten.Count;
                 var w = new List<int> { wLabel };
                 for (int i = 0; i < spalten.Count; i++) w.Add(wCol);
 
@@ -918,7 +918,7 @@ namespace WindowsFormsApplication1
                         k.HinweisRoh("⚠ " + (spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige) +
                                      " — " + z.Titel + ": " + warnung);
                     }
-                k.Beschriftung(" ");
+                k.Abstand();
             }
         }
 
@@ -942,7 +942,7 @@ namespace WindowsFormsApplication1
                 // gerechnet und persistiert, war aber in keiner der beiden Matrixausgaben
                 // zu sehen — dabei ist sie die Bezugsgröße der vermiedenen Kosten.
                 int wLabel = 2000;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 5;
+                int wCol = (k.Inhaltsbreite - wLabel) / 5;
                 int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol };
 
                 Table t = k.NeueTabelle(w);
@@ -1013,7 +1013,7 @@ namespace WindowsFormsApplication1
                 }
 
                 int wLabel = 2800;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 3;
+                int wCol = (k.Inhaltsbreite - wLabel) / 3;
                 int[] w = { wLabel, wCol, wCol, wCol };
 
                 Table t = k.NeueTabelle(w);
@@ -1050,7 +1050,7 @@ namespace WindowsFormsApplication1
                 if (b.CO2GutschriftStromT > 0)
                     k.Hinweis(MyResource.Resource.BILANZ_ZEILE_GUTSCHRIFT + ": " +
                               k.F(b.CO2GutschriftStromT, 1) + " (in der getrennten Referenz enthalten)");
-                k.Beschriftung(" ");
+                k.Abstand();
             }
         }
 
@@ -1072,7 +1072,7 @@ namespace WindowsFormsApplication1
                 k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
                 int wLabel = 3300;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 4;
+                int wCol = (k.Inhaltsbreite - wLabel) / 4;
                 int[] w = { wLabel, wCol, wCol, wCol, wCol };
 
                 Table t = k.NeueTabelle(w);
@@ -1103,7 +1103,7 @@ namespace WindowsFormsApplication1
                     t.Append(tr);
                 }
                 k.Fuege(t);
-                k.Beschriftung(" ");
+                k.Abstand();
             }
         }
 
@@ -1146,10 +1146,10 @@ namespace WindowsFormsApplication1
             }
 
             // W5‑B‑11: sechs Spalten statt fünf; ETAPPE E2 (G8): sieben mit der Spanne.
-            // Die Summe bleibt INHALT_B — die Beschriftungsspalte gibt die Breite ab,
+            // Die Summe bleibt die Inhaltsbreite — die Beschriftungsspalte gibt die Breite ab,
             // die Einstufung und Spanne brauchen.
             int wLabel = 2100;
-            int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 6;
+            int wCol = (k.Inhaltsbreite - wLabel) / 6;
             int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol, wCol };
 
             Table t = k.NeueTabelle(w);
@@ -1249,7 +1249,7 @@ namespace WindowsFormsApplication1
             // Stammprojekt" war bei gewählter Variantenreferenz schlicht falsch. Seit E5
             // Teil b ist es der Satz der Bewertung — derselbe wie auf der Seite.
             if (!string.IsNullOrEmpty(bewertung.Vorschlagstext)) k.TextRoh(bewertung.Vorschlagstext);
-            k.Beschriftung(" ");
+            k.Abstand();
         }
 
         /// <summary>W5‑B‑11: Kopfzelle mit einem Text, der bereits aus
