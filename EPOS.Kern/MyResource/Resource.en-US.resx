@@ -33539,6 +33539,471 @@ Do you want to allow this?</value>
   <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
     <value>The unit of the key figure “{0}”.</value>
   </data>
+  <data name="VF_PRUEF_UNBEKANNT" xml:space="preserve">
+    <value>Unknown placeholder {0}</value>
+  </data>
+  <data name="VF_PRUEF_UNBEKANNT_TUN" xml:space="preserve">
+    <value>Check the spelling or copy the placeholder from the placeholder catalogue.</value>
+  </data>
+  <data name="VF_PRUEF_VORSCHLAG_TUN" xml:space="preserve">
+    <value>Use the suggestion {0}.</value>
+  </data>
+  <data name="VF_PRUEF_MARKE_UNBEKANNT" xml:space="preserve">
+    <value>Unknown marker {0}</value>
+  </data>
+  <data name="VF_PRUEF_MARKE_UNBEKANNT_TUN" xml:space="preserve">
+    <value>Insert a placeholder from the placeholder catalogue or remove the double braces.</value>
+  </data>
+  <data name="VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
+    <value>Placeholder not recognised: “{0}” – {1} without a matching {2} in the same paragraph</value>
+  </data>
+  <data name="VF_PRUEF_KLAMMER_OFFEN_TUN" xml:space="preserve">
+    <value>Retype the placeholder in one go, without a tab or line break.</value>
+  </data>
+  <data name="VF_PRUEF_ORT" xml:space="preserve">
+    <value>{0} does not fit here: type “{1}” is not possible {2}</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_ABSATZ" xml:space="preserve">
+    <value>Put the placeholder in a paragraph of its own.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_HAUPTTEXT" xml:space="preserve">
+    <value>Move the placeholder into the main text.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_ZELLE" xml:space="preserve">
+    <value>Move the placeholder out of the table into a paragraph of its own in the main text.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT" xml:space="preserve">
+    <value>Place the content control around a whole paragraph or type the placeholder as text.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_TABELLE" xml:space="preserve">
+    <value>in a content control around table rows or cells</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT_TABELLE" xml:space="preserve">
+    <value>Place the content control inside the cell around a paragraph, or type the placeholder as text into the cell.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_WENN" xml:space="preserve">
+    <value>Use the switch only as a condition: {0} … {1}.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_EXCEL" xml:space="preserve">
+    <value>Use this placeholder only in the Excel template.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD" xml:space="preserve">
+    <value>Only the key of an image (bild.*) belongs in the alternative text of an image; otherwise type the placeholder as text.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_KOPFFUSS" xml:space="preserve">
+    <value>in headers and footers</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_NOTE" xml:space="preserve">
+    <value>in footnotes and endnotes</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_TEXTFELD" xml:space="preserve">
+    <value>in text boxes</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_ZELLE" xml:space="preserve">
+    <value>in table cells</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SATZ" xml:space="preserve">
+    <value>within a sentence</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_SATZ" xml:space="preserve">
+    <value>in an inline content control</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_OHNE_WENN" xml:space="preserve">
+    <value>outside a condition</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_WORD" xml:space="preserve">
+    <value>in a Word template</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_BILD" xml:space="preserve">
+    <value>in the alternative text of an image</value>
+  </data>
+  <data name="VF_PRUEF_ART_TEXT" xml:space="preserve">
+    <value>text</value>
+  </data>
+  <data name="VF_PRUEF_ART_ZAHL" xml:space="preserve">
+    <value>number</value>
+  </data>
+  <data name="VF_PRUEF_ART_DATUM" xml:space="preserve">
+    <value>date</value>
+  </data>
+  <data name="VF_PRUEF_ART_TABELLE" xml:space="preserve">
+    <value>table</value>
+  </data>
+  <data name="VF_PRUEF_ART_BILD" xml:space="preserve">
+    <value>image</value>
+  </data>
+  <data name="VF_PRUEF_ART_LISTE" xml:space="preserve">
+    <value>list</value>
+  </data>
+  <data name="VF_PRUEF_ART_KAPITEL" xml:space="preserve">
+    <value>chapter</value>
+  </data>
+  <data name="VF_PRUEF_ART_SCHALTER" xml:space="preserve">
+    <value>switch</value>
+  </data>
+  <data name="VF_PRUEF_ART_BLATT" xml:space="preserve">
+    <value>sheet</value>
+  </data>
+  <data name="VF_PRUEF_ART_BLOCK" xml:space="preserve">
+    <value>block marker</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
+    <value>{0} is a per-variant value; per-variant values are not yet available in this version of the program</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>{0} is a per-building value; per-building values are not yet available in this version of the program</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_TUN" xml:space="preserve">
+    <value>Remove the placeholder or use a value of the master project (stamm.*, projekt.*).</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
+    <value>Block {0} is not yet supported in this version of the program</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN" xml:space="preserve">
+    <value>Remove the block together with its end; repeat and condition blocks are filled only by a later version of EPOS-Plan.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
+    <value>Block {0} is not closed</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_OFFEN_TUN" xml:space="preserve">
+    <value>Add {0}.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ENDE" xml:space="preserve">
+    <value>{0} without a matching block start</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ENDE_TUN" xml:space="preserve">
+    <value>Add the block start or remove the marker.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_VERBUNDEN" xml:space="preserve">
+    <value>Merged cells in the repeating row of {0}</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_VERBUNDEN_TUN" xml:space="preserve">
+    <value>Unmerge the cells of this table row.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TABELLE" xml:space="preserve">
+    <value>Block {0} crosses a table boundary</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TABELLE_TUN" xml:space="preserve">
+    <value>Put start and end into the first and last cell of the same table row, or both outside the table.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TIEFE" xml:space="preserve">
+    <value>Block {0} is nested three levels deep – two are allowed</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TIEFE_TUN" xml:space="preserve">
+    <value>Reduce the nesting to two levels.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_BEREICH" xml:space="preserve">
+    <value>Unknown repeat range in {0}</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_BEREICH_TUN" xml:space="preserve">
+    <value>Allowed are {0}.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ALLEIN" xml:space="preserve">
+    <value>Block marker {0} is inside a sentence</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ALLEIN_TUN" xml:space="preserve">
+    <value>Put the marker in a paragraph of its own, or into the first or last cell of a table row.</value>
+  </data>
+  <data name="VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
+    <value>Condition {0} without a switch</value>
+  </data>
+  <data name="VF_PRUEF_WENN_KEIN_SCHALTER" xml:space="preserve">
+    <value>{0} is not a switch and cannot serve as a condition</value>
+  </data>
+  <data name="VF_PRUEF_WENN_TUN" xml:space="preserve">
+    <value>Use a switch from the placeholder catalogue as the condition.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNBEKANNT" xml:space="preserve">
+    <value>Unknown format option “|{0}” in {1}</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_VORSCHLAG" xml:space="preserve">
+    <value>Use the suggestion “|{0}”.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_LISTE" xml:space="preserve">
+    <value>Allowed are: {0}.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNPASSEND" xml:space="preserve">
+    <value>The format option “|{0}” does not apply to {1} (type “{2}”)</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNPASSEND_TUN" xml:space="preserve">
+    <value>Remove the option; for this type the following apply: {0}.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_ENTFERNEN" xml:space="preserve">
+    <value>Remove the option – this type has no format options.</value>
+  </data>
+  <data name="VF_PRUEF_NORMALFORM" xml:space="preserve">
+    <value>{0} is recognised; its normal form is {1}</value>
+  </data>
+  <data name="VF_PRUEF_NORMALFORM_TUN" xml:space="preserve">
+    <value>Optionally use the spelling {0}.</value>
+  </data>
+  <data name="VF_PRUEF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>The template contains no placeholder – the report is added at its end via {0}</value>
+  </data>
+  <data name="VF_PRUEF_OHNE_PLATZHALTER_TUN" xml:space="preserve">
+    <value>Put {0} where the report should appear in the template.</value>
+  </data>
+  <data name="VF_PRUEF_DATUMSFELD" xml:space="preserve">
+    <value>The field {0} shows the date the file is opened, not the date of the report</value>
+  </data>
+  <data name="VF_PRUEF_DATUMSFELD_TUN" xml:space="preserve">
+    <value>Use {0} instead of the field.</value>
+  </data>
+  <data name="VF_PRUEF_KOMMENTARE" xml:space="preserve">
+    <value>Comments: {0} – they are removed when the report is created</value>
+  </data>
+  <data name="VF_PRUEF_KOMMENTARE_TUN" xml:space="preserve">
+    <value>Nothing to do; comments do not appear in the report.</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE" xml:space="preserve">
+    <value>The template is set up in {0}, the report is created in {1}</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_TUN" xml:space="preserve">
+    <value>Set the language of the template or switch the user interface language.</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_DE" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_EN" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_ALT" xml:space="preserve">
+    <value>The template was made with catalogue version {0}; {1} has since been renamed {2}</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_ALT_TUN" xml:space="preserve">
+    <value>Use {0}; {1} still works.</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_NEU" xml:space="preserve">
+    <value>New chapter {0} – not contained in this template</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_NEU_TUN" xml:space="preserve">
+    <value>Add {0} to the template if needed.</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_NEU" xml:space="preserve">
+    <value>The template was made with the newer catalogue version {0}; this version of the program knows catalogue version {1}</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_NEU_TUN" xml:space="preserve">
+    <value>Update EPOS-Plan or remove the unknown placeholders.</value>
+  </data>
+  <data name="VF_PRUEF_GUELTIGKEIT" xml:space="preserve">
+    <value>Validity notes are missing: the template uses economic values without a warning list</value>
+  </data>
+  <data name="VF_PRUEF_GUELTIGKEIT_TUN" xml:space="preserve">
+    <value>Add a warning list, for example {0}.</value>
+  </data>
+  <data name="VF_PRUEF_UNLESBAR" xml:space="preserve">
+    <value>The template cannot be read: {0}</value>
+  </data>
+  <data name="VF_PRUEF_UNLESBAR_TUN" xml:space="preserve">
+    <value>Open the file in Word and save it as a Word document (.docx).</value>
+  </data>
+  <data name="VF_PRUEF_GRUND_LEER" xml:space="preserve">
+    <value>The file is empty.</value>
+  </data>
+  <data name="VF_PRUEF_GRUND_KEIN_WORD" xml:space="preserve">
+    <value>The file is not a Word document.</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT" xml:space="preserve">
+    <value>The file format {0} is not supported</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_TUN" xml:space="preserve">
+    <value>Save it in Word as a Word document (.docx) or Word template (.dotx).</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_DOC" xml:space="preserve">
+    <value>Word 97–2003 (.doc) or encrypted</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_RTF" xml:space="preserve">
+    <value>RTF (Rich Text Format)</value>
+  </data>
+  <data name="VF_PRUEF_MAKROS" xml:space="preserve">
+    <value>The template contains macros</value>
+  </data>
+  <data name="VF_PRUEF_MAKROS_TUN" xml:space="preserve">
+    <value>Save it in Word as a Word document (.docx) without macros.</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE" xml:space="preserve">
+    <value>The template is too large: {0} MB, {1} MB are allowed</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE_ENTPACKT" xml:space="preserve">
+    <value>The template is too large when unpacked: {0} MB, {1} MB are allowed</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE_TUN" xml:space="preserve">
+    <value>Reduce the images or compress them in Word (Picture Format › Compress Pictures).</value>
+  </data>
+  <data name="VF_PRUEF_AENDERUNGEN" xml:space="preserve">
+    <value>Tracked changes in {0}: {1}</value>
+  </data>
+  <data name="VF_PRUEF_AENDERUNGEN_TUN" xml:space="preserve">
+    <value>In Word, accept or reject all changes under “Review” and save.</value>
+  </data>
+  <data name="VF_PRUEF_EXTERN" xml:space="preserve">
+    <value>Linked content: {0} – it is removed when the report is created</value>
+  </data>
+  <data name="VF_PRUEF_EXTERN_TUN" xml:space="preserve">
+    <value>Embed linked images or workbooks in the template if they are to appear in the report.</value>
+  </data>
+  <data name="VF_PRUEF_VORLAGENVERWEIS" xml:space="preserve">
+    <value>The reference to the document template {0} is removed</value>
+  </data>
+  <data name="VF_PRUEF_VORLAGENVERWEIS_TUN" xml:space="preserve">
+    <value>Nothing to do.</value>
+  </data>
+  <data name="VF_PRUEF_UEBERSCHRIFTEN" xml:space="preserve">
+    <value>Heading styles are missing or have no outline level: {0}</value>
+  </data>
+  <data name="VF_PRUEF_UEBERSCHRIFTEN_TUN" xml:space="preserve">
+    <value>Use the styles “Heading 1” to “Heading 3” in Word without changing their outline level.</value>
+  </data>
+  <data name="VF_PRUEF_STIL_UEBERSCHRIFT" xml:space="preserve">
+    <value>Heading {0}</value>
+  </data>
+  <data name="VF_PRUEF_STIL_FEHLT" xml:space="preserve">
+    <value>{0} missing</value>
+  </data>
+  <data name="VF_PRUEF_STIL_OHNE_EBENE" xml:space="preserve">
+    <value>{0} without outline level</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_RUMPF" xml:space="preserve">
+    <value>Main text</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_KOPFZEILE" xml:space="preserve">
+    <value>Header {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSZEILE" xml:space="preserve">
+    <value>Footer {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSNOTE" xml:space="preserve">
+    <value>Footnote {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_ENDNOTE" xml:space="preserve">
+    <value>Endnote {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_TEXTFELD" xml:space="preserve">
+    <value>Text box {0} in {1}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSNOTEN" xml:space="preserve">
+    <value>Footnotes</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_ENDNOTEN" xml:space="preserve">
+    <value>Endnotes</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_NUMMERIERUNG" xml:space="preserve">
+    <value>Numbering</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ABSATZ" xml:space="preserve">
+    <value>Paragraph {0} starting with “{1}”</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ABSATZ_LEER" xml:space="preserve">
+    <value>Paragraph {0} (empty)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ZELLE" xml:space="preserve">
+    <value>Table {0}, row {1}, cell {2} starting with “{3}”</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ZELLE_LEER" xml:space="preserve">
+    <value>Table {0}, row {1}, cell {2} (empty)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_STEUERELEMENT" xml:space="preserve">
+    <value>{0}, content control “{1}”</value>
+  </data>
+  <data name="VF_PRUEF_ORT_BILD" xml:space="preserve">
+    <value>{0}, image “{1}”</value>
+  </data>
+  <data name="VF_PRUEF_ORT_DATEI" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="VF_PRUEF_ORT_FORMATVORLAGEN" xml:space="preserve">
+    <value>Styles</value>
+  </data>
+  <data name="VF_PRUEF_ORT_KOMMENTARE" xml:space="preserve">
+    <value>Comments</value>
+  </data>
+  <data name="VF_PRUEF_ORT_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Document properties</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD" xml:space="preserve">
+    <value>Standard (EPOS-Plan)</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_ABWEICHUNG" xml:space="preserve">
+    <value>Chosen for this project</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_VORGABE" xml:space="preserve">
+    <value>Your default</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_STANDARD" xml:space="preserve">
+    <value>Standard template</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Fallback – the standard template is missing</value>
+  </data>
+  <data name="BV_VORLAGEN_NICHT_VORHANDEN" xml:space="preserve">
+    <value>“{0}” not available – “{1}” used</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD_FEHLT" xml:space="preserve">
+    <value>The standard template {0} is missing – {1} is used</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD_FEHLT_CODE" xml:space="preserve">
+    <value>The standard template {0} is missing – the report is created with the built-in formats</value>
+  </data>
+  <data name="BV_VORLAGEN_IN_WORD" xml:space="preserve">
+    <value>Open in Word – unsaved changes are missing</value>
+  </data>
+  <data name="BV_VORLAGEN_IN_WORD_TUN" xml:space="preserve">
+    <value>Save in Word and check again.</value>
+  </data>
+  <data name="BV_VORLAGEN_NICHT_LESBAR" xml:space="preserve">
+    <value>The template “{0}” cannot be read: {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_FEHLT" xml:space="preserve">
+    <value>The template “{0}” does not exist</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_VORHANDEN" xml:space="preserve">
+    <value>Template folder: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_ANGELEGT" xml:space="preserve">
+    <value>The template folder {0} was created</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_NICHT_ERREICHBAR" xml:space="preserve">
+    <value>The template folder {0} cannot be reached</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_UNGUELTIG" xml:space="preserve">
+    <value>“{0}” is not a valid folder</value>
+  </data>
+  <data name="BV_VORLAGEN_NAME_VERGEBEN" xml:space="preserve">
+    <value>“{0}” already exists in the template folder – replace it or add it under a new name?</value>
+  </data>
+  <data name="BV_VORLAGEN_QUELLE_FEHLT" xml:space="preserve">
+    <value>The file {0} does not exist</value>
+  </data>
+  <data name="BV_VORLAGEN_FORMAT" xml:space="preserve">
+    <value>Only Word documents (.docx) and Word templates (.dotx) – save “{0}” as .docx in Word</value>
+  </data>
+  <data name="BV_VORLAGEN_ENDUNG" xml:space="preserve">
+    <value>The file extension must stay the same: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>The supplied template is read-only – change it only through a copy (“New template…”)</value>
+  </data>
+  <data name="BV_VORLAGEN_NAME_UNGUELTIG" xml:space="preserve">
+    <value>“{0}” is not a valid file name</value>
+  </data>
+  <data name="BV_VORLAGEN_HINZUGEFUEGT" xml:space="preserve">
+    <value>“{0}” added</value>
+  </data>
+  <data name="BV_VORLAGEN_ERSETZT" xml:space="preserve">
+    <value>“{0}” replaced</value>
+  </data>
+  <data name="BV_VORLAGEN_NEU" xml:space="preserve">
+    <value>New template “{0}” created from the standard template</value>
+  </data>
+  <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
+    <value>“{0}” removed – the file is now in {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_FEHLER" xml:space="preserve">
+    <value>“{0}” could not be written: {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
+    <value>“{0}” is already in the template folder</value>
+  </data>
   <data name="BV_TEXT_SEITE" xml:space="preserve">
     <value>Page</value>
   </data>
