@@ -8564,6 +8564,33 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The zones of the building could not be saved: {0}</value>
   </data>
+  <data name="HERKUNFT_MSG_QUELLE_FEHLT" xml:space="preserve">
+    <value>The import source is missing.</value>
+  </data>
+  <data name="HERKUNFT_MSG_FORMAT" xml:space="preserve">
+    <value>The import format “{0}” is not a valid value.</value>
+  </data>
+  <data name="HERKUNFT_MSG_DATEINAME" xml:space="preserve">
+    <value>The file name of the import source is missing or longer than {0} characters.</value>
+  </data>
+  <data name="HERKUNFT_MSG_HASH" xml:space="preserve">
+    <value>The checksum of the import source is not a SHA-256 value (64 lower-case hexadecimal characters).</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZEITPUNKT" xml:space="preserve">
+    <value>The time of the import is missing.</value>
+  </data>
+  <data name="HERKUNFT_MSG_PAARUNG" xml:space="preserve">
+    <value>Pairing {0}: source type and source identifier are required; the source type has at most {1} characters.</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZIEL_FEHLT" xml:space="preserve">
+    <value>Pairing “{0}”: the target {1} needs the ID of its row.</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZIEL_FREMD" xml:space="preserve">
+    <value>Pairing “{0}”: the target {1} with ID {2} does not belong to this building.</value>
+  </data>
+  <data name="HERKUNFT_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The origin of the import could not be saved: {0}</value>
+  </data>
   <data name="LIZ_TITEL" xml:space="preserve">
     <value>License</value>
   </data>
@@ -13914,6 +13941,15 @@ Please check all entries!</value>
   </data>
   <data name="GEB_BTN_GEBTYP" xml:space="preserve">
     <value>Change building type in DB...</value>
+  </data>
+  <data name="GEB_BTN_IMPORT" xml:space="preserve">
+    <value>Import (gbXML, IFC)…</value>
+  </data>
+  <data name="GEB_BTN_IMPORT_HINWEIS" xml:space="preserve">
+    <value>Create a new catalogue building from a gbXML or IFC file and add it to the project list</value>
+  </data>
+  <data name="GEB_MSG_IMPORT_AUFGENOMMEN" xml:space="preserve">
+    <value>The building “{0}” is now in the catalogue and in the project list.</value>
   </data>
   <data name="GEB_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Add to project</value>
@@ -29325,9 +29361,6 @@ Do you want to allow this?</value>
   <data name="SIMENG_AK_FLAECHE_OHNE_ESTRICH" xml:space="preserve">
     <value>System coupling: panel heating without screed mass — the mass of the heating surface is not calculated, so the calculated heat-up time is too short.</value>
   </data>
-  <data name="SIMENG_AK_KAELTESEITE_VERTAGT" xml:space="preserve">
-    <value>System coupling: {0} — the cooling side of system coupling is not implemented yet; cooling of this building is still calculated with ideal control.</value>
-  </data>
   <data name="SIMENG_AK_VORLAUF_AUSLEGUNG" xml:space="preserve">
     <value>System coupling: {0} — the heating curve is off and no plant of the heating channel has a flow temperature; the fixed flow temperature is the design flow temperature {1} °C.</value>
   </data>
@@ -31282,7 +31315,7 @@ Do you want to allow this?</value>
     <value>Hours without heating stay empty in the chart — there is no flow temperature then.</value>
   </data>
   <data name="GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG" xml:space="preserve">
-    <value>Heat emission, heating curve and room controller of the system coupling are extensions of EPOS-Plan, not part of VDI 6007.</value>
+    <value>Heat and cooling emission, heating curve and room controller of the system coupling are extensions of EPOS-Plan, not part of VDI 6007.</value>
   </data>
   <data name="ABW_MERKMAL_HEIZKREIS" xml:space="preserve">
     <value>Calculate heat emission</value>
@@ -31776,6 +31809,9 @@ Do you want to allow this?</value>
   <data name="GIMP_ZONENREGEL_X4" xml:space="preserve">
     <value>X4 – one zone per building</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z5" xml:space="preserve">
+    <value>Z5 – one zone per building</value>
+  </data>
   <data name="GIMP_DLG_TITEL" xml:space="preserve">
     <value>Import building</value>
   </data>
@@ -31796,6 +31832,15 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GRENZE" xml:space="preserve">
     <value>Largest file: {0}</value>
+  </data>
+  <data name="GIMP_DLG_DATEIART" xml:space="preserve">
+    <value>File type not supported: “{0}”. The import reads gbXML files (.xml, .gbxml) and IFC files (.ifc, .ifcxml, .ifczip).</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_IMPORTIERT" xml:space="preserve">
+    <value>This file has already been imported into the project: building “{0}”, {1}.</value>
+  </data>
+  <data name="GIMP_VORBELEGT" xml:space="preserve">
+    <value>Prefilled from the import: file {0}, format {1}.</value>
   </data>
   <data name="GIMP_DLG_NICHT_GELESEN" xml:space="preserve">
     <value>The file contains no building that could be applied.</value>
@@ -31901,6 +31946,51 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GESPERRT" xml:space="preserve">
     <value>Not applied — please fix first:</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT" xml:space="preserve">
+    <value>The cooling emitter type “{0}” is unknown; known types are chilled ceiling, surface cooling and fan coil. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE" xml:space="preserve">
+    <value>The design point of the cooling emitter is invalid: flow {0} °C, return {1} °C and room temperature {2} °C must rise (flow below return below room temperature). The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>The rated output of the cooling emitter {0} kW is not greater than zero. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV" xml:space="preserve">
+    <value>The cooling load of the design day ({0}) is not greater than zero ({1} W at a cooling set point of {2} °C); the rated output of the cooling emitter cannot be derived. Please enter a rated output.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is switched on, but the project calculates without system coupling. The cooling emitter inputs rest until the level is set; cooling is calculated with ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is switched on, but cooling of the building is not effective (project cooling mode, building cooling or cooling set point missing). The cooling emitter inputs rest.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_IDEAL" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is switched on, but the cooling emitter type is “ideal” or empty; cooling is calculated with ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_KAELTESEITE_IDEAL" xml:space="preserve">
+    <value>System coupling: {0} — ideal cooling: no cooling emitter selected.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is insufficient in {1} hours (of which {2} hours at the flow temperature limit); the room temperature there is up to {3} K above the cooling set point.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>System coupling: {0} — no heat pump in cooling mode provides a chilled water flow temperature; the fixed flow temperature of the cooling emitter is the design flow temperature {1} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_GEMISCHT" xml:space="preserve">
+    <value>System coupling: {0} — chilled water colder than necessary: the heat pump calculates at the cooling flow temperature {1} °C, the building mixes up to the flow temperature limit {2} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
+    <value>System coupling: {0} — the flow temperature limit {1} °C is above the design flow temperature {2} °C of the cooling emitter; the rated output is never reached.</value>
+  </data>
+  <data name="SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH" xml:space="preserve">
+    <value>System coupling: surface cooling without screed mass — the mass of the cooling surface is not calculated.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG" xml:space="preserve">
+    <value>System coupling: {0} — the rated output of the cooling emitter is derived: the cooling load of the design day {2} (highest daily mean outdoor temperature, {3} °C), {1} kW for the catalogue building before scaling. Not a standard-compliant verification.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_SENSIBEL" xml:space="preserve">
+    <value>System coupling: the cooling emitter is calculated as sensible only, without dehumidification; the flow temperature limit is a default, not a calculated dew point limit.</value>
   </data>
   <data name="IMP_IFC_PROT_ZU_GROSS" xml:space="preserve">
     <value>The file is {0} bytes, larger than the limit of {1} bytes — it is not read.</value>
@@ -32024,6 +32114,204 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_SCHEMA_IFC" xml:space="preserve">
     <value>IFC schema {0}</value>
+  </data>
+  <data name="GEBK_UABS_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Cooling emission</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLUEBERGABE_AKTIV" xml:space="preserve">
+    <value>Calculate cooling emission (instead of ideal cooling)</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_UEBERGABE_ART" xml:space="preserve">
+    <value>Cooling emitter type :</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_IDEAL" xml:space="preserve">
+    <value>ideal (no cooling emitter)</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_KUEHLDECKE" xml:space="preserve">
+    <value>Chilled ceiling</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG" xml:space="preserve">
+    <value>Surface cooling</value>
+  </data>
+  <data name="GEBK_KUEHLUEBERGABE_GEBLAESEKONVEKTOR" xml:space="preserve">
+    <value>Fan coil</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Cooling emitter exponent :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Cooling emitter rated output :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design chilled water flow :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design chilled water return :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Design room temperature (cooling) :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_VORLAUFGRENZE" xml:space="preserve">
+    <value>Lower flow temperature limit :</value>
+  </data>
+  <data name="GEBK_VORGABE_KEINE_GRENZE" xml:space="preserve">
+    <value>Default: no limit</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUEBERGABE_AUS" xml:space="preserve">
+    <value>Without the tick, cooling is ideal: the building is cooled to the cooling set point without a cooling emitter.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUEBERGABE_IDEAL" xml:space="preserve">
+    <value>Cooling emitter type “ideal”: the building is calculated with ideal cooling, as without the tick. The cooling emission is calculated with chilled ceiling, surface cooling or fan coil.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUEBERGABE_ART" xml:space="preserve">
+    <value>Defaults of the cooling emitter type {0}: exponent {1}, design {2}/{3} °C, radiant share {4}, flow temperature limit {5} (apply to empty fields) — EPOS-Plan defaults, not standard values; every field overrides them.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_GRENZE_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_AUSLEGUNG_RAUM" xml:space="preserve">
+    <value>Design room temperature empty: the cooling set point, {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated output empty: the cooling load of the design day {1} (highest daily mean outdoor temperature, {2} °C) — {0} kW, sensible. Not a standard verification; in the project it scales with the building.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_NENNLEISTUNG_OHNE" xml:space="preserve">
+    <value>Rated output empty: the cooling load of the design day (highest daily mean outdoor temperature), sensible, not a standard verification; the figure appears here as soon as the building is opened in a project with a climate region.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_ANLAGE" xml:space="preserve">
+    <value>Chilled water flow fixed at {0} °C: the cooling flow temperature of the heat pump in cooling mode of this project.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_GEMISCHT" xml:space="preserve">
+    <value>Chilled water flow fixed at {1} °C: the heat pump in cooling mode supplies {0} °C, the building mixes up to the flow temperature limit.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>Chilled water flow fixed at {0} °C: no heat pump in cooling mode has a cooling flow temperature — the design flow applies, at least the flow temperature limit.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_VORLAUF_OHNE" xml:space="preserve">
+    <value>The chilled water flow is fixed: the coldest cooling flow temperature of the heat pumps in cooling mode, without such a unit the design flow; if it lies below the flow temperature limit, the building mixes up.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_GRENZE" xml:space="preserve">
+    <value>The flow temperature limit is a default, not a calculated dew point limit: EPOS-Plan does not check whether condensation forms on the cooling surface.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
+    <value>The flow temperature limit {0} °C lies above the design flow {1} °C — the rated output is never reached.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_SENSIBEL" xml:space="preserve">
+    <value>The cooling emission is calculated sensibly, without dehumidification — every cooling figure is a sensible figure.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_WIRKSAM" xml:space="preserve">
+    <value>Effective in this project: it calculates with system coupling and cooling mode.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Not effective: without a cooling set point the building is not cooled; the cooling emission inputs are dormant.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_PROJEKT_OHNE_STUFE" xml:space="preserve">
+    <value>Not effective in this project: it calculates without system coupling — ideal cooling is calculated.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_PROJEKT_OHNE_KAELTE" xml:space="preserve">
+    <value>Not effective in this project: it does not calculate cooling (project setting “Calculate cooling” off).</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHL_PROJEKT" xml:space="preserve">
+    <value>The cooling emission is only calculated in projects with system coupling “Heating circuit (AK1)” and the project setting “Calculate cooling” (simulation configuration).</value>
+  </data>
+  <data name="GEBK_MSG_KUEHL_ART_UNBEKANNT" xml:space="preserve">
+    <value>The cooling emitter type “{0}” is unknown; please choose chilled ceiling, surface cooling, fan coil or ideal.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHL_NENNLEISTUNG" xml:space="preserve">
+    <value>The rated output of the cooling emitter must be greater than 0.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHL_REIHENFOLGE" xml:space="preserve">
+    <value>The design point of the cooling emitter must ascend: flow {0} °C below return {1} °C below room temperature {2} °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL" xml:space="preserve">
+    <value>Calculate the cooling emission instead of ideal cooling (system coupling AK1); only effective with cooling, a cooling set point, a cooling emitter type and in a project with system coupling AK1 and cooling mode. Switching off keeps the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Cooling emitter type: IDEAL (no cooling emitter), KUEHLDECKE (chilled ceiling), FLAECHENKUEHLUNG (surface cooling) or GEBLAESEKONVEKTOR (fan coil); the type brings exponent, design point, radiant share and flow temperature limit as defaults.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Exponent of the cooling emitter, 1.0 to 1.6; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Sensible rated output of the cooling emitter at the design point in kW; empty = the cooling load of the design day (not a standard verification).</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_AUSLEGUNG_VORLAUF_ERL" xml:space="preserve">
+    <value>Design chilled water flow in °C, 4 to 22; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_AUSLEGUNG_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Design chilled water return in °C, above the flow and below the room temperature; empty = default of the type.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_AUSLEGUNG_RAUM_ERL" xml:space="preserve">
+    <value>Room temperature at the design point of the cooling emitter in °C, 20 to 30; empty = the cooling set point.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_VORLAUFGRENZE_ERL" xml:space="preserve">
+    <value>Lower limit of the chilled water flow in °C, 4 to 22 — a default, not a calculated dew point limit; empty = default of the type (none for fan coils).</value>
+  </data>
+  <data name="ABW_MERKMAL_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Calculate cooling emission</value>
+  </data>
+  <data name="ABW_MERKMAL_KUEHLUEBERGABEART" xml:space="preserve">
+    <value>Cooling emitter type</value>
+  </data>
+  <data name="GEBB_BILD_KUEHLVORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Chilled water flow and return</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHLVORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Chilled water flow / return</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHL_BEGRENZT" xml:space="preserve">
+    <value>Hours with limited cooling emission</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHLVORLAUF_QUELLE" xml:space="preserve">
+    <value>Mean over the hours with cooling — {0}, design {1}/{2} °C, sensible</value>
+  </data>
+  <data name="GEBB_KACHEL_KUEHL_BEGRENZT_QUELLE" xml:space="preserve">
+    <value>Hours in which the cooling emitter delivered less than the cooling set point required — {0} h of them at the flow temperature limit (a default, not a dew point limit). Not overheating hours.</value>
+  </data>
+  <data name="GEBB_HRL_KUEHLVORLAUF_LUECKEN" xml:space="preserve">
+    <value>Hours without cooling stay empty in the chart; the chilled water flow is fixed, the return belongs to the delivered cooling output.</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHLVORLAUF" xml:space="preserve">
+    <value>Chilled water flow</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHLRUECKLAUF" xml:space="preserve">
+    <value>Chilled water return</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHL_AUSLEGUNG_VORLAUF" xml:space="preserve">
+    <value>Design chilled water flow</value>
+  </data>
+  <data name="GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
+    <value>Design chilled water return</value>
+  </data>
+  <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
+    <value>Zone “{0}”: The cooling emitter type “{1}” is not a valid value.</value>
+  </data>
+  <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
+    <value>neither room height nor room volume in the file — default {0} m</value>
+  </data>
+  <data name="GIMP_BELEG_DACH_VORGABE_GESCHOSS" xml:space="preserve">
+    <value>no roof area in the file — default: gross floor area of the top storey "{0}" ({1} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_DACH_VORGABE_RAEUME" xml:space="preserve">
+    <value>no roof area in the file — default: floor area of the top storey "{0}", {1} heated rooms ({2} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_GRUND_VORGABE" xml:space="preserve">
+    <value>no ground floor area in the file — default: usable area {0} m² ÷ {1} storeys</value>
+  </data>
+  <data name="GIMP_BELEG_SONSTIGE_VORGABE" xml:space="preserve">
+    <value>no other area from the file ({0} components without area) — default 0 m²</value>
+  </data>
+  <data name="GIMP_BELEG_RANDBEDINGUNG_VORGABE" xml:space="preserve">
+    <value>no floor component in the file — default ground contact</value>
+  </data>
+  <data name="IMP_IFC_PROT_STOFFWERT_NULL" xml:space="preserve">
+    <value>{0} materials carry property values ≤ 0; they count as missing, so U-value and construction type from these layers are not available ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN" xml:space="preserve">
+    <value>{0}: the material properties of {1} materials are not read — the interface does not map their property sets reliably (IfcThermalMaterialProperties, IfcGeneralMaterialProperties, IfcExtendedMaterialProperties); U-value and construction type from these layers are not available ({2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
+    <value>For {0} envelope components the position of the layers cannot be determined (no IfcMaterialLayerSetUsage or no room side) — assumed: first layer outside ({1}).</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: the smallest interval between two time stamps is {1:0.###} min — allowed are {2} min.</value>

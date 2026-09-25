@@ -279,6 +279,37 @@ public sealed class GebaeudeKatalogDaten
     /// </summary>
     public string? Sollwertprofil { get; set; }
 
+    // ------------------ Stufe AK1: Kühlübergabe (E37, Anlagenkopplung 8.1; KAK-S1, Schritt 135)
+    //
+    // Der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung" — sichtbar nur mit Kühlung, die Werte
+    // reisen unsichtbar mit. NULL-erhaltend wie die Wärmeübergabe: NULL heißt „ideal" (Art),
+    // „Vorgabe der Art" (Exponent, Auslegung, Vorlaufgrenze), „Kühlsollwert" (Raum) bzw.
+    // „hergeleitet aus dem Auslegungstag" (Nennleistung, A2).
+
+    /// <summary>„Kühlübergabe rechnen" (<c>Kuehluebergabe_Aktiv</c>, 0/1-Spalte, <c>NOT NULL DEFAULT 0</c>; A1).</summary>
+    public bool KuehluebergabeAktiv { get; set; }
+
+    /// <summary>Kühlübergabeart (<c>Kuehl_Uebergabe_Art</c>, <c>DbWerte.KUEHLUEBERGABE_*</c>); <c>null</c> = ideal.</summary>
+    public string? KuehlUebergabeArt { get; set; }
+
+    /// <summary>Exponent der Kühlübergabe [–] (<c>Kuehl_Uebergabe_Exponent</c>); <c>null</c> = Vorgabe der Art.</summary>
+    public double? KuehlUebergabeExponent { get; set; }
+
+    /// <summary>Nennleistung der Kühlübergabe [kW], sensibel (<c>Kuehl_Uebergabe_Leistung_Nenn</c>); <c>null</c> = aus dem Auslegungstag (A2).</summary>
+    public double? KuehlUebergabeLeistungNennKw { get; set; }
+
+    /// <summary>Auslegungsvorlauf der Kühlübergabe [°C] (<c>Kuehl_Auslegung_Vorlauf</c>); <c>null</c> = Vorgabe der Art.</summary>
+    public double? KuehlAuslegungVorlauf { get; set; }
+
+    /// <summary>Auslegungsrücklauf der Kühlübergabe [°C] (<c>Kuehl_Auslegung_Ruecklauf</c>); <c>null</c> = Vorgabe der Art.</summary>
+    public double? KuehlAuslegungRuecklauf { get; set; }
+
+    /// <summary>Raumtemperatur im Auslegungspunkt der Kühlübergabe [°C] (<c>Kuehl_Auslegung_Raumtemperatur</c>); <c>null</c> = Kühlsollwert.</summary>
+    public double? KuehlAuslegungRaumtemperatur { get; set; }
+
+    /// <summary>Untere Grenze des Kaltwasser-Vorlaufs [°C] (<c>Kuehl_Vorlaufgrenze</c>) — eine Vorgabe, keine Taupunktrechnung; <c>null</c> = Vorgabe der Art.</summary>
+    public double? KuehlVorlaufgrenze { get; set; }
+
     /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
     /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").

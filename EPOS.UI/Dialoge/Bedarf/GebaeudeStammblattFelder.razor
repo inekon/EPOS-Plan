@@ -345,6 +345,7 @@ else
                     {
                         <Herleitungszeile Text="@Texte.ZeileKuehlungBestandsweg" />
                     }
+                    <GebaeudeKuehluebergabeFelder Arbeit="@Arbeit" Texte="@Texte" Geaendert="@(() => Geaendert.InvokeAsync())" Herleitung="@UebergabeHerleitung" EntprellungMs="@EntprellungMs" />
                 </div>
             }
         </KindInhalt>

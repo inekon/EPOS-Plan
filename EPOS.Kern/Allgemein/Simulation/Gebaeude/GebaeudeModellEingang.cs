@@ -228,6 +228,72 @@ namespace WindowsFormsApplication1
         internal bool SollwertprofilWirksam { get; private set; }
 
         // =====================================================================
+        //  Anlagenkopplung, Kälteseite (E37; Konzept Anlagenkopplung 7.2, 8.1, 8.4, 10.5)
+        // =====================================================================
+
+        /// <summary>Der Schalter <c>Kuehluebergabe_Aktiv</c> des Gebäudes (A1) — die Absicht, unabhängig von der Projektstufe.</summary>
+        internal bool KuehluebergabeAktiv { get; private set; }
+
+        /// <summary>Die Kühlübergabeart des Gebäudes (<c>DbWerte.KUEHLUEBERGABE_*</c>), wie gelesen; <c>null</c> = ideal.</summary>
+        internal string KuehlUebergabeArt { get; private set; }
+
+        /// <summary>
+        /// <b>Ist die Kälteseite der Kopplung für dieses Gebäude wirksam?</b> Projektstufe AK1 oder
+        /// höher, wirksame Kühlung (E32), <c>Kuehluebergabe_Aktiv</c> und eine Kühlübergabeart
+        /// ungleich ideal (<see cref="Kuehluebergabe.KopplungWirksam"/>) — unabhängig vom
+        /// Heizkreis. Sonst rechnet die Kühlung wie bisher, byte-gleich.
+        /// </summary>
+        internal bool KuehlKopplungWirksam { get; private set; }
+
+        /// <summary>
+        /// Die Kennwerte der Kühlübergabe, wie eingegeben (V &lt; R &lt; θ_i,N) — für Anzeige und
+        /// Ergebnis (Φ_N, n, Auslegungspunkt); Spreizung, Übertemperatur und W stehen hier mit
+        /// negativem Vorzeichen, gerechnet wird allein mit <see cref="KuehlUebergabeGespiegelt"/>.
+        /// <c>null</c> ohne wirksame Kälteseite.
+        /// </summary>
+        internal Uebergabekennwerte KuehlUebergabe { get; private set; }
+
+        /// <summary>Dieselben Kennwerte gespiegelt (−V, −R, −θ_i,N) — so rechnet Schritt K (10.5).</summary>
+        internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; private set; }
+
+        /// <summary>Der feste Kaltwasser-Vorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze) (7.2); NaN ohne Kälteseite.</summary>
+        internal double KuehlVorlaufC { get; private set; } = double.NaN;
+
+        /// <summary>Der Kaltwasser-Vorlauf der Quelle [°C] vor dem Hochmischen: der Anlage oder, ohne sie, der Auslegung.</summary>
+        internal double KuehlVorlaufQuelleC { get; private set; } = double.NaN;
+
+        /// <summary>Woher der Kaltwasser-Vorlauf kommt: <see cref="Vorlaufquelle.Anlage"/> oder <see cref="Vorlaufquelle.Auslegung"/>.</summary>
+        internal Vorlaufquelle KuehlVorlaufquelle { get; private set; }
+
+        /// <summary>Steht der Vorlauf an der Vorlaufgrenze, weil die Quelle kälter liefert (Mischgruppe am Gebäude, 7.2)?</summary>
+        internal bool KuehlVorlaufGekappt { get; private set; }
+
+        /// <summary>Die Vorlaufgrenze [°C] — Vorgabe statt Taupunktrechnung; NaN = keine (Gebläsekonvektor).</summary>
+        internal double KuehlVorlaufgrenzeC { get; private set; } = double.NaN;
+
+        /// <summary>Liegt die Vorlaufgrenze über dem Auslegungsvorlauf? Dann wird die Nennleistung nie erreicht (Hinweis).</summary>
+        internal bool KuehlGrenzeUeberAuslegung { get; private set; }
+
+        /// <summary>Strahlungsanteil der Kühlübergabe [–] — Vorgabe der Art, ohne Spalte (KU 3.2).</summary>
+        internal double KuehlStrahlungsanteil { get; private set; }
+
+        /// <summary>
+        /// Die Kühllast des Auslegungstags [W] (A2, 8.4) — die Spitze des periodisch
+        /// eingeschwungenen wärmsten Tags bei idealer Kühlung; NaN, wenn nicht hergeleitet.
+        /// Ausdrücklich kein Normnachweis.
+        /// </summary>
+        internal double AuslegungskuehllastW { get; private set; } = double.NaN;
+
+        /// <summary>Der Auslegungstag der Kühlung (0 … 364): der Tag mit dem höchsten Tagesmittel der Außenluft; −1 ohne Herleitung.</summary>
+        internal int AuslegungstagKuehlung { get; private set; } = -1;
+
+        /// <summary>Das Tagesmittel der Außenluft am Auslegungstag der Kühlung [°C]; NaN ohne Herleitung.</summary>
+        internal double AuslegungstagKuehlungMittelC { get; private set; } = double.NaN;
+
+        /// <summary>Ist die Nennleistung der Kühlübergabe aus dem Auslegungstag hergeleitet (NULL, A2)?</summary>
+        internal bool KuehlNennleistungHergeleitet { get; private set; }
+
+        // =====================================================================
         //  Ersatzparameter und Randreihen (Schritte A und E)
         // =====================================================================
 
@@ -290,24 +356,43 @@ namespace WindowsFormsApplication1
         {
             // Die Kühlleistung wirkt in KU1 rein konvektiv am Luftknoten (Kühlkonzept 3.2):
             // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
-            // Mit wirksamer Kopplung (AK1) trägt die Stunde Übergabe, Vorlauf und Reglerband —
-            // die Kälteseite der Kopplung ist benannt vertagt (H9) und bleibt ideal.
-            if (!KopplungWirksam)
+            // Mit wirksamer Kopplung (AK1) trägt die Stunde Übergabe, Vorlauf und Reglerband.
+            // Die beiden Zweige ohne Kälteseite stehen WÖRTLICH wie vor E37.
+            if (!KuehlKopplungWirksam)
+            {
+                if (!KopplungWirksam)
+                    return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
+                                           PhiRadAW[h], PhiRadIW[h], PhiConv[h],
+                                           heizleistungMaxW: HeizleistungMaxW,
+                                           kuehlleistungMaxW: KuehlleistungMaxW,
+                                           heizungStrahlungsanteil: HeizungStrahlungsanteil,
+                                           zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
                 return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                        heizleistungMaxW: HeizleistungMaxW,
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
+                                       zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
+                                       uebergabe: Uebergabe,
+                                       vorlaufC: VorlaufC[h],
+                                       reglerbandK: ReglerbandK);
+            }
+
+            // Kälteseite (Schritt K, E37): die Kühlübergabe beim festen Kaltwasser-Vorlauf mit
+            // demselben Raumregler; die Wärmeseite, wenn sie wirkt, wie im Zweig darüber.
             return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                    heizleistungMaxW: HeizleistungMaxW,
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                    zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0,
-                                   uebergabe: Uebergabe,
-                                   vorlaufC: VorlaufC[h],
-                                   reglerbandK: ReglerbandK);
+                                   uebergabe: KopplungWirksam ? Uebergabe : null,
+                                   vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
+                                   reglerbandK: ReglerbandK,
+                                   kuehlUebergabeGespiegelt: KuehlUebergabeGespiegelt,
+                                   kuehlVorlaufC: KuehlVorlaufC,
+                                   kuehlStrahlungsanteil: KuehlStrahlungsanteil,
+                                   kuehlVorlaufGekappt: KuehlVorlaufGekappt);
         }
 
         /// <summary>Ist Stunde <paramref name="h"/> (0 … 8759) Nutzungszeit — Stunde des Tages 7 … 22, 1-basiert (Rechenschritte 8.2, E8)?</summary>
@@ -343,6 +428,10 @@ namespace WindowsFormsApplication1
         /// FEST eingetragene Nennleistung der Übergabe — sie gilt dem wirklichen Gebäude und wird auf den
         /// Katalogbau umgerechnet (H7); NaN = die Nennleistung wird auch dann hergeleitet (erster Lauf
         /// der Verhältnisrechnung).</param>
+        /// <param name="kuehlVorlaufAnlageC">Der Kaltwasser-Vorlauf der Anlage [°C] für die Kälteseite
+        /// (E37) — der kälteste wirksame <c>Kuehl_Vorlauf</c> der Wärmepumpen im Kühlbetrieb, von der
+        /// Fassade gelesen; NaN = keiner (dann gilt der Auslegungsvorlauf, benannt). Gilt auch für die
+        /// Nennleistung der Kälteseite <paramref name="nennleistungSkalierung"/>.</param>
         /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
         internal static GebaeudeModellEingang Bauen(
             ProjektGebaeudeModel gebaeude,
@@ -353,7 +442,8 @@ namespace WindowsFormsApplication1
             bool kuehlbetrieb = false,
             string anlagenkopplung = null,
             double vorlaufAnlageC = double.NaN,
-            double nennleistungSkalierung = 1.0)
+            double nennleistungSkalierung = 1.0,
+            double kuehlVorlaufAnlageC = double.NaN)
         {
             GebaeudeModellEingang e = Daten(gebaeude);
 
@@ -515,6 +605,14 @@ namespace WindowsFormsApplication1
 
             if (e.KopplungWirksam)
                 e.KopplungAufloesen(gebaeude, aequivalentN, vorlaufAnlageC, nennleistungSkalierung);
+
+            // Kälteseite (E37): unabhängig vom Heizkreis, nur mit wirksamer Kühlung (E32), dem
+            // Schalter (A1) und einer Kühlübergabeart ungleich ideal. Ohne sie bleibt jede Zeile.
+            e.KuehluebergabeAktiv = gebaeude.Kuehluebergabe_Aktiv;
+            e.KuehlUebergabeArt = gebaeude.Kuehl_Uebergabe_Art;
+            e.KuehlKopplungWirksam = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
+            if (e.KuehlKopplungWirksam)
+                e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
             return e;
         }
 
@@ -883,6 +981,181 @@ namespace WindowsFormsApplication1
             }
             VorlaufC = vorlauf;
         }
+
+        // =====================================================================
+        //  Kälteseite der Kopplung (E37; Anlagenkopplung 7.2, 8.1, 8.4, 10.5)
+        // =====================================================================
+
+        /// <summary>
+        /// Kaltwasser-Vorlauf des Auslegungstags [°C] — kälter als jede Raumluft: Mit der
+        /// unbegrenzten Kühlübergabe (Φ_N = +∞, Xp = 0) liefert die Stunde so jede verlangte Kälte
+        /// in der Verteilung der Übergabe (Grenzfall B der Kälte, 10.5); gerechnet wird mit dem
+        /// Wert nicht, er öffnet nur den Zweig.
+        /// </summary>
+        private const double AUSLEGUNGSTAG_KALTWASSER_C = -273.15;
+
+        /// <summary>Höchstzahl der Wiederholungen des Auslegungstags bis zum periodisch eingeschwungenen Zustand (A2).</summary>
+        internal const int AUSLEGUNGSTAG_WIEDERHOLUNGEN_MAX = 30;
+
+        /// <summary>Relative Schwankung der Tagesspitze, unter der der Auslegungstag als eingeschwungen gilt (A2).</summary>
+        internal const double AUSLEGUNGSTAG_ABBRUCH_RELATIV = 1e-6;
+
+        /// <summary>
+        /// Löst die Kühlübergabe eines kühlgekoppelten Gebäudes auf (E37; Anlagenkopplung 7.2, 8.1,
+        /// 8.4): Vorgaben der Art bei NULL (A4), harte Prüfregeln mit benanntem Fehler, der
+        /// Strahlungsanteil der Art (ohne Spalte), das gemeinsame Proportionalband, der feste
+        /// Kaltwasser-Vorlauf = max(Quelle, Vorlaufgrenze) und die Nennleistung — eingetragen (auf
+        /// den Katalogbau umgerechnet wie auf der Heizseite, H7) oder aus dem Auslegungstag (A2).
+        /// Die Umrechnung kW → W geschieht hier, einmal.
+        /// </summary>
+        private void KuehlKopplungAufloesen(ProjektGebaeudeModel g, double kuehlVorlaufAnlageC, double nennleistungSkalierung)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string art = g.Kuehl_Uebergabe_Art;
+            if (!Kuehluebergabe.ArtBekannt(art))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT, art));
+
+            double n = g.Kuehl_Uebergabe_Exponent ?? Kuehluebergabe.VorgabeExponent(art);
+            Bereich(GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_EXPONENT, n,
+                    GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN, GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX);
+
+            double vN = g.Kuehl_Auslegung_Vorlauf ?? Kuehluebergabe.VorgabeVorlaufC(art);
+            double rN = g.Kuehl_Auslegung_Ruecklauf ?? Kuehluebergabe.VorgabeRuecklaufC(art);
+            double iN = g.Kuehl_Auslegung_Raumtemperatur ?? KuehlSollwert;
+            if (g.Kuehl_Auslegung_Vorlauf.HasValue)
+                Bereich(GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_VORLAUF, vN,
+                        GebaeudeFestwerte.KUEHL_VORLAUF_MIN, GebaeudeFestwerte.KUEHL_VORLAUF_MAX);
+            if (g.Kuehl_Auslegung_Raumtemperatur.HasValue)
+                Bereich(GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR, iN,
+                        GebaeudeFestwerte.KUEHL_AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.KUEHL_AUSLEGUNG_RAUM_MAX);
+            if (!Endlich(vN) || !Endlich(rN) || !Endlich(iN) || !(vN < rN) || !(rN < iN))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE, Text(vN), Text(rN), Text(iN)));
+
+            // 7.2: die Vorlaufgrenze als Vorgabe statt Taupunktrechnung; NaN = keine.
+            double grenze = g.Kuehl_Vorlaufgrenze ?? Kuehluebergabe.VorgabeVorlaufgrenzeC(art);
+            if (g.Kuehl_Vorlaufgrenze.HasValue)
+                Bereich(GebaeudeSchema.SPALTE_KUEHL_VORLAUFGRENZE, grenze,
+                        GebaeudeFestwerte.KUEHL_VORLAUF_MIN, GebaeudeFestwerte.KUEHL_VORLAUF_MAX);
+            KuehlVorlaufgrenzeC = grenze;
+            KuehlGrenzeUeberAuslegung = Endlich(grenze) && grenze > vN;
+
+            // KU 3.2: der Strahlungsanteil ist eine Vorgabe der Art, ohne Spalte (7.4 Punkt 8).
+            KuehlStrahlungsanteil = Kuehluebergabe.VorgabeStrahlungsanteil(art);
+
+            // Ein Raumregler, zwei Sequenzen (7.4 Punkt 6): Ohne Heizkopplung wird das Band hier
+            // aus derselben Spalte aufgelöst wie auf der Heizseite.
+            if (!KopplungWirksam)
+            {
+                double xp = g.Regler_Proportionalband ?? GebaeudeFestwerte.VORGABE_REGLER_PROPORTIONALBAND_K;
+                Bereich(GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND, xp,
+                        GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+                ReglerbandK = xp;
+            }
+
+            // 7.2: fester Vorlauf. Die Mischgruppe am Gebäude mischt das Kaltwasser der Anlage auf
+            // die Grenze hoch; kälter als die Anlage wird der Vorlauf nie.
+            bool anlage = Endlich(kuehlVorlaufAnlageC);
+            KuehlVorlaufquelle = anlage ? Vorlaufquelle.Anlage : Vorlaufquelle.Auslegung;
+            KuehlVorlaufQuelleC = anlage ? kuehlVorlaufAnlageC : vN;
+            KuehlVorlaufGekappt = Endlich(grenze) && KuehlVorlaufQuelleC < grenze;
+            KuehlVorlaufC = KuehlVorlaufGekappt ? grenze : KuehlVorlaufQuelleC;
+
+            // Die Nennleistung (sensibel). Fest eingetragen gilt sie dem wirklichen Gebäude und
+            // wird auf den Katalogbau umgerechnet (H7); leer kommt sie aus dem Auslegungstag (A2).
+            double phiN;
+            if (g.Kuehl_Uebergabe_Leistung_Nenn.HasValue && !double.IsNaN(nennleistungSkalierung))
+            {
+                double wertKw = g.Kuehl_Uebergabe_Leistung_Nenn.Value;
+                if (!(wertKw > 0.0))
+                    Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG, Text(wertKw)));
+                if (!(nennleistungSkalierung > 0.0) || double.IsInfinity(nennleistungSkalierung))
+                    Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_SKALIERUNG_UNGUELTIG, Text(nennleistungSkalierung)));
+                phiN = double.IsPositiveInfinity(wertKw) ? double.PositiveInfinity : 1000.0 * wertKw / nennleistungSkalierung;
+                KuehlNennleistungHergeleitet = false;
+            }
+            else
+            {
+                AuslegungskuehllastW = Auslegungskuehllast(out int tag, out double mittel);
+                AuslegungstagKuehlung = tag;
+                AuslegungstagKuehlungMittelC = mittel;
+                if (!(AuslegungskuehllastW > 0.0) || !Endlich(AuslegungskuehllastW))
+                    Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV,
+                                         TagText(tag, k), Text(AuslegungskuehllastW), Text(KuehlSollwert)));
+                phiN = AuslegungskuehllastW;
+                KuehlNennleistungHergeleitet = true;
+            }
+
+            KuehlUebergabe = new Uebergabekennwerte(phiN, n, vN, rN, iN);
+            KuehlUebergabeGespiegelt = Kuehluebergabe.Gespiegelt(phiN, n, vN, rN, iN);
+        }
+
+        /// <summary>
+        /// <b>Die Kühllast des Auslegungstags</b> [W] (A2, Anlagenkopplung 8.4) — die Spitze des
+        /// periodisch eingeschwungenen Tags mit dem höchsten Tagesmittel der Außenluft: seine 24
+        /// Stundenränder aus den Eingangsreihen (Außen- und Äquivalenttemperatur, solare und innere
+        /// Lasten), Heizung aus, ideale Kühlung auf den Kühlsollwert in der Verteilung der
+        /// Kühlübergabe, ohne Kühlleistungsgrenze und ohne Sommerlüftung. Ein eigenes Zonenmodell
+        /// rechnet, der Zustand des Laufs bleibt unberührt; start im Zustand θ_kühl. Der Tag
+        /// wiederholt sich, bis die Tagesspitze um weniger als 1e-6 relativ schwankt, höchstens
+        /// <see cref="AUSLEGUNGSTAG_WIEDERHOLUNGEN_MAX"/>-mal. Ausdrücklich kein Normnachweis.
+        /// </summary>
+        private double Auslegungskuehllast(out int tag, out double tagesmittelC)
+        {
+            tag = WaermsterTag(ThetaOut, out tagesmittelC);
+            Uebergabekennwerte unbegrenzt = Kuehluebergabe.Gespiegelt(double.PositiveInfinity, 1.0,
+                                                                        AUSLEGUNGSTAG_KALTWASSER_C, AUSLEGUNGSTAG_KALTWASSER_C + 1.0,
+                                                                        KuehlSollwert);
+            var modell = new Zonenmodell2K(Parameter, Bezeichnung);
+            modell.Zuruecksetzen(KuehlSollwert);
+            double spitze = 0.0, spitzeVor = double.NaN;
+            for (int w = 0; w < AUSLEGUNGSTAG_WIEDERHOLUNGEN_MAX; w++)
+            {
+                spitze = 0.0;
+                for (int s = 0; s < 24; s++)
+                {
+                    int h = tag * 24 + s;
+                    var r = new Stundenrand(ThetaOut[h], ThetaEq[h], double.NaN, KuehlSollwert,
+                                            PhiRadAW[h], PhiRadIW[h], PhiConv[h],
+                                            reglerbandK: 0.0,
+                                            kuehlUebergabeGespiegelt: unbegrenzt,
+                                            kuehlVorlaufC: AUSLEGUNGSTAG_KALTWASSER_C,
+                                            kuehlStrahlungsanteil: KuehlStrahlungsanteil);
+                    Stundenergebnis e = modell.Schritt(in r);
+                    if (e.KuehlleistungW > spitze) spitze = e.KuehlleistungW;
+                }
+                if (w > 0 && Math.Abs(spitze - spitzeVor) <= AUSLEGUNGSTAG_ABBRUCH_RELATIV * Math.Abs(spitze)) break;
+                spitzeVor = spitze;
+            }
+            return spitze;
+        }
+
+        /// <summary>Der Tag (0 … 364) mit dem höchsten Tagesmittel der Außenluft und dieses Mittel [°C] — der Spiegel von <see cref="KaeltesterTag"/> (A2).</summary>
+        internal static int WaermsterTag(double[] thetaOut, out double tagesmittelC)
+        {
+            int tag = 0;
+            tagesmittelC = double.NegativeInfinity;
+            for (int d = 0; d < 365; d++)
+            {
+                double summe = 0.0;
+                for (int s = 0; s < 24; s++) summe += thetaOut[d * 24 + s];
+                double mittel = summe / 24.0;
+                if (mittel > tagesmittelC)
+                {
+                    tagesmittelC = mittel;
+                    tag = d;
+                }
+            }
+            return tag;
+        }
+
+        /// <summary>Ein Tag des Jahres (0 … 364, kein Schaltjahr) als Monat und Tag in der Kultur <paramref name="k"/>.</summary>
+        internal static string TagText(int tag, CultureInfo k)
+            => tag < 0 ? "—" : new DateTime(2001, 1, 1).AddDays(tag).ToString("M", k);
 
         /// <summary>Der Tag (0 … 364) mit dem kältesten Tagesmittel der Außenluft und dieses Mittel [°C] (H10).</summary>
         internal static int KaeltesterTag(double[] thetaOut, out double tagesmittelC)

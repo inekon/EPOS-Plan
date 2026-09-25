@@ -26,11 +26,10 @@
         public const string MELDUNGSPRAEFIX = "IMP_GBXML_PROT_";
 
         /// <summary>
-        /// Bereichsschlüssel des Infoknopfs — die Hilfeseite des Gebäudeeditors, in dem der Import als
-        /// Überlagerung steht (A17). Eine eigene Seite samt Anker in <c>help_mapping.txt</c> kommt mit
-        /// der Welle, die den Import im Gebäudedialog anbindet (Wiki-Quelle, <c>HelpMappingAnkerWacheTests</c>).
+        /// Bereichsschlüssel des Infoknopfs — die eigene Hilfeseite „Gebäudeimport" des
+        /// Zuordnungsdialogs, dieselbe für beide Formate (<see cref="GebaeudeImportProfil.HILFE_ZUORDNUNG"/>).
         /// </summary>
-        public const string HILFESCHLUESSEL = "Form_Gebaeude1.btn_Help";
+        public const string HILFESCHLUESSEL = HILFE_ZUORDNUNG;
 
         /// <summary>Legt das Profil an; ohne Angabe gilt die Windows-Grenze.</summary>
         public GbxmlImportProfil(long maxBytes = MAX_BYTES_WINDOWS)

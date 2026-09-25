@@ -136,6 +136,29 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Übergabe die Grenze war [h]; nur mit wirksamer Kopplung.</summary>
         public double? UebergabeBegrenztStundenH;
 
+        // ---- Kälteseite der Kopplung (E37, KAK-S3) — dasselbe Muster: null ohne Kühlkopplung ----
+
+        /// <summary>
+        /// Die Kühlübergabeart des kühlgekoppelt gerechneten Gebäudes (<c>DbWerte.KUEHLUEBERGABE_*</c>);
+        /// <c>null</c> = nicht kühlgekoppelt — zugleich die Kennung in der Ergebniszeile.
+        /// </summary>
+        public string KuehlUebergabeArt;
+
+        /// <summary>Hat das Gebäude kühlgekoppelt gerechnet (Kälteseite E37)?</summary>
+        public bool IstKuehlgekoppelt => !string.IsNullOrEmpty(KuehlUebergabeArt);
+
+        /// <summary>Kältebedarfsgewichtetes Mittel des Kaltwasser-Vorlaufs [°C]; nur mit Kühlkopplung.</summary>
+        public double? KuehlVorlaufMittelC;
+
+        /// <summary>Kältebedarfsgewichtetes Mittel des Rücklaufs [°C]; nur mit Kühlkopplung.</summary>
+        public double? KuehlRuecklaufMittelC;
+
+        /// <summary>Stunden, in denen die Kühlübergabe die Grenze war [h], einschließlich der Vorlaufgrenze; nur mit Kühlkopplung.</summary>
+        public double? KuehlUebergabeBegrenztStundenH;
+
+        /// <summary>Davon die Stunden an der Vorlaufgrenze [h] (7.2); nur mit Kühlkopplung.</summary>
+        public double? KuehlVorlaufgrenzeStundenH;
+
         /// <summary>Rechnet das Gebäude auf dem VDI-Weg?</summary>
         public bool IstVdi6007 => Rechenweg == DbWerte.GEBAEUDE_MODELL_VDI6007;
     }
@@ -214,6 +237,17 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Übergabe (mindestens eines Gebäudes) die Grenze war.</summary>
         public double? UebergabeBegrenztStundenH;
+
+        // ---- Anlagenkopplung, Kälteseite (E37, KAK-S3) — null heißt „nicht erhoben" ----
+
+        /// <summary><c>Kuehl_Vorlauf_Mittel</c> [°C]: kältebedarfsgewichtetes Mittel des Kaltwasser-Vorlaufs über die Stunden mit kühlgekoppeltem Bedarf.</summary>
+        public double? KuehlVorlaufMittelC;
+
+        /// <summary><c>Kuehl_Ruecklauf_Mittel</c> [°C]: dasselbe für den Rücklauf.</summary>
+        public double? KuehlRuecklaufMittelC;
+
+        /// <summary><c>Kuehl_Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Kühlübergabe (mindestens eines Gebäudes) die Grenze war.</summary>
+        public double? KuehlUebergabeBegrenztStundenH;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

@@ -160,10 +160,11 @@ namespace WindowsFormsApplication1
                            "Die Namensabfrage gehört zu Neu… und Duplizieren…, die Sätze anlegen."),
             new KiAusnahme("KatalogImportDialog", KiAusnahmegrund.Import,
                            "Der Herstellerimport legt Katalogsätze an."),
-            // Ohne eigenen Hilfeschlüssel: Der Dialog trägt vorerst den des Gebäudeeditors (Profil,
-            // Form_Gebaeude1.btn_Help) — stünde er hier, sagte der Assistent im Editor ab.
+            // Mit eigenem Hilfeschlüssel (beide Importprofile, Seite „Gebäudeimport"): Der Editor
+            // behält Form_Gebaeude1.btn_Help und damit seinen Assistenten.
             new KiAusnahme("GebaeudeImportDialog", KiAusnahmegrund.Import,
-                           "Der Gebäudeimport ordnet eine Gebäudedatei den Feldern eines neuen Gebäudes zu; was übernommen wird, entscheidet der Anwender Zeile für Zeile."),
+                           "Der Gebäudeimport ordnet eine Gebäudedatei den Feldern eines neuen Gebäudes zu; was übernommen wird, entscheidet der Anwender Zeile für Zeile.",
+                           hilfeschluessel: GebaeudeImportProfil.HILFE_ZUORDNUNG),
             new KiAusnahme("ImportKonflikteDialog", KiAusnahmegrund.Import,
                            "Die Konfliktliste des Herstellerimports entscheidet über anzulegende Sätze.",
                            hilfeschluessel: "Form_ImportKonflikte.btn_Help"),

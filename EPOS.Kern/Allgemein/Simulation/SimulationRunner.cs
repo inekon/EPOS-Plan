@@ -409,6 +409,16 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.UebergabeBegrenztStundenH = heizkreis.UebergabeBegrenztStundenH;
             }
 
+            // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
+            // kuehlgekoppelt gerechnet hat, sonst NULL.
+            KuehlkreisProjekt kuehlkreis = simulation_Waermebedarf.Kuehlkreis;
+            if (kuehlkreis != null)
+            {
+                m.Energiebedarf.KuehlVorlaufMittelC = double.IsNaN(kuehlkreis.VorlaufMittelC) ? (double?)null : kuehlkreis.VorlaufMittelC;
+                m.Energiebedarf.KuehlRuecklaufMittelC = double.IsNaN(kuehlkreis.RuecklaufMittelC) ? (double?)null : kuehlkreis.RuecklaufMittelC;
+                m.Energiebedarf.KuehlUebergabeBegrenztStundenH = kuehlkreis.UebergabeBegrenztStundenH;
+            }
+
             // ENTSCHEID E30: die Kennzahlen je Gebaeude, wie die Gebaeudeschleife des Laufs
             // sie gebildet hat - ErgebnisCtrl.Save legt sie nach Tab_ErgebnisGebaeude.
             m.Gebaeude.AddRange(simulation_Waermebedarf.GebaeudeKennzahlenListe);

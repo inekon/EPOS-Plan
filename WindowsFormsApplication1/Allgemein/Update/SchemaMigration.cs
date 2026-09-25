@@ -4327,13 +4327,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KUEHLUEBERGABE_ZONE = KuehluebergabeSchema.SCHRITT_ZONE;
 
+        // ---- Gebäudesimulation Stufe G4c, Welle 3: der Schritt S-F ---------------------------
+
         /// <summary>
-        /// Schritt 138 — <b>die eingespielten Messreihen eines Projekts</b> (Umsetzungskonzept
+        /// Schritt <see cref="ImportzuordnungSchema.SCHRITT"/> (S-F) — <b>die Herkunftsablage der
+        /// Gebäudeimporte</b> (Datenaustauschkonzept 2.3, 7.1 bis 7.5). Er braucht
+        /// <see cref="SCHRITT_ZONEN"/>, <see cref="SCHRITT_BAUTEILAUFBAU"/> und
+        /// <see cref="SCHRITT_BAUSTOFFKATALOG"/>, auf deren Tabellen die Paarung zeigt.
+        ///
+        /// <para><b>REIN DDL:</b> <c>Tab_Importquelle</c> (eine Zeile je Importlauf, Kaskade zum
+        /// Gebäude) und <c>Tab_Importzuordnung</c> (eine Zeile je Paarung, Kaskade zur Quelle und
+        /// zu jedem der fünf Ziele, genau ein Ziel je Zeile), zwei Indizes. Quelle
+        /// <see cref="ImportzuordnungSchema"/>; die Abweichung „Kaskade auf die fünf Zielverweise"
+        /// ist dort begründet.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, keine Saat, kein Datenumbau; <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_IMPORTZUORDNUNG = ImportzuordnungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt 139 — <b>die eingespielten Messreihen eines Projekts</b> (Umsetzungskonzept
         /// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5, Schemaschritt T4 „Messreihen"). Er steht
         /// als LETZTER Schritt der Liste, <b>ohne Reihenfolgebedingung</b> und ohne einen früheren
         /// Schritt zu brauchen: Die Tabelle hängt allein an <c>Tab_Projekt</c>, das jede Datenbank
         /// führt. Die Nummer ist die nächste freie: Sie folgt lückenlos auf
-        /// <see cref="SCHRITT_KUEHLUEBERGABE_ZONE"/> (137) und steht allein bei
+        /// <see cref="SCHRITT_IMPORTZUORDNUNG"/> (138) und steht allein bei
         /// <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>; wandert sie bei einer Kollision erneut,
         /// ändert sich am Schritt selbst nichts.
         ///
@@ -4351,7 +4369,7 @@ namespace WindowsFormsApplication1
         /// <b>Wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c> und
         /// <c>CREATE INDEX IF NOT EXISTS</c>.</para>
         /// </summary>
-        public const int SCHRITT_138_ZAPFPROFIL_MESSREIHEN = TwwSchema.SCHRITT_T4_MESSREIHEN;
+        public const int SCHRITT_139_ZAPFPROFIL_MESSREIHEN = TwwSchema.SCHRITT_T4_MESSREIHEN;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6176,18 +6194,30 @@ namespace WindowsFormsApplication1
                         "Eine Zone koennte ihre Kuehluebergabe nicht fuehren. KEIN Rechenergebnis aendert " +
                         "sich - kein Rechenweg liest die Zone.",
                         Schritt_KuehluebergabeZone),
+            // GEBAEUDESIMULATION STUFE G4c, WELLE 3 (Datenaustauschkonzept 7.4) - der Schritt
+            // S-F hinter den Mehrzonenschritten. Die Quelle ist ImportzuordnungSchema; die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_IMPORTZUORDNUNG,
+                        "Tab_Importquelle und Tab_Importzuordnung: je Gebaeudeimport die Quelldatei " +
+                        "(Dateiname, SHA-256, Format, Zeitpunkt) und je Paarung EPOS-Zeile - Quellentitaet eine Zeile",
+                        "Die Zuordnung eines Imports ueberlebte den Dialog nicht: Ein zweiter Import derselben " +
+                        "Datei erkennte nicht, was er schon zugeordnet hat, und der Round-Trip faende die " +
+                        "Quellentitaeten nicht wieder. KEIN Rechenergebnis aendert sich - die Tabellen bleiben " +
+                        "leer, kein Rechenweg liest sie.",
+                        Schritt_Importzuordnung),
+
             // ZAPFPROFILGENERATOR Z5 (Schemaschritt T4 "Messreihen") - die eingespielten
             // Messreihen eines Projekts: Tab_TwwMessreihe samt Index auf ID_Projekt. REIN DDL;
             // die Quelle ist TwwSchema.AnweisungenT4Messreihen. Er steht NACH 131 ohne
             // Reihenfolgebedingung; die Tabelle haengt allein an Tab_Projekt.
-            new Schritt(SCHRITT_138_ZAPFPROFIL_MESSREIHEN,
+            new Schritt(SCHRITT_139_ZAPFPROFIL_MESSREIHEN,
                         "Zapfprofilgenerator: die eingespielten Messreihen eines Projekts " +
                         "(Tab_TwwMessreihe) samt Index auf ID_Projekt",
                         "Der Anwender koennte keine gemessene Reihe einspielen; Vergleichsbericht, " +
                         "Validierungskennzahlen und die Kalibrierung gegen die Messung blieben ohne " +
                         "Datenablage. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, " +
                         "und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar.",
-                        Schritt_138_ZapfprofilMessreihen),
+                        Schritt_139_ZapfprofilMessreihen),
         };
 
         /// <summary>
@@ -10327,19 +10357,44 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>
+        /// Schritt S-F — Anlass und Wirkung stehen bei <see cref="SCHRITT_IMPORTZUORDNUNG"/>, die
+        /// Anweisungen bei <see cref="ImportzuordnungSchema"/>: zwei Tabellen, dann zwei Indizes (R2),
+        /// <b>nur <see cref="SqliteDdl"/></b>. Die Idempotenz trägt <c>IF NOT EXISTS</c>.
+        /// </summary>
+        private static bool Schritt_Importzuordnung(Lauf l)
+        {
+            string nr = ImportzuordnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in ImportzuordnungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in ImportzuordnungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    ImportzuordnungSchema.TAB_QUELLE + ", " + ImportzuordnungSchema.TAB_ZUORDNUNG + ") samt zwei " +
+                    "Indizes. KEIN DML: beide Tabellen sind LEER, kein Rechenweg liest sie; der Referenzlauf bleibt " +
+                    "byte-gleich.");
+            return true;
+        }
+
         // =================================================================================
-        // Schritt 138 - die eingespielten Messreihen eines Projekts
+        // Schritt 139 - die eingespielten Messreihen eines Projekts
         // (Zapfprofilgenerator Stufe Z5, T4 "Messreihen")
         // =================================================================================
 
         /// <summary>
-        /// Schritt 138 — Anlass und Wirkung stehen bei
-        /// <see cref="SCHRITT_138_ZAPFPROFIL_MESSREIHEN"/>, die DDL bei
+        /// Schritt 139 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_139_ZAPFPROFIL_MESSREIHEN"/>, die DDL bei
         /// <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
         /// <see cref="TwwSchema.IndizesT4Messreihen"/>. <b>Nur <see cref="SqliteDdl"/></b>;
         /// <b>wiederholbar</b> über <c>IF NOT EXISTS</c>. <b>Kein DML</b> — die Tabelle bleibt leer.
         /// </summary>
-        private static bool Schritt_138_ZapfprofilMessreihen(Lauf l)
+        private static bool Schritt_139_ZapfprofilMessreihen(Lauf l)
         {
             int angelegt = 0;
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
@@ -10363,11 +10418,11 @@ namespace WindowsFormsApplication1
             if (!vollstaendig)
             {
                 l.LetzterFehler = "Die Tabelle der eingespielten Messreihen steht nach dem Schritt nicht.";
-                l.Notiz("138: FEHLER - " + l.LetzterFehler);
+                l.Notiz("139: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("138: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+            l.Notiz("139: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
                     indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) angelegt - " +
                     TwwSchema.TAB_TWW_MESSREIHE + " (eine Zeile je Wert, ID_Projekt mit ON DELETE " +
                     "CASCADE, kein Status, kein ReadOnly). KEIN DML: Die Tabelle bleibt LEER - das " +

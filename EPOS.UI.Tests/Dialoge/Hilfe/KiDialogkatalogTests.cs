@@ -1143,8 +1143,9 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
 
         // 54 bis Stufe 3b, dazu die Randbedingung und die vier Ferienspalten; mit der Welle 3
-        // von AK1 die dreizehn Felder der Wärmeübergabe (Konzept Anlagenkopplung 9.1).
-        Assert.Equal(72, d.Felder.Count);
+        // von AK1 die dreizehn Felder der Wärmeübergabe (Konzept Anlagenkopplung 9.1); mit E37
+        // die acht Felder der Kühlübergabe.
+        Assert.Equal(80, d.Felder.Count);
         Assert.DoesNotContain(d.Felder, f => f.IstReihe);
         Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
 

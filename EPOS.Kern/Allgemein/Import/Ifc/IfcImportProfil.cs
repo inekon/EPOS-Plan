@@ -33,10 +33,10 @@
         public const string ZONENREGEL_Z5 = "Z5";
 
         /// <summary>
-        /// Bereichsschlüssel des Infoknopfs — die Hilfeseite des Gebäudeeditors, in dem der Import als
-        /// Überlagerung steht (Umsetzungskonzept 3.1, A17); eine eigene Seite kommt mit der Oberfläche.
+        /// Bereichsschlüssel des Infoknopfs — die eigene Hilfeseite „Gebäudeimport" des
+        /// Zuordnungsdialogs, dieselbe für beide Formate (<see cref="GebaeudeImportProfil.HILFE_ZUORDNUNG"/>).
         /// </summary>
-        public const string HILFESCHLUESSEL = "Form_Gebaeude1.btn_Help";
+        public const string HILFESCHLUESSEL = HILFE_ZUORDNUNG;
 
         /// <summary>Legt das Profil an; ohne Angabe gilt die Windows-Grenze.</summary>
         public IfcImportProfil(long maxBytes = MAX_BYTES_WINDOWS)
@@ -45,7 +45,19 @@
         {
         }
 
+        /// <summary>50 MB unter Windows, 20 MB auf iOS (U11).</summary>
+        public override long GrenzeFuerPlattform(bool ios) => ios ? MAX_BYTES_IOS : MAX_BYTES_WINDOWS;
+
+        /// <summary>Die Vorgabe der Raumhöhe ohne <c>Height</c> und ohne <c>NetVolume</c>/<c>NetFloorArea</c> [m] (Umsetzungskonzept 3.4).</summary>
+        public const double RUECKFALL_RAUMHOEHE_M = 2.5;
+
         /// <summary>Ein neuer <see cref="IfcLeser"/> je Lauf.</summary>
         public override IGebaeudeLeser LeserErzeugen() => new IfcLeser();
+
+        /// <inheritdoc />
+        public override double? RueckfallRaumhoeheM => RUECKFALL_RAUMHOEHE_M;
+
+        /// <inheritdoc />
+        public override bool FlaechenRueckfaelle => true;
     }
 }

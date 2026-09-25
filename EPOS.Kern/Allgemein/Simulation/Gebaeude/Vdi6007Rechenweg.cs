@@ -81,6 +81,13 @@ namespace WindowsFormsApplication1
         internal double AnlagenVorlaufC { get; set; } = double.NaN;
 
         /// <summary>
+        /// Der Kaltwasser-Vorlauf der Anlage [°C] für kühlgekoppelte Gebäude (E37) — der kälteste
+        /// wirksame <c>Kuehl_Vorlauf</c> der Wärmepumpen im Kühlbetrieb; die Fassade liest ihn.
+        /// NaN = keiner (dann gilt der Auslegungsvorlauf der Kühlübergabe, benannt).
+        /// </summary>
+        internal double KuehlVorlaufAnlageC { get; set; } = double.NaN;
+
+        /// <summary>
         /// Verhältnis wirkliches Gebäude : Katalogbau für eine FEST eingetragene Nennleistung der
         /// Übergabe (H7) — gesetzt von der Fassade; NaN = hergeleitet rechnen (erster Lauf der
         /// Verhältnisrechnung). Ohne feste Nennleistung wirkungslos.
@@ -121,7 +128,7 @@ namespace WindowsFormsApplication1
                 GebaeudeModellEingang eingang = GebaeudeModellEingang.Bauen(
                     gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
                     gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
-                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung);
+                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC);
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
 
@@ -195,6 +202,14 @@ namespace WindowsFormsApplication1
             double[] begrenzt = gekoppelt ? new double[8760] : null;
             double stundenHl = 0.0, stundenHg = 0.0, unterschreitung = 0.0;
 
+            // Die Kälteseite (Schritt K, E37): die Reihen des Kältekreises - nur mit wirksamer
+            // Kühlkopplung, der Spiegel der Heizkreisreihen.
+            bool kuehlgekoppelt = eingang.KuehlKopplungWirksam;
+            double[] kVorlauf = kuehlgekoppelt ? new double[8760] : null;
+            double[] kRuecklauf = kuehlgekoppelt ? new double[8760] : null;
+            double[] kBegrenzt = kuehlgekoppelt ? new double[8760] : null;
+            double stundenKl = 0.0, stundenKk = 0.0, stundenGrenze = 0.0, ueberschreitung = 0.0;
+
             for (int h = 0; h < 8760; h++)
             {
                 bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
@@ -237,6 +252,28 @@ namespace WindowsFormsApplication1
                             " liefert einen unplausiblen Heizkreis (Vorlauf " + s.VorlaufC.ToString("G6", CultureInfo.InvariantCulture) +
                             " °C, Rücklauf " + s.RuecklaufC.ToString("G6", CultureInfo.InvariantCulture) + " °C).");
                 }
+
+                if (kuehlgekoppelt)
+                {
+                    kVorlauf[h] = s.KuehlVorlaufC;
+                    kRuecklauf[h] = s.KuehlRuecklaufC;
+                    kBegrenzt[h] = s.KuehlUebergabeBegrenztAnteil;
+                    stundenKl += s.KuehlleistungMaxAnteil;
+                    stundenKk += s.KeineKaelteAnteil;
+                    stundenGrenze += s.VorlaufgrenzeAnteil;
+                    if (s.KuehlUebergabeBegrenzt && s.ThetaAirMittel - eingang.ThetaMax[h] > ueberschreitung)
+                        ueberschreitung = s.ThetaAirMittel - eingang.ThetaMax[h];
+
+                    // Plausibilität des Kältekreises (Spiegel): NaN nur gemeinsam, sonst endlich,
+                    // und der Rücklauf liegt nie unter dem Vorlauf (Φ_c ≥ 0, W_K > 0).
+                    bool nanV = double.IsNaN(s.KuehlVorlaufC), nanR = double.IsNaN(s.KuehlRuecklaufC);
+                    if (nanV != nanR || (!nanV && (!Endlich(s.KuehlVorlaufC) || !Endlich(s.KuehlRuecklaufC)
+                                                   || s.KuehlVorlaufC - s.KuehlRuecklaufC > Rechenrand.Zu(s.KuehlVorlaufC))))
+                        throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
+                            eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
+                            " liefert einen unplausiblen Kältekreis (Vorlauf " + s.KuehlVorlaufC.ToString("G6", CultureInfo.InvariantCulture) +
+                            " °C, Rücklauf " + s.KuehlRuecklaufC.ToString("G6", CultureInfo.InvariantCulture) + " °C).");
+                }
             }
 
             // E32: Ohne wirksame Kühlung läuft das Gebäude frei - der Löser hat keine obere
@@ -256,13 +293,22 @@ namespace WindowsFormsApplication1
             HeizkreisErgebnis heizkreis = gekoppelt
                 ? HeizkreisErgebnis.Bilden(eingang, vorlauf, ruecklauf, begrenzt, stundenHl, stundenHg, heiz, unterschreitung)
                 : null;
+            // Der Kältebedarf je Stunde (kWh = mittlere kW) als Gewicht der Mittel, in W wie die Heizseite.
+            KuehlkreisErgebnis kuehlkreis = null;
+            if (kuehlgekoppelt)
+            {
+                var kuehlW = new double[8760];
+                for (int h = 0; h < 8760; h++) kuehlW[h] = kuehl[h] * 1000.0;
+                kuehlkreis = KuehlkreisErgebnis.Bilden(eingang, kVorlauf, kRuecklauf, kBegrenzt, stundenKl, stundenKk,
+                                                       stundenGrenze, kuehlW, ueberschreitung);
+            }
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, eingang.ThetaMaxWert,
                                               verbrauchAltKwh, 1.0, umschaltung, beides,
                                               (double[])eingang.ThetaSoll.Clone(), sommerStunden,
                                               eingang.KuehlungWirksam
                                                   ? (double?)eingang.KuehlSollwert : null,
-                                              heizkreis);
+                                              heizkreis, kuehlkreis);
         }
 
         /// <summary>
@@ -270,12 +316,14 @@ namespace WindowsFormsApplication1
         /// Gebäude schweigt sie; mit Schalter und ohne Projektstufe nennt sie, dass die Eingaben
         /// ruhen (F-A17), bei Übergabeart „ideal" den ausdrücklichen Rückfall (F-A1). Mit
         /// wirksamer Kopplung: die gebaute Stufe, die Stunden mit begrenzter Übergabe (Info),
-        /// die Flächenheizung ohne Estrichmasse (3.6), der Rückfall des festen Vorlaufs und die
-        /// benannt vertagte Kälteseite (H9).
+        /// die Flächenheizung ohne Estrichmasse (3.6) und der Rückfall des festen Vorlaufs. Die
+        /// Kälteseite (E37) meldet für sich (<see cref="KaelteseiteMelden"/>) — sie wird vom
+        /// Heizteil nicht mehr abgeschnitten.
         /// </summary>
         private static void KopplungMelden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,
                                            ProjektGebaeudeModel g, string wer)
         {
+            KaelteseiteMelden(e, r, g, wer);
             if (!e.HeizkreisAktiv) return;
             SimulationProtokoll p = SimulationProtokoll.Aktuell;
             CultureInfo k = CultureInfo.CurrentCulture;
@@ -310,9 +358,80 @@ namespace WindowsFormsApplication1
                 p.HinweisEinmal("ak-vorlauf-auslegung-" + id,
                     string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_AUSLEGUNG, wer, e.VorlaufFestC.ToString("0.#", k)));
 
-            if (e.KuehlungWirksam)
-                p.HinweisEinmal("ak-kaelteseite-vertagt-" + id,
-                    string.Format(k, MyResource.Resource.SIMENG_AK_KAELTESEITE_VERTAGT, wer));
+            // Heizseite gekoppelt, Kühlung wirksam, Kälteseite nicht gekoppelt und ohne eigenen
+            // Schalter: die Kühlung rechnet ideal - benannt, nie still.
+            if (e.KuehlungWirksam && !e.KuehlKopplungWirksam && !e.KuehluebergabeAktiv)
+                p.HinweisEinmal("ak-kaelteseite-ideal-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KAELTESEITE_IDEAL, wer));
+        }
+
+        /// <summary>
+        /// Die Meldungen der Kälteseite (E37, Anlagenkopplung 9.5) — je Gebäude und Lauf einmal.
+        /// Ohne Schalter <c>Kuehluebergabe_Aktiv</c> schweigt sie (A1, wie die Heizseite); mit
+        /// Schalter und ohne Projektstufe, ohne wirksame Kühlung (E32) oder mit Art „ideal" nennt
+        /// sie, dass die Eingaben ruhen (F-A17). Mit wirksamer Kälteseite: die gebaute Stufe, die
+        /// begrenzten Stunden samt größter Überschreitung, der Vorlauf aus der Auslegung, das
+        /// Hochmischen des zu kalten Kaltwassers, die Grenze über dem Auslegungsvorlauf, die
+        /// Flächenkühlung ohne Estrich, die Nennleistung aus dem Auslegungstag und K5 (sensibel).
+        /// </summary>
+        private static void KaelteseiteMelden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,
+                                              ProjektGebaeudeModel g, string wer)
+        {
+            if (!e.KuehluebergabeAktiv) return;
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string id = g.ID_Gebaeude.ToString(CultureInfo.InvariantCulture);
+
+            if (!e.KuehlKopplungWirksam)
+            {
+                if (!Waermeuebergabe.StufeAn(e.AnlagenkopplungStufe))
+                    p.HinweisEinmal("ak-kuehl-projektstufe-aus-" + id,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS, wer));
+                else if (!e.KuehlungWirksam)
+                    p.HinweisEinmal("ak-kuehl-kuehlung-unwirksam-" + id,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM, wer));
+                else
+                    p.HinweisEinmal("ak-kuehluebergabeart-ideal-" + id,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLUEBERGABEART_IDEAL, wer));
+                return;
+            }
+
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+                p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
+
+            KuehlkreisErgebnis kk = r.Kuehlkreis;
+            if (kk != null && kk.UebergabeBegrenztStundenH > 0.0)
+                p.HinweisEinmal("ak-kuehluebergabe-begrenzt-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLUEBERGABE_BEGRENZT, wer,
+                                  kk.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                  kk.VorlaufgrenzeStundenH.ToString("0.#", k),
+                                  kk.GroessteUeberschreitungK.ToString("0.0#", k)));
+
+            if (e.KuehlVorlaufquelle == Vorlaufquelle.Auslegung)
+                p.HinweisEinmal("ak-kuehl-vorlauf-auslegung-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG, wer, e.KuehlVorlaufQuelleC.ToString("0.#", k)));
+            else if (e.KuehlVorlaufGekappt)
+                p.HinweisEinmal("ak-kuehl-vorlauf-gemischt-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_VORLAUF_GEMISCHT, wer,
+                                  e.KuehlVorlaufQuelleC.ToString("0.#", k), e.KuehlVorlaufC.ToString("0.#", k)));
+
+            if (e.KuehlGrenzeUeberAuslegung)
+                p.HinweisEinmal("ak-kuehl-grenze-ueber-auslegung-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG, wer,
+                                  e.KuehlVorlaufgrenzeC.ToString("0.#", k), e.KuehlUebergabe.AuslegungVorlaufC.ToString("0.#", k)));
+
+            if (e.KuehlUebergabeArt == DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG)
+                p.HinweisEinmal("ak-flaechenkuehlung-estrich", MyResource.Resource.SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH);
+
+            if (e.KuehlNennleistungHergeleitet)
+                p.HinweisEinmal("ak-kuehl-nennleistung-auslegungstag-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG, wer,
+                                  (e.AuslegungskuehllastW / 1000.0).ToString("0.0#", k),
+                                  GebaeudeModellEingang.TagText(e.AuslegungstagKuehlung, k),
+                                  e.AuslegungstagKuehlungMittelC.ToString("0.#", k)));
+
+            p.HinweisEinmal("ak-kuehl-sensibel", MyResource.Resource.SIMENG_AK_KUEHL_SENSIBEL);
         }
 
         private static void Melden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,

@@ -563,7 +563,7 @@ namespace WindowsFormsApplication1
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
         /// Zone; der Referenzlauf bleibt byte-gleich.
         /// Mit der KÄLTESEITE DER ANLAGENKOPPLUNG (Entscheid E37, Stufe AK1 Welle 4; Konzept
-        /// Anlagenkopplung 8.1 und 8.3) steht das Ziel auf <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>:
+        /// Anlagenkopplung 8.1 und 8.3) stand das Ziel auf <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>:
         /// die acht Spalten der Kühlübergabe an <c>Tab_Gebaeude(_STAMM)</c> samt viertem Neubau der
         /// Sicht <c>Abfrage_Projektgebaeude</c> (<see cref="KuehluebergabeSchema.SCHRITT"/>, KAK-S1),
         /// die Ergebnisspalten der Kälteseite an <c>Tab_ErgebnisEnergiebedarf</c> und
@@ -572,6 +572,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>). Die Nummern stehen allein bei
         /// <see cref="KuehluebergabeSchema"/>. <b>Reines DDL, ergebnisneutral:</b> Der Schalter
         /// steht auf 0, alles andere auf NULL; der Referenzlauf bleibt byte-gleich.
+        /// Mit der HERKUNFTSABLAGE DER GEBÄUDEIMPORTE (Schritt S-F, Stufe G4c; Datenaustauschkonzept
+        /// 2.3 und 7.1 bis 7.5) steht das Ziel auf <see cref="ImportzuordnungSchema.SCHRITT"/>:
+        /// <c>Tab_Importquelle</c> (eine Zeile je Importlauf) und <c>Tab_Importzuordnung</c> (eine Zeile
+        /// je Paarung EPOS-Zeile ↔ Quellentität) samt zwei Indizes — <see cref="ImportzuordnungSchema"/>.
+        /// Die Nummer steht allein dort. <b>Reines DDL, ergebnisneutral:</b> Kein Rechenweg liest die
+        /// Tabellen, Import läuft nur auf Zuruf; der Referenzlauf bleibt byte-gleich.
         /// Mit den EINGESPIELTEN MESSREIHEN EINES PROJEKTS (Zapfprofilgenerator Stufe Z5,
         /// Schemaschritt T4 „Messreihen") steht das Ziel auf
         /// <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>: die Tabelle

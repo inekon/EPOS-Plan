@@ -49,7 +49,7 @@
 > Schritt H mit festem Kaltwasser-Vorlauf und einer Vorlaufgrenze als Vorgabe (7.2); die Nennleistung
 > kommt bei leerem Feld aus einem Auslegungstag (8.4). Die Ergebnisspalten der Kälteseite (`KAK-S3`,
 > 8.3) sind ein eigener Schritt. N-A4 (2.2) gilt wörtlich weiter; wirksame Kopplung heißt „Heizseite oder
-> Kälteseite wirksam".
+> Kälteseite wirksam". Gebaut mit der vierten Welle von AK1 (Schemaschritte 135 bis 137, 8).
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -1155,7 +1155,7 @@ Modellfehler" bezeichnet.
 
 Die ersten drei haben denselben Grund: Die Kälteseite ist jünger. Der vierte Punkt ist mit **E37**
 aufgehoben und durch die Punkte 5 bis 9 ersetzt — die benannten Abweichungen der Kälteseite, wie sie
-die vierte Welle von AK1 baut.
+die vierte Welle von AK1 gebaut hat.
 
 1. **Keine Kühlkurve im Bestand, auch nicht als Festwert-Ersatz.** Der Heizseite steht
    `Tab_Energieanlagen.Vorlauf` (`:713`) als Bestands-Festwert zur Verfügung; die Kälteseite bekommt
@@ -1222,14 +1222,15 @@ Bericht liest sie (9.4) und rechnet nichts nach. Die Definition und die Nummer s
 `ErgebnisGebaeudeSchema` (`SpaltenHeizkreis`, `SCHRITT_HEIZKREIS`); die Nummern 125 bis 127 waren beim
 Merge von anderen Vorhaben belegt.
 
-**Vergeben mit der vierten Welle von AK1 (E37):** Die Kälteseite bekommt zwei eigene Schritte —
-`KAK-S1` (die acht Spalten der Kühlübergabe an den Gebäudetabellen samt viertem Sichtneubau, 8.1) und
-`KAK-S3` (die Ergebnisspalten der Kälteseite in `Tab_ErgebnisEnergiebedarf` und
-`Tab_ErgebnisGebaeude`, 8.3) —, dazu, sobald `Tab_Zone` mit S-C steht, einen dritten für die drei
-Zonenspalten der Kühlübergabe. **Der Kälteteil von `AK-S3` ist damit ein eigener Schritt und nicht
-Teil von Schritt 123** — der Satz in 8.3, er komme „in demselben Schemaschritt, wenn KU1 steht", ist
-damit erledigt. Die Nummern werden erst unmittelbar vor dem Schemacommit gegen `origin` vergeben
-(Regel „lückenlos") und stehen in den Schema-Klassen; dieses Papier trägt sie nach dem Push nach.
+**Vergeben mit der vierten Welle von AK1 (E37, 24.09.2026):** Die Kälteseite bekommt drei eigene
+Schritte — Schemaschritt **135** `KAK-S1` (die acht Spalten der Kühlübergabe an den Gebäudetabellen
+samt viertem Sichtneubau, 8.1), Schemaschritt **136** `KAK-S3` (die Ergebnisspalten der Kälteseite in
+`Tab_ErgebnisEnergiebedarf` und `Tab_ErgebnisGebaeude`, 8.3) und Schemaschritt **137** für die drei
+Zonenspalten der Kühlübergabe an `Tab_Zone` (nach S-C, das mit Schritt 134 steht). **Der Kälteteil von
+`AK-S3` ist damit ein eigener Schritt und nicht Teil von Schritt 123** — der Satz in 8.3, er komme „in
+demselben Schemaschritt, wenn KU1 steht", ist damit erledigt. Definitionen und Nummern stehen allein
+bei `KuehluebergabeSchema` (`SCHRITT`, `SCHRITT_ERGEBNIS`, `SCHRITT_ZONE`); vergeben unmittelbar vor
+dem Schemacommit gegen `origin` (Regel „lückenlos").
 
 Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boolean als
 `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))`, Textlänge als `CHECK (length(...))`,
@@ -1326,8 +1327,11 @@ Kühlbetrieb, `Kuehlung_Aktiv`, Kühlsollwert), der Schalter steht und eine Art 
 — **unabhängig von `Heizkreis_Aktiv`**. Der Datenbankwert der Flächenkühlung ist `FLAECHENKUEHLUNG`,
 nicht der Wert `FLAECHE` der Heizseite, sonst zeigten Anzeigename und Variantenvergleich
 „Flächenheizung". **`Tab_Zone`** bekommt die drei Spalten `Kuehl_Uebergabe_Art`,
-`Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn` in einem eigenen Schritt nach S-C, ohne
-Schalter (Mehrzonenkonzept 4.2); gerechnet ab G6.
+`Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn` in einem eigenen Schritt nach S-C
+(Schemaschritt 137), ohne Schalter (Mehrzonenkonzept 4.2); die Wertliste der Art nimmt an der Zone
+`IDEAL` mit auf, weil NULL dort „Wert des Gebäudes" heißt. Das Aggregat je Gebäude
+(`GebaeudeZonenCtrl`), Projektduplikat und Projekttransfer tragen die drei Spalten NULL-erhaltend;
+gerechnet ab G6.
 
 ### 8.2 `AK-S2` — der Erzeuger: Zeitprogramm und Vorlaufangebot
 

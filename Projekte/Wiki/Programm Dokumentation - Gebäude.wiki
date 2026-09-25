@@ -24,6 +24,7 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 
 * {{Anker|katalogfilter|gebaeudekatalog}}'''Filter Gebäude DB''' – ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Gebäudeart'' und ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40"), dazu ein Textfilter mit Platzhaltern, etwa ''Haus*_1990*''. Die Liste ''Gebäude in DB'' darunter zeigt Name, Gebäudeart und Wohnfläche der Sätze, die der Filter übrig lässt; ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock.
 * '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage. Gesperrt ist es wie in der [[#loeschen|Verwaltung]] für Sätze der Auslieferung und für Gebäude, die ein Projekt führt; statt der Rückfrage steht dann der Grund im Dialog, bei einem benutzten Gebäude mit den Projekten.
+* {{Anker|import}}'''Importieren (gbXML, IFC)…''' – steht in derselben Leiste neben ''Gebäude in DB neu…'' und übernimmt ein Gebäude aus einer gbXML- oder IFC-Datei: Nach dem Zuordnungsdialog öffnet der [[#katalogeditor|Katalogeditor]] vorbelegt, und nach dem Speichern dort steht das neue Gebäude im Katalog und als neue Zeile in der Projektliste. Den Ablauf beschreibt die Seite [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]].
 
 === Übernahme ins Projekt ===
 {{Anker|uebernahme}}
@@ -44,7 +45,7 @@ Die Fußleiste trägt ''Ändern'', ''Simulation…'', ''Gebäudetyp in DB änder
 == Der Katalogeditor ==
 {{Anker|katalogeditor}}
 
-Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…''. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben.
+Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben.
 
 === Reiter „Gebäude und Hülle" ===
 

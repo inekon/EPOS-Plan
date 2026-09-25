@@ -691,6 +691,11 @@ namespace EPOS.Kern.Tests
                 KuehluebergabeSchema.ErgebnisAlle(null);
                 KuehluebergabeSchema.ZoneAlle(null);
 
+                // Schritt S-F (Gebaeudesimulation G4c, Welle 3): Importquelle und Importzuordnung.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug (ImportzuordnungSchema); NACH
+                // S-A bis S-C, auf deren Tabellen die Paarung zeigt; wiederholbar, kein DML.
+                ImportzuordnungSchema.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

@@ -99,6 +99,13 @@ namespace WindowsFormsApplication1
             // Schritt 128 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
             // ebenso vor der Transaktion gefragt; vor 128 bleibt die Zeile die des Schritts 107.
             bool heizkreisSpalten = gebaeudeTabelle && ErgebnisGebaeudeSchema.HeizkreisVollstaendig();
+            // KAK-S3 (E37): die Ergebnisspalten der Kaelteseite - ebenso vor der Transaktion gefragt;
+            // auf einer Datenbank davor bleiben die Zeilen, wie sie waren (Waechter: Spalte vorhanden).
+            bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
+                                         s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+            bool kuehlkreisSpalten = heizkreisSpalten &&
+                                     System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
+                                         s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -214,8 +221,13 @@ namespace WindowsFormsApplication1
                             KuehlungSchema.SPALTE_KAELTERESTBEDARF + ", " +
                             AnlagenkopplungSchema.SPALTE_VORLAUF_MITTEL + ", " +
                             AnlagenkopplungSchema.SPALTE_RUECKLAUF_MITTEL + ", " +
-                            AnlagenkopplungSchema.SPALTE_UEBERGABE_BEGRENZT_STUNDEN + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?)";
+                            AnlagenkopplungSchema.SPALTE_UEBERGABE_BEGRENZT_STUNDEN +
+                            (kuehlkreisEnergie
+                                ? ", " + KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL + ", " +
+                                  KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL + ", " +
+                                  KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN
+                                : "") + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -234,6 +246,13 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@h1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.VorlaufMittelC) });
                             p.Add(new DbParam("@h2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.RuecklaufMittelC) });
                             p.Add(new DbParam("@h3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.UebergabeBegrenztStundenH) });
+                            // KAK-S3 (E37): NULL, solange kein Gebaeude kuehlgekoppelt rechnet.
+                            if (kuehlkreisEnergie)
+                            {
+                                p.Add(new DbParam("@k1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlVorlaufMittelC) });
+                                p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlRuecklaufMittelC) });
+                                p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlUebergabeBegrenztStundenH) });
+                            }
                             v.Ausfuehren(sql, p.ToArray());
                         }
                     }
@@ -804,8 +823,16 @@ namespace WindowsFormsApplication1
                                   ErgebnisGebaeudeSchema.SPALTE_VORLAUF_MITTEL + ", " +
                                   ErgebnisGebaeudeSchema.SPALTE_RUECKLAUF_MITTEL + ", " +
                                   ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_BEGRENZT
+                                : "") +
+                            (kuehlkreisSpalten
+                                ? ", " + KuehluebergabeSchema.SPALTE_ERGEBNIS_KUEHL_UEBERGABE_ART + ", " +
+                                  KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL_C + ", " +
+                                  KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL_C + ", " +
+                                  KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_H + ", " +
+                                  KuehluebergabeSchema.SPALTE_KUEHL_VORLAUFGRENZE_H
                                 : "") + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?" + (heizkreisSpalten ? ", ?,?,?,?" : "") + ")";
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?" + (heizkreisSpalten ? ", ?,?,?,?" : "") +
+                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + ")";
                         foreach (ErgebnisGebaeudeModel g in m.Gebaeude)
                         {
                             List<DbParam> p = new List<DbParam>();
@@ -835,6 +862,16 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@h2", DbParamTyp.Double) { Wert = gekoppelt ? Oder(g.VorlaufMittelC) : DBNull.Value });
                                 p.Add(new DbParam("@h3", DbParamTyp.Double) { Wert = gekoppelt ? Oder(g.RuecklaufMittelC) : DBNull.Value });
                                 p.Add(new DbParam("@h4", DbParamTyp.Double) { Wert = gekoppelt ? Oder(g.UebergabeBegrenztStundenH) : DBNull.Value });
+                            }
+                            if (kuehlkreisSpalten)
+                            {
+                                // KAK-S3 (E37): ohne Kuehlkopplung ALLE fuenf NULL - dieselbe Regel.
+                                bool kuehlgekoppelt = g.IstKuehlgekoppelt;
+                                p.Add(new DbParam("@k1", DbParamTyp.VarWChar) { Wert = kuehlgekoppelt ? (object)g.KuehlUebergabeArt : DBNull.Value });
+                                p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlVorlaufMittelC) : DBNull.Value });
+                                p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlRuecklaufMittelC) : DBNull.Value });
+                                p.Add(new DbParam("@k4", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlUebergabeBegrenztStundenH) : DBNull.Value });
+                                p.Add(new DbParam("@k5", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlVorlaufgrenzeStundenH) : DBNull.Value });
                             }
                             v.Ausfuehren(sqlG, p.ToArray());
                         }
@@ -909,6 +946,10 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.VorlaufMittelC = DN(re, AnlagenkopplungSchema.SPALTE_VORLAUF_MITTEL);
                 m.Energiebedarf.RuecklaufMittelC = DN(re, AnlagenkopplungSchema.SPALTE_RUECKLAUF_MITTEL);
                 m.Energiebedarf.UebergabeBegrenztStundenH = DN(re, AnlagenkopplungSchema.SPALTE_UEBERGABE_BEGRENZT_STUNDEN);
+                // KAK-S3 (E37): dieselbe Regel; eine fehlende Spalte liest ebenfalls null.
+                m.Energiebedarf.KuehlVorlaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL);
+                m.Energiebedarf.KuehlRuecklaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL);
+                m.Energiebedarf.KuehlUebergabeBegrenztStundenH = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN);
             }
 
             // Detail: Waermepumpe (+ Module).
@@ -1263,6 +1304,13 @@ namespace WindowsFormsApplication1
                     g.VorlaufMittelC = DN(rg, ErgebnisGebaeudeSchema.SPALTE_VORLAUF_MITTEL);
                     g.RuecklaufMittelC = DN(rg, ErgebnisGebaeudeSchema.SPALTE_RUECKLAUF_MITTEL);
                     g.UebergabeBegrenztStundenH = DN(rg, ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_BEGRENZT);
+                    // KAK-S3 (E37): NULL bleibt null - "nicht kuehlgekoppelt".
+                    string kuehlArt = S(rg, KuehluebergabeSchema.SPALTE_ERGEBNIS_KUEHL_UEBERGABE_ART);
+                    g.KuehlUebergabeArt = kuehlArt.Length > 0 ? kuehlArt : null;
+                    g.KuehlVorlaufMittelC = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL_C);
+                    g.KuehlRuecklaufMittelC = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL_C);
+                    g.KuehlUebergabeBegrenztStundenH = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_H);
+                    g.KuehlVorlaufgrenzeStundenH = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUFGRENZE_H);
                     m.Gebaeude.Add(g);
                 }
 

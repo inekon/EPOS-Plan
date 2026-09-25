@@ -90,6 +90,41 @@ Die hergeleiteten Zahlen stehen als Vorgabe im Feld und in einer Zeile darunter,
 
 {{Anker|sollwert-zeitprogramm}}'''Sollwert-Zeitprogramm.''' Unter den Feldern steht ein Raster aus sieben Tagen und 24 Stunden. Ohne Zeitprogramm zeigt es gesperrt die Sollwerte, die ohnehin gelten (Tag, Nacht, Wochenende); ''Als Zeitprogramm bearbeiten'' macht daraus ein eigenes Zeitprogramm mit einem Sollwert je Wochenstunde, von Montag 0 Uhr bis Sonntag 23 Uhr. Eine Zeile lässt sich mit einem Wert füllen und auf die Werktage, das Wochenende oder alle Tage kopieren; ''Zeitprogramm verwerfen'' kehrt zu den Sollwerten des Gebäudes zurück. Die Ferien wirken in beiden Fällen darüber. Zulässig sind 0 bis 30 °C; eine leere Zelle wird nicht aufgefüllt, sondern beim Speichern gemeldet.
 
+== Kühlübergabe ==
+{{Anker|kuehluebergabe}}
+
+Ein gekühltes Gebäude rechnet ohne weitere Angaben mit '''idealer Kühlung''': In jeder Stunde wird genau die Kälte in den Raum gebracht, die den Kühlsollwert hält – begrenzt nur durch die Kühlleistungsgrenze. Mit der '''Kühlübergabe''' rechnet es statt dessen die Kühlflächen oder Gebläsekonvektoren des Gebäudes: Sie nehmen je nach Kaltwasser-Vorlauf nur eine bestimmte Leistung auf, derselbe Raumregler wie beim Heizen öffnet nach der Abweichung vom Kühlsollwert, und reicht die Übergabe nicht, steigt die Raumtemperatur über den Kühlsollwert.
+
+Gerechnet wird die Kühlübergabe, wenn diese Dinge zusammenkommen:
+* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'', und die Projekteinstellung ''Kühlung rechnen'' ist eingeschaltet;
+* das Gebäude wird gekühlt – Haken und Kühlsollwert, siehe [[Programm Dokumentation/Kühlung#eingaben|Kühlung]];
+* im Gebäude ist der Haken '''Kühlübergabe rechnen (statt idealer Kühlung)''' gesetzt;
+* eine Kühlübergabeart ist gewählt: '''Kühldecke''', '''Flächenkühlung''' oder '''Gebläsekonvektor'''. ''ideal'' rechnet wie ohne Haken.
+
+Die Kühlübergabe hängt nicht an der Wärmeübergabe: Ein Gebäude kann nur heizseitig, nur kälteseitig oder auf beiden Seiten gekoppelt rechnen. Wer den Haken abschaltet, behält die gewählte Art und die Eingaben.
+
+Die Eingaben stehen in der Gruppe '''Kühlung''' im Abschnitt '''Kühlübergabe''', im Gebäudedialog wie im Stammblatt der Gebäudeverwaltung unter ''Alle Daten''. Der Abschnitt erscheint nur, wenn das Gebäude gekühlt wird. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert. Die Vorgaben sind '''Vorgaben von EPOS-Plan, keine Normwerte'''; jedes Feld überschreibt sie.
+
+{| class="wikitable"
+! Eingabe !! Vorgabe !! Bedeutung
+|-
+| Exponent der Kühlübergabe || Kühldecke und Flächenkühlung 1,1 · Gebläsekonvektor 1,0 || wie stark die aufgenommene Leistung mit der Temperaturdifferenz zum Raum wächst
+|-
+| Nennleistung der Kühlübergabe || hergeleitet || die Kühllast des Auslegungstags – des Tages mit dem höchsten Tagesmittel der Außenluft, so oft wiederholt, bis sich seine Spitze nicht mehr ändert; sensibel, kein Normnachweis; im Projekt wird sie mit dem Gebäude hochgerechnet
+|-
+| Auslegung Kühlvorlauf / Kühlrücklauf || Kühldecke und Flächenkühlung 16/19 °C · Gebläsekonvektor 7/12 °C || der Auslegungspunkt der Kühlübergabe
+|-
+| Auslegung Raum (Kühlung) || Kühlsollwert || die Raumtemperatur im Auslegungspunkt
+|-
+| Untere Vorlaufgrenze || Kühldecke und Flächenkühlung 16 °C · Gebläsekonvektor keine || kälter wird das Kaltwasser am Gebäude nicht
+|}
+
+Den Strahlungsanteil bringt die Art mit (Kühldecke und Flächenkühlung 0,5, Gebläsekonvektor 0); er hat kein eigenes Feld. Der Raumregler ist derselbe wie beim Heizen und nimmt dessen Proportionalband.
+
+'''Kaltwasser-Vorlauf.''' Der Vorlauf der Kühlübergabe ist fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
+
+Unter den Feldern steht, ob die Kühlübergabe im geöffneten Projekt wirkt und woran es fehlt, der Auslegungstag mit seiner Kühllast, der Kaltwasser-Vorlauf und seine Herkunft. Zwei Zeilen stehen immer da: '''Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze''' – EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt –, und die Kühlübergabe rechnet '''sensibel, ohne Entfeuchtung'''. Widersprüchliche Angaben meldet ''OK'' mit den Werten: Vorlauf, Rücklauf und Raumtemperatur des Auslegungspunkts müssen aufsteigen.
+
 == Lüftung ==
 {{Anker|lueftung}}
 
@@ -145,6 +180,11 @@ Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf 
 * das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer.
 Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
 
+Rechnet das Gebäude mit [[#kuehluebergabe|Kühlübergabe]], trägt die Zeile '''Rechenweg''' ebenfalls den Zusatz ''gekoppelt (AK1)'', und der Abschnitt '''Kältebedarf''' zeigt zusätzlich:
+* zwei Kacheln: '''Kühlvorlauf / Kühlrücklauf''' – die Mittel über die Stunden mit Kühlbetrieb, darunter Art, Auslegungspunkt und der Vermerk ''sensibel'' – und '''Stunden mit begrenzter Kühlübergabe''', in denen die Kühlübergabe weniger aufnahm, als der Kühlsollwert verlangte, davon die Stunden an der Vorlaufgrenze;
+* das Bild '''Kühlvorlauf und Kühlrücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Kühlbetrieb bleiben im Bild leer.
+Die Stunden mit begrenzter Kühlübergabe sind keine Überhitzungsstunden: Diese zählen die Stunden über der oberen Raumtemperatur. Der Bericht führt die Zahlen je Gebäude im Abschnitt ''Kältekreis und Kühlübergabe''.
+
 Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistungen stehen in kW, Temperaturen in °C.
 
 == Grenzen ==
@@ -155,5 +195,6 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
 * Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
 * Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
-* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm. Gekühlt wird ein Gebäude mit Wärmeübergabe weiter mit idealer Regelung.
+* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
+* Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit festem Vorlauf; eine Kühlkurve und eine Wahl der Kühlkennlinie je Stunde gibt es nicht, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
 * Wie beim Bestandsweg rechnet das Modell das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch.

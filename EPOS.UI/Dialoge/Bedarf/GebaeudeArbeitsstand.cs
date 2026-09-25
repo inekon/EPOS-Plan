@@ -69,11 +69,13 @@ public sealed class GebaeudeArbeitsstand
         ModellBeimLaden = Stand.Modell;
         RandBeimLaden = Stand.GrundflaecheRandbedingung;
         ArtBeimLaden = Stand.UebergabeArt;
+        KuehlArtBeimLaden = Stand.KuehlUebergabeArt;
         BandBeimLaden = Stand.ReglerProportionalband;
         BandFrei = false;
         BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
         Fehlerfelder.Clear();
         _uebergabeFehlerfelder.Clear();
+        _kuehlFehlerfelder.Clear();
         FerienZerlegen();
         ProfilLesen();
     }
@@ -87,6 +89,7 @@ public sealed class GebaeudeArbeitsstand
         ModellBeimLaden = Stand.Modell;
         RandBeimLaden = Stand.GrundflaecheRandbedingung;
         ArtBeimLaden = Stand.UebergabeArt;
+        KuehlArtBeimLaden = Stand.KuehlUebergabeArt;
         BandBeimLaden = Stand.ReglerProportionalband;
     }
 
@@ -209,9 +212,9 @@ public sealed class GebaeudeArbeitsstand
     }
 
     /// <summary>
-    /// Der Haken „Gebäude wird gekühlt". Ohne Haken stehen Kühlsollwert und Grenze nicht da
-    /// — ihre Werte bleiben im Stand, eine Fehleingabe in einem ausgeblendeten Feld hält den
-    /// Speicherweg aber nicht mehr an.
+    /// Der Haken „Gebäude wird gekühlt". Ohne Haken stehen Kühlsollwert, Grenze und die
+    /// Kühlübergabe nicht da — ihre Werte bleiben im Stand, eine Fehleingabe in einem
+    /// ausgeblendeten Feld hält den Speicherweg aber nicht mehr an.
     /// </summary>
     public void KuehlungSetzen(bool wert, GebaeudeHuelleTexte texte)
     {
@@ -219,6 +222,7 @@ public sealed class GebaeudeArbeitsstand
         if (wert) return;
         Fehlerfelder.Remove(Feld(texte.LabelKuehlSollwert));
         Fehlerfelder.Remove(Feld(texte.LabelKuehlleistungMax));
+        KuehlFehlerfelderLeeren();
     }
 
     /// <summary>Ein Eingabefeld meldet, ob sein Text eine gültige Zahl ist.</summary>
@@ -414,6 +418,189 @@ public sealed class GebaeudeArbeitsstand
 
     private static readonly System.Reflection.PropertyInfo[] AbdruckEigenschaften =
         typeof(GebaeudeKatalogDaten).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+    // =====================================================================
+    //  Die Kühlübergabe (E37; Anlagenkopplung 7.2, 8.1, 9.1; A1, A2, A4)
+    // =====================================================================
+    //
+    // Der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung": sichtbar nur mit Kühlung, der
+    // Schalter kennt kein NULL (A1), „ideal" hält NULL wie auf der Heizseite, und jede Vorgabe
+    // kommt als Zahl aus dem Kern (Waermeuebergabevorgaben.Kuehl*) — mit DENSELBEN Grenzen, an
+    // denen der Eingangsbauer hart abbricht.
+
+    /// <summary>Die Kühlübergabeart beim Laden — „ideal" bleibt NULL, wenn es NULL war.</summary>
+    public string? KuehlArtBeimLaden { get; private set; }
+
+    /// <summary>Die Fehlerfelder des Unterabschnitts — sie fallen, sobald er seine Felder nicht mehr zeigt.</summary>
+    private readonly HashSet<string> _kuehlFehlerfelder = new();
+
+    /// <summary>Rechnet die gewählte Kühlübergabeart (Kühldecke, Flächenkühlung, Gebläsekonvektor)?</summary>
+    public bool KuehlArtRechnet => Waermeuebergabevorgaben.KuehlArtRechnet(Stand.KuehlUebergabeArt);
+
+    /// <summary>Steht der Unterabschnitt da? Nur mit dem Haken „Gebäude wird gekühlt".</summary>
+    public bool KuehluebergabeSichtbar => Stand.KuehlungAktiv;
+
+    /// <summary>Stehen die Felder der Kühlübergabe da? Kühlung, Haken „Kühlübergabe rechnen" UND eine rechnende Art.</summary>
+    public bool KuehlUebergabeAktiv => Stand.KuehlungAktiv && Stand.KuehluebergabeAktiv && KuehlArtRechnet;
+
+    /// <summary>Ein Feld des Unterabschnitts meldet seinen Fehlerzustand — gemerkt für das Ausblenden.</summary>
+    public void KuehlFehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        FehlerMelden(e);
+        if (e.Fehlerhaft) _kuehlFehlerfelder.Add(e.Feld); else _kuehlFehlerfelder.Remove(e.Feld);
+    }
+
+    private void KuehlFehlerfelderLeeren()
+    {
+        foreach (string f in _kuehlFehlerfelder) Fehlerfelder.Remove(f);
+        _kuehlFehlerfelder.Clear();
+    }
+
+    /// <summary>
+    /// Der Haken „Kühlübergabe rechnen" (A1). Ohne Haken bleiben alle Werte im Stand — auch die
+    /// Art (A1: die Art bleibt beim Abschalten); eine Fehleingabe in einem ausgeblendeten Feld
+    /// hält den Speicherweg nicht mehr an.
+    /// </summary>
+    public void KuehluebergabeSetzen(bool wert)
+    {
+        Stand.KuehluebergabeAktiv = wert;
+        if (!wert) KuehlFehlerfelderLeeren();
+    }
+
+    /// <summary>
+    /// Die Kühlübergabeart über ihren Listenplatz in <see cref="Waermeuebergabevorgaben.KuehlArten"/>
+    /// (0 = ideal). „ideal" und NULL sind dasselbe: War beim Laden NULL, bleibt es NULL.
+    /// </summary>
+    public void KuehlArtWaehlen(int? index)
+    {
+        if (index is null || index.Value < 0 || index.Value >= Waermeuebergabevorgaben.KuehlArten.Count) return;
+        string gewaehlt = Waermeuebergabevorgaben.KuehlArten[index.Value];
+        if (gewaehlt == DbWerte.KUEHLUEBERGABE_IDEAL)
+        {
+            bool geladenIdeal = KuehlArtBeimLaden is null || KuehlArtBeimLaden == DbWerte.KUEHLUEBERGABE_IDEAL;
+            Stand.KuehlUebergabeArt = geladenIdeal ? KuehlArtBeimLaden : null;
+            KuehlFehlerfelderLeeren();
+            return;
+        }
+        Stand.KuehlUebergabeArt = gewaehlt;
+    }
+
+    /// <summary>Der Listenplatz der Kühlübergabeart; NULL = ideal (0); eine unbekannte Art = −1.</summary>
+    public int KuehlArtindex
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Stand.KuehlUebergabeArt)) return 0;
+            for (int i = 0; i < Waermeuebergabevorgaben.KuehlArten.Count; i++)
+                if (Waermeuebergabevorgaben.KuehlArten[i] == Stand.KuehlUebergabeArt) return i;
+            return -1;
+        }
+    }
+
+    /// <summary>Die Einträge der Kühlübergabeart: die vier Arten — eine unbekannte gespeicherte Art vorangestellt.</summary>
+    public IReadOnlyList<(int Id, string Text)> KuehlArteintraege(GebaeudeHuelleTexte t)
+    {
+        var l = new List<(int, string)>();
+        if (KuehlArtindex < 0) l.Add((-1, Stand.KuehlUebergabeArt ?? ""));
+        for (int i = 0; i < Waermeuebergabevorgaben.KuehlArten.Count; i++)
+            l.Add((i, t.Kuehluebergabe.Artname(Waermeuebergabevorgaben.KuehlArten[i])));
+        return l;
+    }
+
+    /// <summary>Die Raumtemperatur im Auslegungspunkt der Kühlung, die gilt: das Feld, sonst der Kühlsollwert.</summary>
+    public double? KuehlAuslegungRaumWirksam => Stand.KuehlAuslegungRaumtemperatur ?? Stand.KuehlSollwert;
+
+    /// <summary>Der Auslegungsvorlauf der Kühlung, der gilt: das Feld, sonst die Vorgabe der Art.</summary>
+    public double? KuehlAuslegungVorlaufWirksam
+        => Stand.KuehlAuslegungVorlauf ?? Waermeuebergabevorgaben.KuehlVorlauf(Stand.KuehlUebergabeArt);
+
+    /// <summary>Die Vorlaufgrenze, die gilt: das Feld, sonst die Vorgabe der Art; <c>null</c> = keine Grenze.</summary>
+    public double? KuehlVorlaufgrenzeWirksam
+        => Stand.KuehlVorlaufgrenze ?? Waermeuebergabevorgaben.KuehlVorlaufgrenze(Stand.KuehlUebergabeArt);
+
+    // ---- Herleitungszeilen der Kühlübergabe (9.1: „Jede Vorgabe steht als Zahl") ----
+
+    /// <summary>Die Zeile unter Haken und Art: ohne Haken, „ideal" oder die Vorgaben der Art mit Zahlen.</summary>
+    public string KuehlArtZeile(GebaeudeHuelleTexte t)
+    {
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        if (!Stand.KuehluebergabeAktiv) return k.ZeileAus;
+        if (!KuehlArtRechnet) return k.ZeileIdeal;
+        string art = Stand.KuehlUebergabeArt!;
+        double? grenze = Waermeuebergabevorgaben.KuehlVorlaufgrenze(art);
+        return string.Format(k.ZeileArt, k.Artname(art),
+                             Zahl(Waermeuebergabevorgaben.KuehlExponent(art), 2),
+                             Zahl(Waermeuebergabevorgaben.KuehlVorlauf(art), 0),
+                             Zahl(Waermeuebergabevorgaben.KuehlRuecklauf(art), 0),
+                             Zahl(Waermeuebergabevorgaben.KuehlStrahlungsanteil(art), 2),
+                             grenze.HasValue ? Zahl(grenze, 0) + " °C" : k.GrenzeKeine);
+    }
+
+    /// <summary>
+    /// Die Wirksamkeit samt Grund (Stufe, Kühlung, Art): ohne Kühlsollwert nicht wirksam; mit einem
+    /// geöffneten Projekt, ob es koppelt und kühlt; sonst die Regel.
+    /// </summary>
+    public string KuehlWirksamZeile(GebaeudeHuelleTexte t, UebergabeHerleitungDaten? h)
+    {
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        if (Stand.KuehlSollwert is null) return k.ZeileOhneSollwert;
+        KuehluebergabeHerleitungDaten? kh = h?.Kuehlung;
+        if (kh is null) return k.ZeileProjekt;
+        if (!kh.ProjektKoppelt) return k.ZeileProjektOhneStufe;
+        if (!kh.ProjektKuehlt) return k.ZeileProjektOhneKaelte;
+        return k.ZeileWirksam;
+    }
+
+    /// <summary>Die Zeile der Auslegungs-Raumtemperatur: leer gilt der Kühlsollwert.</summary>
+    public string KuehlRaumZeile(GebaeudeHuelleTexte t)
+        => string.Format(t.Kuehluebergabe.ZeileRaum, Zahl(Stand.KuehlSollwert, 1));
+
+    /// <summary>
+    /// Die Zeile der Nennleistung — die Kühllast des Auslegungstags mit Tag und Tagesmittel, sonst
+    /// die Regel ohne Zahl bzw. der Grund, warum der Kern keine Zahl liefert (A2).
+    /// </summary>
+    public string KuehlNennleistungZeile(GebaeudeHuelleTexte t, UebergabeHerleitungDaten? h)
+    {
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        KuehluebergabeHerleitungDaten? kh = h?.Kuehlung;
+        if (kh is not null && !string.IsNullOrEmpty(kh.Befund)) return string.Format(k.ZeileHerleitungBefund, kh.Befund);
+        if (kh?.AuslegungskuehllastKw is double kw)
+            return string.Format(k.ZeileNennleistung, Zahl(kw, 1), kh.AuslegungstagText, Zahl(kh.AuslegungstagMittelC, 1));
+        return k.ZeileNennleistungOhne;
+    }
+
+    /// <summary>Die Zeile des Kaltwasser-Vorlaufs: aus der Anlage, hochgemischt oder die Auslegung; ohne Projekt die Regel.</summary>
+    public string KuehlVorlaufZeile(GebaeudeHuelleTexte t, UebergabeHerleitungDaten? h)
+    {
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        KuehluebergabeHerleitungDaten? kh = h?.Kuehlung;
+        if (kh?.VorlaufC is not double v || !string.IsNullOrEmpty(kh.Befund)) return k.ZeileVorlaufOhne;
+        if (!kh.VorlaufAusAnlage) return string.Format(k.ZeileVorlaufAuslegung, Zahl(v, 1));
+        return kh.Gekappt
+            ? string.Format(k.ZeileVorlaufGemischt, Zahl(kh.VorlaufQuelleC, 1), Zahl(v, 1))
+            : string.Format(k.ZeileVorlaufAnlage, Zahl(v, 1));
+    }
+
+    /// <summary>
+    /// Der leise Hinweis, dass die Vorlaufgrenze über dem Auslegungsvorlauf liegt (die Nennleistung
+    /// wird nie erreicht); leer, wenn nicht.
+    /// </summary>
+    public string KuehlGrenzeHinweis(GebaeudeHuelleTexte t)
+        => KuehlVorlaufgrenzeWirksam is double g && KuehlAuslegungVorlaufWirksam is double v && g > v
+            ? string.Format(t.Kuehluebergabe.ZeileGrenzeUeberAuslegung, Zahl(g, 1), Zahl(v, 1))
+            : "";
+
+    /// <summary>Der Platzhalter der Vorlaufgrenze: die Vorgabe der Art, sonst „keine Grenze".</summary>
+    public string KuehlGrenzePlatzhalter(GebaeudeHuelleTexte t)
+        => Waermeuebergabevorgaben.KuehlVorlaufgrenze(Stand.KuehlUebergabeArt) is double g
+            ? Vorgabe(g, t)
+            : t.Kuehluebergabe.VorgabeKeineGrenze;
+
+    /// <summary>Der Platzhalter der Nennleistung: die Kühllast des Auslegungstags, sonst „Vorgabe: hergeleitet".</summary>
+    public static string KuehlNennleistungPlatzhalter(UebergabeHerleitungDaten? h, GebaeudeHuelleTexte t)
+        => h?.Kuehlung?.AuslegungskuehllastKw is double kw && string.IsNullOrEmpty(h.Kuehlung.Befund)
+            ? Vorgabe(kw, t)
+            : t.Kuehluebergabe.VorgabeHergeleitet;
 
     // =====================================================================
     //  Abgeleitet — gerechnet im Kern, hier nur zusammengesetzt
@@ -750,6 +937,10 @@ public sealed class GebaeudeArbeitsstand
             }
             if (Stand.KuehlleistungMax is double grenze && !(grenze > 0))
                 return Kuehlung(t.MeldungKuehlleistung);
+
+            // E37: die Regeln des Unterabschnitts „Kühlübergabe" - nur mit Haken und rechnender Art.
+            GebaeudePruefbefund? kuehluebergabe = KuehluebergabePruefen(t);
+            if (kuehluebergabe is not null) return kuehluebergabe;
         }
 
         // Stufe AK1 (Anlagenkopplung 9.1, 9.5): die Regeln der Gruppe „Wärmeübergabe" - nur mit
@@ -827,6 +1018,47 @@ public sealed class GebaeudeArbeitsstand
                     return Uebergabe(string.Format(u.MeldungProfilWert, i + 1, Zahl(ProfilWerte[i], 1),
                                                    Zahl(Waermeuebergabevorgaben.SOLLWERT_MIN, 0),
                                                    Zahl(Waermeuebergabevorgaben.SOLLWERT_MAX, 0)));
+        return null;
+    }
+
+    /// <summary>
+    /// Die Regeln des Unterabschnitts „Kühlübergabe" (E37; 7.2, 9.1): Bereiche der Felder mit den
+    /// Grenzen des Eingangsbauers, die Nennleistung größer null und die Reihenfolge des
+    /// Auslegungspunkts (Vorlauf unter Rücklauf unter Raum) mit den Werten, die gelten — leeres
+    /// Feld = Vorgabe der Art bzw. Kühlsollwert. Ohne Haken oder mit „ideal" gilt keine; eine
+    /// Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt (ein Hinweis, keine Regel).
+    /// </summary>
+    private GebaeudePruefbefund? KuehluebergabePruefen(GebaeudeHuelleTexte t)
+    {
+        if (!Stand.KuehlungAktiv || !Stand.KuehluebergabeAktiv) return null;
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        if (KuehlArtindex < 0) return Kuehlung(string.Format(k.MeldungArtUnbekannt, Stand.KuehlUebergabeArt));
+        if (!KuehlArtRechnet) return null;
+
+        GebaeudePruefbefund? Bereich(double? wert, string label, double min, double max)
+            => wert is double w && (w < min || w > max)
+                ? Kuehlung(string.Format(k.MeldungBereich, Feld(label), Zahl(min, 1), Zahl(max, 1)))
+                : null;
+
+        GebaeudePruefbefund? b =
+            Bereich(Stand.KuehlUebergabeExponent, k.LabelExponent, Waermeuebergabevorgaben.EXPONENT_MIN, Waermeuebergabevorgaben.EXPONENT_MAX)
+            ?? Bereich(Stand.KuehlAuslegungVorlauf, k.LabelAuslegungVorlauf, Waermeuebergabevorgaben.KUEHL_VORLAUF_MIN, Waermeuebergabevorgaben.KUEHL_VORLAUF_MAX)
+            ?? Bereich(Stand.KuehlAuslegungRaumtemperatur, k.LabelAuslegungRaum, Waermeuebergabevorgaben.KUEHL_RAUM_MIN, Waermeuebergabevorgaben.KUEHL_RAUM_MAX)
+            ?? Bereich(Stand.KuehlVorlaufgrenze, k.LabelVorlaufgrenze, Waermeuebergabevorgaben.KUEHL_VORLAUF_MIN, Waermeuebergabevorgaben.KUEHL_VORLAUF_MAX);
+        if (b is not null) return b;
+        if (Stand.KuehlUebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Kuehlung(k.MeldungNennleistung);
+
+        string art = Stand.KuehlUebergabeArt!;
+        double vorlauf = Stand.KuehlAuslegungVorlauf ?? Waermeuebergabevorgaben.KuehlVorlauf(art)!.Value;
+        double ruecklauf = Stand.KuehlAuslegungRuecklauf ?? Waermeuebergabevorgaben.KuehlRuecklauf(art)!.Value;
+        // Ohne Kühlsollwert und ohne Feld ruht die Kälteseite - dann gibt es keinen Raum zu prüfen.
+        if (KuehlAuslegungRaumWirksam is double raum)
+        {
+            if (!(vorlauf < ruecklauf) || !(ruecklauf < raum))
+                return Kuehlung(string.Format(k.MeldungReihenfolge, Zahl(vorlauf, 1), Zahl(ruecklauf, 1), Zahl(raum, 1)));
+        }
+        else if (!(vorlauf < ruecklauf))
+            return Kuehlung(string.Format(k.MeldungReihenfolge, Zahl(vorlauf, 1), Zahl(ruecklauf, 1), "—"));
         return null;
     }
 
@@ -930,6 +1162,12 @@ public sealed class GebaeudeArbeitsstand
         Z(a.HeizkurveSteilheit, g.HeizkurveSteilheit); Z(a.ReglerProportionalband, g.ReglerProportionalband);
         T(a.Sollwertprofil, g.Sollwertprofil);
 
+        // E37: die acht Felder der Kühlübergabe.
+        B(a.KuehluebergabeAktiv, g.KuehluebergabeAktiv); T(a.KuehlUebergabeArt, g.KuehlUebergabeArt);
+        Z(a.KuehlUebergabeExponent, g.KuehlUebergabeExponent); Z(a.KuehlUebergabeLeistungNennKw, g.KuehlUebergabeLeistungNennKw);
+        Z(a.KuehlAuslegungVorlauf, g.KuehlAuslegungVorlauf); Z(a.KuehlAuslegungRuecklauf, g.KuehlAuslegungRuecklauf);
+        Z(a.KuehlAuslegungRaumtemperatur, g.KuehlAuslegungRaumtemperatur); Z(a.KuehlVorlaufgrenze, g.KuehlVorlaufgrenze);
+
         for (int i = 0; i < 4; i++)
         {
             (int? bt, int? bm) = Ferienzeit.TagUndMonat(g.Ferienbeginn[i]);
@@ -1010,9 +1248,31 @@ public sealed class GebaeudeArbeitsstand
             HeizkreisSetzen = HeizkreisSetzen,
             UebergabeArtSetzen = w => KiArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
             UebergabeArtEintraege = () => KiArteintraege(wege.Texte ?? new GebaeudeHuelleTexte()),
-            SollwertprofilSetzen = w => KiProfilSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte())
+            SollwertprofilSetzen = w => KiProfilSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
+
+            // E37: der Unterabschnitt „Kühlübergabe" über dieselben Wege.
+            KuehluebergabeSetzen = KuehluebergabeSetzen,
+            KuehlUebergabeArtSetzen = w => KiKuehlArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
+            KuehlUebergabeArtEintraege = () => KiKuehlArteintraege(wege.Texte ?? new GebaeudeHuelleTexte())
         };
     }
+
+    /// <summary>Die Kühlübergabeart des Assistenten: der Steuerwert über denselben Weg wie die Klappliste.</summary>
+    private string? KiKuehlArtSetzen(string wert, GebaeudeHuelleTexte t)
+    {
+        string gesucht = (wert ?? "").Trim();
+        if (gesucht.Length == 0) gesucht = DbWerte.KUEHLUEBERGABE_IDEAL;
+        for (int i = 0; i < Waermeuebergabevorgaben.KuehlArten.Count; i++)
+            if (string.Equals(Waermeuebergabevorgaben.KuehlArten[i], gesucht, StringComparison.OrdinalIgnoreCase))
+            {
+                KuehlArtWaehlen(i);
+                return null;
+            }
+        return string.Format(t.Kuehluebergabe.MeldungArtUnbekannt, gesucht);
+    }
+
+    private static IReadOnlyList<KiWahleintrag> KiKuehlArteintraege(GebaeudeHuelleTexte t)
+        => Waermeuebergabevorgaben.KuehlArten.Select(a => new KiWahleintrag(a, t.Kuehluebergabe.Artname(a))).ToList();
 
     /// <summary>Die Übergabeart des Assistenten: der Steuerwert über denselben Weg wie die Klappliste.</summary>
     private string? KiArtSetzen(string wert, GebaeudeHuelleTexte t)

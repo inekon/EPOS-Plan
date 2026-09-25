@@ -1792,8 +1792,27 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
-            // ---- Schritt 138: die eingespielten Messreihen eines Projekts
-            //      (Zapfprofilgenerator Stufe Z5, Schemaschritt T4 "Messreihen"). NACH 131.
+            // ---- Schritt S-F (Gebaeudesimulation Stufe G4c, Welle 3; Datenaustauschkonzept 7.1
+            //      bis 7.4): die Herkunftsablage der Gebaeudeimporte - Tab_Importquelle und
+            //      Tab_Importzuordnung samt zwei Indizes, aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Importzuordnung bedient (ImportzuordnungSchema). NACH den
+            //      Schritten S-A bis S-C, auf deren Tabellen die Paarung zeigt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - beide Tabellen entstehen LEER, kein Rechenweg
+            //      liest sie.
+            string nrImport = ImportzuordnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrImport + " - Importquelle und Importzuordnung: " +
+                              (ImportzuordnungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                int import = ImportzuordnungSchema.Ausfuehren();
+                tabellen += import;
+                Console.WriteLine("Schritt " + nrImport + " - " + import + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + ImportzuordnungSchema.Vollstaendig() + " (erwartet True).");
+            }
+            // ---- Schritt 139: die eingespielten Messreihen eines Projekts
+            //      (Zapfprofilgenerator Stufe Z5, Schemaschritt T4 "Messreihen"). NACH S-F.
             //      REIN DDL aus DERSELBEN Quelle, aus der sich
             //      SchemaMigration.Schritt_138_ZapfprofilMessreihen bedient
             //      (TwwSchema.AnweisungenT4Messreihen und TwwSchema.IndizesT4Messreihen):

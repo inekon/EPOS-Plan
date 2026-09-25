@@ -935,4 +935,39 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
         Assert.Equal(8, cut.FindAll(".epos-gebaeude-huellraster tbody tr").Count);
     }
+
+    /// <summary>
+    /// <b>E37: Die Kühlübergabe steht in „Alle Daten" unter der Kühlung</b> — derselbe Baustein
+    /// wie im Katalogeditor, nur mit dem Haken „Gebäude wird gekühlt"; Schalter und Art gehen über
+    /// den gemeinsamen Arbeitsstand in den Schreibweg, der Fuß zählt sie mit.
+    /// </summary>
+    [Fact]
+    public void Die_Kuehluebergabe_steht_in_Alle_Daten_unter_der_Kuehlung()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Assert.Empty(cut.FindAll(".epos-gebaeude-alledaten div.gebk-kuehluebergabe"));
+
+        IElement Schalter(string text) => cut.FindAll(".epos-gebaeude-alledaten label.epos-schalter")
+            .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text).QuerySelector("input")!;
+
+        Schalter("Gebäude wird gekühlt").Change(true);
+        Feld(cut, "Kühlsollwert").Input("26");
+        Assert.Single(cut.FindAll(".epos-gebaeude-alledaten div.gebk-kuehluebergabe"));
+        Schalter("Kühlübergabe rechnen (statt idealer Kühlung)").Change(true);
+        Feld(cut, "Kühlübergabeart :").Change("2");
+        Feld(cut, "Auslegung Kühlvorlauf :").Input("15");
+        // Kühlung, Kühlsollwert, Schalter, Art, Auslegungsvorlauf.
+        Assert.Equal("5 Felder geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
+
+        Knopf(cut, "Speichern").Click();
+
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.True(d.KuehlungAktiv);
+        Assert.True(d.KuehluebergabeAktiv);
+        Assert.Equal(DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG, d.KuehlUebergabeArt);
+        Assert.Equal(15.0, d.KuehlAuslegungVorlauf);
+        Assert.Null(d.KuehlVorlaufgrenze);
+    }
 }

@@ -49,6 +49,36 @@ namespace ChartProben
             return r;
         }
 
+        /// <summary>Die Kühlstunden der Probe (E37): Stunde 3 500 bis 6 499, der Sommer.</summary>
+        private static bool Kuehlstunde(int h) => h >= 3500 && h < 6500;
+
+        /// <summary>Der feste Kaltwasser-Vorlauf der Kälteseite, 16 °C, mit Lücken außerhalb der Kühlstunden.</summary>
+        private static double[] Kuehlvorlaufprobe(bool mitLuecke)
+        {
+            var w = new double[STUNDEN];
+            for (int i = 0; i < STUNDEN; i++) w[i] = Kuehlstunde(i) || !mitLuecke ? 16.0 : double.NaN;
+            return w;
+        }
+
+        /// <summary>Der Rücklauf zur gelieferten Kühlleistung: über dem Vorlauf, im Tagesgang, dieselben Lücken.</summary>
+        private static double[] Kuehlruecklaufprobe(bool mitLuecke)
+        {
+            double[] v = Kuehlvorlaufprobe(mitLuecke);
+            var r = new double[STUNDEN];
+            for (int i = 0; i < STUNDEN; i++)
+                r[i] = double.IsNaN(v[i]) ? double.NaN : v[i] + 1.5 + 1.2 * Math.Sin(2.0 * Math.PI * i / 24.0);
+            return r;
+        }
+
+        private static byte[] Kuehlvorlaufbild(bool mitLuecke, double? auslegungVorlauf, double? auslegungRuecklauf)
+            => ChartRenderer.VorlaufRuecklauf("Kühlvorlauf und Kühlrücklauf", Kuehlvorlaufprobe(mitLuecke), Kuehlruecklaufprobe(mitLuecke),
+                                              auslegungVorlauf, auslegungRuecklauf,
+                                              new ChartRenderer.VorlaufRuecklaufnamen
+                                              {
+                                                  Vorlauf = "Kühlvorlauf", Ruecklauf = "Kühlrücklauf",
+                                                  AuslegungVorlauf = "Auslegung Kühlvorlauf", AuslegungRuecklauf = "Auslegung Kühlrücklauf"
+                                              });
+
         private static byte[] Vorlaufbild(bool mitLuecke, double? auslegungVorlauf, double? auslegungRuecklauf)
             => ChartRenderer.VorlaufRuecklauf("Vorlauf und Rücklauf", Vorlaufprobe(mitLuecke), Ruecklaufprobe(mitLuecke),
                                               auslegungVorlauf, auslegungRuecklauf,
@@ -106,6 +136,44 @@ namespace ChartProben
                 string ausschnitt = SvgSchreiber.Reihenpfad(vorlauf, m.Flaeche, 4000, 6000, true);
                 if (ausschnitt.Length != 0) e.Maengel.Add("der Ausschnitt ganz in der Lücke zeichnet: " + ausschnitt);
                 e.Groesse = gebuendelt.Length.ToString(CultureInfo.InvariantCulture);
+            });
+
+            // E37 - DIE KÄLTESEITE: dasselbe Bild mit den Reihen der Kühlübergabe (fester
+            // Kaltwasser-Vorlauf, Rücklauf darüber, Lücken außerhalb der Kühlstunden). Ohne neuen
+            // Parameter - jedes Bild des Bestands bleibt byte-gleich.
+            Pruefe(ziel, "kuehlvorlauf_ruecklauf_gebaeude", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.SERIE_1), Rollenfarbe(Farbrolle.SERIE_2) },
+                   () => Kuehlvorlaufbild(true, 16.0, 19.0));
+
+            // Gegenproben der Kälteseite: Auslegungspunkt und Lücke stehen im Bild.
+            Unterschiedlich("kuehlvorlauf_auslegung_wirkt",
+                () => Kuehlvorlaufbild(true, 16.0, 19.0),
+                () => Kuehlvorlaufbild(true, null, null));
+            Unterschiedlich("kuehlvorlauf_luecke_wirkt",
+                () => Kuehlvorlaufbild(true, 16.0, 19.0),
+                () => Kuehlvorlaufbild(false, 16.0, 19.0));
+
+            // SVG der Kälteseite: Vorlauf und Rücklauf mit EINER Lücke (Winter davor und danach)
+            // zerfallen in einen Teilpfad je Kühlperiode - hier genau einen -, kein Pfad trägt "NaN".
+            SvgProbe("svg_kuehlvorlauf_luecken", e =>
+            {
+                Zeichenmodell m = ChartRenderer.VorlaufRuecklaufModell("Kühlvorlauf und Kühlrücklauf",
+                    Kuehlvorlaufprobe(true), Kuehlruecklaufprobe(true), 16.0, 19.0,
+                    new ChartRenderer.VorlaufRuecklaufnamen());
+                e.Masse = m.Breite + "x" + m.Hoehe;
+                List<SvgKnoten> pfade = SvgSchreiber.Baum(m).Alle()
+                    .Where(k => k.Name == "path" && Attributwert(k, "class") == SvgSchreiber.KLASSE_REIHE)
+                    .ToList();
+                e.Knoten = pfade.Count.ToString(CultureInfo.InvariantCulture);
+                if (pfade.Count != 4) { e.Maengel.Add("Reihenpfade: " + pfade.Count + " statt 4"); return; }
+                for (int i = 0; i < pfade.Count; i++)
+                {
+                    string d = Attributwert(pfade[i], "d") ?? "";
+                    if (d.Contains("NaN", StringComparison.Ordinal)) e.Maengel.Add("NaN im Pfad: " + m.Reihen[i].Name);
+                    int teile = d.Split('M').Length - 1;
+                    if (teile != 1) e.Maengel.Add("Teilpfade " + m.Reihen[i].Name + ": " + teile + " statt 1");
+                }
+                e.Groesse = (Attributwert(pfade[0], "d") ?? "").Length.ToString(CultureInfo.InvariantCulture);
             });
 
             // SVG: Eine Reihe ohne Lücke schreibt sich wörtlich wie vorher - hier gegen den Pfad der

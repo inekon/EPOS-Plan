@@ -16,7 +16,7 @@ using Xbim.IO.Memory;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Der Erzeuger der IFC-Importproben</b> (Stufe G4a Welle 1): schreibt mit xBIM
+    /// <b>Der Erzeuger der IFC-Importproben</b> (Stufe G4a, Wellen 1 und 2): schreibt mit xBIM
     /// (<c>MemoryModel</c> im Schreibmodus) die Probendateien unter <c>Referenzlaeufe/Importproben/ifc*</c>
     /// — selbst erzeugt, nichts aus dem Netz (Datenaustauschkonzept 8.3). Neutrale Namen, runde Werte,
     /// keine Hersteller- oder Produktdaten, keine Normzahlen.
@@ -52,7 +52,91 @@ namespace EPOS.Kern.Tests
                 ["ifc4_zwei_gebaeude.ifc"] = ZweiGebaeude(),
                 ["ifc4_ohne_mengen.ifc"] = OhneMengen(),
                 ["ifc4_mapconversion.ifc"] = MapConversion(),
+                ["ifc4_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten.ifc", nullwerte: false),
+                ["ifc4_schichten_nullwerte.ifc"] = Schichten(XbimSchemaVersion.Ifc4, "ifc4_schichten_nullwerte.ifc", nullwerte: true),
+                ["ifc2x3_schichten.ifc"] = Schichten(XbimSchemaVersion.Ifc2X3, "ifc2x3_schichten.ifc", nullwerte: false),
+                ["ifc4_rueckfaelle.ifc"] = Rueckfaelle(),
             };
+        }
+
+        // ==================================================================
+        //  Schichten und Rückfälle (Stufe G4a Welle 2)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Das Schichtenhaus</b>: ein Gebäude, ein beheizter Raum (80 m², 2,5 m, 200 m³), vier Außenwände
+        /// (brutto 25/20/25/20 m², ein Fenster 5 m² in der Südwand), Dach- und Bodenplatte je 80 m² — ohne
+        /// U-Werte, alles über <c>IfcMaterialLayerSetUsage</c> mit Stoffwerten in <c>Pset_MaterialThermal</c>
+        /// und <c>Pset_MaterialCommon</c> (IFC2X3: <c>IfcThermalMaterialProperties</c>,
+        /// <c>IfcGeneralMaterialProperties</c> und für die Dämmung zusätzlich
+        /// <c>IfcExtendedMaterialProperties</c>). Süd- und Nordwand zählen ihre Schichten innen zuerst und
+        /// legen sie gegen die lokale y-Achse (<c>NEGATIVE</c>), Ost- und Westwand außen zuerst längs der
+        /// Achse (<c>POSITIVE</c>) — physikalisch dieselbe Wand; die Annahme „erste Schicht außen" läge bei
+        /// Süd und Nord falsch. Mit <paramref name="nullwerte"/> trägt die Dämmung ρ = 0 und c = 0
+        /// (Befund P). Kein Nordwinkel (TrueNorth [0, 1]).
+        /// </summary>
+        public static byte[] Schichten(XbimSchemaVersion schema, string dateiname, bool nullwerte)
+        {
+            using (var b = new Bau(schema, dateiname))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Schichtenhaus", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(eg, "0.01", "Wohnen", 150, 150, 80, 2500, 200, beheizt: true);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ S", null);
+
+                IIfcMaterial putz = b.Baustoff("Putz", 0.7, 1400, 1000);
+                IIfcMaterial mauer = b.Baustoff("Mauerwerk", 0.5, 1200, 1000);
+                IIfcMaterial daemm = nullwerte ? b.Baustoff("Dämmung", 0.04, 0, 0) : b.Baustoff("Dämmung", 0.04, 30, 1500, erweitert2x3: true);
+                IIfcMaterial beton = b.Baustoff("Beton", 2.0, 2400, 1000);
+                IIfcMaterialLayerSet innenZuerst = b.Schichtsatz("Außenwand innen zuerst", (putz, 15), (mauer, 240), (daemm, 100));
+                IIfcMaterialLayerSet aussenZuerst = b.Schichtsatz("Außenwand außen zuerst", (daemm, 100), (mauer, 240), (putz, 15));
+                IIfcMaterialLayerSet dach = b.Schichtsatz("Dach", (beton, 200), (daemm, 200));
+                IIfcMaterialLayerSet boden = b.Schichtsatz("Bodenplatte", (daemm, 100), (beton, 200));
+
+                foreach (Wandlage l in Wandlage.Alle)
+                {
+                    IIfcWall w = b.Wand(eg, l.Name, l, typ, null, "BaseQuantities", l.Lang ? 25.0 : 20.0, null, null, new[] { r });
+                    bool innen = l == Wandlage.Sued || l == Wandlage.Nord;
+                    b.Schichten(w, innen ? innenZuerst : aussenZuerst, IfcLayerSetDirectionEnum.AXIS2,
+                                innen ? IfcDirectionSenseEnum.NEGATIVE : IfcDirectionSenseEnum.POSITIVE);
+                    if (l == Wandlage.Sued) b.Fenster(w, eg, "F-S", flaeche: 5.0);
+                }
+                IIfcSlab d = b.Platte(eg, "Dach", IfcSlabTypeEnum.ROOF, aussen: true, u: null, brutto: 80.0,
+                                      raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL);
+                b.Schichten(d, dach, IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                IIfcSlab p = b.Platte(eg, "Bodenplatte", IfcSlabTypeEnum.BASESLAB, aussen: true, u: null, brutto: 80.0,
+                                      raeume: new[] { r }, grenze: IfcInternalOrExternalEnum.EXTERNAL_EARTH);
+                b.Schichten(p, boden, IfcLayerSetDirectionEnum.AXIS3, IfcDirectionSenseEnum.POSITIVE);
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>
+        /// <b>Das Rückfallhaus</b> (Umsetzungskonzept 3.4, Spalte „Rückfall"): zwei Geschosse mit je einem
+        /// beheizten Raum (60 und 50 m²) ohne Höhe und ohne Volumen, das Obergeschoss mit der
+        /// Bruttogrundfläche 70 m²; zwei Außenwände mit Mengen, Dach- und Bodenplatte OHNE Mengen, keine
+        /// Tür — Raumhöhe, Dach-, Grund- und sonstige Fläche fallen auf ihre Vorgaben.
+        /// </summary>
+        public static byte[] Rueckfaelle()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_rueckfaelle.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Rückfallhaus", null);
+                IIfcBuildingStorey eg = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcBuildingStorey og = b.Geschoss(g, "Obergeschoss", 2800, bruttoM2: 70.0);
+                IIfcSpace unten = b.Raum(eg, "0.01", "Wohnen", 150, 150, 60, null, null, beheizt: true);
+                IIfcSpace oben = b.Raum(og, "1.01", "Schlafen", 150, 150, 50, null, null, beheizt: true);
+                IIfcWallType typ = b.Wandtyp("Außenwand Typ R", 0.3);
+                b.Wand(eg, "EG Süd", Wandlage.Sued, typ, null, "BaseQuantities", 25.0, null, null, new[] { unten });
+                b.Wand(og, "OG Süd", Wandlage.Sued, typ, null, "BaseQuantities", 25.0, null, null, new[] { oben });
+                b.Platte(og, "Dach", IfcSlabTypeEnum.ROOF, aussen: true, u: 0.2, brutto: null,
+                         raeume: new[] { oben }, grenze: IfcInternalOrExternalEnum.EXTERNAL);
+                b.Platte(eg, "Bodenplatte", IfcSlabTypeEnum.BASESLAB, aussen: true, u: 0.4, brutto: null,
+                         raeume: new[] { unten }, grenze: IfcInternalOrExternalEnum.EXTERNAL_EARTH);
+                return b.Speichern();
+            }
         }
 
         // ==================================================================
@@ -403,13 +487,14 @@ namespace EPOS.Kern.Tests
                 r.RelatedElements.Add(teil);
             }
 
-            public IIfcBuildingStorey Geschoss(IIfcBuilding g, string name, double hoeheMm)
+            public IIfcBuildingStorey Geschoss(IIfcBuilding g, string name, double hoeheMm, double? bruttoM2 = null)
             {
                 IIfcBuildingStorey s = Wurzel<IIfcBuildingStorey>("IfcBuildingStorey", name);
                 s.CompositionType = IfcElementCompositionEnum.ELEMENT;
                 s.Elevation = new IfcLengthMeasure(hoeheMm);
                 s.ObjectPlacement = Platzierung(g.ObjectPlacement, 0, 0, hoeheMm);
                 Zerlegen(g, s);
+                if (bruttoM2.HasValue) Mengen(s, "Qto_BuildingStoreyBaseQuantities", Flaeche("GrossFloorArea", bruttoM2.Value));
                 return s;
             }
 
@@ -422,8 +507,12 @@ namespace EPOS.Kern.Tests
                 r.ObjectPlacement = Platzierung(s.ObjectPlacement, x, y, 0);
                 Zerlegen(s, r);
                 if (nettoM2.HasValue)
-                    Mengen(r, "BaseQuantities", Flaeche("NetFloorArea", nettoM2.Value), Laenge("Height", hoeheMm.Value),
-                           Volumen("NetVolume", volumenM3.Value));
+                {
+                    var mengen = new List<IIfcPhysicalQuantity> { Flaeche("NetFloorArea", nettoM2.Value) };
+                    if (hoeheMm.HasValue) mengen.Add(Laenge("Height", hoeheMm.Value));
+                    if (volumenM3.HasValue) mengen.Add(Volumen("NetVolume", volumenM3.Value));
+                    Mengen(r, "BaseQuantities", mengen.ToArray());
+                }
                 Satz(r, "Pset_SpaceCommon", ("IsExternal", new IfcBoolean(false)));
                 if (beheizt)
                 {
@@ -442,15 +531,95 @@ namespace EPOS.Kern.Tests
                 return r;
             }
 
-            public IIfcWallType Wandtyp(string name, double u)
+            public IIfcWallType Wandtyp(string name, double? u)
             {
                 IIfcWallType t = Wurzel<IIfcWallType>("IfcWallType", name);
                 t.PredefinedType = IfcWallTypeEnum.STANDARD;
                 IIfcPropertySet ps = Wurzel<IIfcPropertySet>("IfcPropertySet", "Pset_WallCommon");
                 ps.HasProperties.Add(Einzel("IsExternal", new IfcBoolean(true)));
-                ps.HasProperties.Add(Einzel("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u)));
+                if (u.HasValue) ps.HasProperties.Add(Einzel("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u.Value)));
                 t.HasPropertySets.Add(ps);
                 return t;
+            }
+
+            /// <summary>
+            /// Ein Baustoff mit λ [W/(mK)], ρ [kg/m³] und c [J/(kgK)] — IFC4 in <c>Pset_MaterialThermal</c> und
+            /// <c>Pset_MaterialCommon</c> (<c>IfcMaterialProperties</c>); IFC2X3 als Attribute von
+            /// <c>IfcThermalMaterialProperties</c> und <c>IfcGeneralMaterialProperties</c>, mit
+            /// <paramref name="erweitert2x3"/> zusätzlich ein <c>IfcExtendedMaterialProperties</c>
+            /// „Pset_MaterialThermal". Die IFC2X3-Sätze sind über die Schnittstellen nicht anzulegen; hier
+            /// (Testhilfe, nicht Kern) über die Schemaklassen.
+            /// </summary>
+            public IIfcMaterial Baustoff(string name, double lambda, double rho, double cp, bool erweitert2x3 = false)
+            {
+                IIfcMaterial m = N<IIfcMaterial>("IfcMaterial");
+                m.Name = new IfcLabel(name);
+                if (_ifc2x3)
+                {
+                    var m2 = (Xbim.Ifc2x3.MaterialResource.IfcMaterial)m;
+                    _m.Instances.New<Xbim.Ifc2x3.MaterialPropertyResource.IfcThermalMaterialProperties>(t =>
+                    {
+                        t.Material = m2;
+                        t.ThermalConductivity = new Xbim.Ifc2x3.MeasureResource.IfcThermalConductivityMeasure(lambda);
+                        t.SpecificHeatCapacity = new Xbim.Ifc2x3.MeasureResource.IfcSpecificHeatCapacityMeasure(cp);
+                    });
+                    _m.Instances.New<Xbim.Ifc2x3.MaterialPropertyResource.IfcGeneralMaterialProperties>(t =>
+                    {
+                        t.Material = m2;
+                        t.MassDensity = new Xbim.Ifc2x3.MeasureResource.IfcMassDensityMeasure(rho);
+                    });
+                    if (erweitert2x3)
+                        _m.Instances.New<Xbim.Ifc2x3.MaterialPropertyResource.IfcExtendedMaterialProperties>(t =>
+                        {
+                            t.Material = m2;
+                            t.Name = new Xbim.Ifc2x3.MeasureResource.IfcLabel("Pset_MaterialThermal");
+                            t.ExtendedProperties.Add(_m.Instances.New<Xbim.Ifc2x3.PropertyResource.IfcPropertySingleValue>(v =>
+                            {
+                                v.Name = new Xbim.Ifc2x3.MeasureResource.IfcIdentifier("ThermalConductivity");
+                                v.NominalValue = new Xbim.Ifc2x3.MeasureResource.IfcThermalConductivityMeasure(lambda);
+                            }));
+                        });
+                    return m;
+                }
+                // Die Schnittstelle führt Properties nur lesend; angelegt wird über die IFC4-Klasse.
+                var thermisch = N<Xbim.Ifc4.MaterialResource.IfcMaterialProperties>("IfcMaterialProperties");
+                thermisch.Name = new IfcIdentifier("Pset_MaterialThermal");
+                thermisch.Material = (Xbim.Ifc4.MaterialResource.IfcMaterialDefinition)m;
+                thermisch.Properties.Add((Xbim.Ifc4.PropertyResource.IfcProperty)Einzel("ThermalConductivity", new IfcThermalConductivityMeasure(lambda)));
+                thermisch.Properties.Add((Xbim.Ifc4.PropertyResource.IfcProperty)Einzel("SpecificHeatCapacity", new IfcSpecificHeatCapacityMeasure(cp)));
+                var allgemein = N<Xbim.Ifc4.MaterialResource.IfcMaterialProperties>("IfcMaterialProperties");
+                allgemein.Name = new IfcIdentifier("Pset_MaterialCommon");
+                allgemein.Material = (Xbim.Ifc4.MaterialResource.IfcMaterialDefinition)m;
+                allgemein.Properties.Add((Xbim.Ifc4.PropertyResource.IfcProperty)Einzel("MassDensity", new IfcMassDensityMeasure(rho)));
+                return m;
+            }
+
+            /// <summary>Ein Schichtsatz; die Schichten in der Reihenfolge der Datei, Dicken in mm.</summary>
+            public IIfcMaterialLayerSet Schichtsatz(string name, params (IIfcMaterial Stoff, double DickeMm)[] schichten)
+            {
+                IIfcMaterialLayerSet s = N<IIfcMaterialLayerSet>("IfcMaterialLayerSet");
+                s.LayerSetName = new IfcLabel(name);
+                foreach ((IIfcMaterial stoff, double dicke) in schichten)
+                {
+                    IIfcMaterialLayer l = N<IIfcMaterialLayer>("IfcMaterialLayer");
+                    l.Material = stoff;
+                    l.LayerThickness = new IfcNonNegativeLengthMeasure(dicke);
+                    s.MaterialLayers.Add(l);
+                }
+                return s;
+            }
+
+            /// <summary>Hängt einen Schichtsatz über eine <c>IfcMaterialLayerSetUsage</c> an das Bauteil (Bezugslinie ohne Versatz).</summary>
+            public void Schichten(IIfcElement e, IIfcMaterialLayerSet satz, IfcLayerSetDirectionEnum achse, IfcDirectionSenseEnum sinn)
+            {
+                IIfcMaterialLayerSetUsage nutzung = N<IIfcMaterialLayerSetUsage>("IfcMaterialLayerSetUsage");
+                nutzung.ForLayerSet = satz;
+                nutzung.LayerSetDirection = achse;
+                nutzung.DirectionSense = sinn;
+                nutzung.OffsetFromReferenceLine = new IfcLengthMeasure(0);
+                IIfcRelAssociatesMaterial rel = Wurzel<IIfcRelAssociatesMaterial>("IfcRelAssociatesMaterial", null);
+                rel.RelatingMaterial = nutzung;
+                rel.RelatedObjects.Add(e);
             }
 
             private readonly Dictionary<int, IIfcRelDefinesByType> _typisiert = new Dictionary<int, IIfcRelDefinesByType>();
@@ -536,8 +705,8 @@ namespace EPOS.Kern.Tests
                 f.RelatedBuildingElement = e;
             }
 
-            public void Platte(IIfcBuildingStorey s, string name, IfcSlabTypeEnum art, bool aussen, double? u, double brutto,
-                               IIfcSpace[] raeume, IfcInternalOrExternalEnum grenze)
+            public IIfcSlab Platte(IIfcBuildingStorey s, string name, IfcSlabTypeEnum art, bool aussen, double? u, double? brutto,
+                                   IIfcSpace[] raeume, IfcInternalOrExternalEnum grenze)
             {
                 IIfcSlab p = Wurzel<IIfcSlab>("IfcSlab", name);
                 p.PredefinedType = art;
@@ -547,8 +716,9 @@ namespace EPOS.Kern.Tests
                     Satz(p, "Pset_SlabCommon", ("IsExternal", new IfcBoolean(aussen)), ("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u.Value)));
                 else
                     Satz(p, "Pset_SlabCommon", ("IsExternal", new IfcBoolean(aussen)));
-                Mengen(p, "BaseQuantities", Flaeche("GrossArea", brutto));
+                if (brutto.HasValue) Mengen(p, "BaseQuantities", Flaeche("GrossArea", brutto.Value));
                 foreach (IIfcSpace r in raeume) Grenze(r, p, grenze);
+                return p;
             }
 
             public void Dach(IIfcBuildingStorey s, string name, double u, double brutto, IIfcSpace[] raeume)

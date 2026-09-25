@@ -20,18 +20,30 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Eine Paarung Quellentität ↔ EPOS-Ziel</b> — später eine Zeile in
-    /// <c>Tab_Importzuordnung</c> (7.2). Geschrieben wird in dieser Welle nichts.
+    /// <b>Eine Paarung Quellentität ↔ EPOS-Ziel</b> — eine Zeile in <c>Tab_Importzuordnung</c>
+    /// (7.2), geschrieben von <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>.
     /// </summary>
     internal sealed class GebaeudeQuellzuordnung
     {
-        /// <summary>Legt eine Paarung an; die Kennung wird auf 64 Zeichen gekürzt (<see cref="Quellkennung.Kuerzen"/>).</summary>
-        public GebaeudeQuellzuordnung(string quelltyp, string quellkennung, ImportZiel ziel)
+        /// <summary>
+        /// Legt eine Paarung an; die Kennung wird auf 64 Zeichen gekürzt (<see cref="Quellkennung.Kuerzen"/>).
+        /// <paramref name="zielId"/> ist die Kennung der EPOS-Zeile; beim Ziel <see cref="ImportZiel.Gebaeude"/>
+        /// darf sie fehlen — dann gilt das Gebäude, dem der Import gilt.
+        /// </summary>
+        public GebaeudeQuellzuordnung(string quelltyp, string quellkennung, ImportZiel ziel, int? zielId = null)
         {
             Quelltyp = quelltyp ?? "";
             Quellkennung = WindowsFormsApplication1.Quellkennung.Kuerzen(quellkennung ?? "");
             Ziel = ziel;
+            ZielId = zielId;
         }
+
+        /// <summary>
+        /// Kennung der EPOS-Zeile des Ziels (<c>Tab_Zone.ID</c>, <c>Tab_Bauteil.ID</c> …); <c>null</c> =
+        /// noch keine — beim Gebäudeziel das Gebäude des Imports, bei jedem anderen Ziel wird die
+        /// Paarung benannt abgelehnt (die Zeile entsteht erst mit dem Schreiben, G6c).
+        /// </summary>
+        public int? ZielId { get; }
 
         /// <summary>Typ der Quellentität (<c>Building</c>, <c>Space</c>, <c>Surface</c>, <c>Opening</c> …), höchstens 40 Zeichen.</summary>
         public string Quelltyp { get; }

@@ -183,6 +183,11 @@ namespace WindowsFormsApplication1
                         "ABW_MERKMAL_HEIZKREIS"),
             new Merkmal("Gebäude", "Tab_Gebaeude", "Uebergabe_Art",      "Übergabeart", "", TEXT,
                         "ABW_MERKMAL_UEBERGABEART"),
+            // E37: die Kälteseite - Schalter und Kühlübergabeart (NULL heißt „ideal").
+            new Merkmal("Gebäude", "Tab_Gebaeude", "Kuehluebergabe_Aktiv", "Kühlübergabe rechnen", "", JN,
+                        "ABW_MERKMAL_KUEHLUEBERGABE"),
+            new Merkmal("Gebäude", "Tab_Gebaeude", "Kuehl_Uebergabe_Art", "Kühlübergabeart", "", TEXT,
+                        "ABW_MERKMAL_KUEHLUEBERGABEART"),
         };
 
         /// <summary>
@@ -196,6 +201,7 @@ namespace WindowsFormsApplication1
             {
                 { "Tab_Einstellungen.Anlagenkopplung", Waermeuebergabevorgaben.Stufenname },
                 { "Tab_Gebaeude.Uebergabe_Art", Waermeuebergabevorgaben.Anzeigename },
+                { "Tab_Gebaeude.Kuehl_Uebergabe_Art", Waermeuebergabevorgaben.KuehlAnzeigename },
             };
 
         /// <summary>Der Anzeigeweg eines Textmerkmals mit Steuerwerten; <c>null</c> = der Wert, wie er ist.</summary>

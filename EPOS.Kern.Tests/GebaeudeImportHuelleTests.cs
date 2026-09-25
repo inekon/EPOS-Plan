@@ -68,7 +68,7 @@ namespace EPOS.Kern.Tests
         {
             var parameter = new HashSet<string>(typeof(GebaeudeImportDialog).GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.GetCustomAttribute<ParameterAttribute>() != null).Select(p => p.Name));
-            var h = new GebaeudeImportHuelle();
+            var h = new GebaeudeImportHuelle(new GbxmlImportProfil());   // ein festes Profil
 
             IReadOnlyDictionary<string, object> ohne = h.Gaben();
             Assert.All(ohne.Keys, k => Assert.Contains(k, parameter));
@@ -91,6 +91,115 @@ namespace EPOS.Kern.Tests
             // Die Herkunftsschlüssel, die die Komponente selbst setzt, sind die des Kerns.
             Assert.Equal(ImportherkunftWerte.MANUELL, GebaeudeHerkunftSchluessel.Manuell);
             Assert.Equal(GebaeudeZuordnungsModell.HERKUNFT_LEER, GebaeudeHerkunftSchluessel.Leer);
+        }
+
+        // =================================================================================
+        //  Profil nach Dateiwahl (Stufe G4, Welle 4)
+        // =================================================================================
+
+        [Fact]
+        public void Ohne_festes_Profil_bietet_die_Huelle_beide_Formate_an()
+        {
+            var h = new GebaeudeImportHuelle();
+            Assert.True(h.ProfilNachDatei);
+            Assert.Null(h.Profil);                                  // entschieden wird an der Datei
+            Assert.Equal(GebaeudeImportProfil.DATEIFILTER_ALLE, h.Dateifilter);
+
+            var profil = (GebaeudeImportProfilDaten)h.Gaben()["Profil"];
+            Assert.Equal("gbXML, IFC", profil.Formatname);
+            Assert.Equal(GebaeudeImportProfil.DATEIFILTER_ALLE, profil.Dateifilter);
+            Assert.Equal("gbXML 25 MB · IFC 50 MB", profil.Groessengrenze);   // der Prüfstand ist nicht iOS
+            Assert.Equal(new[] { "X4 – eine Zone je Gebäude", GebaeudeZuordnungsModell.ZonenregelText(IfcImportProfil.ZONENREGEL_Z5) },
+                         profil.Zonierungsregeln);
+            Assert.Equal(GebaeudeImportProfil.HILFE_ZUORDNUNG, profil.HilfeSchluessel);
+        }
+
+        [Fact]
+        public async Task Die_Dateiwahl_waehlt_das_Profil_nach_der_Endung()
+        {
+            IDateiDienst vorher = Dienste.Datei;
+            try
+            {
+                var probe = new Dateiprobe { Antwort = GbxmlImportTests.Probe("gbxml_haus_si.xml") };
+                Dienste.Datei = probe;
+                var h = new GebaeudeImportHuelle();
+                var waehlen = (Func<string, Task<GebaeudeDateiwahl>>)h.Gaben()["DateiWaehlen"];
+
+                Assert.Null((await waehlen("")).Ablehnung);
+                Assert.Equal(GebaeudeImportProfil.DATEIFILTER_ALLE, probe.Filter);   // EINE Dateiwahl für beide
+
+                probe.Antwort = Path.Combine(IfcProbenTests.Ordner(), "ifc4_haus.ifc");
+                GebaeudeDateiwahl ifc = await waehlen("");
+                Assert.Null(ifc.Ablehnung);
+                Assert.Equal("ifc4_haus.ifc", ifc.Dateiname);
+
+                probe.Antwort = Path.Combine(Path.GetTempPath(), "haus-probe.txt");
+                GebaeudeDateiwahl txt = await waehlen("");
+                Assert.Equal("Dateiart nicht unterstützt: „haus-probe.txt“. Gelesen werden gbXML-Dateien (.xml, .gbxml) " +
+                             "und IFC-Dateien (.ifc, .ifcxml, .ifczip).", txt.Ablehnung);
+            }
+            finally
+            {
+                Dienste.Datei = vorher;
+            }
+        }
+
+        [Fact]
+        public async Task Lesen_nimmt_das_Profil_der_Datei()
+        {
+            var h = new GebaeudeImportHuelle();
+            var lesen = Lesen(h.Gaben());
+
+            GebaeudeLesestand ifc = await lesen(Path.Combine(IfcProbenTests.Ordner(), "ifc4_haus.ifc"), null, CancellationToken.None);
+            Assert.True(ifc.Gelesen, string.Join(" | ", ifc.Meldungen.Select(m => m.Text)));
+            Assert.Equal("IFC", ifc.Kopf!.Format);
+            Assert.IsType<IfcImportProfil>(h.Profil);
+            Assert.Equal(IfcImportProfil.MAX_BYTES_WINDOWS, h.Profil.MaxBytes);
+            Assert.Equal(DbWerte.IMPORT_FORMAT_IFC, h.Quelle.Format);
+            Assert.Equal("", ifc.SchonImportiert);                     // ohne Projekt kein Hinweis
+
+            GebaeudeLesestand gbxml = await lesen(GbxmlImportTests.Probe("gbxml_haus_si.xml"), null, CancellationToken.None);
+            Assert.True(gbxml.Gelesen);
+            Assert.Equal("gbXML", gbxml.Kopf!.Format);
+            Assert.IsType<GbxmlImportProfil>(h.Profil);
+
+            GebaeudeLesestand txt = await lesen(Path.Combine(Path.GetTempPath(), "haus-probe.txt"), null, CancellationToken.None);
+            Assert.False(txt.Gelesen);
+            GebaeudeImportMeldung m = Assert.Single(txt.Meldungen);
+            Assert.Equal("GIMP_DLG_DATEIART", m.Kennung);
+            Assert.Equal(WarnStufe.Fehler, m.Stufe);
+        }
+
+        [Fact]
+        public async Task Nach_der_Pruefung_stehen_Herkunft_und_Vorbelegung_bereit()
+        {
+            Assert.Null(new GebaeudeImportHuelle().Herkunft);         // ohne Lauf keine Herkunft
+            (GebaeudeImportHuelle h, IReadOnlyDictionary<string, object> gaben, GebaeudeImportStand stand) = await Probenhaus();
+            Pruefen(gaben)(Ergebnis(stand, name: "Neubau A"));
+
+            GebaeudeImportHerkunft herkunft = h.Herkunft;
+            Assert.NotNull(herkunft);
+            Assert.Same(h.Quelle, herkunft.Quelle);
+            GebaeudeQuellzuordnung p = Assert.Single(herkunft.Paarungen);
+            Assert.Equal("Building", p.Quelltyp);
+            Assert.Equal("geb-1", p.Quellkennung);
+
+            GebaeudeVorbelegung v = h.Vorbelegung(Ergebnis(stand, name: "Neubau A"));
+            Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML.", v.Herleitung);
+            Assert.Equal("Neubau A", v.Daten.Name);
+            Assert.Equal(120.0, v.Daten.WohnflaecheGesamt);
+            // Was nicht aus der Datei kommt, steht wie im Modus Neu des Editors.
+            GebaeudeKatalogDaten neu = GebaeudeKatalogHuelle.AusModell(new GebaeudeModel());
+            Assert.Equal(neu.Verwendung, v.Daten.Verwendung);
+            Assert.Equal(neu.MaxTemperatur, v.Daten.MaxTemperatur);
+            Assert.Equal(neu.Ferienbeginn, v.Daten.Ferienbeginn);
+        }
+
+        [Fact]
+        public void Der_Zeitpunkt_erscheint_in_der_Anzeigekultur()
+        {
+            Assert.Equal("25.09.2026 10:00", GebaeudeImportHuelle.Zeitpunkttext("2026-09-25T10:00:00+02:00"));
+            Assert.Equal("kein Zeitpunkt", GebaeudeImportHuelle.Zeitpunkttext("kein Zeitpunkt"));
         }
 
         // =================================================================================
@@ -191,7 +300,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public async Task Eine_zu_grosse_Datei_liest_der_Ablauf_nicht()
         {
-            var h = new GebaeudeImportHuelle();
+            var h = new GebaeudeImportHuelle(new GbxmlImportProfil());
             h.Profil.MaxBytes = 1000;
             GebaeudeLesestand gelesen = await Lesen(h.Gaben())(GbxmlImportTests.Probe("gbxml_haus_si.xml"), null, CancellationToken.None);
 
@@ -215,7 +324,7 @@ namespace EPOS.Kern.Tests
             {
                 var probe = new Dateiprobe { Antwort = GbxmlImportTests.Probe("gbxml_haus_si.xml") };
                 Dienste.Datei = probe;
-                var h = new GebaeudeImportHuelle();
+                var h = new GebaeudeImportHuelle(new GbxmlImportProfil());
                 var waehlen = (Func<string, Task<GebaeudeDateiwahl>>)h.Gaben()["DateiWaehlen"];
 
                 GebaeudeDateiwahl frei = await waehlen(GbxmlImportProfil.DATEIFILTER);
