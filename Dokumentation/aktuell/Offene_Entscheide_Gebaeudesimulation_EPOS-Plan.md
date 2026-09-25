@@ -119,7 +119,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **U12** | Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog. | **G4** | — |
 | **D1** | gbXML-Import vor IFC-Import. | **Beauftragung G4c/G4a** | — |
 | **D16** | Ja — die gbXML-Zonenbildung erweitert E7. | **Beauftragung G4c** | — |
-| **M9** | Synonymtabelle in der Auslieferung. | **G4b** (Schema 145, umgesetzt 26.09.2026; aus G6a übernommen, Konzept N1.49) | — |
+| **M9** | Synonymtabelle in der Auslieferung. | **G4b** (Schema 146, umgesetzt 26.09.2026; aus G6a übernommen, Konzept N1.49) | — |
 | **M14** | Beides behalten — Wertekopie an der Schicht und Projektkopie der Baustoffe. | **G6a** (Schema) | — |
 | **A6** | Ein Aggregat, Ändern statt Löschen, in einer Transaktion. | **G6b** | — |
 | **M2** | Raumseitenmaß beim Import. | **G6c** | — |

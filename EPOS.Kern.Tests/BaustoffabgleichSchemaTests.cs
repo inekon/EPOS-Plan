@@ -19,8 +19,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_folgt_auf_die_Nachtzeit_und_der_Zielstand_traegt_sie()
         {
-            Assert.Equal(NachtzeitSchema.SCHRITT + 1, BaustoffabgleichSchema.SCHRITT);
-            Assert.Equal(145, BaustoffabgleichSchema.SCHRITT);
+            Assert.True(BaustoffabgleichSchema.SCHRITT > NachtzeitSchema.SCHRITT);
+            Assert.Equal(146, BaustoffabgleichSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= BaustoffabgleichSchema.SCHRITT,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter " + BaustoffabgleichSchema.SCHRITT + ".");
         }

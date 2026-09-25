@@ -178,7 +178,7 @@ namespace Auslieferungsvorlage.Tests
             // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
             // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).
             //
-            // 146 seit dem Namensabgleich der Baustoffe (Schemaschritt 145, Stufe G4b Ergaenzung):
+            // 146 seit dem Namensabgleich der Baustoffe (Schemaschritt 146, Stufe G4b Ergaenzung):
             // Tab_Baustoffsynonym_STAMM (Synonyme der Auslieferung, P6e) und Tab_Baustoffzuordnung
             // (gemerkte Zuordnungen je Projekt, in der Vorlage LEER), beide STRICT von ihrer ersten Zeile an.
             Assert.Equal(146, befund.Strict);

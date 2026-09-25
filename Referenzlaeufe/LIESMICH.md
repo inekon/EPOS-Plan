@@ -409,10 +409,10 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-25_R19_BhkwNetzbezug/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **145**,
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **146**,
 LFS-SHA-256 `3e89b72c…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
 der Datenpflege E24 und noch ohne das Prüfprojekt „PV mit Preisen“, das ohne Referenzrolle hinzukam, und
-ohne die Tabellen des Namensabgleichs (Schritt 145); beides bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
+ohne die Tabellen des Namensabgleichs (Schritt 146); beides bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
 im Arbeitsbaum.
@@ -507,8 +507,8 @@ im Arbeitsbaum.
 > 432/432 CSV byte-gleich; gegen R19 nach der Zusammenführung mit E27 erneut 14/14 (Nachweis in der
 > Statuszeile #521).
 
-> **Nachtrag Schritt 145 (Namensabgleich der Baustoffe) ohne Neufreigabe, die Basis bleibt.**
-> Migrationsschritt **145** (`SCHRITT_BAUSTOFFABGLEICH`; die Nummer steht allein bei
+> **Nachtrag Schritt 146 (Namensabgleich der Baustoffe) ohne Neufreigabe, die Basis bleibt.**
+> Migrationsschritt **146** (`SCHRITT_BAUSTOFFABGLEICH`; die Nummer steht allein bei
 > `BaustoffabgleichSchema.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt auf
 > die Nachtzeit, 144) legt `Tab_Baustoffsynonym_STAMM` (Synonyme der Auslieferung: normalisierter
 > Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, Quelle, `ReadOnly`) und `Tab_Baustoffzuordnung`
@@ -516,9 +516,9 @@ im Arbeitsbaum.
 > `Tab_Baustoff_STAMM`, Zeitpunkt) an, beide STRICT mit Löschweitergabe, dazu vier Indizes, und sät
 > 212 Synonyme mit festen Ids und `ReadOnly = 1`. Auf der Fassung `b68638da…` (Schemastand 144) zog
 > `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
-> den Schritt nach: 2 von 2 Tabellen, 212 von 212 Synonymen, Marker 145; ein zweiter Lauf findet den
+> den Schritt nach: 2 von 2 Tabellen, 212 von 212 Synonymen, Marker 146; ein zweiter Lauf findet den
 > Schritt stehend. Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `b68638da…`: die zwei neuen
-> Tabellen und vier Indizes, `SchemaVersion` 144 → 145 und ein neuer Zähler in `sqlite_sequence`
+> Tabellen und vier Indizes, `SchemaVersion` 144 → 146 und ein neuer Zähler in `sqlite_sequence`
 > (`Tab_Baustoffsynonym_STAMM` auf 9 999, die Saatgrenze); keine bestehende Zeile und kein bestehender
 > Schematext geändert, die Zuordnungstabelle leer. `integrity_check` ok, `foreign_key_check` leer,
 > 146 Tabellen (alle STRICT), 14 Sichten, 223 Indizes samt den von SQLite angelegten. Größe 70 627 328

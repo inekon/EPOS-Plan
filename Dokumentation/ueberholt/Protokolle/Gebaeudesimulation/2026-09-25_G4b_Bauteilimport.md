@@ -235,8 +235,8 @@ Anlass: IFC-Dateien liefern fast nie brauchbare Stoffwerte; das IFC-Probenhaus b
 keinen Aufbau. Die Synonymtabelle (Register M9) kam aus G6a mit, abgestimmt mit der Sitzung G6a; die
 Sitzung G4 gab die Importdateien frei.
 
-**Commits** (Opus-Agent im eigenen Worktree): `1f9d8329` Schritt 145 (Synonymtabelle, gemerkte
-Zuordnungen, Registerpflege, Testdatenbank), `6c82c054` Abgleich im Kern samt Datenbankseite und
+**Commits** (Opus-Agent im eigenen Worktree): `1f9d8329` Schritt 145, jetzt **146** (Synonymtabelle,
+gemerkte Zuordnungen, Registerpflege, Testdatenbank), `6c82c054` Abgleich im Kern samt Datenbankseite und
 Texten, `83ca38b4` Einbau in den Bauteilvorschlag und `VorschlagSchreiben`, `9c287ec9` Tests und die
 Probe `ifc4_haus_materialnamen.ifc`, `9a4153a1` Nachtrag in `Referenzlaeufe/LIESMICH.md`; dazu zwei
 Merges von origin (`11fbbfc3`, `efe0dea3`) und der Merge in den Arbeitszweig.
@@ -277,6 +277,11 @@ Windows-Schale und Referenzlauf je 0 Fehler; Kern 7 678 grün (einer übersprung
 549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14 **PASS**
 (4 610 207 Werte); SQL-Dialekt-Prüfer 1 960 Texte, 0 Fundstellen; Auslieferungsvorlage 38/38;
 Testdatenbank 145 mit `integrity_check` ok und leerem `foreign_key_check`.
+
+**Umnummeriert:** Der Schemaschritt heißt **146** (umnummeriert, weil #522 die 145 zuerst belegte:
+Zapfprofilgenerator T5 „Konstruktor“, `edcfb4a1`). Geändert hat sich allein die Zahl bei
+`BaustoffabgleichSchema.SCHRITT`; die Testdatenbank ist die Fassung von origin (Schemastand 145) mit
+dem nachgezogenen Schritt 146 (`Referenzlaeufe/LIESMICH.md`).
 
 **Offen:** Welle 2 — der Abschnitt „Baustoffe“ im Importdialog (Treffer je Name, eigene Zuordnung, die
 das Projekt beim Speichern merkt), die Saat-Lesenaht für den Wirt der Rasterprobe, die Wiki-Quelle.

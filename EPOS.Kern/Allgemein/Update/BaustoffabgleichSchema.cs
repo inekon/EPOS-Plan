@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
         /// Zielstand und Tests verweisen hierher. Sie folgt auf die Nachtzeit (<see cref="NachtzeitSchema.SCHRITT"/>);
         /// wird der Schritt beim Zusammenführen umnummeriert, ändert sich nur diese Zahl.
         /// </summary>
-        public const int SCHRITT = 145;
+        public const int SCHRITT = 146;
 
         // =================================================================
         //  Namen

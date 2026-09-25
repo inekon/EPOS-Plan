@@ -4046,7 +4046,7 @@ Aufbauten. Der Anwender hat deshalb den Namensabgleich aus G6c in G4b vorgezogen
 
 | Was | Regel |
 |---|---|
-| Schema | Schritt **145**: `Tab_Baustoffsynonym_STAMM` (normalisierter Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, `ReadOnly`, Quelle; 212 Synonyme deutsch/englisch in der Auslieferung) und `Tab_Baustoffzuordnung` (die eigene Zuordnung N7 **je Projekt**) |
+| Schema | Schritt **146**: `Tab_Baustoffsynonym_STAMM` (normalisierter Materialname, Sprache, Verweis auf `Tab_Baustoff_STAMM`, `ReadOnly`, Quelle; 212 Synonyme deutsch/englisch in der Auslieferung) und `Tab_Baustoffzuordnung` (die eigene Zuordnung N7 **je Projekt**) |
 | Reihenfolge | **N7 → N6 → N3 → N4 → N5**: eine gemerkte Zuordnung steht vor jedem automatischen Treffer, sonst ließe sich ein falscher Treffer nie überstimmen; Sonderfälle ohne Stoff (N6) vor dem Katalog, weil eine Schraffur nie ein Stoff ist |
 | Herstellerzeilen (E39) | nur beim genauen Namen (N3); eine herstellerneutrale Zeile geht vor; N5 trifft nie ein Produkt |
 | Stoffwerte | Band je Wert (λ [0,005; 500], ρ [5; 8 000], c [100; 5 000]); ein Wert der Datei im Band hat Vorrang, fehlende Werte kommen aus dem Katalog; Luftschicht als ruhende Luftschicht nach DIN EN ISO 6946, Schraffur und „Solid …“ verworfen |
@@ -4054,7 +4054,7 @@ Aufbauten. Der Anwender hat deshalb den Namensabgleich aus G6c in G4b vorgezogen
 | Herkunft | ein Aufbau mit mindestens einem Katalogwert trägt `KATALOG`, die Schicht den Verweis auf die Projektkopie des Baustoffs; die Bauteilzeile behält das Format |
 | Meldungen | formatfrei `IMP_BAUTEIL_PROT_*` (Mehrzonenkonzept 6.6 nachgezogen) |
 
-Ergebnisneutral: Testdatenbank auf 145, Referenzlauf 14/14 PASS gegen R19. An den Proben: IFC mit
+Ergebnisneutral: Testdatenbank auf 146, Referenzlauf 14/14 PASS gegen R19. An den Proben: IFC mit
 Materialnamen 0 → 6 Aufbauten (16 von 20 Namen getroffen), IFC mit Nullwerten 0 → 4. Der Abschnitt
 „Baustoffe“ im Importdialog mit der eigenen Zuordnung folgt als zweite Welle. Einzelheiten im
 [Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md), Abschnitt 10.
