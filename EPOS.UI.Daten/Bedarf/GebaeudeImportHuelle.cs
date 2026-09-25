@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
     /// Kern an der Endung (<see cref="GebaeudeImportProfil.FuerDatei"/>) — eine andere Endung ist
     /// die benannte Ablehnung „Dateiart nicht unterstützt". Die Größengrenze prüft die Hülle danach
     /// je Profil und Plattform wie gehabt. Mit einem festen Profil
-    /// (<see cref="GebaeudeImportHuelle(GebaeudeImportProfil, int)"/>) bleibt es bei diesem.</para>
+    /// (<see cref="GebaeudeImportHuelle(GebaeudeImportProfil, int, bool?)"/>) bleibt es bei diesem.</para>
     ///
     /// <para><b>Geschrieben wird hier nichts.</b> Der Schreibweg ist ein Delegat des WIRTS
     /// (<see cref="Gaben"/>, <c>uebernehmen</c>); ohne ihn ist OK im Dialog weich gesperrt. Für den
@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
         private readonly GebaeudeImportAblauf _ablauf = new GebaeudeImportAblauf();
         private readonly GebaeudeImportProfil _festesProfil;
         private readonly int _idProjekt;
+        private readonly bool _ios;
         private GebaeudeImportProfil _profil;
         private GebaeudeImportSatz _satz;
 
@@ -65,15 +66,21 @@ namespace WindowsFormsApplication1
         /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
         /// folgt der Endung der gewählten Datei.
         /// </summary>
-        /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines.</param>
-        internal GebaeudeImportHuelle(int idProjekt = 0)
+        /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines — dann fragt die Hülle keine Datenbank.</param>
+        /// <param name="ios">
+        /// Die Plattform der Größengrenze: <c>true</c> = iOS, <c>false</c> = Windows, <c>null</c> = die
+        /// laufende. Die Schalen lassen sie weg; ein Prüfstand (Wirt der Rasterprobe) stellt sie ein.
+        /// </param>
+        internal GebaeudeImportHuelle(int idProjekt = 0, bool? ios = null)
         {
             _idProjekt = idProjekt;
+            _ios = ios ?? OperatingSystem.IsIOS();
         }
 
-        /// <summary>Die Hülle EINES Profils; die Größengrenze wird für die laufende Plattform belegt.</summary>
-        internal GebaeudeImportHuelle(GebaeudeImportProfil profil, int idProjekt = 0)
+        /// <summary>Die Hülle EINES Profils; die Größengrenze wird für die Plattform belegt (<paramref name="ios"/> wie oben).</summary>
+        internal GebaeudeImportHuelle(GebaeudeImportProfil profil, int idProjekt = 0, bool? ios = null)
         {
+            _ios = ios ?? OperatingSystem.IsIOS();
             _festesProfil = MitPlattformgrenze(profil ?? throw new ArgumentNullException(nameof(profil)));
             _profil = _festesProfil;
             _idProjekt = idProjekt;
@@ -154,14 +161,14 @@ namespace WindowsFormsApplication1
                 GebaeudeImportProfil.HILFE_ZUORDNUNG);
         }
 
-        /// <summary>Beide Formate mit der Grenze der laufenden Plattform — gbXML zuerst.</summary>
-        private static IReadOnlyList<GebaeudeImportProfil> BeideProfile()
+        /// <summary>Beide Formate mit der Grenze der Plattform der Hülle — gbXML zuerst.</summary>
+        private IReadOnlyList<GebaeudeImportProfil> BeideProfile()
             => new[] { MitPlattformgrenze(new GbxmlImportProfil()), MitPlattformgrenze(new IfcImportProfil()) };
 
-        /// <summary>Belegt die Größengrenze eines Profils für die laufende Plattform (Softwarearchitektur 1.5, Regel 2).</summary>
-        private static GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
+        /// <summary>Belegt die Größengrenze eines Profils für die Plattform der Hülle (Softwarearchitektur 1.5, Regel 2).</summary>
+        private GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
         {
-            if (profil != null) profil.MaxBytes = profil.GrenzeFuerPlattform(OperatingSystem.IsIOS());
+            if (profil != null) profil.MaxBytes = profil.GrenzeFuerPlattform(_ios);
             return profil;
         }
 

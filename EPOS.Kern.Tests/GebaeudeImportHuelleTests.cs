@@ -202,6 +202,58 @@ namespace EPOS.Kern.Tests
             Assert.Equal("kein Zeitpunkt", GebaeudeImportHuelle.Zeitpunkttext("kein Zeitpunkt"));
         }
 
+        [Fact]
+        public async Task Ohne_Projekt_fragt_die_Huelle_keine_Datenbank()
+        {
+            // Der Wirt der Rasterprobe stellt den Dialog OHNE Datenbank (Proben/Rasterprobe, Seite
+            // /gebaeudeimport): Vom Dateiwähler bis zur Vorbelegung des Editors erreicht kein Schritt
+            // die Zugriffsschicht - auch der Hinweis „schon importiert" nicht, der erst mit einem
+            // Projekt fragt.
+            IDatenzugriff vorherZugriff = DataRepository.Zugriff;
+            IDateiDienst vorherDatei = Dienste.Datei;
+            var zugriffe = new Zaehlzugriff(vorherZugriff);
+            try
+            {
+                DataRepository.Zugriff = zugriffe;
+                Dienste.Datei = new Dateiprobe { Antwort = GbxmlImportTests.Probe("gbxml_haus_si.xml") };
+                var h = new GebaeudeImportHuelle();
+                IReadOnlyDictionary<string, object> gaben = h.Gaben(_ => Task.FromResult<string>(null));
+
+                GebaeudeDateiwahl wahl = await ((Func<string, Task<GebaeudeDateiwahl>>)gaben["DateiWaehlen"])("");
+                Assert.Null(wahl.Ablehnung);
+                GebaeudeLesestand gelesen = await Lesen(gaben)(wahl.Pfad, null, CancellationToken.None);
+                Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
+                Assert.Equal("", gelesen.SchonImportiert);
+                GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, 4, Keine));
+                GebaeudeImportErgebnis ergebnis = Ergebnis(stand, name: "Probe ohne Datenbank");
+                Pruefen(gaben)(ergebnis);
+                Assert.Equal("Probe ohne Datenbank", h.Vorbelegung(ergebnis).Daten.Name);
+
+                Assert.Equal(0, zugriffe.Gesamt);
+            }
+            finally
+            {
+                DataRepository.Zugriff = vorherZugriff;
+                Dienste.Datei = vorherDatei;
+            }
+        }
+
+        [Fact]
+        public async Task Die_Plattform_der_Groessengrenze_laesst_sich_einstellen()
+        {
+            // Die Schalen lassen sie weg (die laufende Plattform); ein Prüfstand zeigt die Grenze von iOS.
+            var ios = new GebaeudeImportHuelle(ios: true);
+            Assert.Equal("gbXML 25 MB · IFC 20 MB", ((GebaeudeImportProfilDaten)ios.Gaben()["Profil"]).Groessengrenze);
+            GebaeudeLesestand ifc = await Lesen(ios.Gaben())(Path.Combine(IfcProbenTests.Ordner(), "ifc4_haus.ifc"), null, CancellationToken.None);
+            Assert.True(ifc.Gelesen, string.Join(" | ", ifc.Meldungen.Select(m => m.Text)));
+            Assert.Equal(IfcImportProfil.MAX_BYTES_IOS, ios.Profil.MaxBytes);
+
+            Assert.Equal(IfcImportProfil.MAX_BYTES_IOS, new GebaeudeImportHuelle(new IfcImportProfil(), ios: true).Profil.MaxBytes);
+            Assert.Equal(IfcImportProfil.MAX_BYTES_WINDOWS, new GebaeudeImportHuelle(new IfcImportProfil(), ios: false).Profil.MaxBytes);
+            Assert.Equal("gbXML 25 MB · IFC 50 MB",
+                         ((GebaeudeImportProfilDaten)new GebaeudeImportHuelle(ios: false).Gaben()["Profil"]).Groessengrenze);
+        }
+
         // =================================================================================
         //  Lesen, Zuordnen, Prüfen
         // =================================================================================
