@@ -20814,6 +20814,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importieren (gbXML, IFC)… ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IMPORT {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_IMPORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_IMPORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
         /// </summary>
         public static string GEB_BTN_SIMULATION {
@@ -20972,6 +20990,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_GELOESCHT {
             get {
                 return ResourceManager.GetString("GEB_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ steht jetzt im Katalog und in der Projektliste. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_IMPORT_AUFGENOMMEN {
+            get {
+                return ResourceManager.GetString("GEB_MSG_IMPORT_AUFGENOMMEN", resourceCulture);
             }
         }
         
@@ -21711,6 +21738,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateiart nicht unterstützt: „{0}“. Gelesen werden gbXML-Dateien (.xml, .gbxml) und IFC-Dateien (.ifc, .ifcxml, .ifczip). ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_DATEIART {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_DATEIART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei wählen… ähnelt.
         /// </summary>
         public static string GIMP_DLG_DATEI_KNOPF {
@@ -21923,6 +21959,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_RAEUME_HINWEIS {
             get {
                 return ResourceManager.GetString("GIMP_DLG_RAEUME_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datei ist im Projekt schon importiert: Gebäude „{0}“, {1}. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SCHON_IMPORTIERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SCHON_IMPORTIERT", resourceCulture);
             }
         }
         
@@ -22580,6 +22625,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_SCHEMA_IFC {
             get {
                 return ResourceManager.GetString("GIMP_SCHEMA_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus dem Import: Datei {0}, Format {1}. ähnelt.
+        /// </summary>
+        public static string GIMP_VORBELEGT {
+            get {
+                return ResourceManager.GetString("GIMP_VORBELEGT", resourceCulture);
             }
         }
         

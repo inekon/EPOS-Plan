@@ -34,8 +34,24 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>; die Überlagerung im
         /// Gebäudedialog setzt ihn selbst.
+        ///
+        /// <para><b>Stufe G4, Welle 4:</b> <paramref name="vorbelegung"/> bringt den Editor mit
+        /// vorbelegten Daten und einer Herleitungszeile hoch (der Gebäudeimport, Modus Neu);
+        /// <c>null</c> = der Satz ist bitgleich der bisherige.</para>
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
+            string bezeichner, GebaeudeKatalogModus modus, GebaeudeVorbelegung vorbelegung = null)
+        {
+            IReadOnlyDictionary<string, object> gaben = Grundgaben(bezeichner, modus);
+            if (vorbelegung?.Daten == null) return gaben;
+            return new Dictionary<string, object>(gaben)
+            {
+                ["Daten"] = vorbelegung.Daten.Kopie(),
+                ["Vorbelegung"] = vorbelegung.Herleitung ?? ""
+            };
+        }
+
+        private static IReadOnlyDictionary<string, object> Grundgaben(
             string bezeichner, GebaeudeKatalogModus modus)
         {
             GebaeudeModel geladen = modus == GebaeudeKatalogModus.Neu

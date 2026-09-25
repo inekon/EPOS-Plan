@@ -38,7 +38,7 @@
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Texte.Titel</h1>
-        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        <InfoKnopf Schluessel="@WirksamerHilfeSchluessel" Dialogname="@Texte.Titel" />
         @if (!Beschaeftigt)
         {
             <Schliesskreuz Geschlossen="BeiAbbrechen" />
@@ -82,6 +82,11 @@
                 <dt>@Texte.KopfGroesse</dt><dd>@kopf.Groesse</dd>
                 <dt>@Texte.KopfZonenregel</dt><dd>@kopf.Zonenregel</dd>
             </dl>
+        }
+        @if (!string.IsNullOrEmpty(_lesestand.SchonImportiert))
+        {
+            @* "Dieselbe Datei schon importiert": ein leiser Hinweis, kein Sperren. *@
+            <p class="epos-leisezeile epos-gebimport-schonimportiert">@_lesestand.SchonImportiert</p>
         }
         <Formularraster Einspaltig="true">
             <KindInhalt>
@@ -258,6 +263,13 @@
     /// <summary>Die Beschriftungen (Bündel).</summary>
     [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
 
+    /// <summary>
+    /// Der Hilfeschlüssel, solange das Profil keinen nennt — die eigene Seite „Gebäudeimport",
+    /// dieselbe für jedes Format (Zeile in <c>help_mapping.txt</c>). Nennt das Profil einen, gilt
+    /// der des Profils.
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_GebaeudeImport.btn_Help";
+
     // =====================================================================
     // Zustand — ein Arbeitsstand; hereingereichte Objekte bleiben unberührt
     // =====================================================================
@@ -306,7 +318,8 @@
 
     private bool Beschaeftigt => _laeuft || _schreibt;
 
-    private string HilfeSchluessel => Profil?.HilfeSchluessel ?? "";
+    private string WirksamerHilfeSchluessel
+        => Profil is { HilfeSchluessel.Length: > 0 } p ? p.HilfeSchluessel : HilfeSchluessel;
 
     private string GrenzeText => string.IsNullOrEmpty(Profil?.Groessengrenze) ? "" : Format(Texte.Grenze, Profil.Groessengrenze);
 

@@ -59,11 +59,16 @@ public sealed record GebaeudeImportKopf(string Dateiname, string Format, string 
 /// Was das Lesen ergeben hat. Nicht gelesen: <see cref="Meldungen"/> nennen den Grund (Lesefehler,
 /// kein Gebäude); gelesen: der Kopf und die Gebäude der Datei für die Klappliste (U13: eines je Lauf).
 /// </summary>
+/// <param name="SchonImportiert">
+/// Der leise Hinweis, dass ein Gebäude des Projekts schon aus derselben Datei stammt (Name und
+/// Zeitpunkt, fertiger Anzeigetext); leer = keiner. Er sperrt nichts.
+/// </param>
 public sealed record GebaeudeLesestand(
     bool Gelesen,
     GebaeudeImportKopf? Kopf,
     IReadOnlyList<string> Gebaeude,
-    IReadOnlyList<GebaeudeImportMeldung> Meldungen);
+    IReadOnlyList<GebaeudeImportMeldung> Meldungen,
+    string SchonImportiert = "");
 
 /// <summary>
 /// Eine Zuordnung, wie der Dialog sie erfragt: welches Gebäude, welche Baualtersklasse

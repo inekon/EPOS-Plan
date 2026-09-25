@@ -61,6 +61,11 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @if (!string.IsNullOrEmpty(Vorbelegung))
+    {
+        <Herleitungszeile Text="@Vorbelegung" />
+    }
+
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
         <KindInhalt>
 
@@ -539,6 +544,12 @@
 
     /// <summary>Welche der drei Betriebsarten gilt.</summary>
     [Parameter] public GebaeudeKatalogModus Modus { get; set; } = GebaeudeKatalogModus.Bearbeiten;
+
+    /// <summary>
+    /// Die leise Herleitungszeile vorbelegter Daten (Stufe G4: „Vorbelegt aus dem Import: Datei …,
+    /// Format …"); leer = keine.
+    /// </summary>
+    [Parameter] public string Vorbelegung { get; set; } = "";
 
     /// <summary>Die Gebäudetypen der Klappliste (<c>Abfrage_Gebaeudetypen</c>).</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Gebaeudetypen { get; set; }

@@ -13942,6 +13942,15 @@ Please check all entries!</value>
   <data name="GEB_BTN_GEBTYP" xml:space="preserve">
     <value>Change building type in DB...</value>
   </data>
+  <data name="GEB_BTN_IMPORT" xml:space="preserve">
+    <value>Import (gbXML, IFC)…</value>
+  </data>
+  <data name="GEB_BTN_IMPORT_HINWEIS" xml:space="preserve">
+    <value>Create a new catalogue building from a gbXML or IFC file and add it to the project list</value>
+  </data>
+  <data name="GEB_MSG_IMPORT_AUFGENOMMEN" xml:space="preserve">
+    <value>The building “{0}” is now in the catalogue and in the project list.</value>
+  </data>
   <data name="GEB_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Add to project</value>
   </data>
@@ -31820,6 +31829,15 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GRENZE" xml:space="preserve">
     <value>Largest file: {0}</value>
+  </data>
+  <data name="GIMP_DLG_DATEIART" xml:space="preserve">
+    <value>File type not supported: “{0}”. The import reads gbXML files (.xml, .gbxml) and IFC files (.ifc, .ifcxml, .ifczip).</value>
+  </data>
+  <data name="GIMP_DLG_SCHON_IMPORTIERT" xml:space="preserve">
+    <value>This file has already been imported into the project: building “{0}”, {1}.</value>
+  </data>
+  <data name="GIMP_VORBELEGT" xml:space="preserve">
+    <value>Prefilled from the import: file {0}, format {1}.</value>
   </data>
   <data name="GIMP_DLG_NICHT_GELESEN" xml:space="preserve">
     <value>The file contains no building that could be applied.</value>

@@ -64,6 +64,48 @@ public sealed class GebaeudeProjektZeile
 
     /// <summary>Der Wärmeleitwert H_ges [W/K]; <c>null</c> = nicht bekannt.</summary>
     public double? HgesWK { get; set; }
+
+    /// <summary>
+    /// Der UNDURCHSICHTIGE Schlüssel der ausstehenden Herkunft einer Zeile aus dem Gebäudeimport
+    /// (Stufe G4, Welle 4); <c>null</c> = keine. Quelle und Paarungen selbst bleiben in der Hülle —
+    /// sie legt sie beim Speichern der Liste an das Modell, und erst der Speicherweg schreibt sie an
+    /// die neue Projektkopie.
+    /// </summary>
+    public string? Herkunftsschluessel { get; set; }
+}
+
+/// <summary>
+/// <b>Der Weg EINES Gebäudeimports aus dem Gebäudedialog</b> (Stufe G4, Welle 4; Architekturentscheid
+/// A17: Überlagerung im Gebäudedialog). Die Hülle baut ihn je Klick auf „Importieren…" neu; die
+/// Kern-Daten des Laufs bleiben in ihr, der Dialog sieht nur Parametersätze und die neue Zeile.
+///
+/// <para>Der Ablauf: <see cref="Gaben"/> öffnet den Zuordnungsdialog (samt dem
+/// <c>Uebernehmen</c>-Delegat des Wirts). Nach seinem OK liefert <see cref="EditorGaben"/> den
+/// Parametersatz des vorbelegten Gebäudeeditors im Modus Neu. Hat der Anwender dort gespeichert,
+/// liefert <see cref="Aufnehmen"/> die neue Projektzeile samt
+/// <see cref="GebaeudeProjektZeile.Herkunftsschluessel"/> — derselbe Weg wie „In das Projekt
+/// übernehmen", geschrieben mit dem OK des Gebäudedialogs.</para>
+/// </summary>
+public sealed class GebaeudeImportweg
+{
+    /// <summary>Legt den Weg an.</summary>
+    public GebaeudeImportweg(IReadOnlyDictionary<string, object> gaben,
+                             Func<IReadOnlyDictionary<string, object>?> editorGaben,
+                             Func<GebaeudeProjektZeile?> aufnehmen)
+    {
+        Gaben = gaben ?? new Dictionary<string, object>();
+        EditorGaben = editorGaben ?? (() => null);
+        Aufnehmen = aufnehmen ?? (() => null);
+    }
+
+    /// <summary>Der Parametersatz des Zuordnungsdialogs — ohne <c>Geschlossen</c>, mit dem <c>Uebernehmen</c> des Wirts.</summary>
+    public IReadOnlyDictionary<string, object> Gaben { get; }
+
+    /// <summary>Nach dem OK des Zuordnungsdialogs: der Parametersatz des vorbelegten Editors im Modus Neu; <c>null</c> = keiner.</summary>
+    public Func<IReadOnlyDictionary<string, object>?> EditorGaben { get; }
+
+    /// <summary>Nach dem Speichern im Editor: die neue Projektzeile mit Herkunftsschlüssel; <c>null</c> = kein neuer Katalogsatz.</summary>
+    public Func<GebaeudeProjektZeile?> Aufnehmen { get; }
 }
 
 /// <summary>

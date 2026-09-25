@@ -21,6 +21,13 @@ namespace WindowsFormsApplication1
         private static readonly Size MASS = new Size(1060, 720);
 
         /// <summary>
+        /// Das Wunschmaß des Gebäudeimports, den der Projektdialog als Überlagerung trägt (Stufe G4):
+        /// Seine Zeilenliste führt acht Spalten (Gruppe, Feld, Wert, Einheit, Beleg, Vorgabe,
+        /// Herkunft, Haken) — wie der Stromspeicherimport.
+        /// </summary>
+        private static readonly Size MASS_IMPORT = new Size(1180, 760);
+
+        /// <summary>
         /// Die vorläufige Id einer noch nicht gespeicherten Zuordnung — derselbe
         /// Startwert wie <c>Form_Gebaeude.startindex</c>.
         /// </summary>
@@ -51,7 +58,11 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<GebaeudeDialog>(GebaeudeHuelle.Titel(), MASS, werte);
+            // Das Fenster traegt den Gebaeudeimport als Ueberlagerung und wuenscht mindestens
+            // dessen Mass (Konzept Administrationsdialoge 7.1 d).
+            (int breite, int hoehe) = EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                MASS.Width, MASS.Height, MASS_IMPORT.Width, MASS_IMPORT.Height);
+            dlg = new BlazorDialogForm<GebaeudeDialog>(GebaeudeHuelle.Titel(), new Size(breite, hoehe), werte);
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
