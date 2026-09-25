@@ -23,7 +23,7 @@ eingefroren; dazu die benannte NaN-Ausnahme in `pruefen`. Maßgeblich:
 | `pruefen` | `Referenzlauf/Plausibilitaet.cs`: benannte Ausnahme für die NaN-Lücken von `vorlauf_<n>`, `ruecklauf_<n>`, `kuehlvorlauf_<n>`, `kuehlruecklauf_<n>.csv` — nur diese Muster, NaN nur als Lücke (Hinweis), Inf, Text und eine Reihe nur aus Lücken bleiben beanstandet; Test `ReferenzlaufPlausibilitaetTests` (15 Fälle, die Datei in `EPOS.Kern.Tests` verlinkt wie in `EPOS.Referenzlauf`) |
 | Tests | Projektlisten um 1047 ergänzt: `GebaeudeRueckwegTests`, `GebaeudeVdi6007Tests`, `GebaeudeVdi6007G2Tests`, `ErsatzparameterBauteilwegTests` (vierzehn Referenzprojekte), `WirtschaftlichkeitAnkerTests`, `ZapfprofilCtrlTests`, `ZapfprofilWeicheTests` (sechs CI-Projekte); Bestandsproben der Testdatenbank nachgezogen: `AnlagenkopplungSchemaTests`, `KuehluebergabeSchemaTests` (gesät ist allein 1047, Zelle für Zelle), `KuehlungSchemaTests`, `KuehlungErzeugerSchemaTests`, `KuehlbetriebProgrammeinstellungTests`, `ReferenzprojektKaelteerzeugerTests` (1017 und 1047 kühlen, die Kühlkennlinie der Kopie gleich der Saat), `PreisbasisSchrittTests` (drei Trägerzeilen mehr), `GebaeudeKatalogverweisTests` (27 Projektgebäude) |
 | Papiere | `Referenzlaeufe/LIESMICH.md` (Regeln, aktuelle Basis, entfernte Basen), Archiv der Referenzbasen (R14-Abschnitt, Tabellenzeile), `CLAUDE.md`, Status der Gebäudesimulation (AK1, GA, Kopf), Anlagenkopplung (Kopf, 11.4, 11.5), Basisname in Konzept Gebäudesimulation (Q14), Systementwurf (B14, Prüfebene 4), Softwarearchitektur und Kühlkonzept (CI), Konzept Wirtschaftlichkeit (Kopf, Referenzbasis, 6.2) |
-| Kein Schemaschritt, kein Rechenweg, kein Logbuch-Satz | Die Welle ändert allein Daten, Basis und das Prüfwerkzeug; die Schemastände 140 und 141 kommen von origin (Abschnitt 5) |
+| Kein Schemaschritt, kein Rechenweg, kein Logbuch-Satz | Die Welle ändert allein Daten, Basis und das Prüfwerkzeug; die Schemastände 140 bis 142 kommen von origin (Abschnitt 5) |
 
 ## 2 Das Referenzprojekt
 
@@ -44,7 +44,7 @@ Gebäude 10653 die fünf Schalter und Arten der Kopplung. Das Skript prüft die 
 und Kopie (`Tool_1` bis `Tool_6`, `Kaskade_Gepflegt`) und die Kühl- und Übergabespalten beider Gebäude.
 
 **Zellvergleiche.** Die Kaskade gegen die Fassung davor (`72a98cdd…`): genau die zwei Zellen `Tool_2` und
-`Tool_3` von 1047. Die endgültige Testdatenbank ist die Fassung von origin mit Schemastand 141
+`Tool_3` von 1047. Die Testdatenbank der Einfrierung ist die Fassung von origin mit Schemastand 141
 (`a427aa72…`) samt Skript; gegen sie (10 507 032 Zellen): 9 365 neue Zeilen in 24 Tabellen — Projekt,
 Einstellungen, Klimaregion mit 365 Tagen Klimadaten und 8 760 Solarstunden, Gebäude mit Zuordnung und
 Tagesverteilung (1 + 192 Zeilen), vier Anlagen, Wärmepumpe mit neun Kennfeld- und zehn
@@ -53,7 +53,7 @@ vier Preis- und drei Trägerzeilen, Wirtschaftlichkeitsparameter — und 21 geä
 `sqlite_sequence`; keine andere Zeile geändert oder entfernt, Schema gleich. `integrity_check` ok,
 `foreign_key_check` leer, 68 747 264 Byte, LFS-SHA-256 `b48add6a…`. Ein zweiter Lauf des Skripts meldet
 „nichts zu tun", die Datei bleibt byte-gleich; ein frischer Lauf auf der Fassung 140 von origin ergab
-dieselben Bytes wie die Anwendung auf die vorige eigene Fassung. Kein Hersteller- oder Produktname kommt
+dieselben Bytes wie die Anwendung auf die vorige eigene Fassung. Nach #505 steht die Testdatenbank auf Schemastand 142 (`1360e2be…`, Abschnitt 5). Kein Hersteller- oder Produktname kommt
 dazu; der Projektname ist neutral.
 
 ## 3 Plausibilität vor dem Einfrieren
@@ -131,7 +131,7 @@ Platz 3):
 
 ## 5 Zusammenführungen und Abnahme
 
-Während der Welle ist origin fünfmal weitergegangen und zusammengeführt worden:
+Während der Welle ist origin sechsmal weitergegangen und zusammengeführt worden:
 
 1. **G3 Wellen C und D1** (Verwaltungen Baustoffe und Bauteilaufbauten; Datenbankleser der Zonen für
    den Lauf) — ohne Konflikt, die Testdatenbank dort unverändert; R15 14/14 PASS, byte-gleich.
@@ -147,6 +147,11 @@ Während der Welle ist origin fünfmal weitergegangen und zusammengeführt worde
 5. **G4-8 und BV-E0** (IFC-Leser linear und iOS-Importprobe, Berichtsvorlagen) — weder Testdatenbank noch
    Rechenweg; ohne Konflikt, in `ios.yml` stehen der neue Eingang von G4 und der Basispfad R15 beide. R15
    14/14 PASS, byte-gleich.
+6. **#505** mit Schemaschritt **142** (dritte Berichtigung der Anschlusslängen im Gebäudekatalog, kein
+   Projekt führt die Sätze) und #501 — Konflikt in der Testdatenbank und in `Referenzlaeufe/LIESMICH.md`;
+   Testdatenbank als Fassung von origin (`fc5f143e…`) plus Skript, 68 747 264 Byte, LFS-SHA-256 `1360e2be…`,
+   Zellvergleich gegen origin genau die Zeilen von 1047; **R15 bleibt:** 14/14 PASS, 432/432 CSV byte-gleich.
+   Der Nachtrag #505 steht beim R15-Abschnitt samt diesem Nachweis.
 
 Die Nachträge Z5 und #496 sind gegen R14 gemessen; sie stehen im Wortlaut am Ende des archivierten
 R14-Abschnitts unter `Dokumentation/ueberholt/Referenzbasen/`.
@@ -158,9 +163,9 @@ Die Abnahme lief auf dem Endstand:
 | Bau des Kern-Filters | 0 Fehler |
 | Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
 | `EPOS.Referenzlauf` | 0 Fehler |
-| Test-Gate | Kern 6 893 (1 übersprungen), UI 6 243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `ReferenzlaufPlausibilitaetTests`, `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`, `HeizkesselKaskadeTests` (keine Kaskadenmarke in der Testdatenbank) |
+| Test-Gate | Kern 6 900 (1 übersprungen), UI 6 243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `ReferenzlaufPlausibilitaetTests`, `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`, `HeizkesselKaskadeTests` (keine Kaskadenmarke in der Testdatenbank) |
 | `Auslieferungsvorlage.Tests` | 34 grün |
-| SqlDialektPruefer | 1 919 SQL-Texte, 0 Fundstellen |
+| SqlDialektPruefer | 1 913 SQL-Texte, 0 Fundstellen |
 | `Werkzeuge/Testdatenbankschema --trocken` | nichts anzulegen |
 | Referenzlauf der vierzehn Projekte gegen R15 | GESAMT: PASS (4 610 207 Werte), 432/432 CSV byte-gleich |
 | Die sechs CI-Projekte mit der Zeile aus `kern.yml` gegen R15 | GESAMT: PASS (2 208 587 Werte), 198/198 CSV byte-gleich |
