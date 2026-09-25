@@ -21,9 +21,11 @@ namespace EPOS.Kern.Tests
     /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8): Die Fehlbilder werden
     /// gegen deutsche Ressourcentexte gehalten.</para>
     /// </summary>
-    public class DwdTryLeserTests
+    public class DwdTryLeserTests : IDisposable
     {
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
 
         // =====================================================================
         //  Hilfen

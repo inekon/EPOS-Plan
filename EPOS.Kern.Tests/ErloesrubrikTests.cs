@@ -21,11 +21,13 @@ namespace EPOS.Kern.Tests
     /// § 9 Abs. 1 Nr. 3 und 4.321 €/a vermiedene Kosten bei 20 MWh vermiedener Menge.
     /// Bei 20,00 €/MWh sind das 400 €/a entgangene Entlastung — effektiv 3.921 €/a.</para>
     /// </summary>
-    public class ErloesrubrikTests
+    public class ErloesrubrikTests : System.IDisposable
     {
         /// <summary>Die Fälle halten deutsche Ressourcentexte gegen <c>Contains</c> —
         /// ohne Pinnung wären sie auf dem Windows-Läufer (en-US) rot.</summary>
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
 
         private const double SATZ_9B_EUR_MWH = 20.00;   // § 9b StromStG, Katalogsatz 2026
 

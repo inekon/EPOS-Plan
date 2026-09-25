@@ -23,9 +23,11 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
     /// </summary>
-    public class TryPaketLeserTests
+    public class TryPaketLeserTests : IDisposable
     {
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
 
         /// <summary>Die drei Regionen des Prüfpakets: Nummer, Breite, Länge.</summary>
         private static readonly (int Nummer, double Lat, double Lon)[] REGIONEN =
