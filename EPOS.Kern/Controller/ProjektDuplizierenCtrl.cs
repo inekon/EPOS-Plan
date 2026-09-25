@@ -172,9 +172,16 @@ namespace WindowsFormsApplication1
             // Tab_TwwZone - ein zweiter Eintrag waere bei OrdinalIgnoreCase eine
             // ArgumentException beim Laden der Klasse (Falle 2 des Mehrzonenkonzepts 4.4).
             // Die Zone des Bauteils loest FK_OVERRIDE je Tabelle auf. NICHT hier auch
-            // ID_Nachbarzone (kommt mit S-G) und ID_Importquelle (Sitzung G4).
+            // ID_Nachbarzone (kommt mit S-G).
             {"ID_Aufbau","Tab_Bauteilaufbau"},
-            {"ID_Baustoff","Tab_Baustoff"}
+            {"ID_Baustoff","Tab_Baustoff"},
+            // Gebaeudesimulation G4c (Schritt S-F, Datenaustauschkonzept 7.4): die Paarung zeigt
+            // auf ihre Importquelle und - als eines ihrer fuenf Ziele - auf ein Bauteil der Kopie.
+            // Beide Beziehungen sind deklariert; die Eintraege tragen den Versatz auch ohne
+            // Schemaauskunft. "ID_Bauteil" fuehrt keine andere Tabelle. ID_Gebaeude, ID_Aufbau und
+            // ID_Baustoff der Paarung stehen schon oben; ihr ID_Zone loest FK_OVERRIDE auf.
+            {"ID_Importquelle", SchemaKatalog.TAB_IMPORTQUELLE},
+            {"ID_Bauteil", SchemaKatalog.TAB_BAUTEIL}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -190,6 +197,8 @@ namespace WindowsFormsApplication1
             // Gebaeudesimulation G3 (S-C): "ID_Zone" meint in FK_MAP die Tww-Zone; am Bauteil
             // ist es die Gebaeudezone. Die deklarierte Beziehung hat ohnehin Vorrang.
             {SchemaKatalog.TAB_BAUTEIL, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
+            // Gebaeudesimulation G4c (S-F): dasselbe fuer das Zonenziel der Importpaarung.
+            {SchemaKatalog.TAB_IMPORTZUORDNUNG, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
         };
 
         // Kind-Tabellen (kein verlaessliches ID_Projekt) -> Sonderfilter ueber den Eltern-FK. {0} = Quell-Projekt-ID.
@@ -267,6 +276,15 @@ namespace WindowsFormsApplication1
             {SchemaKatalog.TAB_ZONE,           "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_BAUTEIL,        "ID_Zone IN (SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
             {SchemaKatalog.TAB_BAUTEILSCHICHT, "ID_Aufbau IN (SELECT ID FROM Tab_Bauteilaufbau WHERE ID_Projekt = {0})"},
+
+            // Gebaeudesimulation G4c (Schritt S-F, Datenaustauschkonzept 7.4, W19) - von Hand und
+            // ZWEISTUFIG: Gebaeude -> Importquelle -> Importzuordnung. Keine der beiden fuehrt ein
+            // ID_Projekt (W16). Ausdruecklich statt ueber die Auto-Erkennung: Die Paarung traegt
+            // SECHS Fremdschluessel (die Quelle und fuenf nullbare Ziele); ueber ID_Gebaeude oder
+            // ID_Zone gefiltert fielen alle Paarungen mit einem anderen Ziel aus der Kopie. Ohne
+            // die Eintraege reiste ein importiertes Projekt still ohne seine Herkunft.
+            {SchemaKatalog.TAB_IMPORTQUELLE,    "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+            {SchemaKatalog.TAB_IMPORTZUORDNUNG, "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
         };
 
         /// <summary>

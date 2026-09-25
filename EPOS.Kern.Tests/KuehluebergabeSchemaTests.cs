@@ -304,7 +304,11 @@ namespace EPOS.Kern.Tests
             Assert.True(KuehluebergabeSchema.ZoneVollstaendig());
             Assert.Equal(0, KuehluebergabeSchema.ZoneAlle(null));
 
-            // Ohne Tabelle (Stand vor S-C) legt er nichts an.
+            // Ohne Tabelle (Stand vor S-C) legt er nichts an. Die Tabellen des späteren Schritts S-F
+            // (ImportzuordnungSchema) zeigen auf Zone und Bauteil und fallen deshalb zuerst - eine
+            // Datei vor S-C trägt sie nicht.
+            DataRepository.ExecuteNonQuery("DROP TABLE \"" + ImportzuordnungSchema.TAB_ZUORDNUNG + "\"");
+            DataRepository.ExecuteNonQuery("DROP TABLE \"" + ImportzuordnungSchema.TAB_QUELLE + "\"");
             DataRepository.ExecuteNonQuery("DROP TABLE \"" + ZonenSchema.TAB_BAUTEIL + "\"");
             DataRepository.ExecuteNonQuery("DROP TABLE \"" + ZonenSchema.TAB_ZONE + "\"");
             var bericht = new List<string>();

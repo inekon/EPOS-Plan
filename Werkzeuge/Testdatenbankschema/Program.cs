@@ -1792,6 +1792,26 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt S-F (Gebaeudesimulation Stufe G4c, Welle 3; Datenaustauschkonzept 7.1
+            //      bis 7.4): die Herkunftsablage der Gebaeudeimporte - Tab_Importquelle und
+            //      Tab_Importzuordnung samt zwei Indizes, aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Importzuordnung bedient (ImportzuordnungSchema). NACH den
+            //      Schritten S-A bis S-C, auf deren Tabellen die Paarung zeigt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - beide Tabellen entstehen LEER, kein Rechenweg
+            //      liest sie.
+            string nrImport = ImportzuordnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrImport + " - Importquelle und Importzuordnung: " +
+                              (ImportzuordnungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                int import = ImportzuordnungSchema.Ausfuehren();
+                tabellen += import;
+                Console.WriteLine("Schritt " + nrImport + " - " + import + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + ImportzuordnungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
