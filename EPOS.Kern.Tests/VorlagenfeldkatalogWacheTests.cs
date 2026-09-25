@@ -110,11 +110,14 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Katalog v1: 27 handgepflegte Einträge, je Kennzahl drei erzeugte. Die Zahl der Kennzahlen
+        /// pinnt dieser Fall bewusst nicht — eine neue Kennzahl meldet die eingefrorene Liste.
+        /// </summary>
         [Fact]
         public void Katalog_v1_zaehlt_27_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
             int kennzahlen = KennzahlenKatalog.Alle().Count;
-            Assert.Equal(44, kennzahlen);
             Assert.Equal(27, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt));
             Assert.Equal(3 * kennzahlen, Vorlagenfeldkatalog.Alle.Count(f => !f.Handgepflegt));
 
