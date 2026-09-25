@@ -2,7 +2,7 @@
 
 Etappe BV-E2 des Konzepts
 [`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
-(Abschnitt 13). Auftrag #NNN, Anwenderauftrag vom 26.09.2026: „starte mit BV-E2“. Der gültige Stand steht im Konzept
+(Abschnitt 13). Auftrag #520, Anwenderauftrag vom 26.09.2026: „starte mit BV-E2“. Der gültige Stand steht im Konzept
 (Rev. 4) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Vorgänger:
 [`BV_E1_Vorlagenwahl_Protokoll.md`](BV_E1_Vorlagenwahl_Protokoll.md). Zweig `konzept-berichtvorlagen` ab `84ac5aa8` (BV-E1
 samt `origin/ios_migration_september`), umgesetzt am 26.09.2026; Fable 5.1 hat orchestriert, vier Agenten (Opus 5.5)
@@ -327,7 +327,7 @@ In den Agenten-Worktrees:
 Die Etappe berührt keinen Rechenweg; ein Referenzlauf gehört nicht zu ihrer Abnahme (Konzept 13). Berührt sind Kern,
 Oberfläche und Hülle (`EPOS.UI.Daten`), dazu die ausgelieferte Standardvorlage; `EPOS.iOS/` ist nicht berührt.
 
-<!-- ABNAHME -->
+**Gate auf 58d4a9ff** (Zweig `konzept-berichtvorlagen` nach dem Merge mit `origin/ios_migration_september` 81b83ae2): Kern-Filter 0 Fehler; Windows-Schale (Debug x64) 0 Fehler; Ressourcen-Designer wiederholbar; voller Lauf 14.915 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern.Tests 7.527, EPOS.UI.Tests 6.426, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27); ChartProben 174 Bilder, 0 Verstöße; SQL-Prüfer 1.939 Texte, 0 Fundstellen; Dokumentationswachen grün. Ein erster Gate-Lauf auf 09787fc9 war rot, weil beim Auflösen des Ressourcenkonflikts mit origin das `</data>` hinter `IMP_GEB_PROT_NACHTZEIT_UNGUELTIG` verloren gegangen war (beide `.resx` kein gültiges XML, Designer ohne die neuen Schlüssel; Folge: Textbündel-, Zapfprofil- und Schemawachen rot, ChartProben-Bau MSB3103) — behoben mit 9cf444ca, danach Merge mit dem neuesten origin und alle zuvor roten Tests grün. Kein Referenzlauf nötig (kein Rechenweg berührt); Änderungen an `EPOS.iOS/` keine; Setup-Lauf nach Rückfrage; der Kern-Lauf der CI auf dem Push ist der Nachweis.
 
 ## 7 Anwenderprobe (Windows)
 

@@ -37,7 +37,7 @@ vom 24.09.2026 bestätigt.
 | Programm Dokumentation/Baustoffe und Bauteilaufbauten | `Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki` | **neue Seite**: die Verwaltungen „Baustoffe" (Liste mit Filtern, Kenndaten, Herkunft, Auslieferungssätze mit Schloss) und „Bauteilaufbauten" (Schichtenraster mit Dicke, Stoffwerten und ruhender Luftschicht, Summenfuß mit R, U, Kapazität und Bezugsperiode, Speichern und Neu) unter Administration → Gebäude; neutrale Beispiele, keine Hersteller- oder Produktdaten; Anker `baustoffe`, `bauteilaufbauten`, `schichten`, `summen`, `speichern`, `help_mapping.txt` mit `BaustoffKatalog.btn_Help` und `Bauteilaufbau.btn_Help` | Status der Gebäudesimulation, Stufe G3 (E39) |
 | Programm Dokumentation/Gebäudeimport | `Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki` | **neue Seite**: Einstieg im Gebäudedialog, Dateiarten und Größengrenzen, Baualtersklasse zuerst, Quelle mit dem Hinweis auf eine schon importierte Datei, Raumliste, Zuordnung mit Herkunft je Feld (Datei, Vorgabe, manuell, leer), was nicht aus der Datei kommt (samt den Vorgaben für Luftwechselrate, Fläche je Nutzer und innere Gewinne), vorbelegter Katalogeditor mit den Vorgaben in der Herleitungszeile, Übernahme ins Projekt und Herkunft im Projekt; `help_mapping.txt` zeigt mit `Form_GebaeudeImport.btn_Help` auf den Anker `zuordnung`; mit E43 die Vorgaben, wenn die Datei nichts liefert: innere Gewinne 5 W/m² × Nutzfläche (ohne Nutzfläche 0 W), Soll am Tag 20 °C, Heizsollwert in der Nacht 18 °C (höchstens das Soll am Tag), Nachtabsenkung 22 bis 6 Uhr, alle änderbar | Status der Gebäudesimulation, Stufe G4 (E38); E43 (N1.48) |
 | Programm Dokumentation/Brauchwasser-Zapfprofil | `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki` | **neue Seite** (Repo-Quelle seit der Stufe Z1 des Zapfprofilgenerators, nie hochgeladen): Rechenweg Brauchwasser, Eingaben je Stufe (Einfach, Erweitert, Experte), Vorschau, Hinweise und Prüfung, Stochastik, Auslegung, Katalog der Brauchwasser-Nutzungsarten, Typtage nach VDI 4655, Messdaten, Vergleich und Kalibrierung, Katalog-Import mit Paketvorlage A100 und Steuerspalte „Gruppe“, Karte „Herkunft“ des Ergebnisbereichs; 35 Anker | Statuszeilen #443, #451, #453, #464, #486, #495, #504, #508, #516, #517 |
-| Programm Dokumentation/Berichtsvorlagen | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` | **neue Seite** (Neuanlage beim Upload): die Gruppe „Vorlage“ der Berichtsseite — Auswahl mit Schloss der Standardvorlage, „Neue Vorlage…“, „Hinzufügen…“, „Prüfen“, „Platzhalter…“, Menü „…“ je Plattform —, die Prüfung vor jedem Bericht mit der Rückfrage und ihren drei Wegen, die Schreibweise der Platzhalter, Prüfzeile und Prüfliste, der Platzhalterkatalog, die Standardvorlage und im Abschnitt „Bericht“ der Einstellungen Firma und Vorlagenordner; Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`; `help_mapping.txt` zeigt mit `UcBericht.btn_Help_Pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` und `Form_AdminSettings.btn_Help_Bericht` auf `pruefliste`, `platzhalterkatalog` und `einstellungen`; neutrale Beispiele, keine Hersteller- oder Produktdaten; mit BV-E2 der Abschnitt „Kapitel“ (neue Anker `kapitel`, `haekchen`) — die Kapitelplatzhalter `{{kapitel.…}}` mit `\|ohne titel` und `\|ebene`, der Kapitelkopf im Format „EPOS Kapitelkopf“ und sein Entfall, die Stelle der Anhang-E-Checkliste, ausgegraute Häkchen mit Grund und die Zeile „Den Inhalt bestimmt die Vorlage“ —, das Bild als Platzhalter, die Standardvorlage im vollen Aufbau und in den Einstellungen das Feld „Logo“ (neuer Anker `logo`); die Anker der Hilfeschlüssel bleiben | Statuszeilen #512 (BV-E1), #NNN (BV-E2) |
+| Programm Dokumentation/Berichtsvorlagen | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` | **neue Seite** (Neuanlage beim Upload): die Gruppe „Vorlage“ der Berichtsseite — Auswahl mit Schloss der Standardvorlage, „Neue Vorlage…“, „Hinzufügen…“, „Prüfen“, „Platzhalter…“, Menü „…“ je Plattform —, die Prüfung vor jedem Bericht mit der Rückfrage und ihren drei Wegen, die Schreibweise der Platzhalter, Prüfzeile und Prüfliste, der Platzhalterkatalog, die Standardvorlage und im Abschnitt „Bericht“ der Einstellungen Firma und Vorlagenordner; Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`; `help_mapping.txt` zeigt mit `UcBericht.btn_Help_Pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` und `Form_AdminSettings.btn_Help_Bericht` auf `pruefliste`, `platzhalterkatalog` und `einstellungen`; neutrale Beispiele, keine Hersteller- oder Produktdaten; mit BV-E2 der Abschnitt „Kapitel“ (neue Anker `kapitel`, `haekchen`) — die Kapitelplatzhalter `{{kapitel.…}}` mit `\|ohne titel` und `\|ebene`, der Kapitelkopf im Format „EPOS Kapitelkopf“ und sein Entfall, die Stelle der Anhang-E-Checkliste, ausgegraute Häkchen mit Grund und die Zeile „Den Inhalt bestimmt die Vorlage“ —, das Bild als Platzhalter, die Standardvorlage im vollen Aufbau und in den Einstellungen das Feld „Logo“ (neuer Anker `logo`); die Anker der Hilfeschlüssel bleiben | Statuszeilen #512 (BV-E1), #520 (BV-E2) |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
@@ -52,7 +52,7 @@ Photovoltaik und Varianten kommen mit E12 hinzu (Tabuwort-Bereinigung der Ampel-
 beziehungsweise Kohärenzhinweis am Abschnitt PV-Vergütung); die Seite Baustoffe und Bauteilaufbauten
 kommt mit der Stufe G3 der Gebäudesimulation hinzu (Gegenlese-Muster ohne Treffer, Wache der
 Produktdaten grün); die Seite Berichtsvorlagen kommt mit BV-E1 (#512) als Neuanlage hinzu, die Seite
-Wirtschaftlichkeit dazu um einen Satz im Abschnitt „Bericht“ (Gegenlese-Muster ohne Treffer); mit BV-E2 (#NNN) wächst die
+Wirtschaftlichkeit dazu um einen Satz im Abschnitt „Bericht“ (Gegenlese-Muster ohne Treffer); mit BV-E2 (#520) wächst die
 Seite Berichtsvorlagen um Kapitel, Häkchen und Logo (Gegenlese-Muster ohne Treffer, Wache der Produktdaten grün).
 
 **Hinweis zum Arbeitsstand:** Die Repo-Quelle der Seite Stromspeicher trägt seit diesem
@@ -73,12 +73,12 @@ beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentl
 
 - Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die
   gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts
-  hinterlegen. (#NNN)
+  hinterlegen. (#520)
 - Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene
   Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite,
   Firma und Vorlagenordner stehen in den Einstellungen. (#512)
 
-*Zu #NNN (Stichwort `bericht`):* Ein Satz — Kapitel als Platzhalter, ausgegraute Häkchen und das Firmenlogo. Ohne eigenen
+*Zu #520 (Stichwort `bericht`):* Ein Satz — Kapitel als Platzhalter, ausgegraute Häkchen und das Firmenlogo. Ohne eigenen
 Satz bleiben die Formatangaben `|ohne titel` und `|ebene`, der Kapitelkopf, die Stelle der Anhang-E-Checkliste aus der
 gewählten Vorlage und die Standardvorlage im vollen Aufbau (dieselbe Funktion).
 
@@ -641,7 +641,7 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   ob sie in einer früheren Runde schon veröffentlicht wurden oder noch offen sind.
 - Die Berichtsvorlagen (BV-E1, #512) bringen die neue Seite „Berichtsvorlagen“ (Neuanlage, Abschnitt 1) und einen Satz
   im Abschnitt „Bericht“ der Seite Wirtschaftlichkeit (Anker `bericht-vorlage`); bis zum Upload führen die Hilfeknöpfe
-  von Prüfliste, Platzhalterkatalog und Einstellungen › Bericht ins Leere. Mit BV-E2 (#NNN) wächst die Seite um Kapitel,
+  von Prüfliste, Platzhalterkatalog und Einstellungen › Bericht ins Leere. Mit BV-E2 (#520) wächst die Seite um Kapitel,
   Häkchen und Logo (neue Anker `kapitel`, `haekchen`, `logo`; die Anker der Hilfeschlüssel bleiben). Die Logbuch-Sätze
   beider Etappen stehen in Abschnitt 2, die Version ist beim Anwender zu erfragen.
 
@@ -661,7 +661,7 @@ vor, für den Termin 26.09.2026:
    Tabuwort-Bereinigung genügt der einfache Ersatz.
 3. Seite im Bearbeitungsformular öffnen (bei einer neuen Seite: `Spezial:Importieren`) und
    durch den vollständigen Text der Repo-Quelle ersetzen; die Zusammenfassungszeile nennt die
-   Statuszeile (hier #470; für Wirtschaftlichkeit und Kosten dazu #474, für Wirtschaftlichkeit auch #477, #478, #479, #484, #492, #498 und #512, für Kosten auch #484, #502 und #510; für die neue Seite Berichtsvorlagen #512 und #NNN).
+   Statuszeile (hier #470; für Wirtschaftlichkeit und Kosten dazu #474, für Wirtschaftlichkeit auch #477, #478, #479, #484, #492, #498 und #512, für Kosten auch #484, #502 und #510; für die neue Seite Berichtsvorlagen #512 und #520).
 4. Nach dem Speichern über `action=raw` und `action=parse` zurücklesen: byte-gleich zur
    Repo-Quelle, keine Parse-Fehler, Kategorien unverändert (Muster: „Dokumentationspflege
    Speicherauslegung“, Hilfesystem-Konzept).
