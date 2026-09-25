@@ -32799,7 +32799,13 @@ Do you want to allow this?</value>
     <value>From now on this building is computed from its building components instead of the U-value groups. The areas are scaled up to the project area with the factor {0} (usable area {1} m² → {2} m²). The entry “{3} {4}” no longer applies afterwards. Take over the zone?</value>
   </data>
   <data name="GEBZ_FRAGE_GRENZEN" xml:space="preserve">
-    <value>The power limits of heating and cooling then apply to the scaled-up envelope.</value>
+    <value>The power limits are not scaled up ({0}); they then apply unchanged to the scaled-up envelope.</value>
+  </data>
+  <data name="GEBZ_GRENZE_HEIZUNG" xml:space="preserve">
+    <value>heating {0} kW</value>
+  </data>
+  <data name="GEBZ_GRENZE_KUEHLUNG" xml:space="preserve">
+    <value>cooling {0} kW</value>
   </data>
   <data name="GEBZ_LEER" xml:space="preserve">
     <value>No zone yet – the building uses the class method with the U-value groups.</value>

@@ -32806,7 +32806,13 @@ Möchten Sie das zulassen?</value>
     <value>Ab jetzt rechnet dieses Gebäude über seine Bauteile statt über die U-Wert-Gruppen. Die Flächen werden mit dem Faktor {0} auf die Projektfläche hochgerechnet (Nutzfläche {1} m² → {2} m²). Die Angabe „{3} {4}“ gilt danach nicht mehr. Zone übernehmen?</value>
   </data>
   <data name="GEBZ_FRAGE_GRENZEN" xml:space="preserve">
-    <value>Die Leistungsgrenzen von Heizung und Kühlung gelten danach der hochgerechneten Hülle.</value>
+    <value>Die Leistungsgrenzen werden nicht hochgerechnet ({0}) und gelten danach unverändert der hochgerechneten Hülle.</value>
+  </data>
+  <data name="GEBZ_GRENZE_HEIZUNG" xml:space="preserve">
+    <value>Heizung {0} kW</value>
+  </data>
+  <data name="GEBZ_GRENZE_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung {0} kW</value>
   </data>
   <data name="GEBZ_LEER" xml:space="preserve">
     <value>Noch keine Zone – das Gebäude rechnet den Klassenweg über die U-Wert-Gruppen.</value>
