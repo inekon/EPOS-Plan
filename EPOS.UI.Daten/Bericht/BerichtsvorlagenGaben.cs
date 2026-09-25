@@ -45,6 +45,10 @@ namespace WindowsFormsApplication1
     /// öffnen", „Im Ordner zeigen", „Ersetzen…", „Entfernen"; ohne Wege (iOS) „Teilen…",
     /// „Ersetzen…", „Entfernen"; eine mitgelieferte Vorlage nur „Schreibgeschützt öffnen" bzw.
     /// „Teilen…". Was nicht geht, meldet die Gruppe benannt.</para>
+    ///
+    /// <para><b>BV-E2 (Konzept 10.2, „Häkchen (BV-Q1 c)"): der Kapitelstand.</b> Jedes Nachladen
+    /// sagt der Seite, welche Kapitel die geprüfte Vorlage führt (<see cref="Kapitel(Pruefbefund)"/>) —
+    /// die Häkchen folgen ihm nach jedem Vorlagenwechsel.</para>
     /// </summary>
     internal sealed class BerichtsvorlagenGaben
     {
@@ -147,6 +151,7 @@ namespace WindowsFormsApplication1
             if (stand.Pruefzeile != null) gaben["Pruefzeile"] = stand.Pruefzeile;
             gaben["PrueflisteGaben"] = new Func<IReadOnlyDictionary<string, object>>(PrueflisteGaben);
             if (stand.Startrueckfrage != null) gaben["Startrueckfrage"] = stand.Startrueckfrage;
+            if (stand.Kapitelstand != null) gaben["Kapitelstand"] = stand.Kapitelstand;
             gaben["StartGewaehlt"] = EventCallback.Factory.Create<string>(this, StartGewaehlt);
             gaben["VorlagenNeuLaden"] = new Func<Vorlagenstand>(Stand);
             gaben["Vorlagentexte"] = new BerichtSeiteVorlagentexte();
@@ -189,6 +194,7 @@ namespace WindowsFormsApplication1
                 Handlungen = handlungen,
                 Pruefzeile = Pruefzeile(start, wahl, prueffehler),
                 Startrueckfrage = MitWord(konfig) ? Rueckfrage(start) : null,
+                Kapitelstand = Kapitel(start?.Pruefbefund),
                 Meldung = meldung ?? "",
                 Fehler = fehler ?? ""
             };
@@ -338,6 +344,45 @@ namespace WindowsFormsApplication1
             bool eigene = start.KannGewaehlteFuellen && start.StandardAngeboten;
             return new Startrueckfrage(R.BK_BER_TITEL_ERSTELLEN, text.ToString(), Punkte(start),
                                        start.WegGewaehlt, start.WegStandard, start.WegAbbrechen, eigene);
+        }
+
+        // =====================================================================
+        //  BV-E2 — die Häkchen folgen der Vorlage (Konzept 10.2, „Häkchen (BV-Q1 c)")
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Was die geprüfte Word-Vorlage an Kapiteln führt</b> — aus der Schnellprüfung
+        /// (<see cref="Pruefbefund.Bausteine"/>, <see cref="Pruefbefund.HatKapitel"/>). Die Häkchen
+        /// schalten Kapitelplatzhalter, keine Einzelplatzhalter: Ein Baustein, den kein Kapitel der
+        /// Vorlage einsetzt, ist „in dieser Vorlage nicht enthalten"; führt die Vorlage gar kein Kapitel
+        /// (weder <c>{{bericht.inhalt}}</c> noch <c>kapitel.*</c>), bestimmt sie den Inhalt allein.
+        /// <c>null</c> = jeder Eintrag frei: Es ist keine Vorlage geprüft (die Standardvorlage fehlt, der
+        /// Lauf nimmt den bisherigen Weg), die Vorlage ist nicht lesbar (der Lauf fällt auf die
+        /// Standardvorlage) oder sie trägt keinen Platzhalter (der Bericht kommt an ihr Ende, als stünde
+        /// dort <c>{{bericht.inhalt}}</c>).
+        /// </summary>
+        internal static Kapitelstand Kapitel(Pruefbefund befund)
+        {
+            if (befund == null) return null;
+            return Kapitel(befund.IstLesbar, befund.AnzahlPlatzhalter, befund.HatKapitel, befund.Bausteine);
+        }
+
+        /// <summary>
+        /// Die Regel von <see cref="Kapitel(Pruefbefund)"/> auf ihren vier Größen: lesbar, Zahl der
+        /// Platzhalter, führt Kapitel, die Bausteine der Kapitel. Ohne Kapitel führt die Vorlage keinen
+        /// Baustein — auch keinen, den ein Einzelplatzhalter berührt.
+        /// </summary>
+        internal static Kapitelstand Kapitel(bool lesbar, int platzhalter, bool hatKapitel, IEnumerable<string> bausteine)
+        {
+            if (!lesbar || platzhalter <= 0) return null;
+            var gefuehrt = hatKapitel
+                ? new HashSet<string>(bausteine ?? Enumerable.Empty<string>(), StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
+            List<string> fehlen = BerichtsKonfiguration.AlleBausteine
+                .Select(b => b.Schluessel)
+                .Where(s => !gefuehrt.Contains(s))
+                .ToList();
+            return new Kapitelstand(fehlen, !hatKapitel);
         }
 
         /// <summary>Die Befunde der Rückfrage, höchstens <see cref="BerichtCtrl.MAX_PUNKTE"/> und „… und n weitere".</summary>

@@ -7203,6 +7203,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_INHALT_AUS_VORLAGE {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_INHALT_AUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Word-Vorlage: ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_LBL_WORD {
@@ -7235,6 +7244,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_MSG_IN_WORD {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_MSG_IN_WORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist in dieser Vorlage nicht enthalten – das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt. ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN", resourceCulture);
             }
         }
         
@@ -7352,6 +7370,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BER_VORLAGE_NEU_TITEL {
             get {
                 return ResourceManager.GetString("BK_BER_VORLAGE_NEU_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in dieser Vorlage nicht enthalten ähnelt.
+        /// </summary>
+        public static string BK_BER_VORLAGE_NICHT_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("BK_BER_VORLAGE_NICHT_ENTHALTEN", resourceCulture);
             }
         }
         

@@ -35126,4 +35126,13 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>What to do: {0}</value>
   </data>
+  <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
+    <value>not contained in this template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN" xml:space="preserve">
+    <value>“{0}” is not contained in this template – the tick is kept and takes effect again as soon as a template contains the chapter.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_INHALT_AUS_VORLAGE" xml:space="preserve">
+    <value>The template determines the content – it holds single placeholders but no chapter.</value>
+  </data>
 </root>
