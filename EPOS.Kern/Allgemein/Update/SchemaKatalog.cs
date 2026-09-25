@@ -3514,9 +3514,8 @@ namespace WindowsFormsApplication1
         /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/> — dieselbe
         /// Begründung wie bei <see cref="Schritt92_Referenzprojekt"/>: Der Grund ist der
         /// LESER. Die Rückfallebene <see cref="Alle"/> läuft bei jedem Simulationsstart;
-        /// die Vergütungswahl liest allein die Wirtschaftlichkeit, und deren eigene
-        /// Rückfallebene (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>) führt die
-        /// Spalte.</para>
+        /// die Vergütungswahl liest allein die Wirtschaftlichkeit, und dort ist der
+        /// Schemaschritt die einzige Quelle der Spalte.</para>
         /// </summary>
         public static readonly SchemaSpalte[] Schritt93_VerguetungJeVariante =
         {
@@ -4186,9 +4185,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — derselbe Grund
         /// wie bei <see cref="Schritt22_KwkgJeAnlage"/>: Der Leser ist allein die
-        /// Wirtschaftlichkeit, deren eigene Rückfallebene
-        /// (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>) sie vorsorglich
-        /// anlegt.</para>
+        /// Wirtschaftlichkeit, und dieser Schritt ist die einzige Quelle der
+        /// Spalten.</para>
         /// </summary>
         public static readonly SchemaSpalte[] Schritt105_KwkgAbwaermeabfuhr =
         {
@@ -4530,9 +4528,9 @@ namespace WindowsFormsApplication1
         /// gelesen (<c>WirtschaftlichkeitCtrl.LadeParameter</c> über <c>D(r, "…")</c>);
         /// das Anhängen hinten ist folgenlos.
         ///
-        /// <b>Doppelte Schema-Wahrheit.</b> <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>
-        /// legt dieselbe Tabelle selbst an; die vier Spalten stehen deshalb dort
-        /// ebenfalls (im CREATE und als <c>SpalteSicher</c>-Nachzug).
+        /// <b>Eine Schema-Wahrheit.</b> Dieser Schritt ist die einzige Quelle der vier
+        /// Spalten; <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> legt weder die
+        /// Tabelle an noch zieht sie Eingabespalten nach.
         /// </summary>
         public static readonly SchemaSpalte[] Schritt28_KwkgTatbestand =
         {
@@ -4781,10 +4779,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>KEIN DML, kein DDL-DEFAULT, kein <c>_STAMM</c>-Gegenstück</b> — wortgleiche
         /// Begründung wie bei <see cref="Schritt71_SzenarioBest"/>. Die Spalten stehen BEWUSST
-        /// NICHT in <see cref="Alle"/>: Kein Rechenweg der Simulation liest sie; die tolerante
-        /// Vorsorge steht unmittelbar vor dem Zugriff in
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dort auch im CREATE — die
-        /// doppelte Schema-Wahrheit dieses Moduls).</para>
+        /// NICHT in <see cref="Alle"/>: Kein Rechenweg der Simulation liest sie, und dieser
+        /// Schritt ist ihre einzige Quelle.</para>
         /// </summary>
         public static readonly SchemaSpalte[] Schritt116_Szenariorahmen =
         {
@@ -4879,8 +4875,7 @@ namespace WindowsFormsApplication1
         /// [€/kWh], „an derselben Tabelle" wie der Erwartungswert (Konzept § 2.11.5).
         ///
         /// <para><b>NULL (und 0) heißt „wie Erwartet"</b> (E9a‑Q5, Lesart a).
-        /// <b>Doppelpflicht:</b> dieselben Spalten im CREATE-Text und als
-        /// <c>SpalteSicher</c>-Nachzug in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        /// Dieser Schritt ist die einzige Quelle der Spalten.
         /// KEIN DML; nicht in <see cref="Alle"/> (Begründung bei
         /// <see cref="Schritt71_SzenarioBest"/>).</para>
         ///
@@ -4901,11 +4896,10 @@ namespace WindowsFormsApplication1
         /// Erwartungswerten <c>DvEntgelt</c> und <c>PpaPreis</c> — dieselbe Zeile, dieselbe
         /// Auflösung „eigene Werte / übernommen vom Stamm" (Konzept § 2.16).
         ///
-        /// <para><b>NULL (und 0) heißt „wie Erwartet".</b> <b>Doppelpflicht (PPV):</b> Die
-        /// Tabelle gehört <c>ProjektPhotovoltaikCtrl</c>, gelesen werden die Spalten vom
-        /// Rechenweg der Wirtschaftlichkeit — die tolerante Vorsorge steht deshalb wie beim
-        /// Schritt 93 beim Leser (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>), der
-        /// Schreibweg der PV-Karte prüft die Spalten vorher. Der CREATE-Text des Schritts 41
+        /// <para><b>NULL (und 0) heißt „wie Erwartet".</b> Die Tabelle gehört
+        /// <c>ProjektPhotovoltaikCtrl</c>, gelesen werden die Spalten vom Rechenweg der
+        /// Wirtschaftlichkeit; dieser Schritt ist ihre einzige Quelle, und der Schreibweg
+        /// der PV-Karte prüft die Spalten vorher. Der CREATE-Text des Schritts 41
         /// (<see cref="SQL_CREATE_PROJEKTPHOTOVOLTAIK"/>) bleibt, wie er ist: Ein
         /// Migrationsschritt wird nie rückwirkend geändert, und er trägt auch die Spalten der
         /// Schritte 64 und 93 nicht.</para>
@@ -4977,10 +4971,9 @@ namespace WindowsFormsApplication1
         /// Pflege</b>.</para>
         ///
         /// <para><b>KEIN DML, kein DDL-DEFAULT, kein <c>_STAMM</c>-Gegenstück</b> — dieselbe
-        /// Begründung wie bei <see cref="Schritt116_Szenariorahmen"/>. <b>Doppelpflicht:</b>
-        /// dieselben Spalten im CREATE-Text und als <c>SpalteSicher</c>-Nachzug in
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; nicht in <see cref="Alle"/>
-        /// (kein Rechenweg der Simulation liest sie).</para>
+        /// Begründung wie bei <see cref="Schritt116_Szenariorahmen"/>. Dieser Schritt ist
+        /// die einzige Quelle der Spalten; nicht in <see cref="Alle"/> (kein Rechenweg der
+        /// Simulation liest sie).</para>
         /// </summary>
         public static readonly SchemaSpalte[] RisikomodulSpalten =
         {
@@ -5091,17 +5084,16 @@ namespace WindowsFormsApplication1
         ///
         /// <see cref="Schritt20_Steuerangaben"/> ist BEWUSST NICHT aufgeführt — dieselbe
         /// Begründung: <c>Tab_ProjektWirtschaftlichkeit</c> gehört dem
-        /// Wirtschaftlichkeitsmodul, der Rechenkern liest die Tabelle nirgends. Dieses
-        /// Modul führt seine Tabellen seit W1 selbst; die tolerante Vorsorge steht
-        /// unmittelbar vor dem Zugriff in
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dieselben sechs Spalten
-        /// über <c>SpalteSicher</c>).
+        /// Wirtschaftlichkeitsmodul, der Rechenkern liest die Tabelle nirgends, und der
+        /// Schemaschritt ist die einzige Quelle der sechs Spalten.
         ///
         /// <see cref="Schritt21_Tarifmodell"/> ist BEWUSST NICHT aufgeführt — dieselbe
         /// Begründung ein drittes Mal: <c>Tab_ProjektTarif</c> und
         /// <c>Tab_ProjektWirtschaftlichkeit</c> gehören dem Wirtschaftlichkeitsmodul,
-        /// der Rechenkern liest beide nirgends. Die tolerante Vorsorge steht unmittelbar
-        /// vor dem Zugriff in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        /// der Rechenkern liest beide nirgends. Die Liste führt mit
+        /// <c>Aufschlaege_Anwenden</c> eine Spalte, die Schemaschritt 85 wieder entfernt
+        /// hat — ein Nachzug aus ihr holte die Spalte zurück; die Liste hat deshalb
+        /// keinen Leser und dokumentiert den Schritt.
         ///
         /// <see cref="Schritt22_KwkgJeAnlage"/> ist BEWUSST NICHT aufgeführt, obwohl seine
         /// Spalten an <c>Tab_Energieanlagen</c> hängen — der einzigen Ausnahme von der
@@ -5109,18 +5101,15 @@ namespace WindowsFormsApplication1
         /// Tabelle: Die acht Spalten gehören fachlich zum Wirtschaftlichkeitsmodul, der
         /// Rechenkern liest keine einzige davon, und die Rückfallebene läuft bei JEDEM
         /// Simulationsstart. Sie würde dort acht Spalten anlegen, die die Simulation nie
-        /// braucht. Die tolerante Vorsorge steht deshalb wie bei den Schritten 19 bis 21
-        /// unmittelbar vor dem Zugriff in
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; zusätzlich fällt
-        /// <c>LiesBhkwAnlagen</c> auf die Abfrage ohne die neuen Spalten zurück, wenn sie
-        /// fehlen.
+        /// braucht. Der Schemaschritt ist die einzige Quelle der acht Spalten; zusätzlich
+        /// fällt <c>LiesBhkwAnlagen</c> auf die Abfrage ohne die neuen Spalten zurück,
+        /// wenn sie fehlen.
         ///
         /// <see cref="Schritt23_Bilanzkonvention"/> ist BEWUSST NICHT aufgeführt —
         /// dieselbe Begründung wie bei den Schritten 20 und 21:
         /// <c>Tab_ProjektWirtschaftlichkeit</c> gehört dem Wirtschaftlichkeitsmodul, der
-        /// Rechenkern liest die Tabelle nirgends. Die tolerante Vorsorge steht
-        /// unmittelbar vor dem Zugriff in
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        /// Rechenkern liest die Tabelle nirgends, und der Schemaschritt ist die einzige
+        /// Quelle der Spalten.
         ///
         /// <see cref="Schritt25_Einheitenkonsistenz"/> ist BEWUSST NICHT aufgeführt —
         /// dieselbe Begründung wie bei <see cref="Schritt12_Preismodell"/>:
@@ -5174,10 +5163,9 @@ namespace WindowsFormsApplication1
         /// bei <see cref="Schritt22_KwkgJeAnlage"/>: Der Grund ist der LESER, nicht die
         /// Tabelle. Die drei Spalten gehören fachlich zum Wirtschaftlichkeitsmodul, der
         /// Rechenkern liest keine einzige davon, und die Rückfallebene läuft bei JEDEM
-        /// Simulationsstart. Die tolerante Vorsorge steht deshalb unmittelbar vor dem
-        /// Zugriff in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>; zusätzlich
-        /// fällt <c>WirtschaftlichkeitCtrl.LiesAnlagen</c> auf die Abfrage ohne die
-        /// neuen Spalten zurück, wenn sie fehlen.
+        /// Simulationsstart. Der Schemaschritt ist die einzige Quelle der drei Spalten;
+        /// zusätzlich fällt <c>WirtschaftlichkeitCtrl.LiesAnlagen</c> auf die Abfrage ohne
+        /// die neuen Spalten zurück, wenn sie fehlen.
         ///
         /// <see cref="Schritt61_Hilfsenergie"/> ist BEWUSST NICHT aufgeführt — dieselbe
         /// Begründung wie bei <see cref="Schritt18_BhkwVollbenutzungsstunden"/>: Die
@@ -5216,9 +5204,8 @@ namespace WindowsFormsApplication1
         /// <see cref="Schritt71_Szenarioparameter"/> ist BEWUSST NICHT aufgeführt —
         /// wortgleiche Begründung wie bei den übrigen
         /// <c>Tab_ProjektWirtschaftlichkeit</c>-Schritten (20, 21, 28): Kein Rechenkern
-        /// der Simulation liest eine der zwölf Spalten, und die tolerante Vorsorge steht
-        /// unmittelbar vor dem Zugriff in
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        /// der Simulation liest eine der zwölf Spalten, und der Schemaschritt ist ihre
+        /// einzige Quelle.
         ///
         /// <see cref="Schritt72_ValeriErgaenzung"/> ist aus demselben Grund BEWUSST
         /// NICHT aufgeführt: Auch die drei p_I-Spalten und der Freitext hängen an

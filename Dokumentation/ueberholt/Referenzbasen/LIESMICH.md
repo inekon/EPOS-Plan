@@ -1841,27 +1841,27 @@ Nachträge stehen deshalb hier, im Wortlaut:
 > **Nicht geändert, berichtet.** Kellerkanten: 0 m bei den Heimen, Schulen und Hallenbädern (die
 > EnEV-Abwandlungen 3, 8 führen 140 m bei 200 m Dachkante, nicht den Umfang; ψ der C-Sätze 0), 14,6 m bei 42, 72,
 > 134, 84, 85 (kein Ausgangssatz führt sie als Umfang; Vorschlag: der Umfang 86,6 bzw. 122,3 m; bei ψ 0,65/0,67
-> +46,8 bis +48,2 bzw. +72,2 W/K) — der Katalog führt die Kellerkante systematisch klein. Dazu die Scan-Gruppen, Entscheidung
-> beim Anwender:
+> +46,8 bis +48,2 bzw. +72,2 W/K; **✔ erledigt mit #505**) — der Katalog führt die Kellerkante systematisch klein. Dazu die
+> Scan-Gruppen, Entscheidung beim Anwender (**alle zehn Zeilen ✔ erledigt mit #505**, Nachtrag unten):
 >
 > | Satz | Befund | Vorschlag Laibung | Herleitung des Vorschlags |
 > |---|---|---|---|
-> | 6 `Pflegeheim-122-EnEV2016` | 0 m bei 545 m² Fenster (Kanten 40 / 30 m) | 540 m | EnEV-Abwandlung 8 gleicher Geometrie: 540 / 545 = 0,99 m/m² (nach dem C-Verhältnis 1,81 wären es 985 m) |
-> | 15 `Industriehalle-320` | alle drei Längen 0 | 16 000 m | Satz 14 `Industrie_ne_81` gleicher Geometrie: 2,5 m/m² × 6 400 m²; Kanten dort 7 337,4 m |
-> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | alle drei Längen 0 | 391,5 m | Sätze 65, 73 gleicher Geometrie: 2,5 m/m² × 156,6 m²; Kanten dort 71,0 m |
-> | 117 `Verw_H_75` | alle drei Längen leer | 391,5 m | Satz 118 `Verw_I_33` gleicher Geometrie; Kanten dort 70,98 m |
-> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | alle drei Längen leer, auch ψ | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 2,901 m/m² × 504 m²; Umfang der Geometrie 103,4 m |
-> | 106 `Bürogebäude KfW 55` | alle drei Längen 0 | 2 875 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m²; Umfang der Geometrie 264,1 m |
-> | 207 `KMH-G-U-120` | Laibung 0 (Kanten 250,68 / 28 m) | 238,3 m | KMH G (206, 209): 268,6 / 112,02 = 2,398 m/m² × 99,37 m² |
-> | 23 `Hallenbad-Umkl-140-EnEV2016` | 50 m (0,12 m/m²), gerundet | 865,1 m | Hallenbad-Umkleide 24: 142 / 70,4 = 2,017 m/m² × 428,9 m² |
-> | 34 `gr_Hotel-80-EnEV2016` | 600 m (0,25 m/m²), gerundet | 6 164,4 m | F-Quelle gleicher Geometrie 2,5729 m/m² × 2 395,9 m² |
-> | 108 `Bürogebäude_gross-30-EnEV2016` | 330 m (0,18 m/m²), gerundet | 4 460 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² |
+> | 6 `Pflegeheim-122-EnEV2016` ✔ #505 | 0 m bei 545 m² Fenster (Kanten 40 / 30 m) | 540 m | EnEV-Abwandlung 8 gleicher Geometrie: 540 / 545 = 0,99 m/m² (nach dem C-Verhältnis 1,81 wären es 985 m) |
+> | 15 `Industriehalle-320` ✔ #505 | alle drei Längen 0 | 16 000 m | Satz 14 `Industrie_ne_81` gleicher Geometrie: 2,5 m/m² × 6 400 m²; Kanten dort 7 337,4 m |
+> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` ✔ #505 | alle drei Längen 0 | 391,5 m | Sätze 65, 73 gleicher Geometrie: 2,5 m/m² × 156,6 m²; Kanten dort 71,0 m |
+> | 117 `Verw_H_75` ✔ #505 | alle drei Längen leer | 391,5 m | Satz 118 `Verw_I_33` gleicher Geometrie; Kanten dort 70,98 m |
+> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` ✔ #505 | alle drei Längen leer, auch ψ | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 2,901 m/m² × 504 m²; Umfang der Geometrie 103,4 m |
+> | 106 `Bürogebäude KfW 55` ✔ #505 | alle drei Längen 0 | 2 875 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m²; Umfang der Geometrie 264,1 m |
+> | 207 `KMH-G-U-120` ✔ #505 | Laibung 0 (Kanten 250,68 / 28 m) | 238,3 m | KMH G (206, 209): 268,6 / 112,02 = 2,398 m/m² × 99,37 m² |
+> | 23 `Hallenbad-Umkl-140-EnEV2016` ✔ #505 | 50 m (0,12 m/m²), gerundet | 865,1 m | Hallenbad-Umkleide 24: 142 / 70,4 = 2,017 m/m² × 428,9 m² |
+> | 34 `gr_Hotel-80-EnEV2016` ✔ #505 | 600 m (0,25 m/m²), gerundet | 6 164,4 m | F-Quelle gleicher Geometrie 2,5729 m/m² × 2 395,9 m² |
+> | 108 `Bürogebäude_gross-30-EnEV2016` ✔ #505 | 330 m (0,18 m/m²), gerundet | 4 460 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² |
 >
 > „Nur Dachkante“ (35, 39–41, 47–49, 52, 55, 58, 61, 63, 66, 67, 112–114, 127, 128, 130, 144–146, 151, 169, 173,
 > 189–191, 195–197, 205, 206, 209–213, 274; 4,7- bis 8-fache Quadratkante, vermutlich geneigte Dächer) bleibt
 > unberührt, darunter die eingefrorenen Referenzsätze 145 und 146. Nebenbefunde ohne Scan-Eintrag: Laibung 0,64 /
-> 0,46 / 0,32 m/m² bei 46 `Hotel-72-EnEV2016`, 57 `Hotel-KfW 55` und 120 `Verwaltung_40-EnEV2016`; Dachkante
-> 7 337,4 m (9,6-fache Quadratkante) bei 14 `Industrie_ne_81`.
+> 0,46 / 0,32 m/m² bei 46 `Hotel-72-EnEV2016`, 57 `Hotel-KfW 55` und 120 `Verwaltung_40-EnEV2016` (bleiben,
+> Anwenderentscheid #505); Dachkante 7 337,4 m (9,6-fache Quadratkante) bei 14 `Industrie_ne_81` (✔ erledigt mit #505).
 >
 > Nachgezogen auf der Fassung von origin mit Schemastand **140** (Nachtrag Stufe Z5 oben, `5de448e8…`) mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher

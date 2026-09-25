@@ -8,12 +8,12 @@ namespace EPOS.Kern.Tests
     /// <b>Die Wache zu den Schemaschritten 90 und 91: die sieben Spalten bleiben weg.</b>
     ///
     /// <para><b>Die Falle, gegen die sie steht.</b>
-    /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> legt seine Tabellen selbst an
-    /// und zieht fehlende Spalten nach (<c>SpalteSicher</c>) — die bekannte doppelte
-    /// Schema-Wahrheit dieses Moduls. Bliebe dort auch nur EINE der sieben Zeilen stehen,
-    /// legte der erste Programmstart nach der Migration die Spalte wieder an: Der
-    /// Schemaschritt haette sie entfernt, das Modul haette sie zurueckgeholt, und niemand
-    /// saehe daran, dass sie nichts mehr rechnet.</para>
+    /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> zieht drei Ergebnisspalten ohne
+    /// Schemaschritt additiv nach (<c>SpalteSicher</c>) — der letzte Rest der doppelten
+    /// Schema-Wahrheit dieses Moduls. Kaeme dort eine der sieben Spalten als Zeile hinzu,
+    /// legte der erste Zugriff nach der Migration die Spalte wieder an: Der Schemaschritt
+    /// haette sie entfernt, das Modul haette sie zurueckgeholt, und niemand saehe daran,
+    /// dass sie nichts mehr rechnet.</para>
     ///
     /// <para>Geprueft wird nicht die Quelle, sondern die WIRKUNG: nach einem Aufruf von
     /// <c>StelleTabellenSicher</c> auf der Arbeitskopie fuehrt
@@ -40,7 +40,7 @@ namespace EPOS.Kern.Tests
             foreach (KeyValuePair<string, string> s in KwkgProjektaltspalten.Spalten)
                 Assert.False(KwkgProjektaltspalten.Vorhanden(s.Key, s.Value),
                              s.Key + "." + s.Value + " ist zurueckgekehrt - eine " +
-                             "SpalteSicher-Zeile oder ein CREATE-Fragment steht noch.");
+                             "SpalteSicher-Zeile steht noch.");
 
             // Der Nachbar, der bleiben soll, steht weiterhin.
             Assert.True(DataRepository.SpalteVorhanden(KwkgProjektaltspalten.TABELLE,
@@ -48,9 +48,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Dieselbe Falle fuer die siebte Spalte (Schemaschritt 91).</b> Sie stand bis
-        /// Etappe BK1b sowohl im CREATE-Fragment als auch als <c>SpalteSicher</c>-Zeile;
-        /// bliebe eine davon stehen, legte der erste Programmstart nach der Migration
+        /// <b>Dieselbe Falle fuer die siebte Spalte (Schemaschritt 91).</b> Kaeme sie als
+        /// <c>SpalteSicher</c>-Zeile zurueck, legte der erste Zugriff nach der Migration
         /// <c>KWKG_Kostenanteil</c> am PROJEKT wieder an - neben dem Feld der Anlage, das
         /// als einziges rechnet.
         /// </summary>
@@ -67,7 +66,7 @@ namespace EPOS.Kern.Tests
             Assert.False(KwkgProjektaltspalten.Vorhanden91(),
                          KwkgProjektaltspalten.TABELLE + "." +
                          KwkgProjektaltspalten.KOSTENANTEIL + " ist zurueckgekehrt - eine " +
-                         "SpalteSicher-Zeile oder ein CREATE-Fragment steht noch.");
+                         "SpalteSicher-Zeile steht noch.");
 
             // Das Feld DER ANLAGE bleibt - es ist das einzige, das § 8 liest.
             Assert.True(DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN,

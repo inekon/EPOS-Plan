@@ -381,7 +381,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-25_R15_Anlagenkopplung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **141**, LFS-SHA-256 `b48add6a…`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
+Schemastand **141**, LFS-SHA-256 `b48add6a…`; heute Schemastand **142**, LFS-SHA-256 `1360e2be…`, Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige**
 Basis im Arbeitsbaum.
@@ -511,6 +511,65 @@ Basis im Arbeitsbaum.
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
 > [Protokoll der fünften Welle AK1](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_AK1_Welle5_Referenzprojekt.md)
 > und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
+
+> **Nachtrag #505: Schemastand 142 (dritte Berichtigung der Anschlusslängen), die Basis bleibt.**
+> Migrationsschritt **142** (`SCHRITT_GEBAEUDE_DRITTE_REPARATUR`; die Nummer steht allein bei
+> `GebaeudeAnschlusslaengenDritteReparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
+> auf die Folgeberichtigung, 141) berichtigt nach dem Anwenderentscheid vom 25.09.2026 („Empfehlung übernommen —
+> eindeutig unplausible Werte berichtigen, den Rest lassen“) die Berichtstabelle des Nachtrags #496: 19 Zellen an
+> achtzehn Sätzen von `Tab_Gebaeude_STAMM` — **reines DML** in der Bauart von #493 und #496 (Bezeichner und
+> unplausibler Wert ± 0,05 je Spalte, dieselben Anweisungen), nichts gelöscht, Projektkopien unberührt. Neu ist allein
+> das Bild **„leer“** (NULL) für die Laibung dreier Sätze: eine feste Anweisung mehr bei
+> `GebaeudeAnschlusslaengenReparatur` (`SQL_FENSTER_WAND_LEER` samt Zählung), weil ein Wertebereich keine leere Zelle
+> trifft. Regel der Herleitung wie #496: Zwilling gleicher Geometrie, sonst Verhältnis der Quelle × Fensterfläche;
+> Kanten = Umfang U = (Außenwand + Fenster) / (Nutzfläche / Grundfläche × Raumhöhe), nicht unter der Quadratkante
+> 4·√Grundfläche. ΔH_T = Σ ψ·ΔL je Satz (ψ des Satzes; ψ 0 oder leer ergibt 0).
+>
+> | Satz | Spalte | vorher | nachher | Herleitung | ΔH_T |
+> |---|---|---|---|---|---|
+> | 6 `Pflegeheim-122-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 0 | 540 m | Zwilling 8 `Pflegeheim-C-S-140-EnEV2016` gleicher Geometrie (Wand 2 132, Fenster 545, Grund 540 m²): 540 m = 0,99 m/m² | +81,0 W/K (ψ 0,15) |
+> | 15 `Industriehalle-320` | dieselbe | 0 | 16 000 m | Zwilling 14 `Industrie_ne_81` (Wand 15 100, Fenster 6 400, Grund 36 587 m²): 2,5 m/m², dort plausibel | 0 (ψ 0) |
+> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | dieselbe | 0 | 391,5 m | Zwillinge 65 `kl_Hotel-I-080`, 73 `ml-Hotel-NE-68` (Wand 613,1, Fenster 156,6, Grund 254,9 m²): 2,5 m/m² | 0 (ψ 0) |
+> | 117 `Verw_H_75` | dieselbe | leer | 391,5 m | Zwilling 118 `Verw_I_33` gleicher Geometrie | +15,7 W/K (ψ 0,04) |
+> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | dieselbe | leer | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 476,8 / 164,36 = 2,901 m/m² × 504 m² | 0 (ψ leer) |
+> | 106 `Bürogebäude KfW 55` | dieselbe | 0 | 2 875 m | kein Satz gleicher Geometrie; Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m² | 0 (ψ 0) |
+> | 207 `KMH-G-U-120` | dieselbe | 0 | 238,3 m | KMH G (206, 209): 268,6 / 112,015 = 2,398 m/m² × 99,37 m² | 0 (ψ 0) |
+> | 23 `Hallenbad-Umkl-140-EnEV2016` | dieselbe | 50 | 865,1 m | Ausgangssatz 24 `Hallenbad-Umkl-180`: 142 / 70,4 = 2,017 m/m² × 428,9 m² (50 m wären 0,12 m/m²) | +32,6 W/K (ψ 0,04) |
+> | 34 `gr_Hotel-80-EnEV2016` | dieselbe | 600 | 6 164,4 m | Geometrie der F-Sätze und von 37 `gr_Hotel-G-134` (Wand 10 094, Grund 1 469, Nutzfläche 18 012 m²) nach #493: 7 879 / 3 062,3 = 2,5729 m/m² × 2 395,9 m² (600 m wären 0,25 m/m²); die gerundeten Kanten 300 m (Umfang 313,8 m) bleiben | +500,8 W/K (ψ 0,09) |
+> | 108 `Bürogebäude_gross-30-EnEV2016` | dieselbe | 330 | 4 460 m | kein Satz gleicher Geometrie; Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² (330 m wären 0,18 m/m²) | +371,7 W/K (ψ 0,09) |
+> | 42 `Hotel_G_96`, 72 `ml-Hotel-G-096` | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 14,6 | 86,6 m | der Umfang, den #496 als Dachkante gesetzt hat (Geometrie 87,7 m, Quadratkante 83,1 m); 14,6 m wären weniger als ein Fünftel der Quadratkante | je +46,8 W/K (ψ 0,65) |
+> | 134 `GMH-G-U-97` | dieselbe | 14,6 | 86,6 m | wie 42 | +47,9 W/K (ψ 0,665) |
+> | 84 `GMH-BZ_T`, 85 `GMH-J-015` | dieselbe | 14,6 | 122,3 m | der Umfang der eigenen Geometrie aus #496 (Dachkante), Quadratkante 88,1 m | je +71,6 W/K (ψ 0,665) |
+> | 14 `Industrie_ne_81` | `Abmessung_Anschluß_Wand_Dach` | 7 337,4 | 2 362,1 m | Umfang der eigenen Geometrie (15 100 + 6 400) / (39 645 / 36 587 × 8,4 m) = 2 362,1 m; Quadratkante 765,1 m, 7 337,4 m wären ihr 9,6-Faches | −497,5 W/K (ψ 0,10) |
+> | 14 `Industrie_ne_81` | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 7 337,4 | 2 362,1 m | derselbe Umfang (der Satz führte beide Kanten gleich); die Laibung 16 000 m (2,5 m/m²) trägt und bleibt | −248,8 W/K (ψ 0,05); Satz −746,3 W/K |
+>
+> **Nicht geändert (Anwenderentscheid):** die Kanten der Laibungssätze (0 m bei ψ 0; bei 117 leer, bei 105, 107 samt
+> ψ leer), die Kellerkanten 0 m der Heime, Schulen und Hallenbäder (ψ 0), die Laibungen 0,32 bis 0,64 m/m² der Sätze
+> 46, 57, 120, die Gruppe „nur Dachkante“ (geneigte Dächer) samt den Referenzsätzen 145 und 146. Danach führt kein
+> Katalogsatz eine leere Laibung, eine Laibung 0 m bei Fenstern (`AltenH-95-EnEV2016` hat keine Fenster), eine
+> Kellerkante 14,6 m oder eine Kellerkante über dem Neunfachen der Quadratkante.
+>
+> Nachgezogen auf der Fassung von origin mit Schemastand **141** (Nachtrag #496 oben, `a427aa72…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
+> 19, berichtigt 19, offen danach 0, Marker 142; ein zweiter Lauf berichtigt nichts. Zellvergleich aller 144 Tabellen
+> gegen die Fassung 141 (10 506 856 Zellen): allein `SchemaVersion` 141 → 142 und die 19 Zellen der Tabelle; Schema
+> unverändert; `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes
+> samt den von SQLite angelegten. Größe 67 915 776 Byte (LFS-SHA-256 `fc5f143e…`). **Ergebnisneutral:** Keinen der
+> achtzehn Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch über den Namen); die
+> dreizehn Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist berührt.**
+> Referenzlauf aller dreizehn Projekte **13/13 PASS gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
+> außer `protokoll.txt`)**.
+>
+> *Gemessen hat #505 gegen R14; der Nachtrag #496, auf den er sich bezieht, steht mit dem Nachtrag Z5 am
+> Ende des R14-Abschnitts unter `Dokumentation/ueberholt/Referenzbasen/`.* **Zusammenführung mit AK1
+> Welle 5 — R15 bleibt:** Die Testdatenbank ist
+> die Fassung von origin mit Schemastand 142 (`fc5f143e…`), auf die
+> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py)
+> angewandt ist; ein zweiter Lauf ändert nichts. Zellvergleich gegen die Fassung von origin (10 507 032
+> Zellen): genau die 9 365 Zeilen des Projekts 1047 in 24 Tabellen und 21 Zeilen `sqlite_sequence`, Schema
+> gleich. `integrity_check` ok, `foreign_key_check` leer, 68 747 264 Byte (LFS-SHA-256 `1360e2be…`).
+> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte, 432/432 CSV
+> byte-gleich, außer `protokoll.txt`); die berichtigten Sätze führt auch 1047 nicht (es führt Satz 125 wie 1017).
 
 > **Die Vorgängerbasis `2026-09-24_R14_Kaelteerzeuger`**, die erste Basis mit Kälteerzeuger, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Kälteerzeuger von 1017
