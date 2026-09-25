@@ -246,6 +246,7 @@ namespace WindowsFormsApplication1
                     throw;
                 }
             }
+            GebaeudeZonenanschluss.ProbeVerwerfen();
             bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
                          SpaltenZone.Count.ToString(CultureInfo.InvariantCulture) +
                          " Spalte(n) der Kuehluebergabe an " + ZonenSchema.TAB_ZONE + " angelegt");

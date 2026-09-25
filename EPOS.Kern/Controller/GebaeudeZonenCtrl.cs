@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
         /// NULL bleibt NULL.
         /// </summary>
         private static IReadOnlyList<string> Kuehlspalten()
-            => KuehluebergabeSchema.ZoneVollstaendig()
+            => GebaeudeZonenanschluss.KuehlspaltenVorhanden()
                 ? KuehluebergabeSchema.SpaltenZone.Select(s => s.Key).ToList()
                 : (IReadOnlyList<string>)Array.Empty<string>();
 

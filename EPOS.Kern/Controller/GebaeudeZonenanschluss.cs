@@ -34,6 +34,8 @@ namespace WindowsFormsApplication1
         private static readonly object _sperre = new object();
         private static string _pfad;
         private static bool? _tabelleVorhanden;
+        private static string _pfadKuehl;
+        private static bool? _kuehlspaltenVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -71,7 +73,34 @@ namespace WindowsFormsApplication1
             {
                 _pfad = null;
                 _tabelleVorhanden = null;
+                _pfadKuehl = null;
+                _kuehlspaltenVorhanden = null;
             }
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die drei Spalten der Kühlübergabe (Schritt
+        /// <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>)? Gemerkt je Datenbankpfad wie
+        /// <see cref="TabelleVorhanden"/> — sonst kostete JEDES Lesen der Zonen vier Schemaabfragen
+        /// (<see cref="KuehluebergabeSchema.ZoneVollstaendig"/>). Der Schritt verwirft die Probe
+        /// (<see cref="ProbeVerwerfen"/>), nachdem er die Spalten angelegt hat.
+        /// </summary>
+        internal static bool KuehlspaltenVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_kuehlspaltenVorhanden.HasValue && string.Equals(pfad, _pfadKuehl, StringComparison.OrdinalIgnoreCase))
+                    return _kuehlspaltenVorhanden.Value;
+            }
+
+            bool da = KuehluebergabeSchema.ZoneVollstaendig();
+            lock (_sperre)
+            {
+                _pfadKuehl = pfad;
+                _kuehlspaltenVorhanden = da;
+            }
+            return da;
         }
 
         /// <summary>
