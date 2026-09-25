@@ -638,6 +638,24 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
 > 160/160 CSV **byte-gleich**.
 
+> **Nachtrag G3 Welle B: Schemastände 132 bis 134 (Baustoffe, Bauteilaufbauten, Zonen der Stufe G3),
+> die Basis bleibt.** Drei Migrationsschritte; die Nummer steht allein bei `BaustoffSchema.SCHRITT`,
+> `BauteilaufbauSchema` und `ZonenSchema` zählen davon weiter (Quelle für Migration, Werkzeug und
+> Testvorrichtung): **132** (S-A) legt `Tab_Baustoff_STAMM` und `Tab_Baustoff` an — spaltengleich, mit
+> der Spalte `Hersteller`, die Projektkopie mit Fremdschlüssel auf `Tab_Projekt` — und sät 132 Zeilen:
+> 65 herstellerneutrale Stoffe und 67 Herstellerprodukte (E39), alle `ReadOnly = 1`; **133** (S-B) legt
+> `Tab_Bauteilaufbau(_STAMM)` und `Tab_Bauteilschicht(_STAMM)` an; **134** (S-C) `Tab_Zone` samt den
+> Blöcken aus KU-S1 und AK-S1 und `Tab_Bauteil` — DDL und die eine Saat des Baustoffkatalogs. In der
+> Arbeit trugen die Schritte die Nummern 130 bis 132, dann 131 bis 133; beim Zusammenführen mit origin
+> waren 129 bis 131 belegt. Nachgezogen auf der Fassung von origin mit Schemastand **131** (Nachtrag
+> Z4b oben, `a4a88c33…`) mit `Werkzeuge/Testdatenbankschema`: 141 Tabellen ohne `sqlite_sequence`
+> (alle STRICT) statt 133, 215 Indizes, 25 Projekte, 132 Saatzeilen im Baustoffkatalog, die übrigen
+> neuen Tabellen leer. Größe 67 883 008 Byte (LFS-SHA-256 `9d3c006a…`). **Ergebnisneutral, keine
+> Einfrierregel berührt:** Kein Referenzprojekt hat eine Zone, und ohne Zone rechnet jedes Gebäude
+> bitgleich den Klassenweg; der Baustoffkatalog gehört nicht zu den gesäten Gebäudedaten. Referenzlauf
+> aller dreizehn Projekte **13/13 byte-gleich** gegen diese Basis. Eine Einfrierregel „gesäte
+> Zonendaten" kommt mit dem ersten Referenzprojekt mit Zone (G6d, Mehrzonenkonzept 8.3).
+
 > **Nachtrag AK1 Welle 4 (E37): Schemastände 135 bis 137 (Kälteseite der Anlagenkopplung), die Basis
 > bleibt.** Drei Migrationsschritte, die Nummern stehen allein bei `KuehluebergabeSchema` (Quelle für
 > Migration, Werkzeug und Testvorrichtung): **135** (`SCHRITT_KUEHLUEBERGABE`, KAK-S1) legt die acht
