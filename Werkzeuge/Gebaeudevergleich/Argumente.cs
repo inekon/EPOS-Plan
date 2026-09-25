@@ -141,18 +141,26 @@ namespace Gebaeudevergleich
             {
                 case AUFNAHME:
                     if (a.Quelle == null) return a.Mit("--quelle fehlt.");
-                    return a.DateiPruefen(a.Quelle, "Quelle");
+                    return a;
                 case VERGLEICH:
                     if (a.Db == null) return a.Mit("--db fehlt.");
-                    return a.DateiPruefen(a.Db, "Datenbank");
+                    return a;
                 default:
                     if (a.Db == null) return a.Mit("--db fehlt.");
                     if (a.Modell != DbWerte.GEBAEUDE_MODELL_TAGESBILANZ && a.Modell != DbWerte.GEBAEUDE_MODELL_VDI6007)
                         return a.Mit("--modell kennt nur " + DbWerte.GEBAEUDE_MODELL_TAGESBILANZ + " und " +
                                      DbWerte.GEBAEUDE_MODELL_VDI6007 + ".");
-                    return a.DateiPruefen(a.Db, "Datenbank");
+                    return a;
             }
         }
+
+        /// <summary>
+        /// Gibt es die Eingabedatei, und ist sie kein Git-LFS-Zeiger? Rückgabe <c>null</c> = ja.
+        /// Bewusst ERST NACH dem Schreibort gerufen: Eine <c>--db</c> unter
+        /// <c>%ProgramData%\EPOS_PLAN</c> wird verweigert, ohne dass die Datei auch nur geöffnet wird.
+        /// </summary>
+        internal string DateienPruefen()
+            => Befehl == AUFNAHME ? DateiPruefen(Quelle, "Quelle") : DateiPruefen(Db, "Datenbank");
 
         private string ProjekteLesen(string wert)
         {
@@ -168,13 +176,13 @@ namespace Gebaeudevergleich
             return null;
         }
 
-        private Argumente DateiPruefen(string pfad, string was)
+        private static string DateiPruefen(string pfad, string was)
         {
-            if (!File.Exists(pfad)) return Mit(was + " nicht gefunden: " + pfad);
+            if (!File.Exists(pfad)) return was + " nicht gefunden: " + pfad;
             if (IstLfsZeiger(pfad))
-                return Mit(was + " ist ein Git-LFS-Zeiger, keine Datenbank: " + pfad +
-                           " - einmal je Rechner \"git lfs install\", dann \"git lfs checkout\".");
-            return this;
+                return was + " ist ein Git-LFS-Zeiger, keine Datenbank: " + pfad +
+                       " - einmal je Rechner \"git lfs install\", dann \"git lfs checkout\".";
+            return null;
         }
 
         /// <summary>Die erste Zeile jeder Git-LFS-Zeigerdatei (Spezifikation v1).</summary>

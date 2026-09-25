@@ -40,7 +40,9 @@ namespace Gebaeudevergleich
 
             // Der Schreibort wird VOR dem Anlegen des Zielordners geprüft - ein verweigertes
             // Ziel darf nicht einmal ein leeres protokoll.txt bekommen (T7).
-            string verweigert = Schreibort.Pruefen(arg);
+            // Erst danach wird die Eingabedatei überhaupt angesehen: Eine --db unter
+            // %ProgramData%\EPOS_PLAN wird verweigert, ohne sie zu öffnen.
+            string verweigert = Schreibort.Pruefen(arg) ?? arg.DateienPruefen();
             if (verweigert != null)
             {
                 Console.Error.WriteLine("Abbruch: " + verweigert);
