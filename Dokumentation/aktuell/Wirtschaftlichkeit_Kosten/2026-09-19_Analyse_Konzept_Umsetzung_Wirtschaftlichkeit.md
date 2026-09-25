@@ -135,7 +135,8 @@ Zeilennummern und Messungen:
 > keine Rechenwirkung — die Basis bleibt. E19‑Q1…Q6 sind am 25.09.2026 nach Empfehlung entschieden (Q4 b, → Register
 > R‑E19). Mit den Papieren zu #498 nachgetragen sind die Anwenderentscheide vom 25.09.2026 zu § 6.3 Nr. 10, 11, 13, 18
 > und 19 (→ Register R‑Rest): Nr. 11 und 13 geschlossen, Nr. 19 belassen, Nr. 10 präzisiert mit einer folgenden kleinen
-> Bauwelle, Nr. 18 nach einer Messwelle.
+> Bauwelle, Nr. 18 nach einer Messwelle — gemessen am 25.09.2026 ohne Rechenwirkung (12 von 13 Referenzprojekten
+> byte-gleich, in 1042 nur die Modulreihenfolge der Wärmepumpen); der Entscheid über den Umbau steht aus.
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);

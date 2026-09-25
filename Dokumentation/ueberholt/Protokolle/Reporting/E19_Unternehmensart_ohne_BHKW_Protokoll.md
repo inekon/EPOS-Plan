@@ -109,7 +109,7 @@ Mit dieser Welle nachgetragen (→ Register R‑Rest; der Weg im Protokoll der E
 | **10** Bezugsgrößen der übrigen KD1-Bemessungsarten | „Wärmepumpe beides“ nur bei den Investitionskosten nach kW elektrisch und kW thermisch — die kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind Energiekosten | offen mit dieser Präzisierung; kleine Bauwelle folgt |
 | **11** Nachzieh-Migration für Bestandsprojekte | nicht nachziehen | geschlossen |
 | **13** Pufferkapazität bleibt null | nur Volumen — die Grenze ist bestätigt | geschlossen |
-| **18** Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) | nach der Empfehlung: zuerst eine Messwelle, danach der Entscheid | offen; die Messwelle läuft (Worktree `mess18`, nicht gemergt) |
+| **18** Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) | nach der Empfehlung: zuerst eine Messwelle, danach der Entscheid | offen — gemessen 25.09.2026 (Probeumbau der fünf Rechenweg-Sortierungen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert; kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus |
 | **19** Asymmetrie „Wartung BHKW“ gegen „Vollwartung / Wartung Kessel“ | belassen — E10‑Q6 a bestätigt; €/kWh el. ist beim BHKW die übliche Vertragsform | dokumentiert, bestätigt |
 
 ## Abweichungen und Befunde
@@ -124,6 +124,13 @@ Mit dieser Welle nachgetragen (→ Register R‑Rest; der Weg im Protokoll der E
    Für die Abnahme taugen beide.
 5. **iOS unberührt** — die iOS-Schale hat dieselbe Lücke; nicht beauftragt.
 6. **Veralteter Kommentar** in `KiDialoge.cs` („Zwoelf Felder …“) — offen, nicht beauftragt.
+7. **Messwelle zu Nr. 18** (Worktree `mess18`, Commit `6de80d66` „nicht mergen“): Der Probeumbau der fünf
+   Rechenweg-Sortierungen auf die 99er-Regel ist ohne Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, in 1042
+   tauschen in `aggregate.csv` nur die zwei Wärmepumpenmodule ihre Plätze (10 Werte, Werte gleich), alle Zeitreihen
+   byte-gleich; Deckung, Endenergie, CO₂ und Kapitalwert unverändert; kein Test rot. Nebenbefund: Die Modul-Lader für
+   Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den Umbau mit der nächsten ohnehin fälligen
+   Neueinfrierung der Referenzbasis bündeln und dann über die drei unsortierten Lader mitentscheiden; der
+   Anwenderentscheid steht aus.
 
 ## Nachweis
 
@@ -173,8 +180,9 @@ Schemaschritt); „heute Schemastand 141“ von #496 stimmt.
 
 ## Offen
 
-- **Nr. 10** („Wärmepumpe beides“ bei den Investitionskosten) — kleine Bauwelle folgt; **Nr. 18** — Messwelle läuft,
-  danach der Entscheid.
+- **Nr. 10** („Wärmepumpe beides“ bei den Investitionskosten) — kleine Bauwelle folgt; **Nr. 18** — gemessen ohne
+  Rechenwirkung; Entscheid des Anwenders, ob der Umbau mit der nächsten Neueinfrierung gebündelt wird oder eine
+  eigene Basis R15 bekommt, dabei über die drei unsortierten Modul-Lader.
 - **Abnahme am Gerät** A‑E19‑1 (fünf Schritte oben); A‑E18‑1 geht jetzt auch an 1017.
 - **Gate** und **CI** (Nachweis oben).
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).

@@ -2717,7 +2717,7 @@ Die Stellen, die mit E19 veraltet sind; „vorher“ ist der Wortlaut vor #498 (
 | § 3.8 (nach Z. 2428) | — | neuer Absatz „§ 9b ist ohne BHKW erreichbar“: Bedingung, Pflegestellen, Nachweis an 1041 |
 | § 6.1 (Z. 2762) | Kurztafel bis E18 (#492) | Zeile „E19 Restpunkte Unternehmensart“ (#498), ohne Schemaschritt |
 | § 6.3 Nr. 15 und 33 (Z. 2901, 2945–2950) | Wortlaut in § 8.37 | Nr. 15 durchgestrichen, „überholt durch die Schalentrennung, Wache mit E19 (#498)“; Nr. 33 durchgestrichen, „erledigt mit E19 (#498)“ mit der Grenze Bilanzjahr; der Block heißt „Aus Etappe E18 (#492) — geschlossen“ |
-| § 6.3 Nr. 10, 11, 13, 18, 19 (Z. 2896, 2897, 2899, 2904–2910, 2911–2914) | Wortlaut in § 8.39 | die Anwenderentscheide vom 25.09.2026 (→ Register R‑Rest): Nr. 10 präzisiert, offen; Nr. 11 und 13 geschlossen; Nr. 18 mit der Messwelle; Nr. 19 belassen |
+| § 6.3 Nr. 10, 11, 13, 18, 19 (Z. 2896, 2897, 2899, 2904–2910, 2911–2914) | Wortlaut in § 8.39 | die Anwenderentscheide vom 25.09.2026 (→ Register R‑Rest): Nr. 10 präzisiert, offen; Nr. 11 und 13 geschlossen; Nr. 18 gemessen, offen; Nr. 19 belassen |
 | § 6.5, Zeile „Energieintensiv“ an drei Orten (Z. 2990) | endete mit „… — ein Hinweis ohne Sperre; gekoppelt ist weiterhin nichts“ | dazu „ohne BHKW steht die Unternehmensart mit derselben Anzeige im Parameterdialog, Gruppe Strom (E19, #498, § 2.4) — je Projektlage eine Pflegestelle“ |
 | § 7 (Z. 3042) | endete mit dem Satz zu E18 (#492) | dazu die Sätze zu E19 (#498) und zu den Anwenderentscheiden vom 25.09.2026 (→ Register R‑E19, R‑Rest) |
 | Anhang (Z. 3105, 3137) | Kürzelzeilen bis #492; Etappenzeilen bis „E18 — Restpunkte Stromsteuer“ | Kürzelzeile der Welle (#498); Etappenzeile „E19 — Restpunkte Unternehmensart (§ 6.3 Nr. 15, 33)“ = #498 |
@@ -2758,8 +2758,7 @@ gebaut.
 >     in 1042 die Modulreihenfolge der Wärmepumpen) — der Umbau ist eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a,
 >     → Register R‑E18); die fünf Stellen tragen im Code den Vermerk „HB1-O1, offen"
 
-**Offen, nach Empfehlung:** zuerst eine Messwelle, danach der Entscheid über den Umbau. Die Messwelle läuft im Worktree
-`mess18` (nicht gemergt).
+**Offen, nach Empfehlung:** zuerst eine Messwelle, danach der Entscheid über den Umbau. Gemessen 25.09.2026 (Probeumbau der fünf Rechenweg-Sortierungen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert; kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus.
 
 *§ 6.3 Nr. 19 (Z. 2911–2914):*
 

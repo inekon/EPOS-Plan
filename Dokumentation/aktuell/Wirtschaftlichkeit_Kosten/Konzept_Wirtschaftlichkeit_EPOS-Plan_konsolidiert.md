@@ -2938,7 +2938,13 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     (`Ladeordnung.SqlAnlagenprio`) änderte die Reihenfolge in 5 von 13 Referenzprojekten (1030, 1040, 1041, 1042, 1045;
     in 1042 die Modulreihenfolge der Wärmepumpen) — der Umbau ist eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a,
     → Register R‑E18); die fünf Stellen tragen im Code den Vermerk „HB1-O1, offen";
-    Anwender 25.09.2026 nach Empfehlung: zuerst eine Messwelle, danach der Entscheid (→ Register R‑Rest)
+    Anwender 25.09.2026 nach Empfehlung: zuerst eine Messwelle, danach der Entscheid (→ Register R‑Rest) —
+    **gemessen 25.09.2026** (Probeumbau der fünf Stellen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne
+    Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge
+    der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert;
+    kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den
+    Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei
+    unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus — offen
 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel" — **dokumentiert mit E10 (#463)** (E10‑Q6, Lesart a,
     → Register R‑E10): Der Kessel führt seine Wartung je Katalogeintrag in €/a, €/kWh oder %/a, und ein neuer Eintrag
     in %/a übernimmt den Wartungssatz der Nutzungsdauertabelle; das BHKW führt sie fest in €/kWh el
@@ -3074,7 +3080,8 @@ Empfehlung (→ Register R‑E18). Die kleine Welle **E19 (#498)** schließt Nr.
 Nr. 33 — die Unternehmensart ohne BHKW im Parameterdialog (§ 2.4) —, ohne Schemaschritt und ohne Rechenwirkung; sechs
 Fragen entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19). Zu Nr. 10, 11, 13, 18 und 19 hat der Anwender
 am 25.09.2026 entschieden (→ Register R‑Rest): Nr. 11 und 13 sind geschlossen, Nr. 19 bleibt dokumentiert, Nr. 10 ist
-präzisiert — eine kleine Bauwelle folgt —, Nr. 18 wartet auf die Messwelle. Aus der
+präzisiert — eine kleine Bauwelle folgt —, Nr. 18 ist gemessen (ohne Rechenwirkung) und wartet auf den Entscheid, ob
+der Umbau mit der nächsten Neueinfrierung der Referenzbasis gebündelt wird. Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
