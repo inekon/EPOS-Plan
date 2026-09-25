@@ -131,6 +131,13 @@ namespace WindowsFormsApplication1
         // Baualtersklasse und steuert nichts. Name: GebaeudeSchema.SPALTE_BAUJAHR.
         public int? Baujahr;
 
+        // ---- Die Nachtzeit (E43, N1.48; NachtzeitSchema.SCHRITT) -------------------------------
+        // Beginn und Ende der Nachtabsenkung als Stunde des Tages 0 bis 23, NULL-ERHALTEND: beide
+        // null heisst die Vorgabe 22 bis 6 Uhr (Nachtzeit.Vorgabe). Namen:
+        // GebaeudeSchema.SPALTE_NACHTABSENKUNG_BEGINN / SPALTE_NACHTABSENKUNG_ENDE.
+        public int? Nachtabsenkung_Beginn;
+        public int? Nachtabsenkung_Ende;
+
         public GebaeudeModel()
         {
             ID = 0;

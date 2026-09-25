@@ -1916,6 +1916,30 @@ namespace Testdatenbankschema
                                   BaustoffQuellenBerichtigung.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt NachtzeitSchema.SCHRITT (Entscheid E43, Konzept-Nachtrag N1.48): Beginn
+            //      und Ende der Nachtabsenkung an Tab_Gebaeude(_STAMM) samt sechstem Sichtneubau
+            //      (101 Spalten). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Nachtzeit bedient (NachtzeitSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108, 122, KAK-S1 und das
+            //      Baujahr oben bauen die Sicht jeweils neu; nur so traegt sie am Ende die Nachtzeit.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Spalten bleiben NULL, und NULL heisst die
+            //      Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor.
+            string nrNachtzeit = NachtzeitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNachtzeit + " - Nachtzeit am Gebaeude: " +
+                              (NachtzeitSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNachtzeit = new List<string>();
+                angelegt += NachtzeitSchema.Alle(berichtNachtzeit);
+                foreach (string zeile in berichtNachtzeit)
+                    Console.WriteLine("Schritt " + nrNachtzeit + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNachtzeit + " - vollstaendig: " + NachtzeitSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
