@@ -569,7 +569,7 @@ Nach Abschnitt 11 wurde die Stufe Z4b am 24.09.2026 auf dem Zweig `z4b` ausgefü
 ## 13 Nachtrag 25.09.2026 — Stufe Z5 umgesetzt
 
 Nach Abschnitt 12 wurde die Stufe Z5 in der Nacht auf den 25.09.2026 auf dem Zweig `z5` ausgeführt
-(von `d6020c05`, 37 eigene Commits bis `a87b783b`, Merges von `origin` `45935351`, `ac8a1762`
+(von `d6020c05`, 37 eigene Commits bis `a87b783b`, Papiere `b28b133f`, Merge `a0bbc633` von `b5a2e389`, gepusht `a0bbc633` am 25.09.2026, Kern-Lauf 36099321791 grün; Merges von `origin` `45935351`, `ac8a1762`
 und `6c5aa139`) und mit dem Stand von `ios_migration_september` zusammengeführt. Damit sind alle Stufen
 Z0–Z5 des Umsetzungskonzepts umgesetzt; der Übertrag setzt bei den Folgen (ZU7, ZU24, K5) an.
 
