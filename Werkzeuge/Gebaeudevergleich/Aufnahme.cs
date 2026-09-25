@@ -123,7 +123,7 @@ namespace Gebaeudevergleich
 
             // 4./5. VACUUM INTO über eine immutable-Verbindung, Prüfsumme davor und danach.
             string hashVorher = Sqlitehilfe.Sha256(quelle);
-            aus.Protokoll("SHA-256 Quelle vorher:  " + hashVorher + T());
+            aus.ProtokollPruefsumme("SHA-256 Quelle vorher:  ", hashVorher + T());
             bool stabil = false;
             for (int versuch = 0; versuch <= WIEDERHOLUNGEN && !stabil; versuch++)
             {
@@ -139,7 +139,7 @@ namespace Gebaeudevergleich
                     Sqlitehilfe.VacuumInto(v, kopie);
 
                 string hashNachher = Sqlitehilfe.Sha256(quelle);
-                aus.Protokoll("SHA-256 Quelle nachher: " + hashNachher + T());
+                aus.ProtokollPruefsumme("SHA-256 Quelle nachher: ", hashNachher + T());
                 stabil = hashNachher == hashVorher;
             }
             if (!stabil)
@@ -174,7 +174,7 @@ namespace Gebaeudevergleich
                           " (Zielstand " + WindowsFormsApplication1.SchemaStand.Zielversion.ToString(CultureInfo.InvariantCulture) + ")" + T());
             string schema = Schemapruefung.Pruefen(stand);
             if (schema != null) aus.Protokoll("Hinweis: " + schema);
-            aus.Protokoll("SHA-256 Kopie: " + Sqlitehilfe.Sha256(kopie) + T());
+            aus.ProtokollPruefsumme("SHA-256 Kopie: ", Sqlitehilfe.Sha256(kopie) + T());
             aus.Protokoll("Größe Kopie: " + new FileInfo(kopie).Length.ToString(CultureInfo.InvariantCulture) + " B");
 
             aus.Konsole("Momentaufnahme geschrieben, Schemastand " + stand.ToString(CultureInfo.InvariantCulture) +

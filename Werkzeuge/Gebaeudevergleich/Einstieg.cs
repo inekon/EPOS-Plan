@@ -33,7 +33,7 @@ namespace Gebaeudevergleich
             try
             {
                 SchreibsperreSetzen();
-                ausgabe.Protokoll("Gebaeudevergleich " + arg.Befehl + " — " + Werkzeugversion);
+                ausgabe.ProtokollPruefsumme("Gebaeudevergleich " + arg.Befehl + " — ", Werkzeugversion);
                 ausgabe.Protokoll("Beginn " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
                 // Klein geschrieben: Die Bereinigung ersetzt jeden Namenswert ab zwei Zeichen,
                 // auch ein Kürzel wie „DE" im Feld Bearbeiter.

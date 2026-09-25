@@ -121,12 +121,13 @@ namespace Gebaeudevergleich
 
         /// <summary>
         /// SHA-256 einer Datei, gelesen mit <c>FileShare.ReadWrite | FileShare.Delete</c> — das
-        /// laufende Programm darf die Datei dabei offen halten.
+        /// laufende Programm darf die Datei dabei offen halten. Kleinbuchstaben-Hex: Die Zeile
+        /// geht ohne Namensbereinigung ins Protokoll (<see cref="Ausgabe.ProtokollPruefsumme"/>).
         /// </summary>
         internal static string Sha256(string pfad)
         {
             using var s = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            return Convert.ToHexString(SHA256.HashData(s));
+            return Convert.ToHexStringLower(SHA256.HashData(s));
         }
     }
 }

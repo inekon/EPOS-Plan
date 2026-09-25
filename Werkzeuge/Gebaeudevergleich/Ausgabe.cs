@@ -28,7 +28,8 @@ namespace Gebaeudevergleich
         private readonly TextWriter _konsole;
         private readonly TextWriter _fehlerkonsole;
         private readonly StreamWriter _datei;
-        private readonly List<string> _zurueckgehalten = new List<string>();
+        /// <summary>Zeilen vor dem Scharfschalten: bereinigt wird <c>Zeile</c>, <c>Roh</c> (eine Prüfsumme) nicht.</summary>
+        private readonly List<(string Zeile, string Roh)> _zurueckgehalten = new List<(string, string)>();
         private readonly Zeilenschreiber _umlenkung;
         private Namensbereinigung _bereinigung;
         private bool _scharf;
@@ -59,7 +60,7 @@ namespace Gebaeudevergleich
             {
                 _bereinigung = bereinigung ?? Namensbereinigung.Leer;
                 _scharf = true;
-                foreach (string z in _zurueckgehalten) _datei.WriteLine(_bereinigung.Bereinigen(z));
+                foreach ((string z, string roh) in _zurueckgehalten) _datei.WriteLine(_bereinigung.Bereinigen(z) + roh);
                 _zurueckgehalten.Clear();
                 _datei.Flush();
             }
@@ -67,6 +68,21 @@ namespace Gebaeudevergleich
 
         /// <summary>Eine Zeile nur ins Protokoll.</summary>
         internal void Protokoll(string zeile) => ProtokollZeile(zeile ?? "");
+
+        /// <summary>
+        /// Eine Prüfsummenzeile ins Protokoll — OHNE Bereinigung. Nur für Zeilen, die das Werkzeug
+        /// allein aus festem Text und einer Prüfsumme (Kleinbuchstaben-Hex) bildet: Ein kurzer
+        /// Namenswert wie „de" träfe sonst mitten in eine Prüfsumme und machte sie unlesbar.
+        /// </summary>
+        internal void ProtokollPruefsumme(string text, string pruefsumme)
+        {
+            lock (_sperre)
+            {
+                if (_entsorgt) return;
+                if (!_scharf) { _zurueckgehalten.Add((text ?? "", pruefsumme ?? "")); return; }
+                _datei.WriteLine(_bereinigung.Bereinigen(text ?? "") + (pruefsumme ?? ""));
+            }
+        }
 
         /// <summary>Eine Zeile ins Protokoll, sofort auf die Platte (Beginn eines Gebäudes).</summary>
         internal void ProtokollSofort(string zeile)
@@ -105,7 +121,7 @@ namespace Gebaeudevergleich
             lock (_sperre)
             {
                 if (_entsorgt) return;
-                if (!_scharf) { _zurueckgehalten.Add(zeile); return; }
+                if (!_scharf) { _zurueckgehalten.Add((zeile, "")); return; }
                 _datei.WriteLine(_bereinigung.Bereinigen(zeile));
             }
         }

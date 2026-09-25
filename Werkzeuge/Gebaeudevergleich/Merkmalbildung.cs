@@ -93,7 +93,7 @@ namespace Gebaeudevergleich
             }
             sb.Append("Zonen=").Append((g.Zonen?.Count ?? 0).ToString(CultureInfo.InvariantCulture));
             byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString()));
-            return Convert.ToHexString(hash).Substring(0, 8);
+            return Convert.ToHexStringLower(hash).Substring(0, 8);
         }
 
         private static string Wert(object v) => v switch

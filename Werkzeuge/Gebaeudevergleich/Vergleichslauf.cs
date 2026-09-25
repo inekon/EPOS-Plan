@@ -43,7 +43,7 @@ namespace Gebaeudevergleich
             if (bindung != null) return Abbruch(aus, bindung);
             aus.Protokoll("Datenbank " + arg.Db);
             string hashVorher = Sqlitehilfe.Sha256(arg.Db);
-            aus.Protokoll("SHA-256 der Datenbank vor dem Lauf: " + hashVorher);
+            aus.ProtokollPruefsumme("SHA-256 der Datenbank vor dem Lauf: ", hashVorher);
 
             int stand = Schemapruefung.Stand();
             aus.Protokoll("Schemastand " + Zahl(stand) + ", Zielstand " + Zahl(SchemaStand.Zielversion));
@@ -76,7 +76,7 @@ namespace Gebaeudevergleich
             DataRepository.PfadUeberschreibung = null;
             Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
             string hashNachher = Sqlitehilfe.Sha256(arg.Db);
-            aus.Protokoll("SHA-256 der Datenbank nach dem Lauf: " + hashNachher +
+            aus.ProtokollPruefsumme("SHA-256 der Datenbank nach dem Lauf: ", hashNachher +
                           (hashNachher == hashVorher ? " (unverändert)" : " — WARNUNG: verändert"));
 
             List<Gebaeudezeile> alle = projekte.SelectMany(p => p.Gebaeude).ToList();
