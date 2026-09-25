@@ -30866,6 +30866,15 @@ Do you want to allow this?</value>
   <data name="MENU_BRAUCHWASSER_NUTZUNGSARTEN" xml:space="preserve">
     <value>Hot water usage types</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>The catalogue package is too large: {0} entries (at most {1}), {2} bytes when unpacked (at most {3}). It is not read.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>The package file “{0}” is too large: {1} bytes (at most {2}). It is not read.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>The archive entry “{0}” points outside the package (“..”, root or drive). The package is not read.</value>
+  </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
     <value>The file “{0}” cannot be read ({1}) — nothing imported.</value>
   </data>

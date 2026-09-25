@@ -97004,6 +97004,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt diese Nutzungsart mit derselben Katalogversion zweimal; übernommen ist nur die erste. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET {
@@ -97126,6 +97135,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PFAD_UNZULAESSIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PFAD_UNZULAESSIG", resourceCulture);
             }
         }
         
@@ -97270,6 +97288,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_ZAHL {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Katalogpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ZU_GROSS", resourceCulture);
             }
         }
         

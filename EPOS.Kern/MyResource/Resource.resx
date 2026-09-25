@@ -30873,6 +30873,15 @@ Möchten Sie das zulassen?</value>
   <data name="MENU_BRAUCHWASSER_NUTZUNGSARTEN" xml:space="preserve">
     <value>Brauchwasser-Nutzungsarten</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>Das Katalogpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen.</value>
+  </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_DATEI_UNLESBAR" xml:space="preserve">
     <value>Die Datei „{0}“ lässt sich nicht lesen ({1}) — nichts importiert.</value>
   </data>

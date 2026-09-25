@@ -539,6 +539,72 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Der Größenschutz des ZIP-Imports</b> (N13 (s), Folge (s)): Eintragszahl und entpackte
+        /// Gesamtgröße stehen im Zentralverzeichnis und werden geprüft, bevor ein Byte entpackt
+        /// wird; eine zu große Einzeldatei fällt ebenso. Ein Eintragsname, der aus dem Archiv
+        /// herauszeigt (<c>..</c>), wird benannt abgelehnt — ein Unterordner dagegen nicht
+        /// (das prüft der Nachbartest). Jedes Mal eine leere Liste, kein Teilpaket.
+        /// </summary>
+        [Fact]
+        public void Der_Groessenschutz_lehnt_ein_zu_grosses_Paket_und_einen_Pfad_nach_oben_ab()
+        {
+            string zip = Path.Combine(Path.GetTempPath(), "epos-twwpaket-schutz-" + Guid.NewGuid().ToString("N") + ".zip");
+
+            // (1) Zu viele Eintraege — der Inhalt spielt keine Rolle, gelesen wird nichts.
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                    for (int i = 0; i <= TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE; i++)
+                    {
+                        ZipArchiveEntry e = a.CreateEntry("datei" + i.ToString(CultureInfo.InvariantCulture) + ".csv");
+                        using var w = new StreamWriter(e.Open(), new UTF8Encoding(false));
+                        w.Write("ID\n");
+                    }
+                IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Empty(d);
+                Assert.Equal("KATALOGIMPORT_ZU_GROSS", fehler.Kennung);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE + 1, fehler.Werte[0]);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE, fehler.Werte[1]);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+
+            // (2) Ein Eintragsname, der aus dem Archiv herauszeigt.
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                {
+                    ZipArchiveEntry e = a.CreateEntry("../" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
+                    using var w = new StreamWriter(e.Open(), new UTF8Encoding(false));
+                    w.Write("ID\n");
+                }
+                IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Empty(d);
+                Assert.Equal("KATALOGIMPORT_PFAD_UNZULAESSIG", fehler.Kennung);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+
+            // (3) Eine zu grosse Einzeldatei: 16 MiB + 1 Byte, die Gesamtgrenze ist nicht erreicht.
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                {
+                    ZipArchiveEntry e = a.CreateEntry(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
+                    using var s = e.Open();
+                    var block = new byte[1024 * 1024];
+                    for (int i = 0; i < block.Length; i++) block[i] = (byte)'x';
+                    for (int i = 0; i < 16; i++) s.Write(block, 0, block.Length);
+                    s.WriteByte((byte)'x');
+                }
+                IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Empty(d);
+                Assert.Equal("KATALOGIMPORT_DATEI_ZU_GROSS", fehler.Kennung);
+                Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv", fehler.Werte[0]);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_BYTE_JE_DATEI + 1, fehler.Werte[1]);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+        }
+
+        /// <summary>
         /// Komma als Trenner, Felder in Anführungszeichen mit Trenner, Anführungszeichen und
         /// Zeilenumbruch — mit jedem Zeilenende. Der Umbruch im Feld kommt als LF an, gleich woher das
         /// Paket stammt; bei CR allein stünde sonst das ganze Paket in der Kopfzeile, und das „;" im
