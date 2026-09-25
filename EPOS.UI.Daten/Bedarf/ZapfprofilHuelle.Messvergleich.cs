@@ -210,9 +210,17 @@ namespace WindowsFormsApplication1
         /// sie eine führt, sonst die der Nutzungsart: Sie sagt, was der Zähler gemessen hat, und das
         /// entscheidet nicht die Hülle. Geschrieben wird nichts — der Dialog setzt die Felder und
         /// speichert erst mit seinem OK.
+        ///
+        /// <para><b>Gerechnet wird nur, wenn es etwas zu rechnen gibt</b>: Die gerechnete Jahresreihe
+        /// trägt allein die Hochrechnung eines <b>Teiljahrs</b>. Deckt die Reihe ein ganzes Jahr
+        /// (365 ± <c>Messkalibrierung.JAHRESRAND_TAGE</c> Tage), gilt ihre Energie unverändert — dann
+        /// läuft der Generator überhaupt nicht. Der Lauf des Teiljahrs läuft <b>nebenläufig</b> wie
+        /// der Vergleich (Muster der Jahresreihe, 5.1); <paramref name="abbruch"/> beendet ihn mit
+        /// <see cref="OperationCanceledException"/>.</para>
         /// </summary>
         internal static ZapfprofilMesskalibrierungDaten MesswertAusReihe(int idProjekt, ZapfprofilEingabeDaten eingabe,
-                                                                        ZapfprofilStand basis, string reihe, int zone)
+                                                                        ZapfprofilStand basis, string reihe, int zone,
+                                                                        CancellationToken abbruch)
         {
             var d = new ZapfprofilMesskalibrierungDaten { Reihe = reihe ?? "" };
             if (string.IsNullOrWhiteSpace(reihe)) return OhneWert(d, ZapfSatz.Neu("MESSKALIBRIERUNG_OHNE_MESSREIHE"));
@@ -226,9 +234,11 @@ namespace WindowsFormsApplication1
             if (z == null) return OhneWert(d, ZapfSatz.Neu("MESSKALIBRIERUNG_OHNE_BEZUGSMENGE"), hinweise);
 
             ZapfBilanzgrenze grenze = Bilanzgrenze(z);
+            // Nur ein Teiljahr wird hochgerechnet - nur dafuer wird die Jahresreihe gerechnet.
+            bool teiljahr = Math.Abs(gemessen.Tage - Zapfkalender.TAGE) > Messkalibrierung.JAHRESRAND_TAGE;
             Messwert m = Messkalibrierung.Jahresmesswert(
                 gemessen, Spreizung(stand, z), grenze, z.SpeicherverlustKwhJeJahr, Mindesttage(),
-                out ZapfSatz grund, hinweise, GerechneteReihe(idProjekt, stand));
+                out ZapfSatz grund, hinweise, teiljahr ? GerechneteReihe(idProjekt, stand, abbruch) : null);
             if (m == null) return OhneWert(d, grund ?? ZapfSatz.Neu("MESSKALIBRIERUNG_OHNE_MENGE"), hinweise);
 
             d.Ok = true;
@@ -419,16 +429,19 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die gerechnete Jahresreihe zum Arbeitsstand für die Hochrechnung eines Teiljahrs;
         /// <c>null</c>, wenn sie nicht zu rechnen ist — dann rechnet die Kalibrierung flach und
-        /// nennt den Bias.
+        /// nennt den Bias. <paramref name="abbruch"/> reicht bis in den Kern; ein Abbruch verlässt die
+        /// Hülle als <see cref="OperationCanceledException"/> — ein abgebrochener Lauf ist keine
+        /// flache Hochrechnung.
         /// </summary>
-        private static Bilanzreihe GerechneteReihe(int idProjekt, ZapfprofilStand stand)
+        private static Bilanzreihe GerechneteReihe(int idProjekt, ZapfprofilStand stand, CancellationToken abbruch)
         {
             try
             {
                 if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we)) return null;
-                ZapfprofilErgebnis e = ZapfprofilCtrl.Rechnen(idProjekt, stand, jan1, we, CancellationToken.None);
+                ZapfprofilErgebnis e = ZapfprofilCtrl.Rechnen(idProjekt, stand, jan1, we, abbruch);
                 return Bilanzreihe.Summe(new[] { e.Zapfung, e.Zirkulation }.Where(r => r != null));
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex) when (ex is ZapfprofilEingabeException || ex is ParametersatzException
                                        || ex is ZapfAuslegungException)
             {

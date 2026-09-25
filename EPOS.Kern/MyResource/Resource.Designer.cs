@@ -89586,6 +89586,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kalibrierung ist abgebrochen; der Arbeitsstand bleibt. ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalibrierung läuft — Messreihe „{0}“ ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Messreihe {0} ähnelt.
         /// </summary>
         public static string ZPG_KAL_QUELLE {

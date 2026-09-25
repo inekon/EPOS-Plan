@@ -177,9 +177,19 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
             return Ergebnis ?? Vergleich(reihe);
         }
 
-        internal ZapfprofilMesskalibrierungDaten Kalibrieren(ZapfprofilEingabeDaten e, string reihe, int zone)
+        /// <summary>Solange gesetzt, hält die Kalibrierung an — der Fall prüft Fortschritt und Abbruch.</summary>
+        internal TaskCompletionSource? Kalibriersperre;
+
+        internal async Task<ZapfprofilMesskalibrierungDaten> Kalibrieren(ZapfprofilEingabeDaten e, string reihe,
+                                                                        int zone, CancellationToken abbruch)
         {
             Kalibriert.Add((reihe, zone));
+            if (Kalibriersperre is not null)
+            {
+                using (abbruch.Register(() => Kalibriersperre.TrySetResult()))
+                    await Kalibriersperre.Task;
+                abbruch.ThrowIfCancellationRequested();
+            }
             return Kalibrierung ?? new ZapfprofilMesskalibrierungDaten
             {
                 Ok = true,
@@ -522,8 +532,60 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Knopf(cut, "Ja").Click();
         Assert.Equal(new[] { (REIHE_A, 0) }, p.Kalibriert.ToArray());
-        Assert.Contains("Jahresmesswert aus", cut.Instance.Kalibrierstatus);
+        cut.WaitForAssertion(() => Assert.Contains("Jahresmesswert aus", cut.Instance.Kalibrierstatus), Frist);
         Assert.Contains(REIHE_A, cut.Find(".epos-zapfprofil-kalibrierstatus").TextContent);
+    }
+
+    /// <summary>
+    /// Eine Reihe über ein ganzes Jahr braucht keine Hochrechnung — die Hülle rechnet dann keine
+    /// Jahresreihe, und der Dialog zeigt keinen Fortschritt: Der Wert steht sofort da.
+    /// </summary>
+    [Fact]
+    public void Eine_Volljahresreihe_kalibriert_ohne_sichtbaren_Lauf()
+    {
+        var p = new Pruefstand();
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Option(cut, "Erweitert").Change("1");
+
+        cut.Find("button.epos-zapfprofil-kalibrieren").Click();
+        Knopf(cut, "Ja").Click();
+        cut.WaitForAssertion(() => Assert.Contains("Jahresmesswert aus", cut.Instance.Kalibrierstatus), Frist);
+
+        Assert.False(cut.Instance.KalibrierungLaeuft);
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-kalibrierfortschritt .epos-fortschritt"));
+    }
+
+    /// <summary>
+    /// Ein Teiljahr wird über den Jahresgang hochgerechnet; dieser Lauf läuft nebenläufig, zeigt
+    /// den Fortschritt an der Kalibrierleiste und lässt sich abbrechen. Ein abgebrochener Lauf
+    /// setzt kein Feld und nennt den Abbruch.
+    /// </summary>
+    [Fact]
+    public void Ein_Teiljahr_zeigt_den_Fortschritt_und_laesst_sich_abbrechen()
+    {
+        var p = new Pruefstand { Kalibriersperre = new TaskCompletionSource() };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Option(cut, "Erweitert").Change("1");
+
+        cut.Find("button.epos-zapfprofil-kalibrieren").Click();
+        Knopf(cut, "Ja").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.KalibrierungLaeuft), Frist);
+        IElement fortschritt = cut.Find(".epos-zapfprofil-kalibrierfortschritt .epos-fortschritt");
+        Assert.Contains(REIHE_A, fortschritt.TextContent);
+
+        // Solange er laeuft, ist der Knopf weich gesperrt und nennt den Lauf als Grund.
+        IElement knopf = cut.Find("button.epos-zapfprofil-kalibrieren");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Contains(REIHE_A, knopf.GetAttribute("title") ?? "");
+
+        cut.Find(".epos-zapfprofil-kalibrierfortschritt button").Click();
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.KalibrierungLaeuft), Frist);
+        Assert.Contains("abgebrochen", cut.Instance.Hinweis);
+        Assert.Equal("", cut.Instance.Kalibrierstatus);
     }
 
     [Fact]
@@ -544,7 +606,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
 
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Knopf(cut, "Ja").Click();
-        Assert.Contains("mindestens 30", cut.Instance.Hinweis);
+        cut.WaitForAssertion(() => Assert.Contains("mindestens 30", cut.Instance.Hinweis), Frist);
     }
 
     // =================================================================================

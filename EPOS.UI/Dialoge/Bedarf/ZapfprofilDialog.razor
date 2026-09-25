@@ -481,6 +481,11 @@
                                                                 @onclick="() => VorschlagOeffnen(zone)">@Texte.KnopfKalibriervorschlag</button>
                                                     }
                                                 </div>
+                                                @* Der nebenläufige Lauf der Kalibrierung: Status und Abbruch an der Leiste. *@
+                                                <div class="epos-zapfprofil-kalibrierfortschritt">
+                                                    <Fortschritt Sichtbar="@KalibrierungLaeuft" Text="@KalibrierLaufText"
+                                                                 Abbrechen="@(EventCallback.Factory.Create(this, KalibrierenAbbrechen))" />
+                                                </div>
                                                 @if (_kalibrierstatus.Length > 0)
                                                 {
                                                     <p class="epos-leisezeile epos-zapfprofil-kalibrierstatus" role="status">@_kalibrierstatus</p>
@@ -1361,9 +1366,11 @@
     /// <summary>
     /// Der Jahresmesswert aus einer Messreihe für die Zone an der Stelle <c>index</c>
     /// (<c>ZapfprofilHuelle.Messkalibrierung</c>); geschrieben wird nichts — der Dialog setzt die
-    /// Felder, das OK speichert.
+    /// Felder, das OK speichert. <b>Nebenläufig und abbrechbar</b> wie der Vergleich: Ein Teiljahr
+    /// wird über den Jahresgang der Rechnung hochgerechnet, und dieser Lauf gehört nicht in den
+    /// Zeichenfaden (eine Volljahresreihe kehrt ohne Lauf zurück).
     /// </summary>
-    [Parameter] public Func<ZapfprofilEingabeDaten, string, int, ZapfprofilMesskalibrierungDaten>? Messkalibrierung { get; set; }
+    [Parameter] public Func<ZapfprofilEingabeDaten, string, int, CancellationToken, Task<ZapfprofilMesskalibrierungDaten>>? Messkalibrierung { get; set; }
 
     /// <summary>Der Kalibriervorschlag einer Nichtwohn-Zone als VORSCHAU (<c>ZapfprofilHuelle.Kalibriervorschlag</c>).</summary>
     [Parameter] public Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagDaten>? Kalibriervorschlag { get; set; }
@@ -1445,6 +1452,9 @@
 
     /// <summary>Das Ergebnis der letzten Kalibrierung — seine Hinweise stehen in der Warnliste.</summary>
     private ZapfprofilMesskalibrierungDaten? _kalibrierung;
+
+    /// <summary>Die Abbruchmarke der laufenden Kalibrierung; <c>null</c>, solange keine läuft.</summary>
+    private CancellationTokenSource? _kalibrierLauf;
 
     /// <summary>Der Kalibriervorschlag als Vorschau; <c>null</c> = die Überlagerung ist zu.</summary>
     private ZapfprofilVorschlagDaten? _vorschlag;
@@ -1554,6 +1564,7 @@
         _kiMaske?.Dispose();
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
+        KalibrierLaufVerwerfen();
     }
 
     // =================================================================================
@@ -2700,8 +2711,10 @@
         _ladehilfeAktuell = false;
         JahresreiheVerwerfen();
         // Ein Vergleich gehört zu dem Stand, gegen den er gerechnet wurde: Er bleibt sichtbar,
-        // trägt aber den Veraltet-Vermerk; ein laufender bricht ab.
+        // trägt aber den Veraltet-Vermerk; ein laufender bricht ab. Eine laufende Kalibrierung
+        // gehört demselben alten Stand — sie bricht ab, ohne Felder zu setzen.
         VergleichVeralten();
+        KalibrierLaufVerwerfen();
         if (ansichtZuruecksetzen) _ansicht = 0;
         VorschauEntprellen();
     }
@@ -2797,6 +2810,7 @@
         // Die Jahresreihe zieht der Lauf der Simulation selbst; ein offener Lauf des Dialogs endet hier.
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
+        KalibrierLaufVerwerfen();
         ZapfprofilEingabeDaten ergebnis = _eingabe.Kopie();
         ergebnis.Weg = ZapfprofilWeg.Generator;
         await Geschlossen.InvokeAsync(new ZapfprofilErgebnisDaten(ergebnis));
@@ -2822,6 +2836,7 @@
     {
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
+        KalibrierLaufVerwerfen();
         return Geschlossen.InvokeAsync(null);
     }
 
@@ -3643,10 +3658,14 @@
         return tage + " · " + urteil;
     }
 
-    /// <summary>Verwirft Lauf UND Ergebnis — der Vergleich gehörte zu einer anderen Reihe.</summary>
+    /// <summary>
+    /// Verwirft Lauf UND Ergebnis — der Vergleich gehörte zu einer anderen Reihe. Eine laufende
+    /// Kalibrierung rechnet gegen dieselbe alte Reihe und endet mit.
+    /// </summary>
     private void VergleichVerwerfen()
     {
         VergleichLaufVerwerfen();
+        KalibrierLaufVerwerfen();
         _vergleich = null;
         _vergleichUeberholt = false;
         _vergleichHinweis = "";
@@ -3725,13 +3744,22 @@
     // --- „Aus Messreihe kalibrieren" --------------------------------------------------
 
     /// <summary>Steht „Aus Messreihe kalibrieren" offen? Es braucht den Delegaten und eine gewählte Reihe.</summary>
-    private bool Kalibrierbar => Messkalibrierung is not null && _vergleichReihe.Length > 0;
+    private bool Kalibrierbar
+        => Messkalibrierung is not null && AbErweitert && _vergleichReihe.Length > 0 && !KalibrierungLaeuft;
 
-    /// <summary>Warum „Aus Messreihe kalibrieren" gesperrt ist.</summary>
+    /// <summary>Warum „Aus Messreihe kalibrieren" gesperrt ist — der Grund nennt auch die Stufe.</summary>
     private string Kalibriersperre
         => Messkalibrierung is null ? Texte.GrundNochNicht
+         : !AbErweitert ? Texte.VergleichNurErweitert
          : _messreihen.Reihen.Count == 0 ? (_messreihen.Grund.Length > 0 ? _messreihen.Grund : Texte.VergleichOhneReihe)
-         : Texte.VergleichOhneWahl;
+         : _vergleichReihe.Length == 0 ? Texte.VergleichOhneWahl
+         : KalibrierungLaeuft ? KalibrierLaufText : "";
+
+    /// <summary>Läuft die Kalibrierung gerade? Prüfhilfe für die Tests.</summary>
+    public bool KalibrierungLaeuft => _kalibrierLauf is not null;
+
+    /// <summary>Der Text am Fortschritt der Kalibrierung.</summary>
+    private string KalibrierLaufText => Format(Texte.KalibrierungLaeuft, _vergleichReihe);
 
     private void KalibrierenFragen(ZapfprofilZoneDaten z)
     {
@@ -3757,7 +3785,54 @@
         if (Messkalibrierung is null) return;
         int index = _eingabe.Zonen.IndexOf(z);
         if (index < 0) return;
-        ZapfprofilMesskalibrierungDaten k = Messkalibrierung(_eingabe.Kopie(), _vergleichReihe, index);
+        KalibrierLaufVerwerfen();
+        var quelle = new CancellationTokenSource();
+        _kalibrierLauf = quelle;
+        _ = KalibrierenLaufen(quelle, _eingabe.Kopie(), _vergleichReihe, z, index);
+    }
+
+    /// <summary>
+    /// Der Lauf der Kalibrierung: Das Ergebnis kommt über <c>InvokeAsync</c> in den Verteiler. Ein
+    /// überholter Lauf (neue Eingabe, neuer Lauf, OK, Abbrechen) hinterlässt nichts; ein
+    /// abgebrochener nennt den Abbruch als leise Zeile. Jede Ausnahme bleibt hier — ein loser Task
+    /// erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task KalibrierenLaufen(CancellationTokenSource quelle, ZapfprofilEingabeDaten kopie,
+                                         string reihe, ZapfprofilZoneDaten zone, int index)
+    {
+        ZapfprofilMesskalibrierungDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await Messkalibrierung!(kopie, reihe, index, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new ZapfprofilMesskalibrierungDaten { Reihe = reihe, Abbruch = ex.Message };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_kalibrierLauf, quelle)) return;
+                _kalibrierLauf = null;
+                if (abgebrochen) _hinweis = Texte.KalibrierungAbgebrochen;
+                else KalibrierungUebernehmen(ergebnis!, zone);
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* der Dialog ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>
+    /// Das Ergebnis in die Felder der Zone: Wert, Einheit, Bilanzgrenze, Quelle und Zeitraum. Die
+    /// Statuszeile steht NACH der Übernahme — <c>Angabe</c> räumt sie über <c>Geaendert</c>.
+    /// </summary>
+    private void KalibrierungUebernehmen(ZapfprofilMesskalibrierungDaten k, ZapfprofilZoneDaten z)
+    {
         _kalibrierung = k;
         if (!k.Ok)
         {
@@ -3773,6 +3848,23 @@
             a.JahresmesswertZeitraum = k.Zeitraum;
         });
         _kalibrierstatus = Format(Texte.StatusKalibriert, k.Reihe);
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt der Kalibrierung: Der Lauf endet an der nächsten Einheit.</summary>
+    private void KalibrierenAbbrechen()
+    {
+        try { _kalibrierLauf?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>Verwirft einen laufenden Lauf der Kalibrierung; das Ergebnis eines früheren bleibt.</summary>
+    private void KalibrierLaufVerwerfen()
+    {
+        CancellationTokenSource? offen = _kalibrierLauf;
+        _kalibrierLauf = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
     }
 
     // --- „Vorschlag übernehmen…" ------------------------------------------------------

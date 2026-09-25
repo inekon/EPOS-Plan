@@ -32848,6 +32848,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_STATUS_KALIBRIERT" xml:space="preserve">
     <value>Jahresmesswert aus „{0}“ übernommen</value>
   </data>
+  <data name="ZPG_KAL_LAEUFT" xml:space="preserve">
+    <value>Kalibrierung läuft — Messreihe „{0}“</value>
+  </data>
+  <data name="ZPG_KAL_ABGEBROCHEN" xml:space="preserve">
+    <value>Die Kalibrierung ist abgebrochen; der Arbeitsstand bleibt.</value>
+  </data>
   <data name="ZPG_VORSCHLAG_TITEL" xml:space="preserve">
     <value>Kalibriervorschlag</value>
   </data>

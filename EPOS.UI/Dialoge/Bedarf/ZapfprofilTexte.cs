@@ -1109,6 +1109,12 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_STATUS_KALIBRIERT</c></summary>
     public string StatusKalibriert { get; set; } = "Jahresmesswert aus „{0}“ übernommen";
 
+    /// <summary><c>ZPG_KAL_LAEUFT</c></summary>
+    public string KalibrierungLaeuft { get; set; } = "Kalibrierung läuft — Messreihe „{0}“";
+
+    /// <summary><c>ZPG_KAL_ABGEBROCHEN</c></summary>
+    public string KalibrierungAbgebrochen { get; set; } = "Die Kalibrierung ist abgebrochen; der Arbeitsstand bleibt.";
+
     /// <summary><c>ZPG_VORSCHLAG_TITEL</c></summary>
     public string VorschlagTitel { get; set; } = "Kalibriervorschlag";
 

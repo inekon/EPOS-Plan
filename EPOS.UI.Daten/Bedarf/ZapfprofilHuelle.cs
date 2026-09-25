@@ -124,14 +124,17 @@ namespace WindowsFormsApplication1
                 // danach liest der Dialog die Messreihen des Projekts neu.
                 ["MessreihenGaben"] = new Func<IReadOnlyDictionary<string, object>>(() => MessreihenGaben(idProjekt)),
                 // Der Vergleich mit einer Messreihe und die Kalibrierung daraus (Stufe Z5, Gruppe 3).
-                // Der Vergleich rechnet DENSELBEN Weg wie der Lauf und laeuft deshalb nebenlaeufig
-                // auf einem Arbeitsfaden mit der Kultur des Aufrufers, abbrechbar; die drei anderen
-                // Wege sind kurz und laufen im Verteiler.
+                // Vergleich UND Kalibrierung rechnen DENSELBEN Weg wie der Lauf und laufen deshalb
+                // nebenlaeufig auf einem Arbeitsfaden mit der Kultur des Aufrufers, abbrechbar; der
+                // Vorschlag und seine Uebernahme rechnen nur aus der Messreihe und laufen im
+                // Verteiler. Die Kalibrierung rechnet nur bei einem Teiljahr (Hochrechnung ueber den
+                // Jahresgang) - bei einer Volljahresreihe kehrt sie ohne Lauf zurueck.
                 ["Messreihen"] = new Func<TwwMessreihenstandDaten>(() => Messreihenstand(idProjekt)),
                 ["Messvergleich"] = new Func<ZapfprofilEingabeDaten, string, CancellationToken, Task<ZapfprofilMessvergleichDaten>>(
                     (e, r, abbruch) => Kulturweitergabe.Starten(() => Vergleichsbericht(idProjekt, e, basis, r, abbruch), abbruch)),
-                ["Messkalibrierung"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilMesskalibrierungDaten>(
-                    (e, r, zone) => MesswertAusReihe(idProjekt, e, basis, r, zone)),
+                ["Messkalibrierung"] = new Func<ZapfprofilEingabeDaten, string, int, CancellationToken, Task<ZapfprofilMesskalibrierungDaten>>(
+                    (e, r, zone, abbruch) => Kulturweitergabe.Starten(
+                        () => MesswertAusReihe(idProjekt, e, basis, r, zone, abbruch), abbruch)),
                 ["Kalibriervorschlag"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagDaten>(
                     (e, r, zone) => Kalibriervorschlag(idProjekt, e, basis, r, zone)),
                 ["VorschlagUebernehmen"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagErgebnisDaten>(
@@ -1787,6 +1790,8 @@ namespace WindowsFormsApplication1
             t.HinweisKalibrieren = Text_("ZPG_HINW_KALIBRIEREN", t.HinweisKalibrieren);
             t.FrageKalibrieren = Text_("ZPG_FRAGE_KALIBRIEREN", t.FrageKalibrieren);
             t.StatusKalibriert = Text_("ZPG_STATUS_KALIBRIERT", t.StatusKalibriert);
+            t.KalibrierungLaeuft = Text_("ZPG_KAL_LAEUFT", t.KalibrierungLaeuft);
+            t.KalibrierungAbgebrochen = Text_("ZPG_KAL_ABGEBROCHEN", t.KalibrierungAbgebrochen);
             t.VorschlagTitel = Text_("ZPG_VORSCHLAG_TITEL", t.VorschlagTitel);
             t.VorschlagVorlage = Text_("ZPG_VORSCHLAG_VORLAGE", t.VorschlagVorlage);
             t.VorschlagKopie = Text_("ZPG_VORSCHLAG_KOPIE", t.VorschlagKopie);

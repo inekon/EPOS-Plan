@@ -178,7 +178,7 @@ namespace EPOS.Kern.Tests
                 Assert.NotNull(v.Skalierungsmass);
 
                 // --- „Aus Messreihe kalibrieren" ----------------------------------------------
-                ZapfprofilMesskalibrierungDaten k = ZapfprofilHuelle.MesswertAusReihe(PROJEKT, eingabe, basis, REIHE, 0);
+                ZapfprofilMesskalibrierungDaten k = ZapfprofilHuelle.MesswertAusReihe(PROJEKT, eingabe, basis, REIHE, 0, CancellationToken.None);
                 Assert.True(k.Ok, k.Abbruch);
                 Assert.Equal((int)ZapfprofilMesswerteinheit.KwhJeJahr, k.EinheitId);
                 Assert.Equal(TAGESMUSTER.Sum() * Zapfkalender.TAGE, k.Wert ?? 0.0, 6);
@@ -282,7 +282,7 @@ namespace EPOS.Kern.Tests
             };
             ZapfprofilStand basis = ZapfprofilCtrl.Lies(PROJEKT);
 
-            ZapfprofilMesskalibrierungDaten k = ZapfprofilHuelle.MesswertAusReihe(PROJEKT, eingabe, basis, REIHE, 0);
+            ZapfprofilMesskalibrierungDaten k = ZapfprofilHuelle.MesswertAusReihe(PROJEKT, eingabe, basis, REIHE, 0, CancellationToken.None);
             Assert.True(k.Ok, k.Abbruch);
             Assert.True(k.Hochgerechnet);
             Assert.True(k.Wert > reihe.Menge, "Vierzig Tage ergeben mehr als vierzig Tage Energie.");
@@ -290,7 +290,7 @@ namespace EPOS.Kern.Tests
                                                                   StringComparison.Ordinal));
 
             // Ohne Bezeichnung: benannt abgelehnt, nichts gerechnet.
-            ZapfprofilMesskalibrierungDaten ohne = ZapfprofilHuelle.MesswertAusReihe(PROJEKT, eingabe, basis, "", 0);
+            ZapfprofilMesskalibrierungDaten ohne = ZapfprofilHuelle.MesswertAusReihe(PROJEKT, eingabe, basis, "", 0, CancellationToken.None);
             Assert.False(ohne.Ok);
             Assert.Equal("ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MESSREIHE", ohne.Kennung);
 

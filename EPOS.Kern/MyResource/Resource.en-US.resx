@@ -32841,6 +32841,12 @@ Do you want to allow this?</value>
   <data name="ZPG_STATUS_KALIBRIERT" xml:space="preserve">
     <value>Annual measured value adopted from „{0}“</value>
   </data>
+  <data name="ZPG_KAL_LAEUFT" xml:space="preserve">
+    <value>Calibration running — measured series “{0}”</value>
+  </data>
+  <data name="ZPG_KAL_ABGEBROCHEN" xml:space="preserve">
+    <value>The calibration was cancelled; the working state remains.</value>
+  </data>
   <data name="ZPG_VORSCHLAG_TITEL" xml:space="preserve">
     <value>Calibration proposal</value>
   </data>
