@@ -187,7 +187,7 @@ Der Punkt gilt für die Zonen, mit denen er gerechnet wurde. Wird danach eine Zo
 
 == Katalog der Brauchwasser-Nutzungsarten ==
 
-{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn.
+{{Anker|katalog}}Die Nutzungsarten, aus denen die Zonen wählen, stehen im Katalog '''Brauchwasser-Nutzungsarten''' (Menü ''Administration'' → ''Wärmebedarf & Heizung'' → ''Brauchwasser'' → ''Brauchwasser-Nutzungsarten''; daneben öffnet ''Brauchwasserprofile'' die Bestandsprofile). Der Katalog gehört zu keinem Projekt. Jede Aktion wirkt sofort; ''Beenden'', ✕ und ''Esc'' schließen ihn. Auf dem iPad steht der Katalog als eigene Ansicht; der Hilfe-Assistent öffnet ihn auf Zuruf, und ''Beenden'' führt in die Ansicht zurück, aus der er geöffnet wurde.
 
 Die Liste führt je Nutzungsart Bezeichner, Bezugsart, Kalender, Herkunft der Bedarfswerte, Katalogversion und Stand (''Auslieferung'', ''eigen'' oder ''Import''); ein Eintrag der Auslieferung trägt ein Schloss. Neben der Liste steht das Stammblatt der gewählten Nutzungsart, nur lesend:
 
@@ -211,7 +211,7 @@ Der Editor führt Bezeichner, Katalogversion, Bezugsart, Tagesgangsatz, den Beda
 
 === Import ===
 
-{{Anker|katalog-import}}''Import…'' spielt ein Katalogpaket ein: je Tabelle eine CSV-Datei – ''Tab_TwwTagesgangsatz_STAMM.csv'', ''Tab_TwwTagesgang_STAMM.csv'', ''Tab_TwwNutzungsart_STAMM.csv'' und ''Tab_TwwZapfkategorie_STAMM.csv'' – mit Kopfzeile, Trenner Semikolon oder Komma und Zahlen mit Punkt, als ZIP-Archiv oder als Ordner; gewählt wird das Archiv oder eine Datei des Ordners. Zapfkategorien ohne Nutzungsart gelten für jede Nutzungsart des Pakets ohne eigene Kategorien.
+{{Anker|katalog-import}}''Import…'' spielt ein Katalogpaket ein: je Tabelle eine CSV-Datei – ''Tab_TwwTagesgangsatz_STAMM.csv'', ''Tab_TwwTagesgang_STAMM.csv'', ''Tab_TwwNutzungsart_STAMM.csv'' und ''Tab_TwwZapfkategorie_STAMM.csv'' – mit Kopfzeile, Trenner Semikolon oder Komma und Zahlen mit Punkt, als ZIP-Archiv oder als Ordner; gewählt wird das Archiv oder eine Datei des Ordners. Auf dem iPad gibt es keinen Ordnerdialog: Dort heißt der Knopf ''ZIP-Paket wählen…'', und das Paket wird als ZIP-Archiv gewählt. Zapfkategorien ohne Nutzungsart gelten für jede Nutzungsart des Pakets ohne eigene Kategorien.
 
 Wahlfrei nimmt ein Paket drei weitere Dateien mit: ''Tab_TwwBedarfstag_STAMM.csv'' mit den Bedarfstagen des Katalogs, ''Tab_TwwBedarfstagEreignis_STAMM.csv'' mit ihren Zapfereignissen und ''Tab_TwwParameter_STAMM.csv'' mit den Parametern des Verfahrens. Ein Bedarfstag trägt Bezeichner, Katalogversion, die Art seiner Quelle, wahlfrei eine Bezugsmenge samt Bezugsart und die Angaben zur Herkunft; seine Ereignisse hängen über die Spalte ''ID_Bedarfstag'' an der ''ID'' des Pakets und tragen Beginn in Minuten, Dauer in Minuten, Energie in Kilowattstunden und ihre Reihenfolge. Jedes Ereignis liegt im Tag, die Reihenfolge läuft lückenlos ab 1, und die Summe der Energie ist positiv. Ein Parameter trägt Schlüssel, Wert, Einheit und Katalogversion. Fehlt einer Tabelle der Platz in der Datenbank, ist ihre Datei benannt übergangen.
 
