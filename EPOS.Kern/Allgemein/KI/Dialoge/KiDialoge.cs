@@ -1206,6 +1206,42 @@ namespace WindowsFormsApplication1
                 });
         }
 
+        /// <summary>
+        /// <b>Das Feld „vorlage“ des Reiterblatts „Bericht“</b> (Konzept Berichtsvorlagen 10.2, Etappe
+        /// BV-E1): die Word-Vorlage des Stammprojekts, gelesen und gesetzt als KENNUNG aus der
+        /// Vorlagenliste (<see cref="Vorlageneintrag.Id"/>: <c>standard</c> oder <c>eigen:</c> +
+        /// Dateiname) — eine Wahl, deren Einträge <see cref="BerichtVorlagenwahl"/> aus
+        /// <see cref="BerichtsvorlagenCtrl.Liste"/> bildet.
+        /// </summary>
+        /// <remarks>
+        /// <b>Noch nicht in <see cref="Berichtseite"/> angemeldet.</b> Die Bindung
+        /// <c>BerichtSeiteKiSicht.Vorlage</c> samt Begleiter <c>VorlageWahl</c> liefert die Hülle der
+        /// Berichtsseite; Feld und Bindung werden im selben Schritt angemeldet, sonst fände die
+        /// Katalogwache der Oberfläche ein Feld ohne Eigenschaft. Gesetzt wird über
+        /// <see cref="BerichtsvorlagenCtrl.Finde"/> und <see cref="BerichtsvorlagenCtrl.SetzeAbweichung"/>
+        /// — eine Kennung, die die Liste nicht kennt, lehnt die Hülle benannt ab.
+        /// </remarks>
+        public static KiDialogFeld BerichtVorlagenfeld()
+        {
+            return new KiDialogFeld("vorlage", "BerichtSeiteKiSicht.Vorlage",
+                                    KiDialogTexte.BkbVorlageName, KiParameterTyp.Wahl,
+                                    KiDialogTexte.BkbVorlageErl, leerErlaubt: true);
+        }
+
+        /// <summary>
+        /// Die Wahleinträge des Felds <see cref="BerichtVorlagenfeld"/>: je Vorlage der Liste ihre
+        /// Kennung und ihr Name; eine mitgelieferte Vorlage, deren Datei fehlt, bleibt wählbar (der Lauf
+        /// nimmt dann den benannten Rückfall), eine eigene ohne Datei nicht.
+        /// </summary>
+        public static IReadOnlyList<KiWahleintrag> BerichtVorlagenwahl(IEnumerable<Vorlageneintrag> liste)
+        {
+            var eintraege = new List<KiWahleintrag>();
+            if (liste == null) return eintraege;
+            foreach (Vorlageneintrag e in liste)
+                if (e != null && (e.Vorhanden || e.IstStandard)) eintraege.Add(new KiWahleintrag(e.Id, e.Name));
+            return eintraege;
+        }
+
         // =====================================================================
         // Form_ProjektSpeichernUnter  ->  ProjektKopieDialog   (Welle KI-F6)
         // =====================================================================
