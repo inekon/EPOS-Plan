@@ -76,6 +76,10 @@ Kapitel 4.3, 4.7, 6.3, 8.4, 11 und 12 folgen, das Register zählt weiter 8 offen
 Nachgezogen am 25.09.2026 mit **E42** (N1.47): Die Größengrenze des gbXML-Imports liegt auf iOS bei
 **25 MB** wie unter Windows statt 10 MB — nach der Messung im iOS-Lauf zur Abnahme von G4a (rund
 7,5 MB Prozessspeicher je MB Datei); die IFC-Grenzen bleiben; das Register zählt weiter 8 offene Punkte.
+Nachgezogen am 25.09.2026 mit **E43** (N1.48): Der Gebäudeimport belegt fehlende Angaben mit ausgewiesenen,
+änderbaren Vorgaben — innere Gewinne 5 W/m² × Nutzfläche, Tagsollwert 20 °C, Nachtabsenkung 18 °C —, und
+Beginn und Ende der Nachtabsenkung sind je Gebäude einstellbar (leer = 22 bis 6 Uhr, Schemaschritt 144,
+ergebnisneutral); das Register zählt weiter 8 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -776,7 +780,8 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
 - **Innere Gewinne** `Interne_Waermegewinne` (W), 50 % konvektiv / 50 % radiativ, in G1
   zeitlich konstant; ein Wochenprofil ist G2+.
 - **Sollwerte** wie im Bestand: Stunden 7–22 `Raumsolltemperatur_Tag`, sonst
-  `Nachtabsenkung`; an den Wochenendtagen der Maske `WE[365]`
+  `Nachtabsenkung` — die Nachtzeit ist je Gebäude einstellbar (`Nachtabsenkung_Beginn`/`_Ende`,
+  leer = 22 bis 6 Uhr, also genau diese Stunden; E43, N1.48); an den Wochenendtagen der Maske `WE[365]`
   `Raumsolltemperatur_Wochenende`, sofern dieser Wert > 5 ist — die Spalte
   `Tab_Gebaeude.Wochenende` geht in **keine** Rechnung ein; in Ferienzeiträumen
   `Raumsolltemperatur_Ferien`, und Ferien haben Vorrang vor dem Wochenende. Der
@@ -3897,3 +3902,50 @@ Abschnitt 1 (E42) und 2 (G4); [Softwarearchitektur](Softwarearchitektur_Gebaeude
 1.5 (Regel 2 — dort stehen die vier Zahlen); [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
 2.5 und 11.2 (D15); das [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md);
 die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.48 Entscheid E43 — Vorgaben des Gebäudeimports, Nachtzeit je Gebäude
+
+**Anlass.** Die Sichtprobe des Gebäudeimports (Protokoll G4, Abschnitt 13) zeigte zwei Lücken: Das
+Umsetzungskonzept 3.4 nannte für die inneren Gewinne „Vorgabe je Gebäudeart (Wohnbau 5 W/m²)“ und für die
+Sollwerte „Vorgaben des Grundlagensatzes“ — beides stand in keinem Code. Der Import übernahm 0 W und, wenn die
+Datei keinen Sollwert trug, einen Tagsollwert von 0 °C, den weder der Editor noch das Stundenmodell ablehnten.
+
+**Entscheid E43 (Anwender, 25.09.2026).**
+
+1. **Innere Gewinne:** Vorgabe **5 W/m² × Nutzfläche**, ein Wert für alle Gebäudearten, als ausgewiesene
+   Vorgabe (Herkunft „Vorgabe“ mit Beleg), änderbar im Zuordnungsdialog und im Gebäudeeditor. Die
+   Auslegungsleistungen der Datei bleiben Vorschlag im Beleg.
+2. **Sollwerte ohne Angabe der Datei:** Tag **20 °C**, Nachtabsenkung **18 °C** (höchstens der Tagsollwert),
+   als ausgewiesene, änderbare Vorgaben; ein Tagsollwert der Datei gilt vor der Vorgabe.
+3. **Die Nachtzeit ist je Gebäude einstellbar:** Beginn und Ende der Nachtabsenkung als volle Stunde (0–23),
+   Nacht = [Beginn, Ende), auch über Mitternacht. **Leer heißt 22 bis 6 Uhr** — genau der feste Fahrplan
+   (Rechenschritte E8: Tagsollwert in den Stunden 7 … 22, 1-basiert), bitgleich hergeleitet aus
+   `GebaeudeFestwerte.TAG_ERSTE_STUNDE`/`TAG_LETZTE_STUNDE`. Nur eine der beiden Angaben oder Beginn = Ende
+   ist ein benannter Eingabefehler. Der Import trägt 22 und 6 als Vorgabe ein.
+
+**Was damit gilt.**
+
+| Größe | Vorgabe | Regel |
+|---|---|---|
+| Innere Gewinne | 5 W/m² × Nutzfläche | ohne Nutzfläche 0 W; Handwert im Dialog und im Editor |
+| Tagsollwert | 20 °C | aus der Datei, wenn vorhanden |
+| Nachtabsenkung | 18 °C | höchstens der Tagsollwert |
+| Nachtzeit | 22 bis 6 Uhr | Spalten `Nachtabsenkung_Beginn` und `Nachtabsenkung_Ende` (Schemaschritt 144) an den Gebäudetabellen, leer = feste Zeit |
+
+**Rechenweg.** Die Nutzungszeit richtet sich nach dem Fahrplan des Gebäudes: der Sollwertfahrplan, die
+Kennzahlen der Nutzungszeit (mittlere Raumtemperatur, Überhitzungsstunden; Rechenschritte 8.2), die
+Komfortstunden der Anlagenkopplung und die Bestandswoche der Übergabevorgaben. Ein gepflegtes Wochenprofil
+(Anlagenkopplung, `Sollwertprofil`) gilt weiter vor dem Tag/Nacht-Fahrplan. Der Tagesbilanz-Altweg liest die
+neuen Spalten nicht. **Ergebnisneutral:** Alle Gebäude der Testdatenbank tragen leere Spalten; der
+Referenzlauf der 14 Projekte gegen R16 ist byte-gleich, eine neue Basis entsteht nicht.
+
+**Was offen bleibt.** Nichts Neues; das Register zählt weiter **8 offene Punkte**.
+
+**Betroffene Stufen:** G4 (Import), G1/G2 (Stundenfahrplan), AK1 (Komfortstunden).
+
+**Nachgezogen:** Kopf und 4.4 dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und
+Abschnitt 1 (E43) und 2 (G4); [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+3.4 (Zeilen `Waermegewinne` und Sollwerte); [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+1.1, E8 und 8.2; [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 4.1 (Hinweis);
+das [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md) Abschnitt 14; die
+Indexzeile in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

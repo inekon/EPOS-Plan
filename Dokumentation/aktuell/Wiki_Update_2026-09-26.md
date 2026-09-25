@@ -296,6 +296,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   1.2.0.4 nach Anwenderentscheid 25.09.2026, die vierte Welle ist vor dem Upload gepusht)
 - Seit 26.09.2026: Gebäudedaten lassen sich aus gbXML- und IFC-Dateien in den Gebäudedialog
   übernehmen. (Gebäudesimulation G4)
+- Seit 26.09.2026: Beginn und Ende der Nachtabsenkung lassen sich je Gebäude einstellen.
+  (Gebäudesimulation G4, E43)
 - Seit 26.09.2026: Baustoffe und Bauteilaufbauten mit Schichten haben eigene Verwaltungen unter
   Administration → Gebäude. (Gebäudesimulation G3)
 - Seit 26.09.2026: Ein Gebäude im Projekt kann als Zone aus Bauteilen mit Schichtaufbau gerechnet
