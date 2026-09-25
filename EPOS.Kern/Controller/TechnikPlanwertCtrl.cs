@@ -1042,6 +1042,21 @@ namespace WindowsFormsApplication1
         internal static string BaugroesseHerleitung(int projektID, int komponentenID,
                                                     string bemessung, int idAnlage)
         {
+            return BaugroesseHerleitung(projektID, komponentenID, bemessung, idAnlage, false);
+        }
+
+        /// <summary>
+        /// E20: dieselbe Herleitung im RASTER der Zeile — <paramref name="investition"/> =
+        /// Kategorie 1; nur dort nennt „je kW elektrisch" an der Wärmepumpe ihren
+        /// Normpunkt (<see cref="WaermepumpePelHerleitung"/>).
+        /// </summary>
+        internal static string BaugroesseHerleitung(int projektID, int komponentenID,
+                                                    string bemessung, int idAnlage,
+                                                    bool investition)
+        {
+            if (IstWpElektrischeLeistung(komponentenID, bemessung, investition))
+                return WaermepumpePelHerleitung(projektID, idAnlage);
+
             if (IstSolarLeistungsart(komponentenID, bemessung))
                 return KollektorfeldHerleitung(projektID, idAnlage);
 
@@ -1243,6 +1258,38 @@ namespace WindowsFormsApplication1
             foreach (WpNormpunkt n in WaermepumpeNormpunkte(projektID, idAnlage))
                 if (n != null) summe += n.PelKw;
             return summe > 0 ? summe : (double?)null;
+        }
+
+        /// <summary>
+        /// E20: der HERLEITUNGSTEXT zu P_el — „11,60 kW ÷ COP 2,90 (A2/W35) = 4,00 kW".
+        /// Die Zahl steht in keiner Gerätemaske; ohne den Satz wäre sie nicht
+        /// nachvollziehbar. Ein interpolierter Normpunkt trägt „≈" vor Heizleistung und
+        /// COP. Mehrere Wärmepumpen (Projektsicht) werden zur Summe zusammengefasst.
+        /// Leer, wenn es nichts herzuleiten gibt.
+        /// </summary>
+        internal static string WaermepumpePelHerleitung(int projektID, int idAnlage)
+        {
+            var punkte = new List<WpNormpunkt>();
+            foreach (WpNormpunkt n in WaermepumpeNormpunkte(projektID, idAnlage))
+                if (n != null) punkte.Add(n);
+            if (punkte.Count == 0) return "";
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            if (punkte.Count == 1)
+            {
+                WpNormpunkt n = punkte[0];
+                string ca = n.Interpoliert ? "≈" : "";
+                return string.Format(k, MyResource.Resource.KDLG_HERLEITUNG_WP_PEL,
+                                     ca + n.PthermKw.ToString("#,##0.00", k),
+                                     ca + n.Cop.ToString("0.00", k),
+                                     n.Name,
+                                     n.PelKw.ToString("#,##0.00", k));
+            }
+
+            double summe = 0;
+            foreach (WpNormpunkt n in punkte) summe += n.PelKw;
+            return string.Format(k, MyResource.Resource.KDLG_HERLEITUNG_WP_PEL_SUMME,
+                                 punkte.Count.ToString(k), summe.ToString("#,##0.00", k));
         }
 
         /// <summary>Anzeigename einer Kostenbasis (lokalisiert).</summary>

@@ -327,7 +327,8 @@ namespace WindowsFormsApplication1
                 // Gerätemaske zu finden sind.
                 z.BasisHerleitung = z.Basis.HasValue
                     ? TechnikPlanwertCtrl.BaugroesseHerleitung(
-                          projektId, komponentenId, z.Raster.Bemessung, anlageDerZeile)
+                          projektId, komponentenId, z.Raster.Bemessung, anlageDerZeile,
+                          z.KategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)   // E20
                     : "";
 
                 // ANWENDERBEFUND 10.09.2026 (H4c): Steht keine Bezugsgröße, wird der
@@ -496,7 +497,8 @@ namespace WindowsFormsApplication1
             // 14.09.2026: und dieselbe Herleitung.
             z.BasisHerleitung = z.Basis.HasValue
                 ? TechnikPlanwertCtrl.BaugroesseHerleitung(
-                      z.ProjektId, komponente, z.Raster.Bemessung, anlage)
+                      z.ProjektId, komponente, z.Raster.Bemessung, anlage,
+                      z.KategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)   // E20
                 : "";
         }
 
@@ -546,7 +548,7 @@ namespace WindowsFormsApplication1
             z.BasisHerleitung = z.Basis.HasValue
                 ? TechnikPlanwertCtrl.BaugroesseHerleitung(
                       z.ProjektId > 0 ? z.ProjektId : ProjektDerZeile(z), komponente,
-                      bemessung, anlage)
+                      bemessung, anlage, z.KategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)   // E20
                 : "";
         }
 
