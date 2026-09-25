@@ -73,6 +73,77 @@ namespace EPOS.Kern.Tests
             Assert.All(punkte, p => Assert.Contains("Tabellenbericht", p.Stelle));
         }
 
+        /// <summary>
+        /// Ohne Kapitelstellen nennt die Spalte „Stelle“ die eigenen Überschriften der Kapitel — Wort für Wort
+        /// die Texte, die die Checkliste vor den Berichtsvorlagen fest trug (Messlatte BV-E2); dasselbe gilt
+        /// für die eigenen Stellen aller Kapitel (<see cref="Berichtskapitel.EigeneStellen"/>).
+        /// </summary>
+        [Fact]
+        public void Ohne_Kapitelstellen_nennt_die_Stelle_die_eigenen_Ueberschriften()
+        {
+            string[] erwartet =
+            {
+                "Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“",
+                "Wortbericht: „Projektbeschreibung“, „Komponenten & Varianten“ · Tabellenbericht: Blatt „Übersicht“",
+                "Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“",
+                "Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten",
+                "Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“",
+                "Wortbericht: „Mehrjahresübersicht der Zahlungsströme“ · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“",
+                "Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“",
+                "Wortbericht: Parameterzeile und Zeitraumhinweis im Kapitel „Wirtschaftlichkeit“ · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen",
+                "Wortbericht: Parameterzeile · Tabellenbericht: Parameterblock (Zins_i)",
+                "Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“",
+                "Wortbericht: „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)",
+                "Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse",
+                "Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“",
+                "Wortbericht: Vorschlag zur Entscheidung unter der Bandbreite · Tabellenbericht: Vorschlagszeile unter der Bandbreite",
+                "Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen)",
+            };
+            Assert.Equal(NUMMERN, AnhangECheckliste.Punkte(new ChecklistenLage()).Select(p => p.Nummer).ToArray());
+            Assert.Equal(erwartet, AnhangECheckliste.Punkte(new ChecklistenLage()).Select(p => p.Stelle).ToArray());
+            Assert.Equal(erwartet, AnhangECheckliste.Punkte(new ChecklistenLage(), Berichtskapitel.EigeneStellen(null, false))
+                                                   .Select(p => p.Stelle).ToArray());
+        }
+
+        /// <summary>
+        /// Mit den Kapitelstellen einer Vorlage (Konzept Berichtsvorlagen 11 Nr. 3): Die Spalte nennt die
+        /// tatsächliche Überschrift — auch in einem Abschnittsverweis („› …“); fehlt ein Kapitel, entfällt es
+        /// aus der Aufzählung, fehlen alle, heißt es „nicht im Bericht“. Ein Abschnitt ohne Kapitelnamen
+        /// bleibt, solange sein Kapitel im Bericht ist.
+        /// </summary>
+        [Fact]
+        public void Mit_Kapitelstellen_nennt_die_Stelle_die_Ueberschriften_der_Vorlage()
+        {
+            var stellen = new System.Collections.Generic.Dictionary<string, string>
+            {
+                [BerichtsKonfiguration.B_DECKBLATT] = null,
+                [BerichtsKonfiguration.B_PROJEKT] = "2 Das Projekt",
+                [BerichtsKonfiguration.B_KOMPONENTEN] = null,
+                [BerichtsKonfiguration.B_ERGEBNISSE] = null,
+                [BerichtsKonfiguration.B_VERGLEICH] = null,
+                [BerichtsKonfiguration.B_WIRTSCHAFT] = "5 Wirtschaftliche Bewertung",
+                [BerichtsKonfiguration.B_ANHANG] = null,
+            };
+            var punkte = AnhangECheckliste.Punkte(new ChecklistenLage(), stellen).ToDictionary(p => p.Nummer, p => p.Stelle);
+
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“", punkte["0.1"]);
+            Assert.Equal("Wortbericht: „2 Das Projekt“ · Tabellenbericht: Blatt „Übersicht“", punkte["0.2"]);
+            Assert.Equal("Wortbericht: „5 Wirtschaftliche Bewertung“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: " +
+                         "Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“", punkte["2b"]);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten", punkte["2a"]);
+            Assert.Equal("Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse", punkte["8"]);
+            Assert.Equal("Wortbericht: „5 Wirtschaftliche Bewertung“ · Tabellenbericht: Formelmappe (Parameterblock, " +
+                         "Mehrjahrestabellen, Kennzahlen)", punkte["11"]);
+
+            stellen[BerichtsKonfiguration.B_WIRTSCHAFT] = null;
+            var ohne = AnhangECheckliste.Punkte(new ChecklistenLage(), stellen).ToDictionary(p => p.Nummer, p => p.Stelle);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Sensitivitätsanalyse", ohne["8"]);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, " +
+                         "Kennzahlen)", ohne["11"]);
+            Assert.Equal(7, AnhangECheckliste.Kapitelbezuege.Count);
+            Assert.All(stellen.Keys, k => Assert.Contains(k, AnhangECheckliste.Kapitelbezuege));
+        }
+
         /// <summary>Ohne Rechnung behauptet die Checkliste nichts, was ein Lauf liefern
         /// müsste: Die rechnenden Punkte sind offen und sagen, was fehlt.</summary>
         [Fact]

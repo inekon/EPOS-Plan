@@ -195,7 +195,12 @@ namespace WindowsFormsApplication1
                             BerichtAbbrechen = () =>
                             {
                                 if (_bericht != null) _bericht.Abbrechen();
-                            }
+                            },
+
+                            // BV-E2 (Konzept Berichtsvorlagen 9.5): Die Anhang-E-Ueberlagerung nennt
+                            // die Stellen der Vorlage, die die Berichtsseite derselben Gruppe gewaehlt
+                            // hat - dieselbe Huelle, dieselbe Wahl.
+                            AnhangEStellenLaden = () => BerichtGaben().Vorlagen.AnhangEStellenDerVorlage()
                         };
                     return _wirtschaft.Gaben();
 

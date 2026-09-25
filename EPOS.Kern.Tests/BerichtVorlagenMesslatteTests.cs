@@ -167,6 +167,72 @@ namespace EPOS.Kern.Tests
             finally { Aufraeumen(ordner); }
         }
 
+        /// <summary>Die erste Zeile der Messlatten des Vorlagenwegs.</summary>
+        private const string KOPFZEILE_VORLAGE =
+            "# Strukturmesslatte BV-E2 (BerichtVorlagenMesslatteTests, Vorlagenweg mit der Standardvorlage) — ";
+
+        /// <summary>
+        /// Die Programmfassung des Deckblatts im Vorlagenweg — fest, damit die Messlatte nicht an der Fassung
+        /// des Testwirts hängt (<c>ersteller.version</c> nimmt sonst die Produktfassung des Einstiegs).
+        /// </summary>
+        private const string FASSUNG = "9.9.9.9";
+
+        /// <summary>Wo der Kapitelteil beginnt: die Überschrift des Inhaltsverzeichnisses.</summary>
+        private const string KAPITELTEIL = "Absatz [Heading1] Inhalt";
+
+        /// <summary>
+        /// <b>Die Messlatte des Vorlagenwegs</b> (Konzept 11 Nr. 1 und 2, Etappe BV-E2): Die Standardvorlage im
+        /// vollen Aufbau ergibt über die Engine für 1030 und die Gruppe denselben Bericht wie der Bausteinweg —
+        /// BIS AUF das Deckblatt, das die Vorlage aus Platzhaltern trägt (begründete Abweichung, Anhang B.3).
+        /// Eingefroren ist der Rumpf (<c>Messlatten/Bericht_Word_&lt;probe&gt;_Vorlage.txt</c>, neu einfrieren wie
+        /// die übrigen); Kopf- und Fußzeile hält <see cref="WordVorlagenfuellerTests"/>, weil das Logo der
+        /// Kopfzeile an der Fassung des Werkzeugs hängt. <b>Zeilengleich zur Messlatte des alten Wegs</b> ist
+        /// der Kapitelteil ab dem Inhaltsverzeichnis: Der Kapitelkopf der Vorlage trägt dort das Format „EPOS
+        /// Kapitelkopf“ (auf Überschrift 1 aufgebaut, Gliederungsebene 1) statt Überschrift 1 — das ist die
+        /// einzige Umschrift —, und den Seitenumbruch vor der Checkliste des Anhangs E setzt die Engine vor
+        /// deren Kapitelkopf, wo der Bausteinweg ihn vor seine Überschrift schreibt.
+        /// </summary>
+        [Theory]
+        [InlineData(PROBE_1030)]
+        [InlineData(PROBE_GRUPPE)]
+        public void Messlatte_Vorlagenweg_mit_der_Standardvorlage(string probe)
+        {
+            string pfad = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.STANDARD);
+            if (pfad == null || !File.Exists(pfad)) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string docx = Path.Combine(ordner, "vorlage.docx");
+                Fuellergebnis ergebnis = new WordBerichtGenerator().ErzeugeMitVorlage(
+                    Probe(probe), Berichtsdatenproben.VolleKonfiguration(), File.ReadAllBytes(pfad),
+                    new Erstellerangaben { Firma = "INEKON GmbH", Version = FASSUNG }, docx);
+                Assert.Empty(ergebnis.Unbekannte);
+
+                List<string> rumpf = Berichtsstruktur.Word(docx).SkipWhile(z => z != "## Rumpf").ToList();
+                var befunde = new List<string>();
+                Vergleiche("Bericht_Word_" + probe + "_Vorlage.txt", rumpf, befunde, KOPFZEILE_VORLAGE);
+
+                string alt = Path.Combine(Berichtsdatenproben.Repowurzel(), MESSLATTEN_REPO.Replace('/', Path.DirectorySeparatorChar),
+                                          "Bericht_Word_" + probe + ".txt");
+                List<string> kapitelAlt = Zeilen(File.ReadAllText(alt, Encoding.UTF8)).SkipWhile(z => z != KAPITELTEIL).ToList();
+                List<string> kapitelNeu = rumpf.SkipWhile(z => z != KAPITELTEIL)
+                                               .Select(z => z.Replace("Absatz [EPOSKapitelkopf] ", "Absatz [Heading1] "))
+                                               .ToList();
+                Assert.NotEmpty(kapitelAlt);
+                if (!kapitelAlt.SequenceEqual(kapitelNeu, StringComparer.Ordinal))
+                    befunde.Add("Kapitelteil ab dem Inhaltsverzeichnis weicht von Bericht_Word_" + probe + ".txt ab. " +
+                                Unterschied(kapitelAlt, kapitelNeu));
+                else
+                    _ausgabe.WriteLine(probe + ": Kapitelteil " + kapitelNeu.Count + " Zeilen, zeilengleich zum alten Weg");
+
+                Assert.True(befunde.Count == 0, string.Join(Environment.NewLine + Environment.NewLine, befunde));
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
         /// <summary>Unterordner der Messlatten, repo-relativ.</summary>
         internal const string MESSLATTEN_REPO = "EPOS.Kern.Tests/Messlatten";
 
@@ -175,9 +241,9 @@ namespace EPOS.Kern.Tests
         /// Bei Abweichung (oder fehlender Datei) steht die aktuelle Liste danach im
         /// Testausgabeordner, und <paramref name="befunde"/> nennt den ersten abweichenden Block.
         /// </summary>
-        private void Vergleiche(string datei, List<string> struktur, List<string> befunde)
+        private void Vergleiche(string datei, List<string> struktur, List<string> befunde, string kopfzeile = KOPFZEILE)
         {
-            var aktuell = new List<string> { KOPFZEILE + datei };
+            var aktuell = new List<string> { kopfzeile + datei };
             aktuell.AddRange(struktur);
 
             string wurzel = Berichtsdatenproben.Repowurzel();

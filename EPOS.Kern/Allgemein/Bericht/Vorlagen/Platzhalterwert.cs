@@ -17,7 +17,8 @@ namespace WindowsFormsApplication1
     {
         private Platzhalterwert(Vorlagenfeldart art, string text, bool istLeer, string grund,
                                 IReadOnlyList<string> zeilen, IReadOnlyList<string> kapitel,
-                                double? zahl, DateTime? datum, string ausnahme)
+                                double? zahl, DateTime? datum, string ausnahme,
+                                bool? schalter = null, Bildinhalt bild = null)
         {
             Art = art;
             Text = text ?? "";
@@ -28,6 +29,8 @@ namespace WindowsFormsApplication1
             Zahl = zahl;
             Datum = datum;
             Ausnahme = ausnahme;
+            Schalter = schalter;
+            Bild = bild;
         }
 
         /// <summary>Die Platzhalterklasse des Eintrags.</summary>
@@ -47,9 +50,15 @@ namespace WindowsFormsApplication1
         /// <summary>Bei einer Liste die Einträge; sonst leer.</summary>
         public IReadOnlyList<string> Zeilen { get; }
 
-        /// <summary>Bei einem Kapitel die Bausteinschlüssel (<c>BerichtsKonfiguration.B_*</c>), die an
+        /// <summary>Bei einem Kapitel die Namen der Kapitel (<see cref="Berichtskapitel.Name"/>), die an
         /// der Stelle einzusetzen sind, in Berichtsreihenfolge; sonst leer.</summary>
         public IReadOnlyList<string> Kapitel { get; }
+
+        /// <summary>Bei einem Schalter sein Wert (Häkchen gesetzt?); sonst <c>null</c>.</summary>
+        public bool? Schalter { get; }
+
+        /// <summary>Bei einem Bild der Inhalt (Bytes, Maße, Inhaltstyp); sonst und ohne Bild <c>null</c>.</summary>
+        public Bildinhalt Bild { get; }
 
         /// <summary>Bei einer Zahl der Rohwert (für Excel); sonst <c>null</c>.</summary>
         public double? Zahl { get; }
@@ -87,6 +96,17 @@ namespace WindowsFormsApplication1
         internal static Platzhalterwert MitKapiteln(IReadOnlyList<string> kapitel)
         {
             return new Platzhalterwert(Vorlagenfeldart.Kapitel, "", false, null, null, kapitel, null, null, null);
+        }
+
+        internal static Platzhalterwert MitSchalter(bool wert)
+        {
+            return new Platzhalterwert(Vorlagenfeldart.Schalter, "", false, null, null, null, null, null, null, wert);
+        }
+
+        internal static Platzhalterwert MitBild(Bildinhalt bild)
+        {
+            return new Platzhalterwert(Vorlagenfeldart.Bild, bild?.Dateiname ?? "", false, null, null, null, null, null, null,
+                                       null, bild);
         }
 
         internal static Platzhalterwert Leer(Vorlagenfeldart art, string text, string grund, string ausnahme)

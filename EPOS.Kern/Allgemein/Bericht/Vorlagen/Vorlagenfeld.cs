@@ -210,8 +210,11 @@ namespace WindowsFormsApplication1
         /// <summary>Die Katalogfassung, seit der es den Schlüssel gibt (Konzept 5.6).</summary>
         public int Seit { get; init; } = 1;
 
-        /// <summary>Bei Kapiteln die Bausteinschlüssel (<c>BerichtsKonfiguration.B_*</c>), die der
-        /// Platzhalter einsetzt; sonst leer.</summary>
+        /// <summary>
+        /// Bei Kapiteln die Katalogschlüssel, die das Kapitel deckt (Konzept 5.1, 12): die Einzelschlüssel,
+        /// deren Inhalt es schreibt, dazu Kapitelkopf und Schalter; beim Sammelanker <c>bericht.inhalt</c>
+        /// alle Kapitel. Sonst leer. Ausgewertet über <see cref="Vorlagenfeldkatalog.Gedeckt"/>.
+        /// </summary>
         public IReadOnlyList<string> Deckt { get; init; } = Array.Empty<string>();
 
         /// <summary>Handgepflegt (eigene Beschreibung) oder aus einer Quelle erzeugt?</summary>

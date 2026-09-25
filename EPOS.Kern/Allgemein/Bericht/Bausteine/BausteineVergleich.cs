@@ -15,6 +15,11 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_ERGEBNISSE; } }
         public string Titel { get { return "Ergebnisse je Variante"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>. Sie weicht vom
+        /// Titel des Häkchens ab („Ergebnisse je Variante“).</summary>
+        public const string UEBERSCHRIFT = "Berechnungsergebnisse je Variante";
+
         // Kernkennzahlen des Variantenkapitels (Katalogschlüssel in Anzeigereihenfolge).
         private static readonly string[] KERN =
         {
@@ -27,7 +32,7 @@ namespace WindowsFormsApplication1
 
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
-            k.Ueberschrift1("Berechnungsergebnisse je Variante");
+            k.Ueberschrift1(UEBERSCHRIFT);
             List<Kennzahl> katalog = KennzahlenKatalog.Alle();
 
             foreach (VariantenDaten v in daten.Varianten)
@@ -114,6 +119,10 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_VERGLEICH; } }
         public string Titel { get { return "Variantenvergleich"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
+        public const string UEBERSCHRIFT = "Variantenvergleich";
+
         // Schlüsselkennzahlen der kompakten Delta-Tabelle.
         private static readonly string[] DELTA_KEYS =
         {
@@ -133,7 +142,7 @@ namespace WindowsFormsApplication1
             List<Kennzahl> katalog =
                 KennzahlenKatalog.Alle(EmissionsAusweis.ModusAusVarianten(daten.Varianten));
 
-            k.Ueberschrift1("Variantenvergleich");
+            k.Ueberschrift1(UEBERSCHRIFT);
             if (varianten.Count == 0)
                 k.Hinweis("Es wurden keine Varianten ausgewählt — die Tabellen zeigen nur das Stammprojekt.");
 
