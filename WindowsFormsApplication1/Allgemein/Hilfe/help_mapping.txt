@@ -420,6 +420,13 @@ Form_PufferSp_Admin.btn_Help        = Gerätekataloge#pufferspeicher
 Form_AdminPV.btn_Help               = Gerätekataloge#pv-module
 Form_AdminWechselrichter.btn_Help   = Gerätekataloge#wechselrichter
 Form_AdminStromspeicher.btn_Help    = Gerätekataloge#stromspeicher
+# Berichtsvorlagen (BV-E1): Die Ueberlagerungen "Pruefliste" und "Platzhalterkatalog"
+# der Berichtsseite und der Abschnitt "Bericht" der Programmeinstellungen fuehren
+# auf die Seite Berichtsvorlagen (Repo-Quelle Projekte/Wiki/Programm Dokumentation -
+# Berichtsvorlagen.wiki); dort steht die Vorlagenwahl der Berichtsseite unter #vorlage.
+UcBericht.btn_Help_Pruefliste          = Berichtsvorlagen#pruefliste
+UcBericht.btn_Help_Platzhalterkatalog  = Berichtsvorlagen#platzhalterkatalog
+Form_AdminSettings.btn_Help_Bericht    = Berichtsvorlagen#einstellungen
 
 # ===========================================================================
 # Feldgenaue Hilfe (H12)

@@ -1,0 +1,52 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Berichtsvorlagen
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Word-Bericht entsteht aus einer '''Word-Vorlage''': einem Word-Dokument mit Platzhaltern, die EPOS-Plan beim Erstellen des Berichts mit den Werten des Projekts füllt. Mitgeliefert wird die ''Standardvorlage (EPOS-Plan)''. Eigene Vorlagen – etwa mit Deckblatt, Kopf- und Fußzeile des Büros – liegen im Vorlagenordner und werden auf der Seite [[Programm Dokumentation/Bericht|Bericht]] gewählt.
+
+== Vorlage auf der Berichtsseite ==
+{{Anker|vorlage}}
+Die Gruppe '''Vorlage''' steht auf der Berichtsseite über den Berichtsbausteinen.
+
+* '''Word-Vorlage''' – die Auswahl führt die ''Standardvorlage (EPOS-Plan)'' und die eigenen Vorlagen des Vorlagenordners. Die Wahl gilt für das Stammprojekt samt seinen Varianten und bleibt beim Projekt gespeichert. Neben der mitgelieferten Vorlage steht ein Schloss: Sie lässt sich nur lesen. Fehlt die Datei einer gewählten Vorlage, bleibt sie gesperrt in der Liste stehen, der Bericht entsteht mit der Standardvorlage, und die Zeile unter der Auswahl nennt beides.
+* {{Anker|neue-vorlage}}'''Neue Vorlage…''' – legt unter einem neuen Namen eine Kopie der Standardvorlage im Vorlagenordner an und wählt sie. Das ist der erste Schritt zu einer eigenen Vorlage: die Kopie in Word öffnen, Deckblatt, Kopf- und Fußzeile gestalten und die [[#schreibweise|Platzhalter]] an die gewünschten Stellen setzen.
+* '''Hinzufügen…''' – kopiert ein vorhandenes Word-Dokument (<code>.docx</code>) oder eine Word-Vorlage (<code>.dotx</code>) in den Vorlagenordner, prüft es vollständig und wählt es. Gibt es den Namen im Vorlagenordner schon, kommt die Vorlage unter einem freien Namen hinzu, etwa ''Angebot (2)''; die Meldung nennt ihn.
+* '''Prüfen''' – prüft die gewählte Vorlage vollständig, siehe [[#pruefliste|Prüfzeile und Prüfliste]].
+* '''Platzhalter…''' – öffnet den [[#platzhalterkatalog|Platzhalterkatalog]].
+* '''…''' – weitere Handlungen zur gewählten Vorlage. Unter Windows: ''In Word öffnen'' (die Vorlage selbst, auch eine <code>.dotx</code>), ''Im Ordner zeigen'', ''Ersetzen…'' (durch eine Datei mit derselben Endung) und ''Entfernen'' – nach einer Rückfrage wandert die Datei in den Unterordner ''Entfernt'' des Vorlagenordners; gelöscht wird nichts. Auf dem iPad steht an erster Stelle ''Teilen…''. Für die mitgelieferte Vorlage gibt es nur ''Schreibgeschützt öffnen'' bzw. ''Teilen…'': Änderungen daran werden nicht gespeichert, eine eigene Vorlage entsteht über ''Neue Vorlage…''. Solange eine Vorlage in Word geöffnet ist, bleiben ''Ersetzen…'' und ''Entfernen'' gesperrt.
+
+{{Anker|erstellen}}Vor jedem Bericht prüft EPOS-Plan die gewählte Vorlage. Findet die Prüfung einen Fehler – etwa einen Platzhalter, den der Katalog nicht kennt –, ist die Vorlage für eine andere Sprache angelegt oder nutzt sie den Paarvergleich, obwohl die Ergebnisansicht alle Varianten zeigt, fragt eine Rückfrage nach dem Weg: ''Mit meiner Vorlage'' (nicht erkannte Platzhalter bleiben gelb markiert im Bericht stehen), ''Mit Standardvorlage'' (nur für diesen Bericht) oder ''Abbrechen''. Gefüllt wird genau der geprüfte Inhalt der Vorlage, auch wenn sie während der Berechnung in Word gespeichert wird. Nach dem Lauf nennt die Meldung die Vorlage, aus der der Bericht entstand, und warum sie es war, dazu nicht ersetzte und leere Platzhalter und entfernte Kommentare. ''Bericht erzeugen'' auf der Seite [[Programm Dokumentation/Wirtschaftlichkeit#bericht|Wirtschaftlichkeit]] nimmt dieselbe Vorlage; führt sie Platzhalter, aber keinen der Wirtschaftlichkeit, entsteht dieser eine Bericht mit der Standardvorlage, und die Meldung sagt es.
+
+== Platzhalter ==
+{{Anker|schreibweise}}
+Ein Platzhalter steht in doppelten geschweiften Klammern im Text der Vorlage, etwa <code><nowiki>{{projekt.name}}</nowiki></code> oder <code><nowiki>{{ersteller.firma}}</nowiki></code>. Groß- und Kleinschreibung und Leerzeichen in den Klammern spielen keine Rolle; die Prüfung nennt dann die übliche Schreibweise. Ein Platzhalter für Text, Zahl oder Datum darf im Haupttext, in Tabellenzellen, in Kopf- und Fußzeilen, in Fuß- und Endnoten und in Textfeldern stehen; das Absatz- und Zeichenformat der Stelle bleibt erhalten. <code><nowiki>{{bericht.inhalt}}</nowiki></code> steht allein in einem Absatz des Haupttexts und setzt dort den ganzen Bericht mit den gewählten Bausteinen ein; eine Vorlage ganz ohne Platzhalter bekommt den Bericht an ihr Ende. Ein Platzhalter ohne Wert wird mit einem Gedankenstrich oder leer gefüllt, nie mit 0. Kommentare der Vorlage erscheinen nicht im Bericht.
+
+== Prüfzeile und Prüfliste ==
+{{Anker|pruefliste}}
+Unter der Auswahl steht die '''Prüfzeile''': Sie nennt die Zahl der Platzhalter der gewählten Vorlage und ob die Prüfung etwas meldet; ist die Vorlage in Word geöffnet, sagt sie, dass ungespeicherte Änderungen im Bericht fehlen. Kurz geprüft wird beim Öffnen der Seite, beim Wechsel der Vorlage, nach jeder Handlung der Gruppe und vor jedem Bericht – dann nur die Platzhalter, ihre Orte, die Sprache und die Kommentare. ''Prüfen'', ''Hinzufügen…'' und ''Ersetzen…'' prüfen vollständig: zusätzlich Dateiformat, Makros, nachverfolgte Änderungen, verknüpfte Inhalte und die Überschriftenstile.
+
+Meldet die Prüfung etwas, steht hinter der Zeile ''anzeigen''. Die '''Prüfliste''' ordnet die Meldungen nach Fehlern, Warnungen und Hinweisen; jede nennt die Fundstelle in der Vorlage (etwa ''Tabelle 2, Zeile 3, Zelle 1 beginnt mit …'') und was zu tun ist. Ein Fehler heißt: Die Stelle wird so nicht gefüllt. Eine Warnung heißt: Der Bericht entsteht, aber anders, als die Vorlage vermuten lässt. Ein Hinweis braucht nichts. Über ''erklären lassen'' erläutert der [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]] eine Meldung.
+
+== Platzhalterkatalog ==
+{{Anker|platzhalterkatalog}}
+''Platzhalter…'' öffnet den '''Platzhalterkatalog''': alle Platzhalter, die eine Word-Vorlage tragen kann, mit Schlüssel, Art (Text, Zahl, Datum, Kapitel …), Kontext (Bericht, Installation, Stammprojekt …) und Beschreibung. Die Suche findet Wörter im Schlüssel und in der Beschreibung; ein aus der Vorlage kopierter Platzhalter samt Klammern findet seinen Eintrag ebenso. Eine gewählte Zeile zeigt darunter den Platzhalter in der Schreibweise der Vorlage, markiert zum Kopieren und Einfügen.
+
+== Standardvorlage ==
+{{Anker|standardvorlage}}
+Die ''Standardvorlage (EPOS-Plan)'' wird mit dem Programm ausgeliefert und mit jedem Update erneuert; sie ist schreibgeschützt. Sie setzt den ganzen Bericht über <code><nowiki>{{bericht.inhalt}}</nowiki></code> ein und trägt in Kopf- und Fußzeile den Programmnamen, die Firma und das Berichtsdatum. Wer sie anpassen will, legt mit ''Neue Vorlage…'' eine Kopie an. Eigene Vorlagen im Vorlagenordner fasst ein Update nie an.
+
+== Einstellungen: Firma und Vorlagenordner ==
+{{Anker|einstellungen}}
+Unter ''Administration › Einstellungen'', Abschnitt '''Bericht''', stehen zwei Angaben für alle Projekte dieses Anwenders:
+
+* '''Firma''' – steht im Bericht an der Stelle <code><nowiki>{{ersteller.firma}}</nowiki></code>. Vorbelegt ist die Firma der Lizenz; ''Standardwerte'' setzt sie wieder darauf. Ein leeres Feld lässt die Stelle im Bericht leer.
+* '''Vorlagenordner''' – der Ordner der eigenen Berichtsvorlagen; vorgegeben ist ''Dokumente\EPOS-Plan\Berichtsvorlagen''. Unter Windows lässt sich jeder erreichbare Ordner wählen, auch ein gemeinsamer Ordner des Büros – dann arbeiten alle mit denselben Vorlagen. Übernommen wird nur ein Ordner, den es gibt; ist er nicht erreichbar, sagt es eine Meldung. Auf dem iPad liegt der Ordner fest in der App, eigene Vorlagen kommen dort über ''Hinzufügen…'' auf der Berichtsseite hinein.
+
+Die Datenbanksicherung nimmt den Vorlagenordner nicht mit; er gehört in die übliche Sicherung der Dateien.
+
+== Siehe auch ==
+
+* [[Programm Dokumentation/Bericht|Bericht]] – Varianten, Bausteine, Ausgabe und Zielordner
+* [[Programm Dokumentation/Wirtschaftlichkeit#bericht|Wirtschaftlichkeit: Bericht]] – was der Word-Bericht zur Wirtschaftlichkeit enthält
+* [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]] – Meldungen erklären lassen
+
+[[Kategorie:Programm Dokumentation]]
