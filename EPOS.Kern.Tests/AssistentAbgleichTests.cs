@@ -66,6 +66,8 @@ namespace EPOS.Kern.Tests
                     Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
                     Assert.Empty(a.GeschriebeneGewerke);
                     Assert.False(a.KopfGeschrieben);
+                    // #497: Kein Traegersatz fehlt - die Heilung schreibt nichts.
+                    Assert.Equal(0, a.GeheilteTraegersaetze);
                     Assert.Equal(alt, MerkmalUebernahmeCtrl.Aenderungsdatum(ID));
                     Assert.Equal(vorher, Abbild(ID));
 
@@ -243,6 +245,228 @@ namespace EPOS.Kern.Tests
                 }
                 finally { WizardCtrl.Aktueller = vorherCtrl; }
             }
+        }
+
+        // =========================================================================
+        // #497 (a): Trägersätze heilen unabhängig vom Erzeuger-Abdruck
+        // =========================================================================
+
+        /// <summary>
+        /// Fehlt einer vorhandenen Anlage ihr projektgebundener Trägersatz, legt ein
+        /// Speichern OHNE Anlagenänderung genau diesen an und setzt das Änderungsdatum;
+        /// die übrigen Sätze behalten ihre Ids. Ein zweites Speichern findet keine Lücke
+        /// mehr und schreibt nichts.
+        /// </summary>
+        [Fact]
+        public void Ein_fehlender_Traegersatz_heilt_beim_Speichern_ohne_Aenderung()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    string name = SechsGewerkeVorbereiten();
+
+                    // Die Saetze des Projekts: ein Brenner-Traeger (Kessel) und der
+                    // Stromtraeger (Waermepumpe). Der Brenner-Satz wird entfernt.
+                    int kesselTraeger = Convert.ToInt32(DataRepository.ExecuteScalar(
+                        "SELECT ID_Carrier FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                        new DbParam("@p", ID), new DbParam("@t", WizardItemClass.KESSEL_TYP)), CultureInfo.InvariantCulture);
+                    Assert.True(kesselTraeger > 0, "Projekt 1041 fuehrt keinen Kessel mit Traeger.");
+                    Assert.Equal(1, Saetze(kesselTraeger));
+                    string andereVorher = AndereSaetze(kesselTraeger);
+
+                    Assert.True(DataRepository.ExecuteSQL(
+                        "DELETE FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                        new DbParam("@p", ID), new DbParam("@c", kesselTraeger)));
+                    Assert.True(DataRepository.ExecuteSQL(
+                        "DELETE FROM energy_price WHERE id_projekt = ? AND carrier_id = ?",
+                        new DbParam("@p", ID), new DbParam("@c", kesselTraeger)));
+                    Assert.Equal(0, Saetze(kesselTraeger));
+
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl a = Bearbeitenlauf(name);
+                    SeitenBetreten(a);
+                    DateTime? alt = DatumSetzen();
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+                    Assert.Empty(a.GeschriebeneGewerke);
+                    Assert.Equal(1, a.GeheilteTraegersaetze);
+                    Assert.Equal(1, Saetze(kesselTraeger));
+                    Assert.Equal(andereVorher, AndereSaetze(kesselTraeger));
+
+                    DateTime? neu = MerkmalUebernahmeCtrl.Aenderungsdatum(ID);
+                    Assert.True(neu.HasValue && neu.Value > alt.Value.AddDays(1),
+                                "Die Heilung hat das Aenderungsdatum nicht gesetzt: " + neu);
+
+                    // Zweites Speichern: keine Luecke, kein Schreiben, kein Stempel.
+                    alt = DatumSetzen();
+                    string vorher = Abbild(ID);
+                    e = a.Speichern();
+                    Assert.True(e.Erfolg, "Zweites Speichern scheiterte an: " + e.Schritt);
+                    Assert.Equal(0, a.GeheilteTraegersaetze);
+                    Assert.Equal(alt, MerkmalUebernahmeCtrl.Aenderungsdatum(ID));
+                    Assert.Equal(vorher, Abbild(ID));
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        // =========================================================================
+        // #497 (b): Id-Nachzug der Zuordnungen
+        // =========================================================================
+
+        /// <summary>
+        /// Neu aufgenommene Zeilen der vier Zuordnungen tragen vorläufige Ids ab 100000;
+        /// nach dem Speichern tragen alle Zeilen die Ids der Datenbank (und den Verweis
+        /// auf ihre Projektkopie), und ein zweites Speichern schreibt nichts.
+        /// </summary>
+        [Fact]
+        public void Nach_dem_Speichern_tragen_die_Zuordnungen_ihre_echten_Ids()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    string name = SechsGewerkeVorbereiten();
+
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl a = Bearbeitenlauf(name);
+                    SeitenBetreten(a);
+
+                    a.Prozess.Add(new Z_ProjektProzesswaermeModel
+                    {
+                        ID_Z = 100000, ID_Projekt = ID, szProzessname = a.Prozess[0].szProzessname, Summe = 7
+                    });
+                    a.Stromverbraucher.Add(new Z_ProjektStromverbraucherModel
+                    {
+                        m_ID_Z = 100000, m_ID_Projekt = ID, m_szVerbraucher = a.Stromverbraucher[0].m_szVerbraucher, m_Summe = 7
+                    });
+                    a.Waermebedarf.Add(new Z_ProjWaermebedarfModel
+                    {
+                        m_ID_Z = 100000, m_ID_Projekt = ID, m_szBezeichner = a.Waermebedarf[0].m_szBezeichner,
+                        Kanal = DbWerte.KANAL_PROZESS
+                    });
+                    a.Stromganglinie.Add(new Z_ProjektStromganglinieModel
+                    {
+                        m_ID_Z = 100001, m_ID_Projekt = ID, m_szStromganglinie = STROMGANGLINIE
+                    });
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+                    Assert.Equal(4, a.GeschriebeneGewerke.Count);
+
+                    // Keine vorlaeufige Id mehr - und genau die Ids der Datenbank.
+                    Assert.Equal(Paare("Z_Projekt_Prozesswaerme", "ID", "ID_Prozesswaerme"),
+                                 Sortiert(a.Prozess.Select(p => (p.ID_Z, p.ID_Prozesswaerme))));
+                    Assert.Equal(Paare("Z_Projekt_Stromverbraucher", "ID", "ID_Stromverbraucher"),
+                                 Sortiert(a.Stromverbraucher.Select(v => (v.m_ID_Z, v.m_ID_Stromverbraucher))));
+                    Assert.Equal(Paare("Z_ProjektWaermebedarf", "ID_Z", "ID_Ganglinie"),
+                                 Sortiert(a.Waermebedarf.Select(w => (w.m_ID_Z, w.m_ID_Ganglinie))));
+                    Assert.Equal(Paare("Z_ProjektStromganglinie", "ID", "ID_Ganglinie"),
+                                 Sortiert(a.Stromganglinie.Select(s => (s.m_ID_Z, s.m_ID_Stromganglinie))));
+                    Assert.All(a.Prozess, p => Assert.True(p.ID_Z < 100000 && p.ID_Projekt == ID));
+                    Assert.All(a.Stromverbraucher, v => Assert.True(v.m_ID_Z < 100000 && v.m_ID_Projekt == ID));
+                    Assert.All(a.Waermebedarf, w => Assert.True(w.m_ID_Z < 100000 && w.m_ID_Projekt == ID));
+                    Assert.All(a.Stromganglinie, s => Assert.True(s.m_ID_Z < 100000 && s.m_ID_Projekt == ID));
+
+                    // Ein zweites Speichern desselben Laufs schreibt nichts.
+                    DateTime? alt = DatumSetzen();
+                    string vorher = Abbild(ID);
+                    e = a.Speichern();
+                    Assert.True(e.Erfolg, "Zweites Speichern scheiterte an: " + e.Schritt);
+                    Assert.Empty(a.GeschriebeneGewerke);
+                    Assert.Equal(alt, MerkmalUebernahmeCtrl.Aenderungsdatum(ID));
+                    Assert.Equal(vorher, Abbild(ID));
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        // =========================================================================
+        // #497 (c): Speichern für ein anderes Projekt als das geladene
+        // =========================================================================
+
+        /// <summary>
+        /// Die Listen stammen aus Projekt 1041; die linke Spalte markiert danach 1030
+        /// (Projekt-Id gesetzt, Ladekennzeichen zurück), gespeichert wird ohne neues
+        /// Laden. Der Lauf lehnt BENANNT ab, und keines der beiden Projekte ist berührt.
+        /// </summary>
+        [Fact]
+        public void Speichern_fuer_ein_anderes_Projekt_als_das_geladene_wird_abgelehnt()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                const int ANDERES = 1030;
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl a = Bearbeitenlauf(Projektname(ID));
+                    Assert.Equal(ID, a.ListenProjektId);
+
+                    // Wie ProjektMarkiert in der Huelle - ohne danach die Projektseite
+                    // zu durchlaufen.
+                    a.ProjektId = ANDERES;
+                    a.BereitsGeladen = false;
+
+                    DateTime? datumAnderes = MerkmalUebernahmeCtrl.Aenderungsdatum(ANDERES);
+                    DateTime? datumEigen = MerkmalUebernahmeCtrl.Aenderungsdatum(ID);
+                    string anderesVorher = Abbild(ANDERES);
+                    string eigenVorher = Abbild(ID);
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.Equal(AssistentAusgang.ProjektGewechselt, e.Ausgang);
+                    Assert.False(e.Erfolg);
+                    Assert.False(a.Gespeichert);
+                    Assert.Empty(a.GeschriebeneGewerke);
+                    Assert.False(string.IsNullOrEmpty(AssistentCtrl.Meldungstext(e)));
+                    Assert.False(string.IsNullOrEmpty(AssistentCtrl.Meldungstitel(e)));
+
+                    Assert.Equal(anderesVorher, Abbild(ANDERES));
+                    Assert.Equal(eigenVorher, Abbild(ID));
+                    Assert.Equal(datumAnderes, MerkmalUebernahmeCtrl.Aenderungsdatum(ANDERES));
+                    Assert.Equal(datumEigen, MerkmalUebernahmeCtrl.Aenderungsdatum(ID));
+
+                    // Nach dem Laden des markierten Projekts geht es wieder.
+                    a.Laden(Projektname(ANDERES));
+                    Assert.Equal(ANDERES, a.ListenProjektId);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        /// <summary>
+        /// Ohne Datenbank: Ein Bearbeiten-Lauf, der nie geladen hat, schreibt nicht —
+        /// er lehnt vor jedem Datenbankzugriff ab; der Neu-Zweig kennt die Prüfung nicht.
+        /// </summary>
+        [Fact]
+        public void Bearbeiten_ohne_geladene_Listen_wird_abgelehnt()
+        {
+            WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+            try
+            {
+                WizardCtrl.Aktueller = new WizardCtrl();
+                AssistentCtrl a = new AssistentCtrl();
+                a.Betriebsart = AssistentCtrl.BETRIEBSART_BEARBEITEN;
+                a.ProjektId = 4711;
+                a.Kopf[0].Name = "Irgendwas";
+                a.Kopf[0].Klimaname = "Region 12 Mannheim";
+
+                Assert.Equal(0, a.ListenProjektId);
+                AssistentErgebnis e = a.Speichern();
+                Assert.Equal(AssistentAusgang.ProjektGewechselt, e.Ausgang);
+                Assert.False(a.Gespeichert);
+            }
+            finally { WizardCtrl.Aktueller = vorherCtrl; }
         }
 
         // =========================================================================
@@ -452,7 +676,12 @@ namespace EPOS.Kern.Tests
 
         private static string Tabelle(string sql, int idProjekt)
         {
-            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@p", idProjekt));
+            return Tabelle(sql, new DbParam("@p", idProjekt));
+        }
+
+        private static string Tabelle(string sql, params DbParam[] parameter)
+        {
+            DataTable dt = DataRepository.GetDataTable(sql, parameter);
             StringBuilder sb = new StringBuilder();
             if (dt == null) return "";
             foreach (DataRow r in dt.Rows)
@@ -497,6 +726,42 @@ namespace EPOS.Kern.Tests
                     foreach (DataColumn c in dt.Columns)
                         felder.Add(c.ColumnName + "=" + Convert.ToString(r[c], CultureInfo.InvariantCulture));
             return felder.ToArray();
+        }
+
+        /// <summary>Zahl der Projekteinstellungssätze des Projekts zu einem Träger.</summary>
+        private static int Saetze(int traeger)
+        {
+            object n = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                new DbParam("@p", ID), new DbParam("@c", traeger));
+            return Convert.ToInt32(n, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Die Sätze der ÜBRIGEN Träger des Projekts — mit Ids, ohne Zeitpunkte.</summary>
+        private static string AndereSaetze(int traeger)
+        {
+            return Tabelle("SELECT * FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger <> ? ORDER BY 1",
+                           new DbParam("@p", ID), new DbParam("@c", traeger))
+                 + Tabelle("SELECT * FROM energy_price WHERE id_projekt = ? AND carrier_id <> ? ORDER BY 1",
+                           new DbParam("@p", ID), new DbParam("@c", traeger));
+        }
+
+        /// <summary>(Zuordnungs-Id, Verweis) je Zeile einer Zuordnungstabelle des Projekts, sortiert.</summary>
+        private static List<(int, int)> Paare(string tabelle, string idSpalte, string verweisSpalte)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT [" + idSpalte + "], [" + verweisSpalte + "] FROM [" + tabelle + "] WHERE ID_Projekt = ?",
+                new DbParam("@p", ID));
+            List<(int, int)> paare = new List<(int, int)>();
+            foreach (DataRow r in dt.Rows)
+                paare.Add((Convert.ToInt32(r[0], CultureInfo.InvariantCulture),
+                           Convert.ToInt32(r[1], CultureInfo.InvariantCulture)));
+            return Sortiert(paare);
+        }
+
+        private static List<(int, int)> Sortiert(IEnumerable<(int, int)> paare)
+        {
+            return paare.OrderBy(p => p.Item1).ThenBy(p => p.Item2).ToList();
         }
 
         private static string Projektname(int idProjekt)
