@@ -607,8 +607,14 @@
                     <Gruppenkopf Titel="@ZonenTexte.Gruppe">
                         <KindInhalt>
                             <Herleitungszeile Text="@Huellwegzeile" />
+                            @if (Sperrzeile is string sperrzeile)
+                            {
+                                @* G6a: gut sichtbar, solange die Simulation das Gebaeude mit mehreren Zonen ablehnt. *@
+                                <Warnbanner Stufe="WarnStufe.Warnung" Text="@sperrzeile" />
+                            }
                             @if (_arbeit.Zonen.Count > 0)
                             {
+                                IReadOnlyList<Zonenkennwerte> kennliste = _arbeit.Kennwerte;
                                 <div class="epos-raster-huelle epos-raster-huelle--frei">
                                     <table class="epos-raster epos-zonenliste">
                                         <thead>
@@ -621,31 +627,56 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ((ZoneDaten listenzone, Zonenkennwerte kennwerte) in _arbeit.Zonen.Zip(_arbeit.Kennwerte))
+                                            @for (int i = 0; i < _arbeit.Zonen.Count; i++)
                                             {
+                                                ZoneDaten listenzone = _arbeit.Zonen[i];
+                                                Zonenkennwerte kennwerte = kennliste[i];
                                                 int id = listenzone.Id;
+                                                bool oben = i == 0, unten = i == _arbeit.Zonen.Count - 1;
                                                 <tr @key="id" data-zone="@id">
                                                     <td>@listenzone.Bezeichner</td>
-                                                    <td class="epos-zahl">@Zahl(kennwerte.Nutzflaeche, 2) m²</td>
+                                                    <td class="epos-zahl">@Flaechentext(listenzone, kennwerte)</td>
                                                     <td class="epos-zahl">@Leitwert(kennwerte.HT)</td>
                                                     <td class="epos-zahl">@kennwerte.Bauteile</td>
                                                     <td class="epos-zellenaktionen">
                                                         <span class="epos-zellenaktionen-inhalt">
+                                                            <button type="button" class="epos-knopf epos-zone-hoch" disabled="@oben"
+                                                                    title="@ZonenTexte.KnopfHoch" aria-label="@(listenzone.Bezeichner + " – " + ZonenTexte.KnopfHoch)"
+                                                                    @onclick="() => ZoneVerschieben(id, -1)"><span aria-hidden="true">▲</span></button>
+                                                            <button type="button" class="epos-knopf epos-zone-runter" disabled="@unten"
+                                                                    title="@ZonenTexte.KnopfRunter" aria-label="@(listenzone.Bezeichner + " – " + ZonenTexte.KnopfRunter)"
+                                                                    @onclick="() => ZoneVerschieben(id, +1)"><span aria-hidden="true">▼</span></button>
                                                             <button type="button" class="epos-knopf" @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfOeffnen</button>
+                                                            <button type="button" class="epos-knopf" aria-disabled="@(NeueZoneSperre is null ? null : "true")"
+                                                                    title="@NeueZoneSperre" @onclick="() => BeiDuplizieren(id)">@ZonenTexte.KnopfDuplizieren</button>
                                                             <button type="button" class="epos-knopf" @onclick="() => _entfernId = id">@ZonenTexte.KnopfEntfernen</button>
                                                         </span>
                                                     </td>
                                                 </tr>
                                             }
                                         </tbody>
+                                        <tfoot>
+                                            <tr class="epos-zonenliste-summe">
+                                                <th scope="row">@ZonenTexte.Summe</th>
+                                                <td class="epos-zahl">@Zahl(_arbeit.NutzflaecheWirksam, 2) m²</td>
+                                                <td class="epos-zahl">@Leitwert(_arbeit.HTAnzeige)</td>
+                                                <td class="epos-zahl">@kennliste.Sum(k => k.Bauteile)</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
                                     </table>
                                 </div>
+                                @foreach (string hinweis in _arbeit.ZonenHinweise)
+                                {
+                                    <Herleitungszeile Text="@hinweis" />
+                                }
                             }
                             else
                             {
                                 <p class="epos-leisezeile">@ZonenTexte.Leer</p>
                                 @Uebernahmeblock
                             }
+                            @Neuezonenblock
                         </KindInhalt>
                     </Gruppenkopf>
                 </KindInhalt>
@@ -673,6 +704,7 @@
             @if (_zoneOffen is not null)
             {
                 <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
+                             NutzflaechePflicht="@ZonendialogPflicht"
                              Projektaufbauten="@_projektaufbauten"
                              Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
                              Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
@@ -686,6 +718,8 @@
                 Beantwortet="UebernahmeBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
     <Rueckfrage Offen="@(_entfernId is not null)" TitelText="@ZonenTexte.KnopfEntfernen" Frage="@Entfernfrage" VorgabeNein="true"
                 Beantwortet="EntfernenBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
+    <Rueckfrage Offen="@(_nachFrage is not null)" TitelText="@_frageTitel" Frage="@_frageText" VorgabeNein="true"
+                Beantwortet="NachfrageBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
     <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@SpeichernUnterFrage"
                 VorgabeNein="true" Beantwortet="SpeichernUnterBeantwortet"
                 JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
@@ -693,6 +727,10 @@
     @if (SpeichernUnterMoeglich)
     {
         <Herleitungszeile Text="@Texte.HinweisSpeichernUnter" />
+        @if (Modus == GebaeudeKatalogModus.Projekt && _arbeit.Zonen.Count > 0)
+        {
+            <Herleitungszeile Text="@SpeichernUnterZonenzeile" />
+        }
     }
 
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
@@ -961,6 +999,14 @@
 
     /// <summary>Die Zone, nach deren Entfernen die Rückfrage fragt; <c>null</c> = keine Rückfrage.</summary>
     private int? _entfernId;
+
+    /// <summary>
+    /// Was nach „Ja" der Rückfrage vor der ersten bzw. zweiten Zone geschieht (G6a: eine neue Zone
+    /// öffnen oder eine duplizieren); <c>null</c> = keine Rückfrage.
+    /// </summary>
+    private Action? _nachFrage;
+    private string _frageTitel = "";
+    private string _frageText = "";
     private bool _speichernUnterFrage;
 
     /// <summary>Die Aufbauten des Projekts — nach dem Übernehmen eines Katalogaufbaus im OK-Weg ergänzt.</summary>
@@ -1051,6 +1097,68 @@
             return null;
         }
     }
+
+    /// <summary>
+    /// Warum „+ Neue Zone …" und „Duplizieren" gesperrt sind; <c>null</c> = frei (G6a). Dieselben Gründe
+    /// wie bei der Übernahme — Katalogsatz, Tagesbilanz-Weg —, aber nicht „Zone schon da"; dazu die
+    /// Höchstzahl der Regelklasse und der Freigabeschalter (A1). Prüfhilfe für die Tests.
+    /// </summary>
+    public string? NeueZoneSperre
+    {
+        get
+        {
+            if (Modus != GebaeudeKatalogModus.Projekt || Zonen is null) return ZonenTexte.SperreKatalog;
+            if (!_arbeit.IstVdi6007) return ZonenTexte.SperreTagesbilanz;
+            int grenze = GebaeudeZonenregeln.Hoechstzahl(Zonen.MehrereZonenFreigegeben);
+            if (_arbeit.Zonen.Count < grenze) return null;
+            return Zonen.MehrereZonenFreigegeben
+                ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreHoechstzahl, grenze)
+                : ZonenTexte.SperreFreigabe;
+        }
+    }
+
+    /// <summary>
+    /// Die Sperrzeile ab zwei Zonen (G6a): Die Simulation lehnt das Gebäude benannt ab, bis EPOS
+    /// mehrere Zonen rechnet; <c>null</c> = keine. Prüfhilfe für die Tests.
+    /// </summary>
+    public string? Sperrzeile
+        => GebaeudeZonenregeln.Rechenbar(_arbeit.Zonen.Count) ? null
+           : string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperrzeileZonen, _arbeit.Zonen.Count);
+
+    /// <summary>Steht die Rückfrage vor der ersten bzw. zweiten Zone? Prüfhilfe für die Tests.</summary>
+    public bool NachfrageOffen => _nachFrage is not null;
+
+    /// <summary>Der Text dieser Rückfrage. Prüfhilfe für die Tests.</summary>
+    public string Nachfragetext => _frageText;
+
+    /// <summary>Steht der Zonendialog mit Pflichtfläche? Prüfhilfe für die Tests.</summary>
+    public bool ZonendialogPflicht
+        => _zoneOffen is not null && (_arbeit.ZoneMitId(_zoneOffen.Id) is null ? _arbeit.Zonen.Count + 1 : _arbeit.Zonen.Count) >= 2;
+
+    /// <summary>„+ Neue Zone …" samt Sperrgrund — weich gesperrt (<c>aria-disabled</c>), der Versuch meldet den Grund.</summary>
+    private RenderFragment Neuezonenblock => __builder =>
+    {
+        string? sperre = NeueZoneSperre;
+        <div class="epos-zeilenknoepfe epos-zonen-neu">
+            <button type="button" class="epos-knopf epos-zonen-neu-knopf"
+                    aria-disabled="@(sperre is null ? null : "true")" title="@sperre"
+                    @onclick="BeiNeueZone">@ZonenTexte.KnopfNeueZone</button>
+        </div>
+        @if (sperre is not null && Modus == GebaeudeKatalogModus.Projekt && Zonen is not null)
+        {
+            <p class="epos-leisezeile">@sperre</p>
+        }
+    };
+
+    /// <summary>Die Nutzfläche einer Zeile der Zonenliste: ab zwei Zonen ohne eigene Fläche „fehlt".</summary>
+    private string Flaechentext(ZoneDaten zone, Zonenkennwerte k)
+        => _arbeit.Zonen.Count >= 2 && zone.Nutzflaeche is null ? ZonenTexte.FlaecheFehlt : Zahl(k.Nutzflaeche, 2) + " m²";
+
+    /// <summary>Die Zeile unter „Speichern unter" mit Zonen: Sie bleiben an der Projektkopie.</summary>
+    private string SpeichernUnterZonenzeile
+        => string.Format(CultureInfo.CurrentCulture, ZonenTexte.HinweisSpeichernUnterZonen,
+                         _arbeit.Zonen.Count.ToString(CultureInfo.CurrentCulture),
+                         _arbeit.Zonen.Sum(z => z.Bauteile.Count).ToString(CultureInfo.CurrentCulture));
 
     /// <summary>Die Zeile unter dem Namen in der Betriebsart Projekt: Die Projektkopie behält ihren Namen.</summary>
     private string NameProjektzeile
@@ -1193,6 +1301,63 @@
         if (ergebnis is null) return;
         if (!_arbeit.ZoneErsetzen(ergebnis)) _arbeit.ZoneAnlegen(ergebnis);
         _meldung = "";
+    }
+
+    /// <summary>
+    /// „+ Neue Zone …" (G6a): Vor der ERSTEN Zone fragt der Dialog, weil das Gebäude danach über seine
+    /// Bauteile rechnet (Softwarearchitektur 3.2 Regel 3); vor der ZWEITEN, weil die Simulation das
+    /// Gebäude dann ablehnt, bis EPOS mehrere Zonen rechnet. Danach öffnet der Zonendialog eine neue,
+    /// leere Zone; erst sein OK legt sie in den Arbeitsstand. Weich gesperrt meldet der Knopf den Grund.
+    /// </summary>
+    private void BeiNeueZone()
+    {
+        if (NeueZoneSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        if (_arbeit.Zonen.Count == 0) Fragen(ZonenTexte.KnopfNeueZone, ZonenTexte.FrageErsteZone, ZoneNeuOeffnen);
+        else if (_arbeit.Zonen.Count == 1) Fragen(ZonenTexte.KnopfNeueZone, ZonenTexte.FrageZweiteZone, ZoneNeuOeffnen);
+        else ZoneNeuOeffnen();
+    }
+
+    private void ZoneNeuOeffnen()
+    {
+        string name = string.Format(CultureInfo.CurrentCulture, ZonenTexte.NameNeu, _arbeit.Zonen.Count + 1);
+        _zoneOffen = _arbeit.NeueZone(name);
+    }
+
+    /// <summary>„Duplizieren": die Kopie steht hinter der Zone; aus einer Zone werden zwei — dann mit Rückfrage.</summary>
+    private void BeiDuplizieren(int id)
+    {
+        if (NeueZoneSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        if (_arbeit.Zonen.Count == 1) Fragen(ZonenTexte.KnopfDuplizieren, ZonenTexte.FrageZweiteZone, () => Duplizieren(id));
+        else Duplizieren(id);
+    }
+
+    private void Duplizieren(int id)
+    {
+        if (_arbeit.ZoneMitId(id) is not ZoneDaten quelle) return;
+        _arbeit.ZoneDuplizieren(id, string.Format(CultureInfo.CurrentCulture, ZonenTexte.NameKopie, quelle.Bezeichner));
+    }
+
+    /// <summary>▲▼: die Zone einen Platz nach oben bzw. unten; der Rang folgt beim Schreiben der Liste.</summary>
+    private void ZoneVerschieben(int id, int richtung)
+    {
+        if (_arbeit.ZoneVerschieben(id, richtung)) _meldung = "";
+    }
+
+    private void Fragen(string titel, string text, Action nachJa)
+    {
+        _frageTitel = titel;
+        _frageText = text;
+        _nachFrage = nachJa;
+    }
+
+    /// <summary>Die Antwort der Rückfrage vor der ersten bzw. zweiten Zone: Ja führt den Weg aus, Nein lässt alles.</summary>
+    private void NachfrageBeantwortet(bool? antwort)
+    {
+        Action? weiter = _nachFrage;
+        _nachFrage = null;
+        if (antwort == true) weiter?.Invoke();
     }
 
     /// <summary>„Zone entfernen": Ja nimmt die gefragte Zone aus dem Arbeitsstand — geschrieben wird mit OK.</summary>
@@ -1737,7 +1902,7 @@
     {
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
-            || _entfernId is not null || _speichernUnterFrage) return Task.CompletedTask;
+            || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 

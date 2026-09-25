@@ -1286,6 +1286,17 @@
         internal const string EINHEIT_W_K = "W/K";
 
         internal static string ZonBezeichnungName => MyResource.Resource.ZONDLG_LBL_BEZEICHNER;
+
+        // ================= Gebaeudesimulation G6a: die Zonenliste im Gebaeudeeditor (nur lesbar)
+
+        internal static string GebzZoneName => MyResource.Resource.GEBZ_SP_ZONE;
+        internal static string GebzZoneNameErl => MyResource.Resource.KI_DLG_GEBZ_ZONE_NAME_ERL;
+        internal static string GebzZoneNutzflaecheName => MyResource.Resource.GEBZ_SP_NUTZFLAECHE;
+        internal static string GebzZoneNutzflaecheErl => MyResource.Resource.KI_DLG_GEBZ_ZONE_NUTZFLAECHE_ERL;
+        internal static string GebzZoneHTName => MyResource.Resource.GEBZ_SP_HT;
+        internal static string GebzZoneHTErl => MyResource.Resource.KI_DLG_GEBZ_ZONE_HT_ERL;
+        internal static string GebzZoneBauteileName => MyResource.Resource.GEBZ_SP_BAUTEILE;
+        internal static string GebzZoneBauteileErl => MyResource.Resource.KI_DLG_GEBZ_ZONE_BAUTEILE_ERL;
         internal static string ZonBezeichnungErl => MyResource.Resource.KI_DLG_ZON_BEZEICHNUNG_ERL;
         internal static string ZonNutzflaecheName => MyResource.Resource.ZONDLG_LBL_NUTZFLAECHE;
         internal static string ZonNutzflaecheErl => MyResource.Resource.KI_DLG_ZON_NUTZFLAECHE_ERL;

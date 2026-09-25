@@ -33102,6 +33102,15 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SPERRE_ZONEN" xml:space="preserve">
     <value>Das Gebäude führt schon {0} Zonen.</value>
   </data>
+  <data name="GEBZ_SPERRZEILE_ZONEN" xml:space="preserve">
+    <value>Mit {0} Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen.</value>
+  </data>
+  <data name="GEBZ_SPERRE_FREIGABE" xml:space="preserve">
+    <value>Dieser Programmstand führt höchstens eine Zone je Gebäude.</value>
+  </data>
+  <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
+    <value>Ein Gebäude trägt höchstens {0} Zonen.</value>
+  </data>
   <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
     <value>Der Tagesbilanz-Weg rechnet keine Zonen – erst den Rechenweg auf VDI 6007 stellen.</value>
   </data>
@@ -33138,17 +33147,50 @@ Möchten Sie das zulassen?</value>
   <data name="GEBZ_SP_AKTIONEN" xml:space="preserve">
     <value>Aktionen</value>
   </data>
+  <data name="GEBZ_SUMME" xml:space="preserve">
+    <value>Summe</value>
+  </data>
+  <data name="GEBZ_FLAECHE_FEHLT" xml:space="preserve">
+    <value>fehlt</value>
+  </data>
   <data name="GEBZ_BTN_OEFFNEN" xml:space="preserve">
     <value>Öffnen…</value>
   </data>
   <data name="GEBZ_BTN_ENTFERNEN" xml:space="preserve">
     <value>Zone entfernen</value>
   </data>
+  <data name="GEBZ_BTN_NEUE_ZONE" xml:space="preserve">
+    <value>+ Neue Zone …</value>
+  </data>
+  <data name="GEBZ_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplizieren</value>
+  </data>
+  <data name="GEBZ_BTN_HOCH" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="GEBZ_BTN_RUNTER" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="GEBZ_NAME_NEU" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="GEBZ_NAME_KOPIE" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
   <data name="GEBZ_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Zone „{0}“ mit {1} Bauteilen entfernen? Das Gebäude rechnet danach wieder den Klassenweg über die U-Wert-Gruppen; geschrieben wird mit OK.</value>
   </data>
   <data name="GEBZ_FRAGE_ENTFERNEN_ZONE" xml:space="preserve">
     <value>Zone „{0}“ mit {1} Bauteilen entfernen? Die übrigen Zonen bleiben; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ERSTE_ZONE" xml:space="preserve">
+    <value>Ab jetzt rechnet dieses Gebäude über die Bauteile seiner Zone statt über die U-Wert-Gruppen; die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone. Neue Zone anlegen?</value>
+  </data>
+  <data name="GEBZ_FRAGE_ZWEITE_ZONE" xml:space="preserve">
+    <value>Mit zwei Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht; für die Simulation bleibt dann, eine Zone zu behalten oder alle zu entfernen. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen?</value>
+  </data>
+  <data name="GEBZ_FRAGE_AUS_PROJEKT" xml:space="preserve">
+    <value>„{0}“ trägt {1} Zonen mit {2} Bauteilen. Mit dem Speichern der Liste werden sie samt dem Gebäude aus dem Projekt gelöscht. Trotzdem aus dem Projekt entfernen?</value>
   </data>
   <data name="GEBZ_ZEILE_SUMMENREGEL" xml:space="preserve">
     <value>Abgeleitet aus den Bauteilen der Zone „{0}“: Fläche je Gruppe Σ A, U = Σ U·A / Σ A. Die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone.</value>
@@ -33179,6 +33221,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
     <value>Der Katalogsatz trägt die {0} Zonen mit {1} Bauteilen nicht mit; sie bleiben an der Projektkopie – trotzdem speichern?</value>
+  </data>
+  <data name="GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
+    <value>Der neue Katalogsatz trägt keine Zonen; die Zonen ({0}) mit {1} Bauteilen bleiben an der Projektkopie.</value>
+  </data>
+  <data name="GEBZ_ZONEN_ZAHL" xml:space="preserve">
+    <value>{0} Zonen</value>
+  </data>
+  <data name="GEBZ_ZEILE_NUTZFLAECHE_PFLICHT" xml:space="preserve">
+    <value>Mit mehreren Zonen braucht jede Zone ihre eigene Nutzfläche (Nutzfläche des Gebäudes: {0} m²).</value>
   </data>
   <data name="GEBZ_MSG_ZONEN" xml:space="preserve">
     <value>Die Zonen wurden nicht gespeichert: {0}</value>
@@ -33404,6 +33455,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
     <value>Der Bauteilaufbau des Projekts, leer = keiner — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
+    <value>Der Name der Zone im Reiter „Zonen“ — nur lesbar; Zonen legt der Anwender dort an, öffnet, dupliziert, ordnet und entfernt sie.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_NUTZFLAECHE_ERL" xml:space="preserve">
+    <value>Die Nutzfläche der Zone in m² (leer an der Zone = die des Gebäudes) — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_HT_ERL" xml:space="preserve">
+    <value>Der Transmissionsleitwert H_T der Zone in W/K aus ihren Bauteilen (Σ U·A + Σ ψ·L) — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_BAUTEILE_ERL" xml:space="preserve">
+    <value>Die Zahl der Bauteile der Zone — nur lesbar.</value>
   </data>
   <data name="KI_DLG_BT_ART_ERL" xml:space="preserve">
     <value>Die Bauteilart: Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade oder Sonstiges. Sie bestimmt die Vorgaben für Neigung und Randbedingung; Fenster und Vorhangfassade rechnen aus U-Wert, g-Wert, Rahmenanteil und Verschattung.</value>

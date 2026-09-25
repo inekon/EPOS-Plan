@@ -33095,6 +33095,15 @@ Do you want to allow this?</value>
   <data name="GEBZ_SPERRE_ZONEN" xml:space="preserve">
     <value>The building already has {0} zones.</value>
   </data>
+  <data name="GEBZ_SPERRZEILE_ZONEN" xml:space="preserve">
+    <value>With {0} zones the simulation rejects this building by name – it does not compute several zones yet. For the simulation keep one zone or remove all of them.</value>
+  </data>
+  <data name="GEBZ_SPERRE_FREIGABE" xml:space="preserve">
+    <value>This program version keeps at most one zone per building.</value>
+  </data>
+  <data name="GEBZ_SPERRE_HOECHSTZAHL" xml:space="preserve">
+    <value>A building carries at most {0} zones.</value>
+  </data>
   <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
     <value>The daily-balance path does not compute zones – set the calculation method to VDI 6007 first.</value>
   </data>
@@ -33131,17 +33140,50 @@ Do you want to allow this?</value>
   <data name="GEBZ_SP_AKTIONEN" xml:space="preserve">
     <value>Actions</value>
   </data>
+  <data name="GEBZ_SUMME" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="GEBZ_FLAECHE_FEHLT" xml:space="preserve">
+    <value>missing</value>
+  </data>
   <data name="GEBZ_BTN_OEFFNEN" xml:space="preserve">
     <value>Open…</value>
   </data>
   <data name="GEBZ_BTN_ENTFERNEN" xml:space="preserve">
     <value>Remove zone</value>
   </data>
+  <data name="GEBZ_BTN_NEUE_ZONE" xml:space="preserve">
+    <value>+ New zone …</value>
+  </data>
+  <data name="GEBZ_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="GEBZ_BTN_HOCH" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="GEBZ_BTN_RUNTER" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="GEBZ_NAME_NEU" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="GEBZ_NAME_KOPIE" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
   <data name="GEBZ_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Remove zone “{0}” with {1} building components? The building then uses the class method with the U-value groups again; it is written with OK.</value>
   </data>
   <data name="GEBZ_FRAGE_ENTFERNEN_ZONE" xml:space="preserve">
     <value>Remove zone “{0}” with {1} building components? The other zones remain; it is written with OK.</value>
+  </data>
+  <data name="GEBZ_FRAGE_ERSTE_ZONE" xml:space="preserve">
+    <value>From now on this building is computed from the building components of its zone instead of the U-value groups; the values of the building remain stored and apply again without a zone. Create a new zone?</value>
+  </data>
+  <data name="GEBZ_FRAGE_ZWEITE_ZONE" xml:space="preserve">
+    <value>With two zones the simulation rejects this building by name – it does not compute several zones yet; for the simulation you then keep one zone or remove all of them. Every zone then needs its own usable area. Create a second zone?</value>
+  </data>
+  <data name="GEBZ_FRAGE_AUS_PROJEKT" xml:space="preserve">
+    <value>“{0}” has {1} zones with {2} building components. When the list is saved they are deleted from the project together with the building. Remove from the project anyway?</value>
   </data>
   <data name="GEBZ_ZEILE_SUMMENREGEL" xml:space="preserve">
     <value>Derived from the building components of the zone “{0}”: area per group Σ A, U = Σ U·A / Σ A. The values of the building remain stored and apply again without a zone.</value>
@@ -33172,6 +33214,15 @@ Do you want to allow this?</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
     <value>The catalogue record does not carry the {0} zones with {1} building components; they remain with the project copy – save anyway?</value>
+  </data>
+  <data name="GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
+    <value>The new catalogue record carries no zones; the zones ({0}) with {1} building components remain with the project copy.</value>
+  </data>
+  <data name="GEBZ_ZONEN_ZAHL" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="GEBZ_ZEILE_NUTZFLAECHE_PFLICHT" xml:space="preserve">
+    <value>With several zones every zone needs its own usable area (usable area of the building: {0} m²).</value>
   </data>
   <data name="GEBZ_MSG_ZONEN" xml:space="preserve">
     <value>The zones were not saved: {0}</value>
@@ -33397,6 +33448,18 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
     <value>The project construction build-up, empty = none — read-only.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_NAME_ERL" xml:space="preserve">
+    <value>The name of the zone in the “Zones” tab — read-only; the user creates, opens, duplicates, orders and removes zones there.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_NUTZFLAECHE_ERL" xml:space="preserve">
+    <value>The usable area of the zone in m² (empty at the zone = that of the building) — read-only.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_HT_ERL" xml:space="preserve">
+    <value>The transmission heat transfer coefficient H_T of the zone in W/K from its building components (Σ U·A + Σ ψ·L) — read-only.</value>
+  </data>
+  <data name="KI_DLG_GEBZ_ZONE_BAUTEILE_ERL" xml:space="preserve">
+    <value>The number of building components of the zone — read-only.</value>
   </data>
   <data name="KI_DLG_BT_ART_ERL" xml:space="preserve">
     <value>The component type: external wall, roof, ground slab, window, door, internal wall, ceiling, curtain wall or other. It sets the defaults for tilt and boundary condition; windows and curtain walls are computed from U-value, g-value, frame fraction and shading.</value>

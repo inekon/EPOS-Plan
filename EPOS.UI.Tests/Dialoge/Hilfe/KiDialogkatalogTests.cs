@@ -1173,10 +1173,18 @@ public class KiDialogkatalogTests : IDisposable
         // 54 bis Stufe 3b, dazu die Randbedingung und die vier Ferienspalten; mit der Welle 3
         // von AK1 die dreizehn Felder der Wärmeübergabe (Konzept Anlagenkopplung 9.1); mit E37
         // die acht Felder der Kühlübergabe; mit G4a das Baujahr neben der Baualtersklasse; mit E43
-        // Beginn und Ende der Nachtabsenkung.
-        Assert.Equal(83, d.Felder.Count);
+        // Beginn und Ende der Nachtabsenkung; mit G6a die vier Spalten der Zonenliste (nur lesbar).
+        Assert.Equal(87, d.Felder.Count);
         Assert.DoesNotContain(d.Felder, f => f.IstReihe);
         Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
+
+        foreach (string zone in new[] { "zone_name", "zone_nutzflaeche", "zone_ht", "zone_bauteile" })
+        {
+            KiDialogFeld spalte = d.FindeFeld(zone)!;
+            Assert.True(spalte.IstSpalte, zone);
+            Assert.True(spalte.NurLesen, zone);
+            Assert.Equal("Nummer", spalte.Zeilenkennzeichen);
+        }
 
         foreach ((string name, double max) in new[]
                  {
@@ -1215,7 +1223,9 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog verwaltung = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_ADMIN)!;
 
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBA_TITEL, verwaltung.Anzeigename);
-        Assert.Equal(editor.Felder.Count, verwaltung.Felder.Count);   // + satz, − betriebsart
+        // + satz, − betriebsart, − die vier Spalten der Zonenliste (G6a: ein Katalogsatz trägt keine Zonen)
+        Assert.Equal(editor.Felder.Count - 4, verwaltung.Felder.Count);
+        Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
 
         KiDialogFeld satz = verwaltung.FindeFeld("satz")!;
         Assert.True(satz.IstWahl);
@@ -1227,7 +1237,7 @@ public class KiDialogkatalogTests : IDisposable
 
         foreach (KiDialogFeld e in editor.Felder)
         {
-            if (e.Name is "betriebsart" or "name") continue;
+            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)) continue;
             KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
             Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");
             Assert.Equal(e.Eigenschaftspfad, v!.Eigenschaftspfad);

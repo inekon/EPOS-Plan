@@ -1454,6 +1454,13 @@ public sealed class GebaeudeArbeitsstand
     /// Was nur der Dialog kennt (Name, Betriebsart, die Einträge der Klapplisten, die
     /// Satzwahl der Verwaltung), kommt über <paramref name="wege"/> herein.
     /// </summary>
+    /// <summary>Die Zonen als Zeilen des Assistenten — je Zugriff neu über dem Arbeitsstand (G6a).</summary>
+    private IReadOnlyList<GebaeudeZoneKiZeile> KiZonen()
+        => Zonen.Zip(Kennwerte, (z, k) => (z, k))
+                .Select((x, i) => new GebaeudeZoneKiZeile((i + 1).ToString(CultureInfo.InvariantCulture), x.z.Bezeichner,
+                                                          x.k.Nutzflaeche, x.k.HT, x.k.Bauteile))
+                .ToList();
+
     public GebaeudeKatalogKiSicht KiSicht(GebaeudeKiWege wege)
     {
         return new GebaeudeKatalogKiSicht
@@ -1513,6 +1520,8 @@ public sealed class GebaeudeArbeitsstand
             RandbedingungSetzen = RandbedingungWaehlen,
             RandbedingungEintraege = wege.RandbedingungEintraege,
             FerienLesen = () => _kiFerien ??= KiFerien(wege.Ferienname),
+            // Stufe G6a: die Zonenliste zum Lesen, Werte aus der EINEN Formel des Kerns.
+            ZonenLesen = KiZonen,
 
             // Stufe AK1: die Gruppe „Wärmeübergabe" über die Wege der Bedienelemente.
             HeizkreisSetzen = HeizkreisSetzen,

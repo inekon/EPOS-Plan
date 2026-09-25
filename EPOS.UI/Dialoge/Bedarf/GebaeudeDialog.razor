@@ -308,6 +308,10 @@
     </Ueberlagerung>
 
     @* --- Rueckfrage vor dem Loeschen eines Katalogsatzes ------------------- *@
+    @* --- Rueckfrage vor dem Entfernen eines Gebaeudes mit Zonen (G6a, A2) --- *@
+    <Rueckfrage Offen="@_ausProjektFrage" TitelText="@BtnEntfernenText" Frage="@AusProjektFrage"
+                VorgabeNein="true" Beantwortet="AusProjektBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText"
                 Frage="@Loeschfrage" Beantwortet="LoeschenBeantwortet"
                 JaText="@JaText" NeinText="@NeinText" />
@@ -493,6 +497,13 @@
     /// </summary>
     [Parameter] public string BtnEntfernenText { get; set; } = "Aus dem Projekt entfernen";
 
+    /// <summary>
+    /// <c>GEBZ_FRAGE_AUS_PROJEKT</c> — die Rückfrage „Aus dem Projekt entfernen" bei einem Gebäude mit
+    /// Zonen (G6a, Anwenderentscheid A2): {0} Gebäude, {1} Zahl der Zonen, {2} Zahl der Bauteile.
+    /// </summary>
+    [Parameter] public string FrageAusProjekt { get; set; } =
+        "„{0}“ trägt {1} Zonen mit {2} Bauteilen. Mit dem Speichern der Liste werden sie samt dem Gebäude aus dem Projekt gelöscht. Trotzdem aus dem Projekt entfernen?";
+
     /// <summary>Kurztext des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN_HINWEIS</c>.</summary>
     [Parameter] public string BtnEntfernenHinweis { get; set; } =
         "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen";
@@ -612,6 +623,17 @@
     public bool ProjekteditorOffen => _projektGaben is not null;
     private bool _gebaeudetypOffen;
     private bool _loeschfrage;
+
+    /// <summary>Steht die Rückfrage vor dem Entfernen eines Gebäudes mit Zonen (G6a, A2)?</summary>
+    private bool _ausProjektFrage;
+
+    /// <summary>Steht die Rückfrage „Aus dem Projekt entfernen"? Prüfhilfe für die Tests.</summary>
+    public bool AusProjektFrageOffen => _ausProjektFrage;
+
+    /// <summary>Der Text dieser Rückfrage: Gebäude, Zahl der Zonen und der Bauteile.</summary>
+    public string AusProjektFrage
+        => _gewaehlt is null ? "" : string.Format(System.Globalization.CultureInfo.CurrentCulture, FrageAusProjekt,
+               _gewaehlt.Name, _gewaehlt.Zonenzahl, _gewaehlt.Bauteilzahl);
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
@@ -914,6 +936,23 @@
     {
         if (_gewaehlt is null) return;
 
+        // Stufe G6a (A2): Ein Gebaeude mit Zonen geht erst nach der Rueckfrage - die Kaskade
+        // loescht Zonen und Bauteile mit dem Speichern der Liste.
+        if (_gewaehlt.Zonenzahl > 0) { _ausProjektFrage = true; return; }
+        Entfernen();
+    }
+
+    /// <summary>Die Antwort: Ja entfernt die Zeile, Nein lässt alles stehen.</summary>
+    private void AusProjektBeantwortet(bool? antwort)
+    {
+        _ausProjektFrage = false;
+        if (antwort == true) Entfernen();
+    }
+
+    private void Entfernen()
+    {
+        if (_gewaehlt is null) return;
+
         Zeilen.Remove(_gewaehlt);
         _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
 
@@ -1146,7 +1185,7 @@
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
-            _loeschfrage || _projektGaben is not null) return Task.CompletedTask;
+            _loeschfrage || _ausProjektFrage || _projektGaben is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 }

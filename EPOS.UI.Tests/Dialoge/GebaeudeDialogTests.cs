@@ -346,6 +346,39 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal("Hotel Sonne", cut.Instance.Katalogzeile?.Bezeichner);
     }
 
+    /// <summary>
+    /// Stufe G6a (Anwenderentscheid A2): Ein Gebäude mit Zonen geht erst nach der Rückfrage aus dem
+    /// Projekt — sie nennt die Zahl der Zonen und der Bauteile; „Nein" lässt alles stehen. Ohne Zonen
+    /// entfernt der Knopf wie bisher sofort.
+    /// </summary>
+    [Fact]
+    public void Aus_dem_Projekt_entfernen_fragt_bei_einem_Gebaeude_mit_Zonen()
+    {
+        GebaeudeProjektZeile mitZonen = Zeile(11, "Haus mit Zonen");
+        mitZonen.Zonenzahl = 2;
+        mitZonen.Bauteilzahl = 7;
+        var zeilen = new List<GebaeudeProjektZeile> { mitZonen, Zeile(12) };
+        var cut = Aufbauen(zeilen: zeilen);
+
+        Entfernen(cut).Click();
+        Assert.True(cut.Instance.AusProjektFrageOffen);
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal("„Haus mit Zonen“ trägt 2 Zonen mit 7 Bauteilen. Mit dem Speichern der Liste werden sie samt dem " +
+                     "Gebäude aus dem Projekt gelöscht. Trotzdem aus dem Projekt entfernen?", cut.Instance.AusProjektFrage);
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Nein").Click();
+        Assert.False(cut.Instance.AusProjektFrageOffen);
+        Assert.Equal(2, zeilen.Count);
+
+        Entfernen(cut).Click();
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+        Assert.Equal(12, Assert.Single(zeilen).IdZ);
+
+        // Ohne Zonen keine Rückfrage.
+        Entfernen(cut).Click();
+        Assert.False(cut.Instance.AusProjektFrageOffen);
+        Assert.Empty(zeilen);
+    }
+
     // =================================================================================
     // Uebernehmen, Entfernen, Detailblock
     // =================================================================================
