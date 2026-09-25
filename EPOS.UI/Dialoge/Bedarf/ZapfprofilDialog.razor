@@ -481,6 +481,10 @@
                                                                 @onclick="() => VorschlagOeffnen(zone)">@Texte.KnopfKalibriervorschlag</button>
                                                     }
                                                 </div>
+                                                @if (_kalibrierstatus.Length > 0)
+                                                {
+                                                    <p class="epos-leisezeile epos-zapfprofil-kalibrierstatus" role="status">@_kalibrierstatus</p>
+                                                }
                                                 <Herleitungszeile Text="@Texte.HinweisKalibrieren" />
                                             }
                                         </KindInhalt>
@@ -1148,7 +1152,7 @@
         <KindInhalt>
             @if (_vorschlag is { } vs)
             {
-                <div class="epos-zapfprofil-vorschlag">
+                <div class="epos-zapfprofil-vorschlagvorschau">
                     @if (!vs.Ok)
                     {
                         <Warnbanner Stufe="WarnStufe.Warnung" Text="@Format(Texte.VorschlagOhne, vs.Abbruch)"
@@ -1447,6 +1451,15 @@
 
     /// <summary>Die Zone, für die die Vorschau offen steht.</summary>
     private ZapfprofilZoneDaten? _vorschlagZone;
+
+    /// <summary>
+    /// Die leise Zeile der Kalibrierung — sie steht BEI ihren Knöpfen: Die Zeile der Editoren
+    /// zeigt nur die Stufe Experte, die Kalibrierung gibt es ab Erweitert.
+    /// </summary>
+    private string _kalibrierstatus = "";
+
+    /// <summary>Die leise Zeile der Kalibrierung — Prüfhilfe für die Tests.</summary>
+    public string Kalibrierstatus => _kalibrierstatus;
 
     private bool _frageOffen;
     private string _frage = "";
@@ -2675,6 +2688,7 @@
         _okKennung = null;
         _hinweis = "";
         _editorStatus = "";
+        _kalibrierstatus = "";
         _vorschauAktuell = false;
         _ladehilfeAktuell = false;
         JahresreiheVerwerfen();
@@ -3751,7 +3765,7 @@
             a.JahresmesswertQuelle = k.Quelle;
             a.JahresmesswertZeitraum = k.Zeitraum;
         });
-        _editorStatus = Format(Texte.StatusKalibriert, k.Reihe);
+        _kalibrierstatus = Format(Texte.StatusKalibriert, k.Reihe);
     }
 
     // --- „Vorschlag übernehmen…" ------------------------------------------------------
@@ -3808,7 +3822,7 @@
         VorschlagSchliessen();
         KatalogNeuLesen();
         ZonenNutzungsartSetzen(z, e.IdNutzungsart);
-        _editorStatus = e.Meldung;
+        _kalibrierstatus = e.Meldung;
     }
 
     // --- Die Rückfrage der beiden Handlungen ------------------------------------------
