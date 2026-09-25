@@ -10405,3 +10405,111 @@ Herleitungstabelle), Konzept Administrationsdialoge 7.1 (a) berichtigt
 **Offen (in „Nach #493“).** (a) Scan-Kandidaten (oben) als mögliche Folgewelle, nur auf Zuruf; (b)
 Restbefund Kaufhaus Außenwand 10 094 m²; (c) Referenzsätze 145/146 mit
 hoher Dachkante bleiben eingefroren (Einfrierregel Gebäudedaten).
+
+## #496 — Gebäudekatalog: Folgeberichtigung der Anschlusslängen, Schemaschritt 141 (25.09.2026)
+
+Anwenderauftrag 25.09.2026 wörtlich: „setze um: weiteren Scan-Kandidaten
+mit vertauschten Anschlusslängen, die Außenwand des Kaufhauses“. Basis
+`a0bbc633` (Z5, Zielversion 140); Commits (Opus 5.5) `1009286e`
+(Schritt, Verdrahtung, Testdatenbank), `5c62736c` (Tests), `480bd4c5`
+(Papiere); Merge `cf8cb414` auf `6cfdebf0`. Nummernabstimmung: #494
+(Berichtsvorlagen-Sitzung), #495/140 (Z5), daher #496/141; die
+Assistent-Welle folgt als #497, E19 als #498.
+
+**Schritt 141.**
+`EPOS.Kern/Allgemein/Update/GebaeudeAnschlusslaengenFolgereparatur.cs`
+(Konstante `SCHRITT`; Anweisungen und Ablauf stammen aus
+`GebaeudeAnschlusslaengenReparatur` (#493), das dafür
+`Ausfuehren(IEnumerable)`/`Offen(IEnumerable)` bekam — keine neue SQL;
+`SchemaStand.Zielversion` = die Konstante; `SchemaMigration.cs`
+`SCHRITT_GEBAEUDE_FOLGEREPARATUR`/`Schritt_GebaeudeFolgereparatur` nach
+`SCHRITT_140_ZAPFPROFIL_MESSREIHEN`; Werkzeug und Nachzieh-Liste lesen
+die Konstante; `TwwSchemaTests` prüft `Zielversion >=
+SCHRITT_T4_MESSREIHEN`). Trifft 39 Zellen in 20 Sätzen, exaktes
+Schadensbild, nichts gelöscht, Projektkopien unberührt, idempotent
+(offen vorher 39, danach 0).
+
+**Herleitungsregel.** (1) Ausgangssatz gleicher Geometrie mit echtem
+Umfang → dessen Umfang; (2) sonst Tausch Laibung/Dachkante, wenn beide
+danach passen (Laibung 1,2–3,4 m je m² Fenster; Dachkante ≥
+4·√Grundfläche und nahe U = (Außenwand +
+Fenster)/(Nutzfläche/Grundfläche × Raumhöhe)); (3) sonst herleiten
+(Laibung = Verhältnis der Quelle × Fensterfläche, Dachkante = Umfang).
+
+**Berichtigungen `Tab_Gebaeude_STAMM` (39 Zellen, 20 Sätze).**
+
+| Sätze | Spalte | Vorher → Nachher | Herleitung | ΔH_T |
+|---|---|---|---|---|
+| 2, 4, 5, 7, 9, 10, 92 | Fenster–Wand/Wand–Dach | 185/985 → 985/185 m | Tausch, Laibung 1,81 m/m², U 187,7 m | +70,4 W/K je Satz |
+| 94, 96 | dieselben | 185/985 → 985/185 m | dieselbe Geometrie | −48,0 W/K |
+| 17, 20 (Hallenbad) | dieselben | 185/985 → 985/185 m | Tausch, 2,35 m/m², 185 m zwischen Quadratkante 132,7 und U 206,3 | +70,4 W/K |
+| 54, 69, 71 (`Hotel-F-228`) | Wand–Dach | 5 380,75/5 380,8 → 116,16 m | wie `Kaufhalle_NE` (76), 48,08 × 10 m, 3 Geschosse à 3,09 m | −1 316 W/K |
+| 54, 69, 71 | Außenwand–Kellerdecke | 40 → 116,16 m | Satz 76 führt die Kellerkante als Umfang; Laibung 515,2 m (2,12 m/m²) bleibt | +38,1 W/K (Summe −1 278,1) |
+| 42, 72, 134 | Fenster–Wand/Wand–Dach | 86,6/295,5 → 295,5/86,6 m | Tausch, 1,24 m/m², U 87,7 m | +31,3 W/K |
+| 84, 85 | Fenster–Wand | 86,6 → 382,6 m | Tausch passt nicht (0,96 m/m², 86,6 < Quadratkante 88,1); 1,2437 × 307,6 m² | +65,1 W/K |
+| 84, 85 | Wand–Dach | 295,5 → 122,3 m | U 122,28 m | −12,1 W/K (Summe +53,0) |
+| 77 `Kaufhaus` | `Flaeche_Außenwand` | 10 093,99 → 1 820,9 m² | 313,8 m × 13,01 m (4 201/1 468,97 × 4,55) = 4 083,2 m² minus 2 262,36 m² Fenster (Fensteranteil 55 %) | −4 963,9 W/K (U 0,6) |
+
+Kaufhaus (Wand–Dach und Außenwand–Kellerdecke) behält 313,8 m als
+einzigen belegten Umfang; 10 094 m² Außenwandfläche hätten 949,6 m
+Umfang bedeutet (3 m Bautiefe), die Grundfläche ist von `KrankenH_NE`
+übernommen.
+
+**Nur berichtet (Tabelle mit Vorschlägen in
+`Referenzlaeufe/LIESMICH.md`, Entscheid beim Anwender).**
+
+| Muster | Sätze | Vorschlag/Kennzahl |
+|---|---|---|
+| Kellerkante 0 m | Heime, Schulen, Hallenbäder | EnEV-Zwillinge 3 und 8 führen 140 m; ψ bei den C-Sätzen 0 |
+| Kellerkante 14,6 m | 42, 72, 134, 84, 85 | Vorschlag Umfang 86,6 bzw. 122,3 m, +46,8…+48,2 bzw. +72,2 W/K |
+| Laibung 0 m/leer | 6 | 540 m (Zwilling 8) |
+| Laibung 0 m/leer | 15 | 16 000 m (Zwilling 14) |
+| Laibung 0 m/leer | 43/64/117 | 391,5 m (Zwillinge 65/73/118) |
+| Laibung 0 m/leer | 105/107 | 1 462,1 m (Verwaltung F, 2,901 m/m²) |
+| Laibung 0 m/leer | 106 | 2 875 m (2,5 m/m²) |
+| Laibung 0 m/leer | 207 | 238,3 m (KMH G, 2,398 m/m²) |
+| gerundete EnEV-Laibung | 23 | 865,1 m |
+| gerundete EnEV-Laibung | 34 | 6 164,4 m |
+| gerundete EnEV-Laibung | 108 | 4 460 m |
+| Nebenbefund ohne Vorschlag | 46, 57, 120 | Laibung 0,64/0,46/0,32 m/m² |
+| Nebenbefund ohne Vorschlag | 14 `Industrie_ne_81` | Dachkante 7 337,4 m (9,6-fache Quadratkante), vom Scan nicht gemeldet |
+
+„Nur D“-Kandidaten aus dem Scan von #493 bleiben nur gelistet
+(Referenzsätze 145/146 eingefroren).
+
+**Einfrierregel.** Keiner der 20 Sätze läuft in einem Projekt (Verweis
+oder Name), keine Projektkopien betroffen; ein Test prüft das. Die Basis
+bleibt.
+
+**Testdatenbank.** Aus Fassung 140 (`5de448e8…`) nachgezogen; LFS
+`a427aa72babe6fb10d44863ec817b3092571216d5e8c68f111249f295201d7e3`, 67
+915 776 Byte; Zellvergleich über 144 Tabellen (10 506 856 Zellen): nur
+`SchemaVersion` 140 → 141 und die 39 Zellen; Schema gleich,
+`integrity_check` ok, `foreign_key_check` leer.
+
+**Tests.** Neu `GebaeudeAnschlusslaengenFolgereparaturTests`
+(Herleitungen, vorher/nachher je Satz mit Plausibilitätsband,
+abweichender Wert, fremder Satz, ReadOnly-Satz, Projektkopie,
+Idempotenz, Werkzeug-/Repo-Wache); Editor-Wächter um die 20 Sätze
+ergänzt; gezielter Lauf 195/195.
+
+**Gate (Agent-Worktree, Stand mit Z5).** Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6 819 (1 übersprungen), EPOS.UI 6 237, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 34/34; Windows-Schale Debug x64 0 Fehler;
+SqlDialektPruefer 1 921 Texte, 0 Fundstellen (die UPDATE-Anweisungen
+zusätzlich per EXPLAIN geprüft); Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte, 394/394 CSV
+byte-gleich); Dokumentations-, Wiki- und Ordnungswachen grün.
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand 141, Nachtrag
+#496 mit Herleitungs- und Berichtstabelle), Konzept
+Administrationsdialoge 7.1 (a).
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #496“).** (a) Kellerkanten 0 m bzw. 14,6 m mit
+Vorschlägen; (b) Laibung 0 m und gerundete EnEV-Laibungen mit
+Vorschlägen; (c) Nebenbefunde 46, 57, 120, 14 ohne Vorschlag; (d) „Nur
+D“-Kandidaten 145/146 bleiben eingefroren — alles nur auf
+Anwenderentscheid.

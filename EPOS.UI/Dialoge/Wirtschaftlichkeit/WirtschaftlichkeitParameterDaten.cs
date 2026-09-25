@@ -131,6 +131,18 @@ public sealed class WirtschaftlichkeitParameterTexte
         "nichts gepflegt, rechnet die Speicherwelt mit 0 und weist das im Protokoll " +
         "aus. Führt der PV-Vergütungsdialog die Vergütung, hat er für v_pv Vorrang.");
 
+    /// <summary>
+    /// ETAPPE E19 (Konzept § 6.3 Nr. 33, E19‑Q6 a): die Erklärzeile unter der
+    /// Unternehmensart, die ohne BHKW in der Gruppe „Strom" steht. Beschriftung und
+    /// Anzeigezeilen kommen aus den Schlüsseln des BHKW-Dialogs (<c>BHW_S_UNTERNEHMENSART</c>,
+    /// <c>BHW_ST_ANTEIL_*</c>).
+    /// </summary>
+    public string Unternehmensart9b { get; } = T("WPAR_UA_9B_HINWEIS",
+        "Für ein Unternehmen des produzierenden Gewerbes oder der Land- und Forstwirtschaft " +
+        "rechnet der nächste Lauf die Entlastung nach § 9b StromStG auf den Netzbezug. " +
+        "Führt das Projekt ein BHKW, wird die Unternehmensart im Dialog " +
+        "„BHKW-Wirtschaftlichkeit“ gepflegt.");
+
     // --------------------------------------------------------------- BHKW
     /// <summary>
     /// Die BHKW-Gruppe dieses Dialogs ist reiner VERWEIS: Sie sagt, wo die
