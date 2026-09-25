@@ -300,6 +300,15 @@ namespace WindowsFormsApplication1
                     liste.Add(new PruefMeldung(PruefStufe.Fehler, MELDUNG + "BAUJAHR_UNGUELTIG", Zahl(jahr),
                         GebaeudeSchema.BAUJAHR_MIN.ToString(CultureInfo.InvariantCulture),
                         GebaeudeSchema.BAUJAHR_MAX.ToString(CultureInfo.InvariantCulture)));
+
+                // Beginn und Ende der Nachtzeit sind volle Stunden im Bereich der Spalte (CHECK 0 … 23, E43);
+                // das Paar prüft der vorbelegte Editor mit derselben Regel wie das Stundenmodell.
+                if (z.Wert is double stunde
+                    && (z.Zielfeld == GebaeudeZielfelder.NACHT_BEGINN || z.Zielfeld == GebaeudeZielfelder.NACHT_ENDE)
+                    && !(stunde == Math.Floor(stunde) && stunde >= Nachtzeit.STUNDE_MIN && stunde <= Nachtzeit.STUNDE_MAX))
+                    liste.Add(new PruefMeldung(PruefStufe.Fehler, MELDUNG + "NACHTZEIT_UNGUELTIG", z.Zielfeld, Zahl(stunde),
+                        Nachtzeit.STUNDE_MIN.ToString(CultureInfo.InvariantCulture),
+                        Nachtzeit.STUNDE_MAX.ToString(CultureInfo.InvariantCulture)));
             }
 
             // Prüfgröße: Volumen gegen Nutzfläche × Raumhöhe (Umsetzungskonzept 3.4, 20 %).

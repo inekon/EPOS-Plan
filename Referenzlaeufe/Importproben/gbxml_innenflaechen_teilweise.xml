@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EPOS-Plan Importprobe (selbst erzeugt): drei beheizte Raeume, zwei massive Innenwaende und eine Staenderwand nur mit R-Wert - die Innenflaechen sind nicht vollstaendig. -->
+<gbXML xmlns="http://www.gbxml.org/schema" version="0.37" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true">
+  <Campus id="campus-1">
+    <Location>
+      <ZipcodeOrPostalCode>00000</ZipcodeOrPostalCode>
+      <CADModelAzimuth>0</CADModelAzimuth>
+    </Location>
+    <Building id="geb-1" buildingType="SingleFamily">
+      <Name>Innenhaus</Name>
+      <BuildingStorey id="gs-eg"><Name>Erdgeschoss</Name><Level>0</Level></BuildingStorey>
+      <Space id="raum-wohnen" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Wohnen</Name><Area>30</Area><Volume>90</Volume></Space>
+      <Space id="raum-kueche" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Küche</Name><Area>15</Area><Volume>45</Volume></Space>
+      <Space id="raum-bad" conditionType="Heated" buildingStoreyIdRef="gs-eg"><Name>Bad</Name><Area>15</Area><Volume>45</Volume></Space>
+    </Building>
+    <Surface id="aw-sued-wohnen" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+      <Opening id="fenster-sued" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <RectangularGeometry><Width>2</Width><Height>1.5</Height></RectangularGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-nord-wohnen" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="aw-west-wohnen" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry><Azimuth>270</Azimuth><Tilt>90</Tilt><Width>6</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="aw-sued-kueche" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="aw-ost-kueche" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>3</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="aw-nord-bad" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-bad"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="aw-ost-bad" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-bad"/>
+      <RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>3</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="dach-wohnen" surfaceType="Roof" constructionIdRef="kon-dach">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>5</Width><Height>6</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="dach-kueche" surfaceType="Roof" constructionIdRef="kon-dach">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="dach-bad" surfaceType="Roof" constructionIdRef="kon-dach">
+      <AdjacentSpaceId spaceIdRef="raum-bad"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="bp-wohnen" surfaceType="SlabOnGrade" constructionIdRef="kon-bodenplatte">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>5</Width><Height>6</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="bp-kueche" surfaceType="SlabOnGrade" constructionIdRef="kon-bodenplatte">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="bp-bad" surfaceType="SlabOnGrade" constructionIdRef="kon-bodenplatte">
+      <AdjacentSpaceId spaceIdRef="raum-bad"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="iw-wohnen-kueche" surfaceType="InteriorWall" constructionIdRef="kon-iw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>3</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="iw-wohnen-bad" surfaceType="InteriorWall" constructionIdRef="kon-iw">
+      <AdjacentSpaceId spaceIdRef="raum-wohnen"/>
+      <AdjacentSpaceId spaceIdRef="raum-bad"/>
+      <RectangularGeometry><Azimuth>90</Azimuth><Tilt>90</Tilt><Width>3</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+    <Surface id="iw-kueche-bad" surfaceType="InteriorWall" constructionIdRef="kon-staenderwand">
+      <AdjacentSpaceId spaceIdRef="raum-kueche"/>
+      <AdjacentSpaceId spaceIdRef="raum-bad"/>
+      <RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>5</Width><Height>3</Height></RectangularGeometry>
+    </Surface>
+  </Campus>
+  <Construction id="kon-aw">
+    <Name>Außenwand</Name>
+    <LayerId layerIdRef="sch-aw"/>
+  </Construction>
+  <Construction id="kon-dach">
+    <Name>Flachdach</Name>
+    <LayerId layerIdRef="sch-dach"/>
+  </Construction>
+  <Construction id="kon-bodenplatte">
+    <Name>Bodenplatte</Name>
+    <LayerId layerIdRef="sch-bp"/>
+  </Construction>
+  <Construction id="kon-iw">
+    <Name>Innenwand massiv</Name>
+    <LayerId layerIdRef="sch-iw"/>
+  </Construction>
+  <Construction id="kon-staenderwand">
+    <Name>Ständerwand</Name>
+    <LayerId layerIdRef="sch-staender"/>
+  </Construction>
+  <Layer id="sch-aw">
+    <MaterialId materialIdRef="mat-daemmung"/>
+    <MaterialId materialIdRef="mat-mauerwerk"/>
+    <MaterialId materialIdRef="mat-putz"/>
+  </Layer>
+  <Layer id="sch-dach">
+    <MaterialId materialIdRef="mat-daemmung-dach"/>
+    <MaterialId materialIdRef="mat-beton"/>
+  </Layer>
+  <Layer id="sch-bp">
+    <MaterialId materialIdRef="mat-daemmung"/>
+    <MaterialId materialIdRef="mat-beton"/>
+  </Layer>
+  <Layer id="sch-iw">
+    <MaterialId materialIdRef="mat-putz"/>
+    <MaterialId materialIdRef="mat-kalksandstein"/>
+    <MaterialId materialIdRef="mat-putz"/>
+  </Layer>
+  <Layer id="sch-staender">
+    <MaterialId materialIdRef="mat-staender"/>
+  </Layer>
+  <Material id="mat-putz">
+    <Name>Putz</Name>
+    <Thickness>0.01</Thickness>
+    <Conductivity unit="WPerMeterK">0.7</Conductivity>
+    <Density unit="KgPerCubicM">1400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-mauerwerk">
+    <Name>Mauerwerk</Name>
+    <Thickness>0.24</Thickness>
+    <Conductivity unit="WPerMeterK">0.8</Conductivity>
+    <Density unit="KgPerCubicM">1600</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-daemmung">
+    <Name>Dämmung</Name>
+    <Thickness>0.1</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">30</Density>
+    <SpecificHeat unit="JPerKgK">1500</SpecificHeat>
+  </Material>
+  <Material id="mat-daemmung-dach">
+    <Name>Dachdämmung</Name>
+    <Thickness>0.2</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">30</Density>
+    <SpecificHeat unit="JPerKgK">1500</SpecificHeat>
+  </Material>
+  <Material id="mat-beton">
+    <Name>Beton</Name>
+    <Thickness>0.2</Thickness>
+    <Conductivity unit="WPerMeterK">2</Conductivity>
+    <Density unit="KgPerCubicM">2400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-kalksandstein">
+    <Name>Kalksandstein</Name>
+    <Thickness>0.115</Thickness>
+    <Conductivity unit="WPerMeterK">1</Conductivity>
+    <Density unit="KgPerCubicM">1800</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-staender">
+    <Name>Ständerwand</Name>
+    <R-value unit="SquareMeterKPerW">0.5</R-value>
+  </Material>
+  <WindowType id="fenster-typ-1">
+    <Name>Fenster</Name>
+    <U-value unit="WPerSquareMeterK">1.1</U-value>
+    <SolarHeatGainCoeff unit="Fraction" solarIncidentAngle="0">0.6</SolarHeatGainCoeff>
+  </WindowType>
+</gbXML>

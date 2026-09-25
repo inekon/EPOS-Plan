@@ -7464,15 +7464,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die in dieser Vorlage nicht enthalten ähnelt.
-        /// </summary>
-        public static string BK_BER_VORLAGE_NICHT_ENTHALTEN {
-            get {
-                return ResourceManager.GetString("BK_BER_VORLAGE_NICHT_ENTHALTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Vorlage ist nicht wählbar. ähnelt.
         /// </summary>
         public static string BK_BER_VORLAGE_NICHT_WAEHLBAR {
@@ -22244,6 +22235,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHT_BEGINN {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHT_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung bis : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NACHT_ENDE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NACHT_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name : ähnelt.
         /// </summary>
         public static string GEBK_LBL_NAME {
@@ -22619,6 +22628,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_LUFTWECHSEL {
             get {
                 return ResourceManager.GetString("GEBK_MSG_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtabsenkung beginnt und endet zu einer vollen Stunde von {0} bis {1}. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_BEREICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende der Nachtabsenkung dürfen nicht gleich sein. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_GLEICH {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr). ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_NACHTZEIT_NUR_EINE {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_NACHTZEIT_NUR_EINE", resourceCulture);
             }
         }
         
@@ -24933,6 +24969,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_JE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_JE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} W/m² × {1} m² Nutzfläche = {2} W; Vorschlag {3} W: Auslegungsleistung für Licht und Geräte aus {4} Räumen — kein zeitlich gemittelter Gewinn, nicht übernommen ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — {0} W wie bei einem neuen Gebäude ähnelt.
         /// </summary>
         public static string GIMP_BELEG_GEWINNE_VORGABE {
@@ -25050,6 +25104,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} Uhr (Nacht von {1} bis {2} Uhr) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_NACHTZEIT_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_NACHTZEIT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bleibt leer — der Luftwechsel der Datei steht ganz bei der Infiltration ähnelt.
         /// </summary>
         public static string GIMP_BELEG_NUTZERLUEFTUNG_LEER {
@@ -25127,6 +25190,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_SOLLWERT {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLLWERT_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLLWERT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} °C, höchstens der Tagsollwert: {1} °C ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG", resourceCulture);
             }
         }
         
@@ -25788,6 +25869,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_NACHT_BEGINN {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_NACHT_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung bis ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_NACHT_ENDE {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_NACHT_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche ähnelt.
         /// </summary>
         public static string GIMP_FELD_NUTZFLAECHE {
@@ -25829,6 +25928,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FELD_RAUMHOEHE {
             get {
                 return ResourceManager.GetString("GIMP_FELD_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert in der Nacht ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_SOLL_NACHT {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_SOLL_NACHT", resourceCulture);
             }
         }
         
@@ -28619,6 +28727,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_LUFTWECHSEL_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} ist keine volle Stunde von {2} bis {3}. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_NACHTZEIT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_NACHTZEIT_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -38254,6 +38371,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_MAX_TEMPERATUR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_MAX_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die volle Stunde, zu der die Nachtabsenkung beginnt (0 bis 23). Leer zusammen mit dem Ende heißt die Vorgabe 22 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_BEGINN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_BEGINN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die volle Stunde, zu der die Nachtabsenkung endet und wieder der Tagsollwert gilt (0 bis 23). Leer zusammen mit dem Beginn heißt die Vorgabe 6 Uhr; nur eines von beiden oder beide gleich ist ein Eingabefehler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_ENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_ENDE_ERL", resourceCulture);
             }
         }
         
@@ -66077,6 +66212,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtzeit von {0} bis {1} Uhr hat eine Stunde außerhalb {2} … {3}. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende der Nachtzeit sind gleich ({0} Uhr) — die Nacht hätte keine Stunde. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_GLEICH {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von der Nachtzeit ist nur eine Grenze gesetzt (Beginn {0}, Ende {1}). Beginn und Ende gehören zusammen; beide leer heißt {2} bis {3} Uhr. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_NUR_EINE {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_NUR_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Netzverluste dürfen nicht größer als 100 % sein. ähnelt.
         /// </summary>
         public static string SIMENG_NETZVERLUSTE_UEBER_100 {
@@ -93170,6 +93332,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Zonen: {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRP_TOPOLOGIE {
@@ -93256,6 +93427,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_GRUND_UEBERGEBEN {
             get {
                 return ResourceManager.GetString("ZPG_AUS_GRUND_UEBERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts zu vermerken ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermerk ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher jeder Wert dieser Auslegung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_UNTER {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_UNTER", resourceCulture);
             }
         }
         
@@ -95510,6 +95753,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPG_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPG_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf, Ladeleistung, Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_GRP_SCHAETZHILFEN {
@@ -95629,9 +95881,63 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigenkonstruktion ähnelt.
         /// </summary>
+        public static string ZPG_HERKUNFT_ART_EIGENKONSTRUKTION {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_EIGENKONSTRUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erfundener Wert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_FIKTIV {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_FIKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die frei verfügbare Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_FREI {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingespielt ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_IMPORT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus einem Verfahren gerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_VERFAHREN {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenkonstruktion ähnelt.
+        /// </summary>
         public static string ZPG_HERKUNFT_EIGENKONSTRUKTION {
             get {
                 return ResourceManager.GetString("ZPG_HERKUNFT_EIGENKONSTRUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogfassung {0} ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_FASSUNG {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_FASSUNG", resourceCulture);
             }
         }
         
@@ -95663,6 +95969,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts zu vermerken ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_OHNE {
@@ -95672,11 +95987,128 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe des Anwenders ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_QUELLE_ANWENDER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_QUELLE_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermerk ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kalibriert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_KALIBRIERT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_KALIBRIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die überschrieben ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die umgerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_UMGERECHNET {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_UMGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_VORGABE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt. ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_UNTER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verfahren ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_VERFAHREN {
             get {
                 return ResourceManager.GetString("ZPG_HERKUNFT_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ZONE_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ZONE_PROJEKT", resourceCulture);
             }
         }
         
@@ -103547,6 +103979,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Typtage ließen sich nicht schreiben: {0}. Der frühere Stand ist unverändert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN {
@@ -103556,11 +103997,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt {0} nicht — die Typtage lassen sich nicht einspielen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Typtagpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS", resourceCulture);
             }
         }
         

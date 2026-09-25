@@ -1,11 +1,11 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
 **Stand 25.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
-`4434983b` · `SchemaStand.Zielversion` = **142**, Schemaschritte 90–142 vergeben (105 = K‑1, #440; 108–110 =
+`f1a8ae83` · `SchemaStand.Zielversion` = **144**, Schemaschritte 90–144 vergeben (105 = K‑1, #440; 108–110 =
 Kühlung KU1; 111–113 = die Schritte E, F, G, #446; 114 = Kühlung KU2; 115 = Zapfprofil Z3, T2, #453; 119 = Kühlung
 KU2 Welle 3, E34), **116–118 = die Schritte B, C, D, gebaut #461 (E9a); E9b (#462) ohne Schritt; 120 = die Sätze der
 Nutzungsdauertabelle, gebaut #463 (E10); E13 (#474) und E14 (#477) ohne Schritt**; 121 = Katalogverweis des Projektgebäudes (#468),
-122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt**; 142 = dritte Reparatur der Anschlusslängen (#505); **E20 (#502), E21 (#506), E22 (#503) und E23 (#510) ohne Schritt** · Referenzbasis `2026-09-25_R16_Anlagenprio` · Gegenstand: das konsolidierte Konzept
+122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt**; 142 = dritte Reparatur der Anschlusslängen (#505); 143 = Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 = Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); **E20 (#502), E21 (#506), E22 (#503), E23 (#510), E24 (#514) und E26 (#518) ohne Schritt** · Referenzbasis `2026-09-25_R18_PvAusweis` · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (seit #474 unter `ueberholt/`),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -138,7 +138,7 @@ Zeilennummern und Messungen:
 > Bauwelle, Nr. 18 nach einer Messwelle — gemessen am 25.09.2026 ohne Rechenwirkung (12 von 13 Referenzprojekten
 > byte-gleich, in 1042 nur die Modulreihenfolge der Wärmepumpen); der Entscheid über den Umbau steht aus.
 
-> **Nachtrag 25.09.2026 (#502, #506, #503, #510).** Aus § 6.3 Nr. 10 präzisiert („Wärmepumpe beides“ nur bei
+> **Nachtrag 25.09.2026 (#502, #506, #503, #510, #514).** Aus § 6.3 Nr. 10 präzisiert („Wärmepumpe beides“ nur bei
 > Investitionskosten nach kW elektrisch und kW thermisch) ist **E20 (#502)** gebaut: Die Investitionskosten der
 > Wärmepumpe lassen sich auch „je kW elektrisch“ bemessen, Bezugsgröße P_el = Ptherm ÷ COP am Normpunkt der
 > Kennlinie; die Betriebskosten blieben zunächst unverändert — ohne Rechenwirkung im Bestand, kein Schemaschritt.
@@ -155,7 +155,23 @@ Zeilennummern und Messungen:
 > kWh bemessen — „je kWh elektrisch“ und „je kWh thermisch“ sind im Betriebsraster der Wärmepumpe gesperrt
 > (`WirtschaftlichkeitCtrl.BasisGrund`, Grund GEWERK), Bestandszeilen rechnen weiter und tragen den
 > Herleitungsvermerk „Altbestand“ — kein Schemaschritt, die Basis bleibt R16. Die fünf Fragen E23‑Q1…Q5 sind
-> nach Empfehlung entschieden.
+> nach Empfehlung entschieden. Aus Nr. 24 ist mit dem Anwenderentscheid vom 25.09.2026 („nehme die Empfehlungen
+> vor: für Später“) die Datenpflege **E24 (#514)** gebaut: Die Kessel der Referenzprojekte 1018 und 1023 tragen den
+> Energieträger „Erdgas E“, 1023 dazu eine Erdgas-Projektzeile mit Preis und rechnet in einer frischen
+> Wirtschaftlichkeit erstmals Energiekosten und Kapitalwert; die Referenzbasis ist neu eingefroren als
+> `2026-09-25_R17_Datenpflege` (einzige Wirkung in der Simulation die Trägerkennung der Kessel in zwei
+> `aggregate.csv`) — kein Schemaschritt. Die sechs Fragen E24‑Q1…Q6 sind nach Empfehlung entschieden.
+
+> **Nachtrag 25.09.2026 abends (#518).** Mit dem Anwenderentscheid vom 25.09.2026 zu den Kern-Befunden N1 und N3
+> aus E25 („Befunde aus E25: Empfehlung/bearbeiten“) ist **E26 (#518)** gebaut: Die Stromproduktion der
+> Photovoltaik ist die Erzeugung der Module (vorher der Direktverbrauch), der Eigenverbrauch des Ausweises ist
+> Erzeugung − Einspeisung, und der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (Reihe
+> `STROMBEDARF_GESAMT`, auch für den KWK-Split, Konzept § 3.6); „PV: vermiedener Bezug“ ist nicht mehr negativ, im
+> Rollentarif sind vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv, der Kapitalwert bleibt an allen
+> Ankern gleich. Die Referenzbasis ist neu eingefroren als `2026-09-25_R18_PvAusweis` (einzige Wirkung
+> `Photovoltaik.Stromproduktion` in vier `aggregate.csv`) — kein Schemaschritt. Die sieben Fragen E26‑Q1…Q7 sind
+> nach Empfehlung entschieden; benannt bleiben Q6, N5 (kapitalwertwirksam, Empfehlung eigene Welle E27) und N6
+> (Konzept § 6.3 Nr. 34).
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
@@ -562,7 +578,7 @@ beide mit E7; Nr. 31 kein Nachziehlauf, die Kennzeichnung ist gebaut #434.
 Größe: S ≤ ½ Tag · M 1–2 Tage · L > 2 Tage. Modell nach `CLAUDE.md`: Opus 5 für Umsetzung, Tests und
 Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzeptarbeit. Nachweis: „Anker"
 = die Ankertests aus E1; „Referenzlauf" = byte-gleich gegen R9 (die Basis der Erhebung; die Zeilen nennen die Basis ihrer
-Zeit, seit E22 (#503) gilt `2026-09-25_R16_Anlagenprio`); „bunit" = `EPOS.UI.Tests`.
+Zeit, seit E26 (#518) gilt `2026-09-25_R18_PvAusweis`); „bunit" = `EPOS.UI.Tests`.
 
 | Etappe | Inhalt | Größe | Rechenwirkung | Nachweis | Schema | Wiki | Modell | Voraussetzung |
 |---|---|---|---|---|---|---|---|---|
@@ -590,6 +606,8 @@ Zeit, seit E22 (#503) gilt `2026-09-25_R16_Anlagenprio`); „bunit" = `EPOS.UI.T
 | **E20 Wärmepumpe je kW elektrisch (Konzept § 6.3 Nr. 10)** — **umgesetzt #502** | die Investitionskosten der Wärmepumpe auch „je kW elektrisch“: P_el = Ptherm ÷ COP am Normpunkt der Kennlinie `Tab_Kenndaten` (A2/W35, B0/W35, W10/W35, bei W35 interpoliert, nie extrapoliert), ein gerechneter Zweig der Landkarte mit dem Schalter `investition` — nur Kategorie 1, die Betriebsseite unverändert; Herleitung „11,60 kW ÷ COP 2,90 (A2/W35) = 4,00 kW“ mit zwei neuen Schlüsseln | S | nein im Bestand (keine Zeile an der WP trägt die Art); **ja**, je Pflege | Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, A/B an 1024 (1.000 €/kW → 4.000 €, Investitionssumme 12.001,00 → 16.001,00 €), `WaermepumpeElektrischeLeistungTests` (13 Fälle), Kreuztafel je Raster | — (kein Schemaschritt) | Kosten `bemessung`, ein Logbuch-Satz | Opus | Anwender 25.09.2026 („‚Wärmepumpe beides‘ nur bei Investitionskosten nach kW elektrisch und kW thermisch“) — **umgesetzt #502** (Merge `49ea20e0`; Zweig `e20`: E20/1 `13d8a9a4`, E20/2 `e10300d7`, E20/3 `f50ac248`, E20/4 `a414b768`; E20‑Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a; Q6 offen beim Anwender) |
 | **E22 Rechenweg-Sortierung nach der Regel „99“ (Konzept § 6.3 Nr. 18)** — **umgesetzt #503** | die fünf Rechenweg-Leser (`WP_Liste_Laden`, `QuellbezuegeAufbauen`, `SenkenPufferDerAnlagen`, `SenkenLaden`, `SenkenlistenLaden`) und die drei Modul-Lader (`SPK_Liste_Laden`, `Solar_Liste_Laden`, `BHKW_Liste_Laden`) nach `Ladeordnung.SqlAnlagenprio` wie Hydraulikbild und Erzeugerkarten — gepflegte Priorität zuerst, ungepflegt hinten; die Vermerke HB1-O1 entfernt | S | nein (alle Werte und Zeitreihen gleich; allein der Modulindex der Wärmepumpen in 1042) | Anker unberührt; A/B gegen R14 und R15 (nur 1042 `aggregate.csv`, 10 Werte, Index), Determinismus 14/14 byte-gleich; **neue Basis `2026-09-25_R16_Anlagenprio`** (vierzehn Projekte), Referenzlauf 14/14 gegen R16 byte-gleich; `AnlagenprioRechenwegTests` (4 Fälle) | — (kein Schemaschritt) | kein Wiki | Opus | Anwender 25.09.2026 („Nr. 18: so umsetzen“, nach der Messwelle `mess18`) — **umgesetzt #503** (Merge `76f8661d`; Zweig `e22`: E22/1 `0e1c0938`, E22/2 `53394b73`, E22/4 `0dd97e05` (Basis R15_Anlagenprio, verworfen), E22/5 `548d5983`, Zusammenführung `8cb5c69b` mit AK1 Welle 5, E22/6 `c6ee0961`; E22‑Q1 entschieden 25.09.2026, nach Empfehlung a) |
 | **E23 Betriebskosten der Wärmepumpe ohne kWh (Konzept § 6.3 Nr. 10, E20‑Q6)** — **umgesetzt #510** | „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster der Wärmepumpe gesperrt (Landkarte `BasisGrund` → GEWERK; Auswahl, KI-Wahlliste und Kreuztafel folgen); Bestandszeilen über `benutzt` wählbar und rechenfähig, Herleitungsvermerk „Altbestand — Betriebskosten der Wärmepumpe werden nicht je kWh bemessen“ (`KostenHerleitung.IstAltbestandWpKwh`, ein neuer Schlüssel); wählbar bleiben fester Jahresbetrag, Prozentbemessungen und je kW | S | nein (keine Zeile an der Wärmepumpe trägt eine kWh-Art) | Anker unberührt, Referenzlauf 14/14 gegen R16 byte-gleich; `WaermepumpeBetriebKwhSperreTests` (8 Fälle), `BemessungsauswahlJeGewerkTests`, `BetriebskostenBemessungsmatrixTests` | — (kein Schemaschritt) | Kosten `laufgroessen`, ein Logbuch-Satz | Opus | Anwender 25.09.2026 (E20‑Q6 b, erweitert: „nicht nach kWh/a — weder Strom noch Wärme“) — **umgesetzt #510** (Merge `f7823b8e`; Zweig `e23`: E23/1 `d1fa1d8a`, E23/2 `b41b5232`, E23/3 `d08446a0`; E23‑Q1…Q5 entschieden 25.09.2026, nach Empfehlung a; Q6 und Q7 offen beim Anwender) |
+| **E24 Datenpflege 1018/1023 (Konzept § 6.3 Nr. 24)** — **umgesetzt #514** | Testdatenbank: Kessel 10369 (1018) und 11205 (1023) mit Träger 63 „Erdgas E“, für 1023 die Erdgas-Projektzeile `energy_project_settings` 10130 (0,84 €/Nm³, 1.200 €/a, Hi 10,5, CO₂ 240) und der Preisstand `energy_price` 10185; einmaliges dotnet-Dateiskript, kein Schemaschritt; Neueinfrierung `2026-09-25_R17_Datenpflege`, R16 ins Archiv; `DatenpflegeKesseltraegerTests` (4 Fälle), `PreisbasisSchrittTests` 17 → 18 | S | nur Wirtschaftlichkeit 1023 (frische Rechnung: Energiekosten Erdgas und Kapitalwert erstmals); Simulation und Emissionen unverändert, allein `HeizkesselModul[0].carrier_id` in 1018 und 1023 | Zellvergleich 10.645.701 Zellen: 2 Zellen, 2 neue Zeilen, 2 Zähler; A/B gegen R16 12/14 PASS, 430/432 CSV byte-gleich; Determinismus 432/432; Referenzlauf 14/14 gegen R17 | — (kein Schemaschritt; Testdatenbank `76dd9e48` → `0c2fe21a`, Schemastand 143) | kein Wiki, kein Logbuch | Opus | Anwender 25.09.2026 („nehme die Empfehlungen vor: für Später“) — **umgesetzt #514** (Merge `edf89ae8`; Zweig `e24`: E24/1 `3e20336e`, E24/2 `717de7d9`, E24/3 `63667c9b`, E24/4 `7da6bb81`; E24‑Q1…Q6 entschieden 25.09.2026, nach Empfehlung) |
+| **E26 PV-Ausweis und Strommatrix-Bedarf (Befunde N1, N3 aus E25; Konzept § 3.6, § 6.3 Nr. 34)** — **umgesetzt #518** | N1: `Ergebnis.Photovoltaik.Stromproduktion` = Erzeugung der Module (`Stromproduktion_Theoretisch`, `SimulationRunner.cs:989-998`), Eigenverbrauch des Ausweises = Erzeugung − Einspeisung; N3: Reihe `STROMBEDARF_GESAMT` (Rest nach der Kaskade + BHKW-Strom) als Bedarf der Strommatrix, auch für den KWK-Split; `PvAusweisStromMatrixTests` (11 Fälle); Neueinfrierung `2026-09-25_R18_PvAusweis`, R17 ins Archiv | S (rund 5 h und Gate) | Ausweis: „PV: vermiedener Bezug“ ≥ 0, im Rollentarif vermiedene Menge und Kosten positiv (1040 −4.496 → +1.332 €/a, 1026 −5.401 → +1.604 €/a); Kapitalwert unverändert; in der Simulation allein `Photovoltaik.Stromproduktion` in 1007, 1040, 1045, 1046 | Anker bitgleich (1024, 1030, KWKG Jahr 1); A/B gegen R17 10/14 PASS, 428/432 CSV byte-gleich; Determinismus 14/14; Referenzlauf 14/14 gegen R18; Tests 14.632/2/0 | — (kein Schemaschritt; Testdatenbank unverändert `0c2fe21a`) | kein Wiki-Fachtext; Logbuch-Vorschlag in der Statuszeile | Opus | Anwender 25.09.2026 („Befunde aus E25: Empfehlung/bearbeiten“) — **umgesetzt #518** (Merge `025a8707`; Zweig `e26`: E26/1 `bc1d8ad8`, E26/2 `4fd6eaa6`, E26/3 `3136a267`, E26/4 `4653fa06`; E26‑Q1…Q7 entschieden 25.09.2026, nach Empfehlung; Restpunkte Q6, N5, N6) |
 
 **Stand der Etappen am 24.09.2026.**
 

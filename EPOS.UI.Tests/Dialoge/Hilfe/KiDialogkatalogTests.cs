@@ -1174,8 +1174,9 @@ public class KiDialogkatalogTests : IDisposable
 
         // 54 bis Stufe 3b, dazu die Randbedingung und die vier Ferienspalten; mit der Welle 3
         // von AK1 die dreizehn Felder der Wärmeübergabe (Konzept Anlagenkopplung 9.1); mit E37
-        // die acht Felder der Kühlübergabe; mit G4a das Baujahr neben der Baualtersklasse.
-        Assert.Equal(81, d.Felder.Count);
+        // die acht Felder der Kühlübergabe; mit G4a das Baujahr neben der Baualtersklasse; mit E43
+        // Beginn und Ende der Nachtabsenkung.
+        Assert.Equal(83, d.Felder.Count);
         Assert.DoesNotContain(d.Felder, f => f.IstReihe);
         Assert.True(d.FindeFeld("randbedingung")!.IstWahl);
 

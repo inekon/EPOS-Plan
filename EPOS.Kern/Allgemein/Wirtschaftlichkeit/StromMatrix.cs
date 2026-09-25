@@ -21,6 +21,11 @@ namespace WindowsFormsApplication1
     ///  - Netzbezug [MWh]           (Zeitreihe NETZBEZUG)
     ///  - PV-Einspeisung [MWh]      (Zeitreihe PV_UEBERSCHUSS)
     ///  - KWK-Eigenstrom [MWh]      (stundenweise min(BHKW-Strom, Strombedarf nach PV))
+    ///
+    /// Strombedarf heißt hier der Bedarf aller Verbraucher des Anschlusses
+    /// (<see cref="ZeitreihenSatz.STROMBEDARF_GESAMT"/>, E26): derselbe Umfang, von dem der
+    /// Netzbezug der Rest ist. Auch der KWK-Split misst sich daran — die Simulation lässt
+    /// das BHKW den Strom der Wärmepumpe decken, also ist dieser Strom Eigenstrom.
     ///  - KWK-Einspeisung [MWh]     (BHKW-Strom − Eigenanteil)
     ///  - Bedarf ohne jede Eigenerzeugung und PV-Eigennutzung [MWh] (Etappen E5/E7)
     /// plus die höchste Stundenlast des Netzbezugs [kW] und die zwei Lastbilder, an
@@ -166,7 +171,15 @@ namespace WindowsFormsApplication1
 
             double[] pvUeber = zeitreihen.Hole(ZeitreihenSatz.PV_UEBERSCHUSS);
             double[] bhkw = zeitreihen.Hole(ZeitreihenSatz.BHKW_STROM);
-            double[] bedarf = zeitreihen.Hole(ZeitreihenSatz.STROMBEDARF);
+            // E26 (Befund N3): Bezugsgröße ist der Bedarf ALLER Verbraucher des Anschlusses
+            // (Strombedarf des Projekts plus Wärmepumpe, Heizstab, Elektrokessel, Kältestrom
+            // der Stufenrechnung) — dieselbe Menge, die ohne Eigenerzeugung aus dem Netz käme
+            // und von der NETZBEZUG der Rest ist. Die Reihe STROMBEDARF allein führt den
+            // Erzeugerstrom nicht; mit ihr wurde die vermiedene Menge in jedem
+            // Wärmepumpenprojekt negativ. Fehlt die Gesamtreihe (Zeitreihensatz ohne
+            // Simulationslauf), gilt STROMBEDARF wie bisher.
+            double[] bedarf = zeitreihen.Hole(ZeitreihenSatz.STROMBEDARF_GESAMT)
+                              ?? zeitreihen.Hole(ZeitreihenSatz.STROMBEDARF);
             double[] pvGenutzt = zeitreihen.Hole(ZeitreihenSatz.PV_GENUTZT);
 
             var m = new StromMatrix();

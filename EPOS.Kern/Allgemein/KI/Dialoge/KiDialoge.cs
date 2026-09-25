@@ -5394,6 +5394,18 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkNachtName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkNachtErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    // Die Nachtzeit (E43): volle Stunden 0 bis 23, beide leer = Vorgabe 22 bis 6 Uhr;
+                    // nur eines oder beide gleich haelt die Pruefung des Arbeitsstands an.
+                    new KiDialogFeld("nacht_beginn", "GebaeudeKatalogKiSicht.NachtBeginn",
+                                     KiDialogTexte.GebkNachtBeginnName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkNachtBeginnErl, leerErlaubt: true,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE,
+                                     min: Nachtzeit.STUNDE_MIN, max: Nachtzeit.STUNDE_MAX),
+                    new KiDialogFeld("nacht_ende", "GebaeudeKatalogKiSicht.NachtEnde",
+                                     KiDialogTexte.GebkNachtEndeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkNachtEndeErl, leerErlaubt: true,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE,
+                                     min: Nachtzeit.STUNDE_MIN, max: Nachtzeit.STUNDE_MAX),
                     new KiDialogFeld("max_temperatur", "GebaeudeKatalogKiSicht.MaxTemperatur",
                                      KiDialogTexte.GebkMaxTemperaturName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkMaxTemperaturErl,

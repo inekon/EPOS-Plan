@@ -108,7 +108,11 @@ namespace WindowsFormsApplication1
         public const string VOLUMEN = "VOLUMEN";
         /// <summary>Fläche je Nutzer [m²] (<c>Flaeche_Nutzer</c>; <c>Bewohner</c> rechnet die Hülle daraus) — ohne Personenangabe die Vorgabe <see cref="GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE"/>.</summary>
         public const string FLAECHE_JE_NUTZER = "FLAECHE_JE_NUTZER";
-        /// <summary>Innere Wärmegewinne [W], zeitlich konstant (<c>Interne_Waermegewinne</c>, im Modell <c>InnereGewinne_W</c>) — immer der Wert eines neuen Gebäudes als Vorgabe.</summary>
+        /// <summary>
+        /// Innere Wärmegewinne [W], zeitlich konstant (<c>Interne_Waermegewinne</c>, im Modell <c>InnereGewinne_W</c>) —
+        /// immer eine ausgewiesene Vorgabe: <see cref="GebaeudeStammCtrl.INNERE_GEWINNE_JE_M2_VORGABE"/> × Nutzfläche
+        /// (E43), ohne Nutzfläche der Wert eines neuen Gebäudes (0 W).
+        /// </summary>
         public const string INNERE_GEWINNE = "INNERE_GEWINNE";
         /// <summary>Baualtersklasse, Buchstabe A…U (<c>Baualtersklasse</c>) — Anwenderangabe, steuert die Vorgaben.</summary>
         public const string BAUALTERSKLASSE = "BAUALTERSKLASSE";
@@ -199,8 +203,20 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------------ Sollwerte
 
-        /// <summary>Heizsollwert am Tag [°C] (<c>Raumsolltemperatur_Tag</c>) — nur, wenn die Datei ihn trägt.</summary>
+        /// <summary>
+        /// Heizsollwert am Tag [°C] (<c>Raumsolltemperatur_Tag</c>) — aus der Datei, wenn sie ihn einheitlich trägt,
+        /// sonst die Vorgabe <see cref="GebaeudeStammCtrl.SOLLTEMPERATUR_TAG_VORGABE"/> (E43).
+        /// </summary>
         public const string SOLL_TAG = "SOLL_TAG";
+        /// <summary>
+        /// Heizsollwert der Nachtabsenkung [°C] (<c>Raumsolltemperatur_Nachtabsenkung</c>) — die Vorgabe
+        /// <see cref="GebaeudeStammCtrl.SOLLTEMPERATUR_NACHT_VORGABE"/>, höchstens der Tagsollwert (E43).
+        /// </summary>
+        public const string SOLL_NACHT = "SOLL_NACHT";
+        /// <summary>Beginn der Nachtabsenkung [h, Stunde des Tages] (<c>Nachtabsenkung_Beginn</c>) — die Vorgabe <see cref="Nachtzeit.VORGABE_BEGINN"/> als ausdrücklicher Wert (E43).</summary>
+        public const string NACHT_BEGINN = "NACHT_BEGINN";
+        /// <summary>Ende der Nachtabsenkung [h, Stunde des Tages] (<c>Nachtabsenkung_Ende</c>) — die Vorgabe <see cref="Nachtzeit.VORGABE_ENDE"/> als ausdrücklicher Wert (E43).</summary>
+        public const string NACHT_ENDE = "NACHT_ENDE";
 
         // ------------------------------------------------------------------ Aufzählungswerte
 
@@ -292,6 +308,9 @@ namespace WindowsFormsApplication1
                 F(LUFTWECHSEL_NUTZER, GRUPPE_LUEFTUNG, "1/h"),
 
                 F(SOLL_TAG, GRUPPE_SOLLWERTE, "°C"),
+                F(SOLL_NACHT, GRUPPE_SOLLWERTE, "°C"),
+                F(NACHT_BEGINN, GRUPPE_SOLLWERTE, "h"),
+                F(NACHT_ENDE, GRUPPE_SOLLWERTE, "h"),
             };
         }
     }
