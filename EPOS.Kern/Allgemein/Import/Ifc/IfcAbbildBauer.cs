@@ -28,6 +28,12 @@ namespace WindowsFormsApplication1
     /// liegt (<see cref="GebaeudeAggregation.SICHT_BODEN"/>/<see cref="GebaeudeAggregation.SICHT_DECKE"/>).
     /// Ein Außenbauteil ohne Raumgrenze zählt über <see cref="AbbildBauteil.HuelleOhneNachbar"/>.</para>
     ///
+    /// <para><b>Linear in der Dateigröße:</b> Jede Rückbeziehung (<c>IsDefinedBy</c>, <c>IsTypedBy</c>,
+    /// <c>HasAssociations</c>, <c>IsDecomposedBy</c>, <c>ContainsElements</c>, <c>HasOpenings</c>,
+    /// <c>HasFillings</c>, <c>HasProperties</c>) kommt aus <see cref="IfcRueckbezuege"/>, das jede
+    /// Beziehungsart einmal je Modell durchläuft — nie aus der Eigenschaft der Bibliothek, die je Frage
+    /// das ganze Modell durchsucht (O(n²)); dort steht auch, warum nicht <c>BeginInverseCaching</c>.</para>
+    ///
     /// <para><b>Keine Geometrieableitung</b> (3.1): Fehlen die Mengen, bleibt die Fläche leer
     /// (<c>IMP_IFC_PROT_KEINE_MENGEN</c>); die Ableitung aus Körpern ist Stufe G5. <c>IfcZone</c> wird
     /// nicht gelesen (3.5 Nr. 8), <c>Pset_SpaceThermalLoad.AirExchangeRate</c> nicht benutzt (3.4).</para>
@@ -47,6 +53,7 @@ namespace WindowsFormsApplication1
         internal const double SCHALENABSTAND_MIN_M = 0.01;
 
         private readonly IModel _modell;
+        private readonly IfcRueckbezuege _bezuege;
         private readonly IfcGebaeudeAbbild _abbild;
         private readonly IProgress<ImportFortschritt> _melder;
         private readonly CancellationToken _abbruch;
@@ -90,6 +97,7 @@ namespace WindowsFormsApplication1
                                 CancellationToken abbruch, double anteilStart)
         {
             _modell = modell;
+            _bezuege = new IfcRueckbezuege(modell);
             _abbild = abbild;
             _melder = melder;
             _abbruch = abbruch;
@@ -161,6 +169,7 @@ namespace WindowsFormsApplication1
                 _abbild.TrueNorthGrad = IfcPlatzierung.DrehungAusTrueNorth(nord[0], nord[1]);
 
             IIfcMapConversion karte = null;
+            // Einmal je Datei gefragt — hier genügt die Suche der Bibliothek (kein Index nötig).
             try { karte = kontext?.HasCoordinateOperation?.OfType<IIfcMapConversion>().FirstOrDefault(); }
             catch (Exception) { karte = null; }   // IFC2X3 kennt die Umrechnung nicht
             if (karte != null)
@@ -214,7 +223,7 @@ namespace WindowsFormsApplication1
 
         private void Baujahr(IIfcBuilding b, AbbildGebaeude g)
         {
-            IfcFund f = IfcEigenschaften.Finden(b, "Pset_BuildingCommon", "YearOfConstruction");
+            IfcFund f = IfcEigenschaften.Finden(_bezuege, b, "Pset_BuildingCommon", "YearOfConstruction");
             string text = f == null ? null : Textwert(f);
             if (string.IsNullOrWhiteSpace(text)) return;
             g.BaujahrText = text.Trim();
@@ -241,13 +250,12 @@ namespace WindowsFormsApplication1
             }
             if (knoten is IIfcSpace raum) RaumAnlegen(raum, gi, geschoss);
 
-            if (knoten is IIfcSpatialElement raeumlich && raeumlich.ContainsElements != null)
-                foreach (IIfcRelContainedInSpatialStructure rel in raeumlich.ContainsElements)
+            if (knoten is IIfcSpatialElement raeumlich)
+                foreach (IIfcRelContainedInSpatialStructure rel in _bezuege.Enthaelt(raeumlich))
                     foreach (IIfcElement e in rel.RelatedElements.OfType<IIfcElement>().OrderBy(x => x.EntityLabel))
                         ElementZuordnen(e, gi, geschoss, besucht);
 
-            if (knoten.IsDecomposedBy == null) return;
-            foreach (IIfcRelAggregates rel in knoten.IsDecomposedBy)
+            foreach (IIfcRelAggregates rel in _bezuege.ZerlegtDurch(knoten))
                 foreach (IIfcObjectDefinition kind in rel.RelatedObjects.OrderBy(x => x.EntityLabel))
                 {
                     if (kind is IIfcBuilding) continue;
@@ -263,8 +271,8 @@ namespace WindowsFormsApplication1
                 _elementGebaeude[e.EntityLabel] = gi;
                 _elementLage[e.EntityLabel] = Lage(geschoss);
             }
-            if (e.IsDecomposedBy == null || !besucht.Add(-e.EntityLabel)) return;
-            foreach (IIfcRelAggregates rel in e.IsDecomposedBy)
+            if (!besucht.Add(-e.EntityLabel)) return;
+            foreach (IIfcRelAggregates rel in _bezuege.ZerlegtDurch(e))
                 foreach (IIfcElement teil in rel.RelatedObjects.OfType<IIfcElement>())
                     ElementZuordnen(teil, gi, geschoss, besucht);
         }
@@ -293,7 +301,7 @@ namespace WindowsFormsApplication1
                 Kennung = s.GlobalId.ToString(),
                 Name = IfcEigenschaften.Text(s.Name) ?? IfcEigenschaften.Text(s.LongName),
                 LageM = Lage(s),
-                GrundflaecheM2 = Positiv(IfcEigenschaften.Menge(s, "BuildingStorey", "GrossFloorArea", _einheiten)),
+                GrundflaecheM2 = Positiv(IfcEigenschaften.Menge(_bezuege, s, "BuildingStorey", "GrossFloorArea", _einheiten)),
             });
         }
 
@@ -314,15 +322,15 @@ namespace WindowsFormsApplication1
             };
             _raumflaechen[s.EntityLabel] = new[]
             {
-                IfcEigenschaften.Menge(s, "Space", "NetFloorArea", _einheiten),
-                IfcEigenschaften.Menge(s, "Space", "GrossFloorArea", _einheiten),
+                IfcEigenschaften.Menge(_bezuege, s, "Space", "NetFloorArea", _einheiten),
+                IfcEigenschaften.Menge(_bezuege, s, "Space", "GrossFloorArea", _einheiten),
             };
-            r.HoeheM = Positiv(IfcEigenschaften.Menge(s, "Space", "Height", _einheiten));
-            r.VolumenM3 = Positiv(IfcEigenschaften.Menge(s, "Space", "NetVolume", _einheiten)
-                                  ?? IfcEigenschaften.Menge(s, "Space", "GrossVolume", _einheiten));
+            r.HoeheM = Positiv(IfcEigenschaften.Menge(_bezuege, s, "Space", "Height", _einheiten));
+            r.VolumenM3 = Positiv(IfcEigenschaften.Menge(_bezuege, s, "Space", "NetVolume", _einheiten)
+                                  ?? IfcEigenschaften.Menge(_bezuege, s, "Space", "GrossVolume", _einheiten));
 
             // Beheizt (3.5 Nr. 3): IsExternal = true schließt aus, sonst die Namensregel.
-            bool? aussen = Wahrheit(IfcEigenschaften.Finden(s, "Pset_SpaceCommon", "IsExternal"));
+            bool? aussen = Wahrheit(IfcEigenschaften.Finden(_bezuege, s, "Pset_SpaceCommon", "IsExternal"));
             if (aussen == true)
             {
                 r.Beheizt = false;
@@ -356,11 +364,11 @@ namespace WindowsFormsApplication1
         private double? Sollwert(IIfcSpace s)
         {
             if (_abbild.SchemaStand == IfcSchemaStand.Ifc4x3) return null;
-            bool vorhanden = IfcEigenschaften.HatSatz(s, PSET_SOLLWERTE);
+            bool vorhanden = IfcEigenschaften.HatSatz(_bezuege, s, PSET_SOLLWERTE);
             if (vorhanden) _abbild.ZahlSollwertsaetze++;
             foreach (string name in new[] { "SpaceTemperatureWinter", "SpaceTemperatureWinterMin", "SpaceTemperatureMin", "SpaceTemperature" })
             {
-                IfcFund f = IfcEigenschaften.Finden(s, PSET_SOLLWERTE, name);
+                IfcFund f = IfcEigenschaften.Finden(_bezuege, s, PSET_SOLLWERTE, name);
                 double? w = f == null ? null : Zahl(f, untereGrenzeZuerst: true);
                 if (w.HasValue) return _einheiten.NachCelsius(w.Value);
             }
@@ -462,7 +470,7 @@ namespace WindowsFormsApplication1
             {
                 List<IIfcElement> teile = Teile(dach);
                 if (teile.Count == 0) continue;
-                if (IfcEigenschaften.Menge(dach, "Roof", "GrossArea", _einheiten).HasValue)
+                if (IfcEigenschaften.Menge(_bezuege, dach, "Roof", "GrossArea", _einheiten).HasValue)
                     foreach (IIfcElement t in teile) uebersprungen.Add(t.EntityLabel);
                 else
                     uebersprungen.Add(dach.EntityLabel);
@@ -493,9 +501,8 @@ namespace WindowsFormsApplication1
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OHNE_WIRT", Ganz(ohneWirt.Count), Beispiele(ohneWirt)));
         }
 
-        private static List<IIfcElement> Teile(IIfcElement e)
-            => e.IsDecomposedBy == null ? new List<IIfcElement>()
-               : e.IsDecomposedBy.SelectMany(r => r.RelatedObjects.OfType<IIfcElement>()).ToList();
+        private List<IIfcElement> Teile(IIfcElement e)
+            => _bezuege.ZerlegtDurch(e).SelectMany(r => r.RelatedObjects.OfType<IIfcElement>()).ToList();
 
         private void Bauteil(IIfcElement e, string klasse)
         {
@@ -507,7 +514,7 @@ namespace WindowsFormsApplication1
             bool senkrecht = e is IIfcWall || e is IIfcCurtainWall || e is IIfcPlate;
 
             // Plattenwerk außen (IfcPlate) nur, wenn es als außen erklärt ist.
-            bool? istAussen = Wahrheit(IfcEigenschaften.Finden(e, satz, "IsExternal"));
+            bool? istAussen = Wahrheit(IfcEigenschaften.Finden(_bezuege, e, satz, "IsExternal"));
             if (e is IIfcPlate && istAussen != true) return;
 
             List<IIfcRelSpaceBoundary> grenzen = GrenzenVon(e);
@@ -528,15 +535,15 @@ namespace WindowsFormsApplication1
             // Flächen: GrossSideArea bzw. GrossArea — nie NetSideArea als Bruttomaß (3.4).
             if (senkrecht && !(e is IIfcPlate))
             {
-                b.BruttoflaecheM2 = Positiv(IfcEigenschaften.Menge(e, klasse, "GrossSideArea", _einheiten))
-                                    ?? Produkt(IfcEigenschaften.Menge(e, klasse, "Length", _einheiten),
-                                               IfcEigenschaften.Menge(e, klasse, "Height", _einheiten));
-                b.NettoflaecheM2 = NichtNegativ(IfcEigenschaften.Menge(e, klasse, "NetSideArea", _einheiten));
+                b.BruttoflaecheM2 = Positiv(IfcEigenschaften.Menge(_bezuege, e, klasse, "GrossSideArea", _einheiten))
+                                    ?? Produkt(IfcEigenschaften.Menge(_bezuege, e, klasse, "Length", _einheiten),
+                                               IfcEigenschaften.Menge(_bezuege, e, klasse, "Height", _einheiten));
+                b.NettoflaecheM2 = NichtNegativ(IfcEigenschaften.Menge(_bezuege, e, klasse, "NetSideArea", _einheiten));
             }
             else
             {
-                b.BruttoflaecheM2 = Positiv(IfcEigenschaften.Menge(e, klasse, "GrossArea", _einheiten));
-                b.NettoflaecheM2 = NichtNegativ(IfcEigenschaften.Menge(e, klasse, "NetArea", _einheiten));
+                b.BruttoflaecheM2 = Positiv(IfcEigenschaften.Menge(_bezuege, e, klasse, "GrossArea", _einheiten));
+                b.NettoflaecheM2 = NichtNegativ(IfcEigenschaften.Menge(_bezuege, e, klasse, "NetArea", _einheiten));
             }
             if (!b.BruttoflaecheM2.HasValue) _ohneMengen.Add(b.Kennung);
 
@@ -549,10 +556,10 @@ namespace WindowsFormsApplication1
             if (senkrecht) Azimut(e, b, grenzen, gi);
             if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
 
-            foreach (IIfcRelVoidsElement rel in e.HasOpenings ?? Enumerable.Empty<IIfcRelVoidsElement>())
+            foreach (IIfcRelVoidsElement rel in _bezuege.Oeffnungen(e))
             {
-                if (!(rel.RelatedOpeningElement is IIfcOpeningElement oeffnung) || oeffnung.HasFillings == null) continue;
-                foreach (IIfcRelFillsElement fuellung in oeffnung.HasFillings)
+                if (!(rel.RelatedOpeningElement is IIfcOpeningElement oeffnung)) continue;
+                foreach (IIfcRelFillsElement fuellung in _bezuege.Fuellungen(oeffnung))
                 {
                     IIfcElement f = fuellung.RelatedBuildingElement;
                     if (f is IIfcWindow fenster) b.Oeffnungen.Add(Oeffnung(fenster, "Window", Bauteilart.Fenster, b));
@@ -724,9 +731,9 @@ namespace WindowsFormsApplication1
                 Randbedingung = wirt.Randbedingung,
                 NeigungGrad = wirt.NeigungGrad,
             };
-            double? flaeche = Positiv(IfcEigenschaften.Menge(o, klasse, "Area", _einheiten))
-                              ?? Produkt(IfcEigenschaften.Menge(o, klasse, "Width", _einheiten),
-                                         IfcEigenschaften.Menge(o, klasse, "Height", _einheiten));
+            double? flaeche = Positiv(IfcEigenschaften.Menge(_bezuege, o, klasse, "Area", _einheiten))
+                              ?? Produkt(IfcEigenschaften.Menge(_bezuege, o, klasse, "Width", _einheiten),
+                                         IfcEigenschaften.Menge(_bezuege, o, klasse, "Height", _einheiten));
             if (!flaeche.HasValue)
             {
                 double breite = double.NaN, hoehe = double.NaN;
@@ -746,14 +753,14 @@ namespace WindowsFormsApplication1
             if (!flaeche.HasValue) _ohneMengen.Add(b.Kennung);
 
             UWert(o, "Pset_" + klasse + "Common", b);
-            IfcFund g = IfcEigenschaften.Finden(o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
+            IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);
             return b;
         }
 
         private void UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
-            IfcFund f = IfcEigenschaften.Finden(e, satz, "ThermalTransmittance");
+            IfcFund f = IfcEigenschaften.Finden(_bezuege, e, satz, "ThermalTransmittance");
             if (f == null) return;
             double? u = Zahl(f);
             if (!u.HasValue) return;
@@ -813,13 +820,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Schichtsatz eines Bauteils samt seiner Nutzung: am Vorkommnis, sonst am Typ (dort ohne Nutzung).</summary>
-        private static IIfcMaterialLayerSet Schichtsatz(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
+        private IIfcMaterialLayerSet Schichtsatz(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
         {
-            IIfcMaterialLayerSet s = Schichtsatz(e.HasAssociations, out nutzung);
+            IIfcMaterialLayerSet s = Schichtsatz(_bezuege.Zuordnungen(e), out nutzung);
             if (s != null) return s;
-            foreach (IIfcRelDefinesByType rel in e.IsTypedBy ?? Enumerable.Empty<IIfcRelDefinesByType>())
+            foreach (IIfcRelDefinesByType rel in _bezuege.TypisiertDurch(e))
             {
-                s = Schichtsatz(rel?.RelatingType?.HasAssociations, out nutzung);
+                IIfcTypeObject typ = rel?.RelatingType;
+                s = Schichtsatz(typ == null ? null : _bezuege.Zuordnungen(typ), out nutzung);
                 if (s != null) return s;
             }
             nutzung = null;
@@ -871,7 +879,7 @@ namespace WindowsFormsApplication1
             (double? Lambda, double? Rho, double? Cp) werte = (null, null, null);
             try
             {
-                List<IIfcMaterialProperties> saetze = (stoff.HasProperties ?? Enumerable.Empty<IIfcMaterialProperties>()).ToList();
+                List<IIfcMaterialProperties> saetze = _bezuege.Stoffsaetze(stoff).ToList();
                 if (_abbild.SchemaStand == IfcSchemaStand.Ifc2x3)
                 {
                     if (saetze.Count > 0) _stoffwerteNichtGelesen.Add(name);
