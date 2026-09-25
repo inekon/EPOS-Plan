@@ -197,6 +197,13 @@ namespace WindowsFormsApplication1
         /// <summary>Hat der letzte Bearbeiten-Lauf den Projektkopf geschrieben?</summary>
         public bool KopfGeschrieben { get; private set; }
 
+        /// <summary>
+        /// Wie viele fehlende Trägersatzpaare hat der letzte Bearbeiten-Lauf bei
+        /// UNVERÄNDERTEM Erzeuger nachgelegt (#497)? 0, wenn keiner fehlte oder die
+        /// Anlagen ohnehin neu geschrieben wurden.
+        /// </summary>
+        public int GeheilteTraegersaetze { get; private set; }
+
         private readonly bool[] _seiteAktiv = new bool[SEITEN];
 
         /// <summary>
@@ -927,8 +934,8 @@ namespace WindowsFormsApplication1
             // --- Erzeuger: Anlagenzeilen, Projektgeraete, Traegersaetze ---------------
             // Unveraendert heisst: keine Anlagenzeile, keine Projektkopie, kein
             // Kostenanker, keine Senke und kein Strang wird angefasst; die Pufferzeilen
-            // ohnehin nicht (FR-1). Auch Add_Projekt_Energietraeger bleibt aus - die
-            // Saetze stehen seit dem Speichern, das diese Anlagen geschrieben hat.
+            // ohnehin nicht (FR-1). Die Traegersaetze heilen trotzdem (#497, else-Zweig).
+            GeheilteTraegersaetze = 0;
             if (erzeuger)
             {
                 _geschriebeneGewerke.Add(AssistentGewerk.Erzeuger);
@@ -948,6 +955,15 @@ namespace WindowsFormsApplication1
                 // Saetze, bereits zugeordnete faengt der COUNT-Test ab.
                 if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                     return Fehler("Add_Projekt_Energietraeger");
+            }
+            else
+            {
+                // #497: Die Heilung haengt nicht am Abdruck. Fehlt zu einer vorhandenen
+                // Anlage ihr projektgebundener Traegersatz, entsteht er hier - und nur
+                // dann gilt das Projekt als geaendert; ohne Luecke wird nichts geschrieben.
+                if (!ctrl.Projekt_Energietraeger_Heilen(ProjektId, Erzeuger, vorgang, out int geheilt))
+                    return Fehler("Projekt_Energietraeger_Heilen");
+                GeheilteTraegersaetze = geheilt;
             }
 
             // Die Gebaeudeliste wird ABGEGLICHEN, nicht neu aufgebaut (Konzept

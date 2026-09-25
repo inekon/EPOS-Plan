@@ -2377,7 +2377,18 @@ namespace WindowsFormsApplication1
         /// (<see cref="TraegerSatzAnlegen"/>), also mit denselben Stammwerten.
         /// </summary>
         public bool Add_Projekt_Energietraeger(int projektID, List<WErzeugerModel> list, DbVorgang vorgang = null)
+            => Add_Projekt_Energietraeger(projektID, list, vorgang, out _);
+
+        /// <summary>
+        /// <see cref="Add_Projekt_Energietraeger(int, List{WErzeugerModel}, DbVorgang)"/> mit
+        /// der Zahl der Satzpaare, die dieser Aufruf tatsächlich ANGELEGT hat — ein bereits
+        /// zugeordneter Träger und eine fehlende Katalogzeile zählen nicht (#497).
+        /// </summary>
+        public bool Add_Projekt_Energietraeger(int projektID, List<WErzeugerModel> list, DbVorgang vorgang,
+                                               out int angelegt)
         {
+            angelegt = 0;
+
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
@@ -2393,7 +2404,8 @@ namespace WindowsFormsApplication1
                 if (carrierId <= 0 || erledigt.Contains(carrierId)) continue;
                 erledigt.Add(carrierId);
 
-                if (!TraegerSatzAnlegen(projektID, carrierId)) return false;
+                if (!TraegerSatzAnlegen(projektID, carrierId, out bool neu)) return false;
+                if (neu) angelegt++;
             }
 
             // ---------------------------------------------------------------------
@@ -2429,10 +2441,36 @@ namespace WindowsFormsApplication1
                 if (stromId > 0 && !erledigt.Contains(stromId))
                 {
                     erledigt.Add(stromId);
-                    if (!TraegerSatzAnlegen(projektID, stromId)) return false;
+                    if (!TraegerSatzAnlegen(projektID, stromId, out bool neu)) return false;
+                    if (neu) angelegt++;
                 }
             }
 
+            return true;
+        }
+
+        /// <summary>
+        /// Die HEILUNG der Trägersätze im Bearbeiten-Zweig des Assistenten (#497): legt zu
+        /// den vorhandenen Anlagen NUR die fehlenden projektgebundenen Satzpaare an
+        /// (<see cref="Add_Projekt_Energietraeger(int, List{WErzeugerModel}, DbVorgang, out int)"/>
+        /// — vorhandene Sätze bleiben unberührt) und markiert das Projekt nur dann als
+        /// geändert, wenn wirklich ein Satz entstanden ist.
+        ///
+        /// <para><b>Warum eigens.</b> Der Abgleich je Gewerk (#490) überspringt bei
+        /// unverändertem Erzeuger den ganzen Anlagen-Schreibweg — mit ihm lief bis dahin
+        /// auch die Trägerzuordnung. Ein fehlender Satz (von Hand gelöscht, Altbestand,
+        /// abgebrochene Zuordnung) heilte danach nicht mehr beim Speichern. Das
+        /// Anlegen selbst setzt kein Änderungsdatum; ein Speichern ohne fehlenden Satz
+        /// schreibt deshalb nichts und stempelt nichts.</para>
+        /// </summary>
+        /// <param name="angelegt">Zahl der angelegten Satzpaare; 0 = nichts geschrieben.</param>
+        public bool Projekt_Energietraeger_Heilen(int projektID, List<WErzeugerModel> list, DbVorgang vorgang,
+                                                  out int angelegt)
+        {
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            if (!Add_Projekt_Energietraeger(projektID, list, vorgang, out angelegt)) return false;
+            if (angelegt > 0) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
             return true;
         }
 
@@ -2477,7 +2515,17 @@ namespace WindowsFormsApplication1
         // internal seit ET-2 (08.09.2026): ProjektEnergietraegerCtrl.StromTraegerSicherstellen
         // schreibt ueber DIESE Mechanik - eine zweite Fassung waere eine zweite Wahrheit.
         internal bool TraegerSatzAnlegen(int projektID, int carrierId)
+            => TraegerSatzAnlegen(projektID, carrierId, out _);
+
+        /// <summary>
+        /// <see cref="TraegerSatzAnlegen(int, int)"/> mit der Auskunft, ob das Satzpaar
+        /// wirklich ANGELEGT wurde (<paramref name="angelegt"/>); <c>false</c> bei fehlender
+        /// Katalogzeile und bei einem bereits zugeordneten Träger (#497).
+        /// </summary>
+        internal bool TraegerSatzAnlegen(int projektID, int carrierId, out bool angelegt)
         {
+            angelegt = false;
+
             object oBrennstoff = DataRepository.ExecuteScalar(
                 "SELECT ID_Brennstoff FROM energy_carrier WHERE id = ?",
                 new DbParam[] { new DbParam("@cid", carrierId) });
@@ -2579,6 +2627,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@nox",    DbParamTyp.Double) { Wert = DBNull.Value }
             })) return false;
 
+            angelegt = true;
             return true;
         }
 
