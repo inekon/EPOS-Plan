@@ -11438,6 +11438,36 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     gap: 4px;
 }
 
+/* MESSDATEN UND VERGLEICH (Stufe Z5). Die Handlungen einer Messreihenzeile stehen in EINER
+   Zeile - der Flexkasten liegt IN der Zelle, nicht auf ihr (die Zelle behaelt ihre Rolle), und
+   beide Knoepfe sind IMMER sichtbar, nie erst bei :hover. */
+.epos-tww-messreihen-handlungen {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+/* Der Wahlblock des Vergleichs steht ueber der Kennzahlentabelle und ist von ihr abgesetzt. */
+.epos-zapfprofil-vergleichwahl {
+    margin-block-end: var(--epos-abstand);
+}
+
+.epos-zapfprofil-vergleichleiste {
+    margin-block-start: 0.4rem;
+}
+
+/* Die Vorschau des Kalibriervorschlags: ihre Zwischentitel bekommen Luft, die breite Tabelle
+   der Tagesgaenge rollt in ihrer Huelle (24 Stundenspalten brechen nicht um). */
+.epos-zapfprofil-vorschlagvorschau > h4 {
+    margin: var(--epos-abstand) 0 0.2rem 0;
+}
+
+.epos-zapfprofil-vorschlaggaenge th,
+.epos-zapfprofil-vorschlaggaenge td {
+    white-space: nowrap;
+}
+
 .epos-zapfprofil-reihenfolge > .epos-zahl {
     min-width: 1.5rem;
 }

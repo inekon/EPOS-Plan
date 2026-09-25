@@ -4366,6 +4366,52 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUJAHR = BaujahrSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt 140 — <b>die eingespielten Messreihen eines Projekts</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5, Schemaschritt T4 „Messreihen"). Er steht
+        /// als LETZTER Schritt der Liste, <b>ohne Reihenfolgebedingung</b> und ohne einen früheren
+        /// Schritt zu brauchen: Die Tabelle hängt allein an <c>Tab_Projekt</c>, das jede Datenbank
+        /// führt. Die Nummer ist die nächste freie: Sie folgt lückenlos auf
+        /// <see cref="SCHRITT_BAUJAHR"/> (139) und steht allein bei
+        /// <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>; wandert sie bei einer Kollision erneut,
+        /// ändert sich am Schritt selbst nichts.
+        ///
+        /// <para><b>REIN DDL</b>, eine Tabelle und ein Index: <c>Tab_TwwMessreihe</c> (STRICT, zehn
+        /// Spalten, eine Zeile je Wert, natürlicher Schlüssel
+        /// ID_Projekt/Bezeichnung/Zeilenindex, <c>ID_Projekt</c> mit <c>ON DELETE CASCADE</c>, kein
+        /// <c>Status</c>, kein <c>ReadOnly</c>) und der Index auf <c>ID_Projekt</c>. Die
+        /// Definitionen stehen bei <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Die Tabelle entsteht LEER; das Repositorium bringt keine
+        /// Zeile mit (Kapitel 9 K5: Messdaten gehören dem Objekt), und ohne eingespielte Messreihe
+        /// ist der Vergleich benannt nicht verfügbar. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über <c>CREATE TABLE IF NOT EXISTS</c> und
+        /// <c>CREATE INDEX IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_140_ZAPFPROFIL_MESSREIHEN = TwwSchema.SCHRITT_T4_MESSREIHEN;
+
+        /// <summary>
+        /// Schritt <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/> — <b>die
+        /// Folgeberichtigung im Gebäudekatalog</b> (Welle #496, Konzept Administrationsdialoge
+        /// 7.1 (a)): die Scan-Kandidaten nach <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/> und die
+        /// Außenwand des Kaufhauses. Er folgt auf <see cref="SCHRITT_140_ZAPFPROFIL_MESSREIHEN"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz, Spalte und
+        /// Schadensbild: Laibung und Dachkante getauscht (Alten-/Pflegeheime, Schulen,
+        /// Hallenbäder, G-096-Sätze), hergeleitet („GMH-BZ_T", „GMH-J-015"), Dach- und Kellerkante
+        /// der „Hotel-F-228"-Sätze auf den Umfang 116,16 m und die Außenwand des Kaufhauses
+        /// 10 094 → 1 820,9 m². Herleitungen bei <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>;
+        /// die Nummer steht allein bei <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Eine Spalte ohne ihr Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_FOLGEREPARATUR = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6189,7 +6235,6 @@ namespace WindowsFormsApplication1
                         "Eine Zone koennte ihre Kuehluebergabe nicht fuehren. KEIN Rechenergebnis aendert " +
                         "sich - kein Rechenweg liest die Zone.",
                         Schritt_KuehluebergabeZone),
-
             // GEBAEUDESIMULATION STUFE G4c, WELLE 3 (Datenaustauschkonzept 7.4) - der Schritt
             // S-F hinter den Mehrzonenschritten. Die Quelle ist ImportzuordnungSchema; die
             // Nummer steht allein dort.
@@ -6212,6 +6257,33 @@ namespace WindowsFormsApplication1
                         "IFC-Import verloere die gelesene Jahreszahl beim Uebernehmen. KEIN Rechenergebnis " +
                         "aendert sich - die Spalte bleibt leer, kein Rechenweg liest sie.",
                         Schritt_Baujahr),
+
+            // ZAPFPROFILGENERATOR Z5 (Schemaschritt T4 "Messreihen") - die eingespielten
+            // Messreihen eines Projekts: Tab_TwwMessreihe samt Index auf ID_Projekt. REIN DDL;
+            // die Quelle ist TwwSchema.AnweisungenT4Messreihen. Er steht NACH 139 ohne
+            // Reihenfolgebedingung; die Tabelle haengt allein an Tab_Projekt.
+            new Schritt(SCHRITT_140_ZAPFPROFIL_MESSREIHEN,
+                        "Zapfprofilgenerator: die eingespielten Messreihen eines Projekts " +
+                        "(Tab_TwwMessreihe) samt Index auf ID_Projekt",
+                        "Der Anwender koennte keine gemessene Reihe einspielen; Vergleichsbericht, " +
+                        "Validierungskennzahlen und die Kalibrierung gegen die Messung blieben ohne " +
+                        "Datenablage. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, " +
+                        "und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar.",
+                        Schritt_140_ZapfprofilMessreihen),
+
+            // WELLE #496 (Konzept Administrationsdialoge 7.1 (a)) - die Folgeberichtigung im
+            // Gebaeudekatalog: Scan-Kandidaten mit vertauschter Laibung und Dachkante, die
+            // Hotel-F-228-Saetze und die Aussenwand des Kaufhauses. REIN DML; die Quelle ist
+            // GebaeudeAnschlusslaengenFolgereparatur. Er steht NACH 140 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_GEBAEUDE_FOLGEREPARATUR,
+                        "Tab_Gebaeude_STAMM: Anschlusslaengen von neunzehn Saetzen (Laibung und Dachkante " +
+                        "getauscht oder hergeleitet, Dach- und Kellerkante der Hotel-F-228-Saetze) und " +
+                        "Aussenwandflaeche des Kaufhauses berichtigt",
+                        "Die Saetze rechneten mit unplausiblen Waermebrueckenlaengen (Laibung 0,3 m je m2 " +
+                        "Fenster, Dachkante 5 380 m bei 474 m2 Dach) und das Kaufhaus mit der Aussenwand eines " +
+                        "zwoelfgeschossigen Krankenhauses. KEIN Rechenergebnis eines Projekts aendert sich - " +
+                        "Projektkopien bleiben, wie sie sind.",
+                        Schritt_GebaeudeFolgereparatur),
         };
 
         /// <summary>
@@ -10017,6 +10089,47 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // Schritt GebaeudeAnschlusslaengenFolgereparatur.SCHRITT - die Folgeberichtigung (Welle #496)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Folgeberichtigung im Gebäudekatalog — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_FOLGEREPARATUR"/>, Schadensbilder und Herleitungen bei
+        /// <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>. Dieselbe Bauart wie
+        /// <see cref="Schritt_GebaeudeAnschlusslaengen"/>: der ganze Schritt aus dem Kern, danach
+        /// die Nachprobe (<see cref="GebaeudeAnschlusslaengenFolgereparatur.Offen"/>).
+        /// </summary>
+        private static bool Schritt_GebaeudeFolgereparatur(Lauf l)
+        {
+            string nr = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeAnschlusslaengenReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeAnschlusslaengenFolgereparatur.Ausfuehren();
+                offen = GebaeudeAnschlusslaengenFolgereparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Wert(e) im Gebaeudekatalog tragen nach dem Schritt weiter ihr Schadensbild.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
         // Schritt GebaeudeAnschlusslaengenReparatur.SCHRITT - die Anschlusslaengen (Welle #493)
         // =================================================================================
 
@@ -10420,6 +10533,56 @@ namespace WindowsFormsApplication1
                     " Gebaeudetabellen, die Sicht fuehrt " +
                     GebaeudeSchema.SICHT_BAUJAHR.Length.ToString(CultureInfo.InvariantCulture) +
                     " Spalten. Die Spalte bleibt leer; KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 140 - die eingespielten Messreihen eines Projekts
+        // (Zapfprofilgenerator Stufe Z5, T4 "Messreihen")
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 140 — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_140_ZAPFPROFIL_MESSREIHEN"/>, die DDL bei
+        /// <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>. <b>Nur <see cref="SqliteDdl"/></b>;
+        /// <b>wiederholbar</b> über <c>IF NOT EXISTS</c>. <b>Kein DML</b> — die Tabelle bleibt leer.
+        /// </summary>
+        private static bool Schritt_140_ZapfprofilMessreihen(Lauf l)
+        {
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
+            {
+                bool stand = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!stand) angelegt++;
+            }
+
+            // Danach der Index auf ID_Projekt - er braucht seine Tabelle.
+            int indizes = 0;
+            foreach (KeyValuePair<string, string> i in TwwSchema.IndizesT4Messreihen)
+            {
+                if (!SqliteDdl(l, i.Value, i.Key)) return false;
+                indizes++;
+            }
+
+            bool vollstaendig = true;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
+                vollstaendig &= SqliteTabelleVorhanden(a.Key);
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Tabelle der eingespielten Messreihen steht nach dem Schritt nicht.";
+                l.Notiz("140: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("140: " + angelegt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) und " +
+                    indizes.ToString(CultureInfo.InvariantCulture) + " Index(e) angelegt - " +
+                    TwwSchema.TAB_TWW_MESSREIHE + " (eine Zeile je Wert, ID_Projekt mit ON DELETE " +
+                    "CASCADE, kein Status, kein ReadOnly). KEIN DML: Die Tabelle bleibt LEER - das " +
+                    "Repositorium bringt keine Messreihe mit (Konzept Kapitel 9 K5) -, und ohne " +
+                    "eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar; der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

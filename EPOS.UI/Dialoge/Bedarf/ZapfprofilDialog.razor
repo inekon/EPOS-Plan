@@ -466,6 +466,32 @@
                                             <Textfeld Bezeichnung="@Texte.LabelMesswertZeitraum" Wert="@a.JahresmesswertZeitraum"
                                                       WertChanged="w => Angabe(zone, x => x.JahresmesswertZeitraum = w ?? string.Empty, auslegung: false)" />
                                             <Herleitungszeile Text="@Texte.HinweisJahresmesswert" />
+                                            @if (Messkalibrierung is not null)
+                                            {
+                                                <div class="epos-leiste epos-zapfprofil-kalibrierleiste">
+                                                    <button type="button" class="epos-knopf epos-zapfprofil-kalibrieren"
+                                                            aria-disabled="@(Kalibrierbar ? null : "true")"
+                                                            title="@(Kalibrierbar ? null : Kalibriersperre)"
+                                                            @onclick="() => KalibrierenFragen(zone)">@Texte.KnopfKalibrieren</button>
+                                                    @if (Kalibriervorschlag is not null)
+                                                    {
+                                                        <button type="button" class="epos-knopf epos-zapfprofil-vorschlag"
+                                                                aria-disabled="@(Vorschlagbar ? null : "true")"
+                                                                title="@(Vorschlagbar ? null : Kalibriersperre)"
+                                                                @onclick="() => VorschlagOeffnen(zone)">@Texte.KnopfKalibriervorschlag</button>
+                                                    }
+                                                </div>
+                                                @* Der nebenläufige Lauf der Kalibrierung: Status und Abbruch an der Leiste. *@
+                                                <div class="epos-zapfprofil-kalibrierfortschritt">
+                                                    <Fortschritt Sichtbar="@KalibrierungLaeuft" Text="@KalibrierLaufText"
+                                                                 Abbrechen="@(EventCallback.Factory.Create(this, KalibrierenAbbrechen))" />
+                                                </div>
+                                                @if (_kalibrierstatus.Length > 0)
+                                                {
+                                                    <p class="epos-leisezeile epos-zapfprofil-kalibrierstatus" role="status">@_kalibrierstatus</p>
+                                                }
+                                                <Herleitungszeile Text="@Texte.HinweisKalibrieren" />
+                                            }
                                         </KindInhalt>
                                     </Formulargruppe>
                                 </KindInhalt>
@@ -883,6 +909,42 @@
                                 </Reiterblatt>
                                 <Reiterblatt Schluessel="@REITER_KENNZAHLEN" Titel="@Texte.ReiterKennzahlen">
                                     <KindInhalt>
+                                        @* Der Vergleich mit einer Messreihe (Stufe Z5): Wahl, Lauf und Abbruch stehen
+                                           UEBER der Kennzahlentabelle; die Kennzahlen selbst sind Zeilen darin. *@
+                                        <section class="epos-zapfprofil-vergleichwahl" aria-label="@Texte.GruppeVergleich">
+                                            <div class="epos-zapfprofil-gruppenhilfe">
+                                                <h4>@Texte.GruppeVergleich</h4>
+                                                <InfoKnopf Schluessel="@HILFE_VERGLEICH" StandardKurztext="@Texte.GruppeVergleich"
+                                                           Dialogname="@Texte.Titel" />
+                                            </div>
+                                            @if (Messvergleich is not null)
+                                            {
+                                                <Formularraster Einspaltig="true">
+                                                    <KindInhalt>
+                                                        <Auswahlfeld Bezeichnung="@Texte.LabelMessreihe" Eintraege="@Messreihenwahl"
+                                                                     Auswahl="@VergleichWahlId" Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                                     Aktiv="@AbErweitert" AuswahlChanged="VergleichReiheSetzen" />
+                                                    </KindInhalt>
+                                                </Formularraster>
+                                                <div class="epos-leiste epos-zapfprofil-vergleichleiste">
+                                                    <span class="epos-leiste-fueller epos-status" role="status">@VergleichStatus</span>
+                                                    <button type="button" class="epos-knopf epos-zapfprofil-vergleich-rechnen"
+                                                            aria-disabled="@(VergleichRechenbar ? null : "true")"
+                                                            title="@(VergleichRechenbar ? null : VergleichSperrgrund)"
+                                                            @onclick="VergleichRechnen">@Texte.KnopfVergleich</button>
+                                                </div>
+                                                <Fortschritt Sichtbar="@VergleichLaeuft" Text="@VergleichLaufText"
+                                                             Abbrechen="@(EventCallback.Factory.Create(this, VergleichAbbrechen))" />
+                                                @if (_vergleichUeberholt)
+                                                {
+                                                    <p class="epos-leisezeile epos-zapfprofil-vergleich-veraltet">@Texte.VergleichVeraltet</p>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <p class="epos-leisezeile epos-zapfprofil-vergleich-ohne">@Texte.GrundNochNicht</p>
+                                            }
+                                        </section>
                                         <table class="epos-raster epos-kennzahlen epos-zapfprofil-kennzahlen">
                                             <thead>
                                                 <tr>
@@ -919,6 +981,39 @@
                                                 else
                                                 {
                                                     <tr class="epos-zapfprofil-stochastik"><td colspan="3">@StochastikErklaerung</td></tr>
+                                                }
+                                                <tr><th scope="rowgroup" colspan="3">@Texte.KennzahlVergleich</th></tr>
+                                                @if (_vergleich is { Ok: true } vergleich)
+                                                {
+                                                    foreach ((string Kennzahl, string Wert, string Vermerk) zeile in Vergleichszeilen(vergleich))
+                                                    {
+                                                        <tr class="epos-zapfprofil-vergleichzeile">
+                                                            <th scope="row">@zeile.Kennzahl</th>
+                                                            <td class="epos-zahl">@zeile.Wert</td>
+                                                            <td>@zeile.Vermerk</td>
+                                                        </tr>
+                                                    }
+                                                    foreach (ZapfprofilFormabgleichDaten f in vergleich.Form)
+                                                    {
+                                                        <tr class="epos-zapfprofil-formzeile" data-tagtyp="@f.Tagtyp">
+                                                            <th scope="row">@Format(Texte.KzFormTagtyp, f.Tagtyp)</th>
+                                                            <td class="epos-zahl">@Zahl(f.MittlereAbweichung, "N4")</td>
+                                                            <td>
+                                                                <Kohaerenzzeile Text="@Formvermerk(f)"
+                                                                                Zustand="@(f.ImRahmen ? KohaerenzZustand.Ok : KohaerenzZustand.Abweichend)" />
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else if (_vergleich is { } abbruch)
+                                                {
+                                                    <tr class="epos-zapfprofil-vergleich-abbruch" data-kennung="@abbruch.Kennung">
+                                                        <td colspan="3">@abbruch.Abbruch</td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    <tr class="epos-zapfprofil-vergleich-leer"><td colspan="3">@VergleichErklaerung</td></tr>
                                                 }
                                             </tbody>
                                         </table>
@@ -990,6 +1085,11 @@
                 <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
                         @onclick="NochNicht">@Texte.KnopfStochastik</button>
             }
+            @if (MessreihenGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-zapfprofil-messdaten"
+                        @onclick="MessdatenOeffnen">@Texte.KnopfMessdaten</button>
+            }
             @if (AuslegungGaben is not null)
             {
                 <button type="button" class="epos-knopf epos-zapfprofil-auslegung"
@@ -1037,12 +1137,115 @@
     </Ueberlagerung>
 
     @* --- Ueberlagerung: die eingespielten Typtage (Stufe Z4b) ---------------- *@
+    @* Dasselbe beim Typtag-Import: Auch er schreibt sofort, also liest das Kreuz den Katalog neu
+       und laesst keine Wahl stehen, die das Paket nicht mehr traegt. *@
     <Ueberlagerung Offen="@(_typtagGaben is not null)" Titel="@Texte.GruppeTyptage"
-                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _typtagGaben = null">
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => TyptageGeschlossen(true)">
         <KindInhalt>
             @if (_typtagGaben is not null)
             {
                 <TwwTyptagImportDialog @attributes="_typtagGaben" TitelAnzeigen="false" Geschlossen="TyptageGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Rueckfrage der Kalibrierung und der Vorschlagsuebernahme (Stufe Z5) ---- *@
+    <Rueckfrage Offen="@_frageOffen" Frage="@_frage" TitelText="@Texte.Titel" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
+
+    @* --- Ueberlagerung: die Vorschau des Kalibriervorschlags (Stufe Z5) ---------- *@
+    <Ueberlagerung Offen="@(_vorschlag is not null)" Titel="@Texte.VorschlagTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="VorschlagSchliessen">
+        <KindInhalt>
+            @if (_vorschlag is { } vs)
+            {
+                <div class="epos-zapfprofil-vorschlagvorschau">
+                    @if (!vs.Ok)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Format(Texte.VorschlagOhne, vs.Abbruch)"
+                                    Kennung="@vs.Kennung" />
+                    }
+                    else
+                    {
+                        <Herleitungszeile Text="@Texte.VorschlagHinweis" />
+                        <table class="epos-raster epos-zapfprofil-vorschlagkopf">
+                            <thead>
+                                <tr><th>@Texte.SpalteKennzahl</th><th>@Texte.SpalteWert</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><th scope="row">@Texte.LabelMessreihe</th><td>@vs.Reihe</td></tr>
+                                <tr><th scope="row">@Texte.VorschlagVorlage</th><td>@vs.Vorlage</td></tr>
+                                <tr><th scope="row">@Texte.VorschlagKopie</th><td class="epos-zapfprofil-vorschlagkopie">@vs.Kopie</td></tr>
+                                <tr><th scope="row">@Texte.VorschlagTagesbedarf</th><td class="epos-zahl">@Zahl(vs.TagesbedarfKwh, "N2") kWh/d</td></tr>
+                                <tr><th scope="row">@Texte.VorschlagJeEinheit</th><td class="epos-zahl">@Zahl(vs.TagesbedarfJeEinheitKwh, "N4")</td></tr>
+                                <tr><th scope="row">@Texte.VorschlagTage</th><td class="epos-zahl">@Zahl(vs.VolleTage, "N0")</td></tr>
+                            </tbody>
+                        </table>
+                        <h4>@Texte.VorschlagWoche</h4>
+                        <table class="epos-raster epos-zapfprofil-vorschlagwoche">
+                            <tbody>
+                                <tr>
+                                    @foreach (double f in vs.Wochenfaktoren)
+                                    {
+                                        <td class="epos-zahl">@Zahl(f, "N3")</td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h4>@Texte.VorschlagGaenge</h4>
+                        <div class="epos-raster-huelle">
+                            <table class="epos-raster epos-zapfprofil-vorschlaggaenge">
+                                <thead>
+                                    <tr>
+                                        <th>@Texte.TgeLabelTagtyp</th>
+                                        <th>@Texte.VorschlagTage</th>
+                                        @for (int h = 0; h < 24; h++)
+                                        {
+                                            <th>@h</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (ZapfprofilVorschlagsgangDaten g in vs.Tagesgaenge)
+                                    {
+                                        <tr data-tagtyp="@g.Tagtyp">
+                                            <th scope="row">@g.Tagtyp</th>
+                                            <td class="epos-zahl">@Zahl(g.Tage, "N0")</td>
+                                            @foreach (double a in g.Anteile)
+                                            {
+                                                <td class="epos-zahl">@Zahl(a * 100.0, "N1")</td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    <div class="epos-leiste">
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf epos-zapfprofil-vorschlag-abbrechen"
+                                @onclick="VorschlagSchliessen">@AbbrechenText</button>
+                        @if (vs.Ok && VorschlagUebernehmen is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-knopf--primaer epos-zapfprofil-vorschlag-uebernehmen"
+                                    @onclick="VorschlagFragen">@Texte.KnopfVorschlagUebernehmen</button>
+                        }
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: die Messreihen des Projekts (Stufe Z5) ---------------- *@
+    @* Das Kreuz der Ueberlagerung geht denselben Weg wie "Beenden" des eingebetteten Dialogs: Der
+       schreibt SOFORT (Einspielen, Loeschen), also ist nach dem Kreuz alles moeglich geschehen -
+       gelesen wird neu, und ein Vergleich gegen eine geloeschte Reihe faellt weg. *@
+    <Ueberlagerung Offen="@(_messreihenGaben is not null)" Titel="@Texte.MessdatenTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => MessdatenGeschlossen(true)">
+        <KindInhalt>
+            @if (_messreihenGaben is not null)
+            {
+                <TwwMessreihenDialog @attributes="_messreihenGaben" TitelAnzeigen="false" Geschlossen="MessdatenGeschlossen" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -1076,6 +1279,9 @@
     private const string HILFE_SCHAETZHILFEN = "Form_Zapfprofil.grp_Schaetzhilfen";
     private const string HILFE_FACHWERTE = "Form_Zapfprofil.grp_Fachwerte";
     private const string HILFE_TYPTAGE = "Form_Zapfprofil.grp_Typtage";
+
+    /// <summary>Der Hilfeschlüssel des Vergleichs mit einer Messreihe (Stufe Z5, 5.8).</summary>
+    private const string HILFE_VERGLEICH = "Form_Zapfprofil.grp_Vergleich";
     private const string HILFE_WARNLISTE = "Form_Zapfprofil.grp_Warnliste";
 
     // --- Parameter (Schluessel wie ZapfprofilHuelle.Gaben) -------------------------
@@ -1148,6 +1354,39 @@
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? TyptagGaben { get; set; }
 
     /// <summary>
+    /// Der Parametersatz des Dialogs „Messdaten“ (Stufe Z5) — der Delegat der Hülle; kein Delegat,
+    /// kein Knopf (etwa ohne gespeichertes Projekt oder ohne die Tabelle der Messreihen).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? MessreihenGaben { get; set; }
+
+    /// <summary>Die eingespielten Messreihen des Projekts (<c>ZapfprofilHuelle.Messreihenstand</c>).</summary>
+    [Parameter] public Func<TwwMessreihenstandDaten>? Messreihen { get; set; }
+
+    /// <summary>
+    /// Der Vergleich des Arbeitsstands mit einer Messreihe (Stufe Z5) — nebenläufig und abbrechbar
+    /// wie die Jahresreihe; kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, string, CancellationToken, Task<ZapfprofilMessvergleichDaten>>? Messvergleich { get; set; }
+
+    /// <summary>
+    /// Der Jahresmesswert aus einer Messreihe für die Zone an der Stelle <c>index</c>
+    /// (<c>ZapfprofilHuelle.Messkalibrierung</c>); geschrieben wird nichts — der Dialog setzt die
+    /// Felder, das OK speichert. <b>Nebenläufig und abbrechbar</b> wie der Vergleich: Ein Teiljahr
+    /// wird über den Jahresgang der Rechnung hochgerechnet, und dieser Lauf gehört nicht in den
+    /// Zeichenfaden (eine Volljahresreihe kehrt ohne Lauf zurück).
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, string, int, CancellationToken, Task<ZapfprofilMesskalibrierungDaten>>? Messkalibrierung { get; set; }
+
+    /// <summary>Der Kalibriervorschlag einer Nichtwohn-Zone als VORSCHAU (<c>ZapfprofilHuelle.Kalibriervorschlag</c>).</summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagDaten>? Kalibriervorschlag { get; set; }
+
+    /// <summary>
+    /// Die Übernahme des Vorschlags in eine Anwenderkopie (<c>TwwNutzungsartCtrl.VorschlagUebernehmen</c>);
+    /// sie schreibt sofort in EINEM Vorgang des Kerns — deshalb die Rückfrage davor.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagErgebnisDaten>? VorschlagUebernehmen { get; set; }
+
+    /// <summary>
     /// Der Vorschlag der Ladeleistung zum Arbeitsstand (Schätzhilfe, 5.3/4.7) — der Delegat der Hülle,
     /// der die Auslegung deterministisch rechnet; entprellt mit der Vorschau, nur ab der Stufe
     /// Erweitert. Kein Delegat = kein Vorschlag, die leise Zeile nennt den Grund.
@@ -1156,6 +1395,12 @@
 
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Die Antworten der Rückfragen der Kalibrierung (Stufe Z5).</summary>
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <inheritdoc cref="JaText"/>
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
 
     /// <summary>Das Ergebnis: der geprüfte Arbeitsstand bei OK, <c>null</c> bei Abbruch.</summary>
     [Parameter] public EventCallback<ZapfprofilErgebnisDaten?> Geschlossen { get; set; }
@@ -1185,6 +1430,63 @@
     private IReadOnlyDictionary<string, object>? _tagesgangGaben;
     private IReadOnlyDictionary<string, object>? _kategorienGaben;
     private IReadOnlyDictionary<string, object>? _typtagGaben;
+
+    /// <summary>Der Parametersatz der offenen Überlagerung „Messdaten“; <c>null</c> = sie ist zu.</summary>
+    private IReadOnlyDictionary<string, object>? _messreihenGaben;
+
+    /// <summary>Das Strichzeichen für eine Zahl, die der Vergleich nicht entschieden hat.</summary>
+    private const string STRICH = "–";
+
+    /// <summary>Die eingespielten Messreihen des Projekts — beim Öffnen und nach dem Messdaten-Dialog gelesen.</summary>
+    private TwwMessreihenstandDaten _messreihen = new();
+
+    /// <summary>Die Bezeichnung der Messreihe, gegen die verglichen wird; leer = keine gewählt.</summary>
+    private string _vergleichReihe = "";
+
+    /// <summary>Das Ergebnis des letzten Vergleichs; <c>null</c> = keiner gerechnet.</summary>
+    private ZapfprofilMessvergleichDaten? _vergleich;
+
+    /// <summary>Gehört das Ergebnis zu einem früheren Arbeitsstand? Dann trägt es den Veraltet-Vermerk.</summary>
+    private bool _vergleichUeberholt;
+
+    /// <summary>Die leise Zeile des Vergleichs (Abbruch, Sperrgrund); leer = keine.</summary>
+    private string _vergleichHinweis = "";
+
+    /// <summary>Die Abbruchmarke des laufenden Vergleichs; <c>null</c>, solange keiner läuft.</summary>
+    private CancellationTokenSource? _vergleichLauf;
+
+    /// <summary>Das Ergebnis der letzten Kalibrierung — seine Hinweise stehen in der Warnliste.</summary>
+    private ZapfprofilMesskalibrierungDaten? _kalibrierung;
+
+    /// <summary>Die Abbruchmarke der laufenden Kalibrierung; <c>null</c>, solange keine läuft.</summary>
+    private CancellationTokenSource? _kalibrierLauf;
+
+    /// <summary>Der Kalibriervorschlag als Vorschau; <c>null</c> = die Überlagerung ist zu.</summary>
+    private ZapfprofilVorschlagDaten? _vorschlag;
+
+    /// <summary>Die Zone, für die die Vorschau offen steht.</summary>
+    private ZapfprofilZoneDaten? _vorschlagZone;
+
+    /// <summary>
+    /// Die Hinweise des letzten Kalibriervorschlags (fehlender Tagtyp, fehlender Wochentag, kurze
+    /// Reihe). Sie stehen in der Warnliste und bleiben dort, wenn die Vorschau zugeht — sie gehören
+    /// den Werten, nicht der Überlagerung.
+    /// </summary>
+    private readonly List<ZapfprofilWarnDaten> _vorschlagHinweise = new();
+
+    /// <summary>
+    /// Die leise Zeile der Kalibrierung — sie steht BEI ihren Knöpfen: Die Zeile der Editoren
+    /// zeigt nur die Stufe Experte, die Kalibrierung gibt es ab Erweitert.
+    /// </summary>
+    private string _kalibrierstatus = "";
+
+    /// <summary>Die leise Zeile der Kalibrierung — Prüfhilfe für die Tests.</summary>
+    public string Kalibrierstatus => _kalibrierstatus;
+
+    private bool _frageOffen;
+    private string _frage = "";
+    private string _frageArt = "";
+    private ZapfprofilZoneDaten? _frageZone;
 
     /// <summary>Die Zone, für die ein Editor offen steht — sein Ergebnis gilt ihr, auch wenn die Wahl inzwischen wechselte.</summary>
     private ZapfprofilZoneDaten? _editorZone;
@@ -1253,6 +1555,7 @@
         _vorschau = Daten.Vorschau;
         _vorschauAktuell = _vorschau is not null;
         _wahl = _eingabe.Zonen.Count > 0 ? 0 : -1;
+        MessreihenLaden();
 
         // Welle #458, Stufe 3a: die Ueberlagerung als EIGENE Maske - solange sie offen
         // steht; ihr Dispose meldet sie ab.
@@ -1273,6 +1576,7 @@
         _kiMaske?.Dispose();
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
+        KalibrierLaufVerwerfen();
     }
 
     // =================================================================================
@@ -1629,6 +1933,10 @@
     /// Der Importdialog ist zu: Hat sich der eingespielte Stand geändert, wird der Katalogstand
     /// neu gelesen (die Wahllisten ziehen nach), und eine Wahl, die es nicht mehr geben kann, fällt
     /// benannt zurück auf den Bestandsweg — nie still auf eine Zone, die das Paket nicht führt.
+    ///
+    /// <para>Das Kreuz und Esc der Überlagerung rufen denselben Weg mit <c>true</c>: Der Importdialog
+    /// schreibt sofort, also ist nach dem Kreuz alles möglich geschehen. Das ist die sichere Seite —
+    /// ein überholter Punkt der Auslegung ist neu zu rechnen, ein stehen gebliebener wäre falsch.</para>
     /// </summary>
     private void TyptageGeschlossen(bool geaendert)
     {
@@ -1745,8 +2053,23 @@
                                                            m.Rang.ToString("N0", CultureInfo.CurrentCulture))));
 
     /// <summary>Die Warnliste der aktuellen Vorschau; leer ohne.</summary>
+    /// <summary>
+    /// Die Warnliste der Bilanz — dazu die Hinweise des Vergleichs und der Kalibrierung (Stufe Z5).
+    /// Sie stehen in DERSELBEN Liste: Ein Anwender sucht seine Hinweise an einer Stelle, nicht an
+    /// drei. Die Reihenfolge ist stabil (Bilanz, Vergleich, Kalibrierung, Kalibriervorschlag).
+    /// </summary>
     private IReadOnlyList<ZapfprofilWarnDaten> Warnliste
-        => _vorschau is { Zustand: ZapfprofilVorschauZustand.Gerechnet } v ? v.Warnliste : Array.Empty<ZapfprofilWarnDaten>();
+    {
+        get
+        {
+            var liste = new List<ZapfprofilWarnDaten>();
+            if (_vorschau is { Zustand: ZapfprofilVorschauZustand.Gerechnet } v) liste.AddRange(v.Warnliste);
+            if (_vergleich is not null) liste.AddRange(_vergleich.Hinweise);
+            if (_kalibrierung is not null) liste.AddRange(_kalibrierung.Hinweise);
+            liste.AddRange(_vorschlagHinweise);
+            return liste;
+        }
+    }
 
     // --- Vorschau ----------------------------------------------------------------------
 
@@ -2129,13 +2452,20 @@
             setzen(x.Ferien[k] ??= new ZapfprofilFerienDaten());
         });
 
-    /// <summary>Der Jahresmesswert; der erste Wert ohne Einheit nimmt die Vorgabe kWh/a.</summary>
+    /// <summary>
+    /// Der Jahresmesswert; der erste Wert ohne Einheit nimmt die Vorgabe kWh/a. Eine EIGENE
+    /// Eingabe nimmt die Hinweise der Kalibrierung weg: Sie gehörten dem Wert, der jetzt nicht
+    /// mehr da steht — ein Hinweis zu einem überschriebenen Wert wäre falsch.
+    /// </summary>
     private void MesswertSetzen(ZapfprofilZoneDaten z, double? wert)
-        => Angabe(z, x =>
+    {
+        _kalibrierung = null;
+        Angabe(z, x =>
         {
             x.Jahresmesswert = wert;
             if (wert.HasValue && !x.JahresmesswertEinheit.HasValue) x.JahresmesswertEinheit = ZapfprofilMesswerteinheit.KwhJeJahr;
         });
+    }
 
     /// <summary>Die Einheit des Messwerts; ein Volumen gilt an der Zapfstelle — seine Grenze fällt weg.</summary>
     private void MesswertEinheitSetzen(ZapfprofilZoneDaten z, int? id)
@@ -2393,9 +2723,15 @@
         _okKennung = null;
         _hinweis = "";
         _editorStatus = "";
+        _kalibrierstatus = "";
         _vorschauAktuell = false;
         _ladehilfeAktuell = false;
         JahresreiheVerwerfen();
+        // Ein Vergleich gehört zu dem Stand, gegen den er gerechnet wurde: Er bleibt sichtbar,
+        // trägt aber den Veraltet-Vermerk; ein laufender bricht ab. Eine laufende Kalibrierung
+        // gehört demselben alten Stand — sie bricht ab, ohne Felder zu setzen.
+        VergleichVeralten();
+        KalibrierLaufVerwerfen();
         if (ansichtZuruecksetzen) _ansicht = 0;
         VorschauEntprellen();
     }
@@ -2491,6 +2827,7 @@
         // Die Jahresreihe zieht der Lauf der Simulation selbst; ein offener Lauf des Dialogs endet hier.
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
+        KalibrierLaufVerwerfen();
         ZapfprofilEingabeDaten ergebnis = _eingabe.Kopie();
         ergebnis.Weg = ZapfprofilWeg.Generator;
         await Geschlossen.InvokeAsync(new ZapfprofilErgebnisDaten(ergebnis));
@@ -2516,12 +2853,18 @@
     {
         EntprellungAbbrechen();
         JahresreiheVerwerfen();
+        KalibrierLaufVerwerfen();
         return Geschlossen.InvokeAsync(null);
     }
 
-    /// <summary>Esc schließt nur, wenn keine Überlagerung offen ist — sonst schließt sie sich selbst.</summary>
+    /// <summary>
+    /// Esc schließt nur, wenn KEINE Überlagerung offen ist — sonst schließt sie sich selbst. Geprüft
+    /// werden alle sechs Schalter (Auslegung, Tagesgang, Zapfkategorien, Typtage, Messdaten,
+    /// Kalibriervorschlag) und die offene Rückfrage.
+    /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
         => e.Key == "Escape" && _auslegungGaben is null && _tagesgangGaben is null && _kategorienGaben is null
+           && _typtagGaben is null && _messreihenGaben is null && _vorschlag is null && !_frageOffen
             ? Abbrechen() : Task.CompletedTask;
 
     /// <summary>
@@ -2590,6 +2933,9 @@
         TyptagartSetzen = KiTyptagart,
         TyptagartEintraege = () => KiMaskenanmeldung.Eintraege(Typtagarten, e => e.Id, e => e.Text),
 
+        MessreiheLesen = () => VergleichWahlId,
+        MessreiheSetzen = KiMessreihe,
+        MessreiheEintraege = () => KiMaskenanmeldung.Eintraege(Messreihenwahl, e => e.Id, e => e.Text),
         SeedLesen = () => _eingabe.Seed,
         SeedSetzen = KiSeed,
         RealisierungenLesen = () => _eingabe.Realisierungen,
@@ -2705,6 +3051,18 @@
             return ZapfprofilKiRegeln.NurMit(Texte.LabelTyptageGebaeudeart, Texte.StufeExperte);
         if (id is int i && Typtagarten.All(e => e.Id != i)) return ZapfprofilKiRegeln.ZeileFehlt;
         TyptagartSetzen(id);
+        return null;
+    }
+
+    /// <summary>
+    /// Die Messreihe des Vergleichs — ab der Stufe Erweitert und nur eine der eingespielten;
+    /// gesetzt wird allein die WAHL, gerechnet wird auf Klick.
+    /// </summary>
+    private string? KiMessreihe(int? id)
+    {
+        if (!AbErweitert) return ZapfprofilKiRegeln.NurMit(Texte.LabelMessreihe, Texte.StufeErweitert);
+        if (id is int i && Messreihenwahl.All(e => e.Id != i)) return ZapfprofilKiRegeln.ZeileFehlt;
+        VergleichReiheSetzen(id);
         return null;
     }
 
@@ -3139,5 +3497,482 @@
         _eingabe.PunktUeberholt = false;
         _okMeldung = "";
         _okKennung = null;
+    }
+
+    // =================================================================================
+    // Messdaten, Vergleich und Kalibrierung (Stufe Z5, Gruppe 3)
+    // =================================================================================
+
+    /// <summary>„Messdaten…" der Fußleiste: die Überlagerung mit den Messreihen des Projekts.</summary>
+    private void MessdatenOeffnen()
+    {
+        if (MessreihenGaben is null) return;
+        _messreihenGaben = MessreihenGaben();
+    }
+
+    /// <summary>
+    /// Der Messdaten-Dialog ist zu: Haben sich die Reihen geändert, wird die Wahlliste neu gelesen;
+    /// ein Vergleich, dessen Reihe es nicht mehr gibt, fällt weg (nie ein Ergebnis zu einer Reihe,
+    /// die nicht mehr da ist), und eine gewählte Reihe, die weg ist, wird abgewählt.
+    ///
+    /// <para>Das Kreuz und Esc der Überlagerung rufen denselben Weg mit <c>true</c>: Der eingebettete
+    /// Dialog schreibt sofort, es gibt also nichts zu verwerfen — wer ihn geöffnet hatte, kann
+    /// eingespielt oder gelöscht haben. Neu zu lesen kostet eine Abfrage, ein Vergleich gegen eine
+    /// gelöschte Reihe kostet den Anwender das Vertrauen in die Zahl.</para>
+    /// </summary>
+    private void MessdatenGeschlossen(bool geaendert)
+    {
+        _messreihenGaben = null;
+        if (!geaendert) return;
+        MessreihenLaden();
+        if (_vergleichReihe.Length > 0 && !_messreihen.Reihen.Any(r => r.Bezeichnung == _vergleichReihe))
+        {
+            _vergleichReihe = "";
+            VergleichVerwerfen();
+        }
+    }
+
+    /// <summary>Die Messreihen des Projekts — ohne Delegat eine leere Liste mit benanntem Grund.</summary>
+    private void MessreihenLaden()
+        => _messreihen = Messreihen?.Invoke() ?? new TwwMessreihenstandDaten { Grund = Texte.VergleichOhneReihe };
+
+    /// <summary>Die Einträge der Messreihenwahl: die Nummer der Zeile (ab 1) und ihre Bezeichnung.</summary>
+    private IReadOnlyList<(int Id, string Text)> Messreihenwahl
+        => _messreihen.Reihen.Select((r, i) => (i + 1, r.Bezeichnung)).ToList();
+
+    /// <summary>Die Nummer der gewählten Reihe in der Wahlliste; <c>null</c> = keine gewählt.</summary>
+    private int? VergleichWahlId
+    {
+        get
+        {
+            int i = _messreihen.Reihen.FindIndex(r => r.Bezeichnung == _vergleichReihe);
+            return i < 0 ? null : i + 1;
+        }
+    }
+
+    /// <summary>Die Wahl der Messreihe; ein Wechsel verwirft das Ergebnis der alten.</summary>
+    private void VergleichReiheSetzen(int? id)
+    {
+        int i = (id ?? 0) - 1;
+        string neu = i >= 0 && i < _messreihen.Reihen.Count ? _messreihen.Reihen[i].Bezeichnung : "";
+        if (neu == _vergleichReihe) return;
+        _vergleichReihe = neu;
+        VergleichVerwerfen();
+    }
+
+    /// <summary>Steht der Vergleich zur Verfügung? Er braucht den Delegaten, die Stufe und eine Reihe.</summary>
+    private bool VergleichMoeglich => Messvergleich is not null && AbErweitert && _messreihen.Reihen.Count > 0;
+
+    /// <summary>Lässt sich rechnen? Eine Reihe ist gewählt, und es läuft nichts.</summary>
+    private bool VergleichRechenbar => VergleichMoeglich && _vergleichReihe.Length > 0 && !VergleichLaeuft;
+
+    /// <summary>Warum der Vergleich nicht geht — der Grund steht am Knopf, nie eine stille Sperre.</summary>
+    private string VergleichSperrgrund
+        => Messvergleich is null ? Texte.GrundNochNicht
+         : !AbErweitert ? Texte.VergleichNurErweitert
+         : _messreihen.Reihen.Count == 0 ? (_messreihen.Grund.Length > 0 ? _messreihen.Grund : Texte.VergleichOhneReihe)
+         : _vergleichReihe.Length == 0 ? Texte.VergleichOhneWahl
+         : VergleichLaeuft ? VergleichLaufText : "";
+
+    /// <summary>Läuft der Vergleich gerade? Prüfhilfe für die Tests.</summary>
+    public bool VergleichLaeuft => _vergleichLauf is not null;
+
+    /// <summary>Das Ergebnis des letzten Vergleichs — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilMessvergleichDaten? Vergleichsergebnis => _vergleich;
+
+    /// <summary>Gehört das Ergebnis zu einem früheren Arbeitsstand? Prüfhilfe für die Tests.</summary>
+    public bool VergleichUeberholt => _vergleichUeberholt;
+
+    private string VergleichLaufText => Format(Texte.VergleichLaeuft, _vergleichReihe);
+
+    /// <summary>Die Statuszeile über dem Vergleich: Lauf, Ergebnis, Abbruch oder Veraltet-Vermerk.</summary>
+    private string VergleichStatus
+        => VergleichLaeuft ? VergleichLaufText
+         : _vergleichHinweis.Length > 0 ? _vergleichHinweis
+         : _vergleich is { Ok: true } ? Format(Texte.VergleichStatus, _vergleich.Reihe)
+         : "";
+
+    /// <summary>Was an der Stelle der Kennzahlen steht, solange kein Ergebnis da ist.</summary>
+    private string VergleichErklaerung
+        => !AbErweitert ? Texte.VergleichNurErweitert
+         : _messreihen.Reihen.Count == 0 ? (_messreihen.Grund.Length > 0 ? _messreihen.Grund : Texte.VergleichOhneReihe)
+         : _vergleichReihe.Length == 0 ? Texte.VergleichOhneWahl
+         : Texte.VergleichLeer;
+
+    /// <summary>
+    /// „Vergleich rechnen": Der Delegat der Hülle rechnet nebenläufig (Muster „Stochastisch
+    /// rechnen", 5.1) — derselbe Rechenweg wie der Lauf, abbrechbar, nie im Zeichenfaden.
+    /// </summary>
+    private void VergleichRechnen()
+    {
+        if (!VergleichRechenbar)
+        {
+            _vergleichHinweis = VergleichSperrgrund;
+            return;
+        }
+        _vergleichHinweis = "";
+        VergleichLaufVerwerfen();
+        var quelle = new CancellationTokenSource();
+        _vergleichLauf = quelle;
+        _ = VergleichLaufen(quelle, _eingabe.Kopie(), _vergleichReihe);
+    }
+
+    /// <summary>
+    /// Der Lauf des Vergleichs: Das Ergebnis kommt über <c>InvokeAsync</c> in den Verteiler. Ein
+    /// überholter Lauf hinterlässt nichts; ein abgebrochener nennt den Abbruch als leise Zeile.
+    /// Jede Ausnahme bleibt hier — ein loser Task erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task VergleichLaufen(CancellationTokenSource quelle, ZapfprofilEingabeDaten kopie, string reihe)
+    {
+        ZapfprofilMessvergleichDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await Messvergleich!(kopie, reihe, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new ZapfprofilMessvergleichDaten { Reihe = reihe, Abbruch = ex.Message };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_vergleichLauf, quelle)) return;
+                _vergleichLauf = null;
+                if (abgebrochen) _vergleichHinweis = Texte.VergleichAbgebrochen;
+                else
+                {
+                    _vergleich = ergebnis;
+                    _vergleichUeberholt = false;
+                }
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* der Dialog ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt: Der Lauf endet an der nächsten Einheit.</summary>
+    private void VergleichAbbrechen()
+    {
+        try { _vergleichLauf?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>Verwirft einen laufenden Vergleich, ohne sein Ergebnis anzutasten.</summary>
+    private void VergleichLaufVerwerfen()
+    {
+        CancellationTokenSource? offen = _vergleichLauf;
+        _vergleichLauf = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>Der Vermerk einer Formzeile: die Tage beider Seiten und das Urteil gegen die Schwelle.</summary>
+    private string Formvermerk(ZapfprofilFormabgleichDaten f)
+    {
+        string tage = Format(Texte.VermerkTage, Zahl(f.TageGemessen, "N0"), Zahl(f.TageGerechnet, "N0"));
+        string urteil = f.ImRahmen ? Texte.FormImRahmen
+                                   : Format(Texte.FormUeberSchwelle, Zahl(_vergleich?.Formschwelle ?? 0.0, "N4"));
+        return tage + " · " + urteil;
+    }
+
+    /// <summary>
+    /// Verwirft Lauf UND Ergebnis — der Vergleich gehörte zu einer anderen Reihe. Eine laufende
+    /// Kalibrierung rechnet gegen dieselbe alte Reihe und endet mit.
+    /// </summary>
+    private void VergleichVerwerfen()
+    {
+        VergleichLaufVerwerfen();
+        KalibrierLaufVerwerfen();
+        _vergleich = null;
+        _vergleichUeberholt = false;
+        _vergleichHinweis = "";
+    }
+
+    /// <summary>
+    /// Der Arbeitsstand hat sich geändert: Ein Ergebnis bleibt sichtbar, trägt aber den
+    /// Veraltet-Vermerk — eine verschwundene Tabelle wäre schlechter als eine gekennzeichnete
+    /// (der Anwender sieht, gegen WAS er gerechnet hat). Ein laufender Vergleich bricht ab.
+    /// </summary>
+    private void VergleichVeralten()
+    {
+        VergleichLaufVerwerfen();
+        if (_vergleich is not null) _vergleichUeberholt = true;
+    }
+
+    /// <summary>
+    /// Die Zeilen des Vergleichsberichts: Kennzahl, Wert als Verhältnis, Vermerk. Was der Vergleich
+    /// nicht entscheiden konnte, steht als Strich mit dem Grund im Vermerk — nie als Null.
+    /// </summary>
+    private IReadOnlyList<(string Kennzahl, string Wert, string Vermerk)> Vergleichszeilen(ZapfprofilMessvergleichDaten v)
+    {
+        var zeilen = new List<(string, string, string)>(8)
+        {
+            (Texte.KzEnergie, VglZahl(v.EnergieVerhaeltnis, "N3"), v.Stochastisch ? Texte.VergleichStochastisch : ""),
+            (Texte.KzEnergieAbweichung, VglProzent(v.EnergieAbweichung), ""),
+            (Texte.KzSpitze, VglZahl(v.Spitzenverhaeltnis, "N3"), Lagetext(v.Lage)),
+            (Format(Texte.KzBand, Zahl(v.PerzentilUnten * 100.0, "N0"), Zahl(v.PerzentilOben * 100.0, "N0")),
+             Bandtext(v), v.Dauerlinienwerte > 0 ? Format(Texte.VermerkDauerlinie, Zahl(v.Dauerlinienwerte, "N0")) : ""),
+            (Texte.KzSpitzenstreuung, Streuungstext(v),
+             v.Streubreite is double sb ? Format(Texte.VermerkStreubreite, Zahl(v.Realisierungen, "N0"), Zahl(sb, "N3"))
+                                        : Texte.VermerkOhneEnsemble),
+            (Texte.KzWurzelN, VglZahl(v.Skalierungsmass, "N3"),
+             v.Einheiten is int n && v.WurzelNVerhaeltnis is double wn
+                ? Format(Texte.VermerkEinheiten, Zahl(n, "N0"), Zahl(wn, "N3")) : Texte.VermerkOhneWert),
+            (Texte.KzForm, VglZahl(v.Formmass, "N4"),
+             v.Formmass is null ? Texte.VermerkOhneWert
+             : v.FormImRahmen ? Texte.FormImRahmen
+             : Format(Texte.FormUeberSchwelle, Zahl(v.Formschwelle, "N4"))),
+            (Texte.KzMonate, VglProzent(v.MonateGroessteAbweichung),
+             v.MonateGroessterMonat > 0 ? Format(Texte.VermerkMonat, Zahl(v.MonateGroessterMonat, "N0")) : "")
+        };
+        return zeilen;
+    }
+
+    /// <summary>Die beiden Bandgrenzen als Verhältnisse; ein Strich, wenn sie nicht zu bilden sind.</summary>
+    private string Bandtext(ZapfprofilMessvergleichDaten v)
+        => v.BandUnten is double u && v.BandOben is double o
+            ? Zahl(u, "N3") + " … " + Zahl(o, "N3") : STRICH;
+
+    /// <summary>Die beiden Grenzen der Realisierungsspitzen; ein Strich ohne Ensemble.</summary>
+    private string Streuungstext(ZapfprofilMessvergleichDaten v)
+        => v.StreuungUnten is double u && v.StreuungOben is double o
+            ? Zahl(u, "N3") + " … " + Zahl(o, "N3") : STRICH;
+
+    private string Lagetext(ZapfprofilSpitzenlage lage)
+        => lage switch
+        {
+            ZapfprofilSpitzenlage.ImBand => Texte.LageImBand,
+            ZapfprofilSpitzenlage.Oberhalb => Texte.LageOberhalb,
+            ZapfprofilSpitzenlage.Unterhalb => Texte.LageUnterhalb,
+            _ => Texte.LageUnbestimmt
+        };
+
+    /// <summary>
+    /// Eine Zahl des Vergleichs; ein <c>null</c> ist ein STRICH, keine Null — was nicht entschieden
+    /// ist, wird nicht als Ergebnis gezeichnet (Hausregel <c>EPOS.UI/CLAUDE.md</c>).
+    /// </summary>
+    private static string VglZahl(double? wert, string format)
+        => wert is double d ? d.ToString(format, CultureInfo.CurrentCulture) : STRICH;
+
+    /// <summary>Eine Verhältniszahl in Prozent; ein <c>null</c> ist ein Strich.</summary>
+    private static string VglProzent(double? wert)
+        => wert is double d ? (d * 100.0).ToString("N2", CultureInfo.CurrentCulture) + " %" : STRICH;
+
+    // --- „Aus Messreihe kalibrieren" --------------------------------------------------
+
+    /// <summary>Steht „Aus Messreihe kalibrieren" offen? Es braucht den Delegaten und eine gewählte Reihe.</summary>
+    private bool Kalibrierbar
+        => Messkalibrierung is not null && AbErweitert && _vergleichReihe.Length > 0 && !KalibrierungLaeuft;
+
+    /// <summary>Warum „Aus Messreihe kalibrieren" gesperrt ist — der Grund nennt auch die Stufe.</summary>
+    private string Kalibriersperre
+        => Messkalibrierung is null ? Texte.GrundNochNicht
+         : !AbErweitert ? Texte.VergleichNurErweitert
+         : _messreihen.Reihen.Count == 0 ? (_messreihen.Grund.Length > 0 ? _messreihen.Grund : Texte.VergleichOhneReihe)
+         : _vergleichReihe.Length == 0 ? Texte.VergleichOhneWahl
+         : KalibrierungLaeuft ? KalibrierLaufText : "";
+
+    /// <summary>Läuft die Kalibrierung gerade? Prüfhilfe für die Tests.</summary>
+    public bool KalibrierungLaeuft => _kalibrierLauf is not null;
+
+    /// <summary>Der Text am Fortschritt der Kalibrierung.</summary>
+    private string KalibrierLaufText => Format(Texte.KalibrierungLaeuft, _vergleichReihe);
+
+    private void KalibrierenFragen(ZapfprofilZoneDaten z)
+    {
+        if (Messkalibrierung is null) return;
+        if (!Kalibrierbar)
+        {
+            _hinweis = Kalibriersperre;
+            return;
+        }
+        _frageZone = z;
+        _frageArt = FRAGE_KALIBRIEREN;
+        _frage = Format(Texte.FrageKalibrieren, z.Name, _vergleichReihe);
+        _frageOffen = true;
+    }
+
+    /// <summary>
+    /// Die Kalibrierung: Der Jahresmesswert der Zone kommt aus der Reihe — Wert, Einheit,
+    /// Bilanzgrenze, Quelle und Zeitraum in EINEM Schritt. Geschrieben wird nichts: Der
+    /// Arbeitsstand trägt die Werte, das OK des Dialogs speichert sie.
+    /// </summary>
+    private void KalibrierenAusfuehren(ZapfprofilZoneDaten z)
+    {
+        if (Messkalibrierung is null) return;
+        int index = _eingabe.Zonen.IndexOf(z);
+        if (index < 0) return;
+        KalibrierLaufVerwerfen();
+        var quelle = new CancellationTokenSource();
+        _kalibrierLauf = quelle;
+        _ = KalibrierenLaufen(quelle, _eingabe.Kopie(), _vergleichReihe, z, index);
+    }
+
+    /// <summary>
+    /// Der Lauf der Kalibrierung: Das Ergebnis kommt über <c>InvokeAsync</c> in den Verteiler. Ein
+    /// überholter Lauf (neue Eingabe, neuer Lauf, OK, Abbrechen) hinterlässt nichts; ein
+    /// abgebrochener nennt den Abbruch als leise Zeile. Jede Ausnahme bleibt hier — ein loser Task
+    /// erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task KalibrierenLaufen(CancellationTokenSource quelle, ZapfprofilEingabeDaten kopie,
+                                         string reihe, ZapfprofilZoneDaten zone, int index)
+    {
+        ZapfprofilMesskalibrierungDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await Messkalibrierung!(kopie, reihe, index, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new ZapfprofilMesskalibrierungDaten { Reihe = reihe, Abbruch = ex.Message };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_kalibrierLauf, quelle)) return;
+                _kalibrierLauf = null;
+                if (abgebrochen) _hinweis = Texte.KalibrierungAbgebrochen;
+                else KalibrierungUebernehmen(ergebnis!, zone);
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* der Dialog ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>
+    /// Das Ergebnis in die Felder der Zone: Wert, Einheit, Bilanzgrenze, Quelle und Zeitraum. Die
+    /// Statuszeile steht NACH der Übernahme — <c>Angabe</c> räumt sie über <c>Geaendert</c>.
+    /// </summary>
+    private void KalibrierungUebernehmen(ZapfprofilMesskalibrierungDaten k, ZapfprofilZoneDaten z)
+    {
+        _kalibrierung = k;
+        if (!k.Ok)
+        {
+            _hinweis = k.Abbruch;
+            return;
+        }
+        Angabe(z, a =>
+        {
+            a.Jahresmesswert = k.Wert;
+            a.JahresmesswertEinheit = (ZapfprofilMesswerteinheit)k.EinheitId;
+            a.JahresmesswertBilanzgrenze = k.BilanzgrenzeId is int g ? (ZapfprofilBilanzgrenze)g : null;
+            a.JahresmesswertQuelle = k.Quelle;
+            a.JahresmesswertZeitraum = k.Zeitraum;
+        });
+        _kalibrierstatus = Format(Texte.StatusKalibriert, k.Reihe);
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt der Kalibrierung: Der Lauf endet an der nächsten Einheit.</summary>
+    private void KalibrierenAbbrechen()
+    {
+        try { _kalibrierLauf?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>Verwirft einen laufenden Lauf der Kalibrierung; das Ergebnis eines früheren bleibt.</summary>
+    private void KalibrierLaufVerwerfen()
+    {
+        CancellationTokenSource? offen = _kalibrierLauf;
+        _kalibrierLauf = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    // --- „Vorschlag übernehmen…" ------------------------------------------------------
+
+    /// <summary>Steht der Kalibriervorschlag offen? Er braucht den Delegaten und eine gewählte Reihe.</summary>
+    private bool Vorschlagbar => Kalibriervorschlag is not null && _vergleichReihe.Length > 0;
+
+    /// <summary>Der Vorschlag als Vorschau — geschrieben wird nichts, bis die Rückfrage mit Ja endet.</summary>
+    private void VorschlagOeffnen(ZapfprofilZoneDaten z)
+    {
+        if (Kalibriervorschlag is null) return;
+        if (!Vorschlagbar)
+        {
+            _hinweis = Kalibriersperre;
+            return;
+        }
+        int index = _eingabe.Zonen.IndexOf(z);
+        if (index < 0) return;
+        _vorschlagZone = z;
+        _vorschlag = Kalibriervorschlag(_eingabe.Kopie(), _vergleichReihe, index);
+        _vorschlagHinweise.Clear();
+        _vorschlagHinweise.AddRange(_vorschlag.Hinweise);
+    }
+
+    private void VorschlagSchliessen()
+    {
+        _vorschlag = null;
+        _vorschlagZone = null;
+    }
+
+    private void VorschlagFragen()
+    {
+        if (_vorschlag is not { Ok: true } v || _vorschlagZone is null || VorschlagUebernehmen is null) return;
+        _frageZone = _vorschlagZone;
+        _frageArt = FRAGE_VORSCHLAG;
+        _frage = Format(Texte.FrageVorschlag, v.Reihe, v.Kopie);
+        _frageOffen = true;
+    }
+
+    /// <summary>
+    /// Die Übernahme: Der Kern legt die Anwenderkopie in EINEM Vorgang an, die Zone wird auf sie
+    /// umgestellt, und der Katalog wird neu gelesen — sonst stünde die neue Nutzungsart nicht in der
+    /// Wahlliste. Die Vorlage bleibt unberührt (K7).
+    /// </summary>
+    private void VorschlagAusfuehren(ZapfprofilZoneDaten z)
+    {
+        if (VorschlagUebernehmen is null) return;
+        int index = _eingabe.Zonen.IndexOf(z);
+        if (index < 0) return;
+        ZapfprofilVorschlagErgebnisDaten e = VorschlagUebernehmen(_eingabe.Kopie(), _vergleichReihe, index);
+        if (!e.Ok)
+        {
+            _hinweis = e.Abbruch;
+            return;
+        }
+        VorschlagSchliessen();
+        KatalogNeuLesen();
+        ZonenNutzungsartSetzen(z, e.IdNutzungsart);
+        // Die Hinweise des uebernommenen Vorschlags gehoeren den Werten der Kopie: Sie bleiben in
+        // der Warnliste, obwohl die Vorschau zugeht.
+        _vorschlagHinweise.Clear();
+        _vorschlagHinweise.AddRange(e.Hinweise);
+        _kalibrierstatus = e.Meldung;
+    }
+
+    // --- Die Rückfrage der beiden Handlungen ------------------------------------------
+
+    private const string FRAGE_KALIBRIEREN = "kalibrieren";
+    private const string FRAGE_VORSCHLAG = "vorschlag";
+
+    /// <summary>Steht eine Rückfrage? Prüfhilfe für die Tests.</summary>
+    public bool FrageOffen => _frageOffen;
+
+    /// <summary>Der Text der offenen Rückfrage; Prüfhilfe für die Tests.</summary>
+    public string Fragetext => _frage;
+
+    private void FrageBeantwortet(bool? antwort)
+    {
+        _frageOffen = false;
+        string art = _frageArt;
+        ZapfprofilZoneDaten? zone = _frageZone;
+        _frageArt = "";
+        _frageZone = null;
+        if (antwort != true || zone is null) return;
+        if (art == FRAGE_KALIBRIEREN) KalibrierenAusfuehren(zone);
+        else if (art == FRAGE_VORSCHLAG) VorschlagAusfuehren(zone);
     }
 }

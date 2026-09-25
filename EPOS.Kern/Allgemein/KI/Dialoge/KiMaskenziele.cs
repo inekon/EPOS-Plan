@@ -410,6 +410,7 @@ namespace WindowsFormsApplication1
                 // Der Dialog der eingespielten VDI-4655-Typtage ist eine Ueberlagerung des
                 // Katalogdialogs (und des Zapfprofils) - dasselbe Ziel.
                 { KiMaskennamen.BRAUCHWASSER_TYPTAGE,       Masken.BrauchwasserNutzungsarten },
+                { KiMaskennamen.BRAUCHWASSER_MESSREIHEN,    Masken.BrauchwasserNutzungsarten },
 
                 // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
                 // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.

@@ -579,16 +579,39 @@ namespace WindowsFormsApplication1
         /// Die Nummer steht allein dort. <b>Reines DDL, ergebnisneutral:</b> Kein Rechenweg liest die
         /// Tabellen, Import läuft nur auf Zuruf; der Referenzlauf bleibt byte-gleich.
         /// Mit dem BAUJAHR DES GEBÄUDES (Stufe G4a; Umsetzungskonzept Gebäudesimulation 3.4 und 3.7)
-        /// steht das Ziel auf <see cref="BaujahrSchema.SCHRITT"/>: die nullbare Spalte <c>Baujahr</c>
+        /// stand das Ziel auf <see cref="BaujahrSchema.SCHRITT"/>: die nullbare Spalte <c>Baujahr</c>
         /// (INTEGER, 1500 … 2100) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt fünftem
         /// Neubau der Sicht <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_BAUJAHR"/>).
         /// Die Nummer steht allein bei <see cref="BaujahrSchema"/>. <b>Reines DDL, ergebnisneutral:</b>
         /// Die Spalte bleibt NULL, und kein Rechenweg liest sie; der Referenzlauf bleibt byte-gleich.
+        /// Mit den EINGESPIELTEN MESSREIHEN EINES PROJEKTS (Zapfprofilgenerator Stufe Z5,
+        /// Schemaschritt T4 „Messreihen") stand das Ziel auf
+        /// <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>: die Tabelle
+        /// <c>Tab_TwwMessreihe</c> (STRICT, eine Zeile je Wert, <c>ID_Projekt</c> mit
+        /// <c>ON DELETE CASCADE</c>, kein <c>Status</c> und kein <c>ReadOnly</c>) samt ihrem Index
+        /// auf <c>ID_Projekt</c> — <see cref="TwwSchema.AnweisungenT4Messreihen"/> und
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>. Sie ist Bestandteil des Projekts (Konzept
+        /// Kapitel 9 K5): Projektkopie und <c>.wpx</c>-Paket tragen sie mit, die
+        /// Auslieferungsvorlage leert sie.
+        /// <b>Reines DDL, ergebnisneutral:</b> Die Tabelle entsteht LEER, das Repositorium bringt
+        /// keine Zeile mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht
+        /// verfügbar; der Referenzlauf bleibt byte-gleich. Die Nummer steht allein bei
+        /// <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>.
+        /// Mit der FOLGEBERICHTIGUNG IM GEBÄUDEKATALOG (Welle #496; Konzept
+        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf
+        /// <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>: die Scan-Kandidaten mit
+        /// vertauschter Laibung und Dachkante (Alten-/Pflegeheime, Schulen, Hallenbäder, die
+        /// G-096-Sätze — Tausch; „GMH-BZ_T", „GMH-J-015" — hergeleitet), die Dach- und Kellerkante
+        /// der drei „Hotel-F-228"-Sätze (116,16 m wie „Kaufhalle_NE") und die Außenwand des
+        /// Kaufhauses (10 094 → 1 820,9 m²) — je Satz, Spalte und Schadensbild bei
+        /// <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>. <b>Ergebnisneutral:</b> Keinen der
+        /// Sätze führt ein Referenzprojekt; der Referenzlauf bleibt byte-gleich. Die Nummer steht
+        /// allein bei <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = BaujahrSchema.SCHRITT;
+        public const int Zielversion = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

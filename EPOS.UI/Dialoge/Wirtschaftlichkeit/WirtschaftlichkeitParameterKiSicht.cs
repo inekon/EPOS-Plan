@@ -46,6 +46,17 @@ public sealed class WirtschaftlichkeitParameterKiSicht
     /// <summary>ETAPPE E15 (V‑G7): die Arten der Risikoberücksichtigung.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? RisikoEintraege { get; init; }
 
+    /// <summary>ETAPPE E19: die Unternehmensarten nach StromStG — Schlüssel ist ihr Steuerwert.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? UnternehmensartEintraege { get; init; }
+
+    /// <summary>
+    /// ETAPPE E19 (E19‑Q5 a): der Setzweg der Unternehmensart. Er gehört dem Dialog, weil
+    /// nur er weiß, ob die Vergleichsgruppe ein BHKW führt — dann ist der Dialog
+    /// „BHKW-Wirtschaftlichkeit" die einzige Pflegestelle. Liefert leer oder den Grund der
+    /// Ablehnung.
+    /// </summary>
+    public Func<string?, string>? UnternehmensartSetzen { get; init; }
+
     /// <summary>Die Maske zeichnet neu — nach jedem Setzen.</summary>
     public Action? Nachziehen { get; init; }
 
@@ -97,6 +108,10 @@ public sealed class WirtschaftlichkeitParameterKiSicht
     /// Steuerwert (leer = aus, ZINS, ABZUG).</summary>
     public IReadOnlyList<KiWahleintrag> RisikoArtWahl
         => RisikoEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>ETAPPE E19: die Unternehmensarten — Schlüssel ist ihr Steuerwert.</summary>
+    public IReadOnlyList<KiWahleintrag> UnternehmensartWahl
+        => UnternehmensartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Allgemein
@@ -160,6 +175,23 @@ public sealed class WirtschaftlichkeitParameterKiSicht
     {
         get => P?.IdKraftwerkspark ?? 0;
         set => Setze(p => p.IdKraftwerkspark = value);
+    }
+
+    /// <summary>
+    /// ETAPPE E19 (Konzept § 6.3 Nr. 33): die Unternehmensart nach StromStG — nur ohne
+    /// BHKW hier gepflegt. Mit BHKW lehnt der Setzer benannt ab und nennt den Dialog
+    /// „BHKW-Wirtschaftlichkeit" (keine zweite Pflegestelle derselben Spalte).
+    /// </summary>
+    public string Unternehmensart
+    {
+        get => P?.Unternehmensart ?? "";
+        set
+        {
+            if (P is null) return;
+            string grund = UnternehmensartSetzen?.Invoke(value) ?? "";
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+            Nachziehen?.Invoke();
+        }
     }
 
     /// <summary>Das Bilanzjahr; 0 = nicht gepflegt.</summary>

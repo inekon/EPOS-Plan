@@ -106,6 +106,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string TAB_TWW_TYPTAG_IMPORT = "Tab_TwwTyptag_IMPORT";
 
+        /// <summary>
+        /// Die eingespielten Messreihen EINES Projekts (Schemaschritt T4 „Messreihen", Konzept 4.8
+        /// und Kapitel 7 Zeile Z5) — <b>anwenderlokal und Bestandteil des Projekts</b>: Sie kommen
+        /// allein aus einer CSV-Datei des Anwenders (<c>Messreihenleser</c>), tragen kein
+        /// <c>ReadOnly</c> und keinen <c>Status</c>, wandern über <c>ID_Projekt</c> mit einer
+        /// Projektkopie und einem <c>.wpx</c>-Paket und werden von der Auslieferungsvorlage
+        /// geleert (Kapitel 9 K5: Messdaten gehören dem Objekt, nie der Auslieferung).
+        /// </summary>
+        public const string TAB_TWW_MESSREIHE = "Tab_TwwMessreihe";
+
         // =================================================================
         //  Die Wertemengen der Textspalten mit CHECK
         // =================================================================
@@ -133,6 +143,28 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Herkunftsart</c>: erfundener Wert (Testkatalog).</summary>
         public const string HERKUNFT_FIKTIV = "FIKTIV";
+
+        /// <summary>
+        /// <b>Nutzungsartengruppe eines Vorgabesatzes der Zapfkategorien</b> — Wohnnutzung
+        /// (Steuerspalte <c>Gruppe</c> des freien Paketteils, keine Spalte der Tabelle; Konzept 4.4,
+        /// N12 (p), Stufe Z5).
+        /// </summary>
+        public const string KATEGORIENGRUPPE_WOHNEN = "Wohnen";
+
+        /// <summary>Nutzungsartengruppe eines Vorgabesatzes: Nichtwohnen (zwei Kategorien nach dem OpenDHW-Muster).</summary>
+        public const string KATEGORIENGRUPPE_NICHTWOHNEN = "Nichtwohnen";
+
+        /// <summary>
+        /// <b>Die EINE Regel, welcher Vorgabesatz an eine Nutzungsart bindet</b> (Auslieferungsvorlage,
+        /// Testkatalog, Kern): Die Kalenderart <c>Wohnen</c> (1) heißt Wohnnutzung, jede andere
+        /// (Arbeitstage, Schulferien, Betrieb, Auslastungsgang) Nichtwohnen. Die Bezugsart trennt
+        /// nicht: Personen tragen Wohn- wie Nichtwohnnutzungen.
+        /// </summary>
+        public static string Kategoriengruppe(long kalenderart)
+            => kalenderart == 1 ? KATEGORIENGRUPPE_WOHNEN : KATEGORIENGRUPPE_NICHTWOHNEN;
+
+        /// <summary>Die Steuerspalte des Paketteils, die die Gruppe eines Vorgabesatzes nennt (keine Tabellenspalte).</summary>
+        public const string STEUERSPALTE_GRUPPE = "Gruppe";
 
         /// <summary><c>Tab_TwwProjekt.Weg</c>: der Brauchwasserkanal rechnet wie im Bestand (Vorgabe).</summary>
         public const string WEG_BESTAND = "BESTAND";
@@ -222,6 +254,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wertemenge von <c>Tab_TwwTyptag_IMPORT.Art</c> als SQL-Liste für den CHECK.</summary>
         public const string TYPTAG_ART_WERTE = "'KATEGORIE','ANZAHL','FAKTOR','GANG','KENNWERT'";
+
+        /// <summary><c>Groesse</c> einer Messreihe: Energie je Zeitschritt [kWh].</summary>
+        public const string MESSGROESSE_ENERGIE = "ENERGIE";
+
+        /// <summary><c>Groesse</c> einer Messreihe: Volumen je Zeitschritt [m³].</summary>
+        public const string MESSGROESSE_VOLUMEN = "VOLUMEN";
+
+        /// <summary><c>Groesse</c> einer Messreihe: mittlere Leistung im Zeitschritt [kW].</summary>
+        public const string MESSGROESSE_LEISTUNG = "LEISTUNG";
+
+        /// <summary>Die Wertemenge der Spalte <c>Groesse</c> von <see cref="TAB_TWW_MESSREIHE"/>.</summary>
+        public const string MESSGROESSE_WERTE = "'ENERGIE','VOLUMEN','LEISTUNG'";
+
+        /// <summary>Die drei Messgrößen in der Reihenfolge der Wertemenge.</summary>
+        public static readonly IReadOnlyList<string> Messgroessen = new[]
+        {
+            MESSGROESSE_ENERGIE, MESSGROESSE_VOLUMEN, MESSGROESSE_LEISTUNG
+        };
 
         /// <summary>Die Satzarten der eingespielten Typtage in der Reihenfolge von <see cref="TYPTAG_ART_WERTE"/>.</summary>
         public static readonly IReadOnlyList<string> TyptagArten = new[]
@@ -754,6 +804,98 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  Schemaschritt T4 „Messreihen" (Stufe Z5): die eingespielten
+        //  Messreihen eines Projekts
+        // =================================================================
+
+        /// <summary>
+        /// Die Nummer des Schemaschritts T4 „Messreihen" (Stufe Z5, Konzept 4.8) — die Tabelle
+        /// <c>Tab_TwwMessreihe</c> samt Index auf <c>ID_Projekt</c>. <b>Die Nummer steht allein
+        /// hier</b>, und <see cref="SchemaStand.Zielversion"/> verweist symbolisch hierher; sie
+        /// folgt lückenlos auf das Baujahr des Gebäudes
+        /// (<see cref="BaujahrSchema.SCHRITT"/> = 139), mit dem sie keine Tabelle teilt.
+        /// </summary>
+        public const int SCHRITT_T4_MESSREIHEN = BaujahrSchema.SCHRITT + 1;
+
+        /// <summary>
+        /// <c>CREATE TABLE IF NOT EXISTS Tab_TwwMessreihe</c> — 10 Spalten (Konzept 4.8,
+        /// Schemaschritt T4 „Messreihen", Stufe Z5).
+        ///
+        /// <para><b>Eine Zeile je Wert</b> (Muster von <see cref="SQL_CREATE_TYPTAG_IMPORT"/>):
+        /// <c>Zeilenindex</c> zählt die Zeitschritte ab <c>Beginn</c> bei 0, <c>Wert</c> trägt den
+        /// gemessenen Wert in der Einheit der <c>Groesse</c>
+        /// (<see cref="MESSGROESSE_ENERGIE"/> kWh, <see cref="MESSGROESSE_VOLUMEN"/> m³,
+        /// <see cref="MESSGROESSE_LEISTUNG"/> kW), und
+        /// (<c>ID_Projekt</c>, <c>Bezeichnung</c>, <c>Zeilenindex</c>) ist ihr natürlicher
+        /// Schlüssel. Die Kopfangaben — <c>Groesse</c>, <c>Aufloesung_min</c>, <c>Beginn</c>,
+        /// <c>Quelle</c>, <c>Datum_Import</c> — stehen an jeder Zeile: Die Reihe ist EIN Vorgang,
+        /// und der Schreibweg schreibt sie geschlossen (<c>TwwMessreihenCtrl</c>).</para>
+        ///
+        /// <para><b>Bestandteil des Projekts</b> (Kapitel 9 K5): <c>ID_Projekt</c> mit
+        /// <c>ON DELETE CASCADE</c> — die Reihe gehört dem Projekt, reist mit seiner Kopie und
+        /// seinem Paket und verschwindet mit ihm. <b>Kein <c>Status</c>, kein <c>ReadOnly</c>,
+        /// keine Provenienzgruppe:</b> Jede Zeile ist gemessen, <c>Quelle</c> nennt die Herkunft
+        /// beim Anwender, <c>Datum_Import</c> den Tag des Einspielens.</para>
+        ///
+        /// <para><b>Keine Werte im Quelltext.</b> Die DDL beschreibt allein die Struktur; jeder
+        /// Wert kommt aus einer Datei des Anwenders. <c>Werkzeuge/Auslieferungsvorlage</c> leert
+        /// die Tabelle — auch die Beispielprojekte führen keine Messreihe.</para>
+        ///
+        /// <para><b>Beginn</b> ist ein Datum <c>JJJJ-MM-TT</c> (ISO, invariant) samt Uhrzeit des
+        /// ersten Zeitschritts als <c>JJJJ-MM-TTThh:mm</c>; die Reihe braucht keinen Jahresbezug
+        /// des Rechenkerns (der rechnet 365 Tage ohne Schaltjahr, die Messung kennt ihren echten
+        /// Kalender).</para>
+        /// </summary>
+        public const string SQL_CREATE_MESSREIHE =
+            "CREATE TABLE IF NOT EXISTS \"Tab_TwwMessreihe\" (\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "    \"ID_Projekt\" INTEGER NOT NULL REFERENCES \"Tab_Projekt\" (\"ID\") ON DELETE CASCADE,\n" +
+            "    \"Bezeichnung\" TEXT NOT NULL,\n" +
+            "    \"Groesse\" TEXT NOT NULL CHECK (\"Groesse\" IN (" + MESSGROESSE_WERTE + ")),\n" +
+            "    \"Aufloesung_min\" INTEGER NOT NULL CHECK (\"Aufloesung_min\" BETWEEN 1 AND 1440),\n" +
+            "    \"Beginn\" TEXT NOT NULL,\n" +
+            "    \"Zeilenindex\" INTEGER NOT NULL CHECK (\"Zeilenindex\" >= 0),\n" +
+            "    \"Wert\" REAL NOT NULL CHECK (\"Wert\" >= 0),\n" +
+            "    \"Quelle\" TEXT NOT NULL,\n" +
+            "    \"Datum_Import\" TEXT NOT NULL,\n" +
+            "    UNIQUE (\"ID_Projekt\", \"Bezeichnung\", \"Zeilenindex\")\n" +
+            ") STRICT";
+
+        /// <summary>
+        /// Die Anweisungen des Schemaschritts T4 „Messreihen" (Stufe Z5): die Tabelle
+        /// der eingespielten Messreihen. Sie hängt allein an <c>Tab_Projekt</c> und darf deshalb
+        /// nach den übrigen Tww-Tabellen entstehen. Reines DDL, wiederholbar über
+        /// <c>IF NOT EXISTS</c>; nach dem Schritt ist sie leer, und kein Rechenweg findet eine
+        /// Messreihe (der Vergleich ist benannt nicht verfügbar).
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> AnweisungenT4Messreihen
+        {
+            get
+            {
+                yield return new KeyValuePair<string, string>(TAB_TWW_MESSREIHE, SQL_CREATE_MESSREIHE);
+            }
+        }
+
+        /// <summary>
+        /// Der Index des Schemaschritts T4 auf <c>Tab_TwwMessreihe.ID_Projekt</c> — der Suchweg
+        /// jedes Zugriffs (die Reihen EINES Projekts) und die Suche, die SQLite beim Löschen eines
+        /// Projekts nach seinen Kindern anstellt. Nach <see cref="AnweisungenT4Messreihen"/>
+        /// abzuarbeiten; wiederholbar über <c>IF NOT EXISTS</c>.
+        ///
+        /// <para><b>Vorgemerkt:</b> Dieser Index ist neben dem UNIQUE-Index über
+        /// (<c>ID_Projekt</c>, <c>Bezeichnung</c>, <c>Zeilenindex</c>) <b>redundant</b> — SQLite kann
+        /// dessen führende Spalte allein benutzen, und jede Zeile kostet damit einen Eintrag mehr, den
+        /// niemand liest. Er bleibt trotzdem in der DDL: Der Schemaschritt T4 ist gebaut und in der
+        /// Testdatenbank angekommen, und eine Änderung seiner Anweisungen hieße, eine schon
+        /// ausgeführte Nummer umzuschreiben (ADR-001). Er gehört in einen späteren Schritt, der ihn
+        /// mit <c>DROP INDEX</c> entfernt, nicht in diesen.</para>
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> IndizesT4Messreihen
+        {
+            get { yield return Index(TAB_TWW_MESSREIHE, "ID_Projekt"); }
+        }
+
+        // =================================================================
         //  Schemaschritt T3 (Schritt 124, Stufe Z4): Laufangaben der Auslegung
         //  und Bezugsart am Bedarfstag
         // =================================================================
@@ -850,7 +992,7 @@ namespace WindowsFormsApplication1
             return angelegt;
         }
 
-        /// <summary>Alle Tww-Tabellen der Schritte T1, T2 und T3 „Typtage" in Anlegereihenfolge.</summary>
+        /// <summary>Alle Tww-Tabellen der Schritte T1, T2, T3 „Typtage" und T4 „Messreihen" in Anlegereihenfolge.</summary>
         public static IEnumerable<KeyValuePair<string, string>> AlleAnweisungen
         {
             get
@@ -858,6 +1000,7 @@ namespace WindowsFormsApplication1
                 foreach (KeyValuePair<string, string> a in Anweisungen) yield return a;
                 foreach (KeyValuePair<string, string> a in AnweisungenT2) yield return a;
                 foreach (KeyValuePair<string, string> a in AnweisungenT3Typtage) yield return a;
+                foreach (KeyValuePair<string, string> a in AnweisungenT4Messreihen) yield return a;
             }
         }
 

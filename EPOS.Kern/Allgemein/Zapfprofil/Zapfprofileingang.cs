@@ -214,6 +214,41 @@ namespace WindowsFormsApplication1
         /// wenn weder der Dialog noch die Einstellung eine nennt.
         /// </summary>
         internal const string STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
+
+        /// <summary>
+        /// Untere Grenze des Bands der synthetischen Spitze [-] (Stufe Z5, Kapitel 7 Zeile Z5
+        /// Kennzahl (b); INEKON-Setzung, freier Paketteil): das Perzentil der Stundenspitzen des
+        /// Ensembles, unter dem die gemessene Spitze als „unterhalb" gilt. Vorgabe 0,85.
+        /// </summary>
+        internal const string VALIDIERUNG_BAND_UNTEN = "Zapfprofil.Validierung.Band.Unten";
+
+        /// <summary>
+        /// Obere Grenze des Bands der synthetischen Spitze [-] (Stufe Z5; INEKON-Setzung, freier
+        /// Paketteil): das Perzentil, über dem die gemessene Spitze als „oberhalb" gilt — dann
+        /// überschätzt die Rechnung die Spitze nicht, sie unterschätzt sie. Vorgabe 0,95.
+        /// </summary>
+        internal const string VALIDIERUNG_BAND_OBEN = "Zapfprofil.Validierung.Band.Oben";
+
+        /// <summary>
+        /// Schwelle des Formabgleichs des Tagesgangs [-] (Stufe Z5, Kennzahl (d); INEKON-Setzung,
+        /// freier Paketteil): die mittlere absolute Abweichung der 24 Stundenanteile je Tagtyp, ab
+        /// der die Form als abweichend gilt. Vorgabe 0,01 — ein Prozentpunkt je Stunde im Mittel.
+        /// </summary>
+        internal const string VALIDIERUNG_FORMSCHWELLE = "Zapfprofil.Validierung.Formschwelle";
+
+        /// <summary>
+        /// Höchster zugelassener Anteil gefüllter Lücken einer Messreihe [-] (Stufe Z5;
+        /// INEKON-Setzung, freier Paketteil): darüber lehnt <c>Messreihenleser</c> die Datei ab,
+        /// darunter nennt er die Lücken. Vorgabe 0,05.
+        /// </summary>
+        internal const string VALIDIERUNG_LUECKENANTEIL = "Zapfprofil.Validierung.Lueckenanteil";
+
+        /// <summary>
+        /// Kürzeste Messreihe für einen Kalibriervorschlag der Nichtwohn-Parameter [d] (Stufe Z5;
+        /// INEKON-Setzung, freier Paketteil): Unter dieser Zahl von Tagen trägt der mittlere
+        /// Tagesgang je Tagtyp zu wenige Tage, und der Vorschlag wird benannt abgelehnt. Vorgabe 30.
+        /// </summary>
+        internal const string VALIDIERUNG_KALIBRIERUNG_TAGE = "Zapfprofil.Validierung.Kalibrierung.MindestTage";
     }
 
     /// <summary>

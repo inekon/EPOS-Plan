@@ -27,7 +27,14 @@ namespace WindowsFormsApplication1
         ProjektnameFehlt,
 
         /// <summary>Ein Schreibschritt ist fehlgeschlagen; <c>Schritt</c> nennt ihn.</summary>
-        Fehlgeschlagen
+        Fehlgeschlagen,
+
+        /// <summary>
+        /// Bearbeiten-Zweig: Die Listen des Laufs gehören nicht dem Projekt, das
+        /// gespeichert werden soll (Projektwechsel ohne neues Laden, #497). Nichts
+        /// geschrieben.
+        /// </summary>
+        ProjektGewechselt
     }
 
     /// <summary>Ausgang und — im Fehlerfall — der Schritt, an dem es lag.</summary>
@@ -92,10 +99,11 @@ namespace WindowsFormsApplication1
     /// Schreibmethode den Vorgang über <c>Vorgangsklammer</c> am Faden an; die
     /// Zugriffsschicht leiht sich dessen Verbindung, statt eine eigene zu öffnen.</para>
     ///
-    /// <para><b>Was damit NICHT eingelöst ist:</b> Risiko R-W16-6 verlangt für jeden
-    /// Umbau des Schreibwegs den Feld-für-Feld-Vergleich am Windows-Gerät
-    /// (<c>Referenzlauf.exe projekt</c>). Der steht aus; auf Linux belegen zwei
-    /// Kern-Prüffälle den Rückzug und den unveränderten Erfolgsfall.</para>
+    /// <para><b>Risiko R-W16-6</b> (Feld-für-Feld-Vergleich am Windows-Gerät,
+    /// <c>Referenzlauf.exe</c>) ist für den BEARBEITETEN Fall geführt (#497): Projekt
+    /// 1041 vor und nach einem Speichern ohne Änderung, 29 Dateien, 298 005 Werte,
+    /// byte-gleich. Der Fall eines über den Assistenten NEU angelegten Projekts steht
+    /// aus; auf Linux belegen Kern-Prüffälle den Rückzug und den Erfolgsfall.</para>
     /// </summary>
     public class AssistentCtrl
     {
@@ -178,6 +186,13 @@ namespace WindowsFormsApplication1
         private IReadOnlyDictionary<Z_ProjGebModel, int> _neueGebaeudeIds;
 
         /// <summary>
+        /// #497: Die echten Ids der im laufenden Speicherlauf neu angelegten Zeilen der
+        /// vier übrigen Zuordnungen — eingetragen erst nach dem Festschreiben
+        /// (<see cref="WizardCtrl.IdNachzug"/>), verworfen bei einem Rückzug.
+        /// </summary>
+        private WizardCtrl.IdNachzug _idNachzug;
+
+        /// <summary>
         /// Der Abdruck der fünf Gewerke (<see cref="AssistentAbgleich"/>) nach den
         /// Ladewegen bzw. nach dem letzten gelungenen Speicherlauf — der Stand der
         /// Datenbank, gegen den der Bearbeiten-Zweig vergleicht. <c>null</c> = kein
@@ -196,6 +211,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hat der letzte Bearbeiten-Lauf den Projektkopf geschrieben?</summary>
         public bool KopfGeschrieben { get; private set; }
+
+        /// <summary>
+        /// Wie viele fehlende Trägersatzpaare hat der letzte Bearbeiten-Lauf bei
+        /// UNVERÄNDERTEM Erzeuger nachgelegt (#497)? 0, wenn keiner fehlte oder die
+        /// Anlagen ohnehin neu geschrieben wurden.
+        /// </summary>
+        public int GeheilteTraegersaetze { get; private set; }
 
         private readonly bool[] _seiteAktiv = new bool[SEITEN];
 
@@ -485,7 +507,21 @@ namespace WindowsFormsApplication1
             // was bis zum Speichern gleich bleibt, wird nicht neu geschrieben. Ohne
             // Projektnamen ist nichts geladen, also auch kein Stand bekannt.
             _gewerkStand = string.IsNullOrEmpty(projektName) ? null : AssistentAbgleich.Abdruecke(this);
+
+            // #497: ... und er traegt das Projekt, dessen Stand die Listen sind.
+            ListenProjektId = string.IsNullOrEmpty(projektName) ? 0 : ProjektCtrl.IdVonName(projektName);
         }
+
+        /// <summary>
+        /// <c>Tab_Projekt.ID</c> des Projekts, dessen Stand die Listen tragen (#497) —
+        /// gesetzt von <see cref="Laden"/> und nach jedem gelungenen Speicherlauf; 0 =
+        /// nichts geladen. Anders als der Vergleichsstand der Gewerke verfällt sie NICHT
+        /// mit <see cref="BereitsGeladen"/> = <c>false</c>: Die Listen gehören dann weiter
+        /// dem bisher geladenen Projekt. Der Bearbeiten-Zweig lehnt ein Speichern ab,
+        /// wenn sie nicht <see cref="ProjektId"/> ist
+        /// (<see cref="AssistentAusgang.ProjektGewechselt"/>).
+        /// </summary>
+        public int ListenProjektId { get; private set; }
 
         /// <summary>
         /// Die Energieanlagen eines bestehenden Projekts.
@@ -776,6 +812,14 @@ namespace WindowsFormsApplication1
             if (ctrl.Projektname == "")
                 return new AssistentErgebnis(AssistentAusgang.ProjektnameFehlt, "");
 
+            // #497: Der Bearbeiten-Zweig schreibt die Listen als Stand DES Projekts, fuer
+            // das sie geladen wurden. Gehoeren sie einem anderen (Projektwechsel ohne
+            // neues Laden) oder keinem, wird BENANNT abgelehnt - nichts geschrieben,
+            // keine Eingabe verworfen. Neu geladen wird bewusst NICHT: Das verwarf die
+            // Eingaben des Laufs still.
+            if (Betriebsart != BETRIEBSART_NEU && ListenProjektId != ProjektId)
+                return new AssistentErgebnis(AssistentAusgang.ProjektGewechselt, "");
+
             ProjektkopfUebernehmen();
             // Nur den NAMEN der Klimaregion fuehren; die korrekte ID_Klimaregion
             // (Projekt-Kopie) setzt WizardCtrl.Add_Projekt/Update_Projekt.
@@ -784,6 +828,7 @@ namespace WindowsFormsApplication1
 
             Gespeichert = false;
             _neueGebaeudeIds = null;
+            _idNachzug = new WizardCtrl.IdNachzug();
 
             // ===== DIE KLAMMER (W16a-O-1) ====================================
             // EIN Vorgang ueber den GANZEN Lauf. Festgeschrieben wird nur, wenn der
@@ -803,6 +848,7 @@ namespace WindowsFormsApplication1
                 catch (Exception)
                 {
                     Gespeichert = false;
+                    _idNachzug.Verwerfen();
                     vorgang.Rollback();
                     throw;
                 }
@@ -812,6 +858,7 @@ namespace WindowsFormsApplication1
                     // Der Schritt hat FALSE gemeldet: nichts von diesem Lauf bleibt
                     // stehen. Die Meldung selbst ist unveraendert (E-4).
                     Gespeichert = false;
+                    _idNachzug.Verwerfen();
                     vorgang.Rollback();
                     return ergebnis;
                 }
@@ -823,6 +870,7 @@ namespace WindowsFormsApplication1
                 catch (Exception)
                 {
                     Gespeichert = false;
+                    _idNachzug.Verwerfen();
                     vorgang.Rollback();
                     return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Commit");
                 }
@@ -833,9 +881,16 @@ namespace WindowsFormsApplication1
                 WizardCtrl.EchteIdsUebernehmen(_neueGebaeudeIds);
                 _neueGebaeudeIds = null;
 
+                // #497: Dasselbe fuer die vier uebrigen Zuordnungen - die Huelle und die
+                // Dialoge dahinter arbeiten ab jetzt mit den Ids der Datenbank.
+                _idNachzug.Uebernehmen();
+
                 // #490: Was jetzt in den Listen steht, steht in der Datenbank - ein zweites
-                // Speichern desselben Laufs ohne weitere Eingabe schreibt nichts.
+                // Speichern desselben Laufs ohne weitere Eingabe schreibt nichts. Der Abdruck
+                // wird NACH dem Id-Nachzug genommen (#497), und er gehoert jetzt diesem
+                // Projekt - im Neu-Zweig dem eben angelegten.
                 _gewerkStand = AssistentAbgleich.Abdruecke(this);
+                ListenProjektId = ProjektId;
 
                 return ergebnis;
             }
@@ -873,19 +928,19 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Energietraeger");
 
-            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
+            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Prozess");
 
-            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
+            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Stromganglinie");
 
             if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_WaermebedarfExtern");
 
-            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
+            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WaermebedarfExtern");
 
-            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
+            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
 
             // SENKEN BEIM ANLEGEN (Anwenderentscheid 23.09.2026): Die Anlagen stehen seit
@@ -927,8 +982,8 @@ namespace WindowsFormsApplication1
             // --- Erzeuger: Anlagenzeilen, Projektgeraete, Traegersaetze ---------------
             // Unveraendert heisst: keine Anlagenzeile, keine Projektkopie, kein
             // Kostenanker, keine Senke und kein Strang wird angefasst; die Pufferzeilen
-            // ohnehin nicht (FR-1). Auch Add_Projekt_Energietraeger bleibt aus - die
-            // Saetze stehen seit dem Speichern, das diese Anlagen geschrieben hat.
+            // ohnehin nicht (FR-1). Die Traegersaetze heilen trotzdem (#497, else-Zweig).
+            GeheilteTraegersaetze = 0;
             if (erzeuger)
             {
                 _geschriebeneGewerke.Add(AssistentGewerk.Erzeuger);
@@ -949,6 +1004,15 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                     return Fehler("Add_Projekt_Energietraeger");
             }
+            else
+            {
+                // #497: Die Heilung haengt nicht am Abdruck. Fehlt zu einer vorhandenen
+                // Anlage ihr projektgebundener Traegersatz, entsteht er hier - und nur
+                // dann gilt das Projekt als geaendert; ohne Luecke wird nichts geschrieben.
+                if (!ctrl.Projekt_Energietraeger_Heilen(ProjektId, Erzeuger, vorgang, out int geheilt))
+                    return Fehler("Projekt_Energietraeger_Heilen");
+                GeheilteTraegersaetze = geheilt;
+            }
 
             // Die Gebaeudeliste wird ABGEGLICHEN, nicht neu aufgebaut (Konzept
             // Administrationsdialoge 7.1 (a)): Unveraenderte Zuordnungen behalten ihre
@@ -964,7 +1028,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))
                     return Fehler("Del_Projekt_Prozess");
 
-                if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
+                if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang, _idNachzug))
                     return Fehler("Add_Projekt_Prozess");
             }
 
@@ -975,7 +1039,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_Stromganglinie(ProjektId, vorgang))
                     return Fehler("Del_Stromganglinie");
 
-                if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
+                if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang, _idNachzug))
                     return Fehler("Add_Stromganglinie");
             }
 
@@ -986,7 +1050,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
                     return Fehler("Del_WaermebedarfExtern");
 
-                if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
+                if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang, _idNachzug))
                     return Fehler("Add_WaermebedarfExtern");
             }
 
@@ -997,7 +1061,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_Projekt_Stromverbraucher(ProjektId, vorgang: vorgang))
                     return Fehler("Del_Projekt_Stromverbraucher");
 
-                if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
+                if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang, _idNachzug))
                     return Fehler("Add_Projekt_Stromverbraucher");
             }
 
@@ -1076,6 +1140,12 @@ namespace WindowsFormsApplication1
                              "Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts " +
                              "gespeichert, das Projekt ist unverändert."),
                         ergebnis.Schritt);
+                case AssistentAusgang.ProjektGewechselt:
+                    return Text("WIZ_PROJEKT_GEWECHSELT",
+                                "Die Eingaben des Assistenten gehören zu einem anderen Projekt als dem " +
+                                "gewählten. Es wurde nichts gespeichert.\n\n" +
+                                "Bitte die Projektseite erneut durchlaufen, damit die Daten des " +
+                                "gewählten Projekts geladen werden.");
                 default:
                     return "";
             }
@@ -1094,6 +1164,8 @@ namespace WindowsFormsApplication1
                     return Text("WIZ_NAME_FEHLT_TITEL", "Projektname fehlt");
                 case AssistentAusgang.Fehlgeschlagen:
                     return Text("WIZ_SPEICHERN_FEHLER_TITEL", "Speichern fehlgeschlagen");
+                case AssistentAusgang.ProjektGewechselt:
+                    return Text("WIZ_PROJEKT_GEWECHSELT_TITEL", "Anderes Projekt gewählt");
                 default:
                     return "";
             }

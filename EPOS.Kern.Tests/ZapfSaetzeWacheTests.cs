@@ -298,7 +298,14 @@ namespace EPOS.Kern.Tests
                .SelectMany(o => Directory.GetFiles(o, "*.cs"))
                // Der Leser der eingespielten Typtage (Stufe Z4b) liegt beim Import, nennt aber
                // seine Ablehnungen als ZapfSatz - also gehoert er in den Quellenkreis.
-               .Concat(new[] { Pfad("EPOS.Kern", "Allgemein", "Import", "Normformvektorleser.cs") });
+               .Concat(new[] { Pfad("EPOS.Kern", "Allgemein", "Import", "Normformvektorleser.cs"),
+                               // Der Leser der gemessenen Reihen (Stufe Z5) liegt ebenfalls beim
+                               // Import, nennt aber seine Ablehnungen als ZapfSatz.
+                               Pfad("EPOS.Kern", "Allgemein", "Import", "Messreihenleser.cs"),
+                               // Die Huelle des Vergleichs (Stufe Z5) nennt EINEN eigenen Satz: die
+                               // Spreizung mehrerer Zonen. Der Kern nimmt EINE Spreizung; welche das
+                               // ist, entscheidet die Huelle - also gehoert sie in den Quellenkreis.
+                               Pfad("EPOS.UI.Daten", "Bedarf", "ZapfprofilHuelle.Messvergleich.cs") });
 
         private static string[] Platzhalter(string text)
             => Regex.Matches(text ?? "", @"\{\d+(:[^}]*)?\}").Select(m => m.Value).Distinct().OrderBy(s => s, StringComparer.Ordinal).ToArray();
