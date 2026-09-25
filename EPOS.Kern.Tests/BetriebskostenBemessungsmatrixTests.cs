@@ -363,6 +363,9 @@ namespace EPOS.Kern.Tests
                 // der des Projekts — und den hat 1026 nicht. Der Grund nennt deshalb
                 // genau diesen Eintrag, nicht den Träger der Anlage.
                 "1026 WP PROZENT_ENDENERGIEBEDARF nein STROMPREIS",
+                // E23 (25.09.2026): Beide kWh-Arten stehen an der Wärmepumpe nicht
+                // mehr zur Auswahl (Landkarte GEWERK) — eine Bestandszeile RECHNET
+                // aber weiter: Die Menge kommt aus dem Lauf, nicht aus der Landkarte.
                 "1026 WP EUR_PRO_KWH_THERMISCH ja",
                 "1026 WP EUR_PRO_KWH_ELEKTRISCH ja",
                 "1026 WP EUR_PRO_KW_LEISTUNG ja",

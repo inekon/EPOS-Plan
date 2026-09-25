@@ -66,7 +66,12 @@ namespace EPOS.Kern.Tests
         /// Flächengrößen kennt sie nicht; ihre Mengen kommen aus dem Lauf.
         /// <para>E20 (Anwenderentscheid 25.09.2026): „Wärmepumpe beides" — im
         /// INVESTITIONSraster zusätzlich „je kW elektrisch" (P_el am Normpunkt der
-        /// Kennlinie); im Betriebsraster bleibt die Art weg.</para></summary>
+        /// Kennlinie); im Betriebsraster bleibt die Art weg.</para>
+        /// <para>E23 (Anwenderentscheide E20‑Q6 b und 25.09.2026): Die Betriebskosten der
+        /// Wärmepumpe werden nicht je kWh bemessen — weder „je kWh elektrisch" („Strom-kWh
+        /// sind Energiekosten") noch „je kWh thermisch". Beide fehlen im Betriebsraster
+        /// mit dem Grund GEWERK; Bestandszeilen hält
+        /// <see cref="WaermepumpeBetriebKwhSperreTests"/>.</para></summary>
         [Fact]
         public void Waermepumpe_bietet_die_Heizleistung_und_die_Laufgroessen()
         {
@@ -86,9 +91,7 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN,
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
-                    DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,
-                    DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
-                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,       // E23: keine kWh-Art mehr
                     DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
                 });
         }
