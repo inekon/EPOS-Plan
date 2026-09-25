@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace WindowsFormsApplication1
 {
@@ -67,6 +69,37 @@ namespace WindowsFormsApplication1
         /// <summary>Zielordner der Ausgabedateien (leer = Dokumente-Ordner).</summary>
         public string ZielOrdner { get; set; } = "";
 
+        // --- Vorlagenwahl je Stammprojekt (Konzept Berichtsvorlagen 10.3, Zeile „Abweichung“) ---
+
+        /// <summary>Quelle der Word-Vorlage: die mitgelieferte Standardvorlage.</summary>
+        public const string VORLAGE_QUELLE_STANDARD = "standard";
+
+        /// <summary>Quelle der Word-Vorlage: eine eigene Vorlage im Vorlagenordner.</summary>
+        public const string VORLAGE_QUELLE_EIGEN = "eigen";
+
+        /// <summary>
+        /// Abweichende Word-Vorlage dieses Stammprojekts: <see cref="VORLAGE_QUELLE_STANDARD"/> oder
+        /// <see cref="VORLAGE_QUELLE_EIGEN"/>; <c>null</c> = keine Abweichung, es gilt die Vorgabe der
+        /// Installation (<c>BerichtsvorlagenCtrl</c>). Eine Datei, keine Datenbankzeile: Wählen,
+        /// Auflösen und der Rückfall bei fehlender Datei stehen im <c>BerichtsvorlagenCtrl</c>.
+        ///
+        /// <para><b>Tolerant gelesen:</b> Ein Wert anderer Art (Zahl, Objekt) setzt nicht die ganze
+        /// Konfiguration auf den Standard zurück, sondern wird zu Text bzw. <c>null</c>;
+        /// ohne Abweichung wird das Feld nicht geschrieben — ältere Fassungen lesen das JSON
+        /// unverändert.</para>
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string VorlageWordQuelle { get; set; }
+
+        /// <summary>
+        /// Dateiname der eigenen Word-Vorlage im Vorlagenordner (ohne Pfad), wenn
+        /// <see cref="VorlageWordQuelle"/> <see cref="VORLAGE_QUELLE_EIGEN"/> ist; sonst <c>null</c>.
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string VorlageWordDatei { get; set; }
+
         /// <summary>Standardkonfiguration (Bausteine laut Katalog-Standard).</summary>
         public static BerichtsKonfiguration Standard()
         {
@@ -97,6 +130,45 @@ namespace WindowsFormsApplication1
                 return k ?? Standard();
             }
             catch { return Standard(); }
+        }
+
+        /// <summary>
+        /// Liest ein Textfeld duldsam: Text bleibt Text, eine Zahl oder ein Wahrheitswert wird zu Text,
+        /// ein Objekt oder eine Liste wird übersprungen und zu <c>null</c> — ein falsch geschriebenes
+        /// neues Feld kostet so nicht die übrige Auswahl.
+        /// </summary>
+        private sealed class TolerantTextKonverter : JsonConverter<string>
+        {
+            public override bool HandleNull { get { return true; } }
+
+            public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.String:
+                        return reader.GetString();
+                    case JsonTokenType.Number:
+                        return reader.TryGetInt64(out long ganz)
+                            ? ganz.ToString(CultureInfo.InvariantCulture)
+                            : reader.GetDouble().ToString("R", CultureInfo.InvariantCulture);
+                    case JsonTokenType.True:
+                        return "true";
+                    case JsonTokenType.False:
+                        return "false";
+                    case JsonTokenType.StartObject:
+                    case JsonTokenType.StartArray:
+                        reader.Skip();
+                        return null;
+                    default:
+                        return null;
+                }
+            }
+
+            public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+            {
+                if (value == null) writer.WriteNullValue();
+                else writer.WriteStringValue(value);
+            }
         }
     }
 }
