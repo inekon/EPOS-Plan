@@ -573,16 +573,22 @@ namespace WindowsFormsApplication1
         /// <see cref="KuehluebergabeSchema"/>. <b>Reines DDL, ergebnisneutral:</b> Der Schalter
         /// steht auf 0, alles andere auf NULL; der Referenzlauf bleibt byte-gleich.
         /// Mit der HERKUNFTSABLAGE DER GEBÄUDEIMPORTE (Schritt S-F, Stufe G4c; Datenaustauschkonzept
-        /// 2.3 und 7.1 bis 7.5) steht das Ziel auf <see cref="ImportzuordnungSchema.SCHRITT"/>:
+        /// 2.3 und 7.1 bis 7.5) stand das Ziel auf <see cref="ImportzuordnungSchema.SCHRITT"/>:
         /// <c>Tab_Importquelle</c> (eine Zeile je Importlauf) und <c>Tab_Importzuordnung</c> (eine Zeile
         /// je Paarung EPOS-Zeile ↔ Quellentität) samt zwei Indizes — <see cref="ImportzuordnungSchema"/>.
         /// Die Nummer steht allein dort. <b>Reines DDL, ergebnisneutral:</b> Kein Rechenweg liest die
         /// Tabellen, Import läuft nur auf Zuruf; der Referenzlauf bleibt byte-gleich.
+        /// Mit dem BAUJAHR DES GEBÄUDES (Stufe G4a; Umsetzungskonzept Gebäudesimulation 3.4 und 3.7)
+        /// steht das Ziel auf <see cref="BaujahrSchema.SCHRITT"/>: die nullbare Spalte <c>Baujahr</c>
+        /// (INTEGER, 1500 … 2100) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt fünftem
+        /// Neubau der Sicht <c>Abfrage_Projektgebaeude</c> (<see cref="GebaeudeSchema.SICHT_BAUJAHR"/>).
+        /// Die Nummer steht allein bei <see cref="BaujahrSchema"/>. <b>Reines DDL, ergebnisneutral:</b>
+        /// Die Spalte bleibt NULL, und kein Rechenweg liest sie; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ImportzuordnungSchema.SCHRITT;
+        public const int Zielversion = BaujahrSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

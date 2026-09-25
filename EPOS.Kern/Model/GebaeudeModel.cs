@@ -126,6 +126,11 @@ namespace WindowsFormsApplication1
         public double? Kuehl_Auslegung_Raumtemperatur;
         public double? Kuehl_Vorlaufgrenze;
 
+        // ---- Das Baujahr (G4a, Umsetzungskonzept 3.4; BaujahrSchema.SCHRITT) ---------------
+        // Die Jahreszahl 1500 bis 2100, NULL-ERHALTEND: null heisst "unbekannt". Steht neben der
+        // Baualtersklasse und steuert nichts. Name: GebaeudeSchema.SPALTE_BAUJAHR.
+        public int? Baujahr;
+
         public GebaeudeModel()
         {
             ID = 0;

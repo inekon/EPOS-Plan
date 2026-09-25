@@ -328,7 +328,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **137**, LFS-SHA-256 `834aa718…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **139**, LFS-SHA-256 `f700e81e…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -684,6 +684,24 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Einfrierregel berührt:** Kein Rechenweg liest die Tabellen, und kein Referenzprojekt führt einen Import.
 > Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
 > außer `protokoll.txt`).
+
+> **Nachtrag G4a Welle 3: Schemastand 139 (Baujahr des Gebäudes), die Basis bleibt.** Migrationsschritt **139**
+> (`SCHRITT_BAUJAHR`; die Nummer steht allein bei `BaujahrSchema.SCHRITT`, der Quelle für Migration, Werkzeug und
+> Testvorrichtung, die Definitionen bei `GebaeudeSchema`) folgt auf S-F (138) und legt an `Tab_Gebaeude` und
+> `Tab_Gebaeude_STAMM` spaltengleich die Spalte `Baujahr INTEGER` mit
+> `CHECK (Baujahr IS NULL OR Baujahr BETWEEN 1500 AND 2100)` an und baut die Sicht `Abfrage_Projektgebaeude` zum
+> fünften Mal neu (99 Spalten, die 98 von KAK-S1 an ihren Stellen, `Baujahr` an Stelle 98) — **reines DDL, keine
+> Saat**. Nachgezogen auf der Fassung von origin mit Schemastand **138** (Nachtrag G4c Welle 3 oben, `3f5c892d…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` (zwei Spalten
+> angelegt; ein zweiter Lauf legt nichts an). Zellvergleich aller 143 Tabellen gegen die Fassung 138 (10 506 686 Zellen
+> der gemeinsamen Spalten): allein `SchemaVersion` 138 → 139; neu ist die Spalte `Baujahr` in beiden Gebäudetabellen,
+> in allen 26 bzw. 269 Zeilen NULL, geändert allein der Text der Sicht; `integrity_check` ok, `foreign_key_check` leer,
+> 143 Tabellen (alle STRICT), 14 Sichten, 217 Indizes. Größe 67 903 488 Byte (LFS-SHA-256 `f700e81e…`).
+> **Ergebnisneutral, keine Einfrierregel berührt:** Die Spalte bleibt in jeder Zeile NULL, es ist also nichts gesät,
+> und kein Rechenweg liest sie — weder der Eingangsbauer des Gebäudemodells noch der Tagesbilanz-Weg noch eine Vorgabe
+> (die Vorgaben hängen an der Baualtersklasse, nicht am Jahr); sie gehört damit nicht zu den Spalten des Gebäudemodells,
+> die die Einfrierregel „gesäte Gebäudedaten“ nennt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
+> Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem

@@ -1752,8 +1752,9 @@ namespace Testdatenbankschema
             //      der sich SchemaMigration.Schritt_Kuehluebergabe, Schritt_KuehluebergabeErgebnis
             //      und Schritt_KuehluebergabeZone bedienen (KuehluebergabeSchema, GebaeudeSchema).
             //
-            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108 und 122 oben bauen die
-            //      Sicht jeweils neu; nur so traegt sie am Ende die Spalten der Kuehluebergabe.
+            //      DER SICHTNEUBAU STEHT NACH 101, 108 UND 122: Die Durchgaenge oben bauen die
+            //      Sicht jeweils neu; nur so traegt sie die Spalten der Kuehluebergabe. Hinter ihm
+            //      baut nur noch der Schritt des Baujahrs (unten) die Sicht neu.
             //
             //      REFERENZLAUF BYTE-GLEICH: Kein DML - der Schalter 0, alles andere NULL; kein
             //      Referenzprojekt rechnet gekoppelt, und der Export nimmt die Ergebnisspalten erst
@@ -1810,6 +1811,29 @@ namespace Testdatenbankschema
                 tabellen += import;
                 Console.WriteLine("Schritt " + nrImport + " - " + import + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
                                   "vollstaendig: " + ImportzuordnungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt BaujahrSchema.SCHRITT (Gebaeudesimulation Stufe G4a, Welle 3;
+            //      Umsetzungskonzept 3.4 und 3.7): die Spalte Baujahr an Tab_Gebaeude(_STAMM)
+            //      samt fuenftem Sichtneubau (99 Spalten). REIN DDL aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Baujahr bedient (BaujahrSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108, 122 und KAK-S1 oben
+            //      bauen die Sicht jeweils neu; nur so traegt sie am Ende das Baujahr.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Spalte bleibt NULL, kein Rechenweg liest sie.
+            string nrBaujahr = BaujahrSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBaujahr + " - Baujahr am Gebaeude: " +
+                              (BaujahrSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBaujahr = new List<string>();
+                angelegt += BaujahrSchema.Alle(berichtBaujahr);
+                foreach (string zeile in berichtBaujahr)
+                    Console.WriteLine("Schritt " + nrBaujahr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBaujahr + " - vollstaendig: " + BaujahrSchema.Vollstaendig() +
+                                  " (erwartet True).");
             }
 
             Console.WriteLine();

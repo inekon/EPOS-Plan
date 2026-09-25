@@ -181,6 +181,14 @@ namespace WindowsFormsApplication1
         public double? Kuehl_Vorlaufgrenze;
 
         // =====================================================================
+        //  Das Baujahr (G4a, Umsetzungskonzept 3.4; fünfter Sichtneubau) —
+        //  NULL-ERHALTEND. Gelesen aus der Sicht; kein Rechenweg liest es.
+        // =====================================================================
+
+        /// <summary>Das Baujahr des Gebäudes (1500 … 2100); null = unbekannt.</summary>
+        public int? Baujahr;
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel

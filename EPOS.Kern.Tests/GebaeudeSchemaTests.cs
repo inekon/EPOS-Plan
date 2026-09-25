@@ -124,8 +124,8 @@ namespace EPOS.Kern.Tests
             }
 
             // Die Sicht in der Datei ist wortgleich die GELTENDE: die des letzten Sichtneubaus
-            // (die von KAK-S1, die die von M3 um die vier Kuehlspalten, die dreizehn
-            // Uebergabespalten und die acht der Kuehluebergabe verlaengert) - die 73 Spalten des Schritts 101 stehen
+            // (die des Baujahrs, die die von M3 um die vier Kuehlspalten, die dreizehn
+            // Uebergabespalten, die acht der Kuehluebergabe und das Baujahr verlaengert) - die 73 Spalten des Schritts 101 stehen
             // weiter an 0..72.
             string gespeichert = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",

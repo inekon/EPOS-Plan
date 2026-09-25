@@ -4287,7 +4287,8 @@ namespace WindowsFormsApplication1
         /// Schritt <see cref="KuehluebergabeSchema.SCHRITT"/> (KAK-S1) — <b>die Kühlübergabe am
         /// Gebäude</b> (Entscheid E37; Konzept Anlagenkopplung 8.1). Er folgt auf
         /// <see cref="SCHRITT_ZONEN"/> ohne Reihenfolgebedingung und erweitert die Sicht der
-        /// Schritte 101, 108 und 122 — als letzter Sichtneubau.
+        /// Schritte 101, 108 und 122; hinter ihm baut nur noch <see cref="SCHRITT_BAUJAHR"/> die
+        /// Sicht neu.
         ///
         /// <para><b>REIN DDL:</b> acht Spalten je Gebäudetabelle (<c>Kuehluebergabe_Aktiv</c> als
         /// Schalter 0/1, Art, Exponent, Nennleistung, Auslegung Vorlauf/Rücklauf/Raum,
@@ -4344,6 +4345,26 @@ namespace WindowsFormsApplication1
         /// <para><b>Ergebnisneutral</b>, keine Saat, kein Datenumbau; <b>wiederholbar</b>.</para>
         /// </summary>
         public const int SCHRITT_IMPORTZUORDNUNG = ImportzuordnungSchema.SCHRITT;
+
+        // ---- Gebäudesimulation Stufe G4a, Welle 3: das Baujahr --------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="BaujahrSchema.SCHRITT"/> — <b>das Baujahr des Gebäudes</b>
+        /// (Umsetzungskonzept Gebäudesimulation 3.4 und 3.7). Er folgt auf
+        /// <see cref="SCHRITT_IMPORTZUORDNUNG"/> ohne Reihenfolgebedingung und erweitert die Sicht
+        /// der Schritte 101, 108, 122 und <see cref="SCHRITT_KUEHLUEBERGABE"/> — als letzter
+        /// Sichtneubau.
+        ///
+        /// <para><b>REIN DDL:</b> die Spalte <c>Baujahr</c> (INTEGER, nullbar,
+        /// <c>CHECK</c> 1500 … 2100) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> neu mit 99 Spalten. Quelle
+        /// <see cref="GebaeudeSchema.SQLITE_BAUJAHR"/> und <see cref="GebaeudeSchema.SQL_VIEW_BAUJAHR"/>;
+        /// die Nummer steht allein bei <see cref="BaujahrSchema.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (keine Saat, kein Rechenweg liest die Spalte),
+        /// <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_BAUJAHR = BaujahrSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6149,7 +6170,7 @@ namespace WindowsFormsApplication1
 
             // ANLAGENKOPPLUNG AK1, WELLE 4 (E37, Konzept Anlagenkopplung 8.1 und 8.3) - die
             // Kaelteseite: KAK-S1 (acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM),
-            // vierter und letzter Sichtneubau), KAK-S3 (Ergebnisspalten der Kaelteseite), die
+            // vierter Sichtneubau), KAK-S3 (Ergebnisspalten der Kaelteseite), die
             // Zonenspalten nach S-C. REIN DDL; die Quelle ist KuehluebergabeSchema.
             new Schritt(SCHRITT_KUEHLUEBERGABE,
                         "Tab_Gebaeude(_STAMM): acht Spalten der Kuehluebergabe (Schalter, Art, Exponent, " +
@@ -6180,6 +6201,17 @@ namespace WindowsFormsApplication1
                         "Quellentitaeten nicht wieder. KEIN Rechenergebnis aendert sich - die Tabellen bleiben " +
                         "leer, kein Rechenweg liest sie.",
                         Schritt_Importzuordnung),
+
+            // GEBAEUDESIMULATION STUFE G4a, WELLE 3 (Umsetzungskonzept 3.4 und 3.7) - das Baujahr:
+            // eine Spalte an Tab_Gebaeude(_STAMM), der fuenfte und letzte Sichtneubau. REIN DDL; die
+            // Quelle ist GebaeudeSchema, die Nummer steht allein bei BaujahrSchema.
+            new Schritt(SCHRITT_BAUJAHR,
+                        "Tab_Gebaeude(_STAMM): die Spalte Baujahr (Jahreszahl 1500 bis 2100, leer = unbekannt), " +
+                        "die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Das Baujahr haette keinen Ort: Der Gebaeudeeditor koennte es nicht speichern, und der " +
+                        "IFC-Import verloere die gelesene Jahreszahl beim Uebernehmen. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalte bleibt leer, kein Rechenweg liest sie.",
+                        Schritt_Baujahr),
         };
 
         /// <summary>
@@ -10341,6 +10373,50 @@ namespace WindowsFormsApplication1
                     ImportzuordnungSchema.TAB_QUELLE + ", " + ImportzuordnungSchema.TAB_ZUORDNUNG + ") samt zwei " +
                     "Indizes. KEIN DML: beide Tabellen sind LEER, kein Rechenweg liest sie; der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt des Baujahrs — Anlass und Reihenfolge stehen bei <see cref="SCHRITT_BAUJAHR"/>,
+        /// die Definitionen bei <see cref="GebaeudeSchema.SQLITE_BAUJAHR"/>. Dieselbe Folge wie KAK-S1:
+        /// Sicht verwerfen, Spalte je Gebäudetabelle anlegen, Sicht neu — nur mit <see cref="SqliteDdl"/>
+        /// und <see cref="SqliteSpalteAnlegen"/>. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="BaujahrSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Baujahr(Lauf l)
+        {
+            string nr = BaujahrSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+
+            // vorweg: die Sicht nennt ihre Spalten namentlich - erst weg damit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // dann das Baujahr je Gebaeudetabelle - spaltengleich an Projekt und Katalog
+            foreach (string t in GebaeudeSchema.TABELLEN)
+                if (!SqliteSpalteAnlegen(l, t, GebaeudeSchema.SPALTE_BAUJAHR, GebaeudeSchema.SQLITE_BAUJAHR)) return false;
+
+            // die Sicht neu - aus SQL_VIEW_BAUJAHR: M3, KU-S1, AK-S1, KAK-S1 und dahinter das Baujahr
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_BAUJAHR, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = BaujahrSchema.Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalte Baujahr oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": Baujahr - die Spalte steht an " +
+                    GebaeudeSchema.TABELLEN.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Gebaeudetabellen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_BAUJAHR.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die Spalte bleibt leer; KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

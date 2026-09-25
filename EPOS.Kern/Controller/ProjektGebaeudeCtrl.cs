@@ -167,6 +167,10 @@ namespace WindowsFormsApplication1
                     item.Kuehl_Auslegung_Raumtemperatur = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR);
                     item.Kuehl_Vorlaufgrenze = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_VORLAUFGRENZE);
 
+                    // Das Baujahr (G4a, fuenfter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+                    // auf einer Sicht ohne die Spalte bleibt es null.
+                    item.Baujahr = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_BAUJAHR);
+
                     _internalList.Add(item);
                 }
             }
@@ -180,6 +184,12 @@ namespace WindowsFormsApplication1
         {
             if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
             return Convert.ToDouble(row[spalte]);
+        }
+
+        private static int? GanzzahlOderNull(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            return Convert.ToInt32(row[spalte], System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private static string TextOderNull(DataRow row, string spalte)
