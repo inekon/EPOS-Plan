@@ -795,6 +795,130 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Weitere Regeln: Zeilenumbruch, Felder, Liste im Steuerelement, Entfall
+        // =====================================================================
+
+        /// <summary>BV-P1: Ein mehrzeiliger Text bleibt im Run mit seinem Format, die Zeilen trennt <c>w:br</c>.</summary>
+        [Fact]
+        public void Mehrzeiliger_Text_wird_zu_Zeilenumbruechen_im_selben_Run()
+        {
+            byte[] v = Vorlage(main =>
+                "<w:p><w:r><w:rPr><w:b/></w:rPr><w:t xml:space=\"preserve\">Beschreibung: {{projekt.beschreibung}}!</w:t></w:r></w:p>" + ABSCHNITT);
+            BerichtsDaten daten = Gruppe();
+            daten.Varianten[0].Projekt = new ProjektModel { m_szBeschreibung = "Zeile eins\r\nZeile zwei\nZeile drei" };
+            string ziel = Ziel("zeilen.docx");
+            Fuelle(v, daten, Konfig(), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            Run r = Assert.Single(doc.MainDocumentPart.Document.Body.Elements<Paragraph>().First().Elements<Run>());
+            Assert.NotNull(r.RunProperties?.Bold);
+            Assert.Equal(2, r.Elements<Break>().Count());
+            Assert.Equal(new[] { "Beschreibung: Zeile eins", "Zeile zwei", "Zeile drei!" }, r.Elements<Text>().Select(t => t.Text));
+        }
+
+        /// <summary>
+        /// Konzept 6.7: <c>w:updateFields</c> nur bei TOC, PAGEREF, REF, SEQ, DOCPROPERTY — auch aus
+        /// einem zerlegten Feldcode oder einem einfachen Feld, an der Schemastelle der Einstellungen;
+        /// DATE und PAGE setzen es nicht, DATE bekommt einen Hinweis.
+        /// </summary>
+        [Fact]
+        public void UpdateFields_nur_bei_Feldern_die_Word_nicht_selbst_aktualisiert()
+        {
+            byte[] ohne = Vorlage(main =>
+                "<w:p><w:r><w:t xml:space=\"preserve\">{{bericht.titel}} </w:t></w:r>" +
+                "<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> DATE \\@ \"dd.MM.yyyy\" </w:instrText></w:r>" +
+                "<w:r><w:fldChar w:fldCharType=\"separate\"/></w:r><w:r><w:t>01.01.2026</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r>" +
+                "<w:fldSimple w:instr=\" PAGE \"><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p>" + ABSCHNITT);
+            string ziel = Ziel("ohne_felder.docx");
+            Fuellergebnis e = Fuelle(ohne, Gruppe(), Konfig(), ziel);
+            Assert.Contains(TX.F(false, TX.DATUMSFELD, "DATE"), e.Hinweise);
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false))
+                Assert.Null(doc.MainDocumentPart.DocumentSettingsPart?.Settings?.GetFirstChild<UpdateFieldsOnOpen>());
+
+            byte[] mit = Vorlage(main =>
+            {
+                main.AddNewPart<DocumentSettingsPart>().Settings = new Settings("<w:settings " + NS + "><w:displayBackgroundShape/>" +
+                    "<w:evenAndOddHeaders w:val=\"false\"/><w:compat><w:compatSetting w:name=\"compatibilityMode\" " +
+                    "w:uri=\"http://schemas.microsoft.com/office/word\" w:val=\"15\"/></w:compat></w:settings>");
+                return "<w:p><w:r><w:t xml:space=\"preserve\">Abbildung </w:t></w:r>" +
+                       "<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r><w:r><w:instrText xml:space=\"preserve\"> SE</w:instrText></w:r>" +
+                       "<w:r><w:instrText xml:space=\"preserve\">Q Abbildung \\* ARABIC </w:instrText></w:r><w:r><w:fldChar w:fldCharType=\"separate\"/></w:r>" +
+                       "<w:r><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType=\"end\"/></w:r></w:p>" + ABSCHNITT;
+            });
+            ziel = Ziel("mit_feldern.docx");
+            Fuelle(mit, Gruppe(), Konfig(), ziel);
+            Assert.Empty(Validierungsfehler(ziel));
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false))
+                Assert.NotNull(doc.MainDocumentPart.DocumentSettingsPart.Settings.GetFirstChild<UpdateFieldsOnOpen>());
+        }
+
+        /// <summary>
+        /// Liste im Inhaltssteuerelement: als Block je Eintrag ein Absatz im Format des ersten
+        /// Absatzes, im Satz ein Fehler — das Steuerelement bleibt stehen.
+        /// </summary>
+        [Fact]
+        public void Liste_im_Block_Steuerelement_wird_zu_Absaetzen_im_Satz_Steuerelement_ist_sie_ein_Fehler()
+        {
+            byte[] v = Vorlage(main =>
+                "<w:sdt><w:sdtPr><w:tag w:val=\"bericht.warnungen\"/><w:id w:val=\"21\"/></w:sdtPr><w:sdtContent>" +
+                "<w:p><w:pPr><w:ind w:left=\"720\"/></w:pPr><w:r><w:t>Warnungen</w:t></w:r></w:p></w:sdtContent></w:sdt>" +
+                "<w:p><w:r><w:t xml:space=\"preserve\">Im Satz: </w:t></w:r><w:sdt><w:sdtPr><w:tag w:val=\"bericht.warnungen\"/>" +
+                "<w:id w:val=\"22\"/></w:sdtPr><w:sdtContent><w:r><w:t>Warnungen</w:t></w:r></w:sdtContent></w:sdt></w:p>" + ABSCHNITT);
+            BerichtsDaten daten = Gruppe();
+            daten.Warnungen.Add("W1");
+            daten.Warnungen.Add("W2");
+            string ziel = Ziel("sdt_liste.docx");
+            Fuellergebnis e = Fuelle(v, daten, Konfig(), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            Body body = doc.MainDocumentPart.Document.Body;
+            List<Paragraph> absaetze = body.Elements<Paragraph>().ToList();
+            Assert.Equal(new[] { "W1", "W2", "Im Satz: Warnungen" }, absaetze.Select(p => p.InnerText));
+            Assert.Equal("720", absaetze[0].ParagraphProperties?.Indentation?.Left?.Value);
+            Assert.Single(body.Descendants<SdtRun>());
+            Assert.Equal(Fuellbefundart.FalscheStelle, Assert.Single(e.Unbekannte).Art);
+            Assert.Contains(e.Fehler, f => f.StartsWith("{{bericht.warnungen}}: ", StringComparison.Ordinal));
+            Assert.Equal(1, e.Ersetzt);
+        }
+
+        /// <summary>
+        /// Konzept 5.3: Liefert ein Kapitelplatzhalter nichts (alle Häkchen ab), entfällt ein
+        /// unmittelbar davor stehender Absatz im Format „EPOS Kapitelkopf“ mit — keine verwaiste
+        /// Überschrift. Mit Inhalt bleibt er.
+        /// </summary>
+        [Fact]
+        public void Kapitel_ohne_Inhalt_entfaellt_mit_seinem_Kapitelkopf()
+        {
+            Func<MainDocumentPart, string> bau = main =>
+            {
+                main.AddNewPart<StyleDefinitionsPart>().Styles = new Styles(
+                    new Style(new StyleName { Val = WordVorlagenstile.NAME_KAPITELKOPF })
+                    { Type = StyleValues.Paragraph, StyleId = "EPOSKapitelkopf", CustomStyle = true });
+                return "<w:p><w:r><w:t>Deckblatt</w:t></w:r></w:p>" +
+                       "<w:p><w:pPr><w:pStyle w:val=\"EPOSKapitelkopf\"/></w:pPr><w:r><w:t>Kapitel</w:t></w:r></w:p>" +
+                       "<w:p><w:r><w:t>{{bericht.inhalt}}</w:t></w:r></w:p>" + ABSCHNITT;
+            };
+
+            string ohne = Ziel("ohne_kapitel.docx");
+            Fuellergebnis e = Fuelle(Vorlage(bau), Gruppe(), Konfig(), ohne);
+            Assert.Empty(Validierungsfehler(ohne));
+            Assert.Equal(1, e.Leere[WordVorlagenfueller.SAMMELANKER]);
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(ohne, false))
+                Assert.Equal(new[] { "Deckblatt" }, doc.MainDocumentPart.Document.Body.Elements<Paragraph>().Select(p => p.InnerText));
+
+            string mit = Ziel("mit_kapitel.docx");
+            Fuelle(Vorlage(bau), Gruppe(), Konfig(BerichtsKonfiguration.B_ANHANG), mit);
+            Assert.Empty(Validierungsfehler(mit));
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(mit, false))
+            {
+                List<string> texte = doc.MainDocumentPart.Document.Body.Elements<Paragraph>().Select(p => p.InnerText).ToList();
+                Assert.Equal(new[] { "Deckblatt", "Kapitel", "Anhang" }, texte.Take(3));
+            }
+        }
+
+        // =====================================================================
         //  Normalisierer und Texte
         // =====================================================================
 
