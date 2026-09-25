@@ -2947,7 +2947,8 @@ ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 142. Die Fragen E23‑Q
 (E20), die Betriebskosten nicht je kWh — fester Jahresbetrag, Prozentbemessungen, je kW (E23); „je kWh elektrisch“ und
 „je kWh thermisch“ sind im Betriebsraster der Wärmepumpe gesperrt, eine Bestandszeile rechnet weiter und trägt den
 Vermerk „Altbestand“. Offen beim Anwender bleiben E23‑Q6 und E23‑Q7 (die Prozent- und Leistungsbemessungen an der
-Wärmepumpe lassen, gebaut a, oder sperren).
+Wärmepumpe lassen, gebaut a, oder sperren). **Entscheide 25.09.2026:** E23‑Q6 und E23‑Q7 nach Empfehlung a (lassen),
+siehe Register R‑E23.
 
 ### 8.47 Berichtigungen im gültigen Stand (#510)
 
