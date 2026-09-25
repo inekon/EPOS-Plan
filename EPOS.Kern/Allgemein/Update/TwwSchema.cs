@@ -144,6 +144,28 @@ namespace WindowsFormsApplication1
         /// <summary><c>Herkunftsart</c>: erfundener Wert (Testkatalog).</summary>
         public const string HERKUNFT_FIKTIV = "FIKTIV";
 
+        /// <summary>
+        /// <b>Nutzungsartengruppe eines Vorgabesatzes der Zapfkategorien</b> — Wohnnutzung
+        /// (Steuerspalte <c>Gruppe</c> des freien Paketteils, keine Spalte der Tabelle; Konzept 4.4,
+        /// N12 (p), Stufe Z5).
+        /// </summary>
+        public const string KATEGORIENGRUPPE_WOHNEN = "Wohnen";
+
+        /// <summary>Nutzungsartengruppe eines Vorgabesatzes: Nichtwohnen (zwei Kategorien nach dem OpenDHW-Muster).</summary>
+        public const string KATEGORIENGRUPPE_NICHTWOHNEN = "Nichtwohnen";
+
+        /// <summary>
+        /// <b>Die EINE Regel, welcher Vorgabesatz an eine Nutzungsart bindet</b> (Auslieferungsvorlage,
+        /// Testkatalog, Kern): Die Kalenderart <c>Wohnen</c> (1) heißt Wohnnutzung, jede andere
+        /// (Arbeitstage, Schulferien, Betrieb, Auslastungsgang) Nichtwohnen. Die Bezugsart trennt
+        /// nicht: Personen tragen Wohn- wie Nichtwohnnutzungen.
+        /// </summary>
+        public static string Kategoriengruppe(long kalenderart)
+            => kalenderart == 1 ? KATEGORIENGRUPPE_WOHNEN : KATEGORIENGRUPPE_NICHTWOHNEN;
+
+        /// <summary>Die Steuerspalte des Paketteils, die die Gruppe eines Vorgabesatzes nennt (keine Tabellenspalte).</summary>
+        public const string STEUERSPALTE_GRUPPE = "Gruppe";
+
         /// <summary><c>Tab_TwwProjekt.Weg</c>: der Brauchwasserkanal rechnet wie im Bestand (Vorgabe).</summary>
         public const string WEG_BESTAND = "BESTAND";
 

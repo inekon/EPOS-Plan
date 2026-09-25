@@ -538,6 +538,10 @@ namespace WindowsFormsApplication1
             string trenner = kopfzeile.IndexOf(';') >= 0 ? ";" : ",";
 
             HashSet<string> bekannt = new HashSet<string>(DataRepository.SpaltenVonTabelle(tabelle), StringComparer.OrdinalIgnoreCase);
+            // Die Steuerspalte „Gruppe" des freien Paketteils (Vorgabesatz je Nutzungsartengruppe,
+            // Stufe Z5) ist keine Spalte der Tabelle: Ein Katalogimport derselben Datei liest sie mit,
+            // übernimmt sie aber nicht — die Kategorien eines Imports hängen an ihrer Nutzungsart.
+            if (tabelle == TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM) bekannt.Add(TwwSchema.STEUERSPALTE_GRUPPE);
             // NReco setzt KEINE Vorgabe fuer BufferSize (ohne sie teilt der Leser durch null); die
             // Groesse begrenzt die Laenge EINES Satzes - 64 kB wie der Ganglinienleser.
             var csv = new CsvReader(new StringReader(text), trenner) { BufferSize = 65536, TrimFields = true };

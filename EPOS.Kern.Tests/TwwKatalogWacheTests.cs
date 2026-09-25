@@ -887,15 +887,36 @@ namespace EPOS.Kern.Tests
         //  Testdatenbank = freier Paketteil (läuft überall, ohne Originale)
         // =============================================================================
 
-        /// <summary>Die Spalten einer Paketzeile, die die Testdatenbank anders führt (Kapitel 6 (c)) oder abbildet.</summary>
-        private static readonly string[] NICHT_VERGLICHEN = { "ID", "ID_Bedarfstag", "Status", "ReadOnly" };
+        /// <summary>
+        /// Die Spalten einer Paketzeile, die die Testdatenbank anders führt (Kapitel 6 (c)) oder
+        /// abbildet; <c>Gruppe</c> ist die Steuerspalte des Paketteils und keine Spalte der Tabelle.
+        /// </summary>
+        private static readonly string[] NICHT_VERGLICHEN =
+        {
+            "ID", "ID_Bedarfstag", "Status", "ReadOnly", TwwSchema.STEUERSPALTE_GRUPPE
+        };
+
+        /// <summary>
+        /// <b>Der Vorgabesatz einer Gruppe</b> aus den Kategoriezeilen des Paketteils (Stufe Z5):
+        /// die Zeilen mit dieser Gruppe in ihrer Reihenfolge, sonst die ohne Gruppe (Rückfall eines
+        /// Paketteils ohne Steuerspalte) — dieselbe Regel wie <c>TwwKataloge.Vorgabesatz</c> der
+        /// Auslieferungsvorlage und wie das Einspielskript.
+        /// </summary>
+        private static List<Dictionary<string, string>> Vorgabesatz(List<Dictionary<string, string>> zeilen, string gruppe)
+        {
+            static string G(Dictionary<string, string> z)
+                => z.TryGetValue(TwwSchema.STEUERSPALTE_GRUPPE, out string g) && g.Length > 0 ? g : null;
+            var satz = zeilen.Where(z => string.Equals(G(z), gruppe, StringComparison.Ordinal)).ToList();
+            return satz.Count > 0 ? satz : zeilen.Where(z => G(z) == null).ToList();
+        }
 
         /// <summary>
         /// <b>Die freien Zeilen der Testdatenbank gleichen dem Paketteil</b>
         /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>, dieselben Dateien, die die Auslieferungsvorlage
         /// einspielt), Wert für Wert und in der Anzahl: jeder Parameter und jeder Bedarfstag (samt
         /// Ereignissen) der Dateien steht mit Herkunftsart <c>FREI</c> und der Katalogversion des
-        /// Testkatalogs da, jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien, und keine
+        /// Testkatalogs da, jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien
+        /// <b>ihrer Gruppe</b> (Wohnen oder Nichtwohnen, Stufe Z5), und keine
         /// weitere Zeile trägt <c>FREI</c>. Status und ReadOnly folgen der Regel der Testdatenbank
         /// (<c>EIGEN</c>, 0). Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
         /// </summary>
@@ -996,14 +1017,18 @@ namespace EPOS.Kern.Tests
                 if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI statt " + soll.Count);
             }
 
-            // --- Zapfkategorien: der Vorgabesatz an jeder Nutzungsart, sonst nichts ----------------
-            List<Dictionary<string, string>> satz = Paketteil(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
-            Assert.NotEmpty(satz);
-            List<Dictionary<string, object>> arten = Zeilen(c, "SELECT \"ID\", \"Bezeichner\" FROM \"" +
+            // --- Zapfkategorien: der Vorgabesatz IHRER GRUPPE an jeder Nutzungsart, sonst nichts ---
+            List<Dictionary<string, string>> zeilen = Paketteil(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
+            Assert.NotEmpty(zeilen);
+            List<Dictionary<string, object>> arten = Zeilen(c, "SELECT \"ID\", \"Bezeichner\", \"Kalenderart\" FROM \"" +
                                                                 TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" ORDER BY \"ID\"", null);
             Assert.NotEmpty(arten);
+            long erwartet = 0;
             foreach (Dictionary<string, object> a in arten)
             {
+                List<Dictionary<string, string>> satz = Vorgabesatz(zeilen,
+                    TwwSchema.Kategoriengruppe(Convert.ToInt64(a["Kalenderart"], CultureInfo.InvariantCulture)));
+                erwartet += satz.Count;
                 List<Dictionary<string, object>> k = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
                                                                "\" WHERE \"ID_Nutzungsart\" = $w ORDER BY \"Reihenfolge\", \"ID\"",
                                                                Convert.ToString(a["ID"], CultureInfo.InvariantCulture));
@@ -1012,8 +1037,8 @@ namespace EPOS.Kern.Tests
                 for (int i = 0; i < satz.Count; i++) Vergleichen(art + " Kategorie " + (i + 1), satz[i], k[i], funde);
             }
             long alle = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + "\"", null);
-            if (alle != (long)arten.Count * satz.Count)
-                funde.Add(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ": " + alle + " Zeile(n) statt " + arten.Count * satz.Count);
+            if (alle != erwartet)
+                funde.Add(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ": " + alle + " Zeile(n) statt " + erwartet);
             return funde;
         }
 

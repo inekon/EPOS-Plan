@@ -118,9 +118,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Auf der Repo-Testdatenbank ist der Vorgabesatz genau der Paketteil
-        /// (<c>Referenzlaeufe/Katalogpaket_frei/Tab_TwwZapfkategorie_STAMM.csv</c>): Namen, Werte und
-        /// Reihenfolge wie die Datei, Herkunftsart <c>FREI</c>. Ohne Testdatenbank schweigt der Fall.
+        /// Auf der Repo-Testdatenbank ist der Vorgabesatz <b>je Gruppe</b> genau der Satz des
+        /// Paketteils (<c>Referenzlaeufe/Katalogpaket_frei/Tab_TwwZapfkategorie_STAMM.csv</c>,
+        /// Steuerspalte <c>Gruppe</c>): Namen, Werte und Reihenfolge wie die Datei, Herkunftsart
+        /// <c>FREI</c> \u2014 gefragt mit einer Nutzungsart der Gruppe (Wohnen: vier Kategorien,
+        /// Nichtwohnen: zwei nach dem OpenDHW-Muster, Stufe Z5). Ohne Testdatenbank schweigt der Fall.
         /// </summary>
         [Fact]
         public void Der_Vorgabesatz_der_Testdatenbank_ist_der_Paketteil()
@@ -130,22 +132,34 @@ namespace EPOS.Kern.Tests
             string[] zeilen = File.ReadAllLines(Path.Combine(Wurzel(), "Referenzlaeufe", "Katalogpaket_frei", "Tab_TwwZapfkategorie_STAMM.csv"))
                                   .Where(z => z.Trim().Length > 0).ToArray();
             string[] kopf = zeilen[0].TrimStart('\uFEFF').Split(';');
-            List<Dictionary<string, string>> soll = zeilen.Skip(1)
+            List<Dictionary<string, string>> alle = zeilen.Skip(1)
                 .Select(z => kopf.Zip(z.Split(';'), (k, w) => (k, w)).ToDictionary(p => p.k, p => p.w)).ToList();
-            Assert.NotEmpty(soll);
+            Assert.NotEmpty(alle);
 
-            IReadOnlyList<Zapfkategorie> v = TwwNutzungsartCtrl.KategorienVorgabe();
-            Assert.Equal(soll.Count, v.Count);
-            for (int i = 0; i < soll.Count; i++)
+            foreach (string gruppe in new[] { TwwSchema.KATEGORIENGRUPPE_WOHNEN, TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN })
             {
-                Assert.Equal(soll[i]["Kategorie"], v[i].Name);
-                Assert.Equal(Zahl(soll[i]["Volumenstrom_l_min"]), v[i].VolumenstromLJeMin);
-                Assert.Equal(Zahl(soll[i]["Sigma"]), v[i].StreuungLJeMin);
-                Assert.Equal(Zahl(soll[i]["Anteil"]), v[i].Anteil);
-                Assert.Equal((int)Zahl(soll[i]["Dauer_min"]), v[i].DauerMin);
-                Assert.Equal(soll[i]["Kappung_l_min"].Length == 0 ? (double?)null : Zahl(soll[i]["Kappung_l_min"]), v[i].KappungLJeMin);
-                Assert.Equal(Herkunftsart.Frei, v[i].Herkunft.Art);
-                Assert.Equal(soll[i]["Quelle"], v[i].Herkunft.Quelle);
+                List<Dictionary<string, string>> soll = alle.Where(z => z[TwwSchema.STEUERSPALTE_GRUPPE] == gruppe).ToList();
+                Assert.NotEmpty(soll);
+                // Eine Nutzungsart dieser Gruppe aus der Testdatenbank (Kalenderart entscheidet).
+                DataTable dt = DataRepository.GetDataTable("SELECT ID, Kalenderart FROM " +
+                                                           TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " ORDER BY ID");
+                int id = dt.Rows.Cast<DataRow>()
+                    .Where(r => TwwSchema.Kategoriengruppe(Convert.ToInt64(r["Kalenderart"], CultureInfo.InvariantCulture)) == gruppe)
+                    .Select(r => Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture)).First();
+
+                IReadOnlyList<Zapfkategorie> v = TwwNutzungsartCtrl.KategorienVorgabe(id);
+                Assert.Equal(soll.Count, v.Count);
+                for (int i = 0; i < soll.Count; i++)
+                {
+                    Assert.Equal(soll[i]["Kategorie"], v[i].Name);
+                    Assert.Equal(Zahl(soll[i]["Volumenstrom_l_min"]), v[i].VolumenstromLJeMin);
+                    Assert.Equal(Zahl(soll[i]["Sigma"]), v[i].StreuungLJeMin);
+                    Assert.Equal(Zahl(soll[i]["Anteil"]), v[i].Anteil);
+                    Assert.Equal((int)Zahl(soll[i]["Dauer_min"]), v[i].DauerMin);
+                    Assert.Equal(soll[i]["Kappung_l_min"].Length == 0 ? (double?)null : Zahl(soll[i]["Kappung_l_min"]), v[i].KappungLJeMin);
+                    Assert.Equal(Herkunftsart.Frei, v[i].Herkunft.Art);
+                    Assert.Equal(soll[i]["Quelle"], v[i].Herkunft.Quelle);
+                }
             }
         }
 

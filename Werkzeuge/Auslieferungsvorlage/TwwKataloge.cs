@@ -331,9 +331,15 @@ namespace Auslieferungsvorlage
         /// <see cref="KATALOGVERSION_FREI"/>) — sonst sähe der Parametersatz der Auslieferung die
         /// Parameter der Stochastik nicht. Die <c>ID</c> eines Bedarfstags ist nur Schlüssel des
         /// Pakets (die Ereignisse verweisen über <c>ID_Bedarfstag</c> darauf); die Datenbank vergibt
-        /// die echte. Die <b>Zapfkategorien</b> führen keine <c>ID_Nutzungsart</c>: Sie sind ein
-        /// Vorgabesatz, den jede Nutzungsart mit Status <c>AUSLIEFERUNG</c> ohne eigene Kategorien
-        /// bekommt.</para>
+        /// die echte. Die <b>Zapfkategorien</b> führen keine <c>ID_Nutzungsart</c>: Sie sind
+        /// Vorgabesätze, von denen jede Nutzungsart mit Status <c>AUSLIEFERUNG</c> ohne eigene
+        /// Kategorien <b>den Satz ihrer Gruppe</b> bekommt (Stufe Z5). Die Gruppe steht in der
+        /// Steuerspalte <see cref="TwwSchema.STEUERSPALTE_GRUPPE"/> — der einzigen Spalte des
+        /// Paketteils, die keine Spalte der Tabelle ist; sie wird nicht geschrieben. Welche Gruppe
+        /// eine Nutzungsart trägt, sagt <see cref="TwwSchema.Kategoriengruppe"/> (Kalenderart
+        /// „Wohnen" oder Nichtwohnen). Ein Paketteil ohne die Spalte bindet seinen einen Satz wie
+        /// bisher an jede Nutzungsart; fehlt der Satz einer Gruppe, bleiben ihre Nutzungsarten ohne
+        /// Kategorien — der Bericht meldet es, und sie rechnen nicht stochastisch.</para>
         ///
         /// <para><b>Schlüsselgleichheit.</b> Führt das Katalogpaket dieselbe Zeile (Parameter:
         /// Schlüssel und Katalogversion; Bedarfstag: Bezeichner und Katalogversion), gilt seine, und
@@ -446,33 +452,55 @@ namespace Auslieferungsvorlage
                         ereignisse++;
                     }
 
-                    // --- Zapfkategorien: der Vorgabesatz an jeder Nutzungsart ohne eigene --------
+                    // --- Zapfkategorien: der Vorgabesatz SEINER GRUPPE an jeder Nutzungsart ohne eigene --
                     List<Dictionary<string, object>> k = zeilen[TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM];
-                    var arten = new List<long>();
+                    var arten = new List<(long Id, string Gruppe)>();
                     long eigene = 0;
                     if (mitNutzungsarten && k.Count > 0)
                     {
-                        DataTable dt = v.Lese("SELECT ID FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE Status = ? AND ID NOT IN " +
+                        DataTable dt = v.Lese("SELECT ID, Kalenderart FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
+                                              " WHERE Status = ? AND ID NOT IN " +
                                               "(SELECT ID_Nutzungsart FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ") ORDER BY ID",
                                               new DbParam("?", TwwSchema.STATUS_AUSLIEFERUNG));
-                        foreach (DataRow r in dt.Rows) arten.Add(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture));
+                        foreach (DataRow r in dt.Rows)
+                            arten.Add((Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture),
+                                       TwwSchema.Kategoriengruppe(Convert.ToInt64(r["Kalenderart"], CultureInfo.InvariantCulture))));
                         eigene = Convert.ToInt64(v.Skalar("SELECT COUNT(DISTINCT ID_Nutzungsart) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM),
                                                  CultureInfo.InvariantCulture);
                     }
-                    foreach (long art in arten)
-                        foreach (Dictionary<string, object> z in k)
+                    var ohneSatz = new List<string>();
+                    var jeGruppe = new Dictionary<string, int>(StringComparer.Ordinal);
+                    foreach ((long art, string gruppe) in arten)
+                    {
+                        List<Dictionary<string, object>> satz = Vorgabesatz(k, gruppe);
+                        if (satz.Count == 0)
+                        {
+                            if (!ohneSatz.Contains(gruppe)) ohneSatz.Add(gruppe);
+                            continue;
+                        }
+                        jeGruppe[gruppe] = jeGruppe.TryGetValue(gruppe, out int n) ? n + 1 : 1;
+                        foreach (Dictionary<string, object> z in satz)
                             Einfuegen(v, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
                                       new Dictionary<string, object>(z, StringComparer.Ordinal) { ["ID_Nutzungsart"] = art }, null);
+                    }
 
                     v.Commit();
 
                     _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv  ->  " + parameter + " von " + p.Count + " Zeile(n)");
                     _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv  ->  " + tage + " von " + b.Count + " Zeile(n)");
                     _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + ".csv  ->  " + ereignisse + " von " + e.Count + " Zeile(n)");
-                    _bericht.Zeile("Zapfkategorien (Vorgabesatz, " + k.Count + " Zeile(n)): an " + arten.Count +
+                    string gruppen = string.Join(", ", jeGruppe.OrderBy(g => g.Key, StringComparer.Ordinal)
+                                                               .Select(g => g.Value + " x " + g.Key +
+                                                                            " (" + Vorgabesatz(k, g.Key).Count + " Kategorien)"));
+                    _bericht.Zeile("Zapfkategorien (Vorgabesaetze, " + k.Count + " Zeile(n) in " +
+                                   Gruppen(k).Count + " Gruppe(n)): an " + jeGruppe.Sum(g => g.Value) +
                                    " Nutzungsart(en) mit Status AUSLIEFERUNG ohne eigene Kategorien gebunden" +
+                                   (gruppen.Length > 0 ? " — " + gruppen : "") +
                                    (eigene > 0 ? "; " + eigene + " Nutzungsart(en) fuehren eigene Kategorien des Katalogs" : "") +
                                    (arten.Count == 0 ? " — der Katalog fuehrt keine solche Nutzungsart" : ""));
+                    foreach (string g in ohneSatz)
+                        _bericht.Zeile("MELDUNG Zapfkategorien: der Paketteil fuehrt keinen Vorgabesatz der Gruppe \"" + g +
+                                       "\" — die Nutzungsarten dieser Gruppe bleiben ohne Kategorien und rechnen nicht stochastisch");
                     foreach (string m in meldungen) _bericht.Zeile("MELDUNG " + m);
                     return true;
                 }
@@ -498,8 +526,9 @@ namespace Auslieferungsvorlage
             List<List<string>> roh = CsvLesen(File.ReadAllText(datei, Encoding.UTF8));
             if (roh.Count < 2) throw new InvalidDataException(name + ": keine Datenzeile.");
             List<string> kopf = roh[0].Select(s => s.Trim()).ToList();
+            bool mitGruppe = tabelle == TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM;
             foreach (string s in kopf)
-                if (!typen.ContainsKey(s))
+                if (!typen.ContainsKey(s) && !(mitGruppe && s == TwwSchema.STEUERSPALTE_GRUPPE))
                     throw new InvalidDataException(name + ": die Spalte \"" + s + "\" gibt es in " + tabelle + " nicht.");
             if (kopf.Contains("Katalogversion"))
                 throw new InvalidDataException(name + ": der Paketteil fuehrt keine Katalogversion — seine Zeilen treten der " +
@@ -520,7 +549,10 @@ namespace Auslieferungsvorlage
                 if (z.Count != kopf.Count)
                     throw new InvalidDataException(ort + ": " + z.Count + " Felder, die Kopfzeile nennt " + kopf.Count + ".");
                 var w = new Dictionary<string, object>(StringComparer.Ordinal);
-                for (int c = 0; c < kopf.Count; c++) w[kopf[c]] = Wert(z[c], typen[kopf[c]], ort + ", Spalte " + kopf[c]);
+                for (int c = 0; c < kopf.Count; c++)
+                    w[kopf[c]] = kopf[c] == TwwSchema.STEUERSPALTE_GRUPPE && !typen.ContainsKey(kopf[c])
+                        ? Gruppe(z[c], ort)
+                        : Wert(z[c], typen[kopf[c]], ort + ", Spalte " + kopf[c]);
                 if (kopfzeile)
                 {
                     if (!string.Equals(Convert.ToString(w["Status"]), TwwSchema.STATUS_AUSLIEFERUNG, StringComparison.Ordinal))
@@ -563,9 +595,46 @@ namespace Auslieferungsvorlage
         /// Fügt eine Zeile des Paketteils ein — ohne die Paket-<c>ID</c>, mit der Katalogversion
         /// <paramref name="version"/> (wo die Tabelle eine führt); liefert die neue ID.
         /// </summary>
+        /// <summary>
+        /// <b>Der Vorgabesatz einer Gruppe</b> aus den Kategoriezeilen des Paketteils: die Zeilen mit
+        /// dieser Gruppe in ihrer Reihenfolge; führt der Paketteil keine (etwa ein älteres Paket ohne
+        /// Steuerspalte), gelten die Zeilen ohne Gruppe für jede Nutzungsart.
+        /// </summary>
+        private static List<Dictionary<string, object>> Vorgabesatz(List<Dictionary<string, object>> zeilen, string gruppe)
+        {
+            var satz = zeilen.Where(z => Gruppe(z) == gruppe).ToList();
+            return satz.Count > 0 ? satz : zeilen.Where(z => Gruppe(z) == null).ToList();
+        }
+
+        /// <summary>Die Gruppen, die die Kategoriezeilen des Paketteils führen (<c>null</c> = ohne Gruppe).</summary>
+        private static List<string> Gruppen(List<Dictionary<string, object>> zeilen)
+            => zeilen.Select(Gruppe).Distinct(StringComparer.Ordinal).ToList();
+
+        /// <summary>Die Gruppe einer gelesenen Kategoriezeile (<c>null</c>, wenn sie keine trägt).</summary>
+        private static string Gruppe(Dictionary<string, object> zeile)
+            => zeile.TryGetValue(TwwSchema.STEUERSPALTE_GRUPPE, out object g) && g != null
+                ? Convert.ToString(g, CultureInfo.InvariantCulture)
+                : null;
+
+        /// <summary>
+        /// Die Gruppe einer Paketzeile der Zapfkategorien (Steuerspalte <c>Gruppe</c>): „Wohnen",
+        /// „Nichtwohnen" oder leer (dann bindet der Satz an jede Nutzungsart — Rückfall eines
+        /// Paketteils ohne Gruppen). Jeder andere Text ist ein Fehler.
+        /// </summary>
+        private static object Gruppe(string roh, string ort)
+        {
+            string g = (roh ?? "").Trim();
+            if (g.Length == 0) return null;
+            if (g != TwwSchema.KATEGORIENGRUPPE_WOHNEN && g != TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN)
+                throw new InvalidDataException(ort + ": Gruppe \"" + g + "\" — erlaubt sind \"" +
+                                               TwwSchema.KATEGORIENGRUPPE_WOHNEN + "\", \"" +
+                                               TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN + "\" und leer.");
+            return g;
+        }
+
         private static long Einfuegen(DbVorgang v, string tabelle, Dictionary<string, object> zeile, string version)
         {
-            var spalten = zeile.Keys.Where(s => s != "ID").ToList();
+            var spalten = zeile.Keys.Where(s => s != "ID" && s != TwwSchema.STEUERSPALTE_GRUPPE).ToList();
             var werte = spalten.Select(s => new DbParam("?", zeile[s])).ToList();
             if (version != null)
             {

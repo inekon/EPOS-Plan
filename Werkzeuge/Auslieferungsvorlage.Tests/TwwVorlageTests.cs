@@ -117,7 +117,7 @@ namespace Auslieferungsvorlage.Tests
             // Die fuenf Zeilen des Pakets, dazu der freie Paketteil (dreizehn Parameter, ein Bedarfstag); der
             // Vorgabesatz der Kategorien tritt zurueck — die Nutzungsart 60 fuehrt eigene.
             Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 19", e.Ausgabe);
-            Assert.Contains("Zapfkategorien (Vorgabesatz, 4 Zeile(n)): an 0 Nutzungsart(en)", e.Ausgabe);
+            Assert.Contains("Zapfkategorien (Vorgabesaetze, 6 Zeile(n) in 2 Gruppe(n)): an 0 Nutzungsart(en)", e.Ausgabe);
 
             Lesen(ziel, () =>
             {
@@ -267,10 +267,12 @@ namespace Auslieferungsvorlage.Tests
         }
 
         /// <summary>
-        /// Die Kategorien-Datei des Paketteils ist ein Vorgabesatz: Jede Nutzungsart mit Status
-        /// AUSLIEFERUNG ohne eigene Kategorien bekommt ihn — Werte wie die Datei, Herkunftsart FREI,
-        /// ReadOnly 1 —, eine Nutzungsart mit eigenen Kategorien behaelt allein ihre. Die Parameter
-        /// treten der Katalogversion der Quelle bei.
+        /// Die Kategorien-Datei des Paketteils fuehrt einen Vorgabesatz JE GRUPPE (Steuerspalte
+        /// Gruppe, Stufe Z5): Jede Nutzungsart mit Status AUSLIEFERUNG ohne eigene Kategorien bekommt
+        /// den Satz ihrer Gruppe — Wohnen (Kalenderart 1) den Wohnsatz, Nichtwohnen (Kalenderart 2
+        /// bis 5) den Nichtwohnsatz, Werte wie die Datei, Herkunftsart FREI, ReadOnly 1 —, eine
+        /// Nutzungsart mit eigenen Kategorien behaelt allein ihre. Die Parameter treten der
+        /// Katalogversion der Quelle bei.
         /// </summary>
         [Fact]
         public void T10_Die_Zapfkategorien_des_Paketteils_binden_an_Nutzungsarten_ohne_eigene()
@@ -285,6 +287,7 @@ namespace Auslieferungsvorlage.Tests
             {
                 long satz = SatzAnlegen("Probe Satz", TwwSchema.STATUS_AUSLIEFERUNG);
                 NutzungAnlegen("Ohne Kategorien", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1);
+                NutzungAnlegen("Nichtwohnen ohne Kategorien", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1, kalenderart: 2);
                 long mit = NutzungAnlegen("Mit Kategorie", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1);
                 KategorieAnlegen(mit, "Eigene", TwwSchema.STATUS_AUSLIEFERUNG, TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
                 Assert.True(DataRepository.ExecuteSQL(
@@ -296,8 +299,9 @@ namespace Auslieferungsvorlage.Tests
             Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Katalogversion der Paketteil-Zeilen: " + VERSION + " (die des Katalogs)", e.Ausgabe);
-            Assert.Contains("Zapfkategorien (Vorgabesatz, 4 Zeile(n)): an 1 Nutzungsart(en) mit Status AUSLIEFERUNG ohne eigene " +
-                            "Kategorien gebunden; 1 Nutzungsart(en) fuehren eigene Kategorien des Katalogs", e.Ausgabe);
+            Assert.Contains("Zapfkategorien (Vorgabesaetze, 6 Zeile(n) in 2 Gruppe(n)): an 2 Nutzungsart(en) mit Status " +
+                            "AUSLIEFERUNG ohne eigene Kategorien gebunden — 1 x Nichtwohnen (2 Kategorien), " +
+                            "1 x Wohnen (4 Kategorien); 1 Nutzungsart(en) fuehren eigene Kategorien des Katalogs", e.Ausgabe);
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
 
             Lesen(ziel, () =>
@@ -309,11 +313,13 @@ namespace Auslieferungsvorlage.Tests
                         new DbParam("?", nutzung)).Rows.Cast<DataRow>()
                     .Select(r => string.Join("|", r.ItemArray.Select(v => v is bool w ? (w ? "1" : "0")
                                                                              : Convert.ToString(v, CultureInfo.InvariantCulture)))));
-                string soll = string.Join("\n", Paketteil(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM).Select(z => string.Join("|",
+                string Soll(string gruppe) => string.Join("\n", Paketteil(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM)
+                    .Where(z => z[TwwSchema.STEUERSPALTE_GRUPPE] == gruppe).Select(z => string.Join("|",
                     new[] { "Kategorie", "Reihenfolge", "Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min",
                             "Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "ReadOnly" }
                         .Select(s => s == "ReadOnly" ? "1" : Zahltext(z[s])))));
-                Assert.Equal(soll, Kategorien("Ohne Kategorien"));
+                Assert.Equal(Soll(TwwSchema.KATEGORIENGRUPPE_WOHNEN), Kategorien("Ohne Kategorien"));
+                Assert.Equal(Soll(TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN), Kategorien("Nichtwohnen ohne Kategorien"));
                 Assert.StartsWith("Eigene|", Kategorien("Mit Kategorie"));
                 Assert.DoesNotContain("\n", Kategorien("Mit Kategorie"));
                 Assert.Equal(Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count, Convert.ToInt32(DataRepository.ExecuteScalar(
@@ -601,7 +607,7 @@ namespace Auslieferungsvorlage.Tests
             return id;
         }
 
-        private static long NutzungAnlegen(string bezeichner, string status, long satz, int readOnly)
+        private static long NutzungAnlegen(string bezeichner, string status, long satz, int readOnly, int kalenderart = 1)
         {
             var spalten = new List<string>
             {
@@ -614,7 +620,7 @@ namespace Auslieferungsvorlage.Tests
             {
                 bezeichner, VERSION, 1, 1.0, 2.0, 3.0,
                 QUELLE, VERSION, "EIGENKONSTRUKTION", 50.0, 10.0,
-                1, 1, QUELLE, VERSION, "EIGENKONSTRUKTION",
+                1, kalenderart, QUELLE, VERSION, "EIGENKONSTRUKTION",
                 QUELLE, VERSION, "EIGENKONSTRUKTION", satz, status, readOnly
             };
             for (int m = 1; m <= 12; m++) { spalten.Add("Monat_" + m); werte.Add(1.0); }

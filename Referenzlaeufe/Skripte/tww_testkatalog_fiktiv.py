@@ -50,8 +50,10 @@ LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vor
 Skript liest dieselben Dateien und schreibt ihre Zeilen in die Testdatenbank - Herkunftsart
 'FREI' wie im Paket, aber nach der Regel der Testdatenbank (Kapitel 6 (c)) Status 'EIGEN',
 ReadOnly 0 und die Katalogversion des Testkatalogs (der Paketteil fuehrt keine eigene). Die
-Kategorien des Paketteils sind ein Vorgabesatz ohne Nutzungsart: Jede Nutzungsart dieses Katalogs
-bekommt ihn.
+Kategorien des Paketteils sind VORGABESAETZE ohne Nutzungsart, je Nutzungsartengruppe einer
+(Steuerspalte "Gruppe": Wohnen, Nichtwohnen - Stufe Z5): Jede Nutzungsart dieses Katalogs bekommt
+den Satz ihrer Gruppe, und die Gruppe folgt der Kalenderart (1 Wohnen = "Wohnen", 2 bis 5 =
+"Nichtwohnen"; dieselbe Regel wie TwwSchema.Kategoriengruppe und die Auslieferungsvorlage).
 
 Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog
 (fiktiv)", Katalogversion "TEST-1", kein Beleg; die abgeleiteten und die freien Zeilen ebenso
@@ -339,6 +341,21 @@ PAKETTEIL_TABELLEN = (T_BEDARFSTAG, T_EREIGNIS, T_PARAMETER, TABELLE_KATEGORIEN)
 HERKUNFT_FREI = "FREI"
 STATUS_PAKET = "AUSLIEFERUNG"
 EREIGNISSPALTEN = ("Minute_Beginn", "Dauer_min", "Energie_Kwh", "Reihenfolge")
+# Die EINE Steuerspalte des Paketteils, die keine Spalte der Tabelle ist (Stufe Z5).
+SPALTE_GRUPPE = "Gruppe"
+GRUPPE_WOHNEN = "Wohnen"
+GRUPPE_NICHTWOHNEN = "Nichtwohnen"
+
+
+def gruppe(kalenderart):
+    """Die Nutzungsartengruppe einer Kalenderart - wie TwwSchema.Kategoriengruppe."""
+    return GRUPPE_WOHNEN if kalenderart == 1 else GRUPPE_NICHTWOHNEN
+
+
+def vorgabesatz(zeilen, gr):
+    """Die Kategoriezeilen der Gruppe `gr`; ohne solche die Zeilen ohne Gruppe (Rueckfall)."""
+    satz = [z for z in zeilen if (z.get(SPALTE_GRUPPE) or None) == gr]
+    return satz if satz else [z for z in zeilen if not z.get(SPALTE_GRUPPE)]
 
 
 def paketteil_lesen():
@@ -377,8 +394,15 @@ def pruefe_paketteil(teil):
     for e in teil[T_EREIGNIS]:
         assert e["ID_Bedarfstag"] in koepfe, "Ereignis ohne Bedarfstag im Paketteil"
         assert sorted(k for k in e if k not in ("ID", "ID_Bedarfstag")) == sorted(EREIGNISSPALTEN), "Ereignisspalten"
-    summe = sum(float(k["Anteil"]) for k in teil[TABELLE_KATEGORIEN])
-    assert abs(summe - 1.0) < 1e-12, f"Kategorien des Paketteils: Anteile {summe}"
+    # Je Gruppe EIN Vorgabesatz, und je Satz summieren die Anteile auf 1.
+    gruppen = {z.get(SPALTE_GRUPPE) for z in teil[TABELLE_KATEGORIEN]}
+    assert gruppen <= {None, GRUPPE_WOHNEN, GRUPPE_NICHTWOHNEN}, f"Kategorien des Paketteils: Gruppen {gruppen}"
+    for gr in sorted(g for g in gruppen if g) or [None]:
+        satz = vorgabesatz(teil[TABELLE_KATEGORIEN], gr)
+        summe = sum(float(k["Anteil"]) for k in satz)
+        assert abs(summe - 1.0) < 1e-12, f"Vorgabesatz {gr}: Anteile {summe}"
+        namen = [k["Kategorie"] for k in satz]
+        assert len(set(namen)) == len(namen), f"Vorgabesatz {gr}: Kategorie doppelt"
 
 
 KATALOGTABELLEN = [
@@ -399,7 +423,9 @@ ERWARTET = {
     "Tab_TwwZone": 0,
     "Tab_TwwWohnungstyp": 0,
     "Tab_TwwProjekt": 0,
-    TABELLE_KATEGORIEN: len(ALLE_NUTZUNGSARTEN) * len(PAKET[TABELLE_KATEGORIEN]),
+    # Je Nutzungsart der Vorgabesatz IHRER Gruppe (Stufe Z5).
+    TABELLE_KATEGORIEN: sum(len(vorgabesatz(PAKET[TABELLE_KATEGORIEN], gruppe(n["kalender"])))
+                            for n in ALLE_NUTZUNGSARTEN),
 }
 
 
@@ -592,11 +618,13 @@ def main():
                                {"Wert": wert, "Quelle": QUELLE, "Ausgabe": None, "Version": VERSION,
                                 "Herkunftsart": HERKUNFT, "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
 
-            # --- Zapfkategorien: der Vorgabesatz des Paketteils an jeder Nutzungsart ------------
-            namen = [z["Kategorie"] for z in PAKET[TABELLE_KATEGORIEN]]
-            for id_art in id_arten:
-                for z in PAKET[TABELLE_KATEGORIEN]:
-                    w = paketwerte(con, TABELLE_KATEGORIEN, z, ohne=("ID", "Kategorie"))
+            # --- Zapfkategorien: je Nutzungsart der Vorgabesatz IHRER Gruppe (Stufe Z5) ---------
+            for id_art, n in zip(id_arten, ALLE_NUTZUNGSARTEN):
+                satz = vorgabesatz(PAKET[TABELLE_KATEGORIEN], gruppe(n["kalender"]))
+                namen = [z["Kategorie"] for z in satz]
+                for z in satz:
+                    ohne_gruppe = {s: w for s, w in z.items() if s != SPALTE_GRUPPE}
+                    w = paketwerte(con, TABELLE_KATEGORIEN, ohne_gruppe, ohne=("ID", "Kategorie"))
                     w.update(testdb)
                     zaehlen(upsert(con, TABELLE_KATEGORIEN, {"ID_Nutzungsart": id_art, "Kategorie": z["Kategorie"]}, w))
                 zaehler[1] += con.execute(
