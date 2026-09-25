@@ -68,6 +68,25 @@ namespace WindowsFormsApplication1
             return item;
         }
 
+        /// <summary>
+        /// Liest die PROJEKTKOPIE eines Gebäudes (<c>Tab_Gebaeude</c>) nach ihrer Id in ein frisches
+        /// Modell — derselbe namensbasierte Leser wie für den Katalog (Namensspalte
+        /// <c>Gebaeudename</c>, die neuen Spalten NULL-erhaltend); <c>null</c>, wenn es die Zeile
+        /// nicht gibt. Der Gebäudedialog bearbeitet diesen Satz in der Betriebsart Projekt
+        /// (Stufe G3, Welle D2).
+        /// </summary>
+        public static GebaeudeModel LiesProjektkopie(int idGebaeude)
+        {
+            if (idGebaeude <= 0) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE_PROJ + "] WHERE [ID] = ?",
+                new DbParam("@id", idGebaeude));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var item = new GebaeudeModel();
+            new GebaeudeStammCtrl().FillModel(item, dt.Rows[0]);
+            return item;
+        }
+
         public bool IsReadOnly(string szBezeichner)
         {
             object v = DataRepository.ExecuteScalar(
@@ -205,56 +224,6 @@ namespace WindowsFormsApplication1
             foreach (DataRow row in dt.Rows)
                 if (row["Bezeichner"] != DBNull.Value) liste.Add(row["Bezeichner"].ToString());
             return liste;
-        }
-
-        /// <summary>
-        /// Der KATALOGFILTER der Gebaeudeverwaltung — die vier SQL-Zweige aus
-        /// <c>Form_Gebaeude.comboBox_Gebaeudeart_SelectedIndexChanged</c>:329-374 und
-        /// <c>comboBox_Baujahr_SelectedIndexChanged</c>:376-419.
-        ///
-        /// <para><b>Befund W9-B1 — die beiden Handler sind NICHT gleich.</b> Im Zweig
-        /// „Gebaeudeart gewaehlt, Baujahr Alle" filtert der Gebaeudeart-Handler NUR nach
-        /// <c>Gebaeudeart</c> (:359), der Baujahr-Handler zusaetzlich nach der Verwendung
-        /// (:392). Welche Liste erscheint, haengt also davon ab, welche Klappliste der
-        /// Anwender zuletzt angefasst hat. Das ist woertlich uebernommen (Regel F3) und
-        /// steckt in <paramref name="ausBaujahrwahl"/>; der Anwender entscheidet, ob es so
-        /// bleibt.</para>
-        /// </summary>
-        /// <param name="wohngebaeude"><c>true</c> = Wohngebaeude, <c>false</c> = Sonstige.</param>
-        /// <param name="gebaeudeart">Gewaehlte Gebaeudeart; <c>null</c> oder leer = „Alle".</param>
-        /// <param name="klassenIndex">Index der Baualtersklasse; <c>null</c> = „Alle".</param>
-        /// <param name="ausBaujahrwahl">
-        /// <c>true</c>, wenn die BAUJAHR-Klappliste die Auswahl ausgeloest hat.
-        /// </param>
-        public static string FilterAusdruck(bool wohngebaeude, string gebaeudeart,
-                                            int? klassenIndex, bool ausBaujahrwahl)
-        {
-            string option = wohngebaeude ? FILTER_WOHNGEBAEUDE : FILTER_NICHT_WOHNGEBAEUDE;
-
-            bool arteAlle = string.IsNullOrEmpty(gebaeudeart);
-            bool jahrAlle = !klassenIndex.HasValue;
-
-            if (arteAlle && jahrAlle) return option;
-            if (arteAlle)
-                return "Baualtersklasse='" + KlassenBuchstabe(klassenIndex.Value) + "' and " + option;
-            if (jahrAlle)
-                return ausBaujahrwahl
-                    ? "Gebaeudeart='" + gebaeudeart + "' and " + option   // :392
-                    : "Gebaeudeart='" + gebaeudeart + "'";                // :359  (Befund W9-B1)
-
-            return "Gebaeudeart='" + gebaeudeart + "' and Baualtersklasse='" +
-                   KlassenBuchstabe(klassenIndex.Value) + "' and " + option;
-        }
-
-        /// <summary>
-        /// Liest den gefilterten Katalog. Derselbe Weg wie <c>ReadAll(filter)</c>, nur mit
-        /// dem Ausdruck aus <see cref="FilterAusdruck"/>.
-        /// </summary>
-        public IReadOnlyList<GebaeudeModel> Filtern(bool wohngebaeude, string gebaeudeart,
-                                                    int? klassenIndex, bool ausBaujahrwahl)
-        {
-            ReadAll(FilterAusdruck(wohngebaeude, gebaeudeart, klassenIndex, ausBaujahrwahl));
-            return _internalList;
         }
 
         /// <summary>
@@ -495,9 +464,42 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ? WHERE Bezeichner = ?";
+            string sql = "UPDATE [" + TABLE + "] SET " + SET_SPALTEN + " WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        /// <summary>
+        /// Die Spalten eines Gebäudesatzes in der Reihenfolge von <see cref="BuildValueParams"/> —
+        /// die SET-Liste von <see cref="Overwrite"/> (Katalog, Namensspalte <c>Bezeichner</c>) und
+        /// von <see cref="ProjektkopieUeberschreiben"/> (Projektkopie, Namensspalte <c>Gebaeudename</c>).
+        /// </summary>
+        private const string SET_SPALTEN = "[Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ?";
+
+        /// <summary>
+        /// <b>Überschreibt die PROJEKTKOPIE eines Gebäudes</b> (<c>Tab_Gebaeude</c>, Stufe G3,
+        /// Welle D2) — die Gebäudewerte, die der Gebäudedialog in der Betriebsart Projekt bearbeitet,
+        /// mit denselben Spalten und Werten wie das Überschreiben eines Katalogsatzes
+        /// (<see cref="BuildValueParams"/>, NULL-erhaltend). Die Zeile wird GEÄNDERT, nie gelöscht
+        /// und neu angelegt: Id, Projekt, Zuordnung, Katalogverweis, Herkunft und die Zonen der Kopie
+        /// (Kaskade) bleiben. Getroffen wird genau die Zeile <paramref name="idGebaeude"/> des
+        /// Projekts <paramref name="idProjekt"/>; <c>false</c>, wenn es sie nicht gibt oder das
+        /// Schreiben scheitert. Die Veraltung des Projekts setzt der Aufrufer.
+        /// </summary>
+        public static bool ProjektkopieUeberschreiben(int idGebaeude, int idProjekt, GebaeudeModel m)
+        {
+            if (m == null || idGebaeude <= 0) return false;
+            object da = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM [" + TABLE_PROJ + "] WHERE [ID] = ? AND [ID_Projekt] = ?",
+                new DbParam("@id", idGebaeude), new DbParam("@p", idProjekt));
+            if (da == null || Convert.ToInt64(da, System.Globalization.CultureInfo.InvariantCulture) != 1) return false;
+
+            string sql = "UPDATE [" + TABLE_PROJ + "] SET " + SET_SPALTEN.Replace("[Bezeichner] = ?", "[Gebaeudename] = ?") +
+                         " WHERE [ID] = ? AND [ID_Projekt] = ?";
+            var ps = new List<DbParam>(new GebaeudeStammCtrl().BuildValueParams(m));
+            ps.Add(new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
+            ps.Add(new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
@@ -822,14 +824,15 @@ namespace WindowsFormsApplication1
         #region --- Stufe 5 der Neuordnung: die Verwaltung als Katalogliste (V16) ---
 
         /// <summary>
-        /// <b>Die Zeilen der Gebaeudeverwaltung</b> (Konzept Administrationsdialoge, V16) —
-        /// ALLE Katalogsaetze mit den fuenf Spalten aus
+        /// <b>Die Zeilen der Gebaeudekataloge</b> — der Verwaltung (Konzept
+        /// Administrationsdialoge, V16) und des Projektdialogs (Stufe G3, Welle K): ALLE
+        /// Katalogsaetze mit den fuenf Spalten aus
         /// <see cref="Katalogfilterprofil.FuerGebaeude"/>, in EINER Abfrage.
         ///
-        /// <para><b>Gefiltert wird danach, nicht hier:</b> Die vier Vorfilter der eigenen
-        /// Tabelle (Verwendung, Gebaeudeart, Baujahr, Suche) sind seit Stufe 5 Trichter und
-        /// Suche der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf
-        /// dem ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baujahr hier als Klartext, nicht
+        /// <para><b>Gefiltert wird danach, nicht hier:</b> Die vier Vorfilter der frueheren
+        /// eigenen Tabellen (Verwendung, Gebaeudeart, Baujahr, Suche) sind Trichter und Suche
+        /// der Katalogliste, und die filtert im Kern (<c>Katalogfilter.Anwenden</c>) auf dem
+        /// ANGEZEIGTEN Wert. Deshalb stehen Verwendung und Baujahr hier als Klartext, nicht
         /// als Steuerwert bzw. Buchstabe.</para>
         ///
         /// <para>Ein Satz mit <c>ReadOnly</c> ist ein Auslieferungssatz und traegt das Schloss

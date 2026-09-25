@@ -1,6 +1,8 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 24.09.2026, nach den Entscheiden E16–E35 und E38 sowie der Prüfung vom 17.09.2026.**
+**Stand 25.09.2026, nach den Entscheiden E16–E38 sowie der Prüfung vom 17.09.2026; mit dem Abschluss
+von G3 (25.09.2026) die Vermerke unter A1, A14 und F-M1. E39 und E40 (Konzept N1.44, N1.45) berühren
+keinen Registerpunkt.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -1132,6 +1134,11 @@ A4, A5 und A9 über U1, U3 und U5 (Kapitel 2).
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) ja, nach Empfehlung — die Kaskade (Löschen/Neuanlegen) bleibt; der Schreibweg wird vor G3 gemessen, die Rettung an der Löschstelle eingebaut.
 
+**Gemessen mit G3 (Welle B, 25.09.2026; Konzept N1.46): keine Rettung nötig.** Kein gewöhnlicher
+Speicherweg löscht ein Gebäude und legt es neu an — die Gebäudeliste wird abgeglichen; Zonen fallen
+nur beim Entfernen oder Tauschen des Gebäudes und beim Löschen des Projekts. Die Probe hält Löschen
+(Zonen weg) und Speichern (Zonen unverändert) fest.
+
 - **Frage:** Bleibt das kaskadierende Löschen der Gebäudekinder bestehen, obwohl der
   Gebäude-Schreibweg möglicherweise löscht und neu anlegt? Bei der Luftstromtabelle greift die
   Falle **doppelt**, weil sie zwei Eltern hat.
@@ -1363,6 +1370,11 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 ### A14 — was trägt den Umschalter Klassenweg → Bauteilweg?
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — der Umschalter Klassenweg → Bauteilweg folgt der Datenlage, der Übergang wird benannt.
+
+**Umgesetzt mit G3 (Wellen W und D2, 25.09.2026):** Ein Gebäude mit genau einer Zone rechnet über
+seine Bauteile, ohne Zone den Klassenweg; die Herleitungszeile „Rechenweg der Hülle" sagt in beiden
+Stellungen, was gilt, und „Gebäude als eine Zone übernehmen" fragt vorher nach (mit E40 samt
+Hochrechnung, Konzept N1.45).
 
 - **Frage:** Woran erkennt der Rechenkern, ob er den Klassenweg oder den Bauteilweg rechnet — an
   der **Datenlage** (leere Zonentabelle heißt Klassenweg) oder an einem eigenen Wert?
@@ -1989,7 +2001,7 @@ Wirkung: F-P4, F-K4, F-A3 und F-Ü7. Zahlen der Richtlinien stehen nicht in dies
 | **F-A2** | Die AK2-Verteilung ist ein Zweipass (Pass 1 unbegrenzter Bedarf je Gebäude als Schlüssel je Stunde, Pass 2 mit verteilter Verfügbarkeit) mit den Randfällen aus `Kanalsatz.NetzverlusteVerteilen` (Summe ≤ 0: volle Schranke je Gebäude; Rundungsrest nicht dem letzten Gebäude), einer zweiten Verteilungsstufe auf die Zonen nach demselben Schlüssel und benannter Pfadabhängigkeit bei Altweg-Gebäuden |
 | **F-A3** | In AK3 ist das Produkt Zonendurchläufe × Anlagendurchläufe je Stunde auf 120 begrenzt; darüber gilt die Stunde als nicht konvergiert (benannte Meldung, letzter Stand); der Grenzfall 50 × 50 × 20 ist in 6.3 ausgerechnet |
 | **F-A4** | Zwei Aufzählungen im ganzen Papier gleich: `Verfuegbarkeitsgrund` (Anlagenseite) und `Begrenzungsgrund` (Gebäudeseite: KEINE_BEGRENZUNG, UEBERGABE, HEIZLEISTUNG_MAX, VERFUEGBARKEIT, UMSCHALTUNG); `Tab_Einstellungen.Anlagenkopplung TEXT(4)` mit `CHECK IN ('AUS','AK1','AK2','AK3')`, NULL = AUS; AK-S1 = 13 Gebäudespalten (26) + 1 Projektspalte = 27 Einträge; in `Tab_Zone` allein `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`; die Kennlinienwahl der Wärmepumpe nimmt je Stunde den gerechneten Vorlauf des versorgten Gebäudes (mehrere Gebäude: bedarfsgewichtetes Mittel, +1–2 PT); die Kälteseite von AK1 setzt KU1 und KU2 voraus |
-| **F-M1** | `Tab_Zone` entsteht mit G3 (S-A bis S-C), `Tab_Zonenluftstrom` und `ID_Nachbarzone` mit S-G in G6b, G6a legt `Tab_Bauteilaufbau(_STAMM)` an; die Zonenspaltentabelle in Mehrzonen 4.2 bekommt einen Block „Spalten aus KU-S1 und AK-S1, sofern diese Stufen stehen", den S-C dann anlegt; Einfrierregeln werden benannt, nicht durchgezählt |
+| **F-M1** | `Tab_Zone` entsteht mit G3 (S-A bis S-C), `Tab_Zonenluftstrom` und `ID_Nachbarzone` mit S-G in G6b, G6a legt `Tab_Bauteilaufbau(_STAMM)` an; die Zonenspaltentabelle in Mehrzonen 4.2 bekommt einen Block „Spalten aus KU-S1 und AK-S1, sofern diese Stufen stehen", den S-C dann anlegt; Einfrierregeln werden benannt, nicht durchgezählt. *Umgesetzt mit G3 (25.09.2026) mit einer Abweichung:* auch `Tab_Bauteilaufbau(_STAMM)` entsteht mit G3 (Schritt 133, Softwarearchitektur W1), G6a legt keine Tabelle mehr an (Konzept N1.46) |
 | **F-M2** | Bei N = 1 entfallen adiabater Vorlauf und Konvergenzprobe, Probe 10 bleibt bitgleich; der Schreibweg ist ein Abgleich über die Ids in einer Transaktion (Entfernen → Ändern → Anlegen, Muster A6), nicht Löschen und Neuanlegen; ADR-005 nennt die Rechenzeit „rund 1,1 bis 2,0 s je Gebäude und Jahr" mit Verweis |
 | **F-D1** | Konzept 7.4 nennt den Paketzuschnitt aus ADR-003 ohne die Klammer mit dem Metapaket; ADR-003 bekommt die fünfte Kraft und die Aufgabe „Paketgröße der iOS-App messen (mit und ohne Schema-Assemblies, ios-arm64, getrimmt)"; der Basis-Name im Zustandsbild lautet ohne Nummer „aktuelle Basis nach `Referenzlaeufe/LIESMICH.md`" |
 

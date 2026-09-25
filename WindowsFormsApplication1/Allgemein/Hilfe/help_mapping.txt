@@ -126,7 +126,6 @@ Form_Klimadaten.btn_Help          = Klimadaten
 # das eine bewusste Zusammenfassung und kein Ersatzziel.
 
 # --- Energieerzeuger ------------------------------------------------------
-Form_WP.btn_Help                    = Wärmepumpe
 Form_Heizkessel.btn_Help            = Heizkessel
 Form_BHKWEing.btn_Help              = BHKW
 Form_SolarKollektoren.btn_Help      = Solarthermie
@@ -257,7 +256,6 @@ KiWerkzeugliste.btn_Help            = Hilfe-Assistent#setzen-und-rechnen
 Form_Start.btn_Help_Energieerzeuger = Energieerzeuger
 Form_Start.btn_Help_Simulation = Simulation
 UcBerichteKosten.btn_Help = Berichte und Kosten
-Form_BHKWAdmin.btn_Help = BHKW
 Form_DBBHKW.btn_Help = BHKW
 Form_Brauchwasser_Admin.btn_Help = Brauchwasser
 Form_EingBrauchwasserTyp.btn_Help = Brauchwasser
@@ -272,6 +270,12 @@ Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
 Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
 Form_Gebaeude2.btn_Help = Gebäude#katalogeditor
 Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
+# Huelle und Zonen eines Projektgebaeudes (G3, Welle D2): Der Gebaeudeeditor im
+# Projekt springt auf seinen Abschnitt; Zonen- und Bauteildialog sind Razor-Masken
+# ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel).
+GebaeudeProjekt.btn_Help = Gebäude#huelle-und-zonen
+Zone.btn_Help = Gebäude#zonen
+Bauteil.btn_Help = Gebäude#bauteile
 # Die zwei Kataloge der Gebaeudehuelle (Baustoffe, Bauteilaufbauten): Razor-Masken
 # ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel);
 # die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Baustoffe
@@ -282,7 +286,6 @@ Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).
 Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
-Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
@@ -318,7 +321,6 @@ Form_VorlagenUebernahme.btn_Help = Kosten#uebernahme-vorlage
 # Kostenseite. Bis hierher landete der Infoknopf auf der falschen Rubrik.
 Form_PhotovoltaikVerguetung.btn_Help = Wirtschaftlichkeit#pv-verguetung
 Form_Tarifstruktur.btn_Help = Wirtschaftlichkeit#strombezug
-Form_AdminPV.btn_Help = Photovoltaik
 Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
 # Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
@@ -327,7 +329,6 @@ Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
 # "Konfiguration Projekt" ist geloescht.
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
-Form_PufferSp_Admin.btn_Help = Pufferspeicher
 # iU9-W14a.2 (Befund W14-B23): Der Katalogeditor der Pufferspeicher hatte als
 # EINZIGE Maske des Gewerks keine Zeile - der Vorlaeufer haengte KiAufrufKnopf
 # statt InfoKnopf an und hatte deshalb gar keinen Hilfeknopf. Die Razor-Fassung
@@ -338,7 +339,6 @@ Form_PufferSp_einlesen.btn_Help = Pufferspeicher
 Form_Quellprofil.btn_Help = Simulation
 Form_Waermesenke.btn_Help = Simulation
 Form_SolarDB.btn_Help = Solarthermie
-Form_SolarKollektorenAdmin.btn_Help = Solarthermie
 Form_SolarKollektoren_einlesen.btn_Help = Solarthermie
 Form_Solarganglinie.btn_Help = Solarthermie
 Form_Solarganglinie_Admin.btn_Help = Solarthermie
@@ -346,7 +346,6 @@ Form_GanglinieImportOptionen.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help_Import = Strombedarf
 Form_Stromganglinie_Admin.btn_Help = Strombedarf
-Form_AdminStromspeicher.btn_Help = Stromspeicher
 Form_Stromspeicher_einlesen.btn_Help = Stromspeicher
 Form_PeakShaving.btn_Help = Stromspeicher
 # Auftrag #203 (11.09.2026): Der Schluessel Form_SpeicherOptimierung.btn_Help
@@ -407,6 +406,20 @@ Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Kosten#gesetzliche-parameter
 Form_KatalogDubletten.btn_Help = Katalogpflege
 Form_Emissionskatalog.btn_Help = Emissionen
+# Die acht Geraeteverwaltungen (Menue Administration): Ihr Infoknopf fuehrt auf
+# die Seite Gerätekataloge (Repo-Quelle Projekte/Wiki/Programm Dokumentation -
+# Gerätekataloge.wiki), je Verwaltung auf den Abschnitt ihres Geraetetyps. Die
+# Schluessel stehen im Kern (KatalogBrowserProfil, ModulKatalogProfil) bzw. in
+# WaermepumpeStammDialog (Form_WP = Masken.WpAdministration). Den Rechenweg
+# fuehrt weiter der zweite Knopf im Detailblock (Teil C, Schluessel .Berechnung).
+Form_Heizkessel_Admin.btn_Help      = Gerätekataloge#heizkessel
+Form_BHKWAdmin.btn_Help             = Gerätekataloge#bhkw
+Form_WP.btn_Help                    = Gerätekataloge#waermepumpen
+Form_SolarKollektorenAdmin.btn_Help = Gerätekataloge#solarkollektoren
+Form_PufferSp_Admin.btn_Help        = Gerätekataloge#pufferspeicher
+Form_AdminPV.btn_Help               = Gerätekataloge#pv-module
+Form_AdminWechselrichter.btn_Help   = Gerätekataloge#wechselrichter
+Form_AdminStromspeicher.btn_Help    = Gerätekataloge#stromspeicher
 
 # ===========================================================================
 # Feldgenaue Hilfe (H12)

@@ -175,8 +175,8 @@ Quellenverweis begrenzt.
 > Simulatorkennung in `RuntimeIdentifiers` der iOS-Schale als Simulatorbau und brach am Linken der
 > Geräte-SQLite ab — nicht an xBIM; nach der Korrektur baut er vollständig (Plattform iOS, AOT,
 > 0 IL-Warnungen), und der Gerätejob von `ios.yml` misst ihn mit und ohne die Paketzeile
-> (`-p:OhneXbim=true`; Lauf 36116562830, Protokoll G4, Abschnitt 11). Offen ist allein die Bewertung
-> des Zuwachses (Aufgabe 7).
+> (`-p:OhneXbim=true`; Lauf 36116562830, Protokoll G4, Abschnitt 11). Den Zuwachs hat der Anwender
+> als nicht erheblich bewertet (E41): Der IFC-Import bleibt auf iOS.
 
 1. [x] `Xbim.IO.MemoryModel` in `Directory.Packages.props` aufnehmen; Lizenzhinweisseite im
        Setup (Frage U10).
@@ -212,7 +212,6 @@ Quellenverweis begrenzt.
        10,4 MB xBIM-Dateien und 62,6 der 66,4 MB AOT-Objekte von xBIM vor dem Linken (94 %);
        anteilig gerechnet sind das rund 31 MB des entpackten Zuwachses. `Xbim.Common` und
        `Xbim.IO.MemoryModel` zusammen rund 5 MB.
-       **Bewertung offen beim Anwender.** Empfehlung: nicht erheblich — der IFC-Import bleibt
-       auf iOS. Der Zuwachs liegt unter einem Achtel des entpackten Pakets und bei rund einem
-       Zehntel des gezippten. Ein einzelnes Schema zu streichen, spart je Schema rund ein
-       Drittel des Anteils, würde aber ein Schema benannt ablehnen, das unter Windows gelesen wird.
+       **Bewertung (Anwender, E41, 25.09.2026): nicht erheblich** — „Zuwachs 8 MB gezippt -> OK“.
+       Der IFC-Import bleibt auf der iOS-Schale mit allen drei Schemata; es wird weder abgelehnt
+       noch ein Schema einzeln referenziert.

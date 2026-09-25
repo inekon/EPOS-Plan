@@ -35,7 +35,20 @@
    wenn Bauart oder Nutzflaeche angefasst wurden oder keine Bauweise gespeichert ist; ein
    freier, gespeicherter Wert bleibt sonst stehen (Konzept 2.11, M-e).
 
-   TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
+   ZONEN UND BAUTEILE (Gebaeudesimulation G3, Welle D2; Softwarearchitektur 3.2/3.3). In der
+   Betriebsart PROJEKT ("Huelle und Zonen..." im Gebaeudedialog) bearbeitet der Editor die
+   Projektkopie samt ihrer Zone (Parameter Zonen, ein GebaeudeZonenweg). Der Reiter "Zonen" steht
+   in jeder Betriebsart und bleibt leer bedienbar; der Knopf "Gebaeude als eine Zone uebernehmen"
+   (auch unter dem Rechenweg) ist nur fuer ein Projektgebaeude ohne Zone auf dem VDI-Weg frei,
+   sonst weich gesperrt mit Grund. Er holt den Hochrechnungsfaktor aus dem Kern, fragt (Rueckfrage)
+   und legt die Zone mit negativen Ids in den Arbeitsstand. Mit Zone sind die Werte der Huelle
+   abgeleitete Anzeigen (Summenregel, Mehrzonenkonzept 4.3) - die gespeicherten Werte bleiben.
+   OK schreibt in drei benannten Schritten: Gebaeudedaten, Katalogaufbauten, Zonen; scheitert
+   ein Schritt, bleibt der Dialog offen, und ein zweites OK wiederholt Geschriebenes nicht.
+   "Speichern unter" eines Gebaeudes mit Zone fragt VOR dem Schreiben (Softwarearchitektur 2.9).
+
+   TASTATUR: Esc schliesst wie Abbrechen - erst, wenn keine Ueberlagerung und keine Rueckfrage
+   steht (Esc kaskadiert). Enter ist nicht belegt. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -87,6 +100,10 @@
                                 <Textfeld Bezeichnung="@LabelName" Wert="@_stand.Name"
                                           WertChanged="w => _stand.Name = w" />
                             }
+                            @if (Modus == GebaeudeKatalogModus.Projekt)
+                            {
+                                <Herleitungszeile Text="@NameProjektzeile" />
+                            }
                             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_stand.Beschreibung"
                                       WertChanged="w => _stand.Beschreibung = w"
                                       Mehrzeilig="true" Zeilen="3" />
@@ -109,6 +126,10 @@
                             <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²" Min="0"
                                         Feldname="@FeldWohnflaeche" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.WohnflaecheGesamt" WertChanged="NutzflaecheSetzen" />
+                            @if (_arbeit.Zone is { Nutzflaeche: double zonenflaeche })
+                            {
+                                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileNutzflaeche, Zahl(zonenflaeche, 2))" />
+                            }
                             <Zahlenfeld Bezeichnung="@LabelFlaecheNutzer" Einheit="m²" Min="0"
                                         Feldname="@FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.FlaecheNutzer"
@@ -137,6 +158,45 @@
                     @* ---- Die Huelle: acht Zeilen, U*A gerechnet (Konzept 2.5) ---------- *@
                     <Gruppenkopf Titel="@Texte.GruppeHuelle">
                         <KindInhalt>
+                            @if (_arbeit.Zone is ZoneDaten huellzone)
+                            {
+                                @* SUMMENREGEL (Mehrzonenkonzept 4.3): Mit Zone sind die Gruppen der Huelle
+                                   abgeleitete Anzeigen aus ihren Bauteilen - die gespeicherten Werte des
+                                   Gebaeudes bleiben stehen und gelten wieder ohne Zone. *@
+                                <div class="epos-raster-huelle epos-raster-huelle--frei">
+                                    <table class="epos-raster epos-huelltabelle epos-huelltabelle--zone">
+                                        <thead>
+                                            <tr>
+                                                <th>@Texte.SpalteBauteil</th>
+                                                <th>@Texte.SpalteKennwert</th>
+                                                <th>@Texte.SpalteGroesse</th>
+                                                <th class="epos-zahl">@Texte.SpalteLeitwert</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (Huellzeile zeile in Zonensummen.Zeilen(huellzone))
+                                            {
+                                                Huellzeile z = zeile;
+                                                <tr @key="z.Bauteil" data-bauteil="@z.Bauteil">
+                                                    <th scope="row">@Zeilentext(z.Bauteil)</th>
+                                                    <td class="epos-zahl">@(z.Kennwert is double u ? Zahl(u, 3) + " W/(m²K)" : "—")</td>
+                                                    <td class="epos-zahl">@Zahl(z.Groesse, 2) m²</td>
+                                                    <td class="epos-zahl">@Zahl(z.LeitwertWK, 1)</td>
+                                                </tr>
+                                            }
+                                            <tr data-bauteil="PsiL">
+                                                <th scope="row">@ZonenTexte.ZeilePsi</th>
+                                                <td></td>
+                                                <td></td>
+                                                <td class="epos-zahl">@Zahl(Zonensummen.PsiL(huellzone), 1)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileSummenregel, huellzone.Bezeichner)" />
+                            }
+                            else
+                            {
                             <div class="epos-raster-huelle epos-raster-huelle--frei">
                                 <table class="epos-raster epos-huelltabelle">
                                     <thead>
@@ -209,6 +269,7 @@
                                 </table>
                             </div>
                             <Herleitungszeile Text="@Texte.HinweisFensterflaeche" />
+                            }
                         </KindInhalt>
                     </Gruppenkopf>
 
@@ -217,10 +278,10 @@
                         <KindInhalt>
                             <Formularraster>
                                 <KindInhalt>
-                            <Textfeld Bezeichnung="@Texte.LabelHT" Wert="@Leitwert(HT)" NurLesen="true" />
-                            <Textfeld Bezeichnung="@Texte.LabelHVe" Wert="@Leitwert(HVe)" NurLesen="true" />
-                            <Textfeld Bezeichnung="@Texte.LabelHGes" Wert="@Leitwert(HT + HVe)" NurLesen="true" />
-                            @if (!IstVdi6007)
+                            <Textfeld Bezeichnung="@Texte.LabelHT" Wert="@Leitwert(_arbeit.HTAnzeige)" NurLesen="true" />
+                            <Textfeld Bezeichnung="@Texte.LabelHVe" Wert="@Leitwert(_arbeit.HVeAnzeige)" NurLesen="true" />
+                            <Textfeld Bezeichnung="@Texte.LabelHGes" Wert="@Leitwert(_arbeit.HTAnzeige + _arbeit.HVeAnzeige)" NurLesen="true" />
+                            @if (!IstVdi6007 && _arbeit.Zone is null)
                             {
                                 <Textfeld Bezeichnung="@Texte.LabelHTGewichtet"
                                           Wert="@Leitwert(Gebaeudehuellbilanz.TransmissionGewichtetWK(Huellzeilen))"
@@ -239,6 +300,14 @@
                     @* ---- Fenster nach Orientierung (Konzept 2.6) ---------------------- *@
                     <Gruppenkopf Titel="@Texte.GruppeFenster">
                         <KindInhalt>
+                            @if (_arbeit.Zone is ZoneDaten fensterzone)
+                            {
+                                @* Mit Zone rechnen ihre Fensterbauteile - die Felder des Gebaeudes bleiben
+                                   gespeichert und stehen wieder da, sobald die Zone entfernt ist. *@
+                                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileFenster, Zahl(Zonensummen.Fensterflaeche(fensterzone), 2))" />
+                            }
+                            else
+                            {
                             <Formularraster>
                                 <KindInhalt>
                             <Zahlenfeld Bezeichnung="@LabelFFNord" Einheit="m²" Min="0"
@@ -265,6 +334,7 @@
                                       Wert="@Zahl(Fenstergesamt, 2)" NurLesen="true" />
                                 </KindInhalt>
                             </Formularraster>
+                            }
                         </KindInhalt>
                     </Gruppenkopf>
 
@@ -340,6 +410,10 @@
                                 </KindInhalt>
                             </Formularraster>
                             <Herleitungszeile Text="@Rechenwegzeile" />
+                            @* Stufe G3 (Softwarearchitektur 3.2 Regel 3, A14): Der Rechenweg der Huelle
+                               folgt der Datenlage - die Zeile sagt in BEIDEN Stellungen, was gilt. *@
+                            <Herleitungszeile Text="@Huellwegzeile" />
+                            @Uebernahmeblock
 
                             @* Der Abschnitt, den es nur auf dem Tagesbilanz-Weg gibt - ueber @if,
                                nicht grau: ein Abschnitt, den es fuer dieses Gebaeude nicht gibt,
@@ -507,6 +581,54 @@
                 </KindInhalt>
             </Reiterblatt>
 
+            @* ================================================== Reiter 3: Zonen (G3) *@
+            @* Grundform (Softwarearchitektur 3.2 Regel 2): Der Reiter steht in jeder Betriebsart und
+               bleibt LEER bedienbar - mit dem Uebernahmeknopf; ein Katalogsatz nennt den Grund. *@
+            <Reiterblatt Schluessel="@REITER_ZONEN" Titel="@ZonenTexte.Reiter">
+                <KindInhalt>
+                    <Gruppenkopf Titel="@ZonenTexte.Gruppe">
+                        <KindInhalt>
+                            <Herleitungszeile Text="@Huellwegzeile" />
+                            @if (_arbeit.Zone is ZoneDaten listenzone)
+                            {
+                                <div class="epos-raster-huelle epos-raster-huelle--frei">
+                                    <table class="epos-raster epos-zonenliste">
+                                        <thead>
+                                            <tr>
+                                                <th>@ZonenTexte.SpalteZone</th>
+                                                <th class="epos-zahl">@ZonenTexte.SpalteNutzflaeche</th>
+                                                <th class="epos-zahl">@ZonenTexte.SpalteHT</th>
+                                                <th class="epos-zahl">@ZonenTexte.SpalteBauteile</th>
+                                                <th class="epos-zellenaktionen">@ZonenTexte.SpalteAktionen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr @key="listenzone.Id">
+                                                <td>@listenzone.Bezeichner</td>
+                                                <td class="epos-zahl">@Zahl(_arbeit.NutzflaecheWirksam, 2) m²</td>
+                                                <td class="epos-zahl">@Leitwert(Zonensummen.HT(listenzone))</td>
+                                                <td class="epos-zahl">@listenzone.Bauteile.Count</td>
+                                                <td class="epos-zellenaktionen">
+                                                    <span class="epos-zellenaktionen-inhalt">
+                                                        <button type="button" class="epos-knopf" @onclick="ZoneOeffnen">@ZonenTexte.KnopfOeffnen</button>
+                                                        <button type="button" class="epos-knopf" @onclick="() => _entfernfrage = true">@ZonenTexte.KnopfEntfernen</button>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile">@ZonenTexte.Leer</p>
+                                @Uebernahmeblock
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </KindInhalt>
+            </Reiterblatt>
+
         </KindInhalt>
     </Reiter>
 
@@ -521,6 +643,30 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- Ueberlagerung: der Zonendialog (Ebene 3, Stufe G3) ----------------- *@
+    <Ueberlagerung Offen="@(_zoneOffen is not null)" Titel="@ZonenDialogTexte.Titel"
+                   Geschlossen="() => ZoneFertig(null)">
+        <KindInhalt>
+            @if (_zoneOffen is not null)
+            {
+                <ZonenDialog Zone="@_zoneOffen" NutzflaecheGebaeude="@_stand.WohnflaecheGesamt" TitelAnzeigen="false"
+                             Projektaufbauten="@_projektaufbauten"
+                             Katalogaufbauten="@(Zonen?.Katalogaufbauten ?? Array.Empty<AufbauWahl>())"
+                             Aufbau="@Zonen?.Aufbau" Texte="@ZonenDialogTexte" BauteilTexte="@BauteilDialogTexte"
+                             Geschlossen="ZoneFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Rueckfragen: Zone uebernehmen, Zone entfernen, Speichern unter mit Zone --- *@
+    <Rueckfrage Offen="@(_vorschlag is not null)" TitelText="@ZonenTexte.KnopfUebernehmen" Frage="@Uebernahmefrage"
+                Beantwortet="UebernahmeBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
+    <Rueckfrage Offen="@_entfernfrage" TitelText="@ZonenTexte.KnopfEntfernen" Frage="@Entfernfrage" VorgabeNein="true"
+                Beantwortet="EntfernenBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
+    <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@SpeichernUnterFrage"
+                VorgabeNein="true" Beantwortet="SpeichernUnterBeantwortet"
+                JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
 
     @if (SpeichernUnterMoeglich)
     {
@@ -542,6 +688,7 @@
     /// <summary>Die Schlüssel der beiden Reiterblätter.</summary>
     private const string REITER_HUELLE = "HUELLE";
     private const string REITER_TEMPERATUREN = "TEMPERATUREN";
+    private const string REITER_ZONEN = "ZONEN";
 
     /// <summary>
     /// Der hereingereichte Satz. Er bleibt UNBERÜHRT — der Dialog arbeitet auf einer
@@ -602,6 +749,22 @@
 
     /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>
+    /// Der Zonenweg eines Gebäudes im Projekt (Stufe G3, Welle D2) — nur in der Betriebsart
+    /// <see cref="GebaeudeKatalogModus.Projekt"/>; <c>null</c> (Katalogsatz, Verwaltung, ohne Gaben) =
+    /// der Zonenreiter nennt seinen Grund, und der Übernahmeknopf ist weich gesperrt.
+    /// </summary>
+    [Parameter] public GebaeudeZonenweg? Zonen { get; set; }
+
+    /// <summary>Die Texte der Zonen im Editor (Bündel, Präfix <c>GEBZ_</c>).</summary>
+    [Parameter] public GebaeudeZonenTexte ZonenTexte { get; set; } = new();
+
+    /// <summary>Die Texte des Zonendialogs (Bündel, Präfix <c>ZONDLG_</c>).</summary>
+    [Parameter] public ZonenDialogTexte ZonenDialogTexte { get; set; } = new();
+
+    /// <summary>Die Texte des Bauteildialogs (Bündel, Präfix <c>BTDLG_</c>).</summary>
+    [Parameter] public BauteilDialogTexte BauteilDialogTexte { get; set; } = new();
 
     /// <summary>
     /// Der Dialog wurde geschlossen: <c>true</c> nach einem erfolgreichen OK-Weg,
@@ -751,6 +914,26 @@
     private IReadOnlyDictionary<string, object>? _brauchwasserGaben;
     private bool _geschrieben;
 
+    // --- Zonen (Stufe G3, Welle D2) ------------------------------------------
+
+    /// <summary>Die offene Zone im Zonendialog (eine Kopie); <c>null</c> = kein Zonendialog.</summary>
+    private ZoneDaten? _zoneOffen;
+
+    /// <summary>Der Vorschlag der Übernahme, solange die Rückfrage steht.</summary>
+    private ZonenuebernahmeDaten? _vorschlag;
+
+    /// <summary>Wird der Hochrechnungsfaktor gerade bestimmt?</summary>
+    private bool _uebernahmeLaeuft;
+
+    private bool _entfernfrage;
+    private bool _speichernUnterFrage;
+
+    /// <summary>Die Aufbauten des Projekts — nach dem Übernehmen eines Katalogaufbaus im OK-Weg ergänzt.</summary>
+    private List<AufbauWahl> _projektaufbauten = new();
+
+    /// <summary>Der Abdruck des Stands, mit dem Schritt 1 (Gebäudedaten) zuletzt geschrieben hat; <c>null</c> = noch nicht.</summary>
+    private string? _abdruckGeschrieben;
+
     /// <summary>Der Name, den das Überschreiben trifft — der Stand beim Öffnen bzw. Laden.</summary>
     private string _ursprungsname = "";
 
@@ -805,7 +988,144 @@
     /// </summary>
     private void KuehlungGesetzt(bool wert) => _arbeit.KuehlungSetzen(wert, Texte);
 
-    private bool SpeichernUnterMoeglich => Modus == GebaeudeKatalogModus.Bearbeiten && Speichern is not null;
+    private bool SpeichernUnterMoeglich
+        => (Modus == GebaeudeKatalogModus.Bearbeiten || Modus == GebaeudeKatalogModus.Projekt) && Speichern is not null;
+
+    /// <summary>Steht der Zonendialog? Prüfhilfe für die Tests.</summary>
+    public bool ZonendialogOffen => _zoneOffen is not null;
+
+    /// <summary>Steht die Rückfrage der Übernahme? Prüfhilfe für die Tests.</summary>
+    public bool UebernahmefrageOffen => _vorschlag is not null;
+
+    /// <summary>Die Zonen des Arbeitsstands. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZoneDaten> ZonenImArbeitsstand => _arbeit.Zonen;
+
+    /// <summary>Die Herleitungszeile „Rechenweg der Hülle" (beide Stellungen). Prüfhilfe für die Tests.</summary>
+    public string Huellwegzeile => _arbeit.Huellwegzeile(ZonenTexte);
+
+    /// <summary>Warum der Übernahmeknopf gesperrt ist; <c>null</c> = frei. Prüfhilfe für die Tests.</summary>
+    public string? UebernahmeSperre
+    {
+        get
+        {
+            if (Modus != GebaeudeKatalogModus.Projekt || Zonen?.Uebernehmen is null) return ZonenTexte.SperreKatalog;
+            if (_arbeit.Zone is ZoneDaten z) return string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreZone, z.Bezeichner);
+            if (!_arbeit.IstVdi6007) return ZonenTexte.SperreTagesbilanz;
+            if (_uebernahmeLaeuft) return ZonenTexte.SperreLaeuft;
+            return null;
+        }
+    }
+
+    /// <summary>Die Zeile unter dem Namen in der Betriebsart Projekt: Die Projektkopie behält ihren Namen.</summary>
+    private string NameProjektzeile
+        => string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileNameProjekt, _ursprungsname);
+
+    /// <summary>
+    /// Der Übernahmeknopf samt leiser Erklärzeile — frei oder WEICH gesperrt (<c>aria-disabled</c>,
+    /// Grund als Kurztext; der Versuch meldet den Grund). Er steht unter dem Rechenweg und im leeren
+    /// Zonenreiter; es ist derselbe Knopf.
+    /// </summary>
+    private RenderFragment Uebernahmeblock => __builder =>
+    {
+        string? sperre = UebernahmeSperre;
+        <div class="epos-zonenuebernahme">
+            @* Eine Knopfzeile im Blatt, keine Leiste: Die Fussleiste des Editors ist die SpeichernLeiste. *@
+            <div class="epos-zeilenknoepfe">
+                @* Weich gesperrt: derselbe Knopf mit aria-disabled und Kurztext; der Klick meldet den Grund. *@
+                <button type="button" class="epos-knopf epos-zonenuebernahme-knopf"
+                        aria-disabled="@(sperre is null ? null : "true")" title="@sperre"
+                        @onclick="BeiUebernehmen">@ZonenTexte.KnopfUebernehmen</button>
+            </div>
+            <p class="epos-leisezeile">@(sperre ?? ZonenTexte.HinweisUebernehmen)</p>
+        </div>
+    };
+
+    /// <summary>Die Rückfrage der Übernahme: Faktor, Nutzfläche alt → neu, die Angabe, die dann nicht mehr gilt.</summary>
+    private string Uebernahmefrage
+    {
+        get
+        {
+            if (_vorschlag is not ZonenuebernahmeDaten v) return "";
+            var c = CultureInfo.CurrentCulture;
+            string frage = string.Format(c, ZonenTexte.FrageUebernehmen, v.Faktor.ToString("0.###", c),
+                                         Zahl(v.NutzflaecheGebaeude, 2), Zahl(v.Zone?.Nutzflaeche, 2),
+                                         Zahl(v.Angabe, 2), v.Einheit);
+            return v.Leistungsgrenzen ? frage + " " + ZonenTexte.FrageGrenzen : frage;
+        }
+    }
+
+    private string Entfernfrage
+        => _arbeit.Zone is ZoneDaten z
+            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.FrageEntfernen, z.Bezeichner,
+                            z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
+            : "";
+
+    private string SpeichernUnterFrage
+        => _arbeit.Zone is ZoneDaten z
+            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.FrageSpeichernUnter, z.Bezeichner,
+                            z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
+            : "";
+
+    // =================================================================================
+    // Zonen: uebernehmen, oeffnen, entfernen - alles im Arbeitsstand (Softwarearchitektur 3.3)
+    // =================================================================================
+
+    /// <summary>
+    /// „Gebäude als eine Zone übernehmen": holt den Vorschlag samt Hochrechnungsfaktor aus dem Kern
+    /// (ein Jahreslauf) und stellt die Rückfrage. Weich gesperrt meldet der Knopf seinen Grund.
+    /// </summary>
+    private async Task BeiUebernehmen()
+    {
+        if (UebernahmeSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _uebernahmeLaeuft = true;
+        ZonenuebernahmeDaten v;
+        try
+        {
+            v = await Zonen!.Uebernehmen!(_arbeit.Probestand());
+        }
+        finally
+        {
+            _uebernahmeLaeuft = false;
+        }
+        if (!v.Ok || v.Zone is null)
+        {
+            Melden(v.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        _vorschlag = v;
+    }
+
+    /// <summary>Die Antwort: Ja legt die Zone in den Arbeitsstand (negative Ids), Nein lässt alles.</summary>
+    private void UebernahmeBeantwortet(bool? antwort)
+    {
+        ZonenuebernahmeDaten? v = _vorschlag;
+        _vorschlag = null;
+        if (antwort != true || v?.Zone is null) return;
+        _arbeit.ZoneSetzen(v.Zone.Kopie());
+        _meldung = "";
+    }
+
+    private void ZoneOeffnen()
+    {
+        if (_arbeit.Zone is ZoneDaten z) _zoneOffen = z.Kopie();
+    }
+
+    /// <summary>Der Zonendialog ist zu: Mit Ergebnis ersetzt es die Zone im Arbeitsstand.</summary>
+    private void ZoneFertig(ZoneDaten? ergebnis)
+    {
+        _zoneOffen = null;
+        if (ergebnis is null) return;
+        _arbeit.ZoneSetzen(ergebnis);
+        _meldung = "";
+    }
+
+    /// <summary>„Zone entfernen": Ja nimmt sie aus dem Arbeitsstand — geschrieben wird mit OK.</summary>
+    private void EntfernenBeantwortet(bool? antwort)
+    {
+        _entfernfrage = false;
+        if (antwort == true) _arbeit.ZoneSetzen(null);
+    }
 
     /// <summary>Die Feldnamen und Meldungen der Prüfung folgen den Parametern.</summary>
     protected override void OnParametersSet()
@@ -846,6 +1166,10 @@
         _arten = Gebaeudearten?.Invoke() ?? Array.Empty<string>();
 
         StandSetzen(Daten ?? new GebaeudeKatalogDaten());
+
+        // Stufe G3: die Zonen eines Gebaeudes im Projekt - ein Katalogsatz traegt keine.
+        _arbeit.ZonenLaden(Zonen?.Zonen, Modus == GebaeudeKatalogModus.Projekt && Zonen is not null);
+        _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
 
         if (Modus == GebaeudeKatalogModus.Admin)
         {
@@ -945,9 +1269,11 @@
                                                        .Replace("{0}", TitelText));
 
         bool istNeu = Modus == GebaeudeKatalogModus.Neu;
-        return Schreiben(istNeu, istNeu ? _stand.Name : _ursprungsname)
-                   ? KiKern.KiErgebnis.Ok(_stand.Name, anzahl: 1)
-                   : KiKern.KiErgebnis.Abgelehnt(_meldung);
+        bool ok = Modus == GebaeudeKatalogModus.Projekt
+            ? SchreibenProjekt()
+            : Schreiben(istNeu, istNeu ? _stand.Name : _ursprungsname);
+        return ok ? KiKern.KiErgebnis.Ok(_stand.Name, anzahl: 1)
+                  : KiKern.KiErgebnis.Abgelehnt(_meldung);
     }
 
     /// <inheritdoc/>
@@ -1195,13 +1521,118 @@
     {
         if (!ok) { await Abbrechen(); return; }
 
+        // Betriebsart Projekt (G3): die Projektkopie samt Zonen, in benannten Schritten.
+        if (Modus == GebaeudeKatalogModus.Projekt)
+        {
+            if (!SchreibenProjekt()) return;
+            await Geschlossen.InvokeAsync(true);
+            return;
+        }
+
         bool istNeu = Modus == GebaeudeKatalogModus.Neu;
         if (!Schreiben(istNeu, istNeu ? _stand.Name : _ursprungsname)) return;
         await Geschlossen.InvokeAsync(true);
     }
 
-    /// <summary>„Speichern unter" — derselbe OK-Weg, angelegt unter dem eingegebenen Namen.</summary>
+    /// <summary>
+    /// <b>Der OK-Weg in der Betriebsart Projekt</b> (Stufe G3, Welle D2; Softwarearchitektur 3.3) —
+    /// in drei BENANNTEN Schritten, jeder mit eigener Meldung:
+    /// <list type="number">
+    /// <item><b>Gebäudedaten</b>: prüfen, ableiten, die Projektkopie überschreiben — nicht noch einmal,
+    /// wenn ein früheres OK sie mit demselben Stand schon geschrieben hat.</item>
+    /// <item><b>Katalogaufbauten</b>: jeder im Bauteildialog aus dem Katalog gewählte Aufbau wird in das
+    /// Projekt übernommen; die Bauteile zeigen danach auf die Kopie (der Arbeitsstand merkt es sich,
+    /// ein zweites OK übernimmt nichts doppelt).</item>
+    /// <item><b>Zonen</b>: nur wenn sie sich geändert haben — Abgleich über die Ids, eine Transaktion
+    /// im Kern (Entfernen → Ändern → Anlegen).</item>
+    /// </list>
+    /// Scheitert ein Schritt, steht seine Meldung, und der Dialog bleibt offen.
+    /// </summary>
+    private bool SchreibenProjekt()
+    {
+        if (!Pruefen(false)) return false;
+        if (Speichern is null) return true;
+
+        // Schritt 1: die Gebaeudedaten der Projektkopie.
+        Ableiten();
+        string abdruck = _arbeit.Abdruck();
+        if (abdruck != _abdruckGeschrieben)
+        {
+            GebaeudeKatalogErgebnis e = Speichern(_stand, false, _ursprungsname);
+            if (!e.Erfolg)
+            {
+                Melden(e.Meldung, WarnStufe.Warnung);
+                return false;
+            }
+            _abdruckGeschrieben = abdruck;
+            _geschrieben = true;
+            _arbeit.Geschrieben();
+        }
+
+        // Schritt 2: Katalogaufbauten in das Projekt uebernehmen.
+        if (Zonen?.AufbauUebernehmen is not null)
+        {
+            foreach (BauteilDaten b in _arbeit.Zonen.SelectMany(z => z.Bauteile).Where(x => x.IdAufbauStamm.HasValue).ToList())
+            {
+                if (!b.IdAufbauStamm.HasValue) continue;   // schon mit einem gleichen Aufbau uebernommen
+                int stamm = b.IdAufbauStamm.Value;
+                AufbauUebernahmeErgebnis r = Zonen.AufbauUebernehmen(stamm);
+                if (!r.Ok || r.Wahl is null)
+                {
+                    Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungAufbau, b.AufbauText, r.Meldung),
+                           WarnStufe.Warnung);
+                    return false;
+                }
+                _projektaufbauten.Add(r.Wahl);
+                foreach (BauteilDaten gleich in _arbeit.Zonen.SelectMany(z => z.Bauteile).Where(x => x.IdAufbauStamm == stamm))
+                {
+                    gleich.IdAufbauStamm = null;
+                    gleich.IdAufbau = r.Wahl.Id;
+                    gleich.AufbauText = r.Wahl.Text;
+                    gleich.UAufbau = r.Wahl.UWert;
+                }
+            }
+        }
+
+        // Schritt 3: die Zonen.
+        if (_arbeit.ZonenGeaendert && Zonen?.Speichern is not null)
+        {
+            string fehler = Zonen.Speichern(_arbeit.Zonen) ?? "";
+            if (fehler.Length > 0)
+            {
+                Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, fehler), WarnStufe.Warnung);
+                return false;
+            }
+            _arbeit.ZonenGeschrieben();
+            _geschrieben = true;
+        }
+        _meldung = "";
+        return true;
+    }
+
+    /// <summary>
+    /// „Speichern unter" — derselbe OK-Weg, angelegt unter dem eingegebenen Namen als Katalogsatz.
+    /// Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben (Softwarearchitektur 2.9): Der
+    /// Katalogsatz trägt keine Zonen.
+    /// </summary>
     private async Task BeiSpeichernUnter()
+    {
+        if (_arbeit.Zone is not null)
+        {
+            _speichernUnterFrage = true;
+            return;
+        }
+        await SpeichernUnterSchreiben();
+    }
+
+    /// <summary>Die Antwort auf die Rückfrage: Ja führt den Weg zu Ende, Nein hält den Dialog offen (3.3 Punkt 6).</summary>
+    private async Task SpeichernUnterBeantwortet(bool? antwort)
+    {
+        _speichernUnterFrage = false;
+        if (antwort == true) await SpeichernUnterSchreiben();
+    }
+
+    private async Task SpeichernUnterSchreiben()
     {
         if (!Schreiben(istNeu: true, bezeichner: _stand.Name)) return;
         await Geschlossen.InvokeAsync(true);
@@ -1215,8 +1646,9 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _brauchwasserGaben is not null) return Task.CompletedTask;
+        // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
+        if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
+            || _entfernfrage || _speichernUnterFrage) return Task.CompletedTask;
         return Abbrechen();
     }
 

@@ -124,9 +124,14 @@ public class GebaeudeDialogImportTests : EposBunitContext
     private IRenderedComponent<GebaeudeDialog> Aufbauen(Protokoll p, List<GebaeudeProjektZeile> zeilen, bool mitImport = true)
         => Render<GebaeudeDialog>(c => c
             .Add(x => x.Zeilen, zeilen)
-            .Add(x => x.Katalog, (_, _, _, _) => new[] { new GebaeudeKatalogZeile("Haus 1990", "Einfamilienhaus", "150,00 [m²]") })
-            .Add(x => x.Gebaeudearten, _ => new[] { "Einfamilienhaus" })
-            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Katalogzeilen, () => new[]
+            {
+                new WindowsFormsApplication1.Katalogfilterzeile(1, "Haus 1990")
+                    .MitText(WindowsFormsApplication1.Katalogfilterprofil.SpBezeichner, "Haus 1990")
+                    .MitText(WindowsFormsApplication1.Katalogfilterprofil.SpGebaeudeart, "Einfamilienhaus")
+                    .MitZahl(WindowsFormsApplication1.Katalogfilterprofil.SpFlaecheM2, 150, 0)
+            })
+            .Add(x => x.Filterstandvorgabe, new WindowsFormsApplication1.Katalogfilterstand())
             .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "", "150,00"))
             .Add(x => x.KatalogGaben, _ => new Dictionary<string, object>())
             .Add(x => x.ImportGaben, mitImport ? () => Weg(p) : null)

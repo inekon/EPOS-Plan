@@ -31,7 +31,9 @@ namespace WindowsFormsApplication1
     /// Speicherweg eines Projektgebäudes löscht und legt die Zeile in <c>Tab_Gebaeude</c> neu an —
     /// die Gebäudeliste wird abgeglichen (<c>WizardCtrl.Schreibe_Projekt_ZuordungGebäude</c>),
     /// die Feld-Übernahme ändert zielgenau (<c>MerkmalUebernahmeCtrl</c>), der Katalogeditor
-    /// schreibt nur den Katalog. Fällt die Zeile, dann weil das Gebäude aus dem Projekt genommen
+    /// schreibt den Katalog, und in der Betriebsart Projekt („Hülle und Zonen…") überschreibt er die
+    /// Projektkopie zeilengenau (<c>GebaeudeStammCtrl.ProjektkopieUeberschreiben</c>, ein UPDATE unter
+    /// derselben Id). Fällt die Zeile, dann weil das Gebäude aus dem Projekt genommen
     /// oder gegen einen anderen Katalogsatz getauscht wurde — dann gehen seine Zonen mit. Eine
     /// Rettung an der Löschstelle braucht es deshalb nicht; die Probe hält beide Fälle fest.</para>
     /// </summary>
@@ -130,6 +132,15 @@ namespace WindowsFormsApplication1
             => GebaeudeZonenabbildung.ArtAusZeile(bauteilart) is Bauteilart art ? BauteilEingang.VorgabeNeigung(art) : 90.0;
 
         /// <summary>
+        /// Heißt eine leere Randbedingung an dieser Bauteilart „innerhalb der Zone"? Ja an Innenwand
+        /// und Decke, sonst heißt sie Außenluft — die Regel der Abbildung
+        /// (<see cref="GebaeudeZonenabbildung.LeerHeisstInnen"/>), für die Vorgabe der Auswahl im
+        /// Bauteildialog.
+        /// </summary>
+        public static bool LeerHeisstInnen(string bauteilart)
+            => GebaeudeZonenabbildung.ArtAusZeile(bauteilart) is Bauteilart art && GebaeudeZonenabbildung.LeerHeisstInnen(art);
+
+        /// <summary>
         /// Braucht das Bauteil einen Azimut? Genau dann, wenn es an die Außenluft grenzt und
         /// nicht waagerecht liegt — Neigung (bzw. ihre Vorgabe nach Bauteilart) weder 0° noch
         /// 180°. Ob es an die Außenluft grenzt, sagt die Regel der leeren Randbedingung
@@ -164,6 +175,8 @@ namespace WindowsFormsApplication1
                            ?? BaustoffCtrl.Laenge(MyResource.Resource.BAUTEIL_FELD_QUELLKENNUNG, z.Quellkennung, BaustoffSchema.LAENGE_QUELLKENNUNG)
                            ?? BaustoffCtrl.HerkunftPruefen(z.Herkunft);
                 if (t != null) return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_WERT, zn, t);
+                if (z.Nutzflaeche.HasValue && (!(z.Nutzflaeche.Value > 0.0) || double.IsInfinity(z.Nutzflaeche.Value)))
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_NUTZFLAECHE, zn);
                 if (z.Uebergabe_Art != null && z.Uebergabe_Art != DbWerte.UEBERGABE_IDEAL && z.Uebergabe_Art != DbWerte.UEBERGABE_RADIATOR
                     && z.Uebergabe_Art != DbWerte.UEBERGABE_FLAECHE && z.Uebergabe_Art != DbWerte.UEBERGABE_KONVEKTOR)
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_UEBERGABEART, zn, z.Uebergabe_Art);
@@ -190,6 +203,137 @@ namespace WindowsFormsApplication1
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// <b>Die Prüfregeln EINES Bauteils</b> (Mehrzonenkonzept 5.3, Ebene Bauteil) — die Regeln
+        /// des Bauteildialogs, genau einmal, im Rückruf seiner Leiste: Name, Fläche größer null,
+        /// U-Wert 0,1 … 6 W/(m²K), 0 &lt; g ≤ 1, Rahmenanteil 0,05 … 0,6, Verschattung (0; 1],
+        /// Azimut 0 … 360°, Neigung 0 … 180°, ψ·L nicht negativ; ein Außenbauteil, das nicht
+        /// waagerecht liegt, braucht einen Azimut (<see cref="BrauchtAzimut"/> — benannt
+        /// abgelehnt, nicht auf Nord vorbelegt); die Randbedingung „Nachbarzone" rechnet EPOS erst
+        /// mit mehreren Zonen (G6); ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder
+        /// einen unbeheizten Raum und trägt einen U-Wert; jedes andere Bauteil außerhalb der Zone
+        /// braucht einen U-Wert oder einen Aufbau. Ohne Datenbank.
+        /// </summary>
+        /// <returns><c>null</c> = gültig, sonst die Meldung mit dem Namen des Bauteils.</returns>
+        public static string BauteilPruefen(Bauteilangabe b)
+        {
+            if (b == null) return null;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string name = (b.Bezeichner ?? "").Trim();
+            if (name.Length == 0) return MyResource.Resource.BAUTEIL_MSG_NAME_FEHLT;
+            string w = BaustoffCtrl.Laenge(MyResource.Resource.KFLT_SP_NAME, name, BaustoffSchema.LAENGE_BEZEICHNER)
+                       ?? BauteilaufbauCtrl.BauteilartPruefen(b.Bauteilart, false);
+            if (w != null) return string.Format(k, MyResource.Resource.BAUTEIL_MSG_WERT, name, w);
+
+            if (!(b.Flaeche > 0.0) || double.IsInfinity(b.Flaeche.Value))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_FLAECHE, name);
+            if (b.UWert.HasValue && !(b.UWert.Value >= GebaeudeFestwerte.U_MIN && b.UWert.Value <= GebaeudeFestwerte.U_MAX))
+                return Bereich(name, "U", b.UWert.Value, GebaeudeFestwerte.U_MIN, GebaeudeFestwerte.U_MAX, "W/(m²K)");
+            if (b.GWert.HasValue && !(b.GWert.Value > 0.0 && b.GWert.Value <= 1.0))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_BEREICH, name, "g", Text(b.GWert.Value), "(0; 1]");
+            if (b.Rahmenanteil.HasValue && !(b.Rahmenanteil.Value >= RAHMENANTEIL_MIN && b.Rahmenanteil.Value <= RAHMENANTEIL_MAX))
+                return Bereich(name, "1 − F_F", b.Rahmenanteil.Value, RAHMENANTEIL_MIN, RAHMENANTEIL_MAX, "");
+            if (b.Verschattung.HasValue && !(b.Verschattung.Value > 0.0 && b.Verschattung.Value <= 1.0))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_BEREICH, name, "F_S", Text(b.Verschattung.Value), "(0; 1]");
+            if (b.Azimut.HasValue && !(b.Azimut.Value >= 0.0 && b.Azimut.Value <= 360.0))
+                return Bereich(name, "Azimut", b.Azimut.Value, 0.0, 360.0, "°");
+            if (b.Neigung.HasValue && !(b.Neigung.Value >= 0.0 && b.Neigung.Value <= 180.0))
+                return Bereich(name, "Neigung", b.Neigung.Value, 0.0, 180.0, "°");
+            if (b.PsiL.HasValue && (!(b.PsiL.Value >= 0.0) || double.IsInfinity(b.PsiL.Value)))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_BEREICH, name, "ψ·L", Text(b.PsiL.Value), "[0; ∞) W/K");
+
+            if (b.Randbedingung != null && !DbWerte.RANDBEDINGUNGEN.Contains(b.Randbedingung))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_RANDBEDINGUNG, name, b.Randbedingung);
+            if (b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE)
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_RAND_ZONE, name);
+
+            var zeile = new BauteilModel { Bauteilart = b.Bauteilart, Randbedingung = b.Randbedingung, Neigung = b.Neigung };
+            if (!b.Azimut.HasValue && BrauchtAzimut(zeile))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_AZIMUT_FEHLT, name);
+
+            Bauteilart? art = GebaeudeZonenabbildung.ArtAusZeile(b.Bauteilart);
+            Bauteilrand? rand = GebaeudeZonenabbildung.RandAusZeile(b.Bauteilart, b.Randbedingung);
+            bool transparent = art == Bauteilart.Fenster || art == Bauteilart.Vorhangfassade;
+            if (transparent && rand != Bauteilrand.Aussenluft && rand != Bauteilrand.Unbeheizt)
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_FENSTER_RAND, name);
+            if (transparent ? !b.UWert.HasValue : (!b.UWert.HasValue && !b.MitAufbau && rand != Bauteilrand.Innen))
+                return string.Format(k, MyResource.Resource.BAUTEIL_MSG_UWERT_FEHLT, name);
+            return null;
+        }
+
+        /// <summary>Untere Grenze des Rahmenanteils im Bauteildialog [–] (Mehrzonenkonzept 5.3).</summary>
+        public const double RAHMENANTEIL_MIN = 0.05;
+
+        /// <summary>Obere Grenze des Rahmenanteils im Bauteildialog [–] (Mehrzonenkonzept 5.3).</summary>
+        public const double RAHMENANTEIL_MAX = 0.6;
+
+        private static string Bereich(string name, string groesse, double wert, double min, double max, string einheit)
+            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_BEREICH, name, groesse, Text(wert),
+                             Text(min) + " … " + Text(max) + (einheit.Length > 0 ? " " + einheit : ""));
+
+        private static string Text(double w) => w.ToString("0.###", CultureInfo.CurrentCulture);
+
+        // =================================================================
+        //  „Gebäude als eine Zone übernehmen" — der Vorschlag mit Hochrechnung
+        // =================================================================
+
+        /// <summary>
+        /// Der Vorschlag für „Gebäude als eine Zone übernehmen" — was die Rückfrage nennt und was
+        /// danach im Arbeitsstand des Dialogs steht. Geschrieben ist nichts.
+        /// </summary>
+        /// <param name="Ok">Ließ sich der Vorschlag bilden?</param>
+        /// <param name="Meldung">Der Grund, wenn nicht (Laufprotokoll der Fassade oder fehlende Projektkopie).</param>
+        /// <param name="Faktor">Der Hochrechnungsfaktor der Fassade (E8).</param>
+        /// <param name="Zone">Die Zone als neue Zeilen mit negativen vorläufigen Ids, hochgerechnet.</param>
+        /// <param name="NutzflaecheGebaeude">Die Nutzfläche des Gebäudes [m²] — der Katalogbau.</param>
+        /// <param name="Einheit">Die Einheit der Angabe im Projekt (<c>Wohnfläche [m²]</c> oder ein Verbrauch).</param>
+        /// <param name="Angabe">Die Angabe im Projekt in dieser Einheit.</param>
+        /// <param name="Leistungsgrenzen">Trägt das Gebäude eine Leistungsgrenze (Heizung, oder Kühlung bei
+        /// gekühltem Gebäude)? Sie folgt dem Flächenschlüssel nicht: Im Klassenweg galt sie dem Katalogbau und
+        /// wurde mit ihm nachmultipliziert, mit der Zone gilt sie der hochgerechneten Hülle — die Rückfrage nennt es.</param>
+        public sealed record Uebernahmevorschlag(bool Ok, string Meldung, double Faktor, ZoneModel Zone,
+                                                 double NutzflaecheGebaeude, string Einheit, double Angabe,
+                                                 bool Leistungsgrenzen = false)
+        {
+            /// <summary>Ist die Angabe ein Verbrauch (keine Fläche)?</summary>
+            public bool Verbrauchsangabe => !string.Equals(Einheit, GebaeudeVorbereitung.EINHEIT_FLAECHE, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag der Übernahme mit Hochrechnung</b> (Anwenderentscheid vom 25.09.2026
+        /// „Hochrechnen“; Softwarearchitektur 3.2 Regel 3). Das Projektgebäude der Zuordnung
+        /// <paramref name="idZ"/> — so, wie der Lauf es liest, mit den Gebäudewerten des
+        /// Arbeitsstands <paramref name="arbeitsstand"/> darüber (<c>null</c> = die gespeicherten) —
+        /// bekommt seinen Hochrechnungsfaktor aus der Fassade
+        /// (<see cref="GebaeudeBedarfCtrl.Hochrechnungsfaktor"/>, gerufen, nicht nachgerechnet), und
+        /// <see cref="GebaeudeZonenuebernahme.AlsEineZone(ProjektGebaeudeModel, double)"/> bildet damit
+        /// die Zone: Flächen und ψ·L mal Faktor, Nutzfläche Faktor × Nutzfläche des Gebäudes. So
+        /// bleibt das Ergebnis beim Übernehmen gleich, und die Zone ist danach die echte Hülle.
+        /// Schreibt nichts — die Zone entsteht im Arbeitsstand des Dialogs und wird erst in dessen
+        /// OK-Weg über <see cref="SpeichernJeGebaeude"/> geschrieben.
+        /// </summary>
+        public static Uebernahmevorschlag Uebernahme(int idProjekt, int idZ, GebaeudeModel arbeitsstand)
+        {
+            ProjektGebaeudeModel g = GebaeudeBedarfCtrl.Projektgebaeude(idProjekt, idZ);
+            if (g == null)
+                return new Uebernahmevorschlag(false, MyResource.Resource.ZONE_MSG_UEBERNAHME_OHNE_KOPIE,
+                                               double.NaN, null, double.NaN, null, double.NaN);
+            if (arbeitsstand != null) UebergabeHerleitungsquelle.Ueberlagern(arbeitsstand, g);
+            string einheit = g.Einheit;
+            double angabe = g.Z_AuswahlWohnflaeche;
+            bool grenzen = g.Heizleistung_Max.HasValue || (g.Kuehlung_Aktiv && g.Kuehlleistung_Max.HasValue);
+
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(idProjekt);
+            double faktor = GebaeudeBedarfCtrl.Hochrechnungsfaktor(idProjekt, projekt.m_ID_Klimaregion, g, out string befund);
+            if (double.IsNaN(faktor))
+                return new Uebernahmevorschlag(false, befund ?? "", double.NaN, null, g.Nutzflaeche, einheit, angabe);
+
+            ZoneModel zone = GebaeudeZonenabbildung.AlsZoneModel(GebaeudeZonenuebernahme.AlsEineZone(g, faktor));
+            zone.ID_Gebaeude = g.ID_Gebaeude;
+            return new Uebernahmevorschlag(true, "", faktor, zone, g.Nutzflaeche, einheit, angabe, grenzen);
         }
 
         // =================================================================

@@ -187,6 +187,16 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BauteilschichtenFelder", 6),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
+        // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
+        // Der Zonendialog führt Bezeichnung und Nutzfläche; seine Bauteile sind ein Raster zum
+        // Lesen (Bauteile[] der Feldkarte), angelegt und geöffnet wird mit Klicks. Der
+        // Bauteildialog führt zwölf Maskenfelder (Art, Bezeichnung, Fläche, Azimut, Neigung,
+        // Randbedingung, g-Wert, Rahmenanteil, Verschattung, ψ·L, U-Wert, Aufbau im Projekt);
+        // die Suchauswahl des Katalogaufbaus ist bewusst draußen.
+        new("ZonenDialog", 2),
+        new("BauteilDialog", 13, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        // ---- Ende Gebäudesimulation G3, Welle D2 ----
+
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
         new("BedarfReiter", 3),
@@ -211,7 +221,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // G4a Welle 3: dazu das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 7 → 8.
         new("GebaeudeAdminDialog", 8),
         new("GebaeudeBedarfDialog", 2),
-        new("GebaeudeDialog", 4),
+        // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
+        // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
+        // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
+        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         new("GebaeudeKatalogDialog", 46),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
@@ -220,7 +234,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
         new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
             "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),
-        new("GebaeudeWohnflaecheDialog", 4),
+        new("GebaeudeWohnflaecheDialog", 5, "der Schalter „dezentral“ steht in beiden Zweigen (mit und ohne Zone) - EIN Katalogfeld"),
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
         new("GesetzeskatalogZeileDialog", 7),

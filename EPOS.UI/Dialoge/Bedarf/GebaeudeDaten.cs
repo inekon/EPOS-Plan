@@ -66,6 +66,18 @@ public sealed class GebaeudeProjektZeile
     public double? HgesWK { get; set; }
 
     /// <summary>
+    /// Hat die Zeile eine Projektkopie (<c>Tab_Gebaeude</c>)? Erst dann trägt sie Zonen, und erst
+    /// dann ist „Hülle und Zonen…" frei (Stufe G3, Welle D2). Eine eben aufgenommene Zeile hat keine.
+    /// </summary>
+    public bool HatProjektkopie { get; set; }
+
+    /// <summary>
+    /// Der Name der Zone, über die das Gebäude rechnet (Stufe G3); <c>null</c> = keine Zone —
+    /// dann rechnet es den Klassenweg samt Hochrechnung über die Angabe.
+    /// </summary>
+    public string? Zone { get; set; }
+
+    /// <summary>
     /// Der UNDURCHSICHTIGE Schlüssel der ausstehenden Herkunft einer Zeile aus dem Gebäudeimport
     /// (Stufe G4, Welle 4); <c>null</c> = keine. Quelle und Paarungen selbst bleiben in der Hülle —
     /// sie legt sie beim Speichern der Liste an das Modell, und erst der Speicherweg schreibt sie an
@@ -107,16 +119,6 @@ public sealed class GebaeudeImportweg
     /// <summary>Nach dem Speichern im Editor: die neue Projektzeile mit Herkunftsschlüssel; <c>null</c> = kein neuer Katalogsatz.</summary>
     public Func<GebaeudeProjektZeile?> Aufnehmen { get; }
 }
-
-/// <summary>
-/// EINE Zeile des Katalograsters (iU9-W9.2) — Name und, in einer zweiten Spalte, Art und
-/// Fläche. Der Vorläufer stellte beides in EINE Zelle („Art\nFläche [m²]"); getrennte
-/// Spalten sind lesbar und lassen sich sortieren.
-/// </summary>
-/// <param name="Name">Der Bezeichner des Katalogsatzes.</param>
-/// <param name="Art">Die Gebäudeart.</param>
-/// <param name="Wohnflaeche">Die Gesamtfläche, bereits als Text mit zwei Nachkommastellen.</param>
-public sealed record GebaeudeKatalogZeile(string Name, string Art, string Wohnflaeche);
 
 /// <summary>
 /// Der Detailblock zu einem KATALOGSATZ (iU9-W9.2) —

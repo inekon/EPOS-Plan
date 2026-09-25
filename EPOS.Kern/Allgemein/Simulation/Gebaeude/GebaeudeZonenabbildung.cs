@@ -197,7 +197,9 @@ namespace WindowsFormsApplication1
                 string werB = wer + ", " + (string.IsNullOrEmpty(b.Bezeichner) ? "#" + nummer.ToString(CultureInfo.InvariantCulture) : b.Bezeichner);
                 bauteile.Add(AlsBauteil(b, aufbauten, werB));
             }
-            return new GebaeudeZonensatz(zone.ID, zone.Bezeichner, bauteile.AsReadOnly());
+            // Die Nutzfläche der Zone (G3, Flächenschlüssel): NULL heißt die des Gebäudes (NaN).
+            return new GebaeudeZonensatz(zone.ID, zone.Bezeichner, bauteile.AsReadOnly(),
+                                         zone.Nutzflaeche ?? double.NaN);
         }
 
         /// <summary>Ein Bauteil als Kern-Eingang (Regeln: Klassenkopf).</summary>
@@ -286,9 +288,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Ein Kern-Datensatz als neue Zeilen</b> — für „Gebäude als eine Zone übernehmen":
         /// eine Zone mit der Id <c>-1</c>, ihre Bauteile mit <c>-1, -2, …</c> in der Reihenfolge
-        /// des Satzes, alle mit Herkunft <see cref="DbWerte.HERKUNFT_VORGABE"/>; die übrigen Spalten
-        /// der Zone bleiben NULL (= Wert des Gebäudes), sie ist beheizt. Rang, Eltern-Id und
-        /// endgültige Ids vergibt <c>GebaeudeZonenCtrl.SpeichernJeGebaeude</c>.
+        /// des Satzes, alle mit Herkunft <see cref="DbWerte.HERKUNFT_VORGABE"/>; die Nutzfläche des
+        /// Satzes (NaN = NULL), die übrigen Spalten der Zone bleiben NULL (= Wert des Gebäudes), sie
+        /// ist beheizt. Rang, Eltern-Id und endgültige Ids vergibt
+        /// <c>GebaeudeZonenCtrl.SpeichernJeGebaeude</c>.
         ///
         /// <para>NaN wird NULL, <c>Psi_L</c> 0 wird NULL (keine Wärmebrücke), die Randbedingung
         /// nach <see cref="RandFuerZeile"/>. Damit liest <see cref="AlsZonensatz"/> denselben
@@ -309,6 +312,7 @@ namespace WindowsFormsApplication1
             {
                 ID = -1,
                 Bezeichner = satz.Bezeichnung,
+                Nutzflaeche = Zahl(satz.Nutzflaeche_M2),
                 IstBeheizt = true,
                 Herkunft = DbWerte.HERKUNFT_VORGABE,
             };

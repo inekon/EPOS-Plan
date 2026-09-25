@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -382,6 +383,54 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Hochrechnungsfaktor der Fassade</b> (E8; Anwenderentscheid vom 25.09.2026
+        /// „Hochrechnen“) für „Gebäude als eine Zone übernehmen": der Faktor, mit dem die Fassade
+        /// den Katalogbau dieses Gebäudes nachmultipliziert — bei einer Flächenangabe Projektfläche
+        /// / Nutzfläche, bei einer Verbrauchsangabe aus der Verhältnisrechnung des Kataloglaufs.
+        /// Er wird <b>gerufen, nicht nachgerechnet</b>: dieselbe Fassade
+        /// (<see cref="SimulationWaermebedarf.HeizwaermeEinesGebaeudes"/>) wie Lauf und
+        /// <see cref="Rechnen"/>, der Faktor ist der, den sie in den Ergebnisträger schreibt
+        /// (<see cref="GebaeudeModellErgebnis.Skalierungsfaktor"/>).
+        ///
+        /// <para>Gerechnet wird der <b>Klassenweg auf dem VDI-Weg</b>: Die Zonen der Zeile werden
+        /// abgehängt (die Übernahme gilt einem Gebäude ohne Zone), und der Rechenweg steht auf
+        /// VDI 6007, weil nur er eine Zone rechnet. Die Zeile <paramref name="gebaeude"/> wird dabei
+        /// GESCHRIEBEN wie im Lauf (<c>Bewohner</c>, <c>Z_AuswahlWohnflaeche</c>); die Datenbank
+        /// nicht.</para>
+        /// </summary>
+        /// <returns>Der Faktor (größer null); NaN, wenn die Fassade das Gebäude nicht rechnet —
+        /// <paramref name="befund"/> nennt dann den Grund aus dem Laufprotokoll.</returns>
+        internal static double Hochrechnungsfaktor(int idProjekt, int idKlimaregion, ProjektGebaeudeModel gebaeude,
+                                                   out string befund)
+        {
+            befund = null;
+            if (gebaeude == null || idProjekt <= 0 || idKlimaregion <= 0)
+            {
+                befund = MyResource.Resource.ZONE_MSG_UEBERNAHME_KEIN_KLIMA;
+                return double.NaN;
+            }
+
+            gebaeude.Zonen = null;
+            gebaeude.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+            sim.KlimakalenderLesen(idKlimaregion);
+
+            int vorher = SimulationProtokoll.Aktuell.Fehler.Count;
+            var werte = new double[STUNDEN_JAHR];
+            bool gerechnet = sim.HeizwaermeEinesGebaeudes(gebaeude, 0, werte);
+            GebaeudeModellErgebnis e = sim.GebaeudeErgebnisse.Ergebnis(0);
+            if (gerechnet && e != null && e.Skalierungsfaktor > 0.0 && !double.IsInfinity(e.Skalierungsfaktor))
+                return e.Skalierungsfaktor;
+
+            IList<string> fehler = SimulationProtokoll.Aktuell.Fehler;
+            befund = fehler.Count > vorher
+                ? string.Join(" ", fehler.Skip(vorher))
+                : MyResource.Resource.ZONE_MSG_UEBERNAHME_KEIN_FAKTOR;
+            return double.NaN;
+        }
+
+        /// <summary>
         /// Das Projektgebäude der Zuordnung <paramref name="idZ"/> so, wie der Lauf es liest
         /// (Sicht <c>Abfrage_Projektgebaeude</c>); <c>null</c>, wenn es keins gibt. Auch der
         /// Gebäudedialog liest hierüber Rechenweg und Wärmeleitwert einer Projektzeile.
@@ -410,7 +459,7 @@ namespace WindowsFormsApplication1
         /// Vergleich — sie ist auch der Schlüssel, mit dem der Lauf die Tagesverteilung
         /// sucht.
         /// </summary>
-        private static int TabGebaeudeId(int idZ)
+        internal static int TabGebaeudeId(int idZ)
         {
             const string sql = "SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?";
 

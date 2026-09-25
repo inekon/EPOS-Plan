@@ -18,10 +18,17 @@
    gleiche Gebaeude im Projekt teilen sich eine Stamm-Id, und btn_Entfernen
    traf ohne ID_Z die falsche Zeile (Kommentar :283-287).
 
-   VIER FILTERZWEIGE, EINER DAVON ZWEIDEUTIG. Der Zweig "Gebaeudeart gewaehlt,
-   Baujahr Alle" filtert im Gebaeudeart-Handler OHNE, im Baujahr-Handler MIT
-   der Verwendung (Befund W9-B1). Woertlich uebernommen; die Komponente sagt
-   dem Kern ueber "ausBaujahrwahl", welches Feld die Auswahl ausgeloest hat.
+   DER KATALOG IST DIE KATALOGLISTE DES HAUSES (Stufe G3, Welle K;
+   Softwarearchitektur 3.2 Regel 5). Dasselbe Profil wie die Gebaeudeverwaltung
+   (Katalogfilterprofil.FuerGebaeude: Name, Gebaeudeart, Verwendung, Baujahr,
+   Flaeche) und DERSELBE Filterstand ueber die Sitzung
+   (Katalogfilterregister.Stand("GEBAEUDE")). Die vier Vorfilter der eigenen
+   Tabelle sind Trichter im Spaltenkopf (Verwendung, Gebaeudeart, Baujahr) und
+   die Suche ueber alle Spalten; gefiltert wird VOR dem Raster, im Kern
+   (Katalogfilter.Anwenden). Die Markierung haengt am Bezeichner. Als
+   Projektdialog behaelt die Liste die Wahlspalte und das Zeilenmass 53 px
+   (kein ZeileIstWahl); einen Vergleich bietet sie nicht an - er stellte nur
+   dieselben fuenf Spalten noch einmal nebeneinander.
 
    VIER UEBERLAGERUNGEN statt vierer Fenster (Risiko R2): der Katalogeditor
    (W9.1), die Wohnflaechenangabe (W9.3), die Gebaeudetypen-Verwaltung (W8.4)
@@ -109,45 +116,13 @@
         </Links>
 
         <Rechts>
-            <Gruppenkopf Titel="@GruppeFilter">
-                <KindInhalt>
-                    <Optionsgruppe Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
-                                   Auswahl="@(_wohngebaeude ? 0 : 1)"
-                                   AuswahlChanged="VerwendungWaehlen" />
-                    <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
-                                 Auswahl="@_artindex" AuswahlChanged="ArtWaehlen" />
-                    <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Klasseneintraege"
-                                 Auswahl="@_klassenindex" AuswahlChanged="KlasseWaehlen" />
-                    <Textfeld Bezeichnung="@LabelSuche" Wert="@_suche" WertChanged="SucheSetzen"
-                              Platzhalter="@PlatzhalterSuche" />
-                </KindInhalt>
-            </Gruppenkopf>
-
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                            <th>@SpalteTypFlaeche</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (GebaeudeKatalogZeile zeile in GefilterterKatalog)
-                        {
-                            GebaeudeKatalogZeile k = zeile;
-                            <tr class="@(k == _katalogzeile ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(k == _katalogzeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => KatalogzeileWaehlen(k)" />
-                                </td>
-                                <td>@k.Name</td>
-                                <td>@k.Art<br />@k.Wohnflaeche</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            @* DIE EINE KATALOGLISTE (Stufe G3, Welle K): Suchzeile ueber der Liste,
+               Trichter und Sortierpfeil im Spaltenkopf, virtualisiert ab 120 Saetzen.
+               Projektdialog: Wahlspalte und 53 px (Hausregel), kein Vergleichsknopf. *@
+            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogzeileWaehlen"
+                          Vergleichbar="false" />
 
             @* Die LISTENLEISTE der Katalogspalte (DL-2, Schritt 7). Sie wirkt auf die
                Liste darueber und ist nach Abschnitt 1 des Konzepts ausdruecklich keine
@@ -218,6 +193,23 @@
                 <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
                         @onclick="BeiAendern">@BtnAendernText</button>
 
+                @* Stufe G3 (Welle D2): die Projektkopie samt Zonen und Bauteilen. Eine noch nicht
+                   gespeicherte Zeile hat keine Projektkopie - weich gesperrt, der Versuch nennt den
+                   Grund. Kein Delegat, kein Knopf. *@
+                @if (ProjektGaben is not null)
+                {
+                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                    {
+                        <button type="button" class="epos-knopf" aria-disabled="true" title="@SperreNeueZeile"
+                                @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">@BtnProjektText</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                                title="@BtnProjektHinweis" @onclick="BeiProjekt">@BtnProjektText</button>
+                    }
+                }
+
                 @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
                    Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
                    Delegat kein Knopf - in der Katalogverwaltung gibt es kein
@@ -249,6 +241,18 @@
             {
                 <GebaeudeKatalogDialog @attributes="_katalogGaben" TitelAnzeigen="false"
                                        Geschlossen="KatalogeditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 6: das Gebaeude im Projekt - Huelle und Zonen (G3) ----- *@
+    <Ueberlagerung Offen="@(_projektGaben is not null)" Titel="@TitelProjekteditor"
+                   Geschlossen="() => ProjekteditorFertig(false)">
+        <KindInhalt>
+            @if (_projektGaben is not null)
+            {
+                <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
+                                       Geschlossen="ProjekteditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -317,17 +321,27 @@
     [Parameter] public List<GebaeudeProjektZeile> Zeilen { get; set; } = new();
 
     /// <summary>
-    /// Der gefilterte Katalog. Die vier Parameter sind Verwendung, Gebäudeart
-    /// (<c>null</c> = Alle), Index der Baualtersklasse (<c>null</c> = Alle) und die
-    /// Herkunft der Auswahl (Befund W9‑B1).
+    /// Die Zeilen des Katalogs, UNGEFILTERT — <c>GebaeudeStammCtrl.Katalogfilterzeilen()</c>,
+    /// dieselben wie in der Gebäudeverwaltung. Gefiltert wird VOR dem Raster, im Kern
+    /// (<c>Katalogfilter.Anwenden</c> in der <c>Katalogliste</c>).
     /// </summary>
-    [Parameter] public Func<bool, string?, int?, bool, IReadOnlyList<GebaeudeKatalogZeile>>? Katalog { get; set; }
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
 
-    /// <summary>Die Gebäudearten je Verwendung.</summary>
-    [Parameter] public Func<bool, IReadOnlyList<string>>? Gebaeudearten { get; set; }
+    /// <summary>
+    /// Die Spalten der Katalogliste — <c>Katalogfilterprofil.FuerGebaeude</c>, fertig übersetzt.
+    /// Ohne Gabe nimmt der Dialog dasselbe Profil mit den Texten aus <c>MyResource</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
 
-    /// <summary>Die 21 Baualtersklassen in ihrer festen Reihenfolge.</summary>
-    [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// Ein eigener Filterstand statt des Registers. Ohne ihn holt der Dialog seinen Stand aus
+    /// dem <c>Katalogfilterregister</c> — DERSELBE wie in der Gebäudeverwaltung (je Katalog
+    /// einer, für die Sitzung).
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>Der Detailblock zu einem Katalogsatz.</summary>
     [Parameter] public Func<string, GebaeudeStammDetail?>? StammDetail { get; set; }
@@ -389,6 +403,21 @@
     public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? BedarfGaben { get; set; }
 
     /// <summary>
+    /// <b>„Hülle und Zonen…"</b> (Gebäudesimulation G3, Welle D2): der Parametersatz des
+    /// Gebäudeeditors in der Betriebsart Projekt für eine Projektzeile — bearbeitet wird die
+    /// Projektkopie samt Zonen. Kein Delegat = kein Knopf; <c>null</c> als Rückgabe heißt „diese Zeile
+    /// hat keine Projektkopie" (der Knopf ist dann ohnehin weich gesperrt).
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? ProjektGaben { get; set; }
+
+    /// <summary>
+    /// Liest Rechenweg, Wärmeleitwert und Zone einer Projektzeile neu aus ihrer Projektkopie — nach
+    /// dem OK von „Hülle und Zonen…". Kein Delegat = die Zeile bleibt, wie sie ist.
+    /// </summary>
+    [Parameter] public Action<GebaeudeProjektZeile>? ZeileAuffrischen { get; set; }
+
+    /// <summary>
     /// <b>Der Gebäudeimport</b> (Stufe G4, Welle 4; A17): baut je Klick auf „Importieren…" den
     /// Weg eines Imports — Zuordnungsdialog, vorbelegter Editor, neue Projektzeile. Kein Delegat =
     /// kein Knopf.
@@ -403,17 +432,24 @@
 
     // --- Texte -----------------------------------------------------------------
 
+    /// <summary><c>GEBZ_BTN_PROJEKT</c> — der Knopf „Hülle und Zonen…".</summary>
+    [Parameter] public string BtnProjektText { get; set; } = Resource.GEBZ_BTN_PROJEKT;
+
+    /// <summary><c>GEBZ_BTN_PROJEKT_HINWEIS</c> — sein Kurztext.</summary>
+    [Parameter] public string BtnProjektHinweis { get; set; } = Resource.GEBZ_BTN_PROJEKT_HINWEIS;
+
+    /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
+    [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
+
+    /// <summary><c>GEBZ_TITEL_PROJEKT</c> — der Titel der Überlagerung des Editors in der Betriebsart Projekt.</summary>
+    [Parameter] public string TitelProjekteditor { get; set; } = Resource.GEBZ_TITEL_PROJEKT;
+
     [Parameter] public string TitelText { get; set; } = "Eingabe der Gebäudedaten";
     [Parameter] public string KopfbandText { get; set; } = "Eingabe der Energiedaten";
     [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Gebäude im Projekt:";
     [Parameter] public string LabelKatalog { get; set; } = "Gebäude in DB:";
-    [Parameter] public string GruppeFilter { get; set; } = "Filter Gebäude DB";
     [Parameter] public string GruppeVerbrauch { get; set; } = "Gebäude: Verbrauch";
-    [Parameter] public string LabelVerwendung { get; set; } = "Verwendung";
     [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart";
-    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr";
-    [Parameter] public string LabelSuche { get; set; } = "Filter:";
-    [Parameter] public string PlatzhalterSuche { get; set; } = "Suche, z. B. Haus*_1990*";
     [Parameter] public string LabelGebaeudename { get; set; } = "Gebäudename:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelWohnflaeche { get; set; } = "Wohn-/Nutzfläche:";
@@ -427,12 +463,9 @@
 
     /// <summary>Beschriftung des Rechenwegs im Detailblock (<c>GEB_LBL_RECHENWEG</c>).</summary>
     [Parameter] public string LabelRechenweg { get; set; } = "Rechenweg:";
+    /// <summary>Kopf der Wahlspalte beider Listen (<c>KFAK_SP_WAHL</c>).</summary>
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
     [Parameter] public string SpalteName { get; set; } = "Name";
-    [Parameter] public string SpalteTypFlaeche { get; set; } = "Typ/Wohnfläche";
-    [Parameter] public string TextAlle { get; set; } = "Alle";
-    [Parameter] public string TextWohngebaeude { get; set; } = "Wohngebäude";
-    [Parameter] public string TextSonstige { get; set; } = "Gewerbe+Sonstige";
 
     /// <summary>
     /// Beschriftung des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN</c>.
@@ -531,17 +564,19 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private bool _wohngebaeude = true;
-    private int? _artindex;
-    private int? _klassenindex;
-    private bool _ausBaujahrwahl;
-    private string _suche = "";
+    /// <summary>Der Filterstand der Katalogliste — aus dem Register, geteilt mit der Verwaltung.</summary>
+    private Katalogfilterstand _filterstand = new();
 
-    private IReadOnlyList<string> _arten = Array.Empty<string>();
-    private IReadOnlyList<GebaeudeKatalogZeile> _katalog = Array.Empty<GebaeudeKatalogZeile>();
+    /// <summary>Das Profil, wenn der Wirt keines reicht — einmal gebaut, damit die Liste es wiedererkennt.</summary>
+    private Katalogfilterprofil? _vorgabeprofil;
+
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
 
     private GebaeudeProjektZeile? _gewaehlt;
-    private GebaeudeKatalogZeile? _katalogzeile;
+
+    /// <summary>Der gewählte Katalogsatz — die Markierung hängt am Schlüssel (Bezeichner).</summary>
+    private string _katalogGewaehlt = "";
+    private Katalogfilterzeile? _katalogzeile;
 
     private string _detailName = "";
     private string _detailArt = "";
@@ -558,6 +593,12 @@
     private GebaeudeImportweg? _importweg;
     private IReadOnlyDictionary<string, object>? _wohnflaecheGaben;
     private IReadOnlyDictionary<string, object>? _bedarfGaben;
+
+    /// <summary>Der Parametersatz des Editors in der Betriebsart Projekt, solange „Hülle und Zonen…" steht.</summary>
+    private IReadOnlyDictionary<string, object>? _projektGaben;
+
+    /// <summary>Steht der Editor eines Projektgebäudes („Hülle und Zonen…")? Prüfhilfe für die Tests.</summary>
+    public bool ProjekteditorOffen => _projektGaben is not null;
     private bool _gebaeudetypOffen;
     private bool _loeschfrage;
     private string _meldung = "";
@@ -567,7 +608,21 @@
     public GebaeudeProjektZeile? Gewaehlt => _gewaehlt;
 
     /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
-    public GebaeudeKatalogZeile? Katalogzeile => _katalogzeile;
+    public Katalogfilterzeile? Katalogzeile => _katalogzeile;
+
+    /// <summary>Die Zeilen des Katalogs, ungefiltert — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterstand der Katalogliste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
+
+    /// <summary>
+    /// Das Profil der Katalogliste: das des Wirts, sonst <c>FuerGebaeude</c> mit den Texten aus
+    /// <c>MyResource</c> — auch ohne Gaben zeichnet die Liste (Hausregel).
+    /// </summary>
+    private Katalogfilterprofil Profil
+        => Katalogprofil ?? (_vorgabeprofil ??= Katalogfilterprofil.FuerGebaeude(
+               s => Resource.ResourceManager.GetString(s) ?? s));
 
     /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
     public string Meldung => _meldung;
@@ -591,12 +646,15 @@
     public bool BedarfOffen => _bedarfGaben is not null;
 
     private string Loeschfrage
-        => string.Format(MeldungLoeschfrage, _katalogzeile?.Name ?? "");
+        => string.Format(MeldungLoeschfrage, _katalogzeile?.Bezeichner ?? "");
 
     protected override void OnInitialized()
     {
-        ArtenLaden();
-        KatalogLaden(ausBaujahrwahl: false);
+        // Der Filterstand je Katalog ueber die Sitzung - derselbe Eintrag wie in der
+        // Gebaeudeverwaltung (Schluessel des Profils, "GEBAEUDE").
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
+
+        KatalogLaden();
         ProjektauswahlNachziehen();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken());
@@ -611,29 +669,28 @@
 
     /// <summary>
     /// Die Sicht des Assistenten auf die LEBENDEN Felder — einmal gebaut, danach nur
-    /// noch gelesen; ihre Delegaten greifen bei jedem Zugriff neu zu.
+    /// noch gelesen; ihre Delegaten greifen bei jedem Zugriff neu zu. Die vier Filterfelder
+    /// sind Suche und Trichter der Katalogliste (Welle K): Setzen heißt, den Ausdruck in den
+    /// Filterstand tippen; die Liste filtert beim nächsten Zeichnen neu.
     /// </summary>
     private GebaeudeKiSicht KiSicht()
     {
         return _kiSicht ??= new GebaeudeKiSicht
         {
-            VerwendungLesen = () => _wohngebaeude ? 0 : 1,
-            VerwendungSetzen = VerwendungWaehlen,
-            VerwendungEintraege = () => KiMaskenanmeldung.Eintraege(
-                Verwendungseintraege, e => e.Id, e => e.Text),
+            VerwendungLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpVerwendung),
+            VerwendungSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpVerwendung, w),
+            VerwendungEintraege = () => Spaltenwahl(Katalogfilterprofil.SpVerwendung),
 
-            FilterGebaeudeartLesen = () => _artindex,
-            FilterGebaeudeartSetzen = ArtWaehlen,
-            GebaeudeartEintraege = () => KiMaskenanmeldung.Eintraege(
-                Arteintraege, e => e.Id, e => e.Text),
+            FilterGebaeudeartLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpGebaeudeart),
+            FilterGebaeudeartSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpGebaeudeart, w),
+            GebaeudeartEintraege = () => Spaltenwahl(Katalogfilterprofil.SpGebaeudeart),
 
-            FilterBaujahrLesen = () => _klassenindex,
-            FilterBaujahrSetzen = KlasseWaehlen,
-            BaujahrEintraege = () => KiMaskenanmeldung.Eintraege(
-                Klasseneintraege, e => e.Id, e => e.Text),
+            FilterBaujahrLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpBaujahr),
+            FilterBaujahrSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpBaujahr, w),
+            BaujahrEintraege = () => Spaltenwahl(Katalogfilterprofil.SpBaujahr),
 
-            SucheLesen = () => _suche,
-            SucheSetzen = muster => SucheSetzen(muster),
+            SucheLesen = () => _filterstand.Suche,
+            SucheSetzen = muster => _filterstand.Suche = muster ?? "",
 
             NameLesen = () => _detailName,
             GebaeudeartLesen = () => _detailArt,
@@ -681,6 +738,9 @@
     /// </summary>
     protected override void OnParametersSet()
     {
+        // Der Kopf der Wahlspalte der Katalogliste kommt ueber den eigenen Text des
+        // Wirtes - dasselbe Wort wie in der Projektliste darueber.
+        Filtertexte.SpalteWahl = SpalteWahl;
         ProjektauswahlNachziehen();
     }
 
@@ -721,98 +781,54 @@
     }
 
     // =================================================================================
-    // Filter
+    // Der Katalog - die Katalogliste des Hauses (Stufe G3, Welle K)
     // =================================================================================
 
-    private void ArtenLaden()
-        => _arten = Gebaeudearten?.Invoke(_wohngebaeude) ?? Array.Empty<string>();
-
-    private void KatalogLaden(bool ausBaujahrwahl)
+    /// <summary>
+    /// Liest den Katalog neu — beim Öffnen und nach einem SCHREIBweg (Editor, Import,
+    /// Löschen). Der FILTER ruft sie nicht: Er wirkt auf die Anzeige, und die Einschränkung
+    /// macht der Kern in der <c>Katalogliste</c>. Die Wahl bleibt am Schlüssel stehen, solange
+    /// es den Satz noch gibt.
+    /// </summary>
+    private void KatalogLaden()
     {
-        _ausBaujahrwahl = ausBaujahrwahl;
-        string? art = (_artindex is null || _artindex.Value < 0 || _artindex.Value >= _arten.Count)
-            ? null : _arten[_artindex.Value];
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
 
-        _katalog = Katalog?.Invoke(_wohngebaeude, art, _klassenindex, ausBaujahrwahl)
-                   ?? Array.Empty<GebaeudeKatalogZeile>();
+        _katalogzeile = Katalogsatz(_katalogGewaehlt);
+        if (_katalogzeile is null) _katalogGewaehlt = "";
+    }
 
-        if (_katalogzeile is not null && !_katalog.Contains(_katalogzeile)) _katalogzeile = null;
+    /// <summary>Der Katalogsatz zu einem Schlüssel; <c>null</c>, wenn es ihn nicht gibt.</summary>
+    private Katalogfilterzeile? Katalogsatz(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel)) return null;
+        foreach (Katalogfilterzeile z in _katalog)
+            if (z.Schluessel == schluessel) return z;
+        return null;
     }
 
     /// <summary>
-    /// Der Umschalter Wohn-/Nichtwohngebäude lädt BEIDE Listen neu — den Katalog und die
-    /// Artenliste (<c>radioBtn_*_CheckedChanged</c>:164/198, dort zweimal wortgleich).
+    /// Die Zeilen, die die Liste gerade ZEIGT — gefiltert und sortiert nach demselben Stand
+    /// und derselben Rechnung wie die <c>Katalogliste</c> (<c>Katalogfilter.Anwenden</c>).
+    /// Gebraucht nur beim Entfernen, das die erste sichtbare Katalogzeile wählt.
     /// </summary>
-    private void VerwendungWaehlen(int? index)
-    {
-        _wohngebaeude = index != 1;
-        _artindex = null;
-        ArtenLaden();
-        KatalogLaden(ausBaujahrwahl: false);
-    }
-
-    private void ArtWaehlen(int? index)
-    {
-        _artindex = index;
-        KatalogLaden(ausBaujahrwahl: false);
-    }
-
-    private void KlasseWaehlen(int? index)
-    {
-        _klassenindex = index;
-        KatalogLaden(ausBaujahrwahl: true);
-    }
-
-    private void SucheSetzen(string wert)
-    {
-        _suche = wert ?? "";
-        if (_katalogzeile is not null && !GefilterterKatalog.Contains(_katalogzeile))
-            _katalogzeile = null;
-    }
+    private IReadOnlyList<Katalogfilterzeile> Sichtbar
+        => Katalogfilter.Anwenden(Profil, _katalog, _filterstand);
 
     /// <summary>
-    /// Die Wildcard-Suche über beide Spalten — <c>ApplyGridFilter</c>:636-682, seit W9.0e
-    /// als <c>Suchmuster</c> im Kern.
+    /// Die Einträge eines Filterfeldes für den Assistenten: jeder Wert, der in der Spalte
+    /// steht, einmal und sortiert — genau das, was der Trichter treffen kann. Schlüssel ist
+    /// der Anzeigetext, denn der Trichter filtert auf dem, was in der Zelle steht.
     /// </summary>
-    private IReadOnlyList<GebaeudeKatalogZeile> GefilterterKatalog
+    private IReadOnlyList<KiKern.KiWahleintrag> Spaltenwahl(string spalte)
     {
-        get
+        var werte = new SortedSet<string>(StringComparer.CurrentCulture);
+        foreach (Katalogfilterzeile z in _katalog)
         {
-            var muster = WindowsFormsApplication1.Suchmuster.Uebersetzen(_suche);
-            if (muster is null) return _katalog;
-
-            var treffer = new List<GebaeudeKatalogZeile>();
-            foreach (GebaeudeKatalogZeile z in _katalog)
-            {
-                if (WindowsFormsApplication1.Suchmuster.Trifft(muster, z.Name) ||
-                    WindowsFormsApplication1.Suchmuster.Trifft(muster, z.Art + " " + z.Wohnflaeche))
-                    treffer.Add(z);
-            }
-            return treffer;
+            string text = z.Text(spalte);
+            if (!string.IsNullOrWhiteSpace(text) && text != ParameterVerwendung.LEER) werte.Add(text);
         }
-    }
-
-    private IReadOnlyList<(int Id, string Text)> Verwendungseintraege
-        => new[] { (0, TextWohngebaeude), (1, TextSonstige) };
-
-    private IReadOnlyList<(int Id, string Text)> Arteintraege
-    {
-        get
-        {
-            var l = new List<(int, string)> { (-1, TextAlle) };
-            for (int i = 0; i < _arten.Count; i++) l.Add((i, _arten[i]));
-            return l;
-        }
-    }
-
-    private IReadOnlyList<(int Id, string Text)> Klasseneintraege
-    {
-        get
-        {
-            var l = new List<(int, string)> { (-1, TextAlle) };
-            for (int i = 0; i < Baualtersklassen.Count; i++) l.Add((i, Baualtersklassen[i]));
-            return l;
-        }
+        return KiMaskenanmeldung.Eintraege(werte, w => w);
     }
 
     // =================================================================================
@@ -823,6 +839,7 @@
     {
         _gewaehlt = z;
         _katalogzeile = null;
+        _katalogGewaehlt = "";
         _detailName = z.Name;
         _detailArt = z.Art;
         _detailBeschreibung = z.Beschreibung;
@@ -837,20 +854,24 @@
         => wk.HasValue ? wk.Value.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " W/K" : "—";
 
     /// <summary>
-    /// Der Katalogsatz füllt den Detailblock aus den STAMMDATEN; Einheit „Wohnfläche [m²]"
-    /// und ein leerer Jahresnutzungsgrad
-    /// (<c>listBox_Gebaeude_DB_SelectedIndexChanged</c>:585-592).
+    /// Die Katalogliste meldet eine Zeile: Der Katalogsatz füllt den Detailblock aus den
+    /// STAMMDATEN; Einheit „Wohnfläche [m²]" und ein leerer Jahresnutzungsgrad
+    /// (<c>listBox_Gebaeude_DB_SelectedIndexChanged</c>:585-592). Die Projektmarkierung fällt.
     /// </summary>
-    private void KatalogzeileWaehlen(GebaeudeKatalogZeile k)
+    private void KatalogzeileWaehlen(string schluessel)
     {
+        Katalogfilterzeile? k = Katalogsatz(schluessel ?? "");
+        if (k is null) return;
+
+        _katalogGewaehlt = k.Schluessel;
         _katalogzeile = k;
         _gewaehlt = null;
 
-        GebaeudeStammDetail? detail = StammDetail?.Invoke(k.Name);
-        _detailName = detail?.Name ?? k.Name;
-        _detailArt = detail?.Art ?? k.Art;
+        GebaeudeStammDetail? detail = StammDetail?.Invoke(k.Bezeichner);
+        _detailName = detail?.Name ?? k.Bezeichner;
+        _detailArt = detail?.Art ?? k.Text(Katalogfilterprofil.SpGebaeudeart);
         _detailBeschreibung = detail?.Beschreibung ?? "";
-        _detailWohnflaeche = detail?.Wohnflaeche ?? k.Wohnflaeche;
+        _detailWohnflaeche = detail?.Wohnflaeche ?? k.Text(Katalogfilterprofil.SpFlaecheM2);
         _detailEinheit = "Wohnfläche [m²]";
         _detailHges = Leitwert(detail?.HgesWK);
         _detailRechenweg = detail?.Rechenweg ?? "";
@@ -864,7 +885,7 @@
     {
         if (_katalogzeile is null || StammSatz is null) return;
 
-        GebaeudeProjektZeile? neu = StammSatz(_katalogzeile.Name);
+        GebaeudeProjektZeile? neu = StammSatz(_katalogzeile.Bezeichner);
         if (neu is null) return;
 
         Zeilen.Add(neu);
@@ -875,7 +896,8 @@
 
     /// <summary>
     /// Entfernt GENAU die gewählte Zeile über ihre <c>IdZ</c> — die Stamm-Id ist bei zwei
-    /// gleichen Gebäuden nicht eindeutig (<c>btn_Entfernen_Click</c>:283-287).
+    /// gleichen Gebäuden nicht eindeutig (<c>btn_Entfernen_Click</c>:283-287). Ist die
+    /// Projektliste danach leer, steht die erste SICHTBARE Katalogzeile im Detailblock.
     /// </summary>
     private void BeiEntfernen()
     {
@@ -885,7 +907,11 @@
         _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
 
         if (_gewaehlt is not null) ProjektzeileWaehlen(_gewaehlt);
-        else if (GefilterterKatalog.Count > 0) KatalogzeileWaehlen(GefilterterKatalog[0]);
+        else
+        {
+            IReadOnlyList<Katalogfilterzeile> sichtbar = Sichtbar;
+            if (sichtbar.Count > 0) KatalogzeileWaehlen(sichtbar[0].Schluessel);
+        }
         Geaendert?.Invoke();
         _meldung = "";
     }
@@ -900,7 +926,7 @@
         if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
 
         _meldung = "";
-        _katalogGaben = KatalogGaben(_katalogzeile.Name);
+        _katalogGaben = KatalogGaben(_katalogzeile.Bezeichner);
     }
 
     private void BeiKatalogNeu()
@@ -921,7 +947,7 @@
         _katalogGaben = null;
         GebaeudeImportweg? import = _importweg;
         _importweg = null;
-        KatalogLaden(_ausBaujahrwahl);   // SetGebaeudeDB() nach dem Schliessen
+        KatalogLaden();   // SetGebaeudeDB() nach dem Schliessen
 
         if (import is null || !gespeichert) return;
         GebaeudeProjektZeile? neu = import.Aufnehmen();
@@ -979,6 +1005,33 @@
     }
 
     /// <summary>
+    /// „Hülle und Zonen…" (G3, Welle D2) — der Editor der Projektkopie als Überlagerung. Ohne
+    /// Projektkopie meldet der Knopf seinen Grund.
+    /// </summary>
+    private void BeiProjekt()
+    {
+        if (_gewaehlt is null || ProjektGaben is null) return;
+        if (!_gewaehlt.HatProjektkopie) { Melden(SperreNeueZeile, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _projektGaben = ProjektGaben(_gewaehlt);
+        if (_projektGaben is null) Melden(SperreNeueZeile, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// Der Editor der Projektkopie ist zu: Hat er geschrieben, liest die Zeile Rechenweg,
+    /// Wärmeleitwert und Zone neu (der Detailblock zieht nach). Die Projektliste selbst ist davon
+    /// unberührt — sie schreibt weiter erst das OK dieses Dialogs.
+    /// </summary>
+    private void ProjekteditorFertig(bool gespeichert)
+    {
+        _projektGaben = null;
+        KatalogLaden();   // "Speichern unter" legt einen Katalogsatz an
+        if (!gespeichert || _gewaehlt is null) return;
+        ZeileAuffrischen?.Invoke(_gewaehlt);
+        ProjektzeileWaehlen(_gewaehlt);
+    }
+
+    /// <summary>
     /// Das Ergebnis der Wohnflächenangabe geht in die MARKIERTE Zeile zurück
     /// (<c>btn_Aendern_Click</c>:445-469, dort über <c>ID_Z</c>).
     /// </summary>
@@ -1027,7 +1080,7 @@
     {
         if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
 
-        string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Name) ?? "";
+        string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
         if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung); return; }
 
         _meldung = "";
@@ -1044,15 +1097,16 @@
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogzeile.Name))
+        if (!KatalogLoeschen(_katalogzeile.Bezeichner))
         {
-            string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Name) ?? "";
+            string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
             Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung);
             return;
         }
 
         _katalogzeile = null;
-        KatalogLaden(_ausBaujahrwahl);
+        _katalogGewaehlt = "";
+        KatalogLaden();
         Melden(MeldungGeloescht, WarnStufe.Hinweis);
     }
 
@@ -1072,7 +1126,7 @@
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
-            _loeschfrage) return Task.CompletedTask;
+            _loeschfrage || _projektGaben is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 }

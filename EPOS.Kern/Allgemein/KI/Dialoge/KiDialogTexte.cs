@@ -966,13 +966,15 @@
         /// <summary>Der Name in der Gebaeudeverwaltung — nur lesbar (Welle #465).</summary>
         internal static string GebaNameErl => MyResource.Resource.KI_DLG_GEBA_NAME_ERL;
 
-        internal static string GebVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
+        // Stufe G3, Welle K: Die vier Filterfelder sind Trichter und Suche der Katalogliste -
+        // ihre Namen sind die Spaltenkoepfe und die Beschriftung des Suchfeldes.
+        internal static string GebVerwendungName => MyResource.Resource.KFLT_SP_VERWENDUNG;
         internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
-        internal static string GebFilterArtName => MyResource.Resource.GEB_LBL_GEBAEUDEART;
+        internal static string GebFilterArtName => MyResource.Resource.KFLT_SP_GEBAEUDEART;
         internal static string GebFilterArtErl => MyResource.Resource.KI_DLG_GEB_FILTER_ART_ERL;
-        internal static string GebFilterBaujahrName => MyResource.Resource.GEB_LBL_BAUJAHR;
+        internal static string GebFilterBaujahrName => MyResource.Resource.KFLT_SP_BAUJAHR;
         internal static string GebFilterBaujahrErl => MyResource.Resource.KI_DLG_GEB_FILTER_BAUJAHR_ERL;
-        internal static string GebSucheName => MyResource.Resource.GEB_LBL_SUCHE;
+        internal static string GebSucheName => MyResource.Resource.KFLT_SUCHE;
         internal static string GebSucheErl => MyResource.Resource.KI_DLG_GEB_SUCHE_ERL;
         internal static string GebNameName => MyResource.Resource.GEB_LBL_GEBAEUDENAME;
         internal static string GebNameErl => MyResource.Resource.KI_DLG_GEB_NAME_ERL;
@@ -1267,6 +1269,54 @@
         internal static string BtaSchichtCpErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_CP_ERL;
         internal static string BtaSchichtLuftschichtName => MyResource.Resource.BTA_LBL_LUFTSCHICHT;
         internal static string BtaSchichtLuftschichtErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL;
+
+        // ================= Gebaeudesimulation G3, Welle D2: Zone und Bauteil
+
+        /// <summary>Der Zonendialog des Gebäudeeditors (G3).</summary>
+        internal static string MaskeZone => MyResource.Resource.KI_DLG_MASKE_ZONE;
+
+        /// <summary>Der Bauteildialog im Zonendialog (G3).</summary>
+        internal static string MaskeBauteil => MyResource.Resource.KI_DLG_MASKE_BAUTEIL;
+
+        /// <summary>Einheit des Wärmebrückenzuschlags ψ·L — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_W_K = "W/K";
+
+        internal static string ZonBezeichnungName => MyResource.Resource.ZONDLG_LBL_BEZEICHNER;
+        internal static string ZonBezeichnungErl => MyResource.Resource.KI_DLG_ZON_BEZEICHNUNG_ERL;
+        internal static string ZonNutzflaecheName => MyResource.Resource.ZONDLG_LBL_NUTZFLAECHE;
+        internal static string ZonNutzflaecheErl => MyResource.Resource.KI_DLG_ZON_NUTZFLAECHE_ERL;
+        internal static string ZonBauteilArtName => MyResource.Resource.BTDLG_LBL_ART;
+        internal static string ZonBauteilArtErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_ART_ERL;
+        internal static string ZonBauteilBezeichnungErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_BEZEICHNUNG_ERL;
+        internal static string ZonBauteilFlaecheErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_FLAECHE_ERL;
+        internal static string ZonBauteilUWertErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_UWERT_ERL;
+        internal static string ZonBauteilAzimutErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_AZIMUT_ERL;
+        internal static string ZonBauteilAufbauName => MyResource.Resource.ZONDLG_SP_AUFBAU;
+        internal static string ZonBauteilAufbauErl => MyResource.Resource.KI_DLG_ZON_BAUTEIL_AUFBAU_ERL;
+
+        internal static string BtArtName => MyResource.Resource.BTDLG_LBL_ART;
+        internal static string BtArtErl => MyResource.Resource.KI_DLG_BT_ART_ERL;
+        internal static string BtBezeichnungErl => MyResource.Resource.KI_DLG_BT_BEZEICHNUNG_ERL;
+        internal static string BtFlaecheName => MyResource.Resource.BTDLG_LBL_FLAECHE;
+        internal static string BtFlaecheErl => MyResource.Resource.KI_DLG_BT_FLAECHE_ERL;
+        internal static string BtAzimutName => MyResource.Resource.BTDLG_LBL_AZIMUT;
+        internal static string BtAzimutErl => MyResource.Resource.KI_DLG_BT_AZIMUT_ERL;
+        internal static string BtNeigungName => MyResource.Resource.BTDLG_LBL_NEIGUNG;
+        internal static string BtNeigungErl => MyResource.Resource.KI_DLG_BT_NEIGUNG_ERL;
+        internal static string BtRandName => MyResource.Resource.BTDLG_LBL_RAND;
+        internal static string BtRandErl => MyResource.Resource.KI_DLG_BT_RAND_ERL;
+        internal static string BtGWertName => MyResource.Resource.BTDLG_LBL_GWERT;
+        internal static string BtGWertErl => MyResource.Resource.KI_DLG_BT_GWERT_ERL;
+        internal static string BtRahmenName => MyResource.Resource.BTDLG_LBL_RAHMEN;
+        internal static string BtRahmenErl => MyResource.Resource.KI_DLG_BT_RAHMEN_ERL;
+        internal static string BtVerschattungName => MyResource.Resource.BTDLG_LBL_VERSCHATTUNG;
+        internal static string BtVerschattungErl => MyResource.Resource.KI_DLG_BT_VERSCHATTUNG_ERL;
+        internal static string BtPsiLName => MyResource.Resource.BTDLG_LBL_PSIL;
+        internal static string BtPsiLErl => MyResource.Resource.KI_DLG_BT_PSIL_ERL;
+        internal static string BtUWertName => MyResource.Resource.BTDLG_LBL_UWERT;
+        internal static string BtUWertErl => MyResource.Resource.KI_DLG_BT_UWERT_ERL;
+        internal static string BtAufbauName => MyResource.Resource.BTDLG_LBL_AUFBAU_PROJEKT;
+        internal static string BtAufbauErl => MyResource.Resource.KI_DLG_BT_AUFBAU_ERL;
 
         internal static string TprofTypName => MyResource.Resource.BPRO_LBL_LISTE_STROM;
         internal static string TprofTypErl => MyResource.Resource.KI_DLG_TPROF_TYP_ERL;

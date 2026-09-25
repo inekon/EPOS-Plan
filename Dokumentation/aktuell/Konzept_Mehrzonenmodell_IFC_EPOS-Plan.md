@@ -2,6 +2,15 @@
 
 **Rev. 3 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachzug 25.09.2026 — Umsetzung G3** ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.44–N1.46): Die Schritte **S-A bis S-C**
+> sind als Schemaschritte **132 bis 134** mit G3 gebaut, und zwar **alle acht Tabellen** — auch
+> `Tab_Bauteilaufbau(_STAMM)` (Softwarearchitektur W1); G6a legt keine Tabelle mehr an. Der
+> Baustoffkatalog trägt die Spalte `Hersteller` und neben 65 herstellerneutralen Stoffen 67
+> Herstellerprodukte (**E39**); die Projektkopien `Tab_Baustoff` und `Tab_Bauteilaufbau` haben den
+> Fremdschlüssel auf `Tab_Projekt`. In G3 liest der Lauf von der Zone nur Nutzfläche (**E40**) und
+> Bauteile. Nachgezogen in 3.5, 4.2, 4.4 und Kapitel 9.
+>
 > **Was Rev. 3 ändert:** `Tab_Zone` und `Tab_Bauteil` entstehen mit **G3** (S-A bis S-C),
 > `Tab_Zonenluftstrom` und `ID_Nachbarzone` erst mit **G6b** im neuen Schritt **S-G**, und G6a legt
 > `Tab_Bauteilaufbau(_STAMM)` an (4.4, Kapitel 9); die Zonenspaltentabelle führt die Spalten aus
@@ -603,21 +612,25 @@ Umrechnung und einen Plausibilitätsriegel (500 ≤ c ≤ 3 000 J/(kgK) deckt Be
 
 ### 3.5 Baustoffkatalog mit gesäten Standardwerten und Quelle
 
-`Tab_Baustoff_STAMM` gibt es heute **nicht**; eine Suche über `*.cs` und `*.sql` findet weder
-`Tab_Bauteil` noch `Tab_Bauteilschicht` noch `Tab_Baustoff_STAMM` im Repositorium (Befund P,
-§ 3.6). Er entsteht mit G3 und ist die Voraussetzung des Mehrzonenimports. **`Tab_Bauteil`,
-`Tab_Bauteilschicht` und `Tab_Baustoff_STAMM` entstehen einmal — mit G3 und bereits in der hier
-vorgeschlagenen Form** (Bauteil an der Zone, Schicht am Aufbau, `Bezeichner` als Namensspalte);
-Kapitel 6.3 des Grundkonzepts ist dafür fortzuschreiben. **`Tab_Zone` entsteht ebenfalls mit G3**,
-weil `Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt und der Zonenreiter der Grundform schon dort
-steht. G6a legt dann nur noch `Tab_Bauteilaufbau(_STAMM)` an; `Tab_Zonenluftstrom` und
-`Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (Schritt S-G, 4.4) — eine zweite Anlage derselben
-Tabellen wäre ein Umbauschritt und nicht ergebnisneutral.
+Der Baustoffkatalog ist die Voraussetzung des Mehrzonenimports. **Gebaut mit G3 (Schemaschritte
+132 bis 134, 25.09.2026):** `Tab_Baustoff(_STAMM)`, `Tab_Bauteilaufbau(_STAMM)`,
+`Tab_Bauteilschicht(_STAMM)`, `Tab_Zone` und `Tab_Bauteil` entstehen **einmal** und in der hier
+vorgeschlagenen Form (Bauteil an der Zone, Schicht am Aufbau, `Bezeichner` als Namensspalte);
+Kapitel 6.3 des Grundkonzepts ist nachgezogen. `Tab_Zone` entsteht mit G3, weil
+`Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt und der Zonenreiter der Grundform schon dort steht.
+G6a legt keine Tabelle mehr an; `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit
+G6b (Schritt S-G, 4.4) — eine zweite Anlage derselben Tabellen wäre ein Umbauschritt und nicht
+ergebnisneutral.
 
-**Saat:** rund 60 Stoffe nach DIN 4108-4 / DIN EN ISO 10456 (Konzept 6.3) nach dem Muster der
+**Saat (Schritt 132, E39):** **65 herstellerneutrale Stoffe** nach DIN 4108-4:2020-11 /
+DIN EN ISO 10456 (feste Ids 1 bis 65) und **67 Herstellerprodukte** mit den Bemessungswerten aus den
+Herstellerunterlagen (feste Ids 1001 bis 1067, Spalte `Hersteller`), nach dem Muster der
 Nutzungsdauer-Saat — feste Id je Zeile („sie bleibt über alle Auslieferungen gleich",
-`EPOS.Kern/Allgemein/Update/NutzungsdauerSchema.cs:78`), `Quelle` je Zeile (`:191`), Sortiernummer,
-geschrieben über `SaatSchreiben()` (`:448`) mit `?`-Parametern, idempotent.
+`EPOS.Kern/Allgemein/Update/NutzungsdauerSchema.cs:78`), `Quelle` je Zeile (`:191`),
+geschrieben über `SaatSchreiben()` (`:448`) mit `?`-Parametern, idempotent; `ReadOnly = 1`, Herkunft
+`VORGABE`. Dämmstoffe der herstellerneutralen Saat heißen nach dem Nennwert („λD 0,035"), die Spalte
+`Lambda` trägt den Bemessungswert ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.44,
+N1.46).
 
 > **Zwei Auflagen aus der Auslieferung.** `Werkzeuge/Auslieferungsvorlage` erkennt Kataloge über
 > `EndsWith("_STAMM", StringComparison.Ordinal)` (`…/Projektsicht.cs:110-111`) — **ordinal**, und
@@ -629,6 +642,8 @@ geschrieben über `SaatSchreiben()` (`:448`) mit `?`-Parametern, idempotent.
 > `Tab_Baustoff_STAMM` schreiben und die Saat mit `ReadOnly = 1` setzen**, sonst ist der Katalog in
 > der Auslieferung leer. **Zu prüfen ist zusätzlich `Tab_Bauteilschicht_STAMM`**: Sie führt keine
 > Spalte `ReadOnly` und würde über die Kaskade ihres Aufbaus mitgerissen (`Vorlagenbau.cs:175`).
+> *Erledigt mit G3:* Die Auslieferungsvorlage führt die Kindkataloge ohne `ReadOnly` namentlich und
+> prüft sie mit eigenen Proben.
 
 **Herkunftskennzeichen.** Je **Aufbau** und je **Baustoff** eine `Herkunft` ∈ {`GBXML`, `IFC`,
 `KATALOG` (über Namensabgleich, mit der getroffenen Stufe als Beleg), `MANUELL`, `VORGABE`} — die
@@ -769,7 +784,8 @@ einen Zone, und die Abfragen bleiben gleich).
 Der Wert `KELLER` aus Konzept 6.1 fehlt hier mit Absicht: Im Mehrzonenmodell ist ein Keller eine
 **unbeheizte Zone**, also `ZONE` (2.5). Der Wert bleibt im Einzonenweg an `Tab_Gebaeude` bestehen.
 
-**`Tab_Bauteilaufbau` / `_STAMM`** — der wiederverwendbare Schichtaufbau: `ID`, `ID_Projekt` (bzw.
+**`Tab_Bauteilaufbau` / `_STAMM`** — der wiederverwendbare Schichtaufbau: `ID`, `ID_Projekt` (FK →
+`Tab_Projekt.ID`, `ON DELETE CASCADE ON UPDATE CASCADE` nach der Hausregel seit Schemaschritt 96; bzw.
 `ReadOnly INTEGER NOT NULL DEFAULT 0 CHECK (IN (0,1))` im Stamm), `Bezeichner`, `Beschreibung`,
 `Bauteilart`, `Quelle` (Dateiname des Imports), `Herkunft` TEXT mit `CHECK (Herkunft IN
 ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` (Datenaustauschkonzept 7.3).
@@ -787,11 +803,12 @@ Zuordnung**, damit eine spätere Katalogänderung kein gerechnetes Ergebnis rüc
 
 **`Tab_Baustoff_STAMM` / `Tab_Baustoff`** — spaltengleich (Regel `WechselrichterSchema.cs:280-284`:
 „eine Spalte nur auf einer Seite ist beim `CopyFromStamm` sofort ein Datenverlust"): `ID`,
-`Bezeichner` NOT NULL, `Gruppe` TEXT (Mauerwerk, Beton, Dämmstoff, Holz, Putz, …), `Lambda`, `Rho`,
-`cp` REAL, `Quelle`, `Herkunft` TEXT mit `CHECK (Herkunft IN
-('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` (Datenaustauschkonzept 7.3); dazu in `_STAMM`
-`ReadOnly`, in der Projektkopie
-`ID_Projekt` NOT NULL. **`Tab_Zonenluftstrom`** — neu gegenüber Befund Q, weil 2.7 es verlangt:
+`Bezeichner` NOT NULL, `Gruppe` TEXT (Mauerwerk, Beton, Dämmstoff, Holz, Putz, …), `Hersteller` TEXT
+(≤ 80, **NULL = herstellerneutral**, E39), `Lambda`, `Rho`, `cp` REAL, `Quelle`, `Herkunft` TEXT mit
+`CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` (Datenaustauschkonzept 7.3),
+`Quellkennung`; dazu in `_STAMM` `ReadOnly`, in der Projektkopie `ID_Projekt` NOT NULL mit
+Fremdschlüssel auf `Tab_Projekt` (`ON DELETE CASCADE ON UPDATE CASCADE`, Hausregel seit
+Schemaschritt 96). **`Tab_Zonenluftstrom`** — neu gegenüber Befund Q, weil 2.7 es verlangt:
 `ID`, `ID_ZoneA`/`ID_ZoneB` NOT NULL (FK, Kaskade), `Volumenstrom` REAL NOT NULL (m³/h),
 `CHECK (ID_ZoneA < ID_ZoneB)` **und** `CREATE UNIQUE INDEX IF NOT EXISTS idx_Zonenluftstrom ON
 Tab_Zonenluftstrom(ID_ZoneA, ID_ZoneB)` — der CHECK normiert die Richtung, der Index erzwingt
@@ -834,16 +851,18 @@ muss also still bleiben (`:4883-4891`).
 
 | Schritt | Inhalt | Ergebnisneutral? |
 |---|---|---|
-| **S-A** | `Tab_Baustoff_STAMM` + `Tab_Baustoff` anlegen, Baustoffsaat schreiben (`ReadOnly = 1`), DDL und Saat in `BaustoffSchema.cs` nach Muster `NutzungsdauerSchema.cs:218/257/297` | ja — legt an und sät |
-| **S-B** | `Tab_Bauteilaufbau(_STAMM)` + `Tab_Bauteilschicht(_STAMM)` anlegen, Index `(ID_Aufbau, Reihenfolge)` | ja |
-| **S-C** (mit **G3**) | `Tab_Zone` + `Tab_Bauteil` anlegen, Indizes `(ID_Gebaeude, Rang)` und `(ID_Zone, Rang)`; `Tab_Zone` und `Tab_Bauteil` führen `Quellkennung` (Länge 64) und `Herkunft` mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` — **nicht** `IfcGuid` (4.2; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4/7.3, Frage D9). Stehen KU-S1 bzw. AK-S1 schon, legt S-C deren Zonenspalten gleich mit an (4.2) | ja, solange kein Rechenweg liest |
+| **S-A** (mit **G3**, Schritt **132**) | `Tab_Baustoff_STAMM` + `Tab_Baustoff` anlegen, Baustoffsaat schreiben (`ReadOnly = 1`), DDL und Saat in `BaustoffSchema.cs` nach Muster `NutzungsdauerSchema.cs:218/257/297` | ja — legt an und sät |
+| **S-B** (mit **G3**, Schritt **133**) | `Tab_Bauteilaufbau(_STAMM)` + `Tab_Bauteilschicht(_STAMM)` anlegen, Index `(ID_Aufbau, Reihenfolge)` | ja |
+| **S-C** (mit **G3**, Schritt **134**) | `Tab_Zone` + `Tab_Bauteil` anlegen, Indizes `(ID_Gebaeude, Rang)` und `(ID_Zone, Rang)`; `Tab_Zone` und `Tab_Bauteil` führen `Quellkennung` (Länge 64) und `Herkunft` mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` — **nicht** `IfcGuid` (4.2; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4/7.3, Frage D9). Stehen KU-S1 bzw. AK-S1 schon, legt S-C deren Zonenspalten gleich mit an (4.2) | ja, solange kein Rechenweg liest |
 | **S-D** | Registerpflege **ohne DDL**: `KatalogRegistry`-Einträge `BAUSTOFF` und `AUFBAU` (mit Datenblock), `SchemaKatalog`-Konstanten (`EPOS.Kern/Allgemein/Update/SchemaKatalog.cs:46`, `:47-51`), `ProjektDuplizierenCtrl.FK_MAP` und `KINDER`, `Seitenschluessel`, `Menuetabelle`, Ressourcen + `ResourceDesigner`, **und die sechs neuen Projekttabellen in `sql/tools/Reduziere-Testdatenbank.sql`** — `Tab_Zone`, `Tab_Bauteil`, `Tab_Zonenluftstrom` über den Unterausdruck auf `Tab_Gebaeude` (sie führen bewusst kein `ID_Projekt`, Vorbild `Tab_DBTagVDaten`), `Tab_Bauteilaufbau`, `Tab_Bauteilschicht`, `Tab_Baustoff` über `ID_Projekt`. Jede Tabelle wird in dem Schritt eingetragen, der sie anlegt — `Tab_Zonenluftstrom` also erst mit S-G | ja |
 | **S-G** (mit **G6b**) | `Tab_Zonenluftstrom` anlegen und `Tab_Bauteil.ID_Nachbarzone` ergänzen, Index `(ID_Zone)`; beide haben vor der Zonenrechnung keinen Leser und gehören deshalb dorthin, wo der Rechenweg entsteht — **nicht** zu S-C (Softwarearchitektur 5) | ja, solange kein Rechenweg liest |
 | **S-E** | **S-E gehört nicht zu G6**: Der Umbau von `GebaeudeStammCtrl.CopyFromStamm`/`Insert`/`Overwrite` auf die Spaltenlisten-Bauweise (Befund Q-1) läuft als eigener, begründeter Einfrierschritt **mit G1**; in G6a bleibt davon nur das Mitkopieren der Zonen im schon umgebauten Kopierweg | **mit G1 nein** — in G6a ergebnisneutral, solange kein Projekt Zonen führt |
 
-Die Schritte S-A bis S-D und S-G werden als **nummerierte** Migrationsschritte nach ADR-001
+Die Schritte S-A bis S-C und S-G werden als **nummerierte** Migrationsschritte nach ADR-001
 geführt; die Nummern werden vergeben, wenn der Schemastand bei Beauftragung der jeweiligen Stufe
-feststeht. Die Gebäudespalten-Schritte tragen bis dahin die Papiernamen **M3** und **M4**; die
+feststeht — **S-A bis S-C tragen seit G3 die Nummern 132 bis 134** (die Nummer steht allein in
+`BaustoffSchema.SCHRITT`, S-B und S-C zählen davon weiter); S-D ist Registerpflege ohne DDL und ohne
+Nummer, S-G bekommt ihre Nummer mit G6b. Die Gebäudespalten-Schritte tragen bis dahin die Papiernamen **M3** und **M4**; die
 Zahlen 77 und 78 sind im Bestand anderweitig vergeben (Softwarearchitektur 2.4; A11, mit E27 entschieden: Nummern erst bei Beauftragung). Der
 Zielstand wird an `SchemaStand.Zielversion` abgelesen. Jede Nummer bekommt ihre Konstante,
 ihre Registrierung und ihren Zweig in `SchemaMigration.cs`.
@@ -852,9 +871,9 @@ ihre Registrierung und ihren Zweig in `SchemaMigration.cs`.
 `Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt und der Zonenreiter der Grundform schon in G3 steht —
 und zwar bereits in der hier vorgeschlagenen Form (Bauteil an der Zone, Schicht am Aufbau,
 `Bezeichner` als Namensspalte). Kommen sie von dort, übernimmt G6a sie unverändert; eine zweite
-Anlage derselben Tabellen in anderer Form wäre ein Umbauschritt und nicht ergebnisneutral. G6a
-legt danach nur noch `Tab_Bauteilaufbau(_STAMM)` (S-B) an; `Tab_Zonenluftstrom` und
-`Tab_Bauteil.ID_Nachbarzone` kommen mit S-G und G6b.
+Anlage derselben Tabellen in anderer Form wäre ein Umbauschritt und nicht ergebnisneutral. **Mit G3
+ist auch S-B gebaut** (Softwarearchitektur W1, Konzept N1.46): G6a legt keine Tabelle mehr an;
+`Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit S-G und G6b.
 
 > **Befund Q-1 (hoch, Sperrpunkt).** `GebaeudeStammCtrl.CopyFromStamm`
 > (`EPOS.Kern/Controller/GebaeudeStammCtrl.cs:439`) ist ein handgeschriebener 55-Spalten-`INSERT`,
@@ -1432,7 +1451,7 @@ zu ziehen, sobald eine neue Spaltenart oder eine geänderte Zeilenhöhe entsteht
 
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **G6a — Datenmodell und Pflege** | Schritt S-D und der Rest von S-B (nummeriert nach ADR-001) samt Schema-Klassen und Testdatenbankwerkzeug; `Tab_Zone`, `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` entstehen schon mit **G3** (S-A bis S-C, 3.5 und 4.4), **G6a legt `Tab_Bauteilaufbau(_STAMM)` an**, `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (S-G); Baustoffsaat (rund 60 Stoffe, DIN 4108-4 / ISO 10456); Baustoff- **und Aufbaukatalog** in der Administration; Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT; Controller und Kopierwege; `FK_MAP`/`KINDER`; Bericht-Zonentabelle | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Leser), `SqlDialektPruefer` grün | **10–15 PT** |
+| **G6a — Datenmodell und Pflege** | **Mit G3 gebaut (25.09.2026, Schritte 132–134):** alle acht Tabellen samt Registerpflege S-D, Baustoffsaat (65 Stoffe und 67 Herstellerprodukte, E39), Baustoff- und Aufbaukatalog unter Administration › Gebäude, Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT, Controller, Kopierwege, `FK_MAP`/`KINDER`, der Zonen- und Bauteildialog in der Grundform. **G6a behält** die Register-, Editor- und Kopierarbeit, die mehrere Zonen verlangen, und die Bericht-Zonentabelle; `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (S-G) | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Leser), `SqlDialektPruefer` grün | **10–15 PT** geplant; mit G3 liegt der größere Teil vor, der Rest wird bei Beauftragung neu beziffert |
 | **G6b — Zoneneingabe und Rechenweg** | Schritt **S-G** (`Tab_Zonenluftstrom`, `Tab_Bauteil.ID_Nachbarzone`); Zonenreiter, Zonendialog, Bauteilliste, Bauteildialog, Hülle nach `EPOS.UI.Daten`; die Zonenschleife in `HeizwaermeEinesGebaeudes`; Gruppenbildung AW/IW mit adiabatem Vorlauf für die 4-K-Regel, Gl. (29)/(31), θ_NR,eq nach (40), Gewichtung (41)/(42) mit Σ B_v = 1; Gauß-Seidel mit fester Reihenfolge und den Schwellen 0,01 K / 0,1 W; unbeheizte Zonen; Konsistenzprüfungen; Proben 1–12 samt 12a | Testbeispiel 10 im Normband, Probe 10 **bitgleich zum Stand nach G3** (trägt nur mit der Ausnahme N = 1, 2.4/2.9), Probe 12a ergebnisneutral, Probe 6 gemessen und begründet | **12–18 PT** |
 | **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **nach D16 — entschieden mit E27 — zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit der Beauftragung von G6c beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle aus der Auslieferung (M9); Zuordnungsdialog mit vier Abschnitten, formatfrei benannt, als Überlagerung im Gebäudedialog (A3, A17); Importprobe auf der Datei mit LFS-Zeile (M10); Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
 | **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
@@ -1446,7 +1465,9 @@ Bauteilreduktion, nicht das Datenmodell.
 
 **Die Stufen verschieben Arbeit untereinander, nicht die Summe.** G6a gibt `Tab_Zone`,
 `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` an G3 ab (3.5, 4.4) und behält
-Register-, Katalog- und Editorarbeit sowie `Tab_Bauteilaufbau(_STAMM)`; dafür kommen zu **G6b**
+Register-, Katalog- und Editorarbeit sowie `Tab_Bauteilaufbau(_STAMM)` — *gebaut hat G3 davon mehr,
+nämlich auch `Tab_Bauteilaufbau(_STAMM)`, beide Kataloge und den Schichteditor (Kopf, Tabelle oben)*;
+dafür kommen zu **G6b**
 der Schritt S-G, der adiabate Vorlauf der 4-K-Zuordnung (2.2) und Probe 12a
 (8.1), zu **G6c** der geometrische Öffnungsrückfall (6.2), die Messung von `IfcSpatialZone` (6.1),
 der Typweg der Schichtsätze über `IsTypedBy` (6.3), die Bauteilart `VORHANGFASSADE` (4.2) und die

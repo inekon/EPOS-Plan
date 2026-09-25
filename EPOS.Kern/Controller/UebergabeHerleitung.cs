@@ -213,7 +213,20 @@ namespace WindowsFormsApplication1
         internal static ProjektGebaeudeModel AusKatalogsatz(GebaeudeModel satz)
         {
             if (satz == null) throw new ArgumentNullException(nameof(satz));
-            var ziel = new ProjektGebaeudeModel();
+            return Ueberlagern(satz, new ProjektGebaeudeModel());
+        }
+
+        /// <summary>
+        /// <b>Die Gebäudewerte eines Satzes über eine Projektzeile legen</b> — dieselbe Regel wie
+        /// <see cref="AusKatalogsatz"/> (jedes öffentliche Feld gleichen Namens und Typs), aber auf
+        /// eine GELESENE Zeile: Was nur das Projekt kennt (Zuordnung, Einheit, Fläche der Auswahl,
+        /// Jahresnutzungsgrad, Kennungen), bleibt die der Zeile. So rechnet die Übernahme einer
+        /// Zone (Stufe G3) mit dem Arbeitsstand des Gebäudedialogs und der Angabe des Projekts.
+        /// </summary>
+        internal static ProjektGebaeudeModel Ueberlagern(GebaeudeModel satz, ProjektGebaeudeModel ziel)
+        {
+            if (satz == null) throw new ArgumentNullException(nameof(satz));
+            if (ziel == null) throw new ArgumentNullException(nameof(ziel));
             foreach (FieldInfo quelle in typeof(GebaeudeModel).GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
                 FieldInfo f = typeof(ProjektGebaeudeModel).GetField(quelle.Name, BindingFlags.Public | BindingFlags.Instance);

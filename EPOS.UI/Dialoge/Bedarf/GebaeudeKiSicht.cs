@@ -6,16 +6,18 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Das FLACHE Abbild der Gebäudemaske für den Hilfe-Assistenten (Welle KI‑F3).
 ///
 /// <para><b>Warum ein Sichtmodell und nicht <c>GebaeudeProjektZeile</c>.</b> Die Maske
-/// führt zwei Listen und einen Detailblock; ihre eigenen Bedienelemente — die drei
-/// Filterfelder und das Suchfeld — liegen in privaten Feldern der Komponente, und der
+/// führt zwei Listen und einen Detailblock; ihre eigenen Bedienelemente — Suche und die
+/// drei Trichter der Katalogliste — liegen im Filterstand der Komponente, und der
 /// Detailblock zeigt je nach Markierung die Werte der Projektzeile ODER des
 /// Katalogsatzes. Ein an der Zeile angemeldeter Katalog zeigte dem Modell Zahlen, die
 /// auf der Maske nirgends stehen; gepflegt werden sie in <c>Form_GebWohnflaeche</c>.
 /// Diese Klasse legt sich statt dessen über die LEBENDEN Felder.</para>
 ///
-/// <para><b>Setzen heißt tippen.</b> Jeder Setzweg geht denselben Weg wie die Hand: Der
-/// Katalog wird danach neu gefiltert, und eine Markierung, die aus dem Filter fällt,
-/// fällt auch aus der Maske.</para>
+/// <para><b>Setzen heißt tippen</b> (Stufe G3, Welle K): Jeder Setzweg schreibt den
+/// Ausdruck in den Filterstand der Katalogliste — die Suche über alle Spalten oder den
+/// Trichter einer Spalte —, und die Liste filtert beim nächsten Zeichnen neu. Leer nimmt
+/// den Filter zurück. Die Markierung hängt am Bezeichner und bleibt stehen, auch wenn der
+/// Filter den Satz ausblendet (Hausregel der Katalogliste).</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b> (Muster <c>QuelleErdreichKiSicht</c>): Jede
 /// Eigenschaft ruft bei jedem Zugriff ihren Delegaten.</para>
@@ -26,14 +28,14 @@ public sealed class GebaeudeKiSicht
     //  Die Zugriffswege — der Dialog setzt sie beim Anmelden
     // =====================================================================
 
-    public Func<int?>? VerwendungLesen { get; init; }
-    public Action<int?>? VerwendungSetzen { get; init; }
+    public Func<string>? VerwendungLesen { get; init; }
+    public Action<string>? VerwendungSetzen { get; init; }
 
-    public Func<int?>? FilterGebaeudeartLesen { get; init; }
-    public Action<int?>? FilterGebaeudeartSetzen { get; init; }
+    public Func<string>? FilterGebaeudeartLesen { get; init; }
+    public Action<string>? FilterGebaeudeartSetzen { get; init; }
 
-    public Func<int?>? FilterBaujahrLesen { get; init; }
-    public Action<int?>? FilterBaujahrSetzen { get; init; }
+    public Func<string>? FilterBaujahrLesen { get; init; }
+    public Action<string>? FilterBaujahrSetzen { get; init; }
 
     public Func<string>? SucheLesen { get; init; }
     public Action<string>? SucheSetzen { get; init; }
@@ -48,24 +50,24 @@ public sealed class GebaeudeKiSicht
     //  Die Einträge der drei Wahlfelder (KI-D-Q6)
     // =====================================================================
 
-    /// <summary>Liefert die zwei Verwendungen, die die Maske zur Wahl stellt.</summary>
+    /// <summary>Liefert die Verwendungen, die in der Spalte „Verwendung" stehen.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? VerwendungEintraege { get; init; }
 
-    /// <summary>Liefert die Gebäudearten der Klappliste samt dem Eintrag „Alle".</summary>
+    /// <summary>Liefert die Gebäudearten, die in der Spalte „Gebäudeart" stehen.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? GebaeudeartEintraege { get; init; }
 
-    /// <summary>Liefert die Baualtersklassen der Klappliste samt dem Eintrag „Alle".</summary>
+    /// <summary>Liefert die Baualtersklassen, die in der Spalte „Baujahr" stehen.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? BaujahrEintraege { get; init; }
 
-    /// <summary>Wohngebäude oder Gewerbe und Sonstiges.</summary>
+    /// <summary>Wohngebäude oder Gewerbe und Sonstiges — so, wie es in der Spalte steht.</summary>
     public IReadOnlyList<KiWahleintrag> VerwendungWahl
         => VerwendungEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
-    /// <summary>Die Gebäudearten, die zur gewählten Verwendung gehören.</summary>
+    /// <summary>Die Gebäudearten des Katalogs.</summary>
     public IReadOnlyList<KiWahleintrag> FilterGebaeudeartWahl
         => GebaeudeartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
-    /// <summary>Die Baualtersklassen A…U samt dem Eintrag „Alle".</summary>
+    /// <summary>Die Baualtersklassen des Katalogs.</summary>
     public IReadOnlyList<KiWahleintrag> FilterBaujahrWahl
         => BaujahrEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
@@ -74,34 +76,30 @@ public sealed class GebaeudeKiSicht
     // =====================================================================
 
     /// <summary>
-    /// Die Verwendung, nach der die Katalogliste gefiltert wird: 0 = Wohngebäude,
-    /// 1 = Gewerbe und Sonstiges. Sie wechselt zugleich die Gebäudearten.
+    /// Der Trichter der Spalte „Verwendung": der Ausdruck, nach dem die Katalogliste
+    /// filtert (Wohngebäude oder Gewerbe+Sonstige); leer = beide.
     /// </summary>
-    public int? Verwendung
+    public string Verwendung
     {
-        get => VerwendungLesen?.Invoke();
-        set => VerwendungSetzen?.Invoke(value);
+        get => VerwendungLesen?.Invoke() ?? "";
+        set => VerwendungSetzen?.Invoke(value ?? "");
     }
 
-    /// <summary>
-    /// Die Gebäudeart des Filters; der Platz in der Klappliste, −1 heißt „Alle".
-    /// </summary>
-    public int? FilterGebaeudeart
+    /// <summary>Der Trichter der Spalte „Gebäudeart"; leer = jede Art.</summary>
+    public string FilterGebaeudeart
     {
-        get => FilterGebaeudeartLesen?.Invoke();
-        set => FilterGebaeudeartSetzen?.Invoke(value);
+        get => FilterGebaeudeartLesen?.Invoke() ?? "";
+        set => FilterGebaeudeartSetzen?.Invoke(value ?? "");
     }
 
-    /// <summary>
-    /// Die Baualtersklasse des Filters; der Platz in der Klappliste, −1 heißt „Alle".
-    /// </summary>
-    public int? FilterBaujahr
+    /// <summary>Der Trichter der Spalte „Baujahr" (Baualtersklasse); leer = jede Klasse.</summary>
+    public string FilterBaujahr
     {
-        get => FilterBaujahrLesen?.Invoke();
-        set => FilterBaujahrSetzen?.Invoke(value);
+        get => FilterBaujahrLesen?.Invoke() ?? "";
+        set => FilterBaujahrSetzen?.Invoke(value ?? "");
     }
 
-    /// <summary>Das Suchmuster über die Namen der Katalogliste (<c>*</c> erlaubt).</summary>
+    /// <summary>Die Suche über alle Spalten der Katalogliste (<c>*</c> und <c>?</c> erlaubt).</summary>
     public string Suche
     {
         get => SucheLesen?.Invoke() ?? "";

@@ -19,7 +19,9 @@
     Gaben ueber die Adresse:
       ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe|
              stromganglinie|rahmen|gebaeude|gebaeudetyp|peak|
-             tww|wohnungen|kategorien  (Zapfprofilgenerator, Stufe Z4)
+             tww|wohnungen|kategorien  (Zapfprofilgenerator, Stufe Z4)|
+             projekt-heizkessel|projekt-gebaeude  (Projektdialoge; gebaeude ist
+             die Verwaltung, projekt-gebaeude der Gebaeudedialog des Projekts)
       ?zeilen=35   Wie viele Katalogzeilen die Liste traegt.
       ?bilder=1|0  Nur fuer klima: Diagramme befuellt (nach dem Import) oder
                    Platzhalter (davor). Vor dem Import war das Bild in Ordnung.
@@ -227,6 +229,23 @@
                                  Exists="@(_ => false)"
                                  GebaeudetypGaben="@(() => GebaeudetypGaben)"
                                  Geschlossen="@(b => { })" />
+            break;
+
+        case "projekt-gebaeude":
+            @* STUFE G3, WELLE K: der Gebaeude-PROJEKTDIALOG (Eingabe der Gebaeudedaten) -
+               Projektliste oben, Uebernahmeleiste, darunter die Katalogliste mit dem Profil
+               der Verwaltung (FuerGebaeude). Als Projektdialog traegt sie die Wahlspalte und
+               das Zeilenmass 53 px (kein ZeileIstWahl, keine Tastenfuehrung). zeilen=<n> ist
+               die Zahl der Katalogsaetze (ab 120 virtualisiert, bis 6 654); die Projektliste
+               traegt zwei Zeilen. Profil und Zeilen sind EINE Instanz je Seite - wie in der
+               Huelle, die sie einmal je Parametersatz baut. *@
+            <GebaeudeDialog Zeilen="@GebaeudeProjektzeilen"
+                            Katalogzeilen="@(() => GebaeudeZeilen)"
+                            Katalogprofil="@GebaeudeProfil"
+                            Filterstandvorgabe="@_filterstand"
+                            StammDetail="@GebaeudeStammdetail"
+                            StammSatz="@GebaeudeStammsatz"
+                            Geschlossen="@(b => { })" />
             break;
 
         case "gebaeudetyp":
@@ -662,6 +681,47 @@
 
     private static readonly string[] GebaeudeStammklassen =
     { "vor 1919", "1919 bis 1948", "Niedrigenergiebauweise", "Eff. 155 (EnEV 2016)" };
+
+    // ----------------------- Stufe G3, Welle K: der Gebaeudedialog des Projekts
+    private Katalogfilterprofil? _gebaeudeProfil;
+
+    /// <summary>Das Profil der Katalogliste — EINE Instanz, wie die Huelle sie je Parametersatz reicht.</summary>
+    private Katalogfilterprofil GebaeudeProfil => _gebaeudeProfil ??= Katalogfilterprofil.FuerGebaeude(Uebersetzt);
+
+    private List<GebaeudeProjektZeile>? _gebaeudeProjektzeilen;
+    private int _naechsteIdZ = 100000;
+
+    /// <summary>Zwei Projektzeilen aus den ersten Katalogsaetzen — die Projektliste steht mit Inhalt da.</summary>
+    private List<GebaeudeProjektZeile> GebaeudeProjektzeilen => _gebaeudeProjektzeilen ??=
+        GebaeudeZeilen.Take(2).Select((z, i) => Projektzeile(z, i + 1)).ToList();
+
+    private static GebaeudeProjektZeile Projektzeile(Katalogfilterzeile z, int idZ) => new()
+    {
+        IdZ = idZ,
+        IdGebaeude = z.Id,
+        IdKatalog = z.Id,
+        Name = z.Bezeichner,
+        Art = z.Text(Katalogfilterprofil.SpGebaeudeart),
+        Beschreibung = "Beschreibung des Gebaeudes " + z.Bezeichner,
+        Wohnflaeche = z.Zahl(Katalogfilterprofil.SpFlaecheM2) ?? 0,
+        Einheit = "Wohnfläche [m²]",
+        Jahresnutzungsgrad = 1,
+        Rechenweg = "VDI 6007",
+        HgesWK = 512.3
+    };
+
+    private GebaeudeStammDetail? GebaeudeStammdetail(string name)
+    {
+        Katalogfilterzeile? z = GebaeudeZeilen.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : new GebaeudeStammDetail(z.Bezeichner, z.Text(Katalogfilterprofil.SpGebaeudeart),
+            "Beschreibung des Gebaeudes " + z.Bezeichner, z.Text(Katalogfilterprofil.SpFlaecheM2), "VDI 6007", 512.3);
+    }
+
+    private GebaeudeProjektZeile? GebaeudeStammsatz(string name)
+    {
+        Katalogfilterzeile? z = GebaeudeZeilen.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : Projektzeile(z, _naechsteIdZ++);
+    }
 
     private GebaeudeStammblattDaten? GebaeudeSatz(string name)
     {

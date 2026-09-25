@@ -3255,10 +3255,10 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: Das Gebäude trägt {1} Zonen; mehrere Zonen rechnet EPOS mit Stufe G6. Bis dahin rechnet ein Gebäude ohne Zone (Klassenweg) oder mit genau einer Zone (Bauteilweg).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Sollwerte, Lüftung, innere Gewinne und Nutzfläche kommen aus der Gebäudezeile.</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche des Gebäudes).</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche der Zone).</value>
   </data>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg.</value>
@@ -14297,17 +14297,11 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen</value>
   </data>
-  <data name="GEB_GRP_FILTER" xml:space="preserve">
-    <value>Filter Gebäude DB</value>
-  </data>
   <data name="GEB_GRP_VERBRAUCH" xml:space="preserve">
     <value>Gebäude: Verbrauch</value>
   </data>
   <data name="GEB_KOPFBAND" xml:space="preserve">
     <value>Eingabe der Energiedaten</value>
-  </data>
-  <data name="GEB_LBL_BAUJAHR" xml:space="preserve">
-    <value>Baujahr</value>
   </data>
   <data name="GEB_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung:</value>
@@ -14330,9 +14324,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_LBL_RECHENWEG" xml:space="preserve">
     <value>Rechenweg:</value>
   </data>
-  <data name="GEB_LBL_SUCHE" xml:space="preserve">
-    <value>Filter:</value>
-  </data>
   <data name="GEB_LBL_WOHNFLAECHE" xml:space="preserve">
     <value>Nutzfläche:</value>
   </data>
@@ -14351,9 +14342,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_MSG_LISTE_KATALOGSATZ_FEHLT" xml:space="preserve">
     <value>Die Gebäudeliste wurde nicht gespeichert: Das Gebäude „{0}“ ist im Gebäudekatalog nicht mehr zu finden. Das Projekt behält seine bisherigen Gebäude.</value>
   </data>
-  <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
-    <value>Suche, z. B. Haus*_1990*</value>
-  </data>
   <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
     <value>Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung)</value>
   </data>
@@ -14368,12 +14356,6 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEB_SP_RECHENWEG" xml:space="preserve">
     <value>Rechenweg</value>
-  </data>
-  <data name="GEB_SP_TYP_FLAECHE" xml:space="preserve">
-    <value>Typ/Wohnfläche</value>
-  </data>
-  <data name="GEB_TEXT_ALLE" xml:space="preserve">
-    <value>Alle</value>
   </data>
   <data name="GEB_TEXT_SONSTIGE" xml:space="preserve">
     <value>Gewerbe+Sonstige</value>
@@ -21375,6 +21357,9 @@ Möchten Sie das zulassen?</value>
   <data name="KDLG_HERL_ABSOLUT" xml:space="preserve">
     <value>Satz = Betrag</value>
   </data>
+  <data name="KDLG_HERL_ALTBESTAND_WP_KWH" xml:space="preserve">
+    <value>Altbestand — Betriebskosten der Wärmepumpe werden nicht je kWh bemessen</value>
+  </data>
   <data name="KDLG_HERL_KWP" xml:space="preserve">
     <value>{0} Module × {1} Wp = {2} kWp</value>
   </data>
@@ -22564,16 +22549,16 @@ Möchten Sie das zulassen?</value>
     <value>Gebäudekatalog</value>
   </data>
   <data name="KI_DLG_GEB_VERWENDUNG_ERL" xml:space="preserve">
-    <value>Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten.</value>
+    <value>Der Trichter der Spalte „Verwendung“ der Katalogliste: Wohngebäude oder Gewerbe+Sonstige. Leer zeigt beide.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_ART_ERL" xml:space="preserve">
-    <value>Die Gebäudeart des Filters. „Alle“ zeigt jede Art der gewählten Verwendung.</value>
+    <value>Der Trichter der Spalte „Gebäudeart“ der Katalogliste; die Liste zeigt die Sätze, deren Gebäudeart den Wert enthält. Leer zeigt jede Art.</value>
   </data>
   <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
-    <value>Die Baualtersklasse des Filters. „Alle“ zeigt jede Klasse.</value>
+    <value>Der Trichter der Spalte „Baujahr“ (Baualtersklasse) der Katalogliste. Leer zeigt jede Klasse.</value>
   </data>
   <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
-    <value>Das Suchmuster über die Namen der Katalogliste; der Stern steht für beliebige Zeichen.</value>
+    <value>Die Suche über alle Spalten der Katalogliste; mehrere Begriffe müssen alle vorkommen, Stern und Fragezeichen sind Platzhalter.</value>
   </data>
   <data name="KI_DLG_GEB_NAME_ERL" xml:space="preserve">
     <value>Der Name des markierten Satzes — je nach Markierung der des Projektgebäudes oder der des Katalogsatzes.</value>
@@ -32883,6 +32868,384 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
     <value>Bei {0} Hüllbauteilen ist die Lage der Schichten nicht bestimmbar (keine IfcMaterialLayerSetUsage oder keine Raumseite) — angenommen: erste Schicht außen ({1}).</value>
   </data>
+  <data name="SIMENG_G3_ZONE_NUTZFLAECHE" xml:space="preserve">
+    <value>Die Nutzfläche der Zone „{0}“ ist {1} m² und nicht größer null; der Bauteilweg braucht sie als Bezugsfläche.</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
+    <value>Die Zone „{0}“ trägt eine eigene Nutzfläche, die Nutzfläche des Gebäudes ist aber {1} m²; ohne sie lassen sich Speichermasse und innere Gewinne nicht anteilig auf die Zone schlüsseln.</value>
+  </data>
+  <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
+    <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
+    <value>Ohne Projekt mit Klimaregion lässt sich der Hochrechnungsfaktor nicht bestimmen – bitte das Projekt speichern und eine Klimaregion wählen.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_FAKTOR" xml:space="preserve">
+    <value>Die Berechnung liefert für dieses Gebäude keinen Hochrechnungsfaktor.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_OHNE_KOPIE" xml:space="preserve">
+    <value>Das Gebäude hat noch keine Projektkopie – erst das Projekt speichern, dann trägt sie eine Zone.</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Das Bauteil braucht einen Namen.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BEREICH" xml:space="preserve">
+    <value>Bauteil „{0}“: {1} = {2} liegt nicht in {3}.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RAND_ZONE" xml:space="preserve">
+    <value>Bauteil „{0}“: Die Randbedingung „Nachbarzone“ rechnet EPOS erst mit mehreren Zonen (Stufe G6).</value>
+  </data>
+  <data name="BAUTEIL_MSG_FENSTER_RAND" xml:space="preserve">
+    <value>Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder an einen unbeheizten Raum.</value>
+  </data>
+  <data name="BAUTEIL_MSG_UWERT_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“: Es braucht einen U-Wert oder einen Aufbau – ein Fenster oder eine Vorhangfassade immer einen U-Wert.</value>
+  </data>
+  <data name="GEBZ_REITER" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEBZ_GRP_ZONEN" xml:space="preserve">
+    <value>Zonen und Bauteile</value>
+  </data>
+  <data name="GEBZ_ZEILE_KLASSENWEG" xml:space="preserve">
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Mit „Gebäude als eine Zone übernehmen“ rechnet das Gebäude über seine Bauteile.</value>
+  </data>
+  <data name="GEBZ_ZEILE_BAUTEILWEG" xml:space="preserve">
+    <value>Rechenweg der Hülle: Bauteilweg – Zone „{0}“, {1} Bauteile. Die U-Wert-Gruppen sind aus den Bauteilen abgeleitet; die Werte des Gebäudes gelten wieder ohne Zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Hülle und Zonen…“ im Gebäudedialog).</value>
+  </data>
+  <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Gebäude als eine Zone übernehmen</value>
+  </data>
+  <data name="GEBZ_HINWEIS_UEBERNEHMEN" xml:space="preserve">
+    <value>Legt aus den U-Wert-Gruppen eine Zone mit Bauteilen an, auf die Projektfläche hochgerechnet; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
+    <value>Nur für ein Gebäude im Projekt: Ein Katalogsatz trägt keine Zonen.</value>
+  </data>
+  <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
+    <value>Das Gebäude führt schon die Zone „{0}“.</value>
+  </data>
+  <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
+    <value>Der Tagesbilanz-Weg rechnet keine Zonen – erst den Rechenweg auf VDI 6007 stellen.</value>
+  </data>
+  <data name="GEBZ_SPERRE_LAEUFT" xml:space="preserve">
+    <value>Der Hochrechnungsfaktor wird bestimmt …</value>
+  </data>
+  <data name="GEBZ_FRAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Ab jetzt rechnet dieses Gebäude über seine Bauteile statt über die U-Wert-Gruppen. Die Flächen werden mit dem Faktor {0} auf die Projektfläche hochgerechnet (Nutzfläche {1} m² → {2} m²). Die Angabe „{3} {4}“ gilt danach nicht mehr. Zone übernehmen?</value>
+  </data>
+  <data name="GEBZ_FRAGE_GRENZEN" xml:space="preserve">
+    <value>Die Leistungsgrenzen von Heizung und Kühlung gelten danach der hochgerechneten Hülle.</value>
+  </data>
+  <data name="GEBZ_LEER" xml:space="preserve">
+    <value>Noch keine Zone – das Gebäude rechnet den Klassenweg über die U-Wert-Gruppen.</value>
+  </data>
+  <data name="GEBZ_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBZ_SP_NUTZFLAECHE" xml:space="preserve">
+    <value>Nutzfläche</value>
+  </data>
+  <data name="GEBZ_SP_HT" xml:space="preserve">
+    <value>H_T</value>
+  </data>
+  <data name="GEBZ_SP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GEBZ_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="GEBZ_BTN_OEFFNEN" xml:space="preserve">
+    <value>Öffnen…</value>
+  </data>
+  <data name="GEBZ_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Zone entfernen</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Zone „{0}“ mit {1} Bauteilen entfernen? Das Gebäude rechnet danach wieder den Klassenweg über die U-Wert-Gruppen; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_ZEILE_SUMMENREGEL" xml:space="preserve">
+    <value>Abgeleitet aus den Bauteilen der Zone „{0}“: Fläche je Gruppe Σ A, U = Σ U·A / Σ A. Die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_FENSTER" xml:space="preserve">
+    <value>Mit der Zone rechnen ihre Fensterbauteile ({0} m²); die Fensterflächen des Gebäudes gelten wieder ohne Zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_PSI" xml:space="preserve">
+    <value>Wärmebrücken der Bauteile Σ ψ·L</value>
+  </data>
+  <data name="GEBZ_ZEILE_NUTZFLAECHE" xml:space="preserve">
+    <value>Die Zone rechnet mit ihrer Nutzfläche {0} m²; Luftvolumen, Speichermasse und innere Gewinne folgen ihr anteilig.</value>
+  </data>
+  <data name="GEBZ_ZEILE_NAME_PROJEKT" xml:space="preserve">
+    <value>Im Projekt behält das Gebäude den Namen „{0}“; ein anderer Name gilt für „Speichern unter“ (neuer Katalogsatz).</value>
+  </data>
+  <data name="GEBZ_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Der Katalogsatz trägt die Zone „{0}“ mit {1} Bauteilen nicht mit – trotzdem speichern?</value>
+  </data>
+  <data name="GEBZ_MSG_ZONEN" xml:space="preserve">
+    <value>Die Zonen wurden nicht gespeichert: {0}</value>
+  </data>
+  <data name="GEBZ_MSG_AUFBAU" xml:space="preserve">
+    <value>Der Aufbau „{0}“ ließ sich nicht aus dem Katalog übernehmen: {1}</value>
+  </data>
+  <data name="GEBZ_MSG_GEBAEUDE" xml:space="preserve">
+    <value>Die Gebäudedaten des Projekts wurden nicht gespeichert.</value>
+  </data>
+  <data name="GEBZ_BTN_PROJEKT" xml:space="preserve">
+    <value>Hülle und Zonen…</value>
+  </data>
+  <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Die Gebäudedaten dieses Projektgebäudes bearbeiten, Zonen und Bauteile anlegen – geschrieben wird die Projektkopie, nicht der Katalog</value>
+  </data>
+  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann.</value>
+  </data>
+  <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
+    <value>Gebäude im Projekt: Hülle und Zonen</value>
+  </data>
+  <data name="GEBW_ZEILE_ZONE" xml:space="preserve">
+    <value>Das Gebäude rechnet über seine Bauteile (Zone „{0}“); die Hochrechnung entfällt – die Angabe gilt nicht.</value>
+  </data>
+  <data name="GEBW_SPERRE_ZONE" xml:space="preserve">
+    <value>Mit Zone rechnet das Gebäude mit der Nutzfläche seiner Zone; Fläche oder Verbrauch skalieren nicht mehr. Die Zone entfernen im Gebäudedialog unter „Hülle und Zonen…“.</value>
+  </data>
+  <data name="ZONDLG_TITEL" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="ZONDLG_LBL_NUTZFLAECHE" xml:space="preserve">
+    <value>Nutzfläche</value>
+  </data>
+  <data name="ZONDLG_PLATZHALTER_NUTZFLAECHE" xml:space="preserve">
+    <value>Gebäudewert {0} m²</value>
+  </data>
+  <data name="ZONDLG_ZEILE_NUTZFLAECHE" xml:space="preserve">
+    <value>Leer gilt die Nutzfläche des Gebäudes ({0} m²). Luftvolumen, Speichermasse und innere Gewinne folgen der Zonenfläche anteilig; die übrigen Werte (Sollwerte, Lüftung) sind die des Gebäudes.</value>
+  </data>
+  <data name="ZONDLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="ZONDLG_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="ZONDLG_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="ZONDLG_SP_FLAECHE" xml:space="preserve">
+    <value>A [m²]</value>
+  </data>
+  <data name="ZONDLG_SP_U" xml:space="preserve">
+    <value>U [W/(m²K)]</value>
+  </data>
+  <data name="ZONDLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="ZONDLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="ZONDLG_SP_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="ZONDLG_SP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="ZONDLG_BTN_NEU" xml:space="preserve">
+    <value>+ Neues Bauteil …</value>
+  </data>
+  <data name="ZONDLG_LEER" xml:space="preserve">
+    <value>Die Zone hat noch kein Bauteil.</value>
+  </data>
+  <data name="ZONDLG_BTN_OEFFNEN" xml:space="preserve">
+    <value>Bauteil öffnen</value>
+  </data>
+  <data name="ZONDLG_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Bauteil entfernen</value>
+  </data>
+  <data name="ZONDLG_SUMME_GRUPPE" xml:space="preserve">
+    <value>Σ A {0}: {1} m²</value>
+  </data>
+  <data name="ZONDLG_SUMME_HT" xml:space="preserve">
+    <value>H_T = Σ U·A + Σ ψ·L = {0} W/K</value>
+  </data>
+  <data name="ZONDLG_MSG_NAME" xml:space="preserve">
+    <value>Die Zone braucht einen Namen.</value>
+  </data>
+  <data name="ZONDLG_U_AUS_AUFBAU" xml:space="preserve">
+    <value>aus Aufbau</value>
+  </data>
+  <data name="BTDLG_TITEL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="BTDLG_TITEL_NEU" xml:space="preserve">
+    <value>Neues Bauteil</value>
+  </data>
+  <data name="BTDLG_LBL_ART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="BTDLG_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="BTDLG_LBL_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="BTDLG_LBL_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="BTDLG_HINWEIS_AZIMUT" xml:space="preserve">
+    <value>Azimut 0° = Nord, 90° = Ost, 180° = Süd, 270° = West; ein Außenbauteil, das nicht waagerecht liegt, braucht ihn.</value>
+  </data>
+  <data name="BTDLG_LBL_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_NEIGUNG" xml:space="preserve">
+    <value>Vorgabe {0}°</value>
+  </data>
+  <data name="BTDLG_LBL_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="BTDLG_RAND_VORGABE_AUSSEN" xml:space="preserve">
+    <value>Außenluft (Vorgabe)</value>
+  </data>
+  <data name="BTDLG_RAND_VORGABE_INNEN" xml:space="preserve">
+    <value>innerhalb der Zone (Vorgabe)</value>
+  </data>
+  <data name="BTDLG_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>Außenluft</value>
+  </data>
+  <data name="BTDLG_RAND_ERDREICH" xml:space="preserve">
+    <value>Erdreich</value>
+  </data>
+  <data name="BTDLG_RAND_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizter Raum</value>
+  </data>
+  <data name="BTDLG_LBL_GWERT" xml:space="preserve">
+    <value>g-Wert</value>
+  </data>
+  <data name="BTDLG_LBL_RAHMEN" xml:space="preserve">
+    <value>Rahmenanteil</value>
+  </data>
+  <data name="BTDLG_LBL_VERSCHATTUNG" xml:space="preserve">
+    <value>Verschattungsfaktor</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_GEBAEUDE" xml:space="preserve">
+    <value>Gebäudewert</value>
+  </data>
+  <data name="BTDLG_LBL_PSIL" xml:space="preserve">
+    <value>Wärmebrücke ψ·L</value>
+  </data>
+  <data name="BTDLG_LBL_UWERT" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_U" xml:space="preserve">
+    <value>aus dem Aufbau</value>
+  </data>
+  <data name="BTDLG_GRP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="BTDLG_LBL_AUFBAU_PROJEKT" xml:space="preserve">
+    <value>Aufbau im Projekt</value>
+  </data>
+  <data name="BTDLG_OHNE_AUFBAU" xml:space="preserve">
+    <value>(ohne Aufbau – nur U-Wert)</value>
+  </data>
+  <data name="BTDLG_LBL_AUFBAU_KATALOG" xml:space="preserve">
+    <value>Aus dem Katalog</value>
+  </data>
+  <data name="BTDLG_KATALOG_WAHL" xml:space="preserve">
+    <value>(Aufbau aus dem Katalog wählen)</value>
+  </data>
+  <data name="BTDLG_BTN_AUFBAU_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BTDLG_HINWEIS_KATALOG" xml:space="preserve">
+    <value>Ein Katalogaufbau wird erst mit OK des Gebäudedialogs in das Projekt übernommen; bis dahin schreibt die Wahl nichts.</value>
+  </data>
+  <data name="BTDLG_AUFBAU_KATALOG" xml:space="preserve">
+    <value>{0} (Katalog, wird mit OK übernommen)</value>
+  </data>
+  <data name="BTDLG_ZEILE_U_AUFBAU" xml:space="preserve">
+    <value>U aus dem Aufbau: {0} W/(m²K).</value>
+  </data>
+  <data name="BTDLG_ZEILE_U_ABWEICHUNG" xml:space="preserve">
+    <value>Der eingetragene U-Wert {0} W/(m²K) weicht um {1} % vom Aufbau ({2} W/(m²K)) ab; gerechnet wird mit dem eingetragenen.</value>
+  </data>
+  <data name="BTDLG_ZEILE_FENSTER" xml:space="preserve">
+    <value>Leere Fensterwerte gelten wie am Gebäude (g-Wert, Rahmenanteil, Verschattung).</value>
+  </data>
+  <data name="BTDLG_ZEILE_KEINE_SCHICHTEN" xml:space="preserve">
+    <value>Ohne Aufbau rechnet das Bauteil mit seinem U-Wert.</value>
+  </data>
+  <data name="KI_DLG_MASKE_ZONE" xml:space="preserve">
+    <value>Zone des Gebäudes</value>
+  </data>
+  <data name="KI_DLG_MASKE_BAUTEIL" xml:space="preserve">
+    <value>Bauteil der Zone</value>
+  </data>
+  <data name="KI_DLG_ZON_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name der Zone; Pflichtfeld.</value>
+  </data>
+  <data name="KI_DLG_ZON_NUTZFLAECHE_ERL" xml:space="preserve">
+    <value>Die Nutzfläche der Zone in m²; leer = die Nutzfläche des Gebäudes. Sie teilt die flächenbezogenen Größen des Gebäudes (Luftvolumen, innere Gewinne, Bewohner) der Zone zu.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_ART_ERL" xml:space="preserve">
+    <value>Die Bauteilart der Zeile — nur lesbar; geändert wird sie im Bauteildialog.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name des Bauteils — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_FLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche des Bauteils in m² — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_UWERT_ERL" xml:space="preserve">
+    <value>Der wirksame U-Wert: eingetragen, sonst der des Aufbaus — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_AZIMUT_ERL" xml:space="preserve">
+    <value>Die Ausrichtung des Bauteils in Grad (0° = Nord) — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
+    <value>Der Bauteilaufbau des Projekts, leer = keiner — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_BT_ART_ERL" xml:space="preserve">
+    <value>Die Bauteilart: Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade oder Sonstiges. Sie bestimmt die Vorgaben für Neigung und Randbedingung; Fenster und Vorhangfassade rechnen aus U-Wert, g-Wert, Rahmenanteil und Verschattung.</value>
+  </data>
+  <data name="KI_DLG_BT_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name des Bauteils; Pflichtfeld.</value>
+  </data>
+  <data name="KI_DLG_BT_FLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche des Bauteils in m²; muss größer null sein.</value>
+  </data>
+  <data name="KI_DLG_BT_AZIMUT_ERL" xml:space="preserve">
+    <value>Die Ausrichtung in Grad, 0° = Nord, 90° = Ost. Ein Außenbauteil, das nicht waagerecht liegt, braucht einen Azimut.</value>
+  </data>
+  <data name="KI_DLG_BT_NEIGUNG_ERL" xml:space="preserve">
+    <value>Die Neigung in Grad, 90° = senkrecht; leer = Vorgabe nach Bauteilart.</value>
+  </data>
+  <data name="KI_DLG_BT_RAND_ERL" xml:space="preserve">
+    <value>Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich oder unbeheizter Raum. Fenster und Vorhangfassade grenzen an Außenluft oder einen unbeheizten Raum.</value>
+  </data>
+  <data name="KI_DLG_BT_GWERT_ERL" xml:space="preserve">
+    <value>Der Gesamtenergiedurchlassgrad der Verglasung, größer 0 bis 1; nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_BT_RAHMEN_ERL" xml:space="preserve">
+    <value>Der Rahmenanteil 0,05 bis 0,6; nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_BT_VERSCHATTUNG_ERL" xml:space="preserve">
+    <value>Der Verschattungsfaktor, größer 0 bis 1 (1 = unverschattet); nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_BT_PSIL_ERL" xml:space="preserve">
+    <value>Der Wärmebrückenzuschlag des Bauteils als ψ·L in W/K; nicht negativ, leer = keiner.</value>
+  </data>
+  <data name="KI_DLG_BT_UWERT_ERL" xml:space="preserve">
+    <value>Der U-Wert in W/(m²K); leer = aus dem Aufbau. Fenster und Vorhangfassade brauchen ihn immer.</value>
+  </data>
+  <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
+    <value>Der Bauteilaufbau des Projekts, 0 = ohne Aufbau. Ein Aufbau aus dem Katalog wird von Hand übernommen und beim OK des Gebäudeeditors in das Projekt kopiert.</value>
+  </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: Der kleinste Abstand zweier Zeitstempel ist {1:0.###} min — zugelassen sind {2} min.</value>
   </data>
@@ -33683,6 +34046,471 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
     <value>Die Einheit der Kennzahl „{0}“.</value>
+  </data>
+  <data name="VF_PRUEF_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannter Platzhalter {0}</value>
+  </data>
+  <data name="VF_PRUEF_UNBEKANNT_TUN" xml:space="preserve">
+    <value>Die Schreibweise prüfen oder den Platzhalter aus dem Platzhalterkatalog übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_VORSCHLAG_TUN" xml:space="preserve">
+    <value>Vorschlag {0} übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_MARKE_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannte Marke {0}</value>
+  </data>
+  <data name="VF_PRUEF_MARKE_UNBEKANNT_TUN" xml:space="preserve">
+    <value>Einen Platzhalter aus dem Platzhalterkatalog einsetzen oder die doppelten Klammern entfernen.</value>
+  </data>
+  <data name="VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
+    <value>Platzhalter nicht erkannt: „{0}“ – {1} ohne passendes {2} im selben Absatz</value>
+  </data>
+  <data name="VF_PRUEF_KLAMMER_OFFEN_TUN" xml:space="preserve">
+    <value>Den Platzhalter in einem Zug neu tippen, ohne Tabulator oder Umbruch.</value>
+  </data>
+  <data name="VF_PRUEF_ORT" xml:space="preserve">
+    <value>{0} passt nicht an diese Stelle: Art „{1}“ ist {2} nicht möglich</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_ABSATZ" xml:space="preserve">
+    <value>Den Platzhalter allein in einen eigenen Absatz setzen.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_HAUPTTEXT" xml:space="preserve">
+    <value>Den Platzhalter in den Haupttext verschieben.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_ZELLE" xml:space="preserve">
+    <value>Den Platzhalter aus der Tabelle in einen eigenen Absatz des Haupttexts verschieben.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT" xml:space="preserve">
+    <value>Das Inhaltssteuerelement um einen ganzen Absatz legen oder den Platzhalter als Text schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_TABELLE" xml:space="preserve">
+    <value>in einem Inhaltssteuerelement um Tabellenzeilen oder -zellen</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT_TABELLE" xml:space="preserve">
+    <value>Das Inhaltssteuerelement in der Zelle um einen Absatz legen oder den Platzhalter als Text in die Zelle schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_WENN" xml:space="preserve">
+    <value>Den Schalter nur als Bedingung verwenden: {0} … {1}.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_EXCEL" xml:space="preserve">
+    <value>Diesen Platzhalter nur in der Excel-Vorlage verwenden.</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_BILD" xml:space="preserve">
+    <value>In den Alternativtext eines Bildes gehört nur der Schlüssel eines Bildes (bild.*); sonst den Platzhalter als Text schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_KOPFFUSS" xml:space="preserve">
+    <value>in Kopf- und Fußzeilen</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_NOTE" xml:space="preserve">
+    <value>in Fuß- und Endnoten</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_TEXTFELD" xml:space="preserve">
+    <value>in Textfeldern</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_ZELLE" xml:space="preserve">
+    <value>in Tabellenzellen</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SATZ" xml:space="preserve">
+    <value>im Satz</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_SATZ" xml:space="preserve">
+    <value>in einem Inhaltssteuerelement im Satz</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_OHNE_WENN" xml:space="preserve">
+    <value>außerhalb einer Bedingung</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_WORD" xml:space="preserve">
+    <value>in einer Word-Vorlage</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_BILD" xml:space="preserve">
+    <value>im Alternativtext eines Bildes</value>
+  </data>
+  <data name="VF_PRUEF_ART_TEXT" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="VF_PRUEF_ART_ZAHL" xml:space="preserve">
+    <value>Zahl</value>
+  </data>
+  <data name="VF_PRUEF_ART_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="VF_PRUEF_ART_TABELLE" xml:space="preserve">
+    <value>Tabelle</value>
+  </data>
+  <data name="VF_PRUEF_ART_BILD" xml:space="preserve">
+    <value>Bild</value>
+  </data>
+  <data name="VF_PRUEF_ART_LISTE" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="VF_PRUEF_ART_KAPITEL" xml:space="preserve">
+    <value>Kapitel</value>
+  </data>
+  <data name="VF_PRUEF_ART_SCHALTER" xml:space="preserve">
+    <value>Schalter</value>
+  </data>
+  <data name="VF_PRUEF_ART_BLATT" xml:space="preserve">
+    <value>Blatt</value>
+  </data>
+  <data name="VF_PRUEF_ART_BLOCK" xml:space="preserve">
+    <value>Blockmarke</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_STAND" xml:space="preserve">
+    <value>{0} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>{0} ist ein Wert je Gebäude; Werte je Gebäude gibt es in dieser Programmfassung noch nicht</value>
+  </data>
+  <data name="VF_PRUEF_KONTEXT_TUN" xml:space="preserve">
+    <value>Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT" xml:space="preserve">
+    <value>Block {0} wird in dieser Programmfassung noch nicht unterstützt</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT_TUN" xml:space="preserve">
+    <value>Den Block samt seinem Ende entfernen; Wiederhol- und Bedingungsblöcke füllt erst eine spätere Fassung von EPOS-Plan.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_OFFEN" xml:space="preserve">
+    <value>Block {0} wird nicht geschlossen</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_OFFEN_TUN" xml:space="preserve">
+    <value>{0} ergänzen.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ENDE" xml:space="preserve">
+    <value>{0} ohne passenden Blockanfang</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ENDE_TUN" xml:space="preserve">
+    <value>Den Blockanfang ergänzen oder die Marke entfernen.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_VERBUNDEN" xml:space="preserve">
+    <value>Verbundene Zellen in der Wiederholzeile von {0}</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_VERBUNDEN_TUN" xml:space="preserve">
+    <value>Den Zellverbund in dieser Tabellenzeile aufheben.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TABELLE" xml:space="preserve">
+    <value>Block {0} reicht über eine Tabellengrenze</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TABELLE_TUN" xml:space="preserve">
+    <value>Anfang und Ende in die erste und letzte Zelle derselben Tabellenzeile setzen oder beide außerhalb der Tabelle.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TIEFE" xml:space="preserve">
+    <value>Block {0} liegt in der dritten Ebene – erlaubt sind zwei</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_TIEFE_TUN" xml:space="preserve">
+    <value>Die Verschachtelung auf zwei Ebenen verringern.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_BEREICH" xml:space="preserve">
+    <value>Unbekannter Wiederholbereich in {0}</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_BEREICH_TUN" xml:space="preserve">
+    <value>Erlaubt sind {0}.</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ALLEIN" xml:space="preserve">
+    <value>Blockmarke {0} steht im Satz</value>
+  </data>
+  <data name="VF_PRUEF_BLOCK_ALLEIN_TUN" xml:space="preserve">
+    <value>Die Marke allein in einen eigenen Absatz setzen oder in die erste bzw. letzte Zelle einer Tabellenzeile.</value>
+  </data>
+  <data name="VF_PRUEF_WENN_OHNE_SCHALTER" xml:space="preserve">
+    <value>Bedingung {0} ohne Schalter</value>
+  </data>
+  <data name="VF_PRUEF_WENN_KEIN_SCHALTER" xml:space="preserve">
+    <value>{0} ist kein Schalter und taugt nicht als Bedingung</value>
+  </data>
+  <data name="VF_PRUEF_WENN_TUN" xml:space="preserve">
+    <value>Einen Schalter aus dem Platzhalterkatalog als Bedingung einsetzen.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannte Formatangabe „|{0}“ in {1}</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag „|{0}“ übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_LISTE" xml:space="preserve">
+    <value>Erlaubt sind: {0}.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNPASSEND" xml:space="preserve">
+    <value>Die Formatangabe „|{0}“ gilt nicht für {1} (Art „{2}“)</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_UNPASSEND_TUN" xml:space="preserve">
+    <value>Die Angabe entfernen; für diese Art gelten: {0}.</value>
+  </data>
+  <data name="VF_PRUEF_ANGABE_TUN_ENTFERNEN" xml:space="preserve">
+    <value>Die Angabe entfernen – für diese Art gibt es keine Formatangaben.</value>
+  </data>
+  <data name="VF_PRUEF_NORMALFORM" xml:space="preserve">
+    <value>{0} ist erkannt; die Normalform lautet {1}</value>
+  </data>
+  <data name="VF_PRUEF_NORMALFORM_TUN" xml:space="preserve">
+    <value>Bei Gelegenheit die Schreibweise {0} übernehmen.</value>
+  </data>
+  <data name="VF_PRUEF_OHNE_PLATZHALTER" xml:space="preserve">
+    <value>Die Vorlage enthält keinen Platzhalter – der Bericht wird mit {0} an ihr Ende gesetzt</value>
+  </data>
+  <data name="VF_PRUEF_OHNE_PLATZHALTER_TUN" xml:space="preserve">
+    <value>{0} an die Stelle der Vorlage setzen, an der der Bericht stehen soll.</value>
+  </data>
+  <data name="VF_PRUEF_DATUMSFELD" xml:space="preserve">
+    <value>Das Feld {0} zeigt das Datum des Öffnens, nicht das des Berichts</value>
+  </data>
+  <data name="VF_PRUEF_DATUMSFELD_TUN" xml:space="preserve">
+    <value>Statt des Felds {0} verwenden.</value>
+  </data>
+  <data name="VF_PRUEF_KOMMENTARE" xml:space="preserve">
+    <value>Kommentare: {0} – sie werden beim Erstellen des Berichts entfernt</value>
+  </data>
+  <data name="VF_PRUEF_KOMMENTARE_TUN" xml:space="preserve">
+    <value>Nichts zu tun; Kommentare erscheinen nicht im Bericht.</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE" xml:space="preserve">
+    <value>Die Vorlage ist auf {0} angelegt, der Bericht entsteht auf {1}</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_TUN" xml:space="preserve">
+    <value>Die Sprache der Vorlage setzen oder die Oberflächensprache wechseln.</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_DE" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="VF_PRUEF_SPRACHE_EN" xml:space="preserve">
+    <value>Englisch</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_ALT" xml:space="preserve">
+    <value>Die Vorlage stammt aus Katalogfassung {0}; {1} heißt seither {2}</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_ALT_TUN" xml:space="preserve">
+    <value>{0} übernehmen; {1} gilt weiter.</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_NEU" xml:space="preserve">
+    <value>Neues Kapitel {0} – in dieser Vorlage nicht enthalten</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_NEU_TUN" xml:space="preserve">
+    <value>Bei Bedarf {0} in die Vorlage setzen.</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_NEU" xml:space="preserve">
+    <value>Die Vorlage stammt aus der neueren Katalogfassung {0}; diese Programmfassung kennt Katalogfassung {1}</value>
+  </data>
+  <data name="VF_PRUEF_FASSUNG_NEU_TUN" xml:space="preserve">
+    <value>EPOS-Plan aktualisieren oder die unbekannten Platzhalter entfernen.</value>
+  </data>
+  <data name="VF_PRUEF_GUELTIGKEIT" xml:space="preserve">
+    <value>Gültigkeitshinweise fehlen: die Vorlage nutzt Werte der Wirtschaftlichkeit ohne Warnliste</value>
+  </data>
+  <data name="VF_PRUEF_GUELTIGKEIT_TUN" xml:space="preserve">
+    <value>Eine Warnliste ergänzen, etwa {0}.</value>
+  </data>
+  <data name="VF_PRUEF_UNLESBAR" xml:space="preserve">
+    <value>Die Vorlage kann nicht gelesen werden: {0}</value>
+  </data>
+  <data name="VF_PRUEF_UNLESBAR_TUN" xml:space="preserve">
+    <value>Die Datei in Word öffnen und als Word-Dokument (.docx) speichern.</value>
+  </data>
+  <data name="VF_PRUEF_GRUND_LEER" xml:space="preserve">
+    <value>Die Datei ist leer.</value>
+  </data>
+  <data name="VF_PRUEF_GRUND_KEIN_WORD" xml:space="preserve">
+    <value>Die Datei ist kein Word-Dokument.</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT" xml:space="preserve">
+    <value>Das Dateiformat {0} wird nicht unterstützt</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_TUN" xml:space="preserve">
+    <value>In Word als Word-Dokument (.docx) oder Word-Vorlage (.dotx) speichern.</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_DOC" xml:space="preserve">
+    <value>Word 97–2003 (.doc) oder verschlüsselt</value>
+  </data>
+  <data name="VF_PRUEF_FORMAT_RTF" xml:space="preserve">
+    <value>RTF (Rich Text Format)</value>
+  </data>
+  <data name="VF_PRUEF_MAKROS" xml:space="preserve">
+    <value>Die Vorlage enthält Makros</value>
+  </data>
+  <data name="VF_PRUEF_MAKROS_TUN" xml:space="preserve">
+    <value>In Word als Word-Dokument (.docx) ohne Makros speichern.</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE" xml:space="preserve">
+    <value>Die Vorlage ist zu groß: {0} MB, erlaubt sind {1} MB</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE_ENTPACKT" xml:space="preserve">
+    <value>Die Vorlage ist entpackt zu groß: {0} MB, erlaubt sind {1} MB</value>
+  </data>
+  <data name="VF_PRUEF_GROESSE_TUN" xml:space="preserve">
+    <value>Bilder verkleinern oder in Word komprimieren (Bildformat › Bilder komprimieren).</value>
+  </data>
+  <data name="VF_PRUEF_AENDERUNGEN" xml:space="preserve">
+    <value>Nachverfolgte Änderungen in {0}: {1}</value>
+  </data>
+  <data name="VF_PRUEF_AENDERUNGEN_TUN" xml:space="preserve">
+    <value>In Word unter „Überprüfen“ alle Änderungen annehmen oder ablehnen und speichern.</value>
+  </data>
+  <data name="VF_PRUEF_EXTERN" xml:space="preserve">
+    <value>Verknüpfte Inhalte: {0} – sie werden beim Erstellen des Berichts entfernt</value>
+  </data>
+  <data name="VF_PRUEF_EXTERN_TUN" xml:space="preserve">
+    <value>Verknüpfte Bilder oder Mappen in die Vorlage einbetten, wenn sie im Bericht erscheinen sollen.</value>
+  </data>
+  <data name="VF_PRUEF_VORLAGENVERWEIS" xml:space="preserve">
+    <value>Der Verweis auf die Dokumentvorlage {0} wird entfernt</value>
+  </data>
+  <data name="VF_PRUEF_VORLAGENVERWEIS_TUN" xml:space="preserve">
+    <value>Nichts zu tun.</value>
+  </data>
+  <data name="VF_PRUEF_UEBERSCHRIFTEN" xml:space="preserve">
+    <value>Überschriftenstile fehlen oder tragen keine Gliederungsebene: {0}</value>
+  </data>
+  <data name="VF_PRUEF_UEBERSCHRIFTEN_TUN" xml:space="preserve">
+    <value>In Word die Formatvorlagen „Überschrift 1“ bis „Überschrift 3“ verwenden, ohne ihre Gliederungsebene zu ändern.</value>
+  </data>
+  <data name="VF_PRUEF_STIL_UEBERSCHRIFT" xml:space="preserve">
+    <value>Überschrift {0}</value>
+  </data>
+  <data name="VF_PRUEF_STIL_FEHLT" xml:space="preserve">
+    <value>{0} fehlt</value>
+  </data>
+  <data name="VF_PRUEF_STIL_OHNE_EBENE" xml:space="preserve">
+    <value>{0} ohne Gliederungsebene</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_RUMPF" xml:space="preserve">
+    <value>Haupttext</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_KOPFZEILE" xml:space="preserve">
+    <value>Kopfzeile {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSZEILE" xml:space="preserve">
+    <value>Fußzeile {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSNOTE" xml:space="preserve">
+    <value>Fußnote {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_ENDNOTE" xml:space="preserve">
+    <value>Endnote {0}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_TEXTFELD" xml:space="preserve">
+    <value>Textfeld {0} in {1}</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_FUSSNOTEN" xml:space="preserve">
+    <value>Fußnoten</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_ENDNOTEN" xml:space="preserve">
+    <value>Endnoten</value>
+  </data>
+  <data name="VF_PRUEF_TEIL_NUMMERIERUNG" xml:space="preserve">
+    <value>Nummerierung</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ABSATZ" xml:space="preserve">
+    <value>Absatz {0} beginnt mit „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ABSATZ_LEER" xml:space="preserve">
+    <value>Absatz {0} (leer)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ZELLE" xml:space="preserve">
+    <value>Tabelle {0}, Zeile {1}, Zelle {2} beginnt mit „{3}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_ZELLE_LEER" xml:space="preserve">
+    <value>Tabelle {0}, Zeile {1}, Zelle {2} (leer)</value>
+  </data>
+  <data name="VF_PRUEF_ORT_STEUERELEMENT" xml:space="preserve">
+    <value>{0}, Inhaltssteuerelement „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_BILD" xml:space="preserve">
+    <value>{0}, Bild „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_ORT_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="VF_PRUEF_ORT_FORMATVORLAGEN" xml:space="preserve">
+    <value>Formatvorlagen</value>
+  </data>
+  <data name="VF_PRUEF_ORT_KOMMENTARE" xml:space="preserve">
+    <value>Kommentare</value>
+  </data>
+  <data name="VF_PRUEF_ORT_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Dokumenteigenschaften</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD" xml:space="preserve">
+    <value>Standard (EPOS-Plan)</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_ABWEICHUNG" xml:space="preserve">
+    <value>Für dieses Projekt gewählt</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_VORGABE" xml:space="preserve">
+    <value>Ihre Vorgabe</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_STANDARD" xml:space="preserve">
+    <value>Standardvorlage</value>
+  </data>
+  <data name="BV_VORLAGEN_GRUND_RUECKFALL" xml:space="preserve">
+    <value>Rückfall – die Standardvorlage fehlt</value>
+  </data>
+  <data name="BV_VORLAGEN_NICHT_VORHANDEN" xml:space="preserve">
+    <value>„{0}“ nicht vorhanden – „{1}“ verwendet</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD_FEHLT" xml:space="preserve">
+    <value>Die Standardvorlage {0} fehlt – verwendet wird {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_STANDARD_FEHLT_CODE" xml:space="preserve">
+    <value>Die Standardvorlage {0} fehlt – der Bericht entsteht mit den eingebauten Formaten</value>
+  </data>
+  <data name="BV_VORLAGEN_IN_WORD" xml:space="preserve">
+    <value>In Word geöffnet – ungespeicherte Änderungen fehlen</value>
+  </data>
+  <data name="BV_VORLAGEN_IN_WORD_TUN" xml:space="preserve">
+    <value>In Word speichern und erneut prüfen.</value>
+  </data>
+  <data name="BV_VORLAGEN_NICHT_LESBAR" xml:space="preserve">
+    <value>Die Vorlage „{0}“ kann nicht gelesen werden: {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_FEHLT" xml:space="preserve">
+    <value>Die Vorlage „{0}“ ist nicht vorhanden</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_VORHANDEN" xml:space="preserve">
+    <value>Vorlagenordner: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_ANGELEGT" xml:space="preserve">
+    <value>Der Vorlagenordner {0} wurde angelegt</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_NICHT_ERREICHBAR" xml:space="preserve">
+    <value>Der Vorlagenordner {0} ist nicht erreichbar</value>
+  </data>
+  <data name="BV_VORLAGEN_ORDNER_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein gültiger Ordner</value>
+  </data>
+  <data name="BV_VORLAGEN_NAME_VERGEBEN" xml:space="preserve">
+    <value>Im Vorlagenordner gibt es schon „{0}“ – ersetzen oder unter neuem Namen hinzufügen?</value>
+  </data>
+  <data name="BV_VORLAGEN_QUELLE_FEHLT" xml:space="preserve">
+    <value>Die Datei {0} ist nicht vorhanden</value>
+  </data>
+  <data name="BV_VORLAGEN_FORMAT" xml:space="preserve">
+    <value>Nur Word-Dokumente (.docx) und Word-Vorlagen (.dotx) – „{0}“ in Word als .docx speichern</value>
+  </data>
+  <data name="BV_VORLAGEN_ENDUNG" xml:space="preserve">
+    <value>Die Endung muss gleich bleiben: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Die mitgelieferte Vorlage ist schreibgeschützt – ändern nur über eine Kopie („Neue Vorlage…“)</value>
+  </data>
+  <data name="BV_VORLAGEN_NAME_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein gültiger Dateiname</value>
+  </data>
+  <data name="BV_VORLAGEN_HINZUGEFUEGT" xml:space="preserve">
+    <value>„{0}“ hinzugefügt</value>
+  </data>
+  <data name="BV_VORLAGEN_ERSETZT" xml:space="preserve">
+    <value>„{0}“ ersetzt</value>
+  </data>
+  <data name="BV_VORLAGEN_NEU" xml:space="preserve">
+    <value>Neue Vorlage „{0}“ aus der Standardvorlage angelegt</value>
+  </data>
+  <data name="BV_VORLAGEN_ENTFERNT" xml:space="preserve">
+    <value>„{0}“ entfernt – die Datei liegt jetzt in {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_FEHLER" xml:space="preserve">
+    <value>„{0}“ konnte nicht geschrieben werden: {1}</value>
+  </data>
+  <data name="BV_VORLAGEN_BEREITS_IM_ORDNER" xml:space="preserve">
+    <value>„{0}“ liegt bereits im Vorlagenordner</value>
   </data>
   <data name="BV_TEXT_SEITE" xml:space="preserve">
     <value>Seite</value>

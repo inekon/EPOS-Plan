@@ -1,8 +1,10 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
@@ -12,7 +14,9 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Gebäude eines Projekts (iU9-W9.2). Soll ist die Feldkarte von <c>Form_Gebaeude</c>:
-/// 27 Zeilen — zwei Listen, vier Filter, der Detailblock und zehn Knöpfe.
+/// zwei Listen, der Detailblock und zehn Knöpfe. Der Katalog ist seit Stufe G3, Welle K die
+/// Katalogliste des Hauses — dasselbe Profil und derselbe Filterstand wie die
+/// Gebäudeverwaltung; die vier Vorfilter sind Suche und Trichter.
 ///
 /// <para>Zwei Betriebsarten (Risiko R‑W9‑2): Projekt und Assistent. Die Verwaltung ist seit
 /// Stufe 5 der Neuordnung der Administrationsdialoge eine eigene Komponente —
@@ -23,24 +27,26 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class GebaeudeDialogTests : EposBunitContext
 {
-    private static readonly string[] ARTEN_WOHN = { "Einfamilienhaus", "Mehrfamilienhaus" };
-    private static readonly string[] ARTEN_SONST = { "Hotel", "Kaufhaus", "Industriehalle" };
-    private static readonly string[] KLASSEN =
-    { "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978",
-      "1979 bis 1983", "1984 bis 1994", "1995 bis 2000", "Niedrigenergiebauweise",
-      "Passivhaus", "EnEv 2007", "Eff. 70 (EnEV 2007)", "EnEV 2009",
-      "Eff. 70 (EnEV 2009)", "Eff. 55 (EnEV 2009)", "EnEV 2014", "EnEV 2016",
-      "Eff. 100 (EnEV 2016)", "Eff. 155 (EnEV 2016)", "BEG 55", "BEG 40" };
+    /// <summary>Das Profil, wie die Hülle es reicht — mit den Texten aus <c>MyResource</c>.</summary>
+    private static Katalogfilterprofil Profil()
+        => Katalogfilterprofil.FuerGebaeude(s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s);
 
-    private static readonly GebaeudeKatalogZeile[] KATALOG_WOHN =
-    {
-        new("Haus 1990", "Einfamilienhaus", "150,00 [m²]"),
-        new("Haus 2010", "Mehrfamilienhaus", "420,00 [m²]")
-    };
+    /// <summary>Eine Katalogzeile mit den fünf Spalten von <c>FuerGebaeude</c>.</summary>
+    private static Katalogfilterzeile Katalogsatz(int id, string name, string art, string verwendung,
+                                                  string baujahr, double flaeche)
+        => new Katalogfilterzeile(id, name)
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpGebaeudeart, art)
+            .MitText(Katalogfilterprofil.SpVerwendung, verwendung)
+            .MitText(Katalogfilterprofil.SpBaujahr, baujahr)
+            .MitZahl(Katalogfilterprofil.SpFlaecheM2, flaeche, 0);
 
-    private static readonly GebaeudeKatalogZeile[] KATALOG_SONST =
+    /// <summary>Drei Sätze in der Reihenfolge des Controllers (<c>ORDER BY Bezeichner</c>).</summary>
+    private static IReadOnlyList<Katalogfilterzeile> Katalog() => new[]
     {
-        new("Hotel Sonne", "Hotel", "1.200,00 [m²]")
+        Katalogsatz(1, "Haus 1990", "Einfamilienhaus", "Wohngebäude", "1984 bis 1994", 150),
+        Katalogsatz(2, "Haus 2010", "Mehrfamilienhaus", "Wohngebäude", "Passivhaus", 420),
+        Katalogsatz(3, "Hotel Sonne", "Hotel", "Gewerbe+Sonstige", "1969 bis 1978", 1200)
     };
 
     public GebaeudeDialogTests()
@@ -64,19 +70,10 @@ public class GebaeudeDialogTests : EposBunitContext
         DezentralWarmwasser = false
     };
 
-    /// <summary>Merkt sich die letzte Filteranfrage, damit die Tests sie prüfen können.</summary>
-    private sealed class Filterprotokoll
-    {
-        internal bool Wohngebaeude = true;
-        internal string? Art;
-        internal int? Klasse;
-        internal bool AusBaujahrwahl;
-    }
-
     private IRenderedComponent<GebaeudeDialog> Aufbauen(
         List<GebaeudeProjektZeile>? zeilen = null,
         bool wizard = false,
-        Filterprotokoll? protokoll = null,
+        Katalogfilterstand? filterstand = null,
         Func<string, bool>? katalogLoeschen = null,
         Func<string, IReadOnlyDictionary<string, object>>? katalogGaben = null,
         Func<string, string>? katalogLoeschsperre = null,
@@ -86,21 +83,12 @@ public class GebaeudeDialogTests : EposBunitContext
         Action? geaendert = null,
         Action<bool>? geschlossen = null)
     {
-        Filterprotokoll p2 = protokoll ?? new Filterprotokoll();
-
         return Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<GebaeudeProjektZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
-            .Add(x => x.Katalog, (wohn, art, klasse, ausBaujahr) =>
-            {
-                p2.Wohngebaeude = wohn;
-                p2.Art = art;
-                p2.Klasse = klasse;
-                p2.AusBaujahrwahl = ausBaujahr;
-                return wohn ? KATALOG_WOHN : KATALOG_SONST;
-            })
-            .Add(x => x.Gebaeudearten, wohn => wohn ? ARTEN_WOHN : ARTEN_SONST)
-            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Katalogprofil, Profil())
+            .Add(x => x.Filterstandvorgabe, filterstand ?? new Katalogfilterstand())
             .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus",
                                                                   "Katalogtext", "150,00"))
             .Add(x => x.StammSatz, n => Zeile(100000, n))
@@ -128,6 +116,19 @@ public class GebaeudeDialogTests : EposBunitContext
     private static IElement Entfernen(IRenderedComponent<GebaeudeDialog> cut)
         => cut.FindAll(".epos-zweispalten-uebernahme button")[1];
 
+    /// <summary>Die gezeichneten Zeilen der Katalogliste.</summary>
+    private static IReadOnlyList<IElement> Katalogzeilen(IRenderedComponent<GebaeudeDialog> cut)
+        => cut.FindAll(".epos-katalogliste tbody tr");
+
+    /// <summary>Wählt einen Katalogsatz über den Wahlknopf seiner Zeile — wie die Hand.</summary>
+    private static void KatalogWaehlen(IRenderedComponent<GebaeudeDialog> cut, string name)
+        => Katalogzeilen(cut).First(tr => tr.TextContent.Contains(name, StringComparison.Ordinal))
+                             .QuerySelector("button.epos-anlagenwahl")!.Click();
+
+    /// <summary>Die Namen der gezeichneten Katalogzeilen.</summary>
+    private static string[] Katalognamen(IRenderedComponent<GebaeudeDialog> cut)
+        => Katalogzeilen(cut).Select(tr => tr.QuerySelectorAll("td")[1].TextContent.Trim()).ToArray();
+
     // =================================================================================
     // Feldbestand je Betriebsart
     // =================================================================================
@@ -141,15 +142,16 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Contains("Eingabe der Energiedaten", cut.Markup);
         Assert.Contains("ausgewählte Gebäude im Projekt:", cut.Markup);
         Assert.Contains("Gebäude in DB:", cut.Markup);
-        Assert.Contains("Filter Gebäude DB", cut.Markup);
         Assert.Contains("Gebäude: Verbrauch", cut.Markup);
-        Assert.Contains("Typ/Wohnfläche", cut.Markup);
 
-        // Zwei Klapplisten (Gebaeudeart, Baujahr), eine Optionsgruppe mit zwei Optionen,
-        // ein Suchfeld, fuenf gesperrte Detailfelder und seit Stufe G1 zwei leise
-        // Kennzahlen (H_ges, Rechenweg).
-        Assert.Equal(2, cut.FindAll("select").Count);
-        Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
+        // Welle K: KEINE Vorfilter mehr ueber dem Katalog - weder Klapplisten noch
+        // Optionsgruppe; die Katalogliste traegt das eine Suchfeld. Dazu fuenf gesperrte
+        // Detailfelder und seit Stufe G1 zwei leise Kennzahlen (H_ges, Rechenweg).
+        Assert.DoesNotContain("Filter Gebäude DB", cut.Markup);
+        Assert.Empty(cut.FindAll("select"));
+        Assert.Empty(cut.FindAll("input[type=radio]"));
+        Assert.Single(cut.FindAll(".epos-katalogliste"));
+        Assert.Single(cut.FindAll(".epos-katalogliste input[type=search]"));
         Assert.Equal(6, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
@@ -185,71 +187,163 @@ public class GebaeudeDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Filter
+    // Der Katalog - die Katalogliste des Hauses (Stufe G3, Welle K)
     // =================================================================================
 
+    /// <summary>
+    /// <b>Der Katalog ist die Katalogliste der Gebäudeverwaltung</b> — dieselben fünf Spalten
+    /// (Profil <c>FuerGebaeude</c>), jede mit Trichter und Sortierpfeil, alle Sätze des
+    /// Katalogs ohne Vorauswahl. Als PROJEKTdialog behält die Liste die Wahlspalte und das
+    /// Zeilenmaß 53 px (Hausregel: nur in den Verwaltungen ist die Zeile die Wahl), und einen
+    /// Vergleichsknopf bietet sie nicht an.
+    /// </summary>
     [Fact]
-    public void Der_Umschalter_laedt_Katalog_UND_Artenliste_neu()
-    {
-        var protokoll = new Filterprotokoll();
-        var cut = Aufbauen(protokoll: protokoll);
-
-        Assert.Contains("Einfamilienhaus", cut.Markup);
-        cut.FindAll("input[type=radio]")[1].Change(true);      // Gewerbe+Sonstige
-
-        Assert.False(protokoll.Wohngebaeude);
-        Assert.Contains("Hotel Sonne", cut.Markup);
-        Assert.Contains("Industriehalle", cut.Markup);
-    }
-
-    [Fact]
-    public void Die_Gebaeudeartliste_beginnt_mit_Alle()
+    public void Der_Katalog_ist_die_Katalogliste_der_Verwaltung_mit_Wahlspalte()
     {
         var cut = Aufbauen();
 
-        IElement art = cut.FindAll("select")[0];
-        Assert.Equal(3, art.QuerySelectorAll("option").Length);   // Alle + zwei Arten
-        Assert.Equal("Alle", art.QuerySelectorAll("option")[0].TextContent);
-    }
+        var koepfe = cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text")
+                        .Select(e => e.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Name", "Gebäudeart", "Verwendung", "Baujahr", "Fläche [m²]" }, koepfe);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
 
-    [Fact]
-    public void Die_Baujahrliste_beginnt_mit_Alle_und_fuehrt_21_Klassen()
-    {
-        var cut = Aufbauen();
+        Assert.Equal(new[] { "Haus 1990", "Haus 2010", "Hotel Sonne" }, Katalognamen(cut));
+        Assert.Equal(3, cut.FindAll(".epos-katalogliste tbody button.epos-anlagenwahl").Count);
+        Assert.Equal("Wahl", cut.Find(".epos-katalogliste thead th.epos-spalte-wahl").TextContent.Trim());
 
-        IElement baujahr = cut.FindAll("select")[1];
-        Assert.Equal(22, baujahr.QuerySelectorAll("option").Length);
-        Assert.Equal("Alle", baujahr.QuerySelectorAll("option")[0].TextContent);
+        Katalogliste liste = cut.FindComponent<Katalogliste>().Instance;
+        Assert.Equal(53f, liste.Zeilenhoehe);
+        Assert.Equal(Raster<Katalogfilterzeile>.ZEILENHOEHE, liste.Zeilenhoehe);
+        Assert.False(liste.ZeileIstWahl);
+        Assert.Empty(cut.FindAll(".epos-katalog-vergleichknopf"));
+        Assert.Contains("3 von 3", cut.Find(".epos-katalog-treffer").TextContent);
     }
 
     /// <summary>
-    /// <b>Befund W9‑B1.</b> Der Kern braucht die Herkunft der Auswahl: Der
-    /// Gebäudeart-Handler filtert ohne, der Baujahr-Handler mit der Verwendung.
+    /// <b>Die Suche geht über alle Spalten</b> (der frühere Textfilter mit Platzhaltern) —
+    /// sie steht im Filterstand, und die Liste zeigt nur die Treffer.
     /// </summary>
     [Fact]
-    public void Die_Herkunft_der_Auswahl_geht_an_den_Kern()
+    public void Die_Suche_ueber_alle_Spalten_filtert_die_Liste()
     {
-        var protokoll = new Filterprotokoll();
-        var cut = Aufbauen(protokoll: protokoll);
+        var stand = new Katalogfilterstand();
+        var cut = Aufbauen(filterstand: stand);
 
-        cut.FindAll("select")[0].Change("1");        // Gebaeudeart
-        Assert.False(protokoll.AusBaujahrwahl);
-        Assert.Equal("Mehrfamilienhaus", protokoll.Art);
+        cut.Find(".epos-katalog-suchzeile input").Input("*1990");
 
-        cut.FindAll("select")[1].Change("4");        // Baujahr
-        Assert.True(protokoll.AusBaujahrwahl);
-        Assert.Equal(4, protokoll.Klasse);
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 1990" }, Katalognamen(cut)));
+        Assert.Equal("*1990", stand.Suche);
     }
 
+    /// <summary>
+    /// <b>Die Verwendung ist ein Trichter</b> (bis Welle K die Optionsgruppe
+    /// Wohngebäude/Gewerbe+Sonstige): „Gewerbe" im Trichter der Spalte lässt nur die
+    /// Gewerbegebäude stehen — ohne einen Weg über die Datenbank.
+    /// </summary>
     [Fact]
-    public void Die_Wildcardsuche_filtert_die_Anzeige()
+    public void Der_Trichter_Verwendung_filtert_die_Liste()
     {
-        var cut = Aufbauen();
+        var stand = new Katalogfilterstand();
+        var cut = Aufbauen(filterstand: stand);
 
-        Assert.Contains("Haus 2010", cut.Markup);
-        cut.FindAll("input[type=text]").First(i => !i.HasAttribute("readonly")).Input("*1990");
-        Assert.DoesNotContain("Haus 2010", cut.Markup);
-        Assert.Contains("Haus 1990", cut.Markup);
+        cut.FindAll(".epos-katalogliste thead .epos-trichter")[2].Click();     // Verwendung
+        cut.WaitForElement(".epos-spaltenfilter input").Change("Gewerbe");
+
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Hotel Sonne" }, Katalognamen(cut)));
+        Assert.Equal("Gewerbe", stand.Ausdruck(Katalogfilterprofil.SpVerwendung));
+    }
+
+    /// <summary>
+    /// <b>Gebäudeart und Baujahr sind Trichter</b> (bis Welle K zwei Klapplisten mit
+    /// „Alle"); sie wirken UND-verknüpft. Die frühere Weiche, deren Ergebnis davon abhing,
+    /// welche Klappliste zuletzt angefasst wurde (Befund W9‑B1), gibt es nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Gebaeudeart_und_Baujahr_filtern_als_Trichter()
+    {
+        var stand = new Katalogfilterstand();
+        stand.Setzen(Katalogfilterprofil.SpVerwendung, "Wohngebäude");
+        var cut = Aufbauen(filterstand: stand);
+        Assert.Equal(new[] { "Haus 1990", "Haus 2010" }, Katalognamen(cut));
+
+        stand.Setzen(Katalogfilterprofil.SpGebaeudeart, "Mehrfamilienhaus");
+        cut.Render();
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 2010" }, Katalognamen(cut)));
+
+        stand.Setzen(Katalogfilterprofil.SpGebaeudeart, "");
+        stand.Setzen(Katalogfilterprofil.SpBaujahr, "1984 bis 1994");
+        cut.Render();
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 1990" }, Katalognamen(cut)));
+    }
+
+    /// <summary>
+    /// <b>Derselbe Filterstand wie in der Verwaltung</b>: Ohne eigene Vorgabe holt der
+    /// Dialog seinen Stand aus dem Register — unter dem Schlüssel der Gebäudeverwaltung.
+    /// Wer dort filtert, findet den Filter hier wieder (je Katalog einer, für die Sitzung).
+    /// </summary>
+    [Fact]
+    public void Ohne_Vorgabe_teilt_der_Dialog_den_Filterstand_der_Verwaltung()
+    {
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Katalogprofil, Profil()));
+
+        Assert.Same(Katalogfilterregister.Stand(Katalogfilterprofil.SCHLUESSEL_GEBAEUDE),
+                    cut.Instance.Filterstand);
+    }
+
+    /// <summary>
+    /// <b>Ohne Gaben zeichnet der Dialog</b> — die Katalogliste steht mit dem Profil
+    /// <c>FuerGebaeude</c> da, leer und mit „Kein Treffer.", statt zu fehlen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Gaben_zeichnet_der_Dialog_samt_leerer_Katalogliste()
+    {
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
+
+        Assert.Single(cut.FindAll(".epos-katalogliste"));
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead .epos-spaltenkopf-text").Count);
+        Assert.Single(cut.FindAll(".epos-katalog-leer"));
+        Assert.Null(cut.Instance.Katalogzeile);
+    }
+
+    /// <summary>
+    /// <b>Die Wahl hängt am Bezeichner</b> (Hausregel der Katalogliste): Blendet die Suche
+    /// den gewählten Satz aus, bleibt er gewählt, und „In das Projekt übernehmen" nimmt ihn.
+    /// </summary>
+    [Fact]
+    public void Die_Katalogwahl_bleibt_wenn_der_Filter_sie_ausblendet()
+    {
+        var zeilen = new List<GebaeudeProjektZeile>();
+        var cut = Aufbauen(zeilen: zeilen);
+
+        KatalogWaehlen(cut, "Haus 2010");
+        cut.Find(".epos-katalog-suchzeile input").Input("Hotel");
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Hotel Sonne" }, Katalognamen(cut)));
+
+        Assert.Equal("Haus 2010", cut.Instance.Katalogzeile?.Bezeichner);
+        Uebernehmen(cut).Click();
+
+        Assert.Equal("Haus 2010", Assert.Single(zeilen).Name);
+    }
+
+    /// <summary>
+    /// Entfernt der Anwender die letzte Projektzeile, steht die erste SICHTBARE Katalogzeile
+    /// im Detailblock — die erste der gefilterten Liste, nicht die erste des Katalogs.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Entfernen_der_letzten_Zeile_steht_die_erste_sichtbare_Katalogzeile()
+    {
+        var stand = new Katalogfilterstand { Suche = "Hotel" };
+        var zeilen = new List<GebaeudeProjektZeile> { Zeile(11) };
+        var cut = Aufbauen(zeilen: zeilen, filterstand: stand);
+
+        Entfernen(cut).Click();
+
+        Assert.Empty(zeilen);
+        Assert.Equal("Hotel Sonne", cut.Instance.Katalogzeile?.Bezeichner);
     }
 
     // =================================================================================
@@ -490,7 +584,7 @@ public class GebaeudeDialogTests : EposBunitContext
         string geloescht = "";
         var cut = Aufbauen(katalogLoeschen: n => { geloescht = n; return true; });
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        KatalogWaehlen(cut, "Haus 2010");
         Knopf(cut, "Gebäude in DB löschen").Click();
 
         Assert.Contains("wirklich gelöscht", cut.Markup);
@@ -498,6 +592,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Equal("Haus 2010", geloescht);
         Assert.Contains("Gebäude gelöscht!", cut.Instance.Meldung);
+        Assert.Null(cut.Instance.Katalogzeile);
     }
 
     [Fact]
@@ -527,7 +622,7 @@ public class GebaeudeDialogTests : EposBunitContext
         var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; },
                            katalogLoeschsperre: n => { gefragt = n; return GRUND; });
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        KatalogWaehlen(cut, "Haus 2010");
         Knopf(cut, "Gebäude in DB löschen").Click();
 
         Assert.Equal("Haus 2010", gefragt);
@@ -988,12 +1083,13 @@ public class GebaeudeDialogTests : EposBunitContext
     /// Sichtklasse <c>GebaeudeKiSicht</c> und steht deshalb nicht in der Markup-Probe
     /// des Dialogkatalogs — dieser Fall ist ihr Ersatz: Die Maske steht gezeichnet da,
     /// die Brücke liest den Namen des markierten Satzes, und ein Setzen des Suchmusters
-    /// landet im Filterfeld.
+    /// landet in der Suche der Katalogliste (Welle K) — die Liste filtert danach.
     /// </summary>
     [Fact]
     public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Suche()
     {
-        Aufbauen();
+        var stand = new Katalogfilterstand();
+        var cut = Aufbauen(filterstand: stand);
 
         Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE));
 
@@ -1009,20 +1105,28 @@ public class GebaeudeDialogTests : EposBunitContext
 
         suche.Setzen("Haus*");
         Assert.Equal("Haus*", suche.Lesen());
+        Assert.Equal("Haus*", stand.Suche);
+
+        cut.Render();
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 1990", "Haus 2010" }, Katalognamen(cut)));
     }
 
     /// <summary>
-    /// <b>Das Baujahr ist ein WAHLFELD</b> (KI-D-Q6): Gesetzt wird über den Anzeigetext
-    /// der Klappliste, in der Sicht steht danach ihr Listenplatz.
+    /// <b>Das Baujahr ist ein WAHLFELD</b> (KI-D-Q6) über die Werte, die in der Spalte
+    /// „Baujahr" stehen: Gesetzt wird über den Anzeigetext, und der landet als Ausdruck im
+    /// Trichter der Spalte — die Liste zeigt danach nur die Sätze dieser Klasse.
     /// </summary>
     [Fact]
     public void Der_Assistent_waehlt_die_Baualtersklasse_ueber_ihren_Text()
     {
-        var cut = Aufbauen();
+        var stand = new Katalogfilterstand();
+        var cut = Aufbauen(filterstand: stand);
 
         WindowsFormsApplication1.KiFeldzugang zugang =
             KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "filter_baujahr");
         Assert.NotNull(zugang);
+        Assert.Equal(new[] { "1969 bis 1978", "1984 bis 1994", "Passivhaus" },
+                     zugang.Wahleintraege().Select(e => e.Text).ToArray());
 
         KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "Passivhaus");
         Assert.True(umsetzung.Ok, umsetzung.Grund);
@@ -1032,6 +1136,39 @@ public class GebaeudeDialogTests : EposBunitContext
         KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE)
                                          .Single(f => f.Name == "filter_baujahr");
         Assert.Equal("Passivhaus", wert.Text);
+        Assert.Equal("Passivhaus", stand.Ausdruck(Katalogfilterprofil.SpBaujahr));
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Haus 2010" }, Katalognamen(cut)));
+    }
+
+    /// <summary>
+    /// <b>Die Verwendung ist ein Trichter, den der Assistent setzt und leert</b>: Die Wahl
+    /// trägt die zwei Verwendungen, die in der Spalte stehen; „leer" nimmt den Filter zurück
+    /// (früher war das Feld Pflicht — die Optionsgruppe hatte immer einen Wert).
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_und_leert_den_Trichter_Verwendung()
+    {
+        var stand = new Katalogfilterstand();
+        var cut = Aufbauen(filterstand: stand);
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "verwendung");
+        Assert.Equal(new[] { "Gewerbe+Sonstige", "Wohngebäude" },
+                     zugang.Wahleintraege().Select(e => e.Schluessel).ToArray());
+
+        KiFeldumsetzung gewerbe = KiFeldwandler.Wandle(zugang, "gewerbe");
+        Assert.True(gewerbe.Ok, gewerbe.Grund);
+        zugang.Setzen(gewerbe.Wert);
+        cut.Render();
+        Assert.Equal("Gewerbe+Sonstige", stand.Ausdruck(Katalogfilterprofil.SpVerwendung));
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Hotel Sonne" }, Katalognamen(cut)));
+
+        KiFeldumsetzung leer = KiFeldwandler.Wandle(zugang, "");
+        Assert.True(leer.Ok, leer.Grund);
+        zugang.Setzen(leer.Wert);
+        cut.Render();
+        Assert.False(stand.Gefiltert(Katalogfilterprofil.SpVerwendung));
+        cut.WaitForAssertion(() => Assert.Equal(3, Katalognamen(cut).Length));
     }
 
     // =================================================================================
@@ -1078,9 +1215,8 @@ public class GebaeudeDialogTests : EposBunitContext
     {
         var cut = Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile> { Zeile(1) })
-            .Add(x => x.Katalog, (wohn, art, klasse, ausBaujahr) => KATALOG_WOHN)
-            .Add(x => x.Gebaeudearten, wohn => ARTEN_WOHN)
-            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext",
                                                                   "150,00", "VDI 6007", 500.0)));
 
@@ -1088,8 +1224,7 @@ public class GebaeudeDialogTests : EposBunitContext
                            .First(l => l.TextContent.Contains("Wärmeleitwert H_ges:")).QuerySelector("input")!;
         Assert.Equal("—", hges.GetAttribute("value"));
 
-        cut.FindAll(".epos-zweispalten table.epos-raster")[1].QuerySelectorAll("tbody tr")[0]
-           .QuerySelector("input, button")!.Click();
+        KatalogWaehlen(cut, "Haus 1990");
 
         Assert.Equal(500.0.ToString("N1", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) + " W/K",
                      cut.FindAll("label.epos-feld")

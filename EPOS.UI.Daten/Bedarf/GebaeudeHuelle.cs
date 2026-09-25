@@ -98,11 +98,12 @@ namespace WindowsFormsApplication1
                 ["Wizard"] = wizard,
                 ["Geaendert"] = geaendert,
 
-                ["Katalog"] = new Func<bool, string, int?, bool, IReadOnlyList<GebaeudeKatalogZeile>>(
-                    (wohn, art, klasse, ausBaujahr) => Katalogzeilen(wohn, art, klasse, ausBaujahr)),
-                ["Gebaeudearten"] = new Func<bool, IReadOnlyList<string>>(
-                    wohn => GebaeudeStammCtrl.Gebaeudearten(wohn)),
-                ["Baualtersklassen"] = GebaeudeStammCtrl.Baualtersklassen(),
+                // Stufe G3, Welle K: der Katalog ist die Katalogliste des Hauses - dieselben
+                // Zeilen und dasselbe Profil wie die Gebaeudeverwaltung (GebaeudeAdminHuelle);
+                // den Filterstand holt der Dialog aus dem Register, geteilt mit ihr.
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    () => GebaeudeStammCtrl.Katalogfilterzeilen()),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(s => Text_(s, s)),
                 ["StammDetail"] = new Func<string, GebaeudeStammDetail>(Stammdetail),
                 ["StammSatz"] = new Func<string, GebaeudeProjektZeile>(
                     name => Aufnehmen(name, projektId, naechsteId)),
@@ -133,6 +134,12 @@ namespace WindowsFormsApplication1
                 ["WohnflaecheGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     Wohnflaechengaben),
 
+                // Stufe G3, Welle D2: "Huelle und Zonen..." - der Editor der PROJEKTKOPIE samt Zonen.
+                // Eine Zeile ohne Projektkopie (eben aufgenommen) hat keinen Parametersatz.
+                ["ProjektGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
+                    z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? null : GebaeudeKatalogHuelle.ProjektGaben(projektId, z.IdZ); }),
+                ["ZeileAuffrischen"] = new Action<GebaeudeProjektZeile>(z => KennwerteSetzen(z, projektId)),
+
                 // Die Gebaeudetypen-Verwaltung liegt noch in der Windows-Schale - ein
                 // Haken der Naht (Gebaeudewege); ohne ihn kein Knopf.
                 ["GebaeudetypGaben"] = Gebaeudewege.GebaeudetypGaben,
@@ -148,27 +155,18 @@ namespace WindowsFormsApplication1
                 ["LabelProjektliste"] =
                     Text_("GEB_LBL_PROJEKTLISTE", "ausgewählte Gebäude im Projekt:"),
                 ["LabelKatalog"] = Text_("GEB_LBL_KATALOG", "Gebäude in DB:"),
-                ["GruppeFilter"] = Text_("GEB_GRP_FILTER", "Filter Gebäude DB"),
                 ["GruppeVerbrauch"] = Text_("GEB_GRP_VERBRAUCH", "Gebäude: Verbrauch"),
-                ["LabelVerwendung"] = Text_("GEBK_LBL_VERWENDUNG", "Verwendung"),
                 ["LabelGebaeudeart"] = Text_("GEB_LBL_GEBAEUDEART", "Gebäudeart"),
-                ["LabelBaujahr"] = Text_("GEB_LBL_BAUJAHR", "Baujahr"),
-                ["LabelSuche"] = Text_("GEB_LBL_SUCHE", "Filter:"),
-                ["PlatzhalterSuche"] = Text_("GEB_PLATZHALTER_SUCHE", "Suche, z. B. Haus*_1990*"),
                 ["LabelGebaeudename"] = Text_("GEB_LBL_GEBAEUDENAME", "Gebäudename:"),
                 ["LabelBeschreibung"] = Text_("GEB_LBL_BESCHREIBUNG", "Beschreibung:"),
                 ["LabelWohnflaeche"] = Text_("GEB_LBL_WOHNFLAECHE", "Nutzfläche:"),
                 ["LabelEinheit"] = Text_("GEBW_LBL_ART_ANGABE", "Art der Angabe:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
-                ["SpalteTypFlaeche"] = Text_("GEB_SP_TYP_FLAECHE", "Typ/Wohnfläche"),
                 // Stufe G1 (Konzept 2.7): Spalte und Detailkennzahlen des Rechenwegs.
                 ["SpalteRechenweg"] = Text_("GEB_SP_RECHENWEG", "Rechenweg"),
                 ["LabelHges"] = Text_("GEB_LBL_HGES", "Wärmeleitwert H_ges:"),
                 ["LabelRechenweg"] = Text_("GEB_LBL_RECHENWEG", "Rechenweg:"),
-                ["TextAlle"] = Text_("GEB_TEXT_ALLE", "Alle"),
-                ["TextWohngebaeude"] = Text_("GEBK_VERWENDUNG_WOHN", "Wohngebäude"),
-                ["TextSonstige"] = Text_("GEB_TEXT_SONSTIGE", "Gewerbe+Sonstige"),
 
                 // Befund W9-B-3 (Windows-Abnahme 05.09.2026): Die zwei Pfeile
                 // trugen bis hierher nur ihr Zeichen. Beschriftung UND Kurztext
@@ -211,21 +209,6 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
-
-        private static IReadOnlyList<GebaeudeKatalogZeile> Katalogzeilen(
-            bool wohngebaeude, string art, int? klasse, bool ausBaujahrwahl)
-        {
-            var ctrl = new GebaeudeStammCtrl();
-            IReadOnlyList<GebaeudeModel> saetze =
-                ctrl.Filtern(wohngebaeude, art, klasse, ausBaujahrwahl);
-
-            var zeilen = new List<GebaeudeKatalogZeile>(saetze.Count);
-            foreach (GebaeudeModel m in saetze)
-                zeilen.Add(new GebaeudeKatalogZeile(
-                    m.Gebaeudename ?? "", m.Gebaeudeart ?? "",
-                    m.Wohnflaeche_gesamt.ToString("F2") + " [m²]"));
-            return zeilen;
-        }
 
         private static GebaeudeStammDetail Stammdetail(string name)
         {
@@ -383,7 +366,11 @@ namespace WindowsFormsApplication1
             string baujahr = GebaeudeStammCtrl.BAUALTERSKLASSEN_DE[
                 GebaeudeStammCtrl.KlassenIndex(z.Baualtersklasse)];
 
-            return GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr);
+            // Stufe G3 (Welle D2): Mit Zone entfaellt die Hochrechnung ueber die Angabe.
+            return new Dictionary<string, object>(GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr))
+            {
+                ["Zone"] = z.Zone ?? ""
+            };
         }
 
         // =================================================================================
@@ -420,6 +407,9 @@ namespace WindowsFormsApplication1
 
             z.Rechenweg = Rechenwegtext(g.Gebaeude_Modell);
             z.HgesWK = Gebaeudehuellbilanz.GesamtWK(g);
+            // Stufe G3 (Welle D2): die Projektkopie traegt Zonen - der Name der Zone, ueber die sie rechnet.
+            z.HatProjektkopie = true;
+            z.Zone = g.Zonen != null && g.Zonen.Count > 0 ? g.Zonen[0].Bezeichnung : null;
         }
 
         // =================================================================================

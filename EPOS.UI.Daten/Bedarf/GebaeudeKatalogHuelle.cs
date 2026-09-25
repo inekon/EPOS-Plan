@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
 
 namespace WindowsFormsApplication1
@@ -57,7 +59,220 @@ namespace WindowsFormsApplication1
             GebaeudeModel geladen = modus == GebaeudeKatalogModus.Neu
                 ? new GebaeudeModel()
                 : Laden(bezeichner) ?? new GebaeudeModel();
+            return Grundgaben(geladen, modus);
+        }
 
+        // =================================================================================
+        // Stufe G3, Welle D2: das Gebaeude IM PROJEKT - Projektkopie samt Zonen
+        // =================================================================================
+
+        /// <summary>Der Hilfeschlüssel der Betriebsart Projekt — Abschnitt „Hülle und Zonen" der Seite Gebäude.</summary>
+        internal const string HILFE_PROJEKT = "GebaeudeProjekt.btn_Help";
+
+        /// <summary>
+        /// <b>Der Parametersatz des Editors in der Betriebsart Projekt</b> („Hülle und Zonen…" im
+        /// Gebäudedialog): bearbeitet wird die PROJEKTKOPIE der Zuordnung <paramref name="idZ"/>
+        /// (<c>Tab_Gebaeude</c>), nicht der Katalogsatz, samt ihrer Zonen (<see cref="Zonenweg"/>).
+        /// <c>null</c>, wenn die Zuordnung keine Projektkopie hat (eine eben aufgenommene Zeile).
+        ///
+        /// <para><b>Der Schreibweg</b> „Speichern" trennt nach dem zweiten Parameter: <c>false</c> (OK)
+        /// überschreibt die Projektkopie — unter ihrem Namen, die Zeile wird geändert, nie gelöscht
+        /// (<see cref="GebaeudeStammCtrl.ProjektkopieUeberschreiben"/>) — und markiert das Projekt als
+        /// geändert; <c>true</c> („Speichern unter") legt einen KATALOGSATZ an, wie im Modus Bearbeiten.
+        /// Die Zonen schreibt der Zonenweg im dritten Schritt des OK-Wegs.</para>
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> ProjektGaben(int idProjekt, int idZ)
+        {
+            int idGebaeude = GebaeudeBedarfCtrl.TabGebaeudeId(idZ);
+            GebaeudeModel kopie = GebaeudeStammCtrl.LiesProjektkopie(idGebaeude);
+            if (idProjekt <= 0 || kopie == null) return null;
+
+            var gaben = new Dictionary<string, object>(Grundgaben(kopie, GebaeudeKatalogModus.Projekt))
+            {
+                ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
+                    (d, istNeu, bez) => istNeu ? Schreiben(d, true, bez) : ProjektSchreiben(idProjekt, idGebaeude, d)),
+                ["Zonen"] = Zonenweg(idProjekt, idZ, idGebaeude),
+                ["HilfeSchluessel"] = HILFE_PROJEKT
+            };
+            gaben.Remove("Lies");
+            gaben.Remove("Katalognamen");
+            return gaben;
+        }
+
+        /// <summary>
+        /// OK in der Betriebsart Projekt, Schritt 1: die Gebäudedaten der Projektkopie — dieselben
+        /// Ableitungen wie beim Katalog (<see cref="NachModell"/>), der Name bleibt der der Kopie.
+        /// </summary>
+        internal static GebaeudeKatalogErgebnis ProjektSchreiben(int idProjekt, int idGebaeude, GebaeudeKatalogDaten daten)
+        {
+            GebaeudeModel vorher = GebaeudeStammCtrl.LiesProjektkopie(idGebaeude);
+            if (vorher == null || daten == null)
+                return new GebaeudeKatalogErgebnis(false, MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+            string name = vorher.Gebaeudename;
+            GebaeudeModel modell = NachModell(daten, vorher);
+            modell.Gebaeudename = name;
+            if (!GebaeudeStammCtrl.ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
+                return new GebaeudeKatalogErgebnis(false, MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
+            return new GebaeudeKatalogErgebnis(true, "");
+        }
+
+        /// <summary>
+        /// <b>Der Zonenweg eines Projektgebäudes</b> (Softwarearchitektur 2.9, 3.3): die Zonen, wie
+        /// <see cref="GebaeudeZonenCtrl.LesenJeGebaeude"/> sie liefert, die Aufbauten des Projekts und
+        /// des Katalogs zur Wahl (U im Kern gerechnet), und die drei Wege des OK — Übernahme mit
+        /// Hochrechnung (<see cref="GebaeudeZonenCtrl.Uebernahme"/>), Katalogaufbau in das Projekt
+        /// (<see cref="BauteilaufbauCtrl.CopyFromStamm"/>) und das Aggregat der Zonen
+        /// (<see cref="GebaeudeZonenCtrl.SpeichernJeGebaeude"/>).
+        ///
+        /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die G3
+        /// nicht liest (Sollwerte, Lüftung, Kühl- und Übergabeeingaben, Herkunft), hält der Weg je Id
+        /// fest und schreibt sie unverändert zurück; eine neue Zone ist beheizt und trägt die Herkunft
+        /// ihres Vorschlags.</para>
+        /// </summary>
+        internal static GebaeudeZonenweg Zonenweg(int idProjekt, int idZ, int idGebaeude)
+        {
+            var zonenCtrl = new GebaeudeZonenCtrl();
+            var aufbauCtrl = new BauteilaufbauCtrl();
+            var gelesen = new Dictionary<int, ZoneModel>();
+            foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(idGebaeude)) gelesen[z.ID] = z;
+
+            var projektaufbauten = aufbauCtrl.LesenJeProjekt(idProjekt).Where(a => a != null).ToDictionary(a => a.ID);
+            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, false)).ToList();
+            List<AufbauWahl> katalogwahl = aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+
+            ZoneDaten AlsDaten(ZoneModel z) => new ZoneDaten
+            {
+                Id = z.ID,
+                Bezeichner = z.Bezeichner ?? "",
+                Nutzflaeche = z.Nutzflaeche,
+                Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b =>
+                {
+                    AufbauWahl a = b.ID_Aufbau is int id ? projektwahl.FirstOrDefault(x => x.Id == id) : null;
+                    return new BauteilDaten
+                    {
+                        Id = b.ID,
+                        Bezeichner = b.Bezeichner ?? "",
+                        Bauteilart = b.Bauteilart,
+                        Flaeche = b.Flaeche,
+                        UWert = b.U_Wert,
+                        GWert = b.g_Wert,
+                        Rahmenanteil = b.Rahmenanteil,
+                        Verschattung = b.Verschattungsfaktor,
+                        Azimut = b.Azimut,
+                        Neigung = b.Neigung,
+                        Randbedingung = b.Randbedingung,
+                        PsiL = b.Psi_L,
+                        IdAufbau = b.ID_Aufbau,
+                        AufbauText = a?.Text ?? "",
+                        UAufbau = a?.UWert,
+                        Herkunft = b.Herkunft,
+                        Quellkennung = b.Quellkennung
+                    };
+                }).ToList()
+            };
+
+            Func<GebaeudeKatalogDaten, Task<ZonenuebernahmeDaten>> uebernehmen = d =>
+            {
+                GebaeudeModel satz = NachModell(d, GebaeudeStammCtrl.LiesProjektkopie(idGebaeude) ?? new GebaeudeModel());
+                GebaeudeZonenCtrl.Uebernahmevorschlag v = GebaeudeZonenCtrl.Uebernahme(idProjekt, idZ, satz);
+                if (v.Ok && v.Zone != null) gelesen[v.Zone.ID] = v.Zone;
+                return Task.FromResult(new ZonenuebernahmeDaten(v.Ok, v.Meldung ?? "", v.Faktor,
+                    v.Zone == null ? null : AlsDaten(v.Zone), v.NutzflaecheGebaeude, v.Einheit ?? "", v.Angabe,
+                    v.Verbrauchsangabe, v.Leistungsgrenzen));
+            };
+
+            Func<int, AufbauUebernahmeErgebnis> aufbauUebernehmen = stammId =>
+            {
+                int neu = aufbauCtrl.CopyFromStamm(stammId, idProjekt);
+                BauteilaufbauModel kopie = neu > 0 ? aufbauCtrl.LesenProjektsatz(neu) : null;
+                if (kopie == null)
+                    return new AufbauUebernahmeErgebnis(false, MyResource.Resource.BTA_MSG_FEHLER, null);
+                projektaufbauten[kopie.ID] = kopie;
+                AufbauWahl w = Wahl(kopie, false);
+                projektwahl.Add(w);
+                return new AufbauUebernahmeErgebnis(true, "", w);
+            };
+
+            Func<IReadOnlyList<ZoneDaten>, string> speichern = liste =>
+            {
+                var zeilen = new List<ZoneModel>();
+                foreach (ZoneDaten d in liste ?? Array.Empty<ZoneDaten>())
+                {
+                    ZoneModel z = gelesen.TryGetValue(d.Id, out ZoneModel alt) ? alt.Kopie()
+                        : new ZoneModel { ID = d.Id, IstBeheizt = true, Herkunft = DbWerte.HERKUNFT_MANUELL };
+                    z.Bezeichner = d.Bezeichner ?? "";
+                    z.Nutzflaeche = d.Nutzflaeche;
+                    z.Bauteile = d.Bauteile.Select(b => new BauteilModel
+                    {
+                        ID = b.Id,
+                        Bezeichner = b.Bezeichner ?? "",
+                        Bauteilart = b.Bauteilart,
+                        ID_Aufbau = b.IdAufbau,
+                        Flaeche = b.Flaeche ?? 0.0,
+                        U_Wert = b.UWert,
+                        g_Wert = b.GWert,
+                        Rahmenanteil = b.Rahmenanteil,
+                        Verschattungsfaktor = b.Verschattung,
+                        Neigung = b.Neigung,
+                        Azimut = b.Azimut,
+                        Randbedingung = b.Randbedingung,
+                        Psi_L = b.PsiL,
+                        Herkunft = b.Herkunft,
+                        Quellkennung = b.Quellkennung
+                    }).ToList();
+                    zeilen.Add(z);
+                }
+                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen);
+                if (!e.Ok) return e.Meldung ?? "";
+                gelesen.Clear();
+                foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
+                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
+                return "";
+            };
+
+            Func<AufbauWahl, AufbauAnsichtDaten> ansicht = w =>
+            {
+                if (w == null) return null;
+                BauteilaufbauModel m = w.Katalog ? aufbauCtrl.LesenKatalogsatz(w.Id)
+                    : projektaufbauten.TryGetValue(w.Id, out BauteilaufbauModel p) ? p : aufbauCtrl.LesenProjektsatz(w.Id);
+                if (m == null) return null;
+                BauteilaufbauDaten daten = BauteilaufbauHuelle.AlsDaten(m);
+                return new AufbauAnsichtDaten(daten, BauteilaufbauHuelle.Kennwerte(daten),
+                                              w.Katalog ? BauteilaufbauHuelle.Baustoffe() : Projektbaustoffe(idProjekt));
+            };
+
+            return new GebaeudeZonenweg
+            {
+                Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
+                Uebernehmen = uebernehmen,
+                AufbauUebernehmen = aufbauUebernehmen,
+                Speichern = speichern,
+                Projektaufbauten = projektwahl,
+                Katalogaufbauten = katalogwahl,
+                Aufbau = ansicht
+            };
+        }
+
+        /// <summary>Ein Aufbau zur Wahl: Name (samt Bauteilart) und der im Kern gerechnete U-Wert.</summary>
+        private static AufbauWahl Wahl(BauteilaufbauModel a, bool katalog)
+        {
+            double? u = null;
+            try { u = BauteilaufbauCtrl.Kennwerte(a, mitBezugsperiode: false).U_WM2K; }
+            catch (Exception) { u = null; }
+            string text = a.Bezeichner ?? "";
+            if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
+            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u);
+        }
+
+        /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>
+        private static IReadOnlyList<BaustoffWahl> Projektbaustoffe(int idProjekt)
+            => new BaustoffCtrl().LesenProjekt(idProjekt)
+                   .Select(b => new BaustoffWahl(b.ID, b.Bezeichner ?? "", b.Lambda, b.Rho, b.Cp)).ToList();
+
+        private static IReadOnlyDictionary<string, object> Grundgaben(
+            GebaeudeModel geladen, GebaeudeKatalogModus modus)
+        {
             // Die Brauchwasser-Zuordnungen des laufenden Projekts. Sie werden erst beim
             // Oeffnen der Ueberlagerung gelesen; das OK der Profilliste schreibt sie zurueck -
             // zusammen mit dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
