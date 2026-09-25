@@ -741,6 +741,10 @@
             // ETAPPE E15 (V-G7): die Arten der Risikoberücksichtigung.
             RisikoEintraege = () => KiMaskenanmeldung.Eintraege(
                 _risikoarten, z => z.Wert, z => z.Text),
+            // ETAPPE E19 (E19‑Q5 a): die Unternehmensart — mit BHKW benannt abgelehnt.
+            UnternehmensartEintraege = () => KiMaskenanmeldung.Eintraege(
+                _ua, z => z.Wert, z => z.Text),
+            UnternehmensartSetzen = UnternehmensartSetzen,
 
             Nachziehen = () => _ = InvokeAsync(StateHasChanged)
         };
