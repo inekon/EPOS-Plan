@@ -112,12 +112,15 @@ internal static class Prueflauf
         // DIE IMPORTPROBE (G4-8) - nur auf Zuruf (EPOS_PRUEFLAUF_IMPORT) und nur mit den
         // Proben im Paket (-p:Importproben=true). Ausserhalb des Blocks oben, damit sie auch
         // dann laeuft, wenn der Rechennachweis abbricht; sie wirft nicht, und ihre Zeilen
-        // stehen VOR der Fertigmarke im Protokoll.
+        // stehen VOR der Fertigmarke im Protokoll. Im Bau ohne xBIM (-p:OhneXbim=true, nur fuer
+        // den Groessenvergleich des Geraetebaus) gibt es sie nicht.
+#if !OHNE_XBIM
         if (Importprobe.Angefordert)
         {
             log.Leerzeile();
             Importprobe.Ausfuehren(log.Zeile, Paketdatei);
         }
+#endif
 
         TimeSpan dauer = DateTime.Now - start;
         log.Leerzeile();
