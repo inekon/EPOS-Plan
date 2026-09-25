@@ -39,12 +39,29 @@ namespace EPOS.Kern.Tests
         /// (CRLF unter Windows mit <c>core.autocrlf</c>, LF auf einem Linux-Läufer ohne — beide
         /// über <c>text=auto</c> gültig); die Mutationen der Fälle unten gehen von CRLF aus, also
         /// wird hier einmal auf CRLF vereinheitlicht, unabhängig vom Auscheck-Zeilenende.</remarks>
-        private static List<TwwPaketdatei> Paket()
+        private static List<TwwPaketdatei> PaketVoll()
         {
             IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(Paketordner(), out ZapfSatz fehler);
             Assert.Null(fehler);
             return d.Select(x => x with { Inhalt = AufCrLf(x.Inhalt) }).ToList();
         }
+
+        /// <summary>Die drei wahlfreien Dateien des Pakets: Bedarfstage, ihre Ereignisse und Parameter (ZU30 bis ZU33).</summary>
+        private static readonly string[] WAHLFREI =
+        {
+            TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv",
+            TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + ".csv",
+            TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv"
+        };
+
+        /// <summary>
+        /// Das Probepaket OHNE die drei wahlfreien Dateien — die vier Dateien des
+        /// Nutzungsartkatalogs. Die Fälle der Nutzungsarten messen an ihm, damit ein Bedarfstag
+        /// oder ein Parameter ihre Zählungen nicht verschiebt; die Fälle der Bedarfstage und
+        /// Parameter nehmen <see cref="PaketVoll"/>.
+        /// </summary>
+        private static List<TwwPaketdatei> Paket()
+            => PaketVoll().Where(d => !WAHLFREI.Contains(d.Name, StringComparer.OrdinalIgnoreCase)).ToList();
 
         private static string AufCrLf(string text) => text == null ? text : Regex.Replace(text, "\r\n|\r|\n", "\r\n");
 
@@ -52,6 +69,27 @@ namespace EPOS.Kern.Tests
         private static List<TwwPaketdatei> PaketMit(string tabelle, Func<string, string> aendern)
             => Paket().Select(d => string.Equals(d.Name, tabelle + ".csv", StringComparison.OrdinalIgnoreCase)
                                    ? d with { Inhalt = aendern(d.Inhalt) } : d).ToList();
+
+        /// <summary>Das VOLLE Paket mit einer Datei, deren Text <paramref name="aendern"/> umschreibt.</summary>
+        private static List<TwwPaketdatei> PaketVollMit(string tabelle, Func<string, string> aendern)
+            => PaketVoll().Select(d => string.Equals(d.Name, tabelle + ".csv", StringComparison.OrdinalIgnoreCase)
+                                       ? d with { Inhalt = aendern(d.Inhalt) } : d).ToList();
+
+        /// <summary>Das volle Paket ohne die genannte Datei.</summary>
+        private static List<TwwPaketdatei> PaketOhne(string tabelle)
+            => PaketVoll().Where(d => !string.Equals(d.Name, tabelle + ".csv", StringComparison.OrdinalIgnoreCase)).ToList();
+
+        /// <summary>Ein Feld einer Datenzeile einer Paketdatei umschreiben (Kopfzeile bleibt).</summary>
+        private static string FeldSetzen(string inhalt, int datenzeile, string spalte, string wert)
+        {
+            string[] zeilen = inhalt.Split(new[] { "\r\n" }, StringSplitOptions.None);
+            int spaltenindex = Array.IndexOf(zeilen[0].Split(';'), spalte);
+            Assert.True(spaltenindex >= 0, "Spalte " + spalte + " fehlt");
+            string[] felder = zeilen[datenzeile].Split(';');
+            felder[spaltenindex] = wert;
+            zeilen[datenzeile] = string.Join(";", felder);
+            return string.Join("\r\n", zeilen);
+        }
 
         /// <summary>
         /// Das Paket mit dem Zeilenende des Falls in jeder Datei: <c>LF</c> (Linux, macOS, iOS),
@@ -283,20 +321,20 @@ namespace EPOS.Kern.Tests
 
             // Der freie Paketteil taugt nicht als Katalogpaket: Seine Zeilen treten der Katalogversion des
             // Katalogs bei, den sie erreichen, und führen deshalb keine (Regel 2 seiner LIESMICH.md) —
-            // der Katalogimport verlangt sie. Benannt abgelehnt, nichts geändert; die Dateien, die kein
-            // Katalogimport kennt (Parameter, Bedarfstag), sind benannt übergangen.
+            // der Katalogimport verlangt sie in JEDER Datei. Benannt abgelehnt, nichts geändert; gemeldet
+            // wird die erste Datei, der die Spalte fehlt (der Bedarfstag wird zuerst gelesen, ZU30).
             string frei = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ZapfZufallTests.Probenordner()))),
                                        "Referenzlaeufe", "Katalogpaket_frei");
             IReadOnlyList<TwwPaketdatei> teil = TwwNutzungsartCtrl.PaketLesen(frei, out ZapfSatz fehler);
             Assert.Null(fehler);
             TwwKatalogimportBericht bf = TwwNutzungsartCtrl.Importieren(teil);
             Assert.Equal("KATALOGIMPORT_SPALTE_FEHLT", bf.Abbruch.Kennung);
-            Assert.Equal(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + ".csv", bf.Abbruch.Werte[0]);
+            Assert.Equal(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv", bf.Abbruch.Werte[0]);
             Assert.Equal("Katalogversion", bf.Abbruch.Werte[1]);
-            Assert.Contains(bf.Hinweise, h => h.Kennung == "KATALOGIMPORT_DATEI_UEBERGANGEN"
-                                               && h.Werte[0].Equals(TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM));
         }
 
         [Fact]
@@ -401,7 +439,9 @@ namespace EPOS.Kern.Tests
             using var db = new TwwTestdatenbank();
             List<TwwPaketdatei> p = PaketMit(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
                 t => t + "99;Waise (erfunden);1;1;1;1;0;;Probepaket (erfunden);;PROBE-1;FREI;EIGEN;0\r\n");
-            p.Add(new TwwPaketdatei(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv", "ID;Bezeichner\r\n1;x\r\n"));
+            // Zwei Dateien, die der Katalogimport nicht kennt: eine Tww-Tabelle außerhalb von
+            // IMPORT_TABELLEN und eine Beilage. Bedarfstage und Parameter KENNT er (ZU30, ZU31).
+            p.Add(new TwwPaketdatei(TwwSchema.TAB_TWW_DIN4708_WERT_STAMM + ".csv", "Art;Schluessel\r\nBELEGUNG;x\r\n"));
             p.Add(new TwwPaketdatei("notizen.csv", "a;b\r\n"));
 
             TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
@@ -510,8 +550,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Zip_Ordner_und_eine_Datei_des_Ordners_lesen_dasselbe_Paket()
         {
-            List<TwwPaketdatei> ordner = Paket();
-            Assert.Equal(4, ordner.Count);
+            List<TwwPaketdatei> ordner = PaketVoll();
+            Assert.Equal(7, ordner.Count);      // vier Dateien der Nutzungsarten, drei wahlfreie (ZU30 bis ZU32)
 
             IReadOnlyList<TwwPaketdatei> eine = TwwNutzungsartCtrl.PaketLesen(
                 Path.Combine(Paketordner(), TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"), out ZapfSatz f1);
@@ -533,7 +573,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(ordner.Select(d => d.Name).OrderBy(n => n), ausZip.Select(d => d.Name).OrderBy(n => n));
 
                 using var db = new TwwTestdatenbank();
-                Assert.Equal(2, TwwNutzungsartCtrl.Importieren(ausZip).Angelegt);
+                // Zwei Nutzungsarten, zwei Bedarfstage, zwei Parameter.
+                Assert.Equal(6, TwwNutzungsartCtrl.Importieren(ausZip).Angelegt);
             }
             finally { try { File.Delete(zip); } catch { } }
         }
@@ -678,8 +719,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("KATALOGIMPORT_ZU_GROSS", fd.Kennung);
             Assert.Equal(100L, fd.Werte[3]);
 
-            // Mit den Vorgaben liest derselbe Weg das ganze Paket.
-            Assert.Equal(4, TwwNutzungsartCtrl.PaketLesen(Paketordner(), out ZapfSatz ohne).Count);
+            // Mit den Vorgaben liest derselbe Weg das ganze Paket (sieben Dateien).
+            Assert.Equal(7, TwwNutzungsartCtrl.PaketLesen(Paketordner(), out ZapfSatz ohne).Count);
             Assert.Null(ohne);
         }
 
@@ -922,6 +963,431 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Q", p.Quelle);
                 Assert.Equal("V", p.Version);
             }
+        }
+
+        // =================================================================================
+        // Bedarfstage und Parameter (ZU30 bis ZU33)
+        // =================================================================================
+
+        private const string TAG_A = "Probetag A (erfunden)";
+        private const string TAG_B = "Probetag B (erfunden)";
+        private const string P_TEMP = ZapfParameter.ANZEIGETEMPERATUR;
+        private const string P_SCHWELLE = ZapfParameter.STUNDENSCHWELLE;
+
+        private static string BedarfstagDatei() => TwwSchema.TAB_TWW_BEDARFSTAG_STAMM;
+        private static string EreignisDatei() => TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM;
+        private static string ParameterDatei() => TwwSchema.TAB_TWW_PARAMETER_STAMM;
+
+        private static TwwImportzeile Zeile(TwwKatalogimportBericht b, TwwImportbereich bereich, string name)
+            => b.ZeilenVon(bereich).Single(z => z.Nutzungsart == name);
+
+        private static IReadOnlyList<Zapfereignis> Ereignisse(int idBedarfstag)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Minute_Beginn, Dauer_min, Energie_Kwh FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM +
+                " WHERE ID_Bedarfstag = ? ORDER BY Reihenfolge, ID", new DbParam("@id", idBedarfstag));
+            var l = new List<Zapfereignis>();
+            foreach (DataRow r in dt.Rows)
+                l.Add(new Zapfereignis(Convert.ToInt32(r["Minute_Beginn"], CultureInfo.InvariantCulture),
+                                       Convert.ToInt32(r["Dauer_min"], CultureInfo.InvariantCulture),
+                                       Convert.ToDouble(r["Energie_Kwh"], CultureInfo.InvariantCulture)));
+            return l;
+        }
+
+        /// <summary>
+        /// <b>Das volle Paket legt Bedarfstage, Ereignisse und Parameter an</b> (ZU30, ZU31): als
+        /// Anwenderzeilen (Status <c>IMPORT</c>, <c>ReadOnly</c> 0, ohne Beleg), Herkunftsart
+        /// <c>IMPORT</c> — <c>FREI</c> und <c>FIKTIV</c> bleiben —, und der Bericht führt seine Zeilen
+        /// in der Reihenfolge Bedarfstage, Parameter, Nutzungsarten (ZU32).
+        /// </summary>
+        [Fact]
+        public void Das_volle_Paket_legt_Bedarfstage_Ereignisse_und_Parameter_als_Import_an()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll());
+
+            Assert.Null(b.Abbruch);
+            Assert.Empty(b.Hinweise);
+            Assert.False(b.Pruefmodus);
+            Assert.Equal(6, b.Angelegt);                  // 2 Bedarfstage, 2 Parameter, 2 Nutzungsarten
+            Assert.Equal(0, b.Ersetzt);
+            Assert.Equal(new[] { A, B }, b.NeueIds.Select(id => (string)Zeile(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, id)["Bezeichner"]).ToArray());
+
+            // Die Reihenfolge des Berichts: erst die Bedarfstage, dann die Parameter, dann die Nutzungsarten.
+            Assert.Equal(new[]
+            {
+                TwwImportbereich.Bedarfstag, TwwImportbereich.Bedarfstag,
+                TwwImportbereich.Parameter, TwwImportbereich.Parameter,
+                TwwImportbereich.Nutzungsart, TwwImportbereich.Nutzungsart
+            }, b.Zeilen.Select(z => z.Bereich).ToArray());
+
+            // Der Bedarfstag A: Quelle 2, Bezugsmenge 10, Bezugsart 1, Herkunftsart FREI bleibt FREI.
+            TwwImportzeile za = Zeile(b, TwwImportbereich.Bedarfstag, TAG_A);
+            Assert.Equal(TwwImportausgang.Angelegt, za.Ausgang);
+            Assert.Null(za.Grund);
+            DataRow ra = Zeile(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, za.IdNeu);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, ra["Status"]);
+            Assert.False(Convert.ToBoolean(ra["ReadOnly"], CultureInfo.InvariantCulture));
+            Assert.Equal(DBNull.Value, ra["Beleg"]);
+            Assert.Equal(2L, Convert.ToInt64(ra["Quelle_Art"], CultureInfo.InvariantCulture));
+            Assert.Equal(10.0, Convert.ToDouble(ra["Bezugsmenge"], CultureInfo.InvariantCulture));
+            Assert.Equal(1L, Convert.ToInt64(ra[TwwSchema.SPALTE_BEZUGSART], CultureInfo.InvariantCulture));
+            Assert.Equal(TwwSchema.HERKUNFT_FREI, ra["Herkunftsart"]);
+            Assert.Equal(new[] { new Zapfereignis(420, 10, 1.0), new Zapfereignis(1200, 20, 2.0) },
+                         Ereignisse(za.IdNeu).ToArray());
+
+            // Der Bedarfstag B: ohne Bezugsmenge und Bezugsart, Herkunftsart VERFAHREN wird IMPORT.
+            TwwImportzeile zb = Zeile(b, TwwImportbereich.Bedarfstag, TAG_B);
+            DataRow rb = Zeile(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, zb.IdNeu);
+            Assert.Equal(DBNull.Value, rb["Bezugsmenge"]);
+            Assert.Equal(DBNull.Value, rb[TwwSchema.SPALTE_BEZUGSART]);
+            Assert.Equal(TwwSchema.HERKUNFT_IMPORT, rb["Herkunftsart"]);
+            Assert.Single(Ereignisse(zb.IdNeu));
+
+            // Die Parameter: Wert, Einheit, Stand IMPORT; FREI bleibt FREI, FIKTIV bleibt FIKTIV.
+            TwwImportzeile pt = Zeile(b, TwwImportbereich.Parameter, P_TEMP);
+            DataRow rp = Zeile(TwwSchema.TAB_TWW_PARAMETER_STAMM, pt.IdNeu);
+            Assert.Equal(40.0, Convert.ToDouble(rp["Wert"], CultureInfo.InvariantCulture));
+            Assert.Equal("°C", rp["Einheit"]);
+            Assert.Equal(VERSION, rp["Katalogversion"]);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, rp["Status"]);
+            Assert.Equal(TwwSchema.HERKUNFT_FREI, rp["Herkunftsart"]);
+            DataRow rs = Zeile(TwwSchema.TAB_TWW_PARAMETER_STAMM, Zeile(b, TwwImportbereich.Parameter, P_SCHWELLE).IdNeu);
+            Assert.Equal(0.5, Convert.ToDouble(rs["Wert"], CultureInfo.InvariantCulture));
+            Assert.Equal(TwwSchema.HERKUNFT_FIKTIV, rs["Herkunftsart"]);
+        }
+
+        /// <summary>Dasselbe Paket zweimal: Bedarfstage und Parameter sind beim zweiten Lauf gleich vorhanden.</summary>
+        [Fact]
+        public void Gleicher_Bedarfstag_und_gleicher_Parameter_werden_uebersprungen()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwNutzungsartCtrl.Importieren(PaketVoll());
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll());
+
+            Assert.Null(b.Abbruch);
+            Assert.Equal(0, b.Ersetzt);
+            Assert.Equal(4, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count + b.ZeilenVon(TwwImportbereich.Parameter).Count);
+            Assert.All(b.ZeilenVon(TwwImportbereich.Bedarfstag),
+                       z => Assert.Equal(TwwImportausgang.Uebersprungen, z.Ausgang));
+            Assert.All(b.ZeilenVon(TwwImportbereich.Parameter),
+                       z => Assert.Equal(TwwImportausgang.Uebersprungen, z.Ausgang));
+            Assert.All(b.ZeilenVon(TwwImportbereich.Bedarfstag),
+                       z => Assert.Equal("KATALOGIMPORT_GLEICH_VORHANDEN", z.Grund.Kennung));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM));
+        }
+
+        /// <summary>
+        /// <b>Ein abweichender Bedarfstag ersetzt die vorhandene Zeile AM PLATZ</b> (ZU30): dieselbe
+        /// <c>ID</c> — ein Projekt, das ihn gewählt hat, zeigt weiter darauf —, danach Stand
+        /// <c>IMPORT</c>, <c>ReadOnly</c> 0 und die Ereignisse des Pakets statt der alten.
+        /// </summary>
+        [Fact]
+        public void Ein_abweichender_Bedarfstag_ersetzt_die_vorhandene_Zeile_mit_gleicher_Id()
+        {
+            using var db = new TwwTestdatenbank();
+            int alt = TwwTestdatenbank.BedarfstagAnlegen(TAG_A, VERSION,
+                new[] { (60, 5, 0.5), (120, 5, 0.5), (180, 5, 0.5) }, quelleArt: 3, bezugsmenge: 5);
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll());
+            TwwImportzeile z = Zeile(b, TwwImportbereich.Bedarfstag, TAG_A);
+
+            Assert.Equal(TwwImportausgang.Ersetzt, z.Ausgang);
+            Assert.Equal(alt, z.IdNeu);
+            Assert.Equal(alt, z.IdErsetzt);
+            Assert.Equal("KATALOGIMPORT_BEDARFSTAG_ERSETZT", z.Grund.Kennung);
+            Assert.Equal(new object[] { TAG_A, TwwSchema.STATUS_EIGEN, 3, 2 }, z.Grund.Werte.ToArray());
+
+            DataRow r = Zeile(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, alt);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, r["Status"]);
+            Assert.False(Convert.ToBoolean(r["ReadOnly"], CultureInfo.InvariantCulture));
+            Assert.Equal(2L, Convert.ToInt64(r["Quelle_Art"], CultureInfo.InvariantCulture));
+            Assert.Equal(10.0, Convert.ToDouble(r["Bezugsmenge"], CultureInfo.InvariantCulture));
+            Assert.Equal(new[] { new Zapfereignis(420, 10, 1.0), new Zapfereignis(1200, 20, 2.0) },
+                         Ereignisse(alt).ToArray());
+            // Keine zweite Zeile, keine Version "(Import n)".
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " WHERE Bezeichner = ?",
+                                  new DbParam("@b", TAG_A)));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM +
+                                  " WHERE ID_Bedarfstag = ?", new DbParam("@id", alt)));
+        }
+
+        /// <summary>
+        /// <b>Auch eine Auslieferungszeile wird ersetzt</b> (ZU30): mit dem Grund am Eintrag und dem
+        /// zweiten Hinweis, der sagt, dass die gelieferte Fassung nicht von selbst zurückkommt.
+        /// </summary>
+        [Fact]
+        public void Eine_Auslieferungszeile_wird_ersetzt_und_beide_Hinweise_stehen()
+        {
+            using var db = new TwwTestdatenbank();
+            int alt = TwwTestdatenbank.BedarfstagAnlegen(TAG_A, VERSION, new[] { (60, 5, 1.0) },
+                status: TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+            int altP = TwwTestdatenbank.ParameterAnlegen(P_TEMP, 60.0, VERSION, "°C");
+            DataRepository.ExecuteNonQuery("UPDATE " + TwwSchema.TAB_TWW_PARAMETER_STAMM +
+                                           " SET Status = ?, ReadOnly = 1 WHERE ID = ?",
+                                           new DbParam("@s", TwwSchema.STATUS_AUSLIEFERUNG), new DbParam("@id", altP));
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll());
+
+            Assert.Equal(TwwImportausgang.Ersetzt, Zeile(b, TwwImportbereich.Bedarfstag, TAG_A).Ausgang);
+            Assert.Equal(TwwImportausgang.Ersetzt, Zeile(b, TwwImportbereich.Parameter, P_TEMP).Ausgang);
+            Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_AUSLIEFERUNG_ERSETZT");
+            Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_PARAMETER_WIRKUNG");
+            ZapfSatz hinweis = b.Hinweise.Single(h => h.Kennung == "KATALOGIMPORT_AUSLIEFERUNG_ERSETZT");
+            Assert.Equal(2, hinweis.Werte[0]);
+            Assert.Contains("Import", hinweis.Klartext, StringComparison.Ordinal);
+
+            // Die Zeilen sind jetzt Anwenderzeilen - die Auslieferungsmarke ist weg.
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Zeile(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, alt)["Status"]);
+            Assert.False(Convert.ToBoolean(Zeile(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, alt)["ReadOnly"], CultureInfo.InvariantCulture));
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Zeile(TwwSchema.TAB_TWW_PARAMETER_STAMM, altP)["Status"]);
+            Assert.False(Convert.ToBoolean(Zeile(TwwSchema.TAB_TWW_PARAMETER_STAMM, altP)["ReadOnly"], CultureInfo.InvariantCulture));
+        }
+
+        /// <summary><b>Ein Parameter mit anderem Wert wird ersetzt</b> (ZU31) — am Platz, mit Grund und Wirkungshinweis.</summary>
+        [Fact]
+        public void Ein_Parameter_mit_anderem_Wert_wird_ersetzt()
+        {
+            using var db = new TwwTestdatenbank();
+            int alt = TwwTestdatenbank.ParameterAnlegen(P_TEMP, 55.0, VERSION, "°C");
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll());
+            TwwImportzeile z = Zeile(b, TwwImportbereich.Parameter, P_TEMP);
+
+            Assert.Equal(TwwImportausgang.Ersetzt, z.Ausgang);
+            Assert.Equal(alt, z.IdNeu);
+            Assert.Equal("KATALOGIMPORT_PARAMETER_ERSETZT", z.Grund.Kennung);
+            Assert.Equal(new object[] { P_TEMP, 55.0, 40.0, "°C" }, z.Grund.Werte.ToArray());
+            Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_PARAMETER_WIRKUNG");
+            Assert.DoesNotContain(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_AUSLIEFERUNG_ERSETZT");
+
+            DataRow r = Zeile(TwwSchema.TAB_TWW_PARAMETER_STAMM, alt);
+            Assert.Equal(40.0, Convert.ToDouble(r["Wert"], CultureInfo.InvariantCulture));
+            Assert.Equal(TwwSchema.STATUS_IMPORT, r["Status"]);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " WHERE Schluessel = ?",
+                                  new DbParam("@s", P_TEMP)));
+        }
+
+        /// <summary>Ein Schlüssel, den kein Rechenweg liest, wird benannt abgelehnt — nur er.</summary>
+        [Fact]
+        public void Ein_unbekannter_Parameterschluessel_wird_benannt_abgelehnt()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(ParameterDatei(), s => FeldSetzen(s, 1, "Schluessel", "Erfunden.Kein.Parameter")));
+
+            TwwImportzeile z = Zeile(b, TwwImportbereich.Parameter, "Erfunden.Kein.Parameter");
+            Assert.Equal(TwwImportausgang.Abgelehnt, z.Ausgang);
+            Assert.Equal("KATALOGIMPORT_PARAMETER_UNBEKANNT", z.Grund.Kennung);
+            // Der zweite Parameter und die Nutzungsarten kommen trotzdem.
+            Assert.Equal(TwwImportausgang.Angelegt, Zeile(b, TwwImportbereich.Parameter, P_SCHWELLE).Ausgang);
+            Assert.Equal(2, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count(x => x.Ausgang == TwwImportausgang.Angelegt));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM));
+        }
+
+        /// <summary>Eine abweichende Einheit und ein Wert außerhalb des Bereichs werden benannt abgelehnt.</summary>
+        [Fact]
+        public void Eine_abweichende_Einheit_und_ein_Wert_ausserhalb_des_Bereichs_werden_benannt_abgelehnt()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht einheit = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(ParameterDatei(), s => FeldSetzen(s, 1, "Einheit", "K")));
+            ZapfSatz g1 = Zeile(einheit, TwwImportbereich.Parameter, P_TEMP).Grund;
+            Assert.Equal("KATALOGIMPORT_PARAMETER_EINHEIT", g1.Kennung);
+            Assert.Equal(new object[] { P_TEMP, "K", "°C" }, g1.Werte.ToArray());
+
+            TwwKatalogimportBericht bereich = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(ParameterDatei(), s => FeldSetzen(s, 1, "Wert", "400")));
+            ZapfSatz g2 = Zeile(bereich, TwwImportbereich.Parameter, P_TEMP).Grund;
+            Assert.Equal("KATALOGIMPORT_PARAMETER_BEREICH", g2.Kennung);
+            Assert.Equal(400.0, g2.Werte[1]);
+        }
+
+        /// <summary>
+        /// Ein Ereignis, dessen <c>ID_Bedarfstag</c> auf keinen Bedarfstag des Pakets zeigt, lehnt das
+        /// Paket als Ganzes ab — es gibt keine Zeile, der es zufallen könnte; nichts ist geschrieben.
+        /// </summary>
+        [Fact]
+        public void Ein_Ereignis_ohne_seinen_Bedarfstag_lehnt_das_Paket_ab()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(EreignisDatei(), s => FeldSetzen(s, 1, "ID_Bedarfstag", "99")));
+
+            Assert.NotNull(b.Abbruch);
+            Assert.Equal("KATALOGIMPORT_EREIGNIS_OHNE_TAG", b.Abbruch.Kennung);
+            Assert.Empty(b.Zeilen);
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+        }
+
+        /// <summary>
+        /// <b>Die Formprüfung eines Bedarfstags (ZU33) lehnt NUR ihn ab</b>: Quelle, Bezugsmenge,
+        /// Bezugsart, Fenster, Energie, Energiesumme und Reihenfolge. Der zweite Bedarfstag, die
+        /// Parameter und die Nutzungsarten kommen in jedem Fall.
+        /// </summary>
+        [Theory]
+        [InlineData("Quelle_Art", "1", "KATALOGIMPORT_WERT_UNGUELTIG")]
+        [InlineData("Quelle_Art", "", "KATALOGIMPORT_PFLICHT_FEHLT")]
+        [InlineData("Bezeichner", "", "KATALOGIMPORT_PFLICHT_FEHLT")]
+        [InlineData("Katalogversion", "", "KATALOGIMPORT_PFLICHT_FEHLT")]
+        [InlineData("Bezugsmenge", "0", "KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE")]
+        [InlineData("Bezugsmenge", "-5", "KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE")]
+        [InlineData("Bezugsart", "9", "KATALOGIMPORT_WERT_UNGUELTIG")]
+        [InlineData("Quelle", "", "KATALOGIMPORT_PFLICHT_FEHLT")]
+        [InlineData("Version", "", "KATALOGIMPORT_PFLICHT_FEHLT")]
+        [InlineData("Herkunftsart", "ERFUNDEN", "KATALOGIMPORT_WERT_UNGUELTIG")]
+        public void Eine_Regel_des_Bedarfstags_lehnt_nur_ihn_ab(string spalte, string wert, string kennung)
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(BedarfstagDatei(), s => FeldSetzen(s, 1, spalte, wert)));
+
+            Assert.Null(b.Abbruch);
+            TwwImportzeile z = b.ZeilenVon(TwwImportbereich.Bedarfstag)[0];
+            Assert.Equal(TwwImportausgang.Abgelehnt, z.Ausgang);
+            Assert.Equal(kennung, z.Grund.Kennung);
+            Assert.Equal(TwwImportausgang.Angelegt, Zeile(b, TwwImportbereich.Bedarfstag, TAG_B).Ausgang);
+            Assert.Equal(2, b.ZeilenVon(TwwImportbereich.Parameter).Count(x => x.Ausgang == TwwImportausgang.Angelegt));
+            Assert.Equal(2, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count(x => x.Ausgang == TwwImportausgang.Angelegt));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+        }
+
+        /// <summary>Die Regeln der Ereignisse (ZU33): Fenster, Energie, Energiesumme, Reihenfolge.</summary>
+        [Theory]
+        [InlineData("Minute_Beginn", "1440", "KATALOGIMPORT_EREIGNIS_FENSTER")]
+        [InlineData("Minute_Beginn", "-1", "KATALOGIMPORT_EREIGNIS_FENSTER")]
+        [InlineData("Minute_Beginn", "1435", "KATALOGIMPORT_EREIGNIS_FENSTER")]
+        [InlineData("Dauer_min", "0", "KATALOGIMPORT_EREIGNIS_FENSTER")]
+        [InlineData("Energie_Kwh", "-1", "KATALOGIMPORT_EREIGNIS_ENERGIE")]
+        [InlineData("Energie_Kwh", "", "KATALOGIMPORT_PFLICHT_FEHLT")]
+        [InlineData("Reihenfolge", "3", "KATALOGIMPORT_EREIGNIS_REIHENFOLGE")]
+        public void Eine_Regel_der_Ereignisse_lehnt_nur_ihren_Bedarfstag_ab(string spalte, string wert, string kennung)
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(EreignisDatei(), s => FeldSetzen(s, 1, spalte, wert)));
+
+            Assert.Null(b.Abbruch);
+            TwwImportzeile z = Zeile(b, TwwImportbereich.Bedarfstag, TAG_A);
+            Assert.Equal(TwwImportausgang.Abgelehnt, z.Ausgang);
+            Assert.Equal(kennung, z.Grund.Kennung);
+            Assert.Equal(TwwImportausgang.Angelegt, Zeile(b, TwwImportbereich.Bedarfstag, TAG_B).Ausgang);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+        }
+
+        /// <summary>Ein Bedarfstag, dessen Ereignisse in der Summe keine Energie tragen, ist abgelehnt.</summary>
+        [Fact]
+        public void Ein_Bedarfstag_ohne_Energie_in_der_Summe_ist_abgelehnt()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(EreignisDatei(), s => FeldSetzen(FeldSetzen(s, 1, "Energie_Kwh", "0"), 2, "Energie_Kwh", "0")));
+
+            TwwImportzeile z = Zeile(b, TwwImportbereich.Bedarfstag, TAG_A);
+            Assert.Equal(TwwImportausgang.Abgelehnt, z.Ausgang);
+            Assert.Equal("KATALOGIMPORT_BEDARFSTAG_ENERGIE_NULL", z.Grund.Kennung);
+        }
+
+        /// <summary>Ohne die Ereignisdatei trägt kein Bedarfstag ein Ereignis — beide sind abgelehnt.</summary>
+        [Fact]
+        public void Ohne_Ereignisdatei_ist_jeder_Bedarfstag_ohne_Ereignis_abgelehnt()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketOhne(EreignisDatei()));
+
+            Assert.Null(b.Abbruch);
+            Assert.All(b.ZeilenVon(TwwImportbereich.Bedarfstag), z =>
+            {
+                Assert.Equal(TwwImportausgang.Abgelehnt, z.Ausgang);
+                Assert.Equal("KATALOGIMPORT_BEDARFSTAG_OHNE_EREIGNIS", z.Grund.Kennung);
+            });
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+            Assert.Equal(2, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count(x => x.Ausgang == TwwImportausgang.Angelegt));
+        }
+
+        /// <summary>
+        /// Zwei Bedarfstage gleichen Namens in EINER Paketdatei: der zweite ist abgelehnt (der erste
+        /// hätte ihn sonst still überschrieben).
+        /// </summary>
+        [Fact]
+        public void Zwei_gleichnamige_Bedarfstage_im_Paket_lehnen_den_zweiten_ab()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(BedarfstagDatei(), s => FeldSetzen(s, 2, "Bezeichner", TAG_A)));
+
+            Assert.Null(b.Abbruch);
+            Assert.Equal(TwwImportausgang.Angelegt, b.ZeilenVon(TwwImportbereich.Bedarfstag)[0].Ausgang);
+            TwwImportzeile zweit = b.ZeilenVon(TwwImportbereich.Bedarfstag)[1];
+            Assert.Equal(TwwImportausgang.Abgelehnt, zweit.Ausgang);
+            Assert.Equal("KATALOGIMPORT_DOPPELT_IM_PAKET", zweit.Grund.Kennung);
+        }
+
+        /// <summary>Zwei gleiche Parameterschlüssel in EINER Paketdatei: der zweite ist abgelehnt.</summary>
+        [Fact]
+        public void Zwei_gleiche_Parameterschluessel_im_Paket_lehnen_den_zweiten_ab()
+        {
+            using var db = new TwwTestdatenbank();
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(
+                PaketVollMit(ParameterDatei(), s => FeldSetzen(FeldSetzen(s, 2, "Schluessel", P_TEMP), 2, "Einheit", "°C")));
+
+            Assert.Null(b.Abbruch);
+            TwwImportzeile zweit = b.ZeilenVon(TwwImportbereich.Parameter)[1];
+            Assert.Equal(TwwImportausgang.Abgelehnt, zweit.Ausgang);
+            Assert.Equal("KATALOGIMPORT_DOPPELT_IM_PAKET", zweit.Grund.Kennung);
+        }
+
+        /// <summary>
+        /// <b>Der Prüfmodus schreibt nichts</b> und sagt dieselben Zeilen: „würde ersetzen" statt
+        /// „ersetzt". Danach steht der Katalog wie vorher.
+        /// </summary>
+        [Fact]
+        public void Der_Pruefmodus_schreibt_nichts_und_nennt_dieselben_Zeilen()
+        {
+            using var db = new TwwTestdatenbank();
+            int alt = TwwTestdatenbank.BedarfstagAnlegen(TAG_A, VERSION, new[] { (60, 5, 1.0) });
+            int altP = TwwTestdatenbank.ParameterAnlegen(P_TEMP, 55.0, VERSION, "°C");
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll(), pruefen: true);
+
+            Assert.True(b.Pruefmodus);
+            Assert.Null(b.Abbruch);
+            Assert.Equal(2, b.Ersetzt);
+            Assert.Equal(TwwImportausgang.Ersetzt, Zeile(b, TwwImportbereich.Bedarfstag, TAG_A).Ausgang);
+            Assert.Equal(TwwImportausgang.Ersetzt, Zeile(b, TwwImportbereich.Parameter, P_TEMP).Ausgang);
+
+            // Nichts geschrieben: der alte Wert, der alte Stand, keine neue Nutzungsart.
+            Assert.Equal(TwwSchema.STATUS_EIGEN, Zeile(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, alt)["Status"]);
+            Assert.Equal(55.0, Convert.ToDouble(Zeile(TwwSchema.TAB_TWW_PARAMETER_STAMM, altP)["Wert"], CultureInfo.InvariantCulture));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM));
+        }
+
+        /// <summary>
+        /// Ohne die Tabellen im Schema sind die drei Dateien benannt übergangen — nie still; die
+        /// Nutzungsarten kommen trotzdem.
+        /// </summary>
+        [Fact]
+        public void Ohne_die_Tabellen_sind_Bedarfstage_und_Parameter_benannt_uebergangen()
+        {
+            using var db = new TwwTestdatenbank();
+            DataRepository.ExecuteNonQuery("DROP TABLE " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM);
+            DataRepository.ExecuteNonQuery("DROP TABLE " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM);
+            DataRepository.ExecuteNonQuery("DROP TABLE " + TwwSchema.TAB_TWW_PARAMETER_STAMM);
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(PaketVoll());
+
+            Assert.Null(b.Abbruch);
+            Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE");
+            Assert.Contains(b.Hinweise, h => h.Kennung == "KATALOGIMPORT_PARAMETER_OHNE_TABELLE");
+            Assert.Single(b.Hinweise.Where(h => h.Kennung == "KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE"));
+            Assert.Empty(b.ZeilenVon(TwwImportbereich.Bedarfstag));
+            Assert.Empty(b.ZeilenVon(TwwImportbereich.Parameter));
+            Assert.Equal(2, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count(x => x.Ausgang == TwwImportausgang.Angelegt));
         }
     }
 }

@@ -1,0 +1,3 @@
+ID;Bezeichner;Katalogversion;Quelle_Art;Bezugsmenge;Bezugsart;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+1;Probetag A (erfunden);PROBE-1;2;10;1;Probepaket (erfunden);;PROBE-1;FREI;AUSLIEFERUNG;1
+2;Probetag B (erfunden);PROBE-1;5;;;Probepaket (erfunden);;PROBE-1;VERFAHREN;AUSLIEFERUNG;1

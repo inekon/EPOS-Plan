@@ -183,6 +183,42 @@ namespace EPOS.Kern.Tests
                 });
         }
 
+        /// <summary>
+        /// Ein Bedarfstag des Katalogs samt Ereignissen (Minute, Dauer, Energie) — Status,
+        /// <c>ReadOnly</c>, Quelle_Art und Bezugsmenge wählt der Fall. Die Reihenfolge der
+        /// Ereignisse ist ihre Reihenfolge im Feld.
+        /// </summary>
+        internal static int BedarfstagAnlegen(string bezeichner, string version,
+                                              (int Minute, int Dauer, double Kwh)[] ereignisse,
+                                              int quelleArt = 2, double? bezugsmenge = null, int? bezugsart = null,
+                                              string status = TwwSchema.STATUS_EIGEN, bool readOnly = false,
+                                              string herkunft = TwwSchema.HERKUNFT_FIKTIV)
+        {
+            int id = DataRepository.ExecuteInsertAndGetId(
+                "INSERT INTO \"Tab_TwwBedarfstag_STAMM\" (\"Bezeichner\", \"Katalogversion\", \"Quelle_Art\", " +
+                "\"Bezugsmenge\", \"Quelle\", \"Ausgabe\", \"Version\", \"Herkunftsart\", \"Status\", \"Beleg\", " +
+                "\"ReadOnly\") VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, ?)",
+                new[]
+                {
+                    new DbParam("@b", bezeichner), new DbParam("@k", version), new DbParam("@a", quelleArt),
+                    new DbParam("@m", bezugsmenge.HasValue ? (object)bezugsmenge.Value : null),
+                    new DbParam("@q", QUELLE), new DbParam("@v", version), new DbParam("@h", herkunft),
+                    new DbParam("@st", status), new DbParam("@ro", readOnly ? 1 : 0)
+                });
+            if (bezugsart.HasValue)
+                DataRepository.ExecuteNonQuery(
+                    "UPDATE \"Tab_TwwBedarfstag_STAMM\" SET \"Bezugsart\" = ? WHERE \"ID\" = ?",
+                    new DbParam("@a", bezugsart.Value), new DbParam("@id", id));
+            for (int i = 0; ereignisse != null && i < ereignisse.Length; i++)
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_TwwBedarfstagEreignis_STAMM\" (\"ID_Bedarfstag\", \"Minute_Beginn\", " +
+                    "\"Dauer_min\", \"Energie_Kwh\", \"Reihenfolge\") VALUES (?, ?, ?, ?, ?)",
+                    new DbParam("@id", id), new DbParam("@m", ereignisse[i].Minute),
+                    new DbParam("@d", ereignisse[i].Dauer), new DbParam("@e", ereignisse[i].Kwh),
+                    new DbParam("@r", i + 1));
+            return id;
+        }
+
         /// <summary>Eine Zone eines Projekts auf eine Nutzungsart.</summary>
         internal static int ZoneAnlegen(int idProjekt, int idNutzungsart, string name, double bezugsmenge,
                                         int reihenfolge = 1)
