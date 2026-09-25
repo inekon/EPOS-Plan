@@ -1,9 +1,9 @@
-# Die Protokolle der 34 entfernten Referenzbasen
+# Die Protokolle der 35 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **34 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **35 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15 und das von R16 am 25.09.2026. **35 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16 und das von R17 am 25.09.2026. **36 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-25_R17_Datenpflege`](../../../Referenzlaeufe/2026-09-25_R17_Datenpflege/);
+> [`Referenzlaeufe/2026-09-25_R18_PvAusweis`](../../../Referenzlaeufe/2026-09-25_R18_PvAusweis/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -62,6 +62,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-24_R14_Kaelteerzeuger` | 24.09.2026 | CI-Basis nach der Schlusswelle KU2 der Kühlung (Projekt 1017 mit Kälteerzeuger: die Wärmepumpe kühlt über ihre Kühlkennlinie); dreizehn Projekte, 394 CSV, 2 249 Skalare — abgelöst durch R15 am 25.09.2026 | [`2026-09-24_R14_Kaelteerzeuger/protokoll.txt`](2026-09-24_R14_Kaelteerzeuger/protokoll.txt) |
 | `2026-09-25_R15_Anlagenkopplung` | 25.09.2026 | CI-Basis nach der Stufe AK1 der Anlagenkopplung (Referenzprojekt 1047: Kopie von 1017 mit gekoppeltem Heizkreis und gekoppelter Kühlübergabe); getragen bis Schemastand 142; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R16 am 25.09.2026 | [`2026-09-25_R15_Anlagenkopplung/protokoll.txt`](2026-09-25_R15_Anlagenkopplung/protokoll.txt) |
 | `2026-09-25_R16_Anlagenprio` | 25.09.2026 | CI-Basis nach der Rechenweg-Sortierung der Anlagen nach der Regel „99“ (E22, Konzept Wirtschaftlichkeit § 6.3 Nr. 18: gepflegte Priorität zuerst; einzige Wirkung die Modulreihenfolge der Wärmepumpen von 1042); getragen bis Schemastand 143; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R17 am 25.09.2026 | [`2026-09-25_R16_Anlagenprio/protokoll.txt`](2026-09-25_R16_Anlagenprio/protokoll.txt) |
+| `2026-09-25_R17_Datenpflege` | 25.09.2026 | CI-Basis nach der Datenpflege nach Konzept Wirtschaftlichkeit § 6.3 Nr. 24 (E24: die Kessel von 1018 und 1023 tragen den Energieträger 63, 1023 dazu eine Projektzeile und einen Preisstand für Erdgas; einzige Wirkung `HeizkesselModul[0].carrier_id` von 1018 und 1023); Schemastand 143; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R18 am 25.09.2026 | [`2026-09-25_R17_Datenpflege/protokoll.txt`](2026-09-25_R17_Datenpflege/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -2251,6 +2252,96 @@ den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tag
 > **Die Vorgängerbasis `2026-09-25_R15_Anlagenkopplung`**, die erste Basis mit Anlagenkopplung, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt
 > 1047 und dem Nachtrag zu Schemastand 142 steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R17 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 25.09.2026 die Basis R17 beschrieben — Anlass (Konzept
+Wirtschaftlichkeit § 6.3 Nr. 24, Datenpflege der Kesselträger von 1018 und 1023), die Pflegetafel, der
+Zellvergleich, die A/B-Tafel gegen R16 und die benannten Kessel ohne Träger. Er steht hier im Wortlaut;
+die Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R17 durch `2026-09-25_R18_PvAusweis`** (Anwender 25.09.2026, Etappe E26, Befund N1 aus
+E25: `Ergebnis.Photovoltaik.Stromproduktion` ist die Erzeugung der Module statt des Direktverbrauchs).
+Allein `Photovoltaik.Stromproduktion` in `aggregate.csv` von 1007, 1040, 1045 und 1046 wechselt, alle
+übrigen Werte und alle Zeitreihen bleiben gleich; die Tafel steht im Abschnitt „Aktuelle Basis“ von
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-25_R17_Datenpflege/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **143**,
+LFS-SHA-256 `0c2fe21a…`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests`
+den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die Datenpflege nach Konzept Wirtschaftlichkeit § 6.3 Nr. 24** (Anwender 25.09.2026,
+> Etappe E24, Entscheide E24‑Q1 … Q6 nach Empfehlung). Zwei Kessel der Referenzprojekte trugen keinen
+> Energieträger und rechneten ihre Emissionen über den Rückfall auf den Gerätebrennstoff; 1023 hatte zudem
+> keine Projektzeile für Erdgas und damit in einer frischen Wirtschaftlichkeitsrechnung keine
+> Energiekosten. Kein Schemaschritt, kein Code am Rechenweg — allein Werte der Testdatenbank, gesetzt mit
+> einem einmaligen dotnet-Dateiskript auf der Fassung mit Schemastand 143 (`76dd9e48…` → `0c2fe21a…`):
+>
+> | Tabelle, Zeile | Projekt | vorher | nachher | Quelle |
+> |---|---|---|---|---|
+> | `Tab_Energieanlagen` 10369 (Kessel 1018251, Brennstoff 3) | 1018 | `ID_Carrier` NULL | **63** „Erdgas E“ | wie das BHKW 11327 desselben Projekts und die Kessel von 1026–1030, 1039–1045 |
+> | `Tab_Energieanlagen` 11205 (Kessel 1018254, Brennstoff 3) | 1023 | `ID_Carrier` NULL | **63** | dieselbe |
+> | `energy_project_settings` **10130** (neu) | 1023 | — | Träger 63, `ID_Umrechnung` 40, Hi 10,5, Hs 11,6, 0,84 €/Nm³, Grundpreis 1 200 €/a, CO₂ **240**, SO₂ 0,3, NOx 110, Nm³ | Kopie der Zeile 10067 von 1030 (E24‑Q1 a: CO₂ wie 1030/1018/1026) |
+> | `energy_price` **10185** (neu) | 1023 | — | Träger 63, 0,84 / 1 200 / Nm³ / Heizwert 10,5, `valid_from` wie 1030 | Kopie der Zeile 10130 von 1030 (E24‑Q2) |
+>
+> Zellvergleich aller 145 Tabellen samt `sqlite_sequence` gegen die Fassung 143 (10 645 701 Zellen): allein
+> die zwei `ID_Carrier`-Zellen, die zwei neuen Zeilen und die zwei Zähler in `sqlite_sequence`
+> (`energy_project_settings` 10129 → 10130, `energy_price` 10184 → 10185); Schema gleich, Zeilenzahlen sonst
+> unverändert. `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
+> 219 Indizes samt den von SQLite angelegten. Größe 68 714 496 Byte (LFS-SHA-256 `0c2fe21a…`). Ein zweiter
+> Lauf des Skripts findet nichts offen.
+>
+> **Einfrierregel „Emissionsfaktoren“ berührt** — die neue Projektzeile führt `energy_project_settings.co2`
+> an einem Referenzprojekt; darum diese Neueinfrierung. **Die Emissionen bewegen sich trotzdem nicht:** Der
+> Projektwert 240 g/kWh steht in der Lesekette vor der aktiven Katalogzeile (BAFA 201 g/kWh) und ist
+> derselbe Wert, den vorher der Rückfall auf `Tab_Brennstoff_Stamm` 3 lieferte. Ohne Projektwert hätte 1023
+> mit 201 g/kWh gerechnet (`Em.Kessel.Co2T` 22,44 → 18,79 t/a, in Phase 0 an einer Kopie gemessen, nicht
+> gewählt).
+>
+> **A/B gegen R16** (14 Projekte): **12/14 PASS und byte-gleich**, 430/432 CSV byte-gleich; 1018 und 1023
+> FAIL mit je **einem** Wert in `aggregate.csv`, alle Zeitreihen byte-gleich:
+>
+> | Projekt, `aggregate.csv` | R16 | R17 |
+> |---|---|---|
+> | 1018 `HeizkesselModul[0].carrier_id` | leer | 63 |
+> | 1023 `HeizkesselModul[0].carrier_id` | leer | 63 |
+>
+> Die Simulation liest weder Arbeits- noch Grundpreis; beides wirkt erst in der Wirtschaftlichkeit: 1023
+> hat seither in einer frischen Rechnung Energiekosten für Erdgas (0,84 €/Nm³ ÷ 10,5 kWh/Nm³ = 0,08 €/kWh)
+> und damit einen Kapitalwert. Die **gebuchten** Ergebnisse der Gruppe „Wöhler“ (1019, 1023, 1024) bleiben
+> unverändert und ohne Nachweisumschlag. 1018 bleibt bewusst ohne Gaspreis (E24‑Q4, Prüffall
+> `ProjektkostenArtenTests`). Nachweis im Test: `EPOS.Kern.Tests/DatenpflegeKesseltraegerTests`.
+>
+> **Benannt, nicht gepflegt (E24‑Q3):** Ohne Energieträger bleiben die Kessel der Referenzprojekte 1007,
+> 1008, 1017, 1046 und 1047 (in 1017 und 1047 auch das BHKW); der Kessel von 1024 trägt `ID_Carrier` = 0.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
+> Vorlauf- und Rücklaufreihen von 1047 (wie in R16).
+>
+> **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **14/14 byte-gleich** (432/432 CSV)
+> und untereinander **GESAMT: PASS** (4 610 207 Werte); der Einfrierlauf ist mit beiden byte-gleich.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
+>   --ziel Referenzlaeufe/2026-09-25_R17_Datenpflege
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+> **Die Vorgängerbasis `2026-09-25_R16_Anlagenprio`**, die erste Basis mit der Anlagenreihenfolge nach der
+> Regel „99“ im Rechenweg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der
+> Modultafel von 1042 und den Nachträgen #504 und Schemastand 143 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 

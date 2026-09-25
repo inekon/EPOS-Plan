@@ -177,6 +177,19 @@ namespace WindowsFormsApplication1
         public double[] Rest_Waermebedarf_stuendlich = new double[8760];
         public double[] Rest_Strombedarf_viertelstuendlich = new double[8760 * 4];
 
+        /// <summary>
+        /// E26 (Befund N3): der Strombedarf ALLER Verbraucher des Anschlusses [kW je
+        /// Viertelstunde] — Strombedarf des Projekts plus der Strom, den die Kaskade in den
+        /// Rest gebucht hat (Wärmepumpe, Heizstab, Elektrokessel, Kältestrom der
+        /// Stufenrechnung), VOR jeder Eigenerzeugung (BHKW, Photovoltaik, Stromspeicher).
+        /// Gebildet nach der Kaskade als Rest plus BHKW-Strom — so kommt jeder Verbraucher,
+        /// den die Kaskade in den Rest bucht, von selbst hinein. Der Kältestrom eines
+        /// eigenen Zählers steht nicht darin (er läuft neben dem Anschluss, E34). Reine
+        /// Auswertung: kein Rechenschritt liest sie; Bezugsgröße der vermiedenen Menge
+        /// (<c>StromMatrix</c>, Konzept Wirtschaftlichkeit § 3.6).
+        /// </summary>
+        public double[] Strombedarf_Verbraucher_viertelstuendlich = new double[8760 * 4];
+
         public bool bSimulationWP = false;
         public bool bSimulationKessel = false;
         public bool bSimulationSolarthermie = false;
@@ -432,6 +445,7 @@ namespace WindowsFormsApplication1
 
             Array.Clear(Rest_Waermebedarf_stuendlich, 0, Rest_Waermebedarf_stuendlich.Length);
             Array.Clear(Rest_Strombedarf_viertelstuendlich, 0, Rest_Strombedarf_viertelstuendlich.Length);
+            Array.Clear(Strombedarf_Verbraucher_viertelstuendlich, 0, Strombedarf_Verbraucher_viertelstuendlich.Length);
             
             simulation_wp.Init();
             simulation_solarthermie.Init();
@@ -548,6 +562,15 @@ namespace WindowsFormsApplication1
 
             Phase(fortschritt, abbruch, Laufphase.Kaskade, 0.10);
             Kaskade_Zweikanalig();
+
+            // E26 (Befund N3): der Bedarf aller Verbraucher vor jeder Eigenerzeugung — der
+            // Rest nach der Kaskade plus der BHKW-Strom, den sie ungeklemmt abgezogen hat.
+            // Eine eigene Reihe, kein Alias; sie ändert kein Ergebnis.
+            Strombedarf_Verbraucher_viertelstuendlich = (double[])Rest_Strombedarf_viertelstuendlich.Clone();
+            if (bSimulationBHKW && simulation_bhkw.stromproduktion != null)
+                Strombedarf_Verbraucher_viertelstuendlich = AddVectors(
+                    Strombedarf_Verbraucher_viertelstuendlich,
+                    Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion));
 
             // Photovoltaik abziehen
             Phase(fortschritt, abbruch, Laufphase.Photovoltaik, 0.60);
