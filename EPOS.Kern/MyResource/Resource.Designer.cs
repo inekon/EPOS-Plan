@@ -88,6 +88,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_HUELLRECHENWEG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_HUELLRECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_KUEHLUEBERGABE {
@@ -111,6 +120,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ABW_MERKMAL_UEBERGABEART {
             get {
                 return ResourceManager.GetString("ABW_MERKMAL_UEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Nutzfläche der Zonen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ZONENFLAECHE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ZONENFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Zonen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ZONENZAHL {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ZONENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ H_T der Zonen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ZONEN_HT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ZONEN_HT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilweg ähnelt.
+        /// </summary>
+        public static string ABW_WERT_BAUTEILWEG {
+            get {
+                return ResourceManager.GetString("ABW_WERT_BAUTEILWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilweg ({0} von {1} Gebäuden) ähnelt.
+        /// </summary>
+        public static string ABW_WERT_BAUTEILWEG_TEIL {
+            get {
+                return ResourceManager.GetString("ABW_WERT_BAUTEILWEG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klassenweg ähnelt.
+        /// </summary>
+        public static string ABW_WERT_KLASSENWEG {
+            get {
+                return ResourceManager.GetString("ABW_WERT_KLASSENWEG", resourceCulture);
             }
         }
         

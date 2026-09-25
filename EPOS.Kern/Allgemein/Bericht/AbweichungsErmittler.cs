@@ -188,6 +188,18 @@ namespace WindowsFormsApplication1
                         "ABW_MERKMAL_KUEHLUEBERGABE"),
             new Merkmal("Gebäude", "Tab_Gebaeude", "Kuehl_Uebergabe_Art", "Kühlübergabeart", "", TEXT,
                         "ABW_MERKMAL_KUEHLUEBERGABEART"),
+
+            // Stufe G6a: die Zonen des Projekts über ALLE Gebäude (ProjektDetails.Zonenmerkmale) -
+            // sonst meldete ein Unterschied nur in den Zonen „Keine Abweichungen". Werte aus der
+            // einen Formel der Zonenkennwerte; der Rechenweg der Hülle über seinen Anzeigenamen.
+            new Merkmal("Gebäude", ProjektDetails.ZONENMERKMALE, "Zonenzahl", "Zahl der Zonen", "", 0,
+                        "ABW_MERKMAL_ZONENZAHL"),
+            new Merkmal("Gebäude", ProjektDetails.ZONENMERKMALE, "Zonenflaeche", "Σ Nutzfläche der Zonen", "m²", 0,
+                        "ABW_MERKMAL_ZONENFLAECHE"),
+            new Merkmal("Gebäude", ProjektDetails.ZONENMERKMALE, "Zonen_HT", "Σ H_T der Zonen", "W/K", 1,
+                        "ABW_MERKMAL_ZONEN_HT"),
+            new Merkmal("Gebäude", ProjektDetails.ZONENMERKMALE, "Huellrechenweg", "Rechenweg der Hülle", "", TEXT,
+                        "ABW_MERKMAL_HUELLRECHENWEG"),
         };
 
         /// <summary>
@@ -202,6 +214,7 @@ namespace WindowsFormsApplication1
                 { "Tab_Einstellungen.Anlagenkopplung", Waermeuebergabevorgaben.Stufenname },
                 { "Tab_Gebaeude.Uebergabe_Art", Waermeuebergabevorgaben.Anzeigename },
                 { "Tab_Gebaeude.Kuehl_Uebergabe_Art", Waermeuebergabevorgaben.KuehlAnzeigename },
+                { ProjektDetails.ZONENMERKMALE + ".Huellrechenweg", ProjektDetails.Huellrechenwegtext },
             };
 
         /// <summary>Der Anzeigeweg eines Textmerkmals mit Steuerwerten; <c>null</c> = der Wert, wie er ist.</summary>
@@ -304,6 +317,8 @@ namespace WindowsFormsApplication1
                 return (d.Gebaeude != null && d.Gebaeude.Rows.Count > 0) ? d.Gebaeude.Rows[0] : null;
             if (f.Tabelle == "Tab_Einstellungen")
                 return (d.Einstellungen != null && d.Einstellungen.Rows.Count > 0) ? d.Einstellungen.Rows[0] : null;
+            if (f.Tabelle == ProjektDetails.ZONENMERKMALE)
+                return (d.Zonenmerkmale != null && d.Zonenmerkmale.Rows.Count > 0) ? d.Zonenmerkmale.Rows[0] : null;
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
                 if (g.Value == f.Tabelle)
                     return d.Komponenten.ContainsKey(g.Key) ? d.Komponenten[g.Key] : null;

@@ -32958,6 +32958,27 @@ Möchten Sie das zulassen?</value>
   <data name="ABW_MERKMAL_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Kühlübergabeart</value>
   </data>
+  <data name="ABW_MERKMAL_ZONENZAHL" xml:space="preserve">
+    <value>Zahl der Zonen</value>
+  </data>
+  <data name="ABW_MERKMAL_ZONENFLAECHE" xml:space="preserve">
+    <value>Σ Nutzfläche der Zonen</value>
+  </data>
+  <data name="ABW_MERKMAL_ZONEN_HT" xml:space="preserve">
+    <value>Σ H_T der Zonen</value>
+  </data>
+  <data name="ABW_MERKMAL_HUELLRECHENWEG" xml:space="preserve">
+    <value>Rechenweg der Hülle</value>
+  </data>
+  <data name="ABW_WERT_KLASSENWEG" xml:space="preserve">
+    <value>Klassenweg</value>
+  </data>
+  <data name="ABW_WERT_BAUTEILWEG" xml:space="preserve">
+    <value>Bauteilweg</value>
+  </data>
+  <data name="ABW_WERT_BAUTEILWEG_TEIL" xml:space="preserve">
+    <value>Bauteilweg ({0} von {1} Gebäuden)</value>
+  </data>
   <data name="GEBB_BILD_KUEHLVORLAUF_RUECKLAUF" xml:space="preserve">
     <value>Kühlvorlauf und Kühlrücklauf</value>
   </data>

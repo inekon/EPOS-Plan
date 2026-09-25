@@ -32951,6 +32951,27 @@ Do you want to allow this?</value>
   <data name="ABW_MERKMAL_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Cooling emitter type</value>
   </data>
+  <data name="ABW_MERKMAL_ZONENZAHL" xml:space="preserve">
+    <value>Number of zones</value>
+  </data>
+  <data name="ABW_MERKMAL_ZONENFLAECHE" xml:space="preserve">
+    <value>Σ usable area of the zones</value>
+  </data>
+  <data name="ABW_MERKMAL_ZONEN_HT" xml:space="preserve">
+    <value>Σ H_T of the zones</value>
+  </data>
+  <data name="ABW_MERKMAL_HUELLRECHENWEG" xml:space="preserve">
+    <value>Envelope calculation</value>
+  </data>
+  <data name="ABW_WERT_KLASSENWEG" xml:space="preserve">
+    <value>Class method</value>
+  </data>
+  <data name="ABW_WERT_BAUTEILWEG" xml:space="preserve">
+    <value>Component method</value>
+  </data>
+  <data name="ABW_WERT_BAUTEILWEG_TEIL" xml:space="preserve">
+    <value>Component method ({0} of {1} buildings)</value>
+  </data>
   <data name="GEBB_BILD_KUEHLVORLAUF_RUECKLAUF" xml:space="preserve">
     <value>Chilled water flow and return</value>
   </data>

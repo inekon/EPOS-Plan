@@ -95,7 +95,7 @@ namespace EPOS.Kern.Tests
                 Schichten =
                 {
                     new BauteilschichtModel { ID_Baustoff = 18, Dicke = 0.175 },
-                    new BauteilschichtModel { Dicke = 0.14, Lambda = 0.035 },
+                    new BauteilschichtModel { Dicke = 0.14, Lambda = 0.035, Rho = 30.0, Cp = 1500.0 },
                     new BauteilschichtModel { Dicke = 0.02, IstLuftschicht = true }
                 }
             };
