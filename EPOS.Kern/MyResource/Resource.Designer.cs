@@ -56639,15 +56639,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen. ähnelt.
-        /// </summary>
-        public static string PREIS_ST_GRUND_EINHEIT {
-            get {
-                return ResourceManager.GetString("PREIS_ST_GRUND_EINHEIT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt für „{0}“ keinen Satz im Jahr {1}. ähnelt.
         /// </summary>
         public static string PREIS_ST_GRUND_KEIN_JAHR {
@@ -73513,15 +73504,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT {
             get {
                 return ResourceManager.GetString("STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die § 54 EnergieStG entlastet HEIZstoffe; EPOS-Plan bemisst ihn hier auf den BHKW-Brennstoff — Kessel- und Spitzenlastbrennstoff sind nicht enthalten (bewusste Lücke der Etappe K6). ähnelt.
-        /// </summary>
-        public static string STEUER_ENERGIEST_54_BEMESSUNG {
-            get {
-                return ResourceManager.GetString("STEUER_ENERGIEST_54_BEMESSUNG", resourceCulture);
             }
         }
         
