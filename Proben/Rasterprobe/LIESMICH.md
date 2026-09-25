@@ -369,6 +369,16 @@ NuGet-Cache findet die Bibliothek dann über die gewöhnliche Modulsuche, ohne `
 Hülle bleibt außerhalb des Repositoriums (`.gitignore`) und wird nach der Messung wieder
 gelöscht; der Wirt-Port ist frei wählbar (`--url`, siehe oben).
 
+**Aufruf mit dem installierten Edge (`rasterprobe.mjs`).** Ohne Playwright-Chromium genügt das
+npm-Paket `playwright-core` (ohne eigenen Browser, rund 9 MB entpackt) in einem Ordner außerhalb des
+Repositoriums; `--kanal msedge` (oder `chrome`) startet den installierten Browser headless — Edge
+rechnet mit derselben Engine wie WebView2 in der Anwendung:
+
+```bash
+npm install playwright-core@1.58.0 --prefix <ordner>
+NODE_PATH=<ordner>/node_modules node rasterprobe.mjs --url http://127.0.0.1:5299 --kanal msedge
+```
+
 **Was die Fälle N zusätzlich messen** (Funktion `STUFE1`, Sollwerte in `pruefe`):
 
 | | Größe | Sollwert |
@@ -656,8 +666,15 @@ stehen keine Zeilen und die Messung ist wertlos (`document.visibilityState` prü
 | J (Vergleich, 46 px) | 46 / 46 | Hülle | 173 ms | 0 | 4 |
 | J, Gegenprobe (Zeilen 45,3/45,7 px) | — | — | — | 0 | **200** |
 
-An der Gebäudeliste schlug die Gegenprobe mit verkleinerten (52,5, 50, 30 px) oder wechselnden
-(50/56 px) Zeilen nur schwach aus (0 bis 12 Änderungen); die Zählung über die Abstandshalter ist dort
-also kein scharfer Nachweis. Maßgeblich ist das Kriterium (c) — gezeichnete Zeilenhöhe gleich dem
-gesetzten Maß —, an dem der Fehler #235 hing. Der Skriptlauf `node rasterprobe.mjs --nur GD` steht
-auf einem Rechner mit Playwright aus.
+Im integrierten Browser schlug die Gegenprobe an der Gebäudeliste mit verkleinerten (52,5, 50,
+30 px) oder wechselnden (50/56 px) Zeilen nur schwach aus (0 bis 12 Änderungen); die Zählung über die
+Abstandshalter ist dort kein scharfer Nachweis. Der Skriptlauf zählt die Sichtbarkeitsmelder selbst
+und ist scharf:
+
+**Skriptlauf vom 25.09.2026** (`node rasterprobe.mjs --kanal msedge`, Edge headless über
+`playwright-core` 1.58.0, Wirt Release auf Port 5299): **alle 27 Fälle erfüllen die Sollwerte**. GD1
+bis GD3 im Einzelnen: Zeilenhöhe 53 / Maß 53, Rollbehälter die Hülle (418 px innen), 0
+`loading`-Umschaltungen, nach dem Rollen um 2 000 px 16 echte Zeilen nach 138 bis 148 ms und 0
+Platzhalter, Sichtbarkeitsmelder 3 beim Aufbau und 4 in den 3 s nach dem Rollen. **Gegenprobe**
+(`--entpinnt --nur GD`, gezeichnete Zeile 52,5 px gegen das Maß 53): 3 von 3 Fällen rot — 408 bis
+410 Sichtbarkeitsmeldungen in 3 s, 16 Platzhalter drei Sekunden nach dem Rollen.
