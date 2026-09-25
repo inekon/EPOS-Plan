@@ -14,7 +14,7 @@ namespace Auslieferungsvorlage
     ///
     /// <para><b>Sieben Fragen.</b> Schemastand, STRICT-Tabellenzahl,
     /// <c>PRAGMA integrity_check</c>, <c>PRAGMA foreign_key_check</c>, die Projektliste,
-    /// der Datenschutzwaechter und die Beidateien. Die ersten vier sind die
+    /// der Datenschutzwaechter (samt leerer Importablage, Schritt S-F) und die Beidateien. Die ersten vier sind die
     /// Kontrollabfragen, die <c>sql/tools/Reduziere-Testdatenbank.sql</c> am Ende zum
     /// Kopieren auffuehrt; die drei uebrigen kommen aus dem Zweck dieser Datei — sie geht
     /// an Dritte.</para>
@@ -169,6 +169,39 @@ namespace Auslieferungsvorlage
                 : "WARNUNG Pfadangaben gefunden:");
             foreach (string t in pfadTreffer) _bericht.Zeile("        " + t);
 
+            // (d) Die Herkunftsablage der Gebaeudeimporte (Schritt S-F, Datenaustauschkonzept 7.4)
+            ok &= ImportablageLeer();
+
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>Beide Tabellen der Importherkunft sind leer</b> (Datenaustauschkonzept 7.4,
+        /// Softwarearchitektur Gebäudesimulation 2.6). <c>Tab_Importquelle</c> trägt Dateiname und
+        /// SHA-256 jeder eingelesenen gbXML- oder IFC-Datei, <c>Tab_Importzuordnung</c> die Kennungen
+        /// ihrer Entitäten — in einer ausgelieferten <c>Kenndaten.sqlite</c> wären das Spuren fremder
+        /// Importe. Die Regel ist eine PRÜFUNG, kein stilles Leeren: Eine Zeile hier kommt über ein
+        /// Beispielpaket, und das gehört vor der Auslieferung bereinigt. Fehlt eine der Tabellen,
+        /// ist das ebenso ein Befund — eine Zählung auf einer fehlenden Tabelle ergäbe still 0.
+        /// </summary>
+        private bool ImportablageLeer()
+        {
+            var teile = new List<string>();
+            bool ok = true;
+            foreach (string t in new[] { ImportzuordnungSchema.TAB_QUELLE, ImportzuordnungSchema.TAB_ZUORDNUNG })
+            {
+                if (!DataRepository.TabelleVorhanden(t))
+                {
+                    ok = false;
+                    teile.Add(t + " fehlt");
+                    continue;
+                }
+                long n = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + t + "\"");
+                if (n != 0) ok = false;
+                teile.Add(t + " " + n.ToString(CultureInfo.InvariantCulture));
+            }
+            _bericht.Zeile((ok ? "ok      " : "FEHLER  ") + "Importablage leer (" + string.Join(", ", teile) + ")" +
+                           (ok ? "" : " — Dateinamen und SHA-256 fremder Importe gehoeren nicht in die Auslieferung"));
             return ok;
         }
 

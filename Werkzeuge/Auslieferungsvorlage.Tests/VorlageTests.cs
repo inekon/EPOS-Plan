@@ -167,7 +167,36 @@ namespace Auslieferungsvorlage.Tests
             // 141 seit den Schritten S-A bis S-C der Gebaeudesimulation (Stufe G3, Welle B):
             // Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Bauteilschicht(_STAMM),
             // Tab_Zone und Tab_Bauteil - acht Tabellen, alle STRICT von ihrer ersten Zeile an.
-            Assert.Equal(141, befund.Strict);
+            // 143 seit dem Schritt S-F der Gebaeudesimulation (Stufe G4c, Welle 3):
+            // Tab_Importquelle und Tab_Importzuordnung, STRICT von ihrer ersten Zeile an und in
+            // der Vorlage LEER (P6d).
+            Assert.Equal(143, befund.Strict);
+        }
+
+        // =============================================================================
+        //  P6d — Die Herkunftsablage der Gebaeudeimporte ist leer (Schritt S-F)
+        // =============================================================================
+        /// <summary>
+        /// <b>Keine Spur eines Imports in der Auslieferung</b> (Datenaustauschkonzept 7.4):
+        /// <c>Tab_Importquelle</c> und <c>Tab_Importzuordnung</c> stehen im Schema und sind leer,
+        /// und der Prüflauf sagt es in seiner eigenen Zeile. Die Gegenprobe — ein Beispielpaket mit
+        /// Importherkunft lässt die Abnahme fallen — steht in <c>AblaufTests.A10</c>.
+        /// </summary>
+        [Fact]
+        public void P6d_Die_Importablage_ist_leer_und_der_Pruefbericht_sagt_es()
+        {
+            if (!_v.Vorhanden) return;
+
+            var befund = _v.Lesen(() => (
+                Tabellen: DataRepository.TabelleVorhanden(ImportzuordnungSchema.TAB_QUELLE) &&
+                          DataRepository.TabelleVorhanden(ImportzuordnungSchema.TAB_ZUORDNUNG),
+                Zeilen: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT (SELECT COUNT(*) FROM \"Tab_Importquelle\") + (SELECT COUNT(*) FROM \"Tab_Importzuordnung\")"))));
+
+            Assert.True(befund.Tabellen, "Die Tabellen der Importherkunft fehlen in der Vorlage.");
+            Assert.Equal(0L, befund.Zeilen);
+            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0)",
+                            File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
 
         // =============================================================================

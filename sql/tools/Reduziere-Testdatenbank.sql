@@ -149,8 +149,12 @@
 --     Tab_Zone                 -> Tab_Gebaeude.ID         (ID_Gebaeude)   Stufe G3
 --     Tab_Bauteil              -> Tab_Zone.ID             (ID_Zone)       Stufe G3
 --     Tab_Bauteilschicht       -> Tab_Bauteilaufbau.ID    (ID_Aufbau)     Stufe G3
+--     Tab_Importquelle         -> Tab_Gebaeude.ID         (ID_Gebaeude)   Stufe G4c
+--     Tab_Importzuordnung      -> Tab_Importquelle.ID     (ID_Importquelle) Stufe G4c
 --   Zone und Bauteil fuehren bewusst KEIN ID_Projekt (Vorbild Tab_DBTagVDaten); die
 --   Schicht haengt am Aufbau, nicht am Projekt (Berichtigung zu Mehrzonenkonzept 4.4).
+--   Die Herkunftsablage der Gebaeudeimporte (Schritt S-F) ebenso: die Quelle haengt am
+--   Gebaeude, die Paarung an der Quelle (Datenaustauschkonzept 7.4).
 --   Von diesen Verweisspalten tragen genau zwei ein DEFAULT 0
 --   (Tab_DBTagV.ID_Gebaeude, Tab_Kenndaten.ID_WP); dort bedeutet 0 "kein
 --   Bezug" und wird wie NULL geschont. Alle uebrigen sind ohne DEFAULT.
@@ -388,6 +392,13 @@ DELETE FROM "Tab_DBTagVDaten" WHERE "ID_TagV"     IS NOT NULL AND "ID_TagV"     
 DELETE FROM "Tab_Zone"           WHERE "ID_Gebaeude" IS NOT NULL AND "ID_Gebaeude" NOT IN (SELECT "ID" FROM "Tab_Gebaeude");
 DELETE FROM "Tab_Bauteil"        WHERE "ID_Zone"     IS NOT NULL AND "ID_Zone"     NOT IN (SELECT "ID" FROM "Tab_Zone");
 DELETE FROM "Tab_Bauteilschicht" WHERE "ID_Aufbau"   IS NOT NULL AND "ID_Aufbau"   NOT IN (SELECT "ID" FROM "Tab_Bauteilaufbau");
+
+-- --- Gebaeudesimulation G4c: Gebaeude -> Importquelle -> Importzuordnung (S-F) ---
+-- Ueber den Unterausdruck auf die Eltern, nicht ueber ID_Projekt - keine der beiden
+-- Tabellen fuehrt eines (W16). Eltern zuerst; die fuenf Zielverweise der Paarung
+-- zeigen in dasselbe Projekt wie ihre Quelle.
+DELETE FROM "Tab_Importquelle"    WHERE "ID_Gebaeude"     IS NOT NULL AND "ID_Gebaeude"     NOT IN (SELECT "ID" FROM "Tab_Gebaeude");
+DELETE FROM "Tab_Importzuordnung" WHERE "ID_Importquelle" IS NOT NULL AND "ID_Importquelle" NOT IN (SELECT "ID" FROM "Tab_Importquelle");
 
 -- --- Waermepumpen-Kennfelder ------------------------------------------------
 -- Tab_Kenndaten.ID_WP ist NOT NULL DEFAULT 0 - 0 wird geschont;
