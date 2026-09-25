@@ -77,11 +77,18 @@ public sealed record GebaeudeLesestand(
 /// (Zielfeld → Wert). Die Handwerte legt die Datenseite auf den Satz und zieht die Vorgaben
 /// nach, die von ihnen abhängen (innere Gewinne von der Nutzfläche, Nachtsollwert vom Tag).
 /// </summary>
+/// <param name="Baustoffzuordnungen">
+/// Die Zuordnungen des Abschnitts „Baustoffe", noch nicht gespeichert: Schlüssel eines
+/// Materialnamens (<see cref="GebaeudeMaterialzeileDaten.Schluessel"/>) → Katalogbaustoff;
+/// <c>null</c> als Wert = die gemerkte Zuordnung des Projekts entfernen. Die Datenseite legt sie
+/// über die gemerkten Zuordnungen und bildet den Vorschlag damit neu.
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
-    IReadOnlyDictionary<string, double?>? Handwerte = null);
+    IReadOnlyDictionary<string, double?>? Handwerte = null,
+    IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -221,10 +228,97 @@ public sealed record GebaeudeBauteileDaten
     public IReadOnlyList<GebaeudeImportMeldung> Meldungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
 }
 
+/// <summary>Ein Katalogbaustoff der Klappliste im Abschnitt „Baustoffe".</summary>
+/// <param name="Id">Die Id des Katalogbaustoffs — der Wert der Zuordnung.</param>
+/// <param name="Text">Der Anzeigetext; eine Herstellerzeile nennt den Hersteller.</param>
+public sealed record GebaeudeBaustoffwahl(int Id, string Text);
+
+/// <summary>Eine Gruppe der Klappliste (<c>optgroup</c>) — herstellerneutrale Zeilen zuerst.</summary>
+/// <param name="Titel">Die Gruppe des Katalogs als Anzeigetext.</param>
+/// <param name="Eintraege">Die Baustoffe der Gruppe in Anzeigereihenfolge.</param>
+public sealed record GebaeudeBaustoffgruppe(string Titel, IReadOnlyList<GebaeudeBaustoffwahl> Eintraege);
+
+/// <summary>
+/// Die sprachneutralen Schlüssel der Abgleichstufe, die die Komponente selbst liest; alle übrigen
+/// reicht die Hülle durch (sie sind zugleich die Stilklassen
+/// <c>epos-gebimport-abgleich--&lt;schlüssel&gt;</c>).
+/// </summary>
+public static class GebaeudeAbgleichSchluessel
+{
+    /// <summary>Die eigene Zuordnung des Anwenders — nur sie lässt sich entfernen.</summary>
+    public const string EigeneZuordnung = "N7";
+
+    /// <summary>Ohne Treffer.</summary>
+    public const string Ohne = "OHNE";
+}
+
+/// <summary>
+/// <b>Ein Materialname der Datei im Abschnitt „Baustoffe"</b> — was der Namensabgleich aus ihm
+/// gemacht hat, als fertige Anzeigetexte: Stufe, zugeordneter Baustoff mit seinen Stoffwerten und
+/// woher die Werte der Schichten kommen. Unveränderlich.
+/// </summary>
+public sealed record GebaeudeMaterialzeileDaten
+{
+    /// <summary>Der Name, wie die Datei ihn schreibt.</summary>
+    public string Name { get; init; } = "";
+
+    /// <summary>Der normalisierte Name — der Schlüssel einer Zuordnung (mehrere Namen können ihn teilen).</summary>
+    public string Schluessel { get; init; } = "";
+
+    /// <summary>Zahl der Schichten mit diesem Namen.</summary>
+    public int Schichten { get; init; }
+
+    /// <summary>Die Stufe des Abgleichs als kurzer Anzeigetext („genauer Name", „eigene Zuordnung" …).</summary>
+    public string Abgleich { get; init; } = "";
+
+    /// <summary>Die Stufe als sprachneutraler Schlüssel (<see cref="GebaeudeAbgleichSchluessel"/>; Stilklasse).</summary>
+    public string AbgleichSchluessel { get; init; } = GebaeudeAbgleichSchluessel.Ohne;
+
+    /// <summary>Der Beleg des Abgleichs als Anzeigetext (Tooltip der Stufe).</summary>
+    public string Beleg { get; init; } = "";
+
+    /// <summary>Der zugeordnete Katalogbaustoff; <c>null</c> = keiner (ohne Treffer, Luftschicht, verworfen).</summary>
+    public int? IdBaustoff { get; init; }
+
+    /// <summary>Der zugeordnete Baustoff als Anzeigetext; leer = keiner.</summary>
+    public string Baustoff { get; init; } = "";
+
+    /// <summary>λ, ρ und c des zugeordneten Baustoffs als Anzeigetext; leer = keiner.</summary>
+    public string Stoffwerte { get; init; } = "";
+
+    /// <summary>Woher die Stoffwerte der Schichten im Vorschlag kommen, als Anzeigetext.</summary>
+    public string Werte { get; init; } = "";
+
+    /// <summary>Braucht der Name einen Baustoff und trifft keinen? Dann ist die Zeile gelb.</summary>
+    public bool OhneTreffer { get; init; }
+
+    /// <summary>Hat das Projekt für den Schlüssel schon eine gemerkte Zuordnung?</summary>
+    public bool Gemerkt { get; init; }
+
+    /// <summary>Hat der Anwender im Dialog eine Zuordnung gesetzt oder entfernt, die erst beim Speichern gilt?</summary>
+    public bool Vorgemerkt { get; init; }
+}
+
+/// <summary>
+/// <b>Der Abschnitt „Baustoffe"</b>: die Zusammenfassung, je Materialname der Datei eine Zeile und
+/// die Katalogbaustoffe der Klappliste, gruppiert — alles fertige Anzeigetexte aus den Gaben.
+/// </summary>
+public sealed record GebaeudeBaustoffeDaten
+{
+    /// <summary>Die Zusammenfassung über dem Abschnitt („16 von 20 zugeordnet, 1 ohne Treffer").</summary>
+    public string Zusammenfassung { get; init; } = "";
+
+    /// <summary>Je Materialname eine Zeile, in der Reihenfolge der Datei.</summary>
+    public IReadOnlyList<GebaeudeMaterialzeileDaten> Zeilen { get; init; } = Array.Empty<GebaeudeMaterialzeileDaten>();
+
+    /// <summary>Die Katalogbaustoffe der Klappliste je Gruppe.</summary>
+    public IReadOnlyList<GebaeudeBaustoffgruppe> Katalog { get; init; } = Array.Empty<GebaeudeBaustoffgruppe>();
+}
+
 /// <summary>
 /// Der Stand einer Zuordnung, wie ihn die Hülle aus dem Kern baut: Kopfzeile, Namensvorschlag,
-/// Raumliste, Zeilen, Meldungen, der Bauteilvorschlag — und der Herkunftstext für eine
-/// Handänderung, damit auch „manuell" aus den Gaben kommt.
+/// Raumliste, Zeilen, Meldungen, der Bauteilvorschlag samt Abschnitt „Baustoffe" — und der
+/// Herkunftstext für eine Handänderung, damit auch „manuell" aus den Gaben kommt.
 /// </summary>
 public sealed record GebaeudeImportStand
 {
@@ -257,13 +351,17 @@ public sealed record GebaeudeImportStand
 
     /// <summary>Der Bauteilvorschlag; <c>null</c> = keiner (dann steht der Abschnitt nicht).</summary>
     public GebaeudeBauteileDaten? Bauteile { get; init; }
+
+    /// <summary>Die Materialnamen der Datei mit ihrem Abgleich; <c>null</c> = keine (dann steht der Abschnitt nicht).</summary>
+    public GebaeudeBaustoffeDaten? Baustoffe { get; init; }
 }
 
 /// <summary>
 /// <b>Das Ergebnis des Dialogs</b> — ALLE Zeilen, auch die unveränderten
 /// (Datenaustauschkonzept 2.4), mit Wert, Herkunftsschlüssel und Haken; dazu Gebäude,
-/// Baualtersklasse, Name des neuen Gebäudes, die umgestellten Räume und die Wahl, das Gebäude
-/// als Zone mit Bauteilen zu übernehmen. Abbrechen liefert <c>null</c>.
+/// Baualtersklasse, Name des neuen Gebäudes, die umgestellten Räume, die Wahl, das Gebäude
+/// als Zone mit Bauteilen zu übernehmen, und die Zuordnungen der Baustoffe. Abbrechen liefert
+/// <c>null</c>.
 /// </summary>
 /// <param name="Gebaeudeindex">Das gewählte Gebäude der Datei.</param>
 /// <param name="Baualtersklasse">Index 0 = A … 20 = U; <c>null</c> = keine.</param>
@@ -271,13 +369,18 @@ public sealed record GebaeudeImportStand
 /// <param name="BeheiztUebersteuert">Raumkennung → beheizt, nur die Abweichungen von der Datei.</param>
 /// <param name="Zeilen">Alle Zeilen der Zuordnung.</param>
 /// <param name="AlsZone">Als Zone mit Bauteilen übernehmen (Schalter des Abschnitts „Bauteile")?</param>
+/// <param name="Baustoffzuordnungen">
+/// Die Zuordnungen des Abschnitts „Baustoffe" (Schlüssel → Katalogbaustoff, <c>null</c> = entfernen);
+/// gemerkt werden sie für das Projekt erst mit dem Speichern der Gebäudeliste.
+/// </param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
     string Gebaeudename,
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
     IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen,
-    bool AlsZone = false)
+    bool AlsZone = false,
+    IReadOnlyDictionary<string, int?>? Baustoffzuordnungen = null)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -431,6 +534,45 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_KEINE_BAUTEILE</summary>
     public string KeineBauteile { get; set; } = Resource.GIMP_DLG_KEINE_BAUTEILE;
+
+    /// <summary>GIMP_DLG_GRP_BAUSTOFFE — Kopf des Abschnitts mit den Materialnamen der Datei.</summary>
+    public string GruppeBaustoffe { get; set; } = Resource.GIMP_DLG_GRP_BAUSTOFFE;
+
+    /// <summary>GIMP_DLG_BAUSTOFFE_HINWEIS</summary>
+    public string BaustoffeHinweis { get; set; } = Resource.GIMP_DLG_BAUSTOFFE_HINWEIS;
+
+    /// <summary>GIMP_DLG_SP_MATERIALNAME</summary>
+    public string SpalteMaterialname { get; set; } = Resource.GIMP_DLG_SP_MATERIALNAME;
+
+    /// <summary>GIMP_DLG_SP_SCHICHTEN</summary>
+    public string SpalteSchichten { get; set; } = Resource.GIMP_DLG_SP_SCHICHTEN;
+
+    /// <summary>GIMP_DLG_SP_ABGLEICH</summary>
+    public string SpalteAbgleich { get; set; } = Resource.GIMP_DLG_SP_ABGLEICH;
+
+    /// <summary>GIMP_DLG_SP_BAUSTOFF</summary>
+    public string SpalteBaustoff { get; set; } = Resource.GIMP_DLG_SP_BAUSTOFF;
+
+    /// <summary>GIMP_DLG_SP_STOFFWERTE</summary>
+    public string SpalteStoffwerte { get; set; } = Resource.GIMP_DLG_SP_STOFFWERTE;
+
+    /// <summary>GIMP_DLG_SP_WERTE_AUS</summary>
+    public string SpalteWerteAus { get; set; } = Resource.GIMP_DLG_SP_WERTE_AUS;
+
+    /// <summary>GIMP_DLG_BAUSTOFF_WAEHLEN — Beschriftung der Klappliste je Zeile für die Sprachausgabe, {0} = Materialname.</summary>
+    public string BaustoffWaehlen { get; set; } = Resource.GIMP_DLG_BAUSTOFF_WAEHLEN;
+
+    /// <summary>GIMP_DLG_BAUSTOFF_PLATZHALTER — leere Zeile der Klappliste, solange kein Baustoff zugeordnet ist.</summary>
+    public string BaustoffPlatzhalter { get; set; } = Resource.GIMP_DLG_BAUSTOFF_PLATZHALTER;
+
+    /// <summary>GIMP_DLG_ZUORDNUNG_ENTFERNEN</summary>
+    public string ZuordnungEntfernen { get; set; } = Resource.GIMP_DLG_ZUORDNUNG_ENTFERNEN;
+
+    /// <summary>GIMP_DLG_ZUORDNUNG_ENTFERNEN_TITEL — {0} = Materialname.</summary>
+    public string ZuordnungEntfernenTitel { get; set; } = Resource.GIMP_DLG_ZUORDNUNG_ENTFERNEN_TITEL;
+
+    /// <summary>GIMP_DLG_BAUSTOFF_VORGEMERKT — Hinweis an einer Zeile, deren Zuordnung erst beim Speichern gilt.</summary>
+    public string BaustoffVorgemerkt { get; set; } = Resource.GIMP_DLG_BAUSTOFF_VORGEMERKT;
 
     /// <summary>GIMP_DLG_GRP_MELDUNGEN</summary>
     public string GruppeMeldungen { get; set; } = Resource.GIMP_DLG_GRP_MELDUNGEN;

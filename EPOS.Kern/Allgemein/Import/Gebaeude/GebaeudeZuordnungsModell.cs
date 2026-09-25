@@ -321,6 +321,108 @@ namespace WindowsFormsApplication1
                 : (bytes / MB).ToString("0.#", CultureInfo.CurrentCulture) + " MB";
         }
 
+        // =================================================================
+        //  Der Abschnitt „Baustoffe" — der Namensabgleich je Materialname
+        // =================================================================
+
+        /// <summary>Stufenschlüssel ohne Treffer.</summary>
+        internal const string ABGLEICH_OHNE = "OHNE";
+        /// <summary>Stufenschlüssel der ruhenden Luftschicht (N6).</summary>
+        internal const string ABGLEICH_LUFTSCHICHT = "LUFTSCHICHT";
+        /// <summary>Stufenschlüssel einer verworfenen Schicht ohne Stoff (N6).</summary>
+        internal const string ABGLEICH_VERWORFEN = "VERWORFEN";
+        /// <summary>Stufenschlüssel der eigenen Zuordnung des Anwenders (N7).</summary>
+        internal const string ABGLEICH_N7 = "N7";
+
+        /// <summary>
+        /// Der sprachneutrale Schlüssel der Stufe eines Treffers — <c>N3</c>, <c>N4</c>, <c>N5</c>,
+        /// <c>N7</c>, <c>LUFTSCHICHT</c>, <c>VERWORFEN</c> oder <c>OHNE</c> (auch ohne Abgleich). Stilklasse
+        /// und Rückweg der Oberfläche; die Beschriftung liefert <see cref="AbgleichText"/>.
+        /// </summary>
+        public static string AbgleichSchluessel(Abgleichtreffer treffer)
+        {
+            if (treffer == null) return ABGLEICH_OHNE;
+            switch (treffer.Stufe)
+            {
+                case Abgleichstufe.Genau: return "N3";
+                case Abgleichstufe.Synonym: return "N4";
+                case Abgleichstufe.Teilwort: return "N5";
+                case Abgleichstufe.Anwender: return ABGLEICH_N7;
+                case Abgleichstufe.Sonderfall:
+                    return treffer.Sonderfall == Abgleichsonderfall.Luftschicht ? ABGLEICH_LUFTSCHICHT : ABGLEICH_VERWORFEN;
+                default: return ABGLEICH_OHNE;
+            }
+        }
+
+        /// <summary>Die Stufe eines Treffers als kurzer Anzeigetext („genauer Name", „Synonym", „Wortanfang", „eigene Zuordnung" …).</summary>
+        public static string AbgleichText(Abgleichtreffer treffer)
+        {
+            string schluessel = AbgleichSchluessel(treffer);
+            return Ressource("GIMP_BS_STUFE_" + schluessel) ?? schluessel;
+        }
+
+        /// <summary>Ein Katalogbaustoff als Anzeigetext: der Bezeichner, bei einer Herstellerzeile mit dem Hersteller; ohne Baustoff leer.</summary>
+        public static string BaustoffText(BaustoffModel baustoff)
+        {
+            if (baustoff == null) return "";
+            string name = baustoff.Bezeichner ?? "";
+            return string.IsNullOrWhiteSpace(baustoff.Hersteller) ? name : name + " (" + baustoff.Hersteller.Trim() + ")";
+        }
+
+        /// <summary>λ, ρ und c eines Katalogbaustoffs in der Anzeigekultur, mit Einheiten; ohne Baustoff „—".</summary>
+        public static string StoffwerteText(BaustoffModel baustoff)
+            => baustoff == null ? MyResource.Resource.GIMP_WERT_LEER
+             : Formatieren(MyResource.Resource.GIMP_BS_STOFFWERTE, ZahlText(baustoff.Lambda), ZahlText(baustoff.Rho), ZahlText(baustoff.Cp));
+
+        /// <summary>
+        /// Woher die Stoffwerte der Schichten eines Materialnamens im Vorschlag kommen: ganz aus der
+        /// Datei, ganz aus dem Katalog, als ruhende Luftschicht, verworfen, in keinem vollständigen
+        /// Aufbau (dann trägt das Bauteil den U-Wert) — oder gemischt, dann je Herkunft die Zahl der
+        /// Schichten („Katalog 4, ohne Aufbau 1").
+        /// </summary>
+        public static string MaterialwerteText(GebaeudeMaterialzeile material)
+        {
+            if (material == null) return "";
+            int n = material.Schichten, datei = material.SchichtenAusDatei, katalog = material.SchichtenAusKatalog;
+            if (material.Treffer?.Sonderfall == Abgleichsonderfall.Luftschicht && datei == 0) return MyResource.Resource.GIMP_BS_WERTE_LUFTSCHICHT;
+            if (material.Treffer?.Sonderfall == Abgleichsonderfall.Verwerfen && datei == 0) return MyResource.Resource.GIMP_BS_WERTE_VERWORFEN;
+            if (n > 0 && datei >= n) return MyResource.Resource.GIMP_BS_WERTE_DATEI;
+            if (n > 0 && katalog >= n && datei == 0) return MyResource.Resource.GIMP_BS_WERTE_KATALOG;
+            if (datei == 0 && katalog == 0) return MyResource.Resource.GIMP_BS_WERTE_KEINE;
+            var teile = new List<string>(3);
+            if (datei > 0) teile.Add(Formatieren(MyResource.Resource.GIMP_BS_WERTE_TEIL_DATEI, datei));
+            if (katalog > 0) teile.Add(Formatieren(MyResource.Resource.GIMP_BS_WERTE_TEIL_KATALOG, katalog));
+            if (n - datei - katalog > 0) teile.Add(Formatieren(MyResource.Resource.GIMP_BS_WERTE_TEIL_OHNE, n - datei - katalog));
+            return string.Join(", ", teile);
+        }
+
+        /// <summary>
+        /// Die Zusammenfassung des Abschnitts: „16 von 20 zugeordnet, 1 ohne Treffer" — zugeordnet heißt
+        /// mit Katalogbaustoff, ohne Treffer zählt nur, wer einen Baustoff bräuchte. Tragen alle Schichten
+        /// vollständige Werte der Datei, sagt sie das und nennt die Treffer der Gegenprobe.
+        /// </summary>
+        public static string BaustoffZusammenfassung(IReadOnlyList<GebaeudeMaterialzeile> materialien)
+        {
+            if (materialien == null || materialien.Count == 0) return "";
+            int getroffen = 0, ohne = 0, brauchen = 0;
+            foreach (GebaeudeMaterialzeile m in materialien)
+            {
+                if (m.Treffer != null && m.Treffer.Getroffen) getroffen++;
+                if (m.BrauchtAbgleich) brauchen++;
+                if (IstOhneTreffer(m)) ohne++;
+            }
+            return brauchen == 0
+                ? Formatieren(MyResource.Resource.GIMP_BS_ZUSAMMENFASSUNG_DATEI, materialien.Count, getroffen)
+                : Formatieren(MyResource.Resource.GIMP_BS_ZUSAMMENFASSUNG, getroffen, materialien.Count, ohne);
+        }
+
+        /// <summary>
+        /// Braucht der Name einen Baustoff und trifft keinen? Dieselbe Regel wie
+        /// <see cref="GebaeudeBauteilvorschlag.OhneTreffer"/> — die gelbe Zeile des Abschnitts.
+        /// </summary>
+        public static bool IstOhneTreffer(GebaeudeMaterialzeile material)
+            => material != null && material.BrauchtAbgleich && material.Treffer != null && material.Treffer.Stufe == Abgleichstufe.Keine;
+
         private static string Ressource(string schluessel)
         {
             if (string.IsNullOrEmpty(schluessel)) return null;

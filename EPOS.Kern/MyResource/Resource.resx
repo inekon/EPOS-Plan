@@ -35949,4 +35949,100 @@ Möchten Sie das zulassen?</value>
   <data name="BAUSTOFF_MSG_ZUORDNUNG_FEHLER" xml:space="preserve">
     <value>Die Zuordnung wurde nicht gemerkt: {0}</value>
   </data>
+  <data name="GIMP_BS_STUFE_N3" xml:space="preserve">
+    <value>genauer Name</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N4" xml:space="preserve">
+    <value>Synonym</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N5" xml:space="preserve">
+    <value>Wortanfang</value>
+  </data>
+  <data name="GIMP_BS_STUFE_N7" xml:space="preserve">
+    <value>eigene Zuordnung</value>
+  </data>
+  <data name="GIMP_BS_STUFE_LUFTSCHICHT" xml:space="preserve">
+    <value>Luftschicht</value>
+  </data>
+  <data name="GIMP_BS_STUFE_VERWORFEN" xml:space="preserve">
+    <value>verworfen</value>
+  </data>
+  <data name="GIMP_BS_STUFE_OHNE" xml:space="preserve">
+    <value>ohne Treffer</value>
+  </data>
+  <data name="GIMP_BS_STOFFWERTE" xml:space="preserve">
+    <value>λ {0} W/(mK) · ρ {1} kg/m³ · c {2} J/(kgK)</value>
+  </data>
+  <data name="GIMP_BS_WERTE_DATEI" xml:space="preserve">
+    <value>aus der Datei</value>
+  </data>
+  <data name="GIMP_BS_WERTE_KATALOG" xml:space="preserve">
+    <value>aus dem Katalog</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_DATEI" xml:space="preserve">
+    <value>Datei {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_KATALOG" xml:space="preserve">
+    <value>Katalog {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_TEIL_OHNE" xml:space="preserve">
+    <value>ohne Aufbau {0}</value>
+  </data>
+  <data name="GIMP_BS_WERTE_LUFTSCHICHT" xml:space="preserve">
+    <value>Widerstand nach DIN EN ISO 6946</value>
+  </data>
+  <data name="GIMP_BS_WERTE_VERWORFEN" xml:space="preserve">
+    <value>entfällt</value>
+  </data>
+  <data name="GIMP_BS_WERTE_KEINE" xml:space="preserve">
+    <value>ohne vollständigen Aufbau</value>
+  </data>
+  <data name="GIMP_BS_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>{0} von {1} zugeordnet, {2} ohne Treffer</value>
+  </data>
+  <data name="GIMP_BS_ZUSAMMENFASSUNG_DATEI" xml:space="preserve">
+    <value>{0} Materialnamen, alle Stoffwerte aus der Datei; {1} davon im Katalog gefunden (Gegenprobe)</value>
+  </data>
+  <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
+    <value>ohne Gruppe</value>
+  </data>
+  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
+    <value>Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt.</value>
+  </data>
+  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
+    <value>Name in der Datei</value>
+  </data>
+  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
+    <value>Schichten</value>
+  </data>
+  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
+    <value>Zuordnung über</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
+    <value>Baustoff</value>
+  </data>
+  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
+    <value>Stoffwerte</value>
+  </data>
+  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
+    <value>Baustoff für „{0}“</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_PLATZHALTER" xml:space="preserve">
+    <value>(Baustoff wählen)</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNUNG_ENTFERNEN" xml:space="preserve">
+    <value>Zuordnung entfernen</value>
+  </data>
+  <data name="GIMP_DLG_ZUORDNUNG_ENTFERNEN_TITEL" xml:space="preserve">
+    <value>Die eigene Zuordnung von „{0}“ entfernen</value>
+  </data>
+  <data name="GIMP_DLG_BAUSTOFF_VORGEMERKT" xml:space="preserve">
+    <value>Vorgemerkt — wird beim Speichern der Gebäudeliste für das Projekt übernommen.</value>
+  </data>
 </root>
