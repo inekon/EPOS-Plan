@@ -437,6 +437,10 @@ namespace EPOS.Kern.Tests
                                             "KrankenH-F-S-136", "KrankenH-F-TS-236", "KrankenH-F-U-400-Pinneberg",
                                             "gr_Hotel-G-134", "Kaufhaus" })
                 Assert.Contains(name, frei);
+            // Welle #496: die Folgeberichtigung (Tausch von Laibung und Dachkante, Hotel-F-228,
+            // Aussenwand des Kaufhauses) - zwanzig Saetze.
+            foreach (string name in GebaeudeAnschlusslaengenFolgereparatur.Berichtigungen.Select(b => b.Bezeichner).Distinct())
+                Assert.Contains(name, frei);
         }
 
         // =====================================================================

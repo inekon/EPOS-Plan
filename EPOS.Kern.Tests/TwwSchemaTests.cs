@@ -497,7 +497,9 @@ namespace EPOS.Kern.Tests
         public void Schritt_T4_Messreihen_steht_in_der_Migration_nach_131()
         {
             int nr = TwwSchema.SCHRITT_T4_MESSREIHEN;
-            Assert.Equal(nr, SchemaStand.Zielversion);
+            // Das Ziel ist weitergezogen (die Folgeberichtigung im Gebaeudekatalog, Welle #496);
+            // die Wache "lueckenlos" haelt die Folge.
+            Assert.True(SchemaStand.Zielversion >= nr, "Zielstand " + SchemaStand.Zielversion + " liegt unter " + nr + ".");
 
             string datei = Migrationsquelle();
             if (datei == null) return;
