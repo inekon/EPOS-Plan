@@ -3031,7 +3031,8 @@ Paket, Testdatenbank oder Werkzeug):
 Zwei Folgeposten aus N16 sind umgesetzt (Statuszeile #504, Protokoll
 [`2026-09-25_Folgeposten_ZU20_ZU24.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Folgeposten_ZU20_ZU24.md));
 **kein Schemaschritt** (nur Katalogdaten); der Schemastand der Testdatenbank kommt aus #505 und
-steht auf 142.
+steht auf 142. Abschlussstand ist der Merge `70ab531a` (origin `f83ce27d`): Testdatenbank
+`22eeb75c…`, Gate **6/6 PASS** gegen die Basis `2026-09-25_R15_Anlagenkopplung`.
 
 **(a) ZU20 — die abgeleiteten VDI-6002-Katalogtypen gehören zur Auslieferung.** Die fünf
 Nutzungsarten „Wohnen groß (abgeleitet)", „Ein- und Zweifamilienhaus (abgeleitet)",

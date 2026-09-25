@@ -70,6 +70,14 @@ unverändert: 5 Tagesgangsätze, 20 Tagesgänge, 8 Nutzungsarten, 24 Zapfkategor
 `integrity_check` ok, `foreign_key_check` leer, Schemastand 141. Zweiter Skriptlauf 0/0, dritter
 ebenso. Committet mit aktivem LFS-Filter, keine `-shm`/`-wal`.
 
+**Stand nach dem Merge `70ab531a`** (origin `f83ce27d`, AK1 Welle 5): Die Testdatenbank ist die
+origin-Fassung mit Schemastand **142** (`1360e2be…`, Referenzprojekt 1047 und Basis R15), auf die das
+Einspielskript nachgezogen ist — 0 Zeilen angelegt, 21 nachgeführt, zweiter Lauf 0/0. Zellvergleich
+gegen die origin-Fassung über alle 144 Tabellen und 10 645 525 Zellen: dieselben **93 Zellen** (45 und
+48), Schema und `sqlite_sequence` gleich, `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen
+(alle STRICT), 14 Sichten, 219 Indizes, keine `AUSLIEFERUNG`-Zeile. 68 747 264 Byte, LFS-SHA-256
+`22eeb75c…`, committet mit aktivem LFS-Filter, keine `-shm`/`-wal`.
+
 ## Gates
 
 | Stand | Kern-Build | Tests | Weiteres |
@@ -80,7 +88,8 @@ ebenso. Committet mit aktivem LFS-Filter, keine `-shm`/`-wal`.
 | nach dem Merge `b0cff527` (`fc787fa4`) | 0 Fehler | 14 085 grün (2 übersprungen): Kern 6 880, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 919/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0; keine Konfliktmarker |
 | nach der Nachbesserung und dem Merge `f52d38ec` (`919f2ba7`, Schemastand 142) | 0 Fehler; Windows-Schale Debug x64 0 Fehler (der Merge brachte `SchemaMigration.cs`) | 14 093 grün (2 übersprungen): Kern 6 888, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 913/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Einspielskript 0/0 (Zellvergleich 93 von 10 506 856); keine Konfliktmarker |
 | nach dem Merge `3a8ec184` (`62f30101`, iOS-Hülle und IFC-Profil, ohne Konflikt) | 0 Fehler; Windows-Schale Debug x64 0 Fehler | 14 093 grün (2 übersprungen): Kern 6 888, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 913/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); keine Konfliktmarker |
-| Abschluss nach dem Merge `0d1cec86` (`78fb9a96`, BV-E1 Berichtsvorlagen und #506, ohne Konflikt — `Setup/EPOS-Plan.iss` von beiden Seiten berührt und selbsttätig zusammengeführt) | 0 Fehler; Windows-Schale Debug x64 0 Fehler | 14 262 grün (2 übersprungen): Kern 7 057, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 913/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Dokumentations- und Tww-Wachen 77/77; keine Konfliktmarker |
+| nach dem Merge `0d1cec86` (`78fb9a96`, BV-E1 Berichtsvorlagen und #506, ohne Konflikt — `Setup/EPOS-Plan.iss` von beiden Seiten berührt und selbsttätig zusammengeführt) | 0 Fehler; Windows-Schale Debug x64 0 Fehler | 14 262 grün (2 übersprungen): Kern 7 057, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 913/0; Auslieferungsvorlage 35/35; Referenzlauf 5/5 PASS gegen R14 (160 Dateien, 1 805 429 Werte); Dokumentations- und Tww-Wachen 77/77; keine Konfliktmarker |
+| Abschluss nach dem Merge `f83ce27d` (`70ab531a`, AK1 Welle 5 mit Referenzprojekt 1047 und der neuen Basis `2026-09-25_R15_Anlagenkopplung`, dazu #502 und #507 — drei Konflikte, alle beide Seiten zusammengeführt) | 0 Fehler; Windows-Schale Debug x64 0 Fehler | 14 294 grün (2 übersprungen): Kern 7 089, UI 6 243, KiKern 549, Engine 386, Planung 27 | SqlDialektPruefer 1 915/0; Auslieferungsvorlage 35/35 (STRICT-Zahl 144); Referenzlauf **6/6 PASS gegen R15** (1030, 1007, 1017, 1045, 1046, 1047; 198 Dateien, 2 208 587 Werte); ChartProben nicht gezogen (`EPOS.Kern/Allgemein/Bericht` unberührt); Designer wiederholbar (+0); keine Konfliktmarker, kein `UU` |
 
 Die Referenzprojekte nutzen den Generator nicht — der Lauf war wie erwartet unverändert. Die
 Wächter der Papiere (Doku-Link-, Wiki-Produktdaten-, Repository-Ordnungswache) liefen im vollen

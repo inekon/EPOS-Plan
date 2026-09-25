@@ -601,6 +601,23 @@ Basis im Arbeitsbaum.
 > Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte, 432/432 CSV
 > byte-gleich, außer `protokoll.txt`); die berichtigten Sätze führt auch 1047 nicht (es führt Satz 125 wie 1017).
 
+> **Nachtrag #504: die abgeleiteten VDI-6002-Typen im Tww-Testkatalog, die Basis bleibt.**
+> **Kein Schemaschritt** — der Folgeposten der Anwenderentscheide ZU20 und ZU24 vom 25.09.2026 setzt
+> allein Werte: Quelle, Version und Herkunftsart `VERFAHREN` der fünf Nutzungsarten „… (abgeleitet)“
+> und ihrer Tagesgänge (Abschnitt „Abgeleitete VDI-Werte im Tww-Testkatalog“ oben). Nachgezogen auf der
+> Fassung von origin mit Schemastand **142** (AK1 Welle 5 oben, `1360e2be…`) mit
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`:
+> 0 Zeilen angelegt, 21 nachgeführt; ein zweiter Lauf schreibt nichts (0 neu, 0 nachgeführt).
+> Zellvergleich aller 144 Tabellen gegen die Fassung von origin (10 645 525 Zellen): abweichend allein
+> **93 Zellen** — 45 in `Tab_TwwNutzungsart_STAMM` und 48 in `Tab_TwwTagesgang_STAMM` —, Zeilenzahlen
+> unverändert, Schema gleich, `sqlite_sequence` gleich (88 Zeilen). `integrity_check` ok,
+> `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite
+> angelegten, keine `AUSLIEFERUNG`-Zeile. Größe 68 747 264 Byte (LFS-SHA-256 `22eeb75c…`).
+> **Ergebnisneutral:** Keines der vierzehn Referenzprojekte führt eine Tww-Zone, und kein Rechenweg
+> der vierzehn liest den Tww-Katalog. **Keine Einfrierregel ist berührt.** Referenzlauf der sechs
+> Projekte der CI (1030, 1007, 1017, 1045, 1046, 1047) gegen diese Basis: **6/6 PASS** (198 Dateien,
+> 2 208 587 Werte).
+
 > **Die Vorgängerbasis `2026-09-24_R14_Kaelteerzeuger`**, die erste Basis mit Kälteerzeuger, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Kälteerzeuger von 1017
 > und den Nachträgen zu den Schemaständen 119 bis 141 steht in
