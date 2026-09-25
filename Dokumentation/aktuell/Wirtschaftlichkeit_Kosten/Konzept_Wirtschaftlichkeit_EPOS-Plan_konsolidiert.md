@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 25.09.2026** · Codestand `f1a8ae83` · `SchemaStand.Zielversion` = 144 · Schemaschritte 90–144 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); E19, E20, E21, E22, E23, E24 und E26 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R18_PvAusweis` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 25.09.2026** · Codestand `3936003c` · `SchemaStand.Zielversion` = 144 · Schemaschritte 90–144 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); E19, E20, E21, E22, E23, E24, E25 und E26 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R18_PvAusweis` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -48,7 +48,7 @@ heißen jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines
 `SCHRITT_WIEDERHOLPERIODE`, § 2.11.2, § 2.13 (3)); **126**, die Reparatur der
 Gebäude-Katalogsätze (#485), **128**, der Heizkreis je Gebäude der Anlagenkopplung, **130**, die Anschlusslängen im
 Gebäudekatalog (#493), und **131** bis **143** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
-Folgeberichtigung #496, die dritte Reparatur #505, die Quellenberichtigung der Baustoffe der Cloud-Sitzung G3) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502), E21 (#506), E22 (#503), E23 (#510), E24 (#514) und E26 (#518) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+Folgeberichtigung #496, die dritte Reparatur #505, die Quellenberichtigung der Baustoffe der Cloud-Sitzung G3) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502), E21 (#506), E22 (#503), E23 (#510), E24 (#514), E26 (#518) und E25 (#519) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -3029,6 +3029,16 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     ohne Klemme — kapitalwertwirksam, Empfehlung eigene Welle E27) und **N6** (die Übersicht „Strombedarf mit
     Eigenverbrauch“ ohne Kältestrom)
 
+**Aus Etappe E25 (#519) — erledigt**
+
+35. ~~**Kein Projekt der Testdatenbank führt eine PV-Anlage mit vollständigem Preissatz** (Befund aus E9a; E21‑Q9,
+    bis dahin ohne eigene Nummer unter Nr. 24 geführt)~~ — erledigt mit E25 (#519): Prüfprojekt 1048 „PV mit Preisen“
+    ohne Referenzrolle (Kopie von 1040, VDI 6007, 10,40 kWp, Strom- und Erdgaspreis, Parametersatz mit
+    Einspeisevergütung, PV-Kostenpositionen), gehalten von `PvPreisProjektTests`; die Basis R18 bleibt (→ Register
+    R‑E25, R‑E21), siehe Protokoll; benannt bleiben die an 1048 nicht angelegte Vergütungszeile und Tarifstruktur
+    (DV-Entgelt, PPA und Rollentarif nur im Test) und die Wiederholung des Skripts nach jeder Neufassung der
+    Testdatenbank ohne 1048
+
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
@@ -3143,7 +3153,12 @@ Empfehlung/bearbeiten“) den PV-Ausweis und erledigt Nr. 34: Die Stromproduktio
 der Module, der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (§ 3.6) — ohne Schemaschritt, der
 Kapitalwert an allen Ankern gleich; allein `Photovoltaik.Stromproduktion` in vier `aggregate.csv` wechselt, deshalb die
 neue Basis R18; sieben Fragen entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26); benannt bleiben Q6, N5 und
-N6 (Nr. 34). Aus der
+N6 (Nr. 34). Die Welle **E25 (#519)** erledigt nach dem Anwenderentscheid vom 25.09.2026 („nehme die Empfehlungen
+vor: für Später“, E21‑Q9 a) Nr. 35: Die Testdatenbank führt mit dem Prüfprojekt 1048 „PV mit Preisen“ erstmals eine
+PV-Anlage mit vollständigem Preissatz — ohne Referenzrolle, ohne Schemaschritt und ohne neue Basis (R18 bleibt,
+Referenzlauf 14/14 byte-gleich); `PvPreisProjektTests` hält Einspeiseerlös, Szenarien C und D, vermiedene Kosten,
+Formelmappe und Kapitalwert-Anker; zehn Fragen entschieden 25.09.2026, alle a, nach Empfehlung (→ Register R‑E25).
+Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |

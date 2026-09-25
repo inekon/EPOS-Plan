@@ -410,12 +410,26 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-25_R18_PvAusweis/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
-LFS-SHA-256 `19a7b632…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
+LFS-SHA-256 `b68638da…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
 Datei wie R17; danach änderte Schemaschritt 144 nur das Schema (vier leere Spalten der Nachtzeit), ohne
-Referenzwirkung, zusammengeführt mit der Datenpflege E24 (Nachtrag unten)). Gegen diese Basis hält
+Referenzwirkung, zusammengeführt mit der Datenpflege E24, und das Prüfprojekt „PV mit Preisen“ kam ohne
+Referenzrolle hinzu (Nachträge unten)). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich
 für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
 **einzige** Basis im Arbeitsbaum.
+
+> **Nachtrag Prüfprojekt 1048 (ohne Referenzrolle), die Basis bleibt.** Auf der Fassung `19a7b632…`
+> (Schemastand 144, mit den Zellen der Datenpflege E24) hat
+> `dotnet run Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> das Projekt 1048 „Prüfprojekt PV mit Preisen“ angelegt (Aufbau im Abschnitt „Das Prüfprojekt 1048“
+> weiter unten). Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `19a7b632…`: Schema gleich
+> (145 Tabellen), **keine bestehende Zeile entfernt oder geändert**, 44 537 neue Zeilen in 30 Tabellen
+> (davon 35 040 Viertelstundenwerte der Stromganglinie, 8 760 Solarwerte, 365 Klimatage), dazu 25 fortgeschriebene
+> Zähler in `sqlite_sequence`; `integrity_check` ok, `foreign_key_check` leer; ein zweiter Lauf findet
+> nichts zu tun. Größe 70 680 576 Byte (kein `VACUUM`), LFS-SHA-256 `b68638da…`. **Keine Einfrierregel
+> ist berührt** — 1048 ist kein Referenzprojekt, und die Vorlage 1040 bleibt Zelle für Zelle.
+> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte), 432/432 CSV
+> byte-gleich.
 
 > **Anlass: der PV-Ausweis** (Anwender 25.09.2026, Etappe E26, Befund N1 aus E25, Entscheide E26‑Q1 … Q7
 > nach Empfehlung). `Ergebnis.Photovoltaik.Stromproduktion` führte die Summe der Direktverbrauchsreihe
@@ -498,7 +512,7 @@ für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Pr
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) und `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) und `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -521,6 +535,31 @@ Rechenergebnis. Danach gehören dazu: `python3 Werkzeuge/SqlDialektPruefer/pruef
 Referenzlaeufe/Kenndaten_Test.sqlite` (0 Fundstellen) und
 `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 --trocken` (0 Spalten, 0 Tabellen anzulegen).
+
+### Das Prüfprojekt 1048 „PV mit Preisen“ (ohne Referenzrolle)
+
+Projekt **1048 „Prüfprojekt PV mit Preisen“** ist das einzige PV-Projekt der Testdatenbank mit einem
+vollständigen Preissatz: Kopie von 1040 auf dem Kopierweg des Programms, Gebäude nach VDI 6007
+(der Tagesbilanz-Weg bleibt allein bei 1040), 40 Module = 10,40 kWp, Strom 0,30 €/kWh (Günstig 0,26 /
+Ungünstig 0,36) und 120 €/a (100 / 150), Erdgas 0,80 €/Nm³ (0,70 / 0,95) und 150 €/a, Parametersatz
+mit Einspeisevergütung PV 0,08 €/kWh (0,10 / 0,06), PV-Investition 1.200 €/kWp (Kategorie 1),
+Wartung 150 €/a (120 / 180) und Instandhaltung 1 % der Investition (Kategorie 2); Flat-Tarif, keine
+Vergütungszeile, keine gespeicherten Ergebnisse. Alle Werte sind neutrale Prüfwerte.
+
+**1048 ist kein Referenzprojekt:** Es steht in keiner Basis und in keiner Projektliste der CI, für
+seine Zeilen gilt keine Einfrierregel, und eine Änderung an 1048 bewegt keine Basis. Es hält die
+PV-Erlösseite der Wirtschaftlichkeit in `EPOS.Kern.Tests/PvPreisProjektTests` (Einspeiseerlös je
+Szenario, Szenarien C und D, vermiedene Kosten, Formelmappe, Kapitalwert-Anker).
+
+```bash
+dotnet run Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Das Skript ist wiederholbar: Steht 1048 mit allen Zielzellen, ändert es nichts (Rückgabe 0); weicht
+etwas ab, bricht es ab, ohne die Datei zu ändern (Rückgabe 2). Es schreibt in eine Arbeitsdatei, prüft
+die Zielzellen, die Unversehrtheit von 1040, `integrity_check` und `foreign_key_check` und ersetzt erst
+dann die Datenbank. Die Zeilen-IDs vergibt der Kopierweg; nach einer Neufassung der Testdatenbank ohne
+1048 wird das Skript auf der neuen Fassung erneut gezogen.
 
 ## Die wichtigste Regel
 
