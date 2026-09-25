@@ -470,6 +470,148 @@ namespace EPOS.Kern.Tests
         }
 
         // =========================================================================
+        // #507 (a): Nachweis R-W16-6 für ein über den Assistenten NEU angelegtes Projekt
+        // =========================================================================
+
+        /// <summary>
+        /// Ein Projekt, das der NEU-Zweig aus Katalogsätzen anlegt — Kopf, Gebäude,
+        /// Kessel samt Energieträger, Prozesswärme, Stromverbraucher, Stromganglinie und
+        /// externer Wärmebedarf —, bleibt bei einem anschließenden Speichern ohne Änderung
+        /// über den Bearbeiten-Zweig Zeile für Zeile stehen: kein Gewerk, kein Kopf, keine
+        /// Trägerheilung, kein Änderungsdatum, keine Id, in keiner projektgebundenen
+        /// Tabelle. Ein zweites Speichern desselben Laufs ebenso.
+        ///
+        /// <para>Das ist der Kern-Teil des Nachweises R-W16-6 für den Neu-Fall (#507); den
+        /// Feld-für-Feld-Vergleich der Simulationsergebnisse davor und danach führt
+        /// <c>Referenzlauf.exe lauf/vergleich</c> auf derselben Probe am Windows-Gerät.
+        /// Brauchwasser ist nicht dabei: Der Assistent führt dafür keine Seite.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_neu_angelegtes_Projekt_bleibt_beim_Speichern_ohne_Aenderung_stehen()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    // --- Der NEU-Lauf ---------------------------------------------------
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl neu = Neuanlage(NEU_NAME);
+
+                    AssistentErgebnis e = neu.Speichern();
+                    Assert.True(e.Erfolg, "Anlegen scheiterte an: " + e.Schritt);
+
+                    int id = ProjektCtrl.IdVonName(NEU_NAME);
+                    Assert.True(id > 0, "Das neue Projekt wurde nicht angelegt.");
+                    Assert.Equal(id, neu.ProjektId);
+
+                    // Alle sechs Gewerke und der Energietraegersatz stehen.
+                    foreach (string t in new[] { "Tab_Energieanlagen", "Z_ProjektGebaeude", "Z_ProjektWaermebedarf",
+                                                 "Z_Projekt_Prozesswaerme", "Z_Projekt_Stromverbraucher",
+                                                 "Z_ProjektStromganglinie", "energy_project_settings", "energy_price",
+                                                 "Tab_Gebaeude", "Tab_Heizkessel", "Tab_Klimaregion" })
+                        Assert.True(Zeilen(t, id) > 0, t + " ist nach dem Anlegen leer.");
+
+                    // --- Der Bearbeiten-Lauf ohne Eingabe -------------------------------
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl a = Bearbeitenlauf(NEU_NAME, id);
+                    a.ZustandMerken();
+                    SeitenBetreten(a, id);
+                    Assert.False(a.HatAenderungen, "Das Betreten der Seiten gilt als Eingabe.");
+
+                    DateTime? alt = DatumSetzen(id);
+                    string vorher = VollesAbbild(id);
+
+                    e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+                    Assert.Empty(a.GeschriebeneGewerke);
+                    Assert.False(a.KopfGeschrieben);
+                    Assert.Equal(0, a.GeheilteTraegersaetze);
+                    Assert.Equal(alt, MerkmalUebernahmeCtrl.Aenderungsdatum(id));
+                    Assert.Equal(vorher, VollesAbbild(id));
+
+                    e = a.Speichern();
+                    Assert.True(e.Erfolg, "Zweites Speichern scheiterte an: " + e.Schritt);
+                    Assert.Empty(a.GeschriebeneGewerke);
+                    Assert.Equal(alt, MerkmalUebernahmeCtrl.Aenderungsdatum(id));
+                    Assert.Equal(vorher, VollesAbbild(id));
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        // =========================================================================
+        // #507 (b): Der Verweis auf die Projektkopie nach einem Rückzug
+        // =========================================================================
+
+        /// <summary>
+        /// <c>Add_Projekt_Prozess</c> und <c>Add_Projekt_Stromverbraucher</c> tragen den
+        /// Verweis auf die Projektkopie schon VOR dem Festschreiben in die Listenzeile ein.
+        /// Rollt der Lauf zurück, zeigt er auf eine Kopie, die es nicht gibt — folgenlos:
+        /// Der nächste Speicherlauf leitet ihn aus dem Namen neu ab, bevor er ihn schreibt,
+        /// und der Abdruck der Gewerke vergleicht ihn nicht. Erzwungen wird der Rückzug in
+        /// <c>Add_Projekt_Stromverbraucher</c> selbst (ein zweiter Verbraucher ohne
+        /// Katalogsatz) — dann sind Prozesswärme und der erste Verbraucher schon kopiert.
+        /// </summary>
+        [Fact]
+        public void Nach_einem_Rueckzug_schreibt_der_naechste_Lauf_gueltige_Verweise()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+                    AssistentCtrl a = Neuanlage(NEU_NAME);
+                    int projekteVorher = Zeilen("Tab_Projekt", 0);
+
+                    a.Stromverbraucher.Add(new Z_ProjektStromverbraucherModel
+                    {
+                        m_ID_Z = 100001, m_szVerbraucher = "Kein Verbraucher dieses Namens (#507)", m_Summe = 1
+                    });
+
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.Equal(AssistentAusgang.Fehlgeschlagen, e.Ausgang);
+                    Assert.Equal("Add_Projekt_Stromverbraucher", e.Schritt);
+                    Assert.Equal(projekteVorher, Zeilen("Tab_Projekt", 0));
+
+                    // Die Listenzeilen zeigen jetzt auf zurueckgerollte Projektkopien.
+                    int pwVerweis = a.Prozess[0].ID_Prozesswaerme;
+                    int svVerweis = a.Stromverbraucher[0].m_ID_Stromverbraucher;
+                    Assert.Null(DataRepository.ExecuteScalar("SELECT ID FROM Tab_Prozesswaerme WHERE ID = ?",
+                                                             new DbParam("@i", pwVerweis)));
+                    Assert.Null(DataRepository.ExecuteScalar("SELECT ID FROM Tab_Stromverbraucher WHERE ID = ?",
+                                                             new DbParam("@i", svVerweis)));
+
+                    // Die fehlerhafte Zeile weg, erneut speichern: gelingt, und jeder
+                    // Verweis zeigt auf eine Kopie DIESES Projekts.
+                    a.Stromverbraucher.RemoveAt(a.Stromverbraucher.Count - 1);
+                    e = a.Speichern();
+                    Assert.True(e.Erfolg, "Zweiter Versuch scheiterte an: " + e.Schritt);
+
+                    int id = ProjektCtrl.IdVonName(NEU_NAME);
+                    Assert.True(id > 0);
+                    Assert.Equal(Paare("Z_Projekt_Prozesswaerme", "ID", "ID_Prozesswaerme", id),
+                                 Sortiert(a.Prozess.Select(p => (p.ID_Z, p.ID_Prozesswaerme))));
+                    Assert.Equal(Paare("Z_Projekt_Stromverbraucher", "ID", "ID_Stromverbraucher", id),
+                                 Sortiert(a.Stromverbraucher.Select(v => (v.m_ID_Z, v.m_ID_Stromverbraucher))));
+                    Assert.Equal((long)id, Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT ID_Projekt FROM Tab_Prozesswaerme WHERE ID = ?",
+                        new DbParam("@i", a.Prozess[0].ID_Prozesswaerme)), CultureInfo.InvariantCulture));
+                    Assert.Equal((long)id, Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT ID_Projekt FROM Tab_Stromverbraucher WHERE ID = ?",
+                        new DbParam("@i", a.Stromverbraucher[0].m_ID_Stromverbraucher)), CultureInfo.InvariantCulture));
+                    Assert.Empty(DataRepository.GetDataTable("PRAGMA foreign_key_check").Rows);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        // =========================================================================
         // Ohne Datenbank: der Abdruck
         // =========================================================================
 
@@ -547,18 +689,152 @@ namespace EPOS.Kern.Tests
             return name;
         }
 
+        // --- #507: die Neuanlage aus Katalogsätzen ------------------------------------
+
+        private const string NEU_NAME = "#507 Neuanlage-Probe";
+        private const string NEU_KLIMA = "stuttgart";
+        private const string NEU_GEBAEUDE = "EFH-A-U-347s";
+        private const string NEU_KESSEL = "GC7000F 22 23 - MX25";
+        private const string NEU_BRENNSTOFF = "Erdgas E";
+        private const string NEU_PROZESS = "Hotel_1";
+        private const string NEU_STROMVERBRAUCHER = "EFH_3_Pers";
+        private const string NEU_WAERMEBEDARF = "Wärmebedarf_Laurentiuskirche";
+
+        /// <summary>
+        /// Ein NEU-Lauf, so gefüllt, wie die Seiten ihn füllen: Kopf mit Klimazone, die
+        /// Kacheln geschaltet, je Gewerk eine Zeile mit vorläufiger Id ab 100000 und
+        /// Katalogverweis. Der Kessel geht den Weg der Kesselseite
+        /// (<c>HeizkesselHuelle.Aufnehmen</c>): Trägervariante im Assistentenbetrieb
+        /// (nur Katalogträger), Temperaturen aus dem Katalogsatz, Stamm-Id als
+        /// Platzhalter der Projektkopie.
+        /// </summary>
+        private static AssistentCtrl Neuanlage(string name)
+        {
+            AssistentCtrl a = new AssistentCtrl();
+            a.Betriebsart = AssistentCtrl.BETRIEBSART_NEU;
+            a.ProjektId = new ProjektCtrl().GetMaxID() + 1;
+
+            a.Kopf[0].Name = name;
+            a.Kopf[0].Beschreibung = "Nachweis R-W16-6, Neu-Fall";
+            a.Kopf[0].Kunde = "Kunde";
+            a.Kopf[0].Bearbeiter = "Bearbeiter";
+            a.Kopf[0].Erstelldatum = new DateTime(2026, 9, 25);
+            a.Kopf[0].Klimaname = NEU_KLIMA;
+            a.KopfMerken();
+
+            foreach (int seite in new[] { WizardItemClass.GEBAEUDE_ITEM, WizardItemClass.WAERMEBEDARF_ITEM,
+                                          WizardItemClass.PROZESS_ITEM, WizardItemClass.STROMSTD_ITEM,
+                                          WizardItemClass.STROMLASTGANG_ITEM, WizardItemClass.KESSEL_ITEM })
+                a.SeiteSchalten(seite, true);
+
+            int gebaeude = KatalogId("Tab_Gebaeude_STAMM", NEU_GEBAEUDE);
+            a.Gebaeude.Add(new Z_ProjGebModel
+            {
+                ID_Z = 100000, ID_Projekt = a.ProjektId, ID_Gebaeude = gebaeude, ID_Gebaeude_Stamm = gebaeude,
+                Gebaeudename = NEU_GEBAEUDE, Wohnflaeche = 201, Einheit = "Wohnfläche [m²]", Jahresnutzungsgrad = 1
+            });
+
+            int kessel = KatalogId("Tab_Heizkessel_STAMM", NEU_KESSEL);
+            int brennstoff = KatalogId("Tab_Brennstoff_Stamm", NEU_BRENNSTOFF);
+            EnergietraegerVarianteCtrl.VariantenErgebnis traeger =
+                EnergietraegerVarianteCtrl.Anlegen(a.ProjektId, true, brennstoff, NEU_BRENNSTOFF, NEU_BRENNSTOFF);
+            Assert.True(traeger.CarrierId > 0, "Traegervariante: " + traeger.Meldung);
+            WErzeugerModel k = new WErzeugerModel
+            {
+                ID = 100000, ID_Projekt = a.ProjektId, ID_Type = WizardItemClass.KESSEL_TYP,
+                Bezeichner = NEU_KESSEL, ID_Carrier = traeger.CarrierId, ID_Kessel = kessel
+            };
+            AnlagenTemperaturen.AusStammsatz(k, kessel);
+            a.Erzeuger.Add(k);
+
+            a.Prozess.Add(new Z_ProjektProzesswaermeModel
+            {
+                ID_Z = 100000, ID_Projekt = a.ProjektId, szProzessname = NEU_PROZESS,
+                ID_Prozesswaerme = KatalogId("Tab_Prozesswaerme_STAMM", NEU_PROZESS), Summe = 30
+            });
+            a.Stromverbraucher.Add(new Z_ProjektStromverbraucherModel
+            {
+                m_ID_Z = 100000, m_ID_Projekt = a.ProjektId, m_szVerbraucher = NEU_STROMVERBRAUCHER,
+                m_ID_Stromverbraucher = KatalogId("Tab_Stromverbraucher_STAMM", NEU_STROMVERBRAUCHER), m_Summe = 8
+            });
+            a.Stromganglinie.Add(new Z_ProjektStromganglinieModel
+            {
+                m_ID_Z = 100000, m_ID_Projekt = a.ProjektId, m_szStromganglinie = STROMGANGLINIE,
+                m_ID_Stromganglinie = KatalogId("Tab_Stromganglinie_STAMM", STROMGANGLINIE)
+            });
+            a.Waermebedarf.Add(new Z_ProjWaermebedarfModel
+            {
+                m_ID_Z = 100000, m_ID_Projekt = a.ProjektId, m_szBezeichner = NEU_WAERMEBEDARF,
+                m_ID_Ganglinie = KatalogId("Tab_Waermebedarf_STAMM", NEU_WAERMEBEDARF), Kanal = DbWerte.KANAL_HEIZUNG
+            });
+            return a;
+        }
+
+        private static int KatalogId(string tabelle, string bezeichner)
+        {
+            int id = DataRepository.GetIdByName(tabelle, "Bezeichner", bezeichner);
+            Assert.True(id > 0, "Katalogsatz fehlt: " + tabelle + " \"" + bezeichner + "\"");
+            return id;
+        }
+
+        /// <summary>Zeilen einer projektgebundenen Tabelle (<c>idProjekt</c> 0 = alle Zeilen).</summary>
+        private static int Zeilen(string tabelle, int idProjekt)
+        {
+            object n = idProjekt == 0
+                ? DataRepository.ExecuteScalar("SELECT COUNT(*) FROM [" + tabelle + "]")
+                : DataRepository.ExecuteScalar("SELECT COUNT(*) FROM [" + tabelle + "] WHERE ID_Projekt = ?",
+                                               new DbParam("@p", idProjekt));
+            return Convert.ToInt32(n, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Das Abbild ALLER projektgebundenen Tabellen — jede Tabelle der Datenbank mit
+        /// einer Spalte <c>ID_Projekt</c> oder <c>ProjektID</c>, dazu <c>Tab_Projekt</c>,
+        /// Senken und Stränge der Anlagen; mit Ids, ohne Zeitpunktspalten.
+        /// </summary>
+        private static string VollesAbbild(int idProjekt)
+        {
+            DataTable tabellen = DataRepository.GetDataTable(
+                "SELECT m.name AS t, (SELECT p.name FROM pragma_table_info(m.name) p " +
+                "WHERE lower(p.name) IN ('id_projekt','projektid') LIMIT 1) AS s " +
+                "FROM sqlite_master m WHERE m.type = 'table' ORDER BY m.name");
+            StringBuilder sb = new StringBuilder();
+            sb.Append("== Tab_Projekt\n").Append(Tabelle("SELECT * FROM Tab_Projekt WHERE ID = ?", idProjekt));
+            foreach (DataRow r in tabellen.Rows)
+            {
+                if (r["s"] == DBNull.Value) continue;
+                string t = Convert.ToString(r["t"], CultureInfo.InvariantCulture);
+                string s = Convert.ToString(r["s"], CultureInfo.InvariantCulture);
+                sb.Append("== ").Append(t).Append('\n')
+                  .Append(Tabelle("SELECT * FROM [" + t + "] WHERE [" + s + "] = ? ORDER BY 1", idProjekt));
+            }
+            foreach (string t in new[] { "Z_AnlageSenke", "Z_AnlageStrang" })
+            {
+                if (!DataRepository.TabelleVorhanden(t)) continue;
+                sb.Append("== ").Append(t).Append('\n')
+                  .Append(Tabelle("SELECT s.* FROM [" + t + "] s JOIN Tab_Energieanlagen e ON e.ID = s.ID_Anlage " +
+                                  "WHERE e.ID_Projekt = ? ORDER BY 1", idProjekt));
+            }
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Ein Lauf im BEARBEITEN-Zweig, so gestellt, wie ihn der Komponentenschritt und
         /// die Kopfseite stellen würden (wie in <c>AssistentCtrlTests</c>).
         /// </summary>
         private static AssistentCtrl Bearbeitenlauf(string name)
         {
+            return Bearbeitenlauf(name, ID);
+        }
+
+        private static AssistentCtrl Bearbeitenlauf(string name, int id)
+        {
             AssistentCtrl a = new AssistentCtrl();
             a.Betriebsart = AssistentCtrl.BETRIEBSART_BEARBEITEN;
-            a.ProjektId = ID;
+            a.ProjektId = id;
             a.Laden(name);
 
-            KomponentenBestandCtrl bestand = KomponentenBestandCtrl.Lesen(ID);
+            KomponentenBestandCtrl bestand = KomponentenBestandCtrl.Lesen(id);
             for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
                 a.SeiteSchalten(bestand[k].SeitenIndex, bestand[k].Vorhanden);
 
@@ -582,10 +858,15 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static void SeitenBetreten(AssistentCtrl a)
         {
+            SeitenBetreten(a, ID);
+        }
+
+        private static void SeitenBetreten(AssistentCtrl a, int id)
+        {
             foreach (WErzeugerModel m in a.Erzeuger)
                 if (m.ID_Type == WizardItemClass.WP_TYP)
                     WaermepumpeGeraeteCtrl.GeraetedatenFuellen(m, m.ID_WP);
-            Z_ProjektGebGanglinieCtrl.KanaeleNachladen(ID, a.Waermebedarf);
+            Z_ProjektGebGanglinieCtrl.KanaeleNachladen(id, a.Waermebedarf);
         }
 
         /// <summary>Gibt eine Eingabe in das Gewerk und nennt die Tabelle, die sich ändern muss.</summary>
@@ -749,9 +1030,14 @@ namespace EPOS.Kern.Tests
         /// <summary>(Zuordnungs-Id, Verweis) je Zeile einer Zuordnungstabelle des Projekts, sortiert.</summary>
         private static List<(int, int)> Paare(string tabelle, string idSpalte, string verweisSpalte)
         {
+            return Paare(tabelle, idSpalte, verweisSpalte, ID);
+        }
+
+        private static List<(int, int)> Paare(string tabelle, string idSpalte, string verweisSpalte, int idProjekt)
+        {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT [" + idSpalte + "], [" + verweisSpalte + "] FROM [" + tabelle + "] WHERE ID_Projekt = ?",
-                new DbParam("@p", ID));
+                new DbParam("@p", idProjekt));
             List<(int, int)> paare = new List<(int, int)>();
             foreach (DataRow r in dt.Rows)
                 paare.Add((Convert.ToInt32(r[0], CultureInfo.InvariantCulture),
@@ -775,9 +1061,14 @@ namespace EPOS.Kern.Tests
         /// <summary>Setzt das Änderungsdatum auf einen alten Stand und liefert ihn, wie die Datenbank ihn liest.</summary>
         private static DateTime? DatumSetzen()
         {
+            return DatumSetzen(ID);
+        }
+
+        private static DateTime? DatumSetzen(int id)
+        {
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET Aenderungsdatum = ? WHERE ID = ?",
-                new DbParam("@d", DbParamTyp.Date) { Wert = ALT }, new DbParam("@p", ID)));
-            DateTime? gelesen = MerkmalUebernahmeCtrl.Aenderungsdatum(ID);
+                new DbParam("@d", DbParamTyp.Date) { Wert = ALT }, new DbParam("@p", id)));
+            DateTime? gelesen = MerkmalUebernahmeCtrl.Aenderungsdatum(id);
             Assert.True(gelesen.HasValue);
             return gelesen;
         }

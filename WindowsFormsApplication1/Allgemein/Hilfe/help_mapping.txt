@@ -479,16 +479,16 @@ Wizard_WPItem.label7                   = Wärmepumpe#spitzenlast
 Wizard_WPItem.label24                  = Wärmepumpe#kennlinien
 
 # --- Klimadaten -----------------------------------------------------------
-# panel2 ist der Standortblock als Ganzes; die Beschriftungen darin fuehren zu
-# den einzelnen Stichpunkten. label1 ist die Kopfzeile ueber dem TMY-Import.
-Form_Klimadaten.panel2           = Klimadaten#standort
-Form_Klimadaten.label4           = Klimadaten#region
-Form_Klimadaten.label6           = Klimadaten#koordinaten
-Form_Klimadaten.label7           = Klimadaten#koordinaten
-Form_Klimadaten.label8           = Klimadaten#bezeichnung
-Form_Klimadaten.label1           = Klimadaten#daten-einlesen
-Form_Klimadaten.panel1           = Klimadaten#regionsliste
-Form_Klimadaten.panel_KlimaGraph = Klimadaten#diagramme
+#
+# DIE ACHT FELDZEILEN SIND ENTFALLEN (#507). Sie sprachen panel1, panel2,
+# panel_KlimaGraph und label1/4/6/7/8 an - WinForms-Steuerelemente einer
+# Maske, die es nicht mehr gibt; der HelpExtender haengt sich an Control.Name
+# und findet in einer WebView keinen. Die Klimadaten sind der Razor-Dialog
+# EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor (unter Windows im Adapter
+# Views/Admin/KlimadatenFenster.cs); er traegt EINEN Infoknopf (Baustein
+# InfoKnopf) mit dem Schluessel Form_Klimadaten.btn_Help (oben) und zeigt
+# damit die Seite Klimadaten. Die alten Anker region, koordinaten, bezeichnung
+# und daten-einlesen traegt die Wikiquelle weiter (Regel 4: Anker bleiben).
 
 # --- Pufferspeicher: Form_PufferSp_Projekt --------------------------------
 # Fuehrend fuer die Nutzung ist das Klassen-Set (_lblKlassenSet), nicht das

@@ -382,6 +382,28 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// E20 — die Gegenprobe im INVESTITIONSraster (Anwenderentscheid 25.09.2026,
+        /// „Wärmepumpe beides" nur bei den Investitionskosten): Dort führt die
+        /// Wärmepumpe „je kW elektrisch" (P_el am Normpunkt), ein fehlender Wert ist
+        /// also ein Pflegebefund des Geräts. Im Betriebsraster bleibt es beim Gewerk;
+        /// die beiden übrigen unpassenden Kombinationen bleiben es in beiden Rastern.
+        /// </summary>
+        [Fact]
+        public void Waermepumpe_je_kW_elektrisch_passt_nur_im_Investitionsraster()
+        {
+            Assert.True(TechnikPlanwertCtrl.KenntBaugroesse(1, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, true));
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GERAET,
+                         WirtschaftlichkeitCtrl.BasisGrund(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 1, false, true));
+
+            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(1, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, false));
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
+                         WirtschaftlichkeitCtrl.BasisGrund(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 1, false, false));
+
+            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(6, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, true));
+            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(4, DbWerte.BEMESSUNG_EUR_PRO_KWP, true));
+        }
+
+        /// <summary>
         /// H4c: Passt die Art zum Gewerk, ist ein fehlender Betrag ein PFLEGE-Befund —
         /// der Grund unterscheidet das, damit der Anwender weiß, wo er suchen muss.
         /// </summary>

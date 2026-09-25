@@ -324,7 +324,7 @@ namespace EPOS.Kern.Tests
 
     /// <summary>
     /// <b>Stufe G2 — die Wirkung auf die Referenzgebäude</b> (berichtend): jedes Gebäude der
-    /// dreizehn Referenzprojekte im Speicher auf VDI 6007 umgestellt und je Schalter einmal
+    /// vierzehn Referenzprojekte im Speicher auf VDI 6007 umgestellt und je Schalter einmal
     /// gerechnet. Geprüft wird die Richtung, ausgegeben die relative Wirkung auf die
     /// Jahreswerte. Die Testdatenbank führt keine Gegenstrahlung; für den langwelligen Term
     /// setzt die Messung eine Klarhimmel-Gegenstrahlung ein (Prüfgröße, kein Produktweg).
@@ -342,7 +342,7 @@ namespace EPOS.Kern.Tests
         }
 
         private static readonly int[] Projekte =
-            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046 };
+            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047 };
 
         [Fact]
         public void Wirkung_von_Sommerlueftung_Infiltration_und_Strahlung_auf_die_Referenzgebaeude()

@@ -11368,6 +11368,12 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="KDLG_HERLEITUNG_SOLAR_KW_FLAECHE" xml:space="preserve">
     <value>{0} kW/m² × {1} m² aperture area = {2} kW</value>
   </data>
+  <data name="KDLG_HERLEITUNG_WP_PEL" xml:space="preserve">
+    <value>{0} kW ÷ COP {1} ({2}) = {3} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_WP_PEL_SUMME" xml:space="preserve">
+    <value>Σ P_el at the rating point of {0} heat pumps = {1} kW</value>
+  </data>
   <data name="KDLG_OHNE_BASIS_ZEILE" xml:space="preserve">
     <value>“{0}”: {1}</value>
   </data>

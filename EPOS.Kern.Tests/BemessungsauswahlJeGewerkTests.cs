@@ -63,8 +63,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Wärmepumpe: die EINE Nennleistung — „je kW Leistung" und „je kW
         /// Heizleistung" meinen sie beide, und zwar in BEIDEN Rastern (Wartung je kW).
-        /// Strom- und Flächengrößen kennt sie nicht; ihre Mengen kommen aus dem
-        /// Lauf.</summary>
+        /// Flächengrößen kennt sie nicht; ihre Mengen kommen aus dem Lauf.
+        /// <para>E20 (Anwenderentscheid 25.09.2026): „Wärmepumpe beides" — im
+        /// INVESTITIONSraster zusätzlich „je kW elektrisch" (P_el am Normpunkt der
+        /// Kennlinie); im Betriebsraster bleibt die Art weg.</para></summary>
         [Fact]
         public void Waermepumpe_bietet_die_Heizleistung_und_die_Laufgroessen()
         {
@@ -76,6 +78,7 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN,
                     DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
                     DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,   // E20: nur Investition
                 },
                 new[]
                 {
@@ -448,8 +451,11 @@ namespace EPOS.Kern.Tests
                 if (genannt.Contains(i.Persistenz)) continue;
 
                 Assert.DoesNotContain(i.Persistenz, Persistenzwerte(komponentenId, invest));
+                // E20: der Grund im RASTER der Liste — „je kW elektrisch" an der
+                // Wärmepumpe fehlt nur im Betriebsraster.
                 Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
-                             WirtschaftlichkeitCtrl.BasisGrund(i.Persistenz, komponentenId));
+                             WirtschaftlichkeitCtrl.BasisGrund(i.Persistenz, komponentenId,
+                                                               false, invest));
             }
         }
 

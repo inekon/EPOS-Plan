@@ -230,30 +230,38 @@ jobs:
       # SpeicherEngine/FlottenSimulator: Verteilung Kaskade, getrennte
       # Richtungswirkungsgrade, SoC-Grenzen, Peak-Reserve, getrennte Netzbilanz).
       # Die zwoelf uebrigen fahren alle die Einzelanlage.
-      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046
+      # AK1 W5 (25.09.2026): 1047 kommt als SECHSTES dazu - das Referenzprojekt
+      # "Anlagenkopplung AK1", eine Kopie von 1017 mit gekoppeltem Heizkreis
+      # (Radiator, Heizkurve) und gekoppelter Kuehluebergabe (Kuehldecke). Es ist
+      # das einzige Projekt der Basis mit Tab_Einstellungen.Anlagenkopplung = AK1
+      # und deshalb der einzige Lauf, der Schritt H und Schritt K des VDI-Wegs
+      # betritt (Vorlauf, Ruecklauf, begrenzte Stunden, Reihen vorlauf_/ruecklauf_/
+      # uebergabe_ und ihre Kuehl-Gegenstuecke).
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030,1007,1017,1045,1046 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+          --projekte 1030,1007,1017,1045,1046,1047 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-24_R14_Kaelteerzeuger
+      - name: Vergleich mit Referenzbasis 2026-09-25_R15_Anlagenkopplung
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R15_Anlagenkopplung/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R15_Anlagenkopplung/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R15_Anlagenkopplung/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R15_Anlagenkopplung/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R15_Anlagenkopplung/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R15_Anlagenkopplung/Projekt_1047 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          for p in 1030 1007 1017 1045 1046; do
+          for p in 1030 1007 1017 1045 1046 1047; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
