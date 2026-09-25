@@ -598,6 +598,9 @@ public sealed class GebaeudeKatalogKiSicht
     /// <summary>Der Weg des Hakens „Übergabe rechnen" (schlägt beim ersten Einschalten die Heizkurve vor).</summary>
     public Action<bool>? HeizkreisSetzen { get; init; }
 
+    /// <summary>Der Weg des Hakens „Heizkurve fahren" (die Wahl gilt danach als die des Anwenders, kein Vorschlag).</summary>
+    public Action<bool>? HeizkurveSetzen { get; init; }
+
     /// <summary>Wählt die Übergabeart über ihren Steuerwert; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
     public Func<string, string?>? UebergabeArtSetzen { get; init; }
 
@@ -682,7 +685,11 @@ public sealed class GebaeudeKatalogKiSicht
     public bool HeizkurveAktiv
     {
         get => Daten?.HeizkurveAktiv ?? false;
-        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveAktiv = value; }
+        set
+        {
+            if (HeizkurveSetzen is not null) HeizkurveSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.HeizkurveAktiv = value;
+        }
     }
 
     /// <summary>Niveau der Heizkurve in K; leer = 0.</summary>
