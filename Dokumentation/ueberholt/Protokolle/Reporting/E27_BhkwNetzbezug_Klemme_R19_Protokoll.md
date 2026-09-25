@@ -1,6 +1,6 @@
 # E27 — BHKW-Überschuss: der Netzbezug ist nie negativ, Referenzbasis R19 (Protokoll, 25.09.2026)
 
-Statuszeile #520 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Anlass: der Befund N5 aus E26
+Statuszeile #521 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Anlass: der Befund N5 aus E26
 (Statusdatei, Nach #518 (g); Register R‑E26, E26‑Q7) und der Anwenderentscheid vom 25.09.2026, „E27: nach Empfehlung
 bauen“ (E27‑Q1 a, E27‑Q2 a); Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](../../../aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
@@ -133,7 +133,7 @@ Nachtrag Schemastand 144 und die Zusammenführung mit E24 aus R18 übernommen, d
 mit 36 Basen und zwölf gesicherten Protokollen, Weg A. **Beim Merge `80a7b9fb`** ist der Abschnitt mit dem Nachtrag
 Prüfprojekt 1048 aus #519 zusammengeführt: der Kopfabsatz nennt die Fassung `b68638da…` und das Prüfprojekt „PV mit
 Preisen“ ohne Nummer (die Wache `PvPreisProjektTests` prüft die ersten 800 Zeichen), der Nachtrag darunter verweist
-auf den Lauf gegen R19 in #520.
+auf den Lauf gegen R19 in #521.
 
 **Fundstellen des Basisnamens** `2026-09-25_R18_PvAusweis` → `2026-09-25_R19_BhkwNetzbezug` (20 Stellen):
 `CLAUDE.md` (Z. 146), `kern.yml` (Z. 264, 268–273, 7 Stellen), `ios.yml` (Z. 224, 228), `Dokumentation/LIESMICH.md`
@@ -183,13 +183,13 @@ nach Empfehlung; gebaut ist jeweils der Entscheid (→ Register R‑E27).
 - **Zahlen:** Abschnitt „Zahlen vorher und nachher“.
 - **Referenzlauf:** A/B gegen R18 und Determinismus im Abschnitt „Die neue Basis“; Kontrolllauf gegen R19 PASS vor dem
   Merge (Testdatenbank `19a7b632…`). Nach dem Merge mit dem Prüfprojekt 1048 (Testdatenbank `b68638da…`):
-  NACHTRAG-520-REF.
+  14/14 PASS, GESAMT 4.610.207 Werte innerhalb der Toleranz, 432/432 CSV byte-gleich (Lauf 22:03–22:04 auf `80a7b9fb`).
 - **Tests** (Worktree `e27` nach E27/4, mit den xUnit-Schaltern, zweimal): 14.803 bestanden / 2 übersprungen / 0 rot
   (EPOS.Kern 7.446/7.447, EPOS.UI 6.395, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27/28); ChartProben 174
   Bilder, 0 Verstöße; SqlDialektPruefer 1.927/0.
 - **Merge** `80a7b9fb` auf `pm26` über `50ecd802`.
-- **Gate:** NACHTRAG-520-GATE.
-- **CI:** NACHTRAG-520-CI — die CI muss gegen R19 laufen (`kern.yml` und `ios.yml` mit dem Basispfad R19).
+- **Gate:** Gate #521 auf `80a7b9fb` (21:56–22:03; Gate-Log noch unter der Nummer 520): Kern-Filter 0 Fehler, ChartProben 0 Fehler, 161 Bild-Hashes gleich mit der Messlatte, Tests Kern 7.495 (1 übersprungen), UI 6.396, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Dokumentationswachen 29/29.
+- **CI:** steht aus (Beobachtung nach dem Push) — die CI muss gegen R19 laufen (`kern.yml` und `ios.yml` mit dem Basispfad R19).
 
 ## Abnahme am Gerät (A‑E27‑1, Windows)
 
@@ -217,11 +217,11 @@ Netzbezug nicht mehr, sondern wird ausschließlich als Einspeisung ausgewiesen.�
 ## Papiere mit der Statuszeile
 
 Mit dem Merge (E27/4): der Basisname und die Referenzbasen-Papiere (Abschnitt „Die neue Basis“). Mit dieser
-Statuszeile: Konzept (Kopf mit Codestand `80a7b9fb`; Schrittabsatz „E27 (#520) ohne Schritt“; § 3.6 Konzeptvermerk;
+Statuszeile: Konzept (Kopf mit Codestand `80a7b9fb`; Schrittabsatz „E27 (#521) ohne Schritt“; § 3.6 Konzeptvermerk;
 § 6.1 Zeile E27; § 6.3 Nr. 34 N5 erledigt und neue Nr. 36; § 7; Anhang), Register (Kopf, Familientafel, neue Familie
-R‑E27, R‑E26 Q7 „N5 gebaut #520“), Analysepapier (Kopf, Nachtrag, § 5 Zeile E27), Protokoll der Entscheidwege (Kopf
+R‑E27, R‑E26 Q7 „N5 gebaut #521“), Analysepapier (Kopf, Nachtrag, § 5 Zeile E27), Protokoll der Entscheidwege (Kopf
 von § 8, § 8.54, § 8.55), Dokumentations-Index (Reporting 141 → 142, Referenzbasen 36 Basen und 37 Dateien),
-Statusdatei (#520, Nach #520; in #519 der CI-Vermerk des Pushs `50ecd802`). Das Archiv der Referenzbasen ist geprüft:
+Statusdatei (#521, Nach #521; in #519 der CI-Vermerk des Pushs `50ecd802`). Das Archiv der Referenzbasen ist geprüft:
 Tabellenzeile und Abschnitt R18 nennen Datum und Grund der Ablösung. Kein Mockup (kein Dialog), kein Wiki-Fachtext.
 
 ## Offen

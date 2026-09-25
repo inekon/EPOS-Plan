@@ -505,7 +505,7 @@ im Arbeitsbaum.
 > ist berührt** — 1048 ist kein Referenzprojekt, und die Vorlage 1040 bleibt Zelle für Zelle.
 > Referenzlauf aller vierzehn Projekte gegen R18 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
 > 432/432 CSV byte-gleich; gegen R19 nach der Zusammenführung mit E27 erneut 14/14 (Nachweis in der
-> Statuszeile #520).
+> Statuszeile #521).
 
 > **Die Vorgängerbasis `2026-09-25_R18_PvAusweis`**, die Basis des PV-Ausweises (Stromproduktion der
 > Photovoltaik ist die Erzeugung der Module, E26), ist mit dieser Einfrierung aus dem Arbeitsbaum

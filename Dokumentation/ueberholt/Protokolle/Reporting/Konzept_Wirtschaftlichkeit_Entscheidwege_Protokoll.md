@@ -1310,8 +1310,8 @@ nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21), in § 8.50 und § 8.5
 `pm26` nach #514 und #515 samt Papieren; der Merge #518, `025a8707`, zieht den Basisnamen an drei Stellen des Konzepts
 nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21 — und trägt „E26 ohne Schritt“ in den Kopf), in § 8.52 und
 § 8.53 **vor #519** (Stand `ba798d8a` = `origin` nach #518 samt Papieren; der Merge #519, `3936003c`, lässt die
-Papiere des Konzepts unberührt), in § 8.54 und § 8.55 **vor #520** (Stand `50ecd802` = `origin` nach #519 samt
-Papieren; der Merge #520, `80a7b9fb`, zieht den Basisnamen an drei Stellen des Konzepts nach — Kopf, Tafel der
+Papiere des Konzepts unberührt), in § 8.54 und § 8.55 **vor #521** (Stand `50ecd802` = `origin` nach #519 samt
+Papieren; der Merge #521, `80a7b9fb`, zieht den Basisnamen an drei Stellen des Konzepts nach — Kopf, Tafel der
 Regressionsanker, § 6.3 Nr. 21 — und trägt „E27 ohne Schritt“ in den Kopf) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
@@ -3092,7 +3092,7 @@ Die Stellen, die mit E25 veraltet sind; „vorher“ ist der Wortlaut vor #519 (
 | § 6.3 Nr. 35 | — | neu, Block „Aus Etappe E25 (#519)“: erledigt, Restpunkte benannt |
 | § 7 | — | Satz zur Welle E25 (#519) |
 
-### 8.54 E27 — BHKW-Überschuss: der Netzbezug ist nie negativ, Referenzbasis R19 (#520)
+### 8.54 E27 — BHKW-Überschuss: der Netzbezug ist nie negativ, Referenzbasis R19 (#521)
 
 Protokoll [`E27_BhkwNetzbezug_Klemme_R19_Protokoll.md`](E27_BhkwNetzbezug_Klemme_R19_Protokoll.md); im Register die
 neue Familie R‑E27 und der fortgeschriebene Umsetzungsstand von R‑E26 (E26‑Q7, N5). Die Welle setzt den Befund N5 aus
@@ -3105,32 +3105,32 @@ Empfehlung entschieden. Sie ist keine Etappe des Plans E0–E12 und kommt ohne S
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **E27** (#520, Merge `80a7b9fb` über `50ecd802`, Zweig `e27` = `a96500eb` von `ba798d8a`) | Klemme am Laufende vor `ReststromMwh`: `SimulationControl.NetzbezugGeklemmt`, nur Werte < 0 → 0, nicht bei der Speicherflotte (E27‑Q1 a, Q5 a); `BhkwReststrombedarfMwh` je Stunde geklemmt, Σ max(0, Bedarf_h − Strom_h) (E27‑Q4 a), Nachschliff `8aa53a99` für bitgleiche 1017/1024/1047; keine neue Ausweisgröße (E27‑Q3 a); Tests `BhkwNetzbezugKlemmeTests` (7 Fälle), Anker 1030 neu (E27‑Q2 a); Neueinfrierung `2026-09-25_R19_BhkwNetzbezug`; kein Schemaschritt, Altergebnisse heilen beim nächsten Lauf (E27‑Q6 a); N7 als Restpunkt (E27‑Q7) | **ja**: 1018 Netzbezug −27,4575 → 0 MWh, Reststromkosten im Rollentarif −8.237,25 → 0 €/a, CO₂ 13,0557 → 25,0008 t/a (E27‑Q8); 1030 Netzbezug 4.357,7808 → 4.358,1728 MWh, Kapitalwert Erwartet −31.141.242,7087 → −31.142.971,0615 €; die übrigen zwölf Projekte unverändert; in der Simulation `aggregate.csv` und `reststrom_viertelstunde.csv` von 1018 und 1030, deshalb die neue Basis |
+| **E27** (#521, Merge `80a7b9fb` über `50ecd802`, Zweig `e27` = `a96500eb` von `ba798d8a`) | Klemme am Laufende vor `ReststromMwh`: `SimulationControl.NetzbezugGeklemmt`, nur Werte < 0 → 0, nicht bei der Speicherflotte (E27‑Q1 a, Q5 a); `BhkwReststrombedarfMwh` je Stunde geklemmt, Σ max(0, Bedarf_h − Strom_h) (E27‑Q4 a), Nachschliff `8aa53a99` für bitgleiche 1017/1024/1047; keine neue Ausweisgröße (E27‑Q3 a); Tests `BhkwNetzbezugKlemmeTests` (7 Fälle), Anker 1030 neu (E27‑Q2 a); Neueinfrierung `2026-09-25_R19_BhkwNetzbezug`; kein Schemaschritt, Altergebnisse heilen beim nächsten Lauf (E27‑Q6 a); N7 als Restpunkt (E27‑Q7) | **ja**: 1018 Netzbezug −27,4575 → 0 MWh, Reststromkosten im Rollentarif −8.237,25 → 0 €/a, CO₂ 13,0557 → 25,0008 t/a (E27‑Q8); 1030 Netzbezug 4.357,7808 → 4.358,1728 MWh, Kapitalwert Erwartet −31.141.242,7087 → −31.142.971,0615 €; die übrigen zwölf Projekte unverändert; in der Simulation `aggregate.csv` und `reststrom_viertelstunde.csv` von 1018 und 1030, deshalb die neue Basis |
 
-*§ 3.6 (vor #520):* Die Strommatrix rechnete den Reststrom als „Restbezug MIT Anlage“, ohne zu sagen, dass er nie
+*§ 3.6 (vor #521):* Die Strommatrix rechnete den Reststrom als „Restbezug MIT Anlage“, ohne zu sagen, dass er nie
 negativ sein darf; die Simulation zog den BHKW-Strom ungeklemmt ab, und ohne nachfolgende Photovoltaik- oder
-Speicherstufe blieb der Überschuss negativ im Reststrom. *§ 6.3 Nr. 34 (vor #520):* N5 stand als benannter Restpunkt
+Speicherstufe blieb der Überschuss negativ im Reststrom. *§ 6.3 Nr. 34 (vor #521):* N5 stand als benannter Restpunkt
 mit der Empfehlung „eigene Welle E27“.
 
-**Erledigt mit E27 (#520):** In § 3.6 steht der Konzeptvermerk „Netzbezug nie negativ“ (E27‑Q1/Q4); § 6.3 Nr. 34
+**Erledigt mit E27 (#521):** In § 3.6 steht der Konzeptvermerk „Netzbezug nie negativ“ (E27‑Q1/Q4); § 6.3 Nr. 34
 vermerkt N5 als erledigt, Nr. 36 ist neu und als erledigt eingetragen. Benannt bleiben Q3 b (eine eigene Ausweisgröße
 „BHKW-Einspeisung“), N7 (Vorab-Überschuss des PV-Modus der Wärmepumpe und Kessel-Vektorstufe hinter dem BHKW;
 Empfehlung Prüfwelle E28 nach Anwenderentscheid) und Q6 (Altergebnisse 1018 und 1031).
 
-### 8.55 Berichtigungen im gültigen Stand (#520)
+### 8.55 Berichtigungen im gültigen Stand (#521)
 
-Die Stellen, die mit E27 veraltet sind; „vorher“ ist der Wortlaut vor #520 (Stand `50ecd802`). Je Stelle eine Zeile;
+Die Stellen, die mit E27 veraltet sind; „vorher“ ist der Wortlaut vor #521 (Stand `50ecd802`). Je Stelle eine Zeile;
 „mit dem Merge“ heißt: die Stelle hat E27/4 selbst nachgezogen.
 
 | Stelle im Konzept | vorher | nachher |
 |---|---|---|
 | Kopf (Z. 3) | Codestand `3936003c`; Referenzbasis `2026-09-25_R18_PvAusweis`; „… E24, E25 und E26 ohne Schritt“ | Codestand `80a7b9fb`; Referenzbasis `2026-09-25_R19_BhkwNetzbezug` (mit dem Merge); „… E25, E26 und E27 ohne Schritt“ (mit dem Merge) |
-| Schrittabsatz | „…, E26 (#518) und E25 (#519) kommen ohne Schritt aus“ | „…, E26 (#518), E25 (#519) und E27 (#520) kommen ohne Schritt aus“ |
+| Schrittabsatz | „…, E26 (#518) und E25 (#519) kommen ohne Schritt aus“ | „…, E26 (#518), E25 (#519) und E27 (#521) kommen ohne Schritt aus“ |
 | § 3.6 | Wortlaut in § 8.54 | neuer Absatz „Netzbezug nie negativ“ (Konzeptvermerk E27‑Q1/Q4) |
-| § 6.1 | — | Zeile E27 (#520) |
+| § 6.1 | — | Zeile E27 (#521) |
 | § 6.2, Tafel, Zeile Referenzbasis | `Referenzlaeufe/2026-09-25_R18_PvAusweis` | `Referenzlaeufe/2026-09-25_R19_BhkwNetzbezug` (mit dem Merge) |
 | § 6.3 Nr. 21 | „heute gilt die Basis `2026-09-25_R18_PvAusweis`“ | „… `2026-09-25_R19_BhkwNetzbezug`“ (mit dem Merge) |
-| § 6.3 Nr. 34 | „… **N5** (… Empfehlung eigene Welle E27) …“ | dazu „N5 erledigt mit E27 (#520), Nr. 36“ |
-| § 6.3 Nr. 36 | — | neu, Block „Aus Etappe E27 (#520)“: erledigt, Restpunkte Q3 b, N7, Q6 benannt |
-| § 7 | — | Satz zur Welle E27 (#520) |
+| § 6.3 Nr. 34 | „… **N5** (… Empfehlung eigene Welle E27) …“ | dazu „N5 erledigt mit E27 (#521), Nr. 36“ |
+| § 6.3 Nr. 36 | — | neu, Block „Aus Etappe E27 (#521)“: erledigt, Restpunkte Q3 b, N7, Q6 benannt |
+| § 7 | — | Satz zur Welle E27 (#521) |
 | Anhang | — | je eine Zeile E27 in der Kürzeltafel und in der Etappentafel |

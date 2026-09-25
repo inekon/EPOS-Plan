@@ -48,7 +48,7 @@ heißen jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines
 `SCHRITT_WIEDERHOLPERIODE`, § 2.11.2, § 2.13 (3)); **126**, die Reparatur der
 Gebäude-Katalogsätze (#485), **128**, der Heizkreis je Gebäude der Anlagenkopplung, **130**, die Anschlusslängen im
 Gebäudekatalog (#493), und **131** bis **143** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
-Folgeberichtigung #496, die dritte Reparatur #505, die Quellenberichtigung der Baustoffe der Cloud-Sitzung G3) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502), E21 (#506), E22 (#503), E23 (#510), E24 (#514), E26 (#518), E25 (#519) und E27 (#520) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+Folgeberichtigung #496, die dritte Reparatur #505, die Quellenberichtigung der Baustoffe der Cloud-Sitzung G3) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502), E21 (#506), E22 (#503), E23 (#510), E24 (#514), E26 (#518), E25 (#519) und E27 (#521) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -2400,7 +2400,7 @@ Ausweises ist Erzeugung − Einspeisung, einschließlich der Speicherladung. Die
 Bezug“ rechnet mit diesem Eigenverbrauch und ist damit nie negativ. Die Zeitreihe `pv_produktion.csv`
 bleibt der direkt genutzte Anteil.
 
-**Netzbezug nie negativ** (E27, #520; → Register R‑E27). Der Netzbezug ist nie negativ: Ein BHKW-Überschuss,
+**Netzbezug nie negativ** (E27, #521; → Register R‑E27). Der Netzbezug ist nie negativ: Ein BHKW-Überschuss,
 den keine spätere Stufe (Verbraucher derselben Viertelstunde, Photovoltaik, Stromspeicher) aufnimmt, steht allein im
 KWK-Split als Einspeisung; der Reststrom wird am Laufende bei 0 geklemmt, der Reststrombedarf der BHKW-Zeile je
 Stunde (E27, Entscheide E27‑Q1/Q4). Die Kaskade zieht den BHKW-Strom weiter ungeklemmt ab, damit spätere Verbraucher
@@ -2845,7 +2845,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E22 Rechenweg-Sortierung nach der Regel „99“** (§ 6.3 Nr. 18; HB1-O1) | Die acht Rechenweg-Leser der Anlagen — die fünf Leser der Wärmepumpen-, Senken- und Pufferlisten und die drei Modul-Lader für Kessel, Solarthermie und BHKW — sortieren nach `Ladeordnung.SqlAnlagenprio` wie Hydraulikbild und Erzeugerkarten: gepflegte Priorität zuerst, eine Anlage ohne Priorität hinten; Wache `AnlagenprioRechenwegTests` — keine Rechenwirkung (Anker unverändert, alle Werte und Zeitreihen gleich), allein in 1042 tauschen die beiden Wärmepumpen ihren Modulindex, deshalb die neue Basis `2026-09-25_R16_Anlagenprio` (vierzehn Projekte); kein Schemaschritt; E22‑Q1 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E22). | #503 |
 | **E23 Betriebskosten der Wärmepumpe ohne kWh** (§ 6.3 Nr. 10; § 3.2; E20‑Q6) | Die Betriebskosten der Wärmepumpe werden nicht je kWh bemessen: „je kWh elektrisch“ und „je kWh thermisch“ antworten an der Wärmepumpe GEWERK und stehen nicht in der Auswahl; eine Bestandszeile rechnet aus dem Lauf weiter und trägt an der Herleitung den Vermerk „Altbestand“ (§ 3.2, Fußnote ²); wählbar bleiben fester Jahresbetrag, Prozentbemessungen und je kW — im Bestand ohne Rechenwirkung (keine Zeile an der Wärmepumpe trägt eine kWh-Art; Anker unverändert, Referenzlauf 14/14 gegen R16 byte-gleich), kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E23). | #510 |
 | **E26 PV-Ausweis und Strommatrix-Bedarf** (§ 3.6; § 6.3 Nr. 32, 34; Befunde N1, N3 aus E25) | Die Stromproduktion der Photovoltaik ist die Erzeugung der Module (Summe der Modulzeilen), der Eigenverbrauch des Ausweises Erzeugung − Einspeisung; der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (Reihe `STROMBEDARF_GESAMT`), auch für den KWK-Split — „PV: vermiedener Bezug“ nicht mehr negativ, im Rollentarif vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv (1040 −4.496 → +1.332 €/a); Kapitalwert an allen Ankern bitgleich; neue Basis `2026-09-25_R18_PvAusweis`, einzige Wirkung `Photovoltaik.Stromproduktion` in vier `aggregate.csv`; kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26). | #518 |
-| **E27 Netzbezug nie negativ** (§ 3.6; § 6.3 Nr. 34, 36; Befund N5 aus E26) | Ein Stromüberschuss des BHKW, den keine spätere Stufe aufnimmt, steht allein im KWK-Split als Einspeisung; der Reststrom wird am Laufende bei 0 geklemmt (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde — 1018 Netzbezug −27,46 → 0 MWh, im Rollentarif keine Gutschrift der Reststromkosten mehr (−8.237,25 → 0 €/a), CO₂ +11,95 t/a; 1030 Kapitalwert Erwartet −31.141.242,71 → −31.142.971,06 € (Anker neu, E27‑Q2 a); neue Basis `2026-09-25_R19_BhkwNetzbezug`, Wirkung allein in 1018 und 1030 (4/432 CSV); kein Schemaschritt; acht Fragen entschieden 25.09.2026 (Q1, Q2 Anwender, Q3…Q8 nach Empfehlung, → Register R‑E27). | #520 |
+| **E27 Netzbezug nie negativ** (§ 3.6; § 6.3 Nr. 34, 36; Befund N5 aus E26) | Ein Stromüberschuss des BHKW, den keine spätere Stufe aufnimmt, steht allein im KWK-Split als Einspeisung; der Reststrom wird am Laufende bei 0 geklemmt (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde — 1018 Netzbezug −27,46 → 0 MWh, im Rollentarif keine Gutschrift der Reststromkosten mehr (−8.237,25 → 0 €/a), CO₂ +11,95 t/a; 1030 Kapitalwert Erwartet −31.141.242,71 → −31.142.971,06 € (Anker neu, E27‑Q2 a); neue Basis `2026-09-25_R19_BhkwNetzbezug`, Wirkung allein in 1018 und 1030 (4/432 CSV); kein Schemaschritt; acht Fragen entschieden 25.09.2026 (Q1, Q2 Anwender, Q3…Q8 nach Empfehlung, → Register R‑E27). | #521 |
 
 ## 6.2 Regressionsanker
 
@@ -3037,7 +3037,7 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     (→ Register R‑E26), siehe Protokoll; benannt bleiben **Q6** (Strombilanz-Diagramm und Excel-Spalte
     „Strombedarf“ zeigen weiter den Projektbedarf), **N5** (1018 negativer Netzbezug, der Rest nach der Kaskade
     ohne Klemme — kapitalwertwirksam, Empfehlung eigene Welle E27) und **N6** (die Übersicht „Strombedarf mit
-    Eigenverbrauch“ ohne Kältestrom); **N5 erledigt mit E27 (#520)**, Nr. 36
+    Eigenverbrauch“ ohne Kältestrom); **N5 erledigt mit E27 (#521)**, Nr. 36
 
 **Aus Etappe E25 (#519) — erledigt**
 
@@ -3049,9 +3049,9 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     (DV-Entgelt, PPA und Rollentarif nur im Test) und die Wiederholung des Skripts nach jeder Neufassung der
     Testdatenbank ohne 1048
 
-**Aus Etappe E27 (#520) — erledigt, Restpunkte benannt**
+**Aus Etappe E27 (#521) — erledigt, Restpunkte benannt**
 
-36. ~~**Negativer Netzbezug bei BHKW-Überschuss** (Befund N5 aus E26, Nr. 34)~~ — erledigt mit E27 (#520): der
+36. ~~**Negativer Netzbezug bei BHKW-Überschuss** (Befund N5 aus E26, Nr. 34)~~ — erledigt mit E27 (#521): der
     Reststrom wird am Laufende bei 0 geklemmt (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte),
     der Reststrombedarf der BHKW-Zeile je Stunde; ein BHKW-Überschuss steht allein im KWK-Split als Einspeisung
     (§ 3.6) — keine Gutschrift der Reststromkosten im Rollentarif mehr, Kapitalwert-Anker 1030 neu gesetzt, Basis
@@ -3180,7 +3180,7 @@ vor: für Später“, E21‑Q9 a) Nr. 35: Die Testdatenbank führt mit dem Prüf
 PV-Anlage mit vollständigem Preissatz — ohne Referenzrolle, ohne Schemaschritt und ohne neue Basis (R18 bleibt,
 Referenzlauf 14/14 byte-gleich); `PvPreisProjektTests` hält Einspeiseerlös, Szenarien C und D, vermiedene Kosten,
 Formelmappe und Kapitalwert-Anker; zehn Fragen entschieden 25.09.2026, alle a, nach Empfehlung (→ Register R‑E25).
-Die Welle **E27 (#520)** erledigt nach dem Anwenderentscheid vom 25.09.2026 („E27: nach Empfehlung bauen“) den
+Die Welle **E27 (#521)** erledigt nach dem Anwenderentscheid vom 25.09.2026 („E27: nach Empfehlung bauen“) den
 Befund N5 aus Nr. 34 als Nr. 36: Der Netzbezug ist nie negativ — ein BHKW-Überschuss steht allein im KWK-Split als
 Einspeisung, der Reststrom wird am Laufende bei 0 geklemmt (§ 3.6) —, ohne Schemaschritt; `aggregate.csv` und
 `reststrom_viertelstunde.csv` von 1018 und 1030 wechseln, deshalb die neue Basis R19, und der Kapitalwert-Anker von
@@ -3255,7 +3255,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | § 6.3 Nr. 18 · HB1-O1 · R‑Rest Nr. 18 · E18‑Q3 · E22‑Q1 | — | — | **#503** | E22: die acht Rechenweg-Leser nach `Ladeordnung.SqlAnlagenprio` (Regel „99“), die Vermerke HB1-O1 entfernt, Wache `AnlagenprioRechenwegTests`; neue Basis `2026-09-25_R16_Anlagenprio`; kein Schemaschritt |
 | § 6.3 Nr. 10 · § 3.2 (Tafel der Runde 1, Fußnote ²) · R‑Rest Nr. 10 · E20‑Q6 · E23‑Q1…Q7 | — | — | **#510** | E23: „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster der Wärmepumpe gesperrt (GEWERK), eine Bestandszeile rechnet weiter mit dem Herleitungsvermerk „Altbestand“ (ein neuer Schlüssel); E23‑Q6 und Q7 entschieden a; kein Schemaschritt |
 | § 3.6 · § 2.6 (Block B, Zeile B2) · § 6.3 Nr. 32 und Nr. 34 · E26‑Q1…Q7 | — | — | **#518** | E26: `Photovoltaik.Stromproduktion` = Erzeugung der Module, Eigenverbrauch des Ausweises = Erzeugung − Einspeisung, Reihe `STROMBEDARF_GESAMT` als Bedarf der Strommatrix und des KWK-Splits; neue Basis `2026-09-25_R18_PvAusweis`; kein Schemaschritt |
-| § 3.6 · § 6.3 Nr. 34 (N5) und Nr. 36 · E26‑Q7 · E27‑Q1…Q8 | — | — | **#520** | E27: Klemme des Reststroms am Laufende (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), `BHKW.Reststrombedarf` je Stunde geklemmt, ein BHKW-Überschuss allein als Einspeisung im KWK-Split; Kapitalwert-Anker 1030 neu; neue Basis `2026-09-25_R19_BhkwNetzbezug`; kein Schemaschritt |
+| § 3.6 · § 6.3 Nr. 34 (N5) und Nr. 36 · E26‑Q7 · E27‑Q1…Q8 | — | — | **#521** | E27: Klemme des Reststroms am Laufende (`SimulationControl.NetzbezugGeklemmt`, nicht bei der Speicherflotte), `BHKW.Reststrombedarf` je Stunde geklemmt, ein BHKW-Überschuss allein als Einspeisung im KWK-Split; Kapitalwert-Anker 1030 neu; neue Basis `2026-09-25_R19_BhkwNetzbezug`; kein Schemaschritt |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 = **#463** (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474; Günstig und Ungünstig in Formeln, Punkt 11 #477; Punkt 6 mit dem Risiko und die Risikozeilen der Mappe #478; Punkte 2b und 3b mit der Wirkungsliste #479), U15 erledigt #461/#462, U10 entfallen #462 |
 
@@ -3293,7 +3293,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E22** — Rechenweg-Sortierung nach der Regel „99“ (§ 6.3 Nr. 18) | die fünf Rechenweg-Leser und die drei Modul-Lader nach `Ladeordnung.SqlAnlagenprio` wie Hydraulikbild und Erzeugerkarten, gepflegte Priorität zuerst, ungepflegt hinten; ohne Rechenwirkung, allein der Modulindex der Wärmepumpen in 1042, neue Basis R16 (vierzehn Projekte); kein Schemaschritt; E22‑Q1 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E22) | **#503** (Merge `76f8661d`) |
 | **E23** — Betriebskosten der Wärmepumpe ohne kWh (§ 6.3 Nr. 10, E20‑Q6) | „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster der Wärmepumpe gesperrt, Bestandszeilen rechnen weiter mit dem Vermerk „Altbestand“; wählbar bleiben fester Jahresbetrag, Prozentbemessungen und je kW; im Bestand ohne Rechenwirkung, kein Schemaschritt; E23‑Q1…Q7 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E23) | **#510** (Merge `f7823b8e`) |
 | **E26** — PV-Ausweis und Strommatrix-Bedarf (Befunde N1, N3 aus E25; § 6.3 Nr. 34) | die Stromproduktion der Photovoltaik als Erzeugung der Module, der Eigenverbrauch des Ausweises als Erzeugung − Einspeisung, der Bedarf der Strommatrix aller Verbraucher (`STROMBEDARF_GESAMT`) auch für den KWK-Split; Kapitalwert an den Ankern gleich, neue Basis R18 (vierzehn Projekte), kein Schemaschritt; E26‑Q1…Q7 entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26); Restpunkte Q6, N5, N6 | **#518** (Merge `025a8707`) |
-| **E27** — Netzbezug nie negativ (Befund N5 aus E26; § 6.3 Nr. 36) | der Reststrom am Laufende bei 0 geklemmt (nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde, ein BHKW-Überschuss allein als Einspeisung im KWK-Split; keine Gutschrift der Reststromkosten im Rollentarif mehr; Kapitalwert-Anker 1030 neu, neue Basis R19 (vierzehn Projekte), kein Schemaschritt; E27‑Q1 und Q2 vom Anwender, Q3…Q8 entschieden 25.09.2026, nach Empfehlung (→ Register R‑E27); Restpunkte Q3 b, N7, Q6 | **#520** (Merge `80a7b9fb`) |
+| **E27** — Netzbezug nie negativ (Befund N5 aus E26; § 6.3 Nr. 36) | der Reststrom am Laufende bei 0 geklemmt (nicht bei der Speicherflotte), der Reststrombedarf der BHKW-Zeile je Stunde, ein BHKW-Überschuss allein als Einspeisung im KWK-Split; keine Gutschrift der Reststromkosten im Rollentarif mehr; Kapitalwert-Anker 1030 neu, neue Basis R19 (vierzehn Projekte), kein Schemaschritt; E27‑Q1 und Q2 vom Anwender, Q3…Q8 entschieden 25.09.2026, nach Empfehlung (→ Register R‑E27); Restpunkte Q3 b, N7, Q6 | **#521** (Merge `80a7b9fb`) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
