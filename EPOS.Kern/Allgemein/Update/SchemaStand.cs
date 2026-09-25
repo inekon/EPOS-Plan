@@ -624,18 +624,25 @@ namespace WindowsFormsApplication1
         /// wortgleich steht (<see cref="BaustoffQuellenBerichtigung"/>). <b>Ergebnisneutral:</b>
         /// Kein Rechenweg liest die Quelle. Die Nummer steht allein bei
         /// <see cref="BaustoffQuellenBerichtigung.SCHRITT"/>.
-        /// Mit der NACHTZEIT JE GEBÄUDE (Entscheid E43, Konzept-Nachtrag N1.48) steht das Ziel auf
+        /// Mit der NACHTZEIT JE GEBÄUDE (Entscheid E43, Konzept-Nachtrag N1.48) stand das Ziel auf
         /// <see cref="NachtzeitSchema.SCHRITT"/>: die nullbaren Spalten <c>Nachtabsenkung_Beginn</c>
         /// und <c>Nachtabsenkung_Ende</c> (Stunde des Tages 0 … 23) an <c>Tab_Gebaeude</c> und
         /// <c>Tab_Gebaeude_STAMM</c> und der sechste Neubau der Sicht <c>Abfrage_Projektgebaeude</c>
         /// (<see cref="GebaeudeSchema.SICHT_NACHTZEIT"/>). <b>Ergebnisneutral:</b> NULL heißt die
         /// Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor. Die Nummer steht allein bei
         /// <see cref="NachtzeitSchema.SCHRITT"/>.
+        /// Mit dem NAMENSABGLEICH DER BAUSTOFFE (Stufe G4b, Ergänzung; Mehrzonenkonzept 3.5 und 6.3,
+        /// E27 zu M9) steht das Ziel auf <see cref="BaustoffabgleichSchema.SCHRITT"/>: die
+        /// Synonymtabelle der Auslieferung <c>Tab_Baustoffsynonym_STAMM</c> samt Saat (<c>ReadOnly = 1</c>)
+        /// und die gemerkten Zuordnungen je Projekt <c>Tab_Baustoffzuordnung</c>, beide STRICT mit
+        /// Verweis auf <c>Tab_Baustoff_STAMM</c> (<see cref="BaustoffabgleichSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen. Die Nummer steht allein bei
+        /// <see cref="BaustoffabgleichSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = NachtzeitSchema.SCHRITT;
+        public const int Zielversion = BaustoffabgleichSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

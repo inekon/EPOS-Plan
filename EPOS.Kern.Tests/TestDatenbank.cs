@@ -724,6 +724,12 @@ namespace EPOS.Kern.Tests
                 // schneidet. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, kein DML.
                 NachtzeitSchema.Alle(null);
 
+                // Schritt BaustoffabgleichSchema.SCHRITT (G4b, Ergaenzung; Mehrzonenkonzept 3.5/6.3, E27
+                // zu M9): die Synonymtabelle der Auslieferung samt Saat und die gemerkten Zuordnungen je
+                // Projekt. Aus DERSELBEN Quelle wie Migration und Werkzeug; NACH dem Baustoffkatalog;
+                // wiederholbar.
+                BaustoffabgleichSchema.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
