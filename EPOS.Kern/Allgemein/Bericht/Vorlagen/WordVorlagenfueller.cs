@@ -405,9 +405,11 @@ namespace WindowsFormsApplication1
                 if (!Haengt(s.Text, s.Teil.Wurzel)) return;
                 Ortsangabe ort = OrtVon(s.Absatz, s.Teil);
                 bool allein = s.Marken.Count == 1 && IstAllein(s.Absatz, s.Marken[0]);
+                List<SdtElement> huellen = s.Text.Ancestors<SdtElement>().ToList();
 
                 string text = s.Text.Text;
                 var stuecke = new List<Stueck>();
+                bool ersetzt = false;
                 int pos = 0;
                 foreach (Platzhalter m in s.Marken)
                 {
@@ -417,12 +419,15 @@ namespace WindowsFormsApplication1
                     {
                         case Entscheidart.Text:
                             stuecke.Add(new Stueck(e.Text, false));
+                            ersetzt = true;
                             break;
                         case Entscheidart.Liste:
                             ErsetzeAbsatz(s.Absatz, Listenabsaetze(s.Absatz, (s.Text.Parent as Run)?.RunProperties, e.Zeilen));
+                            Entbinde(huellen);
                             return;
                         case Entscheidart.Kapitel:
                             FuelleKapitel(s.Absatz, s.Teil, e.Kapitel);
+                            Entbinde(huellen);
                             return;
                         default:
                             stuecke.Add(new Stueck(m.Roh, true));
@@ -432,6 +437,26 @@ namespace WindowsFormsApplication1
                 }
                 if (pos < text.Length) stuecke.Add(new Stueck(text.Substring(pos), false));
                 SchreibeStuecke(s.Text, stuecke);
+                if (ersetzt) Entbinde(huellen);
+            }
+
+            /// <summary>
+            /// Ein Inhaltssteuerelement des Anwenders (Tag kein Schlüssel), in dem ein getippter
+            /// Platzhalter gefüllt wurde, bleibt — aber ohne <c>w:showingPlcHdr</c> (Word zeigte den Wert
+            /// sonst grau als leeren Platzhalter), <c>w:temporary</c> und <c>w:dataBinding</c> (Word
+            /// überschriebe den Wert beim Öffnen mit dem gebundenen Dokumenteigenschaftswert; Konzept 6.6).
+            /// </summary>
+            private static void Entbinde(IEnumerable<SdtElement> huellen)
+            {
+                foreach (SdtElement sdt in huellen)
+                {
+                    SdtProperties eigenschaften = sdt.SdtProperties;
+                    if (eigenschaften == null) continue;
+                    eigenschaften.RemoveAllChildren<ShowingPlaceholder>();
+                    eigenschaften.RemoveAllChildren<TemporarySdt>();
+                    eigenschaften.RemoveAllChildren<DataBinding>();
+                    eigenschaften.RemoveAllChildren<DocumentFormat.OpenXml.Office2013.Word.DataBinding>();
+                }
             }
 
             // ------------------------------------------------------------- Entscheiden und Auflösen

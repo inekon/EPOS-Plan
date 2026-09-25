@@ -386,6 +386,36 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Ein Steuerelement des Anwenders (Tag kein Schlüssel) mit getipptem Platzhalter bleibt
+        /// stehen, verliert nach dem Füllen aber <c>w:showingPlcHdr</c> und <c>w:dataBinding</c> —
+        /// sonst zeigte Word den Wert grau oder überschriebe ihn mit der gebundenen Eigenschaft. Ein
+        /// Steuerelement ohne Platzhalter bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Gebundenes_Steuerelement_des_Anwenders_verliert_Bindung_und_Platzhalteranzeige()
+        {
+            byte[] v = Vorlage(main =>
+                "<w:sdt><w:sdtPr><w:alias w:val=\"Titel\"/><w:tag w:val=\"Titel\"/><w:id w:val=\"31\"/><w:showingPlcHdr/>" +
+                "<w:dataBinding w:prefixMappings=\"xmlns:ns0='http://purl.org/dc/elements/1.1/'\" w:xpath=\"/ns0:coreProperties[1]/ns0:title[1]\" " +
+                "w:storeItemID=\"{6C3C8BC8-F283-45AE-878A-BAB7291924A1}\"/><w:text/></w:sdtPr>" +
+                "<w:sdtContent><w:p><w:r><w:t>{{bericht.titel}}</w:t></w:r></w:p></w:sdtContent></w:sdt>" +
+                "<w:sdt><w:sdtPr><w:tag w:val=\"Frei\"/><w:id w:val=\"32\"/><w:showingPlcHdr/></w:sdtPr>" +
+                "<w:sdtContent><w:p><w:r><w:t>Unberührt</w:t></w:r></w:p></w:sdtContent></w:sdt>" + ABSCHNITT);
+            string ziel = Ziel("gebunden.docx");
+            Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(), ziel);
+
+            Assert.Empty(Validierungsfehler(ziel));
+            Assert.Equal(1, e.Ersetzt);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+            List<SdtBlock> steuer = doc.MainDocumentPart.Document.Body.Elements<SdtBlock>().ToList();
+            Assert.Equal(2, steuer.Count);
+            Assert.Equal("Stammprojekt", steuer[0].Descendants<Paragraph>().Single().InnerText);
+            Assert.Null(steuer[0].SdtProperties.GetFirstChild<ShowingPlaceholder>());
+            Assert.Null(steuer[0].SdtProperties.GetFirstChild<DataBinding>());
+            Assert.NotNull(steuer[1].SdtProperties.GetFirstChild<ShowingPlaceholder>());
+        }
+
+        /// <summary>
         /// Vorlage aus dem deutschen Word (Messprobe 5): Stil-IDs <c>Standard</c>, <c>Titel</c>,
         /// <c>Untertitel</c>, <c>berschrift1</c> bis <c>berschrift3</c>, die Beschriftung als
         /// eingebautes <c>caption</c>. Die Kapitel schreiben über die Rollenauflösung genau diese
@@ -542,7 +572,8 @@ namespace EPOS.Kern.Tests
                 einst.Settings = new Settings("<w:settings " + NS + "><w:attachedTemplate r:id=\"" + vorlage + "\"/></w:settings>");
                 return "<w:p><w:r><w:t>{{bericht.titel}}</w:t></w:r></w:p>" +
                        "<w:p>" + Bild(null, 3, bild) + "</w:p>" +
-                       "<w:p><w:hyperlink r:id=\"" + link + "\"><w:r><w:t>Netz</w:t></w:r></w:hyperlink></w:p>" + ABSCHNITT;
+                       "<w:p><w:hyperlink r:id=\"" + link + "\"><w:r><w:t xml:space=\"preserve\">Netz {{proj</w:t></w:r>" +
+                       "<w:r><w:rPr><w:b/></w:rPr><w:t>ekt.name}}</w:t></w:r></w:hyperlink></w:p>" + ABSCHNITT;
             });
             string ziel = Ziel("verknuepft.docx");
             Fuellergebnis e = Fuelle(v, Gruppe(), Konfig(), ziel);
@@ -556,6 +587,10 @@ namespace EPOS.Kern.Tests
             Assert.Null(doc.MainDocumentPart.DocumentSettingsPart.Settings.GetFirstChild<AttachedTemplate>());
             Assert.Single(doc.MainDocumentPart.HyperlinkRelationships);
             Assert.Equal("Stammprojekt", doc.MainDocumentPart.Document.Body.Elements<Paragraph>().First().InnerText);
+            // Im Hyperlink wird auch ein zerlegter Platzhalter gefüllt; der Hyperlink bleibt.
+            Hyperlink verweis = Assert.Single(doc.MainDocumentPart.Document.Body.Descendants<Hyperlink>());
+            Assert.Equal("Netz Stammprojekt", verweis.InnerText);
+            Assert.Equal(2, e.Ersetzt);
         }
 
         /// <summary>
