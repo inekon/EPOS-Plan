@@ -84987,6 +84987,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen ähnelt.
+        /// </summary>
+        public static string ZPGM_BTN_WAEHLEN {
+            get {
+                return ResourceManager.GetString("ZPGM_BTN_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Messreihe (*.csv;*.txt)|*.csv;*.txt|Alle Dateien (*.*)|*.* ähnelt.
         /// </summary>
         public static string ZPGM_DATEIFILTER {

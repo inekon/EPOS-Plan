@@ -32610,6 +32610,9 @@ Do you want to allow this?</value>
   <data name="ZPGM_BTN_EINSPIELEN" xml:space="preserve">
     <value>Import</value>
   </data>
+  <data name="ZPGM_BTN_WAEHLEN" xml:space="preserve">
+    <value>Select</value>
+  </data>
   <data name="ZPGM_BTN_LOESCHEN" xml:space="preserve">
     <value>Delete</value>
   </data>

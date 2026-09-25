@@ -32617,6 +32617,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPGM_BTN_EINSPIELEN" xml:space="preserve">
     <value>Einspielen</value>
   </data>
+  <data name="ZPGM_BTN_WAEHLEN" xml:space="preserve">
+    <value>Wählen</value>
+  </data>
   <data name="ZPGM_BTN_LOESCHEN" xml:space="preserve">
     <value>Löschen</value>
   </data>

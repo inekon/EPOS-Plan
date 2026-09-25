@@ -400,6 +400,7 @@ namespace WindowsFormsApplication1
             t.ZeitNormalzeit = Text_("ZPGM_ZEIT_NORMALZEIT", t.ZeitNormalzeit);
             t.KnopfDatei = Text_("ZPGM_BTN_DATEI", t.KnopfDatei);
             t.KnopfEinspielen = Text_("ZPGM_BTN_EINSPIELEN", t.KnopfEinspielen);
+            t.KnopfWaehlen = Text_("ZPGM_BTN_WAEHLEN", t.KnopfWaehlen);
             t.KnopfLoeschen = Text_("ZPGM_BTN_LOESCHEN", t.KnopfLoeschen);
             t.KnopfBeenden = Text_("ZPGM_BTN_BEENDEN", t.KnopfBeenden);
             t.Dateifilter = Text_("ZPGM_DATEIFILTER", t.Dateifilter);

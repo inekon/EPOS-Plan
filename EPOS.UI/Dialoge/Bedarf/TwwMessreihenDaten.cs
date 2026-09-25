@@ -302,6 +302,9 @@ public sealed class TwwMessreihenTexte
     /// <summary><c>ZPGM_BTN_EINSPIELEN</c></summary>
     public string KnopfEinspielen { get; set; } = "Einspielen";
 
+    /// <summary><c>ZPGM_BTN_WAEHLEN</c></summary>
+    public string KnopfWaehlen { get; set; } = "Wählen";
+
     /// <summary><c>ZPGM_BTN_LOESCHEN</c></summary>
     public string KnopfLoeschen { get; set; } = "Löschen";
 
