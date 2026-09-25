@@ -32259,4 +32259,7 @@ Do you want to allow this?</value>
   <data name="GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
     <value>Design chilled water return</value>
   </data>
+  <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
+    <value>Zone “{0}”: The cooling emitter type “{1}” is not a valid value.</value>
+  </data>
 </root>

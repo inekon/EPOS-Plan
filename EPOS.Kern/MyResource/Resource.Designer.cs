@@ -83601,6 +83601,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_KUEHLUEBERGABEART {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_KUEHLUEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0}: Die Zone braucht einen Namen. ähnelt.
         /// </summary>
         public static string ZONE_MSG_NAME_LEER {

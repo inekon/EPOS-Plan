@@ -32266,4 +32266,7 @@ Möchten Sie das zulassen?</value>
   <data name="GEBB_REIHE_KUEHL_AUSLEGUNG_RUECKLAUF" xml:space="preserve">
     <value>Auslegung Kühlrücklauf</value>
   </data>
+  <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
+    <value>Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert.</value>
+  </data>
 </root>
