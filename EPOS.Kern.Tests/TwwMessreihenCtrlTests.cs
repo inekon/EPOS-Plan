@@ -330,6 +330,98 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Nulllaeufe und Aufwand
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die Zahl der Nullläufe geht an den Vergleich</b> (Befund 7): Sie steht nicht als
+        /// Kopfwert in der Tabelle, wird beim Rücklesen aber gezählt und der Reihe übergeben — sonst
+        /// stünde eine zurückgelesene Reihe mit <c>Luecken = 0</c> da und Vergleich und Kalibrierung
+        /// hielten eine halb leere Messung für vollständig. Ein benannter Hinweis sagt dazu, dass die
+        /// Ablage gefüllte Lücken und Zeiten ohne Zapfung nicht unterscheidet.
+        /// </summary>
+        [Fact]
+        public void Das_Ruecklesen_zaehlt_die_Nulllaeufe_und_nennt_sie()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            int projekt = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(projekt > 0);
+
+            // Acht Stunden, drei davon ohne Wert (die CSV laesst sie leer -> der Leser fuellt 0).
+            var werte = new[] { 1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 5.0 };
+            Assert.True(Einspielen(projekt, Csv(new DateTime(2025, 4, 1), 60, werte, "kWh")).Ok);
+
+            var hinweise = new List<ZapfSatz>();
+            Messreihe r = TwwMessreihenCtrl.Lesen(projekt, NAME, out ZapfSatz fehler, hinweise);
+            Assert.Null(fehler);
+            Assert.Equal(werte, r.Werte);
+            Assert.Equal(3, r.Luecken);
+            Assert.Equal(3.0 / 8.0, r.Lueckenanteil, 12);
+            ZapfSatz hinweis = Assert.Single(hinweise, h => h.Kennung == "MESSREIHENIMPORT_NULLLAEUFE");
+            Assert.NotEmpty(hinweis.Klartext);
+
+            // Ohne Nulllauf steht kein Hinweis - und die Luecken sind 0.
+            Assert.True(TwwMessreihenCtrl.Loeschen(projekt, NAME) > 0);
+            Assert.True(Einspielen(projekt, Csv(new DateTime(2025, 4, 1), 60, new[] { 1.0, 2.0, 3.0 }, "kWh")).Ok);
+            var ohne = new List<ZapfSatz>();
+            Messreihe voll = TwwMessreihenCtrl.Lesen(projekt, NAME, out _, ohne);
+            Assert.Equal(0, voll.Luecken);
+            Assert.DoesNotContain(ohne, h => h.Kennung == "MESSREIHENIMPORT_NULLLAEUFE");
+
+            // Und ein Schalttag der zurueckgelesenen Reihe wird ebenso benannt wie beim Einlesen.
+            Assert.True(TwwMessreihenCtrl.Loeschen(projekt, NAME) > 0);
+            var tage = Enumerable.Repeat(1.0, 3 * 24).ToArray();          // 28.02. bis 01.03.2024
+            Assert.True(Einspielen(projekt, Csv(new DateTime(2024, 2, 28), 60, tage, "kWh")).Ok);
+            var schalt = new List<ZapfSatz>();
+            Messreihe ueberSchalttag = TwwMessreihenCtrl.Lesen(projekt, NAME, out _, schalt);
+            Assert.Equal(1, ueberSchalttag.Schalttage);
+            Assert.Single(schalt, h => h.Kennung == "MESSREIHE_SCHALTTAG");
+        }
+
+        /// <summary>
+        /// <b>Der Aufwand</b> (Befund 8): <b>100 000 Zeilen einspielen und zurücklesen dauert unter
+        /// fünf Sekunden.</b> Das Einspielen läuft über EIN vorbereitetes Kommando, dessen Parameter
+        /// je Zeile neu belegt werden, das Rücklesen über einen Reader ohne <c>DataTable</c> — beides
+        /// zusammen macht den Unterschied zwischen einer Sekunde und einer Minute.
+        ///
+        /// <para><b>Die Schranke ist grob mit Absicht:</b> Sie soll eine Größenordnung fangen (ein
+        /// Kommando je Zeile, eine <c>DataTable</c> mit sechs Spalten), nicht eine Zehntelsekunde
+        /// messen — ein Bauserver ist langsamer als eine Arbeitsstation, und eine scharfe Schranke
+        /// wäre dort rot, ohne dass sich etwas verschlechtert hätte.</para>
+        /// </summary>
+        [Fact]
+        public void Hunderttausend_Zeilen_brauchen_unter_fuenf_Sekunden()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            int projekt = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(projekt > 0);
+
+            // 100 000 Minutenwerte, rund und erfunden: ein Sägezahn 0,00 bis 0,99 l/min gibt es
+            // nicht - hier kWh je Minute, damit keine Spreizung nötig ist.
+            const int zeilen = 100000;
+            var werte = new double[zeilen];
+            for (int i = 0; i < zeilen; i++) werte[i] = (i % 100) / 100.0;
+
+            var uhr = System.Diagnostics.Stopwatch.StartNew();
+            TwwMessreihenimportBericht b = Einspielen(projekt, Csv(new DateTime(2025, 1, 1), 1, werte, "kWh"));
+            Assert.True(b.Ok, b.Abbruch?.Klartext);
+            Assert.Equal(zeilen, b.Zeilen);
+
+            Messreihe r = TwwMessreihenCtrl.Lesen(projekt, NAME, out ZapfSatz fehler);
+            uhr.Stop();
+            Assert.Null(fehler);
+            Assert.Equal(zeilen, r.Schritte);
+            Assert.Equal(werte[12345], r.Werte[12345], 12);
+            Assert.Equal(werte.Sum(), r.Menge, 6);
+            Assert.True(uhr.Elapsed.TotalSeconds < 5.0,
+                        "Einspielen und Ruecklesen von " + zeilen + " Zeilen dauerten " +
+                        uhr.Elapsed.TotalSeconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) +
+                        " s (Schranke 5 s).");
+        }
+
+        // =============================================================================
         //  Helfer
         // =============================================================================
 

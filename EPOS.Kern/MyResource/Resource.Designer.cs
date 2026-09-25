@@ -93618,6 +93618,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe „{0}“ trägt {1} von {2} Zeitschritten ohne Wert ({3:0.0%}); die Ablage unterscheidet nicht, ob es gefüllte Lücken oder Zeiten ohne Zapfung sind. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSREIHENIMPORT_NULLLAEUFE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSREIHENIMPORT_NULLLAEUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne gelesene Messreihe ist nichts einzuspielen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSREIHENIMPORT_OHNE_REIHE {

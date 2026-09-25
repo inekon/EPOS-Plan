@@ -881,6 +881,14 @@ namespace WindowsFormsApplication1
         /// jedes Zugriffs (die Reihen EINES Projekts) und die Suche, die SQLite beim Löschen eines
         /// Projekts nach seinen Kindern anstellt. Nach <see cref="AnweisungenT4Messreihen"/>
         /// abzuarbeiten; wiederholbar über <c>IF NOT EXISTS</c>.
+        ///
+        /// <para><b>Vorgemerkt:</b> Dieser Index ist neben dem UNIQUE-Index über
+        /// (<c>ID_Projekt</c>, <c>Bezeichnung</c>, <c>Zeilenindex</c>) <b>redundant</b> — SQLite kann
+        /// dessen führende Spalte allein benutzen, und jede Zeile kostet damit einen Eintrag mehr, den
+        /// niemand liest. Er bleibt trotzdem in der DDL: Der Schemaschritt T4 ist gebaut und in der
+        /// Testdatenbank angekommen, und eine Änderung seiner Anweisungen hieße, eine schon
+        /// ausgeführte Nummer umzuschreiben (ADR-001). Er gehört in einen späteren Schritt, der ihn
+        /// mit <c>DROP INDEX</c> entfernt, nicht in diesen.</para>
         /// </summary>
         public static IEnumerable<KeyValuePair<string, string>> IndizesT4Messreihen
         {

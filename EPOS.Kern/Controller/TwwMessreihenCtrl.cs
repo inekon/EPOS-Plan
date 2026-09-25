@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
 {
@@ -135,8 +136,25 @@ namespace WindowsFormsApplication1
         /// <b>Eine Messreihe eines Projekts zurücklesen</b> — der Weg des Vergleichs. Fehlt die
         /// Tabelle oder die Reihe, ist das eine benannte Ablehnung, keine leere Reihe: Ein Vergleich
         /// gegen nichts wäre ein still falsches Ergebnis.
+        ///
+        /// <para><b>Über einen Reader, nicht über eine <c>DataTable</c></b>: Eine Jahresreihe im
+        /// Minutenraster hat über 500 000 Zeilen; sie erst in eine <c>DataTable</c> mit sechs Spalten
+        /// zu laden und dann in ein <c>double[]</c> zu kopieren kostet ein Vielfaches des Speichers,
+        /// den die Reihe braucht. Der Reader schreibt jeden Wert direkt an seinen Platz. Die
+        /// Kopfangaben stehen an jeder Zeile (sie beschreiben EINEN Vorgang) und werden von der
+        /// ersten genommen.</para>
+        ///
+        /// <para><b>Die Zahl der Nullläufe</b> geht an die Reihe: Sie steht nicht als Kopfwert in der
+        /// Tabelle (jede Zeile trägt einen Wert), wird beim Lesen aber mitgezählt und der
+        /// <see cref="Messreihe"/> übergeben — so kennen Vergleich und Kalibrierung den
+        /// Lückenanteil auch dann, wenn nicht der Bericht des Einspielens vorliegt, sondern eine
+        /// eingespielte Reihe aus der Datenbank. Ein Nulllauf ist eine gefüllte Lücke ODER eine echte
+        /// Stunde ohne Zapfung; welche von beiden, sagt die Tabelle nicht, und
+        /// <paramref name="hinweise"/> nennt genau das.</para>
         /// </summary>
-        internal static Messreihe Lesen(int idProjekt, string bezeichnung, out ZapfSatz fehler)
+        /// <param name="hinweise">Nimmt den Vermerk über die Nullläufe auf; darf <c>null</c> sein.</param>
+        internal static Messreihe Lesen(int idProjekt, string bezeichnung, out ZapfSatz fehler,
+                                        ICollection<ZapfSatz> hinweise = null)
         {
             fehler = null;
             if (!TabelleVorhanden())
@@ -145,56 +163,103 @@ namespace WindowsFormsApplication1
                 return null;
             }
             string name = (bezeichnung ?? "").Trim();
-            DataTable t = DataRepository.GetDataTable(
-                "SELECT \"Groesse\", \"Aufloesung_min\", \"Beginn\", \"Zeilenindex\", \"Wert\", \"Quelle\" " +
-                "FROM \"" + TwwSchema.TAB_TWW_MESSREIHE + "\" WHERE \"ID_Projekt\" = ? AND \"Bezeichnung\" = ? " +
-                "ORDER BY \"Zeilenindex\"",
-                new DbParam("@projekt", idProjekt), new DbParam("@name", name));
-            if (t == null || t.Rows.Count == 0)
+
+            string groesse = null, beginntext = null, quelle = null;
+            int aufloesung = 0;
+            var gelesen = new List<double>();
+            int luecken = 0;
+            try
+            {
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(
+                           leihe.Verbindung, leihe.Transaktion,
+                           "SELECT \"Groesse\", \"Aufloesung_min\", \"Beginn\", \"Zeilenindex\", \"Wert\", \"Quelle\" " +
+                           "FROM \"" + TwwSchema.TAB_TWW_MESSREIHE + "\" WHERE \"ID_Projekt\" = ? AND \"Bezeichnung\" = ? " +
+                           "ORDER BY \"Zeilenindex\"",
+                           new[] { new DbParam("@projekt", idProjekt), new DbParam("@name", name) }))
+                using (SqliteDataReader leser = cmd.ExecuteReader())
+                {
+                    while (leser.Read())
+                    {
+                        // Der Zeilenindex MUSS lueckenlos von 0 aufwaerts laufen - sonst waere die
+                        // Reihe zeitlich verschoben. Eine Luecke ist ein benannter Abbruch, keine
+                        // stille 0.
+                        if (leser.GetInt32(3) != gelesen.Count)
+                        {
+                            fehler = ZapfSatz.Neu("MESSREIHENIMPORT_ZEILENINDEX_LUECKE", name, gelesen.Count);
+                            return null;
+                        }
+                        if (gelesen.Count == 0)
+                        {
+                            groesse = leser.GetString(0);
+                            aufloesung = leser.GetInt32(1);
+                            beginntext = leser.GetString(2);
+                            quelle = leser.GetString(5);
+                        }
+                        double w = leser.GetDouble(4);
+                        if (w == 0.0) luecken++;
+                        gelesen.Add(w);
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is not LesemodusException)
+            {
+                fehler = ZapfSatz.Neu("MESSREIHENIMPORT_FEHLGESCHLAGEN", ex.Message);
+                return null;
+            }
+
+            if (gelesen.Count == 0)
             {
                 fehler = ZapfSatz.Neu("MESSREIHENIMPORT_NICHT_GEFUNDEN", name);
                 return null;
             }
 
-            var werte = new double[t.Rows.Count];
-            int i = 0;
-            int luecken = 0;
-            foreach (DataRow r in t.Rows)
-            {
-                // Der Zeilenindex MUSS lueckenlos von 0 aufwaerts laufen - sonst waere die Reihe
-                // zeitlich verschoben. Eine Luecke ist ein benannter Abbruch, keine stille 0.
-                if (Ganz(r, "Zeilenindex") != i)
-                {
-                    fehler = ZapfSatz.Neu("MESSREIHENIMPORT_ZEILENINDEX_LUECKE", name, i);
-                    return null;
-                }
-                werte[i] = Zahl(r, "Wert");
-                if (werte[i] == 0.0) luecken++;
-                i++;
-            }
-
-            DataRow erste = t.Rows[0];
-            if (!DateTime.TryParseExact(Text(erste, "Beginn"), FORMAT_BEGINN, CultureInfo.InvariantCulture,
+            if (!DateTime.TryParseExact(beginntext, FORMAT_BEGINN, CultureInfo.InvariantCulture,
                                         DateTimeStyles.None, out DateTime beginn)
-                && !DateTime.TryParse(Text(erste, "Beginn"), CultureInfo.InvariantCulture,
+                && !DateTime.TryParse(beginntext, CultureInfo.InvariantCulture,
                                       DateTimeStyles.None, out beginn))
             {
-                fehler = ZapfSatz.Neu("MESSREIHENIMPORT_BEGINN_UNGUELTIG", name, Text(erste, "Beginn"));
+                fehler = ZapfSatz.Neu("MESSREIHENIMPORT_BEGINN_UNGUELTIG", name, beginntext);
                 return null;
             }
 
             try
             {
-                // Die Zahl der Luecken steht nicht in der Tabelle (jede Zeile traegt einen Wert);
-                // zurueckgelesen gilt sie als 0 - der Bericht des Einspielens hat sie benannt.
-                return new Messreihe(name, Groesse(Text(erste, "Groesse")), Ganz(erste, "Aufloesung_min"),
-                                     beginn, werte, Text(erste, "Quelle"));
+                double[] werte = gelesen.ToArray();
+                var reihe = new Messreihe(name, Groesse(groesse), aufloesung, beginn, werte, quelle, luecken,
+                                          Schalttage(beginn, werte.Length, aufloesung));
+                if (luecken > 0)
+                    hinweise?.Add(ZapfSatz.Neu("MESSREIHENIMPORT_NULLLAEUFE", name, luecken, werte.Length,
+                                               reihe.Lueckenanteil));
+                if (reihe.Schalttage > 0)
+                    hinweise?.Add(ZapfSatz.Neu("MESSREIHE_SCHALTTAG", reihe.Schalttage));
+                return reihe;
             }
             catch (ArgumentException ex)
             {
                 fehler = ZapfSatz.Neu("MESSREIHENIMPORT_FEHLGESCHLAGEN", ex.Message);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Wie viele 29. Februare die zurückgelesene Reihe überstreicht — dieselbe Regel wie im
+        /// Leser (<c>Messreihenleser</c>): Der Rechenkern rechnet 365 Tage ohne Schaltjahr, und ein
+        /// Schalttag der Messung hat keinen Vergleichstag. Die Zahl steht nicht in der Tabelle; sie
+        /// folgt aus Beginn, Schrittzahl und Auflösung.
+        /// </summary>
+        private static int Schalttage(DateTime beginn, int schritte, int aufloesung)
+        {
+            if (schritte <= 0 || aufloesung <= 0) return 0;
+            DateTime ende = beginn.AddMinutes((double)schritte * aufloesung);
+            int n = 0;
+            for (int jahr = beginn.Year; jahr <= ende.Year; jahr++)
+            {
+                if (!DateTime.IsLeapYear(jahr)) continue;
+                var tag = new DateTime(jahr, 2, 29);
+                if (tag >= beginn.Date && tag < ende) n++;
+            }
+            return n;
         }
 
         // =================================================================================
@@ -258,6 +323,10 @@ namespace WindowsFormsApplication1
                 ? DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : datumImport.Trim();
             string beginn = reihe.Beginn.ToString(FORMAT_BEGINN, CultureInfo.InvariantCulture);
             string groesse = Kennung(reihe.Groesse);
+            // Die Bezeichnung GETRIMMT schreiben: Sie ist Teil des natuerlichen Schluessels
+            // (ID_Projekt, Bezeichnung, Zeilenindex), und Lesen und Loeschen trimmen ihre Eingabe.
+            // Ein fuehrendes Leerzeichen legte sonst eine Reihe an, die niemand wieder findet.
+            string name = (reihe.Bezeichnung ?? "").Trim();
             int vorher = 0;
             int geschrieben = 0;
 
@@ -274,24 +343,44 @@ namespace WindowsFormsApplication1
                         vorher = v.Ausfuehren("DELETE FROM \"" + TwwSchema.TAB_TWW_MESSREIHE + "\" " +
                                               "WHERE \"ID_Projekt\" = ? AND \"Bezeichnung\" = ?",
                                               new DbParam("@projekt", idProjekt),
-                                              new DbParam("@name", reihe.Bezeichnung));
+                                              new DbParam("@name", name));
 
+                        // EIN vorbereitetes Kommando fuer alle Zeilen: Der Text wird einmal geparst
+                        // und der Plan einmal gebaut, danach werden nur die Parameter neu belegt. Je
+                        // Zeile ein eigenes SqliteCommand zu bauen kostete bei einer Jahresreihe im
+                        // Minutenraster (525 600 Zeilen) ein Vielfaches - und der SQL-Text ist
+                        // derselbe, also gehoert er auch nur einmal vorbereitet.
                         IReadOnlyList<double> werte = reihe.Werte;
-                        for (int i = 0; i < werte.Count; i++)
+                        using (SqliteCommand cmd = DataRepository.ErzeugeKommando(
+                                   v.Verbindung, v.Transaktion,
+                                   "INSERT INTO \"" + TwwSchema.TAB_TWW_MESSREIHE + "\" (" + SPALTEN + ") " +
+                                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                   new[]
+                                   {
+                                       new DbParam("@projekt", idProjekt),
+                                       new DbParam("@name", name),
+                                       new DbParam("@groesse", groesse),
+                                       new DbParam("@aufloesung", reihe.AufloesungMin),
+                                       new DbParam("@beginn", beginn),
+                                       new DbParam("@index", 0),
+                                       new DbParam("@wert", 0.0),
+                                       new DbParam("@quelle", reihe.Quelle),
+                                       new DbParam("@datum", datum)
+                                   }))
                         {
-                            geschrieben += v.Ausfuehren(
-                                "INSERT INTO \"" + TwwSchema.TAB_TWW_MESSREIHE + "\" (" + SPALTEN + ") " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                new DbParam("@projekt", idProjekt),
-                                new DbParam("@name", reihe.Bezeichnung),
-                                new DbParam("@groesse", groesse),
-                                new DbParam("@aufloesung", reihe.AufloesungMin),
-                                new DbParam("@beginn", beginn),
-                                new DbParam("@index", i),
-                                new DbParam("@wert", werte[i]),
-                                new DbParam("@quelle", reihe.Quelle),
-                                new DbParam("@datum", datum));
-                            if (i == 0) Pruefnaht();
+                            cmd.Prepare();
+                            // Die beiden Parameter, die je Zeile wechseln - alle uebrigen beschreiben
+                            // den EINEN Vorgang und bleiben stehen (Muster der DDL: die Kopfangaben
+                            // stehen an jeder Zeile).
+                            SqliteParameter pIndex = cmd.Parameters[5];
+                            SqliteParameter pWert = cmd.Parameters[6];
+                            for (int i = 0; i < werte.Count; i++)
+                            {
+                                pIndex.Value = i;
+                                pWert.Value = werte[i];
+                                geschrieben += cmd.ExecuteNonQuery();
+                                if (i == 0) Pruefnaht();
+                            }
                         }
 
                         v.Commit();
@@ -310,7 +399,7 @@ namespace WindowsFormsApplication1
                 return bericht;
             }
 
-            if (vorher > 0) bericht.Hinweise.Add(ZapfSatz.Neu("MESSREIHENIMPORT_ERSETZT", reihe.Bezeichnung, vorher));
+            if (vorher > 0) bericht.Hinweise.Add(ZapfSatz.Neu("MESSREIHENIMPORT_ERSETZT", name, vorher));
             bericht.Zeilen = geschrieben;
             bericht.Ersetzt = vorher;
             bericht.Reihe = reihe;

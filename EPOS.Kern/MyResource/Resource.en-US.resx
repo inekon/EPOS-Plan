@@ -32106,6 +32106,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSREIHENIMPORT_ERSETZT" xml:space="preserve">
     <value>The measured series “{0}” of the same name with {1} time steps has been replaced.</value>
   </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_NULLLAEUFE" xml:space="preserve">
+    <value>The series “{0}” carries {1} of {2} time steps without a value ({3:0.0%}); the store does not distinguish filled gaps from times without draw-off.</value>
+  </data>
   <data name="ZPG_SATZ_MESSREIHENIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
     <value>The measured series could not be imported: {0}. Nothing has been changed.</value>
   </data>

@@ -32113,6 +32113,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSREIHENIMPORT_ERSETZT" xml:space="preserve">
     <value>Die gleichnamige Messreihe „{0}“ mit {1} Zeitschritten ist ersetzt.</value>
   </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_NULLLAEUFE" xml:space="preserve">
+    <value>Die Reihe „{0}“ trägt {1} von {2} Zeitschritten ohne Wert ({3:0.0%}); die Ablage unterscheidet nicht, ob es gefüllte Lücken oder Zeiten ohne Zapfung sind.</value>
+  </data>
   <data name="ZPG_SATZ_MESSREIHENIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
     <value>Die Messreihe konnte nicht eingespielt werden: {0}. Nichts ist geändert.</value>
   </data>
