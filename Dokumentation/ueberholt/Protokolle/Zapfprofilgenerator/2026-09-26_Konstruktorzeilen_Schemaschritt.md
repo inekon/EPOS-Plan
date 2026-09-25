@@ -107,3 +107,7 @@ Index ändert kein Ergebnis, nur den Weg dorthin.
   Konstruktor laden (heute beginnt er dort „ohne Bezug"); sie stehen an der Katalogzeile des Tags.
 - **Wiki-Upload** des Absatzes zum Konstruktor im Sammel-Upload; Logbuch-Satz mit Version beim
   Anwender.
+
+## CI-Nachzug
+
+Der Kern-Lauf 36198474557 (ubuntu, Stand `ed35221b`) war rot: `ZapfprofilKonstruktorzeilenTests.Die_Huelle_fuehrt_die_gespeicherten_Zeilen_an_den_Konstruktor` warf eine `NullReferenceException`, weil `ZapfprofilCtrl.ProjektVorgabe()` die Projektvorgaben aus der DDL der geöffneten Datenbank liest und der Test keine öffnete; auf Windows deckte die noch offene Datenbank eines Vorgängertests den Fehler zu. Fix `763eeb6b`: der Test öffnet eine eigene leere Tww-Datenbank (`using var db = new TwwTestdatenbank()`) wie seine Nachbarn; gefilterter Lauf 5/5 grün.
