@@ -11684,9 +11684,28 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     cursor: default;
 }
 
+/* Im schmalen Fenster kann der Menueknopf am linken Rand stehen, und eine
+   am Knopf rechts ausgerichtete Liste liefe links aus dem Bild. Dort klappt
+   sie unter die ganze Knopfleiste, ueber deren volle Breite. */
+@media (max-width: 600px) {
+    .epos-vorlage-leiste {
+        position: relative;
+    }
+
+    .epos-vorlage-menue {
+        position: static;
+    }
+
+    .epos-vorlage-menue-liste {
+        left: 0;
+        right: 0;
+        min-width: 0;
+    }
+}
+
 /* Die Pruefzeile: Zeichen, Herleitung und "anzeigen" in EINER Zeile, die
-   bei Platzmangel umbricht. Die Herleitungszeile bringt ihre eigene
-   Aussenkante nicht mit - sie steht hier im Fluss der Zeile. */
+   bei Platzmangel umbricht; "anzeigen" steht unmittelbar hinter dem Text
+   (Mockup Teil 2), nicht am rechten Rand. */
 .epos-vorlage-pruefzeile {
     display: flex;
     flex-wrap: wrap;
@@ -11695,7 +11714,7 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 .epos-vorlage-pruefzeile > .epos-herleitung {
-    flex: 1 1 12rem;
+    flex: 0 1 auto;
     min-width: 0;
 }
 

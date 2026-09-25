@@ -41,7 +41,14 @@ public sealed class EinstellungenBerichtTexte
 
     /// <summary>EIN_BERICHT_HINT_VORLAGENORDNER — die Herleitung unter dem Ordner.</summary>
     public string HinweisVorlagenordner { get; set; } = T("EIN_BERICHT_HINT_VORLAGENORDNER",
-        "Hier liegen die eigenen Berichtsvorlagen – auch ein gemeinsamer Ordner des Büros ist möglich. Die Datenbanksicherung nimmt ihn nicht mit.");
+        "Hier liegen die eigenen Berichtsvorlagen. Die Datenbanksicherung nimmt den Ordner nicht mit.");
+
+    /// <summary>
+    /// EIN_BERICHT_HINT_GEMEINSAM — der Zusatz, solange der Ordner wählbar ist (unter Windows; auf
+    /// iOS liegt er fest in der App).
+    /// </summary>
+    public string HinweisGemeinsamerOrdner { get; set; } = T("EIN_BERICHT_HINT_GEMEINSAM",
+        "Auch ein gemeinsamer Ordner des Büros ist möglich – dann arbeiten alle mit denselben Vorlagen.");
 
     /// <summary>EIN_BERICHT_NICHT_VERFUEGBAR — die Absage an den Assistenten, wenn der Abschnitt fehlt.</summary>
     public string NichtVerfuegbar { get; set; } = T("EIN_BERICHT_NICHT_VERFUEGBAR",

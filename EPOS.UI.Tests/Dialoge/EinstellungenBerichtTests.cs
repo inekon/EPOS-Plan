@@ -97,7 +97,8 @@ public class EinstellungenBerichtTests : EposBunitContext
         Assert.False(Ordnerfeld(cut).HasAttribute("readonly"));
         Assert.Equal("Durchsuchen…", cut.Find(".epos-dateiwahl button").TextContent.Trim());
         Assert.Contains("{{ersteller.firma}}", cut.Markup);
-        Assert.Contains("Die Datenbanksicherung nimmt ihn nicht mit.", cut.Markup);
+        Assert.Contains("Die Datenbanksicherung nimmt den Ordner nicht mit.", cut.Markup);
+        Assert.Contains("gemeinsamer Ordner des Büros", cut.Markup);
 
         // Der Abschnitt trägt seinen eigenen Hilfeschlüssel am Infoknopf.
         Assert.Equal("Form_AdminSettings.btn_Help_Bericht", cut.Instance.HilfeSchluesselBericht);
@@ -178,6 +179,7 @@ public class EinstellungenBerichtTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
         Assert.Contains(GRUND, cut.FindAll(".epos-herleitung-text").Select(e => e.TextContent));
         Assert.True(cut.Instance.VorlagenordnerGesperrt);
+        Assert.DoesNotContain("gemeinsamer Ordner des Büros", cut.Markup);   // gilt nur, wo man wählen kann
 
         // Die Firma bleibt bedienbar; OK übergibt sie, den Ordner nie.
         Firmafeld(cut).Input("Tablet GmbH");

@@ -242,6 +242,10 @@
                                         <Herleitungszeile Text="@VorlagenordnerGrund" />
                                     }
                                     <Herleitungszeile Text="@Bt.HinweisVorlagenordner" />
+                                    @if (!VorlagenordnerGesperrt)
+                                    {
+                                        <Herleitungszeile Text="@Bt.HinweisGemeinsamerOrdner" />
+                                    }
                                 </KindInhalt>
                             </Formularraster>
                         </KindInhalt>
