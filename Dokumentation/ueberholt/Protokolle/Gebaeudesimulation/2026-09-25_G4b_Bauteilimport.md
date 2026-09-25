@@ -224,5 +224,59 @@ Referenzlauf ist in beiden Wellen unverändert
   26.09.2026 durch die Orchestrierung; Logbuch-Satz entworfen
   ([Update-Papier](../../../aktuell/Wiki_Update_2026-09-26.md));
 - Azimute im Dialog mit bis zu drei Nachkommastellen (Kleinigkeit);
-- der Namensabgleich der Baustoffe (`ID_Baustoff`);
+- der Namensabgleich der Baustoffe (`ID_Baustoff`) — mit dem Nachtrag unten vorgezogen, Welle 1 fertig;
 - mehrere Zonen (G6c).
+
+## 10 Nachtrag: Namensabgleich N1…N7, Welle 1 (26.09.2026)
+
+**Auftrag.** Der Anwender hat am 26.09.2026 entschieden, den Namensabgleich aus G6c vorzuziehen
+(Nachtrag zu E44 in [Konzept N1.49](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)).
+Anlass: IFC-Dateien liefern fast nie brauchbare Stoffwerte; das IFC-Probenhaus bekam 17 Bauteile, aber
+keinen Aufbau. Die Synonymtabelle (Register M9) kam aus G6a mit, abgestimmt mit der Sitzung G6a; die
+Sitzung G4 gab die Importdateien frei.
+
+**Commits** (Opus-Agent im eigenen Worktree): `1f9d8329` Schritt 145 (Synonymtabelle, gemerkte
+Zuordnungen, Registerpflege, Testdatenbank), `6c82c054` Abgleich im Kern samt Datenbankseite und
+Texten, `83ca38b4` Einbau in den Bauteilvorschlag und `VorschlagSchreiben`, `9c287ec9` Tests und die
+Probe `ifc4_haus_materialnamen.ifc`, `9a4153a1` Nachtrag in `Referenzlaeufe/LIESMICH.md`; dazu zwei
+Merges von origin (`11fbbfc3`, `efe0dea3`) und der Merge in den Arbeitszweig.
+
+**Gebaut.**
+- `Tab_Baustoffsynonym_STAMM` (STRICT; normalisierter Materialname eindeutig, Sprache `de`/`en`,
+  Verweis auf `Tab_Baustoff_STAMM` mit Löschweitergabe, `ReadOnly`, Quelle) mit 212 Synonymen, 116
+  deutsch und 96 englisch, auf 51 der 65 herstellerneutralen Stoffe; die übrigen trifft der Abgleich
+  über ihren eigenen Namen. Keine Hersteller- oder Markennamen; jede Zeile mit Quelle.
+- `Tab_Baustoffzuordnung` (STRICT; Projekt, Materialname, Stammbaustoff, Zeitpunkt; eindeutig je
+  Projekt und Name) für die eigene Zuordnung N7. Sie trägt ein eigenes `ID_Projekt` und ist deshalb vom
+  Planwächter der Kopierlisten ausgenommen; das Projektduplikat versetzt `ID_Baustoff` nicht
+  (`FK_OVERRIDE`, der Verweis zeigt auf den Katalog).
+- `Baustoffabgleich` (Kern, mit Lesenaht) und `BaustoffabgleichCtrl` (`Abgleich()`, `Merken`,
+  `Vergessen`); der Bauteilvorschlag nimmt den Abgleich optional und liefert die Liste der
+  Materialnamen der Datei mit Stufe, Baustoff und Zahl der Schichten.
+
+**Festlegungen** (im Konzept N1.49 zusammengefasst): Reihenfolge N7 → N6 → N3 → N4 → N5;
+Herstellerzeilen nur bei genauem Namen, die neutrale Zeile geht vor; Marken in N2 `verputzt`,
+`bewehrt`, `generisch`, `generic` und Maßangaben; ein Synonym trifft auch als Wortanfang, das längste
+gewinnt, eine Zahl im Rest wählt die Rohdichtestufe derselben Stoffreihe; N5 erst ab fünf Zeichen,
+mehrdeutig heißt ohne Treffer; Band je Stoffwert, fehlt λ, gilt d/R, wenn die Datei einen R-Wert trägt;
+die Luftschicht steht als Namensliste im Code (die Synonymtabelle verlangt einen Baustoff);
+Gegenprobe-Schwelle 50 % (λ streut innerhalb einer Stoffreihe etwa um diesen Betrag); Herkunft
+`KATALOG` nur für Aufbauten mit mindestens einem Katalogwert; ohne übergebenen Abgleich bleibt das
+Verhalten unverändert; die Summenfelder des Einzonenwegs nutzen den Abgleich nicht.
+
+**Wirkung an den Proben** (Aufbauten ohne → mit Abgleich): `ifc4_haus_materialnamen.ifc` 0 → 6 (20
+Namen: 16 Treffer, 3 Sonderfälle, 1 ohne Treffer; mit gemerkter Zuordnung 7), `ifc4_schichten_nullwerte.ifc`
+0 → 4, `ifc2x3_schichten.ifc` 0 → 2, `ifc4_schichten.ifc` und `gbxml_haus_si.xml` unverändert (nur
+Gegenprobe), `ifc4_haus.ifc` ohne Materialien. **Auskunft** (Projekt 1045, `ifc4_haus_materialnamen.ifc`):
+Klassenweg 10,766 MWh, Bauteilweg ohne Abgleich 10,820 MWh, mit Abgleich 8,910 MWh (0,82) — vor allem,
+weil nach E45/2 die Schichten den U-Wert tragen (Wand 0,23 statt 0,4 der Datei); die Abweichungen sind
+gemeldet.
+
+**Abnahme** (Merge in den Arbeitszweig, gegen `2026-09-25_R19_BhkwNetzbezug`): Kern-Filter,
+Windows-Schale und Referenzlauf je 0 Fehler; Kern 7 678 grün (einer übersprungen), UI 6 453, KiKern
+549, SpeicherEngine 386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14 **PASS**
+(4 610 207 Werte); SQL-Dialekt-Prüfer 1 960 Texte, 0 Fundstellen; Auslieferungsvorlage 38/38;
+Testdatenbank 145 mit `integrity_check` ok und leerem `foreign_key_check`.
+
+**Offen:** Welle 2 — der Abschnitt „Baustoffe“ im Importdialog (Treffer je Name, eigene Zuordnung, die
+das Projekt beim Speichern merkt), die Saat-Lesenaht für den Wirt der Rasterprobe, die Wiki-Quelle.
