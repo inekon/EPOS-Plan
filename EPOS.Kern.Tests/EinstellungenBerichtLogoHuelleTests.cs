@@ -16,8 +16,10 @@ namespace EPOS.Kern.Tests
     /// <b>Die Hülle des Logos</b> in der Rubrik „Bericht" der Programmeinstellungen (Etappe BV-E2,
     /// Anwenderentscheid BV-E2-1, Lesart b): Die Gaben tragen <c>Logo</c>, <c>LogoChanged</c>,
     /// <c>LogoWaehler</c> und <c>LogoVorhanden</c> passend zu den Parametern des Dialogs; gelesen und
-    /// geschrieben wird die Einstellung <c>BerichtLogo</c> (Dateipfad, leer = ohne Logo), auch zu einer
-    /// Datei, die es nicht gibt; die Dateiwahl geht über <c>Dienste.Datei</c> mit dem Bildfilter.
+    /// geschrieben wird die Einstellung <c>BerichtLogo</c> (Dateipfad) allein über den Controller
+    /// (<see cref="BerichtsvorlagenCtrl.LogoPfad"/>, <see cref="BerichtsvorlagenCtrl.SchreibeLogo"/>), auch zu
+    /// einer Datei, die es nicht gibt; leer entfernt die Einstellung; die Dateiwahl geht über
+    /// <c>Dienste.Datei</c> mit dem Bildfilter.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class EinstellungenBerichtLogoHuelleTests : IDisposable
@@ -25,6 +27,7 @@ namespace EPOS.Kern.Tests
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
         private readonly string _wurzel = Probevorlagen.TempOrdner("epos-bv-logo");
         private readonly FluechtigeEinstellungen _einstellungen = new FluechtigeEinstellungen();
+        private readonly Probepfade _pfade;
         private readonly BerichtsvorlagenCtrl _vorlagen;
         private readonly IDateiDienst _dateiVorher = Dienste.Datei;
 
@@ -32,7 +35,8 @@ namespace EPOS.Kern.Tests
         {
             string dokumente = Directory.CreateDirectory(Path.Combine(_wurzel, "Dokumente")).FullName;
             string app = Directory.CreateDirectory(Path.Combine(_wurzel, "App", "Vorlagen")).FullName;
-            _vorlagen = new BerichtsvorlagenCtrl(new Probepfade(dokumente, app), _einstellungen, () => "Probe GmbH");
+            _pfade = new Probepfade(dokumente, app);
+            _vorlagen = new BerichtsvorlagenCtrl(_pfade, _einstellungen, () => "Probe GmbH");
         }
 
         public void Dispose()
@@ -44,20 +48,14 @@ namespace EPOS.Kern.Tests
 
         private IReadOnlyDictionary<string, object> Gaben()
         {
-            return EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true }, _einstellungen);
+            return EinstellungenBerichtGaben.Gaben(_vorlagen, new Berichtsvorlagenwege { OrdnerWaehlbar = true });
         }
 
-        [Fact]
-        public void Der_Schluessel_ist_BerichtLogo()
-        {
-            Assert.Equal("BerichtLogo", EinstellungenBerichtGaben.EINSTELLUNG_LOGO);
-        }
-
-        /// <summary>Die vier Gaben des Logos treffen die Parameter des Dialogs; der Anfangswert ist die Einstellung.</summary>
+        /// <summary>Die vier Gaben des Logos treffen die Parameter des Dialogs; der Anfangswert ist die Einstellung des Controllers.</summary>
         [Fact]
         public void Die_Gaben_des_Logos_treffen_die_Parameter_des_Dialogs()
         {
-            _einstellungen.Schreib(EinstellungenBerichtGaben.EINSTELLUNG_LOGO, @"C:\Logos\firma.png");
+            _einstellungen.Schreib(BerichtsvorlagenCtrl.EINSTELLUNG_LOGO, @"C:\Logos\firma.png");
             IReadOnlyDictionary<string, object> gaben = Gaben();
 
             Dictionary<string, Type> parameter = typeof(EinstellungenDialog).GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -73,12 +71,14 @@ namespace EPOS.Kern.Tests
                 Assert.True(parameter.ContainsKey(g.Key), "kein [Parameter] " + g.Key);
 
             Assert.Equal(@"C:\Logos\firma.png", gaben["Logo"]);
-            Assert.Equal("", EinstellungenBerichtGaben.Gaben(_vorlagen, null, new FluechtigeEinstellungen())["Logo"]);
+
+            var ohne = new BerichtsvorlagenCtrl(_pfade, new FluechtigeEinstellungen(), () => "Probe GmbH");
+            Assert.Equal("", EinstellungenBerichtGaben.Gaben(ohne)["Logo"]);
         }
 
         /// <summary>
-        /// Der Rückweg schreibt den Pfad getrimmt — auch zu einer Datei, die es nicht gibt; leer heißt
-        /// „ohne Logo" und steht als leerer Wert da.
+        /// Der Rückweg schreibt über den Controller den Pfad getrimmt — auch zu einer Datei, die es nicht
+        /// gibt; leer heißt „ohne Logo" und entfernt die Einstellung.
         /// </summary>
         [Fact]
         public async Task Der_Rueckweg_schreibt_die_Einstellung_auch_ohne_Datei()
@@ -87,10 +87,14 @@ namespace EPOS.Kern.Tests
 
             string fehlt = Path.Combine(_wurzel, "gibt-es-nicht.png");
             await logo.InvokeAsync("  " + fehlt + " ");
-            Assert.Equal(fehlt, _einstellungen.Lies(EinstellungenBerichtGaben.EINSTELLUNG_LOGO, null));
+            Assert.Equal(fehlt, _einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_LOGO, null));
+            Assert.Equal(fehlt, _vorlagen.LogoPfad);
+            Assert.Equal(fehlt, Gaben()["Logo"]);
 
             await logo.InvokeAsync("");
-            Assert.Equal("", _einstellungen.Lies(EinstellungenBerichtGaben.EINSTELLUNG_LOGO, null));
+            Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_LOGO, null));
+            Assert.Null(_vorlagen.LogoPfad);
+            Assert.Equal("", Gaben()["Logo"]);
         }
 
         /// <summary>Die Dateiwahl geht über <c>Dienste.Datei</c> mit Titel und Bildfilter; abgebrochen = leer.</summary>

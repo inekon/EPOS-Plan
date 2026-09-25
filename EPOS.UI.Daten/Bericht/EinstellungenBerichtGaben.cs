@@ -26,9 +26,10 @@ namespace WindowsFormsApplication1
     /// <c>""</c>, <see cref="Berichtsvorlagenwege.OrdnerWaehlbar"/> fehlt) ist das Feld nur lesbar,
     /// und der Grund steht darunter — benannt, nicht still.</para>
     ///
-    /// <para><b>BV-E2 (Anwenderentscheid BV-E2-1, Lesart b): das Firmenlogo.</b> Die Einstellung
-    /// <see cref="EINSTELLUNG_LOGO"/> trägt den Pfad einer PNG- oder JPEG-Datei (leer = ohne Logo) — den
-    /// Schlüssel liest der Berichtslauf des Kerns für die Kopfzeile. Gewählt wird über
+    /// <para><b>BV-E2 (Anwenderentscheid BV-E2-1, Lesart b): das Firmenlogo.</b> Der Pfad einer PNG-
+    /// oder JPEG-Datei (leer = ohne Logo), den der Berichtslauf für die Kopfzeile liest — gelesen und
+    /// geschrieben allein über den Controller (<see cref="BerichtsvorlagenCtrl.LogoPfad"/>,
+    /// <see cref="BerichtsvorlagenCtrl.SchreibeLogo"/>; leer entfernt die Einstellung). Gewählt wird über
     /// <c>Dienste.Datei</c> (auf iOS kopiert die Dateiwahl die Datei in die Sandbox); ob die Datei da
     /// ist, sagt der Dialog als Hinweis unter dem Feld, geschrieben wird der Pfad trotzdem.</para>
     /// </summary>
@@ -38,25 +39,17 @@ namespace WindowsFormsApplication1
         internal const string HILFE_BERICHT = "Form_AdminSettings.btn_Help_Bericht";
 
         /// <summary>
-        /// BV-E2: die Einstellung des Firmenlogos — der Pfad einer PNG- oder JPEG-Datei, leer = ohne Logo.
-        /// Derselbe Schlüssel, den der Berichtslauf des Kerns liest.
-        /// </summary>
-        internal const string EINSTELLUNG_LOGO = "BerichtLogo";
-
-        /// <summary>
         /// Die Gaben des Abschnitts „Bericht": Firma samt Vorgabe und Rückweg, Vorlagenordner samt
         /// Vorgabe, Rückweg und — ohne Ordnerwahl der Plattform — dem Sperrgrund, die Texte und der
         /// Hilfeschlüssel — dazu (BV-E2) das Logo samt Rückweg, Dateiwahl und Prüfung.
-        /// <paramref name="ctrl"/>, <paramref name="wege"/> und <paramref name="einstellungen"/> reicht ein
-        /// Prüfstand herein; <c>null</c> = die der Plattform.
+        /// <paramref name="ctrl"/> und <paramref name="wege"/> reicht ein Prüfstand herein; <c>null</c> =
+        /// die der Plattform.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(BerichtsvorlagenCtrl ctrl = null,
-                                                                 Berichtsvorlagenwege wege = null,
-                                                                 IEinstellungen einstellungen = null)
+                                                                 Berichtsvorlagenwege wege = null)
         {
             BerichtsvorlagenCtrl vorlagen = ctrl ?? new BerichtsvorlagenCtrl();
             Berichtsvorlagenwege plattform = wege ?? Berichtsvorlagenwege.Plattform ?? new Berichtsvorlagenwege();
-            IEinstellungen ablage = einstellungen ?? Dienste.Einstellungen;
 
             var gaben = new Dictionary<string, object>
             {
@@ -71,8 +64,8 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluesselBericht"] = HILFE_BERICHT,
 
                 // BV-E2 (Entscheid BV-E2-1): das Firmenlogo der Kopfzeile.
-                ["Logo"] = Lies(() => ablage.Lies(EINSTELLUNG_LOGO, "")),
-                ["LogoChanged"] = EventCallback.Factory.Create<string>(new object(), pfad => LogoSchreiben(ablage, pfad)),
+                ["Logo"] = Lies(() => vorlagen.LogoPfad),
+                ["LogoChanged"] = EventCallback.Factory.Create<string>(new object(), pfad => vorlagen.SchreibeLogo(pfad)),
                 ["LogoWaehler"] = new Func<string, Task<string>>(LogoWaehlen),
                 ["LogoVorhanden"] = new Func<string, bool>(LogoVorhanden)
             };
@@ -110,15 +103,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// BV-E2: schreibt das Logo — den Pfad, wie er ist, auch zu einer Datei, die es (noch) nicht gibt;
-        /// leer heißt ausdrücklich „ohne Logo" und wird als leerer Wert geschrieben.
-        /// </summary>
-        internal static void LogoSchreiben(IEinstellungen ablage, string pfad)
-        {
-            (ablage ?? Dienste.Einstellungen).Schreib(EINSTELLUNG_LOGO, (pfad ?? "").Trim());
-        }
-
-        /// <summary>
         /// BV-E2: die Dateiwahl des Logos über <c>Dienste.Datei</c> (Bilder PNG und JPEG); <c>""</c> =
         /// abgebrochen. Den Filter der Komponente nimmt sie, wenn einer kommt.
         /// </summary>
@@ -131,7 +115,12 @@ namespace WindowsFormsApplication1
             catch (Exception) { return ""; }
         }
 
-        /// <summary>BV-E2: Gibt es die Logodatei? Ein ungültiger Pfad ist keine Datei.</summary>
+        /// <summary>
+        /// BV-E2: Gibt es die Datei im Feld? Ein ungültiger Pfad ist keine Datei. Geprüft wird der Wert des
+        /// Felds vor dem Speichern — nicht die Einstellung wie <see cref="BerichtsvorlagenCtrl.LogoVorhanden"/>,
+        /// dessen strengere Probe (PNG oder JPEG, Größe) der Hinweis „Datei nicht gefunden" nicht trüge;
+        /// was der Lauf nicht laden kann, nennt seine Laufmeldung.
+        /// </summary>
         internal static bool LogoVorhanden(string pfad)
         {
             try { return !string.IsNullOrWhiteSpace(pfad) && File.Exists(pfad.Trim()); }
