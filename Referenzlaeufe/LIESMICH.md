@@ -382,7 +382,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-25_R16_Anlagenprio`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-25_R17_Datenpflege`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -393,11 +393,11 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger` und `2026-09-25_R15_Anlagenkopplung` am 25.09.2026** (33 Basen,
-alle neun Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger`, `2026-09-25_R15_Anlagenkopplung` und `2026-09-25_R16_Anlagenprio` am 25.09.2026** (34 Basen,
+alle zehn Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 33 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 34 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -407,66 +407,60 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-25_R16_Anlagenprio/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+**`2026-09-25_R17_Datenpflege/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**143**, LFS-SHA-256 `76dd9e48…` — R16 wurde auf der Fassung `1360e2be…` mit Schemastand 142 eingefroren
-(dieselbe Datei, auf der R15 zuletzt gehalten wurde; Herleitung samt Projekt 1047 im Abschnitt der Basis R15
-unter [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)); danach
-änderten #504 nur 93 Zellen des Tww-Testkatalogs und Schemaschritt 143 nur zwei Quelltexte des
-Baustoffkatalogs, beide ohne Referenzwirkung (Nachträge unten). Gegen
-diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml`
-den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt
-1040. Sie ist die **einzige** Basis im Arbeitsbaum.
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **143**,
+LFS-SHA-256 `0c2fe21a…`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests`
+den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: der Anwenderentscheid vom 25.09.2026 zu Konzept Wirtschaftlichkeit § 6.3 Nr. 18** — der
-> Rechenweg ordnet die Anlagen nach derselben Regel wie Hydraulikbild und Erzeugerkarten
-> (`Ladeordnung.SqlAnlagenprio`, Regel „99“: gepflegte Priorität zuerst, eine Anlage ohne Priorität —
-> NULL oder 0 — hinten, bei Gleichstand die ID). Eine Änderung am Rechenweg, keine an den Daten, kein
-> Schemaschritt:
+> **Anlass: die Datenpflege nach Konzept Wirtschaftlichkeit § 6.3 Nr. 24** (Anwender 25.09.2026,
+> Etappe E24, Entscheide E24‑Q1 … Q6 nach Empfehlung). Zwei Kessel der Referenzprojekte trugen keinen
+> Energieträger und rechneten ihre Emissionen über den Rückfall auf den Gerätebrennstoff; 1023 hatte zudem
+> keine Projektzeile für Erdgas und damit in einer frischen Wirtschaftlichkeitsrechnung keine
+> Energiekosten. Kein Schemaschritt, kein Code am Rechenweg — allein Werte der Testdatenbank, gesetzt mit
+> einem einmaligen dotnet-Dateiskript auf der Fassung mit Schemastand 143 (`76dd9e48…` → `0c2fe21a…`):
 >
-> 1. **Die fünf Rechenweg-Leser**, die bis dahin `ORDER BY Prioritaet, ID` lasen und damit die
->    ungepflegte Anlage VOR die gepflegte stellten: `SimulationControl.WP_Liste_Laden`,
->    `…QuellbezuegeAufbauen`, `…SenkenPufferDerAnlagen`, `WaermesenkeClass.SenkenLaden`,
->    `…SenkenlistenLaden`.
-> 2. **Die drei Modul-Lader**, die ganz ohne `ORDER BY` in der Zeilenfolge der Datenbank luden:
->    `SimulationControl.SPK_Liste_Laden`, `…Solar_Liste_Laden`, `…BHKW_Liste_Laden`.
->
-> **Allein 1042 bewegt sich, und nur im Index der Module** — alle Werte und alle Zeitreihen bleiben
-> Zeichen für Zeichen gleich, 1047 und die übrigen zwölf Projekte sind in allen Dateien byte-gleich zu R15.
-> Die beiden Wärmepumpen von 1042 tauschen die Plätze in `aggregate.csv` (10 Werte):
->
-> | 1042, `aggregate.csv` | R15 `WaermepumpeModul[0]` | R15 `[1]` | R16 `WaermepumpeModul[0]` | R16 `[1]` |
+> | Tabelle, Zeile | Projekt | vorher | nachher | Quelle |
 > |---|---|---|---|---|
-> | `.Modul` (Anlage, Priorität) | CS7800iLW 16 (14818, keine) | CS6800iAW MB + AW 10 OR-T (14817, 1) | CS6800iAW MB + AW 10 OR-T (14817, 1) | CS7800iLW 16 (14818, keine) |
-> | `.Leistung` [kW] | 15 | 11 | 11 | 15 |
-> | `.Waermeproduktion` [MWh/a] | 20,84 | 71,45 | 71,45 | 20,84 |
-> | `.Stromverbrauch` [MWh/a] | 7,06 | 26,29 | 26,29 | 7,06 |
-> | `.Betriebsstunden` [h] | 2 073,4 | 5 995,29 | 5 995,29 | 2 073,4 |
+> | `Tab_Energieanlagen` 10369 (Kessel 1018251, Brennstoff 3) | 1018 | `ID_Carrier` NULL | **63** „Erdgas E“ | wie das BHKW 11327 desselben Projekts und die Kessel von 1026–1030, 1039–1045 |
+> | `Tab_Energieanlagen` 11205 (Kessel 1018254, Brennstoff 3) | 1023 | `ID_Carrier` NULL | **63** | dieselbe |
+> | `energy_project_settings` **10130** (neu) | 1023 | — | Träger 63, `ID_Umrechnung` 40, Hi 10,5, Hs 11,6, 0,84 €/Nm³, Grundpreis 1 200 €/a, CO₂ **240**, SO₂ 0,3, NOx 110, Nm³ | Kopie der Zeile 10067 von 1030 (E24‑Q1 a: CO₂ wie 1030/1018/1026) |
+> | `energy_price` **10185** (neu) | 1023 | — | Träger 63, 0,84 / 1 200 / Nm³ / Heizwert 10,5, `valid_from` wie 1030 | Kopie der Zeile 10130 von 1030 (E24‑Q2) |
 >
-> **A/B der beiden Teile** (gemessen vor dem Zusammenführen mit AK1 Welle 5 an den dreizehn Projekten
-> gegen R14, danach an allen vierzehn gegen R15):
+> Zellvergleich aller 145 Tabellen samt `sqlite_sequence` gegen die Fassung 143 (10 645 701 Zellen): allein
+> die zwei `ID_Carrier`-Zellen, die zwei neuen Zeilen und die zwei Zähler in `sqlite_sequence`
+> (`energy_project_settings` 10129 → 10130, `energy_price` 10184 → 10185); Schema gleich, Zeilenzahlen sonst
+> unverändert. `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
+> 219 Indizes samt den von SQLite angelegten. Größe 68 714 496 Byte (LFS-SHA-256 `0c2fe21a…`). Ein zweiter
+> Lauf des Skripts findet nichts offen.
 >
-> | Stand | Vergleich | Ergebnis |
+> **Einfrierregel „Emissionsfaktoren“ berührt** — die neue Projektzeile führt `energy_project_settings.co2`
+> an einem Referenzprojekt; darum diese Neueinfrierung. **Die Emissionen bewegen sich trotzdem nicht:** Der
+> Projektwert 240 g/kWh steht in der Lesekette vor der aktiven Katalogzeile (BAFA 201 g/kWh) und ist
+> derselbe Wert, den vorher der Rückfall auf `Tab_Brennstoff_Stamm` 3 lieferte. Ohne Projektwert hätte 1023
+> mit 201 g/kWh gerechnet (`Em.Kessel.Co2T` 22,44 → 18,79 t/a, in Phase 0 an einer Kopie gemessen, nicht
+> gewählt).
+>
+> **A/B gegen R16** (14 Projekte): **12/14 PASS und byte-gleich**, 430/432 CSV byte-gleich; 1018 und 1023
+> FAIL mit je **einem** Wert in `aggregate.csv`, alle Zeitreihen byte-gleich:
+>
+> | Projekt, `aggregate.csv` | R16 | R17 |
 > |---|---|---|
-> | Teil 1 allein | gegen R14 (13 Projekte) | 12/13 PASS und byte-gleich; 1042 FAIL mit den **10 Werten** oben, die übrigen 35 Dateien byte-gleich |
-> | Teil 1 + 2 | gegen Teil 1 allein (13 Projekte) | **394/394 CSV byte-gleich** — Teil 2 ändert in keinem Projekt etwas, nicht einmal einen Index |
-> | Teil 1 + 2 | gegen R15 (14 Projekte, Schemastand 142) | 13/14 PASS, 431/432 CSV byte-gleich; allein 1042 `aggregate.csv` mit denselben **10 Werten**; 1047 PASS und byte-gleich (38 Dateien) |
+> | 1018 `HeizkesselModul[0].carrier_id` | leer | 63 |
+> | 1023 `HeizkesselModul[0].carrier_id` | leer | 63 |
 >
-> **Warum ohne Rechenwirkung:** Die Deckungsreihenfolge legt die Kaskade über den Typ fest (`Tool_1..4`),
-> Anlagen finden ihre Senken über die Anlagen-ID und Puffer über `Z_AnlageSenke.Ladeprio`; die Rechenfolge
-> der Wärmepumpen von 1042 steht in `ModulEbenen` (getrennte Senken: 14817 Heizkreis und Puffer 1054196,
-> 14818 nur Brauchwasserpuffer 1054202). Die Reihenfolge der Senken- und Pufferlisten ändert sich außerdem
-> in 1030 (BHKW ohne Priorität hinter BHKW und Kessel mit Priorität) und in 1040, 1041, 1045 (Kessel ohne
-> Priorität hinter der Wärmepumpe mit Priorität 1) — ohne Wirkung auf eine Zahl. Teil 2 greift in keinem
-> Projekt: Keines führt zwei Kessel oder zwei Kollektorfelder, und die beiden BHKW von 1030 stehen nach der
-> Regel wie nach der Zeilenfolge (14920 mit Priorität 1 vor 14921 ohne). Rechnerisch wirkt die Regel erst
-> bei zwei Anlagen gleichen Typs auf derselben Rechenebene und Senke, deren Priorität von der ID abweicht.
+> Die Simulation liest weder Arbeits- noch Grundpreis; beides wirkt erst in der Wirtschaftlichkeit: 1023
+> hat seither in einer frischen Rechnung Energiekosten für Erdgas (0,84 €/Nm³ ÷ 10,5 kWh/Nm³ = 0,08 €/kWh)
+> und damit einen Kapitalwert. Die **gebuchten** Ergebnisse der Gruppe „Wöhler“ (1019, 1023, 1024) bleiben
+> unverändert und ohne Nachweisumschlag. 1018 bleibt bewusst ohne Gaspreis (E24‑Q4, Prüffall
+> `ProjektkostenArtenTests`). Nachweis im Test: `EPOS.Kern.Tests/DatenpflegeKesseltraegerTests`.
+>
+> **Benannt, nicht gepflegt (E24‑Q3):** Ohne Energieträger bleiben die Kessel der Referenzprojekte 1007,
+> 1008, 1017, 1046 und 1047 (in 1017 und 1047 auch das BHKW); der Kessel von 1024 trägt `ID_Carrier` = 0.
 >
 > **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
-> Vorlauf- und Rücklaufreihen von 1047 (wie in R15).
->
-> **Einfrierregeln:** nicht berührt — keine gesäten Daten geändert, die Testdatenbank ist byte-gleich.
+> Vorlauf- und Rücklaufreihen von 1047 (wie in R16).
 >
 > **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **14/14 byte-gleich** (432/432 CSV)
 > und untereinander **GESAMT: PASS** (4 610 207 Werte); der Einfrierlauf ist mit beiden byte-gleich.
@@ -475,62 +469,14 @@ den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tag
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
->   --ziel Referenzlaeufe/2026-09-25_R16_Anlagenprio
+>   --ziel Referenzlaeufe/2026-09-25_R17_Datenpflege
 > ```
 >
-> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis. Nachweis im Test:
-> `EPOS.Kern.Tests/AnlagenprioRechenwegTests` (die acht Leser nutzen die Regel; in 1042 steht die
-> Wärmepumpe ohne Priorität hinter der mit Priorität 1).
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Nachtrag #504: die abgeleiteten VDI-6002-Typen im Tww-Testkatalog, die Basis bleibt.**
-> **Kein Schemaschritt** — der Folgeposten der Anwenderentscheide ZU20 und ZU24 vom 25.09.2026 setzt
-> allein Werte: Quelle, Version und Herkunftsart `VERFAHREN` der fünf Nutzungsarten „… (abgeleitet)“
-> und ihrer Tagesgänge (Abschnitt „Abgeleitete VDI-Werte im Tww-Testkatalog“ oben). Nachgezogen auf der
-> Fassung von origin mit Schemastand **142** (AK1 Welle 5 oben, `1360e2be…`) mit
-> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`:
-> 0 Zeilen angelegt, 21 nachgeführt; ein zweiter Lauf schreibt nichts (0 neu, 0 nachgeführt).
-> Zellvergleich aller 144 Tabellen gegen die Fassung von origin (10 645 525 Zellen): abweichend allein
-> **93 Zellen** — 45 in `Tab_TwwNutzungsart_STAMM` und 48 in `Tab_TwwTagesgang_STAMM` —, Zeilenzahlen
-> unverändert, Schema gleich, `sqlite_sequence` gleich (88 Zeilen). `integrity_check` ok,
-> `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite
-> angelegten, keine `AUSLIEFERUNG`-Zeile. Größe 68 747 264 Byte (LFS-SHA-256 `22eeb75c…`).
-> **Ergebnisneutral:** Keines der vierzehn Referenzprojekte führt eine Tww-Zone, und kein Rechenweg
-> der vierzehn liest den Tww-Katalog. **Keine Einfrierregel ist berührt.** Referenzlauf der sechs
-> Projekte der CI (1030, 1007, 1017, 1045, 1046, 1047) gegen diese Basis: **6/6 PASS** (198 Dateien,
-> 2 208 587 Werte).
-
-> **Nachtrag Schemastand 143 (Herkunft der Rohdichte in der Baustoffsaat, E39), die Basis bleibt.**
-> Migrationsschritt **143** (`SCHRITT_BAUSTOFF_QUELLEN`; die Nummer steht allein bei
-> `BaustoffQuellenBerichtigung.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
-> auf die dritte Berichtigung der Anschlusslängen, 142) setzt die Regel aus E39 in bestehenden Datenbanken
-> durch (Konzept Gebäudesimulation N1.44, „Benannte Lücken“): Stammt die Rohdichte einer Herstellerzeile
-> aus einer Umweltproduktdeklaration, dann nennt die Quelle das. **Reines DML** an der Spalte `Quelle`
-> zweier Saatzeilen — in `Tab_Baustoff_STAMM` über die Saat-Id, in der Projektkopie `Tab_Baustoff` über
-> Hersteller und Bezeichner (den Schlüssel von `BaustoffCtrl.CopyFromStamm`), jeweils nur, wo der alte
-> Saattext wortgleich steht; eine vom Anwender geänderte Quelle bleibt. Die Saat trägt die neuen Texte,
-> eine neue Datenbank bekommt sie gleich.
->
-> | Id | Quelle vorher | angefügt |
-> |---|---|---|
-> | 1041 | `Kingspan, Produktblatt Kooltherm K5 WDVS-Dämmplatte (DE), Version 15, 07/2026` | `; Rohdichte aus FDES 120 mm` |
-> | 1066 | `Baumit, Produktdatenblatt DämmPutz DP 85, 18.09.2025` | `; Rohdichte Mindestwert A2-s1,d0 nach VDPM-EPD` |
->
-> Nachgezogen auf der Fassung von origin mit Schemastand **142** (Nachtrag #504 oben, `22eeb75c…`) mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
-> offen vorher 2, berichtigt 2 Katalogzeilen und 0 Projektkopien (die Testdatenbank führt keine
-> Projektkopie eines Baustoffs), offen danach 0, Marker 143; ein Trockenlauf danach findet nichts offen.
-> Zellvergleich aller Tabellen samt `sqlite_sequence` gegen die Fassung 142: allein `SchemaVersion`
-> 142 → 143 und die zwei Quellzellen; Schema gleich, Zeilenzahlen unverändert. `integrity_check` ok,
-> `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite
-> angelegten. Größe 68 714 496 Byte (das Werkzeug verdichtet mit `VACUUM`; LFS-SHA-256 `76dd9e48…`).
-> **Ergebnisneutral:** Kein Rechenweg liest den Baustoffkatalog, und kein Referenzprojekt hat eine Zone.
-> **Keine Einfrierregel ist berührt** — der Baustoffkatalog gehört nicht zu den gesäten Gebäudedaten.
-> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte), 432/432 CSV
-> byte-gleich.
-
-> **Die Vorgängerbasis `2026-09-25_R15_Anlagenkopplung`**, die erste Basis mit Anlagenkopplung, ist mit
-> dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt
-> 1047 und dem Nachtrag zu Schemastand 142 steht in
+> **Die Vorgängerbasis `2026-09-25_R16_Anlagenprio`**, die erste Basis mit der Anlagenreihenfolge nach der
+> Regel „99“ im Rechenweg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der
+> Modultafel von 1042 und den Nachträgen #504 und Schemastand 143 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -702,7 +648,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-25_R16_Anlagenprio`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-25_R17_Datenpflege`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell
