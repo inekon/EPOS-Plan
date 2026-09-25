@@ -11593,6 +11593,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WPAR_TITEL" xml:space="preserve">
     <value>Economic parameters</value>
   </data>
+  <data name="WPAR_UA_9B_HINWEIS" xml:space="preserve">
+    <value>For a manufacturing business or an agricultural or forestry business, the next run calculates the relief under § 9b StromStG on the grid supply. If the project has a CHP unit, the type of business is maintained in the “CHP economics” dialog.</value>
+  </data>
   <data name="WPAR_G_SZENARIEN" xml:space="preserve">
     <value>Scenarios — best and worst against the expected case</value>
   </data>

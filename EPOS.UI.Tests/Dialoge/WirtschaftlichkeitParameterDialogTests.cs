@@ -106,7 +106,9 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Action<WirtParameterErgebnis>? geschlossen = null,
         Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null,
         bool titelAnzeigen = true,
-        IReadOnlyList<string>? einspeisungHinweise = null)
+        IReadOnlyList<string>? einspeisungHinweise = null,
+        StromsteueranteilStand? stromsteueranteil = null,
+        Func<string, int, GesetzParameter>? katalog = null)
     {
         return Render<WirtschaftlichkeitParameterDialog>(p => p
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
@@ -119,6 +121,8 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
             .Add(x => x.GesetzeGaben, gesetzeGaben)
             .Add(x => x.EinspeisungSzenarioHinweise, einspeisungHinweise ?? Array.Empty<string>())
             .Add(x => x.Speichern, speichern ?? (() => true))
+            .Add(x => x.Stromsteueranteil, stromsteueranteil)
+            .Add(x => x.Katalog, katalog)
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
 
@@ -168,8 +172,8 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         // SP-E-2: Der Anzeigehaken „Aufschlaege beruecksichtigen" ist entfallen -
         // die Preisanteile zerlegen den Arbeitspreis, statt auf ihn zu kommen.
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
-        // ETAPPE E15: die einzige Klappliste ist die Art des Risikos.
-        Assert.Single(cut.FindAll("select"));
+        // ETAPPE E15: die Art des Risikos; ETAPPE E19: ohne BHKW die Unternehmensart.
+        Assert.Equal(2, cut.FindAll("select").Count);
         // AUFTRAG #325: kein Freitextfeld mehr - der Bewertungsblock steht auf der Seite.
         Assert.Empty(cut.FindAll("textarea"));
     }
@@ -201,7 +205,7 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Equal(FELDER_OHNE_ERZEUGER + 1,
                      cut.FindAll("input[inputmode=decimal]").Count);       // + CO2
         Assert.Equal(4, cut.FindAll("input[inputmode=numeric]").Count);   // + Bilanzjahr
-        Assert.Equal(4, cut.FindAll("select").Count);                     // Risiko (E15), Park, Methode, Biomasse
+        Assert.Equal(5, cut.FindAll("select").Count);                     // Risiko (E15), Unternehmensart (E19), Park, Methode, Biomasse
         Assert.Single(cut.FindAll("input[type=checkbox]"));               // Nachweis
         Assert.Single(cut.FindAll("button.epos-sprung"));                 // Katalogknopf
     }
@@ -1221,5 +1225,146 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 
         Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "risiko_zinszuschlag"));
         Assert.NotNull(KiMaskenbruecke.Feldzugang(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "risiko_wahrscheinlichkeit"));
+    }
+
+    // =====================================================================
+    // ETAPPE E19 (Konzept § 6.3 Nr. 33, E19‑Q2/Q3/Q5 a) — die Unternehmensart ohne BHKW
+    // =====================================================================
+
+    private static StromsteueranteilStand Erfasst(double? wert, bool aktiv = true)
+        => new StromsteueranteilStand
+        {
+            TraegerId = 60, TraegerName = "Elektrische Energie", WertCtKwh = wert, Aktiv = aktiv
+        };
+
+    /// <summary>Ein Katalog, der nur die beiden Stromsteuersätze kennt (EUR/MWh), ab 2026.</summary>
+    private static Func<string, int, GesetzParameter> Stromsteuerkatalog(double regel, double reduziert)
+        => (schluessel, jahr) =>
+        {
+            if (jahr < 2026) return null!;
+            if (schluessel == DbWerte.GESETZ_STROMST_REGELSATZ)
+                return new GesetzParameter(1, schluessel, "STROMSTEUER", 2026, regel, "EUR/MWh", "", "");
+            if (schluessel == DbWerte.GESETZ_STROMST_REDUZIERT)
+                return new GesetzParameter(2, schluessel, "STROMSTEUER", 2026, reduziert, "EUR/MWh", "", "");
+            return null!;
+        };
+
+    /// <summary>Das Auswahlfeld der Unternehmensart — die Klappliste mit „Land- und Forstwirtschaft".</summary>
+    private static IElement? UaFeld(IRenderedComponent<WirtschaftlichkeitParameterDialog> cut)
+        => cut.FindAll("select").FirstOrDefault(s => s.TextContent.Contains("Land- und Forstwirtschaft"));
+
+    [Fact]
+    public void E19_Ohne_BHKW_pflegt_die_Gruppe_Strom_die_Unternehmensart()
+    {
+        var cut = Aufbauen(Satz(), stromsteueranteil: Erfasst(2.05));
+
+        IElement ua = UaFeld(cut)!;
+        Assert.NotNull(ua);
+        Assert.Equal(3, ua.QuerySelectorAll("option").Length);
+        Assert.Single(cut.FindAll("div.epos-stanteil"));
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("§ 9b StromStG auf den Netzbezug"));
+        Assert.Contains("Passt zur Unternehmensart: Sie legt den Regelsatz nahe.",
+                        cut.Find("div.epos-stanteil .epos-kohaerenz").TextContent);
+    }
+
+    [Fact]
+    public void E19_Mit_BHKW_steht_nur_der_Verweis()
+    {
+        var cut = Aufbauen(Satz(), bhkw: true, stromsteueranteil: Erfasst(2.05));
+
+        Assert.Null(UaFeld(cut));
+        Assert.Empty(cut.FindAll("div.epos-stanteil"));
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => e.TextContent.Contains("§ 9b StromStG auf den Netzbezug"));
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("BHKW-Wirtschaftlichkeit"));
+    }
+
+    /// <summary>Die Anzeige folgt der gewählten Unternehmensart UND dem Bilanzjahr des
+    /// Arbeitsstands, ohne zu speichern (Nr. 15 live).</summary>
+    [Fact]
+    public void E19_Wahl_und_Bilanzjahr_drehen_die_Anzeige_live_ohne_zu_speichern()
+    {
+        int gerufen = 0;
+        var satz = Satz();
+        var cut = Aufbauen(satz, brennstoff: true, speichern: () => { gerufen++; return true; },
+                           stromsteueranteil: Erfasst(0.1), katalog: Stromsteuerkatalog(25.0, 1.0));
+
+        // Vorbestand: kein produzierendes Gewerbe, Katalogjahr 2026 - 0,1 ct/kWh ist der
+        // reduzierte Satz, die Art legt aber den Regelsatz nahe.
+        Assert.Contains("Das ist der reduzierte Satz 2026 (0,100 ct/kWh, § 9b StromStG).",
+                        cut.Find("div.epos-stanteil .epos-herleitung").TextContent);
+        Assert.Contains("epos-kohaerenz--abweichend", cut.Find("div.epos-stanteil .epos-kohaerenz").ClassName);
+
+        UaFeld(cut)!.Change("1");   // produzierendes Gewerbe
+        Assert.Equal(DbWerte.UNTERNEHMENSART_PROD_GEWERBE, satz.Unternehmensart);
+        Assert.Contains("epos-kohaerenz--ok", cut.Find("div.epos-stanteil .epos-kohaerenz").ClassName);
+
+        // Bilanzjahr 2025 - vor der Katalogzeile: der Abgleich fällt auf die Rückfallebene
+        // (Regelsatz 2,050, reduziert 0,050 ct/kWh); 0,1 ct/kWh ist dann keiner von beiden.
+        var bilanzjahr = cut.FindAll("input[inputmode=numeric]").Last();
+        bilanzjahr.Input("2025");
+        Assert.Equal(2025, satz.BilanzJahr);
+        Assert.Contains("des Jahres 2025.", cut.Find("div.epos-stanteil .epos-herleitung").TextContent);
+
+        Assert.Equal(0, gerufen);
+    }
+
+    [Fact]
+    public void E19_Abbrechen_schreibt_die_Unternehmensart_nicht()
+    {
+        int gerufen = 0;
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(Satz(), speichern: () => { gerufen++; return true; },
+                           geschlossen: e => ergebnis = e);
+
+        UaFeld(cut)!.Change("2");
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent == "Abbrechen").Click();
+
+        Assert.False(ergebnis!.Gespeichert);
+        Assert.Equal(0, gerufen);
+    }
+
+    [Fact]
+    public void E19_OK_schreibt_die_Unternehmensart_mit_dem_Parametersatz()
+    {
+        string? geschrieben = null;
+        var satz = Satz();
+        var cut = Aufbauen(satz, speichern: () => { geschrieben = satz.Unternehmensart; return true; });
+
+        UaFeld(cut)!.Change("2");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Equal(DbWerte.UNTERNEHMENSART_LAND_FORST, geschrieben);
+    }
+
+    /// <summary>E19‑Q5 a: Der Assistent setzt die Unternehmensart ohne BHKW; mit BHKW lehnt
+    /// der Setzer benannt ab und nennt den Dialog „BHKW-Wirtschaftlichkeit".</summary>
+    [Fact]
+    public void E19_Der_Assistent_setzt_die_Unternehmensart_nur_ohne_BHKW()
+    {
+        var satz = Satz();
+        var cut = Aufbauen(satz);
+
+        KiFeldzugang ua = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "unternehmensart");
+        Assert.NotNull(ua);
+        KiFeldumsetzung prod = KiFeldwandler.Wandle(ua, DbWerte.UNTERNEHMENSART_PROD_GEWERBE);
+        Assert.True(prod.Ok, prod.Grund);
+        ua.Setzen(prod.Wert);
+        Assert.Equal(DbWerte.UNTERNEHMENSART_PROD_GEWERBE, satz.Unternehmensart);
+        cut.Dispose();
+
+        var mitBhkw = Satz();
+        Aufbauen(mitBhkw, bhkw: true);
+        KiFeldzugang gesperrt = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "unternehmensart");
+        Assert.NotNull(gesperrt);
+        KiFeldumsetzung land = KiFeldwandler.Wandle(gesperrt, DbWerte.UNTERNEHMENSART_LAND_FORST);
+        Assert.True(land.Ok, land.Grund);
+        var ex = Assert.Throws<InvalidOperationException>(() => gesperrt.Setzen(land.Wert));
+        Assert.Contains("BHKW-Wirtschaftlichkeit", ex.Message);
+        Assert.Equal(DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, mitBhkw.Unternehmensart);
     }
 }
