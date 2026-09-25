@@ -345,12 +345,45 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Prüfung am OK — DIESELBE des Kerns (<see cref="GebaeudeImportAblauf.Pruefen"/>) auf
         /// dem Satz samt Handänderungen, Haken und dem Namen des neuen Gebäudes.
+        ///
+        /// <para><b>Dazu die Prüfung des vorbelegten Editors</b> (<see cref="EditorBefund"/>): Die
+        /// Übernahme führt in den Katalogeditor, dessen Abbrechen den Import verwirft. Was dessen OK
+        /// anhielte — etwa ein fehlender g-Wert, weil weder die Datei noch eine Baualtersklasse ihn
+        /// liefert —, ist deshalb schon hier ein benannter Fehler: Der Anwender wählt eine Klasse oder
+        /// trägt den Wert ein, statt im Editor festzusitzen. Gefragt wird nur, wenn der Kern keinen
+        /// Fehler meldet, damit eine Lücke nicht zweimal erscheint.</para>
         /// </summary>
         internal IReadOnlyList<GebaeudeImportMeldung> Pruefen(GebaeudeImportErgebnis ergebnis)
         {
             GebaeudeImportSatz satz = SatzAusErgebnis(ergebnis);
             if (satz == null) return Array.Empty<GebaeudeImportMeldung>();
-            return GebaeudeZuordnungsModell.Pruefe(satz, ergebnis.Gebaeudename ?? "").Select(MeldungDaten).ToList();
+            List<GebaeudeImportMeldung> meldungen =
+                GebaeudeZuordnungsModell.Pruefe(satz, ergebnis.Gebaeudename ?? "").Select(MeldungDaten).ToList();
+            if (meldungen.Any(m => m.Stufe == WarnStufe.Fehler)) return meldungen;
+
+            GebaeudePruefbefund befund = EditorBefund(ergebnis);
+            if (befund != null)
+                meldungen.Add(new GebaeudeImportMeldung(WarnStufe.Fehler, GebaeudeZuordnungsModell.StufeText(PruefStufe.Fehler),
+                    Formatieren(satz.Baualtersklasse.HasValue ? MyResource.Resource.GIMP_DLG_EDITOR_BEFUND
+                                                              : MyResource.Resource.GIMP_DLG_EDITOR_BEFUND_KLASSE, befund.Meldung),
+                    EDITOR_BEFUND));
+            return meldungen;
+        }
+
+        /// <summary>Die Kennung der Meldung „der Gebäudeeditor nähme das Gebäude so nicht an".</summary>
+        internal const string EDITOR_BEFUND = "GIMP_DLG_EDITOR_BEFUND";
+
+        /// <summary>
+        /// <b>Die Prüfregeln des vorbelegten Editors beim OK</b> — DIESELBE Funktion, die der
+        /// Katalogeditor im Modus Neu ruft (<see cref="GebaeudeArbeitsstand.Pruefen"/> nach
+        /// <c>Laden(…, neu: true)</c>, mit den Texten seines Parametersatzes), auf der
+        /// <see cref="Vorbelegung"/> des Ergebnisses; <c>null</c> = der Editor nähme sie an.
+        /// </summary>
+        internal GebaeudePruefbefund EditorBefund(GebaeudeImportErgebnis ergebnis)
+        {
+            var arbeit = new GebaeudeArbeitsstand();
+            arbeit.Laden(Vorbelegung(ergebnis).Daten, neu: true);
+            return arbeit.Pruefen(true, GebaeudeKatalogHuelle.Prueftexte(), GebaeudeKatalogHuelle.Texte());
         }
 
         /// <summary>

@@ -159,5 +159,51 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(befund);
             Assert.Equal(GebaeudeKatalogHuelle.Texte().MeldungGWert, befund.Meldung);
         }
+
+        // =================================================================================
+        //  Die Prüfung am OK des Zuordnungsdialogs fragt den Editor mit
+        // =================================================================================
+
+        /// <summary>
+        /// Ohne Quelle hält schon der Zuordnungsdialog an — nicht erst der Editor, dessen Abbrechen den
+        /// Import verwürfe: Die Prüfung der Hülle meldet den Befund des Editors als Fehler und nennt die
+        /// Baualtersklasse als Ausweg. Mit Klasse E ist der Weg frei.
+        /// </summary>
+        [Fact]
+        public async Task Ohne_Quelle_haelt_schon_der_Zuordnungsdialog_an()
+        {
+            (GebaeudeImportHuelle h, IReadOnlyDictionary<string, object> gaben, GebaeudeImportErgebnis e) =
+                await Zuordnen("gbxml_ohne_konstruktionen.xml", null);
+            var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)gaben["Pruefen"];
+
+            GebaeudeImportMeldung m = Assert.Single(pruefen(e), x => x.Stufe == WarnStufe.Fehler);
+            Assert.Equal(GebaeudeImportHuelle.EDITOR_BEFUND, m.Kennung);
+            Assert.Equal("Der Gebäudeeditor nähme das Gebäude so nicht an: " + GebaeudeKatalogHuelle.Texte().MeldungGWert
+                         + " Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor.", m.Text);
+            Assert.Equal(EditorBefund(h.Vorbelegung(e).Daten)?.Meldung, h.EditorBefund(e)?.Meldung);   // dieselbe Prüfung
+
+            (_, _, GebaeudeImportErgebnis mitKlasse) = await Zuordnen("gbxml_ohne_konstruktionen.xml", KLASSE_E);
+            Assert.DoesNotContain(pruefen(mitKlasse), x => x.Stufe == WarnStufe.Fehler);
+        }
+
+        /// <summary>
+        /// Eine Handänderung, die der Editor nicht annähme (g-Wert über 1), ist für den Kern nur eine
+        /// Warnung — die Prüfung der Hülle macht daraus den Fehler des Editors, ohne Hinweis auf die
+        /// Klasse, denn eine ist gewählt.
+        /// </summary>
+        [Fact]
+        public async Task Eine_Handaenderung_die_der_Editor_nicht_annaehme_sperrt_die_Uebernahme()
+        {
+            (_, IReadOnlyDictionary<string, object> gaben, GebaeudeImportErgebnis e) = await Zuordnen("gbxml_haus_si.xml", KLASSE_E);
+            var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)gaben["Pruefen"];
+            var zeilen = e.Zeilen.Select(z => z.Zielfeld == GebaeudeZielfelder.G_WERT
+                ? z with { Wert = 1.5, HerkunftSchluessel = GebaeudeHerkunftSchluessel.Manuell } : z).ToList();
+
+            IReadOnlyList<GebaeudeImportMeldung> befund = pruefen(e with { Zeilen = zeilen });
+
+            Assert.Contains(befund, x => x.Stufe == WarnStufe.Warnung && x.Kennung == GebaeudeImportAblauf.MELDUNG + "G_AUSSERHALB");
+            GebaeudeImportMeldung m = Assert.Single(befund, x => x.Stufe == WarnStufe.Fehler);
+            Assert.Equal("Der Gebäudeeditor nähme das Gebäude so nicht an: " + GebaeudeKatalogHuelle.Texte().MeldungGWert, m.Text);
+        }
     }
 }

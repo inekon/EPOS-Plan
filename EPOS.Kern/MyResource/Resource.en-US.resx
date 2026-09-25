@@ -34427,4 +34427,10 @@ Do you want to allow this?</value>
   <data name="GIMP_VORBELEGT_VORGABEN" xml:space="preserve">
     <value>Defaults, not from the file: {0}.</value>
   </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND" xml:space="preserve">
+    <value>The building editor would not accept the building like this: {0}</value>
+  </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND_KLASSE" xml:space="preserve">
+    <value>The building editor would not accept the building like this: {0} A building age class provides default U-values, g-value and thermal bridges.</value>
+  </data>
 </root>

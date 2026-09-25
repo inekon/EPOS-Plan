@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using EPOS.UI.Dienste;
@@ -386,5 +387,30 @@ public class GebaeudeDialogImportTests : EposBunitContext
         Assert.Equal(2, zeilen.Count);
         Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
         Assert.Contains("steht jetzt im Katalog und in der Projektliste", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Eine Datei ohne Konstruktionen und ohne Baualtersklasse: Für U-Werte und g-Wert gibt es keine
+    /// Quelle. Der Zuordnungsdialog hält beim OK an und nennt, was der Editor nicht annähme — der
+    /// Editor öffnet nicht, übernommen wird nichts.
+    /// </summary>
+    [Fact]
+    public void Ohne_Quelle_haelt_der_Zuordnungsdialog_an_statt_den_Editor_zu_oeffnen()
+    {
+        var p = new Protokoll();
+        var zeilen = EineZeile();
+        var cut = Aufbauen(p, zeilen, weg: () => EchterWeg(p, "gbxml_ohne_konstruktionen.xml", null));
+
+        IRenderedComponent<GebaeudeImportDialog> imp = ImportEinlesen(cut);
+        imp.WaitForAssertion(() => Assert.False(imp.Find(".epos-leiste button.epos-knopf--primaer").HasAttribute("disabled")));
+        imp.Find(".epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.Empty(p.Uebernommen);
+        Assert.True(cut.Instance.ImportOffen);
+        Assert.False(cut.Instance.KatalogeditorOffen);
+        Assert.Equal(WarnStufe.Fehler, imp.Instance.MeldungStufe);
+        Assert.Contains("Der Gebäudeeditor nähme das Gebäude so nicht an: Der Fensterdurchlaßgrad muss größer als 0", imp.Instance.Meldung);
+        Assert.Contains("Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor.", imp.Instance.Meldung);
+        Assert.Single(zeilen);
     }
 }

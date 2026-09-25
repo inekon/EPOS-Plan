@@ -34434,4 +34434,10 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_VORBELEGT_VORGABEN" xml:space="preserve">
     <value>Vorgaben, nicht aus der Datei: {0}.</value>
   </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND" xml:space="preserve">
+    <value>Der Gebäudeeditor nähme das Gebäude so nicht an: {0}</value>
+  </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND_KLASSE" xml:space="preserve">
+    <value>Der Gebäudeeditor nähme das Gebäude so nicht an: {0} Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor.</value>
+  </data>
 </root>

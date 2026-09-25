@@ -24213,6 +24213,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudeeditor nähme das Gebäude so nicht an: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_EDITOR_BEFUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_EDITOR_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudeeditor nähme das Gebäude so nicht an: {0} Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_EDITOR_BEFUND_KLASSE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_EDITOR_BEFUND_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude der Datei ähnelt.
         /// </summary>
         public static string GIMP_DLG_GEBAEUDE {

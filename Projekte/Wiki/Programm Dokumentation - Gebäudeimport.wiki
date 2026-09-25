@@ -99,7 +99,7 @@ Der Abschnitt ''Meldungen'' sammelt, was beim Lesen und Zuordnen aufgefallen ist
 === OK ===
 {{Anker|ok}}
 
-''OK'' prüft die übernommenen Zeilen: Nutzfläche und Raumhöhe sind Pflicht, ein U-Wert oder g-Wert außerhalb des üblichen Bereichs ist eine Warnung, eine rot markierte Zeile mit Haken, ein Baujahr, das keine ganze Jahreszahl von 1500 bis 2100 ist, und ein fehlender Name sind Fehler. Ein Fehler hält den Dialog offen und steht oben im Warnband. Sonst schließt der Zuordnungsdialog, und der Katalogeditor öffnet sich. Geschrieben ist zu diesem Zeitpunkt noch nichts.
+''OK'' prüft die übernommenen Zeilen: Nutzfläche und Raumhöhe sind Pflicht, ein U-Wert oder g-Wert außerhalb des üblichen Bereichs ist eine Warnung, eine rot markierte Zeile mit Haken, ein Baujahr, das keine ganze Jahreszahl von 1500 bis 2100 ist, und ein fehlender Name sind Fehler. Danach prüft ''OK'' die Werte so, wie der Katalogeditor ein neues Gebäude prüft: Was er nicht annähme – etwa einen g-Wert, der fehlt oder über 1 liegt, oder einen U-Wert außerhalb des zulässigen Bereichs –, ist ebenfalls ein Fehler; ist keine Baualtersklasse gewählt, nennt die Meldung sie als Ausweg. Ein Fehler hält den Dialog offen und steht oben im Warnband. Sonst schließt der Zuordnungsdialog, und der Katalogeditor öffnet sich. Geschrieben ist zu diesem Zeitpunkt noch nichts.
 
 == Der vorbelegte Katalogeditor ==
 {{Anker|editor}}
