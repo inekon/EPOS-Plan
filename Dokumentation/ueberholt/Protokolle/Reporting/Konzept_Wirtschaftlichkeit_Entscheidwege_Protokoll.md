@@ -1308,8 +1308,9 @@ samt seinen Papieren; der Merge #510, `f7823b8e`, lässt die Papiere unberührt)
 (Stand `822ba803` = `origin` nach #513; der Merge #514, `edf89ae8`, zieht den Basisnamen an drei Stellen des Konzepts
 nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21), in § 8.50 und § 8.51 **vor #518** (Stand `b8f8a168` =
 `pm26` nach #514 und #515 samt Papieren; der Merge #518, `025a8707`, zieht den Basisnamen an drei Stellen des Konzepts
-nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21 — und trägt „E26 ohne Schritt“ in den Kopf) —, nicht vor dem
-Schnitt.*
+nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21 — und trägt „E26 ohne Schritt“ in den Kopf), in § 8.52 und
+§ 8.53 **vor #519** (Stand `ba798d8a` = `origin` nach #518 samt Papieren; der Merge #519, `3936003c`, lässt die
+Papiere des Konzepts unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -3054,3 +3055,37 @@ Die Stellen, die mit E26 veraltet sind; „vorher“ ist der Wortlaut vor #518 (
 | § 6.3 Nr. 34 | — | neu, Block „Aus Etappe E26 (#518)“: erledigt, Restpunkte Q6, N5, N6 benannt |
 | § 7 | — | Satz zur Welle E26 (#518) |
 | Anhang | — | je eine Zeile E26 in der Kürzeltafel und in der Etappentafel |
+
+### 8.52 E25 — Prüfprojekt 1048 „PV mit Preisen“ in der Testdatenbank, ohne Referenzrolle (#519)
+
+Protokoll [`E25_Pruefprojekt_1048_PV_Preise_Protokoll.md`](E25_Pruefprojekt_1048_PV_Preise_Protokoll.md); im Register
+die neue Familie R‑E25 und der fortgeschriebene Umsetzungsstand von R‑E21 (E21‑Q9). Die Welle setzt E21‑Q9 a um — ein
+PV-Projekt mit vollständigen Preisen als eigene Welle, ein neues Projekt außerhalb der Referenzliste — mit dem
+Anwenderentscheid vom 25.09.2026, „nehme die Empfehlungen vor: für Später“; Anlass ist der Befund aus E9a, dass die
+PV-Erlösseite der Wirtschaftlichkeit nur synthetisch geprüft war. Sie ist keine Etappe des Plans E0–E12 und kommt ohne
+Schemaschritt aus, `SchemaStand.Zielversion` bleibt 144; die Referenzbasis R18 bleibt. Die Fragen E25‑Q1…Q10 hat der
+Orchestrator am 25.09.2026 (~15:20) mit der Baufreigabe nach Empfehlung entschieden, alle a. E25 ist nach E26
+gemergt; die Kern-Befunde N1 und N3, die E26 behoben hat, stammen aus der Phase 0 von E25.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E25** (#519, Merge `3936003c` über `ba798d8a`, Zweig `e25` = `e0f6d847` von `4434983b`) | Skript `Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs` (wiederholbar, E25‑Q9 a): Kopie 1040 → 1048 über den Kopierweg des Programms, Gebäude nach VDI 6007 (E25‑Q1 a), 40 Module 10,40 kWp (E25‑Q2 a), Strom 0,30 €/kWh und Erdgas 0,80 €/Nm³ mit Szenariopreisen und Grundpreisen, Parametersatz mit Einspeisevergütung PV 0,08 €/kWh (E25‑Q3 a, Q5 a), Flat (E25‑Q4 a), PV-Kostenpositionen 1.200 €/kWp, Wartung 150 €/a, Instandhaltung 1 % als direkte Zeilen (E25‑Q7 a); Testdatenbank `19a7b632…` → `b68638da…`, 44.537 neue Zeilen, 0 bestehende geändert; Tests `PvPreisProjektTests` (13 Fälle, E25‑Q6 a) | **nein** — nur Testdaten; Referenzlauf 14/14 gegen R18 byte-gleich, 1048 in keiner Projektliste; an 1048 Kapitalwert Erwartet −237.134,727 €, Einspeiseerlös 564,80 €/a |
+
+*§ 6.3 (vor #519):* Das PV-Projekt mit vollständigen Preisen hatte keine eigene Nummer; E21‑Q9 verwies als Ort der
+Regel auf Nr. 24 (Datenpflege), deren Wortlaut den Punkt nicht nannte.
+
+**Erledigt mit E25 (#519):** § 6.3 Nr. 35 ist neu und als erledigt eingetragen. Benannt bleiben die an 1048 nicht
+angelegte Vergütungszeile und Tarifstruktur (E25‑Q3, E25‑Q4; DV-Entgelt, PPA und Rollentarif nur im Test) und die
+Wiederholung des Skripts nach jeder Neufassung der Testdatenbank ohne 1048.
+
+### 8.53 Berichtigungen im gültigen Stand (#519)
+
+Die Stellen, die mit E25 veraltet sind; „vorher“ ist der Wortlaut vor #519 (Stand `ba798d8a`). Der Merge #519,
+`3936003c`, lässt die Papiere des Konzepts unberührt.
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `f1a8ae83`; „… E24 und E26 ohne Schritt“ | Codestand `3936003c`; „… E24, E25 und E26 ohne Schritt“ |
+| Schrittabsatz | „…, E24 (#514) und E26 (#518) kommen ohne Schritt aus“ | „…, E24 (#514), E26 (#518) und E25 (#519) kommen ohne Schritt aus“ |
+| § 6.3 Nr. 35 | — | neu, Block „Aus Etappe E25 (#519)“: erledigt, Restpunkte benannt |
+| § 7 | — | Satz zur Welle E25 (#519) |
