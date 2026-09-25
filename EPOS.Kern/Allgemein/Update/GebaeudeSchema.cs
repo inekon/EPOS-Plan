@@ -60,8 +60,14 @@ namespace WindowsFormsApplication1
     // DER FUENFTE DURCHGANG: das Baujahr (Stufe G4a, Umsetzungskonzept 3.4; Nummer bei
     // BaujahrSchema.SCHRITT). Eine Spalte Baujahr (INTEGER, CHECK 1500 bis 2100) je
     // Gebaeudetabelle, die Sicht mit ihr HINTER den Spalten der Kuehluebergabe neu (99
-    // Spalten). Er laeuft in Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer
-    // Durchgang die Spalte wieder aus der Sicht schneidet.
+    // Spalten).
+    //
+    // DER SECHSTE DURCHGANG: die Nachtzeit (Entscheid E43, Konzept-Nachtrag N1.48; Nummer bei
+    // NachtzeitSchema.SCHRITT). Zwei Spalten Nachtabsenkung_Beginn und Nachtabsenkung_Ende
+    // (INTEGER, Stunde des Tages 0 bis 23, NULL = Vorgabe) je Gebaeudetabelle, die Sicht mit
+    // ihnen HINTER dem Baujahr neu (101 Spalten). Er laeuft in Migration, Werkzeug und
+    // Testkopie ZULETZT, damit kein aelterer Durchgang die Spalten wieder aus der Sicht
+    // schneidet.
     // ====================================================================================
 
     /// <summary>
@@ -75,7 +81,9 @@ namespace WindowsFormsApplication1
     /// Sichtneubau; und der vierte Durchgang KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>,
     /// E37): acht Spalten der Kuehluebergabe je Gebaeudetabelle und der vierte Sichtneubau;
     /// und der fuenfte Durchgang (<see cref="BaujahrSchema.SCHRITT"/>, G4a): das Baujahr je
-    /// Gebaeudetabelle und der fuenfte Sichtneubau.
+    /// Gebaeudetabelle und der fuenfte Sichtneubau; und der sechste Durchgang
+    /// (<see cref="NachtzeitSchema.SCHRITT"/>, E43): Beginn und Ende der Nachtabsenkung je
+    /// Gebaeudetabelle und der sechste Sichtneubau.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -409,6 +417,44 @@ namespace WindowsFormsApplication1
         public static string BaujahrAnlegen(string tabelle)
             => "ALTER TABLE \"" + tabelle + "\" ADD COLUMN \"" + SPALTE_BAUJAHR + "\" " + SQLITE_BAUJAHR;
 
+        // ---- Die Nachtzeit (E43, N1.48; Schritt NachtzeitSchema.SCHRITT, der sechste Sichtneubau)
+        //
+        // Zwei Spalten je Gebaeudetabelle: Beginn und Ende der Nachtabsenkung als volle Stunde des
+        // Tages (0 bis 23). Die Nacht ist [Beginn, Ende), zyklisch ueber Mitternacht. Beide NULL =
+        // die Vorgabe des Stundenmodells (22 bis 6 Uhr, Nachtzeit.VORGABE_BEGINN/VORGABE_ENDE) -
+        // bitgleich mit dem Fahrplan ohne die Spalten. Nur eine gesetzt oder Beginn = Ende ist ein
+        // benannter Eingabefehler (Nachtzeit.Pruefen), kein CHECK: Die Tabelle haelt allein den
+        // Bereich, das Paar pruefen Editor und Eingangsbauer mit derselben Regel.
+
+        /// <summary>Beginn der Nachtabsenkung [Stunde des Tages 0 … 23]; NULL = Vorgabe (22 Uhr).</summary>
+        public const string SPALTE_NACHTABSENKUNG_BEGINN = "Nachtabsenkung_Beginn";
+
+        /// <summary>Ende der Nachtabsenkung [Stunde des Tages 0 … 23], ausschliesslich; NULL = Vorgabe (6 Uhr).</summary>
+        public const string SPALTE_NACHTABSENKUNG_ENDE = "Nachtabsenkung_Ende";
+
+        /// <summary>Kleinste zulaessige Stunde der Nachtzeit (0 Uhr).</summary>
+        public const int NACHTSTUNDE_MIN = 0;
+
+        /// <summary>Groesste zulaessige Stunde der Nachtzeit (23 Uhr).</summary>
+        public const int NACHTSTUNDE_MAX = 23;
+
+        /// <summary>Die zwei Spalten der Nachtzeit in ihrer Reihenfolge - Beginn, dann Ende.</summary>
+        public static readonly string[] NACHTZEIT_SPALTEN = { SPALTE_NACHTABSENKUNG_BEGINN, SPALTE_NACHTABSENKUNG_ENDE };
+
+        /// <summary>
+        /// Die SQLite-Definition einer Nachtzeit-Spalte: <c>INTEGER</c>, nullbar, mit Bereichspruefung
+        /// <see cref="NACHTSTUNDE_MIN"/> … <see cref="NACHTSTUNDE_MAX"/> - wie beim Baujahr unmittelbar in
+        /// SQLite-Schreibweise.
+        /// </summary>
+        public static string SqliteNachtstunde(string spalte)
+            => "INTEGER CHECK (" + spalte + " IS NULL OR " + spalte + " BETWEEN " +
+               NACHTSTUNDE_MIN.ToString(CultureInfo.InvariantCulture) + " AND " +
+               NACHTSTUNDE_MAX.ToString(CultureInfo.InvariantCulture) + ")";
+
+        /// <summary>Die Anweisung, die eine Nachtzeit-Spalte an einer Gebaeudetabelle anlegt (<c>ALTER TABLE … ADD COLUMN</c>).</summary>
+        public static string NachtstundeAnlegen(string tabelle, string spalte)
+            => "ALTER TABLE \"" + tabelle + "\" ADD COLUMN \"" + spalte + "\" " + SqliteNachtstunde(spalte);
+
         // ---- die Sicht ----------------------------------------------------------------
 
         /// <summary>Verwirft die Sicht - wiederholbar (<c>IF EXISTS</c>).</summary>
@@ -467,7 +513,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// DIE BAUVORSCHRIFT DER SICHT — fuer jeden Sichtneubau dieselbe: die 58
         /// Bestandsspalten an ihren Stellen, dahinter die Zusatzspalten der Durchgaenge in
-        /// ihrer Reihenfolge (M3, KU-S1, AK-S1, KAK-S1, dann das Baujahr). Ein Durchgang nennt
+        /// ihrer Reihenfolge (M3, KU-S1, AK-S1, KAK-S1, das Baujahr, dann die Nachtzeit). Ein Durchgang nennt
         /// nur, was er anhaengt.
         /// </summary>
         /// <param name="zusatzspalten">Die Spalten aus <c>Tab_Gebaeude</c> hinter <c>Tab_Gebaeude.ID</c>.</param>
@@ -546,13 +592,30 @@ namespace WindowsFormsApplication1
                                  .Concat(new[] { SPALTE_BAUJAHR }));
 
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Baujahrs).
+        /// Alle Spalten der Sicht ab dem Schritt der Nachtzeit (<see cref="NachtzeitSchema.SCHRITT"/>,
+        /// der sechste Durchgang): die 99 aus <see cref="SICHT_BAUJAHR"/>, dahinter Beginn und Ende der
+        /// Nachtabsenkung - an den Stellen 99 und 100.
+        /// </summary>
+        public static readonly string[] SICHT_NACHTZEIT =
+            SICHT_BAUJAHR.Concat(NACHTZEIT_SPALTEN).ToArray();
+
+        /// <summary>Die Sichtdefinition der Nachtzeit: M3, KU-S1, AK-S1, KAK-S1, das Baujahr und dahinter die zwei Nachtzeit-Spalten.</summary>
+        public static readonly string SQL_VIEW_NACHTZEIT =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Nachtzeit).
         /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_BAUJAHR;
+        public static string[] SICHT_AKTUELL => SICHT_NACHTZEIT;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Baujahrs).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_BAUJAHR;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Nachtzeit).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_NACHTZEIT;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)
@@ -626,6 +689,20 @@ namespace WindowsFormsApplication1
             foreach (string t in TABELLEN)
                 if (!DataRepository.SpalteVorhanden(t, SPALTE_BAUJAHR)) return false;
             return SichtBeginntMit(SICHT_BAUJAHR);
+        }
+
+        /// <summary>
+        /// Steht der Schritt der Nachtzeit (<see cref="NachtzeitSchema.SCHRITT"/>) vollstaendig? Beide
+        /// Gebaeudetabellen fuehren <see cref="SPALTE_NACHTABSENKUNG_BEGINN"/> und
+        /// <see cref="SPALTE_NACHTABSENKUNG_ENDE"/>, und die Sicht liefert <see cref="SICHT_NACHTZEIT"/> in
+        /// dieser Reihenfolge an ihren Stellen 0..100.
+        /// </summary>
+        public static bool NachtzeitVollstaendig()
+        {
+            foreach (string t in TABELLEN)
+                foreach (string s in NACHTZEIT_SPALTEN)
+                    if (!DataRepository.SpalteVorhanden(t, s)) return false;
+            return SichtBeginntMit(SICHT_NACHTZEIT);
         }
 
         /// <summary>Beginnt die Spaltenfolge der Sicht mit <paramref name="soll"/>?</summary>
@@ -847,8 +924,9 @@ namespace WindowsFormsApplication1
         /// <see cref="BaujahrSchema.Alle"/>; die Migration der Schale geht denselben Weg ueber ihre
         /// eigenen Helfer. Sicht verwerfen, die Spalte an beiden Gebaeudetabellen anlegen, wo sie
         /// fehlt, Sicht aus <see cref="SQL_VIEW_BAUJAHR"/> neu bauen. Setzt M3, KU-S1, AK-S1 und
-        /// KAK-S1 voraus und muss als LETZTER Sichtneubau laufen. Wiederholbar, <b>kein DML</b> -
-        /// die Spalte steht danach auf NULL.
+        /// KAK-S1 voraus; hinter ihm laeuft nur noch der Durchgang der Nachtzeit
+        /// (<see cref="NachtzeitAlle"/>). Wiederholbar, <b>kein DML</b> - die Spalte steht danach auf
+        /// NULL.
         /// </summary>
         /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
         /// <returns>Die Zahl der angelegten Spalten (hoechstens zwei).</returns>
@@ -876,6 +954,53 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren(SQL_VIEW_BAUJAHR);
                     bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
                                  SICHT_BAUJAHR.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
+        }
+
+        /// <summary>
+        /// Fuehrt den Schritt der Nachtzeit (<see cref="NachtzeitSchema.SCHRITT"/>) in EINEM Vorgang aus
+        /// - fuer <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c> ueber
+        /// <see cref="NachtzeitSchema.Alle"/>; die Migration der Schale geht denselben Weg ueber ihre
+        /// eigenen Helfer. Sicht verwerfen, die zwei Spalten an beiden Gebaeudetabellen anlegen, wo sie
+        /// fehlen, Sicht aus <see cref="SQL_VIEW_NACHTZEIT"/> neu bauen. Setzt M3, KU-S1, AK-S1, KAK-S1
+        /// und das Baujahr voraus und muss als LETZTER Sichtneubau laufen. Wiederholbar, <b>kein DML</b>
+        /// - die Spalten stehen danach auf NULL (die Vorgabe 22 bis 6 Uhr).
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (hoechstens vier).</returns>
+        public static int NachtzeitAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = TABELLEN.SelectMany(t => NACHTZEIT_SPALTEN.Select(s => (Tabelle: t, Spalte: s)))
+                                  .Where(p => !DataRepository.SpalteVorhanden(p.Tabelle, p.Spalte)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren(SQL_VIEW_DROP);
+                    bericht?.Add("Sicht " + VIEW + " verworfen");
+                    foreach ((string tabelle, string spalte) in fehlend)
+                    {
+                        v.Ausfuehren(NachtstundeAnlegen(tabelle, spalte));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 (TABELLEN.Length * NACHTZEIT_SPALTEN.Length).ToString(CultureInfo.InvariantCulture) +
+                                 " Spalte(n) der Nachtzeit angelegt");
+                    v.Ausfuehren(SQL_VIEW_NACHTZEIT);
+                    bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
+                                 SICHT_NACHTZEIT.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
                     v.Commit();
                 }
                 catch

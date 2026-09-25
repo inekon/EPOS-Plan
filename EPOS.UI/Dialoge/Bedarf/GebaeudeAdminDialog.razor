@@ -796,6 +796,11 @@
         Nachziehen();
     }
 
+    /// <summary>Eine Stunde der Nachtzeit als Text (E43) — leer zeigt die Vorgabe („Vorgabe 22").</summary>
+    private static string Stundentext(int? stunde, int vorgabe)
+        => stunde is int s ? s.ToString(CultureInfo.InvariantCulture)
+                           : Resource.GEBK_VORGABE.Replace("{0}", vorgabe.ToString(CultureInfo.InvariantCulture));
+
     /// <summary>Das Baujahr als Text — ohne Tausendertrennzeichen; leer, wenn unbekannt.</summary>
     private static string Jahrtext(int? jahr)
         => jahr is int j ? j.ToString(CultureInfo.InvariantCulture) : "";
@@ -1050,7 +1055,10 @@
                 new("VERWENDUNG", LabelVerwendung, Verwendungstext(s?.Verwendung ?? "")),
                 new("FLAECHE", LabelWohnflaeche, s?.Wohnflaeche is double w ? w.ToString("N0", k) + " m²" : ""),
                 new("HGES", Resource.GEBA_KZ_HGES, s?.HgesWK is double h ? h.ToString("N1", k) + " W/K" : ""),
-                new("RECHENWEG", Resource.GEBA_KZ_RECHENWEG, s?.Rechenweg ?? "")
+                new("RECHENWEG", Resource.GEBA_KZ_RECHENWEG, s?.Rechenweg ?? ""),
+                // E43: die Nachtzeit - leer zeigt die Vorgabe, wie der Platzhalter des Editors.
+                new("NACHT_BEGINN", Beschriftungen.LabelNachtBeginn, Stundentext(s?.Feldsatz?.NachtBeginn, Nachtzeit.VORGABE_BEGINN)),
+                new("NACHT_ENDE", Beschriftungen.LabelNachtEnde, Stundentext(s?.Feldsatz?.NachtEnde, Nachtzeit.VORGABE_ENDE))
             };
             foreach (Stammblattwert bauteil in s?.Huelle ?? Stammblattwert.Keine)
                 if (!bauteil.IstAbschnitt) felder.Add(new("H_" + bauteil.Name, bauteil.Name, bauteil.Anzeige));

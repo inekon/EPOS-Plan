@@ -515,6 +515,19 @@
                             <Zahlenfeld Bezeichnung="@LabelNachtAbsenkung" Einheit="°C"
                                         Feldname="@Feld(LabelNachtAbsenkung)" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.NachtAbsenkung" WertChanged="w => _stand.NachtAbsenkung = w" />
+                            @* Die Nachtzeit (E43): volle Stunden 0 bis 23, beide leer = die Vorgabe
+                               22 bis 6 Uhr (Platzhalter); nur eines oder beide gleich haelt der
+                               Arbeitsstand beim OK an (Nachtzeit.Pruefen). *@
+                            <Ganzzahlfeld Bezeichnung="@LabelNachtBeginn" Einheit="h"
+                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
+                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_BEGINN)"
+                                          Feldname="@Feld(LabelNachtBeginn)" FehlerZustand="FehlerMelden"
+                                          Wert="@_stand.NachtBeginn" WertChanged="w => _stand.NachtBeginn = w" />
+                            <Ganzzahlfeld Bezeichnung="@LabelNachtEnde" Einheit="h"
+                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
+                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_ENDE)"
+                                          Feldname="@Feld(LabelNachtEnde)" FehlerZustand="FehlerMelden"
+                                          Wert="@_stand.NachtEnde" WertChanged="w => _stand.NachtEnde = w" />
                             <Zahlenfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C"
                                         Feldname="@Feld(LabelMaxTemperatur)" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.MaxTemperatur" WertChanged="w => _stand.MaxTemperatur = w" />
@@ -816,6 +829,10 @@
 
     [Parameter] public string LabelSollTag { get; set; } = "Soll am Tag :";
     [Parameter] public string LabelNachtAbsenkung { get; set; } = "Nachtabsenkung auf :";
+    /// <summary>Beginn der Nachtabsenkung (<c>GEBK_LBL_NACHT_BEGINN</c>).</summary>
+    [Parameter] public string LabelNachtBeginn { get; set; } = "Nachtabsenkung von :";
+    /// <summary>Ende der Nachtabsenkung (<c>GEBK_LBL_NACHT_ENDE</c>).</summary>
+    [Parameter] public string LabelNachtEnde { get; set; } = "Nachtabsenkung bis :";
     [Parameter] public string LabelMaxTemperatur { get; set; } = "Maximalraumtemperatur :";
     [Parameter] public string LabelWEAbsenkung { get; set; } = "Wochenendabsenkung :";
     [Parameter] public string LabelSollFerien { get; set; } = "Soll in Ferien :";
@@ -855,6 +872,14 @@
     [Parameter] public string MeldungNameFehlt { get; set; } = "Gebäudenamen eingeben!";
     /// <summary><c>GEBK_MSG_BAUJAHR</c> — {0} und {1} sind die Grenzen des Baujahrs.</summary>
     [Parameter] public string MeldungBaujahr { get; set; } = "Das Baujahr muss zwischen {0} und {1} liegen.";
+    /// <summary><c>GEBK_MSG_NACHTZEIT_NUR_EINE</c> — {0} und {1} sind Beginn und Ende der Vorgabe.</summary>
+    [Parameter] public string MeldungNachtzeitNurEine { get; set; }
+        = "Bitte Beginn und Ende der Nachtabsenkung beide eingeben oder beide leer lassen (leer = {0} bis {1} Uhr).";
+    /// <summary><c>GEBK_MSG_NACHTZEIT_GLEICH</c>.</summary>
+    [Parameter] public string MeldungNachtzeitGleich { get; set; } = "Beginn und Ende der Nachtabsenkung dürfen nicht gleich sein.";
+    /// <summary><c>GEBK_MSG_NACHTZEIT_BEREICH</c> — {0} und {1} sind die Grenzen der Stunde.</summary>
+    [Parameter] public string MeldungNachtzeitBereich { get; set; }
+        = "Die Nachtabsenkung beginnt und endet zu einer vollen Stunde von {0} bis {1}.";
     [Parameter] public string MeldungFerienWinter { get; set; }
         = "Die Ferien müssen über die Jahresgrenze gehen!";
     [Parameter] public string MeldungFerienOstern { get; set; }
@@ -1145,6 +1170,11 @@
             MeldungZahlFehlt = MeldungZahlFehlt,
             MeldungBaujahr = MeldungBaujahr,
             FeldBaujahr = Feld(LabelBaujahr),
+            MeldungNachtzeitNurEine = MeldungNachtzeitNurEine,
+            MeldungNachtzeitGleich = MeldungNachtzeitGleich,
+            MeldungNachtzeitBereich = MeldungNachtzeitBereich,
+            FeldNachtBeginn = Feld(LabelNachtBeginn),
+            FeldNachtEnde = Feld(LabelNachtEnde),
             MeldungFerienWinter = MeldungFerienWinter,
             MeldungFerienOstern = MeldungFerienOstern,
             MeldungFerienSommer = MeldungFerienSommer,

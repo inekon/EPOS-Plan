@@ -409,11 +409,13 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-25_R18_PvAusweis/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **143**,
-LFS-SHA-256 `0c2fe21a…`, dieselbe Datei wie R17). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
-1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
-`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
-im Arbeitsbaum.
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
+LFS-SHA-256 `19a7b632…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
+Datei wie R17; danach änderte Schemaschritt 144 nur das Schema (vier leere Spalten der Nachtzeit), ohne
+Referenzwirkung, zusammengeführt mit der Datenpflege E24 (Nachtrag unten)). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich
+für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
+**einzige** Basis im Arbeitsbaum.
 
 > **Anlass: der PV-Ausweis** (Anwender 25.09.2026, Etappe E26, Befund N1 aus E25, Entscheide E26‑Q1 … Q7
 > nach Empfehlung). `Ergebnis.Photovoltaik.Stromproduktion` führte die Summe der Direktverbrauchsreihe
@@ -449,6 +451,36 @@ im Arbeitsbaum.
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+> **Nachtrag Schemastand 144 (Nachtzeit je Gebäude, E43), die Basis bleibt.** Migrationsschritt
+> **144** (`SCHRITT_NACHTZEIT`; die Nummer steht allein bei `NachtzeitSchema.SCHRITT`, der Quelle für
+> Migration, Werkzeug und Testvorrichtung; er folgt auf die Herkunft der Rohdichte, 143) legt an
+> `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` je zwei nullbare Spalten `Nachtabsenkung_Beginn` und
+> `Nachtabsenkung_Ende` an (`INTEGER`, `CHECK … IS NULL OR … BETWEEN 0 AND 23`, Stunde des Tages; die
+> Nacht ist [Beginn, Ende), zyklisch über Mitternacht) und baut die Sicht `Abfrage_Projektgebaeude` zum
+> sechsten Mal neu — mit allen Spalten der fünf früheren Durchgänge samt Kühlübergabe und Baujahr, 101
+> Spalten, als letzter Sichtneubau. **Reines DDL, keine Saat:** Beide Spalten stehen überall auf NULL,
+> und NULL heißt die Vorgabe 22 bis 6 Uhr, abgeleitet aus den Stunden des Tagsollwerts und bitgleich mit
+> dem Fahrplan davor. Der Tagesbilanz-Weg (Projekt 1040) liest die Spalten nicht.
+>
+> Die Gebäudesimulations-Sitzung (G4) zog den Schritt auf der Fassung von origin mit Schemastand **143**
+> (`76dd9e48…`, vor der Datenpflege E24) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> nach: 4 von 4 Spalten angelegt, Sicht mit 101 Spalten, Marker 144; ein zweiter Lauf legt nichts an.
+> Zellvergleich aller Tabellen gegen die Fassung 143: allein `SchemaVersion` 143 → 144, die vier neuen
+> Spalten überall NULL und die Schematexte von `Tab_Gebaeude`, `Tab_Gebaeude_STAMM` und
+> `Abfrage_Projektgebaeude`; Zeilenzahlen unverändert. `integrity_check` ok, `foreign_key_check` leer,
+> 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite angelegten. Größe 68 714 496
+> Byte (LFS-SHA-256 `9a71b714…`). **Keine Einfrierregel ist berührt** — die Spalten sind leer, keine
+> gesäte Gebäudeangabe ändert sich. Referenzlauf aller vierzehn Projekte gegen die Basis: **14/14
+> PASS** (4 610 207 Werte), 432/432 CSV byte-gleich.
+>
+> **Zusammenführung mit der Datenpflege E24 (#514):** Beide Fassungen gingen von `76dd9e48…` aus — die
+> Datenpflege (Träger 63 an den Kesseln 10369 und 11205, Erdgaszeilen 10130 und 10185 für 1023) und der
+> Schemaschritt 144. Zusammengeführt wurde, indem das Pflegeskript `e24_pflege` (wiederholbar; Vorzustand
+> geprüft, `integrity_check` ok, `foreign_key_check` leer) auf der Fassung 144 (`9a71b714…`) lief:
+> Ergebnis Schemastand 144 mit den gepflegten Zellen, 68 714 496 Byte, LFS-SHA-256 `19a7b632…`. Gegen
+> R18 bleibt der Referenzlauf 14/14 PASS byte-gleich (Nachweis im Gate der Statuszeile #518).
 
 > **Die Vorgängerbasis `2026-09-25_R17_Datenpflege`**, die Basis der Datenpflege nach Konzept
 > Wirtschaftlichkeit § 6.3 Nr. 24 (Kesselträger von 1018 und 1023), ist mit dieser Einfrierung aus dem

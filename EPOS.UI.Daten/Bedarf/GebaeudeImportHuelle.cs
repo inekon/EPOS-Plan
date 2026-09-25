@@ -599,6 +599,9 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION: d.LuftwechselInfiltration = w; break;
                     case GebaeudeZielfelder.LUFTWECHSEL_NUTZER: d.LuftwechselNutzer = w; break;
                     case GebaeudeZielfelder.SOLL_TAG: d.SollTag = w; break;
+                    case GebaeudeZielfelder.SOLL_NACHT: d.NachtAbsenkung = w; break;
+                    case GebaeudeZielfelder.NACHT_BEGINN: d.NachtBeginn = Ganz(w); break;
+                    case GebaeudeZielfelder.NACHT_ENDE: d.NachtEnde = Ganz(w); break;
 
                     // VOLUMEN (Prüfgröße) und FENSTER_GESAMT (abgeleitet) haben kein Feld.
                 }
@@ -621,7 +624,14 @@ namespace WindowsFormsApplication1
         /// (<c>IMP_GEB_PROT_BAUJAHR_UNGUELTIG</c>); was ohne sie hierher kommt, wird gerundet, und der
         /// Editor hält einen Wert außerhalb des Bereichs mit seiner eigenen Regel an.
         /// </summary>
-        private static int? Jahr(double? wert)
+        private static int? Jahr(double? wert) => Ganz(wert);
+
+        /// <summary>
+        /// Eine Ganzzahlzeile (Baujahr, Beginn und Ende der Nachtzeit) als Ganzzahl; <c>null</c> bleibt
+        /// <c>null</c>. Die Prüfung am OK lässt nur ganze Werte im Bereich der Spalte durch; was ohne sie
+        /// hierher kommt, wird gerundet, und der Editor hält einen Wert außerhalb mit seiner Regel an.
+        /// </summary>
+        private static int? Ganz(double? wert)
             => wert is double j && j >= int.MinValue && j <= int.MaxValue ? (int)Math.Round(j) : (int?)null;
     }
 
