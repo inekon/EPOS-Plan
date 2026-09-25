@@ -348,6 +348,12 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_BTN_AUSLEGUNG</c></summary>
     public string KnopfAuslegung { get; set; } = "Auslegung…";
 
+    /// <summary><c>ZPG_BTN_MESSDATEN</c></summary>
+    public string KnopfMessdaten { get; set; } = "Messdaten…";
+
+    /// <summary><c>ZPG_MESSDATEN_TITEL</c></summary>
+    public string MessdatenTitel { get; set; } = "Messdaten";
+
     /// <summary><c>ZPG_STATUS_AUSLEGUNG</c></summary>
     public string StatusAuslegung { get; set; } = "Auslegung übernommen: {0}";
 
@@ -978,4 +984,167 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_KATEG_STATUS_GESPEICHERT</c></summary>
     public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+
+    // =====================================================================
+    // Vergleich mit einer Messreihe und Kalibrierung (Stufe Z5, Gruppe 3)
+    // =====================================================================
+
+    /// <summary><c>ZPG_GRP_VERGLEICH</c></summary>
+    public string GruppeVergleich { get; set; } = "Vergleich mit einer Messreihe";
+
+    /// <summary><c>ZPG_LBL_MESSREIHE</c></summary>
+    public string LabelMessreihe { get; set; } = "Messreihe";
+
+    /// <summary><c>ZPG_BTN_VERGLEICH</c></summary>
+    public string KnopfVergleich { get; set; } = "Vergleich rechnen";
+
+    /// <summary><c>ZPG_KZ_VERGLEICH</c></summary>
+    public string KennzahlVergleich { get; set; } = "Vergleich mit der Messung";
+
+    /// <summary><c>ZPG_VERGL_OHNE_REIHE</c></summary>
+    public string VergleichOhneReihe { get; set; } = "Es ist keine Messreihe eingespielt — „Messdaten…“ spielt eine ein.";
+
+    /// <summary><c>ZPG_VERGL_OHNE_WAHL</c></summary>
+    public string VergleichOhneWahl { get; set; } = "Wählen Sie die Messreihe, gegen die verglichen werden soll.";
+
+    /// <summary><c>ZPG_VERGL_NUR_ERWEITERT</c></summary>
+    public string VergleichNurErweitert { get; set; } = "Der Vergleich mit einer Messreihe steht ab der Stufe Erweitert.";
+
+    /// <summary><c>ZPG_VERGL_LEER</c></summary>
+    public string VergleichLeer { get; set; } = "Noch kein Vergleich gerechnet.";
+
+    /// <summary><c>ZPG_VERGL_LAEUFT</c></summary>
+    public string VergleichLaeuft { get; set; } = "Vergleich läuft — Messreihe „{0}“";
+
+    /// <summary><c>ZPG_VERGL_ABGEBROCHEN</c></summary>
+    public string VergleichAbgebrochen { get; set; } = "Der Vergleich ist abgebrochen; der Arbeitsstand bleibt.";
+
+    /// <summary><c>ZPG_VERGL_VERALTET</c></summary>
+    public string VergleichVeraltet { get; set; } = "Der Vergleich gehört zu einem früheren Arbeitsstand — neu rechnen.";
+
+    /// <summary><c>ZPG_VERGL_STATUS</c></summary>
+    public string VergleichStatus { get; set; } = "Vergleich mit „{0}“ gerechnet";
+
+    /// <summary><c>ZPG_VERGL_STOCHASTISCH</c></summary>
+    public string VergleichStochastisch { get; set; } = "Die verglichene Jahresreihe ist stochastisch gerechnet.";
+
+    /// <summary><c>ZPG_KZ_ENERGIE_VERHAELTNIS</c></summary>
+    public string KzEnergie { get; set; } = "Energie gemessen/gerechnet";
+
+    /// <summary><c>ZPG_KZ_ENERGIE_ABWEICHUNG</c></summary>
+    public string KzEnergieAbweichung { get; set; } = "Abweichung der Energie";
+
+    /// <summary><c>ZPG_KZ_SPITZE</c></summary>
+    public string KzSpitze { get; set; } = "Messspitze / größte gerechnete Stunde";
+
+    /// <summary><c>ZPG_KZ_BAND</c></summary>
+    public string KzBand { get; set; } = "Band der Dauerlinie (P{0}–P{1})";
+
+    /// <summary><c>ZPG_KZ_SPITZENSTREUUNG</c></summary>
+    public string KzSpitzenstreuung { get; set; } = "Streuung der Realisierungsspitzen";
+
+    /// <summary><c>ZPG_KZ_WURZELN</c></summary>
+    public string KzWurzelN { get; set; } = "√N-Skalierungsmaß";
+
+    /// <summary><c>ZPG_KZ_FORM</c></summary>
+    public string KzForm { get; set; } = "Formabgleich — größte mittlere Abweichung";
+
+    /// <summary><c>ZPG_KZ_FORM_TAGTYP</c></summary>
+    public string KzFormTagtyp { get; set; } = "Form {0}";
+
+    /// <summary><c>ZPG_KZ_MONATE</c></summary>
+    public string KzMonate { get; set; } = "Größte Abweichung der Monatsanteile";
+
+    /// <summary><c>ZPG_LAGE_IM_BAND</c></summary>
+    public string LageImBand { get; set; } = "im Band";
+
+    /// <summary><c>ZPG_LAGE_OBERHALB</c></summary>
+    public string LageOberhalb { get; set; } = "über dem Band — die Rechnung unterschätzt die Spitze";
+
+    /// <summary><c>ZPG_LAGE_UNTERHALB</c></summary>
+    public string LageUnterhalb { get; set; } = "unter dem Band — die Rechnung überschätzt die Spitze stärker als erwartet";
+
+    /// <summary><c>ZPG_LAGE_UNBESTIMMT</c></summary>
+    public string LageUnbestimmt { get; set; } = "nicht entscheidbar";
+
+    /// <summary><c>ZPG_FORM_IM_RAHMEN</c></summary>
+    public string FormImRahmen { get; set; } = "✓ im Rahmen";
+
+    /// <summary><c>ZPG_FORM_UEBER_SCHWELLE</c></summary>
+    public string FormUeberSchwelle { get; set; } = "≠ über der Schwelle {0}";
+
+    /// <summary><c>ZPG_VERGL_OHNE_ENSEMBLE</c></summary>
+    public string VermerkOhneEnsemble { get; set; } = "ohne Ensemble nicht entscheidbar";
+
+    /// <summary><c>ZPG_VERGL_OHNE_WERT</c></summary>
+    public string VermerkOhneWert { get; set; } = "nicht entschieden";
+
+    /// <summary><c>ZPG_VERGL_MONAT</c></summary>
+    public string VermerkMonat { get; set; } = "Monat {0}";
+
+    /// <summary><c>ZPG_VERGL_TAGE</c></summary>
+    public string VermerkTage { get; set; } = "{0} Messtage / {1} Rechentage";
+
+    /// <summary><c>ZPG_VERGL_DAUERLINIE</c></summary>
+    public string VermerkDauerlinie { get; set; } = "über {0} Stundenwerte";
+
+    /// <summary><c>ZPG_VERGL_EINHEITEN</c></summary>
+    public string VermerkEinheiten { get; set; } = "N = {0}, 1/√N = {1}";
+
+    /// <summary><c>ZPG_VERGL_STREUBREITE</c></summary>
+    public string VermerkStreubreite { get; set; } = "{0} Realisierungen, Streubreite {1}";
+
+    /// <summary><c>ZPG_BTN_KALIBRIEREN</c></summary>
+    public string KnopfKalibrieren { get; set; } = "Aus Messreihe kalibrieren";
+
+    /// <summary><c>ZPG_BTN_VORSCHLAG_KALIBRIERT</c></summary>
+    public string KnopfKalibriervorschlag { get; set; } = "Vorschlag übernehmen…";
+
+    /// <summary><c>ZPG_HINW_KALIBRIEREN</c></summary>
+    public string HinweisKalibrieren { get; set; } = "Der Jahresmesswert kommt aus der Messreihe, die der Reiter „Kennzahlen“ nennt; ein Teiljahr wird über den Jahresgang der Rechnung hochgerechnet, und ein Hinweis nennt den Bias.";
+
+    /// <summary><c>ZPG_FRAGE_KALIBRIEREN</c></summary>
+    public string FrageKalibrieren { get; set; } = "Der Jahresmesswert der Zone „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen?";
+
+    /// <summary><c>ZPG_STATUS_KALIBRIERT</c></summary>
+    public string StatusKalibriert { get; set; } = "Jahresmesswert aus „{0}“ übernommen";
+
+    /// <summary><c>ZPG_VORSCHLAG_TITEL</c></summary>
+    public string VorschlagTitel { get; set; } = "Kalibriervorschlag";
+
+    /// <summary><c>ZPG_VORSCHLAG_VORLAGE</c></summary>
+    public string VorschlagVorlage { get; set; } = "Vorlage";
+
+    /// <summary><c>ZPG_VORSCHLAG_KOPIE</c></summary>
+    public string VorschlagKopie { get; set; } = "Bezeichnung der Kopie";
+
+    /// <summary><c>ZPG_VORSCHLAG_TAGESBEDARF</c></summary>
+    public string VorschlagTagesbedarf { get; set; } = "Tagesbedarf";
+
+    /// <summary><c>ZPG_VORSCHLAG_JE_EINHEIT</c></summary>
+    public string VorschlagJeEinheit { get; set; } = "Tagesbedarf je Einheit";
+
+    /// <summary><c>ZPG_VORSCHLAG_TAGE</c></summary>
+    public string VorschlagTage { get; set; } = "Vollständige Messtage";
+
+    /// <summary><c>ZPG_VORSCHLAG_WOCHE</c></summary>
+    public string VorschlagWoche { get; set; } = "Wochenfaktoren Mo–So";
+
+    /// <summary><c>ZPG_VORSCHLAG_GAENGE</c></summary>
+    public string VorschlagGaenge { get; set; } = "Tagesgänge je Tagtyp [%]";
+
+    /// <summary><c>ZPG_VORSCHLAG_STUNDE</c></summary>
+    public string VorschlagStunde { get; set; } = "Stunde";
+
+    /// <summary><c>ZPG_VORSCHLAG_HINWEIS</c></summary>
+    public string VorschlagHinweis { get; set; } = "Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und die Zone rechnet danach mit der Kopie.";
+
+    /// <summary><c>ZPG_BTN_VORSCHLAG_UEBERNEHMEN</c></summary>
+    public string KnopfVorschlagUebernehmen { get; set; } = "Übernehmen";
+
+    /// <summary><c>ZPG_FRAGE_VORSCHLAG</c></summary>
+    public string FrageVorschlag { get; set; } = "Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; die Zone rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen?";
+
+    /// <summary><c>ZPG_VORSCHLAG_OHNE</c></summary>
+    public string VorschlagOhne { get; set; } = "Für diese Zone gibt es keinen Vorschlag: {0}";
 }
