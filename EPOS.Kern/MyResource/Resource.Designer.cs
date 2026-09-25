@@ -30747,6 +30747,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Altbestand — Betriebskosten der Wärmepumpe werden nicht je kWh bemessen ähnelt.
+        /// </summary>
+        public static string KDLG_HERL_ALTBESTAND_WP_KWH {
+            get {
+                return ResourceManager.GetString("KDLG_HERL_ALTBESTAND_WP_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die × {0} · {1} · Runde {2} ähnelt.
         /// </summary>
         public static string KDLG_HERL_BASIS {

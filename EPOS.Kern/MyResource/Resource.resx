@@ -21375,6 +21375,9 @@ Möchten Sie das zulassen?</value>
   <data name="KDLG_HERL_ABSOLUT" xml:space="preserve">
     <value>Satz = Betrag</value>
   </data>
+  <data name="KDLG_HERL_ALTBESTAND_WP_KWH" xml:space="preserve">
+    <value>Altbestand — Betriebskosten der Wärmepumpe werden nicht je kWh bemessen</value>
+  </data>
   <data name="KDLG_HERL_KWP" xml:space="preserve">
     <value>{0} Module × {1} Wp = {2} kWp</value>
   </data>
