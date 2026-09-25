@@ -121,7 +121,7 @@ nach Empfehlung — alle a. E23‑Q6 entstand mit der Ergänzung des Anwenders, 
   übersprungen); Testhost-Regel eingehalten.
 - **Merge** `f7823b8e` auf `pm25` über `c48de9e0` ohne Konflikt (Baum gleich `git merge-tree` der beiden Eltern).
 - **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte, voller Lauf 14.379 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 7.121 und 1 übersprungen, EPOS.UI 6.296, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE510.log`, 25.09.2026 13:02–13:10 Uhr, auf `f7823b8e`); Referenzlauf 14/14 gegen R16 byte-gleich aus dem Bau (Worktree e23)
-- **CI:** steht aus (Beobachtung nach dem Push)
+- **CI:** Kern ubuntu 36128668523 (Arbeitszweig), Kern `main` 36128672959 und Windows `main` 36128673030 auf `b0eb1783` grün
 
 ## Abnahme am Gerät (A‑E23‑1, Windows)
 
