@@ -2,6 +2,13 @@
 
 **Rev. 3 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachzug 25.09.2026 — Umsetzung G4b** ([Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49): Der Einzonenimport aus IFC und gbXML
+> legt auf Wunsch schon **eine** Zone je Gebäude mit Bauteilzeilen und Aufbauten samt Schichten an
+> (Regel Z5); mehrere Zonen, `ID_Nachbarzone` und die Zonierungsregeln Z1…Z4 bleiben G6c. Nach **E45**
+> lässt der Import bei vollständigen Schichten den U-Wert leer, abweichend vom Vorrang des eingetragenen
+> U-Werts in 3.4. Nachgezogen in 1.2, 3.4 und Kapitel 6.
+>
 > **Nachzug 25.09.2026 — Umsetzung G3** ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md),
 > [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.44–N1.46): Die Schritte **S-A bis S-C**
 > sind als Schemaschritte **132 bis 134** mit G3 gebaut, und zwar **alle acht Tabellen** — auch
@@ -158,8 +165,10 @@ Erkennung folgt der Schemaprobe mit Gedächtnis aus `AnlageStrangCtrl.cs:102`: e
 
 Zwei Wege führen zu Zonendaten — **Eingabe** (der Anwender legt im Gebäudedialog Zonen an, von Hand
 oder über „Gebäude als eine Zone übernehmen", Kapitel 5; Stufe G6b) und **Import** (eine IFC-Datei
-liefert Räume, Grenzflächen und Schichten, Kapitel 6; Stufe G6c). Ein drittes Tor gibt es nicht;
-insbesondere entsteht **keine** Zone stillschweigend aus einem Einzonengebäude.
+liefert Räume, Grenzflächen und Schichten, Kapitel 6; Stufe G6c — **eine** Zone je Gebäude samt
+Bauteilen und Aufbauten legt schon der Einzonenimport auf Wunsch an, G4b, Konzept N1.49). Ein
+drittes Tor gibt es nicht; insbesondere entsteht **keine** Zone stillschweigend aus einem
+Einzonengebäude.
 
 **Der Import ist nicht auf IFC beschränkt.** Auch eine gbXML-Datei führt Zonen — `Space` je Raum
 und `Zone` als deren Zusammenfassung (Befund R, 5.1) — und speist **dasselbe** Zonenmodell aus
@@ -604,6 +613,15 @@ Beispieldateien sind die U-Werte aus `Pset_*Common.ThermalTransmittance` die **b
 Quelle (FZK-Haus 33 plausible Werte zwischen 0,3 und 2,0 W/(m²K), DigitalHub 359), die Stoffwerte
 dagegen praktisch nie gefüllt (Befund P, § 3.4).
 
+**Der Import schreibt anders (E45, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49).**
+Bringt eine IFC- oder gbXML-Datei zu einem Bauteil einen **vollständigen** Schichtaufbau (Dicke, λ, ρ, c
+je Schicht, im Plausibilitätsband), schreibt der Bauteilimport (G4b) den Aufbau und lässt `U_Wert`
+**leer** — es rechnen die Schichten; der U-Wert der Datei steht nur zum Vergleich, eine Abweichung über
+**5 %** wird gemeldet. Grund: R₁, C₁ und U·A kommen so aus denselben Schichten, und R_Rest kann nicht
+negativ werden. Ohne vollständige Stoffwerte trägt die Zeile nur den U-Wert (der Datei, sonst aus einer
+masselosen Schichtung, sonst die Vorgabe der Baualtersklasse). Der Vorrang des eingetragenen U-Werts
+gilt weiter für Zeilen, die der Anwender pflegt.
+
 **Einheitenfalle.** Gl. (9), S. 12 verlangt C in J/(m²K), also c in J/(kgK). Die Bauteiltabellen
 der Richtlinie (z. B. A10.1, S. 58) führen c in **kJ/(kgK)** — Faktor 1 000. IFC liefert
 `Pset_MaterialThermal.SpecificHeatCapacity` in SI, also J/(kgK) (Befund P, § 3.2). Der
@@ -1000,6 +1018,20 @@ Alles, was Befund N für den Einzonenimport festlegt — Ablauf `Lesen`/`Ueberne
 Meldungsschlüssel `IMP_IFC_PROT_*`, Einheitenauswertung über `IIfcProject.UnitsInContext`,
 Azimutkette, Größenlimit (50 MB Windows / 20 MB iOS), Lizenzlage xBIM unter CDDL-1.0 nach
 Entscheid E3, iOS-Trimming — gilt unverändert weiter. Hier steht nur, was darüber hinausgeht.
+
+**Was der Einzonenimport schon schreibt (G4b, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+N1.49).** Mit dem Schalter „Als Zone mit Bauteilen übernehmen“ legt der Import aus IFC und gbXML an der
+Projektkopie **eine** Zone je Gebäude an — Regel Z5 dieses Kapitels, Nutzfläche, Volumen und Raumhöhe
+der übernommenen beheizten Räume, Quellkennung des Gebäudes —, dazu je Grenzfläche, Fenster und Tür eine
+Zeile in `Tab_Bauteil` und je vollständigem Schichtsatz einen Aufbau samt Schichten; die Paarungen stehen
+in der Importzuordnung. Grenzflächen gegen unbeheizte oder unbekannte Räume tragen `UNBEHEIZT`
+(Kellertemperatur), Grenzflächen zwischen zwei übernommenen beheizten Räumen sind innere Masse: nach
+**E45** bei vollständiger Datenlage Zeilen beider Seiten innerhalb der Zone (je Raumbegrenzung), sonst
+der Innenflächenfaktor aus der Datei. Kein Namensabgleich nach 6.3 — `ID_Baustoff` bleibt leer, die
+Stoffwerte stehen als Kopie an der Schicht. **G6c** bleibt, was darüber hinausgeht: die
+Zonierungsregeln Z1…Z4 mit mehreren Zonen, `ID_Nachbarzone` und Randbedingung `ZONE`, der
+Namensabgleich N1…N7, die Grundrissansicht; trägt ein Gebäude schon eine Zone, schreibt der Import
+keine.
 
 **Was E27 für die Naht des Imports festlegt** (E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32)): Das
 IFC-Paket bleibt am Kern, und die Naht `IGebaeudeLeser` wird **von Anfang an** gezogen (**A2**) —
