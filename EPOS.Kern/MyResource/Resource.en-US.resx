@@ -31311,10 +31311,10 @@ Do you want to allow this?</value>
     <value>Import catalogue</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder.</value>
+    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
-    <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. Existing rows remain unchanged: identical content is skipped, differing content is added as an own version “(Import n)”.</value>
+    <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. An existing usage type remains unchanged: identical content is skipped, differing content is added as an own version “(Import n)”. A demand day and a parameter are replaced instead — a delivery row as well; the report names every replacement.</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI" xml:space="preserve">
     <value>Select package…</value>
@@ -31329,7 +31329,7 @@ Do you want to allow this?</value>
     <value>Please select a package first.</value>
   </data>
   <data name="ZPGK_IMPORT_ZUSAMMENFASSUNG" xml:space="preserve">
-    <value>{0} created · {1} skipped · {2} rejected</value>
+    <value>{0} created · {1} replaced · {2} skipped · {3} rejected</value>
   </data>
   <data name="ZPGK_IMPORT_ANGELEGT" xml:space="preserve">
     <value>created</value>
@@ -35125,5 +35125,92 @@ Do you want to allow this?</value>
   </data>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>What to do: {0}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE" xml:space="preserve">
+    <value>The package carries demand days; the database does not carry the demand day tables — they are skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_OHNE_TABELLE" xml:space="preserve">
+    <value>The package carries parameters; the database does not carry the parameter table — they are skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEZUGSART_OHNE_SPALTE" xml:space="preserve">
+    <value>The package names the reference quantity type of the demand days; the database does not carry that column yet — the entry is not taken over.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_OHNE_TAG" xml:space="preserve">
+    <value>{0}, line {1}: the event refers to demand day {2}, which the package does not carry.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE" xml:space="preserve">
+    <value>Demand day “{0}” carries the reference quantity {1:0.###}; it must be empty or positive.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_OHNE_EREIGNIS" xml:space="preserve">
+    <value>Demand day “{0}” carries no draw-off event.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_FENSTER" xml:space="preserve">
+    <value>Demand day “{0}” carries an event from minute {1} over {2} minute(s) — it does not fit into the day (0 to 1439, end at most 1440).</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_ENERGIE" xml:space="preserve">
+    <value>Demand day “{0}” carries an event with the energy {1:0.###} kWh; it must not be negative.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ENERGIE_NULL" xml:space="preserve">
+    <value>Demand day “{0}” carries no energy in total.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_REIHENFOLGE" xml:space="preserve">
+    <value>The order of the events of demand day “{0}” is not gapless starting at 1.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ERSETZT" xml:space="preserve">
+    <value>The existing demand day “{0}” (status {1}) now carries the values of the package: {3} event(s) instead of {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_ERSETZT" xml:space="preserve">
+    <value>Parameter “{0}” now carries {2:0.#######} instead of {1:0.#######} [{3}].</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_WIRKUNG" xml:space="preserve">
+    <value>{0} parameter(s) have been replaced; they apply to every future sizing and every validation of this catalogue version.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG_ERSETZT" xml:space="preserve">
+    <value>{0} delivery row(s) have been replaced and now carry the status “import” ({1}). The delivered version does not come back by itself: a program update does not recreate the database, and a delivery template only takes rows with the status “delivery” — the delivered version needs a new installation or a catalogue package that carries it.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_UNBEKANNT" xml:space="preserve">
+    <value>No calculation path of the program reads parameter “{0}”; it is not imported.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_EINHEIT" xml:space="preserve">
+    <value>Parameter “{0}” carries the unit “{1}” in the package; the program reads it in “{2}”.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH" xml:space="preserve">
+    <value>The value {1:0.#######} of parameter “{0}” is outside the permitted range {2:0.###} to {3:0.###}.</value>
+  </data>
+  <data name="ZPGK_IMPORT_ERSETZT" xml:space="preserve">
+    <value>replaced</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_ANGELEGT" xml:space="preserve">
+    <value>would create</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_ERSETZT" xml:space="preserve">
+    <value>would replace</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_UEBERSPRUNGEN" xml:space="preserve">
+    <value>would skip</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_ABGELEHNT" xml:space="preserve">
+    <value>would reject</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_BEDARFSTAGE" xml:space="preserve">
+    <value>Demand days</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_PARAMETER" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_NUTZUNGSARTEN" xml:space="preserve">
+    <value>Usage types</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_BEDARFSTAG" xml:space="preserve">
+    <value>Demand day</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_PARAMETER" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="ZPGK_IMPORT_PRUEFEN" xml:space="preserve">
+    <value>Check only, write nothing</value>
+  </data>
+  <data name="ZPGK_IMPORT_PRUEFHINWEIS" xml:space="preserve">
+    <value>A check run changes nothing; the column “Result” says what an import would do.</value>
   </data>
 </root>

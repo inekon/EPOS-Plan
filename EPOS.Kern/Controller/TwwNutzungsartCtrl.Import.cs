@@ -23,17 +23,50 @@ namespace WindowsFormsApplication1
         Uebersprungen = 1,
 
         /// <summary>Nicht angelegt, weil sie eine Regel des Katalogs verletzt; <see cref="TwwImportzeile.Grund"/> nennt sie.</summary>
-        Abgelehnt = 2
+        Abgelehnt = 2,
+
+        /// <summary>
+        /// Die vorhandene Zeile trägt jetzt die Werte des Pakets (Bedarfstag, Parameter — ZU30,
+        /// ZU31): dieselbe <c>ID</c>, Stand <c>IMPORT</c>, <c>ReadOnly</c> 0. Nutzungsarten werden
+        /// nie ersetzt.
+        /// </summary>
+        Ersetzt = 3
     }
 
     /// <summary>
-    /// Eine Zeile des Importberichts — je Nutzungsart des Pakets: Ausgang, Name und Katalogversion
+    /// Zu welcher Tabelle eine Zeile des Importberichts gehört (ZU32): Der Bericht führt je Tabelle
+    /// eigene Zeilen, in der Reihenfolge Bedarfstage, Parameter, Nutzungsarten.
+    /// </summary>
+    internal enum TwwImportbereich
+    {
+        /// <summary><c>Tab_TwwNutzungsart_STAMM</c> samt Tagesgangsatz, Tagesgängen und Kategorien.</summary>
+        Nutzungsart = 0,
+
+        /// <summary><c>Tab_TwwBedarfstag_STAMM</c> samt <c>Tab_TwwBedarfstagEreignis_STAMM</c>.</summary>
+        Bedarfstag = 1,
+
+        /// <summary><c>Tab_TwwParameter_STAMM</c>.</summary>
+        Parameter = 2
+    }
+
+    /// <summary>
+    /// Eine Zeile des Importberichts — je Eintrag des Pakets: Ausgang, Name und Katalogversion
     /// aus dem Paket, der Name im Katalog (bei einer abweichenden namensgleichen Zeile „… (Import n)"),
     /// die neue Id (0, wenn nichts angelegt wurde), die Zeile der Paketdatei und der Grund als
     /// <see cref="ZapfSatz"/> (bei „angelegt" nur, wenn der Name abweicht).
     /// </summary>
     internal sealed record TwwImportzeile(TwwImportausgang Ausgang, string Nutzungsart, string Katalogversion,
-                                          string Katalogname, int IdNeu, int Zeile, ZapfSatz Grund);
+                                          string Katalogname, int IdNeu, int Zeile, ZapfSatz Grund)
+    {
+        /// <summary>Die Tabelle, zu der die Zeile gehört (Vorgabe: die Nutzungsarten).</summary>
+        internal TwwImportbereich Bereich { get; init; }
+
+        /// <summary>
+        /// Die Id der Zeile, die der Import ersetzt hat (<see cref="TwwImportausgang.Ersetzt"/>) —
+        /// dieselbe wie vorher, damit ein Projekt, das darauf zeigt, weiter darauf zeigt; 0 sonst.
+        /// </summary>
+        internal int IdErsetzt { get; init; }
+    }
 
     /// <summary>
     /// <b>Der Bericht eines Katalogimports</b>: je Nutzungsart eine <see cref="TwwImportzeile"/>, dazu
@@ -42,7 +75,10 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class TwwKatalogimportBericht
     {
-        /// <summary>Je Nutzungsart des Pakets eine Zeile, in der Reihenfolge der Paketdatei.</summary>
+        /// <summary>
+        /// Je Eintrag des Pakets eine Zeile, in der Reihenfolge Bedarfstage, Parameter,
+        /// Nutzungsarten und darin in der Reihenfolge der Paketdatei (ZU32).
+        /// </summary>
         internal List<TwwImportzeile> Zeilen { get; } = new List<TwwImportzeile>();
 
         /// <summary>Übergangene Dateien, Tagesgänge und Kategorien — benannt, nie still.</summary>
@@ -51,12 +87,25 @@ namespace WindowsFormsApplication1
         /// <summary>Der Grund, aus dem das Paket als Ganzes abgelehnt ist; <c>null</c> = gelesen.</summary>
         internal ZapfSatz Abbruch { get; set; }
 
+        /// <summary>
+        /// War es ein Prüflauf? Dann ist NICHTS geschrieben, und die Zeilen sagen, was ein Import
+        /// täte („würde ersetzen").
+        /// </summary>
+        internal bool Pruefmodus { get; set; }
+
         internal int Angelegt => Zeilen.Count(z => z.Ausgang == TwwImportausgang.Angelegt);
         internal int Uebersprungen => Zeilen.Count(z => z.Ausgang == TwwImportausgang.Uebersprungen);
         internal int Abgelehnt => Zeilen.Count(z => z.Ausgang == TwwImportausgang.Abgelehnt);
+        internal int Ersetzt => Zeilen.Count(z => z.Ausgang == TwwImportausgang.Ersetzt);
 
         /// <summary>Die Ids der angelegten Nutzungsarten, in der Reihenfolge des Pakets.</summary>
-        internal IReadOnlyList<int> NeueIds => Zeilen.Where(z => z.Ausgang == TwwImportausgang.Angelegt).Select(z => z.IdNeu).ToList();
+        internal IReadOnlyList<int> NeueIds => Zeilen
+            .Where(z => z.Ausgang == TwwImportausgang.Angelegt && z.Bereich == TwwImportbereich.Nutzungsart)
+            .Select(z => z.IdNeu).ToList();
+
+        /// <summary>Die Zeilen einer Tabelle, in ihrer Reihenfolge.</summary>
+        internal IReadOnlyList<TwwImportzeile> ZeilenVon(TwwImportbereich bereich)
+            => Zeilen.Where(z => z.Bereich == bereich).ToList();
     }
 
     /// <summary>
@@ -92,16 +141,40 @@ namespace WindowsFormsApplication1
     /// sind sie benannt übergangen.</para>
     ///
     /// <para><b>Zwei Stufen der Ablehnung.</b> Taugt das Paket seiner Form nach nicht (unbekannte oder
-    /// fehlende Spalte, falsche Feldzahl, keine Zahl, doppelte ID), ist es als Ganzes abgelehnt und
+    /// fehlende Spalte, falsche Feldzahl, keine Zahl, doppelte ID, ein Ereignis ohne seinen
+    /// Bedarfstag), ist es als Ganzes abgelehnt und
     /// NICHTS geändert — der Bericht nennt Datei, Zeile und Spalte. Verletzt eine Nutzungsart eine
     /// Regel (Pflichtangabe, Wertemenge, Raster, Tagesgangsatz, Kategorien), ist nur sie abgelehnt;
     /// die übrigen werden angelegt. Geschrieben wird in EINEM Vorgang.</para>
+    ///
+    /// <para><b>Bedarfstage und Parameter (ZU30 bis ZU33).</b> Das Paket darf dazu
+    /// <c>Tab_TwwBedarfstag_STAMM.csv</c>, <c>Tab_TwwBedarfstagEreignis_STAMM.csv</c> und
+    /// <c>Tab_TwwParameter_STAMM.csv</c> führen; sie sind wahlfrei, und ohne die Tabelle im Schema
+    /// ist die Datei benannt übergangen. Hier gilt eine ANDERE Dublettenregel als bei den
+    /// Nutzungsarten: <b>Der Import ersetzt die vorhandene Zeile</b> — am Platz, mit derselben
+    /// <c>ID</c>, damit ein Projekt, das den Bedarfstag gewählt hat, weiter darauf zeigt, und
+    /// <b>auch eine Zeile der Auslieferung</b>. Die ersetzte Zeile ist danach eine Anwenderzeile
+    /// (<c>Status = 'IMPORT'</c>, <c>ReadOnly = 0</c>, ohne <c>Beleg</c>) mit der Provenienz des
+    /// Pakets; die Ereignisse eines Bedarfstags werden vollständig ersetzt. Der Bericht nennt jede
+    /// Ersetzung, und ein Hinweis nennt die betroffenen Auslieferungszeilen. Eine Versionsbildung
+    /// „(Import n)" gibt es hier nicht — ein Parameter ist ein Wert, keine Version.</para>
+    ///
+    /// <para><b>Prüfmodus.</b> <see cref="Importieren(IReadOnlyList{TwwPaketdatei}, bool)"/> mit
+    /// <c>pruefen = true</c> rechnet denselben Bericht und schreibt NICHTS (der Vorgang wird
+    /// zurückgerollt); die Oberfläche sagt dann „würde ersetzen" statt „ersetzt".</para>
     /// </summary>
     internal static partial class TwwNutzungsartCtrl
     {
-        /// <summary>Die Dateien des Katalogs der Nutzungsarten in Einspielreihenfolge (Verwiesene zuerst).</summary>
+        /// <summary>
+        /// Die Dateien des Katalogpakets in Einspielreihenfolge (Verwiesene zuerst): der Bedarfstag
+        /// vor seinen Ereignissen, die Parameter, dann der Tagesgangsatz vor seinen Tagesgängen und
+        /// die Nutzungsart vor ihren Kategorien.
+        /// </summary>
         internal static readonly IReadOnlyList<string> IMPORT_TABELLEN = new[]
         {
+            TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
+            TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
+            TwwSchema.TAB_TWW_PARAMETER_STAMM,
             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
             TwwSchema.TAB_TWW_TAGESGANG_STAMM,
             TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
@@ -363,13 +436,17 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// <b>Spielt das Paket ein</b> (Klassenkommentar): Form prüfen, je Nutzungsart die Regeln,
-        /// den Dublettenscan und das Anlegen in EINEM Vorgang. Der Bericht nennt jede Nutzungsart mit
-        /// Ausgang und Grund; ein Abbruch lässt den Katalog unverändert.
+        /// <b>Spielt das Paket ein</b> (Klassenkommentar): Form prüfen, je Eintrag die Regeln,
+        /// den Dublettenscan und das Anlegen, Ersetzen oder Überspringen in EINEM Vorgang. Der
+        /// Bericht nennt jeden Eintrag mit Tabelle, Ausgang und Grund; ein Abbruch lässt den Katalog
+        /// unverändert.
+        ///
+        /// <para><paramref name="pruefen"/> = <c>true</c> ist der <b>Prüflauf</b>: derselbe Bericht,
+        /// aber der Vorgang wird zurückgerollt — es bleibt nichts geschrieben.</para>
         /// </summary>
-        internal static TwwKatalogimportBericht Importieren(IReadOnlyList<TwwPaketdatei> dateien)
+        internal static TwwKatalogimportBericht Importieren(IReadOnlyList<TwwPaketdatei> dateien, bool pruefen = false)
         {
-            var bericht = new TwwKatalogimportBericht();
+            var bericht = new TwwKatalogimportBericht { Pruefmodus = pruefen };
             if (!TabellenVorhanden() || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANG_STAMM))
             {
                 bericht.Abbruch = ZapfSatz.Neu("KATALOGIMPORT_TABELLEN_FEHLEN");
@@ -394,10 +471,28 @@ namespace WindowsFormsApplication1
                 {
                     var satzZiel = new Dictionary<long, int>();
                     var zeilen = new List<TwwImportzeile>();
+                    var ersetzteAuslieferung = new List<string>();
+                    // Die Reihenfolge des Berichts (ZU32): Bedarfstage, Parameter, Nutzungsarten.
+                    foreach (PaketBedarfstag b in paket.Bedarfstage)
+                        zeilen.Add(BedarfstagEinspielen(v, b, paket, ersetzteAuslieferung));
+                    int ersetzteParameter = 0;
+                    foreach (PaketParameterzeile p in paket.Parameter)
+                    {
+                        TwwImportzeile z = ParameterEinspielen(v, p, ersetzteAuslieferung);
+                        if (z.Ausgang == TwwImportausgang.Ersetzt) ersetzteParameter++;
+                        zeilen.Add(z);
+                    }
                     foreach (PaketNutzungsart p in paket.Nutzungsarten)
                         zeilen.Add(Einspielen(v, p, paket, satzZiel));
-                    v.Commit();
+
+                    // Ein Prüflauf schreibt nichts: ohne Commit rollt der Vorgang zurück.
+                    if (!pruefen) v.Commit();
                     bericht.Zeilen.AddRange(zeilen);
+                    if (ersetzteParameter > 0)
+                        bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_PARAMETER_WIRKUNG", ersetzteParameter));
+                    if (ersetzteAuslieferung.Count > 0)
+                        bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_AUSLIEFERUNG_ERSETZT",
+                                                          ersetzteAuslieferung.Count, ersetzteAuslieferung.ToArray()));
                 }
             }
             catch (Exception ex) when (ex is not LesemodusException)
@@ -568,11 +663,19 @@ namespace WindowsFormsApplication1
         // Die Form des Pakets
         // =================================================================================
 
-        /// <summary>Das gelesene Paket: die Nutzungsarten in Dateireihenfolge, ob Kategorien geschrieben werden.</summary>
+        /// <summary>
+        /// Das gelesene Paket: die Nutzungsarten, Bedarfstage und Parameter in Dateireihenfolge, ob
+        /// Kategorien geschrieben werden und ob der Bedarfstag eine Spalte <c>Bezugsart</c> hat.
+        /// </summary>
         private sealed class Paket
         {
             internal List<PaketNutzungsart> Nutzungsarten { get; } = new List<PaketNutzungsart>();
+            internal List<PaketBedarfstag> Bedarfstage { get; } = new List<PaketBedarfstag>();
+            internal List<PaketParameterzeile> Parameter { get; } = new List<PaketParameterzeile>();
             internal bool MitKategorien { get; set; }
+
+            /// <summary>Führt <c>Tab_TwwBedarfstag_STAMM</c> die Spalte <c>Bezugsart</c> (Schritt 124)?</summary>
+            internal bool MitBezugsart { get; set; }
         }
 
         /// <summary>Ein Tagesgangsatz des Pakets: Paket-Id, Name, die vier Tagesgänge samt Provenienz und — wenn er nicht taugt — der Grund.</summary>
@@ -647,6 +750,10 @@ namespace WindowsFormsApplication1
         {
             var tabellen = new Dictionary<string, PaketTabelle>(StringComparer.OrdinalIgnoreCase);
             bool kategorienDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
+            bool bedarfstageDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM)
+                                 && DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM);
+            bool parameterDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM);
+            bool bedarfstageGemeldet = false;
             foreach (TwwPaketdatei d in dateien)
             {
                 string tabelle = IMPORT_TABELLEN.FirstOrDefault(t => string.Equals(t + ".csv", d.Name, StringComparison.OrdinalIgnoreCase));
@@ -660,13 +767,33 @@ namespace WindowsFormsApplication1
                     bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_KATEGORIEN_OHNE_TABELLE"));
                     continue;
                 }
+                if ((tabelle == TwwSchema.TAB_TWW_BEDARFSTAG_STAMM || tabelle == TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM)
+                    && !bedarfstageDa)
+                {
+                    // EIN Hinweis, auch wenn beide Dateien liegen - es fehlt dieselbe Stufe des Schemas.
+                    if (!bedarfstageGemeldet) bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE"));
+                    bedarfstageGemeldet = true;
+                    continue;
+                }
+                if (tabelle == TwwSchema.TAB_TWW_PARAMETER_STAMM && !parameterDa)
+                {
+                    bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_PARAMETER_OHNE_TABELLE"));
+                    continue;
+                }
                 if (tabellen.ContainsKey(tabelle)) throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_DATEI_DOPPELT", d.Name));
                 tabellen[tabelle] = Tabelle(d, tabelle);
             }
             if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, out PaketTabelle tn))
                 throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_KEINE_DATEI", TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"));
 
-            var paket = new Paket { MitKategorien = kategorienDa };
+            var paket = new Paket
+            {
+                MitKategorien = kategorienDa,
+                MitBezugsart = bedarfstageDa
+                               && DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.SPALTE_BEZUGSART)
+            };
+            paket.Bedarfstage.AddRange(Bedarfstage(tabellen, paket, bericht));
+            paket.Parameter.AddRange(Parameterzeilen(tabellen, bericht));
             Dictionary<long, PaketSatz> saetze = Saetze(tabellen, bericht);
             List<PaketKategorie> kategorien =
                 tabellen.TryGetValue(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, out PaketTabelle tk) ? Kategorien(tk) : new List<PaketKategorie>();
@@ -758,6 +885,10 @@ namespace WindowsFormsApplication1
             // Stufe Z5) ist keine Spalte der Tabelle: Ein Katalogimport derselben Datei liest sie mit,
             // übernimmt sie aber nicht — die Kategorien eines Imports hängen an ihrer Nutzungsart.
             if (tabelle == TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM) bekannt.Add(TwwSchema.STEUERSPALTE_GRUPPE);
+            // Die Spalte „Bezugsart" des Bedarfstags kommt erst mit Schemaschritt 124 (T3). Ein Paket,
+            // das sie führt, soll an einer älteren Datenbank nicht als Ganzes fallen: Die Spalte gilt
+            // als bekannt, der Wert bleibt liegen — und das sagt ein Hinweis des Berichts.
+            if (tabelle == TwwSchema.TAB_TWW_BEDARFSTAG_STAMM) bekannt.Add(TwwSchema.SPALTE_BEZUGSART);
             // NReco setzt KEINE Vorgabe fuer BufferSize (ohne sie teilt der Leser durch null); die
             // Groesse begrenzt die Laenge EINES Satzes - 64 kB wie der Ganglinienleser.
             var csv = new CsvReader(new StringReader(text), trenner) { BufferSize = 65536, TrimFields = true };
