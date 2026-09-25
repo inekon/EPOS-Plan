@@ -5,7 +5,7 @@
 Kühlung KU1; 111–113 = die Schritte E, F, G, #446; 114 = Kühlung KU2; 115 = Zapfprofil Z3, T2, #453; 119 = Kühlung
 KU2 Welle 3, E34), **116–118 = die Schritte B, C, D, gebaut #461 (E9a); E9b (#462) ohne Schritt; 120 = die Sätze der
 Nutzungsdauertabelle, gebaut #463 (E10); E13 (#474) und E14 (#477) ohne Schritt**; 121 = Katalogverweis des Projektgebäudes (#468),
-122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt**; 142 = dritte Reparatur der Anschlusslängen (#505); **E20 (#502), E21 (#506), E22 (#503) und E23 (#510) ohne Schritt** · Referenzbasis `2026-09-25_R17_Datenpflege` · Gegenstand: das konsolidierte Konzept
+122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt**; 142 = dritte Reparatur der Anschlusslängen (#505); **E20 (#502), E21 (#506), E22 (#503) und E23 (#510) ohne Schritt** · Referenzbasis `2026-09-25_R18_PvAusweis` · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (seit #474 unter `ueberholt/`),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -562,7 +562,7 @@ beide mit E7; Nr. 31 kein Nachziehlauf, die Kennzeichnung ist gebaut #434.
 Größe: S ≤ ½ Tag · M 1–2 Tage · L > 2 Tage. Modell nach `CLAUDE.md`: Opus 5 für Umsetzung, Tests und
 Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzeptarbeit. Nachweis: „Anker"
 = die Ankertests aus E1; „Referenzlauf" = byte-gleich gegen R9 (die Basis der Erhebung; die Zeilen nennen die Basis ihrer
-Zeit, seit E24 gilt `2026-09-25_R17_Datenpflege`); „bunit" = `EPOS.UI.Tests`.
+Zeit, seit E26 gilt `2026-09-25_R18_PvAusweis`); „bunit" = `EPOS.UI.Tests`.
 
 | Etappe | Inhalt | Größe | Rechenwirkung | Nachweis | Schema | Wiki | Modell | Voraussetzung |
 |---|---|---|---|---|---|---|---|---|
