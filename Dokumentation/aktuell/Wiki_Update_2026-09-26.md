@@ -444,6 +444,8 @@ den Statuszeilen #358–#403; ein eigener Eintrag entfiele als Dopplung nach Reg
   richtig aus. (#383)
 - Seit 26.09.2026: Der BHKW-Katalog führt elektrischen und thermischen Wirkungsgrad; der
   Gesamtwirkungsgrad ergibt sich daraus. (#392)
+- Seit 26.09.2026: Die Gerätekataloge haben eine eigene Hilfeseite; die Hilfeknöpfe der
+  Verwaltungen führen dorthin. (#509)
 - Seit 26.09.2026: Die Farben der Diagramme lassen sich in den Einstellungen je Größe ändern;
   der Bericht nimmt dieselben Farben. (#403)
 - Seit 26.09.2026: Brauchwasser-Zapfprofile lassen sich je Nutzungszone erzeugen und als

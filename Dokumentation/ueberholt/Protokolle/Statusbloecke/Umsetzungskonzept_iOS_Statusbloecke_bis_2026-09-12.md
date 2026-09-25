@@ -10779,3 +10779,53 @@ Upload-Papier nennt weiter „neue Seite“, obwohl der Bestand live ist; (d) de
 Beispielkommentar `Form_Klimadaten.label*` in
 `WindowsFormsApplication1/Allgemein/Hilfe/InfoKnopf.cs:109` (nur ein
 Kommentar).
+
+## #509 — Wiki-Seite Gerätekataloge: Anwenderentscheid „anlegen“, Hilfeknöpfe der Katalogverwaltungen (25.09.2026)
+
+Anwenderentscheid 25.09.2026 (Entscheid zur Wiki-Seite Gerätekataloge:
+Empfehlung → anlegen). Basis `fe32922c`; Commits (Opus 5.5) `1a78dd59` (#509:
+Hilfeknöpfe der acht Geräteverwaltungen auf Gerätekataloge) und `25edfd33`
+(Papiere #509: Gerätekataloge als Neuanlage, Hilfeknöpfe verdrahtet). Kein
+Schemaschritt, kein Kern-Code.
+
+**(a) Umsetzung.** Ausschließlich über
+`WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt` (Schlüssel im Kern
+in `KatalogBrowserProfil` und `ModulKatalogProfil`, Wärmepumpen-Stamm im
+`WaermepumpeStammDialog` mit `Form_WP.btn_Help`; keine Umbenennung, kein
+Doppel, die Vorsilben bleiben für die KI-Erkennung stehen). Acht Hilfeknöpfe
+verdrahtet — Heizkessel (`Form_Heizkessel_Admin.btn_Help`), BHKW
+(`Form_BHKWAdmin.btn_Help`), Wärmepumpen (`Form_WP.btn_Help`),
+Solarkollektoren (`Form_SolarKollektorenAdmin.btn_Help`), Pufferspeicher
+(`Form_PufferSp_Admin.btn_Help`), PV-Module (`Form_AdminPV.btn_Help`),
+Wechselrichter (`Form_AdminWechselrichter.btn_Help`, bisher ohne Zeile, der
+Knopf blieb still) und Stromspeicher (`Form_AdminStromspeicher.btn_Help`) —
+zeigen jetzt auf `Gerätekataloge#<anker>` statt auf die alten Ziele: Seiten
+der Projektdialoge ohne Abschnitt zur Katalogpflege. Alle acht Anker standen
+schon in der Quelle, unverändert; die sieben alten Zeilen stehen gesammelt in
+einem Block hinter `Form_Emissionskatalog`. Die `….Berechnung`-Schlüssel
+(Teil C) blieben unverändert auf `Berechnung/…#rechenweg`. Übergang: bis zur
+Neuanlage am 26.09.2026 bleiben die acht Knöpfe still, der Hilfekatalog kennt
+das Ziel noch nicht.
+
+**(b) Papiere (Agent).** `Wiki_Update_2026-09-26.md` Tafelzeile Gerätekataloge
+(Neuanlage, Anwenderentscheid 25.09.2026; die Hilfeknöpfe der acht
+Verwaltungen zeigen mit #509 auf die Seite, Belege #463, #509), ein
+Absatzvermerk, Abschnitt 3 „entschieden 25.09.2026: anlegen — Neuanlage beim
+Upload“; die Seitenliste des Konzepts Hilfesystem trägt Gerätekataloge jetzt
+als „noch nicht hochgeladen, Neuanlage beim Upload“ mit den acht Schlüsseln
+samt Ankern.
+
+**Gate.** Kern-Filter 0 Fehler; gefilterter Lauf (Hilfe, HelpMapping, Wiki,
+Dokumentation, Katalog, Ki) Kern 1422, UI 1574, KiKern 549, Engine 1;
+`HelpMappingAnkerWacheTests` grün; Windows-Schale 0 Fehler; Tabu 0 Treffer.
+Die Hauptsitzung ergänzt das Nachgate.
+
+**Logbuch.** Ein Satz unter Version 1.2.0.4.
+
+**Offen (in „Nach #509“).** (a) Upload am 26.09.2026: die Seite entsteht als
+Neuanlage, danach lösen sich die acht Knöpfe auf. (b) Folgekandidaten, nur
+auf Zuruf: `Form_KatalogDubletten.btn_Help` → Katalogpflege (die Seite trägt
+den Anker `dubletten`); die Import-Dialoge (`Form_*_einlesen`,
+`KatalogImportProfil.HilfeSchluessel`, `Main_PV_Test`,
+`Form_WechselrichterImport`) zeigen weiter auf Fachseiten, die Anker
+`import`/`import-kuehlkennlinien` liegen vor.
