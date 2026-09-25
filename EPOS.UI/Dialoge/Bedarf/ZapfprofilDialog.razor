@@ -1137,8 +1137,10 @@
     </Ueberlagerung>
 
     @* --- Ueberlagerung: die eingespielten Typtage (Stufe Z4b) ---------------- *@
+    @* Dasselbe beim Typtag-Import: Auch er schreibt sofort, also liest das Kreuz den Katalog neu
+       und laesst keine Wahl stehen, die das Paket nicht mehr traegt. *@
     <Ueberlagerung Offen="@(_typtagGaben is not null)" Titel="@Texte.GruppeTyptage"
-                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _typtagGaben = null">
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => TyptageGeschlossen(true)">
         <KindInhalt>
             @if (_typtagGaben is not null)
             {
@@ -1235,8 +1237,11 @@
     </Ueberlagerung>
 
     @* --- Ueberlagerung: die Messreihen des Projekts (Stufe Z5) ---------------- *@
+    @* Das Kreuz der Ueberlagerung geht denselben Weg wie "Beenden" des eingebetteten Dialogs: Der
+       schreibt SOFORT (Einspielen, Loeschen), also ist nach dem Kreuz alles moeglich geschehen -
+       gelesen wird neu, und ein Vergleich gegen eine geloeschte Reihe faellt weg. *@
     <Ueberlagerung Offen="@(_messreihenGaben is not null)" Titel="@Texte.MessdatenTitel"
-                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _messreihenGaben = null">
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => MessdatenGeschlossen(true)">
         <KindInhalt>
             @if (_messreihenGaben is not null)
             {
@@ -1928,6 +1933,10 @@
     /// Der Importdialog ist zu: Hat sich der eingespielte Stand geändert, wird der Katalogstand
     /// neu gelesen (die Wahllisten ziehen nach), und eine Wahl, die es nicht mehr geben kann, fällt
     /// benannt zurück auf den Bestandsweg — nie still auf eine Zone, die das Paket nicht führt.
+    ///
+    /// <para>Das Kreuz und Esc der Überlagerung rufen denselben Weg mit <c>true</c>: Der Importdialog
+    /// schreibt sofort, also ist nach dem Kreuz alles möglich geschehen. Das ist die sichere Seite —
+    /// ein überholter Punkt der Auslegung ist neu zu rechnen, ein stehen gebliebener wäre falsch.</para>
     /// </summary>
     private void TyptageGeschlossen(bool geaendert)
     {
@@ -3504,6 +3513,11 @@
     /// Der Messdaten-Dialog ist zu: Haben sich die Reihen geändert, wird die Wahlliste neu gelesen;
     /// ein Vergleich, dessen Reihe es nicht mehr gibt, fällt weg (nie ein Ergebnis zu einer Reihe,
     /// die nicht mehr da ist), und eine gewählte Reihe, die weg ist, wird abgewählt.
+    ///
+    /// <para>Das Kreuz und Esc der Überlagerung rufen denselben Weg mit <c>true</c>: Der eingebettete
+    /// Dialog schreibt sofort, es gibt also nichts zu verwerfen — wer ihn geöffnet hatte, kann
+    /// eingespielt oder gelöscht haben. Neu zu lesen kostet eine Abfrage, ein Vergleich gegen eine
+    /// gelöschte Reihe kostet den Anwender das Vertrauen in die Zahl.</para>
     /// </summary>
     private void MessdatenGeschlossen(bool geaendert)
     {

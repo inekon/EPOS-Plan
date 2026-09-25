@@ -307,6 +307,32 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-tww-messreihen"));
     }
 
+    /// <summary>
+    /// Das Kreuz der Überlagerung geht denselben Weg wie „Beenden" des eingebetteten Dialogs: Die
+    /// Reihen werden neu gelesen, und ein Vergleich gegen eine Reihe, die es nicht mehr gibt, fällt
+    /// weg — der Dialog schreibt sofort, also ist nach dem Kreuz alles möglich geschehen.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_der_Ueberlagerung_liest_neu_und_raeumt_einen_Vergleich_ohne_Reihe()
+    {
+        var p = new Pruefstand();
+        var cut = Aufbauen(p, messdaten: () => new Dictionary<string, object>());
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
+
+        // Waehrend die Ueberlagerung offen steht, verschwindet die verglichene Reihe.
+        Knopf(cut, "Messdaten…").Click();
+        p.Stand = Reihen(REIHE_B);
+        cut.Find("button.epos-ueberlagerung-zu").Click();
+
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung .epos-tww-messreihen"));
+        Assert.Null(cut.Instance.Vergleichsergebnis);
+        cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
+        Assert.Contains("Wählen Sie die Messreihe", cut.Find(".epos-zapfprofil-vergleich-leer").TextContent);
+    }
+
     // =================================================================================
     // Die Wahl der Messreihe
     // =================================================================================
