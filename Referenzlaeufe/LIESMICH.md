@@ -354,7 +354,7 @@ im selben Schritt auf die Testdatenbank laufen.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-25_R15_Anlagenkopplung`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-25_R16_Anlagenprio`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Skripte` und `LIESMICH.md` stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
@@ -364,11 +364,11 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger` am 25.09.2026** (32 Basen,
-alle acht Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger` und `2026-09-25_R15_Anlagenkopplung` am 25.09.2026** (33 Basen,
+alle neun Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 32 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 33 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -378,202 +378,82 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-25_R15_Anlagenkopplung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+**`2026-09-25_R16_Anlagenprio/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **141**, LFS-SHA-256 `b48add6a…`; heute Schemastand **142**, LFS-SHA-256 `1360e2be…`, Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
-1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
-`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige**
-Basis im Arbeitsbaum.
+Schemastand **142**, LFS-SHA-256 `1360e2be…` — dieselbe Datei, auf der R15 zuletzt gehalten wurde; ihre
+Herleitung samt Projekt 1047 steht im Abschnitt der Basis R15 unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)). Gegen
+diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml`
+den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt
+1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: die fünfte und letzte Welle der Stufe AK1 der Anlagenkopplung** (vom Anwender am 25.09.2026
-> samt dem Einfrieren und der Aufnahme des neuen Projekts in die CI beauftragt). Eine Änderung, allein an
-> den Daten — **das Referenzprojekt mit Kopplung** (Anlagenkopplung 11.4, Einfrierregel „gesäte
-> Auslegungsdaten der Übergabe" oben): Projekt **1047 „Referenz Anlagenkopplung AK1"** ist eine Kopie von
-> 1017 auf dem Kopierweg des Programms (`ProjektDuplizierenCtrl`, im Skript Schritt für Schritt
-> nachgebildet) mit neun gesetzten Zellen, über
-> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py):
-> `Tab_Einstellungen.Anlagenkopplung` NULL → „AK1", die Kaskade `Tool_2` „Heizkessel" → „Wärmepumpe" und
-> `Tool_3` „Wärmepumpe" → „Heizkessel" (die Wärmepumpe vor dem Elektrokessel, Anwenderentscheid vom
-> 25.09.2026; der Tausch der Platzinhalte wie der Pfeil „nach vorn" der Simulationskonfiguration,
-> `Kaskade_Gepflegt` bleibt 0 wie überall in der Testdatenbank), am Projektgebäude 10653 (der Kopie von 10599)
-> `Heizkreis_Aktiv` 0 → 1, `Uebergabe_Art` NULL → „RADIATOR", `Heizkurve_Aktiv` 0 → 1,
-> `Kuehluebergabe_Aktiv` 0 → 1 und `Kuehl_Uebergabe_Art` NULL → „KUEHLDECKE", dazu die Beschreibung des
-> Projekts. Alle übrigen Übergabespalten bleiben NULL — es rechnen die EPOS-Vorgaben der Art: Radiator
-> 55/45 °C mit n = 1,3, Heizkurve aus dem Auslegungspunkt (Niveau 0 K, Steilheit 1,0),
-> Auslegungs-Außentemperatur aus dem kältesten Tagesmittel, Nennleistung aus der Auslegungsheizlast,
-> Proportionalband 1,0 K, Sollwerte des Gebäudes; Kühldecke 16/19 °C mit n = 1,1, Vorlaufgrenze 16 °C,
-> Nennleistung aus dem Auslegungstag (19. Juni, 20,41 kW am Katalog-Gebäude). **1017 bleibt unverändert
-> und ungekoppelt.** Die Testdatenbank ist die Fassung von origin mit Schemastand 141 (`a427aa72…`, die
-> Schritte 140 und 141 stehen mit ihren Nachträgen beim R14-Abschnitt unter `ueberholt/`), auf die das
-> Skript angewandt ist; Sicherung vorher außerhalb des Repositoriums. Der Zellvergleich aller Tabellen
-> gegen diese Fassung (10 507 032 Zellen) zeigt 9 365 neue Zeilen in 24 Tabellen und 21 geänderte Zeilen
-> in `sqlite_sequence`, keine geänderte oder entfernte Zeile sonst, das Schema gleich. Die Kopie gleicht
-> Zelle für Zelle einem vom Programm duplizierten Projekt (Prüfstand außerhalb des Repositoriums) bis auf
-> die neun Zellen. `integrity_check` ok, `foreign_key_check` leer, 68 747 264 Byte; ein zweiter Lauf des
-> Skripts ändert nichts (byte-gleich).
+> **Anlass: der Anwenderentscheid vom 25.09.2026 zu Konzept Wirtschaftlichkeit § 6.3 Nr. 18** — der
+> Rechenweg ordnet die Anlagen nach derselben Regel wie Hydraulikbild und Erzeugerkarten
+> (`Ladeordnung.SqlAnlagenprio`, Regel „99“: gepflegte Priorität zuerst, eine Anlage ohne Priorität —
+> NULL oder 0 — hinten, bei Gleichstand die ID). Eine Änderung am Rechenweg, keine an den Daten, kein
+> Schemaschritt:
 >
-> **Warum so** — eine Kopie statt 1017 selbst, damit das Kühlreferenzprojekt bleibt, wie es ist, und das
-> Paar 1017/1047 zugleich „ideal gegen gekoppelt" zeigt; 1017 als Vorlage, weil nur dort beide Seiten der
-> Kopplung zu rechnen haben (Einzelgebäude nach VDI 6007, Kühlung mit Kälteerzeuger); Radiator mit
-> gefahrener Heizkurve und Kühldecke mit allen Vorgaben, damit die Basis die hergeleiteten Wege der Art
-> trägt und keine Zahl von Hand (Anlagenkopplung 8.4, 11.4); die Wärmepumpe vor dem Elektrokessel, damit
-> sie Wärme liefert und die Kennlinienwahl am gerechneten Vorlauf (Anlagenkopplung 6.1) auf ein Ergebnis
-> der Basis wirkt — auf Platz 3 deckten BHKW und Elektrokessel die gekappte Last ganz.
+> 1. **Die fünf Rechenweg-Leser**, die bis dahin `ORDER BY Prioritaet, ID` lasen und damit die
+>    ungepflegte Anlage VOR die gepflegte stellten: `SimulationControl.WP_Liste_Laden`,
+>    `…QuellbezuegeAufbauen`, `…SenkenPufferDerAnlagen`, `WaermesenkeClass.SenkenLaden`,
+>    `…SenkenlistenLaden`.
+> 2. **Die drei Modul-Lader**, die ganz ohne `ORDER BY` in der Zeilenfolge der Datenbank luden:
+>    `SimulationControl.SPK_Liste_Laden`, `…Solar_Liste_Laden`, `…BHKW_Liste_Laden`.
 >
-> **Die dreizehn alten Projekte bleiben byte-gleich** — Nullnachweis vor dem Einfrieren, auf dem Stand
-> mit 1047 in der Testdatenbank: 13/13 PASS gegen R14 (4 207 049 Werte), 394/394 CSV byte-gleich, nur
-> `protokoll.txt` anders; nach der Kaskade von 1047 und den Schritten 140 und 141 ebenso byte-gleich zur
-> ersten Einfrierung dieser Basis. **1047 kommt mit 38 Dateien und 198 Skalaren dazu**: gegen 1017 die sechs Reihen
-> des Heiz- und des Kältekreises (`vorlauf_0.csv`, `ruecklauf_0.csv`, `uebergabe_0.csv`,
-> `kuehlvorlauf_0.csv`, `kuehlruecklauf_0.csv`, `kuehluebergabe_0.csv`) und die Skalare
-> `Energiebedarf.Vorlauf_Mittel`, `Ruecklauf_Mittel`, `Uebergabe_Begrenzt_Stunden` samt ihren
-> Kühl-Gegenstücken und den Vektorsummen der sechs Reihen — 394 → 432 CSV, 2 249 → 2 447 Skalare.
+> **Allein 1042 bewegt sich, und nur im Index der Module** — alle Werte und alle Zeitreihen bleiben
+> Zeichen für Zeichen gleich, 1047 und die übrigen zwölf Projekte sind in allen Dateien byte-gleich zu R15.
+> Die beiden Wärmepumpen von 1042 tauschen die Plätze in `aggregate.csv` (10 Werte):
 >
-> | | 1017 (ideal) | 1047 (gekoppelt) |
-> |---|---:|---:|
-> | Heizwärme [MWh/a] | 90,19 | 82,75 (−8,3 %) |
-> | Heizlastspitze [kW] | 63,16 | 45,64 |
-> | mittlere Raumtemperatur der Heizzeit [°C] | 20,72 | 20,08 |
-> | Vorlauf / Rücklauf, bedarfsgewichtet [°C] | — | 36,98 / 33,56 |
-> | Stunden mit begrenzter Wärmeübergabe [h] | — | 1 108,2 (bis 2,4 K unter dem Sollwert) |
-> | Kältebedarf [MWh/a] | 2,52 | 2,33 (−7,5 %) |
-> | Kühlvorlauf / Kühlrücklauf, bedarfsgewichtet [°C] | — | 18,00 / 18,81 |
-> | Stunden mit begrenzter Kühlübergabe [h] | — | 0 |
-> | Stunden mit Kühlbedarf; Überhitzungsstunden [h] | 402; 306 | 423; 327 |
-> | Kaskade der Wärmeerzeuger | BHKW, Elektrokessel, WP | BHKW, WP, Elektrokessel |
-> | Wärmedeckung BHKW / Wärmepumpe / Elektrokessel [%] | 77,5 / 0,05 / 22,3 | 82,4 / 16,4 / 1,2 |
-> | Wärme der Wärmepumpe [MWh/a] | 0,04 | 13,60 |
-> | Strom der Wärmepumpe Heizseite / Kühlseite [MWh/a] | 0,02 / 0,55 | 3,54 / 0,51 |
-> | Jahresarbeitszahl der Wärmepumpe im Heizbetrieb | 2,49 | 3,84 |
-> | Wärme des Elektrokessels [MWh/a] | 20,12 | 1,00 |
-> | Restwärme [MWh/a] | 0,10 | 0 |
-> | Kältedeckung durch die Wärmepumpe | 98,4 % | 98,8 % |
-> | Netzbezug `Stromrestbedarf` [MWh/a] | 655,88 | 641,18 |
+> | 1042, `aggregate.csv` | R15 `WaermepumpeModul[0]` | R15 `[1]` | R16 `WaermepumpeModul[0]` | R16 `[1]` |
+> |---|---|---|---|---|
+> | `.Modul` (Anlage, Priorität) | CS7800iLW 16 (14818, keine) | CS6800iAW MB + AW 10 OR-T (14817, 1) | CS6800iAW MB + AW 10 OR-T (14817, 1) | CS7800iLW 16 (14818, keine) |
+> | `.Leistung` [kW] | 15 | 11 | 11 | 15 |
+> | `.Waermeproduktion` [MWh/a] | 20,84 | 71,45 | 71,45 | 20,84 |
+> | `.Stromverbrauch` [MWh/a] | 7,06 | 26,29 | 26,29 | 7,06 |
+> | `.Betriebsstunden` [h] | 2 073,4 | 5 995,29 | 5 995,29 | 2 073,4 |
 >
-> **Die Abweichung ist die Kopplung, kein Fehler** (Anlagenkopplung 3.5, 4.4, 7.1). Die Wärmeübergabe
-> ist nach den Vorgaben auf die stationäre Auslegungsheizlast bemessen; nach der Absenkung reicht sie in
-> 1 108 Stunden nicht, die Aufheizspitze wird gekappt, und der P-Regler hält den Raum mit seinem Band von
-> 1 K im Mittel etwas unter dem Sollwert — beides senkt die Heizwärme um 8,3 % (Heizwärme, Spitze und
-> begrenzte Stunden wie in der Probe der zweiten Welle mit dem Heizkreis allein). Auf der Kälteseite hebt
-> das Band die Raumluft bis zu 1 K über den Kühlsollwert, bevor die Kühldecke voll liefert: Der
-> Kältebedarf sinkt um 7,5 %, die Stunden mit Kühlbedarf steigen von 402 auf 423 und die
-> Überhitzungsstunden von 306 auf 327 (die Probe der vierten Welle mit der Kühldecke allein: 2,36 MWh/a
-> und 330 Überhitzungsstunden; mit dem Heizkreis dazu liegt der Raum in der Heizzeit tiefer). Das ist
-> gewollt; die Sollwerte von 1017 bleiben.
+> **A/B der beiden Teile** (gemessen vor dem Zusammenführen mit AK1 Welle 5 an den dreizehn Projekten
+> gegen R14, danach an allen vierzehn gegen R15):
 >
-> **Die Wärmepumpe auf Platz 2 wählt ihre Kennlinie am gerechneten Vorlauf.** Hinter dem BHKW übernimmt
-> sie 13,60 MWh/a (16,4 %), der Elektrokessel nur noch 1,00 MWh/a; der Netzbezug sinkt gegen 1017 um
-> 14,7 MWh/a. Der Lauf nennt die Stunden je Stützstelle des Heizkreises — 35 °C 3 858 h, 45 °C 1 782 h,
-> 55 °C 122 h, dazu 2 309 Stunden unter 35 °C (dort gilt die unterste Kennlinie) —, und die
-> Jahresarbeitszahl im Heizbetrieb ist 13,60 / 3,54 = **3,84**. **Gegenprobe ohne Kopplung** (nur an einer
-> Arbeitskopie außerhalb des Repositoriums, 1047 mit `Anlagenkopplung` NULL, sonst gleich): Die Wärmepumpe
-> rechnet dann durchgehend an der Kennlinie des Anlagenvorlaufs 55 °C und kommt auf eine Jahresarbeitszahl
-> von 19,04 / 6,25 = **3,05** — bei höherem Heizbedarf (90,19 MWh/a, ideal) und mehr Betriebsstunden
-> (575 statt 396 h). Die Kennlinienwahl am gerechneten Vorlauf wirkt also, und die Basis hält sie. Die
-> Kälteseite bleibt am festen Kühl-Vorlauf 18 °C der Maschine (E37, A3): EER-Jahreswert 4,52 wie in 1017,
-> Kältestrom 0,51 MWh/a, alles aus dem Netz; die Kaskade ändert daran nichts.
+> | Stand | Vergleich | Ergebnis |
+> |---|---|---|
+> | Teil 1 allein | gegen R14 (13 Projekte) | 12/13 PASS und byte-gleich; 1042 FAIL mit den **10 Werten** oben, die übrigen 35 Dateien byte-gleich |
+> | Teil 1 + 2 | gegen Teil 1 allein (13 Projekte) | **394/394 CSV byte-gleich** — Teil 2 ändert in keinem Projekt etwas, nicht einmal einen Index |
+> | Teil 1 + 2 | gegen R15 (14 Projekte, Schemastand 142) | 13/14 PASS, 431/432 CSV byte-gleich; allein 1042 `aggregate.csv` mit denselben **10 Werten**; 1047 PASS und byte-gleich (38 Dateien) |
 >
-> **Rechenzeit (E36):** Das beidseitig gekoppelte Gebäude von 1047 rechnet in 50 bis 62 ms je Jahr
-> (Heizwärme eines Gebäudes samt Eingang, das Beste aus fünf Läufen nach dem Anlauf, zwei Messungen),
-> das ungekoppelte von 1017 in 22 ms — unter der Grenze von 100 ms.
+> **Warum ohne Rechenwirkung:** Die Deckungsreihenfolge legt die Kaskade über den Typ fest (`Tool_1..4`),
+> Anlagen finden ihre Senken über die Anlagen-ID und Puffer über `Z_AnlageSenke.Ladeprio`; die Rechenfolge
+> der Wärmepumpen von 1042 steht in `ModulEbenen` (getrennte Senken: 14817 Heizkreis und Puffer 1054196,
+> 14818 nur Brauchwasserpuffer 1054202). Die Reihenfolge der Senken- und Pufferlisten ändert sich außerdem
+> in 1030 (BHKW ohne Priorität hinter BHKW und Kessel mit Priorität) und in 1040, 1041, 1045 (Kessel ohne
+> Priorität hinter der Wärmepumpe mit Priorität 1) — ohne Wirkung auf eine Zahl. Teil 2 greift in keinem
+> Projekt: Keines führt zwei Kessel oder zwei Kollektorfelder, und die beiden BHKW von 1030 stehen nach der
+> Regel wie nach der Zeilenfolge (14920 mit Priorität 1 vor 14921 ohne). Rechnerisch wirkt die Regel erst
+> bei zwei Anlagen gleichen Typs auf derselben Rechenebene und Senke, deren Priorität von der ID abweicht.
 >
-> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet. NaN steht nur, wo es gewollt ist:
-> `vorlauf_0.csv` und `ruecklauf_0.csv` von 1047 tragen in den 1 063 Stunden ohne Heizbetrieb NaN (die
-> Lücke der Reihe, Anlagenkopplung 8.3). Der Vergleich nimmt NaN gegen NaN als gleich; `pruefen` nennt die
-> Lücken dieser vier Reihenmuster als Hinweis (`Referenzlauf/Plausibilitaet.cs`, benannte Ausnahme) und
-> meldet die Basis **plausibel**.
+> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet; NaN nur in den gewollten Lücken der
+> Vorlauf- und Rücklaufreihen von 1047 (wie in R15).
 >
-> **Einfrierregeln:** Die Regel „gesäte Auslegungsdaten der Übergabe" entsteht mit diesem Projekt und umfasst
-> die Kaskade des gekoppelten Projekts; für den Platz der Wärmepumpe gilt zugleich „gesäte Kältedaten". 1047 ist
-> zugleich ein Referenzprojekt mit Gebäude-, Kälte- und Kälteerzeugerdaten und mit eigenen Zeilen in
-> `energy_project_settings` — die Regeln „gesäte Gebäudedaten", „gesäte Kältedaten" und die der
-> Emissionsfaktoren gelten für seine Zeilen wie für die von 1017. PV-Modulkoeffizienten und Flottenstand
-> 1046 sind nicht berührt.
+> **Einfrierregeln:** nicht berührt — keine gesäten Daten geändert, die Testdatenbank ist byte-gleich.
 >
-> **Zweimal eingefroren, am selben Tag und vor der Veröffentlichung:** zuerst mit der Wärmepumpe auf Platz 3
-> (Schemastand 139), dann mit der Kaskade oben auf Schemastand 141. Zwischen beiden bewegt sich allein 1047
-> (neun Dateien: `aggregate.csv`, die vier Reihen der Wärmepumpe `wp_produktion`, `wp_strom`,
-> `wp_waermebedarf`, `wp_restwaerme`, drei des Kessels und `reststrom_viertelstunde.csv`); die dreizehn
-> übrigen Projekte sind byte-gleich.
->
-> **Determinismus geprüft:** zweiter Lauf desselben Standes **14/14 byte-gleich** (432/432 CSV) und
-> **GESAMT: PASS** gegen diese Basis (4 610 207 Werte). Der Lauf der sechs CI-Projekte mit der
-> Kommandozeile aus `kern.yml`: **6/6 PASS** (2 208 587 Werte), 198/198 CSV byte-gleich.
+> **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **14/14 byte-gleich** (432/432 CSV)
+> und untereinander **GESAMT: PASS** (4 610 207 Werte); der Einfrierlauf ist mit beiden byte-gleich.
 >
 > ```bash
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
->   --ziel Referenzlaeufe/2026-09-25_R15_Anlagenkopplung
+>   --ziel Referenzlaeufe/2026-09-25_R16_Anlagenprio
 > ```
 >
-> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
-> [Protokoll der fünften Welle AK1](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_AK1_Welle5_Referenzprojekt.md)
-> und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis. Nachweis im Test:
+> `EPOS.Kern.Tests/AnlagenprioRechenwegTests` (die acht Leser nutzen die Regel; in 1042 steht die
+> Wärmepumpe ohne Priorität hinter der mit Priorität 1).
 
-> **Nachtrag #505: Schemastand 142 (dritte Berichtigung der Anschlusslängen), die Basis bleibt.**
-> Migrationsschritt **142** (`SCHRITT_GEBAEUDE_DRITTE_REPARATUR`; die Nummer steht allein bei
-> `GebaeudeAnschlusslaengenDritteReparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
-> auf die Folgeberichtigung, 141) berichtigt nach dem Anwenderentscheid vom 25.09.2026 („Empfehlung übernommen —
-> eindeutig unplausible Werte berichtigen, den Rest lassen“) die Berichtstabelle des Nachtrags #496: 19 Zellen an
-> achtzehn Sätzen von `Tab_Gebaeude_STAMM` — **reines DML** in der Bauart von #493 und #496 (Bezeichner und
-> unplausibler Wert ± 0,05 je Spalte, dieselben Anweisungen), nichts gelöscht, Projektkopien unberührt. Neu ist allein
-> das Bild **„leer“** (NULL) für die Laibung dreier Sätze: eine feste Anweisung mehr bei
-> `GebaeudeAnschlusslaengenReparatur` (`SQL_FENSTER_WAND_LEER` samt Zählung), weil ein Wertebereich keine leere Zelle
-> trifft. Regel der Herleitung wie #496: Zwilling gleicher Geometrie, sonst Verhältnis der Quelle × Fensterfläche;
-> Kanten = Umfang U = (Außenwand + Fenster) / (Nutzfläche / Grundfläche × Raumhöhe), nicht unter der Quadratkante
-> 4·√Grundfläche. ΔH_T = Σ ψ·ΔL je Satz (ψ des Satzes; ψ 0 oder leer ergibt 0).
->
-> | Satz | Spalte | vorher | nachher | Herleitung | ΔH_T |
-> |---|---|---|---|---|---|
-> | 6 `Pflegeheim-122-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 0 | 540 m | Zwilling 8 `Pflegeheim-C-S-140-EnEV2016` gleicher Geometrie (Wand 2 132, Fenster 545, Grund 540 m²): 540 m = 0,99 m/m² | +81,0 W/K (ψ 0,15) |
-> | 15 `Industriehalle-320` | dieselbe | 0 | 16 000 m | Zwilling 14 `Industrie_ne_81` (Wand 15 100, Fenster 6 400, Grund 36 587 m²): 2,5 m/m², dort plausibel | 0 (ψ 0) |
-> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | dieselbe | 0 | 391,5 m | Zwillinge 65 `kl_Hotel-I-080`, 73 `ml-Hotel-NE-68` (Wand 613,1, Fenster 156,6, Grund 254,9 m²): 2,5 m/m² | 0 (ψ 0) |
-> | 117 `Verw_H_75` | dieselbe | leer | 391,5 m | Zwilling 118 `Verw_I_33` gleicher Geometrie | +15,7 W/K (ψ 0,04) |
-> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | dieselbe | leer | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 476,8 / 164,36 = 2,901 m/m² × 504 m² | 0 (ψ leer) |
-> | 106 `Bürogebäude KfW 55` | dieselbe | 0 | 2 875 m | kein Satz gleicher Geometrie; Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m² | 0 (ψ 0) |
-> | 207 `KMH-G-U-120` | dieselbe | 0 | 238,3 m | KMH G (206, 209): 268,6 / 112,015 = 2,398 m/m² × 99,37 m² | 0 (ψ 0) |
-> | 23 `Hallenbad-Umkl-140-EnEV2016` | dieselbe | 50 | 865,1 m | Ausgangssatz 24 `Hallenbad-Umkl-180`: 142 / 70,4 = 2,017 m/m² × 428,9 m² (50 m wären 0,12 m/m²) | +32,6 W/K (ψ 0,04) |
-> | 34 `gr_Hotel-80-EnEV2016` | dieselbe | 600 | 6 164,4 m | Geometrie der F-Sätze und von 37 `gr_Hotel-G-134` (Wand 10 094, Grund 1 469, Nutzfläche 18 012 m²) nach #493: 7 879 / 3 062,3 = 2,5729 m/m² × 2 395,9 m² (600 m wären 0,25 m/m²); die gerundeten Kanten 300 m (Umfang 313,8 m) bleiben | +500,8 W/K (ψ 0,09) |
-> | 108 `Bürogebäude_gross-30-EnEV2016` | dieselbe | 330 | 4 460 m | kein Satz gleicher Geometrie; Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² (330 m wären 0,18 m/m²) | +371,7 W/K (ψ 0,09) |
-> | 42 `Hotel_G_96`, 72 `ml-Hotel-G-096` | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 14,6 | 86,6 m | der Umfang, den #496 als Dachkante gesetzt hat (Geometrie 87,7 m, Quadratkante 83,1 m); 14,6 m wären weniger als ein Fünftel der Quadratkante | je +46,8 W/K (ψ 0,65) |
-> | 134 `GMH-G-U-97` | dieselbe | 14,6 | 86,6 m | wie 42 | +47,9 W/K (ψ 0,665) |
-> | 84 `GMH-BZ_T`, 85 `GMH-J-015` | dieselbe | 14,6 | 122,3 m | der Umfang der eigenen Geometrie aus #496 (Dachkante), Quadratkante 88,1 m | je +71,6 W/K (ψ 0,665) |
-> | 14 `Industrie_ne_81` | `Abmessung_Anschluß_Wand_Dach` | 7 337,4 | 2 362,1 m | Umfang der eigenen Geometrie (15 100 + 6 400) / (39 645 / 36 587 × 8,4 m) = 2 362,1 m; Quadratkante 765,1 m, 7 337,4 m wären ihr 9,6-Faches | −497,5 W/K (ψ 0,10) |
-> | 14 `Industrie_ne_81` | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 7 337,4 | 2 362,1 m | derselbe Umfang (der Satz führte beide Kanten gleich); die Laibung 16 000 m (2,5 m/m²) trägt und bleibt | −248,8 W/K (ψ 0,05); Satz −746,3 W/K |
->
-> **Nicht geändert (Anwenderentscheid):** die Kanten der Laibungssätze (0 m bei ψ 0; bei 117 leer, bei 105, 107 samt
-> ψ leer), die Kellerkanten 0 m der Heime, Schulen und Hallenbäder (ψ 0), die Laibungen 0,32 bis 0,64 m/m² der Sätze
-> 46, 57, 120, die Gruppe „nur Dachkante“ (geneigte Dächer) samt den Referenzsätzen 145 und 146. Danach führt kein
-> Katalogsatz eine leere Laibung, eine Laibung 0 m bei Fenstern (`AltenH-95-EnEV2016` hat keine Fenster), eine
-> Kellerkante 14,6 m oder eine Kellerkante über dem Neunfachen der Quadratkante.
->
-> Nachgezogen auf der Fassung von origin mit Schemastand **141** (Nachtrag #496 oben, `a427aa72…`) mit
-> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
-> 19, berichtigt 19, offen danach 0, Marker 142; ein zweiter Lauf berichtigt nichts. Zellvergleich aller 144 Tabellen
-> gegen die Fassung 141 (10 506 856 Zellen): allein `SchemaVersion` 141 → 142 und die 19 Zellen der Tabelle; Schema
-> unverändert; `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes
-> samt den von SQLite angelegten. Größe 67 915 776 Byte (LFS-SHA-256 `fc5f143e…`). **Ergebnisneutral:** Keinen der
-> achtzehn Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch über den Namen); die
-> dreizehn Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist berührt.**
-> Referenzlauf aller dreizehn Projekte **13/13 PASS gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
-> außer `protokoll.txt`)**.
->
-> *Gemessen hat #505 gegen R14; der Nachtrag #496, auf den er sich bezieht, steht mit dem Nachtrag Z5 am
-> Ende des R14-Abschnitts unter `Dokumentation/ueberholt/Referenzbasen/`.* **Zusammenführung mit AK1
-> Welle 5 — R15 bleibt:** Die Testdatenbank ist
-> die Fassung von origin mit Schemastand 142 (`fc5f143e…`), auf die
-> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py)
-> angewandt ist; ein zweiter Lauf ändert nichts. Zellvergleich gegen die Fassung von origin (10 507 032
-> Zellen): genau die 9 365 Zeilen des Projekts 1047 in 24 Tabellen und 21 Zeilen `sqlite_sequence`, Schema
-> gleich. `integrity_check` ok, `foreign_key_check` leer, 68 747 264 Byte (LFS-SHA-256 `1360e2be…`).
-> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte, 432/432 CSV
-> byte-gleich, außer `protokoll.txt`); die berichtigten Sätze führt auch 1047 nicht (es führt Satz 125 wie 1017).
-
-> **Die Vorgängerbasis `2026-09-24_R14_Kaelteerzeuger`**, die erste Basis mit Kälteerzeuger, ist mit dieser
-> Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Kälteerzeuger von 1017
-> und den Nachträgen zu den Schemaständen 119 bis 141 steht in
+> **Die Vorgängerbasis `2026-09-25_R15_Anlagenkopplung`**, die erste Basis mit Anlagenkopplung, ist mit
+> dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt
+> 1047 und dem Nachtrag zu Schemastand 142 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -745,7 +625,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-25_R15_Anlagenkopplung`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-25_R16_Anlagenprio`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell
