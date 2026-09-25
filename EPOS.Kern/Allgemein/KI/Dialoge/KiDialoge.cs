@@ -1176,17 +1176,18 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Das Reiterblatt „Bericht" derselben Ansicht — zwei Einstellwerte und drei
+        /// Das Reiterblatt „Bericht" derselben Ansicht — drei Einstellwerte und drei
         /// Anzeigen ueber <c>EPOS.UI.Seiten.Berichte.BerichtSeiteKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Zwei Einstellwerte, zwei Mengen.</b> Ausgabeformat und Zielordner stehen
-        /// im Stand der Seite und gehen mit dem Lauf in die Huelle; welche Versionen
-        /// und welche Bausteine der Bericht traegt, sind MENGEN VON VERWEISEN und damit
-        /// keine Feldwerte (ein <c>KiDialogFeld</c> traegt genau einen). Sie gehen als
-        /// AUFSTELLUNG hinaus — dieselbe Bauart wie bei der Einheitenliste der
-        /// Stromspeicher-Ansicht.
+        /// <b>Drei Einstellwerte, zwei Mengen.</b> Ausgabeformat und Zielordner stehen
+        /// im Stand der Seite und gehen mit dem Lauf in die Huelle; die Word-Vorlage
+        /// (BV-E1, <see cref="BerichtVorlagenfeld"/>) ist die Wahl der Gruppe „Vorlage".
+        /// Welche Versionen und welche Bausteine der Bericht traegt, sind MENGEN VON
+        /// VERWEISEN und damit keine Feldwerte (ein <c>KiDialogFeld</c> traegt genau
+        /// einen). Sie gehen als AUFSTELLUNG hinaus — dieselbe Bauart wie bei der
+        /// Einheitenliste der Stromspeicher-Ansicht.
         /// </para>
         /// <para>
         /// <b>Kein Speicherweg.</b> „Erstellen" rechnet den Bericht und schreibt eine
@@ -1206,6 +1207,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("zielordner", "BerichtSeiteKiSicht.Zielordner",
                                      KiDialogTexte.BkbZielName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbZielErl, leerErlaubt: true),
+                    BerichtVorlagenfeld(),
                     new KiDialogFeld("varianten", "BerichtSeiteKiSicht.Varianten",
                                      KiDialogTexte.BkbVariantenName, KiParameterTyp.Text,
                                      KiDialogTexte.BkbVariantenErl,
@@ -1223,18 +1225,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Das Feld „vorlage“ des Reiterblatts „Bericht“</b> (Konzept Berichtsvorlagen 10.2, Etappe
-        /// BV-E1): die Word-Vorlage des Stammprojekts, gelesen und gesetzt als KENNUNG aus der
-        /// Vorlagenliste (<see cref="Vorlageneintrag.Id"/>: <c>standard</c> oder <c>eigen:</c> +
-        /// Dateiname) — eine Wahl, deren Einträge <see cref="BerichtVorlagenwahl"/> aus
-        /// <see cref="BerichtsvorlagenCtrl.Liste"/> bildet.
+        /// BV-E1): die Word-Vorlage des Stammprojekts — eine Wahl aus der Vorlagenliste der Seite,
+        /// angemeldet in <see cref="Berichtseite"/>.
         /// </summary>
         /// <remarks>
-        /// <b>Noch nicht in <see cref="Berichtseite"/> angemeldet.</b> Die Bindung
-        /// <c>BerichtSeiteKiSicht.Vorlage</c> samt Begleiter <c>VorlageWahl</c> liefert die Hülle der
-        /// Berichtsseite; Feld und Bindung werden im selben Schritt angemeldet, sonst fände die
-        /// Katalogwache der Oberfläche ein Feld ohne Eigenschaft. Gesetzt wird über
-        /// <see cref="BerichtsvorlagenCtrl.Finde"/> und <see cref="BerichtsvorlagenCtrl.SetzeAbweichung"/>
-        /// — eine Kennung, die die Liste nicht kennt, lehnt die Hülle benannt ab.
+        /// <para><b>Die Einträge sind die der Seite.</b> Die Bindung <c>BerichtSeiteKiSicht.Vorlage</c>
+        /// samt Begleiter <c>VorlageWahl</c> trägt die stabilen Ids, die die Hülle der Berichtsseite je
+        /// Sitzung vergibt, mit dem Namen der Vorlage als Text — dieselbe Liste, die das Auswahlfeld
+        /// zeigt, auch mit dem gesperrten Eintrag einer fehlenden Vorlage.</para>
+        /// <para><b>Gesetzt wird derselbe Weg wie im Auswahlfeld:</b> Die Seite lehnt während eines Laufs,
+        /// bei einem gesperrten Eintrag und bei einer Id, die die Liste nicht kennt, benannt ab; die
+        /// Hülle löst die Id über <see cref="BerichtsvorlagenCtrl.Finde"/> auf und speichert die
+        /// Abweichung (<see cref="BerichtsvorlagenCtrl.SetzeAbweichung"/>) — gibt es die Vorlage nicht
+        /// mehr, meldet die Gruppe es.</para>
         /// </remarks>
         public static KiDialogFeld BerichtVorlagenfeld()
         {
@@ -1244,9 +1247,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Wahleinträge des Felds <see cref="BerichtVorlagenfeld"/>: je Vorlage der Liste ihre
-        /// Kennung und ihr Name; eine mitgelieferte Vorlage, deren Datei fehlt, bleibt wählbar (der Lauf
-        /// nimmt dann den benannten Rückfall), eine eigene ohne Datei nicht.
+        /// Die Vorlagenliste als Wahleinträge über die KENNUNGEN des Controllers (<c>standard</c>,
+        /// <c>eigen:</c> + Dateiname) — für einen Aufrufer ohne die Seite; die Seite selbst reicht
+        /// ihre stabilen Ids (<c>BerichtSeiteKiSicht.VorlageWahl</c>). Je Vorlage ihre Kennung und ihr
+        /// Name; eine mitgelieferte Vorlage, deren Datei fehlt, bleibt wählbar (der Lauf nimmt dann den
+        /// benannten Rückfall), eine eigene ohne Datei nicht.
         /// </summary>
         public static IReadOnlyList<KiWahleintrag> BerichtVorlagenwahl(IEnumerable<Vorlageneintrag> liste)
         {
@@ -8809,13 +8814,15 @@ namespace WindowsFormsApplication1
         public const string FARBFELD_VORSILBE = "farbe_";
 
         /// <summary>
-        /// Die Programmeinstellungen — sechs benannte Werte und je Farbrolle der
+        /// Die Programmeinstellungen — acht benannte Werte und je Farbrolle der
         /// Diagramme ein Feld der FELDTAFEL.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Setzbar sind die Adressen</b> (Wiki, Geokodierung, PVGIS, DWD-Portal,
-        /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b> und <b>die
+        /// TRY-Regionaldaten), <b>die Kuehlungsvorgabe neuer Projekte</b>, <b>die Rubrik
+        /// „Bericht"</b> (Firma und Vorlagenordner der Berichtsvorlagen, BV-E1 — der
+        /// Ordner wird erst im OK-Weg geprueft und nur bestehend uebernommen) und <b>die
         /// Diagrammfarben</b>. Die Farbfelder ENTSTEHEN aus der Rollenliste
         /// (<see cref="Zeichnung.Diagrammfarben.Gruppen"/>) — derselben, aus der die Huelle
         /// die Rubrik „Diagramme" fuellt; eine zweite Liste gibt es nicht. Feldname =
@@ -8853,7 +8860,16 @@ namespace WindowsFormsApplication1
                                  KiDialogTexte.AdmsetTryRegionalErl, leerErlaubt: true),
                 new KiDialogFeld("neue_projekte_kuehlung", EINSTELLUNGEN_SICHT + ".NeueProjekteMitKuehlung",
                                  KiDialogTexte.AdmsetKuehlungName, KiParameterTyp.Wahrheitswert,
-                                 KiDialogTexte.AdmsetKuehlungErl)
+                                 KiDialogTexte.AdmsetKuehlungErl),
+
+                // BV-E1 (Konzept Berichtsvorlagen 10.3): die Rubrik „Bericht" - an den Arbeitsstand
+                // des Dialogs; ohne Rubrik oder bei gesperrter Ordnerwahl lehnt die Sicht benannt ab.
+                new KiDialogFeld("bericht_firma", EINSTELLUNGEN_SICHT + ".BerichtFirma",
+                                 KiDialogTexte.AdmsetBerichtFirmaName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetBerichtFirmaErl, leerErlaubt: true),
+                new KiDialogFeld("bericht_vorlagenordner", EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
+                                 KiDialogTexte.AdmsetBerichtOrdnerName, KiParameterTyp.Text,
+                                 KiDialogTexte.AdmsetBerichtOrdnerErl, leerErlaubt: true)
             };
 
             foreach (Zeichnung.Rollengruppe gruppe in Zeichnung.Diagrammfarben.Gruppen)

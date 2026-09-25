@@ -6,6 +6,11 @@ using EPOS.UI.Seiten.Berichte;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using KiFeldumsetzung = WindowsFormsApplication1.KiFeldumsetzung;
+using KiFeldwandler = WindowsFormsApplication1.KiFeldwandler;
+using KiFeldzugang = WindowsFormsApplication1.KiFeldzugang;
+using KiMaskenbruecke = WindowsFormsApplication1.KiMaskenbruecke;
+using KiMaskennamen = WindowsFormsApplication1.KiMaskennamen;
 
 namespace EPOS.UI.Tests.Seiten;
 
@@ -672,5 +677,35 @@ public class BerichtSeiteVorlagenTests : EposBunitContext
         // Ein gesperrter Eintrag lehnt benannt ab - mit seinem eigenen Grund.
         var fehler = Assert.Throws<InvalidOperationException>(() => sicht.Vorlage = 3);
         Assert.Equal(FEHLT, fehler.Message);
+    }
+
+    /// <summary>
+    /// <b>Das Katalogfeld „vorlage“ an der Maskenbrücke</b> (BV-E1): eine Wahl aus der
+    /// Vorlagenliste der Seite — gelesen wird die Id der Hülle, gesetzt über denselben Weg wie das
+    /// Auswahlfeld; der gesperrte Eintrag wird mit seinem Grund abgelehnt.
+    /// </summary>
+    [Fact]
+    public void Das_Katalogfeld_vorlage_liest_und_setzt_ueber_die_Maskenbruecke()
+    {
+        int? gemeldet = null;
+        var cut = Zeige(p => p.Add(x => x.Vorlagen, Drei()).Add(x => x.VorlageId, 1)
+            .Add(x => x.VorlageIdChanged, (int? id) => gemeldet = id));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BERICHTSEITE));
+        KiFeldzugang vorlage = KiMaskenbruecke.Feldzugang(KiMaskennamen.BERICHTSEITE, "vorlage");
+        Assert.NotNull(vorlage);
+        Assert.True(vorlage.Setzbar);
+        Assert.Equal(new[] { "1", "2", "3" }, vorlage.Wahleintraege().Select(w => w.Schluessel));
+        Assert.Equal(1, Convert.ToInt32(vorlage.Lesen()));
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(vorlage, "2");
+        Assert.True(wahl.Ok, wahl.Grund);
+        cut.InvokeAsync(() => vorlage.Setzen(wahl.Wert));
+        cut.WaitForAssertion(() => Assert.Equal(2, gemeldet));
+
+        KiFeldumsetzung gesperrt = KiFeldwandler.Wandle(vorlage, "3");
+        Assert.True(gesperrt.Ok, gesperrt.Grund);
+        var fehler = Assert.ThrowsAny<Exception>(() => vorlage.Setzen(gesperrt.Wert));
+        Assert.Contains(FEHLT, fehler.Message + (fehler.InnerException?.Message ?? ""));
     }
 }

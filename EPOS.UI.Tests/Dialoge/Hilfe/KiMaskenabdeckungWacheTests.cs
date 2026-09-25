@@ -208,16 +208,17 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfsProfileDialog", 3),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         // Berichtsvorlagen BV-E1 (Konzept 10.2): die Vorlagenwahl der Gruppe „Vorlage" (2 → 3) -
-        // über BerichtSeiteKiSicht.Vorlage samt VorlageWahl; das Katalogfeld „vorlage" der Maske
-        // Berichtsseite (KiDialoge) zieht der Kernschritt von BV-E1 nach.
-        new("BerichtSeite", 3, "die Vorlagenwahl steht als BerichtSeiteKiSicht.Vorlage bereit; Katalogfeld vorlage im Kern nachzuziehen (BV-E1)"),
+        // das Katalogfeld „vorlage" der Maske Berichtsseite (KiDialoge.BerichtVorlagenfeld) über
+        // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
+        new("BerichtSeite", 3, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl)"),
         new("BhkwWirtschaftlichkeitDialog", 39),
         new("BhkwReiter", 5),
         new("BrennstoffBestandteile", 2),
         new("CaseEingabeDialog", 7),
-        // Berichtsvorlagen BV-E1 (Konzept 10.3): die Firma der Rubrik „Bericht" (9 → 10) über
-        // EinstellungenKiSicht.BerichtFirma; der Vorlagenordner ist eine Dateiwahl und zählt nicht.
-        new("EinstellungenDialog", 10, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner und der Vorlagenordner sind Dateiwahlen; die Firma (BV-E1) steht als EinstellungenKiSicht.BerichtFirma bereit, Katalogfeld bericht_firma im Kern nachzuziehen"),
+        // Berichtsvorlagen BV-E1 (Konzept 10.3): die Firma der Rubrik „Bericht" (9 → 10) - das
+        // Katalogfeld bericht_firma über EinstellungenKiSicht.BerichtFirma; der Vorlagenordner ist
+        // eine Dateiwahl und zählt hier nicht, steht aber als bericht_vorlagenordner im Katalog.
+        new("EinstellungenDialog", 10, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1)"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),
