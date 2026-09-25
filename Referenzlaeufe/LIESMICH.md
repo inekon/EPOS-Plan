@@ -410,12 +410,26 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-25_R18_PvAusweis/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
-LFS-SHA-256 `19a7b632…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
+LFS-SHA-256 `b68638da…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
 Datei wie R17; danach änderte Schemaschritt 144 nur das Schema (vier leere Spalten der Nachtzeit), ohne
-Referenzwirkung, zusammengeführt mit der Datenpflege E24 (Nachtrag unten)). Gegen diese Basis hält
+Referenzwirkung, zusammengeführt mit der Datenpflege E24, und das Prüfprojekt 1048 kam ohne Referenzrolle
+hinzu (Nachträge unten)). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich
 für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
 **einzige** Basis im Arbeitsbaum.
+
+> **Nachtrag Prüfprojekt 1048 (ohne Referenzrolle), die Basis bleibt.** Auf der Fassung `19a7b632…`
+> (Schemastand 144, mit den Zellen der Datenpflege E24) hat
+> `dotnet run Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> das Projekt 1048 „Prüfprojekt PV mit Preisen“ angelegt (Aufbau im Abschnitt „Das Prüfprojekt 1048“
+> weiter unten). Zellvergleich aller Tabellen samt `sqlite_sequence` gegen `19a7b632…`: Schema gleich
+> (145 Tabellen), **keine bestehende Zeile entfernt oder geändert**, 44 537 neue Zeilen in 30 Tabellen
+> (davon 35 040 Viertelstundenwerte der Stromganglinie, 8 760 Solarwerte, 365 Klimatage), dazu 25 fortgeschriebene
+> Zähler in `sqlite_sequence`; `integrity_check` ok, `foreign_key_check` leer; ein zweiter Lauf findet
+> nichts zu tun. Größe 70 680 576 Byte (kein `VACUUM`), LFS-SHA-256 `b68638da…`. **Keine Einfrierregel
+> ist berührt** — 1048 ist kein Referenzprojekt, und die Vorlage 1040 bleibt Zelle für Zelle.
+> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte), 432/432 CSV
+> byte-gleich.
 
 > **Anlass: der PV-Ausweis** (Anwender 25.09.2026, Etappe E26, Befund N1 aus E25, Entscheide E26‑Q1 … Q7
 > nach Empfehlung). `Ergebnis.Photovoltaik.Stromproduktion` führte die Summe der Direktverbrauchsreihe
