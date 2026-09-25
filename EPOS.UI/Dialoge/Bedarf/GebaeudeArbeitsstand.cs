@@ -72,6 +72,7 @@ public sealed class GebaeudeArbeitsstand
         KuehlArtBeimLaden = Stand.KuehlUebergabeArt;
         BandBeimLaden = Stand.ReglerProportionalband;
         BandFrei = false;
+        _heizkurveVorgeschlagen = false;
         BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
         Fehlerfelder.Clear();
         _uebergabeFehlerfelder.Clear();
@@ -91,6 +92,7 @@ public sealed class GebaeudeArbeitsstand
         ArtBeimLaden = Stand.UebergabeArt;
         KuehlArtBeimLaden = Stand.KuehlUebergabeArt;
         BandBeimLaden = Stand.ReglerProportionalband;
+        _heizkurveVorgeschlagen = false;
     }
 
     // =====================================================================
@@ -347,16 +349,49 @@ public sealed class GebaeudeArbeitsstand
     }
 
     /// <summary>
+    /// Hat <see cref="HeizkreisSetzen"/> die Heizkurve VORGESCHLAGEN, ohne dass der Anwender den
+    /// Haken „Heizkurve fahren" seither angefasst hat? Dann nimmt das Ausschalten des Heizkreises
+    /// den Vorschlag zurück.
+    /// </summary>
+    private bool _heizkurveVorgeschlagen;
+
+    /// <summary>
     /// Der Haken „Übergabe rechnen". Beim ersten Einschalten (noch keine rechnende Art) schlägt
     /// der Dialog die Heizkurve vor (8.1: „die Heizkurve schlägt erst der Dialog vor, sobald jemand
-    /// den Heizkreis einschaltet"). Ohne Haken bleiben alle Werte im Stand; eine Fehleingabe in
-    /// einem ausgeblendeten Feld hält den Speicherweg nicht mehr an.
+    /// den Heizkreis einschaltet"). Ohne Haken bleiben alle Werte im Stand, die der ANWENDER
+    /// gesetzt hat; eine Fehleingabe in einem ausgeblendeten Feld hält den Speicherweg nicht mehr
+    /// an.
+    ///
+    /// <para><b>Ein bloßer Vorschlag fällt mit dem Haken.</b> Ein- und wieder Ausschalten ist keine
+    /// Änderung: Hat der Anwender die vorgeschlagene Heizkurve nicht angefasst, steht sie nach dem
+    /// Ausschalten wieder so, wie sie geladen wurde — sonst schriebe ein OK
+    /// <c>Heizkurve_Aktiv = 1</c> in einen Satz ohne Heizkreis, ohne dass der Anwender es sah
+    /// (Befund 25.09.2026 an einer Projektkopie).</para>
     /// </summary>
     public void HeizkreisSetzen(bool wert)
     {
         Stand.HeizkreisAktiv = wert;
-        if (wert && !ArtRechnet && !Stand.HeizkurveAktiv) Stand.HeizkurveAktiv = true;
-        if (!wert) UebergabeFehlerfelderLeeren();
+        if (wert && !ArtRechnet && !Stand.HeizkurveAktiv)
+        {
+            Stand.HeizkurveAktiv = true;
+            _heizkurveVorgeschlagen = true;
+        }
+        if (!wert)
+        {
+            if (_heizkurveVorgeschlagen) Stand.HeizkurveAktiv = false;
+            _heizkurveVorgeschlagen = false;
+            UebergabeFehlerfelderLeeren();
+        }
+    }
+
+    /// <summary>
+    /// Der Haken „Heizkurve fahren" — die Wahl des Anwenders; ein Vorschlag aus
+    /// <see cref="HeizkreisSetzen"/> gilt danach als seine Wahl und bleibt beim Ausschalten stehen.
+    /// </summary>
+    public void HeizkurveSetzen(bool wert)
+    {
+        Stand.HeizkurveAktiv = wert;
+        _heizkurveVorgeschlagen = false;
     }
 
     /// <summary>
@@ -1143,8 +1178,14 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>
     /// <b>Die Ableitungen des Vorläufers</b> (<c>btn_Speichern_Click</c> der zweiten Maske) und
     /// der Hülle — unmittelbar vor dem Schreiben: leere Felder der Temperaturen gelten als 0,
-    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, WW_Bedarf 0,
-    /// Winterferienbeginn 0 → 366; dazu die Summe Ost + West und die Bauweise.
+    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, Winterferienbeginn 0 → 366;
+    /// dazu die Summe Ost + West und die Bauweise.
+    ///
+    /// <para><b>Der Warmwasserbedarf bleibt stehen.</b> Der Vorläufer setzte <c>WW_Bedarf</c> beim
+    /// Übernehmen seiner zweiten Maske auf 0 — nur wer sie öffnete und bestätigte. Als Ableitung im
+    /// OK-Weg hätte das JEDES Speichern getan (Katalogeditor, Stammblatt, „Hülle und Zonen…") und
+    /// den Wert gelöscht, den kein Feld dieses Dialogs zeigt (Befund 25.09.2026: 700 → 0). Der
+    /// Stand trägt ihn unverändert vom Laden bis zum Schreiben.</para>
     /// </summary>
     public void Ableiten()
     {
@@ -1172,8 +1213,6 @@ public sealed class GebaeudeArbeitsstand
         beginn[0] = Ferienzeit.WinterbeginnGehoben(beginn[0]);
         Stand.Ferienbeginn = beginn;
         Stand.Ferienende = Ferienenden();
-
-        Stand.WwBedarf = 0;
     }
 
     // =====================================================================
@@ -1325,6 +1364,7 @@ public sealed class GebaeudeArbeitsstand
 
             // Stufe AK1: die Gruppe „Wärmeübergabe" über die Wege der Bedienelemente.
             HeizkreisSetzen = HeizkreisSetzen,
+            HeizkurveSetzen = HeizkurveSetzen,
             UebergabeArtSetzen = w => KiArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
             UebergabeArtEintraege = () => KiArteintraege(wege.Texte ?? new GebaeudeHuelleTexte()),
             SollwertprofilSetzen = w => KiProfilSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
