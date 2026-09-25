@@ -633,6 +633,51 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.StartsWith("Spitzen unterschätzt"));
     }
 
+    /// <summary>
+    /// <b>Ein gespeicherter Konstruktortag hat keinen Entwurf mehr</b> (Schemaschritt T5,
+    /// Anwenderentscheid ZU25): Seine Zeilen kommen mit den Eingaben herein
+    /// (<c>Eingabe.Konstruktorzeilen</c>, von der Hülle aus <c>Tab_TwwKonstruktorzeile</c>
+    /// gefüllt), und der Konstruktor öffnet mit ihnen — bedienbar wie zuvor: Eine geänderte Zeile
+    /// und OK bauen einen neuen Tag.
+    /// </summary>
+    [Fact]
+    public void Der_Konstruktor_oeffnet_mit_den_gespeicherten_Zeilen_ohne_Entwurf()
+    {
+        var eingabe = new ZapfprofilAuslegungEingabeDaten
+        {
+            SpeicherC = 60,
+            ErzeugerKw = 25,
+            Quelle = ZapfprofilBedarfstagquelle.Konstruktor,
+            IdBedarfstag = 5,
+            Konstruktorzeilen =
+            {
+                new ZapfprofilKonstruktorZeileDaten { BeginnH = 6, EndeH = 7, Regel = "Dusche", Anzahl = 2 },
+                new ZapfprofilKonstruktorZeileDaten { BeginnH = 18, EndeH = 19, Regel = "", VolumenL = 50,
+                                                      ZapftemperaturC = 40, Verbraucher = "Kueche (erfunden)" }
+            }
+        };
+        var cut = Aufbauen(Start(eingabe: eingabe), konstruieren: Bauen);
+        Assert.Null(cut.Instance.Eingabe.Entwurf);
+
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
+        Assert.Equal(2, k.Instance.Zeilen.Count);
+        Assert.Equal("Dusche", k.Instance.Zeilen[0].Regel);
+        Assert.Equal(2, k.Instance.Zeilen[0].Anzahl);
+        Assert.Equal(18, k.Instance.Zeilen[1].BeginnH);
+        Assert.Equal("Kueche (erfunden)", k.Instance.Zeilen[1].Verbraucher);
+
+        // Bedienbar: eine geaenderte Zeile und OK bauen einen neuen Tag; die Zeilen gehen mit.
+        Feld(k, "Beginn [h], Zeile 2").Input("20");
+        Feld(k, "Ende [h], Zeile 2").Input("21");
+        Feld(k, "Name des Bedarfstags").Input("Tag Neu");
+        Knopf(k, "OK").Click();
+        Assert.False(cut.Instance.KonstruktorOffen);
+        Assert.Equal(2, cut.Instance.Eingabe.Konstruktorzeilen.Count);
+        Assert.Equal(20, cut.Instance.Eingabe.Konstruktorzeilen[1].BeginnH);
+        Assert.Null(cut.Instance.Eingabe.IdBedarfstag);
+    }
+
     [Fact]
     public void Erneut_geoeffnet_beginnt_der_Konstruktor_mit_den_Zeilen_des_Entwurfs()
     {

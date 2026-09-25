@@ -537,7 +537,7 @@ public class GebaeudeZonenTests : EposBunitContext
         int gerufen = 0;
         var cut = Wirt(false, _ => { gerufen++; return null; });
 
-        IElement knopf = cut.FindAll("button").Single(b => b.TextContent.Trim() == "Hülle und Zonen…");
+        IElement knopf = cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         knopf.Click();
 
@@ -561,7 +561,7 @@ public class GebaeudeZonenTests : EposBunitContext
             ["Zonen"] = weg.Zonenweg()
         });
 
-        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Hülle und Zonen…").Click();
+        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…").Click();
 
         Assert.True(cut.Instance.ProjekteditorOffen);
         Assert.Contains(KNOPF, cut.Markup);
@@ -572,6 +572,6 @@ public class GebaeudeZonenTests : EposBunitContext
     {
         var cut = Wirt(true, null);
 
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Hülle und Zonen…");
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
     }
 }

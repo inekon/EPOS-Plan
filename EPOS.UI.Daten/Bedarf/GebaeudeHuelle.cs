@@ -190,7 +190,7 @@ namespace WindowsFormsApplication1
                 ["BtnEntfernenText"] = Text_("GEB_BTN_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnEntfernenHinweis"] = Text_("GEB_BTN_ENTFERNEN_HINWEIS",
                     "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen"),
-                ["BtnAendernText"] = Text_("GEB_BTN_AENDERN", "Ändern"),
+                ["BtnAendernText"] = Text_("GEB_BTN_AENDERN", "Fläche und Verbrauch…"),
                 ["BtnSimulationText"] = Text_("GEB_BTN_SIMULATION", "Simulation..."),
                 ["BtnSimulationHinweis"] = Text_("GEB_BTN_SIMULATION_HINWEIS",
                     "Den Wärmebedarf des in der Projektliste markierten Gebäudes "

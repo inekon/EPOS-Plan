@@ -257,6 +257,9 @@ namespace WindowsFormsApplication1
                 });
             }
 
+            // --- 3b. Die Zeilen des Konstruktors (Schritt 145, ZU25) -----------------------------
+            KonstruktorzeilenSchreiben(v, idZeile, stand.Konstruktorzeilen);
+
             // --- 4. Das Projekt als geändert markieren -------------------------------------------
             // Zonen, Projektgrößen und die Weiche sind Eingangsgrößen der Simulation: Ein
             // gespeichertes Ergebnis ist ab hier veraltet (Tab_Projekt.Aenderungsdatum, derselbe
@@ -267,7 +270,12 @@ namespace WindowsFormsApplication1
 
             ProjektStand projekt = projektZeile == null ? null
                 : projektZeile with { Id = idZeile, Weg = stand.Weg, Aenderungsdatum = jetzt };
-            return new ZapfprofilStand(stand.Weg, geschrieben, projekt);   // ohne Entwurf: er ist jetzt Katalogzeile
+            // Ohne Entwurf: Er ist jetzt Katalogzeile. Die Zeilen des Konstruktors bleiben am Stand —
+            // sie stehen ab hier in der Datenbank und tragen das erneute Öffnen des Konstruktors.
+            return new ZapfprofilStand(stand.Weg, geschrieben, projekt)
+            {
+                Konstruktorzeilen = stand.Konstruktorzeilen ?? new KonstruktorzeileStand[0]
+            };
         }
 
         // =================================================================================
@@ -410,6 +418,55 @@ namespace WindowsFormsApplication1
         /// <summary>Führt die Tabelle die Spalte? Im laufenden Vorgang gefragt (Stand vor oder nach einem Schemaschritt).</summary>
         internal static bool SpalteImVorgang(DbVorgang v, string tabelle, string spalte)
             => Anzahl(v, "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?", tabelle, spalte) > 0;
+
+        /// <summary>
+        /// <b>Die Zeilen des Konstruktors am Auslegungssatz</b> (<c>Tab_TwwKonstruktorzeile</c>,
+        /// Schemaschritt T5, Anwenderentscheid ZU25) — <b>ersetzend</b>: erst weg, was am Satz
+        /// steht, dann die Zeilen des Stands in ihrer Reihenfolge (1 … n). Ein leerer Stand löscht
+        /// also, was da war; das ist gewollt, denn der Konstruktor gibt seine Zeilen immer
+        /// geschlossen her.
+        ///
+        /// <para>Vor dem Schritt fehlt die Tabelle: Gegebene Zeilen lehnt der Schreibweg dann
+        /// benannt ab, statt sie still fallen zu lassen; OHNE Zeilen läuft das Speichern durch wie
+        /// vor dem Schritt.</para>
+        /// </summary>
+        private static void KonstruktorzeilenSchreiben(DbVorgang v, int idAuslegung,
+                                                       IReadOnlyList<KonstruktorzeileStand> zeilen)
+        {
+            if (Anzahl(v, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                       TwwSchema.TAB_TWW_KONSTRUKTORZEILE) == 0)
+            {
+                if (zeilen != null && zeilen.Count > 0)
+                    throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
+                        ZapfSatz.Neu("SPEICHER_TABELLE_FEHLT", ZapfSatz.Tabelle(TwwSchema.TAB_TWW_KONSTRUKTORZEILE)));
+                return;
+            }
+
+            v.Ausfuehren("DELETE FROM " + TwwSchema.TAB_TWW_KONSTRUKTORZEILE + " WHERE ID_TwwProjekt = ?",
+                         new DbParam("@auslegung", idAuslegung));
+            if (zeilen == null) return;
+            int reihenfolge = 0;
+            foreach (KonstruktorzeileStand z in zeilen)
+            {
+                if (z == null) continue;
+                v.Ausfuehren(
+                    "INSERT INTO " + TwwSchema.TAB_TWW_KONSTRUKTORZEILE +
+                    " (ID_TwwProjekt, Reihenfolge, Beginn_h, Ende_h, Regel, Anzahl, Volumen_l, " +
+                    "Zapftemperatur_C, Verbraucher) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    new DbParam("@auslegung", idAuslegung),
+                    new DbParam("@reihenfolge", ++reihenfolge),
+                    new DbParam("@beginn", AlsWert(z.BeginnH)),
+                    new DbParam("@ende", AlsWert(z.EndeH)),
+                    new DbParam("@regel", z.Regel ?? ""),
+                    new DbParam("@anzahl", AlsWert(z.Anzahl)),
+                    new DbParam("@volumen", AlsWert(z.VolumenL)),
+                    new DbParam("@temperatur", AlsWert(z.ZapftemperaturC)),
+                    new DbParam("@verbraucher", z.Verbraucher ?? ""));
+            }
+        }
+
+        /// <summary>Eine nullbare Zahl als Parameterwert; <c>null</c> bleibt <c>NULL</c>.</summary>
+        private static object AlsWert(double? wert) => wert.HasValue ? (object)wert.Value : null;
 
         private static long Anzahl(DbVorgang v, string sql, params object[] werte)
         {

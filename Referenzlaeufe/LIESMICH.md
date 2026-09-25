@@ -409,10 +409,10 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-25_R19_BhkwNetzbezug/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
-LFS-SHA-256 `b68638da…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
-der Datenpflege E24 und noch ohne das Prüfprojekt „PV mit Preisen“, das ohne Referenzrolle hinzukam und
-keine Basis bewegt (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **145**,
+LFS-SHA-256 `cba0aa41…` — R19 wurde auf der Fassung `19a7b632…` mit Schemastand 144 eingefroren, den Zellen
+der Datenpflege E24, noch ohne das Prüfprojekt „PV mit Preisen“ und noch ohne den Schemaschritt 145 des
+Zapfprofilgenerators; beides kam ohne Referenzrolle hinzu und bewegt keine Basis (Nachträge unten)). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007,
 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis
 im Arbeitsbaum.
@@ -506,6 +506,24 @@ im Arbeitsbaum.
 > Referenzlauf aller vierzehn Projekte gegen R18 auf dieser Fassung: **14/14 PASS** (4 610 207 Werte),
 > 432/432 CSV byte-gleich; gegen R19 nach der Zusammenführung mit E27 erneut 14/14 (Nachweis in der
 > Statuszeile #521).
+
+> **Nachtrag Schemaschritt 145 (die Zeilen des Bedarfstag-Konstruktors), die Basis bleibt.** Auf der
+> Fassung `b68638da…` (Schemastand 144) hat
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> den Schemaschritt **145** des Zapfprofilgenerators (T5 „Konstruktor", Anwenderentscheid ZU25)
+> nachgezogen: die Tabelle `Tab_TwwKonstruktorzeile` (STRICT, zehn Spalten, `ID_TwwProjekt` mit
+> `ON DELETE CASCADE`, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge, kein eigener Index) und das
+> `DROP INDEX` des redundanten Index `Tab_TwwMessreihe_ID_Projekt`. Zellvergleich aller Tabellen gegen
+> `b68638da…`: **genau zwei Unterschiede** — der Marker `Tab_Applikation.SchemaVersion` 144 → 145 und die
+> neue, LEERE Tabelle; kein `CREATE`-Text einer bestehenden Tabelle, Sicht oder Trigger geändert, **keine
+> Zeile entfernt, hinzugefügt oder geändert** (alle 27 Projekte samt dem Prüfprojekt ohne Referenzrolle
+> stehen Zelle für Zelle). Bei den Indizes fällt `Tab_TwwMessreihe_ID_Projekt` weg, der UNIQUE-Index der
+> neuen Tabelle kommt hinzu. STRICT-Tabellen 144 → **145**; `integrity_check` ok, `foreign_key_check`
+> leer; ein zweiter Lauf legt 0 Tabellen an und 0 Spalten. Größe 70 590 464 Byte (`VACUUM` des
+> Werkzeugs), LFS-SHA-256 `cba0aa41…`. **Keine Einfrierregel ist berührt** — reines DDL, kein Rechenweg
+> liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis, nur den Weg dorthin. Referenzlauf der
+> sechs CI-Projekte gegen R19 auf dieser Fassung: **6/6 PASS** (198 CSV, 2 208 587 Werte; Nachweis in der
+> Statuszeile #522).
 
 > **Die Vorgängerbasis `2026-09-25_R18_PvAusweis`**, die Basis des PV-Ausweises (Stromproduktion der
 > Photovoltaik ist die Erzeugung der Module, E26), ist mit dieser Einfrierung aus dem Arbeitsbaum

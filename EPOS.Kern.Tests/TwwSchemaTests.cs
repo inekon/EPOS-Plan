@@ -37,6 +37,7 @@ namespace EPOS.Kern.Tests
             [TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM] = 16,
             [TwwSchema.TAB_TWW_TYPTAG_IMPORT] = 11,
             [TwwSchema.TAB_TWW_MESSREIHE] = 10,
+            [TwwSchema.TAB_TWW_KONSTRUKTORZEILE] = 10,
         };
 
         [Fact]
@@ -50,7 +51,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, Assert.Single(TwwSchema.AnweisungenT2).Key);
             Assert.Equal(TwwSchema.TAB_TWW_TYPTAG_IMPORT, Assert.Single(TwwSchema.AnweisungenT3Typtage).Key);
             Assert.Equal(TwwSchema.TAB_TWW_MESSREIHE, Assert.Single(TwwSchema.AnweisungenT4Messreihen).Key);
-            Assert.Equal(13, TwwSchema.AlleAnweisungen.Count());
+            Assert.Equal(TwwSchema.TAB_TWW_KONSTRUKTORZEILE, Assert.Single(TwwSchema.AnweisungenT5Konstruktor).Key);
+            Assert.Equal(14, TwwSchema.AlleAnweisungen.Count());
             foreach (KeyValuePair<string, string> a in TwwSchema.AlleAnweisungen)
             {
                 string sql = Skalar(c, "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = $n",
@@ -63,7 +65,9 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
 
             // Fuenf Indizes (vier aus T1, einer aus T4 "Messreihen"), je auf einer
-            // Fremdschluesselspalte ihrer Tabelle.
+            // Fremdschluesselspalte ihrer Tabelle. Der T4-Index faellt in T5 wieder weg (er ist
+            // redundant neben dem UNIQUE-Index) - das prueft
+            // Der_redundante_Index_der_Messreihen_faellt_in_T5; hier steht der Stand NACH T4.
             Assert.Equal(4, TwwSchema.Indizes.Count());
             Assert.Single(TwwSchema.IndizesT4Messreihen);
             foreach (KeyValuePair<string, string> i in TwwSchema.Indizes.Concat(TwwSchema.IndizesT4Messreihen))
@@ -182,6 +186,12 @@ namespace EPOS.Kern.Tests
             (TwwSchema.TAB_TWW_MESSREIHE, "Aufloesung_min", "1441"),
             (TwwSchema.TAB_TWW_MESSREIHE, "Zeilenindex", "-1"),
             (TwwSchema.TAB_TWW_MESSREIHE, "Wert", "-0.001"),
+            // Schemaschritt T5 "Konstruktor" (ZU25): Reihenfolge ab 1, Stunden im Tag, keine negative Menge.
+            (TwwSchema.TAB_TWW_KONSTRUKTORZEILE, "Reihenfolge", "0"),
+            (TwwSchema.TAB_TWW_KONSTRUKTORZEILE, "Beginn_h", "-0.5"),
+            (TwwSchema.TAB_TWW_KONSTRUKTORZEILE, "Ende_h", "24.5"),
+            (TwwSchema.TAB_TWW_KONSTRUKTORZEILE, "Anzahl", "-1.0"),
+            (TwwSchema.TAB_TWW_KONSTRUKTORZEILE, "Volumen_l", "-1.0"),
         };
 
         [Fact]
@@ -267,8 +277,9 @@ namespace EPOS.Kern.Tests
                 }
             }
             // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2,
-            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt T4)
-            Assert.Equal(14, beziehungen);
+            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt T4),
+            // Konstruktorzeile 1 (ID_TwwProjekt, Schritt T5)
+            Assert.Equal(15, beziehungen);
         }
 
         /// <summary>
@@ -518,6 +529,138 @@ namespace EPOS.Kern.Tests
             Assert.Contains("TwwSchema.AnweisungenT4Messreihen", rumpf, StringComparison.Ordinal);
             // Der Index auf ID_Projekt steht im SELBEN Schritt - er ist der Suchweg jedes Zugriffs.
             Assert.Contains("TwwSchema.IndizesT4Messreihen", rumpf, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Der Schemaschritt T5 „Konstruktor" steht in der Migration nach der Nachtzeit</b>
+        /// (Anwenderentscheid ZU25): eigene Konstante, die symbolisch auf
+        /// <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/> zeigt, Platz in der Schrittliste nach
+        /// <c>SCHRITT_NACHTZEIT</c> und eine Methode, die ihr SQL aus dem Kern nimmt
+        /// (<see cref="TwwSchema.AnweisungenT5Konstruktor"/>,
+        /// <see cref="TwwSchema.AufraeumenT5Index"/>) statt eigenes zu tragen; das Ziel steht auf
+        /// seiner Nummer.
+        ///
+        /// <para><b>Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/></b> —
+        /// der Test nennt sie nirgends als Zahl, damit eine Kollision mit einem Nachbarschritt nur
+        /// EINE Zeile bewegt.</para>
+        /// </summary>
+        [Fact]
+        public void Schritt_T5_Konstruktor_steht_in_der_Migration_nach_der_Nachtzeit()
+        {
+            int nr = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
+            Assert.Equal(SchemaStand.Zielversion, nr);
+
+            string datei = Migrationsquelle();
+            if (datei == null) return;
+            string text = File.ReadAllText(datei);
+
+            Assert.Contains("public const int SCHRITT_" + nr + "_ZAPFPROFIL_KONSTRUKTOR = TwwSchema.SCHRITT_T5_KONSTRUKTOR;",
+                            text, StringComparison.Ordinal);
+            int ortNacht = text.IndexOf("new Schritt(SCHRITT_NACHTZEIT", StringComparison.Ordinal);
+            int ortNeu = text.IndexOf("new Schritt(SCHRITT_" + nr + "_ZAPFPROFIL_KONSTRUKTOR", StringComparison.Ordinal);
+            Assert.True(ortNacht > 0 && ortNeu > ortNacht,
+                        "Schritt " + nr + " steht nicht nach der Nachtzeit in der Schrittliste.");
+
+            int methode = text.IndexOf("private static bool Schritt_" + nr + "_ZapfprofilKonstruktor(Lauf l)",
+                                       StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes " + nr + " fehlt.");
+            int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
+            string rumpf = text.Substring(methode, ende - methode);
+            Assert.Contains("TwwSchema.AnweisungenT5Konstruktor", rumpf, StringComparison.Ordinal);
+            // Das DROP INDEX steht im SELBEN Schritt (Anwenderentscheid ZU25: ein Schritt fuer beides).
+            Assert.Contains("TwwSchema.AufraeumenT5Index", rumpf, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Die Zeilen des Konstruktors gehören der Auslegung</b> (Schemaschritt T5,
+        /// Anwenderentscheid ZU25): zehn Spalten, <c>ID_TwwProjekt</c> als einziger Fremdschlüssel
+        /// mit <c>ON DELETE CASCADE</c> auf <c>Tab_TwwProjekt</c> — damit reisen sie mit einer
+        /// Projektkopie und verschwinden mit dem Auslegungssatz und so mit dem Projekt —, weder
+        /// <c>Status</c> noch <c>ReadOnly</c> noch eine Provenienzgruppe, natürlicher Schlüssel
+        /// (ID_TwwProjekt, Reihenfolge), Stunden im Tag und keine negative Menge. <b>Kein eigener
+        /// Index auf dem Verweis</b> — der UNIQUE-Index trägt die Spalte an führender Stelle.
+        /// </summary>
+        [Fact]
+        public void Die_Konstruktorzeilen_gehoeren_der_Auslegung()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+
+            List<string> spalten = Spalten(c, TwwSchema.TAB_TWW_KONSTRUKTORZEILE);
+            Assert.Equal(new[] { "ID", "ID_TwwProjekt", "Reihenfolge", "Beginn_h", "Ende_h", "Regel",
+                                 "Anzahl", "Volumen_l", "Zapftemperatur_C", "Verbraucher" }, spalten);
+            foreach (string verboten in new[] { "Status", "ReadOnly", "Herkunftsart", "Version", "Katalogversion" })
+                Assert.DoesNotContain(verboten, spalten);
+            Assert.DoesNotContain("_STAMM", TwwSchema.TAB_TWW_KONSTRUKTORZEILE);
+
+            // Der einzige Fremdschluessel zeigt auf den Auslegungssatz und raeumt mit ihm auf.
+            List<object[]> fk = Zeilen(c, "SELECT \"table\", \"from\", \"on_delete\" FROM pragma_foreign_key_list($t)",
+                                       ("$t", TwwSchema.TAB_TWW_KONSTRUKTORZEILE));
+            Assert.Single(fk);
+            Assert.Equal(TwwSchema.TAB_TWW_PROJEKT, (string)fk[0][0]);
+            Assert.Equal("ID_TwwProjekt", (string)fk[0][1]);
+            Assert.Equal("CASCADE", (string)fk[0][2]);
+
+            // Kein eigener Index auf dem Verweis - nur der UNIQUE-Index der Tabelle.
+            List<object[]> indizes = Zeilen(c, "SELECT name, \"unique\", origin FROM pragma_index_list($t)",
+                                            ("$t", TwwSchema.TAB_TWW_KONSTRUKTORZEILE));
+            Assert.Single(indizes);
+            Assert.Equal(1L, Convert.ToInt64(indizes[0][1]));
+            Assert.Equal("u", (string)indizes[0][2]);
+
+            Ausfuehren(c, "INSERT INTO \"Tab_Projekt\" (\"ID\") VALUES (1)");
+            Ausfuehren(c, "INSERT INTO \"Tab_TwwProjekt\" (\"ID_Projekt\", \"Weg\") VALUES (1, $w)",
+                       ("$w", TwwSchema.WEG_GENERATOR));
+            const string neu = "INSERT INTO \"Tab_TwwKonstruktorzeile\" (\"ID_TwwProjekt\", \"Reihenfolge\", " +
+                               "\"Beginn_h\", \"Ende_h\", \"Regel\", \"Anzahl\", \"Volumen_l\", " +
+                               "\"Zapftemperatur_C\", \"Verbraucher\") " +
+                               "VALUES (1, $r, 6.0, 7.5, '', NULL, 50.0, 40.0, 'Kueche (erfunden)')";
+            Ausfuehren(c, neu, ("$r", 1));
+            Assert.True(Wirft(c, neu, ("$r", 1)));                 // natuerlicher Schluessel
+            Ausfuehren(c, neu, ("$r", 2));
+            Assert.Equal(2L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwKonstruktorzeile\""));
+
+            // Die Grenzen der DDL: Reihenfolge ab 1, Stunden im Tag, keine negative Menge; STRICT weist Text ab.
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Reihenfolge\" = 0 WHERE \"Reihenfolge\" = 2"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Beginn_h\" = -0.5"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Ende_h\" = 24.5"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Volumen_l\" = -1.0"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Anzahl\" = -1.0"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Volumen_l\" = 'viel'"));   // STRICT
+            // 0 h und 24 h sind der Tagesrand und gehen.
+            Ausfuehren(c, "UPDATE \"Tab_TwwKonstruktorzeile\" SET \"Beginn_h\" = 0.0, \"Ende_h\" = 24.0");
+
+            // Das Projekt raeumt Auslegungssatz und Zeilen mit sich ab.
+            Ausfuehren(c, "DELETE FROM \"Tab_Projekt\" WHERE \"ID\" = 1");
+            Assert.Equal(0L, Skalar(c, "SELECT COUNT(*) FROM \"Tab_TwwKonstruktorzeile\""));
+            Assert.Empty(Zeilen(c, "PRAGMA foreign_key_check"));
+        }
+
+        /// <summary>
+        /// <b>Der redundante Index der Messreihen fällt in T5</b> (Anwenderentscheid ZU25, N15 (a)):
+        /// Schritt T4 legt neben dem UNIQUE-Index über (ID_Projekt, Bezeichnung, Zeilenindex) einen
+        /// Index auf <c>ID_Projekt</c> allein an — SQLite benutzt dafür die führende Spalte des
+        /// UNIQUE-Index. T5 wirft ihn weg, wiederholbar, und der UNIQUE-Index bleibt.
+        /// </summary>
+        [Fact]
+        public void Der_redundante_Index_der_Messreihen_faellt_in_T5()
+        {
+            using SqliteConnection c = Datenbank();
+            Anlegen(c);
+
+            string name = TwwSchema.IndexT4MessreiheProjekt;
+            Assert.Equal(TwwSchema.TAB_TWW_MESSREIHE + "_ID_Projekt", name);
+            Assert.NotNull(Skalar(c, "SELECT name FROM sqlite_master WHERE type = 'index' AND name = $n", ("$n", name)));
+
+            foreach (KeyValuePair<string, string> i in TwwSchema.AufraeumenT5Index) Ausfuehren(c, i.Value);
+            foreach (KeyValuePair<string, string> i in TwwSchema.AufraeumenT5Index) Ausfuehren(c, i.Value);   // wiederholbar
+            Assert.Null(Skalar(c, "SELECT name FROM sqlite_master WHERE type = 'index' AND name = $n", ("$n", name)));
+
+            // Der UNIQUE-Index bleibt - er ist der Suchweg, der die Spalte ohnehin traegt.
+            List<object[]> indizes = Zeilen(c, "SELECT name, \"unique\" FROM pragma_index_list($t)",
+                                            ("$t", TwwSchema.TAB_TWW_MESSREIHE));
+            Assert.Single(indizes);
+            Assert.Equal(1L, Convert.ToInt64(indizes[0][1]));
         }
 
         /// <summary>

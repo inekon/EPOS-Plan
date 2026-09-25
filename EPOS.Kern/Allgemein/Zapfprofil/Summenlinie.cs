@@ -264,11 +264,11 @@ namespace WindowsFormsApplication1
             if (p == null)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig, ZapfSatz.Neu("AUSLEGUNG_PROJEKTGROESSEN_FEHLEN"));
             double kw = ZapfAuslegungParameter.ProjektOderParameter(p.KaltwasserAuslegungC,
-                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C",
+                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, ZapfFeld.AUSLEGUNG_KALTWASSER_C, "°C",
                 ZapfSatz.Neu("BEGRIFF_KALTWASSER_AUSLEGUNG"));
             double speicher = Auslegungspruefung.Endlich(speicherC, ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR"));
             double sensor = ZapfAuslegungParameter.ProjektOderParameter(p.SensorhoeheAnteil,
-                ZapfAuslegungParameter.SENSORHOEHE, ps, prot, "Auslegung.Sensorhoehe", "-", ZapfSatz.Neu("BEGRIFF_SENSORHOEHE"));
+                ZapfAuslegungParameter.SENSORHOEHE, ps, prot, ZapfFeld.AUSLEGUNG_SENSORHOEHE, "-", ZapfSatz.Neu("BEGRIFF_SENSORHOEHE"));
             double? misch = p.Speicherart == ZapfSpeicherart.GemischterSpeicher
                 ? ps.Wert(ZapfAuslegungParameter.MISCHWASSERTEMPERATUR) : (double?)null;
 
@@ -300,7 +300,7 @@ namespace WindowsFormsApplication1
                 ue = new Uebertrager(null, null, null, UWert(ps, werkstoff, ZapfSatz.Neu("BEGRIFF_SCHAETZFORMEL"), prot),
                                      ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR),
                                      ps.Wert(steigung), ps.Wert(achsabschnitt));
-                prot?.Vermerken("", "Auslegung.Uebertragerflaeche", null, "m²", Wertstatus.Vorgabe, ps.Lies(steigung).Herkunft,
+                prot?.Vermerken("", ZapfFeld.AUSLEGUNG_UEBERTRAGERFLAECHE, null, "m²", Wertstatus.Vorgabe, ps.Lies(steigung).Herkunft,
                                 erzeugerart.Value == ZapfErzeugerart.Waermepumpe
                                     ? ZapfSatz.Neu("HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP")
                                     : ZapfSatz.Neu("HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_KESSEL"));
@@ -308,9 +308,9 @@ namespace WindowsFormsApplication1
 
             double? erzeuger = p.ErzeugerKw ?? erzeugerRueckfallKw;
             if (p.ErzeugerKw.HasValue)
-                prot?.Vermerken("", "Auslegung.ErzeugerKw", p.ErzeugerKw.Value, "kW", Wertstatus.Ueberschrieben, null);
+                prot?.Vermerken("", ZapfFeld.AUSLEGUNG_ERZEUGER_KW, p.ErzeugerKw.Value, "kW", Wertstatus.Ueberschrieben, null);
             else if (erzeugerRueckfallKw.HasValue)
-                prot?.Vermerken("", "Auslegung.ErzeugerKw", erzeugerRueckfallKw.Value, "kW", Wertstatus.Vorgabe, null,
+                prot?.Vermerken("", ZapfFeld.AUSLEGUNG_ERZEUGER_KW, erzeugerRueckfallKw.Value, "kW", Wertstatus.Vorgabe, null,
                                 ZapfSatz.Neu("HERKUNFT_LADELEISTUNG_ANGESETZT"));
 
             return Pruefen(new Summenlinienparameter
@@ -338,7 +338,7 @@ namespace WindowsFormsApplication1
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.UebertragerUnbestimmt,
                     ZapfSatz.Neu("AUSLEGUNG_WERKSTOFF_FEHLT", wozu));
             ZapfParameterwert pw = ps.Lies(ZapfAuslegungParameter.UebertragerU(werkstoff.Value));
-            prot?.Vermerken("", "Auslegung.UebertragerU", pw.Wert, "W/(m²·K)", Wertstatus.Vorgabe, pw.Herkunft,
+            prot?.Vermerken("", ZapfFeld.AUSLEGUNG_UEBERTRAGER_U, pw.Wert, "W/(m²·K)", Wertstatus.Vorgabe, pw.Herkunft,
                             werkstoff.Value == ZapfUebertragerwerkstoff.Edelstahl
                                 ? ZapfSatz.Neu("HERKUNFT_WERKSTOFF_EDELSTAHL")
                                 : ZapfSatz.Neu("HERKUNFT_WERKSTOFF_STAHL"));
