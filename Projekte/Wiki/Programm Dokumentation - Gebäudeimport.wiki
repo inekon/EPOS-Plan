@@ -24,7 +24,7 @@ Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es h�
 == Der Zuordnungsdialog ==
 {{Anker|zuordnung}}
 
-Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
+Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung, Bauteile und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
 
 === Baualtersklasse zuerst ===
 {{Anker|baualtersklasse}}
@@ -46,7 +46,7 @@ Enthält die Datei mehrere Gebäude, wählen Sie unter ''Gebäude der Datei'' ei
 === Räume ===
 {{Anker|raeume}}
 
-Die Liste ''Räume'' zeigt jeden Raum des Gebäudes mit Fläche, dem Haken ''Beheizt'' und dem ''Grund'' dafür: die Zustandsangabe der Datei, ein Raumname, der auf einen unbeheizten Raum deutet (etwa Keller, Garage oder Dachboden), oder „keine Angabe – als beheizt angenommen". Nur beheizte Räume bilden die Zone. Stellen Sie einen Haken um, ordnet der Dialog neu zu; der Grund heißt dann „vom Anwender umgestellt".
+Die Liste ''Räume'' zeigt jeden Raum des Gebäudes mit Fläche, dem Haken ''Beheizt'' und dem ''Grund'' dafür: die Zustandsangabe der Datei, ein Raumname, der auf einen unbeheizten Raum deutet (etwa Keller, Garage oder Dachboden), oder „keine Angabe – als beheizt angenommen". Nur beheizte Räume bilden die Zone. Stellen Sie einen Haken um, ordnet der Dialog neu zu – die Zuordnung und die [[#bauteile|Bauteile]]; der Grund heißt dann „vom Anwender umgestellt".
 
 === Zuordnung ===
 {{Anker|zeilen}}
@@ -60,6 +60,8 @@ Die Tabelle ''Zuordnung'' hat je Feld des Gebäudeeditors eine Zeile, geordnet n
 * '''Übernehmen''' – der Haken. Ohne Haken bleibt das Feld des neuen Gebäudes so, wie der Editor es für ein neues Gebäude vorsieht.
 
 {{Anker|baujahr}}Die Zeile ''Baujahr'' in den Kenngrößen trägt die Jahreszahl des Gebäudes. Eine IFC-Datei liefert sie aus der Angabe zum Baujahr des Gebäudes (''Pset_BuildingCommon.YearOfConstruction''); gelesen wird die erste vierstellige Jahreszahl von 1500 bis 2100, der Beleg zeigt den gelesenen Text, etwa „gelesen aus „ca. 1965““. Eine gbXML-Datei führt kein Baujahr; die Zeile bleibt leer. Das Baujahr landet im gleichnamigen Feld des Katalogeditors und ändert keine Vorgabe.
+
+{{Anker|innenflaechenfaktor}}Die Zeile ''Innenflächenfaktor'' in den Kenngrößen trägt die Fläche der inneren Trennflächen – Innenwände und Decken zwischen beheizten Räumen, jede mit beiden Seiten – geteilt durch die Nutzfläche; das Gebäudemodell rechnet damit die Speicherfläche im Inneren. Liegt der Wert außerhalb von 1 bis 5, ist die Zeile gelb: Dann fehlt der Datei vermutlich ein Teil der Innenbauteile, oder sie zählt Flächen mehrfach. Führt die Datei keine Innenflächen, bleibt die Zeile leer, und es gilt die Vorgabe 2,5. Der Wert landet im gleichnamigen Feld des Katalogeditors (Gruppe ''Modellparameter (VDI 6007)'').
 
 Eine gelb markierte Zeile verdient einen Blick, etwa bei fehlender Geometrie, einem unbekannten Nachbarraum oder einem Fenster ohne Himmelsrichtung. Eine rot markierte Zeile ist fehlerhaft – etwa eine Wandfläche, die nach Abzug der Fenster und Außentüren negativ würde – und sperrt die Übernahme, solange ihr Haken gesetzt ist. Die gesamte Fensterfläche ist die Summe der vier Himmelsrichtungen; sie wird angezeigt, aber nicht eigens übernommen.
 
@@ -96,6 +98,22 @@ Für U-Werte, g-Wert und Wärmebrückenkoeffizienten gibt es Vorgaben nur aus de
 * '''Luftwechsel''' – übernommen wird nur die Infiltration, und nur, wenn die Datei sie für jeden beheizten Raum nennt; die Nutzerlüftung bleibt dann leer und rechnet mit ihrer Vorgabe. Nennt die Datei keinen Luftwechsel, stehen beide auf ihrer Vorgabe.
 * '''Soll am Tag''' – übernommen, wenn die Datei für alle beheizten Räume dieselbe Heiz-Solltemperatur nennt; sonst gilt die Vorgabe 20 °C.
 
+=== Bauteile (echte Hülle) ===
+{{Anker|bauteile}}
+
+Der Abschnitt ''Bauteile (echte Hülle)'' zeigt, wie das Gebäude mit seinen eigenen Bauteilen ins Projekt kommt, statt nur mit den Summen der Zuordnung: als '''eine Zone''' aus den beheizten Räumen, mit je einer Zeile für jede Wand, jedes Dach, jeden Boden, jedes Fenster und jede Tür der Datei (siehe [[Programm Dokumentation/Gebäude#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
+
+{{Anker|als-zone}}
+* '''Als Zone mit Bauteilen übernehmen''' – der Schalter. Er steht auf ''ein'', wenn sich aus der Datei eine Zone bilden lässt. Lässt sie sich nicht bilden – etwa weil einem Bauteil ohne Baualtersklasse der U-Wert fehlt oder eine Wand an der Außenluft keine Himmelsrichtung trägt –, steht er auf ''aus'' und ist gesperrt; daneben steht der Grund. Mit Schalter bekommt das Gebäude im Projekt die Zone mit diesen Bauteilen und rechnet mit ihnen; ohne Schalter trägt es nur die Summen der Zuordnung. Die Summenfelder des Katalogsatzes stehen in beiden Fällen.
+* Die '''Kopfzeile''' nennt die Zone mit Nutzfläche und die Zahl der Bauteile und Schichtaufbauten.
+* Die '''Liste''' zeigt je Bauteil den Namen aus der Datei, die Art, die Fläche, den U-Wert, den Azimut (0° = Nord), die Neigung, die Randbedingung und die Herkunft. Wände tragen ihre Fläche ohne Fenster und Türen; jede Öffnung ist eine eigene Zeile. Führt die Datei zu einer Konstruktion alle Stoffwerte (Dicke, Wärmeleitfähigkeit, Dichte und Wärmekapazität je Schicht), steht beim U-Wert „aus Schichten": Das Bauteil bekommt einen Schichtaufbau, und der U-Wert folgt aus ihm. Nennt die Datei dazu einen eigenen U-Wert, der um mehr als 5 % abweicht, sagt es eine Meldung. Ohne vollständige Stoffwerte gilt der U-Wert der Datei, sonst die Vorgabe der Baualtersklasse.
+* Flächen gegen einen unbeheizten oder unbekannten Raum tragen die Randbedingung ''unbeheizter Raum''; das Gebäudemodell rechnet dort mit der Kellertemperatur des Gebäudes.
+* Eine '''Vorhangfassade''' rechnet wie ein Fenster mit Sonneneintrag. U-Wert und g-Wert kommen aus der Datei, wo sie welche führt; sonst gilt der Fenster-U-Wert der Baualtersklasse, und g-Wert, Rahmenanteil und Verschattung sind die des Gebäudes. In den Summenfeldern steht sie unter ''Sonstige Flächen''.
+* Die Zeile zur '''inneren Masse''' sagt, wie die Innenwände und Decken zwischen beheizten Räumen eingehen. Tragen alle eine Fläche und vollständige Stoffwerte und liegt ihre Fläche beider Seiten zwischen dem Einfachen und dem Fünffachen der Nutzfläche, kommen sie als Innenbauteile in die Zone, je Seite eine Zeile. Sonst gilt der gemessene [[#innenflaechenfaktor|Innenflächenfaktor]], und die Speichermasse folgt der Bauart; ohne Innenflächen die Vorgabe 2,5.
+* Darunter stehen die '''Meldungen''' zu den Bauteilen.
+
+Jede Neuzuordnung – eine andere Baualtersklasse, ein umgestellter Raum, ein anderes Gebäude der Datei – bildet die Bauteile neu. Ihre Wahl am Schalter bleibt stehen, bis Sie eine andere Datei oder ein anderes Gebäude wählen.
+
 === Meldungen ===
 {{Anker|meldungen}}
 
@@ -120,15 +138,18 @@ Hat der Editor den Katalogsatz angelegt, steht das neue Gebäude im Katalog ''Ge
 
 Ins Projekt geschrieben wird die Zeile mit ''OK'' des Dialogs ''Eingabe der Gebäudedaten'', im Assistenten mit dem Speichern des Projekts – wie jede andere neue Zeile der Liste (siehe [[Programm Dokumentation/Gebäude#uebernahme|Übernahme ins Projekt]]). ''Abbrechen'' verwirft die neue Zeile; der Katalogsatz bleibt im Gebäudekatalog und lässt sich später übernehmen.
 
+{{Anker|zone-im-projekt}}
+War [[#als-zone|Als Zone mit Bauteilen übernehmen]] eingeschaltet, schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt zugleich die Zone mit ihren Bauteilen und die Schichtaufbauten der Datei als Aufbauten des Projekts; ein Aufbauname, den das Projekt schon führt, bekommt eine Nummer angehängt. Das Gebäude rechnet danach mit seinen Bauteilen. Zone und Bauteile lassen sich im Gebäudedialog über ''Hülle und Zonen…'' ansehen und ändern (siehe [[Programm Dokumentation/Gebäude#zonen|Zonen]]), die Aufbauten unter [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]]. Die Katalogsätze bleiben ohne Zone.
+
 === Herkunft im Projekt ===
 {{Anker|herkunft-projekt}}
 
-Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Gelingt das nicht, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
+Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Kommt das Gebäude als Zone mit Bauteilen, merkt sich EPOS-Plan außerdem, aus welchen Räumen die Zone, aus welcher Fläche oder Öffnung jedes Bauteil und aus welcher Konstruktion jeder Aufbau stammt. Gelingt das nicht oder lassen sich Zone und Bauteile nicht schreiben, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
 
 == Grenzen ==
 {{Anker|grenzen}}
 
-* Übernommen wird '''ein Gebäude als eine Zone'''; Räume, Bauteile und Öffnungen gehen in den Summen und Mitteln des Gebäudes auf.
+* Übernommen wird '''ein Gebäude als eine Zone''': ohne den Schalter ''Als Zone mit Bauteilen übernehmen'' mit den Summen und Mitteln des Gebäudes, mit ihm zusätzlich mit seinen einzelnen Bauteilen. Mehrere Zonen je Gebäude entstehen nicht.
 * Die Werte der Datei gelangen nur über den Katalogeditor ins Projekt; ein vorhandener Katalogsatz oder ein Gebäude im Projekt wird durch einen Import nicht überschrieben.
 * Die Kühl-Auslegungstemperatur der Datei und ihre Leistungen für Beleuchtung und Geräte werden nicht als Werte übernommen.
 
