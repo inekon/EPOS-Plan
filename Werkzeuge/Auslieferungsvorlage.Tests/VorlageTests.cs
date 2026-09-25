@@ -177,7 +177,40 @@ namespace Auslieferungsvorlage.Tests
             // Tab_TwwMessreihe, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der Vorlage
             // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
             // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).
-            Assert.Equal(144, befund.Strict);
+            //
+            // 146 seit dem Namensabgleich der Baustoffe (Schemaschritt 145, Stufe G4b Ergaenzung):
+            // Tab_Baustoffsynonym_STAMM (Synonyme der Auslieferung, P6e) und Tab_Baustoffzuordnung
+            // (gemerkte Zuordnungen je Projekt, in der Vorlage LEER), beide STRICT von ihrer ersten Zeile an.
+            Assert.Equal(146, befund.Strict);
+        }
+
+        // =============================================================================
+        //  P6e — Die Synonyme des Namensabgleichs reisen mit, die Zuordnungen nicht
+        // =============================================================================
+        /// <summary>
+        /// <b>Die Synonymtabelle gehört in die Auslieferung</b> (Entscheid E27 zu M9): Jede Saatzeile steht in
+        /// der Vorlage, mit <c>ReadOnly = 1</c> — auch die Regel <c>--kataloge readonly</c> behielte sie. Die
+        /// gemerkten Zuordnungen sind Projektdatenbestand: Die Tabelle steht im Schema und ist leer; dass
+        /// die Projektbereinigung sie leert, zeigt <c>AblaufTests.A11</c>.
+        /// </summary>
+        [Fact]
+        public void P6e_Die_Synonyme_reisen_mit_und_die_Zuordnungen_sind_leer()
+        {
+            if (!_v.Vorhanden) return;
+
+            var befund = _v.Lesen(() => (
+                Synonyme: Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoffsynonym_STAMM\"")),
+                Gesperrt: Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoffsynonym_STAMM\" WHERE \"ReadOnly\" = 1")),
+                Waisen: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Baustoffsynonym_STAMM\" s LEFT JOIN \"Tab_Baustoff_STAMM\" b ON b.\"ID\" = s.\"ID_Baustoff\" WHERE b.\"ID\" IS NULL")),
+                Zuordnungen: DataRepository.TabelleVorhanden(BaustoffabgleichSchema.TAB_ZUORDNUNG)
+                    ? Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoffzuordnung\""))
+                    : -1L));
+
+            Assert.Equal(BaustoffabgleichSchema.Saat.Count, befund.Synonyme);
+            Assert.Equal(befund.Synonyme, befund.Gesperrt);
+            Assert.Equal(0L, befund.Waisen);
+            Assert.Equal(0L, befund.Zuordnungen);
         }
 
         // =============================================================================
