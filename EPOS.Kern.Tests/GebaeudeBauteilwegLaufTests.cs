@@ -1019,6 +1019,10 @@ namespace EPOS.Kern.Tests
             Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
             Assert.Single(Zeile(1045).Zonen);
 
+            // Die Importzuordnung (Schritt S-F) verweist auf Tab_Zone und Tab_Bauteil; ein Stand
+            // vor S-C kennt sie nicht, also fallen sie zuerst.
+            DataRepository.ExecuteNonQuery("DROP TABLE IF EXISTS \"" + ImportzuordnungSchema.TAB_ZUORDNUNG + "\"");
+            DataRepository.ExecuteNonQuery("DROP TABLE IF EXISTS \"" + ImportzuordnungSchema.TAB_QUELLE + "\"");
             DataRepository.ExecuteNonQuery("DROP TABLE \"" + ZonenSchema.TAB_BAUTEIL + "\"");
             DataRepository.ExecuteNonQuery("DROP TABLE \"" + ZonenSchema.TAB_ZONE + "\"");
             Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());           // gemerkt, bis der Schritt sie verwirft
@@ -1073,6 +1077,7 @@ namespace EPOS.Kern.Tests
             {
                 foreach (ProjektGebaeudeModel x in gebaeude) x.Zonen = null;
                 Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
+                GebaeudeZonenanschluss.KuehlspaltenVorhanden();   // gemerkt wie die Tabellenprobe
                 var zaehler = new Zaehlzugriff(DataRepository.Zugriff);
                 try
                 {

@@ -10345,6 +10345,7 @@ namespace WindowsFormsApplication1
                 if (!SqliteSpalteAnlegen(l, ZonenSchema.TAB_ZONE, s.Key, s.Value)) return false;
                 angelegt++;
             }
+            GebaeudeZonenanschluss.ProbeVerwerfen();
 
             l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
                     KuehluebergabeSchema.SpaltenZone.Count.ToString(CultureInfo.InvariantCulture) +
