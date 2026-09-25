@@ -1,7 +1,7 @@
 ﻿Groesse;Wert
 Lauf.ID_Projekt;1018
 Sim.Restwaerme;0.00182780546
-Sim.Reststrom;-27.4575103
+Sim.Reststrom;0
 Sim.bSimulationWP;False
 Sim.bSimulationKessel;True
 Sim.bSimulationSolarthermie;False
@@ -50,14 +50,14 @@ Energiebedarf.Waermelast_Max;37.36
 Energiebedarf.Strombedarf_Gesamt;0
 Energiebedarf.Strombedarf_Max;0
 Energiebedarf.Waermerestbedarf;0
-Energiebedarf.Stromrestbedarf;-27.46
+Energiebedarf.Stromrestbedarf;0
 Energiebedarf.Waermebedarf_Heizung;68.25
 Energiebedarf.Waermebedarf_Brauchwasser;0
 Energiebedarf.Waermebedarf_Prozess;0
 BHKW.Waermebedarf;68.25
 BHKW.Restwaermebedarf;10.48
 BHKW.Strombedarf;0
-BHKW.Reststrombedarf;-27.46
+BHKW.Reststrombedarf;0
 BHKW.Waermeproduktion;58.32
 BHKW.Waermeueberschuss;0
 BHKW.Stromproduktion;27.46
@@ -148,7 +148,7 @@ Vektor.raumtemperatur_0.Summe;176101.374
 Vektor.operative_temperatur_0.Summe;174355.385
 Vektor.restwaerme.Summe;1.82780546
 Vektor.strombedarf_viertelstunde.Summe;0
-Vektor.reststrom_viertelstunde.Summe;-109830.041
+Vektor.reststrom_viertelstunde.Summe;0
 Vektor.puffer_soc.Summe;91842.5138
 Vektor.puffer_ladung.Summe;36737.4394
 Vektor.puffer_entladung.Summe;35570.7537
