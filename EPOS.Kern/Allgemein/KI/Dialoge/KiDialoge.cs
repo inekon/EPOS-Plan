@@ -1774,9 +1774,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Drei Objekte, ein Feldsatz.</b> Zwoelf Felder gehoeren dem Parametersatz
-        /// des Projekts, vierzehn den zwei SZENARIOSAETZEN Best und Worst - je Groesse
-        /// eines. Sie zeigen den WIRKSAMEN Wert und nicht den gepflegten: Ein leeres
+        /// <b>Drei Objekte, ein Feldsatz.</b> Siebzehn Felder gehoeren dem Parametersatz
+        /// des Projekts, achtzehn den zwei SZENARIOSAETZEN Best und Worst - je Groesse
+        /// eines. Vierzehn der Szenariofelder zeigen den WIRKSAMEN Wert und nicht den
+        /// gepflegten (die vier aus E9b unten tragen den gepflegten): Ein leeres
         /// Feld gaebe es sonst fuer jede Vorgabe, und niemand saehe, womit gerechnet
         /// wird. Gesetzt wird dagegen der gepflegte Wert - wer tippt, pflegt.
         /// </para>

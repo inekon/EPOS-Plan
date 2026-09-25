@@ -127,18 +127,19 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Vorlage
 
-        /// <summary>Sucht die Berichtsvorlage an den bekannten Orten (null = nicht gefunden).</summary>
+        /// <summary>
+        /// Sucht die Berichtsvorlage im Ordner der ausgelieferten Vorlagen
+        /// (<see cref="IPfade.Berichtsvorlagen"/>: <c>{app}\Vorlagen</c>, auf iOS das
+        /// Anwendungspaket); <c>null</c> = nicht gefunden, dann gelten die Ersatzstile.
+        /// </summary>
         public static string FindeVorlage()
         {
-            string basis = AppDomain.CurrentDomain.BaseDirectory ?? "";
-            string[] kandidaten =
-            {
-                Path.Combine(basis, "Vorlagen", "Berichtsvorlage.docx"),
-                Path.Combine(basis, "Allgemein", "Bericht", "Vorlagen", "Berichtsvorlage.docx"),
-            };
-            foreach (string k in kandidaten)
-                if (File.Exists(k)) return k;
-            return null;
+            string ordner = "";
+            try { ordner = Dienste.Pfade.Berichtsvorlagen ?? ""; } catch { ordner = ""; }
+            if (ordner.Length == 0) return null;
+
+            string pfad = Path.Combine(ordner, "Berichtsvorlage.docx");
+            return File.Exists(pfad) ? pfad : null;
         }
 
         private static void SetzeUpdateFields(MainDocumentPart main)

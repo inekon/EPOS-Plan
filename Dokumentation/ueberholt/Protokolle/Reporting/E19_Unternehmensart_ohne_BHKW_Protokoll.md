@@ -146,7 +146,7 @@ Mit dieser Welle nachgetragen (→ Register R‑Rest; der Weg im Protokoll der E
   eingehalten (zweimal gewartet); im Worktree die Dateien `-shm`/`-wal` gelöscht.
 - **Merge** `31a0b085` auf `pm20` über `f55a4cd5` ohne Konflikt; Designer 11.008, wiederholbar (+0).
 - **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte (die Messlatte am 25.09.2026 um die zehn Bilder der AK1-Wellen W3/W4-5 erweitert, alle 151 bisherigen Hashes unverändert), voller Lauf 14.027 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 6.822 und 1 übersprungen, EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE498.log`, 25.09.2026 08:10–08:17 Uhr, auf `31a0b085`)
-- **CI:** steht aus (Beobachtung nach dem Push)
+- **CI:** Kern `main` 36103496631 und Windows `main` 36103496647 auf `cbed6dba` grün; der Kern-Lauf 36103490160 auf dem Arbeitszweig vom Nachfolger (#497 `99815b47`) abgebrochen
 
 ## Abnahme am Gerät (A‑E19‑1, Windows)
 
