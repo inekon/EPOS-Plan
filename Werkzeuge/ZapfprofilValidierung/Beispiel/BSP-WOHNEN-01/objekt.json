@@ -1,0 +1,63 @@
+{
+  // Beschreibung eines Messobjekts fuer Werkzeuge/ZapfprofilValidierung.
+  // ERFUNDENES Beispiel: Katalog, Kennwerte und Messreihe sind synthetisch (Kapitel 6 (a)).
+  // Echte Objekte liegen ausserhalb des Repositoriums (Kapitel 9 K5).
+
+  // Die ANONYME Kennung - das Einzige, was in einen Bericht kommt. Kein Objektname.
+  "kennung": "BSP-WOHNEN-01",
+
+  // Bezeichner der Nutzungsart im Katalog (natuerlicher Schluessel, Konzept 3.1).
+  "nutzungsart": "Beispiel Wohnen (erfunden)",
+
+  // Bezugsmenge in der Bezugsart der Nutzungsart (hier Personen).
+  "bezugsmenge": 48,
+
+  // Bedarfsniveau der Zone: Niedrig, Mittel, Hoch.
+  "niveau": "Mittel",
+
+  // Bilanzgrenze des ZAEHLERS: Zapfstelle | MitVerteilung | MitSpeicher.
+  // Die verglichene Rechnung ist Zapfung + Zirkulation - der Zaehler muss dieselbe Grenze haben.
+  "bilanzgrenze": "MitVerteilung",
+
+  // Rechnet die Zone eine Zirkulation?
+  "zirkulation": true,
+
+  // Temperaturen der Zone [Grad C] bzw. [K]; leer = Katalog und Parametersatz.
+  "zapftemperatur_c": 60,
+  "kaltwasser_mittel_c": 12,
+  "kaltwasser_amplitude_k": 2,
+
+  "kalender": {
+    // Wochentag des 1. Januar: 0 = Montag ... 6 = Sonntag.
+    "wochentag_jan1": 1,
+    // Nur ein Vermerk fuer den Bericht - der Kern kennt keine Feiertagstabelle.
+    "feiertagsregion": "erfunden",
+    // Feiertage als Jahrestage 1 ... 365; sie tragen Sonntagsmenge und Sonntagsgang.
+    "feiertage": [1, 359],
+    // Bis zu vier Ferienfenster der Zone (Ruhetage).
+    "ferien": []
+  },
+
+  "messung": {
+    // Dateiname im Objektordner; leer = messreihe.csv.
+    "datei": "messreihe.csv",
+    // Energie | Volumen | Leistung; leer = die Einheit der Kopfzeile entscheidet.
+    "groesse": "Energie",
+    // Ortszeit (Vorgabe, mit Sommerzeit) oder Normalzeit (ohne Umstellung).
+    "zeitstempel": "Normalzeit",
+    // Hoechster zugelassener Lueckenanteil; leer = Parameter des Katalogs.
+    "lueckenanteil_hoechstens": 0.05,
+    // Anonymer Vermerk zur Quelle - Zaehlerart und Zeitraum, kein Objektname.
+    "quelle": "synthetisch aus der Rechnung (Werkzeugbeispiel)"
+  },
+
+  "stochastik": {
+    "seed": 20260926,
+    // 0 oder 1 = kein Ensemble; ab 2 wird gezogen.
+    "realisierungen": 0,
+    // Ist die verglichene Jahresreihe die gezogene Realisierung? Vorgabe: ja, sobald gezogen wird.
+    "jahresreihe_stochastisch": false
+  },
+
+  "vermerk": "Beispielobjekt des Werkzeugs; die Reihe stammt aus der Rechnung selbst (--beispielreihe)."
+}
