@@ -93915,7 +93915,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Stundenspitzen eines Ensembles lässt sich das Band der synthetischen Spitze nicht bilden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Stundenspitzen eines Ensembles bleibt die Streuung der Realisierungsspitzen unbestimmt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE {
             get {
@@ -93974,6 +93974,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spitzen von {0} Realisierungen streuen zwischen {1:0.###} und {2:0.###} der größten gerechneten Stundenleistung. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG", resourceCulture);
             }
         }
         

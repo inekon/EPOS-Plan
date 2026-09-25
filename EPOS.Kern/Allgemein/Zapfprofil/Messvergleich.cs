@@ -32,16 +32,41 @@ namespace WindowsFormsApplication1
     internal sealed record Energieabgleich(double Verhaeltnis, double Abweichung);
 
     /// <summary>
-    /// <b>Kennzahl (b) — Dauerlinie und Band</b>: die gemessene Stundenspitze und die beiden
-    /// Bandgrenzen, jede <b>bezogen auf die gerechnete Stundenspitze</b> (K5). Die Grenzen sind die
-    /// Perzentile <see cref="PerzentilUnten"/> und <see cref="PerzentilOben"/> der Stundenspitzen
-    /// der Realisierungen des Ensembles; <see cref="Lage"/> nennt, wo die Messung liegt.
-    /// Ohne Ensemble ist <see cref="Lage"/> <see cref="Spitzenlage.Unbestimmt"/> und beide Grenzen
-    /// <c>null</c>.
+    /// <b>Kennzahl (b) — Dauerlinie und Band</b> (Konzept 3.6 / Lehre 1: „Die Messspitze liegt bei
+    /// etwa P90 der synthetischen Dauerlinie"): die gemessene Stundenspitze und die beiden
+    /// Bandgrenzen, jede <b>bezogen auf die größte gerechnete Stundenleistung</b> (K5 — nur
+    /// Verhältniszahlen).
+    ///
+    /// <para><b>Das Band ist ein Quantil der DAUERLINIE</b>, nicht der Ensemblespitzen: Die
+    /// 8 760 Stundenwerte der gerechneten Reihe werden sortiert, und die Grenzen sind ihre Quantile
+    /// <see cref="PerzentilUnten"/> (Vorgabe 0,85) und <see cref="PerzentilOben"/> (0,95), geteilt
+    /// durch die größte Stundenleistung. Die Lehre sagt gerade, dass die echte Messspitze eines
+    /// Objekts nicht das Maximum der Rechnung trifft, sondern ein hohes Quantil ihrer Dauerlinie;
+    /// die Grenzen liegen deshalb UNTER 1, und <see cref="Spitzenlage.Oberhalb"/> heißt: Die Messung
+    /// trifft eine höhere Stelle der Dauerlinie als erwartet.</para>
+    ///
+    /// <para><b>Ohne Ensemble bleibt diese Kennzahl rechenbar</b> — sie braucht nur die gerechnete
+    /// Reihe. <see cref="Dauerlinienwerte"/> nennt, über wie viele Stundenwerte sie gebildet ist;
+    /// <see cref="Spitzenlage.Unbestimmt"/> heißt „ohne Stundenwerte der Messung".</para>
     /// </summary>
     internal sealed record Bandabgleich(Spitzenlage Lage, double? Spitzenverhaeltnis, double? BandUnten,
-                                        double? BandOben, int Realisierungen, double PerzentilUnten,
+                                        double? BandOben, int Dauerlinienwerte, double PerzentilUnten,
                                         double PerzentilOben);
+
+    /// <summary>
+    /// <b>Die Streuung der Realisierungsspitzen</b> — die eigene Kennzahl des Ensembles (Konzept 4.4,
+    /// Gleichzeitigkeit): die Quantile <see cref="PerzentilUnten"/> und <see cref="PerzentilOben"/>
+    /// der größten Stunde JE Realisierung, beide bezogen auf die größte Stundenleistung der
+    /// gerechneten Reihe (K5), und das Verhältnis der beiden Grenzen zueinander
+    /// (<see cref="Streubreite"/> = oben / unten; 1 = alle Realisierungen treffen dieselbe Spitze).
+    ///
+    /// <para>Sie sagt, <b>wie weit die Stochastik streut</b>, und ist damit etwas anderes als das
+    /// Band der Dauerlinie, gegen das die Messung gehalten wird. <b>Ohne Ensemble</b> gibt es sie
+    /// nicht: Der Vergleich liefert dann <c>null</c> und den Hinweis
+    /// <c>MESSVERGLEICH_OHNE_ENSEMBLE</c>, nie eine stille Null.</para>
+    /// </summary>
+    internal sealed record Spitzenstreuung(double Unten, double Oben, double Streubreite, int Realisierungen,
+                                           double PerzentilUnten, double PerzentilOben);
 
     /// <summary>
     /// <b>Kennzahl (c) — √N-Skalierung</b> (Kapitel 7 Zeile Z5): Die Spitze je Einheit fällt mit der
@@ -153,6 +178,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kennzahl (b) — Dauerlinie und Band.</summary>
         internal Bandabgleich Band { get; set; }
+
+        /// <summary>
+        /// Die Streuung der Realisierungsspitzen; <c>null</c> ohne Ensemble („unbestimmt", samt
+        /// Hinweis <c>MESSVERGLEICH_OHNE_ENSEMBLE</c>).
+        /// </summary>
+        internal Spitzenstreuung Streuung { get; set; }
 
         /// <summary>Kennzahl (c) — √N-Skalierung; <c>null</c> ohne Einheitenzahl oder ohne Stundenwerte.</summary>
         internal WurzelNAbgleich WurzelN { get; set; }
@@ -284,6 +315,8 @@ namespace WindowsFormsApplication1
             {
                 erg.Hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_OHNE_STUNDENWERTE", e.Reihe.AufloesungMin));
                 erg.Band = new Bandabgleich(Spitzenlage.Unbestimmt, null, null, null, 0, e.BandUnten, e.BandOben);
+                // Die Streuung des Ensembles braucht die Messung nicht - sie steht auch hier.
+                erg.Streuung = Streuung(e, e.Gerechnet.GroessterStundenwertKw, erg.Hinweise);
                 erg.Form = new Formabgleich(new Tagesgangabweichung[0], null, e.Formschwelle);
                 return erg;
             }
@@ -292,8 +325,11 @@ namespace WindowsFormsApplication1
             double spitzeRechKw = e.Gerechnet.GroessterStundenwertKw;
             double spitzenverhaeltnis = spitzeRechKw > 0.0 ? spitzeMessKw / spitzeRechKw : double.NaN;
 
-            // ---- (b) Band der synthetischen Spitze ---------------------------------------
+            // ---- (b) Band der synthetischen Dauerlinie -----------------------------------
             erg.Band = Band(e, spitzenverhaeltnis, spitzeRechKw, erg.Hinweise);
+
+            // ---- Die Streuung der Realisierungsspitzen (eigene Kennzahl) -----------------
+            erg.Streuung = Streuung(e, spitzeRechKw, erg.Hinweise);
 
             // ---- (c) √N-Skalierung -------------------------------------------------------
             if (e.Einheiten >= 1 && !double.IsNaN(spitzenverhaeltnis))
@@ -302,8 +338,10 @@ namespace WindowsFormsApplication1
                 erg.WurzelN = new WurzelNAbgleich(e.Einheiten, spitzenverhaeltnis, 1.0 / wurzel,
                                                   spitzenverhaeltnis * wurzel);
             }
-            else
+            else if (e.Einheiten < 1)
             {
+                // Nur die FEHLENDE Einheitenzahl heißt „ohne Einheiten". Eine unbrauchbare Spitze
+                // (kein gerechneter Stundenwert) ist ein anderer Grund und steht schon bei (b).
                 erg.Hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_OHNE_EINHEITEN"));
             }
 
@@ -321,27 +359,34 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die beiden Bandgrenzen aus den Stundenspitzen der Realisierungen — beide, wie die
-        /// gemessene Spitze, bezogen auf die gerechnete Spitze (K5). Der Rang eines Perzentils folgt
-        /// derselben Regel wie <c>Perzentilwerte.Rang</c>: <c>k = ⌈q · n⌉</c>, mindestens 1.
+        /// Die beiden Bandgrenzen als <b>Quantile der synthetischen Dauerlinie</b> — die sortierten
+        /// Stundenwerte der gerechneten Reihe —, beide, wie die gemessene Spitze, bezogen auf die
+        /// größte gerechnete Stundenleistung (K5).
+        ///
+        /// <para><b>Warum die Dauerlinie und nicht die Ensemblespitzen:</b> Konzept 3.6 (Lehre 1)
+        /// sagt „die Messspitze liegt bei etwa P90 der synthetischen Dauerlinie". Das ist eine
+        /// Aussage über die EINE gerechnete Reihe — wo in ihrer Dauerlinie die Messung landet —, und
+        /// sie gilt deshalb auch für eine deterministische Rechnung ohne Ensemble. Wie weit die
+        /// Stochastik streut, sagt die eigene Kennzahl <see cref="Spitzenstreuung"/>; die beiden
+        /// Fragen werden nicht mehr in einer Zahl vermischt.</para>
+        ///
+        /// <para>Der Rang eines Quantils folgt derselben Regel wie <c>Perzentilwerte.Rang</c>:
+        /// <c>k = ⌈q · n⌉</c>, mindestens 1, höchstens n — EINE Regel im Bestand.</para>
         /// </summary>
         private static Bandabgleich Band(Messvergleichseingang e, double spitzenverhaeltnis, double spitzeRechKw,
                                          ICollection<ZapfSatz> hinweise)
         {
-            IReadOnlyList<double> stichprobe = e.SynthetischeStundenspitzenKw ?? new double[0];
-            if (stichprobe.Count == 0 || !(spitzeRechKw > 0.0))
+            IReadOnlyList<double> reihe = e.Gerechnet.StundenKwh;
+            if (reihe == null || reihe.Count == 0 || !(spitzeRechKw > 0.0) || double.IsNaN(spitzenverhaeltnis))
             {
-                hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_OHNE_ENSEMBLE"));
                 return new Bandabgleich(Spitzenlage.Unbestimmt, double.IsNaN(spitzenverhaeltnis) ? null : spitzenverhaeltnis,
                                         null, null, 0, e.BandUnten, e.BandOben);
             }
 
-            var geordnet = stichprobe.ToArray();
+            var geordnet = reihe.ToArray();
             Array.Sort(geordnet);
-            double untenKw = geordnet[Rang(geordnet.Length, e.BandUnten) - 1];
-            double obenKw = geordnet[Rang(geordnet.Length, e.BandOben) - 1];
-            double unten = untenKw / spitzeRechKw;
-            double oben = obenKw / spitzeRechKw;
+            double unten = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandUnten) - 1] / spitzeRechKw;
+            double oben = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandOben) - 1] / spitzeRechKw;
 
             Spitzenlage lage = spitzenverhaeltnis < unten ? Spitzenlage.Unterhalb
                              : spitzenverhaeltnis > oben ? Spitzenlage.Oberhalb
@@ -355,12 +400,28 @@ namespace WindowsFormsApplication1
             return new Bandabgleich(lage, spitzenverhaeltnis, unten, oben, geordnet.Length, e.BandUnten, e.BandOben);
         }
 
-        /// <summary>Der Rang <c>k = ⌈q · n⌉</c> (mindestens 1, höchstens n) eines Quantils <c>q</c> aus 0 … 1.</summary>
-        internal static int Rang(int anzahl, double quantil)
+        /// <summary>
+        /// Die Streuung der Realisierungsspitzen — dieselben zwei Quantile, aber über die größte
+        /// Stunde JE Realisierung; <c>null</c> ohne Ensemble (dann steht der Hinweis
+        /// <c>MESSVERGLEICH_OHNE_ENSEMBLE</c>, nie eine stille Null).
+        /// </summary>
+        private static Spitzenstreuung Streuung(Messvergleichseingang e, double spitzeRechKw,
+                                                ICollection<ZapfSatz> hinweise)
         {
-            long k = (long)Math.Ceiling(quantil * anzahl);
-            if (k < 1) k = 1;
-            return k > anzahl ? anzahl : (int)k;
+            IReadOnlyList<double> stichprobe = e.SynthetischeStundenspitzenKw ?? new double[0];
+            if (stichprobe.Count == 0 || !(spitzeRechKw > 0.0))
+            {
+                hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_OHNE_ENSEMBLE"));
+                return null;
+            }
+
+            var geordnet = stichprobe.ToArray();
+            Array.Sort(geordnet);
+            double unten = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandUnten) - 1] / spitzeRechKw;
+            double oben = geordnet[Perzentilwerte.Rang(geordnet.Length, e.BandOben) - 1] / spitzeRechKw;
+            double breite = unten > 0.0 ? oben / unten : double.NaN;
+            hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_SPITZENSTREUUNG", geordnet.Length, unten, oben));
+            return new Spitzenstreuung(unten, oben, breite, geordnet.Length, e.BandUnten, e.BandOben);
         }
 
         // =================================================================================

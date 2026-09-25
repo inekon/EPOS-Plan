@@ -32140,7 +32140,10 @@ Do you want to allow this?</value>
     <value>Without the number of units of the zones the √N scaling stays without comparison.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
-    <value>Without hourly peaks of an ensemble the band of the synthetic peak cannot be formed.</value>
+    <value>Without hourly peaks of an ensemble the scatter of the realisation peaks stays undetermined.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
+    <value>The peaks of {0} realisations scatter between {1:0.###} and {2:0.###} of the largest computed hourly load.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
     <value>The measurement knows no public holidays; they count with the daily profile of their weekday.</value>

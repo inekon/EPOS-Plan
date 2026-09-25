@@ -63,13 +63,27 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1.0, e.Energie.Verhaeltnis, 9);
             Assert.Equal(0.0, e.Energie.Abweichung, 9);
 
-            // (b) Das Band: alle Realisierungen tragen genau die gerechnete Spitze.
-            Assert.Equal(Spitzenlage.ImBand, e.Band.Lage);
+            // (b) Das Band ist NICHT neutral, und das ist der Kern von Lehre 1 (Konzept 3.6): Die
+            // Messspitze soll bei etwa P90 der synthetischen DAUERLINIE liegen, nicht auf ihrem
+            // Maximum. Eine Messung, die genau die gerechnete Reihe ist, trifft das Maximum - sie
+            // liegt damit OBERHALB des Bandes. Das Tagesmuster wiederholt sich hier an allen 365
+            // Tagen, seine Dauerlinie hat darum nur fuenf Stufen (0 / 0,5 / 1,0 / 1,5 / 2,0 kWh mit
+            // 2 920 / 4 015 / 730 / 730 / 365 Stunden, also Grenzen bei Rang 2 920, 6 935, 7 665,
+            // 8 395 und 8 760): Rang 7 446 (P85) fällt in die Stufe 1,0, Rang 8 322 (P95) in die
+            // Stufe 1,5 - das Band ist 0,5 bis 0,75 der gerechneten Spitze 2,0.
+            Assert.Equal(Spitzenlage.Oberhalb, e.Band.Lage);
             Assert.Equal(1.0, e.Band.Spitzenverhaeltnis.Value, 9);
-            Assert.Equal(1.0, e.Band.BandUnten.Value, 9);
-            Assert.Equal(1.0, e.Band.BandOben.Value, 9);
+            Assert.Equal(0.50, e.Band.BandUnten.Value, 9);
+            Assert.Equal(0.75, e.Band.BandOben.Value, 9);
+            Assert.Equal(Bilanzreihe.STUNDEN, e.Band.Dauerlinienwerte);
             Assert.Equal(0.85, e.Band.PerzentilUnten, 9);
             Assert.Equal(0.95, e.Band.PerzentilOben, 9);
+
+            // Die Streuung der Realisierungen dagegen IST neutral: alle tragen die gerechnete Spitze.
+            Assert.Equal(1.0, e.Streuung.Unten, 9);
+            Assert.Equal(1.0, e.Streuung.Oben, 9);
+            Assert.Equal(1.0, e.Streuung.Streubreite, 9);
+            Assert.Equal(10, e.Streuung.Realisierungen);
 
             // (c) Spitze je Einheit gleich: das Verhaeltnis ist 1, das Wurzel-N-Mass damit sqrt(4).
             Assert.Equal(4, e.WurzelN.Einheiten);
@@ -119,44 +133,118 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>(b) Das Band P85–P95:</b> Die Bandgrenzen sind die Perzentile der Stundenspitzen der
-        /// Realisierungen. Die Probe legt eine Stichprobe von 100 Werten 1,00 … 1,99 (bezogen auf die
-        /// gerechnete Spitze) darüber und dreht die gemessene Spitze über, in und unter das Band —
-        /// jedes Mal mit benanntem Vermerk.
+        /// <b>(b) Das Band P85–P95 ist ein Quantil der DAUERLINIE</b> (Konzept 3.6 / Lehre 1: „Die
+        /// Messspitze liegt bei etwa P90 der synthetischen Dauerlinie"). Die Probe rechnet mit einer
+        /// <b>physikalisch plausiblen Dauerlinie</b> — dem Formvektor über einem erfundenen
+        /// Jahresgang (Winter 1,3 / Sommer 0,7) —, nicht mit einer künstlichen Stichprobe: So hat die
+        /// Dauerlinie viele Stufen, und die Grenzen liegen echt auseinander.
+        ///
+        /// <para>Geprüft wird (1) die Rechenregel gegen eine unabhängige Nachrechnung derselben
+        /// Definition samt von Hand gerechnetem Anker, (2) dass beide Grenzen unter 1 liegen und
+        /// aufsteigen, (3) dass eine Messung AUF dem gerechneten Maximum oberhalb des Bandes liegt
+        /// und eine Messung auf dem P90 der Dauerlinie darin, (4) dass das Band <b>ohne Ensemble
+        /// dasselbe</b> ist, und (5) dass die Parameter die Grenzen bewegen.</para>
         /// </summary>
         [Fact]
-        public void Die_Spitze_wird_gegen_das_P85_P95_Band_gehalten()
+        public void Die_Spitze_wird_gegen_das_Band_der_Dauerlinie_gehalten()
         {
-            Bilanzreihe gerechnet = Jahresreihe(1.0);
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
             double spitzeRech = gerechnet.GroessterStundenwertKw;
-            // 100 Realisierungen: Spitze 1,00 bis 1,99 der gerechneten. Rang 85 -> 1,84; Rang 95 -> 1,94.
+
+            // (1) Die unabhaengige Nachrechnung: sortieren, Rang aufrunden, durch die Spitze teilen.
+            double[] dauerlinie = gerechnet.StundenKwh.OrderBy(x => x).ToArray();
+            double erwartetUnten = dauerlinie[Aufgerundet(dauerlinie.Length, 0.85) - 1] / spitzeRech;
+            double erwartetOben = dauerlinie[Aufgerundet(dauerlinie.Length, 0.95) - 1] / spitzeRech;
+
+            Messvergleichsergebnis mitte = MitSpitze(gerechnet, null, 0.5);
+            Assert.Equal(erwartetUnten, mitte.Band.BandUnten.Value, 12);
+            Assert.Equal(erwartetOben, mitte.Band.BandOben.Value, 12);
+            Assert.Equal(Bilanzreihe.STUNDEN, mitte.Band.Dauerlinienwerte);
+            // Die von Hand gerechnete Probe derselben Zahlen (Anker, damit die Nachrechnung nicht
+            // einfach die Umsetzung spiegelt): P85 = 0,4146, P95 = 0,6828 der gerechneten Spitze.
+            Assert.Equal(0.4146, mitte.Band.BandUnten.Value, 4);
+            Assert.Equal(0.6828, mitte.Band.BandOben.Value, 4);
+
+            // (2) Beide Grenzen liegen UNTER 1 und steigen auf - das ist die Aussage von Lehre 1.
+            Assert.True(mitte.Band.BandUnten.Value < mitte.Band.BandOben.Value);
+            Assert.True(mitte.Band.BandOben.Value < 1.0);
+
+            // (3a) Eine Messung, die genau die gerechnete Reihe ist, trifft das Maximum: oberhalb.
+            Messvergleichsergebnis aufMaximum = MitSpitze(gerechnet, null, 1.0);
+            Assert.Equal(Spitzenlage.Oberhalb, aufMaximum.Band.Lage);
+            Assert.Contains(aufMaximum.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_UEBER_BAND");
+
+            // (3b) Eine Messung auf dem P90 der Dauerlinie liegt im Band - die Lehre selbst.
+            double p90 = dauerlinie[Aufgerundet(dauerlinie.Length, 0.90) - 1] / spitzeRech;
+            Messvergleichsergebnis aufP90 = MitSpitze(gerechnet, null, p90);
+            Assert.Equal(Spitzenlage.ImBand, aufP90.Band.Lage);
+            Assert.Contains(aufP90.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_IM_BAND");
+
+            // (3c) Deutlich darunter: die Rechnung ueberschaetzt die Spitze staerker als erwartet.
+            Messvergleichsergebnis darunter = MitSpitze(gerechnet, null, 0.2);
+            Assert.Equal(Spitzenlage.Unterhalb, darunter.Band.Lage);
+            Assert.Contains(darunter.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_UNTER_BAND");
+
+            // (4) OHNE Ensemble ist das Band dasselbe - es braucht nur die gerechnete Reihe.
+            Messvergleichsergebnis ohneEnsemble = Messvergleich.Vergleichen(
+                Eingang(MitSpitzenfaktor(p90, jahresgang: true), gerechnet, einheiten: 1,
+                        stichprobe: new double[0]));
+            Assert.Equal(mitte.Band.BandUnten.Value, ohneEnsemble.Band.BandUnten.Value, 12);
+            Assert.Equal(mitte.Band.BandOben.Value, ohneEnsemble.Band.BandOben.Value, 12);
+            Assert.Equal(Spitzenlage.ImBand, ohneEnsemble.Band.Lage);
+
+            // (5) Die Grenzen sind Parameter: mit 0,50 und 0,60 sinkt das Band, und dieselbe Messung
+            //     liegt darueber.
+            Messvergleichsergebnis anders = Messvergleich.Vergleichen(
+                Eingang(MitSpitzenfaktor(p90, jahresgang: true), gerechnet, einheiten: 1)
+                    with { BandUnten = 0.50, BandOben = 0.60 });
+            Assert.Equal(dauerlinie[Aufgerundet(dauerlinie.Length, 0.50) - 1] / spitzeRech,
+                         anders.Band.BandUnten.Value, 12);
+            Assert.Equal(dauerlinie[Aufgerundet(dauerlinie.Length, 0.60) - 1] / spitzeRech,
+                         anders.Band.BandOben.Value, 12);
+            Assert.Equal(Spitzenlage.Oberhalb, anders.Band.Lage);
+        }
+
+        /// <summary>
+        /// <b>Die Streuung der Realisierungsspitzen ist die EIGENE Kennzahl des Ensembles</b> und
+        /// nicht mehr das Band: Dieselbe Stichprobe 1,00 … 1,99 der gerechneten Spitze ergibt die
+        /// Grenzen 1,84 (Rang 85) und 1,94 (Rang 95) und die Streubreite 1,94/1,84 — und sie
+        /// verschiebt das Band der Dauerlinie um keine Stelle. Ohne Ensemble ist sie <c>null</c>
+        /// („unbestimmt") samt benanntem Hinweis.
+        /// </summary>
+        [Fact]
+        public void Die_Streuung_der_Realisierungsspitzen_steht_neben_dem_Band()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            double spitzeRech = gerechnet.GroessterStundenwertKw;
             double[] stichprobe = Enumerable.Range(0, 100).Select(i => spitzeRech * (1.0 + i / 100.0)).ToArray();
 
-            // Im Band: die gemessene Spitze bei 1,9 der gerechneten.
-            Messvergleichsergebnis mitte = MitSpitze(gerechnet, stichprobe, 1.9);
-            Assert.Equal(1.84, mitte.Band.BandUnten.Value, 9);
-            Assert.Equal(1.94, mitte.Band.BandOben.Value, 9);
-            Assert.Equal(100, mitte.Band.Realisierungen);
-            Assert.Equal(Spitzenlage.ImBand, mitte.Band.Lage);
-            Assert.Contains(mitte.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_IM_BAND");
+            Messvergleichsergebnis mit = MitSpitze(gerechnet, stichprobe, 0.5);
+            Assert.Equal(1.84, mit.Streuung.Unten, 9);
+            Assert.Equal(1.94, mit.Streuung.Oben, 9);
+            Assert.Equal(1.94 / 1.84, mit.Streuung.Streubreite, 9);
+            Assert.Equal(100, mit.Streuung.Realisierungen);
+            Assert.Equal(0.85, mit.Streuung.PerzentilUnten, 9);
+            Assert.Equal(0.95, mit.Streuung.PerzentilOben, 9);
+            Assert.Contains(mit.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZENSTREUUNG");
 
-            // Oberhalb: die Rechnung unterschaetzt die Spitze.
-            Messvergleichsergebnis oben = MitSpitze(gerechnet, stichprobe, 2.5);
-            Assert.Equal(Spitzenlage.Oberhalb, oben.Band.Lage);
-            Assert.Contains(oben.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_UEBER_BAND");
+            // Das Band bleibt, wo es war - die Stichprobe beruehrt es nicht.
+            Messvergleichsergebnis ohne = MitSpitze(gerechnet, new double[0], 0.5);
+            Assert.Equal(ohne.Band.BandUnten.Value, mit.Band.BandUnten.Value, 12);
+            Assert.Equal(ohne.Band.BandOben.Value, mit.Band.BandOben.Value, 12);
 
-            // Unterhalb: die Rechnung ueberschaetzt sie staerker als erwartet.
-            Messvergleichsergebnis unten = MitSpitze(gerechnet, stichprobe, 1.2);
-            Assert.Equal(Spitzenlage.Unterhalb, unten.Band.Lage);
-            Assert.Contains(unten.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZE_UNTER_BAND");
+            // Ohne Ensemble: unbestimmt, benannt.
+            Assert.Null(ohne.Streuung);
+            Assert.Contains(ohne.Hinweise, h => h.Kennung == "MESSVERGLEICH_OHNE_ENSEMBLE");
+            Assert.DoesNotContain(ohne.Hinweise, h => h.Kennung == "MESSVERGLEICH_SPITZENSTREUUNG");
+        }
 
-            // Die Bandgrenzen sind Parameter: mit 0,50 und 0,60 liegt 1,2 mitten im Band.
-            Messvergleichsergebnis anders = Messvergleich.Vergleichen(
-                Eingang(MitSpitzenfaktor(1.2), gerechnet, einheiten: 1, stichprobe: stichprobe)
-                    with { BandUnten = 0.50, BandOben = 0.60 });
-            Assert.Equal(1.49, anders.Band.BandUnten.Value, 9);
-            Assert.Equal(1.59, anders.Band.BandOben.Value, 9);
-            Assert.Equal(Spitzenlage.Unterhalb, anders.Band.Lage);
+        /// <summary>Der Rang <c>k = ⌈q · n⌉</c> der Probe selbst — unabhängig von der Umsetzung.</summary>
+        private static int Aufgerundet(int anzahl, double quantil)
+        {
+            int k = (int)Math.Ceiling(quantil * anzahl);
+            if (k < 1) k = 1;
+            return k > anzahl ? anzahl : k;
         }
 
         /// <summary>
@@ -347,6 +435,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, e.Monate.GroessteAbweichung, 12);   // (e) rechnet
             Assert.Equal(Spitzenlage.Unbestimmt, e.Band.Lage);    // (b) offen
             Assert.Null(e.Band.Spitzenverhaeltnis);
+            Assert.Null(e.Band.BandUnten);                       // ohne Messspitze kein Abgleich
+            Assert.NotNull(e.Streuung);                          // die Streuung braucht die Messung nicht
             Assert.Null(e.WurzelN);                              // (c) offen
             Assert.Null(e.Form.Formmass);                        // (d) offen
             Assert.False(e.Form.ImRahmen);                       // "nicht entschieden", nicht "in Ordnung"
@@ -354,17 +444,22 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Ohne Ensemble bleibt das Band benannt offen; die übrigen Kennzahlen rechnen weiter.
+        /// <b>Ohne Ensemble rechnet das Band weiter</b> — es ist ein Quantil der gerechneten
+        /// Dauerlinie und braucht keine Realisierungen. Allein die <b>Streuung</b> der
+        /// Realisierungsspitzen bleibt benannt unbestimmt (<c>null</c> samt
+        /// <c>MESSVERGLEICH_OHNE_ENSEMBLE</c>); die übrigen Kennzahlen rechnen ebenfalls weiter.
         /// </summary>
         [Fact]
-        public void Ohne_Ensemble_bleibt_das_Band_offen()
+        public void Ohne_Ensemble_bleibt_allein_die_Streuung_offen()
         {
             Messvergleichsergebnis e = Messvergleich.Vergleichen(
                 Eingang(Jahresmessreihe(1.0), Jahresreihe(1.0), einheiten: 4, stichprobe: new double[0]));
             Assert.True(e.Ok);
-            Assert.Equal(Spitzenlage.Unbestimmt, e.Band.Lage);
-            Assert.Null(e.Band.BandUnten);
-            Assert.Equal(1.0, e.Band.Spitzenverhaeltnis.Value, 9);   // die Spitze selbst steht
+            Assert.Equal(0.50, e.Band.BandUnten.Value, 9);           // das Band steht
+            Assert.Equal(0.75, e.Band.BandOben.Value, 9);
+            Assert.Equal(Spitzenlage.Oberhalb, e.Band.Lage);         // die Messung trifft das Maximum
+            Assert.Equal(1.0, e.Band.Spitzenverhaeltnis.Value, 9);
+            Assert.Null(e.Streuung);                                 // die Streuung nicht
             Assert.NotNull(e.WurzelN);
             Assert.Contains(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_OHNE_ENSEMBLE");
         }
@@ -396,18 +491,32 @@ namespace EPOS.Kern.Tests
             Assert.Equal(roh.Formschwelle, leer.Formschwelle, 12);
         }
 
-        /// <summary>Der Rang eines Quantils: ⌈q · n⌉, mindestens 1, höchstens n.</summary>
+        /// <summary>
+        /// Der Rang eines Quantils: ⌈q · n⌉, mindestens 1, höchstens n — und es ist die EINE
+        /// Rangregel des Zapfprofilgenerators (<c>Perzentilwerte.Rang</c>), keine zweite im
+        /// Messvergleich. Die ganzzahlige Form desselben Rangs liefert dieselben Werte.
+        /// </summary>
         [Fact]
         public void Der_Rang_eines_Quantils_folgt_der_Aufrundung()
         {
-            Assert.Equal(1, Messvergleich.Rang(100, 0.0));
-            Assert.Equal(1, Messvergleich.Rang(100, 0.001));
-            Assert.Equal(85, Messvergleich.Rang(100, 0.85));
-            Assert.Equal(95, Messvergleich.Rang(100, 0.95));
-            Assert.Equal(100, Messvergleich.Rang(100, 1.0));
-            Assert.Equal(100, Messvergleich.Rang(100, 2.0));
-            Assert.Equal(9, Messvergleich.Rang(10, 0.85));
-            Assert.Equal(1, Messvergleich.Rang(1, 0.85));
+            Assert.Equal(1, Perzentilwerte.Rang(100, 0.0));
+            Assert.Equal(1, Perzentilwerte.Rang(100, 0.001));
+            Assert.Equal(85, Perzentilwerte.Rang(100, 0.85));
+            Assert.Equal(95, Perzentilwerte.Rang(100, 0.95));
+            Assert.Equal(100, Perzentilwerte.Rang(100, 1.0));
+            Assert.Equal(100, Perzentilwerte.Rang(100, 2.0));
+            Assert.Equal(9, Perzentilwerte.Rang(10, 0.85));
+            Assert.Equal(1, Perzentilwerte.Rang(1, 0.85));
+
+            // Die ganzzahlige Form ist dieselbe Regel - fuer jede Groesse und die Quantile, mit denen
+            // der Bestand rechnet. Sie ist die genauere: q = p/100 ist im Binaersystem meist nicht
+            // darstellbar, und bei n = 100 verschiebt das den aufgerundeten Rang fuer p = 7, 14, 28,
+            // 55 und 56 um eins. Deshalb rechnet das Ensemble weiter ganzzahlig, und die
+            // Bandgrenzen - runde Anteile aus dem Parametersatz - mit der Bruchform.
+            foreach (int n in new[] { 1, 7, 10, 100, 365, 8760 })
+                foreach ((int p, double q) in new[] { (50, 0.50), (60, 0.60), (85, 0.85), (90, 0.90),
+                                                      (95, 0.95), (99, 0.99), (100, 1.00) })
+                    Assert.Equal(Perzentilwerte.Rang(n, p), Perzentilwerte.Rang(n, q));
         }
 
         // =================================================================================
@@ -589,26 +698,41 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Die gerechnete Jahresreihe: 365-mal dasselbe Tagesmuster, mit einem Faktor.</summary>
-        private static Bilanzreihe Jahresreihe(double faktor, double[] muster = null)
+        /// <summary>
+        /// Ein erfundener Jahresgang: 365 Tagesfaktoren, Winter 1,3 und Sommer 0,7, glatt dazwischen
+        /// (<c>1 + 0,3 · cos(2π d / 365)</c>). Er dient allein dazu, die synthetische DAUERLINIE mit
+        /// vielen verschiedenen Stufen zu versehen — ohne ihn wiederholt sich das Tagesmuster an
+        /// allen 365 Tagen, und die Dauerlinie hat nur fünf Stufen. <b>Keine Normzahl</b>: eine
+        /// runde Amplitude über einem Kosinus.
+        /// </summary>
+        private static double Tagesfaktor(int tag) => 1.0 + 0.3 * Math.Cos(2.0 * Math.PI * tag / 365.0);
+
+        private static Bilanzreihe Jahresreihe(double faktor, double[] muster = null, bool jahresgang = false)
         {
             double[] m = muster ?? TAGESMUSTER;
             var werte = new double[Bilanzreihe.STUNDEN];
             for (int d = 0; d < Zapfkalender.TAGE; d++)
+            {
+                double tag = faktor * (jahresgang ? Tagesfaktor(d) : 1.0);
                 for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
-                    werte[d * Zapfkalender.STUNDEN_TAG + h] = m[h] * faktor;
+                    werte[d * Zapfkalender.STUNDEN_TAG + h] = m[h] * tag;
+            }
             return new Bilanzreihe(werte);
         }
 
         /// <summary>Die gemessene Jahresreihe: 365 Tage Stundenwerte desselben Musters.</summary>
-        private static Messreihe Jahresmessreihe(double faktor, double[] muster = null)
-            => Messreihenbau(Zapfkalender.TAGE, faktor, muster ?? TAGESMUSTER);
+        private static Messreihe Jahresmessreihe(double faktor, double[] muster = null, bool jahresgang = false)
+            => Messreihenbau(Zapfkalender.TAGE, faktor, muster ?? TAGESMUSTER, jahresgang);
 
-        private static Messreihe Messreihenbau(int tage, double faktor, double[] muster)
+        private static Messreihe Messreihenbau(int tage, double faktor, double[] muster, bool jahresgang = false)
         {
             var werte = new double[tage * Zapfkalender.STUNDEN_TAG];
             for (int d = 0; d < tage; d++)
+            {
+                double tag = faktor * (jahresgang ? Tagesfaktor(d) : 1.0);
                 for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
-                    werte[d * Zapfkalender.STUNDEN_TAG + h] = muster[h] * faktor;
+                    werte[d * Zapfkalender.STUNDEN_TAG + h] = muster[h] * tag;
+            }
             return new Messreihe("Waermemengenzaehler (erfunden)", ZapfMessgroesse.Energie, 60, BEGINN, werte,
                                  "Probe (erfunden)");
         }
@@ -619,11 +743,22 @@ namespace EPOS.Kern.Tests
         /// einem Faktor unter 1 würde eine andere Stunde zur Spitze, und das Verhältnis wäre nicht
         /// mehr der Faktor. Die Form bleibt dabei unverändert (ein Faktor verschiebt keine Stunde).
         /// </summary>
-        private static Messreihe MitSpitzenfaktor(double faktor) => Jahresmessreihe(faktor);
+        private static Messreihe MitSpitzenfaktor(double faktor, bool jahresgang = false)
+            => Jahresmessreihe(faktor, jahresgang: jahresgang);
 
+        /// <summary>
+        /// Der Vergleich mit einer um <paramref name="faktor"/> abweichenden Messspitze. Der
+        /// Jahresgang der Messreihe folgt dem der gerechneten Reihe — sonst verschöbe die Probe
+        /// neben der Spitze auch die Form.
+        /// </summary>
         private static Messvergleichsergebnis MitSpitze(Bilanzreihe gerechnet, double[] stichprobe, double faktor)
-            => Messvergleich.Vergleichen(Eingang(MitSpitzenfaktor(faktor), gerechnet, einheiten: 1,
-                                                 stichprobe: stichprobe));
+        {
+            // Die Spitzenstunde (7) des ersten Tages gegen die des Tages 182: Gleich heisst
+            // "kein Jahresgang".
+            bool jahresgang = gerechnet.StundenKwh[7] != gerechnet.StundenKwh[182 * 24 + 7];
+            return Messvergleich.Vergleichen(
+                Eingang(MitSpitzenfaktor(faktor, jahresgang), gerechnet, einheiten: 1, stichprobe: stichprobe));
+        }
 
         /// <summary>
         /// Der Eingang: Kalender aus <see cref="WOCHENTAG_JAN1"/> ohne Wochenendkennzeichen (der

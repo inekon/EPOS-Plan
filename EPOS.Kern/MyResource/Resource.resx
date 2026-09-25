@@ -32147,7 +32147,10 @@ Möchten Sie das zulassen?</value>
     <value>Ohne die Einheitenzahl der Zonen bleibt die √N-Skalierung ohne Vergleich.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
-    <value>Ohne Stundenspitzen eines Ensembles lässt sich das Band der synthetischen Spitze nicht bilden.</value>
+    <value>Ohne Stundenspitzen eines Ensembles bleibt die Streuung der Realisierungsspitzen unbestimmt.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
+    <value>Die Spitzen von {0} Realisierungen streuen zwischen {1:0.###} und {2:0.###} der größten gerechneten Stundenleistung.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
     <value>Die Messung kennt keine Feiertage; sie zählen mit dem Tagesgang ihres Wochentags.</value>
