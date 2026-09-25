@@ -1306,7 +1306,10 @@ R15 und #507); der Merge #503, `76f8661d`, zieht den Basisnamen an drei Stellen 
 Regressionsanker, § 6.3 Nr. 21), in § 8.46 und § 8.47 **vor #510** (Stand `c48de9e0` = `origin` nach #509, darin #503
 samt seinen Papieren; der Merge #510, `f7823b8e`, lässt die Papiere unberührt), in § 8.48 und § 8.49 **vor #514**
 (Stand `822ba803` = `origin` nach #513; der Merge #514, `edf89ae8`, zieht den Basisnamen an drei Stellen des Konzepts
-nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21) —, nicht vor dem Schnitt.*
+nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21), in § 8.50 und § 8.51 **vor #518** (Stand `b8f8a168` =
+`pm26` nach #514 und #515 samt Papieren; der Merge #518, `025a8707`, zieht den Basisnamen an drei Stellen des Konzepts
+nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21 — und trägt „E26 ohne Schritt“ in den Kopf) —, nicht vor dem
+Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -3009,3 +3012,45 @@ Die Stellen, die mit E24 veraltet sind; „vorher“ ist der Wortlaut vor #514 (
 | § 6.3 Nr. 21 | „heute gilt die Basis `2026-09-25_R16_Anlagenprio`“ | „… `2026-09-25_R17_Datenpflege`“ (mit dem Merge) |
 | § 6.3 Nr. 24 | Wortlaut in § 8.48 | durchgestrichen, „erledigt mit E24 (#514)“, Rest benannt, siehe Protokoll |
 | § 7 | — | Satz zur Datenpflege E24 (#514) |
+
+### 8.50 E26 — PV-Ausweis: Stromproduktion der Module, Strommatrix-Bedarf aller Verbraucher, Referenzbasis R18 (#518)
+
+Protokoll [`E26_PvAusweis_Strommatrix_R18_Protokoll.md`](E26_PvAusweis_Strommatrix_R18_Protokoll.md); im Register die
+neue Familie R‑E26 und der fortgeschriebene Umsetzungsstand von R‑NR Nr. 32. Die Welle setzt den Anwenderentscheid vom
+25.09.2026 zu den Kern-Befunden N1 und N3 aus E25 um — „Befunde aus E25: Empfehlung/bearbeiten“ —; sie ist keine
+Etappe des Plans E0–E12 und kommt ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 143. Die Fragen E26‑Q1…Q7
+hat der Orchestrator am 25.09.2026 (~19:50) mit der Baufreigabe nach Empfehlung entschieden.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E26** (#518, Merge `025a8707` über `b8f8a168`, Zweig `e26` = `4653fa06` von `868afc57`) | N1: `Ergebnis.Photovoltaik.Stromproduktion` = Erzeugung der Module (`Stromproduktion_Theoretisch`, `SimulationRunner.cs:989-998`) statt des Direktverbrauchs (E26‑Q1 a); N3: Reihe `STROMBEDARF_GESAMT` = Rest nach der Kaskade + BHKW-Strom als Bedarf der Strommatrix, auch für den KWK-Split (E26‑Q3 a); Eigenverbrauch des Ausweises = Erzeugung − Einspeisung (E26‑Q4 a); Tests `PvAusweisStromMatrixTests` (11 Fälle); Neueinfrierung `2026-09-25_R18_PvAusweis` (E26‑Q2 a); kein Schemaschritt (E26‑Q5 a); Q6 b und Q7 als Restpunkte | **ja**, im Ausweis: „PV: vermiedener Bezug“ nicht mehr negativ, im Rollentarif vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv (1040 −4.496 → +1.332 €/a, 1026 −5.401 → +1.604 €/a); Kapitalwert an allen Ankern bitgleich; in der Simulation allein `Photovoltaik.Stromproduktion` in vier `aggregate.csv`, deshalb die neue Basis |
+
+*§ 3.6 (vor #518):* Der Abschnitt „Vermiedene Stromkosten — Ausweis, kein Zahlungsstrom“ steht im Wortlaut
+unverändert; er verlangte schon „Bedarf ohne jede Eigenerzeugung“ (umgesetzt #437), die Strommatrix nahm dafür aber
+allein den Projektbedarf `STROMBEDARF` — ohne Wärmepumpe, Heizstab, Elektrokessel und Kältestrom der Stufenrechnung,
+die der Netzbezug enthält.
+
+**Erledigt mit E26 (#518):** In § 3.6 stehen der Konzeptvermerk zum Bedarf aller Verbraucher (auch für den KWK-Split,
+E26‑Q3) und die Regel der PV-Stromproduktion des Ausweises (Erzeugung der Module, Eigenverbrauch = Erzeugung −
+Einspeisung); § 6.3 Nr. 34 ist als erledigt eingetragen. Benannt bleiben Q6 (Strombilanz-Diagramm und Excel-Spalte
+„Strombedarf“), N5 (1018 negativer Netzbezug, kapitalwertwirksam, Empfehlung eigene Welle E27) und N6 (die Übersicht
+„Strombedarf mit Eigenverbrauch“ ohne Kältestrom).
+
+### 8.51 Berichtigungen im gültigen Stand (#518)
+
+Die Stellen, die mit E26 veraltet sind; „vorher“ ist der Wortlaut vor #518 (Stand `b8f8a168`). Je Stelle eine Zeile;
+„mit dem Merge“ heißt: die Stelle hat E26/4 selbst nachgezogen.
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `edf89ae8`; Referenzbasis `2026-09-25_R17_Datenpflege`; „… E23 und E24 ohne Schritt“ | Codestand `025a8707`; Referenzbasis `2026-09-25_R18_PvAusweis` (mit dem Merge); „… E23, E24 und E26 ohne Schritt“ (mit dem Merge) |
+| Schrittabsatz | „…, E23 (#510) und E24 (#514) kommen ohne Schritt aus“ | „…, E23 (#510), E24 (#514) und E26 (#518) kommen ohne Schritt aus“ |
+| § 2.6, Block B, Zeile B2 | „… steht nur, wo die Aufteilung keinen PV-Anteil führt (umgesetzt #437)“ | dazu „ihre Menge ist der Eigenverbrauch = Erzeugung der Module − Einspeisung (§ 3.6, E26 #518)“ |
+| § 3.6 | Wortlaut in § 8.50 | zwei neue Absätze „Bedarf aller Verbraucher“ (Konzeptvermerk E26‑Q3) und „PV-Stromproduktion des Ausweises“ |
+| § 6.1 | — | Zeile E26 (#518) |
+| § 6.2, Tafel, Zeile Referenzbasis | `Referenzlaeufe/2026-09-25_R17_Datenpflege` | `Referenzlaeufe/2026-09-25_R18_PvAusweis` (mit dem Merge) |
+| § 6.3 Nr. 21 | „heute gilt die Basis `2026-09-25_R17_Datenpflege`“ | „… `2026-09-25_R18_PvAusweis`“ (mit dem Merge) |
+| § 6.3 Nr. 32 | „… der Entscheid: → Register R‑NR“ | dazu „seit E26 (#518) zählt der Bedarf alle Verbraucher des Anschlusses (Nr. 34)“ |
+| § 6.3 Nr. 34 | — | neu, Block „Aus Etappe E26 (#518)“: erledigt, Restpunkte Q6, N5, N6 benannt |
+| § 7 | — | Satz zur Welle E26 (#518) |
+| Anhang | — | je eine Zeile E26 in der Kürzeltafel und in der Etappentafel |
