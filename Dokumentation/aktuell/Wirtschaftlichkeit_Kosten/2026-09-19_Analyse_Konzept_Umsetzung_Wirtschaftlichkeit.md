@@ -1,11 +1,11 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
-**Stand 24.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
-`e79bffb1` · `SchemaStand.Zielversion` = **130**, Schemaschritte 90–130 vergeben (105 = K‑1, #440; 108–110 =
+**Stand 25.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
+`31a0b085` · `SchemaStand.Zielversion` = **141**, Schemaschritte 90–141 vergeben (105 = K‑1, #440; 108–110 =
 Kühlung KU1; 111–113 = die Schritte E, F, G, #446; 114 = Kühlung KU2; 115 = Zapfprofil Z3, T2, #453; 119 = Kühlung
 KU2 Welle 3, E34), **116–118 = die Schritte B, C, D, gebaut #461 (E9a); E9b (#462) ohne Schritt; 120 = die Sätze der
 Nutzungsdauertabelle, gebaut #463 (E10); E13 (#474) und E14 (#477) ohne Schritt**; 121 = Katalogverweis des Projektgebäudes (#468),
-122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt** · Gegenstand: das konsolidierte Konzept
+122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt** · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (seit #474 unter `ueberholt/`),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -127,6 +127,15 @@ Zeilennummern und Messungen:
 > 13 Referenzprojekten und ist eine eigene Etappe. Kein Schemaschritt, keine Rechenwirkung — die Basis bleibt.
 > E18‑Q1…Q6 sind am 24.09.2026 nach Empfehlung a entschieden, E18‑Q7 (Unternehmensart ohne BHKW) steht als Restpunkt
 > Nr. 33 im Konzept (→ Register R‑E18).
+
+> **Nachtrag 25.09.2026 (#498).** Die kleine Welle **E19 (#498)** schließt aus Konzept § 6.3 die Nr. 15 als durch die
+> Schalentrennung überholt — mit einer Wache — und erledigt die Nr. 33: Ohne BHKW pflegt der Parameterdialog in der
+> Gruppe Strom die Unternehmensart samt Anzeige des erfassten Stromsteueranteils, § 9b ist damit für Projekte ohne BHKW
+> erreichbar (Konzept § 2.4, § 3.8); auf das „fahre fort“ des Anwenders nach dem Statusbericht. Kein Schemaschritt,
+> keine Rechenwirkung — die Basis bleibt. E19‑Q1…Q6 sind am 25.09.2026 nach Empfehlung entschieden (Q4 b, → Register
+> R‑E19). Mit den Papieren zu #498 nachgetragen sind die Anwenderentscheide vom 25.09.2026 zu § 6.3 Nr. 10, 11, 13, 18
+> und 19 (→ Register R‑Rest): Nr. 11 und 13 geschlossen, Nr. 19 belassen, Nr. 10 präzisiert mit einer folgenden kleinen
+> Bauwelle, Nr. 18 nach einer Messwelle.
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
@@ -555,6 +564,7 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E17 Nicht monetarisierbare Wirkungen (V‑G11)** — **umgesetzt #479** | die nicht monetarisierbaren Wirkungen nach DIN EN 17463, 6.1 und 8.2 als Liste je Projekt: Kategorie, Beschreibung, Dauer, Wirkung auf Organisation, Mitarbeiter und Umwelt, Beurteilung Dauer × stärkste Wirkung (0 bis 9) als Anzeige; Baustein `WirkungenListe` im Bewertungsblock statt des Freitexts (Altfeld lesbar), Tabelle in Wort- und Tabellenbericht, Punkte 2b und 3b der Anhang-E-Checkliste | S | nein | Anker „keine Rechenwirkung" bitgleich, Referenzlauf 13/13 gegen R14 byte-gleich, `NichtMonetaereWirkungenTests`, `WirkungenListeTests`, Blattstruktur-Wache zwei Fälle | **127** | Wirtschaftlichkeit `wirtschaftlichkeit` (Anker `nicht-monetaer`, `checkliste`), ein Logbuch-Satz | Opus | Anwenderauftrag 24.09.2026 („V‑G11 … kleiner Dialog-und-Bericht-Auftrag ohne Rechenwirkung") — **umgesetzt #479** (erster Merge `0462f92e`, End-Merge `52614c33`; Zweig `e17`: E17/1 `1ca8273b`, E17/2 `3f5f0412`, E17/3 `c902018c`, E17/3a `2512865e`, E17/4 `c5094dd4`, E17/5 `0769c84d`, Zusammenführung `311780cd`, E17/6 `4ede85a5`, E17/7 `db909d37`, E17/8 `079de7d7`, Nachzug `86ebd491` auf #485, E17/9 `f545f86b`; Testdatenbank 127, LFS `87e49ed1`; vier Fragen E17‑Q1…Q4 entschieden 24.09.2026, nach Empfehlung) |
 | **E16 Wiederholperiode je Kostenposition (V‑G3 aus V‑E)** — **umgesetzt #484** | die n-jährlichen Zeitpunkte nach DIN EN 17463, 6.3.1: je Betriebsposition eine Wiederholperiode, Zahlung in s, s + n, … ≤ T (`KapitalwertRechner.ZahltImJahr`), nur Betriebspositionen; Ganzzahlfeld „Zahlung alle: [n] Jahre" im Zeileneditor und in den Kostenvorlagen, Vorlagenübernahme, KI-Feld `wiederholperiode`; „alle n Jahre ab Jahr X" in der Betriebskostentabelle, Hilfsspalte je Topf in der Formelmappe, Nachweisumschlag Fassung 11 | S | **ja**, je Pflege (leer = jährlich) | A/B an 1030 (Zeile 101600098 auf n = 2, drei Szenarien gleich der Handrechnung), Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich, `WiederholperiodeTests`, fünf bUnit-Fälle | **129** | Kosten `kosten` (neuer Anker `zahlung-alle-n-jahre`), Wirtschaftlichkeit `bericht-betriebskosten`, `formelmappe`; ein Logbuch-Satz | Opus | Anwenderauftrag 24.09.2026 („V‑G3 n‑jährliche Zeitpunkte …") — **umgesetzt #484** (Merge `ae7b0ed0`; Zweig `e16`: E16/1 `68a4915a`, E16/2 `7572c0cf`, E16/3 `b8ff3931`, E16/4 `c5ac83f7`, E16/5 `43776f61`, Zusammenführung `cb06a7c3`, E16/6 `de49dec9`, Zusammenführung `6ddb0132` mit AK1 W3, E16/7 `37538993`, E16/8 `7c8f4fc4`; Testdatenbank 129, LFS `4c546a7c`; vier Fragen E16‑Q1…Q4 offen) |
 | **E18 Restpunkte Stromsteuer (Konzept § 6.3 Nr. 14, 16, 18)** — **umgesetzt #492** | Wache der Stromsteuer-Rückfallebene gegen die älteste Katalogzeile in Saat und Testdatenbank (Nr. 14, § 6.5), zwei tote Ressourcen gestrichen; der erfasste Stromsteueranteil unter der Unternehmensart im Dialog „BHKW-Wirtschaftlichkeit" mit Satzabgleich und Kohärenzzeile, nur Anzeige (Nr. 16); Nr. 18 nachgemessen, offen, HB1-O1 an den fünf Rechenweg-Sortierungen vermerkt | S | nein | Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, Gegenprobe der Wache (21 EUR/MWh → rot), `StromsteuerErfasstTests`, acht bUnit-Fälle | — (kein Schemaschritt) | Wirtschaftlichkeit `wirtschaftlichkeit` (Dialog „BHKW-Wirtschaftlichkeit"), ein Logbuch-Satz | Opus | Anwender 24.09.2026 („fahre fort" auf die Empfehlung der kleinen Welle) — **umgesetzt #492** (Merge `e79bffb1`; Zweig `e18`: E18/1 `52e223e2`, E18/2 `52b94866`, E18/3 `50ef787d`, E18/4 `5c05ea6b`, E18/5 `29fad34d`; E18‑Q1…Q6 entschieden 24.09.2026, nach Empfehlung a; Q7 Restpunkt § 6.3 Nr. 33) |
+| **E19 Restpunkte Unternehmensart (Konzept § 6.3 Nr. 15, 33)** — **umgesetzt #498** | Nr. 15 als durch die Schalentrennung überholt geschlossen, Wache `KatalogjahrJeOeffnungTests`; die Unternehmensart ohne BHKW im Parameterdialog, Gruppe Strom, mit der Anzeige des erfassten Stromsteueranteils und der § 9b-Erklärzeile, mit BHKW nur der Verweis (Nr. 33); KI-Feld `unternehmensart` mit Sperre, Maskenwache 35 | S | nein (§ 9b ohne BHKW erreichbar, gerechnet nur mit gewählter Unternehmensart) | Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, `KatalogjahrJeOeffnungTests`, `UnternehmensartOhneBhkwTests` (§ 9b an 1041), sechs bUnit-Fälle | — (kein Schemaschritt) | Wirtschaftlichkeit `parameter`, `bhkw-wirtschaftlichkeit`, ein Logbuch-Satz | Opus | Anwender 25.09.2026 („fahre fort“ nach dem Statusbericht) — **umgesetzt #498** (Merge `31a0b085`; Zweig `e19`: E19/1 `a8832acd`, E19/2 `c87354a0`, E19/3 `14d55922`, E19/4 `bfa2c9e5`; E19‑Q1…Q6 entschieden 25.09.2026, nach Empfehlung, Q4 b) |
 
 **Stand der Etappen am 24.09.2026.**
 
@@ -623,7 +633,9 @@ sind mit **E17 (#479)** gebaut — Schemaschritt 127, Liste mit Kategorie und Be
 Rechenwirkung; seine vier Fragen E17‑Q1…Q4 sind am 24.09.2026 nach Empfehlung entschieden (a). Die n-jährlichen Zeitpunkte V‑G3 sind mit **E16 (#484)** gebaut —
 Schemaschritt 129, Betriebspositionen „alle n Jahre", ohne Pflege ergebnisneutral; seine vier Fragen E16‑Q1…Q4 sind
 offen. Damit ist die Gap-Tafel V‑G des Konzepts geschlossen. Aus Konzept § 6.3 erledigt die kleine Welle **E18 (#492)**
-die Nr. 14 und 16 ohne Schemaschritt; Nr. 18 bleibt offen, Nr. 33 ist neu.
+die Nr. 14 und 16 ohne Schemaschritt; Nr. 18 bleibt offen, Nr. 33 ist neu. Die kleine Welle **E19 (#498)** schließt
+Nr. 15 als überholt und erledigt Nr. 33 ohne Schemaschritt; zu Nr. 10, 11, 13, 18 und 19 hat der Anwender am
+25.09.2026 entschieden (→ Register R‑Rest).
 **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
 zurückgestellt (Statusdatei, „Nach #405" (f)); der Anwender hat sie am **22.09.2026** mit dem Auftrag
 wieder aufgenommen, das Mockup `Dialog_Formel_Zahlenprobe.html` umzusetzen.
@@ -679,7 +691,12 @@ Ergebnis, `ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS`, gepusht am 24.09.2026 um 2
 Wiederholperiode je Kostenposition (V‑G3, `WiederholperiodeSchema.SCHRITT`, gebaut #484; in Phase 1 vorläufig 128);
 `SchemaStand.Zielversion` steht auf **129**. **Nachtrag #492:** 130 hat die Berichtigung der Anschlusslängen im
 Gebäudekatalog genommen (#493, `GebaeudeAnschlusslaengenReparatur.SCHRITT`, reines DML; in der Sitzung vorläufig 131);
-E18 (#492) kommt ohne Schritt aus; `SchemaStand.Zielversion` steht auf **130**.
+E18 (#492) kommt ohne Schritt aus; `SchemaStand.Zielversion` steht auf **130**. **Nachtrag #498:** 131 hat die
+Zapfprofil-Stufe Z4b genommen (#486, `SCHRITT_131_ZAPFPROFIL_TYPTAGE`), 132 bis 139 die Cloud-Sitzungen G3, G4 und AK1
+(Baustoffkatalog, Bauteilaufbau, Zonen, Kühlübergabe mit Ergebnis und Zone, Importzuordnung, Baujahr), 140 die
+Messreihen der Zapfprofil-Stufe Z5 (#495) und 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496,
+`GebaeudeAnschlusslaengenFolgereparatur.SCHRITT`); E19 (#498) kommt ohne Schritt aus; `SchemaStand.Zielversion` steht
+auf **141**.
 
 Damit keine Nummer zweimal vergeben wird, führt dieses Papier die geplanten Schritte fortan mit
 **Buchstaben**. Jeder bekommt seine Nummer **bei der Umsetzung**, aus dem dann freien Bereich (nach der Vergabe vom
