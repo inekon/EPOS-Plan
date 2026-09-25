@@ -6,7 +6,9 @@ namespace EPOS.UI.Seiten.Berichte;
 /// BV-E1 (Konzept 10.2) — die Beschriftungen der Gruppe „Vorlage" der Berichtsseite: Word-Vorlage,
 /// die vier Knöpfe, das Menü „…", die Prüfzeile, die Sperrgründe, der Namensdialog von
 /// „Neue Vorlage…", die Titel der Überlagerungen „Prüfliste" und „Platzhalterkatalog" und die
-/// Rückfälle der erweiterten Startrückfrage.
+/// Rückfälle der erweiterten Startrückfrage — dazu (BV-E2) der Grund an einem Häkchen, dessen
+/// Kapitel die Vorlage nicht führt, der am Häkchen „Deckblatt", wenn die Vorlage es selbst trägt, und
+/// die leise Zeile, die statt der Häkchen steht.
 ///
 /// <para>Ein BÜNDEL nach der Bauart <see cref="WirtschaftlichkeitSeiteTexte"/> (Hausregel
 /// EPOS.UI: ab etwa zehn Anzeigetexten eines, EIN <c>[Parameter]</c>). Es füllt sich SELBST aus
@@ -131,4 +133,41 @@ public sealed class BerichtSeiteVorlagentexte
 
     /// <summary>BK_BER_VORLAGE_WEG_ABBRECHEN</summary>
     public string WegAbbrechen { get; set; } = T("BK_BER_VORLAGE_WEG_ABBRECHEN", "Abbrechen");
+
+    // ---- BV-E2: die Häkchen folgen der Vorlage (Konzept 10.2, „Häkchen (BV-Q1 c)") ----------
+
+    /// <summary>
+    /// BK_BER_VORLAGE_NICHT_ENTHALTEN — der Grund am Häkchen eines Bausteins, dessen Kapitel die
+    /// gewählte Vorlage nicht führt (Kurztext des weich gesperrten Eintrags).
+    /// </summary>
+    public string NichtEnthalten { get; set; } = T("BK_BER_VORLAGE_NICHT_ENTHALTEN",
+        "in dieser Vorlage nicht enthalten");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN — die Meldung nach dem Klick auf ein solches Häkchen;
+    /// <c>{0}</c> = Titel des Bausteins.
+    /// </summary>
+    public string MeldungNichtEnthalten { get; set; } = T("BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN",
+        "„{0}“ ist in dieser Vorlage nicht enthalten – das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_INHALT_AUS_VORLAGE — die leise Zeile STATT der Häkchen, wenn die Vorlage nur
+    /// Einzelplatzhalter führt (weder <c>{{bericht.inhalt}}</c> noch ein Kapitel) und nur Word entsteht.
+    /// </summary>
+    public string InhaltAusVorlage { get; set; } = T("BK_BER_VORLAGE_INHALT_AUS_VORLAGE",
+        "Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE — der Grund am Häkchen „Deckblatt", wenn die Vorlage das
+    /// Deckblatt selbst aus Platzhaltern trägt (Kurztext des weich gesperrten Eintrags).
+    /// </summary>
+    public string DeckblattAusVorlage { get; set; } = T("BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE",
+        "Deckblatt kommt aus der Vorlage");
+
+    /// <summary>
+    /// BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE — die Meldung nach dem Klick auf dieses Häkchen;
+    /// <c>{0}</c> = Titel des Bausteins.
+    /// </summary>
+    public string MeldungDeckblattAusVorlage { get; set; } = T("BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE",
+        "„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.");
 }

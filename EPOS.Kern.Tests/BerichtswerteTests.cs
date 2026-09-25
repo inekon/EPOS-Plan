@@ -247,7 +247,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Erster Hinweis\nZweiter Hinweis\nmit zweiter Zeile", warnungen.Text);
 
             Platzhalterwert inhalt = Wert(w, "{{bericht.inhalt}}");
-            Assert.Equal(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel), inhalt.Kapitel);
+            Assert.Equal(Berichtskapitel.Alle.Select(k => k.Name), inhalt.Kapitel);
             Assert.Equal("", inhalt.Text);
 
             Assert.Equal("Seite", Text(w, "{{text.seite}}"));
@@ -581,7 +581,7 @@ namespace EPOS.Kern.Tests
             Berichtswerte w = Berichtswerte.Aus(GefuellteProbe(), konfig, false, null);
 
             Platzhalterwert inhalt = Vorlagenfeldkatalog.Loese(Vorlagenfeldkatalog.Finde("bericht.inhalt"), w, Ohne);
-            Assert.Equal(new[] { BerichtsKonfiguration.B_DECKBLATT, BerichtsKonfiguration.B_VERGLEICH, BerichtsKonfiguration.B_ANHANG },
+            Assert.Equal(new[] { Berichtskapitel.DECKBLATT, Berichtskapitel.VERGLEICH, Berichtskapitel.ANHANG },
                          inhalt.Kapitel);
 
             Platzhalterwert keins = Vorlagenfeldkatalog.Loese(Vorlagenfeldkatalog.Finde("bericht.inhalt"),
@@ -589,8 +589,52 @@ namespace EPOS.Kern.Tests
             Assert.True(keins.IstLeer);
             Assert.Empty(keins.Kapitel);
 
-            Assert.Equal(BerichtsKonfiguration.AlleBausteine.Length,
-                         Berichtswerte.Aus(GefuellteProbe(), null, false, null).AktiveKapitel.Count);
+            // Ohne Konfiguration alle Kapitel — der Anhang E mit dem Häkchen „Wirtschaftlichkeit“.
+            Assert.Equal(Berichtskapitel.Alle.Select(k => k.Name),
+                         Berichtswerte.Aus(GefuellteProbe(), null, false, null).AktiveKapitel);
+        }
+
+        /// <summary>
+        /// Katalog v2 (BV-E2): ein Kapitel liefert sich selbst, wenn sein Häkchen gesetzt ist, sonst nichts
+        /// (Entfall); der Anhang E folgt dem Häkchen „Wirtschaftlichkeit“; der Schalter ist der Wert des
+        /// Häkchens; der Kapitelkopf die eigene Überschrift in der Berichtssprache; das Logo die Bytes der
+        /// Erstellerangaben, ohne Logo leer mit Grund.
+        /// </summary>
+        [Fact]
+        public void Kapitel_Schalter_Kapitelkoepfe_und_Logo_loesen_sich_auf()
+        {
+            var konfig = new BerichtsKonfiguration();
+            konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_PROJEKT);
+            konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+            Berichtswerte w = Berichtswerte.Aus(GefuellteProbe(), konfig, false, null);
+
+            Assert.Equal(new[] { Berichtskapitel.PROJEKT }, Wert(w, "{{kapitel.projekt}}").Kapitel);
+            Assert.Equal(new[] { Berichtskapitel.ANHANG_E }, Wert(w, "{{kapitel.anhang_e}}").Kapitel);
+            Platzhalterwert aus = Wert(w, "{{kapitel.vergleich|ohne titel}}");
+            Assert.True(aus.IstLeer);
+            Assert.Empty(aus.Kapitel);
+
+            Assert.True(Wert(w, "{{baustein.projekt}}").Schalter);
+            Assert.False(Wert(w, "{{baustein.vergleich}}").Schalter);
+
+            Assert.Equal("Berechnungsergebnisse je Variante", Text(w, "{{text.kapitel_ergebnisse}}"));
+            Assert.Equal("Results per variant", Text(Berichtswerte.Aus(GefuellteProbe(), konfig, true, null), "{{text.kapitel_ergebnisse}}"));
+            Assert.Equal(R.WIRT_AE_TITEL, Text(w, "{{text.kapitel_anhang_e}}"));
+
+            Platzhalterwert ohneLogo = Wert(w, "{{bild.ersteller.logo}}");
+            Assert.True(ohneLogo.IstLeer);
+            Assert.Null(ohneLogo.Bild);
+            Assert.Equal("", ohneLogo.Text);
+            Assert.Equal(R.BV_GRUND_KEIN_LOGO, ohneLogo.Grund);
+
+            byte[] png = WordVorlagenfuellerTests.Png(40, 20);
+            Platzhalterwert logo = Wert(Berichtswerte.Aus(GefuellteProbe(), konfig, false,
+                new Erstellerangaben { Logo = png, LogoDateiname = "firma.png" }), "{{bild.ersteller.logo}}");
+            Assert.False(logo.IstLeer);
+            Assert.Equal(Bildformat.Png, logo.Bild.Format);
+            Assert.Equal(40, logo.Bild.Breite);
+            Assert.Equal(20, logo.Bild.Hoehe);
+            Assert.Equal("firma.png", logo.Text);
         }
 
         [Fact]

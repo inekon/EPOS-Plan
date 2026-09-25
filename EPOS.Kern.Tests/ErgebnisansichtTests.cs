@@ -662,7 +662,10 @@ namespace EPOS.Kern.Tests
         /// <b>Gemessen an der Testdatenbank (22.09.2026, wie am 19.09.2026):</b> 95 von 101
         /// Investitionspositionen tragen keine Nutzungsdauer; betragstragend sind 33, davon
         /// 27 ohne Dauer. Das Einsammeln des Kerns zählt über alle Projekte genau diese 27
-        /// von 33 — mit derselben Kaskade, mit der der Kapitalwert rechnet.
+        /// von 33 — mit derselben Kaskade, mit der der Kapitalwert rechnet. Das Prüfprojekt
+        /// PV mit Preisen 1048 (Kopie von 1040) bringt 21 Positionen mit, davon 20 ohne Dauer;
+        /// betragstragend sind 6, und 5 davon (die Kopien der Zeilen von 1040) ohne Dauer —
+        /// zusammen 115 von 122, 32 von 39.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
@@ -670,8 +673,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(101, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
-            Assert.Equal(95, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
+            Assert.Equal(122, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
+            Assert.Equal(115, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
                                   "AND (Nutzungsdauer IS NULL OR Nutzungsdauer < 1)"));
 
             int ohne = 0, alle = 0, hinweise = 0;
@@ -687,11 +690,11 @@ namespace EPOS.Kern.Tests
                 alle += h.Alle;
                 hinweise += h.Zeilen.Count;
             }
-            Assert.Equal(27, ohne);
-            Assert.Equal(33, alle);
+            Assert.Equal(32, ohne);
+            Assert.Equal(39, alle);
             // Einen Hinweis tragen nur Techniken mit Vorgabe unter T = 20 a: die Wärmepumpe
-            // (18 a) in 1019, 1023, 1024, 1032 und 1040, das BHKW (15 a) in 1018 und 1031.
-            Assert.Equal(7, hinweise);
+            // (18 a) in 1019, 1023, 1024, 1032, 1040 und 1048, das BHKW (15 a) in 1018 und 1031.
+            Assert.Equal(8, hinweise);
         }
 
         /// <summary>

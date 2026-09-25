@@ -6826,7 +6826,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Maßnahme ist benannt, das Datum der Bewertung steht fest.</value>
   </data>
   <data name="WIRT_AE_01_STELLE" xml:space="preserve">
-    <value>Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Übersicht“</value>
   </data>
   <data name="WIRT_AE_01_STAND" xml:space="preserve">
     <value>Projekt, Varianten und Berichtsdatum stehen im Bericht.</value>
@@ -6838,7 +6838,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Maßnahme ist so beschrieben, dass ein Dritter versteht, worum es geht.</value>
   </data>
   <data name="WIRT_AE_02_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Projektbeschreibung“, „Komponenten &amp; Varianten“ · Tabellenbericht: Blatt „Übersicht“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Übersicht“</value>
   </data>
   <data name="WIRT_AE_02_STAND" xml:space="preserve">
     <value>Anlagen und Abweichungen je Variante aus den Projektdaten; eine Kurzbeschreibung der Maßnahme in Worten erfasst EPOS nicht.</value>
@@ -6850,7 +6850,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Alle Wirkungen, die aus der Investitionsentscheidung folgen, sind erfasst.</value>
   </data>
   <data name="WIRT_AE_1_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“</value>
   </data>
   <data name="WIRT_AE_1_STAND" xml:space="preserve">
     <value>Investition, Betriebs- und Energiekosten, Erlöse und Vorteile, Ersatz und Restwert je Stand.</value>
@@ -6862,7 +6862,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Jede messbare Wirkung ist als Menge angegeben.</value>
   </data>
   <data name="WIRT_AE_2A_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten</value>
   </data>
   <data name="WIRT_AE_2A_STAND" xml:space="preserve">
     <value>Energiemengen aus der Stundensimulation je Stand.</value>
@@ -6874,7 +6874,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
   </data>
   <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ (Tabelle) · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Tafel „Nicht monetäre Wirkungen“</value>
   </data>
   <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
     <value>beschrieben; noch keine Wirkung nach Dauer und Wirkung beurteilt (8.2).</value>
@@ -6889,7 +6889,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Zahlungen sind vollständig, nur echte Zahlungen fließen ein, und jede ist erklärt.</value>
   </data>
   <data name="WIRT_AE_3A_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Mehrjahresübersicht der Zahlungsströme“ · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“</value>
   </data>
   <data name="WIRT_AE_3A_STAND" xml:space="preserve">
     <value>Zahlungen je Jahr und Position; vermiedene Kosten nur als Nachweis, keine Abschreibung als Zahlung.</value>
@@ -6907,7 +6907,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Der Betrachtungszeitraum ist angemessen gewählt, die Zeitpunkte der Zahlungen sind bestimmt.</value>
   </data>
   <data name="WIRT_AE_4_STELLE" xml:space="preserve">
-    <value>Wortbericht: Parameterzeile und Zeitraumhinweis im Kapitel „Wirtschaftlichkeit“ · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen</value>
   </data>
   <data name="WIRT_AE_4_ERFUELLT" xml:space="preserve">
     <value>Zeitraum gegen die Nutzungsdauern abgeglichen; Ersatz und Restwert je Jahr.</value>
@@ -6922,7 +6922,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Der Zins ist aus Eigen- und Fremdkapital nachvollziehbar hergeleitet und erläutert.</value>
   </data>
   <data name="WIRT_AE_5_STELLE" xml:space="preserve">
-    <value>Wortbericht: Parameterzeile · Tabellenbericht: Parameterblock (Zins_i)</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Parameterblock (Zins_i)</value>
   </data>
   <data name="WIRT_AE_5_STAND" xml:space="preserve">
     <value>Zins angegeben und je Szenario variiert; seine Herleitung erfasst EPOS nicht.</value>
@@ -6934,7 +6934,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Risiken sind angesetzt oder beschrieben, unterschiedliche Preisänderungen berücksichtigt, Leistungsminderungen bedacht.</value>
   </data>
   <data name="WIRT_AE_6_STELLE" xml:space="preserve">
-    <value>Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“</value>
   </data>
   <data name="WIRT_AE_6_STAND" xml:space="preserve">
     <value>drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risikozuschlag nicht angesetzt und Degradation nicht gerechnet — beides deklariert.</value>
@@ -6946,7 +6946,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Bewertung umfasst alle Nutzen und Lasten mit Geldwert.</value>
   </data>
   <data name="WIRT_AE_7_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)</value>
   </data>
   <data name="WIRT_AE_7_STAND" xml:space="preserve">
     <value>Kapitalwert je Stand und als Differenz zur Referenz; Annuität, Amortisation und Zinsfuß nachrichtlich.</value>
@@ -6958,7 +6958,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Die Einflussgrößen sind einzeln verändert, ihre Wirkung auf den Kapitalwert ist ausgewiesen.</value>
   </data>
   <data name="WIRT_AE_8_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Sensitivitätsanalyse</value>
   </data>
   <data name="WIRT_AE_8_TEILWEISE" xml:space="preserve">
     <value>Zins, Energiepreissteigerung, Investition, Energiekosten und KWK-Zuschlag mit Steigung; Laufzeit, Endzahlungen und Diagramm fehlen.</value>
@@ -6973,7 +6973,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Ein ungünstiger und ein günstiger Fall sind vollständig durchgerechnet.</value>
   </data>
   <data name="WIRT_AE_9_STELLE" xml:space="preserve">
-    <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
   </data>
   <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
     <value>nur Erwartet oder nur eines der Szenarien Günstig und Ungünstig mit Kapitalwert gerechnet.</value>
@@ -6988,7 +6988,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Eine Schlussfolgerung mit Entscheidungsvorschlag liegt vor und bezieht Szenarien und Sensitivität ein.</value>
   </data>
   <data name="WIRT_AE_10_STELLE" xml:space="preserve">
-    <value>Wortbericht: Vorschlag zur Entscheidung unter der Bandbreite · Tabellenbericht: Vorschlagszeile unter der Bandbreite</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Vorschlagszeile unter der Bandbreite</value>
   </data>
   <data name="WIRT_AE_10_ERFUELLT" xml:space="preserve">
     <value>Vorschlag mit Bandbreite und Einstufung je Variante.</value>
@@ -7003,7 +7003,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Rechnung und Ergebnisse sind so dargestellt, dass ein Dritter sie nachvollziehen kann.</value>
   </data>
   <data name="WIRT_AE_11_STELLE" xml:space="preserve">
-    <value>Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen)</value>
+    <value>Wortbericht: {0} · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen)</value>
   </data>
   <data name="WIRT_AE_11_STAND" xml:space="preserve">
     <value>Deklarationen im Bericht; die Mappe rechnet alle drei Szenarien formelbasiert — mit sichtbaren Formeln auf ihre Spalte im Parameterblock.</value>
@@ -34203,6 +34203,186 @@ Möchten Sie das zulassen?</value>
   <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
     <value>Die Einheit der Kennzahl „{0}“.</value>
   </data>
+  <data name="BK_BER_BAUSTEIN_DECKBLATT" xml:space="preserve">
+    <value>Deckblatt</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_INHALTSVERZEICHNIS" xml:space="preserve">
+    <value>Inhaltsverzeichnis</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_PROJEKTBESCHREIBUNG" xml:space="preserve">
+    <value>Projektbeschreibung</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_KOMPONENTEN" xml:space="preserve">
+    <value>Komponenten &amp; Varianten</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_ERGEBNISSE" xml:space="preserve">
+    <value>Ergebnisse je Variante</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_VERGLEICH" xml:space="preserve">
+    <value>Variantenvergleich</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Wirtschaftlichkeit</value>
+  </data>
+  <data name="BK_BER_BAUSTEIN_ANHANG" xml:space="preserve">
+    <value>Anhang</value>
+  </data>
+  <data name="VF_KAPITEL__DECKBLATT" xml:space="preserve">
+    <value>Kapitel „Deckblatt“: Titel, Untertitel und die Tabelle mit Projekt, Kunde, Bearbeiter, Varianten, Berichtsdatum und Programmfassung, wie der Bericht sie ohne Vorlage schreibt. Folgt dem Häkchen „Deckblatt“.</value>
+  </data>
+  <data name="VF_KAPITEL__INHALT" xml:space="preserve">
+    <value>Kapitel „Inhaltsverzeichnis“: die Überschrift „Inhalt“ und das Verzeichnis als Word-Feld, das Word beim Öffnen aktualisiert. Folgt dem Häkchen „Inhaltsverzeichnis“.</value>
+  </data>
+  <data name="VF_KAPITEL__PROJEKT" xml:space="preserve">
+    <value>Kapitel „Projektbeschreibung“: Stammdaten, Gebäude, Energiebedarf und Deckungsgrade des Stammprojekts. Folgt dem Häkchen „Projektbeschreibung“.</value>
+  </data>
+  <data name="VF_KAPITEL__KOMPONENTEN" xml:space="preserve">
+    <value>Kapitel „Komponenten &amp; Varianten“: Komponentenübersicht, Kenndaten je Gewerk und die Abweichungen der Varianten. Folgt dem Häkchen „Komponenten &amp; Varianten“.</value>
+  </data>
+  <data name="VF_KAPITEL__ERGEBNISSE" xml:space="preserve">
+    <value>Kapitel „Berechnungsergebnisse je Variante“: Kennzahlen und Ganglinien je Stand. Folgt dem Häkchen „Ergebnisse je Variante“.</value>
+  </data>
+  <data name="VF_KAPITEL__VERGLEICH" xml:space="preserve">
+    <value>Kapitel „Variantenvergleich“: Kennzahlentabellen je Gruppe, Abweichungen zum Stamm, Diagramme, Erzeuger und Brennstoffmengen. Folgt dem Häkchen „Variantenvergleich“.</value>
+  </data>
+  <data name="VF_KAPITEL__WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Kapitel „Wirtschaftlichkeit“: Kapitalwertmethode mit Kennzahlen, Verlauf, Szenarien und Tabellen. Folgt dem Häkchen „Wirtschaftlichkeit“.</value>
+  </data>
+  <data name="VF_KAPITEL__ANHANG" xml:space="preserve">
+    <value>Kapitel „Anhang“: Simulationsstände, Datengrundlage und die Hinweise des Berichtslaufs. Folgt dem Häkchen „Anhang“.</value>
+  </data>
+  <data name="VF_KAPITEL__ANHANG_E" xml:space="preserve">
+    <value>Kapitel „Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)“: die Checkliste für den Bewertungsbericht nach DIN EN 17463, Anhang E, mit der Stelle jedes Punkts im Bericht. Folgt dem Häkchen „Wirtschaftlichkeit“.</value>
+  </data>
+  <data name="VF_BAUSTEIN__DECKBLATT" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Deckblatt“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__INHALT" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Inhaltsverzeichnis“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__PROJEKT" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Projektbeschreibung“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__KOMPONENTEN" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Komponenten &amp; Varianten“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__ERGEBNISSE" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Ergebnisse je Variante“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__VERGLEICH" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Variantenvergleich“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Wirtschaftlichkeit“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_BAUSTEIN__ANHANG" xml:space="preserve">
+    <value>Schalter: ja, wenn das Häkchen „Anhang“ gesetzt ist; nur als Bedingung in {{#wenn …}}.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_PROJEKT" xml:space="preserve">
+    <value>Überschrift des Kapitels „Projektbeschreibung“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_KOMPONENTEN" xml:space="preserve">
+    <value>Überschrift des Kapitels „Komponenten &amp; Varianten“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_ERGEBNISSE" xml:space="preserve">
+    <value>Überschrift des Kapitels „Berechnungsergebnisse je Variante“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_VERGLEICH" xml:space="preserve">
+    <value>Überschrift des Kapitels „Variantenvergleich“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_WIRTSCHAFTLICHKEIT" xml:space="preserve">
+    <value>Überschrift des Kapitels „Wirtschaftlichkeit“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_ANHANG" xml:space="preserve">
+    <value>Überschrift des Kapitels „Anhang“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_TEXT__KAPITEL_ANHANG_E" xml:space="preserve">
+    <value>Überschrift des Kapitels „Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)“ in der Sprache des Berichts — der Kapitelkopf der Standardvorlage.</value>
+  </data>
+  <data name="VF_BILD__ERSTELLER__LOGO" xml:space="preserve">
+    <value>Firmenlogo des Erstellers aus den Einstellungen (Rubrik „Bericht“) — als Alternativtext eines Bildes; ohne Logo entfällt das Bild.</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
+    <value>Kapitel {0} steht mehrfach in der Vorlage – gefüllt wird nur die erste Stelle</value>
+  </data>
+  <data name="VF_PRUEF_KAPITEL_DOPPELT_TUN" xml:space="preserve">
+    <value>Die weitere Stelle entfernen; im Bericht bleibt sie gelb markiert stehen.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER" xml:space="preserve">
+    <value>{0}: erst in einer späteren Programmfassung</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_SCHALTER" xml:space="preserve">
+    <value>Den Schalter vorerst entfernen; bis dahin bleibt er im Bericht gelb markiert stehen.</value>
+  </data>
+  <data name="VF_PRUEF_SPAETER_TUN_BILD" xml:space="preserve">
+    <value>Ein Bild einfügen und {0} als Alternativtext eintragen – so füllt EPOS-Plan die Stelle schon jetzt.</value>
+  </data>
+  <data name="VF_PRUEF_ANHANG_E_STELLE" xml:space="preserve">
+    <value>Anhang E ohne Stelle für Kapitel „{0}“ – die Checkliste nennt dort „nicht im Bericht“</value>
+  </data>
+  <data name="VF_PRUEF_ANHANG_E_STELLE_TUN" xml:space="preserve">
+    <value>Das Kapitel mit {0} in die Vorlage aufnehmen, wenn der Bewertungsbericht es zeigen soll.</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_KAPITEL_DOPPELT" xml:space="preserve">
+    <value>Die Prüfung meldet ein Kapitel doppelt. Welche Stelle gilt?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_SPAETER" xml:space="preserve">
+    <value>Die Prüfung sagt, ein Platzhalter wirke erst in einer späteren Programmfassung. Was heißt das?</value>
+  </data>
+  <data name="KI_FRAGE_VF_PRUEF_ANHANG_E_STELLE" xml:space="preserve">
+    <value>Die Prüfung meldet Anhang E ohne Stelle für ein Kapitel. Was fehlt?</value>
+  </data>
+  <data name="BV_VORLAGEN_LOGO_FEHLT" xml:space="preserve">
+    <value>Logo nicht gefunden: {0}</value>
+  </data>
+  <data name="BV_VORLAGEN_LOGO_GROSS" xml:space="preserve">
+    <value>Logo zu groß: {0} ({1} MB, höchstens {2} MB)</value>
+  </data>
+  <data name="BV_VORLAGEN_LOGO_FORMAT" xml:space="preserve">
+    <value>Logo ist kein PNG- oder JPEG-Bild: {0}</value>
+  </data>
+  <data name="BV_GRUND_KEIN_LOGO" xml:space="preserve">
+    <value>kein Logo eingestellt</value>
+  </data>
+  <data name="WIRT_AE_STELLE_KAPITEL" xml:space="preserve">
+    <value>„{0}“</value>
+  </data>
+  <data name="WIRT_AE_STELLE_NICHT_IM_BERICHT" xml:space="preserve">
+    <value>nicht im Bericht</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE_WORT" xml:space="preserve">
+    <value>{0} › „Kennzahlen im Szenario „Erwartet““</value>
+  </data>
+  <data name="WIRT_AE_2B_STELLE_WORT" xml:space="preserve">
+    <value>{0} › „Nicht monetäre Wirkungen“ (Tabelle)</value>
+  </data>
+  <data name="WIRT_AE_3A_STELLE_WORT" xml:space="preserve">
+    <value>„Mehrjahresübersicht der Zahlungsströme“</value>
+  </data>
+  <data name="WIRT_AE_4_STELLE_WORT" xml:space="preserve">
+    <value>Parameterzeile und Zeitraumhinweis im Kapitel {0}</value>
+  </data>
+  <data name="WIRT_AE_5_STELLE_WORT" xml:space="preserve">
+    <value>Parameterzeile</value>
+  </data>
+  <data name="WIRT_AE_6_STELLE_WORT" xml:space="preserve">
+    <value>Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE_WORT" xml:space="preserve">
+    <value>„Kennzahlen im Szenario „Erwartet““</value>
+  </data>
+  <data name="WIRT_AE_8_STELLE_WORT" xml:space="preserve">
+    <value>„Sensitivitätsanalyse“</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE_WORT" xml:space="preserve">
+    <value>„Szenarien Ungünstig / Erwartet / Günstig“</value>
+  </data>
+  <data name="WIRT_AE_10_STELLE_WORT" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung unter der Bandbreite</value>
+  </data>
+  <data name="WIRT_AE_11_STELLE_WORT" xml:space="preserve">
+    <value>Kapitel {0} und {1}</value>
+  </data>
   <data name="VF_PRUEF_UNBEKANNT" xml:space="preserve">
     <value>Unbekannter Platzhalter {0}</value>
   </data>
@@ -35534,5 +35714,47 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_BT_NICHT_MOEGLICH" xml:space="preserve">
     <value>Der Bauteilvorschlag lässt sich nicht bilden.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
+    <value>in dieser Vorlage nicht enthalten</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_NICHT_ENTHALTEN" xml:space="preserve">
+    <value>„{0}“ ist in dieser Vorlage nicht enthalten – das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_INHALT_AUS_VORLAGE" xml:space="preserve">
+    <value>Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.</value>
+  </data>
+  <data name="WIRT_AE_BEZUG_STANDARD" xml:space="preserve">
+    <value>Die Stellen im Bericht sind bezogen auf die Standardvorlage.</value>
+  </data>
+  <data name="WIRT_AE_BEZUG_VORLAGE" xml:space="preserve">
+    <value>Die Stellen im Bericht nennen die Kapitel der Vorlage „{0}“.</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_LOGO" xml:space="preserve">
+    <value>Logo:</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_LOGO" xml:space="preserve">
+    <value>Firmenlogo für die Kopfzeile des Berichts – eine PNG- oder JPEG-Datei; leer heißt ohne Logo.</value>
+  </data>
+  <data name="EIN_BERICHT_BTN_LOGO_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FEHLT" xml:space="preserve">
+    <value>Datei nicht gefunden.</value>
+  </data>
+  <data name="EIN_BERICHT_DLG_LOGO" xml:space="preserve">
+    <value>Logo wählen</value>
+  </data>
+  <data name="EIN_BERICHT_LOGO_FILTER" xml:space="preserve">
+    <value>Bilder (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_LOGO_ERL" xml:space="preserve">
+    <value>Das Firmenlogo für die Kopfzeile des Berichts: der Pfad einer PNG- oder JPEG-Datei; leer heißt ohne Logo. Eine Datei, die es nicht gibt, wird trotzdem übernommen – die Rubrik sagt es unter dem Feld.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>Deckblatt kommt aus der Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
+    <value>„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.</value>
   </data>
 </root>

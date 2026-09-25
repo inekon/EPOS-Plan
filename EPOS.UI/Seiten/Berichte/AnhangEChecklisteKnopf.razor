@@ -8,7 +8,16 @@
    im Kern (AnhangECheckliste.Punkte) - dieselben wie auf der Abschlussseite des Wort-
    und des Tabellenberichts. Hier wird nur die Lage aus dem Stand der Seite gelesen
    (was gerechnet und gepflegt ist); die Beurteilung 1-5 vergibt der Pruefer im
-   Bericht, deshalb fehlt die Spalte hier. *@
+   Bericht, deshalb fehlt die Spalte hier.
+
+   BV-E2 (Konzept Berichtsvorlagen 9.5, 11 Nr. 3): DIE STELLE DER GEWAEHLTEN VORLAGE.
+   Beim Oeffnen holt der Knopf ueber StellenLaden, was die Huelle zur gewaehlten
+   Word-Vorlage sagt: je Punkt die Stelle, wie die Checkliste des Kerns sie aus den
+   Kapiteln der Vorlage baut - mit ihren Ueberschriften oder "nicht im Bericht",
+   dazu das Blatt der Mappe. Sie steht an der Stelle der eigenen; ein Punkt ohne
+   Stelle der Huelle behaelt die eigene (die Ueberschriften der Kapitel). Eine leise
+   Zeile ueber der Tafel sagt, worauf sich die Spalte bezieht; ohne Delegat oder
+   ohne Antwort "bezogen auf die Standardvorlage". *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using WindowsFormsApplication1
@@ -19,6 +28,7 @@
 <Ueberlagerung Offen="@_offen" Titel="@Resource.WIRT_AE_TITEL" Geschlossen="Schliessen">
     <KindInhalt>
         <Herleitungszeile Text="@Resource.WIRT_AE_HINWEIS" />
+        <Herleitungszeile Text="@Bezugszeile" />
         <div class="epos-raster-huelle">
             <table class="epos-raster epos-wirt-tafel epos-wirt-checkliste">
                 <thead>
@@ -43,7 +53,16 @@
                             <td>@p.Nummer</td>
                             <td>@p.Thema</td>
                             <td>@p.Anforderung</td>
-                            <td>@p.Stelle</td>
+                            <td>
+                                @if (StelleDerVorlage(p) is string vorlage)
+                                {
+                                    <span class="epos-wirt-checkliste-stelle">@vorlage</span>
+                                }
+                                else
+                                {
+                                    @p.Stelle
+                                }
+                            </td>
                             <td>@p.StandZeile</td>
                         </tr>
                     }
@@ -61,14 +80,40 @@
     /// <summary>Während eines Laufs gesperrt, wie jeder Knopf der Seite.</summary>
     [Parameter] public bool Gesperrt { get; set; }
 
+    /// <summary>
+    /// BV-E2: die Stellen der gewählten Word-Vorlage — beim Öffnen geholt, damit sie der Wahl auf der
+    /// Berichtsseite folgen; eine Stelle der Hülle ersetzt die eigene des Punktes. Ohne Delegat oder
+    /// ohne Antwort nennt die Spalte die eigenen Stellen mit der leisen Zeile „bezogen auf die
+    /// Standardvorlage".
+    /// </summary>
+    [Parameter] public Func<AnhangEStellen?>? StellenLaden { get; set; }
+
     private bool _offen;
     private IReadOnlyList<ChecklistenPunkt> _punkte = Array.Empty<ChecklistenPunkt>();
+    private AnhangEStellen? _stellen;
 
     private void Oeffnen()
     {
         _punkte = AnhangECheckliste.Punkte(Lage(Stand));
+        _stellen = StellenHolen();
         _offen = true;
     }
+
+    /// <summary>Die Stellen der Hülle; ein Fehler beim Holen heißt: bezogen auf die Standardvorlage.</summary>
+    private AnhangEStellen? StellenHolen()
+    {
+        try { return StellenLaden?.Invoke(); }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>Die leise Zeile über der Tafel: worauf sich die Spalte „Stelle im Bericht" bezieht.</summary>
+    private string Bezugszeile => string.IsNullOrWhiteSpace(_stellen?.Bezug)
+        ? Resource.WIRT_AE_BEZUG_STANDARD : _stellen!.Bezug;
+
+    /// <summary>Die Stelle eines Punktes in der gewählten Vorlage; <c>null</c> = die eigene des Punktes.</summary>
+    private string? StelleDerVorlage(ChecklistenPunkt p)
+        => _stellen?.Stellen is { } stellen && stellen.TryGetValue(p.Nummer, out string? s) && !string.IsNullOrWhiteSpace(s)
+           ? s : null;
 
     private void Schliessen() => _offen = false;
 

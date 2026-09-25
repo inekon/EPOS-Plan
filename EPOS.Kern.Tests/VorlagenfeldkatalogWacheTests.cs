@@ -25,8 +25,10 @@ namespace EPOS.Kern.Tests
     /// <para><b>Die eingefrorene Schlüsselliste</b> liegt je Katalogfassung unter
     /// <c>EPOS.Kern.Tests/Messlatten/Vorlagenfeldkatalog_v&lt;n&gt;.txt</c> (UTF-8 ohne BOM, CRLF):
     /// je Zeile ein ausgelieferter Schlüssel, ordinal sortiert, ein Alias als
-    /// <c>alias -&gt; ziel</c>. Die Liste der LAUFENDEN Fassung muss dem Katalog gleichen; aus
-    /// JEDER Liste muss jeder Schlüssel noch lebendig oder Alias sein (5.6). <b>Neu einfrieren</b>
+    /// <c>alias -&gt; ziel</c>. Die Liste JEDER Fassung muss dem Katalog gleichen (Schlüssel mit
+    /// <c>Seit</c> ≤ Fassung); aus jeder Liste muss jeder Schlüssel noch lebendig oder Alias sein (5.6).
+    /// Die Deckungswache hält, dass die Standardvorlage jeden Schlüssel mit Ausgabe Word zeigt
+    /// (Konzept 12). <b>Neu einfrieren</b>
     /// heißt: Bei einer Abweichung schreibt der Fall die aktuelle Liste in den Testausgabeordner
     /// (<c>bin/&lt;Konfiguration&gt;/net10.0/Messlatten/</c>); ist sie gewollt — eine neue Fassung
     /// mit höherer <see cref="Vorlagenfeldkatalog.KATALOGFASSUNG"/> —, wird sie von dort nach
@@ -94,7 +96,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(1, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(2, Vorlagenfeldkatalog.KATALOGFASSUNG);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -111,35 +113,218 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Katalog v1: 27 handgepflegte Einträge, je Kennzahl drei erzeugte. Die Zahl der Kennzahlen
+        /// Katalog v2: 27 handgepflegte Einträge der Fassung 1, dazu 25 der Fassung 2 — neun Kapitel, acht
+        /// Schalter, sieben Kapitelköpfe und das Logo —, je Kennzahl drei erzeugte. Die Zahl der Kennzahlen
         /// pinnt dieser Fall bewusst nicht — eine neue Kennzahl meldet die eingefrorene Liste.
         /// </summary>
         [Fact]
-        public void Katalog_v1_zaehlt_27_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
+        public void Katalog_v2_zaehlt_52_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
             int kennzahlen = KennzahlenKatalog.Alle().Count;
-            Assert.Equal(27, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt));
+            Assert.Equal(52, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt));
+            Assert.Equal(27, Vorlagenfeldkatalog.Alle.Count(f => f.Handgepflegt && f.Seit == 1));
             Assert.Equal(3 * kennzahlen, Vorlagenfeldkatalog.Alle.Count(f => !f.Handgepflegt));
 
             var bereiche = Vorlagenfeldkatalog.Alle.GroupBy(f => f.Schluessel.Split('.')[0])
                 .ToDictionary(g => g.Key, g => g.Count());
             _ausgabe.WriteLine(string.Join(", ", bereiche.Select(b => b.Key + " " + b.Value)));
             Assert.Equal(9, bereiche["bericht"]);
-            Assert.Equal(7, bereiche["text"]);
+            Assert.Equal(14, bereiche["text"]);
             Assert.Equal(3, bereiche["ersteller"]);
             Assert.Equal(8, bereiche["projekt"]);
+            Assert.Equal(9, bereiche["kapitel"]);
+            Assert.Equal(8, bereiche["baustein"]);
+            Assert.Equal(1, bereiche["bild"]);
             Assert.Equal(kennzahlen, bereiche["stamm"]);
             Assert.Equal(2 * kennzahlen, bereiche["kennzahl"]);
         }
 
+        /// <summary>
+        /// Die Einträge der Fassung 2 (Etappe BV-E2): je <see cref="Berichtskapitel"/> ein Kapitel (Word,
+        /// Kontext Bericht), je Häkchen ein Schalter, je Kapitelkopf der Standardvorlage ein Festtext, dazu
+        /// das Logo als Bild (Word, Kontext Installation) — alle mit <c>Seit</c> 2.
+        /// </summary>
         [Fact]
-        public void Bericht_inhalt_ist_der_Sammelanker_ueber_alle_Bausteine()
+        public void Kapitel_Schalter_Kapitelkoepfe_und_Logo_der_Fassung_2()
+        {
+            foreach (Berichtskapitel k in Berichtskapitel.Alle)
+            {
+                Vorlagenfeld kapitel = Vorlagenfeldkatalog.Finde(k.Schluessel);
+                Assert.NotNull(kapitel);
+                Assert.Equal(Vorlagenfeldart.Kapitel, kapitel.Art);
+                Assert.Equal(Vorlagenfeldkontext.Bericht, kapitel.Kontext);
+                Assert.Equal(Vorlagenausgabe.Word, kapitel.Ausgaben);
+                Assert.Equal(2, kapitel.Seit);
+
+                if (k.Schalter != null)
+                {
+                    Vorlagenfeld schalter = Vorlagenfeldkatalog.Finde(k.Schalter);
+                    Assert.Equal(Vorlagenfeldart.Schalter, schalter.Art);
+                    Assert.Equal(2, schalter.Seit);
+                }
+                if (k.Kopfschluessel != null)
+                {
+                    Vorlagenfeld kopf = Vorlagenfeldkatalog.Finde(k.Kopfschluessel);
+                    Assert.Equal(Vorlagenfeldart.Text, kopf.Art);
+                    Assert.Equal(2, kopf.Seit);
+                }
+            }
+            Assert.Equal(new[]
+            {
+                "baustein.anhang", "baustein.deckblatt", "baustein.ergebnisse", "baustein.inhalt", "baustein.komponenten",
+                "baustein.projekt", "baustein.vergleich", "baustein.wirtschaftlichkeit",
+            }, Vorlagenfeldkatalog.Alle.Where(f => f.Art == Vorlagenfeldart.Schalter).Select(f => f.Schluessel)
+                                    .OrderBy(s => s, StringComparer.Ordinal));
+            Assert.Equal(new[]
+            {
+                "text.kapitel_anhang", "text.kapitel_anhang_e", "text.kapitel_ergebnisse", "text.kapitel_komponenten",
+                "text.kapitel_projekt", "text.kapitel_vergleich", "text.kapitel_wirtschaftlichkeit",
+            }, Vorlagenfeldkatalog.Alle.Where(f => f.Schluessel.StartsWith("text.kapitel_", StringComparison.Ordinal))
+                                    .Select(f => f.Schluessel).OrderBy(s => s, StringComparer.Ordinal));
+
+            Vorlagenfeld logo = Vorlagenfeldkatalog.Finde(Vorlagenfeldkatalog.LOGO);
+            Assert.Equal(Vorlagenfeldart.Bild, logo.Art);
+            Assert.Equal(Vorlagenfeldkontext.Installation, logo.Kontext);
+            Assert.Equal(Vorlagenausgabe.Word, logo.Ausgaben);
+            Assert.Equal(2, logo.Seit);
+            Assert.Equal("", logo.Leerwert);
+        }
+
+        /// <summary>
+        /// Die Titel der Häkchen stehen zweisprachig in <c>MyResource</c> (<c>BK_BER_BAUSTEIN_&lt;SCHLÜSSEL&gt;</c>);
+        /// die deutschen gleichen Wort für Wort den festen Titeln (Messlatte — die Häkchenliste liest dieselben
+        /// Texte wie zuvor). Der Kapitelkopf <c>text.kapitel_&lt;name&gt;</c> nennt dagegen die Überschrift, die der
+        /// Baustein selbst setzt: Sie gleicht dem deutschen Häkchentitel bis auf die Ergebnisse
+        /// („Berechnungsergebnisse je Variante“ — so hält die Messlatte des Berichts den Kapitelteil zeilengleich).
+        /// </summary>
+        [Fact]
+        public void Haekchentitel_stehen_zweisprachig_in_MyResource_und_die_deutschen_bleiben()
+        {
+            string[] deutsch = { "Deckblatt", "Inhaltsverzeichnis", "Projektbeschreibung", "Komponenten & Varianten",
+                                 "Ergebnisse je Variante", "Variantenvergleich", "Wirtschaftlichkeit", "Anhang" };
+            string[] englisch = { "Title page", "Table of contents", "Project description", "Components & variants",
+                                  "Results per variant", "Variant comparison", "Economic viability", "Appendix" };
+            Assert.Equal(deutsch, BerichtsKonfiguration.AlleBausteine.Select(b => b.Titel));
+            Assert.Equal(deutsch, BerichtsKonfiguration.AlleBausteine.Select(b => b.TitelIn(false)));
+            Assert.Equal(englisch, BerichtsKonfiguration.AlleBausteine.Select(b => b.TitelIn(true)));
+            Assert.All(BerichtsKonfiguration.AlleBausteine,
+                       b => Assert.Equal("BK_BER_BAUSTEIN_" + b.Schluessel.ToUpperInvariant(), b.TitelId));
+            Assert.Equal("Economic viability", BerichtsKonfiguration.Titel(BerichtsKonfiguration.B_WIRTSCHAFT, true));
+            Assert.Equal("Wirtschaftlichkeit", BerichtsKonfiguration.Titel(BerichtsKonfiguration.B_WIRTSCHAFT, false));
+            Assert.Equal("unbekannt", BerichtsKonfiguration.Titel("unbekannt", true));
+
+            foreach (Berichtskapitel k in Berichtskapitel.Alle.Where(k => k.Kopfschluessel != null && k.Schalter != null))
+            {
+                string erwartet = k.Name == Berichtskapitel.ERGEBNISSE
+                    ? "Berechnungsergebnisse je Variante"
+                    : BerichtsKonfiguration.Titel(k.Baustein, false);
+                Assert.Equal(erwartet, k.Ueberschrift(false));
+            }
+        }
+
+        /// <summary>
+        /// Der Sammelanker deckt jedes Kapitel; jedes Kapitel deckt die Einzelschlüssel, die sein Baustein
+        /// schreibt, dazu Kapitelkopf und Schalter — alles Schlüssel des Katalogs. Ohne Deckt ist nur ein
+        /// Kapitel, das keinen Einzelschlüssel hat.
+        /// </summary>
+        [Fact]
+        public void Bericht_inhalt_deckt_jedes_Kapitel_und_jedes_Kapitel_seine_Schluessel()
         {
             Vorlagenfeld inhalt = Vorlagenfeldkatalog.Finde("bericht.inhalt");
             Assert.Equal(Vorlagenfeldart.Kapitel, inhalt.Art);
             Assert.Equal(Vorlagenausgabe.Word, inhalt.Ausgaben);
-            Assert.Equal(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel), inhalt.Deckt);
-            Assert.Single(Vorlagenfeldkatalog.Alle, f => f.Art == Vorlagenfeldart.Kapitel);
+            Assert.Equal(1, inhalt.Seit);
+            Assert.Equal(Berichtskapitel.Alle.Select(k => k.Schluessel), inhalt.Deckt);
+            Assert.Equal(10, Vorlagenfeldkatalog.Alle.Count(f => f.Art == Vorlagenfeldart.Kapitel));
+
+            foreach (Berichtskapitel k in Berichtskapitel.Alle)
+            {
+                Vorlagenfeld kapitel = Vorlagenfeldkatalog.Finde(k.Schluessel);
+                Assert.All(kapitel.Deckt, d => Assert.True(Vorlagenfeldkatalog.Finde(d)?.Schluessel == d, k.Name + ": " + d));
+                Assert.Equal(kapitel.Deckt.Count, kapitel.Deckt.Distinct(StringComparer.Ordinal).Count());
+                if (k.Schalter != null) Assert.Contains(k.Schalter, kapitel.Deckt);
+                if (k.Kopfschluessel != null) Assert.Contains(k.Kopfschluessel, kapitel.Deckt);
+            }
+
+            Assert.Equal(new[]
+            {
+                "bericht.titel", "bericht.untertitel", "projekt.kunde", "projekt.bearbeiter", "bericht.varianten.liste",
+                "bericht.datum", "bericht.gebaeudemodell.ausweis", "ersteller.firma", "ersteller.programm", "ersteller.version",
+                "baustein.deckblatt",
+            }, Vorlagenfeldkatalog.Finde("kapitel.deckblatt").Deckt);
+            Assert.Equal(Vorlagenfeldkatalog.Alle.Where(f => f.Schluessel.StartsWith("projekt.", StringComparison.Ordinal))
+                                             .Select(f => f.Schluessel)
+                                             .Concat(new[] { "text.kapitel_projekt", "baustein.projekt" }),
+                         Vorlagenfeldkatalog.Finde("kapitel.projekt").Deckt);
+            foreach (string kennzahlen in new[] { "kapitel.ergebnisse", "kapitel.vergleich" })
+            {
+                IReadOnlyList<string> deckt = Vorlagenfeldkatalog.Finde(kennzahlen).Deckt;
+                foreach (Kennzahl k in KennzahlenKatalog.Alle())
+                {
+                    Assert.Contains("stamm.kennzahl." + k.Schluessel, deckt);
+                    Assert.Contains("kennzahl." + k.Schluessel + ".beschriftung", deckt);
+                    Assert.Contains("kennzahl." + k.Schluessel + ".einheit", deckt);
+                }
+            }
+            Assert.Contains("bericht.emissionsmodus", Vorlagenfeldkatalog.Finde("kapitel.vergleich").Deckt);
+            Assert.Contains("bericht.warnungen", Vorlagenfeldkatalog.Finde("kapitel.anhang").Deckt);
+            Assert.Equal(new[] { "text.kapitel_anhang_e" }, Vorlagenfeldkatalog.Finde("kapitel.anhang_e").Deckt);
+        }
+
+        /// <summary>
+        /// <see cref="Vorlagenfeldkatalog.Gedeckt"/>: was die Kapitel einer Vorlage decken, gilt; ein
+        /// Kapitel, das sie nicht führt, gilt, wenn sie jeden seiner Einzelschlüssel führt (das Deckblatt aus
+        /// Platzhaltern) — nicht aber über Schalter oder Kapitelkopf allein; der Sammelanker gilt, sobald
+        /// jedes Kapitel gilt.
+        /// </summary>
+        [Fact]
+        public void Gedeckt_folgt_den_Kapiteln_und_dem_Deckblatt_aus_Platzhaltern()
+        {
+            HashSet<string> projekt = Vorlagenfeldkatalog.Gedeckt(new[] { "kapitel.projekt" });
+            Assert.Contains("projekt.klimaregion", projekt);
+            Assert.Contains("baustein.projekt", projekt);
+            Assert.DoesNotContain("kapitel.komponenten", projekt);
+
+            HashSet<string> inhalt = Vorlagenfeldkatalog.Gedeckt(new[] { "bericht.inhalt" });
+            Assert.All(Berichtskapitel.Alle, k => Assert.Contains(k.Schluessel, inhalt));
+            Assert.Contains("stamm.kennzahl.eff.jaz", inhalt);
+
+            HashSet<string> deckblatt = Vorlagenfeldkatalog.Gedeckt(Vorlagenfeldkatalog.Deckblattangaben);
+            Assert.Contains("kapitel.deckblatt", deckblatt);
+            Assert.Contains("baustein.deckblatt", deckblatt);
+            Assert.DoesNotContain("kapitel.deckblatt", Vorlagenfeldkatalog.Gedeckt(new[] { "bericht.titel", "bericht.datum" }));
+
+            Assert.DoesNotContain("kapitel.komponenten", Vorlagenfeldkatalog.Gedeckt(new[] { "text.kapitel_komponenten", "baustein.komponenten" }));
+            Assert.Contains("ersteller.version", Vorlagenfeldkatalog.Gedeckt(new[] { "bericht.programmversion" }));   // Alias
+            Assert.Empty(Vorlagenfeldkatalog.Gedeckt(new[] { "gibt.es.nicht" }));
+        }
+
+        /// <summary>
+        /// <b>Die Deckungswache</b> (Konzept 12, „Deckung je Ausgabe“): Jeder Katalogschlüssel mit Ausgabe
+        /// Word steht in der Word-Standardvorlage — direkt oder über das <see cref="Vorlagenfeld.Deckt"/> eines
+        /// dort geführten Kapitels (<see cref="Vorlagenfeldkatalog.Gedeckt"/>); ausgenommen sind nur
+        /// vorgemerkte Einträge (<c>Seit</c> über der Fassung). Das Logo der Kopfzeile ist ein Bild mit dem
+        /// Alternativtext <c>{{bild.ersteller.logo}}</c> (Entscheid BV-E2-1).
+        /// </summary>
+        [Fact]
+        public void Deckungswache_jeder_Word_Schluessel_steht_in_der_Standardvorlage()
+        {
+            string pfad = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.STANDARD);
+            if (pfad == null) return;
+            byte[] vorlage = File.ReadAllBytes(pfad);
+
+            Pruefbefund befund = Vorlagenpruefer.Pruefe(vorlage, Pruefstufe.Schnell, new Pruefkontext());
+            Assert.Empty(befund.UnbekannteSchluessel);
+            Assert.Contains(Vorlagenfeldkatalog.LOGO, befund.Schluessel);
+            HashSet<string> gedeckt = Vorlagenfeldkatalog.Gedeckt(befund.Schluessel);
+
+            List<string> fehlen = Vorlagenfeldkatalog.Alle
+                .Where(f => (f.Ausgaben & Vorlagenausgabe.Word) != 0 && f.Seit <= Vorlagenfeldkatalog.KATALOGFASSUNG)
+                .Select(f => f.Schluessel)
+                .Where(s => !gedeckt.Contains(s))
+                .ToList();
+            _ausgabe.WriteLine("Standardvorlage: " + befund.Schluessel.Count + " Schlüssel direkt, " + gedeckt.Count + " gedeckt");
+            Assert.True(fehlen.Count == 0, "Nicht in der Standardvorlage und von keinem ihrer Kapitel gedeckt: " + string.Join(", ", fehlen));
         }
 
         // =====================================================================
@@ -240,7 +425,7 @@ namespace EPOS.Kern.Tests
                 PruefeZweisprachig(text, de, en, funde);
             Assert.True(funde.Count == 0, string.Join(Environment.NewLine, funde));
             Assert.Equal(3, Vorlagenfeldkatalog.Musterschluessel.Count);
-            Assert.Equal(15, Vorlagenfeldkatalog.Textschluessel.Count);
+            Assert.Equal(16, Vorlagenfeldkatalog.Textschluessel.Count);
         }
 
         private static void PruefeZweisprachig(string name, Dictionary<string, string> de, Dictionary<string, string> en,
@@ -380,10 +565,21 @@ namespace EPOS.Kern.Tests
             "# Nie von Hand ändern: eine neue Fassung entsteht aus dem Testausgabeordner.",
         };
 
-        [Fact]
-        public void Die_Liste_der_laufenden_Fassung_gleicht_dem_Katalog()
+        /// <summary>Jede Katalogfassung von 1 bis zur laufenden.</summary>
+        public static IEnumerable<object[]> Fassungen()
         {
-            int fassung = Vorlagenfeldkatalog.KATALOGFASSUNG;
+            for (int f = 1; f <= Vorlagenfeldkatalog.KATALOGFASSUNG; f++) yield return new object[] { f };
+        }
+
+        /// <summary>
+        /// JEDE Fassung gleicht ihrer eingefrorenen Liste: die Schlüssel mit <c>Seit</c> ≤ Fassung samt
+        /// Aliassen. So fällt auch auf, wenn ein neuer Eintrag die <c>Seit</c> einer ausgelieferten Fassung
+        /// trüge — er stünde dann in deren Liste, die sich nie mehr ändert.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(Fassungen))]
+        public void Die_Liste_jeder_Fassung_gleicht_dem_Katalog(int fassung)
+        {
             string datei = Listendatei(fassung);
             var aktuell = new List<string>(Kopf) { "# Katalogfassung " + fassung };
             aktuell.AddRange(Liste(fassung));

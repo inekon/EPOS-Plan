@@ -12,12 +12,16 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_PROJEKT; } }
         public string Titel { get { return "Projektbeschreibung"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
+        public const string UEBERSCHRIFT = "Projektbeschreibung";
+
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return;
 
-            k.Ueberschrift1("Projektbeschreibung");
+            k.Ueberschrift1(UEBERSCHRIFT);
 
             ProjektModel p = stamm.Projekt;
             k.Eigenschaften(
@@ -603,12 +607,16 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_KOMPONENTEN; } }
         public string Titel { get { return "Komponenten & Varianten"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
+        public const string UEBERSCHRIFT = "Komponenten & Varianten";
+
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return;
 
-            k.Ueberschrift1("Komponenten & Varianten");
+            k.Ueberschrift1(UEBERSCHRIFT);
 
             // ---------------- Matrix Komponenten × Varianten ----------------
             k.Ueberschrift2("Komponentenübersicht");

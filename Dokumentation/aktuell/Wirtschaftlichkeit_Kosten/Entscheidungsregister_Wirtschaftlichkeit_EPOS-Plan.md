@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503), E23 (#510), E24 (#514) und E26 (#518) · Schwesterpapiere: das Konzept
+**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503), E23 (#510), E24 (#514), E26 (#518) und E25 (#519) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -63,12 +63,13 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E18 | E18‑Q1…Q7 — die Fragen aus E18, den Restpunkten der Stromsteuer (Konzept § 6.3 Nr. 14, 16, 18; Q1…Q6 entschieden 24.09.2026, nach Empfehlung a, gebaut #492; Q7, der Restpunkt § 6.3 Nr. 33, gebaut #498 mit E19) | Protokoll E18; Statusdatei Nach #492 (a) | 7 |
 | R‑E19 | E19‑Q1…Q6 — die Fragen aus E19, den Restpunkten Nr. 15 und 33 (entschieden 25.09.2026, nach Empfehlung; Q4 b, die übrigen a; gebaut #498) | Protokoll E19; Statusdatei Nach #498 (a) | 6 |
 | R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19, 24 (Fortsetzung von R‑NR; Nr. 18 gebaut #503, Nr. 10 erledigt #510, Nr. 24 gebaut #514) | Statusdatei Nach #498 (a); Protokoll E19; Statusdatei #514 | 6 |
-| R‑E21 | E21‑Q1…Q9 — die Fragen aus E21, der Pflegewelle Nr. 23 (erledigt) und Nr. 24 (benannt) (entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #506) | Protokoll E21; Statusdatei Nach #506 (a) | 9 |
+| R‑E21 | E21‑Q1…Q9 — die Fragen aus E21, der Pflegewelle Nr. 23 (erledigt) und Nr. 24 (benannt) (entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #506; Q9 gebaut #519 mit E25) | Protokoll E21; Statusdatei Nach #506 (a) | 9 |
 | R‑E20 | E20‑Q1…Q8 — die Fragen aus E20, Nr. 10 „Wärmepumpe beides“ bei den Investitionskosten (Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, gebaut #502; Q6 entschieden 25.09.2026 durch den Anwender: b, gebaut mit E23 (#510)) | Protokoll E20; Statusdatei Nach #502 (a) | 8 |
 | R‑E22 | E22‑Q1 — die Frage aus E22, der Rechenweg-Sortierung nach der Regel „99“ (Nr. 18; entschieden 25.09.2026 nach der A/B-Messung, nach Empfehlung a; gebaut #503) | Protokoll E22; Statusdatei Nach #503 (a) | 1 |
 | R‑E23 | E23‑Q1…Q7 — die Fragen aus E23, den Betriebskosten der Wärmepumpe ohne kWh-Bemessung (E20‑Q6 b; Q1…Q5 entschieden 25.09.2026, nach Empfehlung a, gebaut #510; Q6 und Q7 entschieden 25.09.2026, nach Empfehlung a, gebaut #510) | Protokoll E23; Statusdatei Nach #510 (a) | 7 |
 | R‑E24 | E24‑Q1…Q6 — die Fragen aus E24, der Datenpflege Nr. 24 an 1018 und 1023 mit der Basis R17 (entschieden 25.09.2026, nach Empfehlung; gebaut #514) | Protokoll E24; Statusdatei Nach #514 (a) | 6 |
 | R‑E26 | E26‑Q1…Q7 — die Fragen aus E26, dem PV-Ausweis (Befunde N1 und N3 aus E25) mit der Basis R18 (entschieden 25.09.2026, nach Empfehlung; Q1…Q5 a, Q6 b, Q7 nur melden; gebaut #518) | Protokoll E26; Statusdatei Nach #518 (a) | 7 |
+| R‑E25 | E25‑Q1…Q10 — die Fragen aus E25, dem Prüfprojekt 1048 „PV mit Preisen“ ohne Referenzrolle (E21‑Q9 a; entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #519) | Protokoll E25; Statusdatei Nach #519 (a) | 10 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -756,7 +757,7 @@ Baufreigabe, nach Empfehlung — alle a. Gebaut ist jeweils der Entscheid.
 | **E21‑Q6** | Projekt 1023, Kessel 11205 ohne Energieträger, keine eps-Zeile Erdgas: (a) benennen, nicht pflegen; (b) mit Träger und eps-Zeile pflegen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | benannt (#506) — eine Pflege bliebe nicht byte-gleich (CO₂ und Kapitalwert ändern sich), 1023 dient zwei Tests gerade als „ohne Nachweis“; Kandidat für die nächste Neueinfrierung nach R16 — gepflegt mit E24 (#514): Träger 63 und Erdgas-Projektzeile mit CO₂ 240 (Emissionen unverändert), Basis R17; die Rolle „ohne Nachweis“ hängt an den gespeicherten Ergebniszeilen und bleibt (→ R‑E24) |
 | **E21‑Q7** | Projekt 1030, zwei Sammelposten ohne Aufteilungsquelle: (a) nicht anfassen (Anker); (b) aufteilen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | nicht angefasst (#506) — 164 Testdateien nennen 1030, kein Kandidat |
 | **E21‑Q8** | Projekt 1026, kein Stromträger in eps: (a) gewollter Prüffall, belassen; (b) mit Stromträger 60 pflegen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | belassen (#506) — drei Tests nutzen 1026 gerade als Prüffall |
-| **E21‑Q9** | Ein PV-Projekt mit vollständigen Preisen: (a) später als eigene Welle, mit einem neuen Projekt außerhalb der Referenzliste; (b) an einem Referenzprojekt nachziehen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | offen — spätere, eigene Welle |
+| **E21‑Q9** | Ein PV-Projekt mit vollständigen Preisen: (a) später als eigene Welle, mit einem neuen Projekt außerhalb der Referenzliste; (b) an einem Referenzprojekt nachziehen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24; seit E25 Nr. 35 | **gebaut #519** (E25): Prüfprojekt 1048 „PV mit Preisen“ ohne Referenzrolle, Basis R18 bleibt (→ R‑E25) |
 
 ---
 
@@ -857,6 +858,31 @@ Gebaut ist jeweils der Entscheid.
 | **E26‑Q5** | *Schemaschritt für gespeicherte Ergebnisse?* | **entschieden 25.09.2026**, nach Empfehlung: a — kein Schemaschritt, alte Zeilen in `Tab_ErgebnisPhotovoltaik` heilen beim nächsten Lauf | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | — | umgesetzt (#518, kein Schritt) |
 | **E26‑Q6** | *Strombilanz-Diagramm und Excel-Spalte „Strombedarf“ mitziehen?* | **entschieden 25.09.2026**, nach Empfehlung: b — später | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 34 | offen, Restpunkt (`ChartRenderer.cs:457-471`, `ExcelBerichtGenerator.cs:1834`) |
 | **E26‑Q7** | *N5 (1018 negativer Netzbezug) und N6 (Übersicht ohne Kältestrom)* | **entschieden 25.09.2026**, nach Empfehlung: nur melden | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 34 | gemeldet (#518); N5 kapitalwertwirksam, Empfehlung eigene Welle E27 |
+
+---
+
+## R‑E25 — E25‑Q1…Q10: die Fragen aus E25
+
+Quelle: Protokoll
+[`E25_Pruefprojekt_1048_PV_Preise_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E25_Pruefprojekt_1048_PV_Preise_Protokoll.md),
+„Fragen aus der Welle“, und die Statusdatei, Nach #519 (a). Anlass der Welle ist E21‑Q9 a (→ R‑E21) mit dem
+Anwenderentscheid vom 25.09.2026, „nehme die Empfehlungen vor: für Später“, und der Befund aus E9a, dass kein Projekt
+der Testdatenbank eine PV-Anlage mit vollständigem Preissatz führt. Die Fragen stellt der Phase‑0-Bericht; entschieden
+hat sie der Orchestrator am 25.09.2026 (~15:20) mit der Baufreigabe, nach Empfehlung — alle a. Gebaut ist jeweils der
+Entscheid.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E25‑Q1** | *Vorlage des Prüfprojekts* | **entschieden 25.09.2026**, nach Empfehlung: a — Kopie von 1040, das Gebäude nach VDI 6007 | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519, E25/1: Kopie über `ProjektDuplizierenCtrl`, `Gebaeude_Modell` NULL) |
+| **E25‑Q2** | *Größe der PV-Anlage* | **entschieden 25.09.2026**, nach Empfehlung: a — 40 Module (10,40 kWp) | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519: `PV_Leistung` 20 → 40) |
+| **E25‑Q3** | *Vergütung* | **entschieden 25.09.2026**, nach Empfehlung: a — flache Einspeisevergütung im Parametersatz; DV-Entgelt und PPA nur im Test | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519: 0,08 €/kWh, 0,10 / 0,06); keine Vergütungszeile an 1048, Restpunkt |
+| **E25‑Q4** | *Tarif* | **entschieden 25.09.2026**, nach Empfehlung: a — Flat | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519); keine Tarifstruktur an 1048, Restpunkt |
+| **E25‑Q5** | *Werte des Preissatzes* | **entschieden 25.09.2026**, nach Empfehlung: a — wie im Entwurf | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519: Strom 0,30 €/kWh + 120 €/a, Erdgas 0,80 €/Nm³ + 150 €/a, Parametersatz 3 % / 20 a / 2 % / 1,5 %, 1.200 €/kWp, Wartung 150 €/a, Instandhaltung 1 %) |
+| **E25‑Q6** | *Prüfart der Tests* | **entschieden 25.09.2026**, nach Empfehlung: a — Beziehungen und Kapitalwert-Anker relativ 1e‑6 | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519: `PvPreisProjektTests`, 13 Fälle) |
+| **E25‑Q7** | *Anlage der PV-Kostenpositionen* | **entschieden 25.09.2026**, nach Empfehlung: a — direkte Zeilen ohne `NutzungsdauerID`, nicht über die Vorlagenübernahme | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | gebaut (#519: StammIDs 80, 149, 150; keine Katalogzeile) |
+| **E25‑Q8** | *Reihenfolge gegenüber E24* | **entschieden 25.09.2026**, nach Empfehlung: a — erst E24 mergen, dann das Skript einmal auf der Repo-Datenbank und ein LFS-Objekt committen | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | — | umgesetzt (#519: Skript auf `19a7b632…`, LFS `b68638da…`) |
+| **E25‑Q9** | *Ablage des Skripts* | **entschieden 25.09.2026**, nach Empfehlung: a — unter `Referenzlaeufe/Skripte/` samt Abschnitt in `Referenzlaeufe/LIESMICH.md` | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | `Referenzlaeufe/LIESMICH.md` | gebaut (#519: `pruefprojekt_1048_pv_preise.cs`) |
+| **E25‑Q10** | *Die kopierten Zeilen der Vorlage* | **entschieden 25.09.2026**, nach Empfehlung: a — unverändert, einschließlich der Solarthermie-Position 3.775 € ohne Anlage | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 35 | umgesetzt (#519: 20 Investitionszeilen unverändert) |
 
 ---
 

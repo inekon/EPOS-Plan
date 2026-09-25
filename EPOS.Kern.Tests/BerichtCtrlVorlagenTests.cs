@@ -149,9 +149,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Abweichung_auf_eine_eigene_Vorlage_laesst_die_Kapitel_gelb_stehen_und_nennt_sie()
         {
-            byte[] beispiel = Repovorlage(BerichtsvorlageDateiWacheTests.BEISPIEL);
-            if (beispiel == null) return;
-            Vorlageneintrag eigen = Hinzu(BerichtsvorlageDateiWacheTests.BEISPIEL, beispiel);
+            Vorlageneintrag eigen = Hinzu(EIGENE, EigeneMitUnbekannten());
             BerichtsKonfiguration konfig = Konfig();
             BerichtsvorlagenCtrl.SetzeAbweichung(konfig, eigen);
 
@@ -159,8 +157,8 @@ namespace EPOS.Kern.Tests
 
             Assert.Empty(Validierungsfehler(lauf.Pfad));
             Assert.Equal(Vorlagenwahlgrund.Abweichung, lauf.Grund);
-            Assert.Equal("eigen:" + BerichtsvorlageDateiWacheTests.BEISPIEL, lauf.VorlageId);
-            Assert.Equal("Berichtsvorlage_Beispiel", lauf.VorlageName);
+            Assert.Equal("eigen:" + EIGENE, lauf.VorlageId);
+            Assert.Equal("Kapitelentwurf", lauf.VorlageName);
             Assert.Equal(8, lauf.Unbekannte.Count);
             Assert.All(lauf.Unbekannte, b => Assert.StartsWith("{{kapitel.", b.Normalform, StringComparison.Ordinal));
             Assert.Equal(2, lauf.EntfernteKommentare);
@@ -173,9 +171,9 @@ namespace EPOS.Kern.Tests
 
             string meldung = BerichtCtrl.Laufmeldung(lauf, false);
             _ausgabe.WriteLine(meldung);
-            Assert.Contains("Word-Vorlage: „Berichtsvorlage_Beispiel“ (Für dieses Projekt gewählt)", meldung, StringComparison.Ordinal);
+            Assert.Contains("Word-Vorlage: „Kapitelentwurf“ (Für dieses Projekt gewählt)", meldung, StringComparison.Ordinal);
             Assert.Contains("Nicht ersetzte Platzhalter, im Bericht gelb markiert: 8", meldung, StringComparison.Ordinal);
-            Assert.Contains("• {{kapitel.projekt|ohne titel}} – unbekannter Schlüssel; Rumpf, Absatz ", meldung, StringComparison.Ordinal);
+            Assert.Contains("• {{kapitel.eins|ohne titel}} – unbekannter Schlüssel; Rumpf, Absatz ", meldung, StringComparison.Ordinal);
             Assert.Contains("Kommentare der Vorlage entfernt: 2", meldung, StringComparison.Ordinal);
             Assert.Equal(new[] { KiMeldungskennung.BV_LAUF_VORLAGE, KiMeldungskennung.BV_LAUF_UNBEKANNT, KiMeldungskennung.BV_LAUF_LEER,
                                  KiMeldungskennung.BV_LAUF_KOMMENTARE },
@@ -364,7 +362,7 @@ namespace EPOS.Kern.Tests
             Assert.False(ohne.BrauchtRueckfrage);
             Assert.Equal("", ohne.Rueckfrage);
             Assert.Empty(ohne.Befunde);
-            Assert.True(ohne.Pruefbefund.OhneBefund, Probevorlagen.Liste(ohne.Pruefbefund));
+            Assert.Empty(ohne.Pruefbefund.Meldungen);
         }
 
         /// <summary>
@@ -457,6 +455,103 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Stellen der Kapitel (Anhang-E-Checkliste, BV-E2)
+        // =====================================================================
+
+        /// <summary>
+        /// <see cref="BerichtCtrl.KapitelstellenDerVorlage"/> mit der Standardvorlage: je Bausteinschlüssel der
+        /// Kapitelkopf, das Deckblatt aus Platzhaltern, der Anhang E unter <c>anhang_e</c>. Ein abgewähltes
+        /// Häkchen heißt „nicht im Bericht“ (<c>null</c>) — außer beim Deckblatt, das die Vorlage aus
+        /// Platzhaltern selbst trägt.
+        /// </summary>
+        [Fact]
+        public void Kapitelstellen_der_Standardvorlage_folgen_Kapitelkoepfen_und_Haekchen()
+        {
+            if (_standard == null) return;
+            BerichtsKonfiguration voll = Berichtsdatenproben.VolleKonfiguration();
+            IReadOnlyDictionary<string, string> stellen = _ctrl.KapitelstellenDerVorlage(voll, false);
+
+            Assert.Equal(Berichtskapitel.Alle.Select(k => k.Stellenschluessel).OrderBy(s => s, StringComparer.Ordinal),
+                         stellen.Keys.OrderBy(s => s, StringComparer.Ordinal));
+            Assert.Equal("Deckblatt", stellen[BerichtsKonfiguration.B_DECKBLATT]);
+            Assert.Equal("Inhalt", stellen[BerichtsKonfiguration.B_INHALT]);
+            Assert.Equal("Projektbeschreibung", stellen[BerichtsKonfiguration.B_PROJEKT]);
+            Assert.Equal("Komponenten & Varianten", stellen[BerichtsKonfiguration.B_KOMPONENTEN]);
+            Assert.Equal("Berechnungsergebnisse je Variante", stellen[BerichtsKonfiguration.B_ERGEBNISSE]);
+            Assert.Equal("Variantenvergleich", stellen[BerichtsKonfiguration.B_VERGLEICH]);
+            Assert.Equal("Wirtschaftlichkeit", stellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal("Anhang", stellen[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Equal(R.WIRT_AE_TITEL, stellen[Berichtskapitel.ANHANG_E]);
+
+            // Nur das Häkchen „Deckblatt“: jedes Kapitel ohne Stelle, das Deckblatt aus Platzhaltern bleibt.
+            IReadOnlyDictionary<string, string> nurDeckblatt = _ctrl.KapitelstellenDerVorlage(Konfig(), false);
+            Assert.Equal("Deckblatt", nurDeckblatt[BerichtsKonfiguration.B_DECKBLATT]);
+            Assert.All(Berichtskapitel.Alle.Where(k => k.Name != Berichtskapitel.DECKBLATT),
+                       k => Assert.Null(nurDeckblatt[k.Stellenschluessel]));
+            var ohneDeckblatt = new BerichtsKonfiguration();
+            ohneDeckblatt.AktiveBausteine.Add(BerichtsKonfiguration.B_ANHANG);
+            Assert.Equal("Deckblatt", _ctrl.KapitelstellenDerVorlage(ohneDeckblatt, false)[BerichtsKonfiguration.B_DECKBLATT]);
+        }
+
+        /// <summary>
+        /// Eine eigene Vorlage: Der umbenannte Kapitelkopf ist die Stelle, ein Kapitelkopf aus
+        /// <c>{{text.kapitel_*}}</c> folgt der Sprache, ein Kapitel ohne Kapitelkopf nennt seine eigene
+        /// Überschrift, was die Vorlage nicht führt, steht nicht im Bericht — dieselben Stellen macht die
+        /// Checkliste zur Spalte „Stelle“. Lässt sich die gewählte Vorlage nicht lesen, gilt die
+        /// Standardvorlage; fehlt auch sie, der bisherige Weg mit den eigenen Überschriften.
+        /// </summary>
+        [Fact]
+        public void Kapitelstellen_einer_eigenen_Vorlage_und_ihre_Rueckfaelle()
+        {
+            if (_standard == null) return;
+            byte[] vorlage = Probevorlagen.Baue(b => b
+                .Stile(Probevorlagen.Stil("EPOSKapitelkopf", "EPOS Kapitelkopf", 0))
+                .Roh("<w:pPr><w:pStyle w:val=\"EPOSKapitelkopf\"/></w:pPr><w:r><w:t>5 Wirtschaftliche Bewertung</w:t></w:r>")
+                .Absatz("{{kapitel.wirtschaftlichkeit|ohne titel}}")
+                .Roh("<w:pPr><w:pStyle w:val=\"EPOSKapitelkopf\"/></w:pPr><w:r><w:t>{{text.kapitel_anhang_e}}</w:t></w:r>")
+                .Absatz("{{kapitel.anhang_e|ohne titel}}")
+                .Absatz("{{kapitel.projekt}}"));
+            Vorlageneintrag eigen = Hinzu("Bewertung.docx", vorlage);
+            BerichtsKonfiguration konfig = Berichtsdatenproben.VolleKonfiguration();
+            konfig.ZielOrdner = _ziel;
+            BerichtsvorlagenCtrl.SetzeAbweichung(konfig, eigen);
+
+            IReadOnlyDictionary<string, string> deutsch = _ctrl.KapitelstellenDerVorlage(konfig, false);
+            Assert.Equal("5 Wirtschaftliche Bewertung", deutsch[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal(R.WIRT_AE_TITEL, deutsch[Berichtskapitel.ANHANG_E]);
+            Assert.Equal("Projektbeschreibung", deutsch[BerichtsKonfiguration.B_PROJEKT]);
+            Assert.Null(deutsch[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Null(deutsch[BerichtsKonfiguration.B_DECKBLATT]);
+
+            IReadOnlyDictionary<string, string> englisch = _ctrl.KapitelstellenDerVorlage(konfig, true);
+            Assert.Equal(R.ResourceManager.GetString(nameof(R.WIRT_AE_TITEL), CultureInfo.GetCultureInfo("en-US")),
+                         englisch[Berichtskapitel.ANHANG_E]);
+            Assert.Equal("Project description", englisch[BerichtsKonfiguration.B_PROJEKT]);
+            Assert.Equal("5 Wirtschaftliche Bewertung", englisch[BerichtsKonfiguration.B_WIRTSCHAFT]);
+
+            List<ChecklistenPunkt> punkte = AnhangECheckliste.Punkte(new ChecklistenLage(), deutsch);
+            Assert.Equal("Wortbericht: „5 Wirtschaftliche Bewertung“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: " +
+                         "Blatt „Wirtschaftlichkeit“, Block „Erwartet“", punkte.Single(p => p.Nummer == "1").Stelle);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“", punkte.Single(p => p.Nummer == "0.1").Stelle);
+            Assert.Equal("Wortbericht: „Projektbeschreibung“ · Tabellenbericht: Blatt „Übersicht“",
+                         punkte.Single(p => p.Nummer == "0.2").Stelle);
+
+            // Die gewählte Vorlage ist nicht lesbar: die Standardvorlage.
+            File.WriteAllText(eigen.Pfad, "kein Word-Dokument");
+            Assert.Equal("Wirtschaftlichkeit", _ctrl.KapitelstellenDerVorlage(konfig, false)[BerichtsKonfiguration.B_WIRTSCHAFT]);
+
+            // Ohne Standardvorlage der bisherige Weg: die eigenen Überschriften der angehakten Kapitel.
+            File.Delete(Path.Combine(_app, BerichtsvorlagenCtrl.DATEI_STANDARD));
+            BerichtsvorlagenCtrl.EntferneAbweichung(konfig);
+            IReadOnlyDictionary<string, string> alt = _ctrl.KapitelstellenDerVorlage(konfig, false);
+            Assert.Equal("Deckblatt", alt[BerichtsKonfiguration.B_DECKBLATT]);
+            Assert.Equal("Berechnungsergebnisse je Variante", alt[BerichtsKonfiguration.B_ERGEBNISSE]);
+            Assert.Equal("Wirtschaftlichkeit", alt[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal(R.WIRT_AE_TITEL, alt[Berichtskapitel.ANHANG_E]);
+            Assert.Null(_ctrl.KapitelstellenDerVorlage(Konfig(), false)[BerichtsKonfiguration.B_WIRTSCHAFT]);
+        }
+
+        // =====================================================================
         //  Laufmeldung in beiden Sprachen
         // =====================================================================
 
@@ -468,14 +563,13 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Laufmeldung_steht_auf_Deutsch_und_auf_Englisch()
         {
-            byte[] beispiel = Repovorlage(BerichtsvorlageDateiWacheTests.BEISPIEL);
-            if (beispiel == null || _standard == null) return;
-            Vorlageneintrag eigen = Hinzu(BerichtsvorlageDateiWacheTests.BEISPIEL, beispiel);
+            if (_standard == null) return;
+            Vorlageneintrag eigen = Hinzu(EIGENE, EigeneMitUnbekannten());
             BerichtsKonfiguration konfig = Konfig();
             BerichtsvorlagenCtrl.SetzeAbweichung(konfig, eigen);
 
             string deutsch = BerichtCtrl.Laufmeldung(_ctrl.ErzeugeWordLauf(Berichtsdatenproben.Gruppendaten(2), konfig), false);
-            Assert.StartsWith("Word-Vorlage: „Berichtsvorlage_Beispiel“ (Für dieses Projekt gewählt)", deutsch, StringComparison.Ordinal);
+            Assert.StartsWith("Word-Vorlage: „Kapitelentwurf“ (Für dieses Projekt gewählt)", deutsch, StringComparison.Ordinal);
             Assert.Contains("Nicht ersetzte Platzhalter, im Bericht gelb markiert: 8", deutsch, StringComparison.Ordinal);
             Assert.Contains("unbekannter Schlüssel; Rumpf, Absatz ", deutsch, StringComparison.Ordinal);
 
@@ -488,7 +582,7 @@ namespace EPOS.Kern.Tests
                 string englisch = BerichtCtrl.Laufmeldung(lauf, true);
                 _ausgabe.WriteLine(englisch);
                 Assert.True(lauf.Englisch);
-                Assert.StartsWith("Word template: “Berichtsvorlage_Beispiel” (Chosen for this project)", englisch, StringComparison.Ordinal);
+                Assert.StartsWith("Word template: “Kapitelentwurf” (Chosen for this project)", englisch, StringComparison.Ordinal);
                 Assert.Contains("Placeholders not replaced, highlighted yellow in the report: 8", englisch, StringComparison.Ordinal);
                 Assert.Contains("unknown key; Body, paragraph ", englisch, StringComparison.Ordinal);
                 Assert.Contains("Template comments removed: 2", englisch, StringComparison.Ordinal);
@@ -532,6 +626,25 @@ namespace EPOS.Kern.Tests
             var k = new BerichtsKonfiguration { ZielOrdner = _ziel };
             k.AktiveBausteine.Add(BerichtsKonfiguration.B_DECKBLATT);
             return k;
+        }
+
+        /// <summary>Der Dateiname der eigenen Vorlage mit unbekannten Platzhaltern.</summary>
+        private const string EIGENE = "Kapitelentwurf.docx";
+
+        /// <summary>
+        /// Eine eigene Vorlage mit acht Kapitelplatzhaltern, die der Katalog nicht kennt, einem Kundenfeld (leer
+        /// in der Gruppe) und zwei Kommentaren — die Stellen, die im Bericht gelb bleiben, leer sind und
+        /// entfernt werden.
+        /// </summary>
+        private static byte[] EigeneMitUnbekannten()
+        {
+            string[] namen = { "eins", "zwei", "drei", "vier", "fuenf", "sechs", "sieben", "acht" };
+            return Probevorlagen.Baue(b =>
+            {
+                b.Absatz("{{bericht.titel}}").Absatz("{{projekt.kunde}}");
+                foreach (string n in namen) b.Absatz("{{kapitel." + n + "|ohne titel}}");
+                b.Kommentare("Erläuterung", "Noch eine");
+            });
         }
 
         /// <summary>Legt eine Quelldatei an und fügt sie dem Vorlagenordner hinzu.</summary>

@@ -586,5 +586,111 @@ namespace EPOS.Kern.Tests
             Assert.Null(ohneLizenz.Ersteller().Firma);
             Assert.Null(new BerichtsvorlagenCtrl(_pfade, _einstellungen, () => "  ").Ersteller().Firma);
         }
+
+        // =====================================================================
+        //  Logo (BV-E2-1: Platzhalterbild bild.ersteller.logo)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Logo steht als Pfad in der Einstellung „BerichtLogo“; <see cref="BerichtsvorlagenCtrl.Ersteller"/>
+        /// lädt die Datei EINMAL (PNG oder JPEG). Leer oder <c>null</c> entfernt die Einstellung — dann gibt es
+        /// weder Logo noch Warnung.
+        /// </summary>
+        [Fact]
+        public void Logo_steht_als_Pfad_in_der_Einstellung_und_wird_einmal_geladen()
+        {
+            Assert.Equal("BerichtLogo", BerichtsvorlagenCtrl.EINSTELLUNG_LOGO);
+            Assert.Equal(5L * 1024 * 1024, BerichtsvorlagenCtrl.GRENZE_LOGO);
+            Assert.Null(_ctrl.LogoPfad);
+            Assert.False(_ctrl.LogoVorhanden());
+            Erstellerangaben ohne = _ctrl.Ersteller();
+            Assert.Null(ohne.Logo);
+            Assert.Null(ohne.LogoDateiname);
+            Assert.Null(ohne.LogoWarnung);
+
+            byte[] png = WordVorlagenfuellerTests.Png(40, 20);
+            string pfad = Path.Combine(_quellen, "Firmenlogo.png");
+            File.WriteAllBytes(pfad, png);
+            _ctrl.SchreibeLogo("  " + pfad + "  ");
+            Assert.Equal(pfad, _einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_LOGO));
+            Assert.Equal(pfad, _ctrl.LogoPfad);
+            Assert.True(_ctrl.LogoVorhanden());
+
+            Erstellerangaben mit = _ctrl.Ersteller();
+            Assert.Equal(png, mit.Logo);
+            Assert.Equal("Firmenlogo.png", mit.LogoDateiname);
+            Assert.Null(mit.LogoWarnung);
+            Assert.Equal("Lizenz GmbH", mit.Firma);
+
+            // Die Erstellerangaben tragen die geladenen Bytes — die Datei darf danach verschwinden.
+            File.Delete(pfad);
+            Assert.Equal(png, mit.Logo);
+            Bildinhalt bild = Bildinhalt.Aus(mit.Logo, mit.LogoDateiname);
+            Assert.Equal(Bildformat.Png, bild.Format);
+            Assert.Equal(40, bild.Breite);
+            Assert.Equal(20, bild.Hoehe);
+
+            string jpeg = Path.Combine(_quellen, "Logo.jpg");
+            File.WriteAllBytes(jpeg, WordVorlagenfuellerTests.Jpeg(30, 60));
+            _ctrl.SchreibeLogo(jpeg);
+            Assert.Equal("Logo.jpg", _ctrl.Ersteller().LogoDateiname);
+            Assert.Equal(Bildformat.Jpeg, Bildinhalt.Aus(_ctrl.Ersteller().Logo, "Logo.jpg").Format);
+
+            _ctrl.SchreibeLogo("");
+            Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_LOGO));
+            Assert.Null(_ctrl.LogoPfad);
+            _ctrl.SchreibeLogo(jpeg);
+            _ctrl.SchreibeLogo(null);
+            Assert.Null(_ctrl.LogoPfad);
+            Assert.Null(_ctrl.Ersteller().Logo);
+            Assert.Null(_ctrl.Ersteller().LogoWarnung);
+        }
+
+        /// <summary>
+        /// Fehlt die Datei, ist sie zu groß (über 5 MB) oder kein PNG/JPEG, bleibt das Logo <c>null</c>; die
+        /// Warnung nennt den Grund und den Pfad — der Lauf warnt damit einmal („Logo nicht gefunden: …“).
+        /// </summary>
+        [Fact]
+        public void Fehlendes_zu_grosses_oder_fremdes_Logo_bleibt_leer_und_nennt_den_Grund()
+        {
+            string fehlt = Path.Combine(_quellen, "gibt-es-nicht.png");
+            _ctrl.SchreibeLogo(fehlt);
+            Erstellerangaben a = _ctrl.Ersteller();
+            Assert.Null(a.Logo);
+            Assert.Null(a.LogoDateiname);
+            Assert.Equal("Logo nicht gefunden: " + fehlt, a.LogoWarnung);
+            Assert.False(_ctrl.LogoVorhanden());
+            Assert.Equal("Lizenz GmbH", a.Firma);   // die übrigen Angaben bleiben
+
+            string gross = Path.Combine(_quellen, "riesig.png");
+            byte[] kopf = WordVorlagenfuellerTests.Png(2, 2);
+            using (var s = new FileStream(gross, FileMode.Create, FileAccess.Write))
+            {
+                s.Write(kopf, 0, kopf.Length);
+                s.SetLength(BerichtsvorlagenCtrl.GRENZE_LOGO + 1);
+            }
+            _ctrl.SchreibeLogo(gross);
+            a = _ctrl.Ersteller();
+            Assert.Null(a.Logo);
+            Assert.StartsWith("Logo zu groß: " + gross + " (", a.LogoWarnung);
+            Assert.EndsWith("MB, höchstens 5 MB)", a.LogoWarnung);
+            Assert.False(_ctrl.LogoVorhanden());
+
+            // Genau 5 MB sind erlaubt — die Grenze zählt die Bytes der Datei.
+            using (var s = new FileStream(gross, FileMode.Open, FileAccess.Write)) s.SetLength(BerichtsvorlagenCtrl.GRENZE_LOGO);
+            Assert.True(_ctrl.LogoVorhanden());
+
+            string fremd = Path.Combine(_quellen, "logo.png");
+            File.WriteAllText(fremd, "kein Bild");
+            _ctrl.SchreibeLogo(fremd);
+            a = _ctrl.Ersteller();
+            Assert.Null(a.Logo);
+            Assert.Equal("Logo ist kein PNG- oder JPEG-Bild: " + fremd, a.LogoWarnung);
+            Assert.False(_ctrl.LogoVorhanden());
+
+            // Ein Ordner statt einer Datei zählt als „nicht gefunden“.
+            _ctrl.SchreibeLogo(_quellen);
+            Assert.Equal("Logo nicht gefunden: " + _quellen, _ctrl.Ersteller().LogoWarnung);
+        }
     }
 }

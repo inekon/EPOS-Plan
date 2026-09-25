@@ -138,9 +138,13 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_INHALT; } }
         public string Titel { get { return "Inhaltsverzeichnis"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
+        public const string UEBERSCHRIFT = "Inhalt";
+
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
-            k.Ueberschrift1("Inhalt");
+            k.Ueberschrift1(UEBERSCHRIFT);
             k.TocFeld();
             k.Seitenumbruch();
         }
@@ -152,9 +156,13 @@ namespace WindowsFormsApplication1
         public string Schluessel { get { return BerichtsKonfiguration.B_ANHANG; } }
         public string Titel { get { return "Anhang"; } }
 
+        /// <summary>Die Überschrift des Kapitels (Überschrift 1) — Schlüssel der Übersetzung in
+        /// <see cref="BerichtTexte"/>; dieselbe Quelle hat <see cref="Berichtskapitel.Ueberschrift"/>.</summary>
+        public const string UEBERSCHRIFT = "Anhang";
+
         public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
         {
-            k.Ueberschrift1("Anhang");
+            k.Ueberschrift1(UEBERSCHRIFT);
 
             k.Ueberschrift2("Simulationsstände");
             int[] w = { 3200, 1400, 2400, 2355 };
