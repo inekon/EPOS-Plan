@@ -8,7 +8,7 @@ Sammelpostens [N18](2026-09-25_Zapfprofil_Reste.md), Vorstufen in den Protokolle
 [Z4](2026-09-24_Z4_Oberflaeche.md) und [Z4b](2026-09-24_Z4b_Typtage.md). Zweig `zh` von `d2200ebb`
 (= `origin/ios_migration_september`, Schemastand 142, Referenzbasis `2026-09-25_R16_Anlagenprio`),
 zwei Code-Commits `5946064f` (Posten B) und `8f92b7d7` (Posten A), die Papiere `83861a1b` und der
-Merges `289211e0` von `origin` (`c02dbfb4`) und `9acde04b` (`bf129170`).
+Merges `289211e0` von `origin` (`c02dbfb4`), `9acde04b` (`bf129170`) und `41b99c37` (`0b6cbdb1`).
 **Kein Schemaschritt, die Testdatenbank ist unberührt.** Alle Gates im Worktree, kein CI-Lauf bis
 zum Push.
 
