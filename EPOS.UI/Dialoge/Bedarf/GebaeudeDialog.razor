@@ -218,6 +218,23 @@
                 <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
                         @onclick="BeiAendern">@BtnAendernText</button>
 
+                @* Stufe G3 (Welle D2): die Projektkopie samt Zonen und Bauteilen. Eine noch nicht
+                   gespeicherte Zeile hat keine Projektkopie - weich gesperrt, der Versuch nennt den
+                   Grund. Kein Delegat, kein Knopf. *@
+                @if (ProjektGaben is not null)
+                {
+                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                    {
+                        <button type="button" class="epos-knopf" aria-disabled="true" title="@SperreNeueZeile"
+                                @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">@BtnProjektText</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                                title="@BtnProjektHinweis" @onclick="BeiProjekt">@BtnProjektText</button>
+                    }
+                }
+
                 @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
                    Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
                    Delegat kein Knopf - in der Katalogverwaltung gibt es kein
@@ -249,6 +266,18 @@
             {
                 <GebaeudeKatalogDialog @attributes="_katalogGaben" TitelAnzeigen="false"
                                        Geschlossen="KatalogeditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 6: das Gebaeude im Projekt - Huelle und Zonen (G3) ----- *@
+    <Ueberlagerung Offen="@(_projektGaben is not null)" Titel="@TitelProjekteditor"
+                   Geschlossen="() => ProjekteditorFertig(false)">
+        <KindInhalt>
+            @if (_projektGaben is not null)
+            {
+                <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
+                                       Geschlossen="ProjekteditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -389,6 +418,21 @@
     public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? BedarfGaben { get; set; }
 
     /// <summary>
+    /// <b>„Hülle und Zonen…"</b> (Gebäudesimulation G3, Welle D2): der Parametersatz des
+    /// Gebäudeeditors in der Betriebsart Projekt für eine Projektzeile — bearbeitet wird die
+    /// Projektkopie samt Zonen. Kein Delegat = kein Knopf; <c>null</c> als Rückgabe heißt „diese Zeile
+    /// hat keine Projektkopie" (der Knopf ist dann ohnehin weich gesperrt).
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? ProjektGaben { get; set; }
+
+    /// <summary>
+    /// Liest Rechenweg, Wärmeleitwert und Zone einer Projektzeile neu aus ihrer Projektkopie — nach
+    /// dem OK von „Hülle und Zonen…". Kein Delegat = die Zeile bleibt, wie sie ist.
+    /// </summary>
+    [Parameter] public Action<GebaeudeProjektZeile>? ZeileAuffrischen { get; set; }
+
+    /// <summary>
     /// <b>Der Gebäudeimport</b> (Stufe G4, Welle 4; A17): baut je Klick auf „Importieren…" den
     /// Weg eines Imports — Zuordnungsdialog, vorbelegter Editor, neue Projektzeile. Kein Delegat =
     /// kein Knopf.
@@ -402,6 +446,18 @@
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // --- Texte -----------------------------------------------------------------
+
+    /// <summary><c>GEBZ_BTN_PROJEKT</c> — der Knopf „Hülle und Zonen…".</summary>
+    [Parameter] public string BtnProjektText { get; set; } = Resource.GEBZ_BTN_PROJEKT;
+
+    /// <summary><c>GEBZ_BTN_PROJEKT_HINWEIS</c> — sein Kurztext.</summary>
+    [Parameter] public string BtnProjektHinweis { get; set; } = Resource.GEBZ_BTN_PROJEKT_HINWEIS;
+
+    /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
+    [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
+
+    /// <summary><c>GEBZ_TITEL_PROJEKT</c> — der Titel der Überlagerung des Editors in der Betriebsart Projekt.</summary>
+    [Parameter] public string TitelProjekteditor { get; set; } = Resource.GEBZ_TITEL_PROJEKT;
 
     [Parameter] public string TitelText { get; set; } = "Eingabe der Gebäudedaten";
     [Parameter] public string KopfbandText { get; set; } = "Eingabe der Energiedaten";
@@ -558,6 +614,12 @@
     private GebaeudeImportweg? _importweg;
     private IReadOnlyDictionary<string, object>? _wohnflaecheGaben;
     private IReadOnlyDictionary<string, object>? _bedarfGaben;
+
+    /// <summary>Der Parametersatz des Editors in der Betriebsart Projekt, solange „Hülle und Zonen…" steht.</summary>
+    private IReadOnlyDictionary<string, object>? _projektGaben;
+
+    /// <summary>Steht der Editor eines Projektgebäudes („Hülle und Zonen…")? Prüfhilfe für die Tests.</summary>
+    public bool ProjekteditorOffen => _projektGaben is not null;
     private bool _gebaeudetypOffen;
     private bool _loeschfrage;
     private string _meldung = "";
@@ -979,6 +1041,33 @@
     }
 
     /// <summary>
+    /// „Hülle und Zonen…" (G3, Welle D2) — der Editor der Projektkopie als Überlagerung. Ohne
+    /// Projektkopie meldet der Knopf seinen Grund.
+    /// </summary>
+    private void BeiProjekt()
+    {
+        if (_gewaehlt is null || ProjektGaben is null) return;
+        if (!_gewaehlt.HatProjektkopie) { Melden(SperreNeueZeile, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _projektGaben = ProjektGaben(_gewaehlt);
+        if (_projektGaben is null) Melden(SperreNeueZeile, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// Der Editor der Projektkopie ist zu: Hat er geschrieben, liest die Zeile Rechenweg,
+    /// Wärmeleitwert und Zone neu (der Detailblock zieht nach). Die Projektliste selbst ist davon
+    /// unberührt — sie schreibt weiter erst das OK dieses Dialogs.
+    /// </summary>
+    private void ProjekteditorFertig(bool gespeichert)
+    {
+        _projektGaben = null;
+        KatalogLaden(_ausBaujahrwahl);   // "Speichern unter" legt einen Katalogsatz an
+        if (!gespeichert || _gewaehlt is null) return;
+        ZeileAuffrischen?.Invoke(_gewaehlt);
+        ProjektzeileWaehlen(_gewaehlt);
+    }
+
+    /// <summary>
     /// Das Ergebnis der Wohnflächenangabe geht in die MARKIERTE Zeile zurück
     /// (<c>btn_Aendern_Click</c>:445-469, dort über <c>ID_Z</c>).
     /// </summary>
@@ -1072,7 +1161,7 @@
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
-            _loeschfrage) return Task.CompletedTask;
+            _loeschfrage || _projektGaben is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 }
