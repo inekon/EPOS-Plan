@@ -10,8 +10,8 @@ Posten stammen aus den Nachträgen N13 (Folgen (b) und (s)), N15 (Gruppe 3, Folg
 (= `origin/ios_migration_september`, Schemastand 142, Referenzbasis
 `2026-09-25_R16_Anlagenprio`), vier Code-Commits `0036c657`, `0a58ea52`, `6080f65a`, `43d32522`, ein
 Aufräumcommit `ca257fb8`, Merge `da24a5d9` von `origin` (`b0eb1783`), Papiere `6c730a0e`. Nach der
-**Gegenprüfung** drei weitere Commits `b73f46fc`, `4edd1f27`, `9829667b`, ein zweiter Merge von
-`origin` und die Papiere dieses Absatzes. **Kein Schemaschritt, die Testdatenbank ist unberührt.** Alle Gates im
+**Gegenprüfung** drei weitere Commits `b73f46fc`, `4edd1f27`, `9829667b`, die Papiere `29bf185c` und
+der zweite Merge `1b75c5af` von `origin` (`ae15e979`). **Kein Schemaschritt, die Testdatenbank ist unberührt.** Alle Gates im
 Worktree, kein CI-Lauf bis zum Push.
 
 ## Auftrag
@@ -116,15 +116,22 @@ Grund") und bleibt, wie er ist — jetzt trägt ihn auch die Maske.
 
 ## Gates im Worktree
 
+Zweimal gefahren: nach dem ersten Merge (`da24a5d9`) und — nach der Gegenprüfung — auf dem zweiten
+Merge `ae15e979`. Die Zahlen unten sind die des zweiten Laufs; der Konflikt des Merges lag allein in
+der Statusdatei (die origin-Fassung von #510, danach #508 und #511 in Nummernfolge), der Designer
+wurde nach dem resx-Merge neu erzeugt und war ohne Diff.
+
 | Probe | Ergebnis |
 |---|---|
 | `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler |
-| voller Testlauf des Kern-Filters (`xUnit.ParallelizeTestCollections=false`, `MaxParallelThreads=2`) | 0 Fehler |
-| `Werkzeuge/Auslieferungsvorlage.Tests` (eigenes Projekt, mit T14) | 14/14 grün |
+| voller Testlauf des Kern-Filters (`xUnit.ParallelizeTestCollections=false`, `MaxParallelThreads=2`) | 14 487 grün / 0 rot / 2 übersprungen (Kern 7 219, UI 6 306, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27+1) |
+| `Werkzeuge/Auslieferungsvorlage.Tests` (eigenes Projekt, mit T14) | 36/36 grün |
 | Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
 | `Werkzeuge/SqlDialektPruefer` gegen `Referenzlaeufe/Kenndaten_Test.sqlite` | 1 918 Texte, 0 Fundstellen |
-| Referenzlauf der CI-Projekte 1030, 1007, 1017, 1045, 1046, 1047 gegen `2026-09-25_R16_Anlagenprio` | PASS |
+| Referenzlauf der CI-Projekte 1030, 1007, 1017, 1045, 1046, 1047 gegen `2026-09-25_R16_Anlagenprio` | PASS, 2 208 587 Werte |
+| Dokumentationswachen (Link-, Wiki-Produktdaten-, Repository-Ordnungswache) | 29/29 grün |
 | `ResourceDesigner` (`designer_neu.py` ohne Argument) | ohne Diff, wiederholbar |
+| Schemastand der Testdatenbank (`Tab_Applikation.SchemaVersion`) | 142, unverändert |
 
 Die Referenzprojekte nutzen den Generator nicht; der Lauf war wie erwartet unverändert. Die Wächter
 der Papiere (Doku-Link-, Wiki-Produktdaten-, Repository-Ordnungswache) und
