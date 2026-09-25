@@ -10682,3 +10682,100 @@ Administrationsdialoge 7.1 (a).
 Werte (Kellerkanten 0 m, Kanten der Laibungssätze, 46/57/120, „Nur D“)
 — kein Handlungsbedarf, nur Merkposten; (b) Laibung 0 m bei
 `AltenH-95-EnEV2016` ist folgerichtig (keine Fenster).
+
+## #507 — Projektassistent: Nachweis R-W16-6 neu angelegtes Projekt, Verweis-Punkt; Upload-Vorprüfung und Klimadaten-Anker (25.09.2026)
+
+Anwenderauftrag 25.09.2026 „Fahre fort“ (die offenen Punkte aus „Nach #497“ und
+die Vorbereitung des Sammel-Uploads am 26.09.2026). Basis `3a8ec184`; Commits
+(Opus 5.5) `74bdf7fc` (Assistent: Nachweis R-W16-6 für ein neu angelegtes
+Projekt) und `a4154dde` (Klimadaten: alte Wiki-Anker erhalten, tote Feldhilfe
+entfernt); Merge `e1b5114c`. Kein Schemaschritt, die Testdatenbank bleibt
+unverändert, kein Kern-Code außer dem Klassenkopf von `AssistentCtrl`.
+
+**(a) Nachweis R-W16-6 für ein neu angelegtes Projekt.** Windows-Gerät, Kopie
+der Testdatenbank, Zielstand 142; Probe `Probe507` im Scratchpad, nicht im
+Repo. Der Neu-Zweig legte das Projekt „#507 Neuanlage-Probe“ (Id 1047) an —
+Kopf mit Klimazone „stuttgart“, Gebäude `EFH-A-U-347s` aus dem Katalog, Kessel
+über die Kesselseite (Trägervariante „Erdgas E“, Träger 63, Temperaturen aus
+dem Katalogsatz), Prozesswärme `Hotel_1`, Stromverbraucher `EFH_3_Pers`,
+Stromganglinie, externer Wärmebedarf (Kanal Heizung); Brauchwasser blieb aus,
+der Assistent hat dafür keine Seite. Befund, kein Fehler: ein frisches Projekt
+hat noch keine `Tab_Einstellungen`, der erste Referenzlauf bricht mit „keine
+Konfiguration“ ab — erst das Speichern der Simulationskonfiguration legt den
+Satz an (die Probe stellt diesen Anwenderschritt über
+`SimulationKonfigHuelle.Speichern` nach). Lauf vorher (`Referenzlauf.exe lauf
+--projekte 1047`): Wärmebedarf 171,37 MWh (Heizung 141,37, Prozess 30),
+Strombedarf 4 798 MWh, Kessel aktiv. Speichern ohne Änderung über den
+Bearbeiten-Zweig (Laden, Seitenschaltung, alle Seiten betreten):
+`HatAenderungen` false, „Gespeichert“, kein Gewerk, kein Kopf, 0 Trägersätze
+geheilt. Abbild vor/nach: 9 269 Zeilen über alle 56 projektgebundenen Tabellen
+plus Senken und Stränge, mit Ids und `Tab_Projekt` samt Änderungsdatum,
+hash-gleich; die ganze Datenbank 145 Tabellen, 1 497 798 Zeilen, 0 abweichende
+Tabellen. Lauf nachher, `vergleich`: GESAMT PASS, 17 Dateien, 192 810 Werte, 0
+Abweichungen, byte-gleich. Dauerhafter Test
+`Ein_neu_angelegtes_Projekt_bleibt_beim_Speichern_ohne_Aenderung_stehen` in
+`EPOS.Kern.Tests/AssistentAbgleichTests.cs` (dasselbe Rezept, Vollabbild aller
+projektgebundenen Tabellen, zweites Speichern geprüft; Hilfen
+`Bearbeitenlauf`/`SeitenBetreten`/`DatumSetzen`/`Paare` mit Projekt-Id, neu
+`Neuanlage`, `VollesAbbild`, `Zeilen`, `KatalogId`).
+
+**(b) Verweis auf die Projektkopie vor dem Festschreiben — folgenlos,
+erledigt.** Nach einem Rückzug zeigen
+`ID_Prozesswaerme`/`m_ID_Stromverbraucher` der Liste auf zurückgerollte Kopien,
+aber `Add_Projekt_Prozess`/`Add_Projekt_Stromverbraucher` leiten den Verweis
+bei jedem Lauf vor dem Insert neu aus dem Namen ab (`CopyFromStamm`, kein
+Rückfall auf die alte Id, FK-1); der Abdruck vergleicht ihn nicht;
+`BedarfsProfileHuelle` reicht ihn nur durch; die Startseite verwirft ihre
+Liste. Kein Umbau nötig; Beleg-Test
+`Nach_einem_Rueckzug_schreibt_der_naechste_Lauf_gueltige_Verweise` (Rückzug
+erzwungen durch einen Verbraucher ohne Katalogsatz; danach zweiter Lauf: Paare
+gleich der Datenbank, die Kopien gehören dem Projekt, `PRAGMA
+foreign_key_check` leer).
+
+**(c) Lesevorprüfung Sammel-Upload.** Sonnet, nur gelesen, API
+`wiki.epos-plan.de/api.php` erreichbar. Elf vorhandene Live-Seiten (Revisionen
+426–591, 06./13.09.) sind älter als die Repo-Quellen, kein seither im Wiki
+hinzugekommener Text — ein vollständiger Ersatz ist zulässig. Fünf Seiten
+fehlen live und sind Neuanlagen: Gebäudemodell VDI 6007, Kühlung,
+Gerätekataloge (Anwenderentscheid offen), Gebäudeimport,
+Brauchwasser-Zapfprofil. Tabu-Muster: 0 Treffer in 16 Quellen. Logbuch 1.2.0.4:
+124 Sätze, 0 Dubletten; das Live-„Update-Logbuch“ (Rev. 592) steht höchstens
+bei 1.2.0.0. Befund: die Klimadaten-Quelle hatte die Live-Anker `region`,
+`koordinaten`, `bezeichnung`, `daten-einlesen` verloren; `help_mapping.txt`
+verwies noch auf `Form_Klimadaten.label*/panel*` (die Klasse existiert nicht
+mehr). Die Live-Texte liegen im Scratchpad `wiki_live/`.
+
+**(d) Klimadaten-Anker erhalten.** `Projekte/Wiki/Programm Dokumentation -
+Klimadaten.wiki` trägt die vier Anker jetzt als Zweitnamen in `{{Anker|…}}`
+(Zeile 7 `regionsliste|region`, Zeile 38 `standort|koordinaten|bezeichnung`,
+Zeile 59 `einlesen|daten-einlesen`), die Überschriften bleiben unverändert,
+Tabu-Treffer 0. Hilfeweg der Maske:
+`EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor` hat einen Hilfeknopf
+`InfoKnopf Schluessel="Form_Klimadaten.btn_Help"` → `help_mapping.txt` Zeile
+114 `= Klimadaten` (ganze Seite) bleibt bestehen; die acht toten Feldzeilen
+`Form_Klimadaten.panel1/panel2/panel_KlimaGraph/label1/4/6/7/8` sind entfernt,
+der Kommentarblock folgt dem Vorbild `Form_Simulation_Config`;
+`HelpMappingAnkerWacheTests` übersprang diese Zeilen ohnehin (Block H12).
+`Wiki_Update_2026-09-26.md` Zeile 23 vermerkt die erhaltenen Anker; ein Hinweis
+bleibt offen: die Zeile nennt Klimadaten weiter als „neue Seite“, obwohl live
+bereits Revision 433 besteht (nicht geändert).
+
+**Gate (Stand `e1b5114c`).** Kern-Filter 0 Fehler; gefilterter Lauf
+Assistent/Wizard 75/75 (2 neu); Hilfe/Wiki/Dokumentation/Klimadaten: Kern 204,
+UI 719, KiKern 1; `Referenzlauf` Release x64 0 Fehler. Die Zahlen des vollen
+Testlaufs trägt die Hauptsitzung nach (er läuft parallel). Kein Referenzlauf
+der 13 Projekte, der Schreibweg blieb unverändert.
+
+**Papiere.** `Wiki_Update_2026-09-26.md` (Anker-Vermerk Zeile 23); Klassenkopf
+`AssistentCtrl`.
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #507“).** (a) Anwenderentscheid, ob die Seite
+„Gerätekataloge“ im Wiki angelegt wird; (b) Upload am 26.09.2026 unter 1.2.0.4
+durch die Sitzung Wirtschaftlichkeit (Bot-Kennwort als Umgebungsvariable),
+Neuanlagen als Neuanlage, nicht als Ersetzen; (c) die Zeile zu Klimadaten im
+Upload-Papier nennt weiter „neue Seite“, obwohl der Bestand live ist; (d) der
+Beispielkommentar `Form_Klimadaten.label*` in
+`WindowsFormsApplication1/Allgemein/Hilfe/InfoKnopf.cs:109` (nur ein
+Kommentar).
