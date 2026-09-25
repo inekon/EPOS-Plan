@@ -171,9 +171,12 @@ Quellenverweis begrenzt.
 > (`EPOS.Kern/Allgemein/Import/Gebaeude/`), der Leser `IfcLeser`, die Zuordnung liegt in Schemaschritt 138.
 > Aufgabe 5: Der eine iOS-Lauf (E38) hat den Import unter Trimming und AOT im Simulator nachgewiesen
 > (xBIM-Metadaten vollständig, 0 IL-Warnungen, kein Deskriptor nötig) und die iOS-Grenzen gemessen
-> (Protokoll G4, Abschnitt 10). Aufgabe 7 bleibt offen: Der Gerätebau `ios-arm64` trimmt ohne Warnung,
-> scheitert aber am nativen Linken der SQLite-Bibliothek der iOS-Schale; im getrimmten Simulatorpaket
-> tragen die fünf xBIM-DLLs zusammen 7,4 MB.
+> (Protokoll G4, Abschnitt 10). Aufgabe 7 bleibt offen: Der Gerätebau `ios-arm64` trimmte ohne Warnung,
+> lief aber wegen der Simulatorkennung in `RuntimeIdentifiers` der iOS-Schale als Simulatorbau und brach
+> am Linken der Geräte-SQLite ab — nicht an xBIM (Protokoll G4, Abschnitt 11; behoben, Nachweis im
+> nächsten iOS-Lauf). Im getrimmten Simulatorpaket tragen die fünf xBIM-DLLs zusammen 7,4 MB. Für die
+> Messung baut der Gerätejob von `ios.yml` zweimal, der zweite Bau mit `-p:OhneXbim=true` ohne die
+> Paketzeile.
 
 1. [x] `Xbim.IO.MemoryModel` in `Directory.Packages.props` aufnehmen; Lizenzhinweisseite im
        Setup (Frage U10).
