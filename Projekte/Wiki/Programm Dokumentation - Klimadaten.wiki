@@ -4,7 +4,7 @@
 Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechnet. Eine Klimaregion umfasst 8.760 Stundenwerte – Außentemperatur, Global-, Direkt- und Diffusstrahlung, Sonnenwinkel und die vier Fassadenwerte – sowie 365 Tageswerte. Die Maske zeigt außerdem die Liste der vorhandenen Regionen und zwei Diagramme (Jahrestemperatur und Sonnenwinkel).
 
 == Die Liste der Regionen ==
-{{Anker|regionsliste}}
+{{Anker|regionsliste|region}}
 
 Links steht die Liste der vorhandenen Klimaregionen – mit Suchfeld über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf, wie Sie es aus den Gerätekatalogen kennen. Über der Liste steht, wie viele Sätze die Einengung übrig lässt.
 
@@ -35,7 +35,7 @@ Die Legende ist bedienbar. Ein Klick auf den '''Namen''' einer Kurve blendet sie
 * '''Testreferenzjahr (Regionaldaten)''' – die offenen Regionaldaten zu den Testreferenzjahren. EPOS-Plan holt daraus genau den Datensatz der Region, die Ihrem Standort am nächsten liegt.
 
 == Standort ==
-{{Anker|standort}}
+{{Anker|standort|koordinaten|bezeichnung}}
 
 Den Standort geben Sie wie gewohnt an: über einen Ortsnamen, den das Programm in Koordinaten auflöst, oder von Hand über Longitude, Latitude und eine Bezeichnung.
 
@@ -56,7 +56,7 @@ Bei einer '''Testreferenzjahr-Datei''' entfällt die Wahl: Das Programm übernim
 ''Region ermitteln'' sagt Ihnen schon vor dem Einlesen, welche Region Ihr Standort trifft: Nummer und Name der Bezugsstation, ihre Koordinate und die Entfernung zu Ihrem Standort, dazu die Jahre und Szenarien, die das Archiv für diese Region führt. Dafür wird nur das Inhaltsverzeichnis des Archivs gelesen, kein Datensatz. Trifft der Standort keine Region, steht der Grund an derselben Stelle; einlesen können Sie trotzdem.
 
 == Einlesen ==
-{{Anker|einlesen}}
+{{Anker|einlesen|daten-einlesen}}
 
 ''Import…'' in der Fußleiste öffnet die Überlagerung ''Klimadaten einlesen'' mit einem Kreuz am Titel zum Schließen. ''Daten einlesen'' darin legt die Region an und wählt sie danach gleich aus. Der Lauf lässt sich abbrechen. Gibt es schon eine Region dieses Namens, bricht das Programm mit einem Hinweis ab.
 
