@@ -497,7 +497,7 @@ namespace Auslieferungsvorlage.Tests
                 Assert.Equal((long)Paketteil(TwwSchema.TAB_TWW_TAGESGANG_STAMM).Count,
                              Convert.ToInt64(DataRepository.ExecuteScalar(
                                  "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE Herkunftsart = ? AND " +
-                                 "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt _'", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN))));
+                                 "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt %'", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN))));
             });
         }
 

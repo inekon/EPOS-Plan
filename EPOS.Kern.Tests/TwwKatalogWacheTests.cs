@@ -157,7 +157,7 @@ namespace EPOS.Kern.Tests
             Assert.True(geprueft > 0, "Der Testkatalog fehlt — die Probe waere leer.");
             // Die abgeleiteten VDI-Zeilen und das Ecodesign-Zapfprofil stehen da (ZU19, Stufe Z3).
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $w " +
-                             "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _'",
+                             "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt %'",
                              TwwSchema.HERKUNFT_VERFAHREN) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Quelle_Art\" = 5 AND \"Quelle\" = $w",
                              QUELLE_ECODESIGN) == 1, "Das Ecodesign-Zapfprofil fehlt in der Testdatenbank.");
@@ -309,7 +309,7 @@ namespace EPOS.Kern.Tests
             using (SqliteCommand b = c.CreateCommand())
             {
                 b.CommandText = "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $h " +
-                                "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _'";
+                                "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt %'";
                 b.Parameters.AddWithValue("$h", TwwSchema.HERKUNFT_VERFAHREN);
                 var zeilen = new List<Dictionary<string, object>>();
                 using (SqliteDataReader r = b.ExecuteReader())
@@ -816,7 +816,7 @@ namespace EPOS.Kern.Tests
 
             using SqliteConnection c = Oeffnen(pfad);
             List<Dictionary<string, object>> arten = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
-                                                                "\" WHERE \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _' ORDER BY \"ID\"", null);
+                                                                "\" WHERE \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt %' ORDER BY \"ID\"", null);
             Assert.NotEmpty(arten);
             var saetze = new Dictionary<string, long>(StringComparer.Ordinal);
             foreach (Dictionary<string, object> z in arten)
@@ -878,7 +878,7 @@ namespace EPOS.Kern.Tests
             }
             int eigene = saetze.Keys.Count(a => Formquelle(a) == a);
             long abgeleiteteSaetze = Zahl(c, "SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
-                                             "\" WHERE \"Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _'", null);
+                                             "\" WHERE \"Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt %'", null);
             if (abgeleiteteSaetze != eigene)
                 funde.Add("abgeleitete Tagesgangsätze: " + abgeleiteteSaetze + " statt " + eigene);
 

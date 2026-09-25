@@ -46,7 +46,7 @@ ausdrücklich gesperrt.
 5. **Die Summenregeln halten:** jeder Tagesgang Summe 1, die sieben Wochenanteile Summe 1, die zwölf
    Monatsfaktoren im Mittel 1, die Anteile eines Kategoriensatzes Summe 1 (Toleranz 1e-9, Zahlen mit
    Dezimal**punkt**).
-6. **Provenienz füllen:** `Quelle` (je Wertgruppe, etwa „DIN EN 12831-3 Beiblatt A100, Tabelle NA.…"),
+6. **Provenienz füllen:** `Quelle` (je Wertgruppe, wie in der Vorlage „DIN EN 12831-3 Beiblatt A100, Tabelle …"),
    `Ausgabe` (Ausgabestand, darf leer bleiben), `Version` (Stand des Pakets) und `Herkunftsart` — für
    ein Normpaket des Anwenders `IMPORT`.
 7. **Importieren:** in EPOS-Plan **Administration → Brauchwasser → Katalog-Import…**, dann den Ordner

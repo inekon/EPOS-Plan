@@ -651,38 +651,119 @@ namespace EPOS.Kern.Tests
                          TwwNutzungsartCtrl.KategorienLesen(id).Kategorien.Select(k => k.Name).ToArray());
         }
 
+        /// <summary>Die Zahlen, die die Paketvorlage A100 bewusst trägt — und nur sie.</summary>
+        private static readonly double[] PLATZHALTERZAHLEN =
+        {
+            0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 30.0, 60.0,
+            1.0 / 24.0,                                      // Tagesgang gleichverteilt
+            1.0 / 7.0                                        // Woche gleichverteilt
+        };
+
+        /// <summary>
+        /// Freiliste: die Textfelder der Paketvorlage, die bewusst Ziffern führen. Jeder andere Text
+        /// mit einer Ziffer ist ein Fund — so fällt eine in einen Quellentext getippte Tabellen-,
+        /// Bild- oder Zahlenangabe auf.
+        /// </summary>
+        private static readonly string[] PLATZHALTERTEXTE =
+        {
+            "A100-1",                                        // Katalogversion und Provenienz-Version
+            "DIN EN 12831-3 Beiblatt A100, Tabelle …"        // Quelle je Wertgruppe, ohne Tabellennummer
+        };
+
+        /// <summary>
+        /// Hält einen Ordner im Format der Paketvorlage gegen die zwei Freilisten und gibt je Fund
+        /// eine Zeile. Der Trenner kommt wie beim Leser (<c>TwwNutzungsartCtrl.PaketLesen</c>) aus der
+        /// Kopfzeile: Semikolon, wenn sie eines führt, sonst Komma. Liefert eine Datei **kein**
+        /// Zahlenfeld, ist das selbst ein Fund — sonst wäre ein falsch gewählter Trenner als grüner
+        /// Lauf zu lesen.
+        /// </summary>
+        private static List<string> PlatzhalterFunde(string ordner)
+        {
+            var funde = new List<string>();
+            string[] dateien = Directory.GetFiles(ordner, "*.csv").OrderBy(x => x, StringComparer.Ordinal).ToArray();
+            if (dateien.Length == 0) { funde.Add(ordner + ": keine CSV-Datei"); return funde; }
+            foreach (string datei in dateien)
+            {
+                string name = Path.GetFileName(datei);
+                string[] zeilen = File.ReadAllLines(datei, Encoding.UTF8).Where(x => x.Trim().Length > 0).ToArray();
+                if (zeilen.Length < 2) { funde.Add(name + ": keine Beispielzeile"); continue; }
+                char trenner = zeilen[0].IndexOf(';') >= 0 ? ';' : ',';
+                int zahlenfelder = 0;
+                for (int i = 1; i < zeilen.Length; i++)
+                    foreach (string feld in zeilen[i].Split(trenner))
+                    {
+                        string s = feld.Trim();
+                        if (s.Length == 0) continue;
+                        if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double w))
+                        {
+                            zahlenfelder++;
+                            if (!PLATZHALTERZAHLEN.Any(e => Math.Abs(w - e) <= 1e-9 * Math.Max(1.0, Math.Abs(e))))
+                                funde.Add(name + " Zeile " + (i + 1) + ": Zahl " + s);
+                            continue;
+                        }
+                        if (s.Any(char.IsDigit) && !PLATZHALTERTEXTE.Contains(s))
+                            funde.Add(name + " Zeile " + (i + 1) + ": Text \"" + s + "\"");
+                    }
+                if (zahlenfelder == 0)
+                    funde.Add(name + ": kein einziges Zahlenfeld gelesen (Trenner '" + trenner + "')");
+            }
+            return funde;
+        }
+
         /// <summary>
         /// <b>Keine Normzahl in der Vorlage</b> (ZU24, Kapitel 6 (a)): Jedes Zahlenfeld der vier
-        /// Dateien steht in dieser Liste von Platzhaltern. Wer einen Normwert einträgt, fällt hier auf
-        /// — die gefüllte Datei gehört außerhalb des Repositoriums.
+        /// Dateien steht in der Liste der Platzhalter, und jedes Textfeld mit einer Ziffer steht in der
+        /// Freiliste. Wer einen Normwert einträgt — als Zahl oder als Angabe im Quellentext —, fällt
+        /// hier auf; die gefüllte Datei gehört außerhalb des Repositoriums.
         /// </summary>
         [Fact]
         public void Die_Paketvorlage_A100_traegt_nur_Platzhalterzahlen()
         {
-            double[] erlaubt =
-            {
-                0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 30.0, 60.0,
-                1.0 / 24.0,                                  // Tagesgang gleichverteilt
-                1.0 / 7.0                                    // Woche gleichverteilt
-            };
-            var funde = new List<string>();
-            foreach (string datei in Directory.GetFiles(VorlageA100(), "*.csv").OrderBy(x => x, StringComparer.Ordinal))
-            {
-                string[] zeilen = File.ReadAllLines(datei, Encoding.UTF8).Where(x => x.Trim().Length > 0).ToArray();
-                Assert.True(zeilen.Length >= 2, Path.GetFileName(datei) + ": keine Beispielzeile");
-                for (int i = 1; i < zeilen.Length; i++)
-                    foreach (string feld in zeilen[i].Split(';'))
-                    {
-                        string s = feld.Trim();
-                        if (s.Length == 0) continue;
-                        if (!double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) continue;
-                        if (!erlaubt.Any(e => Math.Abs(w - e) <= 1e-9 * Math.Max(1.0, Math.Abs(e))))
-                            funde.Add(Path.GetFileName(datei) + " Zeile " + (i + 1) + ": " + s);
-                    }
-            }
-            Assert.True(funde.Count == 0, "Die Paketvorlage A100 traegt Zahlen, die keine Platzhalter sind " +
-                                         "(Kapitel 6 (a): keine Normzahl im Repositorium):" +
+            List<string> funde = PlatzhalterFunde(VorlageA100());
+            Assert.True(funde.Count == 0, "Die Paketvorlage A100 traegt Zahlen oder Texte, die keine " +
+                                         "Platzhalter sind (Kapitel 6 (a): keine Normzahl im Repositorium):" +
                                          Environment.NewLine + string.Join(Environment.NewLine, funde));
+        }
+
+        /// <summary>
+        /// <b>Die Platzhalterwache greift auch</b> (Gegenprobe zu ZU24): Eine Kopie der Vorlage, in der
+        /// eine fremde Zahl (37) bzw. eine Tabellennummer im Quellentext steht, ergibt einen Fund. Ohne
+        /// diesen Fall wäre nicht belegt, dass der grüne Lauf des Nachbarfalls etwas prüft.
+        /// </summary>
+        [Fact]
+        public void Die_Platzhalterwache_meldet_eine_fremde_Zahl_und_eine_Zahl_im_Quellentext()
+        {
+            string ordner = Path.Combine(Path.GetTempPath(), "EPOS_A100_" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(ordner);
+                foreach (string datei in Directory.GetFiles(VorlageA100(), "*.csv"))
+                    File.Copy(datei, Path.Combine(ordner, Path.GetFileName(datei)));
+                string ziel = Path.Combine(ordner, "Tab_TwwNutzungsart_STAMM.csv");
+                string[] zeilen = File.ReadAllLines(ziel, Encoding.UTF8);
+
+                Assert.Empty(PlatzhalterFunde(ordner));                       // die Kopie selbst ist sauber
+
+                // (1) eine fremde Zahl: Bedarf_Niedrig 10 -> 37
+                string[] felder = zeilen[1].Split(';');
+                int spalte = Array.IndexOf(zeilen[0].Split(';'), "Bedarf_Niedrig");
+                Assert.True(spalte > 0, "Spalte Bedarf_Niedrig fehlt");
+                felder[spalte] = "37";
+                File.WriteAllLines(ziel, new[] { zeilen[0], string.Join(";", felder) }, Encoding.UTF8);
+                Assert.Contains(PlatzhalterFunde(ordner), f => f.Contains("Zahl 37"));
+
+                // (2) eine Zahl im Quellentext: Tabellennummer eingetragen
+                felder = zeilen[1].Split(';');
+                spalte = Array.IndexOf(zeilen[0].Split(';'), "Bedarf_Quelle");
+                Assert.True(spalte > 0, "Spalte Bedarf_Quelle fehlt");
+                felder[spalte] = "DIN EN 12831-3 Beiblatt A100, Tabelle NA.7";
+                File.WriteAllLines(ziel, new[] { zeilen[0], string.Join(";", felder) }, Encoding.UTF8);
+                Assert.Contains(PlatzhalterFunde(ordner), f => f.Contains("Tabelle NA.7"));
+            }
+            finally
+            {
+                if (Directory.Exists(ordner)) Directory.Delete(ordner, true);
+            }
         }
 
         [Fact]
