@@ -3610,10 +3610,12 @@ des Zapfprofil-Rechenwegs einen Größennamen mehr als Zeichenkette trägt.
 Schemastand **145**, STRICT-Tabellen **145**, Zellvergleich gegen die Vorfassung **genau zwei
 Unterschiede** — der Marker `Tab_Applikation.SchemaVersion` 144 → 145 und die neue, leere Tabelle —,
 keine Zeile berührt, das Prüfprojekt ohne Referenzrolle unverändert, `integrity_check` ok, zweiter
-Lauf 0/0. Gates: Kern-Filter 0 Fehler, voller Testlauf 0 Fehler (14 990 erfolgreich, 2
-übersprungen), Windows-Schale 0 Fehler, `SqlDialektPruefer` 0 Fundstellen (1 945 Texte),
-Auslieferungsvorlage-Tests 36 erfolgreich, Referenzlauf der sechs CI-Projekte gegen
-`2026-09-25_R19_BhkwNetzbezug` **6/6 PASS** (198 CSV, 2 208 587 Werte), Designer wiederholbar.
+Lauf 0/0. Gates nach dem Merge von `origin` (die Posten #525 und #526): Kern-Filter 0 Fehler, voller
+Testlauf 0 Fehler (**15 042 erfolgreich**, 2 übersprungen), Windows-Schale 0 Fehler,
+`SqlDialektPruefer` 0 Fundstellen (1 946 Texte), Auslieferungsvorlage-Tests 36 erfolgreich,
+Referenzlauf der sechs CI-Projekte gegen `2026-09-25_R19_BhkwNetzbezug` **6/6 PASS** (198 CSV,
+2 208 587 Werte), Designer wiederholbar. Dieselben Gates waren vor dem Merge grün (14 990
+erfolgreich).
 
 **Folgen.**
 

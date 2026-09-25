@@ -40,20 +40,29 @@ dieses Protokoll hält den Ablauf und die Nachweise.
    (damit zweiundvierzig), Namenstafel Größe → `ZPG_GROESSE_<KONSTANTE>` über Reflexion,
    `ZapfprofilHuelle.Groessenname` mit benanntem Rückfall, 42 Schlüssel in beiden Sprachen, Designer
    neu; Wache `ZapfprofilGroessennamenWacheTests`.
-5. **Papiere** (dieser Schritt): Kapitel 9 (ZU25 umgesetzt), Nachtrag N21, dieses Protokoll,
+5. **Papiere** (`1fe767db`): Kapitel 9 (ZU25 umgesetzt), Nachtrag N21, dieses Protokoll,
    Statuszeile #522, Dokumentations-Index, Wiki-Logbuchsatz, Übergabe Abschnitt 15.
+6. **Merge von `origin`** (`57859187`, Stand `72212716` — die Posten #525 und #526): zwei Konflikte,
+   beide in Papieren. Statusdatei — die fortgeschriebene Zeile #521 von `origin`, dahinter #522, dann
+   #525 und #526; die Reihenfolge von `origin` bleibt unangetastet. Dokumentations-Index —
+   Protokollzahl Zapfprofilgenerator 12 (diese Welle), Gebäudesimulation 10 (`origin`, G6a). Die
+   beiden `.resx` führten sich selbst zusammen (beide Seiten hängen am Ende an), der Designer ist neu
+   erzeugt und wiederholbar. Die Testdatenbank kommt unverändert von hier (LFS `cba0aa41`,
+   Schemastand 145) — `origin` hat sie nicht angefasst; `Zielversion` bleibt
+   `TwwSchema.SCHRITT_T5_KONSTRUKTOR`, die Schrittliste zählt 85 Schritte. Auf `origin` sind #522,
+   #523 und #524 frei — die Nummer bleibt.
 
 ## 3 Gates
 
 | Gate | Ergebnis |
 |---|---|
-| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler |
-| gefilterte Tests (Schema, Migration, Tww, Zapfprofil, Konstruktor, Katalogimport, Auslieferung, Vorlage, KiMasken, Hüllen, Doku- und Wiki-Wachen, Repositoryordnung) | 0 Fehler, 1 762 erfolgreich |
-| `dotnet test WP-Plan.Kern.slnf -c Release` (voller Lauf, xUnit seriell) | 0 Fehler, **14 990 erfolgreich**, 2 übersprungen (EPOS.Kern.Tests 7 595, EPOS.UI.Tests 6 433, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27) |
-| Windows-Schale `-p:EnableWindowsTargeting=true` | 0 Fehler |
-| `Werkzeuge/SqlDialektPruefer` gegen `Kenndaten_Test.sqlite` | 1 945 SQL-Texte, **0 Fundstellen** (374 dynamisch) |
-| `Werkzeuge/Auslieferungsvorlage.Tests` | 0 Fehler, 36 erfolgreich |
-| Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047 gegen `2026-09-25_R19_BhkwNetzbezug` | **6/6 PASS** (198 CSV, 2 208 587 Werte) |
+| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler (vor und nach dem Merge) |
+| gefilterte Tests (Schema, Migration, Tww, Zapfprofil, Konstruktor, Katalogimport, Auslieferung, Vorlage, KiMasken, Hüllen, Doku- und Wiki-Wachen, Repositoryordnung, Größennamen, Zonen) | 0 Fehler, 1 762 vor dem Merge, **1 943** danach |
+| `dotnet test WP-Plan.Kern.slnf -c Release` (voller Lauf, xUnit seriell) | 0 Fehler, **15 042 erfolgreich**, 2 übersprungen (EPOS.Kern.Tests 7 630, EPOS.UI.Tests 6 450, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27); vor dem Merge 14 990 |
+| Windows-Schale `-p:EnableWindowsTargeting=true` | 0 Fehler (vor und nach dem Merge) |
+| `Werkzeuge/SqlDialektPruefer` gegen `Kenndaten_Test.sqlite` | 1 946 SQL-Texte, **0 Fundstellen** (374 dynamisch) |
+| `Werkzeuge/Auslieferungsvorlage.Tests` | 0 Fehler, 36 erfolgreich (vor und nach dem Merge) |
+| Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047 gegen `2026-09-25_R19_BhkwNetzbezug` | **6/6 PASS** (198 CSV, 2 208 587 Werte) — vor und nach dem Merge; nach dem Merge nötig, weil er die Gebäudeseite berührt (G6a) |
 | `ResourceDesigner` (nur prüfen) | unverändert, wiederholbar |
 | Arbeitsbaum | sauber, keine Konfliktmarker |
 
