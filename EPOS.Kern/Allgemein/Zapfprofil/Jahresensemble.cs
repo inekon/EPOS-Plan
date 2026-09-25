@@ -123,12 +123,15 @@ namespace WindowsFormsApplication1
         internal const int BLOCK = 64;
 
         private readonly double[] _jahresenergienKwh;
+        private readonly double[] _stundenspitzenKw;
 
-        private Jahresensemble(string zone, long seed, Bilanzreihe jahrZumSeed, double[] jahresenergienKwh, Bilanzreihe mittel)
+        private Jahresensemble(string zone, long seed, Bilanzreihe jahrZumSeed, double[] jahresenergienKwh,
+                               double[] stundenspitzenKw, Bilanzreihe mittel)
         {
             Zone = zone ?? "";
             Seed = seed;
             _jahresenergienKwh = jahresenergienKwh;
+            _stundenspitzenKw = stundenspitzenKw ?? new double[0];
             JahrZumSeed = jahrZumSeed;
             Mittel = mittel;
             double summe = 0.0;
@@ -153,6 +156,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Jahresenergie je Realisierung [kWh] (r = 0, 1, …) — die Stichprobe der Konsistenzprobe.</summary>
         internal IReadOnlyList<double> JahresenergienKwh => Array.AsReadOnly(_jahresenergienKwh);
+
+        /// <summary>
+        /// <b>Der groesste Stundenwert JE Realisierung</b> [kW = kWh je Stunde], in der Reihenfolge
+        /// r = 0, 1, … (Stufe Z5, Kapitel 7 Zeile Z5 Kennzahl (b)): die Stichprobe, aus der die
+        /// Validierung das Band der synthetischen Spitze bildet (<c>Messvergleich</c>).
+        ///
+        /// <para>Sie kostet nichts: <c>Bilanzreihe.GroessterStundenwertKw</c> steht schon, und die
+        /// Zahl wird wie die Jahresenergie in fester Folge abgelegt — parallel und seriell
+        /// dieselben Bits. <b>Ergebnisneutral:</b> Kein Rechenweg liest sie.</para>
+        /// </summary>
+        internal IReadOnlyList<double> StundenspitzenKw => Array.AsReadOnly(_stundenspitzenKw);
 
         /// <summary>
         /// Die Realisierung zum Seed (r = 0) vor dem Faktor der Energieprobe — die Grundlage der
@@ -253,6 +267,7 @@ namespace WindowsFormsApplication1
 
             var vorbereitung = new Vorbereitung(z);
             var energien = new double[realisierungen];
+            var spitzen = new double[realisierungen];
             var mittel = new double[Bilanzreihe.STUNDEN];
             Bilanzreihe jahrZumSeed = null;
             for (int start = 0; start < realisierungen; start += BLOCK)
@@ -267,12 +282,13 @@ namespace WindowsFormsApplication1
                     int r = start + i;
                     if (r == 0) jahrZumSeed = teil[i];
                     energien[r] = teil[i].JahressummeKwh;
+                    spitzen[r] = teil[i].GroessterStundenwertKw;
                     IReadOnlyList<double> s = teil[i].StundenKwh;
                     for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] += s[h];
                 }
             }
             for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] /= realisierungen;
-            return new Jahresensemble(zone, seed, jahrZumSeed, energien, new Bilanzreihe(mittel));
+            return new Jahresensemble(zone, seed, jahrZumSeed, energien, spitzen, new Bilanzreihe(mittel));
         }
 
         /// <summary>Was für alle Realisierungen gleich ist: Monat je Tag, Dichten je Tagtyp, gemeinsame Tagesmengen.</summary>

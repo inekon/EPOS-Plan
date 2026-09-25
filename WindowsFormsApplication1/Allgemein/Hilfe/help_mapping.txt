@@ -176,6 +176,8 @@ Form_Brauchwasser_Nutzungsarten.grp_Import = Brauchwasser-Zapfprofil#katalog-imp
 # Zapfprofil, der eine Zone auf den Typtagweg stellt - beide derselbe Anker.
 Form_Brauchwasser_Typtage.btn_Help         = Brauchwasser-Zapfprofil#typtage
 Form_Zapfprofil.grp_Typtage                = Brauchwasser-Zapfprofil#typtage
+Form_Brauchwasser_Messreihen.btn_Help      = Brauchwasser-Zapfprofil#messdaten
+Form_Zapfprofil.grp_Vergleich              = Brauchwasser-Zapfprofil#vergleich
 
 # --- Strombedarf ----------------------------------------------------------
 Form_Stromverbraucher.btn_Help      = Stromverbraucher

@@ -249,8 +249,9 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   v der Datenzeile i wird v · (1 + δ) mit δ zyklisch aus (+0,04; −0,03; +0,05; −0,04; +0,03;
   −0,05), gerundet auf die Stellenzahl der Quelle (mindestens zwei signifikante Ziffern);
   Tagesgänge und Wochenanteile werden auf Summe 1, Monatsfaktoren auf Mittel 1 renormiert; kein
-  Wert gleicht seinem Original, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ,
-  dann eine Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
+  Wert gleicht seinem Original — außer einer Null, die multiplikativ nicht abzuleiten ist und
+  unverändert bleibt —, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ, dann eine
+  Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
 - **Das Skript läuft nur lokal** — es liest die gitignorierten Originale unter
   `Normzahlen/vdi6002/` und schreibt die committete Datei
   [`Skripte/tww_katalogwerte_abgeleitet.json`](Skripte/tww_katalogwerte_abgeleitet.json) (497 Werte,
@@ -260,7 +261,8 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   c_w = 1,163 Wh/(l·K) auf kWh bei den Bezugstemperaturen 60/12 °C der Zeile um.
 - **Die Wache** `EPOS.Kern.Tests/TwwKatalogWacheTests.Kein_abgeleiteter_Katalogwert_gleicht_dem_VDI_Original`
   prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
-  Testdatenbank und der JSON-Datei seinem Original gleicht und jeder innerhalb ±6 % liegt; ihre
+  Testdatenbank und der JSON-Datei seinem Original gleicht — eine Null der Quelle bleibt Null und
+  wird nur darauf geprüft — und jeder innerhalb ±6 % liegt; ihre
   Meldung nennt Abweichungen, nie einen Absolutwert.
 - **VDI 4655 läuft unter derselben Regel** (Anwenderentscheid ZU23, 24.09.2026). `--norm vdi4655`
   liest die gitignorierten Originale unter `Normzahlen/vdi4655/` und schreibt
@@ -287,7 +289,7 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
 ## Der freie Paketteil (`Katalogpaket_frei/`)
 
 Die freien Katalogdaten des Zapfprofilgenerators — Zapfkategorien nach Jordan/Vajen (IEA SHC
-Task 26, Modellannahme bis Z5), die fünf Parameter `Zapfprofil.Stochastik.*` und das
+Task 26, Modellannahme), die fünf Parameter `Zapfprofil.Stochastik.*` und das
 Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) — stehen einmal im Repositorium,
 als CSV-Dateien im Paketformat N2 unter [`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md)
 (Aufbau, Regeln und Quellen dort). `Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede
@@ -328,7 +330,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **139**, LFS-SHA-256 `f700e81e…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **141**, LFS-SHA-256 `a427aa72…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -720,6 +722,99 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (die Vorgaben hängen an der Baualtersklasse, nicht am Jahr); sie gehört damit nicht zu den Spalten des Gebäudemodells,
 > die die Einfrierregel „gesäte Gebäudedaten“ nennt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
 > Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag Stufe Z5: Schemastand 140 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
+> Basis bleibt.** Ein Migrationsschritt, die Nummer steht allein bei
+> `TwwSchema.SCHRITT_T4_MESSREIHEN` (Quelle für Migration, Werkzeug und Testvorrichtung; sie folgt
+> lückenlos auf das Baujahr des Gebäudes, 139): **140** (`SCHRITT_140_ZAPFPROFIL_MESSREIHEN`) legt
+> `Tab_TwwMessreihe` an — STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
+> (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`), `ID_Projekt` mit `ON DELETE CASCADE`, kein `Status`
+> und kein `ReadOnly` — samt ihrem Index auf `ID_Projekt`. **Reines DDL;** die Tabelle entsteht LEER
+> und bleibt es: Gemessene Reihen gehören dem Objekt (Konzept Kapitel 9 K5), das Repositorium bringt
+> keine mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfügbar.
+> In der Arbeit trug der Schritt zuerst die Nummer 138, dann 139; beim Zusammenführen mit origin
+> war 138 vom Schritt S-F der Gebäudeimporte und 139 vom Baujahr der Stufe G4a belegt — wer zuerst
+> schiebt, hält die Nummer.
+> Nachgezogen auf der Fassung von origin mit Schemastand **139** (Nachtrag G4a Welle 3 oben,
+> `f700e81e…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> 1 Tabelle und 1 Index neu, Marker 140; ein zweiter Lauf legt nichts an. Danach der fiktive
+> Testkatalog der Stufen Z0 bis Z5
+> (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`):
+> 14 Zeilen neu, 28 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
+> Bedarfstage mit 33 Ereignissen, 85 Parameter, fünf DIN-4708-Werte und 24 Zapfkategorien, alle
+> `FIKTIV` oder „(abgeleitet)"; kein Normwert, kein Herstellerwert, keine Projektzeile. Ein zweiter
+> Lauf schreibt nichts (0 neu, 0 nachgeführt).
+> `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
+> 205 Indizes (219 samt den von SQLite angelegten). Größe 67 923 968 Byte
+> (LFS-SHA-256 `5de448e8…`). Zellvergleich aller 143 gemeinsamen Tabellen gegen die Fassung von
+> origin (10 506 805 Zellen): abweichend allein `Tab_Applikation.SchemaVersion` (139 → 140) und die
+> Katalogzeilen des Skripts (`Tab_TwwNutzungsart_STAMM` 8 statt 7, `Tab_TwwParameter_STAMM` 85 statt
+> 80, `Tab_TwwZapfkategorie_STAMM` 24 statt 28 — die Stufe Z5 führt die Nichtwohnen-Nutzungsarten
+> mit zwei statt vier Kategorien); `Tab_TwwMessreihe` steht mit 0 Zeilen. **Ergebnisneutral:** Kein
+> Referenzprojekt führt eine Messreihe, und kein Rechenweg der dreizehn liest den Tww-Katalog.
+> **Keine Einfrierregel ist berührt.**
+
+> **Nachtrag #496: Schemastand 141 (Folgeberichtigung im Gebäudekatalog), die Basis bleibt.**
+> Migrationsschritt **141** (`SCHRITT_GEBAEUDE_FOLGEREPARATUR`; die Nummer steht allein bei
+> `GebaeudeAnschlusslaengenFolgereparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
+> auf die Messreihen, 140) berichtigt nach Anwenderauftrag vom 25.09.2026 („setze um: weiteren Scan-Kandidaten mit
+> vertauschten Anschlusslängen, die Außenwand des Kaufhauses“) 39 Zellen an zwanzig Sätzen von `Tab_Gebaeude_STAMM` —
+> **reines DML** in der Bauart von #493 (Bezeichner und unplausibler Wert ± 0,05 je Spalte, dieselben Anweisungen),
+> nichts gelöscht, Projektkopien unberührt. **Regel der Herleitung:** (1) führt ein Satz gleicher Geometrie
+> (Ausgangssatz, nicht die gerundete EnEV-Abwandlung) den Umfang, gilt er; (2) sonst der Tausch von Laibung und
+> Dachkante, wenn er für beide Spalten trägt (Laibung im Band des Katalogs 1,2 … 3,4 m je m² Fenster, Median 2,57;
+> Dachkante nicht unter der Quadratkante 4·√Grundfläche und nahe dem Umfang U = (Außenwand + Fenster) /
+> (Nutzfläche / Grundfläche × Raumhöhe)); (3) sonst Laibung = Verhältnis der Quelle × Fensterfläche, Dachkante =
+> Umfang aus der eigenen Geometrie. ΔH_T = Σ ψ·ΔL bzw. U_AW·ΔA je Satz.
+>
+> | Satz | Spalte | vorher | nachher | Herleitung | ΔH_T |
+> |---|---|---|---|---|---|
+> | 2, 4, 5, 7, 9, 10 `AltenH-C-*`, `Pflegeheim-C-*`; 92 `Schule-C-U-202` | `Abmessung_Anschluß_Fenster_Wand` / `…_Wand_Dach` | 185 / 985 | 985 / 185 m | Regel (2), Tausch: Laibung 1,81 m/m² (185 m wären 0,34); Umfang der Geometrie (2 132 + 545) / (3 020 / 540 × 2,55) = 187,7 m neben 185 m, Quadratkante 93,0 m | +70,4 W/K (ψ 0,228 / 0,14) |
+> | 94 `Schule-NE1`, 96 `Schule-NE-66` | dieselben | 185 / 985 | 985 / 185 m | dieselbe Geometrie wie die Heime | −48,0 W/K (ψ 0,04 / 0,10) |
+> | 17 `Hallenbad-652`, 20 `Hallenbad-Sauna-750` | dieselben | 185 / 985 | 985 / 185 m | Regel (2): Laibung 2,35 m/m² (420 m² Fenster); Dachkante zwischen Quadratkante 132,7 m und Umfang der Geometrie 206,3 m (1 100 m², 78,5 × 14,0 m) | +70,4 W/K |
+> | 54 `Hotel-F-228` | `Abmessung_Anschluß_Wand_Dach` | 5 380,75 | 116,16 m | Regel (1): `Kaufhalle_NE` (76) hat dieselbe Geometrie (Wand 834, Fenster 243,4, Dach 473,7, Grund 480,8, Nutzfläche 1 138 m²) und führt Wand–Dach = Keller = 116,16 m (48,08 × 10,0 m; Hülle 1 077,4 m² / 116,16 m = 9,28 m = drei Geschosse zu 3,09 m); 5 380,8 m wären das 61,8-Fache der Quadratkante | −1 316,1 W/K (ψ 0,25) |
+> | 69 `ml_Hotel-F-228`, 71 `ml-Hotel-F-228` | `Abmessung_Anschluß_Wand_Dach` | 5 380,8 | 116,16 m | wie 54 | −1 316,2 W/K |
+> | 54, 69, 71 | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 40 | 116,16 m | wie 54 — der Ausgangssatz führt die Kellerkante als Umfang; 40 m wären weniger als die halbe Quadratkante. Laibung 515,2 m (2,12 m/m²) bleibt | +38,1 W/K (ψ 0,50); je Satz −1 278,1 W/K |
+> | 42 `Hotel_G_96`, 72 `ml-Hotel-G-096`, 134 `GMH-G-U-97` | `Abmessung_Anschluß_Fenster_Wand` / `…_Wand_Dach` | 86,6 / 295,5 | 295,5 / 86,6 m | Regel (2): Laibung 1,24 m/m² (unterer Rand des Katalogs wie `GMH KfW 55` mit 1,20; 86,6 m wären 0,36); Umfang der Geometrie (433 + 237,6) / (1 263 / 431,2 × 2,61) = 87,7 m, Quadratkante 83,1 m | +31,3 W/K (ψ 0,22 / 0,07) |
+> | 84 `GMH-BZ_T`, 85 `GMH-J-015` | `Abmessung_Anschluß_Fenster_Wand` | 86,6 | 382,6 m | Regel (3): dieselben Längen auf fremder Geometrie, der Tausch trägt nicht (0,96 m/m²; 86,6 m lägen unter der Quadratkante 88,1 m) — Verhältnis von 42 nach dem Tausch 295,5 / 237,6 = 1,2437 m/m² × 307,6 m² | +65,1 W/K |
+> | 84, 85 | `Abmessung_Anschluß_Wand_Dach` | 295,5 | 122,3 m | Umfang der Geometrie (633 + 307,6) / (1 430 / 485,2 × 2,61) = 122,28 m (51,8 × 9,4 m) | −12,1 W/K; je Satz +53,0 W/K |
+> | 77 `Kaufhaus` | `Flaeche_Außenwand` | 10 093,99 | 1 820,9 m² | die 10 094 m² stammen aus den F-Sätzen (Nutzfläche 18 012 m², zwölf Geschosse); eigene Geometrie: 4 201 / 1 468,97 = 2,86 Geschosse × 4,55 m = 13,01 m, Hülle 313,8 m × 13,01 m = 4 083,2 m² minus Fenster 2 262,36 m² (Fensteranteil 55 %). Wand–Dach = Keller = 313,8 m aus #493 bleiben: einziger belegter Umfang dieser Grundfläche (`KrankenH_NE`), trägt die Fensterfläche (mindestens 173,9 m Fassade); die 10 094 m² ergäben 949,6 m Umfang — eine Grundfläche von 3 m Tiefe | −4 963,9 W/K (U 0,6) |
+>
+> **Nicht geändert, berichtet.** Kellerkanten: 0 m bei den Heimen, Schulen und Hallenbädern (die
+> EnEV-Abwandlungen 3, 8 führen 140 m bei 200 m Dachkante, nicht den Umfang; ψ der C-Sätze 0), 14,6 m bei 42, 72,
+> 134, 84, 85 (kein Ausgangssatz führt sie als Umfang; Vorschlag: der Umfang 86,6 bzw. 122,3 m; bei ψ 0,65/0,67
+> +46,8 bis +48,2 bzw. +72,2 W/K) — der Katalog führt die Kellerkante systematisch klein. Dazu die Scan-Gruppen, Entscheidung
+> beim Anwender:
+>
+> | Satz | Befund | Vorschlag Laibung | Herleitung des Vorschlags |
+> |---|---|---|---|
+> | 6 `Pflegeheim-122-EnEV2016` | 0 m bei 545 m² Fenster (Kanten 40 / 30 m) | 540 m | EnEV-Abwandlung 8 gleicher Geometrie: 540 / 545 = 0,99 m/m² (nach dem C-Verhältnis 1,81 wären es 985 m) |
+> | 15 `Industriehalle-320` | alle drei Längen 0 | 16 000 m | Satz 14 `Industrie_ne_81` gleicher Geometrie: 2,5 m/m² × 6 400 m²; Kanten dort 7 337,4 m |
+> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | alle drei Längen 0 | 391,5 m | Sätze 65, 73 gleicher Geometrie: 2,5 m/m² × 156,6 m²; Kanten dort 71,0 m |
+> | 117 `Verw_H_75` | alle drei Längen leer | 391,5 m | Satz 118 `Verw_I_33` gleicher Geometrie; Kanten dort 70,98 m |
+> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | alle drei Längen leer, auch ψ | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 2,901 m/m² × 504 m²; Umfang der Geometrie 103,4 m |
+> | 106 `Bürogebäude KfW 55` | alle drei Längen 0 | 2 875 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m²; Umfang der Geometrie 264,1 m |
+> | 207 `KMH-G-U-120` | Laibung 0 (Kanten 250,68 / 28 m) | 238,3 m | KMH G (206, 209): 268,6 / 112,02 = 2,398 m/m² × 99,37 m² |
+> | 23 `Hallenbad-Umkl-140-EnEV2016` | 50 m (0,12 m/m²), gerundet | 865,1 m | Hallenbad-Umkleide 24: 142 / 70,4 = 2,017 m/m² × 428,9 m² |
+> | 34 `gr_Hotel-80-EnEV2016` | 600 m (0,25 m/m²), gerundet | 6 164,4 m | F-Quelle gleicher Geometrie 2,5729 m/m² × 2 395,9 m² |
+> | 108 `Bürogebäude_gross-30-EnEV2016` | 330 m (0,18 m/m²), gerundet | 4 460 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² |
+>
+> „Nur Dachkante“ (35, 39–41, 47–49, 52, 55, 58, 61, 63, 66, 67, 112–114, 127, 128, 130, 144–146, 151, 169, 173,
+> 189–191, 195–197, 205, 206, 209–213, 274; 4,7- bis 8-fache Quadratkante, vermutlich geneigte Dächer) bleibt
+> unberührt, darunter die eingefrorenen Referenzsätze 145 und 146. Nebenbefunde ohne Scan-Eintrag: Laibung 0,64 /
+> 0,46 / 0,32 m/m² bei 46 `Hotel-72-EnEV2016`, 57 `Hotel-KfW 55` und 120 `Verwaltung_40-EnEV2016`; Dachkante
+> 7 337,4 m (9,6-fache Quadratkante) bei 14 `Industrie_ne_81`.
+>
+> Nachgezogen auf der Fassung von origin mit Schemastand **140** (Nachtrag Stufe Z5 oben, `5de448e8…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
+> 39, berichtigt 39, offen danach 0, Marker 141. Zellvergleich aller 144 Tabellen gegen die Fassung 140
+> (10 506 856 Zellen): allein `SchemaVersion` 140 → 141 und die 39 Zellen der Tabelle; Schema unverändert;
+> `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 205 Indizes (219 samt den
+> von SQLite angelegten). Größe 67 915 776 Byte (LFS-SHA-256 `a427aa72…`). **Ergebnisneutral:** Keinen der zwanzig
+> Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch über den Namen); die dreizehn
+> Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist berührt.** Referenzlauf
+> aller dreizehn Projekte **13/13 PASS gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`)**.
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem

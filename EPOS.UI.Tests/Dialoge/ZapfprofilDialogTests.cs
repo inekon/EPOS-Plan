@@ -264,7 +264,12 @@ public class ZapfprofilDialogTests : EposBunitContext
         // Die Erklärung verspricht nur, was steht: P50 … P99 und Gleichzeitigkeit in Karte (b), die Probe in Experte.
         Assert.Contains("P50 … P99 und die Gleichzeitigkeit stehen in Karte (b) der Auslegung", texte[stochastik + 1]);
         Assert.Contains("ihre Konsistenzprobe zeigt die Stufe Experte nach dem Lauf", texte[stochastik + 1]);
-        Assert.Equal(stochastik + 2, texte.Length);
+        // Stufe Z5: darunter die Gruppe „Vergleich mit der Messung“; in der Stufe Einfach steht dort
+        // der Grund statt einer Zahl — nie ein vorbelegtes Ergebnis.
+        int vergleich = Array.FindIndex(texte, t => t.StartsWith("Vergleich mit der Messung"));
+        Assert.Equal(stochastik + 2, vergleich);
+        Assert.Contains("steht ab der Stufe Erweitert", texte[vergleich + 1]);
+        Assert.Equal(vergleich + 2, texte.Length);
 
         // Ohne Schwelle keine Zeile.
         cut = Aufbauen();

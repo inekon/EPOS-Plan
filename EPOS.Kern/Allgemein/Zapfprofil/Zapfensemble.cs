@@ -64,12 +64,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Rang <c>k = ⌈p · n / 100⌉</c> (mindestens 1) des p-Perzentils in einer aufsteigend
-        /// geordneten Stichprobe aus <paramref name="anzahl"/> Werten — ganzzahlig gerechnet.
+        /// geordneten Stichprobe aus <paramref name="anzahl"/> Werten — ganzzahlig gerechnet, damit
+        /// kein Rundungsfehler den Rang um eins verschiebt.
+        ///
+        /// <para><b>Dies ist die EINE Rangregel des Zapfprofilgenerators</b>: Auslegungsensemble,
+        /// Dauerlinienband und Spitzenstreuung des Messvergleichs rechnen alle hiermit.</para>
         /// </summary>
         internal static int Rang(int anzahl, int perzentil)
         {
             long k = ((long)perzentil * anzahl + 99) / 100;
             return k < 1 ? 1 : (int)k;
+        }
+
+        /// <summary>
+        /// Dieselbe Rangregel für ein Quantil <paramref name="quantil"/> aus 0 … 1 —
+        /// <c>k = ⌈q · n⌉</c>, mindestens 1, höchstens <paramref name="anzahl"/>. Sie steht neben der
+        /// ganzzahligen Form, weil die Bandgrenzen des Messvergleichs als Anteil geführt werden
+        /// (Parameter <c>Zapfprofil.Validierung.Band*</c>) und nicht als ganze Prozent.
+        /// </summary>
+        internal static int Rang(int anzahl, double quantil)
+        {
+            long k = (long)Math.Ceiling(quantil * anzahl);
+            if (k < 1) k = 1;
+            return k > anzahl ? anzahl : (int)k;
         }
 
         private static double Wert(double[] geordnet, int p) => geordnet[Rang(geordnet.Length, p) - 1];

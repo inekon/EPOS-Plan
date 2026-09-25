@@ -1833,3 +1833,260 @@ public sealed class ZapfprofilAuslegungStartDaten
     public List<ZapfprofilKatalogeintragDaten> Fuellstandbezuege { get; set; } = new();
 }
 
+/// <summary>
+/// <b>Wo die gemessene Spitze im Band der synthetischen Dauerlinie liegt</b> (Kapitel 7 Zeile Z5,
+/// Kennzahl (b)). <see cref="Unbestimmt"/> heißt „nicht entscheidbar“ — ohne Stundenwerte der
+/// Messung; nie eine stille Antwort. Die Zahlen sind die des Kerns (<c>Spitzenlage</c>), damit die
+/// Hülle sie ohne Tabelle abbilden kann.
+/// </summary>
+public enum ZapfprofilSpitzenlage
+{
+    /// <summary>Nicht entscheidbar.</summary>
+    Unbestimmt = 0,
+
+    /// <summary>Unter der unteren Bandgrenze — die Rechnung überschätzt die Spitze stärker als erwartet.</summary>
+    Unterhalb = 1,
+
+    /// <summary>Im Band — die Abnahme der Validierung ist erfüllt.</summary>
+    ImBand = 2,
+
+    /// <summary>Über der oberen Bandgrenze — die Rechnung unterschätzt die Spitze.</summary>
+    Oberhalb = 3
+}
+
+/// <summary>
+/// <b>Die Form EINES Tagtyps im Vergleich</b> (Kennzahl (d)): der Tagtyp in der Oberflächensprache,
+/// die Zahl der eingegangenen Tage beider Seiten, die mittlere Abweichung der 24 Stundenanteile
+/// gegen die Schwelle und der Anteil der Tagesenergie, der in anderen Stunden liegt.
+/// </summary>
+public sealed record ZapfprofilFormabgleichDaten(string Tagtyp, int TageGemessen, int TageGerechnet,
+                                                 double MittlereAbweichung, double VerschobenerAnteil,
+                                                 bool ImRahmen);
+
+/// <summary>
+/// <b>Der Vergleichsbericht „synthetisch gegen gemessen“</b> (Umsetzungskonzept
+/// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5; Stufe Z5, Gruppe 3) — was der Reiter
+/// „Kennzahlen“ ab der Stufe Erweitert zeigt.
+///
+/// <para><b>Nur Verhältniszahlen</b> (Konzept Kapitel 9 K5): Jede Zahl ist ein Verhältnis oder ein
+/// Anteil — keine gemessene Menge, keine gemessene Leistung. So verlässt nichts die Anlage, was
+/// das Objekt beschreibt.</para>
+///
+/// <para><b>Was nicht entschieden ist, bleibt <c>null</c></b> und wird benannt: ohne Ensemble keine
+/// Spitzenstreuung, ohne Stundenwerte kein Band, ohne vollen Tag kein Formmaß. Ein vorbelegtes
+/// Feld gäbe als Ergebnis aus, was keines ist (Hausregel <c>EPOS.UI/CLAUDE.md</c>).</para>
+/// </summary>
+public sealed class ZapfprofilMessvergleichDaten
+{
+    /// <summary>Ist der Vergleich gerechnet? Sonst nennt <see cref="Abbruch"/> den Grund.</summary>
+    public bool Ok { get; set; }
+
+    /// <summary>Die Bezeichnung der verglichenen Messreihe.</summary>
+    public string Reihe { get; set; } = "";
+
+    /// <summary>Der Grund, aus dem der Vergleich nicht rechenbar ist; leer = gerechnet.</summary>
+    public string Abbruch { get; set; } = "";
+
+    /// <summary>Die Kennung des Grunds (Meldungskennung für „erklären lassen“); leer = gerechnet.</summary>
+    public string Kennung { get; set; } = "";
+
+    /// <summary>Kennzahl (a): Q_gemessen / Q_gerechnet [-]; <c>null</c> ohne Ergebnis.</summary>
+    public double? EnergieVerhaeltnis { get; set; }
+
+    /// <summary>Kennzahl (a): das Verhältnis minus 1 [-].</summary>
+    public double? EnergieAbweichung { get; set; }
+
+    /// <summary>Kennzahl (b): die gemessene Stundenspitze, bezogen auf die größte gerechnete [-].</summary>
+    public double? Spitzenverhaeltnis { get; set; }
+
+    /// <summary>Kennzahl (b): die untere Bandgrenze als Verhältnis [-].</summary>
+    public double? BandUnten { get; set; }
+
+    /// <summary>Kennzahl (b): die obere Bandgrenze als Verhältnis [-].</summary>
+    public double? BandOben { get; set; }
+
+    /// <summary>Kennzahl (b): das untere Perzentil der Dauerlinie [-] (Vorgabe 0,85).</summary>
+    public double PerzentilUnten { get; set; }
+
+    /// <summary>Kennzahl (b): das obere Perzentil der Dauerlinie [-] (Vorgabe 0,95).</summary>
+    public double PerzentilOben { get; set; }
+
+    /// <summary>Kennzahl (b): über wie viele Stundenwerte die Dauerlinie gebildet ist.</summary>
+    public int Dauerlinienwerte { get; set; }
+
+    /// <summary>Kennzahl (b): wo die Messspitze im Band liegt.</summary>
+    public ZapfprofilSpitzenlage Lage { get; set; }
+
+    /// <summary>Die untere Grenze der Realisierungsspitzen [-]; <c>null</c> ohne Ensemble.</summary>
+    public double? StreuungUnten { get; set; }
+
+    /// <summary>Die obere Grenze der Realisierungsspitzen [-]; <c>null</c> ohne Ensemble.</summary>
+    public double? StreuungOben { get; set; }
+
+    /// <summary>Die Streubreite oben/unten [-]; <c>null</c> ohne Ensemble, 1 = keine Streuung.</summary>
+    public double? Streubreite { get; set; }
+
+    /// <summary>Die Zahl der Realisierungen des Ensembles; 0 ohne Ensemble.</summary>
+    public int Realisierungen { get; set; }
+
+    /// <summary>Kennzahl (c): die Zahl der Einheiten N; <c>null</c> ohne Einheitenzahl.</summary>
+    public int? Einheiten { get; set; }
+
+    /// <summary>Kennzahl (c): 1/√N [-].</summary>
+    public double? WurzelNVerhaeltnis { get; set; }
+
+    /// <summary>Kennzahl (c): Spitzenverhältnis · √N [-]; 1 = die Überschätzung folgt genau 1/√N.</summary>
+    public double? Skalierungsmass { get; set; }
+
+    /// <summary>Kennzahl (d): die größte mittlere Abweichung über die Tagtypen [-]; <c>null</c> ohne vollen Tag.</summary>
+    public double? Formmass { get; set; }
+
+    /// <summary>Kennzahl (d): die Schwelle des Formabgleichs [-] (Parameter).</summary>
+    public double Formschwelle { get; set; }
+
+    /// <summary>Kennzahl (d): liegt die Form im Rahmen? Ohne Maß <c>false</c> („nicht entschieden“).</summary>
+    public bool FormImRahmen { get; set; }
+
+    /// <summary>Kennzahl (d): je Tagtyp, den BEIDE Seiten führen, eine Zeile.</summary>
+    public List<ZapfprofilFormabgleichDaten> Form { get; set; } = new();
+
+    /// <summary>Kennzahl (e): die größte absolute Abweichung der Monatsanteile [-]; <c>null</c> ohne Ergebnis.</summary>
+    public double? MonateGroessteAbweichung { get; set; }
+
+    /// <summary>Kennzahl (e): der Monat der größten Abweichung (1 … 12); 0 ohne Ergebnis.</summary>
+    public int MonateGroessterMonat { get; set; }
+
+    /// <summary>Die benannten Hinweise (Teiljahr, Schalttag, Feiertage, Lücken, Ensemble) als Warnzeilen.</summary>
+    public List<ZapfprofilWarnDaten> Hinweise { get; set; } = new();
+
+    /// <summary>Rechnete die verglichene Jahresreihe stochastisch?</summary>
+    public bool Stochastisch { get; set; }
+}
+
+/// <summary>
+/// <b>Was „Aus Messreihe kalibrieren“ ergibt</b> (Stufe Z5, Gruppe 3, Punkt 5): der Jahresmesswert
+/// aus der Reihe samt Bilanzgrenze, Quelle und Zeitraum — die Werte, die der Dialog in die Felder
+/// der Zone schreibt — oder der benannte Grund, aus dem es nicht geht.
+/// </summary>
+public sealed class ZapfprofilMesskalibrierungDaten
+{
+    /// <summary>Steht der Messwert?</summary>
+    public bool Ok { get; set; }
+
+    /// <summary>Der Grund, aus dem kein Messwert entsteht; leer = er steht.</summary>
+    public string Abbruch { get; set; } = "";
+
+    /// <summary>Die Kennung des Grunds (Meldungskennung); leer = er steht.</summary>
+    public string Kennung { get; set; } = "";
+
+    /// <summary>Die Bezeichnung der Messreihe.</summary>
+    public string Reihe { get; set; } = "";
+
+    /// <summary>Der Jahresmesswert in der Einheit <see cref="EinheitId"/>.</summary>
+    public double? Wert { get; set; }
+
+    /// <summary>Die Einheit des Messwerts als Kennung der Maske (kWh/a oder m³/a).</summary>
+    public int EinheitId { get; set; }
+
+    /// <summary>Die Bilanzgrenze des Messwerts als Kennung der Maske; <c>null</c> bei einem Volumen.</summary>
+    public int? BilanzgrenzeId { get; set; }
+
+    /// <summary>Die Quelle, die in das Feld „Quelle“ geht.</summary>
+    public string Quelle { get; set; } = "";
+
+    /// <summary>Der Zeitraum, der in das Feld „Zeitraum“ geht.</summary>
+    public string Zeitraum { get; set; } = "";
+
+    /// <summary>Ist der Wert aus einem Teiljahr hochgerechnet? Dann nennt ein Hinweis den Bias.</summary>
+    public bool Hochgerechnet { get; set; }
+
+    /// <summary>Die benannten Hinweise (Hochrechnung, Bias) als Warnzeilen.</summary>
+    public List<ZapfprofilWarnDaten> Hinweise { get; set; } = new();
+}
+
+/// <summary>Ein vorgeschlagener Tagesgang je Tagtyp in der Vorschau des Kalibriervorschlags.</summary>
+/// <param name="Tagtyp">Der Tagtyp in der Oberflächensprache.</param>
+/// <param name="Tage">Wie viele vollständige Messtage in das Mittel eingegangen sind.</param>
+/// <param name="Anteile">Die 24 Stundenanteile [-], Summe 1.</param>
+public sealed record ZapfprofilVorschlagsgangDaten(string Tagtyp, int Tage, List<double> Anteile);
+
+/// <summary>
+/// <b>Der Kalibriervorschlag einer Nichtwohn-Zone als Vorschau</b> (Stufe Z5, Gruppe 3, Punkt 5):
+/// Tagesbedarf, Wochenfaktoren und die Tagesgänge je Tagtyp, dazu die Bezeichnung der Kopie, die
+/// entstehen würde. <b>Nichts ist geschrieben</b>, solange der Anwender die Rückfrage nicht mit Ja
+/// beantwortet hat.
+///
+/// <para>Diese Zahlen sind Parameter der eigenen Kopie und keine Kennzahl eines Berichts; sie
+/// tragen deshalb absolute Werte (Konzept 4.8) und bleiben in der Datenbank des Anwenders.</para>
+/// </summary>
+public sealed class ZapfprofilVorschlagDaten
+{
+    /// <summary>Steht ein Vorschlag?</summary>
+    public bool Ok { get; set; }
+
+    /// <summary>Der Grund, aus dem kein Vorschlag entsteht; leer = er steht.</summary>
+    public string Abbruch { get; set; } = "";
+
+    /// <summary>Die Kennung des Grunds (Meldungskennung); leer = er steht.</summary>
+    public string Kennung { get; set; } = "";
+
+    /// <summary>Die Bezeichnung der Messreihe.</summary>
+    public string Reihe { get; set; } = "";
+
+    /// <summary>Die Nutzungsart, von der die Kopie abstammt.</summary>
+    public string Vorlage { get; set; } = "";
+
+    /// <summary>Die Bezeichnung und Katalogversion, die die Kopie tragen würde.</summary>
+    public string Kopie { get; set; } = "";
+
+    /// <summary>Der gemessene Tagesbedarf [kWh/d].</summary>
+    public double TagesbedarfKwh { get; set; }
+
+    /// <summary>Der gemessene Tagesbedarf je Einheit [kWh/(Einheit·d)] — das mittlere Niveau der Kopie.</summary>
+    public double TagesbedarfJeEinheitKwh { get; set; }
+
+    /// <summary>Die Bezugsmenge, auf die der Vorschlag bezogen ist.</summary>
+    public double Bezugsmenge { get; set; }
+
+    /// <summary>Die Zahl der vollständigen Messtage, die eingegangen sind.</summary>
+    public int VolleTage { get; set; }
+
+    /// <summary>Die sieben Wochenfaktoren [-] (Montag zuerst), Summe 1.</summary>
+    public List<double> Wochenfaktoren { get; set; } = new();
+
+    /// <summary>Die vorgeschlagenen Tagesgänge je Tagtyp; ein fehlender Tagtyp behält den der Vorlage.</summary>
+    public List<ZapfprofilVorschlagsgangDaten> Tagesgaenge { get; set; } = new();
+
+    /// <summary>Die benannten Hinweise als Warnzeilen.</summary>
+    public List<ZapfprofilWarnDaten> Hinweise { get; set; } = new();
+}
+
+/// <summary>
+/// <b>Was die Übernahme eines Kalibriervorschlags ergeben hat</b>: die Id der neuen Anwenderkopie
+/// und ihre Bezeichnung — oder der benannte Grund. Die Zone stellt der Dialog danach auf die Kopie
+/// um; die Vorlage bleibt unberührt (K7).
+/// </summary>
+public sealed class ZapfprofilVorschlagErgebnisDaten
+{
+    /// <summary>Ist die Kopie angelegt?</summary>
+    public bool Ok { get; set; }
+
+    /// <summary>Der Grund, aus dem nichts entstanden ist; leer = angelegt.</summary>
+    public string Abbruch { get; set; } = "";
+
+    /// <summary>Die Id der neuen Nutzungsart; 0 ohne Erfolg.</summary>
+    public int IdNutzungsart { get; set; }
+
+    /// <summary>Die Bezeichnung der neuen Nutzungsart samt Katalogversion.</summary>
+    public string Kopie { get; set; } = "";
+
+    /// <summary>Die Meldung für die Statuszeile.</summary>
+    public string Meldung { get; set; } = "";
+
+    /// <summary>
+    /// Die benannten Hinweise des Vorschlags, den die Kopie trägt (fehlender Tagtyp, fehlender
+    /// Wochentag, kurze Reihe) — sie gehören zu den Werten der Kopie und stehen deshalb NACH der
+    /// Übernahme weiter in der Warnliste; die Vorschau ist dann längst zu.
+    /// </summary>
+    public List<ZapfprofilWarnDaten> Hinweise { get; set; } = new();
+}

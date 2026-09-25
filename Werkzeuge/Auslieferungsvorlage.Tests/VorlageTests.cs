@@ -164,13 +164,20 @@ namespace Auslieferungsvorlage.Tests
             // Tab_TwwTyptag_IMPORT, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der
             // Vorlage LEER - sie nimmt die Typtage des lizenzierten Anwenders auf, nie eine
             // Auslieferungszeile.
+            //
             // 141 seit den Schritten S-A bis S-C der Gebaeudesimulation (Stufe G3, Welle B):
             // Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Bauteilschicht(_STAMM),
             // Tab_Zone und Tab_Bauteil - acht Tabellen, alle STRICT von ihrer ersten Zeile an.
+            //
             // 143 seit dem Schritt S-F der Gebaeudesimulation (Stufe G4c, Welle 3):
             // Tab_Importquelle und Tab_Importzuordnung, STRICT von ihrer ersten Zeile an und in
             // der Vorlage LEER (P6d).
-            Assert.Equal(143, befund.Strict);
+            //
+            // 144 seit Schemaschritt 140 (Zapfprofilgenerator T4 "Messreihen", Stufe Z5):
+            // Tab_TwwMessreihe, STRICT von ihrer ersten Zeile an. Die Tabelle ist in der Vorlage
+            // LEER - TwwKataloge leert sie ausdruecklich, auch fuer ein Beispielprojekt, weil
+            // gemessene Daten dem Objekt gehoeren (Konzept Kapitel 9 K5).
+            Assert.Equal(144, befund.Strict);
         }
 
         // =============================================================================
@@ -198,6 +205,7 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0)",
                             File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
+
 
         // =============================================================================
         //  P6c — Der Baustoffkatalog und die Kindkataloge ohne ReadOnly (Stufe G3, L1)

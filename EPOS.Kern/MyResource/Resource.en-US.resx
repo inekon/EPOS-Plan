@@ -11593,6 +11593,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WPAR_TITEL" xml:space="preserve">
     <value>Economic parameters</value>
   </data>
+  <data name="WPAR_UA_9B_HINWEIS" xml:space="preserve">
+    <value>For a manufacturing business or an agricultural or forestry business, the next run calculates the relief under § 9b StromStG on the grid supply. If the project has a CHP unit, the type of business is maintained in the “CHP economics” dialog.</value>
+  </data>
   <data name="WPAR_G_SZENARIEN" xml:space="preserve">
     <value>Scenarios — best and worst against the expected case</value>
   </data>
@@ -15692,6 +15695,14 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Saving failed</value>
+  </data>
+  <data name="WIZ_PROJEKT_GEWECHSELT" xml:space="preserve">
+    <value>The entries of the assistant belong to a different project than the selected one. Nothing was saved.
+
+Please go through the project page again so that the data of the selected project is loaded.</value>
+  </data>
+  <data name="WIZ_PROJEKT_GEWECHSELT_TITEL" xml:space="preserve">
+    <value>Different project selected</value>
   </data>
   <data name="WIZ_TITEL" xml:space="preserve">
     <value>Project assistant</value>
@@ -29316,6 +29327,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWTYPTAG_IMPORT" xml:space="preserve">
     <value>imported type days</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWMESSREIHE" xml:space="preserve">
+    <value>imported measured series</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
     <value>transition</value>
   </data>
@@ -33107,5 +33121,710 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
     <value>The project construction build-up, 0 = without construction build-up. A construction build-up from the catalogue is taken over by hand and copied into the project with the OK of the building editor.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
+    <value>{0}: the smallest interval between two time stamps is {1:0.###} min — allowed are {2} min.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_BEGINN_NICHT_STUNDE" xml:space="preserve">
+    <value>{0}: the series starts in minute {1} of an hour; partial hours are left out of the comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_DATEI_UNLESBAR" xml:space="preserve">
+    <value>{0} cannot be read: {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_EINHEIT_UNBEKANNT" xml:space="preserve">
+    <value>{0}: the unit of the value column “{1}” is unknown — expected kWh, m³ or kW.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_FELDZAHL" xml:space="preserve">
+    <value>{0}, line {1}: {2} fields instead of exactly {3}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_KEINE_ZAHL" xml:space="preserve">
+    <value>{0}, line {1}: “{3}” in column “{2}” is not a number.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_KOPFZEILE_FEHLT" xml:space="preserve">
+    <value>{0}: the file has no header row.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_LUECKEN" xml:space="preserve">
+    <value>{0}: {1} of {2} time steps are missing from the file and are set to 0 ({3:0.0%}).</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_LUECKEN_ZU_GROSS" xml:space="preserve">
+    <value>{0}: {1} of {2} time steps are missing ({3:0.0%}); allowed are {4:0.0%}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_OHNE_MENGE" xml:space="preserve">
+    <value>{0}: the series carries no quantity — all values are 0.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>A series on a {0} min grid cannot be condensed to whole hours; duration curve, peak and daily profile stay without comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_OHNE_WERTE" xml:space="preserve">
+    <value>{0}: the file carries no data row.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SCHALTTAG" xml:space="preserve">
+    <value>The series spans {0} leap day(s); the calculation core computes 365 days without a leap year.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SOMMERZEIT" xml:space="preserve">
+    <value>{0}: {1} repeated time stamp of the autumn change read as a following step; the series is in local time.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SPALTE_WERT_FEHLT" xml:space="preserve">
+    <value>{0}: no value column found — recognised are {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_SPALTE_ZEIT_FEHLT" xml:space="preserve">
+    <value>{0}: no time column found — recognised are {1}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_TRENNER_UNBEKANNT" xml:space="preserve">
+    <value>{0}: the header row carries no separator (semicolon, tab or comma).</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_UEBER_EIN_JAHR" xml:space="preserve">
+    <value>The series covers {0:0.#} days, more than one year; the comparison runs over month, weekday and hour.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_WERT_NEGATIV" xml:space="preserve">
+    <value>{0}, line {1}: the value {2:0.###} is negative.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZEITSCHRITT_UNGLEICH" xml:space="preserve">
+    <value>{0}, line {1}: the interval {2:0.###} min is not a multiple of the resolution {3} min.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_FOLGE" xml:space="preserve">
+    <value>{0}, line {1}: the time stamp does not move forward.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZEITSTEMPEL_UNGUELTIG" xml:space="preserve">
+    <value>{0}, line {1}: “{2}” is not a time stamp (expected 2025-01-01T00:00 or 01.01.2025 00:00).</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZU_GROSS" xml:space="preserve">
+    <value>{0} is {1} bytes; allowed are {2} bytes.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZU_KURZ" xml:space="preserve">
+    <value>{0}: {1} data row(s) — the series needs at least {2} to measure a resolution.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHE_ZU_VIELE_ZEILEN" xml:space="preserve">
+    <value>{0}: more time steps than allowed — {1} instead of at most {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_BEGINN_UNGUELTIG" xml:space="preserve">
+    <value>The measured series “{0}” carries the start “{1}”, which is not a point in time.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_ERSETZT" xml:space="preserve">
+    <value>The measured series “{0}” of the same name with {1} time steps has been replaced.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_NULLLAEUFE" xml:space="preserve">
+    <value>The series “{0}” carries {1} of {2} time steps without a value ({3:0.0%}); the store does not distinguish filled gaps from times without draw-off.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The measured series could not be imported: {0}. Nothing has been changed.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The project carries no measured series “{0}”.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_OHNE_REIHE" xml:space="preserve">
+    <value>Without a series that has been read there is nothing to import.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_PROJEKT_FEHLT" xml:space="preserve">
+    <value>Project {0} does not exist.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The database does not yet carry {0}; the schema step is pending.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSREIHENIMPORT_ZEILENINDEX_LUECKE" xml:space="preserve">
+    <value>The measured series “{0}” has a gap in its row index at {1}; it would be shifted in time.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_BAND_UNGUELTIG" xml:space="preserve">
+    <value>The band limits {0:0.###} and {1:0.###} are unusable — expected 0 &lt; lower &lt; upper &lt; 1.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG" xml:space="preserve">
+    <value>The measured annual energy deviates by {0:0.0%} from the calculated one.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_FORM_IM_RAHMEN" xml:space="preserve">
+    <value>The daily profile matches in shape: mean deviation of the hourly shares {0:0.0000} against a threshold of {1:0.0000}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_FORM_UEBER_SCHWELLE" xml:space="preserve">
+    <value>The daily profile deviates in shape: mean deviation of the hourly shares {0:0.0000} above the threshold {1:0.0000}.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_KALENDER_RASTER" xml:space="preserve">
+    <value>The calendar of the calculated series must carry {0} day types.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN" xml:space="preserve">
+    <value>Without the number of units of the zones the √N scaling stays without comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
+    <value>Without hourly peaks of an ensemble the scatter of the realisation peaks stays undetermined.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
+    <value>The peaks of {0} realisations scatter between {1:0.###} and {2:0.###} of the largest computed hourly load.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
+    <value>The measurement knows no public holidays; they count as a working day of their weekday.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_VERGLEICHSTAG" xml:space="preserve">
+    <value>No time step of the measurement meets a day of the calculation year; a comparison is not possible.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SCHALTTAG" xml:space="preserve">
+    <value>{0} time step(s) fall on a 29 February; the calculation core does not know it, they stay out of the comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_TEILJAHR" xml:space="preserve">
+    <value>The measurement covers {0} of {1} days; the energy and month comparison compute both sides over exactly these days.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Without a measured series there is no comparison to compute.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_RECHNUNG" xml:space="preserve">
+    <value>Without a calculated annual series there is no comparison to compute.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>The series on a {0} min grid carries no complete hour; peak, √N scaling and daily profile stay without comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_VOLLEN_TAG" xml:space="preserve">
+    <value>The measurement carries no complete day that the calculation also has; the shape comparison stays open.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE" xml:space="preserve">
+    <value>The calculated annual series carries no quantity; a ratio to it would be meaningless.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
+    <value>At {0:0.###} the measured hourly peak lies within the band {1:0.###} to {2:0.###} of the synthetic duration curve.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
+    <value>At {0:0.###} the measured hourly peak lies above the upper band limit {1:0.###}: the calculation underestimates the peak.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
+    <value>At {0:0.###} the measured hourly peak lies below the lower band limit {1:0.###}: the calculation overestimates the peak more than expected.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
+    <value>A volume series needs a temperature difference θ_tap − θ_cold greater than 0; {0:0.###} K was given.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
+    <value>The {0} zones hold different temperatures; the volume series is converted to energy with the quantity-weighted temperature difference of {1:0.###} K.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
+    <value>Only one of the two sides carries the day type {0}; it is left out of the shape comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET" xml:space="preserve">
+    <value>The series covers {0:0.#} days and has been scaled up flatly to {1} days — every day of the year counts alike, which underestimates a summer measurement and overestimates a winter one; the annual value is an extrapolation, not a measurement.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG" xml:space="preserve">
+    <value>The series covers {0:0.#} of {1} days and has been scaled up with the annual profile of the calculation ({2:0.0%} of the year); the annual value assumes the computed behaviour for the unmeasured time and is not a measurement.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
+    <value>Without the reference quantity of the zone no daily demand per unit can be proposed.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MENGE" xml:space="preserve">
+    <value>The measured series carries no quantity; there is nothing to calibrate.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Without a measured series there is nothing to calibrate.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>A series on a {0} min grid carries no hourly values; a daily profile cannot be proposed from it.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_TAGESGANG" xml:space="preserve">
+    <value>No day type of the measurement carries a quantity; there is no daily profile to propose.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_REIHE_ZU_KURZ" xml:space="preserve">
+    <value>The series carries {0:0.#} complete days; at least {1} are needed for a proposal.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_TAGTYP_FEHLT" xml:space="preserve">
+    <value>The measurement carries no complete {0} with a quantity; there is no proposal for this day type.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_WOCHENTAG_FEHLT" xml:space="preserve">
+    <value>{0} of {1} weekdays carry no complete measured day; they receive the mean of the others.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ" xml:space="preserve">
+    <value>{0} usage type(s) of the package carry no draw-off categories of their own, and the package carries no default set; they compute without scatter.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_VORGABESATZ_GRUPPE" xml:space="preserve">
+    <value>The package carries no default set of draw-off categories for the usage type group {0}.</value>
+  </data>
+  <data name="ZPGM_TITEL" xml:space="preserve">
+    <value>Measured data</value>
+  </data>
+  <data name="ZPGM_HINWEIS_PROJEKT" xml:space="preserve">
+    <value>Measured series belong to the project: they travel with a project copy and a project package and are part of no delivery template.</value>
+  </data>
+  <data name="ZPGM_HINWEIS_FORMAT" xml:space="preserve">
+    <value>A file is a CSV table with a header row: one time stamp, or date and time in separate columns, plus one value column — separator semicolon, tab or comma, numbers with point or comma.</value>
+  </data>
+  <data name="ZPGM_HINWEIS_NULLLAEUFE" xml:space="preserve">
+    <value>A zero step is either a filled gap or a measured hour without draw-off; which of the two, the store does not say.</value>
+  </data>
+  <data name="ZPGM_GRP_LISTE" xml:space="preserve">
+    <value>Imported measured series</value>
+  </data>
+  <data name="ZPGM_GRP_EINLESEN" xml:space="preserve">
+    <value>Read a file</value>
+  </data>
+  <data name="ZPGM_GRP_PRUEFUNG" xml:space="preserve">
+    <value>Check of the file</value>
+  </data>
+  <data name="ZPGM_LEER" xml:space="preserve">
+    <value>No measured series is imported — without one there is neither a comparison nor a calibration from measurement.</value>
+  </data>
+  <data name="ZPGM_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="ZPGM_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="ZPGM_SP_AUFLOESUNG" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="ZPGM_SP_BEGINN" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="ZPGM_SP_TAGE" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="ZPGM_SP_NULLLAEUFE" xml:space="preserve">
+    <value>Zero steps</value>
+  </data>
+  <data name="ZPGM_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ZPGM_SP_IMPORT" xml:space="preserve">
+    <value>Imported on</value>
+  </data>
+  <data name="ZPGM_SP_ANGABE" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ZPGM_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPGM_SP_AKTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="ZPGM_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Designation</value>
+  </data>
+  <data name="ZPGM_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ZPGM_LBL_GROESSE" xml:space="preserve">
+    <value>Measured quantity</value>
+  </data>
+  <data name="ZPGM_LBL_LUECKENSCHWELLE" xml:space="preserve">
+    <value>Highest share of filled gaps</value>
+  </data>
+  <data name="ZPGM_LBL_ZEITSTEMPEL" xml:space="preserve">
+    <value>Time stamps</value>
+  </data>
+  <data name="ZPGM_GROESSE_KOPF" xml:space="preserve">
+    <value>from the header row</value>
+  </data>
+  <data name="ZPGM_GROESSE_ENERGIE" xml:space="preserve">
+    <value>Energy (kWh)</value>
+  </data>
+  <data name="ZPGM_GROESSE_VOLUMEN" xml:space="preserve">
+    <value>Volume (m³)</value>
+  </data>
+  <data name="ZPGM_GROESSE_LEISTUNG" xml:space="preserve">
+    <value>Power (kW)</value>
+  </data>
+  <data name="ZPGM_ZEIT_ORTSZEIT" xml:space="preserve">
+    <value>Local time with daylight saving</value>
+  </data>
+  <data name="ZPGM_ZEIT_NORMALZEIT" xml:space="preserve">
+    <value>Standard time without changeover</value>
+  </data>
+  <data name="ZPGM_BTN_DATEI" xml:space="preserve">
+    <value>Choose file…</value>
+  </data>
+  <data name="ZPGM_BTN_EINSPIELEN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ZPGM_BTN_WAEHLEN" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="ZPGM_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ZPGM_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ZPGM_DATEIFILTER" xml:space="preserve">
+    <value>Measured series (*.csv;*.txt)|*.csv;*.txt|All files (*.*)|*.*</value>
+  </data>
+  <data name="ZPGM_WAHL_TITEL" xml:space="preserve">
+    <value>Choose the file of the measured series</value>
+  </data>
+  <data name="ZPGM_KEINE_DATEI" xml:space="preserve">
+    <value>No file is chosen.</value>
+  </data>
+  <data name="ZPGM_ABBRUCH" xml:space="preserve">
+    <value>The file is rejected: {0}</value>
+  </data>
+  <data name="ZPGM_PRUEFUNG_LAEUFT" xml:space="preserve">
+    <value>The file is being checked …</value>
+  </data>
+  <data name="ZPGM_PRUEFUNG_ABGEBROCHEN" xml:space="preserve">
+    <value>The check was cancelled; nothing has been imported.</value>
+  </data>
+  <data name="ZPGM_BERICHT_OFFEN" xml:space="preserve">
+    <value>Name and source appear in the report only after the next check; what is imported is what the fields hold.</value>
+  </data>
+  <data name="ZPGM_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>The file carries {0} time step(s) in a {1} min raster — {2} day(s).</value>
+  </data>
+  <data name="ZPGM_HINWEISE" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="ZPGM_LBL_SCHRITTE" xml:space="preserve">
+    <value>Time steps</value>
+  </data>
+  <data name="ZPGM_LBL_TAGE" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="ZPGM_LBL_AUFLOESUNG" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="ZPGM_LBL_BEGINN" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="ZPGM_LBL_ENDE" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="ZPGM_LBL_LUECKEN" xml:space="preserve">
+    <value>Filled gaps</value>
+  </data>
+  <data name="ZPGM_LBL_SCHALTTAGE" xml:space="preserve">
+    <value>Leap days</value>
+  </data>
+  <data name="ZPGM_FRAGE_ERSETZEN" xml:space="preserve">
+    <value>The project already carries a measured series “{0}”. The new one replaces it completely. Import?</value>
+  </data>
+  <data name="ZPGM_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>The measured series “{0}” is removed from the project. Delete?</value>
+  </data>
+  <data name="ZPGM_MSG_EINGESPIELT" xml:space="preserve">
+    <value>“{0}” imported: {1} row(s), {2} replaced.</value>
+  </data>
+  <data name="ZPGM_MSG_GELOESCHT" xml:space="preserve">
+    <value>“{0}” removed: {1} row(s).</value>
+  </data>
+  <data name="ZPGM_MSG_NICHTS" xml:space="preserve">
+    <value>There was nothing to delete.</value>
+  </data>
+  <data name="ZPGM_KEIN_PROJEKT" xml:space="preserve">
+    <value>Measured series need a saved project.</value>
+  </data>
+  <data name="ZPGM_WERT_OHNE" xml:space="preserve">
+    <value>not stated</value>
+  </data>
+  <data name="KI_DLG_ZPGM_ANZAHL_NAME" xml:space="preserve">
+    <value>Number of measured series</value>
+  </data>
+  <data name="KI_DLG_ZPGM_ANZAHL_ERL" xml:space="preserve">
+    <value>How many measured series this project carries (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_REIHEN_ERL" xml:space="preserve">
+    <value>The designations of the imported measured series as a list (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_GEWAEHLT_NAME" xml:space="preserve">
+    <value>Selected measured series</value>
+  </data>
+  <data name="KI_DLG_ZPGM_GEWAEHLT_ERL" xml:space="preserve">
+    <value>The designation of the series selected in the list; empty = none selected (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_GROESSE_ERL" xml:space="preserve">
+    <value>The measured quantity of the selected series — energy, volume or power (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_AUFLOESUNG_ERL" xml:space="preserve">
+    <value>The time raster of the selected series in minutes (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_BEGINN_ERL" xml:space="preserve">
+    <value>The instant of the first time step of the selected series (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_TAGE_ERL" xml:space="preserve">
+    <value>The length of the selected series in days, also fractional (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_NULLLAEUFE_ERL" xml:space="preserve">
+    <value>How many time steps of the selected series carry the value 0 — either a filled gap or an hour without draw-off (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_QUELLE_ERL" xml:space="preserve">
+    <value>Where the selected series comes from — the user's statement or the file name (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_DATUM_ERL" xml:space="preserve">
+    <value>The day the selected series was imported (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_GRUND_NAME" xml:space="preserve">
+    <value>Reason without measured series</value>
+  </data>
+  <data name="KI_DLG_ZPGM_GRUND_ERL" xml:space="preserve">
+    <value>Why there is no measured series — no table, no saved project or nothing imported; empty = series are present (display).</value>
+  </data>
+  <data name="KI_DLG_ZPGM_BERICHT_ERL" xml:space="preserve">
+    <value>What the check of the selected file yielded — the summary or the rejection; empty = no check (display).</value>
+  </data>
+  <data name="ZPG_BTN_MESSDATEN" xml:space="preserve">
+    <value>Measured data…</value>
+  </data>
+  <data name="ZPG_GRP_VERGLEICH" xml:space="preserve">
+    <value>Comparison with a measured series</value>
+  </data>
+  <data name="ZPG_LBL_MESSREIHE" xml:space="preserve">
+    <value>Measured series</value>
+  </data>
+  <data name="ZPG_BTN_VERGLEICH" xml:space="preserve">
+    <value>Compute comparison</value>
+  </data>
+  <data name="ZPG_KZ_VERGLEICH" xml:space="preserve">
+    <value>Comparison with the measurement</value>
+  </data>
+  <data name="ZPG_VERGL_OHNE_REIHE" xml:space="preserve">
+    <value>No measured series is imported — “Measured data…” imports one.</value>
+  </data>
+  <data name="ZPG_VERGL_OHNE_WAHL" xml:space="preserve">
+    <value>Choose the measured series to compare against.</value>
+  </data>
+  <data name="ZPG_VERGL_NUR_ERWEITERT" xml:space="preserve">
+    <value>The comparison with a measured series is available from level Advanced.</value>
+  </data>
+  <data name="ZPG_VERGL_LEER" xml:space="preserve">
+    <value>No comparison computed yet.</value>
+  </data>
+  <data name="ZPG_VERGL_LAEUFT" xml:space="preserve">
+    <value>Comparison running — measured series “{0}”</value>
+  </data>
+  <data name="ZPG_VERGL_ABGEBROCHEN" xml:space="preserve">
+    <value>The comparison was cancelled; the working state stays.</value>
+  </data>
+  <data name="ZPG_VERGL_VERALTET" xml:space="preserve">
+    <value>The comparison belongs to an earlier working state — compute again.</value>
+  </data>
+  <data name="ZPG_VERGL_STATUS" xml:space="preserve">
+    <value>Comparison with “{0}” computed</value>
+  </data>
+  <data name="ZPG_VERGL_STOCHASTISCH" xml:space="preserve">
+    <value>The compared annual series is computed stochastically.</value>
+  </data>
+  <data name="ZPG_KZ_ENERGIE_VERHAELTNIS" xml:space="preserve">
+    <value>Energy measured/computed</value>
+  </data>
+  <data name="ZPG_KZ_ENERGIE_ABWEICHUNG" xml:space="preserve">
+    <value>Deviation of the energy</value>
+  </data>
+  <data name="ZPG_KZ_SPITZE" xml:space="preserve">
+    <value>Measured peak / largest computed hour</value>
+  </data>
+  <data name="ZPG_KZ_BAND" xml:space="preserve">
+    <value>Band of the duration curve (P{0}–P{1})</value>
+  </data>
+  <data name="ZPG_KZ_SPITZENSTREUUNG" xml:space="preserve">
+    <value>Spread of the realisation peaks</value>
+  </data>
+  <data name="ZPG_KZ_WURZELN" xml:space="preserve">
+    <value>√N scaling measure</value>
+  </data>
+  <data name="ZPG_KZ_FORM" xml:space="preserve">
+    <value>Shape comparison — largest mean deviation</value>
+  </data>
+  <data name="ZPG_KZ_FORM_TAGTYP" xml:space="preserve">
+    <value>Shape {0}</value>
+  </data>
+  <data name="ZPG_KZ_MONATE" xml:space="preserve">
+    <value>Largest deviation of the monthly shares</value>
+  </data>
+  <data name="ZPG_LAGE_IM_BAND" xml:space="preserve">
+    <value>within the band</value>
+  </data>
+  <data name="ZPG_LAGE_OBERHALB" xml:space="preserve">
+    <value>above the band — the calculation underestimates the peak</value>
+  </data>
+  <data name="ZPG_LAGE_UNTERHALB" xml:space="preserve">
+    <value>below the band — the calculation overestimates the peak more than expected</value>
+  </data>
+  <data name="ZPG_LAGE_UNBESTIMMT" xml:space="preserve">
+    <value>not decidable</value>
+  </data>
+  <data name="ZPG_FORM_IM_RAHMEN" xml:space="preserve">
+    <value>✓ within the limit</value>
+  </data>
+  <data name="ZPG_FORM_UEBER_SCHWELLE" xml:space="preserve">
+    <value>≠ above the threshold {0}</value>
+  </data>
+  <data name="ZPG_VERGL_OHNE_ENSEMBLE" xml:space="preserve">
+    <value>not decidable without an ensemble</value>
+  </data>
+  <data name="ZPG_VERGL_OHNE_WERT" xml:space="preserve">
+    <value>not decided</value>
+  </data>
+  <data name="ZPG_VERGL_MONAT" xml:space="preserve">
+    <value>month {0}</value>
+  </data>
+  <data name="ZPG_VERGL_TAGE" xml:space="preserve">
+    <value>{0} measured days / {1} computed days</value>
+  </data>
+  <data name="ZPG_VERGL_DAUERLINIE" xml:space="preserve">
+    <value>over {0} hourly values</value>
+  </data>
+  <data name="ZPG_VERGL_EINHEITEN" xml:space="preserve">
+    <value>N = {0}, 1/√N = {1}</value>
+  </data>
+  <data name="ZPG_VERGL_STREUBREITE" xml:space="preserve">
+    <value>{0} realisations, spread {1}</value>
+  </data>
+  <data name="ZPG_BTN_KALIBRIEREN" xml:space="preserve">
+    <value>Calibrate from measured series</value>
+  </data>
+  <data name="ZPG_HINW_KALIBRIEREN" xml:space="preserve">
+    <value>The annual measured value comes from the measured series named on the “Key figures” tab; a partial year is extrapolated over the annual profile of the calculation, and a note states the bias.</value>
+  </data>
+  <data name="ZPG_FRAGE_KALIBRIEREN" xml:space="preserve">
+    <value>The annual measured value of zone “{0}” is set from the measured series “{1}”; an existing value is discarded. Adopt?</value>
+  </data>
+  <data name="ZPG_STATUS_KALIBRIERT" xml:space="preserve">
+    <value>Annual measured value adopted from “{0}”</value>
+  </data>
+  <data name="ZPG_KAL_LAEUFT" xml:space="preserve">
+    <value>Calibration running — measured series “{0}”</value>
+  </data>
+  <data name="ZPG_KAL_ABGEBROCHEN" xml:space="preserve">
+    <value>The calibration was cancelled; the working state remains.</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_TITEL" xml:space="preserve">
+    <value>Calibration proposal</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_VORLAGE" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_KOPIE" xml:space="preserve">
+    <value>Designation of the copy</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_TAGESBEDARF" xml:space="preserve">
+    <value>Daily demand</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_JE_EINHEIT" xml:space="preserve">
+    <value>Daily demand per unit</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_TAGE" xml:space="preserve">
+    <value>Complete measured days</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_WOCHE" xml:space="preserve">
+    <value>Weekday factors Mon–Sun</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_GAENGE" xml:space="preserve">
+    <value>Daily profiles per day type [%]</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_HINWEIS" xml:space="preserve">
+    <value>Adopting creates a usage type of your own; the template stays untouched, and the zone afterwards computes with the copy.</value>
+  </data>
+  <data name="ZPG_BTN_VORSCHLAG_UEBERNEHMEN" xml:space="preserve">
+    <value>Adopt</value>
+  </data>
+  <data name="ZPG_FRAGE_VORSCHLAG" xml:space="preserve">
+    <value>From the measured series “{0}” the usage type “{1}” is created; the zone afterwards computes with it, the template stays untouched. Adopt?</value>
+  </data>
+  <data name="ZPG_VORSCHLAG_OHNE" xml:space="preserve">
+    <value>There is no proposal for this zone: {0}</value>
+  </data>
+  <data name="ZPG_KAL_QUELLE" xml:space="preserve">
+    <value>Measured series {0}</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHLAG" xml:space="preserve">
+    <value>Calibrated copy created: {0}</value>
+  </data>
+  <data name="ZPG_BTN_VORSCHLAG_KALIBRIERT" xml:space="preserve">
+    <value>Adopt proposal…</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_BAND_UNGUELTIG" xml:space="preserve">
+    <value>Invalid band of the duration curve</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_ENERGIE_ABWEICHUNG" xml:space="preserve">
+    <value>Deviation of the energy</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_FORM_IM_RAHMEN" xml:space="preserve">
+    <value>Shape within the limit</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_FORM_UEBER_SCHWELLE" xml:space="preserve">
+    <value>Shape above the threshold</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_KALENDER_RASTER" xml:space="preserve">
+    <value>Calendar of the calculation</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_EINHEITEN" xml:space="preserve">
+    <value>Without a number of units</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
+    <value>Without an ensemble</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
+    <value>Measurement without public holidays</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Without a measured series</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_RECHNUNG" xml:space="preserve">
+    <value>Without a computed series</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>Without hourly values</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_VERGLEICHSTAG" xml:space="preserve">
+    <value>Without a comparison day</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_OHNE_VOLLEN_TAG" xml:space="preserve">
+    <value>Without a complete day</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_RECHNUNG_OHNE_MENGE" xml:space="preserve">
+    <value>Calculation without a quantity</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SCHALTTAG" xml:space="preserve">
+    <value>Leap day of the measurement</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPITZENSTREUUNG" xml:space="preserve">
+    <value>Spread of the realisation peaks</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_IM_BAND" xml:space="preserve">
+    <value>Measured peak within the band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_UEBER_BAND" xml:space="preserve">
+    <value>Measured peak above the band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPITZE_UNTER_BAND" xml:space="preserve">
+    <value>Measured peak below the band</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
+    <value>Temperature difference missing</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
+    <value>Temperature difference across zones</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
+    <value>Day type missing</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_TEILJAHR" xml:space="preserve">
+    <value>Partial year of the measurement</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_HOCHGERECHNET" xml:space="preserve">
+    <value>Extrapolated flat</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG" xml:space="preserve">
+    <value>Extrapolated over the annual profile</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
+    <value>Without a reference quantity</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_OHNE_MENGE" xml:space="preserve">
+    <value>Without a measured quantity</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_OHNE_MESSREIHE" xml:space="preserve">
+    <value>Without a measured series</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_OHNE_STUNDENWERTE" xml:space="preserve">
+    <value>Without hourly values</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_OHNE_TAGESGANG" xml:space="preserve">
+    <value>Without a daily profile</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_REIHE_ZU_KURZ" xml:space="preserve">
+    <value>Measured series too short</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_TAGTYP_FEHLT" xml:space="preserve">
+    <value>Day type without a measured day</value>
+  </data>
+  <data name="ZPG_WARN_MESSKALIBRIERUNG_WOCHENTAG_FEHLT" xml:space="preserve">
+    <value>Weekday without a measured day</value>
+  </data>
+  <data name="KI_DLG_ZPG_MESSREIHE_ERL" xml:space="preserve">
+    <value>The imported measured series the “Key figures” tab compares against (a choice among the project's series, from level Advanced); the comparison itself is computed on click.</value>
+  </data>
+  <data name="ZPG_MESSDATEN_TITEL" xml:space="preserve">
+    <value>Measured data</value>
   </data>
 </root>

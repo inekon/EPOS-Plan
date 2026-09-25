@@ -191,6 +191,9 @@ public class KiDialogkatalogTests : IDisposable
         // Zapfprofil Z4b, Gruppe 2: der Dialog der eingespielten VDI-4655-Typtage.
         { KiMaskennamen.BRAUCHWASSER_TYPTAGE,
           typeof(EPOS.UI.Dialoge.Bedarf.TwwTyptagImportKiSicht) },
+        // Zapfprofil Z5, Gruppe 3: der Dialog der eingespielten Messreihen.
+        { KiMaskennamen.BRAUCHWASSER_MESSREIHEN,
+          typeof(EPOS.UI.Dialoge.Bedarf.TwwMessreihenKiSicht) },
 
         // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
         // Brauchwasser sind drei Katalogschluessel derselben Komponente.
@@ -429,9 +432,10 @@ public class KiDialogkatalogTests : IDisposable
         // und deren Bedarfstag-Konstruktor. Welle #465: die Gebaeudeverwaltung. Zapfprofil Z4,
         // Gruppe 2b: die Editoren Tagesgang und Zapfkategorien. Zapfprofil Z4, Gruppe 3: der Katalog
         // der Brauchwasser-Nutzungsarten und sein Editor. Zapfprofil Z4b, Gruppe 2: der Dialog der
-        // eingespielten VDI-4655-Typtage. Gebaeudesimulation G3, Welle C: die Verwaltungen der
-        // Baustoffe und der Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors.
-        Assert.Equal(85, katalog.Anzahl);
+        // eingespielten VDI-4655-Typtage. Zapfprofil Z5, Gruppe 3: der Dialog der Messdaten.
+        // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
+        // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors.
+        Assert.Equal(86, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1504,6 +1508,10 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse TwwNutzungsartEditorKiSicht: die Zahlenfelder über ihren " +
             "Namen, vier Wahlen und die Monatsfaktoren als Zahlenreihe (Grenzen der Felder); Zeuge " +
             "ist TwwNutzungsartAdminDialogTests",
+        [KiMaskennamen.BRAUCHWASSER_MESSREIHEN] =
+            "bindet über die Sichtklasse TwwMessreihenKiSicht: zwölf Anzeigen der eingespielten "
+            + "Reihen und des Prüfberichts, kein Einstellwert — die Dateiwahl ist ein Dateidialog, "
+            + "Einspielen und Löschen bleiben Klicks; Zeuge ist TwwMessreihenDialogTests",
         [KiMaskennamen.BRAUCHWASSER_TYPTAGE] =
             "bindet über die Sichtklasse TwwTyptagImportKiSicht: acht Anzeigen des eingespielten " +
             "Stands und des Prüfberichts, kein Einstellwert — die Paketwahl ist ein Dateidialog, " +
