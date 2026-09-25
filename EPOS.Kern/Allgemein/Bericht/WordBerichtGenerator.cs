@@ -48,14 +48,29 @@ namespace WindowsFormsApplication1
         public const string SVG_EXT_URI = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}";
 
         /// <summary>
-        /// Erzeugt den Bericht. Rückgabe: Pfad der geschriebenen Datei.
+        /// Erzeugt den Bericht. Rückgabe: Pfad der geschriebenen Datei. Die Vorlage sucht
+        /// <see cref="FindeVorlage"/> an den bekannten Orten.
         /// </summary>
         public string Erzeuge(BerichtsDaten daten, BerichtsKonfiguration konfig, string zielDatei)
+            => Erzeuge(daten, konfig, zielDatei, null);
+
+        /// <summary>
+        /// Erzeugt den Bericht aus einer ausdrücklich benannten Vorlage (Konzept
+        /// Berichtsvorlagen, Etappe BV-E0: der Test mit der echten Vorlage). Rückgabe: Pfad
+        /// der geschriebenen Datei.
+        /// </summary>
+        /// <param name="vorlagePfad">Die <c>.docx</c>, die als Rahmen kopiert wird;
+        /// <c>null</c> = <see cref="FindeVorlage"/> wie bisher. Eine benannte, aber fehlende
+        /// Vorlage bricht mit ihrem Pfad ab, statt still auf die Ersatzstile auszuweichen.</param>
+        public string Erzeuge(BerichtsDaten daten, BerichtsKonfiguration konfig, string zielDatei,
+                              string vorlagePfad)
         {
             if (daten == null || daten.Varianten.Count == 0)
                 throw new ArgumentException("Keine Berichtsdaten vorhanden.");
+            if (vorlagePfad != null && !File.Exists(vorlagePfad))
+                throw new FileNotFoundException("Die Berichtsvorlage fehlt: " + vorlagePfad, vorlagePfad);
 
-            string vorlage = FindeVorlage();
+            string vorlage = vorlagePfad ?? FindeVorlage();
             if (vorlage != null) File.Copy(vorlage, zielDatei, true);
 
             using (WordprocessingDocument doc = vorlage != null
@@ -131,7 +146,12 @@ namespace WindowsFormsApplication1
             DocumentSettingsPart sp = main.DocumentSettingsPart ?? main.AddNewPart<DocumentSettingsPart>();
             if (sp.Settings == null) sp.Settings = new Settings();
             sp.Settings.RemoveAllChildren<UpdateFieldsOnOpen>();
-            sp.Settings.PrependChild(new UpdateFieldsOnOpen { Val = true });
+            // An die Stelle, die das Schema vorgibt (CT_Settings ist eine feste Folge;
+            // w:updateFields steht hinter w:evenAndOddHeaders und vor w:compat). Vorangestellt
+            // war die Einstellung nur in der leeren Ersatzdatei gültig — die Einstellungen der
+            // Vorlage (w:displayBackgroundShape, w:evenAndOddHeaders, w:compat) standen dann
+            // dahinter, und der Validator wies das Dokument in jeder Office-Fassung zurück.
+            sp.Settings.AddChild(new UpdateFieldsOnOpen { Val = true });
             sp.Settings.Save();
         }
 

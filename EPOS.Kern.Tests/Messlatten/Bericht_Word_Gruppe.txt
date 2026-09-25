@@ -1,0 +1,124 @@
+# Strukturmesslatte BV-E0 (BerichtVorlagenMesslatteTests, echte Vorlage) — Bericht_Word_Gruppe.txt
+## Kopf- und Fußzeilen
+Kopfzeile default: Absatz [—] EPOS-Plan · Energie · Planung · Optimierung · Simulation⇥ + Bild 90×49 px, SVG nein
+Fußzeile default: Absatz [—] INEKON GmbH⇥{DATE \@ "dd.MM.yyyy"}⇥Seite {PAGE} / {NUMPAGES}
+## Rumpf
+Absatz [Title] Stammprojekt
+Absatz [Subtitle] Variantenvergleich — Energie- und Wärmeversorgung
+Tabelle 2 Sp. × 6 Z. | Kopf: Projekt | Stammprojekt
+Absatz [Hinweis] Erstellt mit EPOS-Plan · Energieplanungs-Software · Energie · Planung · Optimierung · Simulation
+Seitenumbruch
+Absatz [Heading1] Inhalt
+TOC-Feld TOC \o "1-3" \h \z \u
+Seitenumbruch
+Absatz [Heading1] Projektbeschreibung
+Tabelle 2 Sp. × 8 Z. | Kopf: Projektname | Stammprojekt
+Absatz [Heading2] Speichertemperaturen (Schichtmodell)
+Tabelle 3 Sp. × 2 Z. | Kopf: Speicher | T oben Mittel [°C] | T oben Minimum [°C]
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)
+Absatz [Heading1] Komponenten & Varianten
+Absatz [Heading2] Komponentenübersicht
+Tabelle 3 Sp. × 8 Z. | Kopf: Gewerk | Stamm | Variante A
+Absatz [Beschriftung] (leer)
+Absatz [Heading2] Abweichungen der Varianten gegenüber dem Stamm
+Absatz [Heading3] Variante A
+Absatz [Normal] Keine Abweichungen in der verglichenen Anlagen- und Gebäudekonfiguration.
+Absatz [Heading1] Berechnungsergebnisse je Variante
+Absatz [Heading2] Stamm — Stamm
+Absatz [Hinweis] Simulationsstand: —
+Absatz [Normal] Keine Kennzahlen verfügbar.
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)
+Bild 620×260 px, SVG ja
+Absatz [Beschriftung] Speicherverlauf in charakteristischen Wochen (Winter/Übergang/Sommer)
+Absatz [Heading2] Variante — Variante A
+Absatz [Hinweis] Simulationsstand: —
+Absatz [Normal] Keine Kennzahlen verfügbar.
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)
+Bild 620×280 px, SVG ja
+Absatz [Beschriftung] Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)
+Bild 620×260 px, SVG ja
+Absatz [Beschriftung] Speicherverlauf in charakteristischen Wochen (Winter/Übergang/Sommer)
+Absatz [Heading1] Variantenvergleich
+Absatz [Heading2] Kennzahlen im Vergleich (Diagramme)
+Absatz [Heading2] Deckungsdiagramme
+Absatz [Hinweis] Anteile an der Wärme- bzw. Stromdeckung je Projekt (aus den Deckungsgraden der Erzeuger; der Rest ist ungedeckte Wärme bzw. Netzbezug).
+Absatz [Heading3] Stamm — Stamm
+Bild 420×262 px, SVG ja
+Bild 420×262 px, SVG ja
+Absatz [Heading3] Variante — Variante A
+Bild 420×262 px, SVG ja
+Bild 420×262 px, SVG ja
+Absatz [Heading2] Erzeuger — Einzelauflistung je Projekt
+Absatz [Hinweis] Je Projekt eine Zeile pro Gerät (Modul) mit erzeugter Energie; bei BHKW/Kessel der Brennstoff, bei der Wärmepumpe Strom (inkl. Heizstab).
+Absatz [Heading3] Stamm — Stamm
+Tabelle 5 Sp. × 1 Z. | Kopf: Erzeuger | Wärme [MWh/a] | Strom [MWh/a] | Energieträger | Verbrauch [MWh/a]
+Absatz [Heading3] Variante — Variante A
+Tabelle 5 Sp. × 1 Z. | Kopf: Erzeuger | Wärme [MWh/a] | Strom [MWh/a] | Energieträger | Verbrauch [MWh/a]
+Absatz [Heading1] Wirtschaftlichkeit
+Absatz [Normal] Bewertung nach der Kapitalwertmethode in Anlehnung an DIN EN 17463 (ValERI): alle Zahlungsströme der Projekte werden über den Betrachtungszeitraum auf den Entscheidungszeitpunkt abgezinst. Referenz (Unterlassensalternative) ist das Stammprojekt — der Kapitalwert einer Variante ist der Barwert der Differenz-Zahlungsströme Variante − Stamm; ein positiver Wert bedeutet: die Variante ist über den Betrachtungszeitraum wirtschaftlicher als der Stamm.
+Absatz [Hinweis] Parameter dieses Rechenlaufs: i = 3,0 % · T = 20 a · Preissteigerung Energie 0,0 %/a, Betrieb 0,0 %/a, Investition/Ersatz 0,0 %/a (wie Betrieb) · Einspeisevergütung 0,000 €/kWh · Tarifstruktur inaktiv (Flat-Preise der Kostenmaske) · Emissionsbilanz: Bilanzjahr 2026 (nicht gepflegt) · KWK-Strom mit Stromgutschrift über den Kraftwerkspark (nach Katalog, Verdrängungsstrommix gültig ab 2020) · Biomasse biogenes Verbrennungs-CO₂ mit null (GEG/GModG, UBA-Emissionsbilanz, BAFA) · Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor · Restwert linear · Ersatzbeschaffungen nominal konstant (p_I = 0). Energie-/Strompreise aus der Kostenmaske des jeweiligen Projekts; Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). Rechenstand: <datum>.
+Absatz [Hinweis] Betrachtungszeitraum T = 20 a · keine Nutzungsdauern gepflegt: kein Ersatz, kein Restwert.
+Absatz [Hinweis] Vereinfachungen (VALERI): kein Endjahr je Kostenposition; keine Degradation außer beim PV-Ertrag; Energiekosten als Gesamtrechnung des Simulationslaufs ab Jahr 1 (FK10).
+Absatz [Hinweis] Rechnung nominal · Energie- und Stromsteuerentlastungen berücksichtigt · Ertragsteuern nicht berücksichtigt · keine Abschreibungen als Zahlung · Restwert linear — dokumentierte Abweichung von 6.4 · Risikozuschlag nicht angesetzt (6.5 optional) · nicht monetäre Wirkungen benannt
+Absatz [Hinweis] ⚠ Für Stamm, Variante A passt das Wirtschaftlichkeits-Ergebnis nicht zum Simulationslauf dieses Berichts — Bericht erneut erstellen.
+Absatz [Heading2] Kennzahlen im Szenario „Erwartet“
+Absatz [Hinweis] Alle Beträge in €/a sind Werte des ersten Betrachtungsjahres; ihre Entwicklung über den Betrachtungszeitraum steht in der Mehrjahresübersicht.
+Tabelle 3 Sp. × 16 Z. | Kopf: Kennzahl | Stamm | Variante A
+Absatz [Beschriftung] (leer)
+Absatz [Heading2] Kapitalwert-Verlauf über den Betrachtungszeitraum
+Absatz [Hinweis] Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“.
+Bild 620×310 px, SVG ja
+Absatz [Hinweis] Nulldurchgänge (dynamische Amortisation): Variante A: Ungünstig 0,00 a · Erwartet 0,00 a · Günstig 0,00 a
+Bild 620×310 px, SVG ja
+Absatz [Heading2] Von der Investition zur Kapitalwertdifferenz
+Bild 620×305 px, SVG ja
+Absatz [Heading2] Mehrjahresübersicht der Zahlungsströme
+Absatz [Hinweis] Nominale Zahlungen je Jahr im Szenario „Erwartet“, in €. Ausgaben negativ, Einnahmen positiv; die Summe der Positionsspalten ist die Spalte „Netto nominal“. Betriebs- und Energiekosten wachsen mit ihren jeweiligen Preissteigerungssätzen, Ersatzbeschaffungen und Einspeiseerlöse bleiben nominal konstant. Der KWK-Zuschlag endet in dem Jahr, in dem das Vollbenutzungsstunden-Kontingent erschöpft ist.
+Absatz [Heading3] Stamm — Stamm
+Bild 620×310 px, SVG ja
+Tabelle 5 Sp. × 23 Z. | Kopf: Jahr | Energiekosten | Netto nominal | Barwert | Kumuliert
+Absatz [Hinweis] Probe: kumulierter Barwert in T (-178.530) + Restwert-Barwert (0) = Nettobarwert (-178.530).
+Absatz [Heading3] Variante — Variante A
+Bild 620×310 px, SVG ja
+Tabelle 5 Sp. × 23 Z. | Kopf: Jahr | Energiekosten | Netto nominal | Barwert | Kumuliert
+Absatz [Hinweis] Probe: kumulierter Barwert in T (-163.652) + Restwert-Barwert (0) = Nettobarwert (-163.652).
+Absatz [Heading2] Szenarien Ungünstig / Erwartet / Günstig
+Absatz [Hinweis] Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.
+Tabelle 7 Sp. × 3 Z. | Kopf: Variante | ΔKW Ungünstig [€] | ΔKW Erwartet [€] | ΔKW Günstig [€] | Spanne [€] | Amortisation [a] | Einstufung
+Absatz [Hinweis] ΔKW = Kapitalwert der Variante abzüglich Kapitalwert von Stammprojekt (Referenz); „—" = Referenz nicht in der Vergleichsgruppe oder Szenario nicht gerechnet. Spanne = größter minus kleinster der drei Szenariowerte.
+Bild 620×145 px, SVG ja
+Absatz [Hinweis] Ungünstig: Vorgaben — i = 4,0 % · T = 20 a · p_E = 1,0 %/a · p_B = 1,0 %/a · p_I = 1,0 %/a · Investition +10 % · Erträge -10 % · Nutzungsdauer -2 a · Einspeisevergütung 0,000 €/kWh
+Absatz [Hinweis] Günstig: Vorgaben — i = 2,0 % · T = 20 a · p_E = -1,0 %/a · p_B = -1,0 %/a · p_I = -1,0 %/a · Investition -10 % · Erträge +10 % · Nutzungsdauer +2 a · Einspeisevergütung 0,000 €/kWh
+Absatz [Hinweis] 0 von 11 Parametern szenariert
+Absatz [Normal] Vorschlag zur Entscheidung: Variante „Variante A“ — Kapitalwertdifferenz zu Stammprojekt +14.877 € (Erwartet), in allen drei Szenarien positiv (Worst +14.771 €, Best +14.986 €).
+Absatz [Beschriftung] (leer)
+Absatz [Heading2] Nicht monetäre Wirkungen
+Absatz [Hinweis] Nicht monetarisierbare Wirkungen nach DIN EN 17463 (6.1, 8.2): Kategorie, Dauer (kurz, mittel, lang) und Wirkung auf Organisation, Mitarbeiter und Umwelt (keine bis stark); Beurteilung = Dauer × stärkste Wirkung (0 bis 9). Die Wirkungen fließen nicht in den Kapitalwert.
+Tabelle 7 Sp. × 3 Z. | Kopf: Kategorie | Beschreibung | Dauer | Organisation | Mitarbeiter | Umwelt | Beurteilung
+Absatz [Heading2] Sensitivitätsanalyse (Szenario „Erwartet“)
+Absatz [Hinweis] Kapitalwert der Variante gegenüber dem Stamm bei Veränderung je eines Einflussparameters; Zins und Preissteigerung wirken auf beide Projekte, Investitions- und Energiekosten-Ausschlag nur auf die Variante.
+Absatz [Heading3] Variante — Variante A
+Tabelle 5 Sp. × 5 Z. | Kopf: Parameter | KW bei −Δ [€] | KW Basis [€] | KW bei +Δ [€] | Steigung
+Absatz [Beschriftung] (leer)
+Absatz [Heading1] Anhang
+Absatz [Heading2] Simulationsstände
+Tabelle 4 Sp. × 3 Z. | Kopf: Projekt | Rolle | Simulation vom | Hinweis
+Absatz [Heading2] Datengrundlage und Methodik
+Absatz [Normal] Für diesen Bericht wurde jedes aufgeführte Projekt neu simuliert (stündliche Jahresrechnung) und anschließend wirtschaftlich bewertet; die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.
+Absatz [Normal] Grundlage sind die je Projekt gespeicherten Simulationsergebnisse der EPOS-Plan-Simulation (stündliche Jahresrechnung). Varianten sind eigenständige Projektkopien, verknüpft über die Variantenliste des Stammprojekts.
+Absatz [Normal] Herstellerdaten stammen aus den hinterlegten Katalogen oder manuellen Eingaben. Klimadaten aus der dem Projekt zugeordneten Klimaregion.
+Absatz [Hinweis] Emissionsfaktoren und Energiepreise werden mit den Kennzahlgruppen Emissionen und Kosten ausgewiesen, sobald deren Verrechnung aktiv ist (Ausbaustufe).
+Seitenumbruch
+Absatz [Heading1] Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)
+Absatz [Hinweis] Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer.
+Tabelle 6 Sp. × 21 Z. | Kopf: Nr. | Thema | Anforderung | Stelle im Bericht | Stand in EPOS | Beurteilung 1–5
+Abschnitt 11906×16838 hoch · Ränder o/r/u/l 1133/1133/1020/1417 · Kopf default · Fuß default

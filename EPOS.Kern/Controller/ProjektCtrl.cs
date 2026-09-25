@@ -330,7 +330,10 @@ namespace WindowsFormsApplication1
         /// <see cref="VariantenVerknuepfungenEntfernen"/> löst die Verweise FREMDER
         /// Varianten auf dieses Projekt, und <see cref="PufferReferenzenLoesen"/> räumt
         /// Verweise, die keine Projektspalte tragen. Der Schritt ändert an diesem
-        /// Löschweg nichts; er fängt nur das auf, was an ihm vorbeiginge.</para>
+        /// Löschweg nichts; er fängt nur das auf, was an ihm vorbeiginge. Der vierte
+        /// Handgriff, <see cref="BerichtsKonfigurationEntfernen"/>, löscht dagegen nur:
+        /// Auf Zielstand ist er doppelt zur Kaskade, er bleibt als Rückfall für eine
+        /// Datenbank unter Stand 96 (siehe dort).</para>
         /// </summary>
         public bool Delete(int idProjekt)
         {
@@ -438,16 +441,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Entfernt die Berichtskonfiguration DIESES Projekts VOR dem Projekt-DELETE. Die
-        /// Tabelle Berichtskonfiguration hängt an keiner
-        /// Löschweitergabe (Ad-hoc-DDL ohne Beziehung, BerichtCtrl) — verbliebe die
-        /// Zeile, kollidierte eine spätere Projektkopie am eindeutigen Index
-        /// UQ_BerichtKonfigProj, sobald die neue Projekt-ID (MAX+1) auf die verwaiste
-        /// ProjektID fällt (Duplizier-Abbruch vom 21.08.2026). Still über StilleDb:
-        /// Fehlt die Tabelle (Datenbank ohne Berichtsmodul), läuft das Löschen ohne
-        /// Dialog weiter.
-        /// </summary>
-        /// <summary>
         /// Die LÖSCHWEITERGABE der PV-Vergütung — und der Randfall, den ein
         /// Fremdschlüssel nicht könnte (Konzept § 2.16).
         ///
@@ -513,6 +506,27 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Entfernt die Berichtskonfiguration DIESES Projekts VOR dem Projekt-DELETE — ein
+        /// RÜCKFALL, nicht der Weg, auf dem die Zeile im Regelfall verschwindet.
+        ///
+        /// <para><b>Auf einer Datenbank auf Zielstand ist dieses DELETE doppelt.</b>
+        /// <c>Berichtskonfiguration.ProjektID</c> trägt aus Schemaschritt 96 den
+        /// Fremdschlüssel auf <c>Tab_Projekt</c> mit <c>ON DELETE CASCADE</c>
+        /// (<see cref="ProjektFremdschluessel"/>), und jede Verbindung des Kerns schaltet
+        /// die Fremdschlüssel ein (<c>SqliteDatenzugriff.OeffneVerbindung</c>). Das
+        /// Projekt-DELETE nähme die Zeile also von selbst mit — nachgewiesen in
+        /// <c>BerichtCtrlKonfigurationTests</c>.</para>
+        ///
+        /// <para><b>Es bleibt für die Datenbank, die Schritt 96 nicht erreicht hat.</b>
+        /// Scheitert die Migration, startet die Windows-Schale trotzdem, und Projekte
+        /// bleiben löschbar; die iOS-Hülle migriert gar nicht, ihre Datei ist so alt wie
+        /// ihr Seed. Ohne Beziehung bliebe die Zeile dort als Waise liegen, und eine
+        /// Projektkopie, die dieselbe Kennung bekommt (die Kopie wählt MAX+1 und fragt die
+        /// ausgenommene Berichtskonfiguration dabei nicht), erbte die Berichtseinstellungen
+        /// des gelöschten Projekts. Still über <see cref="StilleDb"/>: Ein Fehler hier hält
+        /// das Löschen nicht auf.</para>
+        /// </summary>
         private static void BerichtsKonfigurationEntfernen(int idProjekt)
         {
             try
