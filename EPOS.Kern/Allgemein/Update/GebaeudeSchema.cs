@@ -50,6 +50,13 @@ namespace WindowsFormsApplication1
     // Kuehlspalten neu. Die Projektspalte Tab_Einstellungen.Anlagenkopplung desselben
     // Schritts steht bei AnlagenkopplungSchema, das beide Teile zu EINEM Schritt fuegt.
     // Die drei Uebergabespalten der Zone legt ebenfalls S-C mit an.
+    //
+    // DER VIERTE DURCHGANG: KAK-S1 (Entscheid E37, Anlagenkopplung 8.1; Nummer bei
+    // KuehluebergabeSchema.SCHRITT). Acht Spalten der Kuehluebergabe je Gebaeudetabelle -
+    // der Schalter Kuehluebergabe_Aktiv zuerst (A1) -, die Sicht mit ihnen HINTER den
+    // Uebergabespalten neu (98 Spalten). Er laeuft in Migration, Werkzeug und Testkopie
+    // ZULETZT, damit kein aelterer Durchgang die Spalten wieder aus der Sicht schneidet.
+    // Die drei Zonenspalten der Kuehluebergabe bringt ein eigener Schritt nach S-C.
     // ====================================================================================
 
     /// <summary>
@@ -60,7 +67,8 @@ namespace WindowsFormsApplication1
     /// 108, Kuehlkonzept 7.1): vier Kuehleingaben je Gebaeudetabelle und der zweite
     /// Sichtneubau; und der dritte Durchgang AK-S1 (Schemaschritt 122, Anlagenkopplung
     /// 8.1): dreizehn Spalten der Waermeuebergabe je Gebaeudetabelle und der dritte
-    /// Sichtneubau.
+    /// Sichtneubau; und der vierte Durchgang KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>,
+    /// E37): acht Spalten der Kuehluebergabe je Gebaeudetabelle und der vierte Sichtneubau.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -303,6 +311,64 @@ namespace WindowsFormsApplication1
             TABELLEN.SelectMany(t => UEBERGABE_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
                     .ToArray();
 
+        // ---- KAK-S1, die Kuehluebergabe (vierter Durchgang, E37) ------------------------
+        //
+        // Acht Spalten je Gebaeudetabelle beschreiben die Kaelteseite der Kopplung
+        // (Anlagenkopplung 8.1, Schritt K in 10.5). Der Schalter (A1) wie Heizkreis_Aktiv,
+        // alle anderen nullbar - NULL ist die Vorgabe, die Bereiche prueft der Eingang.
+
+        /// <summary>
+        /// „Die Kuehluebergabe dieses Gebaeudes wird gerechnet" (A1): Schalter wie
+        /// <see cref="SPALTE_HEIZKREIS_AKTIV"/>, <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>.
+        /// Er traegt die ABSICHT, die Felder daneben die WERTE — wer ihn abschaltet, behaelt die Art.
+        /// </summary>
+        public const string SPALTE_KUEHLUEBERGABE_AKTIV = "Kuehluebergabe_Aktiv";
+        /// <summary>Kuehluebergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>); NULL = ideal, Kaelteseite nicht gekoppelt.</summary>
+        public const string SPALTE_KUEHL_UEBERGABE_ART = "Kuehl_Uebergabe_Art";
+        /// <summary>Exponent der Kuehluebergabe [–]; NULL = Vorgabe der Art.</summary>
+        public const string SPALTE_KUEHL_UEBERGABE_EXPONENT = "Kuehl_Uebergabe_Exponent";
+        /// <summary>Nennleistung der Kuehluebergabe [kW], sensibel; NULL = aus dem Auslegungstag (A2).</summary>
+        public const string SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN = "Kuehl_Uebergabe_Leistung_Nenn";
+        /// <summary>Auslegungsvorlauf der Kuehluebergabe [°C]; NULL = Vorgabe der Art.</summary>
+        public const string SPALTE_KUEHL_AUSLEGUNG_VORLAUF = "Kuehl_Auslegung_Vorlauf";
+        /// <summary>Auslegungsruecklauf der Kuehluebergabe [°C]; NULL = Vorgabe der Art.</summary>
+        public const string SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF = "Kuehl_Auslegung_Ruecklauf";
+        /// <summary>Raumtemperatur im Auslegungspunkt der Kuehluebergabe [°C]; NULL = <c>Kuehl_Sollwert</c>.</summary>
+        public const string SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR = "Kuehl_Auslegung_Raumtemperatur";
+        /// <summary>
+        /// Untere Grenze des Kaltwasser-Vorlaufs [°C] — eine Vorgabe statt einer Taupunktrechnung
+        /// (7.2); NULL = Vorgabe der Art, beim Geblaesekonvektor keine Grenze.
+        /// </summary>
+        public const string SPALTE_KUEHL_VORLAUFGRENZE = "Kuehl_Vorlaufgrenze";
+
+        /// <summary>
+        /// Die acht Spalten der Kuehluebergabe JE Tabelle in der Reihenfolge von Anlagenkopplung
+        /// 8.1 (KAK-S1), in <b>Access</b>-Schreibweise wie <see cref="UEBERGABE_SPALTEN"/>.
+        /// </summary>
+        public static readonly KeyValuePair<string, string>[] KUEHLUEBERGABE_SPALTEN =
+        {
+            new KeyValuePair<string, string>(SPALTE_KUEHLUEBERGABE_AKTIV,           "YESNO"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_UEBERGABE_ART,            "TEXT(20)"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_UEBERGABE_EXPONENT,       "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN,  "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_AUSLEGUNG_VORLAUF,        "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF,      "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR, "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_VORLAUFGRENZE,            "DOUBLE"),
+        };
+
+        /// <summary>Der eine Schalter unter den Spalten der Kuehluebergabe - NOT NULL DEFAULT 0.</summary>
+        public static readonly string[] KUEHLUEBERGABE_SCHALTER = { SPALTE_KUEHLUEBERGABE_AKTIV };
+
+        /// <summary>
+        /// Die 16 <see cref="SchemaSpalte"/>-Eintraege von KAK-S1 — die acht aus
+        /// <see cref="KUEHLUEBERGABE_SPALTEN"/> fuer <c>Tab_Gebaeude</c>, dann fuer
+        /// <c>Tab_Gebaeude_STAMM</c>. Die Nummer steht bei <see cref="KuehluebergabeSchema.SCHRITT"/>.
+        /// </summary>
+        public static readonly SchemaSpalte[] Kuehluebergabespalten =
+            TABELLEN.SelectMany(t => KUEHLUEBERGABE_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
+                    .ToArray();
+
         // ---- die Sicht ----------------------------------------------------------------
 
         /// <summary>Verwirft die Sicht - wiederholbar (<c>IF EXISTS</c>).</summary>
@@ -409,13 +475,28 @@ namespace WindowsFormsApplication1
                                  .Concat(UEBERGABE_SPALTEN.Select(s => s.Key)));
 
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit AK-S1). Wer die
+        /// Alle Spalten der Sicht ab KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>): die 90 aus
+        /// <see cref="SICHT_UEBERGABE"/>, dahinter die acht Spalten der Kuehluebergabe - an den
+        /// Stellen 90..97.
+        /// </summary>
+        public static readonly string[] SICHT_KUEHLUEBERGABE =
+            SICHT_UEBERGABE.Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key)).ToArray();
+
+        /// <summary>Die Sichtdefinition von KAK-S1: M3, KU-S1, AK-S1 und dahinter die acht Spalten der Kuehluebergabe.</summary>
+        public static readonly string SQL_VIEW_KUEHLUEBERGABE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key)));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit KAK-S1). Wer die
         /// Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_UEBERGABE;
+        public static string[] SICHT_AKTUELL => SICHT_KUEHLUEBERGABE;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit AK-S1).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_UEBERGABE;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit KAK-S1).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KUEHLUEBERGABE;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)
@@ -465,6 +546,18 @@ namespace WindowsFormsApplication1
             foreach (SchemaSpalte s in Uebergabespalten)
                 if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
             return SichtBeginntMit(SICHT_UEBERGABE);
+        }
+
+        /// <summary>
+        /// Steht KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>) vollstaendig? Alle 16 Spalten
+        /// der Kuehluebergabe stehen, und die Sicht liefert <see cref="SICHT_KUEHLUEBERGABE"/> in
+        /// dieser Reihenfolge an ihren Stellen 0..97.
+        /// </summary>
+        public static bool KuehluebergabespaltenVollstaendig()
+        {
+            foreach (SchemaSpalte s in Kuehluebergabespalten)
+                if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
+            return SichtBeginntMit(SICHT_KUEHLUEBERGABE);
         }
 
         /// <summary>Beginnt die Spaltenfolge der Sicht mit <paramref name="soll"/>?</summary>
@@ -621,6 +714,53 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren(SQL_VIEW_UEBERGABE);
                     bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
                                  SICHT_UEBERGABE.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
+        }
+
+        /// <summary>
+        /// Fuehrt KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>) in EINEM Vorgang aus - fuer
+        /// <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c> ueber
+        /// <see cref="KuehluebergabeSchema.GebaeudeAlle"/>; die Migration der Schale geht denselben
+        /// Weg ueber ihre eigenen Helfer. Sicht verwerfen, die fehlenden Spalten der Kuehluebergabe
+        /// anlegen, Sicht aus <see cref="SQL_VIEW_KUEHLUEBERGABE"/> neu bauen. Setzt M3, KU-S1 und
+        /// AK-S1 voraus und muss als LETZTER Sichtneubau laufen. Wiederholbar, <b>kein DML</b> -
+        /// der Schalter steht danach auf 0, die uebrigen Spalten auf NULL.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (hoechstens 16).</returns>
+        public static int KuehluebergabespaltenAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = Kuehluebergabespalten.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren(SQL_VIEW_DROP);
+                    bericht?.Add("Sicht " + VIEW + " verworfen");
+                    foreach (SchemaSpalte s in fehlend)
+                    {
+                        v.Ausfuehren("ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                     StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 Kuehluebergabespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                                 " Spalte(n) der Kuehluebergabe angelegt");
+                    v.Ausfuehren(SQL_VIEW_KUEHLUEBERGABE);
+                    bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
+                                 SICHT_KUEHLUEBERGABE.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
                     v.Commit();
                 }
                 catch

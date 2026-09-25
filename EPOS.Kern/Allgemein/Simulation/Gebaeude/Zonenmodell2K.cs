@@ -40,6 +40,35 @@ namespace WindowsFormsApplication1
         /// liegt zwischen θ_soll − Xp und θ_soll.
         /// </summary>
         UebergabeRegelbereich,
+
+        /// <summary>
+        /// Anlagenkopplung, Kälteseite (Schritt K, E37), „Kühlübergabe begrenzt", gesättigt (y = 1):
+        /// Das Ventil steht voll offen, die Kühlübergabe hängt als Sekantenleitwert G gegen θ_K im
+        /// freien Lauf, die Raumluft liegt über θ_kühl + Xp. Das Spiegelbild von
+        /// <see cref="UebergabeGesaettigt"/>.
+        /// </summary>
+        KuehluebergabeGesaettigt,
+
+        /// <summary>
+        /// Anlagenkopplung, Kälteseite (Schritt K, E37), Regelbereich (0 &lt; y &lt; 1): Der
+        /// P-Regler drosselt die Kühlübergabe, die Raumluft liegt zwischen θ_kühl und
+        /// θ_kühl + Xp. Das Spiegelbild von <see cref="UebergabeRegelbereich"/>.
+        /// </summary>
+        KuehluebergabeRegelbereich,
+    }
+
+    /// <summary>
+    /// Welche Seite der Übergabe ein gekoppelter Abschnitt rechnet (Anlagenkopplung 10.2 und
+    /// 10.5): die Wärmeseite (Schritt H) oder die Kälteseite (Schritt K, E37). Schritt K ist
+    /// Schritt H im gespiegelten Raum; der Wert <see cref="Heizen"/> ist die Vorgabe.
+    /// </summary>
+    internal enum Uebergabeseite
+    {
+        /// <summary>Die Wärmeseite — Schritt H, die Vorgabe.</summary>
+        Heizen = 0,
+
+        /// <summary>Die Kälteseite — Schritt K, Schritt H im gespiegelten Raum (E37).</summary>
+        Kuehlen,
     }
 
     /// <summary>
@@ -75,7 +104,7 @@ namespace WindowsFormsApplication1
     /// ihm. <see cref="Zuruecksetzen"/> ist Bedingung vor jedem Lauf.</para>
     ///
     /// <para><b>Schritt H — die Anlagenkopplung (Stufe AK1).</b> Trägt der Stundenrand eine
-    /// Übergabe (<see cref="Stundenrand.MitUebergabe"/>), wählt <see cref="SchrittH"/> den Fall
+    /// Übergabe (<see cref="Stundenrand.MitUebergabe"/>), wählt <see cref="SchrittUebergabe"/> den Fall
     /// der Heizung: Liegt die verlangte Leistung innerhalb der Übergabe <b>und</b> ist das
     /// Proportionalband null, gilt WÖRTLICH der geregelte Fall des Bestands (Grenzfall 3.7);
     /// sonst hängt die Übergabe als Sekantenleitwert (G, θ_H) im freien Lauf, je
@@ -85,6 +114,13 @@ namespace WindowsFormsApplication1
     /// aktuelle Raumlufttemperatur" von 10.2 ist beim masselosen Luftknoten dieser
     /// Arbeitspunkt, nicht der Wert eines früheren Abschnitts). Ohne Übergabe bleibt jede
     /// Anweisung des Bestands, wie sie ist.</para>
+    ///
+    /// <para><b>Schritt K — die Kälteseite (E37, 10.5).</b> Trägt der Stundenrand eine
+    /// Kühlübergabe (<see cref="Stundenrand.MitKuehluebergabe"/>) und verlangt das Gebäude Kälte,
+    /// rechnet dieselbe Routine im gespiegelten Raum (<see cref="Uebergabeseite.Kuehlen"/>). Der
+    /// geregelte Kühlfall und die Kühlgrenze verteilen die Kälte dann wie die Übergabe; ohne
+    /// Kühlübergabe bleibt die Kühlung des Bestands wörtlich. Gründe und Zeitanteile stehen je
+    /// Seite im Ergebnis.</para>
     ///
     /// <para>Ohne Datenbank, ohne Protokoll, ohne Statik, einfädig, durchgehend
     /// <c>double</c>.</para>
@@ -123,6 +159,7 @@ namespace WindowsFormsApplication1
         private Fallsystem _freiZusatz;
         private Fallsystem _heizen;
         private Fallsystem _kuehlen;
+        private Fallsystem _kuehlenUebergabe;
 
         // Der Zustand: die beiden Massentemperaturen [°C].
         private double _thetaMAw;
@@ -236,9 +273,13 @@ namespace WindowsFormsApplication1
             int abschnitte = 0;
             Span<Betriebsfall> folge = stackalloc Betriebsfall[ABSCHNITTSDECKEL];
 
-            // Anlagenkopplung: Zeit je Begrenzungsgrund [s] - nur mit Übergabe geführt.
+            // Anlagenkopplung: Zeit je Begrenzungsgrund [s], je Seite ein Feld (Wärmeseite nur mit
+            // Übergabe, Kälteseite nur mit Kühlübergabe geführt). Ein Abschnitt der Kälteseite bucht
+            // das Kältefeld, jeder andere wie gehabt das Heizfeld; so bleibt die Heizseite bitgleich.
             Span<double> tauJeGrund = stackalloc double[GRUENDE];
             tauJeGrund.Clear();
+            Span<double> tauJeGrundKuehl = stackalloc double[GRUENDE];
+            tauJeGrundKuehl.Clear();
 
             while (t < STUNDE_S)
             {
@@ -304,8 +345,20 @@ namespace WindowsFormsApplication1
                             AbschnittsregelVerletzt(fall, q);
                         akkHeiz += Math.Max(q, 0.0) * tau;
                         break;
+                    case Betriebsfall.KuehluebergabeGesaettigt:
+                    case Betriebsfall.KuehluebergabeRegelbereich:
+                        // Spiegel des Übergabefalls (Schritt K): Die Leistung darf um G mal den Rand
+                        // der Gültigkeit über null liegen.
+                        if (q > Rechenrand.Zu(0.0) + ab.LeitwertWK * Rechenrand.Zu(ab.ThetaHC))
+                            AbschnittsregelVerletzt(fall, q);
+                        akkKuehl += Math.Max(-q, 0.0) * tau;
+                        break;
                 }
-                if (r.MitUebergabe) tauJeGrund[(int)ab.Grund] += tau;
+                if (ab.Gekoppelt && ab.K.Seite == Uebergabeseite.Kuehlen) tauJeGrundKuehl[(int)ab.Grund] += tau;
+                else if (r.MitUebergabe) tauJeGrund[(int)ab.Grund] += tau;
+                // Spiegelbildlich zur Heizseite zählt ein ungekoppelter Abschnitt auf der Kälteseite
+                // als „keine Begrenzung" mit — nur für die Wahl des Grunds der Stunde.
+                if (r.MitKuehluebergabe && !ab.Gekoppelt) tauJeGrundKuehl[(int)ab.Grund] += tau;
                 akkAir += air * tau;
                 akkS1 += s1 * tau;
                 akkS2 += s2 * tau;
@@ -323,7 +376,7 @@ namespace WindowsFormsApplication1
             double s1Mittel = akkS1 / STUNDE_S;
             double s2Mittel = akkS2 / STUNDE_S;
             double opMittel = 0.5 * airMittel + 0.5 * (_wAW * s1Mittel + _wIW * s2Mittel);
-            if (!r.MitUebergabe)
+            if (!r.MitUebergabe && !r.MitKuehluebergabe)
                 return new Stundenergebnis(
                     akkHeiz / STUNDE_S,
                     akkKuehl / STUNDE_S,
@@ -338,16 +391,25 @@ namespace WindowsFormsApplication1
                     abschnitte);
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
-            // mittleren Leistung; der Grund mit dem größten Zeitanteil.
+            // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
             LetzteFallfolge = folge.Slice(0, Math.Min(abschnitte, folge.Length)).ToArray();
             double heizMittel = akkHeiz / STUNDE_S;
-            double vorlauf = r.VorlaufC;
+            double vorlauf = r.MitUebergabe ? r.VorlaufC : double.NaN;
             double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
             int grund = 0;
             for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;
+
+            // Kälteseite (Schritt K, 10.5): der Rücklauf über den Spiegel, θ_R = θ_V + Φ̄_c/W_K.
+            double kuehlMittel = akkKuehl / STUNDE_S;
+            double kuehlVorlauf = r.MitKuehluebergabe ? r.KuehlVorlaufC : double.NaN;
+            double kuehlRuecklauf = double.IsNaN(kuehlVorlauf) ? double.NaN
+                : -Waermeuebergabe.RuecklaufC(r.KuehlUebergabeGespiegelt, -kuehlVorlauf, kuehlMittel);
+            int grundKuehl = 0;
+            for (int i = 1; i < GRUENDE; i++) if (tauJeGrundKuehl[i] > tauJeGrundKuehl[grundKuehl]) grundKuehl = i;
+            double tauVorlaufgrenze = tauJeGrundKuehl[(int)Begrenzungsgrund.VorlaufgrenzeKuehlung];
             return new Stundenergebnis(
                 heizMittel,
-                akkKuehl / STUNDE_S,
+                kuehlMittel,
                 airMittel,
                 opMittel,
                 s1Mittel,
@@ -362,16 +424,23 @@ namespace WindowsFormsApplication1
                 (Begrenzungsgrund)grund,
                 tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
-                tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S);
+                tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
+                kuehlVorlauf,
+                kuehlRuecklauf,
+                (Begrenzungsgrund)grundKuehl,
+                (tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlUebergabe] + tauVorlaufgrenze) / STUNDE_S,
+                tauVorlaufgrenze / STUNDE_S,
+                tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlleistungMax] / STUNDE_S,
+                tauJeGrundKuehl[(int)Begrenzungsgrund.KeineKaelte] / STUNDE_S);
         }
 
-        /// <summary>Zahl der Begrenzungsgründe (Länge der Zeitsummen je Grund).</summary>
-        private const int GRUENDE = 4;
+        /// <summary>Zahl der Begrenzungsgründe beider Seiten (Länge der Zeitsummen je Grund).</summary>
+        private const int GRUENDE = 8;
 
         /// <summary>
-        /// Die Folge der Betriebsfälle der zuletzt gerechneten Stunde MIT Übergabe — ein Befund
-        /// für die Proben (zwei Knicke, 11.1), kein Zustand: Das Ergebnis hängt nicht an ihr.
-        /// Stunden ohne Übergabe schreiben sie nicht.
+        /// Die Folge der Betriebsfälle der zuletzt gerechneten Stunde MIT Kopplung (Übergabe oder
+        /// Kühlübergabe) — ein Befund für die Proben (zwei Knicke, 11.1), kein Zustand: Das
+        /// Ergebnis hängt nicht an ihr. Stunden ohne Kopplung schreiben sie nicht.
         /// </summary>
         internal Betriebsfall[] LetzteFallfolge { get; private set; } = Array.Empty<Betriebsfall>();
 
@@ -409,7 +478,7 @@ namespace WindowsFormsApplication1
                 double q0 = h.Ausgang(2, x);
                 if (q0 > 0.0)
                 {
-                    if (r.MitUebergabe) return SchrittH(x, in r, in h, q0, out ab);
+                    if (r.MitUebergabe) return SchrittUebergabe(x, in r, in h, q0, Uebergabeseite.Heizen, out ab);
                     if (Begrenzt(r.HeizleistungMaxW) && q0 > r.HeizleistungMaxW)
                     {
                         ab = Aufbauen(Betriebsfall.Heizgrenze, in r);
@@ -425,6 +494,7 @@ namespace WindowsFormsApplication1
                 double qc0 = -k.Ausgang(2, x);
                 if (qc0 > 0.0)
                 {
+                    if (r.MitKuehluebergabe) return SchrittUebergabe(x, in r, in k, qc0, Uebergabeseite.Kuehlen, out ab);
                     if (Begrenzt(r.KuehlleistungMaxW) && qc0 > r.KuehlleistungMaxW)
                     {
                         ab = Aufbauen(Betriebsfall.Kuehlgrenze, in r);
@@ -454,31 +524,48 @@ namespace WindowsFormsApplication1
         /// θ_soll − Xp: Leitwert G = G_H.</item>
         /// <item><b>H5 Regelbereich:</b> sonst — Leitwert G = Φ_ue,max/Xp + y·G_H.</item>
         /// </list>
+        ///
+        /// <para><b>Schritt K — die Kälteseite (10.5, E37)</b> ist dieselbe Routine im
+        /// <b>gespiegelten Raum</b>: Mit <paramref name="seite"/> = <see cref="Uebergabeseite.Kuehlen"/>
+        /// werden Raumluft, freier Lauf θ₀, Sollwert (θ_kühl) und Vorlauf negiert (<see cref="Sp"/>:
+        /// x ↦ −x, <b>ohne Multiplikation</b>, damit die Wärmeseite Zeichen für Zeichen bleibt), die
+        /// Kennwerte der Kühlübergabe kommen gespiegelt (−V, −R, −θ_i,N) aus dem Rand, die
+        /// Empfindlichkeit s bleibt. Alle Vergleiche und Aufrufe von <see cref="Waermeuebergabe"/>
+        /// laufen im gespiegelten Raum; zurück gilt θ_K = −θ′_H und [unten, oben] = [−oben′, −unten′].
+        /// q₀ ist dann die verlangte Kühlleistung q_c,0 &gt; 0.</para>
         /// </summary>
-        private Betriebsfall SchrittH(Vektor2 x, in Stundenrand r, in Abschnitt geregelt, double q0, out Abschnitt ab)
+        private Betriebsfall SchrittUebergabe(Vektor2 x, in Stundenrand r, in Abschnitt geregelt, double q0,
+                                              Uebergabeseite seite, out Abschnitt ab)
         {
-            Uebergabekennwerte k = r.Uebergabe;
-            double soll = r.ThetaSoll;
+            bool heizen = seite == Uebergabeseite.Heizen;
+            Seitenrand sr = heizen ? Seitenrand.Heizseite(in r) : Seitenrand.Kaelteseite(in r);
+            Uebergabekennwerte k = sr.Kennwerte;
+            double soll = Sp(heizen, sr.SollC);
             double xp = r.ReglerbandK;
-            double vorlauf = r.VorlaufC;
-            double a = r.HeizungStrahlungsanteil;
+            double vorlauf = Sp(heizen, sr.VorlaufC);
+            double a = sr.Strahlungsanteil;
             double eAW = a * _wAW, eIW = a * _wIW, eLuft = 1.0 - a;
 
+            // Die Gründe und Fälle der Seite (Spiegel: Heizgrenze ↔ KeineKaelte usw.).
+            Begrenzungsgrund grundNichts = heizen ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineKaelte;
+            Begrenzungsgrund grundLeistungMax = heizen ? Begrenzungsgrund.HeizleistungMax : Begrenzungsgrund.KuehlleistungMax;
+            Betriebsfall fallGrenze = heizen ? Betriebsfall.Heizgrenze : Betriebsfall.Kuehlgrenze;
+
             // Der freie Lauf ohne Heizung am Abschnittsbeginn und die Antwort der Raumluft auf
-            // die Heizleistung: θ_air = θ₀ + s·Φ (affin im freien System).
+            // die Heizleistung: θ_air = θ₀ + s·Φ (affin im freien System; gespiegelt ebenso).
             Abschnitt frei = Aufbauen(Betriebsfall.Totband, in r);
-            double theta0 = frei.Ausgang(2, x);
+            double theta0 = Sp(heizen, frei.Ausgang(2, x));
             double s = frei.System.Empfindlichkeit(eAW, eIW, eLuft);
 
-            // H1 — Heizgrenze der Übergabe.
+            // H1 / K1 — die Übergabe liefert nichts.
             if (double.IsNaN(vorlauf) || !(vorlauf > theta0))
             {
-                ab = frei.MitKopplung(Kopplung.Frei(Begrenzungsgrund.Heizgrenze, double.IsNaN(vorlauf) ? double.NegativeInfinity : vorlauf, soll));
+                ab = frei.MitKopplung(KopplungFrei(seite, grundNichts, double.IsNaN(vorlauf) ? double.NegativeInfinity : vorlauf, soll));
                 return Betriebsfall.Totband;
             }
 
-            bool hlBegrenzt = Begrenzt(r.HeizleistungMaxW);
-            double hl = r.HeizleistungMaxW;
+            bool hlBegrenzt = Begrenzt(sr.LeistungMaxW);
+            double hl = sr.LeistungMaxW;
 
             // Grenzfall 3.7: Xp = 0 und die Übergabe reicht am Sollwert — der Bestand, wörtlich.
             if (xp == 0.0)
@@ -488,26 +575,26 @@ namespace WindowsFormsApplication1
                 {
                     if (hlBegrenzt && q0 > hl)
                     {
-                        ab = Aufbauen(Betriebsfall.Heizgrenze, in r).MitKopplung(
-                            Kopplung.Frei(Begrenzungsgrund.HeizleistungMax, double.NegativeInfinity,
-                                          Waermeuebergabe.Kappungstemperatur(k, vorlauf, soll, xp, hl)));
-                        return Betriebsfall.Heizgrenze;
+                        ab = Aufbauen(fallGrenze, in r).MitKopplung(
+                            KopplungFrei(seite, grundLeistungMax, double.NegativeInfinity,
+                                         Waermeuebergabe.Kappungstemperatur(k, vorlauf, soll, xp, hl)));
+                        return fallGrenze;
                     }
-                    ab = geregelt.MitKopplung(Kopplung.Geregelt(phiSoll));
-                    return Betriebsfall.HeizenGeregelt;
+                    ab = geregelt.MitKopplung(Kopplung.Geregelt(phiSoll, seite));
+                    return heizen ? Betriebsfall.HeizenGeregelt : Betriebsfall.KuehlenGeregelt;
                 }
             }
 
-            // H4 — kappt Heizleistung_Max, was die Kennlinie des Reglers hergäbe?
+            // H4 — kappt die Leistungsgrenze, was die Kennlinie des Reglers hergäbe?
             if (hlBegrenzt)
             {
                 double thetaHl = theta0 + s * hl;
                 if (thetaHl < soll && Waermeuebergabe.LeistungKennlinieW(k, vorlauf, soll, xp, thetaHl) >= hl)
                 {
-                    ab = Aufbauen(Betriebsfall.Heizgrenze, in r).MitKopplung(
-                        Kopplung.Frei(Begrenzungsgrund.HeizleistungMax, double.NegativeInfinity,
-                                      Waermeuebergabe.Kappungstemperatur(k, vorlauf, soll, xp, hl)));
-                    return Betriebsfall.Heizgrenze;
+                    ab = Aufbauen(fallGrenze, in r).MitKopplung(
+                        KopplungFrei(seite, grundLeistungMax, double.NegativeInfinity,
+                                     Waermeuebergabe.Kappungstemperatur(k, vorlauf, soll, xp, hl)));
+                    return fallGrenze;
                 }
             }
 
@@ -523,14 +610,17 @@ namespace WindowsFormsApplication1
                 thetaStern = thetaSatt;
                 phiStern = phiSatt;
                 leitwert = Waermeuebergabe.SteigungOffenWK(k, phiSatt, vorlauf, thetaSatt);
-                fall = Betriebsfall.UebergabeGesaettigt;
-                grund = Begrenzungsgrund.Uebergabe;
+                fall = heizen ? Betriebsfall.UebergabeGesaettigt : Betriebsfall.KuehluebergabeGesaettigt;
+                // Die Vorlaufgrenze der Kälteseite (7.2) ist nur dann der Grund, wenn die Übergabe
+                // gesättigt ist UND der Vorlauf an der Grenze steht.
+                grund = heizen ? Begrenzungsgrund.Uebergabe
+                        : sr.VorlaufGekappt ? Begrenzungsgrund.VorlaufgrenzeKuehlung : Begrenzungsgrund.KuehlUebergabe;
             }
             else
             {
                 Waermeuebergabe.ArbeitspunktRegelbereich(k, vorlauf, soll, xp, theta0, s,
                                                          out thetaStern, out phiStern, out leitwert);
-                fall = Betriebsfall.UebergabeRegelbereich;
+                fall = heizen ? Betriebsfall.UebergabeRegelbereich : Betriebsfall.KuehluebergabeRegelbereich;
                 grund = Begrenzungsgrund.KeineBegrenzung;
             }
 
@@ -538,19 +628,41 @@ namespace WindowsFormsApplication1
             // ist das die Heizgrenze, bis die Raumluft fällt.
             if (!(phiStern > 0.0) || !(leitwert > 0.0))
             {
-                ab = frei.MitKopplung(Kopplung.Frei(Begrenzungsgrund.Heizgrenze, thetaStern, soll));
+                ab = frei.MitKopplung(KopplungFrei(seite, grundNichts, thetaStern, soll));
                 return Betriebsfall.Totband;
             }
 
             double thetaH = thetaStern + phiStern / leitwert;
             // Obere Gültigkeit: der Knick (gesättigt) bzw. θ_H, wo die lineare Leistung null wird;
             // untere: der Knick (Regelbereich) und die Heizleistungsgrenze der linearen Leistung.
-            double oben = fall == Betriebsfall.UebergabeGesaettigt ? Math.Min(knick, thetaH) : Math.Min(soll, thetaH);
-            double unten = fall == Betriebsfall.UebergabeRegelbereich ? knick : double.NegativeInfinity;
+            bool gesaettigt = fall == Betriebsfall.UebergabeGesaettigt || fall == Betriebsfall.KuehluebergabeGesaettigt;
+            double oben = gesaettigt ? Math.Min(knick, thetaH) : Math.Min(soll, thetaH);
+            double unten = !gesaettigt ? knick : double.NegativeInfinity;
             if (hlBegrenzt) unten = Math.Max(unten, thetaH - hl / leitwert);
-            ab = FreiMitLeitwert(leitwert, thetaH, eAW, eIW, eLuft, in r, Kopplung.Leitwert(grund, leitwert, thetaH, unten, oben));
+
+            // Zurück in den Raum der Raumluft: θ_K = −θ′_H, [unten, oben] = [−oben′, −unten′].
+            double thetaHC = Sp(heizen, thetaH);
+            double untenC = heizen ? unten : -oben;
+            double obenC = heizen ? oben : -unten;
+            ab = FreiMitLeitwert(leitwert, thetaHC, eAW, eIW, eLuft, in r,
+                                 Kopplung.Leitwert(grund, leitwert, thetaHC, untenC, obenC, seite));
             return fall;
         }
+
+        /// <summary>
+        /// Der Spiegel der Kälteseite (Schritt K): die Wärmeseite unverändert, die Kälteseite
+        /// negiert — <b>ohne Multiplikation</b>, damit die Heizseite Zeichen für Zeichen bleibt.
+        /// </summary>
+        private static double Sp(bool heizen, double x) => heizen ? x : -x;
+
+        /// <summary>
+        /// Die Kopplungsangabe einer freien Lage fester Leistung aus Grenzen im Raum der Seite: auf
+        /// der Wärmeseite unverändert, auf der Kälteseite zurückgespiegelt ([−oben′, −unten′]).
+        /// </summary>
+        private static Kopplung KopplungFrei(Uebergabeseite seite, Begrenzungsgrund grund, double untenSeite, double obenSeite)
+            => seite == Uebergabeseite.Heizen
+                ? Kopplung.Frei(grund, untenSeite, obenSeite, seite)
+                : Kopplung.Frei(grund, -obenSeite, -untenSeite, seite);
 
         /// <summary>
         /// Ist der Betriebsfall im Zustand <paramref name="x"/> verletzt — über den
@@ -594,8 +706,20 @@ namespace WindowsFormsApplication1
                 if (Begrenzt(r.HeizleistungMaxW) && z2 - r.HeizleistungMaxW > Rechenrand.Zu(r.HeizleistungMaxW)) return true;
                 return Begrenzt(k.GrenzeQW) && z2 - k.GrenzeQW > Rechenrand.Zu(k.GrenzeQW);
             }
+            if (fall == Betriebsfall.KuehlenGeregelt)
+            {
+                // Schritt K, Grenzfall 3.7 gespiegelt: Die Kühlleistung (−z2) darf weder das
+                // Vorzeichen wechseln noch Kuehlleistung_Max oder die Kühlübergabe am Kühlsollwert
+                // überschreiten — sonst endet der Abschnitt dort (10.5).
+                if (z2 > Rechenrand.Zu(0.0)) return true;
+                if (Begrenzt(r.KuehlleistungMaxW) && -z2 - r.KuehlleistungMaxW > Rechenrand.Zu(r.KuehlleistungMaxW)) return true;
+                return Begrenzt(k.GrenzeQW) && -z2 - k.GrenzeQW > Rechenrand.Zu(k.GrenzeQW);
+            }
             if (k.ThetaUntenC - z2 > Rechenrand.Zu(k.ThetaUntenC)) return true;
             if (z2 - k.ThetaObenC > Rechenrand.Zu(k.ThetaObenC)) return true;
+            // Die Gegenseite je Seite: Wärmeseite gegen den Kühlsollwert, Kälteseite gegen den Heizsollwert.
+            if (k.Seite == Uebergabeseite.Kuehlen)
+                return r.MitHeizung && r.ThetaSoll - z2 > Rechenrand.Zu(r.ThetaSoll);
             return r.MitKuehlung && z2 - r.ThetaMax > Rechenrand.Zu(r.ThetaMax);
         }
 
@@ -609,6 +733,10 @@ namespace WindowsFormsApplication1
                 case Betriebsfall.HeizenGeregelt:
                     return Geregelt(Heizsystem(r.HeizungStrahlungsanteil), r.ThetaSoll, in r);
                 case Betriebsfall.KuehlenGeregelt:
+                    // Mit Kühlübergabe verteilt die Kühlung wie die Übergabe (a·w_AW, a·w_IW, 1 − a),
+                    // sonst springt die Leistung zwischen Grenzfall, Kühlgrenze und Leitwertfall (10.5).
+                    if (r.MitKuehluebergabe)
+                        return Geregelt(KuehlsystemUebergabe(r.KuehlStrahlungsanteil), r.ThetaMax, in r);
                     return Geregelt(Kuehlsystem(r.KuehlungAnteilInnenflaeche), r.ThetaMax, in r);
                 case Betriebsfall.Heizgrenze:
                 {
@@ -617,6 +745,11 @@ namespace WindowsFormsApplication1
                 }
                 case Betriebsfall.Kuehlgrenze:
                 {
+                    if (r.MitKuehluebergabe)
+                    {
+                        double a = r.KuehlStrahlungsanteil;
+                        return Frei(-r.KuehlleistungMaxW, a * _wAW, a * _wIW, 1.0 - a, in r);
+                    }
                     double k = r.KuehlungAnteilInnenflaeche;
                     return Frei(-r.KuehlleistungMaxW, 0.0, k, 1.0 - k, in r);
                 }
@@ -711,6 +844,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Das geregelte Kühlsystem mit Kühlübergabe (Schritt K): die Kälte verteilt wie die
+        /// Übergabe zum Strahlungsanteil flächenproportional auf die Oberflächen, der Rest an die
+        /// Luft — dieselben Gleichungen wie die Heizseite (KU 3.2). Ein eigener Puffer, damit
+        /// Heiz- und Kühlsystem einander in einer Umschaltstunde nicht verdrängen.
+        /// </summary>
+        private Fallsystem KuehlsystemUebergabe(double strahlungsanteil)
+        {
+            if (_kuehlenUebergabe == null || _kuehlenUebergabe.Schluessel != strahlungsanteil)
+                _kuehlenUebergabe = new Fallsystem(this, geregelt: true,
+                                                   anteilAW: strahlungsanteil * _wAW,
+                                                   anteilIW: strahlungsanteil * _wIW,
+                                                   anteilLuft: 1.0 - strahlungsanteil,
+                                                   gExt: _gExt,
+                                                   schluessel: strahlungsanteil);
+            return _kuehlenUebergabe;
+        }
+
+        /// <summary>
         /// Die Abschnittsregel ist verletzt (F-K3): Ein Heizfall hat Kälte bzw. ein Kühlfall
         /// Wärme gebucht. Kein Teilstundenergebnis, der Zustand bleibt unverändert.
         /// </summary>
@@ -746,6 +897,20 @@ namespace WindowsFormsApplication1
                 else if (!(k.PhiNW > 0.0) || !Endlich(k.Exponent) || k.Exponent < 1.0
                          || !(k.DeltaThetaMNK > 0.0) || !Endlich(k.DeltaThetaMNK) || !(k.SpreizungNK > 0.0))
                     fehler = "Uebergabe";
+            }
+
+            // Die Kälteseite der Kopplung (Schritt K, E37) — dieselben Prüfungen an den gespiegelten
+            // Kennwerten; eine Kühlübergabe ohne Kühlung ist ungültig.
+            if (fehler == null && r.MitKuehluebergabe)
+            {
+                Uebergabekennwerte k = r.KuehlUebergabeGespiegelt;
+                if (!r.MitKuehlung) fehler = "KuehlUebergabe ohne Kuehlung";
+                else if (double.IsInfinity(r.KuehlVorlaufC)) fehler = "KuehlVorlaufC";
+                else if (!Endlich(r.ReglerbandK) || r.ReglerbandK < 0.0) fehler = "ReglerbandK";
+                else if (!AnteilGueltig(r.KuehlStrahlungsanteil)) fehler = "KuehlStrahlungsanteil";
+                else if (!(k.PhiNW > 0.0) || !Endlich(k.Exponent) || k.Exponent < 1.0
+                         || !(k.DeltaThetaMNK > 0.0) || !Endlich(k.DeltaThetaMNK) || !(k.SpreizungNK > 0.0))
+                    fehler = "KuehlUebergabe";
             }
 
             if (fehler != null)
@@ -886,12 +1051,13 @@ namespace WindowsFormsApplication1
         /// Was ein Abschnitt mit Übergabe zusätzlich trägt (Schritt H): den Begrenzungsgrund, den
         /// Leitwert samt Ersatztemperatur im Fall „Übergabe begrenzt", die Grenzen der Raumluft
         /// seiner freien Lage und im geregelten Fall die Übergabe am Sollwert. <c>default</c> =
-        /// ohne Kopplung, der Bestand.
+        /// ohne Kopplung, der Bestand (Seite „Heizen", nicht gekoppelt). Die Angaben stehen im
+        /// Raum der Raumluft — auf der Kälteseite also schon zurückgespiegelt (Schritt K).
         /// </summary>
         private readonly struct Kopplung
         {
             private Kopplung(Begrenzungsgrund grund, double leitwertWK, double thetaHC,
-                             double thetaUntenC, double thetaObenC, double grenzeQW)
+                             double thetaUntenC, double thetaObenC, double grenzeQW, Uebergabeseite seite)
             {
                 Gekoppelt = true;
                 Grund = grund;
@@ -900,10 +1066,14 @@ namespace WindowsFormsApplication1
                 ThetaUntenC = thetaUntenC;
                 ThetaObenC = thetaObenC;
                 GrenzeQW = grenzeQW;
+                Seite = seite;
             }
 
             /// <summary>Gehört der Abschnitt zu einer Stunde mit Übergabe?</summary>
             internal bool Gekoppelt { get; }
+
+            /// <summary>Welche Seite der Abschnitt rechnet (Schritt H oder K); <c>default</c> = Heizen.</summary>
+            internal Uebergabeseite Seite { get; }
 
             /// <summary>Welche Grenze die Leistung in diesem Abschnitt gekappt hat.</summary>
             internal Begrenzungsgrund Grund { get; }
@@ -920,22 +1090,74 @@ namespace WindowsFormsApplication1
             /// <summary>Obere Grenze der Raumluft der freien Lage [°C]; +∞ = keine.</summary>
             internal double ThetaObenC { get; }
 
-            /// <summary>Geregelter Fall: die Übergabe am Sollwert Φ_ue,max(θ_soll) [W]; +∞ = unbegrenzt.</summary>
+            /// <summary>
+            /// Geregelter Fall: die Übergabe am Sollwert Φ_ue,max(θ_soll) [W] — auf der Kälteseite die
+            /// Kühlübergabe am Kühlsollwert als positiver Betrag; +∞ = unbegrenzt.
+            /// </summary>
             internal double GrenzeQW { get; }
 
             /// <summary>Geregelter Fall mit Übergabe (Grenzfall 3.7): die Leistung darf bis <paramref name="grenzeQW"/> steigen.</summary>
-            internal static Kopplung Geregelt(double grenzeQW)
+            internal static Kopplung Geregelt(double grenzeQW, Uebergabeseite seite = Uebergabeseite.Heizen)
                 => new Kopplung(Begrenzungsgrund.KeineBegrenzung, 0.0, double.NaN,
-                                double.NegativeInfinity, double.PositiveInfinity, grenzeQW);
+                                double.NegativeInfinity, double.PositiveInfinity, grenzeQW, seite);
 
-            /// <summary>Freie Lage mit fester Leistung (0 oder <c>Heizleistung_Max</c>), gültig für die Raumluft in [unten, oben].</summary>
-            internal static Kopplung Frei(Begrenzungsgrund grund, double untenC, double obenC)
-                => new Kopplung(grund, 0.0, double.NaN, untenC, obenC, double.PositiveInfinity);
+            /// <summary>Freie Lage mit fester Leistung (0 oder Leistungsgrenze), gültig für die Raumluft in [unten, oben].</summary>
+            internal static Kopplung Frei(Begrenzungsgrund grund, double untenC, double obenC,
+                                          Uebergabeseite seite = Uebergabeseite.Heizen)
+                => new Kopplung(grund, 0.0, double.NaN, untenC, obenC, double.PositiveInfinity, seite);
 
             /// <summary>Freie Lage mit der Übergabe als Leitwert (H5), gültig für die Raumluft in [unten, oben].</summary>
             internal static Kopplung Leitwert(Begrenzungsgrund grund, double leitwertWK, double thetaHC,
-                                              double untenC, double obenC)
-                => new Kopplung(grund, leitwertWK, thetaHC, untenC, obenC, double.PositiveInfinity);
+                                              double untenC, double obenC, Uebergabeseite seite = Uebergabeseite.Heizen)
+                => new Kopplung(grund, leitwertWK, thetaHC, untenC, obenC, double.PositiveInfinity, seite);
+        }
+
+        /// <summary>
+        /// Die Angaben EINER Seite der Übergabe aus dem Stundenrand (Schritt H bzw. K), im Raum der
+        /// Raumluft: Sollwert, Vorlauf, Leistungsgrenze, Kennwerte und Strahlungsanteil. Auf der
+        /// Kälteseite sind die Kennwerte schon gespiegelt (−V, −R, −θ_i,N); Sollwert und Vorlauf
+        /// spiegelt <see cref="SchrittUebergabe"/>.
+        /// </summary>
+        private readonly struct Seitenrand
+        {
+            private Seitenrand(double sollC, double vorlaufC, double leistungMaxW, Uebergabekennwerte kennwerte,
+                               double strahlungsanteil, bool vorlaufGekappt)
+            {
+                SollC = sollC;
+                VorlaufC = vorlaufC;
+                LeistungMaxW = leistungMaxW;
+                Kennwerte = kennwerte;
+                Strahlungsanteil = strahlungsanteil;
+                VorlaufGekappt = vorlaufGekappt;
+            }
+
+            /// <summary>Sollwert der Seite [°C]: Heizsollwert bzw. Kühlsollwert (obere Grenze).</summary>
+            internal double SollC { get; }
+
+            /// <summary>Vorlauf der Stunde [°C]; NaN = Heizkurve aus.</summary>
+            internal double VorlaufC { get; }
+
+            /// <summary>Leistungsgrenze der Seite als positiver Betrag [W]; NaN = unbegrenzt.</summary>
+            internal double LeistungMaxW { get; }
+
+            /// <summary>Die Kennwerte der Übergabe — auf der Kälteseite gespiegelt.</summary>
+            internal Uebergabekennwerte Kennwerte { get; }
+
+            /// <summary>Strahlungsanteil der Übergabe [–].</summary>
+            internal double Strahlungsanteil { get; }
+
+            /// <summary>Kälteseite: Steht der Vorlauf an der Vorlaufgrenze (7.2)? Wärmeseite: nie.</summary>
+            internal bool VorlaufGekappt { get; }
+
+            /// <summary>Die Wärmeseite (Schritt H).</summary>
+            internal static Seitenrand Heizseite(in Stundenrand r)
+                => new Seitenrand(r.ThetaSoll, r.VorlaufC, r.HeizleistungMaxW, r.Uebergabe,
+                                  r.HeizungStrahlungsanteil, false);
+
+            /// <summary>Die Kälteseite (Schritt K, E37).</summary>
+            internal static Seitenrand Kaelteseite(in Stundenrand r)
+                => new Seitenrand(r.ThetaMax, r.KuehlVorlaufC, r.KuehlleistungMaxW, r.KuehlUebergabeGespiegelt,
+                                  r.KuehlStrahlungsanteil, r.KuehlVorlaufGekappt);
         }
 
         /// <summary>Ein Abschnitt: System, konstanter Teil der Unbekannten und b.</summary>

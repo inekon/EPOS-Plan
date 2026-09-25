@@ -55,6 +55,10 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Ruecklaufmittel und die Stunden mit begrenzter Uebergabe - dieselbe Regel, sie
             // stehen erst in aggregate.csv, wenn ein Lauf die Uebergabe rechnet.
             foreach (SchemaSpalte s in AnlagenkopplungSchema.Ergebnisspalten) namen.Add(s.Name);
+            // KAK-S3 (E37, Anlagenkopplung 8.3): Vorlauf- und Ruecklaufmittel und die Stunden mit
+            // begrenzter Kuehluebergabe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn
+            // ein Lauf die Kuehluebergabe rechnet.
+            foreach (SchemaSpalte s in KuehluebergabeSchema.Ergebnisspalten) namen.Add(s.Name);
             return namen;
         }
 

@@ -562,11 +562,21 @@ namespace WindowsFormsApplication1
         /// STRICT-Tabellen. Die Nummern stehen allein bei den drei Schema-Klassen.
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
         /// Zone; der Referenzlauf bleibt byte-gleich.
+        /// Mit der KÄLTESEITE DER ANLAGENKOPPLUNG (Entscheid E37, Stufe AK1 Welle 4; Konzept
+        /// Anlagenkopplung 8.1 und 8.3) steht das Ziel auf <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>:
+        /// die acht Spalten der Kühlübergabe an <c>Tab_Gebaeude(_STAMM)</c> samt viertem Neubau der
+        /// Sicht <c>Abfrage_Projektgebaeude</c> (<see cref="KuehluebergabeSchema.SCHRITT"/>, KAK-S1),
+        /// die Ergebnisspalten der Kälteseite an <c>Tab_ErgebnisEnergiebedarf</c> und
+        /// <c>Tab_ErgebnisGebaeude</c> (<see cref="KuehluebergabeSchema.SCHRITT_ERGEBNIS"/>, KAK-S3)
+        /// und die drei Spalten der Kühlübergabe an <c>Tab_Zone</c>
+        /// (<see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>). Die Nummern stehen allein bei
+        /// <see cref="KuehluebergabeSchema"/>. <b>Reines DDL, ergebnisneutral:</b> Der Schalter
+        /// steht auf 0, alles andere auf NULL; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = ZonenSchema.SCHRITT;
+        public const int Zielversion = KuehluebergabeSchema.SCHRITT_ZONE;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
