@@ -32628,6 +32628,15 @@ Do you want to allow this?</value>
   <data name="ZPGM_ABBRUCH" xml:space="preserve">
     <value>The file is rejected: {0}</value>
   </data>
+  <data name="ZPGM_PRUEFUNG_LAEUFT" xml:space="preserve">
+    <value>The file is being checked …</value>
+  </data>
+  <data name="ZPGM_PRUEFUNG_ABGEBROCHEN" xml:space="preserve">
+    <value>The check was cancelled; nothing has been imported.</value>
+  </data>
+  <data name="ZPGM_BERICHT_OFFEN" xml:space="preserve">
+    <value>Name and source appear in the report only after the next check; what is imported is what the fields hold.</value>
+  </data>
   <data name="ZPGM_ZUSAMMENFASSUNG" xml:space="preserve">
     <value>The file carries {0} time step(s) in a {1} min raster — {2} day(s).</value>
   </data>

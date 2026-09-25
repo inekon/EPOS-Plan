@@ -32635,6 +32635,15 @@ Möchten Sie das zulassen?</value>
   <data name="ZPGM_ABBRUCH" xml:space="preserve">
     <value>Die Datei ist abgelehnt: {0}</value>
   </data>
+  <data name="ZPGM_PRUEFUNG_LAEUFT" xml:space="preserve">
+    <value>Die Datei wird geprüft …</value>
+  </data>
+  <data name="ZPGM_PRUEFUNG_ABGEBROCHEN" xml:space="preserve">
+    <value>Die Prüfung ist abgebrochen; es ist nichts eingespielt.</value>
+  </data>
+  <data name="ZPGM_BERICHT_OFFEN" xml:space="preserve">
+    <value>Bezeichnung und Quelle stehen im Bericht erst nach der nächsten Prüfung; eingespielt wird, was in den Feldern steht.</value>
+  </data>
   <data name="ZPGM_ZUSAMMENFASSUNG" xml:space="preserve">
     <value>Die Datei trägt {0} Zeitschritt(e) im Raster {1} min — {2} Tag(e).</value>
   </data>

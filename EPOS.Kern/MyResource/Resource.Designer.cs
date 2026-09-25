@@ -84942,6 +84942,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung und Quelle stehen im Bericht erst nach der nächsten Prüfung; eingespielt wird, was in den Feldern steht. ähnelt.
+        /// </summary>
+        public static string ZPGM_BERICHT_OFFEN {
+            get {
+                return ResourceManager.GetString("ZPGM_BERICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
         /// </summary>
         public static string ZPGM_BTN_BEENDEN {
@@ -85262,6 +85271,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPGM_MSG_NICHTS {
             get {
                 return ResourceManager.GetString("ZPGM_MSG_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung ist abgebrochen; es ist nichts eingespielt. ähnelt.
+        /// </summary>
+        public static string ZPGM_PRUEFUNG_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("ZPGM_PRUEFUNG_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wird geprüft … ähnelt.
+        /// </summary>
+        public static string ZPGM_PRUEFUNG_LAEUFT {
+            get {
+                return ResourceManager.GetString("ZPGM_PRUEFUNG_LAEUFT", resourceCulture);
             }
         }
         

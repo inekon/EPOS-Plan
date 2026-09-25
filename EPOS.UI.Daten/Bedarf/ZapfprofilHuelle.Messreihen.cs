@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -50,8 +52,12 @@ namespace WindowsFormsApplication1
             {
                 ["Stand"] = new Func<TwwMessreihenstandDaten>(() => Messreihenstand(idProjekt)),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(MessreiheDateiWaehlen),
-                ["Pruefen"] = new Func<string, TwwMessreiheneingabeDaten, TwwMessreihenpruefungDaten>(
-                    (pfad, eingabe) => MessreihePruefen(idProjekt, pfad, eingabe)),
+                // Die Pruefung liest und parst die ganze Datei (eine Jahresreihe in 15-min-Schritten
+                // sind 35 040 Zeilen): Sie laeuft NEBENLAEUFIG auf einem Arbeitsfaden mit der Kultur
+                // des Aufrufers, abbrechbar - nie im Zeichenfaden.
+                ["Pruefen"] = new Func<string, TwwMessreiheneingabeDaten, CancellationToken, Task<TwwMessreihenpruefungDaten>>(
+                    (pfad, eingabe, abbruch) => Kulturweitergabe.Starten(
+                        () => MessreihePruefen(idProjekt, pfad, eingabe), abbruch)),
                 ["Texte"] = MessreihenTexte(),
                 ["HilfeSchluessel"] = HILFE_MESSREIHEN
             };
@@ -378,6 +384,9 @@ namespace WindowsFormsApplication1
             t.SpalteAngabe = Text_("ZPGM_SP_ANGABE", t.SpalteAngabe);
             t.SpalteWert = Text_("ZPGM_SP_WERT", t.SpalteWert);
             t.SpalteAktion = Text_("ZPGM_SP_AKTION", t.SpalteAktion);
+            t.PruefungLaeuft = Text_("ZPGM_PRUEFUNG_LAEUFT", t.PruefungLaeuft);
+            t.PruefungAbgebrochen = Text_("ZPGM_PRUEFUNG_ABGEBROCHEN", t.PruefungAbgebrochen);
+            t.BerichtOffen = Text_("ZPGM_BERICHT_OFFEN", t.BerichtOffen);
             t.LabelBezeichnung = Text_("ZPGM_LBL_BEZEICHNUNG", t.LabelBezeichnung);
             t.LabelQuelle = Text_("ZPGM_LBL_QUELLE", t.LabelQuelle);
             t.LabelGroesse = Text_("ZPGM_LBL_GROESSE", t.LabelGroesse);

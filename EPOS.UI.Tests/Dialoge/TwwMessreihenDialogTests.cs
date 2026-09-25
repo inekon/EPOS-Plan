@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
@@ -31,6 +32,9 @@ public class TwwMessreihenDialogTests : EposBunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
+
+    /// <summary>Die Frist jedes Wartens auf einen gezeichneten Zustand nach einem nebenläufigen Lauf.</summary>
+    private static readonly TimeSpan Frist = TimeSpan.FromSeconds(10);
 
     // =================================================================================
     // Prüfstand (erfunden)
@@ -76,9 +80,19 @@ public class TwwMessreihenDialogTests : EposBunitContext
 
         internal TwwMessreihenstandDaten StandLesen() => Stand;
 
-        internal TwwMessreihenpruefungDaten Pruefen(string pfad, TwwMessreiheneingabeDaten eingabe)
+        /// <summary>Solange gesetzt, hält die Prüfung an — der Fall prüft Fortschritt und Abbruch.</summary>
+        internal TaskCompletionSource? Sperre;
+
+        internal async Task<TwwMessreihenpruefungDaten> Pruefen(string pfad, TwwMessreiheneingabeDaten eingabe,
+                                                               CancellationToken abbruch)
         {
             Geprueft.Add(eingabe);
+            if (Sperre is not null)
+            {
+                using (abbruch.Register(() => Sperre.TrySetResult()))
+                    await Sperre.Task;
+                abbruch.ThrowIfCancellationRequested();
+            }
             return Bericht ?? Gut();
         }
 
@@ -252,8 +266,13 @@ public class TwwMessreihenDialogTests : EposBunitContext
         Assert.Contains("Zeile 7", cut.Instance.Meldung);
     }
 
+    /// <summary>
+    /// Neu geprüft wird nur, was das LESEN der Datei ändert: gemessene Größe, Lückenschwelle und
+    /// Zeitrechnung. Bezeichnung und Quelle beschreiben die Reihe — sie schicken den CSV-Leser nicht
+    /// je Tastendruck über die ganze Datei, sondern setzen die leise Zeile zum offenen Bericht.
+    /// </summary>
     [Fact]
-    public void Jede_Eingabe_ueber_der_Dateiwahl_prueft_die_Datei_neu()
+    public void Nur_eine_Angabe_des_Formats_prueft_die_Datei_neu()
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
@@ -261,23 +280,75 @@ public class TwwMessreihenDialogTests : EposBunitContext
         Knopf(cut, "Datei wählen…").Click();
         cut.WaitForAssertion(() => Assert.Single(p.Geprueft));
 
-        // Die Bezeichnung: sie geht in die Optionen des Lesers.
+        // Bezeichnung und Quelle: KEINE Neupruefung, aber eine leise Zeile.
         cut.FindAll("input[type=text]").First().Input("Eigene Bezeichnung");
-        cut.WaitForAssertion(() => Assert.Equal(2, p.Geprueft.Count));
-        Assert.Equal("Eigene Bezeichnung", p.Geprueft[1].Bezeichnung);
+        cut.FindAll("input[type=text]")[1].Input("Eigene Quelle");
+        Assert.Single(p.Geprueft);
+        Assert.Contains("nach der nächsten Prüfung", cut.Find(".epos-tww-messreihen-berichtoffen").TextContent);
 
         // Die gemessene Groesse: ungewaehlt bleibt sie leer - leer und die Kennung 0 heissen beide
         // „aus der Kopfzeile lesen" (TwwMessreiheneingabeDaten.GroesseId). Gewaehlt wird Volumen.
-        Assert.Null(p.Geprueft[1].GroesseId);
+        Assert.Null(p.Geprueft[0].GroesseId);
         cut.FindAll("select").First().Change(TwwMessreihenwahl.GroesseVolumen.ToString(CultureInfo.InvariantCulture));
-        cut.WaitForAssertion(() => Assert.Equal(3, p.Geprueft.Count));
-        Assert.Equal(TwwMessreihenwahl.GroesseVolumen, p.Geprueft[2].GroesseId);
+        cut.WaitForAssertion(() => Assert.Equal(2, p.Geprueft.Count));
+        Assert.Equal(TwwMessreihenwahl.GroesseVolumen, p.Geprueft[1].GroesseId);
+        // Die neue Pruefung traegt Bezeichnung und Quelle mit; die leise Zeile faellt weg.
+        Assert.Equal("Eigene Bezeichnung", p.Geprueft[1].Bezeichnung);
+        Assert.Equal("Eigene Quelle", p.Geprueft[1].Quelle);
+        Assert.Empty(cut.FindAll(".epos-tww-messreihen-berichtoffen"));
 
         // Die Zeitrechnung: Vorgabe Ortszeit, gewaehlt Normalzeit.
-        Assert.Equal(TwwMessreihenwahl.ZeitOrtszeit, p.Geprueft[2].ZeitstempelId);
+        Assert.Equal(TwwMessreihenwahl.ZeitOrtszeit, p.Geprueft[1].ZeitstempelId);
         cut.FindAll("input[type=radio]").Last().Change(true);
-        cut.WaitForAssertion(() => Assert.Equal(4, p.Geprueft.Count));
-        Assert.Equal(TwwMessreihenwahl.ZeitNormalzeit, p.Geprueft[3].ZeitstempelId);
+        cut.WaitForAssertion(() => Assert.Equal(3, p.Geprueft.Count));
+        Assert.Equal(TwwMessreihenwahl.ZeitNormalzeit, p.Geprueft[2].ZeitstempelId);
+    }
+
+    /// <summary>
+    /// Die Prüfung läuft nebenläufig: Fortschritt mit Abbrechen, „Einspielen" bleibt bis zum
+    /// Ergebnis gesperrt und nennt den Lauf als Grund; ein Abbruch lässt keinen Bericht stehen.
+    /// </summary>
+    [Fact]
+    public void Die_Pruefung_laeuft_nebenlaeufig_mit_Fortschritt_und_Abbruch()
+    {
+        var p = new Pruefstand { Sperre = new TaskCompletionSource() };
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Datei wählen…").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.PruefungLaeuft), Frist);
+        Assert.Contains("geprüft", cut.Find(".epos-tww-messreihen-pruefschritt .epos-fortschritt").TextContent);
+
+        IElement einspielen = Knopf(cut, "Einspielen");
+        Assert.Equal("true", einspielen.GetAttribute("aria-disabled"));
+        Assert.Contains("geprüft", einspielen.GetAttribute("title") ?? "");
+
+        cut.Find(".epos-tww-messreihen-pruefschritt button").Click();
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.PruefungLaeuft), Frist);
+        Assert.Null(cut.Instance.Bericht);
+        Assert.Contains("abgebrochen", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Eine nach der Prüfung geänderte Bezeichnung verliert die Rückfrage nicht: Gefragt wird gegen
+    /// die Liste des Dialogs und den Namen, der jetzt in den Feldern steht.
+    /// </summary>
+    [Fact]
+    public void Eine_geaenderte_Bezeichnung_traegt_die_Rueckfrage_des_Ersetzens()
+    {
+        var p = new Pruefstand { Stand = Voll(), Bericht = Pruefstand.Gut() };
+        var cut = Aufbauen(p);
+
+        Knopf(cut, "Datei wählen…").Click();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Bericht));
+        Assert.False(cut.Instance.Bericht!.ErsetztVorhandene);
+
+        // Der Name einer vorhandenen Reihe - ohne Neupruefung, aber mit Rueckfrage.
+        cut.FindAll("input[type=text]").First().Input("Zaehler B (erfunden)");
+        Assert.Single(p.Geprueft);
+        Knopf(cut, "Einspielen").Click();
+        Assert.True(cut.Instance.FrageOffen);
+        Assert.Contains("Zaehler B (erfunden)", cut.Instance.Fragetext);
+        Assert.Empty(p.Eingespielt);
     }
 
     // =================================================================================

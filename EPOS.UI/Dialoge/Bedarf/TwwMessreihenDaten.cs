@@ -320,6 +320,15 @@ public sealed class TwwMessreihenTexte
     /// <summary><c>ZPGM_ABBRUCH</c></summary>
     public string Abbruch { get; set; } = "Die Datei ist abgelehnt: {0}";
 
+    /// <summary><c>ZPGM_PRUEFUNG_LAEUFT</c></summary>
+    public string PruefungLaeuft { get; set; } = "Die Datei wird geprüft …";
+
+    /// <summary><c>ZPGM_PRUEFUNG_ABGEBROCHEN</c></summary>
+    public string PruefungAbgebrochen { get; set; } = "Die Prüfung ist abgebrochen; es ist nichts eingespielt.";
+
+    /// <summary><c>ZPGM_BERICHT_OFFEN</c></summary>
+    public string BerichtOffen { get; set; } = "Bezeichnung und Quelle stehen im Bericht erst nach der nächsten Prüfung; eingespielt wird, was in den Feldern steht.";
+
     /// <summary><c>ZPGM_ZUSAMMENFASSUNG</c></summary>
     public string Zusammenfassung { get; set; } = "Die Datei trägt {0} Zeitschritt(e) im Raster {1} min — {2} Tag(e).";
 

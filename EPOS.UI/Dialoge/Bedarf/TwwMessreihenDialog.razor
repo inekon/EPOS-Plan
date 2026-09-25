@@ -29,6 +29,7 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
+@using System.Threading
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -117,10 +118,12 @@
         <KindInhalt>
             <Formularraster>
                 <KindInhalt>
+                    @* Bezeichnung und Quelle beschreiben die Reihe, nicht ihr Format: Sie loesen
+                       KEINE Neupruefung aus (sonst liefe der CSV-Leser je Tastendruck). *@
                     <Textfeld Bezeichnung="@Texte.LabelBezeichnung" Wert="@_eingabe.Bezeichnung"
-                              WertChanged="w => EingabeSetzen(x => x.Bezeichnung = w ?? string.Empty)" />
+                              WertChanged="w => EingabeSetzen(x => x.Bezeichnung = w ?? string.Empty, neuPruefen: false)" />
                     <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@_eingabe.Quelle"
-                              WertChanged="w => EingabeSetzen(x => x.Quelle = w ?? string.Empty)" />
+                              WertChanged="w => EingabeSetzen(x => x.Quelle = w ?? string.Empty, neuPruefen: false)" />
                     <Auswahlfeld Bezeichnung="@Texte.LabelGroesse" Eintraege="@Groessen"
                                  Auswahl="@(_eingabe.GroesseId ?? GROESSE_AUS_KOPF)"
                                  AuswahlChanged="id => EingabeSetzen(x => x.GroesseId = id ?? GROESSE_AUS_KOPF)" />
@@ -140,6 +143,16 @@
                                Pfad="@_pfad" Waehlen="@DateiWahl" PfadChanged="BeiDatei" />
                 </KindInhalt>
             </Formularraster>
+
+            @* Die Pruefung liest die ganze Datei: nebenlaeufig, mit Fortschritt und Abbrechen. *@
+            <div class="epos-tww-messreihen-pruefschritt">
+                <Fortschritt Sichtbar="@PruefungLaeuft" Text="@Texte.PruefungLaeuft"
+                             Abbrechen="@(EventCallback.Factory.Create(this, PruefungAbbrechen))" />
+            </div>
+            @if (_berichtOffen)
+            {
+                <p class="epos-leisezeile epos-tww-messreihen-berichtoffen">@Texte.BerichtOffen</p>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -222,8 +235,12 @@
     /// <summary>Die Dateiwahl der Plattform (<c>Dienste.Datei</c>, hinter dem Ereignis); <c>""</c> = abgebrochen.</summary>
     [Parameter] public Func<string, Task<string>>? DateiWaehlen { get; set; }
 
-    /// <summary>Die Prüfung einer Datei OHNE Schreibzugriff (<c>Messreihenleser.AusStrom</c>).</summary>
-    [Parameter] public Func<string, TwwMessreiheneingabeDaten, TwwMessreihenpruefungDaten>? Pruefen { get; set; }
+    /// <summary>
+    /// Die Prüfung einer Datei OHNE Schreibzugriff (<c>Messreihenleser.AusStrom</c>) —
+    /// <b>nebenläufig und abbrechbar</b>: Sie liest und parst die ganze Datei, das gehört nicht in
+    /// den Zeichenfaden.
+    /// </summary>
+    [Parameter] public Func<string, TwwMessreiheneingabeDaten, CancellationToken, Task<TwwMessreihenpruefungDaten>>? Pruefen { get; set; }
 
     /// <summary>Das Einspielen (<c>TwwMessreihenCtrl.Importieren</c>); ohne Delegat steht der Knopf nicht da.</summary>
     [Parameter] public Func<string, TwwMessreiheneingabeDaten, TwwMessreihenergebnisDaten>? Einspielen { get; set; }
@@ -270,6 +287,19 @@
     private string _frage = "";
     private string _frageLoeschen = "";
 
+    /// <summary>Die Abbruchmarke der laufenden Prüfung; <c>null</c>, solange keine läuft.</summary>
+    private CancellationTokenSource? _pruefLauf;
+
+    /// <summary>
+    /// Trägt der Bericht Bezeichnung oder Quelle noch nicht, die jetzt in den Feldern stehen? Dann
+    /// sagt eine leise Zeile es — ein Bericht, der etwas anderes zeigt als die Felder, wäre still
+    /// überholt.
+    /// </summary>
+    private bool _berichtOffen;
+
+    /// <summary>Läuft die Prüfung gerade? (Prüfhilfe für Tests.)</summary>
+    public bool PruefungLaeuft => _pruefLauf is not null;
+
     /// <summary>Der angezeigte Stand (Prüfhilfe für Tests).</summary>
     public TwwMessreihenstandDaten Standanzeige => _stand;
 
@@ -285,15 +315,44 @@
     /// <summary>Steht eine Rückfrage? (Prüfhilfe für Tests.)</summary>
     public bool FrageOffen => _frageOffen;
 
+    /// <summary>Der Text der offenen Rückfrage (Prüfhilfe für Tests).</summary>
+    public string Fragetext => _frage;
+
     /// <summary>Die Bezeichnung der gewählten Reihe (Prüfhilfe für Tests); leer = keine.</summary>
     public string Gewaehlte => _gewaehlt;
 
-    /// <summary>Lässt sich einspielen? Eine Datei ist gewählt und die Prüfung hat sie nicht abgelehnt.</summary>
-    private bool Einspielbar => _pfad.Length > 0 && _bericht is not null && !_bericht.Abgebrochen;
+    /// <summary>
+    /// Lässt sich einspielen? Eine Datei ist gewählt, die Prüfung hat sie nicht abgelehnt und sie
+    /// läuft nicht mehr.
+    /// </summary>
+    private bool Einspielbar
+        => _pfad.Length > 0 && !PruefungLaeuft && _bericht is not null && !_bericht.Abgebrochen;
 
     /// <summary>Warum „Einspielen" gesperrt ist — der Grund steht am Knopf, nie eine stille Sperre.</summary>
     private string Einspielgrund
-        => _pfad.Length == 0 ? Texte.KeineDatei : _bericht?.Abbruch ?? Texte.KeineDatei;
+        => _pfad.Length == 0 ? Texte.KeineDatei
+         : PruefungLaeuft ? Texte.PruefungLaeuft
+         : _bericht?.Abbruch ?? Texte.KeineDatei;
+
+    /// <summary>
+    /// Die Bezeichnung, unter der die Reihe abgelegt würde: die eingegebene, sonst die, die die
+    /// Prüfung aus der Datei gelesen hat (leere Eingabe = der Dateiname).
+    /// </summary>
+    private string Zielbezeichnung
+        => _eingabe.Bezeichnung.Trim().Length > 0 ? _eingabe.Bezeichnung.Trim() : _bericht?.Bezeichnung ?? "";
+
+    /// <summary>
+    /// Würde das Einspielen eine vorhandene Reihe ersetzen? Solange die Bezeichnung die der Prüfung
+    /// ist, gilt DEREN Befund — die Hülle hat die Ablage gefragt. Steht in den Feldern inzwischen
+    /// eine andere, entscheidet die Liste dieses Dialogs: Eine geänderte Bezeichnung darf die
+    /// Rückfrage nicht verlieren, und eine zweite Prüfung ist dafür zu teuer.
+    /// </summary>
+    private bool ErsetztVorhandene
+        => _bericht is not null
+           && (string.Equals(Zielbezeichnung, _bericht.Bezeichnung, StringComparison.Ordinal)
+                 ? _bericht.ErsetztVorhandene
+                 : Zielbezeichnung.Length > 0
+                   && _stand.Reihen.Any(r => string.Equals(r.Bezeichnung, Zielbezeichnung, StringComparison.Ordinal)));
 
     private bool Gewaehlt(TwwMessreiheDaten r) => string.Equals(r.Bezeichnung, _gewaehlt, StringComparison.Ordinal);
 
@@ -331,7 +390,11 @@
     }
 
     /// <inheritdoc/>
-    public void Dispose() => _kiMaske?.Dispose();
+    public void Dispose()
+    {
+        _kiMaske?.Dispose();
+        PruefungVerwerfen();
+    }
 
     private void StandLaden()
     {
@@ -343,12 +406,20 @@
     // Eingaben, Dateiwahl und Prüfung
     // =====================================================================
 
-    /// <summary>Eine Eingabe über der Dateiwahl: Sie beschreibt die Datei, also wird neu geprüft.</summary>
-    private void EingabeSetzen(Action<TwwMessreiheneingabeDaten> setzen)
+    /// <summary>
+    /// Eine Eingabe über der Dateiwahl. <b>Neu geprüft wird nur, was das LESEN der Datei ändert</b>:
+    /// die gemessene Größe, die Lückenschwelle und die Zeitrechnung der Zeitstempel. Bezeichnung und
+    /// Quelle beschreiben die Reihe, nicht ihr Format — sie je Tastendruck durch den CSV-Leser zu
+    /// schicken wäre eine Prüfung je Tastendruck über die ganze Datei (Hausregel
+    /// <c>EPOS.UI/CLAUDE.md</c>). Ein Bericht, der sie noch nicht trägt, sagt das als leise Zeile;
+    /// still übergangen wird nichts.
+    /// </summary>
+    private void EingabeSetzen(Action<TwwMessreiheneingabeDaten> setzen, bool neuPruefen = true)
     {
         setzen(_eingabe);
         _meldung = "";
-        Pruefung();
+        if (neuPruefen) Pruefung();
+        else _berichtOffen = _bericht is not null;
     }
 
     /// <summary>Die Dateiwahl der Plattform — über den Delegaten der Hülle, erwartet (nie synchron).</summary>
@@ -363,9 +434,80 @@
         Pruefung();
     }
 
-    /// <summary>Prüft die gewählte Datei mit den Eingaben; ohne Datei fällt der Bericht weg.</summary>
+    /// <summary>
+    /// Prüft die gewählte Datei mit den Eingaben — <b>nebenläufig</b>, mit Fortschritt und
+    /// Abbrechen; ohne Datei fällt der Bericht weg. Ein laufender Lauf endet vorher, sein Ergebnis
+    /// ist überholt.
+    /// </summary>
     private void Pruefung()
-        => _bericht = _pfad.Length == 0 || Pruefen is null ? null : Pruefen(_pfad, _eingabe.Kopie());
+    {
+        PruefungVerwerfen();
+        _berichtOffen = false;
+        if (_pfad.Length == 0 || Pruefen is null)
+        {
+            _bericht = null;
+            return;
+        }
+        var quelle = new CancellationTokenSource();
+        _pruefLauf = quelle;
+        _ = PruefungLaufen(quelle, _pfad, _eingabe.Kopie());
+    }
+
+    /// <summary>
+    /// Der Lauf der Prüfung: Das Ergebnis kommt über <c>InvokeAsync</c> in den Verteiler. Ein
+    /// überholter Lauf hinterlässt nichts; ein abgebrochener nennt den Abbruch als Banner. Jede
+    /// Ausnahme bleibt hier — ein loser Task erreichte die Fehlerschranke nicht.
+    /// </summary>
+    private async Task PruefungLaufen(CancellationTokenSource quelle, string pfad, TwwMessreiheneingabeDaten kopie)
+    {
+        TwwMessreihenpruefungDaten? ergebnis = null;
+        bool abgebrochen = false;
+        try
+        {
+            ergebnis = await Pruefen!(pfad, kopie, quelle.Token);
+        }
+        catch (OperationCanceledException) { abgebrochen = true; }
+        catch (Exception ex)
+        {
+            ergebnis = new TwwMessreihenpruefungDaten { Abgebrochen = true, Abbruch = Format(Texte.Abbruch, ex.Message) };
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(_pruefLauf, quelle)) return;
+                _pruefLauf = null;
+                if (abgebrochen)
+                {
+                    _bericht = null;
+                    _meldung = Texte.PruefungAbgebrochen;
+                    _stufe = WarnStufe.Warnung;
+                }
+                else _bericht = ergebnis;
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException) { /* der Dialog ist gegangen */ }
+        finally { quelle.Dispose(); }
+    }
+
+    /// <summary>„Abbrechen" am Fortschritt: Der Lauf endet, der Bericht fällt weg.</summary>
+    private void PruefungAbbrechen()
+    {
+        try { _pruefLauf?.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
+
+    /// <summary>Verwirft einen laufenden Lauf der Prüfung, ohne sein Ergebnis anzutasten.</summary>
+    private void PruefungVerwerfen()
+    {
+        CancellationTokenSource? offen = _pruefLauf;
+        _pruefLauf = null;
+        if (offen is null) return;
+        try { offen.Cancel(); }
+        catch (ObjectDisposedException) { }
+    }
 
     // =====================================================================
     // Wahl einer Reihe
@@ -394,13 +536,13 @@
             _stufe = WarnStufe.Warnung;
             return;
         }
-        if (_bericht is null || !_bericht.ErsetztVorhandene)
+        if (!ErsetztVorhandene)
         {
             EinspielenAusfuehren();
             return;
         }
         _frageLoeschen = "";
-        _frage = Format(Texte.FrageErsetzen, _bericht.Bezeichnung);
+        _frage = Format(Texte.FrageErsetzen, Zielbezeichnung.Length > 0 ? Zielbezeichnung : _bericht?.Bezeichnung ?? "");
         _frageOffen = true;
     }
 
@@ -431,6 +573,7 @@
         if (!e.Ok) return;
         _gewaehlt = e.Bezeichnung;
         _pfad = "";
+        _berichtOffen = false;
         // Der Bericht bleibt stehen, solange er Hinweise des gelungenen Einspielens traegt.
         if (e.Hinweise.Count == 0) _bericht = null;
     }
