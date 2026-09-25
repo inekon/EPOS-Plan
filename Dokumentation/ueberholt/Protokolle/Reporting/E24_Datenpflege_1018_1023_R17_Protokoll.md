@@ -165,8 +165,8 @@ Baufreigabe, nach Empfehlung; gebaut ist jeweils der Entscheid (→ Register R�
   E24/4 ein Test rot, `PreisbasisSchrittTests`); Wachen 38/38; `AuslieferungsvorlagenWacheTests` 9/9;
   SqlDialektPruefer 1.920/0; Testhost-Regel eingehalten. Kein Test nennt den alten Basisnamen.
 - **Merge** `edf89ae8` auf `pm26` über `origin` = `822ba803`.
-- **Gate:** NACHTRAG-514-GATE
-- **CI:** NACHTRAG-514-CI — die CI muss gegen R17 laufen (`kern.yml` und `ios.yml` mit dem Basispfad R17).
+- **Gate:** Gate #514 auf `edf89ae8` (25.09.2026 19:00–19:06): Kern-Filter 0 Fehler, ChartProben 0 Fehler, 161 Bild-Hashes gleich mit der Messlatte, Tests Kern 7.273 (1 übersprungen), UI 6.375, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Dokumentationswachen 29/29. Nachtest nach dem Merge von `origin` `fc0b7e5c` (`868afc57`): Kern-Filter der Gebäudeklassen 36/36.
+- **CI:** steht aus (Beobachtung nach dem Push) — die CI muss gegen R17 laufen (`kern.yml` und `ios.yml` mit dem Basispfad R17).
 
 ## Abnahme am Gerät (A‑E24‑1, Windows)
 
