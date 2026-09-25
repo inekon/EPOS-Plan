@@ -155,6 +155,12 @@ namespace WindowsFormsApplication1
 
                 using (doc)
                 {
+                    // Ein Zip ohne Word-Hauptteil öffnet das SDK klaglos — es ist trotzdem keine Vorlage.
+                    bool mitRumpf;
+                    try { mitRumpf = doc.MainDocumentPart?.RootElement != null; }
+                    catch (Exception ex) { return s.Unlesbar(ex.Message, summe); }
+                    if (!mitRumpf) return s.Unlesbar(s.T(nameof(R.VF_PRUEF_GRUND_KEIN_WORD)), summe);
+
                     Vorlagendurchlauf lauf;
                     try { lauf = Vorlagenteile.Durchlaufe(doc); }
                     catch (Exception ex) { return s.Unlesbar(ex.Message, summe); }

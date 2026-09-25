@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using R = WindowsFormsApplication1.MyResource.Resource;
 
@@ -1050,7 +1051,12 @@ namespace WindowsFormsApplication1
             public DateTime? Hinzugefuegt { get; set; }
         }
 
-        private static readonly JsonSerializerOptions AblageJson = new JsonSerializerOptions { WriteIndented = true };
+        /// <summary>Eingerückt und mit Umlauten im Klartext — die Ablagedatei soll ein Mensch lesen können.</summary>
+        private static readonly JsonSerializerOptions AblageJson = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        };
 
         /// <summary>Liest die Ablagedatei duldsam: fehlt sie oder ist sie unlesbar, eine leere.</summary>
         internal static Ablage LiesAblage(string ordner)

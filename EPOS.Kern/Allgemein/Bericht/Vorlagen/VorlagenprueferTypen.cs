@@ -382,7 +382,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der nächste Eintrag nach Editierabstand über Schlüssel und Aliasse, höchstens
-        /// <paramref name="grenze"/>; bei Gleichstand der erste in Katalogfolge. <c>null</c> = keiner.
+        /// <paramref name="grenze"/>; bei Gleichstand der erste in Katalogfolge. Ein Schlüssel, der
+        /// einen Katalogschlüssel verlängert oder verkürzt (<c>projekt.kundename</c> →
+        /// <c>projekt.kunde</c>), zählt wie der größte noch zulässige Abstand — ein echter Tippfehler
+        /// geht vor. <c>null</c> = keiner.
         /// </summary>
         internal Vorlagenfeld Naechster(string schluessel, int grenze)
         {
@@ -395,6 +398,7 @@ namespace WindowsFormsApplication1
                 foreach (string kandidat in new[] { f.Schluessel }.Concat(f.Aliasse))
                 {
                     int abstand = Vorlagenpruefer.Abstand(normiert, kandidat, grenze);
+                    if (abstand > grenze && IstVerlaengerung(normiert, kandidat)) abstand = grenze;
                     if (abstand < besterAbstand)
                     {
                         besterAbstand = abstand;
@@ -403,6 +407,15 @@ namespace WindowsFormsApplication1
                 }
             }
             return besterAbstand <= grenze ? bester : null;
+        }
+
+        /// <summary>Beginnt der eine Schlüssel mit dem anderen, und trägt der kürzere mindestens einen Punkt und sechs Zeichen?</summary>
+        private static bool IstVerlaengerung(string a, string b)
+        {
+            string kurz = a.Length <= b.Length ? a : b;
+            string lang = a.Length <= b.Length ? b : a;
+            return kurz.Length >= 6 && kurz.IndexOf('.') > 0 && lang.Length > kurz.Length &&
+                   lang.StartsWith(kurz, StringComparison.Ordinal);
         }
     }
 }
