@@ -139,6 +139,13 @@ namespace WindowsFormsApplication1
         public List<AbbildRaum> Raeume { get; } = new List<AbbildRaum>();
 
         /// <summary>
+        /// Die Geschosse des Gebäudes in Dateireihenfolge (IFC: <c>IfcBuildingStorey</c>); gbXML führt
+        /// keine. Die Zuordnung braucht sie nur für den Rückfall der Dachfläche (Grundfläche des
+        /// obersten Geschosses, Umsetzungskonzept 3.4).
+        /// </summary>
+        public List<AbbildGeschoss> Geschosse { get; } = new List<AbbildGeschoss>();
+
+        /// <summary>
         /// Die Bauteile, die an mindestens einen Raum dieses Gebäudes grenzen; eine Trennwand zweier
         /// Gebäude steht in beiden.
         /// </summary>
@@ -155,6 +162,28 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
+    }
+
+    /// <summary>Ein Geschoss des Abbilds (IFC: <c>IfcBuildingStorey</c>).</summary>
+    internal sealed class AbbildGeschoss
+    {
+        /// <summary>Kennung aus der Datei — dieselbe, die <see cref="AbbildRaum.GeschossKennung"/> nennt.</summary>
+        public string Kennung { get; set; } = "";
+
+        /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Höhenlage [m] — nur für die Reihenfolge, nie als absoluter Wert (Umsetzungskonzept 3.5
+        /// Nr. 2); <c>null</c> = unbekannt.
+        /// </summary>
+        public double? LageM { get; set; }
+
+        /// <summary>Bruttogrundfläche [m²], wie die Datei sie angibt (IFC: <c>Qto_BuildingStoreyBaseQuantities.GrossFloorArea</c>); <c>null</c> = keine.</summary>
+        public double? GrundflaecheM2 { get; set; }
+
+        /// <summary>Was Belege nennen: der Name, sonst die Kennung.</summary>
+        public string Anzeigename => string.IsNullOrWhiteSpace(Name) ? Kennung : Name;
     }
 
     /// <summary>Ein Raum des Abbilds.</summary>

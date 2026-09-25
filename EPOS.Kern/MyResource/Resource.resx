@@ -32269,4 +32269,31 @@ Möchten Sie das zulassen?</value>
   <data name="ZONE_MSG_KUEHLUEBERGABEART" xml:space="preserve">
     <value>Zone „{0}“: Die Kühlübergabeart „{1}“ ist kein gültiger Wert.</value>
   </data>
+  <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
+    <value>weder Raumhöhe noch Volumen der Räume in der Datei — Vorgabe {0} m</value>
+  </data>
+  <data name="GIMP_BELEG_DACH_VORGABE_GESCHOSS" xml:space="preserve">
+    <value>keine Dachfläche in der Datei — Vorgabe: Bruttogrundfläche des obersten Geschosses „{0}“ ({1} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_DACH_VORGABE_RAEUME" xml:space="preserve">
+    <value>keine Dachfläche in der Datei — Vorgabe: Grundfläche des obersten Geschosses „{0}“, {1} beheizte Räume ({2} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_GRUND_VORGABE" xml:space="preserve">
+    <value>keine Grundfläche in der Datei — Vorgabe: Nutzfläche {0} m² ÷ {1} Geschosse</value>
+  </data>
+  <data name="GIMP_BELEG_SONSTIGE_VORGABE" xml:space="preserve">
+    <value>keine sonstige Fläche aus der Datei ({0} Bauteile ohne Fläche) — Vorgabe 0 m²</value>
+  </data>
+  <data name="GIMP_BELEG_RANDBEDINGUNG_VORGABE" xml:space="preserve">
+    <value>kein Bodenbauteil in der Datei — Vorgabe Erdreich</value>
+  </data>
+  <data name="IMP_IFC_PROT_STOFFWERT_NULL" xml:space="preserve">
+    <value>{0} Baustoffe tragen Stoffwerte ≤ 0; sie zählen als fehlend (Fehlstelle), U-Wert bzw. Bauart aus diesen Schichten entfallen ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN" xml:space="preserve">
+    <value>{0}: Die Stoffwerte von {1} Baustoffen werden nicht gelesen — die Schnittstelle bildet ihre Eigenschaftssätze nicht verlässlich ab (IfcThermalMaterialProperties, IfcGeneralMaterialProperties, IfcExtendedMaterialProperties); U-Wert und Bauart aus diesen Schichten entfallen ({2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
+    <value>Bei {0} Hüllbauteilen ist die Lage der Schichten nicht bestimmbar (keine IfcMaterialLayerSetUsage oder keine Raumseite) — angenommen: erste Schicht außen ({1}).</value>
+  </data>
 </root>

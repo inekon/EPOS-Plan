@@ -45,7 +45,16 @@
         {
         }
 
+        /// <summary>Die Vorgabe der Raumhöhe ohne <c>Height</c> und ohne <c>NetVolume</c>/<c>NetFloorArea</c> [m] (Umsetzungskonzept 3.4).</summary>
+        public const double RUECKFALL_RAUMHOEHE_M = 2.5;
+
         /// <summary>Ein neuer <see cref="IfcLeser"/> je Lauf.</summary>
         public override IGebaeudeLeser LeserErzeugen() => new IfcLeser();
+
+        /// <inheritdoc />
+        public override double? RueckfallRaumhoeheM => RUECKFALL_RAUMHOEHE_M;
+
+        /// <inheritdoc />
+        public override bool FlaechenRueckfaelle => true;
     }
 }
