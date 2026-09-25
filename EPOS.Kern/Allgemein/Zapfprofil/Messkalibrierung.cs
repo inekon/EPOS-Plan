@@ -24,10 +24,14 @@ namespace WindowsFormsApplication1
     /// Vergleichsbericht selbst führt allein Verhältniszahlen (K5).</para>
     ///
     /// <para><b>Kleinste Quadrate.</b> Gesucht sind die Stundenanteile <c>a_h</c>, die
-    /// <c>Σ_Tage Σ_h (x_{t,h} − a_h · Q_t)²</c> unter <c>Σ a_h = 1</c> kleinstmöglich machen. Bei
-    /// gleichen Tagesmengen ist die Lösung genau das <b>Mittel der beobachteten Stundenanteile</b> —
-    /// deshalb rechnet der Vorschlag Mittelwerte, und das ist die Lösung der kleinsten Quadrate, kein
-    /// Ersatz dafür. Dasselbe gilt für die Wochenfaktoren über die Tagesmengen.</para>
+    /// <c>Σ_Tage Σ_h (x_{t,h} − a_h · Q_t)²</c> unter <c>Σ a_h = 1</c> kleinstmöglich machen. Die
+    /// Lösung ist <c>a_h = Σ_t Q_t · x_{t,h} / Σ_t Q_t²</c>; sie erfüllt <c>Σ_h a_h = 1</c> von
+    /// selbst und ist nirgends negativ (kein <c>x</c> und kein <c>Q</c> ist es), die Nebenbedingung
+    /// und die Vorzeichenschranke sind also nicht bindend. Bei GLEICHEN Tagesmengen fällt sie mit dem
+    /// Mittel der beobachteten Stundenanteile zusammen; bei <b>ungleichen</b> wiegt sie einen Tag mit
+    /// <c>Q_t²</c> und ist damit etwas anderes als <c>Σ x / Σ Q</c>. <b>Die Wochenfaktoren sind kein
+    /// Ausgleich</b>, sondern das Mittel der Tagesmengen je Wochentag, auf Summe 1 normiert — sie
+    /// sagen, wie sich der Bedarf über die Woche verteilt, nicht welche Form er hat.</para>
     /// </summary>
     internal sealed record Nichtwohnvorschlag(double TagesbedarfKwh, double TagesbedarfJeEinheitKwh,
                                               IReadOnlyList<double> Wochenfaktoren,
@@ -82,6 +86,24 @@ namespace WindowsFormsApplication1
         /// Energie unverändert; ist sie kürzer, wird sie auf 365 Tage <b>hochgerechnet</b> und das
         /// benannt — nie still. Eine Reihe unter <paramref name="mindesttage"/> Tagen wird benannt
         /// abgelehnt: Aus zwei Wochen einen Jahreswert zu machen hieße raten.
+        ///
+        /// <para><b>WIE hochgerechnet wird, entscheidet <paramref name="gerechnet"/>:</b></para>
+        /// <list type="bullet">
+        /// <item><b>Mit der gerechneten Reihe</b> (der Regelfall): Die Reihe wird mit dem
+        /// <b>Jahresgang der Rechnung</b> hochgerechnet. Aus deren Tagessummen wird der Anteil der
+        /// abgedeckten Tage am Jahr gebildet, und die gemessene Energie wird durch diesen Anteil
+        /// geteilt. Eine Messung von November bis Januar wird so nicht wie ein Drittel des Jahres
+        /// behandelt, sondern wie der Anteil, den die drei Wintermonate am Jahresgang haben —
+        /// <c>MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG</c> nennt Tage und Anteil.</item>
+        /// <item><b>Ohne sie</b>: die flache Hochrechnung <c>· 365 / Tage</c>; sie setzt jeden Tag
+        /// des Jahres gleich und unterschätzt deshalb eine Sommermessung und überschätzt eine
+        /// Wintermessung — <c>MESSKALIBRIERUNG_HOCHGERECHNET</c> nennt diesen Bias.</item>
+        /// </list>
+        ///
+        /// <para><b>Der Bias bleibt in beiden Fällen:</b> Hochgerechnet wird die Annahme, dass sich
+        /// das Objekt im ungemessenen Teil des Jahres verhält wie die Rechnung (oder, flach, wie im
+        /// gemessenen Teil). Der Hinweis sagt das; ein Jahreswert aus einem Teiljahr ist nie ein
+        /// gemessener Jahreswert.</para>
         /// </summary>
         /// <param name="reihe">Die gemessene Reihe.</param>
         /// <param name="spreizungK">θ_Zapf − θ̄_KW [K] — nur für eine Volumenreihe.</param>
@@ -90,9 +112,13 @@ namespace WindowsFormsApplication1
         /// <param name="mindesttage">Die kürzeste zugelassene Reihe [d].</param>
         /// <param name="fehler">Die benannte Ablehnung; <c>null</c> = der Messwert steht.</param>
         /// <param name="hinweise">Nimmt die Hochrechnung auf; darf <c>null</c> sein.</param>
+        /// <param name="gerechnet">
+        /// Die gerechnete Jahresreihe, deren Jahresgang die Hochrechnung trägt; <c>null</c> = flach.
+        /// </param>
         internal static Messwert Jahresmesswert(Messreihe reihe, double spreizungK, ZapfBilanzgrenze grenze,
                                                 double? speicherverlustKwhJeJahr, int mindesttage,
-                                                out ZapfSatz fehler, ICollection<ZapfSatz> hinweise = null)
+                                                out ZapfSatz fehler, ICollection<ZapfSatz> hinweise = null,
+                                                Bilanzreihe gerechnet = null)
         {
             fehler = null;
             if (reihe == null)
@@ -125,13 +151,68 @@ namespace WindowsFormsApplication1
             double jahrKwh = kwh;
             if (Math.Abs(reihe.Tage - Zapfkalender.TAGE) > JAHRESRAND_TAGE)
             {
-                jahrKwh = kwh * Zapfkalender.TAGE / reihe.Tage;
-                hinweise?.Add(ZapfSatz.Neu("MESSKALIBRIERUNG_HOCHGERECHNET", reihe.Tage, Zapfkalender.TAGE));
+                double anteil = Jahresanteil(reihe, gerechnet);
+                if (anteil > 0.0)
+                {
+                    jahrKwh = kwh / anteil;
+                    hinweise?.Add(ZapfSatz.Neu("MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG", reihe.Tage,
+                                               Zapfkalender.TAGE, anteil));
+                }
+                else
+                {
+                    jahrKwh = kwh * Zapfkalender.TAGE / reihe.Tage;
+                    hinweise?.Add(ZapfSatz.Neu("MESSKALIBRIERUNG_HOCHGERECHNET", reihe.Tage, Zapfkalender.TAGE));
+                }
             }
 
             string zeitraum = reihe.Beginn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " – "
                               + reihe.Ende.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             return new Messwert(jahrKwh, grenze, speicherverlustKwhJeJahr, reihe.Quelle, zeitraum);
+        }
+
+        /// <summary>
+        /// Der <b>Anteil der abgedeckten Tage am Jahresgang der Rechnung</b> [-] — 0, wenn er nicht
+        /// zu bilden ist (keine gerechnete Reihe, keine gerechnete Menge, kein abgedeckter Tag oder
+        /// eine Reihe über ein ganzes Jahr, die ohnehin nicht hochgerechnet wird).
+        ///
+        /// <para><b>Die Rechnung:</b> Jeder Zeitschritt der Messung bekommt seinen Jahrestag im
+        /// Raster des Kerns (365 Tage ohne Schaltjahr; ein 29. Februar hat dort keinen Gegentag und
+        /// bleibt außen vor). Der Anteil ist dann die Summe der gerechneten Tagessummen über GENAU
+        /// diese Tage, geteilt durch die gerechnete Jahressumme. Das ist der Jahresgang — Monat für
+        /// Monat, hier auf den Tag genau ausgewertet —, mit dem die Messung fortgeschrieben wird.</para>
+        ///
+        /// <para>Deckt die Messung jeden Tag ab, ist der Anteil 1 und die Hochrechnung wirkungslos —
+        /// genau richtig, denn dann ist nichts fortzuschreiben.</para>
+        /// </summary>
+        internal static double Jahresanteil(Messreihe reihe, Bilanzreihe gerechnet)
+        {
+            if (reihe == null || gerechnet == null || !(gerechnet.JahressummeKwh > 0.0)) return 0.0;
+
+            var abgedeckt = new bool[Zapfkalender.TAGE];
+            int tage = 0;
+            for (int i = 0; i < reihe.Schritte; i++)
+            {
+                DateTime z = reihe.Zeitpunkt(i);
+                if (z.Month == 2 && z.Day == 29) continue;          // im Rechenjahr gibt es ihn nicht
+                int jahrestag = z.DayOfYear;
+                if (DateTime.IsLeapYear(z.Year) && jahrestag > 60) jahrestag--;
+                int d = jahrestag - 1;
+                if (d < 0 || d >= Zapfkalender.TAGE || abgedeckt[d]) continue;
+                abgedeckt[d] = true;
+                tage++;
+            }
+            if (tage == 0) return 0.0;
+
+            IReadOnlyList<double> stunden = gerechnet.StundenKwh;
+            double summe = 0.0;
+            for (int d = 0; d < Zapfkalender.TAGE; d++)
+            {
+                if (!abgedeckt[d]) continue;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                    summe += stunden[d * Zapfkalender.STUNDEN_TAG + h];
+            }
+            double anteil = summe / gerechnet.JahressummeKwh;
+            return anteil > 0.0 && anteil <= 1.0 ? anteil : 0.0;
         }
 
         /// <summary>
@@ -143,10 +224,11 @@ namespace WindowsFormsApplication1
         internal static Kalibrierergebnis Kalibrieren(Messreihe reihe, double spreizungK, ZapfBilanzgrenze grenze,
                                                       double? speicherverlustKwhJeJahr, double zapfungKwh,
                                                       double zirkulationKwh, int mindesttage, string zone,
-                                                      out ZapfSatz fehler, ICollection<ZapfSatz> hinweise = null)
+                                                      out ZapfSatz fehler, ICollection<ZapfSatz> hinweise = null,
+                                                      Bilanzreihe gerechnet = null)
         {
             Messwert m = Jahresmesswert(reihe, spreizungK, grenze, speicherverlustKwhJeJahr, mindesttage,
-                                        out fehler, hinweise);
+                                        out fehler, hinweise, gerechnet);
             if (m == null) return null;
             try
             {
@@ -169,10 +251,22 @@ namespace WindowsFormsApplication1
         /// <code>
         /// Q_d        = (1/T) · Σ_t Q_t                              Tagesbedarf [kWh/d]
         /// Q_d,Einheit= Q_d / n_Bezug                                je Einheit
-        /// f_i        = m_i / Σ_j m_j       mit m_i = Mittel von Q_t über die Tage des Wochentags i
-        ///              (Σ f = 1, Montag = 0; ein Wochentag ohne Messtag bekommt das Mittel der übrigen)
-        /// a_{typ,h}  = (Σ_{t ∈ typ} x_{t,h}) / (Σ_{t ∈ typ} Q_t)    Stundenanteile je Tagtyp (Σ_h a = 1)
+        /// f_i        = m_i / Σ_j m_j       Wochenfaktoren (Σ 1, Montag = Index 0)
+        ///              mit m_i = Mittel von Q_t über die Tage des Wochentags i; ein Wochentag ohne
+        ///              Messtag bekommt das Mittel der übrigen
+        /// a_{typ,h}  = (Σ_{t ∈ typ} Q_t · x_{t,h}) / (Σ_{t ∈ typ} Q_t²)   Stundenanteile je Tagtyp
         /// </code>
+        ///
+        /// <para><b>Die Stundenanteile sind die kleinsten Quadrate</b>, nicht ein gepoolter
+        /// Quotient: <c>a_h</c> macht <c>Σ_t Σ_h (x_{t,h} − a_h · Q_t)²</c> kleinstmöglich. Das
+        /// Ergebnis erfüllt <c>Σ_h a_h = 1</c> von selbst — die Summe über h ist
+        /// <c>Σ_t Q_t · Σ_h x_{t,h} / Σ_t Q_t² = Σ_t Q_t² / Σ_t Q_t² = 1</c> —, und weil kein
+        /// <c>x</c> und kein <c>Q</c> negativ ist, ist auch kein <c>a_h</c> negativ: Die
+        /// Nebenbedingung und die Vorzeichenschranke sind nicht bindend und werden deshalb nicht
+        /// nachträglich erzwungen. <b>Bei ungleichen Tagesmengen ist das etwas anderes als
+        /// <c>Σ x / Σ Q</c></b>: Die kleinsten Quadrate wiegen einen Tag mit <c>Q_t²</c>, ein großer
+        /// Tag bestimmt die Form also stärker als ein kleiner — genau das, was die Ausgleichsrechnung
+        /// leistet.</para>
         ///
         /// <para><b>Nur vollständige Tage</b> (24 vollständige Stunden): Ein angeschnittener Tag
         /// zöge den Tagesbedarf nach unten und verbog die Form. Eine Reihe ohne Stundenwerte
@@ -282,26 +376,30 @@ namespace WindowsFormsApplication1
             var liste = new List<Tagesgangvorschlag>(Messvergleich.TAGTYPEN.Count);
             foreach (ZapfTagtyp typ in Messvergleich.TAGTYPEN)
             {
-                var summe = new double[Zapfkalender.STUNDEN_TAG];
+                // Die zwei Summen der kleinsten Quadrate: Σ_t Q_t · x_{t,h} je Stunde und Σ_t Q_t².
+                // Feste Folge nach Datum (volle ist sortiert) - dieselben Bits bei jedem Lauf.
+                var summeQx = new double[Zapfkalender.STUNDEN_TAG];
+                double summeQQ = 0.0;
                 int tage = 0;
                 double menge = 0.0;
                 foreach (DateTime t in volle)
                 {
                     if (Messvergleich.Tagtyp(t) != typ) continue;
                     tage++;
-                    for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
-                    {
-                        summe[h] += gaenge[t][h];
-                        menge += gaenge[t][h];
-                    }
+                    double[] gang = gaenge[t];
+                    double q = 0.0;
+                    for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) q += gang[h];
+                    menge += q;
+                    summeQQ += q * q;
+                    for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) summeQx[h] += q * gang[h];
                 }
-                if (tage == 0 || !(menge > 0.0))
+                if (tage == 0 || !(menge > 0.0) || !(summeQQ > 0.0))
                 {
                     hinweise?.Add(ZapfSatz.Neu("MESSKALIBRIERUNG_TAGTYP_FEHLT", Formvektor.Tagtyp(typ)));
                     continue;
                 }
                 var anteile = new double[Zapfkalender.STUNDEN_TAG];
-                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) anteile[h] = summe[h] / menge;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) anteile[h] = summeQx[h] / summeQQ;
                 liste.Add(new Tagesgangvorschlag(typ, tage, Array.AsReadOnly(anteile)));
             }
             if (liste.Count == 0)

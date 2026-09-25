@@ -32156,7 +32156,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Spitzen von {0} Realisierungen streuen zwischen {1:0.###} und {2:0.###} der größten gerechneten Stundenleistung.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
-    <value>Die Messung kennt keine Feiertage; sie zählen mit dem Tagesgang ihres Wochentags.</value>
+    <value>Die Messung kennt keine Feiertage; sie zählen als Werktag ihres Wochentags.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_VERGLEICHSTAG" xml:space="preserve">
+    <value>Kein Zeitschritt der Messung trifft einen Tag des Rechenjahres; ein Vergleich ist nicht möglich.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SCHALTTAG" xml:space="preserve">
+    <value>{0} Zeitschritt(e) fallen auf einen 29. Februar; der Rechenkern kennt ihn nicht, sie bleiben außer Vergleich.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_TEILJAHR" xml:space="preserve">
+    <value>Die Messung deckt {0} von {1} Tagen ab; Energie- und Monatsvergleich rechnen beide Seiten über genau diese Tage.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE" xml:space="preserve">
     <value>Ohne gemessene Reihe ist kein Vergleich zu rechnen.</value>
@@ -32189,7 +32198,10 @@ Möchten Sie das zulassen?</value>
     <value>Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt.</value>
   </data>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET" xml:space="preserve">
-    <value>Die Reihe umfasst {0:0.#} Tage und ist auf {1} Tage hochgerechnet; der Jahreswert ist eine Hochrechnung, keine Messung.</value>
+    <value>Die Reihe umfasst {0:0.#} Tage und ist flach auf {1} Tage hochgerechnet — jeder Tag des Jahres gilt gleich, eine Sommermessung wird dabei unterschätzt und eine Wintermessung überschätzt; der Jahreswert ist eine Hochrechnung, keine Messung.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG" xml:space="preserve">
+    <value>Die Reihe umfasst {0:0.#} von {1} Tagen und ist mit dem Jahresgang der Rechnung hochgerechnet ({2:0.0%} des Jahres); der Jahreswert setzt für die ungemessene Zeit das gerechnete Verhalten voraus und ist keine Messung.</value>
   </data>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
     <value>Ohne Bezugsmenge der Zone lässt sich kein Tagesbedarf je Einheit vorschlagen.</value>

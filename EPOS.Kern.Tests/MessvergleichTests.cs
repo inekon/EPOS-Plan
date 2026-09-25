@@ -686,8 +686,297 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        //  Das Teiljahr, der Schalttag und die Feiertage
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ein Teiljahr ist kein Fehler</b> (Befund 4): Eine Messung über den Januar wird gegen
+        /// die JANUARTAGE der Rechnung gehalten, nicht gegen ihr Jahr. Das Energieverhältnis ist
+        /// deshalb 1 (die Reihe IST die Rechnung dieser Tage), <c>MESSVERGLEICH_TEILJAHR</c> nennt die
+        /// Zahl der abgedeckten Tage, und die Monatsanteile stehen auf beiden Seiten im Januar auf 1.
+        ///
+        /// <para>Ohne diese Regel wäre das Verhältnis 31/365 ≈ 0,085 — eine Zahl, die nichts über die
+        /// Rechnung sagt, sondern nur über die Länge der Messung.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Teiljahr_wird_gegen_dieselben_Tage_gehalten()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            // 31 Tage ab 01.01. mit GENAU den Werten der gerechneten Reihe.
+            Messreihe januar = Teilmessreihe(gerechnet, BEGINN, 31);
+
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(Eingang(januar, gerechnet, einheiten: 1));
+            Assert.True(e.Ok, e.Abbruch?.Klartext);
+            Assert.Equal(1.0, e.Energie.Verhaeltnis, 9);
+            Assert.Equal(0.0, e.Energie.Abweichung, 9);
+            ZapfSatz teil = Assert.Single(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_TEILJAHR");
+            Assert.NotEmpty(teil.Klartext);
+
+            // Die Monate: Januar 1 auf beiden Seiten, alle uebrigen 0; keine Abweichung.
+            Assert.Equal(1.0, e.Monate.AnteileGemessen[0], 12);
+            Assert.Equal(1.0, e.Monate.AnteileGerechnet[0], 12);
+            for (int m = 1; m < Zapfkalender.MONATE; m++)
+            {
+                Assert.Equal(0.0, e.Monate.AnteileGemessen[m], 12);
+                Assert.Equal(0.0, e.Monate.AnteileGerechnet[m], 12);
+            }
+            Assert.Equal(0.0, e.Monate.GroessteAbweichung, 12);
+            Assert.Equal(1, e.Monate.GroessterMonat);
+
+            // Die alte Regel haette 31/365 ergeben - die Probe haelt fest, dass sie es NICHT tut.
+            Assert.True(e.Energie.Verhaeltnis > 0.5,
+                        "Das Verhaeltnis folgt noch der Jahressumme (" + e.Energie.Verhaeltnis + ").");
+
+            // Ein ganzes Jahr traegt den Teiljahr-Hinweis NICHT.
+            Messvergleichsergebnis ganz = Messvergleich.Vergleichen(
+                Eingang(MitSpitzenfaktor(1.0, jahresgang: true), gerechnet, einheiten: 1));
+            Assert.DoesNotContain(ganz.Hinweise, h => h.Kennung == "MESSVERGLEICH_TEILJAHR");
+            Assert.Equal(1.0, ganz.Energie.Verhaeltnis, 9);
+        }
+
+        /// <summary>
+        /// <b>Ein Sommermonat wird ebenfalls gegen seine eigenen Tage gehalten</b> — und zwar gegen
+        /// die JULITAGE der Rechnung, die im Jahresgang niedriger liegen als die Januartage. Eine
+        /// Messung, die dem gerechneten Juli genau folgt, ergibt deshalb auch im Juli das Verhältnis
+        /// 1; gegen die Jahressumme wären es nur wenige Prozent, und die Monatsanteile lägen im
+        /// falschen Monat.
+        /// </summary>
+        [Fact]
+        public void Ein_Sommermonat_bezieht_sich_auf_die_Sommertage_der_Rechnung()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            var julibeginn = new DateTime(2025, 7, 1);
+            Messreihe juli = Teilmessreihe(gerechnet, julibeginn, 31);
+
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(Eingang(juli, gerechnet, einheiten: 1));
+            Assert.True(e.Ok, e.Abbruch?.Klartext);
+            Assert.Equal(1.0, e.Energie.Verhaeltnis, 9);
+            Assert.Single(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_TEILJAHR");
+            Assert.Equal(1.0, e.Monate.AnteileGemessen[6], 12);      // Juli = Index 6
+            Assert.Equal(1.0, e.Monate.AnteileGerechnet[6], 12);
+            Assert.Equal(7, e.Monate.GroessterMonat);
+            Assert.Equal(0.0, e.Monate.GroessteAbweichung, 12);
+        }
+
+        /// <summary>
+        /// <b>Der 29. Februar hat im Rechenjahr keinen Gegentag</b> (Befund 10): Seine Zeitschritte
+        /// fallen aus BEIDEN Seiten heraus, <c>MESSVERGLEICH_SCHALTTAG</c> nennt ihre Zahl — und die
+        /// Tage NACH ihm treffen trotzdem ihren richtigen Jahrestag, sonst läge der ganze Rest des
+        /// Jahres um einen Tag verschoben.
+        /// </summary>
+        [Fact]
+        public void Ein_Schalttag_bleibt_benannt_ausser_Vergleich()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            // 2024 ist ein Schaltjahr: 20.02. bis 10.03. sind 20 Tage, einer davon der 29.02.
+            Messreihe reihe = Teilmessreihe(gerechnet, new DateTime(2024, 2, 20), 20, schaltjahr: true);
+
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(Eingang(reihe, gerechnet, einheiten: 1));
+            Assert.True(e.Ok, e.Abbruch?.Klartext);
+            ZapfSatz schalt = Assert.Single(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_SCHALTTAG");
+            Assert.NotEmpty(schalt.Klartext);
+            Assert.Single(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_TEILJAHR");
+            // Die 19 vergleichbaren Tage tragen genau die gerechneten Werte: Verhaeltnis 1.
+            Assert.Equal(1.0, e.Energie.Verhaeltnis, 9);
+        }
+
+        /// <summary>
+        /// <b>Der Feiertagsvermerk hängt an jedem vollen Tag</b> (Befund 9), nicht nur an den
+        /// Sonntagen: Ein Feiertag am Dienstag zählt hier als Werktag, und die Messung sagt nicht,
+        /// dass er einer war. Die Probe nimmt eine Messung über fünf Werktage — ohne einen einzigen
+        /// Sonntag — und erwartet den Vermerk.
+        /// </summary>
+        [Fact]
+        public void Der_Feiertagsvermerk_haengt_an_jedem_vollen_Tag()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            // 01.01.2025 ist ein Mittwoch; fuenf Tage ab da sind Mi bis So - deshalb ab dem 06.01.
+            // (Montag) fuenf Tage: Montag bis Freitag, kein Samstag, kein Sonntag.
+            Messreihe werktage = Teilmessreihe(gerechnet, new DateTime(2025, 1, 6), 5);
+            Assert.Equal(DayOfWeek.Monday, werktage.Beginn.DayOfWeek);
+
+            Messvergleichsergebnis e = Messvergleich.Vergleichen(Eingang(werktage, gerechnet, einheiten: 1));
+            Assert.True(e.Ok, e.Abbruch?.Klartext);
+            Assert.Single(e.Hinweise, h => h.Kennung == "MESSVERGLEICH_OHNE_FEIERTAGE");
+            // Und der Tagtyp eines Datums ist der WERKTAG seines Wochentags, nie ein Sonntag.
+            Assert.Equal(ZapfTagtyp.Werktag, Messvergleich.Tagtyp(new DateTime(2025, 5, 1)));    // 1. Mai, Donnerstag
+            Assert.Equal(ZapfTagtyp.Werktag, Messvergleich.Tagtyp(new DateTime(2025, 10, 3)));   // 3. Oktober, Freitag
+            Assert.Equal(ZapfTagtyp.Samstag, Messvergleich.Tagtyp(new DateTime(2025, 1, 4)));
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, Messvergleich.Tagtyp(new DateTime(2025, 1, 5)));
+        }
+
+        /// <summary>
+        /// <b>Die Stundenanteile sind die kleinsten Quadrate</b> (Befund 5), nicht der gepoolte
+        /// Quotient <c>Σ x / Σ Q</c>: Bei UNGLEICHEN Tagesmengen wiegen sie einen Tag mit
+        /// <c>Q_t²</c>, ein großer Tag bestimmt die Form also stärker. Die Probe legt zwei
+        /// Werktagsformen übereinander — einen großen Tag mit der einen, einen kleinen mit der
+        /// anderen — und rechnet beide Formeln von Hand nach: Sie ergeben verschiedene Zahlen, und
+        /// das Ergebnis ist die Lösung der kleinsten Quadrate.
+        /// </summary>
+        [Fact]
+        public void Die_Stundenanteile_sind_die_kleinsten_Quadrate()
+        {
+            // Zwei Formen, beide mit Tagesmenge 1 je Einheit: Form A traegt alles um 08:00,
+            // Form B alles um 18:00. Der grosse Tag traegt 10 kWh, der kleine 1 kWh.
+            var gross = new double[Zapfkalender.STUNDEN_TAG];
+            var klein = new double[Zapfkalender.STUNDEN_TAG];
+            gross[8] = 10.0;
+            klein[18] = 1.0;
+
+            // 40 Tage: gerade Tage gross (Form A), ungerade klein (Form B). Ab Montag, damit jeder
+            // Wochentag vorkommt; hier zaehlt allein der Werktagsgang.
+            var werte = new List<double>();
+            var beginn = new DateTime(2025, 1, 6);          // Montag
+            for (int i = 0; i < 40; i++)
+                werte.AddRange(i % 2 == 0 ? gross : klein);
+            var reihe = new Messreihe("Zaehler (erfunden)", ZapfMessgroesse.Energie, 60, beginn,
+                                      werte.ToArray(), "Probe (erfunden)");
+
+            Nichtwohnvorschlag v = Messkalibrierung.Nichtwohnparameter(reihe, 0.0, 1.0, 20, out ZapfSatz fehler);
+            Assert.Null(fehler);
+            IReadOnlyList<double> a = v.Tagesgaenge.Single(t => t.Tagtyp == ZapfTagtyp.Werktag).Anteile;
+
+            // Von Hand: die Werktage zaehlen. Ueber 40 Tage ab Montag sind 40/7 Wochen; die Probe
+            // rechnet die beiden Summen selbst nach, statt die Zahl zu raten.
+            double summeQQ = 0.0, qx8 = 0.0, qx18 = 0.0;
+            for (int i = 0; i < 40; i++)
+            {
+                DateTime t = beginn.AddDays(i);
+                if (Messvergleich.Tagtyp(t) != ZapfTagtyp.Werktag) continue;
+                double[] gang = i % 2 == 0 ? gross : klein;
+                double q = gang.Sum();
+                summeQQ += q * q;
+                qx8 += q * gang[8];
+                qx18 += q * gang[18];
+            }
+            Assert.Equal(qx8 / summeQQ, a[8], 12);
+            Assert.Equal(qx18 / summeQQ, a[18], 12);
+
+            // Die Nebenbedingung erfuellt sich von selbst, und nichts ist negativ.
+            Assert.Equal(1.0, a.Sum(), 12);
+            Assert.All(a, x => Assert.True(x >= 0.0, "Ein Stundenanteil ist negativ: " + x));
+
+            // UND sie ist etwas ANDERES als der gepoolte Quotient - sonst waere der Befund gegenstandslos.
+            double summeQ = 0.0, x8 = 0.0;
+            for (int i = 0; i < 40; i++)
+            {
+                DateTime t = beginn.AddDays(i);
+                if (Messvergleich.Tagtyp(t) != ZapfTagtyp.Werktag) continue;
+                double[] gang = i % 2 == 0 ? gross : klein;
+                summeQ += gang.Sum();
+                x8 += gang[8];
+            }
+            Assert.NotEqual(x8 / summeQ, a[8], 6);
+
+            // Die kleinsten Quadrate sind wirklich das Minimum: eine Stoerung in beide Richtungen
+            // (auf Summe 1 gehalten) vergroessert die Fehlersumme.
+            Assert.True(Fehlersumme(reihe, beginn, gross, klein, a, 0.0) <= Fehlersumme(reihe, beginn, gross, klein, a, +0.01));
+            Assert.True(Fehlersumme(reihe, beginn, gross, klein, a, 0.0) <= Fehlersumme(reihe, beginn, gross, klein, a, -0.01));
+        }
+
+        /// <summary>
+        /// Die Fehlersumme <c>Σ_t Σ_h (x_{t,h} − a_h · Q_t)²</c> über die Werktage, mit
+        /// <paramref name="stoerung"/> von Stunde 8 nach Stunde 18 verschoben (Σ a bleibt 1).
+        /// </summary>
+        private static double Fehlersumme(Messreihe reihe, DateTime beginn, double[] gross, double[] klein,
+                                          IReadOnlyList<double> anteile, double stoerung)
+        {
+            double[] a = anteile.ToArray();
+            a[8] += stoerung;
+            a[18] -= stoerung;
+            double summe = 0.0;
+            for (int i = 0; i < 40; i++)
+            {
+                DateTime t = beginn.AddDays(i);
+                if (Messvergleich.Tagtyp(t) != ZapfTagtyp.Werktag) continue;
+                double[] gang = i % 2 == 0 ? gross : klein;
+                double q = gang.Sum();
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                {
+                    double d = gang[h] - a[h] * q;
+                    summe += d * d;
+                }
+            }
+            return summe;
+        }
+
+        /// <summary>
+        /// <b>Eine kurze Reihe wird mit dem JAHRESGANG der Rechnung hochgerechnet</b> (Befund 6),
+        /// nicht flach mit <c>· 365 / Tage</c>: Eine Januarmessung wird auf das Jahr geschrieben, indem
+        /// sie durch den Anteil geteilt wird, den die Januartage am gerechneten Jahr haben — bei einem
+        /// Winterprofil ist das MEHR als 31/365, der Jahreswert also KLEINER als die flache
+        /// Hochrechnung. Beide Wege sind benannt, und der Bias steht im Hinweis.
+        /// </summary>
+        [Fact]
+        public void Eine_kurze_Reihe_wird_mit_dem_Jahresgang_hochgerechnet()
+        {
+            Bilanzreihe gerechnet = Jahresreihe(1.0, jahresgang: true);
+            Messreihe januar = Teilmessreihe(gerechnet, BEGINN, 31);
+
+            // Der Anteil der Januartage am gerechneten Jahr - unabhaengig nachgerechnet.
+            double anteil = Messkalibrierung.Jahresanteil(januar, gerechnet);
+            Assert.True(anteil > 31.0 / Zapfkalender.TAGE,
+                        "Der Januar traegt im Winterprofil mehr als seinen Kalenderanteil (" + anteil + ").");
+
+            var mitGang = new List<ZapfSatz>();
+            Messwert m = Messkalibrierung.Jahresmesswert(januar, 0.0, ZapfBilanzgrenze.Zapfstelle, null, 30,
+                                                         out ZapfSatz fehler, mitGang, gerechnet);
+            Assert.Null(fehler);
+            Assert.Equal(januar.Menge / anteil, m.WertKwh, 6);
+            // Die Messung IST die Rechnung dieser Tage - hochgerechnet ergibt sie deren Jahressumme.
+            Assert.Equal(gerechnet.JahressummeKwh, m.WertKwh, 6);
+            ZapfSatz hinweis = Assert.Single(mitGang, h => h.Kennung == "MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG");
+            Assert.NotEmpty(hinweis.Klartext);
+            Assert.DoesNotContain(mitGang, h => h.Kennung == "MESSKALIBRIERUNG_HOCHGERECHNET");
+
+            // OHNE gerechnete Reihe: die flache Hochrechnung, benannt - und sie liegt HOEHER.
+            var flach = new List<ZapfSatz>();
+            Messwert f = Messkalibrierung.Jahresmesswert(januar, 0.0, ZapfBilanzgrenze.Zapfstelle, null, 30,
+                                                         out _, flach);
+            Assert.Equal(januar.Menge * Zapfkalender.TAGE / januar.Tage, f.WertKwh, 6);
+            Assert.True(f.WertKwh > m.WertKwh,
+                        "Die flache Hochrechnung liegt nicht ueber der mit Jahresgang.");
+            Assert.Single(flach, h => h.Kennung == "MESSKALIBRIERUNG_HOCHGERECHNET");
+
+            // Ein ganzes Jahr: der Anteil ist 1, und es wird nicht hochgerechnet.
+            Messreihe ganz = MitSpitzenfaktor(1.0, jahresgang: true);
+            Assert.Equal(1.0, Messkalibrierung.Jahresanteil(ganz, gerechnet), 9);
+            var ohne = new List<ZapfSatz>();
+            Messwert j = Messkalibrierung.Jahresmesswert(ganz, 0.0, ZapfBilanzgrenze.Zapfstelle, null, 30,
+                                                         out _, ohne, gerechnet);
+            Assert.Equal(ganz.Menge, j.WertKwh, 9);
+            Assert.Empty(ohne);
+        }
+
+        // =================================================================================
         //  Helfer
         // =================================================================================
+
+        /// <summary>
+        /// Eine Messreihe, die GENAU die gerechneten Stundenwerte der abgedeckten Tage trägt: ab
+        /// <paramref name="beginn"/> über <paramref name="tage"/> Kalendertage, Stundenraster. Die
+        /// gerechnete Reihe kennt keinen 29. Februar; ein Schaltjahr überspringt ihn in der Rechnung
+        /// und trägt an seiner Stelle die Werte des Folgetags — so steht in der Datei ein echter
+        /// 29. Februar, den der Vergleich außen vor lassen muss.
+        /// </summary>
+        private static Messreihe Teilmessreihe(Bilanzreihe gerechnet, DateTime beginn, int tage,
+                                               bool schaltjahr = false)
+        {
+            IReadOnlyList<double> stunden = gerechnet.StundenKwh;
+            var werte = new List<double>(tage * Zapfkalender.STUNDEN_TAG);
+            for (int i = 0; i < tage; i++)
+            {
+                DateTime t = beginn.AddDays(i);
+                int jahrestag = t.DayOfYear;
+                if (schaltjahr && DateTime.IsLeapYear(t.Year) && jahrestag > 60) jahrestag--;
+                int d = Math.Min(jahrestag, Zapfkalender.TAGE) - 1;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
+                    werte.Add(stunden[d * Zapfkalender.STUNDEN_TAG + h]);
+            }
+            return new Messreihe("Waermemengenzaehler (erfunden)", ZapfMessgroesse.Energie, 60, beginn,
+                                 werte.ToArray(), "Probe (erfunden)");
+        }
+
 
         private static string Kein(object ergebnis, ZapfSatz satz)
         {

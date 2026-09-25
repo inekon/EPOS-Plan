@@ -212,8 +212,16 @@ namespace WindowsFormsApplication1
     /// <para><b>Der echte Kalender der Messung.</b> Die Messreihe wird NIE in das
     /// 8760-Stunden-Raster geschoben (der Kern rechnet 365 Tage ohne Schaltjahr, die Messung kennt
     /// ihren wirklichen Kalender). Verglichen wird über <b>Monat</b>, <b>Wochentag</b> und
-    /// <b>Tagesstunde</b> — Größen, die beide Seiten führen. Feiertage kennt die Messung nicht; sie
-    /// zählen als Sonntag, und ein Hinweis nennt es.</para>
+    /// <b>Tagesstunde</b> — Größen, die beide Seiten führen. <b>Feiertage kennt die Messung nicht:</b>
+    /// Jeder Tag zählt als der Wochentag, der er ist — ein Feiertag am Dienstag also als Werktag —,
+    /// und <c>MESSVERGLEICH_OHNE_FEIERTAGE</c> nennt das, sobald überhaupt ein voller Tag in den
+    /// Formabgleich eingeht.</para>
+    ///
+    /// <para><b>Ein Teiljahr ist kein Fehler</b> (Konzept 4.8): Deckt die Messung nicht alle 365 Tage
+    /// ab, rechnen (a) Energie und (e) Monate über GENAU DIE TAGE, die sie abdeckt — die Rechnung
+    /// wird auf dieselben Tage bezogen, nicht auf ihr Jahr —, und <c>MESSVERGLEICH_TEILJAHR</c> nennt
+    /// die Zahl der Tage. Ein 29. Februar der Messung hat im Raster des Kerns keinen Gegentag; seine
+    /// Schritte fallen aus beiden Seiten heraus, und <c>MESSVERGLEICH_SCHALTTAG</c> nennt es.</para>
     ///
     /// <para><b>Welche Kennzahl welchen Ausschnitt nimmt.</b> (a) Energie und (e) Monate rechnen
     /// über ALLE Zeitschritte der Reihe; (b) Spitze, (c) √N und (d) Form über die
@@ -298,16 +306,48 @@ namespace WindowsFormsApplication1
                 return erg;
             }
 
+            // ---- Welche Tage des Rechenjahres die Messung überhaupt abdeckt ---------------
+            // Jeder Zeitschritt der Messung bekommt seinen Jahrestag im Raster des Kerns (365 Tage
+            // ohne Schaltjahr). Ein Schalttag hat dort KEINEN Gegentag: Seine Schritte fallen aus
+            // beiden Seiten heraus, und ein Hinweis nennt es - stiller als eine verschobene Stunde
+            // wäre nichts.
+            int[] tag = Jahrestage(e.Reihe, kwhJeSchritt.Count, out int schalttagschritte);
+            var abgedeckt = new bool[Zapfkalender.TAGE];
+            for (int i = 0; i < tag.Length; i++)
+                if (tag[i] >= 0) abgedeckt[tag[i]] = true;
+            int tageAbgedeckt = 0;
+            foreach (bool b in abgedeckt) if (b) tageAbgedeckt++;
+            if (schalttagschritte > 0)
+                erg.Hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_SCHALTTAG", schalttagschritte));
+            if (tageAbgedeckt == 0)
+            {
+                erg.Abbruch = ZapfSatz.Neu("MESSVERGLEICH_OHNE_VERGLEICHSTAG");
+                return erg;
+            }
+            if (tageAbgedeckt < Zapfkalender.TAGE)
+                erg.Hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_TEILJAHR", tageAbgedeckt, Zapfkalender.TAGE));
+
             // ---- (a) Energie -------------------------------------------------------------
+            // BEIDE Seiten über DIESELBEN Tage: Eine Messung über zwei Monate gegen die Jahressumme
+            // zu halten ergäbe ein Verhältnis um 1/6 und sagte nichts über die Rechnung.
             double gemessenKwh = 0.0;
-            foreach (double k in kwhJeSchritt) gemessenKwh += k;
-            double gerechnetKwh = e.Gerechnet.JahressummeKwh;
+            for (int i = 0; i < kwhJeSchritt.Count; i++)
+                if (tag[i] >= 0) gemessenKwh += kwhJeSchritt[i];
+            double[] tagessummenRech = TagessummenKwh(e.Gerechnet);
+            double gerechnetKwh = 0.0;
+            for (int d = 0; d < Zapfkalender.TAGE; d++)
+                if (abgedeckt[d]) gerechnetKwh += tagessummenRech[d];
+            if (!(gerechnetKwh > 0.0))
+            {
+                erg.Abbruch = ZapfSatz.Neu("MESSVERGLEICH_RECHNUNG_OHNE_MENGE");
+                return erg;
+            }
             double verhaeltnis = gemessenKwh / gerechnetKwh;
             erg.Energie = new Energieabgleich(verhaeltnis, verhaeltnis - 1.0);
             erg.Hinweise.Add(ZapfSatz.Neu("MESSVERGLEICH_ENERGIE_ABWEICHUNG", verhaeltnis - 1.0));
 
             // ---- (e) Monate --------------------------------------------------------------
-            erg.Monate = Monate(e.Reihe, kwhJeSchritt, gemessenKwh, e.Gerechnet);
+            erg.Monate = Monate(kwhJeSchritt, tag, gemessenKwh, tagessummenRech, abgedeckt, gerechnetKwh);
 
             // ---- Die vollständigen Stunden der Messung -----------------------------------
             IReadOnlyList<Messstunde> stunden = e.Reihe.Stundenwerte(e.SpreizungK);
@@ -458,7 +498,11 @@ namespace WindowsFormsApplication1
             {
                 if (zaehler[kv.Key] != Zapfkalender.STUNDEN_TAG) continue;      // angeschnittener Tag
                 ZapfTagtyp typ = Tagtyp(kv.Key);
-                if (typ == ZapfTagtyp.SonnFeiertag) feiertagsfrage = true;
+                // JEDER volle Tag kann ein Feiertag sein - der 1. Mai ebenso wie der 3. Oktober -,
+                // und die Messung sagt es nicht. Der Hinweis haengt deshalb an jedem vollen Tag, nicht
+                // nur an den Sonntagen: Ein Feiertag am Dienstag zaehlt hier als Werktag, und gerade
+                // DAS ist die Abweichung, die der Anwender wissen muss.
+                feiertagsfrage = true;
                 if (!summeMess.TryGetValue(typ, out double[] s)) summeMess[typ] = s = Neu24();
                 for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) s[h] += kv.Value[h];
                 tageMess[typ] = (tageMess.TryGetValue(typ, out int n) ? n : 0) + 1;
@@ -504,8 +548,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Tagtyp eines wirklichen Datums: Montag bis Freitag Werktag, Samstag Samstag, Sonntag
-        /// Sonn-/Feiertag. <b>Feiertage kennt die Messung nicht</b> — sie zählen als Werktag ihres
-        /// Wochentags; der Hinweis <c>MESSVERGLEICH_OHNE_FEIERTAGE</c> nennt das.
+        /// Sonn-/Feiertag. <b>Feiertage kennt die Messung nicht</b> — sie zählen als <b>Werktag ihres
+        /// Wochentags</b> (ein Feiertag am Dienstag also als Werktag, nicht als Sonntag); der Hinweis
+        /// <c>MESSVERGLEICH_OHNE_FEIERTAGE</c> nennt das an jedem vollen Tag.
         /// </summary>
         internal static ZapfTagtyp Tagtyp(DateTime tag)
         {
@@ -522,27 +567,91 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die Monatsanteile beider Seiten (je Summe 1) und die größte Abweichung. Die Messung zählt
-        /// den Monat ihres wirklichen Zeitstempels, die Rechnung ihre Monatssummen aus dem festen
-        /// Raster — beide Seiten geben Anteile ab, keine Mengen (K5).
+        /// Die Monatsanteile beider Seiten (je Summe 1) und die größte Abweichung — <b>beide über
+        /// DIESELBEN Tage</b> (<paramref name="abgedeckt"/>). Die Messung zählt den Monat ihres
+        /// wirklichen Zeitstempels, die Rechnung die Tage desselben Monats aus ihrem festen Raster;
+        /// ein Monat, den die Messung nicht berührt, steht auf beiden Seiten auf 0. Beide Seiten
+        /// geben Anteile ab, keine Mengen (K5).
+        ///
+        /// <para><b>Die größte Abweichung wird nur unter den ABGEDECKTEN Monaten gesucht</b> — ein
+        /// Monat mit 0 gegen 0 ist keine Übereinstimmung, sondern eine Nichtaussage, und er darf den
+        /// gefundenen Monat nicht verdrängen.</para>
         /// </summary>
-        private static Monatsabgleich Monate(Messreihe reihe, IReadOnlyList<double> kwhJeSchritt,
-                                             double gemessenKwh, Bilanzreihe gerechnet)
+        private static Monatsabgleich Monate(IReadOnlyList<double> kwhJeSchritt, IReadOnlyList<int> tag,
+                                             double gemessenKwh, IReadOnlyList<double> tagessummenRech,
+                                             IReadOnlyList<bool> abgedeckt, double gerechnetKwh)
         {
             var mess = new double[Zapfkalender.MONATE];
             for (int i = 0; i < kwhJeSchritt.Count; i++)
-                mess[reihe.Zeitpunkt(i).Month - 1] += kwhJeSchritt[i];
+                if (tag[i] >= 0) mess[Zapfkalender.Monat(tag[i] + 1) - 1] += kwhJeSchritt[i];
+
+            var rech = new double[Zapfkalender.MONATE];
+            var monatAbgedeckt = new bool[Zapfkalender.MONATE];
+            for (int d = 0; d < Zapfkalender.TAGE; d++)
+            {
+                if (!abgedeckt[d]) continue;
+                int m = Zapfkalender.Monat(d + 1) - 1;
+                rech[m] += tagessummenRech[d];
+                monatAbgedeckt[m] = true;
+            }
 
             double[] anteileMess = Anteile(mess, gemessenKwh);
-            double[] anteileRech = Anteile(gerechnet.MonatssummenKwh.ToArray(), gerechnet.JahressummeKwh);
+            double[] anteileRech = Anteile(rech, gerechnetKwh);
             double groesste = 0.0;
-            int monat = 1;
+            int monat = 0;
             for (int m = 0; m < Zapfkalender.MONATE; m++)
             {
+                if (!monatAbgedeckt[m]) continue;
                 double d = Math.Abs(anteileMess[m] - anteileRech[m]);
-                if (d > groesste) { groesste = d; monat = m + 1; }
+                if (monat == 0 || d > groesste) { groesste = d; monat = m + 1; }
             }
-            return new Monatsabgleich(Array.AsReadOnly(anteileMess), Array.AsReadOnly(anteileRech), groesste, monat);
+            return new Monatsabgleich(Array.AsReadOnly(anteileMess), Array.AsReadOnly(anteileRech), groesste,
+                                      monat == 0 ? 1 : monat);
+        }
+
+        /// <summary>
+        /// Der <b>Jahrestag im Raster des Kerns</b> (0 … 364) zu jedem Zeitschritt der Messung —
+        /// oder −1, wenn der Schritt keinen Gegentag hat. Dazu die Zahl der Schritte, die auf einen
+        /// 29. Februar fallen.
+        ///
+        /// <para><b>Der Kern rechnet 365 Tage ohne Schaltjahr</b> (Kapitel 7). Ein 29. Februar der
+        /// Messung hat deshalb keinen Vergleichstag: Seine Schritte fallen aus <b>beiden</b> Seiten
+        /// heraus — sie dem 28. Februar oder dem 1. März zuzuschlagen verschöbe eine ganze
+        /// Tagesmenge. Jeder Tag NACH dem 29. Februar eines Schaltjahres rückt um einen Tag zurück,
+        /// damit der 1. März der Messung auf den 1. März der Rechnung fällt und nicht auf den
+        /// 2. März.</para>
+        ///
+        /// <para>Läuft die Messung über mehr als ein Jahr, treffen mehrere Zeitschritte denselben
+        /// Jahrestag; das ist gewollt (der Vergleich hält den Jahresgang gegen den Jahresgang) und
+        /// steht schon im Hinweis <c>MESSREIHE_UEBER_EIN_JAHR</c> des Lesers.</para>
+        /// </summary>
+        private static int[] Jahrestage(Messreihe reihe, int schritte, out int schalttagschritte)
+        {
+            schalttagschritte = 0;
+            var tag = new int[schritte];
+            for (int i = 0; i < schritte; i++)
+            {
+                DateTime z = reihe.Zeitpunkt(i);
+                if (z.Month == 2 && z.Day == 29) { tag[i] = -1; schalttagschritte++; continue; }
+                int jahrestag = z.DayOfYear;
+                if (DateTime.IsLeapYear(z.Year) && jahrestag > 60) jahrestag--;
+                tag[i] = jahrestag - 1;
+            }
+            return tag;
+        }
+
+        /// <summary>Die 365 Tagessummen [kWh] der gerechneten Reihe — die Bezugsgröße jedes Teiljahrs.</summary>
+        private static double[] TagessummenKwh(Bilanzreihe gerechnet)
+        {
+            IReadOnlyList<double> stunden = gerechnet.StundenKwh;
+            var tage = new double[Zapfkalender.TAGE];
+            for (int d = 0; d < Zapfkalender.TAGE; d++)
+            {
+                double s = 0.0;
+                for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++) s += stunden[d * Zapfkalender.STUNDEN_TAG + h];
+                tage[d] = s;
+            }
+            return tage;
         }
 
         // =================================================================================

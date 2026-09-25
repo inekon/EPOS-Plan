@@ -32149,7 +32149,16 @@ Do you want to allow this?</value>
     <value>The peaks of {0} realisations scatter between {1:0.###} and {2:0.###} of the largest computed hourly load.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE" xml:space="preserve">
-    <value>The measurement knows no public holidays; they count with the daily profile of their weekday.</value>
+    <value>The measurement knows no public holidays; they count as a working day of their weekday.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_VERGLEICHSTAG" xml:space="preserve">
+    <value>No time step of the measurement meets a day of the calculation year; a comparison is not possible.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SCHALTTAG" xml:space="preserve">
+    <value>{0} time step(s) fall on a 29 February; the calculation core does not know it, they stay out of the comparison.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_TEILJAHR" xml:space="preserve">
+    <value>The measurement covers {0} of {1} days; the energy and month comparison compute both sides over exactly these days.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_MESSREIHE" xml:space="preserve">
     <value>Without a measured series there is no comparison to compute.</value>
@@ -32182,7 +32191,10 @@ Do you want to allow this?</value>
     <value>Only one of the two sides carries the day type {0}; it is left out of the shape comparison.</value>
   </data>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET" xml:space="preserve">
-    <value>The series covers {0:0.#} days and has been scaled up to {1} days; the annual value is an extrapolation, not a measurement.</value>
+    <value>The series covers {0:0.#} days and has been scaled up flatly to {1} days — every day of the year counts alike, which underestimates a summer measurement and overestimates a winter one; the annual value is an extrapolation, not a measurement.</value>
+  </data>
+  <data name="ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG" xml:space="preserve">
+    <value>The series covers {0:0.#} of {1} days and has been scaled up with the annual profile of the calculation ({2:0.0%} of the year); the annual value assumes the computed behaviour for the unmeasured time and is not a measurement.</value>
   </data>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
     <value>Without the reference quantity of the zone no daily demand per unit can be proposed.</value>

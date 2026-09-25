@@ -93492,11 +93492,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe umfasst {0:0.#} Tage und ist auf {1} Tage hochgerechnet; der Jahreswert ist eine Hochrechnung, keine Messung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe umfasst {0:0.#} Tage und ist flach auf {1} Tage hochgerechnet — jeder Tag des Jahres gilt gleich, eine Sommermessung wird dabei unterschätzt und eine Wintermessung überschätzt; der Jahreswert ist eine Hochrechnung, keine Messung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe umfasst {0:0.#} von {1} Tagen und ist mit dem Jahresgang der Rechnung hochgerechnet ({2:0.0%} des Jahres); der Jahreswert setzt für die ungemessene Zeit das gerechnete Verhalten voraus und ist keine Messung. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG", resourceCulture);
             }
         }
         
@@ -93933,7 +93942,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung kennt keine Feiertage; sie zählen mit dem Tagesgang ihres Wochentags. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung kennt keine Feiertage; sie zählen als Werktag ihres Wochentags. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_OHNE_FEIERTAGE {
             get {
@@ -93969,6 +93978,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zeitschritt der Messung trifft einen Tag des Rechenjahres; ein Vergleich ist nicht möglich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_OHNE_VERGLEICHSTAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_OHNE_VERGLEICHSTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung trägt keinen vollständigen Tag, den auch die Rechnung führt; der Formabgleich bleibt offen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_OHNE_VOLLEN_TAG {
@@ -93983,6 +94001,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_RECHNUNG_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeitschritt(e) fallen auf einen 29. Februar; der Rechenkern kennt ihn nicht, sie bleiben außer Vergleich. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SCHALTTAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SCHALTTAG", resourceCulture);
             }
         }
         
@@ -94037,6 +94064,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Messung deckt {0} von {1} Tagen ab; Energie- und Monatsvergleich rechnen beide Seiten über genau diese Tage. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_TEILJAHR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_TEILJAHR", resourceCulture);
             }
         }
         
