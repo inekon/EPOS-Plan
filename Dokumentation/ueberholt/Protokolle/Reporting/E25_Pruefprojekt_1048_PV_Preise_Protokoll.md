@@ -173,8 +173,8 @@ Baufreigabe, alle a, nach Empfehlung; gebaut ist jeweils der Entscheid (→ Regi
   SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen, 0 Fehler; Auslieferungsvorlage-Tests 36/36;
   SqlDialektPruefer 1.927/0; `Testdatenbankschema --trocken` 0/0 (Schritt 144).
 - **Merge** `3936003c` auf `pm26` über `origin` = `ba798d8a`.
-- **Gate:** NACHTRAG-519-GATE
-- **CI:** NACHTRAG-519-CI
+- **Gate:** Gate #519 auf `3936003c` (25.09.2026 21:21–21:29): Kern-Filter 0 Fehler, ChartProben 0 Fehler, 161 Bild-Hashes gleich mit der Messlatte, Tests UI 6.395, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Kern 7.449 von 7.451 (1 übersprungen, 1 rot — Befund 6, behoben mit E25/4 `ceba456f`, `PvPreisProjektTests` danach 13/13), Dokumentationswachen 29/29 auf `3936003c` und erneut auf `ceba456f`.
+- **CI:** steht aus (Beobachtung nach dem Push).
 
 ## Abnahme am Gerät (A‑E25‑1, Windows, an der Testdatenbank)
 
