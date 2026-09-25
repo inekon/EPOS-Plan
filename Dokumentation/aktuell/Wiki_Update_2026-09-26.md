@@ -35,6 +35,7 @@ vom 24.09.2026 bestätigt.
 | Programm Dokumentation/Varianten | `Projekte/Wiki/Programm Dokumentation - Varianten.wiki` | mit E12 der Kohärenzhinweis „übernehmen ohne Stammprojekt" am Abschnitt PV-Vergütung der Variante (Anker `pv-verguetung`) | E12 |
 | Programm Dokumentation/Gebäude | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` | **Repo-Quelle neu angelegt** aus dem Live-Stand (`action=raw`, 3 654 Zeichen, zwölf Anker) und dem Ist-Zustand der Oberfläche: Projektdialog mit Übernahme ins Projekt (Kopie mit Katalogverweis, Neuschreiben der Liste mit „OK"), Katalogeditor mit seinen zwei Reitern, die Verwaltung Gebäude mit Liste, Auswahlleiste (Vergleichen, Duplizieren…, Schloss, Löschen mit Nutzungssperre), Stammblatt (Kenndaten, Hülle, Fenster, Kenngrößen, „Alle Daten"), Speichern/Verwerfen, Neu…, Schloss der Auslieferungssätze, Fußleiste, Hilfe-Assistent und Grenzen (kein Wärmebedarf ohne Projekt); die zwölf Live-Anker bleiben, 25 kommen dazu (u. a. `verwaltung`, `stammblatt`, `katalogeditor`, `gebaeudetypen`, `loeschen`, `schloss`, `assistent`, `grenzen`); `help_mapping.txt` zeigt mit `Form_Gebaeude1`/`Form_Gebaeude2` auf `katalogeditor` und mit `Form_EingGebTyp` auf `gebaeudetypen`; mit G4 der Punkt „Importieren (gbXML, IFC)…" in der Katalogleiste (neuer Anker `import`) und der Verweis im Katalogeditor | Statuszeilen #465, #468, #473; #476; Status der Gebäudesimulation, Stufe G4 |
 | Programm Dokumentation/Gebäudeimport | `Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki` | **neue Seite**: Einstieg im Gebäudedialog, Dateiarten und Größengrenzen, Baualtersklasse zuerst, Quelle mit dem Hinweis auf eine schon importierte Datei, Raumliste, Zuordnung mit Herkunft je Feld (Datei, Vorgabe, manuell, leer), was nicht aus der Datei kommt, vorbelegter Katalogeditor, Übernahme ins Projekt und Herkunft im Projekt; `help_mapping.txt` zeigt mit `Form_GebaeudeImport.btn_Help` auf den Anker `zuordnung` | Status der Gebäudesimulation, Stufe G4 (E38) |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki` | **neue Seite** (Repo-Quelle seit der Stufe Z1 des Zapfprofilgenerators, nie hochgeladen): Rechenweg Brauchwasser, Eingaben je Stufe (Einfach, Erweitert, Experte), Vorschau, Hinweise und Prüfung, Stochastik, Auslegung, Katalog der Brauchwasser-Nutzungsarten, Typtage nach VDI 4655, Messdaten, Vergleich und Kalibrierung; 34 Anker | Statuszeilen #443, #451, #453, #464, #486, #495 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
@@ -417,6 +418,27 @@ den Statuszeilen #358–#403; ein eigener Eintrag entfiele als Dopplung nach Reg
   Gesamtwirkungsgrad ergibt sich daraus. (#392)
 - Seit 26.09.2026: Die Farben der Diagramme lassen sich in den Einstellungen je Größe ändern;
   der Bericht nimmt dieselben Farben. (#403)
+- Seit 26.09.2026: Brauchwasser-Zapfprofile lassen sich je Nutzungszone erzeugen und als
+  Brauchwasserbedarf rechnen. (#443)
+- Seit 26.09.2026: Die Speicherauslegung für Trinkwarmwasser zeigt Summenlinie und Normvergleich
+  nebeneinander und empfiehlt den Punkt der Summenlinie. (#451)
+- Seit 26.09.2026: Das Brauchwasser-Zapfprofil rechnet die Jahresreihe in der Stufe Experte wahlweise
+  stochastisch mit Seed und Realisierungen und zeigt die Konsistenzprobe. (#453)
+- Seit 26.09.2026: Die Auslegung Brauchwasser rechnet auf Wunsch stochastisch und zeigt das Perzentil
+  P95 oder P99 mit Streuband und Gleichzeitigkeit. (#453)
+- Seit 26.09.2026: Das Ecodesign-Zapfprofil L steht als Bedarfstag der Auslegung zur Verfügung. (#453)
+- Seit 26.09.2026: In der Stufe Erweitert des Zapfprofils stehen Wohnungstabelle, Kalender und Ferien,
+  Jahresmesswert, Schätzhilfen und Warnliste; die Stufe Experte trägt die Fachwerte und den
+  Auslastungsgang. (#464)
+- Seit 26.09.2026: Tagesgang und Zapfkategorien einer Nutzungsart lassen sich in der Stufe Experte
+  bearbeiten; die Auslegung speichert Erzeugerart, Werkstoff und die Eingaben des
+  Verfahrensvergleichs. (#464)
+- Seit 26.09.2026: Der Katalog der Brauchwasser-Nutzungsarten lässt sich unter Administration →
+  Brauchwasser pflegen und aus einem Katalogpaket importieren. (#464)
+- Seit 26.09.2026: Der Jahresgang eines Brauchwasser-Zapfprofils kann über Typtage nach VDI 4655
+  laufen; die Werte der Richtlinie spielt der lizenzierte Anwender aus einem eigenen Paket ein. (#486)
+- Seit 26.09.2026: Gemessene Brauchwasser-Reihen lassen sich je Projekt einspielen, mit der gerechneten
+  Jahresreihe vergleichen und zur Kalibrierung des Zapfprofils nutzen. (#495)
 
 *Mit E12 ergänzt:* Statuszeile #377 zählte zu dieser Version „die Logbuch-Sätze 1–14 (+ #361)“;
 für den Rasterfußzeilen-Befund aus #361 (Fußzeile der Rasterkarte bei hoher Zeilenschrift nicht

@@ -5,7 +5,7 @@ in Kapitel 7 und der Nachtrag N15 im
 [Umsetzungskonzept](../../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md); Abschnitt 13
 der [Übergabe](../../../aktuell/Zapfprofilgenerator/2026-09-23_Uebergabe_Zapfprofilgenerator.md);
 Vorstufe im Protokoll [Z4b](2026-09-24_Z4b_Typtage.md). Zweig `z5` von `d6020c05`, 37
-eigene Commits bis `a87b783b`; Merges von `origin` (`45935351` in `07cff70b`, `ac8a1762` in `4c692ff8`,
+eigene Commits bis `a87b783b`, Papiere `b28b133f`, Merge `a0bbc633`, gepusht `a0bbc633`, Kern-Lauf 36099321791 grün; Merges von `origin` (`45935351` in `07cff70b`, `ac8a1762` in `4c692ff8`,
 `6c5aa139` in `c82884d4`). Alle Gates im Worktree, ohne CI-Lauf bis zum Push.
 
 ## Auftrag
@@ -54,6 +54,8 @@ unmittelbar nach Z4b („dont stop").
 - `c82884d4`: Merge `6c5aa139` nach `z5` vor dem Gate, vier Konflikte (SchemaStand, SchemaMigration, LIESMICH der Referenzläufe, Testdatenbank), beide Seiten; T4 auf
   140 mit Testdatenbank `a87b783b` (oid `5de448e8…`, 144 STRICT), die verschluckte
   Methodengrenze wieder eingezogen.
+- `a0bbc633`: Merge `b5a2e389` (G3 Wellen D1 und C) nach `z5`, weil der Push abgewiesen war; Gate wiederholt:
+  Kern-Filter 0 Fehler, 14 014 Tests grün, Windows-Schale 0 Fehler, SqlDialektPruefer 1 921/0, Referenzlauf 5/5 gegen R14 (Merge berührt die Gebäudesimulation), ChartProben entbehrlich.
 - Statusnummer: #494 war mit den Nachbarsitzungen abgestimmt, wurde aber vor dem Push von der
   Berichtsvorlagen-Sitzung belegt; Z5 trägt #495.
 
