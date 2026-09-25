@@ -7967,9 +7967,12 @@ namespace WindowsFormsApplication1
                        komponente == BetriebskostenCtrl.KOMPONENTE_BHKW
                     ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
 
+            // E23 (Anwenderentscheid 25.09.2026): nicht an der Wärmepumpe — ihre
+            // Betriebskosten sind ein fester Jahresbetrag oder % der Investition, nicht
+            // je kWh (weder Strom noch Wärme). Bestandszeilen: siehe unten, „je kWh
+            // elektrisch".
             if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal))
-                return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
-                       komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL ||
+                return komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL ||
                        komponente == BetriebskostenCtrl.KOMPONENTE_BHKW ||
                        komponente == EndenergieAufloeser.KOMPONENTE_SOLARTHERMIE
                     ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
@@ -7977,9 +7980,18 @@ namespace WindowsFormsApplication1
             // E1: Am Heizkessel hängt die Antwort am GERÄT — nur der Elektrokessel
             // führt eine elektrische Größe (seinen Stromeinsatz, EndenergieAufloeser
             // .StromgroesseKwh). Am Brennstoffkessel bleibt es beim Gewerk.
+            //
+            // E23 (Anwenderentscheide E20‑Q6 b und 25.09.2026): An der WÄRMEPUMPE gibt es
+            // die Art nicht mehr — „Strom-kWh sind Energiekosten", und die Betriebskosten
+            // der WP werden überhaupt nicht je kWh bemessen (auch „je kWh thermisch"
+            // oben nicht). Die Landkarte antwortet deshalb GEWERK, und die Auswahl folgt
+            // ihr (BemessungKatalog.Auswahl). Eine Bestandszeile bleibt über „benutzt"
+            // wählbar und RECHNET weiter: RueckfallMenge/FrischeBasis holen die Menge
+            // ohne diese Landkarte (EndenergieAufloeser.StromgroesseKwh bzw.
+            // .WaermeerzeugungKwh); die Herleitung nennt sie Altbestand
+            // (KostenHerleitung.IstAltbestandWpKwh).
             if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal))
-                return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
-                       komponente == EndenergieAufloeser.KOMPONENTE_PHOTOVOLTAIK ||
+                return komponente == EndenergieAufloeser.KOMPONENTE_PHOTOVOLTAIK ||
                        komponente == EndenergieAufloeser.KOMPONENTE_STROMSPEICHER ||
                        komponente == BetriebskostenCtrl.KOMPONENTE_BHKW ||
                        (elektrokessel && komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL)

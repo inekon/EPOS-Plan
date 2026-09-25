@@ -3796,11 +3796,13 @@ Gebäude macht, dessen Ergebnis bis dahin hochgerechnet wurde. Der Anwender ents
    Luftvolumen, Speichermasse der Bauweise, innere Gewinne und die Innenfläche f_IW·A_f. Der Anteil 1
    rechnet bitgleich.
 3. **Das Ergebnis bleibt beim Übernehmen gleich.** Nachgewiesen über die Datenbank an 1007
-   (Faktor 4,59), 1008, 1018 und 1017 (ohne Kühlgrenze und Verbrauchsangabe): relativ **< 10⁻⁹**.
-   Danach gilt die echte Hülle ohne Nachmultiplikation; eine Verbrauchs- oder Flächenangabe steht nur
-   als Hinweis im Protokoll, die Skalierungsangabe ist mit Herleitungszeile weich gesperrt.
+   (Faktor 4,59), 1008, 1018 und 1017 (ohne Kühlleistungsgrenze), dazu an 1007 mit Verbrauchsangabe:
+   relativ **≤ 10⁻⁹**. Danach gilt die echte Hülle ohne Nachmultiplikation; eine Verbrauchs- oder
+   Flächenangabe steht nur als Hinweis im Protokoll, die Skalierungsangabe ist mit Herleitungszeile
+   weich gesperrt.
 4. **Leistungsgrenzen werden nicht hochgerechnet** (Heiz- und Kühlleistungsgrenze) — benannt in der
-   Rückfrage vor der Übernahme, die Faktor, Nutzfläche alt und neu, Angabe und Leistungsgrenzen nennt.
+   Rückfrage vor der Übernahme, die Faktor, Nutzfläche alt und neu, Angabe und die Leistungsgrenzen
+   des Gebäudes mit ihrem Wert nennt.
 
 **Verworfen:** die Übernahme im Katalogmaß (das Ergebnis spränge beim Übernehmen um den Faktor) und
 eine Sperre der Übernahme bei Hochrechnung (sie schlösse gerade die skalierten Gebäude vom Bauteilweg
@@ -3843,10 +3845,11 @@ und würde ein eigener Entscheid.
 | 16 | Die Dämmstoffe der herstellerneutralen Saat heißen nach dem Nennwert „λD 0,0xy" statt nach der Wärmeleitstufe „WLS"; die Spalte `Lambda` trägt den Bemessungswert | Mehrzonenkonzept 3.5 |
 | 17 | **Menüplatz:** die zwei Kataloge gemeinsam unter Administration › Gebäude nach „Gebäudetypen" (beide Schalen), nicht unter einem eigenen Punkt „Bauteilkatalog" | 8.4; Softwarearchitektur 3.1 |
 
-**Was offen bleibt.** Die Umstellung der Katalogseite des Gebäudedialogs auf `Katalogliste`
-([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 3.2, Regel 5): Die
-Rasterprobe braucht Playwright und Chromium, die auf dem Arbeitsrechner fehlen; den Download gibt der
-Anwender frei. Das Register zählt weiter **8 offene Punkte**.
+**Was offen bleibt.** Die Katalogseite des Gebäudedialogs ist die virtualisierte `Katalogliste`
+([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 3.2, Regel 5); ihre
+Rasterprobe (Fälle GD1–GD3) ist im integrierten Browser gemessen. Offen ist allein der Skriptlauf der
+Rasterprobe mit Playwright ([Rasterprobe](../../Proben/Rasterprobe/LIESMICH.md)). Das Register zählt
+weiter **8 offene Punkte**.
 
 **Betroffene Stufen:** G3 (abgeschlossen 25.09.2026); G4b (Bauteile aus IFC); G6a–G6d (übernehmen
 die Tabellen unverändert).

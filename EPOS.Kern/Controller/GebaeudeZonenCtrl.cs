@@ -290,15 +290,23 @@ namespace WindowsFormsApplication1
         /// <param name="NutzflaecheGebaeude">Die Nutzfläche des Gebäudes [m²] — der Katalogbau.</param>
         /// <param name="Einheit">Die Einheit der Angabe im Projekt (<c>Wohnfläche [m²]</c> oder ein Verbrauch).</param>
         /// <param name="Angabe">Die Angabe im Projekt in dieser Einheit.</param>
-        /// <param name="Leistungsgrenzen">Trägt das Gebäude eine Leistungsgrenze (Heizung, oder Kühlung bei
-        /// gekühltem Gebäude)? Sie folgt dem Flächenschlüssel nicht: Im Klassenweg galt sie dem Katalogbau und
-        /// wurde mit ihm nachmultipliziert, mit der Zone gilt sie der hochgerechneten Hülle — die Rückfrage nennt es.</param>
+        /// <param name="HeizgrenzeKw">Die Heizleistungsgrenze des Gebäudes [kW]; <c>null</c> = keine.</param>
+        /// <param name="KuehlgrenzeKw">Die Kühlleistungsgrenze [kW] eines gekühlten Gebäudes; <c>null</c> = keine
+        /// oder das Gebäude wird nicht gekühlt.</param>
         public sealed record Uebernahmevorschlag(bool Ok, string Meldung, double Faktor, ZoneModel Zone,
                                                  double NutzflaecheGebaeude, string Einheit, double Angabe,
-                                                 bool Leistungsgrenzen = false)
+                                                 double? HeizgrenzeKw = null, double? KuehlgrenzeKw = null)
         {
             /// <summary>Ist die Angabe ein Verbrauch (keine Fläche)?</summary>
             public bool Verbrauchsangabe => !string.Equals(Einheit, GebaeudeVorbereitung.EINHEIT_FLAECHE, StringComparison.Ordinal);
+
+            /// <summary>
+            /// Trägt das Gebäude eine Leistungsgrenze (Heizung, oder Kühlung bei gekühltem Gebäude)? Sie
+            /// wird <b>nicht hochgerechnet</b> (E40, Konzept N1.45 Punkt 4): Im Klassenweg galt sie dem
+            /// Katalogbau und wurde mit ihm nachmultipliziert, mit der Zone gilt sie unverändert der
+            /// hochgerechneten Hülle — die Rückfrage nennt sie mit ihrem Wert.
+            /// </summary>
+            public bool Leistungsgrenzen => HeizgrenzeKw.HasValue || KuehlgrenzeKw.HasValue;
         }
 
         /// <summary>
@@ -323,7 +331,8 @@ namespace WindowsFormsApplication1
             if (arbeitsstand != null) UebergabeHerleitungsquelle.Ueberlagern(arbeitsstand, g);
             string einheit = g.Einheit;
             double angabe = g.Z_AuswahlWohnflaeche;
-            bool grenzen = g.Heizleistung_Max.HasValue || (g.Kuehlung_Aktiv && g.Kuehlleistung_Max.HasValue);
+            double? heizgrenze = g.Heizleistung_Max;
+            double? kuehlgrenze = g.Kuehlung_Aktiv ? g.Kuehlleistung_Max : null;
 
             var projekt = new ProjektCtrl();
             projekt.ReadSingle(idProjekt);
@@ -333,7 +342,7 @@ namespace WindowsFormsApplication1
 
             ZoneModel zone = GebaeudeZonenabbildung.AlsZoneModel(GebaeudeZonenuebernahme.AlsEineZone(g, faktor));
             zone.ID_Gebaeude = g.ID_Gebaeude;
-            return new Uebernahmevorschlag(true, "", faktor, zone, g.Nutzflaeche, einheit, angabe, grenzen);
+            return new Uebernahmevorschlag(true, "", faktor, zone, g.Nutzflaeche, einheit, angabe, heizgrenze, kuehlgrenze);
         }
 
         // =================================================================

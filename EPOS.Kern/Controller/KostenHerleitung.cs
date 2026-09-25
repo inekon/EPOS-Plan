@@ -142,6 +142,17 @@ namespace WindowsFormsApplication1
             a.Kurztext = Kurztext(a, p, komponentenId, pz, projektModus, betrieb);
             a.Zeile = Zeilentext(a, projektModus, pz);
 
+            // E23 (Anwenderentscheide E20‑Q6 b und 25.09.2026): Eine Bestandszeile, die
+            // die Betriebskosten der Wärmepumpe je kWh bemisst, rechnet weiter, sagt
+            // aber, dass sie Altbestand ist — auch ohne Bezugsgröße, und nur im
+            // Projektmodus (E23‑Q4).
+            if (projektModus && p != null &&
+                (pz == null || pz.KategorieId != DbWerte.KOSTEN_KATEGORIE_INVESTITION) &&
+                IstAltbestandWpKwh(p.Bemessung, komponentenId))
+                a.Zeile = a.Zeile.Length == 0
+                    ? MyResource.Resource.KDLG_HERL_ALTBESTAND_WP_KWH
+                    : a.Zeile + " · " + MyResource.Resource.KDLG_HERL_ALTBESTAND_WP_KWH;
+
             // U31: Der Empfehlungsbereich stand bis hierher als deutscher Satzbaukasten
             // in der Windows-Hülle — Fachtext in einer Schale, einsprachig. Er entsteht
             // jetzt hier, in zwei Fassungen aus EINER Quelle: dem Werkzeugtipp am
@@ -151,6 +162,25 @@ namespace WindowsFormsApplication1
             // ANWENDERENTSCHEID 19.09.2026: Der Vorlagenhinweis der Projektzeile.
             Vorlagenhinweis(a, p, komponentenId, pz);
             return a;
+        }
+
+        /// <summary>
+        /// E23 (Anwenderentscheide E20‑Q6 b und 25.09.2026: „Betriebskosten bei
+        /// Wärmepumpe: fixer Jahresbetrag oder % von Investitionskosten, nicht nach
+        /// kWh/a — weder Strom noch Wärme"): Bemisst diese Zeile die Wärmepumpe je kWh?
+        /// Das sind „je kWh elektrisch", „je kWh thermisch" und der Altwert „je kWh".
+        /// Keine davon steht dort zur Auswahl (Landkarte
+        /// <see cref="WirtschaftlichkeitCtrl.BasisGrund(string, int, bool, bool)"/>, der
+        /// Altwert ohnehin nicht); eine vorhandene Zeile bleibt wählbar und
+        /// rechenfähig und wird als Altbestand benannt. „% der Endenergiekosten" und
+        /// „% des Endenergiebedarfs" zählen nicht dazu (E23‑Q6/Q7).
+        /// </summary>
+        internal static bool IstAltbestandWpKwh(string bemessung, int komponentenId)
+        {
+            return komponentenId == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE &&
+                   (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal));
         }
 
         /// <summary>

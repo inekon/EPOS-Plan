@@ -1303,7 +1303,8 @@ Wirtschaftlichkeit); der Merge #506, `e7c2f8f7`, lässt die Papiere unberührt),
 Schemaschritt 142); der Merge #502, `49ea20e0`, lässt die Papiere unberührt), in § 8.44 und § 8.45 **vor #503**
 (Stand `f83ce27d` = #502 samt seinen Papieren, zusammengeführt mit `origin` = `bcd61fe2` (AK1 Welle 5 mit der Basis
 R15 und #507); der Merge #503, `76f8661d`, zieht den Basisnamen an drei Stellen des Konzepts nach — Kopf, Tafel der
-Regressionsanker, § 6.3 Nr. 21) —, nicht vor dem Schnitt.*
+Regressionsanker, § 6.3 Nr. 21), in § 8.46 und § 8.47 **vor #510** (Stand `c48de9e0` = `origin` nach #509, darin #503
+samt seinen Papieren; der Merge #510, `f7823b8e`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2920,3 +2921,45 @@ Die Stellen, die mit E22 veraltet sind; „vorher“ ist der Wortlaut vor #503 (
 | § 6.5, Zeile „Zwei Migrationsmechanismen“ | „aufgelöst bis auf drei Ergebnisspalten“ | „aufgelöst mit #501 (Cloud-Sitzung, 25.09.2026: ‚Ad-hoc-DDL der fünf Tabellen entfernt‘) bis auf drei Ergebnisspalten“ |
 | § 7 | — | Satz zur kleinen Welle E22 (#503) |
 | Anhang | — | Kürzel- und Etappenzeile E22 |
+
+### 8.46 E23 — Betriebskosten der Wärmepumpe ohne kWh-Bemessung (#510)
+
+Protokoll [`E23_Waermepumpe_Betrieb_ohne_kWh_Protokoll.md`](E23_Waermepumpe_Betrieb_ohne_kWh_Protokoll.md); im Register
+die neue Familie R‑E23, die Zeile E20‑Q6 von R‑E20 und die Zeile Nr. 10 von R‑Rest. Die Welle setzt den
+Anwenderentscheid E20‑Q6 vom 25.09.2026 um — b, während der Welle erweitert: „bei Wärmepumpe fixer Jahresbetrag (oder %
+von Investitionskosten), nicht nach kWh/a — weder Strom noch Wärme“; sie ist keine Etappe des Plans E0–E12 und kommt
+ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 142. Die Fragen E23‑Q1…Q5 hat der Orchestrator am 25.09.2026
+(13:15) mit der Baufreigabe nach Empfehlung entschieden — alle a; E23‑Q6 und E23‑Q7 sind offen beim Anwender.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E23** (#510, Merge `f7823b8e` über `c48de9e0`, Zweig `e23` = `d08446a0` von `7b92780d`, darin `7799772b` = Merge `fe32922c`) | `EUR_PRO_KWH_ELEKTRISCH` und `EUR_PRO_KWH_THERMISCH` an der Wärmepumpe GEWERK in der Landkarte `BasisGrund` (E23‑Q1 a), Auswahl, KI-Wahlliste und Kreuztafel folgen; eine Bestandszeile bleibt über `benutzt` wählbar und rechenfähig, ohne Lauf mit dem Grund „passt nicht zu diesem Gewerk“ (E23‑Q2 a), kein Umstellungsangebot (E23‑Q5 a); der Vermerk „Altbestand“ an der Herleitung im Kern, nur im Projektmodus (E23‑Q3 a, Q4 a), ein neuer Schlüssel; 8 Testfälle | **nein** im Bestand — keine Zeile an der Wärmepumpe trägt eine kWh-Art; Anker unberührt, Referenzlauf 14/14 gegen R16 byte-gleich |
+
+*§ 6.3 Nr. 10 (vor #510):*
+
+> 10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) — **Anwenderregel umgesetzt mit E20 (#502), offen allein
+>     E20‑Q6** (Anwender 25.09.2026, → Register R‑Rest, R‑E20): die Investitionskosten der Wärmepumpe je kW thermisch
+>     und je kW elektrisch — P_el am Normpunkt der Kennlinie (§ 3.2, Fußnote ¹) —, die Betriebskosten thermisch; Rest:
+>     Das Betriebsraster der Wärmepumpe bietet weiter „je kWh elektrisch“ (Strommenge aus dem Lauf) — lassen
+>     (a, Empfehlung, gebaut) oder entfernen (b), Anwenderentscheid; siehe Protokoll
+
+**Erledigt mit E23 (#510):** Die Investitionskosten der Wärmepumpe bemessen sich je kW thermisch und je kW elektrisch
+(E20), die Betriebskosten nicht je kWh — fester Jahresbetrag, Prozentbemessungen, je kW (E23); „je kWh elektrisch“ und
+„je kWh thermisch“ sind im Betriebsraster der Wärmepumpe gesperrt, eine Bestandszeile rechnet weiter und trägt den
+Vermerk „Altbestand“. Offen beim Anwender bleiben E23‑Q6 und E23‑Q7 (die Prozent- und Leistungsbemessungen an der
+Wärmepumpe lassen, gebaut a, oder sperren). **Entscheide 25.09.2026:** E23‑Q6 und E23‑Q7 nach Empfehlung a (lassen),
+siehe Register R‑E23.
+
+### 8.47 Berichtigungen im gültigen Stand (#510)
+
+Die Stellen, die mit E23 veraltet sind; „vorher“ ist der Wortlaut vor #510 (Stand `c48de9e0`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `76f8661d`; „… E19, E20, E21 und E22 ohne Schritt“ | Codestand `f7823b8e`; „… E19, E20, E21, E22 und E23 ohne Schritt“ |
+| Schrittabsatz | „…, E20 (#502), E21 (#506) und E22 (#503) kommen ohne Schritt aus“ | „…, E21 (#506), E22 (#503) und E23 (#510) kommen ohne Schritt aus“ |
+| § 3.2 Tafel der Runde 1 | ohne Zeilen für die kWh-Arten an der Wärmepumpe | zwei Zeilen `EUR_PRO_KWH_ELEKTRISCH` und `EUR_PRO_KWH_THERMISCH` an der Wärmepumpe, Kategorie 2: „gesperrt (GEWERK), Bestandszeile rechnet aus dem Lauf, Herleitung ‚Altbestand‘“; der Satz „je Raster“ um die kWh-Arten ergänzt; Fußnote ² |
+| § 6.1 | — | neue Zeile E23 |
+| § 6.3 Nr. 10 | Wortlaut in § 8.46 | durchgestrichen, „erledigt mit E20 (#502) und E23 (#510)“, siehe Protokoll |
+| § 7 | — | Satz zur kleinen Welle E23 (#510) |
+| Anhang | — | Kürzel- und Etappenzeile E23 |

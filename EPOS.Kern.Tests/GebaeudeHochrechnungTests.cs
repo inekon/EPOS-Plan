@@ -145,6 +145,26 @@ namespace EPOS.Kern.Tests
             // f_IW·A_f und H_ve gehen in den Parametersatz ein: die Innenfläche und der Lüftungszweig doppelt.
             Assert.Equal(2.0 * klasse.Parameter.A_IW_M2, e.Parameter.A_IW_M2, 9);
             Assert.Equal(klasse.Parameter.R_ext_KW / 2.0, e.Parameter.R_ext_KW, 12);
+
+            // Auch die Kühlleistungsgrenze eines gekühlten Gebäudes folgt dem Schlüssel nicht (E40 Punkt 4).
+            ProjektGebaeudeModel Gekuehlt()
+            {
+                ProjektGebaeudeModel x = Vdi6007Probe.Gebaeude();
+                x.Kuehlung_Aktiv = true;
+                x.Kuehl_Sollwert = 30.0;
+                x.Kuehlleistung_Max = 8.0;
+                return x;
+            }
+            GebaeudeModellEingang Kuehlend(ProjektGebaeudeModel x)
+                => GebaeudeModellEingang.Bauen(x, Klima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE,
+                                               GebaeudeKlimaweg.ZEITBEZUG_VORGABE, true, null);
+            ProjektGebaeudeModel zk = Gekuehlt();
+            GebaeudeModellEingang kk = Kuehlend(Gekuehlt());
+            GebaeudeModellEingang ek = Kuehlend(MitZone(zk, GebaeudeZonenuebernahme.AlsEineZone(zk, 2.0)));
+            Assert.True(ek.KuehlungWirksam);
+            Assert.Equal(2.0, ek.Flaechenanteil);
+            Assert.Equal(8000.0, kk.KuehlleistungMaxW);
+            Assert.Equal(kk.KuehlleistungMaxW, ek.KuehlleistungMaxW);
         }
 
         /// <summary>
@@ -414,6 +434,10 @@ namespace EPOS.Kern.Tests
             GebaeudeZonenCtrl.Uebernahmevorschlag mitGrenze = GebaeudeZonenCtrl.Uebernahme(projekt, idZ, null);
             Assert.True(mitGrenze.Ok, mitGrenze.Meldung);
             Assert.True(mitGrenze.Leistungsgrenzen);
+            // Der Vorschlag trägt die Grenze mit ihrem Wert, wie sie steht - nicht hochgerechnet.
+            object grenze = DataRepository.ExecuteScalar("SELECT Kuehlleistung_Max FROM Tab_Gebaeude WHERE ID = ?",
+                                                         new DbParam("@g", TabGebaeude(idZ)));
+            Assert.Equal(Convert.ToDouble(grenze, CultureInfo.InvariantCulture), mitGrenze.KuehlgrenzeKw);
 
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Kuehlleistung_Max = NULL WHERE ID = ?",
                                                   new DbParam("@g", TabGebaeude(idZ))));

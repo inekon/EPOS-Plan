@@ -46,8 +46,14 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_FRAGE_UEBERNEHMEN</c> — {0} Faktor, {1} Nutzfläche des Gebäudes, {2} der Zone, {3} Angabe, {4} Einheit.</summary>
     public string FrageUebernehmen { get; set; } = Resource.GEBZ_FRAGE_UEBERNEHMEN;
 
-    /// <summary><c>GEBZ_FRAGE_GRENZEN</c></summary>
+    /// <summary><c>GEBZ_FRAGE_GRENZEN</c> — {0} die Grenzen des Gebäudes (<see cref="GrenzeHeizung"/>, <see cref="GrenzeKuehlung"/>).</summary>
     public string FrageGrenzen { get; set; } = Resource.GEBZ_FRAGE_GRENZEN;
+
+    /// <summary><c>GEBZ_GRENZE_HEIZUNG</c> — {0} Heizleistungsgrenze in kW.</summary>
+    public string GrenzeHeizung { get; set; } = Resource.GEBZ_GRENZE_HEIZUNG;
+
+    /// <summary><c>GEBZ_GRENZE_KUEHLUNG</c> — {0} Kühlleistungsgrenze in kW.</summary>
+    public string GrenzeKuehlung { get; set; } = Resource.GEBZ_GRENZE_KUEHLUNG;
 
     /// <summary><c>GEBZ_LEER</c></summary>
     public string Leer { get; set; } = Resource.GEBZ_LEER;

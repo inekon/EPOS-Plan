@@ -162,10 +162,18 @@ public sealed record AufbauAnsichtDaten(BauteilaufbauDaten Aufbau, AufbauKennwer
 /// <param name="Einheit">Die Einheit der Angabe im Projekt.</param>
 /// <param name="Angabe">Die Angabe im Projekt.</param>
 /// <param name="Verbrauchsangabe">Ist die Angabe ein Verbrauch?</param>
-/// <param name="Leistungsgrenzen">Trägt das Gebäude eine Leistungsgrenze, die danach der hochgerechneten Hülle gilt?</param>
+/// <param name="HeizgrenzeKw">Die Heizleistungsgrenze des Gebäudes [kW]; <c>null</c> = keine.</param>
+/// <param name="KuehlgrenzeKw">Die Kühlleistungsgrenze des gekühlten Gebäudes [kW]; <c>null</c> = keine.</param>
 public sealed record ZonenuebernahmeDaten(bool Ok, string Meldung, double Faktor, ZoneDaten? Zone,
                                           double NutzflaecheGebaeude, string Einheit, double Angabe,
-                                          bool Verbrauchsangabe, bool Leistungsgrenzen);
+                                          bool Verbrauchsangabe, double? HeizgrenzeKw = null, double? KuehlgrenzeKw = null)
+{
+    /// <summary>
+    /// Trägt das Gebäude eine Leistungsgrenze? Sie wird nicht hochgerechnet und gilt danach
+    /// unverändert der hochgerechneten Hülle — die Rückfrage nennt sie mit ihrem Wert (E40).
+    /// </summary>
+    public bool Leistungsgrenzen => HeizgrenzeKw.HasValue || KuehlgrenzeKw.HasValue;
+}
 
 /// <summary>Was die Übernahme eines Katalogaufbaus in das Projekt ergab (OK-Weg des Gebäudedialogs).</summary>
 public sealed record AufbauUebernahmeErgebnis(bool Ok, string Meldung, AufbauWahl? Wahl);
