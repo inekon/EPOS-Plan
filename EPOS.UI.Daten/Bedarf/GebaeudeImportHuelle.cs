@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
         private readonly bool _ios;
         private GebaeudeImportProfil _profil;
         private GebaeudeImportSatz _satz;
+        private GebaeudeBauteilvorschlag _vorschlag;
+        private bool _alsZone;
 
         /// <summary>
         /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
@@ -107,6 +109,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Paarungen Quellentität ↔ Gebäude des gewählten Gebäudes für <c>Tab_Importzuordnung</c>.</summary>
         internal IReadOnlyList<GebaeudeQuellzuordnung> Quellzuordnungen
             => _satz?.Quellzuordnungen ?? (IReadOnlyList<GebaeudeQuellzuordnung>)Array.Empty<GebaeudeQuellzuordnung>();
+
+        /// <summary>
+        /// Der Bauteilvorschlag der letzten Zuordnung bzw. Prüfung (Stufe G4b) — mit derselben Klasse
+        /// und denselben Raumhaken wie der Satz; <c>null</c> ohne.
+        /// </summary>
+        internal GebaeudeBauteilvorschlag Vorschlag => _vorschlag;
+
+        /// <summary>
+        /// Kommt das Gebäude als Zone mit Bauteilen? Der Schalter des letzten geprüften Ergebnisses —
+        /// nur, wenn sich der Vorschlag bilden ließ.
+        /// </summary>
+        internal bool AlsZone => _alsZone;
 
         // =================================================================================
         // Der Parametersatz
@@ -338,6 +352,10 @@ namespace WindowsFormsApplication1
             satz.FolgevorgabenNachziehen();
             _satz = satz;
 
+            // Der Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede Anfrage
+            // (Klasse, Gebäude, Raumhaken, Handwert) bildet ihn neu.
+            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken);
+
             return new GebaeudeImportStand
             {
                 Kopftext = GebaeudeZuordnungsModell.KopfText(satz),
@@ -346,6 +364,7 @@ namespace WindowsFormsApplication1
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
                 Meldungen = satz.Meldungen.Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
+                Bauteile = BauteileDaten(_vorschlag),
             };
         }
 
@@ -366,6 +385,12 @@ namespace WindowsFormsApplication1
             if (satz == null) return Array.Empty<GebaeudeImportMeldung>();
             List<GebaeudeImportMeldung> meldungen =
                 GebaeudeZuordnungsModell.Pruefe(satz, ergebnis.Gebaeudename ?? "").Select(MeldungDaten).ToList();
+
+            // Als Zone mit Bauteilen gewählt, aber der Vorschlag lässt sich nicht bilden: benannt
+            // abgelehnt, nicht still als Summenweg übernommen.
+            if (ergebnis.AlsZone && (_vorschlag == null || _vorschlag.Abgelehnt))
+                meldungen.Add(new GebaeudeImportMeldung(WarnStufe.Fehler, GebaeudeZuordnungsModell.StufeText(PruefStufe.Fehler),
+                    Formatieren(MyResource.Resource.GIMP_DLG_ALS_ZONE_NICHT, Ablehnungstext(_vorschlag)), ALS_ZONE_NICHT));
             if (meldungen.Any(m => m.Stufe == WarnStufe.Fehler)) return meldungen;
 
             GebaeudePruefbefund befund = EditorBefund(ergebnis);
@@ -379,6 +404,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Kennung der Meldung „der Gebäudeeditor nähme das Gebäude so nicht an".</summary>
         internal const string EDITOR_BEFUND = "GIMP_DLG_EDITOR_BEFUND";
+
+        /// <summary>Die Kennung der Meldung „als Zone mit Bauteilen gewählt, aber nicht möglich".</summary>
+        internal const string ALS_ZONE_NICHT = "GIMP_DLG_ALS_ZONE_NICHT";
 
         /// <summary>
         /// <b>Die Prüfregeln des vorbelegten Editors beim OK</b> — DIESELBE Funktion, die der
@@ -413,6 +441,11 @@ namespace WindowsFormsApplication1
             }
             satz.FolgevorgabenNachziehen();
             _satz = satz;
+
+            // Der Bauteilvorschlag zum Ergebnis — und ob das Gebäude als Zone mit Bauteilen kommt.
+            _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse),
+                                                         ergebnis.BeheiztUebersteuert);
+            _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
             return satz;
         }
 
@@ -486,6 +519,89 @@ namespace WindowsFormsApplication1
 
         private static string Text(PruefMeldung m) => GebaeudeZuordnungsModell.MeldungText(m);
 
+        // =================================================================================
+        // Der Bauteilvorschlag als Daten des Abschnitts „Bauteile (echte Hülle)" (Stufe G4b)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Bauteilvorschlag als Daten des Dialogs: übernehmbar oder mit Grund abgelehnt, die
+        /// Kopfzeile der Zone, die Zeilen, die Zeile zur inneren Masse und die Meldungen; <c>null</c>
+        /// ohne Vorschlag.
+        /// </summary>
+        internal static GebaeudeBauteileDaten BauteileDaten(GebaeudeBauteilvorschlag v)
+        {
+            if (v == null) return null;
+            ZoneModel zone = v.Zone;
+            return new GebaeudeBauteileDaten
+            {
+                Moeglich = !v.Abgelehnt,
+                Ablehnung = v.Abgelehnt ? Ablehnungstext(v) : "",
+                Kopftext = zone == null ? ""
+                    : Formatieren(MyResource.Resource.GIMP_BT_KOPF, zone.Bezeichner, GebaeudeZuordnungsModell.ZahlText(zone.Nutzflaeche),
+                                  v.Zeilen.Count, v.Aufbauten.Count),
+                Zeilen = v.Zeilen.Select(BauteilzeileDaten).ToList(),
+                Innenweg = zone == null ? "" : InnenwegText(v),
+                Meldungen = v.Meldungen.Select(MeldungDaten).ToList(),
+            };
+        }
+
+        /// <summary>Der Grund, warum sich ein Vorschlag nicht übernehmen lässt: seine Fehler, sonst ein allgemeiner Satz.</summary>
+        private static string Ablehnungstext(GebaeudeBauteilvorschlag v)
+        {
+            string fehler = v == null ? "" : string.Join(" ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(Text));
+            return fehler.Length > 0 ? fehler : MyResource.Resource.GIMP_BT_NICHT_MOEGLICH;
+        }
+
+        /// <summary>Eine Bauteilzeile als Anzeigetexte; die Herkunft der Zeile ist die ihrer Werte (Datei oder Vorgabe).</summary>
+        private static GebaeudeBauteilzeileDaten BauteilzeileDaten(GebaeudeBauteilzeile z)
+        {
+            BauteilModel b = z.Bauteil;
+            string leer = MyResource.Resource.GIMP_WERT_LEER;
+            Importherkunft herkunft = GebaeudeZuordnungsModell.HerkunftAusSchluessel(b.Herkunft);
+            return new GebaeudeBauteilzeileDaten(
+                b.Bezeichner ?? "",
+                BauteilaufbauCtrl.BauteilartText(b.Bauteilart),
+                GebaeudeZuordnungsModell.ZahlText(b.Flaeche) + " m²",
+                b.U_Wert.HasValue ? GebaeudeZuordnungsModell.ZahlText(b.U_Wert) + " W/(m²K)"
+                    : b.ID_Aufbau.HasValue ? MyResource.Resource.GIMP_BT_AUS_SCHICHTEN : leer,
+                b.Azimut.HasValue ? GebaeudeZuordnungsModell.ZahlText(b.Azimut) + "°" : leer,
+                b.Neigung.HasValue ? GebaeudeZuordnungsModell.ZahlText(b.Neigung) + "°" : leer,
+                RandText(b.Randbedingung),
+                GebaeudeZuordnungsModell.HerkunftText(herkunft),
+                GebaeudeZuordnungsModell.HerkunftSchluessel(herkunft),
+                z.Kennung);
+        }
+
+        /// <summary>Die Randbedingung einer Zeile als Anzeigetext — leer heißt an Innenwand und Decke „innerhalb der Zone".</summary>
+        private static string RandText(string rand)
+        {
+            switch (rand)
+            {
+                case null: return MyResource.Resource.GIMP_BT_RAND_INNEN;
+                case DbWerte.RANDBEDINGUNG_AUSSENLUFT: return MyResource.Resource.BTDLG_RAND_AUSSENLUFT;
+                case DbWerte.RANDBEDINGUNG_ERDREICH: return MyResource.Resource.BTDLG_RAND_ERDREICH;
+                case DbWerte.RANDBEDINGUNG_UNBEHEIZT: return MyResource.Resource.BTDLG_RAND_UNBEHEIZT;
+                default: return rand;
+            }
+        }
+
+        /// <summary>Die Zeile zur inneren Masse: Innenbauteile, Innenflächenfaktor aus der Datei oder Vorgabe.</summary>
+        private static string InnenwegText(GebaeudeBauteilvorschlag v)
+        {
+            switch (v.Innenweg)
+            {
+                case Innenweg.Bauteile:
+                    return Formatieren(MyResource.Resource.GIMP_BT_INNENWEG_BAUTEILE, v.Zeilen.Count(z => z.Summenfeld == null),
+                                       GebaeudeZuordnungsModell.ZahlText(Math.Round(v.FlaecheInnen, 2)));
+                case Innenweg.Innenflaechenfaktor:
+                    return Formatieren(MyResource.Resource.GIMP_BT_INNENWEG_FAKTOR,
+                                       GebaeudeZuordnungsModell.ZahlText(Math.Round(v.Innenflaechenfaktor ?? 0.0, 3)));
+                default:
+                    return Formatieren(MyResource.Resource.GIMP_BT_INNENWEG_VORGABE,
+                                       GebaeudeZuordnungsModell.ZahlText(GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR));
+            }
+        }
+
         /// <summary>Übersetzt die Fortschrittsschritte des Ablaufs in Anzeigetexte der Komponente.</summary>
         private sealed class Fortschrittsbruecke : IProgress<ImportFortschritt>
         {
@@ -504,12 +620,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die ausstehende Herkunft</b> des zuletzt geprüften bzw. übernommenen Ergebnisses:
         /// die Quelle des Laufs und die Paarungen des Einzonenwegs
-        /// (<see cref="GebaeudeImportCtrl.Einzonenpaarungen"/>); <c>null</c> ohne Satz. Sie reist an
-        /// der neuen Projektzeile, bis die Gebäudeliste gespeichert wird.
+        /// (<see cref="GebaeudeImportCtrl.Einzonenpaarungen"/>), dazu der Bauteilvorschlag, wenn das
+        /// Gebäude als Zone mit Bauteilen kommt (<see cref="AlsZone"/>); <c>null</c> ohne Satz. Sie
+        /// reist an der neuen Projektzeile, bis die Gebäudeliste gespeichert wird — dann schreibt
+        /// <c>WizardCtrl.GebaeudeZuordnungAnlegen</c> Zone, Bauteile, Aufbauten und Herkunft in einem
+        /// Vorgang. Plattformfrei: derselbe Weg unter Windows und iOS.
         /// </summary>
         internal GebaeudeImportHerkunft Herkunft
             => _satz == null || Quelle == null ? null
-             : new GebaeudeImportHerkunft(Quelle, GebaeudeImportCtrl.Einzonenpaarungen(_satz));
+             : new GebaeudeImportHerkunft(Quelle, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null);
 
         /// <summary>Die Herleitungszeile des vorbelegten Editors: „Vorbelegt aus dem Import: Datei …, Format …"; ohne Lauf leer.</summary>
         internal string Vorbelegungstext

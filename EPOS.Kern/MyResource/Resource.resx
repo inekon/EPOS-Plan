@@ -35295,4 +35295,58 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE" xml:space="preserve">
     <value>Vorgabe des Stundenmodells {0}, gilt bei leerer Zeile</value>
   </data>
+  <data name="GIMP_DLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile (echte Hülle)</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE" xml:space="preserve">
+    <value>Als Zone mit Bauteilen übernehmen</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_HINWEIS" xml:space="preserve">
+    <value>Mit Haken kommt das Gebäude mit einer Zone und diesen Bauteilen in die Projektliste und rechnet mit seinen Bauteilen; ohne Haken trägt es nur die Summen der Zuordnung. Die Summenfelder des Katalogsatzes stehen in beiden Fällen.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_NICHT" xml:space="preserve">
+    <value>Nicht möglich: {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUTEIL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="GIMP_DLG_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="GIMP_DLG_SP_UWERT" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="GIMP_DLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="GIMP_DLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
+    <value>Keine Bauteile.</value>
+  </data>
+  <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
+    <value>aus Schichten</value>
+  </data>
+  <data name="GIMP_BT_RAND_INNEN" xml:space="preserve">
+    <value>innerhalb der Zone</value>
+  </data>
+  <data name="GIMP_BT_KOPF" xml:space="preserve">
+    <value>Zone „{0}“ · Nutzfläche {1} m² · {2} Bauteile · {3} Aufbauten</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_BAUTEILE" xml:space="preserve">
+    <value>Innere Masse: Innenbauteile aus der Datei, {0} Zeilen mit {1} m² Innenfläche beider Seiten.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_FAKTOR" xml:space="preserve">
+    <value>Innere Masse: Innenflächenfaktor {0} aus der Datei, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_VORGABE" xml:space="preserve">
+    <value>Innere Masse: Innenflächenfaktor Vorgabe {0}, die Masse folgt der Bauweise.</value>
+  </data>
+  <data name="GIMP_BT_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Der Bauteilvorschlag lässt sich nicht bilden.</value>
+  </data>
 </root>

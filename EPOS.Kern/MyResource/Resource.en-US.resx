@@ -35288,4 +35288,58 @@ Do you want to allow this?</value>
   <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE" xml:space="preserve">
     <value>default of the hourly model {0}, applies when the row is empty</value>
   </data>
+  <data name="GIMP_DLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Components (real envelope)</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE" xml:space="preserve">
+    <value>Take over as a zone with components</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_HINWEIS" xml:space="preserve">
+    <value>When ticked, the building enters the project list with one zone and these components and is computed from its components; without the tick it carries only the sums of the assignment. The sum fields of the catalogue entry are filled either way.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_NICHT" xml:space="preserve">
+    <value>Not possible: {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="GIMP_DLG_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="GIMP_DLG_SP_UWERT" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="GIMP_DLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="GIMP_DLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
+    <value>No components.</value>
+  </data>
+  <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
+    <value>from layers</value>
+  </data>
+  <data name="GIMP_BT_RAND_INNEN" xml:space="preserve">
+    <value>within the zone</value>
+  </data>
+  <data name="GIMP_BT_KOPF" xml:space="preserve">
+    <value>Zone "{0}" · usable area {1} m² · {2} components · {3} constructions</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_BAUTEILE" xml:space="preserve">
+    <value>Internal mass: internal components from the file, {0} rows with {1} m² internal area of both sides.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_FAKTOR" xml:space="preserve">
+    <value>Internal mass: internal area factor {0} from the file, the mass follows the construction class.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_VORGABE" xml:space="preserve">
+    <value>Internal mass: internal area factor default {0}, the mass follows the construction class.</value>
+  </data>
+  <data name="GIMP_BT_NICHT_MOEGLICH" xml:space="preserve">
+    <value>The component proposal cannot be formed.</value>
+  </data>
 </root>

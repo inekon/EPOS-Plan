@@ -352,6 +352,166 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Equal("VORGABE", p.Geschlossen[0]!.Zeile("GEW")!.HerkunftSchluessel);
     }
 
+    // =====================================================================
+    //  Der Abschnitt „Bauteile (echte Hülle)" (Stufe G4b)
+    // =====================================================================
+
+    /// <summary>Ein Bauteilvorschlag, wie die Hülle ihn reicht: übernehmbar oder mit Grund abgelehnt.</summary>
+    private static GebaeudeBauteileDaten Bauteile(bool moeglich, int zeilen = 3)
+        => new()
+        {
+            Moeglich = moeglich,
+            Ablehnung = moeglich ? "" : "Ablehnung-Probe",
+            Kopftext = "Zone-Probe · " + zeilen + " Bauteile",
+            Zeilen = Enumerable.Range(1, zeilen)
+                .Select(i => new GebaeudeBauteilzeileDaten("Bauteil " + i, "Art-Probe", i + " m²", i == 1 ? "aus Schichten" : "0,3 W/(m²K)",
+                                                           "180°", "90°", "Rand-Probe", "HK-Datei", "DATEI", "k-" + i))
+                .ToList(),
+            Innenweg = "Innenweg-Probe",
+            Meldungen = new[] { new GebaeudeImportMeldung(WarnStufe.Hinweis, "Info", "Bauteilmeldung-Probe", "IMP_BAUTEIL_PROT_X") },
+        };
+
+    /// <summary>
+    /// Die Datenseite bildet den Vorschlag bei jeder Anfrage neu — hier hängt er an den Raumhaken:
+    /// Ist der Keller (r-2) beheizt, lässt er sich nicht bilden; sonst drei Zeilen.
+    /// </summary>
+    private static GebaeudeImportStand MitBauteilen(GebaeudeZuordnungsanfrage a)
+    {
+        bool keller = a.BeheiztUebersteuert.TryGetValue("r-2", out bool b) && b;
+        return Stand(a) with { Bauteile = Bauteile(!keller, keller ? 0 : 3) };
+    }
+
+    private static IElement Zonenschalter(IRenderedComponent<GebaeudeImportDialog> cut)
+        => cut.Find(".epos-gebimport-bauteile input[type=checkbox]");
+
+    [Fact]
+    public void Der_Abschnitt_Bauteile_zeigt_den_vorbelegten_Schalter_die_Liste_den_Innenweg_und_die_Meldungen()
+    {
+        var p = new Protokoll();
+        var cut = Bauen(p, zuordnen: MitBauteilen);
+        Einlesen(cut);
+
+        Assert.Contains(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Contains("Bauteile (echte Hülle)"));
+        IElement schalter = Zonenschalter(cut);
+        Assert.True(schalter.HasAttribute("checked"));
+        Assert.False(schalter.HasAttribute("disabled"));
+        Assert.Contains("Als Zone mit Bauteilen übernehmen", cut.Find(".epos-gebimport-bauteile").TextContent);
+        Assert.True(cut.Instance.AlsZoneWirksam);
+        Assert.Empty(cut.FindAll(".epos-gebimport-bauteile-ablehnung"));
+
+        IReadOnlyList<IElement> zeilen = cut.FindAll(".epos-gebimport-bauteilliste tbody tr");
+        Assert.Equal(3, zeilen.Count);
+        IReadOnlyList<string> zellen = zeilen[0].QuerySelectorAll("td").Select(t => t.TextContent).ToList();
+        Assert.Equal(new[] { "Bauteil 1", "Art-Probe", "1 m²", "aus Schichten", "180°", "90°", "Rand-Probe", "HK-Datei" }, zellen);
+        Assert.Equal("k-1", zeilen[0].GetAttribute("data-kennung"));
+        Assert.Contains("Bauteil", cut.Find(".epos-gebimport-bauteilliste thead").TextContent);
+        Assert.Contains("Zone-Probe", cut.Find(".epos-gebimport-bauteile-kopf").TextContent);
+        Assert.Equal("Innenweg-Probe", cut.Find(".epos-gebimport-innenweg").TextContent);
+        Assert.Contains("Bauteilmeldung-Probe", cut.Find(".epos-gebimport-bauteilmeldungen").TextContent);
+        // Die Meldungen des Vorschlags stehen im Abschnitt, nicht in den Meldungen der Zuordnung.
+        Assert.Single(cut.FindAll(".epos-gebimport-meldungen tbody tr"));
+
+        Ok(cut);
+        cut.WaitForAssertion(() => Assert.Single(p.Geschlossen));
+        Assert.True(p.Geschlossen[0]!.AlsZone);
+        Assert.True(Assert.Single(p.Uebernommen).AlsZone);
+    }
+
+    [Fact]
+    public void Ohne_Schalter_kommt_das_Gebaeude_nur_mit_den_Summen()
+    {
+        var p = new Protokoll();
+        var cut = Bauen(p, zuordnen: MitBauteilen);
+        Einlesen(cut);
+
+        Zonenschalter(cut).Change(false);
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.AlsZoneWirksam));
+        // Ein Neuzuordnen (Klassenwechsel) behält die Wahl.
+        cut.FindAll(".epos-feld")[0].QuerySelector("select")!.Change("4");
+        cut.WaitForAssertion(() => Assert.Equal(2, p.Anfragen.Count));
+        Assert.False(Zonenschalter(cut).HasAttribute("checked"));
+
+        Ok(cut);
+        cut.WaitForAssertion(() => Assert.Single(p.Geschlossen));
+        Assert.False(p.Geschlossen[0]!.AlsZone);
+    }
+
+    [Fact]
+    public void Ein_abgelehnter_Vorschlag_sperrt_den_Schalter_und_nennt_den_Grund_der_Raumhaken_bildet_ihn_neu()
+    {
+        var p = new Protokoll();
+        var cut = Bauen(p, zuordnen: MitBauteilen);
+        Einlesen(cut);
+        Assert.Equal(3, cut.FindAll(".epos-gebimport-bauteilliste tbody tr").Count);
+
+        // Der Keller als beheizt: Die Datenseite bildet den Vorschlag neu — er lässt sich nicht bilden.
+        cut.FindAll(".epos-gebimport-raeume tbody tr")[1].QuerySelector("input[type=checkbox]")!.Change(true);
+        cut.WaitForAssertion(() => Assert.True(Zonenschalter(cut).HasAttribute("disabled")));
+        Assert.False(Zonenschalter(cut).HasAttribute("checked"));
+        Assert.Equal("Nicht möglich: Ablehnung-Probe", cut.Find(".epos-gebimport-bauteile-ablehnung").TextContent);
+        Assert.Empty(cut.FindAll(".epos-gebimport-bauteilliste"));
+        Assert.Equal("Keine Bauteile.", cut.Find(".epos-gebimport-bauteile-leer").TextContent);
+        Assert.False(cut.Instance.AlsZoneWirksam);
+
+        Ok(cut);
+        cut.WaitForAssertion(() => Assert.Single(p.Geschlossen));
+        Assert.False(p.Geschlossen[0]!.AlsZone);
+
+        // Wieder unbeheizt: der Vorschlag ist zurück, der Schalter wieder vorbelegt „ein".
+        var p2 = new Protokoll();
+        var cut2 = Bauen(p2, zuordnen: MitBauteilen);
+        Einlesen(cut2);
+        cut2.FindAll(".epos-gebimport-raeume tbody tr")[1].QuerySelector("input[type=checkbox]")!.Change(true);
+        cut2.WaitForAssertion(() => Assert.True(Zonenschalter(cut2).HasAttribute("disabled")));
+        cut2.FindAll(".epos-gebimport-raeume tbody tr")[1].QuerySelector("input[type=checkbox]")!.Change(false);
+        cut2.WaitForAssertion(() => Assert.False(Zonenschalter(cut2).HasAttribute("disabled")));
+        Assert.True(Zonenschalter(cut2).HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Ohne_Vorschlag_steht_kein_Abschnitt_Bauteile()
+    {
+        var p = new Protokoll();
+        var cut = Bauen(p);
+        Einlesen(cut);
+        Assert.Empty(cut.FindAll(".epos-gebimport-bauteile"));
+        Assert.DoesNotContain("Bauteile (echte Hülle)", cut.Markup);
+        Ok(cut);
+        cut.WaitForAssertion(() => Assert.Single(p.Geschlossen));
+        Assert.False(p.Geschlossen[0]!.AlsZone);
+    }
+
+    [Fact]
+    public void Die_Texte_des_Abschnitts_stehen_auch_englisch()
+    {
+        GebaeudeImportTexte englisch;
+        using (new Kulturvorrichtung("en-US")) englisch = new GebaeudeImportTexte();
+        Assert.Equal("Components (real envelope)", englisch.GruppeBauteile);
+        Assert.Equal("Take over as a zone with components", englisch.AlsZone);
+        Assert.Equal("Not possible: {0}", englisch.AlsZoneNicht);
+
+        var p = new Protokoll();
+        var cut = Render<GebaeudeImportDialog>(c =>
+        {
+            c.Add(x => x.Profil, ProfilA);
+            c.Add(x => x.Baualtersklassen, Klassen);
+            c.Add(x => x.Texte, englisch);
+            c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(_ =>
+                Task.FromResult<GebaeudeDateiwahl?>(new GebaeudeDateiwahl("C:/ablage/haus.alpha", "haus.alpha", 20555))));
+            c.Add(x => x.Lesen, (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)((_, _, _) =>
+                Task.FromResult(Gelesen())));
+            c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)(a => { p.Anfragen.Add(a); return MitBauteilen(a); }));
+        });
+        cut.FindAll("button").First(k => k.TextContent.Contains(englisch.DateiKnopf.TrimEnd('…', '.'))).Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-bauteilliste tbody tr")));
+
+        Assert.Contains("Components (real envelope)", cut.Markup);
+        Assert.Contains("Take over as a zone with components", cut.Find(".epos-gebimport-bauteile").TextContent);
+        string kopf = cut.Find(".epos-gebimport-bauteilliste thead").TextContent;
+        foreach (string spalte in new[] { "Component", "Type", "U-value", "Azimuth", "Tilt", "Boundary condition" })
+            Assert.Contains(spalte, kopf);
+    }
+
     [Fact]
     public void Der_Klassenwechsel_ordnet_neu_zu_und_behaelt_die_Handaenderungen()
     {
