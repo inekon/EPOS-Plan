@@ -130,22 +130,15 @@ namespace WindowsFormsApplication1
             return new WordVorlagenfueller().Fuelle(vorlage, daten, konfig, ersteller, zielDatei);
         }
 
-        /// <summary>Bausteine in Berichtsreihenfolge, gefiltert auf die aktive Auswahl.</summary>
+        /// <summary>
+        /// Bausteine in Berichtsreihenfolge, gefiltert auf die aktive Auswahl. Folge und Klassen stehen
+        /// EINMAL in <see cref="Berichtskapitel.Alle"/>: Deckblatt, Inhaltsverzeichnis, Projekt,
+        /// Komponenten, Ergebnisse, Vergleich, Wirtschaftlichkeit (liest Tab_ErgebnisWirtschaftlichkeit),
+        /// Anhang und die Anhang-E-Checkliste als Abschlussseite am Schlüssel der Wirtschaftlichkeit.
+        /// </summary>
         public static List<IBerichtsBaustein> AktiveBausteine(BerichtsKonfiguration konfig)
         {
-            var alle = new List<IBerichtsBaustein>
-            {
-                new DeckblattBaustein(),
-                new InhaltsverzeichnisBaustein(),
-                new ProjektbeschreibungBaustein(),
-                new KomponentenBaustein(),
-                new ErgebnisseBaustein(),
-                new VergleichBaustein(),
-                new WirtschaftlichkeitBaustein(),   // Phase 6: liest Tab_ErgebnisWirtschaftlichkeit
-                new AnhangBaustein(),
-                new AnhangEChecklisteBaustein(),    // ETAPPE E8b (U43): Abschlussseite, Schlüssel der Wirtschaftlichkeit
-            };
-            return alle.Where(b => konfig == null || konfig.IstAktiv(b.Schluessel)).ToList();
+            return Berichtskapitel.Alle.Where(k => k.IstAktiv(konfig)).Select(k => k.NeuerBaustein()).ToList();
         }
 
         // ------------------------------------------------------------- Vorlage
