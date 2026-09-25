@@ -206,7 +206,14 @@ Referenzlauf ist in beiden Wellen unverändert
 
 ## 8 Abnahme
 
-- **Gate auf dem Merge `fc49ad88`** (gegen die Basis `2026-09-25_R18_PvAusweis`): GATE_FC49AD88
+- **Gate auf dem Merge `fc49ad88`** (gegen die Basis `2026-09-25_R18_PvAusweis`): Kern-Filter und
+  Windows-Schale je 0 Fehler; Kern 7 507 grün (einer übersprungen), UI 6 402, KiKern 549, SpeicherEngine
+  386, SpeicherPlanung 27 (einer übersprungen); Referenzlauf der vierzehn Projekte **14/14 PASS**
+  (4 610 207 Werte); SQL-Dialekt-Prüfer 1 939 Texte, 0 Fundstellen. Nach dem nächsten Merge von origin
+  (`4c568dbb`, dabei die `.resx` als Vereinigung beider Blöcke samt neu erzeugtem Designer) dasselbe
+  Gate noch einmal: Kern 7 574 (einer übersprungen), UI 6 432, KiKern 549, SpeicherEngine 386,
+  SpeicherPlanung 27 (einer übersprungen); Referenzlauf 14/14 PASS gegen R18; SQL-Dialekt-Prüfer 0
+  Fundstellen.
 - **Wachen:** `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` und
   `WikiProduktdatenWacheTests` grün nach dem Nachzug der Papiere (Welle C).
 
