@@ -73,7 +73,7 @@ G3** (N1.46): Der Baustoffkatalog führt neben 65 herstellerneutralen Stoffen 67
 Quelle je Zeile; „Gebäude als eine Zone übernehmen" rechnet Bauteilflächen und ψ·L mit dem Faktor der
 bisherigen Nachmultiplikation hoch, danach gilt die echte Hülle. Die **Stufe G3 ist abgeschlossen**;
 Kapitel 4.3, 4.7, 6.3, 8.4, 11 und 12 folgen, das Register zählt weiter 8 offene Punkte.
-Nachgezogen am 25.09.2026 mit **E41** (N1.47): Die Größengrenze des gbXML-Imports liegt auf iOS bei
+Nachgezogen am 25.09.2026 mit **E42** (N1.47): Die Größengrenze des gbXML-Imports liegt auf iOS bei
 **25 MB** wie unter Windows statt 10 MB — nach der Messung im iOS-Lauf zur Abnahme von G4a (rund
 7,5 MB Prozessspeicher je MB Datei); die IFC-Grenzen bleiben; das Register zählt weiter 8 offene Punkte.
 
@@ -3861,9 +3861,9 @@ die Tabellen unverändert).
 [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md); die
 Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
 
-### N1.47 Entscheid E41 — Die gbXML-Grenze liegt auf iOS bei 25 MB
+### N1.47 Entscheid E42 — Die gbXML-Grenze liegt auf iOS bei 25 MB
 
-**Entscheid E41 (Anwender, 25.09.2026).** Die Größengrenze des gbXML-Imports auf iOS wird von **10 MB auf
+**Entscheid E42 (Anwender, 25.09.2026).** Die Größengrenze des gbXML-Imports auf iOS wird von **10 MB auf
 25 MB** angehoben — dieselbe Zahl wie unter Windows. Grundlage ist die Messung im einen iOS-Lauf zur Abnahme
 von G4a (E38; getrimmte Release-App, AOT, Simulator): Der gbXML-Leser braucht rund **8 MB verwalteten bzw.
 7,5 MB Prozessspeicher je MB Datei**; die 9,8-MB-Probe hob den Prozess auf rund 240 MB, eine 25-MB-Datei kostet
@@ -3874,7 +3874,7 @@ geführt; E38 hielt sie bis zur Abnahme von G4a als Richtwert.
 
 | Format | Windows | iOS | Grundlage |
 |---|---|---|---|
-| gbXML | 25 MB | **25 MB** (vorher Richtwert 10 MB) | D15, **E41** nach Messung |
+| gbXML | 25 MB | **25 MB** (vorher Richtwert 10 MB) | D15, **E42** nach Messung |
 | IFC | 50 MB | 20 MB | U11 (E18); gemessen und bestätigt (20,6-MB-Datei: Prozess rund 400 MB) |
 
 Eine größere Datei wird weiter benannt abgelehnt, bevor gelesen wird. Die Zahl steht als
@@ -3886,7 +3886,7 @@ bleibt offen, bis der Gerätebau der iOS-Schale linkt (Protokoll G4, Abschnitt 1
 **Betroffene Stufen:** G4c (Profil), G4a (Messung).
 
 **Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und
-Abschnitt 1 (E41) und 2 (G4); [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+Abschnitt 1 (E42) und 2 (G4); [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
 1.5 (Regel 2 — dort stehen die vier Zahlen); [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
 2.5 und 11.2 (D15); das [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md);
 die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

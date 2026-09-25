@@ -376,7 +376,7 @@ Umsetzungskonzept (Frage U11). Für gbXML ist sie **neu zu setzen**: die größt
 Beispieldatei hat 16,3 MB und 648 885 Knoten und ist in 1 656 ms validierend durchgelesen
 (Befund R, 4.3) — der Zeitbedarf ist unkritisch, der Speicherbedarf eines vollständigen `XDocument`
 nicht. **Vorschlag: 25 MB Windows / 10 MB iOS**, benannt abgelehnt statt versucht; die iOS-Zahl ist
-zu messen, nicht zu schätzen. **Gemessen und entschieden (E41, 25.09.2026): 25 MB auch auf iOS** — rund 7,5 MB
+zu messen, nicht zu schätzen. **Gemessen und entschieden (E42, 25.09.2026): 25 MB auch auf iOS** — rund 7,5 MB
 Prozessspeicher je MB Datei im iOS-Lauf zur Abnahme von G4a. (Umgesetzt: `GbxmlImportProfil` 25 MB / 10 MB, `IfcImportProfil`
 50 MB / 20 MB, je Profil und Plattform über `GrenzeFuerPlattform`; der Dialog nennt beide Grenzen.
 Die iOS-Zahlen werden erst im einen iOS-Lauf zur Abnahme von G4a gemessen; Protokoll G4 Abschnitte 1,
@@ -1580,7 +1580,7 @@ damit er entscheiden muss.
 | **D12** | **`AirChangesPerHour` ist eine Zahl, EPOS hat zwei Luftwechselspalten** | **Auf `Luftwechsel_Infiltration` legen, `Luftwechsel_Nutzer` NULL lassen** (= Wert des Gebäudes). Eine Aufteilung wäre eine Annahme, und Annahmen gehören nicht in eine Importzeile mit Herkunft `GbXml` |
 | **D13** | **gbXML-Zonenregel X1 nur, wenn Zahl der `Zone` < Zahl der `Space`?** | **Ja.** Revit schreibt je Raum eine `Zone`; ohne den Zusatz entstünden aus einer Bürodatei 93 EPOS-Zonen, und die Mindestgrößenregel müsste sie hinterher wieder zusammenräumen |
 | **D14** | **Wo stehen die Exporte in der Oberfläche?** | **Als Überlagerung im Gebäudedialog**, wie der Import — kein neuer Menüpunkt, kein neuer Maskenschlüssel; das Menü ist Daten (`Menuetabelle.cs`), und ein Untermenü mit einem Punkt ist verboten. Zusätzlich ein Einstieg dort, wo die Ergebnisse liegen (Bedarfsdialog), sobald G1/G2 stehen |
-| **D15** | **Größengrenze für gbXML** | **25 MB Windows / 10 MB iOS**, benannt abgelehnt statt versucht. Die größte gemessene Datei hat 16,3 MB und 648 885 Knoten; die iOS-Zahl ist **zu messen** — **gemessen und mit E41 (25.09.2026) entschieden: 25 MB auch auf iOS** |
+| **D15** | **Größengrenze für gbXML** | **25 MB Windows / 10 MB iOS**, benannt abgelehnt statt versucht. Die größte gemessene Datei hat 16,3 MB und 648 885 Knoten; die iOS-Zahl ist **zu messen** — **gemessen und mit E42 (25.09.2026) entschieden: 25 MB auch auf iOS** |
 
 ---
 
