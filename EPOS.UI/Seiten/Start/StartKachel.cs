@@ -87,4 +87,36 @@ public sealed record Zusammenfassung(
 /// <param name="Standort">Ortsname oder Koordinatenpaar.</param>
 /// <param name="Importdatum">Tag des Imports, kulturgerecht; leer = unbekannt.</param>
 public sealed record KlimaHerkunftGaben(string Quelle, string Bezeichner,
-                                        string Standort, string Importdatum);
+                                        string Standort, string Importdatum)
+{
+    /// <summary>
+    /// <b>Die Herkunftszeile</b> — leer, wo es nichts zu sagen gibt. EIN Satzbau für
+    /// die Kopfleiste der Startseite und den Projektassistenten.
+    ///
+    /// <para><b>Zwei Fassungen, und die kurze ist kein Notbehelf:</b> Eine Region aus
+    /// dem Altbestand führt weder Quelle noch Importdatum (sie sind erst mit
+    /// Schemaschritt 95 entstanden und werden nicht nachdatiert). Die Zeile nennt
+    /// dann Bezeichner und Standort — und behauptet nicht, woher die Reihe
+    /// stammt.</para>
+    /// </summary>
+    /// <param name="herkunft">Die Gaben; <c>null</c> = keine Zeile.</param>
+    /// <param name="langText">Vorlage mit vier Platzhaltern: Quelle, Bezeichner,
+    /// Standort, Importdatum.</param>
+    /// <param name="kurzText">Vorlage mit zwei Platzhaltern: Bezeichner, Standort.</param>
+    public static string Zeile(KlimaHerkunftGaben? herkunft, string langText, string kurzText)
+    {
+        if (herkunft is null) return "";
+
+        string bezeichner = herkunft.Bezeichner ?? "";
+        string standort = herkunft.Standort ?? "";
+        if (bezeichner.Length == 0 && standort.Length == 0) return "";
+
+        bool vollstaendig = (herkunft.Quelle ?? "").Length > 0 && (herkunft.Importdatum ?? "").Length > 0;
+
+        return vollstaendig
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, langText,
+                            herkunft.Quelle, bezeichner, standort, herkunft.Importdatum)
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, kurzText,
+                            bezeichner, standort);
+    }
+}

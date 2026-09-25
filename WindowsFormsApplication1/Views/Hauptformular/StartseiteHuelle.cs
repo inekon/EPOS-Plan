@@ -537,41 +537,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Woher die Klimadaten des Projekts stammen</b> (Auftrag KL-4) - der
         /// Kern-Record, uebersetzt und kulturgerecht datiert; <c>null</c>, wenn das
-        /// Projekt keine Klimaregion fuehrt (dann steht keine Zeile da).
+        /// Projekt keine Klimaregion fuehrt (dann steht keine Zeile da). Die Gaben baut
+        /// KlimaHerkunftAnzeige (EPOS.UI.Daten) - derselbe Weg wie im Projektassistenten.
         /// </summary>
         private KlimaHerkunftGaben Klimaherkunft()
-        {
-            // Der Record heisst wie die Methode, die ihn liefert (Muster
-            // "Color Color"); der volle Namensraum haelt beides auseinander.
-            WindowsFormsApplication1.KlimaHerkunft h = StartseiteCtrl.KlimaHerkunft(_kontext.Id);
-            if (h == null) return null;
-
-            // Auftrag KL-6: Das erste Glied der Zeile nennt nicht nur die Quelle,
-            // sondern das ganze Wetterjahr - "TRY-Regionaldaten (Deutschland) · 2045 ·
-            // sommerwarm". Den Satz baut der Kern (KlimaAnzeige.Quellenzeile), derselbe,
-            // der auch die Spalte "Quelle" der Regionsliste fuellt; eine zweite
-            // Uebersetzung hier waere ein zweiter Wortlaut.
-            return new KlimaHerkunftGaben(
-                KlimaAnzeige.Quellenzeile(h.Quelle, h.Szenario, h.Bezugsjahr),
-                h.Bezeichner, h.Standort, Datumstext(h.Importdatum));
-        }
-
-        /// <summary>
-        /// Das ISO-Importdatum in der Landesschreibweise. Es steht so in der
-        /// Datenbank, weil es dort sortierbar sein muss; gelesen wird es vom
-        /// Anwender. Was sich nicht als ISO lesen laesst, bleibt, wie es ist.
-        /// </summary>
-        private static string Datumstext(string iso)
-        {
-            string wert = (iso ?? "").Trim();
-            if (wert.Length == 0) return "";
-
-            return DateTime.TryParseExact(wert, "yyyy-MM-dd",
-                                          CultureInfo.InvariantCulture,
-                                          DateTimeStyles.None, out DateTime tag)
-                ? tag.ToString("d", CultureInfo.CurrentCulture)
-                : wert;
-        }
+            => KlimaHerkunftAnzeige.Gaben(StartseiteCtrl.KlimaHerkunft(_kontext.Id));
 
         private (bool Fehler, string Text) KlimaSpeichern(int stammRegionId)
         {

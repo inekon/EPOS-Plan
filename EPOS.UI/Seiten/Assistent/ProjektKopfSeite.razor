@@ -36,6 +36,7 @@
 @namespace EPOS.UI.Seiten.Assistent
 
 @using EPOS.UI.Bausteine
+@using EPOS.UI.Seiten.Start
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -62,8 +63,13 @@
             <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
                       WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
 
-            <Auswahlfeld Bezeichnung="@(LabelKlima + PflichtMarke)" Eintraege="@Klimaregionen"
-                         Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
+            @* DIE KLAPPLISTE DER KOPFLEISTE (#527): derselbe Baustein (Suchauswahl,
+               durchsuchbar), dieselben Eintraege aus derselben Quelle
+               (StartseiteCtrl.KlimaregionAuswahlzeilen) - "Heidelberg (TRY 2045
+               sommerwarm)" -, derselbe Platzhalter. Die Wahl ist die Stamm-Id. *@
+            <Suchauswahl Bezeichnung="@(LabelKlima + PflichtMarke)" Kurzname="@LabelKlima"
+                         Eintraege="@Klimaregionen" Auswahl="@KlimaAuswahl"
+                         AuswahlChanged="KlimaGewaehlt" Platzhalter="@KlimaPlatzhalterText" />
 
             <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
                       WertChanged="@(w => Daten.Kunde = w)" />
@@ -81,6 +87,14 @@
                       NurLesen="true" />
         </KindInhalt>
     </Formularraster>
+
+    @* Die HERKUNFTSZEILE der gewaehlten Region - derselbe Satz wie unter der
+       Klappliste der Kopfleiste (KlimaHerkunftGaben.Zeile), hier ueber den
+       Katalogsatz, den das Anlegen in das Projekt kopiert. Ohne Wahl keine Zeile. *@
+    @if (KlimaHerkunftZeile.Length > 0)
+    {
+        <Herleitungszeile Text="@KlimaHerkunftZeile" />
+    }
 
     @* Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, mit Merge 5 aus
        Wizard_Projekt.NameHinweisNachziehen): der Hinweis steht sofort unter den Feldern;
@@ -103,10 +117,29 @@
     [Parameter] public ProjektKopfDaten Daten { get; set; } = new ProjektKopfDaten();
 
     /// <summary>
-    /// Die wählbaren Klimaregionen (<c>Id_Klimaregion</c>, Name) aus den Stammdaten.
+    /// Die wählbaren Klimaregionen (Stamm-Id, Anzeigetext) — dieselben Einträge wie in
+    /// der Kopfleiste der Startseite, „Heidelberg (TRY 2045 sommerwarm)".
     /// </summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Klimaregionen { get; set; }
         = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Der BLANKE Stammname je Stamm-Id (#527) — ihn trägt <see cref="ProjektKopfDaten.Klimaname"/>,
+    /// nicht den Anzeigetext mit der Klammer. Fehlt eine Id, gilt der Anzeigetext.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? Klimanamen { get; set; }
+
+    /// <summary>Die Herkunft einer Region (Stamm-Id) für die Zeile unter der Klappliste; <c>null</c> = keine.</summary>
+    [Parameter] public Func<int, KlimaHerkunftGaben?>? KlimaHerkunft { get; set; }
+
+    /// <summary>Platzhalter der leeren Klappliste (START_KLIMA_REGION).</summary>
+    [Parameter] public string KlimaPlatzhalterText { get; set; } = "Region auswählen";
+
+    /// <summary>Herkunftszeile, lange Fassung (START_KLIMA_HERKUNFT).</summary>
+    [Parameter] public string KlimaHerkunftText { get; set; } = "Klimadaten: {0} · {1} · {2} · Import {3}";
+
+    /// <summary>Herkunftszeile, kurze Fassung (START_KLIMA_HERKUNFT_KURZ).</summary>
+    [Parameter] public string KlimaHerkunftKurzText { get; set; } = "Klimadaten: {0} · {1}";
 
     [Parameter] public string KopfText { get; set; } = "Projektkonfiguration";
     [Parameter] public string HinweisText { get; set; } = "Geben Sie hier die administrativen Projektdaten ein:";
@@ -158,23 +191,56 @@
                 && Klimaregionen.Any(k => k.Id == Daten.IdKlimaregion))
                 return Daten.IdKlimaregion;
 
-            // Aeltere Projekte fuehren nur den NAMEN (die Id ist die Projektkopie) -
-            // dann wird ueber den Anzeigenamen zugeordnet.
+            // Ein Kopf, der die Region nur als NAMEN fuehrt - dann wird ueber den
+            // blanken Stammnamen zugeordnet, ersatzweise ueber den Anzeigetext.
+            if (string.IsNullOrEmpty(Daten.Klimaname)) return null;
             foreach ((int id, string text) in Klimaregionen)
-                if (string.Equals(text, Daten.Klimaname, StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(Stammname(id, text), Daten.Klimaname, StringComparison.CurrentCultureIgnoreCase))
                     return id;
 
             return null;
         }
     }
 
+    /// <summary>
+    /// #527: Die Wahl traegt die Stamm-Id UND den blanken Stammnamen — der Anzeigetext
+    /// „Heidelberg (TRY 2045 sommerwarm)" ist nur Anzeige und kein Schluessel.
+    /// </summary>
     private void KlimaGewaehlt(int? id)
     {
         Daten.IdKlimaregion = id ?? 0;
         Daten.Klimaname = id.HasValue
-            ? Klimaregionen.FirstOrDefault(k => k.Id == id.Value).Text ?? ""
+            ? Stammname(id.Value, Klimaregionen.FirstOrDefault(k => k.Id == id.Value).Text ?? "")
             : "";
     }
+
+    /// <summary>Der blanke Stammname zu einer Id; ohne Namensliste der Anzeigetext.</summary>
+    private string Stammname(int id, string text)
+        => Klimanamen is not null && Klimanamen.TryGetValue(id, out string? name) ? name : text;
+
+    /// <summary>
+    /// Die Herkunftszeile der gewählten Region; leer ohne Wahl oder ohne Auskunft.
+    /// Gefragt wird nur, wenn die Wahl wechselt — jeder Tastendruck in einem der
+    /// Textfelder zeichnet die Seite neu.
+    /// </summary>
+    private string KlimaHerkunftZeile
+    {
+        get
+        {
+            int id = KlimaAuswahl ?? 0;
+            if (id != _herkunftFuer)
+            {
+                _herkunftFuer = id;
+                _herkunftZeile = id > 0 && KlimaHerkunft is not null
+                    ? KlimaHerkunftGaben.Zeile(KlimaHerkunft(id), KlimaHerkunftText, KlimaHerkunftKurzText)
+                    : "";
+            }
+            return _herkunftZeile;
+        }
+    }
+
+    private int _herkunftFuer = -1;
+    private string _herkunftZeile = "";
 
     // =================================================================================
     // Der Hilfe-Assistent (Welle #458, Stufe 2)
