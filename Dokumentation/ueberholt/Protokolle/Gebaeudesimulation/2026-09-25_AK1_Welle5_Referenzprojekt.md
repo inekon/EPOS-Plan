@@ -131,7 +131,7 @@ Platz 3):
 
 ## 5 Zusammenführungen und Abnahme
 
-Während der Welle ist origin viermal weitergegangen und zusammengeführt worden:
+Während der Welle ist origin fünfmal weitergegangen und zusammengeführt worden:
 
 1. **G3 Wellen C und D1** (Verwaltungen Baustoffe und Bauteilaufbauten; Datenbankleser der Zonen für
    den Lauf) — ohne Konflikt, die Testdatenbank dort unverändert; R15 14/14 PASS, byte-gleich.
@@ -144,6 +144,9 @@ Während der Welle ist origin viermal weitergegangen und zusammengeführt worden
 4. **#497 bis #499** (Projektassistent, Unternehmensart im Parameterdialog der Wirtschaftlichkeit,
    Zapfprofil-Entscheide) — weder Testdatenbank noch Rechenweg; Konflikt allein im Kopf des
    Wirtschaftlichkeitskonzepts (Basisname). R15 14/14 PASS, byte-gleich.
+5. **G4-8 und BV-E0** (IFC-Leser linear und iOS-Importprobe, Berichtsvorlagen) — weder Testdatenbank noch
+   Rechenweg; ohne Konflikt, in `ios.yml` stehen der neue Eingang von G4 und der Basispfad R15 beide. R15
+   14/14 PASS, byte-gleich.
 
 Die Nachträge Z5 und #496 sind gegen R14 gemessen; sie stehen im Wortlaut am Ende des archivierten
 R14-Abschnitts unter `Dokumentation/ueberholt/Referenzbasen/`.
@@ -155,9 +158,9 @@ Die Abnahme lief auf dem Endstand:
 | Bau des Kern-Filters | 0 Fehler |
 | Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
 | `EPOS.Referenzlauf` | 0 Fehler |
-| Test-Gate | Kern 6 841 (1 übersprungen), UI 6 243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `ReferenzlaufPlausibilitaetTests`, `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`, `HeizkesselKaskadeTests` (keine Kaskadenmarke in der Testdatenbank) |
+| Test-Gate | Kern 6 893 (1 übersprungen), UI 6 243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `ReferenzlaufPlausibilitaetTests`, `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`, `HeizkesselKaskadeTests` (keine Kaskadenmarke in der Testdatenbank) |
 | `Auslieferungsvorlage.Tests` | 34 grün |
-| SqlDialektPruefer | 1 921 SQL-Texte, 0 Fundstellen |
+| SqlDialektPruefer | 1 919 SQL-Texte, 0 Fundstellen |
 | `Werkzeuge/Testdatenbankschema --trocken` | nichts anzulegen |
 | Referenzlauf der vierzehn Projekte gegen R15 | GESAMT: PASS (4 610 207 Werte), 432/432 CSV byte-gleich |
 | Die sechs CI-Projekte mit der Zeile aus `kern.yml` gegen R15 | GESAMT: PASS (2 208 587 Werte), 198/198 CSV byte-gleich |
