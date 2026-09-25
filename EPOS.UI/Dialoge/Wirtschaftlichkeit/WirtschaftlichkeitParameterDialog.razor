@@ -425,6 +425,44 @@
                Wer ihn hier aendert, aendert die Speicherrechnung mit - und das muss
                dort stehen, wo er ihn aendert. *@
             <Herleitungszeile Text="@_t.EinspeisungHinweis" />
+
+            @* ETAPPE E19 (Konzept § 6.3 Nr. 33, E19-Q2 a): die Unternehmensart nach StromStG
+               OHNE BHKW. § 9b entlastet den Netzbezug jedes Unternehmens des produzierenden
+               Gewerbes und der Land- und Forstwirtschaft und haengt an keiner KWK-Anlage
+               (WirtschaftlichkeitCtrl.BaueSteuerEingabe). Mit BHKW ist der Dialog
+               "BHKW-Wirtschaftlichkeit" (Gruppe 4) die einzige Pflegestelle - dann steht
+               hier nichts, der Verweis der Gruppe "BHKW" nennt ihn. Je Projektlage gibt
+               es damit genau EINE Pflegestelle derselben Spalte.
+
+               Darunter (E19-Q3 a) der im Strompreis erfasste Stromsteueranteil, NUR
+               ANZEIGE - derselbe Baustein wie in Gruppe 4. Die Zeilen folgen der
+               gewaehlten Unternehmensart UND dem Bilanzjahr dieses Arbeitsstands, auch
+               ungespeichert (Nr. 15). *@
+            @if (!HatBhkw)
+            {
+                <Formularraster>
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@_bt.SUnternehmensart"
+                                     Eintraege="@BhkwWahlen.Eintraege(_ua)"
+                                     Auswahl="@BhkwWahlen.NummerZu(_ua, Parameter.Unternehmensart)"
+                                     AuswahlChanged="UnternehmensartGewaehlt" />
+                    </KindInhalt>
+                </Formularraster>
+                <div class="epos-stanteil">
+                    @foreach (StromsteueranteilZeile z in StAnteilZeilen())
+                    {
+                        @if (z.Zustand is KohaerenzZustand zustand)
+                        {
+                            <Kohaerenzzeile Text="@z.Text" Zustand="@zustand" />
+                        }
+                        else
+                        {
+                            <Herleitungszeile Text="@z.Text" />
+                        }
+                    }
+                </div>
+                <Herleitungszeile Text="@_t.Unternehmensart9b" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -604,6 +642,20 @@
     [Parameter] public IReadOnlyList<string> EinspeisungSzenarioHinweise { get; set; }
         = Array.Empty<string>();
 
+    /// <summary>
+    /// ETAPPE E19 (Konzept § 6.3 Nr. 33, E19‑Q3 a) — der im Strompreis erfasste
+    /// Stromsteueranteil (<c>StrompreisZerlegungCtrl.StromsteuerErfasst</c>), nur Anzeige
+    /// unter der Unternehmensart, die ohne BHKW hier gepflegt wird. <c>null</c> = keine Zeile.
+    /// </summary>
+    [Parameter] public StromsteueranteilStand? Stromsteueranteil { get; set; }
+
+    /// <summary>
+    /// ETAPPE E19: der Gesetzeskatalog als Delegat (<c>GesetzKatalog.WertMitHerkunft</c>) —
+    /// Regel- und reduzierter Satz des Bilanzjahres für den Satzabgleich der Anzeige; ohne
+    /// ihn gilt die Rückfallebene.
+    /// </summary>
+    [Parameter] public Func<string, int, GesetzParameter>? Katalog { get; set; }
+
     /// <summary>Was der Dialog beim Schließen meldet.</summary>
     [Parameter] public EventCallback<WirtParameterErgebnis> Geschlossen { get; set; }
 
@@ -634,6 +686,11 @@
     private IReadOnlyList<Steuerwahl> _biomasse = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _risikoarten = Array.Empty<Steuerwahl>();   // E15
 
+    // ETAPPE E19: Unternehmensart ohne BHKW — dieselbe Wahlliste und dieselben Texte
+    // wie Gruppe 4 des Dialogs „BHKW-Wirtschaftlichkeit" (E19‑Q6 a).
+    private readonly BhkwWirtschaftlichkeitTexte _bt = new();
+    private IReadOnlyList<Steuerwahl> _ua = Array.Empty<Steuerwahl>();
+
     private string _fehler = "";
 
     /// <summary>Steht der Gesetzeskatalog als Überlagerung? (Prüfhilfe für Tests)</summary>
@@ -649,6 +706,7 @@
         _methoden = WirtParameterWahlen.Methode(_t);
         _biomasse = WirtParameterWahlen.Biomasse(_t);
         _risikoarten = WirtParameterWahlen.Risiko(_t);   // ETAPPE E15 (V-G7)
+        _ua = BhkwWahlen.Unternehmensart();              // ETAPPE E19
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER,
                                           () => KiSicht(), KiHaken());
@@ -867,6 +925,38 @@
         Best.Einspeiseverguetung = Szenariopaar.Wert(ergebnis.BestCase);
         Worst.Einspeiseverguetung = Szenariopaar.Wert(ergebnis.WorstCase);
     }
+
+    // =====================================================================
+    // ETAPPE E19 — die Unternehmensart ohne BHKW (Konzept § 6.3 Nr. 33)
+    // =====================================================================
+
+    /// <summary>Die Wahl im Auswahlfeld — leer fällt auf die Vorbelegung
+    /// „kein produzierendes Gewerbe" zurück, wie in Gruppe 4 des BHKW-Dialogs.</summary>
+    private void UnternehmensartGewaehlt(int? n)
+    {
+        string w = BhkwWahlen.WertZu(_ua, n);
+        Parameter.Unternehmensart = string.IsNullOrEmpty(w) ? DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE : w;
+    }
+
+    /// <summary>
+    /// Der Setzweg des Assistenten (E19‑Q5 a). Mit BHKW ist der Dialog
+    /// „BHKW-Wirtschaftlichkeit" die einzige Pflegestelle — dann lehnt dieser Weg benannt
+    /// ab, statt eine zweite Pflegestelle derselben Spalte zu öffnen.
+    /// </summary>
+    /// <returns>Leer = gesetzt, sonst der Grund der Ablehnung.</returns>
+    public string UnternehmensartSetzen(string? wert)
+    {
+        if (HatBhkw) return _t.BhkwVerweis;   // derselbe Verweis wie die Gruppe „BHKW"
+        Parameter.Unternehmensart = string.IsNullOrEmpty(wert) ? DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE : wert;
+        return "";
+    }
+
+    /// <summary>Die Zeilen des erfassten Stromsteueranteils zur gewählten Unternehmensart;
+    /// Katalogjahr = Bilanzjahr dieses Arbeitsstands, sonst die Bilanzkonvention.</summary>
+    private IReadOnlyList<StromsteueranteilZeile> StAnteilZeilen()
+        => StromsteueranteilAnzeige.Zeilen(Stromsteueranteil, Parameter.Unternehmensart,
+               Parameter.BilanzJahr > 0 ? Parameter.BilanzJahr : BilanzKonvention.BILANZJAHR_RUECKFALL,
+               Katalog, _bt, BhwTexte.Kultur);
 
     /// <summary>Der Schlusshinweis — je nach Erzeugerlage um zwei Absätze länger.</summary>
     public string Hinweis
