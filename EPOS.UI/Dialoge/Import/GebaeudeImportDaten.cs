@@ -246,6 +246,15 @@ public sealed record GebaeudeImportStand
     /// <summary>Der Herkunftstext einer Handänderung („Manuell").</summary>
     public string ManuellHerkunftText { get; init; } = "";
 
+    /// <summary>
+    /// Die Klasse, die der Import aus dem Baujahr der Datei zog (Index 0 = A … 20 = U); <c>null</c>
+    /// ohne Baujahr oder bei eigener Wahl. Die Klappliste zeigt sie, solange keine eigene Wahl besteht.
+    /// </summary>
+    public int? KlasseDerDatei { get; init; }
+
+    /// <summary>Der Hinweis unter der Klappliste: Herkunft der Klasse und wie viele Werte sie füllt; leer = der allgemeine.</summary>
+    public string KlassenHinweis { get; init; } = "";
+
     /// <summary>Der Bauteilvorschlag; <c>null</c> = keiner (dann steht der Abschnitt nicht).</summary>
     public GebaeudeBauteileDaten? Bauteile { get; init; }
 }
