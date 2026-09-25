@@ -544,6 +544,51 @@
         }
     }
 
+    @* Die Karte „Herkunft" (Herkunftsprotokoll des Kerns, N19): je Wert der Auslegung eine Zeile
+       in der Reihenfolge des Rechenwegs - eingeklappt unter den Gruppen. Die Ueberlagerung fuehrt
+       keine eigene Stufe, deshalb entscheidet die Huelle, ob die Karte steht
+       (ZapfprofilAuslegungDaten.HerkunftSichtbar: ab Erweitert ja). Leer heisst benannt "nichts zu
+       vermerken". *@
+    @if (_ergebnis is { Zustand: ZapfprofilAuslegungZustand.Gerechnet, HerkunftSichtbar: true } herkunft)
+    {
+        <details class="epos-zapfprofil-herkunft epos-zapfausl-herkunft">
+            <summary>@Texte.GruppeHerkunft</summary>
+            <p class="epos-leisezeile">@Texte.HerkunftUnter</p>
+            @if (herkunft.Herkunft.Count == 0)
+            {
+                <p class="epos-leisezeile epos-zapfprofil-herkunft-leer">@Texte.HerkunftLeer</p>
+            }
+            else
+            {
+                <table class="epos-raster epos-zapfprofil-herkunftliste">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Texte.HerkunftSpalteGroesse</th>
+                            <th scope="col">@Texte.HerkunftSpalteWert</th>
+                            <th scope="col">@Texte.HerkunftSpalteZone</th>
+                            <th scope="col">@Texte.HerkunftSpalteStand</th>
+                            <th scope="col">@Texte.HerkunftSpalteQuelle</th>
+                            <th scope="col">@Texte.HerkunftSpalteVermerk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ZapfprofilHerkunftZeile h in herkunft.Herkunft)
+                        {
+                            <tr class="epos-zapfprofil-herkunftzeile" data-groesse="@h.Groesse">
+                                <th scope="row">@h.Groesse</th>
+                                <td class="epos-zahl">@h.Wert</td>
+                                <td>@h.Zone</td>
+                                <td>@h.Stand</td>
+                                <td>@h.Quelle</td>
+                                <td>@h.Vermerk</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </details>
+    }
+
     @foreach (ZapfprofilMeldung m in _ergebnis?.Meldungen ?? new List<ZapfprofilMeldung>())
     {
         if (m.Art == ZapfprofilMeldungsart.Hinweis)

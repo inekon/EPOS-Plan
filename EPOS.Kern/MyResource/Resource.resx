@@ -35220,6 +35220,105 @@ Möchten Sie das zulassen?</value>
   <data name="ZPGK_IMPORT_PRUEFHINWEIS" xml:space="preserve">
     <value>Der Prüflauf ändert nichts; die Spalte „Ergebnis“ sagt, was ein Import täte.</value>
   </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>Das Typtagpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ZONE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>überschrieben</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_KALIBRIERT" xml:space="preserve">
+    <value>kalibriert</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UMGERECHNET" xml:space="preserve">
+    <value>umgerechnet</value>
+  </data>
+  <data name="ZPG_HERKUNFT_QUELLE_ANWENDER" xml:space="preserve">
+    <value>Eingabe des Anwenders</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FASSUNG" xml:space="preserve">
+    <value>Katalogfassung {0}</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_VERFAHREN" xml:space="preserve">
+    <value>aus einem Verfahren gerechnet</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_EIGENKONSTRUKTION" xml:space="preserve">
+    <value>Eigenkonstruktion</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FREI" xml:space="preserve">
+    <value>frei verfügbare Quelle</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_IMPORT" xml:space="preserve">
+    <value>eingespielt</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FIKTIV" xml:space="preserve">
+    <value>erfundener Wert</value>
+  </data>
+  <data name="ZPG_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_LEER" xml:space="preserve">
+    <value>nichts zu vermerken</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Vermerk</value>
+  </data>
+  <data name="ZPG_AUS_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Woher jeder Wert dieser Auslegung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_LEER" xml:space="preserve">
+    <value>nichts zu vermerken</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Vermerk</value>
+  </data>
   <data name="SIMENG_NACHTZEIT_NUR_EINE" xml:space="preserve">
     <value>Von der Nachtzeit ist nur eine Grenze gesetzt (Beginn {0}, Ende {1}). Beginn und Ende gehören zusammen; beide leer heißt {2} bis {3} Uhr. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab.</value>
   </data>
