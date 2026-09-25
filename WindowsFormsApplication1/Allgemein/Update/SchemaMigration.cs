@@ -4392,6 +4392,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_140_ZAPFPROFIL_MESSREIHEN = TwwSchema.SCHRITT_T4_MESSREIHEN;
 
+        /// <summary>
+        /// Schritt <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/> — <b>die
+        /// Folgeberichtigung im Gebäudekatalog</b> (Welle #496, Konzept Administrationsdialoge
+        /// 7.1 (a)): die Scan-Kandidaten nach <see cref="SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN"/> und die
+        /// Außenwand des Kaufhauses. Er folgt auf <see cref="SCHRITT_140_ZAPFPROFIL_MESSREIHEN"/>
+        /// ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML, nur im Katalog</b> (<c>Tab_Gebaeude_STAMM</c>), je Satz, Spalte und
+        /// Schadensbild: Laibung und Dachkante getauscht (Alten-/Pflegeheime, Schulen,
+        /// Hallenbäder, G-096-Sätze), hergeleitet („GMH-BZ_T", „GMH-J-015"), Dach- und Kellerkante
+        /// der „Hotel-F-228"-Sätze auf den Umfang 116,16 m und die Außenwand des Kaufhauses
+        /// 10 094 → 1 820,9 m². Herleitungen bei <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>;
+        /// die Nummer steht allein bei <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt, und
+        /// Projektkopien bleiben unberührt. <b>Wiederholbar:</b> Eine Spalte ohne ihr Bild wird
+        /// übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_GEBAEUDE_FOLGEREPARATUR = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6250,6 +6270,20 @@ namespace WindowsFormsApplication1
                         "Datenablage. KEIN Rechenergebnis aendert sich - die Tabelle entsteht LEER, " +
                         "und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar.",
                         Schritt_140_ZapfprofilMessreihen),
+
+            // WELLE #496 (Konzept Administrationsdialoge 7.1 (a)) - die Folgeberichtigung im
+            // Gebaeudekatalog: Scan-Kandidaten mit vertauschter Laibung und Dachkante, die
+            // Hotel-F-228-Saetze und die Aussenwand des Kaufhauses. REIN DML; die Quelle ist
+            // GebaeudeAnschlusslaengenFolgereparatur. Er steht NACH 140 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_GEBAEUDE_FOLGEREPARATUR,
+                        "Tab_Gebaeude_STAMM: Anschlusslaengen von neunzehn Saetzen (Laibung und Dachkante " +
+                        "getauscht oder hergeleitet, Dach- und Kellerkante der Hotel-F-228-Saetze) und " +
+                        "Aussenwandflaeche des Kaufhauses berichtigt",
+                        "Die Saetze rechneten mit unplausiblen Waermebrueckenlaengen (Laibung 0,3 m je m2 " +
+                        "Fenster, Dachkante 5 380 m bei 474 m2 Dach) und das Kaufhaus mit der Aussenwand eines " +
+                        "zwoelfgeschossigen Krankenhauses. KEIN Rechenergebnis eines Projekts aendert sich - " +
+                        "Projektkopien bleiben, wie sie sind.",
+                        Schritt_GebaeudeFolgereparatur),
         };
 
         /// <summary>
@@ -10051,6 +10085,47 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                     ". KEIN DML: Alle Zeilen stehen auf leer - die Positionen zahlen jaehrlich wie " +
                     "bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt GebaeudeAnschlusslaengenFolgereparatur.SCHRITT - die Folgeberichtigung (Welle #496)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Folgeberichtigung im Gebäudekatalog — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GEBAEUDE_FOLGEREPARATUR"/>, Schadensbilder und Herleitungen bei
+        /// <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>. Dieselbe Bauart wie
+        /// <see cref="Schritt_GebaeudeAnschlusslaengen"/>: der ganze Schritt aus dem Kern, danach
+        /// die Nachprobe (<see cref="GebaeudeAnschlusslaengenFolgereparatur.Offen"/>).
+        /// </summary>
+        private static bool Schritt_GebaeudeFolgereparatur(Lauf l)
+        {
+            string nr = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            GebaeudeAnschlusslaengenReparatur.Bericht bericht;
+            long offen;
+            try
+            {
+                bericht = GebaeudeAnschlusslaengenFolgereparatur.Ausfuehren();
+                offen = GebaeudeAnschlusslaengenFolgereparatur.Offen();
+            }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Wert(e) im Gebaeudekatalog tragen nach dem Schritt weiter ihr Schadensbild.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": " + bericht.Text() + ". Nur Katalogsaetze mit dem Schadensbild; " +
+                    "Projektkopien bleiben, der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
