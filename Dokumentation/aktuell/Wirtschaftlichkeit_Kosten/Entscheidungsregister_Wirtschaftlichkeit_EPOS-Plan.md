@@ -66,7 +66,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E21 | E21‑Q1…Q9 — die Fragen aus E21, der Pflegewelle Nr. 23 (erledigt) und Nr. 24 (benannt) (entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #506) | Protokoll E21; Statusdatei Nach #506 (a) | 9 |
 | R‑E20 | E20‑Q1…Q8 — die Fragen aus E20, Nr. 10 „Wärmepumpe beides“ bei den Investitionskosten (Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, gebaut #502; Q6 entschieden 25.09.2026 durch den Anwender: b, gebaut mit E23 (#510)) | Protokoll E20; Statusdatei Nach #502 (a) | 8 |
 | R‑E22 | E22‑Q1 — die Frage aus E22, der Rechenweg-Sortierung nach der Regel „99“ (Nr. 18; entschieden 25.09.2026 nach der A/B-Messung, nach Empfehlung a; gebaut #503) | Protokoll E22; Statusdatei Nach #503 (a) | 1 |
-| R‑E23 | E23‑Q1…Q7 — die Fragen aus E23, den Betriebskosten der Wärmepumpe ohne kWh-Bemessung (E20‑Q6 b; Q1…Q5 entschieden 25.09.2026, nach Empfehlung a, gebaut #510; **Q6 und Q7 offen beim Anwender**, Empfehlung a, gebaut a) | Protokoll E23; Statusdatei Nach #510 (a) | 7 |
+| R‑E23 | E23‑Q1…Q7 — die Fragen aus E23, den Betriebskosten der Wärmepumpe ohne kWh-Bemessung (E20‑Q6 b; Q1…Q5 entschieden 25.09.2026, nach Empfehlung a, gebaut #510; Q6 und Q7 entschieden 25.09.2026, nach Empfehlung a, gebaut #510) | Protokoll E23; Statusdatei Nach #510 (a) | 7 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -801,7 +801,7 @@ Quelle: Protokoll
 25.09.2026 (→ R‑E20), während Phase 1 erweitert: „bei Wärmepumpe fixer Jahresbetrag (oder % von Investitionskosten),
 nicht nach kWh/a — weder Strom noch Wärme“. E23‑Q1…Q5 stellt der Phase‑0-Bericht; entschieden hat sie der Orchestrator
 am 25.09.2026 (13:15) mit der Baufreigabe, nach Empfehlung — alle a. E23‑Q6 entstand mit der Ergänzung des Anwenders,
-E23‑Q7 im Phase‑1-Bericht; beide sind **offen beim Anwender**, gebaut ist jeweils die Empfehlung a.
+E23‑Q7 im Phase‑1-Bericht; beide sind am 25.09.2026 nach Empfehlung a entschieden, gebaut ist der Entscheid.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
@@ -810,8 +810,8 @@ E23‑Q7 im Phase‑1-Bericht; beide sind **offen beim Anwender**, gebaut ist je
 | **E23‑Q3** | Vermerk an der Bestandszeile: (a) an der Herleitungszeile im Kern; (b) eine eigene Hinweiszeile mit Hüllenfeld; (c) still | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510, E23/2: `KostenHerleitung.IstAltbestandWpKwh`, Schlüssel `KDLG_HERL_ALTBESTAND_WP_KWH`) |
 | **E23‑Q4** | Geltungsbereich des Vermerks: (a) nur im Projektmodus; (b) auch in den Kostenvorlagen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510, E23/2) |
 | **E23‑Q5** | Umstellungsangebot für eine Bestandszeile: (a) keins; (b) auf „% des Endenergiebedarfs“ umstellen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510; kein Bestand betroffen) |
-| **E23‑Q6** | „% der Endenergiekosten“ im Betriebsraster der Wärmepumpe: (a) lassen; (b) sperren | **offen beim Anwender** — Empfehlung a | 25.09.2026 gestellt (mit der Ergänzung des Anwenders während Phase 1) | § 3.2 (Fußnote ²) | gebaut ist die Empfehlung a (#510) |
-| **E23‑Q7** | „% des Endenergiebedarfs“ (die Standardvorlage 13 sät sie für die Hilfsenergie der Wärmepumpe, Live-DB 4 Zeilen), „je kW Leistung“ und „je kW Heizleistung“ an der Wärmepumpe: (a) wählbar lassen — kein kWh/a-Satz; (b) auch sperren, dann Vorlage 13 und Schemaschritt 94 umstellen | **offen beim Anwender** — Empfehlung a | 25.09.2026 gestellt (Phase‑1-Bericht) | § 3.2 (Fußnote ²) | gebaut ist die Empfehlung a (#510) |
+| **E23‑Q6** | „% der Endenergiekosten“ im Betriebsraster der Wärmepumpe: (a) lassen; (b) sperren | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (mit der Ergänzung des Anwenders während Phase 1) | § 3.2 (Fußnote ²) | gebaut ist a (#510) |
+| **E23‑Q7** | „% des Endenergiebedarfs“ (die Standardvorlage 13 sät sie für die Hilfsenergie der Wärmepumpe, Live-DB 4 Zeilen), „je kW Leistung“ und „je kW Heizleistung“ an der Wärmepumpe: (a) wählbar lassen — kein kWh/a-Satz; (b) auch sperren, dann Vorlage 13 und Schemaschritt 94 umstellen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑1-Bericht) | § 3.2 (Fußnote ²) | gebaut ist a (#510) |
 
 ---
 
