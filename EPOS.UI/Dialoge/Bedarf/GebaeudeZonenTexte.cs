@@ -22,6 +22,9 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_ZEILE_BAUTEILWEG</c> — {0} Zone, {1} Zahl der Bauteile.</summary>
     public string ZeileBauteilweg { get; set; } = Resource.GEBZ_ZEILE_BAUTEILWEG;
 
+    /// <summary><c>GEBZ_ZEILE_BAUTEILWEG_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile.</summary>
+    public string ZeileBauteilwegZonen { get; set; } = Resource.GEBZ_ZEILE_BAUTEILWEG_ZONEN;
+
     /// <summary><c>GEBZ_ZEILE_KATALOG</c></summary>
     public string ZeileKatalog { get; set; } = Resource.GEBZ_ZEILE_KATALOG;
 
@@ -36,6 +39,9 @@ public sealed class GebaeudeZonenTexte
 
     /// <summary><c>GEBZ_SPERRE_ZONE</c> — {0} Zone.</summary>
     public string SperreZone { get; set; } = Resource.GEBZ_SPERRE_ZONE;
+
+    /// <summary><c>GEBZ_SPERRE_ZONEN</c> — {0} Zahl der Zonen.</summary>
+    public string SperreZonen { get; set; } = Resource.GEBZ_SPERRE_ZONEN;
 
     /// <summary><c>GEBZ_SPERRE_TAGESBILANZ</c></summary>
     public string SperreTagesbilanz { get; set; } = Resource.GEBZ_SPERRE_TAGESBILANZ;
@@ -79,14 +85,65 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_BTN_ENTFERNEN</c></summary>
     public string KnopfEntfernen { get; set; } = Resource.GEBZ_BTN_ENTFERNEN;
 
+    /// <summary><c>GEBZ_BTN_NEUE_ZONE</c></summary>
+    public string KnopfNeueZone { get; set; } = Resource.GEBZ_BTN_NEUE_ZONE;
+
+    /// <summary><c>GEBZ_BTN_DUPLIZIEREN</c></summary>
+    public string KnopfDuplizieren { get; set; } = Resource.GEBZ_BTN_DUPLIZIEREN;
+
+    /// <summary><c>GEBZ_BTN_HOCH</c> — Kurztext des Knopfes ▲.</summary>
+    public string KnopfHoch { get; set; } = Resource.GEBZ_BTN_HOCH;
+
+    /// <summary><c>GEBZ_BTN_RUNTER</c> — Kurztext des Knopfes ▼.</summary>
+    public string KnopfRunter { get; set; } = Resource.GEBZ_BTN_RUNTER;
+
+    /// <summary><c>GEBZ_NAME_NEU</c> — {0} Nummer der neuen Zone.</summary>
+    public string NameNeu { get; set; } = Resource.GEBZ_NAME_NEU;
+
+    /// <summary><c>GEBZ_NAME_KOPIE</c> — {0} Name der Vorlage.</summary>
+    public string NameKopie { get; set; } = Resource.GEBZ_NAME_KOPIE;
+
+    /// <summary><c>GEBZ_SUMME</c> — die Summenzeile der Zonenliste.</summary>
+    public string Summe { get; set; } = Resource.GEBZ_SUMME;
+
+    /// <summary><c>GEBZ_FLAECHE_FEHLT</c> — die Nutzfläche einer von mehreren Zonen fehlt.</summary>
+    public string FlaecheFehlt { get; set; } = Resource.GEBZ_FLAECHE_FEHLT;
+
+    /// <summary><c>GEBZ_FRAGE_ERSTE_ZONE</c> — die Rückfrage vor der ersten Zone.</summary>
+    public string FrageErsteZone { get; set; } = Resource.GEBZ_FRAGE_ERSTE_ZONE;
+
+    /// <summary><c>GEBZ_FRAGE_ZWEITE_ZONE</c> — die Rückfrage vor der zweiten Zone.</summary>
+    public string FrageZweiteZone { get; set; } = Resource.GEBZ_FRAGE_ZWEITE_ZONE;
+
+    /// <summary><c>GEBZ_SPERRZEILE_ZONEN</c> — {0} Zahl der Zonen.</summary>
+    public string SperrzeileZonen { get; set; } = Resource.GEBZ_SPERRZEILE_ZONEN;
+
+    /// <summary><c>GEBZ_SPERRE_FREIGABE</c> — der Freigabeschalter steht aus.</summary>
+    public string SperreFreigabe { get; set; } = Resource.GEBZ_SPERRE_FREIGABE;
+
+    /// <summary><c>GEBZ_SPERRE_HOECHSTZAHL</c> — {0} Höchstzahl der Zonen.</summary>
+    public string SperreHoechstzahl { get; set; } = Resource.GEBZ_SPERRE_HOECHSTZAHL;
+
+    /// <summary><c>GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile.</summary>
+    public string HinweisSpeichernUnterZonen { get; set; } = Resource.GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN;
+
     /// <summary><c>GEBZ_FRAGE_ENTFERNEN</c> — {0} Zone, {1} Zahl der Bauteile.</summary>
     public string FrageEntfernen { get; set; } = Resource.GEBZ_FRAGE_ENTFERNEN;
+
+    /// <summary><c>GEBZ_FRAGE_ENTFERNEN_ZONE</c> — eine von mehreren Zonen: {0} Zone, {1} Zahl der Bauteile.</summary>
+    public string FrageEntfernenZone { get; set; } = Resource.GEBZ_FRAGE_ENTFERNEN_ZONE;
 
     /// <summary><c>GEBZ_ZEILE_SUMMENREGEL</c> — {0} Zone.</summary>
     public string ZeileSummenregel { get; set; } = Resource.GEBZ_ZEILE_SUMMENREGEL;
 
+    /// <summary><c>GEBZ_ZEILE_SUMMENREGEL_ZONEN</c> — {0} Zahl der Zonen.</summary>
+    public string ZeileSummenregelZonen { get; set; } = Resource.GEBZ_ZEILE_SUMMENREGEL_ZONEN;
+
     /// <summary><c>GEBZ_ZEILE_FENSTER</c> — {0} Fensterfläche der Zone.</summary>
     public string ZeileFenster { get; set; } = Resource.GEBZ_ZEILE_FENSTER;
+
+    /// <summary><c>GEBZ_ZEILE_FENSTER_ZONEN</c> — {0} Fensterfläche aller Zonen, {1} Zahl der Zonen.</summary>
+    public string ZeileFensterZonen { get; set; } = Resource.GEBZ_ZEILE_FENSTER_ZONEN;
 
     /// <summary><c>GEBZ_ZEILE_PSI</c> — die Zeile der Wärmebrücken in der abgeleiteten Hülle.</summary>
     public string ZeilePsi { get; set; } = Resource.GEBZ_ZEILE_PSI;
@@ -94,11 +151,17 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_ZEILE_NUTZFLAECHE</c> — {0} Nutzfläche der Zone.</summary>
     public string ZeileNutzflaeche { get; set; } = Resource.GEBZ_ZEILE_NUTZFLAECHE;
 
+    /// <summary><c>GEBZ_ZEILE_NUTZFLAECHE_ZONEN</c> — {0} Σ Nutzfläche, {1} Zahl der Zonen.</summary>
+    public string ZeileNutzflaecheZonen { get; set; } = Resource.GEBZ_ZEILE_NUTZFLAECHE_ZONEN;
+
     /// <summary><c>GEBZ_ZEILE_NAME_PROJEKT</c> — {0} Name der Projektkopie.</summary>
     public string ZeileNameProjekt { get; set; } = Resource.GEBZ_ZEILE_NAME_PROJEKT;
 
     /// <summary><c>GEBZ_FRAGE_SPEICHERN_UNTER</c> — {0} Zone, {1} Zahl der Bauteile.</summary>
     public string FrageSpeichernUnter { get; set; } = Resource.GEBZ_FRAGE_SPEICHERN_UNTER;
+
+    /// <summary><c>GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile.</summary>
+    public string FrageSpeichernUnterZonen { get; set; } = Resource.GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN;
 
     /// <summary><c>GEBZ_MSG_ZONEN</c> — {0} Grund.</summary>
     public string MeldungZonen { get; set; } = Resource.GEBZ_MSG_ZONEN;
@@ -189,6 +252,12 @@ public sealed class ZonenDialogTexte
 
     /// <summary><c>ZONE_MSG_NUTZFLAECHE</c> — {0} Zone.</summary>
     public string MeldungNutzflaeche { get; set; } = Resource.ZONE_MSG_NUTZFLAECHE;
+
+    /// <summary><c>ZONE_MSG_NUTZFLAECHE_PFLICHT</c> — {0} Zone; dieselbe Regel wie im Kern (G6a).</summary>
+    public string MeldungNutzflaechePflicht { get; set; } = Resource.ZONE_MSG_NUTZFLAECHE_PFLICHT;
+
+    /// <summary><c>GEBZ_ZEILE_NUTZFLAECHE_PFLICHT</c> — {0} Nutzfläche des Gebäudes.</summary>
+    public string ZeileNutzflaechePflicht { get; set; } = Resource.GEBZ_ZEILE_NUTZFLAECHE_PFLICHT;
 
     /// <summary><c>GEBK_MSG_UNGUELTIG</c> — {0} Feld.</summary>
     public string MeldungUngueltig { get; set; } = Resource.GEBK_MSG_UNGUELTIG;

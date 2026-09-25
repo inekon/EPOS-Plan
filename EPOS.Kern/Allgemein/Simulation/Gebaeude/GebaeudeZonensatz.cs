@@ -89,8 +89,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Regel des Umschalters</b> (A14/E27): keine Zone (<c>null</c> oder leer) →
         /// <c>null</c>, der Klassenweg rechnet; genau eine → diese Zone, der Bauteilweg rechnet;
-        /// mehr als eine → benannter Fehler. Eine unlesbare Zone (<see cref="Unlesbar"/>) wirft
-        /// hier den Fehler ihrer Abbildung, mit dem Gebäude davor.
+        /// mehr als die Laufgrenze (<see cref="GebaeudeZonenregeln.LAUFGRENZE"/>, eine Zone) →
+        /// benannter Fehler. Eine unlesbare Zone (<see cref="Unlesbar"/>) wirft hier den Fehler ihrer
+        /// Abbildung, mit dem Gebäude davor.
         /// </summary>
         /// <param name="zonen">Die Zonen des Gebäudes (<see cref="ProjektGebaeudeModel.Zonen"/>).</param>
         /// <param name="wer">Die Bezeichnung des Gebäudes für die Meldung.</param>
@@ -99,7 +100,7 @@ namespace WindowsFormsApplication1
         internal static GebaeudeZonensatz EineZone(IReadOnlyList<GebaeudeZonensatz> zonen, string wer)
         {
             if (zonen == null || zonen.Count == 0) return null;
-            if (zonen.Count > 1)
+            if (!GebaeudeZonenregeln.Rechenbar(zonen.Count))
                 throw new GebaeudeModellException(GebaeudeModellFehler.MehrereZonen,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_MEHRERE_ZONEN,
                                   wer, zonen.Count.ToString(CultureInfo.CurrentCulture)));

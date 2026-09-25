@@ -697,9 +697,10 @@ namespace EPOS.Kern.Tests
         {
             var zonenCtrl = new GebaeudeZonenCtrl();
             ZoneModel wohnen = GebaeudeG3PruefregelTests.GueltigeZone();
+            wohnen.Nutzflaeche = 120;            // ab zwei Zonen Pflicht (G6a)
             var keller = new ZoneModel
             {
-                ID = -2, Bezeichner = "Keller", IstBeheizt = false,
+                ID = -2, Bezeichner = "Keller", IstBeheizt = false, Nutzflaeche = 60,
                 Bauteile = { new BauteilModel { ID = -3, Bezeichner = "Bodenplatte", Bauteilart = DbWerte.BAUTEILART_BODENPLATTE,
                                                 Flaeche = 60, Randbedingung = DbWerte.RANDBEDINGUNG_ERDREICH } }
             };

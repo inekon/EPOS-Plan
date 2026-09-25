@@ -254,6 +254,16 @@ namespace WindowsFormsApplication1
             // damit sie sich nicht mit Zahlenwerten anderer Tabellen kreuzen.
             { "Speichertemperaturen (Schichtmodell)", "Storage temperatures (stratified model)" },
             { "Speicher", "Storage" },
+            // Stufe G6a - die Zonen eines Gebaeudes im Gebaeudeblock der Projektbeschreibung.
+            { "Zonen", "Zones" },
+            { "Zone", "Zone" },
+            { "Nutzfläche [m²]", "Usable area [m²]" },
+            { "Volumen [m³]", "Volume [m³]" },
+            { "H_T [W/K]", "H_T [W/K]" },
+            { "H_ve [W/K]", "H_ve [W/K]" },
+            { "Bauteile", "Building components" },
+            { "Summe", "Total" },
+            { "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.", "* Volume derived from usable area × room height." },
             { "T oben Mittel [°C]", "T top mean [°C]" },
             { "T oben Minimum [°C]", "T top minimum [°C]" },
             { "Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)",

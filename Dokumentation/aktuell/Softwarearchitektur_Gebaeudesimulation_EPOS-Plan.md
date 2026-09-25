@@ -1834,7 +1834,7 @@ der Anwender beheben muss und sonst nicht sieht.
 | `GEBW_` | die Wohnflächenmaske | Bestand |
 | `BST_` | Baustoffkatalog | G3 |
 | `BTA_` | Bauteilaufbau und Schichtenraster | G3 |
-| `ZON_` | Zonenreiter und Zonendialog | G6 |
+| `GEBZ_` | Zonenreiter und Zonendialog (fortgeführt; Meldungen des Kerns `ZONE_MSG_`, `ZONE_HINWEIS_`) | G3, G6a |
 | `BTL_` | Bauteildialog | G6 |
 | `GIMP_` | Gebäudeimport | G4 |
 | `GEXP_` | Gebäudeexport | G7 |
