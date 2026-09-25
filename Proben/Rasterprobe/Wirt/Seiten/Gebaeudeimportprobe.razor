@@ -27,7 +27,10 @@
     bildet es wie der Gebaeudedialog auf den Gebaeudeeditor ab (GebaeudeImportHuelle.Vorbelegung
     = NachKatalogdaten + Herleitungszeile); die Tabelle "Uebernahme" zeigt beides, dazu die Wahl
     "Als Zone mit Bauteilen" des Abschnitts "Bauteile (echte Huelle)" - den Abschnitt selbst
-    zeichnet der Dialog aus dem Bauteilvorschlag der Huelle.
+    zeichnet der Dialog aus dem Bauteilvorschlag der Huelle - und die Baustoffzuordnungen des
+    Abschnitts "Baustoffe". Den Namensabgleich rechnet die Huelle ohne Projekt gegen die
+    Auslieferungssaat im Speicher (Katalog und Synonyme), also auch hier ohne Datenbank; mit
+    ?datei=ifc4_haus_materialnamen.ifc zeigt der Abschnitt zwanzig Namen, einer ohne Treffer.
 
     IM GEBAEUDEDIALOG oeffnet danach der Katalogeditor im Modus Neu, vorbelegt - mit dem
     Parametersatz der Anwendung (GebaeudeKatalogHuelle.Gaben), dessen Wege zur Datenbank den
@@ -116,6 +119,7 @@
                 <dt>Räume umgestellt</dt><dd>@ergebnis.BeheiztUebersteuert.Count</dd>
                 <dt>Zeilen mit Haken</dt><dd>@mitHaken.Count von @ergebnis.Zeilen.Count</dd>
                 <dt>Als Zone mit Bauteilen</dt><dd id="probe-als-zone">@(ergebnis.AlsZone ? "ja" : "nein")</dd>
+                <dt>Baustoffzuordnungen</dt><dd id="probe-baustoffe">@Baustoffzuordnungen(ergebnis)</dd>
             </dl>
             @if (_editorGespeichert.Length > 0)
             {
@@ -416,6 +420,13 @@
 
     private string KlassenText(int? index)
         => index is int k && k >= 0 && k < _klassen.Count ? _klassen[k] : "—";
+
+    /// <summary>Die Zuordnungen des Abschnitts „Baustoffe" im Ergebnis: „Name → Id", entfernt als „Name → entfernen"; sonst „keine".</summary>
+    private static string Baustoffzuordnungen(GebaeudeImportErgebnis ergebnis)
+        => ergebnis.Baustoffzuordnungen is { Count: > 0 } z
+            ? string.Join(", ", z.OrderBy(p => p.Key, StringComparer.Ordinal)
+                                 .Select(p => p.Key + " → " + (p.Value?.ToString(CultureInfo.InvariantCulture) ?? "entfernen")))
+            : "keine";
 
     private static string Zahl(double? wert) => wert is double w ? w.ToString("0.####", CultureInfo.CurrentCulture) : "—";
 
