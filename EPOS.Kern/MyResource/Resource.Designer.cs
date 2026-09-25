@@ -21513,6 +21513,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Dachfläche in der Datei — Vorgabe: Bruttogrundfläche des obersten Geschosses „{0}“ ({1} m²) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_DACH_VORGABE_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_DACH_VORGABE_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Dachfläche in der Datei — Vorgabe: Grundfläche des obersten Geschosses „{0}“, {1} beheizte Räume ({2} m²) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_DACH_VORGABE_RAEUME {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_DACH_VORGABE_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster ähnelt.
         /// </summary>
         public static string GIMP_BELEG_FENSTER_SEKTOR {
@@ -21554,6 +21572,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_GEWINNE_VORSCHLAG {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_GEWINNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Grundfläche in der Datei — Vorgabe: Nutzfläche {0} m² ÷ {1} Geschosse ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GRUND_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GRUND_VORGABE", resourceCulture);
             }
         }
         
@@ -21666,6 +21693,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Bodenbauteil in der Datei — Vorgabe Erdreich ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_RANDBEDINGUNG_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_RANDBEDINGUNG_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Volumen {0} m³ ÷ Nutzfläche {1} m² ähnelt.
         /// </summary>
         public static string GIMP_BELEG_RAUMHOEHE {
@@ -21684,11 +21720,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weder Raumhöhe noch Volumen der Räume in der Datei — Vorgabe {0} m ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_RAUMHOEHE_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_RAUMHOEHE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungs-Heiztemperatur der Zonen von {0} Räumen ähnelt.
         /// </summary>
         public static string GIMP_BELEG_SOLLWERT {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_SOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine sonstige Fläche aus der Datei ({0} Bauteile ohne Fläche) — Vorgabe 0 m² ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_SONSTIGE_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_SONSTIGE_VORGABE", resourceCulture);
             }
         }
         
@@ -25518,11 +25572,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei {0} Hüllbauteilen ist die Lage der Schichten nicht bestimmbar (keine IfcMaterialLayerSetUsage oder keine Raumseite) — angenommen: erste Schicht außen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände ohne auswertbare Raumgrenze: Ihre Außenseite und damit die Himmelsrichtung sind nicht zu bestimmen — ihre Fensterflächen werden gleichmäßig verteilt ({1}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_SEITE_UNBESTIMMT {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_SEITE_UNBESTIMMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Stoffwerte von {1} Baustoffen werden nicht gelesen — die Schnittstelle bildet ihre Eigenschaftssätze nicht verlässlich ab (IfcThermalMaterialProperties, IfcGeneralMaterialProperties, IfcExtendedMaterialProperties); U-Wert und Bauart aus diesen Schichten entfallen ({2}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Baustoffe tragen Stoffwerte ≤ 0; sie zählen als fehlend (Fehlstelle), U-Wert bzw. Bauart aus diesen Schichten entfallen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STOFFWERT_NULL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STOFFWERT_NULL", resourceCulture);
             }
         }
         

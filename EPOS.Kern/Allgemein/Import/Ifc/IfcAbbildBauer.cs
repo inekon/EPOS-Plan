@@ -12,10 +12,12 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Vom geladenen IFC-Modell zum normierten Abbild</b> (Umsetzungskonzept 3.4 und 3.5): Einheiten,
     /// Nordrichtung, Gebäude, Geschosse, Räume, Raumgrenzen und Bauteile — alles über
-    /// <c>Xbim.Ifc4.Interfaces.IIfc*</c>, ein Weg für IFC2X3, IFC4 und IFC4X3. Verzweigt wird nur an
+    /// <c>Xbim.Ifc4.Interfaces.IIfc*</c>, ein Weg für IFC2X3, IFC4 und IFC4X3. Verzweigt wird an
     /// den zwei benannten Stellen (3.5 Nr. 7): der Erkennung der Raumgrenzen 2. Ebene
     /// (<see cref="IstZweiteEbene"/>) und dem in IFC4X3 entfallenen <c>Pset_SpaceThermalRequirements</c>
-    /// (<see cref="Sollwert"/>).
+    /// (<see cref="Sollwert"/>) — und an einer dritten, gemessenen: Die Stoffwerte der Baustoffe liest
+    /// die Schnittstelle in IFC2X3 nicht verlässlich; dort werden sie benannt NICHT gelesen
+    /// (<see cref="Stoffwerte"/>).
     ///
     /// <para><b>Die Übersetzung in die gemeinsame Zuordnung.</b> Ein IFC-Bauteil grenzt oft an mehrere
     /// Räume derselben Seite (eine Außenwand an Wohnen und Küche); <see cref="GebaeudeAggregation"/>
@@ -64,6 +66,11 @@ namespace WindowsFormsApplication1
         private readonly HashSet<int> _grenzenZweiteEbene = new HashSet<int>();
         private readonly HashSet<string> _gemeldeteArten = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<int> _gefuellt = new HashSet<int>();
+
+        private readonly Dictionary<int, (double? Lambda, double? Rho, double? Cp)> _stoffe
+            = new Dictionary<int, (double? Lambda, double? Rho, double? Cp)>();
+        private readonly SortedSet<string> _stoffwertNull = new SortedSet<string>(StringComparer.Ordinal);
+        private readonly SortedSet<string> _stoffwerteNichtGelesen = new SortedSet<string>(StringComparer.Ordinal);
 
         private readonly List<string> _ohneMengen = new List<string>();
         private readonly List<string> _seiteUnbestimmt = new List<string>();
@@ -227,7 +234,11 @@ namespace WindowsFormsApplication1
         private void Struktur(IIfcObjectDefinition knoten, int gi, IIfcBuildingStorey geschoss, HashSet<int> besucht)
         {
             if (!besucht.Add(knoten.EntityLabel)) return;
-            if (knoten is IIfcBuildingStorey s) geschoss = s;
+            if (knoten is IIfcBuildingStorey s)
+            {
+                geschoss = s;
+                GeschossAnlegen(s, gi);
+            }
             if (knoten is IIfcSpace raum) RaumAnlegen(raum, gi, geschoss);
 
             if (knoten is IIfcSpatialElement raeumlich && raeumlich.ContainsElements != null)
@@ -269,6 +280,21 @@ namespace WindowsFormsApplication1
             if (!double.IsNaN(h)) return h * _einheiten.Laenge;
             IfcRahmen? r = IfcPlatzierung.Weltrahmen(geschoss.ObjectPlacement, _wurzel, out _);
             return r.HasValue ? r.Value.Ursprung[2] * _einheiten.Laenge : (double?)null;
+        }
+
+        /// <summary>
+        /// Ein Geschoss des Gebäudes — Lage für die Reihenfolge und die Bruttogrundfläche
+        /// (<c>Qto_BuildingStoreyBaseQuantities.GrossFloorArea</c>) für den Rückfall der Dachfläche (3.4).
+        /// </summary>
+        private void GeschossAnlegen(IIfcBuildingStorey s, int gi)
+        {
+            _abbild.Gebaeude[gi].Geschosse.Add(new AbbildGeschoss
+            {
+                Kennung = s.GlobalId.ToString(),
+                Name = IfcEigenschaften.Text(s.Name) ?? IfcEigenschaften.Text(s.LongName),
+                LageM = Lage(s),
+                GrundflaecheM2 = Positiv(IfcEigenschaften.Menge(s, "BuildingStorey", "GrossFloorArea", _einheiten)),
+            });
         }
 
         private readonly Dictionary<int, double?[]> _raumflaechen = new Dictionary<int, double?[]>();
@@ -515,12 +541,13 @@ namespace WindowsFormsApplication1
             if (!b.BruttoflaecheM2.HasValue) _ohneMengen.Add(b.Kennung);
 
             UWert(e, satz, b);
-            b.Aufbau = Aufbau(e);
+            b.Aufbau = Aufbau(e, out IIfcMaterialLayerSetUsage nutzung);
 
             Nachbarn(b, rand, grenzen, gi, platte != null || e is IIfcRoof);
             b.HuelleOhneNachbar = b.Nachbarn.Count == 0 && (rand == Randbedingung.Aussenluft || rand == Randbedingung.Erdreich);
 
             if (senkrecht) Azimut(e, b, grenzen, gi);
+            if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
 
             foreach (IIfcRelVoidsElement rel in e.HasOpenings ?? Enumerable.Empty<IIfcRelVoidsElement>())
             {
@@ -739,9 +766,22 @@ namespace WindowsFormsApplication1
         //  Schichten (IfcMaterialLayerSet, Pset_MaterialThermal / Pset_MaterialCommon)
         // ==================================================================
 
-        private AbbildAufbau Aufbau(IIfcElement e)
+        /// <summary>Der Eigenschaftssatz der thermischen Stoffwerte (λ, c) — IFC4/IFC4X3.</summary>
+        internal const string PSET_STOFF_THERMISCH = "Pset_MaterialThermal";
+
+        /// <summary>Der allgemeine Eigenschaftssatz des Baustoffs (ρ) — IFC4/IFC4X3.</summary>
+        internal const string PSET_STOFF_ALLGEMEIN = "Pset_MaterialCommon";
+
+        /// <summary>
+        /// Der Aufbau eines Bauteils aus seinem <c>IfcMaterialLayerSet</c>: Dicke je Schicht und die
+        /// Stoffwerte λ, ρ, c ihres Baustoffs (<see cref="Stoffwerte"/>). Die Schichtfolge steht, wie die
+        /// Datei sie zählt; ob die erste Schicht außen oder innen liegt, entscheidet erst
+        /// <see cref="Schichtfolge(IIfcElement, AbbildBauteil, IIfcMaterialLayerSetUsage, List{IIfcRelSpaceBoundary}, int)"/>
+        /// — bis dahin gilt die Annahme „erste Schicht außen".
+        /// </summary>
+        private AbbildAufbau Aufbau(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
         {
-            IIfcMaterialLayerSet satz = Schichtsatz(e);
+            IIfcMaterialLayerSet satz = Schichtsatz(e, out nutzung);
             if (satz == null) return null;
             var a = new AbbildAufbau
             {
@@ -754,14 +794,15 @@ namespace WindowsFormsApplication1
             {
                 IIfcMaterial stoff = schicht?.Material;
                 double dicke = IfcEigenschaften.Wert(schicht?.LayerThickness);
+                (double? lambda, double? rho, double? cp) = Stoffwerte(stoff);
                 a.Schichten.Add(new AbbildSchicht
                 {
                     BaustoffKennung = stoff?.Name.ToString() ?? "",
                     Name = stoff?.Name.ToString(),
                     DickeM = dicke > 0.0 ? dicke * _einheiten.Laenge : (double?)null,
-                    LambdaWmK = Positiv(Stoffwert(stoff, "ThermalConductivity")),
-                    RhoKgM3 = Positiv(Stoffwert(stoff, "MassDensity")),
-                    CpJkgK = Positiv(Stoffwert(stoff, "SpecificHeatCapacity")),
+                    LambdaWmK = lambda,
+                    RhoKgM3 = rho,
+                    CpJkgK = cp,
                 });
             }
             a.Status = a.Schichten.Count == 0 ? Aufbaustatus.OhneAufbau
@@ -771,43 +812,203 @@ namespace WindowsFormsApplication1
             return a;
         }
 
-        /// <summary>Der Schichtsatz eines Bauteils: am Vorkommnis, sonst am Typ.</summary>
-        private static IIfcMaterialLayerSet Schichtsatz(IIfcElement e)
+        /// <summary>Der Schichtsatz eines Bauteils samt seiner Nutzung: am Vorkommnis, sonst am Typ (dort ohne Nutzung).</summary>
+        private static IIfcMaterialLayerSet Schichtsatz(IIfcElement e, out IIfcMaterialLayerSetUsage nutzung)
         {
-            IIfcMaterialLayerSet s = Schichtsatz(e.HasAssociations);
+            IIfcMaterialLayerSet s = Schichtsatz(e.HasAssociations, out nutzung);
             if (s != null) return s;
             foreach (IIfcRelDefinesByType rel in e.IsTypedBy ?? Enumerable.Empty<IIfcRelDefinesByType>())
             {
-                s = Schichtsatz(rel?.RelatingType?.HasAssociations);
+                s = Schichtsatz(rel?.RelatingType?.HasAssociations, out nutzung);
                 if (s != null) return s;
             }
+            nutzung = null;
             return null;
         }
 
-        private static IIfcMaterialLayerSet Schichtsatz(IEnumerable<IIfcRelAssociates> zuordnungen)
+        private static IIfcMaterialLayerSet Schichtsatz(IEnumerable<IIfcRelAssociates> zuordnungen, out IIfcMaterialLayerSetUsage nutzung)
         {
+            nutzung = null;
             if (zuordnungen == null) return null;
             foreach (IIfcRelAssociatesMaterial rel in zuordnungen.OfType<IIfcRelAssociatesMaterial>())
             {
-                if (rel.RelatingMaterial is IIfcMaterialLayerSetUsage nutzung) return nutzung.ForLayerSet;
+                if (rel.RelatingMaterial is IIfcMaterialLayerSetUsage n && n.ForLayerSet != null)
+                {
+                    nutzung = n;
+                    return n.ForLayerSet;
+                }
                 if (rel.RelatingMaterial is IIfcMaterialLayerSet satz) return satz;
             }
             return null;
         }
 
-        /// <summary>Ein Stoffwert aus einem beliebigen Eigenschaftssatz des Baustoffs; <c>null</c> = keiner.</summary>
-        private static double? Stoffwert(IIfcMaterial stoff, string name)
+        /// <summary>
+        /// <b>Die Stoffwerte eines Baustoffs</b> — λ [W/(mK)] und c [J/(kgK)] aus
+        /// <c>Pset_MaterialThermal</c>, ρ [kg/m³] aus <c>Pset_MaterialCommon</c> (Umsetzungskonzept 3.4,
+        /// Zeile Bauweise); steht eine Größe im jeweils anderen dieser zwei Sätze, gilt auch sie, jeder
+        /// andere Satz bleibt ungelesen. Die Werte gelten in SI, wie IFC sie vorgibt.
+        ///
+        /// <para><b>Ein Stoffwert ≤ 0 ist eine Fehlstelle</b> (Befund P: Autorensysteme füllen die Sätze
+        /// oft mit Nullen) — er zählt als fehlend, der Aufbau wird damit masselos bzw. unvollständig, die
+        /// Zuordnung nimmt die Vorgabe; der Baustoff wird benannt (<c>IMP_IFC_PROT_STOFFWERT_NULL</c>).</para>
+        ///
+        /// <para><b>IFC2X3 — die dritte Verzweigung.</b> Dort stehen die Stoffwerte als ATTRIBUTE in
+        /// <c>IfcThermalMaterialProperties</c> und <c>IfcGeneralMaterialProperties</c> oder in
+        /// <c>IfcExtendedMaterialProperties</c>. Gemessen an xBIM 6.1.605: Über
+        /// <c>IIfcMaterialProperties.Properties</c> liefern die ersten beiden nichts (ihre Attribute
+        /// bildet die Schnittstelle nicht ab), die dritte wirft <c>MissingMethodException</c>. Verlässlich
+        /// lesbar ist über die Schnittstellen also nichts; die Stoffwerte werden deshalb nicht gelesen und
+        /// der Baustoff benannt (<c>IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN</c>) — nicht geraten, und ohne
+        /// den Lauf an einer Bibliotheksausnahme scheitern zu lassen.</para>
+        /// </summary>
+        private (double? Lambda, double? Rho, double? Cp) Stoffwerte(IIfcMaterial stoff)
         {
-            if (stoff == null) return null;
+            if (stoff == null) return (null, null, null);
+            if (_stoffe.TryGetValue(stoff.EntityLabel, out (double? Lambda, double? Rho, double? Cp) bekannt)) return bekannt;
+
+            string name = stoff.Name.ToString();
+            if (string.IsNullOrWhiteSpace(name)) name = "#" + stoff.EntityLabel.ToString(CultureInfo.InvariantCulture);
+            (double? Lambda, double? Rho, double? Cp) werte = (null, null, null);
             try
             {
-                foreach (IIfcMaterialProperties satz in stoff.HasProperties ?? Enumerable.Empty<IIfcMaterialProperties>())
-                    foreach (IIfcPropertySingleValue p in satz.Properties.OfType<IIfcPropertySingleValue>())
-                        if (IfcEigenschaften.Gleich(p.Name.ToString(), name)) return IfcEigenschaften.Zahl(p.NominalValue);
+                List<IIfcMaterialProperties> saetze = (stoff.HasProperties ?? Enumerable.Empty<IIfcMaterialProperties>()).ToList();
+                if (_abbild.SchemaStand == IfcSchemaStand.Ifc2x3)
+                {
+                    if (saetze.Count > 0) _stoffwerteNichtGelesen.Add(name);
+                }
+                else
+                {
+                    bool nullwert = false;
+                    werte = (Stoffwert(saetze, "ThermalConductivity", PSET_STOFF_THERMISCH, PSET_STOFF_ALLGEMEIN, ref nullwert),
+                             Stoffwert(saetze, "MassDensity", PSET_STOFF_ALLGEMEIN, PSET_STOFF_THERMISCH, ref nullwert),
+                             Stoffwert(saetze, "SpecificHeatCapacity", PSET_STOFF_THERMISCH, PSET_STOFF_ALLGEMEIN, ref nullwert));
+                    if (nullwert) _stoffwertNull.Add(name);
+                }
             }
-            catch (NotSupportedException)
+            catch (Exception ex) when (ex is NotSupportedException || ex is MissingMethodException || ex is InvalidCastException)
             {
-                // IFC2X3 führt Stoffwerte in eigenen Entitäten, die die IFC4-Schnittstelle nicht abbildet.
+                // Die Schnittstelle bildet den Satz nicht ab — nicht gelesen, benannt; der Lauf geht weiter.
+                werte = (null, null, null);
+                _stoffwerteNichtGelesen.Add(name);
+            }
+            _stoffe[stoff.EntityLabel] = werte;
+            return werte;
+        }
+
+        /// <summary>
+        /// Ein Stoffwert aus dem Satz <paramref name="satz"/>, sonst aus <paramref name="andererSatz"/>;
+        /// <c>null</c> = keiner. Ein Wert ≤ 0 setzt <paramref name="nullwert"/> und zählt als fehlend.
+        /// </summary>
+        private static double? Stoffwert(List<IIfcMaterialProperties> saetze, string eigenschaft, string satz, string andererSatz,
+                                         ref bool nullwert)
+        {
+            foreach (string gesucht in new[] { satz, andererSatz })
+                foreach (IIfcMaterialProperties s in saetze)
+                {
+                    if (!IfcEigenschaften.Gleich(IfcEigenschaften.Text(s.Name), gesucht)) continue;
+                    foreach (IIfcPropertySingleValue p in s.Properties.OfType<IIfcPropertySingleValue>())
+                    {
+                        if (!IfcEigenschaften.Gleich(p.Name.ToString(), eigenschaft)) continue;
+                        double? w = IfcEigenschaften.Zahl(p.NominalValue);
+                        if (!w.HasValue) continue;
+                        if (w.Value > 0.0 && !double.IsInfinity(w.Value)) return w;
+                        nullwert = true;
+                        return null;
+                    }
+                }
+            return null;
+        }
+
+        // ==================================================================
+        //  Schichtfolge (IfcMaterialLayerSetUsage und die Raumseite)
+        // ==================================================================
+
+        /// <summary>Kleinster lotrechter Anteil der z-Achse einer Platte, ab dem „oben" feststeht.</summary>
+        internal const double LOTRECHT_MIN = 0.5;
+
+        /// <summary>
+        /// <b>Welche Schicht liegt raumseitig?</b> Die Spezifikation legt das nicht im Schichtsatz fest,
+        /// sondern in seiner Nutzung (<c>IfcMaterialLayerSetUsage</c>): Die Schichten werden ab der
+        /// Bezugslinie in Richtung <c>DirectionSense</c> längs der Achse <c>LayerSetDirection</c>
+        /// geschichtet — bei der Wand die lokale y-Achse (<c>AXIS2</c>), bei Platte und Dach die lokale
+        /// z-Achse (<c>AXIS3</c>). Die erste Schicht liegt also auf der Seite GEGEN die
+        /// Schichtungsrichtung. Wo außen ist, sagt bei der Wand die Raumgrenze (dieselbe Regel wie beim
+        /// Azimut; bei einer Wand gegen einen unbeheizten Raum die Seite des beheizten), bei der Platte
+        /// ihre Art: Dach und Decke über beheiztem Raum außen oben, Bodenplatte und Boden über
+        /// unbeheiztem Raum außen unten.
+        ///
+        /// <para>Ohne Nutzung (Schichtsatz nur am Typ), ohne bestimmbare Seite oder bei einer anderen
+        /// Achse bleibt die Annahme „erste Schicht außen" stehen und wird für jedes vollständige
+        /// Hüllbauteil benannt (<c>IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN</c>) — sie entscheidet, welche
+        /// Schichten als raumseitige Speichermasse zählen.</para>
+        /// </summary>
+        private void Schichtfolge(IIfcElement e, AbbildBauteil b, IIfcMaterialLayerSetUsage nutzung,
+                                  List<IIfcRelSpaceBoundary> grenzen, int gi)
+        {
+            int? aussen = AussenLaengsSchichtachse(e, b, nutzung, grenzen, gi);
+            if (!aussen.HasValue) return;
+            int stapel = nutzung.DirectionSense == IfcDirectionSenseEnum.NEGATIVE ? -1 : +1;
+            b.Aufbau.Richtung = Schichtfolge(stapel, aussen.Value);
+            b.Aufbau.RichtungAngenommen = false;
+        }
+
+        /// <summary>
+        /// Die Zählrichtung der Schichten aus der Schichtungsrichtung (+1 = längs der Achse, −1 = gegen sie)
+        /// und der Lage der Außenseite auf derselben Achse (+1 / −1): Zeigen beide in dieselbe Richtung,
+        /// liegt die erste Schicht innen.
+        /// </summary>
+        internal static Schichtrichtung Schichtfolge(int schichtungsrichtung, int aussenseite)
+            => schichtungsrichtung * aussenseite > 0 ? Schichtrichtung.InnenNachAussen : Schichtrichtung.AussenNachInnen;
+
+        /// <summary>Die Außenseite längs der Schichtachse: +1, −1, oder <c>null</c> = nicht bestimmbar.</summary>
+        private int? AussenLaengsSchichtachse(IIfcElement e, AbbildBauteil b, IIfcMaterialLayerSetUsage nutzung,
+                                              List<IIfcRelSpaceBoundary> grenzen, int gi)
+        {
+            if (nutzung == null) return null;
+            IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
+            if (!rahmen.HasValue) return null;
+
+            if (nutzung.LayerSetDirection == IfcLayerSetDirectionEnum.AXIS2)
+            {
+                if (!(b.NeigungGrad == 90.0)) return null;
+                List<int> raeume = Raeume(grenzen, gi);
+                bool aussenbauteil = b.Randbedingung == Randbedingung.Aussenluft || b.Randbedingung == Randbedingung.Erdreich;
+                IEnumerable<int> innen = raeume;
+                if (!aussenbauteil)
+                {
+                    // Zwischen beheiztem und unbeheiztem Raum: innen ist die Seite des beheizten.
+                    if (!raeume.Any(r => _raum[r].Beheizt) || !raeume.Any(r => !_raum[r].Beheizt)) return null;
+                    innen = raeume.Where(r => _raum[r].Beheizt);
+                }
+                List<double[]> punkte = innen.Where(r => _raumPunkt.ContainsKey(r)).Select(r => _raumPunkt[r]).ToList();
+                return IfcPlatzierung.Aussenseite(rahmen.Value, punkte);
+            }
+
+            if (nutzung.LayerSetDirection == IfcLayerSetDirectionEnum.AXIS3)
+            {
+                bool? obenAussen = ObenAussen(b);
+                double lotrecht = rahmen.Value.Z[2];
+                if (!obenAussen.HasValue || Math.Abs(lotrecht) < LOTRECHT_MIN) return null;
+                return (obenAussen.Value ? 1 : -1) * (lotrecht > 0.0 ? 1 : -1);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Liegt die Außenseite einer Platte oben? Dach und Decke über Außenluft ja, Bodenplatte nein;
+        /// eine Decke zwischen beheiztem und unbeheiztem Raum nach der Sicht des beheizten (der Leser
+        /// setzt sie aus den Geschosslagen, <see cref="Nachbarn"/>); sonst <c>null</c>.
+        /// </summary>
+        private bool? ObenAussen(AbbildBauteil b)
+        {
+            if (b.Art == Bauteilart.Dach) return true;
+            if (b.Art == Bauteilart.Bodenplatte) return false;
+            if (b.Art != Bauteilart.Decke) return null;
+            if (b.Randbedingung == Randbedingung.Aussenluft) return true;
+            if (b.Nachbarn.Count == 2)
+            {
+                bool? boden = GebaeudeAggregation.SichtIstBoden(b.Nachbarn[0].Sicht);
+                if (boden.HasValue) return !boden.Value;   // der Boden des beheizten Raums hat außen unten
             }
             return null;
         }
@@ -829,6 +1030,7 @@ namespace WindowsFormsApplication1
 
             Mehrschalig();
             KeinUWert();
+            Schichtmeldungen();
 
             int zonen = _modell.Instances.OfType<IIfcZone>().Count();
             if (zonen > 0)
@@ -892,6 +1094,38 @@ namespace WindowsFormsApplication1
                         Zahl(Math.Round(100.0 * e.Value[1] / e.Value[0], 1))));
         }
 
+        /// <summary>
+        /// Die Sammelmeldungen der Schichten: Baustoffe mit Stoffwert ≤ 0, nicht gelesene Stoffwerte
+        /// (IFC2X3) und vollständige Aufbauten von Hüllbauteilen, deren Schichtfolge nur angenommen ist.
+        /// </summary>
+        private void Schichtmeldungen()
+        {
+            if (_stoffwertNull.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "STOFFWERT_NULL",
+                    Ganz(_stoffwertNull.Count), Beispiele(_stoffwertNull.ToList())));
+            if (_stoffwerteNichtGelesen.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "STOFFWERTE_NICHT_GELESEN",
+                    _abbild.Schemastand ?? _abbild.SchemaStand.ToString(), Ganz(_stoffwerteNichtGelesen.Count),
+                    Beispiele(_stoffwerteNichtGelesen.ToList())));
+
+            var angenommen = new List<string>();
+            foreach (AbbildGebaeude g in _abbild.Gebaeude)
+            {
+                var beheizt = new HashSet<string>(g.Raeume.Where(r => r.Beheizt).Select(r => r.Kennung), StringComparer.Ordinal);
+                foreach (AbbildBauteil b in g.Bauteile)
+                {
+                    if (b.Aufbau == null || b.Aufbau.Status != Aufbaustatus.Vollstaendig || !b.Aufbau.RichtungAngenommen) continue;
+                    bool aussen = b.Randbedingung == Randbedingung.Aussenluft || b.Randbedingung == Randbedingung.Erdreich;
+                    int zahlBeheizt = b.Nachbarn.Count(n => beheizt.Contains(n.Kennung));
+                    bool huelle = aussen ? b.HuelleOhneNachbar || zahlBeheizt > 0 : zahlBeheizt == 1;
+                    if (huelle) angenommen.Add(b.Kennung);
+                }
+            }
+            if (angenommen.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "SCHICHTFOLGE_ANGENOMMEN",
+                    Ganz(angenommen.Count), Beispiele(angenommen)));
+        }
+
         private static string UFeld(AbbildBauteil b)
         {
             if (b.Randbedingung == Randbedingung.Erdreich) return GebaeudeZielfelder.U_GRUND;
@@ -908,7 +1142,10 @@ namespace WindowsFormsApplication1
             if (!(b.BruttoflaecheM2 > 0.0)) return;
             if (!summe.TryGetValue(feld, out double[] w)) summe[feld] = w = new double[2];
             w[0] += b.BruttoflaecheM2.Value;
-            if (!b.UWertWm2K.HasValue && b.Aufbau == null) w[1] += b.BruttoflaecheM2.Value;
+            // Ohne U-Wert zählt auch ein Aufbau, aus dem keiner zu rechnen ist (unvollständig, IFC2X3).
+            bool ausSchichten = b.Aufbau != null
+                                && (b.Aufbau.Status == Aufbaustatus.Vollstaendig || b.Aufbau.Status == Aufbaustatus.Masselos);
+            if (!b.UWertWm2K.HasValue && !ausSchichten) w[1] += b.BruttoflaecheM2.Value;
         }
 
         // ==================================================================

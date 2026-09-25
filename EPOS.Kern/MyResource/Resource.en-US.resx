@@ -32070,4 +32070,31 @@ Do you want to allow this?</value>
   <data name="GIMP_SCHEMA_IFC" xml:space="preserve">
     <value>IFC schema {0}</value>
   </data>
+  <data name="GIMP_BELEG_RAUMHOEHE_VORGABE" xml:space="preserve">
+    <value>neither room height nor room volume in the file — default {0} m</value>
+  </data>
+  <data name="GIMP_BELEG_DACH_VORGABE_GESCHOSS" xml:space="preserve">
+    <value>no roof area in the file — default: gross floor area of the top storey "{0}" ({1} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_DACH_VORGABE_RAEUME" xml:space="preserve">
+    <value>no roof area in the file — default: floor area of the top storey "{0}", {1} heated rooms ({2} m²)</value>
+  </data>
+  <data name="GIMP_BELEG_GRUND_VORGABE" xml:space="preserve">
+    <value>no ground floor area in the file — default: usable area {0} m² ÷ {1} storeys</value>
+  </data>
+  <data name="GIMP_BELEG_SONSTIGE_VORGABE" xml:space="preserve">
+    <value>no other area from the file ({0} components without area) — default 0 m²</value>
+  </data>
+  <data name="GIMP_BELEG_RANDBEDINGUNG_VORGABE" xml:space="preserve">
+    <value>no floor component in the file — default ground contact</value>
+  </data>
+  <data name="IMP_IFC_PROT_STOFFWERT_NULL" xml:space="preserve">
+    <value>{0} materials carry property values ≤ 0; they count as missing, so U-value and construction type from these layers are not available ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_STOFFWERTE_NICHT_GELESEN" xml:space="preserve">
+    <value>{0}: the material properties of {1} materials are not read — the interface does not map their property sets reliably (IfcThermalMaterialProperties, IfcGeneralMaterialProperties, IfcExtendedMaterialProperties); U-value and construction type from these layers are not available ({2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
+    <value>For {0} envelope components the position of the layers cannot be determined (no IfcMaterialLayerSetUsage or no room side) — assumed: first layer outside ({1}).</value>
+  </data>
 </root>

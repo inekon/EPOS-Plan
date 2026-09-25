@@ -1720,7 +1720,7 @@ sequenceDiagram
 > und erst das Speichern der Gebäudeliste schreibt Projektkopie und Herkunft in EINEM Vorgang
 > (`WizardCtrl.GebaeudeZuordnungAnlegen` → `GebaeudeImportCtrl.SchreibeHerkunft`). Ablauf und
 > Begründung: [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md),
-> Abschnitt 5.
+> Abschnitt 6.
 
 ### 3.5 Ergebnisdarstellung
 

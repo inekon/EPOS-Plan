@@ -129,6 +129,22 @@ namespace WindowsFormsApplication1
         /// <summary>Der Meldungsschlüssel dieses Formats zu einem Namen (<c>ZU_GROSS</c> → <c>IMP_GBXML_PROT_ZU_GROSS</c>).</summary>
         public string Meldung(string name) => Meldungspraefix + name;
 
+        /// <summary>
+        /// Die Vorgabe der Raumhöhe [m], wenn die Datei weder eine Höhe noch Volumen und Fläche der
+        /// beheizten Räume trägt; <c>null</c> = keine — dann bleibt die Zeile leer (gbXML:
+        /// „sonst NULL = Wert des Gebäudes", Datenaustauschkonzept 3.4). Die Regel gehört dem Format,
+        /// deshalb steht sie im Profil; die Zuordnung setzt sie mit Herkunft „Vorgabe" und Beleg.
+        /// </summary>
+        public virtual double? RueckfallRaumhoeheM => null;
+
+        /// <summary>
+        /// Greifen die Vorgabe-Rückfälle der Hüllflächen (Umsetzungskonzept 3.4, Spalte „Rückfall"):
+        /// Dachfläche → Grundfläche des obersten Geschosses, Grundfläche → Nutzfläche ÷ Geschosszahl,
+        /// sonstige Flächen → 0 — jeweils nur, wenn für die Gruppe KEINE Fläche gelesen ist? gbXML
+        /// liefert die Flächen aus der Geometrie und kennt diese Rückfälle nicht (<c>false</c>).
+        /// </summary>
+        public virtual bool FlaechenRueckfaelle => false;
+
         /// <summary>Die Leserfabrik: ein neuer Leser je Lauf.</summary>
         public abstract IGebaeudeLeser LeserErzeugen();
     }
