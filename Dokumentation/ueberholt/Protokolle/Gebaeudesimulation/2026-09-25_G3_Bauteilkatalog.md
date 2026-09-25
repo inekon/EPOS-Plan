@@ -306,3 +306,20 @@ nur an Außenluft, Festlegung 9), die „offene Regel 5" in der
 `UPDATE` des Schritts per `EXPLAIN` von Hand); Referenzlauf aller vierzehn Projekte **14/14 PASS** gegen
 `2026-09-25_R16_Anlagenprio` (4 610 207 Werte), 432/432 CSV byte-gleich; `DokumentationLinkWacheTests`,
 `RepositoryOrdnungWacheTests` und `WikiProduktdatenWacheTests` grün nach dem Nachzug der Papiere.
+Gepusht mit `2036098b`; Kern-Lauf grün auf `9cee408f` (36147290167, enthält `2036098b`; der eigene Lauf
+wurde vom folgenden Push abgelöst).
+
+## Nachtrag: Skriptlauf der Rasterprobe
+
+Der letzte offene Punkt aus G3. Anwenderfreigabe vom 25.09.2026: nur das npm-Paket `playwright-core`
+1.58.0 (rund 9 MB entpackt, im Scratchpad, nicht im Repository), gemessen mit dem installierten Edge,
+der mit derselben Engine rechnet wie WebView2. `rasterprobe.mjs` lädt dafür ersatzweise
+`playwright-core` und nimmt mit `--kanal msedge` den installierten Browser.
+
+**Ergebnis** (Wirt Release, Port 5299, Edge headless): **alle 27 Fälle der Probe grün**. GD1–GD3:
+Zeilenhöhe 53 gleich dem Maß, Rollbehälter die Hülle (418 px innen), 0 `loading`-Umschaltungen, nach
+dem Rollen um 2 000 px 16 echte Zeilen nach 138–148 ms und 0 Platzhalter, Sichtbarkeitsmelder 3 beim
+Aufbau und 4 in den drei Sekunden danach. **Gegenprobe** `--entpinnt --nur GD` (gezeichnete Zeile
+52,5 px gegen das Maß 53): 3/3 rot, 408–410 Meldungen in drei Sekunden, 16 Platzhalter nach dem
+Rollen. Die im integrierten Browser nur schwache Gegenprobe ist damit im Skriptlauf scharf; Messwerte
+und Aufruf in [Rasterprobe](../../../../Proben/Rasterprobe/LIESMICH.md).

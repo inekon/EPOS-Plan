@@ -3851,9 +3851,9 @@ und würde ein eigener Entscheid.
 
 **Was offen bleibt.** Die Katalogseite des Gebäudedialogs ist die virtualisierte `Katalogliste`
 ([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 3.2, Regel 5); ihre
-Rasterprobe (Fälle GD1–GD3) ist im integrierten Browser gemessen. Offen ist allein der Skriptlauf der
-Rasterprobe mit Playwright ([Rasterprobe](../../Proben/Rasterprobe/LIESMICH.md)). Das Register zählt
-weiter **8 offene Punkte**.
+Rasterprobe (Fälle GD1–GD3) ist im Skriptlauf mit dem installierten Edge gemessen, samt scharfer
+Gegenprobe ([Rasterprobe](../../Proben/Rasterprobe/LIESMICH.md)). Aus G3 bleibt nichts offen; G4b
+(Bauteile aus IFC) wartet auf die Beauftragung. Das Register zählt weiter **8 offene Punkte**.
 
 **Betroffene Stufen:** G3 (abgeschlossen 25.09.2026); G4b (Bauteile aus IFC); G6a–G6d (übernehmen
 die Tabellen unverändert).
