@@ -109,6 +109,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Der Vorlagenordner " + fehlt + " ist nicht erreichbar", nicht.Meldung);
             Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_ORDNER));
             Assert.Equal(Ordnerzustand.Ungueltig, _ctrl.SetzeVorlagenordner("relativ" + Path.DirectorySeparatorChar + "ordner").Zustand);
+            if (OperatingSystem.IsWindows())
+                Assert.Equal(Ordnerzustand.Ungueltig, _ctrl.SetzeVorlagenordner("C:ordner").Zustand);   // laufwerksrelativ
             Assert.Null(_einstellungen.Lies(BerichtsvorlagenCtrl.EINSTELLUNG_ORDNER));
 
             string buero = Directory.CreateDirectory(Path.Combine(_wurzel, "Buero")).FullName;

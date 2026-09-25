@@ -1124,12 +1124,13 @@ namespace WindowsFormsApplication1
         //  Helfer
         // =====================================================================
 
+        /// <summary>Ein vollständiger Pfad — auch unter Windows kein laufwerksrelativer wie <c>C:ordner</c>.</summary>
         private static bool IstGueltigerOrdner(string ordner)
         {
             if (string.IsNullOrWhiteSpace(ordner)) return false;
             try
             {
-                return Path.IsPathRooted(ordner) && Path.GetFullPath(ordner).Length > 0;
+                return Path.IsPathFullyQualified(ordner) && Path.GetFullPath(ordner).Length > 0;
             }
             catch (Exception)
             {

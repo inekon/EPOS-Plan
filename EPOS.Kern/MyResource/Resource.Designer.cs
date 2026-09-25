@@ -76480,7 +76480,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter nicht geschlossen: „{0}“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzhalter nicht erkannt: „{0}“ – {1} ohne passendes {2} im selben Absatz ähnelt.
         /// </summary>
         public static string VF_PRUEF_KLAMMER_OFFEN {
             get {
@@ -76489,7 +76489,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die schließenden Klammern }} ergänzen; ein Platzhalter steht in einer Zeile und enthält keine weitere Klammer. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Platzhalter in einem Zug neu tippen, ohne Tabulator oder Umbruch. ähnelt.
         /// </summary>
         public static string VF_PRUEF_KLAMMER_OFFEN_TUN {
             get {
@@ -76741,6 +76741,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Inhaltssteuerelement in der Zelle um einen Absatz legen oder den Platzhalter als Text in die Zelle schreiben. ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_ORT_TUN_SDT_TABELLE {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_ORT_TUN_SDT_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Den Schalter nur als Bedingung verwenden: {0} … {1}. ähnelt.
         /// </summary>
         public static string VF_PRUEF_ORT_TUN_WENN {
@@ -76867,6 +76876,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in einem Inhaltssteuerelement um Tabellenzeilen oder -zellen ähnelt.
+        /// </summary>
+        public static string VF_PRUEF_STELLE_SDT_TABELLE {
+            get {
+                return ResourceManager.GetString("VF_PRUEF_STELLE_SDT_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die in Textfeldern ähnelt.
         /// </summary>
         public static string VF_PRUEF_STELLE_TEXTFELD {
@@ -76903,7 +76921,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ohne Gliederungsebene {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ohne Gliederungsebene ähnelt.
         /// </summary>
         public static string VF_PRUEF_STIL_OHNE_EBENE {
             get {

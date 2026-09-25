@@ -33555,10 +33555,10 @@ Do you want to allow this?</value>
     <value>Insert a placeholder from the placeholder catalogue or remove the double braces.</value>
   </data>
   <data name="VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
-    <value>Placeholder not closed: “{0}”</value>
+    <value>Placeholder not recognised: “{0}” – {1} without a matching {2} in the same paragraph</value>
   </data>
   <data name="VF_PRUEF_KLAMMER_OFFEN_TUN" xml:space="preserve">
-    <value>Add the closing braces }}; a placeholder stays on one line and contains no further brace.</value>
+    <value>Retype the placeholder in one go, without a tab or line break.</value>
   </data>
   <data name="VF_PRUEF_ORT" xml:space="preserve">
     <value>{0} does not fit here: type “{1}” is not possible {2}</value>
@@ -33574,6 +33574,12 @@ Do you want to allow this?</value>
   </data>
   <data name="VF_PRUEF_ORT_TUN_SDT" xml:space="preserve">
     <value>Place the content control around a whole paragraph or type the placeholder as text.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_TABELLE" xml:space="preserve">
+    <value>in a content control around table rows or cells</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT_TABELLE" xml:space="preserve">
+    <value>Place the content control inside the cell around a paragraph, or type the placeholder as text into the cell.</value>
   </data>
   <data name="VF_PRUEF_ORT_TUN_WENN" xml:space="preserve">
     <value>Use the switch only as a condition: {0} … {1}.</value>
@@ -33855,7 +33861,7 @@ Do you want to allow this?</value>
     <value>{0} missing</value>
   </data>
   <data name="VF_PRUEF_STIL_OHNE_EBENE" xml:space="preserve">
-    <value>{0} without outline level {1}</value>
+    <value>{0} without outline level</value>
   </data>
   <data name="VF_PRUEF_TEIL_RUMPF" xml:space="preserve">
     <value>Main text</value>

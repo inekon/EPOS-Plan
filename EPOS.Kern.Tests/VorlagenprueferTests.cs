@@ -144,13 +144,55 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Unbekannte_Marke_und_offene_Klammer_sind_Fehler()
+        public void Unbekannte_Marke_ist_Fehler_offene_Klammer_Warnung()
         {
             Pruefbefund befund = Schnell(Probevorlagen.AusAbsaetzen("leer {{}} hier", "{{#gruppe x}}", "Kunde {{projekt.kunde} ohne Ende"));
             Assert.Equal(2, Probevorlagen.Mit(befund, "VF_PRUEF_MARKE_UNBEKANNT").Count);
             Pruefmeldung offen = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KLAMMER_OFFEN"));
-            Assert.Contains("{{projekt.kunde} ohne Ende", offen.Text);
-            Assert.Equal(Befundstufe.Fehler, offen.Stufe);
+            Assert.Equal("Platzhalter nicht erkannt: „{{projekt.kunde} ohne Ende“ – {{ ohne passendes }} im selben Absatz", offen.Text);
+            Assert.Equal("Den Platzhalter in einem Zug neu tippen, ohne Tabulator oder Umbruch.", offen.WasTun);
+            Assert.Equal(Befundstufe.Warnung, offen.Stufe);
+        }
+
+        /// <summary>
+        /// Die Erkennung folgt der Engine (Nachtrag A2): Zerlegte Runs verbinden sich nur innerhalb eines
+        /// Behälters (Absatz, Hyperlink, Inhaltssteuerelement im Satz, w:ins …) und nicht über Tabulator,
+        /// Feldzeichen oder Bild hinweg. Was darüber reicht, bleibt im Bericht als Text stehen — der
+        /// Prüfer warnt mit „Platzhalter nicht erkannt“ statt ihn still als gültig zu zählen.
+        /// </summary>
+        [Fact]
+        public void Zerrissene_Platzhalter_werden_wie_in_der_Engine_nicht_erkannt()
+        {
+            W.Run Lauf(string t) => new W.Run(new W.Text(t) { Space = SpaceProcessingModeValues.Preserve });
+            byte[] vorlage = Probevorlagen.Baue(b => b
+                .Element(new W.Paragraph(Lauf("{{projekt."), new W.Run(new W.TabChar()), Lauf("kunde}}")))
+                .Element(new W.Paragraph(Lauf("{{projekt."), new W.Hyperlink(Lauf("kunde}}"))))
+                .Element(new W.Paragraph(Lauf("{{projekt."),
+                                         new W.Run(new W.FieldChar { FieldCharType = W.FieldCharValues.Begin }),
+                                         new W.Run(new W.FieldCode(" PAGE ")),
+                                         new W.Run(new W.FieldChar { FieldCharType = W.FieldCharValues.End }),
+                                         Lauf("kunde}}")))
+                .Roh("<w:r><w:t>{{projekt.</w:t></w:r>" + Probevorlagen.BildXml("Bild 1", "") + "<w:r><w:t>kunde}}</w:t></w:r>")
+                .Element(new W.Paragraph(Lauf("{{projekt."), new W.InsertedRun(Lauf("kunde}}")) { Id = "1", Author = "Probe" }))
+                .Element(new W.Paragraph(new W.Hyperlink(Lauf("{{proj"), Lauf("ekt.kunde}}"))))
+                .Element(new W.Paragraph(new W.InsertedRun(Lauf("{{proj"), Lauf("ekt.kunde}}")) { Id = "2", Author = "Probe" })));
+
+            Pruefbefund befund = Schnell(vorlage);
+            List<Pruefmeldung> offen = Probevorlagen.Mit(befund, "VF_PRUEF_KLAMMER_OFFEN");
+            Assert.Equal(5, offen.Count);
+            Assert.All(offen, m => Assert.Equal(Befundstufe.Warnung, m.Stufe));
+            Assert.Equal(new[] { 1, 2, 3, 4, 5 }, offen.Select(m => int.Parse(m.Fundort.Split(' ')[1])));
+            Assert.Equal(2, befund.AnzahlPlatzhalter);      // ganz im Hyperlink, ganz in w:ins
+            Assert.Equal(0, befund.Fehleranzahl);
+
+            using (WordprocessingDocument doc = WordprocessingDocument.Open(new MemoryStream(vorlage), false))
+            {
+                Vorlagendurchlauf lauf = Vorlagenteile.Durchlaufe(doc);
+                Assert.Equal("{{projekt.\tkunde}}", lauf.Absaetze[0].Text);
+                Assert.Equal("{{projekt.\nkunde}}", lauf.Absaetze[0].Erkennungstext);
+                Assert.Equal("{{projekt.\nkunde}}\n", lauf.Absaetze[1].Erkennungstext);
+                Assert.Equal("{{projekt.kunde}}", lauf.Absaetze[3].Text);   // das Bild trägt keinen Text
+            }
         }
 
         [Fact]
@@ -261,6 +303,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal("{{stand.kennzahl.eff.jaz}} ist ein Wert je Variante; Werte je Variante gibt es in dieser Programmfassung noch nicht", stand.Text);
             Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KONTEXT_GEBAEUDE"));
             Assert.Equal(2, befund.Fehleranzahl);
+
+            // Katalog v1 führt noch keinen dieser Schlüssel: Sie sind nicht „unbekannt“, sondern noch
+            // nicht füllbar — mit dem nahen Wert des Stammprojekts als Vorschlag.
+            Pruefbefund v1 = Schnell(Probevorlagen.AusAbsaetzen("{{stand.kennzahl.eff.jaz}}", "{{gebaeude.flaeche}}"));
+            Pruefmeldung jeVariante = Assert.Single(Probevorlagen.Mit(v1, "VF_PRUEF_KONTEXT_STAND"));
+            Assert.Equal("{{stamm.kennzahl.eff.jaz}}", jeVariante.Vorschlag);
+            Assert.Equal("Den Platzhalter entfernen oder einen Wert des Stammprojekts verwenden (stamm.*, projekt.*).", jeVariante.WasTun);
+            Assert.Single(Probevorlagen.Mit(v1, "VF_PRUEF_KONTEXT_GEBAEUDE"));
+            Assert.Empty(Probevorlagen.Mit(v1, "VF_PRUEF_UNBEKANNT"));
+            Assert.Equal(new[] { "gebaeude.flaeche", "stand.kennzahl.eff.jaz" }, v1.UnbekannteSchluessel);
         }
 
         // =====================================================================
@@ -534,6 +586,62 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Inhaltssteuerelemente um Tabellenzeilen oder -zellen füllt die Engine nicht (Nachtrag A2):
+        /// „passt nicht an diese Stelle“, gleich welcher Art der Schlüssel ist.
+        /// </summary>
+        [Fact]
+        public void Inhaltssteuerelemente_um_Zeilen_und_Zellen_passen_nicht()
+        {
+            byte[] vorlage = Probevorlagen.Baue(b => b.Element(new W.Table(
+                new W.TableGrid(new W.GridColumn { Width = "2000" }),
+                new W.TableRow(new W.SdtCell(new W.SdtProperties(new W.Tag { Val = "projekt.kunde" }),
+                                             new W.SdtContentCell(new W.TableCell(Probevorlagen.Absatz("Kunde"))))),
+                new W.SdtRow(new W.SdtProperties(new W.Tag { Val = "bericht.warnungen" }),
+                             new W.SdtContentRow(new W.TableRow(new W.TableCell(Probevorlagen.Absatz("Hinweise"))))))));
+            Pruefbefund befund = Schnell(vorlage);
+            List<Pruefmeldung> ort = Probevorlagen.Mit(befund, "VF_PRUEF_ORT");
+            Assert.Equal(2, ort.Count);
+            Assert.All(ort, m => Assert.Contains("in einem Inhaltssteuerelement um Tabellenzeilen oder -zellen", m.Text));
+            Assert.Equal("Das Inhaltssteuerelement in der Zelle um einen Absatz legen oder den Platzhalter als Text in die Zelle schreiben.",
+                         ort[0].WasTun);
+            Assert.StartsWith("Tabelle 1, Zeile 1, Zelle 1", ort[0].Fundort);
+        }
+
+        /// <summary>
+        /// Die Tag-Regel der Engine (Nachtrag A2): ein Tag ist ein Platzhalter, wenn er in doppelten
+        /// Klammern steht oder ein Schlüssel mit Punkt ist; sonst bleibt er ohne Befund. Ein Alternativtext
+        /// ist freier Text und braucht dazu einen Bereich des Schlüsselschemas.
+        /// </summary>
+        [Fact]
+        public void Tags_zaehlen_mit_Klammern_oder_Punkt_Alternativtexte_nur_mit_Bereich()
+        {
+            Assert.True(Vorlagenpruefer.IstPlatzhalterTag("projekt.kunde"));
+            Assert.True(Vorlagenpruefer.IstPlatzhalterTag("{{projekt.kunde}}"));
+            Assert.True(Vorlagenpruefer.IstPlatzhalterTag("{{#je stand}}"));
+            Assert.True(Vorlagenpruefer.IstPlatzhalterTag("vorlage.version"));
+            Assert.False(Vorlagenpruefer.IstPlatzhalterTag("#je stand"));
+            Assert.False(Vorlagenpruefer.IstPlatzhalterTag("Deckblatt"));
+            Assert.False(Vorlagenpruefer.IstPlatzhalterTag("{{a}} und {{b}}"));
+            Assert.False(Vorlagenpruefer.IstPlatzhalterTag(" "));
+
+            Assert.True(Vorlagenpruefer.IstBildschluessel("{{bild.vergleich.balken}}"));
+            Assert.True(Vorlagenpruefer.IstBildschluessel("projekt.kunde"));
+            Assert.False(Vorlagenpruefer.IstBildschluessel("Logo.png"));
+            Assert.False(Vorlagenpruefer.IstBildschluessel("{{#je stand}}"));
+            Assert.False(Vorlagenpruefer.IstBildschluessel("Firmenlogo"));
+
+            byte[] vorlage = Probevorlagen.Baue(b => b
+                .Element(new W.SdtBlock(new W.SdtProperties(new W.Tag { Val = "#je stand" }), new W.SdtContentBlock(Probevorlagen.Absatz("a"))))
+                .Element(new W.SdtBlock(new W.SdtProperties(new W.Tag { Val = "{{#je stand}}" }), new W.SdtContentBlock(Probevorlagen.Absatz("b"))))
+                .Element(new W.SdtBlock(new W.SdtProperties(new W.Tag { Val = "vorlage.version" }), new W.SdtContentBlock(Probevorlagen.Absatz("c"))))
+                .Roh(Probevorlagen.BildXml("Logo", "Logo.png")));
+            Pruefbefund befund = Schnell(vorlage);
+            Assert.Equal(2, befund.AnzahlPlatzhalter);
+            Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_BLOCK_NICHT_UNTERSTUETZT"));
+            Assert.Contains("Inhaltssteuerelement „vorlage.version“", Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_UNBEKANNT")).Fundort);
+        }
+
         // =====================================================================
         //  Volle Prüfung: Paket, Format, Makros, Änderungen, Extern, Stile
         // =====================================================================
@@ -653,7 +761,7 @@ namespace EPOS.Kern.Tests
 
             Pruefbefund ohneEbene = Voll(Probevorlagen.Baue(b => b.Absatz("{{bericht.inhalt}}").DeutscheUeberschriften(dritteMitEbene: false)));
             Pruefmeldung m = Assert.Single(Probevorlagen.Mit(ohneEbene, "VF_PRUEF_UEBERSCHRIFTEN"));
-            Assert.Equal("Überschriftenstile fehlen oder tragen keine Gliederungsebene: Überschrift 3 ohne Gliederungsebene 3", m.Text);
+            Assert.Equal("Überschriftenstile fehlen oder tragen keine Gliederungsebene: Überschrift 3 ohne Gliederungsebene", m.Text);
             Assert.Equal("Formatvorlagen", m.Fundort);
             Assert.Equal(Befundstufe.Warnung, m.Stufe);
 
@@ -663,6 +771,13 @@ namespace EPOS.Kern.Tests
             // Ohne Kapitel setzt EPOS-Plan keine Überschrift in die Vorlage — kein Befund.
             Pruefbefund nurText = Voll(Probevorlagen.AusAbsaetzen("{{projekt.kunde}}"));
             Assert.True(nurText.OhneBefund, Probevorlagen.Liste(nurText));
+
+            // Wie die Engine: gefunden auch über die ID; die Gliederungsebene zählt, wenn sie da ist.
+            Pruefbefund ueberId = Voll(Probevorlagen.Baue(b => b.Absatz("{{bericht.inhalt}}").Stile(
+                Probevorlagen.Stil("Heading1", "Überschrift eins", 0),
+                Probevorlagen.Stil("heading2", "Zweite Ebene", 1),
+                Probevorlagen.Stil("berschrift3", "heading 3", 5))));
+            Assert.True(ueberId.OhneBefund, Probevorlagen.Liste(ueberId));
         }
 
         // =====================================================================

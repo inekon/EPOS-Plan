@@ -188,28 +188,43 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ist ein Tag (oder Alternativtext) als Platzhalter gemeint? Ja, wenn er genau eine Marke in
-        /// doppelten Klammern ist, eine Blockmarke ohne Klammern (<c>#je stand</c>) oder ein Schlüssel,
-        /// der mit einem der <see cref="Bereiche"/> beginnt (<c>projekt.kunde</c>). Fremde Tags —
-        /// Deckblätter, Bausteine anderer Werkzeuge — bleiben unbeachtet.
+        /// Ist der Tag eines Inhaltssteuerelements als Platzhalter gemeint? Die Regel der Engine: genau
+        /// eine Marke in doppelten Klammern (<c>{{projekt.kunde}}</c>, <c>{{#je stand}}</c>) oder ein
+        /// Schlüssel mit Punkt (<c>projekt.kunde</c>). Andere Tags — Deckblätter, Bausteine anderer
+        /// Werkzeuge, <c>#je stand</c> ohne Klammern — bleiben unbeachtet und ohne Befund.
         /// </summary>
-        public static bool IstPlatzhalterTag(string tag, bool nurFelder = false)
+        public static bool IstPlatzhalterTag(string tag)
         {
             string t = (tag ?? "").Trim();
             if (t.Length == 0) return false;
-            if (t.StartsWith("{{", StringComparison.Ordinal) && t.EndsWith("}}", StringComparison.Ordinal))
-            {
-                List<Platzhalter> marken = Platzhaltersyntax.Finde(t).ToList();
-                if (marken.Count != 1 || marken[0].Laenge != t.Length) return false;
-                return !nurFelder || marken[0].Art == Platzhalterart.Feld;
-            }
+            if (IstEineMarke(t, out Platzhalter marke)) return marke != null;
             Platzhalter p = Platzhaltersyntax.Lies(t);
-            if (p.Art == Platzhalterart.Feld)
-            {
-                if (!p.SchluesselGueltig || p.Schluessel.IndexOf('.') < 0) return false;
-                return Bereiche.Contains(p.Schluessel.Substring(0, p.Schluessel.IndexOf('.')));
-            }
-            return !nurFelder && p.Art != Platzhalterart.Unbekannt;
+            return p.Art == Platzhalterart.Feld && p.Schluessel.IndexOf('.') > 0;
+        }
+
+        /// <summary>
+        /// Ist der Alternativtext eines Bildes ein Bildplatzhalter? Strenger als ein Tag, weil ein
+        /// Alternativtext freier Text ist („Logo.png“): ein Feld in doppelten Klammern oder ein Schlüssel
+        /// mit Punkt aus einem der <see cref="Bereiche"/>. Sonst kein Befund.
+        /// </summary>
+        public static bool IstBildschluessel(string beschreibung)
+        {
+            string t = (beschreibung ?? "").Trim();
+            if (t.Length == 0) return false;
+            if (IstEineMarke(t, out Platzhalter marke)) return marke != null && marke.Art == Platzhalterart.Feld;
+            Platzhalter p = Platzhaltersyntax.Lies(t);
+            if (p.Art != Platzhalterart.Feld || !p.SchluesselGueltig || p.Schluessel.IndexOf('.') < 0) return false;
+            return Bereiche.Contains(p.Schluessel.Substring(0, p.Schluessel.IndexOf('.')));
+        }
+
+        /// <summary>Steht der Text in doppelten Klammern? Dann ist <paramref name="marke"/> die eine Marke, die ihn ganz füllt, sonst <c>null</c>.</summary>
+        private static bool IstEineMarke(string text, out Platzhalter marke)
+        {
+            marke = null;
+            if (!text.StartsWith("{{", StringComparison.Ordinal) || !text.EndsWith("}}", StringComparison.Ordinal)) return false;
+            List<Platzhalter> marken = Platzhaltersyntax.Finde(text).ToList();
+            if (marken.Count == 1 && marken[0].Laenge == text.Length) marke = marken[0];
+            return true;
         }
 
         /// <summary>Der Editierabstand (Levenshtein), abgebrochen über <paramref name="grenze"/> (dann <c>grenze + 1</c>).</summary>
@@ -530,36 +545,38 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Überschrift 1 bis 3 über <c>w:name</c> (ohne Rücksicht auf die Stil-ID, die ein
-            /// deutsches Word übersetzt, Konzept 6.2), jede mit ihrer Gliederungsebene. Geprüft nur,
-            /// wenn die Vorlage Kapitel einsetzt oder gar keinen Platzhalter hat (dann hängt die
-            /// Engine den Sammelanker an) — sonst setzt EPOS-Plan keine Überschrift in sie.
+            /// Überschrift 1 bis 3 wie in der Engine (Konzept 6.2): über <c>w:name</c> „heading n“ ohne
+            /// Rücksicht auf Groß- und Kleinschreibung, sonst über die ID <c>Heading n</c> — ein deutsches
+            /// Word übersetzt nur die ID. „Fehlt“ heißt: weder Name noch ID; „ohne Gliederungsebene“ heißt:
+            /// der gefundene Stil trägt kein <c>w:outlineLvl</c>. Geprüft nur, wenn die Vorlage Kapitel
+            /// einsetzt oder gar keinen Platzhalter hat (dann hängt die Engine den Sammelanker an) — sonst
+            /// setzt EPOS-Plan keine Überschrift in sie.
             /// </summary>
             public void PruefeUeberschriften(WordprocessingDocument doc)
             {
                 List<Vorlagenfund> gezaehlt = Gezaehlt;
                 if (!(HatKapitel(gezaehlt) || gezaehlt.Count == 0)) return;
 
-                OpenXmlElement stile = doc.MainDocumentPart?.StyleDefinitionsPart?.RootElement;
+                OpenXmlElement wurzel = doc.MainDocumentPart?.StyleDefinitionsPart?.RootElement;
+                List<OpenXmlElement> stile = wurzel == null ? new List<OpenXmlElement>()
+                    : wurzel.ChildElements.Where(e => Vorlagenteile.IstW(e, "style") &&
+                        (Vorlagenteile.Attribut(e, "type", Vorlagenteile.NS_W) ?? "paragraph") == "paragraph").ToList();
                 var befunde = new List<string>();
                 for (int n = 1; n <= 3; n++)
                 {
-                    string name = "heading " + n.ToString(CultureInfo.InvariantCulture);
-                    OpenXmlElement stil = stile?.ChildElements.FirstOrDefault(s =>
-                        Vorlagenteile.IstW(s, "style") &&
-                        (Vorlagenteile.Attribut(s, "type", Vorlagenteile.NS_W) ?? "paragraph") == "paragraph" &&
-                        string.Equals((Vorlagenteile.Attribut(Vorlagenteile.KindW(s, "name"), "val", Vorlagenteile.NS_W) ?? "").Trim(),
-                                      name, StringComparison.OrdinalIgnoreCase));
+                    string zahl = n.ToString(CultureInfo.InvariantCulture);
+                    OpenXmlElement stil =
+                        stile.FirstOrDefault(e => string.Equals(
+                            (Vorlagenteile.Attribut(Vorlagenteile.KindW(e, "name"), "val", Vorlagenteile.NS_W) ?? "").Trim(),
+                            "heading " + zahl, StringComparison.OrdinalIgnoreCase)) ??
+                        stile.FirstOrDefault(e => string.Equals(
+                            (Vorlagenteile.Attribut(e, "styleId", Vorlagenteile.NS_W) ?? "").Trim(),
+                            "Heading" + zahl, StringComparison.OrdinalIgnoreCase));
                     string bezeichnung = T(nameof(R.VF_PRUEF_STIL_UEBERSCHRIFT), n);
                     if (stil == null)
-                    {
                         befunde.Add(T(nameof(R.VF_PRUEF_STIL_FEHLT), bezeichnung));
-                        continue;
-                    }
-                    OpenXmlElement ebene = Vorlagenteile.KindW(Vorlagenteile.KindW(stil, "pPr"), "outlineLvl");
-                    string wert = Vorlagenteile.Attribut(ebene, "val", Vorlagenteile.NS_W);
-                    if (wert != (n - 1).ToString(CultureInfo.InvariantCulture))
-                        befunde.Add(T(nameof(R.VF_PRUEF_STIL_OHNE_EBENE), bezeichnung, n));
+                    else if (Vorlagenteile.KindW(Vorlagenteile.KindW(stil, "pPr"), "outlineLvl") == null)
+                        befunde.Add(T(nameof(R.VF_PRUEF_STIL_OHNE_EBENE), bezeichnung));
                 }
                 if (befunde.Count > 0)
                     Melde(Befundstufe.Warnung, nameof(R.VF_PRUEF_UEBERSCHRIFTEN),
@@ -573,25 +590,30 @@ namespace WindowsFormsApplication1
             {
                 _kommentare = lauf.Kommentare;
 
+                // Erkannt wird wie in der Engine: im Erkennungstext, dessen Trennstellen (Tabulator,
+                // Umbruch, Feldzeichen, Bild, Behältergrenze) kein Platzhalter überspannt. Was dort
+                // zerrissen ist, bleibt im Bericht still als Text stehen — deshalb die Warnung.
                 foreach (Vorlagenabsatz a in lauf.Absaetze)
                 {
-                    foreach (int stelle in Platzhaltersyntax.OffeneKlammern(a.Text))
+                    string text = a.Erkennungstext;
+                    foreach (int stelle in Platzhaltersyntax.OffeneKlammern(text))
                     {
-                        string rest = a.Text.Substring(stelle);
+                        string rest = text.Substring(stelle);
                         int ende = rest.IndexOfAny(new[] { '\n', '\r' });
                         if (ende >= 0) rest = rest.Substring(0, ende);
                         if (rest.Length > 30) rest = rest.Substring(0, 30) + "…";
-                        Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_KLAMMER_OFFEN), T(nameof(R.VF_PRUEF_KLAMMER_OFFEN), rest),
+                        Melde(Befundstufe.Warnung, nameof(R.VF_PRUEF_KLAMMER_OFFEN),
+                              T(nameof(R.VF_PRUEF_KLAMMER_OFFEN), rest, "{{", "}}"),
                               Fundort(a.Ort), T(nameof(R.VF_PRUEF_KLAMMER_OFFEN_TUN)));
                     }
-                    foreach (Platzhalter p in Platzhaltersyntax.Finde(a.Text))
+                    foreach (Platzhalter p in Platzhaltersyntax.Finde(text))
                         _funde.Add(new Vorlagenfund(p, a.Ort, Fundquelle.Text, a, null, null));
                 }
                 foreach (Vorlagensteuerelement st in lauf.Steuerelemente)
                     if (IstPlatzhalterTag(st.Tag))
                         _funde.Add(new Vorlagenfund(Platzhaltersyntax.Lies(st.Tag), st.Ort, Fundquelle.Steuerelement, null, st, null));
                 foreach (Vorlagenbild b in lauf.Bilder)
-                    if (IstPlatzhalterTag(b.Beschreibung, nurFelder: true))
+                    if (IstBildschluessel(b.Beschreibung))
                         _funde.Add(new Vorlagenfund(Platzhaltersyntax.Lies(b.Beschreibung), b.Ort, Fundquelle.Bild, null, null, b));
 
                 foreach (Vorlagenfund f in _funde)
@@ -634,6 +656,17 @@ namespace WindowsFormsApplication1
                     Vorlagenfeld naechster = _katalog.Naechster(p.Schluessel, VORSCHLAG_ABSTAND);
                     string vorschlag = naechster == null ? null
                         : "{{" + naechster.Schluessel + string.Concat(p.Angaben.Select(a => "|" + a.Normalform)) + "}}";
+
+                    // Werte je Variante und je Gebäude führt erst eine spätere Katalogfassung (BV-E4):
+                    // ein Schlüssel dieser Bereiche ist nicht „unbekannt“, sondern noch nicht füllbar.
+                    Vorlagenfeldkontext? bereich = BereichOhneEintrag(p.Schluessel);
+                    if (bereich.HasValue)
+                    {
+                        Kontextfehler(f, bereich.Value, vorschlag);
+                        PruefeAngaben(f, null);
+                        return;
+                    }
+
                     Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_UNBEKANNT), T(nameof(R.VF_PRUEF_UNBEKANNT), p.Normalform),
                           Fundort(f),
                           vorschlag != null ? T(nameof(R.VF_PRUEF_VORSCHLAG_TUN), vorschlag) : T(nameof(R.VF_PRUEF_UNBEKANNT_TUN)),
@@ -643,18 +676,35 @@ namespace WindowsFormsApplication1
                 }
 
                 PruefeOrt(f, feld);
-                if (feld.Kontext == Vorlagenfeldkontext.Stand)
-                    Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_KONTEXT_STAND), T(nameof(R.VF_PRUEF_KONTEXT_STAND), p.Normalform),
-                          Fundort(f), T(nameof(R.VF_PRUEF_KONTEXT_TUN)), p.Normalform);
-                else if (feld.Kontext == Vorlagenfeldkontext.Gebaeude)
-                    Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_KONTEXT_GEBAEUDE), T(nameof(R.VF_PRUEF_KONTEXT_GEBAEUDE), p.Normalform),
-                          Fundort(f), T(nameof(R.VF_PRUEF_KONTEXT_TUN)), p.Normalform);
+                if (feld.Kontext == Vorlagenfeldkontext.Stand || feld.Kontext == Vorlagenfeldkontext.Gebaeude)
+                    Kontextfehler(f, feld.Kontext, null);
                 PruefeAngaben(f, feld);
 
                 if (f.Quelle == Fundquelle.Text && !p.IstNormalform)
                     Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_NORMALFORM),
                           T(nameof(R.VF_PRUEF_NORMALFORM), p.Roh, p.Normalform), Fundort(f),
                           T(nameof(R.VF_PRUEF_NORMALFORM_TUN), p.Normalform), p.Normalform, p.Normalform);
+            }
+
+            /// <summary>
+            /// Ein Wert je Variante oder je Gebäude außerhalb eines Blocks — in BV-E1 gibt es beide noch
+            /// nicht (Konzept 4.7, Etappe BV-E4). Der Vorschlag nennt, wenn es ihn gibt, den nahen Wert
+            /// des Stammprojekts.
+            /// </summary>
+            private void Kontextfehler(Vorlagenfund f, Vorlagenfeldkontext kontext, string vorschlag)
+            {
+                string kennung = kontext == Vorlagenfeldkontext.Gebaeude
+                    ? nameof(R.VF_PRUEF_KONTEXT_GEBAEUDE) : nameof(R.VF_PRUEF_KONTEXT_STAND);
+                Melde(Befundstufe.Fehler, kennung, T(kennung, f.Platzhalter.Normalform), Fundort(f),
+                      T(nameof(R.VF_PRUEF_KONTEXT_TUN)), f.Platzhalter.Normalform, vorschlag);
+            }
+
+            /// <summary>Der Kontext eines Schlüssels ohne Katalogeintrag aus seinem Bereich: <c>stand.</c> oder <c>gebaeude.</c>; sonst <c>null</c>.</summary>
+            private static Vorlagenfeldkontext? BereichOhneEintrag(string schluessel)
+            {
+                if (schluessel.StartsWith("stand.", StringComparison.Ordinal)) return Vorlagenfeldkontext.Stand;
+                if (schluessel.StartsWith("gebaeude.", StringComparison.Ordinal)) return Vorlagenfeldkontext.Gebaeude;
+                return null;
             }
 
             /// <summary>Die Stelle eines Teils, die für Tabellen, Listen und Kapitel verboten ist; <c>null</c> im Rumpf.</summary>
@@ -686,7 +736,7 @@ namespace WindowsFormsApplication1
             {
                 if (f.Absatz == null) return true;
                 Platzhalter p = f.Platzhalter;
-                string text = f.Absatz.Text;
+                string text = f.Absatz.Erkennungstext;
                 if (p.Position < 0 || p.Position + p.Laenge > text.Length) return false;
                 string rest = text.Remove(p.Position, p.Laenge).Replace("­", "");
                 return string.IsNullOrWhiteSpace(rest);
@@ -713,6 +763,14 @@ namespace WindowsFormsApplication1
                         OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_BILD), T(nameof(R.VF_PRUEF_ORT_TUN_BILD)));
                     else if (InNote(o))
                         OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_NOTE), T(nameof(R.VF_PRUEF_ORT_TUN_HAUPTTEXT)));
+                    return;
+                }
+
+                // Inhaltssteuerelemente um Tabellenzeilen oder -zellen füllt die Engine nicht.
+                if (f.Quelle == Fundquelle.Steuerelement &&
+                    (f.Steuerelement.Ebene == Steuerelementebene.Zeile || f.Steuerelement.Ebene == Steuerelementebene.Zelle))
+                {
+                    OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_SDT_TABELLE), T(nameof(R.VF_PRUEF_ORT_TUN_SDT_TABELLE)));
                     return;
                 }
 

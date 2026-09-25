@@ -189,11 +189,12 @@ namespace WindowsFormsApplication1
     /// <summary>Ein Absatz der Vorlage mit seinem zusammengesetzten Text und seiner Elternkette.</summary>
     public sealed class Vorlagenabsatz
     {
-        internal Vorlagenabsatz(Vorlagenort ort, string text, bool inBlockSteuerelement, string steuerelementTag,
-                                OpenXmlElement element, OpenXmlPart teil)
+        internal Vorlagenabsatz(Vorlagenort ort, string text, string erkennungstext, bool inBlockSteuerelement,
+                                string steuerelementTag, OpenXmlElement element, OpenXmlPart teil)
         {
             Ort = ort;
             Text = text ?? "";
+            Erkennungstext = erkennungstext ?? "";
             ErsteWoerter = Vorlagenteile.Anfang(Text);
             InBlockSteuerelement = inBlockSteuerelement;
             SteuerelementTag = steuerelementTag;
@@ -211,6 +212,15 @@ namespace WindowsFormsApplication1
         /// ohne Ersatzzweige im Satz.
         /// </summary>
         public string Text { get; }
+
+        /// <summary>
+        /// Der Text, in dem Platzhalter ERKANNT werden — nach der Regel der Engine: Zerlegte Runs
+        /// verbinden sich nur innerhalb eines Behälters (Absatz, Hyperlink, Inhaltssteuerelement im
+        /// Satz, <c>w:ins</c>, <c>w:customXml</c> …) und nicht über Tabulator, Umbruch, Feldzeichen oder
+        /// Bild hinweg. An jeder solchen Stelle steht hier <see cref="Vorlagenteile.TRENNER"/>; ein
+        /// Platzhalter, der darüber reicht, wird nicht erkannt und bleibt als offene Klammer stehen.
+        /// </summary>
+        public string Erkennungstext { get; }
 
         /// <summary>Die ersten Wörter dieses Absatzes (auch in einer Tabellenzelle der Absatz selbst).</summary>
         public string ErsteWoerter { get; }
@@ -401,6 +411,12 @@ namespace WindowsFormsApplication1
         /// <summary>Namensraum der Beziehungen (<c>r:id</c>).</summary>
         internal const string NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
+        /// <summary>
+        /// Das Zeichen einer Trennstelle im <see cref="Vorlagenabsatz.Erkennungstext"/>: ein Zeilenumbruch,
+        /// über den die Platzhaltersyntax nie hinwegliest.
+        /// </summary>
+        public const char TRENNER = '\n';
+
         /// <summary>Höchstzahl der Wörter im Fundort.</summary>
         public const int ANFANG_WOERTER = 4;
 
@@ -454,7 +470,21 @@ namespace WindowsFormsApplication1
         {
             if (absatz == null) return "";
             var sb = new StringBuilder();
-            Sammle(absatz, sb);
+            Sammle(absatz, sb, false);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Der Text eines Absatzes zum Erkennen der Platzhalter (siehe
+        /// <see cref="Vorlagenabsatz.Erkennungstext"/>): wie <see cref="Absatztext"/>, aber mit
+        /// <see cref="TRENNER"/> an Tabulator, Umbruch, Feldzeichen, Symbol, Noten- und Bildverweis und an
+        /// jeder Grenze eines Behälters im Satz.
+        /// </summary>
+        public static string Erkennungstext(OpenXmlElement absatz)
+        {
+            if (absatz == null) return "";
+            var sb = new StringBuilder();
+            Sammle(absatz, sb, true);
             return sb.ToString();
         }
 
@@ -486,7 +516,7 @@ namespace WindowsFormsApplication1
             return gekuerzt ? sb.ToString().TrimEnd() + " …" : sb.ToString();
         }
 
-        private static void Sammle(OpenXmlElement e, StringBuilder sb)
+        private static void Sammle(OpenXmlElement e, StringBuilder sb, bool erkennung)
         {
             foreach (OpenXmlElement k in e.ChildElements)
             {
@@ -497,13 +527,13 @@ namespace WindowsFormsApplication1
                     {
                         OpenXmlElement erster = k.ChildElements.FirstOrDefault(z => z.NamespaceUri == NS_MC &&
                                                                         (z.LocalName == "Choice" || z.LocalName == "Fallback"));
-                        if (erster != null) Sammle(erster, sb);
+                        if (erster != null) Behaelter(erster, sb, erkennung);
                     }
                     continue;
                 }
                 if (k.NamespaceUri != NS_W)
                 {
-                    Sammle(k, sb);
+                    Sammle(k, sb, erkennung);
                     continue;
                 }
                 switch (k.LocalName)
@@ -513,19 +543,39 @@ namespace WindowsFormsApplication1
                         break;
                     case "tab":
                     case "ptab":
-                        sb.Append('\t');
+                        sb.Append(erkennung ? TRENNER : '\t');
                         break;
                     case "br":
                     case "cr":
                         sb.Append('\n');
                         break;
                     case "noBreakHyphen":
-                        sb.Append('‑');
+                        sb.Append('\u2011');
                         break;
                     case "softHyphen":
-                        sb.Append('­');
+                        sb.Append('\u00AD');
                         break;
-                    // Eigenschaften, Feldanweisungen, gelöschter Text, eingebettete Absätze und Zeichnungen
+                    // Stellen, über die die Engine keinen Platzhalter verbindet
+                    case "fldChar":
+                    case "sym":
+                    case "footnoteReference":
+                    case "endnoteReference":
+                    case "drawing":
+                    case "pict":
+                    case "object":
+                        if (erkennung) sb.Append(TRENNER);
+                        break;
+                    // Behälter im Satz: verbunden wird nur innerhalb
+                    case "hyperlink":
+                    case "sdt":
+                    case "ins":
+                    case "moveTo":
+                    case "customXml":
+                    case "smartTag":
+                    case "fldSimple":
+                        Behaelter(k, sb, erkennung);
+                        break;
+                    // Eigenschaften, Feldanweisungen, gelöschter Text, eingebettete Absätze
                     case "pPr":
                     case "rPr":
                     case "sdtPr":
@@ -538,15 +588,19 @@ namespace WindowsFormsApplication1
                     case "p":
                     case "tbl":
                     case "txbxContent":
-                    case "drawing":
-                    case "pict":
-                    case "object":
                         break;
                     default:
-                        Sammle(k, sb);
+                        Sammle(k, sb, erkennung);
                         break;
                 }
             }
+        }
+
+        private static void Behaelter(OpenXmlElement k, StringBuilder sb, bool erkennung)
+        {
+            if (erkennung) sb.Append(TRENNER);
+            Sammle(k, sb, erkennung);
+            if (erkennung) sb.Append(TRENNER);
         }
 
         // =====================================================================
@@ -816,7 +870,7 @@ namespace WindowsFormsApplication1
                 else absatz = ++lage.Teil.Absaetze;
 
                 Vorlagenort ort = NeuerOrt(lage, absatz, tab != null ? tab.ZellenAnfang : Anfang(text));
-                var a = new Vorlagenabsatz(ort, text, lage.InBlockSdt, lage.BlockTag, p, lage.Teil.Teil);
+                var a = new Vorlagenabsatz(ort, text, Erkennungstext(p), lage.InBlockSdt, lage.BlockTag, p, lage.Teil.Teil);
                 _absaetze.Add(a);
 
                 Lage im = lage.Kopie();
@@ -955,8 +1009,10 @@ namespace WindowsFormsApplication1
                 int zeile = tab.Zeile, zelle = 0;
                 if (ebene == Steuerelementebene.Zeile)
                 {
+                    // Um ganze Zeilen: der Fundort nennt die erste Zelle der ersten Zeile.
                     OpenXmlElement tr = sdt.Descendants().FirstOrDefault(e => IstW(e, "tr"));
                     if (tr != null && tab.Zeilen.TryGetValue(tr, out int r)) zeile = r;
+                    zelle = 1;
                 }
                 else
                 {

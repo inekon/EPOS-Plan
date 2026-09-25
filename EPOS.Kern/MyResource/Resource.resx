@@ -33562,10 +33562,10 @@ Möchten Sie das zulassen?</value>
     <value>Einen Platzhalter aus dem Platzhalterkatalog einsetzen oder die doppelten Klammern entfernen.</value>
   </data>
   <data name="VF_PRUEF_KLAMMER_OFFEN" xml:space="preserve">
-    <value>Platzhalter nicht geschlossen: „{0}“</value>
+    <value>Platzhalter nicht erkannt: „{0}“ – {1} ohne passendes {2} im selben Absatz</value>
   </data>
   <data name="VF_PRUEF_KLAMMER_OFFEN_TUN" xml:space="preserve">
-    <value>Die schließenden Klammern }} ergänzen; ein Platzhalter steht in einer Zeile und enthält keine weitere Klammer.</value>
+    <value>Den Platzhalter in einem Zug neu tippen, ohne Tabulator oder Umbruch.</value>
   </data>
   <data name="VF_PRUEF_ORT" xml:space="preserve">
     <value>{0} passt nicht an diese Stelle: Art „{1}“ ist {2} nicht möglich</value>
@@ -33581,6 +33581,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="VF_PRUEF_ORT_TUN_SDT" xml:space="preserve">
     <value>Das Inhaltssteuerelement um einen ganzen Absatz legen oder den Platzhalter als Text schreiben.</value>
+  </data>
+  <data name="VF_PRUEF_STELLE_SDT_TABELLE" xml:space="preserve">
+    <value>in einem Inhaltssteuerelement um Tabellenzeilen oder -zellen</value>
+  </data>
+  <data name="VF_PRUEF_ORT_TUN_SDT_TABELLE" xml:space="preserve">
+    <value>Das Inhaltssteuerelement in der Zelle um einen Absatz legen oder den Platzhalter als Text in die Zelle schreiben.</value>
   </data>
   <data name="VF_PRUEF_ORT_TUN_WENN" xml:space="preserve">
     <value>Den Schalter nur als Bedingung verwenden: {0} … {1}.</value>
@@ -33862,7 +33868,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} fehlt</value>
   </data>
   <data name="VF_PRUEF_STIL_OHNE_EBENE" xml:space="preserve">
-    <value>{0} ohne Gliederungsebene {1}</value>
+    <value>{0} ohne Gliederungsebene</value>
   </data>
   <data name="VF_PRUEF_TEIL_RUMPF" xml:space="preserve">
     <value>Haupttext</value>
