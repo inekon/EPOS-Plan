@@ -1,0 +1,477 @@
+﻿@* BAUTEILDIALOG - EIN Bauteil einer Zone (Gebaeudesimulation G3, Welle D2; Mehrzonenkonzept
+   5.1 und 5.3, Softwarearchitektur 3.2: Ueberlagerung der Ebene 4 im Zonendialog).
+
+   FORMULARRASTER: Art, Bezeichnung, Flaeche, Azimut, Neigung, Randbedingung (Aussenluft,
+   Erdreich, unbeheizter Raum - KEINE Nachbarzone in G3), g/Rahmen/Verschattung nur bei Fenster
+   und Vorhangfassade, psi*L, U-Wert (leer = aus dem Aufbau). Ein leeres Feld zeigt seine Vorgabe
+   als Platzhalter und bleibt NULL (Vorbild PvModellFelder).
+
+   AUFBAU: die Wahl aus den Aufbauten des Projekts ODER aus dem Stammkatalog. Die Wahl aus dem
+   Katalog schreibt NICHTS: Sie merkt sich die Katalog-Id am Bauteil, und erst der OK-Weg des
+   Gebaeudedialogs uebernimmt den Aufbau in das Projekt (BauteilaufbauCtrl.CopyFromStamm) -
+   Hausregel "Geschrieben wird im OK-Weg". Die Schichten stehen NUR ZUM ANSEHEN da (Werte als
+   Text, Summenfuss aus dem Kern ueber BauteilschichtenFelder); weicht der eingetragene U-Wert
+   um mehr als 10 % vom Aufbau ab, sagt es eine leise Zeile.
+
+   PRUEFREGELN (Mehrzonenkonzept 5.3) genau einmal, im Rueckruf der Leiste, aus dem Kern
+   (GebaeudeZonenCtrl.BauteilPruefen) - eine Wand an Aussenluft ohne Azimut wird benannt
+   abgelehnt, nicht auf Nord vorbelegt. OK gibt den Arbeitsstand zurueck (der Wirt uebernimmt
+   ihn in seinen Arbeitsstand), Abbrechen, Esc und das Kreuz geben null.
+
+   TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-bauteildialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <Formularraster>
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Texte.LabelArt" Eintraege="@Arteintraege" Auswahl="@Artindex"
+                         AuswahlChanged="ArtWaehlen" />
+            <Textfeld Bezeichnung="@Texte.LabelBezeichnung" Wert="@_stand.Bezeichner" Hoechstlaenge="80"
+                      WertChanged="w => _stand.Bezeichner = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelFlaeche" Einheit="m²" Min="0"
+                        Feldname="@Texte.LabelFlaeche" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.Flaeche" WertChanged="w => _stand.Flaeche = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelAzimut" Einheit="°" Min="0" Max="360"
+                        Feldname="@Texte.LabelAzimut" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.Azimut" WertChanged="w => _stand.Azimut = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelNeigung" Einheit="°" Min="0" Max="180"
+                        Platzhalter="@NeigungPlatzhalter"
+                        Feldname="@Texte.LabelNeigung" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.Neigung" WertChanged="w => _stand.Neigung = w" />
+            <Auswahlfeld Bezeichnung="@Texte.LabelRand" Eintraege="@Randeintraege" Auswahl="@Randindex"
+                         AuswahlChanged="RandWaehlen" />
+            @if (Transparent)
+            {
+                <Zahlenfeld Bezeichnung="@Texte.LabelGWert" Min="0" Max="1"
+                            Platzhalter="@Texte.PlatzhalterGebaeude"
+                            Feldname="@Texte.LabelGWert" FehlerZustand="FehlerMelden"
+                            Wert="@_stand.GWert" WertChanged="w => _stand.GWert = w" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelRahmen" Min="0" Max="1"
+                            Platzhalter="@Texte.PlatzhalterGebaeude"
+                            Feldname="@Texte.LabelRahmen" FehlerZustand="FehlerMelden"
+                            Wert="@_stand.Rahmenanteil" WertChanged="w => _stand.Rahmenanteil = w" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelVerschattung" Min="0" Max="1"
+                            Platzhalter="@Texte.PlatzhalterGebaeude"
+                            Feldname="@Texte.LabelVerschattung" FehlerZustand="FehlerMelden"
+                            Wert="@_stand.Verschattung" WertChanged="w => _stand.Verschattung = w" />
+            }
+            <Zahlenfeld Bezeichnung="@Texte.LabelPsiL" Einheit="W/K" Min="0"
+                        Feldname="@Texte.LabelPsiL" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.PsiL" WertChanged="w => _stand.PsiL = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelUWert" Einheit="W/(m²K)" Min="0"
+                        Platzhalter="@UPlatzhalter"
+                        Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.UWert" WertChanged="w => _stand.UWert = w" />
+        </KindInhalt>
+    </Formularraster>
+    <Herleitungszeile Text="@Texte.HinweisAzimut" />
+    @if (Transparent)
+    {
+        <Herleitungszeile Text="@Texte.ZeileFenster" />
+    }
+    @if (UZeile.Length > 0)
+    {
+        <Herleitungszeile Text="@UZeile" />
+    }
+
+    <Gruppenkopf Titel="@Texte.GruppeAufbau">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.LabelAufbauProjekt" Eintraege="@Projekteintraege"
+                                 Auswahl="@Projektauswahl" AuswahlChanged="ProjektaufbauWaehlen" />
+                    @if (Katalogaufbauten.Count > 0)
+                    {
+                        <Suchauswahl Bezeichnung="@Texte.LabelAufbauKatalog" Eintraege="@Katalogeintraege"
+                                     Platzhalter="@Texte.KatalogWahl"
+                                     Auswahl="@_katalogwahl" AuswahlChanged="w => _katalogwahl = w" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+            @if (Katalogaufbauten.Count > 0)
+            {
+                <div class="epos-leiste">
+                    @if (_katalogwahl is null)
+                    {
+                        <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.KatalogWahl"
+                                @onclick="KatalogaufbauUebernehmen">@Texte.KnopfAufbauUebernehmen</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf" @onclick="KatalogaufbauUebernehmen">@Texte.KnopfAufbauUebernehmen</button>
+                    }
+                </div>
+                <Herleitungszeile Text="@Texte.HinweisKatalog" />
+            }
+            @if (_ansicht is not null)
+            {
+                <Stammblattwerte Werte="@Schichtwerte" />
+                <BauteilschichtenFelder Stand="@_ansichtStand" Baustoffe="@_ansicht.Baustoffe"
+                                        Kennwerte="@_ansicht.Kennwerte" Texte="@Texte.Schichten" NurSummen="true" />
+            }
+            else if (!_stand.MitAufbau)
+            {
+                <Herleitungszeile Text="@Texte.ZeileKeineSchichten" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Das Bauteil beim Öffnen — es bleibt UNBERÜHRT; der Dialog arbeitet auf einer Kopie.</summary>
+    [Parameter] public BauteilDaten Bauteil { get; set; } = new();
+
+    /// <summary>Ein neues Bauteil (Titel „Neues Bauteil")?</summary>
+    [Parameter] public bool Neu { get; set; }
+
+    /// <summary>Die Aufbauten des Projekts zur Wahl.</summary>
+    [Parameter] public IReadOnlyList<AufbauWahl> Projektaufbauten { get; set; } = Array.Empty<AufbauWahl>();
+
+    /// <summary>Die Aufbauten des Stammkatalogs zur Wahl; leer = keine Katalogwahl.</summary>
+    [Parameter] public IReadOnlyList<AufbauWahl> Katalogaufbauten { get; set; } = Array.Empty<AufbauWahl>();
+
+    /// <summary>Die Schichten eines Aufbaus zum Ansehen; <c>null</c> = keine Ansicht.</summary>
+    [Parameter] public Func<AufbauWahl, AufbauAnsichtDaten?>? Aufbau { get; set; }
+
+    /// <summary>Das Ergebnis: der Arbeitsstand nach OK; <c>null</c> bei Abbrechen, Esc und dem Kreuz.</summary>
+    [Parameter] public EventCallback<BauteilDaten?> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public BauteilDialogTexte Texte { get; set; } = new();
+
+    /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Bauteil.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    /// <summary>Id der Wahl „ohne Aufbau" in der Projektliste.</summary>
+    private const int OHNE = 0;
+
+    /// <summary>Id des gewählten, noch nicht übernommenen Katalogaufbaus in der Projektliste.</summary>
+    private const int KATALOG = -1;
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private BauteilDaten _stand = new();
+    private string _meldung = "";
+    private int? _katalogwahl;
+    private AufbauAnsichtDaten? _ansicht;
+    private BauteilaufbauArbeitsstand? _ansichtStand;
+    private readonly HashSet<string> _fehlerfelder = new();
+
+    /// <summary>Der Arbeitsstand. Prüfhilfe für die Tests.</summary>
+    public BauteilDaten Arbeitsstand => _stand;
+
+    /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    private string Titel => Neu ? Texte.TitelNeu : Texte.Titel;
+
+    private bool Transparent => _stand.Bauteilart is DbWerte.BAUTEILART_FENSTER or DbWerte.BAUTEILART_VORHANGFASSADE;
+
+    protected override void OnInitialized()
+    {
+        _stand = (Bauteil ?? new BauteilDaten()).Kopie();
+        AnsichtNachziehen();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BAUTEIL, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt den Arbeitsstand
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BauteilKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten auf die LEBENDEN Felder — Setzen nimmt denselben Weg wie die Tastatur.</summary>
+    private BauteilKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BauteilKiSicht
+        {
+            ArtLesen = () => Artindex,
+            ArtSetzen = ArtWaehlen,
+            ArtEintraege = () => KiMaskenanmeldung.Eintraege(Arteintraege, e => e.Id, e => e.Text),
+            BezeichnungLesen = () => _stand.Bezeichner,
+            BezeichnungSetzen = w => _stand.Bezeichner = w ?? "",
+            FlaecheLesen = () => _stand.Flaeche,
+            FlaecheSetzen = w => _stand.Flaeche = w,
+            AzimutLesen = () => _stand.Azimut,
+            AzimutSetzen = w => _stand.Azimut = w,
+            NeigungLesen = () => _stand.Neigung,
+            NeigungSetzen = w => _stand.Neigung = w,
+            RandLesen = () => Randindex,
+            RandSetzen = RandWaehlen,
+            RandEintraege = () => KiMaskenanmeldung.Eintraege(Randeintraege, e => e.Id, e => e.Text),
+            GWertLesen = () => _stand.GWert,
+            GWertSetzen = w => _stand.GWert = w,
+            RahmenLesen = () => _stand.Rahmenanteil,
+            RahmenSetzen = w => _stand.Rahmenanteil = w,
+            VerschattungLesen = () => _stand.Verschattung,
+            VerschattungSetzen = w => _stand.Verschattung = w,
+            PsiLLesen = () => _stand.PsiL,
+            PsiLSetzen = w => _stand.PsiL = w,
+            UWertLesen = () => _stand.UWert,
+            UWertSetzen = w => _stand.UWert = w,
+            AufbauLesen = () => Projektauswahl,
+            AufbauSetzen = ProjektaufbauWaehlen,
+            AufbauEintraege = () => KiMaskenanmeldung.Eintraege(Projekteintraege, e => e.Id, e => e.Text)
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> ist dieselbe Prüfung wie am
+    /// OK-Knopf. Einen Speicherweg hat die Maske nicht — sie gibt ihren Stand an den Zonendialog
+    /// zurück, und das OK des Gebäudedialogs schreibt.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Pruefen() ?? ""
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =================================================================================
+    // Auswahlen
+    // =================================================================================
+
+    private IReadOnlyList<(int Id, string Text)> Arteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < DbWerte.BAUTEILARTEN.Count; i++)
+                l.Add((i, BauteilaufbauCtrl.BauteilartText(DbWerte.BAUTEILARTEN[i])));
+            return l;
+        }
+    }
+
+    private int? Artindex
+    {
+        get
+        {
+            int i = DbWerte.BAUTEILARTEN.ToList().IndexOf(_stand.Bauteilart);
+            return i >= 0 ? i : null;
+        }
+    }
+
+    private void ArtWaehlen(int? i)
+    {
+        if (i is null || i.Value < 0 || i.Value >= DbWerte.BAUTEILARTEN.Count) return;
+        _stand.Bauteilart = DbWerte.BAUTEILARTEN[i.Value];
+    }
+
+    /// <summary>Die Randbedingungen: 0 = keine Angabe (Vorgabe nach Bauteilart), 1 Außenluft, 2 Erdreich, 3 unbeheizt.</summary>
+    private IReadOnlyList<(int Id, string Text)> Randeintraege => new[]
+    {
+        (0, GebaeudeZonenCtrl.LeerHeisstInnen(_stand.Bauteilart) ? Texte.RandVorgabeInnen : Texte.RandVorgabeAussen),
+        (1, Texte.RandAussenluft),
+        (2, Texte.RandErdreich),
+        (3, Texte.RandUnbeheizt)
+    };
+
+    private int? Randindex => _stand.Randbedingung switch
+    {
+        null => 0,
+        DbWerte.RANDBEDINGUNG_AUSSENLUFT => 1,
+        DbWerte.RANDBEDINGUNG_ERDREICH => 2,
+        DbWerte.RANDBEDINGUNG_UNBEHEIZT => 3,
+        _ => null
+    };
+
+    private void RandWaehlen(int? i)
+    {
+        _stand.Randbedingung = i switch
+        {
+            1 => DbWerte.RANDBEDINGUNG_AUSSENLUFT,
+            2 => DbWerte.RANDBEDINGUNG_ERDREICH,
+            3 => DbWerte.RANDBEDINGUNG_UNBEHEIZT,
+            _ => null
+        };
+    }
+
+    private string NeigungPlatzhalter
+        => string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterNeigung,
+                         GebaeudeZonenCtrl.NeigungVorgabe(_stand.Bauteilart).ToString("0", CultureInfo.CurrentCulture));
+
+    private string UPlatzhalter
+        => _stand.UAufbau is double u ? u.ToString("0.###", CultureInfo.CurrentCulture) : Texte.PlatzhalterU;
+
+    // --- Aufbau ----------------------------------------------------------------
+
+    private IReadOnlyList<(int Id, string Text)> Projekteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (OHNE, Texte.OhneAufbau) };
+            if (_stand.IdAufbauStamm.HasValue)
+                l.Add((KATALOG, string.Format(CultureInfo.CurrentCulture, Texte.AufbauAusKatalog, _stand.AufbauText)));
+            foreach (AufbauWahl a in Projektaufbauten) l.Add((a.Id, a.Text));
+            // Ein Aufbau, den die Liste nicht (mehr) führt, bleibt als Eintrag stehen.
+            if (_stand.IdAufbau is int id && Projektaufbauten.All(a => a.Id != id))
+                l.Add((id, _stand.AufbauText.Length > 0 ? _stand.AufbauText : "#" + id.ToString(CultureInfo.InvariantCulture)));
+            return l;
+        }
+    }
+
+    private int? Projektauswahl => _stand.IdAufbauStamm.HasValue ? KATALOG : _stand.IdAufbau ?? OHNE;
+
+    private IReadOnlyList<(int Id, string Text)> Katalogeintraege
+        => Katalogaufbauten.Select(a => (a.Id, a.Text)).ToList();
+
+    private void ProjektaufbauWaehlen(int? id)
+    {
+        if (id is null || id == KATALOG) return;
+        _stand.IdAufbauStamm = null;
+        if (id == OHNE)
+        {
+            _stand.IdAufbau = null;
+            _stand.AufbauText = "";
+            _stand.UAufbau = null;
+        }
+        else
+        {
+            AufbauWahl? a = Projektaufbauten.FirstOrDefault(x => x.Id == id);
+            _stand.IdAufbau = id;
+            _stand.AufbauText = a?.Text ?? _stand.AufbauText;
+            _stand.UAufbau = a?.UWert;
+        }
+        AnsichtNachziehen();
+    }
+
+    /// <summary>
+    /// „Übernehmen" aus dem Katalog: merkt die Katalog-Id am Bauteil, geschrieben wird erst im OK-Weg
+    /// des Gebäudedialogs. Ohne Wahl meldet der weich gesperrte Knopf seinen Grund.
+    /// </summary>
+    private void KatalogaufbauUebernehmen()
+    {
+        AufbauWahl? a = _katalogwahl is int id ? Katalogaufbauten.FirstOrDefault(x => x.Id == id) : null;
+        if (a is null) { _meldung = Texte.KatalogWahl; return; }
+        _meldung = "";
+        _stand.IdAufbau = null;
+        _stand.IdAufbauStamm = a.Id;
+        _stand.AufbauText = a.Text;
+        _stand.UAufbau = a.UWert;
+        AnsichtNachziehen();
+    }
+
+    /// <summary>Die Schichten des gewählten Aufbaus — nur zum Ansehen.</summary>
+    private void AnsichtNachziehen()
+    {
+        _ansicht = null;
+        _ansichtStand = null;
+        if (Aufbau is null) return;
+        AufbauWahl? wahl = _stand.IdAufbauStamm is int s ? Katalogaufbauten.FirstOrDefault(x => x.Id == s)
+                         : _stand.IdAufbau is int p ? Projektaufbauten.FirstOrDefault(x => x.Id == p)
+                         : null;
+        if (wahl is null) return;
+        _ansicht = Aufbau(wahl);
+        if (_ansicht is not null) _ansichtStand = new BauteilaufbauArbeitsstand(_ansicht.Aufbau);
+    }
+
+    private IReadOnlyList<Stammblattwert> Schichtwerte
+        => _ansicht is null || _ansichtStand is null
+            ? Stammblattwert.Keine
+            : BauteilschichtenFelder.Werte(_ansichtStand, _ansicht.Baustoffe, _ansicht.Kennwerte, Texte.Schichten);
+
+    /// <summary>
+    /// Die leise Zeile zum U-Wert: aus dem Aufbau, oder — weicht der eingetragene um mehr als 10 %
+    /// vom Aufbau ab — der Hinweis darauf (Mehrzonenkonzept 3.4; gerechnet wird mit dem eingetragenen).
+    /// </summary>
+    private string UZeile
+    {
+        get
+        {
+            var c = CultureInfo.CurrentCulture;
+            if (_stand.UAufbau is not double ua || !(ua > 0)) return "";
+            if (_stand.UWert is not double u) return string.Format(c, Texte.ZeileUAufbau, ua.ToString("0.###", c));
+            double prozent = Math.Abs(u - ua) / ua * 100.0;
+            return prozent > 10.0
+                ? string.Format(c, Texte.ZeileUAbweichung, u.ToString("0.###", c), prozent.ToString("0", c), ua.ToString("0.###", c))
+                : "";
+        }
+    }
+
+    // =================================================================================
+    // Pruefen und Schliessen
+    // =================================================================================
+
+    private void FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        if (e.Fehlerhaft) _fehlerfelder.Add(e.Feld);
+        else _fehlerfelder.Remove(e.Feld);
+    }
+
+    /// <summary>
+    /// Die Prüfregeln — genau einmal, für OK und Assistent: erst eine Fehleingabe, dann die Regeln
+    /// des Kerns (Mehrzonenkonzept 5.3). <c>null</c> = gültig.
+    /// </summary>
+    private string? Pruefen()
+    {
+        if (_fehlerfelder.Count > 0)
+            return string.Format(CultureInfo.CurrentCulture, Texte.MeldungUngueltig, _fehlerfelder.First());
+        return GebaeudeZonenCtrl.BauteilPruefen(_stand.Angabe());
+    }
+
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Abbrechen();
+        string? fehler = Pruefen();
+        if (fehler is not null)
+        {
+            _meldung = fehler;
+            return Task.CompletedTask;
+        }
+        _meldung = "";
+        _stand.Bezeichner = (_stand.Bezeichner ?? "").Trim();
+        if (!Transparent)
+        {
+            // Fensterwerte gelten nur an Fenster und Vorhangfassade - an einer anderen Art reisen sie nicht mit.
+            _stand.GWert = null;
+            _stand.Rahmenanteil = null;
+            _stand.Verschattung = null;
+        }
+        return Geschlossen.InvokeAsync(_stand.Kopie());
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+}

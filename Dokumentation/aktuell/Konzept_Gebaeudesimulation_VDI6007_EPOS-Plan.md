@@ -68,6 +68,11 @@ vermindert, ψ kommt als Vorgabe je Baualtersklasse, die Anschlusslängen bleibe
 IFC gleich; für G4a gibt es genau einen iOS-Lauf, nur nach ausdrücklicher Rückfrage bei der Abnahme.
 Zugleich ist die Stufe G4 beauftragt (zuerst G4c, dann G4a); vor G4 ist kein Anwenderentscheid mehr
 offen, das Register zählt 8 offene Punkte.
+Nachgezogen am 25.09.2026 mit **E39** (N1.44), **E40** (N1.45) und den **Festlegungen der Umsetzung
+G3** (N1.46): Der Baustoffkatalog führt neben 65 herstellerneutralen Stoffen 67 Herstellerprodukte mit
+Quelle je Zeile; „Gebäude als eine Zone übernehmen" rechnet Bauteilflächen und ψ·L mit dem Faktor der
+bisherigen Nachmultiplikation hoch, danach gilt die echte Hülle. Die **Stufe G3 ist abgeschlossen**;
+Kapitel 4.3, 4.7, 6.3, 8.4, 11 und 12 folgen, das Register zählt weiter 8 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -698,14 +703,19 @@ Wandmitte) ändern die Jahresenergie um höchstens 0,1 % — die RC-Strukturpara
 Streitpunkt, die Randbedingungen sind es; für Leistungs- und Kühlgrenze löst G3 sie durch
 den Bauteilweg ab.
 
-**Bauteilweg (G3, mit Schichtaufbau):** Je Bauteil Schichten (d, λ, ρ, c) von innen nach
-außen; Reduktion nach VDI 6007-1 (Kettenmatrix im Frequenzbereich, Bezugsperiode und
-Identifikation nach Norm), Aggregation mehrerer Bauteile über Parallelschaltung (ΣC, Σ1/R);
-Innenbauteile symmetrisch bis zur Mittelebene. **Nachweis:** die Reduktion der
-Normtestraum-Konstruktionen (Bauweise S und L) muss die in der Norm genannten R_1, R_Rest,
-C_1 treffen — das Material tat es nicht (1.2). Liegt für ein Gebäude ein Bauteilkatalog vor,
-gilt der Bauteilweg, sonst der Klassenweg; der U-Wert je Bauteil folgt dann aus den
-Schichten und überschreibt `k_Wert_*` in der Anzeige mit Herkunftskennzeichen.
+**Bauteilweg (G3, mit Schichtaufbau; umgesetzt 25.09.2026, N1.46):** Je Bauteil Schichten
+(d, λ, ρ, c) von innen nach außen; Reduktion nach VDI 6007-1 (Kettenmatrix im Frequenzbereich,
+Bezugsperiode je Bauteil nach (10a)–(10d), Identifikation nach (12)–(17)), Aggregation mehrerer
+Bauteile einer Gruppe über die **komplexen Widerstände** mit der Bezugsperiode des Raums
+T_RA = 5 d (Gl. (19)–(24)) — nicht über ΣC und Σ1/R getrennt; Innenbauteile symmetrisch über den
+vollständigen Aufbau. **Nachweis:** Die Richtlinie nennt keine Soll-RC-Werte; die Reduktion aus den
+Bauteiltabellen der zwölf Testbeispiele trifft die Parameter der Testräume (Validierungsmodelle der
+AixLib) relativ ≤ 10⁻³, und die Normfälle mit diesen Parametern bleiben 11 von 12 im Band
+([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 10.3). **Wann er gilt:** Ein
+Gebäude mit genau einer Zone rechnet über seine Bauteile (Datenlage, A14), ohne Zone den
+Klassenweg; eine Gruppe ohne Schichten rechnet den Klassenweg aus den Bauteilsummen (Grenzfall,
+bitgleich bis auf Rundung); zwei Zonen werden bis G6 benannt abgelehnt. Mit Zone sind die
+Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Mehrzonenkonzept 4.3).
 
 ### 4.4 Randbedingungen
 
@@ -836,6 +846,14 @@ bleibt die Verbrauchs-Rückrechnung eine **Verhältnisrechnung** mit einem einzi
 ist (Nullstunden, Kappung, Leistungsgrenze). Das ist deterministisch und mit dem Bestand
 vergleichbar; physikalisch sauberer ist die echte Hülle — die liefern der Bauteilkatalog (G3)
 und der IFC-Import (G4), dann entfällt die Nachmultiplikation für diese Gebäude.
+
+**Umgesetzt mit G3 (25.09.2026, E40, N1.45):** Ein Gebäude mit Zone rechnet mit der echten Hülle
+und dem Faktor 1; eine Verbrauchs- oder Flächenangabe steht nur als Hinweis im Protokoll, die
+Skalierungsangabe ist weich gesperrt. „Gebäude als eine Zone übernehmen" rechnet Bauteilflächen und
+ψ·L mit dem Faktor der bisherigen Nachmultiplikation hoch, die Zone trägt die hochgerechnete
+Nutzfläche, und die flächenbezogenen Größen folgen ihr über den Flächenschlüssel — das Ergebnis bleibt
+beim Übernehmen gleich; Leistungsgrenzen werden nicht hochgerechnet. Der Import (G4) füllt die
+Summenfelder des Klassenwegs; Bauteile aus IFC bringt erst G4b.
 
 ### 4.8 Determinismus, Rechenzeit, Prüfungen
 
@@ -1234,24 +1252,24 @@ Werte gar nicht.
 
 ### 6.3 Stufe G3 — Bauteilkatalog
 
-| Tabelle | Spalten (Auszug) |
-|---|---|
-| `Tab_Baustoff_STAMM` | `ID`, `Bezeichner`, `Lambda` W/(mK), `Rho` kg/m³, `cp` J/(kgK), `Quelle`, `ReadOnly` |
-| `Tab_Bauteil` | `ID`, `ID_Gebaeude`, `Bezeichnung`, `Bauteilart` (Außenwand, Dach, Bodenplatte, Fenster, Innenwand, Decke, Sonstiges), `Azimut` °, `Neigung` °, `Flaeche` m², `U_Wert` (NULL = aus Schichten), `g_Wert`, `Rahmenanteil`, `Verschattungsfaktor`, `Randbedingung`, `IstAussen` 0/1, `Herkunft` (manuell, Katalog, IFC) |
-| `Tab_Bauteilschicht` | `ID`, `ID_Aufbau` (FK → `Tab_Bauteilaufbau`, Mehrzonenkonzept 4.2), `Reihenfolge` (innen → außen), `ID_Baustoff`, `Dicke` m |
+**Wie gebaut (25.09.2026).** Drei Schemaschritte legen **alle acht Tabellen** an, STRICT, Beziehungen
+über IDs (Softwarearchitektur W1):
 
-Beziehungen über IDs, STRICT, Migration als eigener Schritt; ein Baustoffkatalog mit
-Standardwerten (DIN 4108-4 / DIN EN ISO 10456) wird gesät. Der Bauteilkatalog ist zugleich das
-Ziel des IFC-Imports auf Bauteilebene (7.6) und ersetzt für diese Gebäude die
-Nachmultiplikation (4.7).
+| Schritt | Tabellen | Inhalt |
+|---|---|---|
+| **132** (S-A, `BaustoffSchema`) | `Tab_Baustoff_STAMM`, `Tab_Baustoff` | spaltengleich, mit `Hersteller` (NULL = herstellerneutral, E39); Saat von 65 herstellerneutralen Stoffen (DIN 4108-4 / DIN EN ISO 10456) und 67 Herstellerprodukten, `ReadOnly = 1`, Quelle je Zeile |
+| **133** (S-B, `BauteilaufbauSchema`) | `Tab_Bauteilaufbau(_STAMM)`, `Tab_Bauteilschicht(_STAMM)` | der wiederverwendbare Aufbau und seine Schichten (innen → außen, Stoffwerte als Kopie) |
+| **134** (S-C, `ZonenSchema`) | `Tab_Zone`, `Tab_Bauteil` | Zone am Gebäude samt den Spaltenblöcken aus KU-S1 und AK-S1; Bauteil an der Zone (neun Bauteilarten, vier Randbedingungen) |
 
-**Angleichung an das Mehrzonenkonzept.** Die Schicht hängt am wiederverwendbaren **Aufbau**
-(`Tab_Bauteilaufbau` / `_STAMM`), nicht unmittelbar am Bauteil, und die Namensspalte heißt
-hausüblich `Bezeichner`. `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` entstehen
-**einmal** — hier mit G3 und bereits in dieser Form; eine zweite Anlage derselben Tabellen in
-einer späteren Stufe wäre ein Umbauschritt und nicht ergebnisneutral. Die vollständigen
-Spaltenlisten samt Kopier- und Katalogregeln stehen im
-[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md), 3.5 und 4.2.
+Die Projektkopien `Tab_Baustoff` und `Tab_Bauteilaufbau` tragen den Fremdschlüssel auf `Tab_Projekt`
+(Hausregel seit Schemaschritt 96, N1.46). Die vollständigen Spaltenlisten stehen in der
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.2, Kopier- und
+Katalogregeln im [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 3.5 und 4.2. Die Schicht
+hängt am **Aufbau**, nicht unmittelbar am Bauteil, die Namensspalte heißt hausüblich `Bezeichner`; die
+Tabellen entstehen **einmal**, G6 übernimmt sie unverändert und ergänzt allein mit S-G
+`Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone`. Der Bauteilkatalog ist zugleich das Ziel des
+IFC-Imports auf Bauteilebene (G4b, 7.6) und ersetzt für Gebäude mit Zone die Nachmultiplikation
+(4.7).
 
 ### 6.4 Persistenzwerte
 
@@ -1487,8 +1505,9 @@ Werte im DTO, Bilder über Delegat). Das ist ohnehin für iOS fällig und wird m
 
 ### 8.4 Menü
 
-Kein neuer Menüpunkt für G0–G2. Der Baustoffkatalog (G3) bekommt einen Punkt unter
-Administration (Menü ist Daten: `Menuetabelle.cs`), der IFC-Import läuft aus dem
+Kein neuer Menüpunkt für G0–G2. Die zwei Kataloge der Stufe G3 — „Baustoffe" und
+„Bauteilaufbauten" — stehen gemeinsam unter Administration › Gebäude nach „Gebäudetypen" (Menü ist
+Daten: `Menuetabelle.cs`; umgesetzt 25.09.2026), der IFC-Import läuft aus dem
 Gebäudedialog, nicht aus „Datenimport" (er ist projektbezogen, kein Katalogimport).
 
 ### 8.5 Texte
@@ -1611,7 +1630,7 @@ dazu die Hüllenwegwache, sobald die Gebäudehülle wandert (8.3).
 | **GB — Bestandsbefunde** | Warnungen statt stiller NaN im Tagesmodell (Q18), `_prevRoomTemp` als Instanzzustand mit `ResetState` je Gebäude (Q23), Korrektur 10576 in der Testdatenbank (Q22), vierte Einfrierregel „gesäte Gebäudedaten" | Referenzergebnisse von 1008 ändern sich (1039 bleibt byte-gleich, 10.4) — eigener, begründeter Einfrierschritt; läuft **vor** der Verschiebung des Altwegs, damit das verschobene Modul der geprüfte Stand ist | klein, 1–2 PT |
 | **G1 — Trennung der Wege und Anbindung des VDI-Modells** | **zuerst:** Tagesbilanz-Weg Zeichen für Zeichen nach `EPOS.Kern/Allgemein/Simulation/Altweg/`, Fassade `SimulationWaermebedarf` mit modellfreiem Vorbereitungsschritt und **einer** Weiche am Eingang; **dann:** der Gebäudespalten-Schritt M3, Namensleser, `DbWerte`, `GebaeudeModellEingang` (Klassenweg 4.3, Randbedingungen 4.4, Hay-Davies je Orientierung), Plausibilitätsprüfungen, Vorlauf, Anbindung des Moduls `Gebaeude/`, Dialoge in VDI-Struktur mit Schalter „Rechenweg" und eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)" (8.1), Hülle nach `EPOS.UI.Daten`, Texte | Verschiebung **byte-gleich** gegen die Basis, als eigener Schritt vor der Anbindung; danach Referenzlauf der Bestandsprojekte unverändert; Referenzprojekte beider Wege, Basis neu eingefroren; Kriterien 10.4 | mittel, 10–16 PT |
 | **G2 — Ergebnisdarstellung** | Raumtemperatur, Kühlbedarf informativ, drei Spitzenwerte, Bild, Bericht, Vergleich Tagesbilanz/VDI 6007 im Bedarfsdialog (bleibt bis GA), Ausweis „Tagesbilanz (Bestandsweg)", Sommerlüftungsregel und Infiltration/Nutzerlüftung, Wiki-Seite; der Klimaspalten-Schritt M4 ist durch Schemaschritt 95 (19.09.2026) vorweggenommen und umgesetzt (2.3) | ChartProben grün; Sichtabnahme Windows | klein–mittel, 3–5 PT |
-| **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog, Bauteilweg mit Kettenmatrix-Reduktion und Normnachweis, geneigte Fenster, echte Hülle statt Nachmultiplikation | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | mittel–groß, 8–12 PT |
+| **G3 — Bauteilkatalog** | die acht Tabellen der Schritte 132–134 (6.3), Verwaltungen „Baustoffe" und „Bauteilaufbauten", Zonen- und Bauteildialog im Gebäudedialog, Bauteilweg mit Kettenmatrix-Reduktion und Normnachweis, geneigte Fenster, echte Hülle statt Nachmultiplikation (E40) — **abgeschlossen 25.09.2026** (N1.44–N1.46) | Reduktion trifft die Parameter der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | mittel–groß, 8–12 PT |
 | **G4 — IFC-Import Stufe 1** | `Xbim.Ifc4` im Kern, `IfcImportAblauf`, `IfcImportSatz`, Zuordnungsdialog, Vorgaben je Baualtersklasse, `Baujahr`, Importprobe KIT, iOS-Trimming-Nachweis | Importprobe bestanden; Windows-Nachweis; iOS-Lauf nach Rückfrage | mittel–groß, 10–20 PT (mit G3-Anbindung +5) |
 | **G5 — Geometrieableitung, gbXML** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug; gbXML-Leser | nur bei Bedarf aus der Praxis | groß, 30–60 PT; gbXML 10–15 PT |
 | **GA — Altweg ablösen** (letzte Stufe) | Modul `Altweg/`, Weiche, `IGebaeudeRechenweg`, Modultrennungswache, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", Spalte `Gebaeude_Modell` und die nur vom Altweg gelesenen Spalten (`DROP COLUMN` je Tabelle und Sichtneubau; dabei `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen, 6.1), `Tab_DBTagV`/`Tab_DBTagVDaten`, Vergleich alt/neu samt `modellErzwungen`, Ausweis und Kältebedarf-0-Hinweis, der AK-Sonderfall „feste Last", die Schreibstellen der Flags `Wochenende`/`Ferien`, Referenzprojekt auf VDI 6007 umstellen, Rückweg-Test einstellen, Basis neu einfrieren. Umfang: Q25 (E27: vollständige Ablösung nach der Löschliste), N1.25 Punkt 4, N1.31; die Löschliste führt das [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | **Ausbauprobe** grün: ein Bau mit umbenanntem Ordner `Altweg/` übersetzt nach Entfernen der Weiche, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; eigener, begründeter Einfrierschritt | **5–8 PT; beauftragbar, sobald die vier Bedingungen aus Q24 erfüllt sind (E27; Prüfung mit jeder Abnahme, Stand in der Statusdatei), in keiner Summe** |
@@ -1642,7 +1661,7 @@ Tabelle. Bei Abweichung gilt das Umsetzungskonzept.
 - **Datenbank:** zwölf Gebäudespalten je Tabelle (G1) und drei weitere mit G2 — nach U5 in
   **einem** Schritt (M3): **15 Spalten je Tabelle, 30 `SchemaSpalte`-Einträge** (6.1); die
   Klimaspalten (M4) sind bereits umgesetzt (Schemaschritt 95: drei in `Tab_Solar(_STAMM)`, zwei in
-  `Tab_Klimaregion(_STAMM)`; Schritt 97: `Szenario`, `Bezugsjahr`); dazu drei Tabellen (G3); eine
+  `Tab_Klimaregion(_STAMM)`; Schritt 97: `Szenario`, `Bezugsjahr`); dazu acht Tabellen (G3, Schritte 132–134); eine
   Spalte und Herkunftskennzeichen (G4). `Gebaeude_Modell` und die Spalten, die nur der Altweg liest,
   bleiben bis zur Stufe GA (E23, E26; Befund X, 6.1).
 - **Aufwand der Trennung (E20, 16.09.2026):** rund **3–5 PT** zusätzlich in G1 für
@@ -1905,8 +1924,8 @@ Geometriebibliothek OCCT unter LGPL nachzieht. Der Ausweg, falls CDDL nicht frei
 wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres Ökosystem).
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
-Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
-(`Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+Referenzbasis ist der eingefrorene Ergebnissatz der vierzehn Testprojekte
+(`Referenzlaeufe/2026-09-25_R16_Anlagenprio`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -3724,3 +3743,117 @@ und Abschnitte 1 (E38), 2 (G4) und 3; [Register](Offene_Entscheide_Gebaeudesimul
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kopf, Vorspann, 3.4
 bis 3.8, 4 und 5; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kopf, 3.4,
 3.6, 3.7 und 9; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.44 Entscheid E39 — Der Baustoffkatalog führt auch die Produkte der wichtigsten Hersteller
+
+**Entscheid E39 (Anwenderwunsch, 24.09.2026).** Schemaschritt S-A der Stufe G3 sät den
+Baustoffkatalog; geplant waren rund 60 herstellerneutrale Stoffe nach DIN 4108-4 und
+DIN EN ISO 10456 (6.3, [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 3.5). Der Anwender
+wünscht dazu die Produkte der wichtigsten Hersteller. Umgesetzt mit der zweiten Welle von G3
+(Schritt **132**):
+
+1. **Eine Saat in zwei Teilen.** **65 herstellerneutrale Stoffe** (DIN 4108-4:2020-11,
+   DIN EN ISO 10456; feste Ids 1 bis 65) und **67 Herstellerprodukte** (feste Ids 1001 bis 1067) mit
+   den Bemessungswerten aus den Herstellerunterlagen (Datenblatt, Leistungserklärung, Zulassung) —
+   beide `ReadOnly = 1`, Herkunft `VORGABE`, **Quelle je Zeile**. Der Beleg jeder Herstellerzeile
+   steht als Kommentar neben der Saatzeile im Quelltext, nicht in der Datenbank.
+2. **Spalte `Hersteller`** an `Tab_Baustoff_STAMM` und `Tab_Baustoff`, spaltengleich, höchstens
+   80 Zeichen, **NULL = herstellerneutral**; der natürliche Schlüssel der Saat ist Hersteller und
+   Bezeichner. Die Verwaltung „Baustoffe" filtert nach Gruppe, Hersteller und „nur herstellerneutral".
+3. **Keine Hersteller im Wiki.** Hersteller- und Produktnamen gehören in den Katalog, nie ins Wiki;
+   `WikiProduktdatenWacheTests` hält die Wiki-Quellen auch gegen die Herstellerzeilen des
+   Baustoffkatalogs (Normnamen wie „Stahlbeton" bleiben erlaubt).
+
+**Benannte Lücken.** Ein großer Dämmstoffhersteller fehlt: Seine Seite verlangt eine Zugangsprüfung,
+die die Recherche nicht umgeht. Einige Rohdichten stammen aus Umweltproduktdeklarationen statt aus dem
+Datenblatt; die Quelle der Zeile nennt das. Die Saat legt nur an, was fehlt — eine später ergänzte
+oder geänderte Zeile erreicht eine bestehende Installation nur über einen eigenen Schemaschritt.
+
+**Was offen bleibt.** Nichts; das Register zählt weiter **8 offene Punkte**.
+
+**Betroffene Stufen:** G3 (Schritt 132, Saat, Verwaltung „Baustoffe"); G6c (Namensabgleich gegen
+`Bezeichner`, Mehrzonenkonzept 3.5).
+
+**Nachgezogen:** Kopf dieses Papiers und 6.3; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitt 1 (E39); [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 3.5 und 4.2;
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kopf und 2.2; die
+Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.45 Entscheid E40 — „Gebäude als eine Zone übernehmen" rechnet die Hülle hoch
+
+**Entscheid E40 (Anwender, 25.09.2026, „Hochrechnen").** Nach E8 (N1.12, 4.7) rechnet ein Gebäude
+ohne Zone mit den Katalogdaten und wird mit dem Faktor der Skalierung — Nutzflächenzuordnung oder
+Verbrauchs-Rückrechnung — nachmultipliziert. Ein Gebäude mit Zone hat die echte Hülle und rechnet
+mit dem Faktor 1 (dritte Welle von G3). Offen war, was „Gebäude als eine Zone übernehmen" aus einem
+Gebäude macht, dessen Ergebnis bis dahin hochgerechnet wurde. Der Anwender entscheidet:
+
+1. **Hochrechnen.** Die Übernahme multipliziert die Bauteilflächen und ψ·L mit dem Faktor der
+   bisherigen Nachmultiplikation; die Zone trägt die hochgerechnete Nutzfläche (Faktor × Nutzfläche).
+2. **Flächenschlüssel der Zone.** Die flächenbezogenen Größen folgen der Nutzfläche der Zone:
+   Luftvolumen, Speichermasse der Bauweise, innere Gewinne und die Innenfläche f_IW·A_f. Der Anteil 1
+   rechnet bitgleich.
+3. **Das Ergebnis bleibt beim Übernehmen gleich.** Nachgewiesen über die Datenbank an 1007
+   (Faktor 4,59), 1008, 1018 und 1017 (ohne Kühlgrenze und Verbrauchsangabe): relativ **< 10⁻⁹**.
+   Danach gilt die echte Hülle ohne Nachmultiplikation; eine Verbrauchs- oder Flächenangabe steht nur
+   als Hinweis im Protokoll, die Skalierungsangabe ist mit Herleitungszeile weich gesperrt.
+4. **Leistungsgrenzen werden nicht hochgerechnet** (Heiz- und Kühlleistungsgrenze) — benannt in der
+   Rückfrage vor der Übernahme, die Faktor, Nutzfläche alt und neu, Angabe und Leistungsgrenzen nennt.
+
+**Verworfen:** die Übernahme im Katalogmaß (das Ergebnis spränge beim Übernehmen um den Faktor) und
+eine Sperre der Übernahme bei Hochrechnung (sie schlösse gerade die skalierten Gebäude vom Bauteilweg
+aus).
+
+**Was offen bleibt.** Nichts; E8 gilt für Gebäude ohne Zone unverändert, das Register zählt weiter
+**8 offene Punkte**.
+
+**Betroffene Stufen:** G3 (sechste Welle, D2); G6 (Flächenschlüssel je Zone bei mehreren Zonen).
+
+**Nachgezogen:** Kopf dieses Papiers und 4.7; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitte 1 (E40) und 2 (G3); [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+8.3; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.46 Festlegungen der Umsetzung G3 — benannt, nicht entschieden
+
+**Anlass.** Die Stufe G3 ist in sechs Wellen gebaut (A, B, W, D1, C, D2; 24./25.09.2026, vom Anwender
+am 24.09.2026 beauftragt; [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md)).
+Wo die Papiere schwiegen oder die Umsetzung von ihnen abweicht, hat sie festgelegt. Die Liste nennt
+diese Festlegungen, damit sie nicht als Anwenderentscheide gelesen werden; Widerspruch ist möglich
+und würde ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **W1 gilt:** alle acht Tabellen entstehen mit G3 (Schritte 132–134) — auch `Tab_Bauteilaufbau(_STAMM)`, die das Mehrzonenkonzept Rev. 3 noch G6a zuschrieb | 6.3; Mehrzonenkonzept 4.4, 9 |
+| 2 | Die Identifikation nach (12)–(17) folgt der quelloffenen Referenzumsetzung und ist numerisch belegt (Normnachweis) | 4.3; Rechenschritte B4 |
+| 3 | Die Bauteile einer Gruppe werden über die **komplexen Widerstände** mit T_RA = 5 d parallel geschaltet (19)–(24), nicht über ΣC und Σ1/R | 4.3; Rechenschritte B5 |
+| 4 | Bezugsperiode **je Bauteil** nach (10a)–(10d) | Rechenschritte B1 |
+| 5 | Grenzfall: Eine Gruppe ohne Schichten rechnet den Klassenweg aus den Bauteilsummen — Bauteilweg = Klassenweg an den 15 Testgebäuden bis 4,7·10⁻¹⁶ relativ, im Jahreslauf (fünf Gebäude, je acht Varianten) 1,3·10⁻¹⁴ | Rechenschritte B7 |
+| 6 | Ein **masseloses opakes Bauteil** geht wie ein Fenster ein (R₁ = R/6 nach (25)/(26)); ein **masseloses Innenbauteil** trägt nur Fläche | Rechenschritte 3 |
+| 7 | α_kon je Bauteil geht als Σ(α·A) in die Gruppe ein — Testbeispiel 10 liegt damit in einzelnen Stunden höchstens **0,088 K** außerhalb des Bands (benannte Abweichung wie Fall 11); die AixLib trifft es nur mit einem um **15,7 %** höheren konvektiven Übergang | Rechenschritte 10.3, 11 Zeile 20 |
+| 8 | Im Normnachweis benannt, nicht an den Formeln: ein **Druckfehler der Richtlinie in Testbeispiel 4** (Decke DE2; der Nachweis nimmt das Bauteil aus Testbeispiel 3) und die Abweichung **FB1 in Testbeispiel 1** (Eingangsdaten der AixLib, rund 3·10⁻⁴ relativ) | Rechenschritte 10.3, 11 Zeile 21 |
+| 9 | Die **Azimutpflicht** gilt nur an Außenluft: Eine Wand an Außenluft ohne Azimut wird benannt abgelehnt, an Erdreich, unbeheiztem Raum oder innerhalb der Zone ist er entbehrlich | Mehrzonenkonzept 4.2, 5.3 |
+| 10 | Eine **leere Randbedingung** heißt an Innenwand und Decke „innerhalb der Zone", sonst Außenluft — die Regel steht an einer Stelle (`GebaeudeZonenabbildung.RandAusZeile`) | Softwarearchitektur 2.2 |
+| 11 | Ein **unbeheizter Nachbarraum** rechnet mit der Kellertemperatur des Gebäudes — bis zum Entscheid M3 des Registers und G6b | Mehrzonenkonzept 2.5 |
+| 12 | Eine Zone mit `IstBeheizt = 0` rechnet in G3 **wie beheizt**; unbeheizte Zonen kommen mit G6 | Mehrzonenkonzept 2.5 |
+| 13 | G3 liest von der Zone **nur Nutzfläche (E40) und Bauteile**; Sollwerte, Lüftung, Gewinne, Kühl- und Übergabespalten der Zone bleiben bis G6 ungelesen, es gelten die Werte des Gebäudes; zwei Zonen werden benannt abgelehnt | 4.3; Mehrzonenkonzept 4.2 |
+| 14 | **Kaskadenmessung A1:** Kein gewöhnlicher Speicherweg löscht ein Gebäude und legt es neu an; Zonen fallen nur beim Entfernen oder Tauschen des Gebäudes und beim Löschen des Projekts — eine Rettung ist nicht nötig | Register A1 |
+| 15 | Die Projektkopien `Tab_Baustoff` und `Tab_Bauteilaufbau` tragen den **Fremdschlüssel auf `Tab_Projekt`** (`ON DELETE CASCADE ON UPDATE CASCADE`) nach der Hausregel seit Schemaschritt 96 — abweichend von Softwarearchitektur 2.2 („ohne Fremdschlüssel, wie der Bestand"), die den Stand davor beschrieb | Softwarearchitektur 2.2; Mehrzonenkonzept 4.2 |
+| 16 | Die Dämmstoffe der herstellerneutralen Saat heißen nach dem Nennwert „λD 0,0xy" statt nach der Wärmeleitstufe „WLS"; die Spalte `Lambda` trägt den Bemessungswert | Mehrzonenkonzept 3.5 |
+| 17 | **Menüplatz:** die zwei Kataloge gemeinsam unter Administration › Gebäude nach „Gebäudetypen" (beide Schalen), nicht unter einem eigenen Punkt „Bauteilkatalog" | 8.4; Softwarearchitektur 3.1 |
+
+**Was offen bleibt.** Die Umstellung der Katalogseite des Gebäudedialogs auf `Katalogliste`
+([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 3.2, Regel 5): Die
+Rasterprobe braucht Playwright und Chromium, die auf dem Arbeitsrechner fehlen; den Download gibt der
+Anwender frei. Das Register zählt weiter **8 offene Punkte**.
+
+**Betroffene Stufen:** G3 (abgeschlossen 25.09.2026); G4b (Bauteile aus IFC); G6a–G6d (übernehmen
+die Tabellen unverändert).
+
+**Nachgezogen:** Kopf dieses Papiers, 4.3, 4.7, 6.3, 8.4, 11 und 12;
+[Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 bis 3;
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 3.5, 4.2, 4.4 und 9;
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf, A1, A14 und F-M1;
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kopf, 2.2, 3.1, 3.2 und 5;
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kopf, 3, 8.3, 10.3 und 11;
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kopf und 4; das
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md); die
+Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).

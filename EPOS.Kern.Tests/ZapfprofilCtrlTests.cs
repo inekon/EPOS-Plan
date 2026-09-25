@@ -47,7 +47,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            foreach (int projekt in new[] { 1030, 1007, 1017, 1045, 1046 })
+            foreach (int projekt in new[] { 1030, 1007, 1017, 1045, 1046, 1047 })
             {
                 Assert.Equal(BrauchwasserWeg.Bestand, ZapfprofilCtrl.Weg(projekt));
                 ZapfprofilStand s = ZapfprofilCtrl.Lies(projekt);

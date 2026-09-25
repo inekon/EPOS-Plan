@@ -67,6 +67,32 @@
         <KindInhalt>
             @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
                Zahlenfelder kurz mit der Einheit dahinter. *@
+            @if (MitZone)
+            {
+                @* Stufe G3 (Welle D2): Mit Zone rechnet das Gebaeude ueber seine Bauteile mit der
+                   Nutzflaeche der Zone - die Angabe skaliert nichts mehr. Die drei Felder der Angabe
+                   stehen WEICH gesperrt da: als Text, der Versuch nennt den Grund. *@
+                <Herleitungszeile Text="@ZonenZeile" />
+                <div class="epos-gebw-zonensperre" aria-disabled="true" title="@SperreZone" @onclick="SperreMelden">
+                    <Formularraster>
+                        <KindInhalt>
+                    <Textfeld Bezeichnung="@LabelBedarfsart" Wert="@_einheit" NurLesen="true" Titel="@SperreZone" />
+                    <Textfeld Bezeichnung="@LabelVerbrauch" Wert="@Zahltext(_wert)" Einheit="@Einheitszeichen"
+                              NurLesen="true" Titel="@SperreZone" />
+                    <Textfeld Bezeichnung="@LabelJahresnutzungsgrad" Wert="@Zahltext(_nutzungsgrad)"
+                              NurLesen="true" Titel="@SperreZone" />
+                        </KindInhalt>
+                    </Formularraster>
+                </div>
+                <Formularraster>
+                    <KindInhalt>
+                <Schalter Bezeichnung="@LabelDezentralWarmwasser" Wert="@_dezentral"
+                          WertChanged="w => _dezentral = w" />
+                    </KindInhalt>
+                </Formularraster>
+            }
+            else
+            {
             <Formularraster>
                 <KindInhalt>
             <Auswahlfeld Bezeichnung="@LabelBedarfsart" Eintraege="@Bedarfsarteintraege"
@@ -88,9 +114,10 @@
                       WertChanged="w => _dezentral = w" />
                 </KindInhalt>
             </Formularraster>
+            }
             @* Stufe G1 (E19, E20; Umsetzungskonzept Gebaeudesimulation 2.7): der Ort der
                Skalierung nach E8 - jeder Rechenweg liest diese vier Groessen. *@
-            @if (HinweisSkalierung.Length > 0)
+            @if (HinweisSkalierung.Length > 0 && !MitZone)
             {
                 <Herleitungszeile Text="@HinweisSkalierung" />
             }
@@ -155,6 +182,19 @@
     /// <summary>Das Ergebnis; <c>null</c> bei Abbruch oder Esc.</summary>
     [Parameter] public EventCallback<GebaeudeWohnflaecheErgebnis?> Geschlossen { get; set; }
 
+    /// <summary>
+    /// Die Zone, über die das Gebäude rechnet (Gebäudesimulation G3, Welle D2); leer = keine. Mit Zone
+    /// entfällt die Hochrechnung über die Angabe — Bedarfsart, Wert und Jahresnutzungsgrad sind weich
+    /// gesperrt, eine Herleitungszeile sagt warum.
+    /// </summary>
+    [Parameter] public string Zone { get; set; } = "";
+
+    /// <summary><c>GEBW_ZEILE_ZONE</c> — {0} Zone.</summary>
+    [Parameter] public string ZeileZone { get; set; } = Resource.GEBW_ZEILE_ZONE;
+
+    /// <summary><c>GEBW_SPERRE_ZONE</c> — der Grund der weichen Sperre.</summary>
+    [Parameter] public string SperreZone { get; set; } = Resource.GEBW_SPERRE_ZONE;
+
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; }
@@ -203,6 +243,17 @@
 
     /// <summary>Die gewählte Bedarfsart samt Einheit. Prüfhilfe für die Tests.</summary>
     public string GewaehlteEinheit => _einheit;
+
+    /// <summary>Rechnet das Gebäude über eine Zone?</summary>
+    public bool MitZone => !string.IsNullOrEmpty(Zone);
+
+    private string ZonenZeile => string.Format(System.Globalization.CultureInfo.CurrentCulture, ZeileZone, Zone);
+
+    private static string Zahltext(double? w)
+        => w is double x ? x.ToString("0.####", System.Globalization.CultureInfo.CurrentCulture) : "";
+
+    /// <summary>Der Versuch an einem weich gesperrten Feld nennt den Grund.</summary>
+    private void SperreMelden() => _meldung = SperreZone;
 
     /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
     public string Meldung => _meldung;

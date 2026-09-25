@@ -93,6 +93,78 @@ public sealed class GebaeudeArbeitsstand
         BandBeimLaden = Stand.ReglerProportionalband;
     }
 
+    // =====================================================================
+    //  Die Zonen eines Projektgebäudes (Gebäudesimulation G3, Welle D2)
+    // =====================================================================
+    //
+    // Ein Katalogsatz trägt keine Zonen (Softwarearchitektur 2.9); ein Gebäude im Projekt höchstens
+    // eine (G3). Die Zonen gehören zum Arbeitsstand wie die Felder: Übernehmen, Öffnen und Entfernen
+    // ändern nur ihn, geschrieben wird im OK-Weg des Editors (Softwarearchitektur 3.3).
+
+    /// <summary>Die Zonen im Arbeitsstand; leer = keine Zone (Klassenweg).</summary>
+    public List<ZoneDaten> Zonen { get; private set; } = new();
+
+    /// <summary>Die Zonen beim Laden bzw. nach dem letzten Schreiben — Vergleich für <see cref="ZonenGeaendert"/>.</summary>
+    private List<ZoneDaten> _zonenGeschrieben = new();
+
+    /// <summary>Führt der Arbeitsstand ein Gebäude im Projekt (mit Zonenweg)? Ein Katalogsatz nicht.</summary>
+    public bool MitZonenweg { get; private set; }
+
+    /// <summary>Die (erste) Zone; <c>null</c> = keine.</summary>
+    public ZoneDaten? Zone => Zonen.Count > 0 ? Zonen[0] : null;
+
+    /// <summary>Übernimmt die Zonen eines Projektgebäudes — beim Öffnen des Editors in der Betriebsart Projekt.</summary>
+    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg)
+    {
+        MitZonenweg = mitZonenweg;
+        Zonen = (zonen ?? Array.Empty<ZoneDaten>()).Select(z => z.Kopie()).ToList();
+        ZonenGeschrieben();
+    }
+
+    /// <summary>Nach einem gelungenen Schreiben der Zonen: der neue Vergleichsstand.</summary>
+    public void ZonenGeschrieben() => _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
+
+    /// <summary>Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert?</summary>
+    public bool ZonenGeaendert
+        => Zonen.Count != _zonenGeschrieben.Count
+           || Zonen.Where((z, i) => !z.GleicheWerte(_zonenGeschrieben[i])).Any();
+
+    /// <summary>Setzt die Zone des Gebäudes (Übernahme oder Rückweg des Zonendialogs); <c>null</c> entfernt sie.</summary>
+    public void ZoneSetzen(ZoneDaten? zone)
+    {
+        Zonen.Clear();
+        if (zone is not null) Zonen.Add(zone);
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile „Rechenweg der Hülle" — in BEIDEN Stellungen (Softwarearchitektur 3.2
+    /// Regel 3): Klassenweg über die U-Wert-Gruppen und die Bauweise, oder Bauteilweg mit Zone und
+    /// Zahl der Bauteile; für einen Katalogsatz der Klassenweg samt dem Satz, dass er keine Zonen trägt.
+    /// </summary>
+    public string Huellwegzeile(GebaeudeZonenTexte t)
+    {
+        if (!MitZonenweg) return t.ZeileKatalog;
+        return Zone is ZoneDaten z
+            ? string.Format(CultureInfo.CurrentCulture, t.ZeileBauteilweg, z.Bezeichner,
+                            z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
+            : t.ZeileKlassenweg;
+    }
+
+    /// <summary>
+    /// Die Nutzfläche, mit der das Gebäude rechnet [m²]: mit Zone deren Nutzfläche (leer = die des
+    /// Gebäudes), sonst die des Gebäudes.
+    /// </summary>
+    public double? NutzflaecheWirksam => Zone?.Nutzflaeche ?? Stand.WohnflaecheGesamt;
+
+    /// <summary>H_T zur Anzeige [W/K]: mit Zone aus ihren Bauteilen (Summenregel), sonst aus den U-Wert-Gruppen.</summary>
+    public double HTAnzeige => Zone is ZoneDaten z ? Zonensummen.HT(z) : HT;
+
+    /// <summary>H_ve zur Anzeige [W/K]: mit Zone über ihre Nutzfläche (Flächenschlüssel), sonst wie <see cref="HVe"/>.</summary>
+    public double HVeAnzeige => Zone is null
+        ? HVe
+        : Gebaeudehuellbilanz.LueftungWK(IstVdi6007 ? WirksamerLuftwechsel : Stand.Luftwechselrate,
+                                         NutzflaecheWirksam, Stand.Raumhoehe);
+
     private void FerienZerlegen()
     {
         for (int n = 0; n < 4; n++)

@@ -27,7 +27,16 @@ public enum GebaeudeKatalogModus
     /// Katalogverwaltung (Menü → Gebäudeverwaltung). Der Name wird zur Klappliste ALLER
     /// Katalogsätze, „Überschreiben" ist frei und „Speichern" gesperrt.
     /// </summary>
-    Admin
+    Admin,
+
+    /// <summary>
+    /// Ein Gebäude IM PROJEKT (Gebäudesimulation G3, Welle D2; Knopf „Hülle und Zonen…" des
+    /// Gebäudedialogs): Bearbeitet wird die Projektkopie (<c>Tab_Gebaeude</c>), nicht der
+    /// Katalogsatz, samt Zonen und Bauteilen. OK schreibt in benannten Schritten Gebäudedaten,
+    /// übernommene Katalogaufbauten und Zonen; „Speichern unter" legt einen Katalogsatz an — ohne
+    /// Zonen, nach einer Rückfrage. Der Name der Projektkopie bleibt.
+    /// </summary>
+    Projekt
 }
 
 /// <summary>

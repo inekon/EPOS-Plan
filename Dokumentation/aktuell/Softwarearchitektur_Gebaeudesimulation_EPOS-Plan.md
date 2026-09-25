@@ -2,6 +2,16 @@
 
 **15.09.2026 — Architekturentwurf, zur Abnahme durch Philipp**
 
+> **Nachzug 25.09.2026 — Abschluss G3** ([Protokoll G3](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G3_Bauteilkatalog.md),
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.44–N1.46): Die acht Tabellen sind nach
+> W1 mit G3 gebaut (Schritte 132–134). Abweichend vom Entwurf trägt der Baustoffkatalog die Spalte
+> `Hersteller` (E39), und die Projektkopien `Tab_Baustoff` und `Tab_Bauteilaufbau` haben den
+> Fremdschlüssel auf `Tab_Projekt` nach der Hausregel seit Schemaschritt 96 (2.2). Die zwei Kataloge
+> stehen unter Administration › Gebäude (3.1); der Gebäudeeditor hat die Betriebsart Projekt, erreicht
+> über „Hülle und Zonen…" im Gebäudedialog (3.2). Offen ist Regel 5 aus 3.2 — die Katalogseite auf
+> `Katalogliste`; die Rasterprobe braucht Playwright und Chromium, die auf dem Arbeitsrechner fehlen.
+> Nachgezogen in 2.2, 3.1, 3.2 und Kapitel 5.
+>
 > **Nachzug 25.09.2026 — Umsetzung G4** ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)):
 > G4c (gbXML) und G4a (IFC) sind gebaut und im Gebäudedialog angebunden. Der Import legt ein
 > **neues** Gebäude an (3.4, benannte Fortschreibung); `UebernehmenInsProjekt` gibt es nicht, die
@@ -931,16 +941,18 @@ Bedeckungsgrad wäre möglich, wird aber nicht gerechnet.
 | `ID` | `INTEGER PRIMARY KEY AUTOINCREMENT` | — | |
 | `Bezeichner` | `TEXT NOT NULL CHECK (length ≤ 80)` | — | Name des Stoffes (W3) |
 | `Gruppe` | `TEXT CHECK (length ≤ 40)` | ja | Ordnungsgruppe |
+| `Hersteller` | `TEXT CHECK (length ≤ 80)` | ja | **NULL = herstellerneutral** (Norm- oder Richtwert); mit G3 nach E39 ergänzt, Teil des natürlichen Schlüssels der Saat |
 | `Lambda`, `Rho`, `cp` | `REAL` | ja | Stoffwerte; NULL = nicht angegeben |
 | `Quelle` | `TEXT CHECK (length ≤ 120)` | ja | Regelwerk oder Dateiname des Imports |
 | `Herkunft` | `TEXT CHECK (IN ('MANUELL','KATALOG','IFC','GBXML','VORGABE'))` | ja | W9 |
 | `Quellkennung` | `TEXT CHECK (length ≤ 64)` | ja | W10 |
 | nur `_STAMM`: `ReadOnly` | `INTEGER NOT NULL DEFAULT 0 CHECK (IN (0,1))` | — | gehört zur Auslieferung |
-| nur Projektkopie: `ID_Projekt` | `INTEGER NOT NULL` | — | ohne Fremdschlüssel, wie der Bestand |
+| nur Projektkopie: `ID_Projekt` | `INTEGER NOT NULL` | — | **umgesetzt mit Fremdschlüssel** auf `Tab_Projekt` (`ON DELETE CASCADE ON UPDATE CASCADE`) nach der Hausregel seit Schemaschritt 96 — der Entwurf „ohne Fremdschlüssel, wie der Bestand" beschrieb den Stand davor (Konzept N1.46) |
 
 **`Tab_Bauteilaufbau_STAMM` / `Tab_Bauteilaufbau`** (`BauteilaufbauSchema`): `ID`, `Bezeichner`
 (`NOT NULL`, ≤ 80), `Beschreibung` (≤ 250), `Bauteilart`, `Quelle`, `Herkunft`, `Quellkennung`; im
-Stamm `ReadOnly`, in der Projektkopie `ID_Projekt NOT NULL`. `Quelle` nimmt den **Dateinamen** eines
+Stamm `ReadOnly`, in der Projektkopie `ID_Projekt NOT NULL` mit demselben Fremdschlüssel auf
+`Tab_Projekt` wie `Tab_Baustoff`. `Quelle` nimmt den **Dateinamen** eines
 Imports auf.
 
 **`Tab_Bauteilschicht_STAMM` / `Tab_Bauteilschicht`** (`BauteilaufbauSchema`, Bauform Wertetabelle):
@@ -971,6 +983,10 @@ die Schicht erbt die Herkunft ihres Aufbaus.
 | `Raumsolltemperatur_Tag`, `_Nachtabsenkung`, `_Wochenende`, `_Ferien`, `Maximaleraumtemperatur`, `Heizung_Strahlungsanteil`, `Heizleistung_Max`, `Luftwechsel_Infiltration`, `Luftwechsel_Nutzer` | `REAL` | ja | **NULL = Wert des Gebäudes** |
 | `Interne_Waermegewinne`, `Bewohner` | `REAL` | ja | NULL = anteilig aus dem Gebäude über den Flächenschlüssel |
 | `Herkunft`, `Quellkennung` | `TEXT` | ja | W9, W10 |
+
+Dazu die Spaltenblöcke aus KU-S1 und AK-S1, die S-C (Schritt 134) mit anlegt, und der Block aus
+KAK-S1 in Schritt 137 ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2). In G3 liest
+der Lauf von der Zone allein `Nutzflaeche` (E40) und ihre Bauteile.
 
 Index `(ID_Gebaeude, Rang)`. **Die neun Sollwert- und Lüftungsspalten spiegeln die Spaltennamen des
 Gebäudes buchstabengetreu** — einschließlich des im Bestand vorhandenen `Maximaleraumtemperatur` —,
@@ -1448,8 +1464,8 @@ gehört als Knopf **in** den Gebäudedialog.
 
 | Maske | Schlüssel | Beantwortet von | Menüzeile | Begründung |
 |---|---|---|---|---|
-| Baustoffkatalog | `Seitenschluessel.BaustoffKatalog = "BAUSTOFF_KATALOG"` | **`AppWurzel.razor`** — freie Ansicht | *Administration → Bauteilkatalog → Baustoffe* | eigener Katalogeditor, über das Menü erreichbar wie jeder andere Katalog |
-| Bauteilaufbau-Katalog | `Seitenschluessel.BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG"` | **`AppWurzel.razor`** — freie Ansicht | *Administration → Bauteilkatalog → Bauteilaufbauten* | **die zwei Kataloge müssen gemeinsam eingehängt werden** — ein Untermenü mit nur einem Punkt ist verboten |
+| Baustoffkatalog | `Seitenschluessel.BaustoffKatalog = "BAUSTOFF_KATALOG"` | **`AppWurzel.razor`** — freie Ansicht | *Administration → Gebäude → Baustoffe* (umgesetzt mit G3, nach „Gebäudetypen"; der Entwurf sah einen eigenen Punkt „Bauteilkatalog" vor) | eigener Katalogeditor, über das Menü erreichbar wie jeder andere Katalog |
+| Bauteilaufbau-Katalog | `Seitenschluessel.BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG"` | **`AppWurzel.razor`** — freie Ansicht | *Administration → Gebäude → Bauteilaufbauten* (umgesetzt mit G3) | **die zwei Kataloge müssen gemeinsam eingehängt werden** — ein Untermenü mit nur einem Punkt ist verboten |
 | Zonendialog, Bauteildialog | **keiner** | — | keine | Sie sind Überlagerungen **im** Gebäudedialog, vier Ebenen tief; ein Schlüssel wäre ein zweites Fenster |
 | Gebäudeimport (IFC, gbXML) | **keiner** (A17, mit E27 entschieden) | — | keine | **Überlagerung** statt Schlüssel — im Gebäudedialog, aufgemacht über zwei Knöpfe in der Katalogleiste („Aus IFC-Datei übernehmen …", „Aus gbXML-Datei übernehmen …"), je mit eigenem Profil und der Regel „kein Delegat, kein Knopf" |
 | Gebäudeexport (G7) | **keiner** (A17, mit E27 entschieden) | — | keine | **Überlagerung**, aus demselben Grund — und der Einstieg zusätzlich dort, wo die Ergebnisse liegen (Bedarfsdialog) |
@@ -1478,11 +1494,10 @@ Muster ist der PV-Import, dessen Schlüssel das Argument `"CEC"` bzw. `"PAN"` tr
 flowchart LR
   ST["Startseite<br/>Reiter Waermebedarf"] --> K["Kachel GEBAEUDE"]
   MN["Menueband<br/>Administration"] --> MG["Gebaeude"]
-  MN --> MB["Bauteilkatalog (NEU)"]
   MG --> MG1["Bearbeiten"]
   MG --> MG2["Gebaeudetypen"]
-  MB --> MB1["Baustoffe"]
-  MB --> MB2["Bauteilaufbauten"]
+  MG --> MB1["Baustoffe (G3)"]
+  MG --> MB2["Bauteilaufbauten (G3)"]
 
   K --> WIRT["GebaeudeDialog<br/>Wirt, Zweispaltenauswahl"]
   MG1 --> WIRT
@@ -1508,8 +1523,8 @@ eingebettete Ansicht ohne eigenen Maskenschlüssel**.
 
 | Maske | Art | Betriebsarten | Was sich ändert | Stufe |
 |---|---|---|---|---|
-| `GebaeudeDialog` (Wirt) | Ansicht mit `SpeichernLeiste` | Projekt, Assistent, Verwaltung | Spalte „Modell" in der Projektliste, zwei leise Kennzahlen im Detailblock, zwei Importknöpfe in der Katalogleiste | G1 · G4 |
-| `GebaeudeKatalogDialog` (Editor) | Überlagerung, vier Reiter | Bearbeiten, Neu, Verwaltung | **ein** Schreibweg (A4 = U1), Reiter 3 „Hülle und Rechenmodell" **in VDI-6007-Struktur** — Modellparameter immer sichtbar, dazu der Schalter **„Rechenweg"** und der eingeklappte Abschnitt **„Tagesbilanz (Bestandsweg)"** (E20, E23) —, Reiter 4 „Zonen", der Knopf „Gebäude als eine Zone übernehmen" | G1 · G3 · G6 |
+| `GebaeudeDialog` (Wirt) | Ansicht mit `SpeichernLeiste` | Projekt, Assistent, Verwaltung | Spalte „Modell" in der Projektliste, zwei leise Kennzahlen im Detailblock, zwei Importknöpfe in der Katalogleiste (gebaut: ein Knopf „Importieren (gbXML, IFC)…"); mit G3 der Knopf **„Hülle und Zonen…"**, der den Editor in der Betriebsart Projekt öffnet — weich gesperrt ohne Projektkopie | G1 · G3 · G4 |
+| `GebaeudeKatalogDialog` (Editor) | Überlagerung, vier Reiter | Bearbeiten, Neu, Verwaltung; **Projekt** (G3: die Projektkopie des Gebäudes samt Zonen) | **ein** Schreibweg (A4 = U1), Reiter 3 „Hülle und Rechenmodell" **in VDI-6007-Struktur** — Modellparameter immer sichtbar, dazu der Schalter **„Rechenweg"** und der eingeklappte Abschnitt **„Tagesbilanz (Bestandsweg)"** (E20, E23) —, Reiter 4 „Zonen", der Knopf „Gebäude als eine Zone übernehmen" (frei nur in der Betriebsart Projekt ohne Zone auf dem VDI-Weg, mit Rückfrage und Hochrechnung nach E40); in der Betriebsart Projekt schreibt OK in drei benannten Schritten — Projektkopie, Katalogaufbauten, Zonen | G1 · G3 · G6 |
 | `GebaeudeBedarfDialog` | Überlagerung | — | Raumtemperatur, drei Spitzenkennzahlen, Vergleichstabelle beider Rechenwege, zweites Bild; **ein Abschnitt „Kältebedarf" neben dem Abschnitt „Wärmebedarf"** mit denselben Bausteinen — Kennzahlkachel, Kanalzeile, Monatsstapel, Dauerlinie (E21); der Ausweis „Tagesbilanz (Bestandsweg)" bei einem Altweg-Gebäude (E20, E23) | G1 · KU1 |
 | `GebaeudeWohnflaecheDialog` (Skalierungsdialog) | Überlagerung | — | **in VDI-6007-Struktur**: Die Zuordnung läuft über die **Nutzfläche** (E19), nicht mehr über die Wohnfläche; Beschriftung, `Herleitungszeile` und Prüfregeln folgen dem Feldnamen der Sicht (E20). **Nicht mehr „unverändert"** | G1 |
 | `GebaeudetypDialog` | Überlagerung | — | **unverändert** | — |
@@ -1531,7 +1546,7 @@ stateDiagram-v2
     [*] --> Wirt : Kachel oder Menue
     Wirt : GebaeudeDialog — zwei Listen, Filter, SpeichernLeiste
 
-    Wirt --> Editor : Bearbeiten oder Neu
+    Wirt --> Editor : Bearbeiten, Neu oder Huelle und Zonen (Betriebsart Projekt, G3)
     Wirt --> Skalierung : Nutzflaeche zuordnen
     Wirt --> Bedarf : Simulation
     Wirt --> Typen : Gebaeudetypen
@@ -1605,7 +1620,10 @@ stateDiagram-v2
    und den Bestandswegabschnitt als **eigenen** Fall. **A19 (= U2) ist damit überholt.**
 5. **Die Katalogseite des Wirts wird virtualisiert, bevor die Listen lang werden** — Umstellung auf
    `Katalogliste` mit Filterstand aus dem Kern, danach die `Proben/Rasterprobe`. Das ist **keine**
-   Voraussetzung von G1, aber **Vorbedingung von G3** (Befund U L4).
+   Voraussetzung von G1, aber **Vorbedingung von G3** (Befund U L4). **Stand nach dem Abschluss von
+   G3 (25.09.2026): offen** — die Rasterprobe braucht Playwright und Chromium, die auf dem
+   Arbeitsrechner fehlen; den Download gibt der Anwender frei. Die Umstellung folgt als eigener
+   Schritt.
 
 ### 3.3 Der eine Schreibweg
 
@@ -2148,7 +2166,7 @@ Information.
 
 | Stelle | Was je Stufe geschieht |
 |---|---|
-| **`kern.yml`** (ubuntu, bei jedem Push) | Bau und Tests des plattformfreien Filters, Werkzeugtests, SQL-Dialekt-Prüfer, `ChartProben`, Referenzlauf der fünf Projekte gegen die Basis. **Das ist der Nachweis für Kern, Oberfläche, Testdatenbank und Doku.** Ab G0 laufen die Normfälle **schweigend** durch (die Zahlen liegen nicht im Repositorium, 1.8) — das ist eine bewusste Lücke im Gate und gehört ins Protokoll |
+| **`kern.yml`** (ubuntu, bei jedem Push) | Bau und Tests des plattformfreien Filters, Werkzeugtests, SQL-Dialekt-Prüfer, `ChartProben`, Referenzlauf der sechs Projekte gegen die Basis. **Das ist der Nachweis für Kern, Oberfläche, Testdatenbank und Doku.** Ab G0 laufen die Normfälle **schweigend** durch (die Zahlen liegen nicht im Repositorium, 1.8) — das ist eine bewusste Lücke im Gate und gehört ins Protokoll |
 | **`windows.yml`** | Job „build-test" bei Push auf den Hauptzweig und nächtlich; er prüft die Windows-Schale samt Migrationsschritt und Hüllen. **Der Setup-Lauf ist beim Anwender zu erfragen**, jedes Mal |
 | **`ios.yml`** | Nur auf Zuruf und **nur nach Rückfrage beim Anwender**, jedes Mal. **Begründet ist ein iOS-Lauf allein, wenn die Änderung die iOS-Hülle selbst trifft** — Dateifilter, Navigationszeile, Seed-Datenbank, Prüfmodus, ein `Dienste.*`-Adapter — oder wenn der Anwender ihn verlangt. Die einmalige Trimming-Messung des Gerätebaus (U16) ist ein solcher Fall |
 | **Der Prüfmodus der iOS-Schale** (nicht zu verwechseln mit dem Schalter `Pruefmodus` des Eingangsbaus, 1.3) | prüft die Seed-Datenbank über die **Zahl der `STRICT`-Tabellen**; sie wächst mit jedem Tabellenschritt (2.2, 2.4) und ist je Schemastand nachzuziehen. **Richtigstellung:** Der iOS-Lauf rechnet heute ein Projekt, das **kein** Gebäude führt — er kann das Gebäudemodell also **nicht** berühren. Er prüft die **Schale**: dass die App startet, die Seed-Datenbank findet, das Schema stimmt und ein Lauf durchläuft. Wer das Gebäudemodell auf iOS nachweisen will, muss dafür ein anderes Projekt wählen; **solange das nicht geschieht, ist der grüne Kern-Lauf auf ubuntu der Nachweis**, und das gehört so ins Protokoll |
@@ -2222,12 +2240,12 @@ Stufe **GA** steht in keiner Summe (E26).
 | **G1 + G2** | **Erster Schritt: der Altweg wandert Zeichen für Zeichen nach `Altweg/`** (`TagesbilanzWaermebedarf`), die Fassade `SimulationWaermebedarf` und der Vorbereitungsschritt `GebaeudeVorbereitung` entstehen, dazu `Modultrennungswache` (E20). **Danach erst** die Anbindung: `GebaeudeKlimaweg` (liest die Klimaspalten aus Schritt 95; Einfrierregel **„gesäte Klimareihen"**), `GebaeudeModellEingang` samt `Bauen`, `GebaeudeModellErgebnis`, `Gebaeudepruefung`; **die eine Weiche am Eingang**; der vierte Parameter der Auskunft; **ein Schreibweg im Editor** (A4), Reiter 3 in VDI-6007-Struktur, Platzhalter am Zahlenfeld (A5), Schalter „Rechenweg" samt eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)", Skalierungsdialog auf die Nutzfläche (E19); **Hüllenumzug nach `EPOS.UI.Daten`** samt `Gebaeudewege` (A10); Bedarfsdialog mit Vergleich, zweitem Bild, drei Spitzenkennzahlen und dem Ausweis „Tagesbilanz (Bestandsweg)"; Kennzahlen und Gruppe `GR_GEBAEUDE`; drei bedingte Reihen im Export; Glossarabschnitt, beide `.resx`, Dialogkatalog-Einträge; Wiki-Seite und Logbuch-Entwurf | M3 (M4 liegt mit Schritt 95 bereit) | **die Verschiebung des Altwegs byte-gleich gegen die GB-Basis, vor der Anbindung**; danach ändern **alle dreizehn Projekte sich — Basis vollständig neu**; dazu der Rückweg-Test auf der Arbeitskopie; `ChartProben` grün; Sichtabnahme Windows; **Versionsnummer beim Anwender erfragt** |
 | **KU0** | **Papiere, nichts bauen:** die Fortschreibung dieses Papiers auf E12, E15 und E21 (1.2, 1.3, 3.5, 4.1, 4.3); führend ist das [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kap. 11 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün |
 | **KU1** (mit G1 + G2) | **Fassade `SimulationKaeltebedarf`** nach dem Muster der Wärmefassade, Kanal `KUEHLUNG` samt den zwei Kanallisten `KANAELE_WAERME`/`KANAELE_KAELTE`, `Kaeltebedarf_Max` und Kältedauerlinie, die vier Kältekennzahlen (4.3), der Abschnitt „Kältebedarf" im Bedarfsdialog mit denselben Bausteinen wie der Abschnitt „Wärmebedarf"; benannter Hinweis bei einem Altweg-Gebäude (E21) | G1 + G2 (nur das Stundenmodell liefert Kühllast) | Projekte **ohne** Kühlung byte-gleich, `Waermelast_Max` unverändert; Kanalsummenprobe; Wächter „Kühlkanal nie negativ"; `ChartProben` grün |
-| **G3** | `Bauteilreduktion` gefüllt, `ErsatzparameterRC.AusBauteilweg`; `BaustoffSchema`, `BauteilaufbauSchema`, `ZonenSchema.Anweisungen` (Schritte S-A bis S-C — **`Tab_Zone` entsteht hier**, und S-C legt die Zonenspalten aus KU-S1 bzw. AK-S1 mit an, sofern diese Stufen stehen, 2.4); `BaustoffCtrl`, `BauteilaufbauCtrl`, Modelle; `BaustoffKatalogDialog`, `BauteilaufbauDialog` mit Schichtenraster; **zwei Menüzeilen gemeinsam**; der Knopf „Gebäude als eine Zone übernehmen" (W1); **`BauteilDialog` und der Zonenreiter in der Grundform** — ohne sie wäre der Bauteilweg dieser Stufe nur über Import oder Testdaten zu füllen (3.2); Registerpflege S-D; **Katalogseite auf `Katalogliste`** samt `Proben/Rasterprobe` (Befund U L4) | G1 + G2 | Reduktion trifft die Vergleichswerte; Bauteilweg gleich Klassenweg im Grenzfall; Referenzlauf **byte-gleich** (kein Leser); Auslieferungsvorlage grün (Katalog nicht leer) |
+| **G3** | `Bauteilreduktion` gefüllt, `ErsatzparameterRC.AusBauteilweg`; `BaustoffSchema`, `BauteilaufbauSchema`, `ZonenSchema.Anweisungen` (Schritte S-A bis S-C — **`Tab_Zone` entsteht hier**, und S-C legt die Zonenspalten aus KU-S1 bzw. AK-S1 mit an, sofern diese Stufen stehen, 2.4); `BaustoffCtrl`, `BauteilaufbauCtrl`, Modelle; `BaustoffKatalogDialog`, `BauteilaufbauDialog` mit Schichtenraster; **zwei Menüzeilen gemeinsam**; der Knopf „Gebäude als eine Zone übernehmen" (W1); **`BauteilDialog` und der Zonenreiter in der Grundform** — ohne sie wäre der Bauteilweg dieser Stufe nur über Import oder Testdaten zu füllen (3.2); Registerpflege S-D; **Katalogseite auf `Katalogliste`** samt `Proben/Rasterprobe` (Befund U L4) | G1 + G2 | Reduktion trifft die Vergleichswerte; Bauteilweg gleich Klassenweg im Grenzfall; Referenzlauf **byte-gleich** (kein Leser); Auslieferungsvorlage grün (Katalog nicht leer). **Stand 25.09.2026: abgeschlossen** — Schritte 132–134 mit allen acht Tabellen (W1), Spalte `Hersteller` und Herstellersaat (E39), `GebaeudeZonenCtrl` samt Zonenleser des Laufs schon hier; die zwei Menüzeilen unter Administration › Gebäude (3.1); der Editor in der Betriebsart Projekt über „Hülle und Zonen…" mit `ZonenDialog`, `BauteilDialog` und der Übernahme nach E40 (3.2); Normnachweis 12 von 12 Testbeispielen relativ ≤ 10⁻³, Normfälle damit 11 von 12 im Band, Grenzfälle erfüllt, Referenzlauf 13/13 unverändert. **Offen:** die Katalogseite auf `Katalogliste` (Regel 5 in 3.2) |
 | **G4a** (IFC-Import) | `IGebaeudeLeser`, `IfcLeser` samt Abbildern und Profil; `GebaeudeImportAblauf`, `-Profil`, `-Satz`, `GebaeudeZuordnungsModell`; `GebaeudeImportDialog` + Hülle; `ImportzuordnungSchema` (Schritt S-F), `GebaeudeImportCtrl`, Kaskadenrettung (W15); **Lizenzhinweisseite** (U10); iOS-Dateifilter | G1 + G2 (G3 für Schichten); G4c vorher (D1, E27) | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; iOS-Lauf **nur nach Rückfrage**. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden, S-F schon mit G4c als Schritt 138, eine Kaskadenrettung entfällt (2.7); selbst erzeugte Proben bestanden, Referenzlauf 13/13 byte-gleich; offen die Windows-Sichtabnahme, der eine iOS-Lauf nach Rückfrage (E38) und der Schemaschritt `Baujahr` (in Arbeit) |
 | **G4b** | Bauteilebene des IFC-Imports | G3, G4a | nach G4a im Feld |
 | **G4c** (gbXML-Import) | `GbxmlLeser`, `GbxmlAbbild`, `GbxmlImportProfil`; zweites Profil am selben Dialog; Zonenregel für den Einzonenfall | G1 + G2 (A7/ADR-004 angenommen, E16); G3 für Schichten | Importprobe bestanden; Referenzlauf unverändert. **G4c kommt vor G4a** (D1, mit E27 entschieden); **D16 ist mit E27 bejaht** — die Zonenregeln des gbXML-Imports kommen damit mit G6c. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden (dazu `GbxmlEinheiten`; das Profil folgt der Dateiendung), samt `ImportzuordnungSchema` als Schritt 138 und `GebaeudeImportCtrl`; Proben bestanden, Referenzlauf 13/13 byte-gleich; offen die Windows-Sichtabnahme |
 | **G5** (Geometrieableitung) | nichts aus diesem Papier | G4 | **unabhängiger Zweig** — G6 braucht ihn nicht; nur bei Bedarf aus der Praxis |
-| **G6a** | `GebaeudeZonenCtrl`, Modelle, Kopierwege, Registerpflege, Bericht-Zonentabelle | G3 | Migrationstests grün; Referenzlauf byte-gleich |
+| **G6a** | `GebaeudeZonenCtrl`, Modelle, Kopierwege, Registerpflege, Bericht-Zonentabelle — Controller, Modelle, Registerpflege und die Kopierwege einer Zone sind mit G3 gebaut; G6a behält, was mehrere Zonen verlangen, und die Bericht-Zonentabelle | G3 | Migrationstests grün; Referenzlauf byte-gleich |
 | **G6b** | `ZonenSchema.AnweisungenKopplung` (Schritt **S-G**: `Tab_Zonenluftstrom`, `ID_Nachbarzone` — **hier**, nicht in G6a: W1 und die Bilder in 2.1 führen ihn mit G6b); `Zonenkopplung`, `ZonenEingang`, `ZonenErgebnis`; `ZonenDialog` um Mehrzonenfelder und Luftaustausch erweitert; `Gebaeudepruefung` auf Zonenebene samt Trennflächenwächter | G6a (A8/ADR-005 angenommen, E17) | Migrationstests grün; die Probe „eine Zone bitgleich zum Stand nach G3" ist **Gate**; Vergleichsrechnung gegen den einfacheren Kopplungsweg; Laufzeit an einem echten Mehrzonengebäude **gemessen** |
 | **G6c** | Zonenimport (IFC und, nach D16 mit E27, gbXML): Zuordnung Zone ↔ Quellentität, Hierarchie im Zuordnungsdialog; **`Zonengeometrie` samt `Zonenumriss`** und die **Grundrissansicht** `GebaeudeAnsicht` im Zuordnungsschritt (E11, 3.4) | G4, G6b | Importproben; **Determinismusprobe der Geometrie** (gleiche Eingabe, gleiche Polygone, 1.7); bunit-Fall der Ansicht samt Pflichttext „schematisch"; iOS-Lauf nach Rückfrage |
 | **G6d** | Zonendaten in der Testdatenbank, Einfrierregel **„gesäte Zonendaten"** | G6c | grüner Kern-Lauf, neue Basis begründet |
@@ -2247,7 +2265,7 @@ flowchart TB
   M2 --> M3["Merge M3 — Gebaeudespalten<br/>Sichtneubau + Namensleser<br/>SPERRPUNKT: CopyFromStamm NULL-erhaltend"]
   M3 --> G12["G1 + G2 — Modell und Darstellung<br/>EINFRIEREN, Basis vollstaendig neu<br/>Regel Klimareihen"]
   M4["M4 — Klimaspalten<br/>vorweggenommen als Schritt 95"] -.->|liegt bereit| G12
-  G12 --> G3["G3 — Bauteilkatalog<br/>SPERRPUNKT: Katalogliste + Rasterprobe"]
+  G12 --> G3["G3 — Bauteilkatalog<br/>abgeschlossen; Katalogliste + Rasterprobe offen"]
   G3 --> G4A["G4a — IFC-Import<br/>SPERRPUNKT: Lizenzhinweisseite"]
   G3 --> G4C["G4c — gbXML-Import<br/>A7 (ADR-004) angenommen"]
   G4C -.->|D1 zuerst| G4A

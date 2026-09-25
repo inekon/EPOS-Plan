@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Gebaeudevergleich - rechnet jedes Gebaeude einer Momentaufnahme je einmal auf dem
+    Tagesbilanz-Weg ("alt") und auf dem VDI-6007-Weg ("neu") und schreibt Kennzahlen,
+    Merkmale, Ursachenvorschlaege und eine Ampel. Bedingung (1) des Abloesekriteriums
+    Q24/E27 der Gebaeudesimulation: Die Abweichung alt/neu ist an den BESTANDSPROJEKTEN
+    des Anwenders gemessen und je Gebaeude und Projekt erklaert.
+
+    WARUM EIN WERKZEUG. Die Referenzbasis zeigt den neuen Weg an dreizehn Projekten der
+    Testdatenbank; die Projekte des Anwenders liegen in seiner Arbeitsdatenbank, und die
+    enthaelt Kundendaten. Deshalb arbeitet das Werkzeug ausschliesslich auf einer
+    Momentaufnahme (VACUUM INTO ueber eine immutable-Verbindung), schreibt seine Ausgabe
+    nur ausserhalb des Repositoriums und ersetzt ohne ausdruecklichen Schalter jeden
+    Projekt-, Kunden-, Bearbeiter- und Gebaeudenamen durch die ID.
+
+    DER RECHENWEG BLEIBT UNBERUEHRT. Gerechnet wird ueber GebaeudeBedarfCtrl.Rechnen mit
+    erzwungenem Rechenweg - derselbe Controller, den der Gebaeudedialog fuer seinen
+    Vergleich alt/neu ruft, und dieselbe Fassade wie im Lauf. Die Schreibnaht steht auf
+    "nein"; nur die drei festen Texte des Werkzeugs (VACUUM INTO, integrity_check und das
+    UPDATE der Variante) laufen ueber eigene Verbindungen.
+
+    net10.0 ohne Windows-Bindung. Gehoert bewusst NICHT in WP-Plan.sln und nicht in den
+    Kern-Filter; gebaut und geprueft ueber die eigene Projektmappe Gebaeudevergleich.sln.
+    Faellt mit Stufe GA (Loeschliste 6.1 des Umsetzungskonzepts Gebaeudesimulation).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+    <AssemblyName>Gebaeudevergleich</AssemblyName>
+    <RootNamespace>Gebaeudevergleich</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Die Proben pruefen Regeln, Schreibort und Schreibsperre von innen. -->
+    <InternalsVisibleTo Include="Gebaeudevergleich.Tests" />
+  </ItemGroup>
+
+</Project>

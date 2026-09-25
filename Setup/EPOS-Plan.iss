@@ -72,6 +72,20 @@
   #error Der Ordner VDI-3805-Daten fehlt in der Repowurzel. Ohne ihn laesst sich die Komponente Herstellerdaten nicht packen; siehe Konzept, Entscheidung E10.
 #endif
 
+; Paketvorlage der A100-Nutzungsarten (Folgeposten ZU24): vier CSV-Dateien des
+; Importformats mit vollstaendigen Kopfzeilen, je einer Beispielzeile aus
+; Platzhaltern und einer Anleitung. Sie traegt KEINE Normwerte - der Anwender
+; kopiert sie, traegt die Werte seines eigenen Normexemplars ein und spielt den
+; Ordner ueber Administration -> Brauchwasser -> Katalog-Import ein. Sie gehoert
+; damit neben die Vorlagendatenbank unter {app}\Vorlage (Tabelle 2.1 des
+; Konzepts: "nur das Setup schreibt"); der Deinstallierer nimmt sie mit
+; {app}\Vorlage mit. Der Ordner ist versioniert, keine Zeigerdatei und kein
+; Erzeugnis von build-setup.ps1.
+#define KatalogVorlageA100  RepoDir + "Referenzlaeufe\Katalogpaket_Vorlage_A100"
+#if !DirExists(KatalogVorlageA100)
+  #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_A100 fehlt. Er ist versioniert und gehoert zur Auslieferung (Folgeposten ZU24).
+#endif
+
 ; Microsoft Edge WebView2 Runtime — der ONLINE-Bootstrapper (rund 2 MB), der
 ; die passende Fassung selbst nachlaedt. Gebraucht seit Paket iU8: Die neuen
 ; Dialoge sind Blazor-Komponenten und laufen in einer WebView2. Auf Windows 11
@@ -332,6 +346,15 @@ Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
 Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
     Flags: ignoreversion recursesubdirs createallsubdirs; \
     Components: herstellerdaten
+
+; Paketvorlage der A100-Nutzungsarten (ZU24) neben die Vorlagendatenbank: vier
+; CSV-Dateien und eine Anleitung, zusammen wenige Kilobyte. Der Anwender kopiert
+; sich den Ordner heraus, traegt die Werte seines Normexemplars ein und spielt ihn
+; ueber den Katalog-Import ein. Ein Update ersetzt den Bestand (ignoreversion),
+; die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#KatalogVorlageA100}\*"; DestDir: "{app}\Vorlage\Katalogpaket_A100"; \
+    Flags: ignoreversion; \
+    Components: programm
 
 ; Voraussetzung: nur mitnehmen, wenn sie auf diesem Rechner fehlt.
 Source: "{#WebView2Installer}"; DestDir: "{tmp}"; \

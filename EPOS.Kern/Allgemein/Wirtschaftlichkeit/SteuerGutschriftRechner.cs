@@ -692,8 +692,7 @@ namespace WindowsFormsApplication1
                 // („die Bemessungsgrundlage ist eine bewusste Lücke"). Sie war richtig,
                 // solange § 54 nur den BHKW-Brennstoff sah; jetzt steht der
                 // Kesselbrennstoff in der Anlagenliste, und die Lücke ist geschlossen.
-                // Der Ressourcenschlüssel bleibt in beiden .resx stehen — er wird nur
-                // nicht mehr erzeugt.
+                // Der Ressourcenschlüssel ist aus beiden .resx gestrichen (E21).
                 if (nach54 && !ProduzierendesGewerbe(e))
                 {
                     Grund(r, SteuerPosition.ENERGIEST_54,
