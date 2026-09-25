@@ -32516,6 +32516,15 @@ Do you want to allow this?</value>
   <data name="GIMP_DLG_KLASSE_HINWEIS" xml:space="preserve">
     <value>The building age class controls all default values: U-values, g-value and thermal bridges.</value>
   </data>
+  <data name="GIMP_DLG_KLASSE_WIRKUNG" xml:space="preserve">
+    <value>Of the {1} values a building age class provides (U-values, g-value, thermal bridges), the file carries {2} itself; the class fills {0}.</value>
+  </data>
+  <data name="GIMP_DLG_KLASSE_AUS_BAUJAHR" xml:space="preserve">
+    <value>Derived from the file's year of construction {0} – choosing another class replaces it.</value>
+  </data>
+  <data name="GEB_MSG_BEDARF_UNGESPEICHERT" xml:space="preserve">
+    <value>the building has not been saved in the project yet – it is saved with OK, after which its heat requirement can be calculated.</value>
+  </data>
   <data name="GIMP_DLG_DATEI" xml:space="preserve">
     <value>Building file</value>
   </data>

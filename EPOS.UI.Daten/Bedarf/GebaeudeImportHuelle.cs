@@ -365,6 +365,8 @@ namespace WindowsFormsApplication1
                 Meldungen = satz.Meldungen.Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
+                KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
+                KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
             };
         }
 

@@ -49,7 +49,10 @@ namespace WindowsFormsApplication1
                 GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ);
             if (!ergebnis.Erfolgreich)
             {
-                befund = ergebnis.Befund;
+                // Eine eben aufgenommene Zeile (etwa aus dem Gebäudeimport) hat noch keine Projektkopie:
+                // Der Grund ist dann das fehlende OK, nicht Projekt oder Klimaregion.
+                befund = ergebnis.Befund
+                         ?? (zeile.IdZ >= GebaeudeHuelle.STARTINDEX ? MyResource.Resource.GEB_MSG_BEDARF_UNGESPEICHERT : null);
                 return null;
             }
 

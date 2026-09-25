@@ -320,6 +320,35 @@ public class GebaeudeImportDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Klappliste zeigt die Klasse der Datei</b> (Befund der Windows-Sichtabnahme): Ohne eigene
+    /// Wahl steht dort die Klasse, die der Import aus dem Baujahr zog, und darunter der Hinweis der
+    /// Datenseite; die Anfrage trägt weiter keine Klasse, bis der Anwender eine wählt. Eine eigene Wahl
+    /// ersetzt sie.
+    /// </summary>
+    [Fact]
+    public void Ohne_eigene_Wahl_zeigt_die_Klappliste_die_Klasse_der_Datei_und_den_Hinweis()
+    {
+        var p = new Protokoll();
+        GebaeudeImportStand MitKlasse(GebaeudeZuordnungsanfrage a) => Stand(a) with
+        {
+            KlasseDerDatei = a.Baualtersklasse is null ? 3 : null,
+            KlassenHinweis = a.Baualtersklasse is null ? "Hinweis aus dem Baujahr" : "Hinweis zur Wahl",
+        };
+        var cut = Bauen(p, zuordnen: MitKlasse);
+        Einlesen(cut);
+
+        IElement klasse = cut.FindAll(".epos-feld")[0].QuerySelector("select")!;
+        Assert.Equal("3", klasse.GetAttribute("value"));
+        Assert.Contains("Hinweis aus dem Baujahr", cut.Markup);
+        Assert.Null(p.Anfragen.Last().Baualtersklasse);
+
+        klasse.Change("4");   // Klasse E
+        cut.WaitForAssertion(() => Assert.Equal(4, p.Anfragen.Last().Baualtersklasse));
+        Assert.Equal("4", cut.FindAll(".epos-feld")[0].QuerySelector("select")!.GetAttribute("value"));
+        Assert.Contains("Hinweis zur Wahl", cut.Markup);
+    }
+
+    /// <summary>
     /// <b>Eine Folgevorgabe zieht nach</b>: Die Datenseite rechnet die inneren Gewinne aus der
     /// Nutzfläche der Handwerte (hier 5 W/m² wie im Kern); nach einer Flächenänderung zeigt der Dialog
     /// den neuen Wert der Gewinne, deren Herkunft Vorgabe bleibt.
