@@ -565,3 +565,53 @@ Nach Abschnitt 11 wurde die Stufe Z4b am 24.09.2026 auf dem Zweig `z4b` ausgefü
   Typen, Nichtwohn-Kategorien; dazu die Folgen aus N13 und N14 (Konstruktorzeilen in der Datenbank,
   Herkunftsprotokoll als Sätze, Referenzfall der Wetterkopplung mit TRY-Import). **Schemaschritt:**
   Nummer erst beim Merge messen; heute ist 131 die höchste.
+
+## 13 Nachtrag 25.09.2026 — Stufe Z5 umgesetzt
+
+Nach Abschnitt 12 wurde die Stufe Z5 in der Nacht auf den 25.09.2026 auf dem Zweig `z5` ausgeführt
+(von `d6020c05`, 37 eigene Commits bis `a87b783b`, Merges von `origin` `45935351`, `ac8a1762`
+und `6c5aa139`) und mit dem Stand von `ios_migration_september` zusammengeführt. Damit sind alle Stufen
+Z0–Z5 des Umsetzungskonzepts umgesetzt; der Übertrag setzt bei den Folgen (ZU7, ZU24, K5) an.
+
+- **Ergebnis Gruppe 1 (Kern):** Schemaschritt **140** `Tab_TwwMessreihe` (Projektdaten, Transfer
+  und Kopie tragen sie, Vorlage leert); `Messreihenleser` (CSV, Auflösung, Lücken, Sommerzeit);
+  `TwwMessreihenCtrl`; `Messvergleich` (Energie, P85–P95-Band der Dauerlinie mit Messspitze,
+  Spitzenstreuung, √N-Skalierung, Formabgleich je Tagtyp, Monatsanteile — alles Verhältniszahlen);
+  `Messkalibrierung` (Jahresmesswert exakt, Hochrechnung mit Jahresgang, Nichtwohn-Vorschlag nach
+  kleinsten Quadraten); fünf Parameter im Paketteil; Wache „Schrittnummern lückenlos".
+- **Ergebnis Gruppe 2 (Katalog):** Ein- und Zweifamilienhaus (ZU19), Nichtwohn-Vorgabesatz mit
+  Steuerspalte `Gruppe`, `VorschlagUebernehmen` (Anwenderkopie aus der Messung); Ziel 25–27 Typen nicht
+  aus VDI 6002 erreichbar (ZU24).
+- **Ergebnis Gruppe 3 (Oberfläche):** Messdaten-Dialog, Vergleichsbericht im Reiter Kennzahlen (nebenläufig, nur Verhältnisse), Kalibrierknöpfe „Aus Messreihe kalibrieren" und „Vorschlag übernehmen…", 32 Validierungshinweise, Wiki-Abschnitte „Messdaten" und „Vergleich und Kalibrierung"; kein neues Bild.
+- **Statuszeile und Protokoll:** #495, Protokoll
+  [`2026-09-25_Z5_Kalibrierung.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Z5_Kalibrierung.md).
+- **Gate im Worktree (nach dem Merge):** Kern-Build 0 Fehler, 13 938 Tests grün, SqlDialektPruefer 1 920/0, ChartProben 174, Vorlage 34/34, Windows-Schale 0 Fehler, Referenzlauf 5/5 gegen R14.
+- **Gegenprüfungen:** je Gruppe eine (34 Befunde, zwei hohe — behoben).
+- **Anwenderentscheide dieser Stufe:** keine neuen; offen: **ZU24** (Katalogtypen: ZU19 auf A100
+  ausdehnen oder externes Katalogpaket), **K5** (Freigabe von INEKON-Messreihen), **ZU7**
+  (Referenzprojekt auf dem Generator mit vierter Einfrierregel und neuer Basis — mit den
+  Nachbarsitzungen abzustimmen), ZU20–ZU22, K8/ZU15, Versionsnummer für die Logbuch-Sätze
+  (Z3 drei, Z4 drei, Z4b einen, Z5 einen).
+- **Sichtabnahme unter Windows** (Zapfprofil → Erweitert/Experte, Reiter Kennzahlen; „Messdaten…"):
+  1. Zapfprofil → Stufe Erweitert → „Messdaten…": Überlagerung mit Liste und beiden Herleitungszeilen.
+  2. „Datei wählen…" merkt den Ordner; der Prüfbericht erscheint sofort; Größe „aus der Kopfzeile" →
+     Volumen ändert den Bericht; Zeitstempel Ortszeit: eine Jahresreihe mit Herbstumstellung wird mit
+     Hinweis angenommen.
+  3. Einspielen einer gleichnamigen Reihe fragt zurück, Löschen ebenso; Esc schließt nur die Überlagerung.
+  4. Reiter Kennzahlen: Reihenwahl, „Vergleich rechnen" zeigt Fortschritt, Abbrechen wirkt; die
+     Kennzahlen stehen als Verhältnisse, ohne Ensemble ein Strich mit Grund; Teiljahr, Schalttag, Lücken
+     und Feiertage als Hinweise.
+  5. Eine Eingabe setzt den Veraltet-Vermerk, die Tabelle bleibt stehen.
+  6. „Aus Messreihe kalibrieren" füllt Wert, Einheit, Bilanzgrenze, Quelle und Zeitraum; Abbrechen des
+     Dialogs verwirft sie; nach OK ist die Jahresenergie der Rechnung gleich dem Messwert.
+  7. Nichtwohn-Zone: „Vorschlag übernehmen…" zeigt Vorschau und Rückfrage; danach rechnet die Zone mit
+     der Kopie „…-E1", die Warnliste führt die Hinweise.
+  8. Katalog „Brauchwasser-Nutzungsarten": Ein- und Zweifamilienhaus vorhanden; Kategorien einer
+     Nichtwohn-Nutzungsart zeigen zwei Zeilen (Kurzzapfung, Duschzapfung).
+  9. Englische Oberfläche: Messdaten-Dialog und Kennzahlen vollständig.
+- **Nächste Aufträge:** (1) ZU7 — ein Referenzprojekt auf den Generator umstellen, vierte
+  Einfrierregel, Basis neu einfrieren (Koordination mit allen Sitzungen, Referenzlauf 13 Projekte);
+  (2) Folgen aus N13–N15 (Konstruktorzeilen in der Datenbank, Herkunftsprotokoll als Sätze,
+  Bedeckungsgrad-Referenzfall mit TRY-Import, redundanter Index, Katalogimport-Reste, Katalogdialog auf
+  iOS); (3) Validierungsbericht mit echten Messreihen nach K5; (4) Wiki-Upload aller Zapfprofil-
+  Abschnitte. **Schemaschritt:** Nummer erst beim Merge messen; heute ist 140 die höchste.

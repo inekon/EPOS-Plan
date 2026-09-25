@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N14 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N15 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1338,7 +1338,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** (umgesetzt, N14) | T3 (Schritt 131), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
-| **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
+| **Z5 — Kalibrierung und Validierung** (umgesetzt, N15) | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
 (N4). Z1 umgesetzt und nach `ios_migration_september` zusammengeführt (Push `4971556a`, Gate auf
@@ -1622,6 +1622,7 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
 | ZU20 | Auslieferung der abgeleiteten VDI-Werte: ja/nein (N12) | Anwender | nach K8 |
 | ZU21 | Setzungen des freien Paketteils bestätigen oder ändern (N12 (u), erweitert in N13) | Anwender | vor der ersten Auslieferung |
 | ZU23 | Anwenderentscheid 24.09.2026: auch die Originalwerte der VDI 4655 im Repositorium werden nach der Regel ZU19 abgeleitet aufgenommen — umgesetzt für die Ableitung und das Grundlagenpapier (Nachtrag N14, Absatz ZU23) | Anwender (entschieden) | Z4b |
+| ZU24 | Katalogtypen 25–27: ZU19 auf DIN EN 12831-3 Beiblatt A100 ausdehnen oder externes Katalogpaket (N15 (f)) | Anwender | vor der Auslieferung |
 | P14 | ruht bis zum Ergebnis von K8 (N1) | Agent nach K8 | Z0, eigener Schritt |
 
 ### N3 (23.09.2026) — Nachbesserung der Abschlusspapiere Z0
@@ -2833,3 +2834,97 @@ Referenzlauf der fünf CI-Projekte gegen `2026-09-24_R14_Kaelteerzeuger` **PASS*
 | ZU22 | Auslieferung der abgeleiteten VDI-4655-Werte; Vervielfältigungsfrage (VDI 4655 untersagt innerbetriebliche Kopien) | Anwender mit K3a/K8 | vor der Auslieferung |
 | Wiki | Abschnitt „Typtage nach VDI 4655" hochladen; Logbuch-Satz mit Versionsnummer | Anwender (Upload gebündelt) | nächster Upload |
 | Sicht | Sichtabnahme unter Windows (Übergabe, Abschnitt 12) | Anwender | nach dem Push |
+
+### N15 (25.09.2026) — Umsetzungsbefunde Z5 (Kalibrierung und Validierung): Messreihen, Vergleich, Katalog, Oberfläche
+
+**Anlass.** Stufe Z5 nach Kapitel 7: Messdatenimport, Vergleichsbericht mit den Validierungskennzahlen,
+Kalibrierung (Jahresmesswert, Nichtwohn-Parameter), Katalogausbau, Nichtwohn-Zapfkategorien,
+Oberfläche. Drei Gruppen (Kern · Katalog · Oberfläche) durch Agenten mit `model: opus` im Worktree
+`z5`, je Gruppe eine Gegenprüfung und eine Nachbesserung; Schemaschritt T4 „Messreihen" =
+**140** (`TwwSchema.SCHRITT_T4_MESSREIHEN`, symbolisch als Nachfolger des letzten fremden
+Schritts; die Nummer wanderte während der Stufe von 132 über 135, weil die Anlagenkopplung und die
+Gebäudesimulation 132–137 belegten); Protokoll
+[Z5](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Z5_Kalibrierung.md), Statuszeile #495.
+Messdaten von INEKON-Projekten lagen nicht vor (K5); validiert wurde mit erfundenen Reihen und der
+freien OpenDHW-Datei, alle Vergleichsergebnisse sind Verhältniszahlen.
+
+**Befunde und Festlegungen (Kern, Gruppe 1):**
+
+- **(a) Schemaschritt 140 `Tab_TwwMessreihe`** (STRICT, eine Zeile je Wert): `ID`, `ID_Projekt`
+  (Fremdschlüssel auf `Tab_Projekt`, ON DELETE CASCADE), `Bezeichnung`, `Groesse` (ENERGIE | VOLUMEN |
+  LEISTUNG), `Aufloesung_min` 1…1440, `Beginn` (ISO mit Uhrzeit), `Zeilenindex` ≥ 0, `Wert` ≥ 0,
+  `Quelle`, `Datum_Import`; eindeutig über (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`). Messreihen sind
+  Projektdaten: Projekttransfer und Projektkopie tragen sie, die Auslieferungsvorlage leert die Tabelle
+  (eigener Prüfposten). Der zusätzliche Index auf `ID_Projekt` ist neben dem eindeutigen Index
+  redundant und in einem späteren Schritt zu entfernen (Folge). Neue Wache: Schrittnummern der
+  Migration lückenlos aufsteigend (löst symbolische Konstanten auf).
+- **(b) Messreihenleser.** CSV mit Kopfzeile; Trenner `;`, Tabulator oder `,` (häufigster der
+  Kopfzeile, Gleichstand `;`); Zeitstempel ISO, Datum + Uhrzeit oder getrennte Spalten; Dezimalkomma
+  zulässig, wenn das Komma nicht Trenner ist; Einheit im Kopf der Wertspalte (`[kWh]`, `[m³]`, `[kW]`)
+  wählt die Größe, die Option schlägt sie; genau so viele Felder wie Kopfspalten; Auflösung aus dem
+  kleinsten positiven Abstand (1, 5, 10, 15, 60 Minuten, Tag); Lücken werden mit 0 gefüllt, gezählt
+  und benannt, über `Zapfprofil.Validierung.Lueckenanteil` abgelehnt; Grenzen 600 000 Zeilen und
+  64 MiB; negative Werte und NaN benannt abgelehnt. **Sommerzeit:** Option Ortszeit/Normalzeit; in
+  Ortszeit gilt der doppelte Zeitstempel der Herbstumstellung einmal als Folgeschritt (Hinweis), die
+  fehlende Stunde im Frühjahr als Lücke. Stundenwerte entstehen nur aus vollständigen Stunden; die
+  Ablage unterscheidet gefüllte Lücken nicht von Zeiten ohne Zapfung (Hinweis beim Rücklesen).
+- **(c) Vergleichsbericht (`Messvergleich`), nur Verhältniszahlen (K5).** (1) Jahresenergie
+  gemessen/gerechnet über genau die abgedeckten Tage (Teiljahr benannt); (2) **Band P85–P95 der
+  Dauerlinie:** Das Band ist das Quantil der **synthetischen Dauerlinie** — der 8 760 sortierten Stundenwerte der gerechneten Reihe —, bezogen auf deren größte Stundenleistung; dagegen wird die Messspitze (größter Stundenwert der Messung / größter gerechneter Stundenwert) gehalten. Lehre 1 („Messspitze ≈ P90 der synthetischen Dauerlinie") ist eine Aussage über die eine gerechnete Reihe und gilt auch für eine deterministische Rechnung ohne Ensemble; die Bandgrenzen liegen unter 1, eine Messung auf dem gerechneten Maximum liegt oberhalb. Wie weit die Stochastik streut, ist eine eigene Kennzahl `Spitzenstreuung` (Quantile der Realisierungsspitzen, ohne Ensemble benannt unbestimmt); die erste Fassung hatte beides in einer Zahl vermischt und war damit unerfüllbar (Gegenprüfung). (3) √N-Skalierung: Verhältnis der Spitzen gemessen/gerechnet mal √N
+  über die Einheitenzahl der Zonen (1 = folgt dem Gesetz); (4) Formabgleich je Tagtyp: mittlere
+  absolute Abweichung der 24 Stundenanteile gegen `Zapfprofil.Validierung.Formschwelle`, dazu der
+  verschobene Anteil ½·Σ|a−b|; (5) Monatsanteile beider Seiten über die abgedeckten Monate mit der
+  größten Abweichung. Die Messung bleibt im echten Kalender; Feiertage zählen als Werktag ihres
+  Wochentags (Hinweis an jedem vollen Tag), Schalttag und Lücken werden benannt.
+- **(d) Kalibrierung.** Der Jahresmesswert aus der Reihe geht denselben Weg wie der Handwert (4.1,
+  `Mengengeruest.Kalibrieren`): die Jahresenergie ist danach exakt der Nettomesswert; kürzere Reihen ab
+  `Zapfprofil.Validierung.Kalibrierung.MindestTage` werden mit dem Jahresgang der gerechneten Reihe
+  hochgerechnet (flach nur ohne Rechnung), der Bias ist benannt. **Nichtwohn-Parameter** als
+  Vorschlag (nichts wird gespeichert): Tagesbedarf, Wochenfaktoren (Σ 1) und Tagesgänge je Tagtyp
+  (Σ 1) als Lösung der kleinsten Quadrate über die Stundenanteile (a_h = Σ Q·x / Σ Q², nichtnegativ);
+  Übernahme als Anwenderkopie über `TwwNutzungsartCtrl.VorschlagUebernehmen` (EIGEN, „…-E<n>",
+  Herkunftsart VERFAHREN, Quelle „Kalibriert aus Messreihe …", Kategorien mitkopiert, Bandbreite
+  entfällt, Jahresgang bleibt).
+- **(e) Parameter des Paketteils (ZU21, Fortschreibung):** `Zapfprofil.Validierung.Band.Unten` 0,85,
+  `…Band.Oben` 0,95, `…Formschwelle` 0,01, `…Lueckenanteil` 0,05, `…Kalibrierung.MindestTage` 30.
+
+**Befunde und Festlegungen (Katalog, Gruppe 2):**
+
+- **(f) Katalogausbau.** Die Ableitung nach ZU19 deckt die lokalen VDI-6002-Originale vollständig ab
+  (acht Nutzungsarten, fünf Profilsätze); neu im Katalog ist das Ein- und Zweifamilienhaus (Bezugsart
+  Personen, Wochen-/Monatsgang und geteilter Tagesgangsatz der Gruppe „Wohnen groß", mittlerer Bedarf
+  als Mitte der abgeleiteten Spanne — zwei Setzungen, ZU21). Campingplatz und Hallenbäder bleiben
+  ausgelassen (keine Bezugsart des Schemas, keine Profile). **Das Ziel „25–27 Typen" ist aus VDI 6002
+  nicht erreichbar**: die Zahl stammt aus DIN EN 12831-3 Beiblatt A100, die K1/K8-gesperrt bleibt.
+  Wege: externes Katalogpaket außerhalb des Repositoriums (Kapitel 6 (b)) oder eine Ausdehnung der
+  Regel ZU19 auf die A100 — **ZU24, Anwender**.
+- **(g) Nichtwohn-Zapfkategorien.** Der Paketteil führt zwei Vorgabesätze, getrennt durch die
+  Steuerspalte `Gruppe` (Erweiterung des Paketformats N2, keine Tabellenspalte): Wohnen = die vier
+  Kategorien nach Jordan/Vajen; Nichtwohnen = zwei Kategorien nach dem OpenDHW-Muster (Kurzzapfung,
+  Duschzapfung; Werte freie Modellannahme, ZU21). Gruppenregel = Kalenderart (1 Wohnen, sonst
+  Nichtwohnen), eine Quelle `TwwSchema.Kategoriengruppe` für Vorlage, Skript, Kern, Import und Wachen;
+  ein älterer Paketteil ohne Spalte bindet wie bisher.
+
+**Befunde und Festlegungen (Oberfläche, Gruppe 3):**
+
+- **(h) Oberfläche.** Messdaten-Dialog (`TwwMessreihenDialog`, Überlagerung aus dem Zapfprofil-Dialog): Liste der Reihen des Projekts, Dateiwahl über `Dienste.Datei` mit gemerktem Ordner, Eingaben Größe, Lückenschwelle, Zeitstempel (Ortszeit/Normalzeit) und Bezeichnung, sofortige Prüfung ohne Schreibzugriff, Einspielen und Löschen mit Rückfrage, Herleitungszeilen zur Projektbindung und zu den Nullläufen; KI-Maske ohne Setzweg. Vergleichsbericht im Reiter Kennzahlen (ab Erweitert) mit Reihenwahl, nebenläufigem Lauf mit Fortschritt und Abbruch, acht Kennzahlenzeilen und einer Formzeile je Tagtyp, Strich mit Grund statt Null (die Spitzenstreuung bleibt in der Oberfläche unbestimmt, weil `Jahresensemble.StundenspitzenKw` nicht im Ergebnis reist — Folge), Veraltet-Markierung. Knöpfe „Aus Messreihe kalibrieren" (füllt Jahresmesswert, Einheit, Bilanzgrenze, Quelle und Zeitraum, nennt Hochrechnung und Bias; eine eigene Eingabe räumt die Kalibrierhinweise) und „Vorschlag übernehmen…" (Vorschau von Tagesbedarf, Wochenfaktoren und Tagesgängen, Rückfrage, Umstellung der Zone auf die Kopie). Warnliste mit den 32 Validierungs- und Kalibrierhinweisen. Kein neues Diagrammbild: 5.6 sieht für den Vergleich keines vor, die Abnahme sind Zahlen. Wiki-Abschnitte „Messdaten" und „Vergleich und Kalibrierung". Nebenfund: Esc des Zapfprofil-Dialogs prüfte die Typtag-Überlagerung nicht (behoben).
+
+**Gegenprüfungen und Nachbesserungen.** Gruppe 1: das Band war zunächst aus den Realisierungsspitzen
+gebildet und damit unerfüllbar (hoch), die Herbstumstellung wurde abgelehnt (hoch), die Schrittliste
+hatte eine Lücke — alles behoben; Teiljahr, Ausgleichsrechnung, Hochrechnung, Lückenzahl und
+Stapelablage nachgezogen. Gruppe 2: der Katalogimport bindet die Vorgabesätze je Gruppe; Provenienz-
+texte ohne Stufenkürzel. Gruppe 3: die Kalibrierung aus der Messreihe rechnet die Jahresreihe nur bei Teiljahr und dann nebenläufig mit Fortschritt und Abbruch; die Messdaten-Prüfung läuft nebenläufig und nur bei Größe, Lückenschwelle, Zeitstempel oder Datei neu; die Vorschlagshinweise stehen in der Warnliste und überleben die Übernahme; Kreuz und Esc beider Überlagerungen lesen neu; der Vergleichsbericht rechnet mit der mengengewichteten Spreizung aller Zonen und benennt sie bei Volumenreihen; ein Katalogpaket ohne Vorgabesatz wird benannt statt geraten.
+
+**Abnahme (Stufe).** Die Abnahme nach Kapitel 7 ist im Worktree an synthetischen Reihen erfüllt: die Messspitze liegt im P85–P95-Band der synthetischen Dauerlinie, die Spitzenstreuung skaliert mit √N, der Formabgleich je Tagtyp hält die Schwelle, und die Jahresenergie ist nach der Kalibrierung gleich dem Messwert; Gate und Referenzlauf gegen R14 sind grün. Echte Messreihen lagen nicht vor (K5) — die Validierung an Messdaten steht aus und ist der eigentliche Nachweis der Stufe.
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| ZU24 | 25–27 Katalogtypen: ZU19 auf DIN EN 12831-3 A100 ausdehnen oder externes Katalogpaket | Anwender | vor der Auslieferung |
+| K5 | Freigabe von INEKON-Messreihen für die Validierung; Validierungsbericht mit echten Reihen | Anwender, Agent eines Folgepostens | nach Freigabe |
+| ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel, Basis neu einfrieren | Agent eines Folgepostens, mit den Nachbarsitzungen abgestimmt | nach Sichtabnahme Z1–Z5 |
+| (a) | redundanten Index auf `Tab_TwwMessreihe.ID_Projekt` entfernen | nächster Schemaschritt des Zapfprofils | bei Gelegenheit |
+| ZU21 | Setzungen dieser Stufe bestätigen (fünf Validierungsparameter, EFH-Setzungen, Nichtwohn-Kategorien) | Anwender | vor der ersten Auslieferung |
+| Wiki | Abschnitte „Messdaten" und „Vergleich und Kalibrierung" hochladen; Logbuch-Satz | Anwender (Upload gebündelt) | nächster Upload |
+| Sicht | Sichtabnahme unter Windows (Übergabe, Abschnitt 13) | Anwender | nach dem Push |
