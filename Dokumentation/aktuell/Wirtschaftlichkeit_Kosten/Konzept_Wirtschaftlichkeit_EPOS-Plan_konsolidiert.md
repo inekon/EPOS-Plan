@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 25.09.2026** · Codestand `f7823b8e` · `SchemaStand.Zielversion` = 142 · Schemaschritte 90–142 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); E19, E20, E21, E22 und E23 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R16_Anlagenprio` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 25.09.2026** · Codestand `3936003c` · `SchemaStand.Zielversion` = 144 · Schemaschritte 90–144 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); 143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39); 144 die Nachtzeit je Gebäude (Cloud-Sitzung G4, E43); E19, E20, E21, E22, E23, E24, E25 und E26 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R18_PvAusweis` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -47,8 +47,8 @@ und der Übernahme eines gepflegten Freitexts `Nicht_Monetaer` als eine Wirkung 
 heißen jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines DDL (`WiederholperiodeSchema.SCHRITT`,
 `SCHRITT_WIEDERHOLPERIODE`, § 2.11.2, § 2.13 (3)); **126**, die Reparatur der
 Gebäude-Katalogsätze (#485), **128**, der Heizkreis je Gebäude der Anlagenkopplung, **130**, die Anschlusslängen im
-Gebäudekatalog (#493), und **131** bis **142** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
-Folgeberichtigung #496, die dritte Reparatur #505) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502), E21 (#506), E22 (#503) und E23 (#510) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+Gebäudekatalog (#493), und **131** bis **143** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
+Folgeberichtigung #496, die dritte Reparatur #505, die Quellenberichtigung der Baustoffe der Cloud-Sitzung G3) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502), E21 (#506), E22 (#503), E23 (#510), E24 (#514), E26 (#518) und E25 (#519) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -573,7 +573,7 @@ nicht addiert werden.
 | # | Position | Warum kein Zahlungsstrom |
 |---|---|---|
 | B1 | **Vermiedene Stromkosten** — Arbeit · Leistung · Summe | Die Einsparung steckt bereits in der kleineren Bezugsrechnung; in den Kapitalwert geht der **Reststrom**betrag. Zusätzliches Buchen wäre Doppelzählung (E5). Der Leistungsanteil ist regelmäßig **negativ** |
-| B2 | PV: vermiedener Bezug, Kappungs- und Ausfallmengen | dito bzw. Mengenausweis. Im Rollentarif trägt der PV-Anteil an B1 den vermiedenen Bezug der Photovoltaik; die Zeile „PV: vermiedener Bezug" zum Flat-Preis steht nur, wo die Aufteilung keinen PV-Anteil führt (umgesetzt #437) |
+| B2 | PV: vermiedener Bezug, Kappungs- und Ausfallmengen | dito bzw. Mengenausweis. Im Rollentarif trägt der PV-Anteil an B1 den vermiedenen Bezug der Photovoltaik; die Zeile „PV: vermiedener Bezug" zum Flat-Preis steht nur, wo die Aufteilung keinen PV-Anteil führt (umgesetzt #437); ihre Menge ist der Eigenverbrauch = Erzeugung der Module − Einspeisung (§ 3.6, E26 #518) |
 
 Die Rubrik kennzeichnet Block B sichtbar, etwa mit dem Vermerk `[Ausweis]` je Zeile und einer
 Summenzeile, die **nur Block A** summiert.
@@ -2383,6 +2383,23 @@ er rechnet mit dem tatsächlichen Restbezug; gespeichert ändert sich allein der
 (`Tab_ErgebnisStromMatrix.Bedarf`) der Projekte mit Photovoltaik. Probe am Beispielprojekt:
 1.179,7 = 1.094,2 + 85,5 MWh, wirksam 293.245,6 + 22.914,0 = 316.159,6 €/a.
 
+**Bedarf aller Verbraucher** (E26, #518; → Register R‑E26). Bedarf ohne jede Eigenerzeugung ist der
+Strombedarf aller Verbraucher des Anschlusses (Projektbedarf, Wärmepumpe, Heizstab, Elektrokessel,
+Kältestrom der Stufenrechnung; Reihe `STROMBEDARF_GESAMT`); auch der KWK-Split (Eigenstrom =
+min(BHKW-Strom, Bedarf nach PV-Eigennutzung)) misst sich daran, weil die Simulation das BHKW den Strom
+der Wärmepumpe decken lässt (E26, Entscheid E26‑Q3). Die Reihe ist der Rest nach der Kaskade plus
+BHKW-Strom (`SimulationControl.Strombedarf_Verbraucher_viertelstuendlich`); der Kältestrom mit eigenem
+Zähler gehört nicht dazu (E34). `StromMatrix.Baue` nimmt sie für Bedarf, PV-Eigenverbrauch, Lastbild und
+KWK-Split und fällt auf den Projektbedarf `STROMBEDARF` zurück, wo sie fehlt. An den Referenzen bleiben
+KWK-Split und Kapitalwert gleich; in einem Projekt, dessen BHKW-Strom zwischen Projekt- und Bruttobedarf
+liegt, kann der Kapitalwert über KWKG-Zuschlag, Stromsteuer und Einspeiseerlös wandern.
+
+**PV-Stromproduktion des Ausweises** (E26, E26‑Q1, E26‑Q4). `Ergebnis.Photovoltaik.Stromproduktion` ist
+die Erzeugung der Module nach Wechselrichter und Clipping (Summe der Modulzeilen); der Eigenverbrauch des
+Ausweises ist Erzeugung − Einspeisung, einschließlich der Speicherladung. Die Zeile „PV: vermiedener
+Bezug“ rechnet mit diesem Eigenverbrauch und ist damit nie negativ. Die Zeitreihe `pv_produktion.csv`
+bleibt der direkt genutzte Anteil.
+
 ## 3.7 Energiesteuer — anlagenscharf
 
 Je Betrachtungsjahr ein Rechnerlauf (Kalenderjahr = Förderbeginn + t − 1). Katalog: jüngste Zeile
@@ -2818,6 +2835,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E20 Wärmepumpe je kW elektrisch** (§ 6.3 Nr. 10; § 3.2) | Die Investitionskosten der Wärmepumpe lassen sich auch „je kW elektrisch“ bemessen; Bezugsgröße P_el = Ptherm ÷ COP am Normpunkt der Kennlinie (A2/W35, B0/W35, W10/W35, bei W35 interpoliert), ein gerechneter Zweig der Landkarte mit dem Schalter `investition` — nur Kategorie 1, die Betriebsseite bleibt unverändert (§ 3.2); im Bestand ohne Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich; A/B an 1024: 1.000 €/kW → 4.000 €), kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung a, E20‑Q6 offen beim Anwender (→ Register R‑E20). | #502 |
 | **E22 Rechenweg-Sortierung nach der Regel „99“** (§ 6.3 Nr. 18; HB1-O1) | Die acht Rechenweg-Leser der Anlagen — die fünf Leser der Wärmepumpen-, Senken- und Pufferlisten und die drei Modul-Lader für Kessel, Solarthermie und BHKW — sortieren nach `Ladeordnung.SqlAnlagenprio` wie Hydraulikbild und Erzeugerkarten: gepflegte Priorität zuerst, eine Anlage ohne Priorität hinten; Wache `AnlagenprioRechenwegTests` — keine Rechenwirkung (Anker unverändert, alle Werte und Zeitreihen gleich), allein in 1042 tauschen die beiden Wärmepumpen ihren Modulindex, deshalb die neue Basis `2026-09-25_R16_Anlagenprio` (vierzehn Projekte); kein Schemaschritt; E22‑Q1 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E22). | #503 |
 | **E23 Betriebskosten der Wärmepumpe ohne kWh** (§ 6.3 Nr. 10; § 3.2; E20‑Q6) | Die Betriebskosten der Wärmepumpe werden nicht je kWh bemessen: „je kWh elektrisch“ und „je kWh thermisch“ antworten an der Wärmepumpe GEWERK und stehen nicht in der Auswahl; eine Bestandszeile rechnet aus dem Lauf weiter und trägt an der Herleitung den Vermerk „Altbestand“ (§ 3.2, Fußnote ²); wählbar bleiben fester Jahresbetrag, Prozentbemessungen und je kW — im Bestand ohne Rechenwirkung (keine Zeile an der Wärmepumpe trägt eine kWh-Art; Anker unverändert, Referenzlauf 14/14 gegen R16 byte-gleich), kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E23). | #510 |
+| **E26 PV-Ausweis und Strommatrix-Bedarf** (§ 3.6; § 6.3 Nr. 32, 34; Befunde N1, N3 aus E25) | Die Stromproduktion der Photovoltaik ist die Erzeugung der Module (Summe der Modulzeilen), der Eigenverbrauch des Ausweises Erzeugung − Einspeisung; der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (Reihe `STROMBEDARF_GESAMT`), auch für den KWK-Split — „PV: vermiedener Bezug“ nicht mehr negativ, im Rollentarif vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv (1040 −4.496 → +1.332 €/a); Kapitalwert an allen Ankern bitgleich; neue Basis `2026-09-25_R18_PvAusweis`, einzige Wirkung `Photovoltaik.Stromproduktion` in vier `aggregate.csv`; kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26). | #518 |
 
 ## 6.2 Regressionsanker
 
@@ -2879,7 +2897,7 @@ Kern Zeichen für Zeichen den Weg von vorher.
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
 | Vermiedene Kosten des Beispielprojekts über den Kernweg (Matrix, Tarifrechner, Verteilschlüssel) | **316.159,6 €/a** = 293.245,6 + 22.914,0 | gemessen (#437, `VermiedeneMengeOhneEigenerzeugungTests`) — vorher 293.245,6 €/a, allein das Blockheizkraftwerk; die übrigen Anker bewegt E7a nicht |
 | Fallstudie DIN EN 17463, Anhang D (Rechenkern, BHKW gegen Kessel und Strombezug) | **64.479,51 €**; Worst **−202.801,57 €**, Best **598.319,65 €** | gemessen #455 (`AnhangDFallstudieTests`) — die Norm nennt 64.480 €, −202.802 € und 598.320 € (Toleranz ±1 €, § 2.11.2) |
-| Referenzbasis | `Referenzlaeufe/2026-09-25_R16_Anlagenprio` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
+| Referenzbasis | `Referenzlaeufe/2026-09-25_R18_PvAusweis` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2993,7 +3011,7 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
 
 30. ~~**Sieben Energieanlagen trugen `KWKG_Anlagenart = ''`**~~ — erledigt mit E7a (#437) und E7c1 (#440), siehe Protokoll; die Regel steht in § 3.6 (Vbh-Kontingent) und § 3.9, die Entscheide: → Register R‑NR und R‑E7 (E7‑Q1); vor dem Ausrollen die Live-Datenbank prüfen (Schritt 102 trifft jede leere Zeichenkette)
 31. ~~**`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.**~~ — erledigt mit E5 (#434), siehe Protokoll; Entscheid (kein Nachziehlauf): → Register R‑NR
-32. ~~**Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1)~~ — erledigt mit E7a (#437), siehe Protokoll; die Regel („ohne jede Eigenerzeugung") steht in § 3.6, der Entscheid: → Register R‑NR
+32. ~~**Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1)~~ — erledigt mit E7a (#437), siehe Protokoll; die Regel („ohne jede Eigenerzeugung") steht in § 3.6, der Entscheid: → Register R‑NR; seit E26 (#518) zählt der Bedarf alle Verbraucher des Anschlusses (Nr. 34)
 
 **Aus Etappe E18 (#492) — geschlossen**
 
@@ -3001,18 +3019,33 @@ Protokoll; die Regel steht in § 3.5 und § 2.5, die Entscheide: → Register R�
     Parameterdialog, Gruppe Strom, samt Anzeige (§ 2.4); Grenze: das Bilanzjahr nur mit Brennstofferzeuger, sonst der
     Rückfall 2026 (E19‑Q4 b, → Register R‑E19), siehe Protokoll
 
+**Aus Etappe E26 (#518) — erledigt, Restpunkte benannt**
+
+34. ~~**PV-Ausweis: Stromproduktion und Bedarf der Strommatrix** (Befunde N1 und N3 aus E25)~~ — erledigt mit E26
+    (#518): Stromproduktion = Erzeugung der Module, Eigenverbrauch = Erzeugung − Einspeisung, Bedarf der Strommatrix
+    aller Verbraucher (`STROMBEDARF_GESAMT`) auch für den KWK-Split (§ 3.6), Basis `2026-09-25_R18_PvAusweis`
+    (→ Register R‑E26), siehe Protokoll; benannt bleiben **Q6** (Strombilanz-Diagramm und Excel-Spalte
+    „Strombedarf“ zeigen weiter den Projektbedarf), **N5** (1018 negativer Netzbezug, der Rest nach der Kaskade
+    ohne Klemme — kapitalwertwirksam, Empfehlung eigene Welle E27) und **N6** (die Übersicht „Strombedarf mit
+    Eigenverbrauch“ ohne Kältestrom)
+
+**Aus Etappe E25 (#519) — erledigt**
+
+35. ~~**Kein Projekt der Testdatenbank führt eine PV-Anlage mit vollständigem Preissatz** (Befund aus E9a; E21‑Q9,
+    bis dahin ohne eigene Nummer unter Nr. 24 geführt)~~ — erledigt mit E25 (#519): Prüfprojekt 1048 „PV mit Preisen“
+    ohne Referenzrolle (Kopie von 1040, VDI 6007, 10,40 kWp, Strom- und Erdgaspreis, Parametersatz mit
+    Einspeisevergütung, PV-Kostenpositionen), gehalten von `PvPreisProjektTests`; die Basis R18 bleibt (→ Register
+    R‑E25, R‑E21), siehe Protokoll; benannt bleiben die an 1048 nicht angelegte Vergütungszeile und Tarifstruktur
+    (DV-Entgelt, PPA und Rollentarif nur im Test) und die Wiederholung des Skripts nach jeder Neufassung der
+    Testdatenbank ohne 1048
+
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-25_R16_Anlagenprio`); **offen bleiben allein die Betriebskosten von 1030**
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-25_R18_PvAusweis`); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. ~~resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie~~ — erledigt mit E21 (#506), siehe Protokoll
-24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
-    WP-Kennlinie 1024 ohne HT-Stützstellen — **gemessen 25.09.2026, benannt:** 1018 (Kessel ohne Energieträger, Puffer
-    ohne Temperaturpaar) und 1023 (Kessel ohne Energieträger, keine eps-Zeile Erdgas) sind Kandidaten für die nächste
-    Neueinfrierung nach R16; 1024 (WP-Kennlinie endet beim Herstellerkatalog bei 20 °C) ist kein Datenfehler, der Kern
-    kappt statt zu extrapolieren; 1030 bleibt Anker, nicht angefasst; 1026 ist ein gewollter Prüffall ohne
-    Stromträger; keine Datenpflege, siehe Protokoll E21
+24. ~~Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar; WP-Kennlinie 1024 ohne HT-Stützstellen~~ — erledigt mit E24 (#514): 1018 und 1023 gepflegt (Kessel mit Energieträger „Erdgas E“, 1023 dazu Erdgas-Projektzeile und Preisstand), Basis `2026-09-25_R17_Datenpflege`; benannt bleiben der 1018-Puffer ohne Temperaturpaar, 1024 (kein Datenfehler), 1030 (Anker) und 1026 (Prüffall), siehe Protokoll
 
 ## 6.4 Fallstricke zur Wiederverwendung
 
@@ -3110,7 +3143,22 @@ Basis R16; E22‑Q1 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑
 Nr. 10 nach dem Anwenderentscheid E20‑Q6 vom 25.09.2026 (b, erweitert auf Strom und Wärme): Die Betriebskosten der
 Wärmepumpe werden nicht je kWh bemessen, eine Bestandszeile rechnet weiter und trägt den Vermerk „Altbestand“ (§ 3.2,
 Fußnote ²) — ohne Schemaschritt und im Bestand ohne Rechenwirkung; sieben Fragen entschieden 25.09.2026, nach
-Empfehlung a (→ Register R‑E23). Aus der
+Empfehlung a (→ Register R‑E23). Die Datenpflege **E24 (#514)** erledigt Nr. 24 nach dem Anwenderentscheid vom
+25.09.2026 („nehme die Empfehlungen vor: für Später“): Die Kessel der Referenzprojekte 1018 und 1023 tragen den
+Energieträger „Erdgas E“, 1023 rechnet mit der neuen Erdgas-Projektzeile in einer frischen Wirtschaftlichkeit erstmals
+Energiekosten und Kapitalwert — ohne Schemaschritt; in der Simulation wechselt allein die Trägerkennung der Kessel in
+zwei `aggregate.csv`, deshalb die neue Basis R17; sechs Fragen entschieden 25.09.2026, nach Empfehlung (→ Register
+R‑E24). Die Welle **E26 (#518)** berichtigt nach dem Anwenderentscheid vom 25.09.2026 („Befunde aus E25:
+Empfehlung/bearbeiten“) den PV-Ausweis und erledigt Nr. 34: Die Stromproduktion der Photovoltaik ist die Erzeugung
+der Module, der Bedarf der Strommatrix zählt alle Verbraucher des Anschlusses (§ 3.6) — ohne Schemaschritt, der
+Kapitalwert an allen Ankern gleich; allein `Photovoltaik.Stromproduktion` in vier `aggregate.csv` wechselt, deshalb die
+neue Basis R18; sieben Fragen entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26); benannt bleiben Q6, N5 und
+N6 (Nr. 34). Die Welle **E25 (#519)** erledigt nach dem Anwenderentscheid vom 25.09.2026 („nehme die Empfehlungen
+vor: für Später“, E21‑Q9 a) Nr. 35: Die Testdatenbank führt mit dem Prüfprojekt 1048 „PV mit Preisen“ erstmals eine
+PV-Anlage mit vollständigem Preissatz — ohne Referenzrolle, ohne Schemaschritt und ohne neue Basis (R18 bleibt,
+Referenzlauf 14/14 byte-gleich); `PvPreisProjektTests` hält Einspeiseerlös, Szenarien C und D, vermiedene Kosten,
+Formelmappe und Kapitalwert-Anker; zehn Fragen entschieden 25.09.2026, alle a, nach Empfehlung (→ Register R‑E25).
+Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -3178,6 +3226,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | § 6.3 Nr. 10 · § 3.2 (Tafel der Runde 1) · H1-1b · H4a · H4b · R‑Rest Nr. 10 · E20‑Q1…Q8 | — | — | **#502** | E20: „je kW elektrisch“ an der Wärmepumpe nur bei den Investitionskosten, P_el = Ptherm ÷ COP am Normpunkt der Kennlinie, Schalter `investition` der Landkarte, Herleitung mit zwei neuen Schlüsseln; E20‑Q6 offen; kein Schemaschritt |
 | § 6.3 Nr. 18 · HB1-O1 · R‑Rest Nr. 18 · E18‑Q3 · E22‑Q1 | — | — | **#503** | E22: die acht Rechenweg-Leser nach `Ladeordnung.SqlAnlagenprio` (Regel „99“), die Vermerke HB1-O1 entfernt, Wache `AnlagenprioRechenwegTests`; neue Basis `2026-09-25_R16_Anlagenprio`; kein Schemaschritt |
 | § 6.3 Nr. 10 · § 3.2 (Tafel der Runde 1, Fußnote ²) · R‑Rest Nr. 10 · E20‑Q6 · E23‑Q1…Q7 | — | — | **#510** | E23: „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster der Wärmepumpe gesperrt (GEWERK), eine Bestandszeile rechnet weiter mit dem Herleitungsvermerk „Altbestand“ (ein neuer Schlüssel); E23‑Q6 und Q7 entschieden a; kein Schemaschritt |
+| § 3.6 · § 2.6 (Block B, Zeile B2) · § 6.3 Nr. 32 und Nr. 34 · E26‑Q1…Q7 | — | — | **#518** | E26: `Photovoltaik.Stromproduktion` = Erzeugung der Module, Eigenverbrauch des Ausweises = Erzeugung − Einspeisung, Reihe `STROMBEDARF_GESAMT` als Bedarf der Strommatrix und des KWK-Splits; neue Basis `2026-09-25_R18_PvAusweis`; kein Schemaschritt |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 = **#463** (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474; Günstig und Ungünstig in Formeln, Punkt 11 #477; Punkt 6 mit dem Risiko und die Risikozeilen der Mappe #478; Punkte 2b und 3b mit der Wirkungsliste #479), U15 erledigt #461/#462, U10 entfallen #462 |
 
@@ -3214,6 +3263,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E20** — Wärmepumpe je kW elektrisch (§ 6.3 Nr. 10) | die Investitionskosten der Wärmepumpe auch „je kW elektrisch“, P_el = Ptherm ÷ COP am Normpunkt der Kennlinie (A2/W35, B0/W35, W10/W35, bei W35 interpoliert), nur Kategorie 1, die Betriebsseite unverändert; im Bestand ohne Rechenwirkung, kein Schemaschritt; E20‑Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, E20‑Q6 offen beim Anwender (→ Register R‑E20) | **#502** (Merge `49ea20e0`) |
 | **E22** — Rechenweg-Sortierung nach der Regel „99“ (§ 6.3 Nr. 18) | die fünf Rechenweg-Leser und die drei Modul-Lader nach `Ladeordnung.SqlAnlagenprio` wie Hydraulikbild und Erzeugerkarten, gepflegte Priorität zuerst, ungepflegt hinten; ohne Rechenwirkung, allein der Modulindex der Wärmepumpen in 1042, neue Basis R16 (vierzehn Projekte); kein Schemaschritt; E22‑Q1 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E22) | **#503** (Merge `76f8661d`) |
 | **E23** — Betriebskosten der Wärmepumpe ohne kWh (§ 6.3 Nr. 10, E20‑Q6) | „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster der Wärmepumpe gesperrt, Bestandszeilen rechnen weiter mit dem Vermerk „Altbestand“; wählbar bleiben fester Jahresbetrag, Prozentbemessungen und je kW; im Bestand ohne Rechenwirkung, kein Schemaschritt; E23‑Q1…Q7 entschieden 25.09.2026, nach Empfehlung a (→ Register R‑E23) | **#510** (Merge `f7823b8e`) |
+| **E26** — PV-Ausweis und Strommatrix-Bedarf (Befunde N1, N3 aus E25; § 6.3 Nr. 34) | die Stromproduktion der Photovoltaik als Erzeugung der Module, der Eigenverbrauch des Ausweises als Erzeugung − Einspeisung, der Bedarf der Strommatrix aller Verbraucher (`STROMBEDARF_GESAMT`) auch für den KWK-Split; Kapitalwert an den Ankern gleich, neue Basis R18 (vierzehn Projekte), kein Schemaschritt; E26‑Q1…Q7 entschieden 25.09.2026, nach Empfehlung (→ Register R‑E26); Restpunkte Q6, N5, N6 | **#518** (Merge `025a8707`) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

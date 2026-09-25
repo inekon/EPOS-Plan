@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N19 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N20 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1418,7 +1418,7 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 **Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
 des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
-am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme, ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme, ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1482,6 +1482,10 @@ Papier voraussetzt:
 | **ZU27** | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import (N14 (c), N15 (m)): an ZU7 koppeln oder liegen lassen? | **nicht an ZU7 koppeln** — der Typtag-Weg ist eine wahlfreie Jahresgang-Alternative allein für Brauchwasser und für VDI 6007 nicht erforderlich; liegen lassen, bis ein Anwender ihn einsetzt | **zurückgestellt 25.09.2026** (N19, Empfehlung angenommen): nicht an ZU7 gekoppelt, die Bewölkungsschwelle bleibt bis dahin an erfundenen Werten geprüft |
 | **ZU28** | Anzeige des Herkunftsprotokolls (N13 (b), N18 (b)): Herleitungszeilen der Stufe Experte oder eigene Karte? | **eigene Karte** im Ergebnisbereich — die Herleitungszeile trägt einen Satz, das Protokoll trägt je Zone ein Dutzend Werte | **entschieden 25.09.2026** (Anwender: „Anzeige ermöglichen (eigene Karte im Ergebnisdialog)"), **umgesetzt (N19)**: zugeklappte Karte „Herkunft" ab Stufe Erweitert, dieselbe in der Auslegung |
 | **ZU29** | Größenschutz des Typtag-Paketlesers (`TwwTyptagCtrl.PaketLesen`): nachziehen wie beim Katalogimport? | **ja**, dasselbe Muster wie `TwwNutzungsartCtrl.PaketLesen` (N18 (c)): drei Grenzen als Konstanten, Prüfung aus dem Zentralverzeichnis **und** beim Lesen, Pfadprüfung, eigene Kennungen des Lesers | **entschieden 25.09.2026** (N19, Empfehlung angenommen), **umgesetzt (N19)** |
+| **ZU30** | Was ist eine Dublette bei einem eingespielten Bedarfstag — und darf er eine vorhandene Zeile ändern? | **ersetzen am Platz**: gleicher Bezeichner und gleiche Katalogversion, gleicher Inhalt — übersprungen; abweichender Inhalt — die vorhandene Zeile trägt die Werte des Pakets, mit derselben `ID`, damit ein Projekt weiter darauf zeigt | **entschieden 25.09.2026**, **umgesetzt (N20)**: „importierter Bedarfstag darf eine vorhandene Auslieferungszeile ersetzen. Hinweis geben."; auch eine Auslieferungszeile, danach Stand `IMPORT`, `ReadOnly` 0, zwei Hinweise im Bericht |
+| **ZU31** | Was tut der Import mit einem Parameter, den der Katalog schon führt? | **den Wert ersetzen** — ein Parameter ist ein Wert, keine Version; keine Bildung von „(Import n)" | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Import ersetzt den Wert. Hinweis geben"; ein Schlüssel, den kein Rechenweg liest, eine abweichende Einheit und ein Wert außerhalb des Bereichs sind benannt abgelehnt (`TwwParameterkatalog`) |
+| **ZU32** | Wie berichtet ein Import, der drei Tabellen anfasst? | **je Tabelle eigene Zeilen** mit Ergebnis und Grund, im Dialog als Gruppen | **entschieden 25.09.2026**, **umgesetzt (N20)**: „Bericht: je Tabelle eigene Zeilen mit Ergebnis und Grund"; Reihenfolge Bedarfstage, Parameter, Nutzungsarten, dazu der Prüflauf „Nur prüfen, nichts schreiben" mit „würde …" |
+| **ZU33** | Welche Regeln prüft der Import an einem Bedarfstag und an einem Parameter? | **nach Empfehlung**: Wertemengen, Tagesfenster der Ereignisse, positive Energiesumme, lückenlose Reihenfolge, bekannter Parameterschlüssel samt Einheit und Bereich; ein Fehler lehnt nur den Eintrag ab | **entschieden 25.09.2026** („Prüfung: Empfehlung"), **umgesetzt (N20)** mit zwei benannten Abweichungen: eine leere `Bezugsmenge` bleibt erlaubt, und ein Ereignis ohne seinen Bedarfstag lehnt das Paket als Ganzes ab |
 
 ---
 
@@ -3416,3 +3420,113 @@ Konstanten als Vorgabe**, damit ein Test an Kilobyte messen kann statt an 64 MB.
 | Logbuch | ein Satz: „Das Brauchwasser-Zapfprofil zeigt ab der Stufe Erweitert eine Karte ‚Herkunft', die je Wert der Rechnung nennt, woher er kommt." — Version beim Anwender zu erfragen | Anwender (Upload gebündelt) | nächster Upload |
 | Wiki | Abschnitt „Vorschau" der Seite Brauchwasser-Zapfprofil (Absatz zur Karte „Herkunft", Anker `herkunft`) hochladen | Anwender (Upload gebündelt) | nächster Upload |
 | Sicht | Sichtabnahme unter Windows: Stufe Erweitert, Karte „Herkunft" aufklappen — je Wert eine Zeile mit Stand und Quelle, in der Reihenfolge des Rechenwegs; in der Stufe Einfach steht keine Karte; die Auslegung zeigt dieselbe Karte | Anwender | nach dem Push |
+### N20 (25.09.2026) — Katalogimport der Bedarfstage und Parameter (ZU30 bis ZU33)
+
+**Anlass.** Der letzte Folgeposten aus N13 (s) und N18 (c): Der Anwender-Katalogimport nahm allein
+die vier Dateien des Nutzungsartkatalogs an; für `Tab_TwwBedarfstag_STAMM`,
+`Tab_TwwBedarfstagEreignis_STAMM` und `Tab_TwwParameter_STAMM` fehlten Dublettenregel, Prüfung und
+Berichtszeilen. Ein Agent mit `model: opus` im Worktree `zi`, Zweig `zi` von `822ba803`, **ohne
+Schemaschritt** (Testdatenbank unberührt, Schemastand 143); Referenzbasis
+`2026-09-25_R16_Anlagenprio`. Protokoll:
+[`2026-09-25_Katalogimport_Bedarfstage_Parameter.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Katalogimport_Bedarfstage_Parameter.md).
+
+**Die vier Entscheide des Anwenders vom 25.09.2026 im Wortlaut:** „Bedarfstage: Was ist eine
+Dublette: importierter Bedarfstag darf eine vorhandene Auslieferungszeile ersetzen. Hinweis geben. /
+Parameter: Import ersetzt den Wert. Hinweis geben / Bericht: je Tabelle eigene Zeilen mit Ergebnis
+und Grund / Prüfung: Empfehlung" — die Zeilen ZU30 bis ZU33 in Kapitel 9.
+
+**(a) Drei wahlfreie Dateien im Paket.** `IMPORT_TABELLEN` führt sie in Einspielreihenfolge vor den
+vier bekannten: Bedarfstag, seine Ereignisse, Parameter. Format wie im Werkzeugweg (Kopfzeile,
+Trenner `;` oder `,`, Punkt als Dezimalzeichen, Provenienzspalten). Die `ID` eines Bedarfstags ist
+**nur Schlüssel des Pakets** — die Ereignisse verweisen über `ID_Bedarfstag` darauf, die Datenbank
+vergibt die echte; dieselbe Regel wie `ID_Tagesgangsatz`. Fehlt eine Tabelle im Schema, ist ihre
+Datei benannt übergangen (`KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE`,
+`KATALOGIMPORT_PARAMETER_OHNE_TABELLE`); ein Paket mit der Spalte `Bezugsart` an einer Datenbank vor
+Schritt 124 fällt nicht, seine Angabe bleibt benannt liegen
+(`KATALOGIMPORT_BEZUGSART_OHNE_SPALTE`).
+
+**(b) Ersetzen statt Versionsbildung (ZU30, ZU31).** Ein Bedarfstag ist über `Bezeichner` und
+`Katalogversion` bestimmt, ein Parameter über `Schluessel` und `Katalogversion`. Gleicher Inhalt —
+übersprungen (`KATALOGIMPORT_GLEICH_VORHANDEN`; verglichen werden beim Bedarfstag `Quelle_Art`,
+`Bezugsmenge`, `Bezugsart` und die Ereignisse in ihrer Reihenfolge, beim Parameter Wert und Einheit,
+die Provenienz jeweils nicht — dieselbe Gruppenregel wie bei den Nutzungsarten). Abweichender Inhalt
+— die vorhandene Zeile trägt danach die Werte des Pakets, **am Platz und mit derselben `ID`**, damit
+ein Projekt, das den Bedarfstag gewählt hat, weiter darauf zeigt; die Ereignisse werden vollständig
+ersetzt. Die Zeile ist danach eine Anwenderzeile: `Status = 'IMPORT'`, `ReadOnly = 0`, ohne `Beleg`,
+Herkunftsart `IMPORT` (`FREI` und `FIKTIV` bleiben, `ImportHerkunft`). **Auch eine Zeile der
+Auslieferung** — das ist der Kern des Entscheids ZU30 und der einzige Ort des Katalogs, an dem der
+Import eine vorhandene Zeile anfasst. Eine Version „(Import n)" gibt es hier nicht: Ein Parameter ist
+ein Wert, keine Version.
+
+**(c) Was mit der gelieferten Fassung geschieht — geprüft, nicht behauptet.** Der Hinweis
+`KATALOGIMPORT_AUSLIEFERUNG_ERSETZT` nennt Zahl und Namen der ersetzten Auslieferungszeilen und sagt,
+dass die gelieferte Fassung **nicht von selbst zurückkommt**. Zwei Messungen dahinter:
+`Erstbereitstellung` kopiert die Vorlage mit `File.Copy(…, false)` — ein Programmupdate legt die
+Datenbank des Anwenders nie neu an; und `Werkzeuge/Auslieferungsvorlage/TwwKataloge.Bereinigen`
+**löscht** jede Zeile, die nicht `Status = 'AUSLIEFERUNG'` trägt — eine aus dieser Datenbank gebaute
+Vorlage führt die ersetzte Zeile also gar nicht mehr. Die gelieferte Fassung braucht deshalb eine
+neue Installation oder ein Katalogpaket, das sie führt. Für ersetzte Parameter nennt
+`KATALOGIMPORT_PARAMETER_WIRKUNG` zusätzlich, dass sie für jede weitere Auslegung und jede
+Validierung dieser Katalogversion gelten.
+
+**(d) Die Liste der gelesenen Parameterschlüssel — neu, weil ZU31 sie braucht.** Ein Schlüssel, den
+kein Rechenweg liest, wäre eine stille Zeile im Katalog. `TwwParameterkatalog`
+(`EPOS.Kern/Allgemein/Zapfprofil/TwwParameterschluessel.cs`) führt **69 Einträge** mit Schlüssel,
+Einheit und zulässigem Bereich, gespeist aus den Konstanten von `ZapfAuslegungParameter`,
+`ZapfParameter` und `ZapfStochastikParameter` — kein zweites Literal. Vier Einträge sind **Vorsätze
+einer Familie** (`DIN4708.Profil.Block.`, `Konstruktor.Regel.`,
+`Speicherauslegung.Nenninhalt.Liste.`, `Zapfprofil.Stochastik.Quantil.P`); sie nehmen nur einen
+Schlüssel MIT Rest an, und wo die Glieder verschiedene Einheiten tragen (ein Zapfblock führt Beginn
+und Dauer in Minuten, den Anteil dimensionslos), prüft der Import keine Einheit. Die Wache
+`EPOS.Kern.Tests/TwwParameterschluesselWacheTests` hält beide Seiten gleich und prüft zusätzlich,
+dass jeder Parameter des freien Paketteils bekannt, in seiner Einheit und in seinem Bereich bleibt —
+sonst lehnte der Import die eigene Auslieferung ab. **Die Bereiche sind Rahmen, keine Fachwerte:**
+Sie fangen den Zahlendreher und die verrutschte Zehnerpotenz ab; den Fachwert setzt der Katalog.
+
+**(e) Prüfung (ZU33, nach Empfehlung).** Bedarfstag: `Quelle_Art` aus {2, 3, 4, 5} — die 1 ist das
+Stundenprofil der Zonen und entsteht im Lauf, nie in einem Katalog —, `Bezugsart` 1 bis 7 oder leer,
+mindestens ein Ereignis, jedes Ereignis im Tag (`Minute_Beginn` 0 bis 1439, `Dauer_min` ab 1, Ende
+höchstens 1440), `Energie_Kwh` nicht negativ und in der Summe positiv, `Reihenfolge` lückenlos ab 1.
+Ein Fehler lehnt **nur diesen Bedarfstag** ab, wie bei den Nutzungsarten. Parameter: unbekannter
+Schlüssel (`KATALOGIMPORT_PARAMETER_UNBEKANNT`), abweichende Einheit
+(`KATALOGIMPORT_PARAMETER_EINHEIT`), Wert außerhalb des Bereichs (`KATALOGIMPORT_PARAMETER_BEREICH`).
+
+- **Abweichung zur Auftragszeile „`Bezugsmenge` > 0": eine leere Bezugsmenge bleibt erlaubt.** Die
+  Spalte ist im Schema `REAL` ohne `NOT NULL`, und der Ecodesign-Bedarfstag des freien Paketteils
+  führt keine — ohne Bezugsmenge wird ein Tag nie skaliert, das ist eine Aussage und kein Mangel.
+  Geprüft wird deshalb: leer **oder** positiv (`KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE`). Mit der
+  strengen Lesart wäre der eigene Paketteil nicht mehr einspielbar.
+- **Abweichung: Ein Ereignis ohne seinen Bedarfstag lehnt das PAKET ab, nicht eine Zeile.** Der
+  Auftrag nennt „abgelehnt"; eine Berichtszeile hat ein Ereignis aber nicht — es gibt keinen
+  Eintrag, dem es zufallen könnte. Ein solcher Verweis ist deshalb ein Formfehler
+  (`KATALOGIMPORT_EREIGNIS_OHNE_TAG` mit Datei, Zeile und Paket-`ID`), und nichts ist geschrieben —
+  dieselbe Stufe wie eine unbekannte Spalte. Ein Tagesgang ohne Satz bleibt dagegen ein Hinweis: Er
+  trägt keine eigene Zeile im Katalog, ein Ereignis dagegen schon.
+
+**(f) Bericht in Gruppen und Prüflauf (ZU32).** Jede Berichtszeile trägt ihre Tabelle
+(`TwwImportbereich`), und der Bericht führt sie in der Reihenfolge Bedarfstage, Parameter,
+Nutzungsarten. Der Katalogdialog zeigt je Tabelle eine eigene Gruppe mit eigener Überschrift und
+eigenem Spaltenkopf (beide Sprachen); eine leere Gruppe steht nicht da. Die Zusammenfassung nennt
+jetzt vier Zahlen (angelegt · ersetzt · übersprungen · abgelehnt). **Der Prüflauf**
+(`Importieren(dateien, pruefen: true)`, im Dialog der Schalter „Nur prüfen, nichts schreiben")
+rechnet denselben Bericht und rollt den Vorgang zurück; die Ausgänge lauten dann „würde anlegen",
+„würde ersetzen", „würde überspringen", „würde ablehnen", der Katalog wird nicht neu geladen und die
+Statuszeile bleibt leer. Der Schalter wählt die Betriebsart eines Knopfdrucks, wird mit der
+Überlagerung zurückgesetzt und nie gespeichert — so steht er mit Vermerk in
+`KiMaskenabdeckungWacheTests`.
+
+**(g) Nachweis.** 17 Muster `ZPG_SATZ_KATALOGIMPORT_…` und zwölf Beschriftungen `ZPGK_IMPORT_…` in
+beiden Sprachen; das Probepaket unter `EPOS.Kern.Tests/Proben/Zapfprofil/Katalogpaket/` führt drei
+weitere Dateien mit erfundenen, runden Werten. Gates: Kern-Filter 0 Fehler, voller Testlauf 0 Fehler
+(14 643 erfolgreich), Windows-Schale 0 Fehler, `SqlDialektPruefer` 0 Fundstellen,
+Auslieferungsvorlage-Tests 36 erfolgreich, Referenzlauf der sechs CI-Projekte gegen
+`2026-09-25_R16_Anlagenprio` **GESAMT: PASS**, Designer wiederholbar.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| Wiki | Seite „Brauchwasser-Zapfprofil" (Abschnitt Katalogimport) hochladen | Anwender (Upload gebündelt) | nächster Upload |
+| Logbuch | ein Satz: „Der Katalogimport für Brauchwasser nimmt auch Bedarfstage und Parameter an und ersetzt vorhandene Werte mit Hinweis." — Version beim Anwender zu erfragen | Anwender | mit dem Upload |
+| (a) | Bereiche der 69 Parametereinträge fachlich durchsehen — sie sind Rahmen gegen Zahlendreher, keine Fachgrenzen; eine engere Grenze gehört in dieselbe Liste | Anwender | mit ZU21 |
+| Sicht | Sichtabnahme unter Windows: die drei Gruppen des Importberichts und der Schalter „Nur prüfen, nichts schreiben" | Anwender | nach dem Push |

@@ -115,7 +115,7 @@ HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;Gas
 HeizkesselModul[0].Verbrauch;11.09
 HeizkesselModul[0].Jahresnutzungsgrad;100
-HeizkesselModul[0].carrier_id;
+HeizkesselModul[0].carrier_id;63
 HeizkesselModul[0].Waermeproduktion;11.09
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1054175

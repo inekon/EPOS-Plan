@@ -468,6 +468,26 @@ braucht die 64-Bit-ACE-Engine. Bauplan und Betriebsablauf stehen im
 [`S7_Protokoll_2026-09-02.md`](../ueberholt/Protokolle/sql/S7_Protokoll_2026-09-02.md).
 Die Windows-Suite `Referenzlauf/` (Modus `migration`) ist davon unabhängig.
 
+### 7.1 Trägerzuordnung der Kessel prüfen
+
+Ein Kessel ohne Energieträger (`Tab_Energieanlagen.ID_Carrier` leer oder 0) rechnet weiter: Seine
+Emissionen nimmt der Lauf ersatzweise aus dem Brennstoffstamm des Geräts, und das
+Simulationsprotokoll meldet das einmal je Kessel (Hinweis `EMISSION_OHNE_TRAEGER_KESSEL_*`: „… hat
+keinen Energieträger zugeordnet — es gilt ersatzweise …“). Fehlt dem Projekt zudem die Projektzeile
+des Brennstoffs mit Preis (`energy_project_settings`, für Erdgas mit Preisstand in `energy_price`),
+hat eine frische Wirtschaftlichkeitsrechnung für diesen Kessel keine Energiekosten und damit
+**keinen Kapitalwert**.
+
+**In einem Bestand wird das nicht automatisch nachgezogen.** Wer Kessel ohne Träger findet, pflegt
+sie nur nach Entscheid des Anwenders: vorher sichern (Abschnitt 3), den Vorzustand prüfen, in einer
+Transaktion schreiben — nach dem Muster des einmaligen dotnet-Dateiskripts `e24_pflege`, mit dem die
+Testdatenbank gepflegt wurde (Träger 63 „Erdgas E“, Projektzeile und Preisstand als Kopie einer
+gepflegten Erdgaszeile; Protokoll
+[`E24_Datenpflege_1018_1023_R17_Protokoll.md`](../ueberholt/Protokolle/Reporting/E24_Datenpflege_1018_1023_R17_Protokoll.md)).
+Ändern können sich dabei die ausgewiesenen Emissionen: Mit Träger, aber ohne CO₂-Wert in der
+Projektzeile gilt die aktive Katalogzeile des Trägers (für Erdgas E 201 statt der 240 g/kWh des
+Rückfalls).
+
 ---
 
 ## 8. Wiederherstellung

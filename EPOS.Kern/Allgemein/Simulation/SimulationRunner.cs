@@ -986,7 +986,16 @@ namespace WindowsFormsApplication1
             {
                 var pvs = sim.simulation_pv;
                 ErgebnisPhotovoltaikModel pvm = new ErgebnisPhotovoltaikModel();
-                pvm.Stromproduktion = pvs.Stromproduktion.Sum() / 1000.0;
+                // E26 (Befund N1): die ERZEUGUNG der Module (nach Wechselrichter und
+                // Clipping) — wie das Modell sie beschreibt und wie ihre Leser sie
+                // nehmen (Kennzahl „Stromerzeugung PV", Eigenverbrauchsquote,
+                // PV: vermiedener Bezug = Erzeugung − Einspeisung). Die Reihe
+                // pvs.Stromproduktion ist seit AP2b der DIREKTVERBRAUCH (SimulationPV,
+                // „Geänderte Ausweissemantik") und bleibt als PV_GENUTZT in den
+                // Zeitreihen; ihre Summe hier machte das Feld zum genutzten Anteil, und
+                // der Ausweis zog den Überschuss ein zweites Mal ab. Gleich der Summe der
+                // Modulzeilen unten.
+                pvm.Stromproduktion = pvs.Stromproduktion_Theoretisch.Sum() / 1000.0;
 
                 // V2 (PV-Konzept § 2.3, Etappe P1): In den Speicher geladene
                 // PV-Energie ist KEINE Einspeisung — sie wirkt bereits als

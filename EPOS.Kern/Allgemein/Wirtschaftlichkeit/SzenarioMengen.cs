@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
         /// trifft. Füllstände, Temperaturen und Deckungsanteile bleiben.</summary>
         private static readonly string[] ENERGIEREIHEN =
         {
-            ZeitreihenSatz.WAERMEBEDARF, ZeitreihenSatz.STROMBEDARF,
+            ZeitreihenSatz.WAERMEBEDARF, ZeitreihenSatz.STROMBEDARF, ZeitreihenSatz.STROMBEDARF_GESAMT,
             ZeitreihenSatz.WP_WAERME, ZeitreihenSatz.WP_STROM, ZeitreihenSatz.HEIZSTAB,
             ZeitreihenSatz.BHKW_WAERME, ZeitreihenSatz.BHKW_STROM, ZeitreihenSatz.BHKW_UEBERSCHUSS,
             ZeitreihenSatz.KESSEL_WAERME, ZeitreihenSatz.SOLAR_WAERME,

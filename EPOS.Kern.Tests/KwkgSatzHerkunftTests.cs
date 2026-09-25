@@ -27,11 +27,13 @@ namespace EPOS.Kern.Tests
     /// Vergleich auf der gerundeten ANZEIGE hielte 5,5667 und 5,57 für denselben Wert
     /// und verschwiege genau die Abweichung, um die es geht.</para>
     /// </summary>
-    public class KwkgSatzHerkunftTests
+    public class KwkgSatzHerkunftTests : IDisposable
     {
         /// <summary>Deutsche Ressourcentexte gegen <c>Contains</c> — ohne Pinnung wäre
         /// der Fall auf dem Windows-Läufer (en-US) rot.</summary>
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
 
         private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 

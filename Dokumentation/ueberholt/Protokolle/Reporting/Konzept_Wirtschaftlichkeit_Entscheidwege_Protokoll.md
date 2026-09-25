@@ -1304,7 +1304,13 @@ Schemaschritt 142); der Merge #502, `49ea20e0`, lässt die Papiere unberührt), 
 (Stand `f83ce27d` = #502 samt seinen Papieren, zusammengeführt mit `origin` = `bcd61fe2` (AK1 Welle 5 mit der Basis
 R15 und #507); der Merge #503, `76f8661d`, zieht den Basisnamen an drei Stellen des Konzepts nach — Kopf, Tafel der
 Regressionsanker, § 6.3 Nr. 21), in § 8.46 und § 8.47 **vor #510** (Stand `c48de9e0` = `origin` nach #509, darin #503
-samt seinen Papieren; der Merge #510, `f7823b8e`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+samt seinen Papieren; der Merge #510, `f7823b8e`, lässt die Papiere unberührt), in § 8.48 und § 8.49 **vor #514**
+(Stand `822ba803` = `origin` nach #513; der Merge #514, `edf89ae8`, zieht den Basisnamen an drei Stellen des Konzepts
+nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21), in § 8.50 und § 8.51 **vor #518** (Stand `b8f8a168` =
+`pm26` nach #514 und #515 samt Papieren; der Merge #518, `025a8707`, zieht den Basisnamen an drei Stellen des Konzepts
+nach — Kopf, Tafel der Regressionsanker, § 6.3 Nr. 21 — und trägt „E26 ohne Schritt“ in den Kopf), in § 8.52 und
+§ 8.53 **vor #519** (Stand `ba798d8a` = `origin` nach #518 samt Papieren; der Merge #519, `3936003c`, lässt die
+Papiere des Konzepts unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2963,3 +2969,123 @@ Die Stellen, die mit E23 veraltet sind; „vorher“ ist der Wortlaut vor #510 (
 | § 6.3 Nr. 10 | Wortlaut in § 8.46 | durchgestrichen, „erledigt mit E20 (#502) und E23 (#510)“, siehe Protokoll |
 | § 7 | — | Satz zur kleinen Welle E23 (#510) |
 | Anhang | — | Kürzel- und Etappenzeile E23 |
+
+### 8.48 E24 — Datenpflege 1018/1023: Kessel-Träger, Erdgaspreis 1023, Referenzbasis R17 (#514)
+
+Protokoll [`E24_Datenpflege_1018_1023_R17_Protokoll.md`](E24_Datenpflege_1018_1023_R17_Protokoll.md); im Register die
+neue Familie R‑E24, die nachgetragene Zeile Nr. 24 von R‑Rest und die Zeilen E21‑Q3, Q4 und Q6 von R‑E21. Die Welle
+setzt den Anwenderentscheid vom 25.09.2026 zu § 6.3 Nr. 24 um — „nehme die Empfehlungen vor: für Später“ —, der die
+Kandidaten aus E21 (E21‑Q3, E21‑Q6) für die nächste Neueinfrierung aufgreift; sie ist keine Etappe des Plans E0–E12 und
+kommt ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 143 (Schritt 143 der Cloud-Sitzung G3). Die Fragen
+E24‑Q1…Q6 hat der Orchestrator am 25.09.2026 (~15:10) mit der Baufreigabe nach Empfehlung entschieden.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E24** (#514, Merge `edf89ae8` über `822ba803`, Zweig `e24` = `7da6bb81` von `822ba803`) | Datenpflege der Testdatenbank mit einem einmaligen dotnet-Dateiskript: Kessel 10369 (1018) und 11205 (1023) mit Träger 63 „Erdgas E“, für 1023 die Erdgas-Projektzeile 10130 (CO₂ 240, E24‑Q1 a) und der Preisstand 10185 (E24‑Q2); nur 1018 und 1023 (E24‑Q3), kein Gaspreis für 1018 (E24‑Q4); Fakten-Tests `DatenpflegeKesseltraegerTests`, `PreisbasisSchrittTests` 17 → 18 (E24‑Q5); Neueinfrierung `2026-09-25_R17_Datenpflege` (vierzehn Projekte, E24‑Q6) | **ja**, allein in der Wirtschaftlichkeit von 1023: eine frische Rechnung hat erstmals Energiekosten für Erdgas und einen Kapitalwert; Simulation und Emissionen unverändert, nur `HeizkesselModul[0].carrier_id` in 1018 und 1023 leer → 63, deshalb die neue Basis |
+
+*§ 6.3 Nr. 24 (vor #514):*
+
+> 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
+>     WP-Kennlinie 1024 ohne HT-Stützstellen — **gemessen 25.09.2026, benannt:** 1018 (Kessel ohne Energieträger, Puffer
+>     ohne Temperaturpaar) und 1023 (Kessel ohne Energieträger, keine eps-Zeile Erdgas) sind Kandidaten für die nächste
+>     Neueinfrierung nach R16; 1024 (WP-Kennlinie endet beim Herstellerkatalog bei 20 °C) ist kein Datenfehler, der Kern
+>     kappt statt zu extrapolieren; 1030 bleibt Anker, nicht angefasst; 1026 ist ein gewollter Prüffall ohne
+>     Stromträger; keine Datenpflege, siehe Protokoll E21
+
+**Erledigt mit E24 (#514):** Die beiden Kandidaten sind gepflegt — die Kessel von 1018 und 1023 tragen den
+Energieträger 63 „Erdgas E“, 1023 hat eine Erdgas-Projektzeile nach dem Muster von 1030 (CO₂ 240 g/kWh, 0,84 €/Nm³,
+1.200 €/a) und einen Preisstand; die Basis ist neu eingefroren als R17. Die Emissionen bleiben gleich, weil der
+Projektwert 240 in der Lesekette vor der Katalogzeile steht und derselbe Wert ist, den vorher der Rückfall auf den
+Brennstoffstamm lieferte. Die Rolle „ohne Nachweis“ von 1023 hängt an den gespeicherten Ergebniszeilen und bleibt.
+Benannt, nicht gepflegt bleiben der Puffer von 1018 ohne Temperaturpaar, 1024 (kein Datenfehler), 1030 (Anker) und
+1026 (Prüffall); dazu die übrigen Referenzkessel ohne Träger (1007, 1008, 1017, 1046, 1047; 1024 mit 0).
+
+### 8.49 Berichtigungen im gültigen Stand (#514)
+
+Die Stellen, die mit E24 veraltet sind; „vorher“ ist der Wortlaut vor #514 (Stand `822ba803`). Je Stelle eine Zeile;
+„mit dem Merge“ heißt: die Stelle hat E24/3 selbst nachgezogen.
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `f7823b8e`; `SchemaStand.Zielversion` = 142, Schemaschritte 90–142; Referenzbasis `2026-09-25_R16_Anlagenprio`; „… E19, E20, E21, E22 und E23 ohne Schritt“ | Codestand `edf89ae8`; Zielversion 143, Schritte 90–143 mit „143 die Quellenberichtigung der Baustoffe (Cloud-Sitzung G3, E39)“ (Berichtigung: Schritt 143 `BaustoffQuellenBerichtigung` stand vor #514 im Code, nicht im Kopf); Referenzbasis `2026-09-25_R17_Datenpflege` (mit dem Merge); „… E19, E20, E21, E22, E23 und E24 ohne Schritt“ |
+| Schrittabsatz | „**131** bis **142** (…, die dritte Reparatur #505)“; „…, E22 (#503) und E23 (#510) kommen ohne Schritt aus“ | „**131** bis **143** (…, die dritte Reparatur #505, die Quellenberichtigung der Baustoffe der Cloud-Sitzung G3)“; „…, E22 (#503), E23 (#510) und E24 (#514) kommen ohne Schritt aus“ |
+| § 6.2, Tafel, Zeile Referenzbasis | `Referenzlaeufe/2026-09-25_R16_Anlagenprio` | `Referenzlaeufe/2026-09-25_R17_Datenpflege` (mit dem Merge) |
+| § 6.3 Nr. 21 | „heute gilt die Basis `2026-09-25_R16_Anlagenprio`“ | „… `2026-09-25_R17_Datenpflege`“ (mit dem Merge) |
+| § 6.3 Nr. 24 | Wortlaut in § 8.48 | durchgestrichen, „erledigt mit E24 (#514)“, Rest benannt, siehe Protokoll |
+| § 7 | — | Satz zur Datenpflege E24 (#514) |
+
+### 8.50 E26 — PV-Ausweis: Stromproduktion der Module, Strommatrix-Bedarf aller Verbraucher, Referenzbasis R18 (#518)
+
+Protokoll [`E26_PvAusweis_Strommatrix_R18_Protokoll.md`](E26_PvAusweis_Strommatrix_R18_Protokoll.md); im Register die
+neue Familie R‑E26 und der fortgeschriebene Umsetzungsstand von R‑NR Nr. 32. Die Welle setzt den Anwenderentscheid vom
+25.09.2026 zu den Kern-Befunden N1 und N3 aus E25 um — „Befunde aus E25: Empfehlung/bearbeiten“ —; sie ist keine
+Etappe des Plans E0–E12 und kommt ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 143. Die Fragen E26‑Q1…Q7
+hat der Orchestrator am 25.09.2026 (~19:50) mit der Baufreigabe nach Empfehlung entschieden.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E26** (#518, Merge `025a8707` über `b8f8a168`, Zweig `e26` = `4653fa06` von `868afc57`) | N1: `Ergebnis.Photovoltaik.Stromproduktion` = Erzeugung der Module (`Stromproduktion_Theoretisch`, `SimulationRunner.cs:989-998`) statt des Direktverbrauchs (E26‑Q1 a); N3: Reihe `STROMBEDARF_GESAMT` = Rest nach der Kaskade + BHKW-Strom als Bedarf der Strommatrix, auch für den KWK-Split (E26‑Q3 a); Eigenverbrauch des Ausweises = Erzeugung − Einspeisung (E26‑Q4 a); Tests `PvAusweisStromMatrixTests` (11 Fälle); Neueinfrierung `2026-09-25_R18_PvAusweis` (E26‑Q2 a); kein Schemaschritt (E26‑Q5 a); Q6 b und Q7 als Restpunkte | **ja**, im Ausweis: „PV: vermiedener Bezug“ nicht mehr negativ, im Rollentarif vermiedene Menge und Kosten der Wärmepumpen-Projekte positiv (1040 −4.496 → +1.332 €/a, 1026 −5.401 → +1.604 €/a); Kapitalwert an allen Ankern bitgleich; in der Simulation allein `Photovoltaik.Stromproduktion` in vier `aggregate.csv`, deshalb die neue Basis |
+
+*§ 3.6 (vor #518):* Der Abschnitt „Vermiedene Stromkosten — Ausweis, kein Zahlungsstrom“ steht im Wortlaut
+unverändert; er verlangte schon „Bedarf ohne jede Eigenerzeugung“ (umgesetzt #437), die Strommatrix nahm dafür aber
+allein den Projektbedarf `STROMBEDARF` — ohne Wärmepumpe, Heizstab, Elektrokessel und Kältestrom der Stufenrechnung,
+die der Netzbezug enthält.
+
+**Erledigt mit E26 (#518):** In § 3.6 stehen der Konzeptvermerk zum Bedarf aller Verbraucher (auch für den KWK-Split,
+E26‑Q3) und die Regel der PV-Stromproduktion des Ausweises (Erzeugung der Module, Eigenverbrauch = Erzeugung −
+Einspeisung); § 6.3 Nr. 34 ist als erledigt eingetragen. Benannt bleiben Q6 (Strombilanz-Diagramm und Excel-Spalte
+„Strombedarf“), N5 (1018 negativer Netzbezug, kapitalwertwirksam, Empfehlung eigene Welle E27) und N6 (die Übersicht
+„Strombedarf mit Eigenverbrauch“ ohne Kältestrom).
+
+### 8.51 Berichtigungen im gültigen Stand (#518)
+
+Die Stellen, die mit E26 veraltet sind; „vorher“ ist der Wortlaut vor #518 (Stand `b8f8a168`). Je Stelle eine Zeile;
+„mit dem Merge“ heißt: die Stelle hat E26/4 selbst nachgezogen.
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `edf89ae8`; Referenzbasis `2026-09-25_R17_Datenpflege`; „… E23 und E24 ohne Schritt“ | Codestand `025a8707`; Referenzbasis `2026-09-25_R18_PvAusweis` (mit dem Merge); „… E23, E24 und E26 ohne Schritt“ (mit dem Merge) |
+| Schrittabsatz | „…, E23 (#510) und E24 (#514) kommen ohne Schritt aus“ | „…, E23 (#510), E24 (#514) und E26 (#518) kommen ohne Schritt aus“ |
+| § 2.6, Block B, Zeile B2 | „… steht nur, wo die Aufteilung keinen PV-Anteil führt (umgesetzt #437)“ | dazu „ihre Menge ist der Eigenverbrauch = Erzeugung der Module − Einspeisung (§ 3.6, E26 #518)“ |
+| § 3.6 | Wortlaut in § 8.50 | zwei neue Absätze „Bedarf aller Verbraucher“ (Konzeptvermerk E26‑Q3) und „PV-Stromproduktion des Ausweises“ |
+| § 6.1 | — | Zeile E26 (#518) |
+| § 6.2, Tafel, Zeile Referenzbasis | `Referenzlaeufe/2026-09-25_R17_Datenpflege` | `Referenzlaeufe/2026-09-25_R18_PvAusweis` (mit dem Merge) |
+| § 6.3 Nr. 21 | „heute gilt die Basis `2026-09-25_R17_Datenpflege`“ | „… `2026-09-25_R18_PvAusweis`“ (mit dem Merge) |
+| § 6.3 Nr. 32 | „… der Entscheid: → Register R‑NR“ | dazu „seit E26 (#518) zählt der Bedarf alle Verbraucher des Anschlusses (Nr. 34)“ |
+| § 6.3 Nr. 34 | — | neu, Block „Aus Etappe E26 (#518)“: erledigt, Restpunkte Q6, N5, N6 benannt |
+| § 7 | — | Satz zur Welle E26 (#518) |
+| Anhang | — | je eine Zeile E26 in der Kürzeltafel und in der Etappentafel |
+
+### 8.52 E25 — Prüfprojekt 1048 „PV mit Preisen“ in der Testdatenbank, ohne Referenzrolle (#519)
+
+Protokoll [`E25_Pruefprojekt_1048_PV_Preise_Protokoll.md`](E25_Pruefprojekt_1048_PV_Preise_Protokoll.md); im Register
+die neue Familie R‑E25 und der fortgeschriebene Umsetzungsstand von R‑E21 (E21‑Q9). Die Welle setzt E21‑Q9 a um — ein
+PV-Projekt mit vollständigen Preisen als eigene Welle, ein neues Projekt außerhalb der Referenzliste — mit dem
+Anwenderentscheid vom 25.09.2026, „nehme die Empfehlungen vor: für Später“; Anlass ist der Befund aus E9a, dass die
+PV-Erlösseite der Wirtschaftlichkeit nur synthetisch geprüft war. Sie ist keine Etappe des Plans E0–E12 und kommt ohne
+Schemaschritt aus, `SchemaStand.Zielversion` bleibt 144; die Referenzbasis R18 bleibt. Die Fragen E25‑Q1…Q10 hat der
+Orchestrator am 25.09.2026 (~15:20) mit der Baufreigabe nach Empfehlung entschieden, alle a. E25 ist nach E26
+gemergt; die Kern-Befunde N1 und N3, die E26 behoben hat, stammen aus der Phase 0 von E25.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E25** (#519, Merge `3936003c` über `ba798d8a`, Zweig `e25` = `e0f6d847` von `4434983b`) | Skript `Referenzlaeufe/Skripte/pruefprojekt_1048_pv_preise.cs` (wiederholbar, E25‑Q9 a): Kopie 1040 → 1048 über den Kopierweg des Programms, Gebäude nach VDI 6007 (E25‑Q1 a), 40 Module 10,40 kWp (E25‑Q2 a), Strom 0,30 €/kWh und Erdgas 0,80 €/Nm³ mit Szenariopreisen und Grundpreisen, Parametersatz mit Einspeisevergütung PV 0,08 €/kWh (E25‑Q3 a, Q5 a), Flat (E25‑Q4 a), PV-Kostenpositionen 1.200 €/kWp, Wartung 150 €/a, Instandhaltung 1 % als direkte Zeilen (E25‑Q7 a); Testdatenbank `19a7b632…` → `b68638da…`, 44.537 neue Zeilen, 0 bestehende geändert; Tests `PvPreisProjektTests` (13 Fälle, E25‑Q6 a) | **nein** — nur Testdaten; Referenzlauf 14/14 gegen R18 byte-gleich, 1048 in keiner Projektliste; an 1048 Kapitalwert Erwartet −237.134,727 €, Einspeiseerlös 564,80 €/a |
+
+*§ 6.3 (vor #519):* Das PV-Projekt mit vollständigen Preisen hatte keine eigene Nummer; E21‑Q9 verwies als Ort der
+Regel auf Nr. 24 (Datenpflege), deren Wortlaut den Punkt nicht nannte.
+
+**Erledigt mit E25 (#519):** § 6.3 Nr. 35 ist neu und als erledigt eingetragen. Benannt bleiben die an 1048 nicht
+angelegte Vergütungszeile und Tarifstruktur (E25‑Q3, E25‑Q4; DV-Entgelt, PPA und Rollentarif nur im Test) und die
+Wiederholung des Skripts nach jeder Neufassung der Testdatenbank ohne 1048.
+
+### 8.53 Berichtigungen im gültigen Stand (#519)
+
+Die Stellen, die mit E25 veraltet sind; „vorher“ ist der Wortlaut vor #519 (Stand `ba798d8a`). Der Merge #519,
+`3936003c`, lässt die Papiere des Konzepts unberührt.
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `f1a8ae83`; „… E24 und E26 ohne Schritt“ | Codestand `3936003c`; „… E24, E25 und E26 ohne Schritt“ |
+| Schrittabsatz | „…, E24 (#514) und E26 (#518) kommen ohne Schritt aus“ | „…, E24 (#514), E26 (#518) und E25 (#519) kommen ohne Schritt aus“ |
+| § 6.3 Nr. 35 | — | neu, Block „Aus Etappe E25 (#519)“: erledigt, Restpunkte benannt |
+| § 7 | — | Satz zur Welle E25 (#519) |
