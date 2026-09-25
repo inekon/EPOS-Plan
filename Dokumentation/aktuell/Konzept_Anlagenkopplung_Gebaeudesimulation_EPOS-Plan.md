@@ -50,6 +50,13 @@
 > kommt bei leerem Feld aus einem Auslegungstag (8.4). Die Ergebnisspalten der Kälteseite (`KAK-S3`,
 > 8.3) sind ein eigener Schritt. N-A4 (2.2) gilt wörtlich weiter; wirksame Kopplung heißt „Heizseite oder
 > Kälteseite wirksam". Gebaut mit der vierten Welle von AK1 (Schemaschritte 135 bis 137, 8).
+>
+> **Nachzug 25.09.2026 — AK1 Welle 5, die Stufe AK1 ist abgenommen:** Das Referenzprojekt mit Kopplung
+> steht — **1047**, eine Kopie von 1017 mit Heizkreis (Radiator, gefahrene Heizkurve) und Kühlübergabe
+> (Kühldecke), alle Auslegungswerte als Vorgaben der Art, die Wärmepumpe vor dem Elektrokessel; die Einfrierregel **„gesäte Auslegungsdaten der
+> Übergabe"** ist umgesetzt und umfasst neben `AK-S1` auch die Spalten aus `KAK-S1` (11.4); die Basis ist
+> `2026-09-25_R15_Anlagenkopplung` mit vierzehn Projekten, und die CI rechnet 1047 als sechstes Projekt mit
+> (11.5).
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -57,7 +64,7 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 25.09.2026 (Nachzug AK1 Welle 4 und E37). **Fassung:** Rev. 2 — mit **E23**, **E24**,
+**Stand:** 25.09.2026 (Nachzug AK1 Welle 5: Referenzprojekt 1047, Einfrierregel, Basis R15; AK1 abgenommen). **Fassung:** Rev. 2 — mit **E23**, **E24**,
 **E25** und **E26** fortgeschrieben, **E27**, **E36** und **E37** nachgezogen.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
@@ -2099,11 +2106,31 @@ Gegenstand benannt, nicht durchgezählt** — eine Ordnungszahl wäre in jedem z
 andere ([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.8). Ohne die
 Regel ändert die erste Saatkorrektur die Ergebnisse still.
 
+**Umgesetzt mit der fünften Welle von AK1 (25.09.2026).** Das Referenzprojekt ist **1047 „Referenz
+Anlagenkopplung AK1"**, eine Kopie des Kühlreferenzprojekts 1017 (Einzelgebäude, reversible
+Wärmepumpe) auf dem Kopierweg des Programms — so trägt es beide Seiten: Projektstufe AK1, am Gebäude
+der Heizkreis (Radiator, gefahrene Heizkurve) und die Kühlübergabe (Kühldecke, E37), alle übrigen
+Übergabespalten leer, also die Vorgaben der Art (8.4); die Wärmepumpe steht vor dem Elektrokessel, damit
+die Kennlinienwahl am gerechneten Vorlauf (6.1) auf ein Ergebnis der Basis wirkt (Jahresarbeitszahl im
+Heizbetrieb 3,84, in der Gegenprobe ohne Kopplung an der Kennlinie des Anlagenvorlaufs 3,05); 1017 bleibt
+ungekoppelt und ist der Vergleichsfall „ideal". Die Einfrierregel **„gesäte Auslegungsdaten der Übergabe"** steht in der
+Wurzel-`CLAUDE.md` und in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md): die
+Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung` eines Referenzprojekts, am Gebäude
+`Heizkreis_Aktiv` und alle Übergabespalten aus `AK-S1` (Art, Exponent, Nennleistung, Auslegungspunkt,
+Heizkurve, `Regler_Proportionalband`, `Sollwertprofil`), alle Spalten aus `KAK-S1`
+(`Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_*`, `Kuehl_Auslegung_*`, `Kuehl_Vorlaufgrenze`), die Kaskade
+eines gekoppelten Referenzprojekts und das Anlegen oder Entfernen eines gekoppelten Referenzprojekts; das
+Zeitprogramm ist das `Sollwertprofil`. Eingefroren als `2026-09-25_R15_Anlagenkopplung` (vierzehn Projekte, die dreizehn
+alten byte-gleich); gegen 1017 sinken Heizwärme um 8,3 % und Kältebedarf um 7,5 %, 1 108 Stunden mit
+begrenzter Wärmeübergabe, Überhitzungsstunden 306 → 327 — die Zahlen und ihre Erklärung stehen im
+Abschnitt „Aktuelle Basis" von [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Mit AK2
+kommt die Sperrzeit dazu, die Komfortstunden erzeugt; sie fällt dann unter dieselbe Regel.
+
 ### 11.5 CI, iOS und ChartProben
 
 - **Der Nachweis liegt auf `kern.yml` (ubuntu):** Bau und Tests des Filters, SQL-Dialekt-Prüfer,
-  ChartProben, Referenzlauf der fünf Projekte gegen die Basis. Ein grüner Kern-Lauf ist der
-  Nachweis für AK0 bis AK3.
+  ChartProben, Referenzlauf der sechs Projekte gegen die Basis — darunter das Referenzprojekt
+  1047 mit Kopplung. Ein grüner Kern-Lauf ist der Nachweis für AK0 bis AK3.
 - **Ein iOS-Lauf ist nicht begründet**, solange keine `Dienste.*`-Schnittstelle, kein Prüfmodus und
   keine Seed-Kopie betroffen ist — bei AK1 bis AK3 ist das nicht der Fall. **Der
   Wochenraster-Baustein** (9.2) ist eine Oberflächenfrage und wird am Gerät angesehen, wenn die

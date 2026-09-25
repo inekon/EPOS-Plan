@@ -170,6 +170,34 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Der Ordner der ausgelieferten Berichtsvorlagen neben der Anwendung.</summary>
+        protected const string OrdnerBerichtsvorlagen = "Vorlagen";
+
+        /// <summary>
+        /// <inheritdoc cref="IPfade.Berichtsvorlagen"/>
+        /// </summary>
+        /// <remarks>
+        /// <para><b><c>{app}\Vorlagen</c> — und kein Aufstieg.</b> Anders als
+        /// <see cref="Auslieferungsvorlage"/> braucht der Entwicklungsstand keinen zweiten Ort:
+        /// Der Ausgabeordner der Schale bekommt die Vorlage beim Bauen unter genau diesem
+        /// Unterordner (<c>WindowsFormsApplication1.csproj</c>, <c>TargetPath</c>
+        /// <c>Vorlagen\Berichtsvorlage.docx</c>), das Setup legt ihn mit der Veröffentlichung nach
+        /// <c>{app}</c>. Ein Aufstieg über die Ordner fände im Testausgabeordner nichts — die
+        /// Berichtstests laufen dort bewusst mit den Ersatzstilen oder benennen die Vorlage des
+        /// Repositoriums ausdrücklich — und könnte nur einen fremden „Vorlagen“-Ordner treffen.</para>
+        ///
+        /// <para><b>Die Windows-Fassung erbt diese Angabe</b>: <c>WindowsPfade</c> überschreibt
+        /// nur <see cref="Produktdaten"/>.</para>
+        /// </remarks>
+        public virtual string Berichtsvorlagen
+        {
+            get
+            {
+                try { return Path.Combine(AppContext.BaseDirectory ?? "", OrdnerBerichtsvorlagen); }
+                catch { return OrdnerBerichtsvorlagen; }
+            }
+        }
+
         /// <inheritdoc/>
         public string Verbinde(string wurzel, params string[] teile)
         {

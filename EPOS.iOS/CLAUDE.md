@@ -39,6 +39,7 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
 | `Dienste/` | 12 Dateien: die neun Umgebungsdienste des Kerns als `Ios*`, dazu `IosHilfeDienst` und `IosProjektQuelle` (die beiden `EPOS.UI`-Schnittstellen) und der plattformfreie `Dateifilter`. **Seit Auftrag #208 liefert `IosProjektQuelle.SimulationGaben` die Ansicht SIMULATION** — aus derselben `SimulationAnsichtQuelle` (`EPOS.UI.Daten`), die auch die Windows-Schale benutzt; die Quelle wird je Sitzung GEHALTEN, damit der gerechnete Lauf und die Bilder einen Ansichtswechsel überleben. **iU9‑W16c hat hier NICHTS geändert**: `IProjektQuelle.StartseiteGaben` (K7) und `IDateiDienst.AdresseOeffnen` (der Browserstart) sind Standardumsetzungen (`null` bzw. `false`), damit die Hülle durch die Erweiterung nicht bricht; wer Startseite und Online-Dokumentation auf dem iPad will, legt sie mit **iU11** nach, und bis dahin sagt `AppWurzel` es im Banner, statt leer zu bleiben. **`BerichteKostenGaben` ist belegt** — aus derselben `BerichteKostenHuelle` (`EPOS.UI.Daten`), die auch die Windows-Schale benutzt, und ebenfalls je Sitzung GEHALTEN: Sie führt den geteilten Gruppenstand der vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht). Benannt abgelehnt bleibt dort genau ein Weg, der Knopf „Variante anlegen" der Übersicht — er führt unter Windows in ein zweites Fenster, auf iOS ist der Variantendialog eine eigene Ansicht der Wurzel. Dazu belegt sie `KostenverwaltungGaben`, `NutzungsdauerGaben` und `GesetzeskatalogGaben`. **Seit dem Befund W16a-O-4 liefert sie auch `AssistentGaben` — den PROJEKTASSISTENTEN**, aus derselben `AssistentAnsichtQuelle` (`EPOS.UI.Daten`), die die Windows-Schale benutzt; `AssistentHuelle` ist dabei auf ihre Naht geschrumpft. **Elf der dreizehn Schritte werden hier BENANNT abgelehnt** (`AssistentPlattformwege.Ohne`): Ihre Hüllen liegen bis iU11 in `WindowsFormsApplication1/Views` und reichen einen Fensterbesitzer an die Katalogdialoge weiter. Bedienbar sind Komponentenauswahl und Projektkopf — und damit der Weg, auf dem ein Projekt entsteht und gespeichert wird. **Anwenderentscheid W16a-O-4-Q1 (13.09.2026, Weg a): Auf iOS merkt JEDER Assistentenlauf sein Projekt als „zuletzt geöffnet"** (`Dienste.Projekt.Uebernehmen`) — die Windows-Unterscheidung Startkachel/Menüweg hat hier keinen Gegenstand |
 | `Datenbankbereitstellung.cs` | Seed-Kopie beim Erststart, `DataRepository.PfadUeberschreibung`, die Gate-Zeilen `SQLite …`/`STRICT=…` und `VACUUM INTO` für die Sicherung |
 | `Pruefung/Prueflauf.cs` | der Prüfmodus für die CI (`EPOS_PRUEFLAUF`); `Ergebnisexport.cs` und `Protokoll.cs` sind aus `Referenzlauf/` **verlinkt**, nicht kopiert. Seit W16a-O-4 schreibt er hinter dem Rechennachweis eine Zeile `Assistent: …`: Er baut den Parametersatz des Projektassistenten auf der echten Datenbank in der Sandbox und meldet, welche Schritte stehen — damit belegt der iOS-Lauf den Weg, statt ihn nur zu übersetzen. Die Probe liest ausschließlich |
+| `Pruefung/Importprobe.cs`, `Pruefung/Prozessspeicher.cs` | die **Importprobe** des Prüfmodus (G4-8): nur mit zusätzlich `EPOS_PRUEFLAUF_IMPORT`, hinter dem Rechennachweis. Gemessen, erzeugt und geschrieben wird im Kern (`Importmessung.Probelauf`, Zeilen `IMPORTPROBE`/`IMPORTMESSUNG`/`IMPORTDIAGNOSE`); die Hülle steuert nur den Weg zu den Proben im Paket, die Dateifilter-Zeile und den Speicherstand bei — `phys_footprint` aus `task_info(TASK_VM_INFO)`, bei jedem Fehler der Rückfall des Kerns. Die vier Proben aus `Referenzlaeufe/Importproben/` kommen **nur mit `-p:Importproben=true`** ins Paket (`ios.yml`, Eingang `abnahme_g4a`) |
 | `Platforms/iOS/` | `Main.cs`, `AppDelegate.cs`, `Info.plist` |
 | `Resources/` | Programmsymbol und Startbild (Platzhalter bis iU13) |
 
@@ -70,6 +71,11 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
   schreibgeschützt; gearbeitet wird auf der Kopie in `Library/Application Support/WP-Plan/EPOS_PLAN`.
 - **`bundle_e_sqlite3`, nicht `bundle_green`** — dieselbe SQLite 3.53.3 wie auf Windows, Linux und
   im macOS-CI. Begründung in `Directory.Packages.props`.
+- **Kein `RuntimeIdentifiers` im Projekt; die Kennung kommt je Bau mit `-r`.** Das iOS-SDK hält
+  einen Bau für einen Simulatorbau, sobald `RuntimeIdentifier` **oder** `RuntimeIdentifiers`
+  „simulator" enthält — mit der Liste `iossimulator-arm64;ios-arm64` linkte `-r ios-arm64` gegen
+  das Simulator-SDK, ohne AOT, und zog beide `e_sqlite3.a` von `SQLitePCLRaw.lib.e_sqlite3.ios`
+  herein. Begründung im Kommentar der `EPOS.iOS.csproj`.
 - **Ein Namensraum für die ganze Hülle: `EPOS.iOS`** — auch für die Dateien unter `Dienste/`.
   Ein Unter-Namensraum `EPOS.iOS.Dienste` verdeckte den statischen Halter
   `WindowsFormsApplication1.Dienste` des Kerns: `Dienste.Pfade` löste dann gegen den eigenen
@@ -93,6 +99,12 @@ dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release -f net10.0-ios -r iossimulator-
   -p:SeedDb=../Referenzlaeufe/Kenndaten_Test.sqlite
 ```
 
+**Der Gerätebau** (`ios.yml`, Job `geraetebau`, nur mit dem Eingang `abnahme_g4a`): `-r ios-arm64`,
+Release, ohne Signatur (`-p:EnableCodeSigning=false`), ohne LLVM (`-p:MtouchUseLlvm=false`). Der Job
+baut zweimal — gewöhnlich und mit `-p:OhneXbim=true` (Kern ohne die Paketzeile `Xbim.IO.MemoryModel`,
+ohne Importprobe; nur für den Größenvergleich nach ADR-003 Aufgabe 7) — und prüft je Programm die
+Zielplattform (`xcrun vtool -show-build`: `platform IOS`, nicht `IOSSIMULATOR`).
+
 Was sich **ohne** Mac prüfen lässt, steht in
 [`../Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md`](../Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md): eine Restore-Probe mit
 `net10.0`-Stub gegen die echte `Directory.Packages.props`, ein Übersetzungslauf der
@@ -110,3 +122,9 @@ SIMCTL_CHILD_EPOS_PRUEFLAUF=1 xcrun simctl launch --console-pty <udid> de.inekon
 Die Kultur wird dabei fest auf **de-DE** gestellt — wortgleich zu
 `EPOS.Referenzlauf.Program.KulturSetzen`. Ohne das mäße der Vergleich Kulturdrift statt
 Plattformdrift.
+
+**Die Importprobe** (Gebäudeimport unter Trimming, G4-8) läuft nur in einem Release-Bau mit
+`-p:Importproben=true` und mit dem zweiten Schalter:
+`SIMCTL_CHILD_EPOS_PRUEFLAUF=1 SIMCTL_CHILD_EPOS_PRUEFLAUF_IMPORT=1 xcrun simctl launch …`. Der
+arm64-Simulator führt keinen JIT aus: Debug läuft mit dem Interpreter und ungetrimmt, Release
+AOT-only und getrimmt (`TrimMode=partial`) wie ein Gerät — deshalb baut `ios.yml` dafür in Release.

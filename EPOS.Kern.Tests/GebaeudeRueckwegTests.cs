@@ -23,7 +23,7 @@ namespace EPOS.Kern.Tests
     /// <c>Projekt_1040/waermebedarf_gebaeude.csv</c> der aktuellen Basis — und die Basis hat
     /// diese Reihe beim Einfrieren von G1 + G2 byte-gleich aus der letzten reinen
     /// Bestandsbasis übernommen. Ändert sich eine Zeile des Altwegs ergebniswirksam, wird der
-    /// Test rot. Der Referenzlauf der dreizehn Projekte hält dasselbe Projekt zusätzlich im
+    /// Test rot. Der Referenzlauf der vierzehn Projekte hält dasselbe Projekt zusätzlich im
     /// Ganzen; dieser Test läuft ohne ihn, mit dem Test-Gate und in der CI.</para>
     ///
     /// <para><b>Er endet mit der Stufe GA</b> (Löschliste, Umsetzungskonzept 6.1): Dann geht 1040
@@ -38,9 +38,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Sein einziges Gebäude, ausdrücklich auf <c>TAGESBILANZ</c>.</summary>
         public const int GEBAEUDE = 10645;
 
-        /// <summary>Die dreizehn Referenzprojekte der Basis.</summary>
+        /// <summary>Die vierzehn Referenzprojekte der Basis.</summary>
         private static readonly int[] Referenzprojekte =
-            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046 };
+            { 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047 };
 
         private readonly TestDatenbank _db;
 

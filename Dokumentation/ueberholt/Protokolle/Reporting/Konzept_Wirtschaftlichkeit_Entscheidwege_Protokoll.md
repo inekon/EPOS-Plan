@@ -1296,7 +1296,11 @@ und #482; der erste Merge #479, `0462f92e`, lässt die Papiere unberührt), in �
 24.09.2026; der Merge #484, `ae7b0ed0`, lässt die Papiere unberührt), in § 8.35 und § 8.36 **vor #492** (Stand `247e2091` = #493 mit
 Schemaschritt 130 samt den Papieren zu #484, #489, #490, #491 und #493; der Merge #492, `e79bffb1`, lässt die Papiere
 unberührt), in § 8.37 bis § 8.39 **vor #498** (Stand `f55a4cd5` = #496 mit Schemaschritt 141 samt den Papieren zu
-#492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+#492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt), in § 8.40 **vor #506**
+(Stand `cbed6dba` = #498 samt seinen Papieren, zusammengeführt mit #499 (Zapfprofilgenerator, ohne Berührung der
+Wirtschaftlichkeit); der Merge #506, `e7c2f8f7`, lässt die Papiere unberührt), in § 8.42 und § 8.43 **vor #502**
+(Stand `365143e1` = #506 samt seinen Papieren, zusammengeführt mit `origin` = `f52d38ec` (#501 und #505 mit
+Schemaschritt 142); der Merge #502, `49ea20e0`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2768,3 +2772,84 @@ gebaut.
 >     (`Wartungskosten_kwhel`) und bekommt keine Vorbelegung. Behoben ist die Asymmetrie nicht.
 
 **Belassen:** E10‑Q6 a ist bestätigt — €/kWh el. ist beim BHKW die übliche Vertragsform.
+
+### 8.40 E21 — Pflegewelle: § 6.3 Nr. 23 resx-Sammelnachtrag erledigt, Nr. 24 und die Datenlücken benannt (#506)
+
+Protokoll [`E21_Pflege_Ressourcen_Testdaten_Protokoll.md`](E21_Pflege_Ressourcen_Testdaten_Protokoll.md); im Register
+die neue Familie R‑E21. Die Welle folgt dem Anwenderwort „sonst nach Empfehlung“ vom 25.09.2026; sie ist keine Etappe
+des Plans E0–E12 und kommt ohne Schemaschritt aus, `SchemaStand.Zielversion` bleibt 141. Die Fragen E21‑Q1…Q9 hat der
+Orchestrator am 25.09.2026 (09:45) mit der Baufreigabe nach Empfehlung entschieden — alle a.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E21** (#506, Merge `e7c2f8f7` über `b5cc1a61`, Zweig `e21` = `02ea7650` von `cbed6dba`) | zwei verwaiste Ressourcenschlüssel aus de/en/Designer gestrichen (E21‑Q1 a), drei Rückfall-Literale an die resx angeglichen (E21‑Q2 a), Kommentare `KiDialoge.cs` und `SteuerGutschriftRechner.cs` nachgezogen; die Datenlücken der Projekte 1018, 1024, 1023, 1030, 1026 gemessen und benannt, keine Datenpflege (E21‑Q3…Q8 a); ein PV-Projekt mit vollständigen Preisen bleibt eine spätere, eigene Welle (E21‑Q9 a) | **nein** — Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, Testdatenbank unverändert |
+
+*§ 6.3 Nr. 23 (vor #506):*
+
+> 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
+
+**Erledigt mit E21 (#506):** 26 Schlüssel aus B3a/B3b/B4/F2/FX1–FX5 geprüft; zwei ohne Leser gestrichen
+(`PREIS_ST_GRUND_EINHEIT`, `STEUER_ENERGIEST_54_BEMESSUNG`), die übrigen tragen einen Leser, de/en sind
+deckungsgleich, keine Dubletten; drei Rückfall-Literale in `EnergietraegerHuelle.cs` auf das schließende
+Anführungszeichen der resx (U+201C) angeglichen — alle 22 Code-Rückfälle der B3/B4/F-Serie sind jetzt zeichengleich
+mit der deutschen resx.
+
+*§ 6.3 Nr. 24 (vor #506):*
+
+> 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar; WP-Kennlinie 1024 ohne
+>     HT-Stützstellen
+
+**Gemessen 25.09.2026, benannt, keine Pflege (E21):** An keinem der fünf geprüften Referenzprojekte (1018, 1024,
+1023, 1030, 1026) bleibt eine Pflege der Lücke byte-gleich gegen die Basis; 1018 (Kessel 1018251 ohne Energieträger,
+Puffer ohne Temperaturpaar) und 1023 (Kessel 11205 ohne Energieträger, keine eps-Zeile Erdgas) sind Kandidaten für
+die nächste Neueinfrierung nach R15; 1024 (WP-Kennlinie 1034317 endet beim Herstellerkatalog bei 20 °C) ist kein
+Datenfehler, der Kern kappt statt zu extrapolieren; 1030 bleibt Anker, nicht angefasst; 1026 ist ein gewollter
+Prüffall ohne Stromträger. Ein PV-Projekt mit vollständigen Preisen folgt später als eigene Welle, außerhalb der
+Referenzliste (E21‑Q9).
+
+### 8.41 Berichtigungen im gültigen Stand (#506)
+
+Die Stellen, die mit E21 veraltet sind; „vorher“ ist der Wortlaut vor #506 (Stand `cbed6dba`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `31a0b085`; „… E19 ohne Schritt“ | Codestand `e7c2f8f7`; „… E19 und E21 ohne Schritt“ |
+| § 6.3 Nr. 23 | Wortlaut in § 8.40 | durchgestrichen, „erledigt mit E21 (#506)“, siehe Protokoll |
+| § 6.3 Nr. 24 | Wortlaut in § 8.40 | „gemessen 25.09.2026, benannt: …“ (Kurztafel), Kandidaten für die nächste Neueinfrierung, siehe Protokoll |
+
+### 8.42 E20 — Investitionskosten der Wärmepumpe „je kW elektrisch“ aus der Kennlinie am Normpunkt (#502)
+
+Protokoll [`E20_Waermepumpe_kW_elektrisch_Protokoll.md`](E20_Waermepumpe_kW_elektrisch_Protokoll.md); im Register die
+neue Familie R‑E20 und die nachgezogene Zeile Nr. 10 von R‑Rest. Die Welle setzt den Anwenderentscheid zu § 6.3 Nr. 10
+vom 25.09.2026 um (§ 8.39); sie ist keine Etappe des Plans E0–E12 und kommt ohne Schemaschritt aus,
+`SchemaStand.Zielversion` bleibt 142 (#505). Die Fragen E20‑Q1…Q5, Q7 und Q8 hat der Orchestrator am 25.09.2026 (09:15) mit
+der Baufreigabe nach Empfehlung entschieden — alle a; E20‑Q6 ist offen beim Anwender.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E20** (#502, Merge `49ea20e0` über `365143e1`, Zweig `e20` = `a414b768` von `cbed6dba`) | P_el der Wärmepumpe = Ptherm ÷ COP am Normpunkt der Kennlinie `Tab_Kenndaten` bei Vorlauf 35 (A2, B0, W10 je Bauart, interpoliert, nie extrapoliert; E20‑Q1…Q4 a); `EUR_PRO_KW_ELEKTRISCH` an der Wärmepumpe nur im Investitionsraster über den Schalter `investition` der Landkarte, die Betriebsseite bleibt GEWERK (E20‑Q5 a); Beschriftung unverändert, Grund GERAET bei fehlendem Normpunkt (E20‑Q7 a, Q8 a); Herleitung mit zwei neuen Schlüsseln; 13 Testfälle und die Kreuztafel je Raster | **nein** im Bestand — keine Zeile an der Wärmepumpe trägt die Art; Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich; A/B an 1024: 1.000 €/kW → 4.000 € |
+
+*§ 6.3 Nr. 10 (vor #502):*
+
+> 10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) — **offen, präzisiert** (Anwender 25.09.2026, → Register
+>     R‑Rest): „Wärmepumpe beides“ nur bei den Investitionskosten nach kW elektrisch und kW thermisch — die
+>     kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind Energiekosten; kleine Bauwelle folgt
+
+**Anwenderregel umgesetzt mit E20 (#502):** Die Investitionskosten der Wärmepumpe bemessen sich je kW thermisch und
+je kW elektrisch — P_el am Normpunkt der Kennlinie —, die Betriebskosten thermisch. **Offen bleibt E20‑Q6:** Das
+Betriebsraster der Wärmepumpe bietet weiter „je kWh elektrisch“ (die Strommenge aus dem Lauf); ob die Art dort bleibt
+(a, Empfehlung) oder entfällt (b), entscheidet der Anwender.
+
+### 8.43 Berichtigungen im gültigen Stand (#502)
+
+Die Stellen, die mit E20 veraltet sind; „vorher“ ist der Wortlaut vor #502 (Stand `365143e1`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `e7c2f8f7`, Zielversion 141; „90–141 vergeben … E19 und E21 ohne Schritt“ | Codestand `49ea20e0`, Zielversion 142; „90–142 vergeben … 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); E19, E20 und E21 ohne Schritt“ |
+| Schrittabsatz | „**131** bis **141** (… die Folgeberichtigung #496) …; die Etappen E18 (#492) und E19 (#498) kommen ohne Schritt aus“ | „**131** bis **142** (… die Folgeberichtigung #496, die dritte Reparatur #505) …; die Etappen E18 (#492), E19 (#498), E20 (#502) und E21 (#506) kommen ohne Schritt aus“ |
+| § 3.2 Tafel der Runde 1 | ohne Zeile für die Wärmepumpe bei `EUR_PRO_KW_ELEKTRISCH` | neue Zeile „`EUR_PRO_KW_ELEKTRISCH` an der Wärmepumpe, nur Kategorie 1“ mit Σ (Ptherm ÷ COP am Normpunkt) × Satz aus `Tab_Kenndaten`; Satz „je Raster“ und Fußnote ¹ zur Normpunktregel |
+| § 6.1 | — | neue Zeile E20 |
+| § 6.3 Nr. 10 | Wortlaut in § 8.42 | „Anwenderregel umgesetzt mit E20 (#502), offen allein E20‑Q6“, siehe Protokoll |
+| § 7 | „… Nr. 10 ist präzisiert — eine kleine Bauwelle folgt —“ | dahinter der Satz zur kleinen Welle E20 (#502) |
+| Anhang | — | Kürzel- und Etappenzeile E20 |

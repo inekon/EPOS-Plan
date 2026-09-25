@@ -176,7 +176,7 @@ welches Papier zuerst hineingeht.
 | **B11** | **Kein Fremdpaket an iOS ohne Messung** | ein Paket, das der Gerätebau nicht trägt, gehört hinter eine Schnittstelle mit Fabrik in der Schale (Muster `IFlottenPlaner`) |
 | **B12** | **CI-Kontingent und Rückfragepflicht** — vor jedem macOS-, iOS- und Setup-Lauf beim Anwender nachfragen, jedes Mal | der Nachweis der Stufen liegt auf `kern.yml` (ubuntu); ein iOS-Lauf ist nur begründet, wenn die iOS-Hülle selbst betroffen ist |
 | **B13** | **Normzahlen liegen nicht im Repositorium** | der Normfallnachweis ist ein lokaler Nachweis; die Lücke im Gate gehört ins Protokoll, nicht in eine Datei |
-| **B14** | **Referenzbasis und Toleranz** — aktuell `2026-09-25_R15_Anlagenprio`, Toleranz Betrag ≥ 1 relativ 1e-4, sonst absolut 0,01; der Byte-Vergleich ist Information | jede Stufe rechnet gegen die **aktuelle** Basis; eine Datei, die nur im neuen Lauf liegt, ist ohne Schalter FAIL |
+| **B14** | **Referenzbasis und Toleranz** — aktuell `2026-09-25_R15_Anlagenkopplung`, Toleranz Betrag ≥ 1 relativ 1e-4, sonst absolut 0,01; der Byte-Vergleich ist Information | jede Stufe rechnet gegen die **aktuelle** Basis; eine Datei, die nur im neuen Lauf liegt, ist ohne Schalter FAIL |
 | **B15** | [`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md) **angenommen** (E20) — zwei getrennte Module, **eine** Weiche am Eingang, ein modellfreier Vorbereitungsschritt davor, der Altweg als **Bestandsweg für die Dauer des Übergangs** (E23, E26), die Oberfläche in **einer** Struktur | der VDI-Weg ruft nichts aus dem Altweg und der Altweg nichts aus dem VDI-Weg; kein zweites Datenmodell; **A16 gegenstandslos**, **U2 überholt**, **A15 bleibt offen** — mit der Empfehlung aus 8.4 |
 
 **Die elf Entscheide im Wortlaut ihrer Wirkung** (Quelle: Konzept-Nachtrag 1 und
@@ -980,7 +980,7 @@ Der Nachweis läuft in **vier Stufen**, und keine ersetzt eine andere:
 | **1 — Normband** | die zwölf Testbeispiele der Richtlinie mit Druckrundung (E10) | **lokal**, Prüfdatei nicht im Repositorium | läuft nicht in der CI; die Lücke im Gate gehört ins Protokoll, nicht in eine Datei |
 | **2 — unabhängige Zweitimplementierung** | der Prototyp außerhalb des Repositoriums als Prüforakel | lokal | dient der Entwicklung; maßgeblich ist Stufe 1 |
 | **3 — Proben im Repositorium** | Rechenproben, Dialogfälle, Strukturwachen, Rundläufe der Formate; dazu die drei Proben der Trennung: **Aufrufprobe** (das Modul `Gebaeude/` ruft nichts aus dem Altweg und umgekehrt), **Symmetrieprobe der Kennzahlen** (zu jeder Kennzahl, jedem Bild und jedem Deckungsweg der Wärmeseite steht das Gegenstück der Kälteseite, E21) und **Probe „Altweg-Gebäude liefert Kältebedarf 0 mit Hinweis"** | `kern.yml` bei jedem Push | prüft Verhalten, nicht Normtreue |
-| **4 — Referenzlauf** | fünf Projekte in der CI, dreizehn in der Basis, Toleranz nach B14 | `kern.yml`; Basis unter `Referenzlaeufe/` | prüft Gleichheit gegen den eingefrorenen Stand, nicht Richtigkeit |
+| **4 — Referenzlauf** | sechs Projekte in der CI, vierzehn in der Basis, Toleranz nach B14 | `kern.yml`; Basis unter `Referenzlaeufe/` | prüft Gleichheit gegen den eingefrorenen Stand, nicht Richtigkeit |
 
 **Der Prüfmodus ist ein Vertrag, kein Schalter im Dialog.** Der Eingangsbau trägt einen
 Prüfmodus-Schalter, mit dem der Kern gegen die Prototypzahlen gehalten wird. Für ihn gilt: Er wird

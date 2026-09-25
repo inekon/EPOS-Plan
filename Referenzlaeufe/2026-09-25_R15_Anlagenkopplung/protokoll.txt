@@ -1,27 +1,27 @@
-﻿# Referenzlauf (Kern) vom 25.09.2026 09:51
+﻿# Referenzlauf (Kern) vom 25.09.2026 08:22
 
-Quelle:        C:\Waermeplan\EPOS-Plan\.claude\worktrees\e22\Referenzlaeufe\Kenndaten_Test.sqlite
-Arbeitskopie:  C:\Waermeplan\EPOS-Plan\.claude\worktrees\e22\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
+Quelle:        C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Kenndaten_Test.sqlite
+Arbeitskopie:  C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
 Kultur:        de-DE
-Zielordner:    Referenzlaeufe/2026-09-25_R15_Anlagenprio
-Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046
-Dauer:         00:00:03
+Zielordner:    Referenzlaeufe/2026-09-25_R15_Anlagenkopplung
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047
+Dauer:         00:00:14
 
 ## Ablauf
 
 ```
 Referenzlauf (Kern) gestartet.
-Projektwurzel: C:\Waermeplan\EPOS-Plan\.claude\worktrees\e22
-Zielordner:    Referenzlaeufe/2026-09-25_R15_Anlagenprio
+Projektwurzel: C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99
+Zielordner:    Referenzlaeufe/2026-09-25_R15_Anlagenkopplung
 
-Quelle vorgegeben (--quelle): C:\Waermeplan\EPOS-Plan\.claude\worktrees\e22\Referenzlaeufe\Kenndaten_Test.sqlite
-Arbeitskopie angelegt: C:\Waermeplan\EPOS-Plan\.claude\worktrees\e22\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite (64 MB)
-DB-Pfad der App verifiziert: C:\Waermeplan\EPOS-Plan\.claude\worktrees\e22\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
+Quelle vorgegeben (--quelle): C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Kenndaten_Test.sqlite
+Arbeitskopie angelegt: C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite (65 MB)
+DB-Pfad der App verifiziert: C:\Users\DirkEngelmann\Documents\EPOS-Plan\.claude\worktrees\agent-a808e68d6fda90d99\Referenzlaeufe\Arbeitskopie\Kenndaten.sqlite
 
 Projektlandschaft wird gelesen ...
-25 Projekte in Tab_Projekt.
+26 Projekte in Tab_Projekt.
 
-Gewaehlte Referenzprojekte (13):
+Gewaehlte Referenzprojekte (14):
   - Projekt 1007 "Laurentiuskirche"
       Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
       Grund:       per --projekte vorgegeben
@@ -61,23 +61,26 @@ Gewaehlte Referenzprojekte (13):
   - Projekt 1046 "Prüfprojekt Speicherflotte"
       Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
       Grund:       per --projekte vorgegeben
+  - Projekt 1047 "Referenz Anlagenkopplung AK1"
+      Ausstattung: Tools: BHKW, Wärmepumpe, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
 
 Projekt 1007 "Laurentiuskirche" wird gerechnet ...
 Simulation startet fuer Projekt 1007 ...
 Simulation beendet, Ergebnis-Kopf-ID 213.
 Projekt 1007: 35 CSV-Dateien, 149 Skalare.
-  OK - 35 Dateien in 00:00
+  OK - 35 Dateien in 00:03
 Projekt 1008 "Heinestr 15" wird gerechnet ...
 Simulation startet fuer Projekt 1008 ...
 Simulation beendet, Ergebnis-Kopf-ID 214.
 Projekt 1008: 29 CSV-Dateien, 161 Skalare.
-  OK - 29 Dateien in 00:00
+  OK - 29 Dateien in 00:01
 Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
 Simulation startet fuer Projekt 1017 ...
 Simulation beendet, Ergebnis-Kopf-ID 215.
 Projekt 1017: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
 Projekt 1017: 32 CSV-Dateien, 186 Skalare.
-  OK - 32 Dateien in 00:00
+  OK - 32 Dateien in 00:01
 Projekt 1018 "BHKW Test München" wird gerechnet ...
 Simulation startet fuer Projekt 1018 ...
 Simulation beendet, Ergebnis-Kopf-ID 216.
@@ -127,8 +130,14 @@ Projekt 1046 "Prüfprojekt Speicherflotte" wird gerechnet ...
 Simulation startet fuer Projekt 1046 ...
 Simulation beendet, Ergebnis-Kopf-ID 225.
 Projekt 1046: 39 CSV-Dateien, 195 Skalare.
-  OK - 39 Dateien in 00:00
+  OK - 39 Dateien in 00:02
+Projekt 1047 "Referenz Anlagenkopplung AK1" wird gerechnet ...
+Simulation startet fuer Projekt 1047 ...
+Simulation beendet, Ergebnis-Kopf-ID 226.
+Projekt 1047: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
+Projekt 1047: 38 CSV-Dateien, 198 Skalare.
+  OK - 38 Dateien in 00:00
 
-Fertig. Gesamtdauer 00:00:03
-Erfolgreich: 13 von 13
+Fertig. Gesamtdauer 00:00:14
+Erfolgreich: 14 von 14
 ```

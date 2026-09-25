@@ -247,13 +247,30 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <!-- Berichtsmodul: Word-Rahmenvorlage in den Ausgabeordner kopieren
-       (WordBerichtGenerator.FindeVorlage sucht unter Vorlagen\Berichtsvorlage.docx) -->
+  <!-- Berichtsmodul: die Word-Vorlagen aus Allgemein\Bericht\Vorlagen nach
+       {app}\Vorlagen kopieren (Konzept Berichtsvorlagen 6.3 und 8.4; dieselben
+       Dateien stehen als MauiAsset in EPOS.iOS\EPOS.iOS.csproj, die Wache
+       EPOS.Kern.Tests/AuslieferungsvorlagenWacheTests haelt beide Lieferwege).
+       Berichtsvorlage.docx ist die Stilvorlage des WordBerichtGenerator
+       (FindeVorlage sucht Vorlagen\Berichtsvorlage.docx) und bleibt als Rueckfall
+       des Codes und Quelle der Bereinigung ausgeliefert.
+       Berichtsvorlage_Standard.docx ist die Standardvorlage mit Platzhaltern in
+       der Stufe mit dem Sammelanker {{bericht.inhalt}}, erzeugt von
+       Werkzeuge\Berichtsvorlage (Modus beispiel mit dem Schalter sammelanker)
+       aus Berichtsvorlage.docx.
+       Berichtsvorlage_Beispiel.docx ist die Beispielvorlage im vollen Aufbau zur
+       Anschauung und wird nicht ausgeliefert, bis sie in BV-E2 zur
+       Standardvorlage wird. -->
   <ItemGroup>
     <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Vorlagen\Berichtsvorlage.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage.docx</TargetPath>
+    </None>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage_Standard.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage_Standard.docx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage_Standard.docx</TargetPath>
     </None>
   </ItemGroup>
 

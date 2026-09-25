@@ -40,7 +40,10 @@ jede unveränderte Projektkopie samt Feld-Übernahmen, und die Startseite schrei
 (7.1 a); **mit #487 (24.09.2026)** tragen gespeicherte Zeilen der Gebäudeliste ihre echte Id, das
 Änderungsdatum folgt nur einer echten Änderung, und „Gebäude in DB löschen" des Projektdialogs hält
 die Löschsperre der Verwaltung (7.1 a); **mit #490 (24.09.2026)** gleicht auch der Bearbeiten-Zweig
-des Assistenten seine übrigen Gewerke ab — ein Speichern ohne Eingabe schreibt nichts (7.1 a).
+des Assistenten seine übrigen Gewerke ab — ein Speichern ohne Eingabe schreibt nichts (7.1 a); **mit
+#497 (25.09.2026)** heilen fehlende Trägersätze auch ohne Anlagenänderung, die Zuordnungszeilen tragen
+nach dem Speichern ihre echten Ids, und ein Speichern für ein anderes als das geladene Projekt wird
+benannt abgelehnt (7.1 a).
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -659,7 +662,9 @@ Schreibweg aus der Liste in die Datenbank trägt (Erzeuger über Reflexion ohne 
 Strangliste des PV-Dialogs; die Zuordnungen über Bezeichner, Summe bzw. Kanal, ohne Ids und
 Projektverweise, die der Add-Weg aus dem Bezeichner neu ableitet) —, und nur ein geändertes Gewerk wird
 gelöscht und neu angelegt. Ein unveränderter Erzeuger lässt Anlagenzeilen, Pufferzeilen, Senken,
-Stränge, Kostenanker, Projektgeräte und Trägersätze stehen; `NeueAnlagenSenkenNachziehen` läuft nur
+Stränge, Kostenanker, Projektgeräte und vorhandene Trägersätze stehen; fehlt einer vorhandenen Anlage
+ihr projektgebundener Trägersatz, legt der Zweig trotzdem genau diesen an und setzt das Datum nur dann
+(`WizardCtrl.Projekt_Energietraeger_Heilen`, #497); `NeueAnlagenSenkenNachziehen` läuft nur
 nach einem Neuschreiben der Anlagen. Der Projektsatz (`Update_Projekt`) wird nur geschrieben, wenn der
 Kopf von der Datenbank abweicht (`AssistentAbgleich.KopfGleichGespeichert`). Damit setzt ein Speichern
 ohne Eingabe das Änderungsdatum nicht, und das letzte Simulationsergebnis bleibt aktuell; eine Eingabe
@@ -667,8 +672,19 @@ in einem Gewerk schreibt genau dieses und setzt das Datum. Ohne Vergleichsstand 
 zurückgesetzt) schreibt der Zweig jedes Gewerk. Die Ladewege füllen dafür, was die Seiten beim Aufbau
 nachtragen — die Stammfelder der Wärmepumpen-Projektkopie und den Kanal des Wärmebedarfs —, sodass
 schon das Betreten einer Seite keine Änderung ist und ein Lauf, der die Seite nie zeigt, weder leere
-Stammfelder in die Projektkopie noch jeden Kanal als Heizung zurückschreibt. Nachweis:
-`AssistentAbgleichTests`. Die Startseite schreibt in **einem**
+Stammfelder in die Projektkopie noch jeden Kanal als Heizung zurückschreibt. Nach dem Festschreiben
+tragen auch die Zeilen der vier übrigen Zuordnungen (Prozesswärme, Stromverbraucher, Stromganglinie,
+externer Wärmebedarf) ihre echte Zuordnungs-Id und den Verweis auf ihre Projektkopie statt der
+vorläufigen Id ab 100000 (`WizardCtrl.IdNachzug`, bei einem Rückzug verworfen); der Abdruck wird danach
+genommen, ein zweites Speichern schreibt nichts (#497). Der Abdruck gehört dem Projekt, dessen Stand die
+Listen tragen (`AssistentCtrl.ListenProjektId`, gesetzt von `Laden` und nach jedem gelungenen
+Speichern): Weicht es im Bearbeiten-Zweig vom zu speichernden Projekt ab — Projektwechsel in der linken
+Spalte ohne erneutes Durchlaufen der Projektseite, oder nie geladen —, lehnt `Speichern` benannt ab
+(`AssistentAusgang.ProjektGewechselt`, Meldung `WIZ_PROJEKT_GEWECHSELT`) und schreibt nichts; ein
+Zwangs-Neuladen verwürfe die Eingaben des Laufs still und ist deshalb nicht gewählt (#497). Nachweis:
+`AssistentAbgleichTests`; Feld-für-Feld-Nachweis am Windows-Gerät (R-W16-6) für den bearbeiteten Fall:
+Projekt 1041 vor und nach einem Speichern ohne Änderung, 298 005 Werte, byte-gleich (#497). Die
+Startseite schreibt in **einem**
 Datenbankvorgang (`WizardCtrl.Speichere_Projekt_Gebaeudeliste`): Scheitert ein Schritt — etwa ein
 Gebäude ohne Verweis, dessen Name im Katalog fehlt —, rollt alles zurück, das Projekt behält seine
 Gebäude, und die Seite zeigt den Grund als Fehlerbanner (`GEB_MSG_LISTE_KATALOGSATZ_FEHLT` bzw.
@@ -724,7 +740,18 @@ Krankenhaussätze. Nachweis `GebaeudeAnschlusslaengenFolgereparaturTests`. Nur b
 geändert: die Sätze mit 0 m Laibung, die gerundeten EnEV-Laibungen, die hohen Dachkanten (vermutlich
 geneigte Dächer, darunter die eingefrorenen Referenzsätze 145 und 146) und die Kellerkanten, die kein
 Ausgangssatz als Umfang führt — Vorschläge in `Referenzlaeufe/LIESMICH.md`, Entscheidung beim
-Anwender. (b)
+Anwender. ✔ **Dritte Berichtigung der Anschlusslängen (#505, Schemaschritt
+`GebaeudeAnschlusslaengenDritteReparatur.SCHRITT`, Anwenderentscheid 25.09.2026 „eindeutig unplausible
+Werte berichtigen, den Rest lassen“):** Zwölf Sätze mit Laibung 0 m, leer oder auf 0,12 bis 0,25 m je m²
+Fenster gerundet führen die Laibung eines Zwillings gleicher Geometrie oder das Verhältnis ihrer Quelle
+× eigene Fensterfläche (etwa `Industriehalle-320` 16 000 m wie `Industrie_ne_81`, `gr_Hotel-80-EnEV2016`
+6 164,4 m); die Kellerkanten 14,6 m der G-096- und GMH-BZ-Sätze stehen auf dem Umfang 86,6 bzw. 122,3 m,
+Dach- und Kellerkante von `Industrie_ne_81` auf dem Umfang der eigenen Geometrie 2 362,1 m statt
+7 337,4 m. Das Bild „leer“ ist eine eigene feste Anweisung (`SQL_FENSTER_WAND_LEER`). Nachweis
+`GebaeudeAnschlusslaengenDritteReparaturTests`, Herleitungen in `Referenzlaeufe/LIESMICH.md`. Bleiben,
+wie sie sind: die Kellerkanten 0 m (ψ 0) der Heime, Schulen und Hallenbäder, die Laibungen 0,32 bis
+0,64 m je m² der Sätze 46, 57, 120, die hohen Dachkanten geneigter Dächer samt den Referenzsätzen 145
+und 146. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im

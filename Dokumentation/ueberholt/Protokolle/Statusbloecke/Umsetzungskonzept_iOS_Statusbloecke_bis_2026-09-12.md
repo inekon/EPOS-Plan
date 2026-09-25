@@ -10513,3 +10513,269 @@ Vorschlägen; (b) Laibung 0 m und gerundete EnEV-Laibungen mit
 Vorschlägen; (c) Nebenbefunde 46, 57, 120, 14 ohne Vorschlag; (d) „Nur
 D“-Kandidaten 145/146 bleiben eingefroren — alles nur auf
 Anwenderentscheid.
+
+## #497 — Projektassistent: Trägersätze heilen, echte Ids, Ablehnung bei Projektwechsel, Nachweis R-W16-6 (25.09.2026)
+
+Anwenderauftrag 25.09.2026 „setze um: … die vier Punkte aus „Nach
+#490““; Basis `b5a2e389`; Commits (Opus 5.5) `4ad2b137` (a),
+`27b903c0` (b), `8e8426df` (c), `45eeeead` Tests (a)–(c), `f0b4ca40`
+(d) + Klassenkopf `AssistentCtrl` + Konzept 7.1 (a); Merges `e6a4b04c`
+(auf #496-Stand `cf8cb414`) und `513e20e6` (auf origin `cbed6dba` =
+#498 E19). Nummernabstimmung: Assistent = #497, E19 = #498.
+
+**(a) Trägersätze heilen.**
+`TraegerSatzAnlegen`/`Add_Projekt_Energietraeger` melden per `out`,
+wie viele Sätze angelegt wurden; neu
+`WizardCtrl.Projekt_Energietraeger_Heilen` legt nur fehlende an,
+`MarkiereProjektGeaendert` nur bei tatsächlicher Anlage;
+`AssistentCtrl.Fortschreiben` ruft es im Zweig eines unveränderten
+Erzeugers, die Zahl steht in `GeheilteTraegersaetze`. Test: gelöschter
+Trägersatz im Kesselsatz von 1041 → Speichern ohne Änderung legt genau
+ihn an und stempelt; zweites Speichern schreibt nichts.
+
+**(b) Id-Nachzug.** Neu `WizardCtrl.IdNachzug`; `Add_Projekt_Prozess`,
+`Add_Projekt_Stromverbraucher`, `Add_WaermebedarfExtern`,
+`Add_Stromganglinie` (liest die AUTOINCREMENT-Id über
+`ExecuteInsertAndGetId`) merken je Zeile Zuordnungs-Id, Projekt-Id und
+bei Ganglinien den Verweis auf die Projektkopie vor;
+`AssistentCtrl.Speichern` trägt sie nach dem Festschreiben ein,
+verwirft sie beim Rückzug, nimmt danach den Abdruck. Test: vorläufige
+Ids ≥ 100000 in allen vier Listen → nach dem Speichern (Id, Verweis)
+gleich der Datenbank, keine Id ≥ 100000, zweites Speichern schreibt
+nichts.
+
+**(c) Projektwechsel.** Benannte Ablehnung statt Zwangs-Neuladen
+(Neuladen verwürfe Eingaben). Neu `AssistentCtrl.ListenProjektId`
+(gesetzt in `Laden` und nach jedem gelungenen Speichern, verfällt
+nicht mit `BereitsGeladen = false`); der Bearbeiten-Zweig ergibt
+`AssistentAusgang.ProjektGewechselt`, wenn die Listen einem anderen
+Projekt gehören oder nie geladen wurden; dann wird nichts geschrieben.
+Einzige sichtbare Änderung: die Meldung „Anderes Projekt gewählt“
+(`WIZ_PROJEKT_GEWECHSELT` + `_TITEL`, beide Sprachen, Designer neu
+erzeugt). Tests: Laden 1041, Speichern für 1030 → `ProjektGewechselt`,
+Abbild und Datum beider Projekte unverändert; ohne geladene Listen
+ebenfalls abgelehnt.
+
+**(d) Nachweis R-W16-6.** Der Modus `projekt` ist der Kindprozess von
+`lauf`; Rezept aus dem W16a-Protokoll auf einer Kopie der
+Testdatenbank: `Referenzlauf.exe lauf --projekte 1041` vor dem
+Speichern, Speicherprobe (Bearbeiten-Lauf mit Laden, Seitenschaltung,
+Speichern ohne Änderung; Konsolenprogramm im Scratchpad, nicht im
+Repo), Lauf danach, `vergleich`: GESAMT PASS, 29 Dateien, 298 005
+Werte, 0 Abweichungen, byte-gleich; danach gegen die Basis R14 (1041)
+ebenfalls PASS. Das Speichern schrieb nur den fehlenden
+Stromträgersatz (Träger 60) in
+`energy_price`/`energy_project_settings` (Heilung aus (a), ohne
+Rechenwirkung); ein zweites Speichern schrieb 0 Zeilen. Offen bleibt
+der Nachweis für ein über den Assistenten neu angelegtes Projekt.
+
+**Gate (losgelöster Worktree, Stand `e6a4b04c` = #496 + #497, danach
+Nachgate auf `513e20e6` mit E19).** Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6 823 (1 übersprungen), EPOS.UI 6 237, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 34/34; Windows-Schale Debug x64 0 Fehler;
+Referenzlauf 13/13 GESAMT PASS gegen `2026-09-24_R14_Kaelteerzeuger`
+(4 207 049 Werte); SqlDialektPruefer 1 911 Texte, 0 Fundstellen
+(Agent, Stand `b5a2e389`).
+
+**Papiere.** Konzept Administrationsdialoge 7.1 (a) samt Kopfzeile;
+Klassenkopf `AssistentCtrl`. Wiki unverändert.
+
+**Logbuch.** Satz vorgeschlagen (Version 1.2.0.4, Sammel-Upload): „Ein
+Speichern im Projektassistenten ohne inhaltliche Änderung lässt das
+Änderungsdatum und das Simulationsergebnis unberührt; gehören die
+Eingaben zu einem anderen als dem gewählten Projekt, speichert er
+nicht und weist darauf hin.“
+
+**Offen (in „Nach #497“).** (a) Nachweis R-W16-6 für ein über den
+Assistenten neu angelegtes Projekt steht aus (bisher nur für 1041
+geführt); (b) `Add_Projekt_Prozess`/`Add_Projekt_Stromverbraucher`
+setzen den Verweis auf die Projektkopie vor dem Festschreiben
+(folgenlos nach Rückzug, weil der Abdruck ihn nicht vergleicht).
+
+## #505 — Gebäudekatalog: dritte Reparatur der Anschlusslängen, Schemaschritt 142 (25.09.2026)
+
+Anwenderentscheid 25.09.2026: Empfehlung übernommen („eindeutig
+unplausible Werte berichtigen, den Rest lassen“), „starte #500“ (umnummeriert zu #505, weil #500 von BV-E0 belegt ist). Basis
+`693ecf4a` (Zapfprofil #499, Zielversion 141); Commits (Opus 5.5)
+`081439f4` (Schritt, Leer-Anweisung, Verdrahtung, Testdatenbank),
+`8eb6c2bd` (Tests), `06d023f8` (Papiere); Merge `18f2b302` auf
+`99815b47` (#497). Nummernabstimmung: #505/Schritt 142 (Zapfprofil
+ZU20/ZU24 folgen als #501, Wirtschaftlichkeit E20/E21 danach).
+
+**Schritt 142.**
+`EPOS.Kern/Allgemein/Update/GebaeudeAnschlusslaengenDritteReparatur.cs`
+(Konstante `SCHRITT`; `SchemaStand.Zielversion` = die Konstante, der
+Doc-Satz zu #496 liegt jetzt in der Vergangenheit;
+`SchemaMigration.cs`
+`SCHRITT_GEBAEUDE_DRITTE_REPARATUR`/`Schritt_GebaeudeDritteReparatur`
+nach 141; Werkzeug und Nachzieh-Liste lesen die Konstante; kein Test
+prüft die Zielversion wörtlich).
+
+**Abweichung vom Auftrag „keine neue SQL“.** Die Laibungen der Sätze
+117, 105, 107 sind NULL, die Anweisung `> ? AND < ?` trifft keine
+leere Zelle — daher in `GebaeudeAnschlusslaengenReparatur` zusätzlich
+`SQL_FENSTER_WAND_LEER`/`SQL_FENSTER_WAND_LEER_ZAEHLUNG` (`… IS NULL`,
+`?`-Parameter), `SqlBerichtigungLeer`/`SqlZaehlungLeer`,
+`Anschlusslaengenberichtigung.AusLeer(...)`, Eigenschaft `Leer`;
+`Ausfuehren`/`Offen` verzweigen entsprechend; die Schritte 130 und 141
+bleiben unverändert; der SqlDialektPruefer prüft die neue
+Zählanweisung, das UPDATE ist zusätzlich per EXPLAIN von Hand geprüft.
+
+**Berichtigungen `Tab_Gebaeude_STAMM` (19 Zellen, 18 Sätze; ΔH_T = ψ·ΔL des Satzes).**
+
+| Sätze | Spalte | Vorher → Nachher | Herleitung | ΔH_T |
+|---|---|---|---|---|
+| 6 `Pflegeheim-122-EnEV2016` | Laibung | 0 → 540 m | Zwilling 8 | +81,0 W/K |
+| 15 `Industriehalle-320` | Laibung | 0 → 16 000 m | Zwilling 14, 2,5 m/m² (14 selbst plausibel) | 0 (ψ 0) |
+| 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | Laibung | 0 → 391,5 m | Zwillinge 65, 73 | 0 |
+| 117 `Verw_H_75` | Laibung | leer → 391,5 m | Zwilling 118 | +15,7 W/K |
+| 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | Laibung | leer → 1 462,1 m | 2,901 m/m² × 504 m² | 0 (ψ leer) |
+| 106 `Bürogebäude KfW 55` | Laibung | 0 → 2 875 m | 2,5 m/m² × 1 150 m² | 0 |
+| 207 `KMH-G-U-120` | Laibung | 0 → 238,3 m | 2,398 m/m² × 99,37 m² | 0 |
+| 23 `Hallenbad-Umkl-140-EnEV2016` | Laibung | 50 → 865,1 m | Satz 24: 2,017 m/m² × 428,9 m² | +32,6 W/K |
+| 34 `gr_Hotel-80-EnEV2016` | Laibung | 600 → 6 164,4 m | F-Geometrie 2,5729 m/m² × 2 395,9 m² | +500,8 W/K |
+| 108 `Bürogebäude_gross-30-EnEV2016` | Laibung | 330 → 4 460 m | 2,5 m/m² × 1 784 m² | +371,7 W/K |
+| 42, 72, 134 | Kellerkante | 14,6 → 86,6 m | Umfang aus #496 | je +46,8/+47,9 W/K |
+| 84, 85 | Kellerkante | 14,6 → 122,3 m | Umfang aus #496 | je +71,6 W/K |
+| 14 `Industrie_ne_81` | Dach- und Kellerkante | 7 337,4 → 2 362,1 m | U = 21 500/(39 645/36 587 × 8,4); Quadratkante 765,1 m (alt 9,6-fach) | −497,5 und −248,8 W/K (Summe −746,3) |
+
+Die Laibung 16 000 m des Satzes 14 selbst bleibt unverändert (2,5
+m/m², plausibel).
+
+**Ausgelassen.** Der Einfrierregel-Filter traf keinen der 18 Sätze
+(keine Projektkopien). Nach Anwenderentscheid bleiben unverändert: die
+Kanten der Laibungssätze (0 m bei ψ 0; bei 117/105/107 leer), die
+gerundete Kante 300 m bei Satz 34, Kellerkanten 0 m, die Sätze
+46/57/120, die „nur Dachkante“-Gruppe samt 145/146; außerhalb der
+Liste bleibt Laibung 0 m von `AltenH-95-EnEV2016` (das Gebäude hat
+keine Fenster).
+
+**Testdatenbank.** Werkzeuglauf: offen 19 → berichtigt 19 → 0, zweiter
+Lauf 0; Zellvergleich über 144 Tabellen (10 506 856 Zellen): nur
+`SchemaVersion` 141 → 142 und die 19 Zellen geändert; Schema gleich,
+`integrity_check` ok, `foreign_key_check` leer; LFS
+`fc5f143eb55b432b6d3a669e28f3dda1f7f92f8bc40c1441db12caf4b38e2bed`, 67
+915 776 Byte.
+
+**Tests.** Neu `GebaeudeAnschlusslaengenDritteReparaturTests`;
+Ergänzung an `GebaeudeKatalogverweisTests` (Editor-Wächter); gezielter
+Lauf 168/168.
+
+**Gate (Agent, Stand `693ecf4a`).** Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6 823 (1 übersprungen), EPOS.UI 6 237, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 34/34; Windows-Schale 0 Fehler; SqlDialektPruefer
+0 Fundstellen; Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte, 394/394 CSV
+byte-gleich). Das Nachgate auf `18f2b302` (mit E19 und #497) trägt die
+Hauptsitzung nach.
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand
+142/`fc5f143e…`, Nachtrag #505 mit Herleitungstabelle, die
+Berichtstabelle aus #496 mit „✔ #505“ markiert), Konzept
+Administrationsdialoge 7.1 (a).
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #505“).** (a) Die nach Anwenderentscheid gelassenen
+Werte (Kellerkanten 0 m, Kanten der Laibungssätze, 46/57/120, „Nur D“)
+— kein Handlungsbedarf, nur Merkposten; (b) Laibung 0 m bei
+`AltenH-95-EnEV2016` ist folgerichtig (keine Fenster).
+
+## #507 — Projektassistent: Nachweis R-W16-6 neu angelegtes Projekt, Verweis-Punkt; Upload-Vorprüfung und Klimadaten-Anker (25.09.2026)
+
+Anwenderauftrag 25.09.2026 „Fahre fort“ (die offenen Punkte aus „Nach #497“ und
+die Vorbereitung des Sammel-Uploads am 26.09.2026). Basis `3a8ec184`; Commits
+(Opus 5.5) `74bdf7fc` (Assistent: Nachweis R-W16-6 für ein neu angelegtes
+Projekt) und `a4154dde` (Klimadaten: alte Wiki-Anker erhalten, tote Feldhilfe
+entfernt); Merge `e1b5114c`. Kein Schemaschritt, die Testdatenbank bleibt
+unverändert, kein Kern-Code außer dem Klassenkopf von `AssistentCtrl`.
+
+**(a) Nachweis R-W16-6 für ein neu angelegtes Projekt.** Windows-Gerät, Kopie
+der Testdatenbank, Zielstand 142; Probe `Probe507` im Scratchpad, nicht im
+Repo. Der Neu-Zweig legte das Projekt „#507 Neuanlage-Probe“ (Id 1047) an —
+Kopf mit Klimazone „stuttgart“, Gebäude `EFH-A-U-347s` aus dem Katalog, Kessel
+über die Kesselseite (Trägervariante „Erdgas E“, Träger 63, Temperaturen aus
+dem Katalogsatz), Prozesswärme `Hotel_1`, Stromverbraucher `EFH_3_Pers`,
+Stromganglinie, externer Wärmebedarf (Kanal Heizung); Brauchwasser blieb aus,
+der Assistent hat dafür keine Seite. Befund, kein Fehler: ein frisches Projekt
+hat noch keine `Tab_Einstellungen`, der erste Referenzlauf bricht mit „keine
+Konfiguration“ ab — erst das Speichern der Simulationskonfiguration legt den
+Satz an (die Probe stellt diesen Anwenderschritt über
+`SimulationKonfigHuelle.Speichern` nach). Lauf vorher (`Referenzlauf.exe lauf
+--projekte 1047`): Wärmebedarf 171,37 MWh (Heizung 141,37, Prozess 30),
+Strombedarf 4 798 MWh, Kessel aktiv. Speichern ohne Änderung über den
+Bearbeiten-Zweig (Laden, Seitenschaltung, alle Seiten betreten):
+`HatAenderungen` false, „Gespeichert“, kein Gewerk, kein Kopf, 0 Trägersätze
+geheilt. Abbild vor/nach: 9 269 Zeilen über alle 56 projektgebundenen Tabellen
+plus Senken und Stränge, mit Ids und `Tab_Projekt` samt Änderungsdatum,
+hash-gleich; die ganze Datenbank 145 Tabellen, 1 497 798 Zeilen, 0 abweichende
+Tabellen. Lauf nachher, `vergleich`: GESAMT PASS, 17 Dateien, 192 810 Werte, 0
+Abweichungen, byte-gleich. Dauerhafter Test
+`Ein_neu_angelegtes_Projekt_bleibt_beim_Speichern_ohne_Aenderung_stehen` in
+`EPOS.Kern.Tests/AssistentAbgleichTests.cs` (dasselbe Rezept, Vollabbild aller
+projektgebundenen Tabellen, zweites Speichern geprüft; Hilfen
+`Bearbeitenlauf`/`SeitenBetreten`/`DatumSetzen`/`Paare` mit Projekt-Id, neu
+`Neuanlage`, `VollesAbbild`, `Zeilen`, `KatalogId`).
+
+**(b) Verweis auf die Projektkopie vor dem Festschreiben — folgenlos,
+erledigt.** Nach einem Rückzug zeigen
+`ID_Prozesswaerme`/`m_ID_Stromverbraucher` der Liste auf zurückgerollte Kopien,
+aber `Add_Projekt_Prozess`/`Add_Projekt_Stromverbraucher` leiten den Verweis
+bei jedem Lauf vor dem Insert neu aus dem Namen ab (`CopyFromStamm`, kein
+Rückfall auf die alte Id, FK-1); der Abdruck vergleicht ihn nicht;
+`BedarfsProfileHuelle` reicht ihn nur durch; die Startseite verwirft ihre
+Liste. Kein Umbau nötig; Beleg-Test
+`Nach_einem_Rueckzug_schreibt_der_naechste_Lauf_gueltige_Verweise` (Rückzug
+erzwungen durch einen Verbraucher ohne Katalogsatz; danach zweiter Lauf: Paare
+gleich der Datenbank, die Kopien gehören dem Projekt, `PRAGMA
+foreign_key_check` leer).
+
+**(c) Lesevorprüfung Sammel-Upload.** Sonnet, nur gelesen, API
+`wiki.epos-plan.de/api.php` erreichbar. Elf vorhandene Live-Seiten (Revisionen
+426–591, 06./13.09.) sind älter als die Repo-Quellen, kein seither im Wiki
+hinzugekommener Text — ein vollständiger Ersatz ist zulässig. Fünf Seiten
+fehlen live und sind Neuanlagen: Gebäudemodell VDI 6007, Kühlung,
+Gerätekataloge (Anwenderentscheid offen), Gebäudeimport,
+Brauchwasser-Zapfprofil. Tabu-Muster: 0 Treffer in 16 Quellen. Logbuch 1.2.0.4:
+124 Sätze, 0 Dubletten; das Live-„Update-Logbuch“ (Rev. 592) steht höchstens
+bei 1.2.0.0. Befund: die Klimadaten-Quelle hatte die Live-Anker `region`,
+`koordinaten`, `bezeichnung`, `daten-einlesen` verloren; `help_mapping.txt`
+verwies noch auf `Form_Klimadaten.label*/panel*` (die Klasse existiert nicht
+mehr). Die Live-Texte liegen im Scratchpad `wiki_live/`.
+
+**(d) Klimadaten-Anker erhalten.** `Projekte/Wiki/Programm Dokumentation -
+Klimadaten.wiki` trägt die vier Anker jetzt als Zweitnamen in `{{Anker|…}}`
+(Zeile 7 `regionsliste|region`, Zeile 38 `standort|koordinaten|bezeichnung`,
+Zeile 59 `einlesen|daten-einlesen`), die Überschriften bleiben unverändert,
+Tabu-Treffer 0. Hilfeweg der Maske:
+`EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor` hat einen Hilfeknopf
+`InfoKnopf Schluessel="Form_Klimadaten.btn_Help"` → `help_mapping.txt` Zeile
+114 `= Klimadaten` (ganze Seite) bleibt bestehen; die acht toten Feldzeilen
+`Form_Klimadaten.panel1/panel2/panel_KlimaGraph/label1/4/6/7/8` sind entfernt,
+der Kommentarblock folgt dem Vorbild `Form_Simulation_Config`;
+`HelpMappingAnkerWacheTests` übersprang diese Zeilen ohnehin (Block H12).
+`Wiki_Update_2026-09-26.md` Zeile 23 vermerkt die erhaltenen Anker; ein Hinweis
+bleibt offen: die Zeile nennt Klimadaten weiter als „neue Seite“, obwohl live
+bereits Revision 433 besteht (nicht geändert).
+
+**Gate (Stand `e1b5114c`).** Kern-Filter 0 Fehler; gefilterter Lauf
+Assistent/Wizard 75/75 (2 neu); Hilfe/Wiki/Dokumentation/Klimadaten: Kern 204,
+UI 719, KiKern 1; `Referenzlauf` Release x64 0 Fehler. Die Zahlen des vollen
+Testlaufs trägt die Hauptsitzung nach (er läuft parallel). Kein Referenzlauf
+der 13 Projekte, der Schreibweg blieb unverändert.
+
+**Papiere.** `Wiki_Update_2026-09-26.md` (Anker-Vermerk Zeile 23); Klassenkopf
+`AssistentCtrl`.
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #507“).** (a) Anwenderentscheid, ob die Seite
+„Gerätekataloge“ im Wiki angelegt wird; (b) Upload am 26.09.2026 unter 1.2.0.4
+durch die Sitzung Wirtschaftlichkeit (Bot-Kennwort als Umgebungsvariable),
+Neuanlagen als Neuanlage, nicht als Ersetzen; (c) die Zeile zu Klimadaten im
+Upload-Papier nennt weiter „neue Seite“, obwohl der Bestand live ist; (d) der
+Beispielkommentar `Form_Klimadaten.label*` in
+`WindowsFormsApplication1/Allgemein/Hilfe/InfoKnopf.cs:109` (nur ein
+Kommentar).

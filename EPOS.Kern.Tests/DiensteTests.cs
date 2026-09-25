@@ -284,6 +284,62 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Die ausgelieferten Berichtsvorlagen liegen neben der Anwendung — <c>{app}\Vorlagen</c>
+        /// (Konzept Berichtsvorlagen 8.4). Wie bei der Auslieferungsvorlage ist die Angabe immer
+        /// ein Pfad, auch wenn es den Ordner nicht gibt; angelegt wird nichts.
+        /// </summary>
+        [Fact]
+        public void StandardPfade_Berichtsvorlagen_liegen_unter_der_Anwendung()
+        {
+            IPfade pfade = new StandardPfade();
+
+            Assert.Equal(Path.Combine(AppContext.BaseDirectory, "Vorlagen"), pfade.Berichtsvorlagen);
+            Assert.StartsWith(AppContext.BaseDirectory, pfade.Berichtsvorlagen);
+            Assert.False(string.IsNullOrEmpty(pfade.Berichtsvorlagen));
+        }
+
+        /// <summary>
+        /// <c>WordBerichtGenerator.FindeVorlage</c> sucht über <see cref="Dienste.Pfade"/> und nicht
+        /// mehr über den Ausgabeordner: Eine Schale, die den Ort umbiegt (iOS: das
+        /// Anwendungspaket), bekommt die Vorlage von dort; liegt dort keine, gilt <c>null</c> — der
+        /// Bericht entsteht dann mit den Ersatzstilen.
+        /// </summary>
+        [Fact]
+        public void FindeVorlage_sucht_ueber_Dienste_Pfade_Berichtsvorlagen()
+        {
+            IPfade vorher = Dienste.Pfade;
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-bv-e1-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(ordner);
+                Dienste.Pfade = new VorlagenPfade(ordner);
+                Assert.Null(WordBerichtGenerator.FindeVorlage());
+
+                string vorlage = Path.Combine(ordner, "Berichtsvorlage.docx");
+                File.WriteAllBytes(vorlage, new byte[] { 0x50, 0x4B, 0x03, 0x04 });
+                Assert.Equal(vorlage, WordBerichtGenerator.FindeVorlage());
+
+                Dienste.Pfade = new VorlagenPfade("");
+                Assert.Null(WordBerichtGenerator.FindeVorlage());
+            }
+            finally
+            {
+                Dienste.Pfade = vorher;
+                try { if (Directory.Exists(ordner)) Directory.Delete(ordner, true); } catch { }
+            }
+        }
+
+        /// <summary>Eine Pfad-Fassung, deren Vorlagenordner der Fall bestimmt.</summary>
+        private sealed class VorlagenPfade : StandardPfade
+        {
+            private readonly string _ordner;
+
+            public VorlagenPfade(string ordner) { _ordner = ordner; }
+
+            public override string Berichtsvorlagen { get { return _ordner; } }
+        }
+
         // ==================================================================
         //  Sprache
         // ==================================================================

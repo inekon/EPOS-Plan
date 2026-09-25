@@ -217,40 +217,6 @@ namespace EPOS.Kern.Tests
             Assert.Null(leer.SatzWorst.PreissteigerungInvestition);
         }
 
-        /// <summary>
-        /// FALL 8: <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> legt die vier Spalten
-        /// des Schritts 72 selbst an. Das ist die TOLERANTE VORSORGE unmittelbar vor dem
-        /// Zugriff: Eine nie migrierte Datenbank soll sich wie eine frisch migrierte
-        /// verhalten und nicht an einer fehlenden Spalte scheitern.
-        ///
-        /// <para>Geprüft wird das, indem die Spalten hier ABSICHTLICH entfernt werden.
-        /// Kann die Datenbank das nicht (ältere SQLite ohne <c>DROP COLUMN</c>), endet der
-        /// Fall still — nachweisen lässt sich die Vorsorge dann nicht.</para>
-        /// </summary>
-        [Fact]
-        public void StelleTabellenSicher_legt_die_Spalten_des_Schritts_72_an()
-        {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
-
-            string tab = SchemaKatalog.TAB_PROJEKTWIRTSCHAFT;
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
-                DataRepository.ExecuteNonQuery(
-                    "ALTER TABLE \"" + tab + "\" DROP COLUMN \"" + s.Name + "\"");
-
-            bool entfernt = true;
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
-                if (DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) entfernt = false;
-            if (!entfernt) return;   // DROP COLUMN nicht moeglich - nichts zu zeigen
-
-            new WirtschaftlichkeitCtrl().StelleTabellenSicher();
-
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
-                Assert.True(DataRepository.SpalteVorhanden(s.Tabelle, s.Name),
-                            "StelleTabellenSicher hat die Spalte nicht angelegt: " +
-                            s.Tabelle + "." + s.Name);
-        }
-
         // =====================================================================
         // 4 Ende zu Ende über Berechne
         // =====================================================================

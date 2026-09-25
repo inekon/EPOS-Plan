@@ -62,18 +62,18 @@ Waermepumpe.Bivalenzpunkt;10.57
 Waermepumpe.Deckung_Heizung;53.81
 Waermepumpe.Deckung_Brauchwasser;19.12
 Waermepumpe.Deckung_Prozess;0
-WaermepumpeModul[0].Modul;CS6800iAW MB + AW 10 OR-T
-WaermepumpeModul[0].Leistung;11
-WaermepumpeModul[0].Waermeproduktion;71.45
-WaermepumpeModul[0].Stromverbrauch;26.29
+WaermepumpeModul[0].Modul;CS7800iLW 16
+WaermepumpeModul[0].Leistung;15
+WaermepumpeModul[0].Waermeproduktion;20.84
+WaermepumpeModul[0].Stromverbrauch;7.06
 WaermepumpeModul[0].Heizstab;0
-WaermepumpeModul[0].Betriebsstunden;5995.29
-WaermepumpeModul[1].Modul;CS7800iLW 16
-WaermepumpeModul[1].Leistung;15
-WaermepumpeModul[1].Waermeproduktion;20.84
-WaermepumpeModul[1].Stromverbrauch;7.06
+WaermepumpeModul[0].Betriebsstunden;2073.4
+WaermepumpeModul[1].Modul;CS6800iAW MB + AW 10 OR-T
+WaermepumpeModul[1].Leistung;11
+WaermepumpeModul[1].Waermeproduktion;71.45
+WaermepumpeModul[1].Stromverbrauch;26.29
 WaermepumpeModul[1].Heizstab;0
-WaermepumpeModul[1].Betriebsstunden;2073.4
+WaermepumpeModul[1].Betriebsstunden;5995.29
 Heizkessel.Waermebedarf;105.94
 Heizkessel.Restwaermebedarf;87.01
 Heizkessel.Waermeproduktion;18.93

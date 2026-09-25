@@ -49,6 +49,9 @@ namespace WindowsFormsApplication1
     /// über eine direkte Wandlung nach <c>IIfcPropertySet</c>.</item>
     /// <item><b>Vorkommnis vor Typ:</b> Fehlt die Eigenschaft am Bauteil, wird der Typ gelesen
     /// (<c>IsTypedBy → RelatingType.HasPropertySets</c>).</item>
+    /// <item><b>Rückbeziehungen aus dem Index:</b> <c>IsDefinedBy</c> und <c>IsTypedBy</c> kommen aus
+    /// <see cref="IfcRueckbezuege"/> — einmal je Modell gebaut, nicht je Frage über das ganze Modell
+    /// gesucht.</item>
     /// <item><b>Mengensatz über den Namen:</b> <c>IIfcElementQuantity.Name</c> ∈ { <c>BaseQuantities</c>,
     /// <c>Qto_&lt;Klasse&gt;BaseQuantities</c>, <c>Qto_&lt;Klasse&gt;Quantities</c> } (Groß-/Kleinschreibung
     /// egal), die Größe über <c>IIfcPhysicalSimpleQuantity.Name</c>.</item>
@@ -57,12 +60,12 @@ namespace WindowsFormsApplication1
     internal static class IfcEigenschaften
     {
         /// <summary>Sucht eine Eigenschaft: erst am Vorkommnis, dann am Typ; <c>null</c> = keine.</summary>
-        public static IfcFund Finden(IIfcObject objekt, string satz, string name)
+        public static IfcFund Finden(IfcRueckbezuege bezuege, IIfcObject objekt, string satz, string name)
         {
             if (objekt == null) return null;
-            IIfcProperty p = InSaetzen(Saetze(objekt), satz, name);
+            IIfcProperty p = InSaetzen(Saetze(bezuege, objekt), satz, name);
             if (p != null) return new IfcFund(p, IfcEigenschaftsquelle.Vorkommnis, satz);
-            foreach (IIfcRelDefinesByType rel in objekt.IsTypedBy ?? Enumerable.Empty<IIfcRelDefinesByType>())
+            foreach (IIfcRelDefinesByType rel in bezuege.TypisiertDurch(objekt))
             {
                 IIfcTypeObject typ = rel?.RelatingType;
                 if (typ?.HasPropertySets == null) continue;
@@ -73,10 +76,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Eigenschaftssätze eines Vorkommnisses — Mengen (<c>IfcPropertySetDefinitionSet</c>) aufgelöst.</summary>
-        public static IEnumerable<IIfcPropertySetDefinition> Saetze(IIfcObject objekt)
+        public static IEnumerable<IIfcPropertySetDefinition> Saetze(IfcRueckbezuege bezuege, IIfcObject objekt)
         {
-            if (objekt?.IsDefinedBy == null) yield break;
-            foreach (IIfcRelDefinesByProperties rel in objekt.IsDefinedBy)
+            if (objekt == null) yield break;
+            foreach (IIfcRelDefinesByProperties rel in bezuege.DefiniertDurch(objekt))
             {
                 IIfcPropertySetDefinitionSelect auswahl = rel?.RelatingPropertyDefinition;
                 if (auswahl?.PropertySetDefinitions == null) continue;
@@ -86,10 +89,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Eigenschaftssätze eines Kontexts (Projekt) — derselbe Weg wie am Objekt.</summary>
-        public static IEnumerable<IIfcPropertySetDefinition> Saetze(IIfcContext kontext)
+        public static IEnumerable<IIfcPropertySetDefinition> Saetze(IfcRueckbezuege bezuege, IIfcContext kontext)
         {
-            if (kontext?.IsDefinedBy == null) yield break;
-            foreach (IIfcRelDefinesByProperties rel in kontext.IsDefinedBy)
+            if (kontext == null) yield break;
+            foreach (IIfcRelDefinesByProperties rel in bezuege.DefiniertDurch(kontext))
             {
                 IIfcPropertySetDefinitionSelect auswahl = rel?.RelatingPropertyDefinition;
                 if (auswahl?.PropertySetDefinitions == null) continue;
@@ -110,8 +113,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Hat das Objekt (Vorkommnis) einen Eigenschaftssatz dieses Namens?</summary>
-        public static bool HatSatz(IIfcObject objekt, string satz)
-            => Saetze(objekt).OfType<IIfcPropertySet>().Any(ps => Gleich(Text(ps.Name), satz));
+        public static bool HatSatz(IfcRueckbezuege bezuege, IIfcObject objekt, string satz)
+            => Saetze(bezuege, objekt).OfType<IIfcPropertySet>().Any(ps => Gleich(Text(ps.Name), satz));
 
         // ==================================================================
         //  Mengen
@@ -121,9 +124,9 @@ namespace WindowsFormsApplication1
         /// Eine Menge des Vorkommnisses in SI (m, m², m³): der Wert mal dem Faktor der Einheit — der eigenen
         /// Einheit der Menge, sonst der des Projekts. <c>null</c> = nicht vorhanden.
         /// </summary>
-        public static double? Menge(IIfcObject objekt, string klasse, string name, IfcEinheiten einheiten)
+        public static double? Menge(IfcRueckbezuege bezuege, IIfcObject objekt, string klasse, string name, IfcEinheiten einheiten)
         {
-            IIfcPhysicalSimpleQuantity q = MengeFinden(objekt, klasse, name);
+            IIfcPhysicalSimpleQuantity q = MengeFinden(bezuege, objekt, klasse, name);
             if (q == null) return null;
             switch (q)
             {
@@ -139,12 +142,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Trägt das Objekt überhaupt einen passenden Mengensatz?</summary>
-        public static bool HatMengensatz(IIfcObject objekt, string klasse)
-            => Saetze(objekt).OfType<IIfcElementQuantity>().Any(q => IstMengensatz(Text(q.Name), klasse));
+        public static bool HatMengensatz(IfcRueckbezuege bezuege, IIfcObject objekt, string klasse)
+            => Saetze(bezuege, objekt).OfType<IIfcElementQuantity>().Any(q => IstMengensatz(Text(q.Name), klasse));
 
-        private static IIfcPhysicalSimpleQuantity MengeFinden(IIfcObject objekt, string klasse, string name)
+        private static IIfcPhysicalSimpleQuantity MengeFinden(IfcRueckbezuege bezuege, IIfcObject objekt, string klasse, string name)
         {
-            foreach (IIfcElementQuantity satz in Saetze(objekt).OfType<IIfcElementQuantity>())
+            foreach (IIfcElementQuantity satz in Saetze(bezuege, objekt).OfType<IIfcElementQuantity>())
             {
                 if (!IstMengensatz(Text(satz.Name), klasse)) continue;
                 foreach (IIfcPhysicalSimpleQuantity q in satz.Quantities.OfType<IIfcPhysicalSimpleQuantity>())

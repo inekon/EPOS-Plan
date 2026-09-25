@@ -160,9 +160,24 @@
   <!-- Xbim.IO.MemoryModel - das Modell im Arbeitsspeicher, ohne Esent und  -->
   <!-- ohne Geometriekern, plattformfrei. Unveraendertes Paket (CDDL-1.0), -->
   <!-- Lizenzhinweis in Setup\Vorlage\Lizenzhinweise.txt.                  -->
+  <!--                                                                    -->
+  <!-- BAU OHNE xBIM (-p:OhneXbim=true; ADR-003 Aufgabe 7). Nur fuer den   -->
+  <!-- Groessenvergleich des iOS-Geraetebaus (ios.yml, Job geraetebau):    -->
+  <!-- ohne die Paketzeile und ohne jede Datei, die xBIM anspricht - der   -->
+  <!-- Leser samt Hilfsklassen und die Importmessung. Das Profil bleibt;   -->
+  <!-- IfcImportProfil.LeserErzeugen lehnt dann benannt ab. Jeder andere   -->
+  <!-- Bau (Windows, Filter, Tests, iOS) setzt den Schalter nicht.         -->
   <!-- ================================================================== -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(OhneXbim)' != 'true'">
     <PackageReference Include="Xbim.IO.MemoryModel" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(OhneXbim)' == 'true'">
+    <DefineConstants>$(DefineConstants);OHNE_XBIM</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(OhneXbim)' == 'true'">
+    <Compile Remove="Allgemein\Import\Ifc\*.cs" />
+    <Compile Include="Allgemein\Import\Ifc\IfcImportProfil.cs" />
+    <Compile Remove="Allgemein\Import\Gebaeude\Importmessung.cs;Allgemein\Import\Gebaeude\ImportmessungProben.cs" />
   </ItemGroup>
 
   <!-- ================================================================== -->

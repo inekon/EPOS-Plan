@@ -675,7 +675,10 @@ namespace WindowsFormsApplication1
                                      WordBerichtGenerator.SCHRIFT_TABELLE));
                 t.Append(r);
             }
-            k.Body.Append(t);
+            // Über den Einfügeanker wie jede andere Tabelle: Mit Vorlage steht am Ende des
+            // Rumpfs deren Abschnittsangabe (w:sectPr), und ein bloßes Anhängen setzte die
+            // Tafel dahinter — ungültig in jeder Office-Fassung (Konzept Berichtsvorlagen 2.4).
+            k.Fuege(t);
         }
 
         private static void SchreibeBetriebskosten(WordKontext k, BerichtsDaten daten,

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Berichtsvorlage - pflegt die Word-Vorlage des Berichts
+    (Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md, Etappe BV-E0, Abschnitt 6.3, Anhang B.3).
+
+    Zwei Modi:
+      bereinigen <docx>                    doppelte Stildefinitionen (gleiche w:styleId)
+                                           zusammenfuehren, je ID bleibt genau eine; das
+                                           Absatzformat "EPOS Kapitelkopf" ergaenzen, wenn es fehlt
+      beispiel <quelle.docx> <ziel.docx>   aus der bereinigten Vorlage die Beispielvorlage
+                                           mit Platzhaltern {{...}} bauen; mit dem Schalter
+                                           sammelanker die Stufe mit {{bericht.inhalt}}
+
+    Beide Modi pruefen ihr Ergebnis mit dem OpenXmlValidator (Office 2007 bis 2021)
+    und schreiben nur, wenn er keinen Fehler meldet.
+
+    Bewusst OHNE Verweis auf EPOS.Kern: Das Werkzeug liest und schreibt nur das Word-Paket.
+    Kapitelfolge und Kapiteltitel des heutigen Berichts stehen als Tabelle in
+    Beispielvorlage.cs; ob sie zum Code passen, prueft die Wache
+    EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests in jedem Kern-Lauf.
+
+    net10.0 ohne Windows-Bindung. Gehoert bewusst NICHT in WP-Plan.sln (Muster:
+    Werkzeuge\Auslieferungsvorlage, Werkzeuge\Formularkarte); gebaut wird ueber die
+    eigene Projektmappe Berichtsvorlage.sln oder direkt mit "dotnet run" (Aufruf siehe
+    LIESMICH.md).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Berichtsvorlage</AssemblyName>
+    <RootNamespace>Berichtsvorlage</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" />
+  </ItemGroup>
+
+</Project>
