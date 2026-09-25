@@ -444,7 +444,10 @@ namespace WindowsFormsApplication1
             double? menge = kaskadenBasis;
             if (!menge.HasValue)
             {
-                menge = TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, z.Komponente, z.Bem, z.Anlage);
+                // E20: die Kaskade IST Kategorie 1 — hier gilt auch „je kW elektrisch"
+                // an der Wärmepumpe (Anwenderentscheid 25.09.2026).
+                menge = TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, z.Komponente, z.Bem, z.Anlage,
+                                                            true);
                 if (menge.HasValue) herkunft = KostenHerleitung.HERKUNFT_ANLAGE;
             }
             if (!menge.HasValue)

@@ -338,7 +338,8 @@ namespace WindowsFormsApplication1
                 z.BasisGrund = z.Basis.HasValue
                     ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
                                z.Raster.Bemessung, komponentenId, anlageDerZeile,
-                               projektId, ref laufAufloeser, ref laufVersucht);
+                               projektId, ref laufAufloeser, ref laufVersucht,
+                               z.KategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION);   // E20
 
                 // ANWENDERENTSCHEID 19.09.2026: Was die Standardvorlage zu DIESER
                 // Position sagt. Ob daraus ein Hinweis wird, entscheidet die
@@ -489,7 +490,8 @@ namespace WindowsFormsApplication1
             z.BasisGrund = z.Basis.HasValue
                 ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
                            z.Raster.Bemessung, komponente, anlage,
-                           z.ProjektId, ref laufAufloeser, ref laufVersucht);
+                           z.ProjektId, ref laufAufloeser, ref laufVersucht,
+                           z.KategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION);   // E20
 
             // 14.09.2026: und dieselbe Herleitung.
             z.BasisHerleitung = z.Basis.HasValue
