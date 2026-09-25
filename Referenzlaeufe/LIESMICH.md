@@ -231,18 +231,21 @@ und CO₂ — und lässt Dateien und Schlüssel im Export entstehen oder verschw
 >
 > **Nicht** betroffen sind Kühleingaben und Kälteerzeuger von Projekten außerhalb der Referenzliste.
 
-## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19 und ZU23)
+## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
 — mit einer Ausnahme, die der Anwender am 23.09.2026 entschieden hat: **geringfügig abweichende
-VDI-Werte dürfen ins Repositorium.** Vier Nutzungsarten „… (abgeleitet)“ (Wohnen groß,
-Studentenwohnheim, Seniorenheim, Krankenhaus) tragen samt eigenem Tagesgangsatz Bedarfswerte,
-Monatsfaktoren, Wochenanteile und Tagesgänge, die aus VDI 6002 Blatt 1 und 2 abgeleitet sind;
-Herkunftsart `FIKTIV` (Testdaten nach einer Regel — weder Eigenkonstruktion noch Normwert),
-Quelle „VDI 6002 Blatt n (abgeleitet)“. Wie jede `FIKTIV`-Zeile bleiben sie aus der
-Auslieferungsvorlage (`TwwKataloge.Bereinigen`); ob abgeleitete Werte je ausgeliefert werden, ist
-die offene Frage ZU20. Ihre Zapfkategorien sind — wie die jeder Nutzungsart des Testkatalogs — der
-Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
+VDI-Werte dürfen ins Repositorium.** Fünf Nutzungsarten „… (abgeleitet)“ (Wohnen groß, Ein- und
+Zweifamilienhaus, Studentenwohnheim, Seniorenheim, Krankenhaus) tragen Bedarfswerte,
+Monatsfaktoren, Wochenanteile und Tagesgänge, die aus VDI 6002 Blatt 1 und 2 abgeleitet sind, auf
+vier Tagesgangsätzen (das Ein- und Zweifamilienhaus teilt den des großen Wohngebäudes);
+Herkunftsart `VERFAHREN` (aus einem Verfahren gerechnet — weder Normwert noch Eigenkonstruktion
+noch freie Quelle), Quelle „abgeleitet aus VDI 6002 Blatt n“, Ausgabe `2014-03`.
+**Sie gehören zur Auslieferung** (Anwenderentscheid ZU20 vom 25.09.2026): Ihre Träger sind drei
+CSV-Dateien des freien Paketteils, und `TwwKataloge` spielt sie in jede Vorlage ein (Abschnitt
+„Der freie Paketteil“). In der Testdatenbank stehen sie nach deren Regel mit Status `EIGEN`,
+`ReadOnly` 0 und Katalogversion `TEST-1`; ihre Zapfkategorien sind — wie die jeder Nutzungsart des
+Testkatalogs — der Vorgabesatz ihrer Gruppe aus dem Paketteil.
 
 - **Die Regel** steht im Kopf von
   [`Skripte/normzahlen_abgeleitet_bauen.py`](Skripte/normzahlen_abgeleitet_bauen.py): jeder Wert
@@ -258,7 +261,10 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   kein Originalwert). Das Einspielskript
   [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) liest nur diese Datei
   und läuft ohne die Originale; die Bedarfswerte rechnet es von Litern bei 60 °C mit
-  c_w = 1,163 Wh/(l·K) auf kWh bei den Bezugstemperaturen 60/12 °C der Zeile um.
+  c_w = 1,163 Wh/(l·K) auf kWh bei den Bezugstemperaturen 60/12 °C der Zeile um. Aus derselben
+  Datei **erzeugt** es die drei Träger des Paketteils
+  (`Katalogpaket_frei/Tab_TwwTagesgangsatz_STAMM.csv`, `…Tagesgang…`, `…Nutzungsart…`; Schalter
+  `--paketteil-schreiben`) und hält sie bei jedem Lauf dagegen — eine Quelle, drei Ablagen.
 - **Die Wache** `EPOS.Kern.Tests/TwwKatalogWacheTests.Kein_abgeleiteter_Katalogwert_gleicht_dem_VDI_Original`
   prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
   Testdatenbank und der JSON-Datei seinem Original gleicht — eine Null der Quelle bleibt Null und
@@ -288,24 +294,47 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
 
 ## Der freie Paketteil (`Katalogpaket_frei/`)
 
-Die freien Katalogdaten des Zapfprofilgenerators — Zapfkategorien nach Jordan/Vajen (IEA SHC
-Task 26, Modellannahme), die fünf Parameter `Zapfprofil.Stochastik.*` und das
-Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) — stehen einmal im Repositorium,
-als CSV-Dateien im Paketformat N2 unter [`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md)
-(Aufbau, Regeln und Quellen dort). `Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede
-Vorlage ein (Herkunftsart `FREI`, Status `AUSLIEFERUNG`, `ReadOnly` 1);
+Die Katalogdaten des Zapfprofilgenerators, die im Repositorium stehen dürfen — Zapfkategorien nach
+Jordan/Vajen (IEA SHC Task 26, Modellannahme) in zwei Vorgabesätzen, dreizehn Parameter
+(`Zapfprofil.Stochastik.*`, `…Zirkulation.*`, `…Anzeige…`, `…Validierung.*`), das
+Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) samt 24 Ereignissen und die fünf
+aus VDI 6002 **abgeleiteten** Nutzungsarten samt vier Tagesgangsätzen und sechzehn Tagesgängen
+(ZU20) — stehen einmal im Repositorium, als sieben CSV-Dateien im Paketformat N2 unter
+[`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md) (Aufbau, Regeln und Quellen dort).
+`Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede Vorlage ein (Status `AUSLIEFERUNG`,
+`ReadOnly` 1, Herkunftsart `FREI` oder `VERFAHREN`);
 [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) schreibt dieselben Zeilen
 in die Testdatenbank — nach deren Regel mit Status `EIGEN`, `ReadOnly` 0 und Katalogversion
-`TEST-1`; die Zapfkategorien als Vorgabesatz an jeder Nutzungsart. Die Wache
+`TEST-1`; die Zapfkategorien als Vorgabesatz ihrer Gruppe an jeder Nutzungsart. Die Wache
 `TwwKatalogWacheTests.Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil` hält beide
 gleich, Wert für Wert und in der Anzahl. Wer eine Datei des Paketteils ändert, lässt das Skript
-im selben Schritt auf die Testdatenbank laufen.
+im selben Schritt auf die Testdatenbank laufen; die drei Träger der abgeleiteten Werte ändert **nur**
+das Skript (`--paketteil-schreiben`), nie die Hand.
+
+Die Zählungen der Tww-Katalogtabellen der Testdatenbank (Schemastand 141): 5 Tagesgangsätze
+(1 fiktiver, 4 abgeleitete), 20 Tagesgänge, 8 Nutzungsarten (3 fiktive, 5 abgeleitete),
+24 Zapfkategorien (je Nutzungsart der Vorgabesatz ihrer Gruppe), 4 Bedarfstage (3 fiktive, das
+Ecodesign-Zapfprofil) mit 33 Ereignissen, 85 Parameter (72 fiktive, 13 freie), 5 DIN-4708-Werte.
+Keine Zeile trägt Status `AUSLIEFERUNG` oder `IMPORT`.
+
+## Paketvorlage der A100-Typen (`Katalogpaket_Vorlage_A100/`)
+
+Die Nichtwohn-Nutzungsarten des Beiblatts A100 der DIN EN 12831-3 (Hotels, Krankenhäuser,
+Sportstätten, Schulen, Bürogebäude) kommen **nicht** aus dem Repositorium, sondern als eigenes
+Katalogpaket des Anwenders (Anwenderentscheid ZU24). Im Repositorium liegt allein die Vorlage:
+[`Katalogpaket_Vorlage_A100/`](Katalogpaket_Vorlage_A100/LIESMICH.md) mit den vier Dateien des
+Importformats, vollständigen Kopfzeilen und je einer Beispielzeile aus **Platzhaltern** — keine
+Normzahl. Die Anleitung, die Wertemengen, die Summenregeln, die Ablehnungsgründe und eine Liste
+empfohlener Typnamen (nur Namen) stehen in ihrer `LIESMICH.md`; die **gefüllte** Datei gehört nie
+ins Repositorium. Zwei Fälle in `EPOS.Kern.Tests/TwwKatalogimportTests` halten die Vorlage: Sie
+spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
 Basen aufräumt, lässt `2026-09-24_R14_Kaelteerzeuger`, `Kenndaten_Test.sqlite`,
-`Importproben`, `Katalogpaket_frei`, `Skripte` und `LIESMICH.md` stehen.**
+`Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
+stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
 Dateien, 1 016,7 MB) sind am 11.09.2026 aus dem Arbeitsbaum gefallen (**SYNC‑Q1**: „entfernt

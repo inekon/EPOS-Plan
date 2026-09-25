@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N16 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N17 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -1472,11 +1472,11 @@ Papier voraussetzt:
 | **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen; Festlegungen der Umsetzung (N8) | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | nach Empfehlung, 23.09.2026 (N6) |
 | **ZU19** | Dürfen Normwerte als geringfügig abweichende, abgeleitete Werte im Repositorium stehen? | **ja**, wenn die Ableitung reproduzierbar und rückrechenbar ist und die Provenienz sie nennt | Anwenderentscheid 23./24.09.2026 (N12, N14); umgesetzt für VDI 6002 (N12) und VDI 4655 (N14) |
-| **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16): ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002“ |
+| **ZU20** | Werden die abgeleiteten VDI-6002-Werte (Katalogtypen nach ZU19) ausgeliefert? | **ja**, mit Herkunftsvermerk „abgeleitet aus VDI 6002“ im Katalog | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: ausliefern mit Herkunftsvermerk „abgeleitet aus VDI 6002 Blatt n“, Herkunftsart `VERFAHREN`, Träger im freien Paketteil |
 | **ZU21** | Setzungen des freien Paketteils bestätigen oder ändern (N12 (p)–(r), N13, N15 (e)/(g))? | bis zur fachlichen Durchsicht **nicht ausliefern**; Prüfliste je Setzung vorlegen | **entschieden 25.09.2026** (N16): die Setzungen bleiben bis zur fachlichen Durchsicht durch den Anwender **ungeliefert**; Prüfliste [Prüfliste ZU21](Zapfprofilgenerator/2026-09-25_Pruefliste_ZU21_Setzungen.md) |
 | **ZU22** | Werden die abgeleiteten VDI-4655-Werte ausgeliefert (die Richtlinie untersagt schon innerbetriebliche Kopien)? | **nein**; der lizenzierte Anwender spielt sie aus einem eigenen Paket ein | **entschieden 25.09.2026** (N16): **nicht** ausliefern, der heutige Weg bleibt — eigenes Paket des lizenzierten Anwenders |
 | **ZU23** | Auch die VDI-4655-Originalwerte des Repositoriums nach der Regel ZU19 ableiten? | **ja**, gleiche Regel wie ZU19 | Anwenderentscheid 24.09.2026 (N14); umgesetzt für die Ableitung und das Grundlagenpapier |
-| **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16): externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100 |
+| **ZU24** | Katalogtypen 25–27 (Hotel, Krankenhaus, Sportstätte u. a. aus DIN EN 12831-3 Beiblatt A100): ZU19 auf die A100 ausdehnen oder externes Katalogpaket? | **externes Katalogpaket** beim Anwender | **entschieden 25.09.2026** (N16), **umgesetzt (N17)**: externes Katalogpaket beim Anwender, keine Ausdehnung von ZU19 auf die A100; Paketvorlage ohne Werte im Repositorium |
 
 ---
 
@@ -3025,3 +3025,102 @@ Paket, Testdatenbank oder Werkzeug):
 | K5 | Validierungsbericht mit echten Reihen, sobald der Anwender Messreihen freigibt (zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert) | Anwender, danach Agent eines Folgepostens | nach der Freigabe |
 | ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel (3.4), Basis neu einfrieren | Agent eines Folgepostens, mit den Nachbarsitzungen abgestimmt | nach der Sichtabnahme Z1–Z5 und nach K5 |
 | (Lücke) | Prüfposten der Auslieferungsvorlage: kein Beispielprojekt mit `Typtage_Aktiv = 1` bei leerer `Tab_TwwTyptag_IMPORT` | Agent eines Folgepostens | bei Gelegenheit |
+
+### N17 (25.09.2026) — Umsetzung der Folgeposten ZU20 und ZU24
+
+Zwei Folgeposten aus N16 sind umgesetzt (Statuszeile #504, Protokoll
+[`2026-09-25_Folgeposten_ZU20_ZU24.md`](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Folgeposten_ZU20_ZU24.md));
+**kein Schemaschritt** (nur Katalogdaten), Schemastand bleibt 141.
+
+**(a) ZU20 — die abgeleiteten VDI-6002-Katalogtypen gehören zur Auslieferung.** Die fünf
+Nutzungsarten „Wohnen groß (abgeleitet)", „Ein- und Zweifamilienhaus (abgeleitet)",
+„Studentenwohnheim (abgeleitet)", „Seniorenheim (abgeleitet)" und „Krankenhaus (abgeleitet)" samt
+ihren vier Tagesgangsätzen und sechzehn Tagesgängen stehen jetzt als **CSV-Träger im freien
+Paketteil** `Referenzlaeufe/Katalogpaket_frei/`: `Tab_TwwTagesgangsatz_STAMM.csv` (4 Zeilen),
+`Tab_TwwTagesgang_STAMM.csv` (16), `Tab_TwwNutzungsart_STAMM.csv` (5), jede Zeile mit `Status`
+`AUSLIEFERUNG`, `ReadOnly` 1 und **ohne** `Katalogversion` (sie tritt der des Zielkatalogs bei —
+Regel 2 des Paketteils). Die Zapfkategorien brauchten keine neue Datei: Die beiden Vorgabesätze
+binden über die Steuerspalte `Gruppe` von selbst an jede neue Nutzungsart ihrer Gruppe (drei mal
+Wohnen mit vier, zwei mal Nichtwohnen mit zwei Kategorien — sechzehn Zeilen).
+
+**Herkunftsart `VERFAHREN`, nicht `FREI`.** N16 hatte `FREI` vorgeschlagen; umgesetzt ist
+`VERFAHREN`. Begründung: `FREI` heißt nach der Definition in
+[`Provenienz.cs`](../../EPOS.Kern/Allgemein/Zapfprofil/Provenienz.cs) „frei verfügbare Quelle" —
+VDI 6002 ist keine. Die Zeile trüge damit eine falsche Aussage über die Richtlinie, sichtbar im
+Katalogdialog und im Bericht. `VERFAHREN` heißt „aus einem Verfahren gerechnet", und genau das ist
+der Wert: Er kommt aus der Ableitungsregel von
+[`normzahlen_abgeleitet_bauen.py`](../../Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py) und
+steht in keiner Richtlinie. Die Quelle nennt die Herkunft im Klartext: **„abgeleitet aus VDI 6002
+Blatt 1"** bzw. „… Blatt 2", Ausgabe `2014-03`, Provenienz-Version `FREI-1`. Damit ist die Regel 1
+des Paketteils erweitert: Eine Zeile trägt `FREI` **oder** `VERFAHREN`; `Werkzeuge/Auslieferungsvorlage`
+prüft beide (`TwwKataloge.PAKETTEIL_HERKUNFT`). `FIKTIV` ist damit fort — die drei
+„Testnutzung A/B/C (fiktiv)" bleiben `FIKTIV`/`EIGEN` und nur in der Testdatenbank.
+
+**Keine Fundstelle im Quellentext.** Der Auftrag nannte „abgeleitet aus VDI 6002 Blatt n,
+Bild/Tabelle …". Bild- und Tabellennummern stehen nicht zur Verfügung: Das Ableitungsskript
+übernimmt Seiten- und Tabellenverweise der Quelle bewusst nicht
+(`normzahlen_abgeleitet_bauen.py`, Kopf). Der Quellentext nennt deshalb Richtlinie und Blatt, die
+Spalte `Ausgabe` den Ausgabestand.
+
+**Die Träger werden erzeugt, nicht getippt.** `tww_testkatalog_fiktiv.py --paketteil-schreiben`
+schreibt die drei Dateien aus `tww_katalogwerte_abgeleitet.json`; **jeder** Lauf des Skripts hält die
+Dateien im Arbeitsbaum gegen das Erzeugnis und bricht bei einer Abweichung ab. So gibt es eine Quelle
+(die JSON) und drei Ablagen, die nicht auseinanderlaufen können: Dateien, Testdatenbank und Vorlage.
+
+**Weitere Umsetzungspunkte:**
+
+1. `Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs`: `PAKETTEIL_TABELLEN` führt die drei neuen
+   Tabellen in Einspielreihenfolge (Satz, Gang, Nutzungsart vor Parameter, Bedarfstag, Ereignis,
+   Kategorie); `PaketteilLesen` prüft Status und **jede** Herkunftsspalte einer Tabelle (die
+   Nutzungsart hat drei, der Tagesgangsatz keine); `PaketteilEinspielen` rechnet die Paket-`ID` des
+   Satzes auf die echte um — tritt ein Satz zurück, weil das Katalogpaket ihn führt, treten seine
+   Tagesgänge und die Nutzungsarten des Paketteils, die auf ihn zeigen, **benannt** mit ihm zurück.
+   Der Prüfposten zählt die Paketteil-Zeilen je Tabelle (Tagesgangsatz über seine Tagesgänge).
+2. Testdatenbank neu gesät aus der origin-Fassung: 21 Zellen einer Zeile je Wertgruppe geändert
+   (45 Zellen in `Tab_TwwNutzungsart_STAMM`, 48 in `Tab_TwwTagesgang_STAMM` — Quelle,
+   Provenienz-Version, Herkunftsart), sonst nichts; Zeilenzahlen unverändert (5 Sätze, 20 Gänge,
+   8 Nutzungsarten, 24 Kategorien), `integrity_check` ok, keine `AUSLIEFERUNG`-Zeile (die
+   Testdatenbank behält ihre Regel: `EIGEN`, `ReadOnly` 0, `TEST-1`).
+3. Wächter: `TwwKatalogWacheTests` nagelt den neuen Quellentext und `VERFAHREN` fest und vergleicht
+   die drei neuen Dateien Wert für Wert mit der Testdatenbank (Satz über den Bezeichner, Tagesgänge
+   je Tagtyp, Nutzungsart samt Verweis auf ihren Satz); `Auslieferungsvorlage.Tests` bekommt **T13**
+   („die abgeleiteten Nutzungsarten stehen in der Vorlage": `AUSLIEFERUNG`, `ReadOnly` 1,
+   `VERFAHREN`, Quelle, Satz mit vier Gängen, Vorgabesatz der Gruppe — und keine Testnutzung), die
+   Zählungen der übrigen Fälle rechnen jetzt aus den Dateien statt aus festen Zahlen.
+4. **Berührt ZU21:** Die neuen Zeilen liegen im **selben** Ordner, den ZU21 bis zur fachlichen
+   Durchsicht zurückhält. Das Werkzeug spielt den Ordner immer ein; die Zurückhaltung ist eine
+   Sache des Anwenders vor der ersten Auslieferung, keine Codeschaltung. Die Prüfliste ZU21 betrifft
+   die Setzungen, nicht die abgeleiteten Werte; die zwei Setzungen des Ein- und
+   Zweifamilienhauses (geliehene Formen, Mitte der Spanne) stehen dort weiter zur Bestätigung.
+
+**(b) ZU24 — Paketvorlage für die A100-Typen, ohne Werte.** Neu ist
+`Referenzlaeufe/Katalogpaket_Vorlage_A100/` mit den vier Dateien des **Importformats** (Tagesgangsatz,
+Tagesgang, Nutzungsart, Zapfkategorie), vollständigen Kopfzeilen und je einer Beispielzeile aus
+Platzhaltern: Bedarf 10/20/30 kWh je Einheit und Tag (bewusst außerhalb jeder plausiblen Spanne),
+Tagesgang gleichverteilt (1/24 je Stunde, vier Tagtypen), Woche gleichverteilt (1/7), Monatsfaktoren
+1, zwei Zapfkategorien mit Anteil 0,5 in der Gruppe `Nichtwohnen`, Bezugsart 3 (Betten),
+Bilanzgrenze 1, Kalenderart 5 (Auslastungsgang), Bezugstemperaturen 60/10 °C. Provenienz vorbelegt
+mit `Quelle` = „DIN EN 12831-3 Beiblatt A100, Tabelle …" (ohne Zahl), `Herkunftsart` = `IMPORT`,
+`Version` = `A100-1`; kein `Status`, kein `ReadOnly`. `Katalogversion` **ist** gesetzt (`A100-1`) —
+sie ist im Importformat Pflichtspalte, anders als im freien Paketteil.
+
+Die [`LIESMICH.md`](../../Referenzlaeufe/Katalogpaket_Vorlage_A100/LIESMICH.md) der Vorlage nennt
+Zweck, die vier Dateien, sieben Schritte (kopieren, je Typ eine Zeile und ein Tagesgangsatz, Werte
+aus dem eigenen Normexemplar, Summenregeln, Provenienz, Import über **Administration → Brauchwasser
+→ Katalog-Import…**), die Ablehnungsgründe in zwei Stufen, den Unterschied zum Weg über die
+Auslieferungsvorlage und eine Liste **empfohlener Typnamen ohne Werte** (Hotel nach Größe und
+Sterneklasse, Hotelküche, Krankenhaus nach Bettenzahl, Klinikum Funktionsgebäude, Schule ohne und
+mit Duschen, Sportstätte mit Duschen, Schwimmbad, Bürogebäude, Werkstatt, Kaserne, JVA-Zellentrakt).
+Dass die **gefüllte** Datei nie ins Repositorium gehört, steht dort ausdrücklich.
+
+Zwei Fälle in `EPOS.Kern.Tests/TwwKatalogimportTests.cs` halten die Vorlage: Sie spielt **ohne
+Ablehnung** ein (eine Nutzungsart, vier Tagesgänge, Herkunftsart `IMPORT`, Vorgabesatz der Gruppe
+Nichtwohnen gebunden), und **jede Zahl** ihrer Felder steht in einer Liste von Platzhaltern —
+ein eingetragener Normwert fällt sofort auf. Die Wiki-Quelle
+`Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki` beschreibt am Anker
+`katalog-import` jetzt die Steuerspalte `Gruppe` und die Paketvorlage als Funktion.
+
+**Nebenbefund.** Der freie Paketteil taugt nicht als Katalogimport-Paket: Er führt keine
+`Katalogversion`, die der Import als Pflichtspalte verlangt. Vorher scheiterte er dort an der
+fehlenden Nutzungsart-Datei, jetzt an der Katalogversion — beides benannt abgelehnt, nichts geändert
+(`TwwKatalogimportTests.Ohne_Datei_der_Nutzungsarten_ist_das_Paket_benannt_abgelehnt` prüft es).
