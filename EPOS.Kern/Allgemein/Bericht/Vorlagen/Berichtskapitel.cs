@@ -68,10 +68,12 @@ namespace WindowsFormsApplication1
         private readonly Func<bool, string> _ueberschrift;
 
         private Berichtskapitel(string name, string baustein, bool eigenerSchalter, bool mitKopf,
-                                Func<IBerichtsBaustein> neu, Type typ, Func<bool, string> ueberschrift)
+                                Func<IBerichtsBaustein> neu, Type typ, Func<bool, string> ueberschrift,
+                                Vorlagenbedarf bedarf = Vorlagenbedarf.Keiner)
         {
             Name = name;
             Baustein = baustein;
+            Bedarf = bedarf;
             Schalter = eigenerSchalter ? PRAEFIX_SCHALTER + name : null;
             Kopfschluessel = mitKopf ? PRAEFIX_KOPF + name : null;
             _neu = neu;
@@ -93,6 +95,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Kapitelkopf der Standardvorlage (<c>text.kapitel_&lt;name&gt;</c>); bei Deckblatt und Inhaltsverzeichnis <c>null</c>.</summary>
         public string Kopfschluessel { get; }
+
+        /// <summary>
+        /// <b>Was der Sammler für das Kapitel zusätzlich erheben muss</b> (Konzept Berichtsvorlagen 5.1, 8.5;
+        /// Etappe BV-E3) — abgelesen am Baustein: „Ergebnisse je Variante“ zeichnet die Ganglinien aus den
+        /// Stundenreihen (<see cref="Vorlagenbedarf.Zeitreihen"/>), „Wirtschaftlichkeit“ den Kapitalwertverlauf
+        /// samt Brücke und Mehrjahrestafeln und die Emissionsbilanz (<see cref="Vorlagenbedarf.Verlauf"/>,
+        /// <see cref="Vorlagenbedarf.Emissionsbilanz"/>). Die übrigen lesen nur, was jeder Lauf erhebt — die
+        /// Speichertemperaturen der Projektbeschreibung sind eine Beigabe, wenn die Stundenreihen ohnehin da
+        /// sind, kein Bedarf; so bleibt die Standardvorlage beim Bedarf von heute. Der Katalog gibt den Bedarf
+        /// an <c>{{kapitel.&lt;name&gt;}}</c> weiter; <see cref="Berichtsbedarf.Vorgabe"/> vereinigt ihn über die
+        /// angehakten Kapitel.
+        /// </summary>
+        public Vorlagenbedarf Bedarf { get; }
 
         /// <summary>
         /// Der Schlüssel des Kapitels in den Kapitelstellen (<see cref="BerichtCtrl.KapitelstellenDerVorlage"/>):
@@ -130,13 +145,15 @@ namespace WindowsFormsApplication1
                                 e => BerichtTexte.T(KomponentenBaustein.UEBERSCHRIFT, e)),
             new Berichtskapitel(ERGEBNISSE, BerichtsKonfiguration.B_ERGEBNISSE, true, true,
                                 () => new ErgebnisseBaustein(), typeof(ErgebnisseBaustein),
-                                e => BerichtTexte.T(ErgebnisseBaustein.UEBERSCHRIFT, e)),
+                                e => BerichtTexte.T(ErgebnisseBaustein.UEBERSCHRIFT, e),
+                                Vorlagenbedarf.Zeitreihen),
             new Berichtskapitel(VERGLEICH, BerichtsKonfiguration.B_VERGLEICH, true, true,
                                 () => new VergleichBaustein(), typeof(VergleichBaustein),
                                 e => BerichtTexte.T(VergleichBaustein.UEBERSCHRIFT, e)),
             new Berichtskapitel(WIRTSCHAFTLICHKEIT, BerichtsKonfiguration.B_WIRTSCHAFT, true, true,
                                 () => new WirtschaftlichkeitBaustein(), typeof(WirtschaftlichkeitBaustein),
-                                e => BerichtTexte.T(WirtschaftlichkeitBaustein.UEBERSCHRIFT, e)),
+                                e => BerichtTexte.T(WirtschaftlichkeitBaustein.UEBERSCHRIFT, e),
+                                Vorlagenbedarf.Verlauf | Vorlagenbedarf.Emissionsbilanz),
             new Berichtskapitel(ANHANG, BerichtsKonfiguration.B_ANHANG, true, true,
                                 () => new AnhangBaustein(), typeof(AnhangBaustein),
                                 e => BerichtTexte.T(AnhangBaustein.UEBERSCHRIFT, e)),

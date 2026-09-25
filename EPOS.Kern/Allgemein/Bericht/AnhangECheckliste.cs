@@ -386,22 +386,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten, IReadOnlyDictionary<string, string> kapitelstellen)
         {
-            var provider = new WirtschaftlichkeitCtrl();
-            List<WirtschaftlichkeitErgebnis> alle = daten.Wirtschaftlichkeit.Count > 0
-                ? daten.Wirtschaftlichkeit
-                : provider.LadeErgebnisse(daten.Varianten.Select(v => v.IdProjekt).ToList());
-            WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
+            // BV-E3 (Konzept Berichtsvorlagen 5.1): aus dem Wertesatz des Laufs — Ergebnisse, Parameter,
+            // Bewertung und Wirkungsliste hat der Sammler über dieselben Aufrufe ermittelt.
+            WirtschaftsBerichtswerte w = WirtschaftsBerichtswerte.Von(daten);
+            List<WirtschaftlichkeitErgebnis> alle = w.Ergebnisse;
+            WirtschaftlichkeitParameter p = w.Parameter;
             WirtschaftlichkeitBewertung bewertung = daten.Bewertung;
             if (bewertung == null && alle.Count > 0)
             {
-                try { bewertung = WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur); }
+                try { bewertung = w.Bewertung; }
                 catch { bewertung = null; }   // ohne Bewertung bleiben die Punkte „offen"
             }
             ChecklistenLage lage = ChecklistenLage.AusBericht(alle, p, bewertung);
             if (bewertung == null || bewertung.Wirkungen == null)
             {
                 // ETAPPE E17: auch ohne Bewertung zählt die Wirkungsliste, nicht der Freitext.
-                List<ProjektWirkung> wirkungen = new ProjektWirkungCtrl().Laden(daten.IdStamm);
+                List<ProjektWirkung> wirkungen = w.Wirkungen;
                 lage.NichtMonetaerErfasst = NichtMonetaereWirkungen.Benannt(wirkungen);
                 lage.NichtMonetaerBeurteilt = NichtMonetaereWirkungen.Beurteilt(wirkungen);
             }

@@ -133,7 +133,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Bausteine in Berichtsreihenfolge, gefiltert auf die aktive Auswahl. Folge und Klassen stehen
         /// EINMAL in <see cref="Berichtskapitel.Alle"/>: Deckblatt, Inhaltsverzeichnis, Projekt,
-        /// Komponenten, Ergebnisse, Vergleich, Wirtschaftlichkeit (liest Tab_ErgebnisWirtschaftlichkeit),
+        /// Komponenten, Ergebnisse, Vergleich, Wirtschaftlichkeit (liest den Wertesatz <see cref="BerichtsDaten.Wirtschaft"/>),
         /// Anhang und die Anhang-E-Checkliste als Abschlussseite am Schlüssel der Wirtschaftlichkeit.
         /// </summary>
         public static List<IBerichtsBaustein> AktiveBausteine(BerichtsKonfiguration konfig)
