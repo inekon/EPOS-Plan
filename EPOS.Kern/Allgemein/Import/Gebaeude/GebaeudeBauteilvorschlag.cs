@@ -525,7 +525,7 @@ namespace WindowsFormsApplication1
                     foreach (AbbildBauteil f in p.Fenster) Fensterzeile(p, f);
                     foreach (AbbildBauteil t in p.Tueren) Tuerzeile(p, t);
                 }
-                InnereMasse(e.Innen);
+                InnereMasse(e);
 
                 Rueckfaelle(satz, ohneFlaecheJeFeld);
                 foreach (List<Huellposten> rest in ohneFlaecheJeFeld.Values)
@@ -700,11 +700,12 @@ namespace WindowsFormsApplication1
             /// Trennfläche, Innenfläche im Band) und danach entweder die Zeilen beider Seiten bilden oder
             /// den Innenflächenfaktor aus der Datei setzen — mit einer Meldung, die Weg und Grund nennt.
             /// </summary>
-            private void InnereMasse(List<Innenposten> innen)
+            private void InnereMasse(Huelleneinordnung einordnung)
             {
-                // Eine Trennfläche mit Nettofläche 0 (ganz Öffnung) ist keine Fläche innerer Masse.
-                List<Innenposten> flaechen = innen.Where(p => !(p.NettoM2.HasValue && p.NettoM2.Value <= 0.0)).ToList();
-                double innenflaeche = flaechen.Where(p => p.NettoM2.HasValue).Sum(p => p.NettoM2.Value * (p.PosB >= 0 ? 2.0 : 1.0));
+                // Eine Trennfläche mit Nettofläche 0 (ganz Öffnung) ist keine Fläche innerer Masse; die
+                // Messung steht an einer Stelle, in der Einordnung.
+                IReadOnlyList<Innenposten> flaechen = einordnung.Innenflaechen;
+                double innenflaeche = einordnung.InnenflaecheM2;
                 int unvollstaendig = flaechen.Count(p => !p.NettoM2.HasValue || Schichtfolge(p.Bauteil.Aufbau, false, out _) == null);
                 _v.Innenflaechen = flaechen.Count;
                 _v.InnenflaecheDateiM2 = innenflaeche;

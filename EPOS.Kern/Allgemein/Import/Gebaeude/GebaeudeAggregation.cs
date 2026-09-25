@@ -16,6 +16,11 @@ namespace WindowsFormsApplication1
     /// <item><b>Zone:</b> Die beheizten Räume bilden die eine Zone — Nutzfläche = Σ Fläche,
     /// Volumen = Σ Volumen, Raumhöhe = Volumen ÷ Nutzfläche, wenn beides da ist. Fehlt einem
     /// beheizten Raum die Fläche, bleibt die Nutzfläche leer (keine geratene Teilsumme).</item>
+    /// <item><b>Einordnung:</b> Welches Bauteil zur Hülle gehört, auf welcher Seite es liegt, in
+    /// welches Summenfeld es zählt, welche Beschreibung einer Trennfläche zählt und wie der
+    /// Fensterabzug ausgeht, entscheidet <see cref="GebaeudeHuelleneinordnung"/> — dieselbe Regel,
+    /// nach der der Bauteilvorschlag seine Zeilen bildet. Hier entstehen daraus Summen, Meldungen
+    /// und Markierungen.</item>
     /// <item><b>Hülle:</b> Ein Bauteil mit einem beheizten Nachbarn und Außentyp gehört nach seinem
     /// Typ zur Hülle; zwei beheizte Nachbarn = innere Masse, keine Hülle; beheizt ↔ unbeheizt =
     /// Hülle „gegen unbeheizt": Boden → Grundfläche mit Randbedingung KELLER, Decke → Dach (als
@@ -84,11 +89,10 @@ namespace WindowsFormsApplication1
 
         private enum Huelle { Aussenwand, Dach, Grund, Sonstige }
 
-        private enum Seite { Aussen, Erdreich, Unbeheizt }
-
         private sealed class Posten
         {
             public AbbildBauteil Bauteil;
+            public Huellposten Einordnung;
             public Huelle Gruppe;
             public string GrundRand;
             public double? NettoM2;
@@ -96,8 +100,6 @@ namespace WindowsFormsApplication1
             public double AbzugM2;
             public double? U;
             public Randbedingung Rand;
-            public string Paar;
-            public string Richtung;
             public bool Verworfen;
             public readonly List<Fensterposten> Fenster = new List<Fensterposten>();
             public readonly List<Posten> Tueren = new List<Posten>();
@@ -155,26 +157,17 @@ namespace WindowsFormsApplication1
             var zeilen = GebaeudeZielfelder.Alle.Select(f => new GebaeudeFeldzeile(f.Schluessel)).ToList();
             var z = zeilen.ToDictionary(r => r.Zielfeld, StringComparer.Ordinal);
 
-            // Alle Räume der Datei — ein Nachbar kann im Nachbargebäude liegen.
-            var raeume = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
-            var raumGebaeude = new Dictionary<string, int>(StringComparer.Ordinal);
-            for (int i = 0; i < abbild.Gebaeude.Count; i++)
-                foreach (AbbildRaum r in abbild.Gebaeude[i].Raeume)
-                    if (!raeume.ContainsKey(r.Kennung)) { raeume[r.Kennung] = r; raumGebaeude[r.Kennung] = i; }
-
             List<AbbildRaum> beheizt = g.Raeume.Where(istBeheizt).ToList();
 
             Kenngroessen(g, beheizt, datei, k, klasseAusBaujahr, profil, z, meldungen);
 
-            // ---- Hülle ----
-            var posten = new List<Posten>();
+            // ---- Hülle: die Einordnung je Bauteil steht an EINER Stelle (GebaeudeHuelleneinordnung,
+            //      auch der Weg des Bauteilvorschlags); hier entstehen daraus Summen, Meldungen und
+            //      Markierungen. ----
+            Huelleneinordnung einordnung = GebaeudeHuelleneinordnung.Einordnen(abbild, index, istBeheizt);
             var zaehler = new SortedDictionary<string, double[]>(StringComparer.Ordinal);   // Info-Sammler: Schlüssel → {Zahl, Fläche}
-            foreach (AbbildBauteil s in g.Bauteile)
-            {
-                Posten p = Einordnen(s, index, raeume, raumGebaeude, istBeheizt, zaehler, z);
-                if (p != null) posten.Add(p);
-            }
-            Trennflaechen(posten, profil, meldungen);
+            List<Posten> posten = einordnung.Huelle.Select(h => Einordnen(h, zaehler, z)).ToList();
+            Trennflaechen(einordnung.Paare, profil, meldungen);
             Oeffnungen(posten, profil, z, meldungen);
             UWerte(posten, meldungen);
             foreach (KeyValuePair<string, double[]> e in zaehler)
@@ -459,120 +452,62 @@ namespace WindowsFormsApplication1
         //  Hülle: Einordnen je Bauteil
         // ==================================================================
 
-        private static Posten Einordnen(AbbildBauteil s, int index, Dictionary<string, AbbildRaum> raeume,
-                                        Dictionary<string, int> raumGebaeude, Func<AbbildRaum, bool> istBeheizt,
-                                        SortedDictionary<string, double[]> zaehler, Dictionary<string, GebaeudeFeldzeile> z)
+        /// <summary>
+        /// <b>Ein Hüllbauteil der Einordnung als Posten der Zuordnung</b>
+        /// (<see cref="GebaeudeHuelleneinordnung"/>): Gruppe aus dem Summenfeld, Randbedingung der
+        /// Grundfläche, dazu die Info-Zähler und die gelben Markierungen, die die Einordnung selbst
+        /// nicht setzt — ein unbekannter Nachbar und eine fehlende Geometrie (3.8).
+        /// </summary>
+        private static Posten Einordnen(Huellposten h, SortedDictionary<string, double[]> zaehler,
+                                        Dictionary<string, GebaeudeFeldzeile> z)
         {
-            // Der beheizte Nachbar DIESES Gebäudes; ohne ihn gehört das Bauteil nicht zur Hülle.
-            int hPos = -1;
-            for (int i = 0; i < s.Nachbarn.Count; i++)
-                if (raeume.TryGetValue(s.Nachbarn[i].Kennung, out AbbildRaum r) && istBeheizt(r)
-                    && raumGebaeude[s.Nachbarn[i].Kennung] == index) { hPos = i; break; }
-            // Ausnahme: Ein Außenbauteil ohne jeden Nachbarraum, das das Format seinem Gebäude zuordnet
-            // (IFC: IsExternal ohne Raumgrenze), zählt nach seiner Randbedingung zur Hülle.
-            bool ohneNachbar = hPos < 0 && s.HuelleOhneNachbar && s.Nachbarn.Count == 0
-                               && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich);
-            if (hPos < 0 && !ohneNachbar) return null;
-
-            int aPos = -1;
-            for (int i = 0; i < s.Nachbarn.Count; i++)
-                if (i != hPos) { aPos = i; break; }
-
-            Seite seite;
-            AbbildRaum andererRaum = null;
-            if (aPos < 0)
+            AbbildBauteil s = h.Bauteil;
+            var p = new Posten
             {
-                if (s.Randbedingung == Randbedingung.Aussenluft) seite = Seite.Aussen;
-                else if (s.Randbedingung == Randbedingung.Erdreich) seite = Seite.Erdreich;
-                else seite = Seite.Unbeheizt;   // Innentyp mit nur einem Nachbarn: die andere Seite ist unbekannt
-            }
-            else
+                Bauteil = s, Einordnung = h, Gruppe = GruppeAus(h.Summenfeld), BruttoM2 = h.BruttoM2,
+                NettoM2 = h.NettoM2, AbzugM2 = h.AbzugM2, Rand = h.Rand, Verworfen = h.Verworfen,
+            };
+            switch (h.Seite)
             {
-                raeume.TryGetValue(s.Nachbarn[aPos].Kennung, out andererRaum);
-                if (andererRaum != null && istBeheizt(andererRaum)) return null;   // innere Masse
-                seite = Seite.Unbeheizt;                                          // unbeheizt oder unbekannt
-            }
-
-            var p = new Posten { Bauteil = s, BruttoM2 = s.BruttoflaecheM2 };
-            switch (seite)
-            {
-                case Seite.Aussen:
-                    if (s.Art == Bauteilart.Aussenwand) p.Gruppe = Huelle.Aussenwand;
-                    else if (s.Art == Bauteilart.Dach || s.Art == Bauteilart.Decke) p.Gruppe = Huelle.Dach;
-                    else
-                    {
-                        p.Gruppe = Huelle.Sonstige;
-                        if (s.Art == Bauteilart.Bodenplatte) Zaehlen(zaehler, "BODEN_AUSSENLUFT", s);
-                    }
+                case Huellseite.Aussen:
+                    if (s.Art == Bauteilart.Bodenplatte) Zaehlen(zaehler, "BODEN_AUSSENLUFT", s);
                     break;
 
-                case Seite.Erdreich:
-                    p.Gruppe = Huelle.Grund;
+                case Huellseite.Erdreich:
                     p.GrundRand = DbWerte.GRUND_ERDREICH;
                     if (s.Art != Bauteilart.Bodenplatte) Zaehlen(zaehler, "ERDREICH_ZUR_GRUNDFLAECHE", s);
                     break;
 
                 default:
-                    bool? boden = IstWaagerechteArt(s.Art) ? Boden(s, hPos, aPos) : null;
-                    if (boden == true)
+                    if (h.Boden == true)
                     {
-                        p.Gruppe = Huelle.Grund;
                         p.GrundRand = DbWerte.GRUND_KELLER;
                         Zaehlen(zaehler, "BODEN_GEGEN_UNBEHEIZT", s);
                     }
-                    else if (boden == false)
-                    {
-                        p.Gruppe = Huelle.Dach;
+                    else if (h.Boden == false)
                         Zaehlen(zaehler, "DECKE_GEGEN_UNBEHEIZT", s);
-                    }
                     else
-                    {
-                        p.Gruppe = Huelle.Sonstige;
                         Zaehlen(zaehler, "FLAECHE_GEGEN_UNBEHEIZT", s);
-                    }
-                    if (aPos >= 0 && andererRaum != null)
-                    {
-                        string h = s.Nachbarn[hPos].Kennung, a = s.Nachbarn[aPos].Kennung;
-                        p.Paar = string.CompareOrdinal(h, a) < 0 ? h + "\u0001" + a : a + "\u0001" + h;
-                        p.Richtung = s.Nachbarn[0].Kennung;
-                    }
-                    else
+                    if (h.Paar == null)
                         z[FeldDerGruppe(p.Gruppe)].Markieren(PruefStufe.Warnung);   // Nachbar unbekannt (3.8)
                     break;
             }
 
             if (!p.BruttoM2.HasValue)
                 z[FeldDerGruppe(p.Gruppe)].Markieren(PruefStufe.Warnung);   // Geometrie fehlt (3.8)
-            p.Rand = seite == Seite.Aussen ? Randbedingung.Aussenluft
-                   : seite == Seite.Erdreich ? Randbedingung.Erdreich : Randbedingung.Unbeheizt;
             return p;
         }
 
-        /// <summary>Ist die Fläche für den beheizten Nachbarn Boden (<c>true</c>) oder Decke (<c>false</c>)? <c>null</c> = unbestimmt.</summary>
-        private static bool? Boden(AbbildBauteil s, int hPos, int aPos)
+        /// <summary>Die Gruppe zu einem Summenfeld der Einordnung.</summary>
+        private static Huelle GruppeAus(string summenfeld)
         {
-            // 1. Die Sicht des beheizten Raums (AdjacentSpaceId/@surfaceType), 2. die des anderen.
-            bool? b = SichtIstBoden(s.Nachbarn[hPos].Sicht);
-            if (b.HasValue) return b;
-            if (aPos >= 0)
+            switch (summenfeld)
             {
-                b = SichtIstBoden(s.Nachbarn[aPos].Sicht);
-                if (b.HasValue) return !b.Value;
+                case GebaeudeZielfelder.FLAECHE_AUSSENWAND: return Huelle.Aussenwand;
+                case GebaeudeZielfelder.FLAECHE_DACH: return Huelle.Dach;
+                case GebaeudeZielfelder.FLAECHE_GRUND: return Huelle.Grund;
+                default: return Huelle.Sonstige;
             }
-
-            // 3. Die Neigung: Die Normale zeigt vom ERSTEN Nachbarn weg (gbXML-Hausannahme) —
-            //    nach oben (Neigung < 90°) heißt: der erste liegt darunter, die Fläche ist seine Decke.
-            bool hIstErster = hPos == 0;
-            if (s.NeigungGrad is double t && Math.Abs(t - 90.0) > WAAGERECHT_GRAD)
-            {
-                bool ersterUnten = t < 90.0;
-                return hIstErster ? !ersterUnten : ersterUnten;
-            }
-
-            // 4. Die Art der Fläche aus Sicht des ersten Nachbarn (Ceiling, InteriorFloor …).
-            b = SichtIstBoden(s.Quellart);
-            if (b.HasValue) return hIstErster ? b.Value : !b.Value;
-            return null;
         }
 
         /// <summary>
@@ -598,9 +533,6 @@ namespace WindowsFormsApplication1
                     return null;
             }
         }
-
-        private static bool IstWaagerechteArt(Bauteilart art)
-            => art == Bauteilart.Decke || art == Bauteilart.Bodenplatte || art == Bauteilart.Dach;
 
         /// <summary>
         /// Die U-Werte der Hüllenbauteile, ihrer Fenster und Türen — nach dem Einordnen, weil erst
@@ -641,83 +573,64 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         /// <summary>
-        /// Die Gegenprobe der Trennflächen (3.5): Beschreibt die Datei dieselbe Trennfläche von beiden
-        /// Seiten (A→B und B→A), zählt nur die größere; weichen sie um mehr als 2 % ab, wird es gemeldet.
+        /// Die Meldung der Gegenprobe (3.5): Welche Beschreibung einer von beiden Seiten beschriebenen
+        /// Trennfläche zählt, entscheidet die Einordnung; weichen die beiden Flächen um mehr als 2 %
+        /// ab, wird es hier gemeldet.
         /// </summary>
-        private static void Trennflaechen(List<Posten> posten, GebaeudeImportProfil profil, List<PruefMeldung> meldungen)
+        private static void Trennflaechen(List<Trennflaechenpaar> paare, GebaeudeImportProfil profil, List<PruefMeldung> meldungen)
         {
-            foreach (IGrouping<string, Posten> paar in posten.Where(p => p.Paar != null).GroupBy(p => p.Paar, StringComparer.Ordinal))
+            foreach (Trennflaechenpaar t in paare)
             {
-                var richtungen = paar.GroupBy(p => p.Richtung, StringComparer.Ordinal).ToList();
-                if (richtungen.Count < 2) continue;
-                var summen = richtungen.Select(r => new { r.Key, Flaeche = r.Sum(p => p.BruttoM2 ?? 0.0), Posten = r.ToList() })
-                                       .OrderByDescending(r => r.Flaeche).ThenBy(r => r.Key, StringComparer.Ordinal).ToList();
-                double gross = summen[0].Flaeche, klein = summen[1].Flaeche;
-                foreach (var r in summen.Skip(1))
-                    foreach (Posten p in r.Posten) p.Verworfen = true;
+                double gross = t.GrossM2, klein = t.KleinM2;
                 if (gross > 0.0 && (gross - klein) > TRENNFLAECHE_TOLERANZ * gross)
-                {
-                    string[] raeume = paar.Key.Split('\u0001');
                     meldungen.Add(new PruefMeldung(PruefStufe.Warnung, profil.Meldung("TRENNFLAECHE_UNGLEICH"),
-                        raeume[0], raeume[1], Zahl(gross), Zahl(klein)));
-                }
+                        t.RaumA, t.RaumB, Zahl(gross), Zahl(klein)));
             }
         }
 
-        /// <summary>Fenster und Türen der Hüllenbauteile samt Fensterabzug (U14).</summary>
+        /// <summary>
+        /// Fenster und Türen der Hüllenbauteile; den Fensterabzug (U14) rechnet die Einordnung, hier
+        /// entstehen die Posten der Öffnungen, die Meldungen zum Abzug und die Markierungen.
+        /// </summary>
         private static void Oeffnungen(List<Posten> posten, GebaeudeImportProfil profil,
                                        Dictionary<string, GebaeudeFeldzeile> z, List<PruefMeldung> meldungen)
         {
             foreach (Posten p in posten)
             {
                 AbbildBauteil s = p.Bauteil;
+                Huellposten h = p.Einordnung;
                 double? azimut = HatHimmelsrichtung(s) ? s.AzimutGrad : null;
-                foreach (AbbildBauteil o in s.Oeffnungen)
+                foreach (AbbildBauteil o in h.Fenster)
                 {
-                    if (o.Art == Bauteilart.Fenster)
+                    p.Fenster.Add(new Fensterposten
                     {
-                        p.Fenster.Add(new Fensterposten
-                        {
-                            Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut, G = o.GWert,
-                        });
-                    }
-                    else if (o.Art == Bauteilart.Tuer)
+                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut, G = o.GWert,
+                    });
+                    if (!o.BruttoflaecheM2.HasValue && !p.Verworfen)
+                        z[GebaeudeZielfelder.FENSTER_GESAMT].Markieren(PruefStufe.Warnung);
+                }
+                foreach (AbbildBauteil o in h.Tueren)
+                {
+                    p.Tueren.Add(new Posten
                     {
-                        p.Tueren.Add(new Posten
-                        {
-                            Bauteil = o, Gruppe = Huelle.Sonstige, NettoM2 = o.BruttoflaecheM2, BruttoM2 = o.BruttoflaecheM2,
-                            Rand = p.Rand, Verworfen = p.Verworfen,
-                        });
-                    }
-                    else continue;
-
-                    if (o.BruttoflaecheM2.HasValue) p.AbzugM2 += o.BruttoflaecheM2.Value;
-                    else if (!p.Verworfen)
-                        z[o.Art == Bauteilart.Fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE]
-                            .Markieren(PruefStufe.Warnung);
+                        Bauteil = o, Gruppe = Huelle.Sonstige, NettoM2 = o.BruttoflaecheM2, BruttoM2 = o.BruttoflaecheM2,
+                        Rand = p.Rand, Verworfen = p.Verworfen,
+                    });
+                    if (!o.BruttoflaecheM2.HasValue && !p.Verworfen)
+                        z[GebaeudeZielfelder.FLAECHE_SONSTIGE].Markieren(PruefStufe.Warnung);
                 }
 
-                if (!p.BruttoM2.HasValue) continue;
-                double netto = p.BruttoM2.Value - p.AbzugM2;
-                if (netto < 0.0 && s.NettoflaecheM2 is double eigen && eigen >= 0.0)
+                if (!p.BruttoM2.HasValue || p.Verworfen) continue;
+                // U14: Rückfall auf die Nettofläche, die die Datei selbst angibt (IFC: NetSideArea).
+                if (h.NettoRueckfall)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "NETTOFLAECHE_RUECKFALL",
+                        s.Kennung, Zahl(p.BruttoM2.Value), Zahl(p.AbzugM2), Zahl(s.NettoflaecheM2.Value)));
+                if (h.NettoNegativ)
                 {
-                    // U14: Rückfall auf die Nettofläche, die die Datei selbst angibt (IFC: NetSideArea).
-                    if (!p.Verworfen)
-                        meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "NETTOFLAECHE_RUECKFALL",
-                            s.Kennung, Zahl(p.BruttoM2.Value), Zahl(p.AbzugM2), Zahl(eigen)));
-                    netto = eigen;
+                    meldungen.Add(new PruefMeldung(PruefStufe.Fehler, profil.Meldung("NETTOFLAECHE_NEGATIV"),
+                        s.Kennung, Zahl(p.BruttoM2.Value), Zahl(p.AbzugM2)));
+                    z[FeldDerGruppe(p.Gruppe)].Markieren(PruefStufe.Fehler);
                 }
-                if (netto < 0.0)
-                {
-                    netto = 0.0;
-                    if (!p.Verworfen)
-                    {
-                        meldungen.Add(new PruefMeldung(PruefStufe.Fehler, profil.Meldung("NETTOFLAECHE_NEGATIV"),
-                            s.Kennung, Zahl(p.BruttoM2.Value), Zahl(p.AbzugM2)));
-                        z[FeldDerGruppe(p.Gruppe)].Markieren(PruefStufe.Fehler);
-                    }
-                }
-                p.NettoM2 = netto;
             }
         }
 
