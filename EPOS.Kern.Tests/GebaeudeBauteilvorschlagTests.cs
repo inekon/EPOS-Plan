@@ -243,6 +243,7 @@ namespace EPOS.Kern.Tests
         [InlineData("ifc4_zwei_gebaeude.ifc", 0, 'E')]
         [InlineData("ifc4_zwei_gebaeude.ifc", 1, 'E')]
         [InlineData("ifc4_ohne_mengen.ifc", 0, 'E')]
+        [InlineData("ifc4_vorhangfassade.ifc", 0, 'E')]
         public void Jede_Gruppe_summiert_die_Flaeche_des_Summenfelds(string name, int index, char? klasse)
         {
             GebaeudeImportAblauf a = BauteilvorschlagProbe.Lesen(name);
@@ -640,18 +641,156 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "raum-wohnen", "raum-schlafen" }, w.Raeume.Select(r => r.Quellkennung));
         }
 
+        // =====================================================================
+        //  Vorhangfassaden — transparent (Anwenderentscheid)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Eine Vorhangfassade rechnet transparent</b>: eine Zeile der Art <c>VORHANGFASSADE</c> mit dem
+        /// U-Wert der Datei, g, Rahmenanteil und Verschattung leer; im Summenfeld steht sie wie im
+        /// Einzonenweg unter „Sonstige Flächen", und die Summenprobe hält Sonstige samt Fassade dagegen.
+        /// </summary>
         [Fact]
-        public void Eine_Vorhangfassade_zaehlt_wie_im_Einzonenweg_als_sonstige_Flaeche()
+        public void Eine_Vorhangfassade_rechnet_transparent_und_zaehlt_im_Summenfeld_Sonstige()
         {
             GbxmlAbbild a = BauteilvorschlagProbe.Synthetisch();
+            a.Gebaeude[0].Bauteile.Add(BauteilvorschlagProbe.Flaeche("wand", Bauteilart.Aussenwand, Randbedingung.Aussenluft,
+                                                                     30, 0.3, 90, 0, "R1"));
+            a.Gebaeude[0].Bauteile.Add(BauteilvorschlagProbe.Flaeche("fassade", Bauteilart.Vorhangfassade, Randbedingung.Aussenluft,
+                                                                     20, 1.4, 90, 180, "R1"));
+            GebaeudeBauteilvorschlag v = BauteilvorschlagProbe.Bilden(a);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen));
+
+            GebaeudeBauteilzeile z = BauteilvorschlagProbe.Zeile(v, "fassade");
+            Assert.Equal(DbWerte.BAUTEILART_VORHANGFASSADE, z.Bauteil.Bauteilart);
+            Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, z.Bauteil.Randbedingung);
+            Assert.Equal(GebaeudeZielfelder.FLAECHE_SONSTIGE, z.Summenfeld);
+            Assert.Equal(20.0, z.Bauteil.Flaeche);
+            Assert.Equal(1.4, z.Bauteil.U_Wert);
+            Assert.Equal(Importherkunft.GbXml, z.HerkunftU);
+            Assert.Null(z.Bauteil.g_Wert);
+            Assert.Equal(Importherkunft.Leer, z.HerkunftG);
+            Assert.Null(z.Bauteil.Rahmenanteil);
+            Assert.Null(z.Bauteil.Verschattungsfaktor);
+            Assert.Null(z.Bauteil.ID_Aufbau);
+            Assert.Equal(180.0, z.Bauteil.Azimut);
+            Assert.Equal(DbWerte.HERKUNFT_GBXML, z.Bauteil.Herkunft);
+
+            PruefMeldung m = Assert.Single(v.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.VORHANGFASSADE);
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "1" }, m.Werte);
+
+            // Die Summenfelder bleiben die des Einzonenwegs: Sonstige samt Fassade gegen das Feld Sonstige.
+            GebaeudeImportSatz satz = v.Satz;
+            Assert.Equal(20.0, satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert);
+            foreach (string feld in GebaeudeBauteilvorschlag.Summenfelder)
+                Nah(satz.Zeile(feld).Wert ?? 0.0, v.Summe(feld));
+        }
+
+        /// <summary>
+        /// <b>Was „leer" an einer Vorhangfassade heißt</b> (<see cref="BauteilEingang.MitGebaeudewerten"/>,
+        /// <see cref="GebaeudeModellEingang"/>): g nimmt den Wert des Gebäudes, Rahmenanteil und Verschattung
+        /// die des Gebäudes bzw. ohne sie die Vorgaben; die Zeile rechnet im Fensterzweig.
+        /// </summary>
+        [Fact]
+        public void Eine_leere_Vorhangfassade_nimmt_g_des_Gebaeudes_und_die_Vorgaben_fuer_Rahmen_und_Verschattung()
+        {
+            GbxmlAbbild a = BauteilvorschlagProbe.Synthetisch();
+            a.Gebaeude[0].Bauteile.Add(BauteilvorschlagProbe.Flaeche("wand", Bauteilart.Aussenwand, Randbedingung.Aussenluft,
+                                                                     30, 0.3, 90, 0, "R1"));
             a.Gebaeude[0].Bauteile.Add(BauteilvorschlagProbe.Flaeche("fassade", Bauteilart.Vorhangfassade, Randbedingung.Aussenluft,
                                                                      20, 1.4, 90, 180, "R1"));
             GebaeudeBauteilvorschlag v = BauteilvorschlagProbe.Bilden(a);
             Assert.False(v.Abgelehnt);
-            GebaeudeBauteilzeile z = BauteilvorschlagProbe.Zeile(v, "fassade");
-            Assert.Equal(DbWerte.BAUTEILART_SONSTIGES, z.Bauteil.Bauteilart);
-            Assert.Equal(GebaeudeZielfelder.FLAECHE_SONSTIGE, z.Summenfeld);
-            Assert.Contains(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.VORHANGFASSADE);
+
+            // Die Zeile bildet sich leer ab (NaN = Vorgabe) …
+            GebaeudeZonensatz satz = GebaeudeZonenabbildung.AlsZonensatz(v.Zone, v.AufbautenJeId);
+            BauteilEingang roh = Assert.Single(satz.Bauteile, b => b.Art == Bauteilart.Vorhangfassade);
+            Assert.True(double.IsNaN(roh.GWert));
+            Assert.True(double.IsNaN(roh.Rahmenanteil));
+            Assert.True(double.IsNaN(roh.Verschattungsfaktor));
+
+            // … und der Eingangsbauer füllt sie mit den Werten des Gebäudes (g 0,75 der Probe; Rahmenanteil
+            // und Verschattung trägt das Probengebäude nicht — dann die Vorgaben).
+            Parameter(v, out GebaeudeModellEingang e);
+            Assert.True(e.Bauteilweg);
+            BauteilEingang b = Assert.Single(e.Bauteile, x => x.Art == Bauteilart.Vorhangfassade);
+            Assert.True(b.IstTransparent);
+            Assert.Equal(Bauteilgruppe.Fenster, b.Gruppe);
+            Assert.Equal(0.75, b.GWert);
+            Assert.Equal(GebaeudeFestwerte.VORGABE_RAHMENANTEIL, b.Rahmenanteil);
+            Assert.Equal(GebaeudeFestwerte.VORGABE_VERSCHATTUNGSFAKTOR, b.Verschattungsfaktor);
+            Assert.Equal(1.4, b.UWert_WM2K);
+        }
+
+        /// <summary>
+        /// <b>Die Probe mit Vorhangfassaden</b> (<c>ifc4_vorhangfassade.ifc</c>): Süd mit U-Wert aus der Datei,
+        /// West ohne — mit Baualtersklasse die Fenstervorgabe (Herkunft VORGABE), ohne Klasse die benannte
+        /// Ablehnung. Die Summen bleiben die des Einzonenwegs.
+        /// </summary>
+        [Fact]
+        public void Die_Probe_mit_Vorhangfassaden_nimmt_U_aus_der_Datei_sonst_die_Fenstervorgabe()
+        {
+            GebaeudeBauteilvorschlag v = Vorschlag("ifc4_vorhangfassade.ifc", 0, 'E');
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen));
+
+            List<GebaeudeBauteilzeile> fassaden = v.Zeilen.Where(z => z.Bauteil.Bauteilart == DbWerte.BAUTEILART_VORHANGFASSADE).ToList();
+            Assert.Equal(2, fassaden.Count);
+            GebaeudeBauteilzeile sued = Assert.Single(fassaden, z => z.Bauteil.Bezeichner == "Glasfassade Süd");
+            GebaeudeBauteilzeile west = Assert.Single(fassaden, z => z.Bauteil.Bezeichner == "Glasfassade West");
+            Assert.Equal("IfcCurtainWall", sued.Quelltyp);
+            Assert.Equal(25.0, sued.Bauteil.Flaeche);
+            Assert.Equal(1.3, sued.Bauteil.U_Wert);
+            Assert.Equal(Importherkunft.Ifc, sued.HerkunftU);
+            Assert.Equal(DbWerte.HERKUNFT_IFC, sued.Bauteil.Herkunft);
+            Assert.Equal(20.0, west.Bauteil.Flaeche);
+            Assert.Equal(GebaeudeVorgaben.Fuer('E').UFenster, west.Bauteil.U_Wert);
+            Assert.Equal(Importherkunft.Vorgabe, west.HerkunftU);
+            Assert.Equal(DbWerte.HERKUNFT_VORGABE, west.Bauteil.Herkunft);
+            Assert.All(fassaden, z =>
+            {
+                Assert.Equal(GebaeudeZielfelder.FLAECHE_SONSTIGE, z.Summenfeld);
+                Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, z.Bauteil.Randbedingung);
+                Assert.Null(z.Bauteil.g_Wert);
+                Assert.True(z.Bauteil.Azimut.HasValue, z.ToString());
+            });
+            Nah(180.0, sued.Bauteil.Azimut);
+            Nah(270.0, west.Bauteil.Azimut);
+            Assert.Equal(new[] { "2" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.VORHANGFASSADE).Werte);
+
+            // Die Summenfelder: Sonstige = beide Fassaden, wie im Einzonenweg.
+            Assert.Equal(45.0, v.Satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert);
+            foreach (string feld in GebaeudeBauteilvorschlag.Summenfelder)
+                Nah(v.Satz.Zeile(feld).Wert ?? 0.0, v.Summe(feld));
+
+            // Ohne Baualtersklasse hat die Westfassade keinen U-Wert: benannt abgelehnt.
+            GebaeudeBauteilvorschlag ohne = Vorschlag("ifc4_vorhangfassade.ifc");
+            Assert.True(ohne.Abgelehnt);
+            PruefMeldung f = Assert.Single(ohne.Meldungen, m => m.Stufe == PruefStufe.Fehler);
+            Assert.Equal(GebaeudeBauteilvorschlag.UWERT_FEHLT, f.Schluessel);
+            Assert.Equal("1", f.Werte[0]);
+            Assert.Equal(west.Kennung, f.Werte[1]);
+        }
+
+        [Fact]
+        public void Eine_Vorhangfassade_ohne_Azimut_wird_benannt_abgelehnt_und_an_Erdreich_rechnet_sie_an_Aussenluft()
+        {
+            GbxmlAbbild a = BauteilvorschlagProbe.Synthetisch();
+            a.Gebaeude[0].Bauteile.Add(BauteilvorschlagProbe.Flaeche("fassade", Bauteilart.Vorhangfassade, Randbedingung.Aussenluft,
+                                                                     20, 1.4, 90, null, "R1"));
+            GebaeudeBauteilvorschlag v = BauteilvorschlagProbe.Bilden(a);
+            Assert.True(v.Abgelehnt);
+            PruefMeldung f = Assert.Single(v.Meldungen, m => m.Stufe == PruefStufe.Fehler);
+            Assert.Equal(GebaeudeBauteilvorschlag.AZIMUT_FEHLT, f.Schluessel);
+            Assert.Equal(new[] { "1", "fassade" }, f.Werte);
+
+            // An Erdreich: Außenluft wie ein Fenster, gemeldet.
+            a.Gebaeude[0].Bauteile[2].AzimutGrad = 90;
+            a.Gebaeude[0].Bauteile[2].Randbedingung = Randbedingung.Erdreich;
+            GebaeudeBauteilvorschlag e = BauteilvorschlagProbe.Bilden(a);
+            GebaeudeBauteilzeile z = BauteilvorschlagProbe.Zeile(e, "fassade");
+            Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, z.Bauteil.Randbedingung);
+            Assert.Contains(e.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.FENSTER_ERDREICH);
         }
 
         // =====================================================================
@@ -925,6 +1064,7 @@ namespace EPOS.Kern.Tests
         [InlineData("ifc4_schichten_nullwerte.ifc", 'E')]
         [InlineData("ifc2x3_schichten.ifc", 'E')]
         [InlineData("ifc4_rueckfaelle.ifc", 'E')]
+        [InlineData("ifc4_vorhangfassade.ifc", 'E')]
         public void Jeder_Vorschlag_bildet_sich_ab_und_baut_den_Bauteilweg(string name, char? klasse)
         {
             GebaeudeBauteilvorschlag v = Vorschlag(name, 0, klasse);

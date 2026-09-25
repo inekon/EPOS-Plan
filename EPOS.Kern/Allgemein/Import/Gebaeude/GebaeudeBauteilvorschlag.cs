@@ -139,8 +139,12 @@ namespace WindowsFormsApplication1
     /// Außenluft und Erdreich die Seite. <b>Gegen einen unbeheizten oder unbekannten Raum</b> steht
     /// die Randbedingung <c>UNBEHEIZT</c> (G3: Kellertemperatur des Gebäudes) — für Boden, Decke und
     /// Wand; die Fläche zählt wie im Einzonenweg (Boden → Grundfläche, Decke → Dach, Wand → Sonstige).
-    /// Eine Vorhangfassade zählt wie im Einzonenweg als Sonstiges (opak). Ein Fenster in einer
-    /// erdberührten Wand rechnet an Außenluft.</item>
+    /// Eine <b>Vorhangfassade ist transparent</b> (Anwenderentscheid): eine Zeile der Art
+    /// <c>VORHANGFASSADE</c>, die im Fensterzweig mit Sonneneintrag rechnet — U und g aus der Datei,
+    /// sonst U aus der Fenstervorgabe der Klasse und g, Rahmenanteil und Verschattung leer (dann die
+    /// Werte des Gebäudes bzw. die Vorgaben); in den Summenfeldern bleibt sie, wie im Einzonenweg,
+    /// unter „Sonstige Flächen", und die Summenprobe hält die Gruppe Sonstige samt Vorhangfassaden
+    /// gegen dieses Feld. Ein Fenster oder eine Vorhangfassade an Erdreich rechnet an Außenluft.</item>
     /// <item><b>Fläche:</b> Nettofläche nach dem Fensterabzug (U14); Fenster und Türen je eine Zeile
     /// mit ihrer Fläche. Fehlt der Gruppe jede Fläche und setzt die Zuordnung eine Vorgabe (IFC,
     /// Umsetzungskonzept 3.4), trägt sie ein einziges flächenloses Bauteil der Gruppe, sonst eine
@@ -232,9 +236,9 @@ namespace WindowsFormsApplication1
         internal const string GEBAEUDETRENNFLAECHE = "IMP_BAUTEIL_PROT_GEBAEUDETRENNFLAECHE";
         /// <summary>I — {0} Zahl, {1} Fläche [m²]: gegen unbeheizte oder unbekannte Räume mit der Kellertemperatur.</summary>
         internal const string UNBEHEIZT = "IMP_BAUTEIL_PROT_UNBEHEIZT";
-        /// <summary>I — {0} Zahl: Vorhangfassade als sonstige, opake Fläche wie im Einzonenweg.</summary>
+        /// <summary>I — {0} Zahl: Vorhangfassaden rechnen transparent mit Sonneneintrag; in den Summenfeldern stehen sie unter „Sonstige Flächen".</summary>
         internal const string VORHANGFASSADE = "IMP_BAUTEIL_PROT_VORHANGFASSADE";
-        /// <summary>I — {0} Zahl: Fenster in erdberührten Wänden rechnen an Außenluft.</summary>
+        /// <summary>I — {0} Zahl: Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft.</summary>
         internal const string FENSTER_ERDREICH = "IMP_BAUTEIL_PROT_FENSTER_ERDREICH";
         /// <summary>I — {0} Kennung: Nettofläche der Datei 0 — keine Zeile, die Öffnungen bleiben.</summary>
         internal const string NETTOFLAECHE_NULL = "IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL";
@@ -533,7 +537,9 @@ namespace WindowsFormsApplication1
 
                 Sammelmeldungen();
                 Summenprobe(satz);
-                if (!_v._zeilen.Any(z => z.Summenfeld != null && z.Summenfeld != GebaeudeZielfelder.FENSTER_GESAMT))
+                // Ein opakes Außenbauteil: weder Innenzeile noch Fenster noch Vorhangfassade.
+                if (!_v._zeilen.Any(z => z.Summenfeld != null && z.Summenfeld != GebaeudeZielfelder.FENSTER_GESAMT
+                                         && z.Bauteil.Bauteilart != DbWerte.BAUTEILART_VORHANGFASSADE))
                     Fehler(KEINE_AUSSENBAUTEILE, _g.Anzeigename);
                 if (!_v.Abgelehnt) Probe(satz);
             }
@@ -573,11 +579,7 @@ namespace WindowsFormsApplication1
             {
                 AbbildBauteil s = p.Bauteil;
                 Bauteilart art = s.Art;
-                if (art == Bauteilart.Vorhangfassade)
-                {
-                    art = Bauteilart.Sonstiges;
-                    _vorhangfassaden++;
-                }
+                if (art == Bauteilart.Vorhangfassade) return Fassadenzeile(p, flaeche, herkunftFlaeche);
                 Bauteilrand rand = RandAus(p.Rand);
                 bool gespiegelt = p.HeizPos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
@@ -592,6 +594,45 @@ namespace WindowsFormsApplication1
                 z.HerkunftFlaeche = herkunftFlaeche;
                 Setzen(z, neigung, hn, azimut, ha);
                 Opak(z, s, art, rand, gespiegelt, p.Summenfeld);
+                if (rand == Bauteilrand.Unbeheizt) { _unbeheizt++; _unbeheiztM2 += flaeche; }
+                Abschliessen(z);
+                return z;
+            }
+
+            /// <summary>
+            /// <b>Eine Vorhangfassade — transparent</b> (Anwenderentscheid): eine Zeile der Art
+            /// <c>VORHANGFASSADE</c>, die der Bauteilweg im Fensterzweig mit Sonneneintrag rechnet.
+            /// U und g aus der Datei, wo sie welche trägt; sonst U aus der Fenstervorgabe der
+            /// Baualtersklasse (Herkunft <c>VORGABE</c>) und g leer — dann gilt der Wert des Gebäudes.
+            /// Rahmenanteil und Verschattungsfaktor bleiben leer: Es gelten die des Gebäudes, ohne sie
+            /// die Vorgaben (<see cref="BauteilEingang.MitGebaeudewerten"/>). Die Fläche zählt weiter in
+            /// das Summenfeld der Einordnung („Sonstige Flächen"), wie im Einzonenweg. An Erdreich
+            /// rechnet sie wie ein Fenster an Außenluft; an Außenluft braucht sie einen Azimut.
+            /// </summary>
+            private GebaeudeBauteilzeile Fassadenzeile(Huellposten p, double flaeche, Importherkunft herkunftFlaeche)
+            {
+                AbbildBauteil s = p.Bauteil;
+                _vorhangfassaden++;
+                Bauteilrand rand = RandAus(p.Rand);
+                if (rand == Bauteilrand.Erdreich)
+                {
+                    rand = Bauteilrand.Aussenluft;
+                    _fensterErdreich++;
+                }
+                bool gespiegelt = p.HeizPos > 0;
+                (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
+
+                GebaeudeBauteilzeile z = NeueZeile(Name(s), Bauteilart.Vorhangfassade, flaeche, rand, p.Summenfeld,
+                                                   s.Quelltyp, s.Kennung, null);
+                z.HerkunftFlaeche = herkunftFlaeche;
+                Setzen(z, neigung, hn, azimut, ha);
+
+                z.UDatei = s.UWertWm2K;
+                if (s.UWertWm2K.HasValue) { z.Bauteil.U_Wert = s.UWertWm2K; z.HerkunftU = _datei; }
+                else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
+                // g: ≤ 0 oder > 1 ist eine Fehlstelle (Datenaustauschkonzept 3.6) — dann gilt der Wert des Gebäudes.
+                if (s.GWert > 0.0 && s.GWert <= 1.0) { z.Bauteil.g_Wert = s.GWert; z.HerkunftG = _datei; }
                 if (rand == Bauteilrand.Unbeheizt) { _unbeheizt++; _unbeheiztM2 += flaeche; }
                 Abschliessen(z);
                 return z;
