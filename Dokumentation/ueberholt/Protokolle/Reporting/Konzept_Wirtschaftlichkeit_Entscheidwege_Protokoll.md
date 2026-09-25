@@ -1298,7 +1298,7 @@ Schemaschritt 130 samt den Papieren zu #484, #489, #490, #491 und #493; der Merg
 unberührt), in § 8.37 bis § 8.39 **vor #498** (Stand `f55a4cd5` = #496 mit Schemaschritt 141 samt den Papieren zu
 #492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt), in § 8.40 **vor #506**
 (Stand `cbed6dba` = #498 samt seinen Papieren, zusammengeführt mit #499 (Zapfprofilgenerator, ohne Berührung der
-Wirtschaftlichkeit); der Merge #506, `36a3fc89`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+Wirtschaftlichkeit); der Merge #506, `e7c2f8f7`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2780,7 +2780,7 @@ Orchestrator am 25.09.2026 (09:45) mit der Baufreigabe nach Empfehlung entschied
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **E21** (#506, Merge `36a3fc89` über `b5cc1a61`, Zweig `e21` = `02ea7650` von `cbed6dba`) | zwei verwaiste Ressourcenschlüssel aus de/en/Designer gestrichen (E21‑Q1 a), drei Rückfall-Literale an die resx angeglichen (E21‑Q2 a), Kommentare `KiDialoge.cs` und `SteuerGutschriftRechner.cs` nachgezogen; die Datenlücken der Projekte 1018, 1024, 1023, 1030, 1026 gemessen und benannt, keine Datenpflege (E21‑Q3…Q8 a); ein PV-Projekt mit vollständigen Preisen bleibt eine spätere, eigene Welle (E21‑Q9 a) | **nein** — Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, Testdatenbank unverändert |
+| **E21** (#506, Merge `e7c2f8f7` über `b5cc1a61`, Zweig `e21` = `02ea7650` von `cbed6dba`) | zwei verwaiste Ressourcenschlüssel aus de/en/Designer gestrichen (E21‑Q1 a), drei Rückfall-Literale an die resx angeglichen (E21‑Q2 a), Kommentare `KiDialoge.cs` und `SteuerGutschriftRechner.cs` nachgezogen; die Datenlücken der Projekte 1018, 1024, 1023, 1030, 1026 gemessen und benannt, keine Datenpflege (E21‑Q3…Q8 a); ein PV-Projekt mit vollständigen Preisen bleibt eine spätere, eigene Welle (E21‑Q9 a) | **nein** — Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich, Testdatenbank unverändert |
 
 *§ 6.3 Nr. 23 (vor #506):*
 
@@ -2811,6 +2811,6 @@ Die Stellen, die mit E21 veraltet sind; „vorher“ ist der Wortlaut vor #506 (
 
 | Stelle im Konzept | vorher | nachher |
 |---|---|---|
-| Kopf (Z. 3) | Codestand `31a0b085`; „… E19 ohne Schritt“ | Codestand `36a3fc89`; „… E19 und E21 ohne Schritt“ |
+| Kopf (Z. 3) | Codestand `31a0b085`; „… E19 ohne Schritt“ | Codestand `e7c2f8f7`; „… E19 und E21 ohne Schritt“ |
 | § 6.3 Nr. 23 | Wortlaut in § 8.40 | durchgestrichen, „erledigt mit E21 (#506)“, siehe Protokoll |
 | § 6.3 Nr. 24 | Wortlaut in § 8.40 | „gemessen 25.09.2026, benannt: …“ (Kurztafel), Kandidaten für die nächste Neueinfrierung, siehe Protokoll |

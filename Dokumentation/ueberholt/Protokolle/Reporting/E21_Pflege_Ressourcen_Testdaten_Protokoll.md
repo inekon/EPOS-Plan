@@ -13,7 +13,7 @@ Analysepapier
 § 5. Vorgänger: [`E19_Unternehmensart_ohne_BHKW_Protokoll.md`](E19_Unternehmensart_ohne_BHKW_Protokoll.md). Zweig `e21`
 von `cbed6dba` (`origin`, nach #498 und #499); Opus 5.5 im Worktree `.claude/worktrees/e21`, zwei Phasen: Phase 0 nur
 gelesen und gemessen, Phase 1 nach der Freigabe (25.09.2026, 09:45) `25984cbd` (E21/1), `02ea7650` (E21/2). Merge
-`36a3fc89` („Merge e21: Pflegewelle Ressourcen (Nr. 23 erledigt) und Datenluecken benannt (Nr. 24) (#506)“) auf `pm21`
+`e7c2f8f7` („Merge e21: Pflegewelle Ressourcen (Nr. 23 erledigt) und Datenluecken benannt (Nr. 24) (#506)“) auf `pm21`
 über `origin` = `b5cc1a61` (Cloud-Sitzung „claude/exciting-jennings“ nach #497), ohne Konflikt. Basis
 `2026-09-24_R14_Kaelteerzeuger`. **Kein Schemaschritt, keine Rechenwirkung** — Anker und Referenzlauf bitgleich; der
 Schemastand bleibt 141.
@@ -106,7 +106,7 @@ jeweils der Entscheid (→ Register R‑E21).
   KiKern 76); voller Lauf 14.027 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 6.822 und 1 übersprungen,
   EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen); Testhost-Regel eingehalten
   (vor dem gefilterten Lauf zwei fremde Testhosts abgewartet).
-- **Merge** `36a3fc89` auf `pm21` über `b5cc1a61` ohne Konflikt; Designer 11.006, wiederholbar (+0).
+- **Merge** `e7c2f8f7` auf `pm21` über `b5cc1a61` ohne Konflikt; Designer 11.006, wiederholbar (+0).
 - **Gate:** NACHTRAG-506-GATE.
 - **CI:** steht aus (Beobachtung nach dem Push).
 
@@ -117,7 +117,7 @@ Kein Eintrag — keine sichtbare Änderung (Ressourcen- und Kommentarpflege, kei
 ## Papiere mit der Statuszeile
 
 Konzept (§ 6.3 Nr. 23 erledigt als Einzeiler, Nr. 24 neuer Wortlaut „gemessen 25.09.2026, benannt: …“ mit den fünf
-Projekten und den Kandidaten für die nächste Neueinfrierung, Kopfzeile Codestand `36a3fc89`, „E19 und E21 ohne
+Projekten und den Kandidaten für die nächste Neueinfrierung, Kopfzeile Codestand `e7c2f8f7`, „E19 und E21 ohne
 Schritt“), Register (neue Familie R‑E21 mit E21‑Q1…Q9), Protokoll der Entscheidwege (§ 8.40, § 8.41), Analysepapier
 (§ 5, Zeile E21, ohne Schemaschritt), Index (Reporting +1). Kein Mockup, kein Wiki, kein Logbuchsatz — E21 ändert
 keine sichtbare Bedienung.
