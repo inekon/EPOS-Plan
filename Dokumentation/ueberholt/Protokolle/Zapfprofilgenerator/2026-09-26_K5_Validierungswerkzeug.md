@@ -212,8 +212,12 @@ stattdessen in den Proben gegen eine Kopie der Testdatenbank.
 | `dotnet build Werkzeuge/ZapfprofilValidierung/ZapfprofilValidierung.sln -c Release` | 0 Fehler, 0 Warnungen |
 | `dotnet test Werkzeuge/ZapfprofilValidierung/ZapfprofilValidierung.sln` | 30 erfolgreich |
 | gefilterte Kern-Tests (`RepositoryOrdnungWache`, `DokumentationLinkWache`, `WikiProduktdatenWache`) | 31 erfolgreich |
-| voller Testlauf `WP-Plan.Kern.slnf` | siehe Statuszeile #523 |
+| gefilterte Kern-Tests (zusätzlich `Zapfprofil`, `Messvergleich`, `Messreihen`) | 536 erfolgreich |
+| voller Testlauf `WP-Plan.Kern.slnf` **auf dem Merge** `81a2d1a1` | 0 Fehler, 15 061 erfolgreich, 2 übersprungen |
+| `SqlDialektPruefer` gegen die Testdatenbank (Fassung #522, Schemastand 145) | 1 946 Texte, 0 Fundstellen |
 | Beispiel-Lauf des Werkzeugs (`Beispiel/`, erfundener Katalog) | beide Objekte grün, Kalibrierfaktor 1, Residuum 0 |
 | Lauf an 21 offenen Messreihen | durchgelaufen, Ergebnis im Validierungsbericht |
 
-Die Testdatenbank ist unberührt; ein Schemaschritt war nicht nötig.
+**Kein Referenzlauf und keine Windows-Schale:** Am Rechenweg und an der Schale ist nichts geändert — der Kern bekommt allein zwei `InternalsVisibleTo`-Zeilen und zwei Wachenfälle. Die Testdatenbank ist von diesem Posten unberührt; ihre neue Fassung samt Schemaschritt 145 und Referenzlauf kommt mit dem Posten #522 von `origin` (Basis R19, 6/6 PASS). Ein Schemaschritt war hier nicht nötig.
+
+**Der Merge von `origin`** (`81a2d1a1`, Stand `eaa40ce6`) hatte drei Konflikte, alle in den Papieren: die Statusdatei (#522 vor #523), das Umsetzungskonzept (N21 vor N22, beide Folgentabellen erhalten, der Satz zum Entscheidstand aus beiden Seiten zusammengeführt) und den Dokumentations-Index (Protokollzahl 13, beide Protokolle in der Sammelzeile). Die Testdatenbank kam in der Fassung von `origin`.
