@@ -239,6 +239,101 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// <b>Das Ergebnis des Kältekreises EINES kühlgekoppelten Gebäudes</b> (E37; Anlagenkopplung
+    /// 8.3, 10.5) — der gemeinsame Kern (<see cref="Kreisergebnis"/>) mit dem Kältebedarf als
+    /// Gewicht, dazu die Grenzen der Kälteseite, die Auslegung der Kühlübergabe und die Herkunft
+    /// des festen Kaltwasser-Vorlaufs. Alle Leistungen sind <b>sensibel</b> (K5).
+    ///
+    /// <para><b>„Kältebedarfsgewichtet"</b> heißt: Mittel über die Stunden mit Kühlleistung &gt; 0.
+    /// Der Rücklauf je Stunde ist der zur gelieferten mittleren Kühlleistung, θ_V + Φ̄_c/W_K.</para>
+    /// </summary>
+    internal sealed class KuehlkreisErgebnis : Kreisergebnis
+    {
+        private KuehlkreisErgebnis() { }
+
+        /// <summary>Bildet das Ergebnis aus dem Eingang und den Reihen des Laufs.</summary>
+        /// <param name="e">Der Eingang (wirksame Kälteseite).</param>
+        /// <param name="vorlaufC">Kaltwasser-Vorlauf je Stunde [°C] (fest).</param>
+        /// <param name="ruecklaufC">Rücklauf je Stunde [°C].</param>
+        /// <param name="uebergabeBegrenztAnteil">Zeitanteil je Stunde mit der Kühlübergabe als Grenze [–], einschließlich Vorlaufgrenze.</param>
+        /// <param name="kuehlleistungMaxStundenH">Summe der Zeitanteile mit <c>Kuehlleistung_Max</c> als Grenze [h].</param>
+        /// <param name="keineKaelteStundenH">Summe der Zeitanteile ohne Kälte der Übergabe (Vorlauf nicht unter der Raumluft) [h].</param>
+        /// <param name="vorlaufgrenzeStundenH">Summe der Zeitanteile an der Vorlaufgrenze [h] (7.2).</param>
+        /// <param name="kuehlbedarfW">Der (unskalierte) Kältebedarf je Stunde [W] — er legt die Bedarfsstunden fest.</param>
+        /// <param name="groessteUeberschreitungK">Größte Überschreitung des Kühlsollwerts in einer Stunde mit begrenzter Kühlübergabe [K].</param>
+        internal static KuehlkreisErgebnis Bilden(GebaeudeModellEingang e, double[] vorlaufC, double[] ruecklaufC,
+                                                  double[] uebergabeBegrenztAnteil, double kuehlleistungMaxStundenH,
+                                                  double keineKaelteStundenH, double vorlaufgrenzeStundenH,
+                                                  double[] kuehlbedarfW, double groessteUeberschreitungK)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            var kk = new KuehlkreisErgebnis();
+            kk.KennzahlenBilden(vorlaufC, ruecklaufC, uebergabeBegrenztAnteil, kuehlbedarfW);
+
+            Uebergabekennwerte k = e.KuehlUebergabe;
+            kk.KuehlleistungMaxStundenH = kuehlleistungMaxStundenH;
+            kk.KeineKaelteStundenH = keineKaelteStundenH;
+            kk.VorlaufgrenzeStundenH = vorlaufgrenzeStundenH;
+            kk.GroessteUeberschreitungK = groessteUeberschreitungK;
+            kk.UebergabeArt = e.KuehlUebergabeArt;
+            kk.Exponent = k.Exponent;
+            kk.UebergabeNennKw = k.PhiNW / 1000.0;
+            kk.UebergabeNennleistungHergeleitet = e.KuehlNennleistungHergeleitet;
+            kk.AuslegungskuehllastKw = e.AuslegungskuehllastW / 1000.0;
+            kk.AuslegungstagKuehlung = e.AuslegungstagKuehlung;
+            kk.AuslegungVorlaufC = k.AuslegungVorlaufC;
+            kk.AuslegungRuecklaufC = k.AuslegungRuecklaufC;
+            kk.AuslegungRaumC = k.AuslegungRaumC;
+            kk.ReglerbandK = e.ReglerbandK;
+            kk.Vorlaufquelle = e.KuehlVorlaufquelle;
+            kk.VorlaufFestC = e.KuehlVorlaufC;
+            kk.VorlaufQuelleC = e.KuehlVorlaufQuelleC;
+            kk.VorlaufGekappt = e.KuehlVorlaufGekappt;
+            kk.VorlaufgrenzeC = e.KuehlVorlaufgrenzeC;
+            kk.Strahlungsanteil = e.KuehlStrahlungsanteil;
+            return kk;
+        }
+
+        /// <summary>Zahl der Kühlstunden (Kühlleistung &gt; 0) — die Stunden der Mittelwerte.</summary>
+        internal int Kuehlstunden => Bedarfsstunden;
+
+        /// <summary>Stunden, in denen <c>Kuehlleistung_Max</c> gekappt hat [h].</summary>
+        internal double KuehlleistungMaxStundenH { get; private set; }
+
+        /// <summary>Stunden, in denen die Kühlübergabe nichts lieferte [h] (Vorlauf nicht unter der Raumluft).</summary>
+        internal double KeineKaelteStundenH { get; private set; }
+
+        /// <summary>Stunden der gesättigten Kühlübergabe an der Vorlaufgrenze [h] — ein Teil von <see cref="Kreisergebnis.UebergabeBegrenztStundenH"/> (7.2).</summary>
+        internal double VorlaufgrenzeStundenH { get; private set; }
+
+        /// <summary>Größte Überschreitung des Kühlsollwerts in einer Stunde mit begrenzter Kühlübergabe [K] (Meldung 9.5).</summary>
+        internal double GroessteUeberschreitungK { get; private set; }
+
+        /// <summary>Die Kühllast des Auslegungstags [kW] — skaliert (E8); NaN, wenn die Nennleistung eingetragen war.</summary>
+        internal double AuslegungskuehllastKw { get; private set; }
+
+        /// <summary>Der Auslegungstag der Kühlung (0 … 364); −1, wenn die Nennleistung eingetragen war.</summary>
+        internal int AuslegungstagKuehlung { get; private set; }
+
+        /// <summary>Der Kaltwasser-Vorlauf der Quelle [°C] vor dem Hochmischen (Anlage oder Auslegung).</summary>
+        internal double VorlaufQuelleC { get; private set; }
+
+        /// <summary>Stand der Vorlauf an der Vorlaufgrenze, weil die Quelle kälter lieferte?</summary>
+        internal bool VorlaufGekappt { get; private set; }
+
+        /// <summary>Die Vorlaufgrenze [°C] — eine Vorgabe, keine gerechnete Taupunktgrenze; NaN = keine.</summary>
+        internal double VorlaufgrenzeC { get; private set; }
+
+        /// <summary>Dasselbe Ergebnis mit den Leistungen der Auslegung mal <paramref name="faktor"/> (E8).</summary>
+        internal KuehlkreisErgebnis Skaliert(double faktor)
+        {
+            var s = (KuehlkreisErgebnis)KernSkaliert(faktor);
+            s.AuslegungskuehllastKw = AuslegungskuehllastKw * faktor;
+            return s;
+        }
+    }
+
+    /// <summary>
     /// <b>Der gemeinsame Kern der Kreise des PROJEKTS</b> (Anlagenkopplung 6.1, 8.3) — die Sicht
     /// der Erzeugerseite auf die gekoppelten Gebäude eines Laufs. Versorgt eine Anlage mehrere
     /// Gebäude, gilt je Stunde das <b>bedarfsgewichtete Mittel</b> ihrer gerechneten Vorläufe
@@ -352,6 +447,36 @@ namespace WindowsFormsApplication1
             if (gekoppelt.Count == 0) return null;
 
             var p = new HeizkreisProjekt();
+            p.ReihenBilden(gekoppelt);
+            return p;
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Kältekreis des PROJEKTS</b> (E37; Anlagenkopplung 8.3): der gemeinsame Kern
+    /// (<see cref="Kreisprojekt"/>) mit dem Kältebedarf als Gewicht. Die drei Größen der
+    /// Projektzeile (KAK-S3): <c>Kuehl_Vorlauf_Mittel</c>, <c>Kuehl_Ruecklauf_Mittel</c> und
+    /// <c>Kuehl_Uebergabe_Begrenzt_Stunden</c>. Die Wärmepumpe liest ihn nicht — sie rechnet am
+    /// <c>Kuehl_Vorlauf</c> (7.4 Punkt 5).
+    /// </summary>
+    internal sealed class KuehlkreisProjekt : Kreisprojekt
+    {
+        private KuehlkreisProjekt() { }
+
+        /// <summary>
+        /// Bildet den Kältekreis des Projekts aus den (skalierten) Ergebnissen des Laufs;
+        /// <c>null</c>, wenn kein Gebäude kühlgekoppelt rechnet.
+        /// </summary>
+        internal static KuehlkreisProjekt Bilden(IReadOnlyList<GebaeudeModellErgebnis> ergebnisse)
+        {
+            var gekoppelt = new List<KeyValuePair<Kreisergebnis, double[]>>();
+            if (ergebnisse != null)
+                foreach (GebaeudeModellErgebnis e in ergebnisse)
+                    if (e != null && e.Kuehlkreis != null && e.KuehlbedarfKwh != null)
+                        gekoppelt.Add(new KeyValuePair<Kreisergebnis, double[]>(e.Kuehlkreis, e.KuehlbedarfKwh));
+            if (gekoppelt.Count == 0) return null;
+
+            var p = new KuehlkreisProjekt();
             p.ReihenBilden(gekoppelt);
             return p;
         }

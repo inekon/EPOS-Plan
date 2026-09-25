@@ -77,6 +77,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <see cref="KopplungWirksam"/> für eine Gebäudezeile — die Frage, die Eingangsbauer und
+        /// Fassade (feste Nennleistung, H7) gleich beantworten.
+        /// </summary>
+        internal static bool KopplungWirksamFuer(ProjektGebaeudeModel g, string stufe, bool kuehlbetrieb)
+            => g != null && KopplungWirksam(stufe, kuehlbetrieb, g.Kuehlung_Aktiv, g.Kuehl_Sollwert,
+                                            g.Kuehluebergabe_Aktiv, g.Kuehl_Uebergabe_Art);
+
+        /// <summary>
         /// Die <b>gespiegelten</b> Kennwerte der Kühlübergabe für Schritt K: (Φ_N, n, −V, −R, −θ_i,N).
         /// Spreizung R − V, Übertemperatur θ_i,N − (V + R)/2, Wärmekapazitätsstrom W_K = Φ_N/(R − V).
         /// </summary>

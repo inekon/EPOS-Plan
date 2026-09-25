@@ -29329,9 +29329,6 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_AK_FLAECHE_OHNE_ESTRICH" xml:space="preserve">
     <value>Anlagenkopplung: Flächenheizung ohne Estrichmasse — die Masse der Heizfläche wird nicht gerechnet, die gerechnete Aufheizzeit ist deshalb zu kurz.</value>
   </data>
-  <data name="SIMENG_AK_KAELTESEITE_VERTAGT" xml:space="preserve">
-    <value>Anlagenkopplung: {0} — die Kälteseite der Anlagenkopplung ist noch nicht gebaut; die Kühlung dieses Gebäudes rechnet weiter mit idealer Regelung.</value>
-  </data>
   <data name="SIMENG_AK_VORLAUF_AUSLEGUNG" xml:space="preserve">
     <value>Anlagenkopplung: {0} — die Heizkurve ist aus, und keine Anlage des Heizkanals führt einen Vorlauf; der feste Vorlauf ist der Auslegungsvorlauf {1} °C.</value>
   </data>
@@ -31905,5 +31902,50 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_DLG_GESPERRT" xml:space="preserve">
     <value>Nicht übernommen — bitte zuerst beheben:</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT" xml:space="preserve">
+    <value>Die Kühlübergabeart „{0}“ ist unbekannt; bekannt sind Kühldecke, Flächenkühlung und Gebläsekonvektor. Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE" xml:space="preserve">
+    <value>Der Auslegungspunkt der Kühlübergabe ist ungültig: Vorlauf {0} °C, Rücklauf {1} °C und Raumtemperatur {2} °C müssen aufsteigen (Vorlauf unter Rücklauf unter Raumtemperatur). Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Nennleistung der Kühlübergabe {0} kW ist nicht größer null. Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV" xml:space="preserve">
+    <value>Die Kühllast des Auslegungstags ({0}) ist nicht größer null ({1} W bei {2} °C Kühlsollwert); die Nennleistung der Kühlübergabe lässt sich so nicht herleiten. Bitte eine Nennleistung eintragen.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, das Projekt rechnet aber ohne Anlagenkopplung. Die Eingaben der Kühlübergabe ruhen, bis die Stufe gesetzt ist; gerechnet wird mit idealer Kühlung.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlung des Gebäudes ist aber nicht wirksam (Kühlbetrieb des Projekts, Kühlung am Gebäude oder Kühlsollwert fehlt). Die Eingaben der Kühlübergabe ruhen.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_IDEAL" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlübergabeart ist aber „ideal“ oder leer; gerechnet wird mit idealer Kühlung.</value>
+  </data>
+  <data name="SIMENG_AK_KAELTESEITE_IDEAL" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — Kühlung ideal: keine Kühlübergabe gewählt.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Kühlübergabe reicht in {1} Stunden nicht (davon {2} Stunden an der Vorlaufgrenze); die Raumtemperatur liegt dort bis zu {3} K über dem Kühlsollwert.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — keine Wärmepumpe im Kühlbetrieb führt einen Kaltwasser-Vorlauf; der feste Vorlauf der Kühlübergabe ist der Auslegungsvorlauf {1} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_GEMISCHT" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — Kaltwasser kälter als nötig: Die Wärmepumpe rechnet am Kühl-Vorlauf {1} °C, das Gebäude mischt auf die Vorlaufgrenze {2} °C hoch.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Vorlaufgrenze {1} °C liegt über dem Auslegungsvorlauf {2} °C der Kühlübergabe; die Nennleistung wird nie erreicht.</value>
+  </data>
+  <data name="SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH" xml:space="preserve">
+    <value>Anlagenkopplung: Flächenkühlung ohne Estrichmasse — die Masse der Kühlfläche wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG" xml:space="preserve">
+    <value>Anlagenkopplung: {0} — die Nennleistung der Kühlübergabe ist hergeleitet: die Kühllast des Auslegungstags {2} (höchstes Tagesmittel der Außenluft, {3} °C), {1} kW für das Katalog-Gebäude vor der Skalierung. Kein Normnachweis.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_SENSIBEL" xml:space="preserve">
+    <value>Anlagenkopplung: Die Kühlübergabe rechnet sensibel, ohne Entfeuchtung; die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze.</value>
   </data>
 </root>

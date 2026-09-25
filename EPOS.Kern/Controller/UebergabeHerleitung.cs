@@ -24,6 +24,48 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// <b>Die hergeleiteten Vorgaben der Kühlübergabe eines Gebäudesatzes</b> (E37; Anlagenkopplung
+    /// 7.2, 8.4, 9.1) — was der Gebäudedialog in die Herleitungszeilen der Kühlübergabe schreibt:
+    /// Auslegungstag und seine Kühllast (= Nennleistung bei leerem Feld, sensibel), Quelle und Höhe
+    /// des festen Kaltwasser-Vorlaufs und die Vorlaufgrenze. Ausdrücklich <b>kein Normnachweis</b>.
+    /// </summary>
+    internal sealed class KuehluebergabeHerleitung
+    {
+        /// <summary>Der Auslegungstag der Kühlung (0 … 364); <c>null</c> ohne Herleitung.</summary>
+        internal int? Auslegungstag { get; init; }
+
+        /// <summary>Der Auslegungstag als Monat und Tag in der Kultur des Aufrufs; leer ohne Herleitung.</summary>
+        internal string AuslegungstagText { get; init; } = "";
+
+        /// <summary>Das Tagesmittel der Außenluft am Auslegungstag [°C]; <c>null</c> ohne Herleitung.</summary>
+        internal double? AuslegungstagMittelC { get; init; }
+
+        /// <summary>Die Kühllast des Auslegungstags [kW] (= Nennleistung bei leerem Feld); <c>null</c> ohne Herleitung.</summary>
+        internal double? AuslegungskuehllastKw { get; init; }
+
+        /// <summary>Woher der Kaltwasser-Vorlauf kommt (Anlage oder Auslegung).</summary>
+        internal Vorlaufquelle Vorlaufquelle { get; init; }
+
+        /// <summary>Der Kaltwasser-Vorlauf der Quelle [°C] vor dem Hochmischen; <c>null</c> ohne Herleitung.</summary>
+        internal double? VorlaufQuelleC { get; init; }
+
+        /// <summary>Der feste Kaltwasser-Vorlauf am Gebäude [°C] = max(Quelle, Grenze); <c>null</c> ohne Herleitung.</summary>
+        internal double? VorlaufC { get; init; }
+
+        /// <summary>Mischt das Gebäude das Kaltwasser auf die Grenze hoch?</summary>
+        internal bool Gekappt { get; init; }
+
+        /// <summary>Die wirksame Vorlaufgrenze [°C]; <c>null</c> = keine Grenze (Gebläsekonvektor).</summary>
+        internal double? VorlaufgrenzeC { get; init; }
+
+        /// <summary>Liegt die Grenze über dem Auslegungsvorlauf (die Nennleistung wird nie erreicht)?</summary>
+        internal bool GrenzeUeberAuslegung { get; init; }
+
+        /// <summary>Warum es keine Zahl gibt — der benannte Grund; leer mit Zahl.</summary>
+        internal string Befund { get; init; } = "";
+    }
+
+    /// <summary>
     /// <b>Die Quelle der hergeleiteten Vorgaben</b> für den Gebäudedialog (Anlagenkopplung 8.4, 9.1:
     /// „Jede Vorgabe steht als Zahl in der Herleitungszeile"). Sie ruft den Rechenweg des Laufs —
     /// sie schreibt ihn nicht ab (Kern-Regel „Eine Auskunft ruft den Rechenweg des Laufs"): derselbe
@@ -81,6 +123,47 @@ namespace WindowsFormsApplication1
             catch (GebaeudeModellException ex)
             {
                 return new UebergabeHerleitung { Befund = ex.Message };
+            }
+        }
+
+        /// <summary>
+        /// Leitet die Kälteseite für <paramref name="satz"/> her (E37): Auslegungstag und Kühllast,
+        /// Quelle und Höhe des Kaltwasser-Vorlaufs, Vorlaufgrenze. <c>null</c>, wenn es nichts
+        /// herzuleiten gibt (keine Kühlübergabeart, kein Kühlsollwert, kein Projekt, keine
+        /// Klimaregion); ein <see cref="KuehluebergabeHerleitung.Befund"/>, wenn der Eingangsbauer
+        /// den Satz ablehnt. Die Heizseite bleibt dabei aus — die Herleitung der Kälteseite hängt
+        /// nicht an ihr.
+        /// </summary>
+        internal KuehluebergabeHerleitung HerleitenKuehlung(GebaeudeModel satz)
+        {
+            if (satz == null || !Kuehluebergabe.ArtBekannt(satz.Kuehl_Uebergabe_Art) || !satz.Kuehl_Sollwert.HasValue) return null;
+            SimulationWaermebedarf klima = Klima();
+            if (klima == null) return null;
+
+            ProjektGebaeudeModel g = AusKatalogsatz(satz);
+            g.Heizkreis_Aktiv = false;
+            g.Kuehlung_Aktiv = true;
+            g.Kuehluebergabe_Aktiv = true;
+            try
+            {
+                GebaeudeModellEingang e = klima.KuehluebergabeEingang(g);
+                return new KuehluebergabeHerleitung
+                {
+                    Auslegungstag = e.AuslegungstagKuehlung,
+                    AuslegungstagText = GebaeudeModellEingang.TagText(e.AuslegungstagKuehlung, CultureInfo.CurrentCulture),
+                    AuslegungstagMittelC = e.AuslegungstagKuehlungMittelC,
+                    AuslegungskuehllastKw = e.AuslegungskuehllastW / 1000.0,
+                    Vorlaufquelle = e.KuehlVorlaufquelle,
+                    VorlaufQuelleC = e.KuehlVorlaufQuelleC,
+                    VorlaufC = e.KuehlVorlaufC,
+                    Gekappt = e.KuehlVorlaufGekappt,
+                    VorlaufgrenzeC = double.IsNaN(e.KuehlVorlaufgrenzeC) ? (double?)null : e.KuehlVorlaufgrenzeC,
+                    GrenzeUeberAuslegung = e.KuehlGrenzeUeberAuslegung,
+                };
+            }
+            catch (GebaeudeModellException ex)
+            {
+                return new KuehluebergabeHerleitung { Befund = ex.Message };
             }
         }
 

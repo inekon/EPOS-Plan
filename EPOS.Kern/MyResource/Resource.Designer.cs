@@ -59768,11 +59768,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühllast des Auslegungstags ({0}) ist nicht größer null ({1} W bei {2} °C Kühlsollwert); die Nennleistung der Kühlübergabe lässt sich so nicht herleiten. Bitte eine Nennleistung eintragen. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegungs-Außentemperatur {0} °C liegt nicht unter der Auslegungs-Raumtemperatur {1} °C; die Heizkurve hat so keinen Auslegungspunkt. Der Lauf bricht für dieses Gebäude ab. ähnelt.
         /// </summary>
         public static string SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM {
             get {
                 return ResourceManager.GetString("SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Flächenkühlung ohne Estrichmasse — die Masse der Kühlfläche wird nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH", resourceCulture);
             }
         }
         
@@ -59786,11 +59804,119 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kälteseite der Anlagenkopplung ist noch nicht gebaut; die Kühlung dieses Gebäudes rechnet weiter mit idealer Regelung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — Kühlung ideal: keine Kühlübergabe gewählt. ähnelt.
         /// </summary>
-        public static string SIMENG_AK_KAELTESEITE_VERTAGT {
+        public static string SIMENG_AK_KAELTESEITE_IDEAL {
             get {
-                return ResourceManager.GetString("SIMENG_AK_KAELTESEITE_VERTAGT", resourceCulture);
+                return ResourceManager.GetString("SIMENG_AK_KAELTESEITE_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlübergabeart ist aber „ideal“ oder leer; gerechnet wird mit idealer Kühlung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHLUEBERGABEART_IDEAL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHLUEBERGABEART_IDEAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlübergabeart „{0}“ ist unbekannt; bekannt sind Kühldecke, Flächenkühlung und Gebläsekonvektor. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kühlübergabe reicht in {1} Stunden nicht (davon {2} Stunden an der Vorlaufgrenze); die Raumtemperatur liegt dort bis zu {3} K über dem Kühlsollwert. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHLUEBERGABE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHLUEBERGABE_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslegungspunkt der Kühlübergabe ist ungültig: Vorlauf {0} °C, Rücklauf {1} °C und Raumtemperatur {2} °C müssen aufsteigen (Vorlauf unter Rücklauf unter Raumtemperatur). Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Vorlaufgrenze {1} °C liegt über dem Auslegungsvorlauf {2} °C der Kühlübergabe; die Nennleistung wird nie erreicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlung des Gebäudes ist aber nicht wirksam (Kühlbetrieb des Projekts, Kühlung am Gebäude oder Kühlsollwert fehlt). Die Eingaben der Kühlübergabe ruhen. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Nennleistung der Kühlübergabe ist hergeleitet: die Kühllast des Auslegungstags {2} (höchstes Tagesmittel der Außenluft, {3} °C), {1} kW für das Katalog-Gebäude vor der Skalierung. Kein Normnachweis. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung der Kühlübergabe {0} kW ist nicht größer null. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, das Projekt rechnet aber ohne Anlagenkopplung. Die Eingaben der Kühlübergabe ruhen, bis die Stufe gesetzt ist; gerechnet wird mit idealer Kühlung. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Die Kühlübergabe rechnet sensibel, ohne Entfeuchtung; die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_SENSIBEL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_SENSIBEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — keine Wärmepumpe im Kühlbetrieb führt einen Kaltwasser-Vorlauf; der feste Vorlauf der Kühlübergabe ist der Auslegungsvorlauf {1} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — Kaltwasser kälter als nötig: Die Wärmepumpe rechnet am Kühl-Vorlauf {1} °C, das Gebäude mischt auf die Vorlaufgrenze {2} °C hoch. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHL_VORLAUF_GEMISCHT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHL_VORLAUF_GEMISCHT", resourceCulture);
             }
         }
         

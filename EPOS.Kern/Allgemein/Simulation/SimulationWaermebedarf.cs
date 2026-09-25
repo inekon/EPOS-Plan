@@ -267,12 +267,45 @@ namespace WindowsFormsApplication1
         private bool _anlagenVorlaufGelesen;
 
         /// <summary>
+        /// Der Kaltwasser-Vorlauf der Anlage [°C] — der feste Vorlauf kühlgekoppelter Gebäude
+        /// (E37, <see cref="WPCtrl.KuehlVorlaufDesKaeltekanals"/>). Gelesen einmal je Lauf und
+        /// nur, wenn das Projekt eine Kopplungsstufe UND Kälte rechnet; NaN = keiner.
+        /// </summary>
+        internal double KuehlVorlaufAnlageC
+        {
+            get
+            {
+                if (!_kuehlVorlaufGelesen)
+                {
+                    _kuehlVorlaufAnlageC = WPCtrl.KuehlVorlaufDesKaeltekanals(m_ID_Projekt);
+                    _kuehlVorlaufGelesen = true;
+                }
+                return _kuehlVorlaufAnlageC;
+            }
+            set
+            {
+                _kuehlVorlaufAnlageC = value;
+                _kuehlVorlaufGelesen = true;
+            }
+        }
+
+        private double _kuehlVorlaufAnlageC = double.NaN;
+        private bool _kuehlVorlaufGelesen;
+
+        /// <summary>
         /// <b>Der Heizkreis des Projekts</b> nach dem Bedarfslauf (Anlagenkopplung AK1, 6.1):
         /// bedarfsgewichteter Vorlauf je Stunde für die Kennlinienwahl der Wärmepumpe und die
         /// drei Größen der Ergebniszeile (Schritt 123). <c>null</c>, wenn kein Gebäude gekoppelt
         /// rechnet — dann rechnet die Erzeugerseite wie im Bestand.
         /// </summary>
         internal HeizkreisProjekt Heizkreis { get; private set; }
+
+        /// <summary>
+        /// <b>Der Kältekreis des Projekts</b> nach dem Bedarfslauf (E37, KAK-S3): die drei Größen
+        /// der Ergebniszeile. <c>null</c>, wenn kein Gebäude kühlgekoppelt rechnet. Die
+        /// Wärmepumpe liest ihn nicht (7.4 Punkt 5).
+        /// </summary>
+        internal KuehlkreisProjekt Kuehlkreis { get; private set; }
 
         /// <summary>Der Tagesbilanz-Weg dieses Laufs — Zugang für die Tests des Altwegs.</summary>
         internal Altweg.TagesbilanzRechenweg Tagesbilanzweg => _altweg;
@@ -420,6 +453,8 @@ namespace WindowsFormsApplication1
             // Ergebnissen - bedarfsgewichteter Vorlauf je Stunde für die Kennlinienwahl der
             // Wärmepumpe und die drei Größen der Ergebniszeile. Ohne gekoppeltes Gebäude null.
             Heizkreis = HeizkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
+            // Die Kälteseite (E37): der Kältekreis des Projekts, ohne kühlgekoppeltes Gebäude null.
+            Kuehlkreis = KuehlkreisProjekt.Bilden(GebaeudeErgebnisse.Alle);
 
             //com.I_Watt_To_Kw(ref Waermebedarf);
             // K1: Der Heizkanal trägt an dieser Stelle genau das, was bisher der
@@ -801,7 +836,10 @@ namespace WindowsFormsApplication1
             _anlagenkopplungProjekt = null;
             _anlagenVorlaufGelesen = false;
             _anlagenVorlaufC = double.NaN;
+            _kuehlVorlaufGelesen = false;
+            _kuehlVorlaufAnlageC = double.NaN;
             Heizkreis = null;
+            Kuehlkreis = null;
         }
 
         /// <summary>
@@ -857,6 +895,25 @@ namespace WindowsFormsApplication1
                                                double.NaN, double.NaN);
         }
 
+        /// <summary>
+        /// <b>Der Eingang eines kühlgekoppelten Gebäudes, ohne Jahreslauf</b> (E37; Anlagenkopplung
+        /// 8.4, A2) — die Auskunft der Kälteseite für den Gebäudedialog: Auslegungstag und seine
+        /// Kühllast, Quelle und Höhe des festen Kaltwasser-Vorlaufs, Vorlaufgrenze. Derselbe
+        /// Eingangsbauer und derselbe Klimakalender wie im Lauf, mit Stufe AK1, Kühlbetrieb und
+        /// hergeleiteter Nennleistung; der Kaltwasser-Vorlauf der Anlage kommt aus den
+        /// Wärmepumpen im Kühlbetrieb des Projekts. Der Aufrufer setzt Schalter, Kühlung und Art
+        /// am Gebäude. Voraussetzung ist <see cref="KlimakalenderLesen"/>. Schreibt nichts.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung des Eingangsbauers.</exception>
+        internal GebaeudeModellEingang KuehluebergabeEingang(ProjektGebaeudeModel item)
+        {
+            KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
+            return GebaeudeModellEingang.Bauen(item, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                                               gemeinsam.Laengengrad, gemeinsam.Breitengrad, _vdi6007.Zeitbezug,
+                                               true, DbWerte.ANLAGENKOPPLUNG_AK1,
+                                               double.NaN, double.NaN, KuehlVorlaufAnlageC);
+        }
+
         internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, double[] ziel)
         {
             // 1. Der modellfreie Vorbereitungsschritt.
@@ -878,6 +935,9 @@ namespace WindowsFormsApplication1
             string stufe = AnlagenkopplungProjekt;
             _vdi6007.Anlagenkopplung = stufe;
             _vdi6007.AnlagenVorlaufC = Waermeuebergabe.StufeAn(stufe) ? AnlagenVorlaufC : double.NaN;
+            // Die Kälteseite (E37): der Kaltwasser-Vorlauf der Anlage, nur mit Stufe und Kälte.
+            _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
+                ? KuehlVorlaufAnlageC : double.NaN;
             _vdi6007.NennleistungSkalierung = 1.0;
             _vdi6007.Probelauf = false;
 
@@ -959,9 +1019,14 @@ namespace WindowsFormsApplication1
             // dem Lauf bekannt (ein Lauf), bei Verbrauchsangabe entsteht es erst aus einem
             // Probelauf mit hergeleiteter Nennleistung; der zweite Lauf rechnet dann mit der
             // eingetragenen, und die Abweichung vom angegebenen Verbrauch wird benannt.
+            // Dasselbe gilt für die Kälteseite (E37): Eine fest eingetragene Nennleistung der
+            // Kühlübergabe gilt ebenso dem wirklichen Gebäude - sonst bliebe die Skalierung bei
+            // der Verbrauchsangabe auf 1,0 und der Kältewert würde falsch umgerechnet.
             bool festeNennleistung = ReferenceEquals(weg, _vdi6007)
-                                     && Waermeuebergabe.KopplungWirksamFuer(item, _vdi6007.Anlagenkopplung)
-                                     && item.Uebergabe_Leistung_Nenn.HasValue;
+                                     && ((Waermeuebergabe.KopplungWirksamFuer(item, _vdi6007.Anlagenkopplung)
+                                          && item.Uebergabe_Leistung_Nenn.HasValue)
+                                         || (Kuehluebergabe.KopplungWirksamFuer(item, _vdi6007.Anlagenkopplung, _vdi6007.Kuehlbetrieb)
+                                             && item.Kuehl_Uebergabe_Leistung_Nenn.HasValue));
             bool zweiLaeufe = festeNennleistung && !vorbereitung.IstFlaeche;
             if (festeNennleistung && vorbereitung.IstFlaeche)
                 _vdi6007.NennleistungSkalierung = item.Z_AuswahlWohnflaeche / item.Nutzflaeche;

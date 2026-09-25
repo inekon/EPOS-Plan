@@ -29322,9 +29322,6 @@ Do you want to allow this?</value>
   <data name="SIMENG_AK_FLAECHE_OHNE_ESTRICH" xml:space="preserve">
     <value>System coupling: panel heating without screed mass — the mass of the heating surface is not calculated, so the calculated heat-up time is too short.</value>
   </data>
-  <data name="SIMENG_AK_KAELTESEITE_VERTAGT" xml:space="preserve">
-    <value>System coupling: {0} — the cooling side of system coupling is not implemented yet; cooling of this building is still calculated with ideal control.</value>
-  </data>
   <data name="SIMENG_AK_VORLAUF_AUSLEGUNG" xml:space="preserve">
     <value>System coupling: {0} — the heating curve is off and no plant of the heating channel has a flow temperature; the fixed flow temperature is the design flow temperature {1} °C.</value>
   </data>
@@ -31898,5 +31895,50 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GESPERRT" xml:space="preserve">
     <value>Not applied — please fix first:</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_UNBEKANNT" xml:space="preserve">
+    <value>The cooling emitter type “{0}” is unknown; known types are chilled ceiling, surface cooling and fan coil. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_AUSLEGUNG_REIHENFOLGE" xml:space="preserve">
+    <value>The design point of the cooling emitter is invalid: flow {0} °C, return {1} °C and room temperature {2} °C must rise (flow below return below room temperature). The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_UNGUELTIG" xml:space="preserve">
+    <value>The rated output of the cooling emitter {0} kW is not greater than zero. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV" xml:space="preserve">
+    <value>The cooling load of the design day ({0}) is not greater than zero ({1} W at a cooling set point of {2} °C); the rated output of the cooling emitter cannot be derived. Please enter a rated output.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_PROJEKTSTUFE_AUS" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is switched on, but the project calculates without system coupling. The cooling emitter inputs rest until the level is set; cooling is calculated with ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_KUEHLUNG_UNWIRKSAM" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is switched on, but cooling of the building is not effective (project cooling mode, building cooling or cooling set point missing). The cooling emitter inputs rest.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABEART_IDEAL" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is switched on, but the cooling emitter type is “ideal” or empty; cooling is calculated with ideal control.</value>
+  </data>
+  <data name="SIMENG_AK_KAELTESEITE_IDEAL" xml:space="preserve">
+    <value>System coupling: {0} — ideal cooling: no cooling emitter selected.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLUEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>System coupling: {0} — the cooling emitter is insufficient in {1} hours (of which {2} hours at the flow temperature limit); the room temperature there is up to {3} K above the cooling set point.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_AUSLEGUNG" xml:space="preserve">
+    <value>System coupling: {0} — no heat pump in cooling mode provides a chilled water flow temperature; the fixed flow temperature of the cooling emitter is the design flow temperature {1} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_VORLAUF_GEMISCHT" xml:space="preserve">
+    <value>System coupling: {0} — chilled water colder than necessary: the heat pump calculates at the cooling flow temperature {1} °C, the building mixes up to the flow temperature limit {2} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
+    <value>System coupling: {0} — the flow temperature limit {1} °C is above the design flow temperature {2} °C of the cooling emitter; the rated output is never reached.</value>
+  </data>
+  <data name="SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH" xml:space="preserve">
+    <value>System coupling: surface cooling without screed mass — the mass of the cooling surface is not calculated.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_NENNLEISTUNG_AUSLEGUNGSTAG" xml:space="preserve">
+    <value>System coupling: {0} — the rated output of the cooling emitter is derived: the cooling load of the design day {2} (highest daily mean outdoor temperature, {3} °C), {1} kW for the catalogue building before scaling. Not a standard-compliant verification.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHL_SENSIBEL" xml:space="preserve">
+    <value>System coupling: the cooling emitter is calculated as sensible only, without dehumidification; the flow temperature limit is a default, not a calculated dew point limit.</value>
   </data>
 </root>
