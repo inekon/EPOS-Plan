@@ -596,6 +596,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gesamtdicke eines Aufbaus in m.</summary>
         public const string SpDicke = "DICKE";
 
+        /// <summary>Der U-Wert eines Aufbaus in W/(m²·K) — gerechnet aus den Schichten (<c>BauteilaufbauCtrl.Kennwerte</c>).</summary>
+        public const string SpUWert = "UWERT";
+
+        /// <summary>Der Wärmedurchlasswiderstand R = Σ d/λ eines Aufbaus in m²·K/W.</summary>
+        public const string SpRWert = "RWERT";
+
+        /// <summary>Die flächenbezogene Wärmekapazität Σ ρ·c·d eines Aufbaus in kJ/(m²·K).</summary>
+        public const string SpKapazitaet = "KAPAZITAET";
+
+        /// <summary>
+        /// <b>Der Ausdruck „ohne Wert"</b> — ein Gleichheitszeichen ohne Operand (Konzept_Katalogfilter
+        /// V1: <c>=15</c> heißt „gleich 15", <c>=</c> allein „gleich nichts"). Er trifft genau die
+        /// Zeilen, deren Zelle den Leerwert trägt; der Schalter „nur herstellerneutral" der
+        /// Baustoffverwaltung setzt ihn auf die Spalte Hersteller — kein zweiter Filterweg,
+        /// „Filter zurücksetzen" nimmt ihn mit.
+        /// </summary>
+        public const string AUSDRUCK_LEER = "=";
+
         /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
         /// die sechs Kataloge der Stufe S3 (Bedarf, Zeitreihen) sind keine Anlagen und
@@ -1092,8 +1110,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der Aufbaukatalog</b> (Schritt S-B) — Name, Bauteilart, Zahl der Schichten,
-        /// Gesamtdicke und Herkunft. Die Zeilen liefert <c>BauteilaufbauCtrl.Katalogfilterzeilen</c>.
+        /// <b>Der Aufbaukatalog</b> (Schritt S-B, Oberfläche Welle C) — Name, Bauteilart, U, R,
+        /// flächenbezogene Kapazität, Zahl der Schichten, Gesamtdicke und Herkunft. Die Zeilen
+        /// liefert <c>BauteilaufbauCtrl.Katalogfilterzeilen</c>; U, R und C rechnet er über den
+        /// Bauteilweg, dieselbe Rechnung wie der Summenfuß des Stammblatts.
+        ///
+        /// <para><b>Rang:</b> Name und U stehen immer — der U-Wert ist die Zahl, nach der ein
+        /// Aufbau gewählt wird; Bauteilart, R, C und Schichtzahl bei Platz; Dicke und Herkunft
+        /// weichen als erste.</para>
         /// </summary>
         public static Katalogfilterprofil FuerBauteilaufbau(Func<string, string> text = null)
         {
@@ -1106,9 +1130,15 @@ namespace WindowsFormsApplication1
                 {
                     new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
                     new Katalogspalte(SpBauteilart, t("KFLT_SP_BAUTEILART"), rang: Katalogspaltenrang.BeiPlatz),
-                    new Katalogspalte(SpSchichten, t("KFLT_SP_SCHICHTEN"), "", Katalogspaltenart.Zahl),
-                    new Katalogspalte(SpDicke, t("KFLT_SP_DICKE"), "m", Katalogspaltenart.Zahl,
+                    new Katalogspalte(SpUWert, t("KFLT_SP_UWERT"), "W/(m²·K)", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpRWert, t("KFLT_SP_RWERT"), "m²·K/W", Katalogspaltenart.Zahl,
                                       rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpKapazitaet, t("KFLT_SP_KAPAZITAET"), "kJ/(m²·K)", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpSchichten, t("KFLT_SP_SCHICHTEN"), "", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpDicke, t("KFLT_SP_DICKE"), "m", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.Breit),
                     new Katalogspalte(SpHerkunft, t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.Breit)
                 }
             };

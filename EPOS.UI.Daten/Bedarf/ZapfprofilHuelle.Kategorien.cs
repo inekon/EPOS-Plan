@@ -28,7 +28,8 @@ namespace WindowsFormsApplication1
                 Hinweis = Satztext(s.Hinweis),
                 Frei = s.Frei,
                 Sperrgrund = s.Frei ? "" : Kategoriengrund(s.Sperre),
-                Vorgabe = TwwNutzungsartCtrl.KategorienVorgabe().Select(AlsKategorie).ToList()
+                // Der Vorgabesatz der Gruppe dieser Nutzungsart (Wohnen oder Nichtwohnen, Stufe Z5).
+                Vorgabe = TwwNutzungsartCtrl.KategorienVorgabe(idNutzungsart).Select(AlsKategorie).ToList()
             };
         }
 

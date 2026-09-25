@@ -364,6 +364,27 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyDictionary<string, object>? GesetzeskatalogGaben() => null;
 
+    // =====================================================================
+    //  Die ZWEI Kataloge der Gebäudesimulation (Stufe G3)
+    // =====================================================================
+    //
+    //  Freie Ansichten auf BEIDEN Plattformen (Softwarearchitektur 3.1): Unter
+    //  Windows reicht die Hauptfensterhülle ihren Parametersatz als Delegat an die
+    //  Wurzel, auf iOS antwortet die Projektquelle — beide aus derselben Hülle
+    //  (EPOS.UI.Daten, BaustoffKatalogHuelle / BauteilaufbauHuelle).
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung „Baustoffe"
+    /// (<c>Dialoge.Bedarf.BaustoffKatalogDialog</c>); <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BaustoffKatalogGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung „Bauteilaufbauten"
+    /// (<c>Dialoge.Bedarf.BauteilaufbauDialog</c>); <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => null;
+
     /// <summary>
     /// Das LAGEBILD DER LIZENZ für das Banner der <see cref="EPOS.UI.Seiten.AppWurzel"/>
     /// (Welle iF30); <c>null</c> = kein Banner.

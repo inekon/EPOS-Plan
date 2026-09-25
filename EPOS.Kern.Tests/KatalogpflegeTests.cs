@@ -223,12 +223,13 @@ namespace EPOS.Kern.Tests
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
-        // Zapfprofilgenerator (P4, Stufe Z3): der Testkatalog aus
-        // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei fiktive Nutzungsarten und vier
-        // aus VDI 6002 abgeleitete (ZU19), fuenf Tagesgangsaetze (der fiktive und je einer der
-        // abgeleiteten), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), alle
-        // Status EIGEN.
-        [InlineData("TWW_NUTZUNGSART", 7, 0, 0)]
+        // Zapfprofilgenerator (P4, Stufe Z3; Katalogausbau Z5): der Testkatalog aus
+        // Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py - drei fiktive Nutzungsarten und fuenf
+        // aus VDI 6002 abgeleitete (ZU19; Wohnen gross, Ein- und Zweifamilienhaus,
+        // Studentenwohnheim, Seniorenheim, Krankenhaus), fuenf Tagesgangsaetze (der fiktive und je
+        // einer der vier eigenen abgeleiteten Formen), vier Bedarfstage (Konstruktor, Referenztag, Normtag,
+        // Ecodesign L), alle Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 8, 0, 0)]
         [InlineData("TWW_TAGESGANGSATZ", 5, 0, 0)]
         [InlineData("TWW_BEDARFSTAG", 4, 0, 0)]
         [InlineData("STROMVERBRAUCHER", 41, 0, 0)]

@@ -72,6 +72,10 @@ public sealed class ZapfprofilKiSicht
     public Func<int?, string?>? TyptagartSetzen { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? TyptagartEintraege { get; init; }
 
+    public Func<int?>? MessreiheLesen { get; init; }
+    public Func<int?, string?>? MessreiheSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? MessreiheEintraege { get; init; }
+
     public Func<int?>? SeedLesen { get; init; }
     public Func<int?, string?>? SeedSetzen { get; init; }
 
@@ -169,6 +173,22 @@ public sealed class ZapfprofilKiSicht
 
     /// <summary>Die Gebäudearten des eingespielten Pakets (KI‑D‑Q6) — Schlüssel ist der Platz in der Liste.</summary>
     public IReadOnlyList<KiWahleintrag> TyptagartWahl => TyptagartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>
+    /// Die eingespielten Messreihen des Projekts (KI‑D‑Q6) — Schlüssel ist der Platz in der Liste.
+    /// </summary>
+    public IReadOnlyList<KiWahleintrag> MessreiheWahl => MessreiheEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>
+    /// Die Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht; leer = keine gewählt. Sie ist
+    /// eine LAUFANGABE des Vergleichs, keine Größe des Arbeitsstands — das Rechnen selbst bleibt
+    /// ein Klick des Anwenders.
+    /// </summary>
+    public int? Messreihe
+    {
+        get => MessreiheLesen?.Invoke();
+        set => ZapfprofilKiRegeln.Setze(MessreiheSetzen, value);
+    }
 
     /// <summary>Die Zufallssaat; leer = Vorgabe.</summary>
     public int? Seed

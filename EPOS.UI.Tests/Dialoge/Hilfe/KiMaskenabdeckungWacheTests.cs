@@ -118,6 +118,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // über GebaeudeKatalogKiSicht an. Die Tabelle führt je Kind EINEN Wirt.
         new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
+        // Gebäudesimulation G3, Welle C: das Schichtenraster eines Aufbaus - die Verwaltung der
+        // Bauteilaufbauten meldet seine Spalten (Schichten[]) über BauteilaufbauKiSicht an.
+        new("BauteilschichtenFelder",         "BauteilaufbauDialog",         KiMaskennamen.BAUTEILAUFBAU),
         // E37 (Anlagenkopplung 8.1): der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung" -
         // derselbe Baustein in beiden Wirten, dieselben acht Felder über GebaeudeKatalogKiSicht.
         new("GebaeudeKuehluebergabeFelder",   "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG)
@@ -149,7 +152,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // ETAPPE E15 (V-G7): die Gruppe „Risiko" - Art, Zinszuschlag, R_loss und p_loss,
         // vier Eingabestellen, die Feldkarte führt sie mit (risiko_art,
         // risiko_zinszuschlag, risiko_verlust, risiko_wahrscheinlichkeit): 30 → 34.
-        new("WirtschaftlichkeitParameterDialog", 34),
+        // ETAPPE E19 (Konzept § 6.3 Nr. 33): die Unternehmensart in der Gruppe „Strom",
+        // nur ohne BHKW sichtbar - eine Eingabestelle, die Feldkarte führt sie mit
+        // (unternehmensart, mit BHKW benannt abgelehnt): 34 → 35.
+        new("WirtschaftlichkeitParameterDialog", 35),
         // ---- Ende ETAPPE E9b ----
 
         // ---- ETAPPE E10 (Nutzungsdauer Stufe S3) ----
@@ -169,6 +175,17 @@ public sealed class KiMaskenabdeckungWacheTests
         // (WirtschaftlichkeitSeite 9 -> 8).
         new("WirkungenListe", 6),
         // ---- Ende ETAPPE E17 ----
+
+        // ---- Gebäudesimulation G3, Welle C (Baustoffe, Bauteilaufbauten) ----
+        // Die sieben Kenndaten der Baustoffverwaltung stehen EINMAL als Fragment und dienen dem
+        // Stammblatt und „Neu…" (Aktion Anlegen); der Schalter „nur herstellerneutral" ist der
+        // Trichter der Spalte Hersteller, kein Maskenfeld. Die Aufbauverwaltung führt vier
+        // Kopffelder, das Schichtenraster als Baustein sechs (Baustoff, Dicke, λ, ρ, c_p,
+        // Luftschicht - die Spalten schicht_* der Feldkarte).
+        new("BaustoffKatalogDialog", 8, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
+        new("BauteilaufbauDialog", 4),
+        new("BauteilschichtenFelder", 6),
+        // ---- Ende Gebäudesimulation G3, Welle C ----
 
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
@@ -264,6 +281,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // und den Pruefbericht; die Paketwahl ist ein Dateidialog, Einspielen und Loeschen sind
         // Handlungen - kein Einstellwert.
         new("TwwTyptagImportDialog", 0),
+        // Zapfprofil Z5, Gruppe 3: der Messdaten-Dialog. Seine fünf Eingaben BESCHREIBEN die
+        // gewählte Datei (Bezeichnung, Quelle, gemessene Größe, Lückenschwelle, Zeitrechnung der
+        // Zeitstempel) und sind ohne sie ohne Sinn; die Dateiwahl selbst ist ein Dateidialog,
+        // Einspielen und Löschen sind Handlungen — kein Einstellwert der Maske.
+        new("TwwMessreihenDialog", 5, "Angaben zur gewählten Datei, kein Einstellwert der Maske "
+            + "(Grund je Bindung in BewusstDraussen)"),
         new("TypProfilDialog", 2),
         new("UebersichtSeite", 4),
         // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
@@ -283,9 +306,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
-        new("ZapfprofilDialog", 58, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+        new("ZapfprofilDialog", 59, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
             "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht. " +
-            "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart")
+            "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart, und die Wahl " +
+            "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte")
     };
 
     /// <summary>

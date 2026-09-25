@@ -344,6 +344,26 @@ public static class Seitenschluessel
     /// <summary>Menue „Administration -> Klimadaten" (<c>KlimadatenDialog</c>, W14c.7).</summary>
     public const string Klimadaten = "KLIMADATEN";
 
+    /// <summary>
+    /// Menue „Administration -> Gebäude -> Baustoffe" (<c>BaustoffKatalogDialog</c>,
+    /// Gebäudesimulation G3, Softwarearchitektur 3.1).
+    /// </summary>
+    /// <remarks>
+    /// Eine FREIE ANSICHT der <see cref="AppWurzel"/> auf beiden Plattformen — der erste
+    /// Katalogeditor ohne Fenster in der Schale und ohne <c>Masken.*</c>-Zwilling. Unter
+    /// Windows faellt der Schluessel durch <c>HauptfensterHuelle.Weg</c>, die Wurzel nimmt den
+    /// Parametersatz der Huelle als Delegat; auf iOS kommt er aus der Projektquelle. Der Kern
+    /// fuehrt dieselbe Zeichenkette als Ziel des Assistenten (<c>KiMaskenziele.BAUSTOFF_KATALOG</c>).
+    /// </remarks>
+    public const string BaustoffKatalog = "BAUSTOFF_KATALOG";
+
+    /// <summary>
+    /// Menue „Administration -> Gebäude -> Bauteilaufbauten" (<c>BauteilaufbauDialog</c>,
+    /// Gebäudesimulation G3) — dieselbe Lage wie <see cref="BaustoffKatalog"/>; die zwei
+    /// Kataloge stehen gemeinsam im Menue (kein Untermenue mit nur einem Punkt).
+    /// </summary>
+    public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
+
     /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
     public const string Kostenverwaltung = "KOSTENVERWALTUNG";
 
@@ -413,6 +433,7 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
+        BaustoffKatalog, BauteilaufbauKatalog,
         Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch

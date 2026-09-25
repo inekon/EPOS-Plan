@@ -26,7 +26,9 @@ DIE REGEL (deterministisch, wiederholbar, byte-gleich):
      Tagtyp die 24 Stundenanteile (Summe 1), je Nutzungsart die sieben Wochenanteile (Summe 1),
      je Nutzungsart die zwoelf Monatsfaktoren (Mittel 1). Das Katalogskript normiert die
      gerundeten Werte beim Einspielen noch einmal exakt (Summe bzw. Mittel genau 1).
-  4. Kein Wert darf seinem Original gleichen (relativ <= 1e-9), und jeder Wert - der gerundete der
+  4. Kein Wert darf seinem Original gleichen (relativ <= 1e-9) - EINE Ausnahme: Eine Null der
+     Quelle laesst sich multiplikativ nicht ableiten und bleibt Null (die Ausgabe zaehlt sie
+     getrennt). Jeder andere Wert - der gerundete der
      JSON-Datei wie der exakt normierte des Katalogs - liegt hoechstens 5,9 % vom Original entfernt
      (Wache: 6 %). Verletzt ein Wert das, nimmt er das naechste delta (k + 1); hat er alle sechs
      ohne Erfolg versucht, rundet er eine Nachkommastelle feiner (d + 1) und beginnt wieder bei
@@ -75,9 +77,13 @@ VERWENDUNG IM TESTKATALOG (tww_testkatalog_fiktiv.py; die JSON-Datei bleibt voll
     Auslieferungskatalog zu pruefen.
   - Die Montags- und Freitagsprofile des Studentenwohnheims bleiben ungenutzt: Der Katalog kennt
     die Tagtypen Werktag, Samstag, Sonn-/Feiertag und Ruhetag.
-  - Campingplatz, die beiden Hallenbaeder und das Ein- und Zweifamilienhaus stehen nicht im
-    Katalog (Bezug, den das Schema nicht kennt, keine Profile oder kein Mittelwert); ihre
-    abgeleiteten Werte bleiben in der Datei, ungenutzt.
+  - Campingplatz und die beiden Hallenbaeder stehen nicht im Katalog (ein Bezug, den das Schema
+    nicht kennt, und keine Profile); ihre abgeleiteten Werte bleiben in der Datei, ungenutzt.
+  - Das Ein- und Zweifamilienhaus STEHT im Katalog (Bezug Person), obwohl die Richtlinie ihm
+    weder Profile noch einen Mittelwert gibt: Es teilt Formen und Tagesgangsatz des grossen
+    Wohngebaeudes, und sein mittlerer Bedarf ist die Mitte der abgeleiteten Spanne - zwei
+    SETZUNGEN der Umsetzung (ZU21), kein neuer Zahlenwert. Der Kopf von
+    tww_testkatalog_fiktiv.py fuehrt beide.
 """
 
 import csv

@@ -8,8 +8,10 @@ namespace WindowsFormsApplication1
     /// Softwarearchitektur W1) — die Kernfunktion hinter dem Knopf, den eine spätere Dialogwelle
     /// in den Reiter „Hülle und Rechenmodell" setzt. Sie bildet aus der Gebäudezeile einen
     /// <see cref="GebaeudeZonensatz"/> mit Bauteilen <b>ohne Schichten</b>, der die fünf
-    /// U/A-Gruppen des Klassenwegs wiedergibt. Die Abbildung auf Tabellenzeilen macht die
-    /// Dialogwelle; hier entsteht nur der Kern-Datensatz. Ohne Datenbank, ohne Zustand.
+    /// U/A-Gruppen des Klassenwegs wiedergibt. Hier entsteht nur der Kern-Datensatz; die
+    /// Abbildung auf neue Tabellenzeilen macht <see cref="GebaeudeZonenabbildung.AlsZoneModel"/>,
+    /// geschrieben wird über <c>GebaeudeZonenCtrl.SpeichernJeGebaeude</c>. Ohne Datenbank, ohne
+    /// Zustand.
     ///
     /// <para><b>Die Zerlegung</b> (Mehrzonenkonzept 3.6, 4.3):</para>
     /// <list type="bullet">

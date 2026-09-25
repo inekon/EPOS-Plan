@@ -406,6 +406,89 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, b.Hinweise.Single(h => h.Kennung == "KATALOGIMPORT_KATEGORIEN_UEBERGANGEN").Werte[0]);
         }
 
+        /// <summary>
+        /// <b>Der freie Paketteil als Katalogpaket</b> (Nachbesserung Gruppe 2): Seine Kategoriedatei
+        /// führt ZWEI Vorgabesätze, getrennt allein durch die Steuerspalte <c>Gruppe</c>. Gebunden wird
+        /// je Nutzungsart der Satz IHRER Gruppe (<see cref="TwwSchema.Kategoriengruppe"/> aus der
+        /// Kalenderart): Die Wohn-Nutzungsart des Probepakets bekommt die vier Wohnkategorien, die
+        /// Nichtwohn-Nutzungsart die zwei Nichtwohnkategorien. Würden beide Sätze zusammen gebunden,
+        /// stände „Kurzzapfung" zweimal da und jede Zeile wäre mit
+        /// <c>KATEGORIE_NAME_DOPPELT</c> abgelehnt.
+        /// </summary>
+        [Fact]
+        public void Der_Paketteil_als_Katalogpaket_bindet_den_Vorgabesatz_je_Gruppe()
+        {
+            using var db = new TwwTestdatenbank();
+            List<TwwPaketdatei> p = PaketMit(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, _ => FreieKategorien());
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
+            Assert.Null(b.Abbruch);
+            Assert.All(b.Zeilen, z => Assert.Null(z.Grund));
+            Assert.Equal(2, b.Angelegt);
+
+            // A ist Kalenderart 1 (Wohnen), B Kalenderart 2 (Nichtwohnen).
+            Assert.Equal(new[] { "Kurzzapfung", "Mittlere Zapfung", "Wannenbad", "Dusche" },
+                         TwwNutzungsartCtrl.KategorienLesen(b.NeueIds[0]).Kategorien.Select(k => k.Name).ToArray());
+            Assert.Equal(new[] { "Kurzzapfung", "Duschzapfung" },
+                         TwwNutzungsartCtrl.KategorienLesen(b.NeueIds[1]).Kategorien.Select(k => k.Name).ToArray());
+            Assert.Equal(6L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+        }
+
+        /// <summary>
+        /// Führt der Paketteil den Vorgabesatz einer Gruppe NICHT, ist das eine benannte Ablehnung der
+        /// Nutzungsart dieser Gruppe — nicht der stille Satz der anderen Gruppe.
+        /// </summary>
+        [Fact]
+        public void Ohne_Vorgabesatz_seiner_Gruppe_ist_die_Nutzungsart_benannt_abgelehnt()
+        {
+            using var db = new TwwTestdatenbank();
+            string[] zeilen = FreieKategorien().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string nurWohnen = string.Join("\r\n",
+                zeilen.Where(z => z == zeilen[0] || z.StartsWith(TwwSchema.KATEGORIENGRUPPE_WOHNEN + ";", StringComparison.Ordinal))) + "\r\n";
+            List<TwwPaketdatei> p = PaketMit(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, _ => nurWohnen);
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
+            Assert.Null(b.Abbruch);
+            Assert.Equal(1, b.Angelegt);
+            Assert.Equal(1, b.Abgelehnt);
+            TwwImportzeile abgelehnt = b.Zeilen.Single(z => z.Ausgang == TwwImportausgang.Abgelehnt);
+            Assert.Equal(B, abgelehnt.Nutzungsart);
+            Assert.Equal("KATALOGIMPORT_VORGABESATZ_GRUPPE", abgelehnt.Grund.Kennung);
+            Assert.Equal(TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN, abgelehnt.Grund.Werte[0]);
+        }
+
+        /// <summary>
+        /// Führt das Paket ÜBERHAUPT keinen Vorgabesatz (die Kategoriedatei trägt nur ihre Kopfzeile),
+        /// bleiben die Nutzungsarten ohne Zapfkategorien — sie rechnen dann ohne Streuung. Das wird
+        /// benannt, nicht still übergangen.
+        /// </summary>
+        [Fact]
+        public void Ein_Paket_ohne_Vorgabesatz_nennt_die_Nutzungsarten_ohne_Kategorien()
+        {
+            using var db = new TwwTestdatenbank();
+            string kopf = FreieKategorien().Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries)[0] + "\r\n";
+            List<TwwPaketdatei> p = PaketMit(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, _ => kopf);
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
+            Assert.Null(b.Abbruch);
+            Assert.All(b.Zeilen, z => Assert.Null(z.Grund));
+            Assert.Equal(2, b.Angelegt);
+            ZapfSatz hinweis = b.Hinweise.Single(h => h.Kennung == "KATALOGIMPORT_OHNE_VORGABESATZ");
+            Assert.Equal(2, hinweis.Werte[0]);
+            Assert.Empty(TwwNutzungsartCtrl.KategorienLesen(b.NeueIds[0]).Kategorien);
+        }
+
+        /// <summary>Die Kategoriedatei des freien Paketteils im Arbeitsbaum, auf CRLF vereinheitlicht.</summary>
+        private static string FreieKategorien()
+        {
+            string frei = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ZapfZufallTests.Probenordner()))),
+                                       "Referenzlaeufe", "Katalogpaket_frei");
+            IReadOnlyList<TwwPaketdatei> teil = TwwNutzungsartCtrl.PaketLesen(frei, out ZapfSatz fehler);
+            Assert.Null(fehler);
+            return AufCrLf(teil.Single(d => string.Equals(d.Name, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ".csv",
+                                                          StringComparison.OrdinalIgnoreCase)).Inhalt);
+        }
+
         [Fact]
         public void Ohne_Tabelle_der_Zapfkategorien_kommen_die_Nutzungsarten_ohne_sie()
         {

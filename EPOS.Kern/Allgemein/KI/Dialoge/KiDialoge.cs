@@ -205,6 +205,19 @@ namespace WindowsFormsApplication1
         public const string GEBAEUDETYP = "Form_EingGebTyp";
 
         /// <summary>
+        /// Die Verwaltung „Baustoffe" (<c>BaustoffKatalogDialog</c>, Gebaeudesimulation G3) — eine
+        /// neue Maske ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe
+        /// (Softwarearchitektur 3.8); zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string BAUSTOFF_KATALOG = "BaustoffKatalog";
+
+        /// <summary>
+        /// Die Verwaltung „Bauteilaufbauten" samt Schichtenraster (<c>BauteilaufbauDialog</c>,
+        /// Gebaeudesimulation G3) — wie <see cref="BAUSTOFF_KATALOG"/> ohne <c>Form_</c>-Vorsilbe.
+        /// </summary>
+        public const string BAUTEILAUFBAU = "Bauteilaufbau";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -283,6 +296,13 @@ namespace WindowsFormsApplication1
         /// Klicks des Anwenders.
         /// </summary>
         public const string BRAUCHWASSER_TYPTAGE = "Form_Brauchwasser_Typtage";
+
+        /// <summary>
+        /// Der Dialog „Messdaten" (<c>TwwMessreihenDialog</c>, Zapfprofilgenerator 4.8) — die
+        /// Ueberlagerung hinter „Messdaten…" im Zapfprofil-Dialog. Sie zeigt die Messreihen des
+        /// Projekts; Dateiwahl, Einspielen und Loeschen bleiben Klicks des Anwenders.
+        /// </summary>
+        public const string BRAUCHWASSER_MESSREIHEN = "Form_Brauchwasser_Messreihen";
 
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
@@ -725,6 +745,8 @@ namespace WindowsFormsApplication1
                 GebaeudeVerwaltung(),
                 GebaeudeBedarf(),
                 Gebaeudetyp(),
+                BaustoffKatalog(),
+                Bauteilaufbau(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -736,6 +758,7 @@ namespace WindowsFormsApplication1
                 BrauchwasserNutzungsarten(),
                 TwwNutzungsartEditor(),
                 BrauchwasserTyptage(),
+                BrauchwasserMessreihen(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -1746,7 +1769,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Wirtschaftlichkeits-Parameter — 30 Felder aus
+        /// Die Wirtschaftlichkeits-Parameter — 35 Felder aus
         /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.WirtschaftlichkeitParameterKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1812,6 +1835,13 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaEinspName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaEinspErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+                    // ETAPPE E19 (Konzept § 6.3 Nr. 33, E19‑Q5 a): die Unternehmensart nach
+                    // StromStG — im Dialog nur ohne BHKW sichtbar; mit BHKW lehnt der Setzer
+                    // benannt ab und nennt den Dialog „BHKW-Wirtschaftlichkeit".
+                    new KiDialogFeld("unternehmensart",
+                                     "WirtschaftlichkeitParameterKiSicht.Unternehmensart",
+                                     KiDialogTexte.BhwUaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwUaErl, leerErlaubt: true),
                     new KiDialogFeld("co2_preis", "WirtschaftlichkeitParameterKiSicht.Co2Preis",
                                      KiDialogTexte.WpaCo2Name, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaCo2Erl,
@@ -3532,6 +3562,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("rechenweg_jahresreihe", ZAPFPROFIL_SICHT + ".Rechenweg",
                                      KiDialogTexte.ZpgRechenwegName, KiParameterTyp.Wahl,
                                      KiDialogTexte.ZpgRechenwegErl),
+                    new KiDialogFeld("messreihe", ZAPFPROFIL_SICHT + ".Messreihe",
+                                     KiDialogTexte.ZpgMessreiheName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgMessreiheErl, leerErlaubt: true),
                     new KiDialogFeld("seed", ZAPFPROFIL_SICHT + ".Seed",
                                      KiDialogTexte.ZpgSeedName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.ZpgSeedErl, leerErlaubt: true),
@@ -4134,6 +4167,79 @@ namespace WindowsFormsApplication1
                 });
         }
 
+        /// <summary>Der Typname der Sichtklasse des Dialogs „Messdaten" (<c>EPOS.UI.Dialoge.Bedarf.TwwMessreihenKiSicht</c>).</summary>
+        private const string TWW_MESSREIHEN_SICHT = "TwwMessreihenKiSicht";
+
+        /// <summary>
+        /// Der Dialog „Messdaten" — zwoelf Anzeigen aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TwwMessreihenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung ohne Einstellwert</b>: Der Dialog zeigt die eingespielten Reihen und
+        /// den Bericht der Pruefung; geschrieben wird ueber „Einspielen" und „Loeschen" — Handlungen,
+        /// die Zeilen anlegen oder wegnehmen und Klicks des Anwenders bleiben (KI-D-Q11). Auch die
+        /// DATEIWAHL bleibt beim Anwender, und die Eingaben darueber (Bezeichnung, Quelle, Groesse,
+        /// Lueckenschwelle, Zeitstempel) beschreiben allein die gewaehlte Datei — ohne sie sind sie
+        /// ohne Sinn. Freigegeben sind deshalb allein Anzeigen, damit <c>dialog_lesen</c> nennt, was
+        /// eingespielt ist und was die Pruefung ergeben hat.
+        /// </para>
+        /// <para>
+        /// <b>Keine Messwerte</b>: Bezeichnung, Groesse, Raster, Beginn, Tage, Nulllaeufe, Quelle und
+        /// Tag des Einspielens sagen, WAS eingespielt ist — nie, wie gross eine gemessene Menge oder
+        /// eine gemessene Spitze ist (Konzept Kapitel 9 K5).
+        /// </para>
+        /// </remarks>
+        private static KiDialog BrauchwasserMessreihen()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BRAUCHWASSER_MESSREIHEN,
+                anzeigename: KiDialogTexte.MaskeBrauchwasserMessreihen,
+                felder: new[]
+                {
+                    new KiDialogFeld("anzahl", TWW_MESSREIHEN_SICHT + ".Anzahl",
+                                     KiDialogTexte.ZpgmAnzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgmAnzahlErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("reihen", TWW_MESSREIHEN_SICHT + ".Reihen",
+                                     KiDialogTexte.ZpgmReihenName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmReihenErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("gewaehlt", TWW_MESSREIHEN_SICHT + ".Gewaehlt",
+                                     KiDialogTexte.ZpgmGewaehltName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmGewaehltErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("groesse", TWW_MESSREIHEN_SICHT + ".Groesse",
+                                     KiDialogTexte.ZpgmGroesseName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmGroesseErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("aufloesung", TWW_MESSREIHEN_SICHT + ".AufloesungMin",
+                                     KiDialogTexte.ZpgmAufloesungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgmAufloesungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beginn", TWW_MESSREIHEN_SICHT + ".Beginn",
+                                     KiDialogTexte.ZpgmBeginnName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmBeginnErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("tage", TWW_MESSREIHEN_SICHT + ".Tage",
+                                     KiDialogTexte.ZpgmTageName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgmTageErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("nulllaeufe", TWW_MESSREIHEN_SICHT + ".Nulllaeufe",
+                                     KiDialogTexte.ZpgmNulllaeufeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgmNulllaeufeErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("quelle", TWW_MESSREIHEN_SICHT + ".Quelle",
+                                     KiDialogTexte.ZpgmQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmQuelleErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("importdatum", TWW_MESSREIHEN_SICHT + ".Importdatum",
+                                     KiDialogTexte.ZpgmDatumName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmDatumErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("grund", TWW_MESSREIHEN_SICHT + ".Grund",
+                                     KiDialogTexte.ZpgmGrundName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmGrundErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("pruefbericht", TWW_MESSREIHEN_SICHT + ".Pruefbericht",
+                                     KiDialogTexte.ZpgmBerichtName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmBerichtErl, leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
         /// <summary>Der Typname der Sichtklasse des Editors einer Nutzungsart (<c>EPOS.UI.Dialoge.Bedarf.TwwNutzungsartEditorKiSicht</c>).</summary>
         private const string TWW_EDITOR_SICHT = "TwwNutzungsartEditorKiSicht";
 
@@ -4472,6 +4578,125 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GtypStundenwerteName, KiParameterTyp.ZahlListe,
                                      KiDialogTexte.GtypStundenwerteErl,
                                      reihe: KiZahlenreihen.Stunden())
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // BaustoffKatalog, Bauteilaufbau  ->  die zwei Kataloge der Gebaeudesimulation (G3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Verwaltung „Baustoffe" — die Satzwahl und die sieben Kenndaten aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BaustoffKatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Der Baustoff ist die SATZWAHL (Schluessel = Id; zwei Hersteller duerfen einen Stoff
+        /// gleichen Namens fuehren) und bleibt frei, wenn ein Auslieferungssatz geschuetzt ist.
+        /// Die Kenndaten schreiben in den Arbeitsstand des Stammblatts; geschrieben wird mit
+        /// „Speichern", dieselbe Pruefung wie am Knopf (<c>BaustoffCtrl.Pruefen</c>).
+        /// </remarks>
+        private static KiDialog BaustoffKatalog()
+        {
+            const string SICHT = "BaustoffKatalogKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.BAUSTOFF_KATALOG,
+                anzeigename: KiDialogTexte.MaskeBaustoffKatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("baustoff", SICHT + "Baustoff", KiDialogTexte.BstBaustoffName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BstBaustoffErl,
+                                     leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.BstBezeichnerName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstBezeichnerErl),
+                    new KiDialogFeld("gruppe", SICHT + "Gruppe", KiDialogTexte.BstGruppeName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstGruppeErl, leerErlaubt: true),
+                    new KiDialogFeld("hersteller", SICHT + "Hersteller", KiDialogTexte.BstHerstellerName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstHerstellerErl, leerErlaubt: true),
+                    new KiDialogFeld("lambda", SICHT + "Lambda", KiDialogTexte.BstLambdaName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BstLambdaErl,
+                                     einheit: KiDialogTexte.EINHEIT_LAMBDA, leerErlaubt: true,
+                                     min: BaustoffCtrl.LAMBDA_MIN, max: BaustoffCtrl.LAMBDA_MAX),
+                    new KiDialogFeld("rho", SICHT + "Rho", KiDialogTexte.BstRhoName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BstRhoErl,
+                                     einheit: KiDialogTexte.EINHEIT_RHO, leerErlaubt: true,
+                                     min: BaustoffCtrl.RHO_MIN, max: BaustoffCtrl.RHO_MAX),
+                    new KiDialogFeld("cp", SICHT + "Cp", KiDialogTexte.BstCpName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BstCpErl,
+                                     einheit: KiDialogTexte.EINHEIT_CP, leerErlaubt: true,
+                                     min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BstQuelleName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstQuelleErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// Die Verwaltung „Bauteilaufbauten" — die Satzwahl, vier Kopffelder und das Raster der
+        /// Schichten aus <c>EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Schichten sind ein RASTER (<c>Schichten[]</c>, Kennzeichen die Nummer innen = 1):
+        /// Baustoff (Wahl — die Schicht uebernimmt λ, ρ und c_p als Kopie), Dicke in mm, λ, ρ,
+        /// c_p und der Schalter Luftschicht. Anlegen, Verschieben und Entfernen einer Schicht
+        /// bleiben Klicks des Anwenders. Geschrieben wird der Aufbau als EIN Aggregat mit
+        /// „Speichern"; die Pruefregeln sind die des Knopfes (<c>BauteilaufbauCtrl.EingabePruefen</c>).
+        /// </remarks>
+        private static KiDialog Bauteilaufbau()
+        {
+            const string SICHT = "BauteilaufbauKiSicht.";
+            string schicht = SICHT + "Schichten" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.BAUTEILAUFBAU,
+                anzeigename: KiDialogTexte.MaskeBauteilaufbau,
+                felder: new[]
+                {
+                    new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtaAufbauName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtaAufbauErl,
+                                     leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.BtaBezeichnerName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtaBezeichnerErl),
+                    new KiDialogFeld("bauteilart", SICHT + "Bauteilart", KiDialogTexte.BtaBauteilartName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtaBauteilartErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", SICHT + "Beschreibung", KiDialogTexte.BtaBeschreibungName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtaBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BtaQuelleName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtaQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("schicht_baustoff", schicht + "Baustoff", KiDialogTexte.BtaSchichtBaustoffName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtaSchichtBaustoffErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER),
+                    new KiDialogFeld("schicht_dicke", schicht + "DickeMm", KiDialogTexte.BtaSchichtDickeName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtDickeErl,
+                                     einheit: KiDialogTexte.EINHEIT_MM, zeilenkennzeichen: NUMMER,
+                                     min: BauteilaufbauCtrl.DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MIN_M),
+                                     max: BauteilaufbauCtrl.DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MAX_M)),
+                    new KiDialogFeld("schicht_lambda", schicht + "Lambda", KiDialogTexte.BtaSchichtLambdaName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtLambdaErl,
+                                     einheit: KiDialogTexte.EINHEIT_LAMBDA, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER,
+                                     min: BaustoffCtrl.LAMBDA_MIN, max: BaustoffCtrl.LAMBDA_MAX),
+                    new KiDialogFeld("schicht_rho", schicht + "Rho", KiDialogTexte.BtaSchichtRhoName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtRhoErl,
+                                     einheit: KiDialogTexte.EINHEIT_RHO, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER,
+                                     min: BaustoffCtrl.RHO_MIN, max: BaustoffCtrl.RHO_MAX),
+                    new KiDialogFeld("schicht_cp", schicht + "Cp", KiDialogTexte.BtaSchichtCpName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtCpErl,
+                                     einheit: KiDialogTexte.EINHEIT_CP, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER,
+                                     min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
+                    new KiDialogFeld("schicht_luftschicht", schicht + "IstLuftschicht",
+                                     KiDialogTexte.BtaSchichtLuftschichtName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BtaSchichtLuftschichtErl, zeilenkennzeichen: NUMMER)
                 },
                 knoepfe: new[]
                 {

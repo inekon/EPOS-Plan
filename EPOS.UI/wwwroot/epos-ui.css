@@ -2238,6 +2238,63 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-radius: var(--epos-ecke);
 }
 
+/* --------------------------------------------------------------------------
+   Das Schichtenraster eines Bauteilaufbaus (Gebaeudesimulation G3,
+   BauteilschichtenFelder). Im Stammblatt stehen 340 bis 440 px zur
+   Verfuegung; die Zeile - eine kleine Maske - laeuft deshalb in drei Lagen
+   ueber dieselben vier Spuren: oben Nummer und Baustoff, in der Mitte die
+   vier Zahlen unter dem Spaltenkopf, unten Luftschicht, R und die
+   Zeilenknoepfe. Kopf- und Fusszelle spannen ueber alle Spuren; die Linie
+   oben setzt eine Schicht von der vorigen ab.
+   -------------------------------------------------------------------------- */
+.epos-bauteilschicht-kopf,
+.epos-bauteilschicht-fuss {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-bauteilschicht-kopf {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-bauteilschicht-kopf > .epos-feld {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.epos-bauteilschicht-nr {
+    flex: 0 0 auto;
+    min-width: 1.5em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.epos-bauteilschicht-fuss {
+    flex-wrap: wrap;
+}
+
+.epos-bauteilschicht-r {
+    flex: 1 1 auto;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+}
+
+/* Der Summenfuss im Lesemodus (Nachsatz der Gruppe "Schichten"). */
+.epos-bauteilschicht-summen {
+    margin: var(--epos-rand) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-bauteilschicht-summe--stark {
+    font-weight: 700;
+}
+
 @media (forced-colors: active) {
     .epos-ueberlagerung {
         border: 2px solid ButtonBorder;
@@ -11379,6 +11436,36 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+/* MESSDATEN UND VERGLEICH (Stufe Z5). Die Handlungen einer Messreihenzeile stehen in EINER
+   Zeile - der Flexkasten liegt IN der Zelle, nicht auf ihr (die Zelle behaelt ihre Rolle), und
+   beide Knoepfe sind IMMER sichtbar, nie erst bei :hover. */
+.epos-tww-messreihen-handlungen {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+/* Der Wahlblock des Vergleichs steht ueber der Kennzahlentabelle und ist von ihr abgesetzt. */
+.epos-zapfprofil-vergleichwahl {
+    margin-block-end: var(--epos-abstand);
+}
+
+.epos-zapfprofil-vergleichleiste {
+    margin-block-start: 0.4rem;
+}
+
+/* Die Vorschau des Kalibriervorschlags: ihre Zwischentitel bekommen Luft, die breite Tabelle
+   der Tagesgaenge rollt in ihrer Huelle (24 Stundenspalten brechen nicht um). */
+.epos-zapfprofil-vorschlagvorschau > h4 {
+    margin: var(--epos-abstand) 0 0.2rem 0;
+}
+
+.epos-zapfprofil-vorschlaggaenge th,
+.epos-zapfprofil-vorschlaggaenge td {
+    white-space: nowrap;
 }
 
 .epos-zapfprofil-reihenfolge > .epos-zahl {

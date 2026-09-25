@@ -7,3 +7,8 @@ Zapfprofil.Stochastik.Quantil.P99;2.3263479;-;Standardnormalverteilung;Quantil z
 Zapfprofil.Zirkulation.Hinweisverhaeltnis;1.5;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator, Warnlogik Z4 (Mockup Lehre 3);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Anzeigetemperatur;45;°C;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.0 und 4.6 (Literanzeige);FREI-1;FREI;AUSLIEFERUNG;1
 Zapfprofil.Stundenschwelle;0.1;kW;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.6 (Stunden über der Schwelle);FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Band.Unten;0.85;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator Kapitel 7 Zeile Z5 (P85-P95-Band);FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Band.Oben;0.95;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator Kapitel 7 Zeile Z5 (P85-P95-Band);FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Formschwelle;0.01;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator Kapitel 7 Zeile Z5 (Formabgleich des Tagesgangs);FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Lueckenanteil;0.05;-;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.8 (Messdatenimport, Lücken);FREI-1;FREI;AUSLIEFERUNG;1
+Zapfprofil.Validierung.Kalibrierung.MindestTage;30;d;Setzung Zapfprofilgenerator;Umsetzungskonzept Zapfprofilgenerator 4.8 (Kalibriervorschlag Nichtwohnen);FREI-1;FREI;AUSLIEFERUNG;1

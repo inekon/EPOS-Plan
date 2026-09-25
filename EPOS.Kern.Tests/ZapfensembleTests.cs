@@ -60,6 +60,13 @@ namespace EPOS.Kern.Tests
                 Jahreskonsistenz k = e.Pruefen(Deterministisch(z));
                 Assert.Equal(10, e.Realisierungen);
                 Assert.Equal(10, e.JahresenergienKwh.Count);
+                // Die Stundenspitze JE Realisierung (Stufe Z5, Band der Validierung): eine Zahl je
+                // Jahr, jede der groesste Stundenwert IHRER Reihe und positiv.
+                Assert.Equal(10, e.StundenspitzenKw.Count);
+                Assert.All(e.StundenspitzenKw, s => Assert.True(s > 0.0, "Eine Realisierung ohne Spitze."));
+                Assert.Equal(e.JahrZumSeed.GroessterStundenwertKw, e.StundenspitzenKw[0], 12);
+                Assert.True(e.StundenspitzenKw.Max() >= e.Mittel.GroessterStundenwertKw,
+                            "Keine Realisierung erreicht die Spitze des Mittels.");
                 Assert.Equal(14600.0, k.DeterministischKwh, 6);
                 double toleranz = Math.Max(0.01 * 14600.0, 3.0 * e.StandardabweichungKwh / Math.Sqrt(10));
                 Assert.Equal(toleranz, k.ToleranzKwh, 9);
@@ -93,6 +100,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(seriell.Mittel.StundenKwh.Select(Bits), parallel.Mittel.StundenKwh.Select(Bits));
             Assert.Equal(seriell.JahrZumSeed.StundenKwh.Select(Bits), parallel.JahrZumSeed.StundenKwh.Select(Bits));
             Assert.Equal(seriell.JahresenergienKwh.Select(Bits), parallel.JahresenergienKwh.Select(Bits));
+            Assert.Equal(seriell.StundenspitzenKw.Select(Bits), parallel.StundenspitzenKw.Select(Bits));
             Assert.Equal(Bits(seriell.StandardabweichungKwh), Bits(parallel.StandardabweichungKwh));
 
             // Auslegungsensemble über mehr als einen Block (Zapfensemble.BLOCK), mit Volumenauftrag.

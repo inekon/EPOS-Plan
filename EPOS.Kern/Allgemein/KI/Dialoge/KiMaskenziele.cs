@@ -184,6 +184,24 @@ namespace WindowsFormsApplication1
         public const string GESETZESKATALOG = "GESETZESKATALOG";
 
         /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Baustoffe" (Gebaeudesimulation G3).
+        /// </summary>
+        /// <remarks>
+        /// Eine FREIE ANSICHT der <c>AppWurzel</c> auf beiden Plattformen
+        /// (<c>Seitenschluessel.BaustoffKatalog</c>; dieselbe Zeichenkette, ein Waechter in
+        /// <c>EPOS.UI.Tests</c> haelt beide gegeneinander). Unter Windows reicht
+        /// <c>WinFormsNavigation.OeffneMaske</c> den Schluessel an die gezeichnete Wurzel weiter,
+        /// auf iOS <c>IosNavigation</c> — derselbe Weg wie der Menuepunkt.
+        /// </remarks>
+        public const string BAUSTOFF_KATALOG = "BAUSTOFF_KATALOG";
+
+        /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Bauteilaufbauten" — dieselbe Lage wie
+        /// <see cref="BAUSTOFF_KATALOG"/>.
+        /// </summary>
+        public const string BAUTEILAUFBAU_KATALOG = "BAUTEILAUFBAU_KATALOG";
+
+        /// <summary>
         /// Der Seitenschluessel des Dialogs „Als Variante speichern" (Welle KI‑F6).
         /// </summary>
         /// <remarks>
@@ -349,6 +367,11 @@ namespace WindowsFormsApplication1
                 // hier fallen Katalogschluessel und Navigationsschluessel zusammen.
                 { KiMaskennamen.GEBAEUDETYP, Masken.GebaeudetypenAdmin },
 
+                // Die zwei Kataloge der Gebaeudesimulation (G3) SIND die Masken ihrer
+                // Menuepunkte - freie Ansichten der Wurzel.
+                { KiMaskennamen.BAUSTOFF_KATALOG, BAUSTOFF_KATALOG },
+                { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
+
                 // Profil und Kopfsatz eines Bedarfstyps gehen als Ueberlagerung aus den
                 // drei Bedarfsverwaltungen auf. Eine Komponente bedient alle drei
                 // Auspraegungen; der Katalogschluessel ist die Stromfassung, und das
@@ -387,6 +410,7 @@ namespace WindowsFormsApplication1
                 // Der Dialog der eingespielten VDI-4655-Typtage ist eine Ueberlagerung des
                 // Katalogdialogs (und des Zapfprofils) - dasselbe Ziel.
                 { KiMaskennamen.BRAUCHWASSER_TYPTAGE,       Masken.BrauchwasserNutzungsarten },
+                { KiMaskennamen.BRAUCHWASSER_MESSREIHEN,    Masken.BrauchwasserNutzungsarten },
 
                 // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
                 // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.
