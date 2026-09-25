@@ -376,7 +376,7 @@ namespace WindowsFormsApplication1
         internal static Speichertemperaturwahl Waehlen(ProjektStand p, Parametersatz ps, bool grossanlage, bool schnellpfadGilt,
                                                      Herkunftsprotokoll prot)
         {
-            const string feld = "Auslegung.SpeicherC";
+            const string feld = ZapfFeld.AUSLEGUNG_SPEICHER_C;
             if (p?.SpeicherC != null)
                 return new Speichertemperaturwahl(
                     ZapfAuslegungParameter.ProjektOderParameter(p.SpeicherC, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR, ps,

@@ -116,6 +116,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string TAB_TWW_MESSREIHE = "Tab_TwwMessreihe";
 
+        /// <summary>
+        /// Die Zeilen des Bedarfstag-Konstruktors EINER Auslegung (Schemaschritt T5 „Konstruktor",
+        /// Konzept 4.5 Quelle (4) und Kapitel 9 Zeile ZU25) — <b>Bestandteil des Projekts</b>: Sie
+        /// hängen über <c>ID_TwwProjekt</c> am Auslegungssatz <c>Tab_TwwProjekt</c>, wandern mit
+        /// einer Projektkopie und einem <c>.wpx</c>-Paket und werden von der Auslieferungsvorlage
+        /// geleert (der konstruierte Bedarfstag selbst trägt <c>Status</c> <c>EIGEN</c> und fällt
+        /// dort ebenfalls — seine Zeilen hätten danach niemanden mehr).
+        /// </summary>
+        public const string TAB_TWW_KONSTRUKTORZEILE = "Tab_TwwKonstruktorzeile";
+
         // =================================================================
         //  Die Wertemengen der Textspalten mit CHECK
         // =================================================================
@@ -882,17 +892,112 @@ namespace WindowsFormsApplication1
         /// Projekts nach seinen Kindern anstellt. Nach <see cref="AnweisungenT4Messreihen"/>
         /// abzuarbeiten; wiederholbar über <c>IF NOT EXISTS</c>.
         ///
-        /// <para><b>Vorgemerkt:</b> Dieser Index ist neben dem UNIQUE-Index über
-        /// (<c>ID_Projekt</c>, <c>Bezeichnung</c>, <c>Zeilenindex</c>) <b>redundant</b> — SQLite kann
-        /// dessen führende Spalte allein benutzen, und jede Zeile kostet damit einen Eintrag mehr, den
-        /// niemand liest. Er bleibt trotzdem in der DDL: Der Schemaschritt T4 ist gebaut und in der
-        /// Testdatenbank angekommen, und eine Änderung seiner Anweisungen hieße, eine schon
-        /// ausgeführte Nummer umzuschreiben (ADR-001). Er gehört in einen späteren Schritt, der ihn
-        /// mit <c>DROP INDEX</c> entfernt, nicht in diesen.</para>
+        /// <para><b>Redundant und deshalb wieder weg:</b> Neben dem UNIQUE-Index über
+        /// (<c>ID_Projekt</c>, <c>Bezeichnung</c>, <c>Zeilenindex</c>) trägt dieser Index nichts —
+        /// SQLite benutzt dessen führende Spalte allein. Die Anweisungen von T4 bleiben, wie sie
+        /// sind (eine ausgeführte Nummer wird nicht umgeschrieben, ADR-001); der Schemaschritt T5
+        /// „Konstruktor" wirft den Index mit <c>DROP INDEX IF EXISTS</c> weg
+        /// (<see cref="AufraeumenT5Index"/>). Eine Datenbank, die T4 noch vor sich hat, legt ihn
+        /// also an und verliert ihn im nächsten Schritt wieder — der Endstand ist derselbe.</para>
         /// </summary>
         public static IEnumerable<KeyValuePair<string, string>> IndizesT4Messreihen
         {
             get { yield return Index(TAB_TWW_MESSREIHE, "ID_Projekt"); }
+        }
+
+        // =================================================================
+        //  Schemaschritt T5 „Konstruktor" (Anwenderentscheid ZU25): die Zeilen
+        //  des Bedarfstag-Konstruktors und das Ende des redundanten T4-Index
+        // =================================================================
+
+        /// <summary>
+        /// Die Nummer des Schemaschritts T5 „Konstruktor" (Anwenderentscheid ZU25, Konzept 4.5
+        /// Quelle (4)) — die Tabelle <c>Tab_TwwKonstruktorzeile</c> und das <c>DROP INDEX</c> des
+        /// redundanten T4-Index. <b>Die Nummer steht allein hier</b>, und
+        /// <see cref="SchemaStand.Zielversion"/> verweist symbolisch hierher; sie folgt lückenlos
+        /// auf die Nachtzeit des Gebäudes (<see cref="NachtzeitSchema.SCHRITT"/>), mit der sie
+        /// keine Tabelle teilt.
+        /// </summary>
+        public const int SCHRITT_T5_KONSTRUKTOR = NachtzeitSchema.SCHRITT + 1;
+
+        /// <summary>
+        /// <c>CREATE TABLE IF NOT EXISTS Tab_TwwKonstruktorzeile</c> — 10 Spalten (Konzept 4.5
+        /// Quelle (4), Kapitel 9 Zeile ZU25).
+        ///
+        /// <para><b>Was drinsteht, ist die EINGABE des Konstruktors</b>, nicht ihr Ergebnis: Je
+        /// Zeile das Zeitfenster in Stunden (<c>Beginn_h</c>, <c>Ende_h</c>) und entweder eine
+        /// Zapfregel des Katalogs samt Anzahl ihrer Vorgänge (<c>Regel</c>, <c>Anzahl</c>) oder ein
+        /// Volumen bei einer Zapftemperatur (<c>Volumen_l</c>, <c>Zapftemperatur_C</c>), dazu der
+        /// neutrale <c>Verbraucher</c>. Die Minuten und Energien des gebauten Tages stehen weiter
+        /// allein an <c>Tab_TwwBedarfstagEreignis_STAMM</c>: Nur mit den Eingabezeilen lässt sich
+        /// der Konstruktor wieder öffnen und eine Zeile ändern.</para>
+        ///
+        /// <para><b>Bestandteil der Auslegung</b> (Kapitel 9 ZU25): <c>ID_TwwProjekt</c> mit
+        /// <c>ON DELETE CASCADE</c> — die Zeilen gehören dem Auslegungssatz
+        /// (<c>Tab_TwwProjekt</c>, eine Zeile je Projekt) und verschwinden mit ihm und damit mit
+        /// dem Projekt. <c>Reihenfolge</c> ist die Position in der Tabelle des Dialogs und mit
+        /// <c>ID_TwwProjekt</c> der natürliche Schlüssel.</para>
+        ///
+        /// <para><b>Kein eigener Index auf <c>ID_TwwProjekt</c>:</b> Der UNIQUE-Index über
+        /// (<c>ID_TwwProjekt</c>, <c>Reihenfolge</c>) trägt die Spalte an führender Stelle; ein
+        /// zweiter Index wäre genau die Redundanz, die dieser Schritt bei
+        /// <c>Tab_TwwMessreihe</c> wegnimmt (<see cref="AufraeumenT5Index"/>).</para>
+        ///
+        /// <para><b>Keine Werte im Quelltext.</b> Die DDL beschreibt allein die Struktur; jede
+        /// Zeile kommt aus dem Konstruktor des Anwenders. Dass Beginn vor Ende liegt, prüft der
+        /// Konstruktor benannt — ohne gebauten Tag entsteht kein Entwurf und damit keine Zeile.</para>
+        /// </summary>
+        public const string SQL_CREATE_KONSTRUKTORZEILE =
+            "CREATE TABLE IF NOT EXISTS \"Tab_TwwKonstruktorzeile\" (\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "    \"ID_TwwProjekt\" INTEGER NOT NULL REFERENCES \"Tab_TwwProjekt\" (\"ID\") ON DELETE CASCADE,\n" +
+            "    \"Reihenfolge\" INTEGER NOT NULL CHECK (\"Reihenfolge\" >= 1),\n" +
+            "    \"Beginn_h\" REAL CHECK (\"Beginn_h\" >= 0 AND \"Beginn_h\" <= 24),\n" +
+            "    \"Ende_h\" REAL CHECK (\"Ende_h\" >= 0 AND \"Ende_h\" <= 24),\n" +
+            "    \"Regel\" TEXT,\n" +
+            "    \"Anzahl\" REAL CHECK (\"Anzahl\" >= 0),\n" +
+            "    \"Volumen_l\" REAL CHECK (\"Volumen_l\" >= 0),\n" +
+            "    \"Zapftemperatur_C\" REAL,\n" +
+            "    \"Verbraucher\" TEXT,\n" +
+            "    UNIQUE (\"ID_TwwProjekt\", \"Reihenfolge\")\n" +
+            ") STRICT";
+
+        /// <summary>
+        /// Die Anweisungen des Schemaschritts T5 „Konstruktor": die Tabelle der Konstruktorzeilen.
+        /// Sie hängt allein an <c>Tab_TwwProjekt</c> und darf deshalb nach den übrigen
+        /// Tww-Tabellen entstehen. Reines DDL, wiederholbar über <c>IF NOT EXISTS</c>; nach dem
+        /// Schritt ist sie leer, und kein Rechenweg liest eine Konstruktorzeile — der Bedarfstag
+        /// rechnet aus seinen Ereignissen.
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> AnweisungenT5Konstruktor
+        {
+            get
+            {
+                yield return new KeyValuePair<string, string>(TAB_TWW_KONSTRUKTORZEILE, SQL_CREATE_KONSTRUKTORZEILE);
+            }
+        }
+
+        /// <summary>
+        /// Der Name des redundanten T4-Index auf <c>Tab_TwwMessreihe.ID_Projekt</c> — dieselbe
+        /// Quelle, aus der <see cref="IndizesT4Messreihen"/> ihn anlegt.
+        /// </summary>
+        public static string IndexT4MessreiheProjekt => Index(TAB_TWW_MESSREIHE, "ID_Projekt").Key;
+
+        /// <summary>
+        /// Das Aufräumen des Schemaschritts T5: <c>DROP INDEX</c> des redundanten T4-Index (der
+        /// UNIQUE-Index über <c>ID_Projekt</c>, <c>Bezeichnung</c>, <c>Zeilenindex</c> trägt die
+        /// Spalte an führender Stelle, siehe <see cref="IndizesT4Messreihen"/>). Nach
+        /// <see cref="AnweisungenT5Konstruktor"/> abzuarbeiten; wiederholbar über
+        /// <c>IF EXISTS</c>. <b>Ergebnisneutral:</b> Ein Index ändert kein Ergebnis, nur den Weg
+        /// dorthin.
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> AufraeumenT5Index
+        {
+            get
+            {
+                yield return new KeyValuePair<string, string>(IndexT4MessreiheProjekt,
+                    "DROP INDEX IF EXISTS \"" + IndexT4MessreiheProjekt + "\"");
+            }
         }
 
         // =================================================================
@@ -992,7 +1097,10 @@ namespace WindowsFormsApplication1
             return angelegt;
         }
 
-        /// <summary>Alle Tww-Tabellen der Schritte T1, T2, T3 „Typtage" und T4 „Messreihen" in Anlegereihenfolge.</summary>
+        /// <summary>
+        /// Alle Tww-Tabellen der Schritte T1, T2, T3 „Typtage", T4 „Messreihen" und T5
+        /// „Konstruktor" in Anlegereihenfolge.
+        /// </summary>
         public static IEnumerable<KeyValuePair<string, string>> AlleAnweisungen
         {
             get
@@ -1001,6 +1109,7 @@ namespace WindowsFormsApplication1
                 foreach (KeyValuePair<string, string> a in AnweisungenT2) yield return a;
                 foreach (KeyValuePair<string, string> a in AnweisungenT3Typtage) yield return a;
                 foreach (KeyValuePair<string, string> a in AnweisungenT4Messreihen) yield return a;
+                foreach (KeyValuePair<string, string> a in AnweisungenT5Konstruktor) yield return a;
             }
         }
 

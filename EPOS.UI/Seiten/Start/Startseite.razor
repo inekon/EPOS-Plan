@@ -926,33 +926,11 @@
 
     /// <summary>
     /// <b>Die Herkunftszeile</b> (Auftrag KL-4) — leer, wo es nichts zu sagen gibt.
-    ///
-    /// <para><b>Zwei Fassungen, und die kurze ist kein Notbehelf:</b> Eine Region aus
-    /// dem Altbestand führt weder Quelle noch Importdatum (sie sind erst mit
-    /// Schemaschritt 95 entstanden und werden nicht nachdatiert). Die Zeile nennt
-    /// dann Bezeichner und Standort — und behauptet nicht, woher die Reihe
-    /// stammt.</para>
+    /// Den Satzbau hält <see cref="KlimaHerkunftGaben.Zeile"/>, derselbe, den der
+    /// Projektassistent unter seiner Klappliste zeigt.
     /// </summary>
     private string Herkunftszeile
-    {
-        get
-        {
-            KlimaHerkunftGaben? h = _klimaherkunft;
-            if (h is null) return "";
-
-            string bezeichner = h.Bezeichner ?? "";
-            string standort = h.Standort ?? "";
-            if (bezeichner.Length == 0 && standort.Length == 0) return "";
-
-            bool vollstaendig = (h.Quelle ?? "").Length > 0 && (h.Importdatum ?? "").Length > 0;
-
-            return vollstaendig
-                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, KlimaHerkunftText,
-                                h.Quelle, bezeichner, standort, h.Importdatum)
-                : string.Format(System.Globalization.CultureInfo.CurrentCulture, KlimaHerkunftKurzText,
-                                bezeichner, standort);
-        }
-    }
+        => KlimaHerkunftGaben.Zeile(_klimaherkunft, KlimaHerkunftText, KlimaHerkunftKurzText);
 
     // =====================================================================
     //  Die Kacheln

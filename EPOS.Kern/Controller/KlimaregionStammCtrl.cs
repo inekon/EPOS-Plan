@@ -145,6 +145,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der blanke NAME eines Stammsatzes zu seiner Id — die Umkehrung von
+        /// <see cref="IdVonName"/>; <c>""</c>, wenn es die Id im Katalog nicht gibt.
+        ///
+        /// <para>Gebraucht vom Projektassistenten: Seine Klappliste meldet die Wahl als
+        /// Stamm-Id, der Speicherweg (<c>ApplyRegionByNameToProjekt</c>) arbeitet mit dem
+        /// Namen. Der Name ist eindeutig (<c>UX_Tab_Klimaregion_STAMM_Name</c>), beide
+        /// Schlüssel bezeichnen also denselben Satz.</para>
+        /// </summary>
+        public static string NameVonId(int stammId)
+        {
+            if (stammId <= 0) return "";
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Name FROM " + TAB_REGION_STAMM + " WHERE ID_Klimaregion = ?",
+                new DbParam("@id", stammId));
+            return (v != null && v != DBNull.Value) ? (Convert.ToString(v) ?? "") : "";
+        }
+
+        /// <summary>
         /// Der ANZEIGENAME der Klimaregion eines Projekts (iU9-W15a.0f).
         ///
         /// <para><b>Zwei Wege, wie im Vorlaeufer</b> (<c>Wizard_Projekt:51-73</c>): Neue

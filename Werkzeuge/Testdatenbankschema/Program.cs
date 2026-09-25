@@ -1940,6 +1940,32 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt TwwSchema.SCHRITT_T5_KONSTRUKTOR (Anwenderentscheid ZU25,
+            //      Zapfprofilgenerator 4.5 Quelle (4), Nachtrag N21): die Zeilen des
+            //      Bedarfstag-Konstruktors am Auslegungssatz und das Ende des redundanten
+            //      T4-Index. NACH der Nachtzeit. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_145_ZapfprofilKonstruktor bedient
+            //      (TwwSchema.AnweisungenT5Konstruktor und TwwSchema.AufraeumenT5Index):
+            //      Tab_TwwKonstruktorzeile, dann DROP INDEX Tab_TwwMessreihe_ID_Projekt.
+            //
+            //      DER INDEX FAELLT ZULETZT: Schritt 140 oben legt ihn an; erst danach darf er weg,
+            //      sonst stuende er am Ende wieder. Ein eigener Index auf ID_TwwProjekt entsteht
+            //      NICHT - der UNIQUE-Index der neuen Tabelle traegt die Spalte an fuehrender Stelle.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabelle entsteht LEER und bleibt es
+            //      (kein Rechenweg liest eine Konstruktorzeile), und ein Index aendert kein
+            //      Ergebnis, nur den Weg dorthin.
+            string nrKonstruktor = TwwSchema.SCHRITT_T5_KONSTRUKTOR.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT5Konstruktor)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, TwwSchema.SCHRITT_T5_KONSTRUKTOR, trocken);
+            if (!trocken)
+                foreach (KeyValuePair<string, string> i in TwwSchema.AufraeumenT5Index)
+                {
+                    DataRepository.ExecuteNonQuery(i.Value);
+                    Console.WriteLine("Schritt " + nrKonstruktor + " - Index " + i.Key + " verworfen (redundant).");
+                }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

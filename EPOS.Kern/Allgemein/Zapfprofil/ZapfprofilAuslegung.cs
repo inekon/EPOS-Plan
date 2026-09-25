@@ -203,7 +203,7 @@ namespace WindowsFormsApplication1
 
             // --- 5. Tagesmengen der Auslegung bei θ_KW,Auslegung (4.2, 4.5) --------------------
             double kwAuslegung = ZapfAuslegungParameter.ProjektOderParameter(p.KaltwasserAuslegungC,
-                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C",
+                ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, ZapfFeld.AUSLEGUNG_KALTWASSER_C, "°C",
                 ZapfSatz.Neu("BEGRIFF_KALTWASSER_AUSLEGUNG"));
             foreach (Zonenarbeit w in arbeit)
             {
@@ -211,7 +211,7 @@ namespace WindowsFormsApplication1
                 try
                 {
                     double f = Wochenreihe.KaltwasserfaktorAuslegung(w.Temperaturen.ZapfC, kwAuslegung, w.Temperaturen.KaltwasserMittelC);
-                    prot.Vermerken(w.Name, "Auslegung.Kaltwasserfaktor", f, "-", Wertstatus.Umgerechnet, null,
+                    prot.Vermerken(w.Name, ZapfFeld.AUSLEGUNG_KALTWASSERFAKTOR, f, "-", Wertstatus.Umgerechnet, null,
                                    ZapfSatz.Neu("HERKUNFT_KALTWASSERFAKTOR_FORMEL"));
                     w.Baustein = new Wochenbaustein(w.Name,
                         Wochenreihe.TagesmengenAuslegung(w.ZapfungKwh, f, w.Struktur, w.Kalender, e.WochentagJan1, w.Name),
@@ -316,9 +316,9 @@ namespace WindowsFormsApplication1
                 try
                 {
                     nutzanteil = ZapfAuslegungParameter.ProjektOderParameter(p.Nutzanteil, ZapfAuslegungParameter.NUTZANTEIL,
-                        ps, prot, "Auslegung.Nutzanteil", "-", ZapfSatz.Neu("BEGRIFF_NUTZANTEIL"));
+                        ps, prot, ZapfFeld.AUSLEGUNG_NUTZANTEIL, "-", ZapfSatz.Neu("BEGRIFF_NUTZANTEIL"));
                     zuschlag = ZapfAuslegungParameter.ProjektOderParameter(p.Zuschlag, ZapfAuslegungParameter.ZUSCHLAG,
-                        ps, prot, "Auslegung.Zuschlag", "-", ZapfSatz.Neu("BEGRIFF_ZUSCHLAG"));
+                        ps, prot, ZapfFeld.AUSLEGUNG_ZUSCHLAG, "-", ZapfSatz.Neu("BEGRIFF_ZUSCHLAG"));
                 }
                 catch (ParametersatzException ex) { speicherGrund = ex.Satz; }
                 catch (ZapfAuslegungException ex) { speicherGrund = ex.Satz; }
@@ -835,7 +835,7 @@ namespace WindowsFormsApplication1
                 double oben = Auslegungspruefung.Spreizung(zapf.Value, kwAuslegung, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_AUSLEGUNG"));
                 double unten = Auslegungspruefung.Spreizung(zapf.Value, kwKatalog, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG"));
                 double f = oben / unten;
-                prot?.Vermerken("", "Auslegung.Bedarfstagfaktor", f, "-", Wertstatus.Umgerechnet, zeile?.Herkunft,
+                prot?.Vermerken("", ZapfFeld.AUSLEGUNG_BEDARFSTAGFAKTOR, f, "-", Wertstatus.Umgerechnet, zeile?.Herkunft,
                                 ZapfSatz.Neu("HERKUNFT_BEDARFSTAGFAKTOR", zapf.Value, kwAuslegung, kwKatalog));
                 faktor *= f;
             }
@@ -898,9 +898,9 @@ namespace WindowsFormsApplication1
         internal static Tagesfenster Ladefenster(ProjektStand p, Parametersatz ps, Herkunftsprotokoll prot)
             => new Tagesfenster(
                 ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterBeginnH, ZapfAuslegungParameter.LADEFENSTER_BEGINN,
-                    ps, prot, "Auslegung.LadefensterBeginn", "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_BEGINN")),
+                    ps, prot, ZapfFeld.AUSLEGUNG_LADEFENSTER_BEGINN, "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_BEGINN")),
                 ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
-                    ps, prot, "Auslegung.Ladefenster", "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_LAENGE")));
+                    ps, prot, ZapfFeld.AUSLEGUNG_LADEFENSTER, "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_LAENGE")));
 
         private static Nutzungsart Suchen(IReadOnlyList<Nutzungsart> katalog, int id)
         {

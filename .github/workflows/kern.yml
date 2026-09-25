@@ -176,6 +176,19 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: dotnet test Werkzeuge/Gebaeudevergleich/Gebaeudevergleich.sln -c Release
 
+      # Zapfprofilgenerator, Stufe Z5 / offener Punkt K5: Das Werkzeug, das den Generator
+      # gegen GEMESSENE Reihen haelt, hat eine eigene Projektmappe und steht nicht in
+      # WP-Plan.sln. Seine Proben laufen gegen das mitgelieferte Beispiel - einen
+      # erfundenen Katalog und eine synthetische Reihe, die aus derselben Rechnung stammt -
+      # und pruefen Katalogleser, Ablauf, Ampel und vor allem die BERICHTSWACHE, die
+      # Absolutwerte der Messung aus jedem Bericht haelt. Echte Messreihen liegen beim
+      # Anwender und nie im Repositorium; der Fall gegen
+      # Referenzlaeufe/Messreihen_INEKON schweigt hier deshalb immer.
+      # NUR ubuntu: plattformfrei, ein zweiter Lauf auf macOS zeigt nichts Neues.
+      - name: ZapfprofilValidierung-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/ZapfprofilValidierung/ZapfprofilValidierung.sln -c Release
+
       # 03.09.2026: SQL-Dialekt-Audit. Der Referenzlauf weiter unten deckt den
       # RECHENWEG ab - Dialog- und Pflegepfade nicht. Genau dort sassen zwei
       # Access-Altlasten, die erst Wochen nach dem Cutover beim Anwender

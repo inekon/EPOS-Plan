@@ -610,7 +610,7 @@
             @if (_konstruktorOffen)
             {
                 <BedarfstagKonstruktor Texte="@Texte" Regeln="@Daten.Regeln" RegelnGrund="@Daten.RegelnGrund"
-                                       Name="@KonstruktorName" Startzeilen="@_eingabe.Entwurf?.Konstruktorzeilen"
+                                       Name="@KonstruktorName" Startzeilen="@_eingabe.Konstruktorzeilen"
                                        Bezugsarten="@Daten.Bezugsarten" Bezugsart="@_eingabe.Entwurf?.Bezugsart"
                                        Bezugsmenge="@_eingabe.Entwurf?.Bezugsmenge"
                                        Konstruieren="@Konstruieren"
@@ -1188,6 +1188,9 @@
         _konstruktorOffen = false;
         if (tag is null) return;
         _eingabe.Entwurf = tag.Kopie();
+        // Die Zeilen, aus denen der Tag entstand, gehen an den Eingaben mit: Sie werden mit der
+        // Auslegung gespeichert und tragen das erneute Öffnen (Schemaschritt T5, ZU25).
+        _eingabe.Konstruktorzeilen = tag.Konstruktorzeilen.Select(z => z.Kopie()).ToList();
         _eingabe.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
         _eingabe.IdBedarfstag = null;
         Geaendert();
