@@ -67,20 +67,24 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
             Assert.Contains("ok      keine Zeile aus einem Normimport", e.Ausgabe);
             Assert.Contains("ok      keine Eingabe aus den lokalen Normdaten (ZU11, Referenzlaeufe/Normzahlen/", e.Ausgabe);
-            // Satz und Nutzungsart der Quelle, dazu der freie Paketteil: dreizehn Parameter, ein Bedarfstag und
-            // der Vorgabesatz der vier Zapfkategorien an der Nutzungsart ohne eigene Kategorien.
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 20", e.Ausgabe);
+            // Satz und Nutzungsart der Quelle, der Vorgabesatz ihrer Gruppe (Wohnen) und der ganze
+            // freie Paketteil (Parameter, Bedarfstag, abgeleitete Saetze und Nutzungsarten samt ihren
+            // Kategorien).
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
+                            (2 + PaketteilVorgabesatz(TwwSchema.KATEGORIENGRUPPE_WOHNEN) + PaketteilKoepfe()), e.Ausgabe);
             // Die Nutzungsart kam mit ReadOnly 0 — die Vorlage sperrt sie (Auslieferung ist unveraenderlich).
             Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
 
             Lesen(ziel, () =>
             {
-                Assert.Equal(new[] { "Probe Nutzung" }, Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.Equal(new[] { "Probe Nutzung" }.Concat(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)).ToArray(),
+                             Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
                 Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT ReadOnly FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = 'Probe Nutzung'")));
-                Assert.Equal(new[] { "Probe Satz" }, Namen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
-                Assert.Equal(4L, Zahl(TwwSchema.TAB_TWW_TAGESGANG_STAMM));
+                Assert.Equal(new[] { "Probe Satz" }.Concat(PaketteilNamen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM)).ToArray(),
+                             Namen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
+                Assert.Equal(4L + Paketteil(TwwSchema.TAB_TWW_TAGESGANG_STAMM).Count, Zahl(TwwSchema.TAB_TWW_TAGESGANG_STAMM));
                 foreach (string t in new[]
                          {
                              TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
@@ -114,15 +118,17 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv  ->  1 Zeile(n)", e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + ".csv  ->  4 Zeile(n)", e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ".csv  ->  2 Zeile(n)", e.Ausgabe);
-            // Die fuenf Zeilen des Pakets, dazu der freie Paketteil (dreizehn Parameter, ein Bedarfstag); der
-            // Vorgabesatz der Kategorien tritt zurueck — die Nutzungsart 60 fuehrt eigene.
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 19", e.Ausgabe);
-            Assert.Contains("Zapfkategorien (Vorgabesaetze, 6 Zeile(n) in 2 Gruppe(n)): an 0 Nutzungsart(en)", e.Ausgabe);
+            // Die fuenf Zeilen des Pakets, dazu der ganze freie Paketteil; an der Nutzungsart 60 tritt der
+            // Vorgabesatz zurueck (sie fuehrt eigene Kategorien), an den abgeleiteten bindet er.
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " + (5 + PaketteilKoepfe()), e.Ausgabe);
+            Assert.Contains("Zapfkategorien (Vorgabesaetze, 6 Zeile(n) in 2 Gruppe(n)): an " +
+                            Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM).Count + " Nutzungsart(en)", e.Ausgabe);
 
             Lesen(ziel, () =>
             {
                 // Genau das Paket, mit seinen Ids — der fiktive Testkatalog ist fort.
-                Assert.Equal(new[] { "Paketnutzung" }, Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.Equal(new[] { "Paketnutzung" }.Concat(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)).ToArray(),
+                             Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
                 Assert.Equal(40L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT ID_Tagesgangsatz FROM Tab_TwwNutzungsart_STAMM WHERE ID = 60")));
                 Assert.Equal(4L, Convert.ToInt64(DataRepository.ExecuteScalar(
@@ -140,7 +146,7 @@ namespace Auslieferungsvorlage.Tests
                 // Die Zapfkategorien des Pakets hängen an der Nutzungsart 60 und sind gesperrt.
                 Assert.Equal(2L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = 60 AND ReadOnly = 1")));
-                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                Assert.Equal((long)PaketteilKategorien(), Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart <> 60")));
             });
         }
@@ -176,16 +182,16 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
             Assert.Contains("ok      nur Status AUSLIEFERUNG", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
-            // Satz, Nutzungsart und die eine Kategorie (sie kam mit ReadOnly 0), dazu der freie Paketteil
-            // (dreizehn Parameter, ein Bedarfstag); die Nutzungsart fuehrt eine Kategorie, der Vorgabesatz tritt zurueck.
-            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 17", e.Ausgabe);
+            // Satz, Nutzungsart und die eine Kategorie (sie kam mit ReadOnly 0), dazu der ganze freie
+            // Paketteil; an der Nutzungsart tritt der Vorgabesatz zurueck — sie fuehrt eine Kategorie.
+            Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " + (3 + PaketteilKoepfe()), e.Ausgabe);
             Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
 
             Lesen(ziel, () =>
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT k.Kategorie, k.ReadOnly, n.Bezeichner FROM Tab_TwwZapfkategorie_STAMM k " +
-                    "JOIN Tab_TwwNutzungsart_STAMM n ON n.ID = k.ID_Nutzungsart");
+                    "JOIN Tab_TwwNutzungsart_STAMM n ON n.ID = k.ID_Nutzungsart WHERE n.Bezeichner = 'Probe Nutzung'");
                 DataRow r = Assert.Single(dt.Rows.Cast<DataRow>());
                 Assert.Equal("Bleibt", Convert.ToString(r["Kategorie"]));
                 Assert.Equal(1L, Convert.ToInt64(r["ReadOnly"]));
@@ -216,8 +222,9 @@ namespace Auslieferungsvorlage.Tests
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Freier Paketteil: " + Path.Combine(Werkzeuglauf.Repowurzel, "Referenzlaeufe", "Katalogpaket_frei"), e.Ausgabe);
             Assert.Contains("Katalogversion der Paketteil-Zeilen: FREI-1 (der Katalog fuehrt keine eigene)", e.Ausgabe);
-            foreach (string t in new[] { TwwSchema.TAB_TWW_PARAMETER_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
-                                         TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM })
+            foreach (string t in new[] { TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, TwwSchema.TAB_TWW_TAGESGANG_STAMM,
+                                         TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, TwwSchema.TAB_TWW_PARAMETER_STAMM,
+                                         TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM })
             {
                 int n = Paketteil(t).Count;
                 Assert.Contains("eingespielt: " + t + ".csv  ->  " + n + " von " + n + " Zeile(n)", e.Ausgabe);
@@ -225,8 +232,12 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
             Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
-            Assert.Contains("Tww-Zeilen mit Herkunftsart FREI (freier Paketteil): " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " " +
-                            Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count, e.Ausgabe);
+            Assert.Contains("Tww-Zeilen mit Herkunftsart FREI/VERFAHREN (freier Paketteil): " +
+                            TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM).Count +
+                            ", " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_TAGESGANG_STAMM).Count +
+                            ", " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM).Count +
+                            ", " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " " + Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count,
+                            e.Ausgabe);
 
             Lesen(ziel, () =>
             {
@@ -260,9 +271,10 @@ namespace Auslieferungsvorlage.Tests
                         .Select(x => string.Join("|", x.ItemArray.Select(v => Convert.ToString(v, CultureInfo.InvariantCulture)))).ToArray();
                     Assert.Equal(soll, ist);
                 }
-                // Keine Nutzungsart in dieser Vorlage — der Vorgabesatz der Kategorien bleibt ungebunden.
-                Assert.Equal(0L, Zahl(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
-                Assert.Equal(0L, Zahl(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+                // Die Nutzungsarten dieser Vorlage sind genau die abgeleiteten des Paketteils (ZU20), und
+                // jede traegt den Vorgabesatz ihrer Gruppe.
+                Assert.Equal((long)Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM).Count, Zahl(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.Equal((long)PaketteilKategorien(), Zahl(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
             });
         }
 
@@ -299,9 +311,13 @@ namespace Auslieferungsvorlage.Tests
             Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Katalogversion der Paketteil-Zeilen: " + VERSION + " (die des Katalogs)", e.Ausgabe);
-            Assert.Contains("Zapfkategorien (Vorgabesaetze, 6 Zeile(n) in 2 Gruppe(n)): an 2 Nutzungsart(en) mit Status " +
-                            "AUSLIEFERUNG ohne eigene Kategorien gebunden — 1 x Nichtwohnen (2 Kategorien), " +
-                            "1 x Wohnen (4 Kategorien); 1 Nutzungsart(en) fuehren eigene Kategorien des Katalogs", e.Ausgabe);
+            // Die zwei Nutzungsarten der Quelle ohne eigene Kategorien und die abgeleiteten des Paketteils.
+            int wohnen = 1 + PaketteilArten(TwwSchema.KATEGORIENGRUPPE_WOHNEN);
+            int nichtwohnen = 1 + PaketteilArten(TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN);
+            Assert.Contains("Zapfkategorien (Vorgabesaetze, 6 Zeile(n) in 2 Gruppe(n)): an " + (wohnen + nichtwohnen) +
+                            " Nutzungsart(en) mit Status AUSLIEFERUNG ohne eigene Kategorien gebunden — " +
+                            nichtwohnen + " x Nichtwohnen (2 Kategorien), " +
+                            wohnen + " x Wohnen (4 Kategorien); 1 Nutzungsart(en) fuehren eigene Kategorien des Katalogs", e.Ausgabe);
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
 
             Lesen(ziel, () =>
@@ -413,6 +429,75 @@ namespace Auslieferungsvorlage.Tests
                 Assert.Equal(0L, Zahl(TwwSchema.TAB_TWW_TYPTAG_IMPORT));
                 // Die Tabelle bleibt im Schema — geleert, nicht entfernt.
                 Assert.True(DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TYPTAG_IMPORT));
+            });
+        }
+
+        /// <summary>
+        /// <b>T13 (ZU20):</b> Die fuenf aus VDI 6002 ABGELEITETEN Nutzungsarten des freien Paketteils
+        /// stehen in der Vorlage — Status AUSLIEFERUNG, ReadOnly 1, Herkunftsart VERFAHREN in jeder
+        /// Provenienzgruppe und die Quelle "abgeleitet aus VDI 6002 Blatt n" —, jede mit ihrem
+        /// Tagesgangsatz, dessen vier Tagesgaengen und dem Vorgabesatz ihrer Gruppe. Die drei
+        /// fiktiven Testnutzungen der Quelle sind fort, und der Pruefposten "keine Zeile mit
+        /// Herkunftsart FIKTIV" bleibt gruen.
+        /// </summary>
+        [Fact]
+        public void T13_Die_abgeleiteten_Nutzungsarten_stehen_in_der_Vorlage()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
+            Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                // Genau die Nutzungsarten des Paketteils, keine Testnutzung.
+                Assert.Equal(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.DoesNotContain(Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), n => n.Contains("(fiktiv)"));
+                Assert.Equal(PaketteilNamen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM), Namen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
+
+                foreach (Dictionary<string, string> z in Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM))
+                {
+                    DataRow r = Assert.Single(DataRepository.GetDataTable(
+                        "SELECT * FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = ?",
+                        new DbParam("?", z["Bezeichner"])).Rows.Cast<DataRow>());
+                    Assert.Equal(TwwSchema.STATUS_AUSLIEFERUNG, Convert.ToString(r["Status"]));
+                    Assert.True(r["ReadOnly"] is bool b ? b : Convert.ToInt64(r["ReadOnly"]) == 1, "ReadOnly ist nicht 1.");
+                    Assert.Equal(TwwKatalogversionFrei, Convert.ToString(r["Katalogversion"]));
+                    foreach (string g in new[] { "Bedarf", "Jahresgang", "Wochengang" })
+                    {
+                        Assert.Equal(TwwSchema.HERKUNFT_VERFAHREN, Convert.ToString(r[g + "_Herkunftsart"]));
+                        Assert.StartsWith("abgeleitet aus VDI 6002 Blatt ", Convert.ToString(r[g + "_Quelle"]));
+                        Assert.Equal(z[g + "_Quelle"], Convert.ToString(r[g + "_Quelle"]));
+                    }
+                    // Bedarf und Faktoren Wert fuer Wert wie die Datei.
+                    foreach (string s in new[] { "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch", "Bezug_Zapftemperatur",
+                                                 "Bezug_Kaltwasser", "Monat_1", "Monat_12", "Woche_1", "Woche_7" })
+                        Assert.Equal(double.Parse(z[s], CultureInfo.InvariantCulture), Convert.ToDouble(r[s]), 12);
+                    // Ihr Tagesgangsatz ist der des Paketteils, mit vier Tagesgaengen.
+                    string satz = PaketteilNamen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM)
+                        [int.Parse(z["ID_Tagesgangsatz"], CultureInfo.InvariantCulture) - 1];
+                    Assert.Equal(satz, Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Bezeichner FROM Tab_TwwTagesgangsatz_STAMM WHERE ID = ?", new DbParam("?", r["ID_Tagesgangsatz"]))));
+                    Assert.Equal(4L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE ID_Tagesgangsatz = ?", new DbParam("?", r["ID_Tagesgangsatz"]))));
+                    // Der Vorgabesatz ihrer Gruppe haengt an ihr.
+                    Assert.Equal((long)PaketteilVorgabesatz(TwwSchema.Kategoriengruppe(
+                                     Convert.ToInt64(r["Kalenderart"], CultureInfo.InvariantCulture))),
+                                 Convert.ToInt64(DataRepository.ExecuteScalar(
+                                     "SELECT COUNT(*) FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart = ? AND ReadOnly = 1",
+                                     new DbParam("?", r["ID"]))));
+                }
+                // Jeder Tagesgang traegt VERFAHREN und die abgeleitete Quelle.
+                Assert.Equal((long)Paketteil(TwwSchema.TAB_TWW_TAGESGANG_STAMM).Count,
+                             Convert.ToInt64(DataRepository.ExecuteScalar(
+                                 "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE Herkunftsart = ? AND " +
+                                 "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt _'", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN))));
             });
         }
 
@@ -643,6 +728,40 @@ namespace Auslieferungsvorlage.Tests
 
         /// <summary>Die Rueckfallversion der Paketteil-Zeilen (TwwKataloge.KATALOGVERSION_FREI).</summary>
         private const string TwwKatalogversionFrei = "FREI-1";
+
+        /// <summary>Der Vorgabesatz einer Gruppe im Paketteil (Steuerspalte <c>Gruppe</c>).</summary>
+        private static int PaketteilVorgabesatz(string gruppe) =>
+            Paketteil(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM).Count(z => z[TwwSchema.STEUERSPALTE_GRUPPE] == gruppe);
+
+        /// <summary>
+        /// Die Zapfkategorien, die der Paketteil an seine EIGENEN Nutzungsarten bindet (ZU20): je
+        /// abgeleitete Nutzungsart der Vorgabesatz ihrer Gruppe, und die Gruppe folgt der Kalenderart.
+        /// </summary>
+        private static int PaketteilKategorien() =>
+            Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)
+                .Sum(z => PaketteilVorgabesatz(TwwSchema.Kategoriengruppe(
+                    long.Parse(z["Kalenderart"], CultureInfo.InvariantCulture))));
+
+        /// <summary>
+        /// Die Kopfzeilen mit Status AUSLIEFERUNG, die der freie Paketteil selbst in jede Vorlage
+        /// bringt: Tagesgangsaetze, Nutzungsarten, Parameter, Bedarfstage und die Zapfkategorien
+        /// seiner Nutzungsarten (Tagesgaenge und Ereignisse sind keine Koepfe).
+        /// </summary>
+        private static int PaketteilKoepfe() =>
+            Paketteil(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM).Count +
+            Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM).Count +
+            Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count +
+            Paketteil(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM).Count +
+            PaketteilKategorien();
+
+        /// <summary>Die Nutzungsarten des Paketteils, deren Gruppe (aus der Kalenderart) die genannte ist.</summary>
+        private static int PaketteilArten(string gruppe) =>
+            Paketteil(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)
+                .Count(z => TwwSchema.Kategoriengruppe(long.Parse(z["Kalenderart"], CultureInfo.InvariantCulture)) == gruppe);
+
+        /// <summary>Die Bezeichner einer Datei des Paketteils in ihrer Reihenfolge.</summary>
+        private static string[] PaketteilNamen(string tabelle) =>
+            Paketteil(tabelle).Select(z => z["Bezeichner"]).ToArray();
 
         /// <summary>
         /// Die Zeilen einer Datei des freien Paketteils im Repositorium (Spaltenname -> Text). Die

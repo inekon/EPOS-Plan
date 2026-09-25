@@ -281,16 +281,22 @@ namespace EPOS.Kern.Tests
             TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);
             Assert.Equal("KATALOGIMPORT_KEINE_DATEI", b.Abbruch.Kennung);
 
-            // Der freie Paketteil allein führt keine Nutzungsart: abgelehnt, die fremden Dateien benannt übergangen.
+            // Der freie Paketteil taugt nicht als Katalogpaket: Seine Zeilen treten der Katalogversion des
+            // Katalogs bei, den sie erreichen, und führen deshalb keine (Regel 2 seiner LIESMICH.md) —
+            // der Katalogimport verlangt sie. Benannt abgelehnt, nichts geändert; die Dateien, die kein
+            // Katalogimport kennt (Parameter, Bedarfstag), sind benannt übergangen.
             string frei = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ZapfZufallTests.Probenordner()))),
                                        "Referenzlaeufe", "Katalogpaket_frei");
             IReadOnlyList<TwwPaketdatei> teil = TwwNutzungsartCtrl.PaketLesen(frei, out ZapfSatz fehler);
             Assert.Null(fehler);
             TwwKatalogimportBericht bf = TwwNutzungsartCtrl.Importieren(teil);
-            Assert.Equal("KATALOGIMPORT_KEINE_DATEI", bf.Abbruch.Kennung);
+            Assert.Equal("KATALOGIMPORT_SPALTE_FEHLT", bf.Abbruch.Kennung);
+            Assert.Equal(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + ".csv", bf.Abbruch.Werte[0]);
+            Assert.Equal("Katalogversion", bf.Abbruch.Werte[1]);
             Assert.Contains(bf.Hinweise, h => h.Kennung == "KATALOGIMPORT_DATEI_UEBERGANGEN"
                                                && h.Werte[0].Equals(TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
         }
 
         [Fact]
@@ -599,6 +605,84 @@ namespace EPOS.Kern.Tests
                 PaketMit(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, t => t.Replace("\r\n11;", "\r\n10;")), zeilenende)).Abbruch;
             Assert.Equal("KATALOGIMPORT_ID_DOPPELT", abbruch?.Kennung);
             Assert.Equal(3, abbruch.Werte[1]);
+        }
+
+        // =================================================================================
+        // Die Paketvorlage der A100-Typen (ZU24)
+        // =================================================================================
+
+        /// <summary>Der Ordner der Paketvorlage <c>Referenzlaeufe/Katalogpaket_Vorlage_A100</c>.</summary>
+        private static string VorlageA100()
+            => Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ZapfZufallTests.Probenordner()))),
+                            "Referenzlaeufe", "Katalogpaket_Vorlage_A100");
+
+        /// <summary>
+        /// <b>Die Paketvorlage der A100-Typen liest sich ohne Ablehnung ein</b> (Anwenderentscheid
+        /// ZU24): Die vier Dateien des Importformats mit ihrer Beispielzeile legen eine Nutzungsart
+        /// samt Tagesgangsatz, vier Tagesgängen und dem Vorgabesatz ihrer Gruppe an — Herkunftsart
+        /// <c>IMPORT</c>, Gruppe <c>Nichtwohnen</c> gebunden (Kalenderart 5, Auslastungsgang). So ist
+        /// die Vorlage nachweislich einspielbar, bevor der Anwender seine Normwerte einträgt.
+        /// </summary>
+        [Fact]
+        public void Die_Paketvorlage_A100_spielt_ohne_Ablehnung_ein()
+        {
+            using var db = new TwwTestdatenbank();
+            IReadOnlyList<TwwPaketdatei> dateien = TwwNutzungsartCtrl.PaketLesen(VorlageA100(), out ZapfSatz fehler);
+            Assert.Null(fehler);
+            Assert.Equal(4, dateien.Count);
+
+            TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(dateien.ToList());
+            Assert.Null(b.Abbruch);
+            Assert.All(b.Zeilen, z => Assert.Null(z.Grund));
+            Assert.Equal(1, b.Angelegt);
+            Assert.Equal(0, b.Abgelehnt);
+            Assert.Empty(b.Hinweise);
+
+            int id = b.NeueIds[0];
+            DataRow z = Zeile(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, id);
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Convert.ToString(z["Status"]));
+            foreach (string g in new[] { "Bedarf", "Jahresgang", "Wochengang" })
+                Assert.Equal(TwwSchema.HERKUNFT_IMPORT, Convert.ToString(z[g + "_Herkunftsart"]));
+            Assert.Equal(5L, Convert.ToInt64(z["Kalenderart"], CultureInfo.InvariantCulture));
+            Assert.Equal(TwwSchema.KATEGORIENGRUPPE_NICHTWOHNEN,
+                         TwwSchema.Kategoriengruppe(Convert.ToInt64(z["Kalenderart"], CultureInfo.InvariantCulture)));
+            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM));
+            Assert.Equal(new[] { "Kurzzapfung (Vorlage)", "Duschzapfung (Vorlage)" },
+                         TwwNutzungsartCtrl.KategorienLesen(id).Kategorien.Select(k => k.Name).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Keine Normzahl in der Vorlage</b> (ZU24, Kapitel 6 (a)): Jedes Zahlenfeld der vier
+        /// Dateien steht in dieser Liste von Platzhaltern. Wer einen Normwert einträgt, fällt hier auf
+        /// — die gefüllte Datei gehört außerhalb des Repositoriums.
+        /// </summary>
+        [Fact]
+        public void Die_Paketvorlage_A100_traegt_nur_Platzhalterzahlen()
+        {
+            double[] erlaubt =
+            {
+                0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 20.0, 30.0, 60.0,
+                1.0 / 24.0,                                  // Tagesgang gleichverteilt
+                1.0 / 7.0                                    // Woche gleichverteilt
+            };
+            var funde = new List<string>();
+            foreach (string datei in Directory.GetFiles(VorlageA100(), "*.csv").OrderBy(x => x, StringComparer.Ordinal))
+            {
+                string[] zeilen = File.ReadAllLines(datei, Encoding.UTF8).Where(x => x.Trim().Length > 0).ToArray();
+                Assert.True(zeilen.Length >= 2, Path.GetFileName(datei) + ": keine Beispielzeile");
+                for (int i = 1; i < zeilen.Length; i++)
+                    foreach (string feld in zeilen[i].Split(';'))
+                    {
+                        string s = feld.Trim();
+                        if (s.Length == 0) continue;
+                        if (!double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) continue;
+                        if (!erlaubt.Any(e => Math.Abs(w - e) <= 1e-9 * Math.Max(1.0, Math.Abs(e))))
+                            funde.Add(Path.GetFileName(datei) + " Zeile " + (i + 1) + ": " + s);
+                    }
+            }
+            Assert.True(funde.Count == 0, "Die Paketvorlage A100 traegt Zahlen, die keine Platzhalter sind " +
+                                         "(Kapitel 6 (a): keine Normzahl im Repositorium):" +
+                                         Environment.NewLine + string.Join(Environment.NewLine, funde));
         }
 
         [Fact]

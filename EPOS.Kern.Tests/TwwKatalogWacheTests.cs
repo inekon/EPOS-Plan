@@ -27,10 +27,11 @@ namespace EPOS.Kern.Tests
     /// <para><b>Die Fälle:</b> keine Zeile mit <c>Status = 'AUSLIEFERUNG'</c>; jede
     /// Katalogzeile ist <c>EIGEN</c> UND trägt in jeder Provenienzgruppe ein zugelassenes Paar
     /// aus Herkunftsart und Quelle — <c>FIKTIV</c> mit „Testkatalog (fiktiv)“ (Kapitel 6 (b)),
-    /// in Nutzungsarten und Tagesgängen dazu <c>FIKTIV</c> mit „VDI 6002 Blatt n (abgeleitet)“
-    /// (Anwenderentscheid ZU19: geringfügig abweichende VDI-Werte, Regel in
-    /// <c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c> — Testdaten nach Regel, weder
-    /// Eigenkonstruktion noch Normwert), in Bedarfstagen <c>FREI</c> mit der Ecodesign-Verordnung
+    /// in Nutzungsarten und Tagesgängen dazu <c>VERFAHREN</c> mit „abgeleitet aus VDI 6002 Blatt n“
+    /// (Anwenderentscheide ZU19 und ZU20: geringfügig abweichende VDI-Werte, Regel in
+    /// <c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c> — aus einem Verfahren gerechnet,
+    /// weder Normwert noch Eigenkonstruktion noch eine frei verfügbare Quelle), in Bedarfstagen
+    /// <c>FREI</c> mit der Ecodesign-Verordnung
     /// (EU-Recht), und überall, wo der freie Paketteil (<c>Referenzlaeufe/Katalogpaket_frei/</c>) eine Datei
     /// führt, <c>FREI</c> mit einer Quelle dieser Datei. Eine Tabelle ohne Status — die
     /// Tagesgänge — prüft nur Herkunft und Quelle, eine ohne Herkunftsspalte — der
@@ -65,7 +66,7 @@ namespace EPOS.Kern.Tests
         private static readonly string[] OHNE_VERSION = { TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM };
 
         /// <summary>Die Quelle der aus VDI 6002 abgeleiteten Zeilen (ZU19); „{0}“ ist das Blatt.</summary>
-        private const string QUELLE_VDI_ABGELEITET = "VDI 6002 Blatt {0} (abgeleitet)";
+        private const string QUELLE_VDI_ABGELEITET = "abgeleitet aus VDI 6002 Blatt {0}";
 
         /// <summary>Die Quelle des Ecodesign-Zapfprofils (EU-Recht, frei).</summary>
         private const string QUELLE_ECODESIGN = "Verordnung (EU) Nr. 814/2013 Anhang III";
@@ -87,8 +88,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die zugelassenen Paare aus Herkunftsart und Quelle je Tabelle: überall der fiktive
-        /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19, Herkunftsart
-        /// <c>FIKTIV</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
+        /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19/ZU20, Herkunftsart
+        /// <c>VERFAHREN</c>); wo der freie Paketteil eine Datei führt, deren Paare (Herkunftsart <c>FREI</c>
         /// — Ecodesign-Zapfprofil, Parameter der Stochastik, Zapfkategorien nach Jordan/Vajen).
         /// </summary>
         private static IEnumerable<(string Herkunft, string Quelle)> Zugelassen(string tabelle)
@@ -96,7 +97,7 @@ namespace EPOS.Kern.Tests
             yield return (TwwSchema.HERKUNFT_FIKTIV, QUELLE_FIKTIV);
             if (tabelle == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM || tabelle == TwwSchema.TAB_TWW_TAGESGANG_STAMM)
                 foreach (string blatt in new[] { "1", "2" })
-                    yield return (TwwSchema.HERKUNFT_FIKTIV, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
+                    yield return (TwwSchema.HERKUNFT_VERFAHREN, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
             string ordner = PaketteilOrdner();
             if (ordner != null && File.Exists(Path.Combine(ordner, tabelle + ".csv")))
                 foreach (var paar in Paketteil(ordner, tabelle).Where(z => z.ContainsKey("Herkunftsart"))
@@ -136,9 +137,10 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Kapitel 6 (b) mit ZU19 verlangt alles ZUGLEICH: <c>Status = 'EIGEN'</c> und in JEDER
         /// Provenienzgruppe ein zugelassenes Paar aus Herkunftsart und Quelle
-        /// (<see cref="Zugelassen"/>). Eine Zeile <c>EIGEN</c> mit Herkunftsart <c>VERFAHREN</c>
-        /// wäre genau der Weg, auf dem eine echte Normzahl als Anwenderkopie in die Testdatenbank
-        /// käme; eine Zeile <c>IMPORT</c> mit <c>FIKTIV</c> ein mitgenommener Fremdkatalog.
+        /// (<see cref="Zugelassen"/>). Entscheidend ist das PAAR: Eine Zeile <c>EIGEN</c> mit
+        /// Herkunftsart <c>VERFAHREN</c> zu einer anderen Quelle als den abgeleiteten VDI-Werten wäre
+        /// genau der Weg, auf dem eine echte Normzahl als Anwenderkopie in die Testdatenbank käme;
+        /// eine Zeile <c>IMPORT</c> mit <c>FIKTIV</c> ein mitgenommener Fremdkatalog.
         /// </summary>
         [Fact]
         public void Jede_Tww_Katalogzeile_ist_EIGEN_mit_zugelassener_Herkunft()
@@ -155,17 +157,17 @@ namespace EPOS.Kern.Tests
             Assert.True(geprueft > 0, "Der Testkatalog fehlt — die Probe waere leer.");
             // Die abgeleiteten VDI-Zeilen und das Ecodesign-Zapfprofil stehen da (ZU19, Stufe Z3).
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $w " +
-                             "AND \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'",
-                             TwwSchema.HERKUNFT_FIKTIV) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
+                             "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _'",
+                             TwwSchema.HERKUNFT_VERFAHREN) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Quelle_Art\" = 5 AND \"Quelle\" = $w",
                              QUELLE_ECODESIGN) == 1, "Das Ecodesign-Zapfprofil fehlt in der Testdatenbank.");
         }
 
         /// <summary>
         /// Gegenprobe auf einer Arbeitskopie: Genau die zwei Faelle, die eine Regel „EIGEN ODER
-        /// FIKTIV“ durchliesse, schlagen an — eine Nutzungsart EIGEN mit Herkunftsart
-        /// VERFAHREN, ein Parameter IMPORT mit Herkunftsart FIKTIV — und dazu ein Tagesgang
-        /// mit fremder Quelle.
+        /// FIKTIV“ durchliesse, schlagen an — eine Nutzungsart EIGEN mit Herkunftsart VERFAHREN zur
+        /// Quelle „Testkatalog (fiktiv)“ (das Paar ist keines der zugelassenen), ein Parameter IMPORT
+        /// mit Herkunftsart FIKTIV — und dazu ein Tagesgang mit fremder Quelle.
         /// </summary>
         [Fact]
         public void Gegenprobe_EIGEN_mit_VERFAHREN_und_IMPORT_mit_FIKTIV_schlagen_an()
@@ -307,8 +309,8 @@ namespace EPOS.Kern.Tests
             using (SqliteCommand b = c.CreateCommand())
             {
                 b.CommandText = "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $h " +
-                                "AND \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'";
-                b.Parameters.AddWithValue("$h", TwwSchema.HERKUNFT_FIKTIV);
+                                "AND \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _'";
+                b.Parameters.AddWithValue("$h", TwwSchema.HERKUNFT_VERFAHREN);
                 var zeilen = new List<Dictionary<string, object>>();
                 using (SqliteDataReader r = b.ExecuteReader())
                     while (r.Read())
@@ -814,7 +816,7 @@ namespace EPOS.Kern.Tests
 
             using SqliteConnection c = Oeffnen(pfad);
             List<Dictionary<string, object>> arten = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
-                                                                "\" WHERE \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)' ORDER BY \"ID\"", null);
+                                                                "\" WHERE \"Bedarf_Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _' ORDER BY \"ID\"", null);
             Assert.NotEmpty(arten);
             var saetze = new Dictionary<string, long>(StringComparer.Ordinal);
             foreach (Dictionary<string, object> z in arten)
@@ -876,7 +878,7 @@ namespace EPOS.Kern.Tests
             }
             int eigene = saetze.Keys.Count(a => Formquelle(a) == a);
             long abgeleiteteSaetze = Zahl(c, "SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
-                                             "\" WHERE \"Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'", null);
+                                             "\" WHERE \"Quelle\" LIKE 'abgeleitet aus VDI 6002 Blatt _'", null);
             if (abgeleiteteSaetze != eigene)
                 funde.Add("abgeleitete Tagesgangsätze: " + abgeleiteteSaetze + " statt " + eigene);
 
@@ -895,7 +897,7 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static readonly string[] NICHT_VERGLICHEN =
         {
-            "ID", "ID_Bedarfstag", "Status", "ReadOnly", TwwSchema.STEUERSPALTE_GRUPPE
+            "ID", "ID_Bedarfstag", "ID_Tagesgangsatz", "Status", "ReadOnly", TwwSchema.STEUERSPALTE_GRUPPE
         };
 
         /// <summary>
@@ -917,7 +919,9 @@ namespace EPOS.Kern.Tests
         /// (<c>Referenzlaeufe/Katalogpaket_frei/</c>, dieselben Dateien, die die Auslieferungsvorlage
         /// einspielt), Wert für Wert und in der Anzahl: jeder Parameter und jeder Bedarfstag (samt
         /// Ereignissen) der Dateien steht mit Herkunftsart <c>FREI</c> und der Katalogversion des
-        /// Testkatalogs da, jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien
+        /// Testkatalogs da, jeder Tagesgangsatz mit seinen vier Tagesgängen und jede abgeleitete
+        /// Nutzungsart mit Herkunftsart <c>VERFAHREN</c> und dem Satz ihrer Datei (ZU20),
+        /// jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien
         /// <b>ihrer Gruppe</b> (Wohnen oder Nichtwohnen, Stufe Z5), und keine
         /// weitere Zeile trägt <c>FREI</c>. Status und ReadOnly folgen der Regel der Testdatenbank
         /// (<c>EIGEN</c>, 0). Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
@@ -1018,6 +1022,58 @@ namespace EPOS.Kern.Tests
                 long frei = Zahl(c, "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"Herkunftsart\" = $w", TwwSchema.HERKUNFT_FREI);
                 if (frei != soll.Count) funde.Add(tabelle + ": " + frei + " Zeile(n) FREI statt " + soll.Count);
             }
+
+            // --- Tagesgangsätze, Tagesgänge und Nutzungsarten (ZU20) ---------------------------
+            // Die ID der Datei ist nur Schlüssel des Pakets; verglichen wird über den Bezeichner,
+            // und der Verweis der Nutzungsart wird auf die echte Id des Satzes zurückgerechnet.
+            var satzIds = new Dictionary<string, long>(StringComparer.Ordinal);
+            List<Dictionary<string, string>> sollSaetze = Paketteil(ordner, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM);
+            Assert.NotEmpty(sollSaetze);
+            List<Dictionary<string, string>> sollGaenge = Paketteil(ordner, TwwSchema.TAB_TWW_TAGESGANG_STAMM);
+            foreach (Dictionary<string, string> z in sollSaetze)
+            {
+                string was = TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + " \"" + z["Bezeichner"] + "\"";
+                List<Dictionary<string, object>> ist = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM +
+                                                                 "\" WHERE \"Bezeichner\" = $w AND \"Katalogversion\" = 'TEST-1'", z["Bezeichner"]);
+                if (ist.Count != 1) { funde.Add(was + ": " + ist.Count + " Zeile(n)"); continue; }
+                Vergleichen(was, z, ist[0], funde);
+                if (Convert.ToString(ist[0]["Status"]) != TwwSchema.STATUS_EIGEN || Convert.ToInt64(ist[0]["ReadOnly"]) != 0)
+                    funde.Add(was + ": nicht EIGEN/ReadOnly 0");
+                long id = Convert.ToInt64(ist[0]["ID"], CultureInfo.InvariantCulture);
+                satzIds[z["ID"]] = id;
+
+                List<Dictionary<string, string>> g = sollGaenge.Where(x => x["ID_Tagesgangsatz"] == z["ID"])
+                                                               .OrderBy(x => int.Parse(x["Tagtyp"], CultureInfo.InvariantCulture)).ToList();
+                List<Dictionary<string, object>> gi = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                                                "\" WHERE \"ID_Tagesgangsatz\" = $w ORDER BY \"Tagtyp\"",
+                                                                id.ToString(CultureInfo.InvariantCulture));
+                if (g.Count != gi.Count) { funde.Add(was + ": " + gi.Count + " Tagesgänge statt " + g.Count); continue; }
+                for (int i = 0; i < g.Count; i++) Vergleichen(was + " Tagtyp " + g[i]["Tagtyp"], g[i], gi[i], funde);
+            }
+            long freieGaenge = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                                       "\" WHERE \"Herkunftsart\" = $w", TwwSchema.HERKUNFT_VERFAHREN);
+            if (freieGaenge != sollGaenge.Count)
+                funde.Add(TwwSchema.TAB_TWW_TAGESGANG_STAMM + ": " + freieGaenge + " Zeile(n) VERFAHREN statt " + sollGaenge.Count);
+
+            List<Dictionary<string, string>> sollArten = Paketteil(ordner, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM);
+            Assert.NotEmpty(sollArten);
+            foreach (Dictionary<string, string> z in sollArten)
+            {
+                string was = TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " \"" + z["Bezeichner"] + "\"";
+                List<Dictionary<string, object>> ist = Zeilen(c, "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
+                                                                 "\" WHERE \"Bezeichner\" = $w AND \"Katalogversion\" = 'TEST-1'", z["Bezeichner"]);
+                if (ist.Count != 1) { funde.Add(was + ": " + ist.Count + " Zeile(n)"); continue; }
+                Vergleichen(was, z, ist[0], funde);
+                if (Convert.ToString(ist[0]["Status"]) != TwwSchema.STATUS_EIGEN || Convert.ToInt64(ist[0]["ReadOnly"]) != 0)
+                    funde.Add(was + ": nicht EIGEN/ReadOnly 0");
+                if (!satzIds.TryGetValue(z["ID_Tagesgangsatz"], out long satz) ||
+                    satz != Convert.ToInt64(ist[0]["ID_Tagesgangsatz"], CultureInfo.InvariantCulture))
+                    funde.Add(was + ": nicht der Tagesgangsatz des Paketteils");
+            }
+            long freieArten = Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
+                                      "\" WHERE \"Bedarf_Herkunftsart\" = $w", TwwSchema.HERKUNFT_VERFAHREN);
+            if (freieArten != sollArten.Count)
+                funde.Add(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ": " + freieArten + " Zeile(n) VERFAHREN statt " + sollArten.Count);
 
             // --- Zapfkategorien: der Vorgabesatz IHRER GRUPPE an jeder Nutzungsart, sonst nichts ---
             List<Dictionary<string, string>> zeilen = Paketteil(ordner, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM);
