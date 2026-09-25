@@ -866,8 +866,9 @@ namespace Auslieferungsvorlage
         /// <c>IMPORT</c>, nur <c>AUSLIEFERUNG</c>, keine verwaiste Kindzeile, keine Herkunftsart
         /// <c>FIKTIV</c>, keine Normdaten (Herkunftsart <c>IMPORT</c>, <c>Tab_TwwTyptag_IMPORT</c>),
         /// jede Auslieferungszeile <c>ReadOnly = 1</c>, keine Eingabe aus den lokalen Normdaten
-        /// (ZU11). <paramref name="mitnahmen"/> nennt zu einer IMPORT-Zeile das Beispielpaket,
-        /// das sie mitgebracht hat.
+        /// (ZU11), kein Beispielprojekt auf dem Typtagweg bei leerer <c>Tab_TwwTyptag_IMPORT</c>
+        /// (N16, Restlücke). <paramref name="mitnahmen"/> nennt zu einer IMPORT-Zeile das
+        /// Beispielpaket, das sie mitgebracht hat.
         /// </summary>
         internal bool Pruefen(IReadOnlyList<string> eingaben = null, IReadOnlyList<string> mitnahmen = null)
         {
@@ -967,6 +968,15 @@ namespace Auslieferungsvorlage
             ok &= Posten(messdaten, "keine gemessene Reihe (" + TAB_MESSREIHE + ", K5: Messdaten " +
                                     "gehoeren dem Objekt)");
 
+            // (7) Der Typtagweg eines Beispielprojekts ohne Typtage (N16, Restluecke): Die Vorlage
+            // leert TAB_TYPTAG_IMPORT, ein mitgenommenes Beispielprojekt behaelt aber seine
+            // Projektspalten. Traegt es Typtage_Aktiv = 1, liefe es im ausgelieferten Stand benannt
+            // auf Ablehnung (ZapfEingabefehler.TyptageUngueltig, Zapfprofileingang) - kein stiller
+            // Rueckfall auf den Formvektor, aber ein Projekt, das nicht rechnet.
+            ok &= Posten(Typtagweg(), "kein Beispielprojekt mit " + TwwSchema.SPALTE_TYPTAGE_AKTIV +
+                                      " = 1 bei leerer " + TAB_TYPTAG_IMPORT + " (das Projekt liefe " +
+                                      "beim Anwender auf eine Ablehnung)");
+
             _bericht.Zeile("        Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
                            auslieferung.ToString(CultureInfo.InvariantCulture));
 
@@ -997,6 +1007,43 @@ namespace Auslieferungsvorlage
             _bericht.Zeile("        Tww-Zeilen mit Herkunftsart " + string.Join("/", PAKETTEIL_HERKUNFT) +
                            " (freier Paketteil): " + string.Join(", ", frei));
             return ok;
+        }
+
+        /// <summary>
+        /// Die Beispielprojekte, die den Typtagweg tragen, waehrend die Tabelle der eingespielten
+        /// Typtage leer ist (N16, Restluecke) - je Zeile die Projektkennung samt Klimazone und
+        /// Gebaeudeart, damit der Bericht sagt, welche Wahl liegen geblieben ist. Fehlt die Tabelle
+        /// oder die Spalte, ist nichts zu melden; steht eine Typtagzeile, ist der Weg gedeckt.
+        /// </summary>
+        private List<string> Typtagweg()
+        {
+            var befunde = new List<string>();
+            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PROJEKT)
+                || !DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_TYPTAGE_AKTIV))
+                return befunde;
+            if (DataRepository.TabelleVorhanden(TAB_TYPTAG_IMPORT)
+                && Zahl("SELECT COUNT(*) FROM \"" + TAB_TYPTAG_IMPORT + "\"", null) > 0)
+                return befunde;
+
+            bool zone = DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_TYPTAGE_KLIMAZONE);
+            bool art = DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_PROJEKT, TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART);
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT \"ID_Projekt\"" +
+                (zone ? ", \"" + TwwSchema.SPALTE_TYPTAGE_KLIMAZONE + "\"" : "") +
+                (art ? ", \"" + TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART + "\"" : "") +
+                " FROM \"" + TwwSchema.TAB_TWW_PROJEKT + "\" WHERE \"" + TwwSchema.SPALTE_TYPTAGE_AKTIV + "\" = 1" +
+                " ORDER BY \"ID_Projekt\"");
+            foreach (DataRow r in t.Rows)
+            {
+                string zeile = "ID_Projekt " + Convert.ToString(r["ID_Projekt"], CultureInfo.InvariantCulture);
+                if (zone && r[TwwSchema.SPALTE_TYPTAGE_KLIMAZONE] != DBNull.Value)
+                    zeile += ", Klimazone " + Convert.ToString(r[TwwSchema.SPALTE_TYPTAGE_KLIMAZONE], CultureInfo.InvariantCulture);
+                if (art && r[TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART] != DBNull.Value
+                    && Convert.ToString(r[TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART]).Length > 0)
+                    zeile += ", Gebaeudeart " + Convert.ToString(r[TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART]);
+                befunde.Add(zeile);
+            }
+            return befunde;
         }
 
         /// <summary>

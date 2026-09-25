@@ -1076,6 +1076,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_VERGL_OHNE_ENSEMBLE</c></summary>
     public string VermerkOhneEnsemble { get; set; } = "ohne Ensemble nicht entscheidbar";
 
+    /// <summary><c>ZPG_VERGL_ENSEMBLE_ZONEN</c></summary>
+    public string VermerkEnsembleZonen { get; set; } = "mehrere stochastische Zonen — Stichprobe nicht bildbar";
+
     /// <summary><c>ZPG_VERGL_OHNE_WERT</c></summary>
     public string VermerkOhneWert { get; set; } = "nicht entschieden";
 

@@ -70,6 +70,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilErgebnis d = ZapfprofilRechner.Rechnen(Eingang(Projekt()), Katalog);
             Assert.False(d.Stochastisch);
             Assert.All(d.JeZone, z => Assert.Null(z.Konsistenz));
+            Assert.All(d.JeZone, z => Assert.Empty(z.StundenspitzenKw));
             Assert.DoesNotContain(d.Hinweise, h => h.Code == ZapfprofilRechner.HINWEIS_STOCHASTISCH);
             // Die Kategorien stören den deterministischen Weg nicht: dieselben Bits wie ohne.
             ZapfprofilErgebnis ohne = ZapfprofilRechner.Rechnen(Eingang(Projekt(), mitKategorien: false), Katalog);
@@ -95,6 +96,11 @@ namespace EPOS.Kern.Tests
                 // … aber eine andere Reihe: die gezogenen Jahre sind nicht der Formvektor.
                 Assert.NotEqual(zd.Zapfung.StundenKwh, zs.Zapfung.StundenKwh);
                 Assert.True(zs.Zapfung.GroessterStundenwertKw > zd.Zapfung.GroessterStundenwertKw);
+                // Die Stundenspitzen der Realisierungen reisen ins Ergebnis (N15 Gruppe 3): je
+                // Realisierung eine positive Zahl, aus der der Vergleichsbericht die
+                // Spitzenstreuung bildet. Ergebnisneutral - die Reihen bleiben, wie sie sind.
+                Assert.Equal(4, zs.StundenspitzenKw.Count);
+                Assert.All(zs.StundenspitzenKw, x => Assert.True(x > 0.0, "Eine Realisierungsspitze ist nicht positiv."));
             }
             // Die Zirkulation folgt dem Laufzeitfenster der deterministischen Reihe: dieselben Bits.
             Assert.Equal(d.Zirkulation.StundenKwh, s.Zirkulation.StundenKwh);

@@ -539,6 +539,151 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Der Größenschutz des ZIP-Imports</b> (N13 (s), Folge (s)): Eintragszahl und entpackte
+        /// Gesamtgröße stehen im Zentralverzeichnis und werden geprüft, bevor ein Byte entpackt
+        /// wird; eine zu große Einzeldatei fällt ebenso. Ein Eintragsname, der aus dem Archiv
+        /// herauszeigt (<c>..</c>), wird benannt abgelehnt — ein Unterordner dagegen nicht
+        /// (das prüft der Nachbartest). Jedes Mal eine leere Liste, kein Teilpaket.
+        /// </summary>
+        [Fact]
+        public void Der_Groessenschutz_lehnt_ein_zu_grosses_Paket_und_einen_Pfad_nach_oben_ab()
+        {
+            string zip = Path.Combine(Path.GetTempPath(), "epos-twwpaket-schutz-" + Guid.NewGuid().ToString("N") + ".zip");
+
+            // (1) Zu viele Eintraege — der Inhalt spielt keine Rolle, gelesen wird nichts.
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                    for (int i = 0; i <= TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE; i++)
+                    {
+                        ZipArchiveEntry e = a.CreateEntry("datei" + i.ToString(CultureInfo.InvariantCulture) + ".csv");
+                        using var w = new StreamWriter(e.Open(), new UTF8Encoding(false));
+                        w.Write("ID\n");
+                    }
+                IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Empty(d);
+                Assert.Equal("KATALOGIMPORT_ZU_GROSS", fehler.Kennung);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE + 1, fehler.Werte[0]);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE, fehler.Werte[1]);
+                // Der Satz nennt auch die gemessene und die erlaubte Gesamtgroesse: 201 Eintraege
+                // mit je drei Byte bleiben weit unter der Grenze — abgelehnt ist die Eintragszahl.
+                Assert.Equal(3L * (TwwNutzungsartCtrl.HOECHSTENS_EINTRAEGE + 1), fehler.Werte[2]);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_BYTE_ENTPACKT, fehler.Werte[3]);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+
+            // (2) Ein Eintragsname, der aus dem Archiv herauszeigt.
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                {
+                    ZipArchiveEntry e = a.CreateEntry("../" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
+                    using var w = new StreamWriter(e.Open(), new UTF8Encoding(false));
+                    w.Write("ID\n");
+                }
+                IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Empty(d);
+                Assert.Equal("KATALOGIMPORT_PFAD_UNZULAESSIG", fehler.Kennung);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+
+            // (3) Eine zu grosse Einzeldatei: 16 MiB + 1 Byte, die Gesamtgrenze ist nicht erreicht.
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                {
+                    ZipArchiveEntry e = a.CreateEntry(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
+                    using var s = e.Open();
+                    var block = new byte[1024 * 1024];
+                    for (int i = 0; i < block.Length; i++) block[i] = (byte)'x';
+                    for (int i = 0; i < 16; i++) s.Write(block, 0, block.Length);
+                    s.WriteByte((byte)'x');
+                }
+                IReadOnlyList<TwwPaketdatei> d = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Empty(d);
+                Assert.Equal("KATALOGIMPORT_DATEI_ZU_GROSS", fehler.Kennung);
+                Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv", fehler.Werte[0]);
+                Assert.Equal(TwwNutzungsartCtrl.HOECHSTENS_BYTE_JE_DATEI + 1, fehler.Werte[1]);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+        }
+
+        /// <summary>
+        /// <b>Ein lügendes Zentralverzeichnis bläht das Paket nicht auf</b> (N18, Gegenprüfung): Die
+        /// entpackte Größe eines Eintrags ist eine Behauptung der Datei (<see cref="Archivluege"/>).
+        /// Gemessen wird, wer sie durchsetzt — <see cref="ZipArchiveEntry.Open"/> begrenzt den
+        /// Entpackstrom selbst auf die ausgewiesene Größe, ein zu klein ausgewiesener Eintrag kommt
+        /// also <b>gekürzt</b> herein und nicht zu groß. Der Größenschutz des Lesers ist damit die
+        /// zweite Wand und feuert hier nicht; das Paket bleibt trotzdem draußen, denn die Formprüfung
+        /// des Einspielens nimmt keine gekürzte Datei. Genau das hält dieser Fall fest: keine
+        /// unbegrenzte Leselast — und kein stiller Import halber Dateien.
+        ///
+        /// <para>Die beiden Grenzen sind Parameter mit den Konstanten als Vorgabe, damit der Ordnerweg
+        /// und die Summe an Kilobyte messbar sind statt an 64 MB (Nachbarfälle).</para>
+        /// </summary>
+        [Fact]
+        public void Ein_luegendes_Zentralverzeichnis_blaeht_das_Paket_nicht_auf()
+        {
+            using var db = new TwwTestdatenbank();
+            const int NUTZLAST = 4000;
+            string zip = Path.Combine(Path.GetTempPath(), "epos-twwpaket-luege-" + Guid.NewGuid().ToString("N") + ".zip");
+            try
+            {
+                using (ZipArchive a = ZipFile.Open(zip, ZipArchiveMode.Create))
+                    foreach (TwwPaketdatei p in Paket())
+                    {
+                        using var w = new StreamWriter(a.CreateEntry(p.Name).Open(), new UTF8Encoding(false));
+                        w.Write(p.Inhalt + new string('x', NUTZLAST));
+                    }
+
+                // Ohne Luege: dasselbe Paket, vollstaendig gelesen und eingespielt.
+                IReadOnlyList<TwwPaketdatei> ganz = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz ohne);
+                Assert.Null(ohne);
+                Assert.All(ganz, p => Assert.EndsWith(new string('x', NUTZLAST), p.Inhalt, StringComparison.Ordinal));
+
+                // Mit Luege: Das Verzeichnis weist ein Byte aus — so viel kommt herein, nicht mehr.
+                Archivluege.EntpackteGroesseFaelschen(zip, 1);
+                IReadOnlyList<TwwPaketdatei> gekuerzt = TwwNutzungsartCtrl.PaketLesen(zip, out ZapfSatz fehler);
+                Assert.Null(fehler);
+                Assert.Equal(4, gekuerzt.Count);
+                Assert.All(gekuerzt, p => Assert.Equal(1, p.Inhalt.Length));
+
+                // Und die halbe Datei kommt nicht in den Katalog: Die Formpruefung lehnt sie ab.
+                TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(gekuerzt);
+                Assert.NotNull(b.Abbruch);
+                Assert.Equal(0, b.Angelegt);
+            }
+            finally { try { File.Delete(zip); } catch { } }
+        }
+
+        /// <summary>
+        /// <b>Eintragszahl und Gesamtgröße gelten auch für Ordner und Einzeldatei</b> (N18,
+        /// Gegenprüfung): Der Ordnerweg und der Weg über EINE Datei des Ordners lesen dieselben
+        /// Dateien wie das Archiv, also gilt dieselbe Grenze — aus dem Dateisystem statt aus dem
+        /// Zentralverzeichnis. Gemessen mit einer kleinen Grenze am erfundenen Probepaket.
+        /// </summary>
+        [Fact]
+        public void Der_Groessenschutz_gilt_auch_fuer_Ordner_und_Einzeldatei()
+        {
+            IReadOnlyList<TwwPaketdatei> ausOrdner = TwwNutzungsartCtrl.PaketLesen(
+                Paketordner(), out ZapfSatz fo, grenzeGesamt: 100);
+            Assert.Empty(ausOrdner);
+            Assert.Equal("KATALOGIMPORT_ZU_GROSS", fo.Kennung);
+            Assert.Equal(100L, fo.Werte[3]);
+
+            IReadOnlyList<TwwPaketdatei> ausDatei = TwwNutzungsartCtrl.PaketLesen(
+                Path.Combine(Paketordner(), TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"), out ZapfSatz fd,
+                grenzeGesamt: 100);
+            Assert.Empty(ausDatei);
+            Assert.Equal("KATALOGIMPORT_ZU_GROSS", fd.Kennung);
+            Assert.Equal(100L, fd.Werte[3]);
+
+            // Mit den Vorgaben liest derselbe Weg das ganze Paket.
+            Assert.Equal(4, TwwNutzungsartCtrl.PaketLesen(Paketordner(), out ZapfSatz ohne).Count);
+            Assert.Null(ohne);
+        }
+
+        /// <summary>
         /// Komma als Trenner, Felder in Anführungszeichen mit Trenner, Anführungszeichen und
         /// Zeilenumbruch — mit jedem Zeilenende. Der Umbruch im Feld kommt als LF an, gleich woher das
         /// Paket stammt; bei CR allein stünde sonst das ganze Paket in der Kopfzeile, und das „;" im

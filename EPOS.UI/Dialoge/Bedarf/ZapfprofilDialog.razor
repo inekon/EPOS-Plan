@@ -3720,7 +3720,8 @@
              Bandtext(v), v.Dauerlinienwerte > 0 ? Format(Texte.VermerkDauerlinie, Zahl(v.Dauerlinienwerte, "N0")) : ""),
             (Texte.KzSpitzenstreuung, Streuungstext(v),
              v.Streubreite is double sb ? Format(Texte.VermerkStreubreite, Zahl(v.Realisierungen, "N0"), Zahl(sb, "N3"))
-                                        : Texte.VermerkOhneEnsemble),
+             : v.EnsembleZonen > 1 ? Texte.VermerkEnsembleZonen
+             : Texte.VermerkOhneEnsemble),
             (Texte.KzWurzelN, VglZahl(v.Skalierungsmass, "N3"),
              v.Einheiten is int n && v.WurzelNVerhaeltnis is double wn
                 ? Format(Texte.VermerkEinheiten, Zahl(n, "N0"), Zahl(wn, "N3")) : Texte.VermerkOhneWert),

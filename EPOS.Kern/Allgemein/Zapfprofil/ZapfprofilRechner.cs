@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -57,6 +56,7 @@ namespace WindowsFormsApplication1
             internal Mengenergebnis TagesbedarfVorschlag;
             internal Typtagjahr Typtagjahr;
             internal double[] Tagesmengen;
+            internal IReadOnlyList<double> StundenspitzenKw;
         }
 
         /// <summary>
@@ -177,15 +177,15 @@ namespace WindowsFormsApplication1
                         // Die Schätzhilfe nach der Kalibrierung: angesetzt ist der Tagesbedarf des Messwerts.
                         a.Tagesbedarf = Schaetzhilfe.Tagesbedarf(a.Stand.TagesbedarfAuto, a.Stand.TagesbedarfManuellKwh,
                             a.TagesbedarfVorschlag, a.Art.Bezug, a.ZapfungKwh / Zapfkalender.TAGE, k.Faktor);
-                        string herkunft = "Messwert " + (a.Messwert.Quelle ?? "") + " " + (a.Messwert.Zeitraum ?? "")
-                                          + ", Grenze " + (int)a.Messwert.Grenze;
+                        ZapfSatz herkunft = ZapfSatz.Neu("HERKUNFT_MESSWERT_KALIBRIERUNG", a.Messwert.Quelle ?? "",
+                                                         a.Messwert.Zeitraum ?? "", (int)a.Messwert.Grenze);
                         prot.Vermerken(a.Name, ZapfFeld.KALIBRIERFAKTOR, k.Faktor, "-", Wertstatus.Kalibriert, null,
-                                       herkunft.Trim());
+                                       herkunft);
                         prot.Vermerken(a.Name, ZapfFeld.JAHRESENERGIE, a.ZapfungKwh, "kWh/a", Wertstatus.Kalibriert, null,
-                                       "Faktor " + k.Faktor.ToString("0.######", CultureInfo.InvariantCulture));
+                                       ZapfSatz.Neu("HERKUNFT_FAKTOR", k.Faktor));
                         if (a.Messwert.Grenze != ZapfBilanzgrenze.Zapfstelle)
                             prot.Vermerken(a.Name, ZapfFeld.ZIRKULATION_ZONENANTEIL, a.ZirkulationKwh, "kWh/a",
-                                           Wertstatus.Kalibriert, null, "Faktor der Zone");
+                                           Wertstatus.Kalibriert, null, ZapfSatz.Neu("HERKUNFT_FAKTOR_DER_ZONE"));
                         if (a.Messwert.Grenze == ZapfBilanzgrenze.MitSpeicher)
                             hinweise.Add(new ZapfHinweis(a.Name, "MESSWERT_SPEICHERVERLUST",
                                 ZapfSatz.Neu("HINWEIS_MESSWERT_SPEICHERVERLUST", a.Name,
@@ -291,7 +291,8 @@ namespace WindowsFormsApplication1
                     Konsistenz = a.Konsistenz,
                     SchaetzhilfeTagesbedarf = a.Tagesbedarf,
                     Auslastung = Zapfauswertung.Auslastung(a.Zapfreihe, e.WochentagJan1),
-                    Auslastungsgang = Formvektor.Auslastungsgang(a.Stand, a.Art)
+                    Auslastungsgang = Formvektor.Auslastungsgang(a.Stand, a.Art),
+                    StundenspitzenKw = a.StundenspitzenKw ?? (IReadOnlyList<double>)new double[0]
                 });
             }
             if (rest != null) zirkreihen.Add(rest);
@@ -503,6 +504,9 @@ namespace WindowsFormsApplication1
             a.Deterministisch = a.Zapfreihe;
             a.Konsistenz = k;
             a.Zapfreihe = bilanz;
+            // Die Stundenspitzen der Realisierungen reisen ins Ergebnis (N15 Gruppe 3): Der
+            // Vergleichsbericht bildet daraus die Spitzenstreuung. Ergebnisneutral.
+            a.StundenspitzenKw = ensemble.StundenspitzenKw;
         }
 
         // =================================================================================
