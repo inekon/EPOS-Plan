@@ -292,6 +292,14 @@ namespace WindowsFormsApplication1
 
                 if (z.Wert is double g && z.Zielfeld == GebaeudeZielfelder.G_WERT && !(g > 0.0 && g <= 1.0))
                     liste.Add(new PruefMeldung(PruefStufe.Warnung, MELDUNG + "G_AUSSERHALB", Zahl(g)));
+
+                // Das Baujahr ist eine ganze Jahreszahl im Bereich der Spalte (CHECK 1500 … 2100) - eine
+                // Handänderung mit Nachkommastellen oder außerhalb des Bereichs sperrt die Übernahme.
+                if (z.Wert is double jahr && z.Zielfeld == GebaeudeZielfelder.BAUJAHR
+                    && !(jahr == Math.Floor(jahr) && jahr >= GebaeudeSchema.BAUJAHR_MIN && jahr <= GebaeudeSchema.BAUJAHR_MAX))
+                    liste.Add(new PruefMeldung(PruefStufe.Fehler, MELDUNG + "BAUJAHR_UNGUELTIG", Zahl(jahr),
+                        GebaeudeSchema.BAUJAHR_MIN.ToString(CultureInfo.InvariantCulture),
+                        GebaeudeSchema.BAUJAHR_MAX.ToString(CultureInfo.InvariantCulture)));
             }
 
             // Prüfgröße: Volumen gegen Nutzfläche × Raumhöhe (Umsetzungskonzept 3.4, 20 %).

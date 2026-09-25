@@ -54,6 +54,9 @@ namespace WindowsFormsApplication1
         {
             if (zeile == null) return "";
             if (zeile.Textwert != null) return TextwertText(zeile.Zielfeld, zeile.Textwert);
+            // Eine Jahreszahl ohne Tausendertrennzeichen - aus 1965 wird nicht „1.965".
+            if (zeile.Zielfeld == GebaeudeZielfelder.BAUJAHR && zeile.Wert is double jahr)
+                return jahr.ToString("0.###", CultureInfo.CurrentCulture);
             return ZahlText(zeile.Wert);
         }
 

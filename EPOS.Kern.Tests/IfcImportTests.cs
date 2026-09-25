@@ -225,6 +225,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal('D', s.Baualtersklasse);
             Assert.Equal(1965, s.Baujahr);
 
+            // Das Baujahr als eigene Zeile (G4a Welle 3): die Jahreszahl aus
+            // Pset_BuildingCommon.YearOfConstruction, Herkunft IFC, der Beleg nennt den gelesenen Text.
+            GebaeudeFeldzeile jahr = s.Zeile(GebaeudeZielfelder.BAUJAHR);
+            Assert.Equal(1965.0, jahr.Wert);
+            Assert.Equal(Importherkunft.Ifc, jahr.Herkunft);
+            Assert.Equal("GIMP_BELEG_BAUJAHR", jahr.Beleg.Schluessel);
+            Assert.Equal(new[] { "ca. 1965" }, jahr.Beleg.Werte);
+            Assert.True(jahr.Uebernehmen);
+
             // Herkunft je Zeile (3.7): Nutzfläche, Raumhöhe, Außenwand und U-Werte aus IFC; Wärmebrücken
             // und Luftwechsel Vorgabe; Anschlusslängen leer.
             foreach (string f in new[] { GebaeudeZielfelder.NUTZFLAECHE, GebaeudeZielfelder.RAUMHOEHE,

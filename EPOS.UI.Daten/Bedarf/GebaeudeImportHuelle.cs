@@ -497,6 +497,7 @@ namespace WindowsFormsApplication1
                         if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) d.Baualtersklasse = k;
                         else if (!string.IsNullOrEmpty(z.Textwert)) d.Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
                         break;
+                    case GebaeudeZielfelder.BAUJAHR: d.Baujahr = Jahr(w); break;
                     case GebaeudeZielfelder.BAUART:
                         int bauart = GebaeudeZielfelder.BauartIndex(z.Textwert);
                         if (bauart >= 0) { d.Bauart = bauart; bauartGesetzt = true; }
@@ -551,6 +552,15 @@ namespace WindowsFormsApplication1
             else if (bauartGesetzt) d.Bauweise = Gebaeudebauweise.BauweiseAusBauart(d.Bauart, d.WohnflaecheGesamt ?? 0);
             return d;
         }
+
+        /// <summary>
+        /// Die Jahreszahl einer Baujahr-Zeile als Ganzzahl; <c>null</c> bleibt <c>null</c>. Die Prüfung am
+        /// OK des Zuordnungsdialogs lässt nur ganze Jahre im Bereich der Spalte durch
+        /// (<c>IMP_GEB_PROT_BAUJAHR_UNGUELTIG</c>); was ohne sie hierher kommt, wird gerundet, und der
+        /// Editor hält einen Wert außerhalb des Bereichs mit seiner eigenen Regel an.
+        /// </summary>
+        private static int? Jahr(double? wert)
+            => wert is double j && j >= int.MinValue && j <= int.MaxValue ? (int)Math.Round(j) : (int?)null;
     }
 
     /// <summary>
