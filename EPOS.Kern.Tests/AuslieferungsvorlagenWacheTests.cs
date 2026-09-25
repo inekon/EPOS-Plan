@@ -21,8 +21,8 @@ namespace EPOS.Kern.Tests
     /// — Rückfall des Codes und Quelle der Bereinigung; sie bleibt ohne Übernahmeschritt und ohne
     /// <c>[InstallDelete]</c> (Entscheid BV-E1-1) — und die Standardvorlage
     /// <c>Berichtsvorlage_Standard.docx</c>: Kapitel für Kapitel mit Kapitelkopf und
-    /// <c>{{kapitel.&lt;name&gt;}}</c>, erzeugt wie die Beispielvorlage (Werkzeug, Modus <c>beispiel</c>
-    /// ohne <c>--sammelanker</c>; BV-E2). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
+    /// <c>{{kapitel.&lt;name&gt;}}</c>, erzeugt wie die Beispielvorlage, aber ohne Kommentare (Werkzeug,
+    /// <c>beispiel --standard</c>; BV-E2). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
     /// Anschauung und steht in keinem Lieferweg. Jede Vorlage im Vorlagenordner steht in einer der beiden
     /// Listen: Eine neue Vorlage wird bewusst ausgeliefert oder bewusst nicht.</para>
     ///

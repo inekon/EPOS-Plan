@@ -51,8 +51,9 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3) ist in beiden Stufen ohne Fehler und ohne
-        /// Warnung — Hinweise allenfalls zu ihren Kommentaren. Sie führt jedes Kapitel einzeln, das Deckblatt
+        /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3; Werkzeug <c>beispiel --standard</c>) ist in
+        /// beiden Stufen ohne Befund: keine Kommentare, Katalogfassung 2 in <c>custom.xml</c>, das Logo der
+        /// Kopfzeile als Bildplatzhalter. Sie führt jedes Kapitel einzeln, das Deckblatt
         /// trägt sie selbst aus Platzhaltern (sein Häkchen gehört nicht zu ihren Bausteinen), die
         /// Wirtschaftlichkeit darin; die Stellen der Kapitel sind ihre Kapitelköpfe.
         /// </summary>
@@ -66,8 +67,9 @@ namespace EPOS.Kern.Tests
             foreach (Pruefstufe stufe in new[] { Pruefstufe.Schnell, Pruefstufe.Voll })
             {
                 Pruefbefund befund = Vorlagenpruefer.Pruefe(vorlage, stufe, Deutsch);
-                Assert.True(befund.Fehleranzahl == 0 && befund.Warnungen == 0, stufe + ":\n" + Probevorlagen.Liste(befund));
-                Assert.All(befund.Meldungen, m => Assert.Equal("VF_PRUEF_KOMMENTARE", m.Kennung));
+                Assert.True(befund.OhneBefund, stufe + ":\n" + Probevorlagen.Liste(befund));
+                Assert.Equal(0, befund.Kommentare);
+                Assert.Contains(Vorlagenfeldkatalog.LOGO, befund.Schluessel);
                 Assert.True(befund.IstLesbar);
                 Assert.Empty(befund.UnbekannteSchluessel);
                 Assert.DoesNotContain("bericht.inhalt", befund.Schluessel);
@@ -83,7 +85,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Berechnungsergebnisse je Variante", befund.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
                 Assert.Equal("Wirtschaftlichkeit", befund.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_AE_TITEL, befund.Kapitelstellen[Berichtskapitel.ANHANG_E]);
-                Assert.Contains(befund.Katalogfassung, new int?[] { null, Vorlagenfeldkatalog.KATALOGFASSUNG });
+                Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, befund.Katalogfassung);
                 Assert.Null(befund.Sprache);
                 Assert.Equal(Vorlagenpruefer.Pruefsumme(vorlage), befund.Pruefsumme);
             }

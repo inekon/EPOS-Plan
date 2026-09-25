@@ -362,7 +362,7 @@ namespace EPOS.Kern.Tests
             Assert.False(ohne.BrauchtRueckfrage);
             Assert.Equal("", ohne.Rueckfrage);
             Assert.Empty(ohne.Befunde);
-            Assert.All(ohne.Pruefbefund.Meldungen, m => Assert.Equal("VF_PRUEF_KOMMENTARE", m.Kennung));
+            Assert.Empty(ohne.Pruefbefund.Meldungen);
         }
 
         /// <summary>
