@@ -653,8 +653,6 @@ namespace WindowsFormsApplication1
                                                : ZapfSatz.Neu("EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE", was, zone));
         }
 
-        private static string Z(double x) => x.ToString("0.###", CultureInfo.InvariantCulture);
-
         /// <summary>Der Vermerk zum gewählten Bedarfsniveau der Zone — je Niveau eine eigene Kennung.</summary>
         private static ZapfSatz Niveaubegriff(ZapfNiveau niveau) => niveau switch
         {
