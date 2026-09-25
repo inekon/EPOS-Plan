@@ -143,8 +143,10 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_UEBERGABE, StringComparison.Ordinal);
                 Assert.DoesNotContain("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_KUEHLUNG, StringComparison.Ordinal);
             }
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_UEBERGABE, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SICHT_AKTUELL);
+            // Die GELTENDE Sicht ist seit KAK-S1 (E37) die des vierten Durchgangs; sie beginnt
+            // mit der Sicht von AK-S1 an denselben Stellen.
+            Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SICHT_AKTUELL.Take(90));
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         /// <summary>
@@ -321,8 +323,10 @@ namespace EPOS.Kern.Tests
             string sicht = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_UEBERGABE, sicht);
-            Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SichtSpalten());
+            // Die geltende Sicht (seit KAK-S1 die vierte) - sie fuehrt die Uebergabespalten an ihren Stellen.
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
+            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SichtSpalten().Take(90));
 
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {

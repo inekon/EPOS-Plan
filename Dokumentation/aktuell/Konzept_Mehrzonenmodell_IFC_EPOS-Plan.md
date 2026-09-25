@@ -738,13 +738,15 @@ Projektware; wiederverwendbar ist der Bauteilaufbau, nicht die Zone).
 | `Interne_Waermegewinne`, `Bewohner` | REAL | ja | NULL = anteilig aus dem Gebäude (Flächenschlüssel) |
 | `Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehl_Sollwert_Nacht` (REAL), `Kuehlung_Aktiv` (INTEGER, `CHECK (IN (0,1))`) | REAL / INTEGER | ja | **Block aus KU-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1) |
 | `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn` | TEXT / REAL / REAL | ja | **Block aus AK-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 8.1); mehr trägt die Zone nicht |
+| `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn` | TEXT (`CHECK IN` der drei Kühlübergabearten) / REAL / REAL | ja | **Block aus KAK-S1** (E37, Konzept N1.42): NULL = Wert des Gebäudes bzw. Anteil der Zonenfläche; ohne Schalter wie die Heizseite. Anders als die übrigen Blöcke kommt er in einem **eigenen Schritt nach S-C**, weil `KAK-S1` nach S-C entsteht; steht S-C beim Schemaschritt der vierten Welle von AK1 noch nicht, ist er benannt auf G6 vertagt. Gelesen wird er erst ab G6 |
 | `Herkunft`, `Quellkennung` | TEXT | ja | `GBXML`/`IFC`/`KATALOG`/`MANUELL`/`VORGABE` — Großbuchstaben, ASCII, Persistenzwerte in `DbWerte` (Muster `DbWerte.cs:2165-2214`), mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` (Muster `Tab_Wechselrichter.Herkunft`); `Quellkennung` trägt die `IfcGloballyUniqueId` (Base64-22) oder die gbXML-`id`, `CHECK (length ≤ 64)` — Spaltenname, Wertebereich und Länge nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4 (Zeile 2) und 7.3, Frage D9 |
 
 **Die beiden Blöcke aus KU-S1 und AK-S1** stehen hier, weil Kühlkonzept und Anlagenkopplung
 dieselben Spalten in der Zone verlangen. Sie werden nicht nachträglich angehängt: Steht die
 jeweilige Stufe schon, legt der Schritt, der `Tab_Zone` anlegt (S-C, 4.4), sie gleich mit an;
 steht sie noch nicht, bringt sie ihr eigener Schritt (KU-S1 bzw. AK-S1) an beide Tabellen. Mehr
-als die hier genannten Spalten trägt die Zone von beiden Stufen nicht.
+als die hier genannten Spalten trägt die Zone von beiden Stufen nicht. Der dritte Block (KAK-S1, E37)
+ist die benannte Ausnahme: ein eigener Schritt nach S-C.
 
 **`Tab_Bauteil`** — Bauform B an `Tab_Zone` (nicht am Gebäude: im Einzonenfall hängt es an der
 einen Zone, und die Abfragen bleiben gleich).

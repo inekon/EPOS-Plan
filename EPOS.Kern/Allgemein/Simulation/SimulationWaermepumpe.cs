@@ -831,7 +831,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Stützstelle zum gerechneten Vorlauf (3.4, H-F4): die nächstgelegene, bei
         /// Gleichstand die höhere, weil sie den ungünstigeren COP liefert. Eine Interpolation
-        /// über den Vorlauf gibt es nicht — eine Regel für Heiz- und Kälteseite.
+        /// über den Vorlauf gibt es nicht. Das gilt für die Heizseite; die Kälteseite wählt bei
+        /// Gleichstand die KÄLTERE Stützstelle (<c>Kuehlkennlinie</c>, K21) — beide Seiten nehmen
+        /// so die ungünstigere Zahl, aber mit eigener Regel.
         /// </summary>
         /// <param name="vorlaeufe">Die Vorläufe der Kennlinien, aufsteigend.</param>
         internal static int StuetzstelleWaehlen(IReadOnlyList<int> vorlaeufe, double vorlauf)
