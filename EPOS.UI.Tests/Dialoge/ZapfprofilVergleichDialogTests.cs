@@ -147,6 +147,12 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         return v;
     }
 
+    /// <summary>Ein benannter Hinweis des Kalibriervorschlags — ein Tagtyp ohne Messtag.</summary>
+    private static ZapfprofilWarnDaten Vorschlagshinweis()
+        => new("ZPG_WARN_MESSKALIBRIERUNG_TAGTYP_FEHLT", "Tagtyp ohne Messtag",
+               "Für den Tagtyp Ruhetag trägt die Messung keinen vollständigen Tag; der Tagesgang der Vorlage bleibt.",
+               ZapfprofilWarnstufe.Hinweis);
+
     /// <summary>Der Prüfstand der fünf Delegaten der Stufe Z5.</summary>
     private sealed class Pruefstand
     {
@@ -220,19 +226,23 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
             v.Wochenfaktoren.AddRange(Enumerable.Repeat(1.0 / 7.0, 7));
             v.Tagesgaenge.Add(new ZapfprofilVorschlagsgangDaten("Werktag", 250,
                 Enumerable.Repeat(1.0 / 24.0, 24).ToList()));
+            v.Hinweise.Add(Vorschlagshinweis());
             return v;
         }
 
         internal ZapfprofilVorschlagErgebnisDaten Uebernehmen(ZapfprofilEingabeDaten e, string reihe, int zone)
         {
             Uebernommen.Add((reihe, zone));
-            return Uebernahme ?? new ZapfprofilVorschlagErgebnisDaten
+            if (Uebernahme is not null) return Uebernahme;
+            var e2 = new ZapfprofilVorschlagErgebnisDaten
             {
                 Ok = true,
                 IdNutzungsart = 2,
                 Kopie = "Wohnen A · TEST-1-E1",
                 Meldung = "Kalibrierte Kopie angelegt: Wohnen A · TEST-1-E1"
             };
+            e2.Hinweise.Add(Vorschlagshinweis());
+            return e2;
         }
     }
 
@@ -672,6 +682,34 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         cut.Find("button.epos-zapfprofil-vorschlag-abbrechen").Click();
         Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschlagvorschau"));
         Assert.Empty(p.Uebernommen);
+    }
+
+    /// <summary>
+    /// Die Hinweise des Kalibriervorschlags stehen in DERSELBEN Warnliste wie die der Bilanz und des
+    /// Vergleichs — und sie bleiben dort, wenn die Vorschau mit der Übernahme zugeht: Sie gehören
+    /// den Werten der Kopie, nicht der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void Die_Hinweise_des_Vorschlags_stehen_in_der_Warnliste_und_bleiben_nach_der_Uebernahme()
+    {
+        var p = new Pruefstand();
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+        Option(cut, "Erweitert").Change("1");
+
+        cut.Find("button.epos-zapfprofil-vorschlag").Click();
+        IElement zeile = Assert.Single(cut.FindAll(".epos-zapfausl-warnliste li"),
+                                      l => l.GetAttribute("data-kennung") == "ZPG_WARN_MESSKALIBRIERUNG_TAGTYP_FEHLT");
+        Assert.Contains("Tagtyp ohne Messtag", zeile.TextContent);
+        Assert.Equal("hinweis", zeile.GetAttribute("data-stufe"));
+
+        // Nach der Uebernahme ist die Vorschau zu - die Hinweise des Ergebnisses bleiben.
+        Knopf(cut, "Übernehmen").Click();
+        Knopf(cut, "Ja").Click();
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschlagvorschau"));
+        Assert.Single(cut.FindAll(".epos-zapfausl-warnliste li"),
+                      l => l.GetAttribute("data-kennung") == "ZPG_WARN_MESSKALIBRIERUNG_TAGTYP_FEHLT");
     }
 
     // =================================================================================

@@ -364,6 +364,9 @@ namespace WindowsFormsApplication1
             Nutzungsart neu = ZapfprofilCtrl.LiesNutzungsart(erg.Id);
             e.Ok = true;
             e.IdNutzungsart = erg.Id;
+            // Die Hinweise gehoeren zu den Werten der Kopie: Der Dialog haelt sie in der Warnliste,
+            // auch wenn die Vorschau mit der Uebernahme zugeht.
+            foreach (ZapfSatz h in hinweise) e.Hinweise.Add(Validierungswarnung(h));
             e.Kopie = neu == null ? vorschau.Kopie : Kopiename(neu.Name, neu.Katalogversion);
             e.Meldung = Format(Text_("ZPG_STATUS_VORSCHLAG", "Kalibrierte Kopie angelegt: {0}"), e.Kopie);
             return e;

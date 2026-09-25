@@ -2082,4 +2082,11 @@ public sealed class ZapfprofilVorschlagErgebnisDaten
 
     /// <summary>Die Meldung für die Statuszeile.</summary>
     public string Meldung { get; set; } = "";
+
+    /// <summary>
+    /// Die benannten Hinweise des Vorschlags, den die Kopie trägt (fehlender Tagtyp, fehlender
+    /// Wochentag, kurze Reihe) — sie gehören zu den Werten der Kopie und stehen deshalb NACH der
+    /// Übernahme weiter in der Warnliste; die Vorschau ist dann längst zu.
+    /// </summary>
+    public List<ZapfprofilWarnDaten> Hinweise { get; set; } = new();
 }

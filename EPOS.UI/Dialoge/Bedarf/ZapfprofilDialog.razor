@@ -1463,6 +1463,13 @@
     private ZapfprofilZoneDaten? _vorschlagZone;
 
     /// <summary>
+    /// Die Hinweise des letzten Kalibriervorschlags (fehlender Tagtyp, fehlender Wochentag, kurze
+    /// Reihe). Sie stehen in der Warnliste und bleiben dort, wenn die Vorschau zugeht — sie gehören
+    /// den Werten, nicht der Überlagerung.
+    /// </summary>
+    private readonly List<ZapfprofilWarnDaten> _vorschlagHinweise = new();
+
+    /// <summary>
     /// Die leise Zeile der Kalibrierung — sie steht BEI ihren Knöpfen: Die Zeile der Editoren
     /// zeigt nur die Stufe Experte, die Kalibrierung gibt es ab Erweitert.
     /// </summary>
@@ -2040,7 +2047,7 @@
     /// <summary>
     /// Die Warnliste der Bilanz — dazu die Hinweise des Vergleichs und der Kalibrierung (Stufe Z5).
     /// Sie stehen in DERSELBEN Liste: Ein Anwender sucht seine Hinweise an einer Stelle, nicht an
-    /// drei. Die Reihenfolge ist stabil (Bilanz, Vergleich, Kalibrierung).
+    /// drei. Die Reihenfolge ist stabil (Bilanz, Vergleich, Kalibrierung, Kalibriervorschlag).
     /// </summary>
     private IReadOnlyList<ZapfprofilWarnDaten> Warnliste
     {
@@ -2050,6 +2057,7 @@
             if (_vorschau is { Zustand: ZapfprofilVorschauZustand.Gerechnet } v) liste.AddRange(v.Warnliste);
             if (_vergleich is not null) liste.AddRange(_vergleich.Hinweise);
             if (_kalibrierung is not null) liste.AddRange(_kalibrierung.Hinweise);
+            liste.AddRange(_vorschlagHinweise);
             return liste;
         }
     }
@@ -3885,6 +3893,8 @@
         if (index < 0) return;
         _vorschlagZone = z;
         _vorschlag = Kalibriervorschlag(_eingabe.Kopie(), _vergleichReihe, index);
+        _vorschlagHinweise.Clear();
+        _vorschlagHinweise.AddRange(_vorschlag.Hinweise);
     }
 
     private void VorschlagSchliessen()
@@ -3921,6 +3931,10 @@
         VorschlagSchliessen();
         KatalogNeuLesen();
         ZonenNutzungsartSetzen(z, e.IdNutzungsart);
+        // Die Hinweise des uebernommenen Vorschlags gehoeren den Werten der Kopie: Sie bleiben in
+        // der Warnliste, obwohl die Vorschau zugeht.
+        _vorschlagHinweise.Clear();
+        _vorschlagHinweise.AddRange(e.Hinweise);
         _kalibrierstatus = e.Meldung;
     }
 
