@@ -1244,6 +1244,12 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh elektrisch · je kW elektr. Leistung ·
         je kW Heizleistung · je kW elektrisch; die Altwerte „je kWh" und
         „je Stunde" stehen nur, wo eine Bestandszeile sie trägt.</li>
+        <li>Bemessungen der Klappliste an der Wärmepumpe: fester Jahresbetrag · % der Investition · % der
+        Endenergiekosten · % des Endenergiebedarfs · je kW Leistung · je kW Heizleistung — ohne „je kWh thermisch“ und
+        „je kWh elektrisch“: Die Betriebskosten der Wärmepumpe werden nicht je kWh bemessen. Trägt eine vorhandene
+        Position eine dieser Arten, bleibt sie in der Liste und rechnet aus dem Lauf weiter; ihre Herleitung endet auf
+        „· Altbestand — Betriebskosten der Wärmepumpe werden nicht je kWh bemessen“, ohne Bezugsgröße steht der Vermerk
+        allein <span class="zk umg">gebaut #510</span></li>
         <li><b>Ohne Simulationslauf</b> tragen die mengenbasierten
         Zeilen ein ⚠ im Betrag, und unter dem Raster steht „‚Wartung BHKW': kein Simulationslauf ·
         ‚Hilfsenergiekosten': kein Simulationslauf"; die investitionsbasierte Zeile rechnet sofort.</li>
@@ -1449,6 +1455,7 @@ Keine stillen Teilsummen
         <tr><td>Summenfuß „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Grund „kein Simulationslauf" unter dem Raster</td><td class="rs">KDLG_BASIS_GRUND_LAUF · KDLG_OHNE_BASIS_ZEILE</td><td>Hinweiszeile unter dem Raster</td></tr>
         <tr><td>Herleitungszeile „× {0} kWh · {1}" unter dem Betrag — ohne Runde</td><td class="rs">KDLG_HERL_BASIS_OHNE_RUNDE · KDLG_HERK_LAUF</td><td>Prozent- und Produktzeilen des Rasters (U28)</td></tr>
+        <tr><td>Vermerk an der Herleitung einer vorhandenen Position je kWh an der Wärmepumpe „Altbestand — Betriebskosten der Wärmepumpe werden nicht je kWh bemessen“, hinter „ · “ oder ohne Bezugsgröße allein <b>neu #510</b></td><td class="rs">KDLG_HERL_ALTBESTAND_WP_KWH</td><td>Zelle Betrag, Betriebskosten der Wärmepumpe</td></tr>
         <tr><td>Schloss an einer Pflichtzeile · Empfehlungsbereich als Zeile unter dem Satzfeld und als Werkzeugtipp</td><td class="rs">KDLG_TT_PFLICHT · KDLG_EMPF_ZEILE · KDLG_TT_EMPFEHLUNG</td><td>Aktions- und Satzspalte des Rasters (U31)</td></tr>
         <tr><td>Laufstand „Mengen stammen aus dem Simulationslauf vom {0}"</td><td class="rs">KDLG_LAUFSTAND · KDLG_LAUFSTAND_OHNE_DATUM</td><td>über dem Raster (U31)</td></tr>
         <tr><td>Gruppe „Endenergie je Komponente": Kopf, vier Spalten und der Hinweis auf die Bemessungen</td><td class="rs">KDLG_G_ENDENERGIE · KDLG_SP_ENDENERGIE_KOMP · KDLG_SP_ENDENERGIE_KWH · KDLG_SP_ENDENERGIE_EUR · KDLG_SP_ENDENERGIE_BASIS · KDLG_HINWEIS_ENDENERGIE</td><td>Gruppe unter dem Raster (U31)</td></tr>
@@ -4974,7 +4981,15 @@ Einstufung
   Raster bleibt; die Zahlen der Zeichnung bleiben — im Bestand keine Rechenwirkung. Fragen E20‑Q1 bis E20‑Q5,
   Q7 und Q8 entschieden nach Empfehlung a, E20‑Q6 offen beim Anwender. Die Ressourcentafel der Kategorie 1 nennt die zwei neuen
   Schlüssel — je Sprache 11.013 Einträge auf dem Merge, der Designer führt 11.010 Eigenschaften. Das Schema steht bei
-  142 (#505); E20 hat keinen Schritt.</p>
+  142 (#505); E20 hat keinen Schritt. <b>E23 (#510) schließt Nr. 10</b> — ohne eigene Zeile dieser Tafel: Im Dialog
+  „Betriebskosten“ (Kategorie 2, Erklärliste unter dem Raster) führt die Klappliste der Wärmepumpe „je kWh thermisch“
+  und „je kWh elektrisch“ nicht mehr — die Betriebskosten der Wärmepumpe werden nicht je kWh bemessen (E20‑Q6 b,
+  erweitert auf Strom und Wärme); eine vorhandene Position mit einer dieser Arten rechnet weiter, ihre Herleitung trägt
+  den Vermerk „Altbestand“. Das Musterprojekt der Kategorie 2 ist ein Blockheizkraftwerk, das Raster bleibt; die Zahlen
+  der Zeichnung bleiben — im Bestand keine Rechenwirkung. Fragen E23‑Q1 bis E23‑Q5 entschieden nach Empfehlung a,
+  E23‑Q6 und E23‑Q7 offen beim Anwender (gebaut a). Die Ressourcentafel der Kategorie 2 nennt den neuen Schlüssel — je
+  Sprache 11.185 Einträge auf dem Merge, der Designer führt 11.182 Eigenschaften. Das Schema steht bei 142; E23 hat
+  keinen Schritt.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
