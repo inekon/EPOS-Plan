@@ -454,14 +454,17 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<Importmessfall> SynthetischeFaelle()
         {
             long gbxmlGrenze = (long)(GbxmlImportProfil.MAX_BYTES_IOS * 0.98);
+            // Seit der IFC-Leser linear wächst (Rückbezüge als Index), passt auch der Fall knapp unter
+            // der iOS-Grenze in den Zeitrahmen - gemessen statt geschätzt (U11).
+            long ifcGrenze = (long)(IfcImportProfil.MAX_BYTES_IOS * 0.98);
             return new[]
             {
                 Fall("synth_gbxml_2mb.xml", 2 * MB, ImportmessungProben.Gbxml),
                 Fall("synth_gbxml_8mb.xml", 8 * MB, ImportmessungProben.Gbxml),
                 Fall("synth_gbxml_grenze_ios.xml", gbxmlGrenze, ImportmessungProben.Gbxml),
                 Fall("synth_ifc_2mb.ifc", 2 * MB, ImportmessungProben.Ifc),
-                Fall("synth_ifc_4mb.ifc", 4 * MB, ImportmessungProben.Ifc),
                 Fall("synth_ifc_8mb.ifc", 8 * MB, ImportmessungProben.Ifc),
+                Fall("synth_ifc_grenze_ios.ifc", ifcGrenze, ImportmessungProben.Ifc),
             };
         }
 
