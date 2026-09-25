@@ -508,9 +508,8 @@ public class GebaeudeZonenTests : EposBunitContext
                     Wohnflaeche = 150, Einheit = "Wohnfläche [m²]", Jahresnutzungsgrad = 1, HatProjektkopie = hatKopie
                 }
             })
-            .Add(x => x.Katalog, (_, _, _, _) => Array.Empty<GebaeudeKatalogZeile>())
-            .Add(x => x.Gebaeudearten, _ => Array.Empty<string>())
-            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Katalogzeilen, () => Array.Empty<Katalogfilterzeile>())
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.ProjektGaben, gaben));
 
     [Fact]

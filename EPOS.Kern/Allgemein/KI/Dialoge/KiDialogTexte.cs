@@ -966,13 +966,15 @@
         /// <summary>Der Name in der Gebaeudeverwaltung — nur lesbar (Welle #465).</summary>
         internal static string GebaNameErl => MyResource.Resource.KI_DLG_GEBA_NAME_ERL;
 
-        internal static string GebVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
+        // Stufe G3, Welle K: Die vier Filterfelder sind Trichter und Suche der Katalogliste -
+        // ihre Namen sind die Spaltenkoepfe und die Beschriftung des Suchfeldes.
+        internal static string GebVerwendungName => MyResource.Resource.KFLT_SP_VERWENDUNG;
         internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
-        internal static string GebFilterArtName => MyResource.Resource.GEB_LBL_GEBAEUDEART;
+        internal static string GebFilterArtName => MyResource.Resource.KFLT_SP_GEBAEUDEART;
         internal static string GebFilterArtErl => MyResource.Resource.KI_DLG_GEB_FILTER_ART_ERL;
-        internal static string GebFilterBaujahrName => MyResource.Resource.GEB_LBL_BAUJAHR;
+        internal static string GebFilterBaujahrName => MyResource.Resource.KFLT_SP_BAUJAHR;
         internal static string GebFilterBaujahrErl => MyResource.Resource.KI_DLG_GEB_FILTER_BAUJAHR_ERL;
-        internal static string GebSucheName => MyResource.Resource.GEB_LBL_SUCHE;
+        internal static string GebSucheName => MyResource.Resource.KFLT_SUCHE;
         internal static string GebSucheErl => MyResource.Resource.KI_DLG_GEB_SUCHE_ERL;
         internal static string GebNameName => MyResource.Resource.GEB_LBL_GEBAEUDENAME;
         internal static string GebNameErl => MyResource.Resource.KI_DLG_GEB_NAME_ERL;

@@ -89,6 +89,8 @@ melden sie im Takt des Bildaufbaus.
 | L / M | wie A (freie Liste der Importmaske), 1 088 × 624 und 400 × 624 |
 | T1 / T2 | 6 654 Nutzungsarten im **Katalog der Brauchwasser-Nutzungsarten** (Seite `/katalogprobe?maske=tww`), 1 088 × 624 und 400 × 624 — dieselben Sollwerte wie J / K (Rollbehälter = Hülle, Zeile 46 px, Tastatur) |
 | T3 | derselbe Katalog mit 40 Sätzen (unter der Schwelle, das Maß eines ausgelieferten Katalogs), 1 088 × 624 |
+| GD1 / GD2 | 6 654 Gebäude in der Katalogliste des **Gebäude-Projektdialogs** „Eingabe der Gebäudedaten" (Seite `/katalogprobe?maske=projekt-gebaeude`; Projektliste oben, Übernahmeleiste, Katalog darunter), 1 088 × 624 und 400 × 624 — gemessen nur in der Katalogliste (`bereich: '.epos-katalogliste'`, die Projektliste darüber trägt ebenfalls eine Hülle); Sollwerte: Rollbehälter = Hülle, Zeile **53 px** (Projektdialog: die Wahlspalte bleibt), keine Tastaturprobe |
+| GD3 | derselbe Dialog mit 269 Gebäuden (das Maß der Testdatenbank, weiter virtualisiert), 1 088 × 624 |
 | Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert"), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
 | Z3 / Z4 / Z5 | das **Raster der Zapfkategorien** für sich (Seite `maske=kategorien`), 10 Kategorien, bearbeitbar 1 088 × 624 und 400 × 624, lesend (`art=lesen`) 1 088 × 624 — Sollwerte (l) |
 | Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px) und 400 × 624 — Sollwerte (l) |
@@ -230,7 +232,8 @@ schrumpfen und rollt nicht in sich) — der Lauf muss dann rot sein.
 
 Die Seite des Wirtes nimmt ihre Gaben aus der Adresse:
 `/katalogprobe?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe&zeilen=<n>&bilder=1|0`.
-Seit Stufe 1 der Neuordnung dazu `maske=stromganglinie|projekt-heizkessel`, `art=` (Ausprägung
+Seit Stufe 1 der Neuordnung dazu `maske=stromganglinie|projekt-heizkessel` (seit Stufe G3,
+Welle K auch `projekt-gebaeude`, der Gebäudedialog des Projekts — `gebaeude` ist die Verwaltung), `art=` (Ausprägung
 von `browser`, `modul`, `bedarf`) und `voll=1` (jede Spalte belegt, in den Textlängen der
 Testdatenbank — `Zeilenbau.Voll`).
 Die Zeilen sind synthetisch, die **Maße** nicht: Das Diagramm kommt aus demselben
@@ -632,3 +635,29 @@ Port 5361):
 
 Offen: Die Wohnungstabelle rollt im Eingabeblock des Zapfprofil-Dialogs bei 1 088 px noch 102 px quer
 („Entfernen" teils hinter dem Rand) — fünf Spalten mit Auswahlfeld und Knopf passen nicht in 498 px.
+
+## Gebäudesimulation G3, Welle K — die Katalogseite des Gebäudedialogs (GD1–GD3)
+
+Die Katalogseite des Gebäudedialogs ist die virtualisierte `Katalogliste` (Wahlspalte, 53 px,
+Filterstand aus dem Kern); Maske `projekt-gebaeude` des Wirts (`maske=gebaeude` bleibt die
+Gebäudeverwaltung, Fall N16 der Katalogprobe). Die Fälle messen unter `.epos-katalogliste`, weil die
+Projektliste darüber ebenfalls eine `.epos-raster-huelle` trägt.
+
+**Gemessen am 25.09.2026 im integrierten Browser der App** (Playwright fehlt auf dem Arbeitsrechner;
+kein Download, Anwenderentscheid): dieselben Größen im Seitenkontext abgelesen, die Sichtbarkeitsmelder
+über die Änderungen der Abstandshalter gezählt. Ein ausgeblendetes Fenster zeichnet nicht — dann
+stehen keine Zeilen und die Messung ist wertlos (`document.visibilityState` prüfen).
+
+| Fall | Zeilenhöhe / Maß | Rollbehälter | neue Zeilen nach dem Rollen | Platzhalter | Abstandshalter-Änderungen in 3 s |
+|---|---|---|---|---|---|
+| GD1 (6 654, 1 088 × 624) | 53 / 53 | Hülle | 151 ms | 0 | 4 |
+| GD2 (6 654, 400 × 624) | 53 / 53 | Hülle (420 px, 9 Zeilen) | 183 ms | 0 | 4 |
+| GD3 (269, 1 088 × 624) | 53 / 53 | Hülle | im Rollen | 0 | 4 |
+| J (Vergleich, 46 px) | 46 / 46 | Hülle | 173 ms | 0 | 4 |
+| J, Gegenprobe (Zeilen 45,3/45,7 px) | — | — | — | 0 | **200** |
+
+An der Gebäudeliste schlug die Gegenprobe mit verkleinerten (52,5, 50, 30 px) oder wechselnden
+(50/56 px) Zeilen nur schwach aus (0 bis 12 Änderungen); die Zählung über die Abstandshalter ist dort
+also kein scharfer Nachweis. Maßgeblich ist das Kriterium (c) — gezeichnete Zeilenhöhe gleich dem
+gesetzten Maß —, an dem der Fehler #235 hing. Der Skriptlauf `node rasterprobe.mjs --nur GD` steht
+auf einem Rechner mit Playwright aus.

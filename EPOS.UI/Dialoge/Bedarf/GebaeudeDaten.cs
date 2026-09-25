@@ -121,16 +121,6 @@ public sealed class GebaeudeImportweg
 }
 
 /// <summary>
-/// EINE Zeile des Katalograsters (iU9-W9.2) — Name und, in einer zweiten Spalte, Art und
-/// Fläche. Der Vorläufer stellte beides in EINE Zelle („Art\nFläche [m²]"); getrennte
-/// Spalten sind lesbar und lassen sich sortieren.
-/// </summary>
-/// <param name="Name">Der Bezeichner des Katalogsatzes.</param>
-/// <param name="Art">Die Gebäudeart.</param>
-/// <param name="Wohnflaeche">Die Gesamtfläche, bereits als Text mit zwei Nachkommastellen.</param>
-public sealed record GebaeudeKatalogZeile(string Name, string Art, string Wohnflaeche);
-
-/// <summary>
 /// Der Detailblock zu einem KATALOGSATZ (iU9-W9.2) —
 /// <c>listBox_Gebaeude_DB_SelectedIndexChanged</c>:574-602.
 /// </summary>

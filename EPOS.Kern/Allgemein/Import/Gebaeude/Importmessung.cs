@@ -191,7 +191,7 @@ namespace WindowsFormsApplication1
     /// <see cref="Probelauf"/> mit den Proben aus dem App-Paket, die Tests unter Windows mit den Proben
     /// aus <c>Referenzlaeufe/Importproben/</c>.
     ///
-    /// <para><b>Wozu.</b> Die iOS-Größengrenzen (IFC 20 MB, gbXML 10 MB) sind geschätzt
+    /// <para><b>Wozu.</b> Die iOS-Größengrenzen (IFC 20 MB, gbXML 25 MB nach E42) sind hiermit gemessen
     /// (Softwarearchitektur 1.5, Regel 2). Aus <c>faktor</c> (Spitzenzuwachs des verwalteten Speichers je
     /// Byte der Datei) und <c>faktor_prozess</c> (dasselbe für den Prozessspeicher, wo die Plattform ihn
     /// liefert) und dem Speicherrahmen einer App auf dem kleinsten unterstützten iPad folgt die Grenze:
@@ -446,10 +446,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die synthetischen Großfälle des Prüfmodus, klein vor groß — ein Abbruch beim größten Fall lässt
         /// die kleineren im Protokoll stehen; erzeugt wird erst beim Messen. gbXML: 2 MB, 8 MB und knapp
-        /// die iOS-Grenze des Profils (10 MB). IFC: 2, 4 und 8 MB; die drei Punkte zeigen den Verlauf von
+        /// die iOS-Grenze des Profils (25 MB nach E42). IFC: 2 und 8 MB und knapp die iOS-Grenze; die Punkte zeigen den Verlauf von
         /// Speicher UND Zeit. Der IFC-Leser geht linear mit der Dateigröße (<see cref="IfcRueckbezuege"/>;
         /// unter Windows, Release: 2 MB ≈ 0,4 s, 8 MB ≈ 1,4 s, 20 MB ≈ 1,6 s, 50 MB ≈ 4,5 s) — ein Fall an
-        /// der iOS-Grenze von 20 MB passt damit in den Zeitrahmen, steht aber nicht in dieser Liste.
+        /// der iOS-Grenze von 20 MB passt damit in den Zeitrahmen und steht in dieser Liste.
         /// </summary>
         public static IReadOnlyList<Importmessfall> SynthetischeFaelle()
         {

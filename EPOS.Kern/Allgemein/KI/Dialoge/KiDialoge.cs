@@ -4962,10 +4962,13 @@ namespace WindowsFormsApplication1
         /// hier die Betriebsart „Verwaltung" meldete, gibt es deshalb nicht.
         /// </para>
         /// <para>
-        /// <b>Setzbar sind die vier FILTERFELDER</b> (Verwendung, Gebaeudeart, Baujahr,
-        /// Suchmuster): Sie sind die Eingabefelder dieser Maske, und mit ihnen findet der
-        /// Anwender den Satz, den er uebernehmen will. Die fuenf Felder des Detailblocks
-        /// sind nur lesbar — sie zeigen, was am markierten Satz steht.
+        /// <b>Setzbar sind die vier FILTERFELDER</b> der Katalogliste (Stufe G3, Welle K):
+        /// die Trichter der Spalten Verwendung, Gebaeudeart und Baujahr und die Suche ueber
+        /// alle Spalten. Mit ihnen findet der Anwender den Satz, den er uebernehmen will. Die
+        /// drei Trichter sind Wahlfelder ueber die Werte, die in ihrer Spalte stehen (der
+        /// Trichter filtert auf dem Anzeigetext, „enthaelt"); leer nimmt den Filter zurueck.
+        /// Die fuenf Felder des Detailblocks sind nur lesbar — sie zeigen, was am markierten
+        /// Satz steht.
         /// </para>
         /// <para>
         /// <b>Die Werte der Zuordnung stehen NICHT hier</b>, sondern unter
@@ -4982,10 +4985,10 @@ namespace WindowsFormsApplication1
                 anzeigename: KiDialogTexte.MaskeGebaeude,
                 felder: new[]
                 {
-                    // ---- Der Filter ueber die Katalogliste --------------------------
+                    // ---- Der Filter ueber die Katalogliste: drei Trichter, eine Suche --
                     new KiDialogFeld("verwendung", "GebaeudeKiSicht.Verwendung",
                                      KiDialogTexte.GebVerwendungName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.GebVerwendungErl),
+                                     KiDialogTexte.GebVerwendungErl, leerErlaubt: true),
                     new KiDialogFeld("filter_gebaeudeart", "GebaeudeKiSicht.FilterGebaeudeart",
                                      KiDialogTexte.GebFilterArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebFilterArtErl, leerErlaubt: true),
