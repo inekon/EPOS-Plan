@@ -1,0 +1,296 @@
+﻿@* Die Ueberlagerung "Platzhalterkatalog" der Berichtsvorlagen (BV-E1, Konzept 9.1 D, 9.3
+   und 9.7) - das Rueckgrat der Platzhaltererkennung: vollstaendig, auch fuer Schluessel ohne
+   Gegenstueck in der App.
+
+   WAS SIE ZEIGT. Ein Suchfeld und die Tabelle Schluessel · Art · Kontext · Beschreibung.
+   Die Suche filtert ueber Schluessel UND Beschreibung (Wort fuer Wort, Gross- und
+   Kleinschreibung gleich; "{{projekt.kunde}}" aus einer Vorlage findet seinen Eintrag). Ein
+   Klick oder Tipp auf eine Zeile zeigt darunter den Platzhalter in der Schreibweise der
+   Vorlage, {{schluessel}}, in einem nur lesbaren Textfeld - MARKIERT, damit er sich kopieren
+   laesst. Die Zwischenablage selbst kommt mit BV-E6 (IZwischenablage); ohne sie zeigt die
+   Aufklappung den Text markiert (Konzept 9.6). Den Baukasten traegt BV-E5.
+
+   DIE ZEILE IST DIE WAHL: Klick auf die Zeile oder der Schluessel als Knopf (Tastatur,
+   aria-pressed). Die Zeile traegt keinen Aktionsknopf, der erst beim Ueberfahren erschiene.
+
+   KEIN ARBEITSSTAND. Der Katalog nimmt nichts auf - EIN primaerer Knopf "Schliessen"
+   (Konzept 9.7); Esc und Kreuz wirken ebenso.
+
+   DIE SUCHE GEHOERT DEM WIRT. Die Berichtsseite fuehrt sie (Suche/SucheChanged) und meldet
+   sie beim Assistenten an - der Wirt meldet an, nicht das Blatt darin
+   (KiMaskenabdeckungWacheTests, Tabelle WIRTE). Allein gezeigt fuehrt der Dialog sie selbst.
+
+   MARKIEREN OHNE EIGENES SKRIPT. Das Textfeld des Hauses gibt sein Eingabeelement nicht
+   heraus; der Dialog sucht es in seiner Huelle ueber die DOM-Methoden querySelector und
+   select - zwei
+   Aufrufe der JS-Bruecke, kein Skript in wwwroot. Scheitert das (Pruefstand, Verbindung
+   weg), bleibt das Feld lesbar und nur unmarkiert. *@
+
+@namespace EPOS.UI.Dialoge.Berichte
+@using System.Globalization
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
+
+<div class="epos-dialog epos-vorlage-katalog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.Titel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    <p class="epos-leisezeile epos-vorlage-kataloghinweis">@Texte.Hinweis</p>
+
+    <div class="epos-vorlage-katalogsuche">
+        <Textfeld Bezeichnung="@Texte.LabelSuche" Wert="@_suche" WertChanged="BeiSuche"
+                  Platzhalter="@Texte.SuchePlatzhalter" />
+    </div>
+
+    @if (Alle.Count == 0)
+    {
+        <p class="epos-leisezeile epos-vorlage-katalogleer">@Texte.Leer</p>
+    }
+    else
+    {
+        <p class="epos-leisezeile epos-vorlage-katalogzahl" role="status">@Zahlzeile</p>
+
+        @if (Treffer.Count == 0)
+        {
+            <p class="epos-leisezeile epos-vorlage-katalogleer">@Texte.KeinTreffer</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle epos-vorlage-kataloghuelle">
+                <table class="epos-raster epos-vorlage-katalogtabelle" aria-label="@Texte.Liste">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Texte.SpalteSchluessel</th>
+                            <th scope="col">@Texte.SpalteArt</th>
+                            <th scope="col">@Texte.SpalteKontext</th>
+                            <th scope="col">@Texte.SpalteBeschreibung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Katalogzeile z in Treffer)
+                        {
+                            bool gewaehlt = IstGewaehlt(z);
+                            <tr class="@(gewaehlt ? "epos-vorlage-katalogzeile epos-vorlage-katalogzeile--gewaehlt" : "epos-vorlage-katalogzeile")"
+                                @onclick="() => Waehlen(z)">
+                                <td class="epos-vorlage-katalogschluessel">
+                                    <button type="button" class="epos-vorlage-katalogwahl"
+                                            aria-pressed="@(gewaehlt ? "true" : "false")"
+                                            aria-label="@Format(Texte.ZeileWaehlen, z.Schluessel)"
+                                            @onclick="() => Waehlen(z)" @onclick:stopPropagation="true">@z.Schluessel</button>
+                                </td>
+                                <td>@z.Art</td>
+                                <td>@z.Kontext</td>
+                                <td class="epos-vorlage-katalogbeschreibung">@z.Beschreibung</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+
+    @if (_gewaehlt is not null)
+    {
+        @* Die Schreibweise der Vorlage, nur lesbar und markiert (siehe Kopf). *@
+        <div class="epos-vorlage-schreibweise" @ref="_schreibweise">
+            <Textfeld Bezeichnung="@Texte.LabelSchreibweise" NurLesen="true"
+                      Wert="@Platzhalterkatalogsuche.Schreibweise(_gewaehlt.Schluessel)" />
+        </div>
+        <Herleitungszeile Text="@Texte.HinweisSchreibweise" />
+        @if (!string.IsNullOrWhiteSpace(_gewaehlt.Beispiel))
+        {
+            <Herleitungszeile Text="@Format(Texte.Beispiel, _gewaehlt.Beispiel)" />
+        }
+    }
+
+    @* --- Die EINE Fussleiste: Fueller · Schliessen (primaer) ------------------------ *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller epos-status" role="status"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-vorlage-schliessen"
+                @onclick="Schliessen">@Texte.Schliessen</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle
+    // =====================================================================
+
+    /// <summary>Die Einträge des Katalogs in Anzeigereihenfolge; leer = leerer Katalog.</summary>
+    [Parameter] public IReadOnlyList<Katalogzeile> Eintraege { get; set; } = Array.Empty<Katalogzeile>();
+
+    /// <summary>
+    /// Die Suche — ANFANGSSTAND, und ein neuer Wert des Wirts ersetzt sie (der Assistent setzt
+    /// sie über die Berichtsseite). Bindbar über <c>@@bind-Suche</c>.
+    /// </summary>
+    [Parameter] public string Suche { get; set; } = "";
+
+    /// <summary>Meldet jede neue Suche an den Wirt.</summary>
+    [Parameter] public EventCallback<string> SucheChanged { get; set; }
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public PlatzhalterkatalogTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Hilfeschlüssel (Muster <c>&lt;Maske&gt;.btn_Help_&lt;Teil&gt;</c>): die Berichtsseite
+    /// <c>UcBericht</c>, Teil Platzhalterkatalog.
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "UcBericht.btn_Help_Platzhalterkatalog";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Der Dialog ist zu Ende — „Schließen", Kreuz oder Esc; es gibt kein Ergebnis.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private ElementReference _schreibweise;
+    private bool _ersterAufbau = true;
+    private bool _markieren;
+
+    private string _suche = "";
+    private string? _sucheGesehen;
+    private Katalogzeile? _gewaehlt;
+
+    private IReadOnlyList<Katalogzeile> _treffer = Array.Empty<Katalogzeile>();
+    private IReadOnlyList<Katalogzeile>? _trefferAus;
+    private int _trefferZahl = -1;
+    private string? _trefferSuche;
+
+    /// <summary>Die aktuelle Suche (Prüfhilfe für Tests).</summary>
+    public string Suchtext => _suche;
+
+    /// <summary>Der gewählte Schlüssel; <c>null</c> = keiner (Prüfhilfe für Tests).</summary>
+    public string? GewaehlterSchluessel => _gewaehlt?.Schluessel;
+
+    private IReadOnlyList<Katalogzeile> Alle => Eintraege ?? Array.Empty<Katalogzeile>();
+
+    /// <summary>
+    /// Die Treffer der Suche — neu gefiltert nur, wenn Liste (Referenz UND Zahl) oder Suche
+    /// wechseln (kein Zeichenlauf rechnet, was sich nicht geändert hat).
+    /// </summary>
+    private IReadOnlyList<Katalogzeile> Treffer
+    {
+        get
+        {
+            if (ReferenceEquals(_trefferAus, Alle) && _trefferZahl == Alle.Count
+                && string.Equals(_trefferSuche, _suche, StringComparison.Ordinal))
+                return _treffer;
+
+            _treffer = Platzhalterkatalogsuche.Filtern(Alle, _suche);
+            _trefferAus = Alle;
+            _trefferZahl = Alle.Count;
+            _trefferSuche = _suche;
+            return _treffer;
+        }
+    }
+
+    /// <summary>„n Platzhalter" bzw. „n von m Platzhaltern", solange gesucht wird.</summary>
+    private string Zahlzeile
+        => string.IsNullOrWhiteSpace(_suche)
+            ? Format(Texte.Anzahl, Alle.Count)
+            : Format(Texte.AnzahlGefiltert, Treffer.Count, Alle.Count);
+
+    private bool IstGewaehlt(Katalogzeile z)
+        => _gewaehlt is not null && string.Equals(_gewaehlt.Schluessel, z.Schluessel, StringComparison.Ordinal);
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnParametersSet()
+    {
+        // Die Suche des Wirts: ein NEUER Wert ersetzt die eigene, derselbe laesst sie stehen.
+        if (!string.Equals(_sucheGesehen, Suche, StringComparison.Ordinal))
+        {
+            _sucheGesehen = Suche;
+            _suche = Suche ?? "";
+        }
+
+        // Neue Eintraege: Die Wahl haengt am Schluessel und faellt nur, wenn er fehlt.
+        if (_gewaehlt is not null)
+            _gewaehlt = Alle.FirstOrDefault(z => z is not null
+                        && string.Equals(z.Schluessel, _gewaehlt.Schluessel, StringComparison.Ordinal));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _ersterAufbau)
+        {
+            _ersterAufbau = false;
+            await _wurzel.FocusAsync();
+        }
+
+        if (_markieren && _gewaehlt is not null)
+        {
+            _markieren = false;
+            await Markieren();
+        }
+    }
+
+    // =====================================================================
+    // Suche und Wahl
+    // =====================================================================
+
+    private async Task BeiSuche(string text)
+    {
+        _suche = text ?? "";
+        await SucheChanged.InvokeAsync(_suche);
+    }
+
+    private void Waehlen(Katalogzeile z)
+    {
+        _gewaehlt = z;
+        _markieren = true;
+    }
+
+    /// <summary>
+    /// Markiert die Schreibweise im nur lesbaren Feld: das Eingabeelement der Hülle über
+    /// <c>querySelector</c>, dann dessen <c>select()</c>. Ein Fehlschlag ist kein Fehler des
+    /// Dialogs — das Feld bleibt lesbar und lässt sich von Hand markieren.
+    /// </summary>
+    private async Task Markieren()
+    {
+        try
+        {
+            IJSObjectReference? feld = await Js.InvokeAsync<IJSObjectReference?>(
+                "Element.prototype.querySelector.call", _schreibweise, "input");
+            if (feld is null) return;
+            try { await feld.InvokeVoidAsync("select"); }
+            finally { await feld.DisposeAsync(); }
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    // =====================================================================
+    // Schließen und Tastatur
+    // =====================================================================
+
+    private Task Schliessen() => Geschlossen.InvokeAsync();
+
+    /// <summary>Esc schließt; Enter bleibt unbelegt.</summary>
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Schliessen() : Task.CompletedTask;
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return (muster ?? "") + " " + string.Join(" ", werte); }
+    }
+}

@@ -11782,3 +11782,276 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ==================================================================== */
+/* BERICHTSVORLAGEN BV-E1 - DIE GRUPPE "VORLAGE" DER BERICHTSSEITE,     */
+/* DIE PRUEFLISTE UND DER PLATZHALTERKATALOG (Konzept Berichtsvorlagen  */
+/* 9.7 und 10.2)                                                        */
+/*                                                                      */
+/* Nur Tokens des Hauses, kein Nesting, jedes Bedienelement mit 44 px   */
+/* Beruehrungsziel. Die Stufenzeichen und die gewaehlte Katalogzeile    */
+/* tragen ihre Aussage zusaetzlich im Wort bzw. in aria-pressed - Farbe */
+/* allein traegt keine; im Kontrastmodus setzt der Block am Ende die    */
+/* Systemfarben.                                                        */
+/* ==================================================================== */
+
+/* Die Gruppe steht UEBER den Berichtsbausteinen und ist von ihnen durch
+   eine leise Linie abgesetzt - kein Kasten, kein zweiter Gruppenkopf. */
+.epos-vorlage {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: var(--epos-rand);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+/* Das Auswahlfeld nimmt die Breite, das Schloss steht rechts daneben -
+   auf der Hoehe des Feldes, nicht der Beschriftung darueber. */
+.epos-vorlage-wahl {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-vorlage-wahl > .epos-feld {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.epos-vorlage-schlossplatz {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-vorlage-leiste {
+    margin-top: 0;
+}
+
+/* Das Menue "...": der Knopf ist ein quadratisches Beruehrungsziel statt
+   der 88 px Mindestbreite eines beschrifteten Knopfes. Die offene Liste
+   haengt absolut am Knopf und macht die Leiste nicht hoeher. Drei
+   z-Ebenen wie bei der Suchauswahl: Deckel 39, Liste 40, der offene
+   Menuekasten 41. */
+.epos-vorlage-menue {
+    position: relative;
+    display: inline-flex;
+}
+
+.epos-vorlage-menue--offen {
+    z-index: 41;
+}
+
+.epos-vorlage-menueknopf {
+    min-width: var(--epos-touchziel);
+}
+
+.epos-vorlage-menue-liste {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 40;
+    min-width: 220px;
+    margin: 2px 0 0 0;
+    padding: 4px 0;
+    list-style: none;
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.epos-vorlage-menue-eintrag {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: 0 12px;
+    font: inherit;
+    color: var(--epos-text);
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.epos-vorlage-menue-eintrag:hover:not([aria-disabled="true"]),
+.epos-vorlage-menue-eintrag:focus-visible {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+/* Weich gesperrt: leise, aber anklickbar - der Klick meldet den Grund. */
+.epos-vorlage-menue-eintrag[aria-disabled="true"] {
+    color: var(--epos-text-leise);
+    cursor: default;
+}
+
+.epos-vorlage-menue-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
+/* Die Pruefzeile: Zeichen, Herleitung und "anzeigen" in EINER Zeile, die
+   bei Platzmangel umbricht. Die Herleitungszeile bringt ihre eigene
+   Aussenkante nicht mit - sie steht hier im Fluss der Zeile. */
+.epos-vorlage-pruefzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-vorlage-pruefzeile > .epos-herleitung {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.epos-vorlage-pruefsymbol {
+    flex: 0 0 auto;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlage-pruefzeile--befund .epos-vorlage-pruefsymbol {
+    color: var(--epos-stufe-warnung);
+}
+
+.epos-vorlage-anzeigen {
+    min-width: 0;
+}
+
+/* ---- Die Pruefliste ------------------------------------------------- */
+
+.epos-vorlage-meldungsgruppe + .epos-vorlage-meldungsgruppe {
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-vorlage-meldungskopf {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 6px 8px;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 700;
+    color: var(--epos-text);
+    background: var(--epos-flaeche);
+}
+
+.epos-vorlage-meldungen {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-vorlage-meldung {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-vorlage-meldungszeichen {
+    flex: 0 0 auto;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+}
+
+.epos-vorlage-meldungsgruppe--fehler .epos-vorlage-meldungszeichen {
+    color: var(--epos-stufe-fehler);
+}
+
+.epos-vorlage-meldungsgruppe--warnung .epos-vorlage-meldungszeichen {
+    color: var(--epos-stufe-warnung);
+}
+
+.epos-vorlage-meldungsrumpf {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.epos-vorlage-meldungstext {
+    color: var(--epos-text);
+}
+
+.epos-vorlage-fundort,
+.epos-vorlage-wastun {
+    color: var(--epos-text-leise);
+}
+
+/* ---- Der Platzhalterkatalog ------------------------------------------ */
+
+.epos-vorlage-katalogsuche {
+    max-width: 32rem;
+}
+
+/* Die Beschreibung ist Fliesstext und bricht um - die Hausregel "Namen
+   brechen nicht" (.epos-raster td) gilt fuer die Namen links davon. */
+td.epos-vorlage-katalogbeschreibung {
+    white-space: normal;
+}
+
+/* Die Zeile ist die Wahl: Klick oder Tipp auf die Zeile, dazu der
+   Schluessel als Knopf fuer die Tastatur. */
+.epos-vorlage-katalogzeile {
+    cursor: pointer;
+}
+
+.epos-vorlage-katalogwahl {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--epos-touchziel);
+    padding: 0 4px;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: inherit;
+    color: var(--epos-quelle-text);
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.epos-vorlage-katalogwahl:hover {
+    text-decoration: underline;
+}
+
+.epos-vorlage-katalogzeile--gewaehlt > td {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-vorlage-katalogzeile--gewaehlt > td:first-child {
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+}
+
+.epos-vorlage-schreibweise .epos-eingabe {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+@media (forced-colors: active) {
+    .epos-vorlage-menue-liste {
+        border: 1px solid CanvasText;
+        box-shadow: none;
+    }
+
+    .epos-vorlage-pruefsymbol,
+    .epos-vorlage-meldungszeichen {
+        color: CanvasText;
+    }
+
+    .epos-vorlage-katalogwahl {
+        color: LinkText;
+    }
+
+    .epos-vorlage-katalogzeile--gewaehlt > td {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+}
