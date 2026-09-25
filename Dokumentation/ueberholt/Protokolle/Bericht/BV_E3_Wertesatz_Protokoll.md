@@ -6,7 +6,7 @@ Etappe BV-E3 des Konzepts
 (Rev. 5) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Vorgänger:
 [`BV_E2_Kapitel_Protokoll.md`](BV_E2_Kapitel_Protokoll.md). Zweig `konzept-berichtvorlagen` ab `57c6c53b` (BV-E2 samt
 `origin/ios_migration_september`), umgesetzt am 26.09.2026; Fable 5.1 hat orchestriert, zwei Agenten (Opus 5.5) haben in
-eigenen Worktrees gearbeitet, eine Wache entstand parallel — 4 Commits, 21 Dateien, +2.557/−157 Zeilen. Kein
+eigenen Worktrees gearbeitet, eine Wache entstand parallel — 6 Commits, 23 Dateien, +3.200/−157 Zeilen. Kein
 Schemaschritt, kein Rechenweg berührt (Referenzlauf GESAMT: PASS), keine Basis und keine Messlatte neu eingefroren, keine
 Ressource, keine Oberfläche, `EPOS.iOS/` nicht berührt. Für den Anwender ändert sich nichts Sichtbares: kein
 Logbucheintrag, keine Wiki-Quelle.
@@ -15,7 +15,7 @@ Logbucheintrag, keine Wiki-Quelle.
 |---|---|---|---|
 | W1 Sammler | Wertesatz `BerichtsDaten.Wirtschaft` (`WirtschaftsBerichtswerte`, `Traegerpreissatz`), die Schreiber auf dem Wertesatz, `Berichtsbedarf` in Vorprüfung, Hülle und Sammler, Tests | `67a18de4`, `c7f3de35`, `89a33982` | `7cfd8cec` |
 | W2 Beste Variante | `BesteVariante.Waehle` im Kern, Kacheln der Wirtschaftlichkeitsseite auf der Kernregel, Tests | `95375033` | auf den Zweig vorgespult |
-| Wache | `BerichtSchreiberOhneDatenbankWacheTests`, Regelzeile in `EPOS.Kern/CLAUDE.md` (Abschnitt „Bericht“) | parallel zu diesen Papieren im Bau | Abschnitt 4 |
+| Wache | `BerichtSchreiberOhneDatenbankWacheTests`, Regelzeile in `EPOS.Kern/CLAUDE.md` (Abschnitt „Bericht“) | `eefb308c`, `45ede76c` | auf dem Zweig nach `81daa0b8` |
 
 ---
 
@@ -77,7 +77,7 @@ Datenbank luden oder daraus rechneten, steht darin; beim Schreiben wird die Date
 Die Schreiber lesen nur noch den Satz: `Bausteine/BausteineWirtschaftlichkeit.cs` (Word),
 `ExcelBerichtGenerator.BlattWirtschaftlichkeit` samt `ExcelFormelmappe.Parameterblock` (neue Überladung mit den
 Trägerpreisen des Satzes), `AnhangECheckliste.cs` und die Kälteerzeugertafel in `Bausteine/BausteineProjekt.cs`
-(`KuehltraegerText` mit übergebener Namensquelle).
+(`KuehltraegerText` mit übergebener Namensquelle). Die Wache aus Abschnitt 4 hält sie dort.
 
 ### 1.3 Verschwundene Zugriffe
 
@@ -205,13 +205,50 @@ die Regel mit `wirtschaft.beste.*` erst in BV-E4.
 
 ## 4 Wache „Schreiber ohne Datenbank“
 
-`BerichtWertesatzTests` weist das Füllen ohne Datenbank an zwei Projekten nach (Abschnitt 6). Dass es so bleibt, hält eine
-Wache, die ein eigener Agent parallel zu diesen Papieren baut: `EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests.cs`
-und eine Regelzeile in `EPOS.Kern/CLAUDE.md`, Abschnitt „Bericht“. Ihr Gegenstand sind die Schreiber des Berichts —
-Bausteine, Anhang-E-Checkliste, Tabellenbericht und Formelmappe —: Sie lesen die Wirtschaftlichkeit aus dem Wertesatz
-`BerichtsDaten.Wirtschaft` und nehmen keinen eigenen Weg zur Datenbank; was ein Schreiber neu braucht, wird ein Teil des
-Wertesatzes und kommt über den Sammler. Wie die Wache prüft und welche Ausnahmen sie führt, sagt ihr Kopfkommentar; ihre
-Abnahme steht in Abschnitt 6.
+`BerichtWertesatzTests` weist das Füllen ohne Datenbank im Lauf nach (Abschnitt 6). Dass es so bleibt, hält die Wache
+`EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests.cs` am Quelltext (639 Zeilen, `eefb308c`). Die Regel steht als
+eigener Absatz am Ende des Abschnitts „Bericht“ in `EPOS.Kern/CLAUDE.md` (`45ede76c`): Die Berichtsschreiber (Bausteine,
+Anhang E, Excel-Generator, Formelmappe, Vorlagenfüller) lesen nur `BerichtsDaten` — alles aus der Datenbank sammelt
+`BerichtsDatenSammler.SammleFuerBericht` einmal in `BerichtsDaten.Wirtschaft`. Was ein Schreiber neu braucht, wird ein
+Teil des Wertesatzes und kommt über den Sammler.
+
+- **Bewacht** sind der ganze Ordner `EPOS.Kern/Allgemein/Bericht/Bausteine/` — ein neuer Baustein fällt ohne Zutun
+  darunter — und die Einzelschreiber `AnhangECheckliste.cs`, `ExcelBerichtGenerator.cs`, `ExcelFormelmappe.cs`,
+  `VerlaufExcel.cs` und `Vorlagen/WordVorlagenfueller.cs`.
+- **Gelesen wird der Programmtext:** Ein eigener Leser blendet Kommentare, Präprozessorzeilen und den Inhalt von
+  Zeichenketten und Zeichen aus, liest aber die Löcher interpolierter Zeichenketten und Folgezeilen, die mit `*`
+  beginnen — die Schreiber setzen Texte zusammen, ein Aufruf in `$"…{…}…"` ist ein Aufruf.
+- **28 Muster in drei Gruppen:** die Zugriffsschicht (`new DataRepository`, `DataRepository.`, `StilleDb.`,
+  `RecordSet`, `IDatenzugriff`, `Datenzugriff.`, `DbParam`, `ExecuteScalar`/`ExecuteNonQuery`/`ExecuteReader`/
+  `GetDataTable`, SQLite direkt); die Controller (`new …Ctrl(`, `…Ctrl.Glied`, `…Ctrl` als Feld, Parameter oder
+  Variable); die Rechenwege mit Datenbank, die der Wertesatz einmal ruft (`LadeErgebnisse(`, `LadeParameter(`,
+  `LadeTarif(`, `LadeStromMatrix(`, `LiesReferenzkessel(`, `EmissionsBilanzRechner.Berechne(` und `Lade…(`,
+  `ProjektWirkungCtrl.Laden(`, `ErzeugerDerGruppe(`, `BerechneVerlaufSzenarien…(`, `KwkgAktivierung.IstAktiv(`,
+  `Emissionsquelle.`, `KostenEmissionRechner.`, `Traegerpreissatz.Lies(`, `TraegerpreisSzenario.Nachweiszeile(`,
+  `WirtschaftlichkeitBewertung.FuerBericht(`, `new GesetzKatalog(`).
+- **Kein Fund ist `WirtschaftsBerichtswerte.Von(daten)`:** Nach dem Sammeln gibt er den gesammelten Satz zurück; den
+  Rückfall, der jeden Teil beim ersten Lesen rechnet, trägt `WirtschaftsBerichtswerte.cs`, nicht der Schreiber.
+- **Positivliste:** sieben Einträge für acht Stellen, je Datei, Muster und Treffer mit genauer Anzahl und Grund. Rot wird
+  die Wache, wenn eine Anzahl nicht mehr stimmt oder ein Eintrag keinen Fund mehr hat — so wächst keine Ausnahme still
+  mit, und keine bleibt als Lücke stehen.
+
+| Stelle | Treffer | Grund |
+|---|---|---|
+| `ExcelFormelmappe.cs:1021`, `:1027`, `:1030`, `:1034` | `BetriebskostenCtrl.Bemessungsfaktor`, `.MengenEinheit`, `.SatzEinheit`, `.Betrag`, je einmal | reine Funktionen des Betriebskosten-Rechenwegs; `BemessungKatalog` ist eine Tafel im Code, keine Datenbank |
+| `Bausteine/BausteineWirtschaftlichkeit.cs:1320` | `WirtschaftlichkeitCtrl.ErzeugerFlags` | nur der Typname, in `WirtschaftlichkeitCtrl` geschachtelt; der Wert kommt aus dem Wertesatz |
+| `Bausteine/BausteineProjekt.cs:304`, `:315` | `Emissionsquelle.TraegerName`, zweimal | die Überladung `KuehltraegerText(m)` ohne Namensquelle und der Rückfall der Überladung mit Quelle; der Bericht übergibt die Namen des Wertesatzes |
+| `ExcelFormelmappe.cs:123` | `Traegerpreissatz.Lies` | die Überladungen des Parameterblocks ohne Trägerpreisquelle; der Tabellenbericht übergibt `w.Traegerpreise` |
+
+Drei Fälle: (1) `Kein_Berichtsschreiber_greift_auf_Datenbank_oder_Controller_zu` ist die Wache selbst.
+(2) `Die_Wache_erkennt_einen_eingebauten_Verstoss`: Ein Probeschreiber trägt je Muster einen Verstoß — alle 28 fallen auf
+der Einbauzeile auf, auch im Loch einer interpolierten Zeichenkette und auf einer `*`-Folgezeile —, zehn Nichtfälle
+(Kommentar, Zeichenkette, Rohzeichenkette, Präprozessorzeile, der Wertesatz) bleiben stumm, und die Positivliste ist eng:
+dieselbe Datei, dasselbe Glied, dieselbe Anzahl. (3) `Die_Wache_sieht_alle_Schreiber_und_jeden_Baustein`: Alle benannten
+Schreiber sind da, jeder `IBerichtsBaustein` der Assembly ist in einer bewachten Datei deklariert, die drei Schreiber des
+Wertesatzes (Wirtschaftlichkeitsbaustein, Anhang E, Tabellenbericht) lesen ihn über `WirtschaftsBerichtswerte.Von`, jede
+Ausnahme ist gültig. Die Laufzeithälfte — `Nachgeholt` bleibt leer — steht in `BerichtWertesatzTests` und wird nicht
+gedoppelt. **Rotprobe:** Ohne Positivliste meldet die Wache genau die acht Stellen mit ihren Zeilen, dazu siebenmal
+„Ausnahme ohne Fund“. Ihre Abnahme steht in Abschnitt 6.
 
 ## 5 Entscheidungen der Agenten
 
@@ -239,12 +276,17 @@ Das Konzept Rev. 5 trägt sie nach.
 - **W2:** Stamm heißt Merker; ein Stand ohne Ergebnis nimmt nicht teil, statt als Null zu zählen; ohne Standliste zählen
   alle Ergebnisse des Szenarios; ein anderes Szenario nur ausdrücklich; `Zahlungsgliederungen.Leitversion` ist nicht
   angeglichen (Abschnitt 8 b).
+- **Wache:** ein eigener Leser statt der zeilenweisen Vereinfachung der übrigen Quelltextwachen, weil ein Aufruf im Loch
+  einer interpolierten Zeichenkette zählt; der Bausteinordner ganz statt einer Dateiliste; eine Positivliste mit genauer
+  Anzahl statt Musterausnahmen; die Überladungen für Aufrufer außerhalb des Berichtslaufs bleiben als Ausnahme stehen
+  (Abschnitt 8 g); der Laufzeitnachweis bleibt in `BerichtWertesatzTests`.
 
 ### 5.3 Zusammenführung
 
 W2 wurde auf den Zweig vorgespult (`95375033`), W1 mit `7cfd8cec` zusammengeführt, beides konfliktfrei; End-Merge mit
-`origin/ios_migration_september` (`dec0a777`): `81daa0b8`. Die Sitzung war zwischenzeitlich unterbrochen; der W1-Agent wurde
-mit seinem committeten Stand wieder aufgenommen.
+`origin/ios_migration_september` (`dec0a777`): `81daa0b8`. Die Wache folgte auf dem Zweig mit `eefb308c` (Wache) und
+`45ede76c` (Regelzeile). Die Sitzung war zwischenzeitlich unterbrochen; der W1-Agent wurde mit seinem committeten Stand
+wieder aufgenommen.
 
 ## 6 Abnahme
 
@@ -253,6 +295,8 @@ In den Agenten-Worktrees:
 - **W1:** Kern-Filter 0 Fehler; gefilterter Testlauf 620 von 620 grün; Windows-Schale 0 Fehler; Referenzlauf der
   14 Projekte gegen die Basis R19 GESAMT: PASS (4.610.207 Werte); SQL-Prüfer ohne Fundstelle.
 - **W2:** Kern-Suite 7.599 grün; Kachelwerte vorher wie nachher byte-gleich in 107 Fällen (Abschnitt 3.3).
+- **Wache:** Build 0 Fehler; ihre drei Fälle zusammen mit Dokumentations-, Kodierungs- und Ordnungswache 30 von 30
+  grün; `BerichtWertesatzTests` 8 von 8; Rotprobe ohne Positivliste wie in Abschnitt 4.
 
 Die Tests der Etappe: `BerichtWertesatzTests` mit 8 Fällen — (a) nach `SammleFuerBericht` für 1030 und die Gruppe 1019
 (zwei Varianten, Kraftwerkspark: Emissionsbilanz und Referenzkessel) mit werfendem Zugriff und Datenbankpfad ins Leere:
@@ -264,12 +308,18 @@ einer Vorlage kommt aus ihren Platzhaltern, eine Vorlage nur mit Deckblattangabe
 (Sammleraufrufe gezählt), die Standardvorlage beides wie heute, und der Weg der Hülle nach dem Sammeln braucht keine
 Datenbank; (f) Laufzeit (Abschnitt 7). Dazu `BerichtsvorlagenHuelleTests` (ein neuer Fall: Der Lauf reicht den Bedarf an
 den Sammler — Deckblattvorlage nur Word: nichts, mit Mappe: deren Häkchen, nur Mappe: die Vorgabe),
-`VorlagenfeldkatalogWacheTests` (die Bedarfswache kennt die Kapitel), `BesteVarianteTests` 13 und
-`BesteVarianteHuellenTests` 3.
+`VorlagenfeldkatalogWacheTests` (die Bedarfswache kennt die Kapitel), `BesteVarianteTests` 13,
+`BesteVarianteHuellenTests` 3 und `BerichtSchreiberOhneDatenbankWacheTests` 3.
 
 Die Etappe berührt keinen Rechenweg; der Referenzlauf gehört nach Konzept 13 trotzdem zu ihrer Abnahme und ist in W1
-erbracht. Berührt sind Kern, Hülle (`EPOS.UI.Daten`) und Kern-Tests; keine Oberfläche, keine Ressource, keine Vorlage der
-Auslieferung, `EPOS.iOS/` nicht.
+erbracht. Berührt sind Kern, Hülle (`EPOS.UI.Daten`), Kern-Tests und `EPOS.Kern/CLAUDE.md` (Regelzeile der Wache); keine
+Oberfläche, keine Ressource, keine Vorlage der Auslieferung, `EPOS.iOS/` nicht.
+
+**Gate auf `81daa0b8`** (Zweig `konzept-berichtvorlagen` mit W1, W2 und `origin/ios_migration_september`) grün:
+Windows-Schale 0 Fehler; Ressourcen-Designer unverändert; voller Lauf 0 Fehler — EPOS.Kern.Tests 7.649 (1 übersprungen),
+EPOS.UI.Tests 6.450, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27 (1 übersprungen); ChartProben
+174 Bilder, 0 Verstöße; SQL-Prüfer 1.940 Texte, 0 Fundstellen. Die Wache kam danach auf den Zweig; ihre Abnahme steht
+oben.
 
 <!-- ABNAHME -->
 
@@ -316,19 +366,26 @@ vorher; der Betriebsweg ist um 17 % (1030) bzw. 19 % (Gruppe) schneller, weil de
 - **(f) Datenbefunde der Testdatenbank (W2).** Die gespeicherten Ergebnisse der Variante 1029 (Stamm 1026) tragen den
   Merker `IstStamm` = 1 — mit ihnen nimmt 1029 an der Wahl nicht als Variante teil; 1043 führt je Szenario zwei
   Ergebniszeilen, die Regel nimmt je Stand die erste.
-- **(g) Aus BV-E1 und BV-E2 weiter offen** („Nach #512“, „Nach #520“ in der Statusdatei): die Anwenderproben unter
+- **(g) Aufräumkandidaten der Wache.** Die Überladung `KuehltraegerText(m)` ohne Namensquelle
+  (`Bausteine/BausteineProjekt.cs`) und die Überladungen des Parameterblocks ohne Trägerpreisquelle
+  (`ExcelFormelmappe.cs`) rufen nur noch Tests (`KaeltestromAbrechnungTests`; `RisikoModulTests`,
+  `SzenarioParameterTests`, `WiederholperiodeTests`). Fallen sie, werden die zwei Einträge der Positivliste zu
+  `Emissionsquelle.TraegerName` und `Traegerpreissatz.Lies` gestrichen.
+- **(h) Aus BV-E1 und BV-E2 weiter offen** („Nach #512“, „Nach #520“ in der Statusdatei): die Anwenderproben unter
   Windows, die Tippprobe mit echtem Word, die Schärfung der Regel „Deckblatt aus Platzhaltern“, die Bezugszeile der
   Anhang-E-Überlagerung bei unlesbarer eigener Vorlage, die ungenutzte Logo-Prüfung des Kerns, die Zukunft der
   Beispielvorlage, der Wiki-Upload der Seite „Berichtsvorlagen“, „Original geändert – übernehmen?“, eine Bedienung der
   Vorgabe, das KI-Feld der Katalogsuche, der Abgleich der Kern-Vorprüfung für Vorlagen ohne Platzhalter und die
   Startrückfrage mit der gespeicherten Versionsauswahl.
-- **(h) Setup- und iOS-Lauf:** BV-E3 berührt weder die Auslieferung noch `EPOS.iOS/` und gibt keinen eigenen Anlass; die
+- **(i) Setup- und iOS-Lauf:** BV-E3 berührt weder die Auslieferung noch `EPOS.iOS/` und gibt keinen eigenen Anlass; die
   Läufe aus BV-E1 und BV-E2 bleiben nach Rückfrage offen.
 
 ## 9 Dateien
 
-Vier Commits der Agenten (Tafel im Kopf), belegt mit `git log --no-merges --stat 9be9d745..81daa0b8` ohne die Commits von
-`origin/ios_migration_september`; zusammen (`git diff --stat 57c6c53b 7cfd8cec`) 21 Dateien, +2.557/−157 Zeilen:
+Sechs Commits (Tafel im Kopf): die vier der Agenten W1 und W2, belegt mit `git log --no-merges --stat 9be9d745..81daa0b8`
+ohne die Commits von `origin/ios_migration_september` — zusammen (`git diff --stat 57c6c53b 7cfd8cec`) 21 Dateien,
++2.557/−157 Zeilen —, und die zwei der Wache (`git diff --stat 81daa0b8 45ede76c`: 2 Dateien, +643 Zeilen); insgesamt
+23 Dateien, +3.200/−157 Zeilen:
 
 | Bereich | Dateien |
 |---|---|
@@ -337,5 +394,5 @@ Vier Commits der Agenten (Tafel im Kopf), belegt mit `git log --no-merges --stat
 | Kern, Wirtschaftlichkeit | neu `EPOS.Kern/Allgemein/Wirtschaftlichkeit/BesteVariante.cs` (W2) |
 | Hülle | `EPOS.UI.Daten/Bericht/BerichtSeiteGaben.cs` (W1), `EPOS.UI.Daten/Wirtschaftlichkeit/WirtschaftlichkeitSeiteGaben.cs` (W2) |
 | Tests Kern | neu `EPOS.Kern.Tests/BerichtWertesatzTests.cs` (W1), `EPOS.Kern.Tests/BesteVarianteTests.cs` mit `BesteVarianteHuellenTests` (W2); geändert `BerichtsvorlagenHuelleTests.cs`, `VorlagenfeldkatalogWacheTests.cs` (W1) |
-| Wache (eigener Agent, parallel) | neu `EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests.cs`; `EPOS.Kern/CLAUDE.md` (Regelzeile im Abschnitt „Bericht“) |
+| Wache | neu `EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests.cs` (`eefb308c`); `EPOS.Kern/CLAUDE.md`, Regelzeile als eigener Absatz am Ende des Abschnitts „Bericht“ (`45ede76c`) |
 | Papiere (dieser Auftrag) | dieses Protokoll, Konzept Rev. 5, `Dokumentation/aktuell/Status_iOS_Migration.md`, `Dokumentation/LIESMICH.md` |
