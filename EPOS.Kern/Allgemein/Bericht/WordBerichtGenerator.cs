@@ -116,7 +116,9 @@ namespace WindowsFormsApplication1
         /// BV-E1): Die Vorlage bleibt, wie sie ist — Deckblatt, Kopf- und Fußzeilen, Abschnitte —,
         /// ihre Platzhalter werden gefüllt, und <c>{{bericht.inhalt}}</c> setzt die angehakten
         /// Bausteine an seine Stelle (<see cref="WordVorlagenfueller"/>). Welche Vorlage genommen wird,
-        /// entscheidet der Aufrufer; <see cref="Erzeuge(BerichtsDaten, BerichtsKonfiguration, string, string)"/>
+        /// entscheidet der Aufrufer — im Programm <see cref="BerichtCtrl.ErzeugeWordLauf"/> über
+        /// <see cref="BerichtsvorlagenCtrl.VorlageFuer"/>, einmal gelesen und mit den Erstellerangaben
+        /// des Controllers; <see cref="Erzeuge(BerichtsDaten, BerichtsKonfiguration, string, string)"/>
         /// bleibt der Weg der Stilvorlage und des Code-Rückfalls.
         /// </summary>
         /// <param name="vorlage">Die Bytes der <c>.docx</c> bzw. <c>.dotx</c>; sie werden nicht verändert.</param>
@@ -149,9 +151,13 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------- Vorlage
 
         /// <summary>
-        /// Sucht die Berichtsvorlage im Ordner der ausgelieferten Vorlagen
-        /// (<see cref="IPfade.Berichtsvorlagen"/>: <c>{app}\Vorlagen</c>, auf iOS das
-        /// Anwendungspaket); <c>null</c> = nicht gefunden, dann gelten die Ersatzstile.
+        /// Sucht die STILVORLAGE des bisherigen Wegs (<see cref="BerichtsvorlagenCtrl.DATEI_RUECKFALL"/>)
+        /// im Ordner der ausgelieferten Vorlagen (<see cref="IPfade.Berichtsvorlagen"/>:
+        /// <c>{app}\Vorlagen</c>, auf iOS das Anwendungspaket); <c>null</c> = nicht gefunden, dann
+        /// gelten die Ersatzstile. Die Standardvorlage mit Platzhaltern
+        /// (<see cref="BerichtsvorlagenCtrl.DATEI_STANDARD"/>) sucht sie nicht: Die füllt die Engine
+        /// (<see cref="ErzeugeMitVorlage"/>) — dieser Weg leert den Rumpf und ließe ihre Platzhalter in
+        /// Kopf- und Fußzeile stehen. Die Dateinamen stehen EINMAL, im <see cref="BerichtsvorlagenCtrl"/>.
         /// </summary>
         public static string FindeVorlage()
         {
@@ -159,7 +165,7 @@ namespace WindowsFormsApplication1
             try { ordner = Dienste.Pfade.Berichtsvorlagen ?? ""; } catch { ordner = ""; }
             if (ordner.Length == 0) return null;
 
-            string pfad = Path.Combine(ordner, "Berichtsvorlage.docx");
+            string pfad = Path.Combine(ordner, BerichtsvorlagenCtrl.DATEI_RUECKFALL);
             return File.Exists(pfad) ? pfad : null;
         }
 
