@@ -85,7 +85,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Die Testdatenbank führt die Spalte, und sie ist im ganzen Bestand
-        /// leer — der Schritt schreibt keinen Wert.</summary>
+        /// leer — der Schritt schreibt keinen Wert. Allein das Prüfprojekt PV mit Preisen 1048
+        /// trägt sie: Sein Parametersatz ist über den Speicherweg des Parameterdialogs
+        /// angelegt, und der schreibt die Vorgabe „AUSWEIS".</summary>
         [Fact]
         public void Die_Testdatenbank_fuehrt_die_leere_Spalte()
         {
@@ -96,8 +98,12 @@ namespace EPOS.Kern.Tests
                                                        SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS));
             object gepflegt = DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT +
-                " WHERE [" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "] IS NOT NULL");
+                " WHERE [" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "] IS NOT NULL" +
+                " AND ID_Projekt <> " + PvPreisProjektTests.PROJEKT);
             Assert.Equal(0, Convert.ToInt32(gepflegt));
+            Assert.Equal(DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT [" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "] FROM " +
+                SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + " WHERE ID_Projekt = " + PvPreisProjektTests.PROJEKT)));
         }
 
         // =================================================================

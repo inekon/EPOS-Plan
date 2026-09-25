@@ -89,7 +89,7 @@ namespace EPOS.Kern.Tests
 
             public Vorrichtung()
             {
-                Db = Neue();
+                Db = new TestDatenbank();
                 if (!Db.Vorhanden) return;
                 using var kultur = new Kulturvorrichtung();
 
@@ -104,9 +104,6 @@ namespace EPOS.Kern.Tests
 
             public void Dispose() => Db.Dispose();
         }
-
-        /// <summary>Eine frische Arbeitskopie der Testdatenbank.</summary>
-        internal static TestDatenbank Neue() => new TestDatenbank();
 
         /// <summary>Der Lauf des Projekts auf der eingelegten Datenbank.</summary>
         private static Dictionary<string, WirtschaftlichkeitErgebnis> Lauf(
@@ -355,7 +352,7 @@ namespace EPOS.Kern.Tests
         public void Die_vermiedenen_Kosten_sind_der_PV_Eigenverbrauch_zum_Bezugspreis()
         {
             if (!_v.Vorhanden) return;
-            using var db = Neue();
+            using var db = new TestDatenbank();
             using var kultur = new Kulturvorrichtung();
 
             var ctrl = new WirtschaftlichkeitCtrl();
@@ -415,7 +412,7 @@ namespace EPOS.Kern.Tests
         public void Ohne_Szenariopreise_bleibt_Erwartet_bitgleich()
         {
             if (!_v.Vorhanden) return;
-            using var db = Neue();
+            using var db = new TestDatenbank();
             using var kultur = new Kulturvorrichtung();
 
             DataRepository.ExecuteNonQuery(
@@ -444,7 +441,7 @@ namespace EPOS.Kern.Tests
         public void Szenario_D_DV_Entgelt_und_PPA_Preis_im_Verguetungsdialog()
         {
             if (!_v.Vorhanden) return;
-            using var db = Neue();
+            using var db = new TestDatenbank();
             using var kultur = new Kulturvorrichtung();
 
             var pvc = new ProjektPhotovoltaikCtrl();
