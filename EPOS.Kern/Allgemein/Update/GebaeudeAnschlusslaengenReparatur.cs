@@ -250,10 +250,18 @@ namespace WindowsFormsApplication1
         /// Der ganze Schritt: jede Berichtigung, deren Bild der Satz trägt. Jeder Handgriff
         /// trifft nur sein Bild und ist für sich wiederholbar.
         /// </summary>
-        public static Bericht Ausfuehren()
+        public static Bericht Ausfuehren() => Ausfuehren(Berichtigungen);
+
+        /// <summary>
+        /// Eine Liste von Berichtigungen ausführen — dieselben Anweisungen für jeden Schritt, der
+        /// Katalogspalten nach Satz, Spalte und Schadensbild berichtigt (auch
+        /// <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>). Jeder Handgriff trifft nur sein
+        /// Bild und ist für sich wiederholbar; die Liste läuft in ihrer Reihenfolge.
+        /// </summary>
+        public static Bericht Ausfuehren(IEnumerable<Anschlusslaengenberichtigung> berichtigungen)
         {
             var b = new Bericht();
-            foreach (Anschlusslaengenberichtigung k in Berichtigungen)
+            foreach (Anschlusslaengenberichtigung k in berichtigungen)
             {
                 if (Zahl(SqlZaehlung(k.Spalte), P(k.Bezeichner), P(k.BildVon), P(k.BildBis)) == 0) continue;
                 int n = DataRepository.ExecuteNonQuery(SqlBerichtigung(k.Spalte), P(k.Neu), P(k.Bezeichner),
@@ -268,10 +276,13 @@ namespace WindowsFormsApplication1
         /// Wie viele Spalten tragen noch ihr Schadensbild? 0 = der Schritt ist gelaufen (die
         /// Nachprobe der Migration).
         /// </summary>
-        public static long Offen()
+        public static long Offen() => Offen(Berichtigungen);
+
+        /// <summary>Wie viele Spalten einer Liste tragen noch ihr Schadensbild?</summary>
+        public static long Offen(IEnumerable<Anschlusslaengenberichtigung> berichtigungen)
         {
             long offen = 0;
-            foreach (Anschlusslaengenberichtigung k in Berichtigungen)
+            foreach (Anschlusslaengenberichtigung k in berichtigungen)
                 offen += Zahl(SqlZaehlung(k.Spalte), P(k.Bezeichner), P(k.BildVon), P(k.BildBis));
             return offen;
         }

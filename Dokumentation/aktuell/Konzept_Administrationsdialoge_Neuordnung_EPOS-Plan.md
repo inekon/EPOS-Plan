@@ -711,9 +711,20 @@ Quelle dieselben Längen 243,7 / 7 879 / 1 392,8 m trugen (Laibung 0,08 m je m²
 beim Kaufhaus 5 820,8 m (dasselbe Verhältnis × 2 262,36 m²) und Dach- und Kellerkante gleich dem
 Umfang 313,8 m der gemeinsamen Grundfläche 1 469 m². Der Schritt trifft je Satz und Spalte nur
 Bezeichner UND unplausiblen Wert; Projektkopien bleiben (Nachweis `GebaeudeAnschlusslaengenReparaturTests`,
-Herleitungen in `Referenzlaeufe/LIESMICH.md`). Weitere Sätze mit auffälligen Anschlusslängen (etwa
-185 / 985 m bei 540 m² Dach in den Altenheim-, Pflegeheim-, Schul- und Hallenbadsätzen, 5 380,8 m
-Dachkante bei `Hotel-F-228`) sind nicht Teil des Entscheids und bleiben, wie sie sind. (b)
+Herleitungen in `Referenzlaeufe/LIESMICH.md`). ✔ **Folgeberichtigung der Scan-Kandidaten und der
+Außenwand des Kaufhauses (#496, Schemaschritt `GebaeudeAnschlusslaengenFolgereparatur.SCHRITT`,
+Anwenderauftrag 25.09.2026):** Die Alten-, Pflegeheim-, Schul- und Hallenbadsätze mit 185 / 985 m und
+die Sätze `Hotel_G_96`, `ml-Hotel-G-096`, `GMH-G-U-97` mit 86,6 / 295,5 m tragen Laibung und Dachkante
+getauscht (die kurze Länge ist der Umfang der eigenen Geometrie); `GMH-BZ_T` und `GMH-J-015`, die
+dieselben Längen auf fremder Geometrie trugen, führen hergeleitet 382,6 m Laibung (1,24 m je m² × 307,6 m²)
+und 122,3 m Umfang; die drei `Hotel-F-228`-Sätze führen Dach- und Kellerkante 116,16 m wie
+`Kaufhalle_NE` gleicher Geometrie statt 5 380,8 / 40 m; das Kaufhaus führt die Außenwand 1 820,9 m²
+(Umfang 313,8 m × 2,86 Geschosse × 4,55 m minus 2 262,36 m² Fenster) statt der 10 094 m² der
+Krankenhaussätze. Nachweis `GebaeudeAnschlusslaengenFolgereparaturTests`. Nur berichtet und nicht
+geändert: die Sätze mit 0 m Laibung, die gerundeten EnEV-Laibungen, die hohen Dachkanten (vermutlich
+geneigte Dächer, darunter die eingefrorenen Referenzsätze 145 und 146) und die Kellerkanten, die kein
+Ausgangssatz als Umfang führt — Vorschläge in `Referenzlaeufe/LIESMICH.md`, Entscheidung beim
+Anwender. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im
