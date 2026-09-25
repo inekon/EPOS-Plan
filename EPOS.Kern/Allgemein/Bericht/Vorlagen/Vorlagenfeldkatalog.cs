@@ -367,6 +367,8 @@ namespace WindowsFormsApplication1
                 {
                     // Der Sammelanker deckt jedes Kapitel; einzeln geführte setzt er nicht noch einmal ein.
                     Deckt = Berichtskapitel.Alle.Select(k => k.Schluessel).ToArray(),
+                    // BV-E3: der Bedarf aller Kapitel — im Lauf nur der angehakten (Berichtsbedarf.AusVorlage).
+                    Bedarf = Berichtskapitel.Alle.Aggregate(Vorlagenbedarf.Keiner, (b, k) => b | k.Bedarf),
                 },
 
                 // ---------------- text.* — Festtexte der Standardvorlage (4.9) ----------------
@@ -428,6 +430,8 @@ namespace WindowsFormsApplication1
                 {
                     Seit = FASSUNG_KAPITEL,
                     Deckt = DecktVon(k, kennzahlen),
+                    // BV-E3: das Kapitel trägt den Bedarf seines Bausteins (Berichtskapitel.Bedarf).
+                    Bedarf = k.Bedarf,
                 };
             }
             foreach (Berichtskapitel k in Berichtskapitel.Alle.Where(k => k.Schalter != null))
