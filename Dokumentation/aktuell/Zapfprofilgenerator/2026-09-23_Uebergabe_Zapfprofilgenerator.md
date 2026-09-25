@@ -615,3 +615,35 @@ Z0–Z5 des Umsetzungskonzepts umgesetzt; der Übertrag setzt bei den Folgen (ZU
   Bedeckungsgrad-Referenzfall mit TRY-Import, redundanter Index, Katalogimport-Reste, Katalogdialog auf
   iOS); (3) Validierungsbericht mit echten Messreihen nach K5; (4) Wiki-Upload aller Zapfprofil-
   Abschnitte. **Schemaschritt:** Nummer erst beim Merge messen; heute ist 140 die höchste.
+
+## 14 Nachtrag 25.09.2026 — Folgeposten ZU20 und ZU24 umgesetzt
+
+Nach Abschnitt 13 sind zwei Folgen der Anwenderentscheide vom 25.09.2026 (Nachtrag N16) auf dem
+Zweig `zu` erledigt (von `fec09538`, Commits `c90990e2` und `8b822f98`, Papiere `3184e857`,
+Merges `e4b8d5b8` von `99815b47`, `3bf3a59f` von `b5cc1a61` und `fc787fa4` von `b0cff527`;
+Statuszeile #504, Nachtrag **N17**,
+Protokoll
+[`2026-09-25_Folgeposten_ZU20_ZU24.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-25_Folgeposten_ZU20_ZU24.md)).
+**Kein Schemaschritt** — Schemastand bleibt 141.
+
+- **ZU20:** Die fünf abgeleiteten VDI-6002-Nutzungsarten samt vier Tagesgangsätzen und sechzehn
+  Tagesgängen gehören zur Auslieferung. Träger sind drei neue CSV-Dateien des freien Paketteils
+  (`Tab_TwwTagesgangsatz_STAMM.csv`, `Tab_TwwTagesgang_STAMM.csv`, `Tab_TwwNutzungsart_STAMM.csv`),
+  Status `AUSLIEFERUNG`, `ReadOnly` 1, Herkunftsart **`VERFAHREN`**, Quelle „abgeleitet aus VDI 6002
+  Blatt n"; das Einspielskript erzeugt sie aus der abgeleiteten JSON-Datei und hält sie bei jedem
+  Lauf dagegen.
+- **ZU24:** `Referenzlaeufe/Katalogpaket_Vorlage_A100/` ist die Paketvorlage für die
+  Nichtwohn-Typen des Beiblatts A100 — vier Dateien des Importformats, je eine Platzhalterzeile,
+  Anleitung und Typnamenliste in ihrer `LIESMICH.md`, **keine Normzahl**. Die Werte trägt der
+  Anwender außerhalb des Repositoriums ein.
+
+**Sichtabnahme unter Windows** (zwei Handgriffe): Im Katalogdialog **Administration → Brauchwasser
+→ Nutzungsarten** stehen die fünf Einträge „… (abgeleitet)" mit Stand *Auslieferung*, Herkunft
+*Verfahren* und Quelle „abgeleitet aus VDI 6002 Blatt 1" bzw. „… Blatt 2"; sie sind gesperrt, und
+*Bearbeiten* legt eine Kopie an. Über **Import…** denselben Dialogs lässt sich der Ordner
+`Referenzlaeufe/Katalogpaket_Vorlage_A100` einspielen: Der Bericht nennt eine angelegte
+Nutzungsart „Beispieltyp (Vorlage)" mit Stand *Import*, ohne Ablehnung und ohne Hinweis.
+
+**Offen bleibt:** ZU21 (fachliche Durchsicht der Setzungen des freien Paketteils — die neuen Zeilen
+liegen im selben Ordner), K5 (Messreihen), ZU7 (Referenzprojekt, vierte Einfrierregel, neue Basis),
+der Wiki-Upload der Zapfprofil-Abschnitte und der Logbuch-Eintrag samt Versionsnummer.

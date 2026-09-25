@@ -407,7 +407,7 @@ namespace EPOS.Kern.Tests
                      {
                          "A100.Ladungsfaktor", "A100-Referenzprofil aus dem Katalog", "W551.Mindesttemperatur",
                          "DIN4708.Profil.Block.1.Anteil", "DIN18599.Wohnen.a", "Jordan/Vajen (IEA SHC Task 26)",
-                         "ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil L", "VDI 6002 Blatt 2 (abgeleitet)"
+                         "ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil L", "abgeleitet aus VDI 6002 Blatt 2"
                      })
                 Assert.True(Fundstellen("probe", erlaubt, begriffe).Count == 0, erlaubt);
         }

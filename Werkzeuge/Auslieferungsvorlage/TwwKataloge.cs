@@ -42,9 +42,12 @@ namespace Auslieferungsvorlage
     /// der Testdatenbank nichts.</para>
     ///
     /// <para><b>Der freie Paketteil</b> (<c>Referenzlaeufe/Katalogpaket_frei/</c>, Stufe Z3) bringt
-    /// die freien Daten aus dem Repositorium — Parameter der Stochastik, Ecodesign-Zapfprofil,
-    /// Zapfkategorien nach Jordan/Vajen — in JEDE Vorlage (<see cref="PaketteilEinspielen"/>),
-    /// nach dem Katalogpaket, das ihn nur ersetzt, wo es dieselbe Zeile führt.</para>
+    /// die Daten des Repositoriums, die ausgeliefert werden dürfen, in JEDE Vorlage
+    /// (<see cref="PaketteilEinspielen"/>), nach dem Katalogpaket, das ihn nur ersetzt, wo es
+    /// dieselbe Zeile führt: Parameter der Stochastik, Ecodesign-Zapfprofil, Zapfkategorien nach
+    /// Jordan/Vajen und — mit ZU20 — die fünf aus VDI 6002 <b>abgeleiteten</b> Nutzungsarten samt
+    /// ihren Tagesgangsätzen und Tagesgängen (Herkunftsart <c>VERFAHREN</c>, Quelle „abgeleitet aus
+    /// VDI 6002 Blatt n"; ihre Zahl steht in keiner Richtlinie).</para>
     /// </summary>
     internal sealed class TwwKataloge
     {
@@ -299,10 +302,24 @@ namespace Auslieferungsvorlage
         /// <summary>Die Tabellen des Paketteils in Einspielreihenfolge (Verwiesene zuerst).</summary>
         internal static readonly string[] PAKETTEIL_TABELLEN =
         {
+            TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
+            TwwSchema.TAB_TWW_TAGESGANG_STAMM,
+            TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
             TwwSchema.TAB_TWW_PARAMETER_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
             TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM
+        };
+
+        /// <summary>
+        /// Die Herkunftsarten, die eine Zeile des freien Paketteils tragen darf: <c>FREI</c> für eine
+        /// frei verfügbare Quelle und <c>VERFAHREN</c> für einen aus einem Verfahren gerechneten Wert
+        /// (die aus VDI 6002 abgeleiteten Nutzungsarten, ZU19/ZU20 — ihre Zahl steht in keiner
+        /// Richtlinie, und ihre Quelle ist keine freie).
+        /// </summary>
+        internal static readonly string[] PAKETTEIL_HERKUNFT =
+        {
+            TwwSchema.HERKUNFT_FREI, TwwSchema.HERKUNFT_VERFAHREN
         };
 
         /// <summary>
@@ -317,21 +334,25 @@ namespace Auslieferungsvorlage
         }
 
         /// <summary>
-        /// <b>Spielt den freien Paketteil ein</b> (Stufe Z3): die freien Daten des Zapfprofilgenerators —
-        /// Parameter der Stochastik, Ecodesign-Zapfprofil samt Ereignissen, Zapfkategorien nach
-        /// Jordan/Vajen —, die im Repositorium stehen dürfen und ohne die die Auslieferung weder
-        /// stochastisch rechnet noch die Bedarfstag-Quelle (5) anbietet. Immer, nach dem externen
+        /// <b>Spielt den freien Paketteil ein</b> (Stufe Z3): die Daten des Zapfprofilgenerators, die
+        /// im Repositorium stehen dürfen — Parameter der Stochastik, Ecodesign-Zapfprofil samt
+        /// Ereignissen, Zapfkategorien nach Jordan/Vajen und die fünf aus VDI 6002 abgeleiteten
+        /// Nutzungsarten samt Tagesgangsätzen und Tagesgängen (ZU20) —, ohne die die Auslieferung weder
+        /// stochastisch rechnet noch die Bedarfstag-Quelle (5) anbietet noch einen Katalog der
+        /// Nutzungsarten führt. Immer, nach dem externen
         /// Katalogpaket; das Ergebnis ist dasselbe wie „Paketteil zuerst, das Katalogpaket ersetzt
         /// ihn nur, wo es dieselbe Zeile führt".
         ///
         /// <para><b>Format</b> wie das Katalogpaket (N2), mit drei Regeln des Paketteils: Jede Zeile
-        /// trägt Herkunftsart <c>FREI</c>, Status <c>AUSLIEFERUNG</c> und <c>ReadOnly</c> 1 (oder
-        /// keine Spalte). Der Paketteil führt <b>keine Katalogversion</b>: Seine Zeilen treten der
+        /// trägt Status <c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1 (oder keine Spalte) und in jeder
+        /// Provenienzgruppe eine Herkunftsart aus <see cref="PAKETTEIL_HERKUNFT"/> — <c>FREI</c> für
+        /// eine frei verfügbare Quelle, <c>VERFAHREN</c> für einen gerechneten Wert. Der Paketteil führt <b>keine Katalogversion</b>: Seine Zeilen treten der
         /// Katalogversion des Katalogs bei (die des zuletzt angelegten Parameters, sonst
         /// <see cref="KATALOGVERSION_FREI"/>) — sonst sähe der Parametersatz der Auslieferung die
         /// Parameter der Stochastik nicht. Die <c>ID</c> eines Bedarfstags ist nur Schlüssel des
         /// Pakets (die Ereignisse verweisen über <c>ID_Bedarfstag</c> darauf); die Datenbank vergibt
-        /// die echte. Die <b>Zapfkategorien</b> führen keine <c>ID_Nutzungsart</c>: Sie sind
+        /// die echte; ebenso die <c>ID</c> eines Tagesgangsatzes, auf die Tagesgänge und Nutzungsarten
+        /// über <c>ID_Tagesgangsatz</c> verweisen. Die <b>Zapfkategorien</b> führen keine <c>ID_Nutzungsart</c>: Sie sind
         /// Vorgabesätze, von denen jede Nutzungsart mit Status <c>AUSLIEFERUNG</c> ohne eigene
         /// Kategorien <b>den Satz ihrer Gruppe</b> bekommt (Stufe Z5). Die Gruppe steht in der
         /// Steuerspalte <see cref="TwwSchema.STEUERSPALTE_GRUPPE"/> — der einzigen Spalte des
@@ -342,7 +363,8 @@ namespace Auslieferungsvorlage
         /// Kategorien — der Bericht meldet es, und sie rechnen nicht stochastisch.</para>
         ///
         /// <para><b>Schlüsselgleichheit.</b> Führt das Katalogpaket dieselbe Zeile (Parameter:
-        /// Schlüssel und Katalogversion; Bedarfstag: Bezeichner und Katalogversion), gilt seine, und
+        /// Schlüssel und Katalogversion; Bedarfstag, Tagesgangsatz und Nutzungsart: Bezeichner und
+        /// Katalogversion), gilt seine, und
         /// der Bericht meldet es. Ohne Katalogpaket ersetzt der Paketteil eine gleiche Zeile der
         /// Quelle. Ein Fehler nennt Datei, Zeile und Grund und rollt den ganzen Paketteil zurück.</para>
         /// </summary>
@@ -407,6 +429,63 @@ namespace Auslieferungsvorlage
                     _bericht.Zeile("Katalogversion der Paketteil-Zeilen: " + version +
                                    (kv == null || kv == DBNull.Value ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
                     var meldungen = new List<string>();
+
+                    // --- Tagesgangsätze, Tagesgänge und Nutzungsarten (ZU20) --------------------
+                    // Die ID des Satzes ist Schlüssel des Pakets: Tagesgänge und Nutzungsarten
+                    // verweisen darauf, die Datenbank vergibt die echte. Tritt ein Satz zurück
+                    // (das Katalogpaket führt ihn), treten seine Tagesgänge und die Nutzungsarten,
+                    // die auf ihn zeigen, mit ihm zurück — benannt, nie still.
+                    var satzIds = new Dictionary<long, long?>();
+                    int nSaetze = 0, nGaenge = 0, nArten = 0;
+                    List<Dictionary<string, object>> saetzeZ = zeilen[TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM];
+                    for (int i = 0; i < saetzeZ.Count; i++)
+                    {
+                        if (!(saetzeZ[i].TryGetValue("ID", out object roh) && roh is long schluesselId))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM][i] + ": die Spalte ID " +
+                                                           "(Schluessel des Pakets fuer Tagesgaenge und Nutzungsarten) fehlt.");
+                        if (satzIds.ContainsKey(schluesselId))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM][i] + ": ID " + schluesselId + " doppelt.");
+                        string satzname = Convert.ToString(saetzeZ[i]["Bezeichner"], CultureInfo.InvariantCulture);
+                        if (Gleich(v, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, "Bezeichner", satzname, version, mitKatalogpaket, meldungen))
+                        {
+                            satzIds[schluesselId] = null;
+                            continue;
+                        }
+                        satzIds[schluesselId] = Einfuegen(v, TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, saetzeZ[i], version);
+                        nSaetze++;
+                    }
+                    List<Dictionary<string, object>> gaengeZ = zeilen[TwwSchema.TAB_TWW_TAGESGANG_STAMM];
+                    for (int i = 0; i < gaengeZ.Count; i++)
+                    {
+                        if (!(gaengeZ[i].TryGetValue("ID_Tagesgangsatz", out object roh) && roh is long kopf) ||
+                            !satzIds.TryGetValue(kopf, out long? neu))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_TAGESGANG_STAMM][i] +
+                                                           ": ID_Tagesgangsatz verweist auf keinen Tagesgangsatz des Paketteils (Waise).");
+                        if (neu == null) continue;                       // der Satz tritt zurueck, seine Gaenge mit ihm
+                        Einfuegen(v, TwwSchema.TAB_TWW_TAGESGANG_STAMM,
+                                  new Dictionary<string, object>(gaengeZ[i], StringComparer.Ordinal) { ["ID_Tagesgangsatz"] = neu.Value }, null);
+                        nGaenge++;
+                    }
+                    List<Dictionary<string, object>> artenZ = zeilen[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM];
+                    for (int i = 0; i < artenZ.Count; i++)
+                    {
+                        if (!(artenZ[i].TryGetValue("ID_Tagesgangsatz", out object roh) && roh is long kopf) ||
+                            !satzIds.TryGetValue(kopf, out long? neu))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_NUTZUNGSART_STAMM][i] +
+                                                           ": ID_Tagesgangsatz verweist auf keinen Tagesgangsatz des Paketteils (Waise).");
+                        string artname = Convert.ToString(artenZ[i]["Bezeichner"], CultureInfo.InvariantCulture);
+                        if (neu == null)
+                        {
+                            meldungen.Add(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " \"" + artname + "\": ihr Tagesgangsatz tritt " +
+                                          "zurueck — die Nutzungsart des Paketteils mit ihm");
+                            continue;
+                        }
+                        if (Gleich(v, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezeichner", artname, version, mitKatalogpaket, meldungen))
+                            continue;
+                        Einfuegen(v, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
+                                  new Dictionary<string, object>(artenZ[i], StringComparer.Ordinal) { ["ID_Tagesgangsatz"] = neu.Value }, version);
+                        nArten++;
+                    }
 
                     // --- Parameter ------------------------------------------------------------
                     int parameter = 0;
@@ -486,6 +565,9 @@ namespace Auslieferungsvorlage
 
                     v.Commit();
 
+                    _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM + ".csv  ->  " + nSaetze + " von " + saetzeZ.Count + " Zeile(n)");
+                    _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + ".csv  ->  " + nGaenge + " von " + gaengeZ.Count + " Zeile(n)");
+                    _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv  ->  " + nArten + " von " + artenZ.Count + " Zeile(n)");
                     _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv  ->  " + parameter + " von " + p.Count + " Zeile(n)");
                     _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv  ->  " + tage + " von " + b.Count + " Zeile(n)");
                     _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + ".csv  ->  " + ereignisse + " von " + e.Count + " Zeile(n)");
@@ -536,8 +618,17 @@ namespace Auslieferungsvorlage
             if (tabelle == TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM && kopf.Contains("ID_Nutzungsart"))
                 throw new InvalidDataException(name + ": die Kategorien des Paketteils sind ein Vorgabesatz ohne ID_Nutzungsart.");
             bool kopfzeile = typen.ContainsKey("Status");
-            if (kopfzeile && (!kopf.Contains("Status") || !kopf.Contains("Herkunftsart")))
-                throw new InvalidDataException(name + ": Status und Herkunftsart gehoeren in jede Zeile des Paketteils.");
+            // Die Herkunftsspalten der Tabelle: "Herkunftsart" oder — bei den Nutzungsarten — je
+            // Provenienzgruppe eine "<Gruppe>_Herkunftsart". Der Tagesgangsatz führt keine (seine
+            // Herkunft steht an seinen Tagesgängen), die Ereignisse weder sie noch Status.
+            List<string> herkunft = typen.Keys.Where(s => s == "Herkunftsart" ||
+                                                          s.EndsWith("_Herkunftsart", StringComparison.Ordinal))
+                                              .OrderBy(s => s, StringComparer.Ordinal).ToList();
+            if (kopfzeile && !kopf.Contains("Status"))
+                throw new InvalidDataException(name + ": Status gehoert in jede Zeile des Paketteils.");
+            foreach (string h in herkunft)
+                if (!kopf.Contains(h))
+                    throw new InvalidDataException(name + ": " + h + " gehoert in jede Zeile des Paketteils.");
 
             var zeilen = new List<Dictionary<string, object>>();
             var orte = new List<string>();
@@ -553,12 +644,14 @@ namespace Auslieferungsvorlage
                     w[kopf[c]] = kopf[c] == TwwSchema.STEUERSPALTE_GRUPPE && !typen.ContainsKey(kopf[c])
                         ? Gruppe(z[c], ort)
                         : Wert(z[c], typen[kopf[c]], ort + ", Spalte " + kopf[c]);
+                foreach (string h in herkunft)
+                    if (!PAKETTEIL_HERKUNFT.Contains(Convert.ToString(w[h]), StringComparer.Ordinal))
+                        throw new InvalidDataException(ort + ": " + h + " \"" + Convert.ToString(w[h]) + "\" — der Paketteil " +
+                                                       "fuehrt nur " + string.Join(" und ", PAKETTEIL_HERKUNFT) + ".");
                 if (kopfzeile)
                 {
                     if (!string.Equals(Convert.ToString(w["Status"]), TwwSchema.STATUS_AUSLIEFERUNG, StringComparison.Ordinal))
                         throw new InvalidDataException(ort + ": Status \"" + Convert.ToString(w["Status"]) + "\" — der Paketteil fuehrt nur AUSLIEFERUNG.");
-                    if (!string.Equals(Convert.ToString(w["Herkunftsart"]), TwwSchema.HERKUNFT_FREI, StringComparison.Ordinal))
-                        throw new InvalidDataException(ort + ": Herkunftsart \"" + Convert.ToString(w["Herkunftsart"]) + "\" — der Paketteil fuehrt nur FREI.");
                     if (w.TryGetValue("ReadOnly", out object ro) && !(ro is long l && l == 1))
                         throw new InvalidDataException(ort + ": ReadOnly muss 1 sein (Auslieferung).");
                     if (typen.ContainsKey("ReadOnly")) w["ReadOnly"] = 1L;
@@ -877,18 +970,32 @@ namespace Auslieferungsvorlage
             _bericht.Zeile("        Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
                            auslieferung.ToString(CultureInfo.InvariantCulture));
 
-            // Die Zeilen des freien Paketteils (Herkunftsart FREI) — nachrichtlich je Tabelle; die
-            // Ereignisse zaehlen an ihrem freien Bedarfstag.
+            // Die Zeilen des freien Paketteils (Herkunftsart FREI oder VERFAHREN) — nachrichtlich je
+            // Tabelle; die Ereignisse zaehlen an ihrem freien Bedarfstag, der Tagesgangsatz (ohne
+            // eigene Herkunftsspalte) an seinen Tagesgaengen.
             var frei = new List<string>();
             foreach (string t in Vorhandene(PAKETTEIL_TABELLEN))
             {
-                long n = t == TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM
-                    ? Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"ID_Bedarfstag\" IN (SELECT \"ID\" FROM \"" +
-                           TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" = ?)", TwwSchema.HERKUNFT_FREI)
-                    : Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Herkunftsart\" = ?", TwwSchema.HERKUNFT_FREI);
+                long n;
+                if (t == TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM)
+                    n = Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"ID_Bedarfstag\" IN (SELECT \"ID\" FROM \"" +
+                             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" IN (?, ?))",
+                             PAKETTEIL_HERKUNFT[0], PAKETTEIL_HERKUNFT[1]);
+                else if (t == TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM)
+                    n = !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANG_STAMM) ? 0
+                        : Zahl("SELECT COUNT(DISTINCT \"ID_Tagesgangsatz\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM +
+                               "\" WHERE \"Herkunftsart\" IN (?, ?)", PAKETTEIL_HERKUNFT[0], PAKETTEIL_HERKUNFT[1]);
+                else
+                {
+                    List<string> h = Herkunftsspalten(t);
+                    n = h.Count == 0 ? 0
+                        : Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"" + h[0] + "\" IN (?, ?)",
+                               PAKETTEIL_HERKUNFT[0], PAKETTEIL_HERKUNFT[1]);
+                }
                 frei.Add(t + " " + n.ToString(CultureInfo.InvariantCulture));
             }
-            _bericht.Zeile("        Tww-Zeilen mit Herkunftsart FREI (freier Paketteil): " + string.Join(", ", frei));
+            _bericht.Zeile("        Tww-Zeilen mit Herkunftsart " + string.Join("/", PAKETTEIL_HERKUNFT) +
+                           " (freier Paketteil): " + string.Join(", ", frei));
             return ok;
         }
 
@@ -917,11 +1024,11 @@ namespace Auslieferungsvorlage
             return false;
         }
 
-        private static long Zahl(string sql, string wert)
+        private static long Zahl(string sql, params string[] werte)
         {
-            object o = wert == null
+            object o = werte == null || werte.Length == 0 || werte[0] == null
                 ? DataRepository.ExecuteScalar(sql)
-                : DataRepository.ExecuteScalar(sql, new DbParam("?", wert));
+                : DataRepository.ExecuteScalar(sql, werte.Select(w => new DbParam("?", w)).ToArray());
             return o == null || o == DBNull.Value ? 0L : Convert.ToInt64(o);
         }
 
