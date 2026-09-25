@@ -82,14 +82,19 @@ Was der Katalogeditor für jedes neue Gebäude verlangt, die Datei aber nicht li
 
 * '''Luftwechselrate''' – immer 0,7 1/h, die Summe der Vorgaben für Infiltration (0,3 1/h) und Nutzerlüftung (0,4 1/h). Das Gebäudemodell rechnet mit Infiltration und Nutzerlüftung, solange eines der beiden Felder gefüllt ist; der Beleg nennt den Luftwechsel, mit dem gerechnet wird.
 * '''Fläche je Nutzer''' – aus den Personenzahlen, wenn die Datei sie für jeden beheizten Raum nennt; sonst 35 m², der Wert, mit dem EPOS-Plan ein Gebäude ohne diese Angabe speichert.
-* '''Innere Gewinne''' – 0 W wie bei einem neuen Gebäude. Eine Datei nennt Auslegungsleistungen für Beleuchtung und Geräte, die zu Zeitplänen gehören; ihre Summe steht nur als Vorschlag im Beleg.
+* '''Innere Gewinne''' – 5 W je m² Nutzfläche, für jede Gebäudeart gleich; bei 120 m² also 600 W. Ohne Nutzfläche bleibt es bei 0 W wie bei einem neuen Gebäude. Eine Datei nennt Auslegungsleistungen für Beleuchtung und Geräte, die zu Zeitplänen gehören; ihre Summe steht nur als Vorschlag im Beleg. Ändern Sie in der Zuordnung die Nutzfläche, bleibt die Vorgabe der inneren Gewinne, wie sie ist; tragen Sie dann den passenden Wert selbst ein.
+* '''Soll am Tag''' – 20 °C, wenn die Datei keine einheitliche Heiz-Solltemperatur nennt.
+* '''Heizsollwert in der Nacht''' – 18 °C, höchstens aber das Soll am Tag; der Beleg nennt es, wenn das Soll am Tag darunter liegt.
+* '''Nachtabsenkung von … bis''' – 22 bis 6 Uhr, übernommen als eingetragene Stunden (siehe [[Programm Dokumentation/Gebäude#nachtzeit|Nachtzeit]]).
+
+Jede dieser Vorgaben lässt sich in der Spalte ''Wert'' ändern – die Herkunft wird dann ''manuell'' – und später im Katalogeditor.
 
 Für U-Werte, g-Wert und Wärmebrückenkoeffizienten gibt es Vorgaben nur aus der Baualtersklasse; ohne Klasse bleiben diese Zeilen leer, wenn die Datei keinen Wert liefert. Weiter gilt:
 
 * '''Wärmebrücken''' – die Verlustkoeffizienten ψ sind die Vorgabe der Baualtersklasse; die '''Anschlusslängen''' bleiben leer, weil eine Gebäudedatei sie nicht als solche führt. Tragen Sie die Längen im Katalogeditor ein, wenn der Wärmebrückenzuschlag gerechnet werden soll.
 * '''Bauart''' – wo die Datei Schichtaufbauten mit Stoffwerten führt, leitet EPOS-Plan sie aus den raumseitigen Schichten der Bauteile ab; sonst gilt die Bauart eines neuen Gebäudes. Der Editor bildet daraus die Speicherfähigkeit wie bei jedem neuen Gebäude.
 * '''Luftwechsel''' – übernommen wird nur die Infiltration, und nur, wenn die Datei sie für jeden beheizten Raum nennt; die Nutzerlüftung bleibt dann leer und rechnet mit ihrer Vorgabe. Nennt die Datei keinen Luftwechsel, stehen beide auf ihrer Vorgabe.
-* '''Soll am Tag''' – übernommen, wenn die Datei für alle beheizten Räume dieselbe Heiz-Solltemperatur nennt.
+* '''Soll am Tag''' – übernommen, wenn die Datei für alle beheizten Räume dieselbe Heiz-Solltemperatur nennt; sonst gilt die Vorgabe 20 °C.
 
 === Meldungen ===
 {{Anker|meldungen}}

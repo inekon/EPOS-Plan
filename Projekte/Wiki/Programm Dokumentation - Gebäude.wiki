@@ -62,6 +62,7 @@ Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er er
 === Reiter „Temperaturen und Ferien" ===
 
 * {{Anker|raumtemperaturen}}'''Raumtemperaturen''' – Soll am Tag, Nachtabsenkung auf, Wochenendabsenkung, Soll in Ferien und Maximalraumtemperatur, jeweils in °C. Sie steuern die Absenkungen im Jahresgang.
+* {{Anker|nachtzeit}}'''Nachtabsenkung von … bis''' – Beginn und Ende der Nacht, je als volle Stunde von 0 bis 23. In dieser Zeit gilt die Nachtabsenkung, in der übrigen Zeit eines Werktags das Soll am Tag; eine wirksame Wochenendabsenkung und die Ferien gehen vor. Die Nacht darf über Mitternacht reichen. Bleiben beide Felder leer, gilt 22 bis 6 Uhr – die Felder zeigen diese Vorgabe. Geben Sie beide Stunden ein oder keine; Beginn und Ende dürfen nicht gleich sein, sonst hält ''OK'' mit einer Meldung an. Ein Beispiel: Ein Büro mit Nachtabsenkung von 19 bis 7 Uhr erhält die Einträge 19 und 7. Die Nachtzeit gilt für den Rechenweg VDI 6007 (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]); ein gepflegtes Sollwert-Zeitprogramm der Wärmeübergabe geht ihr vor, und der Rechenweg Tagesbilanz rechnet immer mit 22 bis 6 Uhr.
 * {{Anker|ferienzeiten}}'''Ferien Anfang''' und '''Ferien Ende''' – vier Zeiträume für Winter, Ostern, Sommer und Herbst, je mit Tag und Monat. Die Winterferien reichen über den Jahreswechsel. In diesen Zeiträumen gilt die Ferien-Solltemperatur.
 * '''Brauchwasser…''' – öffnet in der Gruppe ''Sonstiges'' die Brauchwasserprofile des offenen Projekts.
 
@@ -207,7 +208,7 @@ Alle Felder des Stammblatts sind direkt bearbeitbar:
 * {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''U bzw. ψ'' und Größe ''A bzw. L''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten. Eine weitere Zeile nennt den Rechenweg der Hülle: Ein Katalogsatz rechnet den Klassenweg und trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt über ''Hülle und Zonen…'' im Gebäudedialog (siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
 * {{Anker|fenster}}'''Fenster nach Orientierung''' – Nord, Süd, Ost und West in m²; Summe Ost + West und gesamte Fensterfläche sind gerechnet.
 * '''Kenngrößen''' – Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad (etwa 0,4) und Luftwechselrate.
-* {{Anker|alle-daten}}'''Alle Daten''' – aufklappbar: Raumtemperaturen, Ferien Anfang und Ende, die Modellparameter (VDI 6007) samt Rechenweg und die Kühlung. Die Felder sind dieselben wie im [[#katalogeditor|Katalogeditor]].
+* {{Anker|alle-daten}}'''Alle Daten''' – aufklappbar: Raumtemperaturen samt Nachtzeit (''Nachtabsenkung von … bis''), Ferien Anfang und Ende, die Modellparameter (VDI 6007) samt Rechenweg und die Kühlung. Die Felder sind dieselben wie im [[#katalogeditor|Katalogeditor]].
 
 Ein Beispiel: Für ''Gebäude 1'' mit 150 m² Nutzfläche tragen Sie unter ''Hülle'' für die Außenwand einen U-Wert von 0,3 W/(m²·K) und eine Fläche von 200 m² ein und unter ''Fenster nach Orientierung'' im Süden 20 m²; die Fensterzeile der Hülle zeigt danach die neue Summe.
 
