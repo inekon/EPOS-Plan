@@ -53,7 +53,15 @@ namespace EPOS.Kern.Tests
     /// übersehen. (2) <b>Die zweite Tür des UI-Wächters gilt je Klasse</b> statt je Datei:
     /// Vorher genügte das Wort <c>Kulturvorrichtung</c> irgendwo in der Datei (auch in einem
     /// Kommentar). Der Leser dafür (<see cref="Quelle"/>) maskiert Kommentare,
-    /// Zeichenketten und Präprozessorzeilen, bevor er Klassen, Felder und Klammern zählt.</para>
+    /// Zeichenketten und Präprozessorzeilen, bevor er Klassen, Felder und Klammern zählt.
+    /// (3) <b>Die Standardkultur en-US:</b> <c>EPOS.Kern.Tests/StandardkulturEnUs.cs</c> und
+    /// <c>EPOS.UI.Tests/StandardkulturEnUs.cs</c> setzen beim Laden der Testassembly en-US —
+    /// die Kultur des Windows-Läufers. Ein Fall, der deutsche Ressourcentexte erwartet und
+    /// nicht pinnt, fällt damit auf jedem Rechner, schon im lokalen Gate, statt erst auf dem
+    /// Windows-Läufer nach dem Push (ubuntu läuft invariant und liefert die neutralen,
+    /// deutschen Ressourcen). Genau diese zwei Dateien (nach Pfad) sind von der
+    /// Rückstell-Pflicht ausgenommen; jeder andere Setzer bleibt verboten, und ein eigener
+    /// Fall verlangt, dass beide bestehen und en-US setzen.</para>
     /// </summary>
     public class KulturwaechterTests
     {
@@ -76,6 +84,25 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Die beiden Testprojekte, in denen Kulturvorrichtungen stehen.</summary>
         private static readonly string[] Testprojekte = { "EPOS.Kern.Tests", "EPOS.UI.Tests" };
+
+        /// <summary>
+        /// Die zwei Dateien der Standardkultur en-US (repo-relativ) — die EINZIGEN Setzer, die
+        /// nicht zurückstellen dürfen, weil sie den Ausgangszustand jedes Laufs herstellen.
+        /// </summary>
+        private static readonly string[] StandardkulturDateien =
+        {
+            "EPOS.Kern.Tests/StandardkulturEnUs.cs",
+            "EPOS.UI.Tests/StandardkulturEnUs.cs",
+        };
+
+        /// <summary>Die vier Werte, die eine Standardkultur-Datei setzen muss.</summary>
+        private static readonly string[] StandardkulturZiele =
+        {
+            "CultureInfo.DefaultThreadCurrentCulture",
+            "CultureInfo.DefaultThreadCurrentUICulture",
+            "Thread.CurrentThread.CurrentCulture",
+            "Thread.CurrentThread.CurrentUICulture",
+        };
 
         private static Regex Zielregex(string ziel) => new Regex(
             @"(?:System\.Globalization\.)?CultureInfo\." + ziel + @"\s*=(?!=)",
@@ -394,6 +421,7 @@ namespace EPOS.Kern.Tests
             Assert.True(dateien.Length > 100, "Nur " + dateien.Length + " Testdateien gefunden.");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "KatalogfilterZeitreihenTests.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "CecWechselrichterAuslieferungTests.cs");
+            Assert.DoesNotContain(dateien, d => Path.GetFileName(d) == "StandardkulturEnUs.cs");
         }
 
         // =====================================================================
@@ -486,6 +514,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(dateien, d => Path.GetFileName(d) == "MenuebandTests.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "DiagrammSvgTests.cs");
             Assert.DoesNotContain(dateien, d => Path.GetFileName(d) == "Kulturvorrichtung.cs");
+            Assert.DoesNotContain(dateien, d => Path.GetFileName(d) == "StandardkulturEnUs.cs");
         }
 
         /// <summary>Die UI-Prüfung über synthetische Dateien (je Text eine).</summary>
@@ -597,6 +626,65 @@ namespace EPOS.Kern.Tests
             Assert.Contains("EPOS.Kern.Tests/GebaeudeHochrechnungTests", klassen);
             Assert.Contains("EPOS.UI.Tests/FenstermassTests", klassen);
             Assert.Contains("EPOS.UI.Tests/EposBunitContext", klassen);
+        }
+
+        // =====================================================================
+        //  Die Standardkultur en-US (seit Auftrag #528)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Wächter über die Standardkultur:</b> Beide <see cref="StandardkulturDateien"/>
+        /// bestehen, tragen einen <c>[ModuleInitializer]</c> und setzen im Code die vier Werte
+        /// (<see cref="StandardkulturZiele"/>) auf en-US — keine andere Kultur. Wer eine davon
+        /// entfernt oder umstellt, macht den en-US-Nachweis des lokalen Gates still; das soll
+        /// nicht unbemerkt geschehen.
+        /// </summary>
+        [Fact]
+        public void Die_Standardkultur_en_US_steht_in_beiden_Testprojekten()
+        {
+            string wurzel = Arbeitsbaum();
+            foreach (string relativ in StandardkulturDateien)
+            {
+                string datei = Path.Combine(wurzel, relativ);
+                Assert.True(File.Exists(datei), "Die Standardkultur fehlt: " + relativ + " (Auftrag #528).");
+
+                Quelle q = Quelle.Lies(datei, wurzel);
+                Assert.True(Regex.IsMatch(q.Maske, @"\[\s*ModuleInitializer\s*\]"),
+                    relativ + " traegt keinen [ModuleInitializer].");
+                foreach (string ziel in StandardkulturZiele)
+                {
+                    Assert.True(ZielregexVoll(ziel).Matches(q.Text).Cast<Match>().Any(m => q.IstCode(m.Index)),
+                        relativ + " setzt " + ziel + " nicht.");
+                }
+                Assert.Contains("\"en-US\"", q.Text, StringComparison.Ordinal);
+                Assert.DoesNotMatch(new Regex("\"[a-z]{2}-[A-Z]{2}\""), q.Text.Replace("\"en-US\"", ""));
+            }
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zur Standardkultur zur Laufzeit:</b> Ohne Pinnung gilt en-US, und die
+        /// Ressourcen antworten englisch; eine <see cref="Kulturvorrichtung"/> schaltet auf de-DE
+        /// und stellt danach wieder auf en-US zurück. Dasselbe prüft
+        /// <c>EPOS.UI.Tests/StandardkulturTests</c> für die andere Testassembly.
+        /// </summary>
+        [Fact]
+        public void Ohne_Pinnung_gilt_en_US_und_die_Vorrichtung_stellt_darauf_zurueck()
+        {
+            const string englisch = "Hours of the year [h]";
+            const string deutsch = "Jahresstunden [h]";
+
+            Assert.Equal("en-US", System.Globalization.CultureInfo.CurrentUICulture.Name);
+            Assert.Equal("en-US", System.Globalization.CultureInfo.CurrentCulture.Name);
+            Assert.Equal(englisch, WindowsFormsApplication1.MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+
+            using (new Kulturvorrichtung())
+            {
+                Assert.Equal("de-DE", System.Globalization.CultureInfo.CurrentUICulture.Name);
+                Assert.Equal(deutsch, WindowsFormsApplication1.MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+            }
+
+            Assert.Equal("en-US", System.Globalization.CultureInfo.CurrentUICulture.Name);
+            Assert.Equal(englisch, WindowsFormsApplication1.MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
         }
 
         // =====================================================================
@@ -1130,9 +1218,11 @@ namespace EPOS.Kern.Tests
             // Die eigene Datei ist ausgenommen: ihre Gegenproben-Textzeilen und die
             // Klassendoku nennen "CultureInfo.DefaultThread(UI)Culture =" absichtlich als
             // reinen Text (Muster fuer den Leser, NICHT als echter Setzer) - ohne die
-            // Ausnahme faende sich der Waechter selbst.
+            // Ausnahme faende sich der Waechter selbst. Ebenso ausgenommen, nach Pfad: die
+            // Standardkultur en-US (Auftrag #528) - sie setzt den Ausgangszustand jedes Laufs.
             return Quelldateien(wurzel, "EPOS.Kern.Tests")
                 .Where(d => Path.GetFileName(d) != "KulturwaechterTests.cs")
+                .Where(d => !IstStandardkulturDatei(wurzel, d))
                 .ToArray();
         }
 
@@ -1140,14 +1230,21 @@ namespace EPOS.Kern.Tests
         /// Alle <c>.cs</c>-Dateien in <c>EPOS.UI.Tests</c>, ohne Bauordner und ohne die
         /// Vorrichtung selbst (<c>Kulturvorrichtung.cs</c> — Auftrag #168, erlaubte Ausnahme:
         /// ihre eigenen Zuweisungen und Rückstellungen SIND die Vorrichtung, nicht deren
-        /// Umgehung).
+        /// Umgehung) und ohne die Standardkultur en-US (nach Pfad, Auftrag #528).
         /// </summary>
         private static string[] TestdateienUi()
         {
-            return Quelldateien(Arbeitsbaum(), "EPOS.UI.Tests")
+            string wurzel = Arbeitsbaum();
+            return Quelldateien(wurzel, "EPOS.UI.Tests")
                 .Where(d => Path.GetFileName(d) != "Kulturvorrichtung.cs")
+                .Where(d => !IstStandardkulturDatei(wurzel, d))
                 .ToArray();
         }
+
+        /// <summary>Ist die Datei eine der zwei <see cref="StandardkulturDateien"/>?</summary>
+        private static bool IstStandardkulturDatei(string wurzel, string datei)
+            => StandardkulturDateien.Contains(
+                Path.GetRelativePath(wurzel, datei).Replace('\\', '/'), StringComparer.Ordinal);
 
         /// <summary>Alle <c>.cs</c>-Dateien eines Projektordners, ohne Bauordner, sortiert.</summary>
         private static string[] Quelldateien(string wurzel, string projekt)
