@@ -23,11 +23,11 @@
 /// Hülle beim Schreiben aus (wie <c>InitModelFromControls</c>). Die <c>Bauweise</c>
 /// steht seit dem Entscheid des Anwenders vom 04.09.2026 (W9‑O‑2) hier: Sie hängt
 /// jetzt an der BAUART-Klappliste, und die bedient der Dialog — siehe
-/// <see cref="Bauweise"/>. Die vier Flags
-/// <c>Wochenende</c>, <c>Ferien</c>, <c>WW_Bedarf</c> und der gehobene
+/// <see cref="Bauweise"/>. Die Flags
+/// <c>Wochenende</c> und <c>Ferien</c> und der gehobene
 /// Winterferienbeginn entstehen seit G1 im OK-Weg des Dialogs (früher beim Übernehmen
 /// des zweiten Reiters, wie
-/// <c>btn_Speichern_Click</c>).</para>
+/// <c>btn_Speichern_Click</c>); <c>WW_Bedarf</c> reist unverändert mit.</para>
 /// </summary>
 public sealed class GebaeudeKatalogDaten
 {
@@ -162,8 +162,10 @@ public sealed class GebaeudeKatalogDaten
     public double Ferien { get; set; }
 
     /// <summary>
-    /// <c>WW_Bedarf</c> — der Vorläufer setzte ihn beim Speichern des zweiten Reiters
-    /// bedingungslos auf 0 (<c>btn_Speichern_Click</c>:201).
+    /// <c>WW_Bedarf</c> (Warmwasserbedarf, kWh/a) aus dem Bestand — unverändert übernommen. Kein
+    /// Feld des Dialogs zeigt ihn, also ändert ihn auch kein Speicherweg; der Bericht zeigt ihn.
+    /// (Der Vorläufer setzte ihn beim Übernehmen seiner zweiten Maske auf 0,
+    /// <c>btn_Speichern_Click</c>:201 — im OK-Weg hätte das jedes Speichern getan.)
     /// </summary>
     public double WwBedarf { get; set; }
 

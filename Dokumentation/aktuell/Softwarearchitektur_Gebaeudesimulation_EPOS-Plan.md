@@ -1623,8 +1623,8 @@ stateDiagram-v2
    `Katalogliste` mit Filterstand aus dem Kern, danach die `Proben/Rasterprobe`. Das ist **keine**
    Voraussetzung von G1, aber **Vorbedingung von G3** (Befund U L4). **Stand nach dem Abschluss von
    G3 (25.09.2026): umgesetzt** (Welle K) — die Katalogseite ist die `Katalogliste` mit Filterstand
-   aus dem Kern, Wahlspalte und 53 px; die Rasterprobe (Fälle GD1–GD3) ist im integrierten Browser
-   gemessen, der Skriptlauf mit Playwright steht auf dem Arbeitsrechner aus.
+   aus dem Kern, Wahlspalte und 53 px; die Rasterprobe (Fälle GD1–GD3) ist im Skriptlauf gemessen
+   und hält die Sollwerte, die Gegenprobe schlägt an.
 
 ### 3.3 Der eine Schreibweg
 

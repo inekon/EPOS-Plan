@@ -45,11 +45,14 @@ import { execSync } from 'node:child_process';
 
 // Playwright liegt in dieser Umgebung GLOBAL (npm -g), und ein ES-Modul sucht
 // dort nicht von selbst — NODE_PATH gilt nur fuer CommonJS. Also erst der
-// gewoehnliche Weg, dann der globale Wurzelordner.
+// gewoehnliche Weg, dann der globale Wurzelordner. Ohne das volle Paket genuegt
+// "playwright-core" (ohne eigenen Browser) zusammen mit --kanal, siehe unten.
 const { chromium } = await (async () => {
   try { return await import('playwright'); } catch { /* nicht lokal installiert */ }
+  try { return await import('playwright-core'); } catch { /* auch nicht */ }
   const wurzel = (process.env.NODE_PATH || execSync('npm root -g').toString()).trim();
-  return createRequire(wurzel + '/rasterprobe.cjs')('playwright');
+  const holen = createRequire(wurzel + '/rasterprobe.cjs');
+  try { return holen('playwright'); } catch { return holen('playwright-core'); }
 })();
 
 // ---------------------------------------------------------------- Aufruf
@@ -60,6 +63,9 @@ const arg = (name, vorgabe) => {
 const WURZEL = arg('url', 'http://127.0.0.1:5299');
 const FOTOS = arg('fotos', '');
 const NUR = arg('nur', '');
+// --kanal msedge (oder chrome) nimmt den installierten Browser statt des
+// Playwright-Chromium; Edge rechnet mit derselben Engine wie WebView2.
+const KANAL = arg('kanal', '');
 // --entpinnt nimmt ALLEN Faellen das gesetzte Zeilenmass wieder weg: der Stand
 // VOR dem Fix, aus demselben Programm gemessen. Der Lauf muss dann rot sein.
 const ENTPINNT = process.argv.includes('--entpinnt');
@@ -655,7 +661,7 @@ const FAELLE = [
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch(KANAL ? { headless: true, channel: KANAL } : { headless: true });
 const ergebnisse = [];
 let schlecht = 0;
 

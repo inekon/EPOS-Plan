@@ -98,7 +98,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         WbvkWandDach = 0,
         AnschlussFensterWand = 40,
         AnschlussWandDach = 0,
-        AnschlussAussenwandKeller = 0
+        AnschlussAussenwandKeller = 0,
+        WwBedarf = 700
     };
 
     private static GebaeudeStammblattDaten Satz(Haus h, int id) => new()
@@ -335,7 +336,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <b>Speichern schreibt den ganzen Feldsatz über den Weg des Katalogeditors</b>: Kenndaten
     /// und ein Hüllwert geändert, der Fuß zählt drei Felder; geschrieben wird unter dem
     /// Bezeichner, als Überschreiben (nicht „neu"), mit den Ableitungen des Editors
-    /// (Winterferienbeginn 0 → 366, WW_Bedarf 0). Danach meldet die Statuszeile.
+    /// (Winterferienbeginn 0 → 366); der Warmwasserbedarf, den kein Feld zeigt, reist unverändert
+    /// mit (Befund 25.09.2026: 700 → 0). Danach meldet die Statuszeile.
     /// </summary>
     [Fact]
     public void Speichern_schreibt_den_Feldsatz_ueber_den_Weg_des_Editors()
@@ -361,7 +363,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal(0.3, d.UWertAussenwand);
         Assert.Equal(120, d.FlaecheAussenwand);
         Assert.Equal(366, d.Ferienbeginn[0]);
-        Assert.Equal(0, d.WwBedarf);
+        Assert.Equal(700, d.WwBedarf);
         Assert.False(cut.Instance.Geaendert);
         Assert.StartsWith("Gespeichert um", cut.Instance.Status);
     }

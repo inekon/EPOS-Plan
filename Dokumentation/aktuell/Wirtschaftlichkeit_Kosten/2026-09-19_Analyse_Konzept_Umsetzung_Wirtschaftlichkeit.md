@@ -1,11 +1,11 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
 **Stand 25.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
-`31a0b085` · `SchemaStand.Zielversion` = **141**, Schemaschritte 90–141 vergeben (105 = K‑1, #440; 108–110 =
+`4434983b` · `SchemaStand.Zielversion` = **142**, Schemaschritte 90–142 vergeben (105 = K‑1, #440; 108–110 =
 Kühlung KU1; 111–113 = die Schritte E, F, G, #446; 114 = Kühlung KU2; 115 = Zapfprofil Z3, T2, #453; 119 = Kühlung
 KU2 Welle 3, E34), **116–118 = die Schritte B, C, D, gebaut #461 (E9a); E9b (#462) ohne Schritt; 120 = die Sätze der
 Nutzungsdauertabelle, gebaut #463 (E10); E13 (#474) und E14 (#477) ohne Schritt**; 121 = Katalogverweis des Projektgebäudes (#468),
-122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt** · Gegenstand: das konsolidierte Konzept
+122–123 = Anlagenkopplung AK1, 124 = Zapfprofil-Stufe Z4 (#464), **125 = das Risikomodul V‑G7, gebaut #478 (E15)**, 126 = Reparatur der Gebäude-Katalogsätze (#485), **127 = die nicht monetarisierbaren Wirkungen V‑G11, gebaut #479 (E17)**, 128 = Heizkreis je Gebäude der Anlagenkopplung AK1, Welle 3, **129 = die Wiederholperiode je Kostenposition V‑G3, gebaut #484 (E16)**, 130 = Anschlusslängen im Gebäudekatalog (#493); **E18 (#492) ohne Schritt**; 131 = Zapfprofil-Stufe Z4b (#486), 132–139 = die Cloud-Sitzungen G3, G4 und AK1, 140 = Zapfprofil-Stufe Z5 (#495), 141 = Folgeberichtigung der Anschlusslängen (#496); **E19 (#498) ohne Schritt**; 142 = dritte Reparatur der Anschlusslängen (#505); **E20 (#502), E21 (#506), E22 (#503) und E23 (#510) ohne Schritt** · Referenzbasis `2026-09-25_R16_Anlagenprio` · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) (seit #474 unter `ueberholt/`),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -137,6 +137,25 @@ Zeilennummern und Messungen:
 > und 19 (→ Register R‑Rest): Nr. 11 und 13 geschlossen, Nr. 19 belassen, Nr. 10 präzisiert mit einer folgenden kleinen
 > Bauwelle, Nr. 18 nach einer Messwelle — gemessen am 25.09.2026 ohne Rechenwirkung (12 von 13 Referenzprojekten
 > byte-gleich, in 1042 nur die Modulreihenfolge der Wärmepumpen); der Entscheid über den Umbau steht aus.
+
+> **Nachtrag 25.09.2026 (#502, #506, #503, #510).** Aus § 6.3 Nr. 10 präzisiert („Wärmepumpe beides“ nur bei
+> Investitionskosten nach kW elektrisch und kW thermisch) ist **E20 (#502)** gebaut: Die Investitionskosten der
+> Wärmepumpe lassen sich auch „je kW elektrisch“ bemessen, Bezugsgröße P_el = Ptherm ÷ COP am Normpunkt der
+> Kennlinie; die Betriebskosten blieben zunächst unverändert — ohne Rechenwirkung im Bestand, kein Schemaschritt.
+> Die acht Fragen E20‑Q1…Q8 sind nach Empfehlung entschieden (E20‑Q6 zunächst offen, siehe E23). Als nächste kleine
+> Welle ist **E21 (#506)** gebaut: Nr. 23 als resx-Sammelnachtrag erledigt (zwei verwaiste Ressourcenschlüssel
+> gestrichen, drei Rückfalltexte angeglichen), Nr. 24 und die Datenlücken der Referenzprojekte 1018/1024/1023/
+> 1030/1026 gemessen und benannt — keine Datenpflege, kein Schemaschritt (E21‑Q1…Q9 nach Empfehlung entschieden).
+> Aus Nr. 18 (HB1-O1) ist **E22 (#503)** gebaut: Die acht Rechenweg-Leser der Anlagen sortieren jetzt nach
+> `Ladeordnung.SqlAnlagenprio` wie Hydraulikbild und Erzeugerkarten — gepflegte Priorität zuerst, eine Anlage ohne
+> Priorität nach der Regel „99“ hinten; die Referenzbasis ist deshalb neu eingefroren als
+> `2026-09-25_R16_Anlagenprio` mit vierzehn Projekten, einzige Wirkung die Modulreihenfolge der zwei Wärmepumpen
+> in 1042 — ohne Rechenwirkung, kein Schemaschritt. Mit dem Anwenderentscheid E20‑Q6 (b, während des Baus auf
+> Strom und Wärme erweitert) ist **E23 (#510)** gebaut: Die Betriebskosten der Wärmepumpe werden nicht mehr je
+> kWh bemessen — „je kWh elektrisch“ und „je kWh thermisch“ sind im Betriebsraster der Wärmepumpe gesperrt
+> (`WirtschaftlichkeitCtrl.BasisGrund`, Grund GEWERK), Bestandszeilen rechnen weiter und tragen den
+> Herleitungsvermerk „Altbestand“ — kein Schemaschritt, die Basis bleibt R16. Die fünf Fragen E23‑Q1…Q5 sind
+> nach Empfehlung entschieden.
 
 > **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
 > [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
