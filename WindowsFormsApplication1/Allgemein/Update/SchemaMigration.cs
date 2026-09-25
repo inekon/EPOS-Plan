@@ -4343,8 +4343,8 @@ namespace WindowsFormsApplication1
         /// Schritt <see cref="BaujahrSchema.SCHRITT"/> — <b>das Baujahr des Gebäudes</b>
         /// (Umsetzungskonzept Gebäudesimulation 3.4 und 3.7). Er folgt auf
         /// <see cref="SCHRITT_IMPORTZUORDNUNG"/> ohne Reihenfolgebedingung und erweitert die Sicht
-        /// der Schritte 101, 108, 122 und <see cref="SCHRITT_KUEHLUEBERGABE"/> — als letzter
-        /// Sichtneubau.
+        /// der Schritte 101, 108, 122 und <see cref="SCHRITT_KUEHLUEBERGABE"/>; hinter ihm baut nur
+        /// noch <see cref="SCHRITT_NACHTZEIT"/> die Sicht neu.
         ///
         /// <para><b>REIN DDL:</b> die Spalte <c>Baujahr</c> (INTEGER, nullbar,
         /// <c>CHECK</c> 1500 … 2100) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die Sicht
@@ -4441,6 +4441,27 @@ namespace WindowsFormsApplication1
         /// bleibt.</para>
         /// </summary>
         public const int SCHRITT_BAUSTOFF_QUELLEN = BaustoffQuellenBerichtigung.SCHRITT;
+
+        // ---- Entscheid E43 (Konzept-Nachtrag N1.48): die Nachtzeit je Gebäude ------------------
+
+        /// <summary>
+        /// Schritt <see cref="NachtzeitSchema.SCHRITT"/> — <b>Beginn und Ende der Nachtabsenkung je
+        /// Gebäude</b> (Entscheid E43, Konzept-Nachtrag N1.48). Er folgt auf
+        /// <see cref="SCHRITT_BAUSTOFF_QUELLEN"/> ohne Reihenfolgebedingung und erweitert die Sicht
+        /// der Schritte 101, 108, 122, <see cref="SCHRITT_KUEHLUEBERGABE"/> und
+        /// <see cref="SCHRITT_BAUJAHR"/> — als letzter Sichtneubau.
+        ///
+        /// <para><b>REIN DDL:</b> die Spalten <c>Nachtabsenkung_Beginn</c> und
+        /// <c>Nachtabsenkung_Ende</c> (INTEGER, nullbar, <c>CHECK</c> 0 … 23) an <c>Tab_Gebaeude</c>
+        /// und <c>Tab_Gebaeude_STAMM</c>, die Sicht <c>Abfrage_Projektgebaeude</c> neu mit 101
+        /// Spalten. Quelle <see cref="GebaeudeSchema.SqliteNachtstunde"/> und
+        /// <see cref="GebaeudeSchema.SQL_VIEW_NACHTZEIT"/>; die Nummer steht allein bei
+        /// <see cref="NachtzeitSchema.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (keine Saat; NULL heißt die Vorgabe 22 bis 6 Uhr, bitgleich
+        /// mit dem Fahrplan davor), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_NACHTZEIT = NachtzeitSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -6278,7 +6299,7 @@ namespace WindowsFormsApplication1
                         Schritt_Importzuordnung),
 
             // GEBAEUDESIMULATION STUFE G4a, WELLE 3 (Umsetzungskonzept 3.4 und 3.7) - das Baujahr:
-            // eine Spalte an Tab_Gebaeude(_STAMM), der fuenfte und letzte Sichtneubau. REIN DDL; die
+            // eine Spalte an Tab_Gebaeude(_STAMM), der fuenfte Sichtneubau. REIN DDL; die
             // Quelle ist GebaeudeSchema, die Nummer steht allein bei BaujahrSchema.
             new Schritt(SCHRITT_BAUJAHR,
                         "Tab_Gebaeude(_STAMM): die Spalte Baujahr (Jahreszahl 1500 bis 2100, leer = unbekannt), " +
@@ -6342,6 +6363,18 @@ namespace WindowsFormsApplication1
                         "sich - der Schritt schreibt allein die Quelle, und nur dort, wo der alte Text " +
                         "wortgleich steht.",
                         Schritt_BaustoffQuellen),
+
+            // ENTSCHEID E43 (Konzept-Nachtrag N1.48) - die Nachtzeit je Gebaeude: zwei Spalten an
+            // Tab_Gebaeude(_STAMM), der sechste und letzte Sichtneubau. REIN DDL; die Quelle ist
+            // GebaeudeSchema, die Nummer steht allein bei NachtzeitSchema. Er steht NACH 143 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_NACHTZEIT,
+                        "Tab_Gebaeude(_STAMM): Beginn und Ende der Nachtabsenkung (Stunde des Tages 0 bis 23, " +
+                        "leer = Vorgabe 22 bis 6 Uhr), die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Die Nachtzeit haette keinen Ort: Der Gebaeudeeditor koennte sie nicht speichern, und " +
+                        "jedes Gebaeude rechnete weiter mit 22 bis 6 Uhr. KEIN Rechenergebnis aendert sich - die " +
+                        "Spalten bleiben leer, und leer heisst die Vorgabe.",
+                        Schritt_Nachtzeit),
         };
 
         /// <summary>
@@ -10745,6 +10778,51 @@ namespace WindowsFormsApplication1
                     "Repositorium bringt keine Messreihe mit (Konzept Kapitel 9 K5) -, und ohne " +
                     "eingespielte Messreihe ist der Vergleich benannt nicht verfuegbar; der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt der Nachtzeit — Anlass und Reihenfolge stehen bei <see cref="SCHRITT_NACHTZEIT"/>,
+        /// die Definitionen bei <see cref="GebaeudeSchema.SqliteNachtstunde"/>. Dieselbe Folge wie beim
+        /// Baujahr: Sicht verwerfen, zwei Spalten je Gebäudetabelle anlegen, Sicht neu — nur mit
+        /// <see cref="SqliteDdl"/> und <see cref="SqliteSpalteAnlegen"/>. <b>Wiederholbar</b>; die
+        /// Nachprobe fragt <see cref="NachtzeitSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Nachtzeit(Lauf l)
+        {
+            string nr = NachtzeitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+
+            // vorweg: die Sicht nennt ihre Spalten namentlich - erst weg damit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // dann Beginn und Ende je Gebaeudetabelle - spaltengleich an Projekt und Katalog
+            foreach (string t in GebaeudeSchema.TABELLEN)
+                foreach (string s in GebaeudeSchema.NACHTZEIT_SPALTEN)
+                    if (!SqliteSpalteAnlegen(l, t, s, GebaeudeSchema.SqliteNachtstunde(s))) return false;
+
+            // die Sicht neu - aus SQL_VIEW_NACHTZEIT: M3, KU-S1, AK-S1, KAK-S1, Baujahr und dahinter die Nachtzeit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_NACHTZEIT, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = NachtzeitSchema.Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalten der Nachtzeit oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": Nachtzeit - Beginn und Ende stehen an " +
+                    GebaeudeSchema.TABELLEN.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Gebaeudetabellen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_NACHTZEIT.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die Spalten bleiben leer (Vorgabe 22 bis 6 Uhr); KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

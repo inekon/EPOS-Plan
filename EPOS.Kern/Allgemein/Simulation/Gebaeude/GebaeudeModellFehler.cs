@@ -215,6 +215,15 @@ namespace WindowsFormsApplication1
         /// Zonen rechnet EPOS mit Stufe G6. Keine stille Auswahl einer der Zonen.
         /// </summary>
         MehrereZonen,
+
+        // ---- Entscheid E43: die Nachtzeit je Gebäude (Konzept-Nachtrag N1.48) -------------
+
+        /// <summary>
+        /// Die Nachtzeit des Gebäudes ist widersprüchlich (<see cref="Nachtzeit.Pruefen"/>): nur Beginn
+        /// oder nur Ende ist gesetzt, eine Stunde liegt außerhalb 0 … 23, oder Beginn und Ende sind
+        /// gleich. Kein stiller Rückfall auf die Vorgabe 22 bis 6 Uhr.
+        /// </summary>
+        NachtzeitUngueltig,
     }
 
     /// <summary>

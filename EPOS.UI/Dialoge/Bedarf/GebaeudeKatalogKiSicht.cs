@@ -74,6 +74,12 @@ public sealed class GebaeudeKatalogKiSicht
     public Func<double?>? NachtabsenkungLesen { get; init; }
     public Action<double?>? NachtabsenkungSetzen { get; init; }
 
+    public Func<int?>? NachtBeginnLesen { get; init; }
+    public Action<int?>? NachtBeginnSetzen { get; init; }
+
+    public Func<int?>? NachtEndeLesen { get; init; }
+    public Action<int?>? NachtEndeSetzen { get; init; }
+
     public Func<double?>? MaxTemperaturLesen { get; init; }
     public Action<double?>? MaxTemperaturSetzen { get; init; }
 
@@ -392,6 +398,20 @@ public sealed class GebaeudeKatalogKiSicht
     {
         get => NachtabsenkungLesen?.Invoke();
         set => NachtabsenkungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Beginn der Nachtabsenkung [Stunde 0 … 23]; mit dem Ende leer = Vorgabe 22 Uhr (E43).</summary>
+    public int? NachtBeginn
+    {
+        get => NachtBeginnLesen?.Invoke();
+        set => NachtBeginnSetzen?.Invoke(value);
+    }
+
+    /// <summary>Ende der Nachtabsenkung [Stunde 0 … 23]; mit dem Beginn leer = Vorgabe 6 Uhr (E43).</summary>
+    public int? NachtEnde
+    {
+        get => NachtEndeLesen?.Invoke();
+        set => NachtEndeSetzen?.Invoke(value);
     }
 
     /// <summary>Die höchste zulässige Raumtemperatur [°C]; unter 1 gilt 24.</summary>

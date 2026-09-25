@@ -183,7 +183,7 @@ Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur
 
 Der Knopf ''Simulation…'' im Gebäudedialog öffnet den '''Wärmebedarf Gebäude'''. Auf dem Rechenweg VDI 6007 zeigt er neben Wärmebedarf, höchster Wärmelast und Vollbenutzungsstunden:
 
-* '''mittlere Raumtemperatur''' in der Nutzungszeit (7 bis 22 Uhr);
+* '''mittlere Raumtemperatur''' in der Nutzungszeit – außerhalb der Nachtzeit des Gebäudes (''Nachtabsenkung von … bis'', ohne Angabe 22 bis 6 Uhr, siehe [[Programm Dokumentation/Gebäude#nachtzeit|Nachtzeit]]);
 * '''Stunden mit Sommerlüftung'''.
 
 Darunter steht der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite:

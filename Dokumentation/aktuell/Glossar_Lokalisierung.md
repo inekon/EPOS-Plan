@@ -349,6 +349,7 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Baujahr | year of construction | die Jahreszahl neben der Baualtersklasse (`GEBK_LBL_BAUJAHR`); nicht „construction period" |
 | Bauweise | thermal mass | Wh/K bzw. Wh/(m²K); EN ISO 13790 |
 | Raumtemperatur / Raumlufttemperatur | indoor temperature / indoor air temperature | |
+| Nachtabsenkung von / bis | night setback from / until | Beginn und Ende der Nachtzeit je Gebäude, volle Stunde 0 … 23 (`GEBK_LBL_NACHT_BEGINN`, `GEBK_LBL_NACHT_ENDE`); beide leer = 22 bis 6 Uhr |
 | operative Temperatur | operative temperature | VDI 6007, EN ISO 7726 |
 | Kühlbedarf | cooling demand | |
 | Rechenweg | calculation method | Schalter „Rechenweg" (E20) |

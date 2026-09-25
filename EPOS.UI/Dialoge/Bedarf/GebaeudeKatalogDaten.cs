@@ -109,6 +109,16 @@ public sealed class GebaeudeKatalogDaten
 
     public double? SollTag { get; set; }
     public double? NachtAbsenkung { get; set; }
+
+    /// <summary>
+    /// Beginn der Nachtabsenkung [Stunde des Tages 0 … 23] (<c>Nachtabsenkung_Beginn</c>, Schemaschritt
+    /// <c>NachtzeitSchema.SCHRITT</c>); zusammen mit <see cref="NachtEnde"/> leer = die Vorgabe 22 bis
+    /// 6 Uhr (<c>Nachtzeit.Vorgabe</c>). Nur eines von beiden ist ein Eingabefehler.
+    /// </summary>
+    public int? NachtBeginn { get; set; }
+
+    /// <summary>Ende der Nachtabsenkung [Stunde des Tages 0 … 23], ausschließlich (<c>Nachtabsenkung_Ende</c>).</summary>
+    public int? NachtEnde { get; set; }
     public double? MaxTemperatur { get; set; }
     public double? WochenendAbsenkung { get; set; }
     public double? SollFerien { get; set; }
