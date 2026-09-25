@@ -127,9 +127,13 @@
                             <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²" Min="0"
                                         Feldname="@FeldWohnflaeche" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.WohnflaecheGesamt" WertChanged="NutzflaecheSetzen" />
-                            @if (_arbeit.Zone is { Nutzflaeche: double zonenflaeche })
+                            @if (_arbeit.Zonen.Count == 1 && _arbeit.Zonen[0].Nutzflaeche is double zonenflaeche)
                             {
                                 <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileNutzflaeche, Zahl(zonenflaeche, 2))" />
+                            }
+                            else if (_arbeit.Zonen.Count > 1)
+                            {
+                                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileNutzflaecheZonen, Zahl(_arbeit.NutzflaecheWirksam, 2), _arbeit.Zonen.Count)" />
                             }
                             <Zahlenfeld Bezeichnung="@LabelFlaecheNutzer" Einheit="m²" Min="0"
                                         Feldname="@FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
@@ -159,11 +163,11 @@
                     @* ---- Die Huelle: acht Zeilen, U*A gerechnet (Konzept 2.5) ---------- *@
                     <Gruppenkopf Titel="@Texte.GruppeHuelle">
                         <KindInhalt>
-                            @if (_arbeit.Zone is ZoneDaten huellzone)
+                            @if (_arbeit.Zonen.Count > 0)
                             {
-                                @* SUMMENREGEL (Mehrzonenkonzept 4.3): Mit Zone sind die Gruppen der Huelle
-                                   abgeleitete Anzeigen aus ihren Bauteilen - die gespeicherten Werte des
-                                   Gebaeudes bleiben stehen und gelten wieder ohne Zone. *@
+                                @* SUMMENREGEL (Mehrzonenkonzept 4.3): Mit Zonen sind die Gruppen der Huelle
+                                   abgeleitete Anzeigen aus den Bauteilen ALLER Zonen (G6a) - die gespeicherten
+                                   Werte des Gebaeudes bleiben stehen und gelten wieder ohne Zone. *@
                                 <div class="epos-raster-huelle epos-raster-huelle--frei">
                                     <table class="epos-raster epos-huelltabelle epos-huelltabelle--zone">
                                         <thead>
@@ -175,7 +179,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach (Huellzeile zeile in Zonensummen.Zeilen(huellzone))
+                                            @foreach (Huellzeile zeile in Zonensummen.Zeilen(_arbeit.Zonen))
                                             {
                                                 Huellzeile z = zeile;
                                                 <tr @key="z.Bauteil" data-bauteil="@z.Bauteil">
@@ -189,12 +193,12 @@
                                                 <th scope="row">@ZonenTexte.ZeilePsi</th>
                                                 <td></td>
                                                 <td></td>
-                                                <td class="epos-zahl">@Zahl(Zonensummen.PsiL(huellzone), 1)</td>
+                                                <td class="epos-zahl">@Zahl(Zonensummen.PsiL(_arbeit.Zonen), 1)</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-                                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileSummenregel, huellzone.Bezeichner)" />
+                                <Herleitungszeile Text="@Summenregelzeile" />
                             }
                             else
                             {
@@ -282,7 +286,7 @@
                             <Textfeld Bezeichnung="@Texte.LabelHT" Wert="@Leitwert(_arbeit.HTAnzeige)" NurLesen="true" />
                             <Textfeld Bezeichnung="@Texte.LabelHVe" Wert="@Leitwert(_arbeit.HVeAnzeige)" NurLesen="true" />
                             <Textfeld Bezeichnung="@Texte.LabelHGes" Wert="@Leitwert(_arbeit.HTAnzeige + _arbeit.HVeAnzeige)" NurLesen="true" />
-                            @if (!IstVdi6007 && _arbeit.Zone is null)
+                            @if (!IstVdi6007 && _arbeit.Zonen.Count == 0)
                             {
                                 <Textfeld Bezeichnung="@Texte.LabelHTGewichtet"
                                           Wert="@Leitwert(Gebaeudehuellbilanz.TransmissionGewichtetWK(Huellzeilen))"
@@ -301,11 +305,11 @@
                     @* ---- Fenster nach Orientierung (Konzept 2.6) ---------------------- *@
                     <Gruppenkopf Titel="@Texte.GruppeFenster">
                         <KindInhalt>
-                            @if (_arbeit.Zone is ZoneDaten fensterzone)
+                            @if (_arbeit.Zonen.Count > 0)
                             {
-                                @* Mit Zone rechnen ihre Fensterbauteile - die Felder des Gebaeudes bleiben
-                                   gespeichert und stehen wieder da, sobald die Zone entfernt ist. *@
-                                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileFenster, Zahl(Zonensummen.Fensterflaeche(fensterzone), 2))" />
+                                @* Mit Zonen rechnen ihre Fensterbauteile - die Felder des Gebaeudes bleiben
+                                   gespeichert und stehen wieder da, sobald keine Zone mehr da ist. *@
+                                <Herleitungszeile Text="@Fensterzeile" />
                             }
                             else
                             {
@@ -603,7 +607,7 @@
                     <Gruppenkopf Titel="@ZonenTexte.Gruppe">
                         <KindInhalt>
                             <Herleitungszeile Text="@Huellwegzeile" />
-                            @if (_arbeit.Zone is ZoneDaten listenzone)
+                            @if (_arbeit.Zonen.Count > 0)
                             {
                                 <div class="epos-raster-huelle epos-raster-huelle--frei">
                                     <table class="epos-raster epos-zonenliste">
@@ -617,18 +621,22 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr @key="listenzone.Id">
-                                                <td>@listenzone.Bezeichner</td>
-                                                <td class="epos-zahl">@Zahl(_arbeit.NutzflaecheWirksam, 2) m²</td>
-                                                <td class="epos-zahl">@Leitwert(Zonensummen.HT(listenzone))</td>
-                                                <td class="epos-zahl">@listenzone.Bauteile.Count</td>
-                                                <td class="epos-zellenaktionen">
-                                                    <span class="epos-zellenaktionen-inhalt">
-                                                        <button type="button" class="epos-knopf" @onclick="ZoneOeffnen">@ZonenTexte.KnopfOeffnen</button>
-                                                        <button type="button" class="epos-knopf" @onclick="() => _entfernfrage = true">@ZonenTexte.KnopfEntfernen</button>
-                                                    </span>
-                                                </td>
-                                            </tr>
+                                            @foreach ((ZoneDaten listenzone, Zonenkennwerte kennwerte) in _arbeit.Zonen.Zip(_arbeit.Kennwerte))
+                                            {
+                                                int id = listenzone.Id;
+                                                <tr @key="id" data-zone="@id">
+                                                    <td>@listenzone.Bezeichner</td>
+                                                    <td class="epos-zahl">@Zahl(kennwerte.Nutzflaeche, 2) m²</td>
+                                                    <td class="epos-zahl">@Leitwert(kennwerte.HT)</td>
+                                                    <td class="epos-zahl">@kennwerte.Bauteile</td>
+                                                    <td class="epos-zellenaktionen">
+                                                        <span class="epos-zellenaktionen-inhalt">
+                                                            <button type="button" class="epos-knopf" @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfOeffnen</button>
+                                                            <button type="button" class="epos-knopf" @onclick="() => _entfernId = id">@ZonenTexte.KnopfEntfernen</button>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
                                         </tbody>
                                     </table>
                                 </div>
@@ -676,7 +684,7 @@
     @* --- Rueckfragen: Zone uebernehmen, Zone entfernen, Speichern unter mit Zone --- *@
     <Rueckfrage Offen="@(_vorschlag is not null)" TitelText="@ZonenTexte.KnopfUebernehmen" Frage="@Uebernahmefrage"
                 Beantwortet="UebernahmeBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
-    <Rueckfrage Offen="@_entfernfrage" TitelText="@ZonenTexte.KnopfEntfernen" Frage="@Entfernfrage" VorgabeNein="true"
+    <Rueckfrage Offen="@(_entfernId is not null)" TitelText="@ZonenTexte.KnopfEntfernen" Frage="@Entfernfrage" VorgabeNein="true"
                 Beantwortet="EntfernenBeantwortet" JaText="@ZonenTexte.Ja" NeinText="@ZonenTexte.Nein" />
     <Rueckfrage Offen="@_speichernUnterFrage" TitelText="@BtnSpeichernUnterText" Frage="@SpeichernUnterFrage"
                 VorgabeNein="true" Beantwortet="SpeichernUnterBeantwortet"
@@ -951,7 +959,8 @@
     /// <summary>Wird der Hochrechnungsfaktor gerade bestimmt?</summary>
     private bool _uebernahmeLaeuft;
 
-    private bool _entfernfrage;
+    /// <summary>Die Zone, nach deren Entfernen die Rückfrage fragt; <c>null</c> = keine Rückfrage.</summary>
+    private int? _entfernId;
     private bool _speichernUnterFrage;
 
     /// <summary>Die Aufbauten des Projekts — nach dem Übernehmen eines Katalogaufbaus im OK-Weg ergänzt.</summary>
@@ -1035,7 +1044,8 @@
         get
         {
             if (Modus != GebaeudeKatalogModus.Projekt || Zonen?.Uebernehmen is null) return ZonenTexte.SperreKatalog;
-            if (_arbeit.Zone is ZoneDaten z) return string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreZone, z.Bezeichner);
+            if (_arbeit.Zonen.Count == 1) return string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreZone, _arbeit.Zonen[0].Bezeichner);
+            if (_arbeit.Zonen.Count > 1) return string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreZonen, _arbeit.Zonen.Count);
             if (!_arbeit.IstVdi6007) return ZonenTexte.SperreTagesbilanz;
             if (_uebernahmeLaeuft) return ZonenTexte.SperreLaeuft;
             return null;
@@ -1088,17 +1098,44 @@
         }
     }
 
+    /// <summary>
+    /// Die Rückfrage „Zone entfernen" nennt Name und Zahl der Bauteile der Zone; ist sie die einzige,
+    /// sagt sie, dass das Gebäude danach wieder den Klassenweg rechnet.
+    /// </summary>
     private string Entfernfrage
-        => _arbeit.Zone is ZoneDaten z
-            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.FrageEntfernen, z.Bezeichner,
-                            z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
+        => _entfernId is int id && _arbeit.ZoneMitId(id) is ZoneDaten z
+            ? string.Format(CultureInfo.CurrentCulture, _arbeit.Zonen.Count == 1 ? ZonenTexte.FrageEntfernen : ZonenTexte.FrageEntfernenZone,
+                            z.Bezeichner, z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
             : "";
 
+    /// <summary>„Speichern unter" mit Zonen: Der Katalogsatz trägt sie nicht mit — die Frage nennt Zonen und Bauteile.</summary>
     private string SpeichernUnterFrage
-        => _arbeit.Zone is ZoneDaten z
-            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.FrageSpeichernUnter, z.Bezeichner,
-                            z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
-            : "";
+    {
+        get
+        {
+            CultureInfo c = CultureInfo.CurrentCulture;
+            string bauteile = _arbeit.Zonen.Sum(z => z.Bauteile.Count).ToString(c);
+            return _arbeit.Zonen.Count switch
+            {
+                0 => "",
+                1 => string.Format(c, ZonenTexte.FrageSpeichernUnter, _arbeit.Zonen[0].Bezeichner, bauteile),
+                _ => string.Format(c, ZonenTexte.FrageSpeichernUnterZonen, _arbeit.Zonen.Count.ToString(c), bauteile)
+            };
+        }
+    }
+
+    /// <summary>Die Herleitungszeile der abgeleiteten Hülle: aus der Zone bzw. aus allen Zonen.</summary>
+    private string Summenregelzeile
+        => _arbeit.Zonen.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileSummenregel, _arbeit.Zonen[0].Bezeichner)
+            : string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileSummenregelZonen, _arbeit.Zonen.Count);
+
+    /// <summary>Die Herleitungszeile der Fenster: die Fensterfläche der Zone bzw. aller Zonen.</summary>
+    private string Fensterzeile
+        => _arbeit.Zonen.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileFenster, Zahl(Zonensummen.Fensterflaeche(_arbeit.Zonen[0]), 2))
+            : string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileFensterZonen, Zahl(Zonensummen.Fensterflaeche(_arbeit.Zonen), 2),
+                            _arbeit.Zonen.Count);
 
     // =================================================================================
     // Zonen: uebernehmen, oeffnen, entfernen - alles im Arbeitsstand (Softwarearchitektur 3.3)
@@ -1135,30 +1172,35 @@
     {
         ZonenuebernahmeDaten? v = _vorschlag;
         _vorschlag = null;
-        if (antwort != true || v?.Zone is null) return;
-        _arbeit.ZoneSetzen(v.Zone.Kopie());
+        if (antwort != true || v?.Zone is null || _arbeit.Zonen.Count > 0) return;
+        _arbeit.ZoneAnlegen(v.Zone.Kopie());
         _meldung = "";
     }
 
-    private void ZoneOeffnen()
+    /// <summary>Öffnet die Zone mit dieser Id im Zonendialog — als Kopie; der Arbeitsstand bleibt bis zum OK.</summary>
+    private void ZoneOeffnen(int id)
     {
-        if (_arbeit.Zone is ZoneDaten z) _zoneOffen = z.Kopie();
+        if (_arbeit.ZoneMitId(id) is ZoneDaten z) _zoneOffen = z.Kopie();
     }
 
-    /// <summary>Der Zonendialog ist zu: Mit Ergebnis ersetzt es die Zone im Arbeitsstand.</summary>
+    /// <summary>
+    /// Der Zonendialog ist zu: Mit Ergebnis ersetzt es die Zone GLEICHER Id im Arbeitsstand — die
+    /// übrigen Zonen bleiben (G6a); eine Zone, die es noch nicht gibt, kommt hinzu.
+    /// </summary>
     private void ZoneFertig(ZoneDaten? ergebnis)
     {
         _zoneOffen = null;
         if (ergebnis is null) return;
-        _arbeit.ZoneSetzen(ergebnis);
+        if (!_arbeit.ZoneErsetzen(ergebnis)) _arbeit.ZoneAnlegen(ergebnis);
         _meldung = "";
     }
 
-    /// <summary>„Zone entfernen": Ja nimmt sie aus dem Arbeitsstand — geschrieben wird mit OK.</summary>
+    /// <summary>„Zone entfernen": Ja nimmt die gefragte Zone aus dem Arbeitsstand — geschrieben wird mit OK.</summary>
     private void EntfernenBeantwortet(bool? antwort)
     {
-        _entfernfrage = false;
-        if (antwort == true) _arbeit.ZoneSetzen(null);
+        int? id = _entfernId;
+        _entfernId = null;
+        if (antwort == true && id is int z) _arbeit.ZoneEntfernen(z);
     }
 
     /// <summary>Die Feldnamen und Meldungen der Prüfung folgen den Parametern.</summary>
@@ -1592,6 +1634,14 @@
         if (!Pruefen(false)) return false;
         if (Speichern is null) return true;
 
+        // G6a: die Pruefregeln des Kerns ueber die ganze Zonenliste - VOR dem ersten Schritt, damit
+        // eine verletzte Regel (Nutzflaeche ab zwei Zonen, Hoechstzahl, doppelte Id) nichts halb schreibt.
+        if (_arbeit.ZonenGeaendert && Zonen?.Pruefen?.Invoke(_arbeit.Zonen) is { Length: > 0 } zonenfehler)
+        {
+            Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, zonenfehler), WarnStufe.Warnung);
+            return false;
+        }
+
         // Schritt 1: die Gebaeudedaten der Projektkopie.
         Ableiten();
         string abdruck = _arbeit.Abdruck();
@@ -1656,7 +1706,7 @@
     /// </summary>
     private async Task BeiSpeichernUnter()
     {
-        if (_arbeit.Zone is not null)
+        if (_arbeit.Zonen.Count > 0)
         {
             _speichernUnterFrage = true;
             return;
@@ -1687,7 +1737,7 @@
     {
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
-            || _entfernfrage || _speichernUnterFrage) return Task.CompletedTask;
+            || _entfernId is not null || _speichernUnterFrage) return Task.CompletedTask;
         return Abbrechen();
     }
 

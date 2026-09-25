@@ -3236,7 +3236,7 @@ Both point to {0} "{1}".</value>
     <value>{0}: the entered U-value {1} W/(m²K) deviates by {3} % from the value {2} W/(m²K) calculated from the layers; the calculation uses the entered value.</value>
   </data>
   <data name="SIMENG_G3_MEHRERE_ZONEN" xml:space="preserve">
-    <value>{0}: the building has {1} zones; EPOS computes several zones with stage G6. Until then a building is computed without a zone (class method) or with exactly one zone (building-element method).</value>
+    <value>{0}: the building has {1} zones; the simulation does not compute several zones yet. For the simulation keep one zone or remove all of them (building dialog, “Envelope and zones…”).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
     <value>VDI 6007 building model: {0} uses the component method with the zone “{1}” and {2} building components, {3} of them with a layer build-up; air volume, thermal mass of the construction type and internal gains follow the usable area of the zone (area key), set points, room height and ventilation come from the building record.</value>
@@ -14193,6 +14193,9 @@ Please check all entries!</value>
   </data>
   <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
     <value>The heat requirement of this building cannot be calculated. Please save the project and select a climate region.</value>
+  </data>
+  <data name="GEB_MSG_KEIN_BEDARF_GRUND" xml:space="preserve">
+    <value>The heat requirement of this building cannot be calculated: {0}</value>
   </data>
   <data name="GEBB_TITEL" xml:space="preserve">
     <value>Building heat requirement</value>
@@ -33017,6 +33020,24 @@ Do you want to allow this?</value>
   <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
     <value>Zone “{0}”: the usable area must be greater than zero.</value>
   </data>
+  <data name="ZONE_MSG_ZU_VIELE" xml:space="preserve">
+    <value>A building carries at most {0} zones; the list holds {1}.</value>
+  </data>
+  <data name="ZONE_MSG_NUTZFLAECHE_PFLICHT" xml:space="preserve">
+    <value>Zone “{0}”: with several zones every zone needs its own usable area – empty would mean “the usable area of the building” and count it twice.</value>
+  </data>
+  <data name="ZONE_MSG_ID_DOPPELT" xml:space="preserve">
+    <value>Zone “{0}”: the ID {1} appears twice in the list.</value>
+  </data>
+  <data name="BAUTEIL_MSG_ID_DOPPELT" xml:space="preserve">
+    <value>Component “{0}” (zone “{2}”): the ID {1} appears twice in the list.</value>
+  </data>
+  <data name="ZONE_HINWEIS_FLAECHE" xml:space="preserve">
+    <value>Σ zones {0} m² against building {1} m² ({2} %): the usable areas of the zones differ from that of the building by 5 % or more – rooms counted twice or missing?</value>
+  </data>
+  <data name="ZONE_HINWEIS_OHNE_AUSSEN" xml:space="preserve">
+    <value>Zone “{0}” has no component bordering outside air, ground or an unheated space.</value>
+  </data>
   <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
     <value>Without a project with a climate region the scaling factor cannot be determined – please save the project and select a climate region.</value>
   </data>
@@ -33053,6 +33074,9 @@ Do you want to allow this?</value>
   <data name="GEBZ_ZEILE_BAUTEILWEG" xml:space="preserve">
     <value>Envelope calculation: component method – zone “{0}”, {1} building components. The U-value groups are derived from the building components; the values of the building apply again without a zone.</value>
   </data>
+  <data name="GEBZ_ZEILE_BAUTEILWEG_ZONEN" xml:space="preserve">
+    <value>Envelope calculation: component method – {0} zones, {1} building components. The U-value groups are derived from the building components of all zones; the values of the building apply again without a zone.</value>
+  </data>
   <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
     <value>Envelope calculation: class method – U-value groups and construction type. A catalogue record carries no zones; zones and building components belong to a building in the project (“Envelope and zones…” in the building dialog).</value>
   </data>
@@ -33067,6 +33091,9 @@ Do you want to allow this?</value>
   </data>
   <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
     <value>The building already has the zone “{0}”.</value>
+  </data>
+  <data name="GEBZ_SPERRE_ZONEN" xml:space="preserve">
+    <value>The building already has {0} zones.</value>
   </data>
   <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
     <value>The daily-balance path does not compute zones – set the calculation method to VDI 6007 first.</value>
@@ -33113,11 +33140,20 @@ Do you want to allow this?</value>
   <data name="GEBZ_FRAGE_ENTFERNEN" xml:space="preserve">
     <value>Remove zone “{0}” with {1} building components? The building then uses the class method with the U-value groups again; it is written with OK.</value>
   </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN_ZONE" xml:space="preserve">
+    <value>Remove zone “{0}” with {1} building components? The other zones remain; it is written with OK.</value>
+  </data>
   <data name="GEBZ_ZEILE_SUMMENREGEL" xml:space="preserve">
     <value>Derived from the building components of the zone “{0}”: area per group Σ A, U = Σ U·A / Σ A. The values of the building remain stored and apply again without a zone.</value>
   </data>
+  <data name="GEBZ_ZEILE_SUMMENREGEL_ZONEN" xml:space="preserve">
+    <value>Derived from the building components of all {0} zones: area per group Σ A, U = Σ U·A / Σ A. The values of the building remain stored and apply again without a zone.</value>
+  </data>
   <data name="GEBZ_ZEILE_FENSTER" xml:space="preserve">
     <value>With the zone its window components are used ({0} m²); the window areas of the building apply again without a zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_FENSTER_ZONEN" xml:space="preserve">
+    <value>With the zones their window components are used ({0} m² from {1} zones); the window areas of the building apply again without a zone.</value>
   </data>
   <data name="GEBZ_ZEILE_PSI" xml:space="preserve">
     <value>Thermal bridges of the components Σ ψ·L</value>
@@ -33125,11 +33161,17 @@ Do you want to allow this?</value>
   <data name="GEBZ_ZEILE_NUTZFLAECHE" xml:space="preserve">
     <value>The zone uses its usable area of {0} m²; air volume, thermal mass and internal gains follow it proportionally.</value>
   </data>
+  <data name="GEBZ_ZEILE_NUTZFLAECHE_ZONEN" xml:space="preserve">
+    <value>Σ usable area of the {1} zones: {0} m².</value>
+  </data>
   <data name="GEBZ_ZEILE_NAME_PROJEKT" xml:space="preserve">
     <value>In the project the building keeps the name “{0}”; a different name applies to “Save as” (new catalogue record).</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
     <value>The catalogue record does not carry the zone “{0}” with {1} building components – save anyway?</value>
+  </data>
+  <data name="GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
+    <value>The catalogue record does not carry the {0} zones with {1} building components; they remain with the project copy – save anyway?</value>
   </data>
   <data name="GEBZ_MSG_ZONEN" xml:space="preserve">
     <value>The zones were not saved: {0}</value>

@@ -537,6 +537,23 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Contains("kein Wärmebedarf", cut.Instance.Meldung);
     }
 
+    /// <summary>
+    /// Stufe G6a: Lehnt die Fassade das Gebäude benannt ab (etwa mit zwei Zonen), nennt die Meldung
+    /// diesen Grund statt der allgemeinen Bitte um Klimaregion.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ergebnis_nennt_der_Dialog_den_benannten_Grund()
+    {
+        var cut = Aufbauen(bedarfGaben: _ => null);
+        cut.Render(p => p.Add(x => x.BedarfBefund, () => "Haus: Das Gebäude trägt 2 Zonen."));
+
+        Knopf(cut, "Simulation...").Click();
+
+        Assert.False(cut.Instance.BedarfOffen);
+        Assert.Equal("Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: Haus: Das Gebäude trägt 2 Zonen.",
+                     cut.Instance.Meldung);
+    }
+
     /// <summary>Esc schließt den Wirt nicht, solange der Bedarf steht.</summary>
     [Fact]
     public void Esc_schliesst_NICHT_wenn_der_Bedarf_offen_ist()

@@ -160,10 +160,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Prüfung der Zonenliste eines Gebäudes vor dem Schreiben, ohne Datenbank — <c>null</c>
-        /// = gültig, sonst die Meldung mit dem Namen der Zone bzw. des Bauteils.
+        /// = gültig, sonst die Meldung mit dem Namen der Zone bzw. des Bauteils. Sie gilt im Dialog
+        /// (vor dem OK-Weg) und im Schreibweg (<see cref="SpeichernJeGebaeude"/>).
+        ///
+        /// <para><b>Über die ganze Liste</b> (Stufe G6a): höchstens
+        /// <see cref="GebaeudeZonenregeln.Hoechstzahl()"/> Zonen je Gebäude; ab zwei Zonen braucht jede
+        /// ihre Nutzfläche — leer hieße „die Fläche des Gebäudes" und zählte sie doppelt; eine positive
+        /// Id einer Zone oder eines Bauteils steht höchstens einmal in der Liste, sonst schriebe der
+        /// Abgleich dieselbe Zeile zweimal. Eine einzelne Zone prüft sich wie bisher.</para>
         /// </summary>
         public static string Pruefen(IList<ZoneModel> zonen)
+            => Pruefen(zonen, GebaeudeZonenregeln.Hoechstzahl());
+
+        /// <summary>Dasselbe mit ausdrücklicher Höchstzahl der Zonen — der Freigabeschalter in beiden Stellungen.</summary>
+        internal static string Pruefen(IList<ZoneModel> zonen, int hoechstzahl)
         {
+            List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();
+            if (liste.Count > hoechstzahl)
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_ZU_VIELE,
+                                     hoechstzahl.ToString(CultureInfo.CurrentCulture),
+                                     liste.Count.ToString(CultureInfo.CurrentCulture));
+            bool mehrere = liste.Count >= 2;
+            var zonenIds = new HashSet<int>();
+            var bauteilIds = new HashSet<int>();
+
             int nr = 0;
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {
@@ -172,12 +192,16 @@ namespace WindowsFormsApplication1
                 if (string.IsNullOrWhiteSpace(z.Bezeichner))
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_NAME_LEER, nr);
                 string zn = z.Bezeichner.Trim();
+                if (z.ID > 0 && !zonenIds.Add(z.ID))
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_ID_DOPPELT, zn, z.ID);
                 string t = BaustoffCtrl.Laenge(MyResource.Resource.KFLT_SP_NAME, zn, BaustoffSchema.LAENGE_BEZEICHNER)
                            ?? BaustoffCtrl.Laenge(MyResource.Resource.BAUTEIL_FELD_QUELLKENNUNG, z.Quellkennung, BaustoffSchema.LAENGE_QUELLKENNUNG)
                            ?? BaustoffCtrl.HerkunftPruefen(z.Herkunft);
                 if (t != null) return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_WERT, zn, t);
                 if (z.Nutzflaeche.HasValue && (!(z.Nutzflaeche.Value > 0.0) || double.IsInfinity(z.Nutzflaeche.Value)))
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_NUTZFLAECHE, zn);
+                if (mehrere && !z.Nutzflaeche.HasValue)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_NUTZFLAECHE_PFLICHT, zn);
                 if (z.Uebergabe_Art != null && z.Uebergabe_Art != DbWerte.UEBERGABE_IDEAL && z.Uebergabe_Art != DbWerte.UEBERGABE_RADIATOR
                     && z.Uebergabe_Art != DbWerte.UEBERGABE_FLAECHE && z.Uebergabe_Art != DbWerte.UEBERGABE_KONVEKTOR)
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_UEBERGABEART, zn, z.Uebergabe_Art);
@@ -190,7 +214,9 @@ namespace WindowsFormsApplication1
                     if (string.IsNullOrWhiteSpace(b.Bezeichner))
                         return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_NAME_LEER, zn);
                     string bn = b.Bezeichner.Trim();
-                    string w = BaustoffCtrl.Laenge(MyResource.Resource.KFLT_SP_NAME, bn, BaustoffSchema.LAENGE_BEZEICHNER)
+                    if (b.ID > 0 && !bauteilIds.Add(b.ID))
+                        return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_ID_DOPPELT, bn, b.ID, zn);
+                    string w =BaustoffCtrl.Laenge(MyResource.Resource.KFLT_SP_NAME, bn, BaustoffSchema.LAENGE_BEZEICHNER)
                                ?? BaustoffCtrl.Laenge(MyResource.Resource.BAUTEIL_FELD_QUELLKENNUNG, b.Quellkennung, BaustoffSchema.LAENGE_QUELLKENNUNG)
                                ?? BaustoffCtrl.HerkunftPruefen(b.Herkunft)
                                ?? BauteilaufbauCtrl.BauteilartPruefen(b.Bauteilart, false);
@@ -205,6 +231,69 @@ namespace WindowsFormsApplication1
             }
             return null;
         }
+
+        /// <summary>
+        /// Was <see cref="Hinweise(IEnumerable{Zonenangabe}, double?)"/> von einer Zone liest: Name,
+        /// Nutzfläche (<c>null</c> = die des Gebäudes) und je Bauteil Bauteilart und Randbedingung
+        /// (Persistenzwerte).
+        /// </summary>
+        public sealed record Zonenangabe(string Bezeichner, double? Nutzflaeche,
+                                         IReadOnlyList<(string Bauteilart, string Randbedingung)> Bauteile);
+
+        /// <summary>
+        /// <b>Die Hinweise über die Zonenliste eines Gebäudes</b> (Stufe G6a; Mehrzonenkonzept 5.3) —
+        /// ein eigener Kanal neben <see cref="Pruefen(IList{ZoneModel})"/>: Ein Hinweis hält kein
+        /// Speichern an. Ohne Datenbank; leer = nichts zu sagen.
+        /// <list type="bullet">
+        /// <item>Ab zwei Zonen: Weicht Σ Nutzfläche der Zonen um mindestens
+        /// <see cref="GebaeudeZonenregeln.FLAECHENABWEICHUNG_HINWEIS"/> von der Nutzfläche des
+        /// Gebäudes ab (<c>Tab_Gebaeude.Nutzflaeche</c>, der Wert des Laufs; E19), nennt der Hinweis
+        /// beide Summen und die Abweichung — doppelt gezählte oder vergessene Räume. Eine einzelne
+        /// Zone ist davon ausgenommen: Ihre Fläche ist nach der Übernahme mit Hochrechnung bewusst die
+        /// des wirklichen Gebäudes, nicht die des Katalogbaus.</item>
+        /// <item>Eine Zone ohne Bauteil an Außenluft, Erdreich oder unbeheiztem Raum
+        /// (Außenbauteilgruppe) wird benannt — zulässig, aber auffällig.</item>
+        /// </list>
+        /// </summary>
+        /// <param name="zonen">Die Zonen in Listenfolge.</param>
+        /// <param name="nutzflaecheGebaeude">Die Nutzfläche des Gebäudes [m²]; <c>null</c> = keine (dann kein Flächenhinweis).</param>
+        public static IReadOnlyList<string> Hinweise(IEnumerable<Zonenangabe> zonen, double? nutzflaecheGebaeude)
+        {
+            List<Zonenangabe> liste = (zonen ?? Enumerable.Empty<Zonenangabe>()).Where(z => z != null).ToList();
+            var hinweise = new List<string>();
+            CultureInfo k = CultureInfo.CurrentCulture;
+
+            if (liste.Count >= 2 && nutzflaecheGebaeude is double ag && ag > 0.0 && !double.IsInfinity(ag))
+            {
+                double summe = 0.0;
+                foreach (Zonenangabe z in liste) summe += z.Nutzflaeche ?? ag;
+                double abweichung = (summe - ag) / ag;
+                if (Math.Abs(abweichung) >= GebaeudeZonenregeln.FLAECHENABWEICHUNG_HINWEIS - 1e-12)
+                    hinweise.Add(string.Format(k, MyResource.Resource.ZONE_HINWEIS_FLAECHE,
+                                               summe.ToString("0.##", k), ag.ToString("0.##", k),
+                                               (abweichung * 100.0).ToString("+0.#;−0.#;0", k)));
+            }
+
+            foreach (Zonenangabe z in liste)
+            {
+                bool aussen = (z.Bauteile ?? Array.Empty<(string, string)>()).Any(b =>
+                {
+                    Bauteilrand? rand = GebaeudeZonenabbildung.RandAusZeile(b.Bauteilart, b.Randbedingung);
+                    return rand == Bauteilrand.Aussenluft || rand == Bauteilrand.Erdreich || rand == Bauteilrand.Unbeheizt;
+                });
+                if (!aussen)
+                    hinweise.Add(string.Format(k, MyResource.Resource.ZONE_HINWEIS_OHNE_AUSSEN, (z.Bezeichner ?? "").Trim()));
+            }
+            return hinweise;
+        }
+
+        /// <summary>Dasselbe für gespeicherte Zonen.</summary>
+        public static IReadOnlyList<string> Hinweise(IList<ZoneModel> zonen, double? nutzflaecheGebaeude)
+            => Hinweise((zonen ?? new List<ZoneModel>()).Where(z => z != null)
+                            .Select(z => new Zonenangabe(z.Bezeichner, z.Nutzflaeche,
+                                (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null)
+                                    .Select(b => (b.Bauteilart, b.Randbedingung)).ToList())),
+                        nutzflaecheGebaeude);
 
         /// <summary>
         /// <b>Die Prüfregeln EINES Bauteils</b> (Mehrzonenkonzept 5.3, Ebene Bauteil) — die Regeln

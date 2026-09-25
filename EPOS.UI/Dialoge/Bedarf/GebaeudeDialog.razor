@@ -547,6 +547,17 @@
         "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. " +
         "Bitte das Projekt speichern und eine Klimaregion auswählen.";
 
+    /// <summary>
+    /// Der benannte Grund, wenn <see cref="BedarfGaben"/> zuletzt <c>null</c> lieferte (Stufe G6a —
+    /// etwa ein Gebäude mit mehreren Zonen, das die Simulation ablehnt); <c>null</c> oder leer = die
+    /// allgemeine Meldung <see cref="MeldungKeinBedarf"/>.
+    /// </summary>
+    [Parameter] public Func<string?>? BedarfBefund { get; set; }
+
+    /// <summary><c>GEB_MSG_KEIN_BEDARF_GRUND</c> — {0} der benannte Grund.</summary>
+    [Parameter] public string MeldungKeinBedarfGrund { get; set; } =
+        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}";
+
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gebaeude.btn_Help";
 
@@ -1064,7 +1075,16 @@
 
         _meldung = "";
         IReadOnlyDictionary<string, object>? gaben = BedarfGaben(_gewaehlt);
-        if (gaben is null) { Melden(MeldungKeinBedarf, WarnStufe.Warnung); return; }
+        if (gaben is null)
+        {
+            // Stufe G6a: der benannte Grund der Fassade statt der allgemeinen Meldung.
+            string? grund = BedarfBefund?.Invoke();
+            Melden(string.IsNullOrWhiteSpace(grund)
+                       ? MeldungKeinBedarf
+                       : string.Format(System.Globalization.CultureInfo.CurrentCulture, MeldungKeinBedarfGrund, grund),
+                   WarnStufe.Warnung);
+            return;
+        }
 
         _bedarfGaben = gaben;
     }

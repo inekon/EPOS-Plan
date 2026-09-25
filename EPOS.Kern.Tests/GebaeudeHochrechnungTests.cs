@@ -541,6 +541,7 @@ namespace EPOS.Kern.Tests
                 new BauteilEingang("Kellerwand", Bauteilart.Aussenwand, 30.0, Bauteilrand.Erdreich, 0.5, neigungGrad: 90.0),
             }));
             keller.ID = -2;
+            keller.Nutzflaeche = 40;             // ab zwei Zonen Pflicht (G6a)
             Assert.True(new GebaeudeZonenCtrl().SpeichernJeGebaeude(idGebaeude, new List<ZoneModel> { wohnen, keller }).Ok);
 
             int neu = dup.Duplizieren("Laurentiuskirche", "Laurentiuskirche D2");

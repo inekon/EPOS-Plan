@@ -24,6 +24,14 @@ namespace WindowsFormsApplication1
         /// <summary>Wurde die Zuordnung gefunden und gerechnet?</summary>
         internal bool Erfolgreich;
 
+        /// <summary>
+        /// Der benannte Grund, aus dem die Fassade das Gebäude nicht rechnet — die Fehler, die der
+        /// Rechenweg dabei ins Laufprotokoll schreibt (etwa ein Gebäude mit mehreren Zonen, Stufe
+        /// G6a); <c>null</c> bei Erfolg und wenn es gar nichts zu rechnen gab (kein Projekt, keine
+        /// Klimaregion, keine Projektkopie).
+        /// </summary>
+        internal string Befund;
+
         /// <summary>Der Gebäudename der Projektkopie.</summary>
         internal string Name = "";
 
@@ -291,7 +299,15 @@ namespace WindowsFormsApplication1
             // Der Merkplatz 0 in HeizwaermebedarfGeb - eine Rechnung fuer EIN Gebaeude
             // braucht keinen Rang, siehe HeizwaermeEinesGebaeudes.
             var werte = new double[STUNDEN_JAHR];
-            if (!sim.HeizwaermeEinesGebaeudes(gebaeude, 0, werte)) return ergebnis;
+            int vorher = SimulationProtokoll.Aktuell.Fehler.Count;
+            if (!sim.HeizwaermeEinesGebaeudes(gebaeude, 0, werte))
+            {
+                // Der benannte Grund aus dem Laufprotokoll (Stufe G6a) - dieselbe Lesart wie beim
+                // Hochrechnungsfaktor der Uebernahme.
+                IList<string> fehler = SimulationProtokoll.Aktuell.Fehler;
+                if (fehler.Count > vorher) ergebnis.Befund = string.Join(" ", fehler.Skip(vorher));
+                return ergebnis;
+            }
 
             // Dieselbe Umrechnung wie im Lauf: der Heizkanal geht als WATT in die
             // Schleife und wird danach EINMAL nach kW gebracht.

@@ -61,6 +61,9 @@ namespace WindowsFormsApplication1
 
             int[] naechsteId = { STARTINDEX };
 
+            // Stufe G6a: der benannte Grund der letzten Bedarfsauskunft ohne Zahl.
+            string bedarfBefund = null;
+
             // Welche Anzeigezeile gehoert zu welchem Modell der Fachliste? Der Speicherweg
             // traegt einer neu angelegten Zeile nach dem Festschreiben ihre ECHTE
             // Zuordnungs-Id ins Modell ein (WizardCtrl.EchteIdsUebernehmen); die
@@ -148,7 +151,11 @@ namespace WindowsFormsApplication1
                 // Gebaeudes. Die Katalogverwaltung ist seit Stufe 5 der Neuordnung eine
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
-                    z => { idsNachziehen(); return GebaeudeBedarfHuelle.Gaben(z, projektId); }),
+                    z => { idsNachziehen(); return GebaeudeBedarfHuelle.Gaben(z, projektId, out bedarfBefund); }),
+                // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
+                ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
+                ["MeldungKeinBedarfGrund"] = Text_("GEB_MSG_KEIN_BEDARF_GRUND",
+                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}"),
 
                 ["TitelText"] = Titel(),
                 ["KopfbandText"] = Text_("GEB_KOPFBAND", "Eingabe der Energiedaten"),

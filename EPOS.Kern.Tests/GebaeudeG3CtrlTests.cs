@@ -732,7 +732,7 @@ namespace EPOS.Kern.Tests
                 },
                 new ZoneModel
                 {
-                    ID = -2, Bezeichner = "Keller", IstBeheizt = false,
+                    ID = -2, Bezeichner = "Keller", IstBeheizt = false, Nutzflaeche = 60,
                     Bauteile =
                     {
                         new BauteilModel { ID = -3, Bezeichner = "Bodenplatte", Bauteilart = DbWerte.BAUTEILART_BODENPLATTE,

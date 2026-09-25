@@ -22,6 +22,9 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_ZEILE_BAUTEILWEG</c> — {0} Zone, {1} Zahl der Bauteile.</summary>
     public string ZeileBauteilweg { get; set; } = Resource.GEBZ_ZEILE_BAUTEILWEG;
 
+    /// <summary><c>GEBZ_ZEILE_BAUTEILWEG_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile.</summary>
+    public string ZeileBauteilwegZonen { get; set; } = Resource.GEBZ_ZEILE_BAUTEILWEG_ZONEN;
+
     /// <summary><c>GEBZ_ZEILE_KATALOG</c></summary>
     public string ZeileKatalog { get; set; } = Resource.GEBZ_ZEILE_KATALOG;
 
@@ -36,6 +39,9 @@ public sealed class GebaeudeZonenTexte
 
     /// <summary><c>GEBZ_SPERRE_ZONE</c> — {0} Zone.</summary>
     public string SperreZone { get; set; } = Resource.GEBZ_SPERRE_ZONE;
+
+    /// <summary><c>GEBZ_SPERRE_ZONEN</c> — {0} Zahl der Zonen.</summary>
+    public string SperreZonen { get; set; } = Resource.GEBZ_SPERRE_ZONEN;
 
     /// <summary><c>GEBZ_SPERRE_TAGESBILANZ</c></summary>
     public string SperreTagesbilanz { get; set; } = Resource.GEBZ_SPERRE_TAGESBILANZ;
@@ -82,11 +88,20 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_FRAGE_ENTFERNEN</c> — {0} Zone, {1} Zahl der Bauteile.</summary>
     public string FrageEntfernen { get; set; } = Resource.GEBZ_FRAGE_ENTFERNEN;
 
+    /// <summary><c>GEBZ_FRAGE_ENTFERNEN_ZONE</c> — eine von mehreren Zonen: {0} Zone, {1} Zahl der Bauteile.</summary>
+    public string FrageEntfernenZone { get; set; } = Resource.GEBZ_FRAGE_ENTFERNEN_ZONE;
+
     /// <summary><c>GEBZ_ZEILE_SUMMENREGEL</c> — {0} Zone.</summary>
     public string ZeileSummenregel { get; set; } = Resource.GEBZ_ZEILE_SUMMENREGEL;
 
+    /// <summary><c>GEBZ_ZEILE_SUMMENREGEL_ZONEN</c> — {0} Zahl der Zonen.</summary>
+    public string ZeileSummenregelZonen { get; set; } = Resource.GEBZ_ZEILE_SUMMENREGEL_ZONEN;
+
     /// <summary><c>GEBZ_ZEILE_FENSTER</c> — {0} Fensterfläche der Zone.</summary>
     public string ZeileFenster { get; set; } = Resource.GEBZ_ZEILE_FENSTER;
+
+    /// <summary><c>GEBZ_ZEILE_FENSTER_ZONEN</c> — {0} Fensterfläche aller Zonen, {1} Zahl der Zonen.</summary>
+    public string ZeileFensterZonen { get; set; } = Resource.GEBZ_ZEILE_FENSTER_ZONEN;
 
     /// <summary><c>GEBZ_ZEILE_PSI</c> — die Zeile der Wärmebrücken in der abgeleiteten Hülle.</summary>
     public string ZeilePsi { get; set; } = Resource.GEBZ_ZEILE_PSI;
@@ -94,11 +109,17 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_ZEILE_NUTZFLAECHE</c> — {0} Nutzfläche der Zone.</summary>
     public string ZeileNutzflaeche { get; set; } = Resource.GEBZ_ZEILE_NUTZFLAECHE;
 
+    /// <summary><c>GEBZ_ZEILE_NUTZFLAECHE_ZONEN</c> — {0} Σ Nutzfläche, {1} Zahl der Zonen.</summary>
+    public string ZeileNutzflaecheZonen { get; set; } = Resource.GEBZ_ZEILE_NUTZFLAECHE_ZONEN;
+
     /// <summary><c>GEBZ_ZEILE_NAME_PROJEKT</c> — {0} Name der Projektkopie.</summary>
     public string ZeileNameProjekt { get; set; } = Resource.GEBZ_ZEILE_NAME_PROJEKT;
 
     /// <summary><c>GEBZ_FRAGE_SPEICHERN_UNTER</c> — {0} Zone, {1} Zahl der Bauteile.</summary>
     public string FrageSpeichernUnter { get; set; } = Resource.GEBZ_FRAGE_SPEICHERN_UNTER;
+
+    /// <summary><c>GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile.</summary>
+    public string FrageSpeichernUnterZonen { get; set; } = Resource.GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN;
 
     /// <summary><c>GEBZ_MSG_ZONEN</c> — {0} Grund.</summary>
     public string MeldungZonen { get; set; } = Resource.GEBZ_MSG_ZONEN;

@@ -5,7 +5,8 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <summary>
 /// <b>Eine Zone eines Projektgebäudes</b>, wie der Gebäudedialog sie führt (Gebäudesimulation G3,
 /// Welle D2; Mehrzonenkonzept 5.1) — das DTO zwischen Hülle und <see cref="ZonenDialog"/>, ohne
-/// Fachklasse des Kerns. In G3 trägt ein Gebäude höchstens eine Zone.
+/// Fachklasse des Kerns. Ein Gebäude trägt bis zu <see cref="GebaeudeZonenregeln.PFLEGEGRENZE"/> Zonen
+/// (Stufe G6a); der Lauf rechnet bis Stufe G6b genau eine (<see cref="GebaeudeZonenregeln.LAUFGRENZE"/>).
 /// </summary>
 /// <remarks>
 /// <para><b>Vorläufige Zeilen tragen eine NEGATIVE Id</b> (Softwarearchitektur 3.3 Punkt 2): Nur eine
@@ -26,6 +27,14 @@ public sealed class ZoneDaten
     /// <summary>Nutzfläche der Zone [m²]; <c>null</c> = die Nutzfläche des Gebäudes.</summary>
     public double? Nutzflaeche { get; set; }
 
+    /// <summary>
+    /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein
+    /// Duplikat. Die Hülle übernimmt damit die Spalten der Vorlage, die die Oberfläche nicht führt
+    /// (Sollwerte, Lüftung, Kühl- und Übergabeeingaben), statt sie still auf NULL fallen zu lassen;
+    /// Herkunft und Quellkennung der Vorlage gehen nicht mit.
+    /// </summary>
+    public int? VorlageId { get; set; }
+
     /// <summary>Die Bauteile der Zone in ihrer Reihenfolge (Rang).</summary>
     public List<BauteilDaten> Bauteile { get; set; } = new();
 
@@ -41,6 +50,7 @@ public sealed class ZoneDaten
     public bool GleicheWerte(ZoneDaten? andere)
     {
         if (andere is null || Id != andere.Id || Bezeichner != andere.Bezeichner || Nutzflaeche != andere.Nutzflaeche
+            || VorlageId != andere.VorlageId
             || Bauteile.Count != andere.Bauteile.Count) return false;
         for (int i = 0; i < Bauteile.Count; i++)
             if (!Bauteile[i].GleicheWerte(andere.Bauteile[i])) return false;
@@ -191,7 +201,7 @@ public sealed record AufbauUebernahmeErgebnis(bool Ok, string Meldung, AufbauWah
 /// </remarks>
 public sealed class GebaeudeZonenweg
 {
-    /// <summary>Die Zonen des Projektgebäudes beim Öffnen (in G3 höchstens eine).</summary>
+    /// <summary>Die Zonen des Projektgebäudes beim Öffnen, in Rangfolge.</summary>
     public IReadOnlyList<ZoneDaten> Zonen { get; init; } = Array.Empty<ZoneDaten>();
 
     /// <summary>
@@ -205,6 +215,20 @@ public sealed class GebaeudeZonenweg
 
     /// <summary>OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids); leer = gelungen.</summary>
     public Func<IReadOnlyList<ZoneDaten>, string>? Speichern { get; init; }
+
+    /// <summary>
+    /// Die Prüfregeln des Kerns über die ganze Zonenliste (<c>GebaeudeZonenCtrl.Pruefen</c>, Stufe
+    /// G6a) — der OK-Weg fragt sie VOR dem ersten Schritt, damit eine verletzte Regel nichts halb
+    /// schreibt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
+    /// </summary>
+    public Func<IReadOnlyList<ZoneDaten>, string>? Pruefen { get; init; }
+
+    /// <summary>
+    /// Ist mehr als eine Zone speicherbar? Der Freigabeschalter des Kerns
+    /// (<see cref="GebaeudeZonenregeln.MehrereZonenFreigegeben"/>, Anwenderentscheid A1) — aus, trägt
+    /// das Gebäude höchstens eine Zone, und „+ Neue Zone" nennt die Sperre.
+    /// </summary>
+    public bool MehrereZonenFreigegeben { get; init; } = GebaeudeZonenregeln.MehrereZonenFreigegeben;
 
     /// <summary>Die Aufbauten des Projekts zur Wahl.</summary>
     public IReadOnlyList<AufbauWahl> Projektaufbauten { get; init; } = Array.Empty<AufbauWahl>();

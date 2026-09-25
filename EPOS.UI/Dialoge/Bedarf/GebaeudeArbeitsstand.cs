@@ -96,76 +96,205 @@ public sealed class GebaeudeArbeitsstand
     }
 
     // =====================================================================
-    //  Die Zonen eines Projektgebäudes (Gebäudesimulation G3, Welle D2)
+    //  Die Zonen eines Projektgebäudes (Gebäudesimulation G3, Welle D2; G6a)
     // =====================================================================
     //
-    // Ein Katalogsatz trägt keine Zonen (Softwarearchitektur 2.9); ein Gebäude im Projekt höchstens
-    // eine (G3). Die Zonen gehören zum Arbeitsstand wie die Felder: Übernehmen, Öffnen und Entfernen
-    // ändern nur ihn, geschrieben wird im OK-Weg des Editors (Softwarearchitektur 3.3).
+    // Ein Katalogsatz trägt keine Zonen (Softwarearchitektur 2.9); ein Gebäude im Projekt bis zu
+    // GebaeudeZonenregeln.Hoechstzahl() (G6a), gerechnet wird bis G6b genau eine. Die Zonen gehören
+    // zum Arbeitsstand wie die Felder: Übernehmen, Anlegen, Öffnen, Duplizieren, Umordnen und
+    // Entfernen ändern nur ihn, geschrieben wird im OK-Weg des Editors (Softwarearchitektur 3.3).
+    // JEDE Änderung trifft ihre Zone über die Id — nie über „die erste" (G6a, Risiko 2: ein Ersetzen
+    // der ganzen Liste löschte beim OK still alle übrigen Zonen).
 
-    /// <summary>Die Zonen im Arbeitsstand; leer = keine Zone (Klassenweg).</summary>
+    /// <summary>Die Zonen im Arbeitsstand in Listenfolge (= Rang); leer = keine Zone (Klassenweg).</summary>
     public List<ZoneDaten> Zonen { get; private set; } = new();
 
     /// <summary>Die Zonen beim Laden bzw. nach dem letzten Schreiben — Vergleich für <see cref="ZonenGeaendert"/>.</summary>
     private List<ZoneDaten> _zonenGeschrieben = new();
 
+    /// <summary>
+    /// Die kleinste vergebene vorläufige Id. Eine neue Zone bekommt eine Id DARUNTER — nie eine, die
+    /// schon einmal vergeben war: −1 trägt die Übernahmezone (<c>GebaeudeZonenabbildung</c>), und
+    /// die Hülle hält zu ihr die Spalten der Übernahme fest; eine spätere neue Zone mit derselben Id
+    /// erbte sie still.
+    /// </summary>
+    private int _kleinsteId = -1;
+
     /// <summary>Führt der Arbeitsstand ein Gebäude im Projekt (mit Zonenweg)? Ein Katalogsatz nicht.</summary>
     public bool MitZonenweg { get; private set; }
-
-    /// <summary>Die (erste) Zone; <c>null</c> = keine.</summary>
-    public ZoneDaten? Zone => Zonen.Count > 0 ? Zonen[0] : null;
 
     /// <summary>Übernimmt die Zonen eines Projektgebäudes — beim Öffnen des Editors in der Betriebsart Projekt.</summary>
     public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg)
     {
         MitZonenweg = mitZonenweg;
         Zonen = (zonen ?? Array.Empty<ZoneDaten>()).Select(z => z.Kopie()).ToList();
+        _kleinsteId = Math.Min(-1, Zonen.Count == 0 ? -1 : Zonen.Min(z => z.Id));
         ZonenGeschrieben();
     }
 
     /// <summary>Nach einem gelungenen Schreiben der Zonen: der neue Vergleichsstand.</summary>
     public void ZonenGeschrieben() => _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
 
-    /// <summary>Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert?</summary>
+    /// <summary>Sind die Zonen seit dem Laden bzw. dem letzten Schreiben geändert (auch umgeordnet)?</summary>
     public bool ZonenGeaendert
         => Zonen.Count != _zonenGeschrieben.Count
            || Zonen.Where((z, i) => !z.GleicheWerte(_zonenGeschrieben[i])).Any();
 
-    /// <summary>Setzt die Zone des Gebäudes (Übernahme oder Rückweg des Zonendialogs); <c>null</c> entfernt sie.</summary>
-    public void ZoneSetzen(ZoneDaten? zone)
+    /// <summary>Die Zone mit dieser Id; <c>null</c> = keine.</summary>
+    public ZoneDaten? ZoneMitId(int id) => Zonen.FirstOrDefault(z => z.Id == id);
+
+    /// <summary>Eine neue vorläufige Id — unter allen bisher vergebenen.</summary>
+    private int NeueId() => --_kleinsteId;
+
+    /// <summary>
+    /// Eine neue, leere Zone mit einer neuen vorläufigen Id — noch NICHT im Arbeitsstand; sie kommt
+    /// erst mit <see cref="ZoneAnlegen"/> hinein (etwa nach dem OK des Zonendialogs).
+    /// </summary>
+    public ZoneDaten NeueZone(string bezeichner) => new() { Id = NeueId(), Bezeichner = bezeichner ?? "" };
+
+    /// <summary>
+    /// Hängt eine Zone an die Liste — die Übernahme (Id −1) oder eine neue Zone. Trägt sie keine
+    /// vorläufige Id oder eine, die in der Liste schon steht, bekommt sie eine neue.
+    /// </summary>
+    public ZoneDaten ZoneAnlegen(ZoneDaten zone)
     {
-        Zonen.Clear();
-        if (zone is not null) Zonen.Add(zone);
+        ArgumentNullException.ThrowIfNull(zone);
+        if (zone.Id >= 0 || ZoneMitId(zone.Id) is not null) zone.Id = NeueId();
+        else _kleinsteId = Math.Min(_kleinsteId, zone.Id);
+        Zonen.Add(zone);
+        return zone;
+    }
+
+    /// <summary>Ersetzt die Zone gleicher Id an ihrem Platz (Rückweg des Zonendialogs); <c>false</c> = keine solche Zone.</summary>
+    public bool ZoneErsetzen(ZoneDaten zone)
+    {
+        ArgumentNullException.ThrowIfNull(zone);
+        int i = Zonen.FindIndex(z => z.Id == zone.Id);
+        if (i < 0) return false;
+        Zonen[i] = zone;
+        return true;
+    }
+
+    /// <summary>Nimmt die Zone mit dieser Id samt Bauteilen aus dem Arbeitsstand; <c>false</c> = keine solche Zone.</summary>
+    public bool ZoneEntfernen(int id) => Zonen.RemoveAll(z => z.Id == id) > 0;
+
+    /// <summary>
+    /// Dupliziert die Zone mit dieser Id — die Kopie steht direkt hinter ihr. Zone und Bauteile
+    /// bekommen neue vorläufige Ids, die Bauteile die Herkunft „manuell" und keine Quellkennung: Die
+    /// Importpaarung gehört der Vorlage. <see cref="ZoneDaten.VorlageId"/> nennt die Vorlage, deren
+    /// übrige Spalten die Hülle übernimmt (bei einem Duplikat eines Duplikats dessen Vorlage).
+    /// </summary>
+    /// <returns>Die Kopie; <c>null</c> = keine solche Zone.</returns>
+    public ZoneDaten? ZoneDuplizieren(int id, string bezeichner)
+    {
+        int i = Zonen.FindIndex(z => z.Id == id);
+        if (i < 0) return null;
+        ZoneDaten quelle = Zonen[i];
+        ZoneDaten kopie = quelle.Kopie();
+        kopie.Id = NeueId();
+        kopie.VorlageId = quelle.VorlageId ?? quelle.Id;
+        kopie.Bezeichner = bezeichner ?? "";
+        int bauteilId = 0;
+        foreach (BauteilDaten b in kopie.Bauteile)
+        {
+            b.Id = --bauteilId;
+            b.Herkunft = DbWerte.HERKUNFT_MANUELL;
+            b.Quellkennung = null;
+        }
+        Zonen.Insert(i + 1, kopie);
+        return kopie;
+    }
+
+    /// <summary>
+    /// Verschiebt die Zone mit dieser Id um einen Platz (<paramref name="richtung"/> −1 nach oben,
+    /// +1 nach unten); der Rang folgt beim Schreiben lückenlos der Listenfolge.
+    /// </summary>
+    /// <returns><c>false</c> = keine solche Zone, oder sie steht schon am Rand.</returns>
+    public bool ZoneVerschieben(int id, int richtung)
+    {
+        int i = Zonen.FindIndex(z => z.Id == id);
+        int j = i + Math.Sign(richtung);
+        if (i < 0 || richtung == 0 || j < 0 || j >= Zonen.Count) return false;
+        (Zonen[i], Zonen[j]) = (Zonen[j], Zonen[i]);
+        return true;
     }
 
     /// <summary>
     /// Die Herleitungszeile „Rechenweg der Hülle" — in BEIDEN Stellungen (Softwarearchitektur 3.2
-    /// Regel 3): Klassenweg über die U-Wert-Gruppen und die Bauweise, oder Bauteilweg mit Zone und
-    /// Zahl der Bauteile; für einen Katalogsatz der Klassenweg samt dem Satz, dass er keine Zonen trägt.
+    /// Regel 3): Klassenweg über die U-Wert-Gruppen und die Bauweise, oder Bauteilweg mit der Zone
+    /// (bzw. der Zahl der Zonen) und der Zahl der Bauteile; für einen Katalogsatz der Klassenweg samt
+    /// dem Satz, dass er keine Zonen trägt.
     /// </summary>
     public string Huellwegzeile(GebaeudeZonenTexte t)
     {
         if (!MitZonenweg) return t.ZeileKatalog;
-        return Zone is ZoneDaten z
-            ? string.Format(CultureInfo.CurrentCulture, t.ZeileBauteilweg, z.Bezeichner,
-                            z.Bauteile.Count.ToString(CultureInfo.CurrentCulture))
-            : t.ZeileKlassenweg;
+        if (Zonen.Count == 0) return t.ZeileKlassenweg;
+        CultureInfo c = CultureInfo.CurrentCulture;
+        string bauteile = Zonen.Sum(z => z.Bauteile.Count).ToString(c);
+        return Zonen.Count == 1
+            ? string.Format(c, t.ZeileBauteilweg, Zonen[0].Bezeichner, bauteile)
+            : string.Format(c, t.ZeileBauteilwegZonen, Zonen.Count.ToString(c), bauteile);
+    }
+
+    /// <summary>Der Luftwechsel, mit dem H_ve gebildet wird [1/h] — der des gewählten Rechenwegs.</summary>
+    private double? LuftwechselRechenweg => IstVdi6007 ? WirksamerLuftwechsel : Stand.Luftwechselrate;
+
+    /// <summary>
+    /// Die Kennwerte je Zone in Listenfolge (<see cref="WindowsFormsApplication1.Zonenkennwerte"/>, die
+    /// EINE Formel des Kerns) mit Nutzfläche, Raumhöhe und Luftwechsel des Arbeitsstands.
+    /// </summary>
+    public IReadOnlyList<Zonenkennwerte> Kennwerte
+        => Zonen.Select(z => Zonensummen.Kennwerte(z, Stand.WohnflaecheGesamt, Stand.Raumhoehe, LuftwechselRechenweg)).ToList();
+
+    /// <summary>Die Kennwerte der Zone mit dieser Id; <c>null</c> = keine solche Zone.</summary>
+    public Zonenkennwerte? KennwerteVon(int id)
+        => ZoneMitId(id) is ZoneDaten z ? Zonensummen.Kennwerte(z, Stand.WohnflaecheGesamt, Stand.Raumhoehe, LuftwechselRechenweg) : null;
+
+    /// <summary>
+    /// Die Nutzfläche, mit der das Gebäude rechnet [m²]: mit Zonen Σ ihrer Flächen (leer = die des
+    /// Gebäudes), sonst die des Gebäudes; <c>null</c>, wenn eine Fläche fehlt.
+    /// </summary>
+    public double? NutzflaecheWirksam
+    {
+        get
+        {
+            if (Zonen.Count == 0) return Stand.WohnflaecheGesamt;
+            double summe = 0.0;
+            foreach (Zonenkennwerte k in Kennwerte)
+            {
+                if (k.Nutzflaeche is not double a) return null;
+                summe += a;
+            }
+            return summe;
+        }
+    }
+
+    /// <summary>H_T zur Anzeige [W/K]: mit Zonen Σ aus ihren Bauteilen (Summenregel), sonst aus den U-Wert-Gruppen.</summary>
+    public double HTAnzeige => Zonen.Count == 0 ? HT : Summe(Kennwerte.Select(k => k.HT));
+
+    /// <summary>H_ve zur Anzeige [W/K]: mit Zonen Σ über ihre Nutzflächen (Flächenschlüssel), sonst wie <see cref="HVe"/>.</summary>
+    public double HVeAnzeige => Zonen.Count == 0 ? HVe : Summe(Kennwerte.Select(k => k.HVe));
+
+    /// <summary>Σ in Listenfolge; eine einzige Zone gibt ihren Wert unverändert zurück.</summary>
+    private static double Summe(IEnumerable<double> werte)
+    {
+        double s = 0.0;
+        bool erster = true;
+        foreach (double w in werte)
+        {
+            s = erster ? w : s + w;
+            erster = false;
+        }
+        return s;
     }
 
     /// <summary>
-    /// Die Nutzfläche, mit der das Gebäude rechnet [m²]: mit Zone deren Nutzfläche (leer = die des
-    /// Gebäudes), sonst die des Gebäudes.
+    /// Die Hinweise über die Zonenliste (<c>GebaeudeZonenCtrl.Hinweise</c>, Stufe G6a) — Σ Nutzfläche
+    /// gegen die des Gebäudes, Zonen ohne Außenbauteil; leer = nichts zu sagen. Sie halten kein OK an.
     /// </summary>
-    public double? NutzflaecheWirksam => Zone?.Nutzflaeche ?? Stand.WohnflaecheGesamt;
-
-    /// <summary>H_T zur Anzeige [W/K]: mit Zone aus ihren Bauteilen (Summenregel), sonst aus den U-Wert-Gruppen.</summary>
-    public double HTAnzeige => Zone is ZoneDaten z ? Zonensummen.HT(z) : HT;
-
-    /// <summary>H_ve zur Anzeige [W/K]: mit Zone über ihre Nutzfläche (Flächenschlüssel), sonst wie <see cref="HVe"/>.</summary>
-    public double HVeAnzeige => Zone is null
-        ? HVe
-        : Gebaeudehuellbilanz.LueftungWK(IstVdi6007 ? WirksamerLuftwechsel : Stand.Luftwechselrate,
-                                         NutzflaecheWirksam, Stand.Raumhoehe);
+    public IReadOnlyList<string> ZonenHinweise
+        => GebaeudeZonenCtrl.Hinweise(Zonen.Select(z => new GebaeudeZonenCtrl.Zonenangabe(z.Bezeichner, z.Nutzflaeche,
+               z.Bauteile.Select(b => (b.Bauteilart, b.Randbedingung!)).ToList())), Stand.WohnflaecheGesamt);
 
     private void FerienZerlegen()
     {
