@@ -362,6 +362,21 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | obere Raumtemperatur | maximum indoor temperature | Bestandsfeld `Maximaleraumtemperatur`; obere Kante des Sollwertbands |
 | Überhitzungsstunden | overheating hours | Stunden der Nutzungszeit über der oberen Raumtemperatur |
 | Vergleich der Rechenwege | comparison of calculation methods | Tabelle im Bedarfsdialog, bis Stufe GA |
+| Baustoff | building material | Katalog „Baustoffe" (Stufe G3) |
+| herstellerneutral | manufacturer-neutral | Baustoff ohne Hersteller (Norm- oder Richtwert) |
+| Bauteilaufbau | construction build-up | Katalog „Bauteilaufbauten"; Schichten innen → außen |
+| Bauteilart | component type | Persistenzwerte `AUSSENWAND` … bleiben (§ 10) |
+| Innenwand / Decke / Tür / Fenster | internal wall / ceiling / door / window | Bauteilarten |
+| Vorhangfassade | curtain wall | Bauteilart mit U- und g-Wert |
+| Schicht | layer | Zeile des Schichtenrasters |
+| Rohdichte (ρ) | density | kg/m³ |
+| spezifische Wärmekapazität (c_p) | specific heat capacity | J/(kg·K), nicht kJ |
+| Wärmedurchlasswiderstand (R) | thermal resistance | m²K/W; DIN EN ISO 6946 |
+| Wärmeübergangswiderstand innen/außen (R_si/R_se) | internal/external surface resistance | DIN EN ISO 6946, Tabelle 7 |
+| ruhende Luftschicht | unventilated air layer | DIN EN ISO 6946, Tabelle 8 |
+| flächenbezogene Wärmekapazität | areal heat capacity | Σ ρ·c_p·d in kJ/(m²K); Spalte „Kapazität" → „Heat capacity" |
+| Bezugsperiode (T_BT) | reference period | VDI 6007 Blatt 1, Gl. (10a)–(10d) |
+| Bauteilweg | component method | Rechnung aus Schichten nach VDI 6007 Blatt 1 |
 
 ## 14. Trinkwarmwasser und Zapfprofil
 
