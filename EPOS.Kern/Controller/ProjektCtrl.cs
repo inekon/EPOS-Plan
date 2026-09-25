@@ -161,8 +161,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Klimaregion des AKTIVEN Projekts (<c>Tab_Applikation.ID_Projekt</c>), 0 ohne
-        /// Projekt - die Vorbelegung eines neuen Projekts (Nutzerauftrag 02.09.2026, Merge 5).
+        /// Die <b>STAMM-Id</b> der Klimaregion des AKTIVEN Projekts
+        /// (<c>Tab_Applikation.ID_Projekt</c>), 0 ohne Projekt oder ohne Region - die
+        /// Vorbelegung eines neuen Projekts (Nutzerauftrag 02.09.2026, Merge 5).
+        ///
+        /// <para><b>Stamm-Id, nicht die Id der Projektkopie</b>: Die Vorbelegung landet in
+        /// <see cref="ProjektKopfDaten.IdKlimaregion"/>, und die Klappliste des Assistenten
+        /// fuehrt Stamm-Ids. Die Id aus <c>Tab_Projekt.ID_Klimaregion</c> gehoert der
+        /// Projektkopie - ein anderer Schluesselraum; in der Klappliste traf sie keinen
+        /// Eintrag, und das Feld stand leer da, obwohl die Pflichtregel es fuer gefuellt
+        /// hielt.</para>
         /// </summary>
         public static int KlimaregionDesAktivenProjekts()
         {
@@ -172,10 +180,7 @@ namespace WindowsFormsApplication1
                 if (app == null || app.Rows.Count == 0 || app.Rows[0]["ID_Projekt"] == DBNull.Value) return 0;
                 int id = Convert.ToInt32(app.Rows[0]["ID_Projekt"]);
                 if (id <= 0) return 0;
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?", new DbParam("@id", id));
-                if (dt == null || dt.Rows.Count == 0 || dt.Rows[0]["ID_Klimaregion"] == DBNull.Value) return 0;
-                return Convert.ToInt32(dt.Rows[0]["ID_Klimaregion"]);
+                return StartseiteCtrl.ProjektKlimaregionStammId(id);
             }
             catch (Exception ex)
             {
@@ -209,9 +214,14 @@ namespace WindowsFormsApplication1
         /// <para>Ein leerer Name liefert einen LEEREN Satz mit heutigem Datum — genau
         /// der Zweig <c>Wizard_Projekt.SetProjektbezeichner("")</c> des Neu-Modus.</para>
         ///
-        /// <para>Der Anzeigename der Klimaregion kommt aus
+        /// <para>Der Name der Klimaregion kommt aus
         /// <c>KlimaregionStammCtrl.NameZuProjektregion</c> (mit dem STAMM-Rueckfall fuer
-        /// aeltere Projekte, iU9-W15a.0f).</para>
+        /// aeltere Projekte, iU9-W15a.0f); er ist der eindeutige Stammname.
+        /// <see cref="ProjektKopfDaten.IdKlimaregion"/> ist die <b>Stamm-Id</b> zu diesem
+        /// Namen — der Schluessel der Klappliste im Assistenten und in der Kopfleiste —,
+        /// nicht <c>Tab_Projekt.ID_Klimaregion</c>: Dort steht die Id der PROJEKTKOPIE,
+        /// ein anderer Schluesselraum. Fehlt der Name im Katalog, bleibt die Id 0 und der
+        /// Name stehen.</para>
         /// </summary>
         public static ProjektKopfDaten Kopf(string projektname)
         {
@@ -222,6 +232,8 @@ namespace WindowsFormsApplication1
             ctrl.ReadSingle(projektname);
             if (ctrl.rows == 0) return null;
 
+            string klimaname = KlimaregionStammCtrl.NameZuProjektregion(ctrl.m_ID_Klimaregion, ctrl.m_ID);
+
             return new ProjektKopfDaten
             {
                 Name = ctrl.m_szProjektname ?? "",
@@ -230,8 +242,8 @@ namespace WindowsFormsApplication1
                 Bearbeiter = ctrl.m_szBearbeiter ?? "",
                 Erstelldatum = ctrl.m_Erstelldatum,
                 Aenderungsdatum = ctrl.m_Aenderungsdatum,
-                IdKlimaregion = ctrl.m_ID_Klimaregion,
-                Klimaname = KlimaregionStammCtrl.NameZuProjektregion(ctrl.m_ID_Klimaregion, ctrl.m_ID)
+                IdKlimaregion = KlimaregionStammCtrl.IdVonName(klimaname),
+                Klimaname = klimaname
             };
         }
 

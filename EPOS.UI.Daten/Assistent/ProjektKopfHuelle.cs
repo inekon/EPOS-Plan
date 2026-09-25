@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using EPOS.UI.Seiten.Assistent;
+using EPOS.UI.Seiten.Start;
 
 namespace WindowsFormsApplication1
 {
@@ -64,19 +65,43 @@ namespace WindowsFormsApplication1
                     kopf.Klimaname = gelesen.Klimaname;
                 }
             }
-            else if (string.IsNullOrEmpty(kopf.Name))
+
+            // #527: EINE Lesung der Klappliste - Eintraege wie in der Kopfleiste, dazu die
+            // blanken Stammnamen fuer die Vorbelegung und den Rueckweg der Seite.
+            (IReadOnlyList<(int Id, string Text)> eintraege, IReadOnlyDictionary<int, string> namen)
+                = Klimaregionen();
+
+            if (string.IsNullOrEmpty(projektName) && string.IsNullOrEmpty(kopf.Name))
             {
                 // Vorbelegung eines NEUEN Projekts (Nutzerauftrag 02.09.2026, mit Merge 5 aus
                 // Wizard_Projekt): Bearbeiter = angemeldeter Benutzer, Klimaregion = die des
                 // aktiven Projekts. Nur leere Felder werden belegt.
+                //
+                // #527: Die Region reist als STAMM-Id UND Stammname - so steht sie sichtbar
+                // in der Klappliste, und die Pflichtregel sieht dasselbe wie der Anwender.
+                // Vorher kam hier die Id der PROJEKTKOPIE herein: Sie traf keinen Eintrag,
+                // das Feld stand leer, und die Regel hielt es trotzdem fuer gefuellt.
                 if (string.IsNullOrEmpty(kopf.Bearbeiter)) kopf.Bearbeiter = Environment.UserName;
-                if (kopf.IdKlimaregion <= 0) kopf.IdKlimaregion = ProjektCtrl.KlimaregionDesAktivenProjekts();
+                if (kopf.IdKlimaregion <= 0 && string.IsNullOrEmpty(kopf.Klimaname))
+                {
+                    int stamm = ProjektCtrl.KlimaregionDesAktivenProjekts();
+                    if (stamm > 0 && namen.TryGetValue(stamm, out string stammname))
+                    {
+                        kopf.IdKlimaregion = stamm;
+                        kopf.Klimaname = stammname;
+                    }
+                }
             }
 
             return new Dictionary<string, object>
             {
                 ["Daten"] = kopf,
-                ["Klimaregionen"] = Klimaregionen(),
+                ["Klimaregionen"] = eintraege,
+                ["Klimanamen"] = namen,
+                ["KlimaHerkunft"] = new Func<int, KlimaHerkunftGaben>(Herkunft),
+                ["KlimaPlatzhalterText"] = Text_("START_KLIMA_REGION", "Region auswählen"),
+                ["KlimaHerkunftText"] = Text_("START_KLIMA_HERKUNFT", "Klimadaten: {0} · {1} · {2} · Import {3}"),
+                ["KlimaHerkunftKurzText"] = Text_("START_KLIMA_HERKUNFT_KURZ", "Klimadaten: {0} · {1}"),
                 // Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, Merge 5)
                 ["VergebeneNamen"] = VergebeneNamen(),
                 ["PflichtMarke"] = " *",
@@ -100,12 +125,6 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>
-        /// Die Klimaregionen der Stammdaten als <c>(Id, Name)</c>. Der Vorläufer schrieb
-        /// dafür seine eigene Schleife über <c>ctrl.items[i].m_szName</c> und schlug die
-        /// Id danach mit einem VERKETTETEN SQL nach (Befund W15a-B31/B32); hier reisen
-        /// beide Werte zusammen.
-        /// </summary>
         /// <summary>Alle vergebenen Projektnamen - fuer die Dublettenpruefung eines neuen Projekts.</summary>
         internal static IReadOnlyCollection<string> VergebeneNamen()
         {
@@ -115,25 +134,37 @@ namespace WindowsFormsApplication1
             return namen;
         }
 
-        private static IReadOnlyList<(int Id, string Text)> Klimaregionen()
+        /// <summary>
+        /// <b>Die Klappliste der Klimaregion — dieselbe wie in der Kopfleiste der
+        /// Startseite</b> (#527): aus <see cref="StartseiteCtrl.KlimaregionAuswahlzeilen"/>,
+        /// der einen Quelle beider Listen. Die Einträge sind (Stamm-Id, Anzeigetext) —
+        /// „Heidelberg (TRY 2045 sommerwarm)" —, in derselben Reihenfolge; dazu je Id der
+        /// BLANKE Stammname, den der Speicherweg braucht (die Klammer ist nur Anzeige).
+        ///
+        /// <para>Die Liste lag hier bis dahin ein zweites Mal gebaut vor: eigene Schleife
+        /// über <c>KlimaregionStammCtrl.ReadAll</c> mit blanken Namen und einer
+        /// Datenbankabfrage je Eintrag für die Id — ohne Kurzform, anders als die
+        /// Kopfleiste.</para>
+        /// </summary>
+        internal static (IReadOnlyList<(int Id, string Text)> Eintraege,
+                         IReadOnlyDictionary<int, string> Namen) Klimaregionen()
         {
-            var liste = new List<(int, string)>();
-            try
+            var eintraege = new List<(int Id, string Text)>();
+            var namen = new Dictionary<int, string>();
+            foreach ((int Id, string Name, string Anzeige) z in StartseiteCtrl.KlimaregionAuswahlzeilen())
             {
-                var ctrl = new KlimaregionStammCtrl();
-                ctrl.ReadAll();
-                for (int i = 0; i < ctrl.rows; i++)
-                {
-                    string name = ctrl.items[i].m_szName ?? "";
-                    liste.Add((KlimaregionStammCtrl.IdVonName(name), name));
-                }
+                eintraege.Add((z.Id, z.Anzeige));
+                namen[z.Id] = z.Name ?? "";
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Klimaregionen konnten nicht gelesen werden: " + ex.Message);
-            }
-            return liste;
+            return (eintraege, namen);
         }
+
+        /// <summary>
+        /// Die Herkunft der GEWÄHLTEN Region für die Zeile unter der Klappliste — der
+        /// Katalogsatz, den das Anlegen in das Projekt kopiert; <c>null</c> = keine Zeile.
+        /// </summary>
+        internal static KlimaHerkunftGaben Herkunft(int stammId)
+            => stammId > 0 ? KlimaHerkunftAnzeige.Gaben(StartseiteCtrl.KlimaHerkunftStamm(stammId)) : null;
 
         private static string Text_(string schluessel, string rueckfall)
         {
