@@ -636,7 +636,7 @@ namespace EPOS.Kern.Tests
         public void Die_Grenzen_je_Plattform_stehen_im_Profil()
         {
             Assert.Equal(25L * 1024 * 1024, GbxmlImportProfil.MAX_BYTES_WINDOWS);
-            Assert.Equal(10L * 1024 * 1024, GbxmlImportProfil.MAX_BYTES_IOS);
+            Assert.Equal(25L * 1024 * 1024, GbxmlImportProfil.MAX_BYTES_IOS);
             Assert.Equal(GbxmlImportProfil.MAX_BYTES_WINDOWS, new GbxmlImportProfil().MaxBytes);
             Assert.Equal(GbxmlImportProfil.MAX_BYTES_IOS, new GbxmlImportProfil(GbxmlImportProfil.MAX_BYTES_IOS).MaxBytes);
             var p = new GbxmlImportProfil();

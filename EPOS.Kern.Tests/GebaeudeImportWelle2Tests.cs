@@ -361,7 +361,9 @@ namespace EPOS.Kern.Tests
         {
             var profil = new GbxmlImportProfil();
             Assert.Equal(25L * 1024 * 1024, profil.GrenzeFuerPlattform(false));
-            Assert.Equal(10L * 1024 * 1024, profil.GrenzeFuerPlattform(true));
+            // E41 (25.09.2026): nach der Messung im iOS-Lauf gilt auf iOS dieselbe Grenze wie unter Windows.
+            Assert.Equal(25L * 1024 * 1024, profil.GrenzeFuerPlattform(true));
+            Assert.Equal(20L * 1024 * 1024, new IfcImportProfil().GrenzeFuerPlattform(true));
         }
     }
 }

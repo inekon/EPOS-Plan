@@ -527,8 +527,9 @@ Anlagenkopplung aus, entsteht sie nicht, und das Modul rechnet wie heute.
    `HuellenwegTests`). Das betrifft jede Dateiwahl und jede Rückfrage im Importweg.
 2. **Die Größengrenze ist kein Glied der Plattformnaht, sondern ein Datum des Profils.** Sie
    unterscheidet sich **je Format und je Plattform** — vier Zahlen, nicht eine: IFC 50 MB Windows /
-   20 MB iOS (U11), gbXML 25 MB Windows / 10 MB iOS (D15); **beide iOS-Zahlen sind zu messen, nicht
-   zu schätzen**. **Diese vier Zahlen stehen allein hier** — der Systementwurf verweist auf diese
+   20 MB iOS (U11), gbXML 25 MB Windows / 25 MB iOS (D15, **E41**); **beide iOS-Zahlen sind im iOS-Lauf
+   zur Abnahme von G4a gemessen** (IFC rund 9–11, gbXML rund 7,5 MB Prozessspeicher je MB Datei; Protokoll G4
+   Abschnitt 10). **Diese vier Zahlen stehen allein hier** — der Systementwurf verweist auf diese
    Stelle, statt sie zu wiederholen. Sie stehen als `MaxBytes` in `IfcImportProfil` bzw.
    `GbxmlImportProfil`, und die **Hülle** belegt sie je Plattform (Befund U L7). Die Ablehnung ist
    ein `Warnbanner` der Stufe Fehler **vor** dem Lesen — benannt, nicht versucht. **Bei `.ifczip`

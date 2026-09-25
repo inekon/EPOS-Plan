@@ -19,7 +19,7 @@ Im Dialog '''Eingabe der Gebäudedaten''' steht in der Leiste unter dem Katalog 
 Eine Datei mit anderer Endung lehnt der Dialog mit „Dateiart nicht unterstützt" ab und nennt die beiden Formate.
 
 {{Anker|groesse}}
-Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es höchstens 25 MB für gbXML und 50 MB für IFC, unter iOS höchstens 10 MB bzw. 20 MB; bei ''.ifczip'' zählt die entpackte Größe. Die Grenzen stehen unter der Dateiwahl. Eine größere Datei wird nicht gelesen, der Dialog nennt ihre Größe und die Grenze. Während des Lesens zeigt der Dialog einen Fortschritt; ''Abbrechen'' neben dem Fortschritt oder Esc brechen das Lesen ab, ohne dass etwas übernommen wird.
+Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es höchstens 25 MB für gbXML und 50 MB für IFC, unter iOS höchstens 25 MB bzw. 20 MB; bei ''.ifczip'' zählt die entpackte Größe. Die Grenzen stehen unter der Dateiwahl. Eine größere Datei wird nicht gelesen, der Dialog nennt ihre Größe und die Grenze. Während des Lesens zeigt der Dialog einen Fortschritt; ''Abbrechen'' neben dem Fortschritt oder Esc brechen das Lesen ab, ohne dass etwas übernommen wird.
 
 == Der Zuordnungsdialog ==
 {{Anker|zuordnung}}

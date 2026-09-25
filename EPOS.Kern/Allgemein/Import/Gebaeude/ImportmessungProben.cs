@@ -18,8 +18,8 @@ namespace WindowsFormsApplication1
     /// G4-8): je Format eine Datei aus N gleichartigen Räumen, im Speicher erzeugt — keine Datei im
     /// Repositorium, keine Hersteller- oder Produktdaten, neutrale Namen und runde Werte.
     ///
-    /// <para><b>Wozu.</b> Die iOS-Größengrenzen (IFC 20 MB, gbXML 10 MB, Softwarearchitektur 1.5
-    /// Regel 2) sind geschätzt. Gemessen werden kann nur an Dateien, die groß genug sind, dass der
+    /// <para><b>Wozu.</b> Die iOS-Größengrenzen (IFC 20 MB, gbXML 25 MB nach E41, Softwarearchitektur 1.5
+    /// Regel 2) werden hier gemessen. Gemessen werden kann nur an Dateien, die groß genug sind, dass der
     /// Speicherbedarf des Lesers die Grundlast der Anwendung übersteigt — und die liegen nicht vor.
     /// Die Erzeugung ist deshalb Teil des Kerns: Der Prüfmodus der iOS-Schale und die Tests unter
     /// Windows fahren denselben Weg (<see cref="Importmessung"/>).</para>
