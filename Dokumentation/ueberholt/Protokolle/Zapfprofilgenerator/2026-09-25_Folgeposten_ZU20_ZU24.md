@@ -101,7 +101,7 @@ Testlauf mit.
 ## Gegenprüfung und Nachbesserung
 
 Auf dem Stand `bfa27fb9` hat eine Gegenprüfung des Postens **neun Befunde** ergeben — einer hoch,
-vier mittel, drei gering, zwei zur Kenntnis. Nachgebessert in `5606a566` (Auslieferung) und
+vier mittel, zwei gering, zwei zur Kenntnis. Nachgebessert in `5606a566` (Auslieferung) und
 `e997ec0a` (Wachen und Wortlaut), die Papiere im Folgecommit.
 
 | Nr. | Gewicht | Befund | Ergebnis |
