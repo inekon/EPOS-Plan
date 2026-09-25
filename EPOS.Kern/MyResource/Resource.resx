@@ -13450,6 +13450,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_BAUJAHR" xml:space="preserve">
     <value>Baujahr :</value>
   </data>
+  <data name="GEBK_LBL_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse :</value>
+  </data>
   <data name="GEBK_LBL_BESCHREIBUNG" xml:space="preserve">
     <value>Beschreibung :</value>
   </data>
@@ -13654,6 +13657,9 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEBK_MSG_ZAHL" xml:space="preserve">
     <value>Bitte {0} als Zahl eingeben.</value>
+  </data>
+  <data name="GEBK_MSG_BAUJAHR" xml:space="preserve">
+    <value>Das Baujahr muss zwischen {0} und {1} liegen.</value>
   </data>
   <data name="GEBK_RAND_AUSSENLUFT" xml:space="preserve">
     <value>Außenluft</value>
@@ -22285,8 +22291,11 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_ART_ERL" xml:space="preserve">
     <value>Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude.</value>
   </data>
-  <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
+  <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
     <value>Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
+    <value>Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Es steht neben der Baualtersklasse und ändert weder eine Vorgabe noch die Rechnung.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
     <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
@@ -26727,6 +26736,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GEBA_LBL_BAUJAHR" xml:space="preserve">
     <value>Baujahr</value>
+  </data>
+  <data name="GEBA_LBL_BAUALTERSKLASSE" xml:space="preserve">
+    <value>Baualtersklasse</value>
   </data>
   <data name="GEBA_LBL_VERWENDUNG" xml:space="preserve">
     <value>Verwendung</value>
@@ -31423,6 +31435,9 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_FELD_BAUALTERSKLASSE" xml:space="preserve">
     <value>Baualtersklasse</value>
   </data>
+  <data name="GIMP_FELD_BAUJAHR" xml:space="preserve">
+    <value>Baujahr</value>
+  </data>
   <data name="GIMP_FELD_BAUART" xml:space="preserve">
     <value>Bauart</value>
   </data>
@@ -31677,6 +31692,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_GEB_PROT_G_AUSSERHALB" xml:space="preserve">
     <value>Der g-Wert {0} liegt nicht im Bereich über 0 bis 1.</value>
+  </data>
+  <data name="IMP_GEB_PROT_BAUJAHR_UNGUELTIG" xml:space="preserve">
+    <value>Das Baujahr {0} ist keine ganze Jahreszahl von {1} bis {2}.</value>
   </data>
   <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
     <value>Ohne Baualtersklasse gibt es keine Vorgaben für U-Werte, g-Wert und Wärmebrücken.</value>
@@ -32115,6 +32133,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_BELEG_KLASSE_BAUJAHR" xml:space="preserve">
     <value>aus dem Baujahr {0} („{1}“)</value>
+  </data>
+  <data name="GIMP_BELEG_BAUJAHR" xml:space="preserve">
+    <value>gelesen aus „{0}“</value>
   </data>
   <data name="GIMP_BELEG_LUFTWECHSEL_VORGABE" xml:space="preserve">
     <value>nicht in der Datei — Vorgabe des Stundenmodells</value>

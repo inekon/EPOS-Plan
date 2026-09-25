@@ -112,8 +112,9 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, StringComparison.Ordinal);
                 Assert.DoesNotContain("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_UEBERGABE, StringComparison.Ordinal);
             }
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUEBERGABE, GebaeudeSchema.SICHT_AKTUELL);
+            // Die GELTENDE Sicht ist die des fünften Durchgangs (Baujahr); sie beginnt mit den 98
+            // Spalten von KAK-S1 an ihren Stellen.
+            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUEBERGABE, GebaeudeSchema.SICHT_AKTUELL.Take(98));
         }
 
         /// <summary>
@@ -210,8 +211,10 @@ namespace EPOS.Kern.Tests
             string sicht = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, sicht);
-            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUEBERGABE, GebaeudeSchema.SichtSpalten());
+            // Die Sicht ist die GELTENDE (die des Baujahrs); die 98 Spalten von KAK-S1 stehen darin
+            // an ihren Stellen.
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
+            Assert.Equal(GebaeudeSchema.SICHT_KUEHLUEBERGABE, GebaeudeSchema.SichtSpalten().Take(98));
 
             foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten.Concat(KuehluebergabeSchema.Ergebnisspalten))
             {
@@ -591,7 +594,7 @@ namespace EPOS.Kern.Tests
             using (SqliteCommand cmd = verbindung.CreateCommand())
             {
                 cmd.CommandText = "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = '" + GebaeudeSchema.VIEW + "'";
-                Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, Convert.ToString(cmd.ExecuteScalar(), CultureInfo.InvariantCulture));
+                Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, Convert.ToString(cmd.ExecuteScalar(), CultureInfo.InvariantCulture));
             }
         }
 

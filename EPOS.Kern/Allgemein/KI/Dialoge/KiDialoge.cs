@@ -4846,9 +4846,10 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Fuenf Klapplisten sind WAHLFELDER</b> (KI-D-Q6): Gebaeudetyp und
-        /// Gebaeudeart tragen den Namen des Katalogsatzes als Schluessel, Baujahr und
-        /// Bauart ihren Listenplatz, die VERWENDUNG ihren Steuerwert. Die Bauart zieht
-        /// die Bauweise nach — derselbe Weg, den die Klappliste geht.
+        /// Gebaeudeart tragen den Namen des Katalogsatzes als Schluessel, Baualtersklasse
+        /// und Bauart ihren Listenplatz, die VERWENDUNG ihren Steuerwert. Die Bauart zieht
+        /// die Bauweise nach — derselbe Weg, den die Klappliste geht. Das BAUJAHR daneben
+        /// ist eine Ganzzahl (1500 bis 2100, leer = unbekannt).
         /// </para>
         /// <para>
         /// <b>Die sechzehn FERIENZAHLEN sind eine TABELLE</b> (Welle #458 Stufe 3b): vier
@@ -4975,8 +4976,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkArtErl, leerErlaubt: true),
                     new KiDialogFeld("baualtersklasse", "GebaeudeKatalogKiSicht.Baualtersklasse",
-                                     KiDialogTexte.GebkBaujahrName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.GebkBaujahrErl),
+                                     KiDialogTexte.GebkBaualtersklasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkBaualtersklasseErl),
+                    // Das Baujahr (G4a): eine Jahreszahl neben der Klasse, leer = unbekannt; es
+                    // steuert keine Vorgabe (die haengen an der Baualtersklasse).
+                    new KiDialogFeld("baujahr", "GebaeudeKatalogKiSicht.Baujahr",
+                                     KiDialogTexte.GebkBaujahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkBaujahrErl, leerErlaubt: true,
+                                     min: GebaeudeSchema.BAUJAHR_MIN, max: GebaeudeSchema.BAUJAHR_MAX),
                     new KiDialogFeld("verwendung", "GebaeudeKatalogKiSicht.Verwendung",
                                      KiDialogTexte.GebkVerwendungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkVerwendungErl, leerErlaubt: true),

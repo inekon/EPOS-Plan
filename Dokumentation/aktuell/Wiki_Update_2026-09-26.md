@@ -258,9 +258,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Rücklauf und begrenzte Stunden stehen im Wärmebedarf und im Bericht. (Anlagenkopplung AK1)
 - Seit 26.09.2026: Die Kühlung eines Gebäudes kann an die Anlage gekoppelt gerechnet werden —
   über eine Kühlübergabe (Kühldecke, Flächenkühlung oder Gebläsekonvektor) mit festem
-  Kaltwasser-Vorlauf und einer einstellbaren Vorlaufgrenze. (Anlagenkopplung AK1, E37; **Entwurf**
-  — die Version fragt die Orchestrierung beim Anwender ab: 1.2.0.4 nur, wenn die vierte Welle vor dem
-  Upload gepusht ist, sonst die nächste Version)
+  Kaltwasser-Vorlauf und einer einstellbaren Vorlaufgrenze. (Anlagenkopplung AK1, E37; Version
+  1.2.0.4 nach Anwenderentscheid 25.09.2026, die vierte Welle ist vor dem Upload gepusht)
 - Seit 26.09.2026: Gebäudedaten lassen sich aus gbXML- und IFC-Dateien in den Gebäudedialog
   übernehmen. (Gebäudesimulation G4)
 

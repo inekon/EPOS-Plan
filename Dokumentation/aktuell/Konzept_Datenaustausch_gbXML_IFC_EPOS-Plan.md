@@ -27,6 +27,21 @@
 > dann G4a; G4b erst nach G3 und nachdem G4a im Feld war. Für G4 gibt es genau einen iOS-Lauf, bei
 > der Abnahme von G4a und nur nach ausdrücklicher Rückfrage; G4c wird ohne iOS-Lauf abgenommen. 3.4,
 > 3.6, 3.7 und 9 tragen den Vermerk.
+>
+> **Nachzug 25.09.2026 — Umsetzung G4** ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)):
+> G4c (gbXML) und G4a (IFC) sind gebaut und im Gebäudedialog angebunden; an benannten Stellen weicht
+> der gebaute Stand begründet von diesem Papier ab. **Namen:** das formatfreie Gerüst liegt unter
+> `EPOS.Kern/Allgemein/Import/Gebaeude/`, die Leser unter `Import/Gbxml/` und `Import/Ifc/`, der
+> Dialog ist `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor` mit der Hülle
+> `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs` (2.1, 2.4, 3.1). **Übernahme:** Der Import legt ein
+> **neues** Gebäude an — über den vorbelegten Gebäudeeditor im Modus Neu; erst das Speichern der
+> Gebäudeliste schreibt Projektkopie und Herkunft in einem Vorgang (2.4). **Einstieg:** ein Knopf
+> „Importieren (gbXML, IFC)…" im Gebäudedialog, das Profil folgt der Dateiendung. **Persistenz:**
+> Schemaschritt **138** (S-F); die Kaskadenfalle ist gegenstandslos, die fünf Zielverweise tragen
+> `ON DELETE CASCADE` (7). Die Arbeitsentscheide der Umsetzung stehen an ihren Stellen in 3.4 bis 3.8,
+> der Probenstand in 8.3, 9 und 10. Offen: die Windows-Sichtabnahme, der eine iOS-Lauf zur Abnahme
+> von G4a nur nach Rückfrage (E38) samt den erst dort gemessenen iOS-Größengrenzen, der
+> Schemaschritt `Baujahr` (G4a, in Arbeit).
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -227,6 +242,16 @@ Umsetzungskonzept 3.3 (1.4, Nr. 6): `IfcImportSatz.cs` → `GebaeudeImportSatz.c
 `IfcZuordnungsModell.cs` → `GebaeudeZuordnungsModell.cs`, beide von `Import/Ifc/` nach
 `Import/Gebaeude/`.
 
+**Umgesetzt (Protokoll G4, Abschnitte 1 und 3).** Das Gerüst ist weiter gezogen als oben skizziert:
+Neben Satz und Zuordnungsmodell sind auch **Ablauf und Zwischenmodell formatfrei** —
+`GebaeudeImportAblauf` (Lesen mit Größenablehnung vor dem Parsen, SHA-256, `Zuordnen`, `Pruefen`)
+hinter der Naht `IGebaeudeLeser`, das normierte Zwischenmodell `GebaeudeAbbild` (davon abgeleitet
+`GbxmlAbbild` und `IfcGebaeudeAbbild`), die gemeinsame Zuordnung `GebaeudeAggregation`, die
+Vorgaben je Baualtersklasse `GebaeudeVorgaben`, dazu `GebaeudeImportProfil`, `GebaeudeFeldzeile`,
+`GebaeudeQuelle`, `Quellkennung` und `Importherkunft`. Je Format bleiben allein Leser, Einheiten und
+Profil: `Import/Gbxml/` (so geschrieben, nicht `GbXml/`) mit `GbxmlLeser`, `GbxmlEinheiten`,
+`GbxmlAbbild`, `GbxmlImportProfil`, und `Import/Ifc/` mit `IfcLeser` samt Hilfsklassen.
+
 Drei Regeln des Bestands gelten wörtlich und werden hier nur benannt, nicht wiederholt: der Ablauf
 zeigt nichts an (Zäsur statt Rückruf), ein fehlerhafter Eintrag bricht den Lauf nicht ab, und der
 Zustand lebt im Ablauf, nicht in der Komponente (Befund N, 1.1). Dazu die Drei-Schichten-Regel:
@@ -279,7 +304,8 @@ Drei Festlegungen dazu:
   die beim Round-Trip zählt: *Ist das dieselbe Datei?* Ein Zeitstempel beantwortet sie nicht.
 - **Die Zuordnung ist Projektware und kaskadiert mit dem Gebäude.** Wird das Gebäude gelöscht,
   verschwindet sie mit — sie beschreibt nichts, was ohne das Gebäude noch Sinn hätte. Die Kaskade
-  hat eine Falle, und sie ist benannt: **7 („Die Kaskadenfalle")**.
+  hat eine Falle, und sie ist benannt: **7 („Die Kaskadenfalle")** (umgesetzt: gegenstandslos,
+  Protokoll G4 Abschnitt 4).
 
 ### 2.4 Ein Zuordnungsdialog für beide Formate
 
@@ -297,6 +323,22 @@ Die Hausregeln gelten unverändert: nichts wird ohne OK geschrieben, Abbrechen l
 der Wirt verwirft, der Dialog gibt **alle** Zeilen zurück, auch die unveränderten. Beim
 Mehrzonenimport kommen die vier Abschnitte aus Mehrzonenkonzept 6.4 dazu; sie sind formatfrei
 formuliert und brauchen keine Ergänzung.
+
+**Umgesetzt (Protokoll G4, Abschnitte 2 und 6).** Der Dialog heißt
+`EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor` (mit `GebaeudeImportDaten.cs`), die Hülle
+`EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs` (A3 der Softwarearchitektur). Der **Einstieg** ist ein
+Knopf „Importieren (gbXML, IFC)…" im Gebäudedialog mit **einer** Dateiwahl über den gemeinsamen
+Filter; das Profil folgt der Dateiendung (`GebaeudeImportProfil.FuerDatei`), eine andere Endung ist
+die benannte Ablehnung „Dateiart nicht unterstützt". Der **Übernahmeweg** schreibt nicht in eine
+vorhandene Projektzeile, sondern legt ein **neues** Gebäude an: Zuordnungsdialog → vorbelegter
+Gebäudeeditor im Modus Neu (`GebaeudeImportHuelle.Vorbelegung`) → Katalogsatz über dessen
+gewöhnlichen Schreibweg → die neue Zeile kommt samt ausstehender Herkunft in die Projektliste → das
+Speichern der Gebäudeliste schreibt Projektkopie und Herkunft in einem Vorgang
+(`WizardCtrl.GebaeudeZuordnungAnlegen` → `GebaeudeImportCtrl.SchreibeHerkunft`,
+`EPOS.Kern/Controller/WizardCtrl.cs:2654`, `:2685`). Begründung: Es gibt keinen Editor für
+Projektkopien, eine abweichende Kopie wäre für den Anwender unsichtbar, und der Katalogsatz zeigte
+andere Werte, als das Projekt rechnet. Bricht der Anwender den Gebäudedialog ab, bleibt der
+Katalogsatz, und es entstehen weder Projektzeile noch Herkunft.
 
 ### 2.5 Der Plattformweg
 
@@ -324,14 +366,20 @@ sind dort für `.xml` (`:29`) und `.zip` (`:32`) schon geführt (ebenso Umsetzun
 `.ifc` gibt es **keine** registrierte Typkennung; dort bleibt `public.data` (`:22`) mit einem
 Kommentar wie im `.lic`-Fall (`:37-40`). **Für gbXML ist nichts zu tun:** `.xml` ist bereits auf
 `public.xml` abgebildet; einen neuen Eintrag braucht es nur, wenn der Wähler zusätzlich auf
-`*.gbxml` hören soll.
+`*.gbxml` hören soll. (Umgesetzt: `.ifcxml` → `public.xml`, `.ifczip` → `public.zip-archive` und
+zusätzlich `.gbxml` → `public.xml` in `EPOS.iOS/Dienste/Dateifilter.cs:50-52`, `.ifc` bleibt bei
+`public.data`; geprüft wird die Schale erst im einen iOS-Lauf zur Abnahme von G4a, Protokoll G4
+Abschnitt 5.)
 
 **Größengrenze für beide Formate.** Für IFC steht sie mit 50 MB Windows / 20 MB iOS im
 Umsetzungskonzept (Frage U11). Für gbXML ist sie **neu zu setzen**: die größte gemessene
 Beispieldatei hat 16,3 MB und 648 885 Knoten und ist in 1 656 ms validierend durchgelesen
 (Befund R, 4.3) — der Zeitbedarf ist unkritisch, der Speicherbedarf eines vollständigen `XDocument`
 nicht. **Vorschlag: 25 MB Windows / 10 MB iOS**, benannt abgelehnt statt versucht; die iOS-Zahl ist
-zu messen, nicht zu schätzen.
+zu messen, nicht zu schätzen. (Umgesetzt: `GbxmlImportProfil` 25 MB / 10 MB, `IfcImportProfil`
+50 MB / 20 MB, je Profil und Plattform über `GrenzeFuerPlattform`; der Dialog nennt beide Grenzen.
+Die iOS-Zahlen werden erst im einen iOS-Lauf zur Abnahme von G4a gemessen; Protokoll G4 Abschnitte 1,
+3 und 6.)
 
 ---
 
@@ -348,6 +396,12 @@ EPOS.Kern/Allgemein/Import/GbXml/
     GbXmlImportAblauf.cs   Lesen / Zuordnen / Pruefen, Muster KatalogImportAblauf
     GbXmlImportProfil.cs   Dateifilter, MaxBytes, Zonenregel, Bänder, Hilfeschlüssel
 ```
+
+(Umgesetzt, Protokoll G4 Abschnitt 1: `EPOS.Kern/Allgemein/Import/Gbxml/` mit `GbxmlLeser.cs` —
+LINQ to XML über den Strom, DTD verboten, kein Auflöser, mit und ohne Namensraum, Geometrie aus
+`RectangularGeometry`, sonst aus `PolyLoop` —, `GbxmlEinheiten.cs`, `GbxmlAbbild.cs` und
+`GbxmlImportProfil.cs`. Lesen, Zuordnen und Prüfen trägt der formatfreie `GebaeudeImportAblauf`
+hinter `IGebaeudeLeser` (2.1); einen eigenen `GbXmlImportAblauf` gibt es nicht.)
 
 `EPOS.Kern` benutzt bislang **keine** XML-API (Befund R, 4.3); gbXML ist die erste Nutzung.
 `System.Xml.Linq` ist Teil der BCL — kein Paketeintrag, keine Laufzeitcodeerzeugung, keine
@@ -444,10 +498,10 @@ Grundlage ist die Tabelle aus Befund R, 5.1; hier steht sie auf die Tabellen des
 | `Space` (+ `Zone` über `@zoneIdRef`) | `Tab_Zone` (`Bezeichner`, `Rang`) | Aggregation nach 3.3; `Bezeichner` aus `Space/Name`, sonst `@id` |
 | `Space/Area`, `/Volume` | `Tab_Zone.Nutzflaeche`, `.Volumen` | `Raumhoehe` = Volumen ÷ Fläche, wenn beides vorliegt; sonst NULL = Wert des Gebäudes. **E13 (16.09.2026):** die Zielgröße heißt durchgängig **Nutzfläche** (beheizte Netto-Grundfläche) — auf Gebäudeebene trägt sie weiter die Spalte `Tab_Gebaeude.Wohnflaeche` (Annahme, Frage Q11a; Konzept N1.17) |
 | `Space/@conditionType` | `Tab_Zone.IstBeheizt` | 3.3 |
-| `Zone/DesignHeatT`, `/DesignCoolT` | `Tab_Zone.Raumsolltemperatur_Tag`, `.Maximaleraumtemperatur` | fehlt oft; NULL = Wert des Gebäudes, **keine** Zahlenvorgabe im Import |
+| `Zone/DesignHeatT`, `/DesignCoolT` | `Tab_Zone.Raumsolltemperatur_Tag`, `.Maximaleraumtemperatur` | fehlt oft; NULL = Wert des Gebäudes, **keine** Zahlenvorgabe im Import. (Umgesetzt: `DesignCoolT` wird **nicht** zugeordnet — `Maximaleraumtemperatur` ist nach E32 die Überhitzungsgrenze, kein Sollwert; `DesignHeatT` geht auf den Tagsollwert nur, wenn alle beheizten Räume denselben Wert tragen; Protokoll G4 Abschnitt 1, Nr. 2) |
 | `Space/AirChangesPerHour` | `Tab_Zone.Luftwechsel_Infiltration` | **eine** Zahl gegen zwei Spalten — `Luftwechsel_Nutzer` bleibt NULL (Frage **D12**). `InfiltrationFlow` (`Loose`/`Average`/`Tight`) ist für 1/h unbrauchbar |
 | `Space/PeopleNumber` | `Tab_Zone.Bewohner` | drei Einheiten möglich (`NumberOfPeople`, `SquareMPerPerson`, `SquareFtPerPerson`) — umrechnen, nicht raten |
-| `Space/LightPowerPerArea`, `/EquipPowerPerArea` | `Tab_Zone.Interne_Waermegewinne` | W/m² × Fläche, Einheit Pflicht |
+| `Space/LightPowerPerArea`, `/EquipPowerPerArea` | `Tab_Zone.Interne_Waermegewinne` | W/m² × Fläche, Einheit Pflicht. (Umgesetzt: **innere Gewinne bleiben leer** — die Datei trägt Auslegungsleistungen, die mit Zeitplänen gemeint sind, das Modell rechnet mit einem zeitlich konstanten Gewinn; die Summe steht nur als Vorschlag im Beleg; Protokoll G4 Abschnitt 1, Nr. 1) |
 | `Surface` | `Tab_Bauteil` (`Bezeichner`, `Rang`) | Zuordnung zur Zone nur über `AdjacentSpaceId` |
 | `Surface/@surfaceType` | `Tab_Bauteil.Bauteilart` | Tabelle 3.5 |
 | `RectangularGeometry/Width × Height` | `Tab_Bauteil.Flaeche` | **Bruttomaß** einschließlich der Öffnungen; **Fenster selbst abziehen** (3.6). In `Tab_Bauteil.Flaeche` steht danach die **Nettofläche** — das ist für den Export (5.5) zu beachten |
@@ -461,12 +515,17 @@ Grundlage ist die Tabelle aus Befund R, 5.1; hier steht sie auf die Tabellen des
 | `Opening` (`@openingType`) | eigene Zeile in `Tab_Bauteil`, `Bauteilart = 'FENSTER'` bzw. `'TUER'` | `FixedWindow`/`OperableWindow`/`FixedSkylight`/`OperableSkylight` → Fenster; `SlidingDoor`/`NonSlidingDoor` → Tür; `Air` → keine Fläche |
 | `Opening/RectangularGeometry/Width × Height` | `Tab_Bauteil.Flaeche` | Außenmaß einschließlich Rahmen |
 | `WindowType/U-value` **oder** `Opening/U-value` | `Tab_Bauteil.U_Wert` | **beide Orte prüfen**; nur `WPerSquareMeterK` und `BtuPerHourSquareFtF` sind zulässige Einheiten |
-| `WindowType/SolarHeatGainCoeff` | `Tab_Bauteil.g_Wert` | bei mehreren mit `solarIncidentAngle` den bei 0° nehmen |
+| `WindowType/SolarHeatGainCoeff` | `Tab_Bauteil.g_Wert` | bei mehreren mit `solarIncidentAngle` den bei 0° nehmen. (Umgesetzt: gbXML legt nicht fest, ob der Wert für die Verglasung oder das ganze Fenster gilt; EPOS setzt ihn als g-Wert der **Verglasung** an und mindert zusätzlich um den Rahmenanteil, der Beleg trägt den Hinweis; Protokoll G4 Abschnitt 1, Nr. 7, und Abschnitt 2) |
 | — | `Tab_Bauteil.Rahmenanteil`, `.Verschattungsfaktor` | gbXML kennt beides nicht → NULL = Vorgabe (0,3 / 0,9) |
 | `Location/Latitude`, `/Longitude`, `/Elevation` | — | nur Anzeige; die Klimaregion wählt der Anwender (Umsetzungskonzept 3.1) |
 | — | `Tab_Bauteil.Psi_L`, Baualtersklasse | **fehlt in gbXML vollständig** → Vorgabe bzw. Anwenderangabe (3.8) |
 | `Surface/@surfaceType="Shade"` | — | benannt übergangen; Verschattung durch Nachbarbebauung ist abgegrenzt |
 | `Schedule`-Kette, `Results`, `AirLoop`/`AirSystem`, `Occupants`, `Behaviors` | — | in G4c nicht gelesen |
+
+(Umgesetzt im Einzonenweg X4, Protokoll G4 Abschnitte 1 und 6: Die gelesenen Größen werden über
+`GebaeudeAggregation` auf die 33 Zielfelder des Gebäudeeditors verdichtet und über den Katalogsatz in
+`Tab_Gebaeude` übernommen; Zeilen in `Tab_Zone` und `Tab_Bauteil` entstehen erst mit G6c. Der
+Luftwechsel wird volumengewichtet und nur übernommen, wenn jeder beheizte Raum einen trägt.)
 
 ### 3.5 Bauteilart und Randbedingung
 
@@ -509,6 +568,14 @@ eine davon unabhängige Angabe und wird nur zur Gegenprobe herangezogen.
 nach unten ≈ Σ Flächen nach oben je Zone, und jede Trennfläche muss von beiden Seiten dieselbe
 Größe haben. Weicht sie um mehr als 2 % ab, wird die größere genommen und gemeldet.
 
+(Umgesetzt im Einzonenweg, Protokoll G4 Abschnitt 1, Nr. 3, 4 und 6: **Wände und Decken gegen
+Erdreich zählen zur Grundfläche mit `ERDREICH`** — im Einzonenmodell rechnet nur die Grundfläche
+gegen das Erdreich, Wand, Dach und Sonstige rechnen gegen Außenluft. Boden oder Decke gegen einen
+unbeheizten Raum: zuerst entscheidet `AdjacentSpaceId/@surfaceType`, dann die Neigung, dann die
+Flächenart; Boden → Grundfläche `KELLER`, Decke → Dach, Wand → Sonstige, je mit Hinweis.
+`FreestandingColumn` wird übergangen, `EmbeddedColumn` zählt zu den Sonstigen. Zur Markierung „rot"
+siehe 3.8.)
+
 ### 3.6 Aufbauten, Schichten, Stoffwerte
 
 Die Kette ist flach und über IDREF verkettet: `Surface/@constructionIdRef` → `Construction` →
@@ -541,13 +608,22 @@ ist er die einzige Quelle.
 **Plausibilitätsband:** λ, ρ, c ≤ 0 ist **kein Wert**, sondern eine Fehlstelle — das ist die Lehre
 aus den mit Nullen gefüllten IFC-Dateien (Befund P, 0, Nr. 6) und gilt hier genauso.
 
+**Bauweise (umgesetzt, Protokoll G4 Abschnitt 2, Nr. 1).** Der Import setzt nur die **Bauart**,
+eingerastet über `Gebaeudebauweise.BauartAusBauweise`; der Gebäudeeditor rechnet die Bauweise im
+Modus Neu aus Nutzfläche und Bauart nach, ein freier Wert hielte nicht. Der Wert aus den
+raumseitigen Schichten bis 10 cm (über `Bauteilreduktion`, flächengewichtet über die opaken
+Hüllbauteile) steht im Beleg.
+
 **Fensterabzug.** `RectangularGeometry` liefert die Wandfläche **einschließlich** der Öffnungen; die
 `Opening`-Kinder liegen zusätzlich darauf. Regel wie beim IFC-Weg (Umsetzungskonzept 3.5, Nr. 10):
 A_Wand = Σ Wandfläche − Σ A_Fenster − Σ A_Außentür derselben Fläche; wird das negativ, A = 0, Zeile
 rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV`. **Der Bruttowert wird mitgeführt** (Wandfläche zuzüglich
 ihrer Öffnungen), weil der Export ihn braucht (5.5, Punkt 2). Der Abzug ist die Antwort auf Frage
 **U14** des Umsetzungskonzepts, **mit E38 (24.09.2026) nach Empfehlung entschieden** — für beide
-Importwege.
+Importwege. (Umgesetzt in der gemeinsamen `GebaeudeAggregation`: Wird die Nettofläche negativ, ist
+das beim gbXML-Weg ein **Fehler** wie oben; der IFC-Weg nimmt zuerst die Nettofläche der Datei
+(`NetSideArea`) und bleibt nur ohne sie beim Fehler —
+`EPOS.Kern/Allgemein/Import/Gebaeude/GebaeudeAggregation.cs:663`; Protokoll G4 Abschnitte 1 und 3.)
 
 ### 3.7 Was gbXML nicht sagt
 
@@ -557,7 +633,7 @@ Drei Angaben fehlen im Schema und müssen anders entstehen:
 |---|---|---|
 | **Baualtersklasse / Baujahr** | gbXML hat kein Gegenstück zu `Pset_BuildingCommon.YearOfConstruction` (Befund R, 5.1) | **Anwenderangabe im Zuordnungsdialog**, Klappliste über die 21 Klassen; sie steuert alle U-Wert- und ψ-Vorgaben und ist deshalb das erste Feld des Dialogs |
 | **Wärmebrückenzuschlag ψ·L** | kein Ziel im Schema | ψ als Vorgabe je Baualtersklasse, Anschlusslängen **leer** — dieselbe Regel wie beim IFC-Weg (Umsetzungskonzept, Frage U15, **mit E38 nach Empfehlung entschieden**; Herkunftsmarke `Vorgabe` bzw. `Leer`) |
-| **Schichtrichtung innen/außen** | `Construction` sagt die Reihenfolge, aber nicht, welches Ende raumseitig ist | **Annahme: erste Schicht außen** — wie die **benannte EPOS-Annahme** beim IFC-Weg ohne `…Usage` (Mehrzonenkonzept 6.3: die Spezifikation gibt dort **keine** Lage an; es ist keine Normvorgabe, sondern eine Hausannahme mit 50 % Irrtumswahrscheinlichkeit je Bauteil). Die Annahme wird **markiert**, ist im Aufbaueditor umkehrbar, und weil `Tab_Bauteilschicht.Reihenfolge` innen → außen zählt, wird die gelesene Folge beim Schreiben **umgekehrt** (3.4) |
+| **Schichtrichtung innen/außen** | `Construction` sagt die Reihenfolge, aber nicht, welches Ende raumseitig ist | **Annahme: erste Schicht außen** — wie die **benannte EPOS-Annahme** beim IFC-Weg ohne `…Usage` (Mehrzonenkonzept 6.3: die Spezifikation gibt dort **keine** Lage an; es ist keine Normvorgabe, sondern eine Hausannahme mit 50 % Irrtumswahrscheinlichkeit je Bauteil). Die Annahme wird **markiert**, ist im Aufbaueditor umkehrbar, und weil `Tab_Bauteilschicht.Reihenfolge` innen → außen zählt, wird die gelesene Folge beim Schreiben **umgekehrt** (3.4). (Umgesetzt: gbXML mit dieser Annahme; der IFC-Weg liest die raumseitige Schicht aus `IfcMaterialLayerSetUsage` und der Raumseite und fällt nur ohne sie auf die Annahme zurück, mit Meldung `IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN`; Protokoll G4 Abschnitt 5) |
 
 Die Nutzungssemantik geht zusätzlich verloren: `spaceTypeEnum` hat 126 Werte, und **kein einziger**
 enthält „Residential" (Befund R, 1.9). Für die EPOS-Zielgruppe gibt es also keine passende
@@ -589,6 +665,13 @@ Alle als `PruefMeldung` mit Schlüsseln in **beiden** `.resx`, danach `ResourceD
 | zu viele Zonen | N > 50 | benannte Ablehnung | `IMP_GBXML_PROT_ZU_VIELE_ZONEN` | F |
 | kein Norden | `CADModelAzimuth` fehlt | Annahme 0°, **der Dialog sagt es** | `IMP_GBXML_PROT_KEIN_NORDEN` | W |
 
+(Umgesetzt, Protokoll G4 Abschnitt 1, Nr. 5 und 6: Die 18 Schlüssel dieser Tabelle stehen in beiden `.resx`, dazu
+weitere `IMP_GBXML_PROT_*`, `IMP_GEB_PROT_*` und `GIMP_*`. **Die Markierung „rot" sperrt im
+Zuordnungsdialog nur bei negativer Nettofläche;** fehlende Geometrie, unbekannter Nachbar, Fenster
+ohne Himmelsrichtung und gemischte Randbedingung sind gelb. „Zeile rot" in dieser Tabelle meint die
+Bauteilzeilen von G6c. `IMP_GBXML_PROT_OHNE_AUFBAU` erscheint einmal je Datei mit Zahl und
+Beispielen.)
+
 ---
 
 ## 4. IFC-Import — was der Datenaustausch ergänzt
@@ -607,6 +690,12 @@ Datenaustausch braucht — sonst nichts.
 Alles Übrige gilt unverändert: Ablauf `Lesen`/`Uebernehmen`, Schlüssel `IMP_IFC_PROT_*`,
 Einheitenauflösung über `IIfcProject.UnitsInContext`, Azimutkette mit `TrueNorth` und
 `IfcMapConversion`, Größengrenze, Paketwahl `Xbim.IO.MemoryModel` ohne Esent, iOS-Trimming.
+
+(Umgesetzt, Protokoll G4 Abschnitte 3, 4 und 6: alle vier Ergänzungen — die Persistenz schon mit
+G4c über Schemaschritt 138, die Zählung beider Verlustkanäle in `IfcProtokoll` bis in die Quelle,
+der SHA-256 im `GebaeudeImportAblauf`. Die Übernahme geht den Weg aus 2.4, nicht über ein
+`Uebernehmen` in eine vorhandene Projektzeile. Das iOS-Trimming ist mit dem einen iOS-Lauf zur
+Abnahme von G4a offen.)
 
 ---
 
@@ -1085,6 +1174,13 @@ Muster `WizardCtrl.StraengeSichern` (`EPOS.Kern/Controller/WizardCtrl.cs:109-111
 `:1094`, Wiederherstellung `:1187`). Probe 14 prüft deshalb **beides**: nach dem Löschen des
 Gebäudes sind die Tabellen leer, **nach einem gewöhnlichen Speichern stehen sie unverändert**.
 
+**Umgesetzt (Protokoll G4 Abschnitt 4): Die Kaskadenfalle ist gegenstandslos.** Die Messung A1 der
+Sitzung G3 hat gezeigt, dass kein gewöhnlicher Speicherweg ein Gebäude löscht und neu anlegt, und
+`GebaeudeZonenCtrl` gleicht über die Ids ab (A6 der Softwarearchitektur); eine Rettung in
+`WizardCtrl` ist deshalb nicht gebaut. Probe 14 hält beide Fälle weiter fest. Beide Tabellen
+entstehen mit Schemaschritt **138** (S-F, 7.4); die Bauform ist bis auf die Kaskade der Zielverweise
+(7.2) die hier vorgeschlagene.
+
 ### 7.1 `Tab_Importquelle` — eine Zeile je Importlauf
 
 | Spalte | Typ | NULL | Bedeutung |
@@ -1107,11 +1203,11 @@ Gebäudes sind die Tabellen leer, **nach einem gewöhnlichen Speichern stehen si
 |---|---|---|---|
 | `ID` | INTEGER PRIMARY KEY AUTOINCREMENT | — | |
 | `ID_Importquelle` | INTEGER NOT NULL | — | FK → `Tab_Importquelle.ID`, `ON DELETE CASCADE` |
-| `ID_Gebaeude` | INTEGER | ja | FK → `Tab_Gebaeude.ID`, **ohne** Kaskade — die Paarung EPOS-Gebäude ↔ `IfcBuilding.GlobalId` bzw. gbXML-`Building/@id` |
-| `ID_Zone` | INTEGER | ja | FK → `Tab_Zone.ID`, **ohne** Kaskade |
-| `ID_Bauteil` | INTEGER | ja | FK → `Tab_Bauteil.ID`, ohne Kaskade |
-| `ID_Aufbau` | INTEGER | ja | FK → `Tab_Bauteilaufbau.ID`, ohne Kaskade |
-| `ID_Baustoff` | INTEGER | ja | FK → `Tab_Baustoff.ID`, ohne Kaskade |
+| `ID_Gebaeude` | INTEGER | ja | FK → `Tab_Gebaeude.ID`, `ON DELETE CASCADE` (umgesetzt; vorgeschlagen war „ohne Kaskade", Begründung unter der Tabelle) — die Paarung EPOS-Gebäude ↔ `IfcBuilding.GlobalId` bzw. gbXML-`Building/@id` |
+| `ID_Zone` | INTEGER | ja | FK → `Tab_Zone.ID`, `ON DELETE CASCADE` (umgesetzt) |
+| `ID_Bauteil` | INTEGER | ja | FK → `Tab_Bauteil.ID`, `ON DELETE CASCADE` (umgesetzt) |
+| `ID_Aufbau` | INTEGER | ja | FK → `Tab_Bauteilaufbau.ID`, `ON DELETE CASCADE` (umgesetzt) |
+| `ID_Baustoff` | INTEGER | ja | FK → `Tab_Baustoff.ID`, `ON DELETE CASCADE` (umgesetzt) |
 | `Quellkennung` | TEXT NOT NULL CHECK (length ≤ 64) | — | `IfcGloballyUniqueId` (Base64, 22 Zeichen) bzw. gbXML-`id` |
 | `Quelltyp` | TEXT NOT NULL CHECK (length ≤ 40) | — | `IfcBuilding`, `IfcSpace`, `IfcWall`, `Building`, `Space`, `Surface`, `Construction`, `Material` … |
 
@@ -1121,6 +1217,14 @@ Dazu die Regel, die aus fünf Fremdschlüsseln einen Zeiger macht:
 CHECK ((ID_Gebaeude IS NOT NULL) + (ID_Zone IS NOT NULL) + (ID_Bauteil IS NOT NULL)
      + (ID_Aufbau IS NOT NULL) + (ID_Baustoff IS NOT NULL) = 1)
 ```
+
+**Kaskade auf die Zielverweise (umgesetzt, Protokoll G4 Abschnitt 4).** Die Fremdschlüssel sind im
+Betrieb scharf; ohne Löschregel scheiterte das Entfernen einer importierten Zone, eines Bauteils,
+Aufbaus oder Baustoffs am Verweis der Paarung, und `SET NULL` verletzte den `CHECK`. Die Begründung
+für „ohne Kaskade" — ein Speicherweg, der löscht und neu anlegt, räumte die Paarung bei jedem
+Speichern ab — trägt nicht mehr (Kopf dieses Kapitels), und eine Paarung ohne ihr Ziel hat keine
+Bedeutung. Die fünf Zielverweise tragen deshalb `ON DELETE CASCADE`
+(`EPOS.Kern/Allgemein/Update/ImportzuordnungSchema.cs:212-217`, Begründung im Dateikopf `:24-44`).
 
 **Warum `ID_Gebaeude` auch hier steht**, obwohl `Tab_Importquelle` schon eines führt: Dort zeigt es
 vom Lauf auf das Ziel, hier trägt es die **Paarung** mit der Quellentität. Das Mehrzonenkonzept
@@ -1169,7 +1273,9 @@ eigener Einfrierschritt mit **G1**; er berührt die Nummernfolge nicht.)
 Der Schritt dieses Papiers heißt hier **S-F** und bekommt die nächste freie Nummer **hinter den
 Mehrzonenschritten**; die Zahl bleibt offen, bis die Reihenfolge der Auslieferung feststeht. Inhalt:
 `Tab_Importquelle` und `Tab_Importzuordnung` anlegen, die beiden Indizes setzen. **Kein Datenumbau,
-keine Saat.**
+keine Saat.** (Umgesetzt als Schemaschritt **138**, mit G4c; Testdatenbank auf 138; die
+Registerpflege unten ist erledigt, `FK_MAP` dabei auch um das bisher fehlende `ID_Bauteil` ergänzt
+und `ID_Zone` der Paarung über `FK_OVERRIDE` geführt; Protokoll G4 Abschnitt 4.)
 
 Der Weg ist ADR-001 ([`ADR-001_Schema-Ausrollung.md`](ADR-001_Schema-Ausrollung.md), Option C): eine
 `ImportzuordnungSchema.cs` im Kern als **eine** Quelle für Migrationsschritt,
@@ -1269,7 +1375,7 @@ entschieden mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EP
 | Die vier gbxml.org-Beispieldateien | **keine** | **nicht** ins Repositorium (Befund R, 1.10) |
 | ASHRAE-RP-1810-Testfälle (gbxml.org) | keine ausgewiesenen Bedingungen | nicht aufnehmen |
 | Ladybug/Honeybee | AGPL-3.0 | scheidet als Testdatenquelle aus |
-| `AC20-FZK-Haus.ifc` (KIT/IAI) | uneingeschränkt, Namensnennung | bleibt die IFC-Importprobe (Umsetzungskonzept 3.7); mit **Q12** entschieden: kommt mit Quellenvermerk ins Repositorium |
+| `AC20-FZK-Haus.ifc` (KIT/IAI) | uneingeschränkt, Namensnennung | bleibt die IFC-Importprobe (Umsetzungskonzept 3.7); mit **Q12** entschieden: kommt mit Quellenvermerk ins Repositorium. (Umgesetzt: **nicht** aufgenommen — sie herunterzuladen und aufzunehmen entscheidet der Anwender; der IFC-Weg ist an zwölf selbst erzeugten Proben geprüft, Protokoll G4 Abschnitte 3 und 5) |
 | `FM_ARC_DigitalHub_with_SB_v1.ifc` | **MIT** | die Mehrzonen-Importprobe (Mehrzonenkonzept 8.2); als RWTH-/bim2sim-Datei nach **Q12** erst **nach der Lizenzklärung** aufzunehmen — die Lizenzangabe ist vor der Aufnahme zu belegen |
 
 **Die gbXML-Prüfdateien erzeugt EPOS selbst** — das ist der eigentliche Gewinn des Rundlaufs: Der
@@ -1283,6 +1389,12 @@ tragende Zusage steht auch schon: **`.gitattributes` nimmt `Referenzlaeufe/Impor
 `-text` von der Zeilenenden-Normierung aus** (`.gitattributes:87`). Genau das ist die Bedingung
 dafür, dass die UTF-16LE-Probe (Probe 5) byteweise überlebt — `* text=auto` schriebe sie beim
 nächsten Auschecken um. **An `.gitattributes` ist nichts zu tun.**
+
+(Umgesetzt, Protokoll G4 Abschnitte 1, 3 und 5: **elf selbst erzeugte gbXML-Proben** — das
+Probenhaus in SI, in Fuß/Fahrenheit/BTU und als UTF-16LE, dazu acht Kleinstdateien unter 5 KB je
+Fehlerbild — und **zwölf selbst erzeugte IFC-Proben** liegen unter `Referenzlaeufe/Importproben/`;
+`LIESMICH_Importproben.md` nennt Zweck, Herkunft und Lizenzstand aller Proben des Ordners. Die
+Rundlaufdateien Stufe 1 und Stufe 2 entstehen erst mit dem Export G7, der nicht gebaut ist.)
 
 **Q12 ist entschieden (16.09.2026): Importproben für alle Importwege.** Nicht nur der
 IFC-Weg bekommt seine Probe, sondern **jeder** Leser: die KIT-Datei mit Quellenvermerk für IFC,
@@ -1322,7 +1434,7 @@ Geschmacksfrage, und sie steht an drei Stellen:
 | 11 | **Determinismus der Kennungen** | zweiter Export desselben Projekts liefert **byte-gleiche** `GlobalId` an **jeder `IfcRoot`-Instanz** — Objekte, Eigenschaftssätze, Mengen, Beziehungen, Raumgrenzen (6.4, Rollenglied) — und dieselben gbXML-`id`; ein dupliziertes Projekt liefert andere. Dazu feste Prüfwerte für die selbstgeschriebene RFC-4122-Version-5-Ableitung |
 | 12 | **Determinismus der Datei** | zweimal exportieren ergibt byte-gleiche Dateien **außer** dem Zeitstempel, und der steht an genau einer Stelle |
 | 13 | **Round-Trip-Sperre** | drei Fälle, je benannte Verweigerung mit Angebot einer eigenen Datei nach G7c: `Tab_Importquelle.FehlendeEntitaeten > 0` (beide Verlustkanäle, 6.6 Nr. 2); **Hash der erneut gewählten Datei ≠ `Tab_Importquelle.Hash`** (6.6 Nr. 1); **`Schemastand ≠ 'IFC4'`** (6.6, Einleitung). Dazu der Wächtertest, dass der Import nie `ignoreTypes`/`SkipTypes` setzt |
-| 14 | **Persistenz** | nach dem Import findet ein Test **Gebäude und Zone** über `Tab_Importzuordnung.Quellkennung` wieder; **nach einem gewöhnlichen Speichern des Gebäudes stehen Quelle und Zuordnung unverändert** (Kaskadenfalle, Kapitel 7); erst nach dem **Löschen** des Gebäudes sind beide Tabellen leer |
+| 14 | **Persistenz** | nach dem Import findet ein Test **Gebäude und Zone** über `Tab_Importzuordnung.Quellkennung` wieder; **nach einem gewöhnlichen Speichern des Gebäudes stehen Quelle und Zuordnung unverändert** (Kaskadenfalle, Kapitel 7); erst nach dem **Löschen** des Gebäudes sind beide Tabellen leer. (Umgesetzt in `GebaeudeImportCtrlTests`, dazu: das Entfernen eines Ziels löscht genau dessen Paarung, das Löschen des Projekts leert beide Tabellen; Protokoll G4 Abschnitt 4) |
 | 15 | **bSI-Validierungsdienst** | von Hand, je Stufe einmal (S1 und S3); das Ergebnis wird protokolliert. Der Dienst prüft ausdrücklich **keine** Darstellung — eine geometrielose Datei kann dort vollständig bestehen |
 | 16 | **Betrachter-Prüfmatrix** | rund 1 PT: eine geometrielose EPOS-Testdatei durch Archicad, Revit, Solibri, BIMcollab Zoom, FZKViewer, BIMvision schicken und protokollieren, **was öffnet, was anzeigt, was meldet**. Die veröffentlichte Quellenlage reicht dafür nicht (Befund S, 1.8); **erst dieses Ergebnis trägt die Aussage in 6.1** |
 | 17 | **Referenzlauf** | **`GESAMT: PASS`** unverändert gegen die aktuelle Basis, vor und nach jeder Teilstufe (7.5) |
@@ -1342,6 +1454,10 @@ in **14.5**; sie werden mit G6c bzw. G7b abgenommen.
 und 5 bis 9 laufen gegen Dateien, die nach 8.3 im Repositorium liegen — für gbXML die selbst
 erzeugten, für IFC die KIT-Datei mit Quellenvermerk. Ein Importweg ohne eigene Probendatei gilt
 als nicht abgenommen; RWTH- und bim2sim-Dateien kommen erst nach der Lizenzklärung hinzu.
+(Umgesetzt: für IFC stehen statt der KIT-Datei zwölf selbst erzeugte Proben im Repositorium, 8.3;
+die KIT-Datei, die Probe 20 im Prüfmodus liest, fehlt, solange der Anwender ihre Aufnahme nicht
+entschieden hat. Die Proben 1 bis 3 gehören zum Export G7 und sind nicht gebaut; Protokoll G4
+Abschnitte 1, 3 und 5.)
 
 **Abnahme je Teilstufe:** Kern-Filter grün, die zugehörigen Proben bestanden, Referenzlauf
 unverändert, Windows-Sichtabnahme (Datei wählen bzw. schreiben, Zuordnung prüfen, OK), iOS-Lauf nach
@@ -1355,7 +1471,7 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **G4c — gbXML-Import** | Lesemodell (`GbXmlDatei`, `GbXmlEinheiten`, `GbXmlModell`), Einheiten global und lokal, Aggregation auf das Gebäudemodell, Nachbarschaftsauflösung, Fensterabzug, Aufbauprüfung je Aufbau, **Zonenregel X4** (X1…X3 mit G6c, 3.3), Meldungen in beiden `.resx`, Anschluss an den gemeinsamen Zuordnungsdialog — **dazu die Persistenz** (Kapitel 7: Schemaschritt S-F, zwei Tabellen, `ImportzuordnungSchema.cs`, Registerpflege, Reduzierskript, Auslieferungsvorlage, Umbenennungen `IfcGuid` → `Quellkennung` und `IfcHerkunft` → `Importherkunft`) | Proben 1, 5–9, 14, 21, 24; Referenzlauf unverändert; Windows-Sichtabnahme | **17–28 PT** |
+| **G4c — gbXML-Import** | Lesemodell (`GbXmlDatei`, `GbXmlEinheiten`, `GbXmlModell`), Einheiten global und lokal, Aggregation auf das Gebäudemodell, Nachbarschaftsauflösung, Fensterabzug, Aufbauprüfung je Aufbau, **Zonenregel X4** (X1…X3 mit G6c, 3.3), Meldungen in beiden `.resx`, Anschluss an den gemeinsamen Zuordnungsdialog — **dazu die Persistenz** (Kapitel 7: Schemaschritt S-F, zwei Tabellen, `ImportzuordnungSchema.cs`, Registerpflege, Reduzierskript, Auslieferungsvorlage, Umbenennungen `IfcGuid` → `Quellkennung` und `IfcHerkunft` → `Importherkunft`) | Proben 1, 5–9, 14, 21, 24; Referenzlauf unverändert; Windows-Sichtabnahme. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden (`GbxmlLeser`, `GbxmlEinheiten`, `GbxmlAbbild`, Schemaschritt 138), mit G4a auch der IFC-Weg; Proben 4–9, 14, 21 und 24 grün, Referenzlauf 13/13 byte-gleich, Probe 1 kommt mit G7a; offen die Windows-Sichtabnahme ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | **17–28 PT** |
 | **G7a — gbXML-Export Stufe 1** | `GbXmlExportAblauf`/`-Profil`, Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12 | **9–14 PT** |
 | **G7b — gbXML Stufe 2** | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
 | **G7c — IFC-Export S1** | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |

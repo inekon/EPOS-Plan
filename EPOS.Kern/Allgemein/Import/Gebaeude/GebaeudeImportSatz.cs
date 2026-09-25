@@ -105,8 +105,9 @@ namespace WindowsFormsApplication1
         public char? Baualtersklasse { get; }
 
         /// <summary>
-        /// Das Baujahr der Datei (<see cref="AbbildGebaeude.Baujahr"/>); <c>null</c> = keines. Die Spalte
-        /// <c>Baujahr</c> kommt erst mit dem Schemaschritt der Stufe G4a — bis dahin reist der Wert nur hier.
+        /// Das Baujahr der Datei (<see cref="AbbildGebaeude.Baujahr"/>); <c>null</c> = keines. Geschrieben
+        /// wird es über die Zeile <see cref="GebaeudeZielfelder.BAUJAHR"/> in die Spalte <c>Baujahr</c>
+        /// (Schemaschritt <see cref="BaujahrSchema.SCHRITT"/>); hier steht es für Kopf und Klassenwahl.
         /// </summary>
         public int? Baujahr { get; internal set; }
 

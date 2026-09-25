@@ -59,6 +59,8 @@ Die Tabelle ''Zuordnung'' hat je Feld des Gebäudeeditors eine Zeile, geordnet n
 * '''Herkunft''' – siehe unten.
 * '''Übernehmen''' – der Haken. Ohne Haken bleibt das Feld des neuen Gebäudes so, wie der Editor es für ein neues Gebäude vorsieht.
 
+{{Anker|baujahr}}Die Zeile ''Baujahr'' in den Kenngrößen trägt die Jahreszahl des Gebäudes. Eine IFC-Datei liefert sie aus der Angabe zum Baujahr des Gebäudes (''Pset_BuildingCommon.YearOfConstruction''); gelesen wird die erste vierstellige Jahreszahl von 1500 bis 2100, der Beleg zeigt den gelesenen Text, etwa „gelesen aus „ca. 1965““. Eine gbXML-Datei führt kein Baujahr; die Zeile bleibt leer. Das Baujahr landet im gleichnamigen Feld des Katalogeditors und ändert keine Vorgabe.
+
 Eine gelb markierte Zeile verdient einen Blick, etwa bei fehlender Geometrie, einem unbekannten Nachbarraum oder einem Fenster ohne Himmelsrichtung. Eine rot markierte Zeile ist fehlerhaft – etwa eine Wandfläche, die nach Abzug der Fenster und Außentüren negativ würde – und sperrt die Übernahme, solange ihr Haken gesetzt ist. Die gesamte Fensterfläche ist die Summe der vier Himmelsrichtungen; sie wird angezeigt, aber nicht eigens übernommen.
 
 === Herkunft je Feld ===
@@ -90,7 +92,7 @@ Der Abschnitt ''Meldungen'' sammelt, was beim Lesen und Zuordnen aufgefallen ist
 === OK ===
 {{Anker|ok}}
 
-''OK'' prüft die übernommenen Zeilen: Nutzfläche und Raumhöhe sind Pflicht, ein U-Wert oder g-Wert außerhalb des üblichen Bereichs ist eine Warnung, eine rot markierte Zeile mit Haken und ein fehlender Name sind Fehler. Ein Fehler hält den Dialog offen und steht oben im Warnband. Sonst schließt der Zuordnungsdialog, und der Katalogeditor öffnet sich. Geschrieben ist zu diesem Zeitpunkt noch nichts.
+''OK'' prüft die übernommenen Zeilen: Nutzfläche und Raumhöhe sind Pflicht, ein U-Wert oder g-Wert außerhalb des üblichen Bereichs ist eine Warnung, eine rot markierte Zeile mit Haken, ein Baujahr, das keine ganze Jahreszahl von 1500 bis 2100 ist, und ein fehlender Name sind Fehler. Ein Fehler hält den Dialog offen und steht oben im Warnband. Sonst schließt der Zuordnungsdialog, und der Katalogeditor öffnet sich. Geschrieben ist zu diesem Zeitpunkt noch nichts.
 
 == Der vorbelegte Katalogeditor ==
 {{Anker|editor}}

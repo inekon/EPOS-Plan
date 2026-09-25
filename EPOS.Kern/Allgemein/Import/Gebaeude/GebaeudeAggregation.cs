@@ -320,6 +320,12 @@ namespace WindowsFormsApplication1
                     Zahl(mitLeistung.Sum(r => ((r.LichtWm2 ?? 0.0) + (r.GeraeteWm2 ?? 0.0)) * r.FlaecheM2.Value)),
                     Zahl(mitLeistung.Count));
 
+            // Das Baujahr (Umsetzungskonzept 3.4, Zeile „Baujahr (neue Spalte)"): die gezogene
+            // Jahreszahl der Datei — IFC aus Pset_BuildingCommon.YearOfConstruction, der Beleg nennt den
+            // gelesenen Text; gbXML trägt keins, die Zeile bleibt leer (Herkunft Leer).
+            Setzen(z[GebaeudeZielfelder.BAUJAHR], g.Baujahr, datei,
+                   g.Baujahr.HasValue ? new GebaeudeBeleg("GIMP_BELEG_BAUJAHR", g.BaujahrText ?? "") : null);
+
             GebaeudeFeldzeile bak = z[GebaeudeZielfelder.BAUALTERSKLASSE];
             if (k.HasValue)
             {

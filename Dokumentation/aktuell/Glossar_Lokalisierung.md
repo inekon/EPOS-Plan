@@ -345,6 +345,8 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Strahlungsanteil (der Heizung) | radiative fraction (of heating) | |
 | Heizleistungsgrenze | heating power limit | |
 | Bauart | construction type | Bestand: „Light construction" usw. |
+| Baualtersklasse | building age class | Klasse A … U des Gebäudekatalogs; Bestand `GIMP_FELD_BAUALTERSKLASSE`, Beschriftung `GEBK_LBL_BAUALTERSKLASSE` |
+| Baujahr | year of construction | die Jahreszahl neben der Baualtersklasse (`GEBK_LBL_BAUJAHR`); nicht „construction period" |
 | Bauweise | thermal mass | Wh/K bzw. Wh/(m²K); EN ISO 13790 |
 | Raumtemperatur / Raumlufttemperatur | indoor temperature / indoor air temperature | |
 | operative Temperatur | operative temperature | VDI 6007, EN ISO 7726 |

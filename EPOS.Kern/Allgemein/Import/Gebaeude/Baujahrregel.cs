@@ -20,11 +20,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class Baujahrregel
     {
-        /// <summary>Kleinstes Jahr, das als Baujahr gilt.</summary>
-        public const int JAHR_MIN = 1500;
+        /// <summary>Kleinstes Jahr, das als Baujahr gilt — dieselbe Grenze wie die Spalte (<see cref="GebaeudeSchema.BAUJAHR_MIN"/>).</summary>
+        public const int JAHR_MIN = GebaeudeSchema.BAUJAHR_MIN;
 
-        /// <summary>Größtes Jahr, das als Baujahr gilt.</summary>
-        public const int JAHR_MAX = 2100;
+        /// <summary>Größtes Jahr, das als Baujahr gilt — dieselbe Grenze wie die Spalte (<see cref="GebaeudeSchema.BAUJAHR_MAX"/>).</summary>
+        public const int JAHR_MAX = GebaeudeSchema.BAUJAHR_MAX;
 
         /// <summary>Letztes Jahr, für das eine Jahresklasse (A…H) gilt.</summary>
         public const int LETZTES_KLASSENJAHR = 2000;

@@ -107,6 +107,11 @@ namespace WindowsFormsApplication1
         public const string INNERE_GEWINNE = "INNERE_GEWINNE";
         /// <summary>Baualtersklasse, Buchstabe A…U (<c>Baualtersklasse</c>) — Anwenderangabe, steuert die Vorgaben.</summary>
         public const string BAUALTERSKLASSE = "BAUALTERSKLASSE";
+        /// <summary>
+        /// Baujahr, Jahreszahl 1500 … 2100 (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) —
+        /// IFC liefert es aus <c>Pset_BuildingCommon.YearOfConstruction</c>, gbXML nicht; steuert keine Vorgabe.
+        /// </summary>
+        public const string BAUJAHR = "BAUJAHR";
         /// <summary>Bauart <see cref="BAUART_LEICHT"/>/<see cref="BAUART_SCHWER"/>/<see cref="BAUART_SEHR_SCHWER"/>; der Editor bildet daraus die <c>Bauweise</c>.</summary>
         public const string BAUART = "BAUART";
         /// <summary>Bauweise (Speichermasse) [Wh/K] (<c>Bauweise</c>, im Modell <c>Bauweise_WhK</c>).</summary>
@@ -239,6 +244,7 @@ namespace WindowsFormsApplication1
                 F(FLAECHE_JE_NUTZER, GRUPPE_KENNGROESSEN, "m²"),
                 F(INNERE_GEWINNE, GRUPPE_KENNGROESSEN, "W"),
                 F(BAUALTERSKLASSE, GRUPPE_KENNGROESSEN, "", text: true),
+                F(BAUJAHR, GRUPPE_KENNGROESSEN, ""),
                 F(BAUART, GRUPPE_KENNGROESSEN, "", text: true),
                 F(BAUWEISE, GRUPPE_KENNGROESSEN, "Wh/K", abgeleitet: true),
 
