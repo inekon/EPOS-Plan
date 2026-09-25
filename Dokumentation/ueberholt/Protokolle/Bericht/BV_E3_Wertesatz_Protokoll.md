@@ -2,7 +2,7 @@
 
 Etappe BV-E3 des Konzepts
 [`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
-(Abschnitt 13). Auftrag #NNN, Anwenderauftrag vom 26.09.2026: „fahre fort mit BV-E3“. Der gültige Stand steht im Konzept
+(Abschnitt 13). Auftrag #528, Anwenderauftrag vom 26.09.2026: „fahre fort mit BV-E3“. Der gültige Stand steht im Konzept
 (Rev. 5) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Vorgänger:
 [`BV_E2_Kapitel_Protokoll.md`](BV_E2_Kapitel_Protokoll.md). Zweig `konzept-berichtvorlagen` ab `57c6c53b` (BV-E2 samt
 `origin/ios_migration_september`), umgesetzt am 26.09.2026; Fable 5.1 hat orchestriert, zwei Agenten (Opus 5.5) haben in
@@ -321,7 +321,7 @@ EPOS.UI.Tests 6.450, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung
 174 Bilder, 0 Verstöße; SQL-Prüfer 1.940 Texte, 0 Fundstellen. Die Wache kam danach auf den Zweig; ihre Abnahme steht
 oben.
 
-<!-- ABNAHME -->
+**Abschluss (Orchestrierung, 26.09.2026):** Merge von `origin/ios_migration_september` (ed35221b) konfliktfrei als f7f584b5; Gate auf f7f584b5: Kern-Filter und Windows-Schale 0 Fehler, Designer wiederholbar (+0), voller Lauf 15.089 bestanden / 0 Fehler / 2 übersprungen (KiKern 549, SpeicherEngine 386, SpeicherPlanung 27, EPOS.UI 6.454, EPOS.Kern 7.673), ChartProben 174 Bilder / 0 Verstöße, SQL-Prüfer 1.946 Texte / 0 Fundstellen; Papiere als #528 committet, Push und CI-Nachweis stehen in der Statuszeile #528.
 
 ## 7 Laufzeit
 
