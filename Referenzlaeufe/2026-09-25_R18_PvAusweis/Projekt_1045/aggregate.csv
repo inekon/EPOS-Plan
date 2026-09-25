@@ -101,7 +101,7 @@ HeizkesselModul[0].Waermeproduktion;22.28
 HeizkesselModul[0].Hilfsenergie;0
 Photovoltaik.Strombedarf;31.5
 Photovoltaik.Reststrombedarf;28.76
-Photovoltaik.Stromproduktion;2.74
+Photovoltaik.Stromproduktion;3.55
 Photovoltaik.Strombedarfsdeckung;8.71
 Photovoltaik.Ueberschuss;0.8
 Photovoltaik.MaxSolareLeistung;940.79
