@@ -91,6 +91,14 @@
          auch die Startseite ihre Projektliste holt; beide Typen sind internal. -->
     <InternalsVisibleTo Include="Auslieferungsvorlage" />
     <InternalsVisibleTo Include="Auslieferungsvorlage.Tests" />
+    <!-- Und fuer das Werkzeug, das die beiden Gebaeuderechenwege (Tagesbilanz und
+         VDI 6007) an den Bestandsprojekten vergleicht (Q24/E27, Bedingung 1): Es ruft
+         GebaeudeBedarfCtrl.Rechnen mit erzwungenem Rechenweg, liest die Gebaeude ueber
+         Z_ProjGebCtrl und GebaeudeBedarfCtrl.Projektgebaeude und den Schemastand ueber
+         ApplikationCtrl - alles internal. Das Testprojekt haelt die Zahlen gegen die
+         Referenzbasis. Faellt mit Stufe GA (Loeschliste 6.1, "Tests und Nachweise"). -->
+    <InternalsVisibleTo Include="Gebaeudevergleich" />
+    <InternalsVisibleTo Include="Gebaeudevergleich.Tests" />
   </ItemGroup>
 
   <ItemGroup>

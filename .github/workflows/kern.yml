@@ -164,6 +164,18 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release
 
+      # Gebaeudesimulation, Abloesekriterium Q24/E27 Bedingung (1): Das Werkzeug, das
+      # Tagesbilanz- und VDI-6007-Weg an den Bestandsprojekten vergleicht, hat eine eigene
+      # Projektmappe und steht nicht in WP-Plan.sln. Seine Proben halten die Zahlen gegen
+      # die Referenzbasis (T1/T2/T4) - ein Rechenwegwechsel ohne neue Basis faellt hier
+      # auf - und pruefen Schreibort, Schreibsperre und Namensbereinigung. Sie starten das
+      # Werkzeug als PROGRAMM gegen Kopien der Testdatenbank; ohne diese Datei schweigen
+      # sie. Faellt mit Stufe GA (Loeschliste 6.1).
+      # NUR ubuntu: plattformfrei, ein zweiter Lauf auf macOS zeigte nichts Neues.
+      - name: Gebaeudevergleich-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/Gebaeudevergleich/Gebaeudevergleich.sln -c Release
+
       # 03.09.2026: SQL-Dialekt-Audit. Der Referenzlauf weiter unten deckt den
       # RECHENWEG ab - Dialog- und Pflegepfade nicht. Genau dort sassen zwei
       # Access-Altlasten, die erst Wochen nach dem Cutover beim Anwender
