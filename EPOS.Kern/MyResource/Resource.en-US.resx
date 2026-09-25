@@ -24738,7 +24738,7 @@ Do you want to allow this?</value>
     <value>Word template</value>
   </data>
   <data name="KI_DLG_BKB_VORLAGE_ERL" xml:space="preserve">
-    <value>The Word template of the report, chosen by its identifier from the template list: “standard” for the standard template (EPOS-Plan), “eigen:” followed by the file name for a template of your own in the template folder. The choice applies to this base project; if the file is missing later, the report uses the default or the standard template and says so.</value>
+    <value>The Word template of the report for this base project, chosen from the template list of the page: the standard template (EPOS-Plan) or a template of your own from the template folder. A saved template whose file is missing is shown locked in the list; the report then uses the default or the standard template and says so.</value>
   </data>
   <data name="KI_DLG_PRK_QUELLE_ERL" xml:space="preserve">
     <value>The project that is copied; changing it pre-fills description, customer and editor from it.</value>
@@ -34630,5 +34630,329 @@ Do you want to allow this?</value>
   </data>
   <data name="BV_GRUND_AUSNAHME" xml:space="preserve">
     <value>value could not be determined</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_ANZEIGEN" xml:space="preserve">
+    <value>show</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_HINZUFUEGEN" xml:space="preserve">
+    <value>Add…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_MENUE" xml:space="preserve">
+    <value>…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_NEU" xml:space="preserve">
+    <value>New template…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_PLATZHALTER" xml:space="preserve">
+    <value>Placeholders…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_PRUEFEN" xml:space="preserve">
+    <value>Check</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DATEIFILTER" xml:space="preserve">
+    <value>Word templates (*.docx;*.dotx)|*.docx;*.dotx</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DLG_ERSETZEN" xml:space="preserve">
+    <value>Replace template “{0}”</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DLG_HINZUFUEGEN" xml:space="preserve">
+    <value>Add Word template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Remove the template “{0}” from the template folder? The file is moved into the “Entfernt” subfolder.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_GESPERRT_BESCHAEFTIGT" xml:space="preserve">
+    <value>The template is being processed – please wait a moment.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_GESPERRT_LAUF" xml:space="preserve">
+    <value>While a report is being created, the template stays as it is.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_GRUPPE" xml:space="preserve">
+    <value>Template:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_ERSETZEN" xml:space="preserve">
+    <value>Replace…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_ORDNER" xml:space="preserve">
+    <value>Show in folder</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Open read-only</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_TEILEN" xml:space="preserve">
+    <value>Share…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_WORD" xml:space="preserve">
+    <value>Open in Word</value>
+  </data>
+  <data name="BK_BER_VORLAGE_LBL_WORD" xml:space="preserve">
+    <value>Word template:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MENUE_KURZTEXT" xml:space="preserve">
+    <value>More actions for the selected template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MITGELIEFERT" xml:space="preserve">
+    <value>Supplied template – read only; create your own with “New template…”.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_IN_WORD" xml:space="preserve">
+    <value>“{0}” is open in Word – after saving in Word, choose “Check” here.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The template choice could not be saved.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_ORDNER_FEHLER" xml:space="preserve">
+    <value>The folder {0} could not be shown.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>“{0}” is open read-only – changes are not saved.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>“{0}” could not be passed on.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_UMBENANNT" xml:space="preserve">
+    <value>“{0}” already exists in the template folder – the new template is called “{1}”. To replace it, use “…” › “Replace…”.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_UNBEKANNT" xml:space="preserve">
+    <value>The selected template is no longer in the template folder – the list has been reloaded.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_WORD_FEHLT" xml:space="preserve">
+    <value>“{0}” could not be opened in Word – Word was not found on this computer. The file is located at {1}.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NAME_VORHANDEN" xml:space="preserve">
+    <value>A template “{0}” already exists in the template folder.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NAME_ZEICHEN" xml:space="preserve">
+    <value>The name must not contain these characters: &lt; &gt; : " / \ | ? *</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_FRAGE" xml:space="preserve">
+    <value>Name of the new template:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_HINWEIS" xml:space="preserve">
+    <value>The new template is a copy of the standard template in the template folder; you edit it in Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
+    <value>Please enter a name for the template.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_TITEL" xml:space="preserve">
+    <value>New template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NICHT_WAEHLBAR" xml:space="preserve">
+    <value>This template cannot be selected.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_ENTFERNEN" xml:space="preserve">
+    <value>Moves the template into the “Entfernt” subfolder of the template folder.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_ERSETZEN" xml:space="preserve">
+    <value>Replaces the template with another file with the same extension.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_HINZUFUEGEN" xml:space="preserve">
+    <value>Copies an existing Word template into the template folder and checks it.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_NEU" xml:space="preserve">
+    <value>Creates a copy of the standard template in the template folder – the first step towards a template of your own.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_ORDNER" xml:space="preserve">
+    <value>Shows the template in the template folder.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_PLATZHALTER" xml:space="preserve">
+    <value>Shows all placeholders a template can carry, with their notation.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_PRUEFEN" xml:space="preserve">
+    <value>Checks the selected template completely: placeholders, locations, styles and picture frames.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Changes are not saved – create your own template with “New template…”.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_TEILEN" xml:space="preserve">
+    <value>Passes the template on to another app, for example Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_WORD" xml:space="preserve">
+    <value>Opens the template in Word for editing; then choose “Check”.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_WEG_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="BK_BER_VORLAGE_WEG_EIGENE" xml:space="preserve">
+    <value>With my template</value>
+  </data>
+  <data name="BK_BER_VORLAGE_WEG_STANDARD" xml:space="preserve">
+    <value>With the standard template</value>
+  </data>
+  <data name="BV_VORLAGEN_PRUEFZEILE_BEFUND" xml:space="preserve">
+    <value>checked, {0} placeholders, 1 finding</value>
+  </data>
+  <data name="BV_VORLAGEN_PRUEFZEILE_BEFUNDE" xml:space="preserve">
+    <value>checked, {0} placeholders, {1} findings</value>
+  </data>
+  <data name="BV_VORLAGEN_PRUEFZEILE_OK" xml:space="preserve">
+    <value>checked, {0} placeholders, no findings</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_FIRMA" xml:space="preserve">
+    <value>Appears in the report at {{ersteller.firma}}; pre-filled from the licence.</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_GEMEINSAM" xml:space="preserve">
+    <value>A shared office folder is also possible – then everyone works with the same templates.</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_VORLAGENORDNER" xml:space="preserve">
+    <value>Your own report templates are stored here. The database backup does not include this folder.</value>
+  </data>
+  <data name="EIN_BERICHT_HINWEIS" xml:space="preserve">
+    <value>Details for reports from Word templates – for all projects of this user.</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_FIRMA" xml:space="preserve">
+    <value>Company:</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORLAGENORDNER" xml:space="preserve">
+    <value>Template folder:</value>
+  </data>
+  <data name="EIN_BERICHT_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>The “Report” section is not available in this dialog.</value>
+  </data>
+  <data name="EIN_BERICHT_ORDNER_FEST" xml:space="preserve">
+    <value>On this device the template folder is fixed inside the app; add your own templates with “Add…” on the report page.</value>
+  </data>
+  <data name="EIN_BERICHT_RUBRIK" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_FIRMA_ERL" xml:space="preserve">
+    <value>The company shown in the report at {{ersteller.firma}}; pre-filled from the licence. If empty, the place in the report stays empty.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_ORDNER_ERL" xml:space="preserve">
+    <value>The folder of your own report templates; only an existing, reachable folder is accepted. On a device without folder selection it is fixed inside the app.</value>
+  </data>
+  <data name="VF_KATALOG_ANZAHL" xml:space="preserve">
+    <value>{0} placeholders</value>
+  </data>
+  <data name="VF_KATALOG_ANZAHL_GEFILTERT" xml:space="preserve">
+    <value>{0} of {1} placeholders</value>
+  </data>
+  <data name="VF_KATALOG_ART_BILD" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="VF_KATALOG_ART_BLATT" xml:space="preserve">
+    <value>Sheet</value>
+  </data>
+  <data name="VF_KATALOG_ART_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="VF_KATALOG_ART_KAPITEL" xml:space="preserve">
+    <value>Chapter</value>
+  </data>
+  <data name="VF_KATALOG_ART_LISTE" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="VF_KATALOG_ART_SCHALTER" xml:space="preserve">
+    <value>Switch</value>
+  </data>
+  <data name="VF_KATALOG_ART_TABELLE" xml:space="preserve">
+    <value>Table</value>
+  </data>
+  <data name="VF_KATALOG_ART_TEXT" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="VF_KATALOG_ART_ZAHL" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="VF_KATALOG_BEISPIEL" xml:space="preserve">
+    <value>Example: {0}</value>
+  </data>
+  <data name="VF_KATALOG_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="VF_KATALOG_HINT_SCHREIBWEISE" xml:space="preserve">
+    <value>The placeholder is selected – copy it and paste it at the desired place in the template.</value>
+  </data>
+  <data name="VF_KATALOG_HINWEIS" xml:space="preserve">
+    <value>All placeholders a Word template can carry. Select a row: below it, the placeholder appears in the notation of the template.</value>
+  </data>
+  <data name="VF_KATALOG_KEIN_TREFFER" xml:space="preserve">
+    <value>No placeholder matches the search.</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_BERICHT" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>per building</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_GRUPPE" xml:space="preserve">
+    <value>Comparison group</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_INSTALLATION" xml:space="preserve">
+    <value>Installation</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_STAMM" xml:space="preserve">
+    <value>Base project</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_STAND" xml:space="preserve">
+    <value>per version</value>
+  </data>
+  <data name="VF_KATALOG_LBL_SCHREIBWEISE" xml:space="preserve">
+    <value>Notation in the template:</value>
+  </data>
+  <data name="VF_KATALOG_LBL_SUCHE" xml:space="preserve">
+    <value>Search:</value>
+  </data>
+  <data name="VF_KATALOG_LEER" xml:space="preserve">
+    <value>The catalogue is empty.</value>
+  </data>
+  <data name="VF_KATALOG_LISTE" xml:space="preserve">
+    <value>Placeholders</value>
+  </data>
+  <data name="VF_KATALOG_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="VF_KATALOG_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="VF_KATALOG_SP_KONTEXT" xml:space="preserve">
+    <value>Context</value>
+  </data>
+  <data name="VF_KATALOG_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="VF_KATALOG_SUCHE_PLATZHALTER" xml:space="preserve">
+    <value>Key or description</value>
+  </data>
+  <data name="VF_KATALOG_TITEL" xml:space="preserve">
+    <value>Placeholder catalogue</value>
+  </data>
+  <data name="VF_KATALOG_ZEILE_WAEHLEN" xml:space="preserve">
+    <value>Select placeholder {0}</value>
+  </data>
+  <data name="VF_PRUEF_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="VF_PRUEF_FUNDORT" xml:space="preserve">
+    <value>Location: {0}</value>
+  </data>
+  <data name="VF_PRUEF_GRUPPE_FEHLER" xml:space="preserve">
+    <value>Errors ({0})</value>
+  </data>
+  <data name="VF_PRUEF_GRUPPE_HINWEIS" xml:space="preserve">
+    <value>Notes ({0})</value>
+  </data>
+  <data name="VF_PRUEF_GRUPPE_WARNUNG" xml:space="preserve">
+    <value>Warnings ({0})</value>
+  </data>
+  <data name="VF_PRUEF_KEINE_BEFUNDE" xml:space="preserve">
+    <value>No findings – the template can be filled.</value>
+  </data>
+  <data name="VF_PRUEF_KOPF" xml:space="preserve">
+    <value>Checked: {0} placeholders, template “{1}”</value>
+  </data>
+  <data name="VF_PRUEF_KOPF_OHNE_NAME" xml:space="preserve">
+    <value>Checked: {0} placeholders</value>
+  </data>
+  <data name="VF_PRUEF_LISTE" xml:space="preserve">
+    <value>Check messages</value>
+  </data>
+  <data name="VF_PRUEF_TITEL" xml:space="preserve">
+    <value>Template check list</value>
+  </data>
+  <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
+    <value>What to do: {0}</value>
   </data>
 </root>

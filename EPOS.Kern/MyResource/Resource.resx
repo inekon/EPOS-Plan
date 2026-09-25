@@ -24745,7 +24745,7 @@ Möchten Sie das zulassen?</value>
     <value>Word-Vorlage</value>
   </data>
   <data name="KI_DLG_BKB_VORLAGE_ERL" xml:space="preserve">
-    <value>Die Word-Vorlage des Berichts, gewählt über ihre Kennung aus der Vorlagenliste: „standard“ für die Standardvorlage (EPOS-Plan), „eigen:“ mit dem Dateinamen für eine eigene Vorlage im Vorlagenordner. Die Wahl gilt für dieses Stammprojekt; fehlt die Datei später, nimmt der Bericht die Vorgabe bzw. die Standardvorlage und nennt das.</value>
+    <value>Die Word-Vorlage des Berichts für dieses Stammprojekt, gewählt aus der Vorlagenliste der Seite: die Standardvorlage (EPOS-Plan) oder eine eigene Vorlage aus dem Vorlagenordner. Eine gespeicherte Vorlage, deren Datei fehlt, steht gesperrt in der Liste; der Bericht nimmt dann die Vorgabe bzw. die Standardvorlage und nennt das.</value>
   </data>
   <data name="KI_DLG_PRK_QUELLE_ERL" xml:space="preserve">
     <value>Das Projekt, das kopiert wird; es zu wechseln belegt Beschreibung, Kunde und Bearbeiter aus ihm vor.</value>
@@ -34637,5 +34637,329 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BV_GRUND_AUSNAHME" xml:space="preserve">
     <value>Wert nicht bestimmbar</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_HINZUFUEGEN" xml:space="preserve">
+    <value>Hinzufügen…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_MENUE" xml:space="preserve">
+    <value>…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_NEU" xml:space="preserve">
+    <value>Neue Vorlage…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_PLATZHALTER" xml:space="preserve">
+    <value>Platzhalter…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_BTN_PRUEFEN" xml:space="preserve">
+    <value>Prüfen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DATEIFILTER" xml:space="preserve">
+    <value>Word-Vorlagen (*.docx;*.dotx)|*.docx;*.dotx</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DLG_ERSETZEN" xml:space="preserve">
+    <value>Vorlage „{0}“ ersetzen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_DLG_HINZUFUEGEN" xml:space="preserve">
+    <value>Word-Vorlage hinzufügen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Vorlage „{0}“ aus dem Vorlagenordner entfernen? Die Datei wandert in den Unterordner „Entfernt“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_GESPERRT_BESCHAEFTIGT" xml:space="preserve">
+    <value>Die Vorlage wird gerade bearbeitet – bitte einen Moment.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_GESPERRT_LAUF" xml:space="preserve">
+    <value>Während ein Bericht entsteht, bleibt die Vorlage, wie sie ist.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_GRUPPE" xml:space="preserve">
+    <value>Vorlage:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_ERSETZEN" xml:space="preserve">
+    <value>Ersetzen…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_ORDNER" xml:space="preserve">
+    <value>Im Ordner zeigen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Schreibgeschützt öffnen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_TEILEN" xml:space="preserve">
+    <value>Teilen…</value>
+  </data>
+  <data name="BK_BER_VORLAGE_HANDLUNG_WORD" xml:space="preserve">
+    <value>In Word öffnen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_LBL_WORD" xml:space="preserve">
+    <value>Word-Vorlage:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MENUE_KURZTEXT" xml:space="preserve">
+    <value>Weitere Handlungen zur gewählten Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MITGELIEFERT" xml:space="preserve">
+    <value>Mitgelieferte Vorlage – nur lesen; eine eigene entsteht über „Neue Vorlage…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_IN_WORD" xml:space="preserve">
+    <value>„{0}“ ist in Word geöffnet – nach dem Speichern in Word hier „Prüfen“ wählen.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Vorlagenwahl ließ sich nicht speichern.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_ORDNER_FEHLER" xml:space="preserve">
+    <value>Der Ordner {0} ließ sich nicht zeigen.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>„{0}“ ist schreibgeschützt geöffnet – Änderungen werden nicht gespeichert.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>„{0}“ ließ sich nicht weitergeben.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_UMBENANNT" xml:space="preserve">
+    <value>Im Vorlagenordner gibt es schon „{0}“ – die neue Vorlage heißt „{1}“. Ersetzen geht über „…“ › „Ersetzen…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_UNBEKANNT" xml:space="preserve">
+    <value>Die gewählte Vorlage ist nicht mehr im Vorlagenordner – die Liste ist neu geladen.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_MSG_WORD_FEHLT" xml:space="preserve">
+    <value>„{0}“ ließ sich nicht in Word öffnen – Word wurde auf diesem Rechner nicht gefunden. Die Datei liegt unter {1}.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NAME_VORHANDEN" xml:space="preserve">
+    <value>Eine Vorlage „{0}“ gibt es schon im Vorlagenordner.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NAME_ZEICHEN" xml:space="preserve">
+    <value>Der Name darf diese Zeichen nicht enthalten: &lt; &gt; : " / \ | ? *</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_FRAGE" xml:space="preserve">
+    <value>Name der neuen Vorlage:</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_HINWEIS" xml:space="preserve">
+    <value>Die neue Vorlage ist eine Kopie der Standardvorlage im Vorlagenordner; bearbeitet wird sie in Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_LEER" xml:space="preserve">
+    <value>Bitte einen Namen für die Vorlage eingeben.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NEU_TITEL" xml:space="preserve">
+    <value>Neue Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_NICHT_WAEHLBAR" xml:space="preserve">
+    <value>Diese Vorlage ist nicht wählbar.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_ENTFERNEN" xml:space="preserve">
+    <value>Legt die Vorlage in den Unterordner „Entfernt“ des Vorlagenordners.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_ERSETZEN" xml:space="preserve">
+    <value>Ersetzt die Vorlage durch eine andere Datei mit derselben Endung.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_HINZUFUEGEN" xml:space="preserve">
+    <value>Kopiert eine vorhandene Word-Vorlage in den Vorlagenordner und prüft sie.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_NEU" xml:space="preserve">
+    <value>Legt eine Kopie der Standardvorlage im Vorlagenordner an – der erste Schritt zu einer eigenen Vorlage.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_ORDNER" xml:space="preserve">
+    <value>Zeigt die Vorlage im Vorlagenordner.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_PLATZHALTER" xml:space="preserve">
+    <value>Zeigt alle Platzhalter, die eine Vorlage tragen kann, mit ihrer Schreibweise.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_PRUEFEN" xml:space="preserve">
+    <value>Prüft die gewählte Vorlage vollständig: Platzhalter, Orte, Formatvorlagen und Bildrahmen.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Änderungen werden nicht gespeichert – eine eigene Vorlage entsteht über „Neue Vorlage…“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_TEILEN" xml:space="preserve">
+    <value>Gibt die Vorlage an eine andere App weiter, etwa an Word.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_TIP_WORD" xml:space="preserve">
+    <value>Öffnet die Vorlage in Word zum Bearbeiten; danach „Prüfen“.</value>
+  </data>
+  <data name="BK_BER_VORLAGE_WEG_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="BK_BER_VORLAGE_WEG_EIGENE" xml:space="preserve">
+    <value>Mit meiner Vorlage</value>
+  </data>
+  <data name="BK_BER_VORLAGE_WEG_STANDARD" xml:space="preserve">
+    <value>Mit Standardvorlage</value>
+  </data>
+  <data name="BV_VORLAGEN_PRUEFZEILE_BEFUND" xml:space="preserve">
+    <value>geprüft, {0} Platzhalter, 1 Befund</value>
+  </data>
+  <data name="BV_VORLAGEN_PRUEFZEILE_BEFUNDE" xml:space="preserve">
+    <value>geprüft, {0} Platzhalter, {1} Befunde</value>
+  </data>
+  <data name="BV_VORLAGEN_PRUEFZEILE_OK" xml:space="preserve">
+    <value>geprüft, {0} Platzhalter, keine Befunde</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_FIRMA" xml:space="preserve">
+    <value>Steht im Bericht an der Stelle {{ersteller.firma}}; vorbelegt aus der Lizenz.</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_GEMEINSAM" xml:space="preserve">
+    <value>Auch ein gemeinsamer Ordner des Büros ist möglich – dann arbeiten alle mit denselben Vorlagen.</value>
+  </data>
+  <data name="EIN_BERICHT_HINT_VORLAGENORDNER" xml:space="preserve">
+    <value>Hier liegen die eigenen Berichtsvorlagen. Die Datenbanksicherung nimmt den Ordner nicht mit.</value>
+  </data>
+  <data name="EIN_BERICHT_HINWEIS" xml:space="preserve">
+    <value>Angaben für Berichte aus Word-Vorlagen – für alle Projekte dieses Anwenders.</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_FIRMA" xml:space="preserve">
+    <value>Firma:</value>
+  </data>
+  <data name="EIN_BERICHT_LBL_VORLAGENORDNER" xml:space="preserve">
+    <value>Vorlagenordner:</value>
+  </data>
+  <data name="EIN_BERICHT_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Der Abschnitt „Bericht“ steht in diesem Dialog nicht zur Verfügung.</value>
+  </data>
+  <data name="EIN_BERICHT_ORDNER_FEST" xml:space="preserve">
+    <value>Auf diesem Gerät liegt der Vorlagenordner fest in der App; eigene Vorlagen kommen über „Hinzufügen…“ auf der Berichtsseite hinein.</value>
+  </data>
+  <data name="EIN_BERICHT_RUBRIK" xml:space="preserve">
+    <value>Bericht</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_FIRMA_ERL" xml:space="preserve">
+    <value>Die Firma, die im Bericht an der Stelle {{ersteller.firma}} steht; vorbelegt aus der Lizenz. Leer bleibt die Stelle im Bericht leer.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_BERICHT_ORDNER_ERL" xml:space="preserve">
+    <value>Der Ordner der eigenen Berichtsvorlagen; übernommen wird nur ein bestehender, erreichbarer Ordner. Auf einem Gerät ohne Ordnerwahl liegt er fest in der App.</value>
+  </data>
+  <data name="VF_KATALOG_ANZAHL" xml:space="preserve">
+    <value>{0} Platzhalter</value>
+  </data>
+  <data name="VF_KATALOG_ANZAHL_GEFILTERT" xml:space="preserve">
+    <value>{0} von {1} Platzhaltern</value>
+  </data>
+  <data name="VF_KATALOG_ART_BILD" xml:space="preserve">
+    <value>Bild</value>
+  </data>
+  <data name="VF_KATALOG_ART_BLATT" xml:space="preserve">
+    <value>Blatt</value>
+  </data>
+  <data name="VF_KATALOG_ART_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="VF_KATALOG_ART_KAPITEL" xml:space="preserve">
+    <value>Kapitel</value>
+  </data>
+  <data name="VF_KATALOG_ART_LISTE" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="VF_KATALOG_ART_SCHALTER" xml:space="preserve">
+    <value>Schalter</value>
+  </data>
+  <data name="VF_KATALOG_ART_TABELLE" xml:space="preserve">
+    <value>Tabelle</value>
+  </data>
+  <data name="VF_KATALOG_ART_TEXT" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="VF_KATALOG_ART_ZAHL" xml:space="preserve">
+    <value>Zahl</value>
+  </data>
+  <data name="VF_KATALOG_BEISPIEL" xml:space="preserve">
+    <value>Beispiel: {0}</value>
+  </data>
+  <data name="VF_KATALOG_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="VF_KATALOG_HINT_SCHREIBWEISE" xml:space="preserve">
+    <value>Der Platzhalter ist markiert – kopieren und an der gewünschten Stelle der Vorlage einfügen.</value>
+  </data>
+  <data name="VF_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Alle Platzhalter, die eine Word-Vorlage tragen kann. Eine Zeile wählen: Darunter steht der Platzhalter in der Schreibweise der Vorlage.</value>
+  </data>
+  <data name="VF_KATALOG_KEIN_TREFFER" xml:space="preserve">
+    <value>Kein Platzhalter passt zur Suche.</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_BERICHT" xml:space="preserve">
+    <value>Bericht</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_GEBAEUDE" xml:space="preserve">
+    <value>je Gebäude</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_GRUPPE" xml:space="preserve">
+    <value>Vergleichsgruppe</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_INSTALLATION" xml:space="preserve">
+    <value>Installation</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_STAMM" xml:space="preserve">
+    <value>Stammprojekt</value>
+  </data>
+  <data name="VF_KATALOG_KONTEXT_STAND" xml:space="preserve">
+    <value>je Stand</value>
+  </data>
+  <data name="VF_KATALOG_LBL_SCHREIBWEISE" xml:space="preserve">
+    <value>Schreibweise in der Vorlage:</value>
+  </data>
+  <data name="VF_KATALOG_LBL_SUCHE" xml:space="preserve">
+    <value>Suche:</value>
+  </data>
+  <data name="VF_KATALOG_LEER" xml:space="preserve">
+    <value>Der Katalog ist leer.</value>
+  </data>
+  <data name="VF_KATALOG_LISTE" xml:space="preserve">
+    <value>Platzhalter</value>
+  </data>
+  <data name="VF_KATALOG_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="VF_KATALOG_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="VF_KATALOG_SP_KONTEXT" xml:space="preserve">
+    <value>Kontext</value>
+  </data>
+  <data name="VF_KATALOG_SP_SCHLUESSEL" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="VF_KATALOG_SUCHE_PLATZHALTER" xml:space="preserve">
+    <value>Schlüssel oder Beschreibung</value>
+  </data>
+  <data name="VF_KATALOG_TITEL" xml:space="preserve">
+    <value>Platzhalterkatalog</value>
+  </data>
+  <data name="VF_KATALOG_ZEILE_WAEHLEN" xml:space="preserve">
+    <value>Platzhalter {0} wählen</value>
+  </data>
+  <data name="VF_PRUEF_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="VF_PRUEF_FUNDORT" xml:space="preserve">
+    <value>Fundort: {0}</value>
+  </data>
+  <data name="VF_PRUEF_GRUPPE_FEHLER" xml:space="preserve">
+    <value>Fehler ({0})</value>
+  </data>
+  <data name="VF_PRUEF_GRUPPE_HINWEIS" xml:space="preserve">
+    <value>Hinweise ({0})</value>
+  </data>
+  <data name="VF_PRUEF_GRUPPE_WARNUNG" xml:space="preserve">
+    <value>Warnungen ({0})</value>
+  </data>
+  <data name="VF_PRUEF_KEINE_BEFUNDE" xml:space="preserve">
+    <value>Keine Befunde – die Vorlage lässt sich füllen.</value>
+  </data>
+  <data name="VF_PRUEF_KOPF" xml:space="preserve">
+    <value>Geprüft: {0} Platzhalter, Vorlage „{1}“</value>
+  </data>
+  <data name="VF_PRUEF_KOPF_OHNE_NAME" xml:space="preserve">
+    <value>Geprüft: {0} Platzhalter</value>
+  </data>
+  <data name="VF_PRUEF_LISTE" xml:space="preserve">
+    <value>Meldungen der Prüfung</value>
+  </data>
+  <data name="VF_PRUEF_TITEL" xml:space="preserve">
+    <value>Prüfliste der Vorlage</value>
+  </data>
+  <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
+    <value>Was tun: {0}</value>
   </data>
 </root>
