@@ -72,10 +72,16 @@ public sealed class GebaeudeProjektZeile
     public bool HatProjektkopie { get; set; }
 
     /// <summary>
-    /// Der Name der Zone, über die das Gebäude rechnet (Stufe G3); <c>null</c> = keine Zone —
-    /// dann rechnet es den Klassenweg samt Hochrechnung über die Angabe.
+    /// Der Name der Zone, über die das Gebäude rechnet (Stufe G3), ab zwei Zonen „N Zonen" (G6a);
+    /// <c>null</c> = keine Zone — dann rechnet es den Klassenweg samt Hochrechnung über die Angabe.
     /// </summary>
     public string? Zone { get; set; }
+
+    /// <summary>Die Zahl der Zonen der Projektkopie (G6a) — für die Rückfrage „Aus dem Projekt entfernen".</summary>
+    public int Zonenzahl { get; set; }
+
+    /// <summary>Die Zahl der Bauteile aller Zonen der Projektkopie (G6a) — für dieselbe Rückfrage.</summary>
+    public int Bauteilzahl { get; set; }
 
     /// <summary>
     /// Der UNDURCHSICHTIGE Schlüssel der ausstehenden Herkunft einer Zeile aus dem Gebäudeimport

@@ -32,8 +32,9 @@ namespace WindowsFormsApplication1
     // traegt allein Randbedingung). Bauteilart mit neun Werten (W7), Randbedingung mit vier
     // (W8, kein KELLER), Herkunft mit fuenf (W9), Quellkennung bis 64 Zeichen (W10).
     //
-    // ERGEBNISNEUTRAL. Kein Rechenweg liest die Tabellen, und kein Projekt fuehrt eine Zone;
-    // der Referenzlauf bleibt byte-gleich.
+    // ERGEBNISNEUTRAL. Der Schritt legt nur die Tabellen an. Gelesen werden sie vom Bauteilweg
+    // des Rechenkerns (GebaeudeZonenanschluss, genau eine Zone je Gebaeude; mehrere ab Stufe G6b);
+    // kein Referenzprojekt fuehrt eine Zone, der Referenzlauf bleibt byte-gleich.
     // ====================================================================================
 
     /// <summary>

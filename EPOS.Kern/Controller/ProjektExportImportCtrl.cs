@@ -1718,7 +1718,10 @@ namespace WindowsFormsApplication1
         // konflikte (Int64->Long Integer, String->DateTime, Text mit Zahl usw.) vermieden.
         private static object Passe(object v, Type ziel)
         {
-            if (v == null) return DBNull.Value;
+            // NULL bleibt NULL - auch als DBNull, das Umschluessele fuer einen leeren Wert liefert.
+            // Ohne den zweiten Fall machte Convert.ToString(DBNull) an jeder Textspalte "" daraus
+            // (Befund des Rundlaufwaechters G6a W2: Quellkennung, Quelle, Uebergabe_Art).
+            if (v == null || v is DBNull) return DBNull.Value;
             if (ziel == null) return AlsDbWert(v);
             var ci = System.Globalization.CultureInfo.InvariantCulture;
             try

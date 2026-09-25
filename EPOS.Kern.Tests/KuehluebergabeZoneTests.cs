@@ -36,16 +36,19 @@ namespace EPOS.Kern.Tests
         {
             ZoneModel decke = GebaeudeG3PruefregelTests.GueltigeZone();
             decke.Bezeichner = "Büro";
+            decke.Nutzflaeche = 40;            // ab zwei Zonen Pflicht (G6a)
             decke.Kuehl_Uebergabe_Art = DbWerte.KUEHLUEBERGABE_KUEHLDECKE;
             decke.Kuehl_Uebergabe_Exponent = 1.05;
             decke.Kuehl_Uebergabe_Leistung_Nenn = 3.5;
 
             ZoneModel ideal = GebaeudeG3PruefregelTests.GueltigeZone();
             ideal.Bezeichner = "Lager";
+            ideal.Nutzflaeche = 30;
             ideal.Kuehl_Uebergabe_Art = DbWerte.KUEHLUEBERGABE_IDEAL;
 
             ZoneModel leer = GebaeudeG3PruefregelTests.GueltigeZone();
             leer.Bezeichner = "Flur";
+            leer.Nutzflaeche = 20;
             return new List<ZoneModel> { decke, ideal, leer };
         }
 

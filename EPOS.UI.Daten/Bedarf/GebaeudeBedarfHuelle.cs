@@ -29,7 +29,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             GebaeudeProjektZeile zeile, int projektId)
+            => Gaben(zeile, projektId, out _);
+
+        /// <summary>
+        /// Dasselbe mit dem benannten Grund, wenn es keine Zahl gibt (Stufe G6a): <paramref name="befund"/>
+        /// trägt dann den Fehler, mit dem die Fassade das Gebäude ablehnt (etwa mehrere Zonen) —
+        /// <c>null</c>, wenn es gar nichts zu rechnen gab; dann gilt die allgemeine Meldung des Dialogs.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            GebaeudeProjektZeile zeile, int projektId, out string befund)
         {
+            befund = null;
             if (zeile == null || projektId <= 0) return null;
 
             var projekt = new ProjektCtrl();
@@ -37,7 +47,14 @@ namespace WindowsFormsApplication1
 
             GebaeudeBedarfErgebnis ergebnis =
                 GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ);
-            if (!ergebnis.Erfolgreich) return null;
+            if (!ergebnis.Erfolgreich)
+            {
+                // Eine eben aufgenommene Zeile (etwa aus dem Gebäudeimport) hat noch keine Projektkopie:
+                // Der Grund ist dann das fehlende OK, nicht Projekt oder Klimaregion.
+                befund = ergebnis.Befund
+                         ?? (zeile.IdZ >= GebaeudeHuelle.STARTINDEX ? MyResource.Resource.GEB_MSG_BEDARF_UNGESPEICHERT : null);
+                return null;
+            }
 
             // Der Vergleich alt/neu: derselbe Controller, der andere Rechenweg. Liefert er
             // nichts (etwa ein benannt abgelehntes Gebaeude auf dem VDI-Weg), bleibt die

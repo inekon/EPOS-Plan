@@ -88,6 +88,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_HUELLRECHENWEG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_HUELLRECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_KUEHLUEBERGABE {
@@ -111,6 +120,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ABW_MERKMAL_UEBERGABEART {
             get {
                 return ResourceManager.GetString("ABW_MERKMAL_UEBERGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Nutzfläche der Zonen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ZONENFLAECHE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ZONENFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Zonen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ZONENZAHL {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ZONENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ H_T der Zonen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_ZONEN_HT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_ZONEN_HT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilweg ähnelt.
+        /// </summary>
+        public static string ABW_WERT_BAUTEILWEG {
+            get {
+                return ResourceManager.GetString("ABW_WERT_BAUTEILWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilweg ({0} von {1} Gebäuden) ähnelt.
+        /// </summary>
+        public static string ABW_WERT_BAUTEILWEG_TEIL {
+            get {
+                return ResourceManager.GetString("ABW_WERT_BAUTEILWEG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klassenweg ähnelt.
+        /// </summary>
+        public static string ABW_WERT_KLASSENWEG {
+            get {
+                return ResourceManager.GetString("ABW_WERT_KLASSENWEG", resourceCulture);
             }
         }
         
@@ -3028,6 +3091,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BAUTEIL_MSG_HERKUNFT {
             get {
                 return ResourceManager.GetString("BAUTEIL_MSG_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{2}“): Die Kennung {1} steht zweimal in der Liste. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_ID_DOPPELT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_ID_DOPPELT", resourceCulture);
             }
         }
         
@@ -23667,11 +23739,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone entfernen ähnelt.
         /// </summary>
         public static string GEBZ_BTN_ENTFERNEN {
             get {
                 return ResourceManager.GetString("GEBZ_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach oben ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_HOCH {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Neue Zone … ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_NEUE_ZONE {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_NEUE_ZONE", resourceCulture);
             }
         }
         
@@ -23703,6 +23802,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach unten ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_RUNTER {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_RUNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude als eine Zone übernehmen ähnelt.
         /// </summary>
         public static string GEBZ_BTN_UEBERNEHMEN {
@@ -23712,11 +23820,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fehlt ähnelt.
+        /// </summary>
+        public static string GEBZ_FLAECHE_FEHLT {
+            get {
+                return ResourceManager.GetString("GEBZ_FLAECHE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ trägt {1} Zonen mit {2} Bauteilen. Mit dem Speichern der Liste werden sie samt dem Gebäude aus dem Projekt gelöscht. Trotzdem aus dem Projekt entfernen? ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_AUS_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_AUS_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ mit {1} Bauteilen entfernen? Das Gebäude rechnet danach wieder den Klassenweg über die U-Wert-Gruppen; geschrieben wird mit OK. ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_ENTFERNEN {
             get {
                 return ResourceManager.GetString("GEBZ_FRAGE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ mit {1} Bauteilen entfernen? Die übrigen Zonen bleiben; geschrieben wird mit OK. ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_ENTFERNEN_ZONE {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_ENTFERNEN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ab jetzt rechnet dieses Gebäude über die Bauteile seiner Zone statt über die U-Wert-Gruppen; die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone. Neue Zone anlegen? ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_ERSTE_ZONE {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_ERSTE_ZONE", resourceCulture);
             }
         }
         
@@ -23739,11 +23883,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz trägt die {0} Zonen mit {1} Bauteilen nicht mit; sie bleiben an der Projektkopie – trotzdem speichern? ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ab jetzt rechnet dieses Gebäude über seine Bauteile statt über die U-Wert-Gruppen. Die Flächen werden mit dem Faktor {0} auf die Projektfläche hochgerechnet (Nutzfläche {1} m² → {2} m²). Die Angabe „{3} {4}“ gilt danach nicht mehr. Zone übernehmen? ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("GEBZ_FRAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit zwei Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht; für die Simulation bleibt dann, eine Zone zu behalten oder alle zu entfernen. Jede Zone braucht dann ihre eigene Nutzfläche. Zweite Zone anlegen? ähnelt.
+        /// </summary>
+        public static string GEBZ_FRAGE_ZWEITE_ZONE {
+            get {
+                return ResourceManager.GetString("GEBZ_FRAGE_ZWEITE_ZONE", resourceCulture);
             }
         }
         
@@ -23771,6 +23933,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_GRP_ZONEN {
             get {
                 return ResourceManager.GetString("GEBZ_GRP_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Katalogsatz trägt keine Zonen; die Zonen ({0}) mit {1} Bauteilen bleiben an der Projektkopie. ähnelt.
+        /// </summary>
+        public static string GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN", resourceCulture);
             }
         }
         
@@ -23820,11 +23991,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
+        /// </summary>
+        public static string GEBZ_NAME_KOPIE {
+            get {
+                return ResourceManager.GetString("GEBZ_NAME_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} ähnelt.
+        /// </summary>
+        public static string GEBZ_NAME_NEU {
+            get {
+                return ResourceManager.GetString("GEBZ_NAME_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
         /// </summary>
         public static string GEBZ_REITER {
             get {
                 return ResourceManager.GetString("GEBZ_REITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Programmstand führt höchstens eine Zone je Gebäude. ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_FREIGABE {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_FREIGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Gebäude trägt höchstens {0} Zonen. ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_HOECHSTZAHL {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_HOECHSTZAHL", resourceCulture);
             }
         }
         
@@ -23874,6 +24081,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude führt schon {0} Zonen. ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit {0} Zonen lehnt die Simulation dieses Gebäude benannt ab – sie rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen. ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRZEILE_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRZEILE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
         /// </summary>
         public static string GEBZ_SP_AKTIONEN {
@@ -23919,6 +24144,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe ähnelt.
+        /// </summary>
+        public static string GEBZ_SUMME {
+            get {
+                return ResourceManager.GetString("GEBZ_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude im Projekt: Hülle und Zonen ähnelt.
         /// </summary>
         public static string GEBZ_TITEL_PROJEKT {
@@ -23937,11 +24171,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Bauteilweg – {0} Zonen, {1} Bauteile. Die U-Wert-Gruppen sind aus den Bauteilen aller Zonen abgeleitet; die Werte des Gebäudes gelten wieder ohne Zone. ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_BAUTEILWEG_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_BAUTEILWEG_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Zone rechnen ihre Fensterbauteile ({0} m²); die Fensterflächen des Gebäudes gelten wieder ohne Zone. ähnelt.
         /// </summary>
         public static string GEBZ_ZEILE_FENSTER {
             get {
                 return ResourceManager.GetString("GEBZ_ZEILE_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit den Zonen rechnen ihre Fensterbauteile ({0} m² aus {1} Zonen); die Fensterflächen des Gebäudes gelten wieder ohne Zone. ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_FENSTER_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_FENSTER_ZONEN", resourceCulture);
             }
         }
         
@@ -23982,6 +24234,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit mehreren Zonen braucht jede Zone ihre eigene Nutzfläche (Nutzfläche des Gebäudes: {0} m²). ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_NUTZFLAECHE_PFLICHT {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_NUTZFLAECHE_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Nutzfläche der {1} Zonen: {0} m². ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_NUTZFLAECHE_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_NUTZFLAECHE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebrücken der Bauteile Σ ψ·L ähnelt.
         /// </summary>
         public static string GEBZ_ZEILE_PSI {
@@ -23996,6 +24266,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_ZEILE_SUMMENREGEL {
             get {
                 return ResourceManager.GetString("GEBZ_ZEILE_SUMMENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgeleitet aus den Bauteilen aller {0} Zonen: Fläche je Gruppe Σ A, U = Σ U·A / Σ A. Die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone. ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_SUMMENREGEL_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_SUMMENREGEL_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen ähnelt.
+        /// </summary>
+        public static string GEBZ_ZONEN_ZAHL {
+            get {
+                return ResourceManager.GetString("GEBZ_ZONEN_ZAHL", resourceCulture);
             }
         }
         
@@ -24405,6 +24693,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude ist noch nicht im Projekt gespeichert – mit OK wird es gespeichert, danach lässt sich sein Wärmebedarf berechnen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_BEDARF_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("GEB_MSG_BEDARF_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude gelöscht! ähnelt.
         /// </summary>
         public static string GEB_MSG_GELOESCHT {
@@ -24437,6 +24734,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_MSG_KEIN_BEDARF {
             get {
                 return ResourceManager.GetString("GEB_MSG_KEIN_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0} ähnelt.
+        /// </summary>
+        public static string GEB_MSG_KEIN_BEDARF_GRUND {
+            get {
+                return ResourceManager.GetString("GEB_MSG_KEIN_BEDARF_GRUND", resourceCulture);
             }
         }
         
@@ -25554,6 +25860,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Baujahr {0} der Datei ermittelt – eine andere Wahl ersetzt sie. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_KLASSE_AUS_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_KLASSE_AUS_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse steuert alle Vorgaben: U-Werte, g-Wert und Wärmebrücken. ähnelt.
         /// </summary>
         public static string GIMP_DLG_KLASSE_HINWEIS {
@@ -25568,6 +25883,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_KLASSE_KEINE {
             get {
                 return ResourceManager.GetString("GIMP_DLG_KLASSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von den {1} Werten, die eine Baualtersklasse vorgibt (U-Werte, g-Wert, Wärmebrücken), trägt die Datei {2} selbst; die Klasse füllt {0}. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_KLASSE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_KLASSE_WIRKUNG", resourceCulture);
             }
         }
         
@@ -39217,6 +39541,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBW_WERT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBW_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Bauteile der Zone — nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBZ_ZONE_BAUTEILE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBZ_ZONE_BAUTEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Transmissionsleitwert H_T der Zone in W/K aus ihren Bauteilen (Σ U·A + Σ ψ·L) — nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBZ_ZONE_HT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBZ_ZONE_HT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Zone im Reiter „Zonen“ — nur lesbar; Zonen legt der Anwender dort an, öffnet, dupliziert, ordnet und entfernt sie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBZ_ZONE_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBZ_ZONE_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzfläche der Zone in m² (leer an der Zone = die des Gebäudes) — nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBZ_ZONE_NUTZFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBZ_ZONE_NUTZFLAECHE_ERL", resourceCulture);
             }
         }
         
@@ -66095,7 +66455,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; mehrere Zonen rechnet EPOS mit Stufe G6. Bis dahin rechnet ein Gebäude ohne Zone (Klassenweg) oder mit genau einer Zone (Bauteilweg). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Das Gebäude trägt {1} Zonen; die Simulation rechnet mit mehreren Zonen noch nicht. Für die Simulation eine Zone behalten oder alle entfernen (Gebäudedialog, „Hülle und Zonen…“). ähnelt.
         /// </summary>
         public static string SIMENG_G3_MEHRERE_ZONEN {
             get {
@@ -91046,6 +91406,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Zonen {0} m² gegen Gebäude {1} m² ({2} %): Die Nutzflächen der Zonen weichen um 5 % oder mehr von der des Gebäudes ab – Räume doppelt gezählt oder vergessen? ähnelt.
+        /// </summary>
+        public static string ZONE_HINWEIS_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZONE_HINWEIS_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ hat kein Bauteil an Außenluft, Erdreich oder unbeheiztem Raum. ähnelt.
+        /// </summary>
+        public static string ZONE_HINWEIS_OHNE_AUSSEN {
+            get {
+                return ResourceManager.GetString("ZONE_HINWEIS_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone mit der Kennung {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string ZONE_MSG_FREMD {
@@ -91060,6 +91438,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_GEBAEUDE_FEHLT {
             get {
                 return ResourceManager.GetString("ZONE_MSG_GEBAEUDE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Kennung {1} steht zweimal in der Liste. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_ID_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_ID_DOPPELT", resourceCulture);
             }
         }
         
@@ -91096,6 +91483,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("ZONE_MSG_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Mit mehreren Zonen braucht jede Zone ihre eigene Nutzfläche – leer hieße „die Nutzfläche des Gebäudes“ und zählte sie doppelt. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_NUTZFLAECHE_PFLICHT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_NUTZFLAECHE_PFLICHT", resourceCulture);
             }
         }
         
@@ -91141,6 +91537,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_WERT {
             get {
                 return ResourceManager.GetString("ZONE_MSG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Gebäude trägt höchstens {0} Zonen; die Liste führt {1}. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_ZU_VIELE {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_ZU_VIELE", resourceCulture);
             }
         }
         

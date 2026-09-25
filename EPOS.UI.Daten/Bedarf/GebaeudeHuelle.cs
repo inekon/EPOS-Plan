@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
@@ -33,7 +35,7 @@ namespace WindowsFormsApplication1
         /// Die vorläufige Id einer noch nicht gespeicherten Zuordnung — derselbe
         /// Startwert wie <c>Form_Gebaeude.startindex</c>.
         /// </summary>
-        private const int STARTINDEX = 100000;
+        internal const int STARTINDEX = 100000;
 
         // =================================================================================
         // Der Parametersatz
@@ -60,6 +62,9 @@ namespace WindowsFormsApplication1
             }
 
             int[] naechsteId = { STARTINDEX };
+
+            // Stufe G6a: der benannte Grund der letzten Bedarfsauskunft ohne Zahl.
+            string bedarfBefund = null;
 
             // Welche Anzeigezeile gehoert zu welchem Modell der Fachliste? Der Speicherweg
             // traegt einer neu angelegten Zeile nach dem Festschreiben ihre ECHTE
@@ -148,7 +153,13 @@ namespace WindowsFormsApplication1
                 // Gebaeudes. Die Katalogverwaltung ist seit Stufe 5 der Neuordnung eine
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
-                    z => { idsNachziehen(); return GebaeudeBedarfHuelle.Gaben(z, projektId); }),
+                    z => { idsNachziehen(); return GebaeudeBedarfHuelle.Gaben(z, projektId, out bedarfBefund); }),
+                // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
+                ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
+                ["MeldungKeinBedarfGrund"] = Text_("GEB_MSG_KEIN_BEDARF_GRUND",
+                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}"),
+                // Stufe G6a (Anwenderentscheid A2): „Aus dem Projekt entfernen" fragt bei Zonen nach.
+                ["FrageAusProjekt"] = MyResource.Resource.GEBZ_FRAGE_AUS_PROJEKT,
 
                 ["TitelText"] = Titel(),
                 ["KopfbandText"] = Text_("GEB_KOPFBAND", "Eingabe der Energiedaten"),
@@ -407,9 +418,15 @@ namespace WindowsFormsApplication1
 
             z.Rechenweg = Rechenwegtext(g.Gebaeude_Modell);
             z.HgesWK = Gebaeudehuellbilanz.GesamtWK(g);
-            // Stufe G3 (Welle D2): die Projektkopie traegt Zonen - der Name der Zone, ueber die sie rechnet.
+            // Stufe G3 (Welle D2): die Projektkopie traegt Zonen - der Name der Zone, ueber die sie rechnet;
+            // ab zwei Zonen ihre Zahl (G6a), dazu die Zahl der Bauteile fuer die Rueckfrage beim Entfernen.
             z.HatProjektkopie = true;
-            z.Zone = g.Zonen != null && g.Zonen.Count > 0 ? g.Zonen[0].Bezeichnung : null;
+            int zonen = g.Zonen?.Count ?? 0;
+            z.Zonenzahl = zonen;
+            z.Bauteilzahl = zonen == 0 ? 0 : g.Zonen.Sum(x => x?.Bauteile?.Count ?? 0);
+            z.Zone = zonen == 0 ? null
+                : zonen == 1 ? g.Zonen[0].Bezeichnung
+                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEBZ_ZONEN_ZAHL, zonen);
         }
 
         // =================================================================================

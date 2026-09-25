@@ -4056,3 +4056,62 @@ Kopf, 3.1, 3.4, 3.8 und 4; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_
 [Update-Papier](Wiki_Update_2026-09-26.md) (Logbuch 1.2.0.4, Seite „Gebäudeimport“); das
 [Protokoll G4b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md); die
 Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.50 Entscheid E46 — G6a beauftragt: eine zweite Zone ist speicherbar, 50 Zonen je Gebäude
+
+**Anlass.** Der Auftrag der Stufe G6a (Pflege mehrerer Zonen je Gebäude) stellte drei Fragen (Anhang A),
+weil der Lauf mehrere Zonen erst mit G6b rechnet.
+
+**Entscheid (Anwender, 25.09.2026):**
+
+| # | Frage | Entscheid |
+|---|---|---|
+| A1 | Ist eine zweite Zone schon vor G6b speicherbar? | **ja, mit Schalter:** speicherbar mit Rückfrage und Sperrzeile („Mit N Zonen lehnt die Simulation dieses Gebäude benannt ab"); der Freigabeschalter im Kern (`GebaeudeZonenregeln.MehrereZonenFreigegeben`) steht an und wird für eine Auslieferung vor G6b ausgeschaltet — dann höchstens eine Zone, „+ Neue Zone …" nennt die Sperre. Wiki und Logbuch erst mit G6b |
+| A2 | Fragt „Aus dem Projekt entfernen" bei einem Gebäude mit Zonen nach? | **ja:** die Rückfrage nennt die Zahl der Zonen und Bauteile; bei „Nein" bleibt alles stehen |
+| A3 | Obergrenze je Gebäude? | **50 Zonen** als vorläufige Konstante der Regelklasse (`GebaeudeZonenregeln.PFLEGEGRENZE`); M12 bleibt bis G6c offen, G6c misst und setzt sie endgültig |
+
+**Betroffene Stufen:** G6a (umgesetzt mit den Wellen 1 bis 4); G6b (rechnet mehrere Zonen, hebt die
+Laufgrenze); G6c (M12).
+
+### N1.51 Festlegungen der Umsetzung G6a — benannt, nicht entschieden
+
+**Anlass.** Die Stufe G6a ist in vier Wellen gebaut (W1 bis W4; 25./26.09.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G6a_Zonenpflege.md)). Wo die Papiere
+schwiegen, hat die Umsetzung festgelegt. Die Liste nennt diese Festlegungen, damit sie nicht als
+Anwenderentscheide gelesen werden; Widerspruch ist möglich und würde ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **Eine Regelklasse** (`GebaeudeZonenregeln`, öffentlich): Laufgrenze 1, Pflegegrenze 50 (E46/A3), Freigabeschalter (E46/A1); der Umschalter des Laufs (`GebaeudeZonensatz.EineZone`) und die Oberfläche lesen nur hier | 4.3; Mehrzonenkonzept 5.3 |
+| 2 | **Ab zwei Zonen ist die Nutzfläche Pflicht** — im Kern (`GebaeudeZonenCtrl.Pruefen`, Dialog und Schreibweg) und im Zonendialog (kein Platzhalter „Nutzfläche des Gebäudes"): leer hieße „die Fläche des Gebäudes" und zählte sie doppelt | Mehrzonenkonzept 4.2, 5.3 |
+| 3 | **Doppelte positive Ids** von Zonen oder Bauteilen in der Liste sind ein Fehler — sonst schriebe der Abgleich dieselbe Zeile zweimal; vorläufige Ids dürfen sich wiederholen | Mehrzonenkonzept 4.1 |
+| 4 | **Hinweise statt Fehler:** Σ Nutzfläche der Zonen gegen die des Gebäudes ab 5 % Abweichung — erst ab zwei Zonen, weil eine einzelne Zone nach der Übernahme (E40) bewusst die Fläche des wirklichen Gebäudes trägt —, dazu eine Zone ohne Bauteil an Außenluft, Erdreich oder unbeheiztem Raum | Mehrzonenkonzept 5.3 (E19) |
+| 5 | **Eine Formel für die Zonenkennwerte** (`Zonenkennwerte`): Fläche, Volumen (das der Zone, sonst Fläche × Raumhöhe, gekennzeichnet als abgeleitet), H_T = Σ U·A + Σ ψ·L mit U aus dem Aufbau, H_ve nach der Regel des Laufs (Fläche der Zone × Raumhöhe des **Gebäudes**, auf dem VDI-Weg mit dem wirksamen Luftwechsel), Zahl der Bauteile; bei einer Zone bitgleich zur Anzeige davor | 4.3; Mehrzonenkonzept 4.3 |
+| 6 | **Der Arbeitsstand arbeitet über Ids**; eine neue vorläufige Id liegt unter allen vergebenen (−1 trägt die Übernahmezone). Das behebt die stille Löschung: Das frühere Ersetzen der ganzen Liste behielt beim OK nur eine Zone | Softwarearchitektur 3.3 |
+| 7 | **Ein Duplikat nennt seine Vorlage** (`ZoneDaten.VorlageId`): Die Hülle übernimmt deren ungelesene Spalten (Sollwerte, Lüftung, Kühl- und Übergabewerte), nicht aber Herkunft, Quellkennung und Importpaarung; Zone und Bauteile der Kopie sind neu und manuell | Datenaustauschkonzept 7.4 |
+| 8 | **Die Texte** der Zonenpflege führen das Präfix `GEBZ_` fort (nicht `ZON_`), die Meldungen des Kerns `ZONE_MSG_`/`ZONE_HINWEIS_` | Softwarearchitektur 3.2 |
+| 9 | **Die Bericht-Zonentabelle** steht je Gebäude mit Zonen im Gebäudeblock der Projektbeschreibung und führt Zone, Nutzfläche, Volumen (abgeleitet mit Stern und Hinweis), H_T, H_ve und Bauteile samt Summenzeile, ohne Spalte „beheizt" (Festlegung 12 in N1.46) und ohne Heizwärme und Spitze (G6b); ohne Zonen entfällt sie | Mehrzonenkonzept 9 |
+| 10 | **Die Zonenmerkmale des Variantenvergleichs** — Zahl der Zonen, Σ Nutzfläche, Σ H_T, Rechenweg der Hülle (Klassenweg, Bauteilweg oder „Bauteilweg (n von m Gebäuden)") — gelten über **alle** Gebäude des Projekts, nicht nur über das erste wie die übrigen Gebäudemerkmale | Konzept Berichtswesen, Baustein 4 |
+
+**Vermerke für G6b.**
+- `Tab_Zone` hat keine Nachtzeit (`Nachtabsenkung_Beginn`/`_Ende` am Gebäude, Schemaschritt 144); die
+  Regel „gleicher Name wie am Gebäude" (`ZonenSchema.GebaeudewertSpalten`) greift für sie nicht.
+- Σ H_T über die Zonen gilt nur ohne Grenzen zu einer Nachbarzone; mit `Randbedingung = 'ZONE'` wird
+  eine Trennfläche sonst doppelt gezählt.
+- `IstBeheizt = 0` rechnet bis G6b wie beheizt (N1.46, 12); die Bedeutung ist mit der Zonenschleife
+  festzulegen.
+- Heizwärme und Spitze je Zone gehören in die Bericht-Zonentabelle, sobald G6b sie rechnet; H_ve folgt
+  dann der Raumhöhe bzw. dem Volumen der Zone.
+
+**Was offen bleibt.** Den Freigabeschalter `GebaeudeZonenregeln.MehrereZonenFreigegeben` vor jeder Auslieferung
+ohne G6b ausschalten (E46/A1); Wiki und Logbuch mit G6b; die Windows-Sichtabnahme des Zonenreiters
+und der Zonentabelle im Bericht.
+
+**Betroffene Stufen:** G6a; G6b (Vermerke oben).
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 und 2;
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 2, 4.4, 5.3, 8 und 9;
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 3.2;
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Löschliste GA; das
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G6a_Zonenpflege.md); die Indexzeile in
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md).

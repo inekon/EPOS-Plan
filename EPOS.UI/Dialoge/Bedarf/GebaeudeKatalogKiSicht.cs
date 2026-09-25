@@ -866,7 +866,29 @@ public sealed class GebaeudeKatalogKiSicht
     /// </summary>
     public IReadOnlyList<GebaeudeFerienKiZeile> Ferien
         => FerienLesen?.Invoke() ?? Array.Empty<GebaeudeFerienKiZeile>();
+
+    /// <summary>Liefert die Zonen des Arbeitsstands (G6a); <c>null</c> = keine.</summary>
+    public Func<IReadOnlyList<GebaeudeZoneKiZeile>>? ZonenLesen { get; init; }
+
+    /// <summary>
+    /// Die Zonen eines Gebäudes im Projekt als RASTER zum LESEN (Stufe G6a) — Name, Nutzfläche,
+    /// H_T und Zahl der Bauteile aus der EINEN Formel des Kerns (<c>Zonenkennwerte</c>).
+    /// Anlegen, Öffnen, Duplizieren, Umordnen und Entfernen bleiben Klicks des Anwenders.
+    /// </summary>
+    public IReadOnlyList<GebaeudeZoneKiZeile> Zonen
+        => ZonenLesen?.Invoke() ?? Array.Empty<GebaeudeZoneKiZeile>();
 }
+
+/// <summary>
+/// EINE Zone des Gebäudeeditors für den Hilfe-Assistenten (Stufe G6a) — eine Zeile des Rasters
+/// <see cref="GebaeudeKatalogKiSicht.Zonen"/>, nur lesbar; Kennzeichen die Nummer ab 1.
+/// </summary>
+/// <param name="Nummer">Die Nummer der Zeile ab 1 — das Kennzeichen.</param>
+/// <param name="Name">Der Name der Zone.</param>
+/// <param name="Nutzflaeche">Die Nutzfläche [m²] (ohne eigene: die des Gebäudes).</param>
+/// <param name="HT">H_T der Zone [W/K].</param>
+/// <param name="Bauteile">Die Zahl der Bauteile.</param>
+public sealed record GebaeudeZoneKiZeile(string Nummer, string Name, double? Nutzflaeche, double HT, int Bauteile);
 
 /// <summary>
 /// EIN Ferienzeitraum des Gebäude-Katalogeditors für den Hilfe-Assistenten (Welle #458

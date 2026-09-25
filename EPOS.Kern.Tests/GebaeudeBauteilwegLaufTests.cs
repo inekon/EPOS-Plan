@@ -919,7 +919,7 @@ namespace EPOS.Kern.Tests
             ProjektGebaeudeModel g = Zeile(projekt);
             string id = "(" + g.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) + ")";
             GebaeudeZonensatz z = GebaeudeZonenuebernahme.AlsEineZone(g);
-            ZonenSchreiben(g.ID_Gebaeude, z, new GebaeudeZonensatz(0, "Anbau", z.Bauteile));
+            ZonenSchreiben(g.ID_Gebaeude, z, new GebaeudeZonensatz(0, "Anbau", z.Bauteile, 50.0));
 
             SimulationProtokoll p = SimulationProtokoll.NeuStarten();
             new SimulationWaermebedarf().Waermebedarf_berechnen(projekt, Klimaregion(projekt));
@@ -1136,7 +1136,7 @@ namespace EPOS.Kern.Tests
             GebaeudeZonensatz a = GebaeudeZonenuebernahme.AlsEineZone(gebaeude[0]);
             GebaeudeZonensatz b = GebaeudeZonenuebernahme.AlsEineZone(gebaeude[1]);
             ZonenSchreiben(gebaeude[0].ID_Gebaeude, a);
-            ZonenSchreiben(gebaeude[1].ID_Gebaeude, b, new GebaeudeZonensatz(0, "Anbau", b.Bauteile));
+            ZonenSchreiben(gebaeude[1].ID_Gebaeude, b, new GebaeudeZonensatz(0, "Anbau", b.Bauteile, 50.0));
             Assert.Equal(2, Abfragen());
 
             Schreiben(gebaeude[2].ID_Gebaeude, new List<ZoneModel> { GeschichteteZone(gebaeude[2], projekt, out _) });
