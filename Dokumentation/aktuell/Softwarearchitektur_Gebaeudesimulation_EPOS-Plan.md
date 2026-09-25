@@ -1006,7 +1006,7 @@ bleibt, keine Übersetzungstabelle.
 | `U_Wert` | `REAL` | ja | NULL = aus dem Aufbau gerechnet |
 | `g_Wert`, `Rahmenanteil`, `Verschattungsfaktor` | `REAL` | ja | nur Fenster und Vorhangfassade; NULL = Vorgabe |
 | `Neigung` | `REAL` | ja | NULL = nach `Bauteilart` |
-| `Azimut` | `REAL` | ja | **NULL nur bei Neigung 0° oder 180° zulässig** — eine Wand ohne Azimut wird **benannt abgelehnt**, nicht auf Nord vorbelegt |
+| `Azimut` | `REAL` | ja | **Pflicht nur an Außenluft:** NULL ist zulässig bei Neigung 0° oder 180° und an Erdreich, Zone, unbeheiztem Raum oder innerhalb der Zone — eine Wand an Außenluft ohne Azimut wird **benannt abgelehnt**, nicht auf Nord vorbelegt (`GebaeudeZonenCtrl.BrauchtAzimut`, `BauteilEingang`; [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.46, Punkt 9) |
 | `Randbedingung` | `TEXT CHECK (IN ('AUSSENLUFT','ERDREICH','ZONE','UNBEHEIZT'))` | ja | NULL = Außenluft, **an `INNENWAND` und `DECKE` NULL = innerhalb der Zone** (Innenbauteilgruppe; einen Wert dafür gibt es nicht) — die Regel steht an einer Stelle, `GebaeudeZonenabbildung.RandAusZeile`; **kein `KELLER`** (W8), und **keine Spalte `IstAussen`** (W6) |
 | `ID_Nachbarzone` | `INTEGER` | ja | FK → `Tab_Zone.ID`, **ohne** Kaskade; gesetzt **genau dann**, wenn `Randbedingung = 'ZONE'`, und ≠ `ID_Zone` (Schritt **S-G**) |
 | `Psi_L` | `REAL` | ja | ψ·L in W/K; NULL = keine Wärmebrücke |

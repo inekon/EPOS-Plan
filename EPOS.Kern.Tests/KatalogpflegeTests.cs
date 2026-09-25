@@ -145,9 +145,9 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal(new[] { "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
                          KatalogRegistry.Alle.Where(k => k.VerwendungSperrt).Select(k => k.Schluessel).ToArray());
-            // Gebaeudesimulation G3: Baustoff und Bauteilaufbau stehen erst mit ihrer
-            // Oberflaechenwelle im Dublettendialog; der Baustoff fuehrt den Hersteller als
-            // zweiten Teil des natuerlichen Schluessels.
+            // Gebaeudesimulation G3: Baustoff und Bauteilaufbau pflegen ihre eigenen
+            // Verwaltungen und stehen nicht im Dublettendialog; der Baustoff fuehrt den
+            // Hersteller als zweiten Teil des natuerlichen Schluessels.
             string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU" };
             Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
                                                          && !ohneDialog.Contains(k.Schluessel))

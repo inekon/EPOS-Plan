@@ -90,7 +90,9 @@ namespace EPOS.Kern.Tests
             var daten = (GebaeudeKatalogDaten)editor["Daten"];
             Assert.Equal(NAME, daten.Name);
             Assert.Equal(120.0, daten.WohnflaecheGesamt);
-            Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML.", editor["Vorbelegung"]);
+            Assert.StartsWith("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML. Vorgaben, nicht aus der Datei: ",
+                              (string)editor["Vorbelegung"]);
+            Assert.Contains("Luftwechselrate 0,7 1/h", (string)editor["Vorbelegung"]);
             Assert.Null(weg.Aufnehmen());                             // ohne Speichern im Editor keine Zeile
 
             var speichern = (Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>)editor["Speichern"];

@@ -1779,6 +1779,7 @@ namespace WindowsFormsApplication1
             t.FormImRahmen = Text_("ZPG_FORM_IM_RAHMEN", t.FormImRahmen);
             t.FormUeberSchwelle = Text_("ZPG_FORM_UEBER_SCHWELLE", t.FormUeberSchwelle);
             t.VermerkOhneEnsemble = Text_("ZPG_VERGL_OHNE_ENSEMBLE", t.VermerkOhneEnsemble);
+            t.VermerkEnsembleZonen = Text_("ZPG_VERGL_ENSEMBLE_ZONEN", t.VermerkEnsembleZonen);
             t.VermerkOhneWert = Text_("ZPG_VERGL_OHNE_WERT", t.VermerkOhneWert);
             t.VermerkMonat = Text_("ZPG_VERGL_MONAT", t.VermerkMonat);
             t.VermerkTage = Text_("ZPG_VERGL_TAGE", t.VermerkTage);

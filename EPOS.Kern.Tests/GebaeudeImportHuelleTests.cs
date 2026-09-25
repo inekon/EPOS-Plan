@@ -185,7 +185,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("geb-1", p.Quellkennung);
 
             GebaeudeVorbelegung v = h.Vorbelegung(Ergebnis(stand, name: "Neubau A"));
-            Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML.", v.Herleitung);
+            // Die Herleitungszeile nennt Datei und Format und danach jede übernommene Vorgabe.
+            Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML. Vorgaben, nicht aus der Datei: "
+                         + "Interne Wärmegewinne 0 W; ψ Anschluss Fenster–Wand 0,09 W/(mK); ψ Anschluss Wand–Dach 0,3 W/(mK); "
+                         + "ψ Anschluss Außenwand–Keller 0,6 W/(mK); Luftwechselrate 0,7 1/h.", v.Herleitung);
             Assert.Equal("Neubau A", v.Daten.Name);
             Assert.Equal(120.0, v.Daten.WohnflaecheGesamt);
             // Was nicht aus der Datei kommt, steht wie im Modus Neu des Editors.
@@ -200,6 +203,58 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal("25.09.2026 10:00", GebaeudeImportHuelle.Zeitpunkttext("2026-09-25T10:00:00+02:00"));
             Assert.Equal("kein Zeitpunkt", GebaeudeImportHuelle.Zeitpunkttext("kein Zeitpunkt"));
+        }
+
+        [Fact]
+        public async Task Ohne_Projekt_fragt_die_Huelle_keine_Datenbank()
+        {
+            // Der Wirt der Rasterprobe stellt den Dialog OHNE Datenbank (Proben/Rasterprobe, Seite
+            // /gebaeudeimport): Vom Dateiwähler bis zur Vorbelegung des Editors erreicht kein Schritt
+            // die Zugriffsschicht - auch der Hinweis „schon importiert" nicht, der erst mit einem
+            // Projekt fragt.
+            IDatenzugriff vorherZugriff = DataRepository.Zugriff;
+            IDateiDienst vorherDatei = Dienste.Datei;
+            var zugriffe = new Zaehlzugriff(vorherZugriff);
+            try
+            {
+                DataRepository.Zugriff = zugriffe;
+                Dienste.Datei = new Dateiprobe { Antwort = GbxmlImportTests.Probe("gbxml_haus_si.xml") };
+                var h = new GebaeudeImportHuelle();
+                IReadOnlyDictionary<string, object> gaben = h.Gaben(_ => Task.FromResult<string>(null));
+
+                GebaeudeDateiwahl wahl = await ((Func<string, Task<GebaeudeDateiwahl>>)gaben["DateiWaehlen"])("");
+                Assert.Null(wahl.Ablehnung);
+                GebaeudeLesestand gelesen = await Lesen(gaben)(wahl.Pfad, null, CancellationToken.None);
+                Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
+                Assert.Equal("", gelesen.SchonImportiert);
+                GebaeudeImportStand stand = Zuordnen(gaben)(new GebaeudeZuordnungsanfrage(0, 4, Keine));
+                GebaeudeImportErgebnis ergebnis = Ergebnis(stand, name: "Probe ohne Datenbank");
+                Pruefen(gaben)(ergebnis);
+                Assert.Equal("Probe ohne Datenbank", h.Vorbelegung(ergebnis).Daten.Name);
+
+                Assert.Equal(0, zugriffe.Gesamt);
+            }
+            finally
+            {
+                DataRepository.Zugriff = vorherZugriff;
+                Dienste.Datei = vorherDatei;
+            }
+        }
+
+        [Fact]
+        public async Task Die_Plattform_der_Groessengrenze_laesst_sich_einstellen()
+        {
+            // Die Schalen lassen sie weg (die laufende Plattform); ein Prüfstand zeigt die Grenze von iOS.
+            var ios = new GebaeudeImportHuelle(ios: true);
+            Assert.Equal("gbXML 25 MB · IFC 20 MB", ((GebaeudeImportProfilDaten)ios.Gaben()["Profil"]).Groessengrenze);
+            GebaeudeLesestand ifc = await Lesen(ios.Gaben())(Path.Combine(IfcProbenTests.Ordner(), "ifc4_haus.ifc"), null, CancellationToken.None);
+            Assert.True(ifc.Gelesen, string.Join(" | ", ifc.Meldungen.Select(m => m.Text)));
+            Assert.Equal(IfcImportProfil.MAX_BYTES_IOS, ios.Profil.MaxBytes);
+
+            Assert.Equal(IfcImportProfil.MAX_BYTES_IOS, new GebaeudeImportHuelle(new IfcImportProfil(), ios: true).Profil.MaxBytes);
+            Assert.Equal(IfcImportProfil.MAX_BYTES_WINDOWS, new GebaeudeImportHuelle(new IfcImportProfil(), ios: false).Profil.MaxBytes);
+            Assert.Equal("gbXML 25 MB · IFC 50 MB",
+                         ((GebaeudeImportProfilDaten)new GebaeudeImportHuelle(ios: false).Gaben()["Profil"]).Groessengrenze);
         }
 
         // =================================================================================
@@ -367,7 +422,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(120.0, d.WohnflaecheGesamt);
             Assert.Equal(2.5, d.Raumhoehe);
             Assert.Equal(24.0, d.FlaecheNutzer);
-            Assert.Null(d.Waermegewinne);                         // innere Gewinne: nur Vorschlag im Beleg
+            Assert.Equal(0.0, d.Waermegewinne);                   // innere Gewinne: Vorgabe eines neuen Gebäudes, der Vorschlag nur im Beleg
             Assert.Equal(4, d.Baualtersklasse);                   // E
             Assert.Equal(Gebaeudebauweise.SCHWER, d.Bauart);
             Assert.Equal(120.0 * 50, d.Bauweise);                 // Nutzfläche × 50 — die Rechnung des Editors
@@ -395,6 +450,8 @@ namespace EPOS.Kern.Tests
             Assert.Null(d.AnschlussAussenwandKeller);
             Assert.Equal(0.5, d.LuftwechselInfiltration);
             Assert.Null(d.LuftwechselNutzer);                     // D12
+            Assert.Equal(GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION + GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER,
+                         d.Luftwechselrate);                      // die Pflichtangabe des Editors: Vorgabe 0,7 1/h
             Assert.Equal(20.0, d.SollTag);
             Assert.Equal("Wohngebaeude", d.Verwendung);           // kein Zielfeld — bleibt
 

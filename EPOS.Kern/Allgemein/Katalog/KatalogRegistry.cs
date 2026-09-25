@@ -281,9 +281,11 @@ namespace WindowsFormsApplication1
             // zum Inhalt, sortiert nach Reihenfolge, und gehen mit ihm (Kaskade). Die
             // Stoffwerte der Schicht sind eine Kopie und damit Inhalt; ID_Baustoff ebenso.
             //
-            // ImDublettendialog = false: Anzeigename und Texte stehen (ADM_KATALOG_*), die
-            // Verwaltungsseite kommt mit der Oberflaechenwelle; bis dahin bleiben beide
-            // Kataloge fuer Scan, Bereinigung und Verwendungspruefung im Kern erreichbar.
+            // ImDublettendialog = false: Anzeigename und Texte stehen (ADM_KATALOG_*). Gepflegt
+            // werden beide Kataloge in ihren eigenen Verwaltungen (EPOS.UI/Dialoge/Bedarf/
+            // BaustoffKatalogDialog.razor und BauteilaufbauDialog.razor); der Dublettendialog
+            // fuehrt sie nicht. Fuer Scan, Bereinigung und Verwendungspruefung bleiben sie im
+            // Kern erreichbar.
             // ------------------------------------------------------------------------
             new KatalogDefinition
             {

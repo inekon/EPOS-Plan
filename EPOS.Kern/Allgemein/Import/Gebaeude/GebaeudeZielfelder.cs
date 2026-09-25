@@ -66,8 +66,13 @@ namespace WindowsFormsApplication1
     /// <para><b>Was bewusst KEIN Zielfeld ist.</b> Rahmenanteil, Verschattungsfaktor, Masseanteil
     /// außen, Innenflächenfaktor, Strahlungsanteil und Heizleistungsgrenze: gbXML kennt keine
     /// dieser Größen (Datenaustauschkonzept 3.4, Zeile „— → Rahmenanteil"), die Spalten bleiben
-    /// NULL und damit bei der Vorgabe des Eingangsbauers (<c>GebaeudeFestwerte.VORGABE_*</c>). Die
-    /// alte Einzelspalte <c>Luftwechselrate</c> auch nicht — der Luftwechsel geht nach D12 auf die
+    /// NULL und damit bei der Vorgabe des Eingangsbauers (<c>GebaeudeFestwerte.VORGABE_*</c>).</para>
+    ///
+    /// <para><b>Was jedes neue Gebäude braucht.</b> Der Gebäudeeditor nimmt ein neues Gebäude nur
+    /// mit Luftwechselrate, Fläche je Nutzer und inneren Wärmegewinnen an
+    /// (<c>GebaeudeArbeitsstand.Pruefen</c>). Liefert die Datei sie nicht, trägt ihre Zeile eine
+    /// ausgewiesene Vorgabe (Herkunft <see cref="Importherkunft.Vorgabe"/>, Beleg mit der Quelle der
+    /// Zahl) — die Luftwechselrate immer, denn der gelesene Luftwechsel geht nach D12 auf die
     /// Infiltration.</para>
     /// </summary>
     internal static class GebaeudeZielfelder
@@ -101,9 +106,9 @@ namespace WindowsFormsApplication1
         public const string RAUMHOEHE = "RAUMHOEHE";
         /// <summary>Beheiztes Volumen [m³] — nur Prüfgröße gegen Nutzfläche × Raumhöhe, keine Spalte.</summary>
         public const string VOLUMEN = "VOLUMEN";
-        /// <summary>Fläche je Nutzer [m²] (<c>Flaeche_Nutzer</c>; <c>Bewohner</c> rechnet die Hülle daraus).</summary>
+        /// <summary>Fläche je Nutzer [m²] (<c>Flaeche_Nutzer</c>; <c>Bewohner</c> rechnet die Hülle daraus) — ohne Personenangabe die Vorgabe <see cref="GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE"/>.</summary>
         public const string FLAECHE_JE_NUTZER = "FLAECHE_JE_NUTZER";
-        /// <summary>Innere Wärmegewinne [W], zeitlich konstant (<c>Interne_Waermegewinne</c>, im Modell <c>InnereGewinne_W</c>).</summary>
+        /// <summary>Innere Wärmegewinne [W], zeitlich konstant (<c>Interne_Waermegewinne</c>, im Modell <c>InnereGewinne_W</c>) — immer der Wert eines neuen Gebäudes als Vorgabe.</summary>
         public const string INNERE_GEWINNE = "INNERE_GEWINNE";
         /// <summary>Baualtersklasse, Buchstabe A…U (<c>Baualtersklasse</c>) — Anwenderangabe, steuert die Vorgaben.</summary>
         public const string BAUALTERSKLASSE = "BAUALTERSKLASSE";
@@ -181,6 +186,12 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------------ Lüftung
 
+        /// <summary>
+        /// Luftwechselrate [1/h] (<c>Luftwechselrate</c>) — immer die Vorgabe Infiltration + Nutzerlüftung
+        /// des Stundenmodells (Umsetzungskonzept 3.4); das Modell rechnet mit ihr nur, wenn Infiltration
+        /// und Nutzerlüftung beide leer sind (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?)"/>).
+        /// </summary>
+        public const string LUFTWECHSELRATE = "LUFTWECHSELRATE";
         /// <summary>Infiltration [1/h] (<c>Luftwechsel_Infiltration</c>) — trägt nach D12 den ganzen gelesenen Luftwechsel.</summary>
         public const string LUFTWECHSEL_INFILTRATION = "LUFTWECHSEL_INFILTRATION";
         /// <summary>Nutzerlüftung [1/h] (<c>Luftwechsel_Nutzer</c>) — bleibt nach D12 leer (= Vorgabe des Modells).</summary>
@@ -276,6 +287,7 @@ namespace WindowsFormsApplication1
                 F(LAENGE_WAND_DACH, GRUPPE_WAERMEBRUECKEN, "m"),
                 F(LAENGE_AUSSENWAND_KELLER, GRUPPE_WAERMEBRUECKEN, "m"),
 
+                F(LUFTWECHSELRATE, GRUPPE_LUEFTUNG, "1/h"),
                 F(LUFTWECHSEL_INFILTRATION, GRUPPE_LUEFTUNG, "1/h"),
                 F(LUFTWECHSEL_NUTZER, GRUPPE_LUEFTUNG, "1/h"),
 

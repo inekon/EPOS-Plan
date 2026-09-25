@@ -111,6 +111,30 @@ namespace WindowsFormsApplication1
         /// <summary>Der Zusatz einer abweichenden namensgleichen Version: „ (Import n)" — derselbe wie im Projektimport.</summary>
         internal static string ImportZusatz(int n) => " (Import " + n.ToString(CultureInfo.InvariantCulture) + ")";
 
+        /// <summary>
+        /// <b>Höchstzahl der Einträge eines Katalogpakets</b> (numerische Setzung): Das Format N2
+        /// kennt vier Dateien des Nutzungsartkatalogs und die Dateien des Paketteils; 200 Einträge
+        /// lassen Ordner, Beilagen und Schreibweisen zu und fangen ein Archiv ab, das nicht dieses
+        /// Paket ist. Geprüft wird das Zentralverzeichnis, bevor ein Byte entpackt wird — dieselbe
+        /// Regel wie im Normformvektorleser (N13 (s), Größenschutz).
+        /// </summary>
+        internal const int HOECHSTENS_EINTRAEGE = 200;
+
+        /// <summary>
+        /// <b>Höchste entpackte Gesamtgröße eines Katalogpakets [Byte]</b> (numerische Setzung,
+        /// 64 MB): Die CSV-Dateien tragen Text; ein Katalog mit einigen hundert Nutzungsarten und
+        /// ihren Tagesgängen bleibt weit darunter. Die Grenze fängt das aufgeblähte Archiv ab,
+        /// ohne es zu entpacken.
+        /// </summary>
+        internal const long HOECHSTENS_BYTE_ENTPACKT = 64L * 1024 * 1024;
+
+        /// <summary>
+        /// <b>Höchste Größe EINER Paketdatei [Byte]</b> (numerische Setzung, 16 MB): Der Leser hält
+        /// jede Datei ganz im Speicher (<see cref="File.ReadAllText(string, Encoding)"/> bzw.
+        /// <see cref="StreamReader.ReadToEnd"/>); die Grenze gilt für das Archiv wie für den Ordner.
+        /// </summary>
+        internal const long HOECHSTENS_BYTE_JE_DATEI = 16L * 1024 * 1024;
+
         /// <summary>Spalten, die das Paket führen darf, die der Import aber nicht übernimmt.</summary>
         private static readonly HashSet<string> IMPORT_UEBERGANGEN = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -127,8 +151,31 @@ namespace WindowsFormsApplication1
         /// (das Paket ist der Ordner, gewählt wird eine Datei darin) und dazu sich selbst, ein Ordner
         /// seine <c>*.csv</c>. Eine Datei, die sich nicht lesen lässt, ergibt den benannten
         /// <paramref name="fehler"/> und eine leere Liste.
+        ///
+        /// <para><b>Der Größenschutz des Archivs</b> (N13 (s)): Eintragszahl und entpackte
+        /// Gesamtgröße stehen im Zentralverzeichnis und werden geprüft, <b>bevor ein Byte entpackt
+        /// wird</b> (<c>KATALOGIMPORT_ZU_GROSS</c>); dazu die Größe jeder einzelnen Datei
+        /// (<c>KATALOGIMPORT_DATEI_ZU_GROSS</c>, auch für Ordner und Einzeldatei — dort samt
+        /// Eintragszahl und Gesamtgröße, denn ein Ordner kann ebenso überladen sein). Ein Eintragsname,
+        /// der aus dem Archiv herauszeigt (<c>..</c>, Wurzel, Laufwerk), wird benannt abgelehnt
+        /// (<c>KATALOGIMPORT_PFAD_UNZULAESSIG</c>); ein Unterordner ist erlaubt, denn der Leser nimmt
+        /// den Dateinamen. Verzeichniseinträge fallen still, sie tragen keinen Inhalt.</para>
+        ///
+        /// <para><b>Das Zentralverzeichnis ist eine Behauptung</b> der Datei, also gilt <b>dieselbe
+        /// Grenze ein zweites Mal beim Lesen</b>: Je Eintrag wird bis zur Grenze und ein Byte darüber
+        /// gelesen, und die Summe der gelesenen Einträge läuft mit; wer darüber kommt, fällt mit
+        /// derselben Kennung (Muster <c>Allgemein/Import/Ifc/IfcLeser.Entpacken</c>). Diese zweite
+        /// Wand ist <b>Vorsorge</b>: <see cref="ZipArchiveEntry.Open"/> begrenzt den Entpackstrom
+        /// heute selbst auf die ausgewiesene Größe (gemessen in
+        /// <c>EPOS.Kern.Tests/TwwKatalogimportTests</c>), ein zu klein ausgewiesener Eintrag kommt
+        /// also <b>gekürzt</b> herein statt zu groß — und fällt dann der Formprüfung des Einspielens
+        /// zu, nicht dem Größenschutz. Der Leser verlässt sich nicht darauf. Die beiden Grenzen sind
+        /// <b>Parameter mit den Konstanten als Vorgabe</b>, damit ein Test das Greifen der Prüfung an
+        /// einem kleinen Archiv messen kann statt an 64 MB.</para>
         /// </summary>
-        internal static IReadOnlyList<TwwPaketdatei> PaketLesen(string pfad, out ZapfSatz fehler)
+        internal static IReadOnlyList<TwwPaketdatei> PaketLesen(string pfad, out ZapfSatz fehler,
+                                                                long grenzeJeDatei = HOECHSTENS_BYTE_JE_DATEI,
+                                                                long grenzeGesamt = HOECHSTENS_BYTE_ENTPACKT)
         {
             fehler = null;
             var dateien = new List<TwwPaketdatei>();
@@ -137,29 +184,84 @@ namespace WindowsFormsApplication1
             {
                 if (Directory.Exists(pfad))
                 {
-                    foreach (string d in Directory.GetFiles(pfad, "*.csv").OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                    string[] gefunden = Directory.GetFiles(pfad, "*.csv")
+                                                 .OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+                    if (MengeZuGross(gefunden, grenzeGesamt, out fehler)) return new TwwPaketdatei[0];
+                    foreach (string d in gefunden)
+                    {
+                        if (ZuGross(d, grenzeJeDatei, out fehler)) return new TwwPaketdatei[0];
                         dateien.Add(new TwwPaketdatei(Path.GetFileName(d), Lesen(d)));
+                    }
                 }
                 else if (string.Equals(Path.GetExtension(pfad), ".zip", StringComparison.OrdinalIgnoreCase))
                 {
                     using (ZipArchive zip = ZipFile.OpenRead(pfad))
+                    {
+                        // Die Mengengrenze VOR dem Entpacken, allein aus dem Zentralverzeichnis:
+                        // Eintragszahl und entpackte Gesamtgroesse (wie im Normformvektorleser). Die
+                        // Summe bricht AN der Grenze ab, damit sie an erfundenen Laengen nicht
+                        // ueberlaeuft (200 Eintraege mit 2^62 Byte waeren sonst eine kleine Zahl).
+                        long entpackt = 0;
+                        foreach (ZipArchiveEntry e in zip.Entries)
+                        {
+                            long l = Math.Max(0L, e.Length);
+                            if (l > grenzeGesamt - entpackt) { entpackt = grenzeGesamt + 1; break; }
+                            entpackt += l;
+                        }
+                        if (zip.Entries.Count > HOECHSTENS_EINTRAEGE || entpackt > grenzeGesamt)
+                        {
+                            fehler = ZapfSatz.Neu("KATALOGIMPORT_ZU_GROSS", zip.Entries.Count, HOECHSTENS_EINTRAEGE,
+                                                  entpackt, grenzeGesamt);
+                            return new TwwPaketdatei[0];
+                        }
+                        long gesamt = 0;
                         foreach (ZipArchiveEntry e in zip.Entries.OrderBy(x => x.FullName, StringComparer.OrdinalIgnoreCase))
                         {
+                            // Ein Verzeichniseintrag traegt keinen Inhalt (Name leer) und faellt still.
+                            if (e.Name.Length == 0) continue;
+                            if (!Pfadsicher(e.FullName))
+                            {
+                                fehler = ZapfSatz.Neu("KATALOGIMPORT_PFAD_UNZULAESSIG", e.FullName);
+                                return new TwwPaketdatei[0];
+                            }
                             if (!string.Equals(Path.GetExtension(e.Name), ".csv", StringComparison.OrdinalIgnoreCase)) continue;
-                            using (var s = new StreamReader(e.Open(), Encoding.UTF8, true))
-                                dateien.Add(new TwwPaketdatei(e.Name, s.ReadToEnd()));
+                            if (e.Length > grenzeJeDatei)
+                            {
+                                fehler = ZapfSatz.Neu("KATALOGIMPORT_DATEI_ZU_GROSS", e.Name, e.Length, grenzeJeDatei);
+                                return new TwwPaketdatei[0];
+                            }
+                            // Und nun dieselbe Grenze BEIM Lesen: Das Verzeichnis kann gelogen haben.
+                            string inhalt = EintragLesen(e, Math.Min(grenzeJeDatei, grenzeGesamt - gesamt), out long gelesen);
+                            if (inhalt == null)
+                            {
+                                fehler = gelesen > grenzeJeDatei
+                                    ? ZapfSatz.Neu("KATALOGIMPORT_DATEI_ZU_GROSS", e.Name, gelesen, grenzeJeDatei)
+                                    : ZapfSatz.Neu("KATALOGIMPORT_ZU_GROSS", zip.Entries.Count, HOECHSTENS_EINTRAEGE,
+                                                   gesamt + gelesen, grenzeGesamt);
+                                return new TwwPaketdatei[0];
+                            }
+                            gesamt += gelesen;
+                            dateien.Add(new TwwPaketdatei(e.Name, inhalt));
                         }
+                    }
                 }
                 else
                 {
                     string ordner = Path.GetDirectoryName(Path.GetFullPath(pfad)) ?? "";
+                    List<string> satz = Directory.GetFiles(ordner, "Tab_Tww*.csv")
+                                                 .OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+                    // Die gewaehlte Datei gehoert dazu, auch wenn ihr Name nicht auf das Muster passt.
+                    if (!satz.Any(d => string.Equals(Path.GetFileName(d), name, StringComparison.OrdinalIgnoreCase)))
+                        satz.Add(pfad);
+                    if (MengeZuGross(satz, grenzeGesamt, out fehler)) return new TwwPaketdatei[0];
                     var gelesen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (string d in Directory.GetFiles(ordner, "Tab_Tww*.csv").OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+                    foreach (string d in satz)
                     {
-                        dateien.Add(new TwwPaketdatei(Path.GetFileName(d), Lesen(d)));
-                        gelesen.Add(Path.GetFileName(d));
+                        if (ZuGross(d, grenzeJeDatei, out fehler)) return new TwwPaketdatei[0];
+                        string dn = Path.GetFileName(d);
+                        if (!gelesen.Add(dn)) continue;
+                        dateien.Add(new TwwPaketdatei(dn, Lesen(d)));
                     }
-                    if (!gelesen.Contains(name)) dateien.Add(new TwwPaketdatei(name, Lesen(pfad)));
                 }
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is InvalidDataException
@@ -172,6 +274,89 @@ namespace WindowsFormsApplication1
         }
 
         private static string Lesen(string datei) => File.ReadAllText(datei, Encoding.UTF8);
+
+        /// <summary>
+        /// Ist die Datei größer als <paramref name="grenze"/> (<see cref="HOECHSTENS_BYTE_JE_DATEI"/>)?
+        /// Dann steht der benannte Grund in <paramref name="fehler"/> und nichts wird gelesen.
+        /// </summary>
+        private static bool ZuGross(string datei, long grenze, out ZapfSatz fehler)
+        {
+            fehler = null;
+            long laenge = new FileInfo(datei).Length;
+            if (laenge <= grenze) return false;
+            fehler = ZapfSatz.Neu("KATALOGIMPORT_DATEI_ZU_GROSS", Path.GetFileName(datei), laenge, grenze);
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Eintragszahl und Gesamtgröße eines Ordner- oder Einzeldateiwegs</b> — dieselbe Grenze
+        /// wie im Archiv (<see cref="HOECHSTENS_EINTRAEGE"/>, <paramref name="grenzeGesamt"/>), nur
+        /// aus dem Dateisystem statt aus dem Zentralverzeichnis. Die Summe bricht AN der Grenze ab,
+        /// damit sie nicht überläuft.
+        /// </summary>
+        private static bool MengeZuGross(IReadOnlyList<string> dateien, long grenzeGesamt, out ZapfSatz fehler)
+        {
+            fehler = null;
+            long gesamt = 0;
+            foreach (string d in dateien)
+            {
+                long l = Math.Max(0L, new FileInfo(d).Length);
+                if (l > grenzeGesamt - gesamt) { gesamt = grenzeGesamt + 1; break; }
+                gesamt += l;
+            }
+            if (dateien.Count <= HOECHSTENS_EINTRAEGE && gesamt <= grenzeGesamt) return false;
+            fehler = ZapfSatz.Neu("KATALOGIMPORT_ZU_GROSS", dateien.Count, HOECHSTENS_EINTRAEGE, gesamt, grenzeGesamt);
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Liest einen Archiveintrag, höchstens <paramref name="grenze"/> + 1 Byte</b> (Muster
+        /// <c>IfcLeser.Entpacken</c>): Ergebnis ist der Text in UTF-8 (BOM erlaubt) oder <c>null</c>,
+        /// wenn der Eintrag entpackt über die Grenze geht — dann hat das Zentralverzeichnis gelogen.
+        /// <paramref name="gelesen"/> nennt die gelesenen Byte, bei einer Ablehnung also
+        /// <paramref name="grenze"/> + 1 oder etwas darüber (der letzte Block wird ganz geschrieben).
+        /// </summary>
+        private static string EintragLesen(ZipArchiveEntry eintrag, long grenze, out long gelesen)
+        {
+            using (Stream quelle = eintrag.Open())
+            using (var ziel = new MemoryStream())
+            {
+                var block = new byte[81920];
+                int n;
+                while ((n = quelle.Read(block, 0, block.Length)) > 0)
+                {
+                    ziel.Write(block, 0, n);
+                    if (ziel.Length > grenze) { gelesen = ziel.Length; return null; }
+                }
+                gelesen = ziel.Length;
+                ziel.Position = 0;
+                using (var leser = new StreamReader(ziel, Encoding.UTF8, true))
+                    return leser.ReadToEnd();
+            }
+        }
+
+        /// <summary>
+        /// Ist der Eintragsname des Archivs unbedenklich? Ein Unterordner ist erlaubt (ein ZIP aus
+        /// einem Ordner trägt ihn; der Leser nimmt ohnehin nur den Dateinamen), ein Schritt nach
+        /// oben (<c>..</c>) und ein absoluter Pfad (Wurzel oder Laufwerk) nicht: Ein solcher Name
+        /// zeigt aus dem Archiv heraus und hat in einem Katalogpaket nichts zu suchen.
+        ///
+        /// <para>Ein <c>:</c> allein ist kein Grund — ein unter Unix gepacktes Paket darf es im
+        /// Dateinamen tragen. Abgelehnt wird allein das <b>Laufwerksmuster</b> <c>^[A-Za-z]:</c> am
+        /// Anfang eines Pfadteils.</para>
+        /// </summary>
+        private static bool Pfadsicher(string eintrag)
+        {
+            if (string.IsNullOrWhiteSpace(eintrag)) return false;
+            if (eintrag[0] == '/' || eintrag[0] == '\\') return false;
+            foreach (string teil in eintrag.Split('/', '\\'))
+                if (teil == ".." || Laufwerksanfang(teil)) return false;
+            return true;
+        }
+
+        /// <summary>Beginnt der Name mit einem Laufwerksbuchstaben (<c>^[A-Za-z]:</c>)?</summary>
+        private static bool Laufwerksanfang(string teil)
+            => teil.Length >= 2 && teil[1] == ':' && char.IsAsciiLetter(teil[0]);
 
         // =================================================================================
         // Importieren

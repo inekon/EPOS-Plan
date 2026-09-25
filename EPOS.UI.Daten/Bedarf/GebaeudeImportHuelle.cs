@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
     /// Kern an der Endung (<see cref="GebaeudeImportProfil.FuerDatei"/>) — eine andere Endung ist
     /// die benannte Ablehnung „Dateiart nicht unterstützt". Die Größengrenze prüft die Hülle danach
     /// je Profil und Plattform wie gehabt. Mit einem festen Profil
-    /// (<see cref="GebaeudeImportHuelle(GebaeudeImportProfil, int)"/>) bleibt es bei diesem.</para>
+    /// (<see cref="GebaeudeImportHuelle(GebaeudeImportProfil, int, bool?)"/>) bleibt es bei diesem.</para>
     ///
     /// <para><b>Geschrieben wird hier nichts.</b> Der Schreibweg ist ein Delegat des WIRTS
     /// (<see cref="Gaben"/>, <c>uebernehmen</c>); ohne ihn ist OK im Dialog weich gesperrt. Für den
@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
         private readonly GebaeudeImportAblauf _ablauf = new GebaeudeImportAblauf();
         private readonly GebaeudeImportProfil _festesProfil;
         private readonly int _idProjekt;
+        private readonly bool _ios;
         private GebaeudeImportProfil _profil;
         private GebaeudeImportSatz _satz;
 
@@ -65,15 +66,21 @@ namespace WindowsFormsApplication1
         /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
         /// folgt der Endung der gewählten Datei.
         /// </summary>
-        /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines.</param>
-        internal GebaeudeImportHuelle(int idProjekt = 0)
+        /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines — dann fragt die Hülle keine Datenbank.</param>
+        /// <param name="ios">
+        /// Die Plattform der Größengrenze: <c>true</c> = iOS, <c>false</c> = Windows, <c>null</c> = die
+        /// laufende. Die Schalen lassen sie weg; ein Prüfstand (Wirt der Rasterprobe) stellt sie ein.
+        /// </param>
+        internal GebaeudeImportHuelle(int idProjekt = 0, bool? ios = null)
         {
             _idProjekt = idProjekt;
+            _ios = ios ?? OperatingSystem.IsIOS();
         }
 
-        /// <summary>Die Hülle EINES Profils; die Größengrenze wird für die laufende Plattform belegt.</summary>
-        internal GebaeudeImportHuelle(GebaeudeImportProfil profil, int idProjekt = 0)
+        /// <summary>Die Hülle EINES Profils; die Größengrenze wird für die Plattform belegt (<paramref name="ios"/> wie oben).</summary>
+        internal GebaeudeImportHuelle(GebaeudeImportProfil profil, int idProjekt = 0, bool? ios = null)
         {
+            _ios = ios ?? OperatingSystem.IsIOS();
             _festesProfil = MitPlattformgrenze(profil ?? throw new ArgumentNullException(nameof(profil)));
             _profil = _festesProfil;
             _idProjekt = idProjekt;
@@ -154,14 +161,14 @@ namespace WindowsFormsApplication1
                 GebaeudeImportProfil.HILFE_ZUORDNUNG);
         }
 
-        /// <summary>Beide Formate mit der Grenze der laufenden Plattform — gbXML zuerst.</summary>
-        private static IReadOnlyList<GebaeudeImportProfil> BeideProfile()
+        /// <summary>Beide Formate mit der Grenze der Plattform der Hülle — gbXML zuerst.</summary>
+        private IReadOnlyList<GebaeudeImportProfil> BeideProfile()
             => new[] { MitPlattformgrenze(new GbxmlImportProfil()), MitPlattformgrenze(new IfcImportProfil()) };
 
-        /// <summary>Belegt die Größengrenze eines Profils für die laufende Plattform (Softwarearchitektur 1.5, Regel 2).</summary>
-        private static GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
+        /// <summary>Belegt die Größengrenze eines Profils für die Plattform der Hülle (Softwarearchitektur 1.5, Regel 2).</summary>
+        private GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
         {
-            if (profil != null) profil.MaxBytes = profil.GrenzeFuerPlattform(OperatingSystem.IsIOS());
+            if (profil != null) profil.MaxBytes = profil.GrenzeFuerPlattform(_ios);
             return profil;
         }
 
@@ -338,12 +345,45 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Prüfung am OK — DIESELBE des Kerns (<see cref="GebaeudeImportAblauf.Pruefen"/>) auf
         /// dem Satz samt Handänderungen, Haken und dem Namen des neuen Gebäudes.
+        ///
+        /// <para><b>Dazu die Prüfung des vorbelegten Editors</b> (<see cref="EditorBefund"/>): Die
+        /// Übernahme führt in den Katalogeditor, dessen Abbrechen den Import verwirft. Was dessen OK
+        /// anhielte — etwa ein fehlender g-Wert, weil weder die Datei noch eine Baualtersklasse ihn
+        /// liefert —, ist deshalb schon hier ein benannter Fehler: Der Anwender wählt eine Klasse oder
+        /// trägt den Wert ein, statt im Editor festzusitzen. Gefragt wird nur, wenn der Kern keinen
+        /// Fehler meldet, damit eine Lücke nicht zweimal erscheint.</para>
         /// </summary>
         internal IReadOnlyList<GebaeudeImportMeldung> Pruefen(GebaeudeImportErgebnis ergebnis)
         {
             GebaeudeImportSatz satz = SatzAusErgebnis(ergebnis);
             if (satz == null) return Array.Empty<GebaeudeImportMeldung>();
-            return GebaeudeZuordnungsModell.Pruefe(satz, ergebnis.Gebaeudename ?? "").Select(MeldungDaten).ToList();
+            List<GebaeudeImportMeldung> meldungen =
+                GebaeudeZuordnungsModell.Pruefe(satz, ergebnis.Gebaeudename ?? "").Select(MeldungDaten).ToList();
+            if (meldungen.Any(m => m.Stufe == WarnStufe.Fehler)) return meldungen;
+
+            GebaeudePruefbefund befund = EditorBefund(ergebnis);
+            if (befund != null)
+                meldungen.Add(new GebaeudeImportMeldung(WarnStufe.Fehler, GebaeudeZuordnungsModell.StufeText(PruefStufe.Fehler),
+                    Formatieren(satz.Baualtersklasse.HasValue ? MyResource.Resource.GIMP_DLG_EDITOR_BEFUND
+                                                              : MyResource.Resource.GIMP_DLG_EDITOR_BEFUND_KLASSE, befund.Meldung),
+                    EDITOR_BEFUND));
+            return meldungen;
+        }
+
+        /// <summary>Die Kennung der Meldung „der Gebäudeeditor nähme das Gebäude so nicht an".</summary>
+        internal const string EDITOR_BEFUND = "GIMP_DLG_EDITOR_BEFUND";
+
+        /// <summary>
+        /// <b>Die Prüfregeln des vorbelegten Editors beim OK</b> — DIESELBE Funktion, die der
+        /// Katalogeditor im Modus Neu ruft (<see cref="GebaeudeArbeitsstand.Pruefen"/> nach
+        /// <c>Laden(…, neu: true)</c>, mit den Texten seines Parametersatzes), auf der
+        /// <see cref="Vorbelegung"/> des Ergebnisses; <c>null</c> = der Editor nähme sie an.
+        /// </summary>
+        internal GebaeudePruefbefund EditorBefund(GebaeudeImportErgebnis ergebnis)
+        {
+            var arbeit = new GebaeudeArbeitsstand();
+            arbeit.Laden(Vorbelegung(ergebnis).Daten, neu: true);
+            return arbeit.Pruefen(true, GebaeudeKatalogHuelle.Prueftexte(), GebaeudeKatalogHuelle.Texte());
         }
 
         /// <summary>
@@ -449,11 +489,32 @@ namespace WindowsFormsApplication1
         /// <b>Der vorbelegte Satz des Gebäudeeditors im Modus Neu</b>: <see cref="NachKatalogdaten"/>
         /// auf den Vorgabedaten eines neuen Gebäudes — denselben, mit denen der Editor im Modus Neu
         /// öffnet (<c>GebaeudeKatalogHuelle.AusModell(new GebaeudeModel())</c>) —, dazu die
-        /// Herleitungszeile.
+        /// Herleitungszeile samt den übernommenen Vorgaben (<see cref="Vorgabentext"/>): Der Editor
+        /// zeigt keine Herkunft je Feld, an dieser Zeile bleibt eine Vorgabe als Vorgabe erkennbar.
         /// </summary>
         internal GebaeudeVorbelegung Vorbelegung(GebaeudeImportErgebnis ergebnis)
-            => new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
-                                       Vorbelegungstext);
+        {
+            string vorgaben = Vorgabentext(ergebnis);
+            return new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
+                                           vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben);
+        }
+
+        /// <summary>
+        /// Die übernommenen Vorgaben eines Ergebnisses als ein Satz: „Vorgaben, nicht aus der Datei:
+        /// Luftwechselrate 0,7 1/h; …" — jede Zeile mit Haken und Herkunft Vorgabe, mit Feld, Wert und
+        /// Einheit in der Anzeigekultur; ohne solche Zeile leer.
+        /// </summary>
+        internal static string Vorgabentext(GebaeudeImportErgebnis ergebnis)
+        {
+            string vorgabe = GebaeudeZuordnungsModell.HerkunftSchluessel(Importherkunft.Vorgabe);
+            List<string> teile = (ergebnis?.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
+                .Where(z => z != null && z.Haken && z.HerkunftSchluessel == vorgabe)
+                .Select(z => z.Textwert != null
+                    ? z.Feld + " (" + z.WertText + ")"
+                    : (z.Feld + " " + GebaeudeZuordnungsModell.ZahlText(z.Wert) + " " + z.Einheit).Trim())
+                .ToList();
+            return teile.Count == 0 ? "" : Formatieren(MyResource.Resource.GIMP_VORBELEGT_VORGABEN, string.Join("; ", teile));
+        }
 
         // =================================================================================
         // Der Weg „als Katalogsatz ablegen" — Abbildung auf den Gebäudeeditor
@@ -534,6 +595,7 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.LAENGE_AUSSENWAND_KELLER: d.AnschlussAussenwandKeller = w; break;
 
                     // ---- Lüftung (D12) und Sollwert
+                    case GebaeudeZielfelder.LUFTWECHSELRATE: d.Luftwechselrate = w; break;
                     case GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION: d.LuftwechselInfiltration = w; break;
                     case GebaeudeZielfelder.LUFTWECHSEL_NUTZER: d.LuftwechselNutzer = w; break;
                     case GebaeudeZielfelder.SOLL_TAG: d.SollTag = w; break;

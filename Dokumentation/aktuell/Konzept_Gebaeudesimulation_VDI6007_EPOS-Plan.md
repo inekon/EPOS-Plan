@@ -3769,8 +3769,12 @@ wünscht dazu die Produkte der wichtigsten Hersteller. Umgesetzt mit der zweiten
 
 **Benannte Lücken.** Ein großer Dämmstoffhersteller fehlt: Seine Seite verlangt eine Zugangsprüfung,
 die die Recherche nicht umgeht. Einige Rohdichten stammen aus Umweltproduktdeklarationen statt aus dem
-Datenblatt; die Quelle der Zeile nennt das. Die Saat legt nur an, was fehlt — eine später ergänzte
-oder geänderte Zeile erreicht eine bestehende Installation nur über einen eigenen Schemaschritt.
+Datenblatt; die Quelle der Zeile nennt das (etwa „…; EPD niedriger Rohdichtebereich“). Die Saat legt
+nur an, was fehlt — eine später ergänzte oder geänderte Zeile erreicht eine bestehende Installation
+nur über einen eigenen Schemaschritt. Für die Zeilen 1041 und 1066 ist das **Schritt 143**
+(`BaustoffQuellenBerichtigung`): Er ergänzt ihre Quelle um die Herkunft der Rohdichte (FDES bzw.
+Mindestwert der Brandklasse nach VDPM-EPD), im Katalog und in jeder Projektkopie, und nur dort, wo der
+alte Saattext wortgleich steht.
 
 **Was offen bleibt.** Nichts; das Register zählt weiter **8 offene Punkte**.
 

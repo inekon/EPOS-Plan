@@ -75,7 +75,10 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(z.Kalibrierfaktor);
             Herkunftseintrag k = e.Herkunft.Last(x => x.Feld == ZapfFeld.KALIBRIERFAKTOR);
             Assert.Equal(Wertstatus.Kalibriert, k.Status);
-            Assert.Contains("Zähler (fiktiv)", k.Vermerk);
+            // Der Vermerk ist ein Satz mit Kennung und Werten (N13 (b)), kein deutscher Klartext:
+            // geprüft wird die Kennung und die Messwertquelle als WERT, nicht der fertige Satz.
+            Assert.Equal("HERKUNFT_MESSWERT_KALIBRIERUNG", k.Vermerk.Kennung);
+            Assert.Contains("Zähler (fiktiv)", k.Vermerk.Werte);
             Assert.Equal(Wertstatus.Kalibriert, e.Herkunft.Last(x => x.Feld == ZapfFeld.JAHRESENERGIE).Status);
         }
 

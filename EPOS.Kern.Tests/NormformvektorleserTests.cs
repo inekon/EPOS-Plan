@@ -368,6 +368,57 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Ein lügendes Zentralverzeichnis bläht das Paket nicht auf</b> (N18, Gegenprüfung): Die
+        /// entpackte Größe ist eine Behauptung der Datei (<see cref="Archivluege"/>). Gemessen wird,
+        /// wer sie durchsetzt — <c>ZipArchiveEntry.Open</c> begrenzt den Entpackstrom selbst auf die
+        /// ausgewiesene Größe, ein zu klein ausgewiesener Eintrag kommt also <b>gekürzt</b> herein und
+        /// nicht zu groß. Die Gesamtgrenze des Lesers ist damit die zweite Wand und feuert hier nicht;
+        /// das Paket bleibt trotzdem draußen, denn die gekürzte Datei fällt der Formprüfung zu — eine
+        /// benannte Ablehnung, kein halber Satz.
+        ///
+        /// <para>Dass die Gesamtgrenze selbst greift, hält der Nachbarfall fest; sie ist dafür ein
+        /// Parameter mit <c>HOECHSTENS_BYTE_ENTPACKT</c> als Vorgabe.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_luegendes_Zentralverzeichnis_blaeht_das_Paket_nicht_auf()
+        {
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-typtagpaket-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                string zip = Typtagpaketbauer.Erfunden().AlsZip(ordner);
+
+                // Ohne Luege: das Paket kommt vollstaendig herein.
+                using (FileStream ganz = File.OpenRead(zip))
+                {
+                    Normformvektorsatz satz = Normformvektorleser.AusStrom(ganz, out ZapfSatz ohne);
+                    Assert.Null(ohne);
+                    Assert.True(satz.Traegt);
+                }
+
+                // Mit Luege: ein Byte je Eintrag kommt herein — und das ist keine Kopfzeile.
+                Archivluege.EntpackteGroesseFaelschen(zip, 1);
+                using (FileStream gekuerzt = File.OpenRead(zip))
+                {
+                    Assert.Null(Normformvektorleser.AusStrom(gekuerzt, out ZapfSatz fehler));
+                    Assert.NotNull(fehler);
+                    Assert.StartsWith("NORMVEKTOR_", fehler.Kennung, StringComparison.Ordinal);
+                }
+
+                // Und die Gesamtgrenze greift am Verzeichnis, bevor ein Byte entpackt wird.
+                using (FileStream klein = File.OpenRead(zip))
+                {
+                    Assert.Null(Normformvektorleser.AusStrom(klein, out ZapfSatz fehler, null, grenzeGesamt: 1));
+                    Assert.Equal("NORMVEKTOR_PAKET_ZU_GROSS", fehler.Kennung);
+                    Assert.Equal(1L, fehler.Werte[3]);
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(ordner)) Directory.Delete(ordner, true);
+            }
+        }
+
+        /// <summary>
         /// Das Raster eines Tagesgangs muss sich auf Stunden summieren lassen: Teiler von 60 oder
         /// Vielfaches von 60, und dabei Teiler von 1440. Alles andere wird benannt abgelehnt —
         /// <c>Typtaggang.Stundenanteile()</c> gilt allein für diese Fälle (Befund Gruppe 1).

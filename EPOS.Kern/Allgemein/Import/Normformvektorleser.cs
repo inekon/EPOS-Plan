@@ -109,7 +109,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Höchste entpackte Gesamtgröße eines Pakets [Byte]</b> (numerische Setzung, 64 MB): Die
         /// sechs Dateien tragen Text — 45 Faktorblöcke und Tagesgänge im Minutenraster bleiben weit
-        /// darunter. Die Grenze fängt das aufgeblähte Archiv ab, ohne es zu entpacken.
+        /// darunter. Die Grenze fängt das aufgeblähte Archiv ab, ohne es zu entpacken — und ein
+        /// zweites Mal beim Lesen, denn das Zentralverzeichnis ist nur eine Behauptung der Datei.
         /// </summary>
         internal const long HOECHSTENS_BYTE_ENTPACKT = 64L * 1024 * 1024;
 
@@ -122,9 +123,23 @@ namespace WindowsFormsApplication1
         /// oder wird in den Speicher gelesen). Ergebnis ist der Satz oder <c>null</c> samt
         /// benanntem <paramref name="fehler"/>; <paramref name="hinweise"/> nimmt auf, was die
         /// Rechnung nicht entscheidet.
+        ///
+        /// <para><b>Die Gesamtgröße gilt zweimal</b> (Muster
+        /// <c>Allgemein/Import/Ifc/IfcLeser.Entpacken</c>): erst aus dem Zentralverzeichnis, bevor
+        /// ein Byte entpackt wird, dann <b>beim Lesen</b> — je Eintrag bis zum verbleibenden Rest und
+        /// ein Byte darüber, denn das Verzeichnis ist nur eine Behauptung der Datei. Beide Male ist
+        /// die Ablehnung <c>NORMVEKTOR_PAKET_ZU_GROSS</c>. Die zweite Wand ist <b>Vorsorge</b>:
+        /// <see cref="ZipArchiveEntry.Open"/> begrenzt den Entpackstrom heute selbst auf die
+        /// ausgewiesene Größe, ein zu klein ausgewiesener Eintrag kommt also <b>gekürzt</b> herein
+        /// statt zu groß — und fällt dann der Formprüfung zu (gemessen in
+        /// <c>EPOS.Kern.Tests/NormformvektorleserTests</c>). Der Leser verlässt sich nicht darauf.
+        /// <paramref name="grenzeGesamt"/> ist ein Parameter mit
+        /// <see cref="HOECHSTENS_BYTE_ENTPACKT"/> als Vorgabe, damit ein Test das Greifen der Prüfung
+        /// an einem kleinen Archiv messen kann statt an 64 MB.</para>
         /// </summary>
         internal static Normformvektorsatz AusStrom(Stream strom, out ZapfSatz fehler,
-                                                    ICollection<ZapfSatz> hinweise = null)
+                                                    ICollection<ZapfSatz> hinweise = null,
+                                                    long grenzeGesamt = HOECHSTENS_BYTE_ENTPACKT)
         {
             fehler = null;
             if (strom == null)
@@ -149,20 +164,36 @@ namespace WindowsFormsApplication1
                 {
                     // Die Mengengrenze VOR dem Entpacken, allein aus dem Zentralverzeichnis (wie im
                     // TRY-Paketleser kein Byte eines Eintrags): Eintragszahl und entpackte Groesse.
+                    // Die Summe bricht AN der Grenze ab, damit sie an erfundenen Laengen nicht
+                    // ueberlaeuft.
                     long entpackt = 0;
-                    foreach (ZipArchiveEntry e in zip.Entries) entpackt += e.Length;
-                    if (zip.Entries.Count > HOECHSTENS_EINTRAEGE || entpackt > HOECHSTENS_BYTE_ENTPACKT)
+                    foreach (ZipArchiveEntry e in zip.Entries)
+                    {
+                        long l = Math.Max(0L, e.Length);
+                        if (l > grenzeGesamt - entpackt) { entpackt = grenzeGesamt + 1; break; }
+                        entpackt += l;
+                    }
+                    if (zip.Entries.Count > HOECHSTENS_EINTRAEGE || entpackt > grenzeGesamt)
                     {
                         fehler = ZapfSatz.Neu("NORMVEKTOR_PAKET_ZU_GROSS", zip.Entries.Count, HOECHSTENS_EINTRAEGE,
-                                              entpackt, HOECHSTENS_BYTE_ENTPACKT);
+                                              entpackt, grenzeGesamt);
                         return null;
                     }
                     dateien = new List<TwwPaketdatei>();
+                    long gesamt = 0;
                     foreach (ZipArchiveEntry e in zip.Entries.OrderBy(x => x.FullName, StringComparer.OrdinalIgnoreCase))
                     {
                         if (!string.Equals(Path.GetExtension(e.Name), ".csv", StringComparison.OrdinalIgnoreCase)) continue;
-                        using (var s = new StreamReader(e.Open(), Encoding.UTF8, true))
-                            dateien.Add(new TwwPaketdatei(e.Name, s.ReadToEnd()));
+                        // Und nun dieselbe Grenze BEIM Lesen: Das Verzeichnis kann gelogen haben.
+                        string inhalt = EintragLesen(e, grenzeGesamt - gesamt, out long gelesen);
+                        if (inhalt == null)
+                        {
+                            fehler = ZapfSatz.Neu("NORMVEKTOR_PAKET_ZU_GROSS", zip.Entries.Count, HOECHSTENS_EINTRAEGE,
+                                                  gesamt + gelesen, grenzeGesamt);
+                            return null;
+                        }
+                        gesamt += gelesen;
+                        dateien.Add(new TwwPaketdatei(e.Name, inhalt));
                     }
                 }
             }
@@ -173,6 +204,31 @@ namespace WindowsFormsApplication1
                 return null;
             }
             return AusDateien(dateien, out fehler, hinweise);
+        }
+
+        /// <summary>
+        /// <b>Liest einen Archiveintrag, höchstens <paramref name="grenze"/> + 1 Byte</b> (Muster
+        /// <c>IfcLeser.Entpacken</c>): Ergebnis ist der Text in UTF-8 (BOM erlaubt) oder <c>null</c>,
+        /// wenn der Eintrag entpackt über die Grenze geht — dann hat das Zentralverzeichnis gelogen.
+        /// <paramref name="gelesen"/> nennt die gelesenen Byte.
+        /// </summary>
+        private static string EintragLesen(ZipArchiveEntry eintrag, long grenze, out long gelesen)
+        {
+            using (Stream quelle = eintrag.Open())
+            using (var ziel = new MemoryStream())
+            {
+                var block = new byte[81920];
+                int n;
+                while ((n = quelle.Read(block, 0, block.Length)) > 0)
+                {
+                    ziel.Write(block, 0, n);
+                    if (ziel.Length > grenze) { gelesen = ziel.Length; return null; }
+                }
+                gelesen = ziel.Length;
+                ziel.Position = 0;
+                using (var leser = new StreamReader(ziel, Encoding.UTF8, true))
+                    return leser.ReadToEnd();
+            }
         }
 
         /// <summary>

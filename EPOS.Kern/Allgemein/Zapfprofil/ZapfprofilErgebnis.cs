@@ -88,6 +88,17 @@ namespace WindowsFormsApplication1
         /// deterministischen Weg und bei einer abgelehnten Zone.
         /// </summary>
         public Jahreskonsistenz Konsistenz { get; init; }
+
+        /// <summary>
+        /// <b>Der größte Stundenwert JE Realisierung des Jahresensembles der Zone</b> [kW], in der
+        /// Reihenfolge r = 0, 1, … (<c>Jahresensemble.StundenspitzenKw</c>): die Stichprobe, aus der
+        /// der Vergleichsbericht die <b>Spitzenstreuung</b> bildet (<c>Messvergleich</c>, N15
+        /// Gruppe 3). Leer auf dem deterministischen Weg und bei einer abgelehnten Zone.
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest sie; sie kostet nichts, weil das
+        /// Ensemble sie ohnehin führt.</para>
+        /// </summary>
+        public IReadOnlyList<double> StundenspitzenKw { get; init; } = new double[0];
     }
 
     /// <summary>

@@ -299,24 +299,42 @@ namespace WindowsFormsApplication1
             }
 
             // Fläche je Nutzer: Σ Fläche ÷ Σ Personen — nur, wenn JEDER beheizte Raum eine Angabe trägt.
+            // Sonst die ausgewiesene Vorgabe, mit der EPOS ein Gebäude ohne diese Angabe speichert
+            // (GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE): Editor und Stundenmodell verlangen einen
+            // Wert größer null (GebaeudeArbeitsstand.Pruefen, GebaeudeModellEingang.Pruefen).
+            GebaeudeFeldzeile jeNutzer = z[GebaeudeZielfelder.FLAECHE_JE_NUTZER];
             var personen = beheizt.Select(r => r.Personen
                 ?? (r.FlaecheJePersonM2 > 0.0 && r.FlaecheM2 > 0.0 ? r.FlaecheM2 / r.FlaecheJePersonM2 : null)).ToList();
             int mitPersonen = personen.Count(p => p.HasValue);
             if (beheizt.Count > 0 && mitPersonen == beheizt.Count && nutzflaeche > 0.0 && personen.Sum(p => p.Value) > 0.0)
             {
                 double summe = personen.Sum(p => p.Value);
-                Setzen(z[GebaeudeZielfelder.FLAECHE_JE_NUTZER], nutzflaeche.Value / summe, datei,
+                Setzen(jeNutzer, nutzflaeche.Value / summe, datei,
                     new GebaeudeBeleg("GIMP_BELEG_PERSONEN", Zahl(summe), Zahl(beheizt.Count)));
             }
-            else if (mitPersonen > 0)
-                meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "PERSONEN_UNVOLLSTAENDIG",
-                    Zahl(mitPersonen), Zahl(beheizt.Count - mitPersonen)));
+            else
+            {
+                if (mitPersonen > 0)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "PERSONEN_UNVOLLSTAENDIG",
+                        Zahl(mitPersonen), Zahl(beheizt.Count - mitPersonen)));
+                jeNutzer.VorgabeWert = GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE;
+                jeNutzer.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_FLAECHE_NUTZER_VORGABE",
+                                                          Zahl(GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE));
+                VorgabeUebernehmen(jeNutzer);
+            }
 
             // Innere Gewinne: Die Datei trägt AUSLEGUNGSleistungen je Fläche (mit Zeitplänen gemeint),
-            // das Modell einen zeitlich konstanten Gewinn — nicht dieselbe Größe. Nur Vorschlag im Beleg.
+            // das Modell einen zeitlich konstanten Gewinn — nicht dieselbe Größe; ihre Summe steht nur
+            // als Vorschlag im Beleg. Der Editor verlangt einen Wert: die Zeile trägt deshalb den eines
+            // neuen Gebäudes (GebaeudeModel, 0 W) als ausgewiesene Vorgabe.
+            GebaeudeFeldzeile gewinne = z[GebaeudeZielfelder.INNERE_GEWINNE];
+            double gewinneNeu = new GebaeudeModel().Interne_Waermegewinne;
+            gewinne.VorgabeWert = gewinneNeu;
+            gewinne.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORGABE", Zahl(gewinneNeu));
+            VorgabeUebernehmen(gewinne);
             List<AbbildRaum> mitLeistung = beheizt.Where(r => r.FlaecheM2 > 0.0 && (r.LichtWm2.HasValue || r.GeraeteWm2.HasValue)).ToList();
             if (mitLeistung.Count > 0)
-                z[GebaeudeZielfelder.INNERE_GEWINNE].Beleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORSCHLAG",
+                gewinne.Beleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORSCHLAG",
                     Zahl(mitLeistung.Sum(r => ((r.LichtWm2 ?? 0.0) + (r.GeraeteWm2 ?? 0.0)) * r.FlaecheM2.Value)),
                     Zahl(mitLeistung.Count));
 
@@ -967,6 +985,13 @@ namespace WindowsFormsApplication1
         private static void Lueftung(List<AbbildRaum> beheizt, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z,
                                      List<PruefMeldung> meldungen)
         {
+            InfiltrationUndNutzer(beheizt, datei, z, meldungen);
+            Luftwechselrate(z);
+        }
+
+        private static void InfiltrationUndNutzer(List<AbbildRaum> beheizt, Importherkunft datei,
+                                                  Dictionary<string, GebaeudeFeldzeile> z, List<PruefMeldung> meldungen)
+        {
             // D12: der ganze gelesene Luftwechsel auf die Infiltration, die Nutzerlüftung bleibt leer.
             z[GebaeudeZielfelder.LUFTWECHSEL_NUTZER].Beleg = new GebaeudeBeleg("GIMP_BELEG_NUTZERLUEFTUNG_LEER");
 
@@ -995,6 +1020,33 @@ namespace WindowsFormsApplication1
             double summeW = mit.Sum(gewicht);
             Setzen(z[GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION], mit.Sum(r => r.LuftwechselJeH.Value * gewicht(r)) / summeW,
                 datei, new GebaeudeBeleg(beleg, Zahl(mit.Count)));
+        }
+
+        /// <summary>
+        /// <b>Die Luftwechselrate — immer die ausgewiesene Vorgabe</b> (Umsetzungskonzept 3.4):
+        /// Infiltration + Nutzerlüftung der Vorgaben des Stundenmodells (0,3 + 0,4 = 0,7 1/h). Der
+        /// Gebäudeeditor verlangt sie größer null; die Datei liefert sie nie als eigene Größe, denn ein
+        /// gelesener Luftwechsel geht nach D12 auf die Infiltration.
+        ///
+        /// <para>Der Beleg sagt, womit das Stundenmodell dann rechnet — gerufen, nicht nachgerechnet
+        /// (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?, out Luftwechselherkunft)"/>):
+        /// Steht Infiltration oder Nutzerlüftung, rechnet es mit deren Summe (das leere Glied mit seiner
+        /// Vorgabe) — mit einer gelesenen Infiltration also nicht mit der Luftwechselrate; sind beide leer
+        /// (Luftwechsel nur für einen Teil der Räume gelesen), rechnet es mit der Luftwechselrate.</para>
+        /// </summary>
+        private static void Luftwechselrate(Dictionary<string, GebaeudeFeldzeile> z)
+        {
+            GebaeudeFeldzeile rate = z[GebaeudeZielfelder.LUFTWECHSELRATE];
+            double inf = GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION, nutz = GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER;
+            double vorgabe = inf + nutz;
+            double wirksam = Gebaeudemodellvorgaben.WirksamerLuftwechsel(vorgabe,
+                z[GebaeudeZielfelder.LUFTWECHSEL_INFILTRATION].Wert, z[GebaeudeZielfelder.LUFTWECHSEL_NUTZER].Wert,
+                out Luftwechselherkunft herkunft);
+            rate.VorgabeWert = vorgabe;
+            rate.VorgabeBeleg = herkunft == Luftwechselherkunft.InfiltrationUndNutzer
+                ? new GebaeudeBeleg("GIMP_BELEG_LUFTWECHSELRATE_VORGABE", Zahl(vorgabe), Zahl(inf), Zahl(nutz), Zahl(wirksam))
+                : new GebaeudeBeleg("GIMP_BELEG_LUFTWECHSELRATE_VORGABE_WIRKT", Zahl(vorgabe), Zahl(inf), Zahl(nutz));
+            VorgabeUebernehmen(rate);
         }
 
         private static void VorgabeLuftwechsel(GebaeudeFeldzeile zeile, double wert)

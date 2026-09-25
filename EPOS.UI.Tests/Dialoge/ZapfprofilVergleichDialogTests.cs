@@ -417,6 +417,87 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         Assert.Contains(REIHE_A, cut.Find(".epos-zapfprofil-vergleichleiste .epos-status").TextContent);
     }
 
+    /// <summary>
+    /// <b>Mit Ensemble steht die Spitzenstreuung als Zahl</b> (N15 Gruppe 3, Folge): Sobald die
+    /// Hülle die Stundenspitzen der Realisierungen führt, zeigt der Vergleichsbericht die beiden
+    /// Grenzen und im Vermerk Realisierungszahl und Streubreite — kein STRICH, und der Hinweis
+    /// „ohne Ensemble" fällt weg. Die übrigen sieben Zeilen bleiben, wie sie sind.
+    /// </summary>
+    [Fact]
+    public void Mit_Ensemble_steht_die_Spitzenstreuung_als_Zahl()
+    {
+        ZapfprofilMessvergleichDaten v = Vergleich();
+        v.Hinweise.Clear();
+        v.StreuungUnten = 0.82;
+        v.StreuungOben = 1.04;
+        v.Streubreite = 1.268;
+        v.Realisierungen = 25;
+
+        var p = new Pruefstand { Ergebnis = v };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Vergleichsergebnis?.Ok), Frist);
+
+        string[] zeilen = cut.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(8, zeilen.Length);
+        string streuung = Assert.Single(zeilen, z => z.StartsWith("Streuung der Realisierungsspitzen"));
+        Assert.Contains("0,820 … 1,040", streuung);
+        Assert.Contains("25 Realisierungen", streuung);
+        Assert.Contains("1,268", streuung);
+        Assert.DoesNotContain("ohne Ensemble", streuung);
+        // Kein STRICH mehr in dieser Zeile — sie trägt jetzt zwei Zahlen.
+        Assert.DoesNotContain("–", streuung);
+    }
+
+    /// <summary>
+    /// <b>Mehrere stochastische Zonen tragen ihren eigenen Strichgrund</b> (N18, Gegenprüfung):
+    /// Tragen mehrere Zonen ein Ensemble, ist die Stichprobe der Realisierungsspitzen nicht zu
+    /// bilden — jede Zone zieht für sich. Die Zeile zeigt dann einen Strich, und im Vermerk steht
+    /// genau dieser Grund und nicht „ohne Ensemble": Die Rechnung IST stochastisch, nur die
+    /// Stichprobe nicht bildbar. Das ist ein anderer Satz als der leere Ensemblefall darunter.
+    /// </summary>
+    [Fact]
+    public void Mehrere_stochastische_Zonen_zeigen_einen_Strich_mit_ihrem_eigenen_Grund()
+    {
+        ZapfprofilMessvergleichDaten v = Vergleich();
+        v.Hinweise.Clear();
+        v.Stochastisch = true;
+        v.EnsembleZonen = 2;
+
+        var p = new Pruefstand { Ergebnis = v };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Vergleichsergebnis?.Ok), Frist);
+
+        string[] zeilen = cut.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(8, zeilen.Length);
+        string streuung = Assert.Single(zeilen, z => z.StartsWith("Streuung der Realisierungsspitzen"));
+        Assert.Contains("mehrere stochastische Zonen", streuung);
+        Assert.DoesNotContain("ohne Ensemble", streuung);
+        // Ein Strich statt Zahlen — geschaetzt wird nichts.
+        Assert.Contains("–", streuung);
+
+        // Ohne die Zonenzahl bleibt es beim leeren Ensemblefall.
+        ZapfprofilMessvergleichDaten ohne = Vergleich();
+        ohne.Hinweise.Clear();
+        var p2 = new Pruefstand { Ergebnis = ohne };
+        var cut2 = Aufbauen(p2);
+        Erweitert(cut2);
+        Wahl(cut2, 1);
+        Knopf(cut2, "Vergleich rechnen").Click();
+        cut2.WaitForAssertion(() => Assert.True(cut2.Instance.Vergleichsergebnis?.Ok), Frist);
+        string leer = Assert.Single(cut2.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()),
+                                    z => z.StartsWith("Streuung der Realisierungsspitzen"));
+        Assert.Contains("ohne Ensemble", leer);
+        Assert.DoesNotContain("mehrere stochastische Zonen", leer);
+    }
+
     [Fact]
     public void Eine_Form_ueber_der_Schwelle_steht_als_abweichend_da()
     {

@@ -911,7 +911,7 @@ namespace WindowsFormsApplication1
 
             // "Flaeche_Nutzer == 0 -> 35" und die Bewohnerzahl daraus.
             m.Flaeche_Nutzer = nutzer;
-            if (nutzer == 0) { m.Flaeche_Nutzer = 35; nutzer = 35; }
+            if (nutzer == 0) { m.Flaeche_Nutzer = GebaeudeStammCtrl.FLAECHE_JE_NUTZER_VORGABE; nutzer = m.Flaeche_Nutzer; }
             m.Bewohner = wfl / nutzer;
 
             m.Interne_Waermegewinne = d.Waermegewinne ?? 0;

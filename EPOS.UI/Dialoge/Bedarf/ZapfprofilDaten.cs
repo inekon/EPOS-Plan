@@ -1929,6 +1929,14 @@ public sealed class ZapfprofilMessvergleichDaten
     /// <summary>Die Zahl der Realisierungen des Ensembles; 0 ohne Ensemble.</summary>
     public int Realisierungen { get; set; }
 
+    /// <summary>
+    /// Wie viele Zonen ein Ensemble tragen, wenn es <b>mehr als eine</b> ist; sonst 0. Dann ist die
+    /// Stichprobe der Realisierungsspitzen nicht zu bilden — jede Zone zieht ihre Realisierungen
+    /// für sich, die Spitze der Summe ist nicht die Summe der Spitzen. Die Zeile trägt dann einen
+    /// Strich mit genau diesem Grund, nicht mit „ohne Ensemble“.
+    /// </summary>
+    public int EnsembleZonen { get; set; }
+
     /// <summary>Kennzahl (c): die Zahl der Einheiten N; <c>null</c> ohne Einheitenzahl.</summary>
     public int? Einheiten { get; set; }
 
