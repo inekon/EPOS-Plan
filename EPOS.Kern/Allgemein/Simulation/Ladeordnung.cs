@@ -67,6 +67,11 @@ namespace WindowsFormsApplication1
         /// bleibt: Zahl und Bedingung stehen genau einmal da, direkt neben der Konstante,
         /// aus der sie kommen.</para>
         ///
+        /// <para><b>Er gilt für Anzeige und Rechenweg.</b> Dieselbe Ordnung lesen die
+        /// Anzeige-Leser (Hydraulikbild, Erzeugerkarten) und die Rechenweg-Leser der
+        /// Simulation (Modullisten, Quell- und Senkenbezüge), damit Modul 1 im Ergebnis
+        /// dieselbe Anlage ist wie die vorderste Karte und das erste Symbol im Bild.</para>
+        ///
         /// <paramref name="alias"/> ist der Tabellen-Alias der Abfrage (z. B. <c>"a"</c>);
         /// leer oder <c>null</c> für eine Abfrage ohne Alias.
         /// </summary>
