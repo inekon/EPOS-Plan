@@ -89,6 +89,8 @@ melden sie im Takt des Bildaufbaus.
 | L / M | wie A (freie Liste der Importmaske), 1 088 × 624 und 400 × 624 |
 | T1 / T2 | 6 654 Nutzungsarten im **Katalog der Brauchwasser-Nutzungsarten** (Seite `/katalogprobe?maske=tww`), 1 088 × 624 und 400 × 624 — dieselben Sollwerte wie J / K (Rollbehälter = Hülle, Zeile 46 px, Tastatur) |
 | T3 | derselbe Katalog mit 40 Sätzen (unter der Schwelle, das Maß eines ausgelieferten Katalogs), 1 088 × 624 |
+| GD1 / GD2 | 6 654 Gebäude in der Katalogliste des **Gebäude-Projektdialogs** „Eingabe der Gebäudedaten" (Seite `/katalogprobe?maske=projekt-gebaeude`; Projektliste oben, Übernahmeleiste, Katalog darunter), 1 088 × 624 und 400 × 624 — gemessen nur in der Katalogliste (`bereich: '.epos-katalogliste'`, die Projektliste darüber trägt ebenfalls eine Hülle); Sollwerte: Rollbehälter = Hülle, Zeile **53 px** (Projektdialog: die Wahlspalte bleibt), keine Tastaturprobe |
+| GD3 | derselbe Dialog mit 269 Gebäuden (das Maß der Testdatenbank, weiter virtualisiert), 1 088 × 624 |
 | Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert"), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
 | Z3 / Z4 / Z5 | das **Raster der Zapfkategorien** für sich (Seite `maske=kategorien`), 10 Kategorien, bearbeitbar 1 088 × 624 und 400 × 624, lesend (`art=lesen`) 1 088 × 624 — Sollwerte (l) |
 | Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px) und 400 × 624 — Sollwerte (l) |
@@ -230,7 +232,8 @@ schrumpfen und rollt nicht in sich) — der Lauf muss dann rot sein.
 
 Die Seite des Wirtes nimmt ihre Gaben aus der Adresse:
 `/katalogprobe?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe&zeilen=<n>&bilder=1|0`.
-Seit Stufe 1 der Neuordnung dazu `maske=stromganglinie|projekt-heizkessel`, `art=` (Ausprägung
+Seit Stufe 1 der Neuordnung dazu `maske=stromganglinie|projekt-heizkessel` (seit Stufe G3,
+Welle K auch `projekt-gebaeude`, der Gebäudedialog des Projekts — `gebaeude` ist die Verwaltung), `art=` (Ausprägung
 von `browser`, `modul`, `bedarf`) und `voll=1` (jede Spalte belegt, in den Textlängen der
 Testdatenbank — `Zeilenbau.Voll`).
 Die Zeilen sind synthetisch, die **Maße** nicht: Das Diagramm kommt aus demselben
