@@ -69,6 +69,8 @@ vollstaendigen Preisen in der Testdatenbank (#519)“) auf `pm26` über `origin`
   vermiedene Kosten im Rollentarif); Zählungen nachgezogen; LIESMICH-Abschnitt zum Prüfprojekt.
 - **E25/3** (`a313d776`): drei Wachen an 1048 angepasst, voller Lauf; (`e0f6d847`): LIESMICH „Aktuelle Basis“ mit SHA
   `b68638da…` und dem Nachtrag Prüfprojekt 1048.
+- **E25/4** (auf `pm26` nach dem Merge): Kopfabsatz der LIESMICH ohne Nummer (Befund 6 unter „Abweichungen und
+  Befunde“).
 
 ## Das Prüfprojekt 1048
 
@@ -156,6 +158,12 @@ Baufreigabe, alle a, nach Empfehlung; gebaut ist jeweils der Entscheid (→ Regi
 4. **Andere Zeilen-ID der Stromzeile als auf der Arbeitskopie:** die Datenpflege E24 hat vorher eine Zeile in
    `energy_project_settings` angelegt; das Skript vergibt die IDs zur Laufzeit.
 5. **Testhost-Regel einmal verletzt:** ein gefilterter Lauf von 68 Fällen (7 s) bei zwei fremden testhosts, grün.
+6. **Gate #519 auf `3936003c` zunächst rot, 1 von 7.451 Kern-Tests:** `PvPreisProjektTests.Das_Projekt_hat_keine_Referenzrolle`
+   prüft die ersten 800 Zeichen des Abschnitts „## Aktuelle Basis“ in `Referenzlaeufe/LIESMICH.md` auf die Nummer
+   1048 — der Kopfabsatz der aktuellen Basis nennt kein Prüfprojekt, der Nachtrag darunter darf es. Der letzte
+   E25-Commit `e0f6d847` (LIESMICH-Nachtrag, nach dem vollen Lauf des Agenten) hatte 1048 im Kopfabsatz genannt.
+   Behoben auf `pm26` als E25/4 (Kopfabsatz der LIESMICH ohne Nummer; Wortlaut jetzt „das Prüfprojekt „PV mit
+   Preisen“ kam ohne Referenzrolle hinzu“), die Klasse danach grün.
 
 ## Nachweis
 
