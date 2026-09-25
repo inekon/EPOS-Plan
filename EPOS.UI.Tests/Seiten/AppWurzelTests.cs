@@ -729,7 +729,7 @@ public class AppWurzelTests : EposBunitContext
 
     /// <summary>
     /// Ohne Delegat der Hülle (iOS) öffnet die Wurzel den Katalog über die QUELLE — der einzige
-    /// Katalog, der dort aufgeht. „Beenden" führt zurück zur vorherigen Ansicht. Geprüft über
+    /// Katalog, der dort aufgeht. „Beenden" führt zur Startansicht zurück (wie die zwei Kataloge der Gebäudesimulation, ohne Rückwegstapel). Geprüft über
     /// Klassen und Zustand, nicht über Klartext (kulturunabhängig).
     /// </summary>
     [Fact]
