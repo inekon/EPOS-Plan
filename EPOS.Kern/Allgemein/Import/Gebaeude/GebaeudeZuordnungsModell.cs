@@ -205,6 +205,44 @@ namespace WindowsFormsApplication1
                                leer.ToString(CultureInfo.CurrentCulture));
         }
 
+        /// <summary>
+        /// Die Klasse, die der Satz aus dem Baujahr der Datei zog, als Index der Klappliste (0 = A …
+        /// 20 = U); <c>null</c>, wenn der Anwender eine Klasse gewählt hat oder die Datei kein Baujahr
+        /// trägt. Der Dialog zeigt sie in der Klappliste, solange keine eigene Wahl besteht — sonst
+        /// stünde dort „keine", während der Satz schon mit der Klasse rechnet.
+        /// </summary>
+        public static int? KlasseDerDatei(GebaeudeImportSatz satz)
+        {
+            GebaeudeFeldzeile bak = satz?.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE);
+            if (bak == null || !satz.Baualtersklasse.HasValue) return null;
+            if (bak.Herkunft != Importherkunft.Ifc && bak.Herkunft != Importherkunft.GbXml) return null;
+            return GebaeudeStammCtrl.KlassenIndex(satz.Baualtersklasse.Value.ToString());
+        }
+
+        /// <summary>
+        /// Der Hinweis unter der Klappliste: woher die Klasse kommt und wie viele der Klassenwerte
+        /// (<see cref="GebaeudeVorgaben.Klassenfelder"/>) sie tatsächlich füllt. Trägt die Datei eigene
+        /// U-Werte und einen g-Wert, bleiben der Klasse nur die Wärmebrücken — dann ändert eine andere
+        /// Wahl wenig, und der Hinweis sagt das. Ohne Klasse der allgemeine Hinweis.
+        /// </summary>
+        public static string KlassenHinweis(GebaeudeImportSatz satz)
+        {
+            if (satz == null || !satz.Baualtersklasse.HasValue) return MyResource.Resource.GIMP_DLG_KLASSE_HINWEIS;
+            int ausKlasse = 0, ausDatei = 0;
+            foreach (string feld in GebaeudeVorgaben.Klassenfelder)
+            {
+                GebaeudeFeldzeile z = satz.Zeile(feld);
+                if (z == null) continue;
+                if (z.Herkunft == Importherkunft.Ifc || z.Herkunft == Importherkunft.GbXml) ausDatei++;
+                else if (z.Herkunft == Importherkunft.Vorgabe && z.Beleg?.Schluessel == "GIMP_BELEG_VORGABE_KLASSE") ausKlasse++;
+            }
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string wirkung = Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_WIRKUNG, ausKlasse.ToString(k),
+                                         GebaeudeVorgaben.Klassenfelder.Count.ToString(k), ausDatei.ToString(k));
+            if (!KlasseDerDatei(satz).HasValue) return wirkung;
+            return Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_AUS_BAUJAHR, satz.Baujahr?.ToString(k) ?? "") + " " + wirkung;
+        }
+
         /// <summary>Die Plausibilität am OK-Weg — dieselbe Prüfung wie <see cref="GebaeudeImportAblauf.Pruefen"/>.</summary>
         public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz, string katalogname = null)
             => GebaeudeImportAblauf.Pruefen(satz, katalogname);

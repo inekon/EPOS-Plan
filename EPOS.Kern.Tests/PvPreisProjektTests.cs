@@ -387,6 +387,9 @@ namespace EPOS.Kern.Tests
         public void Szenario_C_ordnet_die_Energiekosten_und_der_Ausweis_zaehlt_vier()
         {
             if (!_v.Vorhanden) return;
+            // Die Namen der gepflegten Parameter sind Ressourcentexte (de-DE); der Windows-Läufer
+            // der CI läuft unter en-US.
+            using var kultur = new Kulturvorrichtung();
 
             double e = _v.Ergebnis[ERWARTET].EnergiekostenJahr.Value;
             Assert.Equal(_v.Stand.Energiekosten.Value, e, 6);

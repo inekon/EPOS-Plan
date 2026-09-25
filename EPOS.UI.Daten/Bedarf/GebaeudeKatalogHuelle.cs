@@ -128,7 +128,8 @@ namespace WindowsFormsApplication1
         /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die G3
         /// nicht liest (Sollwerte, Lüftung, Kühl- und Übergabeeingaben, Herkunft), hält der Weg je Id
         /// fest und schreibt sie unverändert zurück; eine neue Zone ist beheizt und trägt die Herkunft
-        /// ihres Vorschlags.</para>
+        /// ihres Vorschlags. Ein Duplikat (Stufe G6a, <see cref="ZoneDaten.VorlageId"/>) übernimmt diese
+        /// Spalten von seiner Vorlage — ohne deren Herkunft, Quellkennung und Importpaarung.</para>
         /// </summary>
         internal static GebaeudeZonenweg Zonenweg(int idProjekt, int idZ, int idGebaeude)
         {
@@ -194,13 +195,25 @@ namespace WindowsFormsApplication1
                 return new AufbauUebernahmeErgebnis(true, "", w);
             };
 
-            Func<IReadOnlyList<ZoneDaten>, string> speichern = liste =>
+            // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt,
+            // kommt aus der gelesenen Zeile gleicher Id; ein Duplikat nimmt es von seiner Vorlage
+            // (VorlageId) - ohne Herkunft, Quellkennung und Importpaarung der Vorlage; eine neue
+            // Zone ist beheizt und manuell.
+            List<ZoneModel> Zeilen(IReadOnlyList<ZoneDaten> liste)
             {
                 var zeilen = new List<ZoneModel>();
                 foreach (ZoneDaten d in liste ?? Array.Empty<ZoneDaten>())
                 {
-                    ZoneModel z = gelesen.TryGetValue(d.Id, out ZoneModel alt) ? alt.Kopie()
-                        : new ZoneModel { ID = d.Id, IstBeheizt = true, Herkunft = DbWerte.HERKUNFT_MANUELL };
+                    ZoneModel z;
+                    if (gelesen.TryGetValue(d.Id, out ZoneModel alt)) z = alt.Kopie();
+                    else if (d.VorlageId is int vorlage && gelesen.TryGetValue(vorlage, out ZoneModel quelle))
+                    {
+                        z = quelle.Kopie();
+                        z.ID = d.Id;
+                        z.Herkunft = DbWerte.HERKUNFT_MANUELL;
+                        z.Quellkennung = null;
+                    }
+                    else z = new ZoneModel { ID = d.Id, IstBeheizt = true, Herkunft = DbWerte.HERKUNFT_MANUELL };
                     z.Bezeichner = d.Bezeichner ?? "";
                     z.Nutzflaeche = d.Nutzflaeche;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
@@ -223,6 +236,12 @@ namespace WindowsFormsApplication1
                     }).ToList();
                     zeilen.Add(z);
                 }
+                return zeilen;
+            }
+
+            Func<IReadOnlyList<ZoneDaten>, string> speichern = liste =>
+            {
+                List<ZoneModel> zeilen = Zeilen(liste);
                 GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen);
                 if (!e.Ok) return e.Meldung ?? "";
                 gelesen.Clear();
@@ -230,6 +249,9 @@ namespace WindowsFormsApplication1
                 MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
                 return "";
             };
+
+            // Die Pruefregeln des Kerns ueber die ganze Liste, ohne Datenbank (G6a).
+            Func<IReadOnlyList<ZoneDaten>, string> pruefen = liste => GebaeudeZonenCtrl.Pruefen(Zeilen(liste)) ?? "";
 
             Func<AufbauWahl, AufbauAnsichtDaten> ansicht = w =>
             {
@@ -248,6 +270,7 @@ namespace WindowsFormsApplication1
                 Uebernehmen = uebernehmen,
                 AufbauUebernehmen = aufbauUebernehmen,
                 Speichern = speichern,
+                Pruefen = pruefen,
                 Projektaufbauten = projektwahl,
                 Katalogaufbauten = katalogwahl,
                 Aufbau = ansicht

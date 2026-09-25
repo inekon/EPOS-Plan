@@ -52,6 +52,9 @@ namespace WindowsFormsApplication1
                         "spez. Wärmeverbrauch", Zahl(k, g, "spez_Waermeverbrauch", "kWh/m²a", 1),
                         "Warmwasserbedarf", Zahl(k, g, "WW_Bedarf", "kWh/a", 0),
                         "Raumhöhe", Zahl(k, g, "Raumhoehe", "m", 2));
+
+                    // Stufe G6a: die Zonen dieses Gebaeudes - der Abschnitt entfaellt ohne Zonen.
+                    ZonentabelleSchreiben(k, stamm.Details, g);
                 }
             }
 
@@ -98,6 +101,74 @@ namespace WindowsFormsApplication1
 
         /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
         internal const string UEBERSCHRIFT_GEBAEUDE_ERGEBNIS = "Gebäude (Simulationsergebnis Stamm)";
+
+        /// <summary>Die Zeile über der Zonentabelle eines Gebäudes (G6a) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_ZONEN = "Zonen";
+
+        /// <summary>Der Hinweis unter der Zonentabelle, wenn ein Volumen abgeleitet ist — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_ZONENVOLUMEN = "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.";
+
+        /// <summary>
+        /// <b>Die Zonen eines Gebäudes</b> (Stufe G6a; Mehrzonenkonzept 9) — Zone, Nutzfläche, Volumen,
+        /// H_T, H_ve und Bauteile je Zone samt Summenzeile, Bauform wie die Speichertemperaturen. Die
+        /// Werte kommen nur aus der einen Formel (<see cref="Zonenkennwerte"/>, über
+        /// <see cref="ProjektDetails.Kennwerte"/>); ein abgeleitetes Volumen trägt einen Stern und den
+        /// Hinweis darunter. Keine Spalte „beheizt" (eine unbeheizte Zone rechnet bis G6b wie beheizt)
+        /// und keine Heizwärme je Zone (sie kommt mit G6b). Der Abschnitt entfällt ohne Zonen.
+        /// </summary>
+        private static void ZonentabelleSchreiben(WordKontext k, ProjektDetails details, DataRow gebaeude)
+        {
+            if (details == null || gebaeude == null) return;
+            List<ZoneModel> zonen = details.ZonenVon((int)(ProjektDetails.D(gebaeude, "ID") ?? 0));
+            if (zonen.Count == 0) return;
+
+            k.Text(UEBERSCHRIFT_ZONEN);
+            int[] w = { 2355, 1500, 1500, 1400, 1400, 1200 };
+            Table t = k.NeueTabelle(w);
+            var kopf = new TableRow();
+            kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            kopf.Append(k.Zelle("Nutzfläche [m²]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            kopf.Append(k.Zelle("Volumen [m³]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            kopf.Append(k.Zelle("H_T [W/K]", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            kopf.Append(k.Zelle("H_ve [W/K]", w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            kopf.Append(k.Zelle("Bauteile", w[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            t.Append(kopf);
+
+            double flaeche = 0.0, volumen = 0.0, ht = 0.0, hve = 0.0;
+            bool flaecheBekannt = true, volumenBekannt = true, abgeleitet = false;
+            int bauteile = 0;
+            foreach (ZoneModel z in zonen)
+            {
+                Zonenkennwerte kw = details.Kennwerte(z, gebaeude);
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(z.Bezeichner) ? "—" : z.Bezeichner, w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(kw.Nutzflaeche.HasValue ? k.F(kw.Nutzflaeche.Value, 1) : "—", w[1], false, null, JustificationValues.Right));
+                string vol = kw.Volumen.HasValue ? k.F(kw.Volumen.Value, 0) + (kw.VolumenAbgeleitet ? " *" : "") : "—";
+                tr.Append(k.Zelle(vol, w[2], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(kw.HT, 1), w[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(k.F(kw.HVe, 1), w[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(kw.Bauteile.ToString(k.Kultur), w[5], false, null, JustificationValues.Right));
+                t.Append(tr);
+
+                if (kw.Nutzflaeche is double a) flaeche += a; else flaecheBekannt = false;
+                if (kw.Volumen is double v) volumen += v; else volumenBekannt = false;
+                abgeleitet |= kw.Volumen.HasValue && kw.VolumenAbgeleitet;
+                ht += kw.HT;
+                hve += kw.HVe;
+                bauteile += kw.Bauteile;
+            }
+
+            var summe = new TableRow();
+            summe.Append(k.Zelle("Summe", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            summe.Append(k.Zelle(flaecheBekannt ? k.F(flaeche, 1) : "—", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(volumenBekannt ? k.F(volumen, 0) : "—", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(k.F(ht, 1), w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(k.F(hve, 1), w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(bauteile.ToString(k.Kultur), w[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            t.Append(summe);
+            k.Fuege(t);
+            if (abgeleitet) k.Hinweis(HINWEIS_ZONENVOLUMEN);
+        }
 
         /// <summary>
         /// Überschrift des Kälteabschnitts — seit Stufe KU2 Welle 3 „Kältebedarf und -deckung"
