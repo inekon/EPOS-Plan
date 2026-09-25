@@ -15682,6 +15682,14 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Speichern fehlgeschlagen</value>
   </data>
+  <data name="WIZ_PROJEKT_GEWECHSELT" xml:space="preserve">
+    <value>Die Eingaben des Assistenten gehören zu einem anderen Projekt als dem gewählten. Es wurde nichts gespeichert.
+
+Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projekts geladen werden.</value>
+  </data>
+  <data name="WIZ_PROJEKT_GEWECHSELT_TITEL" xml:space="preserve">
+    <value>Anderes Projekt gewählt</value>
+  </data>
   <data name="WIZ_TITEL" xml:space="preserve">
     <value>Projektassistent</value>
   </data>

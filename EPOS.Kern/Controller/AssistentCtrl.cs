@@ -27,7 +27,14 @@ namespace WindowsFormsApplication1
         ProjektnameFehlt,
 
         /// <summary>Ein Schreibschritt ist fehlgeschlagen; <c>Schritt</c> nennt ihn.</summary>
-        Fehlgeschlagen
+        Fehlgeschlagen,
+
+        /// <summary>
+        /// Bearbeiten-Zweig: Die Listen des Laufs gehören nicht dem Projekt, das
+        /// gespeichert werden soll (Projektwechsel ohne neues Laden, #497). Nichts
+        /// geschrieben.
+        /// </summary>
+        ProjektGewechselt
     }
 
     /// <summary>Ausgang und — im Fehlerfall — der Schritt, an dem es lag.</summary>
@@ -499,7 +506,21 @@ namespace WindowsFormsApplication1
             // was bis zum Speichern gleich bleibt, wird nicht neu geschrieben. Ohne
             // Projektnamen ist nichts geladen, also auch kein Stand bekannt.
             _gewerkStand = string.IsNullOrEmpty(projektName) ? null : AssistentAbgleich.Abdruecke(this);
+
+            // #497: ... und er traegt das Projekt, dessen Stand die Listen sind.
+            ListenProjektId = string.IsNullOrEmpty(projektName) ? 0 : ProjektCtrl.IdVonName(projektName);
         }
+
+        /// <summary>
+        /// <c>Tab_Projekt.ID</c> des Projekts, dessen Stand die Listen tragen (#497) —
+        /// gesetzt von <see cref="Laden"/> und nach jedem gelungenen Speicherlauf; 0 =
+        /// nichts geladen. Anders als der Vergleichsstand der Gewerke verfällt sie NICHT
+        /// mit <see cref="BereitsGeladen"/> = <c>false</c>: Die Listen gehören dann weiter
+        /// dem bisher geladenen Projekt. Der Bearbeiten-Zweig lehnt ein Speichern ab,
+        /// wenn sie nicht <see cref="ProjektId"/> ist
+        /// (<see cref="AssistentAusgang.ProjektGewechselt"/>).
+        /// </summary>
+        public int ListenProjektId { get; private set; }
 
         /// <summary>
         /// Die Energieanlagen eines bestehenden Projekts.
@@ -790,6 +811,14 @@ namespace WindowsFormsApplication1
             if (ctrl.Projektname == "")
                 return new AssistentErgebnis(AssistentAusgang.ProjektnameFehlt, "");
 
+            // #497: Der Bearbeiten-Zweig schreibt die Listen als Stand DES Projekts, fuer
+            // das sie geladen wurden. Gehoeren sie einem anderen (Projektwechsel ohne
+            // neues Laden) oder keinem, wird BENANNT abgelehnt - nichts geschrieben,
+            // keine Eingabe verworfen. Neu geladen wird bewusst NICHT: Das verwarf die
+            // Eingaben des Laufs still.
+            if (Betriebsart != BETRIEBSART_NEU && ListenProjektId != ProjektId)
+                return new AssistentErgebnis(AssistentAusgang.ProjektGewechselt, "");
+
             ProjektkopfUebernehmen();
             // Nur den NAMEN der Klimaregion fuehren; die korrekte ID_Klimaregion
             // (Projekt-Kopie) setzt WizardCtrl.Add_Projekt/Update_Projekt.
@@ -860,6 +889,7 @@ namespace WindowsFormsApplication1
                 // wird NACH dem Id-Nachzug genommen (#497), und er gehoert jetzt diesem
                 // Projekt - im Neu-Zweig dem eben angelegten.
                 _gewerkStand = AssistentAbgleich.Abdruecke(this);
+                ListenProjektId = ProjektId;
 
                 return ergebnis;
             }
@@ -1109,6 +1139,12 @@ namespace WindowsFormsApplication1
                              "Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts " +
                              "gespeichert, das Projekt ist unverändert."),
                         ergebnis.Schritt);
+                case AssistentAusgang.ProjektGewechselt:
+                    return Text("WIZ_PROJEKT_GEWECHSELT",
+                                "Die Eingaben des Assistenten gehören zu einem anderen Projekt als dem " +
+                                "gewählten. Es wurde nichts gespeichert.\n\n" +
+                                "Bitte die Projektseite erneut durchlaufen, damit die Daten des " +
+                                "gewählten Projekts geladen werden.");
                 default:
                     return "";
             }
@@ -1127,6 +1163,8 @@ namespace WindowsFormsApplication1
                     return Text("WIZ_NAME_FEHLT_TITEL", "Projektname fehlt");
                 case AssistentAusgang.Fehlgeschlagen:
                     return Text("WIZ_SPEICHERN_FEHLER_TITEL", "Speichern fehlgeschlagen");
+                case AssistentAusgang.ProjektGewechselt:
+                    return Text("WIZ_PROJEKT_GEWECHSELT_TITEL", "Anderes Projekt gewählt");
                 default:
                     return "";
             }
