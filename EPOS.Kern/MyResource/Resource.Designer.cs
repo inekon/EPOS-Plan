@@ -95877,6 +95877,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} Zonen führen verschiedene Temperaturen; die Volumenreihe wird mit der mengengewichteten Spreizung {1:0.###} K in Energie gerechnet. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT {
@@ -97889,6 +97898,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSVERGLEICH_SPREIZUNG_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_SPREIZUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung mehrerer Zonen ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN", resourceCulture);
             }
         }
         

@@ -39,8 +39,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Hinweiskennungen des Vergleichs und der Kalibrierung</b> — je eine Ressource
         /// <c>ZPG_WARN_…</c> als Titel der Warnliste, wie bei <see cref="BILANZHINWEISE"/>. Die Wache
-        /// <c>ZapfprofilHuelleMessvergleichTests</c> hält die Liste gegen den Quelltext der beiden
-        /// Kern-Dateien und beide Sprachen gegen die Liste.
+        /// <c>ZapfprofilHuelleMessreihenTests</c> hält die Liste gegen den Quelltext der beiden
+        /// Kern-Dateien UND dieser Hülle und beide Sprachen gegen die Liste.
         /// </summary>
         internal static readonly string[] VALIDIERUNGSHINWEISE =
         {
@@ -53,6 +53,9 @@ namespace WindowsFormsApplication1
             "MESSVERGLEICH_SPITZENSTREUUNG", "MESSVERGLEICH_SPITZE_IM_BAND", "MESSVERGLEICH_SPITZE_UEBER_BAND",
             "MESSVERGLEICH_SPITZE_UNTER_BAND", "MESSVERGLEICH_SPREIZUNG_FEHLT", "MESSVERGLEICH_TAGTYP_FEHLT",
             "MESSVERGLEICH_TEILJAHR",
+            // Diese Hülle selbst: Die Spreizung mehrerer Zonen ist ihre Sache, nicht die des Kerns
+            // (der Vergleich nimmt EINE Spreizung).
+            "MESSVERGLEICH_SPREIZUNG_ZONEN",
             // Die Kalibrierung (Messkalibrierung.cs)
             "MESSKALIBRIERUNG_HOCHGERECHNET", "MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG",
             "MESSKALIBRIERUNG_OHNE_BEZUGSMENGE", "MESSKALIBRIERUNG_OHNE_MENGE", "MESSKALIBRIERUNG_OHNE_MESSREIHE",
@@ -120,7 +123,7 @@ namespace WindowsFormsApplication1
             var eingang = new Messvergleichseingang
             {
                 Reihe = gemessen,
-                SpreizungK = Spreizung(stand),
+                SpreizungK = Gesamtspreizung(stand, gemessen.IstVolumen, hinweise),
                 Gerechnet = Bilanzreihe.Summe(new[] { e.Zapfung, e.Zirkulation }.Where(r => r != null)),
                 Kalender = Zapfkalender.Bilden(jan1, we, null),
                 Einheiten = Einheiten(stand)
@@ -384,14 +387,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Spreizung θ_Zapf − θ̄_KW [K] — sie wirkt <b>nur bei einer Volumenreihe</b>. Genommen
-        /// werden die Temperaturen der Zone; führt sie keine, die Bezugstemperaturen ihrer
+        /// Die Spreizung θ_Zapf − θ̄_KW [K] EINER Zone — sie wirkt <b>nur bei einer Volumenreihe</b>.
+        /// Genommen werden die Temperaturen der Zone; führt sie keine, die Bezugstemperaturen ihrer
         /// Nutzungsart. Bleibt sie ≤ 0, lehnt der Kern die Volumenreihe benannt ab
-        /// (<c>MESSVERGLEICH_SPREIZUNG_FEHLT</c>) — die Hülle rät nicht.
+        /// (<c>MESSVERGLEICH_SPREIZUNG_FEHLT</c>) — die Hülle rät nicht. Für den Vergleich über alle
+        /// Zonen gilt <see cref="Gesamtspreizung"/>.
         /// </summary>
-        private static double Spreizung(ZapfprofilStand stand, ZonenStand z = null)
+        private static double Spreizung(ZapfprofilStand stand, ZonenStand z)
         {
-            ZonenStand zone = z ?? stand?.Zonen?.FirstOrDefault();
+            ZonenStand zone = z;
             if (zone == null) return 0.0;
             Temperaturbezug bezug = null;
             if (zone.IdNutzungsart > 0)
@@ -399,6 +403,48 @@ namespace WindowsFormsApplication1
             double zapf = zone.ZapftemperaturC ?? bezug?.ZapftemperaturC ?? 0.0;
             double kalt = zone.KaltwasserMittelC ?? bezug?.KaltwasserC ?? 0.0;
             return zapf - kalt;
+        }
+
+        /// <summary>
+        /// Wie weit zwei Spreizungen auseinanderliegen dürfen, um als gleich zu gelten [K] — eine
+        /// Rundung der Eingabe ist kein Unterschied der Temperaturen.
+        /// </summary>
+        private const double SPREIZUNG_GLEICH = 1e-9;
+
+        /// <summary>
+        /// <b>Die Spreizung des ganzen Vergleichs</b> [K]: Der Kern nimmt EINE Spreizung, der
+        /// Arbeitsstand kann mehrere Zonen mit verschiedenen Temperaturen führen. Genommen wird das
+        /// <b>mengengewichtete Mittel</b> über die Zonen (Gewicht ist die Bezugsmenge — sie sagt,
+        /// welcher Anteil der gemessenen Menge aus welcher Zone kommt); ohne jede Bezugsmenge das
+        /// ungewichtete Mittel.
+        ///
+        /// <para>Die Spreizung wirkt <b>nur bei einer Volumenreihe</b> (dort rechnet sie m³ in kWh).
+        /// Führen dann mehrere Zonen VERSCHIEDENE Temperaturen, ist das Mittel eine Annahme — sie
+        /// wird benannt (<c>MESSVERGLEICH_SPREIZUNG_ZONEN</c>), nie still genommen. Bei einer
+        /// Energie- oder Leistungsreihe ist die Spreizung ohne Wirkung; dann steht kein Hinweis.</para>
+        /// </summary>
+        private static double Gesamtspreizung(ZapfprofilStand stand, bool volumenreihe, ICollection<ZapfSatz> hinweise)
+        {
+            IReadOnlyList<ZonenStand> zonen = stand?.Zonen;
+            if (zonen == null || zonen.Count == 0) return 0.0;
+            if (zonen.Count == 1) return Spreizung(stand, zonen[0]);
+
+            double erste = Spreizung(stand, zonen[0]);
+            bool verschieden = false;
+            double menge = 0.0, gewichtet = 0.0, summe = 0.0;
+            foreach (ZonenStand z in zonen)
+            {
+                double s = Spreizung(stand, z);
+                double m = z.Bezugsmenge > 0.0 ? z.Bezugsmenge : 0.0;
+                menge += m;
+                gewichtet += s * m;
+                summe += s;
+                if (Math.Abs(s - erste) > SPREIZUNG_GLEICH) verschieden = true;
+            }
+            double mittel = menge > 0.0 ? gewichtet / menge : summe / zonen.Count;
+            if (verschieden && volumenreihe)
+                hinweise?.Add(ZapfSatz.Neu("MESSVERGLEICH_SPREIZUNG_ZONEN", zonen.Count, mittel));
+            return mittel;
         }
 
         /// <summary>Die Bezugstemperaturen der Kopie: die der Zone, sonst die der Vorlage (dann <c>null</c>).</summary>

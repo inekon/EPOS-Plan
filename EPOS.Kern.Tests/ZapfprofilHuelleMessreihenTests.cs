@@ -71,7 +71,13 @@ namespace EPOS.Kern.Tests
                 foreach (Match m in muster.Matches(File.ReadAllText(
                              Pfad("EPOS.Kern", "Allgemein", "Zapfprofil", datei))))
                     kennungen.Add(m.Groups["k"].Value);
+            // Die Huelle selbst nennt EINEN eigenen Satz: die Spreizung mehrerer Zonen (der Kern nimmt
+            // EINE Spreizung, welche das ist, entscheidet die Huelle). Er gehoert in denselben Kreis.
+            foreach (Match m in muster.Matches(File.ReadAllText(
+                         Pfad("EPOS.UI.Daten", "Bedarf", "ZapfprofilHuelle.Messvergleich.cs"))))
+                kennungen.Add(m.Groups["k"].Value);
             Assert.True(kennungen.Count >= 25, "Nur " + kennungen.Count + " Kennungen gefunden.");
+            Assert.Contains("MESSVERGLEICH_SPREIZUNG_ZONEN", kennungen);
 
             string[] ungelistet = kennungen.Where(k => !ZapfprofilHuelle.VALIDIERUNGSHINWEISE.Contains(k)).ToArray();
             Assert.True(ungelistet.Length == 0, "Nicht in VALIDIERUNGSHINWEISE: " + string.Join(", ", ungelistet));
@@ -301,6 +307,58 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Spreizung mehrerer Zonen</b> (Gruppe 3, Punkt 6): Der Kern nimmt EINE Spreizung; führt
+        /// der Arbeitsstand mehrere Zonen mit verschiedenen Temperaturen, rechnet die Hülle mit dem
+        /// <b>mengengewichteten</b> Mittel und nennt das — aber nur bei einer VOLUMENreihe, denn nur
+        /// dort wirkt die Spreizung. Gleiche Temperaturen und eine Energiereihe stehen ohne Hinweis.
+        /// </summary>
+        [Fact]
+        public void Mehrere_Zonen_mit_verschiedenen_Temperaturen_rechnen_mengengewichtet_und_benannt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int art = Nichtwohnart();
+            ZapfprofilStand basis = ZapfprofilCtrl.Lies(PROJEKT);
+
+            // Zone A: 60/10 °C (50 K) mit Menge 10; Zone B: 50/10 °C (40 K) mit Menge 30.
+            // Das mengengewichtete Mittel ist (50*10 + 40*30) / 40 = 42,5 K.
+            ZapfprofilEingabeDaten Zwei(double zapfB) => new()
+            {
+                Zonen =
+                {
+                    Zone("Zone A", art, 10, 60.0, 10.0),
+                    Zone("Zone B", art, 30, zapfB, 10.0)
+                }
+            };
+
+            // --- Eine VOLUMENreihe: die Spreizung wirkt, das Mittel wird benannt ---------------
+            Assert.True(TwwMessreihenCtrl.Importieren(PROJEKT, Erfunden(Zapfkalender.TAGE, ZapfMessgroesse.Volumen, 0.02)).Ok);
+            ZapfprofilMessvergleichDaten v = ZapfprofilHuelle.Vergleichsbericht(
+                PROJEKT, Zwei(50.0), basis, REIHE, CancellationToken.None);
+            Assert.True(v.Ok, v.Abbruch);
+            ZapfprofilWarnDaten hinweis = Assert.Single(v.Hinweise,
+                h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN");
+            Assert.Equal("Spreizung mehrerer Zonen", hinweis.Titel);
+            Assert.Contains("42,5", hinweis.Text);
+
+            // Gleiche Temperaturen: kein Hinweis - es gibt nichts zu mitteln.
+            ZapfprofilMessvergleichDaten gleich = ZapfprofilHuelle.Vergleichsbericht(
+                PROJEKT, Zwei(60.0), basis, REIHE, CancellationToken.None);
+            Assert.True(gleich.Ok, gleich.Abbruch);
+            Assert.DoesNotContain(gleich.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN");
+
+            // --- Eine ENERGIEreihe: die Spreizung ist ohne Wirkung, also ohne Hinweis ----------
+            Assert.True(TwwMessreihenCtrl.Importieren(PROJEKT, Erfunden(Zapfkalender.TAGE)).Ok);
+            ZapfprofilMessvergleichDaten energie = ZapfprofilHuelle.Vergleichsbericht(
+                PROJEKT, Zwei(50.0), basis, REIHE, CancellationToken.None);
+            Assert.True(energie.Ok, energie.Abbruch);
+            Assert.DoesNotContain(energie.Hinweise, h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN");
+
+            Assert.True(ZapfprofilHuelle.MessreiheLoeschen(PROJEKT, REIHE).Ok);
+        }
+
+        /// <summary>
         /// <b>Ohne gespeichertes Projekt</b> gibt es keine Messreihen und keinen Schreibweg: Der
         /// Stand nennt den Grund, die Gaben führen weder <c>Einspielen</c> noch <c>Loeschen</c>.
         /// </summary>
@@ -372,16 +430,30 @@ namespace EPOS.Kern.Tests
                 "SELECT ID FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = ? AND Katalogversion = ?",
                 new DbParam("@b", "Testnutzung B (fiktiv)"), new DbParam("@k", "TEST-1")), CultureInfo.InvariantCulture);
 
-        /// <summary>Eine erfundene Stundenreihe über <paramref name="tage"/> Tage mit dem Muster.</summary>
-        private static Messreihe Erfunden(int tage)
+        /// <summary>
+        /// Eine erfundene Stundenreihe über <paramref name="tage"/> Tage mit dem Muster — in der
+        /// Größe <paramref name="groesse"/>, jeder Wert mit <paramref name="faktor"/> skaliert (eine
+        /// Volumenreihe trägt m³, keine kWh).
+        /// </summary>
+        private static Messreihe Erfunden(int tage, ZapfMessgroesse groesse = ZapfMessgroesse.Energie,
+                                          double faktor = 1.0)
         {
             var werte = new double[tage * Zapfkalender.STUNDEN_TAG];
             for (int d = 0; d < tage; d++)
                 for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
-                    werte[d * Zapfkalender.STUNDEN_TAG + h] = TAGESMUSTER[h];
-            return new Messreihe(REIHE, ZapfMessgroesse.Energie, 60, new DateTime(2025, 1, 1), werte,
-                                 "Probe (erfunden)");
+                    werte[d * Zapfkalender.STUNDEN_TAG + h] = TAGESMUSTER[h] * faktor;
+            return new Messreihe(REIHE, groesse, 60, new DateTime(2025, 1, 1), werte, "Probe (erfunden)");
         }
+
+        /// <summary>Eine Zone mit eigenen Temperaturen (Angaben der Stufe Experte).</summary>
+        private static ZapfprofilZoneDaten Zone(string name, int art, double menge, double zapf, double kalt)
+            => new()
+            {
+                Name = name,
+                IdNutzungsart = art,
+                Bezugsmenge = menge,
+                Angaben = new ZapfprofilZonenangabenDaten { ZapftemperaturC = zapf, KaltwasserMittelC = kalt }
+            };
 
         /// <summary>Dieselbe Reihe als CSV-Datei — der Weg, den die Hülle geht (Datei, Strom, Leser).</summary>
         private static string Csv(int tage)

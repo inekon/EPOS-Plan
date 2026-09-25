@@ -32478,6 +32478,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
     <value>A volume series needs a temperature difference θ_tap − θ_cold greater than 0; {0:0.###} K was given.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
+    <value>The {0} zones hold different temperatures; the volume series is converted to energy with the quantity-weighted temperature difference of {1:0.###} K.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Only one of the two sides carries the day type {0}; it is left out of the shape comparison.</value>
   </data>
@@ -32966,6 +32969,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_FEHLT" xml:space="preserve">
     <value>Temperature difference missing</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
+    <value>Temperature difference across zones</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Day type missing</value>
