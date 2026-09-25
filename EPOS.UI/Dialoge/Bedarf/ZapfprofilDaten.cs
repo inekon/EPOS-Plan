@@ -1360,6 +1360,14 @@ public sealed class ZapfprofilAuslegungEingabeDaten
     /// <summary>Der konstruierte, noch nicht gespeicherte Tag (Quelle Konstruktor ohne Id).</summary>
     public ZapfprofilBedarfstagDaten? Entwurf { get; set; }
 
+    /// <summary>
+    /// Die Zeilen des Bedarfstag-Konstruktors (Schemaschritt T5, Anwenderentscheid ZU25) — die
+    /// Eingaben, aus denen der Tag entstand. Der Konstruktor öffnet mit ihnen, auch wenn der Tag
+    /// schon gespeichert ist und es deshalb keinen <see cref="Entwurf"/> mehr gibt. Leer = der
+    /// Konstruktor beginnt mit einer Zeile wie beim ersten Mal.
+    /// </summary>
+    public List<ZapfprofilKonstruktorZeileDaten> Konstruktorzeilen { get; set; } = new();
+
     /// <summary>Speichertemperatur [°C]; <c>null</c> = Vorgabe.</summary>
     public double? SpeicherC { get; set; }
 
@@ -1411,6 +1419,7 @@ public sealed class ZapfprofilAuslegungEingabeDaten
         Quelle = Quelle,
         IdBedarfstag = IdBedarfstag,
         Entwurf = Entwurf?.Kopie(),
+        Konstruktorzeilen = Konstruktorzeilen.Select(z => z.Kopie()).ToList(),
         SpeicherC = SpeicherC,
         ErzeugerKw = ErzeugerKw,
         UebertragerKw = UebertragerKw,
