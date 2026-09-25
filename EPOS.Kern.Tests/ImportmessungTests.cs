@@ -135,6 +135,35 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Der_IFC_Leser_waechst_linear_mit_der_Dateigroesse()
+        {
+            // Grob, aber ein Rückfall auf O(n²) fällt auf: Der große Fall (≈ 8 MB) hat achtmal so viele
+            // Räume wie der kleine (≈ 1 MB); linear ist das Achtfache der Zeit, erlaubt sind das Zwanzigfache
+            // und 1 s Rauschen. Solange der Leser die Rückbeziehungen je Frage über das ganze Modell suchte,
+            // brauchte der große Fall unter Windows 75- bis 230-mal so lange wie der kleine. Die Zeitgrenze
+            // lässt einen Rückfall nach Sekunden scheitern, statt ihn minutenlang laufen zu lassen
+            // (IfcRueckbezuege, IfcRueckbezuegeTests).
+            const int raeume = 400;
+            byte[] klein = ImportmessungProben.Ifc(raeume);
+            byte[] gross = ImportmessungProben.Ifc(8 * raeume);
+            Importmessung.Messen(ImportmessungProben.Ifc(50), "synth_ifc_warm.ifc", erwarteteRaeume: 50);   // JIT
+
+            Importmessergebnis a1 = Importmessung.Messen(klein, "synth_ifc_klein.ifc", erwarteteRaeume: raeume);
+            Importmessergebnis a2 = Importmessung.Messen(klein, "synth_ifc_klein.ifc", erwarteteRaeume: raeume);
+            Assert.True(a1.Ergebnis == Importmessergebnis.OK, a1.ProbeZeile());
+            Importmessergebnis a = a1.DauerMs >= a2.DauerMs ? a1 : a2;   // der langsamere: großzügig
+            long grenzeMs = 20 * a.DauerMs + 1000;
+            Importmessergebnis b;
+            using (var zeit = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(grenzeMs + 10000)))
+                b = Importmessung.Messen(gross, "synth_ifc_gross.ifc", erwarteteRaeume: 8 * raeume, abbruch: zeit.Token);
+
+            Assert.True(b.Ergebnis == Importmessergebnis.OK, b.ProbeZeile() + " | klein: " + a.MessZeile());
+            Assert.True(b.DauerMs <= grenzeMs,
+                "Nicht linear: " + b.DauerMs + " ms für " + (8 * raeume) + " Räume gegen " + a.DauerMs + " ms für " + raeume
+                + " (Grenze " + grenzeMs + " ms)\n" + a.MessZeile() + "\n" + b.MessZeile());
+        }
+
+        [Fact]
         public void Die_Erzeugung_ist_deterministisch_und_ohne_CR()
         {
             Assert.Equal(ImportmessungProben.Gbxml(120), ImportmessungProben.Gbxml(120));

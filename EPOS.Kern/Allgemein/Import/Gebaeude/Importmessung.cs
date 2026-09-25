@@ -446,10 +446,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die synthetischen Großfälle des Prüfmodus, klein vor groß — ein Abbruch beim größten Fall lässt
         /// die kleineren im Protokoll stehen; erzeugt wird erst beim Messen. gbXML: 2 MB, 8 MB und knapp
-        /// die iOS-Grenze des Profils (10 MB). IFC: 2, 4 und 8 MB — NICHT die Grenze von 20 MB: Das Abbild
-        /// des IFC-Lesers wächst überproportional mit der Zahl der Bauteile (unter Windows 2 MB ≈ 3 s,
-        /// 4 MB ≈ 6 s, 8 MB ≈ 1 min; 20 MB lief nach 12 min noch), ein Fall an der Grenze sprengte den
-        /// Zeitrahmen des Laufs. Die drei Punkte zeigen den Verlauf von Speicher UND Zeit.
+        /// die iOS-Grenze des Profils (10 MB). IFC: 2, 4 und 8 MB; die drei Punkte zeigen den Verlauf von
+        /// Speicher UND Zeit. Der IFC-Leser geht linear mit der Dateigröße (<see cref="IfcRueckbezuege"/>;
+        /// unter Windows, Release: 2 MB ≈ 0,4 s, 8 MB ≈ 1,4 s, 20 MB ≈ 1,6 s, 50 MB ≈ 4,5 s) — ein Fall an
+        /// der iOS-Grenze von 20 MB passt damit in den Zeitrahmen, steht aber nicht in dieser Liste.
         /// </summary>
         public static IReadOnlyList<Importmessfall> SynthetischeFaelle()
         {
