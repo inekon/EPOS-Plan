@@ -661,3 +661,44 @@ An der Gebäudeliste schlug die Gegenprobe mit verkleinerten (52,5, 50, 30 px) o
 also kein scharfer Nachweis. Maßgeblich ist das Kriterium (c) — gezeichnete Zeilenhöhe gleich dem
 gesetzten Maß —, an dem der Fehler #235 hing. Der Skriptlauf `node rasterprobe.mjs --nur GD` steht
 auf einem Rechner mit Playwright aus.
+
+## Gebäudeimport-Sichtprobe (Stufe G4) — Seite `/gebaeudeimport`
+
+**Zweck.** Den Gebäudeimport so sehen, wie die Anwendung ihn zeigt, **ohne** die Datenbank des
+Anwenders zu öffnen: der echte `GebaeudeImportDialog` mit der echten `GebaeudeImportHuelle` (ohne
+Projekt), die Proben aus `Referenzlaeufe/Importproben/`. Ersetzt ist allein das Fenster der
+Dateiwahl — der `Probenwaehler` (`Dienste.Datei` des Wirtes) liefert den Pfad der Probe; Dateiart,
+Größengrenze samt benannter Ablehnung, Lesen, Zuordnen und Prüfen sind der Weg der Anwendung.
+Der Wirt referenziert dafür `EPOS.UI.Daten` (das ihm seine internen Hüllen freigibt) und richtet
+die Zugriffsschicht auf einen Ordner, den es nicht gibt (`DataRepository.PfadUeberschreibung` in
+`Program.cs`): Ein Datenbankzugriff scheiterte laut, statt `%ProgramData%\EPOS_PLAN` zu öffnen.
+Dass die Hülle ohne Projekt keine Datenbank fragt, hält
+`GebaeudeImportHuelleTests.Ohne_Projekt_fragt_die_Huelle_keine_Datenbank`.
+
+```bash
+# Windows, Git-Bash (Wurzel des Arbeitsbaums)
+dotnet build Proben/Rasterprobe/Wirt/Rasterprobe.Wirt.csproj -c Release
+ASPNETCORE_URLS=http://127.0.0.1:5299 \
+  dotnet Proben/Rasterprobe/Wirt/bin/Release/net10.0/Rasterprobe.Wirt.dll
+# PowerShell: $env:ASPNETCORE_URLS='http://127.0.0.1:5299'; dotnet Proben/Rasterprobe/Wirt/bin/Release/net10.0/Rasterprobe.Wirt.dll
+```
+
+| Adresse | Was sie zeigt |
+|---|---|
+| `/gebaeudeimport` | der Zuordnungsdialog mit `gbxml_haus_si.xml`; „Datei wählen…" liest die Probe, OK übernimmt. Darunter die Tabelle **Übernahme**: Name, Baualtersklasse, jede Zeile mit Haken (Wert, Einheit, Herkunft) und die Abbildung auf den Gebäudeeditor (`Vorbelegung` = `NachKatalogdaten` samt Herleitungszeile) — Nutzfläche, Raumhöhe, Fläche je Nutzer, Flächen und U-Werte je Gruppe, Fenster N/O/S/W und Ost + West, g, ψ und Anschlusslängen, Luftwechsel, Sollwert, Baujahr |
+| `/gebaeudeimport?datei=<name>` | dasselbe mit einer anderen Datei des Ordners (die Seite führt die Gebäudeproben als Verweise); eine fremde Art zeigt die benannte Ablehnung |
+| `…&ios=1` | die Größengrenze von iOS („gbXML 25 MB · IFC 20 MB") statt Windows |
+| `…&kultur=en-US` bzw. `de-DE` | Kultur und Sprache (Ressourcentexte, Zahlen der Übernahme); der Seitenabruf setzt dafür das Kulturkeks, das die Schaltung (`/_blazor`) liest — ohne `kultur=` gilt die Kultur des Prozesses |
+| `…&dialog=gebaeude` | der Gebäudedialog des Projekts (wie `katalogprobe?maske=projekt-gebaeude`, zwölf synthetische Katalogsätze) **mit** „Importieren (gbXML, IFC)…"; der Zuordnungsdialog steht in seiner Überlagerung, nach OK öffnet der **vorbelegte Katalogeditor** im Modus Neu, nach dessen OK steht das Gebäude in der Projektliste samt Meldung. Der Editor bekommt den Parametersatz der Anwendung (`GebaeudeKatalogHuelle.Gaben`); nur seine Wege zur Datenbank weichen der Seite: Typen, Arten, Katalognamen und die Namensprüfung der Übernahme gegen den synthetischen Katalog, „Lies" findet nichts, die hergeleiteten Vorgaben der Wärmeübergabe fehlen, „Speichern" schreibt nichts. Die übrigen Beschriftungen des Gebäudedialogs bleiben seine deutschen Vorgaben |
+
+Geschrieben wird nirgends; der Wirt bleibt außerhalb jeder Projektmappe und CI. Schalter für
+Probe, Kultur, Grenze und Fall stehen oben auf der Seite (sie laden neu, damit die Schaltung die
+Kultur wechselt).
+
+**Selbstprüfung vom 25.09.2026** (integrierter Browser, Wirt auf Port 5299): Lesen, Zuordnen, OK
+und Übernahme in beiden Fällen, `kultur=en-US` in Dialog und Übernahme, `ios=1` in der
+Grenzzeile; im Protokoll des Wirtes kein Datenbankzugriff. **Befund:** Der vorbelegte Editor hält
+sein OK an — ohne Baualtersklasse mit „Die Fläche je Nutzer muss größer als 0 sein", mit Klasse E
+(Fläche je Nutzer 24 m² aus der Vorgabe) mit „Die Luftwechselrate muss größer als 0 sein": Die
+Abbildung setzt `LuftwechselInfiltration`, die Pflichtangabe `Luftwechselrate` des Editors bleibt
+die 0 eines neuen Gebäudes.
