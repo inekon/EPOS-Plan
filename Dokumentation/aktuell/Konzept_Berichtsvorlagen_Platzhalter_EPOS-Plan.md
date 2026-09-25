@@ -1,6 +1,6 @@
 # Konzept Berichtsvorlagen mit Platzhaltern — Word- und Excel-Bericht aus einer Vorlage (EPOS-Plan)
 
-Stand 26.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 3 — BV-E1 umgesetzt (#NNN, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
+Stand 26.09.2026, Codestand 571a80e5 (Zweig ios_migration_september), Rev. 3 — BV-E1 umgesetzt (#512, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`): Entscheid BV-E1-1 und gebauter Stand eingearbeitet (6.3, 8.4, 10.2, 10.3, 11, 13, 15.2, Anhang B.3); Rev. 2 — Entscheide vom 25.09.2026 eingearbeitet (Abschnitt 14), BV-E0 umgesetzt (#500, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`); Kennungen BV-Q (Entscheidfragen), BV-E (Etappen), BV-P (Platzhalterklassen).
 
 **Geltungsbereich.** Das Papier legt fest, wie EPOS-Plan den Word- und den Excel-Bericht künftig
 aus einer Vorlage füllt, die der Anwender in Word bzw. Excel selbst pflegt, und wie er in der App
@@ -16,7 +16,7 @@ Dazu der Nachtrag desselben Tages, mit einem Bildschirmfoto der heutigen Bericht
 > Berichtsrelevanter Varianten zuvor ausgeführt. Start in Bereich Berichte&Kosten
 
 Am 25.09.2026 hat der Anwender die Entscheidfragen BV-Q1 bis BV-Q19 entschieden — nach Empfehlung, mit fünf
-Änderungen (Abschnitt 14) — und BV-E0 gestartet. BV-E0 ist mit #500 umgesetzt, BV-E1 mit #NNN (Abschnitt 13); für
+Änderungen (Abschnitt 14) — und BV-E0 gestartet. BV-E0 ist mit #500 umgesetzt, BV-E1 mit #512 (Abschnitt 13); für
 BV-E1 gilt der Entscheid BV-E1-1 des Auftraggebers: Die Stilvorlage `Berichtsvorlage.docx` bleibt neben der
 Standardvorlage `Berichtsvorlage_Standard.docx`, eine Übernahme der Altdatei gibt es nicht (6.3, 10.3).
 
@@ -790,7 +790,7 @@ Vorlage keinen Schlüssel der Wirtschaftlichkeit — geprüft über Katalogberei
 für diesen Lauf die Standardvorlage an und nennt die gewählte. Die KI-Sicht (`BausteineLesen`, :317) lernt in
 BV-E1, die Vorlage zu lesen und zu setzen.
 
-**Stand nach BV-E1 (#NNN).** Gebaut sind das Auswahlfeld mit Schloss und gesperrtem Eintrag, „Neue Vorlage…“ als Kopie
+**Stand nach BV-E1 (#512).** Gebaut sind das Auswahlfeld mit Schloss und gesperrtem Eintrag, „Neue Vorlage…“ als Kopie
 der Standardvorlage (der Kurzbericht kommt mit BV-E5), „Hinzufügen…“, „Prüfen“, „Platzhalter…“ mit dem Katalog (der
 Baukasten kommt mit BV-E5), das Menü „…“ je Plattform, die Prüfzeile mit „anzeigen“ und Prüfliste, die erweiterte
 Rückfrage mit drei Wegen, der Lauf, der genau die geprüften Bytes füllt, die Rubrik „Bericht“ der Einstellungen und das
@@ -865,13 +865,13 @@ Assistenten (das KI-Feld ist nicht angemeldet), die Häkchenregeln (BV-E2) und d
 
 Aufwand geschätzt in Personentagen; Grundlage ist der Technikbefund (Word 15–18 PT, Excel 6–10 PT) zuzüglich
 Katalog, Oberfläche, Migration und Tests. BV-E6 kann ab BV-E2 parallel laufen; BV-E4 setzt E2 und E3 voraus,
-BV-E7 setzt E3 voraus. BV-E0 (#500) und BV-E1 (#NNN) sind umgesetzt (Entscheide in Abschnitt 14, BV-E1-1 in 10.3);
+BV-E7 setzt E3 voraus. BV-E0 (#500) und BV-E1 (#512) sind umgesetzt (Entscheide in Abschnitt 14, BV-E1-1 in 10.3);
 als Nächstes steht BV-E2 an.
 
 | Etappe | Ziel | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|---|
 | **BV-E0 Grundlagen, Messlatte, Messproben, Beispielvorlage** | Fehlerquellen schließen, Maßstab festlegen, Vorlage zeigen | BW:678 beheben; Test mit echter Vorlage; Strukturmesslatte; doppelte Stile bereinigen; Ad-hoc-DDL und veraltete Kommentare (10.3); Laufzeit heute messen. Beispielvorlage aus dem bisherigen Bericht über `Werkzeuge/Berichtsvorlage` (6.3, Anhang B.3). Messproben als Tests: Excel-Namen mit Punkt, ClosedXML-Rundlauf (Diagramm samt Reihenbezügen auf einer wachsenden Tabelle, Tabelle, Name, berechnete Spalten), Excel-Diagramm über das OpenXML SDK anlegen (BV-Q11), `.xltx`, `<v>` einer in Excel gespeicherten Vorlagenformel, SDT und Alternativtext, Vorlage aus deutschem Word 365, Tippprobe. Geräteprobe iPad notieren (BV-Q16) | Gate grün; Validator grün mit Vorlage; Beispielvorlage: Validator grün, Anwender hat sie in Word gesehen; Messbefunde im Protokoll; Mockup angenommen (BV-Q9 c, 25.09.2026); kein Logbucheintrag | 4–5 — **umgesetzt 25.09.2026 (#500)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E0_Grundlagen_Protokoll.md`; offen: Tippprobe, echtes Word 365, iPad |
-| **BV-E1 Vorlagenwahl und Textplatzhalter** | eigenes Deckblatt, Kopf- und Fußzeile; übriger Bericht wie heute | Katalog v1 (`bericht.*`, `text.*`, `ersteller.*` mit `ersteller.programm` und `ersteller.version`, `projekt.*`, `stamm.kennzahl.*`, `kennzahl.*`, `bericht.inhalt`); Engine mit Normalisierer, allen Teilen, Einfügeanker, Rollenauflösung, Inhaltsbreite, Kommentarentfernung; Standardvorlage `Berichtsvorlage_Standard.docx` aus der Beispielvorlage in der Stufe mit `{{bericht.inhalt}}` in beiden Lieferwegen, die Stilvorlage bleibt (6.3), `IPfade.Berichtsvorlagen` in `StandardPfade` und `IosPfade` statt `AppDomain.BaseDirectory` in `FindeVorlage` (8.4); kein Übernahmeschritt und kein `[InstallDelete]` (Entscheid BV-E1-1, 10.3); `BerichtsvorlagenCtrl`, `BerichtsvorlagenGaben`, `Berichtsvorlagenwege`; Vorlagenordner wählbar mit Vorgabe (Einstellung `BerichtVorlagenordner`, 10.3), „Neue Vorlage…“, „Hinzufügen…“, Vorgabe; Vorlagengruppe, Prüfzeile, `BerichtSeiteVorlagentexte`; Prüfer beider Stufen, Vorprüfung, erweiterte Rückfrage; Abschnitt „Bericht“ im Einstellungsdialog mit „Firma“ und „Vorlagenordner“; iOS-Dateifilter `.dotx`; KI-Anmeldung samt Eingabebilanz (`KiMaskenabdeckungWacheTests.cs:131, :168`) | Messlatte, Validator, schmutzige Vorlagen (auch deutsches Word) grün; Wache der Auslieferungsdateien grün (12); Katalogwachen und `designer_neu.py` prüfend grün; bunit grün; Schale baut auf Linux; Setup-Lauf nach Rückfrage (Standardvorlage in `{app}\Vorlagen`); Anwenderprobe mit `{{ersteller.firma}}` und gewähltem Vorlagenordner (das Logo der Kopfzeile folgt mit BV-E2); Änderungen an `EPOS.iOS/` (MauiAsset, `IosPfade.Berichtsvorlagen`, Dateifilter) im Protokoll | 6–8 — **umgesetzt 26.09.2026 (#NNN)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`; offen: Anwenderprobe, Setup-Lauf, iOS-Lauf, Wiki-Upload, Tippprobe |
+| **BV-E1 Vorlagenwahl und Textplatzhalter** | eigenes Deckblatt, Kopf- und Fußzeile; übriger Bericht wie heute | Katalog v1 (`bericht.*`, `text.*`, `ersteller.*` mit `ersteller.programm` und `ersteller.version`, `projekt.*`, `stamm.kennzahl.*`, `kennzahl.*`, `bericht.inhalt`); Engine mit Normalisierer, allen Teilen, Einfügeanker, Rollenauflösung, Inhaltsbreite, Kommentarentfernung; Standardvorlage `Berichtsvorlage_Standard.docx` aus der Beispielvorlage in der Stufe mit `{{bericht.inhalt}}` in beiden Lieferwegen, die Stilvorlage bleibt (6.3), `IPfade.Berichtsvorlagen` in `StandardPfade` und `IosPfade` statt `AppDomain.BaseDirectory` in `FindeVorlage` (8.4); kein Übernahmeschritt und kein `[InstallDelete]` (Entscheid BV-E1-1, 10.3); `BerichtsvorlagenCtrl`, `BerichtsvorlagenGaben`, `Berichtsvorlagenwege`; Vorlagenordner wählbar mit Vorgabe (Einstellung `BerichtVorlagenordner`, 10.3), „Neue Vorlage…“, „Hinzufügen…“, Vorgabe; Vorlagengruppe, Prüfzeile, `BerichtSeiteVorlagentexte`; Prüfer beider Stufen, Vorprüfung, erweiterte Rückfrage; Abschnitt „Bericht“ im Einstellungsdialog mit „Firma“ und „Vorlagenordner“; iOS-Dateifilter `.dotx`; KI-Anmeldung samt Eingabebilanz (`KiMaskenabdeckungWacheTests.cs:131, :168`) | Messlatte, Validator, schmutzige Vorlagen (auch deutsches Word) grün; Wache der Auslieferungsdateien grün (12); Katalogwachen und `designer_neu.py` prüfend grün; bunit grün; Schale baut auf Linux; Setup-Lauf nach Rückfrage (Standardvorlage in `{app}\Vorlagen`); Anwenderprobe mit `{{ersteller.firma}}` und gewähltem Vorlagenordner (das Logo der Kopfzeile folgt mit BV-E2); Änderungen an `EPOS.iOS/` (MauiAsset, `IosPfade.Berichtsvorlagen`, Dateifilter) im Protokoll | 6–8 — **umgesetzt 26.09.2026 (#512)**, Protokoll `../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md`; offen: Anwenderprobe, Setup-Lauf, iOS-Lauf, Wiki-Upload, Tippprobe |
 | **BV-E2 Kapitel und Häkchen** | Vorlage bestimmt Reihenfolge und Umfang | `kapitel.*` einzeln, Standardvorlage im vollen Aufbau der Beispielvorlage (Anhang B.3); `\|ohne titel`, `\|ebene 2`, Entfall des Kapitelkopfs; Häkchen mit ausgegrauten Einträgen; Abweichung je Stammprojekt; `custom.xml` mit Fassung; `Deckt`; Bausteintitel nach MyResource; zweiter Einstieg; Stelle in der Anhang-E-Überlagerung; Logo der Kopfzeile als Bildplatzhalter oder Entfall (BV-Q8, aus BV-E1) | Word-Wachen grün auf dem Vorlagenweg; Deckungswache Kapitel; bunit Häkchenliste; Linux-Bau der Schale; Anwendervorlage mit umgestellter Folge und abgewähltem Häkchen ohne verwaiste Überschrift | 3–4 |
 | **BV-E3 Reiner Wertesatz** | Auflösen ohne Datenbank, gleiche Zahlen in Word und Excel | Zugriffe und Nebenrechnungen nach `BerichtsDaten.Wirtschaft` über dieselben Rechenwege; beste Variante in den Kern; `Bedarf` steuert Zeitreihen, Verlauf, Emissionsbilanz | Messlatte unverändert; Wirtschaftlichkeits- und Anhang-E-Tests grün; Test mit werfendem `IDatenzugriff` beim Füllen; Word gegen Excel für alle `stand.wirtschaft.*`; Probe gegen heutigen Bausteinweg; Referenzlauf GESAMT: PASS; kein Logbucheintrag | 3–5 |
 | **BV-E4 Blöcke, Schalter, Standwerte** | Werte je Variante und bedingte Abschnitte | `je stand`, `je variante`, `je gebaeude`, `wenn`, `hat.*`, Standschalter (4.11); Zeilenwiederholung, SDT-Wiederholabschnitt mit Auspacken; `stand.*`-Werte, `stand.a/b`, `vergleich.*`, `wirtschaft.*` samt `beste`, Parametern, Szenarien; Warnlisten und Gültigkeitsregel | 0, 1, 3, 7 Varianten und Paarsicht; verschachtelte Blöcke; Leerfälle; Prüfer meldet offene Blöcke und Kontextverstöße | 4–6 |
@@ -932,13 +932,13 @@ Entscheid im Wortlaut:
 
 ### 15.2 Offene Punkte
 
-Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500) und BV-E1 (#NNN) sind
+Die Entscheide BV-Q1 bis BV-Q19 sind am 25.09.2026 gefallen (Abschnitt 14); BV-E0 (#500) und BV-E1 (#512) sind
 umgesetzt, für BV-E1 gilt der Entscheid BV-E1-1 (10.3). Offen sind aus BV-E0 die Tippprobe, der Nachweis mit echtem
 Word 365 und Excel und die Geräteprobe iPad (iU13, BV-Q16); aus BV-E1 die Anwenderprobe unter Windows, der Setup- und der
 iOS-Lauf (je nach Rückfrage), der Wiki-Upload der Seite „Berichtsvorlagen“, die Zeile „Original geändert – übernehmen?“,
 eine Bedienung der Vorgabe (`BerichtVorlageWord`), die Anmeldung der Katalogsuche beim Assistenten, der Abgleich der
 Kern-Vorprüfung für Vorlagen ohne Platzhalter und das Logo der Kopfzeile (BV-E2). Einzelheiten stehen im Protokoll
-`../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md` (Abschnitt 8) und unter „Nach #NNN“ in der
+`../ueberholt/Protokolle/Bericht/BV_E1_Vorlagenwahl_Protokoll.md` (Abschnitt 8) und unter „Nach #512“ in der
 Statusdatei. Als Nächstes steht BV-E2 an.
 
 ### 15.3 Verworfene Lösungen mit Grund

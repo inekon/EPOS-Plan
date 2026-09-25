@@ -2,7 +2,7 @@
 
 Etappe BV-E1 des Konzepts
 [`Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md`](../../../aktuell/Konzept_Berichtsvorlagen_Platzhalter_EPOS-Plan.md)
-(Abschnitt 13). Auftrag #NNN, Anwenderauftrag vom 25.09.2026: „Starte BV-E1“. Der gültige Stand steht im Konzept
+(Abschnitt 13). Auftrag #512, Anwenderauftrag vom 25.09.2026: „Starte BV-E1“. Der gültige Stand steht im Konzept
 (Rev. 3) und in der [Statusdatei](../../../aktuell/Status_iOS_Migration.md); hier steht, wie es geworden ist. Vorgänger:
 [`BV_E0_Grundlagen_Protokoll.md`](BV_E0_Grundlagen_Protokoll.md). Zweig `konzept-berichtvorlagen`, umgesetzt am
 25./26.09.2026; Fable 5.1 hat orchestriert, sieben Agenten (Opus 5.5) haben in eigenen Worktrees in drei Wellen
@@ -294,7 +294,7 @@ In den Agenten-Worktrees, je Welle:
 Die Etappe berührt keinen Rechenweg; ein Referenzlauf gehört nicht zu ihrer Abnahme (Konzept 13). Die Änderungen an
 `EPOS.iOS/` sind ungebaut (Abschnitt 8).
 
-<!-- ABNAHME -->
+**Gate auf dem Merge 26f8e6ea** (Zweig `konzept-berichtvorlagen` mit `origin/ios_migration_september` b0eb1783): Kern-Filter 0 Fehler; Windows-Schale (Debug x64) 0 Fehler; Ressourcen-Designer wiederholbar; voller Lauf 14.573 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern.Tests 7.244, EPOS.UI.Tests 6.367, KiKern.Tests 549, SpeicherEngine.Tests 386, SpeicherPlanung.Tests 27); ChartProben 174 Bilder, 0 Verstöße; SQL-Prüfer 1.918 Texte, 0 Fundstellen; Dokumentationswachen grün. Zwischenstände: Welle 1 (764ca21d) voller Lauf 14.259 grün; Welle 2 (966a04e5) voller Lauf 14.350 grün bis auf den fremden Zeitmesstest `TwwMessreihenCtrlTests.Hunderttausend_Zeilen_brauchen_unter_fuenf_Sekunden`, der unter Last rot und allein grün läuft; CI Kern ubuntu 36128668523 grün auf b0eb1783 (enthält Welle 2). Kein Referenzlauf nötig (kein Rechenweg berührt); die Änderungen an `EPOS.iOS/` (MauiAsset, `IosPfade.Berichtsvorlagen`, Dateifilter) sind ungebaut, ein iOS-Lauf nur nach Rückfrage; der Setup-Lauf nach Rückfrage.
 
 ## 7 Anwenderprobe (Windows)
 
