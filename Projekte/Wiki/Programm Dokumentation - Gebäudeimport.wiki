@@ -1,0 +1,128 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gebäudeimport
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der '''Gebäudeimport''' übernimmt die Daten eines Gebäudes aus einer Gebäudedatei im Format '''gbXML''' oder '''IFC'''. Aus der Datei entsteht ein neuer Satz im [[Programm Dokumentation/Gebäude|Gebäudekatalog]], den Sie vor dem Speichern im Katalogeditor sehen und ergänzen, und eine neue Zeile in der Gebäudeliste des Projekts. Welche Werte aus der Datei stammen, welche eine Vorgabe sind und welche leer bleiben, zeigt der Zuordnungsdialog Zeile für Zeile.
+
+== Aufruf ==
+{{Anker|aufruf}}
+
+Im Dialog '''Eingabe der Gebäudedaten''' steht in der Leiste unter dem Katalog ''Gebäude in DB'' neben ''Gebäude in DB neu…'' der Knopf '''Importieren (gbXML, IFC)…''' (siehe [[Programm Dokumentation/Gebäude#projektdialog|Die Gebäude des Projekts]]). Er öffnet den Zuordnungsdialog '''Gebäude importieren''' über dem Dialog. Im Assistenten steht derselbe Knopf beim Schritt der Gebäude.
+
+== Dateiarten und Größe ==
+{{Anker|dateiarten}}
+
+''Datei wählen…'' öffnet eine Dateiwahl für beide Formate; welches gilt, ergibt sich aus der Endung der Datei:
+
+* '''gbXML''' – Endung ''.xml'' oder ''.gbxml''.
+* '''IFC''' – Endung ''.ifc'' (STEP-Text), ''.ifcxml'' oder ''.ifczip'' (gepackt). Gelesen werden die Schemastände IFC2X3, IFC4 und IFC4X3; eine Datei anderen Schemas lehnt der Dialog mit einer Meldung ab.
+
+Eine Datei mit anderer Endung lehnt der Dialog mit „Dateiart nicht unterstützt" ab und nennt die beiden Formate.
+
+{{Anker|groesse}}
+Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es höchstens 25 MB für gbXML und 50 MB für IFC, unter iOS höchstens 10 MB bzw. 20 MB; bei ''.ifczip'' zählt die entpackte Größe. Die Grenzen stehen unter der Dateiwahl. Eine größere Datei wird nicht gelesen, der Dialog nennt ihre Größe und die Grenze. Während des Lesens zeigt der Dialog einen Fortschritt; ''Abbrechen'' neben dem Fortschritt oder Esc brechen das Lesen ab, ohne dass etwas übernommen wird.
+
+== Der Zuordnungsdialog ==
+{{Anker|zuordnung}}
+
+Der Dialog '''Gebäude importieren''' führt von oben nach unten durch die Übernahme: Baualtersklasse, Datei, Quelle, Räume, Zuordnung und Meldungen. ''OK'' übernimmt, ''Abbrechen'', das Kreuz und Esc schließen ohne Übernahme.
+
+=== Baualtersklasse zuerst ===
+{{Anker|baualtersklasse}}
+
+Das erste Feld ist die '''Baualtersklasse'''. Sie liefert die Vorgaben für das, was eine Gebäudedatei meist nicht enthält: die U-Werte der Bauteile, den g-Wert der Fenster und die Wärmebrückenkoeffizienten. Die Vorgabe einer Klasse ist der Median der Sätze dieser Klasse im Gebäudekatalog; der Kurztext an der Spalte ''Vorgabe'' nennt Klasse und Zahl der Sätze. Für eine Klasse ohne Katalogsatz bleibt die Vorgabe leer.
+
+Wählen Sie die Klasse am besten vor der Datei. Ein späterer Wechsel ordnet neu zu; Werte, die Sie von Hand eingetragen haben, und gesetzte oder entfernte Haken bleiben dabei stehen. Nennt die Datei ein Baujahr und ist keine Klasse gewählt, bestimmt EPOS-Plan die Klasse aus dem Baujahr; der Beleg der Zeile sagt das.
+
+=== Quelle ===
+{{Anker|quelle}}
+
+Nach dem Lesen nennt der Abschnitt ''Quelle'' Datei, Format, Schema, Größe und Zonenregel. Die Zonenregel ist „eine Zone je Gebäude": Alle beheizten Räume bilden zusammen das eine Gebäude des Katalogs.
+
+{{Anker|schon-importiert}}
+Stammt ein Gebäude des offenen Projekts schon aus derselben Datei, steht unter der Quelle ein leiser Hinweis mit dem Namen dieses Gebäudes und dem Zeitpunkt des Imports. Als dieselbe Datei gilt eine Datei mit gleichem Inhalt, unabhängig von ihrem Namen. Der Import bleibt trotzdem möglich.
+
+Enthält die Datei mehrere Gebäude, wählen Sie unter ''Gebäude der Datei'' eines aus; je Import wird ein Gebäude übernommen. Der ''Name des neuen Gebäudes'' ist mit dem Namen aus der Datei vorbelegt. Unter diesem Namen entsteht der Katalogsatz; ein Name, den der Gebäudekatalog schon führt, hält den Dialog beim ''OK'' mit einer Meldung offen.
+
+=== Räume ===
+{{Anker|raeume}}
+
+Die Liste ''Räume'' zeigt jeden Raum des Gebäudes mit Fläche, dem Haken ''Beheizt'' und dem ''Grund'' dafür: die Zustandsangabe der Datei, ein Raumname, der auf einen unbeheizten Raum deutet (etwa Keller, Garage oder Dachboden), oder „keine Angabe – als beheizt angenommen". Nur beheizte Räume bilden die Zone. Stellen Sie einen Haken um, ordnet der Dialog neu zu; der Grund heißt dann „vom Anwender umgestellt".
+
+=== Zuordnung ===
+{{Anker|zeilen}}
+
+Die Tabelle ''Zuordnung'' hat je Feld des Gebäudeeditors eine Zeile, geordnet nach Gruppen – Kenngrößen, Außenwand, Fenster, Dach, Grundfläche, Sonstige Flächen, Wärmebrücken, Lüftung und Sollwerte. Jede Zeile zeigt:
+
+* '''Wert''' und '''Einheit''' – die Zahl, die übernommen wird. Ein Zahlenfeld lässt sich ändern.
+* '''Beleg''' – woraus der Wert stammt, etwa „Summe aus 3 beheizten Räumen" oder das flächengewichtete Mittel der U-Werte mehrerer Bauteile.
+* '''Vorgabe''' – der Wert der Baualtersklasse, auch wenn die Datei eine eigene Zahl liefert.
+* '''Herkunft''' – siehe unten.
+* '''Übernehmen''' – der Haken. Ohne Haken bleibt das Feld des neuen Gebäudes so, wie der Editor es für ein neues Gebäude vorsieht.
+
+Eine gelb markierte Zeile verdient einen Blick, etwa bei fehlender Geometrie, einem unbekannten Nachbarraum oder einem Fenster ohne Himmelsrichtung. Eine rot markierte Zeile ist fehlerhaft – etwa eine Wandfläche, die nach Abzug der Fenster und Außentüren negativ würde – und sperrt die Übernahme, solange ihr Haken gesetzt ist. Die gesamte Fensterfläche ist die Summe der vier Himmelsrichtungen; sie wird angezeigt, aber nicht eigens übernommen.
+
+=== Herkunft je Feld ===
+{{Anker|herkunft}}
+
+Die Spalte ''Herkunft'' sagt für jedes Feld, woher sein Wert kommt:
+
+* '''gbXML-Datei''' bzw. '''IFC-Datei''' – gelesen aus der Datei.
+* '''Vorgabe''' – aus der gewählten Baualtersklasse, weil die Datei keinen Wert liefert.
+* '''Manuell''' – von Ihnen im Dialog eingetragen. Ein eingetragener Wert setzt den Haken; Beleg und Markierung der Zeile entfallen.
+* '''Leer''' – weder die Datei noch die Klasse liefert einen Wert.
+
+Die Herkunft je Feld gilt für diesen Dialog. Im Projekt merkt sich EPOS-Plan die Datei, aus der ein Gebäude stammt (siehe [[#herkunft-projekt|Herkunft im Projekt]]).
+
+=== Was nicht aus der Datei kommt ===
+{{Anker|nicht-aus-der-datei}}
+
+* '''Wärmebrücken''' – die Verlustkoeffizienten ψ sind die Vorgabe der Baualtersklasse; die '''Anschlusslängen''' bleiben leer, weil eine Gebäudedatei sie nicht als solche führt. Tragen Sie die Längen im Katalogeditor ein, wenn der Wärmebrückenzuschlag gerechnet werden soll.
+* '''Innere Gewinne''' bleiben leer. Eine Datei nennt Auslegungsleistungen für Beleuchtung und Geräte, die zu Zeitplänen gehören; ihre Summe steht nur als Vorschlag im Beleg.
+* '''Bauart''' – wo die Datei Schichtaufbauten mit Stoffwerten führt, leitet EPOS-Plan sie aus den raumseitigen Schichten der Bauteile ab; sonst gilt die Bauart eines neuen Gebäudes. Der Editor bildet daraus die Speicherfähigkeit wie bei jedem neuen Gebäude.
+* '''Luftwechsel''' – übernommen wird nur die Infiltration, und nur, wenn die Datei sie für jeden beheizten Raum nennt; die Nutzerlüftung bleibt leer und rechnet mit ihrer Vorgabe.
+* '''Soll am Tag''' – übernommen, wenn die Datei für alle beheizten Räume dieselbe Heiz-Solltemperatur nennt.
+
+=== Meldungen ===
+{{Anker|meldungen}}
+
+Der Abschnitt ''Meldungen'' sammelt, was beim Lesen und Zuordnen aufgefallen ist, mit der Stufe Hinweis, Warnung oder Fehler. Zahlen darin erscheinen in der Schreibweise der Programmsprache.
+
+=== OK ===
+{{Anker|ok}}
+
+''OK'' prüft die übernommenen Zeilen: Nutzfläche und Raumhöhe sind Pflicht, ein U-Wert oder g-Wert außerhalb des üblichen Bereichs ist eine Warnung, eine rot markierte Zeile mit Haken und ein fehlender Name sind Fehler. Ein Fehler hält den Dialog offen und steht oben im Warnband. Sonst schließt der Zuordnungsdialog, und der Katalogeditor öffnet sich. Geschrieben ist zu diesem Zeitpunkt noch nichts.
+
+== Der vorbelegte Katalogeditor ==
+{{Anker|editor}}
+
+Nach dem ''OK'' öffnet sich der [[Programm Dokumentation/Gebäude#katalogeditor|Katalogeditor]] für ein '''neues Gebäude''', vorbelegt mit den übernommenen Werten und dem Namen aus dem Zuordnungsdialog. Eine leise Zeile unter dem Kopf nennt Datei und Format, aus denen er vorbelegt ist. Alle übrigen Felder stehen wie bei ''Gebäude in DB neu…''. Sie können jedes Feld noch ändern und ergänzen, etwa die Anschlusslängen der Wärmebrücken, die Raumtemperaturen oder die Ferienzeiten.
+
+''OK'' im Editor prüft und legt den Katalogsatz an, wie bei jedem neuen Gebäude. ''Abbrechen'', das Kreuz und Esc schließen den Editor, ohne etwas anzulegen; der Import ist dann verworfen.
+
+== Übernahme ins Projekt ==
+{{Anker|projekt}}
+
+Hat der Editor den Katalogsatz angelegt, steht das neue Gebäude im Katalog ''Gebäude in DB'' und zugleich als markierte Zeile in der Liste ''ausgewählte Gebäude im Projekt'' – vorbelegt wie bei ''In das Projekt übernehmen'' mit der Art der Angabe ''Wohnfläche [m²]'', der Nutzfläche des Gebäudes und dem Jahresnutzungsgrad 1. Eine Zeile oben im Dialog bestätigt das.
+
+Ins Projekt geschrieben wird die Zeile mit ''OK'' des Dialogs ''Eingabe der Gebäudedaten'', im Assistenten mit dem Speichern des Projekts – wie jede andere neue Zeile der Liste (siehe [[Programm Dokumentation/Gebäude#uebernahme|Übernahme ins Projekt]]). ''Abbrechen'' verwirft die neue Zeile; der Katalogsatz bleibt im Gebäudekatalog und lässt sich später übernehmen.
+
+=== Herkunft im Projekt ===
+{{Anker|herkunft-projekt}}
+
+Mit der neuen Zeile schreibt EPOS-Plan zur Kopie des Gebäudes im Projekt, aus welcher Datei sie stammt: Dateiname ohne Pfad, Format, Schema, Größe, einen Fingerabdruck des Inhalts und den Zeitpunkt des Imports, dazu die Kennung des Gebäudes in der Datei. Gelingt das nicht, wird die ganze Gebäudeliste nicht gespeichert, das Projekt bleibt unverändert, und eine Meldung nennt den Grund. Ein späteres Speichern der Liste lässt die Herkunft stehen; wird das Gebäude aus dem Projekt entfernt, fällt sie mit ihm weg. Über den Fingerabdruck erkennt ein zweiter Import dieselbe Datei (siehe [[#schon-importiert|Quelle]]).
+
+== Grenzen ==
+{{Anker|grenzen}}
+
+* Übernommen wird '''ein Gebäude als eine Zone'''; Räume, Bauteile und Öffnungen gehen in den Summen und Mitteln des Gebäudes auf.
+* Die Werte der Datei gelangen nur über den Katalogeditor ins Projekt; ein vorhandener Katalogsatz oder ein Gebäude im Projekt wird durch einen Import nicht überschrieben.
+* Die Kühl-Auslegungstemperatur der Datei und ihre Leistungen für Beleuchtung und Geräte werden nicht als Werte übernommen.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Gebäude]] – Gebäudekatalog, Katalogeditor und die Gebäude des Projekts
+* [[Programm Dokumentation/Gebäudemodell VDI 6007]] – das stündliche Gebäudemodell und seine Eingaben
+* [[Programm Dokumentation/Hilfe-Assistent]] – was der Assistent in den Masken setzt
+
+[[Kategorie:Programm Dokumentation]]

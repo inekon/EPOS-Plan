@@ -1711,6 +1711,17 @@ sequenceDiagram
   H-->>K: Sammelmeldung, Geschlossen(true)
 ```
 
+> **Benannte Fortschreibung (Stufe G4, Welle 4).** Die Übernahme in den Einzonenweg geht nicht in
+> EINEM Schritt ins Projekt — `UebernehmenInsProjekt` gibt es nicht. Der Einstieg ist EIN Knopf im
+> Gebäudedialog (A17), das Profil folgt der Dateiendung (`GebaeudeImportProfil.FuerDatei`). Nach dem
+> OK des Zuordnungsdialogs öffnet der Katalogeditor im Modus Neu, vorbelegt
+> (`GebaeudeImportHuelle.Vorbelegung`); sein gewöhnlicher Schreibweg legt den Katalogsatz an. Der
+> Gebäudedialog nimmt die neue Zeile samt dem Schlüssel ihrer ausstehenden Herkunft in seine Liste,
+> und erst das Speichern der Gebäudeliste schreibt Projektkopie und Herkunft in EINEM Vorgang
+> (`WizardCtrl.GebaeudeZuordnungAnlegen` → `GebaeudeImportCtrl.SchreibeHerkunft`). Ablauf und
+> Begründung: [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md),
+> Abschnitt 5.
+
 ### 3.5 Ergebnisdarstellung
 
 Die Ergebnisdarstellung ist **fertig gebaut und stufbar** (Befund U 5). Die neuen Größen brauchen
