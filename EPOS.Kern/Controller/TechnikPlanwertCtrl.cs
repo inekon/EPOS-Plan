@@ -669,6 +669,25 @@ namespace WindowsFormsApplication1
         internal static double? BaugroesseSumme(int projektID, int komponentenID,
                                                 string bemessung, int idAnlage)
         {
+            return BaugroesseSumme(projektID, komponentenID, bemessung, idAnlage, false);
+        }
+
+        /// <summary>
+        /// E20 (Anwenderentscheid 25.09.2026, Konzept § 6.3 Nr. 10): dieselbe Summe, aber
+        /// mit dem RASTER der Zeile. <paramref name="investition"/> = true heißt
+        /// Kategorie 1 (Investitionskosten); nur dort gilt „je kW elektrisch" an der
+        /// Wärmepumpe (<see cref="IstWpElektrischeLeistung"/>). Die Betriebsseite fragt
+        /// mit false — ihre Antwort bleibt, wie sie war.
+        /// </summary>
+        internal static double? BaugroesseSumme(int projektID, int komponentenID,
+                                                string bemessung, int idAnlage,
+                                                bool investition)
+        {
+            // E20: die elektrische Leistungsaufnahme der Wärmepumpe — GERECHNET aus der
+            // Kennlinie am Normpunkt, weil Tab_WP keine Spalte dafür führt.
+            if (IstWpElektrischeLeistung(komponentenID, bemessung, investition))
+                return WaermepumpePelKw(projektID, idAnlage);
+
             string komponente = KomponentenName(komponentenID);
             if (komponente == null) return null;
             Plan plan;
@@ -853,6 +872,10 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.KDLG_GR_KWP;
             if (IstSolarLeistungsart(komponentenID, bemessung))
                 return MyResource.Resource.KDLG_GR_KOLLEKTORFELD;
+            // E20: der dritte gerechnete Zweig. Der Name ist rasterfrei — eine Herkunft
+            // „Anlage" trägt diese Kombination ohnehin nur in Kategorie 1.
+            if (IstWpElektrischeLeistung(komponentenID, bemessung, true))
+                return MyResource.Resource.KDLG_GR_PEL;
 
             bool egal;
             switch (Geraetespalte(komponentenID, bemessung, out egal))
@@ -877,6 +900,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static bool KenntBaugroesse(int komponentenID, string bemessung)
         {
+            return KenntBaugroesse(komponentenID, bemessung, false);
+        }
+
+        /// <summary>
+        /// E20: dieselbe Frage im RASTER der Zeile — <paramref name="investition"/> = true
+        /// ist Kategorie 1. Einzig „je kW elektrisch" an der Wärmepumpe hängt daran
+        /// (Anwenderentscheid 25.09.2026: „Wärmepumpe beides" nur bei den
+        /// Investitionskosten); jede andere Kombination antwortet in beiden Rastern gleich.
+        /// </summary>
+        internal static bool KenntBaugroesse(int komponentenID, string bemessung, bool investition)
+        {
+            if (IstWpElektrischeLeistung(komponentenID, bemessung, investition)) return true;
             if (IstPvLeistungsart(komponentenID, bemessung)) return true;
             if (IstSolarLeistungsart(komponentenID, bemessung)) return true;
 
@@ -1035,6 +1070,179 @@ namespace WindowsFormsApplication1
             return komponentenID == KOMPONENTE_SOLARTHERMIE &&
                    (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
                     string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal));
+        }
+
+        // ================================================ E20 (Anwender 25.09.2026)
+        // DIE ELEKTRISCHE LEISTUNGSAUFNAHME DER WÄRMEPUMPE — an EINER Stelle.
+        //
+        // Konzept § 6.3 Nr. 10, Anwenderentscheid 25.09.2026: „Wärmepumpe beides"
+        // gilt NUR bei den Investitionskosten — je kW thermisch UND je kW elektrisch.
+        // Die kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind
+        // Energiekosten; auf der Betriebsseite bleibt „je kW elektrisch" an der
+        // Wärmepumpe deshalb eine Art ohne Bezugsgröße (Grund GEWERK).
+        //
+        // Tab_WP führt KEINE elektrische Leistung: Nennleistung ist thermisch (beim
+        // VDI-3805-Import abgeschnitten), Heizung ist der Heizstab, der Nenn-COP des
+        // Datensatzes wird nicht gespeichert. Die Kennlinie (Tab_Kenndaten: Vorlauf,
+        // Quellentemperatur, COP, Ptherm) trägt sie aber an jedem Punkt als
+        // Ptherm ÷ COP. Maßgeblich ist der NORMPUNKT des Datenblatts bei 35 °C Vorlauf
+        // (E20‑Q1 a, Q2 a): Luft/Wasser A2/W35, Sole/Wasser B0/W35, Wasser/Wasser
+        // W10/W35. Fehlt die Stützstelle, wird zwischen den Nachbarn derselben
+        // Kennlinie linear interpoliert (Ptherm und COP je für sich), nie
+        // extrapoliert. Der Heizstab zählt nicht (Q3 a), der Kühlbetrieb auch nicht
+        // (Q4 a) — seine Aufnahme liegt unter der des Heizens.
+        //
+        // Gemessen am 25.09.2026: Der Normpunkt liegt bei 47 von 49 Katalogtypen
+        // unmittelbar vor; die Nennleistung wäre als Zähler unbrauchbar (Verhältnis
+        // zur Heizleistung am Normpunkt 0,26 … 1,9).
+        // ==========================================================================
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> der Wärmepumpe — dieselbe feste
+        /// Nummer wie in <see cref="KomponentenName"/>.</summary>
+        private const int KOMPONENTE_WAERMEPUMPE = 1;
+
+        /// <summary>Vorlauftemperatur des Normpunkts [°C] (W35).</summary>
+        internal const int WP_NORM_VORLAUF = 35;
+
+        /// <summary>
+        /// E20: „je kW elektrisch" an der Wärmepumpe — NUR im Investitionsraster
+        /// (<paramref name="investition"/> = Kategorie 1).
+        /// </summary>
+        internal static bool IstWpElektrischeLeistung(int komponentenID, string bemessung,
+                                                      bool investition)
+        {
+            return investition &&
+                   komponentenID == KOMPONENTE_WAERMEPUMPE &&
+                   string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Die Quellentemperatur des Normpunkts je Bauart (<c>Tab_WP.Typ</c>) [°C];
+        /// <c>null</c> bei unbekannter Bauart — dann gibt es keine Bezugsgröße.
+        /// </summary>
+        internal static int? WpNormQuellentemperatur(string typ)
+        {
+            switch ((typ ?? "").Trim())
+            {
+                case DbWerte.WP_BAUART_LUFT_WASSER: return 2;     // A2/W35
+                case DbWerte.WP_BAUART_SOLE_WASSER: return 0;     // B0/W35
+                case DbWerte.WP_BAUART_WASSER_WASSER: return 10;  // W10/W35
+                default: return null;
+            }
+        }
+
+        /// <summary>Der Normpunkt eines Geräts: Heizleistung, COP und daraus P_el.</summary>
+        internal sealed class WpNormpunkt
+        {
+            /// <summary>Heizleistung am Normpunkt [kW].</summary>
+            public double PthermKw;
+
+            /// <summary>Leistungszahl am Normpunkt.</summary>
+            public double Cop;
+
+            /// <summary>Elektrische Leistungsaufnahme am Normpunkt [kW] = Ptherm ÷ COP.</summary>
+            public double PelKw;
+
+            /// <summary>Kurzname des Normpunkts, z. B. „A2/W35".</summary>
+            public string Name = "";
+
+            /// <summary>true = zwischen zwei Stützstellen interpoliert.</summary>
+            public bool Interpoliert;
+        }
+
+        /// <summary>
+        /// Der Normpunkt der Kennlinie eines (Projekt-)Geräts — <c>null</c>, wenn die
+        /// Bauart unbekannt ist, die Kennlinie bei 35 °C Vorlauf den Punkt weder führt
+        /// noch einschließt, oder COP bzw. Heizleistung nicht positiv sind.
+        /// </summary>
+        internal static WpNormpunkt WaermepumpeNormpunkt(int idWp, string typ)
+        {
+            int? t = WpNormQuellentemperatur(typ);
+            if (!t.HasValue) return null;
+
+            DataTable dt;
+            try
+            {
+                dt = DataRepository.GetDataTable(
+                    "SELECT Temperatur, COP, Ptherm FROM Tab_Kenndaten " +
+                    "WHERE ID_WP = ? AND Vorlauf = ? AND COP > 0 AND Ptherm > 0 " +
+                    "ORDER BY Temperatur",
+                    new DbParam("@wp", idWp),
+                    new DbParam("@vl", WP_NORM_VORLAUF));
+            }
+            catch { return null; }
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow unten = null, oben = null;
+            foreach (DataRow r in dt.Rows)
+            {
+                int temp = Ganz(r, "Temperatur");
+                if (temp == t.Value) return Normpunkt(typ, t.Value, Zahl(r, "Ptherm"), Zahl(r, "COP"), false);
+                if (temp < t.Value) unten = r;
+                else if (oben == null) oben = r;
+            }
+            if (unten == null || oben == null) return null;   // nie extrapolieren
+
+            double t0 = Ganz(unten, "Temperatur"), t1 = Ganz(oben, "Temperatur");
+            double f = (t.Value - t0) / (t1 - t0);
+            double pth = Zahl(unten, "Ptherm") + f * (Zahl(oben, "Ptherm") - Zahl(unten, "Ptherm"));
+            double cop = Zahl(unten, "COP") + f * (Zahl(oben, "COP") - Zahl(unten, "COP"));
+            return Normpunkt(typ, t.Value, pth, cop, true);
+        }
+
+        private static WpNormpunkt Normpunkt(string typ, int temperatur, double pth, double cop,
+                                             bool interpoliert)
+        {
+            if (!(cop > 0) || !(pth > 0)) return null;
+            string quelle = string.Equals((typ ?? "").Trim(), DbWerte.WP_BAUART_LUFT_WASSER, StringComparison.Ordinal) ? "A"
+                          : string.Equals((typ ?? "").Trim(), DbWerte.WP_BAUART_SOLE_WASSER, StringComparison.Ordinal) ? "B"
+                          : "W";
+            return new WpNormpunkt
+            {
+                PthermKw = pth,
+                Cop = cop,
+                PelKw = pth / cop,
+                Name = quelle + temperatur.ToString(CultureInfo.InvariantCulture) +
+                       "/W" + WP_NORM_VORLAUF.ToString(CultureInfo.InvariantCulture),
+                Interpoliert = interpoliert,
+            };
+        }
+
+        /// <summary>Die Normpunkte der Wärmepumpen eines Projekts, je Anlagenzeile —
+        /// <c>null</c>-Einträge für Geräte ohne Normpunkt.</summary>
+        private static List<WpNormpunkt> WaermepumpeNormpunkte(int projektID, int idAnlage)
+        {
+            var liste = new List<WpNormpunkt>();
+            try
+            {
+                var ps = new List<DbParam> { new DbParam("@p", projektID) };
+                string sql = "SELECT w.ID, w.Typ FROM Tab_WP AS w " +
+                             "INNER JOIN Tab_Energieanlagen AS a ON w.ID = a.ID_WP " +
+                             "WHERE a.ID_Projekt = ?";
+                if (idAnlage > 0) { sql += " AND a.ID = ?"; ps.Add(new DbParam("@a", idAnlage)); }
+                sql += " ORDER BY a.ID";
+
+                DataTable dt = DataRepository.GetDataTable(sql, ps.ToArray());
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        liste.Add(WaermepumpeNormpunkt(Ganz(r, "ID"), Text(r, "Typ")));
+            }
+            catch { liste.Clear(); }
+            return liste;
+        }
+
+        /// <summary>
+        /// E20: Σ P_el am Normpunkt der Wärmepumpen [kW] — dieselbe Summe über die
+        /// Anlagenzeilen wie <see cref="BaugroesseSumme"/> (ein Gerät ohne Normpunkt
+        /// trägt nichts bei, wie ein NULL im SQL-SUM); <c>null</c>, wenn nichts bleibt.
+        /// </summary>
+        /// <param name="idAnlage">&gt; 0 = nur diese Anlagenzeile; 0 = das ganze Projekt.</param>
+        internal static double? WaermepumpePelKw(int projektID, int idAnlage)
+        {
+            double summe = 0;
+            foreach (WpNormpunkt n in WaermepumpeNormpunkte(projektID, idAnlage))
+                if (n != null) summe += n.PelKw;
+            return summe > 0 ? summe : (double?)null;
         }
 
         /// <summary>Anzeigename einer Kostenbasis (lokalisiert).</summary>
