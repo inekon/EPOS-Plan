@@ -29706,6 +29706,129 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
     <value>Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter.</value>
   </data>
+  <data name="ZPG_SATZ_HERKUNFT_PARAMETER" xml:space="preserve">
+    <value>Parameter {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_PARAMETER_GROSSANLAGE" xml:space="preserve">
+    <value>Parameter {0} (Großanlage)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_PARAMETER_SCHNELLAUSLEGUNG" xml:space="preserve">
+    <value>Parameter {0} (Schnellauslegung)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_AUSLASTUNGSGANG_ZONE" xml:space="preserve">
+    <value>Auslastungsgang der Zone</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_SUMME_VOR_NORMIERUNG" xml:space="preserve">
+    <value>Summe vor der Normierung</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FERIEN_WIE_SONNTAG" xml:space="preserve">
+    <value>wie Sonntag</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TAGESGANGSATZ" xml:space="preserve">
+    <value>Tagesgangsatz {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART" xml:space="preserve">
+    <value>Bezugstemperatur der Nutzungsart</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_AUS_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>aus der Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TAGESBEDARF_MANUELL" xml:space="preserve">
+    <value>Tagesbedarf manuell · {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR" xml:space="preserve">
+    <value>(θ_Zapf − θ̄_KW) / (θ_Bezug − θ_KW,Bezug) = ({0:0.###} − {1:0.###}) / ({2:0.###} − {3:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR_ANGEWANDT" xml:space="preserve">
+    <value>Temperaturfaktor {0:0.###}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FLAECHENKENNWERT_FORMEL" xml:space="preserve">
+    <value>max(a − b · A_WE ; c) mit A_WE = {0:0.###} m²</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_NIVEAU_NIEDRIG" xml:space="preserve">
+    <value>Niveau niedrig</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_NIVEAU_MITTEL" xml:space="preserve">
+    <value>Niveau mittel</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_NIVEAU_HOCH" xml:space="preserve">
+    <value>Niveau hoch</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FLAECHE_GEBAEUDE" xml:space="preserve">
+    <value>Fläche des gebundenen Gebäudes (A8)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WE_BEZUGSMENGE" xml:space="preserve">
+    <value>WE = Bezugsmenge</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>WE = Σ Anzahl der Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZONENFLAECHE_JE_WE" xml:space="preserve">
+    <value>{0} · Wohnfläche je WE {1:0.###} m²</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_MESSWERT_VOLUMEN" xml:space="preserve">
+    <value>aus {0:0.###} m³/a, Grenze {1}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_MESSWERT_ENERGIE" xml:space="preserve">
+    <value>in kWh/a, Grenze {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_MESSWERT_KALIBRIERUNG" xml:space="preserve">
+    <value>Messwert {0} {1}, Grenze {2}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FAKTOR" xml:space="preserve">
+    <value>Faktor {0:0.######}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FAKTOR_DER_ZONE" xml:space="preserve">
+    <value>Faktor der Zone</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP" xml:space="preserve">
+    <value>Schätzformel NA.2 (Wärmepumpe)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_KESSEL" xml:space="preserve">
+    <value>Schätzformel NA.1 (Kessel)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_LADELEISTUNG_ANGESETZT" xml:space="preserve">
+    <value>angesetzte Ladeleistung der Speicherauslegung</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WERKSTOFF_STAHL" xml:space="preserve">
+    <value>Werkstoff Stahl</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WERKSTOFF_EDELSTAHL" xml:space="preserve">
+    <value>Werkstoff Edelstahl</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_KALTWASSERFAKTOR_FORMEL" xml:space="preserve">
+    <value>(θ_Zapf − θ_KW,Auslegung) / (θ_Zapf − θ̄_KW)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
+    <value>(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
+    <value>flächengewichtet</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_GEWICHT_MENGE" xml:space="preserve">
+    <value>mengengewichtet</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_GEBAEUDEWEIT" xml:space="preserve">
+    <value>gebäudeweit, mit α</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_ZONEN" xml:space="preserve">
+    <value>Summe der Flächen der Zonen in Z1, ohne α</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_LEITUNGSLAENGE" xml:space="preserve">
+    <value>Methode Leitungslänge</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_ANTEIL" xml:space="preserve">
+    <value>Methode Anteil am Zapfbedarf</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_FLAECHENKENNWERT" xml:space="preserve">
+    <value>Methode Flächenkennwert</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_JAHRESVERLUST_FORMEL" xml:space="preserve">
+    <value>P · t_Lauf · {0}</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
     <value>Die Schwelle der Stundenzählung ({0} kW) ist negativ oder keine endliche Zahl — die Stunden über der Schwelle werden nicht gezählt.</value>
   </data>

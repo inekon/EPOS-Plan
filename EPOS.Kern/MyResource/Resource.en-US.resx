@@ -29699,6 +29699,129 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
     <value>The display temperature ({1:0.#} °C) is not above the mean cold-water temperature of zone “{0}” ({2:0.#} °C) — the zone shows no litres.</value>
   </data>
+  <data name="ZPG_SATZ_HERKUNFT_PARAMETER" xml:space="preserve">
+    <value>Parameter {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_PARAMETER_GROSSANLAGE" xml:space="preserve">
+    <value>Parameter {0} (large installation)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_PARAMETER_SCHNELLAUSLEGUNG" xml:space="preserve">
+    <value>Parameter {0} (quick sizing)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_AUSLASTUNGSGANG_ZONE" xml:space="preserve">
+    <value>Load profile of the zone</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_SUMME_VOR_NORMIERUNG" xml:space="preserve">
+    <value>Sum before normalisation</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FERIEN_WIE_SONNTAG" xml:space="preserve">
+    <value>same as Sunday</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TAGESGANGSATZ" xml:space="preserve">
+    <value>Daily profile set {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART" xml:space="preserve">
+    <value>Reference temperature of the usage type</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_AUS_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>from the dwelling table</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TAGESBEDARF_MANUELL" xml:space="preserve">
+    <value>Daily demand entered by hand · {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR" xml:space="preserve">
+    <value>(θ_draw − θ̄_cold) / (θ_ref − θ_cold,ref) = ({0:0.###} − {1:0.###}) / ({2:0.###} − {3:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR_ANGEWANDT" xml:space="preserve">
+    <value>Temperature factor {0:0.###}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FLAECHENKENNWERT_FORMEL" xml:space="preserve">
+    <value>max(a − b · A_dw ; c) with A_dw = {0:0.###} m²</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_NIVEAU_NIEDRIG" xml:space="preserve">
+    <value>Level low</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_NIVEAU_MITTEL" xml:space="preserve">
+    <value>Level medium</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_NIVEAU_HOCH" xml:space="preserve">
+    <value>Level high</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FLAECHE_GEBAEUDE" xml:space="preserve">
+    <value>Area of the linked building (A8)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WE_BEZUGSMENGE" xml:space="preserve">
+    <value>Dwellings = reference quantity</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WE_WOHNUNGSTABELLE" xml:space="preserve">
+    <value>Dwellings = Σ count of the dwelling table</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZONENFLAECHE_JE_WE" xml:space="preserve">
+    <value>{0} · living area per dwelling {1:0.###} m²</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_MESSWERT_VOLUMEN" xml:space="preserve">
+    <value>from {0:0.###} m³/a, boundary {1}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_MESSWERT_ENERGIE" xml:space="preserve">
+    <value>in kWh/a, boundary {0}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_MESSWERT_KALIBRIERUNG" xml:space="preserve">
+    <value>Measured value {0} {1}, boundary {2}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FAKTOR" xml:space="preserve">
+    <value>Factor {0:0.######}</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_FAKTOR_DER_ZONE" xml:space="preserve">
+    <value>Factor of the zone</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP" xml:space="preserve">
+    <value>Estimate formula NA.2 (heat pump)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_KESSEL" xml:space="preserve">
+    <value>Estimate formula NA.1 (boiler)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_LADELEISTUNG_ANGESETZT" xml:space="preserve">
+    <value>assumed charging power of the storage sizing</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WERKSTOFF_STAHL" xml:space="preserve">
+    <value>Material steel</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_WERKSTOFF_EDELSTAHL" xml:space="preserve">
+    <value>Material stainless steel</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_KALTWASSERFAKTOR_FORMEL" xml:space="preserve">
+    <value>(θ_draw − θ_cold,design) / (θ_draw − θ̄_cold)</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
+    <value>(θ_draw − θ_cold,d) / (θ_draw − θ_cold,d,catalogue) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
+    <value>weighted by area</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_GEWICHT_MENGE" xml:space="preserve">
+    <value>weighted by quantity</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_MANUELL" xml:space="preserve">
+    <value>by hand</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_GEBAEUDEWEIT" xml:space="preserve">
+    <value>whole building, with α</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_ZONEN" xml:space="preserve">
+    <value>Sum of the areas of the zones in Z1, without α</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_LEITUNGSLAENGE" xml:space="preserve">
+    <value>Method pipe length</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_ANTEIL" xml:space="preserve">
+    <value>Method share of the draw-off demand</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_FLAECHENKENNWERT" xml:space="preserve">
+    <value>Method area indicator</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_ZIRK_JAHRESVERLUST_FORMEL" xml:space="preserve">
+    <value>P · t_run · {0}</value>
+  </data>
   <data name="ZPG_SATZ_HINWEIS_STUNDENSCHWELLE_UNGUELTIG" xml:space="preserve">
     <value>The threshold for counting hours ({0} kW) is negative or not a finite number — hours above the threshold are not counted.</value>
   </data>

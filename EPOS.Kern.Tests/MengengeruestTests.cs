@@ -72,6 +72,31 @@ namespace EPOS.Kern.Tests
             Herkunftseintrag e = p.Letzter("Zone A", ZapfFeld.BEDARF_SPEZ);
             Assert.Equal(Wertstatus.Vorgabe, e.Status);
             Assert.Equal(Herkunftsart.Fiktiv, e.Quelle.Art);
+            // Der Vermerk des Protokolls ist ein Satz mit Kennung, kein Klartext (N13 (b)).
+            Assert.Equal("HERKUNFT_NIVEAU_HOCH", e.Vermerk.Kennung);
+        }
+
+        /// <summary>
+        /// Jeder Vermerk des Herkunftsprotokolls ist ein <c>ZapfSatz</c> mit Kennung und Werten
+        /// (N13 (b)): Der Temperaturfaktor trägt seine vier Temperaturen als Werte, nicht als
+        /// zusammengesetzten Text; wo nichts zu vermerken ist, steht <c>null</c>.
+        /// </summary>
+        [Fact]
+        public void Die_Vermerke_des_Protokolls_sind_Saetze_mit_Kennung_und_Werten()
+        {
+            var p = new Herkunftsprotokoll();
+            ZonenStand z = Zone(menge: 1.0) with { KaltwasserMittelC = 12.0 };
+            Menge(z, Art(), p: p);
+
+            Herkunftseintrag f = p.Letzter("Zone A", ZapfFeld.TEMPERATURFAKTOR);
+            Assert.Equal("HERKUNFT_TEMPERATURFAKTOR", f.Vermerk.Kennung);
+            Assert.Equal(4, f.Vermerk.Werte.Count);
+            Assert.Contains(12.0, f.Vermerk.Werte);
+
+            // Eine überschriebene Zapftemperatur braucht keinen Vermerk — der Status sagt alles.
+            Herkunftseintrag t = p.Letzter("Zone A", ZapfFeld.ZAPFTEMPERATUR);
+            Assert.Equal("HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART", t.Vermerk.Kennung);
+            Assert.Null(p.Letzter("Zone A", ZapfFeld.BEZUGSMENGE).Vermerk);
         }
 
         [Fact]
