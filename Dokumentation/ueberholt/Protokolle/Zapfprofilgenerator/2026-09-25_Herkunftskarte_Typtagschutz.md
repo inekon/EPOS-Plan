@@ -8,7 +8,7 @@ Sammelpostens [N18](2026-09-25_Zapfprofil_Reste.md), Vorstufen in den Protokolle
 [Z4](2026-09-24_Z4_Oberflaeche.md) und [Z4b](2026-09-24_Z4b_Typtage.md). Zweig `zh` von `d2200ebb`
 (= `origin/ios_migration_september`, Schemastand 142, Referenzbasis `2026-09-25_R16_Anlagenprio`),
 zwei Code-Commits `5946064f` (Posten B) und `8f92b7d7` (Posten A), die Papiere `83861a1b` und der
-Merge `289211e0` von `origin` (`c02dbfb4`).
+Merges `289211e0` von `origin` (`c02dbfb4`) und `9acde04b` (`bf129170`).
 **Kein Schemaschritt, die Testdatenbank ist unberührt.** Alle Gates im Worktree, kein CI-Lauf bis
 zum Push.
 
@@ -118,8 +118,12 @@ damit auch hier Vorsorge.
 
 ## Gates im Worktree
 
-Nach dem Merge `289211e0` von `origin` (`c02dbfb4`; Konflikt allein in der Statusdatei — die
-origin-Fassung von #513, danach #516 in Nummernfolge, im Block der offenen Punkte #516 vor #513):
+Nach den beiden Merges von `origin` — `289211e0` (`c02dbfb4`; Konflikt allein in der Statusdatei —
+die origin-Fassung von #513, danach #516 in Nummernfolge, im Block der offenen Punkte #516 vor #513)
+und `9acde04b` (`bf129170`; Konflikte in beiden `.resx` und im Sammel-Upload-Papier: beide Seiten
+hatten am Ende angefügt, aufgelöst mit **beiden** Blöcken samt dem verlorenen `</data>` an der Naht,
+0 doppelte Schlüssel, 11 620 Einträge je Sprache; im Papier je Tafelzeile die Seite, die sie geändert
+hat), Designer nach dem resx-Merge neu erzeugt und ohne Diff:
 
 - `dotnet build WP-Plan.Kern.slnf -c Release` — **0 Fehler** (46 Warnungen, Bestand).
 - Gefilterte Tests (`Zapfprofil|Tww|Typtag|KiMasken|Huellen|ZapfSaetze|DokumentationLinkWache|WikiProduktdatenWache|RepositoryOrdnungWache`)
