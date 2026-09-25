@@ -3255,10 +3255,10 @@ Beide zeigen auf {0} „{1}".</value>
     <value>{0}: Das Gebäude trägt {1} Zonen; mehrere Zonen rechnet EPOS mit Stufe G6. Bis dahin rechnet ein Gebäude ohne Zone (Klassenweg) oder mit genau einer Zone (Bauteilweg).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Sollwerte, Lüftung, innere Gewinne und Nutzfläche kommen aus der Gebäudezeile.</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet den Bauteilweg mit der Zone „{1}“ und {2} Bauteilen, davon {3} mit Schichtaufbau; Luftvolumen, Speichermasse der Bauweise und innere Gewinne folgen der Nutzfläche der Zone (Flächenschlüssel), Sollwerte, Raumhöhe und Lüftung kommen aus der Gebäudezeile.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche des Gebäudes).</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit seiner Zone und deren Bauteilen (echte Hülle). Die Angabe {1} {2} wird weder zurückgerechnet noch nachmultipliziert — Skalierungsfaktor 1, Bezugsfläche {3} m² (Nutzfläche der Zone).</value>
   </data>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg.</value>
@@ -11374,6 +11374,12 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="KDLG_HERLEITUNG_SOLAR_KW_FLAECHE" xml:space="preserve">
     <value>{0} kW/m² × {1} m² Aperturfläche = {2} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_WP_PEL" xml:space="preserve">
+    <value>{0} kW ÷ COP {1} ({2}) = {3} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_WP_PEL_SUMME" xml:space="preserve">
+    <value>Σ P_el am Normpunkt von {0} Wärmepumpen = {1} kW</value>
   </data>
   <data name="KDLG_OHNE_BASIS_ZEILE" xml:space="preserve">
     <value>„{0}“: {1}</value>
@@ -32744,6 +32750,384 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
     <value>Bei {0} Hüllbauteilen ist die Lage der Schichten nicht bestimmbar (keine IfcMaterialLayerSetUsage oder keine Raumseite) — angenommen: erste Schicht außen ({1}).</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_NUTZFLAECHE" xml:space="preserve">
+    <value>Die Nutzfläche der Zone „{0}“ ist {1} m² und nicht größer null; der Bauteilweg braucht sie als Bezugsfläche.</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
+    <value>Die Zone „{0}“ trägt eine eigene Nutzfläche, die Nutzfläche des Gebäudes ist aber {1} m²; ohne sie lassen sich Speichermasse und innere Gewinne nicht anteilig auf die Zone schlüsseln.</value>
+  </data>
+  <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
+    <value>Zone „{0}“: Die Nutzfläche muss größer als null sein.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
+    <value>Ohne Projekt mit Klimaregion lässt sich der Hochrechnungsfaktor nicht bestimmen – bitte das Projekt speichern und eine Klimaregion wählen.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_FAKTOR" xml:space="preserve">
+    <value>Die Berechnung liefert für dieses Gebäude keinen Hochrechnungsfaktor.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_OHNE_KOPIE" xml:space="preserve">
+    <value>Das Gebäude hat noch keine Projektkopie – erst das Projekt speichern, dann trägt sie eine Zone.</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>Das Bauteil braucht einen Namen.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BEREICH" xml:space="preserve">
+    <value>Bauteil „{0}“: {1} = {2} liegt nicht in {3}.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RAND_ZONE" xml:space="preserve">
+    <value>Bauteil „{0}“: Die Randbedingung „Nachbarzone“ rechnet EPOS erst mit mehreren Zonen (Stufe G6).</value>
+  </data>
+  <data name="BAUTEIL_MSG_FENSTER_RAND" xml:space="preserve">
+    <value>Bauteil „{0}“: Ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder an einen unbeheizten Raum.</value>
+  </data>
+  <data name="BAUTEIL_MSG_UWERT_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“: Es braucht einen U-Wert oder einen Aufbau – ein Fenster oder eine Vorhangfassade immer einen U-Wert.</value>
+  </data>
+  <data name="GEBZ_REITER" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEBZ_GRP_ZONEN" xml:space="preserve">
+    <value>Zonen und Bauteile</value>
+  </data>
+  <data name="GEBZ_ZEILE_KLASSENWEG" xml:space="preserve">
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Mit „Gebäude als eine Zone übernehmen“ rechnet das Gebäude über seine Bauteile.</value>
+  </data>
+  <data name="GEBZ_ZEILE_BAUTEILWEG" xml:space="preserve">
+    <value>Rechenweg der Hülle: Bauteilweg – Zone „{0}“, {1} Bauteile. Die U-Wert-Gruppen sind aus den Bauteilen abgeleitet; die Werte des Gebäudes gelten wieder ohne Zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Hülle und Zonen…“ im Gebäudedialog).</value>
+  </data>
+  <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Gebäude als eine Zone übernehmen</value>
+  </data>
+  <data name="GEBZ_HINWEIS_UEBERNEHMEN" xml:space="preserve">
+    <value>Legt aus den U-Wert-Gruppen eine Zone mit Bauteilen an, auf die Projektfläche hochgerechnet; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
+    <value>Nur für ein Gebäude im Projekt: Ein Katalogsatz trägt keine Zonen.</value>
+  </data>
+  <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
+    <value>Das Gebäude führt schon die Zone „{0}“.</value>
+  </data>
+  <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
+    <value>Der Tagesbilanz-Weg rechnet keine Zonen – erst den Rechenweg auf VDI 6007 stellen.</value>
+  </data>
+  <data name="GEBZ_SPERRE_LAEUFT" xml:space="preserve">
+    <value>Der Hochrechnungsfaktor wird bestimmt …</value>
+  </data>
+  <data name="GEBZ_FRAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>Ab jetzt rechnet dieses Gebäude über seine Bauteile statt über die U-Wert-Gruppen. Die Flächen werden mit dem Faktor {0} auf die Projektfläche hochgerechnet (Nutzfläche {1} m² → {2} m²). Die Angabe „{3} {4}“ gilt danach nicht mehr. Zone übernehmen?</value>
+  </data>
+  <data name="GEBZ_FRAGE_GRENZEN" xml:space="preserve">
+    <value>Die Leistungsgrenzen von Heizung und Kühlung gelten danach der hochgerechneten Hülle.</value>
+  </data>
+  <data name="GEBZ_LEER" xml:space="preserve">
+    <value>Noch keine Zone – das Gebäude rechnet den Klassenweg über die U-Wert-Gruppen.</value>
+  </data>
+  <data name="GEBZ_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBZ_SP_NUTZFLAECHE" xml:space="preserve">
+    <value>Nutzfläche</value>
+  </data>
+  <data name="GEBZ_SP_HT" xml:space="preserve">
+    <value>H_T</value>
+  </data>
+  <data name="GEBZ_SP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GEBZ_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="GEBZ_BTN_OEFFNEN" xml:space="preserve">
+    <value>Öffnen…</value>
+  </data>
+  <data name="GEBZ_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Zone entfernen</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Zone „{0}“ mit {1} Bauteilen entfernen? Das Gebäude rechnet danach wieder den Klassenweg über die U-Wert-Gruppen; geschrieben wird mit OK.</value>
+  </data>
+  <data name="GEBZ_ZEILE_SUMMENREGEL" xml:space="preserve">
+    <value>Abgeleitet aus den Bauteilen der Zone „{0}“: Fläche je Gruppe Σ A, U = Σ U·A / Σ A. Die Werte des Gebäudes bleiben gespeichert und gelten wieder ohne Zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_FENSTER" xml:space="preserve">
+    <value>Mit der Zone rechnen ihre Fensterbauteile ({0} m²); die Fensterflächen des Gebäudes gelten wieder ohne Zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_PSI" xml:space="preserve">
+    <value>Wärmebrücken der Bauteile Σ ψ·L</value>
+  </data>
+  <data name="GEBZ_ZEILE_NUTZFLAECHE" xml:space="preserve">
+    <value>Die Zone rechnet mit ihrer Nutzfläche {0} m²; Luftvolumen, Speichermasse und innere Gewinne folgen ihr anteilig.</value>
+  </data>
+  <data name="GEBZ_ZEILE_NAME_PROJEKT" xml:space="preserve">
+    <value>Im Projekt behält das Gebäude den Namen „{0}“; ein anderer Name gilt für „Speichern unter“ (neuer Katalogsatz).</value>
+  </data>
+  <data name="GEBZ_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Der Katalogsatz trägt die Zone „{0}“ mit {1} Bauteilen nicht mit – trotzdem speichern?</value>
+  </data>
+  <data name="GEBZ_MSG_ZONEN" xml:space="preserve">
+    <value>Die Zonen wurden nicht gespeichert: {0}</value>
+  </data>
+  <data name="GEBZ_MSG_AUFBAU" xml:space="preserve">
+    <value>Der Aufbau „{0}“ ließ sich nicht aus dem Katalog übernehmen: {1}</value>
+  </data>
+  <data name="GEBZ_MSG_GEBAEUDE" xml:space="preserve">
+    <value>Die Gebäudedaten des Projekts wurden nicht gespeichert.</value>
+  </data>
+  <data name="GEBZ_BTN_PROJEKT" xml:space="preserve">
+    <value>Hülle und Zonen…</value>
+  </data>
+  <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Die Gebäudedaten dieses Projektgebäudes bearbeiten, Zonen und Bauteile anlegen – geschrieben wird die Projektkopie, nicht der Katalog</value>
+  </data>
+  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
+    <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst mit OK entsteht seine Projektkopie, die Zonen tragen kann.</value>
+  </data>
+  <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
+    <value>Gebäude im Projekt: Hülle und Zonen</value>
+  </data>
+  <data name="GEBW_ZEILE_ZONE" xml:space="preserve">
+    <value>Das Gebäude rechnet über seine Bauteile (Zone „{0}“); die Hochrechnung entfällt – die Angabe gilt nicht.</value>
+  </data>
+  <data name="GEBW_SPERRE_ZONE" xml:space="preserve">
+    <value>Mit Zone rechnet das Gebäude mit der Nutzfläche seiner Zone; Fläche oder Verbrauch skalieren nicht mehr. Die Zone entfernen im Gebäudedialog unter „Hülle und Zonen…“.</value>
+  </data>
+  <data name="ZONDLG_TITEL" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="ZONDLG_LBL_NUTZFLAECHE" xml:space="preserve">
+    <value>Nutzfläche</value>
+  </data>
+  <data name="ZONDLG_PLATZHALTER_NUTZFLAECHE" xml:space="preserve">
+    <value>Gebäudewert {0} m²</value>
+  </data>
+  <data name="ZONDLG_ZEILE_NUTZFLAECHE" xml:space="preserve">
+    <value>Leer gilt die Nutzfläche des Gebäudes ({0} m²). Luftvolumen, Speichermasse und innere Gewinne folgen der Zonenfläche anteilig; die übrigen Werte (Sollwerte, Lüftung) sind die des Gebäudes.</value>
+  </data>
+  <data name="ZONDLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="ZONDLG_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="ZONDLG_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="ZONDLG_SP_FLAECHE" xml:space="preserve">
+    <value>A [m²]</value>
+  </data>
+  <data name="ZONDLG_SP_U" xml:space="preserve">
+    <value>U [W/(m²K)]</value>
+  </data>
+  <data name="ZONDLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="ZONDLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="ZONDLG_SP_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="ZONDLG_SP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="ZONDLG_BTN_NEU" xml:space="preserve">
+    <value>+ Neues Bauteil …</value>
+  </data>
+  <data name="ZONDLG_LEER" xml:space="preserve">
+    <value>Die Zone hat noch kein Bauteil.</value>
+  </data>
+  <data name="ZONDLG_BTN_OEFFNEN" xml:space="preserve">
+    <value>Bauteil öffnen</value>
+  </data>
+  <data name="ZONDLG_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Bauteil entfernen</value>
+  </data>
+  <data name="ZONDLG_SUMME_GRUPPE" xml:space="preserve">
+    <value>Σ A {0}: {1} m²</value>
+  </data>
+  <data name="ZONDLG_SUMME_HT" xml:space="preserve">
+    <value>H_T = Σ U·A + Σ ψ·L = {0} W/K</value>
+  </data>
+  <data name="ZONDLG_MSG_NAME" xml:space="preserve">
+    <value>Die Zone braucht einen Namen.</value>
+  </data>
+  <data name="ZONDLG_U_AUS_AUFBAU" xml:space="preserve">
+    <value>aus Aufbau</value>
+  </data>
+  <data name="BTDLG_TITEL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="BTDLG_TITEL_NEU" xml:space="preserve">
+    <value>Neues Bauteil</value>
+  </data>
+  <data name="BTDLG_LBL_ART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="BTDLG_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="BTDLG_LBL_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="BTDLG_LBL_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="BTDLG_HINWEIS_AZIMUT" xml:space="preserve">
+    <value>Azimut 0° = Nord, 90° = Ost, 180° = Süd, 270° = West; ein Außenbauteil, das nicht waagerecht liegt, braucht ihn.</value>
+  </data>
+  <data name="BTDLG_LBL_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_NEIGUNG" xml:space="preserve">
+    <value>Vorgabe {0}°</value>
+  </data>
+  <data name="BTDLG_LBL_RAND" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="BTDLG_RAND_VORGABE_AUSSEN" xml:space="preserve">
+    <value>Außenluft (Vorgabe)</value>
+  </data>
+  <data name="BTDLG_RAND_VORGABE_INNEN" xml:space="preserve">
+    <value>innerhalb der Zone (Vorgabe)</value>
+  </data>
+  <data name="BTDLG_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>Außenluft</value>
+  </data>
+  <data name="BTDLG_RAND_ERDREICH" xml:space="preserve">
+    <value>Erdreich</value>
+  </data>
+  <data name="BTDLG_RAND_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizter Raum</value>
+  </data>
+  <data name="BTDLG_LBL_GWERT" xml:space="preserve">
+    <value>g-Wert</value>
+  </data>
+  <data name="BTDLG_LBL_RAHMEN" xml:space="preserve">
+    <value>Rahmenanteil</value>
+  </data>
+  <data name="BTDLG_LBL_VERSCHATTUNG" xml:space="preserve">
+    <value>Verschattungsfaktor</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_GEBAEUDE" xml:space="preserve">
+    <value>Gebäudewert</value>
+  </data>
+  <data name="BTDLG_LBL_PSIL" xml:space="preserve">
+    <value>Wärmebrücke ψ·L</value>
+  </data>
+  <data name="BTDLG_LBL_UWERT" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_U" xml:space="preserve">
+    <value>aus dem Aufbau</value>
+  </data>
+  <data name="BTDLG_GRP_AUFBAU" xml:space="preserve">
+    <value>Aufbau</value>
+  </data>
+  <data name="BTDLG_LBL_AUFBAU_PROJEKT" xml:space="preserve">
+    <value>Aufbau im Projekt</value>
+  </data>
+  <data name="BTDLG_OHNE_AUFBAU" xml:space="preserve">
+    <value>(ohne Aufbau – nur U-Wert)</value>
+  </data>
+  <data name="BTDLG_LBL_AUFBAU_KATALOG" xml:space="preserve">
+    <value>Aus dem Katalog</value>
+  </data>
+  <data name="BTDLG_KATALOG_WAHL" xml:space="preserve">
+    <value>(Aufbau aus dem Katalog wählen)</value>
+  </data>
+  <data name="BTDLG_BTN_AUFBAU_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BTDLG_HINWEIS_KATALOG" xml:space="preserve">
+    <value>Ein Katalogaufbau wird erst mit OK des Gebäudedialogs in das Projekt übernommen; bis dahin schreibt die Wahl nichts.</value>
+  </data>
+  <data name="BTDLG_AUFBAU_KATALOG" xml:space="preserve">
+    <value>{0} (Katalog, wird mit OK übernommen)</value>
+  </data>
+  <data name="BTDLG_ZEILE_U_AUFBAU" xml:space="preserve">
+    <value>U aus dem Aufbau: {0} W/(m²K).</value>
+  </data>
+  <data name="BTDLG_ZEILE_U_ABWEICHUNG" xml:space="preserve">
+    <value>Der eingetragene U-Wert {0} W/(m²K) weicht um {1} % vom Aufbau ({2} W/(m²K)) ab; gerechnet wird mit dem eingetragenen.</value>
+  </data>
+  <data name="BTDLG_ZEILE_FENSTER" xml:space="preserve">
+    <value>Leere Fensterwerte gelten wie am Gebäude (g-Wert, Rahmenanteil, Verschattung).</value>
+  </data>
+  <data name="BTDLG_ZEILE_KEINE_SCHICHTEN" xml:space="preserve">
+    <value>Ohne Aufbau rechnet das Bauteil mit seinem U-Wert.</value>
+  </data>
+  <data name="KI_DLG_MASKE_ZONE" xml:space="preserve">
+    <value>Zone des Gebäudes</value>
+  </data>
+  <data name="KI_DLG_MASKE_BAUTEIL" xml:space="preserve">
+    <value>Bauteil der Zone</value>
+  </data>
+  <data name="KI_DLG_ZON_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name der Zone; Pflichtfeld.</value>
+  </data>
+  <data name="KI_DLG_ZON_NUTZFLAECHE_ERL" xml:space="preserve">
+    <value>Die Nutzfläche der Zone in m²; leer = die Nutzfläche des Gebäudes. Sie teilt die flächenbezogenen Größen des Gebäudes (Luftvolumen, innere Gewinne, Bewohner) der Zone zu.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_ART_ERL" xml:space="preserve">
+    <value>Die Bauteilart der Zeile — nur lesbar; geändert wird sie im Bauteildialog.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name des Bauteils — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_FLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche des Bauteils in m² — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_UWERT_ERL" xml:space="preserve">
+    <value>Der wirksame U-Wert: eingetragen, sonst der des Aufbaus — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_AZIMUT_ERL" xml:space="preserve">
+    <value>Die Ausrichtung des Bauteils in Grad (0° = Nord) — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
+    <value>Der Bauteilaufbau des Projekts, leer = keiner — nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_BT_ART_ERL" xml:space="preserve">
+    <value>Die Bauteilart: Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade oder Sonstiges. Sie bestimmt die Vorgaben für Neigung und Randbedingung; Fenster und Vorhangfassade rechnen aus U-Wert, g-Wert, Rahmenanteil und Verschattung.</value>
+  </data>
+  <data name="KI_DLG_BT_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name des Bauteils; Pflichtfeld.</value>
+  </data>
+  <data name="KI_DLG_BT_FLAECHE_ERL" xml:space="preserve">
+    <value>Die Fläche des Bauteils in m²; muss größer null sein.</value>
+  </data>
+  <data name="KI_DLG_BT_AZIMUT_ERL" xml:space="preserve">
+    <value>Die Ausrichtung in Grad, 0° = Nord, 90° = Ost. Ein Außenbauteil, das nicht waagerecht liegt, braucht einen Azimut.</value>
+  </data>
+  <data name="KI_DLG_BT_NEIGUNG_ERL" xml:space="preserve">
+    <value>Die Neigung in Grad, 90° = senkrecht; leer = Vorgabe nach Bauteilart.</value>
+  </data>
+  <data name="KI_DLG_BT_RAND_ERL" xml:space="preserve">
+    <value>Woran das Bauteil grenzt: keine Angabe (Vorgabe nach Bauteilart), Außenluft, Erdreich oder unbeheizter Raum. Fenster und Vorhangfassade grenzen an Außenluft oder einen unbeheizten Raum.</value>
+  </data>
+  <data name="KI_DLG_BT_GWERT_ERL" xml:space="preserve">
+    <value>Der Gesamtenergiedurchlassgrad der Verglasung, größer 0 bis 1; nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_BT_RAHMEN_ERL" xml:space="preserve">
+    <value>Der Rahmenanteil 0,05 bis 0,6; nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_BT_VERSCHATTUNG_ERL" xml:space="preserve">
+    <value>Der Verschattungsfaktor, größer 0 bis 1 (1 = unverschattet); nur Fenster und Vorhangfassade; leer = Wert des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_BT_PSIL_ERL" xml:space="preserve">
+    <value>Der Wärmebrückenzuschlag des Bauteils als ψ·L in W/K; nicht negativ, leer = keiner.</value>
+  </data>
+  <data name="KI_DLG_BT_UWERT_ERL" xml:space="preserve">
+    <value>Der U-Wert in W/(m²K); leer = aus dem Aufbau. Fenster und Vorhangfassade brauchen ihn immer.</value>
+  </data>
+  <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
+    <value>Der Bauteilaufbau des Projekts, 0 = ohne Aufbau. Ein Aufbau aus dem Katalog wird von Hand übernommen und beim OK des Gebäudeeditors in das Projekt kopiert.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: Der kleinste Abstand zweier Zeitstempel ist {1:0.###} min — zugelassen sind {2} min.</value>

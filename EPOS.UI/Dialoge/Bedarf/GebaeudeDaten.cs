@@ -66,6 +66,18 @@ public sealed class GebaeudeProjektZeile
     public double? HgesWK { get; set; }
 
     /// <summary>
+    /// Hat die Zeile eine Projektkopie (<c>Tab_Gebaeude</c>)? Erst dann trägt sie Zonen, und erst
+    /// dann ist „Hülle und Zonen…" frei (Stufe G3, Welle D2). Eine eben aufgenommene Zeile hat keine.
+    /// </summary>
+    public bool HatProjektkopie { get; set; }
+
+    /// <summary>
+    /// Der Name der Zone, über die das Gebäude rechnet (Stufe G3); <c>null</c> = keine Zone —
+    /// dann rechnet es den Klassenweg samt Hochrechnung über die Angabe.
+    /// </summary>
+    public string? Zone { get; set; }
+
+    /// <summary>
     /// Der UNDURCHSICHTIGE Schlüssel der ausstehenden Herkunft einer Zeile aus dem Gebäudeimport
     /// (Stufe G4, Welle 4); <c>null</c> = keine. Quelle und Paarungen selbst bleiben in der Hülle —
     /// sie legt sie beim Speichern der Liste an das Modell, und erst der Speicherweg schreibt sie an

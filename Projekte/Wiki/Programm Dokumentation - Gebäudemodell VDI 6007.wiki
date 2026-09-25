@@ -18,7 +18,7 @@ Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Progr
 == Eingaben ==
 {{Anker|eingaben}}
 
-Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien.
+Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien. Führt ein Gebäude im Projekt eine Zone, nimmt das Modell die Hülle statt aus der Tabelle aus den Bauteilen dieser Zone (siehe [[#bauteilweg|Bauteilweg]]).
 
 Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit Raumtemperaturen, Ferien, Modellparametern, Rechenweg und Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
 
@@ -51,6 +51,33 @@ Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, 
 |-
 | Sommerlüftung || aus || siehe [[#sommerlueftung|Sommerlüftung]]
 |}
+
+== Bauteilweg ==
+{{Anker|bauteilweg}}
+
+Wie das Modell die Hülle abbildet, hängt davon ab, ob das Gebäude im Projekt eine Zone führt. Zone und Bauteile legen Sie im Gebäudedialog des Projekts an, siehe [[Programm Dokumentation/Gebäude#zonen|Gebäude]].
+
+* '''Klassenweg''' – ohne Zone. Das Modell rechnet mit den U-Wert-Gruppen der Hülle – Außenwand, Fenster, Dach, Bodenplatte und Sonstiges, je mit U-Wert und Fläche – und nimmt die Speichermasse aus der Bauweise. Die Kennwerte der beiden Speicher leitet es daraus nach einem festen Schema ab.
+* '''Bauteilweg''' – mit genau einer Zone. Das Modell rechnet über die Bauteile der Zone, jedes mit Fläche, Randbedingung, Neigung, Azimut und, wo zugeordnet, seinem Schichtaufbau.
+
+'''Reduktion der Bauteile.''' Jeden Schichtaufbau reduziert das Modell nach VDI 6007 Blatt 1, Gl. (1)–(24), über die Kettenmatrix seiner Schichten auf Widerstand und Kapazität. Die Bezugsperiode gilt je Bauteil und beträgt 7 Tage oder 2 Tage nach Gl. (10a)–(10d); welche gilt, hängt am Verhältnis R₁;rel / C₁;rel. Die Bauteile werden zu zwei Gruppen zusammengefasst: die Außenbauteile einseitig, die Innenbauteile – Innenwände und Decken innerhalb der Zone – symmetrisch. Fenster und Vorhangfassaden bilden den Fensterzweig nach Gl. (25)/(26) und rechnen mit ihrem U-Wert. Die Kennwerte eines einzelnen Aufbaus – R, U, C und T_BT – zeigt die Seite [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#summen|Baustoffe und Bauteilaufbauten]].
+
+'''Bauteile ohne Schichten.''' Ein Bauteil ohne Aufbau, nur mit U-Wert, rechnet in seiner Gruppe wie im Klassenweg. Trägt eine ganze Gruppe keine Schichten, nimmt sie ihre Kapazität aus der Bauweise. Eine Zone, die aus den U-Wert-Gruppen übernommen ist und keine Aufbauten trägt, rechnet darum wie der Klassenweg.
+
+'''Sonne und Außenseite.''' Die solaren Gewinne rechnet das Modell je Fensterbauteil mit dessen Neigung und Azimut: Ein geneigtes Fenster, etwa ein Dachfenster, bekommt die Einstrahlung seiner Neigung, ein waagerechtes Fenster die Globalstrahlung. g-Wert, Rahmenanteil und Verschattungsfaktor nimmt es vom Bauteil, leer vom Gebäude. Die äquivalente Außentemperatur bildet das Modell je Bauteil und gewichtet sie mit U·A: ein Bauteil an Außenluft mit der Außenluft – bei eingeschalteter [[#strahlung|Strahlung auf die Außenbauteile]] mit der Einstrahlung seiner eigenen Neigung und Richtung –, ein Bauteil am Erdreich mit der Erdreichtemperatur, ein Bauteil an einem unbeheizten Raum mit der Kellertemperatur des Gebäudes.
+
+'''Echte Hülle.''' Mit Zone rechnet das Gebäude ohne Hochrechnung: Der Skalierungsfaktor ist 1, die Bezugsfläche ist die Nutzfläche der Zone – leer die des Gebäudes. Eine eingetragene Fläche oder ein Verbrauch im Projekt wird nicht zurückgerechnet; ein Hinweis im Protokoll nennt das. Über den '''Flächenschlüssel''' – den Anteil der Zonenfläche an der Nutzfläche des Gebäudes – folgen der Zone anteilig:
+
+* das Luftvolumen, Nutzfläche der Zone × Raumhöhe des Gebäudes, und mit ihm der Lüftungsleitwert und die Sommerlüftung;
+* die Speichermasse der Bauweise einer Gruppe ohne Schichten, Bauweise je m² × Zonenfläche;
+* die inneren Wärmegewinne, die im Gebäude als Leistung in W stehen, nicht je m²;
+* die Innenbauteilfläche f_IW · A_f aus dem Innenflächenfaktor und der Zonenfläche.
+
+Sollwerte, Raumhöhe, Luftwechsel und die Leistungsgrenzen von Heizung und Kühlung bleiben die des Gebäudes. Das Protokoll der Simulation nennt je Gebäude die Zone, die Zahl ihrer Bauteile und wie viele davon einen Schichtaufbau tragen.
+
+Ein Beispiel: ''Gebäude 1'' führt die Zone ''Gebäude'' mit 250 m² Nutzfläche; das Gebäude selbst hat 100 m². Die Zone rechnet mit dem Luftvolumen von 250 m² und dem 2,5-Fachen der inneren Wärmegewinne des Gebäudes; Sollwerte und Luftwechsel bleiben die des Gebäudes.
+
+'''Grenzen des Bauteilwegs.''' Ein Gebäude mit mehr als einer Zone rechnet EPOS-Plan nicht; die Simulation meldet es mit dem Namen des Gebäudes als Fehler. Der Rechenweg ''Tagesbilanz'' rechnet keine Zone: Ein Gebäude mit Zone rechnet dort ohne sie, und das Protokoll gibt einen Hinweis. Eine Nachbarzone als Randbedingung gibt es nicht; ein unbeheizter Raum rechnet mit der Kellertemperatur des Gebäudes.
 
 == Heizkreis und Wärmeübergabe ==
 {{Anker|heizkreis}}
@@ -142,14 +169,14 @@ Bei einem gekühlten Gebäude (siehe [[Programm Dokumentation/Kühlung|Kühlung]
 == Strahlung auf die Außenbauteile ==
 {{Anker|strahlung}}
 
-Ohne diesen Schalter sehen Wände, Dach und sonstige Außenflächen die Außenlufttemperatur. Mit dem Schalter rechnet das Modell für sie eine '''äquivalente Außentemperatur''' nach VDI 6007 Blatt 1: Die Sonne erwärmt die Außenflächen (Absorptionsgrad 0,6), die langwellige Abstrahlung gegen den Himmel kühlt sie. Die Außenwand bekommt dabei das Mittel der Einstrahlung auf die vier Fassaden, das Dach wird als waagerechte Fläche gerechnet.
+Ohne diesen Schalter sehen Wände, Dach und sonstige Außenflächen die Außenlufttemperatur. Mit dem Schalter rechnet das Modell für sie eine '''äquivalente Außentemperatur''' nach VDI 6007 Blatt 1: Die Sonne erwärmt die Außenflächen (Absorptionsgrad 0,6), die langwellige Abstrahlung gegen den Himmel kühlt sie. Die Außenwand bekommt dabei das Mittel der Einstrahlung auf die vier Fassaden, das Dach wird als waagerechte Fläche gerechnet. Auf dem [[#bauteilweg|Bauteilweg]] bekommt jedes Außenbauteil an Außenluft die Einstrahlung seiner eigenen Neigung und Richtung.
 
 Für die Abstrahlung braucht das Modell die '''atmosphärische Gegenstrahlung''' der Klimadaten. PVGIS-Abrufe und Testreferenzjahre liefern sie; eine Klimaregion ohne diesen Wert rechnet ohne den langwelligen Anteil. Die Abstrahlung der Fenster geht immer ein, wenn die Klimadaten die Gegenstrahlung führen.
 
 == Klimadaten ==
 {{Anker|klimadaten}}
 
-Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden und Ferien folgen dem Kalender des Projekts. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
+Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden – auf dem [[#bauteilweg|Bauteilweg]] auf jede Neigung und Richtung eines Bauteils – rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden und Ferien folgen dem Kalender des Projekts. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
 
 == Ergebnisse ==
 {{Anker|ergebnisse}}
@@ -190,11 +217,11 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 == Grenzen ==
 {{Anker|grenzen}}
 
-* Das Gebäude ist '''eine Zone'''. Räume unterschiedlicher Temperatur werden nicht getrennt gerechnet.
-* Die Hülle steht als U-Wert und Fläche je Bauteil, nicht als Schichtaufbau; die Kennwerte des Modells leitet das Programm daraus nach einem festen Schema ab.
+* Das Gebäude ist '''eine Zone'''. Räume unterschiedlicher Temperatur werden nicht getrennt gerechnet; ein Gebäude mit mehr als einer Zone rechnet EPOS-Plan nicht (siehe [[#bauteilweg|Bauteilweg]]).
+* Ohne Zone steht die Hülle als U-Wert und Fläche je Bauteilgruppe, nicht als Schichtaufbau; die Kennwerte des Modells leitet das Programm daraus nach einem festen Schema ab. Mit Zone rechnet es die Schichtaufbauten ihrer Bauteile nach VDI 6007 Blatt 1.
 * Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
 * Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
 * Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
 * Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
 * Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit festem Vorlauf; eine Kühlkurve und eine Wahl der Kühlkennlinie je Stunde gibt es nicht, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
-* Wie beim Bestandsweg rechnet das Modell das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch.
+* Ohne Zone rechnet das Modell wie der Bestandsweg das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch. Mit Zone rechnet es die Hülle der Zone ohne Hochrechnung.

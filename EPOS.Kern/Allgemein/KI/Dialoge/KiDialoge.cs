@@ -218,6 +218,19 @@ namespace WindowsFormsApplication1
         public const string BAUTEILAUFBAU = "Bauteilaufbau";
 
         /// <summary>
+        /// Der Zonendialog (<c>ZonenDialog</c>, Gebaeudesimulation G3) — eine Ueberlagerung im
+        /// Gebaeudeeditor, ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich
+        /// die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string ZONE = "Zone";
+
+        /// <summary>
+        /// Der Bauteildialog (<c>BauteilDialog</c>, Gebaeudesimulation G3) — eine Ueberlagerung im
+        /// Zonendialog, wie <see cref="ZONE"/> ohne <c>Form_</c>-Vorsilbe.
+        /// </summary>
+        public const string BAUTEIL = "Bauteil";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -747,6 +760,8 @@ namespace WindowsFormsApplication1
                 Gebaeudetyp(),
                 BaustoffKatalog(),
                 Bauteilaufbau(),
+                Zone(),
+                Bauteil(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -4703,6 +4718,122 @@ namespace WindowsFormsApplication1
                 {
                     new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
                     new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// Der Zonendialog des Gebäudeeditors (Gebaeudesimulation G3, Welle D2) — zwei Felder und
+        /// das Raster der Bauteile aus <c>EPOS.UI.Dialoge.Bedarf.ZonenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Bauteile sind ein RASTER zum LESEN (<c>Bauteile[]</c>, Kennzeichen die Nummer ab 1):
+        /// Anlegen, Öffnen und Entfernen bleiben Klicks des Anwenders, die Werte eines Bauteils setzt
+        /// der Assistent im Bauteildialog (<see cref="Bauteil"/>). Der Dialog schreibt nicht — er
+        /// gibt die Zone an den Arbeitsstand des Gebäudeeditors zurück, und dessen OK schreibt.
+        /// </remarks>
+        private static KiDialog Zone()
+        {
+            const string SICHT = "ZonenKiSicht.";
+            string bauteil = SICHT + "Bauteile" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.ZONE,
+                anzeigename: KiDialogTexte.MaskeZone,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichnung", SICHT + "Bezeichnung", KiDialogTexte.ZonBezeichnungName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonBezeichnungErl),
+                    new KiDialogFeld("nutzflaeche", SICHT + "Nutzflaeche", KiDialogTexte.ZonNutzflaecheName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonNutzflaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true),
+                    new KiDialogFeld("bauteil_art", bauteil + "Art", KiDialogTexte.ZonBauteilArtName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonBauteilArtErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_bezeichnung", bauteil + "Bezeichnung",
+                                     KiDialogTexte.ZonBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZonBauteilBezeichnungErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_flaeche", bauteil + "Flaeche", KiDialogTexte.BtFlaecheName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonBauteilFlaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_uwert", bauteil + "UWert", KiDialogTexte.BtUWertName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonBauteilUWertErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_azimut", bauteil + "Azimut", KiDialogTexte.BtAzimutName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonBauteilAzimutErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER, nurLesen: true),
+                    new KiDialogFeld("bauteil_aufbau", bauteil + "Aufbau", KiDialogTexte.ZonBauteilAufbauName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonBauteilAufbauErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Der Bauteildialog (Gebaeudesimulation G3, Welle D2) — zwölf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BauteilKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Bauteilart, Randbedingung und Aufbau sind WAHLFELDER (Listenplätze bzw. Ids der Maske).
+        /// Die Grenzen sind die der Prüfregeln (<c>GebaeudeZonenCtrl.BauteilPruefen</c>, Mehrzonenkonzept
+        /// 5.3); die Prüfung selbst läuft wie am OK-Knopf. Einen Katalogaufbau übernimmt der Anwender
+        /// von Hand — die Kopie in das Projekt ist ein Schreibweg des OK im Gebäudeeditor.
+        /// </remarks>
+        private static KiDialog Bauteil()
+        {
+            const string SICHT = "BauteilKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.BAUTEIL,
+                anzeigename: KiDialogTexte.MaskeBauteil,
+                felder: new[]
+                {
+                    new KiDialogFeld("art", SICHT + "Art", KiDialogTexte.BtArtName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtArtErl),
+                    new KiDialogFeld("bezeichnung", SICHT + "Bezeichnung", KiDialogTexte.ZonBezeichnungName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtBezeichnungErl),
+                    new KiDialogFeld("flaeche", SICHT + "Flaeche", KiDialogTexte.BtFlaecheName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtFlaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("azimut", SICHT + "Azimut", KiDialogTexte.BtAzimutName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtAzimutErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
+                                     min: 0.0, max: 360.0),
+                    new KiDialogFeld("neigung", SICHT + "Neigung", KiDialogTexte.BtNeigungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtNeigungErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
+                                     min: 0.0, max: 180.0),
+                    new KiDialogFeld("randbedingung", SICHT + "Randbedingung", KiDialogTexte.BtRandName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtRandErl),
+                    new KiDialogFeld("gwert", SICHT + "GWert", KiDialogTexte.BtGWertName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtGWertErl,
+                                     leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("rahmenanteil", SICHT + "Rahmenanteil", KiDialogTexte.BtRahmenName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtRahmenErl, leerErlaubt: true,
+                                     min: GebaeudeZonenCtrl.RAHMENANTEIL_MIN, max: GebaeudeZonenCtrl.RAHMENANTEIL_MAX),
+                    new KiDialogFeld("verschattung", SICHT + "Verschattung", KiDialogTexte.BtVerschattungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtVerschattungErl,
+                                     leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("psil", SICHT + "PsiL", KiDialogTexte.BtPsiLName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtPsiLErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_K, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("uwert", SICHT + "UWert", KiDialogTexte.BtUWertName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtUWertErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true,
+                                     min: GebaeudeFestwerte.U_MIN, max: GebaeudeFestwerte.U_MAX),
+                    new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtAufbauName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtAufbauErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
                 });
         }
 

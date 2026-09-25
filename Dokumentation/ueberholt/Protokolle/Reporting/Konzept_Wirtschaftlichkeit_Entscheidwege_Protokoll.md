@@ -1298,7 +1298,12 @@ Schemaschritt 130 samt den Papieren zu #484, #489, #490, #491 und #493; der Merg
 unberührt), in § 8.37 bis § 8.39 **vor #498** (Stand `f55a4cd5` = #496 mit Schemaschritt 141 samt den Papieren zu
 #492, #493, #494, #495 und #496; der Merge #498, `31a0b085`, lässt die Papiere unberührt), in § 8.40 **vor #506**
 (Stand `cbed6dba` = #498 samt seinen Papieren, zusammengeführt mit #499 (Zapfprofilgenerator, ohne Berührung der
-Wirtschaftlichkeit); der Merge #506, `e7c2f8f7`, lässt die Papiere unberührt) —, nicht vor dem Schnitt.*
+Wirtschaftlichkeit); der Merge #506, `e7c2f8f7`, lässt die Papiere unberührt), in § 8.42 und § 8.43 **vor #502**
+(Stand `365143e1` = #506 samt seinen Papieren, zusammengeführt mit `origin` = `f52d38ec` (#501 und #505 mit
+Schemaschritt 142); der Merge #502, `49ea20e0`, lässt die Papiere unberührt), in § 8.44 und § 8.45 **vor #503**
+(Stand `f83ce27d` = #502 samt seinen Papieren, zusammengeführt mit `origin` = `bcd61fe2` (AK1 Welle 5 mit der Basis
+R15 und #507); der Merge #503, `76f8661d`, zieht den Basisnamen an drei Stellen des Konzepts nach — Kopf, Tafel der
+Regressionsanker, § 6.3 Nr. 21) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -2814,3 +2819,104 @@ Die Stellen, die mit E21 veraltet sind; „vorher“ ist der Wortlaut vor #506 (
 | Kopf (Z. 3) | Codestand `31a0b085`; „… E19 ohne Schritt“ | Codestand `e7c2f8f7`; „… E19 und E21 ohne Schritt“ |
 | § 6.3 Nr. 23 | Wortlaut in § 8.40 | durchgestrichen, „erledigt mit E21 (#506)“, siehe Protokoll |
 | § 6.3 Nr. 24 | Wortlaut in § 8.40 | „gemessen 25.09.2026, benannt: …“ (Kurztafel), Kandidaten für die nächste Neueinfrierung, siehe Protokoll |
+
+### 8.42 E20 — Investitionskosten der Wärmepumpe „je kW elektrisch“ aus der Kennlinie am Normpunkt (#502)
+
+Protokoll [`E20_Waermepumpe_kW_elektrisch_Protokoll.md`](E20_Waermepumpe_kW_elektrisch_Protokoll.md); im Register die
+neue Familie R‑E20 und die nachgezogene Zeile Nr. 10 von R‑Rest. Die Welle setzt den Anwenderentscheid zu § 6.3 Nr. 10
+vom 25.09.2026 um (§ 8.39); sie ist keine Etappe des Plans E0–E12 und kommt ohne Schemaschritt aus,
+`SchemaStand.Zielversion` bleibt 142 (#505). Die Fragen E20‑Q1…Q5, Q7 und Q8 hat der Orchestrator am 25.09.2026 (09:15) mit
+der Baufreigabe nach Empfehlung entschieden — alle a; E20‑Q6 ist offen beim Anwender.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E20** (#502, Merge `49ea20e0` über `365143e1`, Zweig `e20` = `a414b768` von `cbed6dba`) | P_el der Wärmepumpe = Ptherm ÷ COP am Normpunkt der Kennlinie `Tab_Kenndaten` bei Vorlauf 35 (A2, B0, W10 je Bauart, interpoliert, nie extrapoliert; E20‑Q1…Q4 a); `EUR_PRO_KW_ELEKTRISCH` an der Wärmepumpe nur im Investitionsraster über den Schalter `investition` der Landkarte, die Betriebsseite bleibt GEWERK (E20‑Q5 a); Beschriftung unverändert, Grund GERAET bei fehlendem Normpunkt (E20‑Q7 a, Q8 a); Herleitung mit zwei neuen Schlüsseln; 13 Testfälle und die Kreuztafel je Raster | **nein** im Bestand — keine Zeile an der Wärmepumpe trägt die Art; Anker unberührt, Referenzlauf 13/13 gegen R14 byte-gleich; A/B an 1024: 1.000 €/kW → 4.000 € |
+
+*§ 6.3 Nr. 10 (vor #502):*
+
+> 10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) — **offen, präzisiert** (Anwender 25.09.2026, → Register
+>     R‑Rest): „Wärmepumpe beides“ nur bei den Investitionskosten nach kW elektrisch und kW thermisch — die
+>     kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind Energiekosten; kleine Bauwelle folgt
+
+**Anwenderregel umgesetzt mit E20 (#502):** Die Investitionskosten der Wärmepumpe bemessen sich je kW thermisch und
+je kW elektrisch — P_el am Normpunkt der Kennlinie —, die Betriebskosten thermisch. **Offen bleibt E20‑Q6:** Das
+Betriebsraster der Wärmepumpe bietet weiter „je kWh elektrisch“ (die Strommenge aus dem Lauf); ob die Art dort bleibt
+(a, Empfehlung) oder entfällt (b), entscheidet der Anwender.
+
+### 8.43 Berichtigungen im gültigen Stand (#502)
+
+Die Stellen, die mit E20 veraltet sind; „vorher“ ist der Wortlaut vor #502 (Stand `365143e1`). Je Stelle eine Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `e7c2f8f7`, Zielversion 141; „90–141 vergeben … E19 und E21 ohne Schritt“ | Codestand `49ea20e0`, Zielversion 142; „90–142 vergeben … 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); E19, E20 und E21 ohne Schritt“ |
+| Schrittabsatz | „**131** bis **141** (… die Folgeberichtigung #496) …; die Etappen E18 (#492) und E19 (#498) kommen ohne Schritt aus“ | „**131** bis **142** (… die Folgeberichtigung #496, die dritte Reparatur #505) …; die Etappen E18 (#492), E19 (#498), E20 (#502) und E21 (#506) kommen ohne Schritt aus“ |
+| § 3.2 Tafel der Runde 1 | ohne Zeile für die Wärmepumpe bei `EUR_PRO_KW_ELEKTRISCH` | neue Zeile „`EUR_PRO_KW_ELEKTRISCH` an der Wärmepumpe, nur Kategorie 1“ mit Σ (Ptherm ÷ COP am Normpunkt) × Satz aus `Tab_Kenndaten`; Satz „je Raster“ und Fußnote ¹ zur Normpunktregel |
+| § 6.1 | — | neue Zeile E20 |
+| § 6.3 Nr. 10 | Wortlaut in § 8.42 | „Anwenderregel umgesetzt mit E20 (#502), offen allein E20‑Q6“, siehe Protokoll |
+| § 7 | „… Nr. 10 ist präzisiert — eine kleine Bauwelle folgt —“ | dahinter der Satz zur kleinen Welle E20 (#502) |
+| Anhang | — | Kürzel- und Etappenzeile E20 |
+
+### 8.44 E22 — Rechenweg-Sortierung nach der Regel „99“ des Hydraulikbilds, Referenzbasis R16 (#503)
+
+Protokoll [`E22_Anlagenprio_Rechenweg_R16_Protokoll.md`](E22_Anlagenprio_Rechenweg_R16_Protokoll.md); im Register die
+neue Familie R‑E22 und die nachgezogenen Zeilen Nr. 18 von R‑Rest und E18‑Q3 von R‑E18. Die Welle setzt den zweiten
+Anwenderentscheid zu § 6.3 Nr. 18 vom 25.09.2026 um — „Nr. 18: so umsetzen, Umbau: Das Hydraulikbild wurde im August
+(HB1) auf die richtige Regel umgestellt: ungepflegte Anlagen nach hinten, Regel ‚99‘“ —, gefallen nach der Messwelle,
+die § 8.39 festhält; sie ist keine Etappe des Plans E0–E12 und kommt ohne Schemaschritt aus, `SchemaStand.Zielversion`
+bleibt 142 (#505). E22‑Q1 ist im Bau nach der A/B-Messung entschieden, nach Empfehlung a.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E22** (#503, Merge `76f8661d` über `f83ce27d`, Zweig `e22` = `c6ee0961` von `cbed6dba`) | die fünf Rechenweg-Leser (`WP_Liste_Laden`, `QuellbezuegeAufbauen`, `SenkenPufferDerAnlagen`, `SenkenLaden`, `SenkenlistenLaden`) und die drei Modul-Lader (`SPK_Liste_Laden`, `Solar_Liste_Laden`, `BHKW_Liste_Laden`) nach `Ladeordnung.SqlAnlagenprio` (E22‑Q1 a), die Vermerke HB1-O1 entfernt, Wache `AnlagenprioRechenwegTests`; Neueinfrierung `2026-09-25_R16_Anlagenprio` (vierzehn Projekte) auf `2026-09-25_R15_Anlagenkopplung` | **nein** — Anker unberührt, alle Werte und Zeitreihen gleich; allein 1042 tauscht in `aggregate.csv` den Modulindex der beiden Wärmepumpen (10 Werte), deshalb die neue Basis |
+
+*§ 6.3 Nr. 18 (vor #503, Z. 2950–2963):*
+
+> 18. Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) — **offen**, nachgemessen mit E18 (#492): Die fünf Rechenweg-Leser
+>     `SimulationControl` (`WP_Liste_Laden`, `QuellbezuegeAufbauen`, `SenkenPufferDerAnlagen`) und `WaermesenkeClass`
+>     (`SenkenLaden`, `SenkenlistenLaden`) sortieren `ORDER BY Prioritaet, ID` und damit ungepflegt (NULL) vor gepflegt;
+>     48 von 60 Wärmeerzeugern der Testdatenbank tragen keine Priorität. Die 99er-Regel der Anzeige
+>     (`Ladeordnung.SqlAnlagenprio`) änderte die Reihenfolge in 5 von 13 Referenzprojekten (1030, 1040, 1041, 1042, 1045;
+>     in 1042 die Modulreihenfolge der Wärmepumpen) — der Umbau ist eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a,
+>     → Register R‑E18); die fünf Stellen tragen im Code den Vermerk „HB1-O1, offen";
+>     Anwender 25.09.2026 nach Empfehlung: zuerst eine Messwelle, danach der Entscheid (→ Register R‑Rest) —
+>     **gemessen 25.09.2026** (Probeumbau der fünf Stellen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne
+>     Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge
+>     der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert;
+>     kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den
+>     Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei
+>     unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus — offen
+
+**Erledigt mit E22 (#503):** Rechenweg, Hydraulikbild und Erzeugerkarten folgen derselben Regel
+`Ladeordnung.SqlAnlagenprio` — gepflegte Priorität zuerst, eine Anlage ohne Priorität (NULL oder 0) hinten, bei
+Gleichstand die ID. Umgestellt sind die fünf Leser aus dem Wortlaut und — nach der A/B-Messung, E22‑Q1 a — die drei
+Modul-Lader des Nebenbefunds. Die Messung des Baus bestätigt die Messwelle: allein 1042 tauscht in `aggregate.csv`
+die Modulreihenfolge der beiden Wärmepumpen (10 Werte, Werte gleich), die drei Lader ändern in keinem Projekt etwas.
+Die Empfehlung der Messwelle, den Umbau mit der nächsten ohnehin fälligen Neueinfrierung zu bündeln, hat der
+Anwender nicht übernommen: E22 hat eine eigene Basis eingefroren.
+
+**Die Basis-Kollision (Befund mit Lehre).** E22 fror zuerst auf R14 `2026-09-25_R15_Anlagenprio` ein (`0dd97e05`,
+dreizehn Projekte); zeitgleich fror die Cloud-Sitzung der Anlagenkopplung, AK1 Welle 5 (`bcd61fe2`),
+`2026-09-25_R15_Anlagenkopplung` ein (vierzehn Projekte, neu 1047, Einfrierregel „gesäte Auslegungsdaten der
+Übergabe“, R14 entfernt) und stand zuerst auf `origin`. E22 ist beim Zusammenführen (`8cb5c69b`) auf diese Basis
+gesetzt worden, der eigene Ordner ist verworfen, E22/6 (`c6ee0961`) hat R16 eingefroren und R15 archiviert. Lehre:
+Zwei Sitzungen, die zugleich eine Basis einfrieren, brauchen Abstimmung; der Basisname ist erst beim Fetch vor dem
+Push endgültig — wie Statusnummer und Schemaschritt.
+
+### 8.45 Berichtigungen im gültigen Stand (#503)
+
+Die Stellen, die mit E22 veraltet sind; „vorher“ ist der Wortlaut vor #503 (Stand `f83ce27d`). Je Stelle eine Zeile;
+„mit dem Merge“ heißt: die Stelle hat E22/6 selbst nachgezogen.
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf (Z. 3) | Codestand `49ea20e0`; Referenzbasis `2026-09-25_R15_Anlagenkopplung`; „… E19, E20 und E21 ohne Schritt“ | Codestand `76f8661d`; Referenzbasis `2026-09-25_R16_Anlagenprio` (mit dem Merge); „… E19, E20, E21 und E22 ohne Schritt“ |
+| Schrittabsatz | „die Etappen E18 (#492), E19 (#498), E20 (#502) und E21 (#506) kommen ohne Schritt aus“ | „…, E20 (#502), E21 (#506) und E22 (#503) kommen ohne Schritt aus“ |
+| § 6.1 | — | neue Zeile E22 |
+| § 6.2, Tafel, Zeile Referenzbasis | `Referenzlaeufe/2026-09-25_R15_Anlagenkopplung` | `Referenzlaeufe/2026-09-25_R16_Anlagenprio` (mit dem Merge) |
+| § 6.3 Nr. 18 | Wortlaut in § 8.44 | durchgestrichen, „erledigt mit E22 (#503)“, siehe Protokoll |
+| § 6.3 Nr. 21 | „heute gilt die Basis `2026-09-24_R14_Kaelteerzeuger`“ | „… `2026-09-25_R16_Anlagenprio`“ (mit dem Merge) |
+| § 6.3 Nr. 24 | „Kandidaten für die nächste Neueinfrierung nach R15“ | „… nach R16“ |
+| § 6.5, Zeile „Zwei Migrationsmechanismen“ | „aufgelöst bis auf drei Ergebnisspalten“ | „aufgelöst mit #501 (Cloud-Sitzung, 25.09.2026: ‚Ad-hoc-DDL der fünf Tabellen entfernt‘) bis auf drei Ergebnisspalten“ |
+| § 7 | — | Satz zur kleinen Welle E22 (#503) |
+| Anhang | — | Kürzel- und Etappenzeile E22 |

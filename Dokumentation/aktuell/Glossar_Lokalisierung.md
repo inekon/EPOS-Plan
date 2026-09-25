@@ -379,6 +379,13 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | flächenbezogene Wärmekapazität | areal heat capacity | Σ ρ·c_p·d in kJ/(m²K); Spalte „Kapazität" → „Heat capacity" |
 | Bezugsperiode (T_BT) | reference period | VDI 6007 Blatt 1, Gl. (10a)–(10d) |
 | Bauteilweg | component method | Rechnung aus Schichten nach VDI 6007 Blatt 1 |
+| Zone | zone | Zone eines Gebäudes (Tab_Zone); in G3 höchstens eine |
+| Klassenweg | class method | Rechnung aus den U-Wert-Gruppen und der Bauweise |
+| Flächenschlüssel | area key | Anteil der Zonenfläche an der Nutzfläche des Gebäudes |
+| Hochrechnung (auf die Projektfläche) | scaling up (to the project area) | Übernahme einer Zone mit dem Skalierungsfaktor |
+| Projektkopie | project copy | die Zeile eines Gebäudes im Projekt (Tab_Gebaeude) |
+| Hülle und Zonen | envelope and zones | Knopf des Gebäudedialogs |
+| Katalogsatz | catalogue record | ein Satz des Gebäudekatalogs |
 
 ## 14. Trinkwarmwasser und Zapfprofil
 

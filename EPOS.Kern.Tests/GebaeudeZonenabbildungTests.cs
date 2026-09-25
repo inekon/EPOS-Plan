@@ -23,6 +23,7 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(ist);
             Assert.Null(ist.Lesefehler);
             Assert.Equal(erwartet.Bezeichnung, ist.Bezeichnung);
+            Zahl(erwartet.Nutzflaeche_M2, ist.Nutzflaeche_M2, erwartet.Bezeichnung + " Nutzfläche");
             Assert.Equal(erwartet.Bauteile.Count, ist.Bauteile.Count);
             for (int i = 0; i < erwartet.Bauteile.Count; i++) GleichesBauteil(erwartet.Bauteile[i], ist.Bauteile[i]);
         }
@@ -59,6 +60,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(erwartet.Bezeichner, ist.Bezeichner);
             Assert.Equal(erwartet.Herkunft, ist.Herkunft);
+            Assert.Equal(erwartet.Nutzflaeche, ist.Nutzflaeche);
             Assert.Equal(erwartet.Bauteile.Count, ist.Bauteile.Count);
             for (int i = 0; i < erwartet.Bauteile.Count; i++)
             {

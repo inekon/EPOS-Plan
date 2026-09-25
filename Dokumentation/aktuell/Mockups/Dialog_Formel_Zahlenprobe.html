@@ -872,6 +872,7 @@ a{color:var(--marine-hell)}
         <tbody>
           <tr><td>Position</td><td>Textfeld</td><td>Eingabe</td></tr>
           <tr><td>Bemessung</td><td>Klappliste, je Gewerk gefiltert</td><td>beim Blockheizkraftwerk: fester Betrag · % der Investition · % der Erzeugerkosten · je kW elektr. Leistung · je kW Heizleistung · je kW elektrisch</td></tr>
+          <tr><td>Bemessung an der Wärmepumpe</td><td>Klappliste, je Gewerk und Raster gefiltert</td><td>Investitionskosten: fester Betrag · % der Investition · % der Erzeugerkosten · je kW Leistung · je kW Heizleistung · je kW elektrisch (nur Investition) — Bezugsgröße ist die elektrische Leistungsaufnahme am Normpunkt der Kennlinie (A2/W35, B0/W35, W10/W35 je Bauart, bei W35 interpoliert); die Herleitung unter dem Betrag nennt „P_el der Anlage · 11,60 kW ÷ COP 2,90 (A2/W35) = 4,00 kW“, bei mehreren Wärmepumpen „Σ P_el am Normpunkt von 2 Wärmepumpen = … kW“; ohne Normpunkt ⚠ mit dem Grund „kein Gerät mit dieser Baugröße im Projekt“. Die Betriebskosten der Wärmepumpe führen „je kW elektrisch“ nicht <span class="zk umg">gebaut #502</span></td></tr>
           <tr><td>Satz</td><td>Zahlenfeld</td><td>Einheit folgt der Bemessung</td></tr>
           <tr><td>Nutzungsdauer</td><td>Zahlenfeld</td><td>nur bei Investitionskosten</td></tr>
           <tr><td>Betrag</td><td>gerechnet, nie eingebbar</td><td>absolute Bemessung: spiegelt den Satz (🔗); sonst Kaskade aus Satz und Bezugsgröße des Projekts — Werkzeugtipp nennt die Rechnung</td></tr>
@@ -913,7 +914,8 @@ a{color:var(--marine-hell)}
   <b>Katalog:</b> „Positionskatalog…" öffnet die Administration der Kostenfaktoren. <b>Bewerten:</b> Die
   Bemessung entscheidet, woran der Satz bemisst — fester Betrag (Satz ist der Betrag), Prozent einer
   Investitionsbasis (Kaskade, Runden 2 und 3) oder ein Satz je Baugröße der Gerätewelt (Runde 1: je kW elektr.
-  Leistung → <span class="mono">Tab_BHKW.Pel</span>, je kW Heizleistung → <span class="mono">Ptherm</span>).
+  Leistung → <span class="mono">Tab_BHKW.Pel</span>, je kW Heizleistung → <span class="mono">Ptherm</span>; an der Wärmepumpe je kW elektrisch → Ptherm ÷ COP am Normpunkt der
+  Kennlinie <span class="mono">Tab_Kenndaten</span>, nur bei den Investitionskosten <span class="zk umg">gebaut #502</span>).
   Kostenart, Erlös-/Zuschusskennzeichen und Empfehlungsbereich pflegt der Zeileneditor (✏️); die
   Hauptposition (<span class="mono">Tab_Kostenfaktor.IsMainComponent</span>) kommt aus dem Positionskatalog.</p>
   <div class="ueb-schleier">
@@ -1104,6 +1106,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Zeileneditor „Position bearbeiten": Bezeichnung, Kostenart, Erlös/Zuschuss, Positionsart, Empfehlung; Kostenarten</td><td class="rs">VPOS_TITEL · VPOS_LBL_BEZEICHNUNG · VPOS_LBL_KOSTENART · VPOS_CHK_ERLOES · VPOS_LBL_POSITIONSART · VPOS_POSITIONSART_KEINE · VPOS_LBL_EMPFEHLUNG · VPOS_LBL_BIS · KOSTENART_KAPITALGEBUNDEN · KOSTENART_BETRIEBSGEBUNDEN · KOSTENART_BEDARFSGEBUNDEN · KOSTENART_SONSTIGE · — (ohne Ressource: WirtschaftlichkeitZeilen.KostenartText)</td><td>Überlagerung des Stifts</td></tr>
         <tr><td>Worst/Best · Übernahme · Löschrückfragen · Pflichtposition</td><td class="rs">KCASE_TITEL · KCASE_BEST_EUR · KCASE_WORST_EUR · KOSTEN_CASE_STARTJAHR · KUEB_TITEL · KUEB_LBL_ZIEL · KUEB_LBL_QUELLPROJEKT · KUEB_SP_ZIEL · KUEB_POS_VORHANDEN · KUEB_POS_NEU · KUEB_VORLAGE_LEER · KUEB_KATALOG_LEER · KDLG_MSG_POS_LOESCHEN · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Überlagerungen und Rückfragen</td></tr>
         <tr><td>Bezugsgrößenzeile „× {0} · {1} · Runde {2}" unter dem Betrag, absolute Zeile „Satz = Betrag"</td><td class="rs">KDLG_HERL_BASIS · KDLG_HERL_ABSOLUT · KDLG_HERK_* · KDLG_GR_*</td><td>Zelle Betrag (U28)</td></tr>
+        <tr><td>Herleitung der elektrischen Leistung der Wärmepumpe am Normpunkt „{0} kW ÷ COP {1} ({2}) = {3} kW“ · Summenform „Σ P_el am Normpunkt von {0} Wärmepumpen = {1} kW“; Größenname „P_el“ <b>neu #502</b></td><td class="rs">KDLG_HERLEITUNG_WP_PEL · KDLG_HERLEITUNG_WP_PEL_SUMME · KDLG_GR_PEL</td><td>Zelle Betrag, Investitionskosten der Wärmepumpe</td></tr>
         <tr><td>Summenzeile „Investition brutto {0} · Zuschuss {1} · I₀ {2}"</td><td class="rs">KDLG_SUMME_DREITEILIG</td><td>Summenfuß (U29)</td></tr>
         <tr><td>Gruppenkopf „Ersatz und Restwert" · Spalten „Betrag" · „Nutzungsdauer n" · „Ersatzbeschaffung" · „Restwert Jahr {0}" · „Herkunft der Dauer"; Zellentexte „Jahr {0}", „{0} von {1}", „Barwert {0}", „— läuft wie T", „— deckungsgleich mit T"</td><td class="rs">ND_TAFEL_TITEL · ND_TAFEL_SP_POSITION · ND_TAFEL_SP_BETRAG · ND_TAFEL_SP_DAUER · ND_TAFEL_SP_ERSATZ · ND_TAFEL_SP_RESTWERT · ND_TAFEL_SP_HERKUNFT · ND_TAFEL_JAHR · ND_TAFEL_VON · ND_TAFEL_BARWERT · ND_TAFEL_WIE_T · ND_TAFEL_GLEICH_T · ND_TAFEL_VORGABE</td><td>Gruppe unter dem Raster (U30)</td></tr>
         <tr><td>Hinweis über der Tafel (Textmuster mit T, Vorgabe, Technik, k, n und Liste)</td><td class="rs">ND_TAFEL_HINWEIS_T · ND_TAFEL_HINWEIS_OHNE · ND_TAFEL_HINWEIS_SCHLUSS · ND_TAFEL_OHNE_EINTRAG</td><td>Über der Gruppe (U30)</td></tr>
@@ -4963,7 +4966,15 @@ Einstufung
   Unternehmensart wirken erst beim nächsten Öffnen) ist durch die Schalentrennung überholt und hat kein Bild. Fragen
   E19‑Q1 bis E19‑Q6 entschieden nach Empfehlung, Q4 b. Die Ressourcentafel der Kategorie 8 nennt den neuen Schlüssel —
   je Sprache 11.011 Einträge auf dem Merge, der Designer führt 11.008 Eigenschaften. Das Schema steht bei 141 (#496, die
-  Folgeberichtigung der Anschlusslängen); E19 hat keinen Schritt.</p>
+  Folgeberichtigung der Anschlusslängen); E19 hat keinen Schritt. <b>E20 (#502) baut Nr. 10</b> — ohne eigene Zeile dieser Tafel: Im Dialog
+  „Investitionskosten“ (Kategorie 1, Erklärtafel unter dem Raster und Absatz „Bewerten“) führt die Klappliste der
+  Wärmepumpe bei den Investitionskosten zusätzlich „je kW elektrisch“; Bezugsgröße ist die elektrische
+  Leistungsaufnahme am Normpunkt der Kennlinie, die Herleitung nennt „11,60 kW ÷ COP 2,90 (A2/W35) = 4,00 kW“; die
+  Betriebskosten der Wärmepumpe bleiben unverändert. Das Musterprojekt der Kategorie 1 ist ein Blockheizkraftwerk, das
+  Raster bleibt; die Zahlen der Zeichnung bleiben — im Bestand keine Rechenwirkung. Fragen E20‑Q1 bis E20‑Q5,
+  Q7 und Q8 entschieden nach Empfehlung a, E20‑Q6 offen beim Anwender. Die Ressourcentafel der Kategorie 1 nennt die zwei neuen
+  Schlüssel — je Sprache 11.013 Einträge auf dem Merge, der Designer führt 11.010 Eigenschaften. Das Schema steht bei
+  142 (#505); E20 hat keinen Schritt.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">

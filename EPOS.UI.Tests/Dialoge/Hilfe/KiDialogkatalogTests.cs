@@ -152,6 +152,14 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.BaustoffKatalogKiSicht) },
         { KiMaskennamen.BAUTEILAUFBAU,
           typeof(EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht) },
+
+        // Gebaeudesimulation G3, Welle D2: Zone und Bauteil, je eine Sichtklasse - die Bauteile
+        // der Zone sind ein Raster zum Lesen, die drei Wahlfelder des Bauteils tragen ihre
+        // Begleiteigenschaft <Feld>Wahl.
+        { KiMaskennamen.ZONE,
+          typeof(EPOS.UI.Dialoge.Bedarf.ZonenKiSicht) },
+        { KiMaskennamen.BAUTEIL,
+          typeof(EPOS.UI.Dialoge.Bedarf.BauteilKiSicht) },
         { KiMaskennamen.TYPPROFIL,
           typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
 
@@ -426,8 +434,8 @@ public class KiDialogkatalogTests : IDisposable
         // der Brauchwasser-Nutzungsarten und sein Editor. Zapfprofil Z4b, Gruppe 2: der Dialog der
         // eingespielten VDI-4655-Typtage. Zapfprofil Z5, Gruppe 3: der Dialog der Messdaten.
         // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
-        // Bauteilaufbauten.
-        Assert.Equal(84, katalog.Anzahl);
+        // Bauteilaufbauten. Welle D2: Zone und Bauteil des Gebaeudeeditors.
+        Assert.Equal(86, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1460,6 +1468,12 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.BAUTEILAUFBAU] =
             "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
             "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",
+        [KiMaskennamen.ZONE] =
+            "bindet über die Sichtklasse ZonenKiSicht auf Bezeichnung, Nutzfläche und das " +
+            "Bauteilraster zum Lesen; Zeuge ist ZonenDialogTests",
+        [KiMaskennamen.BAUTEIL] =
+            "bindet über die Sichtklasse BauteilKiSicht auf die Listenplätze von Art, " +
+            "Randbedingung und Aufbau und den Arbeitsstand des Bauteils; Zeuge ist BauteilDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",

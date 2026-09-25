@@ -159,6 +159,46 @@ namespace EPOS.Kern.Tests
                 foreach (int k in ALLE_GEWERKE)
                     Assert.Equal(TechnikPlanwertCtrl.KenntBaugroesse(k, bem),
                                  BemessungKatalog.PasstZuGewerk(bem, k));
+
+            // E20 (Anwenderentscheid 25.09.2026): Die Landkarte kennt das RASTER — und
+            // bleibt je Raster EINE. Für beide Raster stimmen Auswahl, Grund und
+            // Gerätewelt überein; die Fassung ohne Raster ist die des Betriebsrasters.
+            foreach (bool invest in new[] { false, true })
+            {
+                foreach (BemessungKatalog.Info i in BemessungKatalog.Alle)
+                    foreach (int k in ALLE_GEWERKE)
+                        Assert.Equal(
+                            !string.Equals(WirtschaftlichkeitCtrl.BasisGrund(i.Persistenz, k, false, invest),
+                                           WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
+                                           StringComparison.Ordinal),
+                            BemessungKatalog.PasstZuGewerk(i.Persistenz, k, invest));
+
+                foreach (string bem in geraetearten)
+                    foreach (int k in ALLE_GEWERKE)
+                        Assert.Equal(TechnikPlanwertCtrl.KenntBaugroesse(k, bem, invest),
+                                     BemessungKatalog.PasstZuGewerk(bem, k, invest));
+            }
+        }
+
+        /// <summary>
+        /// E20: Die Raster unterscheiden sich in GENAU EINER Zelle der Kreuztafel —
+        /// „je kW elektrisch" an der Wärmepumpe (Anwenderentscheid 25.09.2026:
+        /// „Wärmepumpe beides" nur bei den Investitionskosten). Jede andere Kombination
+        /// aus Art und Gewerk antwortet in beiden Rastern gleich.
+        /// </summary>
+        [Fact]
+        public void Die_Raster_unterscheiden_sich_nur_in_je_kW_elektrisch_an_der_Waermepumpe()
+        {
+            var abweichend = new List<string>();
+            foreach (BemessungKatalog.Info i in BemessungKatalog.Alle)
+                foreach (int k in ALLE_GEWERKE)
+                    if (BemessungKatalog.PasstZuGewerk(i.Persistenz, k, true) !=
+                        BemessungKatalog.PasstZuGewerk(i.Persistenz, k, false))
+                        abweichend.Add(k + " " + i.Persistenz);
+
+            Assert.Equal(new[] { "1 " + DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH }, abweichend);
+            Assert.True(BemessungKatalog.PasstZuGewerk(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 1, true));
+            Assert.False(BemessungKatalog.PasstZuGewerk(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 1, false));
         }
 
         /// <summary>Am Pufferspeicher führt die verbleibende Art auch wirklich eine
