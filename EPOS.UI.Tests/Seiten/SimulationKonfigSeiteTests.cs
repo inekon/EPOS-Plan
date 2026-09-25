@@ -422,6 +422,138 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(seite.FindAll("section.epos-simkonfig-kuehlung"));
     }
 
+    // =====================================================================
+    //  Anlagenkopplung AK1 Welle 3 (Konzept Anlagenkopplung 9.4, 9.6 Maske 1) —
+    //  die Projekteinstellung „Anlagenkopplung"
+    // =====================================================================
+
+    /// <summary>Was die Kopplungswahl geschrieben hat; die Antwort der Naht steht in <see cref="_kopplungAntwort"/>.</summary>
+    private readonly List<string?> _kopplungGeschrieben = new();
+
+    private bool _kopplungAntwort = true;
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitKopplung(string? stufe)
+    {
+        SimulationParameterDienste wege = Parameterdienste();
+        Func<ParameterDaten> laden = wege.Laden!;
+        wege.Laden = () =>
+        {
+            ParameterDaten p = laden();
+            p.Anlagenkopplung = stufe;
+            return p;
+        };
+        wege.AnlagenkopplungSchreiben = s =>
+        {
+            _kopplungGeschrieben.Add(s);
+            return _kopplungAntwort;
+        };
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste())
+            .Add(x => x.Parameter, wege)
+            .Add(x => x.StartProjekt, 1030));
+    }
+
+    private static IElement Kopplungswahl(IRenderedComponent<SimulationKonfigSeite> seite)
+        => seite.Find("section.epos-simkonfig-anlagenkopplung select");
+
+    private static IElement Kopplungsoption(IRenderedComponent<SimulationKonfigSeite> seite, string wert)
+        => Kopplungswahl(seite).QuerySelectorAll("option").First(o => o.GetAttribute("value") == wert);
+
+    /// <summary>
+    /// Die Wahl führt die vier Stufen der Wertliste; nur „aus" und „Heizkreis (AK1)" sind wählbar,
+    /// Fahrplan (AK2) und geschlossener Kreis (AK3) stehen gesperrt mit ihrem Grund — kein
+    /// Persistenzwert ohne Rechenweg (Kühlkonzept K7). Zeichnen schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Anlagenkopplung_fuehrt_vier_Stufen_und_sperrt_die_nicht_gebauten()
+    {
+        var seite = SeiteMitKopplung(null);
+
+        IElement abschnitt = seite.Find("section.epos-simkonfig-anlagenkopplung");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_ANLAGENKOPPLUNG, abschnitt.TextContent);
+        List<IElement> optionen = Kopplungswahl(seite).QuerySelectorAll("option")
+            .Where(o => o.GetAttribute("value") != "").ToList();
+        Assert.Equal(4, optionen.Count);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_AUS, optionen[0].TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_AK1, optionen[1].TextContent.Trim());
+        Assert.False(optionen[0].HasAttribute("disabled"));
+        Assert.False(optionen[1].HasAttribute("disabled"));
+        Assert.True(optionen[2].HasAttribute("disabled"));
+        Assert.True(optionen[3].HasAttribute("disabled"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[2].TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[3].TextContent);
+
+        Assert.True(optionen[0].HasAttribute("selected"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS, abschnitt.TextContent);
+        Assert.Empty(_kopplungGeschrieben);
+    }
+
+    /// <summary>„Heizkreis (AK1)" schreibt SOFORT, wie der Kühlschalter; „aus" schreibt NULL.</summary>
+    [Fact]
+    public void AK1_schreibt_sofort_und_aus_schreibt_null()
+    {
+        var seite = SeiteMitKopplung(null);
+
+        Kopplungswahl(seite).Change("1");
+        Assert.Equal(new string?[] { WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1 }, _kopplungGeschrieben);
+        Assert.Equal(WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1, seite.Instance.Laufparameter.Anlagenkopplung);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1, seite.Find("section.epos-simkonfig-anlagenkopplung").TextContent);
+
+        Kopplungswahl(seite).Change("0");
+        Assert.Equal(new string?[] { WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1, null }, _kopplungGeschrieben);
+        Assert.Null(seite.Instance.Laufparameter.Anlagenkopplung);
+    }
+
+    /// <summary>Eine gesperrte Stufe lässt das Feld nicht zu: Es wird nichts geschrieben.</summary>
+    [Fact]
+    public void Eine_nicht_gebaute_Stufe_schreibt_nicht()
+    {
+        var seite = SeiteMitKopplung(null);
+
+        Kopplungswahl(seite).Change("2");
+
+        Assert.Empty(_kopplungGeschrieben);
+        Assert.Null(seite.Instance.Laufparameter.Anlagenkopplung);
+    }
+
+    /// <summary>
+    /// Steht eine nicht gebaute Stufe schon in der Datenbank, zeigt die Wahl sie, und die Zeile
+    /// sagt, dass der Lauf den Heizkreis (AK1) rechnet.
+    /// </summary>
+    [Fact]
+    public void Eine_gespeicherte_nicht_gebaute_Stufe_steht_da_und_nennt_was_der_Lauf_rechnet()
+    {
+        var seite = SeiteMitKopplung(WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK2);
+
+        Assert.True(Kopplungsoption(seite, "2").HasAttribute("selected"));
+        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT, WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_AK2),
+                        seite.Find("section.epos-simkonfig-anlagenkopplung").TextContent);
+    }
+
+    /// <summary>Scheitert das Schreiben, kehrt die Wahl zum gespeicherten Stand zurück, und die Fußzeile meldet es.</summary>
+    [Fact]
+    public void Ein_gescheitertes_Schreiben_der_Kopplung_wird_gemeldet_und_die_Wahl_kehrt_zurueck()
+    {
+        _kopplungAntwort = false;
+        var seite = SeiteMitKopplung(null);
+
+        Kopplungswahl(seite).Change("1");
+
+        Assert.Equal(new string?[] { WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1 }, _kopplungGeschrieben);
+        Assert.Null(seite.Instance.Laufparameter.Anlagenkopplung);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER, seite.Markup);
+        Assert.True(Kopplungsoption(seite, "0").HasAttribute("selected"));
+    }
+
+    /// <summary>Ohne Schreibweg (eine Plattform ohne die Naht) steht kein Abschnitt „Anlagenkopplung".</summary>
+    [Fact]
+    public void Ohne_Schreibweg_steht_kein_Kopplungsabschnitt()
+    {
+        var seite = SeiteMitParametern();
+
+        Assert.Empty(seite.FindAll("section.epos-simkonfig-anlagenkopplung"));
+    }
+
     /// <summary>
     /// <b>Anwenderwunsch 16.09.2026</b> (Screenshots „Simulation → Konfiguration"):
     /// „Erstelle dort einen Knopf anstelle des blauen Balkens ‚Parameter für die

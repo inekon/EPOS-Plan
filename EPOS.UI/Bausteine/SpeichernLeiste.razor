@@ -39,8 +39,12 @@
                 @onclick="() => Ergebnis.InvokeAsync(false)">@AbbrechenText</button>
     }
 
+    @* Die WEICHE Sperre (OkSperrgrund): aria-disabled und der Grund als title, der Knopf
+       bleibt anklickbar - der Dialog meldet den Versuch. Ohne Grund stehen beide Attribute
+       nicht im Markup, die Leiste zeichnet wie zuvor. *@
     <button type="button" class="epos-knopf epos-knopf--primaer"
-            disabled="@(!OkErlaubt)" @onclick="() => Ergebnis.InvokeAsync(true)">@OkText</button>
+            disabled="@(!OkErlaubt)" aria-disabled="@(OkSperrgrund is null ? null : "true")"
+            title="@OkSperrgrund" @onclick="() => Ergebnis.InvokeAsync(true)">@OkText</button>
 </div>
 
 @code {
@@ -70,6 +74,15 @@
 
     /// <summary>OK anklickbar? Der Dialog entscheidet, was eine gueltige Eingabe ist.</summary>
     [Parameter] public bool OkErlaubt { get; set; } = true;
+
+    /// <summary>
+    /// Der Grund einer WEICHEN Sperre des OK-Knopfs; <c>null</c> = keine (Vorgabe). Gesetzt,
+    /// trägt der Knopf <c>aria-disabled="true"</c> und den Grund als <c>title</c>, bleibt aber
+    /// anklickbar und meldet <see cref="Ergebnis"/> mit <c>true</c> — der Dialog meldet den
+    /// Versuch (Hausregel: ein gesperrtes Bedienelement, das seinen Grund erklären soll, darf
+    /// nicht <c>disabled</c> sein). <see cref="OkErlaubt"/> bleibt die HARTE Sperre.
+    /// </summary>
+    [Parameter] public string? OkSperrgrund { get; set; }
 
     /// <summary>Zeigt den Speichern-Knopf. Ohne ihn bleibt die Leiste OK/Abbrechen.</summary>
     [Parameter] public bool MitSpeichern { get; set; }

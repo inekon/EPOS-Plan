@@ -1708,10 +1708,94 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 131 - vollstaendig: " + TwwSchema.T3TyptageVollstaendig() + " (erwartet True).");
             }
 
-            // ---- Schritt 135: die eingespielten Messreihen eines Projekts
+            // ---- Schritte S-A, S-B, S-C (Gebaeudesimulation Stufe G3, Welle B;
+            //      Softwarearchitektur 2.2/2.4, W1): Baustoffkatalog samt Norm- und Herstellersaat, Bauteilaufbauten
+            //      mit Schichten, Zonen und Bauteile - acht STRICT-Tabellen aus DENSELBEN Quellen, aus
+            //      denen sich SchemaMigration.Schritt_BaustoffKatalog, Schritt_Bauteilaufbau und
+            //      Schritt_Zonen bedienen (BaustoffSchema, BauteilaufbauSchema, ZonenSchema).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Tabellen; kein Projekt fuehrt
+            //      eine Zone.
+            string nrBaustoff = BaustoffSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrAufbau = BauteilaufbauSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrZonen = ZonenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBaustoff + " - Baustoffkatalog: " +
+                              (BaustoffSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrAufbau + " - Bauteilaufbauten: " +
+                              (BauteilaufbauSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrZonen + " - Zonen und Bauteile: " +
+                              (ZonenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                BaustoffSchema.Bericht berichtBaustoff = BaustoffSchema.Ausfuehren();
+                tabellen += berichtBaustoff.TabellenAngelegt;
+                Console.WriteLine("Schritt " + nrBaustoff + " - " + berichtBaustoff.Zeile() + ".");
+                Console.WriteLine("Schritt " + nrBaustoff + " - vollstaendig: " + BaustoffSchema.Vollstaendig() + " (erwartet True).");
+
+                int aufbau = BauteilaufbauSchema.Ausfuehren();
+                tabellen += aufbau;
+                Console.WriteLine("Schritt " + nrAufbau + " - " + aufbau + " von 4 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + BauteilaufbauSchema.Vollstaendig() + " (erwartet True).");
+
+                int zonen = ZonenSchema.Ausfuehren();
+                tabellen += zonen;
+                Console.WriteLine("Schritt " + nrZonen + " - " + zonen + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + ZonenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritte KuehluebergabeSchema.SCHRITT bis SCHRITT_ZONE (Anlagenkopplung AK1
+            //      Welle 4, E37): KAK-S1 - acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM)
+            //      samt viertem Sichtneubau (98 Spalten); KAK-S3 - die Ergebnisspalten der
+            //      Kaelteseite an Tab_ErgebnisEnergiebedarf und Tab_ErgebnisGebaeude; die drei
+            //      Zonenspalten der Kuehluebergabe an Tab_Zone. REIN DDL aus DERSELBEN Quelle, aus
+            //      der sich SchemaMigration.Schritt_Kuehluebergabe, Schritt_KuehluebergabeErgebnis
+            //      und Schritt_KuehluebergabeZone bedienen (KuehluebergabeSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108 und 122 oben bauen die
+            //      Sicht jeweils neu; nur so traegt sie am Ende die Spalten der Kuehluebergabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - der Schalter 0, alles andere NULL; kein
+            //      Referenzprojekt rechnet gekoppelt, und der Export nimmt die Ergebnisspalten erst
+            //      mit einem Wert auf.
+            string nrKuehl = KuehluebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrKuehlErgebnis = KuehluebergabeSchema.SCHRITT_ERGEBNIS.ToString(CultureInfo.InvariantCulture);
+            string nrKuehlZone = KuehluebergabeSchema.SCHRITT_ZONE.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKuehl + " - Kuehluebergabe am Gebaeude (KAK-S1): " +
+                              (KuehluebergabeSchema.GebaeudeVollstaendig() ? "steht bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrKuehlErgebnis + " - Ergebnisspalten der Kaelteseite (KAK-S3): " +
+                              (KuehluebergabeSchema.ErgebnisVollstaendig() ? "stehen bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrKuehlZone + " - Kuehluebergabe an der Zone: " +
+                              (KuehluebergabeSchema.ZoneVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKuehl = new List<string>();
+                angelegt += KuehluebergabeSchema.GebaeudeAlle(berichtKuehl);
+                foreach (string zeile in berichtKuehl)
+                    Console.WriteLine("Schritt " + nrKuehl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehl + " - vollstaendig: " + KuehluebergabeSchema.GebaeudeVollstaendig() +
+                                  " (erwartet True).");
+
+                var berichtKuehlErgebnis = new List<string>();
+                angelegt += KuehluebergabeSchema.ErgebnisAlle(berichtKuehlErgebnis);
+                foreach (string zeile in berichtKuehlErgebnis)
+                    Console.WriteLine("Schritt " + nrKuehlErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehlErgebnis + " - vollstaendig: " + KuehluebergabeSchema.ErgebnisVollstaendig() +
+                                  " (erwartet True).");
+
+                var berichtKuehlZone = new List<string>();
+                angelegt += KuehluebergabeSchema.ZoneAlle(berichtKuehlZone);
+                foreach (string zeile in berichtKuehlZone)
+                    Console.WriteLine("Schritt " + nrKuehlZone + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehlZone + " - vollstaendig: " + KuehluebergabeSchema.ZoneVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 138: die eingespielten Messreihen eines Projekts
             //      (Zapfprofilgenerator Stufe Z5, Schemaschritt T4 "Messreihen"). NACH 131.
             //      REIN DDL aus DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_135_ZapfprofilMessreihen bedient
+            //      SchemaMigration.Schritt_138_ZapfprofilMessreihen bedient
             //      (TwwSchema.AnweisungenT4Messreihen und TwwSchema.IndizesT4Messreihen):
             //      Tab_TwwMessreihe samt Index auf ID_Projekt.
             //
@@ -1720,12 +1804,12 @@ namespace Testdatenbankschema
             //      gehoeren dem Objekt); eingespielt werden sie allein beim Anwender.
             Console.WriteLine();
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
-                tabellen += TabelleSicherstellen(a.Key, a.Value, 135, trocken);
+                tabellen += TabelleSicherstellen(a.Key, a.Value, TwwSchema.SCHRITT_T4_MESSREIHEN, trocken);
             if (!trocken)
                 foreach (KeyValuePair<string, string> i in TwwSchema.IndizesT4Messreihen)
                 {
                     DataRepository.ExecuteNonQuery(i.Value);
-                    Console.WriteLine("Schritt 135 - Index " + i.Key + " sichergestellt.");
+                    Console.WriteLine("Schritt " + TwwSchema.SCHRITT_T4_MESSREIHEN.ToString(CultureInfo.InvariantCulture) + " - Index " + i.Key + " sichergestellt.");
                 }
 
             Console.WriteLine();

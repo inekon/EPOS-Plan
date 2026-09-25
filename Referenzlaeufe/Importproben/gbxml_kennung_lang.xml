@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EPOS-Plan Importprobe (selbst erzeugt): eine Flaechenkennung mit 80 Zeichen - gekuerzt auf 56 Zeichen und acht Zeichen SHA-256 -->
+<gbXML xmlns="http://www.gbxml.org/schema" version="0.37" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true">
+  <Campus id="campus-1">
+    <Location><ZipcodeOrPostalCode>00000</ZipcodeOrPostalCode><CADModelAzimuth>0</CADModelAzimuth></Location>
+    <Building id="geb-1" buildingType="SingleFamily"><Name>Haus 1</Name>
+      <Space id="raum-1" conditionType="Heated"><Name>Wohnraum</Name><Area>50</Area><Volume>125</Volume></Space>
+    </Building>
+    <Surface id="aussenwand-nord-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-1"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>90</Tilt><Width>10</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="aw-sued" surfaceType="ExteriorWall"><AdjacentSpaceId spaceIdRef="raum-1"/><RectangularGeometry><Azimuth>180</Azimuth><Tilt>90</Tilt><Width>10</Width><Height>2.5</Height></RectangularGeometry></Surface>
+    <Surface id="dach" surfaceType="Roof"><AdjacentSpaceId spaceIdRef="raum-1"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>0</Tilt><Width>10</Width><Height>5</Height></RectangularGeometry></Surface>
+    <Surface id="bodenplatte" surfaceType="SlabOnGrade"><AdjacentSpaceId spaceIdRef="raum-1"/><RectangularGeometry><Azimuth>0</Azimuth><Tilt>180</Tilt><Width>10</Width><Height>5</Height></RectangularGeometry></Surface>
+  </Campus>
+</gbXML>

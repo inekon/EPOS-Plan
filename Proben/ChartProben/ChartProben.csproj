@@ -89,6 +89,10 @@
     <!-- Zapfprofilgenerator Z2: die Bilder der Auslegung Summenlinie, Wertepaarkurve und
          massgebende Woche - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Auslegung.cs" />
+
+    <!-- Anlagenkopplung AK1 Welle 3: das Bild Vorlauf und Ruecklauf mit Luecken ohne
+         Heizbetrieb - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Anlagenkopplung.cs" />
   </ItemGroup>
 
   <ItemGroup>

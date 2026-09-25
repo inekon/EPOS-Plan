@@ -84,7 +84,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Action Pruefnaht = () => { };
 
-        /// <summary>Führt die Datenbank die Tabelle der Messreihen (Stand ab Schritt 135)?</summary>
+        /// <summary>Führt die Datenbank die Tabelle der Messreihen (Stand ab Schemaschritt T4, <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>)?</summary>
         internal static bool TabelleVorhanden() => DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_MESSREIHE);
 
         // =================================================================================

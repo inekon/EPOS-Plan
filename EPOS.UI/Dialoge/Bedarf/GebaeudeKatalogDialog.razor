@@ -350,6 +350,21 @@
                         </KindInhalt>
                     </Gruppenkopf>
 
+                    @* ---- Waermeuebergabe (Stufe AK1; Anlagenkopplung 9.1, 9.2; E20, H11) --
+                       Unter dem Rechenweg, ueber der Kuehlung - sie gehoert zur
+                       Modellparametrierung, nicht zur Huelle. Teil der VDI-Struktur, deshalb
+                       IMMER sichtbar; auf dem Tagesbilanz-Weg sagt eine Zeile, dass die Eingaben
+                       erst mit VDI 6007 gelten (F-A18, bis GA). Die Felder zeichnet der Baustein
+                       GebaeudeWaermeuebergabeFelder - derselbe im Stammblatt der Verwaltung. *@
+                    <Gruppenkopf Titel="@Texte.Uebergabe.Gruppe">
+                        <KindInhalt>
+                            <GebaeudeWaermeuebergabeFelder Arbeit="@_arbeit" Texte="@Texte"
+                                                           Herleitung="@UebergabeHerleitung"
+                                                           WochenVorschau="@WochenVorschau"
+                                                           EntprellungMs="@EntprellungMs" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
                     @* ---- Kuehlung (Stufe KU1; Kuehlkonzept 8.1; E20, E31) ---------------
                        Teil der VDI-Struktur, deshalb IMMER sichtbar und bearbeitbar - auch auf
                        dem Tagesbilanz-Weg; dort sagt eine Herleitungszeile, dass die Eingaben
@@ -556,6 +571,18 @@
 
     /// <summary>Meldet, wie die Brauchwasserliste geschlossen wurde.</summary>
     [Parameter] public Action<bool>? BrauchwasserFertig { get; set; }
+
+    /// <summary>
+    /// Leitet Auslegungs-Außentemperatur und Nennleistung der Wärmeübergabe aus dem Kern her
+    /// (Anlagenkopplung 8.4, H10) — über die Hülle; <c>null</c> = die Zeilen nennen die Regel ohne Zahl.
+    /// </summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
+
+    /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms aus dem Kern; <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
+
+    /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>
     /// Der Dialog wurde geschlossen: <c>true</c> nach einem erfolgreichen OK-Weg,
@@ -850,7 +877,8 @@
             // Welle #458 Stufe 3b: die Randbedingung des Hüll-Rasters und die Ferien.
             RandbedingungEintraege = () => KiMaskenanmeldung.Eintraege(
                 Randeintraege, e => e.Id, e => e.Text),
-            Ferienname = Ferienname
+            Ferienname = Ferienname,
+            Texte = Texte
         });
     }
 

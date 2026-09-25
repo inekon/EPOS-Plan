@@ -328,7 +328,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **131**, LFS-SHA-256 `a4a88c33…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **138**, SHA-256 `80117ca8…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -637,6 +637,54 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > eingespielte Typtage ist der Typtagweg benannt nicht verfügbar.
 > Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
 > 160/160 CSV **byte-gleich**.
+
+> **Nachtrag AK1 Welle 4 (E37): Schemastände 135 bis 137 (Kälteseite der Anlagenkopplung), die Basis
+> bleibt.** Drei Migrationsschritte, die Nummern stehen allein bei `KuehluebergabeSchema` (Quelle für
+> Migration, Werkzeug und Testvorrichtung): **135** (`SCHRITT_KUEHLUEBERGABE`, KAK-S1) legt die acht
+> Spalten der Kühlübergabe an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` — `Kuehluebergabe_Aktiv` (0/1,
+> Vorgabe 0), `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn`,
+> `Kuehl_Auslegung_Vorlauf`, `Kuehl_Auslegung_Ruecklauf`, `Kuehl_Auslegung_Raumtemperatur`,
+> `Kuehl_Vorlaufgrenze`, sonst alle NULL — und baut die Sicht `Abfrage_Projektgebaeude` zum vierten Mal
+> neu (98 Spalten, die 90 davor an ihren Stellen); **136** (`SCHRITT_KUEHLUEBERGABE_ERGEBNIS`, KAK-S3)
+> hängt `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und `Kuehl_Uebergabe_Begrenzt_Stunden` an
+> `Tab_ErgebnisEnergiebedarf` und `Kuehl_Uebergabe_Art` (CHECK der drei Arten), `KuehlVorlaufMittel_C`,
+> `KuehlRuecklaufMittel_C`, `KuehlUebergabeBegrenzt_H` und `KuehlVorlaufgrenze_H` (0 … 8 760) an
+> `Tab_ErgebnisGebaeude`; **137** (`SCHRITT_KUEHLUEBERGABE_ZONE`) hängt `Kuehl_Uebergabe_Art` (CHECK samt
+> `IDEAL`), `Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn` an `Tab_Zone` — **reines
+> DDL**. Sie stehen nach S-C (134, Stufe G3). Die drei Energiebedarf-Spalten gehen erst mit einem Wert in
+> `aggregate.csv` (`SpaltenNurMitWert`). Nachgezogen auf der Fassung von origin mit Schemastand **134**
+> (G3 Welle B, `9d3c006a…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: 27 Spalten
+> neu, Marker 137; ein zweiter Lauf legt nichts an. Zellvergleich aller Tabellen gegen die Fassung 134
+> (10 504 069 Zellen): allein `SchemaVersion` 134 → 137, die 27 neuen Spalten (der Schalter 0, alles
+> andere NULL) und die Sicht; `integrity_check` ok, `foreign_key_check` leer, 141 Tabellen (alle STRICT),
+> 14 Sichten, 215 Indizes. Größe 67 887 104 Byte (LFS-SHA-256 `834aa718…`). **Ergebnisneutral:** Kein
+> Referenzprojekt rechnet gekoppelt. **Keine Einfrierregel ist berührt**; die Einfrierregel der
+> Auslegungsdaten der Wärme- und Kühlübergabe samt `Kuehluebergabe_Aktiv` kommt mit der fünften Welle von
+> AK1. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394
+> CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag Stufe Z5: Schemastand 138 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
+> Basis bleibt.** Ein Migrationsschritt, die Nummer steht allein bei
+> `TwwSchema.SCHRITT_T4_MESSREIHEN` (Quelle für Migration, Werkzeug und Testvorrichtung; sie folgt
+> lückenlos auf 137): **138** (`SCHRITT_138_ZAPFPROFIL_MESSREIHEN`) legt `Tab_TwwMessreihe` an —
+> STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
+> (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`), `ID_Projekt` mit `ON DELETE CASCADE`, kein `Status`
+> und kein `ReadOnly` — samt ihrem Index auf `ID_Projekt`. **Reines DDL;** die Tabelle entsteht LEER
+> und bleibt es: Gemessene Reihen gehören dem Objekt (Konzept Kapitel 9 K5), das Repositorium bringt
+> keine mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfügbar.
+> Nachgezogen auf der Fassung von origin mit Schemastand **137** (AK1 Welle 4, `834aa718…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> 1 Tabelle und 1 Index neu, Marker 138; ein zweiter Lauf legt nichts an. Danach der fiktive
+> Testkatalog der Stufen Z0 bis Z5
+> (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite`):
+> 14 Zeilen neu, 16 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
+> Bedarfstage mit 33 Ereignissen, 85 Parameter, fünf DIN-4708-Werte und 24 Zapfkategorien, alle
+> `FIKTIV` oder „(abgeleitet)"; kein Normwert, kein Herstellerwert, keine Projektzeile.
+> `integrity_check` ok, `foreign_key_check` leer, 142 Tabellen (alle STRICT), 14 Sichten,
+> 217 Indizes. Größe 67 903 488 Byte (SHA-256 `80117ca8…`). **Ergebnisneutral:** Kein
+> Referenzprojekt führt eine Messreihe, und kein Rechenweg der dreizehn liest den Tww-Katalog.
+> **Keine Einfrierregel ist berührt.**
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem

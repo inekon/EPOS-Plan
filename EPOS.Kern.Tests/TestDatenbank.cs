@@ -660,7 +660,7 @@ namespace EPOS.Kern.Tests
                 // ... und die WAHL des Typtagwegs je Projekt aus DERSELBEN Quelle
                 // (TwwSchema.SpaltenT3Typtage) - Typtage_Aktiv steht auf 0, beide Angaben auf NULL.
                 TwwSchema.T3TyptageAlle(null);
-                // Schritt 135 (Zapfprofilgenerator Stufe Z5, T4 "Messreihen"): die eingespielten
+                // Schritt T4 (Zapfprofilgenerator Stufe Z5, T4 "Messreihen"): die eingespielten
                 // Messreihen eines Projekts samt Index auf ID_Projekt. Reines DDL aus DERSELBEN
                 // Quelle wie Migration und Werkzeug (TwwSchema.AnweisungenT4Messreihen,
                 // TwwSchema.IndizesT4Messreihen); IF NOT EXISTS ist selbst wiederholbar. Die
@@ -674,6 +674,22 @@ namespace EPOS.Kern.Tests
                 // Anschlusslaengen im Gebaeudekatalog nach Satz, Spalte und Schadensbild. Aus
                 // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
                 GebaeudeAnschlusslaengenReparatur.Ausfuehren();
+                // Schritte S-A, S-B, S-C (Gebaeudesimulation G3, Welle B): Baustoffkatalog samt
+                // Norm- und Herstellersaat, Bauteilaufbauten mit Schichten, Zonen und Bauteile. Aus DENSELBEN
+                // Quellen wie Migration und Werkzeug (BaustoffSchema, BauteilaufbauSchema,
+                // ZonenSchema); wiederholbar.
+                BaustoffSchema.Ausfuehren();
+                BauteilaufbauSchema.Ausfuehren();
+                ZonenSchema.Ausfuehren();
+
+                // Schritte KuehluebergabeSchema.SCHRITT bis SCHRITT_ZONE (Anlagenkopplung AK1 Welle 4,
+                // E37): KAK-S1 - acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM) und der
+                // vierte Sichtneubau, ZULETZT, damit kein aelterer Durchgang oben die Spalten wieder
+                // aus der Sicht schneidet; KAK-S3 - die Ergebnisspalten der Kaelteseite; die drei
+                // Zonenspalten. Aus DENSELBEN Quellen wie Migration und Werkzeug; wiederholbar, kein DML.
+                KuehluebergabeSchema.GebaeudeAlle(null);
+                KuehluebergabeSchema.ErgebnisAlle(null);
+                KuehluebergabeSchema.ZoneAlle(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

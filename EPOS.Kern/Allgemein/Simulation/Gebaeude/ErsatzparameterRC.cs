@@ -328,6 +328,16 @@ namespace WindowsFormsApplication1
         /// <summary>Die Herleitung je Bauteil — nur im Bauteilweg; im Klassenweg leer.</summary>
         internal IReadOnlyList<BauteilHerleitung> Bauteilherleitung { get; private init; } = Array.Empty<BauteilHerleitung>();
 
+        /// <summary>
+        /// Der in Gl. (27) wirksame U-Wert je Bauteil [W/(m²K)], in der Reihenfolge des
+        /// übergebenen Bauteilsatzes (Bauteilweg; leer im Klassenweg): eingetragen, sonst aus den
+        /// Schichten; NaN für ein Innenbauteil ohne Angabe. Aus derselben Rechnung wie
+        /// <see cref="SummeUA_opak_WK"/> und <see cref="UA_Fenster_WK"/> — der Eingangsbauer
+        /// gewichtet damit die äquivalente Außentemperatur je Bauteil (Gl. (41)), ohne den
+        /// U-Wert ein zweites Mal zu rechnen.
+        /// </summary>
+        internal IReadOnlyList<double> UWirksamJeBauteil_WM2K { get; private init; } = Array.Empty<double>();
+
         /// <summary>Der Weg der Außenbauteilgruppe (Klassenweg oder Bauteilweg, Mehrzonenkonzept 3.6).</summary>
         internal Gruppenweg WegAussen { get; private init; }
 
@@ -541,9 +551,9 @@ namespace WindowsFormsApplication1
                 throw BauteilEingang.Bereich(GebaeudeModellFehler.ParameterUngueltig, wer, "H_ve", g.Lueftungsleitwert_WK, "[0; ∞) W/K");
 
             // ---- Prüfen und Gruppen bilden ----
-            var aussen = new List<(BauteilEingang B, string Wer)>();
-            var fenster = new List<(BauteilEingang B, string Wer)>();
-            var innen = new List<(BauteilEingang B, string Wer)>();
+            var aussen = new List<(BauteilEingang B, string Wer, int I)>();
+            var fenster = new List<(BauteilEingang B, string Wer, int I)>();
+            var innen = new List<(BauteilEingang B, string Wer, int I)>();
             double psiL = 0.0;
             for (int i = 0; i < bauteile.Count; i++)
             {
@@ -553,9 +563,9 @@ namespace WindowsFormsApplication1
                 psiL += b.PsiL_WK;
                 switch (b.Gruppe)
                 {
-                    case Bauteilgruppe.Fenster: fenster.Add((b, werB)); break;
-                    case Bauteilgruppe.Innen: innen.Add((b, werB)); break;
-                    default: aussen.Add((b, werB)); break;
+                    case Bauteilgruppe.Fenster: fenster.Add((b, werB, i)); break;
+                    case Bauteilgruppe.Innen: innen.Add((b, werB, i)); break;
+                    default: aussen.Add((b, werB, i)); break;
                 }
             }
             if (aussen.Count == 0)
@@ -563,16 +573,17 @@ namespace WindowsFormsApplication1
                     Bauteilreduktion.Format(MyResource.Resource.SIMENG_G3_KEINE_AUSSENBAUTEILE, wer));
 
             var herleitung = new List<BauteilHerleitung>();
+            var uJeBauteil = new double[bauteile.Count];
 
             // ---- Flächen und Übergänge im Raum (A2, A6) ----
             double aOpak = 0.0, aFenster = 0.0, alphaAw = 0.0, alphaAussen = 0.0;
-            foreach ((BauteilEingang b, _) in aussen)
+            foreach ((BauteilEingang b, _, _) in aussen)
             {
                 aOpak += b.Flaeche_M2;
                 alphaAw += AlphaKonInnen(b) * b.Flaeche_M2;
                 alphaAussen += AlphaAussenGesamt(b) * b.Flaeche_M2;
             }
-            foreach ((BauteilEingang b, _) in fenster)
+            foreach ((BauteilEingang b, _, _) in fenster)
             {
                 aFenster += b.Flaeche_M2;
                 alphaAw += AlphaKonInnen(b) * b.Flaeche_M2;
@@ -585,7 +596,7 @@ namespace WindowsFormsApplication1
             {
                 aIw = 0.0;
                 double alphaIw = 0.0;
-                foreach ((BauteilEingang b, _) in innen)
+                foreach ((BauteilEingang b, _, _) in innen)
                 {
                     aIw += b.Flaeche_M2;
                     alphaIw += AlphaKonInnen(b) * b.Flaeche_M2;
@@ -607,7 +618,7 @@ namespace WindowsFormsApplication1
             double uaOpak = 0.0;
             var zweigeAw = new List<(double R1_KW, double C1_Jk)>();
             var masseloseAw = new List<(BauteilEingang B, string Wer, double R_KW, double UGerechnet)>();
-            foreach ((BauteilEingang b, string werB) in aussen)
+            foreach ((BauteilEingang b, string werB, int ib) in aussen)
             {
                 double uGerechnet = double.NaN;
                 Schichtkennwerte kennwerte = default;
@@ -619,6 +630,7 @@ namespace WindowsFormsApplication1
                 }
                 double uWirksam = double.IsNaN(b.UWert_WM2K) ? uGerechnet : b.UWert_WM2K;
                 uaOpak += uWirksam * b.Flaeche_M2;
+                uJeBauteil[ib] = uWirksam;
 
                 if (b.HatSchichten && kennwerte.Kapazitaet_JM2K > 0.0)
                 {
@@ -674,12 +686,13 @@ namespace WindowsFormsApplication1
             if (fenster.Count > 0)
             {
                 double leitwertAf = 0.0;
-                foreach ((BauteilEingang b, string werB) in fenster)
+                foreach ((BauteilEingang b, string werB, int ib) in fenster)
                 {
                     double rAf = WiderstandGl26(b, werB, GebaeudeModellFehler.FensterzweigUngueltig);
                     double r1 = rAf / 6.0;
                     leitwertAf += 1.0 / r1;
                     uaFenster += b.UWert_WM2K * b.Flaeche_M2;
+                    uJeBauteil[ib] = b.UWert_WM2K;
                     herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Fenster, true, double.NaN, double.NaN, double.NaN,
                                                          r1, double.NaN, double.NaN, b.UWert_WM2K));
                 }
@@ -689,7 +702,7 @@ namespace WindowsFormsApplication1
 
             // ---- Innenbauteilgruppe ----
             var zweigeIw = new List<(double R1_KW, double C1_Jk)>();
-            foreach ((BauteilEingang b, string werB) in innen)
+            foreach ((BauteilEingang b, string werB, int ib) in innen)
             {
                 double uGerechnet = double.NaN;
                 bool mitMasse = false;
@@ -702,6 +715,7 @@ namespace WindowsFormsApplication1
                     mitMasse = kennwerte.Kapazitaet_JM2K > 0.0;
                 }
                 double uWirksam = double.IsNaN(b.UWert_WM2K) ? uGerechnet : b.UWert_WM2K;
+                uJeBauteil[ib] = uWirksam;
                 if (mitMasse)
                 {
                     Bezugsperiodenwahl wahl = Bauteilreduktion.BezugsperiodeWaehlen(b.Schichten, b.Flaeche_M2,
@@ -749,7 +763,8 @@ namespace WindowsFormsApplication1
             {
                 throw new GebaeudeModellException(ex.Grund, wer + ": " + ex.Message);
             }
-            return p with { Bauteilherleitung = herleitung.AsReadOnly(), WegAussen = wegAussen, WegInnen = wegInnen };
+            return p with { Bauteilherleitung = herleitung.AsReadOnly(), WegAussen = wegAussen, WegInnen = wegInnen,
+                            UWirksamJeBauteil_WM2K = Array.AsReadOnly(uJeBauteil) };
         }
 
         /// <summary>Der konvektive Übergang raumseitig α_kon,i [W/(m²K)]: eingetragen, sonst <see cref="GebaeudeFestwerte.ALPHA_KON_INNEN"/>.</summary>

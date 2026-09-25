@@ -142,6 +142,39 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kühlleistungsgrenze [kW] bei wirksamer Kühlung; <c>null</c> = unbegrenzt.</summary>
         internal double? KuehlleistungMaxKw;
 
+        // ---- Anlagenkopplung AK1 (Konzept Anlagenkopplung 9.4, 12.1): der Heizkreis -----------
+        //
+        // Aus DEMSELBEN Ergebnisträger wie die Kennzahlen darüber - und derselben Stelle, aus der
+        // der Lauf Tab_ErgebnisGebaeude füllt (GebaeudeKennzahlen): Dialog und Bericht zeigen
+        // dieselbe Zahl. Ohne wirksame Kopplung bleibt alles leer.
+
+        /// <summary>Die Übergabeart (<c>DbWerte.UEBERGABE_*</c>); <c>null</c> = nicht gekoppelt gerechnet.</summary>
+        internal string UebergabeArt;
+
+        /// <summary>Hat der Lauf das Gebäude gekoppelt gerechnet?</summary>
+        internal bool Gekoppelt => !string.IsNullOrEmpty(UebergabeArt);
+
+        /// <summary>Vorlauf je Stunde [°C]; NaN ohne Heizbetrieb (eine Lücke im Bild).</summary>
+        internal double[] VorlaufC;
+
+        /// <summary>Rücklauf je Stunde zur gelieferten Leistung [°C]; NaN wie der Vorlauf.</summary>
+        internal double[] RuecklaufC;
+
+        /// <summary>Heizzeitgewichtetes Mittel des Vorlaufs [°C]; <c>null</c> ohne Heizstunde.</summary>
+        internal double? VorlaufMittelC;
+
+        /// <summary>Heizzeitgewichtetes Mittel des Rücklaufs [°C]; <c>null</c> ohne Heizstunde.</summary>
+        internal double? RuecklaufMittelC;
+
+        /// <summary>Stunden, in denen die Übergabe die Grenze war [h].</summary>
+        internal double? UebergabeBegrenztStundenH;
+
+        /// <summary>Der Auslegungsvorlauf, mit dem gerechnet wurde [°C] (Eingabe oder Vorgabe der Art).</summary>
+        internal double? AuslegungVorlaufC;
+
+        /// <summary>Der Auslegungsrücklauf, mit dem gerechnet wurde [°C].</summary>
+        internal double? AuslegungRuecklaufC;
+
         /// <summary>
         /// Rechnet das Gebäude auf dem Bestandsweg? Dann bucht der Lauf Kältebedarf 0 mit Hinweis
         /// (F-K18) — der Bedarfsdialog zeigt dieselbe 0 mit demselben Hinweis. Bis Stufe GA.
@@ -276,6 +309,20 @@ namespace WindowsFormsApplication1
                     ergebnis.StundenHeizenUndKuehlen = vdi.StundenHeizenUndKuehlen;
                 }
                 ergebnis.KuehlSollwertC = vdi.KuehlSollwert;
+
+                // Anlagenkopplung AK1 (9.4): der Heizkreis desselben Laufs - nur bei wirksamer Kopplung.
+                HeizkreisErgebnis hk = vdi.Heizkreis;
+                if (hk != null)
+                {
+                    ergebnis.UebergabeArt = hk.UebergabeArt;
+                    ergebnis.VorlaufC = hk.VorlaufC;
+                    ergebnis.RuecklaufC = hk.RuecklaufC;
+                    ergebnis.VorlaufMittelC = double.IsNaN(hk.VorlaufMittelC) ? null : hk.VorlaufMittelC;
+                    ergebnis.RuecklaufMittelC = double.IsNaN(hk.RuecklaufMittelC) ? null : hk.RuecklaufMittelC;
+                    ergebnis.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;
+                    ergebnis.AuslegungVorlaufC = hk.AuslegungVorlaufC;
+                    ergebnis.AuslegungRuecklaufC = hk.AuslegungRuecklaufC;
+                }
             }
             ergebnis.KuehlbetriebProjekt = sim.KuehlbetriebProjekt;
             ergebnis.KuehlungAktiv = gebaeude.Kuehlung_Aktiv;

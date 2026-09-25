@@ -14,6 +14,14 @@ namespace WindowsFormsApplication1
     /// Gebäudezeile <b>nach</b> dem Vorbereitungsschritt und die Klimareihen, die dieser
     /// bereitgestellt hat; er liest keine Tabelle selbst.</para>
     ///
+    /// <para><b>Zwei Wege nach Datenlage</b> (Stufe G3, A14/E27): Ohne Zone
+    /// (<see cref="ProjektGebaeudeModel.Zonen"/> leer) rechnet der Klassenweg — bitgleich wie vor
+    /// G3. Mit genau einer Zone rechnet der Bauteilweg: Ersatzparameter aus den Bauteilen
+    /// (<see cref="ErsatzparameterRC.AusBauteilweg(GebaeudeModellEingang, IReadOnlyList{BauteilEingang})"/>),
+    /// solare Gewinne und äquivalente Außentemperatur je Bauteil
+    /// (<see cref="BauteilwegAussenseite"/>); alles Übrige — Sollwerte, Lüftung, innere Gewinne,
+    /// Kühlung, Übergabe — bleibt das der Gebäudezeile.</para>
+    ///
     /// <para><b>Vorgaben bei NULL</b> sind die des Eingangsbauers (Rechenschritte 1.1), nicht
     /// DDL-Vorgaben; sie stehen in <see cref="GebaeudeFestwerte"/>. <b>Harte Prüfungen</b>
     /// (Konzept 4.8) brechen mit einem benannten <see cref="GebaeudeModellFehler"/> ab — die
@@ -223,8 +231,26 @@ namespace WindowsFormsApplication1
         //  Ersatzparameter und Randreihen (Schritte A und E)
         // =====================================================================
 
-        /// <summary>Die RC-Größen des Klassenwegs (Schritt A).</summary>
+        /// <summary>Die RC-Größen — des Klassenwegs (Schritt A) oder, mit Zone, des Bauteilwegs (Schritt B).</summary>
         internal ErsatzparameterRC Parameter { get; private set; }
+
+        /// <summary>
+        /// Die Zone, mit der das Gebäude den Bauteilweg rechnet (Stufe G3, A14/E27); <c>null</c> =
+        /// keine Zone, Klassenweg. G3 liest von ihr nur die Bauteile — Sollwerte, Flächen,
+        /// Lüftung und Gewinne bleiben die der Gebäudezeile (<see cref="GebaeudeZonensatz"/>).
+        /// </summary>
+        internal GebaeudeZonensatz Zone { get; private set; }
+
+        /// <summary>
+        /// Die Bauteile, mit denen der Bauteilweg rechnet: die der Zone, Fenster mit g-Wert,
+        /// Rahmenanteil und Verschattung des Gebäudes aufgefüllt, wo sie NaN tragen
+        /// (<see cref="BauteilEingang.MitGebaeudewerten"/>); in der Reihenfolge der Zone.
+        /// <c>null</c> im Klassenweg.
+        /// </summary>
+        internal IReadOnlyList<BauteilEingang> Bauteile { get; private set; }
+
+        /// <summary>Rechnet das Gebäude den Bauteilweg (genau eine Zone)?</summary>
+        internal bool Bauteilweg => Zone != null;
 
         /// <summary>Der Zeitbezug, mit dem die Fassadenstrahlung gerechnet ist (U6).</summary>
         internal Zeitbezug Zeitbezug { get; private set; }
@@ -246,11 +272,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zwischengröße: Fenstersolareintrag gesamt [W] (E3).</summary>
         internal double[] PhiSolar { get; private set; }
-        /// <summary>Zwischengröße: Temperatur an der Grundfläche [°C] (E6).</summary>
+        /// <summary>Zwischengröße: Temperatur an der Grundfläche [°C] (E6), nach der Randbedingung der Gebäudezeile.</summary>
         internal double[] ThetaGrund { get; private set; }
         /// <summary>Zwischengröße: die Fassadenstrahlung [W/m²] (E2).</summary>
         internal Fassadenstrahlung Strahlung { get; private set; }
-        /// <summary>Fiel die Erdreichrechnung auf Ersatzwerte des Jahresgangs zurück?</summary>
+        /// <summary>Fiel die Erdreichrechnung auf Ersatzwerte des Jahresgangs zurück? Im Bauteilweg nur, wenn ein Bauteil am Erdreich liegt.</summary>
         internal bool ErdreichErsatzwerte { get; private set; }
         /// <summary>Zahl der Stunden mit Gegenstrahlung — nur in ihnen rechnet der langwellige Term (NULL-Regel E5).</summary>
         internal int StundenMitGegenstrahlung { get; private set; }
@@ -330,7 +356,17 @@ namespace WindowsFormsApplication1
             double nennleistungSkalierung = 1.0)
         {
             GebaeudeModellEingang e = Daten(gebaeude);
-            e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
+
+            // Der Umschalter nach Datenlage (A14/E27): ohne Zone der Klassenweg, bitgleich wie
+            // vor G3; mit genau einer Zone der Bauteilweg; mehrere Zonen benannt abgelehnt.
+            e.Zone = GebaeudeZonensatz.EineZone(gebaeude.Zonen, e.Bezeichnung);
+            if (e.Zone == null)
+                e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
+            else
+            {
+                e.Bauteile = e.BauteileMitGebaeudewerten(e.Zone.Bauteile);
+                e.Parameter = ErsatzparameterRC.AusBauteilweg(e, e.Bauteile);
+            }
             e.Zeitbezug = zeitbezug;
 
             GebaeudeKlimaweg.Pruefen(solarOrtszeit, laengengrad, breitengrad);
@@ -357,20 +393,9 @@ namespace WindowsFormsApplication1
             double anteilAW = aAwGes / aRaum;
             double anteilIW = aIw / aRaum;
 
-            double solarFaktor = e.GWert * (1.0 - e.Rahmenanteil) * e.Verschattungsfaktor * GebaeudeFestwerte.F_W;
             double aKon = GebaeudeFestwerte.A_KON_SOLAR;
             double innenKonv = GebaeudeFestwerte.ANTEIL_INNERE_LASTEN_KONVEKTIV * e.InnereGewinne_W;
             double innenRad = e.InnereGewinne_W - innenKonv;
-
-            // ---- Gewichte der äquivalenten Außentemperatur (E7) ----
-            double uaLuftseitig = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Dach * e.A_Dach_M2
-                                  + e.U_Sonstige * e.A_Sonstige_M2;
-            // Mit Schalter: Wand und Sonstiges senkrecht, Dach waagerecht (Klassenweg, Rechenschritte E5).
-            double uaSenkrecht = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Sonstige * e.A_Sonstige_M2;
-            double uaDach = e.U_Dach * e.A_Dach_M2;
-            double uaGrund = e.U_Grund * e.A_Grund_M2;
-            double uaFenster = p.UA_Fenster_WK;
-            double uaSumme = p.SummeUA_opak_WK + uaFenster;
 
             var thetaEq = new double[8760];
             var phiRadAW = new double[8760];
@@ -379,46 +404,89 @@ namespace WindowsFormsApplication1
             var phiSolar = new double[8760];
             Fassadenstrahlung s = e.Strahlung;
 
-            for (int h = 0; h < 8760; h++)
+            // Die äquivalente Außentemperatur am Auslegungspunkt (AK1, 8.4) — je Weg aus
+            // denselben Gewichten wie die Stundenreihe.
+            Func<int, double, double> aequivalentN;
+
+            if (e.Zone == null)
             {
-                // E3 — Fenstersolareintrag, flächenproportional verteilt (A_v = 0 im Klassenweg).
-                double sol = (e.A_FensterSued_M2 * s.Sued[h] + e.A_FensterOst_M2 * s.Ost[h]
-                              + e.A_FensterWest_M2 * s.West[h] + e.A_FensterNord_M2 * s.Nord[h]) * solarFaktor;
-                phiSolar[h] = sol;
-                double solLuft = aKon * sol;
-                double solRad = sol - solLuft;
+                // ======== Klassenweg (G1/G2) — unverändert ========
+                double solarFaktor = e.GWert * (1.0 - e.Rahmenanteil) * e.Verschattungsfaktor * GebaeudeFestwerte.F_W;
 
-                // E4 — innere Lasten, 0,5/0,5; die drei Summen für den Löser.
-                phiRadAW[h] = solRad * anteilAW + innenRad * anteilAW;
-                phiRadIW[h] = solRad * anteilIW + innenRad * anteilIW;
-                phiConv[h] = solLuft + innenKonv;
+                // ---- Gewichte der äquivalenten Außentemperatur (E7) ----
+                double uaLuftseitig = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Dach * e.A_Dach_M2
+                                      + e.U_Sonstige * e.A_Sonstige_M2;
+                // Mit Schalter: Wand und Sonstiges senkrecht, Dach waagerecht (Klassenweg, Rechenschritte E5).
+                double uaSenkrecht = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Sonstige * e.A_Sonstige_M2;
+                double uaDach = e.U_Dach * e.A_Dach_M2;
+                double uaGrund = e.U_Grund * e.A_Grund_M2;
+                double uaFenster = p.UA_Fenster_WK;
+                double uaSumme = p.SummeUA_opak_WK + uaFenster;
 
-                // E5/E7 (G2) — Fenster θ_out + Δθ_lw nach Gl. (39); opake Flächen mit Schalter
-                // θ_out + Δθ_lw + Δθ_kw nach Gl. (32), ohne Schalter θ_out. NULL-Regel: ohne
-                // Gegenstrahlung ist Δθ_lw = 0. Die Außenwand des Klassenwegs hat keine
-                // Orientierung; ihre Einstrahlung ist das Mittel der vier Fassaden, das Dach
-                // liegt waagerecht und bekommt die Globalstrahlung (benannte Festlegung E5).
-                double tOut = e.ThetaOut[h];
-                double eA = GebaeudeKlimaweg.Gegenstrahlung(solarOrtszeit[h]);
-                double tFenster = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_WAND);
-                if (!e.AussenbauteileStrahlung)
+                for (int h = 0; h < 8760; h++)
                 {
-                    // Ohne Schalter dieselbe Bildung wie in G1 (bitgleich bei fehlender Gegenstrahlung).
-                    thetaEq[h] = uaSumme > 0.0
-                        ? (uaLuftseitig * tOut + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
-                        : tOut;
+                    // E3 — Fenstersolareintrag, flächenproportional verteilt (A_v = 0 im Klassenweg).
+                    double sol = (e.A_FensterSued_M2 * s.Sued[h] + e.A_FensterOst_M2 * s.Ost[h]
+                                  + e.A_FensterWest_M2 * s.West[h] + e.A_FensterNord_M2 * s.Nord[h]) * solarFaktor;
+                    phiSolar[h] = sol;
+                    double solLuft = aKon * sol;
+                    double solRad = sol - solLuft;
+
+                    // E4 — innere Lasten, 0,5/0,5; die drei Summen für den Löser.
+                    phiRadAW[h] = solRad * anteilAW + innenRad * anteilAW;
+                    phiRadIW[h] = solRad * anteilIW + innenRad * anteilIW;
+                    phiConv[h] = solLuft + innenKonv;
+
+                    // E5/E7 (G2) — Fenster θ_out + Δθ_lw nach Gl. (39); opake Flächen mit Schalter
+                    // θ_out + Δθ_lw + Δθ_kw nach Gl. (32), ohne Schalter θ_out. NULL-Regel: ohne
+                    // Gegenstrahlung ist Δθ_lw = 0. Die Außenwand des Klassenwegs hat keine
+                    // Orientierung; ihre Einstrahlung ist das Mittel der vier Fassaden, das Dach
+                    // liegt waagerecht und bekommt die Globalstrahlung (benannte Festlegung E5).
+                    double tOut = e.ThetaOut[h];
+                    double eA = GebaeudeKlimaweg.Gegenstrahlung(solarOrtszeit[h]);
+                    double tFenster = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_WAND);
+                    if (!e.AussenbauteileStrahlung)
+                    {
+                        // Ohne Schalter dieselbe Bildung wie in G1 (bitgleich bei fehlender Gegenstrahlung).
+                        thetaEq[h] = uaSumme > 0.0
+                            ? (uaLuftseitig * tOut + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
+                            : tOut;
+                    }
+                    else
+                    {
+                        double iWand = 0.25 * (s.Sued[h] + s.Ost[h] + s.West[h] + s.Nord[h]);
+                        double iDach = Math.Max(solarOrtszeit[h].Globalstrahlung, 0.0);
+                        double tSenkrecht = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_WAND)
+                                            + GebaeudeKlimaweg.DeltaThetaKurzwellig(iWand, eA, tOut);
+                        double tDach = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_DACH)
+                                       + GebaeudeKlimaweg.DeltaThetaKurzwellig(iDach, eA, tOut);
+                        thetaEq[h] = uaSumme > 0.0
+                            ? (uaSenkrecht * tSenkrecht + uaDach * tDach + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
+                            : tOut;
+                    }
                 }
-                else
+
+                // 8.4: die Grundfläche am Auslegungstag, Fenster und opake Flächen ohne Strahlung.
+                aequivalentN = (tag, aN) =>
                 {
-                    double iWand = 0.25 * (s.Sued[h] + s.Ost[h] + s.West[h] + s.Nord[h]);
-                    double iDach = Math.Max(solarOrtszeit[h].Globalstrahlung, 0.0);
-                    double tSenkrecht = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_WAND)
-                                        + GebaeudeKlimaweg.DeltaThetaKurzwellig(iWand, eA, tOut);
-                    double tDach = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_DACH)
-                                   + GebaeudeKlimaweg.DeltaThetaKurzwellig(iDach, eA, tOut);
-                    thetaEq[h] = uaSumme > 0.0
-                        ? (uaSenkrecht * tSenkrecht + uaDach * tDach + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
-                        : tOut;
+                    double grundN = e.Grundtemperatur(tag, aN);
+                    return uaSumme > 0.0 ? (uaLuftseitig * aN + uaGrund * grundN + uaFenster * aN) / uaSumme : aN;
+                };
+            }
+            else
+            {
+                // ======== Bauteilweg (G3): Außenseite je Bauteil, Lasten wie im Klassenweg ========
+                aequivalentN = e.BauteilwegAussenseite(solarOrtszeit, laengengrad, breitengrad, zeitbezug,
+                                                       erdreichAusKlima, thetaEq, phiSolar);
+                for (int h = 0; h < 8760; h++)
+                {
+                    // E3/E4 — dieselbe Aufteilung wie im Klassenweg, über die Flächen des Records.
+                    double sol = phiSolar[h];
+                    double solLuft = aKon * sol;
+                    double solRad = sol - solLuft;
+                    phiRadAW[h] = solRad * anteilAW + innenRad * anteilAW;
+                    phiRadIW[h] = solRad * anteilIW + innenRad * anteilIW;
+                    phiConv[h] = solLuft + innenKonv;
                 }
             }
 
@@ -446,9 +514,245 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
 
             if (e.KopplungWirksam)
-                e.KopplungAufloesen(gebaeude, uaLuftseitig, uaGrund, uaFenster, uaSumme,
-                                    vorlaufAnlageC, nennleistungSkalierung);
+                e.KopplungAufloesen(gebaeude, aequivalentN, vorlaufAnlageC, nennleistungSkalierung);
             return e;
+        }
+
+        // =====================================================================
+        //  Bauteilweg (Stufe G3): die Außenseite je Bauteil
+        // =====================================================================
+
+        /// <summary>Woran ein Außenbauteil in der äquivalenten Außentemperatur grenzt (G3).</summary>
+        private enum Aussenseite
+        {
+            /// <summary>Opak an Außenluft: θ_out, mit Schalter + Δθ_lw + Δθ_kw (Gl. (32)).</summary>
+            LuftOpak,
+
+            /// <summary>Transparent an Außenluft: θ_out + Δθ_lw (Gl. (39)), unabhängig vom Schalter.</summary>
+            LuftFenster,
+
+            /// <summary>Erdreich: die Erdreichtemperatur nach Kusuda (E6).</summary>
+            Erdreich,
+
+            /// <summary>Unbeheizter Raum: die Kellertemperatur des Gebäudes (benannte G3-Regel).</summary>
+            Unbeheizt,
+        }
+
+        /// <summary>
+        /// Ein Glied der U·A-Gewichtung nach Gl. (41): die Bauteile einer Randart mit demselben
+        /// Sichtfaktor und derselben Einstrahlungsreihe, ihre U·A zusammengefasst.
+        /// </summary>
+        private sealed class Glied
+        {
+            internal Aussenseite Art;
+            internal double Sichtfaktor = double.NaN;
+            internal double[] Einstrahlung;
+            internal double UA_WK;
+        }
+
+        /// <summary>
+        /// Die Bauteile der Zone mit den Fensterwerten des Gebäudes, wo ein Fenster sie offen
+        /// lässt (<see cref="BauteilEingang.MitGebaeudewerten"/>) — g-Wert, Rahmenanteil und
+        /// Verschattung der Gebäudezeile, die ihrerseits schon die Vorgaben tragen.
+        /// </summary>
+        private IReadOnlyList<BauteilEingang> BauteileMitGebaeudewerten(IReadOnlyList<BauteilEingang> bauteile)
+        {
+            if (bauteile == null) return Array.Empty<BauteilEingang>();
+            var liste = new BauteilEingang[bauteile.Count];
+            for (int i = 0; i < bauteile.Count; i++)
+            {
+                BauteilEingang b = bauteile[i] ?? throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
+                    Bezeichnung + ": Die Zone „" + Zone.Bezeichnung + "“ enthält einen leeren Bauteileintrag (Nr. " +
+                    (i + 1).ToString(CultureInfo.InvariantCulture) + ").");
+                liste[i] = b.MitGebaeudewerten(GWert, Rahmenanteil, Verschattungsfaktor);
+            }
+            return Array.AsReadOnly(liste);
+        }
+
+        /// <summary>
+        /// <b>Die Außenseite des Bauteilwegs</b> (Stufe G3; Rechenschritte E2, E3, E5–E7): füllt
+        /// <paramref name="phiSolar"/> und <paramref name="thetaEq"/> und liefert die äquivalente
+        /// Außentemperatur am Auslegungspunkt für die Anlagenkopplung (8.4).
+        ///
+        /// <list type="bullet">
+        /// <item><b>Solare Gewinne je Fensterbauteil</b> an Außenluft (E3): A · I(Neigung, Azimut) ·
+        /// g · (1 − Rahmenanteil) · F_S · F_W, mit den Werten des Bauteils (NaN = Gebäudewert) und
+        /// demselben Faktor F_W wie im Klassenweg. Die Einstrahlung kommt aus
+        /// <see cref="GebaeudeKlimaweg.EinstrahlungBauteil"/> mit dem Azimut der Datenbank
+        /// (0° = Nord → <see cref="GebaeudeKlimaweg.AzimutAusDatenbank"/>) und der Neigung des
+        /// Bauteils — damit rechnen geneigte Fenster (Dachfenster); ein waagerechtes Fenster
+        /// bekommt die Globalstrahlung. Ein Fenster zu einem unbeheizten Raum bekommt keine
+        /// Sonne (der Weg durch den Nachbarraum ist M3/G6b).</item>
+        /// <item><b>Äquivalente Außentemperatur je Bauteil</b>, mit U·A gewichtet (Gl. (41)); U ist
+        /// der in Gl. (27) wirksame Wert (<see cref="ErsatzparameterRC.UWirksamJeBauteil_WM2K"/>).
+        /// Opak an Außenluft: ohne Schalter θ_out, mit Schalter θ_out + Δθ_lw + Δθ_kw mit der
+        /// eigenen Einstrahlung und dem Sichtfaktor der eigenen Neigung
+        /// (<see cref="GebaeudeKlimaweg.SichtfaktorHimmel"/>). Fenster an Außenluft: θ_out + Δθ_lw
+        /// mit dem Sichtfaktor ihrer Neigung. Erdreich: die Erdreichtemperatur (E6). Unbeheizter
+        /// Raum: die Kellertemperatur des Gebäudes — <b>benannte G3-Regel</b>; die
+        /// Temperaturregel unbeheizter Nachbarzonen ist M3 und kommt mit G6b.</item>
+        /// <item><b>Die Lastaufteilung</b> (E3, E4) bleibt die des Klassenwegs über die Flächen
+        /// des Records (A_v = 0); sie bildet der Aufrufer.</item>
+        /// </list>
+        /// </summary>
+        private Func<int, double, double> BauteilwegAussenseite(IReadOnlyList<SolardatenModel> klima,
+            double laengengrad, double breitengrad, Zeitbezug zeitbezug, bool erdreichAusKlima,
+            double[] thetaEq, double[] phiSolar)
+        {
+            IReadOnlyList<BauteilEingang> bauteile = Bauteile;
+            IReadOnlyList<double> u = Parameter.UWirksamJeBauteil_WM2K;
+            Fassadenstrahlung s = Strahlung;
+
+            // Einstrahlung je (Neigung, Azimut) einmal gerechnet; die vier Fassaden liegen aus E2
+            // schon vor (GebaeudeKlimaweg.Einstrahlung ist für sie bitgleich zu Fassaden).
+            var reihen = new Dictionary<(double Neigung, double Azimut), double[]>
+            {
+                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_SUED)] = s.Sued,
+                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_OST)] = s.Ost,
+                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_WEST)] = s.West,
+                [(GebaeudeKlimaweg.NEIGUNG_FASSADE, GebaeudeKlimaweg.AZIMUT_NORD)] = s.Nord,
+            };
+            double[] Reihe(BauteilEingang b)
+            {
+                double neigung = b.NeigungWirksamGrad;
+                double azimut = double.IsNaN(b.AzimutGrad) ? double.NaN : GebaeudeKlimaweg.AzimutAusDatenbank(b.AzimutGrad);
+                // Waagerecht nach oben ist der Azimut gleichgültig (Globalstrahlung).
+                (double, double) schluessel = neigung == 0.0 ? (0.0, 0.0) : (neigung, double.IsNaN(azimut) ? 0.0 : azimut);
+                if (!reihen.TryGetValue(schluessel, out double[] r))
+                {
+                    r = GebaeudeKlimaweg.EinstrahlungBauteil(klima, laengengrad, breitengrad, azimut, neigung, zeitbezug);
+                    reihen[schluessel] = r;
+                }
+                return r;
+            }
+
+            var glieder = new List<Glied>();
+            Glied Finden(Aussenseite art, double sichtfaktor, double[] einstrahlung)
+            {
+                foreach (Glied vorhanden in glieder)
+                    if (vorhanden.Art == art && vorhanden.Sichtfaktor.Equals(sichtfaktor)
+                        && ReferenceEquals(vorhanden.Einstrahlung, einstrahlung))
+                        return vorhanden;
+                var neu = new Glied { Art = art, Sichtfaktor = sichtfaktor, Einstrahlung = einstrahlung };
+                glieder.Add(neu);
+                return neu;
+            }
+
+            var fensterSolar = new List<(double Flaeche_M2, double Faktor, double[] Reihe)>();
+            bool mitErdreich = false;
+            for (int i = 0; i < bauteile.Count; i++)
+            {
+                BauteilEingang b = bauteile[i];
+                if (b.Gruppe == Bauteilgruppe.Innen) continue;
+                double neigung = b.NeigungWirksamGrad;
+                Glied g;
+                switch (b.Rand)
+                {
+                    case Bauteilrand.Erdreich:
+                        g = Finden(Aussenseite.Erdreich, double.NaN, null);
+                        mitErdreich = true;
+                        break;
+                    case Bauteilrand.Unbeheizt:
+                        g = Finden(Aussenseite.Unbeheizt, double.NaN, null);
+                        break;
+                    default:
+                        if (b.IstTransparent)
+                        {
+                            g = Finden(Aussenseite.LuftFenster, GebaeudeKlimaweg.SichtfaktorHimmel(neigung), null);
+                            double faktor = b.GWert * (1.0 - b.RahmenanteilWirksam) * b.VerschattungsfaktorWirksam * GebaeudeFestwerte.F_W;
+                            fensterSolar.Add((b.Flaeche_M2, faktor, Reihe(b)));
+                        }
+                        else
+                        {
+                            g = AussenbauteileStrahlung
+                                ? Finden(Aussenseite.LuftOpak, GebaeudeKlimaweg.SichtfaktorHimmel(neigung), Reihe(b))
+                                : Finden(Aussenseite.LuftOpak, double.NaN, null);
+                        }
+                        break;
+                }
+                g.UA_WK += u[i] * b.Flaeche_M2;
+            }
+
+            // Erdreich (E6): Liegt die Grundfläche der Gebäudezeile am Erdreich, ist die Reihe
+            // schon gerechnet; sonst entsteht sie hier mit denselben Festwerten.
+            double[] erdreich = null;
+            ErdreichErsatzwerte = false;
+            if (mitErdreich)
+            {
+                bool ausKlima = erdreichAusKlima;
+                erdreich = string.Equals(GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal)
+                    ? ThetaGrund
+                    : GebaeudeKlimaweg.Grundtemperatur(DbWerte.GRUND_ERDREICH, Kellertemperatur, ThetaOut, out ausKlima);
+                ErdreichErsatzwerte = !ausKlima;
+            }
+
+            double uaSumme = 0.0;
+            foreach (Glied g in glieder) uaSumme += g.UA_WK;
+
+            for (int h = 0; h < 8760; h++)
+            {
+                // E3 — Fenstersolareintrag je Fensterbauteil.
+                double sol = 0.0;
+                foreach ((double a, double faktor, double[] reihe) in fensterSolar) sol += a * reihe[h] * faktor;
+                phiSolar[h] = sol;
+
+                // E5/E7 — je Glied die äquivalente Außentemperatur, U·A-gewichtet (Gl. (41)).
+                double tOut = ThetaOut[h];
+                double eA = GebaeudeKlimaweg.Gegenstrahlung(klima[h]);
+                double summe = 0.0;
+                foreach (Glied g in glieder)
+                {
+                    double theta;
+                    switch (g.Art)
+                    {
+                        case Aussenseite.Erdreich:
+                            theta = erdreich[h];
+                            break;
+                        case Aussenseite.Unbeheizt:
+                            theta = Kellertemperatur;
+                            break;
+                        case Aussenseite.LuftFenster:
+                            theta = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, g.Sichtfaktor);
+                            break;
+                        default:
+                            theta = g.Einstrahlung == null
+                                ? tOut
+                                : tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, g.Sichtfaktor)
+                                  + GebaeudeKlimaweg.DeltaThetaKurzwellig(g.Einstrahlung[h], eA, tOut);
+                            break;
+                    }
+                    summe += g.UA_WK * theta;
+                }
+                thetaEq[h] = uaSumme > 0.0 ? summe / uaSumme : tOut;
+            }
+
+            // 8.4: am Auslegungspunkt Außenluft und Fenster bei θ_out,N ohne Strahlung, das
+            // Erdreich mit seinem Tagesmittel am Auslegungstag, der unbeheizte Raum bei der
+            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe.
+            return (tag, aN) =>
+            {
+                double summe = 0.0;
+                foreach (Glied g in glieder)
+                {
+                    double theta;
+                    switch (g.Art)
+                    {
+                        case Aussenseite.Erdreich:
+                            double tagessumme = 0.0;
+                            for (int st = 0; st < 24; st++) tagessumme += erdreich[tag * 24 + st];
+                            theta = tagessumme / 24.0;
+                            break;
+                        case Aussenseite.Unbeheizt:
+                            theta = Kellertemperatur;
+                            break;
+                        default:
+                            theta = aN;
+                            break;
+                    }
+                    summe += g.UA_WK * theta;
+                }
+                return uaSumme > 0.0 ? summe / uaSumme : aN;
+            };
         }
 
         // =====================================================================
@@ -463,9 +767,11 @@ namespace WindowsFormsApplication1
         /// Strahlungsanteil der Übergabeart (H12) — und die Vorlaufreihe aus Heizkurve oder
         /// festem Vorlauf. Die Umrechnung kW → W geschieht hier, einmal (3.3).
         /// </summary>
-        private void KopplungAufloesen(ProjektGebaeudeModel g, double uaLuftseitig, double uaGrund,
-                                       double uaFenster, double uaSumme, double vorlaufAnlageC,
-                                       double nennleistungSkalierung)
+        /// <param name="aequivalentN">Die äquivalente Außentemperatur am Auslegungspunkt [°C] aus
+        /// Auslegungstag (0 … 364) und Auslegungs-Außentemperatur — gebildet vom Weg des Gebäudes:
+        /// im Klassenweg aus den U·A-Gruppen, im Bauteilweg aus den Bauteilen (G3).</param>
+        private void KopplungAufloesen(ProjektGebaeudeModel g, Func<int, double, double> aequivalentN,
+                                       double vorlaufAnlageC, double nennleistungSkalierung)
         {
             CultureInfo k = CultureInfo.CurrentCulture;
             string art = g.Uebergabe_Art;
@@ -523,11 +829,11 @@ namespace WindowsFormsApplication1
                        string.Format(k, MyResource.Resource.SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM, Text(aN), Text(iN)));
             AuslegungAussentemperaturC = aN;
 
-            // 8.4: die Auslegungsheizlast — die stationäre Last des Katalogbaus bei aN und iN,
-            // ohne solare und innere Lasten; die Grundfläche am Auslegungstag, die Fenster und
-            // opaken Flächen ohne Strahlung (benannte Festlegung). Ein Aufruf des Lösers.
-            double grundN = Grundtemperatur(auslegungstag, aN);
-            double eqN = uaSumme > 0.0 ? (uaLuftseitig * aN + uaGrund * grundN + uaFenster * aN) / uaSumme : aN;
+            // 8.4: die Auslegungsheizlast — die stationäre Last des Katalogbaus (im Bauteilweg:
+            // der Hülle der Zone) bei aN und iN, ohne solare und innere Lasten; die Grundfläche
+            // bzw. das Erdreich am Auslegungstag, die Fenster und opaken Flächen ohne Strahlung
+            // (benannte Festlegung). Ein Aufruf des Lösers.
+            double eqN = aequivalentN(auslegungstag, aN);
             AuslegungsheizlastW = new Zonenmodell2K(Parameter, Bezeichnung)
                 .StationaereHeizlastW(iN, aN, eqN, HeizungStrahlungsanteil);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
@@ -99,6 +100,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal(hk.VorlaufMittelC, gelesen.VorlaufMittelC);
             Assert.Equal(hk.RuecklaufMittelC, gelesen.RuecklaufMittelC);
             Assert.Equal(hk.UebergabeBegrenztStundenH, gelesen.UebergabeBegrenztStundenH);
+        }
+
+        // =====================================================================
+        //  Der Export (Konzept 8.3): drei Reihen je gekoppeltem Gebäude — bedingt
+        // =====================================================================
+
+        /// <summary>
+        /// Ohne Kopplung schreibt der Export dieselben Dateien wie bisher — keine Reihe des
+        /// Heizkreises; gekoppelt kommen genau drei hinzu, hinter den Bestandsreihen: Vorlauf und
+        /// Rücklauf (NaN ohne Heizbetrieb) und der Anteil begrenzter Übergabe je Stunde. Neue Skalare
+        /// gibt es nicht.
+        /// </summary>
+        [Fact]
+        public void Der_Export_schreibt_die_drei_Reihen_nur_fuer_ein_gekoppeltes_Gebaeude()
+        {
+            if (!_db.Vorhanden) return;
+
+            GebaeudeExportsatz ohne = Assert.Single(GebaeudeErgebnisexport.Saetze(Rechne(PROJEKT).simulation_Waermebedarf));
+            Assert.DoesNotContain(ohne.Reihen, r => r.Key.StartsWith("vorlauf_", StringComparison.Ordinal)
+                                                    || r.Key.StartsWith("ruecklauf_", StringComparison.Ordinal)
+                                                    || r.Key.StartsWith("uebergabe_", StringComparison.Ordinal));
+
+            Koppeln(GEBAEUDE);
+            Assert.True(KonfigurationCtrl.AnlagenkopplungSchreiben(PROJEKT, DbWerte.ANLAGENKOPPLUNG_AK1));
+            SimulationRunner lauf = Rechne(PROJEKT);
+            GebaeudeExportsatz mit = Assert.Single(GebaeudeErgebnisexport.Saetze(lauf.simulation_Waermebedarf));
+
+            string n = mit.Index.ToString(CultureInfo.InvariantCulture);
+            string[] neu = { "vorlauf_" + n + ".csv", "ruecklauf_" + n + ".csv", "uebergabe_" + n + ".csv" };
+            Assert.Equal(ohne.Reihen.Select(r => r.Key).Concat(neu), mit.Reihen.Select(r => r.Key));
+            Assert.Equal(ohne.Skalare.Select(s => s.Key), mit.Skalare.Select(s => s.Key));
+
+            HeizkreisErgebnis hk = lauf.simulation_Waermebedarf.GebaeudeErgebnisse.Ergebnis(0).Heizkreis;
+            Assert.Same(hk.VorlaufC, mit.Reihen.Single(r => r.Key == neu[0]).Value);
+            Assert.Same(hk.RuecklaufC, mit.Reihen.Single(r => r.Key == neu[1]).Value);
+            double[] anteil = mit.Reihen.Single(r => r.Key == neu[2]).Value;
+            Assert.Equal(8760, anteil.Length);
+            Assert.All(anteil, a => Assert.InRange(a, 0.0, 1.0));
+            Assert.Contains(hk.VorlaufC, double.IsNaN);
         }
 
         /// <summary>

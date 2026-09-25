@@ -172,6 +172,14 @@ namespace EPOS.Kern.Tests
 
                 foreach (KatalogDefinition def in KatalogRegistry.Alle.Where(k => !k.SchlossAusStatus))
                 {
+                    // Ein Katalog, der leer ausgeliefert wird (der Aufbaukatalog der Stufe G3),
+                    // bekommt fuer die Probe einen Satz - geschaltet wird auch er.
+                    if (Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM [" + def.Tabelle + "]"),
+                                        CultureInfo.InvariantCulture) == 0)
+                        Assert.True(DataRepository.ExecuteSQL(
+                            "INSERT INTO [" + def.Tabelle + "] ([" + def.NamensSpalte + "]) VALUES (?)",
+                            new DbParam("@n", "Probe " + def.Schluessel)), def.Tabelle + ": Probesatz nicht angelegt.");
+
                     DataRow satz = Erster(def);
                     int id = Convert.ToInt32(satz[def.IdSpalte], CultureInfo.InvariantCulture);
                     bool vorher = Schloss(def, satz);

@@ -804,9 +804,18 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Schemaschritt T4 „Messreihen" (Schritt 135, Stufe Z5): die
-        //  eingespielten Messreihen eines Projekts
+        //  Schemaschritt T4 „Messreihen" (Stufe Z5): die eingespielten
+        //  Messreihen eines Projekts
         // =================================================================
+
+        /// <summary>
+        /// Die Nummer des Schemaschritts T4 „Messreihen" (Stufe Z5, Konzept 4.8) — die Tabelle
+        /// <c>Tab_TwwMessreihe</c> samt Index auf <c>ID_Projekt</c>. <b>Die Nummer steht allein
+        /// hier</b>, und <see cref="SchemaStand.Zielversion"/> verweist symbolisch hierher; sie
+        /// folgt lückenlos auf die drei Schritte der Kälteseite der Anlagenkopplung
+        /// (<see cref="KuehluebergabeSchema.SCHRITT_ZONE"/> = 137).
+        /// </summary>
+        public const int SCHRITT_T4_MESSREIHEN = KuehluebergabeSchema.SCHRITT_ZONE + 1;
 
         /// <summary>
         /// <c>CREATE TABLE IF NOT EXISTS Tab_TwwMessreihe</c> — 10 Spalten (Konzept 4.8,
@@ -853,7 +862,7 @@ namespace WindowsFormsApplication1
             ") STRICT";
 
         /// <summary>
-        /// Die Anweisungen des Schemaschritts T4 „Messreihen" (Schritt 135, Stufe Z5): die Tabelle
+        /// Die Anweisungen des Schemaschritts T4 „Messreihen" (Stufe Z5): die Tabelle
         /// der eingespielten Messreihen. Sie hängt allein an <c>Tab_Projekt</c> und darf deshalb
         /// nach den übrigen Tww-Tabellen entstehen. Reines DDL, wiederholbar über
         /// <c>IF NOT EXISTS</c>; nach dem Schritt ist sie leer, und kein Rechenweg findet eine

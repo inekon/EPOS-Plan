@@ -81,6 +81,26 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Rechnet dieser Satz auf dem VDI-Weg? Nur dann gibt es das Bild „Raumtemperatur".</summary>
     public bool IstVdi6007 { get; init; }
 
+    // ---- Anlagenkopplung AK1 (Konzept Anlagenkopplung 9.4, 12.1) ----------------------
+    //
+    // Nur für ein gekoppelt gerechnetes Gebäude; sonst false bzw. null - die Kacheln stehen dann
+    // nicht da, statt „—" zu zeigen.
+
+    /// <summary>Hat der Lauf das Gebäude gekoppelt gerechnet (Wärmeübergabe statt idealer Regelung)?</summary>
+    public bool IstGekoppelt { get; init; }
+
+    /// <summary>Heizzeitgewichtetes Mittel des gefahrenen Vorlaufs [°C]; <c>null</c> ohne Heizstunde.</summary>
+    public double? VorlaufMittelC { get; init; }
+
+    /// <summary>Dasselbe für den Rücklauf zur gelieferten Leistung [°C].</summary>
+    public double? RuecklaufMittelC { get; init; }
+
+    /// <summary>Stunden, in denen die Übergabe die Grenze war [h].</summary>
+    public double? UebergabeBegrenztStundenH { get; init; }
+
+    /// <summary>Die leise Zeile unter der Vorlaufkachel, fertig formuliert: Übergabeart und Auslegungspunkt.</summary>
+    public string Heizkreiszeile { get; init; } = "";
+
     // ---- Stufe KU1: der Abschnitt „Kältebedarf" (Kühlkonzept 8.4; E21, F-K18) --------
     //
     // Dieselben Bausteine wie die Wärmeseite: Kennzahltabelle, eigenes Bild, Monatswerte.

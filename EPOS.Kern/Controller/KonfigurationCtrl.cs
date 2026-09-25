@@ -912,6 +912,34 @@ namespace WindowsFormsApplication1
             return KuehlbetriebSchreiben(idProjekt, an);
         }
 
+        /// <summary>
+        /// <b>Der Projektschalter „Anlagenkopplung"</b> (Konzept Anlagenkopplung 9.4, AK1 Welle 3) —
+        /// der Schreibweg der Oberfläche (Abschnitt „Anlagenkopplung" der Simulationskonfiguration),
+        /// nach der Regel von <see cref="KuehlbetriebSetzen"/>: <b>Steht ein Einstellungssatz</b>,
+        /// wird nur die Stufe geschrieben. <b>Steht keiner</b>, ist „aus" ohne Satz schon wahr — dann
+        /// wird nichts geschrieben; jede andere Stufe legt denselben <b>Vormerksatz</b> an
+        /// (<see cref="IstVormerksatz"/>), den das erste Speichern der Kaskade zum Einstellungssatz
+        /// macht (die Stufe reist dort mit).
+        ///
+        /// <para><b>„aus" schreibt NULL</b> — kein DDL-DEFAULT und kein gespeicherter Fachwert für
+        /// den Bestandsweg (8.1): <see cref="DbWerte.ANLAGENKOPPLUNG_AUS"/> und <c>null</c> heißen
+        /// dasselbe. Eine Stufe außerhalb der Wertliste scheitert an der Prüfung der Spalte.</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach die gewünschte Stufe trägt.</returns>
+        public static bool AnlagenkopplungSetzen(int idProjekt, string stufe)
+        {
+            if (idProjekt <= 0) return false;
+            string wert = string.IsNullOrEmpty(stufe) || stufe == DbWerte.ANLAGENKOPPLUNG_AUS ? null : stufe;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (wert == null) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return AnlagenkopplungSchreiben(idProjekt, wert);
+        }
+
         /// <summary>Steht für das Projekt ein Einstellungssatz (auch ein Vormerksatz)?</summary>
         private static bool SatzVorhanden(int idProjekt)
         {

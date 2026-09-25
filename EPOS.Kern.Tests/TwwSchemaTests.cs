@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 using Xunit;
@@ -264,7 +266,7 @@ namespace EPOS.Kern.Tests
                 }
             }
             // Tagesgang 1, Nutzungsart 2, Ereignis 1, Zone 4, Wohnungstyp 2, Projekt 2,
-            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt 135)
+            // Zapfkategorie 1, Messreihe 1 (ID_Projekt, Schritt T4)
             Assert.Equal(14, beziehungen);
         }
 
@@ -482,26 +484,32 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt 135 (T4 „Messreihen", Stufe Z5) steht in der Migration der Schale NACH 131
+        /// Der Schritt T4 „Messreihen" (Stufe Z5) steht in der Migration der Schale NACH 131
         /// und bedient sich derselben Quelle (<see cref="TwwSchema.AnweisungenT4Messreihen"/>,
-        /// <see cref="TwwSchema.IndizesT4Messreihen"/>); das Ziel steht auf mindestens 135.
+        /// <see cref="TwwSchema.IndizesT4Messreihen"/>); das Ziel steht auf seiner Nummer.
+        ///
+        /// <para><b>Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/></b> —
+        /// der Test nennt sie nirgends als Zahl, damit eine Kollision mit einem Nachbarschritt nur
+        /// EINE Zeile bewegt.</para>
         /// </summary>
         [Fact]
-        public void Schritt_135_steht_in_der_Migration_nach_131()
+        public void Schritt_T4_Messreihen_steht_in_der_Migration_nach_131()
         {
-            Assert.True(SchemaStand.Zielversion >= 135, "Zielstand " + SchemaStand.Zielversion + " liegt unter 135.");
+            int nr = TwwSchema.SCHRITT_T4_MESSREIHEN;
+            Assert.Equal(nr, SchemaStand.Zielversion);
 
             string datei = Migrationsquelle();
             if (datei == null) return;
             string text = File.ReadAllText(datei);
 
-            Assert.Contains("public const int SCHRITT_135_ZAPFPROFIL_MESSREIHEN = 135;", text, StringComparison.Ordinal);
+            Assert.Contains("public const int SCHRITT_" + nr + "_ZAPFPROFIL_MESSREIHEN = TwwSchema.SCHRITT_T4_MESSREIHEN;",
+                            text, StringComparison.Ordinal);
             int ort131 = text.IndexOf("new Schritt(SCHRITT_131_ZAPFPROFIL_TYPTAGE", StringComparison.Ordinal);
-            int ort135 = text.IndexOf("new Schritt(SCHRITT_135_ZAPFPROFIL_MESSREIHEN", StringComparison.Ordinal);
-            Assert.True(ort131 > 0 && ort135 > ort131, "Schritt 135 steht nicht nach 131 in der Schrittliste.");
+            int ort135 = text.IndexOf("new Schritt(SCHRITT_" + nr + "_ZAPFPROFIL_MESSREIHEN", StringComparison.Ordinal);
+            Assert.True(ort131 > 0 && ort135 > ort131, "Schritt " + nr + " steht nicht nach 131 in der Schrittliste.");
 
-            int methode = text.IndexOf("private static bool Schritt_135_ZapfprofilMessreihen(Lauf l)", StringComparison.Ordinal);
-            Assert.True(methode > 0, "Die Methode des Schrittes 135 fehlt.");
+            int methode = text.IndexOf("private static bool Schritt_" + nr + "_ZapfprofilMessreihen(Lauf l)", StringComparison.Ordinal);
+            Assert.True(methode > 0, "Die Methode des Schrittes " + nr + " fehlt.");
             int ende = text.IndexOf("return true;", methode, StringComparison.Ordinal);
             string rumpf = text.Substring(methode, ende - methode);
             Assert.Contains("TwwSchema.AnweisungenT4Messreihen", rumpf, StringComparison.Ordinal);
@@ -510,7 +518,76 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die eingespielten Messreihen sind Bestandteil des Projekts</b> (Schritt 135, T4
+        /// <b>Die Schrittnummern der SQLite-Liste steigen lückenlos</b> — jede Nummer genau einmal,
+        /// jede Folgenummer um genau eins größer als ihre Vorgängerin, und die letzte ist
+        /// <see cref="SchemaStand.Zielversion"/>.
+        ///
+        /// <para><b>Warum diese Wache:</b> Parallele Zweige vergeben Nummern gleichzeitig. Wer beim
+        /// Zusammenführen eine Lücke stehen lässt (131, dann 135), hinterlässt eine Datenbank, deren
+        /// Marker auf 135 steht, ohne dass 132 bis 134 je gelaufen sind — ein späterer Zweig, der
+        /// 133 nachträgt, wird an ihr nie ausgeführt. Der Test liest die Nummern der
+        /// <c>new Schritt(...)</c>-Einträge über die Konstanten aus dem Quelltext der Schale; ohne
+        /// sie (plattformfreier Lauf) fällt er stillschweigend weg wie die Nachbartests.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Schrittnummern_steigen_lueckenlos()
+        {
+            string datei = Migrationsquelle();
+            if (datei == null) return;
+            string text = File.ReadAllText(datei);
+
+            // 1) Die Konstanten: NAME -> Zahl. Beide Schreibweisen kommen vor - die nackte Zahl
+            //    und der Verweis auf eine Schema-Klasse (dann steht die Zahl dort). Der Test löst
+            //    nur auf, was er im SELBEN Quelltext findet, und lässt den Rest weg: Eine Nummer,
+            //    die er nicht kennt, kann er nicht prüfen, und sie still zu erfinden wäre falsch.
+            var konstanten = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (Match m in Regex.Matches(
+                         text, @"public const int (SCHRITT[A-Z0-9_]*) = (\d+);"))
+                konstanten[m.Groups[1].Value] = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+
+            // 2) Die Liste in ihrer Reihenfolge. Der Abschnitt SCHRITTE_SQLITE endet am "};".
+            int listeAb = text.IndexOf("SCHRITTE_SQLITE", StringComparison.Ordinal);
+            Assert.True(listeAb > 0, "Die Liste SCHRITTE_SQLITE steht nicht im Quelltext.");
+            int listeBis = text.IndexOf("\n        };", listeAb, StringComparison.Ordinal);
+            Assert.True(listeBis > listeAb, "Das Ende der Liste SCHRITTE_SQLITE ist nicht zu finden.");
+            string liste = text.Substring(listeAb, listeBis - listeAb);
+
+            var nummern = new List<int>();
+            var unbekannt = new List<string>();
+            foreach (Match m in Regex.Matches(liste, @"new Schritt\(\s*(SCHRITT[A-Za-z0-9_]*)"))
+            {
+                string name = m.Groups[1].Value;
+                if (konstanten.TryGetValue(name, out int nr)) nummern.Add(nr);
+                else unbekannt.Add(name);
+            }
+            Assert.True(nummern.Count >= 2, "Zu wenige aufgelöste Schrittnummern (" + nummern.Count + ").");
+
+            // 3) Lückenlos aufsteigend - und jede Nummer nur einmal.
+            var doppelt = nummern.GroupBy(n => n).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+            Assert.True(doppelt.Count == 0,
+                        "Doppelte Schrittnummer(n): " + string.Join(", ", doppelt) + ".");
+
+            var sortiert = nummern.OrderBy(n => n).ToList();
+            var luecken = new List<string>();
+            for (int i = 1; i < sortiert.Count; i++)
+                if (sortiert[i] != sortiert[i - 1] + 1)
+                    luecken.Add(sortiert[i - 1] + " -> " + sortiert[i]);
+            Assert.True(luecken.Count == 0,
+                        "Lücke(n) in der Schrittliste: " + string.Join(", ", luecken) +
+                        " (nicht aufgelöst: " + (unbekannt.Count == 0 ? "keine" : string.Join(", ", unbekannt)) + ").");
+
+            // 4) Die Reihenfolge der Liste ist die Reihenfolge der Nummern - ein Schritt läuft nie
+            //    vor einem kleineren, sonst stimmte die Marker-Semantik nicht.
+            for (int i = 1; i < nummern.Count; i++)
+                Assert.True(nummern[i] > nummern[i - 1],
+                            "Schritt " + nummern[i] + " steht in der Liste vor " + nummern[i - 1] + ".");
+
+            // 5) Das Ziel ist die letzte Nummer.
+            Assert.Equal(sortiert[sortiert.Count - 1], SchemaStand.Zielversion);
+        }
+
+        /// <summary>
+        /// <b>Die eingespielten Messreihen sind Bestandteil des Projekts</b> (Schritt T4,
         /// „Messreihen", Stufe Z5; Konzept Kapitel 9 K5): <c>Tab_TwwMessreihe</c> führt
         /// <c>ID_Projekt</c> mit <c>ON DELETE CASCADE</c> — damit reist sie mit einer Projektkopie
         /// und einem <c>.wpx</c>-Paket und verschwindet mit dem Projekt —, trägt aber weder

@@ -62,6 +62,12 @@ namespace WindowsFormsApplication1
                 ? sortiert => Kaeltemodell(ergebnis, sortiert)
                 : null;
 
+            // Das Bild „Vorlauf und Rücklauf" (Anlagenkopplung AK1, 9.4) - nur für ein gekoppelt
+            // gerechnetes Gebäude; Stunden ohne Heizbetrieb sind Lücken der Linie.
+            Func<Zeichenmodell> vorlaufbild = ergebnis.Gekoppelt && ergebnis.VorlaufC != null
+                ? () => Vorlaufmodell(ergebnis)
+                : null;
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
@@ -69,6 +75,14 @@ namespace WindowsFormsApplication1
                     sortiert => Bedarfsmodell(ergebnis, sortiert)),
                 ["BildauftragRaumtemperatur"] = raumbild,
                 ["BildauftragKaelte"] = kaeltebild,
+                ["BildauftragVorlauf"] = vorlaufbild,
+                ["BildtextVorlauf"] = Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
+                ["KachelVorlaufRuecklauf"] = Text_("GEBB_KACHEL_VORLAUF_RUECKLAUF", "Vorlauf / Rücklauf"),
+                ["KachelBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT", "Stunden mit begrenzter Übergabe"),
+                ["QuelleBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT_QUELLE",
+                                           "Stunden, in denen die Übergabe weniger lieferte, als der Sollwert verlangte"),
+                ["HinweisVorlaufLuecken"] = Text_("GEBB_HRL_VORLAUF_LUECKEN",
+                                                  "Stunden ohne Heizbetrieb bleiben im Bild leer — dort gibt es keinen Vorlauf."),
                 ["GruppeKaelte"] = Text_("GEBB_GRP_KAELTE", "Kältebedarf"),
                 ["LabelKaeltelastMax"] = Text_("GEBB_LBL_KAELTELAST_MAX", "max. Kältelast"),
                 ["LabelHeizenUndKuehlen"] = Text_("GEBB_LBL_HEIZEN_UND_KUEHLEN", "Stunden mit Heizen und Kühlen:"),
@@ -137,8 +151,15 @@ namespace WindowsFormsApplication1
                 VollbenutzungsstundenH = ergebnis.VollbenutzungsstundenH,
                 MonatswerteMwh = monate,
 
-                Modelltext = GebaeudeHuelle.Rechenwegtext(ergebnis.Modell, vorgabe: false),
+                Modelltext = Rechenweg(ergebnis),
                 IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
+
+                // Anlagenkopplung AK1 (9.4): der Heizkreis - nur gekoppelt, aus demselben Ergebnis.
+                IstGekoppelt = ergebnis.Gekoppelt,
+                VorlaufMittelC = ergebnis.Gekoppelt ? ergebnis.VorlaufMittelC : null,
+                RuecklaufMittelC = ergebnis.Gekoppelt ? ergebnis.RuecklaufMittelC : null,
+                UebergabeBegrenztStundenH = ergebnis.Gekoppelt ? ergebnis.UebergabeBegrenztStundenH : null,
+                Heizkreiszeile = ergebnis.Gekoppelt ? Heizkreiszeile(ergebnis) : "",
                 SpitzeTagesmittelKw = ergebnis.SpitzeTagesmittelKw,
                 SpitzeQuantil95Kw = ergebnis.SpitzeQuantil95Kw,
                 // Stufe KU1 (F-K18): Auf dem Bestandsweg bucht der Lauf Kaeltebedarf 0 mit
@@ -162,6 +183,46 @@ namespace WindowsFormsApplication1
                     : ergebnis.KaelteBestandsweg ? new double[12] : new List<double>(),
                 KaelteHerleitung = Kaelteherleitung(ergebnis)
             };
+        }
+
+        /// <summary>
+        /// Der Rechenweg samt Ausweis der Kopplung (Anlagenkopplung 9.4): auf dem VDI-Weg mit
+        /// wirksamer Kopplung „VDI 6007, gekoppelt (AK1)", sonst der Rechenweg allein.
+        /// </summary>
+        internal static string Rechenweg(GebaeudeBedarfErgebnis e)
+        {
+            string text = GebaeudeHuelle.Rechenwegtext(e.Modell, vorgabe: false);
+            return e.Gekoppelt ? text + ", " + Text_("GEB_RECHENWEG_GEKOPPELT", "gekoppelt (AK1)") : text;
+        }
+
+        /// <summary>Die Zeile unter der Vorlaufkachel: Übergabeart und der Auslegungspunkt, mit dem gerechnet wurde.</summary>
+        internal static string Heizkreiszeile(GebaeudeBedarfErgebnis e)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            return string.Format(k, Text_("GEBB_KACHEL_VORLAUF_QUELLE",
+                                          "Mittel der Stunden mit Heizbetrieb — {0}, Auslegung {1}/{2} °C"),
+                                 Waermeuebergabevorgaben.Anzeigename(e.UebergabeArt),
+                                 e.AuslegungVorlaufC.HasValue ? e.AuslegungVorlaufC.Value.ToString("N0", k) : "—",
+                                 e.AuslegungRuecklaufC.HasValue ? e.AuslegungRuecklaufC.Value.ToString("N0", k) : "—");
+        }
+
+        /// <summary>
+        /// Das Bild „Vorlauf und Rücklauf" (Anlagenkopplung AK1, 9.4): gefahrener Vorlauf und
+        /// Rücklauf mit dem Auslegungspunkt — gezeichnet im Kern (<c>ChartRenderer.VorlaufRuecklaufModell</c>).
+        /// </summary>
+        private static Zeichenmodell Vorlaufmodell(GebaeudeBedarfErgebnis ergebnis)
+        {
+            return ChartRenderer.VorlaufRuecklaufModell(
+                Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
+                ergebnis.VorlaufC, ergebnis.RuecklaufC,
+                ergebnis.AuslegungVorlaufC, ergebnis.AuslegungRuecklaufC,
+                new ChartRenderer.VorlaufRuecklaufnamen
+                {
+                    Vorlauf = Text_("GEBB_REIHE_VORLAUF", "Vorlauf"),
+                    Ruecklauf = Text_("GEBB_REIHE_RUECKLAUF", "Rücklauf"),
+                    AuslegungVorlauf = Text_("GEBB_REIHE_AUSLEGUNG_VORLAUF", "Auslegung Vorlauf"),
+                    AuslegungRuecklauf = Text_("GEBB_REIHE_AUSLEGUNG_RUECKLAUF", "Auslegung Rücklauf"),
+                });
         }
 
         /// <summary>

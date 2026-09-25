@@ -63,7 +63,8 @@ namespace EPOS.Kern.Tests
         public void DieRegistryFuehrtAlleKatalogeInFesterZahl()
         {
             // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
-            Assert.Equal(23, KatalogRegistry.Alle.Count);
+            // Gebaeudesimulation G3 (Welle B, W21): Baustoff und Bauteilaufbau dazu - 25.
+            Assert.Equal(25, KatalogRegistry.Alle.Count);
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -77,7 +78,10 @@ namespace EPOS.Kern.Tests
                 // selben Anlage und wird nach dem Modul gepflegt.
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
                 "WECHSELRICHTER", "BHKW",
-                "STROMSPEICHER", "GEBAEUDE", "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
+                "STROMSPEICHER", "GEBAEUDE",
+                // Gebaeudesimulation G3 (W21): die zwei Kataloge der Gebaeudehuelle beim Gebaeude.
+                "BAUSTOFF", "BAUTEILAUFBAU",
+                "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
                 // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
                 "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                 "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
@@ -141,11 +145,19 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal(new[] { "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
                          KatalogRegistry.Alle.Where(k => k.VerwendungSperrt).Select(k => k.Schluessel).ToArray());
-            Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal))
+            // Gebaeudesimulation G3: Baustoff und Bauteilaufbau stehen erst mit ihrer
+            // Oberflaechenwelle im Dublettendialog; der Baustoff fuehrt den Hersteller als
+            // zweiten Teil des natuerlichen Schluessels.
+            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU" };
+            Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
+                                                         && !ohneDialog.Contains(k.Schluessel))
                                              .Select(k => k.Schluessel).ToArray(),
                          KatalogRegistry.Dublettendialog.Select(k => k.Schluessel).ToArray());
-            Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)),
+            Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
+                                                       && k.Schluessel != "BAUSTOFF"),
                        k => Assert.Empty(k.SchluesselZusatzSpalten));
+            Assert.Equal(new[] { BaustoffSchema.SPALTE_HERSTELLER },
+                         KatalogRegistry.Finde("BAUSTOFF").SchluesselZusatzSpalten);
         }
 
         /// <summary>
@@ -166,16 +178,17 @@ namespace EPOS.Kern.Tests
             Assert.Contains(k.Datenbloecke, b => b.Tabelle == "Tab_Solar_STAMM" && b.FkSpalte == "ID_Klimaregion");
         }
 
-        /// <summary>Sieben Kataloge fuehren eine Verwendungspruefung — die vier Typprofile und
-        /// die drei Tww-Kataloge (P8); die uebrigen sechzehn nicht — der Dublettendialog sagt
-        /// das dem Anwender ausdruecklich.</summary>
+        /// <summary>Acht Kataloge fuehren eine Verwendungspruefung — die vier Typprofile, die
+        /// drei Tww-Kataloge (P8) und der Baustoff (G3); die uebrigen siebzehn nicht — der
+        /// Dublettendialog sagt das dem Anwender ausdruecklich.</summary>
         [Fact]
         public void DieKatalogeMitVerwendungspruefung()
         {
             string[] mitPruefung = KatalogRegistry.Alle
                 .Where(k => k.VerwendungsPruefungen.Length > 0)
                 .Select(k => k.Schluessel).ToArray();
-            Assert.Equal(new[] { "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
+            // Gebaeudesimulation G3: der Baustoff - eine Katalogschicht zeigt ueber die ID auf ihn.
+            Assert.Equal(new[] { "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                                  "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
                          mitPruefung);
         }

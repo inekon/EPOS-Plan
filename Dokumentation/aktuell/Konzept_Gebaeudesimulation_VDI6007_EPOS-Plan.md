@@ -52,6 +52,22 @@ Kältestroms trägt zusätzlich **Grund- und Leistungspreis seines Stromträgers
 einen Grundpreis und den Leistungspreis auf die eigene Spitze des Kältestroms der Anlage; anteilig am
 Netzbezug bleibt es bei E34; umgesetzt mit der vierten Welle von KU2, das Register zählt weiter 11
 offene Punkte.
+Nachgezogen am 24.09.2026 mit **E36** (N1.41): Die Rechenzeit der Anlagenkopplung (N-A4) gilt nur
+bei **wirksamer Kopplung** und lautet dann **höchstens 100 ms je Gebäude und Jahr** — gemessen 21 bis
+31 ms; Gebäude ohne Kopplung bleiben beim Bestand. Nachgezogen mit der dritten Welle von AK1, das
+Register zählt weiter 11 offene Punkte.
+Nachgezogen am 25.09.2026 mit **E37** (N1.42): Die Kälteseite der Anlagenkopplung (H9) bekommt
+**eigene Spalten für die Kühlübergabe** am Gebäude — Schalter `Kuehluebergabe_Aktiv`, Art (Kühldecke,
+Flächenkühlung, Gebläsekonvektor), Exponent, Nennleistung, Auslegungspunkt und eine Vorlaufgrenze als
+Vorgabe statt Taupunktrechnung —, fester Kaltwasser-Vorlauf, Nennleistung aus einem Auslegungstag;
+wirksame Kopplung heißt nun „Heizseite oder Kälteseite wirksam". Umgesetzt mit der vierten Welle von
+AK1, das Register zählt weiter 8 offene Punkte.
+Nachgezogen am 24.09.2026 mit **E38** (N1.43): U13, U14 und U15 sind nach Empfehlung entschieden —
+mehrere Gebäude einer Datei kommen eines je Lauf, die Wandfläche wird um Fenster und Außentüren
+vermindert, ψ kommt als Vorgabe je Baualtersklasse, die Anschlusslängen bleiben leer, für gbXML und
+IFC gleich; für G4a gibt es genau einen iOS-Lauf, nur nach ausdrücklicher Rückfrage bei der Abnahme.
+Zugleich ist die Stufe G4 beauftragt (zuerst G4c, dann G4a); vor G4 ist kein Anwenderentscheid mehr
+offen, das Register zählt 8 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3541,3 +3557,170 @@ des Anschlusses.
 (E35) und 2 (KU2); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter K9,
 Kopf); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 6.1, 6.2, 6.3 und 11.1; die
 Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.41 Entscheid E36 — Die Rechenzeit der Anlagenkopplung: höchstens 100 ms je gekoppeltem Gebäude und Jahr
+
+**Entscheid E36 (Anwender, 24.09.2026).** Die Anforderung **N-A4** der
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) (2.2) verlangte für AK1
+höchstens 20 % mehr Rechenzeit als der Bestand. Die zweite Welle von AK1 hat gemessen, dass das mit
+dem Fallsystem je Abschnitt (Schritt H: Übergabe begrenzt, gesättigt oder im Regelbereich, bis zu
+zwei Umschaltzeitpunkte je Stunde) nicht zu halten ist: je gekoppeltem Gebäude und Jahr **21 bis
+31 ms** statt **7 ms** ohne Kopplung. Der Anwender entscheidet:
+
+1. **N-A4 gilt nur bei wirksamer Kopplung** — Projektstufe AK1 oder höher, Haken „Übergabe rechnen"
+   und eine Übergabeart ungleich ideal — und lautet dann: **höchstens 100 ms je Gebäude und Jahr**.
+2. **Gebäude ohne wirksame Kopplung bleiben unverändert** — sie rechnen auf dem Bestandszweig
+   (Grenzfall A der Anlagenkopplung, 3.7) byte-gleich und so schnell wie bisher (rund 5 ms je Zone und
+   Jahr, 4.8 und 5.13).
+
+**Was damit gilt.**
+
+| Fall | Grenze | Gemessen |
+|---|---|---|
+| Gebäude ohne wirksame Kopplung | unverändert: der Bestand (4.8, 5.13) | 7 ms je Gebäude und Jahr |
+| Gebäude mit wirksamer Kopplung (AK1) | höchstens **100 ms** je Gebäude und Jahr | 21 bis 31 ms |
+| AK3 (Iteration je Stunde) | wird vor der Abnahme an einem Mehrzonengebäude gemessen und fortgeschrieben (Anlagenkopplung 6.3) | — |
+
+**Die Probe berichtet, sie richtet nicht.** Die Läufer der CI sind verschieden schnell; eine harte
+Schwelle von 100 ms wäre eine Aussage über den Läufer, nicht über den Rechenweg. Die Messprobe des
+gekoppelten Jahreslaufs (`AnlagenkopplungEingangTests`) gibt die Zeit aus und scheitert erst beim
+**Fünffachen** der Grenze (500 ms) — dann ist am Rechenweg etwas grundsätzlich falsch, nicht der
+Läufer langsam.
+
+**Was offen bleibt.** Das Register zählt weiter **11 offene Punkte**; E36 beantwortet die Frage, die
+die zweite Welle von AK1 zu N-A4 an den Anwender gestellt hatte, und öffnet keine.
+
+**Betroffene Stufen:** AK1 (Welle 3: Anforderung und Messprobe); AK3 (Messung vor der Abnahme,
+unverändert).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1
+(E36) und 2 (AK1); [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) Kopf und
+2.2 (N-A4); die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.42 Entscheid E37 — Die Kälteseite der Kopplung bekommt eigene Spalten für die Kühlübergabe
+
+**Entscheid E37 (Anwender, 24.09.2026).** Die Kälteseite der
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) war nach **H9** (E24) für
+AK1 zugesagt, sobald KU2 steht; die zweite Welle von AK1 hat sie **benannt vertagt**, weil `AK-S1`
+keine gebäudeseitigen Spalten der Kühlübergabe führt und der Auslegungspunkt nach der Anlagenkopplung
+7.4 (alter Punkt 4) an der Anlage hing. Der Anwender entscheidet: **Die Kälteseite bekommt eigene
+Spalten am Gebäude**, gebaut mit der vierten Welle von AK1. Zugleich beantwortet er die vier Fragen
+des Umsetzungsauftrags:
+
+| Nr. | Frage | Entscheid |
+|---|---|---|
+| **A1** | eigener Schalter der Kühlübergabe? | **ja — abweichend von der Empfehlung:** `Kuehluebergabe_Aktiv` als erste Spalte, behandelt wie `Heizkreis_Aktiv`; beim Abschalten bleibt die gewählte Art erhalten, der Wortlaut von N-A4 (E36) bleibt |
+| **A2** | Nennleistung, wenn das Feld leer ist | nach Empfehlung: die Kühllast eines **periodisch eingeschwungenen Auslegungstags** (höchstes Tagesmittel der Außentemperatur, solare und innere Lasten, ideal auf den Kühlsollwert) — das Gegenstück der stationären Heizlast (H7), kein Normnachweis, kein zusätzlicher Jahreslauf |
+| **A3** | Kühlkurve und Kennlinienwahl der Wärmepumpe je Stunde | nach Empfehlung **vertagt**: fester Kaltwasser-Vorlauf; die Wärmepumpe rechnet wie in KU2 am `Kuehl_Vorlauf`, die Mischgruppe sitzt am Gebäude |
+| **A4** | EPOS-Vorgaben je Art | wie vorgeschlagen (Tabelle unten) |
+
+**Die Spalten** — Papiername `KAK-S1`, je in `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, also sechzehn
+`SchemaSpalte`-Einträge, hinter den dreizehn Übergabespalten von `AK-S1`; die Sicht
+`Abfrage_Projektgebaeude` wird zum vierten Mal neu gebaut (90 → 98 Spalten). NULL ist die Vorgabe, kein
+DDL-DEFAULT auf einem Fachwert; die Bereiche prüft der Eingang.
+
+| Spalte | Typangabe | NULL bedeutet |
+|---|---|---|
+| `Kuehluebergabe_Aktiv` | `YESNO` wie `Heizkreis_Aktiv` | — (Schalter, Vorgabe aus) |
+| `Kuehl_Uebergabe_Art` | `TEXT(20)` | ideal: Kälteseite nicht gekoppelt, Bestandsweg |
+| `Kuehl_Uebergabe_Exponent` | `DOUBLE` | Vorgabe der Art (1,0 bis 1,6) |
+| `Kuehl_Uebergabe_Leistung_Nenn` | `DOUBLE` (kW, sensibel) | hergeleitet aus dem Auslegungstag (A2) |
+| `Kuehl_Auslegung_Vorlauf` | `DOUBLE` (°C) | Vorgabe der Art (4 bis 22 °C) |
+| `Kuehl_Auslegung_Ruecklauf` | `DOUBLE` (°C) | Vorgabe der Art; Vorlauf < Rücklauf < Raum |
+| `Kuehl_Auslegung_Raumtemperatur` | `DOUBLE` (°C) | `Kuehl_Sollwert` (20 bis 30 °C) |
+| `Kuehl_Vorlaufgrenze` | `DOUBLE` (°C) | Vorgabe der Art; beim Gebläsekonvektor keine Grenze |
+
+| Art (EPOS-Vorgabe, A4) | n | Auslegung Vorlauf/Rücklauf | Strahlungsanteil | Vorlaufgrenze |
+|---|---|---|---|---|
+| Kühldecke | 1,1 | 16/19 °C | 0,5 | 16 °C |
+| Flächenkühlung | 1,1 | 16/19 °C | 0,5 | 16 °C; Estrich masselos |
+| Gebläsekonvektor | 1,0 | 7/12 °C | 0 | keine; Leistung sensibel, ohne Entfeuchtung (K5) |
+
+Dazu die Ergebnisspalten der Kälteseite (Papiername `KAK-S3`, ein **eigener** Schemaschritt, alle
+nullbar, NULL = nicht kühlgekoppelt gerechnet): `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und
+`Kuehl_Uebergabe_Begrenzt_Stunden` in `Tab_ErgebnisEnergiebedarf`; `Kuehl_Uebergabe_Art`,
+`KuehlVorlaufMittel_C`, `KuehlRuecklaufMittel_C`, `KuehlUebergabeBegrenzt_H` und
+`KuehlVorlaufgrenze_H` in `Tab_ErgebnisGebaeude`.
+
+**Der Rechenweg in drei Sätzen.** Schritt H der Anlagenkopplung (10.2) rechnet die Kälteseite
+spiegelbildlich — alle Temperaturen und Vergleiche im gespiegelten Raum (−θ), die Kennwerte der
+Übergabe mit (−V, −R, −θ_i,N), der P-Regler mit demselben Proportionalband auf dem Band
+[θ_kühl, θ_kühl + Xp]. Der Kaltwasser-Vorlauf ist fest: der kälteste wirksame `Kuehl_Vorlauf` der
+Wärmepumpen im Kühlbetrieb, am Gebäude auf die Vorlaufgrenze hochgemischt (max(Anlage, Grenze)), ohne
+Anlagenwert der Auslegungsvorlauf. Ist die Übergabe in einer Stunde gesättigt und der Vorlauf an der
+Grenze, trägt die Stunde den Grund `VORLAUFGRENZE_KUEHLUNG`; die Grenze ist eine Vorgabe, keine
+gerechnete Taupunktgrenze (K5).
+
+**Die Zone.** `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn`
+kommen in einem **eigenen Schemaschritt nach S-C** an `Tab_Zone` (NULL = Wert des Gebäudes bzw. Anteil
+der Zonenfläche), ohne Schalter wie die Heizseite; steht S-C beim Schemaschritt der vierten Welle noch
+nicht, sind sie benannt auf G6 vertagt. Gerechnet wird die Übergabe je Zone ab G6.
+
+**Neue benannte Abweichungen von der Symmetrie** (Anlagenkopplung 7.4, ersetzen den alten Punkt 4):
+keine Kühlkurve und keine Kennlinienwahl je Stunde, die Wärmepumpe bleibt am `Kuehl_Vorlauf` (A3); ein
+gemeinsames `Regler_Proportionalband` — ein Raumregler, zwei Sequenzen; kein Sollwertprofil der Kühlung
+(kommt mit KU3); der Strahlungsanteil ist eine Vorgabe je Art ohne eigene Spalte (Kühlkonzept 3.2); die
+Nennleistung kommt aus dem Auslegungstag statt aus einer stationären Rechnung (A2).
+
+**Folge für E36 und N-A4.** Der Wortlaut bleibt; **wirksame Kopplung heißt „Heizseite oder Kälteseite
+wirksam"**. Die Kälteseite ist wirksam mit Projektstufe AK1 oder höher, wirksamer Kühlung nach E32
+(Projektschalter Kühlbetrieb, `Kuehlung_Aktiv`, Kühlsollwert), dem Schalter `Kuehluebergabe_Aktiv` und
+einer Kühlübergabeart ungleich ideal (A1) — unabhängig von `Heizkreis_Aktiv`.
+
+**Was offen bleibt.** Das Register zählt weiter **8 offene Punkte**; E37 beantwortet H9 für AK1 und
+öffnet keine Frage. Referenzprojekt mit Kopplung, Einfrierregel und Basis R15 kommen mit der fünften
+Welle von AK1; sie friert `Kuehluebergabe_Aktiv` mit ein.
+
+**Betroffene Stufen:** AK1 (Wellen 4 und 5), G3 (Schritt S-C, Zonenspalten), G6 (Übergabe je Zone),
+KU3 (Sollwertprofil der Kühlung).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1
+(E37); [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter H9);
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 2.1 (F-A16), 2.2
+(N-A4), 7.1, 7.2, 7.4, 8, 8.1, 8.3, 8.4, 9.1, 9.5, 10.5, 11.1 und 13.1;
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.2 und 7.1;
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2; die Indexzeilen in
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.43 Entscheid E38 — U13, U14 und U15 nach Empfehlung; ein iOS-Lauf zur Abnahme von G4a
+
+**Entscheid E38 (Anwender, 24.09.2026).** Der Anwender entscheidet die drei Punkte **U13**, **U14**
+und **U15** des [Registers der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+nach dessen Empfehlung und legt fest, wie der iOS-Nachweis des IFC-Imports aus **E18** (N1.23)
+läuft. Die drei waren nach E28 (N1.33) die letzten offenen Fragen des
+[Umsetzungskonzepts](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) und vor G4 fällig.
+Sie gelten für **beide Importwege** —
+den gbXML-Import (G4c) und den IFC-Import (G4a) —, weil beide über das gemeinsame Zuordnungsgerüst
+dieselben Zielfelder füllen ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
+2.1). Wie in E27 und E28 gilt die Empfehlung im Wortlaut des jeweiligen Registerabschnitts.
+
+**Was damit gilt.**
+
+| Nr. | Entscheid | Wirkt in |
+|---|---|---|
+| **U13** | Mehrere Gebäude in einer Datei: **eines je Lauf** — der Dialog bietet die Gebäude der Datei in einer Klappliste an, übernommen wird je Lauf eines. „Alle auf einmal" entfällt und mit ihm die erzeugten Katalognamen und die Dublettenlogik des Katalogimports | G4c (`Campus/Building`, Datenaustauschkonzept 3.4), G4a (`IfcBuilding`, Umsetzungskonzept 3.5 Nr. 1) |
+| **U14** | Die Wandfläche wird um Fenster und Außentüren **vermindert**: A_Wand = Σ Bruttowandfläche (IFC `GrossSideArea`, gbXML `RectangularGeometry`) − Σ A_Fenster − Σ A_Außentür; ohne Abzug zählte die Öffnung als Wand und als Fenster. Wird die Differenz negativ, greift beim IFC-Weg `NetSideArea`, sonst Warnung und A_Wand = 0; beim gbXML-Weg A = 0, Zeile rot, `IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV` | G4c (Datenaustauschkonzept 3.6), G4a (Umsetzungskonzept 3.5 Nr. 10) |
+| **U15** | Die drei Wärmebrückenkennwerte ψ werden **als Vorgabe je Baualtersklasse** gesetzt, die drei Anschlusslängen bleiben **leer** — eine geratene Länge sähe aus wie eine gemessene; beide tragen ihre Herkunftsmarke (`Vorgabe` bzw. `Leer`) | G4c (Datenaustauschkonzept 3.7), G4a (Umsetzungskonzept 3.4) |
+| **E18** (IFC auf iOS) | **Genau ein** iOS-Lauf (`ios.yml`) als Trimming- und Gerätenachweis für G4a — **ausschließlich nach ausdrücklicher Rückfrage beim Anwender zum Zeitpunkt der Abnahme von G4a**; sonst gilt für die Sitzung „keine iOS-/macOS-Läufe". Für G4c heißt das: Abnahme ohne iOS-Lauf | G4a (G4-8, Abnahme) |
+
+**Beauftragung der Stufe G4.** Mit E38 beauftragt der Anwender zugleich die Stufe **G4**: zuerst
+**G4c** (gbXML-Import), dann **G4a** (IFC-Import) — die Reihenfolge aus D1 (E27, N1.32); **G4b**
+(IFC auf Bauteilebene) erst nach G3 und nachdem G4a im Feld war
+([Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 3.8 und Kapitel 4).
+
+**Was offen bleibt.** Vor G4 ist **kein Anwenderentscheid mehr offen**; Konzept, Umsetzungskonzept,
+Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Registerpunkt mehr.
+Das Register zählt **8 offene Punkte** — M3, M5–M8 und M11–M13 (G6b bis G6d). Es bleibt die
+Folgeaufgabe **D6** aus E27 (das Gegenüber des IFC-Exports, vor der Stufe über die semantische
+hinaus). Weil G4c ohne iOS-Lauf abgenommen wird, bleibt die iOS-Zahl der gbXML-Größengrenze
+(Datenaustauschkonzept 11.2, D15) bis zur Abnahme von G4a ein Richtwert.
+
+**Betroffene Stufen:** G4c (U13, U14, U15), G4a (U13, U14, U15, der eine iOS-Lauf), G4b (erst nach
+G3 und nachdem G4a im Feld war).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf
+und Abschnitte 1 (E38), 2 (G4) und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+(Vermerk unter U13, U14 und U15, Ergänzung unter U16, Kopf, Kapitel 0, 2 und 9, Zählung 8);
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kopf, Vorspann, 3.4
+bis 3.8, 4 und 5; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kopf, 3.4,
+3.6, 3.7 und 9; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
