@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502) und E22 (#503) · Schwesterpapiere: das Konzept
+**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502), E22 (#503) und E23 (#510) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -62,10 +62,11 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E17 | E17‑Q1…Q4 — die Fragen aus E17, den nicht monetarisierbaren Wirkungen V‑G11 (entschieden 24.09.2026, nach Empfehlung) | Protokoll E17; Statusdatei Nach #479 (a) | 4 |
 | R‑E18 | E18‑Q1…Q7 — die Fragen aus E18, den Restpunkten der Stromsteuer (Konzept § 6.3 Nr. 14, 16, 18; Q1…Q6 entschieden 24.09.2026, nach Empfehlung a, gebaut #492; Q7, der Restpunkt § 6.3 Nr. 33, gebaut #498 mit E19) | Protokoll E18; Statusdatei Nach #492 (a) | 7 |
 | R‑E19 | E19‑Q1…Q6 — die Fragen aus E19, den Restpunkten Nr. 15 und 33 (entschieden 25.09.2026, nach Empfehlung; Q4 b, die übrigen a; gebaut #498) | Protokoll E19; Statusdatei Nach #498 (a) | 6 |
-| R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19 (Fortsetzung von R‑NR; Nr. 18 gebaut #503) | Statusdatei Nach #498 (a); Protokoll E19 | 5 |
+| R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19 (Fortsetzung von R‑NR; Nr. 18 gebaut #503, Nr. 10 erledigt #510) | Statusdatei Nach #498 (a); Protokoll E19 | 5 |
 | R‑E21 | E21‑Q1…Q9 — die Fragen aus E21, der Pflegewelle Nr. 23 (erledigt) und Nr. 24 (benannt) (entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #506) | Protokoll E21; Statusdatei Nach #506 (a) | 9 |
-| R‑E20 | E20‑Q1…Q8 — die Fragen aus E20, Nr. 10 „Wärmepumpe beides“ bei den Investitionskosten (Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, gebaut #502; **Q6 offen beim Anwender**, Empfehlung a, gebaut a) | Protokoll E20; Statusdatei Nach #502 (a) | 8 |
+| R‑E20 | E20‑Q1…Q8 — die Fragen aus E20, Nr. 10 „Wärmepumpe beides“ bei den Investitionskosten (Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, gebaut #502; Q6 entschieden 25.09.2026 durch den Anwender: b, gebaut mit E23 (#510)) | Protokoll E20; Statusdatei Nach #502 (a) | 8 |
 | R‑E22 | E22‑Q1 — die Frage aus E22, der Rechenweg-Sortierung nach der Regel „99“ (Nr. 18; entschieden 25.09.2026 nach der A/B-Messung, nach Empfehlung a; gebaut #503) | Protokoll E22; Statusdatei Nach #503 (a) | 1 |
+| R‑E23 | E23‑Q1…Q7 — die Fragen aus E23, den Betriebskosten der Wärmepumpe ohne kWh-Bemessung (E20‑Q6 b; Q1…Q5 entschieden 25.09.2026, nach Empfehlung a, gebaut #510; **Q6 und Q7 offen beim Anwender**, Empfehlung a, gebaut a) | Protokoll E23; Statusdatei Nach #510 (a) | 7 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -719,11 +720,12 @@ Quelle: die Statusdatei, Nach #498 (a), und das Protokoll
 „Anwenderentscheide vom 25.09.2026“; der Wortlaut der Punkte vor den Entscheiden steht im Protokoll der Entscheidwege
 § 8.39. Die Familie setzt R‑NR fort. Der Anwender hat am 25.09.2026 zu fünf offenen Punkten entschieden; nachgetragen mit
 den Papieren zu #498. Die Zeile Nr. 10 ist mit den Papieren zu #502 nachgezogen (gebaut mit E20, → R‑E20). Die Zeile Nr. 18 ist mit den Papieren zu #503 nachgezogen (der zweite Entscheid
-„Nr. 18: so umsetzen“ nach der Messwelle, gebaut mit E22, → R‑E22).
+„Nr. 18: so umsetzen“ nach der Messwelle, gebaut mit E22, → R‑E22). Die Zeile Nr. 10 ist mit den Papieren zu #510
+erledigt (E20‑Q6 b, erweitert auf Strom und Wärme, gebaut mit E23, → R‑E20, R‑E23).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **Nr. 10** | Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) | „Wärmepumpe beides“ nur bei Investitionskosten nach kW elektrisch und kW thermisch — die kWh-Bemessung der Wärmepumpe bleibt thermisch; Strom-kWh sind Energiekosten | 25.09.2026, Anwender | § 6.3 Nr. 10 | umgesetzt mit E20 (#502): Investitionskosten der Wärmepumpe je kW thermisch und je kW elektrisch (P_el = Ptherm ÷ COP am Normpunkt der Kennlinie, § 3.2), Betriebskosten thermisch; offen allein E20‑Q6 („je kWh elektrisch“ im Betriebsraster der Wärmepumpe, → R‑E20) |
+| **Nr. 10** | Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) | „Wärmepumpe beides“ nur bei Investitionskosten nach kW elektrisch und kW thermisch — die kWh-Bemessung der Wärmepumpe bleibt thermisch; Strom-kWh sind Energiekosten | 25.09.2026, Anwender | § 6.3 Nr. 10 | umgesetzt mit E20 (#502): Investitionskosten der Wärmepumpe je kW thermisch und je kW elektrisch (P_el = Ptherm ÷ COP am Normpunkt der Kennlinie, § 3.2), Betriebskosten thermisch; **erledigt** mit E23 (#510): die Betriebskosten der Wärmepumpe nicht je kWh — „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster gesperrt, eine Bestandszeile rechnet weiter mit dem Vermerk „Altbestand“ (E20‑Q6 b, → R‑E20, R‑E23) |
 | **Nr. 11** | Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option | „nicht nachziehen“ | 25.09.2026, Anwender | § 6.3 Nr. 11 | geschlossen |
 | **Nr. 13** | Pufferkapazität bleibt null — bewusste Grenze | „nur Volumen“ — die Grenze ist bestätigt | 25.09.2026, Anwender | § 6.3 Nr. 13 | geschlossen |
 | **Nr. 18** | Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): offen, der Umbau eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a) | nach Empfehlung: zuerst eine Messwelle, danach der Entscheid; nach der Messwelle: „Nr. 18: so umsetzen, Umbau: Das Hydraulikbild wurde im August (HB1) auf die richtige Regel umgestellt: ungepflegte Anlagen nach hinten, Regel ‚99‘“ | 25.09.2026, Anwender, nach Empfehlung; 25.09.2026, Anwender, nach der Messwelle | § 6.3 Nr. 18 | gebaut mit E22 (#503): die fünf Rechenweg-Leser und die drei Modul-Lader nach `Ladeordnung.SqlAnlagenprio` (E22‑Q1 a, → R‑E22) — ohne Rechenwirkung, allein die Modulreihenfolge der beiden Wärmepumpen in 1042; neue Basis `2026-09-25_R16_Anlagenprio`; zuvor gemessen 25.09.2026 (Messwelle `mess18`, nicht gemergt) |
@@ -760,7 +762,8 @@ Quelle: Protokoll
 „Fragen aus der Welle“, und die Statusdatei, Nach #502 (a). Die Fragen stellt der Phase‑0-Bericht der Welle E20 (Anlass:
 der Anwenderentscheid zu § 6.3 Nr. 10 vom 25.09.2026, → R‑Rest); entschieden hat sie der Orchestrator am 25.09.2026
 (09:15) mit der Baufreigabe, nach Empfehlung — alle a, **E20‑Q6 offen beim Anwender**. Gebaut ist jeweils der
-Entscheid, bei Q6 die Empfehlung a.
+Entscheid, bei Q6 die Empfehlung a. E20‑Q6 hat der Anwender am 25.09.2026 entschieden: b, während der Welle E23
+erweitert auf „weder Strom noch Wärme“; gebaut mit E23 (#510, → R‑E23).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
@@ -769,7 +772,7 @@ Entscheid, bei Q6 die Empfehlung a.
 | **E20‑Q3** | Heizstab: (a) nicht einrechnen; (b) einrechnen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502, E20/1) |
 | **E20‑Q4** | Kühlbetrieb: (a) nur der Heiz-Normpunkt; (b) die Kühlkennlinie mitbetrachten | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502, E20/1; an 1017 liegt P_el im Kühlbetrieb 2,7–4,2 kW unter den 7,91 kW des Heiz-Normpunkts) |
 | **E20‑Q5** | Freischaltung: (a) Schalter `investition` in der Landkarte, die Betriebsseite bleibt GEWERK; (b) überall freischalten, die Betriebsauswahl sperren | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 („je Raster“) | gebaut ist a (#502, E20/2: `BasisGrund`, `PasstZuGewerk`, `BemessungKatalog.Auswahl` je Raster, `InvestKaskade` true, `RueckfallMenge` false) |
-| **E20‑Q6** | „je kWh elektrisch“ im Betriebsraster der Wärmepumpe (Strommenge aus dem Lauf, Grund LAUF): (a) in E20 nicht anfassen, als Rest von Nr. 10 benennen; (b) aus der Betriebsauswahl nehmen, Bestandszeilen über `benutzt` schützen | **offen beim Anwender** — Empfehlung a | 25.09.2026 gestellt (Phase‑0-Bericht) | § 6.3 Nr. 10 | gebaut ist die Empfehlung a (#502: die Betriebsseite unverändert); mit dem Entscheid ist Nr. 10 geschlossen |
+| **E20‑Q6** | „je kWh elektrisch“ im Betriebsraster der Wärmepumpe (Strommenge aus dem Lauf, Grund LAUF): (a) in E20 nicht anfassen, als Rest von Nr. 10 benennen; (b) aus der Betriebsauswahl nehmen, Bestandszeilen über `benutzt` schützen | **entschieden 25.09.2026: b**, gebaut mit E23 (#510); erweitert: „bei Wärmepumpe fixer Jahresbetrag (oder % von Investitionskosten), nicht nach kWh/a — weder Strom noch Wärme“ | 25.09.2026 gestellt (Phase‑0-Bericht); Anwender 25.09.2026 („E20‑Q6: erläutere / fahre fort“ → nach Empfehlung b), ergänzt während E23 | § 6.3 Nr. 10; § 3.2 (Fußnote ²) | #502 baute die damalige Empfehlung a (Betriebsseite unverändert); gebaut ist b mit E23 (#510): „je kWh elektrisch“ und „je kWh thermisch“ im Betriebsraster der Wärmepumpe gesperrt, eine Bestandszeile rechnet mit dem Vermerk „Altbestand“ (→ R‑E23); Nr. 10 erledigt |
 | **E20‑Q7** | Beschriftung: (a) „je kW elektrisch“ unverändert; (b) eigene Beschriftung an der Wärmepumpe | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | Bemessungskatalog (`BM_KW_ELEKTRISCH`) | gebaut ist a (#502) |
 | **E20‑Q8** | Grund bei fehlendem Normpunkt: (a) GERAET wiederverwenden; (b) eigener Grund | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502; zwei Katalogtypen ohne Normpunkt ergeben null mit Grund GERAET) |
 
@@ -787,6 +790,28 @@ Empfehlung — a. Gebaut ist der Entscheid.
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
 | **E22‑Q1** | Die drei Modul-Lader `SPK_Liste_Laden` (Kessel), `Solar_Liste_Laden` (Solarthermie) und `BHKW_Liste_Laden` laden ohne `ORDER BY`: (a) mitnehmen, wenn die A/B-Abweichungen nur Reihenfolgen oder Indizes sind; (b) nur die fünf Rechenweg-Leser, falls die Lader Zeitreihen oder Kennzahlen ändern | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Auftrag E22), im Bau nach der A/B-Messung entschieden (die fünf Leser und die drei Lader gegen die fünf Leser allein: 394/394 CSV byte-gleich) | § 6.3 Nr. 18 | gebaut ist a (#503, E22/2: die drei Lader nach `Ladeordnung.SqlAnlagenprio`) |
+
+---
+
+## R‑E23 — E23‑Q1…Q7: die Fragen aus E23
+
+Quelle: Protokoll
+[`E23_Waermepumpe_Betrieb_ohne_kWh_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E23_Waermepumpe_Betrieb_ohne_kWh_Protokoll.md),
+„Fragen aus der Welle“, und die Statusdatei, Nach #510 (a). Anlass der Welle ist der Anwenderentscheid E20‑Q6 b vom
+25.09.2026 (→ R‑E20), während Phase 1 erweitert: „bei Wärmepumpe fixer Jahresbetrag (oder % von Investitionskosten),
+nicht nach kWh/a — weder Strom noch Wärme“. E23‑Q1…Q5 stellt der Phase‑0-Bericht; entschieden hat sie der Orchestrator
+am 25.09.2026 (13:15) mit der Baufreigabe, nach Empfehlung — alle a. E23‑Q6 entstand mit der Ergänzung des Anwenders,
+E23‑Q7 im Phase‑1-Bericht; beide sind **offen beim Anwender**, gebaut ist jeweils die Empfehlung a.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E23‑Q1** | Ort der Sperre: (a) in der Landkarte `WirtschaftlichkeitCtrl.BasisGrund` (Grund GEWERK); (b) eine eigene Sperrliste in `BemessungKatalog.Auswahl` | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510, E23/1; Auswahl, KI-Wahlliste und Kreuztafel folgen) |
+| **E23‑Q2** | Grund einer Bestandszeile ohne Lauf: (a) „passt nicht zu diesem Gewerk“ hinnehmen; (b) ein Sonderfall LAUF | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510) |
+| **E23‑Q3** | Vermerk an der Bestandszeile: (a) an der Herleitungszeile im Kern; (b) eine eigene Hinweiszeile mit Hüllenfeld; (c) still | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510, E23/2: `KostenHerleitung.IstAltbestandWpKwh`, Schlüssel `KDLG_HERL_ALTBESTAND_WP_KWH`) |
+| **E23‑Q4** | Geltungsbereich des Vermerks: (a) nur im Projektmodus; (b) auch in den Kostenvorlagen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510, E23/2) |
+| **E23‑Q5** | Umstellungsangebot für eine Bestandszeile: (a) keins; (b) auf „% des Endenergiebedarfs“ umstellen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ²) | gebaut ist a (#510; kein Bestand betroffen) |
+| **E23‑Q6** | „% der Endenergiekosten“ im Betriebsraster der Wärmepumpe: (a) lassen; (b) sperren | **offen beim Anwender** — Empfehlung a | 25.09.2026 gestellt (mit der Ergänzung des Anwenders während Phase 1) | § 3.2 (Fußnote ²) | gebaut ist die Empfehlung a (#510) |
+| **E23‑Q7** | „% des Endenergiebedarfs“ (die Standardvorlage 13 sät sie für die Hilfsenergie der Wärmepumpe, Live-DB 4 Zeilen), „je kW Leistung“ und „je kW Heizleistung“ an der Wärmepumpe: (a) wählbar lassen — kein kWh/a-Satz; (b) auch sperren, dann Vorlage 13 und Schemaschritt 94 umstellen | **offen beim Anwender** — Empfehlung a | 25.09.2026 gestellt (Phase‑1-Bericht) | § 3.2 (Fußnote ²) | gebaut ist die Empfehlung a (#510) |
 
 ---
 
