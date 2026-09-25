@@ -740,7 +740,8 @@ namespace WindowsFormsApplication1
             e.WaermedeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
 
-            e.ReststrombedarfMwh = e.StrombedarfMwh - bh.Stromproduktion_BHKW_MWh;
+            // E27 (E27‑Q4): je Stunde geklemmt - wortgleich mit SimulationRunner.
+            e.ReststrombedarfMwh = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion);
             e.WaermeueberschussMwh = bh.WaermeueberschussKwh / 1000.0;
             e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;

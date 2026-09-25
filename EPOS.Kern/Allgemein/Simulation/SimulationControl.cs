@@ -630,6 +630,16 @@ namespace WindowsFormsApplication1
             // Wärmebedarf von kWh in MWh umrechnen
             RestwaermeMwh /= 1000.0;
 
+            // Der Netzbezug ist nie negativ (E27, Befund N5). Die Kaskade zieht die
+            // BHKW-Erzeugung ungeklemmt ab, damit spätere Verbraucher derselben Viertelstunde
+            // (Wärmepumpe, Heizstab, Elektrokessel, Kältestrom) und die Photovoltaik den
+            // Überschuss sehen. Folgt keine klemmende Stufe (Photovoltaik, Stromspeicher),
+            // stünde der Überschuss hier noch negativ im Vektor und würde als Netzbezug
+            // verrechnet - obwohl der KWK-Split ihn schon als Einspeisung führt. Nur Werte
+            // unter 0 werden gesetzt; jeder andere Wert bleibt bitgleich.
+            if (!SpeicherflotteErsetztReststrom)
+                Rest_Strombedarf_viertelstuendlich = NetzbezugGeklemmt(Rest_Strombedarf_viertelstuendlich);
+
             // ReststromMwh mathematisch korrekt aus dem finalen Ergebnis-Vektor berechnen
             // Falls deine Quell-Vektoren stündliche kW-Mittelwerte/kWh enthalten:
             ReststromMwh = Speicherflottennetzbilanz != null
@@ -4393,6 +4403,45 @@ namespace WindowsFormsApplication1
                 else result[i] = array1[i] - array2[i];
             }
             return result;
+        }
+
+        /// <summary>
+        /// Der Netzbezug aus dem Rest nach der Kaskade: Werte unter 0 (ein BHKW-Überschuss,
+        /// den keine Stufe mehr aufgenommen hat) werden 0, alle anderen bleiben bitgleich.
+        /// Ohne negativen Wert kommt dasselbe Array zurück; sonst ein neues, weil der Rest auf
+        /// das Ausgangsarray des Strombedarfs zeigen kann (E27).
+        /// </summary>
+        internal static double[] NetzbezugGeklemmt(double[] rest)
+        {
+            if (rest == null) return null;
+            bool negativ = false;
+            for (int i = 0; i < rest.Length && !negativ; i++)
+                if (rest[i] < 0) negativ = true;
+            if (!negativ) return rest;
+
+            double[] result = new double[rest.Length];
+            for (int i = 0; i < rest.Length; i++)
+                result[i] = rest[i] < 0 ? 0.0 : rest[i];
+            return result;
+        }
+
+        /// <summary>
+        /// Der Reststrombedarf nach der BHKW-Stufe [MWh]: je Stunde Stufeneingang minus
+        /// Erzeugung, nie unter 0 (E27, Entscheid E27‑Q4). Ein Überschuss ist Einspeisung
+        /// (KWK-Split), kein negativer Bedarf. Gemeinsame Formel für Ergebnis und
+        /// Ergebnisansicht.
+        /// </summary>
+        internal static double BhkwReststrombedarfMwh(double[] strombedarf, double[] stromproduktion)
+        {
+            if (strombedarf == null) return 0.0;
+            double summe = 0.0;
+            for (int h = 0; h < strombedarf.Length; h++)
+            {
+                double erz = stromproduktion != null && h < stromproduktion.Length ? stromproduktion[h] : 0.0;
+                double r = strombedarf[h] - erz;
+                if (r > 0) summe += r;
+            }
+            return summe / 1000.0;
         }
 
         public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
