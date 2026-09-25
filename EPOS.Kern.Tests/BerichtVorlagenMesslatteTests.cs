@@ -109,11 +109,10 @@ namespace EPOS.Kern.Tests
                 foreach (FileFormatVersions fassung in WordBerichtSvgWacheTests.Fassungen)
                 {
                     List<ValidationErrorInfo> alle = new OpenXmlValidator(fassung).Validate(doc).ToList();
-                    List<ValidationErrorInfo> fehler = alle.Where(f => !Ausgenommen(f)).ToList();
-                    _ausgabe.WriteLine(probe + " · " + fassung + ": " + alle.Count + " Meldungen, davon " +
-                                       (alle.Count - fehler.Count) + " ausgenommen");
+                    List<ValidationErrorInfo> fehler = alle;
+                    _ausgabe.WriteLine(probe + " · " + fassung + ": " + alle.Count + " Meldungen");
                     foreach (ValidationErrorInfo f in alle)
-                        _ausgabe.WriteLine("   " + (Ausgenommen(f) ? "[ausgenommen] " : "") + Text(f));
+                        _ausgabe.WriteLine("   " + Text(f));
                     if (fehler.Count > 0)
                         befunde.Add(fassung + ": " + fehler.Count + " Fehler — " +
                                     string.Join(" | ", fehler.Take(3).Select(Text)));
@@ -328,23 +327,6 @@ namespace EPOS.Kern.Tests
         // =====================================================================
         //  Helfer
         // =====================================================================
-
-        /// <summary>
-        /// <b>AUSSCHLUSSLISTE — VORLÄUFIG.</b> Die Berichtsvorlage führt die Formatvorlagen
-        /// <c>Title</c> und <c>Heading1</c>–<c>Heading3</c> in <c>word/styles.xml</c> ZWEIMAL
-        /// (Konzept Berichtsvorlagen 2.1, gemessen); der Validator meldet je Doppel
-        /// <c>Sem_UniqueAttributeValue</c> auf <c>w:styleId</c>, in jeder Office-Fassung vier
-        /// Meldungen. Die Vorlage wird parallel bereinigt (BV-E0 „doppelte Stile bereinigen“);
-        /// nach dem Zusammenführen entfällt diese Liste, und der Test muss ohne sie grün sein.
-        /// Ausgenommen ist NUR diese Meldung an diesen vier Stilen — jede andere zählt.
-        /// </summary>
-        private static readonly string[] DoppelteStileDerVorlage = { "Title", "Heading1", "Heading2", "Heading3" };
-
-        private static bool Ausgenommen(ValidationErrorInfo f)
-            => f.Id == "Sem_UniqueAttributeValue"
-               && f.Part != null && f.Part.Uri.ToString() == "/word/styles.xml"
-               && f.Node is Style stil && stil.StyleId != null
-               && DoppelteStileDerVorlage.Contains(stil.StyleId.Value);
 
         private static string Text(ValidationErrorInfo f)
             => f.Id + " @ " + (f.Part != null ? f.Part.Uri.ToString() : "?") + " " + f.Path?.XPath + ": " + f.Description;

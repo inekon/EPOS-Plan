@@ -105,7 +105,9 @@ Aufrufstellen (BV:73-99, 162-224; BP:371-377; BW:290-418, 1223-1226). Farben aus
 ### 2.4 Befunde, die jede Vorlagenlösung zuerst trifft
 
 Die Wirkungstafel wird mit `k.Body.Append(t)` statt `k.Fuege(t)` eingefügt (BW:678) und landete mit Vorlage
-hinter der `sectPr`. Feste Stil-IDs, DATE-Feld, `docPr/@id` ab 1, feste Breite und Datenbankzugriffe der
+hinter der `sectPr` (in BV-E0 behoben). Zweiter Befund aus BV-E0: `SetzeUpdateFields` stellte
+`w:updateFields` mit `PrependChild` vor `w:displayBackgroundShape` der Vorlage — in jeder Office-Fassung
+ungültig, ohne Vorlage nie aufgefallen (behoben mit `AddChild` an der Schemastelle). Feste Stil-IDs, DATE-Feld, `docPr/@id` ab 1, feste Breite und Datenbankzugriffe der
 Bausteine (2.1) treffen jede fremde Vorlage; die Abschnitte 5, 6 und 11 lösen sie.
 
 
@@ -811,7 +813,8 @@ BV-E1, die Vorlage zu lesen und zu setzen.
    Standardvorlage hält `BerichtBlattstrukturWacheTests.cs:1115`.
 4. **Formelmappe** unverändert; **Warnungen** in Laufmeldung und `bericht.warnungen` (heute BS:176-180);
    **Konfiguration** `B_*` unverändert gelesen.
-5. **BW:678 vorab:** `k.Body.Append(t)` wird `k.Fuege(t)`.
+5. **BW:678 und `SetzeUpdateFields` vorab (BV-E0, erledigt):** `k.Body.Append(t)` wird `k.Fuege(t)`;
+   `w:updateFields` kommt über `AddChild` an die Schemastelle der Einstellungen.
 6. **Bekannte Mängel** nur, wo eine Etappe sie berührt, im Protokoll: feste Datumsmuster, „Stamm — Stamm“,
    Δ%-Format (EBG:349), Freeze (EBG:1774), Datum und Menge als Text (EBG:235, :1764), nur erstes Gerät je
    Gewerk (`ProjektDetails.cs:80`).
