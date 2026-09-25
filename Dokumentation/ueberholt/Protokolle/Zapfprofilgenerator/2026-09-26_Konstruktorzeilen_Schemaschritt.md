@@ -51,6 +51,10 @@ dieses Protokoll hält den Ablauf und die Nachweise.
    Schemastand 145) — `origin` hat sie nicht angefasst; `Zielversion` bleibt
    `TwwSchema.SCHRITT_T5_KONSTRUKTOR`, die Schrittliste zählt 85 Schritte. Auf `origin` sind #522,
    #523 und #524 frei — die Nummer bleibt.
+7. **Zweiter Merge von `origin`** (`983b3aee`, Stand `17728b80` — der Posten #527: Klimaregion im
+   Projektassistenten, Klassenhinweis des Gebäudeimports): **ohne Konflikt**; Zielversion,
+   Statuszeile #522 und Testdatenbank unberührt, Designer unverändert. Build, Windows-Schale,
+   gefilterte Tests (0 Fehler, 1 765 erfolgreich) und Referenzlauf (6/6 PASS) danach wiederholt.
 
 ## 3 Gates
 
