@@ -1850,8 +1850,7 @@ NULL = Wert des Gebäudes. Wer sie anlegt, hängt an der Reihenfolge der Stufen:
 noch nicht, bringt dieser Schritt sie an alle drei Tabellen. Einen Nachtragsschritt „sobald es
 die Zone gibt" gibt es nicht — mit **einer** Ausnahme nach **E37** (Konzept N1.42): Die drei
 Zonenspalten der Kühlübergabe (`Kuehl_Uebergabe_Art`, `_Exponent`, `_Leistung_Nenn`) kommen in einem
-eigenen Schritt nach S-C, weil `KAK-S1` nach S-C entsteht; steht S-C beim Schemaschritt der vierten
-Welle von AK1 noch nicht, sind sie benannt auf G6 vertagt. Die Typangaben stehen in Access-Schreibweise und werden beim
+eigenen Schritt nach S-C (Schemaschritt 137), weil `KAK-S1` (Schemaschritt 135) nach S-C entsteht. Die Typangaben stehen in Access-Schreibweise und werden beim
 Anlegen übersetzt — `YESNO` erzeugt die
 `CHECK`-Klausel von selbst.
 
