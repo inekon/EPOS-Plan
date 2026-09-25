@@ -154,7 +154,82 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Plausibilität am OK-Weg — dieselbe Prüfung wie <see cref="GebaeudeImportAblauf.Pruefen"/>.</summary>
-        public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz) => GebaeudeImportAblauf.Pruefen(satz);
+        public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz, string katalogname = null)
+            => GebaeudeImportAblauf.Pruefen(satz, katalogname);
+
+        // ------------------------------------------------------------------ Welle 2: Dialog
+
+        /// <summary>Schlüssel der Herkunft „leer" in der Oberfläche — die Persistenz kennt keinen (<see cref="ImportherkunftWerte.Wert"/>).</summary>
+        public const string HERKUNFT_LEER = "LEER";
+
+        /// <summary>
+        /// Der sprachneutrale Schlüssel einer Herkunft für die Oberfläche (Stilklasse, Rückweg):
+        /// der Persistenzwert (<see cref="ImportherkunftWerte"/>), für „leer" <see cref="HERKUNFT_LEER"/>.
+        /// </summary>
+        public static string HerkunftSchluessel(Importherkunft herkunft) => ImportherkunftWerte.Wert(herkunft) ?? HERKUNFT_LEER;
+
+        /// <summary>Der Rückweg zu <see cref="HerkunftSchluessel"/>; ein unbekannter Schlüssel ist „leer".</summary>
+        public static Importherkunft HerkunftAusSchluessel(string schluessel)
+        {
+            switch (schluessel)
+            {
+                case ImportherkunftWerte.GBXML: return Importherkunft.GbXml;
+                case ImportherkunftWerte.IFC: return Importherkunft.Ifc;
+                case ImportherkunftWerte.KATALOG: return Importherkunft.Katalog;
+                case ImportherkunftWerte.MANUELL: return Importherkunft.Manuell;
+                case ImportherkunftWerte.VORGABE: return Importherkunft.Vorgabe;
+                default: return Importherkunft.Leer;
+            }
+        }
+
+        /// <summary>
+        /// Der Grund, warum ein Raum als beheizt oder unbeheizt gilt: vom Anwender umgestellt, die
+        /// Zustandsangabe der Datei, der Treffer der Namensregel oder „keine Angabe".
+        /// </summary>
+        public static string RaumGrundText(GebaeudeRaumzeile raum)
+        {
+            if (raum == null) return "";
+            if (raum.Uebersteuert) return MyResource.Resource.GIMP_RAUM_GRUND_MANUELL;
+            switch (raum.Quelle)
+            {
+                case BeheiztQuelle.Attribut:
+                    return Formatieren(MyResource.Resource.GIMP_RAUM_GRUND_ATTRIBUT, raum.Zustandsangabe ?? "");
+                case BeheiztQuelle.Name:
+                    return Formatieren(MyResource.Resource.GIMP_RAUM_GRUND_NAME, raum.Namenstreffer ?? raum.Name ?? "");
+                default:
+                    return MyResource.Resource.GIMP_RAUM_GRUND_ANNAHME;
+            }
+        }
+
+        /// <summary>Der Anzeigename des Formats eines Profils („gbXML", „IFC") — ein Datum des Profils, nie ein Literal der Oberfläche.</summary>
+        public static string FormatText(GebaeudeImportProfil profil)
+            => profil == null ? "" : Ressource("GIMP_FORMAT_" + profil.Format) ?? profil.Format;
+
+        /// <summary>Die Beschriftung einer Zonierungsregel („X4 – eine Zone je Gebäude"); eine unbekannte erscheint als Schlüssel.</summary>
+        public static string ZonenregelText(string regel)
+            => string.IsNullOrEmpty(regel) ? "" : Ressource("GIMP_ZONENREGEL_" + regel) ?? regel;
+
+        /// <summary>Der Text eines Fortschrittsschritts des Ablaufs (<see cref="ImportFortschritt"/>); ohne Schlüssel leer.</summary>
+        public static string FortschrittText(ImportFortschritt fortschritt)
+        {
+            string vorlage = Ressource(fortschritt.Schluessel);
+            if (vorlage == null) return fortschritt.Schluessel ?? "";
+            string[] werte = fortschritt.Werte ?? Array.Empty<string>();
+            return werte.Length == 0 ? vorlage : Formatieren(vorlage, werte);
+        }
+
+        /// <summary>
+        /// Eine Dateigröße zur Anzeige: unter einem Megabyte in KB, sonst in MB, je mit einer
+        /// Nachkommastelle in der Anzeigekultur (1 MB = 1 024 × 1 024 Byte, wie die Grenzen der Profile).
+        /// </summary>
+        public static string GroesseText(long bytes)
+        {
+            const double KB = 1024.0, MB = 1024.0 * 1024.0;
+            if (bytes < 0) bytes = 0;
+            return bytes < MB
+                ? (bytes / KB).ToString("0.#", CultureInfo.CurrentCulture) + " KB"
+                : (bytes / MB).ToString("0.#", CultureInfo.CurrentCulture) + " MB";
+        }
 
         private static string Ressource(string schluessel)
         {

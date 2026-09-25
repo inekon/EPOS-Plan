@@ -549,6 +549,33 @@ public sealed class StilblattTests
         Assert.DoesNotContain("flex:", block, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// <b>Stufe G4c, Welle 2:</b> Der Gebäudeimport markiert seine Zeilen gelb und rot aus den
+    /// TOKENS des Hauses (keine Farbliterale), und im Kontrastmodus bleiben die zwei Zustände
+    /// sichtbar verschieden — gestrichelt gegen durchgezogen. Die Herkunft ist je Schlüssel
+    /// eine Regel; die beiden Dateiformate teilen eine.
+    /// </summary>
+    [Fact]
+    public void G4c_Die_Zeilen_des_Gebaeudeimports_markieren_mit_Tokens()
+    {
+        Assert.Contains("var(--epos-warn-flaeche)", Regelblock(".epos-gebimport-zeile--gelb > td"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-ampel-rot-flaeche)", Regelblock(".epos-gebimport-zeile--rot > td"), StringComparison.Ordinal);
+        Assert.Contains("dashed var(--epos-warn-rahmen)", Regelblock(".epos-gebimport-zeile--gelb > td:first-child"), StringComparison.Ordinal);
+        Assert.Contains("solid var(--epos-stufe-fehler)", Regelblock(".epos-gebimport-zeile--rot > td:first-child"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-quelle-text)", Regelblock(".epos-gebimport-herkunft--gbxml,"), StringComparison.Ordinal);
+        Assert.Contains("font-weight: 600", Regelblock(".epos-gebimport-herkunft--manuell"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        int kontrast = css.IndexOf(".epos-gebimport-zeile--gelb > td:first-child { border-left: 4px dashed CanvasText; }", StringComparison.Ordinal);
+        Assert.True(kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal),
+                    "Der Kontrastmodus des Gebäudeimports fehlt");
+        Assert.Contains(".epos-gebimport-zeile--rot > td:first-child { border-left: 4px solid CanvasText; }", css, StringComparison.Ordinal);
+
+        // Die Beschriftung der Zeilenfelder ist nur für die Sprachausgabe da, das Zahlenfeld schmal.
+        Assert.Contains("clip-path: inset(50%)", Regelblock(".epos-gebimport-zeilen .epos-feld-text,"), StringComparison.Ordinal);
+        Assert.Contains("width: 7em", Regelblock(".epos-gebimport-zeilen input.epos-eingabe"), StringComparison.Ordinal);
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
 

@@ -139,8 +139,11 @@ namespace EPOS.Kern.Tests
             // Klasse, Bauart, Bauweise.
             Assert.Equal("E", s.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Textwert);
             Assert.Equal(Importherkunft.Manuell, s.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+            // Welle 2: Alle Hüllbauteile tragen vollständige Aufbauten — die Bauart kommt aus den
+            // Schichten (33,83 Wh/(m²K), eingerastet auf „schwer"), die Bauweise bleibt leer.
             Assert.Equal(GebaeudeZielfelder.BAUART_SCHWER, s.Zeile(GebaeudeZielfelder.BAUART).Textwert);
-            Assert.Equal(Importherkunft.Vorgabe, s.Zeile(GebaeudeZielfelder.BAUART).Herkunft);
+            Assert.Equal(Importherkunft.GbXml, s.Zeile(GebaeudeZielfelder.BAUART).Herkunft);
+            Assert.Equal("GIMP_BELEG_BAUART_SCHICHTEN", s.Zeile(GebaeudeZielfelder.BAUART).Beleg.Schluessel);
             Assert.Null(Wert(s, GebaeudeZielfelder.BAUWEISE));
 
             // Meldungen: kein Norden (Annahme 0°), Verschattung übergangen, Zonenvorschlag X1.

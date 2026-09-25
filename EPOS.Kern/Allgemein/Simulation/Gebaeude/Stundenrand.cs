@@ -26,6 +26,12 @@
     /// <see cref="Uebergabe"/> ≠ <c>null</c> ist die Heizung keine ideale Regelung mehr, sondern
     /// eine Übergabe bei <see cref="VorlaufC"/> mit dem Raumregler <see cref="ReglerbandK"/>
     /// (Schritt H). <c>null</c> heißt: der Bestandsweg, Zeichen für Zeichen.</para>
+    ///
+    /// <para><b>Kälteseite der Kopplung (Schritt K, E37).</b> Mit
+    /// <see cref="KuehlUebergabeGespiegelt"/> ≠ <c>null</c> ist die Kühlung keine ideale Regelung
+    /// mehr, sondern eine Kühlübergabe beim festen Kaltwasser-Vorlauf <see cref="KuehlVorlaufC"/>
+    /// mit demselben Raumregler <see cref="ReglerbandK"/>; sie setzt eine Kühlung voraus
+    /// (<see cref="MitKuehlung"/>). <c>null</c> heißt: die Kühlung des Bestands.</para>
     /// </summary>
     internal readonly struct Stundenrand
     {
@@ -44,8 +50,16 @@
             double zusatzleitwertWK = 0.0,
             Uebergabekennwerte uebergabe = null,
             double vorlaufC = double.NaN,
-            double reglerbandK = 0.0)
+            double reglerbandK = 0.0,
+            Uebergabekennwerte kuehlUebergabeGespiegelt = null,
+            double kuehlVorlaufC = double.NaN,
+            double kuehlStrahlungsanteil = 0.0,
+            bool kuehlVorlaufGekappt = false)
         {
+            KuehlUebergabeGespiegelt = kuehlUebergabeGespiegelt;
+            KuehlVorlaufC = kuehlVorlaufC;
+            KuehlStrahlungsanteil = kuehlStrahlungsanteil;
+            KuehlVorlaufGekappt = kuehlVorlaufGekappt;
             ThetaOut = thetaOut;
             ThetaEq = thetaEq;
             ThetaSoll = thetaSoll;
@@ -125,6 +139,24 @@
 
         /// <summary>Rechnet die Heizung als Übergabe (Anlagenkopplung, Schritt H)?</summary>
         internal bool MitUebergabe => Uebergabe != null;
+
+        /// <summary>
+        /// Die Kennwerte der Kühlübergabe, <b>gespiegelt</b> (−V, −R, −θ_i,N; Schritt K, E37);
+        /// <c>null</c> = ideale Kühlung, der Bestandsweg.
+        /// </summary>
+        internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; }
+
+        /// <summary>Fester Kaltwasser-Vorlauf der Stunde [°C], schon auf die Vorlaufgrenze hochgemischt (7.2). Nur mit Kühlübergabe.</summary>
+        internal double KuehlVorlaufC { get; }
+
+        /// <summary>Strahlungsanteil der Kühlübergabe [–] (Vorgabe der Art); verteilt wie die Heizseite.</summary>
+        internal double KuehlStrahlungsanteil { get; }
+
+        /// <summary>Steht der Kaltwasser-Vorlauf an der Vorlaufgrenze, weil die Anlage kälter liefert (7.2)?</summary>
+        internal bool KuehlVorlaufGekappt { get; }
+
+        /// <summary>Rechnet die Kühlung als Kühlübergabe (Anlagenkopplung, Schritt K, E37)?</summary>
+        internal bool MitKuehluebergabe => KuehlUebergabeGespiegelt != null;
     }
 
     /// <summary>
@@ -138,7 +170,8 @@
     ///
     /// <para><b>Anlagenkopplung (AK1).</b> Mit Übergabe trägt die Stunde zusätzlich Vorlauf,
     /// Rücklauf zur GELIEFERTEN Leistung (H6), den überwiegenden Begrenzungsgrund und die
-    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null.</para>
+    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null. Mit Kühlübergabe
+    /// (Schritt K, E37) trägt sie dasselbe für die Kälteseite, je Seite getrennt.</para>
     /// </summary>
     internal readonly struct Stundenergebnis
     {
@@ -159,8 +192,22 @@
             Begrenzungsgrund begrenzungsgrund = Begrenzungsgrund.KeineBegrenzung,
             double uebergabeBegrenztAnteil = 0.0,
             double heizleistungMaxAnteil = 0.0,
-            double heizgrenzeAnteil = 0.0)
+            double heizgrenzeAnteil = 0.0,
+            double kuehlVorlaufC = double.NaN,
+            double kuehlRuecklaufC = double.NaN,
+            Begrenzungsgrund kuehlBegrenzungsgrund = Begrenzungsgrund.KeineBegrenzung,
+            double kuehlUebergabeBegrenztAnteil = 0.0,
+            double vorlaufgrenzeAnteil = 0.0,
+            double kuehlleistungMaxAnteil = 0.0,
+            double keineKaelteAnteil = 0.0)
         {
+            KuehlVorlaufC = kuehlVorlaufC;
+            KuehlRuecklaufC = kuehlRuecklaufC;
+            KuehlBegrenzungsgrund = kuehlBegrenzungsgrund;
+            KuehlUebergabeBegrenztAnteil = kuehlUebergabeBegrenztAnteil;
+            VorlaufgrenzeAnteil = vorlaufgrenzeAnteil;
+            KuehlleistungMaxAnteil = kuehlleistungMaxAnteil;
+            KeineKaelteAnteil = keineKaelteAnteil;
             VorlaufC = vorlaufC;
             RuecklaufC = ruecklaufC;
             Begrenzungsgrund = begrenzungsgrund;
@@ -239,5 +286,37 @@
 
         /// <summary>War die Übergabe in dieser Stunde die Grenze — ja/nein?</summary>
         internal bool UebergabeBegrenzt => UebergabeBegrenztAnteil > 0.0;
+
+        // ---- die Kälteseite der Kopplung (Schritt K, E37) ----
+
+        /// <summary>Kaltwasser-Vorlauf der Stunde [°C] (fest, 7.2); NaN ohne Kühlübergabe.</summary>
+        internal double KuehlVorlaufC { get; }
+
+        /// <summary>
+        /// Rücklauf der Kühlübergabe [°C], θ_V + Φ̄_c/W_K zur gelieferten mittleren Kühlleistung —
+        /// der Spiegel von <see cref="RuecklaufC"/>; NaN wie <see cref="KuehlVorlaufC"/>.
+        /// </summary>
+        internal double KuehlRuecklaufC { get; }
+
+        /// <summary>Der Begrenzungsgrund der Kälteseite mit dem größten Zeitanteil der Stunde.</summary>
+        internal Begrenzungsgrund KuehlBegrenzungsgrund { get; }
+
+        /// <summary>
+        /// Zeitanteil der Stunde, in dem die Kühlübergabe die Grenze war [–] — einschließlich der
+        /// Zeit an der Vorlaufgrenze (<see cref="VorlaufgrenzeAnteil"/>).
+        /// </summary>
+        internal double KuehlUebergabeBegrenztAnteil { get; }
+
+        /// <summary>Zeitanteil der Stunde, in dem die gesättigte Kühlübergabe an der Vorlaufgrenze stand [–] (7.2).</summary>
+        internal double VorlaufgrenzeAnteil { get; }
+
+        /// <summary>Zeitanteil der Stunde, in dem <c>Kuehlleistung_Max</c> gekappt hat [–] (gekoppelt).</summary>
+        internal double KuehlleistungMaxAnteil { get; }
+
+        /// <summary>Zeitanteil der Stunde, in dem die Kühlübergabe nichts lieferte [–] (Vorlauf nicht unter der Raumluft).</summary>
+        internal double KeineKaelteAnteil { get; }
+
+        /// <summary>War die Kühlübergabe in dieser Stunde die Grenze — ja/nein?</summary>
+        internal bool KuehlUebergabeBegrenzt => KuehlUebergabeBegrenztAnteil > 0.0;
     }
 }

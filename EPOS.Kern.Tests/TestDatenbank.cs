@@ -672,6 +672,16 @@ namespace EPOS.Kern.Tests
                 BaustoffSchema.Ausfuehren();
                 BauteilaufbauSchema.Ausfuehren();
                 ZonenSchema.Ausfuehren();
+
+                // Schritte KuehluebergabeSchema.SCHRITT bis SCHRITT_ZONE (Anlagenkopplung AK1 Welle 4,
+                // E37): KAK-S1 - acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM) und der
+                // vierte Sichtneubau, ZULETZT, damit kein aelterer Durchgang oben die Spalten wieder
+                // aus der Sicht schneidet; KAK-S3 - die Ergebnisspalten der Kaelteseite; die drei
+                // Zonenspalten. Aus DENSELBEN Quellen wie Migration und Werkzeug; wiederholbar, kein DML.
+                KuehluebergabeSchema.GebaeudeAlle(null);
+                KuehluebergabeSchema.ErgebnisAlle(null);
+                KuehluebergabeSchema.ZoneAlle(null);
+
                 // Schritt S-F (Gebaeudesimulation G4c, Welle 3): Importquelle und Importzuordnung.
                 // Aus DERSELBEN Quelle wie Migration und Werkzeug (ImportzuordnungSchema); NACH
                 // S-A bis S-C, auf deren Tabellen die Paarung zeigt; wiederholbar, kein DML.

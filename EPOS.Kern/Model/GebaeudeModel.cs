@@ -112,6 +112,20 @@ namespace WindowsFormsApplication1
         public double? Regler_Proportionalband;
         public string Sollwertprofil;
 
+        // ---- KAK-S1, die Kuehluebergabe (E37, Anlagenkopplung 8.1) -----------------------
+        // NULL-ERHALTEND wie die Bloecke darueber: Kuehl_Uebergabe_Art NULL heisst "ideal"
+        // (Kaelteseite nicht gekoppelt), jede andere NULL-Zahl "Vorgabe der Art" bzw.
+        // "hergeleitet" (Auslegungstag); der Schalter kennt kein NULL (A1, wie Heizkreis_Aktiv).
+        // Namen: GebaeudeSchema.SPALTE_KUEHL*.
+        public bool Kuehluebergabe_Aktiv;
+        public string Kuehl_Uebergabe_Art;
+        public double? Kuehl_Uebergabe_Exponent;
+        public double? Kuehl_Uebergabe_Leistung_Nenn;
+        public double? Kuehl_Auslegung_Vorlauf;
+        public double? Kuehl_Auslegung_Ruecklauf;
+        public double? Kuehl_Auslegung_Raumtemperatur;
+        public double? Kuehl_Vorlaufgrenze;
+
         public GebaeudeModel()
         {
             ID = 0;

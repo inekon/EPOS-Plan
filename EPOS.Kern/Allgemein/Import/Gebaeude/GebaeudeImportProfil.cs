@@ -56,6 +56,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public long MaxBytes { get; set; }
 
+        /// <summary>
+        /// Die Grenze des Formats für eine Plattform — die Hülle belegt damit <see cref="MaxBytes"/>
+        /// (<c>OperatingSystem.IsIOS()</c>). Ohne eigene Konstanten gilt die angelegte Grenze.
+        /// </summary>
+        public virtual long GrenzeFuerPlattform(bool ios) => MaxBytes;
+
         /// <summary>Die wählbaren Zonierungsregeln; die erste ist die Vorbelegung. In G4c nur <see cref="ZONENREGEL_X4"/>.</summary>
         public IReadOnlyList<string> Zonierungsregeln { get; }
 

@@ -562,6 +562,16 @@ namespace WindowsFormsApplication1
         /// STRICT-Tabellen. Die Nummern stehen allein bei den drei Schema-Klassen.
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabellen, und kein Projekt führt eine
         /// Zone; der Referenzlauf bleibt byte-gleich.
+        /// Mit der KÄLTESEITE DER ANLAGENKOPPLUNG (Entscheid E37, Stufe AK1 Welle 4; Konzept
+        /// Anlagenkopplung 8.1 und 8.3) stand das Ziel auf <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>:
+        /// die acht Spalten der Kühlübergabe an <c>Tab_Gebaeude(_STAMM)</c> samt viertem Neubau der
+        /// Sicht <c>Abfrage_Projektgebaeude</c> (<see cref="KuehluebergabeSchema.SCHRITT"/>, KAK-S1),
+        /// die Ergebnisspalten der Kälteseite an <c>Tab_ErgebnisEnergiebedarf</c> und
+        /// <c>Tab_ErgebnisGebaeude</c> (<see cref="KuehluebergabeSchema.SCHRITT_ERGEBNIS"/>, KAK-S3)
+        /// und die drei Spalten der Kühlübergabe an <c>Tab_Zone</c>
+        /// (<see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>). Die Nummern stehen allein bei
+        /// <see cref="KuehluebergabeSchema"/>. <b>Reines DDL, ergebnisneutral:</b> Der Schalter
+        /// steht auf 0, alles andere auf NULL; der Referenzlauf bleibt byte-gleich.
         /// Mit der HERKUNFTSABLAGE DER GEBÄUDEIMPORTE (Schritt S-F, Stufe G4c; Datenaustauschkonzept
         /// 2.3 und 7.1 bis 7.5) steht das Ziel auf <see cref="ImportzuordnungSchema.SCHRITT"/>:
         /// <c>Tab_Importquelle</c> (eine Zeile je Importlauf) und <c>Tab_Importzuordnung</c> (eine Zeile

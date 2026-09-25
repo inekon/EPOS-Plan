@@ -4,11 +4,13 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Welche Grenze die Heizleistung im Raum gekappt hat — die Gebäudeseite der beiden
-    /// Aufzählungen aus Anlagenkopplung 5.3, soweit sie in der Stufe AK1 entstehen (4.5,
-    /// Schritt H4 in 10.2). Die Anlagenseite (<c>Verfuegbarkeitsgrund</c>) und die Gründe
-    /// <c>VORLAUF_ANLAGE</c>, <c>VERFUEGBARKEIT</c>, <c>UMSCHALTUNG</c> kommen mit AK2,
-    /// <c>VORLAUFGRENZE_KUEHLUNG</c> mit der Kälteseite (H9).
+    /// Welche Grenze die Heiz- bzw. Kühlleistung im Raum gekappt hat — die Gebäudeseite der
+    /// beiden Aufzählungen aus Anlagenkopplung 5.3, soweit sie in der Stufe AK1 entstehen (4.5,
+    /// Schritt H4 in 10.2, Schritt K in 10.5). Die Anlagenseite (<c>Verfuegbarkeitsgrund</c>) und
+    /// die Gründe <c>VORLAUF_ANLAGE</c>, <c>VERFUEGBARKEIT</c>, <c>UMSCHALTUNG</c> kommen mit AK2.
+    /// Die Gründe der Kälteseite (E37) stehen <b>am Ende</b>, damit die Heizseite ihre Werte
+    /// behält; je Seite gilt dieselbe Rangfolge (Spiegel: Heizgrenze ↔ KeineKaelte,
+    /// Uebergabe ↔ KuehlUebergabe, HeizleistungMax ↔ KuehlleistungMax).
     /// </summary>
     internal enum Begrenzungsgrund
     {
@@ -23,6 +25,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Leistungsgrenze des Gebäudes (<c>Heizleistung_Max</c>) hat gegriffen.</summary>
         HeizleistungMax,
+
+        /// <summary>Kälteseite: Die Kühlübergabe liefert nichts — der Kaltwasser-Vorlauf liegt nicht unter der Raumluft (K1).</summary>
+        KeineKaelte,
+
+        /// <summary>Kälteseite: Das Ventil steht voll offen, und die Kühlfläche gibt her, was sie kann.</summary>
+        KuehlUebergabe,
+
+        /// <summary>Kälteseite: Die Leistungsgrenze des Gebäudes (<c>Kuehlleistung_Max</c>) hat gegriffen.</summary>
+        KuehlleistungMax,
+
+        /// <summary>
+        /// Kälteseite: Die Kühlübergabe ist gesättigt, und der Vorlauf steht an der Vorlaufgrenze
+        /// (<c>Kuehl_Vorlaufgrenze</c>, eine Vorgabe statt einer gerechneten Taupunktgrenze, 7.2) —
+        /// <c>VORLAUFGRENZE_KUEHLUNG</c>. Nur in gesättigten Abschnitten mit gekapptem Vorlauf.
+        /// </summary>
+        VorlaufgrenzeKuehlung,
     }
 
     /// <summary>

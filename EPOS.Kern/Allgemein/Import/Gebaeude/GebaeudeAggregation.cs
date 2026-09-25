@@ -34,6 +34,18 @@ namespace WindowsFormsApplication1
     /// (auch auf waagerechten Wirten) gleichmäßig auf alle vier, mit Warnung.</item>
     /// <item><b>Vorgaben:</b> U, g und ψ aus <see cref="GebaeudeVorgaben"/> (U12, U15), die
     /// Anschlusslängen bleiben leer.</item>
+    /// <item><b>Bauart aus Schichten</b> (Umsetzungskonzept 3.4, Zeile Bauweise): raumseitige
+    /// Schichten bis 10 cm, C″ = Σ ρ·c·d je Aufbau (<see cref="SchichtwerteNaht.WirksameKapazitaetAusSchichten"/>),
+    /// flächengewichtet über die opaken Hüllbauteile der beheizten Zone, ÷ 3600 → Wh/(m²K) —
+    /// nur, wenn JEDES dieser Bauteile einen vollständigen Aufbau trägt; die Bauart rastet über
+    /// <see cref="Gebaeudebauweise.BauartAusBauweise"/> ein. Die Bauweise selbst bleibt leer
+    /// (<see cref="GebaeudeZielfeld.Abgeleitet"/>): Der Gebäudeeditor bildet sie im Modus Neu vor
+    /// dem Speichern aus Bauart und Nutzfläche und überschriebe einen freien Wert
+    /// (<c>GebaeudeArbeitsstand.Laden</c> setzt <c>BauweiseNachfuehren</c> für einen neuen Satz,
+    /// <c>Ableiten</c> schreibt Nutzfläche × 20/50/100). Der Wert aus den Schichten steht im Beleg.</item>
+    /// <item><b>Räume:</b> „beheizt" entscheidet der Leser; der Anwender kann es je Raum
+    /// übersteuern (Raumliste des Dialogs) — gelesen wird der wirksame Zustand
+    /// (<see cref="GebaeudeRaumzeile.BeheiztWirksam"/>), das Abbild bleibt unverändert.</item>
     /// </list>
     /// </summary>
     internal static class GebaeudeAggregation
@@ -81,13 +93,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Bildet den Satz eines Gebäudes.</summary>
+        /// <param name="uebersteuert">Raumkennung → beheizt (die Haken der Raumliste); <c>null</c> = keine.</param>
         internal static GebaeudeImportSatz Bilden(GebaeudeAbbild abbild, int index, char? klasse,
-                                                  GebaeudeQuelle quelle, GebaeudeImportProfil profil)
+                                                  GebaeudeQuelle quelle, GebaeudeImportProfil profil,
+                                                  IReadOnlyDictionary<string, bool> uebersteuert = null)
         {
             AbbildGebaeude g = abbild.Gebaeude[index];
             Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
                 ? Importherkunft.Ifc : Importherkunft.GbXml;
             char? k = Klasse(klasse);
+            Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
 
             var meldungen = new List<PruefMeldung>(abbild.Meldungen);
             meldungen.AddRange(g.Meldungen);
@@ -95,6 +110,18 @@ namespace WindowsFormsApplication1
             {
                 meldungen.AddRange(b.Meldungen);
                 foreach (AbbildBauteil o in b.Oeffnungen) meldungen.AddRange(o.Meldungen);
+            }
+
+            // Die Haken der Raumliste: je umgestelltem Raum dieses Gebäudes eine Info.
+            var abweichungen = new Dictionary<string, bool>(StringComparer.Ordinal);
+            foreach (AbbildRaum r in g.Raeume)
+            {
+                bool wirksam = istBeheizt(r);
+                if (wirksam == r.Beheizt) continue;
+                abweichungen[r.Kennung] = wirksam;
+                meldungen.Add(new PruefMeldung(PruefStufe.Info,
+                    GebaeudeImportAblauf.MELDUNG + (wirksam ? "RAUM_ALS_BEHEIZT" : "RAUM_ALS_UNBEHEIZT"),
+                    r.Kennung, r.Name ?? ""));
             }
 
             var zeilen = GebaeudeZielfelder.Alle.Select(f => new GebaeudeFeldzeile(f.Schluessel)).ToList();
@@ -107,7 +134,7 @@ namespace WindowsFormsApplication1
                 foreach (AbbildRaum r in abbild.Gebaeude[i].Raeume)
                     if (!raeume.ContainsKey(r.Kennung)) { raeume[r.Kennung] = r; raumGebaeude[r.Kennung] = i; }
 
-            List<AbbildRaum> beheizt = g.Raeume.Where(r => r.Beheizt).ToList();
+            List<AbbildRaum> beheizt = g.Raeume.Where(istBeheizt).ToList();
 
             Kenngroessen(g, beheizt, datei, k, z, meldungen);
 
@@ -116,7 +143,7 @@ namespace WindowsFormsApplication1
             var zaehler = new SortedDictionary<string, double[]>(StringComparer.Ordinal);   // Info-Sammler: Schlüssel → {Zahl, Fläche}
             foreach (AbbildBauteil s in g.Bauteile)
             {
-                Posten p = Einordnen(s, index, raeume, raumGebaeude, zaehler, z);
+                Posten p = Einordnen(s, index, raeume, raumGebaeude, istBeheizt, zaehler, z);
                 if (p != null) posten.Add(p);
             }
             Trennflaechen(posten, profil, meldungen);
@@ -133,13 +160,15 @@ namespace WindowsFormsApplication1
             var sonstige = aktiv.Where(p => p.Gruppe == Huelle.Sonstige).Concat(aktiv.SelectMany(p => p.Tueren)).ToList();
             Gruppe(sonstige, Huelle.Sonstige, GebaeudeZielfelder.FLAECHE_SONSTIGE, GebaeudeZielfelder.U_SONSTIGE, datei, k, z, meldungen);
             Grundrand(aktiv, datei, z, meldungen);
+            Bauart(aktiv, datei, z, meldungen);
             Fenster(aktiv, datei, k, z, meldungen);
             Waermebruecken(k, z);
             Lueftung(beheizt, datei, z, meldungen);
             Sollwerte(beheizt, datei, z, meldungen);
 
+            // Prüfgrößen und abgeleitete Felder (gesamte Fensterfläche, Bauweise) übernimmt nie jemand.
             foreach (GebaeudeFeldzeile r in zeilen)
-                r.Uebernehmen = r.HatWert && !(GebaeudeZielfelder.Finde(r.Zielfeld)?.NurPruefgroesse ?? false);
+                r.Uebernehmen = r.HatWert && r.HakenSetzbar;
 
             // ---- Quellzuordnungen (Tab_Importzuordnung, 7.2) — Ziel in G4c immer das Gebäude ----
             var zuordnungen = new List<GebaeudeQuellzuordnung> { new GebaeudeQuellzuordnung("Building", g.Kennung, ImportZiel.Gebaeude) };
@@ -155,7 +184,10 @@ namespace WindowsFormsApplication1
             }
 
             var satz = new GebaeudeImportSatz(quelle, g.Name, g.Kennung, k, profil.Zonenregel, g.Zonenvorschlag,
-                                              zeilen, meldungen, zuordnungen);
+                                              zeilen, meldungen, zuordnungen)
+            {
+                Uebersteuerungen = abweichungen,
+            };
 
             // Obergrenze der Zonen (3.3) — für X4 ist es genau eine.
             int zonen = Zonenzahl(profil.Zonenregel, g, beheizt.Count);
@@ -236,16 +268,77 @@ namespace WindowsFormsApplication1
             }
             else
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "KEINE_BAUALTERSKLASSE"));
+        }
 
-            // Bauart: ohne auswertbare Schichten „schwer" (Umsetzungskonzept 3.4, Zeile Bauweise) —
-            // nie ein absoluter Wert; die Bauweise bildet der Editor aus der Bauart.
-            List<AbbildAufbau> aufbauten = g.Bauteile.Where(b => b.Aufbau != null).Select(b => b.Aufbau).Distinct().ToList();
+        // ==================================================================
+        //  Bauart aus den Schichten (Umsetzungskonzept 3.4, Zeile Bauweise)
+        // ==================================================================
+
+        /// <summary>
+        /// Die Bauart der Zone: aus den Schichten, wenn JEDES opake Hüllbauteil einen vollständigen
+        /// Aufbau trägt — C″ je Aufbau über <see cref="SchichtwerteNaht.WirksameKapazitaetAusSchichten"/>,
+        /// flächengewichtet mit der Nettofläche, ÷ 3600 → Wh/(m²K); die Bauart rastet über
+        /// <see cref="Gebaeudebauweise.BauartAusBauweise"/> ein (Schwellen 30 und 75 Wh/(m²K)). Sonst
+        /// „schwer" als Vorgabe — nie ein absoluter Wert (Gebaeudebauweise.BauweiseAusBauart).
+        ///
+        /// <para><b>Die Bauweise bleibt leer</b>, auch wenn sie aus den Schichten bestimmbar ist:
+        /// Der Gebäudeeditor bildet sie im Modus Neu vor dem Speichern aus Bauart und Nutzfläche
+        /// (<c>GebaeudeArbeitsstand.Laden</c>: <c>BauweiseNachfuehren = neu || …</c>;
+        /// <c>Ableiten</c>: Nutzfläche × 20/50/100) — ein übernommener freier Wert ginge dort
+        /// still verloren. Die Zahl steht deshalb im Beleg; das Plausibilitätsband 5 … 200 Wh/(m²K)
+        /// (Konzept 4.8) prüft den spezifischen Wert und warnt.</para>
+        ///
+        /// <para>Die Türen stehen nicht in <paramref name="aktiv"/> (sie hängen an ihrer Wand) und
+        /// zählen als Öffnung nicht mit, ebenso die Fenster.</para>
+        /// </summary>
+        private static void Bauart(List<Posten> aktiv, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z,
+                                   List<PruefMeldung> meldungen)
+        {
             GebaeudeFeldzeile bauart = z[GebaeudeZielfelder.BAUART];
+            GebaeudeFeldzeile bauweise = z[GebaeudeZielfelder.BAUWEISE];
+            double? nutzflaeche = z[GebaeudeZielfelder.NUTZFLAECHE].Wert;
+
+            int vollstaendig = 0;
+            double summeCA = 0.0, summeA = 0.0;
+            foreach (Posten p in aktiv)
+            {
+                double? c = p.NettoM2.HasValue ? SchichtwerteNaht.WirksameKapazitaetAusSchichten(p.Bauteil.Aufbau) : null;
+                if (!c.HasValue) continue;
+                vollstaendig++;
+                summeCA += c.Value * p.NettoM2.Value;
+                summeA += p.NettoM2.Value;
+            }
+
+            if (aktiv.Count > 0 && vollstaendig == aktiv.Count && summeA > 0.0)
+            {
+                double jeM2 = summeCA / summeA / 3600.0;   // J/(m²K) → Wh/(m²K)
+                double? gesamt = nutzflaeche > 0.0 ? jeM2 * nutzflaeche.Value : null;
+                int index = gesamt.HasValue
+                    ? Gebaeudebauweise.BauartAusBauweise(gesamt.Value, nutzflaeche.Value)
+                    : Gebaeudebauweise.BauartAusBauweise(jeM2, 1.0);
+
+                bauart.Textwert = GebaeudeZielfelder.BauartSchluessel(index);
+                bauart.Herkunft = datei;
+                bauart.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUART_SCHICHTEN",
+                    Zahl(Math.Round(jeM2, 2)), Zahl(vollstaendig), Zahl(Math.Round(summeA, 2)));
+                bauweise.Beleg = gesamt.HasValue
+                    ? new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_SCHICHTEN", Zahl(Math.Round(gesamt.Value)), Zahl(Math.Round(jeM2, 2)))
+                    : new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_AUS_BAUART");
+
+                if (!(jeM2 >= GebaeudeFestwerte.BAUWEISE_JE_M2_MIN && jeM2 <= GebaeudeFestwerte.BAUWEISE_JE_M2_MAX))
+                {
+                    meldungen.Add(new PruefMeldung(PruefStufe.Warnung, GebaeudeImportAblauf.MELDUNG + "BAUWEISE_AUSSERHALB",
+                        Zahl(Math.Round(jeM2, 2)), Zahl(GebaeudeFestwerte.BAUWEISE_JE_M2_MIN),
+                        Zahl(GebaeudeFestwerte.BAUWEISE_JE_M2_MAX)));
+                    bauart.Markieren(PruefStufe.Warnung);
+                }
+                return;
+            }
+
             bauart.Textwert = GebaeudeZielfelder.BAUART_SCHWER;
             bauart.Herkunft = Importherkunft.Vorgabe;
-            bauart.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUART_VORGABE",
-                Zahl(aufbauten.Count(a => a.Status == Aufbaustatus.Vollstaendig)), Zahl(aufbauten.Count));
-            z[GebaeudeZielfelder.BAUWEISE].Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_AUS_BAUART");
+            bauart.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUART_VORGABE", Zahl(vollstaendig), Zahl(aktiv.Count));
+            bauweise.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_AUS_BAUART");
         }
 
         // ==================================================================
@@ -253,13 +346,13 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         private static Posten Einordnen(AbbildBauteil s, int index, Dictionary<string, AbbildRaum> raeume,
-                                        Dictionary<string, int> raumGebaeude, SortedDictionary<string, double[]> zaehler,
-                                        Dictionary<string, GebaeudeFeldzeile> z)
+                                        Dictionary<string, int> raumGebaeude, Func<AbbildRaum, bool> istBeheizt,
+                                        SortedDictionary<string, double[]> zaehler, Dictionary<string, GebaeudeFeldzeile> z)
         {
             // Der beheizte Nachbar DIESES Gebäudes; ohne ihn gehört das Bauteil nicht zur Hülle.
             int hPos = -1;
             for (int i = 0; i < s.Nachbarn.Count; i++)
-                if (raeume.TryGetValue(s.Nachbarn[i].Kennung, out AbbildRaum r) && r.Beheizt
+                if (raeume.TryGetValue(s.Nachbarn[i].Kennung, out AbbildRaum r) && istBeheizt(r)
                     && raumGebaeude[s.Nachbarn[i].Kennung] == index) { hPos = i; break; }
             if (hPos < 0) return null;
 
@@ -278,7 +371,7 @@ namespace WindowsFormsApplication1
             else
             {
                 raeume.TryGetValue(s.Nachbarn[aPos].Kennung, out andererRaum);
-                if (andererRaum != null && andererRaum.Beheizt) return null;   // innere Masse
+                if (andererRaum != null && istBeheizt(andererRaum)) return null;   // innere Masse
                 seite = Seite.Unbeheizt;                                          // unbeheizt oder unbekannt
             }
 
@@ -633,18 +726,22 @@ namespace WindowsFormsApplication1
             }
 
             Gewichtet(z[GebaeudeZielfelder.U_FENSTER], uA, mitU, nMitU, gesamt, datei, k, meldungen);
-            Gewichtet(z[GebaeudeZielfelder.G_WERT], gA, mitG, nMitG, gesamt, datei, k, meldungen);
+            // Der g-Wert aus gbXML trägt einen Hinweis im Beleg: SolarHeatGainCoeff gilt dort meist für
+            // das ganze Fenster, EPOS mindert zusätzlich um den Rahmenanteil (Protokoll G4, Entscheid 7).
+            Gewichtet(z[GebaeudeZielfelder.G_WERT], gA, mitG, nMitG, gesamt, datei, k, meldungen,
+                      datei == Importherkunft.GbXml ? "GIMP_BELEG_G_GBXML" : "GIMP_BELEG_U_GEWICHTET");
         }
 
         /// <summary>Flächengewichtetes Mittel mit der 30-%-Regel; sonst die Vorgabe der Klasse.</summary>
         private static void Gewichtet(GebaeudeFeldzeile zeile, double summeWA, double mitWert, int nMitWert, double gesamt,
-                                      Importherkunft datei, char? k, List<PruefMeldung> meldungen)
+                                      Importherkunft datei, char? k, List<PruefMeldung> meldungen,
+                                      string belegSchluessel = "GIMP_BELEG_U_GEWICHTET")
         {
             Vorgabe(zeile, k);
             double ohne = gesamt - mitWert;
             if (gesamt > 0.0 && mitWert > 0.0 && ohne <= ANTEIL_OHNE_U_GRENZE * gesamt)
             {
-                Setzen(zeile, summeWA / mitWert, datei, new GebaeudeBeleg("GIMP_BELEG_U_GEWICHTET", Zahl(nMitWert), Zahl(mitWert)));
+                Setzen(zeile, summeWA / mitWert, datei, new GebaeudeBeleg(belegSchluessel, Zahl(nMitWert), Zahl(mitWert)));
                 return;
             }
             VorgabeUebernehmen(zeile);

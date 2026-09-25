@@ -112,7 +112,8 @@ namespace EPOS.Kern.Tests
             Assert.EndsWith(") STRICT", soll, StringComparison.Ordinal);
             Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS);
             Assert.True(ErgebnisGebaeudeSchema.HeizkreisVollstaendig());
-            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_HEIZKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            // Die Messlatte steht auf dem Zielstand: dazu die fünf Spalten des Kältekreises (KAK-S3, E37).
+            Assert.Equal(ErgebnisGebaeudeSchema.SPALTENZAHL_MIT_KUEHLKREIS, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
             // Vorzustand herstellen, Schritt 107 fahren, zweimal - dann Schritt 128, zweimal.
             DataRepository.ExecuteNonQuery("DROP TABLE " + ErgebnisGebaeudeSchema.TAB);

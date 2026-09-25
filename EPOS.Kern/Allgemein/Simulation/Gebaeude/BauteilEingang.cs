@@ -71,7 +71,9 @@ namespace WindowsFormsApplication1
     /// <para><b>NaN heißt „nicht angegeben"</b> und trägt je Feld eine benannte Regel:
     /// U-Wert NaN = aus den Schichten; Neigung NaN = nach Art (Dach/Decke 0°, Bodenplatte 180°,
     /// sonst 90°); Azimut NaN nur bei waagerechten Flächen (0°/180°) oder abseits der Außenluft;
-    /// Rahmenanteil und Verschattung NaN = Vorgabe aus <see cref="GebaeudeFestwerte"/>;
+    /// Rahmenanteil und Verschattung NaN = Vorgabe aus <see cref="GebaeudeFestwerte"/> — im Lauf
+    /// füllt der Eingangsbauer g-Wert, Rahmenanteil und Verschattung eines Fensters vorher mit
+    /// dem Gebäudewert (<see cref="MitGebaeudewerten"/>);
     /// α_kon,i und α_kon,a NaN = Vorgabe des Wegs (<see cref="ErsatzparameterRC.AusBauteilweg(GebaeudeModellEingang, IReadOnlyList{BauteilEingang})"/>).
     /// Der Azimut folgt der Datenbankkonvention <b>0° = Nord</b>, im Uhrzeigersinn (Ost 90°,
     /// Süd 180°, West 270°); die Umrechnung in die Konvention des Klimawegs steht in
@@ -175,6 +177,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der wirksame Verschattungsfaktor [–]: eingetragen, sonst <see cref="GebaeudeFestwerte.VORGABE_VERSCHATTUNGSFAKTOR"/>.</summary>
         internal double VerschattungsfaktorWirksam => double.IsNaN(Verschattungsfaktor) ? GebaeudeFestwerte.VORGABE_VERSCHATTUNGSFAKTOR : Verschattungsfaktor;
+
+        /// <summary>
+        /// Das Bauteil mit den Fensterwerten des Gebäudes für jedes nicht angegebene Feld
+        /// (Stufe G3, Eingangsbauer): Trägt ein transparentes Bauteil g-Wert, Rahmenanteil oder
+        /// Verschattung als NaN, gilt der Wert der Gebäudezeile — der seinerseits schon die
+        /// Vorgabe trägt, wenn die Zeile leer ist. Ein opakes Bauteil und ein vollständig
+        /// angegebenes Fenster kommen unverändert zurück (dieselbe Instanz).
+        /// </summary>
+        internal BauteilEingang MitGebaeudewerten(double gWert, double rahmenanteil, double verschattungsfaktor)
+        {
+            if (!IstTransparent || (!double.IsNaN(GWert) && !double.IsNaN(Rahmenanteil) && !double.IsNaN(Verschattungsfaktor)))
+                return this;
+            return new BauteilEingang(Bezeichnung, Art, Flaeche_M2, Rand, UWert_WM2K, Schichten, NeigungGrad, AzimutGrad,
+                                      double.IsNaN(GWert) ? gWert : GWert,
+                                      double.IsNaN(Rahmenanteil) ? rahmenanteil : Rahmenanteil,
+                                      double.IsNaN(Verschattungsfaktor) ? verschattungsfaktor : Verschattungsfaktor,
+                                      PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K);
+        }
 
         /// <summary>Die Vorgabeneigung einer Art [°].</summary>
         internal static double VorgabeNeigung(Bauteilart art)

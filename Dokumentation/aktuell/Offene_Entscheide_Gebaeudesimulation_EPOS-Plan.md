@@ -1855,7 +1855,7 @@ Erläuterungen stehen im Papier, hier nur der Entscheid je Frage.
 | **H6** | AK3 wird jetzt nicht zugesagt; der Entscheid fällt nach einer Feldphase von AK1 und AK2 | AK3 |
 | **H7** | Die Kopplung wirkt in beiden Läufen der Verhältnisrechnung (E8); die Nennleistung der Übergabe folgt bei NULL der skalierten Auslegungslast; feste Nennleistung wird im Bericht benannt | AK1 |
 | **H8** | Wochenprofil als Spalte je Gebäude (Sollwertprofil) bzw. je Anlage (Zeitprogramm), 168 Werte, strenger Parser; keine Profiltabelle | AK1, AK2 |
-| **H9** | Kälteseite in AK1, wenn KU2 den Kühl-Vorlauf liefert; sonst benannt vertagt | AK1 |
+| **H9** | Kälteseite in AK1, wenn KU2 den Kühl-Vorlauf liefert; sonst benannt vertagt. **E37** (24.09.2026, Konzept N1.42): Die Kälteseite bekommt eigene Spalten der Kühlübergabe am Gebäude samt Schalter `Kuehluebergabe_Aktiv`, gebaut mit der vierten Welle von AK1 | AK1 |
 | **H10** | Auslegungs-Außentemperatur aus der Klimareihe hergeleitet als Vorgabe, ein Feld überschreibt; Herleitung steht im Dialog | AK1 |
 | **H11** | Die Dialoggruppe heißt „Wärmeübergabe"; die Wärmesenke behält „Heizkreis" | AK1 |
 | **H12** | Leerer `Heizung_Strahlungsanteil` bedeutet künftig „Vorgabe der Übergabeart"; Glossar, Herleitungszeile, Datenbankfall | AK1 |

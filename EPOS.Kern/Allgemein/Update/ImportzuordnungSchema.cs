@@ -59,9 +59,11 @@ namespace WindowsFormsApplication1
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht; Migration,
         /// Werkzeug, Zielstand und Tests verweisen hierher. Der Schritt folgt auf die
         /// Mehrzonenschritte S-A bis S-C (<see cref="ZonenSchema.SCHRITT"/>), auf deren Tabellen
-        /// die Paarung zeigt. Wird er beim Zusammenführen umnummeriert, ändert sich nur diese Zahl.
+        /// die Paarung zeigt, und auf die Kälteseite der Anlagenkopplung
+        /// (<see cref="KuehluebergabeSchema.SCHRITT_ZONE"/>), mit der er keine Tabelle teilt. Wird er
+        /// beim Zusammenführen umnummeriert, ändert sich nur diese Zahl.
         /// </summary>
-        public const int SCHRITT = 135;
+        public const int SCHRITT = 138;
 
         // =================================================================
         //  Namen — sprachneutral und EINMAL

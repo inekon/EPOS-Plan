@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
     internal sealed class GebaeudeZielfeld
     {
         internal GebaeudeZielfeld(string schluessel, string gruppe, string einheit, int reihenfolge,
-                                  bool istText = false, bool nurPruefgroesse = false)
+                                  bool istText = false, bool nurPruefgroesse = false, bool abgeleitet = false)
         {
             Schluessel = schluessel;
             Gruppe = gruppe;
@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
             Reihenfolge = reihenfolge;
             IstText = istText;
             NurPruefgroesse = nurPruefgroesse;
+            Abgeleitet = abgeleitet;
         }
 
         /// <summary>Sprachneutraler ASCII-Schlüssel (<see cref="GebaeudeZielfelder"/>), nie ein Anzeigetext.</summary>
@@ -34,6 +35,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Nur Prüfgröße — wird angezeigt und geprüft, aber nie geschrieben.</summary>
         public bool NurPruefgroesse { get; }
+
+        /// <summary>
+        /// Entsteht beim Schreiben aus anderen Feldern und wird deshalb weder eingegeben noch
+        /// übernommen: die gesamte Fensterfläche (Summe der vier Himmelsrichtungen) und die
+        /// Bauweise — der Gebäudeeditor bildet sie im Modus Neu vor dem Speichern aus Bauart und
+        /// Nutzfläche (<c>GebaeudeArbeitsstand.Laden</c>/<c>Ableiten</c>) und überschriebe einen
+        /// freien Wert.
+        /// </summary>
+        public bool Abgeleitet { get; }
+
+        /// <summary>Darf der Anwender den Wert im Zuordnungsdialog ändern? Nur Zahlenfelder, die weder Prüfgröße noch abgeleitet sind.</summary>
+        public bool Eingebbar => !IstText && !NurPruefgroesse && !Abgeleitet;
+
+        /// <summary>Darf der Anwender den Haken setzen? Nicht bei Prüfgrößen und abgeleiteten Feldern — sie werden nie übernommen.</summary>
+        public bool HakenSetzbar => !NurPruefgroesse && !Abgeleitet;
     }
 
     /// <summary>
@@ -201,11 +217,19 @@ namespace WindowsFormsApplication1
             return -1;
         }
 
+        /// <summary>Der Bauart-Schlüssel zu einem Bauart-Index des Gebäudeeditors — der Rückweg zu <see cref="BauartIndex"/>; ein unbekannter Index ergibt „schwer".</summary>
+        public static string BauartSchluessel(int index)
+        {
+            if (index == Gebaeudebauweise.LEICHT) return BAUART_LEICHT;
+            if (index == Gebaeudebauweise.SEHR_SCHWER) return BAUART_SEHR_SCHWER;
+            return BAUART_SCHWER;
+        }
+
         private static GebaeudeZielfeld[] Bauen()
         {
             int n = 0;
-            GebaeudeZielfeld F(string s, string g, string e, bool text = false, bool pruef = false)
-                => new GebaeudeZielfeld(s, g, e, ++n, text, pruef);
+            GebaeudeZielfeld F(string s, string g, string e, bool text = false, bool pruef = false, bool abgeleitet = false)
+                => new GebaeudeZielfeld(s, g, e, ++n, text, pruef, abgeleitet);
 
             return new[]
             {
@@ -216,7 +240,7 @@ namespace WindowsFormsApplication1
                 F(INNERE_GEWINNE, GRUPPE_KENNGROESSEN, "W"),
                 F(BAUALTERSKLASSE, GRUPPE_KENNGROESSEN, "", text: true),
                 F(BAUART, GRUPPE_KENNGROESSEN, "", text: true),
-                F(BAUWEISE, GRUPPE_KENNGROESSEN, "Wh/K"),
+                F(BAUWEISE, GRUPPE_KENNGROESSEN, "Wh/K", abgeleitet: true),
 
                 F(FLAECHE_AUSSENWAND, GRUPPE_AUSSENWAND, "m²"),
                 F(U_AUSSENWAND, GRUPPE_AUSSENWAND, "W/(m²K)"),
@@ -225,7 +249,7 @@ namespace WindowsFormsApplication1
                 F(FENSTER_OST, GRUPPE_FENSTER, "m²"),
                 F(FENSTER_SUED, GRUPPE_FENSTER, "m²"),
                 F(FENSTER_WEST, GRUPPE_FENSTER, "m²"),
-                F(FENSTER_GESAMT, GRUPPE_FENSTER, "m²"),
+                F(FENSTER_GESAMT, GRUPPE_FENSTER, "m²", abgeleitet: true),
                 F(U_FENSTER, GRUPPE_FENSTER, "W/(m²K)"),
                 F(G_WERT, GRUPPE_FENSTER, "–"),
 
