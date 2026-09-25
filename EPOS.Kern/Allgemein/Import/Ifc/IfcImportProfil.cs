@@ -51,8 +51,18 @@
         /// <summary>Die Vorgabe der Raumhöhe ohne <c>Height</c> und ohne <c>NetVolume</c>/<c>NetFloorArea</c> [m] (Umsetzungskonzept 3.4).</summary>
         public const double RUECKFALL_RAUMHOEHE_M = 2.5;
 
+#if OHNE_XBIM
+        /// <summary>
+        /// Bau ohne xBIM (<c>-p:OhneXbim=true</c>, nur der Größenvergleich des iOS-Gerätebaus, ADR-003
+        /// Aufgabe 7): kein Leser, der Import wird benannt abgelehnt — <see cref="GebaeudeImportAblauf"/>
+        /// legt die Ausnahme als Lesefehler ab.
+        /// </summary>
+        public override IGebaeudeLeser LeserErzeugen()
+            => throw new System.PlatformNotSupportedException("IFC-Import ist in diesem Bau nicht enthalten (ohne Xbim.IO.MemoryModel).");
+#else
         /// <summary>Ein neuer <see cref="IfcLeser"/> je Lauf.</summary>
         public override IGebaeudeLeser LeserErzeugen() => new IfcLeser();
+#endif
 
         /// <inheritdoc />
         public override double? RueckfallRaumhoeheM => RUECKFALL_RAUMHOEHE_M;

@@ -71,6 +71,11 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
   schreibgeschützt; gearbeitet wird auf der Kopie in `Library/Application Support/WP-Plan/EPOS_PLAN`.
 - **`bundle_e_sqlite3`, nicht `bundle_green`** — dieselbe SQLite 3.53.3 wie auf Windows, Linux und
   im macOS-CI. Begründung in `Directory.Packages.props`.
+- **Kein `RuntimeIdentifiers` im Projekt; die Kennung kommt je Bau mit `-r`.** Das iOS-SDK hält
+  einen Bau für einen Simulatorbau, sobald `RuntimeIdentifier` **oder** `RuntimeIdentifiers`
+  „simulator" enthält — mit der Liste `iossimulator-arm64;ios-arm64` linkte `-r ios-arm64` gegen
+  das Simulator-SDK, ohne AOT, und zog beide `e_sqlite3.a` von `SQLitePCLRaw.lib.e_sqlite3.ios`
+  herein. Begründung im Kommentar der `EPOS.iOS.csproj`.
 - **Ein Namensraum für die ganze Hülle: `EPOS.iOS`** — auch für die Dateien unter `Dienste/`.
   Ein Unter-Namensraum `EPOS.iOS.Dienste` verdeckte den statischen Halter
   `WindowsFormsApplication1.Dienste` des Kerns: `Dienste.Pfade` löste dann gegen den eigenen
@@ -93,6 +98,12 @@ dotnet workload install maui-ios --version 10.0.400.1 --skip-sign-check
 dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release -f net10.0-ios -r iossimulator-arm64 \
   -p:SeedDb=../Referenzlaeufe/Kenndaten_Test.sqlite
 ```
+
+**Der Gerätebau** (`ios.yml`, Job `geraetebau`, nur mit dem Eingang `abnahme_g4a`): `-r ios-arm64`,
+Release, ohne Signatur (`-p:EnableCodeSigning=false`), ohne LLVM (`-p:MtouchUseLlvm=false`). Der Job
+baut zweimal — gewöhnlich und mit `-p:OhneXbim=true` (Kern ohne die Paketzeile `Xbim.IO.MemoryModel`,
+ohne Importprobe; nur für den Größenvergleich nach ADR-003 Aufgabe 7) — und prüft je Programm die
+Zielplattform (`xcrun vtool -show-build`: `platform IOS`, nicht `IOSSIMULATOR`).
 
 Was sich **ohne** Mac prüfen lässt, steht in
 [`../Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md`](../Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md): eine Restore-Probe mit
