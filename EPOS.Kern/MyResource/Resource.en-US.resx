@@ -36014,4 +36014,16 @@ Do you want to allow this?</value>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Design, charging window</value>
   </data>
+  <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
+    <value>Select ZIP package…</value>
+  </data>
+  <data name="ZPGK_IMPORT_DATEIFILTER_ZIP" xml:space="preserve">
+    <value>Catalogue package (*.zip)|*.zip</value>
+  </data>
+  <data name="ZPGK_IMPORT_NUR_ZIP" xml:space="preserve">
+    <value>On this device the package is selected as a ZIP archive; there is no package folder here.</value>
+  </data>
+  <data name="ZPGK_KEINE_ANSICHT" xml:space="preserve">
+    <value>The catalogue of domestic hot water usage types is not available on this device.</value>
+  </data>
 </root>

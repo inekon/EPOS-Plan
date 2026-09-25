@@ -566,6 +566,34 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Der Weg ohne Ordnerwahl (ZU26): auf iOS allein das ZIP-Archiv
+    // =================================================================================
+
+    /// <summary>
+    /// Führt die Plattform keine Ordnerwahl (<c>OrdnerwahlVerfuegbar = false</c>, iOS), trägt der
+    /// Wahlknopf die ZIP-Beschriftung, der Filter nimmt allein <c>*.zip</c>, und ein Satz nennt die
+    /// Einschränkung; mit Ordnerwahl bleibt der Dialog, wie er ist. Verglichen wird gegen das
+    /// Textbündel selbst, nicht gegen Klartext — kulturunabhängig.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Ohne_Ordnerwahl_nimmt_der_Import_allein_das_ZIP_Archiv(bool ordnerwahl)
+    {
+        var cut = Aufbauen(new Pruefkatalog());
+        cut.Render(p => p.Add(x => x.OrdnerwahlVerfuegbar, ordnerwahl));
+        TwwNutzungsartAdminTexte t = cut.Instance.Texte;
+
+        cut.Find("button.epos-importknopf").Click();
+        Assert.True(cut.Instance.ImportOffen);
+
+        EPOS.UI.Standards.Dateiwahl wahl = cut.FindComponent<EPOS.UI.Standards.Dateiwahl>().Instance;
+        Assert.Equal(ordnerwahl ? t.ImportDatei : t.ImportDateiZip, wahl.KnopfText);
+        Assert.Equal(ordnerwahl ? t.ImportDateifilter : t.ImportDateifilterZip, wahl.Filter);
+        Assert.Equal(!ordnerwahl, cut.Find(".epos-tww-import").TextContent.Contains(t.ImportNurZip, StringComparison.Ordinal));
+    }
+
+    // =================================================================================
     // Wache über das Textbündel
     // =================================================================================
 

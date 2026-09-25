@@ -135,6 +135,20 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => BauteilaufbauKatalog;
 
+    // ---- Der Katalog der Brauchwasser-Nutzungsarten (ZU26) ------------------
+
+    /// <summary>Der Parametersatz des Katalogs „Brauchwasser-Nutzungsarten"; <c>null</c> = nicht geführt.</summary>
+    internal IReadOnlyDictionary<string, object>? NutzungsartKatalog { get; set; }
+
+    /// <summary>Wie oft die Wurzel den Parametersatz des Katalogs erfragt hat.</summary>
+    internal int NutzungsartKatalogGefragt { get; private set; }
+
+    public IReadOnlyDictionary<string, object>? NutzungsartKatalogGaben()
+    {
+        NutzungsartKatalogGefragt++;
+        return NutzungsartKatalog;
+    }
+
     /// <summary>
     /// Das Lagebild der Lizenz (Welle iF30) — <c>null</c> = kein Banner, und das ist
     /// die Vorgabe: Kein bestehender Fall soll durch die Erweiterung ein Banner bekommen.
