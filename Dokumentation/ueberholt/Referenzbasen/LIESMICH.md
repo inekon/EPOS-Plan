@@ -1,9 +1,9 @@
-# Die Protokolle der 31 entfernten Referenzbasen
+# Die Protokolle der 32 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **31 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **32 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026. **32 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14 am 25.09.2026. **33 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger`](../../../Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/);
+> [`Referenzlaeufe/2026-09-25_R15_Anlagenprio`](../../../Referenzlaeufe/2026-09-25_R15_Anlagenprio/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -59,6 +59,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-22_R11_Bestandsbefunde` | 22.09.2026 | CI-Basis nach der Stufe GB der Gebäudesimulation (Bestandsbefunde des Tagesbilanz-Wegs, `Bauweise` von Gebäude 10576); die letzte Basis allein auf dem Tagesbilanz-Weg; dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R12 am 23.09.2026 | [`2026-09-22_R11_Bestandsbefunde/protokoll.txt`](2026-09-22_R11_Bestandsbefunde/protokoll.txt) |
 | `2026-09-23_R12_Gebaeudemodell` | 23.09.2026 | CI-Basis nach der Schlusswelle G1 + G2 der Gebäudesimulation (VDI 6007 als Vorgabemodell aller Gebäude, 1040 auf dem Tagesbilanz-Weg); ungekühlte Gebäude noch an `Maximaleraumtemperatur` gekappt; dreizehn Projekte, 399 CSV, 2 239 Skalare — abgelöst durch R13 am 23.09.2026 | [`2026-09-23_R12_Gebaeudemodell/protokoll.txt`](2026-09-23_R12_Gebaeudemodell/protokoll.txt) |
 | `2026-09-23_R13_Kuehlung` | 23.09.2026 | CI-Basis nach der Schlusswelle KU1 der Kühlung (E32: ungekühlte Gebäude laufen frei; Projekt 1017 als Referenzprojekt mit Kühlung, Kältebedarf ungedeckt); dreizehn Projekte, 387 CSV, 2 207 Skalare — abgelöst durch R14 am 24.09.2026 | [`2026-09-23_R13_Kuehlung/protokoll.txt`](2026-09-23_R13_Kuehlung/protokoll.txt) |
+| `2026-09-24_R14_Kaelteerzeuger` | 24.09.2026 | CI-Basis nach der Schlusswelle KU2 der Kühlung (Projekt 1017 deckt seine Kälte mit der Wärmepumpe im Kühlbetrieb); getragen bis Schemastand 141; dreizehn Projekte, 394 CSV, 2 249 Skalare — abgelöst durch R15 am 25.09.2026 | [`2026-09-24_R14_Kaelteerzeuger/protokoll.txt`](2026-09-24_R14_Kaelteerzeuger/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -1367,6 +1368,113 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
 > den Nachträgen zu den Schemaständen 104 bis 113 und zum Zapfprofil-Testkatalog steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R14 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 24. bis zum 25.09.2026 die Basis R14 beschrieben — Anlass
+(Schlusswelle KU2 der Kühlung: Projekt 1017 mit Kälteerzeuger), die Tabelle von 1017 gegen R13 und der
+Einfrierbefehl. Er steht hier im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Die Nachträge zu den
+Schemaständen 119 bis 141, die R14 ergebnisneutral getragen hat, sind **nicht** mitgewandert: Sie stehen weiter
+im Abschnitt „Aktuelle Basis“ von [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md), weil die
+Nachfolgebasis R15 auf eben dieser Testdatenbank (Schemastand 141) eingefroren ist und die Nachträge deren Stand
+herleiten.
+
+**Abgelöst wurde R14 durch `2026-09-25_R15_Anlagenprio`** (Anwenderentscheid vom 25.09.2026 zu Konzept
+Wirtschaftlichkeit § 6.3 Nr. 18: Der Rechenweg ordnet die Anlagen nach der Regel des Hydraulikbilds, eine
+Anlage ohne Priorität steht hinten). Allein die Modulreihenfolge der beiden Wärmepumpen von 1042 in
+`aggregate.csv` wechselt, alle Werte und alle Zeitreihen bleiben gleich; die Tabelle steht im Abschnitt
+„Aktuelle Basis“ von [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **141**, LFS-SHA-256 `a427aa72…`,
+Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
+Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die vierte und letzte Welle der Stufe KU2 der Kühlung** (vom Anwender am 24.09.2026 samt
+> dem Einfrieren beauftragt). Eine Änderung an den Daten, zwei an der Wirtschaftlichkeit:
+>
+> 1. **Testdatenbank: das Referenzprojekt mit Kälteerzeuger** (Kühlkonzept 10.4, Einfrierregel „gesäte
+>    Kältedaten" oben): Die Wärmepumpe von 1017 kühlt — vier Zellen und zehn Zeilen über
+>    [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](../../../Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py):
+>    `Tab_Einstellungen.Tool_3` leer → „Wärmepumpe" (Kaskadenplatz 3), Projektgerät 1017033
+>    `Kuehlbetrieb` 0 → 1, `Kuehl_Vorlauf` NULL → 18, `Kuehl_Hilfsstromanteil` NULL → 0,05, dazu die
+>    zehn Zeilen der gesäten Kühlkennlinie in `Tab_Kenndaten_Kuehlung` (die Tabelle war leer; SQLite
+>    führt dazu die Zeile der Tabelle in `sqlite_sequence`). Sicherung vorher außerhalb des
+>    Repositoriums; der Zellvergleich aller 132 Tabellen (10 498 993 Zellen) zeigt genau diese vier
+>    Zellen, zehn Zeilen und die Sequenzzeile, die 14 Sichten und 208 Indizes gleich;
+>    `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 784 704 Byte, ein zweiter Lauf
+>    des Skripts ändert nichts.
+> 2. **E35 und die Reste von E34** — Grund- und Leistungspreis eines eigenen Zählers, der Preis des
+>    vermiedenen Bezugs, die Bemessungsmenge nach § 9b StromStG, das Mengenszenario — ändern Kosten,
+>    nicht die Simulation; der Referenzlauf führt keine Kosten, und kein Referenzprojekt trägt einen
+>    Kühlträger. Vor der Datenänderung waren alle dreizehn Projekte gegen R13 byte-gleich.
+>
+> **Warum so** — Kaskadenplatz 3 hinter BHKW und Elektrokessel (ohne Platz rechnet die Maschine nicht,
+> auf Platz 3 bleibt die Wärmeseite fast unverändert), Kühl-Vorlauf 18 °C (Flächenkühlung, sensible
+> Kälte), Hilfsstromanteil 5 % (die Basis trägt den Zuschlag), kein Kühlträger (der Referenzfall ohne
+> den Sonderweg aus E34), eine gesäte Kühlkennlinie aus runden, erfundenen Werten (der Katalogsatz des
+> Geräts trägt keine), die Nennkühlleistung bleibt leer: Kühlkonzept 10.4.
+>
+> **Allein 1017 bewegt sich, zwölf Projekte bleiben byte-gleich** (alle Dateien):
+>
+> | 1017 | R13 | R14 |
+> |---|---:|---:|
+> | Kältebedarf [MWh/a] | 2,52 | 2,52 |
+> | Kältedeckung durch die Wärmepumpe [MWh/a] | — | 2,48 (98,4 %) |
+> | ungedeckte Kälte `Kaelterestbedarf` [MWh/a] | 2,52 | 0,04 |
+> | Kältestrom, davon Hilfsstrom [MWh/a] | — | 0,55; 0,03 |
+> | Jahresarbeitszahl Kälte (EER-Jahreswert) | — | 4,52 |
+> | Kühltage | — | 43 |
+> | Wärme der Wärmepumpe auf Platz 3 [MWh/a] | — | 0,04 |
+> | Restwärme [MWh/a] | 0,14 | 0,10 |
+> | Netzbezug `Stromrestbedarf` [MWh/a] | 655,31 | 655,88 |
+>
+> Der Kältestrom kommt ganz aus dem Netz (0,5487 von 0,5487 MWh/a): In den Kühlstunden deckt die
+> Eigenerzeugung schon den übrigen Strombedarf nicht — Stromspeicher, BHKW und Elektrokessel bleiben
+> Zeichen für Zeichen, wie sie waren; 1017 führt keine Photovoltaik. Kosten und CO₂ führt der
+> Referenzlauf nicht; gerechnet (`ReferenzprojektKaelteerzeugerTests`) steigen die Stromkosten des
+> Anschlusses um 283,55 €/a, der Kältestrom trägt 273,60 €/a und 0,24 t/a CO₂.
+>
+> **Dateien und Schlüssel:** 1017 bekommt die sieben Dateien der Wärmepumpe (`heizstab.csv`,
+> `wp_produktion.csv`, `wp_quellentemperatur.csv`, `wp_restwaerme.csv`, `wp_strom.csv`,
+> `wp_waermebedarf.csv`, `wp_warmwasserbedarf.csv`) und 42 Skalare (`Kaelte.*`, `Kaelte[0].*`,
+> `Waermepumpe.*`, `WaermepumpeModul[0].*`, sieben Vektorsummen) — 387 → 394 CSV, 2 207 → 2 249
+> Skalare. Gegen R13 meldet der Vergleich 1 689 Abweichungen, alle in 1017: die neuen Dateien und
+> Schlüssel, die geänderten Skalare und die Reihen `reststrom_viertelstunde.csv` (1 660 geänderte
+> Viertelstunden) und `restwaerme.csv` (19 geänderte Stunden).
+>
+> **Kein Fehlschlag, kein NaN, keine Ablehnung:** 13/13 Projekte gerechnet.
+>
+> **Einfrierregeln:** Die Regel „gesäte Kältedaten" umfasst jetzt die Kälteerzeugung. Emissionsfaktoren,
+> PV-Modulkoeffizienten, Flottenstand 1046 und gesäte Gebäudedaten sind nicht berührt.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich** (394/394 CSV) und
+> **GESAMT: PASS** gegen diese Basis (4 207 049 Werte); ebenso byte-gleich ein Lauf vor dem Zusammenführen
+> mit der Szenariopflege E9b (#462) — sie bewegt kein Referenzprojekt.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+>   --ziel Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
+> [Protokoll der Schlusswelle KU2](../Protokolle/Gebaeudesimulation/2026-09-24_Schlusswelle_KU2.md)
+> und im [Status der Gebäudesimulation](../../aktuell/Status_Gebaeudesimulation_VDI6007.md).
+
+> **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
+> Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
+> Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 

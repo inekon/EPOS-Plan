@@ -304,7 +304,7 @@ im selben Schritt auf die Testdatenbank laufen.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-24_R14_Kaelteerzeuger`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-25_R15_Anlagenprio`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Skripte` und `LIESMICH.md` stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
@@ -314,10 +314,10 @@ mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselbe
 gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-18_R9_Kesselbrennstoff` am 19.09.2026, `2026-09-19_R10_BhkwWirkungsgrad` am
 22.09.2026, `2026-09-22_R11_Bestandsbefunde` und `2026-09-23_R12_Gebaeudemodell` am 23.09.2026,
-`2026-09-23_R13_Kuehlung` am 24.09.2026** (31 Basen, alle sieben Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-09-23_R13_Kuehlung` am 24.09.2026, `2026-09-24_R14_Kaelteerzeuger` am 25.09.2026** (32 Basen, alle acht Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 31 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 32 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -327,86 +327,78 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+**`2026-09-25_R15_Anlagenprio/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **141**, LFS-SHA-256 `a427aa72…`,
-Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
-1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
-Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
+Schemastand **141**, LFS-SHA-256 `a427aa72…` — dieselbe Datei, auf der R14 zuletzt gehalten wurde;
+ihre Herleitung steht in den Nachträgen unten). Gegen diese Basis hält `.github/workflows/kern.yml`
+(1030, 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige**
+Basis im Arbeitsbaum.
 
-> **Anlass: die vierte und letzte Welle der Stufe KU2 der Kühlung** (vom Anwender am 24.09.2026 samt
-> dem Einfrieren beauftragt). Eine Änderung an den Daten, zwei an der Wirtschaftlichkeit:
+> **Anlass: der Anwenderentscheid vom 25.09.2026 zu Konzept Wirtschaftlichkeit § 6.3 Nr. 18** — der
+> Rechenweg ordnet die Anlagen nach derselben Regel wie Hydraulikbild und Erzeugerkarten
+> (`Ladeordnung.SqlAnlagenprio`, Regel „99“: gepflegte Priorität zuerst, eine Anlage ohne Priorität —
+> NULL oder 0 — hinten, bei Gleichstand die ID). Eine Änderung am Rechenweg, keine an den Daten, kein
+> Schemaschritt:
 >
-> 1. **Testdatenbank: das Referenzprojekt mit Kälteerzeuger** (Kühlkonzept 10.4, Einfrierregel „gesäte
->    Kältedaten" oben): Die Wärmepumpe von 1017 kühlt — vier Zellen und zehn Zeilen über
->    [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](Skripte/kaelteerzeuger_1017_referenzprojekt.py):
->    `Tab_Einstellungen.Tool_3` leer → „Wärmepumpe" (Kaskadenplatz 3), Projektgerät 1017033
->    `Kuehlbetrieb` 0 → 1, `Kuehl_Vorlauf` NULL → 18, `Kuehl_Hilfsstromanteil` NULL → 0,05, dazu die
->    zehn Zeilen der gesäten Kühlkennlinie in `Tab_Kenndaten_Kuehlung` (die Tabelle war leer; SQLite
->    führt dazu die Zeile der Tabelle in `sqlite_sequence`). Sicherung vorher außerhalb des
->    Repositoriums; der Zellvergleich aller 132 Tabellen (10 498 993 Zellen) zeigt genau diese vier
->    Zellen, zehn Zeilen und die Sequenzzeile, die 14 Sichten und 208 Indizes gleich;
->    `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 784 704 Byte, ein zweiter Lauf
->    des Skripts ändert nichts.
-> 2. **E35 und die Reste von E34** — Grund- und Leistungspreis eines eigenen Zählers, der Preis des
->    vermiedenen Bezugs, die Bemessungsmenge nach § 9b StromStG, das Mengenszenario — ändern Kosten,
->    nicht die Simulation; der Referenzlauf führt keine Kosten, und kein Referenzprojekt trägt einen
->    Kühlträger. Vor der Datenänderung waren alle dreizehn Projekte gegen R13 byte-gleich.
+> 1. **Die fünf Rechenweg-Leser**, die bis dahin `ORDER BY Prioritaet, ID` lasen und damit die
+>    ungepflegte Anlage VOR die gepflegte stellten: `SimulationControl.WP_Liste_Laden`,
+>    `…QuellbezuegeAufbauen`, `…SenkenPufferDerAnlagen`, `WaermesenkeClass.SenkenLaden`,
+>    `…SenkenlistenLaden`.
+> 2. **Die drei Modul-Lader**, die ganz ohne `ORDER BY` in der Zeilenfolge der Datenbank luden:
+>    `SimulationControl.SPK_Liste_Laden`, `…Solar_Liste_Laden`, `…BHKW_Liste_Laden`.
 >
-> **Warum so** — Kaskadenplatz 3 hinter BHKW und Elektrokessel (ohne Platz rechnet die Maschine nicht,
-> auf Platz 3 bleibt die Wärmeseite fast unverändert), Kühl-Vorlauf 18 °C (Flächenkühlung, sensible
-> Kälte), Hilfsstromanteil 5 % (die Basis trägt den Zuschlag), kein Kühlträger (der Referenzfall ohne
-> den Sonderweg aus E34), eine gesäte Kühlkennlinie aus runden, erfundenen Werten (der Katalogsatz des
-> Geräts trägt keine), die Nennkühlleistung bleibt leer: Kühlkonzept 10.4.
+> **Allein 1042 bewegt sich, und nur im Index der Module** — alle Werte und alle Zeitreihen bleiben
+> Zeichen für Zeichen gleich. Die beiden Wärmepumpen tauschen die Plätze in `aggregate.csv`:
 >
-> **Allein 1017 bewegt sich, zwölf Projekte bleiben byte-gleich** (alle Dateien):
+> | 1042, `aggregate.csv` | R14 `WaermepumpeModul[0]` | R14 `[1]` | R15 `WaermepumpeModul[0]` | R15 `[1]` |
+> |---|---|---|---|---|
+> | `.Modul` (Anlage, Priorität) | CS7800iLW 16 (14818, keine) | CS6800iAW MB + AW 10 OR-T (14817, 1) | CS6800iAW MB + AW 10 OR-T (14817, 1) | CS7800iLW 16 (14818, keine) |
+> | `.Leistung` [kW] | 15 | 11 | 11 | 15 |
+> | `.Waermeproduktion` [MWh/a] | 20,84 | 71,45 | 71,45 | 20,84 |
+> | `.Stromverbrauch` [MWh/a] | 7,06 | 26,29 | 26,29 | 7,06 |
+> | `.Betriebsstunden` [h] | 2 073,4 | 5 995,29 | 5 995,29 | 2 073,4 |
 >
-> | 1017 | R13 | R14 |
-> |---|---:|---:|
-> | Kältebedarf [MWh/a] | 2,52 | 2,52 |
-> | Kältedeckung durch die Wärmepumpe [MWh/a] | — | 2,48 (98,4 %) |
-> | ungedeckte Kälte `Kaelterestbedarf` [MWh/a] | 2,52 | 0,04 |
-> | Kältestrom, davon Hilfsstrom [MWh/a] | — | 0,55; 0,03 |
-> | Jahresarbeitszahl Kälte (EER-Jahreswert) | — | 4,52 |
-> | Kühltage | — | 43 |
-> | Wärme der Wärmepumpe auf Platz 3 [MWh/a] | — | 0,04 |
-> | Restwärme [MWh/a] | 0,14 | 0,10 |
-> | Netzbezug `Stromrestbedarf` [MWh/a] | 655,31 | 655,88 |
+> **A/B der beiden Teile** (je 13 Projekte, gerechnet auf demselben Stand):
 >
-> Der Kältestrom kommt ganz aus dem Netz (0,5487 von 0,5487 MWh/a): In den Kühlstunden deckt die
-> Eigenerzeugung schon den übrigen Strombedarf nicht — Stromspeicher, BHKW und Elektrokessel bleiben
-> Zeichen für Zeichen, wie sie waren; 1017 führt keine Photovoltaik. Kosten und CO₂ führt der
-> Referenzlauf nicht; gerechnet (`ReferenzprojektKaelteerzeugerTests`) steigen die Stromkosten des
-> Anschlusses um 283,55 €/a, der Kältestrom trägt 273,60 €/a und 0,24 t/a CO₂.
+> | Stand | Vergleich | Ergebnis |
+> |---|---|---|
+> | Teil 1 allein | gegen R14 | 12/13 PASS und byte-gleich; 1042 FAIL mit den **10 Werten** oben, die übrigen 35 Dateien byte-gleich |
+> | Teil 1 + 2 | gegen Teil 1 allein | **394/394 CSV byte-gleich** — Teil 2 ändert in keinem Projekt etwas, nicht einmal einen Index |
 >
-> **Dateien und Schlüssel:** 1017 bekommt die sieben Dateien der Wärmepumpe (`heizstab.csv`,
-> `wp_produktion.csv`, `wp_quellentemperatur.csv`, `wp_restwaerme.csv`, `wp_strom.csv`,
-> `wp_waermebedarf.csv`, `wp_warmwasserbedarf.csv`) und 42 Skalare (`Kaelte.*`, `Kaelte[0].*`,
-> `Waermepumpe.*`, `WaermepumpeModul[0].*`, sieben Vektorsummen) — 387 → 394 CSV, 2 207 → 2 249
-> Skalare. Gegen R13 meldet der Vergleich 1 689 Abweichungen, alle in 1017: die neuen Dateien und
-> Schlüssel, die geänderten Skalare und die Reihen `reststrom_viertelstunde.csv` (1 660 geänderte
-> Viertelstunden) und `restwaerme.csv` (19 geänderte Stunden).
+> **Warum ohne Rechenwirkung:** Die Deckungsreihenfolge legt die Kaskade über den Typ fest (`Tool_1..4`),
+> Anlagen finden ihre Senken über die Anlagen-ID und Puffer über `Z_AnlageSenke.Ladeprio`; die Rechenfolge
+> der Wärmepumpen von 1042 steht in `ModulEbenen` (getrennte Senken: 14817 Heizkreis und Puffer 1054196,
+> 14818 nur Brauchwasserpuffer 1054202). Die Reihenfolge der Senken- und Pufferlisten ändert sich außerdem
+> in 1030 (BHKW ohne Priorität hinter BHKW und Kessel mit Priorität) und in 1040, 1041, 1045 (Kessel ohne
+> Priorität hinter der Wärmepumpe mit Priorität 1) — ohne Wirkung auf eine Zahl. Teil 2 greift in keinem
+> Projekt: Keines führt zwei Kessel oder zwei Kollektorfelder, und die beiden BHKW von 1030 stehen nach der
+> Regel wie nach der Zeilenfolge (14920 mit Priorität 1 vor 14921 ohne). Rechnerisch wirkt die Regel erst
+> bei zwei Anlagen gleichen Typs auf derselben Rechenebene und Senke, deren Priorität von der ID abweicht.
 >
 > **Kein Fehlschlag, kein NaN, keine Ablehnung:** 13/13 Projekte gerechnet.
 >
-> **Einfrierregeln:** Die Regel „gesäte Kältedaten" umfasst jetzt die Kälteerzeugung. Emissionsfaktoren,
-> PV-Modulkoeffizienten, Flottenstand 1046 und gesäte Gebäudedaten sind nicht berührt.
+> **Einfrierregeln:** nicht berührt — keine gesäten Daten geändert, die Testdatenbank ist byte-gleich.
 >
-> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich** (394/394 CSV) und
-> **GESAMT: PASS** gegen diese Basis (4 207 049 Werte); ebenso byte-gleich ein Lauf vor dem Zusammenführen
-> mit der Szenariopflege E9b (#462) — sie bewegt kein Referenzprojekt.
+> **Determinismus geprüft:** zwei Läufe desselben Standes nacheinander **13/13 byte-gleich** (394/394 CSV)
+> und untereinander **GESAMT: PASS** (4 207 049 Werte); der Einfrierlauf ist mit beiden byte-gleich.
 >
 > ```bash
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
->   --ziel Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger
+>   --ziel Referenzlaeufe/2026-09-25_R15_Anlagenprio
 > ```
 >
-> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
-> [Protokoll der Schlusswelle KU2](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_Schlusswelle_KU2.md)
-> und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis. Nachweis im Test:
+> `EPOS.Kern.Tests/AnlagenprioRechenwegTests` (die acht Leser nutzen die Regel; in 1042 steht die
+> Wärmepumpe ohne Priorität hinter der mit Priorität 1).
+
+**Nachträge zur Testdatenbank (Schemastände 119 bis 141).** Die folgenden Nachträge sind gegen die
+Vorgängerbasis R14 gemessen, jeder ergebnisneutral. Sie bleiben hier, weil R15 auf eben dieser Testdatenbank
+(Schemastand **141**, LFS-SHA-256 `a427aa72…`) eingefroren ist und die Nachträge deren Stand herleiten; „die
+Basis bleibt“ meint in ihnen R14.
 
 > **Nachtrag: Schemastände 120 und 121 (Zusammenführung mit E10 #463 und #468), die Basis bleibt.** Die
 > Testdatenbank ist die Fassung von origin mit Schemastand **121** (LFS-SHA-256 `00fbbb8b…`; die
@@ -798,10 +790,11 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist berührt.** Referenzlauf
 > aller dreizehn Projekte **13/13 PASS gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`)**.
 
-> **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
-> Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
-> Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in
-> [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
+> **Die Vorgängerbasis `2026-09-24_R14_Kaelteerzeuger`**, die erste Basis mit Kälteerzeuger, ist mit
+> dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt
+> 1017 mit Kälteerzeuger steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md); die
+> Nachträge zu den Schemaständen 119 bis 141 stehen oben, weil R15 sie trägt.
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 ## Was hier liegt
@@ -972,7 +965,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-24_R14_Kaelteerzeuger`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-25_R15_Anlagenprio`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell
