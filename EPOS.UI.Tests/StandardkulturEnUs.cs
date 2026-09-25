@@ -5,7 +5,7 @@ namespace EPOS.UI.Tests;
 
 /// <summary>
 /// Die feste Standardkultur dieses Testprojekts: <b>en-US</b>, gesetzt beim Laden der
-/// Testassembly, bevor der erste Fall läuft (Auftrag #528, CI-Wächter). Gegenstück zu
+/// Testassembly, bevor der erste Fall läuft (Auftrag #529, CI-Wächter). Gegenstück zu
 /// <c>EPOS.Kern.Tests/StandardkulturEnUs.cs</c>; dort steht die Begründung ausführlich.
 ///
 /// <para><b>Kurz.</b> Der Windows-Läufer der CI läuft unter en-US, ubuntu unter der invarianten

@@ -5,7 +5,7 @@ using Xunit;
 namespace EPOS.UI.Tests;
 
 /// <summary>
-/// Gegenprobe zur Standardkultur von <c>EPOS.UI.Tests</c> (Auftrag #528): Ohne Pinnung gilt
+/// Gegenprobe zur Standardkultur von <c>EPOS.UI.Tests</c> (Auftrag #529): Ohne Pinnung gilt
 /// en-US, und die Ressourcen antworten englisch; eine <see cref="Kulturvorrichtung"/> schaltet
 /// auf de-DE und stellt danach wieder auf en-US zurück. Fällt dieser Fall, fehlt oder wirkt
 /// <c>StandardkulturEnUs</c> nicht — oder eine Klasse hat eine Kultur stehen lassen.

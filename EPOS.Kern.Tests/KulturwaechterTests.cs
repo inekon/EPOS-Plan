@@ -42,7 +42,7 @@ namespace EPOS.Kern.Tests
     /// (<c>Kulturvorrichtung.cs</c>), deren eigene Zuweisungen und Rückstellungen der
     /// Gegenstand der Prüfung wären, nicht ihr Ergebnis.</para>
     ///
-    /// <para><b>Seit Auftrag #528 (26.09.2026, CI-Wächter; Befunde #515 und #525):</b>
+    /// <para><b>Seit Auftrag #529 (26.09.2026, CI-Wächter; Befunde #515 und #525):</b>
     /// (1) <b>Wächter A</b> — jede <c>Kulturvorrichtung</c> wird entsorgt. #515: sechs
     /// Klassen hielten eine Vorrichtung als Feld, ohne <c>IDisposable</c> zu sein; xUnit rief
     /// nie <c>Dispose()</c>, de-DE blieb prozessweit bis zum Laufende stehen und verdeckte,
@@ -155,7 +155,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Der Wächter — EPOS.UI.Tests (seit Auftrag #168, Tür je Klasse seit #528)
+        //  Der Wächter — EPOS.UI.Tests (seit Auftrag #168, Tür je Klasse seit #529)
         // =====================================================================
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace EPOS.Kern.Tests
                 "Diese Dateien in EPOS.UI.Tests setzen eine Kultur (CultureInfo.DefaultThread(UI)Culture, " +
                 "Thread.CurrentThread.Current(UI)Culture oder CultureInfo.Current(UI)Culture), ohne sie in " +
                 "derselben Datei zurueckzustellen und ohne dass ihre Klasse die Kulturvorrichtung nutzt " +
-                "(Auftrag #168, Tuer je Klasse seit #528):\n" +
+                "(Auftrag #168, Tuer je Klasse seit #529):\n" +
                 string.Join("\n", funde));
         }
 
@@ -215,7 +215,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Wächter A — jede Kulturvorrichtung wird entsorgt (seit Auftrag #528)
+        //  Wächter A — jede Kulturvorrichtung wird entsorgt (seit Auftrag #529)
         // =====================================================================
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace EPOS.Kern.Tests
             }
 
             Assert.True(funde.Count == 0,
-                "Diese Kulturvorrichtungen werden nicht sicher entsorgt (Waechter A, Auftrag #528; " +
+                "Diese Kulturvorrichtungen werden nicht sicher entsorgt (Waechter A, Auftrag #529; " +
                 "Befund #515: eine nie entsorgte Vorrichtung laesst de-DE prozessweit bis zum Laufende " +
                 "stehen und verdeckt fehlende Pinnung anderer Klassen). Regel: ein Vorrichtungsfeld " +
                 "verlangt IDisposable/IAsyncDisposable in der eigenen Basisliste (oder BunitContext/" +
@@ -425,7 +425,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Gegenproben — EPOS.UI.Tests (seit Auftrag #168, Tür je Klasse seit #528)
+        //  Gegenproben — EPOS.UI.Tests (seit Auftrag #168, Tür je Klasse seit #529)
         // =====================================================================
 
         /// <summary>
@@ -479,7 +479,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Gegenprobe zur Tür je Klasse (#528):</b> Bis #528 befreite schon das Wort
+        /// <b>Gegenprobe zur Tür je Klasse (#529):</b> Bis #529 befreite schon das Wort
         /// <c>EposBunitContext</c> oder <c>Kulturvorrichtung</c> irgendwo in der Datei — auch in
         /// einem Kommentar — jede Zuweisung der Datei. Jetzt fällt die Zuweisung einer Klasse
         /// ohne Vorrichtung auf, auch neben einer bunit-Klasse in derselben Datei; eine
@@ -526,7 +526,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Gegenproben — Wächter A (seit Auftrag #528)
+        //  Gegenproben — Wächter A (seit Auftrag #529)
         // =====================================================================
 
         /// <summary><b>Gegenprobe A1:</b> ein Vorrichtungsfeld ohne <c>IDisposable</c> fällt auf —
@@ -629,7 +629,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Die Standardkultur en-US (seit Auftrag #528)
+        //  Die Standardkultur en-US (seit Auftrag #529)
         // =====================================================================
 
         /// <summary>
@@ -646,7 +646,7 @@ namespace EPOS.Kern.Tests
             foreach (string relativ in StandardkulturDateien)
             {
                 string datei = Path.Combine(wurzel, relativ);
-                Assert.True(File.Exists(datei), "Die Standardkultur fehlt: " + relativ + " (Auftrag #528).");
+                Assert.True(File.Exists(datei), "Die Standardkultur fehlt: " + relativ + " (Auftrag #529).");
 
                 Quelle q = Quelle.Lies(datei, wurzel);
                 Assert.True(Regex.IsMatch(q.Maske, @"\[\s*ModuleInitializer\s*\]"),
@@ -703,7 +703,7 @@ namespace EPOS.Kern.Tests
         /// einem <c>finally { ... }</c>-Block gehören — einfache Tiefenzählung der
         /// geschweiften Klammern, reicht für Quelltext ohne Klammern in Zeichenketten/Kommentaren
         /// an dieser Stelle (dieselbe Vereinfachung wie die übrigen Quelltext-Wächter des Projekts;
-        /// der UI-Wächter reicht seit #528 den maskierten Text herein).
+        /// der UI-Wächter reicht seit #529 den maskierten Text herein).
         /// </summary>
         private static List<(int Start, int Ende)> RestoreRegionen(string text)
         {
@@ -740,7 +740,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Werkzeug — Quelltextleser (seit Auftrag #528)
+        //  Werkzeug — Quelltextleser (seit Auftrag #529)
         // =====================================================================
 
         /// <summary>Ein Vorrichtungsfeld einer Klasse: Name und Stelle im Text.</summary>
@@ -1219,7 +1219,7 @@ namespace EPOS.Kern.Tests
             // Klassendoku nennen "CultureInfo.DefaultThread(UI)Culture =" absichtlich als
             // reinen Text (Muster fuer den Leser, NICHT als echter Setzer) - ohne die
             // Ausnahme faende sich der Waechter selbst. Ebenso ausgenommen, nach Pfad: die
-            // Standardkultur en-US (Auftrag #528) - sie setzt den Ausgangszustand jedes Laufs.
+            // Standardkultur en-US (Auftrag #529) - sie setzt den Ausgangszustand jedes Laufs.
             return Quelldateien(wurzel, "EPOS.Kern.Tests")
                 .Where(d => Path.GetFileName(d) != "KulturwaechterTests.cs")
                 .Where(d => !IstStandardkulturDatei(wurzel, d))
@@ -1230,7 +1230,7 @@ namespace EPOS.Kern.Tests
         /// Alle <c>.cs</c>-Dateien in <c>EPOS.UI.Tests</c>, ohne Bauordner und ohne die
         /// Vorrichtung selbst (<c>Kulturvorrichtung.cs</c> — Auftrag #168, erlaubte Ausnahme:
         /// ihre eigenen Zuweisungen und Rückstellungen SIND die Vorrichtung, nicht deren
-        /// Umgehung) und ohne die Standardkultur en-US (nach Pfad, Auftrag #528).
+        /// Umgehung) und ohne die Standardkultur en-US (nach Pfad, Auftrag #529).
         /// </summary>
         private static string[] TestdateienUi()
         {
