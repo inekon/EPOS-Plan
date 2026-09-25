@@ -35126,4 +35126,13 @@ Do you want to allow this?</value>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>What to do: {0}</value>
   </data>
+  <data name="SIMENG_NACHTZEIT_NUR_EINE" xml:space="preserve">
+    <value>Only one limit of the night period is set (start {0}, end {1}). Start and end belong together; both empty means {2} to {3} o'clock. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="SIMENG_NACHTZEIT_BEREICH" xml:space="preserve">
+    <value>The night period from {0} to {1} o'clock has an hour outside {2} … {3}. This is an input error; the run stops for this building.</value>
+  </data>
+  <data name="SIMENG_NACHTZEIT_GLEICH" xml:space="preserve">
+    <value>Start and end of the night period are equal ({0} o'clock) — the night would have no hour. This is an input error; the run stops for this building.</value>
+  </data>
 </root>

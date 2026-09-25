@@ -65834,6 +65834,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachtzeit von {0} bis {1} Uhr hat eine Stunde außerhalb {2} … {3}. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_BEREICH {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende der Nachtzeit sind gleich ({0} Uhr) — die Nacht hätte keine Stunde. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_GLEICH {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von der Nachtzeit ist nur eine Grenze gesetzt (Beginn {0}, Ende {1}). Beginn und Ende gehören zusammen; beide leer heißt {2} bis {3} Uhr. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_NACHTZEIT_NUR_EINE {
+            get {
+                return ResourceManager.GetString("SIMENG_NACHTZEIT_NUR_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Netzverluste dürfen nicht größer als 100 % sein. ähnelt.
         /// </summary>
         public static string SIMENG_NETZVERLUSTE_UEBER_100 {

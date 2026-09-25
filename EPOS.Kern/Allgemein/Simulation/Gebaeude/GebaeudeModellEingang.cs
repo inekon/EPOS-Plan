@@ -153,6 +153,13 @@ namespace WindowsFormsApplication1
         /// <summary>Ferientage (Index 0 … 364), nur bei aktivem Fahrplan belegt.</summary>
         internal bool[] Ferientage { get; private set; }
 
+        /// <summary>
+        /// Die Nachtzeit des Gebäudes (Entscheid E43): <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>, beide
+        /// leer = <see cref="Nachtzeit.Vorgabe"/> (22 bis 6 Uhr, der Fahrplan nach E8). Sie trennt im
+        /// Sollwertfahrplan Tag- und Nachtsollwert und bestimmt die Nutzungszeit der Kennzahlen.
+        /// </summary>
+        internal Nachtzeit Nachtzeit { get; private set; } = Nachtzeit.Vorgabe;
+
         /// <summary>Masseanteil der Außenbauteile a_AW [–].</summary>
         internal double MasseanteilAussen { get; private set; }
         /// <summary>Innenflächenfaktor f_IW [–].</summary>
@@ -448,13 +455,12 @@ namespace WindowsFormsApplication1
                                    kuehlVorlaufGekappt: KuehlVorlaufGekappt);
         }
 
-        /// <summary>Ist Stunde <paramref name="h"/> (0 … 8759) Nutzungszeit — Stunde des Tages 7 … 22, 1-basiert (Rechenschritte 8.2, E8)?</summary>
-        internal static bool Nutzungszeit(int h)
-        {
-            int stundeDesTages = h % 24 + 1;
-            return stundeDesTages >= GebaeudeFestwerte.TAG_ERSTE_STUNDE
-                && stundeDesTages <= GebaeudeFestwerte.TAG_LETZTE_STUNDE;
-        }
+        /// <summary>
+        /// Ist Stunde <paramref name="h"/> (0 … 8759) Nutzungszeit dieses Gebäudes — außerhalb seiner
+        /// <see cref="Nachtzeit"/> (Rechenschritte 8.2, E8, E43)? Ohne Angabe der Nachtzeit Stunde des
+        /// Tages 7 … 22, 1-basiert, wie nach E8.
+        /// </summary>
+        internal bool Nutzungszeit(int h) => Nachtzeit.Nutzungszeit(h);
 
         // =====================================================================
         //  Der Eingangsbauer
@@ -1430,6 +1436,7 @@ namespace WindowsFormsApplication1
             e.SummePsiL_WK = psiL;
 
             e.Pruefen(g);
+            e.NachtzeitAufloesen(g);
             e.Ferientage = Ferienfahrplan(g, e.Bezeichnung);
             return e;
         }
@@ -1497,6 +1504,40 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Nachtzeit des Gebäudes (Entscheid E43) — nach DERSELBEN Regel wie der Editor
+        /// (<see cref="Nachtzeit.Pruefen"/>): beide Spalten leer ist die Vorgabe 22 bis 6 Uhr; nur eine
+        /// gesetzt, eine Stunde außerhalb 0 … 23 oder Beginn = Ende bricht benannt ab
+        /// (<see cref="GebaeudeModellFehler.NachtzeitUngueltig"/>), ohne stillen Rückfall.
+        /// </summary>
+        private void NachtzeitAufloesen(ProjektGebaeudeModel g)
+        {
+            int? beginn = g.Nachtabsenkung_Beginn, ende = g.Nachtabsenkung_Ende;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            switch (Nachtzeit.Pruefen(beginn, ende))
+            {
+                case NachtzeitBefund.NurEineGesetzt:
+                    Fehler(GebaeudeModellFehler.NachtzeitUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_NACHTZEIT_NUR_EINE, Stunde(beginn), Stunde(ende),
+                                         Nachtzeit.VORGABE_BEGINN, Nachtzeit.VORGABE_ENDE));
+                    break;
+                case NachtzeitBefund.AusserhalbDesTages:
+                    Fehler(GebaeudeModellFehler.NachtzeitUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_NACHTZEIT_BEREICH, Stunde(beginn), Stunde(ende),
+                                         Nachtzeit.STUNDE_MIN, Nachtzeit.STUNDE_MAX));
+                    break;
+                case NachtzeitBefund.BeginnGleichEnde:
+                    Fehler(GebaeudeModellFehler.NachtzeitUngueltig,
+                           string.Format(k, MyResource.Resource.SIMENG_NACHTZEIT_GLEICH, Stunde(beginn)));
+                    break;
+            }
+            Nachtzeit = Nachtzeit.Aus(beginn, ende);
+        }
+
+        /// <summary>Eine Stunde der Nachtzeit für die Meldung; leer als „—".</summary>
+        private static string Stunde(int? stunde)
+            => stunde.HasValue ? stunde.Value.ToString(CultureInfo.InvariantCulture) : "—";
+
+        /// <summary>
         /// Die Ferientage (E8): Der Fahrplan ist aktiv, wenn <c>Ferien</c> über 0,9 und der
         /// Feriensollwert mindestens 1 °C ist. Ein Zeitraum mit 0 oder 366 an einer Grenze ist
         /// „aus"; ein anderer Tag außerhalb 1 … 365 in einem aktiven Fahrplan wird benannt
@@ -1548,7 +1589,7 @@ namespace WindowsFormsApplication1
                 int tag = h / 24;
                 if (e.Ferientage[tag]) soll[h] = e.SollFerien;
                 else if (weWirksam && wochenende[tag]) soll[h] = e.SollWochenende;
-                else if (Nutzungszeit(h)) soll[h] = e.SollTag;
+                else if (e.Nutzungszeit(h)) soll[h] = e.SollTag;
                 else soll[h] = e.SollNacht;
             }
             return soll;
