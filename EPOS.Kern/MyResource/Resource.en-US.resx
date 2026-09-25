@@ -8552,6 +8552,33 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The zones of the building could not be saved: {0}</value>
   </data>
+  <data name="HERKUNFT_MSG_QUELLE_FEHLT" xml:space="preserve">
+    <value>The import source is missing.</value>
+  </data>
+  <data name="HERKUNFT_MSG_FORMAT" xml:space="preserve">
+    <value>The import format “{0}” is not a valid value.</value>
+  </data>
+  <data name="HERKUNFT_MSG_DATEINAME" xml:space="preserve">
+    <value>The file name of the import source is missing or longer than {0} characters.</value>
+  </data>
+  <data name="HERKUNFT_MSG_HASH" xml:space="preserve">
+    <value>The checksum of the import source is not a SHA-256 value (64 lower-case hexadecimal characters).</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZEITPUNKT" xml:space="preserve">
+    <value>The time of the import is missing.</value>
+  </data>
+  <data name="HERKUNFT_MSG_PAARUNG" xml:space="preserve">
+    <value>Pairing {0}: source type and source identifier are required; the source type has at most {1} characters.</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZIEL_FEHLT" xml:space="preserve">
+    <value>Pairing “{0}”: the target {1} needs the ID of its row.</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZIEL_FREMD" xml:space="preserve">
+    <value>Pairing “{0}”: the target {1} with ID {2} does not belong to this building.</value>
+  </data>
+  <data name="HERKUNFT_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The origin of the import could not be saved: {0}</value>
+  </data>
   <data name="LIZ_TITEL" xml:space="preserve">
     <value>License</value>
   </data>

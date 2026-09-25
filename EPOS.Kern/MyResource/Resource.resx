@@ -8559,6 +8559,33 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="ZONE_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Die Zonen des Gebäudes konnten nicht gespeichert werden: {0}</value>
   </data>
+  <data name="HERKUNFT_MSG_QUELLE_FEHLT" xml:space="preserve">
+    <value>Die Importquelle fehlt.</value>
+  </data>
+  <data name="HERKUNFT_MSG_FORMAT" xml:space="preserve">
+    <value>Das Importformat „{0}“ ist kein gültiger Wert.</value>
+  </data>
+  <data name="HERKUNFT_MSG_DATEINAME" xml:space="preserve">
+    <value>Der Dateiname der Importquelle fehlt oder ist länger als {0} Zeichen.</value>
+  </data>
+  <data name="HERKUNFT_MSG_HASH" xml:space="preserve">
+    <value>Die Prüfsumme der Importquelle ist kein SHA-256-Wert (64 Hexadezimalzeichen, klein geschrieben).</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZEITPUNKT" xml:space="preserve">
+    <value>Der Zeitpunkt des Imports fehlt.</value>
+  </data>
+  <data name="HERKUNFT_MSG_PAARUNG" xml:space="preserve">
+    <value>Paarung {0}: Quelltyp und Quellkennung sind Pflicht, der Quelltyp hat höchstens {1} Zeichen.</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZIEL_FEHLT" xml:space="preserve">
+    <value>Paarung „{0}“: Das Ziel {1} braucht die Kennung seiner Zeile.</value>
+  </data>
+  <data name="HERKUNFT_MSG_ZIEL_FREMD" xml:space="preserve">
+    <value>Paarung „{0}“: Das Ziel {1} mit der Kennung {2} gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="HERKUNFT_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Herkunft des Imports konnte nicht gespeichert werden: {0}</value>
+  </data>
   <data name="LIZ_TITEL" xml:space="preserve">
     <value>Lizenz</value>
   </data>

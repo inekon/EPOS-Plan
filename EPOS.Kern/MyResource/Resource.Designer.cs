@@ -22521,6 +22521,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Dateiname der Importquelle fehlt oder ist länger als {0} Zeichen. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_DATEINAME {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_DATEINAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Importformat „{0}“ ist kein gültiger Wert. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_FORMAT {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfsumme der Importquelle ist kein SHA-256-Wert (64 Hexadezimalzeichen, klein geschrieben). ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_HASH {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_HASH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Herkunft des Imports konnte nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paarung {0}: Quelltyp und Quellkennung sind Pflicht, der Quelltyp hat höchstens {1} Zeichen. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_PAARUNG {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_PAARUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Importquelle fehlt. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zeitpunkt des Imports fehlt. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_ZEITPUNKT {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_ZEITPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paarung „{0}“: Das Ziel {1} braucht die Kennung seiner Zeile. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_ZIEL_FEHLT {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_ZIEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paarung „{0}“: Das Ziel {1} mit der Kennung {2} gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string HERKUNFT_MSG_ZIEL_FREMD {
+            get {
+                return ResourceManager.GetString("HERKUNFT_MSG_ZIEL_FREMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die ausführliche Beschreibung steht in der Dokumentation. ähnelt.
         /// </summary>
         public static string HILFE_IOS_BESCHREIBUNG {
