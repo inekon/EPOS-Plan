@@ -35142,4 +35142,94 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
     <value>Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen.</value>
   </data>
+  <data name="ZPG_HERKUNFT_ZONE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>überschrieben</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_KALIBRIERT" xml:space="preserve">
+    <value>kalibriert</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UMGERECHNET" xml:space="preserve">
+    <value>umgerechnet</value>
+  </data>
+  <data name="ZPG_HERKUNFT_QUELLE_ANWENDER" xml:space="preserve">
+    <value>Eingabe des Anwenders</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FASSUNG" xml:space="preserve">
+    <value>Katalogfassung {0}</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_VERFAHREN" xml:space="preserve">
+    <value>aus einem Verfahren gerechnet</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_EIGENKONSTRUKTION" xml:space="preserve">
+    <value>Eigenkonstruktion</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FREI" xml:space="preserve">
+    <value>frei verfügbare Quelle</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_IMPORT" xml:space="preserve">
+    <value>eingespielt</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FIKTIV" xml:space="preserve">
+    <value>erfundener Wert</value>
+  </data>
+  <data name="ZPG_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_LEER" xml:space="preserve">
+    <value>nichts zu vermerken</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Vermerk</value>
+  </data>
+  <data name="ZPG_AUS_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Woher jeder Wert dieser Auslegung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_LEER" xml:space="preserve">
+    <value>nichts zu vermerken</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Vermerk</value>
+  </data>
 </root>

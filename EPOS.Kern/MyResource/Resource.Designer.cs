@@ -92504,6 +92504,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Zonen: {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRP_TOPOLOGIE {
@@ -92590,6 +92599,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_GRUND_UEBERGEBEN {
             get {
                 return ResourceManager.GetString("ZPG_AUS_GRUND_UEBERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts zu vermerken ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermerk ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher jeder Wert dieser Auslegung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_UNTER {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_UNTER", resourceCulture);
             }
         }
         
@@ -94844,6 +94925,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPG_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPG_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf, Ladeleistung, Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_GRP_SCHAETZHILFEN {
@@ -94963,9 +95053,63 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigenkonstruktion ähnelt.
         /// </summary>
+        public static string ZPG_HERKUNFT_ART_EIGENKONSTRUKTION {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_EIGENKONSTRUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erfundener Wert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_FIKTIV {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_FIKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die frei verfügbare Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_FREI {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingespielt ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_IMPORT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus einem Verfahren gerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_VERFAHREN {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenkonstruktion ähnelt.
+        /// </summary>
         public static string ZPG_HERKUNFT_EIGENKONSTRUKTION {
             get {
                 return ResourceManager.GetString("ZPG_HERKUNFT_EIGENKONSTRUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogfassung {0} ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_FASSUNG {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_FASSUNG", resourceCulture);
             }
         }
         
@@ -94997,6 +95141,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts zu vermerken ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_OHNE {
@@ -95006,11 +95159,128 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe des Anwenders ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_QUELLE_ANWENDER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_QUELLE_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermerk ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kalibriert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_KALIBRIERT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_KALIBRIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die überschrieben ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die umgerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_UMGERECHNET {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_UMGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_VORGABE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt. ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_UNTER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verfahren ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_VERFAHREN {
             get {
                 return ResourceManager.GetString("ZPG_HERKUNFT_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ZONE_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ZONE_PROJEKT", resourceCulture);
             }
         }
         
