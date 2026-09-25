@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 25.09.2026** · Codestand `e7c2f8f7` · `SchemaStand.Zielversion` = 141 · Schemaschritte 90–141 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); E19 und E21 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R15_Anlagenkopplung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 25.09.2026** · Codestand `49ea20e0` · `SchemaStand.Zielversion` = 142 · Schemaschritte 90–142 vergeben (116–118 die Schritte B, C und D der Etappe E9a; E9b ohne Schritt; 119 die Kühlung KU2; 120 die Sätze der Nutzungsdauertabelle, Etappe E10; 121–124 anderen Feldern; E13 und E14 ohne Schritt; 125 das Risikomodul, Etappe E15; 126 die Reparatur der Gebäude-Katalogsätze (#485); 127 die nicht monetarisierbaren Wirkungen, Etappe E17; 128 der Heizkreis je Gebäude im Ergebnis (Anlagenkopplung AK1, Welle 3); 129 die Wiederholperiode je Kostenposition, Etappe E16; 130 die Anschlusslängen im Gebäudekatalog (#493); E18 ohne Schritt; 131 die Zapfprofil-Stufe Z4b (#486); 132–139 den Cloud-Sitzungen G3, G4 und AK1; 140 die Messreihen der Zapfprofil-Stufe Z5 (#495); 141 die Folgeberichtigung der Anschlusslängen im Gebäudekatalog (#496); 142 die dritte Reparatur der Anschlusslängen im Gebäudekatalog (#505); E19, E20 und E21 ohne Schritt) · Gesetzeskatalog Generation 9 (Nachpflege ohne Schemaschritt, § 3.6) · Referenzbasis `2026-09-25_R15_Anlagenkopplung` · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die Schritte 97 bis 101, 103, 107 bis 110, 114, 115, 119, 121 bis 124, 128 und 130 bis 141 gehören nicht diesem Feld: **97**
 Szenario und Bezugsjahr der Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -47,8 +47,8 @@ und der Übernahme eines gepflegten Freitexts `Nicht_Monetaer` als eine Wirkung 
 heißen jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines DDL (`WiederholperiodeSchema.SCHRITT`,
 `SCHRITT_WIEDERHOLPERIODE`, § 2.11.2, § 2.13 (3)); **126**, die Reparatur der
 Gebäude-Katalogsätze (#485), **128**, der Heizkreis je Gebäude der Anlagenkopplung, **130**, die Anschlusslängen im
-Gebäudekatalog (#493), und **131** bis **141** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
-Folgeberichtigung #496) gehören nicht diesem Feld; die Etappen E18 (#492) und E19 (#498) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
+Gebäudekatalog (#493), und **131** bis **142** (die Zapfprofil-Stufen Z4b und Z5, die Cloud-Sitzungen G3, G4 und AK1, die
+Folgeberichtigung #496, die dritte Reparatur #505) gehören nicht diesem Feld; die Etappen E18 (#492), E19 (#498), E20 (#502) und E21 (#506) kommen ohne Schritt aus. Wer hier einen Schritt plant, nimmt die nächste freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -1789,6 +1789,7 @@ Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne `ORDER BY`**; die Ru
 | `EUR_PRO_KW_HEIZLEISTUNG` | Σ Nennleistung × Satz | `Tab_WP.Nennleistung` |
 | `EUR_PRO_KW_LEISTUNG` | Σ P_therm × Satz | `Tab_Heizkessel.Ptherm` |
 | `EUR_PRO_KW_ELEKTRISCH` | Σ P_el × Satz | `Tab_BHKW.Pel` |
+| `EUR_PRO_KW_ELEKTRISCH` an der Wärmepumpe, **nur Kategorie 1**¹ | Σ (Ptherm ÷ COP am Normpunkt) × Satz | `Tab_Kenndaten` bei W35 (A2/B0/W10 je `Tab_WP.Typ`, interpoliert) |
 | `EUR_PRO_KWP` | Σ (Modulanzahl × Modulleistung)/1000 × Satz | `PhotovoltaikCtrl.KwpSumme` |
 | `EUR_PRO_KWH_KAPAZITAET` | Σ Energie × Satz | `Tab_Stromspeicher.Energie` |
 | `EUR_PRO_M2_KOLLEKTOR` | Σ (Aperturfläche × Modulanzahl) × Satz | Solarthermie |
@@ -1797,6 +1798,18 @@ Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne `ORDER BY`**; die Ru
 Art ↔ Gewerk wird gekreuzt geprüft: falsches Paar ⇒ **null, keine Fantasiezahl**. Der
 Pufferspeicher bemisst sich allein an seinem **Volumen**; eine kWh-Kapazität führt er nicht
 (ohne Temperaturpaar keine belastbare kWh), und `EUR_PRO_KWH_KAPAZITAET` liefert dort null.
+Geprüft wird **je Raster** (Schalter `investition` der Landkarte `TechnikPlanwertCtrl.Geraetespalte`): Allein
+`EUR_PRO_KW_ELEKTRISCH` an der Wärmepumpe antwortet im Investitions- und im Betriebsraster verschieden — in der
+Kaskade (Kategorie 1) rechnet die Zeile, im Betriebsraster (Kategorie 2) bleibt sie GEWERK und steht nicht in der
+Auswahl.
+
+¹ **Normpunktregel** (gebaut #502, E20; § 6.3 Nr. 10; → Register R‑E20). `Tab_WP` führt keine elektrische Leistung
+(`Nennleistung` ist thermisch). P_el = Ptherm ÷ COP am Normpunkt der Kennlinie `Tab_Kenndaten` bei Vorlauf 35 —
+Luft/Wasser A2, Sole/Wasser B0, Wasser/Wasser W10 nach `Tab_WP.Typ`; fehlt die Stützstelle, wird je Größe linear
+interpoliert (Herleitung mit „≈“), nie extrapoliert; COP ≤ 0, Ptherm ≤ 0, unbekannte Bauart oder keine umschließende
+Stützstelle ⇒ null mit Grund GERAET; Heizstab und Kühlkennlinie zählen nicht; mehrere Wärmepumpen einer Anlage
+summieren. Herleitung am Betrag: „11,60 kW ÷ COP 2,90 (A2/W35) = 4,00 kW“ (`KDLG_HERLEITUNG_WP_PEL`, Summenform
+`KDLG_HERLEITUNG_WP_PEL_SUMME`).
 
 **Runde 2 — `PROZENT_ERZEUGERKOSTEN`:**
 
@@ -2788,6 +2801,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E16 Wiederholperiode je Kostenposition** (V‑G3 aus V‑E, § 2.11.2, § 2.13 (3), § 3.1, § 3.4) | Schemaschritt 129 (nach 128, dem Heizkreis der Anlagenkopplung AK1, Welle 3): die Spalte `Wiederholperiode_a` (INTEGER, nullbar; leer, 0, 1 = jährlich) an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`, reines DDL, die Zahl allein in `WiederholperiodeSchema.SCHRITT`; eine Betriebsposition mit n ≥ 2 zahlt in s, s + n, … ≤ T (`KapitalwertRechner.ZahltImJahr`, eigene Liste `Wiederholposten` neben den Töpfen), fortgeschrieben mit p_B bzw. p_E; das Ganzzahlfeld „Zahlung alle: [n] Jahre" im Zeileneditor der Betriebsseite und in den Kostenvorlagen, mitgenommen von der Vorlagenübernahme; „alle n Jahre ab Jahr X" in der Betriebskostentabelle beider Berichte, Hilfsspalte je Topf in der Formelmappe, Nachweisumschlag Fassung 11 — ohne Pflege bitgleich (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), A/B-Nachweis an 1030 gleich der Handrechnung, Testdatenbank 129; vier Fragen offen (→ Register R‑E16). | #484 |
 | **E18 Restpunkte Stromsteuer** (§ 6.3 Nr. 14, 16, 18; § 6.5) | Die Wache hält die Rückfallebene der Stromsteuer (`StrompreisZerlegungModel`) gegen die älteste Katalogzeile in Saat und Testdatenbank, zwei tote Ressourcen gestrichen; der Dialog „BHKW-Wirtschaftlichkeit" zeigt unter der Unternehmensart den erfassten Stromsteueranteil mit Satzabgleich und Kohärenzzeile, nur Anzeige (§ 2.2, Gruppe 4); die fünf Rechenweg-Sortierungen tragen den Vermerk HB1-O1, Nr. 18 bleibt offen — keine Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), kein Schemaschritt; sechs Fragen entschieden 24.09.2026, nach Empfehlung, die siebte ist der Restpunkt Nr. 33 (→ Register R‑E18). | #492 |
 | **E19 Restpunkte Unternehmensart** (§ 6.3 Nr. 15, 33; § 2.4, § 3.8) | Nr. 15 ist durch die Schalentrennung überholt — die Hülle der Energieträgerverwaltung liest Bilanzjahr und Unternehmensart je Öffnung, die Wache `KatalogjahrJeOeffnungTests` hält es fest; ohne BHKW pflegt der Parameterdialog in der Gruppe Strom die Unternehmensart samt Anzeige des erfassten Stromsteueranteils und § 9b-Erklärzeile, mit BHKW bleibt der Dialog „BHKW-Wirtschaftlichkeit“ die Pflegestelle (§ 2.4); KI-Feld `unternehmensart` mit Sperre bei BHKW, Maskenwache 35; § 9b ohne BHKW erreichbar (§ 3.8) — keine Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich), kein Schemaschritt; sechs Fragen entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19). | #498 |
+| **E20 Wärmepumpe je kW elektrisch** (§ 6.3 Nr. 10; § 3.2) | Die Investitionskosten der Wärmepumpe lassen sich auch „je kW elektrisch“ bemessen; Bezugsgröße P_el = Ptherm ÷ COP am Normpunkt der Kennlinie (A2/W35, B0/W35, W10/W35, bei W35 interpoliert), ein gerechneter Zweig der Landkarte mit dem Schalter `investition` — nur Kategorie 1, die Betriebsseite bleibt unverändert (§ 3.2); im Bestand ohne Rechenwirkung (Anker unverändert, Referenzlauf 13/13 gegen R14 byte-gleich; A/B an 1024: 1.000 €/kW → 4.000 €), kein Schemaschritt; sieben Fragen entschieden 25.09.2026, nach Empfehlung a, E20‑Q6 offen beim Anwender (→ Register R‑E20). | #502 |
 
 ## 6.2 Regressionsanker
 
@@ -2921,9 +2935,11 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 
 **Fachlich und technisch**
 
-10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) — **offen, präzisiert** (Anwender 25.09.2026, → Register
-    R‑Rest): „Wärmepumpe beides“ nur bei den Investitionskosten nach kW elektrisch und kW thermisch — die
-    kWh-Bemessung der Wärmepumpe bleibt thermisch, Strom-kWh sind Energiekosten; kleine Bauwelle folgt
+10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) — **Anwenderregel umgesetzt mit E20 (#502), offen allein
+    E20‑Q6** (Anwender 25.09.2026, → Register R‑Rest, R‑E20): die Investitionskosten der Wärmepumpe je kW thermisch
+    und je kW elektrisch — P_el am Normpunkt der Kennlinie (§ 3.2, Fußnote ¹) —, die Betriebskosten thermisch; Rest:
+    Das Betriebsraster der Wärmepumpe bietet weiter „je kWh elektrisch“ (Strommenge aus dem Lauf) — lassen
+    (a, Empfehlung, gebaut) oder entfernen (b), Anwenderentscheid; siehe Protokoll
 11. ~~Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option~~ — geschlossen: nicht nachziehen (Anwender 25.09.2026, → Register R‑Rest), siehe Protokoll
 12. ~~`InvestSummeFuer` auf die abgeleitete Kaskadensumme umbauen (B-5)~~ — erledigt mit W5‑B‑8, siehe Protokoll
 13. ~~Pufferkapazität bleibt null — bewusste Grenze~~ — geschlossen: nur Volumen, die Grenze bestätigt (Anwender 25.09.2026, → Register R‑Rest), siehe Protokoll
@@ -3085,7 +3101,10 @@ Nr. 33 — die Unternehmensart ohne BHKW im Parameterdialog (§ 2.4) —, ohne S
 Fragen entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19). Zu Nr. 10, 11, 13, 18 und 19 hat der Anwender
 am 25.09.2026 entschieden (→ Register R‑Rest): Nr. 11 und 13 sind geschlossen, Nr. 19 bleibt dokumentiert, Nr. 10 ist
 präzisiert — eine kleine Bauwelle folgt —, Nr. 18 ist gemessen (ohne Rechenwirkung) und wartet auf den Entscheid, ob
-der Umbau mit der nächsten Neueinfrierung der Referenzbasis gebündelt wird. Aus der
+der Umbau mit der nächsten Neueinfrierung der Referenzbasis gebündelt wird. Die kleine Welle **E20 (#502)** baut
+Nr. 10 — die Investitionskosten der Wärmepumpe auch je kW elektrisch, P_el am Normpunkt der Kennlinie (§ 3.2) —, ohne
+Schemaschritt und im Bestand ohne Rechenwirkung; sieben Fragen entschieden 25.09.2026, nach Empfehlung, E20‑Q6 offen
+beim Anwender (→ Register R‑E20). Aus der
 früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen, und von B8 allein der Rest von B‑6; B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
@@ -3150,6 +3169,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **V‑G3** (§ 2.11.2) · V‑E (n-jährliche Zeitpunkte, § 2.11.4) · E9a‑Q6-Vermerk · § 2.13 (3) · E16‑Q1…Q4 | — | — | **#484** | E16: Schemaschritt 129, die Spalte `Wiederholperiode_a` an Projekt- und Vorlagenpositionen; Zahlung in s, s + n, … ≤ T (`ZahltImJahr`), nur Betriebspositionen; Feld „Zahlung alle: [n] Jahre" im Zeileneditor, „alle n Jahre ab Jahr X" in der Betriebskostentabelle, Hilfsspalte je Topf in der Formelmappe |
 | § 6.3 Nr. 14, 16, 18 und 33 · § 6.5 (Stromsteuersatz) · B4 § 4 Grenzen 1 und 3 · HB1-O1 · E18‑Q1…Q7 | — | — | **#492** | E18: Wache der Stromsteuer-Rückfallebene gegen den Katalog (Saat und Testdatenbank, älteste Zeile), der erfasste Stromsteueranteil unter der Unternehmensart im Dialog „BHKW-Wirtschaftlichkeit" (Gruppe 4 und Überlagerung), HB1-O1 an den fünf Rechenweg-Sortierungen vermerkt; kein Schemaschritt |
 | § 6.3 Nr. 15 und 33 · § 2.4 (Gruppe Strom) · § 3.8 (§ 9b) · B4 § 4 Grenze 2 · E18‑Q7 · E19‑Q1…Q6 | — | — | **#498** | E19: Nr. 15 überholt, Wache `KatalogjahrJeOeffnungTests`; die Unternehmensart ohne BHKW im Parameterdialog, Gruppe Strom, mit der Anzeige des erfassten Stromsteueranteils und der § 9b-Erklärzeile, KI-Feld mit Sperre; kein Schemaschritt |
+| § 6.3 Nr. 10 · § 3.2 (Tafel der Runde 1) · H1-1b · H4a · H4b · R‑Rest Nr. 10 · E20‑Q1…Q8 | — | — | **#502** | E20: „je kW elektrisch“ an der Wärmepumpe nur bei den Investitionskosten, P_el = Ptherm ÷ COP am Normpunkt der Kennlinie, Schalter `investition` der Landkarte, Herleitung mit zwei neuen Schlüsseln; E20‑Q6 offen; kein Schemaschritt |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 = **#463** (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** (erledigt #440); U22 erledigt #446 und #452 (Anzeigezeilen), U32 erledigt #446, U39 erledigt #446 und #463 (Entkopplung; Gerätespalten und Speicherflotte), U41, U42 und U46 bis U49 erledigt #454, U12 und U43 erledigt #455 (Punkt 9 „erfüllt" #474; Günstig und Ungünstig in Formeln, Punkt 11 #477; Punkt 6 mit dem Risiko und die Risikozeilen der Mappe #478; Punkte 2b und 3b mit der Wirkungsliste #479), U15 erledigt #461/#462, U10 entfallen #462 |
 
@@ -3183,6 +3203,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E16** — Wiederholperiode je Kostenposition (V‑G3) | Schemaschritt 129 (`Wiederholperiode_a` an `Tab_ProjektWerte` und `Tab_KostenVorlagePosition`), Betriebspositionen „alle n Jahre" nach DIN EN 17463, 6.3.1 — Zahlung in s, s + n, … ≤ T; Feld „Zahlung alle: [n] Jahre" im Zeileneditor und in den Kostenvorlagen, Ausweis in Betriebskostentabelle, Formelmappe und Nachweisumschlag; ohne Pflege bitgleich, A/B an 1030, Testdatenbank 129; E16‑Q1…Q4 offen (→ Register R‑E16) | **#484** (Merge `ae7b0ed0`) |
 | **E18** — Restpunkte Stromsteuer (§ 6.3 Nr. 14, 16, 18) | Wache der Stromsteuer-Rückfallebene gegen Saat und Katalog der Testdatenbank (älteste Zeile), zwei tote Ressourcen gestrichen; Anzeige des erfassten Stromsteueranteils mit Satzabgleich und Kohärenzzeile im Dialog „BHKW-Wirtschaftlichkeit"; Nr. 18 nachgemessen, offen, im Code vermerkt; ohne Rechenwirkung, kein Schemaschritt; E18‑Q1…Q6 entschieden 24.09.2026, nach Empfehlung, Q7 als Restpunkt Nr. 33 (→ Register R‑E18) | **#492** (Merge `e79bffb1`) |
 | **E19** — Restpunkte Unternehmensart (§ 6.3 Nr. 15, 33) | Nr. 15 durch die Schalentrennung überholt, Wache `KatalogjahrJeOeffnungTests`; die Unternehmensart ohne BHKW im Parameterdialog, Gruppe Strom, mit der Anzeige des erfassten Stromsteueranteils und der § 9b-Erklärzeile (§ 9b ohne BHKW erreichbar); KI-Feld mit Sperre, Maskenwache 35; ohne Rechenwirkung, kein Schemaschritt; E19‑Q1…Q6 entschieden 25.09.2026, nach Empfehlung, Q4 b (→ Register R‑E19) | **#498** (Merge `31a0b085`) |
+| **E20** — Wärmepumpe je kW elektrisch (§ 6.3 Nr. 10) | die Investitionskosten der Wärmepumpe auch „je kW elektrisch“, P_el = Ptherm ÷ COP am Normpunkt der Kennlinie (A2/W35, B0/W35, W10/W35, bei W35 interpoliert), nur Kategorie 1, die Betriebsseite unverändert; im Bestand ohne Rechenwirkung, kein Schemaschritt; E20‑Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, E20‑Q6 offen beim Anwender (→ Register R‑E20) | **#502** (Merge `49ea20e0`) |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

@@ -7760,11 +7760,16 @@ namespace WindowsFormsApplication1
         /// Ohne ihn liefe der ganze Rechenweg der Kategorie 1 je Betriebskostenzeile
         /// erneut — dasselbe Muster wie <paramref name="aufloeser"/>/<paramref name="versucht"/>
         /// beim Endenergie-Auflöser.</para>
+        /// <para><b>E20 (Anwenderentscheid 25.09.2026):</b> <paramref name="investition"/>
+        /// = die Zeile gehört zu Kategorie 1. Nur dann kennt die Gerätewelt „je kW
+        /// elektrisch" an der Wärmepumpe; die Summenschleifen der Betriebskosten fragen
+        /// mit der Vorgabe false.</para>
         /// </summary>
         private static double? RueckfallMenge(int idProjekt, DataRow r, string bem,
                                               ref EndenergieAufloeser aufloeser, ref bool versucht,
                                               ref Dictionary<KeyValuePair<int, int>, double> investSummen,
-                                              SzenarioSatz satz, string szenario)
+                                              SzenarioSatz satz, string szenario,
+                                              bool investition = false)
         {
             int komponente, idAnlage;
             KomponenteUndAnlage(r, out komponente, out idAnlage);
@@ -7806,7 +7811,8 @@ namespace WindowsFormsApplication1
                 string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
                 string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
             if (!ausDemLauf)
-                return TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, komponente, bem, idAnlage);
+                return TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, komponente, bem, idAnlage,
+                                                           investition);
 
             if (!versucht)
             {
@@ -7922,6 +7928,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string BasisGrund(string bem, int komponente, bool elektrokessel)
         {
+            return BasisGrund(bem, komponente, elektrokessel, false);
+        }
+
+        /// <summary>
+        /// E20 (Anwenderentscheid 25.09.2026, Konzept § 6.3 Nr. 10): dieselbe Landkarte im
+        /// RASTER der Zeile — <paramref name="investition"/> = Kategorie 1. Nur die
+        /// Gerätewelt hängt daran („je kW elektrisch" an der Wärmepumpe gibt es allein bei
+        /// den Investitionskosten); auf der Betriebsseite bleibt die Antwort
+        /// <see cref="BASISGRUND_GEWERK"/>.
+        /// </summary>
+        internal static string BasisGrund(string bem, int komponente, bool elektrokessel,
+                                          bool investition)
+        {
             if (string.IsNullOrEmpty(bem) ||
                 string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal) ||
                 string.Equals(bem, DbWerte.BEMESSUNG_JAHRESBETRAG, StringComparison.Ordinal))
@@ -7973,7 +7992,7 @@ namespace WindowsFormsApplication1
             // Die Arten aus der GERÄTEWELT. Hier unterscheidet die Landkarte selbst,
             // ob die Art zum Gewerk passt (H4c).
             if (IstRueckfallErmittelbareArt(bem))
-                return TechnikPlanwertCtrl.KenntBaugroesse(komponente, bem)
+                return TechnikPlanwertCtrl.KenntBaugroesse(komponente, bem, investition)
                     ? BASISGRUND_GERAET : BASISGRUND_GEWERK;
 
             // „je kWh", „% der Erzeugerkosten": ihre Menge ist gepflegte Eingabe,
@@ -7991,12 +8010,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string BasisGrundFuerZeile(string bem, int komponente, int idAnlage)
         {
+            return BasisGrundFuerZeile(bem, komponente, idAnlage, false);
+        }
+
+        /// <summary>E20: <see cref="BasisGrundFuerZeile(string, int, int)"/> im RASTER der
+        /// Zeile — <paramref name="investition"/> = Kategorie 1
+        /// (<see cref="BasisGrund(string, int, bool, bool)"/>).</summary>
+        internal static string BasisGrundFuerZeile(string bem, int komponente, int idAnlage,
+                                                   bool investition)
+        {
             bool elektrokessel =
                 idAnlage > 0 &&
                 komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL &&
                 string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) &&
                 IstElektrokesselAnlage(idAnlage);
-            return BasisGrund(bem, komponente, elektrokessel);
+            return BasisGrund(bem, komponente, elektrokessel, investition);
         }
 
         /// <summary>
@@ -8021,7 +8049,19 @@ namespace WindowsFormsApplication1
                                                    ref EndenergieAufloeser aufloeser,
                                                    ref bool versucht)
         {
-            string grund = BasisGrundFuerZeile(bem, komponente, idAnlage);
+            return BasisGrundFuerZeile(bem, komponente, idAnlage, idProjekt,
+                                       ref aufloeser, ref versucht, false);
+        }
+
+        /// <summary>E20: dieselbe Fassung mit dem Lauf in der Hand, im RASTER der Zeile —
+        /// <paramref name="investition"/> = Kategorie 1.</summary>
+        internal static string BasisGrundFuerZeile(string bem, int komponente, int idAnlage,
+                                                   int idProjekt,
+                                                   ref EndenergieAufloeser aufloeser,
+                                                   ref bool versucht,
+                                                   bool investition)
+        {
+            string grund = BasisGrundFuerZeile(bem, komponente, idAnlage, investition);
             if (idProjekt <= 0 ||
                 !string.Equals(grund, BASISGRUND_LAUF, StringComparison.Ordinal))
                 return grund;
@@ -8090,7 +8130,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT w.ProjektID, w.KomponentenID, " +
+                    "SELECT w.ProjektID, w.KategorieID, w.KomponentenID, " +
                     "w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
                     (AnlagenSpalteVorhanden()
                         ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] "
@@ -8103,6 +8143,10 @@ namespace WindowsFormsApplication1
                 string bem = string.IsNullOrEmpty(bemessung)
                     ? Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG) : bemessung;
                 int idProjekt = r["ProjektID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ProjektID"]);
+                // E20: Das Raster der Zeile entscheidet mit, ob die Gerätewelt die Art
+                // kennt („je kW elektrisch" an der Wärmepumpe nur in Kategorie 1).
+                bool investition = r["KategorieID"] != DBNull.Value &&
+                                   Convert.ToInt32(r["KategorieID"]) == DbWerte.KOSTEN_KATEGORIE_INVESTITION;
 
                 EndenergieAufloeser aufloeser = null;
                 bool versucht = false;
@@ -8111,7 +8155,7 @@ namespace WindowsFormsApplication1
                     ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht, null, null)
                     : IstRueckfallErmittelbareArt(bem)
                         ? RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
-                                         ref investSummen, null, null)
+                                         ref investSummen, null, null, investition)
                         : null;
 
                 if (menge.HasValue) return menge;
@@ -8121,7 +8165,7 @@ namespace WindowsFormsApplication1
                 // #363: Den genauen Grund — der Auflöser steht hier ohnehin schon (er
                 // wurde für die Menge gebaut), also kostet die Auskunft nichts mehr.
                 grund = BasisGrundFuerZeile(bem, komponente, idAnlage, idProjekt,
-                                            ref aufloeser, ref versucht);
+                                            ref aufloeser, ref versucht, investition);
                 return null;
             }
             catch (Exception)
@@ -8189,7 +8233,8 @@ namespace WindowsFormsApplication1
                 menge = endenergie
                     ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht, null, null)
                     : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
-                                     ref investSummen, null, null);   // W5-B-11: Ausweis = Erwartungslauf
+                                     ref investSummen, null, null,     // W5-B-11: Ausweis = Erwartungslauf
+                                     kategorie == DbWerte.KOSTEN_KATEGORIE_INVESTITION);   // E20
 
                 var p = new DbParam("@m", DbParamTyp.Double);
                 p.Wert = menge.HasValue ? (object)menge.Value : DBNull.Value;

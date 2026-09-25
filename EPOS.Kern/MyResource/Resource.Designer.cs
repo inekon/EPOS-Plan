@@ -30720,6 +30720,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW ÷ COP {1} ({2}) = {3} kW ähnelt.
+        /// </summary>
+        public static string KDLG_HERLEITUNG_WP_PEL {
+            get {
+                return ResourceManager.GetString("KDLG_HERLEITUNG_WP_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ P_el am Normpunkt von {0} Wärmepumpen = {1} kW ähnelt.
+        /// </summary>
+        public static string KDLG_HERLEITUNG_WP_PEL_SUMME {
+            get {
+                return ResourceManager.GetString("KDLG_HERLEITUNG_WP_PEL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Satz = Betrag ähnelt.
         /// </summary>
         public static string KDLG_HERL_ABSOLUT {
