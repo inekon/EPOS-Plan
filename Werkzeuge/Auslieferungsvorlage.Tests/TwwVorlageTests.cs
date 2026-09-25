@@ -615,6 +615,56 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains(quelle, e.Ausgabe);
         }
 
+        /// <summary>
+        /// <b>T14 (N16, Restlücke):</b> Der Prüfposten zum Typtagweg. <b>Negativ:</b> Ein Lauf ohne
+        /// Beispielpaket hat kein Projekt in der Vorlage — der Posten steht grün. <b>Positiv:</b> Ein
+        /// Beispielpaket, dessen Projekt <c>Typtage_Aktiv = 1</c> trägt, fällt: Die Vorlage leert
+        /// <c>Tab_TwwTyptag_IMPORT</c>, das Projekt liefe beim Anwender benannt auf eine Ablehnung
+        /// (<c>ZapfEingabefehler.TyptageUngueltig</c>). Der Bericht nennt die Projektkennung.
+        /// </summary>
+        [Fact]
+        public void T14_Ein_Beispielprojekt_auf_dem_Typtagweg_faellt_bei_leerer_Typtagtabelle()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+
+            // Negativ: kein Beispielpaket, also kein Projekt in der Vorlage — der Posten ist gruen.
+            Werkzeuglauf.Ergebnis ohne = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
+            Assert.True(ohne.Code == 0, ohne.Alles);
+            Assert.Contains("ok      kein Beispielprojekt mit " + TwwSchema.SPALTE_TYPTAGE_AKTIV + " = 1 bei leerer " +
+                            TwwSchema.TAB_TWW_TYPTAG_IMPORT, ohne.Ausgabe);
+
+            // Positiv: das Beispielprojekt traegt den Typtagweg, die Typtagtabelle bleibt leer.
+            string werkbank = o.Datei("werkbank.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, werkbank);
+            string beispiel = o.Datei("tww-typtag-beispiel.wpx");
+
+            Bearbeiten(werkbank, () =>
+            {
+                long projekt = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ID FROM Tab_Projekt WHERE Projektname = ?", new DbParam("?", Vorlage.BEISPIELPROJEKT)));
+                if (Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("?", projekt))) == 0)
+                    Assert.True(DataRepository.ExecuteSQL("INSERT INTO Tab_TwwProjekt (ID_Projekt) VALUES (?)",
+                                                          new DbParam("?", projekt)));
+                Assert.True(DataRepository.ExecuteSQL(
+                    "UPDATE Tab_TwwProjekt SET " + TwwSchema.SPALTE_TYPTAGE_AKTIV + " = 1, " +
+                    TwwSchema.SPALTE_TYPTAGE_KLIMAZONE + " = 3, " + TwwSchema.SPALTE_TYPTAGE_GEBAEUDEART +
+                    " = 'probehaus' WHERE ID_Projekt = ?", new DbParam("?", projekt)));
+                Assert.True(new ProjektExportImportCtrl().Exportieren(Vorlage.BEISPIELPROJEKT, beispiel),
+                            "Der Export des Beispielprojekts ist fehlgeschlagen.");
+            });
+
+            Werkzeuglauf.Ergebnis mit = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten2.sqlite"),
+                                                             "--beispiele", beispiel, "--trocken");
+            Assert.True(mit.Code == 5, mit.Alles);
+            Assert.Contains("FEHLER  kein Beispielprojekt mit " + TwwSchema.SPALTE_TYPTAGE_AKTIV + " = 1 bei leerer " +
+                            TwwSchema.TAB_TWW_TYPTAG_IMPORT, mit.Ausgabe);
+            Assert.Contains("Klimazone 3, Gebaeudeart probehaus", mit.Ausgabe);
+        }
+
         // =============================================================================
         //  Handwerkszeug
         // =============================================================================
