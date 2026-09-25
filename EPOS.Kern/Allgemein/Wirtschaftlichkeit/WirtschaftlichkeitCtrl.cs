@@ -322,409 +322,59 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Tabellen
 
-        /// <summary>Legt die Tabellen der Wirtschaftlichkeit an, falls sie fehlen — eine
-        /// stille Vorsorge neben der Schemamigration. Alle fünf stehen im Grundschema und
-        /// tragen ihren Fremdschlüssel auf <c>Tab_Projekt</c> mit <c>ON DELETE CASCADE</c>
-        /// (aus dem Grundschema bzw. aus Schemaschritt 96); die CREATE-Texte hier führen
-        /// weder Fremdschlüssel noch <c>STRICT</c> und greifen nur, wenn eine Tabelle fehlt.
-        /// Die Berichtskonfiguration hat keine solche Vorsorge (<see cref="BerichtCtrl.TAB_KONFIG"/>).</summary>
+        /// <summary>
+        /// Zieht die drei Ergebnisspalten nach, die kein Schemaschritt führt, und sät den
+        /// Katalog gesetzlicher Parameter. <b>Die Tabellen selbst legt sie nicht an.</b>
+        /// </summary>
         /// <remarks>
-        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht (still, damit die
-        /// leeren <c>catch</c>-Zweige weiter halten, was sie zusagen); Schemaproben statt
-        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen); SQLite-DDL statt Access-DDL
-        /// (S4d vorgezogen).
+        /// <para><b>Warum die fünf Tabellen hier nicht entstehen.</b> <see cref="TAB_PARAMETER"/>,
+        /// <see cref="TAB_ERGEBNIS"/>, <see cref="TAB_SENS"/>, <see cref="TAB_TARIF"/> und
+        /// <see cref="TAB_MATRIX"/> stehen im Grundschema (<c>sql/schema/001_grundschema.sql</c>),
+        /// aus dem jede Datenbank hervorgeht — unter Windows über die Auslieferungsvorlage
+        /// (<see cref="Erstbereitstellung"/>), auf iOS über die Seed-Kopie, in Tests und
+        /// Referenzlauf über die Testdatenbank. Alle fünf sind dort <c>STRICT</c>; Parameter-
+        /// und Tariftabelle tragen ihren Fremdschlüssel auf <c>Tab_Projekt</c> mit
+        /// <c>ON DELETE CASCADE</c> seit dem Grundschema, die drei Ergebnistabellen bekommen ihn
+        /// in Schemaschritt 96 (<see cref="ProjektFremdschluessel"/>). Eine Anlage an dieser
+        /// Stelle entstünde ohne Fremdschlüssel und ohne <c>STRICT</c>, und Schritt 96 baute eine
+        /// solche Tabelle nicht um, sondern bräche an ihr ab
+        /// (<see cref="ProjektFremdschluessel.Zieltext"/>) — die Simulation bliebe gesperrt.
+        /// Fehlt eine Tabelle doch, nennen Laden und Speichern den Datenbankfehler
+        /// (<see cref="Ladefehler"/>, <see cref="Speicherfehler"/>).</para>
         ///
-        /// <para>Die Spaltenlisten sind unveraendert - uebersetzt sind nur die TYPEN
-        /// (LONG->INTEGER, DOUBLE->REAL, TEXT(n)/LONGTEXT->TEXT, YESNO->INTEGER 0/1,
-        /// DATETIME->TEXT) und die beiden Access-Inline-Nebenbedingungen: SQLite kennt
-        /// kein <c>CONSTRAINT … UNIQUE</c> in der Spaltenzeile, der eindeutige Index auf
-        /// ID_Projekt wird deshalb - wie im Grundschema - getrennt angelegt.</para>
+        /// <para><b>Warum die Eingabespalten hier nicht nachgezogen werden.</b> Jede Spalte, die
+        /// ein Schemaschritt anlegt (20, 21, 22, 23, 28, 61, 71, 72, 88, 89, 92, 93, 105, 116,
+        /// 118, 125), ist auf jeder Datenbank garantiert, auf der dieser Controller läuft: Die
+        /// Windows-Schale führt <c>SchemaMigration.Ausfuehren</c> bei jedem Start vor dem ersten
+        /// Fenster aus und sperrt bei Fehlschlag die Simulation
+        /// (<see cref="SchemaStand.SimulationGesperrt"/>); die Seed-Datenbank der iOS-Hülle und
+        /// die Testdatenbank stehen auf <see cref="SchemaStand.Zielversion"/>. Ein zweiter
+        /// DDL-Ort holte zudem Entferntes zurück: <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>
+        /// führt <c>Aufschlaege_Anwenden</c>, das Schemaschritt 85 entfernt hat — ein Nachzug aus
+        /// dieser Liste legte die Spalte bei jedem Zugriff wieder an (Wache:
+        /// <c>WirtschaftlichkeitCtrlTabellenTests</c>).</para>
+        ///
+        /// <para><b>Was bleibt, und warum.</b> Drei Ergebnisspalten führt weder das Grundschema
+        /// noch ein Schemaschritt: <see cref="SPALTE_STROMST_MODUS"/> (Etappe B6),
+        /// <see cref="SPALTE_ERSATZ_BARWERT"/> (W5-B-10) und <see cref="SPALTE_NACHWEIS_JSON"/>
+        /// (B7P). Die Testdatenbank bekommt sie einzeln über <c>Werkzeuge/Testdatenbankschema</c>,
+        /// eine Anwenderdatenbank aus einer älteren Auslieferungsvorlage nur hier. Bis ein
+        /// Schemaschritt sie führt, bleibt dieser additive Nachzug (<see cref="SpalteSicher"/>:
+        /// <c>ALTER TABLE … ADD COLUMN</c> nur bei nachweislichem Fehlen, kein DML); ein
+        /// Fehlschlag steht in <see cref="Vorsorgewarnung"/>.</para>
         /// </remarks>
         public void StelleTabellenSicher()
         {
-            // ETAPPE E13 (E7c3‑Q6): Die Warnung gilt für DIESE Vorsorge — seit die
+            // ETAPPE E13 (E7c3-Q6): Die Warnung gilt für DIESE Vorsorge — seit die
             // Oberfläche sie zeigt, darf ein längst behobener Fehler nicht stehen bleiben.
             Vorsorgewarnung = null;
-            try
-            {
-                // Der Block hielt bis S4b die eigene OleDbConnection; er bleibt als
-                // Klammer stehen, damit der Diff auf den Umbau beschraenkt bleibt.
-                {
-                    // Jeder CREATE einzeln abgesichert: ein Fehlschlag (z. B. reserviertes
-                    // Wort) darf weder die anderen Tabellen noch die Spalten-Nachrüstung
-                    // darunter verhindern (Review-Befund Phase 7).
-                    try
-                    {
-                    if (!TabelleVorhanden(TAB_PARAMETER))
-                    {
-                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_PARAMETER + "] (" +
-                                  "\"ID\" INTEGER PRIMARY KEY, " +
-                                  "\"ID_Projekt\" INTEGER, " +
-                                  "\"Zinssatz\" REAL, " +
-                                  "\"Betrachtungszeitraum\" INTEGER, " +
-                                  "\"Preissteigerung_Energie\" REAL, " +
-                                  "\"Preissteigerung_Betrieb\" REAL, " +
-                                  "\"Einspeiseverguetung\" REAL, " +
-                                  "\"CO2_Preis\" REAL, " +
-                                  // ETAPPE K6 (HF6/M-D): die KWKG-Projektangaben auch im
-                                  // CREATE — sonst hätte eine frisch angelegte Tabelle sie erst
-                                  // nach dem SpalteSicher-Nachzug weiter unten. ETAPPE BK1a/BK1b:
-                                  // Sechs der Fragmente sind mit den Schemaschritten 90 und 91
-                                  // entfallen (KwkgProjektaltspalten) — sie stehen nur noch dort.
-                                  "\"KWKG_Pauschalmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"KWKG_Pauschalmodus\" IN (0,1)), " +
-                                  // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): die vier
-                                  // Spalten des Schritts 72 auch im CREATE - dieselbe
-                                  // Begruendung wie bei K6 daruber. Der Freitext steht ohne
-                                  // Laengenpruefung da (MEMO -> TEXT): Ein Fliesstext,
-                                  // dessen Laenge niemand vorhersagen kann, darf beim
-                                  // Speichern nicht abgeschnitten werden.
-                                  "\"" + SchemaKatalog.SPALTE_PW_PREIS_I + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "\" TEXT, " +
-                                  // ETAPPE E9a (Schritt B, Schemaschritt 116): der
-                                  // Szenariorahmen auch im CREATE - dieselbe Begruendung
-                                  // wie bei K6 und W5-B-12 darueber. Nullbar, ohne Vorgabe:
-                                  // leer heisst "wie Erwartet".
-                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + "\" INTEGER, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + "\" INTEGER, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE + "\" REAL, " +
-                                  // ETAPPE E9a (Schritt D, Schemaschritt 118): die
-                                  // Einspeiseverguetungen je Szenario - dieselbe Begruendung.
-                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_BEST + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "\" REAL, " +
-                                  // ETAPPE E15 (V-G7, Schemaschritt 125): das Risikomodul -
-                                  // dieselbe Begruendung; leer heisst "kein Risiko".
-                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_ART + "\" " +
-                                  StilleDb.SqliteSpaltenTyp(SchemaKatalog.SPALTE_PW_RISIKO_ART, "TEXT(10)") + ", " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_ZINSZUSCHLAG + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_VERLUST + "\" REAL, " +
-                                  "\"" + SchemaKatalog.SPALTE_PW_RISIKO_WAHRSCHEINLICHKEIT + "\" REAL, " +
-                                  "\"GeaendertAm\" TEXT)");
-                        Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
-                            "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
-                    }
-                    }
-                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
-                    try
-                    {
-                    if (!TabelleVorhanden(TAB_ERGEBNIS))
-                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_ERGEBNIS + "] (" +
-                                  "\"ID\" INTEGER PRIMARY KEY, " +
-                                  "\"ID_Projekt\" INTEGER, " +
-                                  "\"ID_Ergebnis\" INTEGER, " +          // FK auf Tab_Ergebnis.ID (Simulationslauf)
-                                  "\"Szenario\" TEXT CHECK (length(\"Szenario\") <= 20), " +
-                                  "\"IstStamm\" INTEGER NOT NULL DEFAULT 0 CHECK (\"IstStamm\" IN (0,1)), " +
-                                  "\"Anzeige\" TEXT CHECK (length(\"Anzeige\") <= 255), " +
-                                  "\"Zeitstempel\" TEXT, " +
-                                  "\"Zinssatz\" REAL, " +
-                                  "\"Betrachtungszeitraum\" INTEGER, " +
-                                  "\"Preissteigerung_Energie\" REAL, " +
-                                  "\"Preissteigerung_Betrieb\" REAL, " +
-                                  "\"Einspeiseverguetung\" REAL, " +
-                                  "\"Investition\" REAL, " +
-                                  "\"Betriebskosten\" REAL, " +
-                                  "\"Energiekosten\" REAL, " +
-                                  "\"Einspeiseerloes\" REAL, " +
-                                  "\"BarwertAusgaben\" REAL, " +
-                                  "\"BarwertEinnahmen\" REAL, " +
-                                  "\"Restwert\" REAL, " +
-                                  "\"Kapitalwert\" REAL, " +
-                                  "\"KapitalwertDiff\" REAL, " +
-                                  "\"AnnuitaetKW\" REAL, " +
-                                  "\"AmortisationJahre\" REAL, " +
-                                  "\"Gestehungskosten\" REAL, " +
-                                  "\"IRR\" REAL, " +
-                                  "\"CO2Abgabe\" REAL, " +
-                                  "\"KWKGErloes\" REAL, " +
-                                  "\"Fehlgrund\" TEXT)");
-                    }
-                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
-                    try
-                    {
-                    if (!TabelleVorhanden(TAB_SENS))
-                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_SENS + "] (" +
-                                  "\"ID\" INTEGER PRIMARY KEY, " +
-                                  "\"ID_Projekt\" INTEGER, " +
-                                  "\"Parameter\" TEXT CHECK (length(\"Parameter\") <= 60), " +
-                                  "\"KwMinus\" REAL, " +
-                                  "\"KwBasis\" REAL, " +
-                                  "\"KwPlus\" REAL, " +
-                                  "\"Zeitstempel\" TEXT)");
-                    }
-                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
-                    try
-                    {
-                    if (!TabelleVorhanden(TAB_TARIF))
-                    {
-                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_TARIF + "] (" +
-                                  "\"ID\" INTEGER PRIMARY KEY, " +
-                                  "\"ID_Projekt\" INTEGER, " +
-                                  "\"Aktiv\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Aktiv\" IN (0,1)), " +
-                                  "\"Winter_Von\" INTEGER, " +
-                                  "\"Winter_Bis\" INTEGER, " +
-                                  "\"HT_Von\" INTEGER, " +
-                                  "\"HT_Bis\" INTEGER, " +
-                                  "\"Bezug_W_HT\" REAL, \"Bezug_W_NT\" REAL, \"Bezug_S_HT\" REAL, \"Bezug_S_NT\" REAL, " +
-                                  "\"Einsp_W_HT\" REAL, \"Einsp_W_NT\" REAL, \"Einsp_S_HT\" REAL, \"Einsp_S_NT\" REAL, " +
-                                  "\"Staffel_Grenze\" REAL, \"Staffel_Preis1\" REAL, \"Staffel_Preis2\" REAL, " +
-                                  "\"GeaendertAm\" TEXT)");
-                        Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjTarifProj\" " +
-                            "ON [" + TAB_TARIF + "] (\"ID_Projekt\")");
-                    }
-                    }
-                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
-                    try
-                    {
-                    if (!TabelleVorhanden(TAB_MATRIX))
-                        Ddl("CREATE TABLE IF NOT EXISTS [" + TAB_MATRIX + "] (" +
-                                  "\"ID\" INTEGER PRIMARY KEY, " +
-                                  "\"ID_Projekt\" INTEGER, " +
-                                  "\"Zone\" TEXT CHECK (length(\"Zone\") <= 20), " +
-                                  "\"BezugMWh\" REAL, " +
-                                  "\"EinspPvMWh\" REAL, " +
-                                  "\"KwkEigenMWh\" REAL, " +
-                                  "\"KwkEinspMWh\" REAL, " +
-                                  "\"MaxBezugKW\" REAL, " +
-                                  "\"Zeitstempel\" TEXT)");
-                    }
-                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
 
-                    // Ältere Tabellenstände additiv nachrüsten (Muster
-                    // ErgebnisCtrl.StelleModulSpaltenSicher) — CREATE erfasst nur Neuanlagen.
-                    SpalteSicher(TAB_ERGEBNIS, "IstStamm", "YESNO");
-                    SpalteSicher(TAB_ERGEBNIS, "Anzeige", "TEXT(255)");
-                    SpalteSicher(TAB_ERGEBNIS, "IRR", "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, "CO2Abgabe", "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, "KWKGErloes", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "CO2_Preis", "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
-                    // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung wird
-                    // mitgeschrieben, damit ein gespeichertes Ergebnis nachvollziehbar
-                    // bleibt. Additiv über denselben Weg wie die Spalten darüber — dieses
-                    // Modul führt seine Tabellen seit jeher selbst (bekannte doppelte
-                    // Wahrheit gegenüber SchemaMigration, W4-Umsetzungsstand Abschnitt 6);
-                    // ein Migrationsschritt dafür wäre der dritte Mechanismus.
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
-                    SpalteSicher(TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "RefKessel_ID_Brennstoff", "LONG");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Inbetriebnahme", "DATETIME");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Abschlag_Negativ", "DOUBLE");
-
-                    // ETAPPE E4 — die drei Steuergutschriften und die Herkunft ihrer
-                    // Sätze im ERGEBNIS. Additiv über denselben Weg wie die Spalten
-                    // darüber (Begründung bei SPALTE_ENERGIESTEUER).
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_ENERGIESTEUER, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_BEFREIUNG, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_ENTLASTUNG, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STEUER_HERKUNFT, "LONGTEXT");
-
-                    // ETAPPE E4 — die sechs Projektangaben der Steuerprüfung. Sie
-                    // entstehen regulär über Migrationsschritt 20; das hier ist die
-                    // tolerante VORSORGE unmittelbar vor dem Zugriff, damit eine nie
-                    // migrierte Datenbank nicht an einer fehlenden Spalte scheitert —
-                    // dasselbe Muster wie KostenPositionCtrl.StelleSpaltenSicher (E3).
-                    // Die WERTE-Vorbelegung bleibt allein bei Schritt 20b: Die Leseseite
-                    // behandelt leer/NULL ohnehin wie „keine Gutschrift", und ein zweiter
-                    // schreibender Weg auf Anwenderdaten wäre eine Wahrheit zu viel.
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_UNTERNEHMENSART, "TEXT(24)");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_RAEUMLICH, "YESNO");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ, "YESNO");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD, "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
-                    // ETAPPE B6 - dieselbe tolerante Vorsorge fuer den Modus des
-                    // § 9 Abs. 1 Nr. 3 StromStG; regulaer entsteht er in Schritt 88.
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
-
-                    // KONZEPT § 2.9 - das waehlbare Vergleichsprojekt. Regulaer entsteht
-                    // es in Schemaschritt 92; das hier ist DER ZWEITE DDL-ORT, den diese
-                    // Tabelle seit jeher verlangt (doppelte Schema-Wahrheit dieses
-                    // Moduls, Konzept § 9 Punkt 2). KEINE Werte-Vorbelegung: NULL heisst
-                    // Stamm, und genau das haelt den Bestand unveraendert.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt92_Referenzprojekt)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // KONZEPT § 2.16 - die Verguetungswahl je Variante an
-                    // Tab_ProjektPhotovoltaik. Regulaer entsteht sie in Schemaschritt 93;
-                    // das hier ist DER ZWEITE DDL-ORT. Die Tabelle gehoert zwar
-                    // ProjektPhotovoltaikCtrl, gelesen wird die Spalte aber von DIESEM
-                    // Rechenweg (RechnePvVerguetung ueber LiesAufgeloest) - und die
-                    // Vorsorge gehoert zum Leser, nicht zur Tabelle. KEINE
-                    // Werte-Vorbelegung: NULL heisst uebernehmen, und ohne Zeile gilt
-                    // dasselbe.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt93_VerguetungJeVariante)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE K6 (HF6/M-D) — die verbliebene KWKG-Projektangabe. Regulär legt sie
-                    // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
-                    // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
-                    // Konzept § 9 Punkt 2). WERTE werden auch hier nicht vorbelegt: leer
-                    // heißt „nicht angegeben", und genau das hält den Bestand unverändert.
-                    // ETAPPE BK1b: Der Kostenanteil ist mit Schemaschritt 91 entfallen —
-                    // stünde er hier noch, legte ihn der nächste Programmstart wieder an.
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
-
-                    // ETAPPE E5 — der Bedarf OHNE Anlage je Zone: die Bezugsgröße der
-                    // Differenzmethode. Sie fehlte im Modell vollständig.
-                    SpalteSicher(TAB_MATRIX, "BedarfMWh", "DOUBLE");
-
-                    // ETAPPE E5 — vermiedene Kosten und Aufschlagsbetrag im ERGEBNIS.
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_ARBEIT, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_LEISTUNG, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_GESAMT, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_AUFSCHLAG_BETRAG, "DOUBLE");
-
-                    // ETAPPE W5-B-10 (VALERI) - der Barwert der Ersatzbeschaffungen.
-                    // Additiv über denselben Weg; er ist Teilmenge von BarwertAusgaben
-                    // und wird nirgends aufsummiert.
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_ERSATZ_BARWERT, "DOUBLE");
-
-                    // ETAPPE W5-B-9 - die zwölf Spalten des Szenario-Parametersatzes.
-                    // Sie entstehen regulär über Migrationsschritt 71; das hier ist die
-                    // tolerante VORSORGE unmittelbar vor dem Zugriff, damit eine nie
-                    // migrierte Datenbank nicht an einer fehlenden Spalte scheitert -
-                    // dasselbe Muster wie bei den E4-, E5- und E6-Spalten. Eine
-                    // WERTE-Vorbelegung gibt es weder hier noch in Schritt 71: NULL
-                    // heißt „Vorgabe“, und die Leseseite macht daraus die Vorgabe.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE W5-B-12 - die vier Spalten der VALERI-Ergaenzung: der
-                    // Preisaenderungssatz der kapitalgebundenen Kosten p_I (Projektwert
-                    // und je einer fuer Best und Worst) und der Freitext "Nicht monetaere
-                    // Wirkungen". Sie entstehen regulaer ueber Migrationsschritt 72; das
-                    // hier ist die tolerante VORSORGE unmittelbar vor dem Zugriff -
-                    // wortgleiche Begruendung wie bei Schritt 71 darueber. Und ebenso
-                    // KEINE Werte-Vorbelegung: NULL heisst bei p_I "wie p_B", bei den
-                    // zwei Szenariospalten "Vorgabe" und beim Freitext "nichts erfasst".
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE E9a (Schritt B) - der Szenariorahmen: Betrachtungszeitraum und
-                    // Mengenfaktor je Szenario. Regulaer entstehen die vier Spalten ueber
-                    // Schemaschritt 116; das hier ist die tolerante VORSORGE unmittelbar vor
-                    // dem Zugriff (doppelte Schema-Wahrheit dieses Moduls, Konzept § 9
-                    // Punkt 2). KEINE Werte-Vorbelegung: leer heisst "wie Erwartet".
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE E9a (Schritt D) - die Erloessaetze je Szenario: Einspeise-
-                    // verguetung (PV, KWK) an der Parametertabelle UND DV-Entgelt und
-                    // PPA-Preis an Tab_ProjektPhotovoltaik. Regulaer entstehen sie ueber
-                    // Schemaschritt 118; das hier ist DER ZWEITE DDL-ORT - fuer die
-                    // PV-Tabelle mit der Begruendung von Schritt 93: Die Tabelle gehoert
-                    // ProjektPhotovoltaikCtrl, gelesen werden die Spalten von DIESEM
-                    // Rechenweg, und die Vorsorge gehoert zum Leser. KEINE
-                    // Werte-Vorbelegung: leer heisst "wie Erwartet".
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE E15 (V-G7) - das Risikomodul. Regulaer entstehen die vier
-                    // Spalten ueber Schemaschritt 125; das hier ist die tolerante VORSORGE
-                    // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls).
-                    // KEINE Werte-Vorbelegung: leer heisst "kein Risiko angesetzt".
-                    foreach (SchemaSpalte s in SchemaKatalog.RisikomodulSpalten)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die
-                    // Summe der beiden Spalten ist der bereits vorhandene Gesamtbetrag.
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_EINSPEISUNG_PV, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_EINSPEISUNG_KWK, "DOUBLE");
-
-                    // ETAPPE K5 — der angesetzte Investitionszuschuss. Additiv über
-                    // denselben Weg; die doppelte Schema-Wahrheit dieses Moduls (§ 9.2
-                    // des Konzepts) wird damit nicht um einen dritten Mechanismus
-                    // erweitert: Ergebnisspalten führt der Controller, Eingabespalten
-                    // der Migrationskatalog.
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_ZUSCHUSS, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_FORM, "TEXT(50)");   // P6
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_AW, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_MARKTPRAEMIE, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_AUSFALL_KWH, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_AUSFALL_EUR, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_51A, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_KAPPUNG_KWH, "DOUBLE");
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_VERMIEDEN, "DOUBLE");
-
-                    // ETAPPE B7P — der Nachweisumschlag. Additiv über denselben Weg
-                    // wie SPALTE_STEUER_HERKUNFT: Ergebnisspalten führt dieses Modul
-                    // selbst, Eingabespalten der Migrationskatalog. Eine Datei ohne die
-                    // Spalte lädt unverändert — die Leseseite prüft sie tolerant.
-                    SpalteSicher(TAB_ERGEBNIS, SPALTE_NACHWEIS_JSON, "LONGTEXT");
-
-                    // ETAPPE E5 — die Spalten des Tarif-Rollenmodells und die zwei
-                    // Projektangaben. Sie entstehen regulär über Migrationsschritt 21;
-                    // das hier ist die tolerante VORSORGE unmittelbar vor dem Zugriff,
-                    // damit eine nie migrierte Datenbank nicht an einer fehlenden Spalte
-                    // scheitert — dasselbe Muster wie bei den E4-Spalten darüber. Die
-                    // WERTE-Vorbelegung bleibt allein bei Schritt 21b: Die Leseseite
-                    // behandelt leer/NULL ohnehin wie ZONEN.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt21_Tarifmodell)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE E6 — die acht KWKG-Spalten JE ANLAGE an Tab_Energieanlagen.
-                    // Sie entstehen regulär über Migrationsschritt 22; das hier ist die
-                    // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
-                    // wie bei E4 und E5. Eine WERTE-Vorbelegung gibt es weder hier noch
-                    // in Schritt 22: NULL heißt „kein eigener Wert", und dann gilt der
-                    // Projektwert.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt22_KwkgJeAnlage)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE B3 Paket a — die drei Angaben JE ANLAGE (Steuerwahl,
-                    // Aufteilungsmethode, Hilfsenergieanteil) an Tab_Energieanlagen. Sie
-                    // entstehen regulär über Migrationsschritt 61a; das hier ist die
-                    // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
-                    // wie bei E4, E5 und E6. Eine WERTE-Vorbelegung gibt es weder hier
-                    // noch in Schritt 61: NULL heißt „kein eigener Wert", und dann gilt
-                    // der Projektwert bzw. „keine Hilfsenergie".
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt61_SteuerJeAnlage)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE BK1 — der Kostenanteil JE ANLAGE an Tab_Energieanlagen. Er
-                    // entsteht regulär über Migrationsschritt 89; das hier ist die
-                    // tolerante VORSORGE unmittelbar vor dem Zugriff. Die WERTE-Seite
-                    // (das DML, das die Projektvorgaben in die Anlagenzeilen schreibt)
-                    // bleibt allein bei Schritt 89 — sie ist eine einmalige Überführung
-                    // und keine Vorsorge.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // ETAPPE E7c (Befund K-1) — Kennzeichen „Vorrichtung zur
-                    // Abwärmeabfuhr" und Stromkennzahl JE ANLAGE. Sie entstehen regulär
-                    // über Migrationsschritt 105; das hier ist die tolerante VORSORGE
-                    // unmittelbar vor dem Zugriff. Kein DML: Das Kennzeichen steht nach
-                    // dem ADD COLUMN auf 0 (Fall 1), die Kennzahl auf NULL.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-
-                    // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
-                    // entstehen regulär über Migrationsschritt 23; das hier ist die
-                    // tolerante VORSORGE unmittelbar vor dem Zugriff — dasselbe Muster
-                    // wie bei E4, E5 und E6. Die WERTE-Vorbelegung bleibt allein bei
-                    // Schritt 23b; die Leseseite behandelt leer/NULL ohnehin wie den
-                    // Vorgabewert, und ein leeres Bilanzjahr wie 2026.
-                    foreach (SchemaSpalte s in SchemaKatalog.Schritt23_Bilanzkonvention)
-                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge — die nennen
-                // ihren Grund seit E7c3 selbst (Ladefehler, Rechenstufe „Speichern").
-                Vorsorgefehler(ex);
-            }
+            SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
+            SpalteSicher(TAB_ERGEBNIS, SPALTE_ERSATZ_BARWERT, "DOUBLE");    // W5-B-10
+            SpalteSicher(TAB_ERGEBNIS, SPALTE_NACHWEIS_JSON, "LONGTEXT");   // B7P
 
             // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
-            // Verbindung, eigener Fang: Ein Fehlschlag darf die Tabellen oben nicht
+            // Verbindung, eigener Fang: Ein Fehlschlag darf die Spalten oben nicht
             // gefährden, und umgekehrt.
             GesetzKatalog.StelleKatalogSicher();
         }
@@ -771,19 +421,11 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static bool TabelleVorhanden(string name)
-        {
-            return StilleDb.TabelleVorhanden(name);
-        }
-
         /// <summary>
-        /// Eine DDL-/Verwaltungsanweisung, still. ARBEITSPAKET S4b, Verhaltenstreue:
-        /// Der frühere Weg WARF bei einem Fehlschlag, und genau darauf bauen die
-        /// umschliessenden <c>try/catch</c>-Klammern (ein misslungenes CREATE darf den
-        /// zugehörigen Index nicht mehr anlegen, ein misslungenes ALTER meldet "nicht
-        /// neu angelegt"). <see cref="StilleDb"/> wirft nicht, also wird hier von Hand
-        /// geworfen. Nach aussen bleibt alles gleich - gefangen wurde die Ausnahme
-        /// schon bisher wortlos.
+        /// Eine DDL-Anweisung, still. <see cref="StilleDb"/> wirft nicht; geworfen wird hier
+        /// von Hand, damit der Fang in <see cref="SpalteSicher"/> greift: Ein misslungenes
+        /// ALTER meldet „nicht neu angelegt" und nennt den Grund in
+        /// <see cref="Vorsorgewarnung"/>.
         /// </summary>
         private static void Ddl(string sql)
         {
@@ -5797,7 +5439,7 @@ namespace WindowsFormsApplication1
         private List<BhkwAnlage> LiesAnlagen(int idProjekt, int idType)
         {
             // ETAPPE E6: Zuerst mit den acht neuen Spalten. Fehlen sie (Datenbank vor
-            // Migrationsschritt 22, in der auch StelleTabellenSicher nie lief), scheitert
+            // Migrationsschritt 22), scheitert
             // die Abfrage — dann greift dieselbe Abfrage ohne sie, und jede E6-Angabe
             // bleibt leer. Das ist genau der Zustand, in dem überall der Projektwert gilt.
             //

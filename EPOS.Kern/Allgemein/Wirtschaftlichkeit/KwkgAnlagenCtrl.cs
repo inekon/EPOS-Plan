@@ -142,11 +142,6 @@ namespace WindowsFormsApplication1
             var liste = new List<KwkgAnlagenAngabe>();
             if (idStamm <= 0) return liste;
 
-            // Die Tabellen und Spalten sicherstellen — dieselbe tolerante Vorsorge, die
-            // auch der Rechenweg fährt (StelleTabellenSicher legt die acht Spalten an,
-            // falls die Migration nie lief).
-            new WirtschaftlichkeitCtrl().StelleTabellenSicher();
-
             if (string.IsNullOrEmpty(stammName)) stammName = Projektname(idStamm);
 
             var varianten = new VariantenCtrl();
