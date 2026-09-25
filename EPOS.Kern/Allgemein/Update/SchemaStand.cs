@@ -631,11 +631,20 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeSchema.SICHT_NACHTZEIT"/>). <b>Ergebnisneutral:</b> NULL heißt die
         /// Vorgabe 22 bis 6 Uhr, bitgleich mit dem Fahrplan davor. Die Nummer steht allein bei
         /// <see cref="NachtzeitSchema.SCHRITT"/>.
+        /// Mit den ZEILEN DES BEDARFSTAG-KONSTRUKTORS (Anwenderentscheid ZU25, Zapfprofilgenerator
+        /// 4.5 Quelle (4)) steht das Ziel auf <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>: die
+        /// Tabelle <c>Tab_TwwKonstruktorzeile</c> (STRICT, zehn Spalten, <c>ID_TwwProjekt</c> mit
+        /// <c>ON DELETE CASCADE</c>, natürlicher Schlüssel ID_TwwProjekt/Reihenfolge) und das
+        /// <c>DROP INDEX</c> des redundanten Index auf <c>Tab_TwwMessreihe.ID_Projekt</c>
+        /// (<see cref="TwwSchema.AnweisungenT5Konstruktor"/>,
+        /// <see cref="TwwSchema.AufraeumenT5Index"/>). <b>Ergebnisneutral:</b> Die Tabelle entsteht
+        /// LEER, kein Rechenweg liest eine Konstruktorzeile, und ein Index ändert kein Ergebnis.
+        /// Die Nummer steht allein bei <see cref="TwwSchema.SCHRITT_T5_KONSTRUKTOR"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = NachtzeitSchema.SCHRITT;
+        public const int Zielversion = TwwSchema.SCHRITT_T5_KONSTRUKTOR;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

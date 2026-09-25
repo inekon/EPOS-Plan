@@ -29469,6 +29469,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWMESSREIHE" xml:space="preserve">
     <value>eingespielte Messreihen</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE" xml:space="preserve">
+    <value>Zeilen des Bedarfstag-Konstruktors</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
     <value>Übergang</value>
   </data>

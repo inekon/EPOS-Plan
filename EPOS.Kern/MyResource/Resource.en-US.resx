@@ -29462,6 +29462,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWMESSREIHE" xml:space="preserve">
     <value>imported measured series</value>
   </data>
+  <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE" xml:space="preserve">
+    <value>rows of the demand day constructor</value>
+  </data>
   <data name="ZPG_SATZ_BEGRIFF_TYPTAG_JAHRESZEIT_1" xml:space="preserve">
     <value>transition</value>
   </data>

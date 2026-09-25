@@ -164,6 +164,11 @@ namespace WindowsFormsApplication1
             // Die deklarierte Beziehung Tab_TwwWohnungstyp.ID_Zone -> Tab_TwwZone erkennt
             // _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne sie.
             {"ID_Zone","Tab_TwwZone"},
+            // Zapfprofilgenerator (Schemaschritt T5, Anwenderentscheid ZU25): die Zeilen des
+            // Bedarfstag-Konstruktors haengen am Auslegungssatz Tab_TwwProjekt. Die deklarierte
+            // Beziehung Tab_TwwKonstruktorzeile.ID_TwwProjekt -> Tab_TwwProjekt erkennt _echteFks
+            // ohnehin; der Eintrag traegt den Versatz auch ohne sie.
+            {"ID_TwwProjekt","Tab_TwwProjekt"},
             // Gebaeudesimulation G3 (Schritte S-B/S-C, Softwarearchitektur 2.6): das Bauteil
             // zeigt auf den Aufbau der PROJEKTKOPIE, die Schicht auf den Baustoff der
             // Projektkopie (W11). Beide Beziehungen sind deklariert und werden von _echteFks
@@ -261,6 +266,14 @@ namespace WindowsFormsApplication1
             // Erkennung braucht die deklarierte Beziehung, und ohne sie fuehre eine
             // Projektkopie mit Zonen, aber ohne Wohnungstypen.
             {"Tab_TwwWohnungstyp",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
+
+            // Zapfprofilgenerator (Schemaschritt T5, Anwenderentscheid ZU25): Die Zeilen des
+            // Bedarfstag-Konstruktors haengen am AUSLEGUNGSSATZ Tab_TwwProjekt (eine Zeile je
+            // Projekt) und fuehren kein eigenes ID_Projekt. Ausdruecklich statt ueber die
+            // Auto-Erkennung - dasselbe Muster wie die Wohnungstabelle darueber; ohne den Eintrag
+            // fuehre eine Projektkopie mit dem konstruierten Bedarfstag, aber ohne die Zeilen, aus
+            // denen er entstand.
+            {"Tab_TwwKonstruktorzeile", "ID_TwwProjekt IN (SELECT ID FROM Tab_TwwProjekt WHERE ID_Projekt = {0})"},
 
             // Gebaeudesimulation G3 (Schritte S-B/S-C, Softwarearchitektur 2.6, W19) - von
             // Hand und DREISTUFIG: Gebaeude -> Zone -> Bauteil und Aufbau -> Schicht. Keines

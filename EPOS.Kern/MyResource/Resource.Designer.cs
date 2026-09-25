@@ -100928,6 +100928,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen des Bedarfstag-Konstruktors ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_BEGRIFF_TABELLE_TWWKONSTRUKTORZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die eingespielte Messreihen ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWMESSREIHE {
