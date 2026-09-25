@@ -205,6 +205,19 @@ namespace WindowsFormsApplication1
         public const string GEBAEUDETYP = "Form_EingGebTyp";
 
         /// <summary>
+        /// Die Verwaltung „Baustoffe" (<c>BaustoffKatalogDialog</c>, Gebaeudesimulation G3) — eine
+        /// neue Maske ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe
+        /// (Softwarearchitektur 3.8); zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string BAUSTOFF_KATALOG = "BaustoffKatalog";
+
+        /// <summary>
+        /// Die Verwaltung „Bauteilaufbauten" samt Schichtenraster (<c>BauteilaufbauDialog</c>,
+        /// Gebaeudesimulation G3) — wie <see cref="BAUSTOFF_KATALOG"/> ohne <c>Form_</c>-Vorsilbe.
+        /// </summary>
+        public const string BAUTEILAUFBAU = "Bauteilaufbau";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -732,6 +745,8 @@ namespace WindowsFormsApplication1
                 GebaeudeVerwaltung(),
                 GebaeudeBedarf(),
                 Gebaeudetyp(),
+                BaustoffKatalog(),
+                Bauteilaufbau(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -4556,6 +4571,125 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GtypStundenwerteName, KiParameterTyp.ZahlListe,
                                      KiDialogTexte.GtypStundenwerteErl,
                                      reihe: KiZahlenreihen.Stunden())
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // BaustoffKatalog, Bauteilaufbau  ->  die zwei Kataloge der Gebaeudesimulation (G3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Verwaltung „Baustoffe" — die Satzwahl und die sieben Kenndaten aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BaustoffKatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Der Baustoff ist die SATZWAHL (Schluessel = Id; zwei Hersteller duerfen einen Stoff
+        /// gleichen Namens fuehren) und bleibt frei, wenn ein Auslieferungssatz geschuetzt ist.
+        /// Die Kenndaten schreiben in den Arbeitsstand des Stammblatts; geschrieben wird mit
+        /// „Speichern", dieselbe Pruefung wie am Knopf (<c>BaustoffCtrl.Pruefen</c>).
+        /// </remarks>
+        private static KiDialog BaustoffKatalog()
+        {
+            const string SICHT = "BaustoffKatalogKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.BAUSTOFF_KATALOG,
+                anzeigename: KiDialogTexte.MaskeBaustoffKatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("baustoff", SICHT + "Baustoff", KiDialogTexte.BstBaustoffName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BstBaustoffErl,
+                                     leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.BstBezeichnerName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstBezeichnerErl),
+                    new KiDialogFeld("gruppe", SICHT + "Gruppe", KiDialogTexte.BstGruppeName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstGruppeErl, leerErlaubt: true),
+                    new KiDialogFeld("hersteller", SICHT + "Hersteller", KiDialogTexte.BstHerstellerName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstHerstellerErl, leerErlaubt: true),
+                    new KiDialogFeld("lambda", SICHT + "Lambda", KiDialogTexte.BstLambdaName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BstLambdaErl,
+                                     einheit: KiDialogTexte.EINHEIT_LAMBDA, leerErlaubt: true,
+                                     min: BaustoffCtrl.LAMBDA_MIN, max: BaustoffCtrl.LAMBDA_MAX),
+                    new KiDialogFeld("rho", SICHT + "Rho", KiDialogTexte.BstRhoName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BstRhoErl,
+                                     einheit: KiDialogTexte.EINHEIT_RHO, leerErlaubt: true,
+                                     min: BaustoffCtrl.RHO_MIN, max: BaustoffCtrl.RHO_MAX),
+                    new KiDialogFeld("cp", SICHT + "Cp", KiDialogTexte.BstCpName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BstCpErl,
+                                     einheit: KiDialogTexte.EINHEIT_CP, leerErlaubt: true,
+                                     min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BstQuelleName,
+                                     KiParameterTyp.Text, KiDialogTexte.BstQuelleErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>
+        /// Die Verwaltung „Bauteilaufbauten" — die Satzwahl, vier Kopffelder und das Raster der
+        /// Schichten aus <c>EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Schichten sind ein RASTER (<c>Schichten[]</c>, Kennzeichen die Nummer innen = 1):
+        /// Baustoff (Wahl — die Schicht uebernimmt λ, ρ und c_p als Kopie), Dicke in mm, λ, ρ,
+        /// c_p und der Schalter Luftschicht. Anlegen, Verschieben und Entfernen einer Schicht
+        /// bleiben Klicks des Anwenders. Geschrieben wird der Aufbau als EIN Aggregat mit
+        /// „Speichern"; die Pruefregeln sind die des Knopfes (<c>BauteilaufbauCtrl.EingabePruefen</c>).
+        /// </remarks>
+        private static KiDialog Bauteilaufbau()
+        {
+            const string SICHT = "BauteilaufbauKiSicht.";
+            string schicht = SICHT + "Schichten" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.BAUTEILAUFBAU,
+                anzeigename: KiDialogTexte.MaskeBauteilaufbau,
+                felder: new[]
+                {
+                    new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtaAufbauName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtaAufbauErl,
+                                     leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.BtaBezeichnerName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtaBezeichnerErl),
+                    new KiDialogFeld("bauteilart", SICHT + "Bauteilart", KiDialogTexte.BtaBauteilartName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtaBauteilartErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", SICHT + "Beschreibung", KiDialogTexte.BtaBeschreibungName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtaBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BtaQuelleName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtaQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("schicht_baustoff", schicht + "Baustoff", KiDialogTexte.BtaSchichtBaustoffName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtaSchichtBaustoffErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER),
+                    new KiDialogFeld("schicht_dicke", schicht + "DickeMm", KiDialogTexte.BtaSchichtDickeName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtDickeErl,
+                                     einheit: KiDialogTexte.EINHEIT_MM, zeilenkennzeichen: NUMMER,
+                                     min: BauteilaufbauCtrl.DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MIN_M),
+                                     max: BauteilaufbauCtrl.DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MAX_M)),
+                    new KiDialogFeld("schicht_lambda", schicht + "Lambda", KiDialogTexte.BtaSchichtLambdaName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtLambdaErl,
+                                     einheit: KiDialogTexte.EINHEIT_LAMBDA, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER,
+                                     min: BaustoffCtrl.LAMBDA_MIN, max: BaustoffCtrl.LAMBDA_MAX),
+                    new KiDialogFeld("schicht_rho", schicht + "Rho", KiDialogTexte.BtaSchichtRhoName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtRhoErl,
+                                     einheit: KiDialogTexte.EINHEIT_RHO, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER,
+                                     min: BaustoffCtrl.RHO_MIN, max: BaustoffCtrl.RHO_MAX),
+                    new KiDialogFeld("schicht_cp", schicht + "Cp", KiDialogTexte.BtaSchichtCpName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtCpErl,
+                                     einheit: KiDialogTexte.EINHEIT_CP, leerErlaubt: true,
+                                     zeilenkennzeichen: NUMMER,
+                                     min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
+                    new KiDialogFeld("schicht_luftschicht", schicht + "IstLuftschicht",
+                                     KiDialogTexte.BtaSchichtLuftschichtName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BtaSchichtLuftschichtErl, zeilenkennzeichen: NUMMER)
                 },
                 knoepfe: new[]
                 {

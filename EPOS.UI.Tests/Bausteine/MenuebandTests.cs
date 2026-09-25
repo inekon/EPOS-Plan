@@ -180,7 +180,11 @@ public class MenuebandTests : EposBunitContext
         // Nutzungsarten" (NEUES Ziel, der Katalog des Zapfprofilgenerators). Der
         // Knoten bleibt als Punkt stehen und klappt nur noch auf. Also 61 Punkte
         // und 47 Handlungen.
-        Assert.Equal(61, Punkte.Count);
+        //
+        // GEBAEUDESIMULATION G3 (Softwarearchitektur 3.1): „Gebaeude" fuehrt
+        // hinter „Gebaeudetypen" die zwei Kataloge „Baustoffe" und
+        // „Bauteilaufbauten" - zwei neue Wege. Also 63 Punkte und 49 Handlungen.
+        Assert.Equal(63, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -841,6 +845,10 @@ public class MenuebandTests : EposBunitContext
 
         Assert.Equal(new[]
         {
+            // Gebaeudesimulation G3: die zwei NEUEN Ziele unter „Gebaeude" - die
+            // Kataloge der Baustoffe und der Bauteilaufbauten.
+            Seitenschluessel.BaustoffKatalog,
+            Seitenschluessel.BauteilaufbauKatalog,
             Seitenschluessel.BhkwAdmin,
             Seitenschluessel.BrauchwasserAdmin,
             // Zapfprofilgenerator 5.4: das NEUE Ziel - der Katalog der
@@ -1202,8 +1210,11 @@ public class MenuebandTests : EposBunitContext
         // (13 -> 14 aufklappende) und legt den SECHSTEN echten Weg an: den
         // Katalog der Brauchwasser-Nutzungsarten (46 -> 47). Das bisherige Ziel
         // wandert unveraendert eine Ebene tiefer.
+        //
+        // Die Gebaeudesimulation G3 legt zwei echte Wege an - die Kataloge der
+        // Baustoffe und der Bauteilaufbauten unter „Gebaeude" (47 -> 49).
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
-        Assert.Equal(47, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(49, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

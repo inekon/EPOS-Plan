@@ -24,6 +24,11 @@ namespace WindowsFormsApplication1
     /// Bauweise, Lüftung, Sollwertfahrplan, Kühl- und Übergabeeingaben). Die Zonenwerte
     /// gehen mit Stufe G6 ein.</para>
     ///
+    /// <para><b>Eine unlesbare Zone</b> (<see cref="Unlesbar"/>) trägt statt ihrer Bauteile den
+    /// benannten Fehler ihrer Abbildung (<see cref="GebaeudeZonenabbildung"/>): Das Lesen bleibt
+    /// heil, und erst der Lauf, der die Zone rechnet, bricht für dieses Gebäude mit diesem Grund
+    /// ab (<see cref="EineZone"/>) — kein stilles Weglassen der Zone.</para>
+    ///
     /// <para>Unveränderlich; geprüft wird im Bauteilweg, nicht beim Anlegen.</para>
     /// </summary>
     internal sealed class GebaeudeZonensatz
@@ -47,14 +52,30 @@ namespace WindowsFormsApplication1
         /// <summary>Die Bauteile der Zone, in der Reihenfolge des Lesers.</summary>
         internal IReadOnlyList<BauteilEingang> Bauteile { get; }
 
+        /// <summary>Der Grund, aus dem sich die Zeilen der Zone nicht abbilden ließen; <c>null</c> = abgebildet.</summary>
+        internal GebaeudeModellFehler? Lesefehlergrund { get; private init; }
+
+        /// <summary>Die Meldung dazu (ohne das Gebäude); <c>null</c> = abgebildet.</summary>
+        internal string Lesefehler { get; private init; }
+
+        /// <summary>
+        /// Eine Zone, deren Zeilen sich nicht abbilden ließen — ohne Bauteile, mit dem benannten
+        /// Fehler der Abbildung. Sie zählt als Zone (<see cref="HatZonen"/>); <see cref="EineZone"/>
+        /// wirft ihren Fehler, sobald der Lauf sie rechnen soll.
+        /// </summary>
+        internal static GebaeudeZonensatz Unlesbar(int zonenId, string bezeichnung, GebaeudeModellFehler grund, string meldung)
+            => new GebaeudeZonensatz(zonenId, bezeichnung, null) { Lesefehlergrund = grund, Lesefehler = meldung ?? "" };
+
         /// <summary>
         /// <b>Die Regel des Umschalters</b> (A14/E27): keine Zone (<c>null</c> oder leer) →
         /// <c>null</c>, der Klassenweg rechnet; genau eine → diese Zone, der Bauteilweg rechnet;
-        /// mehr als eine → benannter Fehler.
+        /// mehr als eine → benannter Fehler. Eine unlesbare Zone (<see cref="Unlesbar"/>) wirft
+        /// hier den Fehler ihrer Abbildung, mit dem Gebäude davor.
         /// </summary>
         /// <param name="zonen">Die Zonen des Gebäudes (<see cref="ProjektGebaeudeModel.Zonen"/>).</param>
         /// <param name="wer">Die Bezeichnung des Gebäudes für die Meldung.</param>
-        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.MehrereZonen"/>.</exception>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.MehrereZonen"/> oder der
+        /// Grund der Abbildung einer unlesbaren Zone.</exception>
         internal static GebaeudeZonensatz EineZone(IReadOnlyList<GebaeudeZonensatz> zonen, string wer)
         {
             if (zonen == null || zonen.Count == 0) return null;
@@ -62,7 +83,11 @@ namespace WindowsFormsApplication1
                 throw new GebaeudeModellException(GebaeudeModellFehler.MehrereZonen,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_MEHRERE_ZONEN,
                                   wer, zonen.Count.ToString(CultureInfo.CurrentCulture)));
-            return zonen[0] ?? throw new ArgumentException("Die Zonenliste enthält einen leeren Eintrag.", nameof(zonen));
+            GebaeudeZonensatz zone = zonen[0] ?? throw new ArgumentException("Die Zonenliste enthält einen leeren Eintrag.", nameof(zonen));
+            if (zone.Lesefehler != null)
+                throw new GebaeudeModellException(zone.Lesefehlergrund ?? GebaeudeModellFehler.BauteilUngueltig,
+                                                  wer + ", " + zone.Lesefehler);
+            return zone;
         }
 
         /// <summary>Hat das Gebäude mindestens eine Zone — rechnet es also nicht den Klassenweg?</summary>

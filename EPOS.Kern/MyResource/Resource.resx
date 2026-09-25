@@ -3263,6 +3263,30 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} rechnet auf dem Tagesbilanz-Weg; seine Zone geht dort nicht ein — den Bauteilweg rechnet allein der VDI-6007-Weg.</value>
   </data>
+  <data name="SIMENG_G3_ZONE_WER" xml:space="preserve">
+    <value>Zone „{0}“</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_BAUTEILART" xml:space="preserve">
+    <value>{0}: Die Bauteilart „{1}“ ist keine der neun Bauteilarten ({2}).</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_RANDBEDINGUNG" xml:space="preserve">
+    <value>{0}: Die Randbedingung „{1}“ ist keine der vier Randbedingungen ({2}); leer heißt Außenluft, an Innenwand und Decke „innerhalb der Zone“.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_AUFBAU_FEHLT" xml:space="preserve">
+    <value>{0}: Der Aufbau {1} gehört nicht zum Projekt des Gebäudes.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE" xml:space="preserve">
+    <value>{0}, Schicht {1}: {2} fehlt; eine Schicht, die keine Luftschicht ist, rechnet mit ihrer Wertekopie von λ, ρ und c_p.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_INNEN" xml:space="preserve">
+    <value>{0}: „Innerhalb der Zone“ steht in der Zonentabelle nur an einer Innenwand oder Decke (Randbedingung leer), nicht an der Bauteilart „{1}“.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHTEN" xml:space="preserve">
+    <value>{0}: Das Bauteil trägt einen Schichtaufbau; die Übernahme schreibt Bauteile ohne Aufbau.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_ALPHA" xml:space="preserve">
+    <value>{0}: Das Bauteil trägt einen eigenen Übergangskoeffizienten α_kon; die Zonentabelle führt keinen.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
   </data>
@@ -8472,6 +8496,15 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KFLT_SP_DICKE" xml:space="preserve">
     <value>Dicke</value>
   </data>
+  <data name="KFLT_SP_UWERT" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="KFLT_SP_RWERT" xml:space="preserve">
+    <value>R-Wert</value>
+  </data>
+  <data name="KFLT_SP_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
   <data name="BAUSTOFF_MSG_NAME_LEER" xml:space="preserve">
     <value>Der Baustoff braucht einen Namen.</value>
   </data>
@@ -8495,6 +8528,93 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="BAUSTOFF_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Der Baustoff konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="BST_TITEL" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="BST_LEER" xml:space="preserve">
+    <value>Der Katalog führt noch keinen Baustoff – „Neu…“ legt einen an.</value>
+  </data>
+  <data name="BST_SCHALTER_NEUTRAL" xml:space="preserve">
+    <value>nur herstellerneutral</value>
+  </data>
+  <data name="BST_NEUTRAL" xml:space="preserve">
+    <value>herstellerneutral</value>
+  </data>
+  <data name="BST_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BST_LBL_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="BST_LBL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="BST_LBL_LAMBDA" xml:space="preserve">
+    <value>Wärmeleitfähigkeit λ</value>
+  </data>
+  <data name="BST_LBL_RHO" xml:space="preserve">
+    <value>Rohdichte ρ</value>
+  </data>
+  <data name="BST_LBL_CP" xml:space="preserve">
+    <value>Spez. Wärmekapazität c_p</value>
+  </data>
+  <data name="BST_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="BST_LBL_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="BST_LBL_QUELLKENNUNG" xml:space="preserve">
+    <value>Quellkennung</value>
+  </data>
+  <data name="BST_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="BST_EINHEIT_LAMBDA" xml:space="preserve">
+    <value>W/(mK)</value>
+  </data>
+  <data name="BST_EINHEIT_RHO" xml:space="preserve">
+    <value>kg/m³</value>
+  </data>
+  <data name="BST_EINHEIT_CP" xml:space="preserve">
+    <value>J/(kgK)</value>
+  </data>
+  <data name="BST_VERWENDUNG" xml:space="preserve">
+    <value>in {0} Schicht(en) des Aufbaukatalogs</value>
+  </data>
+  <data name="BST_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>in keiner Schicht des Aufbaukatalogs</value>
+  </data>
+  <data name="BST_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="BST_TITEL_NEU" xml:space="preserve">
+    <value>Neuer Baustoff</value>
+  </data>
+  <data name="BST_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Soll der Baustoff „{0}“ gelöscht werden?</value>
+  </data>
+  <data name="BST_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>In {0} Schicht(en) des Aufbaukatalogs verwendet – Löschen gesperrt; dort zuerst ersetzen.</value>
+  </data>
+  <data name="BST_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Stehen bleiben (in Schichten verwendet): {0}</value>
+  </data>
+  <data name="BST_MSG_ANGELEGT" xml:space="preserve">
+    <value>„{0}“ angelegt.</value>
+  </data>
+  <data name="BST_MSG_GELOESCHT" xml:space="preserve">
+    <value>„{0}“ gelöscht.</value>
+  </data>
+  <data name="BST_MSG_FEHLER" xml:space="preserve">
+    <value>Der Baustoff konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="BST_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Diesen Namen führt der Katalog für diesen Hersteller bereits.</value>
+  </data>
+  <data name="BST_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Baustoffverwaltung steht auf diesem Gerät noch nicht zur Verfügung.</value>
   </data>
   <data name="BAUTEIL_FELD_QUELLKENNUNG" xml:space="preserve">
     <value>Quellkennung</value>
@@ -8522,6 +8642,210 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Der Bauteilaufbau konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="BAUTEIL_MSG_KEINE_SCHICHT" xml:space="preserve">
+    <value>Der Bauteilaufbau braucht mindestens eine Schicht.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_DICKE_BAND" xml:space="preserve">
+    <value>Schicht {0}: Die Dicke {1:0.###} mm liegt nicht in {2:0.###} … {3:0.###} mm.</value>
+  </data>
+  <data name="BAUTEIL_MSG_LUFTSCHICHT_DICKE" xml:space="preserve">
+    <value>Schicht {0}: Die ruhende Luftschicht ist {1:0.###} mm dick; DIN EN ISO 6946 Tabelle 8 gilt bis {2:0.###} mm.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_LAMBDA" xml:space="preserve">
+    <value>Schicht {0}: Die Wärmeleitfähigkeit λ fehlt – ohne λ ist nur eine ruhende Luftschicht zulässig.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_FEHLT" xml:space="preserve">
+    <value>Schicht {0}: Die Angabe „{1}“ fehlt; der Bauteilweg braucht sie für die Speichermasse.</value>
+  </data>
+  <data name="BAUTEIL_MSG_REIHENFOLGE" xml:space="preserve">
+    <value>Die Schichten sind nicht lückenlos ab 1 nummeriert: Schicht {0} trägt die Nummer {1}.</value>
+  </data>
+  <data name="BTA_TITEL" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
+  <data name="BTA_LEER" xml:space="preserve">
+    <value>Der Katalog führt noch keinen Bauteilaufbau – „Neu…“ legt einen an.</value>
+  </data>
+  <data name="BTA_TITEL_NEU" xml:space="preserve">
+    <value>Neuer Bauteilaufbau</value>
+  </data>
+  <data name="BTA_GRP_SCHICHTEN" xml:space="preserve">
+    <value>Schichten</value>
+  </data>
+  <data name="BTA_SCHICHTEN_ZAHL" xml:space="preserve">
+    <value>{0} Schichten</value>
+  </data>
+  <data name="BTA_SCHICHTEN_EINS" xml:space="preserve">
+    <value>1 Schicht</value>
+  </data>
+  <data name="BTA_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BTA_LBL_BAUTEILART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="BTA_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="BTA_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="BTA_LBL_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="BTA_LBL_QUELLKENNUNG" xml:space="preserve">
+    <value>Quellkennung</value>
+  </data>
+  <data name="BTA_KZ_U" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="BTA_KZ_R" xml:space="preserve">
+    <value>R-Wert</value>
+  </data>
+  <data name="BTA_KZ_C" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="BTA_EINHEIT_U" xml:space="preserve">
+    <value>W/(m²K)</value>
+  </data>
+  <data name="BTA_EINHEIT_R" xml:space="preserve">
+    <value>m²K/W</value>
+  </data>
+  <data name="BTA_EINHEIT_KAPAZITAET" xml:space="preserve">
+    <value>kJ/(m²K)</value>
+  </data>
+  <data name="BTA_EINHEIT_MM" xml:space="preserve">
+    <value>mm</value>
+  </data>
+  <data name="BTA_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="BTA_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Soll der Bauteilaufbau „{0}“ samt seinen Schichten gelöscht werden?</value>
+  </data>
+  <data name="BTA_MSG_ANGELEGT" xml:space="preserve">
+    <value>„{0}“ angelegt.</value>
+  </data>
+  <data name="BTA_MSG_GELOESCHT" xml:space="preserve">
+    <value>„{0}“ gelöscht.</value>
+  </data>
+  <data name="BTA_MSG_FEHLER" xml:space="preserve">
+    <value>Der Bauteilaufbau konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="BTA_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Diesen Namen gibt es im Katalog bereits.</value>
+  </data>
+  <data name="BTA_KEINE_ANSICHT" xml:space="preserve">
+    <value>Die Verwaltung der Bauteilaufbauten steht auf diesem Gerät noch nicht zur Verfügung.</value>
+  </data>
+  <data name="BTA_WER_AUFBAU" xml:space="preserve">
+    <value>Bauteilaufbau</value>
+  </data>
+  <data name="BTA_ART_AUSSENWAND" xml:space="preserve">
+    <value>Außenwand</value>
+  </data>
+  <data name="BTA_ART_DACH" xml:space="preserve">
+    <value>Dach</value>
+  </data>
+  <data name="BTA_ART_BODENPLATTE" xml:space="preserve">
+    <value>Bodenplatte</value>
+  </data>
+  <data name="BTA_ART_FENSTER" xml:space="preserve">
+    <value>Fenster</value>
+  </data>
+  <data name="BTA_ART_TUER" xml:space="preserve">
+    <value>Tür</value>
+  </data>
+  <data name="BTA_ART_INNENWAND" xml:space="preserve">
+    <value>Innenwand</value>
+  </data>
+  <data name="BTA_ART_DECKE" xml:space="preserve">
+    <value>Decke</value>
+  </data>
+  <data name="BTA_ART_VORHANGFASSADE" xml:space="preserve">
+    <value>Vorhangfassade</value>
+  </data>
+  <data name="BTA_ART_SONSTIGES" xml:space="preserve">
+    <value>Sonstiges</value>
+  </data>
+  <data name="BTA_ART_JEDE" xml:space="preserve">
+    <value>für jede Bauteilart</value>
+  </data>
+  <data name="BTA_RASTER" xml:space="preserve">
+    <value>Schichten von innen nach außen</value>
+  </data>
+  <data name="BTA_LEER_SCHICHTEN" xml:space="preserve">
+    <value>Noch keine Schicht – „+ Neue Schicht …“ legt die innerste an.</value>
+  </data>
+  <data name="BTA_SP_DICKE" xml:space="preserve">
+    <value>Dicke [mm]</value>
+  </data>
+  <data name="BTA_SP_LAMBDA" xml:space="preserve">
+    <value>λ [W/(mK)]</value>
+  </data>
+  <data name="BTA_SP_RHO" xml:space="preserve">
+    <value>ρ [kg/m³]</value>
+  </data>
+  <data name="BTA_SP_CP" xml:space="preserve">
+    <value>c_p [J/(kgK)]</value>
+  </data>
+  <data name="BTA_LBL_SCHICHT" xml:space="preserve">
+    <value>Schicht {0}</value>
+  </data>
+  <data name="BTA_LBL_BAUSTOFF" xml:space="preserve">
+    <value>Baustoff</value>
+  </data>
+  <data name="BTA_FREIE_EINGABE" xml:space="preserve">
+    <value>(freie Eingabe)</value>
+  </data>
+  <data name="BTA_LBL_LUFTSCHICHT" xml:space="preserve">
+    <value>Luftschicht</value>
+  </data>
+  <data name="BTA_HINWEIS_LUFTSCHICHT" xml:space="preserve">
+    <value>Ohne λ ist die Luftschicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8, und sie trägt keine Speichermasse.</value>
+  </data>
+  <data name="BTA_R_SCHICHT" xml:space="preserve">
+    <value>R = {0} m²K/W</value>
+  </data>
+  <data name="BTA_R_OFFEN" xml:space="preserve">
+    <value>R: – (nicht bestimmbar)</value>
+  </data>
+  <data name="BTA_BTN_INNEN" xml:space="preserve">
+    <value>Nach innen</value>
+  </data>
+  <data name="BTA_BTN_AUSSEN" xml:space="preserve">
+    <value>Nach außen</value>
+  </data>
+  <data name="BTA_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Schicht entfernen</value>
+  </data>
+  <data name="BTA_BTN_NEUE_SCHICHT" xml:space="preserve">
+    <value>+ Neue Schicht …</value>
+  </data>
+  <data name="BTA_SUMME_R" xml:space="preserve">
+    <value>R = Σ d/λ = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_U" xml:space="preserve">
+    <value>U = {0} W/(m²K)</value>
+  </data>
+  <data name="BTA_SUMME_C" xml:space="preserve">
+    <value>C = Σ ρ·c_p·d = {0} kJ/(m²K)</value>
+  </data>
+  <data name="BTA_SUMME_TBT" xml:space="preserve">
+    <value>T_BT = {0} d · C₁ = {1} kJ/(m²K) (VDI 6007, Gl. (10a)–(10d))</value>
+  </data>
+  <data name="BTA_SUMME_TBT_OFFEN" xml:space="preserve">
+    <value>T_BT: nicht bestimmbar – {0}</value>
+  </data>
+  <data name="BTA_SUMME_OFFEN" xml:space="preserve">
+    <value>Summen nicht bestimmbar – {0}</value>
+  </data>
+  <data name="BTA_HERLEITUNG_U" xml:space="preserve">
+    <value>U = 1/(R_si + R + R_se) mit R_si = {0} und R_se = {1} m²K/W – Neigung {2}° aus der Bauteilart, an Außenluft (DIN EN ISO 6946, Tabelle 7).</value>
+  </data>
+  <data name="BTA_HERLEITUNG_TBT" xml:space="preserve">
+    <value>Bezugsperiode aus R₁;rel = {0} und C₁;rel = {1}.</value>
   </data>
   <data name="BAUTEIL_MSG_SCHICHT_DICKE" xml:space="preserve">
     <value>Schicht {0}: Die Dicke muss größer als null sein.</value>
@@ -15691,6 +16015,12 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="MENU_GEB_TYPEN" xml:space="preserve">
     <value>Gebäudetypen</value>
   </data>
+  <data name="MENU_BAUSTOFFE" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="MENU_BAUTEILAUFBAUTEN" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
   <data name="MENU_HELP" xml:space="preserve">
     <value>Hilfe</value>
   </data>
@@ -22512,6 +22842,75 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_GTYP_STUNDENWERTE_ERL" xml:space="preserve">
     <value>Die 24 Stundenwerte der gewählten Tageskurve im Arbeitsstand, Stunde 1 bis 24 – dieselben, die „Stundenwerte…“ zeigt. Geschrieben wird mit „Speichern“; solange geänderte Werte ungespeichert sind, hält die Maske den Kurvenwechsel an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BST" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="KI_DLG_MASKE_BTA" xml:space="preserve">
+    <value>Bauteilaufbauten</value>
+  </data>
+  <data name="KI_DLG_BST_BAUSTOFF_NAME" xml:space="preserve">
+    <value>Baustoff</value>
+  </data>
+  <data name="KI_DLG_BST_BAUSTOFF_ERL" xml:space="preserve">
+    <value>Der gewählte Baustoff der Liste (Schlüssel ist seine Id). Ihn zu setzen wählt die Zeile – derselbe Weg wie ein Klick; ungespeicherte Änderungen halten die Wahl an.</value>
+  </data>
+  <data name="KI_DLG_BST_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name des Baustoffs; zusammen mit dem Hersteller ist er im Katalog eindeutig.</value>
+  </data>
+  <data name="KI_DLG_BST_GRUPPE_ERL" xml:space="preserve">
+    <value>Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe.</value>
+  </data>
+  <data name="KI_DLG_BST_HERSTELLER_ERL" xml:space="preserve">
+    <value>Der Hersteller; leer heißt herstellerneutral (Norm- oder Richtwert).</value>
+  </data>
+  <data name="KI_DLG_BST_LAMBDA_ERL" xml:space="preserve">
+    <value>Die Wärmeleitfähigkeit λ in W/(mK), zulässig 0,005 bis 500; leer = nicht angegeben (0 wäre ein anderer Stoff).</value>
+  </data>
+  <data name="KI_DLG_BST_RHO_ERL" xml:space="preserve">
+    <value>Die Rohdichte ρ in kg/m³, zulässig 5 bis 8 000; leer = nicht angegeben.</value>
+  </data>
+  <data name="KI_DLG_BST_CP_ERL" xml:space="preserve">
+    <value>Die spezifische Wärmekapazität c_p in J/(kgK) – nicht kJ –, zulässig 100 bis 5 000; leer = nicht angegeben.</value>
+  </data>
+  <data name="KI_DLG_BST_QUELLE_ERL" xml:space="preserve">
+    <value>Regelwerk oder Datenblatt, aus dem die Werte stammen.</value>
+  </data>
+  <data name="KI_DLG_BTA_AUFBAU_NAME" xml:space="preserve">
+    <value>Bauteilaufbau</value>
+  </data>
+  <data name="KI_DLG_BTA_AUFBAU_ERL" xml:space="preserve">
+    <value>Der gewählte Aufbau der Liste (Schlüssel ist seine Id). Ihn zu setzen wählt die Zeile samt ihren Schichten – derselbe Weg wie ein Klick.</value>
+  </data>
+  <data name="KI_DLG_BTA_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name des Aufbaus; im Katalog eindeutig.</value>
+  </data>
+  <data name="KI_DLG_BTA_BAUTEILART_ERL" xml:space="preserve">
+    <value>Für welche Bauteilart der Aufbau gedacht ist; leer = für jede. Die Art bestimmt die Neigung und damit die Übergangswiderstände des U-Werts; Fenster und Vorhangfassade rechnen aus dem U-Wert und tragen keinen Schichtaufbau.</value>
+  </data>
+  <data name="KI_DLG_BTA_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Aufbau.</value>
+  </data>
+  <data name="KI_DLG_BTA_QUELLE_ERL" xml:space="preserve">
+    <value>Regelwerk oder Quelle des Aufbaus.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_BAUSTOFF_ERL" xml:space="preserve">
+    <value>Der Baustoff der Schicht (Schlüssel ist seine Id; leer = freie Eingabe). Die Wahl übernimmt λ, ρ und c_p des Stoffes als Kopie; danach sind sie überschreibbar.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_DICKE_ERL" xml:space="preserve">
+    <value>Die Dicke der Schicht in mm, zulässig 1 bis 1 000 (eine ruhende Luftschicht bis 300).</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_LAMBDA_ERL" xml:space="preserve">
+    <value>Die Wärmeleitfähigkeit λ der Schicht in W/(mK); leer nur bei einer ruhenden Luftschicht.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_RHO_ERL" xml:space="preserve">
+    <value>Die Rohdichte ρ der Schicht in kg/m³; eine Stoffschicht braucht sie für die Speichermasse.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_CP_ERL" xml:space="preserve">
+    <value>Die spezifische Wärmekapazität c_p der Schicht in J/(kgK); eine Stoffschicht braucht sie für die Speichermasse.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL" xml:space="preserve">
+    <value>Die Schicht ist eine Luftschicht. Ohne λ ist sie ruhend – ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8.</value>
   </data>
   <data name="KI_DLG_GTYP_OHNE_KURVE" xml:space="preserve">
     <value>Der gewählte Gebäudetyp führt keine Tageskurve; zuerst einen Typ mit Kurven wählen.</value>

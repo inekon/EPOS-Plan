@@ -112,6 +112,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Zeilen der Katalogverwaltung</b> nach <see cref="Katalogfilterprofil.FuerBaustoff"/>
         /// — EINE Abfrage; ein Satz der Auslieferung trägt das Schloss.
+        ///
+        /// <para><b>Der Schlüssel der Zeile ist die Id</b> (Mehrzonenkonzept 5.2): Derselbe Name
+        /// bei zwei Herstellern ist keine Dublette, eine Wahl über den Namen träfe beide. Ein
+        /// herstellerneutraler Stoff zeigt in der Spalte Hersteller den Leerwert — der Trichter
+        /// <see cref="Katalogfilterprofil.AUSDRUCK_LEER"/> findet genau ihn („nur herstellerneutral").</para>
         /// </summary>
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
@@ -124,9 +129,11 @@ namespace WindowsFormsApplication1
             foreach (DataRow r in dt.Rows)
             {
                 string bezeichner = Katalogfeld.Text(r, "Bezeichner");
-                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                int id = Katalogfeld.Ganzzahl(r, "ID");
+                var zeile = new Katalogfilterzeile(id, bezeichner)
                 {
-                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly"),
+                    Schluessel = id.ToString(CultureInfo.InvariantCulture)
                 };
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
@@ -138,6 +145,44 @@ namespace WindowsFormsApplication1
                     .MitText(Katalogfilterprofil.SpQuelle, Katalogfeld.Text(r, "Quelle")));
             }
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Wie viele Katalogschichten jeden Katalogstoff führen</b> — Id des Stoffs → Zahl der
+        /// Schichten in <c>Tab_Bauteilschicht_STAMM</c>; EINE Abfrage. Daran hängt die weiche
+        /// Löschsperre der Verwaltung (der Fremdschlüssel ist restriktiv, W11). Ein Stoff ohne
+        /// Schicht fehlt im Ergebnis.
+        /// </summary>
+        public static IReadOnlyDictionary<int, int> KatalogVerwendung()
+        {
+            var ergebnis = new Dictionary<int, int>();
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT \"ID_Baustoff\", COUNT(*) AS Anzahl FROM \"" + SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM + "\" " +
+                "WHERE \"ID_Baustoff\" IS NOT NULL GROUP BY \"ID_Baustoff\"");
+            if (dt == null) return ergebnis;
+            foreach (DataRow r in dt.Rows)
+                ergebnis[Convert.ToInt32(r["ID_Baustoff"], CultureInfo.InvariantCulture)] =
+                    Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Der Anzeigetext einer Herkunft (<see cref="DbWerte.HERKUENFTE"/>) — nie Steuerwert; ohne
+        /// Herkunft leer, ein unbekannter Wert erscheint, wie er ist. Die Texte sind die des
+        /// Gebäudeimports (<c>GIMP_HERKUNFT_*</c>): dieselben fünf Werte, dieselbe Bedeutung.
+        /// </summary>
+        public static string HerkunftText(string herkunft)
+        {
+            switch (herkunft)
+            {
+                case null: return "";
+                case DbWerte.HERKUNFT_MANUELL: return MyResource.Resource.GIMP_HERKUNFT_MANUELL;
+                case DbWerte.HERKUNFT_KATALOG: return MyResource.Resource.GIMP_HERKUNFT_KATALOG;
+                case DbWerte.HERKUNFT_IFC: return MyResource.Resource.GIMP_HERKUNFT_IFC;
+                case DbWerte.HERKUNFT_GBXML: return MyResource.Resource.GIMP_HERKUNFT_GBXML;
+                case DbWerte.HERKUNFT_VORGABE: return MyResource.Resource.GIMP_HERKUNFT_VORGABE;
+                default: return herkunft;
+            }
         }
 
         // =================================================================

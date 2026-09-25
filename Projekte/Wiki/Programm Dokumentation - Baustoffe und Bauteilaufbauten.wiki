@@ -1,0 +1,70 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Baustoffe und Bauteilaufbauten
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die zwei Kataloge '''Baustoffe''' und '''Bauteilaufbauten''' beschreiben die Gebäudehülle Schicht für Schicht: Ein Baustoff trägt seine Stoffwerte, ein Bauteilaufbau stapelt Schichten aus solchen Stoffen von innen nach außen. Aus den Schichten rechnet EPOS-Plan den U-Wert, die Speichermasse und die Bezugsperiode nach VDI 6007 – dieselben Größen, mit denen das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] ein Bauteil rechnet.
+
+Beide Kataloge öffnen Sie über das Menü '''Administration''' › ''Gebäude'': ''Baustoffe'' und ''Bauteilaufbauten''. Sie stehen im Aufbau der übrigen Verwaltungen: links die Liste, rechts das Stammblatt des gewählten Satzes, darüber die Auswahlleiste, unten die Fußleiste mit ''Speichern'', ''Verwerfen'', ''Neu…'' und ''Beenden''.
+
+== Baustoffe ==
+{{Anker|baustoffe}}
+
+Der Baustoffkatalog führt je Stoff einen Namen, eine Gruppe (etwa Mauerwerk, Beton, Dämmstoffe), den Hersteller und drei Stoffwerte:
+
+{| class="wikitable"
+! Wert !! Einheit !! zulässig
+|-
+| Wärmeleitfähigkeit λ || W/(mK) || 0,005 … 500
+|-
+| Rohdichte ρ || kg/m³ || 5 … 8 000
+|-
+| spezifische Wärmekapazität c_p || J/(kgK) || 100 … 5 000
+|}
+
+Die Wärmekapazität steht in '''J'''/(kgK), nicht in kJ/(kgK) wie in manchen Tabellenwerken – 1 kJ/(kgK) sind 1 000 J/(kgK). Ein leeres Feld heißt „nicht angegeben"; eine 0 wäre ein anderer Stoff und wird nicht angenommen. Dazu kommt die ''Quelle'', das Regelwerk oder Datenblatt, aus dem die Werte stammen.
+
+Ein Stoff '''ohne Hersteller''' ist herstellerneutral – ein Norm- oder Richtwert. Der Schalter '''nur herstellerneutral''' über der Liste zeigt nur diese Stoffe; er setzt den Filter „=" (ohne Wert) auf die Spalte ''Hersteller'', und ''Filter zurücksetzen'' nimmt ihn wieder weg. Derselbe Name darf bei zwei Herstellern vorkommen; innerhalb eines Herstellers ist er eindeutig.
+
+Die mitgelieferten Stoffe tragen das Schloss: Sie sind nur lesbar. Einen eigenen Satz legen Sie mit ''Neu…'' an oder mit ''Duplizieren…'' in der Auswahlleiste aus einem vorhandenen; ''Schloss aufheben…'' macht einen mitgelieferten Satz zu einem eigenen. ''Löschen'' ist gesperrt, solange eine Schicht des Aufbaukatalogs den Stoff verwendet – die Gruppe ''Herkunft'' im Stammblatt nennt, in wie vielen Schichten er steht.
+
+== Bauteilaufbauten ==
+{{Anker|bauteilaufbauten}}
+
+Ein Bauteilaufbau hat einen Namen, eine Bauteilart, eine Beschreibung, eine Quelle und seine '''Schichten'''. Die Liste zeigt je Aufbau die Bauteilart, den U-Wert, den Wärmedurchlasswiderstand R, die flächenbezogene Wärmekapazität, die Zahl der Schichten, die Gesamtdicke und die Herkunft.
+
+Die '''Bauteilart''' (Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade, Sonstiges oder ''für jede Bauteilart'') legt die Neigung fest, mit der der Katalog den U-Wert rechnet: Wand 90°, Dach und Decke 0°, Bodenplatte 180°. Fenster und Vorhangfassade rechnen im Gebäudemodell aus ihrem U-Wert; ein Schichtaufbau ist für sie nicht vorgesehen und wird beim Speichern abgelehnt.
+
+=== Schichten ===
+{{Anker|schichten}}
+
+Die Gruppe ''Schichten'' im Stammblatt ist eine Liste, in der jede Zeile eine Schicht ist – von innen (Schicht 1) nach außen. Je Schicht:
+
+* '''Baustoff''' – die Wahl aus dem Baustoffkatalog. Sie übernimmt λ, ρ und c_p des Stoffes als Kopie; danach können Sie jeden Wert überschreiben. ''(freie Eingabe)'' lässt die Werte stehen und löst die Zuordnung.
+* '''Dicke''' in mm, zulässig 1 bis 1 000 mm.
+* '''λ, ρ, c_p''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
+* '''Luftschicht''' – ohne λ ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit λ rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
+* '''R''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.
+
+Die Knöpfe ▲ und ▼ schieben eine Schicht nach innen oder außen, ✕ nimmt sie heraus, ''+ Neue Schicht …'' hängt außen eine an. Die Nummerierung folgt immer der Reihenfolge der Liste.
+
+=== Summen ===
+{{Anker|summen}}
+
+Unter den Schichten stehen die Kennwerte des Aufbaus:
+
+* '''R = Σ d/λ''' – der Wärmedurchlasswiderstand aller Schichten einschließlich der ruhenden Luftschichten.
+* '''U = 1/(R_si + R + R_se)''' – mit den Wärmeübergangswiderständen nach DIN EN ISO 6946, Tabelle 7, für die Neigung der Bauteilart an Außenluft. Die Zeile darunter nennt die angesetzten Werte R_si und R_se.
+* '''C = Σ ρ·c_p·d''' – die flächenbezogene Wärmekapazität in kJ/(m²K).
+* '''T_BT''' – die Bezugsperiode nach VDI 6007 Blatt 1, Gl. (10a)–(10d): 7 Tage, oder 2 Tage bei raumseitig abgedeckter Speichermasse (etwa hinter einer Vorsatzschale mit Luftschicht). Daneben steht die wirksame Kapazität C₁ je m² bei dieser Periode.
+
+Fehlt einer Schicht eine Angabe, bleiben die Summen leer, und die Zeile nennt, was fehlt.
+
+=== Speichern und Neu ===
+{{Anker|speichern}}
+
+Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusammen. Vorher prüft EPOS-Plan: ein Name, mindestens eine Schicht, jede Dicke im zulässigen Bereich, λ, ρ und c_p im zulässigen Bereich und vorhanden, wo die Schicht sie braucht. Eine verletzte Regel steht als Meldung über der Liste; der Aufbau bleibt ungespeichert, bis Sie sie beheben oder ''Verwerfen'' wählen.
+
+''Neu…'' öffnet dieselben Felder samt Schichtenliste als eigenes Blatt über der Verwaltung; ''OK'' prüft mit denselben Regeln und legt den Aufbau an. ''Duplizieren…'' kopiert einen Aufbau samt seinen Schichten unter neuem Namen.
+
+Ein Aufbau des Katalogs ist eine Vorlage: Übernimmt ein Projekt ihn, arbeitet es mit einer Kopie samt seinen Stoffen. Eine spätere Änderung im Katalog verschiebt kein gerechnetes Projekt.
+
+[[Kategorie:Programm Dokumentation]]

@@ -176,7 +176,8 @@ namespace WindowsFormsApplication1
             }
 
             // Stufe G3 (A14/E27): die Zonen der Gebäude - die eine Anschlussstelle für Lauf und
-            // Auskunft. Ohne angeschlossenen Leser trägt kein Gebäude eine Zone (Klassenweg).
+            // Auskunft. Der Leser liest je Projekt (höchstens vier Abfragen); ohne Tab_Zone
+            // (älterer Schemastand) oder ohne Zeilen trägt kein Gebäude eine Zone (Klassenweg).
             GebaeudeZonenanschluss.Anschliessen(ID_Projekt, _internalList);
         }
 

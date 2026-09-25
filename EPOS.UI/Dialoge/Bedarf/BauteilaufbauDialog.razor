@@ -1,0 +1,912 @@
+﻿@* Die Verwaltung "Bauteilaufbauten" - ein Katalogdialog mit Schichtenraster
+   (Gebaeudesimulation G3, Welle C; Softwarearchitektur Gebaeudesimulation 3.1-3.3,
+   Mehrzonenkonzept 5.1 und 5.3).
+
+   DAS GERUEST DER VERWALTUNGEN (Vorbild GebaeudetypDialog, wie die Baustoffverwaltung):
+   Katalograhmen, Katalogliste mit ZeileIstWahl, Auswahlleiste, Stammblatt, Fussleiste
+   Speichern - Verwerfen - Status - Neu... - Beenden. Kein fuenfter Katalogbrowser: Der
+   Aufbau ist ein AGGREGAT aus Kopf und Schichten, und die Schichten sind eine Liste im Dialog
+   (Zeilenraster), kein Feld eines Profils.
+
+   DIE LISTE: Name, Bauteilart, U, R, flaechenbezogene Kapazitaet, Schichtzahl, Dicke,
+   Herkunft - Profil und Zeilen aus dem Kern (Katalogfilterprofil.FuerBauteilaufbau,
+   BauteilaufbauCtrl.Katalogfilterzeilen, U/R/C ueber denselben Bauteilweg wie der
+   Summenfuss). Der Schluessel der Zeile ist die Id.
+
+   DAS STAMMBLATT: Kenndaten (Name, Bauteilart als Auswahl der neun Persistenzwerte oder
+   "fuer jede", Beschreibung, Quelle) und die Gruppe "Schichten" als Zeilenraster
+   (BauteilschichtenFelder) mit dem Summenfuss aus dem Kern. Der Arbeitsstand
+   (BauteilaufbauArbeitsstand) fuehrt Kopf UND Schichten; geschrieben wird er erst mit
+   "Speichern" bzw. dem OK von "Neu..." - ein Aggregat, EINE Transaktion im Kern
+   (BauteilaufbauCtrl.KatalogSpeichern). Die Pruefregeln (Mehrzonenkonzept 5.3,
+   BauteilaufbauCtrl.EingabePruefen) laufen genau einmal, im Speicherweg.
+
+   "NEU..." oeffnet denselben Editor als Ueberlagerung auf einem eigenen Arbeitsstand - der
+   Editor bleibt nur hinter "Neu..." (AD-Q6); ein Aufbau ohne Schicht wird nicht angelegt.
+
+   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, Rueckfrage, schmales Blatt, Dialog).
+   Enter ist nicht belegt - die Knoepfe schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-katalog-dialog epos-bauteilaufbau-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+    @if (_katalog.Count == 0)
+    {
+        <p class="epos-leisezeile epos-bauteilaufbau-leer">@Texte.LeerKatalog</p>
+    }
+
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
+        <Liste>
+            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
+        </Liste>
+
+        <Auswahl>
+            <Auswahlleiste Fokus="@Fokusname" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            <Stammblatt Name="@_stand.Gespeichert.Bezeichner" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@(!_auslieferung && _schloss.Entsperrt(ZeileZu(_gewaehlt)))"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    @* KENNDATEN: direkt bedienbar; ein Auslieferungssatz als TEXT. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeKenndaten" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Kenndatenwerte(_stand.Gespeichert) : null)">
+                        <KindInhalt>
+                            @Kenndatenfelder(_stand)
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
+                    @* SCHICHTEN: das Zeilenraster mit Summenfuss; ein Auslieferungssatz als TEXT,
+                       der Summenfuss als Nachsatz. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeSchichten" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? BauteilschichtenFelder.Werte(_stand, _baustoffe, _kennwerte, Texte.Schichten) : null)">
+                        <KindInhalt>
+                            <BauteilschichtenFelder Stand="@_stand" Baustoffe="@_baustoffe" Kennwerte="@_kennwerte"
+                                                    Texte="@Texte.Schichten" Geaendert="Nachziehen" />
+                        </KindInhalt>
+                        <Nachsatz>
+                            <BauteilschichtenFelder Stand="@_stand" Baustoffe="@_baustoffe" Kennwerte="@_kennwerte"
+                                                    Texte="@Texte.Schichten" NurSummen="true" />
+                        </Nachsatz>
+                    </Stammblattgruppe>
+
+                    @* HERKUNFT: immer Text. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeHerkunft" Lesemodus="true" Werte="@Herkunftwerte" />
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
+    </Katalograhmen>
+
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15): Speichern - Verwerfen - Fueller (Statuszeile) -
+       Neu... - Beenden. Duplizieren..., Schloss und Loeschen stehen in der Auswahlleiste. *@
+    <div class="epos-leiste">
+        @if (Speichern is not null)
+        {
+            @if (_auslieferung)
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true"
+                        title="@Texte.SpeichernGesperrt" @onclick="BeiSpeichern">@Texte.KnopfSpeichern</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" disabled="@(!_stand.Geaendert)"
+                        @onclick="BeiSpeichern">@Texte.KnopfSpeichern</button>
+            }
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Geaendert)"
+                    @onclick="BeiVerwerfen">@Texte.KnopfVerwerfen</button>
+        }
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Speichern is not null)
+        {
+            <button type="button" class="epos-knopf" @onclick="BeiNeu">@Texte.KnopfNeu</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="Schliessen">@Texte.KnopfBeenden</button>
+    </div>
+
+    @* --- "Neu...": derselbe Editor auf einem eigenen Arbeitsstand; OK prueft und legt an --- *@
+    <Ueberlagerung Offen="@_neuOffen" Titel="@Texte.TitelNeu" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="NeuSchliessen">
+        <KindInhalt>
+            @if (_neuOffen)
+            {
+                <div class="epos-bauteilaufbau-neu">
+                    @if (_neuMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_neuMeldung" />
+                    }
+                    @Kenndatenfelder(_neuStand)
+                    <BauteilschichtenFelder Stand="@_neuStand" Baustoffe="@_baustoffe" Kennwerte="@_neuKennwerte"
+                                            Texte="@Texte.Schichten" Geaendert="NeuNachziehen" />
+                    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="NeuErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -------- *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@Texte.KnopfDuplizieren"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@Texte.LabelBezeichner"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@Texte.NameLeer" Pruefung="NameBelegt"
+                              OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen"
+                              Geschlossen="BeiDuplizierName" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@Texte.KnopfLoeschen"
+                Frage="@_loeschfrageText"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiLoeschfrage" />
+
+    @* --- Rueckfrage vor dem Umschalten des Schlosses (AD-Q15, Vorgabe Nein) *@
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiSchlossAntwort" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle (BauteilaufbauHuelle)
+    // =====================================================================
+
+    /// <summary>Die Zeilen der Liste (<c>BauteilaufbauCtrl.Katalogfilterzeilen</c>); ohne sie ist die Liste leer.</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Spalten — <c>Katalogfilterprofil.FuerBauteilaufbau</c>; ohne sie das Profil mit den Ressourcentexten.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der Verwaltungen).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>Lädt einen Aufbau samt Schichten über seine Id; <c>null</c> = es gibt ihn nicht (mehr).</summary>
+    [Parameter] public Func<int, BauteilaufbauDaten?>? Lies { get; set; }
+
+    /// <summary>Die Baustoffe des Katalogs zur Wahl in einer Schicht; ohne sie nur freie Eingabe.</summary>
+    [Parameter] public Func<IReadOnlyList<BaustoffWahl>>? Baustoffe { get; set; }
+
+    /// <summary>
+    /// Die Bauteilarten zur Wahl — Persistenzwert und Anzeigetext, der erste Eintrag mit leerem
+    /// Wert heißt „für jede Bauteilart". Ohne sie nur dieser eine Eintrag.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Wert, string Text)>? Bauteilarten { get; set; }
+
+    /// <summary>
+    /// Der Summenfuß aus dem Kern (<c>BauteilaufbauCtrl.Kennwerte</c>): R je Schicht, R, U, C,
+    /// T_BT. Ohne ihn bleibt der Fuß leer — die Oberfläche rechnet nicht.
+    /// </summary>
+    [Parameter] public Func<BauteilaufbauDaten, AufbauKennwerteDaten>? Kennwerte { get; set; }
+
+    /// <summary>
+    /// Die Prüfregeln des Kerns (<c>BauteilaufbauCtrl.EingabePruefen</c>, Mehrzonenkonzept 5.3) —
+    /// <c>null</c> oder leer = gültig. Gerufen genau einmal, im Speicherweg, und vom Assistenten.
+    /// </summary>
+    [Parameter] public Func<BauteilaufbauDaten, string?>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Schreibt den Aufbau samt Schichten als EIN Aggregat — Id 0 legt an, sonst wird geändert
+    /// (<c>BauteilaufbauCtrl.KatalogSpeichern</c>). Ohne ihn weder „Speichern" noch „Neu…".
+    /// </summary>
+    [Parameter] public Func<BauteilaufbauDaten, BauteilaufbauSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>Löscht einen Aufbau samt Schichten (<c>BauteilaufbauCtrl.KatalogLoeschen</c>).</summary>
+    [Parameter] public Func<int, BauteilaufbauSpeicherErgebnis>? Loeschen { get; set; }
+
+    /// <summary>„Duplizieren…" samt Schichten (<c>BauteilaufbauCtrl.KatalogDuplizieren</c>).</summary>
+    [Parameter] public Func<int, string, BauteilaufbauSpeicherErgebnis>? Duplizieren { get; set; }
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15, <c>BauteilaufbauCtrl.SchlossSetzen</c>).</summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („Beenden", Esc, Kreuz) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel, das Raster mit eigenem Unterbündel).</summary>
+    [Parameter] public BauteilaufbauTexte Texte { get; set; } = new();
+
+    /// <summary>Der Titel im Dialogkopf; leer = eingebettet, die Überlagerung des Wirts trägt Titel und Kreuz.</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.BTA_TITEL;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Bauteilaufbau.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private Katalogfilterprofil? _profil;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private string _gewaehlt = "";
+    private bool _auslieferung;
+    private IReadOnlyList<BaustoffWahl> _baustoffe = Array.Empty<BaustoffWahl>();
+
+    /// <summary>Der ARBEITSSTAND des gewählten Aufbaus — Kopf und Schichten; „Speichern" schreibt ihn.</summary>
+    private BauteilaufbauArbeitsstand _stand = new();
+    private AufbauKennwerteDaten _kennwerte = AufbauKennwerteDaten.Leer;
+
+    private bool _neuOffen;
+    private BauteilaufbauArbeitsstand _neuStand = new();
+    private AufbauKennwerteDaten _neuKennwerte = AufbauKennwerteDaten.Leer;
+    private string _neuMeldung = "";
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+    private string _duplizierQuelle = "";
+
+    private bool _loeschfrage;
+    private string _loeschfrageText = "";
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    private readonly Zeilenauswahl _auswahl = new();
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+
+    private string _meldung = "";
+    private string _status = "";
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
+    private EventCallback _loeschen;
+    private readonly Schlossumschaltung _schloss = new();
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    // ---- Prüfhilfen für die Tests ---------------------------------------
+    /// <summary>Die Namen der Liste in Listenreihenfolge (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Namensliste => _katalog.Select(z => z.Bezeichner).ToList();
+    /// <summary>Der Schlüssel (die Id) der gewählten Zeile (Prüfhilfe).</summary>
+    public string Gewaehlt => _gewaehlt;
+    /// <summary>Der Arbeitsstand des Stammblatts (Prüfhilfe).</summary>
+    public BauteilaufbauArbeitsstand Arbeitsstand => _stand;
+    /// <summary>Der Arbeitsstand der Überlagerung „Neu…" (Prüfhilfe).</summary>
+    public BauteilaufbauArbeitsstand NeuStand => _neuStand;
+    /// <summary>Der Summenfuß des Stammblatts (Prüfhilfe).</summary>
+    public AufbauKennwerteDaten Summenfuss => _kennwerte;
+    /// <summary>Die stehende Meldung (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
+    /// <summary>Die Meldung der Überlagerung „Neu…" (Prüfhilfe).</summary>
+    public string NeuMeldung => _neuMeldung;
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe).</summary>
+    public string Status => _status;
+    /// <summary>Trägt das Stammblatt geänderte Werte? (Prüfhilfe)</summary>
+    public bool Geaendert => _stand.Geaendert;
+    /// <summary>Ist der gewählte Aufbau ein Auslieferungssatz? (Prüfhilfe)</summary>
+    public bool Auslieferung => _auslieferung;
+    /// <summary>Steht die Überlagerung „Neu…"? (Prüfhilfe)</summary>
+    public bool NeuOffen => _neuOffen;
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe)</summary>
+    public bool Loeschfrage => _loeschfrage;
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe)</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
+    private Katalogfilterprofil Profil
+        => _profil ??= Katalogprofil
+                       ?? Katalogfilterprofil.FuerBauteilaufbau(s => Resource.ResourceManager.GetString(s) ?? s);
+
+    /// <summary>Die Bauteilarten — ohne Gaben nur „für jede Bauteilart".</summary>
+    private IReadOnlyList<(string Wert, string Text)> Arten
+        => Bauteilarten is { Count: > 0 } ? Bauteilarten : new[] { ("", Texte.BauteilartJede) };
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
+        _baustoffe = Baustoffe?.Invoke() ?? Array.Empty<BaustoffWahl>();
+        ListeLaden();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BAUTEILAUFBAU, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BauteilaufbauKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: Die Satzwahl nimmt den Weg eines Klicks, Kopf und Schichten den Arbeitsstand.</summary>
+    private BauteilaufbauKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BauteilaufbauKiSicht
+        {
+            AufbauLesen = () => _gewaehlt,
+            AufbauSetzen = BeiZeile,
+            AufbauEintraege = () => KiMaskenanmeldung.Eintraege(_katalog, z => z.Schluessel, z => z.Bezeichner),
+            StandLesen = () => _stand.Gespeichert.Id > 0 ? _stand : null,
+            Bauteilarten = () => Arten,
+            Baustoffe = () => _baustoffe,
+            Geaendert = Nachziehen
+        };
+    }
+
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _auslieferung,
+        Schreibschutzgrund = () => Texte.SpeichernGesperrt,
+        Pruefen = () => Pruefbefund(_stand.Arbeit) ?? "",
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null || _stand.Gespeichert.Id <= 0)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Texte.Titel));
+        if (_auslieferung) return KiKern.KiErgebnis.Abgelehnt(Texte.SpeichernGesperrt);
+        if (!_stand.Geaendert) return KiKern.KiErgebnis.Ok(_stand.Gespeichert.Bezeichner, anzahl: 0);
+
+        BeiSpeichern();
+        return _meldung.Length > 0
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(_stand.Gespeichert.Bezeichner, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =====================================================================
+    // Liste und Wahl
+    // =====================================================================
+
+    private void ListeLaden(string? wunsch = null)
+    {
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+
+        _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        string ziel = wunsch ?? _gewaehlt;
+        if (_katalog.Count == 0) { SatzWaehlen(""); return; }
+        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : _katalog[0].Schluessel);
+    }
+
+    /// <summary>Die Liste meldet eine Zeile. <b>Geänderte Werte halten die Wahl</b> (Konzept 3.3).</summary>
+    private void BeiZeile(string schluessel)
+    {
+        if (_stand.Geaendert && schluessel != _gewaehlt)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return;
+        }
+        SatzWaehlen(schluessel);
+    }
+
+    private void SatzWaehlen(string schluessel)
+    {
+        _meldung = "";
+        _gewaehlt = schluessel ?? "";
+        Katalogfilterzeile? zeile = ZeileZu(_gewaehlt);
+        BauteilaufbauDaten? gelesen = zeile is not null ? Lies?.Invoke(zeile.Id) : null;
+        BauteilaufbauDaten daten = gelesen
+            ?? (zeile is null ? new BauteilaufbauDaten() : new BauteilaufbauDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
+        _auslieferung = zeile?.Geschuetzt == true || daten.Auslieferung;
+        _stand = new BauteilaufbauArbeitsstand(daten);
+        KennwerteHolen();
+    }
+
+    private Katalogfilterzeile? ZeileZu(string schluessel) => _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+
+    private string Fokusname => ZeileZu(_gewaehlt)?.Bezeichner ?? "";
+
+    // =====================================================================
+    // Stammblatt
+    // =====================================================================
+
+    /// <summary>Die Kopffelder — im Stammblatt und in „Neu…" dieselben, je auf ihrem Arbeitsstand.</summary>
+    private RenderFragment Kenndatenfelder(BauteilaufbauArbeitsstand stand) => __builder =>
+    {
+        BauteilaufbauDaten d = stand.Arbeit;
+        <Formularraster>
+            <KindInhalt>
+                <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@d.Bezeichner"
+                          WertChanged="w => Kopf(stand, () => d.Bezeichner = w ?? string.Empty)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelBauteilart" Eintraege="@Arteintraege"
+                             Auswahl="@ArtIndex(d.Bauteilart)"
+                             AuswahlChanged="i => Kopf(stand, () => d.Bauteilart = ArtWert(i))" />
+                <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@d.Beschreibung" Mehrzeilig="true" Zeilen="2"
+                          WertChanged="w => Kopf(stand, () => d.Beschreibung = w ?? string.Empty)" />
+                <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle"
+                          WertChanged="w => Kopf(stand, () => d.Quelle = w ?? string.Empty)" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Arteintraege
+        => Arten.Select((a, i) => (i, a.Text)).ToList();
+
+    private int? ArtIndex(string wert)
+    {
+        IReadOnlyList<(string Wert, string Text)> arten = Arten;
+        for (int i = 0; i < arten.Count; i++)
+            if (string.Equals(arten[i].Wert, wert ?? "", StringComparison.Ordinal)) return i;
+        return 0;
+    }
+
+    private string ArtWert(int? index)
+    {
+        IReadOnlyList<(string Wert, string Text)> arten = Arten;
+        return index is int i && i >= 0 && i < arten.Count ? arten[i].Wert : "";
+    }
+
+    private string ArtText(string wert)
+    {
+        foreach ((string w, string t) in Arten)
+            if (string.Equals(w, wert ?? "", StringComparison.Ordinal)) return t;
+        return wert ?? "";
+    }
+
+    /// <summary>Eine Eingabe in ein Kopffeld — im Stammblatt zieht sie „geändert" nach, in „Neu…" die eigene Meldung.</summary>
+    private void Kopf(BauteilaufbauArbeitsstand stand, Action schritt)
+    {
+        if (ReferenceEquals(stand, _stand) && _auslieferung) return;
+        schritt();
+        stand.Eingabe();
+        if (ReferenceEquals(stand, _stand)) Nachziehen();
+        else NeuNachziehen();
+    }
+
+    /// <summary>Nach jeder Änderung im Stammblatt: Meldung und Status weichen, der Summenfuß kommt neu.</summary>
+    private void Nachziehen()
+    {
+        _meldung = "";
+        _status = "";
+        KennwerteHolen();
+    }
+
+    private void NeuNachziehen()
+    {
+        _neuMeldung = "";
+        _neuKennwerte = Kennwerte?.Invoke(_neuStand.Arbeit) ?? AufbauKennwerteDaten.Leer;
+    }
+
+    private void KennwerteHolen()
+        => _kennwerte = _stand.Gespeichert.Id > 0 || _stand.Schichten.Count > 0
+               ? Kennwerte?.Invoke(_stand.Arbeit) ?? AufbauKennwerteDaten.Leer
+               : AufbauKennwerteDaten.Leer;
+
+    /// <summary>„Außenwand · 5 Schichten · Auslieferungssatz".</summary>
+    private string Unterzeile
+    {
+        get
+        {
+            BauteilaufbauDaten d = _stand.Gespeichert;
+            if (d.Bezeichner.Length == 0) return "";
+            int n = d.Schichten.Count;
+            string schichten = n == 1 ? Texte.SchichtenEins
+                             : string.Format(CultureInfo.CurrentCulture, Texte.SchichtenZahl, n);
+            return ArtText(d.Bauteilart) + " · " + schichten + " · "
+                   + (_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+        }
+    }
+
+    /// <summary>U, R und C des Arbeitsstands — aus dem Summenfuß, nicht gerechnet.</summary>
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+    {
+        get
+        {
+            if (_stand.Gespeichert.Bezeichner.Length == 0 || !_kennwerte.U_WM2K.HasValue)
+                return Array.Empty<Stammblattkennzahl>();
+            var c = CultureInfo.CurrentCulture;
+            return new[]
+            {
+                new Stammblattkennzahl(_kennwerte.U_WM2K.Value.ToString("0.000", c) + " " + Texte.EinheitU, Texte.KennzahlU),
+                new Stammblattkennzahl((_kennwerte.R_M2KW ?? 0).ToString("0.00", c) + " " + Texte.EinheitR, Texte.KennzahlR),
+                new Stammblattkennzahl((_kennwerte.Kapazitaet_KJM2K ?? 0).ToString("0", c) + " " + Texte.EinheitKapazitaet, Texte.KennzahlC)
+            };
+        }
+    }
+
+    private IReadOnlyList<Stammblattwert> Kenndatenwerte(BauteilaufbauDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelBezeichner, d.Bezeichner),
+        new Stammblattwert(Texte.LabelBauteilart, ArtText(d.Bauteilart)),
+        new Stammblattwert(Texte.LabelBeschreibung, d.Beschreibung),
+        new Stammblattwert(Texte.LabelQuelle, d.Quelle)
+    };
+
+    private IReadOnlyList<Stammblattwert> Herkunftwerte
+    {
+        get
+        {
+            BauteilaufbauDaten d = _stand.Gespeichert;
+            var liste = new List<Stammblattwert> { new(Texte.LabelHerkunft, d.Herkunft) };
+            if (d.Quellkennung.Length > 0) liste.Add(new(Texte.LabelQuellkennung, d.Quellkennung));
+            return liste;
+        }
+    }
+
+    private string Aenderungshinweis
+    {
+        get
+        {
+            int n = _stand.GeaenderteFelder;
+            if (n == 0) return "";
+            return n == 1 ? Resource.ADM_SB_GEAENDERT_EINS
+                 : string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n);
+        }
+    }
+
+    // =====================================================================
+    // Speichern, Verwerfen, Neu — der EINE Schreibweg
+    // =====================================================================
+
+    private string? Pruefbefund(BauteilaufbauDaten d)
+    {
+        string? befund = Pruefen?.Invoke(d);
+        return string.IsNullOrEmpty(befund) ? null : befund;
+    }
+
+    /// <summary>
+    /// „Speichern": die Prüfregeln EINMAL, dann das Aggregat über die Hülle in EINER
+    /// Transaktion; danach liest die Liste neu, die Wahl bleibt, die Statuszeile meldet es.
+    /// Scheitert der Schritt, bleibt der Arbeitsstand stehen — ein zweites „Speichern" versucht
+    /// ihn erneut.
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        _meldung = "";
+        if (_auslieferung) { Warnen(Texte.SpeichernGesperrt); return; }
+        if (!_stand.Geaendert || _stand.Gespeichert.Id <= 0 || Speichern is null) return;
+
+        string? befund = Pruefbefund(_stand.Arbeit);
+        if (befund is not null) { Warnen(befund); return; }
+
+        BauteilaufbauSpeicherErgebnis e = Speichern(_stand.Arbeit.Kopie());
+        if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
+                                DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+    }
+
+    private void BeiVerwerfen()
+    {
+        _stand.Zuruecksetzen();
+        _meldung = "";
+        KennwerteHolen();
+    }
+
+    private void BeiNeu()
+    {
+        if (Speichern is null) return;
+        if (_stand.Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _neuStand = new BauteilaufbauArbeitsstand();
+        _neuKennwerte = AufbauKennwerteDaten.Leer;
+        _neuMeldung = "";
+        _neuOffen = true;
+    }
+
+    private void NeuSchliessen()
+    {
+        _neuOffen = false;
+        _neuMeldung = "";
+    }
+
+    /// <summary>„Neu…" — OK prüft (dieselben Regeln wie „Speichern") und legt Kopf und Schichten an.</summary>
+    private void NeuErgebnis(bool ok)
+    {
+        if (!ok) { NeuSchliessen(); return; }
+        if (Speichern is null) return;
+
+        BauteilaufbauDaten neu = _neuStand.Arbeit.Kopie();
+        neu.Id = 0;
+        string? befund = Pruefbefund(neu);
+        if (befund is not null) { _neuMeldung = befund; return; }
+
+        BauteilaufbauSpeicherErgebnis e = Speichern(neu);
+        if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
+
+        string name = neu.Bezeichner.Trim();
+        NeuSchliessen();
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Texte.Angelegt, name);
+    }
+
+    // =====================================================================
+    // Auswahlleiste: Vergleichen, Duplizieren..., Schloss, Löschen
+    // =====================================================================
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(4)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Duplizieren is not null)
+            liste.Add(new(Texte.KnopfDuplizieren, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        if (_schloss.Handlung(Schloss, _schlossHandlung, SchlossZiele, false) is { } schloss)
+            liste.Add(schloss);
+        if (Loeschen is not null)
+            liste.Add(new(Texte.KnopfLoeschen, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private bool Geschuetzt(string schluessel) => ZeileZu(schluessel)?.Geschuetzt == true;
+
+    /// <summary>Ist JEDE Zielzeile ein Auslieferungssatz, ist „Löschen" weich gesperrt.</summary>
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0 || ziele.Any(z => !Geschuetzt(z))) return "";
+            return Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    private void Warnen(string text) => _meldung = text ?? "";
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary><b>Der Vergleich</b> (V12): die Spalten der Liste nebeneinander — Bauteilart, U, R, C, Schichten, Dicke — und die Herkunft.</summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> schluessel = _auswahl.Gewaehlte;
+        _vergleichskoepfe = schluessel.Select(s => ZeileZu(s)?.Bezeichner ?? s).ToList();
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(schluessel.Count);
+        foreach (string s in schluessel)
+        {
+            Katalogfilterzeile? z = ZeileZu(s);
+            var felder = Profil.Spalten
+                .Where(sp => sp.Schluessel != Katalogfilterprofil.SpBezeichner && sp.Schluessel != Katalogfilterprofil.SpHerkunft)
+                .Select(sp => new Vergleichsfeld(sp.Schluessel, sp.Kopftext, z?.Text(sp.Schluessel) ?? ""))
+                .ToList();
+            felder.Add(new("HERKUNFT", Resource.ADM_VG_HERKUNFT,
+                Geschuetzt(s) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    /// <summary><b>„Löschen"</b> (V8, AD-Q9): Auslieferungssätze bleiben stehen; fragt zurück.</summary>
+    private void BeiLoeschen()
+    {
+        if (Loeschen is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) return;
+
+        var loeschbar = ziele.Where(z => !Geschuetzt(z)).ToList();
+        var geschuetzt = ziele.Where(Geschuetzt).Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        if (loeschbar.Count == 0) { Warnen(LoeschSperrgrund); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = geschuetzt.Count;
+
+        var namen = loeschbar.Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        string frage = namen.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.FrageLoeschen, namen[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            namen.Count, string.Join(", ", namen));
+        if (geschuetzt.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", geschuetzt));
+        _loeschfrageText = frage;
+        _loeschfrage = true;
+    }
+
+    private void BeiLoeschfrage(bool? ja)
+    {
+        _loeschfrage = false;
+        if (ja != true || Loeschen is null) return;
+
+        int geloescht = 0;
+        string einzeln = "";
+        string fehler = "";
+        foreach (string s in _loeschziele)
+        {
+            Katalogfilterzeile? z = ZeileZu(s);
+            if (z is null) continue;
+            BauteilaufbauSpeicherErgebnis e = Loeschen(z.Id);
+            if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
+            else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
+        }
+
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        _loeschziele = new List<string>();
+
+        if (geloescht > 0) ListeLaden();
+        if (fehler.Length > 0) Warnen(fehler);
+        if (geloescht == 0) return;
+
+        _status = ziele == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.Geloescht, einzeln)
+            : blieben > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
+    }
+
+    private void BeiDuplizieren()
+    {
+        if (Duplizieren is null) return;
+        if (_stand.Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) return;
+
+        _duplizierQuelle = ziele[0];
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(ZeileZu(_duplizierQuelle)?.Bezeichner ?? "", NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    private bool NameVergeben(string name) => _katalog.Any(z => z.Bezeichner == name);
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? Texte.NameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
+        if (zeile is null) return;
+
+        BauteilaufbauSpeicherErgebnis e = Duplizieren(zeile.Id, name);
+        if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_DUPLIZIERT, zeile.Bezeichner, name.Trim());
+    }
+
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =====================================================================
+
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _katalog);
+
+    private void BeiSchloss()
+    {
+        string? grund = _schloss.Fragen(Schloss, SchlossZiele, _stand.Geaendert);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Schloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeLaden();
+        _meldung = "";
+        _status = a.Status;
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _duplizierfrage || _schloss.FrageOffen)
+            return Task.CompletedTask;
+
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
+        return Schliessen();
+    }
+
+    /// <summary>Schließen — „Beenden", Esc und Kreuz, immer mit <c>true</c>. Geänderte Werte halten an.</summary>
+    private Task Schliessen()
+    {
+        if (_stand.Geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
+}

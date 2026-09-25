@@ -148,6 +148,10 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht) },
         { KiMaskennamen.GEBAEUDETYP,
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht) },
+        { KiMaskennamen.BAUSTOFF_KATALOG,
+          typeof(EPOS.UI.Dialoge.Bedarf.BaustoffKatalogKiSicht) },
+        { KiMaskennamen.BAUTEILAUFBAU,
+          typeof(EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht) },
         { KiMaskennamen.TYPPROFIL,
           typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
 
@@ -421,7 +425,9 @@ public class KiDialogkatalogTests : IDisposable
         // Gruppe 2b: die Editoren Tagesgang und Zapfkategorien. Zapfprofil Z4, Gruppe 3: der Katalog
         // der Brauchwasser-Nutzungsarten und sein Editor. Zapfprofil Z4b, Gruppe 2: der Dialog der
         // eingespielten VDI-4655-Typtage. Zapfprofil Z5, Gruppe 3: der Dialog der Messdaten.
-        Assert.Equal(82, katalog.Anzahl);
+        // Gebaeudesimulation G3, Welle C: die Verwaltungen der Baustoffe und der
+        // Bauteilaufbauten.
+        Assert.Equal(84, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -817,6 +823,12 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.GESETZESKATALOG);
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Einstellungen,
                      KiMaskenziele.EINSTELLUNGEN);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BaustoffKatalog,
+                     KiMaskenziele.BAUSTOFF_KATALOG);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BauteilaufbauKatalog,
+                     KiMaskenziele.BAUTEILAUFBAU_KATALOG);
+        Assert.Equal(KiMaskenziele.BAUSTOFF_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUSTOFF_KATALOG));
+        Assert.Equal(KiMaskenziele.BAUTEILAUFBAU_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.BAUTEILAUFBAU));
     }
 
     /// <summary>
@@ -1442,6 +1454,12 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.GEBAEUDETYP] =
             "bindet über die Sichtklasse GebaeudetypKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist GebaeudetypDialogTests",
+        [KiMaskennamen.BAUSTOFF_KATALOG] =
+            "bindet über die Sichtklasse BaustoffKatalogKiSicht auf die Satzwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BaustoffKatalogDialogTests",
+        [KiMaskennamen.BAUTEILAUFBAU] =
+            "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
+            "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",
