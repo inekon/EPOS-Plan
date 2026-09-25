@@ -606,7 +606,8 @@ namespace WindowsFormsApplication1
                 b.Strombedarf = strombedarfMWh;
                 // E27 (E27‑Q4): Stufeneingang minus Erzeugung je Stunde, nie unter 0 - ein
                 // Überschuss ist Einspeisung (KWK-Split), kein negativer Bedarf.
-                b.Reststrombedarf = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion);
+                b.Reststrombedarf = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion,
+                                                                          bh.Stromproduktion_BHKW_MWh);
                 b.Waermeproduktion = bh.Waermeproduktion_BHKW_MWh;
                 b.Waermeueberschuss = bh.WaermeueberschussKwh / 1000.0;
                 b.Stromproduktion = bh.Stromproduktion_BHKW_MWh;

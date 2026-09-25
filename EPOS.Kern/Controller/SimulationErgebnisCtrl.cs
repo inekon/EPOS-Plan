@@ -741,7 +741,8 @@ namespace WindowsFormsApplication1
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
 
             // E27 (E27‑Q4): je Stunde geklemmt - wortgleich mit SimulationRunner.
-            e.ReststrombedarfMwh = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion);
+            e.ReststrombedarfMwh = SimulationControl.BhkwReststrombedarfMwh(bh.strombedarf, bh.stromproduktion,
+                                                                         bh.Stromproduktion_BHKW_MWh);
             e.WaermeueberschussMwh = bh.WaermeueberschussKwh / 1000.0;
             e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;

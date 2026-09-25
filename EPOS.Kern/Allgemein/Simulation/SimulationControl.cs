@@ -4429,19 +4429,24 @@ namespace WindowsFormsApplication1
         /// Der Reststrombedarf nach der BHKW-Stufe [MWh]: je Stunde Stufeneingang minus
         /// Erzeugung, nie unter 0 (E27, Entscheid E27‑Q4). Ein Überschuss ist Einspeisung
         /// (KWK-Split), kein negativer Bedarf. Gemeinsame Formel für Ergebnis und
-        /// Ergebnisansicht.
+        /// Ergebnisansicht. Ohne Überschussstunde bleibt es bei der Jahresdifferenz
+        /// <paramref name="strombedarf"/>.Sum()/1000 − <paramref name="stromproduktionMwh"/>,
+        /// bitgleich mit der Formel davor.
         /// </summary>
-        internal static double BhkwReststrombedarfMwh(double[] strombedarf, double[] stromproduktion)
+        internal static double BhkwReststrombedarfMwh(double[] strombedarf, double[] stromproduktion,
+                                                      double stromproduktionMwh)
         {
             if (strombedarf == null) return 0.0;
+            bool ueberschuss = false;
             double summe = 0.0;
             for (int h = 0; h < strombedarf.Length; h++)
             {
                 double erz = stromproduktion != null && h < stromproduktion.Length ? stromproduktion[h] : 0.0;
                 double r = strombedarf[h] - erz;
                 if (r > 0) summe += r;
+                else if (r < 0) ueberschuss = true;
             }
-            return summe / 1000.0;
+            return ueberschuss ? summe / 1000.0 : strombedarf.Sum() / 1000.0 - stromproduktionMwh;
         }
 
         public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
