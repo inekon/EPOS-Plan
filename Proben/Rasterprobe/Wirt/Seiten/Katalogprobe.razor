@@ -286,7 +286,7 @@
                                        Loeschen="@(id => new TwwNutzungsartSpeicherErgebnis(true, id, "", ""))"
                                        KategorienGaben="@(_ => new Dictionary<string, object> { ["Daten"] = KategorienDaten, ["Texte"] = new ZapfprofilTexte(), ["Pruefen"] = new Func<IReadOnlyList<ZapfprofilKategorieDaten>, ZapfprofilKategorienPruefungDaten>(KategorienPruefen) })"
                                        PaketWaehlen="@(_ => Task.FromResult(""))"
-                                       Importieren="@(_ => new TwwImportberichtDaten())"
+                                       Importieren="@((_, _) => new TwwImportberichtDaten())"
                                        Geschlossen="@(b => { })" />
             break;
 
