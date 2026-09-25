@@ -86,7 +86,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         MaxTemperatur = 24,
         WochenendAbsenkung = 0,
         SollFerien = 0,
-        Luftwechselrate = 0.5
+        Luftwechselrate = 0.5,
+        WwBedarf = 700
     };
 
     private IRenderedComponent<GebaeudeKatalogDialog> Aufbauen(
@@ -1104,7 +1105,23 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Assert.Equal(1, geschrieben.Wochenende);
         Assert.Equal(1, geschrieben.Ferien);
-        Assert.Equal(0, geschrieben.WwBedarf);
+    }
+
+    /// <summary>
+    /// Der Warmwasserbedarf zeigt kein Feld — OK schreibt ihn so, wie er geladen wurde, auch nach
+    /// einer Änderung am zweiten Reiter (Befund 25.09.2026: Speichern setzte 700 auf 0).
+    /// </summary>
+    [Fact]
+    public void OK_haelt_den_Warmwasserbedarf()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        ReiterWaehlen(cut, REITER2);
+
+        cut.FindAll("input[inputmode=decimal]")[3].Input("16");   // Wochenendabsenkung
+        Ok(cut);
+
+        Assert.Equal(700, geschrieben.WwBedarf);
     }
 
     [Fact]

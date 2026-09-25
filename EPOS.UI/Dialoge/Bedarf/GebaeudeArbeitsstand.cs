@@ -1143,8 +1143,14 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>
     /// <b>Die Ableitungen des Vorläufers</b> (<c>btn_Speichern_Click</c> der zweiten Maske) und
     /// der Hülle — unmittelbar vor dem Schreiben: leere Felder der Temperaturen gelten als 0,
-    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, WW_Bedarf 0,
-    /// Winterferienbeginn 0 → 366; dazu die Summe Ost + West und die Bauweise.
+    /// Maximaltemperatur &lt; 1 → 24, die Flags Wochenende und Ferien, Winterferienbeginn 0 → 366;
+    /// dazu die Summe Ost + West und die Bauweise.
+    ///
+    /// <para><b>Der Warmwasserbedarf bleibt stehen.</b> Der Vorläufer setzte <c>WW_Bedarf</c> beim
+    /// Übernehmen seiner zweiten Maske auf 0 — nur wer sie öffnete und bestätigte. Als Ableitung im
+    /// OK-Weg hätte das JEDES Speichern getan (Katalogeditor, Stammblatt, „Hülle und Zonen…") und
+    /// den Wert gelöscht, den kein Feld dieses Dialogs zeigt (Befund 25.09.2026: 700 → 0). Der
+    /// Stand trägt ihn unverändert vom Laden bis zum Schreiben.</para>
     /// </summary>
     public void Ableiten()
     {
@@ -1172,8 +1178,6 @@ public sealed class GebaeudeArbeitsstand
         beginn[0] = Ferienzeit.WinterbeginnGehoben(beginn[0]);
         Stand.Ferienbeginn = beginn;
         Stand.Ferienende = Ferienenden();
-
-        Stand.WwBedarf = 0;
     }
 
     // =====================================================================
