@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
@@ -16,6 +18,35 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Messlatte der Berichtsvorlagen</b> (Konzept Berichtsvorlagen mit Platzhaltern,
     /// Etappe BV-E0; Abschnitt 11 „Migration“ Nr. 1 und 5).
+    ///
+    /// <para><b>Was sie festhält.</b> Den Bericht, wie ihn der Bausteinweg HEUTE schreibt —
+    /// und zwar MIT DER ECHTEN VORLAGE des Repositoriums
+    /// (<see cref="Berichtsdatenproben.VORLAGE_REPO"/>), nicht mit den Ersatzstilen, die ein
+    /// Lauf ohne Vorlage bekommt. Zwei Proben (<see cref="Berichtsdatenproben"/>): das
+    /// Referenzprojekt 1030 und die synthetische Gruppe, beide mit allen Bausteinen samt
+    /// Wirtschaftlichkeit und der Tabelle „Nicht monetarisierbare Wirkungen“. Die Etappen
+    /// BV-E1 ff. bauen den Wortbericht auf Vorlagen mit Platzhaltern um; sie treffen diese
+    /// Messlatte oder begründen jede Abweichung (Konzept Abschnitt 11 Nr. 1).</para>
+    ///
+    /// <para><b>Die eingefrorenen Listen</b> liegen unter <c>EPOS.Kern.Tests/Messlatten/</c>:
+    /// <c>Bericht_Word_1030.txt</c>, <c>Bericht_Word_Gruppe.txt</c>,
+    /// <c>Bericht_Excel_1030.txt</c>, <c>Bericht_Excel_Gruppe.txt</c> (UTF-8 ohne BOM, CRLF;
+    /// gelesen über die Repowurzel, die Zeilenenden sind beim Vergleich gleichgültig). Aufbau
+    /// der Zeilen: <see cref="Berichtsstruktur"/>. Das Laufdatum steht darin nirgends — jedes
+    /// Datum im Text ist <c>&lt;datum&gt;</c>.</para>
+    ///
+    /// <para><b>Neu einfrieren.</b> Weicht ein Lauf ab, schreibt der Test die AKTUELLE Liste
+    /// in den Testausgabeordner — <c>EPOS.Kern.Tests/bin/&lt;Konfiguration&gt;/net10.0/Messlatten/</c>
+    /// — und meldet den ersten abweichenden Block. Ist die Abweichung gewollt und begründet
+    /// (Konzept 11 Nr. 1: Stiletiketten nach der Bereinigung, Lage der Wirkungstafel,
+    /// <c>{{bericht.datum}}</c> statt des DATE-Felds, jede neue Zeile eines Bausteins), wird
+    /// die Datei von dort nach <c>EPOS.Kern.Tests/Messlatten/</c> kopiert und mit der
+    /// Begründung im selben Commit eingecheckt. Eine fehlende Messlatte entsteht auf demselben
+    /// Weg. Nie von Hand editieren — die Liste ist, was der Lauf schreibt.</para>
+    ///
+    /// <para><b>Nebenbei gemessen:</b> die Laufzeit von Wort- und Tabellenbericht für 1030 und
+    /// für eine Gruppe mit sieben Ständen (<see cref="Laufzeit"/>) — der Maßstab für die
+    /// Leistungsabnahme der späteren Etappen („heute + 10 %“).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class BerichtVorlagenMesslatteTests : IDisposable
@@ -99,6 +130,202 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  2 — die Strukturmesslatte
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Strukturmesslatte.</b> Wortbericht (mit echter Vorlage) und Tabellenbericht
+        /// der Probe, als Strukturliste gegen die eingefrorene Liste unter
+        /// <c>EPOS.Kern.Tests/Messlatten/</c>. Beide Listen werden verglichen, bevor der Fall
+        /// fällt — eine Abweichung im Wortbericht verdeckt keine im Tabellenbericht.
+        /// </summary>
+        [Theory]
+        [InlineData(PROBE_1030)]
+        [InlineData(PROBE_GRUPPE)]
+        public void Messlatte_Word_und_Excel(string probe)
+        {
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = Probe(probe);
+                BerichtsKonfiguration konfig = Berichtsdatenproben.VolleKonfiguration();
+
+                string docx = Path.Combine(ordner, "bericht.docx");
+                new WordBerichtGenerator().Erzeuge(daten, konfig, docx, vorlage);
+                string xlsx = Path.Combine(ordner, "bericht.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, konfig, xlsx);
+
+                var befunde = new List<string>();
+                Vergleiche("Bericht_Word_" + probe + ".txt", Berichtsstruktur.Word(docx), befunde);
+                Vergleiche("Bericht_Excel_" + probe + ".txt", Berichtsstruktur.Excel(xlsx), befunde);
+                Assert.True(befunde.Count == 0, string.Join(Environment.NewLine + Environment.NewLine, befunde));
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>Unterordner der Messlatten, repo-relativ.</summary>
+        internal const string MESSLATTEN_REPO = "EPOS.Kern.Tests/Messlatten";
+
+        /// <summary>
+        /// Vergleicht die Liste des Laufs mit der eingefrorenen Datei <paramref name="datei"/>.
+        /// Bei Abweichung (oder fehlender Datei) steht die aktuelle Liste danach im
+        /// Testausgabeordner, und <paramref name="befunde"/> nennt den ersten abweichenden Block.
+        /// </summary>
+        private void Vergleiche(string datei, List<string> struktur, List<string> befunde)
+        {
+            var aktuell = new List<string> { KOPFZEILE + datei };
+            aktuell.AddRange(struktur);
+
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            string pfad = Path.Combine(wurzel, MESSLATTEN_REPO.Replace('/', Path.DirectorySeparatorChar), datei);
+            List<string> erwartet = File.Exists(pfad) ? Zeilen(File.ReadAllText(pfad, Encoding.UTF8)) : null;
+            if (erwartet != null && erwartet.SequenceEqual(aktuell, StringComparer.Ordinal))
+            {
+                _ausgabe.WriteLine(datei + ": " + aktuell.Count + " Zeilen, gleich der Messlatte");
+                return;
+            }
+
+            string ausgabe = Path.Combine(AppContext.BaseDirectory, "Messlatten", datei);
+            Directory.CreateDirectory(Path.GetDirectoryName(ausgabe));
+            File.WriteAllText(ausgabe, string.Join("\r\n", aktuell) + "\r\n", new UTF8Encoding(false));
+
+            befunde.Add(erwartet == null
+                ? datei + ": Die Messlatte fehlt (" + MESSLATTEN_REPO + "/" + datei + "). Die Liste dieses Laufs (" +
+                  aktuell.Count + " Zeilen) steht unter " + ausgabe + " — prüfen und nach " + MESSLATTEN_REPO + " kopieren."
+                : datei + ": weicht von der Messlatte ab. " + Unterschied(erwartet, aktuell) + Environment.NewLine +
+                  "Die Liste dieses Laufs steht unter " + ausgabe + " — ist die Abweichung begründet, von dort nach " +
+                  MESSLATTEN_REPO + " kopieren (Kopfkommentar der Testklasse).");
+        }
+
+        /// <summary>Die erste Zeile jeder Messlatte — sie nennt Herkunft und Regel.</summary>
+        private const string KOPFZEILE = "# Strukturmesslatte BV-E0 (BerichtVorlagenMesslatteTests, echte Vorlage) — ";
+
+        /// <summary>Die Zeilen eines Textes, gleich welche Zeilenenden; eine Schlusszeile ohne Inhalt entfällt.</summary>
+        private static List<string> Zeilen(string text)
+        {
+            List<string> zeilen = text.Split('\n').Select(z => z.TrimEnd('\r')).ToList();
+            if (zeilen.Count > 0 && zeilen[^1].Length == 0) zeilen.RemoveAt(zeilen.Count - 1);
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Der erste abweichende Block: gemeinsamer Anfang und gemeinsames Ende abgezogen, was
+        /// dazwischen steht — je Seite höchstens zehn Zeilen, mit Zeilennummer der Datei.
+        /// </summary>
+        private static string Unterschied(List<string> erwartet, List<string> aktuell)
+        {
+            int anfang = 0;
+            while (anfang < erwartet.Count && anfang < aktuell.Count &&
+                   string.Equals(erwartet[anfang], aktuell[anfang], StringComparison.Ordinal))
+                anfang++;
+            int ende = 0;
+            while (ende < erwartet.Count - anfang && ende < aktuell.Count - anfang &&
+                   string.Equals(erwartet[erwartet.Count - 1 - ende], aktuell[aktuell.Count - 1 - ende], StringComparison.Ordinal))
+                ende++;
+
+            var sb = new StringBuilder();
+            sb.Append("Messlatte ").Append(erwartet.Count).Append(" Zeilen, Lauf ").Append(aktuell.Count)
+              .Append(" Zeilen; erste Abweichung in Zeile ").Append(anfang + 1).Append('.');
+            Block(sb, "Messlatte", erwartet, anfang, erwartet.Count - ende);
+            Block(sb, "Lauf", aktuell, anfang, aktuell.Count - ende);
+            return sb.ToString();
+        }
+
+        private static void Block(StringBuilder sb, string seite, List<string> zeilen, int von, int bis)
+        {
+            sb.Append(Environment.NewLine).Append("  ").Append(seite);
+            if (bis <= von)
+            {
+                sb.Append(": keine Zeile an dieser Stelle (vor Zeile ").Append(von + 1).Append(')');
+                return;
+            }
+            sb.Append(" (Zeilen ").Append(von + 1).Append('–').Append(bis).Append("):");
+            for (int i = von; i < bis && i < von + 10; i++)
+                sb.Append(Environment.NewLine).Append("    ").Append(i + 1).Append(": ").Append(zeilen[i]);
+            if (bis - von > 10) sb.Append(Environment.NewLine).Append("    … ").Append(bis - von - 10).Append(" weitere");
+        }
+
+        // =====================================================================
+        //  3 — die Laufzeit heute
+        // =====================================================================
+
+        /// <summary>Sicherheitsgrenze je Erzeugung — der Fall misst, er bewertet nicht.</summary>
+        private const double GRENZE_SEKUNDEN = 120.0;
+
+        /// <summary>Erzeugungen je Probe und Ausgabe.</summary>
+        private const int LAEUFE = 3;
+
+        /// <summary>
+        /// <b>Die Laufzeit heute</b> — der Maßstab für die Leistungsabnahme der späteren Etappen
+        /// (Konzept 13, BV-E5: „heute + 10 %“). Wortbericht (mit echter Vorlage) und
+        /// Tabellenbericht je <see cref="LAEUFE"/>-mal für 1030 und für die synthetische Gruppe
+        /// mit sieben Ständen; gemessen wird allein die Erzeugung, nicht Simulation und
+        /// Wirtschaftlichkeitsrechnung der Probe davor. Die Zeiten stehen in der Testausgabe; der
+        /// Fall hält nur die Sicherheitsgrenze von <see cref="GRENZE_SEKUNDEN"/> s je Erzeugung.
+        /// </summary>
+        [Fact]
+        public void Laufzeit()
+        {
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsKonfiguration konfig = Berichtsdatenproben.VolleKonfiguration();
+                var proben = new List<(string Name, BerichtsDaten Daten)>
+                {
+                    ("1030", Probe(PROBE_1030)),
+                    ("Gruppe mit 7 Ständen", Probe(PROBE_GRUPPE, 7)),
+                };
+                Assert.Equal(7, proben[1].Daten.Varianten.Count);
+
+#if DEBUG
+                const string konfiguration = "Debug";
+#else
+                const string konfiguration = "Release";
+#endif
+                _ausgabe.WriteLine("Laufzeit · " + konfiguration + " · " +
+                                   System.Runtime.InteropServices.RuntimeInformation.OSDescription + " · " +
+                                   System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+
+                var zuLang = new List<string>();
+                int nummer = 0;
+                foreach ((string name, BerichtsDaten daten) in proben)
+                    foreach (string art in new[] { "Word", "Excel" })
+                    {
+                        var zeiten = new List<long>();
+                        for (int lauf = 1; lauf <= LAEUFE; lauf++)
+                        {
+                            string ziel = Path.Combine(ordner, "lauf_" + (++nummer) + (art == "Word" ? ".docx" : ".xlsx"));
+                            Stopwatch uhr = Stopwatch.StartNew();
+                            if (art == "Word") new WordBerichtGenerator().Erzeuge(daten, konfig, ziel, vorlage);
+                            else new ExcelBerichtGenerator().Erzeuge(daten, konfig, ziel);
+                            uhr.Stop();
+                            zeiten.Add(uhr.ElapsedMilliseconds);
+                            if (uhr.Elapsed.TotalSeconds > GRENZE_SEKUNDEN)
+                                zuLang.Add(name + " · " + art + " · Lauf " + lauf + ": " +
+                                           uhr.Elapsed.TotalSeconds.ToString("0.0") + " s");
+                        }
+                        List<long> sortiert = zeiten.OrderBy(z => z).ToList();
+                        _ausgabe.WriteLine("Laufzeit " + name + " · " + art + ": " + string.Join(" / ", zeiten) +
+                                           " ms (Median " + sortiert[sortiert.Count / 2] + " ms)");
+                    }
+
+                Assert.True(zuLang.Count == 0, "Über der Sicherheitsgrenze von " + GRENZE_SEKUNDEN + " s: " +
+                                               string.Join("; ", zuLang));
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 
@@ -132,6 +359,12 @@ namespace EPOS.Kern.Tests
                 daten = Berichtsdatenproben.Projektdaten1030();
                 p = new WirtschaftlichkeitCtrl().LadeParameter(Berichtsdatenproben.PROJEKT_1030);
                 p.IdStamm = Berichtsdatenproben.PROJEKT_1030;
+                // Der KWKG-Förderbeginn FEST: Ohne Inbetriebnahmedatum rechnet der Zuschlag ab
+                // dem Folgejahr des LAUFS (WirtschaftlichkeitCtrl.Foerderbeginn), und die
+                // Herleitung der Sätze („… Stand 2027“) kippte zum Jahreswechsel. Mit dem
+                // 01.01.2027 sind Wort- und Tabellenliste der Probe gleich denen ohne Datum
+                // (gemessen am 25.09.2026) — nur eben in jedem Jahr.
+                p.KwkgInbetriebnahme = new DateTime(2027, 1, 1);
             }
             else
             {
