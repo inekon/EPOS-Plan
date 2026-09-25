@@ -260,6 +260,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>G3 liest von der Zone nur Nutzfläche und Bauteile</b> (Konzept Gebäudesimulation N1.46,
+        /// Festlegungen 12 und 13): Eine Zone mit <c>IstBeheizt = 0</c> und eigenen Sollwerten,
+        /// Lüftungs-, Gewinn- und Übergabespalten bildet denselben Kern-Satz wie eine beheizte Zone
+        /// ohne sie — sie rechnet wie beheizt, mit den Werten des Gebäudes, bis G6.
+        /// </summary>
+        [Fact]
+        public void Eine_unbeheizte_Zone_und_die_uebrigen_Zonenspalten_bleiben_in_G3_ungelesen()
+        {
+            BauteilModel Wand() => new BauteilModel { ID = 1, Bezeichner = "Wand", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                                      Flaeche = 20.0, U_Wert = 0.3, Azimut = 180.0 };
+            var beheizt = new ZoneModel { ID = 5, Bezeichner = "Wohnen", Nutzflaeche = 120.0, Bauteile = { Wand() } };
+            var unbeheizt = new ZoneModel
+            {
+                ID = 5, Bezeichner = "Wohnen", Nutzflaeche = 120.0, IstBeheizt = false,
+                Raumhoehe = 3.5, Raumsolltemperatur_Tag = 17.0, Heizleistung_Max = 4.0, Luftwechsel_Nutzer = 2.0,
+                Interne_Waermegewinne = 900.0, Uebergabe_Art = DbWerte.UEBERGABE_RADIATOR,
+                Kuehlung_Aktiv = true, Kuehl_Sollwert = 24.0, Kuehlleistung_Max = 3.0,
+                Bauteile = { Wand() }
+            };
+
+            ZonenabbildungProbe.GleicherSatz(GebaeudeZonenabbildung.AlsZonensatz(beheizt, KeineAufbauten),
+                                             GebaeudeZonenabbildung.AlsZonensatz(unbeheizt, KeineAufbauten));
+        }
+
+        /// <summary>
         /// Benannte Fehler statt stiller Annahmen: eine unbekannte Bauteilart oder Randbedingung,
         /// ein Aufbau, den das Projekt nicht führt, ein Aufbau ohne Schicht, eine Schicht ohne
         /// Wertekopie, die keine Luftschicht ist.

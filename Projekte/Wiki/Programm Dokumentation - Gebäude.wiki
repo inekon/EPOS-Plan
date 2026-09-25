@@ -100,7 +100,7 @@ Ein Klick bestimmt zuerst den '''Hochrechnungsfaktor''': EPOS-Plan rechnet das G
 * Ab jetzt rechnet das Gebäude über seine Bauteile statt über die U-Wert-Gruppen.
 * Die Flächen werden mit dem Faktor auf die Projektfläche hochgerechnet; die Rückfrage nennt den Faktor und die Nutzfläche vor und nach der Hochrechnung.
 * Die Flächen- bzw. Verbrauchsangabe des Projekts gilt danach nicht mehr.
-* Trägt das Gebäude eine Leistungsgrenze für Heizung oder Kühlung, gilt sie danach der hochgerechneten Hülle.
+* Trägt das Gebäude eine Leistungsgrenze für Heizung oder Kühlung, nennt die Rückfrage sie mit ihrem Wert: Sie wird nicht hochgerechnet und gilt danach unverändert der hochgerechneten Hülle.
 
 Mit ''Ja'' entsteht im Arbeitsstand des Editors die Zone ''Gebäude'' mit diesen Bauteilen:
 

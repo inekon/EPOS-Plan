@@ -1040,7 +1040,11 @@
         </div>
     };
 
-    /// <summary>Die Rückfrage der Übernahme: Faktor, Nutzfläche alt → neu, die Angabe, die dann nicht mehr gilt.</summary>
+    /// <summary>
+    /// Die Rückfrage der Übernahme: Faktor, Nutzfläche alt → neu, die Angabe, die dann nicht mehr gilt,
+    /// und — trägt das Gebäude welche — die Leistungsgrenzen mit ihrem Wert, die nicht hochgerechnet
+    /// werden (E40).
+    /// </summary>
     private string Uebernahmefrage
     {
         get
@@ -1050,7 +1054,11 @@
             string frage = string.Format(c, ZonenTexte.FrageUebernehmen, v.Faktor.ToString("0.###", c),
                                          Zahl(v.NutzflaecheGebaeude, 2), Zahl(v.Zone?.Nutzflaeche, 2),
                                          Zahl(v.Angabe, 2), v.Einheit);
-            return v.Leistungsgrenzen ? frage + " " + ZonenTexte.FrageGrenzen : frage;
+            if (!v.Leistungsgrenzen) return frage;
+            var grenzen = new List<string>();
+            if (v.HeizgrenzeKw is double heiz) grenzen.Add(string.Format(c, ZonenTexte.GrenzeHeizung, heiz.ToString("0.##", c)));
+            if (v.KuehlgrenzeKw is double kuehl) grenzen.Add(string.Format(c, ZonenTexte.GrenzeKuehlung, kuehl.ToString("0.##", c)));
+            return frage + " " + string.Format(c, ZonenTexte.FrageGrenzen, string.Join(", ", grenzen));
         }
     }
 

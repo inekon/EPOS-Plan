@@ -80,8 +80,8 @@ wiederholbar (+0).
 ## Fragen aus der Welle
 
 E23‑Q1…Q5 stellt der Phase‑0-Bericht; entschieden hat sie der Orchestrator am 25.09.2026 (13:15) mit der Baufreigabe,
-nach Empfehlung — alle a. E23‑Q6 entstand mit der Ergänzung des Anwenders, E23‑Q7 im Phase‑1-Bericht; **beide sind offen
-beim Anwender**, gebaut ist jeweils die Empfehlung a (→ Register R‑E23).
+nach Empfehlung — alle a. E23‑Q6 entstand mit der Ergänzung des Anwenders, E23‑Q7 im Phase‑1-Bericht; beide sind am
+25.09.2026 nach Empfehlung a entschieden (→ Register R‑E23).
 
 | Frage | Lesarten | Entscheid |
 |---|---|---|
@@ -90,8 +90,8 @@ beim Anwender**, gebaut ist jeweils die Empfehlung a (→ Register R‑E23).
 | **E23‑Q3** Vermerk | (a) an der Herleitungszeile im Kern; (b) eine eigene Hinweiszeile mit Hüllenfeld; (c) still | a |
 | **E23‑Q4** Geltungsbereich des Vermerks | (a) nur im Projektmodus; (b) auch in den Kostenvorlagen | a |
 | **E23‑Q5** Umstellungsangebot | (a) keins; (b) die Bestandszeile auf „% des Endenergiebedarfs“ umstellen | a |
-| **E23‑Q6** „% der Endenergiekosten“ im Betriebsraster der Wärmepumpe | (a) lassen; (b) sperren | **offen beim Anwender** — Empfehlung a, gebaut a |
-| **E23‑Q7** „% des Endenergiebedarfs“ (die Standardvorlage 13 sät sie für die Hilfsenergie der Wärmepumpe, Live-DB 4 Zeilen), „je kW Leistung“ und „je kW Heizleistung“ an der Wärmepumpe | (a) wählbar lassen — kein kWh/a-Satz; (b) auch sperren, dann Vorlage 13 und Schemaschritt 94 umstellen | **offen beim Anwender** — Empfehlung a, gebaut a |
+| **E23‑Q6** „% der Endenergiekosten“ im Betriebsraster der Wärmepumpe | (a) lassen; (b) sperren | **entschieden 25.09.2026**, nach Empfehlung: a |
+| **E23‑Q7** „% des Endenergiebedarfs“ (die Standardvorlage 13 sät sie für die Hilfsenergie der Wärmepumpe, Live-DB 4 Zeilen), „je kW Leistung“ und „je kW Heizleistung“ an der Wärmepumpe | (a) wählbar lassen — kein kWh/a-Satz; (b) auch sperren, dann Vorlage 13 und Schemaschritt 94 umstellen | **entschieden 25.09.2026**, nach Empfehlung: a |
 
 ## Abweichungen und Befunde
 
@@ -121,7 +121,7 @@ beim Anwender**, gebaut ist jeweils die Empfehlung a (→ Register R‑E23).
   übersprungen); Testhost-Regel eingehalten.
 - **Merge** `f7823b8e` auf `pm25` über `c48de9e0` ohne Konflikt (Baum gleich `git merge-tree` der beiden Eltern).
 - **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte, voller Lauf 14.379 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 7.121 und 1 übersprungen, EPOS.UI 6.296, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE510.log`, 25.09.2026 13:02–13:10 Uhr, auf `f7823b8e`); Referenzlauf 14/14 gegen R16 byte-gleich aus dem Bau (Worktree e23)
-- **CI:** steht aus (Beobachtung nach dem Push)
+- **CI:** Kern ubuntu 36128668523 (Arbeitszweig), Kern `main` 36128672959 und Windows `main` 36128673030 auf `b0eb1783` grün
 
 ## Abnahme am Gerät (A‑E23‑1, Windows)
 
@@ -154,8 +154,10 @@ der Wärmepumpe gestrichen, Satz zur vorhandenen Position mit dem Vermerk „Alt
 
 ## Offen
 
-- **E23‑Q6 und E23‑Q7** — Anwenderentscheid: die Prozent- und Leistungsbemessungen an der Wärmepumpe lassen (a,
-  Empfehlung, gebaut) oder sperren (b; bei Q7 mit Umstellung der Vorlage 13 und des Schemaschritts 94).
+- **E23‑Q6 und E23‑Q7** — **entschieden 25.09.2026, nach Empfehlung: a** (lassen); die Prozent- und
+  Leistungsbemessungen an der Wärmepumpe bleiben wählbar.
 - **Abnahme am Gerät** A‑E23‑1 (fünf Schritte oben).
 - **Gate** und **CI** (Nachweis oben).
 - Der **Wiki-Sammel-Upload** am 26.09.2026 (Version 1.2.0.4, freigegeben).
+
+**Entscheide 25.09.2026:** E23‑Q6 und E23‑Q7 nach Empfehlung a (lassen), siehe Register R‑E23

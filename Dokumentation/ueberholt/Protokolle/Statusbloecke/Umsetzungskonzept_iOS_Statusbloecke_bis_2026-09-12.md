@@ -10829,3 +10829,64 @@ den Anker `dubletten`); die Import-Dialoge (`Form_*_einlesen`,
 `KatalogImportProfil.HilfeSchluessel`, `Main_PV_Test`,
 `Form_WechselrichterImport`) zeigen weiter auf Fachseiten, die Anker
 `import`/`import-kuehlkennlinien` liegen vor.
+
+## #511 — Hilfeknöpfe der Dublettenbereinigung und der Katalogimporte auf die Seite Gerätekataloge (25.09.2026)
+
+Anwenderauftrag „fahre fort“ 25.09.2026 (Folgekandidaten aus „Nach #509 (b)“).
+Basis `b0eb1783` (#510); Commits (Opus 5.5) `41449de3` (#511: Hilfeknöpfe
+Dubletten und Katalogimporte auf Gerätekataloge), `26b4564b` (Papiere #511:
+Tafelzeile Gerätekataloge, Seitenliste Hilfesystem) und `08c40a8d` (#511:
+Wechselrichterimport-Hilfe, Kern-Bereich, Zuordnung). Kein Schemaschritt;
+Kern-Code nur eine Zeile in `KiChatKontext.BEREICH_JE_HILFEPRAEFIX`
+(`Form_WechselrichterImport` → `B_PHOTOVOLTAIK`, nötig für
+`KiDialogaufrufTests.Jeder_Hilfeschluessel_des_Bestands_findet_einen_Bereich`).
+
+**(a) Umsetzung.** Ausschließlich über
+`WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt` (Schlüssel im Kern
+in `KatalogBrowserProfil` und `ModulKatalogProfil`, Wärmepumpen-Stamm über
+`Form_WP.btn_Help`; keine Umbenennung, kein Doppel, die Vorsilben bleiben für
+die KI-Erkennung stehen). Acht Umstellungen (Schlüssel | Ort | vorher →
+nachher): `Form_KatalogDubletten.btn_Help` |
+`EPOS.UI/Dialoge/Admin/KatalogDublettenDialog.razor` | `Katalogpflege` (live
+vorhanden, keine Repo-Quelle) → `Gerätekataloge#dubletten` — der Abschnitt
+beschreibt die ganze Bedienung (Katalogwahl, Prüfen, Baum, Gegenüberstellung,
+vier Aktionen, Löschschutz) und hat eine Repo-Quelle mit Ankerwache, die
+Live-Seite Katalogpflege bleibt im Wiki. `Form_Heizkessel_einlesen.btn_Help`,
+`Form_PufferSp_einlesen.btn_Help`, `Form_SolarKollektoren_einlesen.btn_Help`,
+`Form_WP_einlesen.btn_Help`, `Form_Stromspeicher_einlesen.btn_Help` |
+`EPOS.UI/Dialoge/Import/KatalogImportDialog.razor` (Weiche) | Fachseiten
+Heizkessel/Pufferspeicher/Solarthermie/Wärmepumpe/Stromspeicher (ohne
+Importabschnitt) → `Gerätekataloge#import` — die Fachseiten beschreiben nur den
+Projektdialog, der WP-Import liest Heiz- und Kühlkennlinien, `#import` zeigt
+den Ablauf, der Anker `import-kuehlkennlinien` folgt darunter.
+`Main_PV_Test.btn_Help` | `EPOS.Kern/Allgemein/Import/ModulImportProfil.cs`
+(PV) | `Photovoltaik` → `#import`. `Form_WechselrichterImport.btn_Help` |
+`ModulImportProfil.cs` (Wechselrichter) | keine Zeile, der Knopf blieb still →
+`#import` (neu, mit der Kern-Zeile). Gelassen:
+`KatalogImportProfil.HilfeSchluessel` (Bereichsnamen, kein Dialog liest sie);
+die Nicht-Katalogimporte (`Form_GebaeudeImport`, `Form_ImportKonflikte`,
+`Form_ProjektExportImport`, `Form_SpotpreisImport`,
+`Form_GanglinieImportOptionen`, `Form_Stromganglinie.btn_Help_Import`,
+`Form_AdminWaermeeinlesen`, `Form_Waermebedarf.btn_Help_Import`). Die Anker
+`dubletten`, `import`, `import-kuehlkennlinien` standen schon in der Quelle,
+unverändert; Ziele geprüft live über `action=raw` und in den Repo-Quellen über
+`Projekte/Wiki/*.wiki` und `help_cache.json`. Übergang: bis zur Neuanlage der
+Seite am 26.09.2026 bleiben die acht Knöpfe still.
+
+**(b) Papiere (Agent).** `help_mapping.txt` (acht Zeilen als Block mit
+Kopfkommentar hinter den acht Verwaltungen von #509);
+`Wiki_Update_2026-09-26.md` Tafelzeile Gerätekataloge additiv „mit #511 auch
+Dubletten- und Import-Dialoge …“; die Seitenliste des Konzepts Hilfesystem
+trägt Gerätekataloge jetzt mit acht Schlüsseln samt Ankern.
+
+**Gate.** Kern-Filter 0 Fehler; gefilterter Lauf (Hilfe, HelpMapping, Wiki,
+Dokumentation, Katalog, Import, Ki) Kern 1723, UI 1762, KiKern 549, Engine 2;
+nach dem Nachtrag (Ki, HelpMapping, Hilfe) Kern 563, UI 798, KiKern 549;
+Windows-Schale 0 Fehler (vor dem Nachtrag); Tabu 0 Treffer. Die Hauptsitzung
+ergänzt das Gate (voller Lauf, Windows-Schale).
+
+**Logbuch.** Keiner (Ergänzung zu #509).
+
+**Offen (in „Nach #511“).** (a) Die acht Knöpfe lösen erst nach der Neuanlage
+der Seite am 26.09.2026 auf. (b) `KatalogImportProfil.HilfeSchluessel` trägt
+weiter Bereichsnamen ohne Leser — Bestand, kein Handlungsbedarf.

@@ -25,10 +25,10 @@ namespace WindowsFormsApplication1
     // unterscheiden sie. Eine Spalte nur auf einer Seite waere beim CopyFromStamm sofort ein
     // Datenverlust.
     //
-    // HERSTELLER (Anwenderwunsch 24.09.2026): eine Spalte ueber 2.2 hinaus. NULL heisst
-    // herstellerneutral - ein Norm- oder Richtwert. Die Kataloge der wichtigsten Hersteller
-    // werden in einem spaeteren Schritt gesaet; die Spalte entsteht schon jetzt, damit dieser
-    // Schritt kein DDL braucht.
+    // HERSTELLER (Anwenderentscheid E39, 24.09.2026): eine Spalte ueber 2.2 hinaus. NULL heisst
+    // herstellerneutral - ein Norm- oder Richtwert. Die Produkte der wichtigsten Hersteller saet
+    // dieser Schritt mit (BaustoffSaat.cs); Hersteller und Bezeichner sind der natuerliche
+    // Schluessel der Saat (SaatSchreiben).
     //
     // DER PROJEKTFREMDSCHLUESSEL (Hausregel seit Schemaschritt 96, BETRIEB_SQLITE.md 2a).
     // ID_Projekt der Projektkopie traegt FOREIGN KEY auf Tab_Projekt mit ON DELETE CASCADE
@@ -80,8 +80,8 @@ namespace WindowsFormsApplication1
         public const string SPALTE_GRUPPE = "Gruppe";
 
         /// <summary>
-        /// Hersteller des Produkts; <b>NULL = herstellerneutral</b> (Norm- oder Richtwert).
-        /// Anwenderwunsch vom 24.09.2026: Herstellerkataloge kommen in einem späteren Schritt.
+        /// Hersteller des Produkts; <b>NULL = herstellerneutral</b> (Norm- oder Richtwert). Mit dem
+        /// Bezeichner der natürliche Schlüssel der Saat (E39).
         /// </summary>
         public const string SPALTE_HERSTELLER = "Hersteller";
 
