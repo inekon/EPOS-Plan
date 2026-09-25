@@ -178,6 +178,13 @@ namespace WindowsFormsApplication1
         private IReadOnlyDictionary<Z_ProjGebModel, int> _neueGebaeudeIds;
 
         /// <summary>
+        /// #497: Die echten Ids der im laufenden Speicherlauf neu angelegten Zeilen der
+        /// vier übrigen Zuordnungen — eingetragen erst nach dem Festschreiben
+        /// (<see cref="WizardCtrl.IdNachzug"/>), verworfen bei einem Rückzug.
+        /// </summary>
+        private WizardCtrl.IdNachzug _idNachzug;
+
+        /// <summary>
         /// Der Abdruck der fünf Gewerke (<see cref="AssistentAbgleich"/>) nach den
         /// Ladewegen bzw. nach dem letzten gelungenen Speicherlauf — der Stand der
         /// Datenbank, gegen den der Bearbeiten-Zweig vergleicht. <c>null</c> = kein
@@ -791,6 +798,7 @@ namespace WindowsFormsApplication1
 
             Gespeichert = false;
             _neueGebaeudeIds = null;
+            _idNachzug = new WizardCtrl.IdNachzug();
 
             // ===== DIE KLAMMER (W16a-O-1) ====================================
             // EIN Vorgang ueber den GANZEN Lauf. Festgeschrieben wird nur, wenn der
@@ -810,6 +818,7 @@ namespace WindowsFormsApplication1
                 catch (Exception)
                 {
                     Gespeichert = false;
+                    _idNachzug.Verwerfen();
                     vorgang.Rollback();
                     throw;
                 }
@@ -819,6 +828,7 @@ namespace WindowsFormsApplication1
                     // Der Schritt hat FALSE gemeldet: nichts von diesem Lauf bleibt
                     // stehen. Die Meldung selbst ist unveraendert (E-4).
                     Gespeichert = false;
+                    _idNachzug.Verwerfen();
                     vorgang.Rollback();
                     return ergebnis;
                 }
@@ -830,6 +840,7 @@ namespace WindowsFormsApplication1
                 catch (Exception)
                 {
                     Gespeichert = false;
+                    _idNachzug.Verwerfen();
                     vorgang.Rollback();
                     return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Commit");
                 }
@@ -840,8 +851,14 @@ namespace WindowsFormsApplication1
                 WizardCtrl.EchteIdsUebernehmen(_neueGebaeudeIds);
                 _neueGebaeudeIds = null;
 
+                // #497: Dasselbe fuer die vier uebrigen Zuordnungen - die Huelle und die
+                // Dialoge dahinter arbeiten ab jetzt mit den Ids der Datenbank.
+                _idNachzug.Uebernehmen();
+
                 // #490: Was jetzt in den Listen steht, steht in der Datenbank - ein zweites
-                // Speichern desselben Laufs ohne weitere Eingabe schreibt nichts.
+                // Speichern desselben Laufs ohne weitere Eingabe schreibt nichts. Der Abdruck
+                // wird NACH dem Id-Nachzug genommen (#497), und er gehoert jetzt diesem
+                // Projekt - im Neu-Zweig dem eben angelegten.
                 _gewerkStand = AssistentAbgleich.Abdruecke(this);
 
                 return ergebnis;
@@ -880,19 +897,19 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Energietraeger");
 
-            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
+            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Prozess");
 
-            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
+            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Stromganglinie");
 
             if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_WaermebedarfExtern");
 
-            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
+            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WaermebedarfExtern");
 
-            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
+            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang, _idNachzug))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
 
             // SENKEN BEIM ANLEGEN (Anwenderentscheid 23.09.2026): Die Anlagen stehen seit
@@ -980,7 +997,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))
                     return Fehler("Del_Projekt_Prozess");
 
-                if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
+                if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang, _idNachzug))
                     return Fehler("Add_Projekt_Prozess");
             }
 
@@ -991,7 +1008,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_Stromganglinie(ProjektId, vorgang))
                     return Fehler("Del_Stromganglinie");
 
-                if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
+                if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang, _idNachzug))
                     return Fehler("Add_Stromganglinie");
             }
 
@@ -1002,7 +1019,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
                     return Fehler("Del_WaermebedarfExtern");
 
-                if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
+                if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang, _idNachzug))
                     return Fehler("Add_WaermebedarfExtern");
             }
 
@@ -1013,7 +1030,7 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Del_Projekt_Stromverbraucher(ProjektId, vorgang: vorgang))
                     return Fehler("Del_Projekt_Stromverbraucher");
 
-                if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
+                if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang, _idNachzug))
                     return Fehler("Add_Projekt_Stromverbraucher");
             }
 

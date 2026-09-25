@@ -2912,6 +2912,46 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der ID-NACHZUG der übrigen vier Zuordnungen (Prozesswärme, Stromverbraucher,
+        /// Stromganglinie, externer Wärmebedarf; #497) — dasselbe Muster wie
+        /// <see cref="EchteIdsUebernehmen"/> für die Gebäude: Die Add-Wege merken sich je
+        /// angelegter Zeile ihre echte Zuordnungs-Id (und den Verweis auf die
+        /// Projektkopie), eingetragen wird erst nach dem Festschreiben
+        /// (<see cref="Uebernehmen"/>). Rollt der Vorgang zurück, wird der Nachzug
+        /// verworfen, und die Zeilen behalten ihre vorläufigen Ids.
+        ///
+        /// <para>Danach arbeiten die Hülle und nachgelagerte Dialoge (Entfernen einer
+        /// Zeile über <c>ID_Z</c>) mit den Ids der Datenbank, nicht mit den vorläufigen ab
+        /// 100000.</para>
+        /// </summary>
+        public sealed class IdNachzug
+        {
+            private readonly List<Action> _schritte = new List<Action>();
+
+            /// <summary>Zahl der gemerkten Einträge.</summary>
+            public int Anzahl => _schritte.Count;
+
+            /// <summary>Merkt einen Eintrag vor; <c>null</c> wird übergangen.</summary>
+            public void Merken(Action eintragen)
+            {
+                if (eintragen != null) _schritte.Add(eintragen);
+            }
+
+            /// <summary>Trägt alle gemerkten Ids ein — nur nach dem Festschreiben rufen.</summary>
+            public void Uebernehmen()
+            {
+                foreach (Action a in _schritte) a();
+                _schritte.Clear();
+            }
+
+            /// <summary>Verwirft den Nachzug (Rückzug des Vorgangs).</summary>
+            public void Verwerfen()
+            {
+                _schritte.Clear();
+            }
+        }
+
+        /// <summary>
         /// Die Zuordnungswerte einer Zeile in <c>Z_ProjektGebaeude</c>, so gelesen wie
         /// <see cref="Z_ProjGebCtrl.LiesProjekt"/> (NULL wie 0, leer, nein).
         /// </summary>
@@ -3052,7 +3092,10 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
-        public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list, DbVorgang vorgang = null)
+        /// <param name="nachzug">#497: merkt je angelegter Zeile ihre echte Id vor
+        /// (<see cref="IdNachzug"/>); <c>null</c> = kein Nachzug.</param>
+        public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list, DbVorgang vorgang = null,
+                                           IdNachzug nachzug = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
@@ -3082,9 +3125,10 @@ namespace WindowsFormsApplication1
                     ? "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner, Kanal) VALUES (?, ?, ?, ?, ?)"
                     : "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
 
+                int idZ = nextID++;
                 var ps = new List<DbParam>
                 {
-                    new DbParam("@id", nextID++),
+                    new DbParam("@id", idZ),
                     new DbParam("@pID", projektID),
                     new DbParam("@gID", projGanglinieId),
                     new DbParam("@bez", item.m_szBezeichner ?? "")
@@ -3094,11 +3138,17 @@ namespace WindowsFormsApplication1
                         Z_ProjektGebGanglinieCtrl.KanalOderHeizung(item.Kanal)));
 
                 if (!DataRepository.ExecuteSQL(sql, ps.ToArray())) return false;
+
+                Z_ProjWaermebedarfModel zeile = item;
+                nachzug?.Merken(() => { zeile.m_ID_Z = idZ; zeile.m_ID_Projekt = projektID; zeile.m_ID_Ganglinie = projGanglinieId; });
             }
             return true;
         }
 
-        public bool Add_Projekt_Prozess(int projektID, List<Z_ProjektProzesswaermeModel> list, DbVorgang vorgang = null)
+        /// <param name="nachzug">#497: merkt je angelegter Zeile ihre echte Id vor
+        /// (<see cref="IdNachzug"/>); <c>null</c> = kein Nachzug.</param>
+        public bool Add_Projekt_Prozess(int projektID, List<Z_ProjektProzesswaermeModel> list, DbVorgang vorgang = null,
+                                        IdNachzug nachzug = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
@@ -3136,8 +3186,9 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
+                int idZ = nextID++;
                 DbParam[] ps = {
-                    new DbParam("@id", nextID++),
+                    new DbParam("@id", idZ),
                     new DbParam("@pID", projektID),
                     new DbParam("@pwID", item.ID_Prozesswaerme),
                     new DbParam("@bez", item.szProzessname ?? ""),
@@ -3145,11 +3196,17 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+
+                Z_ProjektProzesswaermeModel zeile = item;
+                nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
             }
             return true;
         }
 
-        public bool Add_Projekt_Stromverbraucher(int projektID, List<Z_ProjektStromverbraucherModel> list, DbVorgang vorgang = null)
+        /// <param name="nachzug">#497: merkt je angelegter Zeile ihre echte Id vor
+        /// (<see cref="IdNachzug"/>); <c>null</c> = kein Nachzug.</param>
+        public bool Add_Projekt_Stromverbraucher(int projektID, List<Z_ProjektStromverbraucherModel> list, DbVorgang vorgang = null,
+                                                 IdNachzug nachzug = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
@@ -3187,8 +3244,9 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Stromverbraucher (ID, ID_Projekt, ID_Stromverbraucher, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
+                int idZ = nextID++;
                 DbParam[] ps = {
-                    new DbParam("@id", nextID++),
+                    new DbParam("@id", idZ),
                     new DbParam("@pID", projektID),
                     new DbParam("@svID", item.m_ID_Stromverbraucher),
                     new DbParam("@bez", item.m_szVerbraucher ?? ""),
@@ -3196,11 +3254,17 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+
+                Z_ProjektStromverbraucherModel zeile = item;
+                nachzug?.Merken(() => { zeile.m_ID_Z = idZ; zeile.m_ID_Projekt = projektID; });
             }
             return true;
         }
 
-        public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list, DbVorgang vorgang = null)
+        /// <param name="nachzug">#497: merkt je angelegter Zeile ihre echte Id vor
+        /// (<see cref="IdNachzug"/>); <c>null</c> = kein Nachzug.</param>
+        public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list, DbVorgang vorgang = null,
+                                       IdNachzug nachzug = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
@@ -3226,7 +3290,13 @@ namespace WindowsFormsApplication1
                     new DbParam("@bez", item.m_szStromganglinie ?? "")
                 };
 
-                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                // #497: Die Zuordnungs-Id vergibt die Datenbank (AUTOINCREMENT); fuer den
+                // Nachzug wird sie auf derselben Verbindung zurueckgelesen.
+                int idZ = DataRepository.ExecuteInsertAndGetId(sql, ps);
+                if (idZ <= 0) return false;
+
+                Z_ProjektStromganglinieModel zeile = item;
+                nachzug?.Merken(() => { zeile.m_ID_Z = idZ; zeile.m_ID_Projekt = projektID; zeile.m_ID_Stromganglinie = projGanglinieId; });
             }
             return true;
         }
