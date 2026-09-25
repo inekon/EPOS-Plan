@@ -1338,7 +1338,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** (umgesetzt, N13) | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** (umgesetzt, N14) | T3 (Schritt 131), `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2 in N14 (d) beantwortet), Importdialog (Gruppe 2, offen) | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
-| **Z5 — Kalibrierung und Validierung** (umgesetzt, N15) | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
+| **Z5 — Kalibrierung und Validierung** (umgesetzt, N15; Werkzeug bereit, Daten offen, N22) | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
 (N4). Z1 umgesetzt und nach `ios_migration_september` zusammengeführt (Push `4971556a`, Gate auf
@@ -1418,7 +1418,7 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 **Stand der Entscheide.** K1, K8, ZU1–ZU14 und die Lizenzfrage zu den VDI-6002-Kopien in der Ablage
 des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1, Kapitel 11).
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
-am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme, ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme, ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1432,7 +1432,7 @@ Papier voraussetzt:
 | K3 | Auslegungsperzentil | P99 Vorgabe, P95 wählbar; Brauchwasser-Auslegung nur aus der Dreiergruppe, Empfehlung der Summenlinienpunkt | Empfehlung vorausgesetzt |
 | K3a | VDI-4655-Datenstrategie | Import-Schnittstelle (Z4b), gleichrangig, Vorgabe Eigenkonstruktion | Empfehlung vorausgesetzt |
 | K4 | Kaltwasser in der Bilanz | fester Jahresgang in Z1, Kopplung an die Klimaregion als Option in Z4; die Auslegung rechnet unabhängig davon mit `θ_KW,Auslegung` | Empfehlung vorausgesetzt |
-| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium |
+| K5 | Messdaten | Freigabe vor Z5, bis dahin nur Verhältniszahlen | **zurückgestellt 25.09.2026** (N16, „später“); Empfehlung für später: zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt mit mindestens einem Messjahr, CSV-Stundenwerte, anonymisiert; Objektdaten nie im Repositorium. **Das Werkzeug steht** (`Werkzeuge/ZapfprofilValidierung`, N22), und ein erster Lauf an offen lizenzierten Fremddaten liegt vor; die Freigabe eigener Reihen bleibt offen |
 | K6 | Bestandsweg | Koexistenz bis nach Z5 | Empfehlung vorausgesetzt |
 | K7 | Katalogpflege | Auslieferung ReadOnly, Vier-Augen-Freigabe, Anwenderkopie „eigen", benutzte Zeilen unveränderlich | Empfehlung vorausgesetzt |
 | K8 | Juristische Prüfung | mit Z0 beauftragen; umfasst auch die lokalen Normkopien und die Digitalisate des Bestandskatalogs | nach Empfehlung, 23.09.2026 (N1); Nutzung vorab zu Testzwecken OK (N5) |
@@ -3031,7 +3031,7 @@ Paket, Testdatenbank oder Werkzeug):
 | ZU20 | abgeleitete VDI-6002-Zeilen in die Auslieferung heben: CSV-Paketteil für Nutzungsart, Tagesgangsatz und Tagesgang unter `Referenzlaeufe/Katalogpaket_frei/` mit `Herkunftsart FREI`, `Status AUSLIEFERUNG`, `ReadOnly 1`; Herkunftsart im Skript von `FIKTIV` lösen; Provenienztext auf „abgeleitet aus VDI 6002 Blatt n"; Wache und Testdatenbank im selben Schritt nachziehen | Agent eines Folgepostens | vor der ersten Auslieferung |
 | ZU21 | Prüfliste durchsehen, je Zeile bestätigen oder ändern; erst danach geht der freie Paketteil in die Auslieferung | Anwender | vor der ersten Auslieferung |
 | ZU24 | Paketvorlage für die A100-Typen **ohne Werte** (Spalten, Provenienzpflicht, Beispielzeile mit runden Platzhaltern) im Repositorium; die Werte trägt der Anwender außerhalb ein | Agent eines Folgepostens | vor der Auslieferung |
-| K5 | Validierungsbericht mit echten Reihen, sobald der Anwender Messreihen freigibt (zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert) | Anwender, danach Agent eines Folgepostens | nach der Freigabe |
+| K5 | Validierungsbericht mit echten Reihen, sobald der Anwender Messreihen freigibt (zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert). Das Werkzeug dafür steht samt Ablageregel und Berichtswache, und ein erster Lauf an offen lizenzierten Fremddaten liegt vor (N22) | Anwender, danach Agent eines Folgepostens | nach der Freigabe |
 | ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel (3.4), Basis neu einfrieren | Agent eines Folgepostens, mit den Nachbarsitzungen abgestimmt | nach der Sichtabnahme Z1–Z5 und nach K5 |
 | (Lücke) | Prüfposten der Auslieferungsvorlage: kein Beispielprojekt mit `Typtage_Aktiv = 1` bei leerer `Tab_TwwTyptag_IMPORT` | Agent eines Folgepostens | bei Gelegenheit |
 
@@ -3530,3 +3530,127 @@ Auslieferungsvorlage-Tests 36 erfolgreich, Referenzlauf der sechs CI-Projekte ge
 | Logbuch | ein Satz: „Der Katalogimport für Brauchwasser nimmt auch Bedarfstage und Parameter an und ersetzt vorhandene Werte mit Hinweis." — Version beim Anwender zu erfragen | Anwender | mit dem Upload |
 | (a) | Bereiche der 69 Parametereinträge fachlich durchsehen — sie sind Rahmen gegen Zahlendreher, keine Fachgrenzen; eine engere Grenze gehört in dieselbe Liste | Anwender | mit ZU21 |
 | Sicht | Sichtabnahme unter Windows: die drei Gruppen des Importberichts und der Schalter „Nur prüfen, nichts schreiben" | Anwender | nach dem Push |
+
+---
+
+### N22 (26.09.2026) — Validierungswerkzeug der Stufe Z5 und erster Lauf an offenen Messreihen (K5)
+
+*(N21 gehört zum parallelen Posten.)*
+
+**Anlass.** Die Abnahme der Stufe Z5 ist ein Vergleich gegen Messungen (Kapitel 7 Zeile Z5); umgesetzt
+wurde sie an erfundenen Reihen (N15). Echte Reihen dürfen nicht ins Repositorium (K5). Ein Werkzeug
+löst genau diesen Widerspruch: Die Reihen liegen beim Anwender, das Werkzeug liegt im Repositorium,
+und der Bericht trägt nur Verhältniszahlen. Der Anwender hat am 26.09.2026 dazu drei offen
+lizenzierte Fremddatensätze freigegeben („Nehme Norwegen und Zenodo", danach Forbell) und eine vierte
+Quelle nach Prüfung verworfen.
+
+**(a) Das Werkzeug** `Werkzeuge/ZapfprofilValidierung` (Konsole, `net10.0`, eigene Projektmappe mit
+Testprojekt, nicht in `WP-Plan.sln` und nicht im Kern-Filter — wie `Auslieferungsvorlage`,
+`Gebaeudevergleich` und `Formularkarte`; eigener Schritt in `kern.yml`). Aufruf:
+
+```
+dotnet run --project Werkzeuge/ZapfprofilValidierung -c Release -- <ordner> --ziel <berichtordner>
+       [--katalog <sqlite|paketordner>] [--realisierungen N] [--seed S] [--trocken] [--beispielreihe]
+```
+
+Je Messobjekt ein Unterordner mit `objekt.json` (anonyme Kennung, Nutzungsart-Bezeichner,
+Bezugsmenge, Niveau, Bilanzgrenze des Zählers, Zirkulation, Temperaturen, Kalender mit Wochentag des
+1. Januar und Feiertagen als Jahrestage, Messangaben, Stochastik) und `messreihe.csv` im Format des
+`Messreihenleser`. Rückgabe: 0 abgenommen, 2 Aufruf, 3 Schreibort, 5 nicht abgenommen, 6 Fund der
+Berichtswache, 1 unerwartet. Format, Felder und Grenzen stehen im
+[`LIESMICH.md`](../../Werkzeuge/ZapfprofilValidierung/LIESMICH.md) des Werkzeugs.
+
+**(b) Der Rechenweg ist datenbankfrei.** `ZapfprofilRechner.Rechnen` auf einem `Zapfprofileingang`
+mit einer Zone, `Messvergleich`, `Messkalibrierung`, `Messreihenleser` — alles Bestand des Kerns. Der
+Katalog kommt als **Modell** herein: `Nutzungsart`, `Tagesgangsatz`, `Parametersatz` und
+`Zapfkategorie`, gebaut aus einem Paketordner im Format N2 (Kapitel 6 (b)) **oder** aus einer
+`.sqlite`. Kein Controller, keine Projektkopie, kein `DataRepository`; eine SQLite-Quelle wird
+`immutable=1` und `ReadOnly` geöffnet und bleibt byte-gleich. Die im Auftrag vorgesehene
+Projektkopie war damit nicht nötig. Der **freie Paketteil allein genügt nicht** — er führt die
+Kaltwasser-, Wohnen- und Zirkulationsparameter des Mengengerüsts nicht; Vorgabe der Katalogquelle ist
+deshalb `Referenzlaeufe/Kenndaten_Test.sqlite`, und das Beispiel bringt einen vollständigen,
+erfundenen Paketteil mit.
+
+**(c) Zwei benannte Unterschiede zum Dialogweg**, beide mit Grund im Quelltext:
+
+1. **Verglichen wird gegen die kalibrierte Reihe.** Die gerechnete Stundenleistung ist der
+   Bezugsmenge proportional; bei einem Messobjekt ist die Bezugsmenge eine Schätzung, die Reihe nicht.
+   Gegen die rohe Rechnung prüfte das Band der Dauerlinie die Schätzung statt der Gestalt. Nach der
+   Kalibrierung (4.1) steht der Niveaufehler allein im **Kalibrierfaktor**. Der erste Lauf bestätigt
+   die Wahl: Die Faktoren reichen von 0,16 bis 5,1.
+2. **Die verglichene Reihe folgt der Bilanzgrenze des Zählers** aus `objekt.json`: an der Zapfstelle
+   allein die Zapfung, mit Verteilung oder Speicher beide Teile — dieselbe Grenze, mit der die
+   Kalibrierung ohnehin rechnet. `ZapfprofilHuelle.Vergleichsbericht` summiert stets beide; im Dialog
+   ist das vertretbar, weil dort ein Projekt mit gepflegter Messwertgrenze steht.
+
+**(d) Die Abnahmekriterien als Ampel.** Je Objekt **drei**: Band der Dauerlinie (Lage der Messspitze
+im P85–P95-Band), Formabgleich des Tagesgangs gegen die Parameterschwelle, Jahresenergie nach der
+Kalibrierung (relativ 1e-9). Die **√N-Skalierung ist das vierte Kriterium und steht im
+Sammelbericht, nicht je Objekt**: Sie ist eine Aussage über Objekte **verschiedener Größe** — die
+Spitze je Einheit fällt wie 1/√N (4.4). An einem Objekt ist `Spitzenverhältnis · √N` nur eine Zahl;
+ein Band um 1 hieße zu behaupten, die Rechnung überschätze die Spitze jedes Objekts um genau den
+Faktor √N, und schon ein Mehrfamilienhaus mit 48 Personen könnte das nicht erfüllen. Geprüft wird die
+Steigung von ln(Spitzenverhältnis) über ln(N) gegen **−0,5 ± 0,25** (die Schranke ist eine numerische
+Setzung des Werkzeugs, sie steht in jedem Bericht); unter drei Objekten mit verschiedenem N bleibt das
+Kriterium **gelb**. Gelb heißt überall „nicht entschieden", nie „in Ordnung".
+
+**(e) Die Berichtswache** hält jeden Berichtstext vor dem Schreiben in drei Schichten: keine Einheit
+einer Menge oder Leistung; keine Kennzahl einer Messreihe (Jahresmenge, Energie, größter Wert,
+Tagesmittel) in irgendeiner Schreibweise mit **mindestens sechs Ziffern**, geprüft mit
+Ziffernrandprüfung; und als Bauform ein `Objektbefund`, der gar keinen absoluten Messwert führt. Die
+Ziffernschranke ist gemessen, nicht angenommen: Ohne sie hielt die Wache zwei Berichte zurück, weil
+eine Bandgrenze und eine Energieabweichung zufällig mit einer gerundeten Messgröße zusammenfielen.
+Ein Fund bricht mit Rückgabe 6 ab, ohne eine Datei zu schreiben. **Der Kalibriervorschlag einer
+Nichtwohn-Zone steht als Verhältnis** („Tagesbedarf je Einheit, Messung/Rechnung") und nicht als
+Betrag — ein Tagesbedarf in kWh ist eine gemessene Menge und gehört in die Katalogkopie des
+Anwenders, nicht in einen Bericht. Einen Objektnamen kann die Wache nicht erkennen; die
+Anonymisierung bleibt Sache des Anwenders.
+
+**(f) Ablage.** `Referenzlaeufe/Messreihen_INEKON/` mit `LIESMICH.md`, in `.gitignore` bis auf dieses
+ausgenommen — Bauform und Begründung wie `Referenzlaeufe/Normzahlen/`;
+`RepositoryOrdnungWacheTests` prüft die Regel und die Gegenprobe. Offen lizenzierte Fremddaten
+gehören in einen Ordner **außerhalb** des Repositoriums.
+
+**(g) Das Beispiel** (`Beispiel/`): erfundener Katalog (fünf CSV-Dateien, runde Werte, Herkunftsart
+`FIKTIV`) und zwei Objekte — ein Wohnobjekt und eine Nichtwohn-Zone, damit der Kalibriervorschlag
+vorkommt. Die Messreihen stammen aus derselben Rechnung: deterministische Jahresreihe mal festem
+Rauschen (± 15 %, feste Saat), **gleiche Jahresenergie**, Spitze auf die **Bandmitte gekappt** und
+die abgeschnittene Energie wertgewichtet verteilt (`--beispielreihe`, wiederholbar). Gekappt statt
+gestreckt, weil gegen die kalibrierte Reihe verglichen wird: Ein Streckfaktor verschwindet dort
+wieder; was die Spitze senkt, ist eine flachere Gestalt bei gleicher Energie — genau die Lehre, an der
+das Band hängt (3.6). Beide Objekte sind grün **durch Konstruktion**; das Beispiel prüft den Weg des
+Werkzeugs, nicht den Rechenweg. 30 Proben, darunter Teiljahr, Volumenreihe mit Spreizung, Ensemble,
+Nichtwohn-Vorschlag, Trockenlauf, Aufruffehler, Katalogleser, die Berichtswache samt Gegenproben und
+das vierte Kriterium; der Fall gegen `Referenzlaeufe/Messreihen_INEKON/` schweigt ohne Objekte.
+
+**(h) Drei Konverter** unter `Werkzeuge/ZapfprofilValidierung/Konverter/` setzen offen lizenzierte
+Fremddaten (je CC BY 4.0, Namensnennung in jedem Bericht) in das Format des Lesers um — ohne
+Zusatzpaket, auch die Excel-Quelle wird mit `zipfile` und `xml.etree` gelesen. Vier gemeinsame Regeln:
+ein Kalenderjahr; ein zusammenhängendes Fenster mit höchstens 5 % Lücken und mindestens 30 Tagen,
+sonst **benannt übergangen**; negative Werte auf 0 und gezählt; Bezugsmengen als **Platzhalter**,
+solange sie nicht belegt sind, und als solche im Vermerk. Eine vierte Quelle (Flexitility) wurde
+geprüft und **nicht verwendet** — sie führt den Gesamt-Trinkwasserdurchfluss am Hausanschluss, kein
+getrenntes Warmwasser.
+
+**(i) Der erste Lauf** über 21 Objekte (stochastisch, zehn Realisierungen, Katalog der Testdatenbank)
+steht mit Zahlen, Ursachen und sechs Folgen in
+[`Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md`](Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md).
+Der Befund in zwei Sätzen: Die **Energie stimmt nach der Kalibrierung bei allen 21 Objekten exakt**,
+und die **√N-Skalierung ist mit einer Steigung von −0,29 bestätigt**. **Band und Formabgleich sind an
+keinem Objekt erfüllt** — mit benannten Ursachen: Platzhalter-Bezugsmengen, unbekannte Feiertage, eine
+Zone je Objekt, aus VDI 6002 abgeleitete Klassenmittel als Tagesgänge, und für kleine Einheitenzahlen
+ein Bandkriterium, das dort keine brauchbare Messlatte ist (bei drei Personen trägt eine einzelne
+gezogene Gleichzeitigkeit die Jahresspitze, und P85/P95 der Dauerlinie liegen bei 0,04 bis 0,09 des
+Maximums).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| K5 | Validierung an **eigenen, freigegebenen** Objekten — der eigentliche Nachweis der Stufe. Werkzeug und Weg stehen jetzt; gebraucht werden zwei bis drei Mehrfamilienhäuser und ein Nichtwohnobjekt, je ein Messjahr, CSV-Stundenwerte, anonymisiert | Anwender | nach der Freigabe |
+| V1 | Bezugsmengen und **Bezugsarten** der offenen Datensätze nachtragen (für die norwegischen Wohngebäude Personen statt Wohnungen); danach trägt das vierte Kriterium belastbar | Folgeposten | nach Bedarf |
+| V2 | Feiertage je Land und Jahr in die `objekt.json` eintragen, Formabgleich neu lesen | Folgeposten | nach Bedarf |
+| V3 | **Das Bandkriterium für kleine Einheitenzahlen überarbeiten** — Quantil der Ensemblespitzen statt Quantil der Dauerlinie, oder eine Untergrenze für N, unter der es gelb bleibt. Berührt `Messvergleich` im Kern | Anwenderentscheid, dann Kern | offen |
+| V4 | Die Bandgrenzen prüfen (`Zapfprofil.Validierung.Band.Unten`/`.Oben`, heute 0,85 / 0,95): Bei den großen Objekten lag die Messspitze durchweg knapp darüber | Anwenderentscheid | mit ZU21 |
+| V5 | Die Formschwelle prüfen (`Zapfprofil.Validierung.Formschwelle`, heute 0,01): an erfundenen Reihen gesetzt, gemessene Objekte liegen bei 0,01 bis 0,04 | Anwenderentscheid | mit ZU21 |
+| ZU7 | Referenzprojekt auf den Generator umstellen, vierte Einfrierregel, Basis neu einfrieren — unverändert **nach** der Sichtabnahme Z1–Z5 und **nach** K5 | Folgeposten | offen |
