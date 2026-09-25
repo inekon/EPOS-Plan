@@ -99,10 +99,11 @@ namespace WindowsFormsApplication1
     /// Schreibmethode den Vorgang über <c>Vorgangsklammer</c> am Faden an; die
     /// Zugriffsschicht leiht sich dessen Verbindung, statt eine eigene zu öffnen.</para>
     ///
-    /// <para><b>Was damit NICHT eingelöst ist:</b> Risiko R-W16-6 verlangt für jeden
-    /// Umbau des Schreibwegs den Feld-für-Feld-Vergleich am Windows-Gerät
-    /// (<c>Referenzlauf.exe projekt</c>). Der steht aus; auf Linux belegen zwei
-    /// Kern-Prüffälle den Rückzug und den unveränderten Erfolgsfall.</para>
+    /// <para><b>Risiko R-W16-6</b> (Feld-für-Feld-Vergleich am Windows-Gerät,
+    /// <c>Referenzlauf.exe</c>) ist für den BEARBEITETEN Fall geführt (#497): Projekt
+    /// 1041 vor und nach einem Speichern ohne Änderung, 29 Dateien, 298 005 Werte,
+    /// byte-gleich. Der Fall eines über den Assistenten NEU angelegten Projekts steht
+    /// aus; auf Linux belegen Kern-Prüffälle den Rückzug und den Erfolgsfall.</para>
     /// </summary>
     public class AssistentCtrl
     {
