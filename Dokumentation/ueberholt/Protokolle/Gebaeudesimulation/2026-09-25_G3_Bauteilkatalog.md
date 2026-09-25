@@ -278,3 +278,31 @@ Gebäudeliste schlug sie mit verkleinerten oder wechselnden Zeilenhöhen nur sch
 Maßgeblich ist deshalb das Kriterium, an dem der Fehler #235 hing — die gezeichnete Zeilenhöhe
 gleich dem gesetzten Maß —, und das ist erfüllt. Der Skriptlauf `node rasterprobe.mjs --nur GD`
 steht auf einem Rechner mit Playwright aus.
+
+## Nachtrag: Nachweis N1.44–N1.46
+
+Die drei Nachträge des [Konzepts](../../../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+(E39, E40 und die Festlegungen der Umsetzung) sind Aussage für Aussage gegen Code und Tests gehalten
+worden (25.09.2026). Wo eine Probe fehlte oder die Umsetzung vom Papier abwich, ist nachgezogen:
+
+| Commit | Punkt | Inhalt |
+|---|---|---|
+| `ad3f0c9a` | N1.44 (E39), N1.46 Festlegung 15 | Wiki-Wache gegen alle Herstellernamen des Baustoffkatalogs (auch kurze Namen ab drei Zeichen und jeder Teil eines zusammengesetzten Namens); Belegwache — jede Herstellerzeile der Saat trägt ihren Beleg als Kommentar darüber; natürlicher Schlüssel der Saat ist Hersteller und Bezeichner; Projektfremdschlüssel mit `ON UPDATE CASCADE` |
+| `8633238f` | N1.46 Festlegungen 9, 12, 13 | Proben: die Azimutpflicht gilt nur an Außenluft; eine unbeheizte Zone mit eigenen Soll-, Lüftungs-, Gewinn-, Grenz- und Übergabespalten bildet denselben Kern-Satz wie eine beheizte ohne sie |
+| `e9576a7b` | N1.45 (E40) Punkte 3 und 4 | Die Rückfrage vor „Gebäude als eine Zone übernehmen" nennt die gesetzten Leistungsgrenzen mit ihrem Wert und sagt, dass sie nicht hochgerechnet werden; Probe, dass eine abweichende Flächenangabe nur als Hinweis im Protokoll steht |
+| `28a712ab` | N1.45, N1.46 | Konzept: Beleg der Hochrechnung (1017 ohne Kühlleistungsgrenze, 1007 mit Verbrauchsangabe, Toleranz ≤ 10⁻⁹), Rückfrage mit Leistungsgrenzen, „Was offen bleibt" nach der Welle K |
+| `ad6866f5`, `22029d63` | N1.44 (E39), Lücke „Rohdichte aus Umweltproduktdeklaration" | **Schemaschritt 143** (`BaustoffQuellenBerichtigung`): Die Quelle der Herstellerzeilen 1041 (Rohdichte aus der FDES 120 mm) und 1066 (Mindest-Trockenrohdichte der Brandklasse A2-s1,d0 nach VDPM-EPD) nennt die Herkunft der Rohdichte — in der Saat und, nur wo der alte Saattext wortgleich steht, im Katalog und in jeder Projektkopie bestehender Datenbanken; Testdatenbank auf Schemastand 143 ohne Neufreigabe der Basis ([Referenzläufe](../../../../Referenzlaeufe/LIESMICH.md), Nachtrag Schemastand 143) |
+
+Mit dem Nachweis sind drei veraltete Aussagen berichtigt: die Azimutregel im
+[Mehrzonenkonzept](../../../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2 und in der
+[Softwarearchitektur](../../../aktuell/Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.2 (Pflicht
+nur an Außenluft, Festlegung 9), die „offene Regel 5" in der
+[Statusdatei](../../../aktuell/Status_Gebaeudesimulation_VDI6007.md) und der Kommentar in
+`KatalogRegistry` zur Verwaltung der beiden G3-Kataloge (`fc1ad7da`).
+
+**Abnahme** (Stand `fc1ad7da`): Kern-Filter und Windows-Schale je 0 Fehler; Test-Gate grün — Kern
+7 218 (einer übersprungen), UI 6 304, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (einer
+übersprungen), Auslieferungsvorlage 35/35; SQL-Dialekt-Prüfer 0 Fundstellen (1 920 Texte, die zwei
+`UPDATE` des Schritts per `EXPLAIN` von Hand); Referenzlauf aller vierzehn Projekte **14/14 PASS** gegen
+`2026-09-25_R16_Anlagenprio` (4 610 207 Werte), 432/432 CSV byte-gleich; `DokumentationLinkWacheTests`,
+`RepositoryOrdnungWacheTests` und `WikiProduktdatenWacheTests` grün nach dem Nachzug der Papiere.

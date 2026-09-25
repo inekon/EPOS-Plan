@@ -409,11 +409,12 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-09-25_R16_Anlagenprio/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **142**, LFS-SHA-256 `22eeb75c…` — R16 wurde auf der Fassung `1360e2be…` eingefroren (dieselbe
-Datei, auf der R15 zuletzt gehalten wurde; Herleitung samt Projekt 1047 im Abschnitt der Basis R15 unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)); #504 änderte danach
-nur 93 Zellen des Tww-Testkatalogs ohne Referenzwirkung (Nachtrag unten). Gegen
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
+**143**, LFS-SHA-256 `76dd9e48…` — R16 wurde auf der Fassung `1360e2be…` mit Schemastand 142 eingefroren
+(dieselbe Datei, auf der R15 zuletzt gehalten wurde; Herleitung samt Projekt 1047 im Abschnitt der Basis R15
+unter [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)); danach
+änderten #504 nur 93 Zellen des Tww-Testkatalogs und Schemaschritt 143 nur zwei Quelltexte des
+Baustoffkatalogs, beide ohne Referenzwirkung (Nachträge unten). Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml`
 den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt
 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -481,10 +482,6 @@ den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tag
 > `EPOS.Kern.Tests/AnlagenprioRechenwegTests` (die acht Leser nutzen die Regel; in 1042 steht die
 > Wärmepumpe ohne Priorität hinter der mit Priorität 1).
 
-> **Die Vorgängerbasis `2026-09-25_R15_Anlagenkopplung`**, die erste Basis mit Anlagenkopplung, ist mit
-> dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt
-> 1047 und dem Nachtrag zu Schemastand 142 steht in
-
 > **Nachtrag #504: die abgeleiteten VDI-6002-Typen im Tww-Testkatalog, die Basis bleibt.**
 > **Kein Schemaschritt** — der Folgeposten der Anwenderentscheide ZU20 und ZU24 vom 25.09.2026 setzt
 > allein Werte: Quelle, Version und Herkunftsart `VERFAHREN` der fünf Nutzungsarten „… (abgeleitet)“
@@ -501,6 +498,39 @@ den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tag
 > der vierzehn liest den Tww-Katalog. **Keine Einfrierregel ist berührt.** Referenzlauf der sechs
 > Projekte der CI (1030, 1007, 1017, 1045, 1046, 1047) gegen diese Basis: **6/6 PASS** (198 Dateien,
 > 2 208 587 Werte).
+
+> **Nachtrag Schemastand 143 (Herkunft der Rohdichte in der Baustoffsaat, E39), die Basis bleibt.**
+> Migrationsschritt **143** (`SCHRITT_BAUSTOFF_QUELLEN`; die Nummer steht allein bei
+> `BaustoffQuellenBerichtigung.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
+> auf die dritte Berichtigung der Anschlusslängen, 142) setzt die Regel aus E39 in bestehenden Datenbanken
+> durch (Konzept Gebäudesimulation N1.44, „Benannte Lücken“): Stammt die Rohdichte einer Herstellerzeile
+> aus einer Umweltproduktdeklaration, dann nennt die Quelle das. **Reines DML** an der Spalte `Quelle`
+> zweier Saatzeilen — in `Tab_Baustoff_STAMM` über die Saat-Id, in der Projektkopie `Tab_Baustoff` über
+> Hersteller und Bezeichner (den Schlüssel von `BaustoffCtrl.CopyFromStamm`), jeweils nur, wo der alte
+> Saattext wortgleich steht; eine vom Anwender geänderte Quelle bleibt. Die Saat trägt die neuen Texte,
+> eine neue Datenbank bekommt sie gleich.
+>
+> | Id | Quelle vorher | angefügt |
+> |---|---|---|
+> | 1041 | `Kingspan, Produktblatt Kooltherm K5 WDVS-Dämmplatte (DE), Version 15, 07/2026` | `; Rohdichte aus FDES 120 mm` |
+> | 1066 | `Baumit, Produktdatenblatt DämmPutz DP 85, 18.09.2025` | `; Rohdichte Mindestwert A2-s1,d0 nach VDPM-EPD` |
+>
+> Nachgezogen auf der Fassung von origin mit Schemastand **142** (Nachtrag #504 oben, `22eeb75c…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> offen vorher 2, berichtigt 2 Katalogzeilen und 0 Projektkopien (die Testdatenbank führt keine
+> Projektkopie eines Baustoffs), offen danach 0, Marker 143; ein Trockenlauf danach findet nichts offen.
+> Zellvergleich aller Tabellen samt `sqlite_sequence` gegen die Fassung 142: allein `SchemaVersion`
+> 142 → 143 und die zwei Quellzellen; Schema gleich, Zeilenzahlen unverändert. `integrity_check` ok,
+> `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes samt den von SQLite
+> angelegten. Größe 68 714 496 Byte (das Werkzeug verdichtet mit `VACUUM`; LFS-SHA-256 `76dd9e48…`).
+> **Ergebnisneutral:** Kein Rechenweg liest den Baustoffkatalog, und kein Referenzprojekt hat eine Zone.
+> **Keine Einfrierregel ist berührt** — der Baustoffkatalog gehört nicht zu den gesäten Gebäudedaten.
+> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte), 432/432 CSV
+> byte-gleich.
+
+> **Die Vorgängerbasis `2026-09-25_R15_Anlagenkopplung`**, die erste Basis mit Anlagenkopplung, ist mit
+> dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Referenzprojekt
+> 1047 und dem Nachtrag zu Schemastand 142 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
