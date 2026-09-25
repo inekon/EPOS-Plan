@@ -163,8 +163,8 @@ ist jeweils der Entscheid (→ Register R‑E26).
   (EPOS.Kern 7.292/7.293, EPOS.UI 6.378, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27/28); ChartProben 174
   Bilder, 0 Verstöße; SqlDialektPruefer 1.920/0.
 - **Merge** `025a8707` auf `pm26` über `b8f8a168`.
-- **Gate:** NACHTRAG-518-GATE
-- **CI:** NACHTRAG-518-CI — die CI muss gegen R18 laufen (`kern.yml` und `ios.yml` mit dem Basispfad R18).
+- **Gate:** Gate #518 auf `025a8707` (25.09.2026 20:01–20:19): Kern-Filter 0 Fehler, ChartProben 0 Fehler, 161 Bild-Hashes gleich mit der Messlatte, Tests Kern 7.292 (1 übersprungen), UI 6.378, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), Dokumentationswachen 29/29.
+- **CI:** steht aus (Beobachtung nach dem Push) — die CI muss gegen R18 laufen (`kern.yml` und `ios.yml` mit dem Basispfad R18).
 
 ## Abnahme am Gerät (A‑E26‑1, Windows)
 
