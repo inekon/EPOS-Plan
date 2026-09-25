@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
 
             k.Titel(daten.Stammprojektname);
-            k.Untertitel("Variantenvergleich — Energie- und Wärmeversorgung");
+            k.Untertitel(UNTERTITEL);
 
             string varianten = string.Join(", ",
                 daten.Varianten.Where(v => !v.IstStamm).Select(v => v.Anzeige));
@@ -54,6 +54,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Beschriftung der Ausweiszeile im Berichtskopf (A12) — Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
         internal const string ZEILE_GEBAEUDEMODELL = "Gebäudemodell";
+
+        /// <summary>Der Untertitel des Deckblatts — Schlüssel der Übersetzung in <see cref="BerichtTexte"/>;
+        /// derselbe Text steht hinter dem Platzhalter <c>{{bericht.untertitel}}</c>.</summary>
+        internal const string UNTERTITEL = "Variantenvergleich — Energie- und Wärmeversorgung";
 
         /// <summary>
         /// Trägt der Berichtskopf den Produktausweis nach E10 (A12)? Ja, sobald ein Stand des

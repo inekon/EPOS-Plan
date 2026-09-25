@@ -2528,10 +2528,10 @@ namespace WindowsFormsApplication1
                 herkunft = string.Format(
                     T("PREIS_ST_QUELLE_RUECKFALL",
                       "Rückfallebene: {0} ct/kWh aus dem Programm. {1} "
-                      + "Nachpflegbar über „Gesetzliche Parameter\"."),
+                      + "Nachpflegbar über „Gesetzliche Parameter“."),
                     Anzeige(wert),
                     string.Format(T("PREIS_ST_GRUND_KEIN_JAHR",
-                        "Der Katalog führt für „{0}\" keinen Satz im Jahr {1}."),
+                        "Der Katalog führt für „{0}“ keinen Satz im Jahr {1}."),
                         schluessel, _katalogJahr.ToString(CultureInfo.InvariantCulture)));
             }
 
@@ -2539,7 +2539,7 @@ namespace WindowsFormsApplication1
             if (empfohlen)
                 voll += Environment.NewLine + string.Format(
                     T("PREIS_ST_EMPFOHLEN",
-                      "Vorschlag zur Unternehmensart „{0}\" dieses Projekts. "
+                      "Vorschlag zur Unternehmensart „{0}“ dieses Projekts. "
                       + "Eingetragen wird der Satz erst mit einem Klick."),
                     UnternehmensartAnzeige(_unternehmensart));
 

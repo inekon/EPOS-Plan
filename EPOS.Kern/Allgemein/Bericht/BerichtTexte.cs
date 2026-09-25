@@ -23,12 +23,26 @@ namespace WindowsFormsApplication1
         /// <summary>Kultur der Berichtssprache (Zahlen-/Datumsformate).</summary>
         public static CultureInfo Kultur
         {
-            get { return CultureInfo.GetCultureInfo(Englisch ? "en-US" : "de-DE"); }
+            get { return KulturFuer(Englisch); }
+        }
+
+        /// <summary>Kultur einer ausdrücklich gewählten Berichtssprache: <c>en-US</c> oder <c>de-DE</c>
+        /// (Berichtsvorlagen: der Wertesatz bekommt die Sprache übergeben).</summary>
+        public static CultureInfo KulturFuer(bool englisch)
+        {
+            return CultureInfo.GetCultureInfo(englisch ? "en-US" : "de-DE");
         }
 
         public static string T(string de)
         {
-            if (!Englisch || de == null) return de;
+            return T(de, Englisch);
+        }
+
+        /// <summary>Wie <see cref="T(string)"/>, aber für eine ausdrücklich gewählte Sprache statt der
+        /// Oberflächensprache.</summary>
+        public static string T(string de, bool englisch)
+        {
+            if (!englisch || de == null) return de;
             string en;
             return _en.TryGetValue(de, out en) ? en : de;
         }
