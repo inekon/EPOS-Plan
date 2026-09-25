@@ -33051,6 +33051,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
     <value>Die {0} Zonen führen verschiedene Temperaturen; die Volumenreihe wird mit der mengengewichteten Spreizung {1:0.###} K in Energie gerechnet.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN" xml:space="preserve">
+    <value>Es tragen {0} Zonen ein Jahresensemble; die Spitzenstreuung ist daraus nicht zu bilden, weil jede Zone ihre Realisierungen für sich zieht und die Spitze der Summe nicht die Summe der Spitzen ist.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Den Tagtyp {0} führt nur eine der beiden Seiten; er bleibt im Formabgleich unberücksichtigt.</value>
   </data>
@@ -33545,6 +33548,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
     <value>Spreizung mehrerer Zonen</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN" xml:space="preserve">
+    <value>Ensemble mehrerer Zonen</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Tagtyp fehlt</value>

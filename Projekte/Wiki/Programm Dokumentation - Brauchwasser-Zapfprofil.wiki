@@ -269,12 +269,12 @@ Die Tabelle '''Vergleich mit der Messung''' nennt nur Verhältnisse und Anteile 
 
 * '''Energie gemessen/gerechnet''' und die '''Abweichung der Energie''', dazu die Zahl der Messtage und der Rechentage.
 * '''Messspitze / größte gerechnete Stunde''' und das '''Band der Dauerlinie''', in dem die Messspitze erwartet wird; seine Grenzen werden als Parameter gepflegt. Daneben steht die Lage: im Band, über dem Band – dann unterschätzt die Rechnung die Spitze – oder unter dem Band.
-* '''Streuung der Realisierungsspitzen''' mit der Zahl der Realisierungen und der Streubreite, sofern ein Ensemble vorliegt.
+* '''Streuung der Realisierungsspitzen''' mit der Zahl der Realisierungen und der Streubreite. Sie steht als Zahl, wenn der [[#stochastik|Rechenweg der Jahresreihe]] stochastisch ist und genau eine Nutzungszone gezogene Jahre führt; bei mehreren solchen Zonen zieht jede Zone ihre Jahre für sich – die Streuung der Summe ist daraus nicht zu bilden, und es steht ein Strich mit diesem Grund.
 * das '''√N-Skalierungsmaß''' der Gleichzeitigkeit mit der Zahl der Einheiten.
 * der '''Formabgleich''' – die größte mittlere Abweichung der Tagesform und je Tagtyp das Urteil ''im Rahmen'' oder ''über der Schwelle''; die Schwelle wird als Parameter gepflegt.
 * die '''größte Abweichung der Monatsanteile''' samt dem Monat, in dem sie steht.
 
-Was der Vergleich nicht entscheiden kann, steht als Strich mit dem Grund daneben – nie als Null. Die Hinweise des Vergleichs – ein Teiljahr der Messung, ein Schalttag, dass die Messung keine Feiertage kennt, ein fehlendes Ensemble – stehen in der Liste [[#warnliste-bilanz|Hinweise der Bilanz]] unter der Vorschau.
+Was der Vergleich nicht entscheiden kann, steht als Strich mit dem Grund daneben – nie als Null. Die Hinweise des Vergleichs – ein Teiljahr der Messung, ein Schalttag, dass die Messung keine Feiertage kennt, ein fehlendes Ensemble, ein Ensemble in mehreren Zonen – stehen in der Liste [[#warnliste-bilanz|Hinweise der Bilanz]] unter der Vorschau.
 
 Ändert danach eine Eingabe den Arbeitsstand, bleibt die Tabelle stehen und trägt den Vermerk, dass sie zu einem überholten Arbeitsstand gehört und neu zu rechnen ist; ein laufender Vergleich bricht ab.
 

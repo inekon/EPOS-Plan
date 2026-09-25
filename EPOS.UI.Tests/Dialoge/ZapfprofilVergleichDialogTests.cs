@@ -417,6 +417,41 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         Assert.Contains(REIHE_A, cut.Find(".epos-zapfprofil-vergleichleiste .epos-status").TextContent);
     }
 
+    /// <summary>
+    /// <b>Mit Ensemble steht die Spitzenstreuung als Zahl</b> (N15 Gruppe 3, Folge): Sobald die
+    /// Hülle die Stundenspitzen der Realisierungen führt, zeigt der Vergleichsbericht die beiden
+    /// Grenzen und im Vermerk Realisierungszahl und Streubreite — kein STRICH, und der Hinweis
+    /// „ohne Ensemble" fällt weg. Die übrigen sieben Zeilen bleiben, wie sie sind.
+    /// </summary>
+    [Fact]
+    public void Mit_Ensemble_steht_die_Spitzenstreuung_als_Zahl()
+    {
+        ZapfprofilMessvergleichDaten v = Vergleich();
+        v.Hinweise.Clear();
+        v.StreuungUnten = 0.82;
+        v.StreuungOben = 1.04;
+        v.Streubreite = 1.268;
+        v.Realisierungen = 25;
+
+        var p = new Pruefstand { Ergebnis = v };
+        var cut = Aufbauen(p);
+        Erweitert(cut);
+        Wahl(cut, 1);
+
+        Knopf(cut, "Vergleich rechnen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Vergleichsergebnis?.Ok), Frist);
+
+        string[] zeilen = cut.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(8, zeilen.Length);
+        string streuung = Assert.Single(zeilen, z => z.StartsWith("Streuung der Realisierungsspitzen"));
+        Assert.Contains("0,820 … 1,040", streuung);
+        Assert.Contains("25 Realisierungen", streuung);
+        Assert.Contains("1,268", streuung);
+        Assert.DoesNotContain("ohne Ensemble", streuung);
+        // Kein STRICH mehr in dieser Zeile — sie trägt jetzt zwei Zahlen.
+        Assert.DoesNotContain("–", streuung);
+    }
+
     [Fact]
     public void Eine_Form_ueber_der_Schwelle_steht_als_abweichend_da()
     {

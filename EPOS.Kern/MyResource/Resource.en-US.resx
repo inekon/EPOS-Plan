@@ -33044,6 +33044,9 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
     <value>The {0} zones hold different temperatures; the volume series is converted to energy with the quantity-weighted temperature difference of {1:0.###} K.</value>
   </data>
+  <data name="ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN" xml:space="preserve">
+    <value>{0} zones hold a yearly ensemble; the peak spread cannot be formed from them, because each zone draws its own realisations and the peak of the sum is not the sum of the peaks.</value>
+  </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Only one of the two sides carries the day type {0}; it is left out of the shape comparison.</value>
   </data>
@@ -33538,6 +33541,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
     <value>Temperature difference across zones</value>
+  </data>
+  <data name="ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN" xml:space="preserve">
+    <value>Ensemble across zones</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Day type missing</value>

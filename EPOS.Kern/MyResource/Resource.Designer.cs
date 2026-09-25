@@ -97814,6 +97814,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es tragen {0} Zonen ein Jahresensemble; die Spitzenstreuung ist daraus nicht zu bilden, weil jede Zone ihre Realisierungen für sich zieht und die Spitze der Summe nicht die Summe der Spitzen ist. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang stimmt in der Form: mittlere Abweichung der Stundenanteile {0:0.0000} bei einer Schwelle von {1:0.0000}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_FORM_IM_RAHMEN {
@@ -99835,6 +99844,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSVERGLEICH_ENERGIE_ABWEICHUNG {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_ENERGIE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ensemble mehrerer Zonen ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN", resourceCulture);
             }
         }
         
