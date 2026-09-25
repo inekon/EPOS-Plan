@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EPOS.UI.Seiten.Berichte;
@@ -28,12 +29,24 @@ namespace WindowsFormsApplication1
     /// <para><b>Die drei Persistenzwerte „Word", „Excel" und „Beide"</b>
     /// (Tabelle <c>Berichtskonfiguration</c>) bleiben deutsch und eingefroren;
     /// die Komponente rechnet mit der Nummer 0/1/2 (Drei-Schichten-Regel).</para>
+    ///
+    /// <para><b>BV-E1 (Konzept Berichtsvorlagen 10.2): die Word-Vorlage.</b> Die Gruppe „Vorlage"
+    /// der Seite belegt <see cref="BerichtsvorlagenGaben"/>. Der Lauf prüft VOR dem Sammeln vor
+    /// (<see cref="BerichtCtrl.PruefeVorStart"/> — der Befund, den die Seite vor der Startrückfrage
+    /// geholt hat, samt seinen Bytes), füllt nach dem Sammeln genau diese Bytes
+    /// (<see cref="BerichtCtrl.ErzeugeWord(BerichtsDaten, BerichtsKonfiguration, Startbefund, Startweg)"/>)
+    /// und schreibt die Laufmeldung (<see cref="BerichtCtrl.Laufmeldung"/>) in die Meldung der
+    /// Seite. Die Wahl der Vorlage ist die Abweichung des Stammprojekts in seiner Konfiguration;
+    /// der Lauf nimmt sie aus der gespeicherten Konfiguration mit, auch wenn er die übrige Auswahl
+    /// aus dem Auftrag bildet.</para>
     /// </summary>
     internal sealed class BerichtSeiteGaben
     {
         private readonly int _idStamm;
         private readonly string _stammName;
-        private readonly BerichtCtrl _bericht = new BerichtCtrl();
+        private readonly BerichtsvorlagenCtrl _vorlagenCtrl;
+        private readonly BerichtCtrl _bericht;
+        private readonly BerichtsvorlagenGaben _vorlagen;
 
         /// <summary>
         /// KONZEPT § 2.15 (VG‑Q4): Die geteilte Vergleichswahl trägt auch die SICHT der
@@ -45,19 +58,40 @@ namespace WindowsFormsApplication1
 
         private CancellationTokenSource _cts;
 
-        internal BerichtSeiteGaben(int idStamm, string stammName)
+        /// <param name="idStamm">Das Stammprojekt der Vergleichsgruppe.</param>
+        /// <param name="stammName">Sein Name (Titel, Dateiname).</param>
+        /// <param name="vorlagen">Der Vorlagen-Controller; <c>null</c> = mit den Diensten der Plattform
+        /// (ein Prüfstand reicht eigene Pfade und Einstellungen herein).</param>
+        /// <param name="wege">Die Wege der Plattform um eine Vorlagendatei; <c>null</c> =
+        /// <see cref="Berichtsvorlagenwege.Plattform"/>.</param>
+        internal BerichtSeiteGaben(int idStamm, string stammName, BerichtsvorlagenCtrl vorlagen = null,
+                                   Berichtsvorlagenwege wege = null)
         {
             _idStamm = idStamm;
             _stammName = stammName ?? "";
+            _vorlagenCtrl = vorlagen ?? new BerichtsvorlagenCtrl();
+            _bericht = new BerichtCtrl(_vorlagenCtrl);
+            _vorlagen = new BerichtsvorlagenGaben(idStamm, _bericht, _vorlagenCtrl, wege, Sichtnummer);
         }
 
         /// <summary>Läuft gerade ein Bericht? (Der Wirt darf dann nicht schließen.)</summary>
         internal bool Beschaeftigt { get { return _cts != null; } }
 
+        /// <summary>Die Hülle der Gruppe „Vorlage" (BV-E1) — dieselbe Instanz für Seite und Lauf.</summary>
+        internal BerichtsvorlagenGaben Vorlagen { get { return _vorlagen; } }
+
+        /// <summary>
+        /// Das Sammeln der Berichtsdaten — im Betrieb <see cref="BerichtsDatenSammler.SammleFuerBericht(int, string, List{int}, bool, IProgress{BerichtsDatenSammler.Fortschritt}, CancellationToken, Vergleichssicht)"/>;
+        /// ein Prüfstand setzt einen Satz ohne Simulation ein (Konfiguration, Zeitreihen ja/nein,
+        /// Fortschritt, Abbruch, Sicht).
+        /// </summary>
+        internal Func<BerichtsKonfiguration, bool, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
+                      Vergleichssicht, BerichtsDaten> Sammler { get; set; }
+
         /// <summary>Der Parametersatz der Seite.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
         {
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Laden"] = new Func<BerichtStand>(Laden),
                 ["Erstellen"] = new Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>(Erstellen),
@@ -95,6 +129,10 @@ namespace WindowsFormsApplication1
                 ["StatusAbgebrochen"] = MyResource.Resource.BK_BER_STATUS_ABGEBROCHEN,
                 ["HilfeSchluessel"] = "UcBericht.btn_Help"
             };
+
+            // BV-E1: die Gruppe „Vorlage" — Liste, Wahl, Menü, Prüfzeile, Überlagerungen, Rückfrage.
+            _vorlagen.Belegen(gaben);
+            return gaben;
         }
 
         // =====================================================================
@@ -181,14 +219,36 @@ namespace WindowsFormsApplication1
         /// <param name="auswahlMerken"><c>true</c> = die Auswahl des Auftrags wird die
         /// gespeicherte Konfiguration der Gruppe (Berichtsseite); <c>false</c> = der Lauf
         /// nimmt sie nur für sich (<see cref="ErzeugeFuerVergleich"/>).</param>
+        /// <param name="erzwingtWirtschaftlichkeit">Zweiter Einstieg (Wirtschaftlichkeitsseite): Die
+        /// Vorprüfung fragt, ob die Vorlage Platzhalter der Wirtschaftlichkeit führt (Konzept 10.2).</param>
         private async Task<LaufErgebnis> Erstellen(BerichtAuftrag auftrag, Action<Laufschritt> melder,
-                                                   bool auswahlMerken)
+                                                   bool auswahlMerken, bool erzwingtWirtschaftlichkeit = false)
         {
             if (_cts != null) return new LaufErgebnis { Abgebrochen = true };
 
+            // BV-E1: Die Vorlagenwahl ist die Abweichung des Stammprojekts. Sie steht in der
+            // GESPEICHERTEN Konfiguration, nicht im Auftrag, und geht mit - in den Lauf und ins
+            // Merken; sonst löschte jeder Lauf der Berichtsseite die Wahl.
             BerichtsKonfiguration konfig = AusAuftrag(auftrag);
+            VorlagenwahlUebernehmen(konfig, Lade());
             if (auswahlMerken)
                 try { _bericht.Speichere(_idStamm, konfig); } catch { }   // Auswahl merken (Kap. 8.4)
+
+            // BV-E1 (Konzept 6.8, 10.2): die Vorprüfung VOR dem Sammeln. Der Befund, den die Seite
+            // vor ihrer Startrückfrage geholt hat, gilt samt seinen Bytes, wenn er zu diesem Lauf
+            // passt; sonst prüft der Lauf frisch. Der Weg ist die Antwort der erweiterten
+            // Rückfrage - ohne Antwort die gewählte Vorlage.
+            bool englisch = BerichtTexte.Englisch;
+            bool mitWord = konfig.Ausgabe == AUSGABE_WORD || konfig.Ausgabe == AUSGABE_BEIDE;
+            Startbefund start = null;
+            Startweg weg = Startweg.Gewaehlt;
+            IReadOnlyList<string> ungefragt = Array.Empty<string>();
+            if (mitWord)
+            {
+                try { start = _vorlagen.StartFuerLauf(konfig, englisch, Sichtnummer(), erzwingtWirtschaftlichkeit); }
+                catch (Exception) { start = null; }   // der Lauf wählt und liest dann selbst (ErzeugeWordLauf)
+                weg = Weg(auftrag.Vorlagenweg, start, erzwingtWirtschaftlichkeit, out ungefragt);
+            }
 
             _cts = new CancellationTokenSource();
             var melde = new Progress<BerichtsDatenSammler.Fortschritt>(
@@ -224,18 +284,25 @@ namespace WindowsFormsApplication1
                 // rechnet der Sammler in Sicht 2 gegen A (ohne zu speichern) und bucht die
                 // Gruppenrechnung wie bisher; die Gruppenreferenz setzt er selbst.
                 Vergleichssicht sicht = Vergleich.Sicht.Kopie();
-                BerichtsDaten daten = await Kulturweitergabe.Starten(() =>
-                    new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
-                                                                 konfig.VariantenIds,
-                                                                 mitZeitreihen, melde, ct, sicht), ct);
+                Func<BerichtsKonfiguration, bool, IProgress<BerichtsDatenSammler.Fortschritt>, CancellationToken,
+                     Vergleichssicht, BerichtsDaten> sammler = Sammler;
+                BerichtsDaten daten = await Kulturweitergabe.Starten(() => sammler != null
+                    ? sammler(konfig, mitZeitreihen, melde, ct, sicht)
+                    : new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
+                                                                   konfig.VariantenIds,
+                                                                   mitZeitreihen, melde, ct, sicht), ct);
 
+                // BV-E1: Word aus DENSELBEN Bytes, die die Vorprüfung gelesen hat, auf dem Weg der
+                // Rückfrage; der Lauf sagt, woraus der Bericht entstand (Laufmeldung).
                 string wordPfad = null, excelPfad = null;
-                if (konfig.Ausgabe == AUSGABE_WORD || konfig.Ausgabe == AUSGABE_BEIDE)
+                Berichtslauf lauf = null;
+                if (mitWord)
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_WORD));
                     ct.ThrowIfCancellationRequested();
-                    wordPfad = await Kulturweitergabe.Starten(
-                        () => _bericht.ErzeugeWord(daten, konfig), ct);
+                    lauf = await Kulturweitergabe.Starten(
+                        () => _bericht.ErzeugeWord(daten, konfig, start, weg), ct);
+                    wordPfad = lauf.Pfad;
                 }
                 if (konfig.Ausgabe == AUSGABE_EXCEL || konfig.Ausgabe == AUSGABE_BEIDE)
                 {
@@ -246,12 +313,7 @@ namespace WindowsFormsApplication1
                 }
 
                 string erster = wordPfad ?? excelPfad;
-                string meldung = MyResource.Resource.BK_BER_MSG_ERSTELLT_KOPF;
-                if (wordPfad != null) meldung += "\r\n" + wordPfad;
-                if (excelPfad != null) meldung += "\r\n" + excelPfad;
-                if (daten.Warnungen.Count > 0)
-                    meldung += "\r\n\r\n" + MyResource.Resource.BK_BER_MSG_HINWEISE + "\r\n• " +
-                               string.Join("\r\n• ", daten.Warnungen);
+                string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch);
 
                 return new LaufErgebnis
                 {
@@ -298,6 +360,13 @@ namespace WindowsFormsApplication1
         /// E5b): Baustein und Versionen gelten für den einen Bericht; die gespeicherte
         /// Konfiguration der Gruppe bleibt, wie die Berichtsseite sie zuletzt gemerkt hat.
         /// Gemerkt wird allein beim Lauf der Berichtsseite.</para>
+        ///
+        /// <para><b>BV-E1 (Konzept 10.2, zweiter Einstieg):</b> Der Lauf nimmt die gespeicherte
+        /// Vorlagenwahl und prüft vor, ob die Vorlage Platzhalter der Wirtschaftlichkeit führt. Die
+        /// Wirtschaftlichkeitsseite hat keine erweiterte Rückfrage; führt die Vorlage Platzhalter,
+        /// aber keinen der Wirtschaftlichkeit, entsteht DIESER Bericht deshalb mit der
+        /// Standardvorlage, und die Laufmeldung nennt es samt den Befunden der Vorprüfung. Eine
+        /// Vorlage ganz ohne Platzhalter bekommt den ganzen Bericht an ihr Ende und bleibt.</para>
         /// </summary>
         /// <param name="varianten">Die gewählten Versionen OHNE Stamm.</param>
         internal Task<LaufErgebnis> ErzeugeFuerVergleich(IReadOnlyList<int> varianten, Action<Laufschritt> melder)
@@ -323,7 +392,81 @@ namespace WindowsFormsApplication1
                 Zielordner = string.IsNullOrWhiteSpace(k.ZielOrdner) ? Dienste.Pfade.Dokumente : k.ZielOrdner,
                 AnzahlMitStamm = ids.Count + 1
             };
-            return Erstellen(auftrag, melder, false);
+            return Erstellen(auftrag, melder, false, erzwingtWirtschaftlichkeit: true);
+        }
+
+        // =====================================================================
+        // BV-E1 — Vorlage, Weg und Laufmeldung
+        // =====================================================================
+
+        /// <summary>Die Sicht der Ergebnisansicht als Nummer der Vorprüfung: 2 = Paarvergleich, sonst 1.</summary>
+        private int Sichtnummer()
+        {
+            return Vergleich?.Sicht?.IstPaar == true ? 2 : 1;
+        }
+
+        private BerichtsKonfiguration Lade()
+        {
+            try { return _bericht.Lade(_idStamm) ?? BerichtsKonfiguration.Standard(); }
+            catch { return BerichtsKonfiguration.Standard(); }
+        }
+
+        /// <summary>Die Vorlagenwahl (Abweichung) der gespeicherten Konfiguration in die des Laufs.</summary>
+        private static void VorlagenwahlUebernehmen(BerichtsKonfiguration ziel, BerichtsKonfiguration gespeichert)
+        {
+            ziel.VorlageWordQuelle = gespeichert?.VorlageWordQuelle;
+            ziel.VorlageWordDatei = gespeichert?.VorlageWordDatei;
+        }
+
+        /// <summary>
+        /// Der Weg des Laufs aus der Antwort der erweiterten Rückfrage (<see cref="BerichtAuftrag.Vorlagenweg"/>):
+        /// „standard" = für diesen Lauf die Standardvorlage, „eigene" = die gewählte. Ohne Antwort und
+        /// mit einem Befund, der eine Rückfrage bräuchte, hat niemand gefragt — der zweite Einstieg
+        /// oder ein Befund, der erst mit der Auswahl dieses Laufs entstand: Die Befunde gehen dann in
+        /// die Laufmeldung (<paramref name="ungefragt"/>); im zweiten Einstieg nimmt eine Vorlage mit
+        /// Platzhaltern, aber ohne einen der Wirtschaftlichkeit, die Standardvorlage.
+        /// </summary>
+        internal static Startweg Weg(string vorlagenweg, Startbefund start, bool erzwingtWirtschaftlichkeit,
+                                     out IReadOnlyList<string> ungefragt)
+        {
+            ungefragt = Array.Empty<string>();
+            if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Standard, StringComparison.Ordinal))
+                return Startweg.Standard;
+            if (string.Equals(vorlagenweg, EPOS.UI.Seiten.Berichte.Startweg.Eigene, StringComparison.Ordinal))
+                return Startweg.Gewaehlt;
+            if (start == null || !start.BrauchtRueckfrage) return Startweg.Gewaehlt;
+
+            ungefragt = BerichtsvorlagenGaben.Punkte(start);
+            bool ohneWirtschaft = erzwingtWirtschaftlichkeit && start.OhneWirtschaftlichkeit && start.StandardAngeboten
+                                  && (start.Pruefbefund?.AnzahlPlatzhalter ?? 0) > 0;
+            return ohneWirtschaft ? Startweg.Standard : Startweg.Gewaehlt;
+        }
+
+        /// <summary>
+        /// Die Meldung eines gelungenen Laufs: die geschriebenen Dateien, die Laufmeldung des
+        /// Word-Berichts (Vorlage und Grund, Rückfälle, gelbe und leere Platzhalter, Kommentare,
+        /// Warnungen der Engine — <see cref="BerichtCtrl.Laufmeldung"/>), die Befunde der Vorprüfung,
+        /// nach denen niemand gefragt hat, und die Hinweise des Sammlers.
+        /// </summary>
+        internal static string Meldung(string wordPfad, string excelPfad, Berichtslauf lauf,
+                                       IReadOnlyList<string> ungefragt, IReadOnlyList<string> warnungen, bool englisch)
+        {
+            var sb = new StringBuilder(MyResource.Resource.BK_BER_MSG_ERSTELLT_KOPF);
+            if (wordPfad != null) sb.Append("\r\n").Append(wordPfad);
+            if (excelPfad != null) sb.Append("\r\n").Append(excelPfad);
+
+            string laufmeldung = lauf == null ? "" : BerichtCtrl.Laufmeldung(lauf, englisch);
+            if (laufmeldung.Length > 0) sb.Append("\r\n\r\n").Append(laufmeldung);
+
+            if (ungefragt != null && ungefragt.Count > 0)
+                sb.Append("\r\n\r\n").Append(MyResource.Resource.BV_START_BEFUNDE)
+                  .Append("\r\n• ").Append(string.Join("\r\n• ", ungefragt));
+
+            if (warnungen != null && warnungen.Count > 0)
+                sb.Append("\r\n\r\n").Append(MyResource.Resource.BK_BER_MSG_HINWEISE)
+                  .Append("\r\n• ").Append(string.Join("\r\n• ", warnungen));
+
+            return sb.ToString();
         }
 
         // =====================================================================

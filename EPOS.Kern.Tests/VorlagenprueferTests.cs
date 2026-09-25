@@ -775,9 +775,41 @@ namespace EPOS.Kern.Tests
             // Wie die Engine: gefunden auch über die ID; die Gliederungsebene zählt, wenn sie da ist.
             Pruefbefund ueberId = Voll(Probevorlagen.Baue(b => b.Absatz("{{bericht.inhalt}}").Stile(
                 Probevorlagen.Stil("Heading1", "Überschrift eins", 0),
-                Probevorlagen.Stil("heading2", "Zweite Ebene", 1),
+                Probevorlagen.Stil("Heading2", "Zweite Ebene", 1),
                 Probevorlagen.Stil("berschrift3", "heading 3", 5))));
             Assert.True(ueberId.OhneBefund, Probevorlagen.Liste(ueberId));
+        }
+
+        /// <summary>
+        /// BV-E1 B1a: Die Überschriftenprüfung IST die Rollenauflösung der Engine
+        /// (<see cref="WordVorlagenstile.Finde"/>). Die ID vergleicht die Engine genau, den Namen ohne
+        /// Rücksicht auf Groß- und Kleinschreibung — ein Stil mit der ID „heading2“ und einem freien
+        /// Namen ist für sie keine Überschrift 2, sie legte beim Füllen eine an. Genau dann warnt der
+        /// Prüfer; für jede der drei Ebenen gilt: „fehlt“ im Befund ⇔ <c>Finde</c> liefert nichts.
+        /// </summary>
+        [Fact]
+        public void Ueberschriftenpruefung_folgt_der_Rollenaufloesung_der_Engine()
+        {
+            byte[] vorlage = Probevorlagen.Baue(b => b.Absatz("{{bericht.inhalt}}").Stile(
+                Probevorlagen.Stil("Standard", "Normal", null, standard: true),
+                Probevorlagen.Stil("HEADING1", "heading 1", 0),        // über den Namen gefunden
+                Probevorlagen.Stil("heading2", "Zweite Ebene", 1),     // ID anders geschrieben, Name frei: fehlt
+                Probevorlagen.Stil("Heading3", "Dritte Ebene", 2)));   // über die ID gefunden
+
+            Pruefmeldung m = Assert.Single(Probevorlagen.Mit(Voll(vorlage), "VF_PRUEF_UEBERSCHRIFTEN"));
+            Assert.Equal("Überschriftenstile fehlen oder tragen keine Gliederungsebene: Überschrift 2 fehlt", m.Text);
+
+            using var strom = new MemoryStream(vorlage, false);
+            using WordprocessingDocument doc = WordprocessingDocument.Open(strom, false);
+            var rollen = new WordVorlagenstile(doc.MainDocumentPart);
+            string[] ebenen = { WordVorlagenstile.UEBERSCHRIFT1, WordVorlagenstile.UEBERSCHRIFT2, WordVorlagenstile.UEBERSCHRIFT3 };
+            for (int n = 1; n <= 3; n++)
+            {
+                bool fehltLautPruefer = m.Text.Contains("Überschrift " + n + " fehlt", StringComparison.Ordinal);
+                Assert.Equal(fehltLautPruefer, rollen.Finde(ebenen[n - 1]) == null);
+            }
+            Assert.Equal("HEADING1", rollen.Finde(WordVorlagenstile.UEBERSCHRIFT1));
+            Assert.Equal("Heading3", rollen.Finde(WordVorlagenstile.UEBERSCHRIFT3));
         }
 
         // =====================================================================

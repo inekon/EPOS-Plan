@@ -27,6 +27,12 @@ namespace WindowsFormsApplication1
     /// Behälterwechsel. Ein Platzhalter über eine solche Grenze hinweg bleibt unerkannt stehen
     /// (der Prüfer meldet ihn als offene Klammer). Absätze in Textfeldern liest der Aufrufer als
     /// eigene Absätze; Feldergebnisse (<c>w:fldSimple</c>) bleiben unberührt.</para>
+    ///
+    /// <para><b>Warum der Prüfer ihn nicht benutzt.</b> Der Normalisierer ändert den Baum — der
+    /// Prüfer darf das nicht, er liest über <see cref="Vorlagenteile"/>. Beide erkennen nach
+    /// derselben Trennregel; wo sie sich unterscheiden (Zweige von <c>mc:AlternateContent</c>,
+    /// <c>w:smartTag</c>, <c>w:fldSimple</c>, <c>w:bdo</c>/<c>w:dir</c>), steht im Kopf von
+    /// <c>Vorlagenteile.cs</c>.</para>
     /// </summary>
     internal static class WordVorlagennormalisierer
     {

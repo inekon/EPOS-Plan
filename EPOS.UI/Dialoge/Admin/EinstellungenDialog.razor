@@ -62,7 +62,19 @@
    (KiMaskennamen.EINSTELLUNGEN, Sichtklasse EinstellungenKiSicht) - die fuenf
    Adressen, die Kuehlungsvorgabe neuer Projekte und die Diagrammfarben als
    Feldtafel. Die Ordner, der Datenbankname und der KI-Abschalter bleiben beim
-   Anwender. Speichern ist der Weg von OK, ohne zu schliessen. *@
+   Anwender. Speichern ist der Weg von OK, ohne zu schliessen.
+
+   DIE RUBRIK "BERICHT" (BV-E1, Konzept Berichtsvorlagen 10.3) steht VOR
+   "Anwendung" - die Sammelrubrik bleibt die letzte - und nur, wenn die Huelle
+   einen Rueckweg fuer Firma oder Vorlagenordner reicht (kein Rueckweg, keine
+   Rubrik): "Firma" fuer {{ersteller.firma}} und der Vorlagenordner der eigenen
+   Berichtsvorlagen mit "Durchsuchen…". Beide Werte stehen im ARBEITSSTAND des
+   Dialogs und gehen erst im OK-Weg hinaus - NACH dem gelungenen Speichern des
+   Wertesatzes, je Wert einmal und nur geaendert (FirmaChanged,
+   VorlagenordnerChanged); Abbrechen, Kreuz und Esc melden nichts. Lehnt die
+   Plattform die Ordnerwahl ab (iOS: fest die Sandbox) oder fehlt der
+   Ordnerwaehler, ist das Pfadfeld nur lesbar, ohne Knopf, und der Grund steht
+   darunter. "Standardwerte" setzt beide auf die Vorgaben der Huelle. *@
 
 @namespace EPOS.UI.Dialoge.Admin
 @using System.Linq
@@ -205,6 +217,41 @@
                     </KindInhalt>
                 </Reiterblatt>
 
+                @* Die Rubrik "Bericht" (BV-E1, Konzept Berichtsvorlagen 10.3) - nur mit
+                   einem Rueckweg der Huelle; sie steht vor der Sammelrubrik. *@
+                @if (BerichtSichtbar)
+                {
+                    <Reiterblatt Schluessel="BERICHT" Titel="@Bt.Rubrik">
+                        <KindInhalt>
+                            <div class="epos-formathinweis">
+                                <Herleitungszeile Text="@Bt.Hinweis" />
+                                <InfoKnopf Schluessel="@HilfeSchluesselBericht" StandardKurztext="@Bt.Rubrik"
+                                           Dialogname="@Bt.Rubrik" />
+                            </div>
+                            <Formularraster Einspaltig="true">
+                                <KindInhalt>
+                                    <Textfeld Bezeichnung="@Bt.LabelFirma" Wert="@_firma"
+                                              WertChanged="@(t => _firma = t)" />
+                                    <Herleitungszeile Text="@Bt.HinweisFirma" />
+                                    <Dateiwahl Bezeichnung="@Bt.LabelVorlagenordner" Pfad="@_vorlagenordner"
+                                               PfadChanged="@(p => _vorlagenordner = p)"
+                                               Waehlen="@VorlagenordnerWaehler" KnopfText="@DurchsuchenText"
+                                               NurLesen="@VorlagenordnerGesperrt" />
+                                    @if (VorlagenordnerGrund.Length > 0)
+                                    {
+                                        <Herleitungszeile Text="@VorlagenordnerGrund" />
+                                    }
+                                    <Herleitungszeile Text="@Bt.HinweisVorlagenordner" />
+                                    @if (!VorlagenordnerGesperrt)
+                                    {
+                                        <Herleitungszeile Text="@Bt.HinweisGemeinsamerOrdner" />
+                                    }
+                                </KindInhalt>
+                            </Formularraster>
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
                 <Reiterblatt Schluessel="ANWENDUNG" Titel="@RubrikAnwendungText">
                     <KindInhalt>
                         <Dateiwahl Bezeichnung="@LabelAllgemein" Pfad="@_satz.AllgemeinPfad"
@@ -326,6 +373,55 @@
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // =====================================================================
+    // BV-E1 — der Abschnitt „Bericht" (Konzept Berichtsvorlagen 10.3)
+    //
+    // Firma und Vorlagenordner führt der Dialog im ARBEITSSTAND; hinaus gehen sie nur im
+    // OK-Weg, nach dem gelungenen Speichern des Wertesatzes, je Wert einmal und nur, wenn er
+    // sich geändert hat. Ohne FirmaChanged und VorlagenordnerChanged steht die Rubrik nicht da.
+    // =====================================================================
+
+    /// <summary>Die Firma für <c>{{ersteller.firma}}</c> — Anfangswert (Einstellung <c>BerichtFirma</c>).</summary>
+    [Parameter] public string Firma { get; set; } = "";
+
+    /// <summary>
+    /// Übergabe der Firma im OK-Weg (getrimmt), nach dem gelungenen <see cref="Speichern"/> und
+    /// nur, wenn sie sich geändert hat; Abbrechen, Kreuz und Esc melden nichts.
+    /// </summary>
+    [Parameter] public EventCallback<string> FirmaChanged { get; set; }
+
+    /// <summary>Die Vorgabe der Firma für „Standardwerte" (aus der Lizenz); leer = die Firma bleibt.</summary>
+    [Parameter] public string FirmaVorgabe { get; set; } = "";
+
+    /// <summary>Der Vorlagenordner — Anfangswert (Einstellung <c>BerichtVorlagenordner</c>).</summary>
+    [Parameter] public string Vorlagenordner { get; set; } = "";
+
+    /// <summary>
+    /// Übergabe des Vorlagenordners im OK-Weg, wie <see cref="FirmaChanged"/> — nie, solange die
+    /// Wahl gesperrt ist.
+    /// </summary>
+    [Parameter] public EventCallback<string> VorlagenordnerChanged { get; set; }
+
+    /// <summary>Die Vorgabe des Vorlagenordners für „Standardwerte"; leer = der Ordner bleibt.</summary>
+    [Parameter] public string VorlagenordnerVorgabe { get; set; } = "";
+
+    /// <summary>
+    /// Warum der Vorlagenordner nicht wählbar ist (iOS: fest die Sandbox, benannt abgelehnt);
+    /// leer = wählbar. Gesetzt ist das Feld nur lesbar, ohne „Durchsuchen…", und der Grund
+    /// steht darunter. Den Ordnerwähler teilt der Abschnitt mit den übrigen Pfaden
+    /// (<see cref="OrdnerWaehler"/>); ohne ihn ist der Ordner ebenso fest.
+    /// </summary>
+    [Parameter] public string VorlagenordnerGesperrtGrund { get; set; } = "";
+
+    /// <summary>Die Beschriftungen des Abschnitts (<c>EIN_BERICHT_*</c>).</summary>
+    [Parameter] public EinstellungenBerichtTexte BerichtTexte { get; set; } = new();
+
+    /// <summary>
+    /// Hilfeschlüssel des Abschnitts (Muster <c>&lt;Maske&gt;.btn_Help_&lt;Teil&gt;</c>, wie
+    /// <c>Form_WirtschaftlichkeitParameter.btn_Help_Risiko</c>).
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBericht { get; set; } = "Form_AdminSettings.btn_Help_Bericht";
+
+    // =====================================================================
     // Texte
     // =====================================================================
 
@@ -391,6 +487,48 @@
 
     private bool _frageOffen;
 
+    // ---- BV-E1: der Arbeitsstand des Abschnitts „Bericht" -------------------
+
+    private string _firma = "";
+    private string _vorlagenordner = "";
+
+    /// <summary>Was zuletzt hinausging (bzw. hereinkam) — ein zweites OK wiederholt nichts.</summary>
+    private string _firmaGemeldet = "";
+    private string _vorlagenordnerGemeldet = "";
+
+    private readonly EinstellungenBerichtTexte _berichtTexteVorgabe = new();
+
+    /// <summary>Die Beschriftungen des Abschnitts — nie <c>null</c>.</summary>
+    private EinstellungenBerichtTexte Bt => BerichtTexte ?? _berichtTexteVorgabe;
+
+    /// <summary>Kein Rückweg, keine Rubrik: Die Rubrik „Bericht" steht nur mit einem Rückruf der Hülle.</summary>
+    public bool BerichtSichtbar => FirmaChanged.HasDelegate || VorlagenordnerChanged.HasDelegate;
+
+    /// <summary>
+    /// Ist der Vorlagenordner fest? Wenn die Plattform die Wahl ablehnt
+    /// (<see cref="VorlagenordnerGesperrtGrund"/>) oder kein Ordnerwähler da ist (Entscheid E-5).
+    /// </summary>
+    public bool VorlagenordnerGesperrt => PfadeFest || !string.IsNullOrWhiteSpace(VorlagenordnerGesperrtGrund);
+
+    /// <summary>
+    /// Der Grund unter dem festen Vorlagenordner — der der Plattform; ohne ihn keiner, denn den
+    /// Grund der festen Pfade nennt die Zeile über der Rubrikenleiste schon.
+    /// </summary>
+    private string VorlagenordnerGrund => string.IsNullOrWhiteSpace(VorlagenordnerGesperrtGrund)
+        ? "" : VorlagenordnerGesperrtGrund.Trim();
+
+    /// <summary>Der Wähler des Vorlagenordners — keiner, solange die Wahl gesperrt ist.</summary>
+    private Func<string, Task<string?>>? VorlagenordnerWaehler => VorlagenordnerGesperrt ? null : OrdnerWaehler;
+
+    /// <summary>Die Firma im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public string FirmaArbeitsstand => _firma;
+
+    /// <summary>Der Vorlagenordner im Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public string VorlagenordnerArbeitsstand => _vorlagenordner;
+
+    /// <summary>Die Sicht des Hilfe-Assistenten auf diesen Dialog (Prüfhilfe).</summary>
+    public EinstellungenKiSicht Assistentensicht => KiSicht();
+
     /// <summary>
     /// Der Arbeitsstand der Rubrik „Diagramme": Rollenschlüssel → <c>#RRGGBB</c>.
     /// Er trägt JEDE Rolle — auch die unveränderten —, damit das Feld eine Farbe
@@ -454,6 +592,12 @@
         Uebernehmen(Satz);
         _kiAus = KiAbgeschaltet;
         if (!KiLesbar) Melden(KiFehlerText, WarnStufe.Warnung);
+
+        // BV-E1: der Arbeitsstand des Abschnitts „Bericht" aus den Anfangswerten.
+        _firma = Firma ?? "";
+        _vorlagenordner = Vorlagenordner ?? "";
+        _firmaGemeldet = _firma.Trim();
+        _vorlagenordnerGemeldet = _vorlagenordner.Trim();
     }
 
     protected override void OnInitialized()
@@ -483,7 +627,24 @@
             // Fehleingabe und zeigt den gesetzten Ton.
             _farbstand++;
         },
-        Gesetzt = () => _meldung = ""
+        Gesetzt = () => _meldung = "",
+
+        // BV-E1: der Abschnitt „Bericht" — derselbe Arbeitsstand wie die Felder; wo es ihn
+        // nicht gibt oder die Ordnerwahl gesperrt ist, lehnt die Sicht BENANNT ab.
+        BerichtFirmaLesen = () => _firma,
+        BerichtFirmaSetzen = text =>
+        {
+            if (!BerichtSichtbar) throw new InvalidOperationException(Bt.NichtVerfuegbar);
+            _firma = text ?? "";
+        },
+        BerichtVorlagenordnerLesen = () => _vorlagenordner,
+        BerichtVorlagenordnerSetzen = pfad =>
+        {
+            if (!BerichtSichtbar) throw new InvalidOperationException(Bt.NichtVerfuegbar);
+            if (VorlagenordnerGesperrt)
+                throw new InvalidOperationException(VorlagenordnerGrund.Length > 0 ? VorlagenordnerGrund : PfadeFestText);
+            _vorlagenordner = pfad ?? "";
+        }
     };
 
     /// <summary>
@@ -519,6 +680,9 @@
             _ = InvokeAsync(StateHasChanged);
             return KiKern.KiErgebnis.Fehlgeschlagen(befund.Meldung);
         }
+
+        // BV-E1: derselbe OK-Weg - der Abschnitt „Bericht" geht nach dem Wertesatz hinaus.
+        await BerichtUebergeben();
 
         Melden(GespeichertText, WarnStufe.Erfolg);
         _ = InvokeAsync(StateHasChanged);
@@ -586,6 +750,12 @@
 
         Uebernehmen(await Zuruecksetzen());
 
+        // BV-E1: der Abschnitt „Bericht" auf die Vorgaben der Huelle - nur, wo sie eine
+        // reicht, und der Ordner nur, wenn er waehlbar ist.
+        if (!string.IsNullOrWhiteSpace(FirmaVorgabe)) _firma = FirmaVorgabe;
+        if (!VorlagenordnerGesperrt && !string.IsNullOrWhiteSpace(VorlagenordnerVorgabe))
+            _vorlagenordner = VorlagenordnerVorgabe;
+
         // Zuruecksetzen SPEICHERT NICHT - woertlich wie der Vorlaeufer.
         Melden(StandardwerteGeladenText, WarnStufe.Hinweis);
     }
@@ -616,7 +786,36 @@
 
         if (!befund.Ok) { Melden(befund.Meldung, WarnStufe.Fehler); return; }
 
+        // BV-E1: Der Abschnitt „Bericht" geht erst NACH dem gelungenen Speichern hinaus -
+        // scheitert das Speichern, bleibt er im Arbeitsstand, und Abbrechen verwirft ihn.
+        await BerichtUebergeben();
+
         await Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// Übergibt Firma und Vorlagenordner — je Wert einmal und nur geändert (ein zweites OK
+    /// nach dem Speichern des Assistenten wiederholt nichts); den Ordner nie, solange die
+    /// Wahl gesperrt ist.
+    /// </summary>
+    private async Task BerichtUebergeben()
+    {
+        if (!BerichtSichtbar) return;
+
+        string firma = (_firma ?? "").Trim();
+        if (FirmaChanged.HasDelegate && !string.Equals(firma, _firmaGemeldet, StringComparison.Ordinal))
+        {
+            _firmaGemeldet = firma;
+            await FirmaChanged.InvokeAsync(firma);
+        }
+
+        string ordner = (_vorlagenordner ?? "").Trim();
+        if (!VorlagenordnerGesperrt && VorlagenordnerChanged.HasDelegate
+            && !string.Equals(ordner, _vorlagenordnerGemeldet, StringComparison.Ordinal))
+        {
+            _vorlagenordnerGemeldet = ordner;
+            await VorlagenordnerChanged.InvokeAsync(ordner);
+        }
     }
 
     private void Melden(string text, WarnStufe stufe)

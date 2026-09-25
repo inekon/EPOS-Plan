@@ -270,6 +270,13 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
+            // Berichtsvorlagen BV-E1 (Konzept 10.3): die Wege um eine Vorlagendatei, die nur
+            // Windows kennt - "Im Ordner zeigen" (Explorer), "In Word oeffnen" und
+            // "Schreibgeschuetzt oeffnen" (Word selbst) und die Wahl des Vorlagenordners. Ohne
+            // diesen Haken bietet das Menue "…" der Berichtsseite "Teilen…", und der
+            // Vorlagenordner ist fest - genau der Stand auf iOS.
+            Berichtsvorlagenwege.Plattform = WindowsBerichtsvorlagenwege.Erzeugen();
+
             // Stufe G1 der Gebaeudesimulation (Umsetzungskonzept 2.8, E27/A10): Die
             // Gebaeudehuellen liegen in EPOS.UI.Daten; zwei ihrer Unterdialoge haben die
             // Datenhaelfte noch hier - die Brauchwasser-Profilliste und die

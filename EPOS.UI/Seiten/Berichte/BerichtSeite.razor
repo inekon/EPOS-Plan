@@ -26,9 +26,35 @@
 
    FORTSCHRITT: Der Baustein Fortschritt kommt mit Welle 11. Bis dahin steht
    hier das HTML-Element <progress> - es deckt die ProgressBar der Feldkarte
-   ab und braucht keine Bibliothek. *@
+   ab und braucht keine Bibliothek.
+
+   BV-E1 (Konzept Berichtsvorlagen 10.2): DIE GRUPPE "VORLAGE" steht oben rechts
+   UEBER den Berichtsbausteinen - Auswahlfeld "Word-Vorlage" (Schloss neben dem
+   Feld bei einer mitgelieferten Vorlage, gesperrter Eintrag mit Grund fuer eine
+   fehlende), die Knoepfe "Neue Vorlage…", "Hinzufuegen…", "Pruefen",
+   "Platzhalter…" und das Menue "…" (Eintraege als Daten aus der Huelle), darunter
+   die Pruefzeile (Herleitungszeile mit Zeichen und "anzeigen"). Ohne Gaben steht
+   die Gruppe nicht da - kein Delegat, kein Knopf.
+   * Waehrend eines Laufs sind alle Knoepfe der Gruppe WEICH gesperrt
+     (aria-disabled, Grund als Kurztext, ein Klick meldet ihn), die Wahl selbst
+     wie die uebrigen Felder hart.
+   * "Neue Vorlage…" fragt den Namen im NamensDialog (Ueberlagerung im selben
+     Fenster) und meldet ihn; Pruefliste und Platzhalterkatalog sind Unterdialoge
+     in Ueberlagerungen, ihre Parametersaetze baut die Huelle (PrueflisteGaben,
+     PlatzhalterkatalogGaben).
+   * Die Parameter der Gruppe sind der ANFANGSSTAND; nach jeder Handlung und
+     unmittelbar vor der Startrueckfrage holt die Seite den frischen Stand ueber
+     VorlagenNeuLaden (die Schnellpruefung laeuft vor jedem Start, Konzept 6.8).
+   * Liefert die Huelle eine Startrueckfrage, ersetzt sie die heutige: dieselbe
+     Rueckfrage mit Befunden und drei Wegen ("Mit meiner Vorlage", "Mit
+     Standardvorlage", "Abbrechen", BV-Q6); die Antwort geht als StartGewaehlt
+     hinaus und reist im Auftrag (Vorlagenweg) mit. *@
 
 @namespace EPOS.UI.Seiten.Berichte
+@using System.Globalization
+@using System.Text
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Berichte
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -91,6 +117,131 @@
 
         @* --------------------------------------------------- Bausteine *@
         <section class="epos-seite-spalte">
+            @* --- BV-E1: die Gruppe "Vorlage" UEBER den Haekchen (Konzept 10.2) --- *@
+            @if (VorlagengruppeSichtbar)
+            {
+                <div class="epos-vorlage" role="group" aria-label="@Vt.Gruppe">
+                    <p class="epos-untergruppe">@Vt.Gruppe</p>
+
+                    @if (_gruppenfehler.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_gruppenfehler" />
+                    }
+                    @if (_sperrmeldung.Length > 0)
+                    {
+                        @* Das Banner NACH dem Versuch, mit Verfall (Hausregel „Zustand, Meldung,
+                           Leerzustand"): Der Grund stand schon am Knopf. *@
+                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_sperrmeldung"
+                                    Verfaellt="@Sperrmeldungsdauer" Verfallen="SperrmeldungVerfallen" />
+                    }
+
+                    <div class="epos-vorlage-wahl">
+                        <Auswahlfeld Bezeichnung="@Vt.LabelWord" Eintraege="@Vorlageneintraege"
+                                     Auswahl="@_vorlageId" Aktiv="@(!GruppeGesperrt)"
+                                     GesperrteEintraege="@GesperrteVorlagen"
+                                     GesperrtHinweise="@Vorlagensperrgruende"
+                                     GesperrtHinweis="@Vt.NichtWaehlbar"
+                                     AuswahlChanged="BeiVorlage" />
+                        @if (GewaehlteVorlage is { Mitgeliefert: true })
+                        {
+                            <span class="epos-vorlage-schlossplatz">
+                                <Kennzeichen Kurztext="@Vt.Mitgeliefert" />
+                            </span>
+                        }
+                    </div>
+
+                    @if (GewaehlteVorlage is { Gesperrt: true } fehlend)
+                    {
+                        <Herleitungszeile Text="@Sperrhinweis(fehlend)" />
+                    }
+
+                    @if (KnoepfeSichtbar)
+                    {
+                        <div class="epos-leiste epos-vorlage-leiste">
+                            @if (NeueVorlage.HasDelegate)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-neu"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeu)"
+                                        @onclick="NeuFragen">@Vt.KnopfNeu</button>
+                            }
+                            @if (Hinzufuegen.HasDelegate)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-hinzufuegen"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextHinzufuegen)"
+                                        @onclick="HinzufuegenKlick">@Vt.KnopfHinzufuegen</button>
+                            }
+                            @if (Pruefen.HasDelegate)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-pruefen"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPruefen)"
+                                        @onclick="PruefenKlick">@Vt.KnopfPruefen</button>
+                            }
+                            @if (PlatzhalterkatalogGaben is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-platzhalter"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPlatzhalter)"
+                                        @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
+                            }
+                            @if (MenueMoeglich)
+                            {
+                                @* Das Menue „…": Die Eintraege sind DATEN der Huelle; ein inaktiver
+                                   Eintrag bleibt stehen, traegt seinen Grund und meldet ihn beim Klick.
+                                   Geschlossen wird ueber die Schliessflaeche, nie ueber focusout. *@
+                                <span class="@(_menueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
+                                      @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_menueOffen">
+                                    <button type="button" class="epos-knopf epos-vorlage-menueknopf"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztext)"
+                                            aria-label="@Vt.MenueKurztext" aria-expanded="@(_menueOffen ? "true" : "false")"
+                                            aria-controls="@MenueId"
+                                            @onclick="MenueUmschalten">@Vt.KnopfMenue</button>
+                                    @if (_menueOffen)
+                                    {
+                                        <ul class="epos-vorlage-menue-liste" id="@MenueId" aria-label="@Vt.MenueKurztext">
+                                            @foreach (Handlung h in _handlungen)
+                                            {
+                                                <li>
+                                                    <button type="button" class="epos-vorlage-menue-eintrag"
+                                                            aria-disabled="@(h.Aktiv ? null : "true")"
+                                                            title="@Eintragstitel(h)"
+                                                            @onclick="() => HandlungKlick(h)">@h.Text</button>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </span>
+                            }
+                        </div>
+                    }
+                    @if (_menueOffen)
+                    {
+                        @* DER DECKEL: faengt den Klick neben das Menue, auf Maus wie auf dem Finger
+                           (Muster Suchauswahl, drei z-Ebenen im Stilblatt). *@
+                        <div class="epos-vorlage-menue-schliessflaeche" aria-hidden="true"
+                             @onclick="MenueSchliessen"></div>
+                    }
+
+                    @if (_pruefzeile is not null)
+                    {
+                        @* Die Pruefzeile (Konzept 9.7): eine Herleitungszeile mit Zeichen davor
+                           und „anzeigen" dahinter - kein Kennzeichen, das ist das Schloss. *@
+                        <div class="@(_pruefzeile.HatBefunde ? "epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund" : "epos-vorlage-pruefzeile")"
+                             role="status">
+                            @if (!string.IsNullOrEmpty(_pruefzeile.Symbol))
+                            {
+                                <span class="epos-vorlage-pruefsymbol" aria-hidden="true">@_pruefzeile.Symbol</span>
+                            }
+                            <Herleitungszeile Text="@_pruefzeile.Text" />
+                            @if (_pruefzeile.HatBefunde && PrueflisteGaben is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-vorlage-anzeigen"
+                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.PrueflisteTitel)"
+                                        @onclick="PrueflisteOeffnen">@Anzeigentext</button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
             <Mehrfachauswahl Bezeichnung="@LabelBausteine" Eintraege="@Bausteineintraege"
                              Gewaehlt="@GewaehlteBausteine" Aktiv="@(!_laeuft)"
                              MitSammelknoepfen="false"
@@ -141,9 +292,55 @@
     </div>
 
     @* --------------------------------------------------- Rueckfragen *@
+    @* BV-E1: Dieselbe Rueckfrage traegt auch die ERWEITERTE Startfrage (BV-Q6) - Ja =
+       „Mit meiner Vorlage", Nein = „Mit Standardvorlage", Abbrechen = „Abbrechen"; ohne
+       eigenen Weg nur „Mit Standardvorlage" (Ja) und „Abbrechen" (Nein). Esc heisst dann
+       Abbrechen. *@
     <Rueckfrage Offen="@(_frage != Frageart.Keine)" Frage="@_fragetext"
                 TitelText="@_fragetitel" Beantwortet="Beantwortet"
-                JaText="@JaText" NeinText="@NeinText" />
+                JaText="@FrageJaText" NeinText="@FrageNeinText"
+                MitAbbrechen="@FrageMitAbbrechen" AbbrechenText="@FrageAbbrechenText"
+                VorgabeNein="@(_frage == Frageart.Handlung)" />
+
+    @* --------------------------------------------------- Unterdialoge (BV-E1) *@
+    @* Ein Titel, eine Stelle: Die Ueberlagerungen tragen Titel und Kreuz, die Dialoge darin
+       zeigen keinen eigenen Kopf - TitelText="" bzw. TitelAnzeigen="false" steht RECHTS vom
+       Parametersatz der Huelle. *@
+    <Ueberlagerung Offen="@_namensdialogOffen" Titel="@Vt.NeuTitel" Geschlossen="NamensdialogAbbrechen">
+        <KindInhalt>
+            @if (_namensdialogOffen)
+            {
+                <NamensDialog TitelText="" FrageText="@Vt.NeuFrage" HinweisText="@Vt.NeuHinweis"
+                              MeldungLeer="@Vt.NeuLeer" Pruefung="@VorlagennamePruefen"
+                              OkText="@Vt.Ok" AbbrechenText="@Vt.Abbrechen"
+                              Geschlossen="NamensdialogGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_prueflisteGaben is not null)" Titel="@Vt.PrueflisteTitel"
+                   Geschlossen="PrueflisteSchliessen">
+        <KindInhalt>
+            @if (_prueflisteGaben is not null)
+            {
+                <PrueflisteDialog @attributes="_prueflisteGaben" TitelAnzeigen="false"
+                                  Geschlossen="PrueflisteSchliessen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_katalogGaben is not null)" Titel="@Vt.KatalogTitel"
+                   Geschlossen="KatalogSchliessen">
+        <KindInhalt>
+            @if (_katalogGaben is not null)
+            {
+                @* Die Suche gehoert dem Wirt: Er meldet sie beim Assistenten an. *@
+                <PlatzhalterkatalogDialog @attributes="_katalogGaben" TitelAnzeigen="false"
+                                          Suche="@_katalogsuche" SucheChanged="BeiKatalogsuche"
+                                          Geschlossen="KatalogSchliessen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -226,6 +423,98 @@
     [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
 
     // =====================================================================
+    // BV-E1 — die Gruppe „Vorlage" (Konzept Berichtsvorlagen 10.2)
+    //
+    // Die Werte sind der ANFANGSSTAND; ein NEUER Wert der Hülle ersetzt den Stand der
+    // Gruppe, derselbe lässt ihn stehen. Frisch geholt wird über VorlagenNeuLaden.
+    // Ohne Vorlagen und ohne Rückrufe steht die Gruppe nicht da.
+    // =====================================================================
+
+    /// <summary>
+    /// Die wählbaren Word-Vorlagen: „Standard (EPOS-Plan)" und die eigenen des
+    /// Vorlagenordners, je mit stabiler Id.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Vorlagenzeile> Vorlagen { get; set; } = Array.Empty<Vorlagenzeile>();
+
+    /// <summary>Die gewählte Vorlage (<see cref="Vorlagenzeile.Id"/>); <c>null</c> = keine.</summary>
+    [Parameter] public int? VorlageId { get; set; }
+
+    /// <summary>
+    /// Der Anwender hat eine andere Vorlage gewählt (auch über den Assistenten) — die Hülle
+    /// merkt sich die Wahl und prüft schnell; danach holt die Seite den Stand nach.
+    /// </summary>
+    [Parameter] public EventCallback<int?> VorlageIdChanged { get; set; }
+
+    /// <summary>Die Einträge des Menüs „…" zur gewählten Vorlage; leer = kein Menü.</summary>
+    [Parameter] public IReadOnlyList<Handlung> Vorlagenhandlungen { get; set; } = Array.Empty<Handlung>();
+
+    /// <summary>Ein aktiver Eintrag des Menüs „…" wurde gewählt — gemeldet wird <see cref="Handlung.Id"/>.</summary>
+    [Parameter] public EventCallback<string> HandlungGewaehlt { get; set; }
+
+    /// <summary>
+    /// „Neue Vorlage…": der Name aus dem Namensdialog (getrimmt, nie leer) — die Hülle legt
+    /// die Kopie der Standardvorlage an und wählt sie. Ohne Rückruf kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback<string> NeueVorlage { get; set; }
+
+    /// <summary>
+    /// Die Namensprüfung des Namensdialogs (<c>NamensDialog.Pruefung</c>): ein Fehlertext
+    /// hält den Dialog offen („gibt es schon"); <c>null</c>/leer = der Name ist frei.
+    /// </summary>
+    [Parameter] public Func<string, string?>? VorlagennamePruefen { get; set; }
+
+    /// <summary>„Hinzufügen…" — die Hülle öffnet die Dateiwahl der Plattform, kopiert und prüft voll.</summary>
+    [Parameter] public EventCallback Hinzufuegen { get; set; }
+
+    /// <summary>„Prüfen" — die volle Prüfung der gewählten Vorlage (Konzept 6.8).</summary>
+    [Parameter] public EventCallback Pruefen { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Überlagerung „Platzhalterkatalog"
+    /// (<c>PlatzhalterkatalogDialog</c>); <c>null</c> als Antwort = geht gerade nicht. Ohne
+    /// Delegat kein Knopf „Platzhalter…". <c>Geschlossen</c>, <c>TitelAnzeigen</c>,
+    /// <c>Suche</c> und <c>SucheChanged</c> setzt die Seite selbst.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? PlatzhalterkatalogGaben { get; set; }
+
+    /// <summary>Die Prüfzeile unter der Wahl; <c>null</c> = keine.</summary>
+    [Parameter] public Pruefstand? Pruefzeile { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Überlagerung „Prüfliste" (<c>PrueflisteDialog</c>) — „anzeigen"
+    /// in der Prüfzeile öffnet sie; <c>null</c> als Antwort = geht gerade nicht. Ohne Delegat
+    /// kein „anzeigen". <c>Geschlossen</c> und <c>TitelAnzeigen</c> setzt die Seite selbst.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? PrueflisteGaben { get; set; }
+
+    /// <summary>
+    /// Die erweiterte Startrückfrage (BV-Q6): Liefert die Hülle sie, steht sie statt der
+    /// heutigen vor dem Lauf; <c>null</c> = die heutige (<see cref="FrageStart"/>).
+    /// </summary>
+    [Parameter] public Startrueckfrage? Startrueckfrage { get; set; }
+
+    /// <summary>
+    /// Die Antwort der erweiterten Startrückfrage — <see cref="Startweg.Eigene"/>,
+    /// <see cref="Startweg.Standard"/> oder <see cref="Startweg.Abbruch"/>. Gemeldet VOR dem
+    /// Lauf; bei „eigene"/„standard" folgt <see cref="Erstellen"/> mit demselben Weg im
+    /// Auftrag.
+    /// </summary>
+    [Parameter] public EventCallback<string> StartGewaehlt { get; set; }
+
+    /// <summary>
+    /// Holt den FRISCHEN Stand der Gruppe — nach jeder Handlung der Gruppe, vor der
+    /// Startrückfrage und nach dem Lauf. <c>null</c> (Delegat oder Antwort) = der Stand
+    /// bleibt, wie er ist.
+    /// </summary>
+    [Parameter] public Func<Vorlagenstand?>? VorlagenNeuLaden { get; set; }
+
+    /// <summary>Die Beschriftungen der Gruppe (Bündel mit <c>BK_BER_VORLAGE_*</c>).</summary>
+    [Parameter] public BerichtSeiteVorlagentexte Vorlagentexte { get; set; } = new();
+
+    /// <summary>Wie lange die Meldung nach einem Klick auf einen gesperrten Knopf steht.</summary>
+    [Parameter] public TimeSpan Sperrmeldungsdauer { get; set; } = TimeSpan.FromSeconds(4);
+
+    // =====================================================================
     // Zustand
     // =====================================================================
 
@@ -242,14 +531,56 @@
     private string _meldung = "";
     private string _fehler = "";
 
-    private enum Frageart { Keine, Erstellen, Oeffnen }
+    /// <summary>
+    /// Welche Frage steht — die heutige, die erweiterte (BV-E1), die vor einer Handlung des
+    /// Menüs „…" (BV-E1) oder „öffnen?".
+    /// </summary>
+    private enum Frageart { Keine, Erstellen, Vorlage, Handlung, Oeffnen }
     private Frageart _frage = Frageart.Keine;
     private string _fragetext = "";
     private string _fragetitel = "";
     private string _oeffnen = "";
+    private Handlung? _frageHandlung;
+
+    // ---- BV-E1: der Stand der Vorlagengruppe ------------------------------
+
+    private readonly BerichtSeiteVorlagentexte _vorlagentexteVorgabe = new();
+
+    private IReadOnlyList<Vorlagenzeile> _vorlagen = Array.Empty<Vorlagenzeile>();
+    private int? _vorlageId;
+    private IReadOnlyList<Handlung> _handlungen = Array.Empty<Handlung>();
+    private Pruefstand? _pruefzeile;
+    private Startrueckfrage? _startrueckfrage;
+
+    /// <summary>Die zuletzt GESEHENEN Werte der Hülle — ein neuer Wert ersetzt den Stand.</summary>
+    private IReadOnlyList<Vorlagenzeile>? _gesehenVorlagen;
+    private int? _gesehenVorlageId;
+    private IReadOnlyList<Handlung>? _gesehenHandlungen;
+    private Pruefstand? _gesehenPruefzeile;
+    private Startrueckfrage? _gesehenStartrueckfrage;
+    private bool _gesehen;
+
+    /// <summary>Läuft gerade eine Handlung der Gruppe (Dateiwahl, Kopie, Prüfung)?</summary>
+    private bool _vorlageBeschaeftigt;
+    private bool _menueOffen;
+    private bool _namensdialogOffen;
+    private IReadOnlyDictionary<string, object>? _prueflisteGaben;
+    private IReadOnlyDictionary<string, object>? _katalogGaben;
+    private string _katalogsuche = "";
+    private string _sperrmeldung = "";
+    private string _gruppenfehler = "";
+
+    /// <summary>Die Kennung der Menüliste für <c>aria-controls</c> — je Seite eindeutig.</summary>
+    private readonly string _menueId = "epos-vorlage-menue-" + Guid.NewGuid().ToString("N");
 
     /// <summary>Läuft gerade ein Bericht? (Prüfhilfe und Wirt: dann nicht schließen.)</summary>
     public bool Beschaeftigt => _laeuft;
+
+    /// <summary>Die gewählte Vorlage (Prüfhilfe).</summary>
+    public int? GewaehlteVorlageId => _vorlageId;
+
+    /// <summary>Die Sicht des Hilfe-Assistenten auf diese Seite (Prüfhilfe).</summary>
+    public BerichtSeiteKiSicht Assistentensicht => KiSicht();
 
     /// <summary>Statuszeile (Prüfhilfe).</summary>
     public string Status => _status;
@@ -290,6 +621,35 @@
                                           () => KiSicht(), KiHaken());
     }
 
+    /// <summary>
+    /// BV-E1: Die Werte der Gruppe sind der Anfangsstand — ein NEUER Wert der Hülle
+    /// ersetzt den Stand, derselbe (ein Zeichenlauf des Rahmens mit demselben Gabensatz)
+    /// lässt die Wahl und das Nachgeladene stehen.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        bool neu = !_gesehen
+                   || !ReferenceEquals(Vorlagen, _gesehenVorlagen)
+                   || VorlageId != _gesehenVorlageId
+                   || !ReferenceEquals(Vorlagenhandlungen, _gesehenHandlungen)
+                   || !Equals(Pruefzeile, _gesehenPruefzeile)
+                   || !Equals(Startrueckfrage, _gesehenStartrueckfrage);
+        if (!neu) return;
+
+        _gesehen = true;
+        _gesehenVorlagen = Vorlagen;
+        _gesehenVorlageId = VorlageId;
+        _gesehenHandlungen = Vorlagenhandlungen;
+        _gesehenPruefzeile = Pruefzeile;
+        _gesehenStartrueckfrage = Startrueckfrage;
+
+        _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
+        _vorlageId = VorlageId;
+        _handlungen = Vorlagenhandlungen ?? Array.Empty<Handlung>();
+        _pruefzeile = Pruefzeile;
+        _startrueckfrage = Startrueckfrage;
+    }
+
     // =====================================================================
     // Der Hilfe-Assistent (Welle KI-F6)
     // =====================================================================
@@ -299,7 +659,8 @@
 
     /// <summary>
     /// Die Sicht des Assistenten: Ausgabeformat und Zielordner als Einstellwerte,
-    /// die zwei Mengen als Aufstellung.
+    /// die zwei Mengen als Aufstellung — dazu (BV-E1) die Vorlagenwahl als Wahlfeld,
+    /// die Prüfzeile als Anzeige und die Suche des Platzhalterkatalogs.
     /// </summary>
     private BerichtSeiteKiSicht KiSicht()
     {
@@ -315,8 +676,35 @@
 
             VariantenLesen = KiVariantenzeile,
             BausteineLesen = KiBausteinzeile,
-            StatusLesen = () => _status
+            StatusLesen = () => _status,
+
+            VorlageLesen = () => _vorlageId,
+            VorlageSetzen = KiVorlageSetzen,
+            VorlageEintraege = () => KiMaskenanmeldung.Eintraege(_vorlagen, z => z.Id, z => z.Text),
+            PruefzeileLesen = () => _pruefzeile?.Text ?? "",
+            KatalogsucheLesen = () => _katalogsuche,
+            KatalogsucheSetzen = text =>
+            {
+                _katalogsuche = text ?? "";
+                _ = InvokeAsync(StateHasChanged);
+            }
         };
+    }
+
+    /// <summary>
+    /// Die Vorlagenwahl des Assistenten — derselbe Weg wie das Auswahlfeld. Wo der
+    /// Anwender nicht wählen könnte, lehnt sie BENANNT ab: während eines Laufs, bei
+    /// einem gesperrten Eintrag und bei einer Id, die die Liste nicht kennt.
+    /// </summary>
+    private void KiVorlageSetzen(int? id)
+    {
+        if (GruppeGesperrt) throw new InvalidOperationException(Sperrgrund);
+
+        Vorlagenzeile? zeile = id.HasValue ? _vorlagen.FirstOrDefault(v => v.Id == id.Value) : null;
+        if (zeile is null) throw new InvalidOperationException(Vt.NichtWaehlbar);
+        if (zeile.Gesperrt) throw new InvalidOperationException(Sperrhinweis(zeile));
+
+        _ = InvokeAsync(() => BeiVorlage(id));
     }
 
     /// <summary>Die angehakten Versionen als Aufstellung — je Zeile ihr Klartext.</summary>
@@ -445,7 +833,7 @@
     // Läufe
     // =====================================================================
 
-    private BerichtAuftrag Auftrag()
+    private BerichtAuftrag Auftrag(string vorlagenweg = "")
     {
         var varianten = new List<int>();
         int mitStamm = 0;
@@ -462,29 +850,66 @@
             Bausteine = new List<string>(_bausteine),
             AusgabeId = _stand.AusgabeId,
             Zielordner = _stand.Zielordner,
-            AnzahlMitStamm = mitStamm
+            AnzahlMitStamm = mitStamm,
+            VorlageId = _vorlageId,
+            Vorlagenweg = vorlagenweg ?? ""
         };
     }
 
     private void ErstellenFragen()
     {
         if (_laeuft || Erstellen is null) return;
+        _menueOffen = false;
+
+        // BV-E1 (Konzept 6.8): Die Schnellprüfung läuft vor JEDEM Start — der frische
+        // Stand entscheidet, welche Rückfrage steht.
+        VorlagenNachziehen(mitMeldung: false);
+
+        int anzahl = Auftrag().AnzahlMitStamm;
+        if (_startrueckfrage is not null)
+        {
+            _frage = Frageart.Vorlage;
+            _fragetitel = string.IsNullOrWhiteSpace(_startrueckfrage.Titel) ? TitelErstellen : _startrueckfrage.Titel;
+            _fragetext = Startfragetext(_startrueckfrage, anzahl);
+            return;
+        }
+
         _frage = Frageart.Erstellen;
         _fragetitel = TitelErstellen;
-        _fragetext = string.Format(FrageStart, Auftrag().AnzahlMitStamm);
+        _fragetext = string.Format(FrageStart, anzahl);
     }
 
     private async Task Beantwortet(bool? antwort)
     {
         Frageart war = _frage;
+        Startrueckfrage? erweitert = _startrueckfrage;
         _frage = Frageart.Keine;
+
+        // BV-E1: Die erweiterte Frage kennt drei Antworten — auch „Abbrechen" wird gemeldet.
+        if (war == Frageart.Vorlage)
+        {
+            string weg = Startantwort(antwort, erweitert?.EigeneMoeglich ?? true);
+            await StartGewaehlt.InvokeAsync(weg);
+            if (weg != Startweg.Abbruch) await ErstellenLaufen(weg);
+            return;
+        }
+
+        // BV-E1: Die Handlung des Menüs „…" geht erst auf „Ja" hinaus.
+        if (war == Frageart.Handlung)
+        {
+            Handlung? handlung = _frageHandlung;
+            _frageHandlung = null;
+            if (antwort == true && handlung is not null)
+                await Gruppenhandlung(() => HandlungGewaehlt.InvokeAsync(handlung.Id));
+            return;
+        }
 
         if (antwort != true) return;
 
         switch (war)
         {
             case Frageart.Erstellen:
-                await ErstellenLaufen();
+                await ErstellenLaufen("");
                 break;
             case Frageart.Oeffnen:
                 if (DateiOeffnen is not null && !string.IsNullOrEmpty(_oeffnen))
@@ -493,19 +918,70 @@
         }
     }
 
-    private async Task ErstellenLaufen()
+    private async Task ErstellenLaufen(string vorlagenweg)
     {
         if (Erstellen is null) return;
 
         LaufBeginnen();
         try
         {
-            LaufErgebnis erg = await Erstellen(Auftrag(), Melden);
+            LaufErgebnis erg = await Erstellen(Auftrag(vorlagenweg), Melden);
             Auffrischen();          // Zeitstempel in der Liste auffrischen
+            VorlagenNachziehen(mitMeldung: false);
             ErgebnisZeigen(erg);    // NACH dem Auffrischen, das die Statuszeile leert
         }
         finally { LaufBeenden(); }
     }
+
+    /// <summary>
+    /// Die Antwort der erweiterten Startrückfrage als Weg: Mit eigenem Weg ist Ja = eigene,
+    /// Nein = Standard, Abbrechen/Esc = Abbruch; ohne ihn ist Ja = Standard, sonst Abbruch.
+    /// </summary>
+    private static string Startantwort(bool? antwort, bool eigeneMoeglich) => eigeneMoeglich
+        ? antwort switch { true => Startweg.Eigene, false => Startweg.Standard, _ => Startweg.Abbruch }
+        : antwort == true ? Startweg.Standard : Startweg.Abbruch;
+
+    /// <summary>
+    /// Der Text der erweiterten Rückfrage: der Satz der Hülle (ein <c>{0}</c> wird die
+    /// Versionszahl — ersetzt, nicht formatiert, damit ein <c>{{…}}</c> darin stehen bleibt),
+    /// darunter je Befund eine Zeile.
+    /// </summary>
+    private static string Startfragetext(Startrueckfrage frage, int anzahl)
+    {
+        var text = new StringBuilder((frage.Text ?? "").Replace("{0}",
+            anzahl.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal));
+
+        bool erster = true;
+        foreach (string befund in frage.Befunde ?? Array.Empty<string>())
+        {
+            if (string.IsNullOrWhiteSpace(befund)) continue;
+            if (erster) { text.Append('\n'); erster = false; }
+            text.Append("\n• ").Append(befund.Trim());
+        }
+
+        return text.ToString();
+    }
+
+    private bool ErweiterteFrage => _frage == Frageart.Vorlage && _startrueckfrage is not null;
+
+    private bool EigeneMoeglich => _startrueckfrage?.EigeneMoeglich ?? true;
+
+    private string FrageJaText => !ErweiterteFrage ? JaText
+        : EigeneMoeglich ? Beschriftung(_startrueckfrage!.WegEigene, Vt.WegEigene)
+                         : Beschriftung(_startrueckfrage!.WegStandard, Vt.WegStandard);
+
+    private string FrageNeinText => !ErweiterteFrage ? NeinText
+        : EigeneMoeglich ? Beschriftung(_startrueckfrage!.WegStandard, Vt.WegStandard)
+                         : Beschriftung(_startrueckfrage!.WegAbbrechen, Vt.WegAbbrechen);
+
+    private bool FrageMitAbbrechen => ErweiterteFrage && EigeneMoeglich;
+
+    private string FrageAbbrechenText => ErweiterteFrage
+        ? Beschriftung(_startrueckfrage!.WegAbbrechen, Vt.WegAbbrechen)
+        : AbbrechenText;
+
+    private static string Beschriftung(string? text, string rueckfall)
+        => string.IsNullOrWhiteSpace(text) ? rueckfall : text;
 
     private void LaufBeginnen()
     {
@@ -551,4 +1027,224 @@
     }
 
     private void LaufAbbrechen() => Abbrechen?.Invoke();
+
+    // =====================================================================
+    // BV-E1 — die Gruppe „Vorlage"
+    // =====================================================================
+
+    /// <summary>Die Beschriftungen der Gruppe — nie <c>null</c>, auch wenn die Hülle es reicht.</summary>
+    private BerichtSeiteVorlagentexte Vt => Vorlagentexte ?? _vorlagentexteVorgabe;
+
+    /// <summary>Kein Delegat, kein Knopf: Ohne Vorlagen und ohne Rückrufe steht die Gruppe nicht da.</summary>
+    private bool VorlagengruppeSichtbar
+        => _vorlagen.Count > 0 || _pruefzeile is not null
+           || NeueVorlage.HasDelegate || Hinzufuegen.HasDelegate || Pruefen.HasDelegate
+           || PlatzhalterkatalogGaben is not null;
+
+    /// <summary>Das Menü „…" steht nur mit Einträgen UND Rückruf.</summary>
+    private bool MenueMoeglich => _handlungen.Count > 0 && HandlungGewaehlt.HasDelegate;
+
+    /// <summary>Die Knopfleiste der Gruppe steht nur, wenn sie wenigstens einen Knopf trägt.</summary>
+    private bool KnoepfeSichtbar
+        => NeueVorlage.HasDelegate || Hinzufuegen.HasDelegate || Pruefen.HasDelegate
+           || PlatzhalterkatalogGaben is not null || MenueMoeglich;
+
+    private string MenueId => _menueId;
+
+    /// <summary>Weich gesperrt: während eines Laufs und solange eine Handlung der Gruppe läuft.</summary>
+    private bool GruppeGesperrt => _laeuft || _vorlageBeschaeftigt;
+
+    private string Sperrgrund => _laeuft ? Vt.GesperrtLauf : Vt.GesperrtBeschaeftigt;
+
+    /// <summary><c>aria-disabled</c> der Knöpfe der Gruppe — gesetzt nur, solange sie gesperrt sind.</summary>
+    private string? Sperrattribut => GruppeGesperrt ? "true" : null;
+
+    /// <summary>Der Kurztext am Knopf: frei die Erklärung, gesperrt der Grund.</summary>
+    private string? Knopftitel(string kurztext)
+        => GruppeGesperrt ? Sperrgrund : (string.IsNullOrWhiteSpace(kurztext) ? null : kurztext);
+
+    /// <summary>
+    /// Die weiche Sperre MELDET den Versuch (Hausregel „Bedienung"): Das Banner in der Gruppe
+    /// nennt den Grund und verfällt. <c>true</c> = gesperrt, der Klick endet hier.
+    /// </summary>
+    private bool GesperrtMelden()
+    {
+        if (!GruppeGesperrt) return false;
+        _sperrmeldung = Sperrgrund;
+        return true;
+    }
+
+    private void SperrmeldungVerfallen() => _sperrmeldung = "";
+
+    private IReadOnlyList<(int Id, string Text)> Vorlageneintraege
+        => _vorlagen.Where(v => v is not null).Select(v => (v.Id, v.Text)).ToList();
+
+    private IReadOnlyCollection<int> GesperrteVorlagen
+        => _vorlagen.Where(v => v is not null && v.Gesperrt).Select(v => v.Id).ToList();
+
+    private IReadOnlyDictionary<int, string> Vorlagensperrgruende
+    {
+        get
+        {
+            var gruende = new Dictionary<int, string>();
+            foreach (Vorlagenzeile v in _vorlagen)
+                if (v is not null && v.Gesperrt && !gruende.ContainsKey(v.Id)) gruende[v.Id] = Sperrhinweis(v);
+            return gruende;
+        }
+    }
+
+    private Vorlagenzeile? GewaehlteVorlage
+        => _vorlageId.HasValue ? _vorlagen.FirstOrDefault(v => v is not null && v.Id == _vorlageId.Value) : null;
+
+    private string Sperrhinweis(Vorlagenzeile zeile)
+        => string.IsNullOrWhiteSpace(zeile.GesperrtHinweis) ? Vt.NichtWaehlbar : zeile.GesperrtHinweis;
+
+    private string Anzeigentext
+        => string.IsNullOrWhiteSpace(_pruefzeile?.Knopftext) ? Vt.Anzeigen : _pruefzeile!.Knopftext;
+
+    /// <summary>
+    /// Übernimmt den frischen Stand der Hülle (<c>VorlagenNeuLaden</c>); ohne Delegat oder
+    /// ohne Antwort bleibt der Stand, wie er ist.
+    /// </summary>
+    private void VorlagenNachziehen(bool mitMeldung)
+    {
+        Vorlagenstand? neu = VorlagenNeuLaden?.Invoke();
+        if (neu is null) return;
+
+        _vorlagen = neu.Vorlagen ?? Array.Empty<Vorlagenzeile>();
+        _vorlageId = neu.VorlageId;
+        _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
+        _pruefzeile = neu.Pruefzeile;
+        _startrueckfrage = neu.Startrueckfrage;
+        _gruppenfehler = neu.Fehler ?? "";
+        if (mitMeldung && !string.IsNullOrWhiteSpace(neu.Meldung)) _status = neu.Meldung;
+    }
+
+    /// <summary>
+    /// Eine Handlung der Gruppe: Die Knöpfe sind währenddessen weich gesperrt, danach holt
+    /// die Seite den frischen Stand — auch wenn die Handlung scheitert.
+    /// </summary>
+    private async Task Gruppenhandlung(Func<Task> handlung)
+    {
+        _vorlageBeschaeftigt = true;
+        _menueOffen = false;
+        _sperrmeldung = "";
+        _gruppenfehler = "";
+        try { await handlung(); }
+        finally
+        {
+            _vorlageBeschaeftigt = false;
+            VorlagenNachziehen(mitMeldung: true);
+        }
+    }
+
+    private async Task BeiVorlage(int? id)
+    {
+        if (id == _vorlageId) return;
+        _vorlageId = id;
+        await Gruppenhandlung(() => VorlageIdChanged.InvokeAsync(id));
+    }
+
+    // ---- „Neue Vorlage…" --------------------------------------------------
+
+    private void NeuFragen()
+    {
+        if (GesperrtMelden()) return;
+        _menueOffen = false;
+        _namensdialogOffen = true;
+    }
+
+    private void NamensdialogAbbrechen() => _namensdialogOffen = false;
+
+    private async Task NamensdialogGeschlossen(string? name)
+    {
+        _namensdialogOffen = false;
+        if (string.IsNullOrWhiteSpace(name)) return;
+        string neu = name.Trim();
+        await Gruppenhandlung(() => NeueVorlage.InvokeAsync(neu));
+    }
+
+    // ---- „Hinzufügen…" und „Prüfen" -----------------------------------------
+
+    private async Task HinzufuegenKlick()
+    {
+        if (GesperrtMelden()) return;
+        await Gruppenhandlung(() => Hinzufuegen.InvokeAsync());
+    }
+
+    private async Task PruefenKlick()
+    {
+        if (GesperrtMelden()) return;
+        await Gruppenhandlung(() => Pruefen.InvokeAsync());
+    }
+
+    // ---- Das Menü „…" ---------------------------------------------------------
+
+    private void MenueUmschalten()
+    {
+        if (GesperrtMelden()) { _menueOffen = false; return; }
+        _menueOffen = !_menueOffen;
+    }
+
+    private void MenueSchliessen() => _menueOffen = false;
+
+    private void BeiMenuetaste(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") _menueOffen = false;
+    }
+
+    private async Task HandlungKlick(Handlung h)
+    {
+        _menueOffen = false;
+        if (GesperrtMelden()) return;
+        if (!h.Aktiv)
+        {
+            // Der inaktive Eintrag MELDET seinen Grund, statt zu handeln.
+            _sperrmeldung = string.IsNullOrWhiteSpace(h.Grund) ? Vt.NichtWaehlbar : h.Grund;
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(h.Rueckfrage))
+        {
+            // Erst fragen (Vorgabe „Nein"), dann handeln - im selben Fenster.
+            _frageHandlung = h;
+            _frage = Frageart.Handlung;
+            _fragetitel = h.Text;
+            _fragetext = h.Rueckfrage;
+            return;
+        }
+        await Gruppenhandlung(() => HandlungGewaehlt.InvokeAsync(h.Id));
+    }
+
+    /// <summary>Der Kurztext eines Menüeintrags: frei die Erklärung, gesperrt der Grund.</summary>
+    private static string? Eintragstitel(Handlung h)
+    {
+        string text = h.Aktiv ? h.Kurztext : h.Grund;
+        return string.IsNullOrWhiteSpace(text) ? null : text;
+    }
+
+    // ---- Prüfliste und Platzhalterkatalog (Überlagerungen) -----------------------
+
+    private void PrueflisteOeffnen()
+    {
+        if (GesperrtMelden() || PrueflisteGaben is null) return;
+        _menueOffen = false;
+        IReadOnlyDictionary<string, object>? gaben = PrueflisteGaben();
+        if (gaben is null) return;
+        _prueflisteGaben = gaben;
+    }
+
+    private void PrueflisteSchliessen() => _prueflisteGaben = null;
+
+    private void KatalogOeffnen()
+    {
+        if (GesperrtMelden() || PlatzhalterkatalogGaben is null) return;
+        _menueOffen = false;
+        IReadOnlyDictionary<string, object>? gaben = PlatzhalterkatalogGaben();
+        if (gaben is null) return;
+        _katalogGaben = gaben;
+    }
+
+    private void KatalogSchliessen() => _katalogGaben = null;
+
+    private void BeiKatalogsuche(string text) => _katalogsuche = text ?? "";
 }
