@@ -282,6 +282,61 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int Inhaltsbreite { get; }
 
+        // ------------------------------------------------------------- Kapitelformat (Konzept 4.8, 5.3)
+
+        /// <summary>
+        /// <c>|ohne titel</c>: Die eigene Überschrift des Bausteins entfällt — sein erster Aufruf von
+        /// Überschrift 1 oder 2 (die Kapitelüberschrift) schreibt nichts; der Kapitelkopf der Vorlage
+        /// steht an ihrer Stelle.
+        /// </summary>
+        public bool OhneTitel { get; internal set; }
+
+        /// <summary>
+        /// <c>|ebene n</c> minus 1: um so viele Ebenen rücken die Überschriften des Bausteins tiefer —
+        /// Überschrift 1 wird Überschrift n, 2 wird n + 1 …, höchstens 9 (<see cref="WordVorlagenstile.EBENE_MAX"/>).
+        /// </summary>
+        public int Ebenenversatz { get; internal set; }
+
+        /// <summary>
+        /// Die Stellen der Kapitel im Bericht, wie ihn die Vorlage baut (Konzept 11 Nr. 3): je
+        /// <see cref="Berichtskapitel.Stellenschluessel"/> die Überschrift vor dem Anker, <c>null</c> =
+        /// nicht im Bericht. Die Anhang-E-Checkliste nennt sie in ihrer Spalte „Stelle“; <c>null</c> (der
+        /// bisherige Weg) heißt: die eigenen Überschriften der angehakten Kapitel.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Kapitelstellen { get; internal set; }
+
+        /// <summary>
+        /// Wohin, was der Baustein VOR seine entfallene Überschrift schreibt, kommt: vor den Kapitelkopf
+        /// der Vorlage (<c>|ohne titel</c> unter einem Kapitelkopf). So steht der Seitenumbruch des
+        /// Anhangs E vor dem Kapitelkopf, und die Überschrift hängt nie allein am Seitenende.
+        /// <c>null</c> = alles an den Anker.
+        /// </summary>
+        internal Einfuegeanker Vorspann { get; set; }
+
+        /// <summary>Wie viele Elemente der Baustein an den Anker geschrieben hat (Konzept 5.3 „Entfall“).</summary>
+        internal int AmAnkerGeschrieben { get; private set; }
+
+        /// <summary>Die Elemente, die vor den Kapitelkopf gewandert sind.</summary>
+        internal IReadOnlyList<OpenXmlElement> ImVorspann { get { return _imVorspann; } }
+
+        private readonly List<OpenXmlElement> _puffer = new List<OpenXmlElement>();
+        private readonly List<OpenXmlElement> _imVorspann = new List<OpenXmlElement>();
+        private bool _titelErledigt;
+
+        /// <summary>Wird zurückgehalten, was vor der Überschrift kommt (bis klar ist, ob sie entfällt)?</summary>
+        private bool Puffert { get { return OhneTitel && Vorspann != null && !_titelErledigt; } }
+
+        /// <summary>
+        /// Nach dem Baustein: Schrieb er keine Überschrift, gehört das Zurückgehaltene an den Anker —
+        /// in der Folge, in der er es schrieb.
+        /// </summary>
+        internal void Abschliessen()
+        {
+            _titelErledigt = true;
+            foreach (OpenXmlElement el in _puffer) Setze(el);
+            _puffer.Clear();
+        }
+
         /// <summary>Die Stil-ID einer Rolle (<see cref="WordVorlagenstile"/>): im Vorlagenweg
         /// aufgelöst, sonst die feste ID.</summary>
         public string StilId(string rolle)
@@ -340,6 +395,17 @@ namespace WindowsFormsApplication1
         public void Fuege(OpenXmlElement el)
         {
             if (el is Table t) PasseEin(t);
+            if (Puffert)
+            {
+                _puffer.Add(el);
+                return;
+            }
+            Setze(el);
+        }
+
+        private void Setze(OpenXmlElement el)
+        {
+            AmAnkerGeschrieben++;
             if (_anker != null) _anker.Fuege(el);
             else if (_sect != null) Body.InsertBefore(el, _sect);
             else Body.Append(el);
@@ -409,6 +475,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void MitStilRoh(string styleId, string text)
         {
+            // Kapitelformat (Konzept 4.8): Die erste Überschrift 1 oder 2 ist die Kapitelüberschrift —
+            // mit |ohne titel entfällt sie, und was davor stand, wandert vor den Kapitelkopf. |ebene n
+            // rückt jede Überschrift des Bausteins um n − 1 Ebenen tiefer.
+            int? ebene = WordVorlagenstile.Ueberschriftebene(styleId);
+            if (ebene.HasValue && ebene.Value <= 2 && !_titelErledigt)
+            {
+                _titelErledigt = true;
+                if (OhneTitel)
+                {
+                    foreach (OpenXmlElement el in _puffer)
+                    {
+                        Vorspann.Fuege(el);
+                        _imVorspann.Add(el);
+                    }
+                    _puffer.Clear();
+                    return;
+                }
+            }
+            if (ebene.HasValue && Ebenenversatz > 0) styleId = WordVorlagenstile.Ueberschrift(ebene.Value + Ebenenversatz);
+
             // styleId ist eine ROLLE (WordVorlagenstile): im Vorlagenweg je Dokument aufgelöst.
             var p = new Paragraph(new ParagraphProperties(new ParagraphStyleId { Val = StilId(styleId) }));
             p.Append(new Run(new Text(text ?? "") { Space = SpaceProcessingModeValues.Preserve }));

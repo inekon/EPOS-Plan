@@ -51,11 +51,13 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die Standardvorlage (Sammelanker, Kopf- und Fußzeile) ist in beiden Stufen ohne jeden
-        /// Befund: fünf Platzhalter, Kapitel über den Sammelanker, die Wirtschaftlichkeit darin.
+        /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3) ist in beiden Stufen ohne Fehler und ohne
+        /// Warnung — Hinweise allenfalls zu ihren Kommentaren. Sie führt jedes Kapitel einzeln, das Deckblatt
+        /// trägt sie selbst aus Platzhaltern (sein Häkchen gehört nicht zu ihren Bausteinen), die
+        /// Wirtschaftlichkeit darin; die Stellen der Kapitel sind ihre Kapitelköpfe.
         /// </summary>
         [Fact]
-        public void Standardvorlage_aus_dem_Repository_ohne_Befund_mit_fuenf_Platzhaltern()
+        public void Standardvorlage_aus_dem_Repository_ohne_Fehler_mit_allen_Kapiteln_ausser_dem_Deckblatt()
         {
             string pfad = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.STANDARD);
             if (pfad == null) return;
@@ -64,46 +66,47 @@ namespace EPOS.Kern.Tests
             foreach (Pruefstufe stufe in new[] { Pruefstufe.Schnell, Pruefstufe.Voll })
             {
                 Pruefbefund befund = Vorlagenpruefer.Pruefe(vorlage, stufe, Deutsch);
-                Assert.True(befund.OhneBefund, stufe + ":\n" + Probevorlagen.Liste(befund));
-                Assert.Equal(0, befund.Fehleranzahl);
-                Assert.Equal(5, befund.AnzahlPlatzhalter);
+                Assert.True(befund.Fehleranzahl == 0 && befund.Warnungen == 0, stufe + ":\n" + Probevorlagen.Liste(befund));
+                Assert.All(befund.Meldungen, m => Assert.Equal("VF_PRUEF_KOMMENTARE", m.Kennung));
                 Assert.True(befund.IstLesbar);
-                Assert.Equal(new[] { "bericht.datum", "bericht.inhalt", "ersteller.firma", "ersteller.programm", "text.seite" },
-                             befund.Schluessel);
                 Assert.Empty(befund.UnbekannteSchluessel);
+                Assert.DoesNotContain("bericht.inhalt", befund.Schluessel);
+                Assert.All(Berichtskapitel.Alle.Where(k => k.Name != Berichtskapitel.DECKBLATT),
+                           k => Assert.Contains(k.Schluessel, befund.Schluessel));
                 Assert.True(befund.HatKapitel);
                 Assert.True(befund.HatWirtschaftlichkeit);
-                Assert.Equal(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel), befund.Bausteine);
-                Assert.Null(befund.Katalogfassung);
+                Assert.Equal(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel)
+                                                 .Where(b => b != BerichtsKonfiguration.B_DECKBLATT), befund.Bausteine);
+                Assert.True(befund.DeckblattAusPlatzhaltern);
+                Assert.Equal("Deckblatt", befund.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+                Assert.Equal("Inhalt", befund.Kapitelstellen[BerichtsKonfiguration.B_INHALT]);
+                Assert.Equal("Berechnungsergebnisse je Variante", befund.Kapitelstellen[BerichtsKonfiguration.B_ERGEBNISSE]);
+                Assert.Equal("Wirtschaftlichkeit", befund.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_AE_TITEL, befund.Kapitelstellen[Berichtskapitel.ANHANG_E]);
+                Assert.Contains(befund.Katalogfassung, new int?[] { null, Vorlagenfeldkatalog.KATALOGFASSUNG });
                 Assert.Null(befund.Sprache);
                 Assert.Equal(Vorlagenpruefer.Pruefsumme(vorlage), befund.Pruefsumme);
             }
         }
 
         /// <summary>
-        /// Die Beispielvorlage (voller Aufbau, BV-E2) führt acht Kapitelplatzhalter, die Katalog v1 noch
-        /// nicht kennt: je ein Fehler „unbekannt“ OHNE Vorschlag (kein Katalogschlüssel liegt nah), dazu
-        /// der Hinweis auf ihre zwei Kommentare. Die Platzhalter in den Kommentaren prüft niemand.
+        /// Die Beispielvorlage (voller Aufbau) kennt Katalog v2 ganz: kein Fehler, keine Warnung, jedes
+        /// Kapitel bekannt; ihre Kommentare stehen als Hinweis. Die Platzhalter in den Kommentaren prüft niemand.
         /// </summary>
         [Fact]
-        public void Beispielvorlage_meldet_die_Kapitel_als_unbekannt_ohne_Vorschlag()
+        public void Beispielvorlage_kennt_ihre_Kapitel_und_meldet_nur_die_Kommentare()
         {
             string pfad = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.BEISPIEL);
             if (pfad == null) return;
             Pruefbefund befund = Voll(File.ReadAllBytes(pfad));
 
-            List<Pruefmeldung> unbekannt = Probevorlagen.Mit(befund, "VF_PRUEF_UNBEKANNT");
-            Assert.Equal(8, unbekannt.Count);
-            Assert.All(unbekannt, m => Assert.StartsWith("{{kapitel.", m.Marke));
-            Assert.All(unbekannt, m => Assert.Null(m.Vorschlag));
-            Assert.Equal(8, befund.Fehleranzahl);
-            Assert.Equal(28, befund.AnzahlPlatzhalter);
-            Assert.Equal(2, befund.Kommentare);
-            Pruefmeldung kommentare = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KOMMENTARE"));
-            Assert.Equal(Befundstufe.Hinweis, kommentare.Stufe);
-            Assert.Contains("2", kommentare.Text);
-            Assert.True(befund.HatKapitel);
+            Assert.Equal(0, befund.Fehleranzahl);
             Assert.Equal(0, befund.Warnungen);
+            Assert.Empty(befund.UnbekannteSchluessel);
+            Assert.Equal(befund.Kommentare > 0 ? 1 : 0, Probevorlagen.Mit(befund, "VF_PRUEF_KOMMENTARE").Count);
+            Assert.True(befund.HatKapitel);
+            Assert.Equal(7, befund.Bausteine.Count);
+            Assert.True(befund.AnzahlPlatzhalter >= 24, befund.AnzahlPlatzhalter.ToString());
         }
 
         // =====================================================================
@@ -260,10 +263,12 @@ namespace EPOS.Kern.Tests
                 Feld("tabelle.vergleich", Vorlagenfeldart.Tabelle),
                 Feld("hat.kaelte", Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Bericht));
 
-            // Bild als Text allein: gut; in der Fußnote: Fehler.
+            // Bild als Text allein: kein Ortsfehler (die Engine füllt die Form erst in BV-E5 — bis dahin „später“);
+            // in der Fußnote: Ortsfehler.
             Pruefbefund bild = MitKatalog(Probevorlagen.Baue(b => b.Absatz("{{bild.vergleich.balken}}").Fussnoten("{{bild.vergleich.balken}}")), katalog);
             Pruefmeldung note = Assert.Single(Probevorlagen.Mit(bild, "VF_PRUEF_ORT"));
             Assert.Contains("Art „Bild“ ist in Fuß- und Endnoten nicht möglich", note.Text);
+            Assert.Equal(2, Probevorlagen.Mit(bild, "VF_PRUEF_SPAETER").Count);
 
             // Tabelle im Textfeld: Fehler.
             Pruefbefund textfeld = MitKatalog(Probevorlagen.Baue(b => b.Roh(Probevorlagen.TextfeldXml("{{tabelle.vergleich}}"))), katalog);
@@ -450,9 +455,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Katalogfassung_und_Sprache_aus_custom_xml_Sprache_abweichend_warnt()
         {
-            byte[] englisch = Probevorlagen.Baue(b => b.Absatz("{{projekt.kunde}}").Eigenschaften(1, "en"));
+            byte[] englisch = Probevorlagen.Baue(b => b.Absatz("{{projekt.kunde}}").Eigenschaften(2, "en"));
             Pruefbefund deutsch = Vorlagenpruefer.Pruefe(englisch, Pruefstufe.Schnell, new Pruefkontext { Englisch = false });
-            Assert.Equal(1, deutsch.Katalogfassung);
+            Assert.Equal(2, deutsch.Katalogfassung);
             Assert.Equal("en", deutsch.Sprache);
             Assert.True(deutsch.SpracheAbweichend);
             Pruefmeldung sprache = Assert.Single(Probevorlagen.Mit(deutsch, "VF_PRUEF_SPRACHE"));
@@ -479,16 +484,27 @@ namespace EPOS.Kern.Tests
             Pruefbefund mitAlias = MitKatalog(Probevorlagen.Baue(b => b.Absatz("{{projekt.bauherr}}").Eigenschaften(1, null)), katalog);
             Pruefmeldung alt = Assert.Single(Probevorlagen.Mit(mitAlias, "VF_PRUEF_FASSUNG_ALT"));
             Assert.Equal("Die Vorlage stammt aus Katalogfassung 1; {{projekt.bauherr}} heißt seither {{projekt.auftraggeber}}", alt.Text);
-            Pruefmeldung neu = Assert.Single(Probevorlagen.Mit(mitAlias, "VF_PRUEF_KAPITEL_NEU"));
+            // Neben kapitel.neu bekommt die Vorlage der Fassung 1 auch je Kapitel des Katalogs v2 einen Hinweis.
+            Pruefmeldung neu = Assert.Single(Probevorlagen.Mit(mitAlias, "VF_PRUEF_KAPITEL_NEU"), m => m.Marke == "{{kapitel.neu}}");
             Assert.Equal("Neues Kapitel {{kapitel.neu}} – in dieser Vorlage nicht enthalten", neu.Text);
             Assert.Equal(0, mitAlias.Fehleranzahl);
 
             Pruefbefund ohneAlias = MitKatalog(Probevorlagen.Baue(b => b.Absatz("{{projekt.kunde}}{{kapitel.neu}}").Eigenschaften(1, null)), katalog);
             Assert.Empty(Probevorlagen.Mit(ohneAlias, "VF_PRUEF_FASSUNG_ALT"));
-            Assert.Empty(Probevorlagen.Mit(ohneAlias, "VF_PRUEF_KAPITEL_NEU"));
+            Assert.DoesNotContain(Probevorlagen.Mit(ohneAlias, "VF_PRUEF_KAPITEL_NEU"), m => m.Marke == "{{kapitel.neu}}");
 
+            // Katalog v2 (BV-E2): Eine Vorlage der Fassung 1 bekommt je neuem Kapitel einen Hinweis — außer
+            // sie führt den Sammelanker, der jedes Kapitel deckt; der Alias von Fassung 1 bleibt ohne Befund.
             Pruefbefund gleich = Schnell(Probevorlagen.Baue(b => b.Absatz("{{bericht.programmversion}}").Eigenschaften(1, null)));
-            Assert.True(gleich.OhneBefund, Probevorlagen.Liste(gleich));
+            Assert.Empty(Probevorlagen.Mit(gleich, "VF_PRUEF_FASSUNG_ALT"));
+            Assert.Equal(Berichtskapitel.Alle.Select(k => "{{" + k.Schluessel + "}}"),
+                         Probevorlagen.Mit(gleich, "VF_PRUEF_KAPITEL_NEU").Select(m => m.Marke));
+            Assert.All(gleich.Meldungen, m => Assert.Equal(Befundstufe.Hinweis, m.Stufe));
+            Pruefbefund sammel = Schnell(Probevorlagen.Baue(b => b.Absatz("{{bericht.programmversion}}")
+                                                              .Absatz("{{bericht.inhalt}}").Eigenschaften(1, null)));
+            Assert.True(sammel.OhneBefund, Probevorlagen.Liste(sammel));
+            Pruefbefund aktuell = Schnell(Probevorlagen.Baue(b => b.Absatz("{{bericht.programmversion}}").Eigenschaften(2, null)));
+            Assert.True(aktuell.OhneBefund, Probevorlagen.Liste(aktuell));
 
             Pruefbefund neuer = Schnell(Probevorlagen.Baue(b => b.Absatz("{{projekt.zukunft}}").Eigenschaften(9, null)));
             Assert.Single(Probevorlagen.Mit(neuer, "VF_PRUEF_FASSUNG_NEU"));
@@ -810,6 +826,155 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal("HEADING1", rollen.Finde(WordVorlagenstile.UEBERSCHRIFT1));
             Assert.Equal("Heading3", rollen.Finde(WordVorlagenstile.UEBERSCHRIFT3));
+        }
+
+        // =====================================================================
+        //  Kapitel, Häkchen, Stellen (BV-E2)
+        // =====================================================================
+
+        /// <summary>
+        /// <see cref="Pruefbefund.Bausteine"/> sind die Häkchen, deren Kapitel die Vorlage führt — einzeln an
+        /// gültiger Stelle, über den Sammelanker alle, ohne jeden Platzhalter ebenfalls alle (die Engine hängt
+        /// den Sammelanker an); der Anhang E zählt zur Wirtschaftlichkeit. Ein Kapitel in der Tabellenzelle
+        /// führt die Vorlage nicht (Ortsfehler). Eine Vorlage, die Kapitel bewusst weglässt, bekommt keinen Befund.
+        /// </summary>
+        [Fact]
+        public void Die_Kapitel_der_Vorlage_bestimmen_ihre_Haekchen()
+        {
+            Pruefbefund einzeln = Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.projekt}}", "{{kapitel.anhang_e|ohne titel}}"));
+            // Allein der Anhang E meldet die Kapitel, auf die er verweist und die fehlen (Warnung, kein Fehler).
+            Assert.All(einzeln.Meldungen, m => Assert.Equal("VF_PRUEF_ANHANG_E_STELLE", m.Kennung));
+            Assert.Equal(new[] { "{{kapitel.deckblatt}}", "{{kapitel.komponenten}}", "{{kapitel.ergebnisse}}", "{{kapitel.vergleich}}",
+                                 "{{kapitel.wirtschaftlichkeit}}", "{{kapitel.anhang}}" },
+                         einzeln.Meldungen.Select(m => m.Marke));
+            Assert.Equal(0, einzeln.Fehleranzahl);
+            Assert.Equal(new[] { BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_WIRTSCHAFT }, einzeln.Bausteine);
+            Assert.True(einzeln.HatKapitel);
+            Assert.False(einzeln.HatWirtschaftlichkeit);   // der Anhang E ist nicht die Wirtschaftlichkeit
+
+            Pruefbefund sammel = Schnell(Probevorlagen.AusAbsaetzen("{{bericht.inhalt}}"));
+            Assert.Equal(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel), sammel.Bausteine);
+            Assert.True(sammel.HatWirtschaftlichkeit);
+
+            Pruefbefund ohne = Schnell(Probevorlagen.AusAbsaetzen("Nur Text"));
+            Assert.Equal(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel), ohne.Bausteine);
+
+            Pruefbefund nurText = Schnell(Probevorlagen.AusAbsaetzen("{{projekt.kunde}}"));
+            Assert.Empty(nurText.Bausteine);
+            Assert.False(nurText.HatKapitel);
+
+            Pruefbefund zelle = Schnell(Probevorlagen.Baue(b => b.Tabelle(new[] { new[] { "{{kapitel.vergleich}}" } })));
+            Assert.Empty(zelle.Bausteine);
+            Assert.Single(Probevorlagen.Mit(zelle, "VF_PRUEF_ORT"));
+            Assert.Null(zelle.Kapitelstellen[BerichtsKonfiguration.B_VERGLEICH]);
+        }
+
+        /// <summary>
+        /// Ein Kapitel zweimal: Die erste gültige Stelle zählt, jede weitere bekommt den Hinweis „doppelt“
+        /// (die Engine lässt sie gelb stehen) — auch der Sammelanker. Ein Fehler ist es nicht.
+        /// </summary>
+        [Fact]
+        public void Ein_Kapitel_zweimal_ist_ein_Hinweis_an_der_zweiten_Stelle()
+        {
+            Pruefbefund befund = Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.anhang}}", "Text", "{{kapitel.anhang|ebene 2}}",
+                                                                     "{{bericht.inhalt}}", "{{bericht.inhalt}}"));
+            List<Pruefmeldung> doppelt = Probevorlagen.Mit(befund, "VF_PRUEF_KAPITEL_DOPPELT");
+            Assert.Equal(2, doppelt.Count);
+            Assert.All(doppelt, m => Assert.Equal(Befundstufe.Hinweis, m.Stufe));
+            Assert.Equal("Kapitel {{kapitel.anhang}} steht mehrfach in der Vorlage – gefüllt wird nur die erste Stelle", doppelt[0].Text);
+            Assert.StartsWith("Absatz 3", doppelt[0].Fundort, StringComparison.Ordinal);
+            Assert.Equal("{{kapitel.anhang|ebene 2}}", doppelt[0].Marke);
+            Assert.StartsWith("Absatz 5", doppelt[1].Fundort, StringComparison.Ordinal);
+            Assert.Equal(0, befund.Fehleranzahl);
+        }
+
+        /// <summary>
+        /// Katalog v2: Ein Schalter (<c>baustein.*</c>) außerhalb einer Bedingung ist ein Ortsfehler und wirkt
+        /// erst in einer späteren Programmfassung (Hinweis); das Logo als getippter Text ist ein Fehler — die
+        /// Engine füllt allein das Bild mit dem Schlüssel im Alternativtext, und das ohne Befund, auch wenn
+        /// kein Logo eingestellt ist.
+        /// </summary>
+        [Fact]
+        public void Schalter_und_Bild_als_Text_wirken_erst_spaeter_das_Platzhalterbild_ist_ohne_Befund()
+        {
+            Pruefbefund schalter = Schnell(Probevorlagen.AusAbsaetzen("{{baustein.projekt}}"));
+            Pruefmeldung ort = Assert.Single(Probevorlagen.Mit(schalter, "VF_PRUEF_ORT"));
+            Assert.Equal(Befundstufe.Fehler, ort.Stufe);
+            Assert.Equal("Den Schalter nur als Bedingung verwenden: {{#wenn baustein.projekt}} … {{/wenn}}.", ort.WasTun);
+            Pruefmeldung spaeter = Assert.Single(Probevorlagen.Mit(schalter, "VF_PRUEF_SPAETER"));
+            Assert.Equal(Befundstufe.Hinweis, spaeter.Stufe);
+            Assert.Equal("{{baustein.projekt}}: erst in einer späteren Programmfassung", spaeter.Text);
+
+            Pruefbefund logoText = Schnell(Probevorlagen.AusAbsaetzen("{{bild.ersteller.logo}}"));
+            Pruefmeldung bild = Assert.Single(logoText.Meldungen);
+            Assert.Equal("VF_PRUEF_SPAETER", bild.Kennung);
+            Assert.Equal(Befundstufe.Fehler, bild.Stufe);
+            Assert.Contains("{{bild.ersteller.logo}} als Alternativtext", bild.WasTun, StringComparison.Ordinal);
+
+            Pruefbefund logoBild = Schnell(Probevorlagen.Baue(b => b.Roh(Probevorlagen.BildXml("Logo", "{{bild.ersteller.logo}}"))));
+            Assert.True(logoBild.OhneBefund, Probevorlagen.Liste(logoBild));
+            Assert.Equal(new[] { Vorlagenfeldkatalog.LOGO }, logoBild.Schluessel);
+        }
+
+        /// <summary>
+        /// Führt die Vorlage den Anhang E, warnt der Prüfer für jedes Kapitel, auf das seine Checkliste
+        /// verweist, das die Vorlage aber nicht führt („nicht im Bericht“); Deckblattangaben aus Platzhaltern
+        /// gelten als Deckblatt. Ohne Anhang E, über den Sammelanker oder mit allen Kapiteln keine Warnung.
+        /// </summary>
+        [Fact]
+        public void Anhang_E_ohne_Stelle_warnt_je_fehlendem_Kapitel()
+        {
+            Pruefbefund befund = Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.wirtschaftlichkeit}}", "{{kapitel.anhang_e}}"));
+            List<Pruefmeldung> ohne = Probevorlagen.Mit(befund, "VF_PRUEF_ANHANG_E_STELLE");
+            Assert.Equal(new[]
+            {
+                "{{kapitel.deckblatt}}", "{{kapitel.projekt}}", "{{kapitel.komponenten}}", "{{kapitel.ergebnisse}}",
+                "{{kapitel.vergleich}}", "{{kapitel.anhang}}",
+            }, ohne.Select(m => m.Marke));
+            Assert.All(ohne, m => Assert.Equal(Befundstufe.Warnung, m.Stufe));
+            Assert.Equal("Anhang E ohne Stelle für Kapitel „Projektbeschreibung“ – die Checkliste nennt dort „nicht im Bericht“",
+                         ohne[1].Text);
+            Assert.Equal("Das Kapitel mit {{kapitel.projekt}} in die Vorlage aufnehmen, wenn der Bewertungsbericht es zeigen soll.",
+                         ohne[1].WasTun);
+
+            Pruefbefund mitDeckblatt = Schnell(Probevorlagen.AusAbsaetzen("{{bericht.titel}}", "{{kapitel.wirtschaftlichkeit}}",
+                                                                           "{{kapitel.anhang_e}}"));
+            Assert.Equal(5, Probevorlagen.Mit(mitDeckblatt, "VF_PRUEF_ANHANG_E_STELLE").Count);
+            Assert.True(mitDeckblatt.DeckblattAusPlatzhaltern);
+
+            Assert.Empty(Probevorlagen.Mit(Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.wirtschaftlichkeit}}")), "VF_PRUEF_ANHANG_E_STELLE"));
+            Assert.Empty(Probevorlagen.Mit(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.inhalt}}")), "VF_PRUEF_ANHANG_E_STELLE"));
+        }
+
+        /// <summary>
+        /// Die Stellen der Kapitel (Konzept 11 Nr. 3): der Kapitelkopf unmittelbar vor dem Anker, Platzhalter
+        /// darin aufgelöst (<c>{{text.kapitel_wirtschaftlichkeit}}</c>, in der Sprache des Berichts); mit
+        /// <c>|ohne titel</c> ohne Kapitelkopf die nächste Überschrift davor; sonst die eigene Überschrift des
+        /// Bausteins. Ein Kapitel, das die Vorlage nicht führt, hat keine Stelle.
+        /// </summary>
+        [Fact]
+        public void Die_Stelle_ist_der_Kapitelkopf_sonst_die_Ueberschrift_davor_sonst_die_eigene()
+        {
+            byte[] vorlage = Probevorlagen.Baue(b => b
+                .Stile(Probevorlagen.Stil("EPOSKapitelkopf", "EPOS Kapitelkopf", 0), Probevorlagen.Stil("Heading1", "heading 1", 0))
+                .Roh("<w:pPr><w:pStyle w:val=\"EPOSKapitelkopf\"/></w:pPr><w:r><w:t>{{text.kapitel_wirtschaftlichkeit}}</w:t></w:r>")
+                .Absatz("{{kapitel.wirtschaftlichkeit|ohne titel}}")
+                .Absatz("{{kapitel.projekt}}")
+                .Roh("<w:pPr><w:pStyle w:val=\"Heading1\"/></w:pPr><w:r><w:t>Mein Anhang</w:t></w:r>")
+                .Absatz("Einleitung")
+                .Absatz("{{kapitel.anhang|ohne titel}}"));
+
+            Pruefbefund deutsch = Schnell(vorlage);
+            Assert.Equal("Wirtschaftlichkeit", deutsch.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal("Projektbeschreibung", deutsch.Kapitelstellen[BerichtsKonfiguration.B_PROJEKT]);
+            Assert.Equal("Mein Anhang", deutsch.Kapitelstellen[BerichtsKonfiguration.B_ANHANG]);
+            Assert.Null(deutsch.Kapitelstellen[BerichtsKonfiguration.B_VERGLEICH]);
+            Assert.Null(deutsch.Kapitelstellen[Berichtskapitel.ANHANG_E]);
+            Assert.False(deutsch.DeckblattAusPlatzhaltern);
+
+            Pruefbefund englisch = Vorlagenpruefer.Pruefe(vorlage, Pruefstufe.Schnell, new Pruefkontext { Englisch = true });
+            Assert.Equal("Economic viability", englisch.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            Assert.Equal("Project description", englisch.Kapitelstellen[BerichtsKonfiguration.B_PROJEKT]);
         }
 
         // =====================================================================

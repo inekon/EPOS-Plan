@@ -1141,6 +1141,53 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Derselbe Bau auf dem VORLAGENWEG mit der Standardvorlage (Konzept Berichtsvorlagen 11 Nr. 3,
+        /// Etappe BV-E2): Die Kapitelköpfe der Vorlage tragen die Überschriften des Bausteinwegs in derselben
+        /// Folge, und unter dem Kapitelkopf „Wirtschaftlichkeit“ stehen dieselben Abschnitte — die Stellen, auf
+        /// die die Anhang-E-Checkliste verweist; ihre Spalte nennt deshalb dieselben Überschriften.
+        /// </summary>
+        [Fact]
+        public void Word_mit_der_Standardvorlage_traegt_dieselben_Kapitel_und_Abschnitte()
+        {
+            string vorlage = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.STANDARD);
+            if (vorlage == null || !File.Exists(vorlage)) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "vorlage.docx");
+                Fuellergebnis ergebnis = new WordBerichtGenerator().ErzeugeMitVorlage(
+                    Gruppendaten(), VolleKonfiguration(), File.ReadAllBytes(vorlage), new Erstellerangaben(), ziel);
+                Assert.Empty(ergebnis.Unbekannte);
+
+                using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                Body body = doc.MainDocumentPart.Document.Body;
+                Assert.Equal(
+                    new[]
+                    {
+                        "Inhalt", "Projektbeschreibung", "Komponenten & Varianten", "Berechnungsergebnisse je Variante",
+                        "Variantenvergleich", "Wirtschaftlichkeit", "Anhang",
+                        "Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)",
+                    },
+                    Kapitelueberschriften(body).ToArray());
+                Assert.Equal(
+                    new[]
+                    {
+                        "Kennzahlen im Szenario „Erwartet“",
+                        "Kapitalwert-Verlauf über den Betrachtungszeitraum",
+                        "Von der Investition zur Kapitalwertdifferenz",
+                        "Mehrjahresübersicht der Zahlungsströme",
+                        "Szenarien Ungünstig / Erwartet / Günstig",
+                    },
+                    AbschnitteDesKapitels(body, "Wirtschaftlichkeit").ToArray());
+                Assert.Equal("Wirtschaftlichkeit", ergebnis.Kapitelstellen[BerichtsKonfiguration.B_WIRTSCHAFT]);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
         /// Zahl der Tabellen und die Kopfzeile der Kennzahlentabelle. Die
         /// Kennzahlentabelle ist die erste, deren Kopf mit „Kennzahl" beginnt; die letzte
         /// Tabelle ist die Anhang-E-Checkliste (ETAPPE E8b, U43).
@@ -1384,15 +1431,27 @@ namespace EPOS.Kern.Tests
             return MitStil(body, stil).FirstOrDefault();
         }
 
+        /// <summary>Die Stil-ID des Kapitelkopfs der Vorlagen („EPOS Kapitelkopf“, Ebene 1).</summary>
+        private const string KAPITELKOPF = "EPOSKapitelkopf";
+
+        /// <summary>Die Überschriften der Ebene 1 — Überschrift 1 und der Kapitelkopf der Vorlagen — in ihrer Folge.</summary>
+        private static IEnumerable<string> Kapitelueberschriften(Body body)
+        {
+            return body.Descendants<Paragraph>()
+                       .Where(p => p.ParagraphProperties?.ParagraphStyleId?.Val?.Value is string s && (s == "Heading1" || s == KAPITELKOPF))
+                       .Select(p => p.InnerText)
+                       .Where(t => !string.IsNullOrWhiteSpace(t));
+        }
+
         /// <summary>Die Überschriften der Ebene 2 zwischen dem Kapitel <paramref name="kapitel"/>
-        /// (Ebene 1) und dem nächsten Kapitel, in ihrer Reihenfolge.</summary>
+        /// (Ebene 1: Überschrift 1 oder der Kapitelkopf einer Vorlage) und dem nächsten Kapitel, in ihrer Reihenfolge.</summary>
         private static IEnumerable<string> AbschnitteDesKapitels(Body body, string kapitel)
         {
             bool drin = false;
             foreach (Paragraph p in body.Descendants<Paragraph>())
             {
                 string stil = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                if (stil == "Heading1")
+                if (stil == "Heading1" || stil == KAPITELKOPF)
                 {
                     if (drin) yield break;
                     drin = p.InnerText == kapitel;

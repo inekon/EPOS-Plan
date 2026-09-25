@@ -169,6 +169,7 @@ namespace WindowsFormsApplication1
                     s.LiesEigenschaften(doc);
                     s.PruefePlatzhalter(lauf);
                     s.PruefeRahmen(lauf);
+                    s.PruefeKapitel(doc, lauf);
                     if (stufe == Pruefstufe.Voll)
                     {
                         s.PruefeFormat(doc, makroImPaket);
@@ -310,6 +311,9 @@ namespace WindowsFormsApplication1
             private bool _spracheAbweichend;
             private bool _formatGemeldet;
             private int _kommentare;
+            private List<string> _bausteine;
+            private Dictionary<string, string> _kapitelstellen;
+            private bool _deckblattAusPlatzhaltern;
 
             public Sitzung(Pruefstufe stufe, Pruefkontext kontext, Vorlagenkatalogsicht katalog)
             {
@@ -756,6 +760,8 @@ namespace WindowsFormsApplication1
                 {
                     OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_OHNE_WENN),
                               T(nameof(R.VF_PRUEF_ORT_TUN_WENN), "{{#wenn " + feld.Schluessel + "}}", "{{/wenn}}"));
+                    // Bedingungen füllt erst BV-E4 — bis dahin bleibt auch ein Schalter in {{#wenn}} stehen.
+                    Spaeter(f, Befundstufe.Hinweis, T(nameof(R.VF_PRUEF_SPAETER_TUN_SCHALTER)));
                     return;
                 }
                 if (f.Quelle == Fundquelle.Bild)
@@ -774,6 +780,11 @@ namespace WindowsFormsApplication1
                     OrtFehler(f, feld.Art, nameof(R.VF_PRUEF_STELLE_SDT_TABELLE), T(nameof(R.VF_PRUEF_ORT_TUN_SDT_TABELLE)));
                     return;
                 }
+
+                // Ein Bild als Text oder Tag füllt erst eine spätere Fassung (BV-E5): Heute füllt die Engine
+                // allein das Bild, das den Schlüssel im Alternativtext trägt — die Stelle bliebe gelb stehen.
+                if (feld.Art == Vorlagenfeldart.Bild)
+                    Spaeter(f, Befundstufe.Fehler, T(nameof(R.VF_PRUEF_SPAETER_TUN_BILD), "{{" + feld.Schluessel + "}}"));
 
                 bool einfach = feld.Art == Vorlagenfeldart.Text || feld.Art == Vorlagenfeldart.Zahl ||
                                feld.Art == Vorlagenfeldart.Datum;
@@ -815,6 +826,20 @@ namespace WindowsFormsApplication1
             private void OrtFehler(Vorlagenfund f, Vorlagenfeldart art, string stelle, string wasTun)
             {
                 OrtFehler(f, ArtName(art), stelle, wasTun);
+            }
+
+            /// <summary>
+            /// „Erst in einer späteren Programmfassung“ — ein Schalter (wirkt ab BV-E4 in <c>{{#wenn}}</c>) als
+            /// Hinweis neben dem Ortsfehler, ein Bild als Text oder Tag (ab BV-E5) als Fehler: Es bliebe gelb stehen.
+            /// </summary>
+            private void Spaeter(Vorlagenfund f, Befundstufe stufe, string wasTun)
+            {
+                string marke = MarkeVon(f);
+                string text = T(nameof(R.VF_PRUEF_SPAETER), marke);
+                if (stufe == Befundstufe.Fehler)
+                    Melde(Befundstufe.Fehler, nameof(R.VF_PRUEF_SPAETER), text, Fundort(f), wasTun, marke);
+                else
+                    Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_SPAETER), text, Fundort(f), wasTun, marke);
             }
 
             private void OrtFehler(Vorlagenfund f, string artName, string stelle, string wasTun)
@@ -1123,12 +1148,16 @@ namespace WindowsFormsApplication1
                     {
                         if (f.Feld == null || f.Platzhalter.Art != Platzhalterart.Feld) continue;
                         string alias = f.Platzhalter.Schluessel;
-                        if (alias == f.Feld.Schluessel || !gemeldet.Add(alias)) continue;
+                        // „Seither Alias“ nur, wenn der Eintrag jünger ist als die Vorlage — ein Alias, den
+                        // schon ihre Fassung kannte (bericht.programmversion seit Fassung 1), ist kein Befund.
+                        if (alias == f.Feld.Schluessel || f.Feld.Seit <= fassung || !gemeldet.Add(alias)) continue;
                         string alt = "{{" + alias + "}}", neu = "{{" + f.Feld.Schluessel + "}}";
                         Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_FASSUNG_ALT), T(nameof(R.VF_PRUEF_FASSUNG_ALT), fassung, alt, neu),
                               Fundort(f), T(nameof(R.VF_PRUEF_FASSUNG_ALT_TUN), neu, alt), alt, neu);
                     }
-                    var genutzt = new HashSet<string>(gezaehlt.Where(f => f.Feld != null).Select(f => f.Feld.Schluessel), StringComparer.Ordinal);
+                    // Genutzt heißt auch gedeckt: Der Sammelanker führt jedes Kapitel, auch die neuen.
+                    HashSet<string> genutzt = Vorlagenfeldkatalog.Gedeckt(
+                        gezaehlt.Where(f => f.Feld != null).Select(f => f.Feld.Schluessel), _katalog.Alle, _katalog.Finde);
                     foreach (Vorlagenfeld kapitel in _katalog.Alle.Where(e => e.Art == Vorlagenfeldart.Kapitel && e.Seit > fassung))
                     {
                         if (genutzt.Contains(kapitel.Schluessel)) continue;
@@ -1156,6 +1185,109 @@ namespace WindowsFormsApplication1
                           T(nameof(R.VF_PRUEF_GUELTIGKEIT_TUN), "{{" + Warnlisten[0] + "}}"));
             }
 
+            // ------------------------------------------------------------ Kapitel (Konzept 5.3, 10.2, 11 Nr. 3)
+
+            /// <summary>
+            /// Die Kapitel der Vorlage, nach der Regel der Engine: Je Kapitel gilt die erste gültige Stelle
+            /// (allein im Absatz des Rumpfs oder als Inhaltssteuerelement auf Blockebene; getippte
+            /// Platzhalter in Dokumentfolge, danach die Steuerelemente) — jede weitere bekommt den Hinweis
+            /// „doppelt“. Daraus die Häkchen, die die Vorlage schaltet (<see cref="Pruefbefund.Bausteine"/>),
+            /// die Überschrift vor jedem Anker (<see cref="Pruefbefund.Kapitelstellen"/>) und, wenn die
+            /// Vorlage den Anhang E führt, die Warnung für jedes Kapitel, auf das seine Checkliste verweist,
+            /// das sie aber nicht führt. Eine Vorlage, die Kapitel bewusst weglässt, bekommt sonst keinen
+            /// Befund; eine ohne jeden Platzhalter führt über den angehängten Sammelanker alle.
+            /// </summary>
+            public void PruefeKapitel(WordprocessingDocument doc, Vorlagendurchlauf lauf)
+            {
+                List<Vorlagenfund> gezaehlt = Gezaehlt;
+                var orte = new Dictionary<string, Vorlagenfund>(StringComparer.Ordinal);
+                Vorlagenfund sammel = null;
+                foreach (Vorlagenfund f in gezaehlt.Where(f => f.Feld?.Art == Vorlagenfeldart.Kapitel && IstKapitelstelle(f)))
+                {
+                    bool sammelanker = string.Equals(f.Feld.Schluessel, WordVorlagenfueller.SAMMELANKER, StringComparison.Ordinal);
+                    Berichtskapitel k = sammelanker ? null : Berichtskapitel.Finde(f.Feld.Schluessel);
+                    if (!sammelanker && k == null) continue;
+                    if (sammelanker ? sammel == null : !orte.ContainsKey(k.Name))
+                    {
+                        if (sammelanker) sammel = f;
+                        else orte[k.Name] = f;
+                        continue;
+                    }
+                    string marke = "{{" + f.Feld.Schluessel + "}}";
+                    Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_KAPITEL_DOPPELT), T(nameof(R.VF_PRUEF_KAPITEL_DOPPELT), marke),
+                          Fundort(f), T(nameof(R.VF_PRUEF_KAPITEL_DOPPELT_TUN)), MarkeVon(f));
+                }
+
+                bool alle = sammel != null || gezaehlt.Count == 0;
+                _bausteine = BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel)
+                    .Where(b => alle || Berichtskapitel.Alle.Any(k => k.Baustein == b && orte.ContainsKey(k.Name)))
+                    .ToList();
+
+                // Die Überschrift vor jedem Anker — wie die Engine sie im gefüllten Bericht findet.
+                MainDocumentPart main = doc.MainDocumentPart;
+                WordVorlagenstile stile = main == null ? null : new WordVorlagenstile(main);
+                string kopfstil = stile?.Finde(WordVorlagenstile.KAPITELKOPF);
+                HashSet<string> ueberschriften = Berichtskapitel.UeberschriftIds(stile);
+                var absaetze = new Dictionary<OpenXmlElement, Vorlagenabsatz>();
+                foreach (Vorlagenabsatz a in lauf.Absaetze)
+                    if (a.Element != null && !absaetze.ContainsKey(a.Element)) absaetze[a.Element] = a;
+                Berichtswerte werte = Berichtswerte.Aus(new BerichtsDaten(), null, Kontext.Englisch, null);
+                ISet<string> deckblattangaben = Vorlagenfeldkatalog.Deckblattangaben;
+                bool deckblatt = gezaehlt.Any(f => f.Ort?.Teil == Vorlagenteilart.Rumpf && f.Feld != null &&
+                                                   deckblattangaben.Contains(f.Feld.Schluessel));
+                _deckblattAusPlatzhaltern = deckblatt;
+
+                _kapitelstellen = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (Berichtskapitel k in Berichtskapitel.Alle)
+                {
+                    string text = null;
+                    if (orte.TryGetValue(k.Name, out Vorlagenfund f)) text = Kopftext(k, f, kopfstil, ueberschriften, absaetze, werte);
+                    else if (alle) text = k.Ueberschrift(Kontext.Englisch);
+                    if (text == null && k.Name == Berichtskapitel.DECKBLATT && deckblatt) text = k.Ueberschrift(Kontext.Englisch);
+                    _kapitelstellen[k.Stellenschluessel] = text;
+                }
+
+                if (_kapitelstellen[Berichtskapitel.ANHANG_E] == null) return;
+                foreach (string bezug in AnhangECheckliste.Kapitelbezuege)
+                {
+                    if (!_kapitelstellen.TryGetValue(bezug, out string stelle) || stelle != null) continue;
+                    Berichtskapitel k = Berichtskapitel.Alle.First(x => x.Stellenschluessel == bezug);
+                    string marke = "{{" + k.Schluessel + "}}";
+                    Melde(Befundstufe.Warnung, nameof(R.VF_PRUEF_ANHANG_E_STELLE),
+                          T(nameof(R.VF_PRUEF_ANHANG_E_STELLE), BerichtsKonfiguration.Titel(k.Baustein, Kontext.Englisch)),
+                          Datei, T(nameof(R.VF_PRUEF_ANHANG_E_STELLE_TUN), marke), marke);
+                }
+            }
+
+            /// <summary>Füllt die Engine an dieser Stelle ein Kapitel (Rumpf, keine Zelle, kein Textfeld; allein bzw. Block)?</summary>
+            private static bool IstKapitelstelle(Vorlagenfund f)
+            {
+                Vorlagenort o = f.Ort;
+                if (o == null || o.Teil != Vorlagenteilart.Rumpf || o.InTabelle) return false;
+                if (f.Quelle == Fundquelle.Text) return IstAllein(f);
+                return f.Quelle == Fundquelle.Steuerelement && f.Steuerelement?.Ebene == Steuerelementebene.Block;
+            }
+
+            /// <summary>
+            /// Die Überschrift vor dem Anker eines einzeln geführten Kapitels: der Kapitelkopf unmittelbar
+            /// davor, mit <c>|ohne titel</c> sonst die nächste Überschrift davor — ihr Text, Platzhalter
+            /// darin aufgelöst (<c>{{text.kapitel_projekt}}</c>); ohne sie die eigene Überschrift des Bausteins.
+            /// </summary>
+            private string Kopftext(Berichtskapitel k, Vorlagenfund f, string kopfstil, HashSet<string> ueberschriften,
+                                    Dictionary<OpenXmlElement, Vorlagenabsatz> absaetze, Berichtswerte werte)
+            {
+                OpenXmlElement bezug = f.Quelle == Fundquelle.Steuerelement ? f.Steuerelement?.Element : f.Absatz?.Element;
+                OpenXmlElement kopf = Berichtskapitel.KapitelkopfVor(bezug, kopfstil);
+                if (kopf == null && f.Platzhalter.Angaben.Any(a => a.Art == Formatangabeart.OhneTitel))
+                    kopf = Berichtskapitel.UeberschriftVor(bezug, ueberschriften);
+                if (kopf != null && absaetze.TryGetValue(kopf, out Vorlagenabsatz absatz))
+                {
+                    string text = Vorlagenfeldkatalog.LoeseImText(absatz.Text, werte).Trim();
+                    if (text.Length > 0) return text;
+                }
+                return k.Ueberschrift(Kontext.Englisch);
+            }
+
             // ------------------------------------------------------------ Befund
 
             private static bool HatKapitel(List<Vorlagenfund> gezaehlt)
@@ -1177,15 +1309,18 @@ namespace WindowsFormsApplication1
                 List<string> unbekannte = felder.Where(f => f.Feld == null).Select(f => f.Platzhalter.Schluessel)
                     .Distinct(StringComparer.Ordinal).OrderBy(s => s, StringComparer.Ordinal).ToList();
 
-                var gedeckt = new HashSet<string>(felder.Where(f => f.Feld != null).SelectMany(f => f.Feld.Deckt), StringComparer.Ordinal);
-                List<string> bausteine = BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel).Where(gedeckt.Contains).ToList();
-                bool wirtschaft = felder.Any(f => f.Feld != null &&
-                    (Wirtschaftsbereiche.Any(b => f.Feld.Schluessel.StartsWith(b, StringComparison.Ordinal)) ||
-                     f.Feld.Deckt.Contains(BerichtsKonfiguration.B_WIRTSCHAFT)));
+                // Die Wirtschaftlichkeit: ein Schlüssel ihrer Bereiche oder ihr Kapitel — direkt oder gedeckt,
+                // etwa über den Sammelanker (Konzept 10.2, zweiter Einstieg).
+                HashSet<string> gedeckt = Vorlagenfeldkatalog.Gedeckt(
+                    felder.Where(f => f.Feld != null).Select(f => f.Feld.Schluessel), _katalog.Alle, _katalog.Finde);
+                string wirtschaftskapitel = Berichtskapitel.PRAEFIX_KAPITEL + Berichtskapitel.WIRTSCHAFTLICHKEIT;
+                bool wirtschaft = gedeckt.Any(k => string.Equals(k, wirtschaftskapitel, StringComparison.Ordinal) ||
+                                                   Wirtschaftsbereiche.Any(b => k.StartsWith(b, StringComparison.Ordinal)));
 
                 return new Pruefbefund(_stufe, _meldungen, _funde.ToList(), gezaehlt.Count, schluessel, unbekannte,
-                                       _fassung, _sprache, _spracheAbweichend, HatKapitel(gezaehlt), wirtschaft, bausteine,
-                                       summe, lesbar, _kommentare);
+                                       _fassung, _sprache, _spracheAbweichend, HatKapitel(gezaehlt), wirtschaft,
+                                       _bausteine ?? new List<string>(), summe, lesbar, _kommentare, _kapitelstellen,
+                                       _deckblattAusPlatzhaltern);
             }
         }
     }

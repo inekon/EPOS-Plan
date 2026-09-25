@@ -207,8 +207,11 @@ namespace WindowsFormsApplication1
                              int anzahlPlatzhalter, IReadOnlyList<string> schluessel, IReadOnlyList<string> unbekannte,
                              int? katalogfassung, string sprache, bool spracheAbweichend, bool hatKapitel,
                              bool hatWirtschaftlichkeit, IReadOnlyList<string> bausteine, string pruefsumme,
-                             bool istLesbar, int kommentare)
+                             bool istLesbar, int kommentare, IReadOnlyDictionary<string, string> kapitelstellen = null,
+                             bool deckblattAusPlatzhaltern = false)
         {
+            Kapitelstellen = kapitelstellen ?? new Dictionary<string, string>(StringComparer.Ordinal);
+            DeckblattAusPlatzhaltern = deckblattAusPlatzhaltern;
             Stufe = stufe;
             Meldungen = Ordne(meldungen ?? Array.Empty<Pruefmeldung>());
             Funde = funde ?? Array.Empty<Vorlagenfund>();
@@ -266,8 +269,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool HatWirtschaftlichkeit { get; }
 
-        /// <summary>Die Bausteine (<c>BerichtsKonfiguration.B_*</c>), die Kapitelplatzhalter der Vorlage einsetzen.</summary>
+        /// <summary>
+        /// Die Häkchen (<c>BerichtsKonfiguration.B_*</c>, in Berichtsfolge), deren Kapitel die Vorlage führt
+        /// — einzeln an gültiger Stelle oder über den Sammelanker <c>{{bericht.inhalt}}</c> (alle); eine
+        /// Vorlage ohne Platzhalter bekommt den Sammelanker ans Ende und führt damit alle. Der Anhang E
+        /// zählt zum Häkchen „Wirtschaftlichkeit“. Die übrigen Häkchen graut die Hülle aus („in dieser
+        /// Vorlage nicht enthalten“, Konzept 10.2).
+        /// </summary>
         public IReadOnlyList<string> Bausteine { get; }
+
+        /// <summary>
+        /// Die Stelle jedes Kapitels im Bericht, den die Vorlage baut (Konzept 11 Nr. 3), je
+        /// <see cref="Berichtskapitel.Stellenschluessel"/>: die Überschrift vor dem Anker — der
+        /// Kapitelkopf der Vorlage, sonst die eigene Überschrift des Bausteins —, <c>null</c>, wenn die
+        /// Vorlage das Kapitel nicht führt. Ohne Rücksicht auf die Häkchen: die berücksichtigt
+        /// <see cref="BerichtCtrl.KapitelstellenDerVorlage"/>.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Kapitelstellen { get; }
+
+        /// <summary>
+        /// Trägt der Rumpf Deckblattangaben aus Platzhaltern (<c>{{bericht.titel}}</c> …)? Dann steht ein
+        /// Deckblatt im Bericht, auch ohne das Kapitel Deckblatt und ohne sein Häkchen.
+        /// </summary>
+        public bool DeckblattAusPlatzhaltern { get; }
 
         /// <summary>Die Prüfsumme der geprüften Bytes (SHA-256, hexadezimal, klein).</summary>
         public string Pruefsumme { get; }
@@ -300,7 +324,7 @@ namespace WindowsFormsApplication1
             var alle = new List<Pruefmeldung>(Meldungen) { meldung };
             return new Pruefbefund(Stufe, alle, Funde, AnzahlPlatzhalter, Schluessel, UnbekannteSchluessel, Katalogfassung,
                                    Sprache, SpracheAbweichend, HatKapitel, HatWirtschaftlichkeit, Bausteine, Pruefsumme,
-                                   IstLesbar, Kommentare);
+                                   IstLesbar, Kommentare, Kapitelstellen, DeckblattAusPlatzhaltern);
         }
 
         /// <summary>Ein Befund ohne lesbare Vorlage: allein die übergebene Meldung.</summary>

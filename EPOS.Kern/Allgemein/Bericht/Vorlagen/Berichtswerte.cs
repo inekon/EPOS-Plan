@@ -28,6 +28,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Programmfassung; <c>null</c> = die Produktfassung wie auf dem Deckblatt.</summary>
         public string Version { get; set; }
+
+        /// <summary>
+        /// Das Firmenlogo für <c>bild.ersteller.logo</c> (PNG oder JPEG, Anwenderentscheid BV-E2-1): die
+        /// Bytes der Datei aus der Einstellung <c>BerichtLogo</c>, die <c>BerichtsvorlagenCtrl.Ersteller</c>
+        /// einmal lädt; <c>null</c> = kein Logo, dann entfällt das Platzhalterbild.
+        /// </summary>
+        public byte[] Logo { get; set; }
+
+        /// <summary>Der Dateiname des Logos ohne Pfad (Alternativtext des gefüllten Bildes); <c>null</c> ohne.</summary>
+        public string LogoDateiname { get; set; }
+
+        /// <summary>
+        /// Warum das eingestellte Logo fehlt — „Logo nicht gefunden: &lt;pfad&gt;“, zu groß, kein PNG oder
+        /// JPEG —, in der Sprache der Oberfläche; <c>null</c> = kein Befund. Die Engine nennt ihn als
+        /// Warnung des Laufs, sobald die Vorlage das Logo führt.
+        /// </summary>
+        public string LogoWarnung { get; set; }
     }
 
     /// <summary>
@@ -69,9 +86,9 @@ namespace WindowsFormsApplication1
             _kennzahlen = new Dictionary<string, Kennzahl>(StringComparer.Ordinal);
             foreach (Kennzahl k in Kennzahlen) _kennzahlen[k.Schluessel] = k;
 
-            AktiveKapitel = BerichtsKonfiguration.AlleBausteine
-                .Where(b => konfig == null || konfig.IstAktiv(b.Schluessel))
-                .Select(b => b.Schluessel)
+            AktiveKapitel = Berichtskapitel.Alle
+                .Where(k => k.IstAktiv(konfig))
+                .Select(k => k.Name)
                 .ToList();
 
             Produktausweis = DeckblattBaustein.ProduktausweisNoetig(daten);
@@ -94,6 +111,9 @@ namespace WindowsFormsApplication1
                 Firma = ersteller?.Firma,
                 Programm = string.IsNullOrWhiteSpace(ersteller?.Programm) ? Erstellerangaben.PROGRAMM : ersteller.Programm,
                 Version = string.IsNullOrWhiteSpace(ersteller?.Version) ? Produktfassung() : ersteller.Version,
+                Logo = ersteller?.Logo,
+                LogoDateiname = ersteller?.LogoDateiname,
+                LogoWarnung = ersteller?.LogoWarnung,
             };
             return new Berichtswerte(daten, konfig, englisch, vollstaendig);
         }
@@ -125,7 +145,10 @@ namespace WindowsFormsApplication1
         /// <summary>Der Kennzahlenkatalog, beschriftet nach <see cref="Emissionsmodus"/>.</summary>
         public IReadOnlyList<Kennzahl> Kennzahlen { get; }
 
-        /// <summary>Die Schlüssel der angehakten Bausteine in Berichtsreihenfolge.</summary>
+        /// <summary>
+        /// Die Namen der angehakten Kapitel (<see cref="Berichtskapitel.Name"/>) in Berichtsreihenfolge —
+        /// der Anhang E mit dem Häkchen „Wirtschaftlichkeit“.
+        /// </summary>
         public IReadOnlyList<string> AktiveKapitel { get; }
 
         /// <summary>Hat ein Stand ein Gebäude nach VDI 6007 gerechnet (Produktausweis des Deckblatts)?</summary>

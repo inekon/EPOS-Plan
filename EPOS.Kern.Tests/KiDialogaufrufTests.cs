@@ -224,9 +224,10 @@ namespace EPOS.Kern.Tests
         public void Jede_Kennung_hat_einen_Wissensabschnitt()
         {
             // 21 Kennungen der Flotte, des Laufs, der Strangampel und der Klimadaten,
-            // dazu 47 der Berichtsvorlagen (BV-E1: Prüfer, Vorlagen-Controller, Laufmeldung, Vorprüfung).
-            Assert.Equal(21 + 47, KiMeldungskennung.Alle.Length);
-            Assert.Equal(47, KiMeldungskennung.Berichtsvorlagen.Length);
+            // dazu 50 der Berichtsvorlagen (Prüfer, Vorlagen-Controller, Laufmeldung, Vorprüfung; mit
+            // BV-E2 Kapitel doppelt, „erst später“ und Anhang E ohne Stelle).
+            Assert.Equal(21 + 50, KiMeldungskennung.Alle.Length);
+            Assert.Equal(50, KiMeldungskennung.Berichtsvorlagen.Length);
             Assert.Equal(KiMeldungskennung.Alle.Length, KiMeldungskennung.Alle.Distinct(StringComparer.Ordinal).Count());
 
             foreach (string kennung in KiMeldungskennung.Alle)

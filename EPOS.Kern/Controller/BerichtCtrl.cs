@@ -320,6 +320,52 @@ namespace WindowsFormsApplication1
                                    Tk(englisch, nameof(R.BV_START_WEG_ABBRECHEN)));
         }
 
+        // =====================================================================
+        //  Stellen der Kapitel (Anhang-E-Checkliste)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Stellen der Kapitel in der gewählten Vorlage</b> (Konzept Berichtsvorlagen 11 Nr. 3; Etappe
+        /// BV-E2) — ohne zu füllen: je Bausteinschlüssel (<see cref="Berichtskapitel.Stellenschluessel"/>;
+        /// der Anhang E, der seinen Bausteinschlüssel mit der Wirtschaftlichkeit teilt, unter
+        /// <see cref="Berichtskapitel.ANHANG_E"/>) die Überschrift, unter der das Kapitel im Bericht steht:
+        /// der Kapitelkopf der Vorlage vor dem Anker, sonst die eigene Überschrift des Bausteins, in der
+        /// Sprache <paramref name="englisch"/>. <c>null</c> = nicht im Bericht — die Vorlage führt das
+        /// Kapitel nicht, oder sein Häkchen ist nicht gesetzt (ein Deckblatt aus Platzhaltern steht
+        /// unabhängig vom Häkchen). Die Vorlage wählt der Lauf (<see cref="BerichtsvorlagenCtrl.VorlageFuer"/>);
+        /// lässt sie sich nicht lesen, gilt die Standardvorlage, fehlt auch die, der bisherige Weg mit den
+        /// eigenen Überschriften der angehakten Kapitel. Dieselben Stellen nennt die Checkliste des Berichts
+        /// (<see cref="Fuellergebnis.Kapitelstellen"/>); <see cref="AnhangECheckliste.Punkte(ChecklistenLage, IReadOnlyDictionary{string, string})"/>
+        /// macht aus ihnen die Spalte „Stelle“.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> KapitelstellenDerVorlage(BerichtsKonfiguration konfig, bool englisch)
+        {
+            Vorlagenwahl wahl = _vorlagen.VorlageFuer(konfig);
+            var kandidaten = new List<Vorlageneintrag>();
+            if (wahl.Grund != Vorlagenwahlgrund.Rueckfall) kandidaten.Add(wahl.Eintrag);
+            Vorlageneintrag standard = _vorlagen.Standardeintrag();
+            if (standard.Vorhanden && !kandidaten.Any(k => k.IstStandard)) kandidaten.Add(standard);
+
+            foreach (Vorlageneintrag eintrag in kandidaten)
+            {
+                byte[] bytes = Lies(eintrag, out _);
+                if (bytes == null) continue;
+                Pruefbefund befund = Vorlagenpruefer.Pruefe(bytes, Pruefstufe.Schnell, Pruefkontext.Aus(konfig, englisch));
+                if (!befund.IstLesbar) continue;
+
+                var stellen = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (Berichtskapitel k in Berichtskapitel.Alle)
+                {
+                    befund.Kapitelstellen.TryGetValue(k.Stellenschluessel, out string stelle);
+                    if (stelle != null && !k.IstAktiv(konfig))
+                        stelle = k.Name == Berichtskapitel.DECKBLATT && befund.DeckblattAusPlatzhaltern ? k.Ueberschrift(englisch) : null;
+                    stellen[k.Stellenschluessel] = stelle;
+                }
+                return stellen;
+            }
+            return Berichtskapitel.EigeneStellen(konfig, englisch);
+        }
+
         /// <summary>
         /// Nutzt die Vorlage den Paarvergleich (<c>stand.a</c>, <c>stand.b</c>, Konzept 4.7)? In Sicht 1
         /// bleibt <c>stand.b</c> allein zulässig, wenn genau eine Variante gewählt ist.

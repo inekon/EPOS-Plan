@@ -16,8 +16,8 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Wache über die drei Word-Vorlagen im Repository</b> (Konzept Berichtsvorlagen,
     /// Etappen BV-E0 und BV-E1, 6.2, 6.3, Anhang B.3): die Stilvorlage des Generators
-    /// <c>Berichtsvorlage.docx</c>, die Standardvorlage <c>Berichtsvorlage_Standard.docx</c> in der
-    /// Stufe mit dem Sammelanker <c>{{bericht.inhalt}}</c> und die Beispielvorlage
+    /// <c>Berichtsvorlage.docx</c>, die Standardvorlage <c>Berichtsvorlage_Standard.docx</c> im
+    /// vollen Aufbau (BV-E2: Deckblatt aus Platzhaltern, Kapitel einzeln) und die Beispielvorlage
     /// <c>Berichtsvorlage_Beispiel.docx</c> im vollen Aufbau, alle drei erzeugt mit
     /// <c>Werkzeuge/Berichtsvorlage</c>. Welche davon ausgeliefert werden, hält
     /// <see cref="AuslieferungsvorlagenWacheTests"/>.
@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Stilvorlage des heutigen Generators — Rückfall des Codes und Quelle der Bereinigung.</summary>
         internal const string STILVORLAGE = "Berichtsvorlage.docx";
 
-        /// <summary>Die Standardvorlage in der Stufe mit dem Sammelanker (BV-E1).</summary>
+        /// <summary>Die Standardvorlage im vollen Aufbau der Beispielvorlage (BV-E2).</summary>
         internal const string STANDARD = "Berichtsvorlage_Standard.docx";
 
         /// <summary>Die Beispielvorlage im vollen Aufbau (Anhang B.3) — Anschauung bis BV-E2.</summary>
@@ -80,8 +80,26 @@ namespace EPOS.Kern.Tests
             "{{kapitel.anhang|ohne titel}}", "{{kapitel.anhang_e|ohne titel}}",
         };
 
-        /// <summary>Der Rumpf der Standardvorlage: allein der Sammelanker (Anhang B.3, „Stufen“).</summary>
-        private static readonly string[] StandardRumpfErwartet = { "{{bericht.inhalt}}" };
+        /// <summary>
+        /// Der Rumpf der Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3): Deckblatt aus Platzhaltern,
+        /// Inhaltsverzeichnis und je Kapitel der Kapitelplatzhalter — ohne die Kapitelköpfe, die als Text oder
+        /// als <c>{{text.kapitel_*}}</c> stehen dürfen.
+        /// </summary>
+        private static readonly string[] StandardRumpfErwartet =
+        {
+            "{{bericht.titel}}", "{{bericht.untertitel}}",
+            "{{text.kunde}}", "{{projekt.kunde}}",
+            "{{text.bearbeiter}}", "{{projekt.bearbeiter}}",
+            "{{text.ersteller}}", "{{ersteller.firma}}",
+            "{{text.varianten}}", "{{bericht.varianten.liste}}",
+            "{{text.datum}}", "{{bericht.datum}}",
+            "{{bericht.gebaeudemodell.ausweis|leer statt strich}}",
+            "{{text.erstellt_mit}}", "{{ersteller.programm}}", "{{ersteller.version}}",
+            "{{kapitel.inhalt}}",
+            "{{kapitel.projekt|ohne titel}}", "{{kapitel.komponenten|ohne titel}}", "{{kapitel.ergebnisse|ohne titel}}",
+            "{{kapitel.vergleich|ohne titel}}", "{{kapitel.wirtschaftlichkeit|ohne titel}}",
+            "{{kapitel.anhang|ohne titel}}", "{{kapitel.anhang_e|ohne titel}}",
+        };
 
         /// <summary>Kopfzeile beider Vorlagen mit Platzhaltern.</summary>
         private static readonly string[] KopfzeileErwartet = { "{{ersteller.programm}}" };
@@ -181,11 +199,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Standardvorlage in der Stufe mit dem Sammelanker (Anhang B.3, „Stufen“; BV-E1): Der
-        /// Rumpf ist allein der Absatz <c>{{bericht.inhalt}}</c> — an seine Stelle setzt die Engine
-        /// den Bericht des Bausteinwegs mit Deckblatt, Inhaltsverzeichnis und Kapiteln —, ein
-        /// einziger Abschnitt trägt Kopf- und Fußzeile mit denselben Platzhaltern wie die
-        /// Beispielvorlage, und Kommentare gibt es keine (die Erläuterungen trägt die Beispielvorlage).
+        /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3): Der Rumpf trägt das Deckblatt aus
+        /// Platzhaltern, <c>{{kapitel.inhalt}}</c> und je Kapitel den Kapitelplatzhalter mit <c>|ohne titel</c>
+        /// unmittelbar unter einem Kapitelkopf, dessen Text die heutige Überschrift ist oder ihr
+        /// <c>{{text.kapitel_*}}</c>; keinen Sammelanker. Das Deckblatt ist Abschnitt 1, der letzte Abschnitt
+        /// trägt Kopf- und Fußzeile mit denselben Platzhaltern wie die Beispielvorlage.
         /// </summary>
         [Fact]
         public void Die_Standardvorlage_fuehrt_genau_die_erwarteten_Platzhalter()
@@ -195,22 +213,33 @@ namespace EPOS.Kern.Tests
             MainDocumentPart main = doc.MainDocumentPart;
             Body rumpf = main.Document.Body;
 
-            Assert.Equal(StandardRumpfErwartet, Platzhalter(rumpf).ToArray());
+            List<string> platzhalter = Platzhalter(rumpf);
+            Assert.Equal(StandardRumpfErwartet,
+                         platzhalter.Where(p => !p.StartsWith("{{text.kapitel_", StringComparison.Ordinal)).ToArray());
+            Assert.DoesNotContain("{{bericht.inhalt}}", platzhalter);
             Assert.Equal(KopfzeileErwartet, main.HeaderParts.SelectMany(h => Platzhalter(h.Header)).ToArray());
             Assert.Equal(FusszeileErwartet, main.FooterParts.SelectMany(f => Platzhalter(f.Footer)).ToArray());
 
-            List<OpenXmlElement> inhalt = rumpf.ChildElements.Where(c => !(c is SectionProperties)).ToList();
-            Assert.True(inhalt.Count == 1 && inhalt[0] is Paragraph,
-                "Der Rumpf der Standardvorlage ist nicht allein ein Absatz, sondern: "
-                + string.Join(", ", inhalt.Select(c => c.LocalName)));
-            Assert.Equal("{{bericht.inhalt}}", Absatztext((Paragraph)inhalt[0]));
+            List<Paragraph> absaetze = rumpf.Elements<Paragraph>().ToList();
+            var koepfe = new List<string>();
+            for (int i = 0; i < absaetze.Count; i++)
+            {
+                Match m = Kapitelmuster.Match(Absatztext(absaetze[i]));
+                if (!m.Success || !Absatztext(absaetze[i]).EndsWith("|ohne titel}}", StringComparison.Ordinal)) continue;
+                Assert.True(i > 0 && Stilkennung(absaetze[i - 1]) == KAPITELKOPF_ID,
+                    "„" + Absatztext(absaetze[i]) + "“ steht nicht unter einem Kapitelkopf.");
+                string kopf = Absatztext(absaetze[i - 1]);
+                Berichtskapitel kapitel = Berichtskapitel.Finde(m.Groups[1].Value);
+                Assert.True(kopf == kapitel.Ueberschrift(false) || kopf == "{{" + kapitel.Kopfschluessel + "}}",
+                    "Kapitelkopf „" + kopf + "“ über {{" + kapitel.Schluessel + "}}");
+                koepfe.Add(kapitel.Name);
+            }
+            Assert.Equal(Berichtskapitel.Alle.Where(k => k.Kopfschluessel != null).Select(k => k.Name), koepfe);
 
-            SectionProperties abschnitt = Assert.Single(rumpf.Descendants<SectionProperties>());
-            Assert.NotEmpty(abschnitt.Elements<HeaderReference>());
-            Assert.NotEmpty(abschnitt.Elements<FooterReference>());
-
-            Assert.Empty(rumpf.Descendants<CommentReference>());
-            Assert.Equal(0, main.WordprocessingCommentsPart?.Comments?.Elements<Comment>().Count() ?? 0);
+            SectionProperties letzter = rumpf.Elements<SectionProperties>().Single();
+            Assert.NotEmpty(letzter.Elements<HeaderReference>());
+            Assert.NotEmpty(letzter.Elements<FooterReference>());
+            Assert.Equal(2, rumpf.Descendants<SectionProperties>().Count());
         }
 
         /// <summary>

@@ -15,6 +15,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Art passt nicht an die Stelle (Kapitel im Satz, Liste in der Kopfzeile …).</summary>
         FalscheStelle,
+
+        /// <summary>Dasselbe Kapitel steht schon an einer früheren Stelle — nur die erste wird gefüllt (Konzept 5.3).</summary>
+        Doppelt,
     }
 
     /// <summary>
@@ -102,6 +105,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Trug die Vorlage keinen einzigen Platzhalter (dann stehen die Kapitel am Ende, Konzept 6.1)?</summary>
         public bool OhnePlatzhalter { get; internal set; }
+
+        /// <summary>
+        /// Die Stelle jedes Kapitels im gefüllten Bericht (Konzept 11 Nr. 3): je
+        /// <see cref="Berichtskapitel.Stellenschluessel"/> die Überschrift vor dem Anker — der Kapitelkopf
+        /// der Vorlage, sonst die eigene Überschrift des Bausteins —, <c>null</c> = nicht im Bericht.
+        /// Dieselben Stellen nennt die Anhang-E-Checkliste des Berichts.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Kapitelstellen { get; internal set; }
+            = new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>Hinweise: angelegte Stile, entfernte Kommentare, der Verweis auf die Dokumentvorlage, Datumsfelder.</summary>
         public IReadOnlyList<string> Hinweise { get { return _hinweise; } }
