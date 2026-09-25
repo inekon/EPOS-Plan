@@ -828,10 +828,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool PasstZuGewerk(string persistenz, int komponentenId)
         {
+            return PasstZuGewerk(persistenz, komponentenId, false);
+        }
+
+        /// <summary>
+        /// E20 (Anwenderentscheid 25.09.2026, Konzept § 6.3 Nr. 10): dieselbe Frage im
+        /// RASTER — <paramref name="invest"/> = true fragt das Investitionsraster. Einzig
+        /// „je kW elektrisch" an der Wärmepumpe antwortet dort anders („Wärmepumpe
+        /// beides" nur bei den Investitionskosten); die Fassung ohne Raster ist die
+        /// Antwort des Betriebsrasters.
+        /// </summary>
+        public static bool PasstZuGewerk(string persistenz, int komponentenId, bool invest)
+        {
             if (komponentenId <= 0 || string.IsNullOrEmpty(persistenz)) return true;
-            return !string.Equals(WirtschaftlichkeitCtrl.BasisGrund(persistenz, komponentenId),
-                                  WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
-                                  StringComparison.Ordinal);
+            return !string.Equals(
+                WirtschaftlichkeitCtrl.BasisGrund(persistenz, komponentenId, false, invest),
+                WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
+                StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -871,7 +884,7 @@ namespace WindowsFormsApplication1
             {
                 if (benutzt != null && benutzt.Contains(i.Persistenz)) { treffer.Add(i); continue; }
                 if (!(invest ? i.FuerInvest : i.FuerBetrieb)) continue;
-                if (filtern && !PasstZuGewerk(i.Persistenz, komponentenId)) continue;
+                if (filtern && !PasstZuGewerk(i.Persistenz, komponentenId, invest)) continue;   // E20: je Raster
                 treffer.Add(i);
             }
             return treffer;
