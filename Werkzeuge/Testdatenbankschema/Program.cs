@@ -1877,6 +1877,26 @@ namespace Testdatenbankschema
                                   GebaeudeAnschlusslaengenFolgereparatur.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt GebaeudeAnschlusslaengenDritteReparatur.SCHRITT: die dritte Berichtigung
+            //      der Anschlusslaengen (Welle #505, Anwenderentscheid 25.09.2026). NACH 141.
+            //      REINES DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_GebaeudeDritteReparatur bedient
+            //      (GebaeudeAnschlusslaengenDritteReparatur): Laibungen 0 m oder leer, gerundete
+            //      EnEV-Laibungen, Kellerkanten 14,6 m, Kanten von Industrie_ne_81.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Keinen der Saetze fuehrt ein Referenzprojekt, und
+            //      Projektkopien bleiben unberuehrt.
+            string nrDritte = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDritte + " - dritte Berichtigung der Anschlusslaengen, offen vorher: " +
+                              GebaeudeAnschlusslaengenDritteReparatur.Offen() + ".");
+            if (!trocken)
+            {
+                GebaeudeAnschlusslaengenReparatur.Bericht berichtDritte = GebaeudeAnschlusslaengenDritteReparatur.Ausfuehren();
+                Console.WriteLine("Schritt " + nrDritte + " - " + berichtDritte.Text() + "; offen: " +
+                                  GebaeudeAnschlusslaengenDritteReparatur.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

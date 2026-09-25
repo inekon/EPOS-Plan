@@ -10592,3 +10592,93 @@ Assistenten neu angelegtes Projekt steht aus (bisher nur für 1041
 geführt); (b) `Add_Projekt_Prozess`/`Add_Projekt_Stromverbraucher`
 setzen den Verweis auf die Projektkopie vor dem Festschreiben
 (folgenlos nach Rückzug, weil der Abdruck ihn nicht vergleicht).
+
+## #505 — Gebäudekatalog: dritte Reparatur der Anschlusslängen, Schemaschritt 142 (25.09.2026)
+
+Anwenderentscheid 25.09.2026: Empfehlung übernommen („eindeutig
+unplausible Werte berichtigen, den Rest lassen“), „starte #500“ (umnummeriert zu #505, weil #500 von BV-E0 belegt ist). Basis
+`693ecf4a` (Zapfprofil #499, Zielversion 141); Commits (Opus 5.5)
+`081439f4` (Schritt, Leer-Anweisung, Verdrahtung, Testdatenbank),
+`8eb6c2bd` (Tests), `06d023f8` (Papiere); Merge `18f2b302` auf
+`99815b47` (#497). Nummernabstimmung: #505/Schritt 142 (Zapfprofil
+ZU20/ZU24 folgen als #501, Wirtschaftlichkeit E20/E21 danach).
+
+**Schritt 142.**
+`EPOS.Kern/Allgemein/Update/GebaeudeAnschlusslaengenDritteReparatur.cs`
+(Konstante `SCHRITT`; `SchemaStand.Zielversion` = die Konstante, der
+Doc-Satz zu #496 liegt jetzt in der Vergangenheit;
+`SchemaMigration.cs`
+`SCHRITT_GEBAEUDE_DRITTE_REPARATUR`/`Schritt_GebaeudeDritteReparatur`
+nach 141; Werkzeug und Nachzieh-Liste lesen die Konstante; kein Test
+prüft die Zielversion wörtlich).
+
+**Abweichung vom Auftrag „keine neue SQL“.** Die Laibungen der Sätze
+117, 105, 107 sind NULL, die Anweisung `> ? AND < ?` trifft keine
+leere Zelle — daher in `GebaeudeAnschlusslaengenReparatur` zusätzlich
+`SQL_FENSTER_WAND_LEER`/`SQL_FENSTER_WAND_LEER_ZAEHLUNG` (`… IS NULL`,
+`?`-Parameter), `SqlBerichtigungLeer`/`SqlZaehlungLeer`,
+`Anschlusslaengenberichtigung.AusLeer(...)`, Eigenschaft `Leer`;
+`Ausfuehren`/`Offen` verzweigen entsprechend; die Schritte 130 und 141
+bleiben unverändert; der SqlDialektPruefer prüft die neue
+Zählanweisung, das UPDATE ist zusätzlich per EXPLAIN von Hand geprüft.
+
+**Berichtigungen `Tab_Gebaeude_STAMM` (19 Zellen, 18 Sätze; ΔH_T = ψ·ΔL des Satzes).**
+
+| Sätze | Spalte | Vorher → Nachher | Herleitung | ΔH_T |
+|---|---|---|---|---|
+| 6 `Pflegeheim-122-EnEV2016` | Laibung | 0 → 540 m | Zwilling 8 | +81,0 W/K |
+| 15 `Industriehalle-320` | Laibung | 0 → 16 000 m | Zwilling 14, 2,5 m/m² (14 selbst plausibel) | 0 (ψ 0) |
+| 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | Laibung | 0 → 391,5 m | Zwillinge 65, 73 | 0 |
+| 117 `Verw_H_75` | Laibung | leer → 391,5 m | Zwilling 118 | +15,7 W/K |
+| 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | Laibung | leer → 1 462,1 m | 2,901 m/m² × 504 m² | 0 (ψ leer) |
+| 106 `Bürogebäude KfW 55` | Laibung | 0 → 2 875 m | 2,5 m/m² × 1 150 m² | 0 |
+| 207 `KMH-G-U-120` | Laibung | 0 → 238,3 m | 2,398 m/m² × 99,37 m² | 0 |
+| 23 `Hallenbad-Umkl-140-EnEV2016` | Laibung | 50 → 865,1 m | Satz 24: 2,017 m/m² × 428,9 m² | +32,6 W/K |
+| 34 `gr_Hotel-80-EnEV2016` | Laibung | 600 → 6 164,4 m | F-Geometrie 2,5729 m/m² × 2 395,9 m² | +500,8 W/K |
+| 108 `Bürogebäude_gross-30-EnEV2016` | Laibung | 330 → 4 460 m | 2,5 m/m² × 1 784 m² | +371,7 W/K |
+| 42, 72, 134 | Kellerkante | 14,6 → 86,6 m | Umfang aus #496 | je +46,8/+47,9 W/K |
+| 84, 85 | Kellerkante | 14,6 → 122,3 m | Umfang aus #496 | je +71,6 W/K |
+| 14 `Industrie_ne_81` | Dach- und Kellerkante | 7 337,4 → 2 362,1 m | U = 21 500/(39 645/36 587 × 8,4); Quadratkante 765,1 m (alt 9,6-fach) | −497,5 und −248,8 W/K (Summe −746,3) |
+
+Die Laibung 16 000 m des Satzes 14 selbst bleibt unverändert (2,5
+m/m², plausibel).
+
+**Ausgelassen.** Der Einfrierregel-Filter traf keinen der 18 Sätze
+(keine Projektkopien). Nach Anwenderentscheid bleiben unverändert: die
+Kanten der Laibungssätze (0 m bei ψ 0; bei 117/105/107 leer), die
+gerundete Kante 300 m bei Satz 34, Kellerkanten 0 m, die Sätze
+46/57/120, die „nur Dachkante“-Gruppe samt 145/146; außerhalb der
+Liste bleibt Laibung 0 m von `AltenH-95-EnEV2016` (das Gebäude hat
+keine Fenster).
+
+**Testdatenbank.** Werkzeuglauf: offen 19 → berichtigt 19 → 0, zweiter
+Lauf 0; Zellvergleich über 144 Tabellen (10 506 856 Zellen): nur
+`SchemaVersion` 141 → 142 und die 19 Zellen geändert; Schema gleich,
+`integrity_check` ok, `foreign_key_check` leer; LFS
+`fc5f143eb55b432b6d3a669e28f3dda1f7f92f8bc40c1441db12caf4b38e2bed`, 67
+915 776 Byte.
+
+**Tests.** Neu `GebaeudeAnschlusslaengenDritteReparaturTests`;
+Ergänzung an `GebaeudeKatalogverweisTests` (Editor-Wächter); gezielter
+Lauf 168/168.
+
+**Gate (Agent, Stand `693ecf4a`).** Kern-Filter 0 Fehler; Tests
+EPOS.Kern 6 823 (1 übersprungen), EPOS.UI 6 237, KiKern 549,
+SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen),
+Auslieferungsvorlage 34/34; Windows-Schale 0 Fehler; SqlDialektPruefer
+0 Fundstellen; Referenzlauf 13/13 GESAMT PASS gegen
+`2026-09-24_R14_Kaelteerzeuger` (4 207 049 Werte, 394/394 CSV
+byte-gleich). Das Nachgate auf `18f2b302` (mit E19 und #497) trägt die
+Hauptsitzung nach.
+
+**Papiere.** `Referenzlaeufe/LIESMICH.md` (Schemastand
+142/`fc5f143e…`, Nachtrag #505 mit Herleitungstabelle, die
+Berichtstabelle aus #496 mit „✔ #505“ markiert), Konzept
+Administrationsdialoge 7.1 (a).
+
+**Logbuch.** Keiner.
+
+**Offen (in „Nach #505“).** (a) Die nach Anwenderentscheid gelassenen
+Werte (Kellerkanten 0 m, Kanten der Laibungssätze, 46/57/120, „Nur D“)
+— kein Handlungsbedarf, nur Merkposten; (b) Laibung 0 m bei
+`AltenH-95-EnEV2016` ist folgerichtig (keine Fenster).
