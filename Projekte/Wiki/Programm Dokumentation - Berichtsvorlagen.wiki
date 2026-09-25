@@ -1,14 +1,14 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Berichtsvorlagen
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Der Word-Bericht entsteht aus einer '''Word-Vorlage''': einem Word-Dokument mit Platzhaltern, die EPOS-Plan beim Erstellen des Berichts mit den Werten des Projekts füllt. Mitgeliefert wird die ''Standardvorlage (EPOS-Plan)''. Eigene Vorlagen – etwa mit Deckblatt, Kopf- und Fußzeile des Büros – liegen im Vorlagenordner und werden auf der Seite [[Programm Dokumentation/Bericht|Bericht]] gewählt.
+Der Word-Bericht entsteht aus einer '''Word-Vorlage''': einem Word-Dokument mit Platzhaltern, die EPOS-Plan beim Erstellen des Berichts mit den Werten des Projekts füllt. Mitgeliefert wird die ''Standardvorlage (EPOS-Plan)''. Eigene Vorlagen – etwa mit Deckblatt, Kopf- und Fußzeile des Büros – liegen im Vorlagenordner und werden auf der Seite [[Programm Dokumentation/Bericht|Bericht]] gewählt. Die Vorlage bestimmt auch, welche [[#kapitel|Kapitel]] der Bericht in welcher Folge enthält.
 
 == Vorlage auf der Berichtsseite ==
 {{Anker|vorlage}}
-Die Gruppe '''Vorlage''' steht auf der Berichtsseite über den Berichtsbausteinen.
+Die Gruppe '''Vorlage''' steht auf der Berichtsseite über den Berichtsbausteinen; welche Bausteine die gewählte Vorlage führt, zeigen deren [[#haekchen|Häkchen]].
 
 * '''Word-Vorlage''' – die Auswahl führt die ''Standardvorlage (EPOS-Plan)'' und die eigenen Vorlagen des Vorlagenordners. Die Wahl gilt für das Stammprojekt samt seinen Varianten und bleibt beim Projekt gespeichert. Neben der mitgelieferten Vorlage steht ein Schloss: Sie lässt sich nur lesen. Fehlt die Datei einer gewählten Vorlage, bleibt sie gesperrt in der Liste stehen, der Bericht entsteht mit der Standardvorlage, und die Zeile unter der Auswahl nennt beides.
-* {{Anker|neue-vorlage}}'''Neue Vorlage…''' – legt unter einem neuen Namen eine Kopie der Standardvorlage im Vorlagenordner an und wählt sie. Das ist der erste Schritt zu einer eigenen Vorlage: die Kopie in Word öffnen, Deckblatt, Kopf- und Fußzeile gestalten und die [[#schreibweise|Platzhalter]] an die gewünschten Stellen setzen.
+* {{Anker|neue-vorlage}}'''Neue Vorlage…''' – legt unter einem neuen Namen eine Kopie der Standardvorlage im Vorlagenordner an und wählt sie. Das ist der erste Schritt zu einer eigenen Vorlage: die Kopie in Word öffnen, Deckblatt, Kopf- und Fußzeile gestalten, die [[#kapitel|Kapitel]] umstellen oder weglassen und die [[#schreibweise|Platzhalter]] an die gewünschten Stellen setzen.
 * '''Hinzufügen…''' – kopiert ein vorhandenes Word-Dokument (<code>.docx</code>) oder eine Word-Vorlage (<code>.dotx</code>) in den Vorlagenordner, prüft es vollständig und wählt es. Gibt es den Namen im Vorlagenordner schon, kommt die Vorlage unter einem freien Namen hinzu, etwa ''Angebot (2)''; die Meldung nennt ihn.
 * '''Prüfen''' – prüft die gewählte Vorlage vollständig, siehe [[#pruefliste|Prüfzeile und Prüfliste]].
 * '''Platzhalter…''' – öffnet den [[#platzhalterkatalog|Platzhalterkatalog]].
@@ -18,7 +18,44 @@ Die Gruppe '''Vorlage''' steht auf der Berichtsseite über den Berichtsbausteine
 
 == Platzhalter ==
 {{Anker|schreibweise}}
-Ein Platzhalter steht in doppelten geschweiften Klammern im Text der Vorlage, etwa <code><nowiki>{{projekt.name}}</nowiki></code> oder <code><nowiki>{{ersteller.firma}}</nowiki></code>. Groß- und Kleinschreibung und Leerzeichen in den Klammern spielen keine Rolle; die Prüfung nennt dann die übliche Schreibweise. Ein Platzhalter für Text, Zahl oder Datum darf im Haupttext, in Tabellenzellen, in Kopf- und Fußzeilen, in Fuß- und Endnoten und in Textfeldern stehen; das Absatz- und Zeichenformat der Stelle bleibt erhalten. <code><nowiki>{{bericht.inhalt}}</nowiki></code> steht allein in einem Absatz des Haupttexts und setzt dort den ganzen Bericht mit den gewählten Bausteinen ein; eine Vorlage ganz ohne Platzhalter bekommt den Bericht an ihr Ende. Ein Platzhalter ohne Wert wird mit einem Gedankenstrich oder leer gefüllt, nie mit 0. Kommentare der Vorlage erscheinen nicht im Bericht.
+Ein Platzhalter steht in doppelten geschweiften Klammern im Text der Vorlage, etwa <code><nowiki>{{projekt.name}}</nowiki></code> oder <code><nowiki>{{ersteller.firma}}</nowiki></code>. Groß- und Kleinschreibung und Leerzeichen in den Klammern spielen keine Rolle; die Prüfung nennt dann die übliche Schreibweise. Ein Platzhalter für Text, Zahl oder Datum darf im Haupttext, in Tabellenzellen, in Kopf- und Fußzeilen, in Fuß- und Endnoten und in Textfeldern stehen; das Absatz- und Zeichenformat der Stelle bleibt erhalten. <code><nowiki>{{bericht.inhalt}}</nowiki></code> steht allein in einem Absatz des Haupttexts und setzt dort alle Kapitel mit gesetztem Häkchen ein, die die Vorlage nicht einzeln führt (siehe [[#kapitel|Kapitel]]); eine Vorlage ganz ohne Platzhalter bekommt den Bericht an ihr Ende. Ein Bild wird zum Platzhalter, wenn sein Alternativtext den Platzhalter trägt: An einem Bild mit <code><nowiki>{{bild.ersteller.logo}}</nowiki></code> setzt EPOS-Plan das [[#logo|Logo]] aus den Einstellungen ein. Ein Platzhalter ohne Wert wird mit einem Gedankenstrich oder leer gefüllt, nie mit 0. Kommentare der Vorlage erscheinen nicht im Bericht.
+
+== Kapitel ==
+{{Anker|kapitel}}
+Die Kapitel des Berichts stehen in der Vorlage als '''Kapitelplatzhalter''', jeder allein in einem Absatz des Haupttexts – nicht in einer Tabelle, einem Textfeld oder einer Kopf- oder Fußzeile:
+
+{| class="wikitable"
+! Platzhalter !! Kapitel
+|-
+| <code><nowiki>{{kapitel.deckblatt}}</nowiki></code> || Deckblatt
+|-
+| <code><nowiki>{{kapitel.inhalt}}</nowiki></code> || Inhaltsverzeichnis
+|-
+| <code><nowiki>{{kapitel.projekt}}</nowiki></code> || Projektbeschreibung
+|-
+| <code><nowiki>{{kapitel.komponenten}}</nowiki></code> || Komponenten & Varianten
+|-
+| <code><nowiki>{{kapitel.ergebnisse}}</nowiki></code> || Ergebnisse je Variante
+|-
+| <code><nowiki>{{kapitel.vergleich}}</nowiki></code> || Variantenvergleich
+|-
+| <code><nowiki>{{kapitel.wirtschaftlichkeit}}</nowiki></code> || Wirtschaftlichkeit
+|-
+| <code><nowiki>{{kapitel.anhang}}</nowiki></code> || Anhang
+|-
+| <code><nowiki>{{kapitel.anhang_e}}</nowiki></code> || Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E); sie folgt dem Häkchen ''Wirtschaftlichkeit''
+|}
+
+Die Kapitel erscheinen in der Folge, in der sie in der Vorlage stehen; ein Kapitel, das die Vorlage weder einzeln noch über <code><nowiki>{{bericht.inhalt}}</nowiki></code> enthält, fehlt im Bericht. Steht ein Kapitel zweimal in der Vorlage, füllt EPOS-Plan nur die erste Stelle – die zweite bleibt gelb markiert stehen, und die Prüfung weist darauf hin. Zwei Formatangaben nach einem senkrechten Strich ändern die Überschriften eines Kapitels:
+
+* <code><nowiki>{{kapitel.projekt|ohne titel}}</nowiki></code> – das Kapitel ohne seine eigene Überschrift; die Überschrift gibt die Vorlage vor.
+* <code><nowiki>{{kapitel.anhang|ebene 2}}</nowiki></code> – die Überschriften des Kapitels beginnen auf Ebene 2 statt auf Ebene 1, die Unterüberschriften rücken mit; möglich sind die Ebenen 1 bis 9.
+
+'''Kapitelkopf.''' Eine Überschrift unmittelbar über dem Kapitelplatzhalter im Absatzformat ''EPOS Kapitelkopf'' gehört zum Kapitel: Entfällt das Kapitel – sein Häkchen ist nicht gesetzt, oder es gibt nichts zu berichten –, entfällt sie mit, und im Bericht bleibt keine Überschrift ohne Inhalt stehen. Der Kapitelkopf trägt eigenen Text oder einen Platzhalter wie <code><nowiki>{{text.kapitel_projekt}}</nowiki></code>, der die Überschrift des Kapitels in der Sprache des Berichts einsetzt. Eine Überschrift in einem anderen Absatzformat bleibt immer stehen.
+
+'''Checkliste nach DIN EN 17463, Anhang E.''' Die Spalte ''Stelle im Bericht'' der Checkliste nennt je Punkt die Überschrift, unter der das Kapitel in dieser Vorlage steht; ein Kapitel, das die Vorlage nicht führt, steht dort als ''nicht im Bericht'', und die Prüfung warnt davor. Dieselben Stellen zeigt die [[Programm Dokumentation/Wirtschaftlichkeit#checkliste|Anhang-E-Checkliste]] der Wirtschaftlichkeitsseite für die auf der Berichtsseite gewählte Vorlage; eine Zeile unter der Tafel nennt die Vorlage, auf die sich die Stellen beziehen.
+
+{{Anker|haekchen}}'''Häkchen der Berichtsbausteine.''' Die Häkchen auf der Berichtsseite schalten die Kapitel der Vorlage ein und aus. Führt die gewählte Word-Vorlage ein Kapitel nicht, steht sein Eintrag ausgegraut mit dem Grund ''in dieser Vorlage nicht enthalten''; trägt die Vorlage ihr Deckblatt selbst aus Platzhaltern – wie die Standardvorlage –, steht ''Deckblatt'' ausgegraut mit dem Grund ''Deckblatt kommt aus der Vorlage''. Das Häkchen selbst bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt; ein Klick auf den ausgegrauten Eintrag nennt den Grund, ''Alle'' lässt ihn unverändert. Wird auch die Excel-Mappe erstellt (Ausgabe ''Beide''), bleiben die Kapitel frei, die die Mappe enthält – ausgegraut sein können dann nur Deckblatt, Inhaltsverzeichnis und Anhang; bei der Ausgabe ''Excel'' sind alle Einträge frei. Führt die Vorlage einzelne Platzhalter, aber kein Kapitel, steht bei der Ausgabe ''Word'' statt der Liste die Zeile ''Den Inhalt bestimmt die Vorlage – sie führt einzelne Platzhalter, aber kein Kapitel.''
 
 == Prüfzeile und Prüfliste ==
 {{Anker|pruefliste}}
@@ -32,13 +69,14 @@ Meldet die Prüfung etwas, steht hinter der Zeile ''anzeigen''. Die '''Prüflist
 
 == Standardvorlage ==
 {{Anker|standardvorlage}}
-Die ''Standardvorlage (EPOS-Plan)'' wird mit dem Programm ausgeliefert und mit jedem Update erneuert; sie ist schreibgeschützt. Sie setzt den ganzen Bericht über <code><nowiki>{{bericht.inhalt}}</nowiki></code> ein und trägt in Kopf- und Fußzeile den Programmnamen, die Firma und das Berichtsdatum. Wer sie anpassen will, legt mit ''Neue Vorlage…'' eine Kopie an. Eigene Vorlagen im Vorlagenordner fasst ein Update nie an.
+Die ''Standardvorlage (EPOS-Plan)'' wird mit dem Programm ausgeliefert und mit jedem Update erneuert; sie ist schreibgeschützt. Sie baut den Bericht im vollen Aufbau: das Deckblatt aus Platzhaltern – Titel, Untertitel, eine Tabelle mit Kunde, Bearbeiter, Ersteller, Varianten und Datum, dazu Programmname und Programmfassung – auf einer eigenen Seite ohne Kopf- und Fußzeile, danach das Inhaltsverzeichnis und jedes Kapitel unter seinem [[#kapitel|Kapitelkopf]]. Die Kopfzeile trägt den Programmnamen und das [[#logo|Logo]], die Fußzeile die Firma, das Berichtsdatum und die Seitenzahl. Beschriftungen und Kapitelköpfe sind Platzhalter, so entsteht der Bericht in der Sprache der Oberfläche. Wer die Standardvorlage anpassen will, legt mit ''Neue Vorlage…'' eine Kopie an; an ihr lässt sich ablesen, wie Kapitel, Kapitelköpfe und Logo gesetzt werden. Eigene Vorlagen im Vorlagenordner fasst ein Update nie an.
 
-== Einstellungen: Firma und Vorlagenordner ==
+== Einstellungen: Firma, Logo und Vorlagenordner ==
 {{Anker|einstellungen}}
-Unter ''Administration › Einstellungen'', Abschnitt '''Bericht''', stehen zwei Angaben für alle Projekte dieses Anwenders:
+Unter ''Administration › Einstellungen'', Abschnitt '''Bericht''', stehen drei Angaben für alle Projekte dieses Anwenders:
 
 * '''Firma''' – steht im Bericht an der Stelle <code><nowiki>{{ersteller.firma}}</nowiki></code>. Vorbelegt ist die Firma der Lizenz; ''Standardwerte'' setzt sie wieder darauf. Ein leeres Feld lässt die Stelle im Bericht leer.
+* {{Anker|logo}}'''Logo''' – das Firmenlogo für die Kopfzeile des Berichts: eine PNG- oder JPEG-Datei bis 5 MB, gewählt über ''Durchsuchen''. ''Entfernen'' und ''Standardwerte'' leeren das Feld; dann erscheint im Bericht kein Logo. Beim Erstellen setzt EPOS-Plan die Datei an die Stelle des Logos der Vorlage, mit ihrem Seitenverhältnis in dessen Rahmen eingepasst. Gibt es die Datei nicht, steht unter dem Feld ''Datei nicht gefunden.''; fehlt sie beim Erstellen, ist sie größer als 5 MB oder kein PNG- oder JPEG-Bild, entfällt das Logo, und die Meldung nach dem Lauf nennt den Grund. In einer eigenen Vorlage ist jedes Bild mit dem Alternativtext <code><nowiki>{{bild.ersteller.logo}}</nowiki></code> eine solche Stelle; wer dort ein festes Bild will, ersetzt das Bild und löscht den Alternativtext.
 * '''Vorlagenordner''' – der Ordner der eigenen Berichtsvorlagen; vorgegeben ist ''Dokumente\EPOS-Plan\Berichtsvorlagen''. Unter Windows lässt sich jeder erreichbare Ordner wählen, auch ein gemeinsamer Ordner des Büros – dann arbeiten alle mit denselben Vorlagen. Übernommen wird nur ein Ordner, den es gibt; ist er nicht erreichbar, sagt es eine Meldung. Auf dem iPad liegt der Ordner fest in der App, eigene Vorlagen kommen dort über ''Hinzufügen…'' auf der Berichtsseite hinein.
 
 Die Datenbanksicherung nimmt den Vorlagenordner nicht mit; er gehört in die übliche Sicherung der Dateien.
@@ -47,6 +85,7 @@ Die Datenbanksicherung nimmt den Vorlagenordner nicht mit; er gehört in die üb
 
 * [[Programm Dokumentation/Bericht|Bericht]] – Varianten, Bausteine, Ausgabe und Zielordner
 * [[Programm Dokumentation/Wirtschaftlichkeit#bericht|Wirtschaftlichkeit: Bericht]] – was der Word-Bericht zur Wirtschaftlichkeit enthält
+* [[Programm Dokumentation/Wirtschaftlichkeit#checkliste|Wirtschaftlichkeit: Anhang-E-Checkliste]] – die Stelle im Bericht je Punkt der Norm
 * [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]] – Meldungen erklären lassen
 
 [[Kategorie:Programm Dokumentation]]
