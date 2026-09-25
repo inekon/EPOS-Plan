@@ -1812,7 +1812,6 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrImport + " - " + import + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
                                   "vollstaendig: " + ImportzuordnungSchema.Vollstaendig() + " (erwartet True).");
             }
-
             // ---- Schritt BaujahrSchema.SCHRITT (Gebaeudesimulation Stufe G4a, Welle 3;
             //      Umsetzungskonzept 3.4 und 3.7): die Spalte Baujahr an Tab_Gebaeude(_STAMM)
             //      samt fuenftem Sichtneubau (99 Spalten). REIN DDL aus DERSELBEN Quelle, aus der
@@ -1835,6 +1834,26 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrBaujahr + " - vollstaendig: " + BaujahrSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt 140: die eingespielten Messreihen eines Projekts
+            //      (Zapfprofilgenerator Stufe Z5, Schemaschritt T4 "Messreihen"). NACH dem Baujahr.
+            //      REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_140_ZapfprofilMessreihen bedient
+            //      (TwwSchema.AnweisungenT4Messreihen und TwwSchema.IndizesT4Messreihen):
+            //      Tab_TwwMessreihe samt Index auf ID_Projekt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Tabelle entsteht LEER und bleibt es.
+            //      Das Repositorium bringt keine Messreihe mit (Konzept Kapitel 9 K5: Messdaten
+            //      gehoeren dem Objekt); eingespielt werden sie allein beim Anwender.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT4Messreihen)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, TwwSchema.SCHRITT_T4_MESSREIHEN, trocken);
+            if (!trocken)
+                foreach (KeyValuePair<string, string> i in TwwSchema.IndizesT4Messreihen)
+                {
+                    DataRepository.ExecuteNonQuery(i.Value);
+                    Console.WriteLine("Schritt " + TwwSchema.SCHRITT_T4_MESSREIHEN.ToString(CultureInfo.InvariantCulture) + " - Index " + i.Key + " sichergestellt.");
+                }
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");

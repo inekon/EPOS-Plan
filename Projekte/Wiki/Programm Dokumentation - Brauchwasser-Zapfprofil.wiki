@@ -233,6 +233,57 @@ Steht der Schalter, bildet das Programm den Jahresgang aus dem Wetter der Klimar
 
 Die Jahresmenge bleibt erhalten: Negative Tagesmengen werden auf 0 gesetzt, danach werden die Tagesmengen auf die Jahresmenge gebracht; ein Hinweis nennt das. Führt das Paket zu den benutzten Typtagen Tagesgänge, tragen sie auch die Tagesform, sonst bleibt der Tagesgangsatz der Zone die Quelle. Die Ferienfenster einer Zone wirken auf dem Typtagweg nicht; auch das nennt ein Hinweis. Der Typtagweg gilt nur für Wohngrößen – Personen und Wohneinheiten –, jede andere Bezugsart wird mit Grund abgelehnt. Weicht die gerechnete Zahl der Kalendertage je Typtag von der eingespielten Tabelle ab, ist das ein Hinweis und kein Fehler: Das Wetter des Projekts und die Tabelle stammen aus verschiedenen Jahren.
 
+== Messdaten ==
+
+{{Anker|messdaten}}''Messdaten…'' in der Fußleiste des Zapfprofils öffnet die Überlagerung '''Messdaten'''. Sie führt die Messreihen, die diesem Projekt eingespielt sind, und spielt neue ein. Messreihen gehören zum Projekt: Sie reisen mit einer Projektkopie und einem Projektpaket und stehen in keiner Auslieferungsvorlage. Ohne gespeichertes Projekt gibt es die beiden schreibenden Knöpfe nicht; ihr Hinweis nennt den Grund.
+
+Die Liste '''Eingespielte Messreihen''' führt je Reihe Bezeichnung, gemessene Größe, Auflösung, Beginn, Tage, Nullläufe, Quelle und den Tag des Einspielens. Ein '''Nulllauf''' ist eine gefüllte Lücke oder eine gemessene Stunde ohne Zapfung; welche von beiden, sagt die Ablage nicht. Ist nichts eingespielt, sagt es die Liste: Ohne Messreihe gibt es weder einen Vergleich noch eine Kalibrierung aus der Messung.
+
+=== Datei einlesen ===
+
+''Datei wählen…'' nimmt eine CSV-Tabelle mit Kopfzeile: einen Zeitstempel oder Datum und Uhrzeit getrennt, dazu eine Wertspalte. Trenner ist Semikolon, Tabulator oder Komma, Zahlen tragen Punkt oder Komma. Fünf Eingaben beschreiben die Datei:
+
+* '''Bezeichnung''' – der Name der Reihe; leer gilt der Dateiname.
+* '''Quelle''' – woher die Werte stammen.
+* '''Gemessene Größe''' – Vorgabe ist ''aus der Kopfzeile''; erst wenn der Kopf keine Einheit trägt, ist dieses Feld die Antwort. Wählbar sind Energie, Volumen und Leistung.
+* '''Höchster Anteil gefüllter Lücken''' – leer gilt die Vorgabe.
+* '''Zeitstempel''' – die Zeitrechnung der Reihe: ''Ortszeit mit Sommerzeit'' oder ''Normalzeit ohne Umstellung''.
+
+Die gewählte Datei wird sofort geprüft, ohne dass etwas geschrieben wird. Die '''Prüfung der Datei''' nennt entweder Datei, Zeile und Grund der Ablehnung oder, wenn die Datei taugt, was ein Einspielen ablegen würde: Bezeichnung, gemessene Größe, Auflösung, Beginn, Ende, Zeitschritte, Tage, gefüllte Lücken, Schalttage und Quelle. Darunter stehen die '''Hinweise''': gefüllte Lücken, die beiden Sprünge der Sommerzeit und ein 29. Februar.
+
+''Einspielen'' schreibt die Reihe; eine Reihe gleicher Bezeichnung desselben Projekts wird nach einer Rückfrage vollständig ersetzt. ''Löschen'' entfernt die gewählte Reihe nach einer Rückfrage. Beides wirkt sofort – es gibt nichts zu verwerfen. ''Beenden'', ✕ und ''Esc'' schließen die Überlagerung.
+
+== Vergleich und Kalibrierung ==
+
+{{Anker|vergleich}}Ab der Stufe ''Erweitert'' trägt der Reiter [[#kennzahlen|Kennzahlen]] die Gruppe '''Vergleich mit einer Messreihe'''. Sie hält die gerechnete Jahresreihe gegen eine eingespielte [[#messdaten|Messreihe]] des Projekts und bietet die Kalibrierung aus der Messung an. In der Stufe ''Einfach'' steht statt der Gruppe der Hinweis, ab welcher Stufe sie kommt; ohne eingespielte Messreihe nennt sie den Weg zu den Messdaten.
+
+=== Vergleich rechnen ===
+
+''Messreihe'' wählt die Reihe, gegen die verglichen wird; ''Vergleich rechnen'' startet den Lauf. Er läuft nebenher, zeigt seinen Fortschritt und lässt sich abbrechen – der Arbeitsstand bleibt dabei erhalten. Gerechnet wird derselbe Weg wie im Lauf, deterministisch oder stochastisch, so wie es der [[#stochastik|Rechenweg der Jahresreihe]] sagt; eine stochastisch gerechnete Jahresreihe vermerkt die Tabelle.
+
+Die Tabelle '''Vergleich mit der Messung''' nennt nur Verhältnisse und Anteile – keine gemessene Menge und keine gemessene Leistung:
+
+* '''Energie gemessen/gerechnet''' und die '''Abweichung der Energie''', dazu die Zahl der Messtage und der Rechentage.
+* '''Messspitze / größte gerechnete Stunde''' und das '''Band der Dauerlinie''', in dem die Messspitze erwartet wird; seine Grenzen werden als Parameter gepflegt. Daneben steht die Lage: im Band, über dem Band – dann unterschätzt die Rechnung die Spitze – oder unter dem Band.
+* '''Streuung der Realisierungsspitzen''' mit der Zahl der Realisierungen und der Streubreite, sofern ein Ensemble vorliegt.
+* das '''√N-Skalierungsmaß''' der Gleichzeitigkeit mit der Zahl der Einheiten.
+* der '''Formabgleich''' – die größte mittlere Abweichung der Tagesform und je Tagtyp das Urteil ''im Rahmen'' oder ''über der Schwelle''; die Schwelle wird als Parameter gepflegt.
+* die '''größte Abweichung der Monatsanteile''' samt dem Monat, in dem sie steht.
+
+Was der Vergleich nicht entscheiden kann, steht als Strich mit dem Grund daneben – nie als Null. Die Hinweise des Vergleichs – ein Teiljahr der Messung, ein Schalttag, dass die Messung keine Feiertage kennt, ein fehlendes Ensemble – stehen in der Liste [[#warnliste-bilanz|Hinweise der Bilanz]] unter der Vorschau.
+
+Ändert danach eine Eingabe den Arbeitsstand, bleibt die Tabelle stehen und trägt den Vermerk, dass sie zu einem überholten Arbeitsstand gehört und neu zu rechnen ist; ein laufender Vergleich bricht ab.
+
+=== Aus Messreihe kalibrieren ===
+
+''Aus Messreihe kalibrieren'' in der Gruppe [[#belegung|Jahresmesswert]] setzt den Jahresmesswert der gewählten Zone aus der Reihe, die der Reiter ''Kennzahlen'' nennt – samt Einheit, Bilanzgrenze, Quelle und Zeitraum. Ein vorhandener Wert fällt dabei weg; die Rückfrage nennt Zone und Reihe. Deckt die Reihe kein ganzes Jahr, wird sie über den Jahresgang der Rechnung auf ein Jahr hochgerechnet, und ein Hinweis nennt, dass ein so gebildeter Jahreswert nie ein gemessener Jahreswert ist. Geschrieben wird erst mit ''OK'' des Dialogs.
+
+=== Vorschlag übernehmen ===
+
+''Vorschlag übernehmen…'' zeigt für eine Zone mit einer Nutzungsart außerhalb des Wohnens den '''Kalibriervorschlag''' als Vorschau: die Vorlage und die Bezeichnung der Kopie, die entstehen würde, den Tagesbedarf, den Tagesbedarf je Einheit, die Zahl der vollständigen Messtage, die Wochenfaktoren Mo–So und die Tagesgänge je Tagtyp in Prozent. Gibt es für die Zone keinen Vorschlag, nennt die Überlagerung den Grund.
+
+''Übernehmen'' fragt nach und legt danach eine eigene Nutzungsart an – eine Kopie der Vorlage mit den gemessenen Werten. Die Zone rechnet danach mit ihr, die Vorlage bleibt unberührt. Ein Tagtyp, für den die Messung keinen vollständigen Tag hergibt, behält den Tagesgang der Vorlage.
+
 == Simulation und monatlicher Verlauf ==
 
 Steht der Rechenweg auf ''Zapfprofil'', rechnet ''Simulation'' im Bedarfsprofil-Dialog die Zonen des Arbeitsstands – auch vor dem Speichern und ohne markiertes Bestandsprofil; die Leiste trägt dann den Vermerk ''rechnet den Zapfprofilweg''. Das Ergebnis zeigt die Brauchwassersäulen gestapelt aus Zapfung und Zirkulation und nennt die Zirkulation als eigenen Posten. Trägt eine Zone 0 oder kann das Zapfprofil nicht gerechnet werden, steht der Grund als Hinweis über den Listen.

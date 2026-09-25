@@ -92,6 +92,13 @@ namespace WindowsFormsApplication1
         /// (<c>IdNutzungsart</c> 0). Startwerte des Editors, wenn eine Nutzungsart keine Kategorien
         /// führt; leer, wenn der Katalog keinen Vorgabesatz trägt.
         ///
+        /// <para><b>Je Nutzungsartengruppe ein Satz</b> (Stufe Z5): Der Paketteil führt einen Satz
+        /// für Wohnnutzungen (vier Kategorien) und einen für Nichtwohnen (zwei nach dem
+        /// OpenDHW-Muster). Ist <paramref name="idNutzungsart"/> genannt, zählen nur die
+        /// Nutzungsarten ihrer Gruppe als Kandidaten (<see cref="TwwSchema.Kategoriengruppe"/>, die
+        /// Kalenderart entscheidet) — der Editor einer Nichtwohn-Nutzungsart startet nie mit dem
+        /// Wohnsatz. Ohne Angabe (0) zählen alle Gruppen wie bisher.</para>
+        ///
         /// <para><b>Eindeutig, auch nach Kopien und Änderungen</b> (nicht „die freien Kategorien der
         /// kleinsten Nutzungsart", die nach einer Änderung an Ort und Stelle einen Teilsatz trifft):
         /// In Frage kommt nur eine Nutzungsart, deren Kategorien ALLE Herkunftsart <c>FREI</c> tragen
@@ -102,14 +109,26 @@ namespace WindowsFormsApplication1
         /// jeder Nutzungsart ohne eigene Kategorien), bei Gleichstand der größere, dann der der
         /// kleinsten Nutzungsart.</para>
         /// </summary>
-        internal static IReadOnlyList<Zapfkategorie> KategorienVorgabe()
+        internal static IReadOnlyList<Zapfkategorie> KategorienVorgabe(int idNutzungsart = 0)
         {
             if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM)) return new Zapfkategorie[0];
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT ID_Nutzungsart, Kategorie, Volumenstrom_l_min, Sigma, Dauer_min, Anteil, Kappung_l_min, Quelle, Ausgabe, " +
-                "Version, Herkunftsart, Status FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
-                " ORDER BY ID_Nutzungsart, Reihenfolge, ID");
+                "SELECT k.ID_Nutzungsart, k.Kategorie, k.Volumenstrom_l_min, k.Sigma, k.Dauer_min, k.Anteil, k.Kappung_l_min, " +
+                "k.Quelle, k.Ausgabe, k.Version, k.Herkunftsart, k.Status, n.Kalenderart FROM " +
+                TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " k INNER JOIN " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM +
+                " n ON n.ID = k.ID_Nutzungsart ORDER BY k.ID_Nutzungsart, k.Reihenfolge, k.ID");
             if (dt == null) return new Zapfkategorie[0];
+
+            // Die Gruppe der gefragten Nutzungsart: nur ihre Gruppe kommt als Vorgabe in Frage.
+            string gruppe = null;
+            if (idNutzungsart > 0)
+            {
+                object ka = DataRepository.ExecuteScalar(
+                    "SELECT Kalenderart FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?",
+                    new DbParam("@id", idNutzungsart));
+                if (ka != null && ka != DBNull.Value)
+                    gruppe = TwwSchema.Kategoriengruppe(Convert.ToInt64(ka, CultureInfo.InvariantCulture));
+            }
 
             string frei = TwwWertemengen.Text(Herkunftsart.Frei);
             string auslieferung = TwwWertemengen.Text(ZapfKatalogstatus.Auslieferung);
@@ -117,6 +136,9 @@ namespace WindowsFormsApplication1
             foreach (DataRow r in dt.Rows)
             {
                 int id = ZapfprofilCtrl.Ganz(r, "ID_Nutzungsart");
+                if (gruppe != null
+                    && !string.Equals(TwwSchema.Kategoriengruppe(ZapfprofilCtrl.Ganz(r, "Kalenderart")), gruppe, StringComparison.Ordinal))
+                    continue;
                 if (saetze.Count == 0 || saetze[saetze.Count - 1].Id != id) saetze.Add((id, new List<Zapfkategorie>(), true, true));
                 var s = saetze[saetze.Count - 1];
                 s.Kategorien.Add(Kategorie(r, 0));
@@ -169,7 +191,7 @@ namespace WindowsFormsApplication1
             if (grund != null) return new TwwKategorienErgebnis(TwwKatalogAusgang.RasterUngueltig, idNutzungsart, grund);
 
             string neueVersion = string.IsNullOrWhiteSpace(katalogversion) ? null : katalogversion.Trim();
-            IReadOnlyList<Zapfkategorie> vorgabe = KategorienVorgabe();
+            IReadOnlyList<Zapfkategorie> vorgabe = KategorienVorgabe(idNutzungsart);
             int ziel = idNutzungsart;
             bool neu = false;
 

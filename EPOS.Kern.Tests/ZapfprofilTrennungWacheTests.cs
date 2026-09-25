@@ -70,7 +70,11 @@ namespace EPOS.Kern.Tests
             "Jahresensemble.cs",
             // Stufe Z4b: die eingespielten Typtage tragen den JAHRESGANG der Bilanz; die Auslegung
             // (Wochenreihe, Bedarfstag, Summenlinie) bleibt unberührt (N14 (j)).
-            "Typtagsatz.cs", "Typtagzuordnung.cs"
+            "Typtagsatz.cs", "Typtagzuordnung.cs",
+            // Stufe Z5: die gemessene Reihe, ihr Vergleich gegen die JAHRESREIHE der Bilanz und die
+            // Kalibrierung des MENGENGERÜSTS sind Bilanz — die Auslegung (Bedarfstag, Summenlinie,
+            // Speicher) bleibt unberührt; kein Auslegungstyp nennt eine Messreihe.
+            "Messreihe.cs", "Messvergleich.cs", "Messkalibrierung.cs"
         };
 
         /// <summary>Die Dateien, deren Typen Minuten- bzw. Stundenwerte tragen dürfen.</summary>

@@ -120,6 +120,25 @@ namespace WindowsFormsApplication1
                 // Der Dialog "VDI-4655-Typtage" (Stufe Z4b): Einspielen und Loeschen schreiben
                 // sofort; danach liest der Dialog den Katalogstand samt Typtagstand neu.
                 ["TyptagGaben"] = new Func<IReadOnlyDictionary<string, object>>(TyptagGaben),
+                // Der Dialog „Messdaten" (Stufe Z5): Einspielen und Loeschen schreiben sofort;
+                // danach liest der Dialog die Messreihen des Projekts neu.
+                ["MessreihenGaben"] = new Func<IReadOnlyDictionary<string, object>>(() => MessreihenGaben(idProjekt)),
+                // Der Vergleich mit einer Messreihe und die Kalibrierung daraus (Stufe Z5, Gruppe 3).
+                // Vergleich UND Kalibrierung rechnen DENSELBEN Weg wie der Lauf und laufen deshalb
+                // nebenlaeufig auf einem Arbeitsfaden mit der Kultur des Aufrufers, abbrechbar; der
+                // Vorschlag und seine Uebernahme rechnen nur aus der Messreihe und laufen im
+                // Verteiler. Die Kalibrierung rechnet nur bei einem Teiljahr (Hochrechnung ueber den
+                // Jahresgang) - bei einer Volljahresreihe kehrt sie ohne Lauf zurueck.
+                ["Messreihen"] = new Func<TwwMessreihenstandDaten>(() => Messreihenstand(idProjekt)),
+                ["Messvergleich"] = new Func<ZapfprofilEingabeDaten, string, CancellationToken, Task<ZapfprofilMessvergleichDaten>>(
+                    (e, r, abbruch) => Kulturweitergabe.Starten(() => Vergleichsbericht(idProjekt, e, basis, r, abbruch), abbruch)),
+                ["Messkalibrierung"] = new Func<ZapfprofilEingabeDaten, string, int, CancellationToken, Task<ZapfprofilMesskalibrierungDaten>>(
+                    (e, r, zone, abbruch) => Kulturweitergabe.Starten(
+                        () => MesswertAusReihe(idProjekt, e, basis, r, zone, abbruch), abbruch)),
+                ["Kalibriervorschlag"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagDaten>(
+                    (e, r, zone) => Kalibriervorschlag(idProjekt, e, basis, r, zone)),
+                ["VorschlagUebernehmen"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagErgebnisDaten>(
+                    (e, r, zone) => VorschlagUebernehmen(idProjekt, e, basis, r, zone)),
                 ["Ladevorschlag"] = new Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten>(e => Ladevorschlag(idProjekt, e, basis)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
@@ -1729,6 +1748,66 @@ namespace WindowsFormsApplication1
             t.KnopfStochastik = Text_("ZPG_BTN_STOCHASTIK", t.KnopfStochastik);
             t.KnopfStochastikTitel = Text_("ZPG_BTN_STOCHASTIK_TITEL", t.KnopfStochastikTitel);
             t.KnopfAuslegung = Text_("ZPG_BTN_AUSLEGUNG", t.KnopfAuslegung);
+            t.KnopfMessdaten = Text_("ZPG_BTN_MESSDATEN", t.KnopfMessdaten);
+            // Vergleich mit einer Messreihe und Kalibrierung (Stufe Z5, Gruppe 3)
+            t.GruppeVergleich = Text_("ZPG_GRP_VERGLEICH", t.GruppeVergleich);
+            t.LabelMessreihe = Text_("ZPG_LBL_MESSREIHE", t.LabelMessreihe);
+            t.KnopfVergleich = Text_("ZPG_BTN_VERGLEICH", t.KnopfVergleich);
+            t.KennzahlVergleich = Text_("ZPG_KZ_VERGLEICH", t.KennzahlVergleich);
+            t.VergleichOhneReihe = Text_("ZPG_VERGL_OHNE_REIHE", t.VergleichOhneReihe);
+            t.VergleichOhneWahl = Text_("ZPG_VERGL_OHNE_WAHL", t.VergleichOhneWahl);
+            t.VergleichNurErweitert = Text_("ZPG_VERGL_NUR_ERWEITERT", t.VergleichNurErweitert);
+            t.VergleichLeer = Text_("ZPG_VERGL_LEER", t.VergleichLeer);
+            t.VergleichLaeuft = Text_("ZPG_VERGL_LAEUFT", t.VergleichLaeuft);
+            t.VergleichAbgebrochen = Text_("ZPG_VERGL_ABGEBROCHEN", t.VergleichAbgebrochen);
+            t.VergleichVeraltet = Text_("ZPG_VERGL_VERALTET", t.VergleichVeraltet);
+            t.VergleichStatus = Text_("ZPG_VERGL_STATUS", t.VergleichStatus);
+            t.VergleichStochastisch = Text_("ZPG_VERGL_STOCHASTISCH", t.VergleichStochastisch);
+            t.KzEnergie = Text_("ZPG_KZ_ENERGIE_VERHAELTNIS", t.KzEnergie);
+            t.KzEnergieAbweichung = Text_("ZPG_KZ_ENERGIE_ABWEICHUNG", t.KzEnergieAbweichung);
+            t.KzSpitze = Text_("ZPG_KZ_SPITZE", t.KzSpitze);
+            t.KzBand = Text_("ZPG_KZ_BAND", t.KzBand);
+            t.KzSpitzenstreuung = Text_("ZPG_KZ_SPITZENSTREUUNG", t.KzSpitzenstreuung);
+            t.KzWurzelN = Text_("ZPG_KZ_WURZELN", t.KzWurzelN);
+            t.KzForm = Text_("ZPG_KZ_FORM", t.KzForm);
+            t.KzFormTagtyp = Text_("ZPG_KZ_FORM_TAGTYP", t.KzFormTagtyp);
+            t.KzMonate = Text_("ZPG_KZ_MONATE", t.KzMonate);
+            t.LageImBand = Text_("ZPG_LAGE_IM_BAND", t.LageImBand);
+            t.LageOberhalb = Text_("ZPG_LAGE_OBERHALB", t.LageOberhalb);
+            t.LageUnterhalb = Text_("ZPG_LAGE_UNTERHALB", t.LageUnterhalb);
+            t.LageUnbestimmt = Text_("ZPG_LAGE_UNBESTIMMT", t.LageUnbestimmt);
+            t.FormImRahmen = Text_("ZPG_FORM_IM_RAHMEN", t.FormImRahmen);
+            t.FormUeberSchwelle = Text_("ZPG_FORM_UEBER_SCHWELLE", t.FormUeberSchwelle);
+            t.VermerkOhneEnsemble = Text_("ZPG_VERGL_OHNE_ENSEMBLE", t.VermerkOhneEnsemble);
+            t.VermerkOhneWert = Text_("ZPG_VERGL_OHNE_WERT", t.VermerkOhneWert);
+            t.VermerkMonat = Text_("ZPG_VERGL_MONAT", t.VermerkMonat);
+            t.VermerkTage = Text_("ZPG_VERGL_TAGE", t.VermerkTage);
+            t.VermerkDauerlinie = Text_("ZPG_VERGL_DAUERLINIE", t.VermerkDauerlinie);
+            t.VermerkEinheiten = Text_("ZPG_VERGL_EINHEITEN", t.VermerkEinheiten);
+            t.VermerkStreubreite = Text_("ZPG_VERGL_STREUBREITE", t.VermerkStreubreite);
+            t.KnopfKalibrieren = Text_("ZPG_BTN_KALIBRIEREN", t.KnopfKalibrieren);
+            t.KnopfKalibriervorschlag = Text_("ZPG_BTN_VORSCHLAG_KALIBRIERT", t.KnopfKalibriervorschlag);
+            t.HinweisKalibrieren = Text_("ZPG_HINW_KALIBRIEREN", t.HinweisKalibrieren);
+            t.FrageKalibrieren = Text_("ZPG_FRAGE_KALIBRIEREN", t.FrageKalibrieren);
+            t.StatusKalibriert = Text_("ZPG_STATUS_KALIBRIERT", t.StatusKalibriert);
+            t.KalibrierungLaeuft = Text_("ZPG_KAL_LAEUFT", t.KalibrierungLaeuft);
+            t.KalibrierungAbgebrochen = Text_("ZPG_KAL_ABGEBROCHEN", t.KalibrierungAbgebrochen);
+            t.VorschlagTitel = Text_("ZPG_VORSCHLAG_TITEL", t.VorschlagTitel);
+            t.VorschlagVorlage = Text_("ZPG_VORSCHLAG_VORLAGE", t.VorschlagVorlage);
+            t.VorschlagKopie = Text_("ZPG_VORSCHLAG_KOPIE", t.VorschlagKopie);
+            t.VorschlagTagesbedarf = Text_("ZPG_VORSCHLAG_TAGESBEDARF", t.VorschlagTagesbedarf);
+            t.VorschlagJeEinheit = Text_("ZPG_VORSCHLAG_JE_EINHEIT", t.VorschlagJeEinheit);
+            t.VorschlagTage = Text_("ZPG_VORSCHLAG_TAGE", t.VorschlagTage);
+            t.VorschlagWoche = Text_("ZPG_VORSCHLAG_WOCHE", t.VorschlagWoche);
+            t.VorschlagGaenge = Text_("ZPG_VORSCHLAG_GAENGE", t.VorschlagGaenge);
+            t.VorschlagStunde = Text_("ZPG_VORSCHLAG_STUNDE", t.VorschlagStunde);
+            t.VorschlagHinweis = Text_("ZPG_VORSCHLAG_HINWEIS", t.VorschlagHinweis);
+            t.KnopfVorschlagUebernehmen = Text_("ZPG_BTN_VORSCHLAG_UEBERNEHMEN", t.KnopfVorschlagUebernehmen);
+            t.FrageVorschlag = Text_("ZPG_FRAGE_VORSCHLAG", t.FrageVorschlag);
+            t.VorschlagOhne = Text_("ZPG_VORSCHLAG_OHNE", t.VorschlagOhne);
+            // Der Titel der Überlagerung steht als ZPG_-Schlüssel (jede Beschriftung dieses Bündels tut
+            // das); sein Wort gleicht dem Titel des eingebetteten Dialogs (ZPGM_TITEL).
+            t.MessdatenTitel = Text_("ZPG_MESSDATEN_TITEL", t.MessdatenTitel);
             t.StatusAuslegung = Text_("ZPG_STATUS_AUSLEGUNG", t.StatusAuslegung);
             t.AuslegungOhnePunkt = Text_("ZPG_AUSLEGUNG_OHNE_PUNKT", t.AuslegungOhnePunkt);
             t.PunktUeberholt = Text_("ZPG_PUNKT_UEBERHOLT", t.PunktUeberholt);

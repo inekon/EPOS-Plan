@@ -293,8 +293,9 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   v der Datenzeile i wird v · (1 + δ) mit δ zyklisch aus (+0,04; −0,03; +0,05; −0,04; +0,03;
   −0,05), gerundet auf die Stellenzahl der Quelle (mindestens zwei signifikante Ziffern);
   Tagesgänge und Wochenanteile werden auf Summe 1, Monatsfaktoren auf Mittel 1 renormiert; kein
-  Wert gleicht seinem Original, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ,
-  dann eine Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
+  Wert gleicht seinem Original — außer einer Null, die multiplikativ nicht abzuleiten ist und
+  unverändert bleibt —, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ, dann eine
+  Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
 - **Das Skript läuft nur lokal** — es liest die gitignorierten Originale unter
   `Normzahlen/vdi6002/` und schreibt die committete Datei
   [`Skripte/tww_katalogwerte_abgeleitet.json`](Skripte/tww_katalogwerte_abgeleitet.json) (497 Werte,
@@ -304,7 +305,8 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
   c_w = 1,163 Wh/(l·K) auf kWh bei den Bezugstemperaturen 60/12 °C der Zeile um.
 - **Die Wache** `EPOS.Kern.Tests/TwwKatalogWacheTests.Kein_abgeleiteter_Katalogwert_gleicht_dem_VDI_Original`
   prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
-  Testdatenbank und der JSON-Datei seinem Original gleicht und jeder innerhalb ±6 % liegt; ihre
+  Testdatenbank und der JSON-Datei seinem Original gleicht — eine Null der Quelle bleibt Null und
+  wird nur darauf geprüft — und jeder innerhalb ±6 % liegt; ihre
   Meldung nennt Abweichungen, nie einen Absolutwert.
 - **VDI 4655 läuft unter derselben Regel** (Anwenderentscheid ZU23, 24.09.2026). `--norm vdi4655`
   liest die gitignorierten Originale unter `Normzahlen/vdi4655/` und schreibt
@@ -331,7 +333,7 @@ Vorgabesatz des freien Paketteils (Abschnitt „Der freie Paketteil“).
 ## Der freie Paketteil (`Katalogpaket_frei/`)
 
 Die freien Katalogdaten des Zapfprofilgenerators — Zapfkategorien nach Jordan/Vajen (IEA SHC
-Task 26, Modellannahme bis Z5), die fünf Parameter `Zapfprofil.Stochastik.*` und das
+Task 26, Modellannahme), die fünf Parameter `Zapfprofil.Stochastik.*` und das
 Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) — stehen einmal im Repositorium,
 als CSV-Dateien im Paketformat N2 unter [`Katalogpaket_frei/`](Katalogpaket_frei/LIESMICH.md)
 (Aufbau, Regeln und Quellen dort). `Werkzeuge/Auslieferungsvorlage` spielt den Ordner in jede
@@ -373,7 +375,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-25_R15_Anlagenkopplung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **139**, LFS-SHA-256 `5643a7ca…`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
+Schemastand **139**, LFS-SHA-256 `5643a7ca…`; heute Schemastand **140**, LFS-SHA-256 `72a98cdd…`, Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige**
 Basis im Arbeitsbaum.
@@ -478,6 +480,50 @@ Basis im Arbeitsbaum.
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
 > [Protokoll der fünften Welle AK1](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_AK1_Welle5_Referenzprojekt.md)
 > und im [Status der Gebäudesimulation](../Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md).
+
+> **Nachtrag Stufe Z5: Schemastand 140 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
+> Basis bleibt.** Ein Migrationsschritt, die Nummer steht allein bei
+> `TwwSchema.SCHRITT_T4_MESSREIHEN` (Quelle für Migration, Werkzeug und Testvorrichtung; sie folgt
+> lückenlos auf das Baujahr des Gebäudes, 139): **140** (`SCHRITT_140_ZAPFPROFIL_MESSREIHEN`) legt
+> `Tab_TwwMessreihe` an — STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
+> (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`), `ID_Projekt` mit `ON DELETE CASCADE`, kein `Status`
+> und kein `ReadOnly` — samt ihrem Index auf `ID_Projekt`. **Reines DDL;** die Tabelle entsteht LEER
+> und bleibt es: Gemessene Reihen gehören dem Objekt (Konzept Kapitel 9 K5), das Repositorium bringt
+> keine mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfügbar.
+> In der Arbeit trug der Schritt zuerst die Nummer 138, dann 139; beim Zusammenführen mit origin
+> war 138 vom Schritt S-F der Gebäudeimporte und 139 vom Baujahr der Stufe G4a belegt — wer zuerst
+> schiebt, hält die Nummer.
+> Nachgezogen auf der Fassung von origin mit Schemastand **139** (Nachtrag G4a Welle 3 oben,
+> `f700e81e…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> 1 Tabelle und 1 Index neu, Marker 140; ein zweiter Lauf legt nichts an. Danach der fiktive
+> Testkatalog der Stufen Z0 bis Z5
+> (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`):
+> 14 Zeilen neu, 28 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
+> Bedarfstage mit 33 Ereignissen, 85 Parameter, fünf DIN-4708-Werte und 24 Zapfkategorien, alle
+> `FIKTIV` oder „(abgeleitet)"; kein Normwert, kein Herstellerwert, keine Projektzeile. Ein zweiter
+> Lauf schreibt nichts (0 neu, 0 nachgeführt).
+> `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
+> 205 Indizes (219 samt den von SQLite angelegten). Größe 67 923 968 Byte
+> (LFS-SHA-256 `5de448e8…`). Zellvergleich aller 143 gemeinsamen Tabellen gegen die Fassung von
+> origin (10 506 805 Zellen): abweichend allein `Tab_Applikation.SchemaVersion` (139 → 140) und die
+> Katalogzeilen des Skripts (`Tab_TwwNutzungsart_STAMM` 8 statt 7, `Tab_TwwParameter_STAMM` 85 statt
+> 80, `Tab_TwwZapfkategorie_STAMM` 24 statt 28 — die Stufe Z5 führt die Nichtwohnen-Nutzungsarten
+> mit zwei statt vier Kategorien); `Tab_TwwMessreihe` steht mit 0 Zeilen. **Ergebnisneutral:** Kein
+> Referenzprojekt führt eine Messreihe, und kein Rechenweg der dreizehn liest den Tww-Katalog.
+> **Keine Einfrierregel ist berührt.**
+>
+> *Gemessen hat die Stufe Z5 gegen R14 (der Nachtrag G4a, auf den der Text verweist, steht beim
+> R14-Abschnitt unter `ueberholt/`).* **Zusammenführung mit AK1 Welle 5 — R15 bleibt:** Die
+> Testdatenbank ist die Fassung von origin mit Schemastand 140 (`5de448e8…`), auf die
+> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](Skripte/anlagenkopplung_1047_referenzprojekt.py)
+> erneut angewandt ist; ein zweiter Lauf ändert nichts. Zellvergleich aller 145 Tabellen gegen die
+> Fassung von origin (10 507 032 Zellen): genau die 9 365 Zeilen des Projekts 1047 in 24 Tabellen und
+> 21 Zeilen `sqlite_sequence`, Schema gleich; gegen die Einfrierfassung von R15 (`5643a7ca…`) allein die
+> Zeilen der Stufe Z5, die Zeilen von 1047 Id für Id gleich. `integrity_check` ok, `foreign_key_check`
+> leer, 68 747 264 Byte (LFS-SHA-256 `72a98cdd…`); `Werkzeuge/Testdatenbankschema --trocken` legt nichts
+> an. Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte, 432/432
+> CSV byte-gleich, außer `protokoll.txt`). Auch 1047 liest den Tww-Katalog nicht.
 
 > **Die Vorgängerbasis `2026-09-24_R14_Kaelteerzeuger`**, die erste Basis mit Kälteerzeuger, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Kälteerzeuger von 1017

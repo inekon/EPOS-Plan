@@ -32,6 +32,10 @@ namespace EPOS.Kern.Tests
     {
         private const int PROJEKT = 1007;
         private const string NUTZUNG = "Testnutzung A (fiktiv)";
+
+        /// <summary>Eine Nutzungsart der Gruppe Nichtwohnen (Kalenderart Arbeitstage, Bezug Beschäftigte).</summary>
+        private const string NUTZUNG_NICHTWOHNEN = "Testnutzung B (fiktiv)";
+
         private const string VERSION = "TEST-1";
 
         // =================================================================================
@@ -383,6 +387,42 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, waerme.Energieprobe_Verletzungen);
         }
 
+        /// <summary>
+        /// <b>Eine NICHTWOHN-Zone rechnet stochastisch</b> (Stufe Z5, Gruppe 2): Der Katalog führt
+        /// je Nutzungsartengruppe einen Vorgabesatz der Zapfkategorien; die Zone auf einer
+        /// Nichtwohn-Nutzungsart (Kalenderart Arbeitstage, Bezug Beschäftigte) findet deshalb ihre
+        /// ZWEI Kategorien nach dem OpenDHW-Muster, der Lauf geht ohne Ablehnung durch, und die
+        /// Jahresmenge bleibt die des deterministischen Wegs (Energieprobe). Ohne Testdatenbank
+        /// schweigt der Fall.
+        /// </summary>
+        [Fact]
+        public void Eine_Nichtwohn_Zone_rechnet_stochastisch_ohne_Ablehnung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ZonenStand zone = Zone(NUTZUNG_NICHTWOHNEN) with { Name = "Zone Nichtwohnen" };
+            // Zwei Kategorien im Katalog — der Vorgabesatz der Gruppe Nichtwohnen.
+            IReadOnlyList<Zapfkategorie> k = ZapfprofilCtrl.Zapfkategorien(new[] { zone.IdNutzungsart });
+            Assert.Equal(new[] { "Kurzzapfung", "Duschzapfung" }, k.Select(x => x.Name).ToArray());
+
+            bool[] we = new bool[Zapfkalender.TAGE];
+            ProjektStand vorgabe = ZapfprofilCtrl.ProjektVorgabe() with { Weg = BrauchwasserWeg.Generator };
+            var deterministisch = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone }, vorgabe);
+            ZapfprofilErgebnis d = ZapfprofilCtrl.Rechnen(PROJEKT, deterministisch, 0, we);
+            Assert.True(d.Vollstaendig, string.Join("; ", d.Ablehnungen.Select(a => a.Klartext)));
+
+            var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone },
+                                            vorgabe with { JahresreiheStochastisch = true, Seed = 1, Realisierungen = 2 });
+            ZapfprofilErgebnis s = ZapfprofilCtrl.Rechnen(PROJEKT, stand, 0, we);
+
+            Assert.True(s.Stochastisch);
+            Assert.Empty(s.Ablehnungen);
+            Assert.True(s.Vollstaendig);
+            Assert.Equal(d.Zapfung.JahressummeKwh, s.Zapfung.JahressummeKwh, 6);
+            // … und es ist wirklich eine gezogene Reihe: die Stundenwerte sind andere.
+            Assert.NotEqual(d.Zapfung.StundenKwh, s.Zapfung.StundenKwh);
+        }
+
         // =================================================================================
         // (d) Kein Referenzprojekt auf dem Generator
         // =================================================================================
@@ -433,7 +473,8 @@ namespace EPOS.Kern.Tests
                 .Where(f => f.IsLiteral && f.FieldType == typeof(string))
                 .Select(f => (string)f.GetRawConstantValue())
                 .ToArray();
-            Assert.Equal(18, schluessel.Length);
+            // 23 seit Stufe Z5: die fuenf Setzungen Zapfprofil.Validierung.* des freien Paketteils.
+            Assert.Equal(23, schluessel.Length);
             foreach (string s in schluessel) Assert.True(ps.Enthaelt(s), "Parameter fehlt im Testkatalog: " + s);
         }
 
@@ -442,11 +483,13 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>Eine erfundene Zone: 10 Personen auf der fiktiven Nutzungsart A, gebunden an das Gebäude des Projekts.</summary>
-        private static ZonenStand Zone()
+        private static ZonenStand Zone() => Zone(NUTZUNG);
+
+        private static ZonenStand Zone(string bezeichner)
         {
             int nutzung = Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = ? AND Katalogversion = ?",
-                new DbParam("@b", NUTZUNG), new DbParam("@k", VERSION)));
+                new DbParam("@b", bezeichner), new DbParam("@k", VERSION)));
             int gebaeude = Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT MIN(ID) FROM Tab_Gebaeude WHERE ID_Projekt = ?", new DbParam("@p", PROJEKT)));
             return new ZonenStand
