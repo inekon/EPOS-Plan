@@ -412,8 +412,8 @@ danach im Wegweiser desselben Ordners.
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand **144**,
 LFS-SHA-256 `b68638da…` — R18 wurde auf der Fassung `0c2fe21a…` mit Schemastand 143 eingefroren, dieselbe
 Datei wie R17; danach änderte Schemaschritt 144 nur das Schema (vier leere Spalten der Nachtzeit), ohne
-Referenzwirkung, zusammengeführt mit der Datenpflege E24, und das Prüfprojekt 1048 kam ohne Referenzrolle
-hinzu (Nachträge unten)). Gegen diese Basis hält
+Referenzwirkung, zusammengeführt mit der Datenpflege E24, und das Prüfprojekt „PV mit Preisen“ kam ohne
+Referenzrolle hinzu (Nachträge unten)). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich
 für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
 **einzige** Basis im Arbeitsbaum.
