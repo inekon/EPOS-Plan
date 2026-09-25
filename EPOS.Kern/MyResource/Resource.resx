@@ -35757,4 +35757,61 @@ Möchten Sie das zulassen?</value>
   <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>„{0}“ kommt aus der Vorlage – sie trägt das Deckblatt selbst; das Häkchen bleibt gespeichert und wirkt wieder, sobald eine Vorlage das Kapitel führt.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_ABGLEICH" xml:space="preserve">
+    <value>Namensabgleich: {0} Schicht(en) tragen Stoffwerte aus dem Baustoffkatalog, {1} Aufbau(ten) damit vollständig; {2} von {3} Materialnamen getroffen.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_BAUSTOFF_UNBEKANNT" xml:space="preserve">
+    <value>{0} Materialname(n) ohne Treffer im Baustoffkatalog ({1}) — diese Aufbauten tragen nur den U-Wert.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG" xml:space="preserve">
+    <value>{0} Baustoff(e) mit Stoffwerten außerhalb des Plausibilitätsbands ({1}) — diese Werte gelten als nicht geliefert.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
+    <value>{0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
+    <value>{0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE" xml:space="preserve">
+    <value>Baustoff {0}: λ der Datei {1} W/(mK), Katalogbaustoff „{2}“ {3} W/(mK), Abweichung {4} % — es rechnen die Werte der Datei.</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N3" xml:space="preserve">
+    <value>N3 · genauer Treffer „{0}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N3_HERSTELLER" xml:space="preserve">
+    <value>N3 · genauer Treffer „{0}“ ({1})</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N4" xml:space="preserve">
+    <value>N4 · Synonym „{0}“ ({1}) → „{2}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N4_WORTANFANG" xml:space="preserve">
+    <value>N4 · Synonym „{0}“ als Wortanfang ({1}) → „{2}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N5" xml:space="preserve">
+    <value>N5 · Teilwort „{0}“ → „{1}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N6_LUFTSCHICHT" xml:space="preserve">
+    <value>N6 · ruhende Luftschicht nach DIN EN ISO 6946</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N6_VERWORFEN" xml:space="preserve">
+    <value>N6 · kein Stoff (Schraffur oder leer) — Schicht verworfen</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N7" xml:space="preserve">
+    <value>N7 · Zuordnung des Anwenders → „{0}“</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_MEHRDEUTIG" xml:space="preserve">
+    <value>ohne Treffer — mehrdeutig, {0} Kandidaten</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_OHNE" xml:space="preserve">
+    <value>ohne Treffer</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_NAME" xml:space="preserve">
+    <value>Der Materialname ist leer — die Zuordnung wurde nicht gemerkt.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_STOFF" xml:space="preserve">
+    <value>Den Baustoff {0} gibt es im Katalog nicht — die Zuordnung wurde nicht gemerkt.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_FEHLER" xml:space="preserve">
+    <value>Die Zuordnung wurde nicht gemerkt: {0}</value>
+  </data>
 </root>

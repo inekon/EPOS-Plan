@@ -2897,6 +2897,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung wurde nicht gemerkt: {0} ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_ZUORDNUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_ZUORDNUNG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Materialname ist leer — die Zuordnung wurde nicht gemerkt. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_ZUORDNUNG_NAME {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_ZUORDNUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Baustoff {0} gibt es im Katalog nicht — die Zuordnung wurde nicht gemerkt. ähnelt.
+        /// </summary>
+        public static string BAUSTOFF_MSG_ZUORDNUNG_STOFF {
+            get {
+                return ResourceManager.GetString("BAUSTOFF_MSG_ZUORDNUNG_STOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellkennung ähnelt.
         /// </summary>
         public static string BAUTEIL_FELD_QUELLKENNUNG {
@@ -24897,6 +24924,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Treffer — mehrdeutig, {0} Kandidaten ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N3 · genauer Treffer „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N3 {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N3 · genauer Treffer „{0}“ ({1}) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N3_HERSTELLER {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N3_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N4 · Synonym „{0}“ ({1}) → „{2}“ ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N4 {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N4 · Synonym „{0}“ als Wortanfang ({1}) → „{2}“ ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N4_WORTANFANG {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N4_WORTANFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N5 · Teilwort „{0}“ → „{1}“ ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N5 {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N6 · ruhende Luftschicht nach DIN EN ISO 6946 ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N6_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N6_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N6 · kein Stoff (Schraffur oder leer) — Schicht verworfen ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N6_VERWORFEN {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N6_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N7 · Zuordnung des Anwenders → „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_N7 {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_N7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Treffer ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUSTOFF_OHNE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUSTOFF_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bildet der Gebäudeeditor aus der Bauart ähnelt.
         /// </summary>
         public static string GIMP_BELEG_BAUWEISE_AUS_BAUART {
@@ -28587,11 +28704,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Namensabgleich: {0} Schicht(en) tragen Stoffwerte aus dem Baustoffkatalog, {1} Aufbau(ten) damit vollständig; {2} von {3} Materialnamen getroffen. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ABGLEICH {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ABGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenbauteile ohne Himmelsrichtung, obwohl sie nicht waagerecht liegen: {1} — so lassen sie sich nicht als Bauteile übernehmen. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_AZIMUT_FEHLT {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_AZIMUT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Materialname(n) ohne Treffer im Baustoffkatalog ({1}) — diese Aufbauten tragen nur den U-Wert. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_BAUSTOFF_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_BAUSTOFF_UNBEKANNT", resourceCulture);
             }
         }
         
@@ -28722,6 +28857,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff {0}: λ der Datei {1} W/(mK), Katalogbaustoff „{2}“ {3} W/(mK), Abweichung {4} % — es rechnen die Werte der Datei. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Nettofläche 0 — keine Zeile, die Öffnungen bleiben. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL {
@@ -28776,11 +28929,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau {0}: Stoffwerte unvollständig oder außerhalb des Bereichs ({1}) — kein Aufbau, nur der U-Wert. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Baustoff(e) mit Stoffwerten außerhalb des Plausibilitätsbands ({1}) — diese Werte gelten als nicht geliefert. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG", resourceCulture);
             }
         }
         

@@ -35750,4 +35750,61 @@ Do you want to allow this?</value>
   <data name="BK_BER_VORLAGE_MSG_DECKBLATT_AUS_VORLAGE" xml:space="preserve">
     <value>“{0}” comes from the template – it carries the title page itself; the tick is kept and takes effect again as soon as a template contains the chapter.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_ABGLEICH" xml:space="preserve">
+    <value>Name matching: {0} layer(s) take material data from the material catalogue, completing {1} construction(s); {2} of {3} material names matched.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_BAUSTOFF_UNBEKANNT" xml:space="preserve">
+    <value>{0} material name(s) without a match in the material catalogue ({1}) — these constructions carry the U-value only.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG" xml:space="preserve">
+    <value>{0} material(s) with values outside the plausibility band ({1}) — these values count as not supplied.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
+    <value>{0} layer(s) without a material discarded (hatch or empty: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
+    <value>{0} air layer(s) are calculated as unventilated air layers to EN ISO 6946.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LAMBDA_GEGENPROBE" xml:space="preserve">
+    <value>Material {0}: file λ {1} W/(mK), catalogue material “{2}” {3} W/(mK), deviation {4} % — the file values are used.</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N3" xml:space="preserve">
+    <value>N3 · exact match “{0}”</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N3_HERSTELLER" xml:space="preserve">
+    <value>N3 · exact match “{0}” ({1})</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N4" xml:space="preserve">
+    <value>N4 · synonym “{0}” ({1}) → “{2}”</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N4_WORTANFANG" xml:space="preserve">
+    <value>N4 · synonym “{0}” as leading words ({1}) → “{2}”</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N5" xml:space="preserve">
+    <value>N5 · partial word “{0}” → “{1}”</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N6_LUFTSCHICHT" xml:space="preserve">
+    <value>N6 · unventilated air layer to EN ISO 6946</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N6_VERWORFEN" xml:space="preserve">
+    <value>N6 · no material (hatch or empty) — layer discarded</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_N7" xml:space="preserve">
+    <value>N7 · user assignment → “{0}”</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_MEHRDEUTIG" xml:space="preserve">
+    <value>no match — ambiguous, {0} candidates</value>
+  </data>
+  <data name="GIMP_BELEG_BAUSTOFF_OHNE" xml:space="preserve">
+    <value>no match</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_NAME" xml:space="preserve">
+    <value>The material name is empty — the assignment was not stored.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_STOFF" xml:space="preserve">
+    <value>Material {0} does not exist in the catalogue — the assignment was not stored.</value>
+  </data>
+  <data name="BAUSTOFF_MSG_ZUORDNUNG_FEHLER" xml:space="preserve">
+    <value>The assignment was not stored: {0}</value>
+  </data>
 </root>
