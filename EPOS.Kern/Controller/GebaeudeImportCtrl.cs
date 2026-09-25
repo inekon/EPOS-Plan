@@ -392,8 +392,16 @@ namespace WindowsFormsApplication1
     /// gespeichert wird. Erst dann gibt es die Projektkopie, an die
     /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/> sie im selben Vorgang schreibt
     /// (<c>WizardCtrl.GebaeudeZuordnungAnlegen</c>). Unveränderlich; ohne Datenbank.
+    ///
+    /// <para><b>Mit dem Bauteilvorschlag</b> (Stufe G4b): Hat der Anwender „Als Zone mit Bauteilen
+    /// übernehmen" gewählt, reist der Vorschlag mit; beim Speichern der Liste schreibt
+    /// <c>GebaeudeZonenCtrl.VorschlagSchreiben</c> Zone, Bauteile und Aufbauten an die neue
+    /// Projektkopie, und die Herkunft trägt dazu die Paarungen von Räumen, Flächen und
+    /// Konstruktionen — alles im selben Vorgang.</para>
     /// </summary>
     /// <param name="Quelle">Die Quelle des Laufs (Dateiname, SHA-256, Größe, Format …).</param>
     /// <param name="Paarungen">Die Paarungen — im Einzonenweg allein Gebäude ↔ Gebäudekennung der Datei.</param>
-    internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen);
+    /// <param name="Vorschlag">Der Bauteilvorschlag, wenn das Gebäude als Zone mit Bauteilen kommt; <c>null</c> = nur die Summenfelder.</param>
+    internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen,
+                                                  GebaeudeBauteilvorschlag Vorschlag = null);
 }

@@ -149,15 +149,130 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // =================================================================================
+        //  Folgevorgaben: Gewinne folgen der Nutzfläche, die Nacht folgt dem Tag
+        // =================================================================================
+
         [Fact]
-        public void Eine_Handaenderung_der_Nutzflaeche_rechnet_die_inneren_Gewinne_nicht_nach()
+        public void Eine_Handaenderung_der_Nutzflaeche_zieht_die_inneren_Gewinne_nach()
         {
             GebaeudeImportSatz s = Probenhaus();
             s.ManuellSetzen(GebaeudeZielfelder.NUTZFLAECHE, 200);
-            // Die Vorgabe entstand beim Zuordnen aus der gelesenen Fläche; der Anwender ändert sie bei
-            // Bedarf selbst (Dialog oder Editor).
-            Assert.Equal(600.0, s.Zeile(GebaeudeZielfelder.INNERE_GEWINNE).Wert);
-            Assert.Equal(Importherkunft.Vorgabe, s.Zeile(GebaeudeZielfelder.INNERE_GEWINNE).Herkunft);
+            s.FolgevorgabenNachziehen();
+
+            // 5 W/m² × 200 m², weiter als Vorgabe; der Vorschlag der Datei bleibt im Beleg, mit den neuen Zahlen.
+            GebaeudeFeldzeile gewinne = s.Zeile(GebaeudeZielfelder.INNERE_GEWINNE);
+            Assert.Equal(1000.0, gewinne.Wert);
+            Assert.Equal(1000.0, gewinne.VorgabeWert);
+            Assert.Equal(Importherkunft.Vorgabe, gewinne.Herkunft);
+            Assert.True(gewinne.Uebernehmen);
+            Assert.Equal("nicht in der Datei — Vorgabe 5 W/m² × 200 m² Nutzfläche = 1000 W",
+                         GebaeudeZuordnungsModell.BelegText(gewinne.VorgabeBeleg));
+            Assert.Equal("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG", gewinne.Beleg.Schluessel);
+            Assert.StartsWith("Vorgabe 5 W/m² × 200 m² Nutzfläche = 1000 W; Vorschlag 600 W: Auslegungsleistung",
+                              GebaeudeZuordnungsModell.BelegText(gewinne.Beleg));
+
+            // Ohne Nutzfläche gilt die Vorgabe eines neuen Gebäudes (0 W); der Vorschlag bleibt im Beleg.
+            s.ManuellSetzen(GebaeudeZielfelder.NUTZFLAECHE, null);
+            s.FolgevorgabenNachziehen();
+            Assert.Equal(0.0, gewinne.Wert);
+            Assert.Equal("GIMP_BELEG_GEWINNE_VORSCHLAG", gewinne.Beleg.Schluessel);
+            Assert.Equal("GIMP_BELEG_GEWINNE_VORGABE", gewinne.VorgabeBeleg.Schluessel);
+
+            // Ein Satz ohne Vorschlag in der Datei: der Beleg ist die Vorgabe selbst.
+            GebaeudeImportSatz klein = KleinerSatz();
+            klein.ManuellSetzen(GebaeudeZielfelder.NUTZFLAECHE, 40);
+            klein.FolgevorgabenNachziehen();
+            Assert.Equal(200.0, klein.Zeile(GebaeudeZielfelder.INNERE_GEWINNE).Wert);
+            Assert.Equal("GIMP_BELEG_GEWINNE_JE_FLAECHE", klein.Zeile(GebaeudeZielfelder.INNERE_GEWINNE).Beleg.Schluessel);
+        }
+
+        [Fact]
+        public void Von_Hand_gesetzte_Gewinne_bleiben_bei_einer_neuen_Nutzflaeche()
+        {
+            GebaeudeImportSatz s = Probenhaus();
+            s.ManuellSetzen(GebaeudeZielfelder.INNERE_GEWINNE, 777);
+            s.ManuellSetzen(GebaeudeZielfelder.NUTZFLAECHE, 200);
+            s.FolgevorgabenNachziehen();
+            Assert.Equal(777.0, s.Zeile(GebaeudeZielfelder.INNERE_GEWINNE).Wert);
+            Assert.Equal(Importherkunft.Manuell, s.Zeile(GebaeudeZielfelder.INNERE_GEWINNE).Herkunft);
+        }
+
+        [Fact]
+        public void Die_Nacht_folgt_einem_Handtag_unter_18_Grad()
+        {
+            GebaeudeImportSatz s = KleinerSatz();
+            s.ManuellSetzen(GebaeudeZielfelder.SOLL_TAG, 17);
+            s.FolgevorgabenNachziehen();
+            GebaeudeFeldzeile nacht = s.Zeile(GebaeudeZielfelder.SOLL_NACHT);
+            Assert.Equal(17.0, nacht.Wert);
+            Assert.Equal(Importherkunft.Vorgabe, nacht.Herkunft);
+            Assert.Equal("nicht in der Datei — Vorgabe 18 °C, höchstens der Tagsollwert: 17 °C", GebaeudeZuordnungsModell.BelegText(nacht.Beleg));
+
+            // Ein Tag über 18 °C: wieder die Vorgabe 18 °C.
+            s.ManuellSetzen(GebaeudeZielfelder.SOLL_TAG, 21);
+            s.FolgevorgabenNachziehen();
+            Assert.Equal(18.0, nacht.Wert);
+            Assert.Equal("nicht in der Datei — Vorgabe 18 °C", GebaeudeZuordnungsModell.BelegText(nacht.Beleg));
+        }
+
+        [Fact]
+        public void Eine_Handnacht_bleibt_bei_einem_neuen_Tag()
+        {
+            GebaeudeImportSatz s = KleinerSatz();
+            s.ManuellSetzen(GebaeudeZielfelder.SOLL_NACHT, 16);
+            s.ManuellSetzen(GebaeudeZielfelder.SOLL_TAG, 15);
+            s.FolgevorgabenNachziehen();
+            Assert.Equal(16.0, s.Zeile(GebaeudeZielfelder.SOLL_NACHT).Wert);
+            Assert.Equal(Importherkunft.Manuell, s.Zeile(GebaeudeZielfelder.SOLL_NACHT).Herkunft);
+        }
+
+        /// <summary>Der Nachzug ohne Handänderung ändert nichts — Zuordnung und Nachzug benutzen dieselbe Regel.</summary>
+        [Fact]
+        public void Ein_Satz_ohne_Handaenderung_ist_nach_dem_Nachzug_unveraendert()
+        {
+            foreach (GebaeudeImportSatz s in new[]
+                     {
+                         Probenhaus(), KleinerSatz(),
+                         KleinerSatz("<Space id=\"raum-1\" conditionType=\"Heated\"><Name>Wohnraum</Name><Volume>125</Volume></Space>"),
+                         Probenhaus(x => x.Replace("<DesignHeatT>20</DesignHeatT>", "<DesignHeatT>17</DesignHeatT>")),
+                     })
+            {
+                string vorher = Abdruck(s);
+                s.FolgevorgabenNachziehen();
+                Assert.Equal(vorher, Abdruck(s));
+            }
+        }
+
+        private static string Abdruck(GebaeudeImportSatz s)
+            => string.Join("\n", s.Zeilen.Select(z => string.Join("|", z.Zielfeld, z.Wert?.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                                                                   z.Textwert, z.Herkunft, z.Beleg?.ToString(), z.VorgabeWert?.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                                                                   z.VorgabeBeleg?.ToString(), z.Uebernehmen, z.Markierung)));
+
+        [Fact]
+        public async Task Die_Vorbelegung_mit_einer_Handflaeche_ergibt_5_W_je_m2_mal_Flaeche()
+        {
+            (GebaeudeImportHuelle h, IReadOnlyDictionary<string, object> gaben, GebaeudeImportErgebnis e) =
+                await GebaeudeImportEditorabschlussTests.Zuordnen("gbxml_ohne_konstruktionen.xml", KLASSE_E);
+
+            // Die Handfläche im Ergebnis — die Zeile der Gewinne steht noch auf der alten Vorgabe.
+            List<GebaeudeFeldzeileDaten> zeilen = e.Zeilen.Select(z => z.Zielfeld == GebaeudeZielfelder.NUTZFLAECHE
+                ? z with { Wert = 150, HerkunftSchluessel = GebaeudeHerkunftSchluessel.Manuell } : z).ToList();
+            var hand = new GebaeudeImportErgebnis(e.Gebaeudeindex, e.Baualtersklasse, e.Gebaeudename, e.BeheiztUebersteuert, zeilen);
+            GebaeudeVorbelegung v = h.Vorbelegung(hand);
+            Assert.Equal(150.0, v.Daten.WohnflaecheGesamt);
+            Assert.Equal(750.0, v.Daten.Waermegewinne);
+            Assert.Contains("Interne Wärmegewinne 750 W", v.Herleitung);
+
+            // Die Zuordnung mit Handwerten zeigt dasselbe im Dialog.
+            var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
+            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, new Dictionary<string, bool>(),
+                new Dictionary<string, double?> { [GebaeudeZielfelder.NUTZFLAECHE] = 150, [GebaeudeZielfelder.SOLL_TAG] = 17 }));
+            GebaeudeFeldzeileDaten gewinne = stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.INNERE_GEWINNE);
+            Assert.Equal(750.0, gewinne.Wert);
+            Assert.Equal(ImportherkunftWerte.VORGABE, gewinne.HerkunftSchluessel);
+            Assert.Equal(GebaeudeHerkunftSchluessel.Manuell, stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.NUTZFLAECHE).HerkunftSchluessel);
+            Assert.Equal(17.0, stand.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.SOLL_NACHT).Wert);
         }
 
         // =================================================================================

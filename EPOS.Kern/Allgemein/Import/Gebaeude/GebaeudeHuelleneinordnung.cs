@@ -119,6 +119,16 @@ namespace WindowsFormsApplication1
         internal double? NettoM2 { get; set; }
     }
 
+    /// <summary>
+    /// <b>Eine Trennfläche, die die Datei von beiden Seiten beschreibt</b> — das Ergebnis der
+    /// Gegenprobe: Es zählt die größere Beschreibung, die kleinere ist verworfen.
+    /// </summary>
+    /// <param name="RaumA">Der eine Raum (der kleinere Schlüssel, ordinal).</param>
+    /// <param name="RaumB">Der andere Raum.</param>
+    /// <param name="GrossM2">Die Bruttofläche der größeren Beschreibung [m²].</param>
+    /// <param name="KleinM2">Die Bruttofläche der nächstkleineren Beschreibung [m²].</param>
+    internal sealed record Trennflaechenpaar(string RaumA, string RaumB, double GrossM2, double KleinM2);
+
     /// <summary>Das Ergebnis der Einordnung: Hülle und innere Masse, je in Dateireihenfolge.</summary>
     internal sealed class Huelleneinordnung
     {
@@ -127,21 +137,38 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Flächen innerer Masse.</summary>
         internal List<Innenposten> Innen { get; } = new List<Innenposten>();
+
+        /// <summary>Die Trennflächen, die die Datei von beiden Seiten beschreibt, in der Reihenfolge ihres ersten Auftretens.</summary>
+        internal List<Trennflaechenpaar> Paare { get; } = new List<Trennflaechenpaar>();
+
+        /// <summary>
+        /// Die Flächen innerer Masse, die zählen — ohne die mit Nettofläche 0 (ganz Öffnung); eine
+        /// ohne Geometrie zählt mit (sie trägt keine Fläche, aber sie fehlt der Datenlage).
+        /// </summary>
+        internal IReadOnlyList<Innenposten> Innenflaechen
+            => Innen.Where(p => !(p.NettoM2.HasValue && p.NettoM2.Value <= 0.0)).ToList();
+
+        /// <summary>
+        /// <b>Die gemessene Innenfläche beider Seiten</b> [m²]: je Fläche innerer Masse die
+        /// Nettofläche, zweifach, wenn beide Räume zu diesem Gebäude gehören, sonst einfach (nur die
+        /// eigene Seite zählt) — die eine Messung für das Zielfeld Innenflächenfaktor der Zuordnung
+        /// und den Innenweg des Bauteilvorschlags.
+        /// </summary>
+        internal double InnenflaecheM2
+            => Innenflaechen.Where(p => p.NettoM2.HasValue).Sum(p => p.NettoM2.Value * (p.PosB >= 0 ? 2.0 : 1.0));
     }
 
     /// <summary>
     /// <b>Die Einordnung der Bauteile eines Gebäudes in Hülle und innere Masse</b> — die Regeln der
-    /// Einzonen-Zuordnung (<see cref="GebaeudeAggregation"/>, Zonenregel X4) je Bauteil, damit der
-    /// Bauteilvorschlag (<see cref="GebaeudeBauteilvorschlag"/>) dieselben Flächen in dieselben
-    /// Summenfelder legt wie die Summen des Gebäudeeditors. Ohne Datenbank.
+    /// Einzonen-Zuordnung (Zonenregel X4) je Bauteil, an EINER Stelle: Die Zuordnung
+    /// (<see cref="GebaeudeAggregation"/>) bildet ihre Summenfelder aus dieser Einordnung, der
+    /// Bauteilvorschlag (<see cref="GebaeudeBauteilvorschlag"/>) seine Zeilen — so legen beide
+    /// dieselben Flächen in dieselben Summenfelder. Ohne Datenbank; meldet nichts (die Meldungen
+    /// und Markierungen der Zuordnung bildet die Aggregation aus dem Ergebnis).
     ///
-    /// <para><b>Die Regeln stehen hier ein zweites Mal</b>, Zeile für Zeile nach
-    /// <c>GebaeudeAggregation.Einordnen</c>, <c>Boden</c>, <c>Trennflaechen</c> und
-    /// <c>Oeffnungen</c> — die Aggregation war bei der Entstehung dieser Klasse belegt (Stufe G4b,
-    /// Welle A). Der Vorschlag hält beide gegeneinander: Jede Gruppe muss dieselbe Fläche summieren
-    /// wie das Summenfeld der Aggregation, sonst lehnt er benannt ab
-    /// (<see cref="GebaeudeBauteilvorschlag.SUMME_ABWEICHUNG"/>). Die Aggregation soll ihre Einordnung
-    /// später von hier beziehen.</para>
+    /// <para>Der Vorschlag hält seine Zeilen trotzdem gegen die Summenfelder der Zuordnung: Jede
+    /// Gruppe muss dieselbe Fläche summieren, sonst lehnt er benannt ab
+    /// (<see cref="GebaeudeBauteilvorschlag.SUMME_ABWEICHUNG"/>).</para>
     ///
     /// <list type="bullet">
     /// <item><b>Hülle:</b> ein Bauteil mit einem beheizten Nachbarn DIESES Gebäudes; zwei beheizte
@@ -179,7 +206,7 @@ namespace WindowsFormsApplication1
             foreach (AbbildBauteil s in g.Bauteile)
                 Einordnen(s, index, raeume, raumGebaeude, istBeheizt, ergebnis);
 
-            Trennflaechen(ergebnis.Huelle);
+            Trennflaechen(ergebnis.Huelle, ergebnis.Paare);
             foreach (Huellposten p in ergebnis.Huelle) Oeffnungen(p);
             foreach (Innenposten p in ergebnis.Innen) Oeffnungen(p);
             return ergebnis;
@@ -252,9 +279,10 @@ namespace WindowsFormsApplication1
             ergebnis.Huelle.Add(p);
         }
 
-        /// <summary>Ist die Fläche für den beheizten Nachbarn Boden (<c>true</c>) oder Decke (<c>false</c>)? — die Regel der Aggregation.</summary>
+        /// <summary>Ist die Fläche für den beheizten Nachbarn Boden (<c>true</c>) oder Decke (<c>false</c>)? <c>null</c> = unbestimmt.</summary>
         internal static bool? Boden(AbbildBauteil s, int hPos, int aPos)
         {
+            // 1. Die Sicht des beheizten Raums (AdjacentSpaceId/@surfaceType), 2. die des anderen.
             bool? b = GebaeudeAggregation.SichtIstBoden(s.Nachbarn[hPos].Sicht);
             if (b.HasValue) return b;
             if (aPos >= 0)
@@ -263,6 +291,8 @@ namespace WindowsFormsApplication1
                 if (b.HasValue) return !b.Value;
             }
 
+            // 3. Die Neigung: Die Normale zeigt vom ERSTEN Nachbarn weg (gbXML-Hausannahme) —
+            //    nach oben (Neigung < 90°) heißt: der erste liegt darunter, die Fläche ist seine Decke.
             bool hIstErster = hPos == 0;
             if (s.NeigungGrad is double t && Math.Abs(t - 90.0) > GebaeudeAggregation.WAAGERECHT_GRAD)
             {
@@ -270,6 +300,7 @@ namespace WindowsFormsApplication1
                 return hIstErster ? !ersterUnten : ersterUnten;
             }
 
+            // 4. Die Art der Fläche aus Sicht des ersten Nachbarn (Ceiling, InteriorFloor …).
             b = GebaeudeAggregation.SichtIstBoden(s.Quellart);
             if (b.HasValue) return hIstErster ? b.Value : !b.Value;
             return null;
@@ -279,8 +310,12 @@ namespace WindowsFormsApplication1
         internal static bool IstWaagerechteArt(Bauteilart art)
             => art == Bauteilart.Decke || art == Bauteilart.Bodenplatte || art == Bauteilart.Dach;
 
-        /// <summary>Die Gegenprobe der Trennflächen: von zwei Beschreibungen derselben Trennfläche zählt die größere.</summary>
-        private static void Trennflaechen(List<Huellposten> posten)
+        /// <summary>
+        /// Die Gegenprobe der Trennflächen (Datenaustauschkonzept 3.5): Beschreibt die Datei dieselbe
+        /// Trennfläche von beiden Seiten (A→B und B→A), zählt nur die größere Beschreibung; jedes
+        /// solche Paar steht mit beiden Flächen in <paramref name="paare"/>.
+        /// </summary>
+        private static void Trennflaechen(List<Huellposten> posten, List<Trennflaechenpaar> paare)
         {
             foreach (IGrouping<string, Huellposten> paar in posten.Where(p => p.Paar != null).GroupBy(p => p.Paar, StringComparer.Ordinal))
             {
@@ -290,6 +325,8 @@ namespace WindowsFormsApplication1
                                        .OrderByDescending(r => r.Flaeche).ThenBy(r => r.Key, StringComparer.Ordinal).ToList();
                 foreach (var r in summen.Skip(1))
                     foreach (Huellposten p in r.Posten) p.Verworfen = true;
+                string[] raeume = paar.Key.Split('\u0001');
+                paare.Add(new Trennflaechenpaar(raeume[0], raeume[1], summen[0].Flaeche, summen[1].Flaeche));
             }
         }
 

@@ -51,6 +51,7 @@ KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
 | `ifc4_schichten_nullwerte.ifc` | dasselbe Haus, die Dämmung mit ρ = 0 und c = 0 — Stoffwerte ≤ 0 als Fehlstelle | selbst erzeugt | eigenes Werk |
 | `ifc2x3_schichten.ifc` | dasselbe Haus in IFC2X3 mit `IfcThermalMaterialProperties`, `IfcGeneralMaterialProperties` und einem `IfcExtendedMaterialProperties` — die Stoffwerte werden benannt nicht gelesen | selbst erzeugt | eigenes Werk |
 | `ifc4_rueckfaelle.ifc` | zwei Geschosse, Räume ohne Höhe und Volumen, Dach- und Bodenplatte ohne Mengen, keine Tür, Obergeschoss mit `GrossFloorArea` — die Vorgabe-Rückfälle für Raumhöhe, Dach-, Grund- und sonstige Fläche | selbst erzeugt | eigenes Werk |
+| `ifc4_vorhangfassade.ifc` | Fassadenhaus: ein beheizter Raum (80 m²), zwei Vorhangfassaden (`IfcCurtainWall`, Süd 25 m² mit U-Wert 1,3, West 20 m² ohne U-Wert), Ost- und Nordwand mit U-Wert am Wandtyp, ein Fenster, Dach- und Bodenplatte — Vorhangfassaden im Bauteilvorschlag transparent, in den Summenfeldern unter „Sonstige Flächen" | selbst erzeugt | eigenes Werk |
 | `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
 
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte

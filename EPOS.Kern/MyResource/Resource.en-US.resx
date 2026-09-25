@@ -35549,6 +35549,165 @@ Do you want to allow this?</value>
   <data name="IMP_GEB_PROT_NACHTZEIT_UNGUELTIG" xml:space="preserve">
     <value>{0} {1} is not a full hour from {2} to {3}.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>There is no building with index {0} (the file holds {1}) — no component proposal.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_BEHEIZTEN_RAEUME" xml:space="preserve">
+    <value>Building "{0}" has no heated space — no zone, no components.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_AUSSENBAUTEILE" xml:space="preserve">
+    <value>Building "{0}" has no opaque exterior component — a zone with components needs at least one.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_AZIMUT_FEHLT" xml:space="preserve">
+    <value>{0} exterior components without orientation although they are not horizontal: {1} — they cannot be taken over as components.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_UWERT_FEHLT" xml:space="preserve">
+    <value>{0} components carry neither a U-value nor layers, and no building age class supplies a default: {1} — please choose a building age class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SUMME_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: the components add up to {1} m², the assignment to {2} m² — the proposal does not match the sum fields.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_BAUTEILWEG" xml:space="preserve">
+    <value>The trial run through the component method fails: {0}</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} components, windows or doors without area: {1} — not taken over.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_OHNE_NACHBAR" xml:space="preserve">
+    <value>{0} surfaces without an adjacent space: {1} — assigned to no building, not taken over.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
+    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the layers are used.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Construction {0}: material data incomplete or out of range ({1}) — no construction, U-value only.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_U_VORGABE" xml:space="preserve">
+    <value>{0} components carry the U-value of building age class {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_FLAECHE_VORGABE" xml:space="preserve">
+    <value>{0}: no area in the file — default {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_BAUTEILE" xml:space="preserve">
+    <value>Internal mass from the file's components: {0} partitions as {1} rows, internal area of both sides {2} m² ({3} per m² of usable area).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_FAKTOR_STOFFWERTE" xml:space="preserve">
+    <value>Internal area factor {0} from the file ({1} m² internal area); {2} of {3} partitions lack area or material data — the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_FAKTOR_UNPLAUSIBEL" xml:space="preserve">
+    <value>Internal area factor {0} from the file ({1} m² internal area) lies outside {2} … {3} — no internal components, the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_VORGABE" xml:space="preserve">
+    <value>The file has no internal surfaces — internal area factor default {0}, the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_INNEN_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>Without a usable area the internal area of {0} m² cannot be related — internal area factor default {1}, the mass follows the construction class.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_GEBAEUDETRENNFLAECHE" xml:space="preserve">
+    <value>{0} partitions to heated spaces of another building — only this building's side counts.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_UNBEHEIZT" xml:space="preserve">
+    <value>{0} components ({1} m²) adjoin unheated or unknown spaces — boundary condition "unheated" at the building's basement temperature.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_VORHANGFASSADE" xml:space="preserve">
+    <value>{0} curtain walls are computed as transparent with solar gains; in the sum fields they are listed under "Other areas".</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
+    <value>{0} windows or curtain walls in contact with the ground are computed against outdoor air.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
+    <value>{0}: net area 0 — no row, the openings remain.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
+    <value>The orientations include the file's north direction ({0}°).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NORDWINKEL_NICHT_ANGEWANDT" xml:space="preserve">
+    <value>The file's north angle ({0}°) is not added — the orientations stand as in the file.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>Building {0} does not exist — nothing written.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_KEINE_PROJEKTKOPIE" xml:space="preserve">
+    <value>Building {0} belongs to no project — constructions need a project; nothing written.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ZONE_VORHANDEN" xml:space="preserve">
+    <value>Building {0} already has zones ({1}) — nothing is replaced; nothing written.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NICHT_GESCHRIEBEN" xml:space="preserve">
+    <value>The components were not written: {0}</value>
+  </data>
+  <data name="GIMP_FELD_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Internal area factor</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>internal area of both sides {0} m² ({1} partitions) ÷ usable area {2} m²</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_AUSSERHALB" xml:space="preserve">
+    <value>internal area of both sides {0} m² ({1} partitions) ÷ usable area {2} m² — outside {3} … {4}, please check</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_LEER" xml:space="preserve">
+    <value>no internal surfaces in the file — empty, the default {0} applies</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_OHNE_NUTZFLAECHE" xml:space="preserve">
+    <value>internal area {0} m² but no usable area — empty, the default {1} applies</value>
+  </data>
+  <data name="GIMP_BELEG_INNENFLAECHENFAKTOR_VORGABE" xml:space="preserve">
+    <value>default of the hourly model {0}, applies when the row is empty</value>
+  </data>
+  <data name="GIMP_DLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Components (real envelope)</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE" xml:space="preserve">
+    <value>Take over as a zone with components</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_HINWEIS" xml:space="preserve">
+    <value>When ticked, the building enters the project list with one zone and these components and is computed from its components; without the tick it carries only the sums of the assignment. The sum fields of the catalogue entry are filled either way.</value>
+  </data>
+  <data name="GIMP_DLG_ALS_ZONE_NICHT" xml:space="preserve">
+    <value>Not possible: {0}</value>
+  </data>
+  <data name="GIMP_DLG_SP_BAUTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="GIMP_DLG_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="GIMP_DLG_SP_UWERT" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="GIMP_DLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="GIMP_DLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="GIMP_DLG_SP_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
+    <value>No components.</value>
+  </data>
+  <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
+    <value>from layers</value>
+  </data>
+  <data name="GIMP_BT_RAND_INNEN" xml:space="preserve">
+    <value>within the zone</value>
+  </data>
+  <data name="GIMP_BT_KOPF" xml:space="preserve">
+    <value>Zone "{0}" · usable area {1} m² · {2} components · {3} constructions</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_BAUTEILE" xml:space="preserve">
+    <value>Internal mass: internal components from the file, {0} rows with {1} m² internal area of both sides.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_FAKTOR" xml:space="preserve">
+    <value>Internal mass: internal area factor {0} from the file, the mass follows the construction class.</value>
+  </data>
+  <data name="GIMP_BT_INNENWEG_VORGABE" xml:space="preserve">
+    <value>Internal mass: internal area factor default {0}, the mass follows the construction class.</value>
+  </data>
+  <data name="GIMP_BT_NICHT_MOEGLICH" xml:space="preserve">
+    <value>The component proposal cannot be formed.</value>
+  </data>
   <data name="BK_BER_VORLAGE_NICHT_ENTHALTEN" xml:space="preserve">
     <value>not contained in this template</value>
   </data>

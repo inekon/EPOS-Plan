@@ -72,13 +72,16 @@ public sealed record GebaeudeLesestand(
 
 /// <summary>
 /// Eine Zuordnung, wie der Dialog sie erfragt: welches Gebäude, welche Baualtersklasse
-/// (Index 0 = A … 20 = U, <c>null</c> = keine) und welche Räume der Anwender gegen die Datei
-/// umgestellt hat (Raumkennung → beheizt).
+/// (Index 0 = A … 20 = U, <c>null</c> = keine), welche Räume der Anwender gegen die Datei
+/// umgestellt hat (Raumkennung → beheizt) und welche Werte er von Hand eingetragen hat
+/// (Zielfeld → Wert). Die Handwerte legt die Datenseite auf den Satz und zieht die Vorgaben
+/// nach, die von ihnen abhängen (innere Gewinne von der Nutzfläche, Nachtsollwert vom Tag).
 /// </summary>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
-    IReadOnlyDictionary<string, bool> BeheiztUebersteuert);
+    IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
+    IReadOnlyDictionary<string, double?>? Handwerte = null);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
@@ -174,9 +177,54 @@ public sealed record GebaeudeFeldzeileDaten
 }
 
 /// <summary>
+/// <b>Eine Bauteilzeile des Vorschlags</b> — die Zeile, die als echtes Bauteil in die Zone käme,
+/// als fertige Anzeigetexte: Bezeichner, Art, Fläche, U-Wert (oder „aus Schichten"), Azimut,
+/// Neigung, Randbedingung und Herkunft.
+/// </summary>
+/// <param name="Bezeichner">Name des Bauteils.</param>
+/// <param name="Art">Bauteilart als Anzeigetext.</param>
+/// <param name="Flaeche">Fläche mit Einheit.</param>
+/// <param name="UWert">U-Wert mit Einheit, „aus Schichten" oder leer als Strich.</param>
+/// <param name="Azimut">Azimut in Grad, leer als Strich.</param>
+/// <param name="Neigung">Neigung in Grad, leer als Strich.</param>
+/// <param name="Randbedingung">Randbedingung als Anzeigetext.</param>
+/// <param name="HerkunftText">Herkunft der Zeile als Anzeigetext.</param>
+/// <param name="HerkunftSchluessel">Herkunft als sprachneutraler Schlüssel (Stilklasse).</param>
+/// <param name="Kennung">Kennung der Quellentität in der Datei; <c>null</c> = Vorgabezeile.</param>
+public sealed record GebaeudeBauteilzeileDaten(
+    string Bezeichner, string Art, string Flaeche, string UWert, string Azimut, string Neigung,
+    string Randbedingung, string HerkunftText, string HerkunftSchluessel, string? Kennung = null);
+
+/// <summary>
+/// <b>Der Bauteilvorschlag eines Gebäudes</b> für den Abschnitt „Bauteile (echte Hülle)": ob er
+/// sich bilden lässt (sonst der Grund), die Kopfzeile der Zone, die Bauteilzeilen, die Zeile zur
+/// inneren Masse und seine Meldungen — alles fertige Anzeigetexte aus den Gaben.
+/// </summary>
+public sealed record GebaeudeBauteileDaten
+{
+    /// <summary>Lässt sich der Vorschlag übernehmen? Sonst ist der Schalter aus und gesperrt.</summary>
+    public bool Moeglich { get; init; }
+
+    /// <summary>Der Grund, warum nicht; leer, wenn er sich übernehmen lässt.</summary>
+    public string Ablehnung { get; init; } = "";
+
+    /// <summary>Die Kopfzeile der Zone (Name, Nutzfläche, Zahl der Bauteile und Aufbauten); leer = keine Zone.</summary>
+    public string Kopftext { get; init; } = "";
+
+    /// <summary>Die Bauteilzeilen in der Reihenfolge des Vorschlags.</summary>
+    public IReadOnlyList<GebaeudeBauteilzeileDaten> Zeilen { get; init; } = Array.Empty<GebaeudeBauteilzeileDaten>();
+
+    /// <summary>Die Zeile zur inneren Masse (Innenbauteile, Innenflächenfaktor aus der Datei oder Vorgabe); leer = keine.</summary>
+    public string Innenweg { get; init; } = "";
+
+    /// <summary>Die Meldungen des Vorschlags.</summary>
+    public IReadOnlyList<GebaeudeImportMeldung> Meldungen { get; init; } = Array.Empty<GebaeudeImportMeldung>();
+}
+
+/// <summary>
 /// Der Stand einer Zuordnung, wie ihn die Hülle aus dem Kern baut: Kopfzeile, Namensvorschlag,
-/// Raumliste, Zeilen, Meldungen — und der Herkunftstext für eine Handänderung, damit auch
-/// „manuell" aus den Gaben kommt.
+/// Raumliste, Zeilen, Meldungen, der Bauteilvorschlag — und der Herkunftstext für eine
+/// Handänderung, damit auch „manuell" aus den Gaben kommt.
 /// </summary>
 public sealed record GebaeudeImportStand
 {
@@ -197,25 +245,30 @@ public sealed record GebaeudeImportStand
 
     /// <summary>Der Herkunftstext einer Handänderung („Manuell").</summary>
     public string ManuellHerkunftText { get; init; } = "";
+
+    /// <summary>Der Bauteilvorschlag; <c>null</c> = keiner (dann steht der Abschnitt nicht).</summary>
+    public GebaeudeBauteileDaten? Bauteile { get; init; }
 }
 
 /// <summary>
 /// <b>Das Ergebnis des Dialogs</b> — ALLE Zeilen, auch die unveränderten
 /// (Datenaustauschkonzept 2.4), mit Wert, Herkunftsschlüssel und Haken; dazu Gebäude,
-/// Baualtersklasse, Name des neuen Gebäudes und die umgestellten Räume. Abbrechen liefert
-/// <c>null</c>.
+/// Baualtersklasse, Name des neuen Gebäudes, die umgestellten Räume und die Wahl, das Gebäude
+/// als Zone mit Bauteilen zu übernehmen. Abbrechen liefert <c>null</c>.
 /// </summary>
 /// <param name="Gebaeudeindex">Das gewählte Gebäude der Datei.</param>
 /// <param name="Baualtersklasse">Index 0 = A … 20 = U; <c>null</c> = keine.</param>
 /// <param name="Gebaeudename">Der Name, unter dem das Gebäude angelegt würde.</param>
 /// <param name="BeheiztUebersteuert">Raumkennung → beheizt, nur die Abweichungen von der Datei.</param>
 /// <param name="Zeilen">Alle Zeilen der Zuordnung.</param>
+/// <param name="AlsZone">Als Zone mit Bauteilen übernehmen (Schalter des Abschnitts „Bauteile")?</param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
     string Gebaeudename,
     IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
-    IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen)
+    IReadOnlyList<GebaeudeFeldzeileDaten> Zeilen,
+    bool AlsZone = false)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)
@@ -336,6 +389,39 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_ZEILEN_HINWEIS</summary>
     public string ZeilenHinweis { get; set; } = Resource.GIMP_DLG_ZEILEN_HINWEIS;
+
+    /// <summary>GIMP_DLG_GRP_BAUTEILE — Kopf des Abschnitts mit dem Bauteilvorschlag.</summary>
+    public string GruppeBauteile { get; set; } = Resource.GIMP_DLG_GRP_BAUTEILE;
+
+    /// <summary>GIMP_DLG_ALS_ZONE — der Schalter „Als Zone mit Bauteilen übernehmen".</summary>
+    public string AlsZone { get; set; } = Resource.GIMP_DLG_ALS_ZONE;
+
+    /// <summary>GIMP_DLG_ALS_ZONE_HINWEIS</summary>
+    public string AlsZoneHinweis { get; set; } = Resource.GIMP_DLG_ALS_ZONE_HINWEIS;
+
+    /// <summary>GIMP_DLG_ALS_ZONE_NICHT — Platzhalter {0} = der Grund, warum der Vorschlag sich nicht übernehmen lässt.</summary>
+    public string AlsZoneNicht { get; set; } = Resource.GIMP_DLG_ALS_ZONE_NICHT;
+
+    /// <summary>GIMP_DLG_SP_BAUTEIL</summary>
+    public string SpalteBauteil { get; set; } = Resource.GIMP_DLG_SP_BAUTEIL;
+
+    /// <summary>GIMP_DLG_SP_ART</summary>
+    public string SpalteArt { get; set; } = Resource.GIMP_DLG_SP_ART;
+
+    /// <summary>GIMP_DLG_SP_UWERT</summary>
+    public string SpalteUWert { get; set; } = Resource.GIMP_DLG_SP_UWERT;
+
+    /// <summary>GIMP_DLG_SP_AZIMUT</summary>
+    public string SpalteAzimut { get; set; } = Resource.GIMP_DLG_SP_AZIMUT;
+
+    /// <summary>GIMP_DLG_SP_NEIGUNG</summary>
+    public string SpalteNeigung { get; set; } = Resource.GIMP_DLG_SP_NEIGUNG;
+
+    /// <summary>GIMP_DLG_SP_RAND</summary>
+    public string SpalteRand { get; set; } = Resource.GIMP_DLG_SP_RAND;
+
+    /// <summary>GIMP_DLG_KEINE_BAUTEILE</summary>
+    public string KeineBauteile { get; set; } = Resource.GIMP_DLG_KEINE_BAUTEILE;
 
     /// <summary>GIMP_DLG_GRP_MELDUNGEN</summary>
     public string GruppeMeldungen { get; set; } = Resource.GIMP_DLG_GRP_MELDUNGEN;
