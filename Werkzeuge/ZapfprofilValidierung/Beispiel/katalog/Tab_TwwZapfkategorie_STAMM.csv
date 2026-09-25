@@ -1,0 +1,18 @@
+ID_Nutzungsart;Kategorie;Reihenfolge;Volumenstrom_l_min;Dauer_min;Anteil;Sigma;Kappung_l_min;Quelle;Ausgabe;Version;Herkunftsart;Status;ReadOnly
+
+1;Kurzzapfung;1;2.0;1;0.15;1.0;;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+1;Mittlere Zapfung;2;6.0;1;0.35;2.0;;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+1;Duschen;3;8.0;5;0.4;2.0;20;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+1;Baden;4;14.0;10;0.1;2.0;30;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+2;Kurzzapfung;1;2.0;1;0.15;1.0;;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+2;Mittlere Zapfung;2;6.0;1;0.35;2.0;;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+2;Duschen;3;8.0;5;0.4;2.0;20;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+
+2;Baden;4;14.0;10;0.1;2.0;30;Erfundener Beispielkatalog;Werkzeug ZapfprofilValidierung;BSP-1;FIKTIV;AUSLIEFERUNG;1
+

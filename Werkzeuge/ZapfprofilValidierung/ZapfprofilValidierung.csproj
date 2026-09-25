@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ZapfprofilValidierung - der Rechennachweis des Zapfprofilgenerators gegen ECHTE
+    Messreihen (Umsetzungskonzept Zapfprofilgenerator, Kapitel 7 Stufe Z5, offener
+    Punkt K5).
+
+    WARUM ES DAS GIBT. Die Abnahme der Stufe Z5 ist ein VERGLEICH gegen Messungen:
+    Messspitze im P85-P95-Band der synthetischen Dauerlinie, Wurzel-N-Skalierung der
+    Ueberschaetzung, Formabgleich des Tagesgangs gegen eine Schwelle, Jahresenergie nach
+    der Kalibrierung exakt. Umgesetzt wurde Z5 mit erfundenen Reihen (Nachtrag N15) -
+    echte Messreihen lagen nicht vor. Sie duerfen auch nicht ins Repositorium (K5:
+    "Objektdaten nie im Repositorium"). Ein Werkzeug loest genau diesen Widerspruch: Die
+    Reihen liegen beim Anwender, das Werkzeug liegt im Repositorium, und der Bericht
+    traegt nur VERHAELTNISZAHLEN und Anteile - keine gemessene Menge, keine gemessene
+    Leistung, keinen Objektnamen.
+
+    KEIN ZWEITER RECHENWEG. Gerechnet wird mit ZapfprofilRechner, verglichen mit
+    Messvergleich, kalibriert mit Messkalibrierung, gelesen mit Messreihenleser - alles
+    Bestand des Kerns und alles datenbankfrei. Das Werkzeug bringt nur die Umgebung mit,
+    die dem Kern verboten ist: Pfade, Dateien, Konsole.
+
+    net10.0 ohne Windows-Bindung - laeuft damit auch auf Linux und in der CI.
+    Gehoert bewusst NICHT in WP-Plan.sln (Muster: Werkzeuge\Auslieferungsvorlage,
+    Werkzeuge\Gebaeudevergleich, Werkzeuge\Formularkarte). Gebaut und geprueft wird ueber
+    die eigene Projektmappe ZapfprofilValidierung.sln, die auch das Testprojekt fuehrt.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>ZapfprofilValidierung</AssemblyName>
+    <RootNamespace>ZapfprofilValidierung</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Die Proben pruefen Katalogleser, Ablauf, Ampel und Berichtswache von innen. -->
+    <InternalsVisibleTo Include="ZapfprofilValidierung.Tests" />
+  </ItemGroup>
+
+</Project>
