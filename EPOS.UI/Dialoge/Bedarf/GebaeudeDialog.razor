@@ -28,6 +28,16 @@
    und seit dem Anwenderwunsch W9-E-2 (05.09.2026) der WAERMEBEDARF des
    markierten Gebaeudes (Knopf "Simulation..." im Detailblock, W9.8).
 
+   DER GEBAEUDEIMPORT (Stufe G4, Welle 4; Architekturentscheid A17): EIN Knopf
+   "Importieren (gbXML, IFC)..." in der Leiste unter dem Katalog oeffnet den
+   Zuordnungsdialog als fuenfte Ueberlagerung - ohne eigenen Kopf, der Importdialog
+   fuehrt Titel und Kreuz selbst (Muster ImportUeberlagerung). Nach seinem OK oeffnet
+   der Katalogeditor im Modus Neu, vorbelegt aus der Datei; speichert der Anwender dort,
+   nimmt dieser Dialog das neue Gebaeude selbst in die Projektliste auf (derselbe Weg
+   wie "In das Projekt uebernehmen") - samt dem Schluessel seiner ausstehenden Herkunft,
+   die erst das OK dieses Dialogs mit der Liste schreibt. Abbrechen im Editor verwirft
+   Zeile und Herkunft. Kein Delegat, kein Knopf.
+
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
 
@@ -41,6 +51,7 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Import
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -148,6 +159,13 @@
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogNeu">@BtnDbNeuText</button>
+                @* Stufe G4 (A17): der Gebaeudeimport - neben "neu...", denn er legt einen
+                   neuen Katalogsatz an. Kein Delegat, kein Knopf. *@
+                @if (ImportGaben is not null)
+                {
+                    <button type="button" class="epos-knopf epos-importknopf" title="@BtnImportHinweis"
+                            @onclick="BeiImport">@BtnImportText</button>
+                }
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
                 <button type="button" class="epos-knopf"
@@ -222,14 +240,29 @@
         </SpeichernLeiste>
     }
 
-    @* --- Ueberlagerung 1: der Katalogeditor (W9.1) ------------------------- *@
+    @* --- Ueberlagerung 1: der Katalogeditor (W9.1), auch vorbelegt aus dem Import (G4) -- *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
-                   Titel="@BtnDbAendernText" Geschlossen="KatalogeditorFertig">
+                   Titel="@(_importweg is not null ? BtnDbNeuText : BtnDbAendernText)"
+                   Geschlossen="() => KatalogeditorFertig(false)">
         <KindInhalt>
             @if (_katalogGaben is not null)
             {
                 <GebaeudeKatalogDialog @attributes="_katalogGaben" TitelAnzeigen="false"
-                                       Geschlossen="_ => KatalogeditorFertig()" />
+                                       Geschlossen="KatalogeditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 5: der Gebaeudeimport (Stufe G4, A17) ---------------
+       Ohne Titel und ohne Kreuz: Der Importdialog fuehrt beides selbst, nimmt sein Kreuz
+       waehrend eines Lesegangs weg und deutet Esc dann als "Lauf abbrechen" - ein Kreuz
+       der Ueberlagerung schloesse mitten im Lauf (Muster ImportUeberlagerung). *@
+    <Ueberlagerung Offen="@(_importGaben is not null)" Titel="" Schliessbar="false"
+                   Zusatzklasse="epos-ueberlagerung--breit">
+        <KindInhalt>
+            @if (_importGaben is not null)
+            {
+                <GebaeudeImportDialog @attributes="_importGaben" Geschlossen="ImportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -355,6 +388,13 @@
     [Parameter]
     public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? BedarfGaben { get; set; }
 
+    /// <summary>
+    /// <b>Der Gebäudeimport</b> (Stufe G4, Welle 4; A17): baut je Klick auf „Importieren…" den
+    /// Weg eines Imports — Zuordnungsdialog, vorbelegter Editor, neue Projektzeile. Kein Delegat =
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<GebaeudeImportweg>? ImportGaben { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -437,6 +477,17 @@
     [Parameter] public string BtnDbLoeschenText { get; set; } = "Gebäude in DB löschen";
     [Parameter] public string BtnGebTypText { get; set; } = "Gebäudetyp in DB ändern...";
 
+    /// <summary>Beschriftung des Importknopfs — <c>GEB_BTN_IMPORT</c> (Stufe G4).</summary>
+    [Parameter] public string BtnImportText { get; set; } = "Importieren (gbXML, IFC)…";
+
+    /// <summary>Kurztext des Importknopfs — <c>GEB_BTN_IMPORT_HINWEIS</c>.</summary>
+    [Parameter] public string BtnImportHinweis { get; set; } =
+        "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen";
+
+    /// <summary>„Das Gebäude „{0}" steht jetzt …" — nach dem Import; <c>{0}</c> ist der Name (<c>GEB_MSG_IMPORT_AUFGENOMMEN</c>).</summary>
+    [Parameter] public string MeldungImportAufgenommen { get; set; } =
+        "Das Gebäude „{0}“ steht jetzt im Katalog und in der Projektliste.";
+
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -501,6 +552,10 @@
     private string _detailRechenweg = "";
 
     private IReadOnlyDictionary<string, object>? _katalogGaben;
+    private IReadOnlyDictionary<string, object>? _importGaben;
+
+    /// <summary>Der laufende Import — vom Klick auf „Importieren…" bis zum Schließen des vorbelegten Editors.</summary>
+    private GebaeudeImportweg? _importweg;
     private IReadOnlyDictionary<string, object>? _wohnflaecheGaben;
     private IReadOnlyDictionary<string, object>? _bedarfGaben;
     private bool _gebaeudetypOffen;
@@ -519,6 +574,12 @@
 
     /// <summary>Steht der Katalogeditor? Prüfhilfe für die Tests.</summary>
     public bool KatalogeditorOffen => _katalogGaben is not null;
+
+    /// <summary>Steht der Zuordnungsdialog des Imports? Prüfhilfe für die Tests.</summary>
+    public bool ImportOffen => _importGaben is not null;
+
+    /// <summary>Läuft ein Import (Zuordnung oder vorbelegter Editor)? Prüfhilfe für die Tests.</summary>
+    public bool ImportLaeuft => _importweg is not null;
 
     /// <summary>Steht die Wohnflächenangabe? Prüfhilfe für die Tests.</summary>
     public bool WohnflaecheOffen => _wohnflaecheGaben is not null;
@@ -849,10 +910,65 @@
         _katalogGaben = KatalogGaben("");
     }
 
-    private void KatalogeditorFertig()
+    /// <summary>
+    /// Der Katalogeditor ist zu — <paramref name="gespeichert"/> ist sein Ausgang (<c>true</c>
+    /// nach einem Speichern). Kam er aus einem Import, nimmt der Dialog das neue Gebäude jetzt in
+    /// die Projektliste auf — derselbe Weg wie „In das Projekt übernehmen", Arbeitsstand bis zum OK
+    /// dieses Dialogs; ohne Speichern verfällt der Import samt Herkunft.
+    /// </summary>
+    private void KatalogeditorFertig(bool gespeichert)
     {
         _katalogGaben = null;
+        GebaeudeImportweg? import = _importweg;
+        _importweg = null;
         KatalogLaden(_ausBaujahrwahl);   // SetGebaeudeDB() nach dem Schliessen
+
+        if (import is null || !gespeichert) return;
+        GebaeudeProjektZeile? neu = import.Aufnehmen();
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        ProjektzeileWaehlen(neu);
+        Geaendert?.Invoke();
+        Melden(Format(MeldungImportAufgenommen, neu.Name), WarnStufe.Hinweis);
+    }
+
+    // =================================================================================
+    // Der Gebaeudeimport (Stufe G4, Welle 4; A17)
+    // =================================================================================
+
+    /// <summary>„Importieren (gbXML, IFC)…" — der Zuordnungsdialog als Überlagerung.</summary>
+    private void BeiImport()
+    {
+        if (ImportGaben is null) return;
+        _meldung = "";
+        _importweg = ImportGaben();
+        _importGaben = _importweg?.Gaben;
+        if (_importGaben is null) _importweg = null;
+    }
+
+    /// <summary>
+    /// Der Zuordnungsdialog ist zu: mit Ergebnis nach seinem OK (der <c>Uebernehmen</c>-Delegat
+    /// des Wirts hat die Vorbelegung gebaut) — dann öffnet der Katalogeditor im Modus Neu,
+    /// vorbelegt; <c>null</c> bei Abbrechen, ✕ und Esc — dann ist nichts geschehen.
+    /// </summary>
+    private void ImportFertig(GebaeudeImportErgebnis? ergebnis)
+    {
+        _importGaben = null;
+        if (ergebnis is null || _importweg is null)
+        {
+            _importweg = null;
+            return;
+        }
+
+        _katalogGaben = _importweg.EditorGaben();
+        if (_katalogGaben is null) _importweg = null;
+    }
+
+    private static string Format(string vorlage, params object?[] werte)
+    {
+        try { return string.Format(System.Globalization.CultureInfo.CurrentCulture, vorlage ?? "", werte); }
+        catch (FormatException) { return vorlage ?? ""; }
     }
 
     private void BeiAendern()
@@ -954,8 +1070,9 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _katalogGaben is not null || _wohnflaecheGaben is not null ||
-            _bedarfGaben is not null || _gebaeudetypOffen || _loeschfrage) return Task.CompletedTask;
+        if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
+            _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
+            _loeschfrage) return Task.CompletedTask;
         return Abbrechen();
     }
 }

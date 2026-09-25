@@ -45,7 +45,20 @@ namespace WindowsFormsApplication1
         }
 
         private static string ZonenspaltenSql(string alias)
-            => string.Join(", ", new[] { "ID" }.Concat(ZonenSchema.Zonenspalten).Select(s => alias + ".\"" + s + "\""));
+            => string.Join(", ", new[] { "ID" }.Concat(ZonenSchema.Zonenspalten).Concat(Kuehlspalten())
+                                             .Select(s => alias + ".\"" + s + "\""));
+
+        /// <summary>
+        /// Die drei Spalten der Kühlübergabe an der Zone (E37, Schritt 137;
+        /// <see cref="KuehluebergabeSchema.SpaltenZone"/>) — gelesen und geschrieben NEBEN den
+        /// Spalten von <see cref="ZonenSchema.Zonenspalten"/>, die unverändert bleiben; leer, solange
+        /// die Datenbank den Schritt nicht trägt. So reisen sie über jeden Weg des Aggregats mit,
+        /// NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Kuehlspalten()
+            => KuehluebergabeSchema.ZoneVollstaendig()
+                ? KuehluebergabeSchema.SpaltenZone.Select(s => s.Key).ToList()
+                : (IReadOnlyList<string>)Array.Empty<string>();
 
         private static string BauteilspaltenSql(string alias)
             => string.Join(", ", new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten).Select(s => alias + ".\"" + s + "\""));
@@ -154,6 +167,8 @@ namespace WindowsFormsApplication1
                 if (z.Uebergabe_Art != null && z.Uebergabe_Art != DbWerte.UEBERGABE_IDEAL && z.Uebergabe_Art != DbWerte.UEBERGABE_RADIATOR
                     && z.Uebergabe_Art != DbWerte.UEBERGABE_FLAECHE && z.Uebergabe_Art != DbWerte.UEBERGABE_KONVEKTOR)
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_UEBERGABEART, zn, z.Uebergabe_Art);
+                if (z.Kuehl_Uebergabe_Art != null && !Waermeuebergabevorgaben.KuehlArten.Contains(z.Kuehl_Uebergabe_Art))
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_KUEHLUEBERGABEART, zn, z.Kuehl_Uebergabe_Art);
 
                 foreach (BauteilModel b in z.Bauteile ?? new List<BauteilModel>())
                 {
@@ -197,6 +212,12 @@ namespace WindowsFormsApplication1
             foreach (ZoneModel z in liste) z.Bauteile ??= new List<BauteilModel>();
             string fehler = Pruefen(liste);
             if (fehler != null) return Ergebnis.Fehler(fehler);
+
+            // Die Spalten der Zone: die von ZonenSchema und - mit Schritt 137 - die drei der
+            // Kuehluebergabe (E37); festgestellt VOR dem Vorgang, auf der gewoehnlichen Verbindung.
+            IReadOnlyList<string> kuehl = Kuehlspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(kuehl).ToList();
+            IEnumerable<DbParam> Werte(ZoneModel z) => kuehl.Count > 0 ? Zonenwerte(z).Concat(Kuehlwerte(z)) : Zonenwerte(z);
 
             try
             {
@@ -265,13 +286,13 @@ namespace WindowsFormsApplication1
                         z.Bezeichner = z.Bezeichner.Trim();
                         if (z.ID > 0)
                             v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_ZONE + "\" SET " +
-                                         string.Join(", ", ZonenSchema.Zonenspalten.Select(s => "\"" + s + "\" = ?")) +
-                                         " WHERE \"ID\" = ?", Zonenwerte(z).Append(new DbParam("@id", z.ID)).ToArray());
+                                         string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                                         " WHERE \"ID\" = ?", Werte(z).Append(new DbParam("@id", z.ID)).ToArray());
                         else
                             z.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_ZONE + "\" (" +
-                                                    string.Join(", ", ZonenSchema.Zonenspalten.Select(s => "\"" + s + "\"")) +
-                                                    ") VALUES (" + BaustoffCtrl.Fragezeichen(ZonenSchema.Zonenspalten.Count) + ")",
-                                                    Zonenwerte(z).ToArray());
+                                                    string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                                    ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")",
+                                                    Werte(z).ToArray());
                     }
 
                     // 3) Aendern und Anlegen der Bauteile - ein verschobenes Bauteil bekommt hier
@@ -348,6 +369,14 @@ namespace WindowsFormsApplication1
             yield return BaustoffCtrl.Text("@qk", z.Quellkennung);
         }
 
+        /// <summary>Die Werte der Kühlübergabe einer Zone in der Reihenfolge von <see cref="KuehluebergabeSchema.SpaltenZone"/>; NULL bleibt NULL.</summary>
+        private static IEnumerable<DbParam> Kuehlwerte(ZoneModel z)
+        {
+            yield return BaustoffCtrl.Text("@kua", z.Kuehl_Uebergabe_Art);
+            yield return BaustoffCtrl.Zahl("@kue", z.Kuehl_Uebergabe_Exponent);
+            yield return BaustoffCtrl.Zahl("@kul", z.Kuehl_Uebergabe_Leistung_Nenn);
+        }
+
         /// <summary>Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>; NULL bleibt NULL.</summary>
         private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b)
         {
@@ -405,6 +434,9 @@ namespace WindowsFormsApplication1
                     Uebergabe_Art = BaustoffCtrl.TextAus(r, "Uebergabe_Art"),
                     Uebergabe_Exponent = BaustoffCtrl.ZahlAus(r, "Uebergabe_Exponent"),
                     Uebergabe_Leistung_Nenn = BaustoffCtrl.ZahlAus(r, "Uebergabe_Leistung_Nenn"),
+                    Kuehl_Uebergabe_Art = BaustoffCtrl.TextAus(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART),
+                    Kuehl_Uebergabe_Exponent = BaustoffCtrl.ZahlAus(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_EXPONENT),
+                    Kuehl_Uebergabe_Leistung_Nenn = BaustoffCtrl.ZahlAus(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN),
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung")
                 };

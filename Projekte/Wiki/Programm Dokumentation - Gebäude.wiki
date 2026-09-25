@@ -24,6 +24,7 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 
 * {{Anker|katalogfilter|gebaeudekatalog}}'''Filter Gebäude DB''' – ''Verwendung'' (Wohngebäude oder Gewerbe+Sonstige), ''Gebäudeart'' und ''Baujahr'' (die Baualtersklasse, von „vor 1919" bis „BEG 40"), dazu ein Textfilter mit Platzhaltern, etwa ''Haus*_1990*''. Die Liste ''Gebäude in DB'' darunter zeigt Name, Gebäudeart und Wohnfläche der Sätze, die der Filter übrig lässt; ein Klick in die Spalte ''Wahl'' zeigt den Satz im Detailblock.
 * '''Gebäude in DB neu…''', '''Gebäude in DB ändern…''', '''Gebäude in DB löschen''' – die Leiste unter dem Katalog. ''neu…'' und ''ändern…'' öffnen den [[#katalogeditor|Katalogeditor]] über dem Dialog, ''ändern…'' für den markierten Katalogsatz. ''löschen'' entfernt den markierten Satz nach einer Rückfrage. Gesperrt ist es wie in der [[#loeschen|Verwaltung]] für Sätze der Auslieferung und für Gebäude, die ein Projekt führt; statt der Rückfrage steht dann der Grund im Dialog, bei einem benutzten Gebäude mit den Projekten.
+* {{Anker|import}}'''Importieren (gbXML, IFC)…''' – steht in derselben Leiste neben ''Gebäude in DB neu…'' und übernimmt ein Gebäude aus einer gbXML- oder IFC-Datei: Nach dem Zuordnungsdialog öffnet der [[#katalogeditor|Katalogeditor]] vorbelegt, und nach dem Speichern dort steht das neue Gebäude im Katalog und als neue Zeile in der Projektliste. Den Ablauf beschreibt die Seite [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]].
 
 === Übernahme ins Projekt ===
 {{Anker|uebernahme}}
@@ -44,11 +45,11 @@ Die Fußleiste trägt ''Ändern'', ''Simulation…'', ''Gebäudetyp in DB änder
 == Der Katalogeditor ==
 {{Anker|katalogeditor}}
 
-Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…''. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben.
+Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben.
 
 === Reiter „Gebäude und Hülle" ===
 
-* {{Anker|kenngroessen|luftwechsel}}'''Kenngrößen''' – Name, Beschreibung, Verwendung, Gebäudeart, Baujahr (Baualtersklasse) und Bauart, dazu Nutzfläche, Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad und die Luftwechselrate in 1/h, die die Lüftungsverluste bestimmt. Die Bauart – leicht, schwer oder sehr schwer – bestimmt die Speicherfähigkeit des Gebäudes aus der Nutzfläche.
+* {{Anker|kenngroessen|luftwechsel}}'''Kenngrößen''' – Name, Beschreibung, Verwendung, Gebäudeart, Baualtersklasse, Baujahr und Bauart, dazu Nutzfläche, Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad und die Luftwechselrate in 1/h, die die Lüftungsverluste bestimmt. Die Bauart – leicht, schwer oder sehr schwer – bestimmt die Speicherfähigkeit des Gebäudes aus der Nutzfläche. Das ''Baujahr'' neben der Baualtersklasse ist eine ganze Jahreszahl von 1500 bis 2100 und darf leer bleiben; eine andere Eingabe färbt das Feld. Es hält das Jahr fest, ändert aber weder eine Vorgabe noch die Rechnung – die Vorgaben folgen der Baualtersklasse.
 * {{Anker|flaechen|u-werte}}'''Hülle: Transmission je Bauteil''' – eine Tabelle der acht Bauteile: Außenwand, Fenster, Dach, Bodenplatte und Sonstiges mit U-Wert in W/(m²·K) und Fläche in m², dazu die drei Wärmebrücken Fenster–Wand, Wand–Dach und Außenwand–Keller (siehe unten). Die Fensterfläche ist die Summe der vier Himmelsrichtungen. Für die Bodenplatte wählen Sie die ''Randbedingung'' Erdreich, Keller (unbeheizt) oder Außenluft; beim Keller kommt die Kellertemperatur dazu. Ein U-Wert liegt zwischen 0,1 und 6 W/(m²·K).
 * {{Anker|waermebruecken|anschlussmasse}}'''Wärmebrücken''' – je Anschluss der Verlustkoeffizient ψ in W/(m·K) und die Anschlusslänge in m; erst aus beiden ergibt sich der Wärmebrückenzuschlag.
 * '''Wärmeleitwerte''' – die gerechneten Leitwerte ''H_T'' (Transmission), ''H_ve'' (Lüftung) und ''H_ges''.
@@ -69,14 +70,14 @@ Die '''Verwaltung Gebäude''' pflegt den Gebäudekatalog. Sie ist aufgebaut wie 
 === Die Liste ===
 {{Anker|liste}}
 
-Die Liste zeigt je Gebäude ''Name'', ''Gebäudeart'', ''Verwendung'', ''Baujahr'' und ''Fläche'' in m². Über ihr steht das Suchfeld über alle Spalten; ''Gebäudeart'', ''Verwendung'' und ''Baujahr'' tragen einen Trichter im Spaltenkopf, jede Spalte den Sortierpfeil. Über der Liste steht, wie viele Sätze die Einengung übrig lässt. Ein Satz der Auslieferung trägt hinter seinem Namen ein Schloss. Ein Klick auf eine Zeile wählt den Satz, auch mit den Pfeiltasten.
+Die Liste zeigt je Gebäude ''Name'', ''Gebäudeart'', ''Verwendung'', ''Baujahr'' (die Baualtersklasse) und ''Fläche'' in m². Über ihr steht das Suchfeld über alle Spalten; ''Gebäudeart'', ''Verwendung'' und ''Baujahr'' tragen einen Trichter im Spaltenkopf, jede Spalte den Sortierpfeil. Über der Liste steht, wie viele Sätze die Einengung übrig lässt. Ein Satz der Auslieferung trägt hinter seinem Namen ein Schloss. Ein Klick auf eine Zeile wählt den Satz, auch mit den Pfeiltasten.
 
 === Die Auswahlleiste ===
 {{Anker|auswahlleiste}}
 
 Ein Kästchen je Zeile erlaubt die Mehrfachwahl, das Kästchen im Spaltenkopf wählt alle sichtbaren Sätze. Die Auswahlleiste darüber nennt, wie viele Sätze gewählt sind, und führt die Handlungen für sie:
 
-* {{Anker|vergleichen}}'''Vergleichen''' – ab zwei gewählten Sätzen: Das Stammblatt stellt Gebäudetyp, Gebäudeart, Baujahr, Verwendung, Wohn-/Nutzfläche, ''H_ges'', Rechenweg, die Bauteile der Hülle und die Herkunft nebeneinander. Der Vergleich ist nur lesbar; ''‹ Stammblatt von …'' kehrt zum gewählten Satz zurück.
+* {{Anker|vergleichen}}'''Vergleichen''' – ab zwei gewählten Sätzen: Das Stammblatt stellt Gebäudetyp, Gebäudeart, Baualtersklasse, Baujahr, Verwendung, Wohn-/Nutzfläche, ''H_ges'', Rechenweg, die Bauteile der Hülle und die Herkunft nebeneinander. Der Vergleich ist nur lesbar; ''‹ Stammblatt von …'' kehrt zum gewählten Satz zurück.
 * {{Anker|duplizieren}}'''Duplizieren…''' – für genau einen Satz: Das Programm fragt den Namen der Kopie ab, vorbelegt mit dem Namen und dem Zusatz „(Kopie)" – aus ''Gebäude 1'' wird ''Gebäude 1 (Kopie)''. Die Kopie ist ein eigener Satz mit allen Werten und ist danach gewählt. So entsteht auch ein Satz unter einem anderen Namen, denn der Name selbst lässt sich im Stammblatt nicht ändern.
 * '''Schloss aufheben…''' bzw. '''Schloss setzen…''' – siehe [[#schloss|Schloss der Auslieferungssätze]].
 * {{Anker|loeschen}}'''Löschen''' – entfernt die gewählten Sätze nach einer Rückfrage, ohne Wahl den Satz im Stammblatt. Gesperrt ist das Löschen für Sätze der Auslieferung und für Gebäude, die ein Projekt führt: Der Kurztext am Knopf nennt dann das Projekt, etwa „In Projekten verwendet (Projekt 1) – Löschen gesperrt; dort zuerst entfernen." Erkannt wird die Nutzung an der Kopie im Projekt, die sich ihren Katalogsatz merkt – auch nach einer Umbenennung. Sind nur einige der gewählten Sätze gesperrt, nennt die Rückfrage die Sätze, die stehen bleiben, und die Statuszeile zählt danach gelöschte und stehen gebliebene Sätze.
@@ -86,11 +87,11 @@ Ein Kästchen je Zeile erlaubt die Mehrfachwahl, das Kästchen im Spaltenkopf w�
 === Das Stammblatt ===
 {{Anker|stammblatt}}
 
-Der Kopf des Stammblatts nennt den Namen des Satzes und darunter Gebäudeart, Verwendung, Baujahr und ob es ein Satz der Auslieferung oder ein eigener Satz ist. Drei Kennzahlen stehen daneben: ''Wohn-/Nutzfläche'', der Wärmeleitwert ''H_ges'' in W/K und der ''Rechenweg''. Fehlt ein Wert, steht ein Strich.
+Der Kopf des Stammblatts nennt den Namen des Satzes und darunter Gebäudeart, Verwendung, Baualtersklasse und ob es ein Satz der Auslieferung oder ein eigener Satz ist. Drei Kennzahlen stehen daneben: ''Wohn-/Nutzfläche'', der Wärmeleitwert ''H_ges'' in W/K und der ''Rechenweg''. Fehlt ein Wert, steht ein Strich.
 
 Alle Felder des Stammblatts sind direkt bearbeitbar:
 
-* {{Anker|kenndaten}}'''Kenndaten''' – Name (nur lesbar), Gebäudetyp, Gebäudeart, Baujahr, Verwendung, Wohn-/Nutzfläche, Bauart und Beschreibung. Wohn-/Nutzfläche und Bauart bestimmen die Speicherfähigkeit des Gebäudes mit. Der Knopf ''Gebäudetypen…'' im Kopf der Gruppe öffnet die [[#gebaeudetypen|Gebäudetypen]].
+* {{Anker|kenndaten}}'''Kenndaten''' – Name (nur lesbar), Gebäudetyp, Gebäudeart, Baualtersklasse, Baujahr, Verwendung, Wohn-/Nutzfläche, Bauart und Beschreibung. Wohn-/Nutzfläche und Bauart bestimmen die Speicherfähigkeit des Gebäudes mit; das Baujahr ist wie im Katalogeditor eine Jahreszahl von 1500 bis 2100 oder leer. Der Knopf ''Gebäudetypen…'' im Kopf der Gruppe öffnet die [[#gebaeudetypen|Gebäudetypen]].
 * {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''U bzw. ψ'' und Größe ''A bzw. L''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten.
 * {{Anker|fenster}}'''Fenster nach Orientierung''' – Nord, Süd, Ost und West in m²; Summe Ost + West und gesamte Fensterfläche sind gerechnet.
 * '''Kenngrößen''' – Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad (etwa 0,4) und Luftwechselrate.

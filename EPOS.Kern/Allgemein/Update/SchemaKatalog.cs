@@ -277,6 +277,19 @@ namespace WindowsFormsApplication1
         /// <summary>Bauteile einer Zone (S-C) — ohne <c>ID_Projekt</c>, hängt an der Zone (W4, W16).</summary>
         public const string TAB_BAUTEIL = "Tab_Bauteil";
 
+        // ------------------------------------------------------------------------
+        // GEBAEUDESIMULATION, STUFE G4c (Datenaustauschkonzept 7.1/7.2, Schritt
+        // S-F): die Herkunftsablage der Gebaeudeimporte. Je Tabelle EINE Konstante;
+        // die DDL steht in ImportzuordnungSchema. Beide Tabellen fuehren kein
+        // ID_Projekt (W16) - sie haengen ueber das Gebaeude am Projekt.
+        // ------------------------------------------------------------------------
+
+        /// <summary>Eine Zeile je Importlauf (Schritt S-F, <see cref="ImportzuordnungSchema"/>) — hängt am Projektgebäude.</summary>
+        public const string TAB_IMPORTQUELLE = "Tab_Importquelle";
+
+        /// <summary>Eine Zeile je Paarung EPOS-Zeile ↔ Quellentität (S-F) — hängt an der Importquelle.</summary>
+        public const string TAB_IMPORTZUORDNUNG = "Tab_Importzuordnung";
+
         /// <summary>
         /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher
         /// § 8.1 Punkt 2/3): der KOPF eines Quellprofils — ein benanntes

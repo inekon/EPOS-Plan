@@ -175,6 +175,41 @@ namespace WindowsFormsApplication1
         /// <summary>Der Auslegungsrücklauf, mit dem gerechnet wurde [°C].</summary>
         internal double? AuslegungRuecklaufC;
 
+        // ---- E37 (Anlagenkopplung 8.3, 10.5): der Kältekreis, gespiegelt zum Heizkreis ---------
+        //
+        // Aus demselben Ergebnisträger; ohne wirksame Kälteseite bleibt alles leer. Alle Zahlen
+        // sind sensibel (K5).
+
+        /// <summary>Die Kühlübergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>); <c>null</c> = Kälteseite nicht gekoppelt gerechnet.</summary>
+        internal string KuehlUebergabeArt;
+
+        /// <summary>Hat der Lauf die Kälteseite des Gebäudes gekoppelt gerechnet?</summary>
+        internal bool KuehlGekoppelt => !string.IsNullOrEmpty(KuehlUebergabeArt);
+
+        /// <summary>Kaltwasser-Vorlauf je Stunde [°C] (fest).</summary>
+        internal double[] KuehlVorlaufC;
+
+        /// <summary>Rücklauf je Stunde zur gelieferten Kühlleistung [°C].</summary>
+        internal double[] KuehlRuecklaufC;
+
+        /// <summary>Kältebedarfsgewichtetes Mittel des Kaltwasser-Vorlaufs [°C]; <c>null</c> ohne Kühlstunde.</summary>
+        internal double? KuehlVorlaufMittelC;
+
+        /// <summary>Kältebedarfsgewichtetes Mittel des Rücklaufs [°C]; <c>null</c> ohne Kühlstunde.</summary>
+        internal double? KuehlRuecklaufMittelC;
+
+        /// <summary>Stunden, in denen die Kühlübergabe die Grenze war [h].</summary>
+        internal double? KuehlUebergabeBegrenztStundenH;
+
+        /// <summary>Davon die Stunden an der Vorlaufgrenze [h] (7.2).</summary>
+        internal double? KuehlVorlaufgrenzeStundenH;
+
+        /// <summary>Der Auslegungsvorlauf der Kühlübergabe, mit dem gerechnet wurde [°C].</summary>
+        internal double? KuehlAuslegungVorlaufC;
+
+        /// <summary>Der Auslegungsrücklauf der Kühlübergabe, mit dem gerechnet wurde [°C].</summary>
+        internal double? KuehlAuslegungRuecklaufC;
+
         /// <summary>
         /// Rechnet das Gebäude auf dem Bestandsweg? Dann bucht der Lauf Kältebedarf 0 mit Hinweis
         /// (F-K18) — der Bedarfsdialog zeigt dieselbe 0 mit demselben Hinweis. Bis Stufe GA.
@@ -322,6 +357,21 @@ namespace WindowsFormsApplication1
                     ergebnis.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;
                     ergebnis.AuslegungVorlaufC = hk.AuslegungVorlaufC;
                     ergebnis.AuslegungRuecklaufC = hk.AuslegungRuecklaufC;
+                }
+
+                // E37: der Kaeltekreis desselben Laufs - nur bei wirksamer Kaelteseite.
+                KuehlkreisErgebnis kk = vdi.Kuehlkreis;
+                if (kk != null)
+                {
+                    ergebnis.KuehlUebergabeArt = kk.UebergabeArt;
+                    ergebnis.KuehlVorlaufC = kk.VorlaufC;
+                    ergebnis.KuehlRuecklaufC = kk.RuecklaufC;
+                    ergebnis.KuehlVorlaufMittelC = double.IsNaN(kk.VorlaufMittelC) ? null : kk.VorlaufMittelC;
+                    ergebnis.KuehlRuecklaufMittelC = double.IsNaN(kk.RuecklaufMittelC) ? null : kk.RuecklaufMittelC;
+                    ergebnis.KuehlUebergabeBegrenztStundenH = kk.UebergabeBegrenztStundenH;
+                    ergebnis.KuehlVorlaufgrenzeStundenH = kk.VorlaufgrenzeStundenH;
+                    ergebnis.KuehlAuslegungVorlaufC = kk.AuslegungVorlaufC;
+                    ergebnis.KuehlAuslegungRuecklaufC = kk.AuslegungRuecklaufC;
                 }
             }
             ergebnis.KuehlbetriebProjekt = sim.KuehlbetriebProjekt;

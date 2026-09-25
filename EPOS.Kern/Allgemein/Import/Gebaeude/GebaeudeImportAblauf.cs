@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
                 Abbild = abbild;
                 Quelle = new GebaeudeQuelle(profil.Format, dateiname, hash, puffer.LongLength, abbild.Schemastand,
                                             Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
-                                            Programmfassung(), profil.Zonenregel, 0);
+                                            Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten);
                 foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
             }
             catch (OperationCanceledException)
@@ -204,16 +204,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="gebaeudeIndex">Index in <see cref="Gebaeude"/>.</param>
         /// <param name="baualtersklasse">Die gewählte Klasse A…U; <c>null</c> = keine (dann keine Vorgaben).</param>
+        /// <param name="beheiztUebersteuert">
+        /// Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = alles wie gelesen. Sie
+        /// wirken nur auf diese Zuordnung — das Abbild bleibt, wie der Leser es gebaut hat.
+        /// </param>
         /// <exception cref="InvalidOperationException">wenn nichts gelesen ist.</exception>
         /// <exception cref="ArgumentOutOfRangeException">bei einem Index außerhalb der Klappliste.</exception>
-        public GebaeudeImportSatz Zuordnen(int gebaeudeIndex, char? baualtersklasse)
+        public GebaeudeImportSatz Zuordnen(int gebaeudeIndex, char? baualtersklasse,
+                                           IReadOnlyDictionary<string, bool> beheiztUebersteuert = null)
+        {
+            GebaeudePruefen(gebaeudeIndex);
+            return GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert);
+        }
+
+        /// <summary>
+        /// <b>Die Raumliste eines Gebäudes</b> mit dem wirksamen „beheizt" und dem Grund der
+        /// Entscheidung (Attribut der Datei, Namensregel, keine Angabe) — in Dateireihenfolge, für
+        /// die Liste mit dem Haken im Zuordnungsdialog (Umsetzungskonzept 3.5 Nr. 3).
+        /// </summary>
+        /// <param name="gebaeudeIndex">Index in <see cref="Gebaeude"/>.</param>
+        /// <param name="beheiztUebersteuert">Dieselben Haken wie bei <see cref="Zuordnen"/>; <c>null</c> = keine.</param>
+        /// <exception cref="InvalidOperationException">wenn nichts gelesen ist.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">bei einem Index außerhalb der Klappliste.</exception>
+        public IReadOnlyList<GebaeudeRaumzeile> Raeume(int gebaeudeIndex, IReadOnlyDictionary<string, bool> beheiztUebersteuert = null)
+        {
+            GebaeudePruefen(gebaeudeIndex);
+            var liste = new List<GebaeudeRaumzeile>();
+            foreach (AbbildRaum r in Abbild.Gebaeude[gebaeudeIndex].Raeume)
+                liste.Add(new GebaeudeRaumzeile(r, beheiztUebersteuert));
+            return liste;
+        }
+
+        private void GebaeudePruefen(int gebaeudeIndex)
         {
             if (Abbild == null || Profil == null)
                 throw new InvalidOperationException("Es ist keine Gebäudedatei gelesen.");
             if (gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count)
                 throw new ArgumentOutOfRangeException(nameof(gebaeudeIndex));
-
-            return GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil);
         }
 
         // ==================================================================
@@ -226,12 +253,23 @@ namespace WindowsFormsApplication1
         /// U-Wert außerhalb 0,1 … 6 W/(m²K) und ein g-Wert außerhalb (0, 1] sind Warnungen; eine
         /// übernommene Zeile mit Fehlermarkierung blockiert. Jede Meldung der Stufe Fehler sperrt
         /// die Übernahme.
+        ///
+        /// <para>Dieselbe Prüfung gilt am OK des Zuordnungsdialogs: Die Hülle legt dessen
+        /// Handänderungen und Haken auf den Satz (<see cref="GebaeudeImportSatz.ManuellSetzen"/>,
+        /// <see cref="GebaeudeImportSatz.HakenSetzen"/>) und fragt hier.</para>
         /// </summary>
-        public static IReadOnlyList<PruefMeldung> Pruefen(GebaeudeImportSatz satz)
+        /// <param name="satz">Der Satz samt Handänderungen.</param>
+        /// <param name="katalogname">
+        /// Der Name, unter dem das Gebäude angelegt würde; <c>null</c> = nicht zu prüfen, leer =
+        /// Fehler (ein Katalogsatz ohne Namen ist nicht wiederzufinden).
+        /// </param>
+        public static IReadOnlyList<PruefMeldung> Pruefen(GebaeudeImportSatz satz, string katalogname = null)
         {
             var liste = new List<PruefMeldung>();
             if (satz == null) return liste;
             if (satz.Ablehnung != null) liste.Add(satz.Ablehnung);
+            if (katalogname != null && string.IsNullOrWhiteSpace(katalogname))
+                liste.Add(new PruefMeldung(PruefStufe.Fehler, MELDUNG + "NAME_FEHLT"));
 
             foreach (string pflicht in new[] { GebaeudeZielfelder.NUTZFLAECHE, GebaeudeZielfelder.RAUMHOEHE })
             {
@@ -254,6 +292,14 @@ namespace WindowsFormsApplication1
 
                 if (z.Wert is double g && z.Zielfeld == GebaeudeZielfelder.G_WERT && !(g > 0.0 && g <= 1.0))
                     liste.Add(new PruefMeldung(PruefStufe.Warnung, MELDUNG + "G_AUSSERHALB", Zahl(g)));
+
+                // Das Baujahr ist eine ganze Jahreszahl im Bereich der Spalte (CHECK 1500 … 2100) - eine
+                // Handänderung mit Nachkommastellen oder außerhalb des Bereichs sperrt die Übernahme.
+                if (z.Wert is double jahr && z.Zielfeld == GebaeudeZielfelder.BAUJAHR
+                    && !(jahr == Math.Floor(jahr) && jahr >= GebaeudeSchema.BAUJAHR_MIN && jahr <= GebaeudeSchema.BAUJAHR_MAX))
+                    liste.Add(new PruefMeldung(PruefStufe.Fehler, MELDUNG + "BAUJAHR_UNGUELTIG", Zahl(jahr),
+                        GebaeudeSchema.BAUJAHR_MIN.ToString(CultureInfo.InvariantCulture),
+                        GebaeudeSchema.BAUJAHR_MAX.ToString(CultureInfo.InvariantCulture)));
             }
 
             // Prüfgröße: Volumen gegen Nutzfläche × Raumhöhe (Umsetzungskonzept 3.4, 20 %).

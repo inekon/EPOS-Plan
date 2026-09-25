@@ -65,11 +65,20 @@ namespace WindowsFormsApplication1
     /// <para><b>Einheiten stehen im Namen</b> (<c>…M2</c>, <c>…M3</c>, <c>…Grad</c>, <c>…WmK</c>):
     /// Hier ist alles bereits SI; die Umrechnung liegt beim Leser.</para>
     ///
-    /// <para><b>Der Nordwinkel wird gelesen, nie still angewandt</b> (3.2): Azimute stehen so im
-    /// Abbild, wie die Datei sie schreibt.</para>
+    /// <para><b>Der Nordwinkel wird nie still angewandt</b> (3.2): Beim gbXML-Weg stehen die Azimute
+    /// so im Abbild, wie die Datei sie schreibt. Beim IFC-Weg dreht der Leser sie nach
+    /// Umsetzungskonzept 3.4 um <c>TrueNorth</c> bzw. die Drehung der <c>IfcMapConversion</c> —
+    /// und sagt das mit einer Meldung; <see cref="NordwinkelGrad"/> nennt die angewandte Drehung.</para>
     /// </summary>
     internal class GebaeudeAbbild
     {
+        /// <summary>
+        /// Zahl der beim Lesen verlorenen Entitäten (IFC: Summe beider Verlustkanäle des Parsers,
+        /// Datenaustauschkonzept 4, Ergänzung 3); gbXML kennt keinen Verlustkanal und führt 0. Der
+        /// Ablauf legt die Zahl in <see cref="GebaeudeQuelle.FehlendeEntitaeten"/> ab.
+        /// </summary>
+        public int FehlendeEntitaeten { get; set; }
+
         /// <summary>Format des Abbilds (<see cref="GebaeudeQuelle.FORMAT_GBXML"/> bzw. <see cref="GebaeudeQuelle.FORMAT_IFC"/>).</summary>
         public string Format { get; set; } = "";
 
@@ -110,11 +119,31 @@ namespace WindowsFormsApplication1
         /// <summary>Gebäudeart der Datei (gbXML <c>@buildingType</c>), nur Anzeige.</summary>
         public string Art { get; set; }
 
+        /// <summary>Typ der Quellentität für <c>Tab_Importzuordnung.Quelltyp</c> (gbXML <c>Building</c>, IFC <c>IfcBuilding</c>).</summary>
+        public string Quelltyp { get; set; } = "Building";
+
         /// <summary>Was die Klappliste zeigt: der Name, sonst die Kennung.</summary>
         public string Anzeigename => string.IsNullOrWhiteSpace(Name) ? Kennung : Name;
 
+        /// <summary>
+        /// Das Baujahr, wie es aus der Datei gezogen ist (IFC: <c>Pset_BuildingCommon.YearOfConstruction</c>,
+        /// erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
+        /// daraus die Baualtersklasse ab, wenn der Anwender keine vorgibt.
+        /// </summary>
+        public int? Baujahr { get; set; }
+
+        /// <summary>Der Text, aus dem <see cref="Baujahr"/> gezogen ist, wie gelesen; <c>null</c> = keiner.</summary>
+        public string BaujahrText { get; set; }
+
         /// <summary>Die Räume des Gebäudes.</summary>
         public List<AbbildRaum> Raeume { get; } = new List<AbbildRaum>();
+
+        /// <summary>
+        /// Die Geschosse des Gebäudes in Dateireihenfolge (IFC: <c>IfcBuildingStorey</c>); gbXML führt
+        /// keine. Die Zuordnung braucht sie nur für den Rückfall der Dachfläche (Grundfläche des
+        /// obersten Geschosses, Umsetzungskonzept 3.4).
+        /// </summary>
+        public List<AbbildGeschoss> Geschosse { get; } = new List<AbbildGeschoss>();
 
         /// <summary>
         /// Die Bauteile, die an mindestens einen Raum dieses Gebäudes grenzen; eine Trennwand zweier
@@ -135,11 +164,36 @@ namespace WindowsFormsApplication1
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
     }
 
+    /// <summary>Ein Geschoss des Abbilds (IFC: <c>IfcBuildingStorey</c>).</summary>
+    internal sealed class AbbildGeschoss
+    {
+        /// <summary>Kennung aus der Datei — dieselbe, die <see cref="AbbildRaum.GeschossKennung"/> nennt.</summary>
+        public string Kennung { get; set; } = "";
+
+        /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Höhenlage [m] — nur für die Reihenfolge, nie als absoluter Wert (Umsetzungskonzept 3.5
+        /// Nr. 2); <c>null</c> = unbekannt.
+        /// </summary>
+        public double? LageM { get; set; }
+
+        /// <summary>Bruttogrundfläche [m²], wie die Datei sie angibt (IFC: <c>Qto_BuildingStoreyBaseQuantities.GrossFloorArea</c>); <c>null</c> = keine.</summary>
+        public double? GrundflaecheM2 { get; set; }
+
+        /// <summary>Was Belege nennen: der Name, sonst die Kennung.</summary>
+        public string Anzeigename => string.IsNullOrWhiteSpace(Name) ? Kennung : Name;
+    }
+
     /// <summary>Ein Raum des Abbilds.</summary>
     internal sealed class AbbildRaum
     {
         /// <summary>Kennung aus der Datei.</summary>
         public string Kennung { get; set; } = "";
+
+        /// <summary>Typ der Quellentität für <c>Tab_Importzuordnung.Quelltyp</c> (gbXML <c>Space</c>, IFC <c>IfcSpace</c>).</summary>
+        public string Quelltyp { get; set; } = "Space";
 
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
@@ -149,6 +203,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Volumen [m³]; <c>null</c> = nicht gelesen.</summary>
         public double? VolumenM3 { get; set; }
+
+        /// <summary>
+        /// Lichte Raumhöhe [m], wie die Datei sie angibt (IFC: <c>Qto_SpaceBaseQuantities.Height</c>);
+        /// <c>null</c> = nicht gelesen — dann gilt Volumen ÷ Fläche (Umsetzungskonzept 3.4).
+        /// </summary>
+        public double? HoeheM { get; set; }
 
         /// <summary>Ist der Raum beheizt?</summary>
         public bool Beheizt { get; set; } = true;
@@ -236,6 +296,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Bruttofläche [m²] einschließlich der Öffnungen; <c>null</c> = Geometrie fehlt.</summary>
         public double? BruttoflaecheM2 { get; set; }
+
+        /// <summary>
+        /// Nettofläche [m²], wie die Datei sie selbst angibt (IFC: <c>NetSideArea</c>); <c>null</c> = keine.
+        /// Sie ist allein der Rückfall des Fensterabzugs (U14), wenn Brutto − Öffnungen negativ wird —
+        /// die Fläche selbst kommt immer aus <see cref="BruttoflaecheM2"/>.
+        /// </summary>
+        public double? NettoflaecheM2 { get; set; }
+
+        /// <summary>
+        /// Gehört das Bauteil ohne jeden Nachbarraum zur Hülle seines Gebäudes? Der IFC-Leser setzt es
+        /// für ein Außenbauteil ohne Raumgrenze (<c>IsExternal = true</c>), das über die räumliche Struktur
+        /// einem Gebäude zugeordnet ist; es zählt dann nach seiner <see cref="Randbedingung"/>. gbXML setzt
+        /// es nie — dort hängt jede Fläche an ihren <c>AdjacentSpaceId</c>.
+        /// </summary>
+        public bool HuelleOhneNachbar { get; set; }
 
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }

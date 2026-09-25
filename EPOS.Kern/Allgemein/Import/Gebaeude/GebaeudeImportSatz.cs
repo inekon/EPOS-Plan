@@ -20,18 +20,30 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Eine Paarung Quellentität ↔ EPOS-Ziel</b> — später eine Zeile in
-    /// <c>Tab_Importzuordnung</c> (7.2). Geschrieben wird in dieser Welle nichts.
+    /// <b>Eine Paarung Quellentität ↔ EPOS-Ziel</b> — eine Zeile in <c>Tab_Importzuordnung</c>
+    /// (7.2), geschrieben von <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/>.
     /// </summary>
     internal sealed class GebaeudeQuellzuordnung
     {
-        /// <summary>Legt eine Paarung an; die Kennung wird auf 64 Zeichen gekürzt (<see cref="Quellkennung.Kuerzen"/>).</summary>
-        public GebaeudeQuellzuordnung(string quelltyp, string quellkennung, ImportZiel ziel)
+        /// <summary>
+        /// Legt eine Paarung an; die Kennung wird auf 64 Zeichen gekürzt (<see cref="Quellkennung.Kuerzen"/>).
+        /// <paramref name="zielId"/> ist die Kennung der EPOS-Zeile; beim Ziel <see cref="ImportZiel.Gebaeude"/>
+        /// darf sie fehlen — dann gilt das Gebäude, dem der Import gilt.
+        /// </summary>
+        public GebaeudeQuellzuordnung(string quelltyp, string quellkennung, ImportZiel ziel, int? zielId = null)
         {
             Quelltyp = quelltyp ?? "";
             Quellkennung = WindowsFormsApplication1.Quellkennung.Kuerzen(quellkennung ?? "");
             Ziel = ziel;
+            ZielId = zielId;
         }
+
+        /// <summary>
+        /// Kennung der EPOS-Zeile des Ziels (<c>Tab_Zone.ID</c>, <c>Tab_Bauteil.ID</c> …); <c>null</c> =
+        /// noch keine — beim Gebäudeziel das Gebäude des Imports, bei jedem anderen Ziel wird die
+        /// Paarung benannt abgelehnt (die Zeile entsteht erst mit dem Schreiben, G6c).
+        /// </summary>
+        public int? ZielId { get; }
 
         /// <summary>Typ der Quellentität (<c>Building</c>, <c>Space</c>, <c>Surface</c>, <c>Opening</c> …), höchstens 40 Zeichen.</summary>
         public string Quelltyp { get; }
@@ -86,8 +98,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gebäudekennung aus der Datei, ungekürzt.</summary>
         public string Gebaeudekennung { get; }
 
-        /// <summary>Die gewählte Baualtersklasse (A…U); <c>null</c> = keine — dann gibt es keine Vorgaben.</summary>
+        /// <summary>
+        /// Die Baualtersklasse des Satzes (A…U): die gewählte, sonst die aus dem Baujahr der Datei
+        /// abgeleitete (A…H); <c>null</c> = keine — dann gibt es keine Vorgaben.
+        /// </summary>
         public char? Baualtersklasse { get; }
+
+        /// <summary>
+        /// Das Baujahr der Datei (<see cref="AbbildGebaeude.Baujahr"/>); <c>null</c> = keines. Geschrieben
+        /// wird es über die Zeile <see cref="GebaeudeZielfelder.BAUJAHR"/> in die Spalte <c>Baujahr</c>
+        /// (Schemaschritt <see cref="BaujahrSchema.SCHRITT"/>); hier steht es für Kopf und Klassenwahl.
+        /// </summary>
+        public int? Baujahr { get; internal set; }
 
         /// <summary>Die angewandte Zonenregel (<c>X4</c> in G4c).</summary>
         public string Zonenregel { get; }
@@ -111,12 +133,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public PruefMeldung Ablehnung { get; internal set; }
 
+        /// <summary>
+        /// Die Räume, deren „beheizt" der Anwender gegen die Datei umgestellt hat — Kennung →
+        /// beheizt, nur die Abweichungen (Umsetzungskonzept 3.5 Nr. 3: „Der Dialog zeigt die
+        /// Raumliste mit dem Haken"). Leer, wenn alles wie gelesen gilt.
+        /// </summary>
+        public IReadOnlyDictionary<string, bool> Uebersteuerungen { get; internal set; }
+            = new Dictionary<string, bool>(StringComparer.Ordinal);
+
         /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
         public GebaeudeFeldzeile Zeile(string zielfeld)
         {
             foreach (GebaeudeFeldzeile z in _zeilen)
                 if (string.Equals(z.Zielfeld, zielfeld, StringComparison.Ordinal)) return z;
             return null;
+        }
+
+        /// <summary>
+        /// Eine Handänderung des Dialogs auf den Satz legen (<see cref="GebaeudeFeldzeile.ManuellSetzen"/>);
+        /// <c>false</c>, wenn es das Zielfeld nicht gibt oder es nicht eingebbar ist — dann bleibt
+        /// die Zeile, wie sie ist.
+        /// </summary>
+        public bool ManuellSetzen(string zielfeld, double? wert)
+        {
+            GebaeudeFeldzeile z = Zeile(zielfeld);
+            if (z == null || !z.Eingebbar) return false;
+            z.ManuellSetzen(wert);
+            return true;
+        }
+
+        /// <summary>Den Haken des Dialogs auf den Satz legen (<see cref="GebaeudeFeldzeile.HakenSetzen"/>).</summary>
+        public bool HakenSetzen(string zielfeld, bool haken)
+        {
+            GebaeudeFeldzeile z = Zeile(zielfeld);
+            if (z == null) return false;
+            z.HakenSetzen(haken);
+            return true;
         }
     }
 }

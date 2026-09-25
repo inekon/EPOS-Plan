@@ -215,6 +215,55 @@ namespace WindowsFormsApplication1
         /// <summary>Steilheit der Heizkurve bei NULL [–] — die Kurve durch den Auslegungspunkt (3.4).</summary>
         internal const double VORGABE_HEIZKURVE_STEILHEIT = 1.0;
 
+        // ---- Anlagenkopplung, Kälteseite (E37; Konzept Anlagenkopplung 7.2, 8.1) ----
+        //
+        // Ebenfalls VORGABEN VON EPOS-PLAN (A4), keine Normwerte, je Gebäude einstellbar.
+
+        /// <summary>Exponent der Kühldecke [–] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHLUEBERGABE_EXPONENT_KUEHLDECKE = 1.1;
+
+        /// <summary>Exponent der Flächenkühlung [–] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHLUEBERGABE_EXPONENT_FLAECHENKUEHLUNG = 1.1;
+
+        /// <summary>Exponent des Gebläsekonvektors [–] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHLUEBERGABE_EXPONENT_GEBLAESEKONVEKTOR = 1.0;
+
+        /// <summary>Auslegungsvorlauf von Kühldecke und Flächenkühlung [°C] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHL_AUSLEGUNG_VORLAUF_FLAECHE = 16.0;
+
+        /// <summary>Auslegungsrücklauf von Kühldecke und Flächenkühlung [°C] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHL_AUSLEGUNG_RUECKLAUF_FLAECHE = 19.0;
+
+        /// <summary>Auslegungsvorlauf des Gebläsekonvektors [°C] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHL_AUSLEGUNG_VORLAUF_KONVEKTOR = 7.0;
+
+        /// <summary>Auslegungsrücklauf des Gebläsekonvektors [°C] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHL_AUSLEGUNG_RUECKLAUF_KONVEKTOR = 12.0;
+
+        /// <summary>Strahlungsanteil von Kühldecke und Flächenkühlung [–] — EPOS-Vorgabe (E37, KU 3.2).</summary>
+        internal const double KUEHL_STRAHLUNGSANTEIL_FLAECHE = STRAHLUNGSANTEIL_FLAECHE;
+
+        /// <summary>Strahlungsanteil des Gebläsekonvektors [–] — EPOS-Vorgabe (E37).</summary>
+        internal const double KUEHL_STRAHLUNGSANTEIL_KONVEKTOR = 0.0;
+
+        /// <summary>
+        /// Vorlaufgrenze von Kühldecke und Flächenkühlung [°C] — EPOS-Vorgabe als Ersatz der
+        /// Taupunktgrenze (7.2, K5); der Gebläsekonvektor hat keine Grenze.
+        /// </summary>
+        internal const double KUEHL_VORLAUFGRENZE_FLAECHE = 16.0;
+
+        /// <summary>Kleinster zulässiger Auslegungsvorlauf und kleinste Vorlaufgrenze der Kühlübergabe [°C] (E37).</summary>
+        internal const double KUEHL_VORLAUF_MIN = 4.0;
+
+        /// <summary>Größter zulässiger Auslegungsvorlauf und größte Vorlaufgrenze der Kühlübergabe [°C] (E37).</summary>
+        internal const double KUEHL_VORLAUF_MAX = 22.0;
+
+        /// <summary>Kleinste zulässige Auslegungs-Raumtemperatur der Kühlübergabe [°C] (E37).</summary>
+        internal const double KUEHL_AUSLEGUNG_RAUM_MIN = 20.0;
+
+        /// <summary>Größte zulässige Auslegungs-Raumtemperatur der Kühlübergabe [°C] (E37).</summary>
+        internal const double KUEHL_AUSLEGUNG_RAUM_MAX = 30.0;
+
         // Prüfregeln der Eingaben (Dialogtabelle 9.1) — der Kern prüft dieselben Grenzen hart,
         // damit eine Eingabe, die am Dialog vorbei in die Datenbank kommt, benannt abbricht.
 

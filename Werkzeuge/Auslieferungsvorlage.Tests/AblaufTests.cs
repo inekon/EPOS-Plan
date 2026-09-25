@@ -230,6 +230,62 @@ namespace Auslieferungsvorlage.Tests
             Assert.True(vorher.Values.Sum() > 0, "Die Quelle fuehrt keine Katalogzeile — die Probe waere leer.");
         }
 
+        // =============================================================================
+        //  A10 — Ein Beispiel mit Importherkunft laesst die Abnahme fallen (Schritt S-F)
+        // =============================================================================
+        /// <summary>
+        /// <b>Die Gegenprobe zu <c>VorlageTests.P6d</c></b> (Datenaustauschkonzept 7.4): Ein
+        /// Beispielpaket, dessen Gebäude eine Importquelle samt Paarung trägt, reist mit seiner
+        /// Herkunft (der Projekttransfer führt beide Tabellen über ihre <c>KINDER</c>-Einträge) —
+        /// und die Prüfregel „Importablage leer" lässt die Abnahme mit Code 5 fallen, statt
+        /// Dateiname und SHA-256 eines fremden Imports in die Auslieferung zu tragen.
+        /// </summary>
+        [Fact]
+        public void A10_Ein_Beispiel_mit_Importherkunft_faellt_in_der_Pruefung()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            const string BEISPIEL = "Laurentiuskirche";      // Projekt 1007 mit einem Gebaeude
+
+            string werkbank = o.Datei("werkbank.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, werkbank);
+            string paket = o.Datei("beispiel-mit-import.wpx");
+            string vorher = DataRepository.PfadUeberschreibung;
+            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
+            try
+            {
+                DataRepository.PfadUeberschreibung = werkbank;
+                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (Beispiel mit Importherkunft)");
+                int gebaeude = Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT MIN(g.ID) FROM Tab_Gebaeude g INNER JOIN Tab_Projekt p ON p.ID = g.ID_Projekt WHERE p.Projektname = ?",
+                    new DbParam("?", BEISPIEL)));
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    int quelle = v.EinfuegenUndId(
+                        "INSERT INTO Tab_Importquelle (ID_Gebaeude, Format, Dateiname, Hash, Groesse, Zeitpunkt) " +
+                        "VALUES (?, 'GBXML', 'haus.xml', ?, 1234, '2026-09-25T10:00:00+02:00')",
+                        new[] { new DbParam("@g", gebaeude), new DbParam("@h", new string('a', 64)) });
+                    v.Ausfuehren("INSERT INTO Tab_Importzuordnung (ID_Importquelle, ID_Gebaeude, Quellkennung, Quelltyp) " +
+                                 "VALUES (?, ?, 'bldg-1', 'Building')", new DbParam("@q", quelle), new DbParam("@g", gebaeude));
+                    v.Commit();
+                }
+                Assert.True(new ProjektExportImportCtrl().Exportieren(BEISPIEL, paket), "Der Export des Beispiels ist fehlgeschlagen.");
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                Schreibnaht.Schreibrecht = schreibrecht;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+
+            string quelldatei = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelldatei);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelldatei, o.Datei("Kenndaten.sqlite"),
+                                                           "--beispiele", paket, "--trocken");
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1)", e.Ausgabe);
+        }
+
         // -----------------------------------------------------------------------------
 
         /// <summary>

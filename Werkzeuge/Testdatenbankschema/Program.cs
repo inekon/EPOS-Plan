@@ -1744,6 +1744,98 @@ namespace Testdatenbankschema
                                   "vollstaendig: " + ZonenSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritte KuehluebergabeSchema.SCHRITT bis SCHRITT_ZONE (Anlagenkopplung AK1
+            //      Welle 4, E37): KAK-S1 - acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM)
+            //      samt viertem Sichtneubau (98 Spalten); KAK-S3 - die Ergebnisspalten der
+            //      Kaelteseite an Tab_ErgebnisEnergiebedarf und Tab_ErgebnisGebaeude; die drei
+            //      Zonenspalten der Kuehluebergabe an Tab_Zone. REIN DDL aus DERSELBEN Quelle, aus
+            //      der sich SchemaMigration.Schritt_Kuehluebergabe, Schritt_KuehluebergabeErgebnis
+            //      und Schritt_KuehluebergabeZone bedienen (KuehluebergabeSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT NACH 101, 108 UND 122: Die Durchgaenge oben bauen die
+            //      Sicht jeweils neu; nur so traegt sie die Spalten der Kuehluebergabe. Hinter ihm
+            //      baut nur noch der Schritt des Baujahrs (unten) die Sicht neu.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - der Schalter 0, alles andere NULL; kein
+            //      Referenzprojekt rechnet gekoppelt, und der Export nimmt die Ergebnisspalten erst
+            //      mit einem Wert auf.
+            string nrKuehl = KuehluebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            string nrKuehlErgebnis = KuehluebergabeSchema.SCHRITT_ERGEBNIS.ToString(CultureInfo.InvariantCulture);
+            string nrKuehlZone = KuehluebergabeSchema.SCHRITT_ZONE.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKuehl + " - Kuehluebergabe am Gebaeude (KAK-S1): " +
+                              (KuehluebergabeSchema.GebaeudeVollstaendig() ? "steht bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrKuehlErgebnis + " - Ergebnisspalten der Kaelteseite (KAK-S3): " +
+                              (KuehluebergabeSchema.ErgebnisVollstaendig() ? "stehen bereits" : "offen") + ".");
+            Console.WriteLine("Schritt " + nrKuehlZone + " - Kuehluebergabe an der Zone: " +
+                              (KuehluebergabeSchema.ZoneVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKuehl = new List<string>();
+                angelegt += KuehluebergabeSchema.GebaeudeAlle(berichtKuehl);
+                foreach (string zeile in berichtKuehl)
+                    Console.WriteLine("Schritt " + nrKuehl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehl + " - vollstaendig: " + KuehluebergabeSchema.GebaeudeVollstaendig() +
+                                  " (erwartet True).");
+
+                var berichtKuehlErgebnis = new List<string>();
+                angelegt += KuehluebergabeSchema.ErgebnisAlle(berichtKuehlErgebnis);
+                foreach (string zeile in berichtKuehlErgebnis)
+                    Console.WriteLine("Schritt " + nrKuehlErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehlErgebnis + " - vollstaendig: " + KuehluebergabeSchema.ErgebnisVollstaendig() +
+                                  " (erwartet True).");
+
+                var berichtKuehlZone = new List<string>();
+                angelegt += KuehluebergabeSchema.ZoneAlle(berichtKuehlZone);
+                foreach (string zeile in berichtKuehlZone)
+                    Console.WriteLine("Schritt " + nrKuehlZone + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKuehlZone + " - vollstaendig: " + KuehluebergabeSchema.ZoneVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt S-F (Gebaeudesimulation Stufe G4c, Welle 3; Datenaustauschkonzept 7.1
+            //      bis 7.4): die Herkunftsablage der Gebaeudeimporte - Tab_Importquelle und
+            //      Tab_Importzuordnung samt zwei Indizes, aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Importzuordnung bedient (ImportzuordnungSchema). NACH den
+            //      Schritten S-A bis S-C, auf deren Tabellen die Paarung zeigt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - beide Tabellen entstehen LEER, kein Rechenweg
+            //      liest sie.
+            string nrImport = ImportzuordnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrImport + " - Importquelle und Importzuordnung: " +
+                              (ImportzuordnungSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                int import = ImportzuordnungSchema.Ausfuehren();
+                tabellen += import;
+                Console.WriteLine("Schritt " + nrImport + " - " + import + " von 2 Tabelle(n) angelegt, zwei Indizes; " +
+                                  "vollstaendig: " + ImportzuordnungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt BaujahrSchema.SCHRITT (Gebaeudesimulation Stufe G4a, Welle 3;
+            //      Umsetzungskonzept 3.4 und 3.7): die Spalte Baujahr an Tab_Gebaeude(_STAMM)
+            //      samt fuenftem Sichtneubau (99 Spalten). REIN DDL aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Baujahr bedient (BaujahrSchema, GebaeudeSchema).
+            //
+            //      DER SICHTNEUBAU STEHT ZULETZT: Die Durchgaenge 101, 108, 122 und KAK-S1 oben
+            //      bauen die Sicht jeweils neu; nur so traegt sie am Ende das Baujahr.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - die Spalte bleibt NULL, kein Rechenweg liest sie.
+            string nrBaujahr = BaujahrSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBaujahr + " - Baujahr am Gebaeude: " +
+                              (BaujahrSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBaujahr = new List<string>();
+                angelegt += BaujahrSchema.Alle(berichtBaujahr);
+                foreach (string zeile in berichtBaujahr)
+                    Console.WriteLine("Schritt " + nrBaujahr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBaujahr + " - vollstaendig: " + BaujahrSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

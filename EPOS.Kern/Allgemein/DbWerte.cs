@@ -2455,6 +2455,21 @@ namespace WindowsFormsApplication1
             HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE
         };
 
+        /// <summary>
+        /// Format eines Gebäudeimports: IFC (Spalte <c>Tab_Importquelle.Format</c>, Schritt S-F,
+        /// <see cref="ImportzuordnungSchema"/>). NOT NULL — jede Quelle hat genau ein Format.
+        /// </summary>
+        public const string IMPORT_FORMAT_IFC = "IFC";
+
+        /// <summary>Format eines Gebäudeimports: gbXML (<c>Tab_Importquelle.Format</c>).</summary>
+        public const string IMPORT_FORMAT_GBXML = "GBXML";
+
+        /// <summary>Die zwei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> IMPORT_FORMATE = new[]
+        {
+            IMPORT_FORMAT_IFC, IMPORT_FORMAT_GBXML
+        };
+
         // =====================================================================
         // Anlagenkopplung, Stufe AK1 (Konzept Anlagenkopplung 3.1 und 8.1,
         //   Schemaschritt 122 = AK-S1). Persistenzwerte, eingefroren und ASCII
@@ -2494,6 +2509,30 @@ namespace WindowsFormsApplication1
         /// <summary>Kopplungsstufe AK3 — der geschlossene Kreis. Zugelassen wie <see cref="ANLAGENKOPPLUNG_AK2"/>,
         /// angeboten erst mit dem Rechenweg.</summary>
         public const string ANLAGENKOPPLUNG_AK3 = "AK3";
+
+        // =====================================================================
+        // Anlagenkopplung, Kaelteseite (Entscheid E37, Konzept Anlagenkopplung
+        //   8.1, KAK-S1). Persistenzwerte der Spalte
+        //   Tab_Gebaeude(_STAMM).Kuehl_Uebergabe_Art, eingefroren und ASCII.
+        //   Eigene Werte, nicht die der Heizseite: FLAECHE hiesse in Anzeige und
+        //   Variantenvergleich "Flaechenheizung".
+        // =====================================================================
+
+        /// <summary>
+        /// Kuehluebergabeart ideal — die Kaelteseite der Kopplung ist aus, die Kuehlung regelt
+        /// ideal (<c>Tab_Gebaeude(_STAMM).Kuehl_Uebergabe_Art</c>). <b>Auch NULL bedeutet
+        /// IDEAL.</b>
+        /// </summary>
+        public const string KUEHLUEBERGABE_IDEAL = "IDEAL";
+
+        /// <summary>Kuehluebergabeart Kuehldecke.</summary>
+        public const string KUEHLUEBERGABE_KUEHLDECKE = "KUEHLDECKE";
+
+        /// <summary>Kuehluebergabeart Flaechenkuehlung (Fussboden, Wand) - ohne Estrichmasse.</summary>
+        public const string KUEHLUEBERGABE_FLAECHENKUEHLUNG = "FLAECHENKUEHLUNG";
+
+        /// <summary>Kuehluebergabeart Geblaesekonvektor - sensibel, ohne Entfeuchtung (K5).</summary>
+        public const string KUEHLUEBERGABE_GEBLAESEKONVEKTOR = "GEBLAESEKONVEKTOR";
 
         // =====================================================================
         // Wechselrichterkatalog, Stufe S1 (Anwenderentscheid W6-E-2, 06.09.2026)

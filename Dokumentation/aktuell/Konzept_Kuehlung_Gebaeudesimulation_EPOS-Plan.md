@@ -475,9 +475,12 @@ bekommt dieses Gegenstück in KU1 **nicht**. `KU-S1` führt deshalb **keine** Sp
 Übergabeart voraus, und die entsteht erst mit der
 [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) (AK1). Bis dahin gilt:
 Wer eine Kühldecke rechnen will, rechnet sie nicht — das ist auch die Grenze aus 3.6 und
-Kapitel 14. Kommt AK1, kommt der Anteil aus derselben Quelle wie auf der Wärmeseite, und die
-Kältedeckung teilt Φ_c nach denselben Gleichungen auf; ein gebäudeseitiges Spaltenpaar entsteht
-dafür nicht.
+Kapitel 14. Mit AK1 kommt der Anteil aus der Übergabeart, und die Kältedeckung teilt Φ_c nach
+denselben Gleichungen auf wie die Wärmeseite. **Nach E37** (Konzept N1.42) hat die Kühlübergabe
+**eigene Spalten** am Gebäude — Schalter, Art, Exponent, Nennleistung, Auslegungspunkt und
+Vorlaufgrenze ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 8.1); der
+**Strahlungsanteil bleibt ohne Spalte**, er ist eine Vorgabe je Art (Kühldecke und Flächenkühlung 0,5,
+Gebläsekonvektor 0). Ohne gewählte Kühlübergabe gilt diese Vereinfachung unverändert.
 
 ### 3.3 Vorzeichen: die Norm innen, der Betrag außen
 
@@ -1845,7 +1848,9 @@ Zonenspaltentabelle im [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.
 NULL = Wert des Gebäudes. Wer sie anlegt, hängt an der Reihenfolge der Stufen: Steht KU-S1, wenn
 `Tab_Zone` entsteht (Schritt S-C mit G3, Mehrzonen 4.4), legt S-C sie gleich mit an; steht KU-S1
 noch nicht, bringt dieser Schritt sie an alle drei Tabellen. Einen Nachtragsschritt „sobald es
-die Zone gibt" gibt es nicht. Die Typangaben stehen in Access-Schreibweise und werden beim
+die Zone gibt" gibt es nicht — mit **einer** Ausnahme nach **E37** (Konzept N1.42): Die drei
+Zonenspalten der Kühlübergabe (`Kuehl_Uebergabe_Art`, `_Exponent`, `_Leistung_Nenn`) kommen in einem
+eigenen Schritt nach S-C (Schemaschritt 137), weil `KAK-S1` (Schemaschritt 135) nach S-C entsteht. Die Typangaben stehen in Access-Schreibweise und werden beim
 Anlegen übersetzt — `YESNO` erzeugt die
 `CHECK`-Klausel von selbst.
 

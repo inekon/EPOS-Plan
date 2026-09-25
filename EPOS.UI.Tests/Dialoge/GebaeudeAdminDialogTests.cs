@@ -367,6 +367,63 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Das Baujahr steht in den Kenndaten neben der Baualtersklasse</b> (G4a): ein Zahlenfeld,
+    /// das als geändertes Feld zählt und beim Speichern über den Weg des Editors geschrieben wird;
+    /// die Klappliste daneben heißt „Baualtersklasse", nicht mehr „Baujahr".
+    /// </summary>
+    [Fact]
+    public void Das_Baujahr_steht_neben_der_Baualtersklasse_und_wird_gespeichert()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Assert.Equal("SELECT", Feld(cut, "Baualtersklasse").TagName.ToUpperInvariant());
+        IElement jahr = Feld(cut, "Baujahr");
+        Assert.Equal("INPUT", jahr.TagName.ToUpperInvariant());
+        Assert.Equal("", jahr.GetAttribute("value") ?? "");
+        List<string> beschriftungen = cut.FindAll(".epos-stammblatt label.epos-feld .epos-feld-text")
+                                         .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(beschriftungen.IndexOf("Baualtersklasse") + 1, beschriftungen.IndexOf("Baujahr"));
+
+        jahr.Input("1965");
+        Assert.True(cut.Instance.Geaendert);
+        Knopf(cut, "Speichern").Click();
+
+        var (d, neu, _) = Assert.Single(p.Gespeichert);
+        Assert.False(neu);
+        Assert.Equal(1965, d.Baujahr);
+        Assert.Equal(1, d.Baualtersklasse);
+    }
+
+    /// <summary>Ein Baujahr außerhalb 1500 … 2100 färbt das Feld, und „Speichern" schreibt nichts.</summary>
+    [Fact]
+    public void Ein_ungueltiges_Baujahr_haelt_das_Speichern_an()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+
+        Feld(cut, "Baujahr").Input("1499");
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Baujahr").ClassName);
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Empty(p.Gespeichert);
+        Assert.Contains("Baujahr", cut.Instance.Meldung);
+    }
+
+    /// <summary>Der Vergleich führt Baualtersklasse und Baujahr als zwei Zeilen.</summary>
+    [Fact]
+    public void Der_Vergleich_fuehrt_Baualtersklasse_und_Baujahr_getrennt()
+    {
+        var cut = Aufbauen();
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll(".epos-katalogliste tbody td.epos-spalte-kaestchen input")[1].Change(true);
+        Handlung(cut, "Vergleichen").Click();
+
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Baualtersklasse" && z.Abweichend);
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Baujahr" && !z.Abweichend);
+    }
+
+    /// <summary>
     /// <b>Die Bauart zieht die Bauweise nach</b> (W9‑O‑2) — derselbe Weg wie im Editor:
     /// „sehr schwer" bei 140 m² ergibt 14 000.
     /// </summary>
@@ -934,5 +991,40 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal("Schloss von „Schule D“ aufgehoben.", cut.Instance.Status);
         Assert.Empty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
         Assert.Equal(8, cut.FindAll(".epos-gebaeude-huellraster tbody tr").Count);
+    }
+
+    /// <summary>
+    /// <b>E37: Die Kühlübergabe steht in „Alle Daten" unter der Kühlung</b> — derselbe Baustein
+    /// wie im Katalogeditor, nur mit dem Haken „Gebäude wird gekühlt"; Schalter und Art gehen über
+    /// den gemeinsamen Arbeitsstand in den Schreibweg, der Fuß zählt sie mit.
+    /// </summary>
+    [Fact]
+    public void Die_Kuehluebergabe_steht_in_Alle_Daten_unter_der_Kuehlung()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        cut.Find(".epos-stammblatt .epos-modulparameter-knopf").Click();
+        Assert.Empty(cut.FindAll(".epos-gebaeude-alledaten div.gebk-kuehluebergabe"));
+
+        IElement Schalter(string text) => cut.FindAll(".epos-gebaeude-alledaten label.epos-schalter")
+            .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text).QuerySelector("input")!;
+
+        Schalter("Gebäude wird gekühlt").Change(true);
+        Feld(cut, "Kühlsollwert").Input("26");
+        Assert.Single(cut.FindAll(".epos-gebaeude-alledaten div.gebk-kuehluebergabe"));
+        Schalter("Kühlübergabe rechnen (statt idealer Kühlung)").Change(true);
+        Feld(cut, "Kühlübergabeart :").Change("2");
+        Feld(cut, "Auslegung Kühlvorlauf :").Input("15");
+        // Kühlung, Kühlsollwert, Schalter, Art, Auslegungsvorlauf.
+        Assert.Equal("5 Felder geändert", cut.Find(".epos-stammblatt-hinweis").TextContent);
+
+        Knopf(cut, "Speichern").Click();
+
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.True(d.KuehlungAktiv);
+        Assert.True(d.KuehluebergabeAktiv);
+        Assert.Equal(DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG, d.KuehlUebergabeArt);
+        Assert.Equal(15.0, d.KuehlAuslegungVorlauf);
+        Assert.Null(d.KuehlVorlaufgrenze);
     }
 }

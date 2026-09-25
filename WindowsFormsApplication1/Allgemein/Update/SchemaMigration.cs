@@ -4281,6 +4281,91 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ZONEN = ZonenSchema.SCHRITT;
 
+        // ---- Anlagenkopplung AK1, Welle 4 (E37): die Kälteseite -----------------------------
+
+        /// <summary>
+        /// Schritt <see cref="KuehluebergabeSchema.SCHRITT"/> (KAK-S1) — <b>die Kühlübergabe am
+        /// Gebäude</b> (Entscheid E37; Konzept Anlagenkopplung 8.1). Er folgt auf
+        /// <see cref="SCHRITT_ZONEN"/> ohne Reihenfolgebedingung und erweitert die Sicht der
+        /// Schritte 101, 108 und 122; hinter ihm baut nur noch <see cref="SCHRITT_BAUJAHR"/> die
+        /// Sicht neu.
+        ///
+        /// <para><b>REIN DDL:</b> acht Spalten je Gebäudetabelle (<c>Kuehluebergabe_Aktiv</c> als
+        /// Schalter 0/1, Art, Exponent, Nennleistung, Auslegung Vorlauf/Rücklauf/Raum,
+        /// Vorlaufgrenze), die Sicht <c>Abfrage_Projektgebaeude</c> neu mit 98 Spalten. Quelle
+        /// <see cref="GebaeudeSchema.Kuehluebergabespalten"/> und
+        /// <see cref="GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE"/>; die Nummer steht allein bei
+        /// <see cref="KuehluebergabeSchema.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_KUEHLUEBERGABE = KuehluebergabeSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KuehluebergabeSchema.SCHRITT_ERGEBNIS"/> (KAK-S3) — <b>die
+        /// Ergebnisspalten der Kälteseite</b> (Konzept Anlagenkopplung 8.3). Er braucht
+        /// <see cref="SCHRITT_107_ERGEBNIS_GEBAEUDE"/>, dessen Tabelle er erweitert.
+        ///
+        /// <para><b>REIN DDL:</b> <c>Kuehl_Vorlauf_Mittel</c>, <c>Kuehl_Ruecklauf_Mittel</c>,
+        /// <c>Kuehl_Uebergabe_Begrenzt_Stunden</c> an <c>Tab_ErgebnisEnergiebedarf</c> und
+        /// <c>Kuehl_Uebergabe_Art</c>, <c>KuehlVorlaufMittel_C</c>, <c>KuehlRuecklaufMittel_C</c>,
+        /// <c>KuehlUebergabeBegrenzt_H</c>, <c>KuehlVorlaufgrenze_H</c> an
+        /// <c>Tab_ErgebnisGebaeude</c>, alle nullbar. Quelle <see cref="KuehluebergabeSchema"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_KUEHLUEBERGABE_ERGEBNIS = KuehluebergabeSchema.SCHRITT_ERGEBNIS;
+
+        /// <summary>
+        /// Schritt <see cref="KuehluebergabeSchema.SCHRITT_ZONE"/> — <b>die Kühlübergabe an der
+        /// Zone</b> (Mehrzonenkonzept 4.2). Er braucht <see cref="SCHRITT_ZONEN"/>.
+        ///
+        /// <para><b>REIN DDL:</b> <c>Kuehl_Uebergabe_Art</c> (Wertliste samt IDEAL),
+        /// <c>Kuehl_Uebergabe_Exponent</c>, <c>Kuehl_Uebergabe_Leistung_Nenn</c> an <c>Tab_Zone</c>,
+        /// nullbar, ohne Schalter. Quelle <see cref="KuehluebergabeSchema.SpaltenZone"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (kein Rechenweg liest die Zone), <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_KUEHLUEBERGABE_ZONE = KuehluebergabeSchema.SCHRITT_ZONE;
+
+        // ---- Gebäudesimulation Stufe G4c, Welle 3: der Schritt S-F ---------------------------
+
+        /// <summary>
+        /// Schritt <see cref="ImportzuordnungSchema.SCHRITT"/> (S-F) — <b>die Herkunftsablage der
+        /// Gebäudeimporte</b> (Datenaustauschkonzept 2.3, 7.1 bis 7.5). Er braucht
+        /// <see cref="SCHRITT_ZONEN"/>, <see cref="SCHRITT_BAUTEILAUFBAU"/> und
+        /// <see cref="SCHRITT_BAUSTOFFKATALOG"/>, auf deren Tabellen die Paarung zeigt.
+        ///
+        /// <para><b>REIN DDL:</b> <c>Tab_Importquelle</c> (eine Zeile je Importlauf, Kaskade zum
+        /// Gebäude) und <c>Tab_Importzuordnung</c> (eine Zeile je Paarung, Kaskade zur Quelle und
+        /// zu jedem der fünf Ziele, genau ein Ziel je Zeile), zwei Indizes. Quelle
+        /// <see cref="ImportzuordnungSchema"/>; die Abweichung „Kaskade auf die fünf Zielverweise"
+        /// ist dort begründet.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>, keine Saat, kein Datenumbau; <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_IMPORTZUORDNUNG = ImportzuordnungSchema.SCHRITT;
+
+        // ---- Gebäudesimulation Stufe G4a, Welle 3: das Baujahr --------------------------------
+
+        /// <summary>
+        /// Schritt <see cref="BaujahrSchema.SCHRITT"/> — <b>das Baujahr des Gebäudes</b>
+        /// (Umsetzungskonzept Gebäudesimulation 3.4 und 3.7). Er folgt auf
+        /// <see cref="SCHRITT_IMPORTZUORDNUNG"/> ohne Reihenfolgebedingung und erweitert die Sicht
+        /// der Schritte 101, 108, 122 und <see cref="SCHRITT_KUEHLUEBERGABE"/> — als letzter
+        /// Sichtneubau.
+        ///
+        /// <para><b>REIN DDL:</b> die Spalte <c>Baujahr</c> (INTEGER, nullbar,
+        /// <c>CHECK</c> 1500 … 2100) an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c>, die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> neu mit 99 Spalten. Quelle
+        /// <see cref="GebaeudeSchema.SQLITE_BAUJAHR"/> und <see cref="GebaeudeSchema.SQL_VIEW_BAUJAHR"/>;
+        /// die Nummer steht allein bei <see cref="BaujahrSchema.SCHRITT"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b> (keine Saat, kein Rechenweg liest die Spalte),
+        /// <b>wiederholbar</b>.</para>
+        /// </summary>
+        public const int SCHRITT_BAUJAHR = BaujahrSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -6082,6 +6167,51 @@ namespace WindowsFormsApplication1
                         "Uebernahme als eine Zone faende keinen Ort. KEIN Rechenergebnis aendert sich - " +
                         "die Tabellen bleiben leer, und eine leere Tab_Zone heisst Klassenweg.",
                         Schritt_Zonen),
+
+            // ANLAGENKOPPLUNG AK1, WELLE 4 (E37, Konzept Anlagenkopplung 8.1 und 8.3) - die
+            // Kaelteseite: KAK-S1 (acht Spalten der Kuehluebergabe an Tab_Gebaeude(_STAMM),
+            // vierter Sichtneubau), KAK-S3 (Ergebnisspalten der Kaelteseite), die
+            // Zonenspalten nach S-C. REIN DDL; die Quelle ist KuehluebergabeSchema.
+            new Schritt(SCHRITT_KUEHLUEBERGABE,
+                        "Tab_Gebaeude(_STAMM): acht Spalten der Kuehluebergabe (Schalter, Art, Exponent, " +
+                        "Nennleistung, Auslegungspunkt, Vorlaufgrenze), die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Die Eingaben der Kuehluebergabe haetten keinen Ort. KEIN Rechenergebnis aendert " +
+                        "sich - die Spalten bleiben leer, der Schalter steht auf 0.",
+                        Schritt_Kuehluebergabe),
+            new Schritt(SCHRITT_KUEHLUEBERGABE_ERGEBNIS,
+                        "Tab_ErgebnisEnergiebedarf und Tab_ErgebnisGebaeude: mittlerer Kaltwasser-Vor- " +
+                        "und Ruecklauf, Stunden mit begrenzter Kuehluebergabe und an der Vorlaufgrenze",
+                        "Die kuehlgekoppelte Rechnung haette keine Ergebnisspalten. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten bleiben leer, bis ein Lauf die Kuehluebergabe rechnet.",
+                        Schritt_KuehluebergabeErgebnis),
+            new Schritt(SCHRITT_KUEHLUEBERGABE_ZONE,
+                        "Tab_Zone: Art, Exponent und Nennleistung der Kuehluebergabe je Zone",
+                        "Eine Zone koennte ihre Kuehluebergabe nicht fuehren. KEIN Rechenergebnis aendert " +
+                        "sich - kein Rechenweg liest die Zone.",
+                        Schritt_KuehluebergabeZone),
+
+            // GEBAEUDESIMULATION STUFE G4c, WELLE 3 (Datenaustauschkonzept 7.4) - der Schritt
+            // S-F hinter den Mehrzonenschritten. Die Quelle ist ImportzuordnungSchema; die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_IMPORTZUORDNUNG,
+                        "Tab_Importquelle und Tab_Importzuordnung: je Gebaeudeimport die Quelldatei " +
+                        "(Dateiname, SHA-256, Format, Zeitpunkt) und je Paarung EPOS-Zeile - Quellentitaet eine Zeile",
+                        "Die Zuordnung eines Imports ueberlebte den Dialog nicht: Ein zweiter Import derselben " +
+                        "Datei erkennte nicht, was er schon zugeordnet hat, und der Round-Trip faende die " +
+                        "Quellentitaeten nicht wieder. KEIN Rechenergebnis aendert sich - die Tabellen bleiben " +
+                        "leer, kein Rechenweg liest sie.",
+                        Schritt_Importzuordnung),
+
+            // GEBAEUDESIMULATION STUFE G4a, WELLE 3 (Umsetzungskonzept 3.4 und 3.7) - das Baujahr:
+            // eine Spalte an Tab_Gebaeude(_STAMM), der fuenfte und letzte Sichtneubau. REIN DDL; die
+            // Quelle ist GebaeudeSchema, die Nummer steht allein bei BaujahrSchema.
+            new Schritt(SCHRITT_BAUJAHR,
+                        "Tab_Gebaeude(_STAMM): die Spalte Baujahr (Jahreszahl 1500 bis 2100, leer = unbekannt), " +
+                        "die Sicht Abfrage_Projektgebaeude neu gebaut",
+                        "Das Baujahr haette keinen Ort: Der Gebaeudeeditor koennte es nicht speichern, und der " +
+                        "IFC-Import verloere die gelesene Jahreszahl beim Uebernehmen. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalte bleibt leer, kein Rechenweg liest sie.",
+                        Schritt_Baujahr),
         };
 
         /// <summary>
@@ -10101,6 +10231,194 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
                     ZonenSchema.TAB_ZONE + ", " + ZonenSchema.TAB_BAUTEIL + ") samt zwei Indizes. KEIN DML: " +
                     "keine implizite Zone, kein Rechenweg liest die Tabellen; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Die Schritte der Kaelteseite der Anlagenkopplung (AK1 Welle 4, E37)
+        // =================================================================================
+
+        /// <summary>
+        /// KAK-S1 — Anlass und Reihenfolge stehen bei <see cref="SCHRITT_KUEHLUEBERGABE"/>, die
+        /// Definitionen bei <see cref="GebaeudeSchema.Kuehluebergabespalten"/>. Dieselbe Folge wie
+        /// Schritt 122: Sicht verwerfen, Spalten anlegen, Sicht neu - nur mit <see cref="SqliteDdl"/>
+        /// und <see cref="SqliteSpalteAnlegen"/>. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="KuehluebergabeSchema.GebaeudeVollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Kuehluebergabe(Lauf l)
+        {
+            string nr = KuehluebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+
+            // vorweg: die Sicht nennt ihre Spalten namentlich - erst weg damit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // dann die acht Spalten der Kuehluebergabe je Gebaeudetabelle (16 Eintraege)
+            foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            // die Sicht neu - aus SQL_VIEW_KUEHLUEBERGABE: M3, KU-S1, AK-S1 und dahinter die Kuehluebergabe
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_KUEHLUEBERGABE, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = KuehluebergabeSchema.GebaeudeVollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalten der Kuehluebergabe oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": KAK-S1 - " +
+                    GebaeudeSchema.Kuehluebergabespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten der Kuehluebergabe stehen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_KUEHLUEBERGABE.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die Spalten bleiben leer (der Schalter 0); KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// KAK-S3 — Anlass und Wirkung stehen bei <see cref="SCHRITT_KUEHLUEBERGABE_ERGEBNIS"/>, die
+        /// Spalten bei <see cref="KuehluebergabeSchema.Ergebnisspalten"/> und
+        /// <see cref="KuehluebergabeSchema.SpaltenKuehlkreis"/>. <b>Wiederholbar</b>, eine vorhandene
+        /// Spalte wird übergangen. Fehlt <c>Tab_ErgebnisGebaeude</c> (Schritt 107 ist nicht
+        /// gelaufen), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KuehluebergabeErgebnis(Lauf l)
+        {
+            string nr = KuehluebergabeSchema.SCHRITT_ERGEBNIS.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB))
+            {
+                l.LetzterFehler = "Die Tabelle " + ErgebnisGebaeudeSchema.TAB + " fehlt; Schritt 107 ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (SchemaSpalte s in KuehluebergabeSchema.Ergebnisspalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+            foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenKuehlkreis)
+            {
+                if (SqliteSpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key)) continue;
+                if (!SqliteSpalteAnlegen(l, ErgebnisGebaeudeSchema.TAB, s.Key, s.Value)) return false;
+                angelegt++;
+            }
+
+            l.Notiz(nr + ": KAK-S3 - " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    (KuehluebergabeSchema.Ergebnisspalten.Length + KuehluebergabeSchema.SpaltenKuehlkreis.Count)
+                        .ToString(CultureInfo.InvariantCulture) +
+                    " Ergebnisspalte(n) der Kuehluebergabe angelegt, alle nullbar. KEIN DML: NULL heisst " +
+                    "'nicht kuehlgekoppelt gerechnet'; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Zonenschritt der Kühlübergabe — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KUEHLUEBERGABE_ZONE"/>, die Spalten bei
+        /// <see cref="KuehluebergabeSchema.SpaltenZone"/>. <b>Wiederholbar</b>. Fehlt <c>Tab_Zone</c>
+        /// (S-C ist nicht gelaufen), ist das ein Fehler des Schritts.
+        /// </summary>
+        private static bool Schritt_KuehluebergabeZone(Lauf l)
+        {
+            string nr = KuehluebergabeSchema.SCHRITT_ZONE.ToString(CultureInfo.InvariantCulture);
+            if (!SqliteTabelleVorhanden(ZonenSchema.TAB_ZONE))
+            {
+                l.LetzterFehler = "Die Tabelle " + ZonenSchema.TAB_ZONE + " fehlt; Schritt " +
+                                  ZonenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) + " ist nicht gelaufen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenZone)
+            {
+                if (SqliteSpalteVorhanden(ZonenSchema.TAB_ZONE, s.Key)) continue;
+                if (!SqliteSpalteAnlegen(l, ZonenSchema.TAB_ZONE, s.Key, s.Value)) return false;
+                angelegt++;
+            }
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    KuehluebergabeSchema.SpaltenZone.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) der Kuehluebergabe an " + ZonenSchema.TAB_ZONE + " angelegt, nullbar, ohne " +
+                    "Schalter. KEIN DML; kein Rechenweg liest die Zone.");
+            return true;
+        }
+
+        /// <summary>
+        /// Schritt S-F — Anlass und Wirkung stehen bei <see cref="SCHRITT_IMPORTZUORDNUNG"/>, die
+        /// Anweisungen bei <see cref="ImportzuordnungSchema"/>: zwei Tabellen, dann zwei Indizes (R2),
+        /// <b>nur <see cref="SqliteDdl"/></b>. Die Idempotenz trägt <c>IF NOT EXISTS</c>.
+        /// </summary>
+        private static bool Schritt_Importzuordnung(Lauf l)
+        {
+            string nr = ImportzuordnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in ImportzuordnungSchema.Tabellenanweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+            foreach (KeyValuePair<string, string> a in ImportzuordnungSchema.Indexanweisungen)
+                if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+
+            l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
+                    ImportzuordnungSchema.TAB_QUELLE + ", " + ImportzuordnungSchema.TAB_ZUORDNUNG + ") samt zwei " +
+                    "Indizes. KEIN DML: beide Tabellen sind LEER, kein Rechenweg liest sie; der Referenzlauf bleibt " +
+                    "byte-gleich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt des Baujahrs — Anlass und Reihenfolge stehen bei <see cref="SCHRITT_BAUJAHR"/>,
+        /// die Definitionen bei <see cref="GebaeudeSchema.SQLITE_BAUJAHR"/>. Dieselbe Folge wie KAK-S1:
+        /// Sicht verwerfen, Spalte je Gebäudetabelle anlegen, Sicht neu — nur mit <see cref="SqliteDdl"/>
+        /// und <see cref="SqliteSpalteAnlegen"/>. <b>Wiederholbar</b>; die Nachprobe fragt
+        /// <see cref="BaujahrSchema.Vollstaendig"/>.
+        /// </summary>
+        private static bool Schritt_Baujahr(Lauf l)
+        {
+            string nr = BaujahrSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+
+            // vorweg: die Sicht nennt ihre Spalten namentlich - erst weg damit
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // dann das Baujahr je Gebaeudetabelle - spaltengleich an Projekt und Katalog
+            foreach (string t in GebaeudeSchema.TABELLEN)
+                if (!SqliteSpalteAnlegen(l, t, GebaeudeSchema.SPALTE_BAUJAHR, GebaeudeSchema.SQLITE_BAUJAHR)) return false;
+
+            // die Sicht neu - aus SQL_VIEW_BAUJAHR: M3, KU-S1, AK-S1, KAK-S1 und dahinter das Baujahr
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_BAUJAHR, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = BaujahrSchema.Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Spalte Baujahr oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz(nr + ": Baujahr - die Spalte steht an " +
+                    GebaeudeSchema.TABELLEN.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Gebaeudetabellen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_BAUJAHR.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die Spalte bleibt leer; KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

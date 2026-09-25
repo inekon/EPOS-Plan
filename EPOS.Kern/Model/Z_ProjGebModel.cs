@@ -29,6 +29,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? ID_Gebaeude_Stamm;
 
+        /// <summary>
+        /// Die AUSSTEHENDE Herkunft einer neuen Zeile aus dem Gebäudeimport (Stufe G4, Welle 4) —
+        /// Quelle und Paarungen, die <c>WizardCtrl.GebaeudeZuordnungAnlegen</c> nach dem Anlegen der
+        /// Projektkopie im selben Vorgang schreibt. <c>null</c> = keine (jede gewöhnliche Zeile). Eine
+        /// bleibende Zeile schreibt sie nicht noch einmal.
+        /// </summary>
+        internal GebaeudeImportHerkunft Importherkunft;
+
         public Z_ProjGebModel()
         {
             items = null;

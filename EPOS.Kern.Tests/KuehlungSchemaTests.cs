@@ -82,7 +82,7 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("Tab_Gebaeude." + s.Key, GebaeudeSchema.SQL_VIEW_KUEHLUNG, StringComparison.Ordinal);
                 Assert.DoesNotContain("Tab_Gebaeude." + s.Key, GebaeudeSchema.SQL_VIEW_NEU, StringComparison.Ordinal);
             }
-            // Die GELTENDE Sicht ist seit Schritt 122 (AK-S1) die dritte; sie beginnt mit den
+            // Die GELTENDE Sicht ist die des letzten Sichtneubaus (des Baujahrs, die fuenfte); sie beginnt mit den
             // 77 Spalten von KU-S1 an ihren Stellen (AnlagenkopplungSchemaTests).
             Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SICHT_AKTUELL.Take(77));
         }
@@ -161,7 +161,7 @@ namespace EPOS.Kern.Tests
             string sicht = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?",
                 new DbParam("?", GebaeudeSchema.VIEW)), CultureInfo.InvariantCulture);
-            // Die Sicht ist die GELTENDE (seit Schritt 122 die von AK-S1); die 77 Spalten von
+            // Die Sicht ist die GELTENDE (die des letzten Sichtneubaus, des Baujahrs); die 77 Spalten von
             // KU-S1 stehen darin an ihren Stellen.
             Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
             Assert.Equal(GebaeudeSchema.SICHT_KUEHLUNG, GebaeudeSchema.SichtSpalten().Take(77));

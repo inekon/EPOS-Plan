@@ -126,6 +126,12 @@ namespace WindowsFormsApplication1
         public const int SPALTENZAHL_MIT_HEIZKREIS = SPALTENZAHL + 4;
 
         /// <summary>
+        /// Spaltenzahl der Tabelle nach KAK-S3 (<see cref="KuehluebergabeSchema.SCHRITT_ERGEBNIS"/>,
+        /// E37): dazu die fünf Spalten des Kältekreises (<see cref="KuehluebergabeSchema.SpaltenKuehlkreis"/>).
+        /// </summary>
+        public const int SPALTENZAHL_MIT_KUEHLKREIS = SPALTENZAHL_MIT_HEIZKREIS + 5;
+
+        /// <summary>
         /// <b>Die vier Spalten von Schritt 128</b> in Anlegereihenfolge: Name und SQLite-Definition
         /// (STRICT-Typ samt <c>CHECK</c>), <b>nullbar, ohne Vorgabe und ohne Nachtrag</b> — jede
         /// vorhandene Ergebniszeile ist eine Zeile ohne Kopplung. Die Wertliste der Übergabeart

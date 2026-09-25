@@ -26,10 +26,10 @@
         public const string MELDUNGSPRAEFIX = "IMP_GBXML_PROT_";
 
         /// <summary>
-        /// Bereichsschlüssel des Infoknopfs — die Hilfeseite des Gebäudeeditors, in dem der Import als
-        /// Überlagerung steht (A17); eine eigene Seite kommt mit der Oberfläche (Welle 2).
+        /// Bereichsschlüssel des Infoknopfs — die eigene Hilfeseite „Gebäudeimport" des
+        /// Zuordnungsdialogs, dieselbe für beide Formate (<see cref="GebaeudeImportProfil.HILFE_ZUORDNUNG"/>).
         /// </summary>
-        public const string HILFESCHLUESSEL = "Form_Gebaeude1.btn_Help";
+        public const string HILFESCHLUESSEL = HILFE_ZUORDNUNG;
 
         /// <summary>Legt das Profil an; ohne Angabe gilt die Windows-Grenze.</summary>
         public GbxmlImportProfil(long maxBytes = MAX_BYTES_WINDOWS)
@@ -37,6 +37,9 @@
                    HILFESCHLUESSEL, MELDUNGSPRAEFIX, "GIMP_SCHEMA_GBXML")
         {
         }
+
+        /// <summary>25 MB unter Windows, 10 MB auf iOS (D15).</summary>
+        public override long GrenzeFuerPlattform(bool ios) => ios ? MAX_BYTES_IOS : MAX_BYTES_WINDOWS;
 
         /// <summary>Ein neuer <see cref="GbxmlLeser"/> je Lauf.</summary>
         public override IGebaeudeLeser LeserErzeugen() => new GbxmlLeser();

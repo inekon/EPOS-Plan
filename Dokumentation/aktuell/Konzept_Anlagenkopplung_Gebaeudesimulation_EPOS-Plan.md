@@ -41,6 +41,15 @@
 > folgt dem Entscheid **E36** (24.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 > N1.41): Mit wirksamer Kopplung gilt höchstens **100 ms je Gebäude und Jahr** (gemessen 21 bis
 > 31 ms), ungekoppelte Gebäude bleiben beim Bestand.
+>
+> **Nachzug 25.09.2026 — AK1 Welle 4 und E37:** Die Kälteseite (H9) bekommt nach **E37** (24.09.2026,
+> [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.42) **eigene Spalten der Kühlübergabe
+> am Gebäude** (`KAK-S1`, 8.1) samt Schalter `Kuehluebergabe_Aktiv`; der Auslegungspunkt steht damit am
+> Gebäude, nicht mehr an der Anlage (7.1, 7.4). Die Rechnung ist **Schritt K** (10.5), der Spiegel von
+> Schritt H mit festem Kaltwasser-Vorlauf und einer Vorlaufgrenze als Vorgabe (7.2); die Nennleistung
+> kommt bei leerem Feld aus einem Auslegungstag (8.4). Die Ergebnisspalten der Kälteseite (`KAK-S3`,
+> 8.3) sind ein eigener Schritt. N-A4 (2.2) gilt wörtlich weiter; wirksame Kopplung heißt „Heizseite oder
+> Kälteseite wirksam". Gebaut mit der vierten Welle von AK1 (Schemaschritte 135 bis 137, 8).
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -48,8 +57,8 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 24.09.2026 (Nachzug AK1 Welle 3 und E36). **Fassung:** Rev. 2 — mit **E23**, **E24**,
-**E25** und **E26** fortgeschrieben, **E27** und **E36** nachgezogen.
+**Stand:** 25.09.2026 (Nachzug AK1 Welle 4 und E37). **Fassung:** Rev. 2 — mit **E23**, **E24**,
+**E25** und **E26** fortgeschrieben, **E27**, **E36** und **E37** nachgezogen.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
 Anlagenkopplung vom Heizkörper bis zum Wiki bedeutet: die Physik der Übergabe, Heizkurve und
@@ -268,7 +277,7 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | **F-A13** | **Unterdeckung wird zu Komfortstunden**: Unterschreitungsstunden, Kelvinstunden, längste zusammenhängende Unterschreitung — je Gebäude und je Projekt | E22 | Berichtsprobe; Katalogeintrag je Kennzahl in beiden Sprachen | AK2 |
 | **F-A14** | Gebäude, Erzeugerkaskade und Speicher rechnen je Stunde **zusammen**; der Vorlauf wirkt auf den Wirkungsgrad zurück, die Regelung auf den Vorlauf | E22 | Konvergenzprobe gegen ein exaktes Prüforakel für einen Erzeuger (11.2) | AK3 |
 | **F-A15** | Die **Iteration** hat Abbruchmaße, eine Höchstzahl und einen **benannten Fehler** bei Nichtkonvergenz (Gebäude, Stunde, Beteiligte) — nie eine stille Näherung | ADR-005 | Rechenprobe: erzwungene Nichtkonvergenz erzeugt den benannten Fehler | AK3 |
-| **F-A16** | Die **Kälteseite** trägt zu jeder Größe der Wärmeseite ein Gegenstück — Kaltwasser-Vorlauf, Kühlkennlinie, Kühlflächenexponent, Überschreitungsstunden — **oder** die Abweichung steht benannt in der Abweichungsliste (7.4) | E21, E22 | Probe „Symmetrie der Anlagenkopplung" gegen die Liste in 7.4 | AK1/AK2 |
+| **F-A16** | Die **Kälteseite** trägt zu jeder Größe der Wärmeseite ein Gegenstück — Kaltwasser-Vorlauf, Kühlkennlinie, Kühlflächenexponent, Überschreitungsstunden — **oder** die Abweichung steht benannt in der Abweichungsliste (7.4). Die Ergebniszahlen der Kälteseite in AK1 sind `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und `Kuehl_Uebergabe_Begrenzt_Stunden` (8.3, E37); die Komfortzahlen kommen mit AK2 | E21, E22, E37 | Probe „Symmetrie der Anlagenkopplung" gegen die Liste in 7.4 | AK1/AK2 |
 | **F-A17** | Jede Stufe ist **je Projekt wählbar** und **je Gebäude schaltbar**, Vorgabe **aus**; ein Gebäude mit eingeschaltetem Heizkreis in einem Projekt ohne Kopplung trägt einen **benannten Hinweis**, keine stille Null | E22 | bunit-Fall am Gebäudedialog; Meldung in beiden Sprachen (9.5) | AK1 |
 | **F-A18** | Ein Gebäude auf dem **Altweg** (Tagesbilanz, Bestandsweg) bekommt **keine Anlagenkopplung, solange es dort rechnet** — benannter Hinweis, nie eine stille Null; der Altweg wird nicht angefasst und geht als **feste Last** in Verteilung und Deckung ein. Hinweis und Sonderfall gelten bis zur Ablösung (Stufe **GA**, Zeitpunkt offen) und stehen in deren Löschliste | E20, E23, E26 | Rechenprobe „Altweg-Gebäude ohne Kopplung mit Hinweis"; `Modultrennungswache` grün | AK1 |
 | **F-A19** | **Vorlauf- und Rücklaufmittel** je Gebäude sowie die **Heizkreisreihen** stehen im Referenzlauf-Export — **bedingt** geschrieben, damit die Bestandsordner byte-gleich bleiben | 8.3 | Referenzlauf: Projekte ohne Kopplung byte-gleich | AK1 |
@@ -280,7 +289,7 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | **N-A1** | **Referenzbasis** — jede Stufe rechnet gegen die aktuelle Basis; eine neue **Datei** ohne Bedingung ist FAIL (`Referenzlauf/Vergleich.cs:183-190`) | `GESAMT: PASS` | Referenzlauf je Merge |
 | **N-A2** | **Determinismus** — zwei Läufe byte-gleich, auch mit Kopplung; die Iteration in AK3 ist deterministisch (feste Reihenfolge, feste Höchstzahl) | 13 von 13 | Protokollzeile des Referenzlaufs |
 | **N-A3** | **Rückwärtsverträglichkeit** — ein Projekt **ohne** Kopplung rechnet nach AK1, AK2 und AK3 **byte-gleich** wie vorher | 12 von 13 Projekten unberührt | Vergleich je Projekt |
-| **N-A4** | **Rechenzeit** — ohne wirksame Kopplung bleibt jedes Gebäude beim Bestand (rund 5 ms je Zone und Jahr, Konzept 4.8). Mit wirksamer Kopplung kostet das Fallsystem je Abschnitt (Schritt H) mehr: gemessen **7 ms ohne und 21 bis 31 ms mit Kopplung** je Gebäude und Jahr; dafür gilt nach **E36** eine eigene Grenze. AK3 zahlt die Durchläufe, beschränkt ihr Produkt je Stunde auf **120** (6.3) und **wird gemessen**, nicht geschätzt | AK1: höchstens **100 ms je gekoppeltem Gebäude und Jahr** (E36), ungekoppelt unverändert; AK3 gemessen und im Papier fortgeschrieben | Messprobe des gekoppelten Jahreslaufs (`AnlagenkopplungEingangTests`): gibt die Zeit aus und scheitert erst beim Fünffachen der Grenze — die Läufer der CI sind verschieden schnell; Laufzeitzeile des Referenzlaufs |
+| **N-A4** | **Rechenzeit** — ohne wirksame Kopplung bleibt jedes Gebäude beim Bestand (rund 5 ms je Zone und Jahr, Konzept 4.8). Mit wirksamer Kopplung kostet das Fallsystem je Abschnitt (Schritt H) mehr: gemessen **7 ms ohne und 21 bis 31 ms mit Kopplung** je Gebäude und Jahr; dafür gilt nach **E36** eine eigene Grenze. AK3 zahlt die Durchläufe, beschränkt ihr Produkt je Stunde auf **120** (6.3) und **wird gemessen**, nicht geschätzt | AK1: höchstens **100 ms je gekoppeltem Gebäude und Jahr** (E36), ungekoppelt unverändert; gekoppelt heißt nach **E37** „Heizseite oder Kälteseite wirksam" (8.1), die Grenze gilt auch mit beiden Seiten und dem Auslegungstag der Kälteseite (8.4); AK3 gemessen und im Papier fortgeschrieben | Messprobe des gekoppelten Jahreslaufs (`AnlagenkopplungEingangTests`): gibt die Zeit aus und scheitert erst beim Fünffachen der Grenze — die Läufer der CI sind verschieden schnell; Laufzeitzeile des Referenzlaufs |
 | **N-A5** | **Plattformgleichheit** — alle Kopplungsfelder sind auf iOS erreichbar oder **benannt** abgelehnt | keine stumme Absage | iOS-Zeile je Maske |
 | **N-A6** | **Zweisprachigkeit** — jeder neue Anzeigetext und jede Meldung in beiden `.resx`, danach `Werkzeuge/ResourceDesigner` | vollständig | Wächter und Designerlauf |
 | **N-A7** | **Einheitenwächter** — Zeitreihen in kWh mit Einheit im Namen, Temperaturen in °C, Leistungen in kW; keine nackten Faktoren 1 000 in Hülle oder Anzeige | grün | `EinheitenWacheTests`, `DoubleWacheTests` |
@@ -1104,10 +1113,13 @@ Gegenstück auf der Kälteseite — **oder** die Abweichung steht in der Liste (
 
 | Wärmeseite | Kälteseite | Bemerkung |
 |---|---|---|
-| Heizkurve `theta_V(theta_out)` | **Kühlkurve** `theta_V,k(theta_out)` — steigende Außentemperatur, **sinkender** Kaltwasser-Vorlauf | dieselbe Formel mit umgekehrtem Vorzeichen der Übertemperatur |
-| `Auslegung_Vorlauf` / `_Ruecklauf` (Gebäude) | `Tab_WP.Kuehl_Vorlauf` (`KU-S3` des Kühlkonzepts, 7.3) samt fester Spreizung | **keine Symmetrie, sondern eine benannte Abweichung (7.4, Punkt 4)**: Der Auslegungspunkt der Kühlübergabe steht auf der **Anlagenseite**, nicht am Gebäude. Eine Spalte, zwei Leser — Kennlinienwahl (KU2) und Auslegungspunkt (AK1) — und **kein** gebäudeseitiges Spaltenpaar |
-| Heizkörperexponent `n` | **Kühlflächenexponent** `n_k` — EPOS-Vorgaben: Kühldecke 1,1; Gebläsekonvektor 1,0; Kaltwasser-Flächenkühlung 1,1 | Werte als EPOS-Vorgaben gekennzeichnet, wie in 3.1 |
-| `Heizung_Strahlungsanteil` | Strahlungsanteil der Kühlung | Vorgabe je Kühlübergabeart |
+| Heizkurve `theta_V(theta_out)` | **Kühlkurve** `theta_V,k(theta_out)` — steigende Außentemperatur, **sinkender** Kaltwasser-Vorlauf | **vertagt (E37, A3)** — in AK1 fährt die Kälteseite einen festen Vorlauf; benannte Abweichung in 7.4 |
+| `Heizkreis_Aktiv`, `Uebergabe_Art` | `Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_Art` (Kühldecke, Flächenkühlung, Gebläsekonvektor; NULL = ideal) | eigene Spalten am Gebäude nach **E37** (`KAK-S1`, 8.1) |
+| `Auslegung_Vorlauf` / `_Ruecklauf` / `_Raumtemperatur` (Gebäude) | `Kuehl_Auslegung_Vorlauf` / `_Ruecklauf` / `_Raumtemperatur` (Gebäude) | **Auslegung am Gebäude** (E37); leer heißt Vorgabe der Art bzw. `Kuehl_Sollwert`. Der Kaltwasser-Vorlauf der Stunde kommt fest aus der Anlage (`Tab_WP.Kuehl_Vorlauf`, 7.2) |
+| `Uebergabe_Leistung_Nenn` — hergeleitet aus der stationären Heizlast | `Kuehl_Uebergabe_Leistung_Nenn` — hergeleitet aus der Kühllast eines Auslegungstags (8.4) | benannte Abweichung in 7.4 (A2) |
+| Heizkörperexponent `n` | **Kühlflächenexponent** `n_k` (`Kuehl_Uebergabe_Exponent`) — EPOS-Vorgaben: Kühldecke 1,1; Gebläsekonvektor 1,0; Kaltwasser-Flächenkühlung 1,1 | Werte als EPOS-Vorgaben gekennzeichnet, wie in 3.1 |
+| `Heizung_Strahlungsanteil` | Strahlungsanteil der Kühlung | **Vorgabe je Kühlübergabeart ohne eigene Spalte** (Kühldecke und Flächenkühlung 0,5, Gebläsekonvektor 0); benannte Abweichung in 7.4 |
+| `Regler_Proportionalband` | dasselbe Feld | **ein** Raumregler mit zwei Sequenzen; benannte Abweichung in 7.4 |
 | `Heizleistung_Max` | `Kuehlleistung_Max` (`KU-S1` des Kühlkonzepts, 7.1) | vorhanden, unverändert |
 | Unterschreitungsstunden | **Überschreitungsstunden** und Kelvinstunden über dem Kühlsollwert | dieselben drei Zahlen, dasselbe Schwellenprinzip (5.5) |
 | Wärmepumpen-Heizkennlinie über dem Vorlauf | Kühlkennlinie über dem Kühl-Vorlauf (`Tab_Kenndaten_Kuehlung`, `sql/schema/001_grundschema.sql:1321-1330`) | derselbe Kennlinienleser, dieselbe Stützstellenwahl (3.4) |
@@ -1118,11 +1130,16 @@ Gegenstück auf der Kälteseite — **oder** die Abweichung steht in der Liste (
 Eine Kühlfläche darf nicht unter den Taupunkt der Raumluft gefahren werden, sonst fällt Kondensat
 aus. EPOS-Plan rechnet **keine Feuchtebilanz** (K5 des Kühlkonzepts), kann den Taupunkt also nicht
 bestimmen. **Festlegung: eine feste untere Grenze des Kaltwasser-Vorlaufs je Kühlübergabeart, als
-EPOS-Vorgabe (Flächenkühlung 16 °C, Gebläsekonvektor keine Grenze), einstellbar, benannt.** Die
-Kühlkurve wird an dieser Grenze gekappt, die Stunde trägt den `Begrenzungsgrund`
-**`VORLAUFGRENZE_KUEHLUNG`** (5.3) — das Gegenstück zu `VORLAUF_ANLAGE` auf der Wärmeseite —, und
-der Bericht sagt in einem Satz, dass die Grenze eine **Vorgabe** ist und keine gerechnete
-Taupunktgrenze. Eine Feuchtebilanz bleibt ausgeschlossen (1.3).
+EPOS-Vorgabe (Kühldecke und Flächenkühlung 16 °C, Gebläsekonvektor keine Grenze), einstellbar, benannt
+— die Spalte `Kuehl_Vorlaufgrenze` (E37, 8.1).** Der Vorlauf ist in AK1 fest (E37, A3): Die Mischgruppe
+am Gebäude mischt das Kaltwasser der Anlage auf die Grenze hoch, **fester Vorlauf = max(Anlage,
+Grenze)**; kälter als die Anlage wird er nie. Liegt die Grenze über dem Auslegungsvorlauf, sagt der
+Eingang es als Hinweis — die Nennleistung wird dann nie erreicht. Die Stunde trägt den
+`Begrenzungsgrund` **`VORLAUFGRENZE_KUEHLUNG`** (5.3) — das Gegenstück zu `VORLAUF_ANLAGE` auf der
+Wärmeseite — **nur, wenn die Übergabe in dieser Stunde gesättigt ist und der Vorlauf an der Grenze
+steht**; im Regelbereich hat die Grenze nichts begrenzt. Der Bericht sagt in einem Satz, dass die
+Grenze eine **Vorgabe** ist und keine gerechnete Taupunktgrenze. Eine Feuchtebilanz bleibt
+ausgeschlossen (1.3).
 
 ### 7.3 Die Umschaltung greift nicht in die Kopplung ein
 
@@ -1136,7 +1153,9 @@ Modellfehler" bezeichnet.
 
 ### 7.4 Die benannten Abweichungen von der Symmetrie
 
-Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
+Die ersten drei haben denselben Grund: Die Kälteseite ist jünger. Der vierte Punkt ist mit **E37**
+aufgehoben und durch die Punkte 5 bis 9 ersetzt — die benannten Abweichungen der Kälteseite, wie sie
+die vierte Welle von AK1 gebaut hat.
 
 1. **Keine Kühlkurve im Bestand, auch nicht als Festwert-Ersatz.** Der Heizseite steht
    `Tab_Energieanlagen.Vorlauf` (`:713`) als Bestands-Festwert zur Verfügung; die Kälteseite bekommt
@@ -1149,15 +1168,32 @@ Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
    (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27).
 3. **Keine Kältenetzverluste** — das ist bereits eine benannte Abweichung des Kühlkonzepts (14) und
    bleibt eine; die Anlagenkopplung ändert daran nichts.
-4. **Der Auslegungspunkt der Kühlübergabe kommt aus der Anlage, nicht aus dem Gebäude.** Auf der
-   Wärmeseite ist er eine Gebäudeeigenschaft (`Auslegung_Vorlauf`/`_Ruecklauf` in `AK-S1`, 8.1);
-   auf der Kälteseite wird **`Tab_WP.Kuehl_Vorlauf`** gelesen — dieselbe Spalte, die KU2 für die
-   Kennlinienwahl führt — und dazu eine **feste Spreizung von 5 K** als EPOS-Vorgabe angesetzt.
-   `AK-S1` legt dafür **kein** gebäudeseitiges Spaltenpaar an. **Der Preis, benannt:** Versorgen
-   zwei Kältemaschinen mit verschiedenen Kaltwasser-Vorläufen dasselbe Gebäude, gilt je Stunde der
-   Vorlauf der Maschine, die in dieser Stunde deckt; eine gebäudeseitige Auslegung gäbe es dafür
-   nicht. Ein eigenes Paar `Kuehl_Auslegung_Vorlauf`/`_Ruecklauf` kommt, wenn ein Fall es verlangt
-   — nicht vorher.
+4. **Aufgehoben mit E37.** Der Auslegungspunkt der Kühlübergabe kam hier aus der Anlage
+   (`Tab_WP.Kuehl_Vorlauf` mit fester Spreizung); nach **E37** steht er wie auf der Wärmeseite am
+   **Gebäude** (`Kuehl_Auslegung_Vorlauf`/`_Ruecklauf`/`_Raumtemperatur`, `KAK-S1`, 8.1). Die Anlage
+   liefert nur noch den Kaltwasser-Vorlauf der Stunde (7.2).
+5. **Keine Kühlkurve und keine Kennlinienwahl je Stunde (E37, A3).** Die Kälteseite fährt einen
+   **festen** Vorlauf: den kältesten wirksamen `Kuehl_Vorlauf` der Wärmepumpen im Kühlbetrieb, am
+   Gebäude auf die Vorlaufgrenze hochgemischt (7.2). Die Wärmepumpe bleibt wie in KU2 am
+   `Kuehl_Vorlauf`, weil die Mischgruppe am Gebäude sitzt; `Kaeltekaskade` und Kennlinienwahl der
+   Kälteseite bleiben unberührt. Die gespiegelte Heizkurve taugt nicht: Sie schaltete bei
+   θ_out ≤ θ_kühl ab, obwohl Sonne und innere Lasten Kühllast erzeugen, und das gespiegelte H10 gäbe
+   einen entarteten Nenner von 0 bis 3 K. Die belastbare Führung ist die raumgeführte Kurve in AK3.
+6. **Ein gemeinsames `Regler_Proportionalband`** — ein Raumregler, zwei Sequenzen. Das Kühlband
+   liegt auf [θ_kühl, θ_kühl + Xp] und überlappt das Heizband nicht, weil der Kühlsollwert mindestens
+   1 K über dem höchsten Heizsollwert liegt (Kühlkonzept, Eingangsregel zu E32).
+7. **Kein Sollwertprofil der Kühlung.** Die Kälteseite hält `Kuehl_Sollwert` bzw.
+   `Kuehl_Sollwert_Nacht`; ein Wochenprofil kommt mit KU3.
+8. **Der Strahlungsanteil der Kühlübergabe ist eine Vorgabe je Art ohne eigene Spalte**
+   (Kühlkonzept 3.2): Kühldecke und Flächenkühlung 0,5, Gebläsekonvektor 0.
+9. **Die Nennleistung kommt aus einem Auslegungstag, nicht aus einer stationären Rechnung (E37,
+   A2).** Eine stationäre Kühllast ohne Sonne und innere Lasten wäre keine; der periodisch
+   eingeschwungene Tag mit dem höchsten Tagesmittel der Außentemperatur ist das Gegenstück zur
+   stationären Heizlast (8.4). Er trifft bei südlastigen Gebäuden nicht immer die Spitzenlast — eine
+   eingetragene Nennleistung überschreibt ihn.
+
+Einen eigenen Schalter hat die Kälteseite **wie** die Wärmeseite (`Kuehluebergabe_Aktiv`, E37 A1);
+das ist keine Abweichung.
 
 ---
 
@@ -1185,6 +1221,16 @@ gekoppelt gerechnet), `VorlaufMittel_C`, `RuecklaufMittel_C`, `UebergabeBegrenzt
 Bericht liest sie (9.4) und rechnet nichts nach. Die Definition und die Nummer stehen allein bei
 `ErgebnisGebaeudeSchema` (`SpaltenHeizkreis`, `SCHRITT_HEIZKREIS`); die Nummern 125 bis 127 waren beim
 Merge von anderen Vorhaben belegt.
+
+**Vergeben mit der vierten Welle von AK1 (E37, 24.09.2026):** Die Kälteseite bekommt drei eigene
+Schritte — Schemaschritt **135** `KAK-S1` (die acht Spalten der Kühlübergabe an den Gebäudetabellen
+samt viertem Sichtneubau, 8.1), Schemaschritt **136** `KAK-S3` (die Ergebnisspalten der Kälteseite in
+`Tab_ErgebnisEnergiebedarf` und `Tab_ErgebnisGebaeude`, 8.3) und Schemaschritt **137** für die drei
+Zonenspalten der Kühlübergabe an `Tab_Zone` (nach S-C, das mit Schritt 134 steht). **Der Kälteteil von
+`AK-S3` ist damit ein eigener Schritt und nicht Teil von Schritt 123** — der Satz in 8.3, er komme „in
+demselben Schemaschritt, wenn KU1 steht", ist damit erledigt. Definitionen und Nummern stehen allein
+bei `KuehluebergabeSchema` (`SCHRITT`, `SCHRITT_ERGEBNIS`, `SCHRITT_ZONE`); vergeben unmittelbar vor
+dem Schemacommit gegen `origin` (Regel „lückenlos").
 
 Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boolean als
 `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))`, Textlänge als `CHECK (length(...))`,
@@ -1249,6 +1295,44 @@ NULL-Werts: `Heizung_Strahlungsanteil` NULL heißt künftig „Vorgabe der Über
 (**H12**) — eine Bedeutungsänderung ohne Schemaänderung, die deshalb im Glossar und in der
 Herleitungszeile stehen muss, nicht nur im Code.
 
+**`KAK-S1` — die Kühlübergabe am Gebäude (E37).** Acht Spalten je Gebäudetabelle, also **sechzehn
+`SchemaSpalte`-Einträge**, hinter den dreizehn Übergabespalten; die Sicht `Abfrage_Projektgebaeude`
+wird zum **vierten** Mal neu gebaut (90 → 98 Spalten), und dieser Durchgang läuft in Migration,
+Werkzeug und Testdatenbank **zuletzt**, damit ein älterer Durchgang die Spalten nicht wieder aus der
+Sicht schneidet. Typen und Regeln wie oben; die Bereiche prüft der Eingang (Konzept N1.42).
+
+| Spalte | Typangabe | SQLite | NULL bedeutet | Prüfung im Eingang |
+|---|---|---|---|---|
+| `Kuehluebergabe_Aktiv` | `YESNO` | INTEGER, `CHECK IN (0,1)` | — (Schalter, Vorgabe 0 = aus) | — |
+| `Kuehl_Uebergabe_Art` | `TEXT(20)` | TEXT | **ideal** — Kälteseite nicht gekoppelt, Bestandsweg | `IDEAL`, `KUEHLDECKE`, `FLAECHENKUEHLUNG`, `GEBLAESEKONVEKTOR` |
+| `Kuehl_Uebergabe_Exponent` | `DOUBLE` | REAL | Vorgabe der Art | 1,0 ≤ n ≤ 1,6 |
+| `Kuehl_Uebergabe_Leistung_Nenn` | `DOUBLE` | REAL (kW, sensibel) | Kühllast des Auslegungstags (8.4) | > 0 |
+| `Kuehl_Auslegung_Vorlauf` | `DOUBLE` | REAL (°C) | Vorgabe der Art | 4 ≤ V ≤ 22 |
+| `Kuehl_Auslegung_Ruecklauf` | `DOUBLE` | REAL (°C) | Vorgabe der Art | V < R < θ_i,N |
+| `Kuehl_Auslegung_Raumtemperatur` | `DOUBLE` | REAL (°C) | `Kuehl_Sollwert` | 20 ≤ θ_i,N ≤ 30 |
+| `Kuehl_Vorlaufgrenze` | `DOUBLE` | REAL (°C) | Vorgabe der Art; Gebläsekonvektor: keine | 4 ≤ x ≤ 22; über dem Auslegungsvorlauf ein Hinweis |
+
+**EPOS-Vorgaben je Kühlübergabeart** (E37, A4), als Vorgaben gekennzeichnet wie in 3.1:
+
+| Art | n | Auslegung V/R | Strahlungsanteil | Vorlaufgrenze |
+|---|---|---|---|---|
+| Kühldecke (`KUEHLDECKE`) | 1,1 | 16/19 °C | 0,5 | 16 °C |
+| Flächenkühlung (`FLAECHENKUEHLUNG`) | 1,1 | 16/19 °C | 0,5 | 16 °C; Estrich masselos wie auf der Heizseite (3.6) |
+| Gebläsekonvektor (`GEBLAESEKONVEKTOR`) | 1,0 | 7/12 °C | 0 | keine; die Leistung ist sensibel, die Entfeuchtung fehlt (K5) |
+
+**`Kuehluebergabe_Aktiv` wie `Heizkreis_Aktiv`.** Der Schalter trägt die Absicht, die Felder die
+Werte; wer die Kühlübergabe abschaltet, behält die gewählte Art. Die Kälteseite ist **wirksam**, wenn
+die Projektstufe AK1 oder höher gesetzt ist, die Kühlung nach E32 wirksam ist (Projektschalter
+Kühlbetrieb, `Kuehlung_Aktiv`, Kühlsollwert), der Schalter steht und eine Art ungleich ideal gewählt ist
+— **unabhängig von `Heizkreis_Aktiv`**. Der Datenbankwert der Flächenkühlung ist `FLAECHENKUEHLUNG`,
+nicht der Wert `FLAECHE` der Heizseite, sonst zeigten Anzeigename und Variantenvergleich
+„Flächenheizung". **`Tab_Zone`** bekommt die drei Spalten `Kuehl_Uebergabe_Art`,
+`Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn` in einem eigenen Schritt nach S-C
+(Schemaschritt 137), ohne Schalter (Mehrzonenkonzept 4.2); die Wertliste der Art nimmt an der Zone
+`IDEAL` mit auf, weil NULL dort „Wert des Gebäudes" heißt. Das Aggregat je Gebäude
+(`GebaeudeZonenCtrl`), Projektduplikat und Projekttransfer tragen die drei Spalten NULL-erhaltend;
+gerechnet ab G6.
+
 ### 8.2 `AK-S2` — der Erzeuger: Zeitprogramm und Vorlaufangebot
 
 Zwei Spalten in `Tab_Energieanlagen` (`sql/schema/001_grundschema.sql:703-788`). Die Tabelle ist
@@ -1293,14 +1377,23 @@ Wärmeteil (AK1), **vier** zum Komfortteil (AK2).
 | | `Komfort_Laengste_Strecke` | längste zusammenhängende Unterschreitung [h] | AK2 |
 | | `Fahrplan_Begrenzt_Stunden` | Stunden, in denen der Fahrplan die Grenze war [h] | AK2 |
 
-Die Kälteseite bekommt mit **F-A16** die drei Gegenstücke `Kuehl_Vorlauf_Mittel`,
-`Komfort_Ueberschreitungsstunden` und `Komfort_Kelvinstunden_Kuehlung` — **in demselben
-Schemaschritt**, wenn KU1 zu diesem Zeitpunkt steht, sonst in einem eigenen.
+**Die Kälteseite (`KAK-S3`, E37)** bekommt mit **F-A16** die drei Gegenstücke des Wärmeteils in
+einem **eigenen** Schemaschritt (8): `Kuehl_Vorlauf_Mittel` und `Kuehl_Ruecklauf_Mittel`
+(kältebedarfsgewichtetes Mittel [°C]) und `Kuehl_Uebergabe_Begrenzt_Stunden` [h] in
+`Tab_ErgebnisEnergiebedarf`, dazu je Gebäude nach dem Muster von Schritt 128 in
+`Tab_ErgebnisGebaeude` `Kuehl_Uebergabe_Art` (Wertliste der drei Arten), `KuehlVorlaufMittel_C`,
+`KuehlRuecklaufMittel_C`, `KuehlUebergabeBegrenzt_H` (einschließlich der Stunden an der Vorlaufgrenze)
+und `KuehlVorlaufgrenze_H` (der Anteil davon an der Vorlaufgrenze, 7.2). Alle nullbar, NULL heißt
+„nicht kühlgekoppelt gerechnet", die Anzeige zeigt „—". Die drei Energiebedarf-Spalten stehen im
+selben Schritt in `SpaltenNurMitWert` des Referenzlauf-Exports, sonst wäre ein neuer NULL-Schlüssel in
+`aggregate.csv` FAIL. Die Komfortgegenstücke `Komfort_Ueberschreitungsstunden` und
+`Komfort_Kelvinstunden_Kuehlung` kommen mit AK2.
 
 **Die Reihen bleiben draußen.** Die 8 760 Werte je Reihe gehören nicht in die Datenbank (dieselbe
 Regel wie für alle Ergebnisreihen); sie reisen über den Referenzlauf-Export als
 `vorlauf_<n>.csv`, `ruecklauf_<n>.csv` und `uebergabe_<n>.csv` — **bedingt** geschrieben, nur für
-Gebäude mit aktivem Heizkreis. Der Grund steht in `Referenzlauf/Vergleich.cs:183-190`: Eine
+Gebäude mit aktivem Heizkreis —, auf der Kälteseite als `kuehlvorlauf_<n>.csv`,
+`kuehlruecklauf_<n>.csv` und `kuehluebergabe_<n>.csv`, nur für kühlgekoppelte Gebäude. Der Grund steht in `Referenzlauf/Vergleich.cs:183-190`: Eine
 **Datei**, die nur im neuen Lauf liegt, hat die höchste Schwere und ist FAIL, und **dagegen gibt es
 keinen Schalter**; ein neuer **Schlüssel** in `aggregate.csv` lässt sich dagegen mit `--ohne`
 benannt ausnehmen (`:47-59`, `:61-62`, `:74-79`, `:225`, `:250`). Daraus folgt die Reihenfolgeregel
@@ -1323,6 +1416,18 @@ DIN EN 12831 — keine Aufheizleistung, keine Zuschläge, keine raumweise Rechnu
 stationäre Last des vorhandenen Modells unter den eingegebenen Auslegungsbedingungen, und der
 Dialog sagt das in der Herleitungszeile. Eine Heizlastberechnung als Nachweis bleibt ausgeschlossen
 (Kapitel 15).
+
+**Die Nennleistung der Kälteseite (E37, A2).** Ist `Kuehl_Uebergabe_Leistung_Nenn` leer, gilt die
+**Kühllast eines periodisch eingeschwungenen Auslegungstags**: der Tag mit dem höchsten Tagesmittel der
+Außentemperatur, seine 24 Stundenränder aus den Eingangsreihen (Außen- und Äquivalenttemperatur, solare
+und innere Lasten), Heizung aus, ideale Kühlung auf `Kuehl_Sollwert` mit der Verteilung der
+Kühlübergabe, ohne Kühlleistungsgrenze und ohne Sommerlüftung. Ein eigenes Zonenmodell rechnet den Tag
+so oft, bis die Tagesspitze um weniger als 1e‑6 relativ schwankt (höchstens 30-mal); der Zustand des
+Laufs bleibt unberührt, und es entsteht **kein** zusätzlicher Jahreslauf (E21, „ein Lauf, zwei Reihen").
+Die Spitze des letzten Tags ist Φ_N; ist sie nicht größer null, bricht der Eingang mit dem benannten Rat
+ab, Φ_N einzutragen. Wie die Auslegungsheizlast ist das **kein Normnachweis** (H-F12), und die
+Herleitungszeile nennt den Tag. Eine eingetragene Nennleistung skaliert wie auf der Heizseite nicht mit
+dem Gebäude (H7); die Verbrauchsangabe rechnet dann zwei Läufe.
 
 ### 8.5 Das Bild
 
@@ -1465,6 +1570,16 @@ Vorhabens (**H11**).
   `<InfoKnopf Schluessel=… Dialogname=… />`, und der Wirt meldet die Feldliste über
   `KiMaskenanmeldung` an.
 
+**Die Kälteseite: Unterabschnitt „Kühlübergabe" in der Gruppe „Kühlung" (E37).** Ein eigener Baustein
+in beiden Wirten (Gebäudedialog und Stammblatt), sichtbar nur mit eingeschalteter Kühlung; die Werte
+reisen unsichtbar mit. Er heißt „Kühlübergabe", weil „Kältekreis" im Kühlkonzept schon die Senke
+bezeichnet. Felder: Schalter „Kühlübergabe rechnen" (`Kuehluebergabe_Aktiv`), Art (ideal, Kühldecke,
+Flächenkühlung, Gebläsekonvektor), Exponent, Nennleistung (der hergeleitete Wert als Zahl im
+Platzhalter), Auslegung Vorlauf/Rücklauf/Raum, Vorlaufgrenze — dieselben drei Regeln wie oben.
+Herleitungszeilen: die Wirksamkeit samt Grund (Stufe, Kühlung, Schalter, Art), die Quelle des Vorlaufs
+(Anlage oder Auslegung, gekappt an der Grenze), der Auslegungstag der Nennleistung, „die Grenze ist eine
+Vorgabe, keine gerechnete Taupunktgrenze" und „sensibel, ohne Entfeuchtung" (K5) an jeder Zahl.
+
 ### 9.2 Sollwert-Zeitprogramm — ein Wochenraster, kein Zahlenfeld
 
 Ein Textfeld mit 168 Werten ist keine Bedienung. Das Zeitprogramm bekommt einen **eigenen
@@ -1534,6 +1649,14 @@ Sprachneutral im Kern, Text in der Oberfläche; je Meldung beide `.resx` und dan
 | Sperrzeit und Zeitprogramm widersprechen sich | **Info** | die Sperrzeit gilt; Zahl der betroffenen Stunden |
 | Iteration nicht konvergiert (AK3) | **Fehler** | Gebäude, Stunde, Beteiligte, größte verbleibende Abweichung (F-A15) |
 | Flächenheizung: Aufheizzeit ohne Estrichmasse | **Info**, einmal je Lauf | die gerechnete Aufheizzeit ist zu kurz (3.6) |
+| Kühlübergabe gewählt, Projektstufe „aus" oder Kühlung nicht wirksam (E32) | **Hinweis**, einmal je Gebäude | „Eingaben der Kühlübergabe ruhen", mit dem Grund (F-A17) |
+| Kühlübergabe reicht nicht, Raumtemperatur steigt | **Info**, einmal je Gebäude und Lauf | Zahl der begrenzten Stunden und größte Überschreitung des Kühlsollwerts |
+| Kaltwasser-Vorlauf aus der Auslegung (kein Kälteerzeuger mit Vorlauf) | **Hinweis**, einmal je Gebäude | der Auslegungsvorlauf gilt als fester Vorlauf |
+| Kaltwasser kälter als die Vorlaufgrenze | **Hinweis**, einmal je Gebäude | „Die Wärmepumpe rechnet am `Kuehl_Vorlauf`, das Gebäude mischt hoch" (7.2) |
+| Vorlaufgrenze über dem Auslegungsvorlauf | **Hinweis** im Eingang | die Nennleistung wird nie erreicht |
+| Nennleistung der Kühlübergabe hergeleitet | **Info**, einmal je Gebäude | „aus dem Auslegungstag X", kein Normnachweis (8.4) |
+| Flächenkühlung, Gebläsekonvektor | **Info** | Estrich masselos bzw. sensibel ohne Entfeuchtung (K5) |
+| Heizseite gekoppelt, Kühlung wirksam, Kälteseite nicht gekoppelt | **Hinweis** | „Kühlung ideal — keine Kühlübergabe gewählt" |
 
 **Jeder Altweg-Sonderfall dieses Papiers wird bei seiner Entstehung in die Löschliste der Stufe GA
 eingetragen** — Regel aus [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md), Wortlaut in E26. Für die
@@ -1814,6 +1937,38 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,84 kW
 | `VorlaufMittelC`, `RuecklaufMittelC` | °C | heizzeitgewichtetes Mittel, Ergebnisspalte |
 | `KomfortUnterschreitungsstundenH`, `KomfortKelvinstundenKh`, `KomfortLaengsteStreckeH` | h, Kh, h | ab AK2, Ergebnisspalten (5.5) |
 
+### 10.5 Schritt K — die Kälteseite (E37)
+
+Schritt K ist **Schritt H im gespiegelten Raum**, keine zweite Rechnung. Trägt die Stunde eine
+Kühlübergabe und verlangt das Gebäude Kälte (die Kühlleistung q_c,0 im geregelten System auf θ_kühl
+ist größer null), rechnet dieselbe Routine mit allen Temperaturen negiert: Raumluft, freier Lauf θ₀,
+Sollwert und Vorlauf werden gespiegelt (x ↦ −x, ohne Multiplikation, damit die Heizseite bitgleich
+bleibt), die Kennwerte der Übergabe mit (−V, −R, −θ_i,N) — Spreizung R − V, Übertemperatur
+Δθ_m,N = θ_i,N − (V + R)/2 —, die Empfindlichkeit s der Raumluft bleibt. Die Ergebnisse werden
+zurückgespiegelt: θ_K = −θ′_H, Grenzen [unten, oben] = [−oben′, −unten′]; der Abschnitt hängt die
+Übergabe als Leitwert G·(θ_K − θ_air) mit der Verteilung a·w_AW, a·w_IW, 1 − a in den freien Lauf.
+
+| Schritt | Wärmeseite (H) | Kälteseite (K) |
+|---|---|---|
+| 1 | Vorlauf nicht über θ₀ → Heizgrenze | Vorlauf nicht unter θ₀ → Totband mit Grund `KEINE_KAELTE` |
+| Grenzfall 3.7 | Xp = 0 und q₀ ≤ Φ_offen(θ_soll) → geregelter Fall des Bestands | Xp = 0 und q_c,0 ≤ Φ_offen(θ_kühl) → `KuehlenGeregelt`; über `Kuehlleistung_Max` → `Kuehlgrenze` |
+| 4 | `Heizleistung_Max` kappt → Heizgrenze | `Kuehlleistung_Max` kappt → Kühlgrenze, Grund `KUEHLLEISTUNG_MAX` |
+| 5 | gesättigt (Grund `UEBERGABE`) oder Regelbereich | gesättigt (Grund `KUEHL_UEBERGABE`, bei Vorlauf an der Grenze `VORLAUFGRENZE_KUEHLUNG`) oder Regelbereich |
+
+**Die Verteilung ist Pflicht.** Mit Kühlübergabe verteilen auch der geregelte Kühlfall und die
+Kühlgrenze die Kälte wie die Übergabe (a·w_AW, a·w_IW, 1 − a); nur so bleiben Grenzfall, Schritt 4 und
+Leitwertfall stetig, und die Kühlung rechnet nach Kühlkonzept 3.2 „mit denselben Gleichungen". Ohne
+Kühlübergabe bleibt die Verteilung des Bestands wörtlich. Der Raumregler ist derselbe (7.4, Punkt 6):
+y = clamp((θ_i − θ_kühl)/Xp, 0, 1). Rücklauf der Stunde: θ_R = θ_V + Φ̄_c/W_K. Gründe und Zeitanteile
+werden je Seite geführt; in einer Umschaltstunde tragen Heiz- und Kälteseite je ihren Grund.
+
+| Reihe / Kennzahl | Einheit | Weg |
+|---|---|---|
+| `KuehlVorlaufC[8760]`, `KuehlRuecklaufC[8760]` | °C | `kuehlvorlauf_<n>.csv`, `kuehlruecklauf_<n>.csv`, **bedingt** (8.3) |
+| `KuehlUebergabeKwh[8760]` | kWh | `kuehluebergabe_<n>.csv`, **bedingt** |
+| `KuehlVorlaufMittelC`, `KuehlRuecklaufMittelC` | °C | kältebedarfsgewichtetes Mittel, Ergebnisspalte (`KAK-S3`) |
+| `KuehlUebergabeBegrenztH`, `KuehlVorlaufgrenzeH` | h | Ergebnisspalten (`KAK-S3`) |
+
 ---
 
 ## 11. Tests, Nachweis, Referenzbasis
@@ -1837,6 +1992,11 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,84 kW
 | **Exponent wirkt in der richtigen Richtung** | größerer Exponent bei gleicher Übertemperatur unter dem Auslegungspunkt: kleinere Leistung | AK1 |
 | **Reglerband** | `Xp = 0` gleich Bestandsverhalten; `Xp > 0` senkt die mittlere Raumtemperatur in der Heizzeit, monoton mit `Xp` | AK1 |
 | **Sollwertprofil** | 168 Werte gleich der Bestandsbelegung ergeben **byte-gleiche** Reihen; 167 Werte ergeben einen **benannten Fehler** (4.3) | AK1 |
+| **Spiegelprobe (Kälteseite, E37)** | Heizgekoppelte Stunden mit dem Rand X gegen kühlgekoppelte mit −X (Temperaturen, Lasten und Anfangszustand negiert, Gegenseite jeweils aus, gleicher Strahlungsanteil a > 0, Heiz- und Kühlleistungsgrenze vertauscht, fester Vorlauf): Leistungen vertauscht, Temperaturen genau negiert, Fallfolge gespiegelt, Gründe je Seite, Zeitanteile gleich — **Toleranz 0** (10.5) | AK1 |
+| **Grenzfall B Kälte** | Φ_N unendlich, Xp = 0, a = 0: **bitgleich** zu `KuehlenGeregelt` bzw. `Kuehlgrenze` des Bestands, auch mit `Kuehlleistung_Max` | AK1 |
+| **Handrechnung Kühldecke** | Φ_N = 2 000 W, 16/19/26 °C, n = 1,1: W_K = 666,7 W/K, Δθ_m,N = 8,5 K; bei θ_i = 27 °C und V = 16 °C Φ ≈ 2 218 W, R ≈ 19,33 °C; mit Grenze 18 °C Φ ≈ 1 784 W und Grund `VORLAUFGRENZE_KUEHLUNG` (10.5) | AK1 |
+| **Umschaltstunde** | Heizen und Kühlen gekoppelt in einer Stunde: Gründe je Seite getrennt, höchstens 60 Abschnitte | AK1 |
+| **Symmetrie** | Jede Wärmespalte und jede Kennzahl von AK1 hat ein Kälte-Gegenstück oder einen Eintrag in 7.4 (F-A16) | AK1 |
 | **Sperrzeit erzeugt Unterschreitung** | Ein Gebäude ohne Speicher mit achtstündiger Sperrzeit im Winter hat Komfortstunden; dasselbe Gebäude ohne Sperrzeit hat keine | AK2 |
 | **Verfügbarkeit trägt immer einen Grund** | jede Stunde mit `LeistungKw` kleiner als der Bedarf hat einen Grund ungleich `KEINE_BEGRENZUNG` (F-A12) | AK2 |
 | **Komfortkennzahlen** | Schwelle 0 zählt mehr Stunden als Schwelle 1 K; Kelvinstunden ≥ Stundenzahl × Schwelle; längste Strecke ≤ Stundenzahl | AK2 |
@@ -2100,7 +2260,7 @@ erst nach der Feldphase von AK1 und AK2.
 | **H6** | **Wird AK3 überhaupt gebaut?** | **entschieden (E24)** — **AK3 jetzt nicht zusagen; der Entscheid fällt nach einer Feldphase von AK1 und AK2.** AK3 ist 23–38 PT und kehrt die Laufordnung um; die Frage gehört **nach einer Feldphase von AK1 und AK2** gestellt, wenn man weiß, wie oft die Vorlaufrückwirkung in der Praxis den Ausschlag gibt. Dieses Papier beschreibt sie vollständig, damit die Entscheidung dann eine Grundlage hat | der größte Einzelposten; und der einzige, der den Bestandsrumpf berührt |
 | **H7** | **Verhältnis zur Skalierung E8:** Die Verbrauchs-Rückrechnung ist eine Verhältnisrechnung mit einem Kataloglauf. Mit begrenzter Übergabe ist das Modell **nicht mehr proportional** | **entschieden (E24)** — **Die Kopplung wirkt in beiden Läufen der Verhältnisrechnung**, und `Uebergabe_Leistung_Nenn` wird bei NULL aus der **skalierten** Auslegungslast gebildet (8.4). Damit skaliert die Heizfläche mit dem Gebäude, und das Verhältnis bleibt belastbar. Wo der Anwender eine feste Nennleistung einträgt, ist es das **nicht** — und der Bericht sagt es | die Belastbarkeit jeder Verbrauchs-Rückrechnung mit aktiver Kopplung |
 | **H8** | **Zeitprogramm-Quelle:** Spalte je Gebäude bzw. Anlage (168 Werte als Text), eigene Profiltabelle, oder Ausbau der Sperrzeitfelder? | **entschieden (E24)** — **Spalte je Gebäude bzw. Anlage**, nach dem Muster `WQ_Wochenwerte` (`sql/schema/001_grundschema.sql:738`). Eine eigene Tabelle nach dem Muster `Tab_Quellprofil` (`:2136-2151`) käme erst in Frage, wenn Profile **wiederverwendbar** werden sollen — das ist heute nicht verlangt | zwei Spalten gegen zwei Tabellen mit Kopierwegen, Katalogpflege und Registereinträgen |
-| **H9** | **Kälteseite in AK1 oder erst in AK2?** | **entschieden (E24)** — **In AK1 — aber nur, wenn KU2 steht** (7.4). Der Löser ist derselbe, der Zusatz klein; ohne `Kuehl_Vorlauf` aus `KU-S3` fehlt ihr jedoch der Auslegungspunkt. Steht KU2 nicht, wird die Kälteseite **benannt vertagt**, nicht still weggelassen | die Symmetriezusage aus E21 — und ob sie beim ersten Anlauf eingehalten wird |
+| **H9** | **Kälteseite in AK1 oder erst in AK2?** | **entschieden (E24)** — **In AK1 — aber nur, wenn KU2 steht** (7.4). Der Löser ist derselbe, der Zusatz klein; ohne `Kuehl_Vorlauf` aus `KU-S3` fehlt ihr jedoch der Auslegungspunkt. Steht KU2 nicht, wird die Kälteseite **benannt vertagt**, nicht still weggelassen. **Umgesetzt mit E37** (24.09.2026, Konzept N1.42): eigene Spalten der Kühlübergabe am Gebäude (8.1), Schritt K (10.5), gebaut mit der vierten Welle von AK1 | die Symmetriezusage aus E21 — und ob sie beim ersten Anlauf eingehalten wird |
 | **H10** | **Auslegungs-Außentemperatur:** Eingabefeld oder aus der Klimareihe hergeleitet? | **entschieden (E24)** — **Beides: hergeleitet als Vorgabe, Feld überschreibt** (8.4). Das kälteste Tagesmittel der Projekt-Klimareihe ist eine Zahl aus den eigenen Daten; eine feste Konstante wäre für jede Region dieselbe und damit falsch | ob ein Bestandsgebäude ohne eine einzige neue Eingabe rechnen kann |
 | **H11** | **Namenskollision „Heizkreis":** Der Ressourcenschlüssel `SIM_HEIZKREIS` bezeichnet bereits die **Wärmesenke** des Anlagenschemas (`WaermesenkeClass.cs:108`, `SchemaModell.cs:516`, `:973`, `:1010`) | **entschieden (E24)** — **Die neue Dialoggruppe heißt „Wärmeübergabe"**, die Senke behält „Heizkreis" (9.1). Zwei Dinge in einem Produkt gleich zu nennen ist der billigste vermeidbare Fehler | Verständlichkeit jeder Meldung, jeder Wiki-Zeile und jeder Hilfeanfrage an den Assistenten |
 | **H12** | **`Heizung_Strahlungsanteil`:** Bleibt NULL = 0,3, oder heißt NULL künftig „Vorgabe der Übergabeart"? | **entschieden (E24)** — **Vorgabe der Übergabeart** (3.3, 8.1). Wer „Flächenheizung" wählt, hat den Strahlungsanteil damit gewählt; 0,3 für eine Fußbodenheizung wäre eine Zahl, die niemand gemeint hat. **Eine Bedeutungsänderung ohne Schemaänderung** — sie gehört ins Glossar und in die Herleitungszeile, nicht nur in den Code | eine stille Ergebnisänderung für jedes Gebäude, das die Übergabeart setzt und den Strahlungsanteil leer lässt |

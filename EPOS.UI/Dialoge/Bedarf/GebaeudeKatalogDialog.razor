@@ -61,6 +61,11 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @if (!string.IsNullOrEmpty(Vorbelegung))
+    {
+        <Herleitungszeile Text="@Vorbelegung" />
+    }
+
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
         <KindInhalt>
 
@@ -87,9 +92,15 @@
                                       Mehrzeilig="true" Zeilen="3" />
                             <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                          Auswahl="@Artindex" AuswahlChanged="ArtWaehlen" />
-                            <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Klasseneintraege"
+                            <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
                                          Auswahl="@_stand.Baualtersklasse"
                                          AuswahlChanged="i => _stand.Baualtersklasse = i ?? 0" />
+                            @* Das Baujahr (G4a): ganzzahlig, optional, 1500 bis 2100 - eine
+                               Fehleingabe faerbt und haelt den OK-Weg an (Fehlerfelder). *@
+                            <Ganzzahlfeld Bezeichnung="@LabelBaujahr"
+                                          Min="@GebaeudeSchema.BAUJAHR_MIN" Max="@GebaeudeSchema.BAUJAHR_MAX"
+                                          Feldname="@Feld(LabelBaujahr)" FehlerZustand="FehlerMelden"
+                                          Wert="@_stand.Baujahr" WertChanged="w => _stand.Baujahr = w" />
                             <Auswahlfeld Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
                                          Auswahl="@Verwendungsindex" AuswahlChanged="VerwendungWaehlen" />
                             <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Bauarteintraege"
@@ -406,6 +417,8 @@
                             {
                                 <Herleitungszeile Text="@Texte.ZeileKuehlungBestandsweg" />
                             }
+                            @* E37: der Unterabschnitt „Kuehluebergabe" - derselbe Baustein im Stammblatt. *@
+                            <GebaeudeKuehluebergabeFelder Arbeit="@_arbeit" Texte="@Texte" Herleitung="@UebergabeHerleitung" EntprellungMs="@EntprellungMs" />
                             </div>
                         </KindInhalt>
                     </Gruppenkopf>
@@ -540,6 +553,12 @@
     /// <summary>Welche der drei Betriebsarten gilt.</summary>
     [Parameter] public GebaeudeKatalogModus Modus { get; set; } = GebaeudeKatalogModus.Bearbeiten;
 
+    /// <summary>
+    /// Die leise Herleitungszeile vorbelegter Daten (Stufe G4: „Vorbelegt aus dem Import: Datei …,
+    /// Format …"); leer = keine.
+    /// </summary>
+    [Parameter] public string Vorbelegung { get; set; } = "";
+
     /// <summary>Die Gebäudetypen der Klappliste (<c>Abfrage_Gebaeudetypen</c>).</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Gebaeudetypen { get; set; }
 
@@ -613,6 +632,9 @@
     [Parameter] public string LabelGebaeudetyp { get; set; } = "Gebäudetyp :";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung :";
     [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart :";
+    /// <summary>Die Klappliste der Baualtersklasse (<c>GEBK_LBL_BAUALTERSKLASSE</c>).</summary>
+    [Parameter] public string LabelBaualtersklasse { get; set; } = "Baualtersklasse :";
+    /// <summary>Das Zahlenfeld des Baujahrs (<c>GEBK_LBL_BAUJAHR</c>).</summary>
     [Parameter] public string LabelBaujahr { get; set; } = "Baujahr :";
     [Parameter] public string LabelVerwendung { get; set; } = "Verwendung :";
     [Parameter] public string LabelBauart { get; set; } = "Bauart :";
@@ -667,6 +689,8 @@
 
     [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
     [Parameter] public string MeldungNameFehlt { get; set; } = "Gebäudenamen eingeben!";
+    /// <summary><c>GEBK_MSG_BAUJAHR</c> — {0} und {1} sind die Grenzen des Baujahrs.</summary>
+    [Parameter] public string MeldungBaujahr { get; set; } = "Das Baujahr muss zwischen {0} und {1} liegen.";
     [Parameter] public string MeldungFerienWinter { get; set; }
         = "Die Ferien müssen über die Jahresgrenze gehen!";
     [Parameter] public string MeldungFerienOstern { get; set; }
@@ -790,6 +814,8 @@
         {
             MeldungNameFehlt = MeldungNameFehlt,
             MeldungZahlFehlt = MeldungZahlFehlt,
+            MeldungBaujahr = MeldungBaujahr,
+            FeldBaujahr = Feld(LabelBaujahr),
             MeldungFerienWinter = MeldungFerienWinter,
             MeldungFerienOstern = MeldungFerienOstern,
             MeldungFerienSommer = MeldungFerienSommer,

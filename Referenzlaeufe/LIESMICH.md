@@ -328,7 +328,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
-Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **131**, LFS-SHA-256 `a4a88c33…`,
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **139**, LFS-SHA-256 `f700e81e…`,
 Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
 Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
@@ -637,6 +637,71 @@ Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
 > eingespielte Typtage ist der Typtagweg benannt nicht verfügbar.
 > Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
 > 160/160 CSV **byte-gleich**.
+
+> **Nachtrag AK1 Welle 4 (E37): Schemastände 135 bis 137 (Kälteseite der Anlagenkopplung), die Basis
+> bleibt.** Drei Migrationsschritte, die Nummern stehen allein bei `KuehluebergabeSchema` (Quelle für
+> Migration, Werkzeug und Testvorrichtung): **135** (`SCHRITT_KUEHLUEBERGABE`, KAK-S1) legt die acht
+> Spalten der Kühlübergabe an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` — `Kuehluebergabe_Aktiv` (0/1,
+> Vorgabe 0), `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn`,
+> `Kuehl_Auslegung_Vorlauf`, `Kuehl_Auslegung_Ruecklauf`, `Kuehl_Auslegung_Raumtemperatur`,
+> `Kuehl_Vorlaufgrenze`, sonst alle NULL — und baut die Sicht `Abfrage_Projektgebaeude` zum vierten Mal
+> neu (98 Spalten, die 90 davor an ihren Stellen); **136** (`SCHRITT_KUEHLUEBERGABE_ERGEBNIS`, KAK-S3)
+> hängt `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und `Kuehl_Uebergabe_Begrenzt_Stunden` an
+> `Tab_ErgebnisEnergiebedarf` und `Kuehl_Uebergabe_Art` (CHECK der drei Arten), `KuehlVorlaufMittel_C`,
+> `KuehlRuecklaufMittel_C`, `KuehlUebergabeBegrenzt_H` und `KuehlVorlaufgrenze_H` (0 … 8 760) an
+> `Tab_ErgebnisGebaeude`; **137** (`SCHRITT_KUEHLUEBERGABE_ZONE`) hängt `Kuehl_Uebergabe_Art` (CHECK samt
+> `IDEAL`), `Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn` an `Tab_Zone` — **reines
+> DDL**. Sie stehen nach S-C (134, Stufe G3). Die drei Energiebedarf-Spalten gehen erst mit einem Wert in
+> `aggregate.csv` (`SpaltenNurMitWert`). Nachgezogen auf der Fassung von origin mit Schemastand **134**
+> (G3 Welle B, `9d3c006a…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: 27 Spalten
+> neu, Marker 137; ein zweiter Lauf legt nichts an. Zellvergleich aller Tabellen gegen die Fassung 134
+> (10 504 069 Zellen): allein `SchemaVersion` 134 → 137, die 27 neuen Spalten (der Schalter 0, alles
+> andere NULL) und die Sicht; `integrity_check` ok, `foreign_key_check` leer, 141 Tabellen (alle STRICT),
+> 14 Sichten, 215 Indizes. Größe 67 887 104 Byte (LFS-SHA-256 `834aa718…`). **Ergebnisneutral:** Kein
+> Referenzprojekt rechnet gekoppelt. **Keine Einfrierregel ist berührt**; die Einfrierregel der
+> Auslegungsdaten der Wärme- und Kühlübergabe samt `Kuehluebergabe_Aktiv` kommt mit der fünften Welle von
+> AK1. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394
+> CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag G4c Welle 3: Schemastand 138 (Herkunftsablage der Gebäudeimporte, Schritt S-F), die Basis bleibt.**
+> Migrationsschritt **138** (`SCHRITT_IMPORTZUORDNUNG`; die Nummer steht allein bei `ImportzuordnungSchema.SCHRITT`,
+> der Quelle für Migration, Werkzeug und Testvorrichtung) folgt den Mehrzonenschritten 132–134 der Stufe G3 und der
+> Kälteseite 135–137 (AK1 Welle 4) und legt zwei leere STRICT-Tabellen an — **reines DDL, keine Saat**:
+> `Tab_Importquelle` (eine Zeile je Importlauf: Gebäude mit Kaskade, Format `IFC`/`GBXML`, Dateiname ohne Pfad,
+> SHA-256, Größe, Schemastand, Zeitpunkt, Programmfassung, Zonenregel, Zahl fehlender Entitäten) und
+> `Tab_Importzuordnung` (eine Zeile je Paarung: Quelle mit Kaskade, fünf nullbare Zielverweise auf Gebäude, Zone,
+> Bauteil, Aufbau und Baustoff, genau einer gesetzt, ebenfalls mit Kaskade — Begründung der Abweichung von
+> Softwarearchitektur 2.2 im Kopf von `ImportzuordnungSchema` —, Quellkennung bis 64 und Quelltyp bis 40 Zeichen)
+> samt den Indizes über `ID_Importquelle` und `Quellkennung`. In der Arbeit trug der Schritt die Nummer 135; beim
+> Zusammenführen mit origin waren 135 bis 137 von der Kälteseite belegt.
+> Nachgezogen auf der Fassung von origin mit Schemastand **137** (Nachtrag AK1 Welle 4 oben, `834aa718…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` (zwei Tabellen
+> angelegt; ein zweiter Lauf legt nichts an). Zellvergleich aller 141 Tabellen gegen die Fassung 137 (11 977 604 Zellen):
+> allein `SchemaVersion` 137 → 138; neu sind die zwei leeren Tabellen und die zwei Indizes, kein bestehender Tabellen-,
+> Sicht- oder Indextext ist geändert; `integrity_check` ok, `foreign_key_check` leer, 143 Tabellen (alle STRICT) statt
+> 141, 14 Sichten, 217 Indizes statt 215. Größe 67 903 488 Byte (LFS-SHA-256 `3f5c892d…`). **Ergebnisneutral, keine
+> Einfrierregel berührt:** Kein Rechenweg liest die Tabellen, und kein Referenzprojekt führt einen Import.
+> Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
+> außer `protokoll.txt`).
+
+> **Nachtrag G4a Welle 3: Schemastand 139 (Baujahr des Gebäudes), die Basis bleibt.** Migrationsschritt **139**
+> (`SCHRITT_BAUJAHR`; die Nummer steht allein bei `BaujahrSchema.SCHRITT`, der Quelle für Migration, Werkzeug und
+> Testvorrichtung, die Definitionen bei `GebaeudeSchema`) folgt auf S-F (138) und legt an `Tab_Gebaeude` und
+> `Tab_Gebaeude_STAMM` spaltengleich die Spalte `Baujahr INTEGER` mit
+> `CHECK (Baujahr IS NULL OR Baujahr BETWEEN 1500 AND 2100)` an und baut die Sicht `Abfrage_Projektgebaeude` zum
+> fünften Mal neu (99 Spalten, die 98 von KAK-S1 an ihren Stellen, `Baujahr` an Stelle 98) — **reines DDL, keine
+> Saat**. Nachgezogen auf der Fassung von origin mit Schemastand **138** (Nachtrag G4c Welle 3 oben, `3f5c892d…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` (zwei Spalten
+> angelegt; ein zweiter Lauf legt nichts an). Zellvergleich aller 143 Tabellen gegen die Fassung 138 (10 506 686 Zellen
+> der gemeinsamen Spalten): allein `SchemaVersion` 138 → 139; neu ist die Spalte `Baujahr` in beiden Gebäudetabellen,
+> in allen 26 bzw. 269 Zeilen NULL, geändert allein der Text der Sicht; `integrity_check` ok, `foreign_key_check` leer,
+> 143 Tabellen (alle STRICT), 14 Sichten, 217 Indizes. Größe 67 903 488 Byte (LFS-SHA-256 `f700e81e…`).
+> **Ergebnisneutral, keine Einfrierregel berührt:** Die Spalte bleibt in jeder Zeile NULL, es ist also nichts gesät,
+> und kein Rechenweg liest sie — weder der Eingangsbauer des Gebäudemodells noch der Tagesbilanz-Weg noch eine Vorgabe
+> (die Vorgaben hängen an der Baualtersklasse, nicht am Jahr); sie gehört damit nicht zu den Spalten des Gebäudemodells,
+> die die Einfrierregel „gesäte Gebäudedaten“ nennt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
+> Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
 
 > **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
 > Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem

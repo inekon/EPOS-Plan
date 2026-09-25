@@ -42,6 +42,14 @@ internal static class Dateifilter
         [".png"] = "public.png",
         [".jpg"] = "public.jpeg",
         [".jpeg"] = "public.jpeg",
+        // Gebaeudeimport (Umsetzungskonzept Gebaeudesimulation 3.6,
+        // Datenaustauschkonzept 2.5): ifcXML ist XML, ".ifczip" ein ZIP-Behaelter,
+        // ".gbxml" gbXML unter eigener Endung. Fuer ".ifc" (STEP-Text) gibt es
+        // keine registrierte Typkennung; dort bleibt public.data die richtige
+        // Antwort.
+        [".ifcxml"] = "public.xml",
+        [".ifczip"] = "public.zip-archive",
+        [".gbxml"] = "public.xml",
     };
 
     /// <summary>

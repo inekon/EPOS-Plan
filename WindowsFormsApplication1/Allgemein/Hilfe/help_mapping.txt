@@ -276,6 +276,10 @@ Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
 # und Bauteilaufbauten.wiki), je Maske ein Abschnitt.
 BaustoffKatalog.btn_Help = Baustoffe und Bauteilaufbauten#baustoffe
 Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
+# Gebaeudeimport (gbXML, IFC): der Zuordnungsdialog hat eine eigene Seite mit
+# Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
+# Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).
+Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
 Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel

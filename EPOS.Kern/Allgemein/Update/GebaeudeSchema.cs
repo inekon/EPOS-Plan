@@ -50,6 +50,18 @@ namespace WindowsFormsApplication1
     // Kuehlspalten neu. Die Projektspalte Tab_Einstellungen.Anlagenkopplung desselben
     // Schritts steht bei AnlagenkopplungSchema, das beide Teile zu EINEM Schritt fuegt.
     // Die drei Uebergabespalten der Zone legt ebenfalls S-C mit an.
+    //
+    // DER VIERTE DURCHGANG: KAK-S1 (Entscheid E37, Anlagenkopplung 8.1; Nummer bei
+    // KuehluebergabeSchema.SCHRITT). Acht Spalten der Kuehluebergabe je Gebaeudetabelle -
+    // der Schalter Kuehluebergabe_Aktiv zuerst (A1) -, die Sicht mit ihnen HINTER den
+    // Uebergabespalten neu (98 Spalten). Die drei Zonenspalten der Kuehluebergabe bringt ein
+    // eigener Schritt nach S-C.
+    //
+    // DER FUENFTE DURCHGANG: das Baujahr (Stufe G4a, Umsetzungskonzept 3.4; Nummer bei
+    // BaujahrSchema.SCHRITT). Eine Spalte Baujahr (INTEGER, CHECK 1500 bis 2100) je
+    // Gebaeudetabelle, die Sicht mit ihr HINTER den Spalten der Kuehluebergabe neu (99
+    // Spalten). Er laeuft in Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer
+    // Durchgang die Spalte wieder aus der Sicht schneidet.
     // ====================================================================================
 
     /// <summary>
@@ -60,7 +72,10 @@ namespace WindowsFormsApplication1
     /// 108, Kuehlkonzept 7.1): vier Kuehleingaben je Gebaeudetabelle und der zweite
     /// Sichtneubau; und der dritte Durchgang AK-S1 (Schemaschritt 122, Anlagenkopplung
     /// 8.1): dreizehn Spalten der Waermeuebergabe je Gebaeudetabelle und der dritte
-    /// Sichtneubau.
+    /// Sichtneubau; und der vierte Durchgang KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>,
+    /// E37): acht Spalten der Kuehluebergabe je Gebaeudetabelle und der vierte Sichtneubau;
+    /// und der fuenfte Durchgang (<see cref="BaujahrSchema.SCHRITT"/>, G4a): das Baujahr je
+    /// Gebaeudetabelle und der fuenfte Sichtneubau.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -303,6 +318,97 @@ namespace WindowsFormsApplication1
             TABELLEN.SelectMany(t => UEBERGABE_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
                     .ToArray();
 
+        // ---- KAK-S1, die Kuehluebergabe (vierter Durchgang, E37) ------------------------
+        //
+        // Acht Spalten je Gebaeudetabelle beschreiben die Kaelteseite der Kopplung
+        // (Anlagenkopplung 8.1, Schritt K in 10.5). Der Schalter (A1) wie Heizkreis_Aktiv,
+        // alle anderen nullbar - NULL ist die Vorgabe, die Bereiche prueft der Eingang.
+
+        /// <summary>
+        /// „Die Kuehluebergabe dieses Gebaeudes wird gerechnet" (A1): Schalter wie
+        /// <see cref="SPALTE_HEIZKREIS_AKTIV"/>, <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>.
+        /// Er traegt die ABSICHT, die Felder daneben die WERTE — wer ihn abschaltet, behaelt die Art.
+        /// </summary>
+        public const string SPALTE_KUEHLUEBERGABE_AKTIV = "Kuehluebergabe_Aktiv";
+        /// <summary>Kuehluebergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>); NULL = ideal, Kaelteseite nicht gekoppelt.</summary>
+        public const string SPALTE_KUEHL_UEBERGABE_ART = "Kuehl_Uebergabe_Art";
+        /// <summary>Exponent der Kuehluebergabe [–]; NULL = Vorgabe der Art.</summary>
+        public const string SPALTE_KUEHL_UEBERGABE_EXPONENT = "Kuehl_Uebergabe_Exponent";
+        /// <summary>Nennleistung der Kuehluebergabe [kW], sensibel; NULL = aus dem Auslegungstag (A2).</summary>
+        public const string SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN = "Kuehl_Uebergabe_Leistung_Nenn";
+        /// <summary>Auslegungsvorlauf der Kuehluebergabe [°C]; NULL = Vorgabe der Art.</summary>
+        public const string SPALTE_KUEHL_AUSLEGUNG_VORLAUF = "Kuehl_Auslegung_Vorlauf";
+        /// <summary>Auslegungsruecklauf der Kuehluebergabe [°C]; NULL = Vorgabe der Art.</summary>
+        public const string SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF = "Kuehl_Auslegung_Ruecklauf";
+        /// <summary>Raumtemperatur im Auslegungspunkt der Kuehluebergabe [°C]; NULL = <c>Kuehl_Sollwert</c>.</summary>
+        public const string SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR = "Kuehl_Auslegung_Raumtemperatur";
+        /// <summary>
+        /// Untere Grenze des Kaltwasser-Vorlaufs [°C] — eine Vorgabe statt einer Taupunktrechnung
+        /// (7.2); NULL = Vorgabe der Art, beim Geblaesekonvektor keine Grenze.
+        /// </summary>
+        public const string SPALTE_KUEHL_VORLAUFGRENZE = "Kuehl_Vorlaufgrenze";
+
+        /// <summary>
+        /// Die acht Spalten der Kuehluebergabe JE Tabelle in der Reihenfolge von Anlagenkopplung
+        /// 8.1 (KAK-S1), in <b>Access</b>-Schreibweise wie <see cref="UEBERGABE_SPALTEN"/>.
+        /// </summary>
+        public static readonly KeyValuePair<string, string>[] KUEHLUEBERGABE_SPALTEN =
+        {
+            new KeyValuePair<string, string>(SPALTE_KUEHLUEBERGABE_AKTIV,           "YESNO"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_UEBERGABE_ART,            "TEXT(20)"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_UEBERGABE_EXPONENT,       "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN,  "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_AUSLEGUNG_VORLAUF,        "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF,      "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR, "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_VORLAUFGRENZE,            "DOUBLE"),
+        };
+
+        /// <summary>Der eine Schalter unter den Spalten der Kuehluebergabe - NOT NULL DEFAULT 0.</summary>
+        public static readonly string[] KUEHLUEBERGABE_SCHALTER = { SPALTE_KUEHLUEBERGABE_AKTIV };
+
+        /// <summary>
+        /// Die 16 <see cref="SchemaSpalte"/>-Eintraege von KAK-S1 — die acht aus
+        /// <see cref="KUEHLUEBERGABE_SPALTEN"/> fuer <c>Tab_Gebaeude</c>, dann fuer
+        /// <c>Tab_Gebaeude_STAMM</c>. Die Nummer steht bei <see cref="KuehluebergabeSchema.SCHRITT"/>.
+        /// </summary>
+        public static readonly SchemaSpalte[] Kuehluebergabespalten =
+            TABELLEN.SelectMany(t => KUEHLUEBERGABE_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
+                    .ToArray();
+
+        // ---- Das Baujahr (G4a; Schritt BaujahrSchema.SCHRITT, der fuenfte Sichtneubau) ---
+        //
+        // Eine Spalte je Gebaeudetabelle (Umsetzungskonzept Gebaeudesimulation 3.4, Zeile
+        // "Baujahr (neue Spalte)"): die Jahreszahl, NULL = unbekannt. Sie steht neben der
+        // Baualtersklasse, steuert aber nichts - kein Rechenweg und keine Vorgabe liest sie.
+
+        /// <summary>
+        /// Das Baujahr des Gebaeudes [a], ganzzahlig; NULL = unbekannt. Gefuellt von Hand oder
+        /// vom IFC-Import (<c>Pset_BuildingCommon.YearOfConstruction</c>); kein Rechenweg liest es.
+        /// </summary>
+        public const string SPALTE_BAUJAHR = "Baujahr";
+
+        /// <summary>Kleinstes zulaessiges Baujahr — dieselbe Grenze wie die Leseregel des Imports.</summary>
+        public const int BAUJAHR_MIN = 1500;
+
+        /// <summary>Groesstes zulaessiges Baujahr.</summary>
+        public const int BAUJAHR_MAX = 2100;
+
+        /// <summary>
+        /// Die SQLite-Definition der Spalte: <c>INTEGER</c>, nullbar, mit Bereichspruefung
+        /// <see cref="BAUJAHR_MIN"/> … <see cref="BAUJAHR_MAX"/>. Sie steht unmittelbar in
+        /// SQLite-Schreibweise, weil die Typuebersetzung (<c>StilleDb.SqliteSpaltenTyp</c>) keine
+        /// Bereichspruefung kennt.
+        /// </summary>
+        public static readonly string SQLITE_BAUJAHR =
+            "INTEGER CHECK (" + SPALTE_BAUJAHR + " IS NULL OR " + SPALTE_BAUJAHR + " BETWEEN " +
+            BAUJAHR_MIN.ToString(CultureInfo.InvariantCulture) + " AND " +
+            BAUJAHR_MAX.ToString(CultureInfo.InvariantCulture) + ")";
+
+        /// <summary>Die Anweisung, die das Baujahr an einer Gebaeudetabelle anlegt (<c>ALTER TABLE … ADD COLUMN</c>).</summary>
+        public static string BaujahrAnlegen(string tabelle)
+            => "ALTER TABLE \"" + tabelle + "\" ADD COLUMN \"" + SPALTE_BAUJAHR + "\" " + SQLITE_BAUJAHR;
+
         // ---- die Sicht ----------------------------------------------------------------
 
         /// <summary>Verwirft die Sicht - wiederholbar (<c>IF EXISTS</c>).</summary>
@@ -361,8 +467,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// DIE BAUVORSCHRIFT DER SICHT — fuer jeden Sichtneubau dieselbe: die 58
         /// Bestandsspalten an ihren Stellen, dahinter die Zusatzspalten der Durchgaenge in
-        /// ihrer Reihenfolge (M3, dann KU-S1, dann AK-S1). Ein Durchgang nennt nur, was er
-        /// anhaengt.
+        /// ihrer Reihenfolge (M3, KU-S1, AK-S1, KAK-S1, dann das Baujahr). Ein Durchgang nennt
+        /// nur, was er anhaengt.
         /// </summary>
         /// <param name="zusatzspalten">Die Spalten aus <c>Tab_Gebaeude</c> hinter <c>Tab_Gebaeude.ID</c>.</param>
         public static string SichtSql(IEnumerable<string> zusatzspalten)
@@ -409,13 +515,44 @@ namespace WindowsFormsApplication1
                                  .Concat(UEBERGABE_SPALTEN.Select(s => s.Key)));
 
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit AK-S1). Wer die
-        /// Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
+        /// Alle Spalten der Sicht ab KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>): die 90 aus
+        /// <see cref="SICHT_UEBERGABE"/>, dahinter die acht Spalten der Kuehluebergabe - an den
+        /// Stellen 90..97.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_UEBERGABE;
+        public static readonly string[] SICHT_KUEHLUEBERGABE =
+            SICHT_UEBERGABE.Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key)).ToArray();
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit AK-S1).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_UEBERGABE;
+        /// <summary>Die Sichtdefinition von KAK-S1: M3, KU-S1, AK-S1 und dahinter die acht Spalten der Kuehluebergabe.</summary>
+        public static readonly string SQL_VIEW_KUEHLUEBERGABE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key)));
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt des Baujahrs (<see cref="BaujahrSchema.SCHRITT"/>,
+        /// der fuenfte Durchgang): die 98 aus <see cref="SICHT_KUEHLUEBERGABE"/>, dahinter das
+        /// Baujahr - an der Stelle 98.
+        /// </summary>
+        public static readonly string[] SICHT_BAUJAHR =
+            SICHT_KUEHLUEBERGABE.Concat(new[] { SPALTE_BAUJAHR }).ToArray();
+
+        /// <summary>Die Sichtdefinition des Baujahrs: M3, KU-S1, AK-S1, KAK-S1 und dahinter das Baujahr.</summary>
+        public static readonly string SQL_VIEW_BAUJAHR =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR }));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Baujahrs).
+        /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
+        /// </summary>
+        public static string[] SICHT_AKTUELL => SICHT_BAUJAHR;
+
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Baujahrs).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_BAUJAHR;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)
@@ -465,6 +602,30 @@ namespace WindowsFormsApplication1
             foreach (SchemaSpalte s in Uebergabespalten)
                 if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
             return SichtBeginntMit(SICHT_UEBERGABE);
+        }
+
+        /// <summary>
+        /// Steht KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>) vollstaendig? Alle 16 Spalten
+        /// der Kuehluebergabe stehen, und die Sicht liefert <see cref="SICHT_KUEHLUEBERGABE"/> in
+        /// dieser Reihenfolge an ihren Stellen 0..97.
+        /// </summary>
+        public static bool KuehluebergabespaltenVollstaendig()
+        {
+            foreach (SchemaSpalte s in Kuehluebergabespalten)
+                if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
+            return SichtBeginntMit(SICHT_KUEHLUEBERGABE);
+        }
+
+        /// <summary>
+        /// Steht der Schritt des Baujahrs (<see cref="BaujahrSchema.SCHRITT"/>) vollstaendig? Beide
+        /// Gebaeudetabellen fuehren <see cref="SPALTE_BAUJAHR"/>, und die Sicht liefert
+        /// <see cref="SICHT_BAUJAHR"/> in dieser Reihenfolge an ihren Stellen 0..98.
+        /// </summary>
+        public static bool BaujahrVollstaendig()
+        {
+            foreach (string t in TABELLEN)
+                if (!DataRepository.SpalteVorhanden(t, SPALTE_BAUJAHR)) return false;
+            return SichtBeginntMit(SICHT_BAUJAHR);
         }
 
         /// <summary>Beginnt die Spaltenfolge der Sicht mit <paramref name="soll"/>?</summary>
@@ -621,6 +782,100 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren(SQL_VIEW_UEBERGABE);
                     bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
                                  SICHT_UEBERGABE.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
+        }
+
+        /// <summary>
+        /// Fuehrt KAK-S1 (<see cref="KuehluebergabeSchema.SCHRITT"/>) in EINEM Vorgang aus - fuer
+        /// <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c> ueber
+        /// <see cref="KuehluebergabeSchema.GebaeudeAlle"/>; die Migration der Schale geht denselben
+        /// Weg ueber ihre eigenen Helfer. Sicht verwerfen, die fehlenden Spalten der Kuehluebergabe
+        /// anlegen, Sicht aus <see cref="SQL_VIEW_KUEHLUEBERGABE"/> neu bauen. Setzt M3, KU-S1 und
+        /// AK-S1 voraus; hinter ihm laeuft nur noch der Durchgang des Baujahrs
+        /// (<see cref="BaujahrAlle"/>). Wiederholbar, <b>kein DML</b> - der Schalter steht danach
+        /// auf 0, die uebrigen Spalten auf NULL.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (hoechstens 16).</returns>
+        public static int KuehluebergabespaltenAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = Kuehluebergabespalten.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren(SQL_VIEW_DROP);
+                    bericht?.Add("Sicht " + VIEW + " verworfen");
+                    foreach (SchemaSpalte s in fehlend)
+                    {
+                        v.Ausfuehren("ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                     StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 Kuehluebergabespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                                 " Spalte(n) der Kuehluebergabe angelegt");
+                    v.Ausfuehren(SQL_VIEW_KUEHLUEBERGABE);
+                    bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
+                                 SICHT_KUEHLUEBERGABE.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
+        }
+
+        /// <summary>
+        /// Fuehrt den Schritt des Baujahrs (<see cref="BaujahrSchema.SCHRITT"/>) in EINEM Vorgang aus
+        /// - fuer <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c> ueber
+        /// <see cref="BaujahrSchema.Alle"/>; die Migration der Schale geht denselben Weg ueber ihre
+        /// eigenen Helfer. Sicht verwerfen, die Spalte an beiden Gebaeudetabellen anlegen, wo sie
+        /// fehlt, Sicht aus <see cref="SQL_VIEW_BAUJAHR"/> neu bauen. Setzt M3, KU-S1, AK-S1 und
+        /// KAK-S1 voraus und muss als LETZTER Sichtneubau laufen. Wiederholbar, <b>kein DML</b> -
+        /// die Spalte steht danach auf NULL.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (hoechstens zwei).</returns>
+        public static int BaujahrAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = TABELLEN.Where(t => !DataRepository.SpalteVorhanden(t, SPALTE_BAUJAHR)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren(SQL_VIEW_DROP);
+                    bericht?.Add("Sicht " + VIEW + " verworfen");
+                    foreach (string t in fehlend)
+                    {
+                        v.Ausfuehren(BaujahrAnlegen(t));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 TABELLEN.Length.ToString(CultureInfo.InvariantCulture) +
+                                 " Spalte(n) Baujahr angelegt");
+                    v.Ausfuehren(SQL_VIEW_BAUJAHR);
+                    bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
+                                 SICHT_BAUJAHR.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
                     v.Commit();
                 }
                 catch

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -17,8 +18,11 @@ namespace WindowsFormsApplication1
     /// Aufzählungswerte nehmen die Schlüssel des Gebäudeeditors (<c>GEBK_BAUART_*</c>,
     /// <c>GEBK_RAND_*</c>, <c>GEB_BAK_*</c>), damit derselbe Begriff nicht zwei Texte bekommt.</para>
     ///
-    /// <para><b>Zahlen</b> zeigt <see cref="WertText"/> in der Anzeigekultur; Belege und Meldungen
-    /// tragen ihre Werte invariant (Muster <see cref="PruefMeldung"/>).</para>
+    /// <para><b>Zahlen</b> zeigt <see cref="WertText"/> in der Anzeigekultur. Belege und Meldungen
+    /// TRAGEN ihre Werte invariant (Muster <see cref="PruefMeldung"/>) — gespeichert und verglichen
+    /// wird so; erst <see cref="BelegText"/> und <see cref="MeldungText"/> setzen eine Dezimalzahl
+    /// darin in die Anzeigekultur (<see cref="AnzeigeWert"/>, de-DE: Komma). Das gilt nur hier, nicht
+    /// global an <see cref="PruefMeldung"/>.</para>
     /// </summary>
     internal static class GebaeudeZuordnungsModell
     {
@@ -50,6 +54,9 @@ namespace WindowsFormsApplication1
         {
             if (zeile == null) return "";
             if (zeile.Textwert != null) return TextwertText(zeile.Zielfeld, zeile.Textwert);
+            // Eine Jahreszahl ohne Tausendertrennzeichen - aus 1965 wird nicht „1.965".
+            if (zeile.Zielfeld == GebaeudeZielfelder.BAUJAHR && zeile.Wert is double jahr)
+                return jahr.ToString("0.###", CultureInfo.CurrentCulture);
             return ZahlText(zeile.Wert);
         }
 
@@ -90,23 +97,68 @@ namespace WindowsFormsApplication1
                                WertText(zeile), einheit, HerkunftText(zeile.Herkunft)).Trim();
         }
 
-        /// <summary>Der Text eines Belegs; ohne Beleg leer. Fehlt der Schlüssel, die sprachneutrale Kurzfassung.</summary>
+        /// <summary>
+        /// Der Text eines Belegs; ohne Beleg leer. Fehlt der Schlüssel, die sprachneutrale Kurzfassung.
+        /// Dezimalzahlen unter den Werten erscheinen in der Anzeigekultur (<see cref="AnzeigeWert"/>).
+        /// </summary>
         public static string BelegText(GebaeudeBeleg beleg)
         {
             if (beleg == null) return "";
             string vorlage = Ressource(beleg.Schluessel);
             if (vorlage == null) return beleg.ToString();
-            return beleg.Werte.Length == 0 ? vorlage : Formatieren(vorlage, beleg.Werte);
+            if (beleg.Werte.Length == 0) return vorlage;
+            var werte = new object[beleg.Werte.Length];
+            for (int i = 0; i < werte.Length; i++) werte[i] = AnzeigeWert(beleg.Werte[i]);
+            return Formatieren(vorlage, werte);
         }
+
+        /// <summary>
+        /// <b>Ein Beleg- oder Meldungswert in der Anzeigekultur.</b> Eine invariant geschriebene
+        /// Dezimalzahl (<c>18.37</c>, <c>-0.5</c>, <c>1E-05</c>) bekommt Dezimal- und Minuszeichen
+        /// der aktuellen Kultur (de-DE: <c>18,37</c>); ihre Ziffern bleiben, wie sie sind. Ganzzahlen
+        /// (Baujahr, Anzahl, Byte), Kennungen, Dateinamen und Texte bleiben unverändert — auch ohne
+        /// Tausendertrennzeichen, damit aus dem Baujahr 2024 nicht „2.024" wird.
+        /// </summary>
+        public static string AnzeigeWert(string wert)
+        {
+            if (string.IsNullOrEmpty(wert)) return wert ?? "";
+            Match m = Dezimalzahl.Match(wert);
+            if (!m.Success || (!m.Groups["bruch"].Success && !m.Groups["exponent"].Success)) return wert;
+
+            NumberFormatInfo nf = NumberFormatInfo.CurrentInfo;
+            if (m.Groups["exponent"].Success)
+                return double.TryParse(wert, NumberStyles.Float, CultureInfo.InvariantCulture, out double d)
+                    ? d.ToString("0.###############", CultureInfo.CurrentCulture)
+                    : wert;
+            return (m.Groups["minus"].Success ? nf.NegativeSign : "") + m.Groups["ganz"].Value
+                   + nf.NumberDecimalSeparator + m.Groups["bruch"].Value;
+        }
+
+        /// <summary>Eine invariant geschriebene Zahl: Vorzeichen, Ganzteil, Nachkommastellen, Exponent.</summary>
+        private static readonly Regex Dezimalzahl = new Regex(
+            @"^(?<minus>-)?(?<ganz>\d+)(?:\.(?<bruch>\d+))?(?<exponent>[eE][+-]?\d+)?$",
+            RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Meldungen, deren Werte zwar wie Zahlen aussehen, aber keine sind — der Versionswert einer
+        /// Datei („0.37") bleibt, wie er in der Datei steht.
+        /// </summary>
+        private static readonly HashSet<string> OhneZahlwerte = new HashSet<string>(StringComparer.Ordinal)
+        {
+            GbxmlImportProfil.MELDUNGSPRAEFIX + "VERSION_UNBEKANNT",
+            IfcImportProfil.MELDUNGSPRAEFIX + "SCHEMA_UNBEKANNT",
+        };
 
         /// <summary>
         /// Der Text einer Meldung — derselbe Weg wie im Ganglinienimport, mit einem Zusatz: Ein Wert,
         /// der ein Zielfeldschlüssel (<c>U_AUSSENWAND</c>) oder ein Randbedingungswert
-        /// (<c>KELLER</c>) ist, erscheint mit seiner Beschriftung statt als Schlüssel.
+        /// (<c>KELLER</c>) ist, erscheint mit seiner Beschriftung statt als Schlüssel, und eine
+        /// Dezimalzahl in der Anzeigekultur (<see cref="AnzeigeWert"/>).
         /// </summary>
         public static string MeldungText(PruefMeldung meldung)
         {
             if (meldung == null) return "";
+            bool zahlen = !OhneZahlwerte.Contains(meldung.Schluessel ?? "");
             var werte = new string[meldung.Werte.Length];
             for (int i = 0; i < werte.Length; i++)
             {
@@ -114,7 +166,7 @@ namespace WindowsFormsApplication1
                 werte[i] = GebaeudeZielfelder.Finde(w) != null ? FeldText(w)
                          : w == DbWerte.GRUND_ERDREICH || w == DbWerte.GRUND_KELLER || w == DbWerte.GRUND_AUSSENLUFT
                              ? TextwertText(GebaeudeZielfelder.GRUND_RANDBEDINGUNG, w)
-                             : w;
+                             : zahlen ? AnzeigeWert(w) : w;
             }
             return GanglinienProtokollText.Text(new PruefMeldung(meldung.Stufe, meldung.Schluessel, werte));
         }
@@ -154,7 +206,82 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Plausibilität am OK-Weg — dieselbe Prüfung wie <see cref="GebaeudeImportAblauf.Pruefen"/>.</summary>
-        public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz) => GebaeudeImportAblauf.Pruefen(satz);
+        public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz, string katalogname = null)
+            => GebaeudeImportAblauf.Pruefen(satz, katalogname);
+
+        // ------------------------------------------------------------------ Welle 2: Dialog
+
+        /// <summary>Schlüssel der Herkunft „leer" in der Oberfläche — die Persistenz kennt keinen (<see cref="ImportherkunftWerte.Wert"/>).</summary>
+        public const string HERKUNFT_LEER = "LEER";
+
+        /// <summary>
+        /// Der sprachneutrale Schlüssel einer Herkunft für die Oberfläche (Stilklasse, Rückweg):
+        /// der Persistenzwert (<see cref="ImportherkunftWerte"/>), für „leer" <see cref="HERKUNFT_LEER"/>.
+        /// </summary>
+        public static string HerkunftSchluessel(Importherkunft herkunft) => ImportherkunftWerte.Wert(herkunft) ?? HERKUNFT_LEER;
+
+        /// <summary>Der Rückweg zu <see cref="HerkunftSchluessel"/>; ein unbekannter Schlüssel ist „leer".</summary>
+        public static Importherkunft HerkunftAusSchluessel(string schluessel)
+        {
+            switch (schluessel)
+            {
+                case ImportherkunftWerte.GBXML: return Importherkunft.GbXml;
+                case ImportherkunftWerte.IFC: return Importherkunft.Ifc;
+                case ImportherkunftWerte.KATALOG: return Importherkunft.Katalog;
+                case ImportherkunftWerte.MANUELL: return Importherkunft.Manuell;
+                case ImportherkunftWerte.VORGABE: return Importherkunft.Vorgabe;
+                default: return Importherkunft.Leer;
+            }
+        }
+
+        /// <summary>
+        /// Der Grund, warum ein Raum als beheizt oder unbeheizt gilt: vom Anwender umgestellt, die
+        /// Zustandsangabe der Datei, der Treffer der Namensregel oder „keine Angabe".
+        /// </summary>
+        public static string RaumGrundText(GebaeudeRaumzeile raum)
+        {
+            if (raum == null) return "";
+            if (raum.Uebersteuert) return MyResource.Resource.GIMP_RAUM_GRUND_MANUELL;
+            switch (raum.Quelle)
+            {
+                case BeheiztQuelle.Attribut:
+                    return Formatieren(MyResource.Resource.GIMP_RAUM_GRUND_ATTRIBUT, raum.Zustandsangabe ?? "");
+                case BeheiztQuelle.Name:
+                    return Formatieren(MyResource.Resource.GIMP_RAUM_GRUND_NAME, raum.Namenstreffer ?? raum.Name ?? "");
+                default:
+                    return MyResource.Resource.GIMP_RAUM_GRUND_ANNAHME;
+            }
+        }
+
+        /// <summary>Der Anzeigename des Formats eines Profils („gbXML", „IFC") — ein Datum des Profils, nie ein Literal der Oberfläche.</summary>
+        public static string FormatText(GebaeudeImportProfil profil)
+            => profil == null ? "" : Ressource("GIMP_FORMAT_" + profil.Format) ?? profil.Format;
+
+        /// <summary>Die Beschriftung einer Zonierungsregel („X4 – eine Zone je Gebäude"); eine unbekannte erscheint als Schlüssel.</summary>
+        public static string ZonenregelText(string regel)
+            => string.IsNullOrEmpty(regel) ? "" : Ressource("GIMP_ZONENREGEL_" + regel) ?? regel;
+
+        /// <summary>Der Text eines Fortschrittsschritts des Ablaufs (<see cref="ImportFortschritt"/>); ohne Schlüssel leer.</summary>
+        public static string FortschrittText(ImportFortschritt fortschritt)
+        {
+            string vorlage = Ressource(fortschritt.Schluessel);
+            if (vorlage == null) return fortschritt.Schluessel ?? "";
+            string[] werte = fortschritt.Werte ?? Array.Empty<string>();
+            return werte.Length == 0 ? vorlage : Formatieren(vorlage, werte);
+        }
+
+        /// <summary>
+        /// Eine Dateigröße zur Anzeige: unter einem Megabyte in KB, sonst in MB, je mit einer
+        /// Nachkommastelle in der Anzeigekultur (1 MB = 1 024 × 1 024 Byte, wie die Grenzen der Profile).
+        /// </summary>
+        public static string GroesseText(long bytes)
+        {
+            const double KB = 1024.0, MB = 1024.0 * 1024.0;
+            if (bytes < 0) bytes = 0;
+            return bytes < MB
+                ? (bytes / KB).ToString("0.#", CultureInfo.CurrentCulture) + " KB"
+                : (bytes / MB).ToString("0.#", CultureInfo.CurrentCulture) + " MB";
+        }
 
         private static string Ressource(string schluessel)
         {

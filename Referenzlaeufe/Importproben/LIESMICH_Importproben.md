@@ -28,6 +28,30 @@ Die Fuß- und die UTF-16-Datei entstanden aus derselben Gebäudedefinition wie d
 | `gbxml_zwei_gebaeude.xml` | zwei Gebäude in einer Datei, eines je Lauf (U13) | selbst erzeugt | eigenes Werk |
 | `gbxml_nettoflaeche_negativ.xml` | ein Fenster größer als seine Wand — Nettofläche 0 (U14) | selbst erzeugt | eigenes Werk |
 
+## Gebäudeimport IFC (Stufe G4a)
+
+Selbst erzeugt am 25.09.2026 mit xBIM (`MemoryModel` im Schreibmodus) durch die Testhilfe
+`EPOS.Kern.Tests/IfcProbenErzeuger.cs` — deterministisch (feste `GlobalId`s, fester Zeitstempel,
+feste Kopfangaben, CRLF); `IfcProbenTests` hält fest, dass eine erneute Erzeugung byte-gleich wäre
+(beim `.ifczip` der entpackte Inhalt). Neutrale Bezeichner, runde Werte, keine Normzahlen und keine
+Herstellerdaten; nichts aus dem Netz. Längen in Millimetern, Flächen in m² ohne Prefix. Die
+KIT-Probe `AC20-FZK-Haus.ifc` ist nicht aufgenommen (entscheidet der Anwender).
+
+| Datei | Zweck | Herkunft | Lizenzstand |
+|---|---|---|---|
+| `ifc4_haus.ifc` | Probenhaus IFC4: ein Gebäude, zwei beheizte Vollgeschosse über einem Kellergeschoss mit unbeheiztem „Keller"; vier beheizte Räume (130 m², Höhen 2,6/2,4 m), Außenwände in vier Richtungen mit `BaseQuantities` bzw. `Qto_WallBaseQuantities` (eine nur mit Länge × Höhe), U-Wert am Wandtyp und zwei Vorkommniswerte, fünf Fenster mit `Pset_DoorWindowGlazingType` (eines nur mit Breite × Höhe), Haustür über `OverallWidth`/`OverallHeight`, Flachdach, Kellerdecke, Geschossdecke, Bodenplatte, Innenwand; 28 Raumgrenzen als Basisklasse mit `Name='2ndLevel'`/`Description='2a'`; TrueNorth [−2, 1, 0]; `Pset_BuildingCommon.YearOfConstruction = 'ca. 1965'`; Sollwert als Bereich mit `SetPointValue` | selbst erzeugt | eigenes Werk |
+| `ifc2x3_haus.ifc` | dasselbe Haus in IFC2X3 (Sollwert als `SpaceTemperatureMin`, soweit abbildbar) — dieselben Zahlen | selbst erzeugt | eigenes Werk |
+| `ifc4_haus.ifczip` | `ifc4_haus.ifc` im ZIP-Behälter — Größengrenze gegen die entpackte Größe | selbst erzeugt | eigenes Werk |
+| `ifc4x1_kopf.ifc` | Kopf mit dem nicht angenommenen Schema IFC4X1 | selbst erzeugt | eigenes Werk |
+| `ifc4_zwei_gebaeude.ifc` | zwei Gebäude, eines je Lauf (U13) | selbst erzeugt | eigenes Werk |
+| `ifc4_ohne_mengen.ifc` | Raum und Außenwände ohne jeden Mengensatz — Meldung statt Geometrieableitung | selbst erzeugt | eigenes Werk |
+| `ifc4_mapconversion.ifc` | Kontext mit TrueNorth UND `IfcMapConversion` (90°) — die Umrechnung gilt, TrueNorth wird nicht addiert | selbst erzeugt | eigenes Werk |
+| `ifc4_schichten.ifc` | Schichtenhaus: ein beheizter Raum, vier Außenwände, Dach- und Bodenplatte ohne U-Werte, aber mit `IfcMaterialLayerSetUsage` und Stoffwerten in `Pset_MaterialThermal`/`Pset_MaterialCommon`; zwei Wände zählen innen zuerst gegen die Achse (`NEGATIVE`), zwei außen zuerst längs der Achse (`POSITIVE`) — Bauart aus den raumseitigen Schichten und Schichtfolge aus der Nutzung | selbst erzeugt | eigenes Werk |
+| `ifc4_schichten_nullwerte.ifc` | dasselbe Haus, die Dämmung mit ρ = 0 und c = 0 — Stoffwerte ≤ 0 als Fehlstelle | selbst erzeugt | eigenes Werk |
+| `ifc2x3_schichten.ifc` | dasselbe Haus in IFC2X3 mit `IfcThermalMaterialProperties`, `IfcGeneralMaterialProperties` und einem `IfcExtendedMaterialProperties` — die Stoffwerte werden benannt nicht gelesen | selbst erzeugt | eigenes Werk |
+| `ifc4_rueckfaelle.ifc` | zwei Geschosse, Räume ohne Höhe und Volumen, Dach- und Bodenplatte ohne Mengen, keine Tür, Obergeschoss mit `GrossFloorArea` — die Vorgabe-Rückfälle für Raumhöhe, Dach-, Grund- und sonstige Fläche | selbst erzeugt | eigenes Werk |
+| `ifc4_verlust.ifc` | von Hand geschriebene Kleinstdatei (< 5 KB), absichtlich beschädigt: ein unbekannter Entitätstyp und ein Verweis ins Leere — beide Verlustkanäle | von Hand geschrieben | eigenes Werk |
+
 ## Katalog-, Geräte-, Ganglinien- und Klimaimporte
 
 | Datei | Zweck | Herkunft | Lizenzstand |

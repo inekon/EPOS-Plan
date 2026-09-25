@@ -1012,6 +1012,8 @@
         internal static string GebkBeschreibungErl => MyResource.Resource.KI_DLG_GEBK_BESCHREIBUNG_ERL;
         internal static string GebkArtName => MyResource.Resource.GEBK_LBL_GEBAEUDEART;
         internal static string GebkArtErl => MyResource.Resource.KI_DLG_GEBK_ART_ERL;
+        internal static string GebkBaualtersklasseName => MyResource.Resource.GEBK_LBL_BAUALTERSKLASSE;
+        internal static string GebkBaualtersklasseErl => MyResource.Resource.KI_DLG_GEBK_BAUALTERSKLASSE_ERL;
         internal static string GebkBaujahrName => MyResource.Resource.GEBK_LBL_BAUJAHR;
         internal static string GebkBaujahrErl => MyResource.Resource.KI_DLG_GEBK_BAUJAHR_ERL;
         internal static string GebkVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
@@ -1102,6 +1104,23 @@
         internal static string GebkKuehlSollwertErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_SOLLWERT_ERL;
         internal static string GebkKuehlleistungMaxName => MyResource.Resource.GEBK_LBL_KUEHLLEISTUNG_MAX;
         internal static string GebkKuehlleistungMaxErl => MyResource.Resource.KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL;
+        // E37 (Anlagenkopplung 8.1): der Unterabschnitt „Kuehluebergabe"
+        internal static string GebkKuehluebergabeAktivName => MyResource.Resource.GEBK_LBL_KUEHLUEBERGABE_AKTIV;
+        internal static string GebkKuehluebergabeAktivErl => MyResource.Resource.KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL;
+        internal static string GebkKuehlUebergabeArtName => MyResource.Resource.GEBK_LBL_KUEHL_UEBERGABE_ART;
+        internal static string GebkKuehlUebergabeArtErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL;
+        internal static string GebkKuehlUebergabeExponentName => MyResource.Resource.GEBK_LBL_KUEHL_UEBERGABE_EXPONENT;
+        internal static string GebkKuehlUebergabeExponentErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_UEBERGABE_EXPONENT_ERL;
+        internal static string GebkKuehlUebergabeNennleistungName => MyResource.Resource.GEBK_LBL_KUEHL_UEBERGABE_NENNLEISTUNG;
+        internal static string GebkKuehlUebergabeNennleistungErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_UEBERGABE_NENNLEISTUNG_ERL;
+        internal static string GebkKuehlAuslegungVorlaufName => MyResource.Resource.GEBK_LBL_KUEHL_AUSLEGUNG_VORLAUF;
+        internal static string GebkKuehlAuslegungVorlaufErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_AUSLEGUNG_VORLAUF_ERL;
+        internal static string GebkKuehlAuslegungRuecklaufName => MyResource.Resource.GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF;
+        internal static string GebkKuehlAuslegungRuecklaufErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_AUSLEGUNG_RUECKLAUF_ERL;
+        internal static string GebkKuehlAuslegungRaumName => MyResource.Resource.GEBK_LBL_KUEHL_AUSLEGUNG_RAUM;
+        internal static string GebkKuehlAuslegungRaumErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_AUSLEGUNG_RAUM_ERL;
+        internal static string GebkKuehlVorlaufgrenzeName => MyResource.Resource.GEBK_LBL_KUEHL_VORLAUFGRENZE;
+        internal static string GebkKuehlVorlaufgrenzeErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_VORLAUFGRENZE_ERL;
         // Stufe AK1 (Anlagenkopplung 9.1): die Gruppe „Waermeuebergabe"
         internal static string GebkHeizkreisAktivName => MyResource.Resource.GEBK_LBL_HEIZKREIS_AKTIV;
         internal static string GebkHeizkreisAktivErl => MyResource.Resource.KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL;

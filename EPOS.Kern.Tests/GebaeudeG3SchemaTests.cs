@@ -249,7 +249,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
             Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
-            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten), Spalten(SchemaKatalog.TAB_ZONE));
+            // Hinter den Spalten von S-C hängt der eigene Zonenschritt der Kühlübergabe (E37,
+            // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an.
+            Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten)
+                                       .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key)),
+                         Spalten(SchemaKatalog.TAB_ZONE));
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten), Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }
@@ -394,8 +398,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, BaustoffSchema.SaatSchreiben());
             Assert.Equal(0.5, Convert.ToDouble(DataRepository.ExecuteScalar("SELECT Lambda FROM Tab_Baustoff_STAMM WHERE ID = 13")));
 
-            // Eine Datei vor dem Schritt: Kind vor Eltern abräumen, dann alle drei Schritte.
-            foreach (string t in new[] { "Tab_Bauteil", "Tab_Zone", "Tab_Bauteilschicht", "Tab_Bauteilschicht_STAMM",
+            // Eine Datei vor dem Schritt: Kind vor Eltern abräumen, dann alle drei Schritte. Die
+            // Tabellen des späteren Schritts S-F (ImportzuordnungSchema) sind Kinder aller G3-Tabellen
+            // außer den Katalogen und fallen deshalb zuerst - eine Datei vor S-A trägt sie nicht.
+            foreach (string t in new[] { "Tab_Importzuordnung", "Tab_Importquelle",
+                                         "Tab_Bauteil", "Tab_Zone", "Tab_Bauteilschicht", "Tab_Bauteilschicht_STAMM",
                                          "Tab_Bauteilaufbau", "Tab_Bauteilaufbau_STAMM", "Tab_Baustoff", "Tab_Baustoff_STAMM" })
                 DataRepository.ExecuteNonQuery("DROP TABLE \"" + t + "\"");
             DataRepository.ExecuteNonQuery("DELETE FROM sqlite_sequence WHERE name = 'Tab_Baustoff_STAMM'");
@@ -412,6 +419,8 @@ namespace EPOS.Kern.Tests
             Assert.True(BauteilaufbauSchema.Vollstaendig());
             Assert.True(ZonenSchema.Vollstaendig());
             Assert.Contains("132 von 132 Saatzeile(n)", b.Zeile());
+            Assert.Equal(2, ImportzuordnungSchema.Ausfuehren());
+            Assert.True(ImportzuordnungSchema.Vollstaendig());
         }
 
         private static List<string> IndexSpalten(string index)

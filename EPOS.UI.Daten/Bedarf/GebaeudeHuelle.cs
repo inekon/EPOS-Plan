@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Dialoge.Import;
 
 namespace WindowsFormsApplication1
 {
@@ -17,7 +19,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Vier Unterdialoge, vier Überlagerungen.</b> Katalogeditor, Skalierungsdialog,
     /// Gebäudetypen-Verwaltung und Wärmebedarf erscheinen IM selben Fenster; die Hülle reicht
-    /// dafür nur die Parametersätze durch.</para>
+    /// dafür nur die Parametersätze durch. Der Gebäudeimport (Stufe G4) kommt als fünfte dazu —
+    /// sein Weg (<see cref="GebaeudeImportweg"/>) hält die ausstehende Herkunft einer neuen Zeile,
+    /// bis die Liste gespeichert wird.</para>
     ///
     /// <para><b>Stufe G1 (Konzept 2.7):</b> Jede Projektzeile trägt den Rechenweg als
     /// Anzeigetext und den Wärmeleitwert H_ges — beides so, wie der Kern rechnet
@@ -39,11 +43,19 @@ namespace WindowsFormsApplication1
             int projektId, string projektName,
             List<Z_ProjGebModel> modelle, bool wizard)
         {
+            // Stufe G4, Welle 4: die AUSSTEHENDEN Herkuenfte der Zeilen aus dem Gebaeudeimport,
+            // je undurchsichtigem Schluessel der Zeile. Die Kern-Daten bleiben hier; NachModell
+            // legt sie an das Modell, und erst der Speicherweg schreibt sie an die neue Kopie.
+            // Ein Modell, das seine Herkunft noch traegt (Assistent: dieselbe Liste ueber mehrere
+            // Seitenbesuche), bekommt beim Neuaufbau wieder einen Schluessel.
+            var ausstehend = new Dictionary<string, GebaeudeImportHerkunft>(StringComparer.Ordinal);
+
             var zeilen = new List<GebaeudeProjektZeile>();
             foreach (Z_ProjGebModel m in modelle)
             {
                 GebaeudeProjektZeile z = AusModell(m);
                 KennwerteSetzen(z, projektId);
+                if (m.Importherkunft != null) z.Herkunftsschluessel = Vormerken(ausstehend, m.Importherkunft);
                 zeilen.Add(z);
             }
 
@@ -74,7 +86,7 @@ namespace WindowsFormsApplication1
                 paare.Clear();
                 foreach (GebaeudeProjektZeile z in zeilen)
                 {
-                    Z_ProjGebModel m = NachModell(z, projektId);
+                    Z_ProjGebModel m = NachModell(z, projektId, ausstehend);
                     modelle.Add(m);
                     paare.Add((m, z));
                 }
@@ -108,6 +120,15 @@ namespace WindowsFormsApplication1
                     name => GebaeudeKatalogHuelle.Gaben(name,
                         string.IsNullOrEmpty(name)
                             ? GebaeudeKatalogModus.Neu : GebaeudeKatalogModus.Bearbeiten)),
+
+                // Stufe G4, Welle 4 (A17): der Gebaeudeimport - je Klick ein neuer Weg.
+                ["ImportGaben"] = new Func<GebaeudeImportweg>(
+                    () => Importweg(projektId, naechsteId, ausstehend)),
+                ["BtnImportText"] = Text_("GEB_BTN_IMPORT", "Importieren (gbXML, IFC)…"),
+                ["BtnImportHinweis"] = Text_("GEB_BTN_IMPORT_HINWEIS",
+                    "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen"),
+                ["MeldungImportAufgenommen"] = Text_("GEB_MSG_IMPORT_AUFGENOMMEN",
+                    "Das Gebäude „{0}“ steht jetzt im Katalog und in der Projektliste."),
 
                 ["WohnflaecheGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     Wohnflaechengaben),
@@ -249,6 +270,98 @@ namespace WindowsFormsApplication1
             };
         }
 
+        // =================================================================================
+        // Stufe G4, Welle 4: der Gebaeudeimport (A17)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Weg EINES Gebäudeimports</b> — je Klick auf „Importieren…" eine neue
+        /// <see cref="GebaeudeImportHuelle"/> mit Profil nach Dateiwahl und dem Projekt für den
+        /// Hinweis „schon importiert".
+        ///
+        /// <list type="number">
+        /// <item><b>Übernehmen</b> (OK des Zuordnungsdialogs): derselbe Satz wie an der Prüfung,
+        /// ein im Katalog schon vergebener Name ist die benannte Absage (der Dialog bleibt offen);
+        /// sonst entstehen die Vorbelegung des Editors
+        /// (<see cref="GebaeudeImportHuelle.Vorbelegung"/>) und die ausstehende Herkunft. Geschrieben
+        /// wird nichts.</item>
+        /// <item><b>Editor</b>: der Katalogeditor im Modus Neu, vorbelegt; sein Schreibweg ist der
+        /// gewöhnliche (<see cref="GebaeudeKatalogHuelle.Schreiben"/>) — die Hülle merkt sich nur
+        /// den Namen, unter dem er angelegt hat.</item>
+        /// <item><b>Aufnehmen</b> (der Editor hat gespeichert): die neue Projektzeile über
+        /// denselben Weg wie „In das Projekt übernehmen" (<see cref="Aufnehmen(string, int, int[])"/>),
+        /// dazu der Schlüssel der ausstehenden Herkunft. Ohne Speichern im Editor keine Zeile, die
+        /// Herkunft verfällt.</item>
+        /// </list>
+        /// </summary>
+        private static GebaeudeImportweg Importweg(int projektId, int[] naechsteId,
+                                                   Dictionary<string, GebaeudeImportHerkunft> ausstehend)
+        {
+            var import = new GebaeudeImportHuelle(projektId);
+            GebaeudeVorbelegung vorbelegung = null;
+            GebaeudeImportHerkunft herkunft = null;
+            string angelegt = null;
+
+            Func<GebaeudeImportErgebnis, Task<string>> uebernehmen = ergebnis =>
+            {
+                vorbelegung = null;
+                herkunft = null;
+                angelegt = null;
+                if (import.SatzAusErgebnis(ergebnis) == null || import.Quelle == null)
+                    return Task.FromResult(MyResource.Resource.GIMP_DLG_NICHT_GELESEN);
+
+                string name = (ergebnis.Gebaeudename ?? "").Trim();
+                if (name.Length > 0 && GebaeudeKatalogHuelle.Laden(name) != null)
+                    return Task.FromResult(Text_("GEBK_MSG_NAME_VERGEBEN",
+                        "Ein Gebäude mit diesem Namen steht schon im Katalog."));
+
+                vorbelegung = import.Vorbelegung(ergebnis);
+                herkunft = import.Herkunft;
+                return Task.FromResult<string>(null);
+            };
+
+            Func<IReadOnlyDictionary<string, object>> editorGaben = () =>
+            {
+                if (vorbelegung == null) return null;
+                var gaben = new Dictionary<string, object>(
+                    GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu, vorbelegung));
+
+                // Der Schreibweg bleibt der des Editors; gemerkt wird nur, unter welchem Namen
+                // er angelegt hat - danach sucht "Aufnehmen" den neuen Katalogsatz.
+                if (gaben.TryGetValue("Speichern", out object weg) &&
+                    weg is Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis> speichern)
+                    gaben["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
+                        (daten, neu, bezeichner) =>
+                        {
+                            GebaeudeKatalogErgebnis e = speichern(daten, neu, bezeichner);
+                            if (e != null && e.Erfolg && neu) angelegt = daten?.Name;
+                            return e;
+                        });
+                return gaben;
+            };
+
+            Func<GebaeudeProjektZeile> aufnehmen = () =>
+            {
+                if (string.IsNullOrEmpty(angelegt) || herkunft == null) return null;
+                GebaeudeProjektZeile zeile = Aufnehmen(angelegt, projektId, naechsteId);
+                if (zeile == null) return null;
+                zeile.Herkunftsschluessel = Vormerken(ausstehend, herkunft);
+                herkunft = null;
+                angelegt = null;
+                return zeile;
+            };
+
+            return new GebaeudeImportweg(import.Gaben(uebernehmen), editorGaben, aufnehmen);
+        }
+
+        /// <summary>Merkt eine ausstehende Herkunft unter einem neuen, undurchsichtigen Schlüssel vor.</summary>
+        private static string Vormerken(Dictionary<string, GebaeudeImportHerkunft> ausstehend, GebaeudeImportHerkunft herkunft)
+        {
+            string schluessel = "import-" + Guid.NewGuid().ToString("N");
+            ausstehend[schluessel] = herkunft;
+            return schluessel;
+        }
+
         /// <summary>
         /// Der Parametersatz der Wohnflächenangabe zu EINER Zeile. Das Baujahrfeld dort
         /// zeigt den KLARTEXT der Baualtersklasse, die Zeile führt den Buchstaben
@@ -331,8 +444,19 @@ namespace WindowsFormsApplication1
             };
         }
 
-        internal static Z_ProjGebModel NachModell(GebaeudeProjektZeile z, int projektId)
+        /// <summary>
+        /// Zeile → Modell. Trägt die Zeile den Schlüssel einer ausstehenden Herkunft (Stufe G4,
+        /// Welle 4), legt <paramref name="ausstehend"/> sie an das Modell
+        /// (<see cref="Z_ProjGebModel.Importherkunft"/>); der Speicherweg schreibt sie dann an die
+        /// neue Projektkopie. Ohne Schlüssel oder ohne Eintrag bleibt sie <c>null</c>.
+        /// </summary>
+        internal static Z_ProjGebModel NachModell(GebaeudeProjektZeile z, int projektId,
+                                                  IReadOnlyDictionary<string, GebaeudeImportHerkunft> ausstehend = null)
         {
+            GebaeudeImportHerkunft herkunft = null;
+            if (z.Herkunftsschluessel != null && ausstehend != null)
+                ausstehend.TryGetValue(z.Herkunftsschluessel, out herkunft);
+
             return new Z_ProjGebModel
             {
                 ID_Z = z.IdZ,
@@ -346,7 +470,8 @@ namespace WindowsFormsApplication1
                 Wohnflaeche = z.Wohnflaeche,
                 Einheit = z.Einheit,
                 Jahresnutzungsgrad = z.Jahresnutzungsgrad,
-                DezentralWarmwasser = z.DezentralWarmwasser
+                DezentralWarmwasser = z.DezentralWarmwasser,
+                Importherkunft = herkunft
             };
         }
 

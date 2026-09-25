@@ -17,7 +17,8 @@
    im Kern auf dem angezeigten Text.
 
    DAS STAMMBLATT (V9) FUEHRT JEDES FELD DES KATALOGEDITORS (#465):
-     * KENNDATEN: Gebaeudetyp, Gebaeudeart, Baujahr, Verwendung, Wohn-/Nutzflaeche,
+     * KENNDATEN: Gebaeudetyp, Gebaeudeart, Baualtersklasse, Baujahr (G4a, die
+       Jahreszahl neben der Klasse), Verwendung, Wohn-/Nutzflaeche,
        Bauart, Beschreibung; der Name ist Lesewert (umbenannt wird ueber
        Duplizieren...). "Gebaeudetypen..." im Kopf der Gruppe oeffnet die
        Verwaltung Gebaeudetypen als Ueberlagerung.
@@ -115,8 +116,12 @@
                                                  Auswahl="@Index(_typen, _arbeit.Stand.Typ)" AuswahlChanged="BeiTyp" />
                                     <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                                  Auswahl="@Index(_arten, _arbeit.Stand.Gebaeudeart)" AuswahlChanged="BeiArt" />
-                                    <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Klasseneintraege"
+                                    <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
                                                  Auswahl="@_arbeit.Stand.Baualtersklasse" AuswahlChanged="BeiKlasse" />
+                                    <Ganzzahlfeld Bezeichnung="@LabelBaujahr"
+                                                  Min="@GebaeudeSchema.BAUJAHR_MIN" Max="@GebaeudeSchema.BAUJAHR_MAX"
+                                                  Feldname="@Prueftexte.FeldBaujahr" FehlerZustand="BeiFehlerzustand"
+                                                  Wert="@_arbeit.Stand.Baujahr" WertChanged="BeiBaujahr" />
                                     <Auswahlfeld Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
                                                  Auswahl="@_arbeit.Verwendungsindex(Verwendungswerte)"
                                                  AuswahlChanged="BeiVerwendung" />
@@ -337,6 +342,9 @@
     [Parameter] public string LabelName { get; set; } = Resource.GEBA_LBL_NAME;
     [Parameter] public string LabelGebaeudetyp { get; set; } = Resource.GEBA_LBL_GEBAEUDETYP;
     [Parameter] public string LabelGebaeudeart { get; set; } = Resource.GEBA_LBL_GEBAEUDEART;
+    /// <summary>Die Klappliste der Baualtersklasse (<c>GEBA_LBL_BAUALTERSKLASSE</c>).</summary>
+    [Parameter] public string LabelBaualtersklasse { get; set; } = Resource.GEBA_LBL_BAUALTERSKLASSE;
+    /// <summary>Das Zahlenfeld des Baujahrs (<c>GEBA_LBL_BAUJAHR</c>).</summary>
     [Parameter] public string LabelBaujahr { get; set; } = Resource.GEBA_LBL_BAUJAHR;
     [Parameter] public string LabelVerwendung { get; set; } = Resource.GEBA_LBL_VERWENDUNG;
     [Parameter] public string LabelWohnflaeche { get; set; } = Resource.GEBA_LBL_WOHNFLAECHE;
@@ -780,6 +788,18 @@
         Nachziehen();
     }
 
+    /// <summary>Das Baujahr (G4a) — leer heißt „unbekannt"; der Bereich prüft das Feld selbst und der Arbeitsstand beim Speichern.</summary>
+    private void BeiBaujahr(int? wert)
+    {
+        if (_auslieferung) return;
+        _arbeit.Stand.Baujahr = wert;
+        Nachziehen();
+    }
+
+    /// <summary>Das Baujahr als Text — ohne Tausendertrennzeichen; leer, wenn unbekannt.</summary>
+    private static string Jahrtext(int? jahr)
+        => jahr is int j ? j.ToString(CultureInfo.InvariantCulture) : "";
+
     private void BeiVerwendung(int? index)
     {
         if (_auslieferung) return;
@@ -853,7 +873,8 @@
         new Stammblattwert(LabelName, _gewaehlt),
         new Stammblattwert(LabelGebaeudetyp, _satz?.Typ ?? ""),
         new Stammblattwert(LabelGebaeudeart, _satz?.Gebaeudeart ?? ""),
-        new Stammblattwert(LabelBaujahr, Klassentext(_satz?.Baualtersklasse)),
+        new Stammblattwert(LabelBaualtersklasse, Klassentext(_satz?.Baualtersklasse)),
+        new Stammblattwert(LabelBaujahr, Jahrtext(_arbeit.Stand.Baujahr)),
         new Stammblattwert(LabelVerwendung, Verwendungstext(_satz?.Verwendung ?? "")),
         new Stammblattwert(LabelWohnflaeche, Flaechentext),
         new Stammblattwert(Beschriftungen.LabelBauart, Bauarttext(_arbeit.Stand.Bauart)),
@@ -1024,7 +1045,8 @@
             {
                 new("TYP", LabelGebaeudetyp, s?.Typ ?? ""),
                 new("ART", LabelGebaeudeart, s?.Gebaeudeart ?? ""),
-                new("BAUJAHR", LabelBaujahr, Klassentext(s?.Baualtersklasse)),
+                new("BAUALTERSKLASSE", LabelBaualtersklasse, Klassentext(s?.Baualtersklasse)),
+                new("BAUJAHR", LabelBaujahr, Jahrtext(s?.Feldsatz?.Baujahr)),
                 new("VERWENDUNG", LabelVerwendung, Verwendungstext(s?.Verwendung ?? "")),
                 new("FLAECHE", LabelWohnflaeche, s?.Wohnflaeche is double w ? w.ToString("N0", k) + " m²" : ""),
                 new("HGES", Resource.GEBA_KZ_HGES, s?.HgesWK is double h ? h.ToString("N1", k) + " W/K" : ""),

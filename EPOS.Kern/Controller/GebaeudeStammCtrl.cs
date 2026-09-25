@@ -450,11 +450,25 @@ namespace WindowsFormsApplication1
                 new DbParam("@b81", DbParamTyp.Double) { Wert = Wert(m.Heizkurve_Steilheit) },
                 new DbParam("@b82", DbParamTyp.Double) { Wert = Wert(m.Regler_Proportionalband) },
                 new DbParam("@b83", DbParamTyp.LongVarWChar) { Wert = Wert(m.Sollwertprofil) },
+                // KAK-S1 (E37): NULL-erhaltend, der Schalter 0/1
+                new DbParam("@b84", DbParamTyp.Boolean) { Wert = m.Kuehluebergabe_Aktiv },
+                new DbParam("@b85", DbParamTyp.VarWChar) { Wert = Wert(m.Kuehl_Uebergabe_Art) },
+                new DbParam("@b86", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Uebergabe_Exponent) },
+                new DbParam("@b87", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Uebergabe_Leistung_Nenn) },
+                new DbParam("@b88", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Auslegung_Vorlauf) },
+                new DbParam("@b89", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Auslegung_Ruecklauf) },
+                new DbParam("@b90", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Auslegung_Raumtemperatur) },
+                new DbParam("@b91", DbParamTyp.Double) { Wert = Wert(m.Kuehl_Vorlaufgrenze) },
+                // Das Baujahr (G4a, BaujahrSchema.SCHRITT): NULL-erhaltend, NULL = unbekannt
+                new DbParam("@b92", DbParamTyp.Integer) { Wert = Wert(m.Baujahr) },
             };
         }
 
         /// <summary>Ein nullbarer Wert als Parameterwert - NULL bleibt NULL (Vorgabe).</summary>
         private static object Wert(double? x) => x.HasValue ? (object)x.Value : DBNull.Value;
+
+        /// <summary>Eine nullbare Ganzzahl als Parameterwert - NULL bleibt NULL (unbekannt).</summary>
+        private static object Wert(int? x) => x.HasValue ? (object)x.Value : DBNull.Value;
 
         /// <summary>Ein Text als Parameterwert - NULL bleibt NULL (Vorgabe).</summary>
         private static object Wert(string x) => x != null ? (object)x : DBNull.Value;
@@ -464,7 +478,7 @@ namespace WindowsFormsApplication1
         public bool Insert(GebaeudeModel m)
         {
             int newId = DataRepository.GetMaxID(TABLE) + 1;
-            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [ReadOnly]) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             var ps = new List<DbParam>();
             ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
@@ -481,7 +495,7 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ? WHERE Bezeichner = ?";
+            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ? WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
@@ -493,9 +507,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Liest die fuenfzehn Spalten des Gebaeudespalten-Schritts M3 (Schemaschritt 101),
-        /// die vier Kuehleingaben aus KU-S1 (Schemaschritt 108) und die dreizehn Spalten der
-        /// Waermeuebergabe aus AK-S1 (Schemaschritt 122) NULL-ERHALTEND in das Modell: NULL
-        /// bleibt <c>null</c>, die fuenf Schalter werden 0/1. Fehlt eine Spalte
+        /// die vier Kuehleingaben aus KU-S1 (Schemaschritt 108), die dreizehn Spalten der
+        /// Waermeuebergabe aus AK-S1 (Schemaschritt 122), die acht der Kuehluebergabe aus
+        /// KAK-S1 (E37) und das Baujahr (G4a) NULL-ERHALTEND in das Modell: NULL bleibt
+        /// <c>null</c>, die sechs Schalter werden 0/1. Fehlt eine Spalte
         /// (Datenbank vor dem Schritt), bleibt das Feld auf seiner Vorbelegung. Gerufen fuer
         /// Katalog (hier) und Projekt (<c>GebaeudeCtrl</c>).
         /// </summary>
@@ -539,10 +554,30 @@ namespace WindowsFormsApplication1
             item.Heizkurve_Steilheit = Zahl(row, GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT);
             item.Regler_Proportionalband = Zahl(row, GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND);
             item.Sollwertprofil = Text(row, GebaeudeSchema.SPALTE_SOLLWERTPROFIL);
+
+            // KAK-S1 (E37, Anlagenkopplung 8.1): die acht Spalten der Kuehluebergabe, ebenso
+            // NULL-ERHALTEND; der Schalter wird 0/1 (A1).
+            item.Kuehluebergabe_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLUEBERGABE_AKTIV);
+            item.Kuehl_Uebergabe_Art = Text(row, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART);
+            item.Kuehl_Uebergabe_Exponent = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_EXPONENT);
+            item.Kuehl_Uebergabe_Leistung_Nenn = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN);
+            item.Kuehl_Auslegung_Vorlauf = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_VORLAUF);
+            item.Kuehl_Auslegung_Ruecklauf = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF);
+            item.Kuehl_Auslegung_Raumtemperatur = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR);
+            item.Kuehl_Vorlaufgrenze = Zahl(row, GebaeudeSchema.SPALTE_KUEHL_VORLAUFGRENZE);
+
+            // Das Baujahr (G4a, BaujahrSchema.SCHRITT): NULL-ERHALTEND, null = unbekannt.
+            item.Baujahr = Ganzzahl(row, GebaeudeSchema.SPALTE_BAUJAHR);
         }
 
         private static object Roh(DataRow row, string spalte)
             => row.Table.Columns.Contains(spalte) ? row[spalte] : DBNull.Value;
+
+        private static int? Ganzzahl(DataRow row, string spalte)
+        {
+            object w = Roh(row, spalte);
+            return w == DBNull.Value ? (int?)null : Convert.ToInt32(w, System.Globalization.CultureInfo.InvariantCulture);
+        }
 
         private static string Text(DataRow row, string spalte)
         {
@@ -600,7 +635,7 @@ namespace WindowsFormsApplication1
 
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
-            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [ID_Gebaeude_Stamm]) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = new DbParam[]
             {
                 new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
@@ -700,10 +735,24 @@ namespace WindowsFormsApplication1
                 new DbParam("@c84", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT) },
                 new DbParam("@c85", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND) },
                 new DbParam("@c86", DbParamTyp.LongVarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_SOLLWERTPROFIL) },
+                // KAK-S1 (E37): dieselbe Regel - NULL bleibt NULL (ideal, Vorgabe der Art,
+                // Auslegungstag); der Schalter geht als 0/1 hinueber, die Art bleibt beim
+                // Abschalten erhalten (A1).
+                new DbParam("@c87", DbParamTyp.Boolean) { Wert = Schalter(r, GebaeudeSchema.SPALTE_KUEHLUEBERGABE_AKTIV) },
+                new DbParam("@c88", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART) },
+                new DbParam("@c89", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_EXPONENT) },
+                new DbParam("@c90", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN) },
+                new DbParam("@c91", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_VORLAUF) },
+                new DbParam("@c92", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF) },
+                new DbParam("@c93", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR) },
+                new DbParam("@c94", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHL_VORLAUFGRENZE) },
+                // Das Baujahr (G4a, BaujahrSchema.SCHRITT): dieselbe Regel - NULL bleibt NULL
+                // (unbekannt), eine Jahreszahl geht unveraendert hinueber.
+                new DbParam("@c95", DbParamTyp.Integer) { Wert = Roh(r, GebaeudeSchema.SPALTE_BAUJAHR) },
                 // Schemaschritt 121 (Welle #468): Die Kopie merkt sich, aus welchem
                 // Katalogsatz sie stammt - eine Umbenennung des Satzes zerreisst die Klammer
                 // der Loeschsperre dann nicht mehr (GebaeudeKatalogverweis).
-                new DbParam("@c87", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
+                new DbParam("@c96", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
 

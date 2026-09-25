@@ -155,6 +155,22 @@ namespace WindowsFormsApplication1
                     item.Regler_Proportionalband = ZahlOderNull(row, GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND);
                     item.Sollwertprofil = TextOderNull(row, GebaeudeSchema.SPALTE_SOLLWERTPROFIL);
 
+                    // Die acht Spalten der Kuehluebergabe aus KAK-S1 (E37, vierter Sichtneubau):
+                    // NULL-ERHALTEND beim Namen gelesen - auf einer Sicht ohne die Spalten bleibt
+                    // alles null bzw. aus.
+                    item.Kuehluebergabe_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLUEBERGABE_AKTIV);
+                    item.Kuehl_Uebergabe_Art = TextOderNull(row, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_ART);
+                    item.Kuehl_Uebergabe_Exponent = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_EXPONENT);
+                    item.Kuehl_Uebergabe_Leistung_Nenn = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_UEBERGABE_LEISTUNG_NENN);
+                    item.Kuehl_Auslegung_Vorlauf = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_VORLAUF);
+                    item.Kuehl_Auslegung_Ruecklauf = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RUECKLAUF);
+                    item.Kuehl_Auslegung_Raumtemperatur = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_RAUMTEMPERATUR);
+                    item.Kuehl_Vorlaufgrenze = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHL_VORLAUFGRENZE);
+
+                    // Das Baujahr (G4a, fuenfter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+                    // auf einer Sicht ohne die Spalte bleibt es null.
+                    item.Baujahr = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_BAUJAHR);
+
                     _internalList.Add(item);
                 }
             }
@@ -169,6 +185,12 @@ namespace WindowsFormsApplication1
         {
             if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
             return Convert.ToDouble(row[spalte]);
+        }
+
+        private static int? GanzzahlOderNull(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            return Convert.ToInt32(row[spalte], System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private static string TextOderNull(DataRow row, string spalte)

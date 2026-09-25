@@ -893,17 +893,89 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Baujahr, Bauart, Verwendung
+    // Baualtersklasse, Baujahr, Bauart, Verwendung
     // =================================================================================
 
     [Fact]
-    public void Die_Baujahrliste_fuehrt_21_Klassen()
+    public void Die_Klappliste_der_Baualtersklasse_fuehrt_21_Klassen()
     {
         var cut = Aufbauen();
 
-        Assert.Equal(21, Klappliste(cut, "Baujahr :").QuerySelectorAll("option").Length);
+        Assert.Equal(21, Klappliste(cut, "Baualtersklasse :").QuerySelectorAll("option").Length);
         Assert.Contains("vor 1919", cut.Markup);
         Assert.Contains("BEG 40", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Das Baujahr ist ein Zahlenfeld neben der Baualtersklasse</b> (G4a): ganzzahlig, ohne
+    /// Tausendertrennzeichen, und die Beschriftung „Baujahr" gehört allein ihm — die Klappliste
+    /// heißt „Baualtersklasse".
+    /// </summary>
+    [Fact]
+    public void Das_Baujahr_steht_als_Zahlenfeld_neben_der_Baualtersklasse()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Baujahr = 1965;
+        var cut = Aufbauen(daten);
+
+        IElement feld = Eingabe(cut, "Baujahr :");
+        Assert.Equal("1965", feld.GetAttribute("value"));
+        Assert.Equal("numeric", feld.GetAttribute("inputmode"));
+        Assert.Null(Feld(cut, "Baujahr :").QuerySelector("select"));
+
+        // Die Reihenfolge im Raster: die Klappliste der Klasse, gleich danach das Jahr.
+        List<string> beschriftungen = cut.FindAll("label.epos-feld .epos-feld-text").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(beschriftungen.IndexOf("Baualtersklasse :") + 1, beschriftungen.IndexOf("Baujahr :"));
+    }
+
+    [Fact]
+    public void Das_Baujahr_wird_gespeichert_und_leer_bleibt_NULL()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+
+        Ok(cut);
+        Assert.Null(geschrieben.Baujahr);
+
+        cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Eingabe(cut, "Baujahr :").Input("1972");
+        Ok(cut);
+        Assert.Equal(1972, geschrieben.Baujahr);
+    }
+
+    /// <summary>Eine Jahreszahl außerhalb 1500 … 2100 oder ein Text färbt das Feld und hält den OK-Weg an.</summary>
+    [Theory]
+    [InlineData("1499")]
+    [InlineData("2101")]
+    [InlineData("1965,5")]
+    [InlineData("ca. 1965")]
+    public void Ein_ungueltiges_Baujahr_faerbt_und_wird_nicht_gespeichert(string eingabe)
+    {
+        bool geschrieben = false;
+        var cut = Aufbauen(speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+
+        Eingabe(cut, "Baujahr :").Input(eingabe);
+
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Baujahr :").ClassName);
+        Assert.Null(cut.Instance.Arbeitsstand.Baujahr);
+        Ok(cut);
+        Assert.False(geschrieben);
+        Assert.Contains("Baujahr", cut.Instance.Meldung);
+    }
+
+    /// <summary>Ein gespeichertes Baujahr außerhalb des Bereichs (etwa aus dem Assistenten) meldet die Regel des Arbeitsstands.</summary>
+    [Fact]
+    public void Ein_Baujahr_ausserhalb_des_Bereichs_meldet_beim_OK()
+    {
+        bool geschrieben = false;
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Baujahr = 1400;
+        var cut = Aufbauen(daten, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+
+        Ok(cut);
+
+        Assert.False(geschrieben);
+        Assert.Equal("Das Baujahr muss zwischen 1500 und 2100 liegen.", cut.Instance.Meldung);
     }
 
     /// <summary>Befund W9‑B8: Der Steuerwert der Verwendung ist getrennt vom Anzeigetext.</summary>

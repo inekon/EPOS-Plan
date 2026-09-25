@@ -4896,9 +4896,10 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Fuenf Klapplisten sind WAHLFELDER</b> (KI-D-Q6): Gebaeudetyp und
-        /// Gebaeudeart tragen den Namen des Katalogsatzes als Schluessel, Baujahr und
-        /// Bauart ihren Listenplatz, die VERWENDUNG ihren Steuerwert. Die Bauart zieht
-        /// die Bauweise nach — derselbe Weg, den die Klappliste geht.
+        /// Gebaeudeart tragen den Namen des Katalogsatzes als Schluessel, Baualtersklasse
+        /// und Bauart ihren Listenplatz, die VERWENDUNG ihren Steuerwert. Die Bauart zieht
+        /// die Bauweise nach — derselbe Weg, den die Klappliste geht. Das BAUJAHR daneben
+        /// ist eine Ganzzahl (1500 bis 2100, leer = unbekannt).
         /// </para>
         /// <para>
         /// <b>Die sechzehn FERIENZAHLEN sind eine TABELLE</b> (Welle #458 Stufe 3b): vier
@@ -5025,8 +5026,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkArtErl, leerErlaubt: true),
                     new KiDialogFeld("baualtersklasse", "GebaeudeKatalogKiSicht.Baualtersklasse",
-                                     KiDialogTexte.GebkBaujahrName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.GebkBaujahrErl),
+                                     KiDialogTexte.GebkBaualtersklasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkBaualtersklasseErl),
+                    // Das Baujahr (G4a): eine Jahreszahl neben der Klasse, leer = unbekannt; es
+                    // steuert keine Vorgabe (die haengen an der Baualtersklasse).
+                    new KiDialogFeld("baujahr", "GebaeudeKatalogKiSicht.Baujahr",
+                                     KiDialogTexte.GebkBaujahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GebkBaujahrErl, leerErlaubt: true,
+                                     min: GebaeudeSchema.BAUJAHR_MIN, max: GebaeudeSchema.BAUJAHR_MAX),
                     new KiDialogFeld("verwendung", "GebaeudeKatalogKiSicht.Verwendung",
                                      KiDialogTexte.GebkVerwendungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GebkVerwendungErl, leerErlaubt: true),
@@ -5253,6 +5260,37 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkKuehlleistungMaxName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkKuehlleistungMaxErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    // ---- Kuehluebergabe (E37, Anlagenkopplung 8.1) - Unterabschnitt der Kuehlung.
+                    //      Schalter und Art ueber die Wege des Arbeitsstands, die Zahlen leer = NULL.
+                    new KiDialogFeld("kuehluebergabe_aktiv", "GebaeudeKatalogKiSicht.KuehluebergabeAktiv",
+                                     KiDialogTexte.GebkKuehluebergabeAktivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebkKuehluebergabeAktivErl),
+                    new KiDialogFeld("kuehl_uebergabe_art", "GebaeudeKatalogKiSicht.KuehlUebergabeArt",
+                                     KiDialogTexte.GebkKuehlUebergabeArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkKuehlUebergabeArtErl),
+                    new KiDialogFeld("kuehl_uebergabe_exponent", "GebaeudeKatalogKiSicht.KuehlUebergabeExponent",
+                                     KiDialogTexte.GebkKuehlUebergabeExponentName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlUebergabeExponentErl, leerErlaubt: true, min: 1.0, max: 1.6),
+                    new KiDialogFeld("kuehl_uebergabe_nennleistung", "GebaeudeKatalogKiSicht.KuehlUebergabeNennleistung",
+                                     KiDialogTexte.GebkKuehlUebergabeNennleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlUebergabeNennleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_auslegung_vorlauf", "GebaeudeKatalogKiSicht.KuehlAuslegungVorlauf",
+                                     KiDialogTexte.GebkKuehlAuslegungVorlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlAuslegungVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 4, max: 22),
+                    new KiDialogFeld("kuehl_auslegung_ruecklauf", "GebaeudeKatalogKiSicht.KuehlAuslegungRuecklauf",
+                                     KiDialogTexte.GebkKuehlAuslegungRuecklaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlAuslegungRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_auslegung_raum", "GebaeudeKatalogKiSicht.KuehlAuslegungRaumtemperatur",
+                                     KiDialogTexte.GebkKuehlAuslegungRaumName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlAuslegungRaumErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 20, max: 30),
+                    new KiDialogFeld("kuehl_vorlaufgrenze", "GebaeudeKatalogKiSicht.KuehlVorlaufgrenze",
+                                     KiDialogTexte.GebkKuehlVorlaufgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlVorlaufgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 4, max: 22),
                     // ---- Waermeuebergabe (Stufe AK1, Anlagenkopplung 9.1, 9.2) ------------
                     //
                     // Schalter, Art und Zeitprogramm gehen ueber die Wege des Arbeitsstands

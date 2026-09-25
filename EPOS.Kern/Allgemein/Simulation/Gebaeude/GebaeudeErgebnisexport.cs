@@ -102,6 +102,14 @@ namespace WindowsFormsApplication1
                 reihen.Add(new KeyValuePair<string, double[]>("uebergabe_" + n + ".csv", e.Heizkreis.UebergabeBegrenztAnteil));
             }
 
+            // Kälteseite (E37, 8.3): die drei Reihen des Kältekreises nur mit wirksamer Kühlkopplung.
+            if (e.Kuehlkreis != null)
+            {
+                reihen.Add(new KeyValuePair<string, double[]>("kuehlvorlauf_" + n + ".csv", e.Kuehlkreis.VorlaufC));
+                reihen.Add(new KeyValuePair<string, double[]>("kuehlruecklauf_" + n + ".csv", e.Kuehlkreis.RuecklaufC));
+                reihen.Add(new KeyValuePair<string, double[]>("kuehluebergabe_" + n + ".csv", e.Kuehlkreis.UebergabeBegrenztAnteil));
+            }
+
             string p = "Geb[" + n + "].";
             var skalare = new List<KeyValuePair<string, double>>
             {
