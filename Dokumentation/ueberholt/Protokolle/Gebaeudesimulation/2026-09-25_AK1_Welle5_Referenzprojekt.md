@@ -105,16 +105,19 @@ Produktname kommt dazu; der Projektname ist neutral.
 
 ## 5 Abnahme
 
-Auf dem Stand nach allen Änderungen (Testdatenbank, Basis, Tests, Papiere):
+Nach dem Einfrieren ist origin weitergegangen (G3 Welle C: Verwaltungen Baustoffe und Bauteilaufbauten;
+Welle D1: Datenbankleser der Zonen für den Lauf) und ohne Konflikt zusammengeführt worden; die
+Testdatenbank ist dort unverändert. **R15 rechnet auf dem zusammengeführten Stand unverändert:**
+14/14 PASS, 432/432 CSV byte-gleich. Die Abnahme lief auf diesem Stand:
 
 | Prüfung | Ergebnis |
 |---|---|
 | Bau des Kern-Filters | 0 Fehler |
 | Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
 | `EPOS.Referenzlauf` | 0 Fehler |
-| Test-Gate | Kern 6 690 (1 übersprungen), UI 6 154, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests` |
+| Test-Gate | Kern 6 728 (1 übersprungen), UI 6 194, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen), alle grün — darin `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests`, `WikiProduktdatenWacheTests`, `GebaeudeRueckwegTests`; vor dem Zusammenführen ebenso grün (Kern 6 690, UI 6 154) |
 | `Auslieferungsvorlage.Tests` | 34 grün |
-| SqlDialektPruefer | 1 910 SQL-Texte, 0 Fundstellen |
+| SqlDialektPruefer | 1 911 SQL-Texte, 0 Fundstellen |
 | Referenzlauf der vierzehn Projekte gegen R15 | GESAMT: PASS (4 610 207 Werte), 432/432 CSV byte-gleich |
 | Die sechs CI-Projekte mit der Zeile aus `kern.yml` gegen R15 | GESAMT: PASS (2 208 587 Werte), 198/198 CSV byte-gleich |
 | Konfliktmarker, `git status` | keine; sauber |
