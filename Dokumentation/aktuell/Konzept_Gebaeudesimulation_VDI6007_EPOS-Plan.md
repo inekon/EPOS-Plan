@@ -4136,3 +4136,27 @@ und der Zonentabelle im Bericht.
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Löschliste GA; das
 [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G6a_Zonenpflege.md); die Indexzeile in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
+
+### N1.52 Entscheid E47 — Baualtersklassen nach Bauzeitraum, Energiestandard als eigenes Feld
+
+**Entscheid E47 (Anwender, 26.09.2026).** Anlass ist die Windows-Sichtabnahme des Gebäudeimports (Protokoll
+G4, Abschnitt 15, Punkt 6). Die 21 Baualtersklassen A–U werden abgelöst: Die **Baualtersklasse** ist ein
+Bauzeitraum mit den Buchstaben der Deutschen Wohngebäudetypologie des IWU (A bis 1859 … K 2010–2015), ergänzt
+um **L 2016–2020** und **M ab 2021**, für Wohn- und Nichtwohngebäude gleich; das **Baujahr führt**, die Klasse
+folgt aus ihm und ist nur ohne Baujahr wählbar. Der **Energiestandard** ist ein eigenes, freiwilliges Feld mit
+zwölf Einträgen (teilsaniert, saniert nach GModG, Niedrigenergiehaus, Effizienzhaus 115/100 historisch, 85,
+70, 55, 40, Denkmal, Passivhaus, Nullemissionsgebäude), gefiltert nach Wohn- und Nichtwohngebäude.
+
+**Vorgaben.** E27 bleibt: Mediane der eigenen Katalogsätze, zuerst je Energiestandard, sonst je Klasse; ohne
+Katalogsatz bleibt die Vorgabe leer. Übernommen werden nur die Jahresgrenzen der Typologie, nicht ihre
+Kennwerte.
+
+**Bestand.** Ein Schemaschritt schlüsselt die gespeicherten Klassen um (Baujahr zuerst, sonst Tabelle im
+Konzept Baualtersklassen, Abschnitt 5) und benennt die Sätze des Auslieferungskatalogs um, deren zweiter
+Namensteil der alte Buchstabe ist. Kein Rechenweg liest Klasse oder Standard; der Referenzlauf bleibt
+byte-gleich, eine neue Basis entsteht nicht.
+
+**Was offen bleibt.** Nichts Neues im Register; die Umsetzung folgt in Wellen nach dem
+[Konzept Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) (Abschnitt 7).
+
+**Betroffene Stufen:** G4 (Import, Vorgaben), G4b (Bauteilvorschlag), Gebäudeeditor und -verwaltung, Bericht.

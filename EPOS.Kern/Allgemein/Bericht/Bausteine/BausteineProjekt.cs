@@ -87,7 +87,9 @@ namespace WindowsFormsApplication1
                     "Deckungsgrad Prozesswärme", DeckungWert(k, stamm, "energie.deckung_prozess"));
 
                 // STUFE KU1 (Kuehlkonzept 8.4; E21, K5, K18): der Kaeltebedarf des Stamms.
-                KaelteSchreiben(k, stamm);
+                // BV-E3: Die Namen der Kuehltraeger kommen aus dem Wertesatz des Laufs
+                // (BerichtsDaten.Wirtschaft) — beim Schreiben ohne Datenbank.
+                KaelteSchreiben(k, stamm, id => WirtschaftsBerichtswerte.Von(daten).Traegername(id));
             }
 
             // ENTSCHEID E30: die Kennzahlen je Gebaeude aus Tab_ErgebnisGebaeude.
@@ -196,7 +198,7 @@ namespace WindowsFormsApplication1
         /// wäre keine Aussage, sondern eine Frage." Gerechnet wird hier nichts — die Zahlen sind
         /// die Ergebnisspalten des Laufs (KU-S4) und die Kennzahlen des Katalogs.</para>
         /// </summary>
-        private static void KaelteSchreiben(WordKontext k, VariantenDaten stamm)
+        private static void KaelteSchreiben(WordKontext k, VariantenDaten stamm, Func<int, string> traegername)
         {
             ErgebnisEnergiebedarfModel e = stamm?.Ergebnis?.Energiebedarf;
             if (e == null || !e.KaelteErhoben) return;
@@ -249,7 +251,7 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp);
+            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -265,7 +267,8 @@ namespace WindowsFormsApplication1
         /// Aus den Modulzeilen des Ergebnisses (Schemaschritt 119); eine Wärmepumpe ohne Kälte steht
         /// nicht darin.
         /// </summary>
-        private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp)
+        private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
+                                                    Func<int, string> traegername)
         {
             var zeilen = wp.Module.Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
             if (zeilen.Count == 0) return;
@@ -287,7 +290,7 @@ namespace WindowsFormsApplication1
                 tr.Append(k.Zelle(k.F(strom, 2), b[2], false, null, JustificationValues.Right));
                 tr.Append(k.Zelle(strom > 0 ? k.F(m.Kaelteproduktion.Value / strom, 2) : "—", b[3], false, null, JustificationValues.Right));
                 tr.Append(k.Zelle(m.Kaeltestrom_Netzbezug.HasValue ? k.F(m.Kaeltestrom_Netzbezug.Value, 2) : "—", b[4], false, null, JustificationValues.Right));
-                tr.Append(k.Zelle(KuehltraegerText(m), b[5], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(KuehltraegerText(m, traegername), b[5], false, null, JustificationValues.Left));
                 t.Append(tr);
             }
 
@@ -298,9 +301,18 @@ namespace WindowsFormsApplication1
         /// <summary>Der Stromträger des Kältestroms einer Modulzeile: der des Projekts, oder ein abweichender samt Abrechnungsart (E34).</summary>
         internal static string KuehltraegerText(ErgebnisWaermepumpeModulModel m)
         {
+            return KuehltraegerText(m, Emissionsquelle.TraegerName);
+        }
+
+        /// <summary>
+        /// Derselbe Text mit dem Namen des Trägers aus einer übergebenen Quelle — im Bericht aus dem
+        /// Wertesatz des Laufs (<see cref="WirtschaftsBerichtswerte.Traegername"/>, BV-E3).
+        /// </summary>
+        internal static string KuehltraegerText(ErgebnisWaermepumpeModulModel m, Func<int, string> traegername)
+        {
             if (m == null || !m.Kuehl_CarrierId.HasValue || m.Kuehl_CarrierId.Value <= 0)
                 return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
-            string name = Emissionsquelle.TraegerName(m.Kuehl_CarrierId.Value);
+            string name = (traegername ?? Emissionsquelle.TraegerName)(m.Kuehl_CarrierId.Value);
             return string.Format(m.Kuehl_EigenerZaehler == true ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
                                                                : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG, name);
         }

@@ -382,12 +382,12 @@ namespace WindowsFormsApplication1
         private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten,
                                                                                   Formelregister formeln)
         {
-            var provider = new WirtschaftlichkeitCtrl();
-            List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();
-            bool ausDiesemLauf = daten.Wirtschaftlichkeit.Count > 0;
-            List<WirtschaftlichkeitErgebnis> alle = ausDiesemLauf
-                ? daten.Wirtschaftlichkeit
-                : provider.LadeErgebnisse(ids);
+            // BV-E3 (Konzept Berichtsvorlagen 5.1): Das Blatt liest den WERTESATZ des Laufs
+            // (BerichtsDaten.Wirtschaft) — dieselben Teile wie der Wortbericht, vom Sammler EINMAL
+            // über dieselben Aufrufe ermittelt; beim Schreiben wird die Datenbank nicht berührt.
+            WirtschaftsBerichtswerte w = WirtschaftsBerichtswerte.Von(daten);
+            bool ausDiesemLauf = w.AusDiesemLauf;
+            List<WirtschaftlichkeitErgebnis> alle = w.Ergebnisse;
 
             IXLWorksheet ws = wb.Worksheets.Add(BerichtTexte.T("Wirtschaftlichkeit"));
             int r = 1;
@@ -408,24 +408,23 @@ namespace WindowsFormsApplication1
                 return null;
             }
 
-            WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
-            TarifParameter tarifP = provider.LadeTarif(daten.IdStamm);
+            WirtschaftlichkeitParameter p = w.Parameter;
+            TarifParameter tarifP = w.Tarif;
 
             // ETAPPE E5 Teil b: die BEWERTUNG dieses Laufs — Bandbreite mit Einstufungen,
             // Vorschlag, Hinweistext, Deklarationen, Nutzungsdauer-Hinweise, Stände ohne
             // Nachweis und Sensitivität; dieselbe, die der Wortbericht liest. Ohne Sammler
             // (Proben, Rückfall) entsteht sie aus denselben Kernmethoden.
-            WirtschaftlichkeitBewertung bewertung = daten.Bewertung
-                ?? WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur);
+            WirtschaftlichkeitBewertung bewertung = w.Bewertung;
 
-            ws.Cell(r, 1).Value = p.Nachweis(BerichtTexte.Kultur) +
+            ws.Cell(r, 1).Value = w.Parameternachweis(BerichtTexte.Kultur) +
                 // ETAPPE E7 (Divergenz D1): Der TARIFnachweis stand bisher nur im
                 // Word-Bericht. Er nennt Modell, Arbeitspreise und Preisstand — ohne ihn
                 // ist die Stromkostenzeile im Excel-Blatt nicht nachvollziehbar.
                 " · " + tarifP.Nachweis(BerichtTexte.Kultur) +
                 // LEITENTSCHEIDUNGEN L12/L13: derselbe Ausweis wie im Word-Bericht —
                 // Rechtsstand der Emissionsbewertung und Konvention der Biomasse.
-                " · " + BilanzKonvention.Bestimme(p, new GesetzKatalog()).Ausweis(BerichtTexte.Kultur) +
+                " · " + w.Bilanzkonvention.Ausweis(BerichtTexte.Kultur) +
                 " · " + BerichtTexte.T("Referenz: Stammprojekt · Restwert linear") +
                 " · " + BerichtTexte.T("Rechenstand") + ": " +
                 alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur);
@@ -439,7 +438,8 @@ namespace WindowsFormsApplication1
             // ETAPPE E9a: mit Zeitraum, Menge und Erlössätzen je Szenario und — nur wo
             // gepflegt — den Trägerpreisen der Stände.
             // ETAPPE E15 (V‑G7): mit Risiko die Risikozeilen, ihre Formeln über das Register.
-            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten, formeln);
+            // BV-E3: die gepflegten Trägerpreise der Stände aus dem Wertesatz (Traegerpreissatz.Lies).
+            r = ExcelFormelmappe.Parameterblock(ws, r, p, daten.Varianten, formeln, w.Traegerpreise);
 
             if (!ausDiesemLauf)
             {
@@ -458,7 +458,7 @@ namespace WindowsFormsApplication1
             {
                 WirtschaftlichkeitErgebnis ea = alle.FirstOrDefault(x =>
                     x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                if (ea == null || (ea.Fehlgrund == null && !provider.ErgebnisAktuell(ea)))
+                if (ea == null || (ea.Fehlgrund == null && !w.ErgebnisAktuell(ea)))
                     veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
             }
             if (veraltet.Count > 0)
@@ -498,8 +498,7 @@ namespace WindowsFormsApplication1
             // den Haekchen folgt. In Sicht 2 stehen A und B mit A als Referenz, in
             // Sicht 1 alle Staende gegen die Referenz der Gruppe. Dieselbe
             // Zeilendefinition wie in Word und auf der Seite.
-            int idReferenz = daten.Sicht != null && daten.Sicht.IstPaar
-                           ? daten.Sicht.IdA : daten.IdGruppenreferenz;
+            int idReferenz = w.IdReferenzTafel;
             var spalten = new List<VariantenDaten>();
             if (daten.Sicht != null && daten.Sicht.IstPaar)
                 foreach (int id in daten.Sicht.Spalten(null))
@@ -509,8 +508,7 @@ namespace WindowsFormsApplication1
                 }
             if (spalten.Count == 0) spalten.AddRange(daten.Varianten);
 
-            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(
-                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarifP, idReferenz), alle);
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(w.Zeilen(idReferenz), alle);
 
             // KONZEPT § 2.15 (VG-Q4): In Sicht 2 sagt die DEKLARATIONSZEILE, wogegen
             // gerechnet wurde - die Norm laesst den Vergleich zweier Massnahmen zu
@@ -572,8 +570,7 @@ namespace WindowsFormsApplication1
 
                     // ETAPPE E9a (Norm 9 c): die gepflegten Trägerpreise des Szenarios je
                     // Stand — nur, wo einer gepflegt ist (sonst keine Zeile, das Blatt bleibt).
-                    string preise = TraegerpreisSzenario.Nachweiszeile(daten.Varianten, szenario,
-                                                                       BerichtTexte.Kultur);
+                    string preise = w.Traegerpreiszeile(szenario, BerichtTexte.Kultur);
                     if (!string.IsNullOrEmpty(preise))
                     {
                         ws.Cell(r, 1).Value = preise;
@@ -763,16 +760,13 @@ namespace WindowsFormsApplication1
             // aber keine Stundenreihen im Berichtslauf, entfällt der Block mit Hinweis.
             // ETAPPE BK1: dieselbe EINE Regel wie im Word-Baustein und im Rechenkern.
             // Q11 (E7b): nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
-            bool zeitreihenNoetig = (tarifP != null && tarifP.Wirksam) ||
-                                    KwkgAktivierung.IstAktiv(daten.IdStamm,
-                                        daten.Varianten.Select(x => x.IdProjekt));
+            // BV-E3: Die Regel steht im Wertesatz (VerlaufEntfaellt) — dieselbe wie im Wortbericht.
             int rStart = r;
             // E7/E14: der Verlauf je Zeitraum ist zugleich die Grundlage der Mehrjahrestabellen.
             WirtschaftlichkeitVerlaufSzenarien verlaufSzenarien = null;
             try
             {
-                if (zeitreihenNoetig &&
-                    daten.Varianten.Any(v => v.Fehler == null && v.Zeitreihen == null))
+                if (w.VerlaufEntfaellt)
                 {
                     ws.Cell(r, 1).Value = BerichtTexte.T(
                         "Kapitalwert-Verlauf entfällt: Bericht ohne Stundenreihen erzeugt (Baustein „Ergebnisse je Variante“ aktivieren).");
@@ -786,8 +780,10 @@ namespace WindowsFormsApplication1
                     // für Zahl der bisherige Einzellauf.
                     // ETAPPE E9a (Schritt B): jedes Szenario über SEINEN Betrachtungszeitraum;
                     // die Tabelle läuft bis zum längsten, Jahre jenseits von T_s bleiben leer.
-                    WirtschaftlichkeitVerlaufSzenarien drei =
-                        provider.BerechneVerlaufSzenarienJeZeitraum(daten, p);
+                    // BV-E3: gerechnet hat ihn der Sammler; scheiterte die Rechnung, entfällt der
+                    // Block wie bei einem Fehler hier (Fang unten).
+                    WirtschaftlichkeitVerlaufSzenarien drei = w.Verlauf
+                        ?? throw new InvalidOperationException("Der Kapitalwertverlauf ließ sich nicht rechnen.");
                     WirtschaftlichkeitVerlauf verlauf = drei.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
                     verlaufSzenarien = drei;           // E6: Grundlage des Blattes „Verlauf" und (E7/E14) der Mehrjahrestabellen
                     var mitReihe = verlauf.Absolut.Where(s => s.Kumuliert != null).ToList();
@@ -969,7 +965,7 @@ namespace WindowsFormsApplication1
 
             // ---------------- Strommengen-Matrix (W3) ----------------
             // Q11 (E7b): keine Tarifzonen mehr — eine Jahreszeile je Projekt.
-            Dictionary<int, StromMatrix> matrizen = provider.LadeStromMatrix(ids);
+            Dictionary<int, StromMatrix> matrizen = w.Strommatrizen;
             if (matrizen.Count > 0)
             {
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MATRIX_TITEL + " [MWh]";
@@ -1027,8 +1023,8 @@ namespace WindowsFormsApplication1
                     // sonst stünden zwei Rechenstände in einem Blatt (Review Phase 8).
                     WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
                         x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                    if (erw == null || !provider.ErgebnisAktuell(erw)) continue;
-                    EmissionsBilanz b = EmissionsBilanzRechner.Berechne(v.IdProjekt, p);
+                    if (erw == null || !w.ErgebnisAktuell(erw)) continue;
+                    EmissionsBilanz b = w.Emissionsbilanz(v.IdProjekt);   // BV-E3: EmissionsBilanzRechner im Sammler
                     if (b == null || (!b.CO2GekoppeltT.HasValue && !b.CO2GetrenntT.HasValue)) continue;
 
                     ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige) +

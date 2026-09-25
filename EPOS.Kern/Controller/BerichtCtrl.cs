@@ -276,6 +276,8 @@ namespace WindowsFormsApplication1
         /// — kommt statt der heutigen Startrückfrage die erweiterte Rückfrage mit drei Wegen
         /// (<see cref="Startbefund.BrauchtRueckfrage"/>). Die Bytes gehen mit dem Befund an
         /// <see cref="ErzeugeWord(BerichtsDaten, BerichtsKonfiguration, Startbefund, Startweg)"/>.
+        /// Den Bedarf der Vorlage — Stundenreihen, Verlauf, Emissionsbilanz — legt die Vorprüfung in
+        /// <see cref="Startbefund.Bedarf"/> (Konzept 5.1, BV-E3; <see cref="Berichtsbedarf.AusVorlage"/>).
         /// </summary>
         /// <param name="konfig">Die Konfiguration des Laufs (Abweichung, Varianten).</param>
         /// <param name="englisch">Entsteht der Bericht auf Englisch? Sprache der Befunde und Texte.</param>
@@ -314,10 +316,17 @@ namespace WindowsFormsApplication1
                 text = Rueckfragetext(wahl, projekte, befunde, bytes != null && befund?.HatFehler == true, englisch);
             }
 
+            // BV-E3 (Konzept 5.1): der Bedarf der Vorlage aus ihren Platzhaltern — Stundenreihen, Verlauf und
+            // Emissionsbilanz erhebt der Sammler nur, wenn die Vorlage sie zeigt. Ohne lesbare Vorlage (Rückfall
+            // auf den bisherigen Weg) die Vorgabe der Häkchen.
+            Berichtsbedarf bedarf = wahl.Grund == Vorlagenwahlgrund.Rueckfall
+                ? Berichtsbedarf.Vorgabe(konfig)
+                : Berichtsbedarf.AusVorlage(befund, konfig);
+
             return new Startbefund(wahl, befund, bytes, lesefehler, englisch, projekte, sprache, sichtUnpassend, ohneWirtschaft,
                                    befunde, text,
                                    Tk(englisch, nameof(R.BV_START_WEG_EIGENE)), Tk(englisch, nameof(R.BV_START_WEG_STANDARD)),
-                                   Tk(englisch, nameof(R.BV_START_WEG_ABBRECHEN)));
+                                   Tk(englisch, nameof(R.BV_START_WEG_ABBRECHEN)), bedarf);
         }
 
         // =====================================================================

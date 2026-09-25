@@ -174,11 +174,51 @@ namespace WindowsFormsApplication1
                                                IProgress<Fortschritt> fortschritt, CancellationToken abbruch,
                                                Vergleichssicht sicht)
         {
+            // BV-E3: Der Schalter ist der Zeitreihenteil des Bedarfs; Verlauf und Emissionsbilanz
+            // erhebt der Lauf wie bisher, sobald ein Schreiber sie zeigt.
+            return SammleFuerBericht(idStamm, stammName, variantenIds,
+                                     new Berichtsbedarf((mitZeitreihen ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner) |
+                                                        Vorlagenbedarf.Verlauf | Vorlagenbedarf.Emissionsbilanz),
+                                     fortschritt, abbruch, sicht);
+        }
+
+        /// <summary>
+        /// ETAPPE BV-E3 (Konzept Berichtsvorlagen 5.1, 8.5) — derselbe Berichtslauf mit dem
+        /// <b>Bedarf</b> des Berichts: Simulation und Wirtschaftlichkeitsrechnung laufen immer, die
+        /// Stundenreihen, der Kapitalwertverlauf und die Emissionsbilanz nur, wenn der Bericht sie
+        /// zeigt (<see cref="Berichtsbedarf"/>; die Hülle bildet ihn mit
+        /// <see cref="Berichtsbedarf.FuerLauf"/> aus Vorlage und Häkchen).
+        ///
+        /// <para><b>Danach der Wertesatz.</b> Was Wirtschaftlichkeitsbaustein, Anhang E, Tabellenbericht
+        /// und Formelmappe beim Schreiben aus der Datenbank lasen oder daraus rechneten, ermittelt der
+        /// Lauf EINMAL nach der Wirtschaftlichkeitsrechnung über dieselben Rechenwege
+        /// (<see cref="WirtschaftsBerichtswerte.Ermittle"/>) und legt es als
+        /// <see cref="BerichtsDaten.Wirtschaft"/> an den Baum — Word und Excel lesen dieselben Zahlen,
+        /// und der Verlauf wird einmal gerechnet statt je Ausgabe.</para>
+        /// </summary>
+        /// <param name="bedarf">Was der Bericht zeigt; <c>null</c> = <see cref="Berichtsbedarf.Alles"/>.</param>
+        /// <param name="sicht">Die Vergleichssicht der Sitzung; <c>null</c> = Sicht 1.</param>
+        public BerichtsDaten SammleFuerBericht(int idStamm, string stammName, List<int> variantenIds,
+                                               Berichtsbedarf bedarf,
+                                               IProgress<Fortschritt> fortschritt, CancellationToken abbruch,
+                                               Vergleichssicht sicht)
+        {
+            Berichtsbedarf b = bedarf ?? Berichtsbedarf.Alles;
+
             // Der Wirtschaftlichkeitsschritt ist ein zusätzlicher Fortschrittsschritt
             // hinter den Projekten — sonst stünde der Balken schon auf 100 %, während
             // noch gerechnet wird.
             IProgress<Fortschritt> melder = fortschritt == null
                 ? null : new FortschrittMitZusatz(fortschritt, 1);
+
+            // Die Stundenreihen: was der Bericht zeigt (Bedarf) — und was die RECHNUNG braucht.
+            // SP-W1: Ist am Stromträger ein Leistungspreis gepflegt, braucht die Kostenseite die
+            // Reihen — ohne Bezugsspitze fällt sein Leistungsanteil aus den Energiekosten.
+            // LS-E-2 (VF-1): Der Leistungspreis zählt für die GANZE Gruppe; führt ihn nur eine
+            // Variante, fehlte ihr ohne Reihen der Leistungsanteil. Die Regel stand bis BV-E3 in
+            // der Hülle (BerichtSeiteGaben) und gilt jetzt für jeden Aufrufer.
+            bool mitZeitreihen = b.Zeitreihen ||
+                                 KostenEmissionRechner.StromLeistungspreisGepflegt(idStamm, variantenIds);
 
             BerichtsDaten daten = Sammle(idStamm, stammName, variantenIds,
                                          true /* immer frisch simulieren */, mitZeitreihen,
@@ -189,8 +229,22 @@ namespace WindowsFormsApplication1
             if (daten != null) daten.Sicht = sicht != null ? sicht.Kopie() : null;
 
             RechneWirtschaftlichkeit(daten, fortschritt, abbruch);
+
+            // BV-E3: der Wertesatz der Wirtschaftlichkeit — nach der Rechnung, mit der Sicht, der
+            // Referenz und der Bewertung, die sie am Baum hinterlassen hat.
+            if (daten != null)
+            {
+                abbruch.ThrowIfCancellationRequested();
+                daten.Wirtschaft = WirtschaftsBerichtswerte.Ermittle(daten, b);
+            }
             return daten;
         }
+
+        /// <summary>
+        /// BV-E3 — wie viele Zeitreihensätze dieser Sammler eingesammelt hat (Nachweis des Bedarfs:
+        /// ohne Bedarf und ohne gepflegten Leistungspreis keiner).
+        /// </summary>
+        internal int ZeitreihenErhoben { get; private set; }
 
         /// <summary>
         /// Schritt (b) der Berichtskette: Wirtschaftlichkeit der gesammelten
@@ -485,8 +539,11 @@ namespace WindowsFormsApplication1
                     // Stundenreihen sind trotzdem gültig — Verhalten wie bisher.
                     if (erg > 0) v.FrischSimuliert = true;
                     if (_mitZeitreihen)
+                    {
+                        ZeitreihenErhoben++;
                         try { v.Zeitreihen = ZeitreihenExtraktor.AusLauf(runner); }
                         catch { v.Zeitreihen = null; }
+                    }
                 }
                 else if (v.ErgebnisFehlte)
                     throw new InvalidOperationException("Simulation fehlgeschlagen: " + (fehler ?? "unbekannter Fehler"));
