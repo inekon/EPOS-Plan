@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Proben zum Werkzeug Gebaeudevergleich (Q24/E27, Bedingung 1) - T1 bis T15 des
+    Umsetzungsauftrags.
+
+    Sie laufen gegen KOPIEN von Referenzlaeufe\Kenndaten_Test.sqlite - nie gegen die Datei
+    selbst - und halten die Zahlen des Werkzeugs gegen die Referenzbasis unter
+    Referenzlaeufe\20*_R*. Jede Kopie liegt in einem eigenen Ordner unter %TEMP% mit der
+    Besitzmarke besitz.sperre (Muster EPOS.Kern.Tests\TestDatenbank). Fehlt die
+    Testdatenbank (nur der LFS-Zeiger), schweigen die Faelle.
+
+    Das Werkzeug wird als PROGRAMM gerufen (Kommandozeile, Rueckgabecode, Ausgabedateien,
+    Konsole) - so, wie es an der Arbeitsdatenbank laeuft. Nur die Ursachenregeln, die
+    Prozesssperre und die Schreibsperre werden zusaetzlich von innen geprueft; dafuer der
+    ProjectReference samt InternalsVisibleTo des Werkzeugs.
+
+    Gehoert bewusst NICHT in WP-Plan.sln und nicht in den Kern-Filter. Gebaut und
+    ausgefuehrt ueber Werkzeuge\Gebaeudevergleich\Gebaeudevergleich.sln.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+    <AssemblyName>Gebaeudevergleich.Tests</AssemblyName>
+    <RootNamespace>Gebaeudevergleich.Tests</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+    <ProjectReference Include="..\Gebaeudevergleich\Gebaeudevergleich.csproj" />
+  </ItemGroup>
+
+</Project>
