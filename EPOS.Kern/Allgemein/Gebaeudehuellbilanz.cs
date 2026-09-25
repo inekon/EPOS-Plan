@@ -192,6 +192,51 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die fünf Transmissionsgruppen einer Zone aus ihren Bauteilen</b> (Stufe G3, Welle D2;
+        /// Summenregel Mehrzonenkonzept 4.3) — die abgeleitete Anzeige des Gebäudedialogs, sobald das
+        /// Gebäude eine Zone trägt: je Gruppe Σ A und U = Σ U·A / Σ A. Die Zuordnung: Außenwand;
+        /// Fenster und Vorhangfassade; Dach; Bodenplatte; Tür, Sonstiges und jedes Innenbauteil mit
+        /// ausdrücklicher Randbedingung als „Sonstiges". Ein Bauteil innerhalb der Zone (Innenwand oder
+        /// Decke ohne Randbedingung, <c>GebaeudeZonenabbildung.LeerHeisstInnen</c>) zählt nicht zur
+        /// Hülle. Fehlt einem Bauteil der Gruppe der U-Wert (weder eingetragen noch aus dem Aufbau
+        /// bestimmbar), steht der Kennwert der Gruppe leer — keine erfundene Zahl.
+        /// </summary>
+        /// <param name="bauteile">Je Bauteil Bauteilart und Randbedingung (Persistenzwerte), Fläche [m²]
+        /// und der wirksame U-Wert [W/(m²K)] (<c>null</c> = nicht bestimmbar).</param>
+        public static IReadOnlyList<Huellzeile> Zonenzeilen(
+            IEnumerable<(string Bauteilart, string Randbedingung, double Flaeche, double? UWert)> bauteile)
+        {
+            var reihe = new[] { Huellbauteil.Aussenwand, Huellbauteil.Fenster, Huellbauteil.Dach,
+                                Huellbauteil.Bodenplatte, Huellbauteil.Sonstiges };
+            var flaeche = new double[reihe.Length];
+            var leitwert = new double[reihe.Length];
+            var offen = new bool[reihe.Length];
+            foreach ((string art, string rand, double a, double? u) in bauteile ?? Array.Empty<(string, string, double, double?)>())
+            {
+                Bauteilart? kern = GebaeudeZonenabbildung.ArtAusZeile(art);
+                if (kern.HasValue && GebaeudeZonenabbildung.RandAusZeile(kern.Value, rand) == Bauteilrand.Innen) continue;
+                Huellbauteil gruppe = kern switch
+                {
+                    Bauteilart.Aussenwand => Huellbauteil.Aussenwand,
+                    Bauteilart.Fenster or Bauteilart.Vorhangfassade => Huellbauteil.Fenster,
+                    Bauteilart.Dach => Huellbauteil.Dach,
+                    Bauteilart.Bodenplatte => Huellbauteil.Bodenplatte,
+                    _ => Huellbauteil.Sonstiges,
+                };
+                int i = Array.IndexOf(reihe, gruppe);
+                flaeche[i] += a;
+                if (u.HasValue) leitwert[i] += u.Value * a;
+                else offen[i] = true;
+            }
+            var zeilen = new Huellzeile[reihe.Length];
+            for (int i = 0; i < reihe.Length; i++)
+                zeilen[i] = new Huellzeile(reihe[i],
+                                           flaeche[i] > 0.0 && !offen[i] ? leitwert[i] / flaeche[i] : (double?)null,
+                                           flaeche[i]);
+            return zeilen;
+        }
+
+        /// <summary>
         /// Die Fensterfläche Ost + West: Summe der beiden getrennten Felder, und wenn beide
         /// leer sind, das Bestandsfeld. <c>null</c>, wenn genau eines der beiden steht — dann
         /// ist die Eingabe unvollständig (der Kern setzt für ein leeres Feld die Hälfte des

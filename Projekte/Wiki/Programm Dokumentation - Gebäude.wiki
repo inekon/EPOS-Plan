@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gebäude
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gebäude.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Die '''Gebäude''' sind die Grundlage der Heizwärmeberechnung. EPOS-Plan führt sie an zwei Stellen: im '''Gebäudekatalog''', der Geometrie, Hülle, Nutzungsrandbedingungen, Ferienzeiten, Modellparameter und Kühlung eines Gebäudes enthält, und im '''Projekt''', das ein Gebäude aus dem Katalog übernimmt und dazu nur die Bezugsgröße – Nutzfläche oder Verbrauch – und den Jahresnutzungsgrad pflegt. Den Katalog bearbeiten Sie in der '''Verwaltung Gebäude''', die Zuordnung zum Projekt im Dialog '''Eingabe der Gebäudedaten'''.
+Die '''Gebäude''' sind die Grundlage der Heizwärmeberechnung. EPOS-Plan führt sie an zwei Stellen: im '''Gebäudekatalog''', der Geometrie, Hülle, Nutzungsrandbedingungen, Ferienzeiten, Modellparameter und Kühlung eines Gebäudes enthält, und im '''Projekt''', das ein Gebäude aus dem Katalog als eigene Kopie übernimmt und dazu die Bezugsgröße – Nutzfläche oder Verbrauch – und den Jahresnutzungsgrad pflegt. Den Katalog bearbeiten Sie in der '''Verwaltung Gebäude''', die Zuordnung zum Projekt im Dialog '''Eingabe der Gebäudedaten'''. Die Kopie im Projekt lässt sich dort über ''Hülle und Zonen…'' selbst bearbeiten und mit einer Zone aus einzelnen Bauteilen beschreiben (siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
 
 == Aufruf ==
 {{Anker|aufruf}}
@@ -9,6 +9,7 @@ Die '''Gebäude''' sind die Grundlage der Heizwärmeberechnung. EPOS-Plan führt
 * '''Verwaltung Gebäude''' – Menü ''Administration'' › ''Gebäude'' › ''Bearbeiten''. Sie braucht kein offenes Projekt.
 * '''Gebäudetypen''' – Menü ''Administration'' › ''Gebäude'' › ''Gebäudetypen''; dieselbe Verwaltung öffnet sich auch aus beiden Gebäudedialogen (siehe [[#gebaeudetypen|Gebäudetypen]]).
 * '''Eingabe der Gebäudedaten''' – im offenen Projekt auf der Startseite im Reiter ''Wärmebedarf'' und im Assistenten beim Schritt der Gebäude.
+* '''Gebäude im Projekt: Hülle und Zonen''' – im Dialog ''Eingabe der Gebäudedaten'' über ''Hülle und Zonen…'' für die markierte Zeile der Projektliste.
 
 == Die Gebäude des Projekts ==
 {{Anker|projektdialog}}
@@ -31,21 +32,22 @@ Der Dialog '''Eingabe der Gebäudedaten''' zeigt links die Liste ''ausgewählte 
 
 ''In das Projekt übernehmen'' setzt den markierten Katalogsatz als neue Zeile in die Projektliste, vorbelegt mit der Art der Angabe ''Wohnfläche [m²]'', der Wohnfläche des Katalogsatzes und dem Jahresnutzungsgrad 1. Übernommen wird mit ''OK''; ''Abbrechen'' verwirft die Änderungen der Liste.
 
-Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts fort: Eine unveränderte Zeile bleibt mit ihrem ganzen Stand erhalten, auch mit projekteigenen Werten aus Feldübernahmen und der Tagesverteilung. Nur entfernte Zeilen werden gelöscht und neu hinzugekommene Katalogsätze neu angelegt; die Zuordnungswerte einer bleibenden Zeile – Fläche bzw. Verbrauch, ihre Einheit, der Jahresnutzungsgrad und die dezentrale Warmwasserbereitung – übernimmt EPOS-Plan aus der Projektliste, so wie sie im Dialog stehen. Der Katalogsatz liefert nur die Kopie eines neu hinzugekommenen Gebäudes. Schlägt das Speichern fehl, etwa weil der Katalogsatz eines Altbestands ohne Verweis umbenannt wurde, bleibt der Stand des Projekts unverändert, und die Startseite zeigt eine Meldung.
+Das Projekt rechnet mit einer '''eigenen Kopie''' jedes Gebäudes. Die Kopie merkt sich, aus welchem Katalogsatz sie stammt – auch dann, wenn dieser Satz später umbenannt wird. Mit ''OK'' schreibt EPOS-Plan die Gebäudeliste des Projekts fort: Eine unveränderte Zeile bleibt mit ihrem ganzen Stand erhalten, auch mit projekteigenen Werten aus Feldübernahmen und der Tagesverteilung, mit dem, was [[#huelle-und-zonen|Hülle und Zonen…]] an der Kopie bearbeitet hat, und mit ihrer Zone. Nur entfernte Zeilen werden gelöscht – samt ihrer Zone – und neu hinzugekommene Katalogsätze neu angelegt; die Zuordnungswerte einer bleibenden Zeile – Fläche bzw. Verbrauch, ihre Einheit, der Jahresnutzungsgrad und die dezentrale Warmwasserbereitung – übernimmt EPOS-Plan aus der Projektliste, so wie sie im Dialog stehen. Der Katalogsatz liefert nur die Kopie eines neu hinzugekommenen Gebäudes. Schlägt das Speichern fehl, etwa weil der Katalogsatz eines Altbestands ohne Verweis umbenannt wurde, bleibt der Stand des Projekts unverändert, und die Startseite zeigt eine Meldung.
 
 === Gebäude: Verbrauch ===
 
 * {{Anker|verbrauch}}'''Gebäude: Verbrauch''' – der Detailblock nennt Gebäudename, Gebäudeart, Beschreibung, Wohn-/Nutzfläche, ''Art der Angabe'', den Wärmeleitwert ''H_ges'' und den Rechenweg der markierten Zeile. Das kleine i am Kopf des Blocks führt zum Rechenweg des Wärmebedarfs.
-* '''Ändern''' – öffnet für die markierte Projektzeile die Eingabe der Nutzfläche bzw. des Verbrauchs. Unter ''Bedarfsart'' wählen Sie ''Wohnfläche [m²]'' oder einen Verbrauch – Öl in Litern, Gas in Kubikmetern oder MWh, Brennstoff oder allgemeinen Verbrauch in MWh je Jahr – und tragen den Wert ein. Bei einem Verbrauch gehört der '''Jahresnutzungsgrad''' der bestehenden Anlage dazu, etwa 0,85 für 85 %: Damit rechnet EPOS-Plan den Verbrauch in Nutzwärme um und skaliert das Gebäudemodell auf diesen Bedarf. Der Schalter ''Dezentrale Warmwasserbereitung'' gehört ebenfalls zu den Angaben des Projekts.
+* '''Ändern''' – öffnet für die markierte Projektzeile die Eingabe der Nutzfläche bzw. des Verbrauchs. Unter ''Bedarfsart'' wählen Sie ''Wohnfläche [m²]'' oder einen Verbrauch – Öl in Litern, Gas in Kubikmetern oder MWh, Brennstoff oder allgemeinen Verbrauch in MWh je Jahr – und tragen den Wert ein. Bei einem Verbrauch gehört der '''Jahresnutzungsgrad''' der bestehenden Anlage dazu, etwa 0,85 für 85 %: Damit rechnet EPOS-Plan den Verbrauch in Nutzwärme um und skaliert das Gebäudemodell auf diesen Bedarf. Der Schalter ''Dezentrale Warmwasserbereitung'' gehört ebenfalls zu den Angaben des Projekts. Führt das Gebäude eine Zone (siehe [[#zone-uebernehmen|Gebäude als eine Zone übernehmen]]), rechnet es über seine Bauteile, und die Hochrechnung entfällt: Eine Zeile im Dialog sagt das, ''Bedarfsart'', Wert und Jahresnutzungsgrad sind gesperrt – ein Klick darauf nennt den Grund –, und die dezentrale Warmwasserbereitung bleibt einstellbar.
+* '''Hülle und Zonen…''' – öffnet für die markierte Projektzeile den Gebäudeeditor, in dem Sie die Kopie des Gebäudes im Projekt bearbeiten und ihre Zone anlegen; siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]. Für eine Zeile, die noch nicht im Projekt gespeichert ist, ist der Knopf gesperrt, und sein Kurztext nennt den Grund: Erst mit ''OK'' des Gebäudedialogs entsteht die Projektkopie.
 * {{Anker|waermebedarf}}'''Simulation…''' – rechnet den Wärmebedarf genau des markierten Gebäudes und zeigt ihn in der Überlagerung ''Wärmebedarf Gebäude'': Kennzahlen, Jahresganglinie und – auf dem Rechenweg VDI 6007 – den Vergleich der Rechenwege, den Verlauf der Raumtemperatur und den Kältebedarf. Dafür muss das Projekt gespeichert sein und eine Klimaregion führen; sonst sagt eine Meldung, was fehlt. Die Kennzahlen beschreibt die Seite [[Programm Dokumentation/Gebäudemodell VDI 6007#ergebnisse|Gebäudemodell VDI 6007]].
 * '''Gebäudetyp in DB ändern…''' – öffnet die Verwaltung der [[#gebaeudetypen|Gebäudetypen]].
 
-Die Fußleiste trägt ''Ändern'', ''Simulation…'', ''Gebäudetyp in DB ändern…'', ''OK'' und ''Abbrechen''. Im Assistenten stehen die beiden Listen, die Leiste unter dem Katalog und der Detailblock ohne diese Fußleiste; weiter geht es mit der Leiste des Assistenten.
+Die Fußleiste trägt ''Ändern'', ''Hülle und Zonen…'', ''Simulation…'', ''Gebäudetyp in DB ändern…'', ''OK'' und ''Abbrechen''. Im Assistenten stehen die beiden Listen, die Leiste unter dem Katalog und der Detailblock ohne diese Fußleiste; weiter geht es mit der Leiste des Assistenten.
 
 == Der Katalogeditor ==
 {{Anker|katalogeditor}}
 
-Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben.
+Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an und schließt wie ''OK''. Ein Satz der Auslieferung lässt sich nicht überschreiben. Über ''Hülle und Zonen…'' bearbeitet derselbe Editor die Kopie eines Gebäudes im Projekt; was dort gilt, beschreibt [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]].
 
 === Reiter „Gebäude und Hülle" ===
 
@@ -55,12 +57,122 @@ Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er er
 * '''Wärmeleitwerte''' – die gerechneten Leitwerte ''H_T'' (Transmission), ''H_ve'' (Lüftung) und ''H_ges''.
 * '''Fenster nach Orientierung''' – die Fensterflächen Nord, Süd, Ost und West in m²; Ost und West tragen Sie beide ein oder lassen beide leer.
 * '''Modellparameter (VDI 6007)''', '''Rechenweg''' und '''Kühlung''' – beschrieben auf den Seiten [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Kühlung|Kühlung]]. Ein leeres Modellfeld rechnet mit seiner Vorgabe. Auf dem Rechenweg ''Tagesbilanz'' erscheint zusätzlich der Abschnitt ''Tagesbilanz (Bestandsweg)'' mit dem [[#gebaeudetypen|Gebäudetyp]].
+* '''Rechenweg der Hülle''' – eine Zeile unter dem Rechenweg: ''Klassenweg – U-Wert-Gruppen und Bauweise'' oder ''Bauteilweg – Zone „…", n Bauteile''. Ein Katalogsatz rechnet immer den Klassenweg und trägt keine Zonen; der Knopf ''Gebäude als eine Zone übernehmen'' bei dieser Zeile ist im Katalog gesperrt. Zonen führt nur ein Gebäude im Projekt (siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
 
 === Reiter „Temperaturen und Ferien" ===
 
 * {{Anker|raumtemperaturen}}'''Raumtemperaturen''' – Soll am Tag, Nachtabsenkung auf, Wochenendabsenkung, Soll in Ferien und Maximalraumtemperatur, jeweils in °C. Sie steuern die Absenkungen im Jahresgang.
 * {{Anker|ferienzeiten}}'''Ferien Anfang''' und '''Ferien Ende''' – vier Zeiträume für Winter, Ostern, Sommer und Herbst, je mit Tag und Monat. Die Winterferien reichen über den Jahreswechsel. In diesen Zeiträumen gilt die Ferien-Solltemperatur.
 * '''Brauchwasser…''' – öffnet in der Gruppe ''Sonstiges'' die Brauchwasserprofile des offenen Projekts.
+
+== Gebäude im Projekt: Hülle und Zonen ==
+{{Anker|huelle-und-zonen}}
+
+'''Hülle und Zonen…''' in der Fußleiste des Projektdialogs öffnet den Gebäudeeditor ''Gebäude im Projekt: Hülle und Zonen'' für die markierte Zeile der Projektliste. Bearbeitet wird die '''Projektkopie''' des Gebäudes, nicht der Katalogsatz: Was Sie hier eintragen, gilt nur in diesem Projekt. Der Editor trägt die Reiter des [[#katalogeditor|Katalogeditors]] und dazu den Reiter ''Zonen''.
+
+* '''OK''' prüft und schreibt in dieser Reihenfolge: zuerst die Gebäudedaten, dann die aus dem Katalog gewählten Bauteilaufbauten, dann die Zonen mit ihren Bauteilen. ''Abbrechen'', Esc und das Kreuz schließen den Editor, ohne etwas zu schreiben.
+* Für eine Zeile, die noch nicht im Projekt gespeichert ist, ist der Knopf gesperrt; sein Kurztext nennt den Grund: Erst mit ''OK'' des Gebäudedialogs entsteht die Projektkopie, die Zonen tragen kann.
+* Der '''Name''' des Gebäudes im Projekt bleibt, wie er ist; eine Zeile im Editor sagt es. Ein anderer Name gilt nur für ''Speichern unter'', das einen neuen Katalogsatz anlegt (siehe [[#zone-katalog|Speichern unter]]).
+
+=== Klassenweg und Bauteilweg ===
+
+Ein Gebäude ohne Zone rechnet den '''Klassenweg''': die U-Wert-Gruppen der Hülle – Außenwand, Fenster, Dach, Bodenplatte und Sonstiges – und die Bauweise als Speichermasse. Ein Gebäude im Projekt mit einer Zone rechnet den '''Bauteilweg''' über die Bauteile dieser Zone – mit ihren Schichtaufbauten, Neigungen und Himmelsrichtungen und ohne Hochrechnung auf die Angabe des Projekts. Ein Gebäude führt höchstens eine Zone. Die Rechnung dahinter beschreibt die Seite [[Programm Dokumentation/Gebäudemodell VDI 6007#bauteilweg|Gebäudemodell VDI 6007]].
+
+Im Reiter ''Gebäude und Hülle'' steht unter dem Rechenweg die Zeile '''Rechenweg der Hülle''', in beiden Stellungen: ''Klassenweg – U-Wert-Gruppen und Bauweise'' oder ''Bauteilweg – Zone „…", n Bauteile''. Mit Zone sind die Werte der Hülle in diesem Reiter '''abgeleitete Anzeigen''':
+
+* die Tabelle der Hülle – je Gruppe die Fläche Σ A und der U-Wert U = Σ U·A / Σ A der Bauteile der Zone, dazu die Wärmebrücken der Bauteile als Σ ψ·L; eine Zeile sagt, dass die Werte aus den Bauteilen abgeleitet sind;
+* die Fensterflächen nach Orientierung – gerechnet wird mit den Fensterbauteilen der Zone, deren Fläche eine Zeile nennt;
+* die Nutzfläche – die Zone rechnet mit ihrer eigenen Nutzfläche.
+
+Die gespeicherten Werte des Gebäudes bleiben dabei stehen und gelten wieder, sobald die Zone entfernt ist.
+
+=== Gebäude als eine Zone übernehmen ===
+{{Anker|zone-uebernehmen}}
+
+Der Knopf '''Gebäude als eine Zone übernehmen''' steht im Reiter ''Gebäude und Hülle'' bei der Zeile ''Rechenweg der Hülle'' und im leeren Reiter ''Zonen''. Er legt aus den U-Wert-Gruppen des Gebäudes eine Zone mit Bauteilen an. Frei ist er nur für ein Gebäude im Projekt ohne Zone auf dem Rechenweg VDI 6007; sonst ist er gesperrt, und sein Kurztext nennt den Grund:
+
+* ein Katalogsatz trägt keine Zonen;
+* das Gebäude führt schon eine Zone;
+* der Rechenweg ''Tagesbilanz'' rechnet keine Zonen – zuerst den Rechenweg auf VDI 6007 stellen.
+
+Ein Klick bestimmt zuerst den '''Hochrechnungsfaktor''': EPOS-Plan rechnet das Gebäude dafür einen Jahreslauf lang, und der Kurztext am Knopf sagt, dass der Faktor bestimmt wird. Das Projekt muss dazu gespeichert sein und eine Klimaregion führen; sonst nennt eine Meldung, was fehlt. Danach stellt der Editor eine Rückfrage:
+
+* Ab jetzt rechnet das Gebäude über seine Bauteile statt über die U-Wert-Gruppen.
+* Die Flächen werden mit dem Faktor auf die Projektfläche hochgerechnet; die Rückfrage nennt den Faktor und die Nutzfläche vor und nach der Hochrechnung.
+* Die Flächen- bzw. Verbrauchsangabe des Projekts gilt danach nicht mehr.
+* Trägt das Gebäude eine Leistungsgrenze für Heizung oder Kühlung, gilt sie danach der hochgerechneten Hülle.
+
+Mit ''Ja'' entsteht im Arbeitsstand des Editors die Zone ''Gebäude'' mit diesen Bauteilen:
+
+* Außenwand und Sonstiges als je vier senkrechte Bauteile nach Nord, Ost, Süd und West;
+* das Dach, waagerecht;
+* die Bodenplatte mit der Randbedingung des Gebäudes – Erdreich, unbeheizter Raum für den unbeheizten Keller oder Außenluft;
+* ein Fenster je Himmelsrichtung;
+* die Wärmebrücken, auf die Wände verteilt.
+
+Alle Flächen und Wärmebrücken sind mit dem Faktor multipliziert; die Nutzfläche der Zone ist Faktor × Nutzfläche des Gebäudes. Geschrieben wird mit ''OK'' des Editors; ''Nein'' lässt alles, wie es ist.
+
+Der Faktor ist derselbe, mit dem die Rechnung ohne Zone das Gebäude auf das Projekt hochrechnet: bei einer Flächenangabe Projektfläche / Nutzfläche, bei einer Verbrauchsangabe das Verhältnis des angegebenen zum gerechneten Verbrauch. Darum bleibt der Wärmebedarf beim Übernehmen gleich, und die Zone ist danach die '''echte Hülle''' des Gebäudes im Projekt, die ohne Hochrechnung rechnet.
+
+Ein Beispiel: ''Gebäude 1'' hat 100 m² Nutzfläche, das Projekt gibt 250 m² an. Der Faktor ist 2,5; aus 120 m² Außenwand werden in der Zone 300 m², verteilt auf vier Bauteile, und die Zone hat 250 m² Nutzfläche.
+
+=== Reiter „Zonen" ===
+{{Anker|zonen}}
+
+Der Reiter '''Zonen''' listet die Zone des Gebäudes mit ''Zone'', ''Nutzfläche'', ''H_T'' = Σ U·A + Σ ψ·L in W/K und der Zahl der ''Bauteile''. Je Zeile stehen zwei Knöpfe:
+
+* '''Öffnen…''' – öffnet den Zonendialog.
+* '''Zone entfernen''' – nach einer Rückfrage; das Gebäude rechnet danach wieder den Klassenweg über seine U-Wert-Gruppen. Geschrieben wird mit ''OK'' des Editors.
+
+Ohne Zone steht im Reiter die Zeile „Noch keine Zone …" und der Knopf [[#zone-uebernehmen|Gebäude als eine Zone übernehmen]].
+
+Der '''Zonendialog''' erscheint als Überlagerung über dem Editor:
+
+* '''Bezeichnung''' – der Name der Zone.
+* '''Nutzfläche''' in m² – leer gilt die Nutzfläche des Gebäudes. Eine Zeile darunter nennt diesen Wert und den Flächenschlüssel: Luftvolumen, Speichermasse und innere Gewinne folgen der Zonenfläche anteilig; Sollwerte und Lüftung bleiben die des Gebäudes.
+* '''Bauteile''' – ein Zeilenraster mit ''Art'', ''Bezeichnung'', ''A'' in m², ''U'' in W/(m²·K), ''Azimut'', ''Neigung'', ''Randbedingung'' und ''Aufbau''. Trägt ein Bauteil einen Aufbau und kein eigenes U, steht dort der U-Wert des Aufbaus mit dem Vermerk ''aus Aufbau''. Je Zeile öffnet ''Bauteil öffnen'' den [[#bauteile|Bauteildialog]], und ''Bauteil entfernen'' nimmt das Bauteil aus der Zone; ''+ Neues Bauteil …'' legt eines an.
+* Der Summenfuß nennt Σ A je Gruppe und H_T = Σ U·A + Σ ψ·L in W/K.
+
+''OK'' prüft – die Zone braucht einen Namen und eine Nutzfläche größer null – und übernimmt sie in den Arbeitsstand des Editors; geschrieben wird erst mit dessen ''OK''. ''Abbrechen'' verwirft die Änderungen an der Zone.
+
+=== Bauteile ===
+{{Anker|bauteile}}
+
+Der '''Bauteildialog''' erscheint als Überlagerung über dem Zonendialog und beschreibt ein Bauteil der Zone:
+
+* '''Bauteilart''' – Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade oder Sonstiges.
+* '''Bezeichnung''' und '''Fläche''' in m².
+* '''Azimut''' in Grad – 0° = Nord, 90° = Ost, 180° = Süd, 270° = West.
+* '''Neigung''' in Grad – leer gilt die Vorgabe der Bauteilart: Wand 90°, Dach und Decke 0°, Bodenplatte 180°.
+* '''Randbedingung''' – Außenluft, Erdreich oder unbeheizter Raum. Leer gilt Außenluft, an Innenwand und Decke „innerhalb der Zone". Eine Nachbarzone gibt es als Randbedingung nicht.
+* '''g-Wert''', '''Rahmenanteil''' und '''Verschattungsfaktor''' – nur bei Fenster und Vorhangfassade; leer gilt der Wert des Gebäudes.
+* '''Wärmebrücke ψ·L''' in W/K.
+* '''U-Wert''' in W/(m²·K) – leer gilt der U-Wert des Aufbaus.
+
+Die Gruppe '''Aufbau''' ordnet dem Bauteil einen Schichtaufbau zu:
+
+* ''Aufbau im Projekt'' – ein Aufbau, den das Projekt schon führt, oder ''(ohne Aufbau – nur U-Wert)''; ohne Aufbau rechnet das Bauteil mit seinem U-Wert.
+* ''Aus dem Katalog'' – ein Aufbau aus dem Katalog der Bauteilaufbauten, gefunden über die Suche und mit ''Übernehmen'' gewählt. Kopiert wird er in das Projekt erst mit ''OK'' des Gebäudeeditors; bis dahin schreibt die Wahl nichts.
+* Die '''Schichten''' des gewählten Aufbaus stehen zum Ansehen da – Schicht, Baustoff, Dicke, λ und R – mit dem Summenfuß R, U, C und T_BT; die Größen beschreibt die Seite [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]].
+
+Weicht ein eingetragener U-Wert um mehr als 10 % vom U-Wert des Aufbaus ab, sagt es eine leise Zeile; gerechnet wird mit dem eingetragenen.
+
+''OK'' prüft das Bauteil und übernimmt es in die Zone; ''Abbrechen'' verwirft die Eingaben. Die Regeln beim ''OK'':
+
+* ein Name und eine Fläche größer null;
+* U-Wert 0,1 bis 6 W/(m²·K), g-Wert größer 0 bis 1, Rahmenanteil 0,05 bis 0,6, Verschattungsfaktor größer 0 bis 1;
+* Azimut 0 bis 360°, Neigung 0 bis 180°, ψ·L nicht negativ;
+* ein Außenbauteil, das nicht waagerecht liegt, braucht einen Azimut – er wird nicht auf Nord vorbelegt;
+* ein Fenster oder eine Vorhangfassade grenzt an Außenluft oder an einen unbeheizten Raum und braucht einen U-Wert;
+* jedes andere Bauteil außerhalb der Zone braucht einen U-Wert oder einen Aufbau.
+
+=== Zone, Katalog und Projekt ===
+{{Anker|zone-katalog}}
+
+* '''Speichern unter''' im Editor eines Gebäudes mit Zone fragt vor dem Schreiben: „Der Katalogsatz trägt die Zone „…" mit n Bauteilen nicht mit – trotzdem speichern?" Ein Katalogsatz trägt keine Zonen; wer ihn später ins Projekt holt, bekommt ein Gebäude ohne Zone, das den Klassenweg rechnet.
+* '''Ändern''' im Projektdialog: Mit Zone gilt die Flächen- oder Verbrauchsangabe des Projekts nicht, und Bedarfsart, Wert und Jahresnutzungsgrad sind gesperrt (siehe [[#verbrauch|Gebäude: Verbrauch]]).
+* '''Projekt duplizieren''' und der [[Programm Dokumentation/Projekttransfer|Projekttransfer]] nehmen Zonen, Bauteile und Aufbauten mit.
+* Wird das Gebäude aus dem Projekt entfernt, gehen seine Zonen mit.
 
 == Die Verwaltung Gebäude ==
 {{Anker|verwaltung}}
@@ -92,7 +204,7 @@ Der Kopf des Stammblatts nennt den Namen des Satzes und darunter Gebäudeart, Ve
 Alle Felder des Stammblatts sind direkt bearbeitbar:
 
 * {{Anker|kenndaten}}'''Kenndaten''' – Name (nur lesbar), Gebäudetyp, Gebäudeart, Baualtersklasse, Baujahr, Verwendung, Wohn-/Nutzfläche, Bauart und Beschreibung. Wohn-/Nutzfläche und Bauart bestimmen die Speicherfähigkeit des Gebäudes mit; das Baujahr ist wie im Katalogeditor eine Jahreszahl von 1500 bis 2100 oder leer. Der Knopf ''Gebäudetypen…'' im Kopf der Gruppe öffnet die [[#gebaeudetypen|Gebäudetypen]].
-* {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''U bzw. ψ'' und Größe ''A bzw. L''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten.
+* {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''U bzw. ψ'' und Größe ''A bzw. L''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten. Eine weitere Zeile nennt den Rechenweg der Hülle: Ein Katalogsatz rechnet den Klassenweg und trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt über ''Hülle und Zonen…'' im Gebäudedialog (siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
 * {{Anker|fenster}}'''Fenster nach Orientierung''' – Nord, Süd, Ost und West in m²; Summe Ost + West und gesamte Fensterfläche sind gerechnet.
 * '''Kenngrößen''' – Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad (etwa 0,4) und Luftwechselrate.
 * {{Anker|alle-daten}}'''Alle Daten''' – aufklappbar: Raumtemperaturen, Ferien Anfang und Ende, die Modellparameter (VDI 6007) samt Rechenweg und die Kühlung. Die Felder sind dieselben wie im [[#katalogeditor|Katalogeditor]].
@@ -141,7 +253,8 @@ Ein Satz der Auslieferung bleibt auch für den Assistenten unverändert; er nenn
 
 * Die Verwaltung zeigt '''keinen Wärmebedarf'''. Er hängt an der Klimaregion, am Kalender und an den Angaben des Projekts – Nutzfläche oder Verbrauch, Jahresnutzungsgrad, Kühlung – und steht im Projektdialog unter [[#waermebedarf|Simulation…]].
 * Der '''Name''' eines Satzes lässt sich im Stammblatt nicht ändern; ein Satz unter anderem Namen entsteht über ''Duplizieren…''.
-* Ein Projekt rechnet mit seiner eigenen Kopie. Eine spätere Änderung am Katalogsatz erreicht eine Zeile, die in der Projektliste bleibt, nicht; dafür wird die Zeile entfernt und der Katalogsatz neu übernommen (siehe [[#uebernahme|Übernahme ins Projekt]]).
+* Ein Projekt rechnet mit seiner eigenen Kopie. Eine spätere Änderung am Katalogsatz erreicht eine Zeile, die in der Projektliste bleibt, nicht; dafür wird die Zeile entfernt und der Katalogsatz neu übernommen (siehe [[#uebernahme|Übernahme ins Projekt]]). Die Kopie im Projekt selbst bearbeiten Sie über [[#huelle-und-zonen|Hülle und Zonen…]].
+* Ein Katalogsatz trägt '''keine Zonen'''; Zonen und Bauteile gibt es nur an einem Gebäude im Projekt.
 
 == Gebäudetypen ==
 {{Anker|gebaeudetypen}}
@@ -151,12 +264,13 @@ Der '''Gebäudetyp''' eines Satzes benennt die Tagesverteilungskurven, mit denen
 == Berechnung ==
 {{Anker|berechnung}}
 
-Die Heizlast eines Gebäudes entsteht aus den U-Werten, den Wärmebrücken, dem Luftwechsel, den solaren und internen Gewinnen und der Speicherfähigkeit des Gebäudes. Den Rechenweg beschreiben die Seiten [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+Die Heizlast eines Gebäudes entsteht aus den U-Werten, den Wärmebrücken, dem Luftwechsel, den solaren und internen Gewinnen und der Speicherfähigkeit des Gebäudes. Ohne Zone nimmt das Modell die Hülle aus den U-Wert-Gruppen und der Bauweise (Klassenweg), mit Zone aus deren Bauteilen und Schichtaufbauten ([[Programm Dokumentation/Gebäudemodell VDI 6007#bauteilweg|Bauteilweg]]). Den Rechenweg beschreiben die Seiten [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
 
 * [[Programm Dokumentation/Gebäudemodell VDI 6007]] – das stündliche Gebäudemodell und seine Eingaben
+* [[Programm Dokumentation/Baustoffe und Bauteilaufbauten]] – die Schichtaufbauten der Bauteile
 * [[Programm Dokumentation/Kühlung]] – Kühlung je Projekt und Gebäude
 * [[Programm Dokumentation/Gerätekataloge]] – Aufbau der Verwaltungen, Schreibschutz und Löschen
 * [[Programm Dokumentation/Hilfe-Assistent]] – was der Assistent in den Masken setzt

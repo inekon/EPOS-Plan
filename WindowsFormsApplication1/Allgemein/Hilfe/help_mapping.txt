@@ -270,6 +270,12 @@ Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
 Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
 Form_Gebaeude2.btn_Help = Gebäude#katalogeditor
 Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
+# Huelle und Zonen eines Projektgebaeudes (G3, Welle D2): Der Gebaeudeeditor im
+# Projekt springt auf seinen Abschnitt; Zonen- und Bauteildialog sind Razor-Masken
+# ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel).
+GebaeudeProjekt.btn_Help = Gebäude#huelle-und-zonen
+Zone.btn_Help = Gebäude#zonen
+Bauteil.btn_Help = Gebäude#bauteile
 # Die zwei Kataloge der Gebaeudehuelle (Baustoffe, Bauteilaufbauten): Razor-Masken
 # ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel);
 # die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Baustoffe

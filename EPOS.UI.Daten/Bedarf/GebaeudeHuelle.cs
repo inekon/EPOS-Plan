@@ -133,6 +133,12 @@ namespace WindowsFormsApplication1
                 ["WohnflaecheGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     Wohnflaechengaben),
 
+                // Stufe G3, Welle D2: "Huelle und Zonen..." - der Editor der PROJEKTKOPIE samt Zonen.
+                // Eine Zeile ohne Projektkopie (eben aufgenommen) hat keinen Parametersatz.
+                ["ProjektGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
+                    z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? null : GebaeudeKatalogHuelle.ProjektGaben(projektId, z.IdZ); }),
+                ["ZeileAuffrischen"] = new Action<GebaeudeProjektZeile>(z => KennwerteSetzen(z, projektId)),
+
                 // Die Gebaeudetypen-Verwaltung liegt noch in der Windows-Schale - ein
                 // Haken der Naht (Gebaeudewege); ohne ihn kein Knopf.
                 ["GebaeudetypGaben"] = Gebaeudewege.GebaeudetypGaben,
@@ -383,7 +389,11 @@ namespace WindowsFormsApplication1
             string baujahr = GebaeudeStammCtrl.BAUALTERSKLASSEN_DE[
                 GebaeudeStammCtrl.KlassenIndex(z.Baualtersklasse)];
 
-            return GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr);
+            // Stufe G3 (Welle D2): Mit Zone entfaellt die Hochrechnung ueber die Angabe.
+            return new Dictionary<string, object>(GebaeudeWohnflaecheHuelle.Gaben(modell, baujahr))
+            {
+                ["Zone"] = z.Zone ?? ""
+            };
         }
 
         // =================================================================================
@@ -420,6 +430,9 @@ namespace WindowsFormsApplication1
 
             z.Rechenweg = Rechenwegtext(g.Gebaeude_Modell);
             z.HgesWK = Gebaeudehuellbilanz.GesamtWK(g);
+            // Stufe G3 (Welle D2): die Projektkopie traegt Zonen - der Name der Zone, ueber die sie rechnet.
+            z.HatProjektkopie = true;
+            z.Zone = g.Zonen != null && g.Zonen.Count > 0 ? g.Zonen[0].Bezeichnung : null;
         }
 
         // =================================================================================

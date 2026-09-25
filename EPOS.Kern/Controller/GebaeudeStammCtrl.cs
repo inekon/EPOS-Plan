@@ -68,6 +68,25 @@ namespace WindowsFormsApplication1
             return item;
         }
 
+        /// <summary>
+        /// Liest die PROJEKTKOPIE eines Gebäudes (<c>Tab_Gebaeude</c>) nach ihrer Id in ein frisches
+        /// Modell — derselbe namensbasierte Leser wie für den Katalog (Namensspalte
+        /// <c>Gebaeudename</c>, die neuen Spalten NULL-erhaltend); <c>null</c>, wenn es die Zeile
+        /// nicht gibt. Der Gebäudedialog bearbeitet diesen Satz in der Betriebsart Projekt
+        /// (Stufe G3, Welle D2).
+        /// </summary>
+        public static GebaeudeModel LiesProjektkopie(int idGebaeude)
+        {
+            if (idGebaeude <= 0) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE_PROJ + "] WHERE [ID] = ?",
+                new DbParam("@id", idGebaeude));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var item = new GebaeudeModel();
+            new GebaeudeStammCtrl().FillModel(item, dt.Rows[0]);
+            return item;
+        }
+
         public bool IsReadOnly(string szBezeichner)
         {
             object v = DataRepository.ExecuteScalar(
@@ -495,9 +514,42 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            string sql = "UPDATE [" + TABLE + "] SET [Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ? WHERE Bezeichner = ?";
+            string sql = "UPDATE [" + TABLE + "] SET " + SET_SPALTEN + " WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        /// <summary>
+        /// Die Spalten eines Gebäudesatzes in der Reihenfolge von <see cref="BuildValueParams"/> —
+        /// die SET-Liste von <see cref="Overwrite"/> (Katalog, Namensspalte <c>Bezeichner</c>) und
+        /// von <see cref="ProjektkopieUeberschreiben"/> (Projektkopie, Namensspalte <c>Gebaeudename</c>).
+        /// </summary>
+        private const string SET_SPALTEN = "[Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ?";
+
+        /// <summary>
+        /// <b>Überschreibt die PROJEKTKOPIE eines Gebäudes</b> (<c>Tab_Gebaeude</c>, Stufe G3,
+        /// Welle D2) — die Gebäudewerte, die der Gebäudedialog in der Betriebsart Projekt bearbeitet,
+        /// mit denselben Spalten und Werten wie das Überschreiben eines Katalogsatzes
+        /// (<see cref="BuildValueParams"/>, NULL-erhaltend). Die Zeile wird GEÄNDERT, nie gelöscht
+        /// und neu angelegt: Id, Projekt, Zuordnung, Katalogverweis, Herkunft und die Zonen der Kopie
+        /// (Kaskade) bleiben. Getroffen wird genau die Zeile <paramref name="idGebaeude"/> des
+        /// Projekts <paramref name="idProjekt"/>; <c>false</c>, wenn es sie nicht gibt oder das
+        /// Schreiben scheitert. Die Veraltung des Projekts setzt der Aufrufer.
+        /// </summary>
+        public static bool ProjektkopieUeberschreiben(int idGebaeude, int idProjekt, GebaeudeModel m)
+        {
+            if (m == null || idGebaeude <= 0) return false;
+            object da = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM [" + TABLE_PROJ + "] WHERE [ID] = ? AND [ID_Projekt] = ?",
+                new DbParam("@id", idGebaeude), new DbParam("@p", idProjekt));
+            if (da == null || Convert.ToInt64(da, System.Globalization.CultureInfo.InvariantCulture) != 1) return false;
+
+            string sql = "UPDATE [" + TABLE_PROJ + "] SET " + SET_SPALTEN.Replace("[Bezeichner] = ?", "[Gebaeudename] = ?") +
+                         " WHERE [ID] = ? AND [ID_Projekt] = ?";
+            var ps = new List<DbParam>(new GebaeudeStammCtrl().BuildValueParams(m));
+            ps.Add(new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
+            ps.Add(new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt });
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 

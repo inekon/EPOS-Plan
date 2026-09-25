@@ -363,6 +363,12 @@ namespace WindowsFormsApplication1
                 // braucht eine gewaehlte Projektzeile samt gerechnetem Bedarf.
                 { KiMaskennamen.GEBAEUDE_BEDARF, STARTSEITE },
 
+                // Zone und Bauteil (G3, Welle D2) gehen als Ueberlagerungen im Gebaeudeeditor
+                // einer Projektzeile auf („Huelle und Zonen…" der Gebaeudemaske); kontextfrei
+                // gibt es sie nicht. Ihr Weg beginnt wie der der Gebaeudemaske auf der Startseite.
+                { KiMaskennamen.ZONE,    STARTSEITE },
+                { KiMaskennamen.BAUTEIL, STARTSEITE },
+
                 // Die Gebaeudetypen-Verwaltung IST die Maske des Navigationsschluessels -
                 // hier fallen Katalogschluessel und Navigationsschluessel zusammen.
                 { KiMaskennamen.GEBAEUDETYP, Masken.GebaeudetypenAdmin },
