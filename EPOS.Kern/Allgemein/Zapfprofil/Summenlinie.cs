@@ -301,7 +301,9 @@ namespace WindowsFormsApplication1
                                      ps.Wert(ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR),
                                      ps.Wert(steigung), ps.Wert(achsabschnitt));
                 prot?.Vermerken("", "Auslegung.Uebertragerflaeche", null, "m²", Wertstatus.Vorgabe, ps.Lies(steigung).Herkunft,
-                                "Schätzformel " + (erzeugerart.Value == ZapfErzeugerart.Waermepumpe ? "NA.2 (Wärmepumpe)" : "NA.1 (Kessel)"));
+                                erzeugerart.Value == ZapfErzeugerart.Waermepumpe
+                                    ? ZapfSatz.Neu("HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP")
+                                    : ZapfSatz.Neu("HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_KESSEL"));
             }
 
             double? erzeuger = p.ErzeugerKw ?? erzeugerRueckfallKw;
@@ -309,7 +311,7 @@ namespace WindowsFormsApplication1
                 prot?.Vermerken("", "Auslegung.ErzeugerKw", p.ErzeugerKw.Value, "kW", Wertstatus.Ueberschrieben, null);
             else if (erzeugerRueckfallKw.HasValue)
                 prot?.Vermerken("", "Auslegung.ErzeugerKw", erzeugerRueckfallKw.Value, "kW", Wertstatus.Vorgabe, null,
-                                "angesetzte Ladeleistung der Speicherauslegung");
+                                ZapfSatz.Neu("HERKUNFT_LADELEISTUNG_ANGESETZT"));
 
             return Pruefen(new Summenlinienparameter
             {
@@ -337,7 +339,9 @@ namespace WindowsFormsApplication1
                     ZapfSatz.Neu("AUSLEGUNG_WERKSTOFF_FEHLT", wozu));
             ZapfParameterwert pw = ps.Lies(ZapfAuslegungParameter.UebertragerU(werkstoff.Value));
             prot?.Vermerken("", "Auslegung.UebertragerU", pw.Wert, "W/(m²·K)", Wertstatus.Vorgabe, pw.Herkunft,
-                            "Werkstoff " + werkstoff.Value);
+                            werkstoff.Value == ZapfUebertragerwerkstoff.Edelstahl
+                                ? ZapfSatz.Neu("HERKUNFT_WERKSTOFF_EDELSTAHL")
+                                : ZapfSatz.Neu("HERKUNFT_WERKSTOFF_STAHL"));
             return pw.Wert;
         }
 

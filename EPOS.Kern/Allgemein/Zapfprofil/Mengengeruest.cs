@@ -156,7 +156,7 @@ namespace WindowsFormsApplication1
             {
                 zapf = n.Bezugstemperaturen.ZapftemperaturC;
                 p?.Vermerken(zone, ZapfFeld.ZAPFTEMPERATUR, zapf, "°C", Wertstatus.Vorgabe, n.Herkunft?.Bedarf,
-                             "Bezugstemperatur der Nutzungsart");
+                             ZapfSatz.Neu("HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART"));
             }
 
             double mittel = ZoneOderParameter(z.KaltwasserMittelC, ZapfParameter.KALTWASSER_MITTEL, ps, p, zone,
@@ -221,7 +221,7 @@ namespace WindowsFormsApplication1
             string zone = z.Name ?? "";
             IReadOnlyList<WohnungstypStand> wohnungen = z.Wohnungen ?? new WohnungstypStand[0];
             double menge;
-            string vermerk;
+            ZapfSatz vermerk;
 
             if (wohnungen.Count > 0 && WohnungstabelleWirksam(n))
             {
@@ -241,12 +241,12 @@ namespace WindowsFormsApplication1
                         menge += w.Anzahl * personen;
                     }
                 }
-                vermerk = "aus der Wohnungstabelle";
+                vermerk = ZapfSatz.Neu("HERKUNFT_AUS_WOHNUNGSTABELLE");
             }
             else
             {
                 menge = z.Bezugsmenge;
-                vermerk = "";
+                vermerk = null;
             }
 
             if (double.IsNaN(menge) || double.IsInfinity(menge) || menge <= 0)
@@ -288,15 +288,15 @@ namespace WindowsFormsApplication1
                     BandbreitePruefen(qd / (bezugsmenge * fManuell.Value), z, n, hinweise);
                 p?.Vermerken(zone, ZapfFeld.TAGESBEDARF, qd, "kWh/d", Wertstatus.Ueberschrieben, null);
                 p?.Vermerken(zone, ZapfFeld.JAHRESENERGIE, qaManuell, "kWh/a", Wertstatus.Ueberschrieben, null,
-                             "Tagesbedarf manuell · 365");
+                             ZapfSatz.Neu("HERKUNFT_TAGESBEDARF_MANUELL", Zapfkalender.TAGE));
                 return new Mengenergebnis(qaManuell, bezugsmenge, 1.0, flaeche);
             }
 
             double fTheta = Temperaturfaktor(t.ZapfC, t.KaltwasserMittelC, n.Bezugstemperaturen, zone);
             Wertstatus statusTheta = fTheta == 1.0 ? Wertstatus.Vorgabe : Wertstatus.Umgerechnet;
             p?.Vermerken(zone, ZapfFeld.TEMPERATURFAKTOR, fTheta, "-", statusTheta, n.Herkunft?.Bedarf,
-                         "(θ_Zapf − θ̄_KW) / (θ_Bezug − θ_KW,Bezug) = (" + Z(t.ZapfC) + " − " + Z(t.KaltwasserMittelC)
-                         + ") / (" + Z(n.Bezugstemperaturen.ZapftemperaturC) + " − " + Z(n.Bezugstemperaturen.KaltwasserC) + ")");
+                         ZapfSatz.Neu("HERKUNFT_TEMPERATURFAKTOR", t.ZapfC, t.KaltwasserMittelC,
+                                      n.Bezugstemperaturen.ZapftemperaturC, n.Bezugstemperaturen.KaltwasserC));
 
             double qa;
             Wertstatus status;
@@ -324,7 +324,7 @@ namespace WindowsFormsApplication1
                 ZapfParameterwert pc = ps.Lies(ZapfParameter.WOHNEN_FORMEL_C);
                 double kennwert = FlaechenkennwertWohnenKwhJeM2(aWe, pa.Wert, pb.Wert, pc.Wert);
                 p?.Vermerken(zone, ZapfFeld.FLAECHENKENNWERT, kennwert, "kWh/(m²·a)", Wertstatus.Vorgabe, pa.Herkunft,
-                             "max(a − b · A_WE ; c) mit A_WE = " + Z(aWe) + " m²");
+                             ZapfSatz.Neu("HERKUNFT_FLAECHENKENNWERT_FORMEL", aWe));
                 qa = kennwert * bezugsmenge * fTheta;
                 status = fTheta == 1.0 ? Wertstatus.Vorgabe : Wertstatus.Umgerechnet;
             }
@@ -343,13 +343,14 @@ namespace WindowsFormsApplication1
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
                         ZapfSatz.Neu("EINGABE_KATALOGBEDARF_NEGATIV", n.Name ?? ""));
                 p?.Vermerken(zone, ZapfFeld.BEDARF_SPEZ, q, "kWh/(Einheit·d)", Wertstatus.Vorgabe, n.Herkunft?.Bedarf,
-                             "Niveau " + z.Niveau);
+                             Niveaubegriff(z.Niveau));
                 qa = bezugsmenge * q * tage * fTheta;
                 status = fTheta == 1.0 ? Wertstatus.Vorgabe : Wertstatus.Umgerechnet;
             }
 
             p?.Vermerken(zone, ZapfFeld.JAHRESENERGIE, qa, "kWh/a", status, n.Herkunft?.Bedarf,
-                         status == Wertstatus.Umgerechnet ? "Temperaturfaktor " + Z(fTheta) : "");
+                         status == Wertstatus.Umgerechnet
+                             ? ZapfSatz.Neu("HERKUNFT_TEMPERATURFAKTOR_ANGEWANDT", fTheta) : null);
             return new Mengenergebnis(qa, bezugsmenge, fTheta, flaeche);
         }
 
@@ -371,14 +372,14 @@ namespace WindowsFormsApplication1
         {
             if (n.Bezug == ZapfBezugsart.Flaeche) return bezugsmenge;
 
-            double? we = WohneinheitenZahl(z, n, bezugsmenge, out string herkunftWe);
+            double? we = WohneinheitenZahl(z, n, bezugsmenge, out ZapfSatz herkunftWe);
             string zone = z.Name ?? "";
             bool eigene = we.HasValue && z.WohnflaecheJeWeM2.HasValue && z.WohnflaecheJeWeM2.Value > 0;
             if (!eigene && z.GebaeudeflaecheM2.HasValue && z.GebaeudeflaecheM2.Value > 0)
             {
                 double g = z.GebaeudeflaecheM2.Value;
                 p?.Vermerken(zone, ZapfFeld.ZONENFLAECHE, g, "m²", Wertstatus.Vorgabe, null,
-                             "Fläche des gebundenen Gebäudes (A8)");
+                             ZapfSatz.Neu("HERKUNFT_FLAECHE_GEBAEUDE"));
                 return g;
             }
             if (!we.HasValue) return null;
@@ -409,7 +410,7 @@ namespace WindowsFormsApplication1
 
             double flaeche = we.Value * jeWe;
             p?.Vermerken(zone, ZapfFeld.ZONENFLAECHE, flaeche, "m²", status, quelle,
-                         herkunftWe + " · Wohnfläche je WE " + Z(jeWe) + " m²");
+                         ZapfSatz.Neu("HERKUNFT_ZONENFLAECHE_JE_WE", herkunftWe, jeWe));
             return flaeche;
         }
 
@@ -440,21 +441,21 @@ namespace WindowsFormsApplication1
         /// Die WE-Zahl einer Zone: bei Bezugsart Wohneinheiten die Bezugsmenge, bei Bezugsart
         /// Personen mit Wohnungstabelle Σ Anzahl; sonst oder bei nicht positiver Zahl <c>null</c>.
         /// </summary>
-        private static double? WohneinheitenZahl(ZonenStand z, Nutzungsart n, double bezugsmenge, out string herkunft)
+        private static double? WohneinheitenZahl(ZonenStand z, Nutzungsart n, double bezugsmenge, out ZapfSatz herkunft)
         {
-            herkunft = "";
+            herkunft = null;
             double? we = null;
             if (n.Bezug == ZapfBezugsart.Wohneinheiten)
             {
                 we = bezugsmenge;
-                herkunft = "WE = Bezugsmenge";
+                herkunft = ZapfSatz.Neu("HERKUNFT_WE_BEZUGSMENGE");
             }
             else if (n.Bezug == ZapfBezugsart.Personen && z.Wohnungen != null && z.Wohnungen.Count > 0)
             {
                 double summe = 0.0;
                 foreach (WohnungstypStand w in z.Wohnungen) summe += w.Anzahl;
                 we = summe;
-                herkunft = "WE = Σ Anzahl der Wohnungstabelle";
+                herkunft = ZapfSatz.Neu("HERKUNFT_WE_WOHNUNGSTABELLE");
             }
             return we.HasValue && we.Value > 0 ? we : null;
         }
@@ -502,8 +503,9 @@ namespace WindowsFormsApplication1
                 kwh = wert;
             }
             p?.Vermerken(zone, ZapfFeld.MESSWERT, kwh, "kWh/a", Wertstatus.Ueberschrieben, null,
-                         (einheit == ZapfMesswerteinheit.KubikmeterJeJahr ? "aus " + Z(wert) + " m³/a" : "in kWh/a")
-                         + ", Grenze " + (int)grenze);
+                         einheit == ZapfMesswerteinheit.KubikmeterJeJahr
+                             ? ZapfSatz.Neu("HERKUNFT_MESSWERT_VOLUMEN", wert, (int)grenze)
+                             : ZapfSatz.Neu("HERKUNFT_MESSWERT_ENERGIE", (int)grenze));
             return new Messwert(kwh, grenze, z.SpeicherverlustKwhJeJahr, z.JahresmesswertQuelle, z.JahresmesswertZeitraum);
         }
 
@@ -631,7 +633,8 @@ namespace WindowsFormsApplication1
                 return w;
             }
             ZapfParameterwert pw = ps.Lies(schluessel);
-            p?.Vermerken(zone, feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft, "Parameter " + schluessel);
+            p?.Vermerken(zone, feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft,
+                         ZapfSatz.Neu("HERKUNFT_PARAMETER", schluessel));
             return pw.Wert;
         }
 
@@ -650,6 +653,12 @@ namespace WindowsFormsApplication1
                                                : ZapfSatz.Neu("EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE", was, zone));
         }
 
-        private static string Z(double x) => x.ToString("0.###", CultureInfo.InvariantCulture);
+        /// <summary>Der Vermerk zum gewählten Bedarfsniveau der Zone — je Niveau eine eigene Kennung.</summary>
+        private static ZapfSatz Niveaubegriff(ZapfNiveau niveau) => niveau switch
+        {
+            ZapfNiveau.Niedrig => ZapfSatz.Neu("HERKUNFT_NIVEAU_NIEDRIG"),
+            ZapfNiveau.Hoch => ZapfSatz.Neu("HERKUNFT_NIVEAU_HOCH"),
+            _ => ZapfSatz.Neu("HERKUNFT_NIVEAU_MITTEL")
+        };
     }
 }

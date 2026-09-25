@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N17 (Kapitel 11)**
+**Stand 2026-09-24 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N18 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -3161,3 +3161,136 @@ und ZU20 liefert sie auf dieser Grundlage aus. Keine Codeänderung.
 | Logbuch | zwei Sätze: „Der Katalog der Brauchwasser-Nutzungsarten enthält fünf aus VDI 6002 abgeleitete Nutzungsarten mit Herkunftsvermerk." und „Für die Nichtwohn-Nutzungsarten nach DIN EN 12831-3 Beiblatt A100 liegt eine Paketvorlage zum Ausfüllen und Einspielen im Programmordner bei." — Version beim Anwender zu erfragen | Anwender (Upload gebündelt) | nächster Upload |
 | Wiki | Absatz `katalog-import` (Steuerspalte `Gruppe`, Paketvorlage samt Ablageort) hochladen | Anwender (Upload gebündelt) | nächster Upload |
 | Sicht | Katalogdialog: fünf Typen „… (abgeleitet)" mit Herkunft „Verfahren", Quelle „abgeleitet aus VDI 6002 Blatt n", Stand „Auslieferung"; Katalogimport spielt die A100-Vorlage ohne Ablehnung ein | Anwender | nach dem Push |
+
+### N18 (25.09.2026) — Sammelposten „Zapfprofil-Reste": vier Folgeposten aus N13–N16
+
+**Anlass.** Vier offene Folgeposten der Nachträge N13 bis N16, in einem Zug und **ohne
+Schemaschritt** (Testdatenbank unberührt): der fehlende Prüfposten der Auslieferungsvorlage zum
+Typtagweg (N16, Restlücke), das Herkunftsprotokoll als Sätze (N13 Folge (b)), der Größenschutz des
+Katalogimports (N13 Folge (s)) und die Spitzenstreuung im Vergleichsbericht (N15 Gruppe 3, Folge).
+Ein Agent mit `model: opus` im Worktree `zr`, Zweig `zr` von `dbcaf63a` (Schemastand 142,
+Referenzbasis `2026-09-25_R16_Anlagenprio`); je Posten ein Commit.
+
+**(a) Prüfposten Typtagweg (N16, Restlücke) — erfüllt.** `Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs`
+führt einen siebten Tww-Prüfposten: Ist `Tab_TwwTyptag_IMPORT` leer — und die Vorlage leert sie
+immer —, darf kein Projekt der Vorlage `Tab_TwwProjekt.Typtage_Aktiv = 1` tragen. Der Bericht nennt
+je Fund die Projektkennung samt gewählter Klimazone und Gebäudeart, denn genau diese Wahl bliebe
+liegen. Ohne die Tabelle oder die Spalte ist nichts zu melden; steht eine Typtagzeile, ist der Weg
+gedeckt und der Posten schweigt. Test T14 in `Werkzeuge/Auslieferungsvorlage.Tests/TwwVorlageTests.cs`
+prüft beide Seiten: ein Lauf ohne Beispielpaket bleibt grün, ein Beispielpaket mit gesetztem
+Typtagweg fällt mit Rückgabecode 5 und nennt Zone und Gebäudeart.
+
+**(b) Herkunftsprotokoll als Sätze (N13 Folge (b)) — erfüllt, mit einer Einschränkung.**
+`Herkunftseintrag.Vermerk` ist ein `ZapfSatz` statt eines deutschen Klartexts; `null` heißt „nichts
+zu vermerken" (vorher der leere Text). 41 Muster `ZPG_SATZ_HERKUNFT_…` in beiden Sprachen, die Wache
+`ZapfSaetzeWacheTests` hält sie wie jede andere Kennung. Wo eine Aufzählung den Vermerk bestimmt
+(Bedarfsniveau, Übertragerwerkstoff, Zirkulationsmethode, Quelle der Speichertemperatur,
+Erzeugerart der Schätzformel), trägt **jede Ausprägung ihre eigene Kennung** — eine Zahl im Vermerk
+wäre keine Aussage. Die Formeln (Temperaturfaktor, Flächenkennwert, Kaltwasser- und
+Bedarfstagfaktor) tragen ihre Temperaturen als Werte, nicht als zusammengesetzten Text; die
+Zahlformate stehen im Muster.
+
+- **Einschränkung: Hülle und Dialog reichen das Protokoll nicht durch — es reist heute nirgends
+  hin.** `ZapfprofilErgebnis.Herkunft` und `Auslegungsergebnis.Herkunft` werden von keiner Hülle und
+  keiner Seite gelesen (geprüft über den ganzen Baum); das Protokoll ist Rechennachweis für Kern und
+  Tests. Der Umbau macht es **anzeigefähig** (die Hülle baut den Satz in der Oberflächensprache, wie
+  bei jedem Hinweis), führt die Anzeige aber nicht ein — dafür gibt es keinen Beschluss und keinen
+  Ort in 5.x. Folge unten.
+
+**(c) Katalogimport: Größenschutz und Pfadprüfung (N13 Folge (s)) — teils erfüllt.**
+`TwwNutzungsartCtrl.PaketLesen` prüft drei Grenzen als benannte Konstanten: `HOECHSTENS_EINTRAEGE`
+(200), `HOECHSTENS_BYTE_ENTPACKT` (64 MB) und `HOECHSTENS_BYTE_JE_DATEI` (16 MB). Eintragszahl und
+entpackte Gesamtgröße stehen im Zentralverzeichnis und werden geprüft, **bevor ein Byte entpackt
+wird** (`KATALOGIMPORT_ZU_GROSS`) — dasselbe Muster wie im `Normformvektorleser` und im
+`TryPaketLeser`; die Grenze je Datei (`KATALOGIMPORT_DATEI_ZU_GROSS`) gilt für Archiv, Ordner und
+Einzeldatei, weil der Leser jede Datei ganz im Speicher hält. Ein Eintragsname, der aus dem Archiv
+herauszeigt (`..`, Wurzel, Laufwerk), wird benannt abgelehnt (`KATALOGIMPORT_PFAD_UNZULAESSIG`);
+Verzeichniseinträge fallen still, sie tragen keinen Inhalt.
+
+- **Abweichung: Ein Unterordner bleibt erlaubt.** Der Auftrag sah eine flache Pfadprüfung vor. Ein
+  ZIP, das aus einem Ordner entstanden ist, trägt seinen Ordnernamen (`paket/Tab_….csv`) — der
+  Bestand liest solche Pakete, und `TwwKatalogimportTests` prüft das ausdrücklich. Abgelehnt wird
+  deshalb nur, was aus dem Archiv herauszeigt; der Leser nimmt ohnehin allein den Dateinamen, und
+  zwei gleichnamige Dateien fallen schon als `KATALOGIMPORT_DATEI_DOPPELT`. Nichts wird auf die
+  Platte entpackt — Zip-Slip im engen Sinn ist hier kein Weg, die Prüfung hält den Namen trotzdem.
+- **Weiter offen: Bedarfstage und Parameter deckt der Katalogimport nicht ab.** N13 (s) und die
+  Folge nennen die Erweiterung, beschreiben sie aber nicht: Für `Tab_TwwBedarfstag_STAMM`,
+  `Tab_TwwBedarfstagEreignis_STAMM` und `Tab_TwwParameter_STAMM` fehlen Dublettenregel,
+  Versionsbildung und Berichtszeilen; die Auslieferungsvorlage spielt sie über einen eigenen Weg
+  ein (`--katalogpaket`), nicht über diesen Import. **Still ist das nicht:** Eine solche Datei im
+  Paket steht als `KATALOGIMPORT_DATEI_UEBERGANGEN` mit Namen im Bericht (geprüft in
+  `TwwKatalogimportTests`). Folge unten.
+
+**(d) Spitzenstreuung im Vergleichsbericht (N15 Gruppe 3, Folge) — erfüllt, mit benannter Grenze.**
+`Jahresensemble.StundenspitzenKw` reist je Zone ins Ergebnis
+(`ZonenErgebnis.StundenspitzenKw`, leer auf dem deterministischen Weg und bei einer abgelehnten
+Zone); die Hülle belegt damit `Messvergleich.SynthetischeStundenspitzenKw`, und der Reiter
+Kennzahlen zeigt die Spitzenstreuung als Zahl statt als Strich. **Ergebnisneutral:** Kein Rechenweg
+liest die Spitzen, die Reihen bleiben Bit für Bit, wie sie waren.
+
+- **Benannte Grenze: nur EINE Zone mit Ensemble.** Tragen mehrere Zonen ein Ensemble, ist die
+  Stichprobe nicht zu bilden — jede Zone zieht ihre Realisierungen für sich, und die Spitze der
+  Summe ist nicht die Summe der Spitzen. Die Hülle sagt das (`MESSVERGLEICH_ENSEMBLE_ZONEN`, wie
+  schon `MESSVERGLEICH_SPREIZUNG_ZONEN` ein Satz der Hülle, nicht des Kerns) und schätzt nicht; die
+  Zeile trägt dazu ihren **eigenen** Strichvermerk (siehe Gegenprüfung, Befund 2). Eine
+  Stichprobe über die Summe bräuchte die Realisierungen aller Zonen gleichzeitig; das ist eine
+  Änderung am Ensemble, nicht am Bericht.
+- Der bunit-Fall `Mit_Ensemble_steht_die_Spitzenstreuung_als_Zahl` in `EPOS.UI.Tests` hält beide
+  Grenzen, Realisierungszahl und Streubreite gegen die Zeile; die Wiki-Quelle
+  „Brauchwasser-Zapfprofil" nennt im Abschnitt „Vergleich und Kalibrierung" die Bedingung.
+
+**Gegenprüfung und Nachbesserung.** Eine zweite Sitzung hat den Stand gegen die Regeln gehalten;
+**sechs Befunde**, alle behoben (Zweig `zr`, drei Commits):
+
+1. **Zweite Wand beim ZIP-Lesen (mittel).** Beide Paketleser — `TwwNutzungsartCtrl.PaketLesen` und
+   `Normformvektorleser.AusStrom` — prüften die entpackte Größe allein am Zentralverzeichnis und
+   lasen den Eintrag danach mit `ReadToEnd()` ohne Grenze. Sie lesen nun je Eintrag bis zur Grenze
+   und ein Byte darüber, mit mitlaufender Summe (Muster
+   `Allgemein/Import/Ifc/IfcLeser.Entpacken`); die Ablehnung behält ihre Kennung
+   (`KATALOGIMPORT_DATEI_ZU_GROSS`, `KATALOGIMPORT_ZU_GROSS`, `NORMVEKTOR_PAKET_ZU_GROSS`), und die
+   Grenzen sind Parameter mit den Konstanten als Vorgabe, damit die Prüfung an Kilobyte messbar ist
+   statt an 64 MB. **Gemessen dabei:** `ZipArchiveEntry.Open` begrenzt den Entpackstrom selbst auf
+   die ausgewiesene Größe — ein lügendes Verzeichnis bläht das Paket also nicht auf, es **kürzt**
+   den Eintrag. Die zweite Wand ist damit Vorsorge (der Leser verlässt sich nicht auf eine
+   Eigenschaft des Rahmenwerks), und der gekürzte Eintrag fällt der Formprüfung zu. Beides hält der
+   Prüfstand `EPOS.Kern.Tests/Archivluege.cs` fest: Er schreibt die ausgewiesene Größe im
+   Zentralverzeichnis um und lässt die Nutzlast unberührt; je ein Fall in
+   `TwwKatalogimportTests` und `NormformvektorleserTests` zeigt, dass nichts aufgebläht und nichts
+   still halb eingespielt wird.
+2. **Mehrere Ensemble-Zonen: falscher Strichgrund (mittel).** Die leere Stichprobe der Hülle ließ
+   den Kern `MESSVERGLEICH_OHNE_ENSEMBLE` setzen, und die Zeile zeigte „ohne Ensemble nicht
+   entscheidbar" — der falsche Grund, denn die Rechnung **ist** stochastisch. Die Hülle legt die
+   Zahl der tragenden Zonen nun ins DTO (`ZapfprofilMessvergleichDaten.EnsembleZonen`, 0 bei genau
+   einer), und die Zeile trägt den eigenen Vermerk **`ZPG_VERGL_ENSEMBLE_ZONEN`** („mehrere
+   stochastische Zonen — Stichprobe nicht bildbar") in beiden Sprachen. Der Hinweis der Warnliste
+   bleibt, wie er war. Der Satz der Wiki-Quelle traf schon zu („es steht ein Strich mit diesem
+   Grund") — jetzt trägt ihn auch die Maske.
+3. **Eintragszahl und Gesamtgröße nur im Archiv (gering).** Der Ordner- und der Einzeldateiweg des
+   Katalogimports prüften nur die Größe **einer** Datei. Beide prüfen nun auch Eintragszahl und
+   Gesamtgröße (`MengeZuGross`, aus dem Dateisystem statt aus dem Zentralverzeichnis).
+4. **`Pfadsicher` lehnte jedes `:` ab (gering).** Ein unter Unix gepacktes Paket darf ein `:` im
+   Dateinamen tragen; abgelehnt wird jetzt allein das Laufwerksmuster `^[A-Za-z]:` am Anfang eines
+   Pfadteils.
+5. **Überlauf der Summe (gering).** Die Summe der ausgewiesenen Größen bricht **an** der Grenze ab,
+   statt an erfundenen Längen überzulaufen (200 Einträge mit je 2^62 Byte wären sonst eine kleine
+   Zahl gewesen) — im Archiv wie im Dateisystem.
+6. **Aufräumen (gering).** Das ungenutzte `using System.Globalization` in
+   `EPOS.Kern/Allgemein/Zapfprofil/ZapfprofilRechner.cs` (Rest des entfernten Zahlenformatierers).
+
+**Neu geprüft:** die Hüllen-Weiche „genau eine / mehrere stochastische Zonen" auf der Testdatenbank
+(`ZapfprofilHuelleMessreihenTests`), der bunit-Fall der Zeile für **beide** Strichgründe, der
+Ordner- und Einzeldateiweg des Größenschutzes, und der Satz `KATALOGIMPORT_ZU_GROSS` nun samt
+gemessener und erlaubter Gesamtgröße (`Werte[2]`, `Werte[3]`).
+
+**Folgen:**
+
+| Folge | Was | Wer | Wann |
+|---|---|---|---|
+| (p) | Konstruktorzeilen des Bedarfstags in der Datenbank (N13 Folge (p)) **und** der redundante Index auf `Tab_TwwMessreihe.ID_Projekt` (N15 Folge (a)) in **einem** künftigen Schemaschritt des Zapfprofils — beide sind reines DDL, ein eigener Schritt je Kleinigkeit kostet eine Nummer und einen Referenzlauf | Agent eines Folgepostens | nächster Schemaschritt des Zapfprofils |
+| (r) | Katalogdialog auf iOS (N13 Folge (r)): Naht der Schale, eigene Welle **nach iU11** — die Hülle lehnt ihn dort heute benannt ab, das bleibt bis dahin der Stand | Agent einer iOS-Welle | nach iU11 |
+| (m) | Referenzfall der Wetterkopplung mit `Tab_Solar.Bedeckungsgrad` aus einem TRY-Import (N14 Folge (c), N15 Folge (m)): Die Testdatenbank führt keinen Bedeckungsgrad, die Bewölkungsschwelle der Typtagzuordnung ist damit nur an erfundenen Werten geprüft | Agent eines Folgepostens | offen |
+| (s) | Katalogimport um Bedarfstage und Parameter erweitern — vorher Dublettenregel, Versionsbildung und Berichtszeilen je Tabelle festlegen (N13 (s) nennt sie, beschreibt sie nicht) | Agent eines Folgepostens, nach Festlegung | offen |
+| (b) | Herkunftsprotokoll anzeigen: Ort in 5.x festlegen (Herleitungszeilen der Stufe Experte oder eigene Karte), dann Hülle und Dialog; der Kern ist vorbereitet | Anwender (Entscheid), danach Agent | offen |
+| Logbuch | ein Satz: „Der Vergleich einer Messreihe zeigt die Streuung der Realisierungsspitzen, wenn die Jahresreihe stochastisch gerechnet ist." — Version beim Anwender zu erfragen | Anwender (Upload gebündelt) | nächster Upload |
+| Wiki | Abschnitt „Vergleich und Kalibrierung" der Seite Brauchwasser-Zapfprofil (Satz zur Spitzenstreuung) hochladen | Anwender (Upload gebündelt) | nächster Upload |
+| Sicht | Sichtabnahme unter Windows: Reiter Kennzahlen mit stochastischer Jahresreihe und **einer** Zone — die Streuung steht als Zahl; mit zwei stochastischen Zonen steht ein Strich mit dem Vermerk „mehrere stochastische Zonen — Stichprobe nicht bildbar", dazu der Grund in der Warnliste | Anwender | nach dem Push |

@@ -212,7 +212,7 @@ namespace WindowsFormsApplication1
                 {
                     double f = Wochenreihe.KaltwasserfaktorAuslegung(w.Temperaturen.ZapfC, kwAuslegung, w.Temperaturen.KaltwasserMittelC);
                     prot.Vermerken(w.Name, "Auslegung.Kaltwasserfaktor", f, "-", Wertstatus.Umgerechnet, null,
-                                   "(θ_Zapf − θ_KW,Auslegung) / (θ_Zapf − θ̄_KW)");
+                                   ZapfSatz.Neu("HERKUNFT_KALTWASSERFAKTOR_FORMEL"));
                     w.Baustein = new Wochenbaustein(w.Name,
                         Wochenreihe.TagesmengenAuslegung(w.ZapfungKwh, f, w.Struktur, w.Kalender, e.WochentagJan1, w.Name),
                         w.Struktur, w.Kalender);
@@ -836,9 +836,7 @@ namespace WindowsFormsApplication1
                 double unten = Auslegungspruefung.Spreizung(zapf.Value, kwKatalog, ZapfSatz.Neu("BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG"));
                 double f = oben / unten;
                 prot?.Vermerken("", "Auslegung.Bedarfstagfaktor", f, "-", Wertstatus.Umgerechnet, zeile?.Herkunft,
-                                "(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = (" + Auslegungstext.Z(zapf.Value) + " − "
-                                + Auslegungstext.Z(kwAuslegung) + ") / (" + Auslegungstext.Z(zapf.Value) + " − "
-                                + Auslegungstext.Z(kwKatalog) + ")");
+                                ZapfSatz.Neu("HERKUNFT_BEDARFSTAGFAKTOR", zapf.Value, kwAuslegung, kwKatalog));
                 faktor *= f;
             }
             return Bedarfstag.AusKatalog(zeile, faktor);

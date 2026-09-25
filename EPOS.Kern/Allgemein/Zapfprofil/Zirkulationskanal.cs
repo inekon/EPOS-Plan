@@ -116,7 +116,8 @@ namespace WindowsFormsApplication1
             }
             double alpha = Gewicht(summeAlle, summeZ1, jedeFlaeche, flaecheAlle, flaecheZ1);
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_GEWICHT, alpha, "-", Wertstatus.Vorgabe, null,
-                            jedeFlaeche ? "flächengewichtet" : "mengengewichtet");
+                            jedeFlaeche ? ZapfSatz.Neu("HERKUNFT_GEWICHT_FLAECHE")
+                                        : ZapfSatz.Neu("HERKUNFT_GEWICHT_MENGE"));
 
             double laufzeit = ProjektOderParameter(p.ZirkLaufzeitH, ZapfParameter.ZIRKULATION_LAUFZEIT, ps, prot,
                                                    ZapfFeld.ZIRKULATION_LAUFZEIT, "h/d");
@@ -134,7 +135,8 @@ namespace WindowsFormsApplication1
                     throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
                         ZapfSatz.Neu("EINGABE_ZIRKULATION_MANUELL"));
                 leistung = p.ZirkManuellKw.Value;
-                prot?.Vermerken("", ZapfFeld.ZIRKULATION_METHODE, null, "", Wertstatus.Ueberschrieben, null, "manuell");
+                prot?.Vermerken("", ZapfFeld.ZIRKULATION_METHODE, null, "", Wertstatus.Ueberschrieben, null,
+                                ZapfSatz.Neu("HERKUNFT_ZIRK_MANUELL"));
             }
             else
             {
@@ -148,14 +150,14 @@ namespace WindowsFormsApplication1
                     {
                         flaecheN = NichtNegativ(p.ZirkFlaecheM2.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_FLAECHE"));
                         prot?.Vermerken("", ZapfFeld.ZIRKULATION_FLAECHE, flaecheN, "m²", Wertstatus.Ueberschrieben, null,
-                                        "gebäudeweit, mit α");
+                                        ZapfSatz.Neu("HERKUNFT_ZIRK_FLAECHE_GEBAEUDEWEIT"));
                     }
                     else
                     {
                         flaecheN = flaecheZ1;
                         gewichtFlaeche = 1.0;
                         prot?.Vermerken("", ZapfFeld.ZIRKULATION_FLAECHE, flaecheN, "m²", Wertstatus.Vorgabe, null,
-                                        "Summe der Flächen der Zonen in Z1, ohne α");
+                                        ZapfSatz.Neu("HERKUNFT_ZIRK_FLAECHE_ZONEN"));
                         if (flaecheN > 0)
                             foreach (string name in z1OhneFlaeche)
                                 hinweise?.Add(new ZapfHinweis(name, "ZIRKULATION_ZONE_OHNE_FLAECHE",
@@ -170,7 +172,7 @@ namespace WindowsFormsApplication1
                 }
                 prot?.Vermerken("", ZapfFeld.ZIRKULATION_METHODE, (int)methode.Value, "",
                                 methode == p.ZirkMethode ? Wertstatus.Vorgabe : Wertstatus.Umgerechnet, null,
-                                methode.Value.ToString());
+                                Methodenvermerk(methode.Value));
 
                 switch (methode.Value)
                 {
@@ -219,7 +221,7 @@ namespace WindowsFormsApplication1
             double jahresverlust = leistung * laufzeit * Zapfkalender.TAGE;
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_LEISTUNG, leistung, "kW", Wertstatus.Vorgabe, null);
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_JAHRESVERLUST, jahresverlust, "kWh/a", Wertstatus.Vorgabe, null,
-                            "P · t_Lauf · 365");
+                            ZapfSatz.Neu("HERKUNFT_ZIRK_JAHRESVERLUST_FORMEL", Zapfkalender.TAGE));
 
             var anteile = new double[zonen.Count];
             double rest = jahresverlust;
@@ -365,7 +367,7 @@ namespace WindowsFormsApplication1
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
                     ZapfSatz.Neu("EINGABE_ZIRKULATION_LAGE"));
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_LAGE, pw.Wert, "", Wertstatus.Vorgabe, pw.Herkunft,
-                            "Parameter " + ZapfParameter.ZIRKULATION_LAGE);
+                            ZapfSatz.Neu("HERKUNFT_PARAMETER", ZapfParameter.ZIRKULATION_LAGE));
             return (int)pw.Wert;
         }
 
@@ -378,7 +380,8 @@ namespace WindowsFormsApplication1
                 return projektwert.Value;
             }
             ZapfParameterwert pw = ps.Lies(schluessel);
-            prot?.Vermerken("", feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft, "Parameter " + schluessel);
+            prot?.Vermerken("", feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft,
+                            ZapfSatz.Neu("HERKUNFT_PARAMETER", schluessel));
             return pw.Wert;
         }
 
@@ -389,6 +392,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static bool ManuellGueltig(double? wert)
             => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) && wert.Value >= 0;
+
+        /// <summary>Der Vermerk zur wirksamen Zirkulationsmethode — je Methode eine eigene Kennung.</summary>
+        private static ZapfSatz Methodenvermerk(ZapfZirkulationsmethode methode) => methode switch
+        {
+            ZapfZirkulationsmethode.Leitungslaenge => ZapfSatz.Neu("HERKUNFT_ZIRK_METHODE_LEITUNGSLAENGE"),
+            ZapfZirkulationsmethode.Anteil => ZapfSatz.Neu("HERKUNFT_ZIRK_METHODE_ANTEIL"),
+            _ => ZapfSatz.Neu("HERKUNFT_ZIRK_METHODE_FLAECHENKENNWERT")
+        };
 
         private static double NichtNegativ(double w, ZapfSatz was)
         {

@@ -29,10 +29,14 @@ namespace WindowsFormsApplication1
     /// Parameter der eigenen Katalogkopie des Anwenders und bleiben in dessen Datenbank
     /// (Konzept 4.8).</para>
     ///
-    /// <para><b>Ohne Ensemble</b> bleibt die Spitzenstreuung <c>null</c> und wird benannt
-    /// (<c>MESSVERGLEICH_OHNE_ENSEMBLE</c>): Die Stundenspitzen der Realisierungen führt das
-    /// <c>Jahresensemble</c>, nicht das Ergebnis des Laufs. Das Band der Dauerlinie braucht sie
-    /// nicht — es ist ein Quantil der gerechneten Reihe.</para>
+    /// <para><b>Die Spitzenstreuung</b> (N15 Gruppe 3) kommt aus den Stundenspitzen der
+    /// Realisierungen, die das Ergebnis je Zone führt (<c>ZonenErgebnis.StundenspitzenKw</c>). Sie
+    /// steht, wenn <b>genau eine</b> Zone ein Ensemble trägt; bei mehreren Zonen ist die Spitze der
+    /// Summe nicht die Summe der Spitzen (eigene Ziehung je Zone), und die Hülle benennt das
+    /// (<c>MESSVERGLEICH_ENSEMBLE_ZONEN</c> in der Warnliste, dazu <c>EnsembleZonen</c> im DTO, damit
+    /// die Zeile ihren eigenen Strichvermerk trägt) statt zu rechnen. Ohne Ensemble bleibt sie
+    /// <c>null</c> und wird benannt (<c>MESSVERGLEICH_OHNE_ENSEMBLE</c>). Das Band der Dauerlinie
+    /// braucht sie nicht — es ist ein Quantil der gerechneten Reihe.</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
     {
@@ -54,8 +58,9 @@ namespace WindowsFormsApplication1
             "MESSVERGLEICH_SPITZE_UNTER_BAND", "MESSVERGLEICH_SPREIZUNG_FEHLT", "MESSVERGLEICH_TAGTYP_FEHLT",
             "MESSVERGLEICH_TEILJAHR",
             // Diese Hülle selbst: Die Spreizung mehrerer Zonen ist ihre Sache, nicht die des Kerns
-            // (der Vergleich nimmt EINE Spreizung).
-            "MESSVERGLEICH_SPREIZUNG_ZONEN",
+            // (der Vergleich nimmt EINE Spreizung); ebenso die Stichprobe der Realisierungsspitzen,
+            // die bei mehreren Ensembles nicht zu bilden ist.
+            "MESSVERGLEICH_SPREIZUNG_ZONEN", "MESSVERGLEICH_ENSEMBLE_ZONEN",
             // Die Kalibrierung (Messkalibrierung.cs)
             "MESSKALIBRIERUNG_HOCHGERECHNET", "MESSKALIBRIERUNG_HOCHGERECHNET_JAHRESGANG",
             "MESSKALIBRIERUNG_OHNE_BEZUGSMENGE", "MESSKALIBRIERUNG_OHNE_MENGE", "MESSKALIBRIERUNG_OHNE_MESSREIHE",
@@ -122,12 +127,15 @@ namespace WindowsFormsApplication1
             catch (Exception ex) { return OhneText(d, "ZPG_MSG_JAHRESREIHE_UNERWARTET", ex.Message); }
 
             d.Stochastisch = e.Stochastisch;
+            IReadOnlyList<double> spitzen = Realisierungsspitzen(e, hinweise, out int ensembleZonen);
+            d.EnsembleZonen = ensembleZonen;
             var eingang = new Messvergleichseingang
             {
                 Reihe = gemessen,
                 SpreizungK = Gesamtspreizung(stand, gemessen.IstVolumen, hinweise),
                 Gerechnet = Bilanzreihe.Summe(new[] { e.Zapfung, e.Zirkulation }.Where(r => r != null)),
                 Kalender = Zapfkalender.Bilden(jan1, we, null),
+                SynthetischeStundenspitzenKw = spitzen,
                 Einheiten = Einheiten(stand)
             };
             try { eingang = Messvergleich.AusParametern(eingang, ZapfprofilCtrl.Parameter()); }
@@ -184,6 +192,30 @@ namespace WindowsFormsApplication1
             }
             foreach (ZapfSatz h in hinweise) d.Hinweise.Add(Validierungswarnung(h));
             return d;
+        }
+
+        /// <summary>
+        /// <b>Die Stichprobe der Realisierungsspitzen</b> für die Spitzenstreuung (N15 Gruppe 3):
+        /// die Stundenspitzen des Ensembles, wenn <b>genau eine</b> Zone eines trägt. Bei mehreren
+        /// Zonen ist sie nicht zu bilden — jede Zone zieht ihre Realisierungen für sich, die Spitze
+        /// der Summe ist nicht die Summe der Spitzen; das wird benannt, nicht geschätzt. Leer heißt
+        /// für den Kern „kein Ensemble" (<c>MESSVERGLEICH_OHNE_ENSEMBLE</c>).
+        ///
+        /// <para><paramref name="ensembleZonen"/> trägt die Zahl der tragenden Zonen, <b>wenn es mehr
+        /// als eine ist</b>, sonst 0 — sie geht ins DTO. Denn beide Fälle enden für den Kern in einer
+        /// leeren Stichprobe, und ein Strich mit „ohne Ensemble" wäre bei mehreren Ensembles der
+        /// falsche Grund: Die Rechnung ist stochastisch, nur die Stichprobe nicht bildbar.</para>
+        /// </summary>
+        private static IReadOnlyList<double> Realisierungsspitzen(ZapfprofilErgebnis e, ICollection<ZapfSatz> hinweise,
+                                                                 out int ensembleZonen)
+        {
+            List<IReadOnlyList<double>> mit = (e?.JeZone ?? new ZonenErgebnis[0])
+                .Where(z => !z.Abgelehnt && z.StundenspitzenKw != null && z.StundenspitzenKw.Count > 0)
+                .Select(z => z.StundenspitzenKw).ToList();
+            ensembleZonen = mit.Count > 1 ? mit.Count : 0;
+            if (mit.Count == 1) return mit[0];
+            if (mit.Count > 1) hinweise?.Add(ZapfSatz.Neu("MESSVERGLEICH_ENSEMBLE_ZONEN", mit.Count));
+            return new double[0];
         }
 
         private static ZapfprofilMessvergleichDaten Ohne(ZapfprofilMessvergleichDaten d, ZapfSatz grund,

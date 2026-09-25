@@ -100523,6 +100523,375 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslastungsgang der Zone ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_AUSLASTUNGSGANG_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_AUSLASTUNGSGANG_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Wohnungstabelle ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_AUS_WOHNUNGSTABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_AUS_WOHNUNGSTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###}) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugstemperatur der Nutzungsart ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor {0:0.######} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_FAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor der Zone ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_FAKTOR_DER_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_FAKTOR_DER_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Sonntag ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_FERIEN_WIE_SONNTAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_FERIEN_WIE_SONNTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max(a − b · A_WE ; c) mit A_WE = {0:0.###} m² ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_FLAECHENKENNWERT_FORMEL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_FLAECHENKENNWERT_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche des gebundenen Gebäudes (A8) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_FLAECHE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_FLAECHE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die flächengewichtet ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mengengewichtet ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_GEWICHT_MENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_GEWICHT_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (θ_Zapf − θ_KW,Auslegung) / (θ_Zapf − θ̄_KW) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_KALTWASSERFAKTOR_FORMEL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_KALTWASSERFAKTOR_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die angesetzte Ladeleistung der Speicherauslegung ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_LADELEISTUNG_ANGESETZT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_LADELEISTUNG_ANGESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in kWh/a, Grenze {0} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_MESSWERT_ENERGIE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_MESSWERT_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Messwert {0} {1}, Grenze {2} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_MESSWERT_KALIBRIERUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_MESSWERT_KALIBRIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus {0:0.###} m³/a, Grenze {1} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_MESSWERT_VOLUMEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_MESSWERT_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niveau hoch ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_NIVEAU_HOCH {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_NIVEAU_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niveau mittel ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_NIVEAU_MITTEL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_NIVEAU_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niveau niedrig ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_NIVEAU_NIEDRIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_NIVEAU_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter {0} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_PARAMETER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter {0} (Großanlage) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_PARAMETER_GROSSANLAGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_PARAMETER_GROSSANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter {0} (Schnellauslegung) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_PARAMETER_SCHNELLAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_PARAMETER_SCHNELLAUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe vor der Normierung ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_SUMME_VOR_NORMIERUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_SUMME_VOR_NORMIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf manuell · {0} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_TAGESBEDARF_MANUELL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_TAGESBEDARF_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgangsatz {0} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_TAGESGANGSATZ {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_TAGESGANGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (θ_Zapf − θ̄_KW) / (θ_Bezug − θ_KW,Bezug) = ({0:0.###} − {1:0.###}) / ({2:0.###} − {3:0.###}) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturfaktor {0:0.###} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR_ANGEWANDT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_TEMPERATURFAKTOR_ANGEWANDT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schätzformel NA.1 (Kessel) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_KESSEL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schätzformel NA.2 (Wärmepumpe) ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werkstoff Edelstahl ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_WERKSTOFF_EDELSTAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_WERKSTOFF_EDELSTAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werkstoff Stahl ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_WERKSTOFF_STAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_WERKSTOFF_STAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WE = Bezugsmenge ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_WE_BEZUGSMENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_WE_BEZUGSMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WE = Σ Anzahl der Wohnungstabelle ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_WE_WOHNUNGSTABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_WE_WOHNUNGSTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gebäudeweit, mit α ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_GEBAEUDEWEIT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_GEBAEUDEWEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Flächen der Zonen in Z1, ohne α ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P · t_Lauf · {0} ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_JAHRESVERLUST_FORMEL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_JAHRESVERLUST_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die manuell ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_MANUELL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Methode Anteil am Zapfbedarf ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_METHODE_ANTEIL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_METHODE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Methode Flächenkennwert ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_METHODE_FLAECHENKENNWERT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_METHODE_FLAECHENKENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Methode Leitungslänge ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZIRK_METHODE_LEITUNGSLAENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZIRK_METHODE_LEITUNGSLAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Wohnfläche je WE {1:0.###} m² ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_ZONENFLAECHE_JE_WE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_ZONENFLAECHE_JE_WE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER {
@@ -100766,6 +101135,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt diese Nutzungsart mit derselben Katalogversion zweimal; übernommen ist nur die erste. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET {
@@ -100888,6 +101266,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PFAD_UNZULAESSIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PFAD_UNZULAESSIG", resourceCulture);
             }
         }
         
@@ -101032,6 +101419,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_ZAHL {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Katalogpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_ZU_GROSS", resourceCulture);
             }
         }
         
@@ -101545,6 +101941,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_ENERGIE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es tragen {0} Zonen ein Jahresensemble; die Spitzenstreuung ist daraus nicht zu bilden, weil jede Zone ihre Realisierungen für sich zieht und die Spitze der Summe nicht die Summe der Spitzen ist. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN", resourceCulture);
             }
         }
         
@@ -103169,6 +103574,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrere stochastische Zonen — Stichprobe nicht bildbar ähnelt.
+        /// </summary>
+        public static string ZPG_VERGL_ENSEMBLE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_VERGL_ENSEMBLE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich läuft — Messreihe „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_VERGL_LAEUFT {
@@ -103570,6 +103984,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_MESSVERGLEICH_ENERGIE_ABWEICHUNG {
             get {
                 return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_ENERGIE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ensemble mehrerer Zonen ähnelt.
+        /// </summary>
+        public static string ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN", resourceCulture);
             }
         }
         

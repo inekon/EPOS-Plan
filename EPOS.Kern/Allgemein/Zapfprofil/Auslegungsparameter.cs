@@ -204,7 +204,8 @@ namespace WindowsFormsApplication1
                 return projektwert.Value;
             }
             ZapfParameterwert pw = ps.Lies(schluessel);
-            prot?.Vermerken("", feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft, "Parameter " + schluessel);
+            prot?.Vermerken("", feld, pw.Wert, einheit, Wertstatus.Vorgabe, pw.Herkunft,
+                            ZapfSatz.Neu("HERKUNFT_PARAMETER", schluessel));
             return pw.Wert;
         }
     }
@@ -401,10 +402,20 @@ namespace WindowsFormsApplication1
             ZapfParameterwert pw = ps.Lies(schluessel);
             Auslegungspruefung.Endlich(pw.Wert, ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR_PARAMETER", schluessel));
             prot?.Vermerken("", feld, pw.Wert, "°C", Wertstatus.Vorgabe, pw.Herkunft,
-                            "Parameter " + schluessel + (quelle == Speichertemperaturquelle.Grossanlage ? " (Großanlage)"
-                                                         : quelle == Speichertemperaturquelle.Schnellpfad ? " (Schnellauslegung)" : ""));
+                            Parametervermerk(schluessel, quelle));
             return new Speichertemperaturwahl(pw.Wert, quelle, quelle == Speichertemperaturquelle.Schnellpfad);
         }
+
+        /// <summary>
+        /// Der Vermerk zur gewählten Quelle der Speichertemperatur: der Parameterschlüssel, und wo
+        /// die Großanlage oder der Schnellpfad ihn wählt, eine eigene Kennung (N13 (b)).
+        /// </summary>
+        private static ZapfSatz Parametervermerk(string schluessel, Speichertemperaturquelle quelle) => quelle switch
+        {
+            Speichertemperaturquelle.Grossanlage => ZapfSatz.Neu("HERKUNFT_PARAMETER_GROSSANLAGE", schluessel),
+            Speichertemperaturquelle.Schnellpfad => ZapfSatz.Neu("HERKUNFT_PARAMETER_SCHNELLAUSLEGUNG", schluessel),
+            _ => ZapfSatz.Neu("HERKUNFT_PARAMETER", schluessel)
+        };
     }
 
     /// <summary>Die Wertprüfungen der Auslegung: jede Verletzung ist eine benannte Ablehnung.</summary>

@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
             p?.Vermerken(zone, ZapfFeld.MONATSFAKTOREN, null, "-",
                          ueberschrieben ? Wertstatus.Ueberschrieben : Wertstatus.Vorgabe,
                          ueberschrieben ? null : n.Herkunft?.Jahresgang,
-                         ueberschrieben ? "Auslastungsgang der Zone" : "");
+                         ueberschrieben ? ZapfSatz.Neu("HERKUNFT_AUSLASTUNGSGANG_ZONE") : null);
 
             // --- Woche: Σ 1 ---------------------------------------------------------------
             double[] woche = Raster(n.Wochenfaktoren, Zapfkalender.WOCHENTAGE, zone, ZapfSatz.Neu("BEGRIFF_WOCHENFAKTOREN"));
@@ -74,13 +74,13 @@ namespace WindowsFormsApplication1
             var wocheNormiert = new double[Zapfkalender.WOCHENTAGE];
             for (int i = 0; i < Zapfkalender.WOCHENTAGE; i++) wocheNormiert[i] = woche[i] / summeWoche;
             p?.Vermerken(zone, ZapfFeld.WOCHENFAKTOREN, summeWoche, "-", Wertstatus.Vorgabe, n.Herkunft?.Wochengang,
-                         "Summe vor der Normierung");
+                         ZapfSatz.Neu("HERKUNFT_SUMME_VOR_NORMIERUNG"));
 
             // --- Ferienfaktor ---------------------------------------------------------------
             double? ferien = n.Ferienfaktor;
             if (ferien.HasValue) NichtNegativ(ferien.Value, zone, ZapfSatz.Neu("BEGRIFF_FERIENFAKTOR"));
             p?.Vermerken(zone, ZapfFeld.FERIENFAKTOR, ferien, "-", Wertstatus.Vorgabe, n.Herkunft?.Jahresgang,
-                         ferien.HasValue ? "" : "wie Sonntag");
+                         ferien.HasValue ? null : ZapfSatz.Neu("HERKUNFT_FERIEN_WIE_SONNTAG"));
 
             // --- Tagesgänge: je Σ 1 ---------------------------------------------------------
             if (satz == null || !satz.Vollstaendig || satz.Anteile == null
@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
             }
             p?.Vermerken(zone, ZapfFeld.TAGESGANGSATZ, satz.Id, "ID",
                          z.IdTagesgangsatz.HasValue ? Wertstatus.Ueberschrieben : Wertstatus.Vorgabe,
-                         satz.JeTagtyp[0], satz.Bezeichner);
+                         satz.JeTagtyp[0], ZapfSatz.Neu("HERKUNFT_TAGESGANGSATZ", satz.Bezeichner ?? ""));
 
             return new Zeitstruktur(monate, wocheNormiert, ferien, gaenge, leer);
         }

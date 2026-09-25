@@ -28,7 +28,9 @@ namespace WindowsFormsApplication1
     /// leer für das Projekt — welchen Stand hat, woher er kommt und was dabei geschah.
     /// <see cref="Quelle"/> ist die Provenienz der Katalog- oder Parametergruppe, aus der der
     /// Wert stammt; <c>null</c>, wo der Anwender ihn gesetzt hat. <see cref="Vermerk"/> nennt
-    /// Faktor, Messwertquelle oder Rechenweg im Klartext.
+    /// Faktor, Messwertquelle oder Rechenweg — als <see cref="ZapfSatz"/> mit Kennung und Werten
+    /// (Muster <c>ZPG_SATZ_HERKUNFT_…</c> in beiden Sprachen), nicht als deutscher Klartext
+    /// (N13 (b)); <c>null</c>, wo es nichts zu vermerken gibt.
     /// </summary>
     internal sealed record Herkunftseintrag(
         string Zone,
@@ -37,7 +39,7 @@ namespace WindowsFormsApplication1
         string Einheit,
         Wertstatus Status,
         Provenienz Quelle,
-        string Vermerk);
+        ZapfSatz Vermerk);
 
     /// <summary>
     /// <b>Das Herkunftsprotokoll einer Rechnung</b> (Konzept 2.1, Provenienz): je Feld und
@@ -54,10 +56,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hält einen Wert fest.</summary>
         internal void Vermerken(string zone, string feld, double? wert, string einheit, Wertstatus status,
-                                Provenienz quelle, string vermerk = null)
+                                Provenienz quelle, ZapfSatz vermerk = null)
         {
             if (string.IsNullOrEmpty(feld)) throw new ArgumentException("Ein Protokolleintrag ohne Feld.", nameof(feld));
-            _eintraege.Add(new Herkunftseintrag(zone ?? "", feld, wert, einheit ?? "", status, quelle, vermerk ?? ""));
+            _eintraege.Add(new Herkunftseintrag(zone ?? "", feld, wert, einheit ?? "", status, quelle, vermerk));
         }
 
         /// <summary>Der zuletzt vermerkte Eintrag zu Zone und Feld; <c>null</c>, wenn es keinen gibt.</summary>
