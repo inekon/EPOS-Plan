@@ -189,6 +189,7 @@ namespace WindowsFormsApplication1
         {
             { "AssistentSeite",                B_ASSISTENT },
             { "BaustoffKatalog",               B_GEBAEUDE },
+            { "Bauteil",                       B_GEBAEUDE },
             { "Bauteilaufbau",                 B_GEBAEUDE },
             { "Form_AdminPV",                  B_PHOTOVOLTAIK },
             { "Form_AdminSettings",            B_ADMIN },
@@ -252,6 +253,7 @@ namespace WindowsFormsApplication1
             { "Form_Waermesenke",              B_SIM_KONFIG },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
             { "Form_Zapfprofil",               B_BRAUCHWASSER },
+            { "GebaeudeProjekt",               B_GEBAEUDE },
             { "Hauptfenster",                  B_HAUPTFENSTER },
             { "Kenndaten",                     B_WAERMEPUMPE },
             { "KiWerkzeugliste",               B_HILFE },
@@ -260,7 +262,8 @@ namespace WindowsFormsApplication1
             { "UcBkKosten",                    B_KOSTEN },
             { "UcBkUebersicht",                B_VARIANTEN },
             { "UcWirtschaftlichkeit",          B_WIRTSCHAFT },
-            { "Wizard_WPItem",                 B_WAERMEPUMPE }
+            { "Wizard_WPItem",                 B_WAERMEPUMPE },
+            { "Zone",                          B_GEBAEUDE }
         };
 
         /// <summary>Die Präfixtabelle zum Nachlesen — eine Kopie, keine Handhabe.</summary>

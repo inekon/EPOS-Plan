@@ -1111,9 +1111,11 @@ namespace WindowsFormsApplication1
         /// benannt im Laufprotokoll ausgewiesen, nicht still übergangen.</item>
         /// <item><b>Nennleistung:</b> Eine fest eingetragene Nennleistung der Übergabe gilt dem
         /// wirklichen Gebäude, und das rechnet jetzt selbst — Verhältnis 1, kein Probelauf.</item>
-        /// <item><b>Bezugsfläche</b> ist die Nutzfläche des Gebäudes (A_f, E13 — die Fläche, mit der
-        /// der Eingangsbauer rechnet; die Zonenfläche liest G3 nicht), Bewohner = Nutzfläche /
-        /// Fläche je Nutzer, ohne Skalierung. Wie im Bestandszweig werden <c>Bewohner</c> und
+        /// <item><b>Bezugsfläche</b> ist die Nutzfläche der Zone (A_f, E13; ohne eigene Angabe die
+        /// des Gebäudes — <see cref="GebaeudeZonensatz.Bezugsflaeche"/>), die Fläche, mit der der
+        /// Eingangsbauer über den Flächenschlüssel rechnet; Bewohner = Zonenfläche / Fläche je
+        /// Nutzer, ohne Skalierung. Nach „Gebäude als eine Zone übernehmen" ist das die
+        /// hochgerechnete Projektfläche. Wie im Bestandszweig werden <c>Bewohner</c> und
         /// <c>Z_AuswahlWohnflaeche</c> an der gelesenen Zeile nachgetragen.</item>
         /// </list>
         /// Die Auskunft (<see cref="GebaeudeBedarfCtrl"/>) nimmt denselben Weg, weil sie dieselbe
@@ -1127,7 +1129,13 @@ namespace WindowsFormsApplication1
             _vdi6007.Probelauf = false;
             if (!weg.Rechnen(item, index, ziel, gemeinsam, out double _)) return false;
 
-            if (!vorbereitung.IstFlaeche || item.Z_AuswahlWohnflaeche != item.Nutzflaeche)
+            // Die Bezugsfläche der Zone - der Lauf hat die Zone eben gerechnet, es gibt genau eine.
+            double flaeche = item.Zonen[0].Bezugsflaeche(item);
+
+            // Eine Flächenangabe gleich der Zonenfläche (bis auf den Zahlenrand der Hochrechnung)
+            // hätte nichts skaliert - sonst ist die Angabe benannt, nicht still übergangen.
+            if (!vorbereitung.IstFlaeche
+                || Math.Abs(item.Z_AuswahlWohnflaeche - flaeche) > 1e-9 * Math.Max(1.0, Math.Abs(flaeche)))
             {
                 System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
                 SimulationProtokoll.Aktuell.HinweisEinmal(
@@ -1135,11 +1143,11 @@ namespace WindowsFormsApplication1
                     string.Format(k, MyResource.Resource.SIMENG_G3_ANGABE_NICHT_SKALIERT,
                                   (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ")",
                                   item.Z_AuswahlWohnflaeche.ToString("0.##", k), item.Einheit ?? "",
-                                  item.Nutzflaeche.ToString("0.##", k)));
+                                  flaeche.ToString("0.##", k)));
             }
 
-            item.Z_AuswahlWohnflaeche = item.Nutzflaeche;
-            item.Bewohner = item.Nutzflaeche / item.Flaeche_Nutzer;
+            item.Z_AuswahlWohnflaeche = flaeche;
+            item.Bewohner = flaeche / item.Flaeche_Nutzer;
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
             return true;

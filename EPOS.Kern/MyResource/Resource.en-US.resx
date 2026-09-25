@@ -3239,10 +3239,10 @@ Both point to {0} "{1}".</value>
     <value>{0}: the building has {1} zones; EPOS computes several zones with stage G6. Until then a building is computed without a zone (class method) or with exactly one zone (building-element method).</value>
   </data>
   <data name="SIMENG_G3_BAUTEILWEG" xml:space="preserve">
-    <value>VDI 6007 building model: {0} uses the building-element method with the zone “{1}” and {2} building elements, {3} of them with a layer build-up; set points, ventilation, internal gains and usable floor area come from the building record.</value>
+    <value>VDI 6007 building model: {0} uses the component method with the zone “{1}” and {2} building components, {3} of them with a layer build-up; air volume, thermal mass of the construction type and internal gains follow the usable area of the zone (area key), set points, room height and ventilation come from the building record.</value>
   </data>
   <data name="SIMENG_G3_ANGABE_NICHT_SKALIERT" xml:space="preserve">
-    <value>VDI 6007 building model: {0} is computed with its zone and its building elements (actual envelope). The entry {1} {2} is neither back-calculated nor applied as a scaling factor — scaling factor 1, reference area {3} m² (usable floor area of the building).</value>
+    <value>VDI 6007 building model: {0} is computed with its zone and its building components (actual envelope). The entry {1} {2} is neither back-calculated nor applied as a scaling factor — scaling factor 1, reference area {3} m² (usable area of the zone).</value>
   </data>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} is computed on the daily-balance path; its zone is not used there — only the VDI 6007 path computes the building-element method.</value>
@@ -32743,6 +32743,384 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_IFC_PROT_SCHICHTFOLGE_ANGENOMMEN" xml:space="preserve">
     <value>For {0} envelope components the position of the layers cannot be determined (no IfcMaterialLayerSetUsage or no room side) — assumed: first layer outside ({1}).</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_NUTZFLAECHE" xml:space="preserve">
+    <value>The usable area of the zone “{0}” is {1} m² and not greater than zero; the component method needs it as reference area.</value>
+  </data>
+  <data name="SIMENG_G3_ZONE_SCHLUESSEL" xml:space="preserve">
+    <value>The zone “{0}” has its own usable area, but the usable area of the building is {1} m²; without it thermal mass and internal gains cannot be apportioned to the zone.</value>
+  </data>
+  <data name="ZONE_MSG_NUTZFLAECHE" xml:space="preserve">
+    <value>Zone “{0}”: the usable area must be greater than zero.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_KLIMA" xml:space="preserve">
+    <value>Without a project with a climate region the scaling factor cannot be determined – please save the project and select a climate region.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_KEIN_FAKTOR" xml:space="preserve">
+    <value>The calculation yields no scaling factor for this building.</value>
+  </data>
+  <data name="ZONE_MSG_UEBERNAHME_OHNE_KOPIE" xml:space="preserve">
+    <value>The building has no project copy yet – save the project first; the copy then carries a zone.</value>
+  </data>
+  <data name="BAUTEIL_MSG_NAME_FEHLT" xml:space="preserve">
+    <value>The building component needs a name.</value>
+  </data>
+  <data name="BAUTEIL_MSG_BEREICH" xml:space="preserve">
+    <value>Building component “{0}”: {1} = {2} is outside {3}.</value>
+  </data>
+  <data name="BAUTEIL_MSG_RAND_ZONE" xml:space="preserve">
+    <value>Building component “{0}”: EPOS computes the boundary condition “adjacent zone” only with several zones (stage G6).</value>
+  </data>
+  <data name="BAUTEIL_MSG_FENSTER_RAND" xml:space="preserve">
+    <value>Building component “{0}”: a window or curtain wall faces outdoor air or an unheated space.</value>
+  </data>
+  <data name="BAUTEIL_MSG_UWERT_FEHLT" xml:space="preserve">
+    <value>Building component “{0}”: it needs a U-value or a build-up – a window or curtain wall always needs a U-value.</value>
+  </data>
+  <data name="GEBZ_REITER" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEBZ_GRP_ZONEN" xml:space="preserve">
+    <value>Zones and building components</value>
+  </data>
+  <data name="GEBZ_ZEILE_KLASSENWEG" xml:space="preserve">
+    <value>Envelope calculation: class method – U-value groups and construction type. With “Take over building as one zone” the building is computed from its building components.</value>
+  </data>
+  <data name="GEBZ_ZEILE_BAUTEILWEG" xml:space="preserve">
+    <value>Envelope calculation: component method – zone “{0}”, {1} building components. The U-value groups are derived from the building components; the values of the building apply again without a zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
+    <value>Envelope calculation: class method – U-value groups and construction type. A catalogue record carries no zones; zones and building components belong to a building in the project (“Envelope and zones…” in the building dialog).</value>
+  </data>
+  <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Take over building as one zone</value>
+  </data>
+  <data name="GEBZ_HINWEIS_UEBERNEHMEN" xml:space="preserve">
+    <value>Creates one zone with building components from the U-value groups, scaled up to the project area; it is written with OK.</value>
+  </data>
+  <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
+    <value>Only for a building in the project: a catalogue record carries no zones.</value>
+  </data>
+  <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
+    <value>The building already has the zone “{0}”.</value>
+  </data>
+  <data name="GEBZ_SPERRE_TAGESBILANZ" xml:space="preserve">
+    <value>The daily-balance path does not compute zones – set the calculation method to VDI 6007 first.</value>
+  </data>
+  <data name="GEBZ_SPERRE_LAEUFT" xml:space="preserve">
+    <value>Determining the scaling factor …</value>
+  </data>
+  <data name="GEBZ_FRAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>From now on this building is computed from its building components instead of the U-value groups. The areas are scaled up to the project area with the factor {0} (usable area {1} m² → {2} m²). The entry “{3} {4}” no longer applies afterwards. Take over the zone?</value>
+  </data>
+  <data name="GEBZ_FRAGE_GRENZEN" xml:space="preserve">
+    <value>The power limits of heating and cooling then apply to the scaled-up envelope.</value>
+  </data>
+  <data name="GEBZ_LEER" xml:space="preserve">
+    <value>No zone yet – the building uses the class method with the U-value groups.</value>
+  </data>
+  <data name="GEBZ_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBZ_SP_NUTZFLAECHE" xml:space="preserve">
+    <value>Usable area</value>
+  </data>
+  <data name="GEBZ_SP_HT" xml:space="preserve">
+    <value>H_T</value>
+  </data>
+  <data name="GEBZ_SP_BAUTEILE" xml:space="preserve">
+    <value>Building components</value>
+  </data>
+  <data name="GEBZ_SP_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="GEBZ_BTN_OEFFNEN" xml:space="preserve">
+    <value>Open…</value>
+  </data>
+  <data name="GEBZ_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove zone</value>
+  </data>
+  <data name="GEBZ_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Remove zone “{0}” with {1} building components? The building then uses the class method with the U-value groups again; it is written with OK.</value>
+  </data>
+  <data name="GEBZ_ZEILE_SUMMENREGEL" xml:space="preserve">
+    <value>Derived from the building components of the zone “{0}”: area per group Σ A, U = Σ U·A / Σ A. The values of the building remain stored and apply again without a zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_FENSTER" xml:space="preserve">
+    <value>With the zone its window components are used ({0} m²); the window areas of the building apply again without a zone.</value>
+  </data>
+  <data name="GEBZ_ZEILE_PSI" xml:space="preserve">
+    <value>Thermal bridges of the components Σ ψ·L</value>
+  </data>
+  <data name="GEBZ_ZEILE_NUTZFLAECHE" xml:space="preserve">
+    <value>The zone uses its usable area of {0} m²; air volume, thermal mass and internal gains follow it proportionally.</value>
+  </data>
+  <data name="GEBZ_ZEILE_NAME_PROJEKT" xml:space="preserve">
+    <value>In the project the building keeps the name “{0}”; a different name applies to “Save as” (new catalogue record).</value>
+  </data>
+  <data name="GEBZ_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
+    <value>The catalogue record does not carry the zone “{0}” with {1} building components – save anyway?</value>
+  </data>
+  <data name="GEBZ_MSG_ZONEN" xml:space="preserve">
+    <value>The zones were not saved: {0}</value>
+  </data>
+  <data name="GEBZ_MSG_AUFBAU" xml:space="preserve">
+    <value>The build-up “{0}” could not be taken over from the catalogue: {1}</value>
+  </data>
+  <data name="GEBZ_MSG_GEBAEUDE" xml:space="preserve">
+    <value>The building data of the project were not saved.</value>
+  </data>
+  <data name="GEBZ_BTN_PROJEKT" xml:space="preserve">
+    <value>Envelope and zones…</value>
+  </data>
+  <data name="GEBZ_BTN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Edit the building data of this project building, create zones and building components – the project copy is written, not the catalogue</value>
+  </data>
+  <data name="GEBZ_SPERRE_NEUE_ZEILE" xml:space="preserve">
+    <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created with OK.</value>
+  </data>
+  <data name="GEBZ_TITEL_PROJEKT" xml:space="preserve">
+    <value>Building in the project: envelope and zones</value>
+  </data>
+  <data name="GEBW_ZEILE_ZONE" xml:space="preserve">
+    <value>The building is computed from its building components (zone “{0}”); the scaling does not apply – the entry is not used.</value>
+  </data>
+  <data name="GEBW_SPERRE_ZONE" xml:space="preserve">
+    <value>With a zone the building uses the usable area of its zone; area or consumption no longer scale. Remove the zone in the building dialog under “Envelope and zones…”.</value>
+  </data>
+  <data name="ZONDLG_TITEL" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZONDLG_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZONDLG_LBL_NUTZFLAECHE" xml:space="preserve">
+    <value>Usable area</value>
+  </data>
+  <data name="ZONDLG_PLATZHALTER_NUTZFLAECHE" xml:space="preserve">
+    <value>Building value {0} m²</value>
+  </data>
+  <data name="ZONDLG_ZEILE_NUTZFLAECHE" xml:space="preserve">
+    <value>Empty means the usable area of the building ({0} m²). Air volume, thermal mass and internal gains follow the zone area proportionally; all other values (set points, ventilation) are those of the building.</value>
+  </data>
+  <data name="ZONDLG_GRP_BAUTEILE" xml:space="preserve">
+    <value>Building components</value>
+  </data>
+  <data name="ZONDLG_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ZONDLG_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZONDLG_SP_FLAECHE" xml:space="preserve">
+    <value>A [m²]</value>
+  </data>
+  <data name="ZONDLG_SP_U" xml:space="preserve">
+    <value>U [W/(m²K)]</value>
+  </data>
+  <data name="ZONDLG_SP_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="ZONDLG_SP_NEIGUNG" xml:space="preserve">
+    <value>Inclination</value>
+  </data>
+  <data name="ZONDLG_SP_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="ZONDLG_SP_AUFBAU" xml:space="preserve">
+    <value>Build-up</value>
+  </data>
+  <data name="ZONDLG_BTN_NEU" xml:space="preserve">
+    <value>+ New building component …</value>
+  </data>
+  <data name="ZONDLG_LEER" xml:space="preserve">
+    <value>The zone has no building component yet.</value>
+  </data>
+  <data name="ZONDLG_BTN_OEFFNEN" xml:space="preserve">
+    <value>Open building component</value>
+  </data>
+  <data name="ZONDLG_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove building component</value>
+  </data>
+  <data name="ZONDLG_SUMME_GRUPPE" xml:space="preserve">
+    <value>Σ A {0}: {1} m²</value>
+  </data>
+  <data name="ZONDLG_SUMME_HT" xml:space="preserve">
+    <value>H_T = Σ U·A + Σ ψ·L = {0} W/K</value>
+  </data>
+  <data name="ZONDLG_MSG_NAME" xml:space="preserve">
+    <value>The zone needs a name.</value>
+  </data>
+  <data name="ZONDLG_U_AUS_AUFBAU" xml:space="preserve">
+    <value>from build-up</value>
+  </data>
+  <data name="BTDLG_TITEL" xml:space="preserve">
+    <value>Building component</value>
+  </data>
+  <data name="BTDLG_TITEL_NEU" xml:space="preserve">
+    <value>New building component</value>
+  </data>
+  <data name="BTDLG_LBL_ART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="BTDLG_LBL_BEZEICHNUNG" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BTDLG_LBL_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="BTDLG_LBL_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="BTDLG_HINWEIS_AZIMUT" xml:space="preserve">
+    <value>Azimuth 0° = north, 90° = east, 180° = south, 270° = west; an external component that is not horizontal needs it.</value>
+  </data>
+  <data name="BTDLG_LBL_NEIGUNG" xml:space="preserve">
+    <value>Inclination</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_NEIGUNG" xml:space="preserve">
+    <value>Default {0}°</value>
+  </data>
+  <data name="BTDLG_LBL_RAND" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="BTDLG_RAND_VORGABE_AUSSEN" xml:space="preserve">
+    <value>Outdoor air (default)</value>
+  </data>
+  <data name="BTDLG_RAND_VORGABE_INNEN" xml:space="preserve">
+    <value>inside the zone (default)</value>
+  </data>
+  <data name="BTDLG_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>Outdoor air</value>
+  </data>
+  <data name="BTDLG_RAND_ERDREICH" xml:space="preserve">
+    <value>Ground</value>
+  </data>
+  <data name="BTDLG_RAND_UNBEHEIZT" xml:space="preserve">
+    <value>Unheated space</value>
+  </data>
+  <data name="BTDLG_LBL_GWERT" xml:space="preserve">
+    <value>g-value</value>
+  </data>
+  <data name="BTDLG_LBL_RAHMEN" xml:space="preserve">
+    <value>Frame fraction</value>
+  </data>
+  <data name="BTDLG_LBL_VERSCHATTUNG" xml:space="preserve">
+    <value>Shading factor</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_GEBAEUDE" xml:space="preserve">
+    <value>Building value</value>
+  </data>
+  <data name="BTDLG_LBL_PSIL" xml:space="preserve">
+    <value>Thermal bridge ψ·L</value>
+  </data>
+  <data name="BTDLG_LBL_UWERT" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_U" xml:space="preserve">
+    <value>from the build-up</value>
+  </data>
+  <data name="BTDLG_GRP_AUFBAU" xml:space="preserve">
+    <value>Build-up</value>
+  </data>
+  <data name="BTDLG_LBL_AUFBAU_PROJEKT" xml:space="preserve">
+    <value>Build-up in the project</value>
+  </data>
+  <data name="BTDLG_OHNE_AUFBAU" xml:space="preserve">
+    <value>(no build-up – U-value only)</value>
+  </data>
+  <data name="BTDLG_LBL_AUFBAU_KATALOG" xml:space="preserve">
+    <value>From the catalogue</value>
+  </data>
+  <data name="BTDLG_KATALOG_WAHL" xml:space="preserve">
+    <value>(choose a build-up from the catalogue)</value>
+  </data>
+  <data name="BTDLG_BTN_AUFBAU_UEBERNEHMEN" xml:space="preserve">
+    <value>Take over</value>
+  </data>
+  <data name="BTDLG_HINWEIS_KATALOG" xml:space="preserve">
+    <value>A catalogue build-up is copied into the project only with OK of the building dialog; until then the choice writes nothing.</value>
+  </data>
+  <data name="BTDLG_AUFBAU_KATALOG" xml:space="preserve">
+    <value>{0} (catalogue, copied with OK)</value>
+  </data>
+  <data name="BTDLG_ZEILE_U_AUFBAU" xml:space="preserve">
+    <value>U from the build-up: {0} W/(m²K).</value>
+  </data>
+  <data name="BTDLG_ZEILE_U_ABWEICHUNG" xml:space="preserve">
+    <value>The entered U-value {0} W/(m²K) deviates by {1} % from the build-up ({2} W/(m²K)); the entered value is used.</value>
+  </data>
+  <data name="BTDLG_ZEILE_FENSTER" xml:space="preserve">
+    <value>Empty window values are taken from the building (g-value, frame fraction, shading).</value>
+  </data>
+  <data name="BTDLG_ZEILE_KEINE_SCHICHTEN" xml:space="preserve">
+    <value>Without a build-up the component uses its U-value.</value>
+  </data>
+  <data name="KI_DLG_MASKE_ZONE" xml:space="preserve">
+    <value>Building zone</value>
+  </data>
+  <data name="KI_DLG_MASKE_BAUTEIL" xml:space="preserve">
+    <value>Zone building component</value>
+  </data>
+  <data name="KI_DLG_ZON_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>The name of the zone; required.</value>
+  </data>
+  <data name="KI_DLG_ZON_NUTZFLAECHE_ERL" xml:space="preserve">
+    <value>The usable area of the zone in m²; empty = the usable area of the building. It assigns the area-related quantities of the building (air volume, internal gains, occupants) to the zone.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_ART_ERL" xml:space="preserve">
+    <value>The component type of the row — read-only; it is changed in the building component dialog.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>The name of the building component — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_FLAECHE_ERL" xml:space="preserve">
+    <value>The area of the building component in m² — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_UWERT_ERL" xml:space="preserve">
+    <value>The effective U-value: as entered, otherwise that of the construction build-up — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_AZIMUT_ERL" xml:space="preserve">
+    <value>The orientation of the building component in degrees (0° = north) — read-only.</value>
+  </data>
+  <data name="KI_DLG_ZON_BAUTEIL_AUFBAU_ERL" xml:space="preserve">
+    <value>The project construction build-up, empty = none — read-only.</value>
+  </data>
+  <data name="KI_DLG_BT_ART_ERL" xml:space="preserve">
+    <value>The component type: external wall, roof, ground slab, window, door, internal wall, ceiling, curtain wall or other. It sets the defaults for tilt and boundary condition; windows and curtain walls are computed from U-value, g-value, frame fraction and shading.</value>
+  </data>
+  <data name="KI_DLG_BT_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>The name of the building component; required.</value>
+  </data>
+  <data name="KI_DLG_BT_FLAECHE_ERL" xml:space="preserve">
+    <value>The area of the building component in m²; must be greater than zero.</value>
+  </data>
+  <data name="KI_DLG_BT_AZIMUT_ERL" xml:space="preserve">
+    <value>The orientation in degrees, 0° = north, 90° = east. An external building component that is not horizontal needs an azimuth.</value>
+  </data>
+  <data name="KI_DLG_BT_NEIGUNG_ERL" xml:space="preserve">
+    <value>The tilt in degrees, 90° = vertical; empty = default for the component type.</value>
+  </data>
+  <data name="KI_DLG_BT_RAND_ERL" xml:space="preserve">
+    <value>What the building component borders on: not specified (default for the component type), outdoor air, ground or unheated space. Windows and curtain walls border on outdoor air or an unheated space.</value>
+  </data>
+  <data name="KI_DLG_BT_GWERT_ERL" xml:space="preserve">
+    <value>The total solar energy transmittance of the glazing, greater than 0 up to 1; windows and curtain walls only; empty = value of the building.</value>
+  </data>
+  <data name="KI_DLG_BT_RAHMEN_ERL" xml:space="preserve">
+    <value>The frame fraction 0.05 to 0.6; windows and curtain walls only; empty = value of the building.</value>
+  </data>
+  <data name="KI_DLG_BT_VERSCHATTUNG_ERL" xml:space="preserve">
+    <value>The shading factor, greater than 0 up to 1 (1 = unshaded); windows and curtain walls only; empty = value of the building.</value>
+  </data>
+  <data name="KI_DLG_BT_PSIL_ERL" xml:space="preserve">
+    <value>The thermal bridge allowance of the building component as ψ·L in W/K; not negative, empty = none.</value>
+  </data>
+  <data name="KI_DLG_BT_UWERT_ERL" xml:space="preserve">
+    <value>The U-value in W/(m²K); empty = from the construction build-up. Windows and curtain walls always need it.</value>
+  </data>
+  <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
+    <value>The project construction build-up, 0 = without construction build-up. A construction build-up from the catalogue is taken over by hand and copied into the project with the OK of the building editor.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: the smallest interval between two time stamps is {1:0.###} min — allowed are {2} min.</value>

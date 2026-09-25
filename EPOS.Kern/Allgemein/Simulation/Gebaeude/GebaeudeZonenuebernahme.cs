@@ -34,6 +34,18 @@ namespace WindowsFormsApplication1
     /// null). Geprüft wird nicht hier, sondern im Bauteilweg — mit denselben Grenzen wie für
     /// jedes andere Bauteil.</para>
     ///
+    /// <para><b>Die Hochrechnung</b> (Anwenderentscheid vom 25.09.2026 „Hochrechnen“): Der
+    /// Klassenweg rechnet den Katalogbau und multipliziert seine Reihe mit dem Faktor der
+    /// Fassade nach (E8: bei einer Flächenangabe Projektfläche / Nutzfläche, bei einer
+    /// Verbrauchsangabe aus der Verhältnisrechnung des Kataloglaufs). Die Übernahme rechnet die
+    /// Hülle mit GENAU diesem Faktor auf die Projektfläche hoch — alle Bauteilflächen und ψ·L mal
+    /// Faktor, die Zone trägt die Nutzfläche Faktor × Nutzfläche des Gebäudes —, und der Bauteilweg
+    /// rechnet danach ohne Nachmultiplikation dasselbe Ergebnis: Das RC-Modell ist linear in
+    /// Leitwerten, Kapazitäten und Lasten, und über den Flächenschlüssel folgen Speichermasse,
+    /// Luftvolumen, innere Gewinne und f_IW·A_f der Zonenfläche. Den Faktor liefert die Fassade
+    /// selbst (<c>GebaeudeBedarfCtrl.Hochrechnungsfaktor</c>), er wird hier nicht nachgerechnet.
+    /// Faktor 1 ist der Grenzfall darunter.</para>
+    ///
     /// <para><b>Der Grenzfall:</b> Mit diesem Satz rechnet der Bauteilweg dieselben Reihen wie
     /// der Klassenweg, bis auf die Reihenfolge der Summen (Nachweis
     /// <c>GebaeudeBauteilwegLaufTests</c>). Zwei benannte Ausnahmen, beide nur mit Schalter
@@ -69,19 +81,32 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Bildet aus der Gebäudezeile <paramref name="g"/> EINE Zone mit Bauteilen ohne
-        /// Schichten (Regeln: <see cref="GebaeudeZonenuebernahme"/>). Liest die Zeile, schreibt
-        /// sie nicht.
+        /// Schichten, ohne Hochrechnung (Faktor 1 — der Grenzfall; Regeln:
+        /// <see cref="GebaeudeZonenuebernahme"/>). Liest die Zeile, schreibt sie nicht.
         /// </summary>
-        internal static GebaeudeZonensatz AlsEineZone(ProjektGebaeudeModel g)
+        internal static GebaeudeZonensatz AlsEineZone(ProjektGebaeudeModel g) => AlsEineZone(g, 1.0);
+
+        /// <summary>
+        /// Bildet aus der Gebäudezeile <paramref name="g"/> EINE Zone mit Bauteilen ohne
+        /// Schichten, auf die Projektfläche hochgerechnet (Regeln:
+        /// <see cref="GebaeudeZonenuebernahme"/>): jede Bauteilfläche und jedes ψ·L mal
+        /// <paramref name="faktor"/>, die Zone mit der Nutzfläche <paramref name="faktor"/> ×
+        /// Nutzfläche des Gebäudes. Liest die Zeile, schreibt sie nicht.
+        /// </summary>
+        /// <param name="g">Die Gebäudezeile (Klassenweg, U-Wert-Gruppen).</param>
+        /// <param name="faktor">Der Hochrechnungsfaktor der Fassade (E8) — größer null und endlich.</param>
+        internal static GebaeudeZonensatz AlsEineZone(ProjektGebaeudeModel g, double faktor)
         {
             if (g == null) throw new ArgumentNullException(nameof(g));
+            if (!(faktor > 0.0) || double.IsInfinity(faktor))
+                throw new ArgumentOutOfRangeException(nameof(faktor), faktor, "Der Hochrechnungsfaktor ist nicht größer null oder nicht endlich.");
 
             var bauteile = new List<BauteilEingang>();
 
-            // Σψ·L des Gebäudes — dieselbe Bildung wie im Eingangsbauer.
-            double psiL = g.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand * g.Abmessung_Anschluß_Fenster_Wand
+            // Σψ·L des Gebäudes — dieselbe Bildung wie im Eingangsbauer, hochgerechnet.
+            double psiL = faktor * (g.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand * g.Abmessung_Anschluß_Fenster_Wand
                         + g.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach * g.Abmessung_Anschluß_Wand_Dach
-                        + g.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke * g.Abmessung_Anschluß_Außenwand_Kellerdecke;
+                        + g.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke * g.Abmessung_Anschluß_Außenwand_Kellerdecke);
             bool wand = g.Flaeche_Außenwand > 0.0;
             bool sonstiges = g.Sonstige_Flaechen > 0.0;
             double psiViertel = psiL / 4.0;
@@ -89,23 +114,23 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < 4; i++)
                 if (wand)
                     bauteile.Add(new BauteilEingang("Außenwand " + Richtungen[i], Bauteilart.Aussenwand,
-                        g.Flaeche_Außenwand / 4.0, Bauteilrand.Aussenluft, g.k_Wert_Außenwand,
+                        faktor * g.Flaeche_Außenwand / 4.0, Bauteilrand.Aussenluft, g.k_Wert_Außenwand,
                         neigungGrad: NEIGUNG_SENKRECHT, azimutGrad: Azimute[i], psiL_WK: psiViertel));
 
             for (int i = 0; i < 4; i++)
                 if (sonstiges)
                     bauteile.Add(new BauteilEingang("Sonstiges " + Richtungen[i], Bauteilart.Sonstiges,
-                        g.Sonstige_Flaechen / 4.0, Bauteilrand.Aussenluft, g.k_Wert_Sonstiges,
+                        faktor * g.Sonstige_Flaechen / 4.0, Bauteilrand.Aussenluft, g.k_Wert_Sonstiges,
                         neigungGrad: NEIGUNG_SENKRECHT, azimutGrad: Azimute[i],
                         psiL_WK: wand ? 0.0 : psiViertel));
 
             if (g.Dachflaeche > 0.0)
-                bauteile.Add(new BauteilEingang("Dach", Bauteilart.Dach, g.Dachflaeche, Bauteilrand.Aussenluft,
+                bauteile.Add(new BauteilEingang("Dach", Bauteilart.Dach, faktor * g.Dachflaeche, Bauteilrand.Aussenluft,
                     g.k_Wert_Dachflaeche, neigungGrad: NEIGUNG_WAAGERECHT_OBEN,
                     psiL_WK: wand || sonstiges ? 0.0 : psiL));
 
             if (g.Grundflaeche > 0.0)
-                bauteile.Add(new BauteilEingang("Bodenplatte", Bauteilart.Bodenplatte, g.Grundflaeche,
+                bauteile.Add(new BauteilEingang("Bodenplatte", Bauteilart.Bodenplatte, faktor * g.Grundflaeche,
                     RandAusGrund(g.Grundflaeche_Randbedingung), g.k_Wert_Grundflaeche,
                     neigungGrad: NEIGUNG_WAAGERECHT_UNTEN,
                     psiL_WK: wand || sonstiges || g.Dachflaeche > 0.0 ? 0.0 : psiL));
@@ -115,11 +140,11 @@ namespace WindowsFormsApplication1
             double[] fenster = { g.Fensterflaeche_Nord, ost, g.Fensterflaeche_Sued, west };
             for (int i = 0; i < 4; i++)
                 if (fenster[i] > 0.0)
-                    bauteile.Add(new BauteilEingang("Fenster " + Richtungen[i], Bauteilart.Fenster, fenster[i],
+                    bauteile.Add(new BauteilEingang("Fenster " + Richtungen[i], Bauteilart.Fenster, faktor * fenster[i],
                         Bauteilrand.Aussenluft, g.k_Wert_Fenster,
                         neigungGrad: NEIGUNG_SENKRECHT, azimutGrad: Azimute[i]));
 
-            return new GebaeudeZonensatz(0, ZONE_BEZEICHNUNG, bauteile.AsReadOnly());
+            return new GebaeudeZonensatz(0, ZONE_BEZEICHNUNG, bauteile.AsReadOnly(), faktor * g.Nutzflaeche);
         }
 
         /// <summary>

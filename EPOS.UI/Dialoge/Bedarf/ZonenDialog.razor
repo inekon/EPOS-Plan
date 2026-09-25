@@ -1,0 +1,364 @@
+﻿@* ZONENDIALOG - EINE Zone eines Projektgebaeudes in der Grundform (Gebaeudesimulation G3, Welle D2;
+   Mehrzonenkonzept 5.1, Softwarearchitektur 3.2: Ueberlagerung der Ebene 3 im Gebaeudeeditor).
+
+   GRUNDFORM (G3): Bezeichnung und Nutzflaeche der Zone (leer = Nutzflaeche des Gebaeudes, eine
+   Herleitungszeile nennt den Wert und den Flaechenschluessel), darunter die Bauteile als
+   Zeilenraster (Art, Bezeichnung, A, U, Azimut, Neigung, Randbedingung, Aufbau) mit je zwei
+   IMMER sichtbaren Zeilenknoepfen (oeffnen, entfernen), der Abschlusszeile "+ Neues Bauteil ..."
+   und dem Summenfuss (Sigma A je Gruppe, H_T). Mehrzonenfelder und Luftaustausch kommen mit G6b.
+
+   DIE ZEILE IST NUR ANZEIGE. Bearbeitet wird ein Bauteil im Bauteildialog (Ueberlagerung der
+   Ebene 4); dessen OK uebernimmt die Zeile in DIESEN Arbeitsstand, geschrieben wird erst mit
+   dem OK des Gebaeudeeditors (Softwarearchitektur 3.3). Eine neue Zeile traegt eine negative Id.
+
+   PRUEFREGELN (Mehrzonenkonzept 5.3, Ebene Zone) genau einmal im Rueckruf der Leiste: Name,
+   Nutzflaeche groesser null. OK gibt den Arbeitsstand zurueck, Abbrechen, Esc und das Kreuz
+   geben null. Esc kaskadiert: Solange der Bauteildialog steht, wertet er Esc selbst aus. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-zonendialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <Formularraster>
+        <KindInhalt>
+            <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@_stand.Bezeichner" Hoechstlaenge="80"
+                      WertChanged="w => _stand.Bezeichner = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelNutzflaeche" Einheit="m²" Min="0"
+                        Platzhalter="@NutzflaechePlatzhalter"
+                        Feldname="@Texte.LabelNutzflaeche" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.Nutzflaeche" WertChanged="w => _stand.Nutzflaeche = w" />
+        </KindInhalt>
+    </Formularraster>
+    <Herleitungszeile Text="@NutzflaecheZeile" />
+
+    <Gruppenkopf Titel="@Texte.GruppeBauteile">
+        <KindInhalt>
+            <Zeilenraster Bezeichnung="@Texte.GruppeBauteile" Spalten="@Spalten" Spaltenmass="@SPALTENMASS"
+                          Summen="@Summen">
+                <KindInhalt>
+                    @for (int i = 0; i < _stand.Bauteile.Count; i++)
+                    {
+                        int index = i;
+                        BauteilDaten b = _stand.Bauteile[index];
+                        <div class="epos-zr-zeile epos-zonenbauteil" role="row" @key="b.Id">
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@ArtText(b.Bauteilart)</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@b.Bezeichner</span></div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@Zahl(b.Flaeche, 2)</div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@UText(b)</div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@Winkel(b.Azimut)</div>
+                            <div class="epos-zr-zelle epos-zahl" role="cell">@NeigungText(b)</div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@RandText(b)</span></div>
+                            <div class="epos-zr-zelle" role="cell"><span class="epos-zr-text">@(b.AufbauText.Length > 0 ? b.AufbauText : "—")</span></div>
+                            <div class="epos-zr-zelle" role="cell">
+                                <span class="epos-zr-aktionen">
+                                    <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.KnopfOeffnen"
+                                            aria-label="@(b.Bezeichner + " – " + Texte.KnopfOeffnen)"
+                                            @onclick="() => BauteilOeffnen(index)"><span aria-hidden="true">✎</span></button>
+                                    <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.KnopfEntfernen"
+                                            aria-label="@(b.Bezeichner + " – " + Texte.KnopfEntfernen)"
+                                            @onclick="() => BauteilEntfernen(index)"><span aria-hidden="true">✕</span></button>
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </KindInhalt>
+                <AbschlussZeile>
+                    <div class="epos-zr-neuzeile" role="row">
+                        @if (_stand.Bauteile.Count == 0)
+                        {
+                            <p class="epos-leisezeile">@Texte.Leer</p>
+                        }
+                        <button type="button" class="epos-textknopf" @onclick="BauteilNeu">@Texte.NeuesBauteil</button>
+                    </div>
+                </AbschlussZeile>
+            </Zeilenraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiErgebnis" />
+
+    @* --- Ueberlagerung: der Bauteildialog (Ebene 4) ------------------------ *@
+    <Ueberlagerung Offen="@(_bauteil is not null)" Titel="@(_bauteilNeu ? BauteilTexte.TitelNeu : BauteilTexte.Titel)"
+                   Geschlossen="() => BauteilFertig(null)">
+        <KindInhalt>
+            @if (_bauteil is not null)
+            {
+                <BauteilDialog Bauteil="@_bauteil" Neu="@_bauteilNeu" TitelAnzeigen="false"
+                               Projektaufbauten="@Projektaufbauten" Katalogaufbauten="@Katalogaufbauten"
+                               Aufbau="@Aufbau" Texte="@BauteilTexte" Geschlossen="BauteilFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Die Spuren des Bauteilrasters: acht Spalten und die Aktionsspalte.</summary>
+    private const string SPALTENMASS =
+        "minmax(0, 1.2fr) minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 0.7fr) minmax(0, 1.3fr) minmax(0, 1.5fr) auto";
+
+    /// <summary>Die Zone beim Öffnen — sie bleibt UNBERÜHRT; der Dialog arbeitet auf einer Kopie.</summary>
+    [Parameter] public ZoneDaten Zone { get; set; } = new();
+
+    /// <summary>Die Nutzfläche des Gebäudes [m²] — Platzhalter und Herleitung der leeren Zonenfläche.</summary>
+    [Parameter] public double? NutzflaecheGebaeude { get; set; }
+
+    /// <summary>Die Aufbauten des Projekts zur Wahl im Bauteildialog.</summary>
+    [Parameter] public IReadOnlyList<AufbauWahl> Projektaufbauten { get; set; } = Array.Empty<AufbauWahl>();
+
+    /// <summary>Die Aufbauten des Stammkatalogs zur Wahl im Bauteildialog.</summary>
+    [Parameter] public IReadOnlyList<AufbauWahl> Katalogaufbauten { get; set; } = Array.Empty<AufbauWahl>();
+
+    /// <summary>Die Schichten eines Aufbaus zum Ansehen; <c>null</c> = keine Ansicht.</summary>
+    [Parameter] public Func<AufbauWahl, AufbauAnsichtDaten?>? Aufbau { get; set; }
+
+    /// <summary>Das Ergebnis: der Arbeitsstand nach OK; <c>null</c> bei Abbrechen, Esc und dem Kreuz.</summary>
+    [Parameter] public EventCallback<ZoneDaten?> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public ZonenDialogTexte Texte { get; set; } = new();
+
+    /// <summary>Die Anzeigetexte des Bauteildialogs (ein Bündel).</summary>
+    [Parameter] public BauteilDialogTexte BauteilTexte { get; set; } = new();
+
+    /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Zone.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private ZoneDaten _stand = new();
+    private string _meldung = "";
+    private readonly HashSet<string> _fehlerfelder = new();
+
+    private BauteilDaten? _bauteil;
+    private bool _bauteilNeu;
+    private int _bauteilIndex = -1;
+
+    /// <summary>Der Arbeitsstand. Prüfhilfe für die Tests.</summary>
+    public ZoneDaten Arbeitsstand => _stand;
+
+    /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht der Bauteildialog? Prüfhilfe für die Tests.</summary>
+    public bool BauteilOffen => _bauteil is not null;
+
+    protected override void OnInitialized()
+    {
+        _stand = (Zone ?? new ZoneDaten()).Kopie();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ZONE, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt den Arbeitsstand
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ZonenKiSicht? _kiSicht;
+
+    private ZonenKiSicht KiSicht()
+    {
+        return _kiSicht ??= new ZonenKiSicht
+        {
+            BezeichnungLesen = () => _stand.Bezeichner,
+            BezeichnungSetzen = w => _stand.Bezeichner = w ?? "",
+            NutzflaecheLesen = () => _stand.Nutzflaeche,
+            NutzflaecheSetzen = w => _stand.Nutzflaeche = w,
+            BauteileLesen = () => _stand.Bauteile,
+            ArtText = ArtText
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> ist dieselbe Prüfung wie am
+    /// OK-Knopf. Bauteile anlegen, öffnen und entfernen bleiben Klicks des Anwenders; einen Speicherweg
+    /// hat die Maske nicht — das OK des Gebäudeeditors schreibt.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Pruefen() ?? ""
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    private IReadOnlyList<string> Spalten => new[]
+    {
+        Texte.SpalteArt, Texte.SpalteBezeichnung, Texte.SpalteFlaeche, Texte.SpalteU, Texte.SpalteAzimut,
+        Texte.SpalteNeigung, Texte.SpalteRand, Texte.SpalteAufbau, Texte.SpalteAktionen
+    };
+
+    private string NutzflaechePlatzhalter
+        => NutzflaecheGebaeude is double a
+            ? string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterNutzflaeche, Zahl(a, 2))
+            : "";
+
+    private string NutzflaecheZeile
+        => string.Format(CultureInfo.CurrentCulture, Texte.ZeileNutzflaeche, NutzflaecheGebaeude is double a ? Zahl(a, 2) : "—");
+
+    private static string ArtText(string art) => BauteilaufbauCtrl.BauteilartText(art);
+
+    private string UText(BauteilDaten b)
+    {
+        if (b.UWert is double u) return Zahl(u, 3);
+        if (b.UAufbau is double ua) return Zahl(ua, 3) + " (" + Texte.UAusAufbau + ")";
+        return "—";
+    }
+
+    private static string Winkel(double? w) => w is double x ? Zahl(x, 0) + "°" : "—";
+
+    private static string NeigungText(BauteilDaten b)
+        => b.Neigung is double n ? Zahl(n, 0) + "°" : "(" + Zahl(GebaeudeZonenCtrl.NeigungVorgabe(b.Bauteilart), 0) + "°)";
+
+    private string RandText(BauteilDaten b) => b.Randbedingung switch
+    {
+        null => GebaeudeZonenCtrl.LeerHeisstInnen(b.Bauteilart) ? BauteilTexte.RandVorgabeInnen : BauteilTexte.RandVorgabeAussen,
+        DbWerte.RANDBEDINGUNG_AUSSENLUFT => BauteilTexte.RandAussenluft,
+        DbWerte.RANDBEDINGUNG_ERDREICH => BauteilTexte.RandErdreich,
+        DbWerte.RANDBEDINGUNG_UNBEHEIZT => BauteilTexte.RandUnbeheizt,
+        _ => b.Randbedingung
+    };
+
+    /// <summary>
+    /// Der Summenfuß: Σ A je Gruppe der Hülle (gruppiert im Kern, <see cref="Gebaeudehuellbilanz.Zonenzeilen"/>)
+    /// und H_T = Σ U·A + Σ ψ·L.
+    /// </summary>
+    private IReadOnlyList<(string Text, bool Stark)> Summen
+    {
+        get
+        {
+            if (_stand.Bauteile.Count == 0) return Array.Empty<(string, bool)>();
+            var c = CultureInfo.CurrentCulture;
+            IReadOnlyList<Huellzeile> zeilen = Zonensummen.Zeilen(_stand);
+            var liste = new List<(string, bool)>();
+            foreach (Huellzeile z in zeilen)
+                if ((z.Groesse ?? 0.0) > 0.0)
+                    liste.Add((string.Format(c, Texte.SummeGruppe, Zonensummen.Gruppentext(z.Bauteil), Zahl(z.Groesse, 2)), false));
+            liste.Add((string.Format(c, Texte.SummeHT, Zahl(Zonensummen.HT(_stand), 1)), true));
+            return liste;
+        }
+    }
+
+    private static string Zahl(double? w, int stellen) => GebaeudeArbeitsstand.Zahl(w, stellen);
+
+    // =================================================================================
+    // Bauteile: oeffnen, anlegen, entfernen - alles im Arbeitsstand
+    // =================================================================================
+
+    private void BauteilOeffnen(int index)
+    {
+        if (index < 0 || index >= _stand.Bauteile.Count) return;
+        _bauteilIndex = index;
+        _bauteilNeu = false;
+        _bauteil = _stand.Bauteile[index];
+    }
+
+    private void BauteilNeu()
+    {
+        int id = Math.Min(0, _stand.Bauteile.Count == 0 ? 0 : _stand.Bauteile.Min(b => b.Id)) - 1;
+        _bauteilIndex = -1;
+        _bauteilNeu = true;
+        _bauteil = new BauteilDaten { Id = id, Herkunft = DbWerte.HERKUNFT_MANUELL };
+    }
+
+    private void BauteilEntfernen(int index)
+    {
+        if (index < 0 || index >= _stand.Bauteile.Count) return;
+        _stand.Bauteile.RemoveAt(index);
+        _meldung = "";
+    }
+
+    /// <summary>Der Bauteildialog ist zu: mit Ergebnis übernimmt die Zeile (neu angehängt), sonst bleibt alles.</summary>
+    private void BauteilFertig(BauteilDaten? ergebnis)
+    {
+        BauteilDaten? offen = _bauteil;
+        _bauteil = null;
+        if (ergebnis is null || offen is null) return;
+        if (_bauteilIndex >= 0 && _bauteilIndex < _stand.Bauteile.Count) _stand.Bauteile[_bauteilIndex] = ergebnis;
+        else _stand.Bauteile.Add(ergebnis);
+        _bauteilIndex = -1;
+        _meldung = "";
+    }
+
+    // =================================================================================
+    // Pruefen und Schliessen
+    // =================================================================================
+
+    private void FehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        if (e.Fehlerhaft) _fehlerfelder.Add(e.Feld);
+        else _fehlerfelder.Remove(e.Feld);
+    }
+
+    /// <summary>Die Prüfregeln der Zone — genau einmal, für OK und Assistent. <c>null</c> = gültig.</summary>
+    private string? Pruefen()
+    {
+        if (_fehlerfelder.Count > 0)
+            return string.Format(CultureInfo.CurrentCulture, BauteilTexte.MeldungUngueltig, _fehlerfelder.First());
+        string name = (_stand.Bezeichner ?? "").Trim();
+        if (name.Length == 0) return Texte.MeldungName;
+        if (_stand.Nutzflaeche is double a && (!(a > 0.0) || double.IsInfinity(a)))
+            return string.Format(CultureInfo.CurrentCulture, Texte.MeldungNutzflaeche, name);
+        return null;
+    }
+
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Abbrechen();
+        string? fehler = Pruefen();
+        if (fehler is not null)
+        {
+            _meldung = fehler;
+            return Task.CompletedTask;
+        }
+        _meldung = "";
+        _stand.Bezeichner = _stand.Bezeichner.Trim();
+        return Geschlossen.InvokeAsync(_stand.Kopie());
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Esc kaskadiert: der offene Bauteildialog wertet ihn selbst aus.
+        if (e.Key != "Escape" || _bauteil is not null) return Task.CompletedTask;
+        return Abbrechen();
+    }
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+}

@@ -6,6 +6,10 @@ Außenbauteilgruppe nach (27)–(28c) ausgeschrieben (A4, A7a, B6, 10.4, 10.5)
 **Nachgezogen 23.09.2026 mit E32** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.37): Ohne
 wirksame Kühlung hat der Löser keine obere Grenze — das Gebäude läuft frei, es gibt keine
 Kühlreihe, und die Überhitzungsstunden zählen gegen `Maximaleraumtemperatur` (7.1, 8.1, 8.2, 9).
+**Nachgezogen 25.09.2026 mit dem Abschluss von G3** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+N1.45, N1.46): Schritt B ist umgesetzt, nicht mehr Vorschau (Kapitel 3); ein Gebäude mit Zone rechnet
+ohne Nachmultiplikation (8.3, E40); der Nachweis des Bauteilwegs steht in 10.3, die Testbeispiele 10
+und 4 als benannte Abweichungen in Kapitel 11 (Zeilen 20 und 21).
 **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet; Rev. 1 vom 16.09.2026**
 Rev. 2 zieht den Fensterzweig nach E14 durch alle Schritte (A7a, Schritt C, E7, θ_op, stationäre
 Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und getrennten Heiz- und
@@ -463,10 +467,12 @@ G_cIW = 1/R_conv,IW, G_rad = 1/R_rad und G_ext = 1/R_ext gebildet [W/K].
 
 ---
 
-## 3. Schritt B — Bauteilweg (Stufe G3, Vorschau)
+## 3. Schritt B — Bauteilweg (Stufe G3)
 
-Liegt für ein Gebäude ein Bauteilkatalog mit Schichtaufbauten vor, ersetzt der Bauteilweg die
-Schritte A4 bis A6. Er ist das normkonforme Verfahren; hier steht nur die Schrittfolge, die
+**Umgesetzt mit G3 (25.09.2026):** `Bauteilreduktion` und `ErsatzparameterRC.AusBauteilweg` im
+Modul `Gebaeude/`. Trägt ein Gebäude genau eine Zone, ersetzt der Bauteilweg die Schritte A4 bis A6
+(Datenlage, A14); ohne Zone gilt Schritt A, zwei Zonen werden bis G6 benannt abgelehnt. Er ist das
+normkonforme Verfahren; hier steht nur die Schrittfolge, die
 Herleitung steht in der Richtlinie (Abschnitt 6.3, Seiten 11–14) und der Nachweisplan im
 Konzept 4.3 und in
 [`Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md`](Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md),
@@ -488,6 +494,13 @@ Die Richtlinie nennt **keine** Soll-RC-Werte zum Abgleich; der Nachweis lautet: 
 den Bauteiltabellen der Testräume rechnen, damit simulieren und die Ergebnisreihen im Normband
 treffen (Kapitel 10). Mit dem Bauteilweg folgt der U-Wert je Bauteil aus den Schichten und
 überschreibt `k_Wert_*` in der Anzeige mit Herkunftskennzeichen.
+
+**Festlegungen der Umsetzung** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.46):
+Ein masseloses opakes Bauteil geht wie ein Fenster ein (R₁ = R/6 nach (25)/(26)), ein masseloses
+Innenbauteil trägt nur Fläche; α_kon je Bauteil geht als Σ(α·A) in die Gruppe ein (Kapitel 11,
+Zeile 20); eine leere Randbedingung heißt an Innenwand und Decke „innerhalb der Zone", sonst
+Außenluft; ein unbeheizter Nachbarraum rechnet mit der Kellertemperatur des Gebäudes bis G6b; solare
+Gewinne je Fensterbauteil mit Azimut und Neigung, θ_eq je Bauteil nach (41).
 
 ---
 
@@ -1248,6 +1261,11 @@ Schemaschritte je Kennzahl stehen im
 
 ### 8.3 Skalierung und Verbrauchs-Rückrechnung (Entscheid E8, letzter Schritt)
 
+**Ein Gebäude mit Zone (Bauteilweg, G3) rechnet mit dem Faktor 1** — seine Hülle ist die echte; eine
+Verbrauchs- oder Flächenangabe steht nur als Hinweis im Protokoll. Die Übernahme „Gebäude als eine
+Zone übernehmen" rechnet Flächen und ψ·L einmal mit dem bisherigen Faktor hoch (E40,
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.45). Für Gebäude ohne Zone gilt:
+
 Die Simulation läuft mit den **Katalogdaten** des Gebäudes. Erst danach wird skaliert:
 
 ```
@@ -1646,6 +1664,20 @@ Der Nachweis im Einzelnen steht in
 und
 [`Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md`](Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md).
 
+**Der Bauteilweg (Schritt B, G3, 25.09.2026).** Lokal gegen die AixLib-Daten
+(`BauteilreduktionNormTests`, in der CI schweigend; die Bauteiltabellen zieht
+`Referenzlaeufe/Skripte/vdi6007_bauteiltabellen.py` aus der lokalen Normkopie, das Skript enthält
+keine Normzahl): Die Reduktion aus den Bauteiltabellen trifft die Parameter der Testräume in **12 von
+12** Testbeispielen relativ ≤ 10⁻³, und die Normfälle mit diesen Parametern bringen dasselbe
+Bandergebnis wie mit den Parametern der AixLib — **11 von 12 im Band**, Fall 11 mit seiner benannten
+Grenze. Drei Stellen sind benannt, keine liegt an den Formeln: FB1 in Testbeispiel 1 trifft die
+Innengruppe nur auf rund 3·10⁻⁴ (Eingangsdaten der AixLib); Testbeispiel 4 führt für die Decke DE2
+einen Druckfehler, der Nachweis nimmt das Bauteil aus Testbeispiel 3 (Kapitel 11, Zeile 21);
+Testbeispiel 10 liegt mit den α-Werten der Tabelle in einzelnen Stunden höchstens 0,088 K außerhalb
+des Bands, mit dem konvektiven Übergang der AixLib, der um 15,7 % kräftiger ist, vollständig darin
+(Kapitel 11, Zeile 20). Der Grenzfall Bauteilweg = Klassenweg hält an den 15 Testgebäuden bis
+4,7·10⁻¹⁶ relativ, im Jahreslauf an fünf Gebäuden mit je acht Varianten bis 1,3·10⁻¹⁴.
+
 **Die Normzahlen werden nicht ausgeliefert.** Sie sind ein internes Prüfmittel; der
 ausgelieferte Test führt nur die berechneten Abweichungen und das Bestanden-Kriterium.
 
@@ -1727,6 +1759,8 @@ steht in der Löschliste der Stufe GA (Umsetzungskonzept 6).
 | 17 | **Innerer Strahlungsaustausch über A_rad = min(A_AW,ges, A_IW)** | Gl. (29)/(31): Austausch der beiden Oberflächengruppen aus den Flächen beider Gruppen | EPOS-Festlegung des Klassenwegs ohne Quelle in der Richtlinie (A2, A6); die Bezugsfläche zählt nach E14 die Fensterfläche mit. Umstellung auf (29)/(31) mit **G3** (Konzept N1.19). Die Wirkung wird in **G0** einmal gemessen: derselbe Fall mit beiden Bildungen von R_rad | A2, A6, Konzept N1.19 |
 | 18 | **Opake Außenflächen des Klassenwegs ohne Orientierung** (Stufe G2) | (32)–(38) je Außenfläche mit ihrer eigenen Orientierung und Neigung | `Tab_Gebaeude` führt die opaken Flächen nur als Summen. Mit Schalter `Aussenbauteile_Strahlung` gelten Außenwand und Sonstiges als senkrecht (φ = 0,5) mit dem Mittel der Einstrahlung auf die vier Fassaden, das Dach als waagerecht (φ = 1,0) mit der Globalstrahlung; die Grundfläche bleibt ohne Strahlungsterm. Mit dem Bauteilweg (G3) je Fläche | E5, Konzept 4.4 |
 | 19 | **Hysterese der Sommerlüftung auch auf den Außenabstand** (Stufe G2) | — (die Sommerlüftung ist keine Regel der Richtlinie, sondern EPOS-Ergänzung, Konzept 4.4) | Ohne Hysterese auf den Abstand θ_air − θ_out schaltete die Regel an Abenden mit gerade 2 K Abstand Stunde für Stunde; zurückgeschaltet wird bei θ_air < 22 °C oder θ_out > θ_air − 1 K | 7.2, F-P4 |
+| 20 | **Konvektiver Übergang der Außengruppe als Σ(α_kon·A) der Bauteile** (Stufe G3) — **Testbeispiel 10** liegt damit in einzelnen Stunden höchstens 0,088 K außerhalb des Bands | Blatt 1 gibt die konvektiven Werte je Bauteil vor; das Validierungsmodell der AixLib zu Testbeispiel 10 rechnet die Außengruppe mit einem um 15,7 % höheren konvektiven Übergang, ihren Restwiderstand aber mit den α-Werten der Tabelle | Der Bauteilweg folgt der Tabelle und bildet die Summe über die Bauteile der Gruppe — ein zweiter, nur für einen Testfall passender Übergang wäre ein Hilfskonstrukt. Benannte Abweichung wie Fall 11; welcher α_kon für eine Trennfläche in der Außengruppe gilt, klärt G6 (Mehrzonenkonzept 2.2, Punkt 4) | 3, 10.3; Konzept N1.46 |
+| 21 | **Druckfehler der Richtlinie in Testbeispiel 4** (Decke DE2) — keine Abweichung des Rechenwegs | Die Bauteiltabelle führt für eine Dämmschicht der Decke eine Wärmeleitfähigkeit, die weder zu ihrem Materialnamen noch zu derselben Schicht in Testbeispiel 3 passt, und eine verschobene Rohdichte | Der Normnachweis nimmt das Bauteil aus Testbeispiel 3, wie die AixLib, die Testbeispiel 4 mit den Raumparametern von Testbeispiel 3 rechnet, und weist die Abweichung des gedruckten Aufbaus daneben aus | 10.3; Konzept N1.46 |
 
 ---
 
