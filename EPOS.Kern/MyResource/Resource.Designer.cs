@@ -18032,6 +18032,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse ähnelt.
+        /// </summary>
+        public static string GEBA_LBL_BAUALTERSKLASSE {
+            get {
+                return ResourceManager.GetString("GEBA_LBL_BAUALTERSKLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr ähnelt.
         /// </summary>
         public static string GEBA_LBL_BAUJAHR {
@@ -19202,6 +19211,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_BAUALTERSKLASSE {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_BAUALTERSKLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauart : ähnelt.
         /// </summary>
         public static string GEBK_LBL_BAUART {
@@ -19864,6 +19882,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_LBL_WOHNFLAECHE {
             get {
                 return ResourceManager.GetString("GEBK_LBL_WOHNFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr muss zwischen {0} und {1} liegen. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_BAUJAHR", resourceCulture);
             }
         }
         
@@ -21927,6 +21954,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gelesen aus „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bildet der Gebäudeeditor aus der Bauart ähnelt.
         /// </summary>
         public static string GIMP_BELEG_BAUWEISE_AUS_BAUART {
@@ -22616,6 +22652,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FELD_BAUART {
             get {
                 return ResourceManager.GetString("GIMP_FELD_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baujahr ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_BAUJAHR", resourceCulture);
             }
         }
         
@@ -25469,6 +25514,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZU_VIELE_ZONEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr {0} ist keine ganze Jahreszahl von {1} bis {2}. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_BAUJAHR_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_BAUJAHR_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -34415,6 +34469,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BAUALTERSKLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BAUALTERSKLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUART_ERL {
@@ -34424,7 +34487,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Es steht neben der Baualtersklasse und ändert weder eine Vorgabe noch die Rechnung. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUJAHR_ERL {
             get {

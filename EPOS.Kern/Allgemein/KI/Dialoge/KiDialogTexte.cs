@@ -1012,6 +1012,8 @@
         internal static string GebkBeschreibungErl => MyResource.Resource.KI_DLG_GEBK_BESCHREIBUNG_ERL;
         internal static string GebkArtName => MyResource.Resource.GEBK_LBL_GEBAEUDEART;
         internal static string GebkArtErl => MyResource.Resource.KI_DLG_GEBK_ART_ERL;
+        internal static string GebkBaualtersklasseName => MyResource.Resource.GEBK_LBL_BAUALTERSKLASSE;
+        internal static string GebkBaualtersklasseErl => MyResource.Resource.KI_DLG_GEBK_BAUALTERSKLASSE_ERL;
         internal static string GebkBaujahrName => MyResource.Resource.GEBK_LBL_BAUJAHR;
         internal static string GebkBaujahrErl => MyResource.Resource.KI_DLG_GEBK_BAUJAHR_ERL;
         internal static string GebkVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;

@@ -111,6 +111,7 @@ namespace WindowsFormsApplication1
                 ["LabelGebaeudetyp"] = Text_("GEBK_LBL_GEBAEUDETYP", "Gebäudetyp :"),
                 ["LabelBeschreibung"] = Text_("GEBK_LBL_BESCHREIBUNG", "Beschreibung :"),
                 ["LabelGebaeudeart"] = Text_("GEBK_LBL_GEBAEUDEART", "Gebäudeart :"),
+                ["LabelBaualtersklasse"] = Text_("GEBK_LBL_BAUALTERSKLASSE", "Baualtersklasse :"),
                 ["LabelBaujahr"] = Text_("GEBK_LBL_BAUJAHR", "Baujahr :"),
                 ["LabelVerwendung"] = Text_("GEBK_LBL_VERWENDUNG", "Verwendung :"),
                 ["LabelBauart"] = Text_("GEBK_LBL_BAUART", "Bauart :"),
@@ -151,6 +152,7 @@ namespace WindowsFormsApplication1
                 // auch das Stammblatt der Gebaeudeverwaltung nimmt (#465).
                 ["MeldungZahlFehlt"] = p.MeldungZahlFehlt,
                 ["MeldungNameFehlt"] = p.MeldungNameFehlt,
+                ["MeldungBaujahr"] = p.MeldungBaujahr,
                 ["MeldungFerienWinter"] = p.MeldungFerienWinter,
                 ["MeldungFerienOstern"] = p.MeldungFerienOstern,
                 ["MeldungFerienSommer"] = p.MeldungFerienSommer,
@@ -192,6 +194,9 @@ namespace WindowsFormsApplication1
             p.MeldungFerienOstern = Text_(Ferienzeit.MELDUNG_OSTERN, p.MeldungFerienOstern);
             p.MeldungFerienSommer = Text_(Ferienzeit.MELDUNG_SOMMER, p.MeldungFerienSommer);
             p.MeldungFerienHerbst = Text_(Ferienzeit.MELDUNG_HERBST, p.MeldungFerienHerbst);
+
+            p.MeldungBaujahr = Text_("GEBK_MSG_BAUJAHR", p.MeldungBaujahr);
+            p.FeldBaujahr = GebaeudeArbeitsstand.Feld(Text_("GEBK_LBL_BAUJAHR", p.FeldBaujahr));
 
             p.FeldWohnflaeche = Text_("GEBK_FELD_WOHNFLAECHE", p.FeldWohnflaeche);
             p.FeldFlaecheNutzer = Text_("GEBK_FELD_FLAECHE_NUTZER", p.FeldFlaecheNutzer);
@@ -560,6 +565,8 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
+                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt).
+                Baujahr = m.Baujahr,
                 // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
@@ -719,6 +726,8 @@ namespace WindowsFormsApplication1
             m.Raumhoehe = d.Raumhoehe ?? 0;
 
             m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(d.Baualtersklasse).ToString();
+            // G4a: das Baujahr NULL-erhaltend - leer bleibt NULL ("unbekannt"), nie 0.
+            m.Baujahr = d.Baujahr;
             m.Gebaeudeart = d.Gebaeudeart ?? "";
             m.Wohngebaeude_Nicht_Wohngebaeude = d.Verwendung ?? VERWENDUNGSWERTE[0];
 

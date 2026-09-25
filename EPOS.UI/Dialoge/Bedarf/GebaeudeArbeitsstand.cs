@@ -865,6 +865,12 @@ public sealed class GebaeudeArbeitsstand
         foreach (string feld in Fehlerfelder)
             return Huelle(t.MeldungUngueltig.Replace("{0}", feld));
 
+        // Das Baujahr (G4a): leer ist erlaubt (unbekannt), sonst gilt der Bereich der Spalte -
+        // dieselbe Grenze, an der die Datenbank mit ihrem CHECK abweist.
+        if (Stand.Baujahr is int jahr && (jahr < GebaeudeSchema.BAUJAHR_MIN || jahr > GebaeudeSchema.BAUJAHR_MAX))
+            return Huelle(string.Format(CultureInfo.CurrentCulture, p.MeldungBaujahr,
+                                        GebaeudeSchema.BAUJAHR_MIN, GebaeudeSchema.BAUJAHR_MAX));
+
         (double? wert, string name)[] pflicht =
         {
             (Stand.WohnflaecheGesamt, p.FeldWohnflaeche),
@@ -1121,6 +1127,7 @@ public sealed class GebaeudeArbeitsstand
 
         T(a.Typ, g.Typ); T(a.Beschreibung, g.Beschreibung); T(a.Gebaeudeart, g.Gebaeudeart);
         T(a.Verwendung, g.Verwendung); I(a.Baualtersklasse, g.Baualtersklasse); I(a.Bauart, g.Bauart);
+        I(a.Baujahr, g.Baujahr);
 
         Z(a.WohnflaecheGesamt, g.WohnflaecheGesamt); Z(a.FlaecheNutzer, g.FlaecheNutzer);
         Z(a.Waermegewinne, g.Waermegewinne); Z(a.Fensterdurchlassgrad, g.Fensterdurchlassgrad);
@@ -1459,6 +1466,12 @@ public sealed class GebaeudePrueftexte
 
     /// <summary><c>GEBK_MSG_FERIEN_HERBST</c>.</summary>
     public string MeldungFerienHerbst { get; set; } = "Fehler: Bei der Eingabe der Herbstferien!";
+
+    /// <summary><c>GEBK_MSG_BAUJAHR</c> — <c>{0}</c> und <c>{1}</c> sind die Grenzen der Spalte.</summary>
+    public string MeldungBaujahr { get; set; } = "Das Baujahr muss zwischen {0} und {1} liegen.";
+
+    /// <summary>Das Baujahr — die Beschriftung <c>GEBK_LBL_BAUJAHR</c> ohne Doppelpunkt (Feldname der Fehleingabe).</summary>
+    public string FeldBaujahr { get; set; } = "Baujahr";
 
     /// <summary><c>GEBK_FELD_WOHNFLAECHE</c>.</summary>
     public string FeldWohnflaeche { get; set; } = "Nutzfläche";

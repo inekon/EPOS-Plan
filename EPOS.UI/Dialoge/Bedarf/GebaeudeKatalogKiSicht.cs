@@ -218,6 +218,13 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Daten is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
     }
 
+    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt.</summary>
+    public int? Baujahr
+    {
+        get => Daten?.Baujahr;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Baujahr = value; }
+    }
+
     /// <summary>
     /// Die Verwendung als STEUERWERT (nicht als Anzeigetext): Sie entscheidet, aus
     /// welcher Liste die Gebäudearten kommen.

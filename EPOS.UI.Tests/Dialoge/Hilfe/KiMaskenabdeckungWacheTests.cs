@@ -191,10 +191,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // Welle #465: die Kenndaten des Stammblatts samt Wohnfläche und Bauart (Katalogfelder
         // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,
         // beschreibung); die übrigen Felder des Katalogeditors trägt GebaeudeStammblattFelder.
-        new("GebaeudeAdminDialog", 7),
+        // G4a Welle 3: dazu das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 7 → 8.
+        new("GebaeudeAdminDialog", 8),
         new("GebaeudeBedarfDialog", 2),
         new("GebaeudeDialog", 4),
-        new("GebaeudeKatalogDialog", 45),
+        // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
+        new("GebaeudeKatalogDialog", 46),
         new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
             "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
         new("GebaeudeStammblattFelder", 36, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +

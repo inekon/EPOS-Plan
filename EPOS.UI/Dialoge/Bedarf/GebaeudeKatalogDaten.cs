@@ -54,6 +54,13 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Index der Baualtersklasse (0 = 'A' … 20 = 'U').</summary>
     public int Baualtersklasse { get; set; }
 
+    /// <summary>
+    /// Das Baujahr (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) — eine Jahreszahl
+    /// 1500 … 2100 neben der Klasse; <c>null</c> = unbekannt. Es steuert weder eine Vorgabe noch die
+    /// Rechnung (die Vorgaben hängen an der Baualtersklasse).
+    /// </summary>
+    public int? Baujahr { get; set; }
+
     /// <summary>Index der Bauart (0 = leicht, 1 = schwer, 2 = sehr schwer).</summary>
     public int Bauart { get; set; } = 1;
 
