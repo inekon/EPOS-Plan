@@ -14,12 +14,15 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Wache über die beiden Word-Vorlagen im Repository</b> (Konzept Berichtsvorlagen,
-    /// Etappe BV-E0, 6.2, 6.3, Anhang B.3): die Stilvorlage des Generators
-    /// <c>Berichtsvorlage.docx</c> und die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c>,
-    /// beide erzeugt mit <c>Werkzeuge/Berichtsvorlage</c>.
+    /// <b>Die Wache über die drei Word-Vorlagen im Repository</b> (Konzept Berichtsvorlagen,
+    /// Etappen BV-E0 und BV-E1, 6.2, 6.3, Anhang B.3): die Stilvorlage des Generators
+    /// <c>Berichtsvorlage.docx</c>, die Standardvorlage <c>Berichtsvorlage_Standard.docx</c> in der
+    /// Stufe mit dem Sammelanker <c>{{bericht.inhalt}}</c> und die Beispielvorlage
+    /// <c>Berichtsvorlage_Beispiel.docx</c> im vollen Aufbau, alle drei erzeugt mit
+    /// <c>Werkzeuge/Berichtsvorlage</c>. Welche davon ausgeliefert werden, hält
+    /// <see cref="AuslieferungsvorlagenWacheTests"/>.
     ///
-    /// <para><b>Warum eine Wache.</b> Beide Dateien sind Binärdateien, die niemand im Diff
+    /// <para><b>Warum eine Wache.</b> Die Dateien sind Binärdateien, die niemand im Diff
     /// liest. Eine in Word gespeicherte Fassung kann still doppelte Stil-IDs, übersetzte
     /// Stilnamen oder zerlegte Platzhalter mitbringen — Word zeigt dann alles richtig an, der
     /// Validator aber meldet die Datei, und die Engine fände einen Platzhalter nicht mehr, der
@@ -32,8 +35,17 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _kultur.Dispose();
 
-        private const string STANDARD = "Berichtsvorlage.docx";
-        private const string BEISPIEL = "Berichtsvorlage_Beispiel.docx";
+        /// <summary>Der Ordner der Vorlagen, repo-relativ.</summary>
+        internal const string ORDNER_REPO = "WindowsFormsApplication1/Allgemein/Bericht/Vorlagen";
+
+        /// <summary>Die Stilvorlage des heutigen Generators — Rückfall des Codes und Quelle der Bereinigung.</summary>
+        internal const string STILVORLAGE = "Berichtsvorlage.docx";
+
+        /// <summary>Die Standardvorlage in der Stufe mit dem Sammelanker (BV-E1).</summary>
+        internal const string STANDARD = "Berichtsvorlage_Standard.docx";
+
+        /// <summary>Die Beispielvorlage im vollen Aufbau (Anhang B.3) — Anschauung bis BV-E2.</summary>
+        internal const string BEISPIEL = "Berichtsvorlage_Beispiel.docx";
 
         /// <summary>Die Stil-IDs, die der <c>WordBerichtGenerator</c> über <c>WordKontext.MitStil</c> anspricht.</summary>
         private static readonly string[] Pflichtstile =
@@ -49,7 +61,7 @@ namespace EPOS.Kern.Tests
 
         private static readonly Regex Kapitelmuster = new Regex(@"^\{\{kapitel\.([a-z_]+)(\|[a-z ]+)?\}\}$", RegexOptions.CultureInvariant);
 
-        /// <summary>Die Platzhalter des Rumpfs in Dokumentfolge (Anhang B.3).</summary>
+        /// <summary>Die Platzhalter des Rumpfs der Beispielvorlage in Dokumentfolge (Anhang B.3).</summary>
         private static readonly string[] RumpfErwartet =
         {
             // Deckblatt
@@ -68,19 +80,32 @@ namespace EPOS.Kern.Tests
             "{{kapitel.anhang|ohne titel}}", "{{kapitel.anhang_e|ohne titel}}",
         };
 
+        /// <summary>Der Rumpf der Standardvorlage: allein der Sammelanker (Anhang B.3, „Stufen“).</summary>
+        private static readonly string[] StandardRumpfErwartet = { "{{bericht.inhalt}}" };
+
+        /// <summary>Kopfzeile beider Vorlagen mit Platzhaltern.</summary>
         private static readonly string[] KopfzeileErwartet = { "{{ersteller.programm}}" };
 
         /// <summary>Links die Firma, in der Mitte das Datum (an der Stelle des früheren DATE-Felds), rechts die Seite.</summary>
         private static readonly string[] FusszeileErwartet = { "{{ersteller.firma}}", "{{bericht.datum}}", "{{text.seite}}" };
 
+        /// <summary>Alle drei Vorlagen: Stilregeln und Validator.</summary>
         public static IEnumerable<object[]> Vorlagen()
+        {
+            yield return new object[] { STILVORLAGE };
+            yield return new object[] { STANDARD };
+            yield return new object[] { BEISPIEL };
+        }
+
+        /// <summary>Die beiden Vorlagen mit Platzhaltern: Runs, Fußzeile, Firmenname.</summary>
+        public static IEnumerable<object[]> VorlagenMitPlatzhaltern()
         {
             yield return new object[] { STANDARD };
             yield return new object[] { BEISPIEL };
         }
 
         // =====================================================================
-        //  Beide Vorlagen: Stile und Validator
+        //  Alle Vorlagen: Stile und Validator
         // =====================================================================
 
         [Theory]
@@ -135,17 +160,12 @@ namespace EPOS.Kern.Tests
             using WordprocessingDocument doc = Oeffnen(datei);
             if (doc == null) return;
 
-            foreach (FileFormatVersions fassung in Fassungen)
-            {
-                List<ValidationErrorInfo> fehler = new OpenXmlValidator(fassung).Validate(doc).ToList();
-                Assert.True(fehler.Count == 0,
-                    datei + ", " + fassung + ": " + fehler.Count + " Fehler — " + string.Join(" | ",
-                        fehler.Take(5).Select(f => f.Description + " @ " + f.Part?.Uri + " " + f.Path?.XPath)));
-            }
+            List<string> fehler = Validatorfehler(doc);
+            Assert.True(fehler.Count == 0, datei + ": " + fehler.Count + " Fehler — " + string.Join(" | ", fehler.Take(5)));
         }
 
         // =====================================================================
-        //  Beispielvorlage: Platzhalter, Runs, Kapitel, Firmenname
+        //  Vorlagen mit Platzhaltern: Platzhalter, Runs, Kapitel, Fußzeile, Firmenname
         // =====================================================================
 
         [Fact]
@@ -161,14 +181,48 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Die Standardvorlage in der Stufe mit dem Sammelanker (Anhang B.3, „Stufen“; BV-E1): Der
+        /// Rumpf ist allein der Absatz <c>{{bericht.inhalt}}</c> — an seine Stelle setzt die Engine
+        /// den Bericht des Bausteinwegs mit Deckblatt, Inhaltsverzeichnis und Kapiteln —, ein
+        /// einziger Abschnitt trägt Kopf- und Fußzeile mit denselben Platzhaltern wie die
+        /// Beispielvorlage, und Kommentare gibt es keine (die Erläuterungen trägt die Beispielvorlage).
+        /// </summary>
+        [Fact]
+        public void Die_Standardvorlage_fuehrt_genau_die_erwarteten_Platzhalter()
+        {
+            using WordprocessingDocument doc = Oeffnen(STANDARD);
+            if (doc == null) return;
+            MainDocumentPart main = doc.MainDocumentPart;
+            Body rumpf = main.Document.Body;
+
+            Assert.Equal(StandardRumpfErwartet, Platzhalter(rumpf).ToArray());
+            Assert.Equal(KopfzeileErwartet, main.HeaderParts.SelectMany(h => Platzhalter(h.Header)).ToArray());
+            Assert.Equal(FusszeileErwartet, main.FooterParts.SelectMany(f => Platzhalter(f.Footer)).ToArray());
+
+            List<OpenXmlElement> inhalt = rumpf.ChildElements.Where(c => !(c is SectionProperties)).ToList();
+            Assert.True(inhalt.Count == 1 && inhalt[0] is Paragraph,
+                "Der Rumpf der Standardvorlage ist nicht allein ein Absatz, sondern: "
+                + string.Join(", ", inhalt.Select(c => c.LocalName)));
+            Assert.Equal("{{bericht.inhalt}}", Absatztext((Paragraph)inhalt[0]));
+
+            SectionProperties abschnitt = Assert.Single(rumpf.Descendants<SectionProperties>());
+            Assert.NotEmpty(abschnitt.Elements<HeaderReference>());
+            Assert.NotEmpty(abschnitt.Elements<FooterReference>());
+
+            Assert.Empty(rumpf.Descendants<CommentReference>());
+            Assert.Equal(0, main.WordprocessingCommentsPart?.Comments?.Elements<Comment>().Count() ?? 0);
+        }
+
+        /// <summary>
         /// Jeder Platzhalter steht ungeteilt und allein in einem Run, und der Run trägt
         /// <c>w:noProof</c> — sonst fände die Engine ihn nur über den Normalisierer, und Word
         /// unterstriche ihn als Rechtschreibfehler.
         /// </summary>
-        [Fact]
-        public void Jeder_Platzhalter_steht_allein_in_einem_Run_mit_noProof()
+        [Theory]
+        [MemberData(nameof(VorlagenMitPlatzhaltern))]
+        public void Jeder_Platzhalter_steht_allein_in_einem_Run_mit_noProof(string datei)
         {
-            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
+            using WordprocessingDocument doc = Oeffnen(datei);
             if (doc == null) return;
 
             foreach ((string teil, OpenXmlElement wurzel) in Teile(doc))
@@ -181,13 +235,13 @@ namespace EPOS.Kern.Tests
                     if (!Platzhaltermuster.IsMatch(text)) continue;
                     inRuns++;
                     Assert.True(Platzhaltermuster.Match(text).Value == text,
-                        teil + ": Run „" + text + "“ trägt neben dem Platzhalter weiteren Text.");
+                        datei + ", " + teil + ": Run „" + text + "“ trägt neben dem Platzhalter weiteren Text.");
                     NoProof aus = r.RunProperties?.NoProof;
                     Assert.True(aus != null && (aus.Val == null || aus.Val.Value),
-                        teil + ": Platzhalter „" + text + "“ ohne w:noProof.");
+                        datei + ", " + teil + ": Platzhalter „" + text + "“ ohne w:noProof.");
                 }
                 Assert.True(imText == inRuns,
-                    teil + ": " + imText + " Platzhalter im Text, aber nur " + inRuns + " ungeteilt in einem Run.");
+                    datei + ", " + teil + ": " + imText + " Platzhalter im Text, aber nur " + inRuns + " ungeteilt in einem Run.");
             }
         }
 
@@ -246,23 +300,46 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Die Fußzeile trägt die Seitenfelder PAGE und NUMPAGES, aber kein DATE-Feld mehr:
+        /// DATE zeigte das Datum des Öffnens, nicht das des Berichts — an seiner Stelle steht
+        /// <c>{{bericht.datum}}</c> (Konzept 6.7, BV-Q8).
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(VorlagenMitPlatzhaltern))]
+        public void Die_Fusszeile_traegt_die_Seitenfelder_und_kein_DATE_Feld(string datei)
+        {
+            using WordprocessingDocument doc = Oeffnen(datei);
+            if (doc == null) return;
+
+            List<string> felder = doc.MainDocumentPart.FooterParts
+                .SelectMany(f => f.Footer.Descendants<FieldCode>().Select(c => c.Text)
+                    .Concat(f.Footer.Descendants<SimpleField>().Select(s => s.Instruction?.Value)))
+                .Select(Feldname)
+                .ToList();
+            Assert.True(felder.Contains("PAGE") && felder.Contains("NUMPAGES") && !felder.Contains("DATE"),
+                datei + ": Felder der Fußzeile " + string.Join(", ", felder) + " — erwartet PAGE und NUMPAGES, kein DATE.");
+        }
+
+        /// <summary>
         /// Der Name des Herstellers steht nirgends mehr im Paket (BV-Q8: der Bericht nennt den
         /// Ersteller) — weder in Rumpf, Kopf- und Fußzeile noch in Kommentaren oder Eigenschaften.
         /// </summary>
-        [Fact]
-        public void Die_Beispielvorlage_nennt_INEKON_GmbH_nicht_mehr()
+        [Theory]
+        [MemberData(nameof(VorlagenMitPlatzhaltern))]
+        public void Die_Vorlage_mit_Platzhaltern_nennt_INEKON_GmbH_nicht_mehr(string datei)
         {
-            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
+            using WordprocessingDocument doc = Oeffnen(datei);
             if (doc == null) return;
 
             foreach ((string teil, OpenXmlElement wurzel) in Teile(doc))
-                Assert.DoesNotContain("INEKON GmbH", wurzel.InnerText, StringComparison.Ordinal);
+                Assert.False(wurzel.InnerText.Contains("INEKON GmbH", StringComparison.Ordinal),
+                    datei + ": „INEKON GmbH“ steht noch in " + teil);
 
             foreach (OpenXmlPart teil in doc.GetAllParts().Where(p => p.ContentType.Contains("xml", StringComparison.OrdinalIgnoreCase)))
             {
                 using var leser = new StreamReader(teil.GetStream(FileMode.Open, FileAccess.Read), Encoding.UTF8);
                 Assert.True(!leser.ReadToEnd().Contains("INEKON GmbH", StringComparison.Ordinal),
-                    "„INEKON GmbH“ steht noch in " + teil.Uri);
+                    datei + ": „INEKON GmbH“ steht noch in " + teil.Uri);
             }
 
             string eigenschaften = string.Join(" | ", doc.PackageProperties.Creator, doc.PackageProperties.Title,
@@ -271,7 +348,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Helfer
+        //  Helfer (auch für AuslieferungsvorlagenWacheTests)
         // =====================================================================
 
         /// <summary>Office 2007 bis 2021 — jede Fassung, die der Validator kennt.</summary>
@@ -282,12 +359,27 @@ namespace EPOS.Kern.Tests
             FileFormatVersions.Office2019, FileFormatVersions.Office2021
         };
 
-        /// <summary>Öffnet eine Vorlage aus dem Repository lesend; <c>null</c> außerhalb des Repositoriums.</summary>
-        private static WordprocessingDocument Oeffnen(string datei)
+        /// <summary>
+        /// Die Befunde des <see cref="OpenXmlValidator"/> in jeder Fassung, je Befund
+        /// „Fassung: Beschreibung @ Teil Pfad“; leer = gültig.
+        /// </summary>
+        internal static List<string> Validatorfehler(WordprocessingDocument doc)
+            => Fassungen.SelectMany(fassung => new OpenXmlValidator(fassung).Validate(doc)
+                            .Select(f => fassung + ": " + f.Description + " @ " + f.Part?.Uri + " " + f.Path?.XPath))
+                        .ToList();
+
+        /// <summary>Der Pfad einer Vorlage im Repository; <c>null</c> außerhalb des Repositoriums.</summary>
+        internal static string Pfad(string datei)
         {
-            string wurzel = Repowurzel();
-            if (wurzel == null) return null;
-            string pfad = Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein", "Bericht", "Vorlagen", datei);
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            return wurzel == null ? null : Path.Combine(wurzel, ORDNER_REPO.Replace('/', Path.DirectorySeparatorChar), datei);
+        }
+
+        /// <summary>Öffnet eine Vorlage aus dem Repository lesend; <c>null</c> außerhalb des Repositoriums.</summary>
+        internal static WordprocessingDocument Oeffnen(string datei)
+        {
+            string pfad = Pfad(datei);
+            if (pfad == null) return null;
             Assert.True(File.Exists(pfad), "Vorlage fehlt: " + pfad);
             return WordprocessingDocument.Open(pfad, false);
         }
@@ -321,6 +413,10 @@ namespace EPOS.Kern.Tests
         private static string Stilkennung(Paragraph p)
             => p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
+        /// <summary>Der Feldname einer Feldanweisung (<c>w:instrText</c>, <c>w:fldSimple/@w:instr</c>), groß.</summary>
+        private static string Feldname(string anweisung)
+            => (anweisung ?? "").Trim().Split(' ', 2)[0].ToUpperInvariant();
+
         /// <summary>Der Kapitelname eines Bausteins, wie ihn <c>kapitel.&lt;name&gt;</c> führt (Konzept Anhang A).</summary>
         private static string Kapitelname(IBerichtsBaustein b)
         {
@@ -328,14 +424,6 @@ namespace EPOS.Kern.Tests
             if (b.Schluessel == BerichtsKonfiguration.B_INHALT) return "inhalt";
             if (b.Schluessel == BerichtsKonfiguration.B_PROJEKT) return "projekt";
             return b.Schluessel;
-        }
-
-        /// <summary>Die Wurzel des Repositoriums, aufwärts gesucht; sonst <c>null</c>.</summary>
-        private static string Repowurzel()
-        {
-            for (DirectoryInfo d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
-                if (File.Exists(Path.Combine(d.FullName, "WP-Plan.sln"))) return d.FullName;
-            return null;
         }
     }
 }
