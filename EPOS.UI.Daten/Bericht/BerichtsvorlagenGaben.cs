@@ -409,6 +409,8 @@ namespace WindowsFormsApplication1
             switch (handlung)
             {
                 case HANDLUNG_WORD:
+                    // Die mitgelieferte Vorlage wird nie zum Bearbeiten geöffnet — nur als Kopie.
+                    if (e.IstStandard) { _fehler = R.BV_VORLAGEN_SCHREIBGESCHUETZT; return; }
                     if (!Vorhanden(e)) return;
                     if (wege.InWordOeffnen != null && Versuche(wege.InWordOeffnen, e.Pfad))
                         _meldung = Format(R.BK_BER_VORLAGE_MSG_IN_WORD, e.Name);
