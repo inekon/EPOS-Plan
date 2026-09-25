@@ -38,8 +38,8 @@ namespace WindowsFormsApplication1
     // eigenen Laufs). Die Wirtschaftlichkeit steht nicht im Export des Referenzlaufs.
     //
     // WIEDERHOLBAR. Ein zweiter Lauf findet keinen fremden Verweis mehr (Offen() = 0) und
-    // fasst nichts an. Fehlt die Tabelle (sie entsteht erst mit dem ersten
-    // Wirtschaftlichkeitslauf, WirtschaftlichkeitCtrl.StelleTabellenSicher), tut er nichts.
+    // fasst nichts an. Fehlt die Tabelle (sie steht im Grundschema; eine Datenbank ohne
+    // sie ist kein Bestand von EPOS-Plan), tut er nichts.
     //
     // EINE QUELLE fuer drei Leser: den Schemaschritt in
     // WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs, das Werkzeug

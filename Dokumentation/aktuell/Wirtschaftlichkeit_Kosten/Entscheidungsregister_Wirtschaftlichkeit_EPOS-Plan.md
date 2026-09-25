@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492) und E19 (#498) · Schwesterpapiere: das Konzept
+**Stand 25.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457), E8a (#454), E8b (#455), E8c (#460), E9a (#461), E9b (#462), E10 (#463), E13 (#474), E14 (#477), E15 (#478), E17 (#479), E16 (#484), E18 (#492), E19 (#498), E21 (#506), E20 (#502) und E22 (#503) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -62,7 +62,10 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑E17 | E17‑Q1…Q4 — die Fragen aus E17, den nicht monetarisierbaren Wirkungen V‑G11 (entschieden 24.09.2026, nach Empfehlung) | Protokoll E17; Statusdatei Nach #479 (a) | 4 |
 | R‑E18 | E18‑Q1…Q7 — die Fragen aus E18, den Restpunkten der Stromsteuer (Konzept § 6.3 Nr. 14, 16, 18; Q1…Q6 entschieden 24.09.2026, nach Empfehlung a, gebaut #492; Q7, der Restpunkt § 6.3 Nr. 33, gebaut #498 mit E19) | Protokoll E18; Statusdatei Nach #492 (a) | 7 |
 | R‑E19 | E19‑Q1…Q6 — die Fragen aus E19, den Restpunkten Nr. 15 und 33 (entschieden 25.09.2026, nach Empfehlung; Q4 b, die übrigen a; gebaut #498) | Protokoll E19; Statusdatei Nach #498 (a) | 6 |
-| R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19 (Fortsetzung von R‑NR) | Statusdatei Nach #498 (a); Protokoll E19 | 5 |
+| R‑Rest | Anwenderentscheide vom 25.09.2026 zu Restpunkten des Konzepts § 6.3: Nr. 10, 11, 13, 18, 19 (Fortsetzung von R‑NR; Nr. 18 gebaut #503) | Statusdatei Nach #498 (a); Protokoll E19 | 5 |
+| R‑E21 | E21‑Q1…Q9 — die Fragen aus E21, der Pflegewelle Nr. 23 (erledigt) und Nr. 24 (benannt) (entschieden 25.09.2026, nach Empfehlung, alle a; gebaut #506) | Protokoll E21; Statusdatei Nach #506 (a) | 9 |
+| R‑E20 | E20‑Q1…Q8 — die Fragen aus E20, Nr. 10 „Wärmepumpe beides“ bei den Investitionskosten (Q1…Q5, Q7, Q8 entschieden 25.09.2026, nach Empfehlung a, gebaut #502; **Q6 offen beim Anwender**, Empfehlung a, gebaut a) | Protokoll E20; Statusdatei Nach #502 (a) | 8 |
+| R‑E22 | E22‑Q1 — die Frage aus E22, der Rechenweg-Sortierung nach der Regel „99“ (Nr. 18; entschieden 25.09.2026 nach der A/B-Messung, nach Empfehlung a; gebaut #503) | Protokoll E22; Statusdatei Nach #503 (a) | 1 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -681,7 +684,7 @@ Nr. 33).
 |---|---|---|---|---|---|
 | **E18‑Q1** | Gegen welche Katalogzeile die Wache die Rückfallebene hält: (a) die älteste Zeile je Schlüssel — eine Novelle ist eine spätere Jahreszeile; (b) die jüngste | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.5 (Stromsteuersatz); § 6.3 Nr. 14 | gebaut ist a (#492, E18/1: Saattest und Wache der Testdatenbank auf der ältesten Zeile) |
 | **E18‑Q2** | Die Ressourcen `PREIS_STROMSTEUER_REGELFALL` und `PREIS_STROMSTEUER_REDUZIERT` ohne Leser seit B4: (a) streichen; (b) lassen | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.5 (Stromsteuersatz) | gebaut ist a (#492, E18/1: beide Schlüssel de/en gestrichen) |
-| **E18‑Q3** | Nr. 18, die Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): (a) offen lassen mit Befundsatz, der Umbau nur als eigene Etappe mit Neueinfrierung; (b) in E18 umbauen; (c) als Grenze schließen | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 18 | gebaut ist a (#492, E18/2: Vermerk „HB1-O1, offen" an den fünf Stellen, nur Kommentare) — offen bleibt der Umbau |
+| **E18‑Q3** | Nr. 18, die Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): (a) offen lassen mit Befundsatz, der Umbau nur als eigene Etappe mit Neueinfrierung; (b) in E18 umbauen; (c) als Grenze schließen | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 18 | gebaut ist a (#492, E18/2: Vermerk „HB1-O1, offen" an den fünf Stellen, nur Kommentare) — der Umbau ist gebaut mit E22 (#503), die Vermerke sind entfernt (→ R‑Rest Nr. 18, R‑E22) |
 | **E18‑Q4** | Ort der Anzeige des erfassten Stromsteueranteils: (a) Dialog „BHKW-Wirtschaftlichkeit", Gruppe 4 und die Überlagerung „Sätze und Herkunft"; (b) zusätzlich der Parameterdialog; (c) nur der Parameterdialog | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 2.2, Gruppe 4; § 6.3 Nr. 16 | gebaut ist a (#492, E18/4) |
 | **E18‑Q5** | Umfang der Anzeige: (a) Wert, Aktiv, Satzabgleich, Vorschlag und Kohärenz ohne Sperre; (b) nur der Wert | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 2.2, Gruppe 4; § 6.5 | gebaut ist a (#492, E18/4: Herleitungs- und Kohärenzzeile, folgt live der Unternehmensart) |
 | **E18‑Q6** | Der rohe Leseweg des Stromsteueranteils: (a) aus `KohaerenzPruefung` nach `StrompreisZerlegungCtrl` verschoben; (b) als Kopie | **entschieden 24.09.2026**, nach Empfehlung: a | 24.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.9 (Fall 4) | gebaut ist a (#492, E18/3: `StromsteuerRoh` wortgleich verschoben, Fall 4 ruft ihn dort) |
@@ -715,15 +718,75 @@ Quelle: die Statusdatei, Nach #498 (a), und das Protokoll
 [`E19_Unternehmensart_ohne_BHKW_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E19_Unternehmensart_ohne_BHKW_Protokoll.md),
 „Anwenderentscheide vom 25.09.2026“; der Wortlaut der Punkte vor den Entscheiden steht im Protokoll der Entscheidwege
 § 8.39. Die Familie setzt R‑NR fort. Der Anwender hat am 25.09.2026 zu fünf offenen Punkten entschieden; nachgetragen mit
-den Papieren zu #498.
+den Papieren zu #498. Die Zeile Nr. 10 ist mit den Papieren zu #502 nachgezogen (gebaut mit E20, → R‑E20). Die Zeile Nr. 18 ist mit den Papieren zu #503 nachgezogen (der zweite Entscheid
+„Nr. 18: so umsetzen“ nach der Messwelle, gebaut mit E22, → R‑E22).
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **Nr. 10** | Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) | „Wärmepumpe beides“ nur bei Investitionskosten nach kW elektrisch und kW thermisch — die kWh-Bemessung der Wärmepumpe bleibt thermisch; Strom-kWh sind Energiekosten | 25.09.2026, Anwender | § 6.3 Nr. 10 | offen mit dieser Präzisierung — kleine Bauwelle folgt |
+| **Nr. 10** | Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b) | „Wärmepumpe beides“ nur bei Investitionskosten nach kW elektrisch und kW thermisch — die kWh-Bemessung der Wärmepumpe bleibt thermisch; Strom-kWh sind Energiekosten | 25.09.2026, Anwender | § 6.3 Nr. 10 | umgesetzt mit E20 (#502): Investitionskosten der Wärmepumpe je kW thermisch und je kW elektrisch (P_el = Ptherm ÷ COP am Normpunkt der Kennlinie, § 3.2), Betriebskosten thermisch; offen allein E20‑Q6 („je kWh elektrisch“ im Betriebsraster der Wärmepumpe, → R‑E20) |
 | **Nr. 11** | Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option | „nicht nachziehen“ | 25.09.2026, Anwender | § 6.3 Nr. 11 | geschlossen |
 | **Nr. 13** | Pufferkapazität bleibt null — bewusste Grenze | „nur Volumen“ — die Grenze ist bestätigt | 25.09.2026, Anwender | § 6.3 Nr. 13 | geschlossen |
-| **Nr. 18** | Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): offen, der Umbau eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a) | nach Empfehlung: zuerst eine Messwelle, danach der Entscheid | 25.09.2026, Anwender, nach Empfehlung | § 6.3 Nr. 18 | offen — gemessen 25.09.2026 (Probeumbau der fünf Rechenweg-Sortierungen auf die 99er-Regel, Worktree `mess18`, nicht gemergt): ohne Rechenwirkung — 12 von 13 Referenzprojekten byte-gleich, nur 1042 tauscht in `aggregate.csv` die Modulreihenfolge der beiden Wärmepumpen (10 Werte, Werte gleich, Index anders); Deckung, Endenergie, CO₂, Kapitalwert unverändert; kein Test rot. Nebenbefund: Die Modul-Lader für Kessel, Solarthermie und BHKW sortieren gar nicht. Empfehlung: den Umbau mit der nächsten ohnehin fälligen Neueinfrierung der Referenzbasis bündeln und dann über die drei unsortierten Lader mitentscheiden; der Anwenderentscheid steht aus |
+| **Nr. 18** | Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1): offen, der Umbau eine eigene Etappe mit neuem Referenzlauf (E18‑Q3 a) | nach Empfehlung: zuerst eine Messwelle, danach der Entscheid; nach der Messwelle: „Nr. 18: so umsetzen, Umbau: Das Hydraulikbild wurde im August (HB1) auf die richtige Regel umgestellt: ungepflegte Anlagen nach hinten, Regel ‚99‘“ | 25.09.2026, Anwender, nach Empfehlung; 25.09.2026, Anwender, nach der Messwelle | § 6.3 Nr. 18 | gebaut mit E22 (#503): die fünf Rechenweg-Leser und die drei Modul-Lader nach `Ladeordnung.SqlAnlagenprio` (E22‑Q1 a, → R‑E22) — ohne Rechenwirkung, allein die Modulreihenfolge der beiden Wärmepumpen in 1042; neue Basis `2026-09-25_R16_Anlagenprio`; zuvor gemessen 25.09.2026 (Messwelle `mess18`, nicht gemergt) |
 | **Nr. 19** | Asymmetrie „Wartung BHKW“ gegen „Vollwartung / Wartung Kessel“ (E10‑Q6, → R‑E10) | belassen — E10‑Q6 a bestätigt; €/kWh el. ist beim BHKW die übliche Vertragsform | 25.09.2026, Anwender | § 6.3 Nr. 19 | dokumentiert (#463), bestätigt |
+
+---
+
+## R‑E21 — E21‑Q1…Q9: die Fragen aus E21
+
+Quelle: Protokoll
+[`E21_Pflege_Ressourcen_Testdaten_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E21_Pflege_Ressourcen_Testdaten_Protokoll.md),
+„Fragen aus der Welle“, und die Statusdatei, Nach #506 (a). Die Fragen stellt der Phase‑0-Bericht der Pflegewelle E21
+(Anwender 25.09.2026: „sonst nach Empfehlung“); entschieden hat sie der Orchestrator am 25.09.2026 (09:45) mit der
+Baufreigabe, nach Empfehlung — alle a. Gebaut ist jeweils der Entscheid.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E21‑Q1** | Zwei verwaiste Ressourcenschlüssel (`PREIS_ST_GRUND_EINHEIT` ohne Leser, `STEUER_ENERGIEST_54_BEMESSUNG` seit B3a nicht mehr erzeugt): (a) beide streichen, Kommentar `SteuerGutschriftRechner.cs` nachziehen; (b) belassen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 23 | gebaut ist a (#506, E21/1: beide Schlüssel aus de/en/Designer gestrichen) |
+| **E21‑Q2** | Drei Rückfall-Literale ohne geschlossenes Anführungszeichen (`EnergietraegerHuelle.cs:2531/2534/2542`): (a) an die resx angleichen (U+201C); (b) belassen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 23 | gebaut ist a (#506, E21/2: alle 22 Code-Rückfälle zeichengleich mit der de-resx) |
+| **E21‑Q3** | Projekt 1018, Kessel 1018251 ohne Energieträger (`ID_Carrier` NULL): (a) benennen, nicht pflegen; (b) mit einem plausiblen Wert (63 Erdgas E) pflegen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | benannt (#506) — eine Pflege bliebe nicht byte-gleich (1 Abweichung); Kandidat für die nächste Neueinfrierung nach R16 |
+| **E21‑Q4** | Projekt 1018, Pufferspeicher ohne Vorlauf-/Rücklauftemperatur: (a) benennen, nicht pflegen; (b) mit einer Probe (70/50) pflegen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | benannt (#506) — eine Pflege bliebe nicht byte-gleich (12 Dateien anders); kein eigener Kandidat, dieselbe Neueinfrierung wie E21‑Q3 |
+| **E21‑Q5** | Projekt 1024, WP-Kennlinie 1034317 endet beim Herstellerkatalog bei 20 °C: (a) kein Datenfehler feststellen, der Kern kappt statt zu extrapolieren; (b) erfundene Stützstellen ergänzen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | festgestellt (#506) — kein Kandidat für eine Neueinfrierung |
+| **E21‑Q6** | Projekt 1023, Kessel 11205 ohne Energieträger, keine eps-Zeile Erdgas: (a) benennen, nicht pflegen; (b) mit Träger und eps-Zeile pflegen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | benannt (#506) — eine Pflege bliebe nicht byte-gleich (CO₂ und Kapitalwert ändern sich), 1023 dient zwei Tests gerade als „ohne Nachweis“; Kandidat für die nächste Neueinfrierung nach R16 |
+| **E21‑Q7** | Projekt 1030, zwei Sammelposten ohne Aufteilungsquelle: (a) nicht anfassen (Anker); (b) aufteilen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | nicht angefasst (#506) — 164 Testdateien nennen 1030, kein Kandidat |
+| **E21‑Q8** | Projekt 1026, kein Stromträger in eps: (a) gewollter Prüffall, belassen; (b) mit Stromträger 60 pflegen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | belassen (#506) — drei Tests nutzen 1026 gerade als Prüffall |
+| **E21‑Q9** | Ein PV-Projekt mit vollständigen Preisen: (a) später als eigene Welle, mit einem neuen Projekt außerhalb der Referenzliste; (b) an einem Referenzprojekt nachziehen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 6.3 Nr. 24 | offen — spätere, eigene Welle |
+
+---
+
+## R‑E20 — E20‑Q1…Q8: die Fragen aus E20
+
+Quelle: Protokoll
+[`E20_Waermepumpe_kW_elektrisch_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E20_Waermepumpe_kW_elektrisch_Protokoll.md),
+„Fragen aus der Welle“, und die Statusdatei, Nach #502 (a). Die Fragen stellt der Phase‑0-Bericht der Welle E20 (Anlass:
+der Anwenderentscheid zu § 6.3 Nr. 10 vom 25.09.2026, → R‑Rest); entschieden hat sie der Orchestrator am 25.09.2026
+(09:15) mit der Baufreigabe, nach Empfehlung — alle a, **E20‑Q6 offen beim Anwender**. Gebaut ist jeweils der
+Entscheid, bei Q6 die Empfehlung a.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E20‑Q1** | Bezugsgröße P_el der Wärmepumpe: (a) Ptherm ÷ COP am Normpunkt je Bauart, bei W35 interpoliert; (b) Maximum über die Kennlinie; (c) Auslegungspunkt; (d) `Nennleistung` ÷ COP | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502, E20/1: `WaermepumpePelKw`) |
+| **E20‑Q2** | Normpunkt der Luft/Wasser-Wärmepumpe: (a) A2/W35; (b) A7/W35 nach EN 14511 (1024: a 4,00 kW, b 4,23 kW) | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502, E20/1: `WpNormQuellentemperatur`) |
+| **E20‑Q3** | Heizstab: (a) nicht einrechnen; (b) einrechnen | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502, E20/1) |
+| **E20‑Q4** | Kühlbetrieb: (a) nur der Heiz-Normpunkt; (b) die Kühlkennlinie mitbetrachten | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502, E20/1; an 1017 liegt P_el im Kühlbetrieb 2,7–4,2 kW unter den 7,91 kW des Heiz-Normpunkts) |
+| **E20‑Q5** | Freischaltung: (a) Schalter `investition` in der Landkarte, die Betriebsseite bleibt GEWERK; (b) überall freischalten, die Betriebsauswahl sperren | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 („je Raster“) | gebaut ist a (#502, E20/2: `BasisGrund`, `PasstZuGewerk`, `BemessungKatalog.Auswahl` je Raster, `InvestKaskade` true, `RueckfallMenge` false) |
+| **E20‑Q6** | „je kWh elektrisch“ im Betriebsraster der Wärmepumpe (Strommenge aus dem Lauf, Grund LAUF): (a) in E20 nicht anfassen, als Rest von Nr. 10 benennen; (b) aus der Betriebsauswahl nehmen, Bestandszeilen über `benutzt` schützen | **offen beim Anwender** — Empfehlung a | 25.09.2026 gestellt (Phase‑0-Bericht) | § 6.3 Nr. 10 | gebaut ist die Empfehlung a (#502: die Betriebsseite unverändert); mit dem Entscheid ist Nr. 10 geschlossen |
+| **E20‑Q7** | Beschriftung: (a) „je kW elektrisch“ unverändert; (b) eigene Beschriftung an der Wärmepumpe | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | Bemessungskatalog (`BM_KW_ELEKTRISCH`) | gebaut ist a (#502) |
+| **E20‑Q8** | Grund bei fehlendem Normpunkt: (a) GERAET wiederverwenden; (b) eigener Grund | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Phase‑0-Bericht), Orchestrator mit der Baufreigabe | § 3.2 (Fußnote ¹) | gebaut ist a (#502; zwei Katalogtypen ohne Normpunkt ergeben null mit Grund GERAET) |
+
+---
+
+## R‑E22 — E22‑Q1: die Frage aus E22
+
+Quelle: Protokoll
+[`E22_Anlagenprio_Rechenweg_R16_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E22_Anlagenprio_Rechenweg_R16_Protokoll.md),
+„Fragen aus der Welle“, und die Statusdatei, Nach #503 (a). Die Frage stellt der Auftrag der Welle E22 (Anlass:
+der Anwenderentscheid zu § 6.3 Nr. 18 vom 25.09.2026, → R‑Rest) samt der Regel, nach der sie im Bau entschieden wird:
+a, wenn die A/B-Abweichungen nur Reihenfolgen oder Indizes sind. Entschieden am 25.09.2026 nach der Messung, nach
+Empfehlung — a. Gebaut ist der Entscheid.
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E22‑Q1** | Die drei Modul-Lader `SPK_Liste_Laden` (Kessel), `Solar_Liste_Laden` (Solarthermie) und `BHKW_Liste_Laden` laden ohne `ORDER BY`: (a) mitnehmen, wenn die A/B-Abweichungen nur Reihenfolgen oder Indizes sind; (b) nur die fünf Rechenweg-Leser, falls die Lader Zeitreihen oder Kennzahlen ändern | **entschieden 25.09.2026**, nach Empfehlung: a | 25.09.2026 gestellt (Auftrag E22), im Bau nach der A/B-Messung entschieden (die fünf Leser und die drei Lader gegen die fünf Leser allein: 394/394 CSV byte-gleich) | § 6.3 Nr. 18 | gebaut ist a (#503, E22/2: die drei Lader nach `Ladeordnung.SqlAnlagenprio`) |
 
 ---
 

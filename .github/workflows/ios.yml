@@ -20,6 +20,15 @@
 # die eingefrorene Windows-Basis. WAS ER NICHT BEWEISEN KANN: das Verhalten auf einem
 # ECHTEN Geraet - AOT statt JIT, Signierung, Speichergrenzen, Bedienung mit dem
 # Finger. Das ist iU13.
+#
+# ABNAHME G4a (Eingang "abnahme_g4a", Vorgabe aus; Umsetzungskonzept
+# Gebaeudesimulation 3.6/3.8, G4-8; E38: genau EIN Lauf, nur nach Rueckfrage). Hinter
+# dem unveraenderten Basisnachweis ein zweiter Simulatorbau in Release - AOT-only und
+# getrimmt wie ein Geraet - mit Pruefmodus samt Importprobe (gbXML und IFC, Speicher-
+# messung, Dateifilter), dazu ein paralleler Job "geraetebau" (ios-arm64 ohne Signatur:
+# Trimming, IL-Warnungen, Zielplattform, Paketgroesse mit und ohne xBIM - ADR-003
+# Aufgabe 7). Alles dort continue-on-error.
+# Ohne den Eingang laeuft der Job wie zuvor.
 # =====================================================================================
 name: iOS
 
@@ -34,6 +43,12 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      # Abnahme G4a (G4-8): Vorgabe aus - dann ist der Lauf derselbe wie ohne Eingang.
+      abnahme_g4a:
+        description: 'Abnahme G4a: zusaetzlich getrimmter Release-Simulatorbau mit Importprobe und Geraetebau ios-arm64 ohne Signatur (laenger, zehnfaches Kontingent)'
+        type: boolean
+        default: false
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -52,7 +67,9 @@ jobs:
     # NICHT macos-latest: Das Label wandert. macos-26 ist arm64, bringt .NET 10.0.400
     # vorinstalliert mit (aber keine Workloads) und fuehrt iOS-Simulatorlaufzeiten 26.x.
     runs-on: macos-26
-    timeout-minutes: 60
+    # Mit abnahme_g4a folgen dem Basisnachweis ein zweiter Bau (Release, AOT) und ein
+    # zweiter Pruefmodus; ohne den Eingang bleibt es bei 60 Minuten.
+    timeout-minutes: ${{ inputs.abnahme_g4a && 110 || 60 }}
 
     steps:
       # OHNE "lfs: true" - siehe kern.yml (Auftrag #243, Anwenderentscheid AUF-Q2 vom
@@ -204,11 +221,11 @@ jobs:
 
       # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml
       # (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den Job rot.
-      - name: iZ6-Vergleich Projekt 1030 gegen 2026-09-24_R14_Kaelteerzeuger
+      - name: iZ6-Vergleich Projekt 1030 gegen 2026-09-25_R16_Anlagenprio
         run: |
           dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-25_R16_Anlagenprio/Projekt_1030 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
             vergleich artifacts/reflauf/ref artifacts/ios/pruefung
           echo "--- Byte-Diff (nur Information) ---"
@@ -235,3 +252,388 @@ jobs:
           name: ios-app
           path: EPOS.iOS/bin/Debug/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
           retention-days: 14
+
+      # =================================================================================
+      # ABNAHME G4a (Umsetzungskonzept Gebaeudesimulation 3.6/3.8, G4-8; E38: genau EIN
+      # Lauf). Nur mit dem Eingang abnahme_g4a, und alles HINTER dem Basisnachweis:
+      # Startmarken, iZ6-Vergleich und beide Artefakte oben stehen zu diesem Zeitpunkt.
+      # Jeder Schritt traegt continue-on-error - ein Fehler hier kostet den
+      # Basisnachweis nicht; das Schrittergebnis steht in der Zusammenfassung.
+      #
+      # WARUM RELEASE. Der arm64-Simulator fuehrt keinen JIT aus. Debug laeuft mit dem
+      # Interpreter (MAUI setzt dort UseInterpreter) und damit OHNE Linker; Release laeuft
+      # AOT-only und getrimmt - fuer arm64-Simulator ohne Interpreter ist TrimMode=partial
+      # die Vorgabe des SDK (Xamarin.Shared.Sdk.Trimming.props), hier ausdruecklich
+      # gesetzt. Das ist das Verhalten eines Geraets; nur so zeigt der Simulator, ob der
+      # Import unter Trimming und AOT laeuft.
+      # WARUM OHNE LLVM. Der Release-Bau mit LLVM lief im fuenften Lauf (33740727778)
+      # 40 Minuten und wurde abgebrochen. MtouchUseLlvm=false haelt die AOT-Uebersetzung
+      # bei Minuten; fuer den Funktionsnachweis unerheblich, bei Laufzeiten ein Abschlag.
+      # =================================================================================
+      - name: "G4a: Bauen getrimmt (Simulator, Release, AOT ohne LLVM, TrimMode=partial)"
+        id: g4a_bau
+        if: ${{ !cancelled() && inputs.abnahme_g4a }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/g4a
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release \
+            -f net10.0-ios -r iossimulator-arm64 \
+            -p:SeedDb=../${{ env.SEED }} \
+            -p:Importproben=true \
+            -p:TrimMode=partial \
+            -p:MtouchUseLlvm=false \
+            2>&1 | tee artifacts/g4a/bau_simulator_getrimmt.log
+
+      # Belegt, dass der Linker gewirkt hat: Das Debug-Paket traegt die Rahmenassemblies
+      # ungetrimmt (Interpreter, kein IL-Stripping), der Ordner "linked" des Release-Baus
+      # die getrimmten, noch nicht gestrippten. xBIM bleibt bei partial unberuehrt (nicht
+      # als trimmbar markiert).
+      - name: "G4a: Paketvergleich ungetrimmt gegen getrimmt"
+        if: ${{ !cancelled() && inputs.abnahme_g4a && steps.g4a_bau.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          D=EPOS.iOS/bin/Debug/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
+          R=EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
+          L=$(find EPOS.iOS/obj/Release -type d -name linked | head -1)
+          echo "Linker-Ausgabe: ${L:-keine}"
+          ( cd "$D" && find . -name '*.dll' -type f -exec stat -f '%z %N' {} + | sort -k2 ) > artifacts/g4a/dll_debug_ungetrimmt.txt || true
+          ( cd "$R" && find . -name '*.dll' -type f -exec stat -f '%z %N' {} + | sort -k2 ) > artifacts/g4a/dll_release_paket.txt || true
+          if [ -n "$L" ]; then
+            ( cd "$L" && find . -name '*.dll' -type f -exec stat -f '%z %N' {} + | sort -k2 ) > artifacts/g4a/dll_release_linked.txt || true
+          fi
+          echo "Paket Debug:   $(du -sk "$D" | cut -f1) KB"
+          echo "Paket Release: $(du -sk "$R" | cut -f1) KB"
+          printf '%-46s %12s %12s\n' "Assembly" "ungetrimmt" "gelinkt"
+          for n in System.Private.CoreLib.dll System.Private.Xml.dll System.Private.Xml.Linq.dll System.Linq.dll System.IO.Compression.dll Microsoft.Extensions.DependencyInjection.dll Xbim.Common.dll Xbim.Ifc4.dll Xbim.Ifc2x3.dll Xbim.Ifc4x3.dll Xbim.IO.MemoryModel.dll EPOS.Kern.dll; do
+            a=$(awk -v n="/$n" 'substr($2, length($2) - length(n) + 1) == n {print $1}' artifacts/g4a/dll_debug_ungetrimmt.txt | head -1)
+            b=$(awk -v n="/$n" 'substr($2, length($2) - length(n) + 1) == n {print $1}' artifacts/g4a/dll_release_linked.txt 2>/dev/null | head -1)
+            printf '%-46s %12s %12s\n' "$n" "${a:-fehlt}" "${b:-fehlt}"
+          done
+          echo "--- Proben im Paket ---"
+          ls -l "$R"/importprobe_* || echo "FEHLER: keine Importproben im Paket"
+          echo "--- IL-Warnungen des getrimmten Baus ---"
+          grep -E "IL[23][0-9]{3}:" artifacts/g4a/bau_simulator_getrimmt.log | sed -E 's/ \[[^]]*\]$//' | sort -u > artifacts/g4a/il_warnungen_simulator.txt || true
+          echo "eindeutig: $(wc -l < artifacts/g4a/il_warnungen_simulator.txt)"
+          grep -oE "IL[23][0-9]{3}" artifacts/g4a/il_warnungen_simulator.txt | sort | uniq -c | sort -rn || true
+
+      # Der Rauchtest-Lauf haengt noch am Simulator (simctl launch im Hintergrund, s. o.).
+      # Er wird beendet und das Paket SAMT Datenbereich entfernt - sonst laege dort schon
+      # die Fertigmarke des ersten Laufs. Frisch installiert laeuft der Erststart mit der
+      # Seed-Kopie wie oben; der zweite Schalter EPOS_PRUEFLAUF_IMPORT haengt die
+      # Importprobe hinter den Rechennachweis (Pruefung/Importprobe.cs).
+      - name: "G4a: Getrimmte App fahren (Pruefmodus mit Importprobe)"
+        id: g4a_lauf
+        if: ${{ !cancelled() && inputs.abnahme_g4a && steps.g4a_bau.outcome == 'success' }}
+        continue-on-error: true
+        timeout-minutes: 35
+        run: |
+          UDID="${{ steps.sim.outputs.udid }}"
+          APP=EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
+          mkdir -p artifacts/g4a
+          xcrun simctl terminate "$UDID" "$BUNDLE" || true
+          xcrun simctl uninstall "$UDID" "$BUNDLE" || true
+          xcrun simctl install "$UDID" "$APP"
+          SIMCTL_CHILD_EPOS_PRUEFLAUF=1 SIMCTL_CHILD_EPOS_PRUEFLAUF_IMPORT=1 \
+            xcrun simctl launch --console-pty "$UDID" "$BUNDLE" \
+            > artifacts/g4a/start_getrimmt.log 2>&1 &
+          KONSOLE=$!
+          DATA=$(xcrun simctl get_app_container "$UDID" "$BUNDLE" data)
+          echo "Datenbereich: $DATA"
+          # Bis zu 30 Minuten: Rechennachweis 1030, dann die Importprobe (Zeitrahmen im
+          # Kern: nach 10 Minuten beginnt kein Grossfall mehr). Endet die Konsole vorher,
+          # ist die App abgestuerzt - dann nicht weiter warten.
+          for i in $(seq 1 360); do
+            [ -f "$DATA/Documents/pruefung/fertig.txt" ] && break
+            if ! kill -0 "$KONSOLE" 2>/dev/null; then
+              echo "App-Prozess beendet, bevor die Fertigmarke da war."
+              break
+            fi
+            sleep 5
+          done
+          cp -r "$DATA/Documents/pruefung" artifacts/g4a/pruefung_getrimmt 2>/dev/null || true
+          xcrun simctl io "$UDID" screenshot artifacts/g4a/oberflaeche_getrimmt.png || true
+          xcrun simctl terminate "$UDID" "$BUNDLE" || true
+          cp "$HOME"/Library/Logs/DiagnosticReports/EPOS.iOS* artifacts/g4a/ 2>/dev/null || true
+          tr -d '\r' < artifacts/g4a/start_getrimmt.log | grep -E "IMPORTPROBE|IMPORTMESSUNG|IMPORTDIAGNOSE" > artifacts/g4a/importzeilen.txt || true
+          echo "--- Startprotokoll (Ende) ---"
+          tail -n 80 artifacts/g4a/start_getrimmt.log || true
+          test -f artifacts/g4a/pruefung_getrimmt/fertig.txt
+
+      # Rot, wenn eine Zeile fehlt oder ein Fall nicht OK ist - wegen continue-on-error
+      # nur im Schrittergebnis, nicht im Job. UEBERSPRUNGEN (Zeitrahmen) ist kein Fehler.
+      - name: "G4a: Importprobe auswerten"
+        id: g4a_auswertung
+        if: ${{ !cancelled() && inputs.abnahme_g4a }}
+        continue-on-error: true
+        run: |
+          Z=artifacts/g4a/importzeilen.txt
+          if [ ! -s "$Z" ]; then
+            echo "FEHLER: keine Importzeilen - Bau, Start oder Probe ist ausgefallen (start_getrimmt.log)."
+            exit 1
+          fi
+          echo "--- Dateiwahl: Typkennungen je Endung ---"
+          grep -o "IMPORTPROBE dateifilter.*" "$Z" || echo "FEHLER: Dateifilter-Zeile fehlt"
+          echo "--- xBIM-Metadaten unter Trimming (erwartet = ungetrimmt gezaehlt) ---"
+          grep -o "IMPORTDIAGNOSE xbim.*" "$Z" || true
+          echo "--- Funktion ---"
+          grep -oE "IMPORTPROBE fall=.*" "$Z" | grep -v " erzeugt " | sed -E 's/ (pruefung|grenze_ios)=[^ ]+//g' || true
+          echo "--- Speicher und Zeit ---"
+          grep -oE "IMPORTMESSUNG .*" "$Z" | sed -E 's/ (verwaltet_vor_mb|gehalten_mb|gc|proben)=[^ ]+//g' || true
+          echo "--- Diagnose: Ausnahmen ---"
+          grep "IMPORTDIAGNOSE.*AUSNAHME" "$Z" || echo "(keine)"
+          grep -o "IMPORTPROBE ende.*" "$Z" || { echo "FEHLER: Schlusszeile fehlt - die Probe ist nicht zu Ende gelaufen."; exit 1; }
+          if grep -qE "ergebnis=(LESEFEHLER|RAEUME_FEHLEN|AUSNAHME|ABWEICHUNG|ZEITGRENZE|DATEI_FEHLT|DATEI_UNLESBAR|ERZEUGUNG_FEHLER|FORMAT_UNBEKANNT)" "$Z"; then
+            echo "FEHLER: mindestens ein Fall ist nicht OK (Zeilen oben)."
+            exit 1
+          fi
+
+      # Nur Information: Rechnet die getrimmte AOT-App Projekt 1030 wie die Basis? Die
+      # Basis kommt aus dem iZ6-Schritt oben (dort steht ihr Name genau einmal).
+      - name: "G4a: Rechennachweis 1030 der getrimmten App (Information)"
+        id: g4a_1030
+        if: ${{ !cancelled() && inputs.abnahme_g4a }}
+        continue-on-error: true
+        run: |
+          test -d artifacts/reflauf/ref/Projekt_1030 || { echo "Basis aus dem iZ6-Schritt fehlt."; exit 1; }
+          test -d artifacts/g4a/pruefung_getrimmt/Projekt_1030 || { echo "Keine CSV der getrimmten App."; exit 1; }
+          dotnet run --project EPOS.Referenzlauf -c Release -- \
+            vergleich artifacts/reflauf/ref artifacts/g4a/pruefung_getrimmt
+
+      - name: "G4a: Ergebnisse als Artefakt"
+        if: ${{ always() && inputs.abnahme_g4a }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4a-simulator
+          path: artifacts/g4a
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: "G4a: Zusammenfassung"
+        if: ${{ always() && inputs.abnahme_g4a }}
+        continue-on-error: true
+        run: |
+          {
+            echo "### Abnahme G4a - Simulator (Release, AOT, getrimmt)"
+            echo ""
+            echo "| Schritt | Ergebnis |"
+            echo "|---|---|"
+            echo "| Bau getrimmt | ${{ steps.g4a_bau.outcome }} |"
+            echo "| Lauf mit Importprobe | ${{ steps.g4a_lauf.outcome }} |"
+            echo "| Auswertung der Importprobe | ${{ steps.g4a_auswertung.outcome }} |"
+            echo "| Rechennachweis 1030 getrimmt (Information) | ${{ steps.g4a_1030.outcome }} |"
+            echo ""
+            echo '```'
+            cut -c1-300 artifacts/g4a/importzeilen.txt 2>/dev/null || echo "(keine Importzeilen)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # =====================================================================================
+  # ABNAHME G4a - GERAETEBAU (G4-8; ADR-003 Kraft 5). Nur mit dem Eingang abnahme_g4a.
+  # ios-arm64, Release, OHNE Signatur: EnableCodeSigning=false ueberspringt die Suche
+  # nach Zertifikat und Bereitstellungsprofil (_DetectSigningIdentity) und das Signieren
+  # des Pakets. Getrimmt wird mit der Geraetevorgabe TrimMode=partial; LLVM ist aus
+  # (Laufzeit, s. o.). TrimmerSingleWarn=false zeigt IL-Warnungen je Aufrufstelle statt
+  # einer Sammelwarnung je Assembly. Eigener Job, parallel zum Simulator: Er kann den
+  # Basisnachweis weder ueber die Zeitgrenze noch ueber das Ergebnis beruehren
+  # (continue-on-error auf Job- und Schrittebene).
+  # ZWEI BAUTEN (ADR-003 Aufgabe 7): erst der gewoehnliche, dann derselbe mit
+  # -p:OhneXbim=true - ohne die Paketzeile Xbim.IO.MemoryModel und ohne die Dateien, die
+  # xBIM ansprechen (EPOS.Kern.csproj). Die Differenz der beiden Pakete ist der Zuwachs
+  # durch xBIM. Beide Programme werden auf ihre Zielplattform geprueft (LC_BUILD_VERSION
+  # "platform IOS"): Der erste Geraetebau (36106562267) linkte gegen das Simulator-SDK,
+  # weil RuntimeIdentifiers im Projekt "iossimulator-arm64" nannte (EPOS.iOS.csproj).
+  # =====================================================================================
+  geraetebau:
+    if: ${{ inputs.abnahme_g4a }}
+    runs-on: macos-26
+    timeout-minutes: 120
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: LFS-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-testdb-${{ hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') }}
+
+      # Die Seed-Datenbank geht ins Paket und damit in die gemessene Paketgroesse. Faellt
+      # der Abruf aus, baut der Schritt unten trotzdem (mit dem Zeiger) - vermerkt hier.
+      - name: Seed-Datenbank aus LFS
+        continue-on-error: true
+        run: |
+          git lfs pull --include="${{ env.SEED }}" --exclude=""
+          echo "Seed-Datenbank: $(wc -c < "${{ env.SEED }}" | tr -d ' ') Byte"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Workload maui-ios (Set 10.0.400.1)
+        run: |
+          dotnet workload install maui-ios --version 10.0.400.1 --skip-sign-check
+          dotnet workload list
+
+      - name: "G4a: Geraetebau ios-arm64 (Release, ohne Signatur, AOT ohne LLVM)"
+        id: bau
+        continue-on-error: true
+        timeout-minutes: 45
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/geraet
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release \
+            -f net10.0-ios -r ios-arm64 \
+            -p:SeedDb=../${{ env.SEED }} \
+            -p:EnableCodeSigning=false \
+            -p:MtouchUseLlvm=false \
+            -p:TrimmerSingleWarn=false \
+            2>&1 | tee artifacts/geraet/bau_geraet.log
+
+      - name: "G4a: IL-Warnungen und Groessen"
+        id: auswertung
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          L=artifacts/geraet/bau_geraet.log
+          echo "Bau: ${{ steps.bau.outcome }}"
+          echo "--- Fehler ---"
+          grep -E ": error [A-Z]+[0-9]+" "$L" | sed -E 's/ \[[^]]*\]$//' | sort -u | head -n 40 || echo "(keine)"
+          echo "--- IL-Warnungen ---"
+          grep -E "IL[23][0-9]{3}:" "$L" | sed -E 's/ \[[^]]*\]$//' | sort -u > artifacts/geraet/il_warnungen.txt || true
+          echo "eindeutig: $(wc -l < artifacts/geraet/il_warnungen.txt)"
+          grep -oE "IL[23][0-9]{3}" artifacts/geraet/il_warnungen.txt | sort | uniq -c | sort -rn || true
+          echo "--- davon xBIM, Import, Kern ---"
+          grep -iE "xbim|ifc|gbxml|import|EPOS\.Kern|WindowsFormsApplication1" artifacts/geraet/il_warnungen.txt > artifacts/geraet/il_warnungen_xbim_import.txt || true
+          cat artifacts/geraet/il_warnungen_xbim_import.txt
+          APP=EPOS.iOS/bin/Release/net10.0-ios/ios-arm64/EPOS.iOS.app
+          if [ -d "$APP" ]; then
+            echo "--- Paket ---"
+            echo "gesamt: $(du -sk "$APP" | cut -f1) KB"
+            ( cd "$APP" && find . -type f -exec stat -f '%z %N' {} + | sort -rn ) > artifacts/geraet/paketinhalt.txt
+            head -n 25 artifacts/geraet/paketinhalt.txt
+            echo "--- xBIM im Paket (Metadaten; das IL ist bei AOT gestrippt) ---"
+            grep -i xbim artifacts/geraet/paketinhalt.txt || true
+            awk 'tolower($2) ~ /xbim/ {s+=$1} END {printf "Summe xBIM im Paket: %.1f MB\n", s/1048576}' artifacts/geraet/paketinhalt.txt
+          else
+            echo "Kein App-Paket - der Bau ist fehlgeschlagen."
+          fi
+          echo "--- AOT-Objekte (Code, statisch ins Hauptprogramm gelinkt) ---"
+          find EPOS.iOS/obj/Release/net10.0-ios/ios-arm64 -type f -name '*.o' -exec stat -f '%z %N' {} + 2>/dev/null | sort -rn > artifacts/geraet/aot_objekte.txt || true
+          head -n 20 artifacts/geraet/aot_objekte.txt
+          awk 'tolower($2) ~ /xbim/ {s+=$1} END {printf "Summe AOT-Objekte xBIM: %.1f MB\n", s/1048576}' artifacts/geraet/aot_objekte.txt
+          awk '{s+=$1} END {printf "Summe AOT-Objekte gesamt: %.1f MB\n", s/1048576}' artifacts/geraet/aot_objekte.txt
+          echo "--- Zielplattform des Programms (LC_BUILD_VERSION; Geraet = IOS, nicht IOSSIMULATOR) ---"
+          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist" 2>/dev/null || echo EPOS.iOS)
+          xcrun vtool -show-build "$APP/$EXE" > artifacts/geraet/plattform_mit_xbim.txt 2>&1 || true
+          grep -E "platform|minos|sdk" artifacts/geraet/plattform_mit_xbim.txt || echo "(kein Programm)"
+          echo "RID-Warnung im Protokoll: $(grep -c 'will override the value for RuntimeIdentifiers' "$L" || true)"
+          test "${{ steps.bau.outcome }}" = "success"
+          grep -qE "^[[:space:]]*platform (IOS|2)$" artifacts/geraet/plattform_mit_xbim.txt
+
+      # ADR-003 Aufgabe 7: derselbe Bau ohne xBIM. Das Paket des ersten Baus wird vorher
+      # beiseitegelegt, bin/obj aller Projekte geraeumt (die Paketzeile fehlt dann schon
+      # beim Restore; nichts Altes darf in den zweiten Bau rutschen).
+      - name: "G4a: Geraetebau ohne xBIM (ADR-003 Aufgabe 7)"
+        id: bau_ohne
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 45
+        run: |
+          set -o pipefail
+          APP=EPOS.iOS/bin/Release/net10.0-ios/ios-arm64/EPOS.iOS.app
+          mkdir -p "$RUNNER_TEMP/mit_xbim"
+          if [ -d "$APP" ]; then cp -R "$APP" "$RUNNER_TEMP/mit_xbim/"; fi
+          find . -mindepth 2 -maxdepth 2 -type d \( -name bin -o -name obj \) -not -path './.git/*' -prune -exec rm -rf {} +
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release \
+            -f net10.0-ios -r ios-arm64 \
+            -p:SeedDb=../${{ env.SEED }} \
+            -p:EnableCodeSigning=false \
+            -p:MtouchUseLlvm=false \
+            -p:TrimmerSingleWarn=false \
+            -p:OhneXbim=true \
+            2>&1 | tee artifacts/geraet/bau_geraet_ohne_xbim.log
+
+      # Groessen beider Pakete: Summe der Dateien, das Programm (AOT-Code statisch gelinkt),
+      # die xBIM-Dateien im Paket, das gezippte Paket (Naeherung der Ladegroesse) und die
+      # Seed-Datenbank, die in beiden gleich ist. Dazu die Zielplattform des zweiten Baus.
+      - name: "G4a: Paketgroesse mit und ohne xBIM"
+        id: vergleich
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          groessen() {  # $1 = Variante, $2 = Paketordner
+            local ziel=artifacts/geraet/groessen_$1.txt
+            if [ ! -d "$2" ]; then echo "kein Paket" | tee "$ziel"; return 0; fi
+            ditto -c -k --keepParent "$2" "$RUNNER_TEMP/paket_$1.zip"
+            {
+              echo "paket_byte=$(find "$2" -type f -exec stat -f %z {} + | awk '{s+=$1} END {print s+0}')"
+              local exe; exe=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$2/Info.plist" 2>/dev/null || echo EPOS.iOS)
+              echo "programm_byte=$(stat -f %z "$2/$exe" 2>/dev/null || echo 0)"
+              echo "xbim_dateien_byte=$(find "$2" -type f -iname '*xbim*' -exec stat -f %z {} + | awk '{s+=$1} END {print s+0}')"
+              echo "zip_byte=$(stat -f %z "$RUNNER_TEMP/paket_$1.zip")"
+              echo "seed_byte=$(stat -f %z "$2/Kenndaten.sqlite" 2>/dev/null || echo 0)"
+            } | tee "$ziel"
+          }
+          wert() { v=$(grep "^$2=" "artifacts/geraet/groessen_$1.txt" | cut -d= -f2); echo "${v:-0}"; }
+          mb() { awk -v b="$1" 'BEGIN {printf "%.2f", b/1048576}'; }
+          echo "--- mit xBIM ---"
+          groessen mit_xbim "$RUNNER_TEMP/mit_xbim/EPOS.iOS.app"
+          echo "--- ohne xBIM ---"
+          APP=EPOS.iOS/bin/Release/net10.0-ios/ios-arm64/EPOS.iOS.app
+          groessen ohne_xbim "$APP"
+          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist" 2>/dev/null || echo EPOS.iOS)
+          xcrun vtool -show-build "$APP/$EXE" > artifacts/geraet/plattform_ohne_xbim.txt 2>&1 || true
+          grep -E "platform|minos|sdk" artifacts/geraet/plattform_ohne_xbim.txt || echo "(kein Programm)"
+          grep -i xbim artifacts/geraet/bau_geraet_ohne_xbim.log | grep -iE "error|warn" | head -n 10 || true
+          echo "--- Zuwachs durch xBIM (MB zu 1 048 576 Byte) ---"
+          {
+            echo "| Groesse | mit xBIM | ohne xBIM | Zuwachs |"
+            echo "|---|---|---|---|"
+            for k in paket_byte programm_byte xbim_dateien_byte zip_byte seed_byte; do
+              m=$(wert mit_xbim $k); o=$(wert ohne_xbim $k)
+              echo "| ${k%_byte} | $(mb $m) | $(mb $o) | $(mb $((m - o))) |"
+            done
+          } | tee artifacts/geraet/vergleich_xbim.md
+          test "${{ steps.bau_ohne.outcome }}" = "success"
+          grep -qE "^[[:space:]]*platform (IOS|2)$" artifacts/geraet/plattform_ohne_xbim.txt
+
+      - name: "G4a: Geraetebau als Artefakt"
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: g4a-geraetebau
+          path: artifacts/geraet
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: "G4a: Zusammenfassung Geraetebau"
+        if: ${{ always() }}
+        continue-on-error: true
+        run: |
+          {
+            echo "### Abnahme G4a - Geraetebau ios-arm64 (Release, ohne Signatur)"
+            echo ""
+            echo "| Schritt | Ergebnis |"
+            echo "|---|---|"
+            echo "| Bau | ${{ steps.bau.outcome }} |"
+            echo "| Auswertung (samt Zielplattform IOS) | ${{ steps.auswertung.outcome }} |"
+            echo "| Bau ohne xBIM | ${{ steps.bau_ohne.outcome }} |"
+            echo "| Paketgroesse mit und ohne xBIM (samt Zielplattform IOS) | ${{ steps.vergleich.outcome }} |"
+            echo ""
+            echo "Zielplattform: $(grep -hE 'platform' artifacts/geraet/plattform_mit_xbim.txt 2>/dev/null | tr -s ' ' | head -n 1) / ohne xBIM: $(grep -hE 'platform' artifacts/geraet/plattform_ohne_xbim.txt 2>/dev/null | tr -s ' ' | head -n 1)"
+            echo ""
+            echo "Paketgroesse in MB (1 048 576 Byte):"
+            echo ""
+            cat artifacts/geraet/vergleich_xbim.md 2>/dev/null || echo "(kein Vergleich)"
+            echo ""
+            echo "IL-Warnungen (eindeutig): $(cat artifacts/geraet/il_warnungen.txt 2>/dev/null | wc -l | tr -d ' ')"
+            echo ""
+            echo '```'
+            head -n 40 artifacts/geraet/il_warnungen_xbim_import.txt 2>/dev/null | cut -c1-300 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

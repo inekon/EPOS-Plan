@@ -1,9 +1,9 @@
-# Die Protokolle der 31 entfernten Referenzbasen
+# Die Protokolle der 33 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **31 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **33 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026. **32 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14 und das von R15 am 25.09.2026. **34 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger`](../../../Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger/);
+> [`Referenzlaeufe/2026-09-25_R16_Anlagenprio`](../../../Referenzlaeufe/2026-09-25_R16_Anlagenprio/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -59,6 +59,8 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-22_R11_Bestandsbefunde` | 22.09.2026 | CI-Basis nach der Stufe GB der Gebäudesimulation (Bestandsbefunde des Tagesbilanz-Wegs, `Bauweise` von Gebäude 10576); die letzte Basis allein auf dem Tagesbilanz-Weg; dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R12 am 23.09.2026 | [`2026-09-22_R11_Bestandsbefunde/protokoll.txt`](2026-09-22_R11_Bestandsbefunde/protokoll.txt) |
 | `2026-09-23_R12_Gebaeudemodell` | 23.09.2026 | CI-Basis nach der Schlusswelle G1 + G2 der Gebäudesimulation (VDI 6007 als Vorgabemodell aller Gebäude, 1040 auf dem Tagesbilanz-Weg); ungekühlte Gebäude noch an `Maximaleraumtemperatur` gekappt; dreizehn Projekte, 399 CSV, 2 239 Skalare — abgelöst durch R13 am 23.09.2026 | [`2026-09-23_R12_Gebaeudemodell/protokoll.txt`](2026-09-23_R12_Gebaeudemodell/protokoll.txt) |
 | `2026-09-23_R13_Kuehlung` | 23.09.2026 | CI-Basis nach der Schlusswelle KU1 der Kühlung (E32: ungekühlte Gebäude laufen frei; Projekt 1017 als Referenzprojekt mit Kühlung, Kältebedarf ungedeckt); dreizehn Projekte, 387 CSV, 2 207 Skalare — abgelöst durch R14 am 24.09.2026 | [`2026-09-23_R13_Kuehlung/protokoll.txt`](2026-09-23_R13_Kuehlung/protokoll.txt) |
+| `2026-09-24_R14_Kaelteerzeuger` | 24.09.2026 | CI-Basis nach der Schlusswelle KU2 der Kühlung (Projekt 1017 mit Kälteerzeuger: die Wärmepumpe kühlt über ihre Kühlkennlinie); dreizehn Projekte, 394 CSV, 2 249 Skalare — abgelöst durch R15 am 25.09.2026 | [`2026-09-24_R14_Kaelteerzeuger/protokoll.txt`](2026-09-24_R14_Kaelteerzeuger/protokoll.txt) |
+| `2026-09-25_R15_Anlagenkopplung` | 25.09.2026 | CI-Basis nach der Stufe AK1 der Anlagenkopplung (Referenzprojekt 1047: Kopie von 1017 mit gekoppeltem Heizkreis und gekoppelter Kühlübergabe); getragen bis Schemastand 142; vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R16 am 25.09.2026 | [`2026-09-25_R15_Anlagenkopplung/protokoll.txt`](2026-09-25_R15_Anlagenkopplung/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -1367,6 +1369,742 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 > **Die Vorgängerbasis `2026-09-23_R12_Gebaeudemodell`**, die erste Basis auf dem VDI-Weg, ist mit
 > dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu G1 + G2 und
 > den Nachträgen zu den Schemaständen 104 bis 113 und zum Zapfprofil-Testkatalog steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R14 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 24. bis zum 25.09.2026 die Basis R14 beschrieben — Anlass
+(Schlusswelle KU2 der Kühlung: Projekt 1017 mit Kälteerzeuger), die Tabelle für 1017 gegen R13 und die
+Nachträge zu den Schemaständen 119 bis 139 (140 und 141 am Ende), mit denen die Basis ergebnisneutral geblieben ist. Er steht
+hier im Wortlaut, weil diese Nachträge die Ergebnisneutralität der Schritte belegen; die Verweise sind auf
+diesen Ort umgestellt.
+
+**Abgelöst wurde R14 durch `2026-09-25_R15_Anlagenkopplung`** (Stufe AK1 der Anlagenkopplung, fünfte
+Welle, vom Anwender am 25.09.2026 beauftragt: das Referenzprojekt 1047 mit Kopplung — eine Kopie von 1017
+mit gekoppeltem Heizkreis und gekoppelter Kühlübergabe — kommt als vierzehntes Projekt dazu). Die
+dreizehn Projekte von R14 bleiben byte-gleich; die Tabelle 1017 gegen 1047 steht im Abschnitt „Aktuelle
+Basis“ von [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-24_R14_Kaelteerzeuger/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046), **394 CSV**, **2 249 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
+Schemastand **119**, LFS-SHA-256 `63cc2d64…`; heute Schemastand **139**, LFS-SHA-256 `f700e81e…`,
+Nachträge unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
+Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die vierte und letzte Welle der Stufe KU2 der Kühlung** (vom Anwender am 24.09.2026 samt
+> dem Einfrieren beauftragt). Eine Änderung an den Daten, zwei an der Wirtschaftlichkeit:
+>
+> 1. **Testdatenbank: das Referenzprojekt mit Kälteerzeuger** (Kühlkonzept 10.4, Einfrierregel „gesäte
+>    Kältedaten" oben): Die Wärmepumpe von 1017 kühlt — vier Zellen und zehn Zeilen über
+>    [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](../../../Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py):
+>    `Tab_Einstellungen.Tool_3` leer → „Wärmepumpe" (Kaskadenplatz 3), Projektgerät 1017033
+>    `Kuehlbetrieb` 0 → 1, `Kuehl_Vorlauf` NULL → 18, `Kuehl_Hilfsstromanteil` NULL → 0,05, dazu die
+>    zehn Zeilen der gesäten Kühlkennlinie in `Tab_Kenndaten_Kuehlung` (die Tabelle war leer; SQLite
+>    führt dazu die Zeile der Tabelle in `sqlite_sequence`). Sicherung vorher außerhalb des
+>    Repositoriums; der Zellvergleich aller 132 Tabellen (10 498 993 Zellen) zeigt genau diese vier
+>    Zellen, zehn Zeilen und die Sequenzzeile, die 14 Sichten und 208 Indizes gleich;
+>    `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 784 704 Byte, ein zweiter Lauf
+>    des Skripts ändert nichts.
+> 2. **E35 und die Reste von E34** — Grund- und Leistungspreis eines eigenen Zählers, der Preis des
+>    vermiedenen Bezugs, die Bemessungsmenge nach § 9b StromStG, das Mengenszenario — ändern Kosten,
+>    nicht die Simulation; der Referenzlauf führt keine Kosten, und kein Referenzprojekt trägt einen
+>    Kühlträger. Vor der Datenänderung waren alle dreizehn Projekte gegen R13 byte-gleich.
+>
+> **Warum so** — Kaskadenplatz 3 hinter BHKW und Elektrokessel (ohne Platz rechnet die Maschine nicht,
+> auf Platz 3 bleibt die Wärmeseite fast unverändert), Kühl-Vorlauf 18 °C (Flächenkühlung, sensible
+> Kälte), Hilfsstromanteil 5 % (die Basis trägt den Zuschlag), kein Kühlträger (der Referenzfall ohne
+> den Sonderweg aus E34), eine gesäte Kühlkennlinie aus runden, erfundenen Werten (der Katalogsatz des
+> Geräts trägt keine), die Nennkühlleistung bleibt leer: Kühlkonzept 10.4.
+>
+> **Allein 1017 bewegt sich, zwölf Projekte bleiben byte-gleich** (alle Dateien):
+>
+> | 1017 | R13 | R14 |
+> |---|---:|---:|
+> | Kältebedarf [MWh/a] | 2,52 | 2,52 |
+> | Kältedeckung durch die Wärmepumpe [MWh/a] | — | 2,48 (98,4 %) |
+> | ungedeckte Kälte `Kaelterestbedarf` [MWh/a] | 2,52 | 0,04 |
+> | Kältestrom, davon Hilfsstrom [MWh/a] | — | 0,55; 0,03 |
+> | Jahresarbeitszahl Kälte (EER-Jahreswert) | — | 4,52 |
+> | Kühltage | — | 43 |
+> | Wärme der Wärmepumpe auf Platz 3 [MWh/a] | — | 0,04 |
+> | Restwärme [MWh/a] | 0,14 | 0,10 |
+> | Netzbezug `Stromrestbedarf` [MWh/a] | 655,31 | 655,88 |
+>
+> Der Kältestrom kommt ganz aus dem Netz (0,5487 von 0,5487 MWh/a): In den Kühlstunden deckt die
+> Eigenerzeugung schon den übrigen Strombedarf nicht — Stromspeicher, BHKW und Elektrokessel bleiben
+> Zeichen für Zeichen, wie sie waren; 1017 führt keine Photovoltaik. Kosten und CO₂ führt der
+> Referenzlauf nicht; gerechnet (`ReferenzprojektKaelteerzeugerTests`) steigen die Stromkosten des
+> Anschlusses um 283,55 €/a, der Kältestrom trägt 273,60 €/a und 0,24 t/a CO₂.
+>
+> **Dateien und Schlüssel:** 1017 bekommt die sieben Dateien der Wärmepumpe (`heizstab.csv`,
+> `wp_produktion.csv`, `wp_quellentemperatur.csv`, `wp_restwaerme.csv`, `wp_strom.csv`,
+> `wp_waermebedarf.csv`, `wp_warmwasserbedarf.csv`) und 42 Skalare (`Kaelte.*`, `Kaelte[0].*`,
+> `Waermepumpe.*`, `WaermepumpeModul[0].*`, sieben Vektorsummen) — 387 → 394 CSV, 2 207 → 2 249
+> Skalare. Gegen R13 meldet der Vergleich 1 689 Abweichungen, alle in 1017: die neuen Dateien und
+> Schlüssel, die geänderten Skalare und die Reihen `reststrom_viertelstunde.csv` (1 660 geänderte
+> Viertelstunden) und `restwaerme.csv` (19 geänderte Stunden).
+>
+> **Kein Fehlschlag, kein NaN, keine Ablehnung:** 13/13 Projekte gerechnet.
+>
+> **Einfrierregeln:** Die Regel „gesäte Kältedaten" umfasst jetzt die Kälteerzeugung. Emissionsfaktoren,
+> PV-Modulkoeffizienten, Flottenstand 1046 und gesäte Gebäudedaten sind nicht berührt.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich** (394/394 CSV) und
+> **GESAMT: PASS** gegen diese Basis (4 207 049 Werte); ebenso byte-gleich ein Lauf vor dem Zusammenführen
+> mit der Szenariopflege E9b (#462) — sie bewegt kein Referenzprojekt.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+>   --ziel Referenzlaeufe/2026-09-24_R14_Kaelteerzeuger
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
+> [Protokoll der Schlusswelle KU2](../Protokolle/Gebaeudesimulation/2026-09-24_Schlusswelle_KU2.md)
+> und im [Status der Gebäudesimulation](../../aktuell/Status_Gebaeudesimulation_VDI6007.md).
+
+> **Nachtrag: Schemastände 120 und 121 (Zusammenführung mit E10 #463 und #468), die Basis bleibt.** Die
+> Testdatenbank ist die Fassung von origin mit Schemastand **121** (LFS-SHA-256 `00fbbb8b…`; die
+> Schritte 120 und 121 stehen mit ihren Nachträgen beim R13-Abschnitt unter `ueberholt/`), auf die
+> [`Skripte/kaelteerzeuger_1017_referenzprojekt.py`](../../../Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py) erneut
+> angewandt ist; `kuehlung_1017_referenzprojekt.py` und `gebaeude_10612_233_bauweise.py` finden nichts zu
+> tun, ein zweiter Lauf des Skripts ändert nichts. Zellvergleich aller 132 Tabellen gegen die Fassung von
+> origin (10 499 019 Zellen): genau die vier Zellen, zehn Zeilen und die Sequenzzeile der vierten Welle;
+> 14 Sichten und 209 Indizes gleich, `integrity_check` ok, `foreign_key_check` leer, 67 792 896 Byte
+> (LFS-SHA-256 `9acda529…`). Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS**
+> (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag: Schemastände 122 und 123 (Anlagenkopplung, Stufe AK1 Welle 1), die Basis bleibt.** Die
+> Testdatenbank steht über `Werkzeuge/Testdatenbankschema` auf Schemastand **123**: Schritt 122
+> (`AK-S1`) legt die dreizehn Spalten der Wärmeübergabe an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`
+> und baut `Abfrage_Projektgebaeude` ein drittes Mal neu (90 Spalten), dazu
+> `Tab_Einstellungen.Anlagenkopplung` (Wertliste AUS/AK1/AK2/AK3, NULL = aus); Schritt 123 (`AK-S3`,
+> Wärmeteil) die drei nullbaren Ergebnisspalten `Vorlauf_Mittel`, `Ruecklauf_Mittel` und
+> `Uebergabe_Begrenzt_Stunden` an `Tab_ErgebnisEnergiebedarf`. Reines DDL: Sicherung vorher außerhalb
+> des Repositoriums; der Zellvergleich aller 132 Tabellen gegen die Fassung 121 (10 499 091 Zellen)
+> zeigt allein `SchemaVersion` 121 → 123, die 30 neuen Spalten sind leer (die vier Schalter 0), und
+> nur die DDL der vier Tabellen und der Sicht hat sich geändert; 14 Sichten und 209 Indizes, 131 von
+> 132 Tabellen STRICT, `integrity_check` ok, `foreign_key_check` leer, 67 792 896 Byte (LFS-SHA-256
+> `1ba28e23…`). Ein zweiter Lauf des Werkzeugs legt nichts an; die Migration der Schale ergibt aus der
+> Fassung 121 dieselbe DDL und dieselben Zellen. Kein Rechenweg liest die Spalten, und die drei
+> Ergebnisspalten gehen erst mit einem Wert in `aggregate.csv` (`Referenzlauf/Ergebnisexport.cs`).
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 207 049 Werte, 394/394 CSV
+> byte-gleich, außer `protokoll.txt`). Einfrierregeln sind nicht berührt; die Regel „gesäte
+> Auslegungsdaten der Übergabe" (Anlagenkopplung 11.4) entsteht erst mit dem Referenzprojekt der
+> Kopplung.
+
+> **Nachtrag: Schemastand 119 (Kühlung, Stufe KU2, Welle 3), die Basis bleibt.** Migrationsschritt
+> **119** (`SCHRITT_119_KAELTESTROM`: `Tab_Energieanlagen.Kuehl_EigenerZaehler` — 0/1 mit `CHECK`, nullbar,
+> ohne Vorgabe, NULL = anteilig am Netzbezug, Entscheid E34 — und sieben nullbare Ergebnisspalten der
+> Kälteseite an `Tab_ErgebnisWaermepumpe` (`Kaelteproduktion_WP`, `Stromverbrauch_Kuehlung`) und
+> `Tab_ErgebnisWaermepumpeModul` (`Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`,
+> `Kuehl_carrier_id`, `Kuehl_EigenerZaehler`); Quelle `KuehlungSchema`), **reines DDL** (Kühlkonzept 6.1–6.4,
+> 8.4). Er folgt auf die Schritte 115 (Zapfprofil, Nachtrag oben) und 116 bis 118 (Szenarioabdeckung der
+> Wirtschaftlichkeit, E9a) und ist auf deren Fassung **118** nachgezogen, mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`; ein zweiter Lauf
+> findet nichts offen. Zellvergleich aller 132 Tabellen (samt `sqlite_sequence`) gegen die Fassung 118
+> (10 498 685 Zellen): `SchemaVersion` 118 → 119 und die acht neuen Spalten, alle NULL, sonst nichts; die 14
+> Sichten und alle 208 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer, 131 von 131
+> Fachtabellen STRICT, Größe unverändert 67 784 704 Byte. **Keine Einfrierregel ist berührt:** Die neuen
+> Spalten tragen keinen gesäten Wert; die Ergebnisspalten schreibt nur ein Lauf mit Kältekaskade, und kein
+> Referenzprojekt kühlt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis
+> (4 145 687 Werte, 387/387 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `6259b348…`).
+
+> **Nachtrag E10 (#463): Schemastand 120 und der Anschluss der Speicherflotte an die
+> Nutzungsdauertabelle, die Basis bleibt.** Migrationsschritt **120**
+> (`SCHRITT_120_NUTZUNGSDAUER_SAETZE`, Nutzungsdauer-Konzept Stufe S3), **reines DML** an
+> `Tab_Nutzungsdauer`: Die leeren Satzzellen der Standardzeilen bekommen die Mitte des
+> Empfehlungsbereichs derselben Position der Betriebsvorlagen-Saat (Quelle `NutzungsdauerSaetze`) —
+> fünf Zellen `Instandsetzung_Prozent`: Heizkessel · Wärmeerzeuger 2,0, BHKW · Modul 6,0,
+> Wärmezentrale · Rohrleitungen 2,0, Stromeinspeisung · Netzanschluss 2,0, Bauliche Anlagen 1,25;
+> `Wartung_Prozent` bleibt überall leer. Mit `Werkzeuge/Testdatenbankschema` auf der Fassung 119
+> nachgezogen; ein zweiter Lauf setzt nichts (0/5). Zellvergleich gegen die Fassung 119: allein
+> `SchemaVersion` 119 → 120 und diese fünf Zellen; `integrity_check` ok, `foreign_key_check` leer,
+> Größe unverändert 67 784 704 Byte (LFS-SHA-256 `52c4729d…`). **Ergebnisneutral:** Ein Satz der
+> Tabelle rechnet erst, wenn der Anwender ihn über „Sätze vorbelegen…" oder die Übernahme einer
+> Kostenvorlage in eine Position schreibt; der Rechenweg liest weiter den Satz der Position.
+>
+> **Mit derselben Welle** rechnet die Wirtschaftlichkeit der Speicherflotten-STUDIE den Restwert je
+> Einheit linear aus ihrer Nutzungsdauer auf der Ersatzkette der Flotte (Betrag der letzten
+> Beschaffung × Restdauer ÷ Nutzungsdauer); eine Einheit ohne eigenes Ersatzintervall nimmt die
+> Nutzungsdauer der Standardzeile „Stromspeicher · Batterie" (10 a), und der feste Restwert je
+> Einheit ist ein Altfeld, das nicht mehr rechnet. Der Projektlauf rechnet keine
+> Flottenwirtschaftlichkeit, und `aggregate.csv` führt für 1046 nur die Physik der Flotte — die
+> Referenz bewegt sich nicht (dritte Einfrierregel, Absatz „Anschluss an die Nutzungsdauertabelle").
+> Referenzlauf aller dreizehn Projekte gegen diese Basis: **13/13 PASS** (4 145 687 Werte, 387/387 CSV
+> byte-gleich, außer `protokoll.txt`) — deshalb keine neue Basis R14.
+
+> **Nachtrag: Schemastand 124 (Zapfprofilgenerator, Stufe Z4, Schemaschritt T3) und drei Setzungen des
+> freien Paketteils, die Basis bleibt.** Migrationsschritt **124** (`SCHRITT_124_ZAPFPROFIL_LAUFANGABEN`;
+> Quelle `TwwSchema.SpaltenT3`, die Wertemengen stehen je einmal in `TwwSchema` für DDL und Schreibweg): an
+> `Tab_TwwProjekt` die Laufangaben der Auslegung `Erzeugerart` (1, 2), `Uebertrager_Werkstoff` (1, 2),
+> `Personen_Auto` (0/1, Vorgabe 1), `Personen_Manuell` (≥ 0) und `Fuellstand_Bezug` (1 bis 4), an
+> `Tab_TwwBedarfstag_STAMM` die `Bezugsart` (1 bis 7, nullbar) — alle mit `CHECK`, sonst nullbar.
+> Nachgezogen auf der Fassung von origin mit Schemastand **123** (Nachtrag Anlagenkopplung oben,
+> `1ba28e23…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (sechs Spalten
+> angelegt; ein zweiter Lauf legt nichts an), danach
+> [`Skripte/tww_testkatalog_fiktiv.py`](../../../Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py) mit `--stochastik`: Es führt am
+> Ecodesign-Zapfprofil L des freien Paketteils die Bezugsart 2 (Wohneinheiten) nach und spielt aus
+> [`Katalogpaket_frei/Tab_TwwParameter_STAMM.csv`](../../../Referenzlaeufe/Katalogpaket_frei/LIESMICH.md) die drei Setzungen
+> `Zapfprofil.Zirkulation.Hinweisverhaeltnis` (1,5), `Zapfprofil.Anzeigetemperatur` (45 °C) und
+> `Zapfprofil.Stundenschwelle` (0,1 kW) nach der Regel der Testdatenbank ein — Setzungen von INEKON zur
+> Bestätigung (ZU21) —, zusammen 3 angelegt, 1 nachgeführt; ein zweiter Lauf meldet 0/0. Zellvergleich
+> aller 132 Tabellen gegen die Fassung 123 (10 503 133 Zellen): `SchemaVersion` 123 → 124, die sechs neuen
+> Spalten — `Tab_TwwProjekt` ohne Zeile, die Bezugsart allein am Ecodesign-Tag gesetzt, an den drei
+> fiktiven Tagen NULL —, die drei Zeilen in `Tab_TwwParameter_STAMM` (samt `sqlite_sequence`), sonst
+> nichts; die 14 Sichten und alle 209 Indizes unverändert. `integrity_check` ok, `foreign_key_check` leer,
+> Größe unverändert 67 792 896 Byte (LFS-SHA-256 `1d971b1a…`). **Keine Einfrierregel ist berührt:**
+> Kein Referenzprojekt steht auf dem Generator. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
+> diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag E15 (#478): Schemastand 125 (Risikomodul der Wirtschaftlichkeit), die Basis bleibt.**
+> Migrationsschritt **125** (`SCHRITT_125_RISIKOMODUL`; Quelle `SchemaKatalog.RisikomodulSpalten`), **reines DDL**
+> an `Tab_ProjektWirtschaftlichkeit`: `Risiko_Art` (TEXT(10); leer = kein Risiko, `ZINS`, `ABZUG`),
+> `Risiko_Zinszuschlag` [%-Punkte], `Risiko_Verlust` [€ je Periode] und `Risiko_Wahrscheinlichkeit` [%], nullbar,
+> ohne Vorgabe (DIN EN 17463, 6.5 und Anhang F; Konzept Wirtschaftlichkeit § 2.11.2, V‑G7). Nachgezogen auf der
+> Fassung **124** (Nachtrag oben, `1d971b1a…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: vier Spalten angelegt,
+> keine Tabelle, Marker 125. `integrity_check` ok, `foreign_key_check` leer, Größe unverändert 67 792 896 Byte
+> (LFS-SHA-256 `6c4c32f9…`); die vier Spalten sind in allen fünf Parameterzeilen leer. **Ergebnisneutral:** Leer
+> heißt „kein Risiko", und kein Referenzprojekt trägt eines; die Wirtschaftlichkeit geht ohnehin nicht in
+> `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen
+> diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag: Schemastand 126 (Reparatur der Gebäude-Katalogsätze, Welle #485), die Basis bleibt.**
+> Migrationsschritt **126** (`SCHRITT_GEBAEUDE_KATALOGREPARATUR`; die Nummer steht allein bei
+> `GebaeudeKatalogReparatur.SCHRITT`, dort auch Anweisungen und Schadensbilder), **reines DML** an
+> `Tab_Gebaeude_STAMM`, je Satz nach Bezeichner UND Schadensbild (Konzept Administrationsdialoge 7.1 (a)):
+> `Krankenhaus_92-EnEV2016` U-Wert Fenster 0,09 → 1,3, Fensterfläche Nord 10 000 → 250 m², gesamte
+> Fensterfläche 11 645,9 → 1 895,9 m² (Süd + Ost/West + Nord wie im Editor); „Fläche je Nutzer" leer →
+> Wohnfläche ÷ Bewohner bei `EFH-BZ2` (40,0), `KrankenH-F-U-400` (50,0, Bewohner 360 → 360,24 wie die
+> Geschwister), `KMEH-M-U-54` (31,78), `Z-EFH-A-S-126` (28,71); die acht Testreste 275–282
+> (`Z2-EFH-A-S*`, `EFH-BZ2 XXX`) gelöscht — nur, weil keine Projektkopie sie über
+> `ID_Gebaeude_Stamm` oder den Namen führt (ein benutzter Rest bliebe und stünde im Protokoll).
+> Nachgezogen auf der Fassung 125 (Nachtrag E15 oben, `6c4c32f9…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (offen
+> vorher 14, danach 0; ein zweiter Lauf findet nichts). Zellvergleich aller Tabellen gegen die Fassung 125
+> (10 503 021 Zellen): `SchemaVersion` 125 → 126, die acht Zellen der fünf berichtigten Sätze und die acht
+> gelöschten Zeilen, sonst nichts; 355 Schemaobjekte unverändert, `integrity_check` ok,
+> `foreign_key_check` leer, 67 788 800 Byte (LFS-SHA-256 `0fe67575…`). Der Katalog zählt 269 Sätze,
+> und jeder besteht die Prüfung des Gebäudeeditors (Wächter
+> `GebaeudeKatalogverweisTests.Nach_der_Reparatur_besteht_jeder_Katalogsatz_die_Editorpruefung`).
+> **Keine Einfrierregel ist berührt:** Keiner der dreizehn Sätze ist einem Referenzprojekt zugeordnet,
+> und Projektkopien bleiben unberührt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
+> Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag E17 (#479): Schemastand 127 (nicht monetarisierbare Wirkungen der Wirtschaftlichkeit), die Basis bleibt.**
+> Migrationsschritt **127** (`SCHRITT_127_NICHT_MONETAERE_WIRKUNGEN`; Quelle `ProjektWirkungSchema` für Migration,
+> Werkzeug und Testvorrichtung) legt die Tabelle `Tab_ProjektWirkung` an (STRICT; `ID`, `ID_Projekt` mit
+> Fremdschlüssel auf `Tab_Projekt` ON DELETE/UPDATE CASCADE, `Sortierung`, `Kategorie` mit CHECK
+> `ENERGIEFLUSS`/`FINANZIELL`/`SONSTIG`, `Beschreibung`, `Dauer` 1–3, `Wirkung_Organisation`, `Wirkung_Mitarbeiter`,
+> `Wirkung_Umwelt` je 0–3, NULL = nicht beurteilt) samt Index `idx_ProjektWirkung_Projekt` und übernimmt einen
+> gepflegten Freitext `Tab_ProjektWirtschaftlichkeit.Nicht_Monetaer` als eine Wirkung SONSTIG ohne Beurteilung
+> (DIN EN 17463, 6.1 und 8.2; Konzept Wirtschaftlichkeit § 2.11.2, V‑G11). Der Schritt steht nach **126** (Reparatur
+> der Gebäude-Katalogsätze, #485, Nachtrag Schemastand 126). Nachgezogen auf der Fassung **126** (`0fe67575…`,
+> 67 788 800 Byte) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: nur Tabelle und Index
+> neu, **0 Freitexte übernommen** (kein Referenzprojekt pflegt einen), Schritt 126 fand nichts offen, Marker 127;
+> 132 Tabellen, alle STRICT, 14 Sichten, 210 Indizes; `integrity_check` ok, `foreign_key_check` leer, ein zweiter Lauf
+> meldet den Schritt als stehend. Größe 67 796 992 Byte (LFS-SHA-256 `87e49ed1…`). **Ergebnisneutral:** Kein Rechenweg liest die Tabelle,
+> und die Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf
+> aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer
+> `protokoll.txt`).
+
+> **Nachtrag AK1 Welle 3: Schemastand 128 (Heizkreis je Gebäude im Ergebnis, Anlagenkopplung), die Basis bleibt.**
+> Migrationsschritt **128** (`SCHRITT_128_ERGEBNIS_HEIZKREIS`; die Nummer steht allein bei
+> `ErgebnisGebaeudeSchema.SCHRITT_HEIZKREIS`, Quelle `ErgebnisGebaeudeSchema.SpaltenHeizkreis` für Migration, Werkzeug
+> und Testvorrichtung) hängt vier nullbare Spalten an `Tab_ErgebnisGebaeude` (Muster E30; Konzept Anlagenkopplung 8.3,
+> 9.4): `Uebergabe_Art` (CHECK `RADIATOR`/`FLAECHE`/`KONVEKTOR`; NULL = nicht gekoppelt gerechnet), `VorlaufMittel_C`,
+> `RuecklaufMittel_C` und `UebergabeBegrenzt_H` (0 … 8 760) — **reines DDL**. Vergeben beim Merge mit origin
+> (125 Risikomodul, 126 Katalogreparatur, 127 Wirkungen waren belegt); er steht nach **127**. Nachgezogen auf der
+> Fassung **127** (Nachtrag E17 oben, `87e49ed1…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: vier Spalten neu, alle
+> leer, Marker 128. Zellvergleich aller 133 Tabellen gegen die Fassung 127 (11 973 380 Zellen): allein `SchemaVersion`
+> 127 → 128 und der Tabellentext von `Tab_ErgebnisGebaeude`; `integrity_check` ok, `foreign_key_check` leer, 133 Tabellen
+> (132 STRICT), 14 Sichten, 210 Indizes. Größe 67 796 992 Byte (LFS-SHA-256 `81209c50…`). **Ergebnisneutral:** Kein
+> Referenzprojekt rechnet gekoppelt, und der Referenzlauf exportiert die Tabelle nicht. **Keine Einfrierregel ist
+> berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV
+> byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag E16 (#484): Schemastand 129 (Wiederholperiode je Kostenposition der Wirtschaftlichkeit), die Basis bleibt.**
+> Migrationsschritt **129** (`SCHRITT_WIEDERHOLPERIODE`; die Nummer steht allein bei `WiederholperiodeSchema.SCHRITT`,
+> der Quelle für Migration, Werkzeug und Testvorrichtung) hängt die nullbare Spalte `Wiederholperiode_a` (INTEGER, ohne
+> Vorgabe; leer, 0 und 1 = jährlich) an `Tab_ProjektWerte` und an `Tab_KostenVorlagePosition` (DIN EN 17463, 6.3.1
+> „alle n Jahre"; Konzept Wirtschaftlichkeit § 2.11.2, V‑G3) — **reines DDL**. In Phase 1 vorläufig 128; nach dem Push
+> des Schritts 128 (Nachtrag AK1 Welle 3 oben) steht er als **129** nach 128, der Zwischenstand 127 → 128 der Welle
+> (`f4a6ee8b…`) ist überholt. Nachgezogen auf der Fassung **128** (`81209c50…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: zwei Spalten neu, keine
+> Tabelle, Schritt 128 fand nichts offen, Marker 129; 133 Tabellen (132 STRICT), 14 Sichten, 210 Indizes;
+> `integrity_check` ok, `foreign_key_check` leer. Größe 67 796 992 Byte, unverändert (LFS-SHA-256 `4c546a7c…`).
+> **Ergebnisneutral:** Keine Zeile pflegt `Wiederholperiode_a`, leer rechnet jährlich wie vor dem Schritt, und die
+> Wirtschaftlichkeit geht ohnehin nicht in `aggregate.csv`. **Keine Einfrierregel ist berührt.** Referenzlauf aller
+> dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag #493: Schemastand 130 (Anschlusslängen im Gebäudekatalog), die Basis bleibt.**
+> Migrationsschritt **130** (`SCHRITT_GEBAEUDE_ANSCHLUSSLAENGEN`; die Nummer steht allein bei
+> `GebaeudeAnschlusslaengenReparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; der Schritt der
+> Zapfprofil-Sitzung folgt ihm) berichtigt nach Anwenderentscheid vom 24.09.2026 („Ersetzt durch plausible Werte“)
+> 20 Zellen an sieben Sätzen von `Tab_Gebaeude_STAMM` — **reines DML, je Satz, Spalte und Schadensbild** (Bezeichner und
+> unplausibler Wert ± 0,05), nichts gelöscht, Projektkopien unberührt:
+>
+> | Satz | Spalte | vorher | nachher | Herleitung |
+> |---|---|---|---|---|
+> | 79 `Krankenhaus_92-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 1 800 | 4 812,0 m | Laibung je m² Fenster des Ausgangssatzes 78 `KrankenH_NE` 7 655,75 / 3 016,3 = 2,5381 m/m² × 1 895,9 m² |
+> | 79 | `Flaeche_Außenwand` | 12 094 | 13 214,4 m² | Hüllfläche der Geometrie von 78: 12 094 + 3 016,3 = 15 110,3 m² minus Fenster 1 895,9 m² (Ost/West bleibt 400) |
+> | 80–83 `KrankenH-F-*`, 37 `gr_Hotel-G-134` | `Abmessung_Anschluß_Fenster_Wand` | 243,7 | 7 879,0 m | Tausch mit der Dachkante trägt: 7 879 / 3 062,3 = 2,573 m/m² (78: 2,538); 243,7 m wären 0,08 m/m² |
+> | dieselben | `Abmessung_Anschluß_Wand_Dach` | 7 879 | 313,8 m | Umfang der Grundfläche 1 469 m² wie bei 78 (Wand–Dach = Keller = 313,8). Der Tausch (243,7 m) trägt hier nicht: Hülle 13 156,3 m² / 243,7 m = 54,0 m = 4,40 m je Geschoss (12,26 Geschosse, Raumhöhe 2,55 m); mit 313,8 m 3,42 m je Geschoss (78: 3,54 m bei 3,0 m) |
+> | dieselben | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 1 392,8 | 313,8 m | Umfang wie bei 78; 1 392,8 m wären das 4,4-Fache |
+> | 77 `Kaufhaus` | `Abmessung_Anschluß_Fenster_Wand` | 243,7 | 5 820,8 m | Abwandlung der F-Sätze (Fenster 2 262,36 m²); Tausch gäbe 3,48 m/m², daher Verhältnis der F-Quelle 2,5729 m/m² × 2 262,36 m² |
+> | 77 | `Abmessung_Anschluß_Wand_Dach`, `…_Außenwand_Kellerdecke` | 7 879 / 1 392,78 | 313,8 / 313,8 m | Umfang der Grundfläche 1 469 m² wie bei 78 und den F-Sätzen |
+>
+> Nachgezogen auf der Fassung **129** (Nachtrag E16 oben, `4c546a7c…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
+> 20, berichtigt 20, offen danach 0, Marker 130. Zellvergleich aller 133 Tabellen gegen die Fassung 129: allein
+> `SchemaVersion` 129 → 130 und die 20 Zellen der Tabelle; Schema unverändert; `integrity_check` ok, `foreign_key_check`
+> leer, 133 Tabellen (132 STRICT), 14 Sichten, 210 Indizes. Größe 67 796 992 Byte (LFS-SHA-256 `f8fe1b76…`).
+> **Ergebnisneutral:** Keinen der sieben Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch
+> über den Namen); die dreizehn Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist
+> berührt.** Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte).
+
+> **Nachtrag: Schemastand 131 (Zapfprofilgenerator, Stufe Z4b, Schemaschritt T3 „Typtage"), die Basis
+> bleibt.** Migrationsschritt **131** (`SCHRITT_131_ZAPFPROFIL_TYPTAGE`; Quelle
+> `TwwSchema.AnweisungenT3Typtage`): die Tabelle `Tab_TwwTyptag_IMPORT` — STRICT, elf Spalten (`ID`,
+> `Art`, `Klimazone`, `Gebaeudeart`, `Typtag`, `Aufloesung_min`, `Zeilenindex`, `Wert`, `Quelle`,
+> `Ausgabe`, `Datum_Import`), natürlicher Schlüssel (`Art`, `Klimazone`, `Gebaeudeart`, `Typtag`,
+> `Zeilenindex`), **kein `Status` und kein `ReadOnly`**, kein Fremdschlüssel. Sie nimmt die Typtage auf,
+> die der **lizenzierte Anwender** selbst einspielt; das Repositorium bringt keine Zeile mit (Konzept
+> Kapitel 6), und die Auslieferungsvorlage leert sie. Im SELBEN Schritt stehen die drei Projektspalten
+> der Wahl an `Tab_TwwProjekt` — `Typtage_Aktiv` (0/1, Vorgabe 0), `Typtage_Klimazone` und
+> `Typtage_Gebaeudeart` (beide NULL = keine Wahl), Quelle `TwwSchema.SpaltenT3Typtage`. Die Nummer war in
+> der Arbeit 125; beim Zusammenführen mit origin waren 125 bis 129 belegt (Risikomodul, Gebaeude-
+> Katalogreparatur, Wirkungen, Heizkreis, Wiederholperiode) und mit der Welle #493 auch 130
+> (Anschlusslängen im Gebäudekatalog); der Schritt steht jetzt nach **130**.
+> Nachgezogen auf der Fassung von origin mit Schemastand **130** (Nachtrag #493 oben,
+> `f8fe1b76…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` (eine
+> Tabelle und drei Spalten angelegt; ein zweiter Lauf legt nichts an), danach
+> `tww_testkatalog_fiktiv.py --stochastik` (0 angelegt, 0 nachgeführt — der Testkatalog stand schon
+> vollständig da; zweiter Lauf 0/0). **Kein DML:** Die Tabelle ist und bleibt LEER, `Typtage_Aktiv`
+> steht auf 0 und beide Angaben auf NULL. Zellvergleich aller Tabellen gegen die Fassung 130
+> (10 502 791 Zellen): allein `SchemaVersion` 130 → 131, die drei neuen Spalten und der Tabellentext von
+> `Tab_TwwProjekt`; `integrity_check` ok, `foreign_key_check` leer, 134 Tabellen (133 STRICT) statt 133
+> (132), 14 Sichten und 211 Indizes unverändert. Größe 67 805 184 Byte (LFS-SHA-256 `a4a88c33…`).
+> **Keine Einfrierregel ist berührt:** Kein Referenzprojekt steht auf dem Generator, und ohne
+> eingespielte Typtage ist der Typtagweg benannt nicht verfügbar.
+> Referenzlauf der fünf CI-Projekte (1030, 1007, 1017, 1045, 1046) **5/5 PASS** gegen diese Basis,
+> 160/160 CSV **byte-gleich**.
+
+> **Nachtrag G3 Welle B: Schemastände 132 bis 134 (Baustoffe, Bauteilaufbauten, Zonen der Stufe G3),
+> die Basis bleibt.** Drei Migrationsschritte; die Nummer steht allein bei `BaustoffSchema.SCHRITT`,
+> `BauteilaufbauSchema` und `ZonenSchema` zählen davon weiter (Quelle für Migration, Werkzeug und
+> Testvorrichtung): **132** (S-A) legt `Tab_Baustoff_STAMM` und `Tab_Baustoff` an — spaltengleich, mit
+> der Spalte `Hersteller`, die Projektkopie mit Fremdschlüssel auf `Tab_Projekt` — und sät 132 Zeilen:
+> 65 herstellerneutrale Stoffe und 67 Herstellerprodukte (E39), alle `ReadOnly = 1`; **133** (S-B) legt
+> `Tab_Bauteilaufbau(_STAMM)` und `Tab_Bauteilschicht(_STAMM)` an; **134** (S-C) `Tab_Zone` samt den
+> Blöcken aus KU-S1 und AK-S1 und `Tab_Bauteil` — DDL und die eine Saat des Baustoffkatalogs. In der
+> Arbeit trugen die Schritte die Nummern 130 bis 132, dann 131 bis 133; beim Zusammenführen mit origin
+> waren 129 bis 131 belegt. Nachgezogen auf der Fassung von origin mit Schemastand **131** (Nachtrag
+> Z4b oben, `a4a88c33…`) mit `Werkzeuge/Testdatenbankschema`: 141 Tabellen ohne `sqlite_sequence`
+> (alle STRICT) statt 133, 215 Indizes, 25 Projekte, 132 Saatzeilen im Baustoffkatalog, die übrigen
+> neuen Tabellen leer. Größe 67 883 008 Byte (LFS-SHA-256 `9d3c006a…`). **Ergebnisneutral, keine
+> Einfrierregel berührt:** Kein Referenzprojekt hat eine Zone, und ohne Zone rechnet jedes Gebäude
+> bitgleich den Klassenweg; der Baustoffkatalog gehört nicht zu den gesäten Gebäudedaten. Referenzlauf
+> aller dreizehn Projekte **13/13 byte-gleich** gegen diese Basis. Eine Einfrierregel „gesäte
+> Zonendaten" kommt mit dem ersten Referenzprojekt mit Zone (G6d, Mehrzonenkonzept 8.3).
+
+> **Nachtrag AK1 Welle 4 (E37): Schemastände 135 bis 137 (Kälteseite der Anlagenkopplung), die Basis
+> bleibt.** Drei Migrationsschritte, die Nummern stehen allein bei `KuehluebergabeSchema` (Quelle für
+> Migration, Werkzeug und Testvorrichtung): **135** (`SCHRITT_KUEHLUEBERGABE`, KAK-S1) legt die acht
+> Spalten der Kühlübergabe an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` — `Kuehluebergabe_Aktiv` (0/1,
+> Vorgabe 0), `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn`,
+> `Kuehl_Auslegung_Vorlauf`, `Kuehl_Auslegung_Ruecklauf`, `Kuehl_Auslegung_Raumtemperatur`,
+> `Kuehl_Vorlaufgrenze`, sonst alle NULL — und baut die Sicht `Abfrage_Projektgebaeude` zum vierten Mal
+> neu (98 Spalten, die 90 davor an ihren Stellen); **136** (`SCHRITT_KUEHLUEBERGABE_ERGEBNIS`, KAK-S3)
+> hängt `Kuehl_Vorlauf_Mittel`, `Kuehl_Ruecklauf_Mittel` und `Kuehl_Uebergabe_Begrenzt_Stunden` an
+> `Tab_ErgebnisEnergiebedarf` und `Kuehl_Uebergabe_Art` (CHECK der drei Arten), `KuehlVorlaufMittel_C`,
+> `KuehlRuecklaufMittel_C`, `KuehlUebergabeBegrenzt_H` und `KuehlVorlaufgrenze_H` (0 … 8 760) an
+> `Tab_ErgebnisGebaeude`; **137** (`SCHRITT_KUEHLUEBERGABE_ZONE`) hängt `Kuehl_Uebergabe_Art` (CHECK samt
+> `IDEAL`), `Kuehl_Uebergabe_Exponent` und `Kuehl_Uebergabe_Leistung_Nenn` an `Tab_Zone` — **reines
+> DDL**. Sie stehen nach S-C (134, Stufe G3). Die drei Energiebedarf-Spalten gehen erst mit einem Wert in
+> `aggregate.csv` (`SpaltenNurMitWert`). Nachgezogen auf der Fassung von origin mit Schemastand **134**
+> (G3 Welle B, `9d3c006a…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`: 27 Spalten
+> neu, Marker 137; ein zweiter Lauf legt nichts an. Zellvergleich aller Tabellen gegen die Fassung 134
+> (10 504 069 Zellen): allein `SchemaVersion` 134 → 137, die 27 neuen Spalten (der Schalter 0, alles
+> andere NULL) und die Sicht; `integrity_check` ok, `foreign_key_check` leer, 141 Tabellen (alle STRICT),
+> 14 Sichten, 215 Indizes. Größe 67 887 104 Byte (LFS-SHA-256 `834aa718…`). **Ergebnisneutral:** Kein
+> Referenzprojekt rechnet gekoppelt. **Keine Einfrierregel ist berührt**; die Einfrierregel der
+> Auslegungsdaten der Wärme- und Kühlübergabe samt `Kuehluebergabe_Aktiv` kommt mit der fünften Welle von
+> AK1. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394
+> CSV byte-gleich, außer `protokoll.txt`).
+
+> **Nachtrag G4c Welle 3: Schemastand 138 (Herkunftsablage der Gebäudeimporte, Schritt S-F), die Basis bleibt.**
+> Migrationsschritt **138** (`SCHRITT_IMPORTZUORDNUNG`; die Nummer steht allein bei `ImportzuordnungSchema.SCHRITT`,
+> der Quelle für Migration, Werkzeug und Testvorrichtung) folgt den Mehrzonenschritten 132–134 der Stufe G3 und der
+> Kälteseite 135–137 (AK1 Welle 4) und legt zwei leere STRICT-Tabellen an — **reines DDL, keine Saat**:
+> `Tab_Importquelle` (eine Zeile je Importlauf: Gebäude mit Kaskade, Format `IFC`/`GBXML`, Dateiname ohne Pfad,
+> SHA-256, Größe, Schemastand, Zeitpunkt, Programmfassung, Zonenregel, Zahl fehlender Entitäten) und
+> `Tab_Importzuordnung` (eine Zeile je Paarung: Quelle mit Kaskade, fünf nullbare Zielverweise auf Gebäude, Zone,
+> Bauteil, Aufbau und Baustoff, genau einer gesetzt, ebenfalls mit Kaskade — Begründung der Abweichung von
+> Softwarearchitektur 2.2 im Kopf von `ImportzuordnungSchema` —, Quellkennung bis 64 und Quelltyp bis 40 Zeichen)
+> samt den Indizes über `ID_Importquelle` und `Quellkennung`. In der Arbeit trug der Schritt die Nummer 135; beim
+> Zusammenführen mit origin waren 135 bis 137 von der Kälteseite belegt.
+> Nachgezogen auf der Fassung von origin mit Schemastand **137** (Nachtrag AK1 Welle 4 oben, `834aa718…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` (zwei Tabellen
+> angelegt; ein zweiter Lauf legt nichts an). Zellvergleich aller 141 Tabellen gegen die Fassung 137 (11 977 604 Zellen):
+> allein `SchemaVersion` 137 → 138; neu sind die zwei leeren Tabellen und die zwei Indizes, kein bestehender Tabellen-,
+> Sicht- oder Indextext ist geändert; `integrity_check` ok, `foreign_key_check` leer, 143 Tabellen (alle STRICT) statt
+> 141, 14 Sichten, 217 Indizes statt 215. Größe 67 903 488 Byte (LFS-SHA-256 `3f5c892d…`). **Ergebnisneutral, keine
+> Einfrierregel berührt:** Kein Rechenweg liest die Tabellen, und kein Referenzprojekt führt einen Import.
+> Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
+> außer `protokoll.txt`).
+
+> **Nachtrag G4a Welle 3: Schemastand 139 (Baujahr des Gebäudes), die Basis bleibt.** Migrationsschritt **139**
+> (`SCHRITT_BAUJAHR`; die Nummer steht allein bei `BaujahrSchema.SCHRITT`, der Quelle für Migration, Werkzeug und
+> Testvorrichtung, die Definitionen bei `GebaeudeSchema`) folgt auf S-F (138) und legt an `Tab_Gebaeude` und
+> `Tab_Gebaeude_STAMM` spaltengleich die Spalte `Baujahr INTEGER` mit
+> `CHECK (Baujahr IS NULL OR Baujahr BETWEEN 1500 AND 2100)` an und baut die Sicht `Abfrage_Projektgebaeude` zum
+> fünften Mal neu (99 Spalten, die 98 von KAK-S1 an ihren Stellen, `Baujahr` an Stelle 98) — **reines DDL, keine
+> Saat**. Nachgezogen auf der Fassung von origin mit Schemastand **138** (Nachtrag G4c Welle 3 oben, `3f5c892d…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite` (zwei Spalten
+> angelegt; ein zweiter Lauf legt nichts an). Zellvergleich aller 143 Tabellen gegen die Fassung 138 (10 506 686 Zellen
+> der gemeinsamen Spalten): allein `SchemaVersion` 138 → 139; neu ist die Spalte `Baujahr` in beiden Gebäudetabellen,
+> in allen 26 bzw. 269 Zeilen NULL, geändert allein der Text der Sicht; `integrity_check` ok, `foreign_key_check` leer,
+> 143 Tabellen (alle STRICT), 14 Sichten, 217 Indizes. Größe 67 903 488 Byte (LFS-SHA-256 `f700e81e…`).
+> **Ergebnisneutral, keine Einfrierregel berührt:** Die Spalte bleibt in jeder Zeile NULL, es ist also nichts gesät,
+> und kein Rechenweg liest sie — weder der Eingangsbauer des Gebäudemodells noch der Tagesbilanz-Weg noch eine Vorgabe
+> (die Vorgaben hängen an der Baualtersklasse, nicht am Jahr); sie gehört damit nicht zu den Spalten des Gebäudemodells,
+> die die Einfrierregel „gesäte Gebäudedaten“ nennt. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese
+> Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`).
+
+> **Die Vorgängerbasis `2026-09-23_R13_Kuehlung`**, die erste Basis mit Kühlung, ist mit dieser
+> Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu E32 und dem
+> Referenzprojekt mit Kühlung und den Nachträgen zu den Schemaständen 114 bis 121 steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+**Zwei Nachträge nach dem ersten Einfrieren von R15.** Die Stufe Z5 des Zapfprofilgenerators
+(Schemastand 140) und #496 (Schemastand 141) sind auf origin gegen R14 gemessen worden, während R15
+noch nicht veröffentlicht war; R15 ist danach auf Schemastand 141 neu eingefroren worden. Beide
+Nachträge stehen deshalb hier, im Wortlaut:
+
+> **Nachtrag Stufe Z5: Schemastand 140 (Zapfprofilgenerator, Schemaschritt T4 „Messreihen"), die
+> Basis bleibt.** Ein Migrationsschritt, die Nummer steht allein bei
+> `TwwSchema.SCHRITT_T4_MESSREIHEN` (Quelle für Migration, Werkzeug und Testvorrichtung; sie folgt
+> lückenlos auf das Baujahr des Gebäudes, 139): **140** (`SCHRITT_140_ZAPFPROFIL_MESSREIHEN`) legt
+> `Tab_TwwMessreihe` an — STRICT, zehn Spalten, eine Zeile je Wert, natürlicher Schlüssel
+> (`ID_Projekt`, `Bezeichnung`, `Zeilenindex`), `ID_Projekt` mit `ON DELETE CASCADE`, kein `Status`
+> und kein `ReadOnly` — samt ihrem Index auf `ID_Projekt`. **Reines DDL;** die Tabelle entsteht LEER
+> und bleibt es: Gemessene Reihen gehören dem Objekt (Konzept Kapitel 9 K5), das Repositorium bringt
+> keine mit, und ohne eingespielte Messreihe ist der Vergleich benannt nicht verfügbar.
+> In der Arbeit trug der Schritt zuerst die Nummer 138, dann 139; beim Zusammenführen mit origin
+> war 138 vom Schritt S-F der Gebäudeimporte und 139 vom Baujahr der Stufe G4a belegt — wer zuerst
+> schiebt, hält die Nummer.
+> Nachgezogen auf der Fassung von origin mit Schemastand **139** (Nachtrag G4a Welle 3 oben,
+> `f700e81e…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`:
+> 1 Tabelle und 1 Index neu, Marker 140; ein zweiter Lauf legt nichts an. Danach der fiktive
+> Testkatalog der Stufen Z0 bis Z5
+> (`py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --stochastik`):
+> 14 Zeilen neu, 28 nachgeführt — fünf Tagesgangsätze, 20 Tagesgänge, acht Nutzungsarten, vier
+> Bedarfstage mit 33 Ereignissen, 85 Parameter, fünf DIN-4708-Werte und 24 Zapfkategorien, alle
+> `FIKTIV` oder „(abgeleitet)"; kein Normwert, kein Herstellerwert, keine Projektzeile. Ein zweiter
+> Lauf schreibt nichts (0 neu, 0 nachgeführt).
+> `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten,
+> 205 Indizes (219 samt den von SQLite angelegten). Größe 67 923 968 Byte
+> (LFS-SHA-256 `5de448e8…`). Zellvergleich aller 143 gemeinsamen Tabellen gegen die Fassung von
+> origin (10 506 805 Zellen): abweichend allein `Tab_Applikation.SchemaVersion` (139 → 140) und die
+> Katalogzeilen des Skripts (`Tab_TwwNutzungsart_STAMM` 8 statt 7, `Tab_TwwParameter_STAMM` 85 statt
+> 80, `Tab_TwwZapfkategorie_STAMM` 24 statt 28 — die Stufe Z5 führt die Nichtwohnen-Nutzungsarten
+> mit zwei statt vier Kategorien); `Tab_TwwMessreihe` steht mit 0 Zeilen. **Ergebnisneutral:** Kein
+> Referenzprojekt führt eine Messreihe, und kein Rechenweg der dreizehn liest den Tww-Katalog.
+> **Keine Einfrierregel ist berührt.**
+
+> **Nachtrag #496: Schemastand 141 (Folgeberichtigung im Gebäudekatalog), die Basis bleibt.**
+> Migrationsschritt **141** (`SCHRITT_GEBAEUDE_FOLGEREPARATUR`; die Nummer steht allein bei
+> `GebaeudeAnschlusslaengenFolgereparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
+> auf die Messreihen, 140) berichtigt nach Anwenderauftrag vom 25.09.2026 („setze um: weiteren Scan-Kandidaten mit
+> vertauschten Anschlusslängen, die Außenwand des Kaufhauses“) 39 Zellen an zwanzig Sätzen von `Tab_Gebaeude_STAMM` —
+> **reines DML** in der Bauart von #493 (Bezeichner und unplausibler Wert ± 0,05 je Spalte, dieselben Anweisungen),
+> nichts gelöscht, Projektkopien unberührt. **Regel der Herleitung:** (1) führt ein Satz gleicher Geometrie
+> (Ausgangssatz, nicht die gerundete EnEV-Abwandlung) den Umfang, gilt er; (2) sonst der Tausch von Laibung und
+> Dachkante, wenn er für beide Spalten trägt (Laibung im Band des Katalogs 1,2 … 3,4 m je m² Fenster, Median 2,57;
+> Dachkante nicht unter der Quadratkante 4·√Grundfläche und nahe dem Umfang U = (Außenwand + Fenster) /
+> (Nutzfläche / Grundfläche × Raumhöhe)); (3) sonst Laibung = Verhältnis der Quelle × Fensterfläche, Dachkante =
+> Umfang aus der eigenen Geometrie. ΔH_T = Σ ψ·ΔL bzw. U_AW·ΔA je Satz.
+>
+> | Satz | Spalte | vorher | nachher | Herleitung | ΔH_T |
+> |---|---|---|---|---|---|
+> | 2, 4, 5, 7, 9, 10 `AltenH-C-*`, `Pflegeheim-C-*`; 92 `Schule-C-U-202` | `Abmessung_Anschluß_Fenster_Wand` / `…_Wand_Dach` | 185 / 985 | 985 / 185 m | Regel (2), Tausch: Laibung 1,81 m/m² (185 m wären 0,34); Umfang der Geometrie (2 132 + 545) / (3 020 / 540 × 2,55) = 187,7 m neben 185 m, Quadratkante 93,0 m | +70,4 W/K (ψ 0,228 / 0,14) |
+> | 94 `Schule-NE1`, 96 `Schule-NE-66` | dieselben | 185 / 985 | 985 / 185 m | dieselbe Geometrie wie die Heime | −48,0 W/K (ψ 0,04 / 0,10) |
+> | 17 `Hallenbad-652`, 20 `Hallenbad-Sauna-750` | dieselben | 185 / 985 | 985 / 185 m | Regel (2): Laibung 2,35 m/m² (420 m² Fenster); Dachkante zwischen Quadratkante 132,7 m und Umfang der Geometrie 206,3 m (1 100 m², 78,5 × 14,0 m) | +70,4 W/K |
+> | 54 `Hotel-F-228` | `Abmessung_Anschluß_Wand_Dach` | 5 380,75 | 116,16 m | Regel (1): `Kaufhalle_NE` (76) hat dieselbe Geometrie (Wand 834, Fenster 243,4, Dach 473,7, Grund 480,8, Nutzfläche 1 138 m²) und führt Wand–Dach = Keller = 116,16 m (48,08 × 10,0 m; Hülle 1 077,4 m² / 116,16 m = 9,28 m = drei Geschosse zu 3,09 m); 5 380,8 m wären das 61,8-Fache der Quadratkante | −1 316,1 W/K (ψ 0,25) |
+> | 69 `ml_Hotel-F-228`, 71 `ml-Hotel-F-228` | `Abmessung_Anschluß_Wand_Dach` | 5 380,8 | 116,16 m | wie 54 | −1 316,2 W/K |
+> | 54, 69, 71 | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 40 | 116,16 m | wie 54 — der Ausgangssatz führt die Kellerkante als Umfang; 40 m wären weniger als die halbe Quadratkante. Laibung 515,2 m (2,12 m/m²) bleibt | +38,1 W/K (ψ 0,50); je Satz −1 278,1 W/K |
+> | 42 `Hotel_G_96`, 72 `ml-Hotel-G-096`, 134 `GMH-G-U-97` | `Abmessung_Anschluß_Fenster_Wand` / `…_Wand_Dach` | 86,6 / 295,5 | 295,5 / 86,6 m | Regel (2): Laibung 1,24 m/m² (unterer Rand des Katalogs wie `GMH KfW 55` mit 1,20; 86,6 m wären 0,36); Umfang der Geometrie (433 + 237,6) / (1 263 / 431,2 × 2,61) = 87,7 m, Quadratkante 83,1 m | +31,3 W/K (ψ 0,22 / 0,07) |
+> | 84 `GMH-BZ_T`, 85 `GMH-J-015` | `Abmessung_Anschluß_Fenster_Wand` | 86,6 | 382,6 m | Regel (3): dieselben Längen auf fremder Geometrie, der Tausch trägt nicht (0,96 m/m²; 86,6 m lägen unter der Quadratkante 88,1 m) — Verhältnis von 42 nach dem Tausch 295,5 / 237,6 = 1,2437 m/m² × 307,6 m² | +65,1 W/K |
+> | 84, 85 | `Abmessung_Anschluß_Wand_Dach` | 295,5 | 122,3 m | Umfang der Geometrie (633 + 307,6) / (1 430 / 485,2 × 2,61) = 122,28 m (51,8 × 9,4 m) | −12,1 W/K; je Satz +53,0 W/K |
+> | 77 `Kaufhaus` | `Flaeche_Außenwand` | 10 093,99 | 1 820,9 m² | die 10 094 m² stammen aus den F-Sätzen (Nutzfläche 18 012 m², zwölf Geschosse); eigene Geometrie: 4 201 / 1 468,97 = 2,86 Geschosse × 4,55 m = 13,01 m, Hülle 313,8 m × 13,01 m = 4 083,2 m² minus Fenster 2 262,36 m² (Fensteranteil 55 %). Wand–Dach = Keller = 313,8 m aus #493 bleiben: einziger belegter Umfang dieser Grundfläche (`KrankenH_NE`), trägt die Fensterfläche (mindestens 173,9 m Fassade); die 10 094 m² ergäben 949,6 m Umfang — eine Grundfläche von 3 m Tiefe | −4 963,9 W/K (U 0,6) |
+>
+> **Nicht geändert, berichtet.** Kellerkanten: 0 m bei den Heimen, Schulen und Hallenbädern (die
+> EnEV-Abwandlungen 3, 8 führen 140 m bei 200 m Dachkante, nicht den Umfang; ψ der C-Sätze 0), 14,6 m bei 42, 72,
+> 134, 84, 85 (kein Ausgangssatz führt sie als Umfang; Vorschlag: der Umfang 86,6 bzw. 122,3 m; bei ψ 0,65/0,67
+> +46,8 bis +48,2 bzw. +72,2 W/K; **✔ erledigt mit #505**) — der Katalog führt die Kellerkante systematisch klein. Dazu die
+> Scan-Gruppen, Entscheidung beim Anwender (**alle zehn Zeilen ✔ erledigt mit #505**, Nachtrag unten):
+>
+> | Satz | Befund | Vorschlag Laibung | Herleitung des Vorschlags |
+> |---|---|---|---|
+> | 6 `Pflegeheim-122-EnEV2016` ✔ #505 | 0 m bei 545 m² Fenster (Kanten 40 / 30 m) | 540 m | EnEV-Abwandlung 8 gleicher Geometrie: 540 / 545 = 0,99 m/m² (nach dem C-Verhältnis 1,81 wären es 985 m) |
+> | 15 `Industriehalle-320` ✔ #505 | alle drei Längen 0 | 16 000 m | Satz 14 `Industrie_ne_81` gleicher Geometrie: 2,5 m/m² × 6 400 m²; Kanten dort 7 337,4 m |
+> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` ✔ #505 | alle drei Längen 0 | 391,5 m | Sätze 65, 73 gleicher Geometrie: 2,5 m/m² × 156,6 m²; Kanten dort 71,0 m |
+> | 117 `Verw_H_75` ✔ #505 | alle drei Längen leer | 391,5 m | Satz 118 `Verw_I_33` gleicher Geometrie; Kanten dort 70,98 m |
+> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` ✔ #505 | alle drei Längen leer, auch ψ | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 2,901 m/m² × 504 m²; Umfang der Geometrie 103,4 m |
+> | 106 `Bürogebäude KfW 55` ✔ #505 | alle drei Längen 0 | 2 875 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m²; Umfang der Geometrie 264,1 m |
+> | 207 `KMH-G-U-120` ✔ #505 | Laibung 0 (Kanten 250,68 / 28 m) | 238,3 m | KMH G (206, 209): 268,6 / 112,02 = 2,398 m/m² × 99,37 m² |
+> | 23 `Hallenbad-Umkl-140-EnEV2016` ✔ #505 | 50 m (0,12 m/m²), gerundet | 865,1 m | Hallenbad-Umkleide 24: 142 / 70,4 = 2,017 m/m² × 428,9 m² |
+> | 34 `gr_Hotel-80-EnEV2016` ✔ #505 | 600 m (0,25 m/m²), gerundet | 6 164,4 m | F-Quelle gleicher Geometrie 2,5729 m/m² × 2 395,9 m² |
+> | 108 `Bürogebäude_gross-30-EnEV2016` ✔ #505 | 330 m (0,18 m/m²), gerundet | 4 460 m | Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² |
+>
+> „Nur Dachkante“ (35, 39–41, 47–49, 52, 55, 58, 61, 63, 66, 67, 112–114, 127, 128, 130, 144–146, 151, 169, 173,
+> 189–191, 195–197, 205, 206, 209–213, 274; 4,7- bis 8-fache Quadratkante, vermutlich geneigte Dächer) bleibt
+> unberührt, darunter die eingefrorenen Referenzsätze 145 und 146. Nebenbefunde ohne Scan-Eintrag: Laibung 0,64 /
+> 0,46 / 0,32 m/m² bei 46 `Hotel-72-EnEV2016`, 57 `Hotel-KfW 55` und 120 `Verwaltung_40-EnEV2016` (bleiben,
+> Anwenderentscheid #505); Dachkante 7 337,4 m (9,6-fache Quadratkante) bei 14 `Industrie_ne_81` (✔ erledigt mit #505).
+>
+> Nachgezogen auf der Fassung von origin mit Schemastand **140** (Nachtrag Stufe Z5 oben, `5de448e8…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
+> 39, berichtigt 39, offen danach 0, Marker 141. Zellvergleich aller 144 Tabellen gegen die Fassung 140
+> (10 506 856 Zellen): allein `SchemaVersion` 140 → 141 und die 39 Zellen der Tabelle; Schema unverändert;
+> `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 205 Indizes (219 samt den
+> von SQLite angelegten). Größe 67 915 776 Byte (LFS-SHA-256 `a427aa72…`). **Ergebnisneutral:** Keinen der zwanzig
+> Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch über den Namen); die dreizehn
+> Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist berührt.** Referenzlauf
+> aller dreizehn Projekte **13/13 PASS gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich, außer `protokoll.txt`)**.
+
+## Die Basis R15 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 25.09.2026 die Basis R15 beschrieben — Anlass (Stufe AK1 der
+Anlagenkopplung, fünfte Welle: das Referenzprojekt 1047 mit Kopplung), die Tabelle 1017 gegen 1047 und den
+Nachtrag #505 zu Schemastand 142 samt der Zusammenführung mit AK1 Welle 5, mit dem die Basis ergebnisneutral
+geblieben ist. Er steht hier im Wortlaut, weil der Nachtrag die Testdatenbank herleitet, auf der auch die
+Nachfolgebasis steht; die Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R15 durch `2026-09-25_R16_Anlagenprio`** (Anwenderentscheid vom 25.09.2026 zu Konzept
+Wirtschaftlichkeit § 6.3 Nr. 18: Der Rechenweg ordnet die Anlagen nach der Regel des Hydraulikbilds, eine
+Anlage ohne Priorität steht hinten). Allein die Modulreihenfolge der beiden Wärmepumpen von 1042 in
+`aggregate.csv` wechselt, alle Werte und alle Zeitreihen bleiben gleich, 1047 und die übrigen zwölf
+Projekte sind byte-gleich; die Tabelle steht im Abschnitt „Aktuelle Basis“ von
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-25_R15_Anlagenkopplung/`** — **vierzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047), **432 CSV**, **2 447 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (eingefroren auf
+Schemastand **141**, LFS-SHA-256 `b48add6a…`; heute Schemastand **142**, LFS-SHA-256 `1360e2be…`, Nachtrag unten). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
+1007, 1017, 1045, 1046, 1047) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die **einzige**
+Basis im Arbeitsbaum.
+
+> **Anlass: die fünfte und letzte Welle der Stufe AK1 der Anlagenkopplung** (vom Anwender am 25.09.2026
+> samt dem Einfrieren und der Aufnahme des neuen Projekts in die CI beauftragt). Eine Änderung, allein an
+> den Daten — **das Referenzprojekt mit Kopplung** (Anlagenkopplung 11.4, Einfrierregel „gesäte
+> Auslegungsdaten der Übergabe" oben): Projekt **1047 „Referenz Anlagenkopplung AK1"** ist eine Kopie von
+> 1017 auf dem Kopierweg des Programms (`ProjektDuplizierenCtrl`, im Skript Schritt für Schritt
+> nachgebildet) mit neun gesetzten Zellen, über
+> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](../../../Referenzlaeufe/Skripte/anlagenkopplung_1047_referenzprojekt.py):
+> `Tab_Einstellungen.Anlagenkopplung` NULL → „AK1", die Kaskade `Tool_2` „Heizkessel" → „Wärmepumpe" und
+> `Tool_3` „Wärmepumpe" → „Heizkessel" (die Wärmepumpe vor dem Elektrokessel, Anwenderentscheid vom
+> 25.09.2026; der Tausch der Platzinhalte wie der Pfeil „nach vorn" der Simulationskonfiguration,
+> `Kaskade_Gepflegt` bleibt 0 wie überall in der Testdatenbank), am Projektgebäude 10653 (der Kopie von 10599)
+> `Heizkreis_Aktiv` 0 → 1, `Uebergabe_Art` NULL → „RADIATOR", `Heizkurve_Aktiv` 0 → 1,
+> `Kuehluebergabe_Aktiv` 0 → 1 und `Kuehl_Uebergabe_Art` NULL → „KUEHLDECKE", dazu die Beschreibung des
+> Projekts. Alle übrigen Übergabespalten bleiben NULL — es rechnen die EPOS-Vorgaben der Art: Radiator
+> 55/45 °C mit n = 1,3, Heizkurve aus dem Auslegungspunkt (Niveau 0 K, Steilheit 1,0),
+> Auslegungs-Außentemperatur aus dem kältesten Tagesmittel, Nennleistung aus der Auslegungsheizlast,
+> Proportionalband 1,0 K, Sollwerte des Gebäudes; Kühldecke 16/19 °C mit n = 1,1, Vorlaufgrenze 16 °C,
+> Nennleistung aus dem Auslegungstag (19. Juni, 20,41 kW am Katalog-Gebäude). **1017 bleibt unverändert
+> und ungekoppelt.** Die Testdatenbank ist die Fassung von origin mit Schemastand 141 (`a427aa72…`, die
+> Schritte 140 und 141 stehen mit ihren Nachträgen beim R14-Abschnitt unter `ueberholt/`), auf die das
+> Skript angewandt ist; Sicherung vorher außerhalb des Repositoriums. Der Zellvergleich aller Tabellen
+> gegen diese Fassung (10 507 032 Zellen) zeigt 9 365 neue Zeilen in 24 Tabellen und 21 geänderte Zeilen
+> in `sqlite_sequence`, keine geänderte oder entfernte Zeile sonst, das Schema gleich. Die Kopie gleicht
+> Zelle für Zelle einem vom Programm duplizierten Projekt (Prüfstand außerhalb des Repositoriums) bis auf
+> die neun Zellen. `integrity_check` ok, `foreign_key_check` leer, 68 747 264 Byte; ein zweiter Lauf des
+> Skripts ändert nichts (byte-gleich).
+>
+> **Warum so** — eine Kopie statt 1017 selbst, damit das Kühlreferenzprojekt bleibt, wie es ist, und das
+> Paar 1017/1047 zugleich „ideal gegen gekoppelt" zeigt; 1017 als Vorlage, weil nur dort beide Seiten der
+> Kopplung zu rechnen haben (Einzelgebäude nach VDI 6007, Kühlung mit Kälteerzeuger); Radiator mit
+> gefahrener Heizkurve und Kühldecke mit allen Vorgaben, damit die Basis die hergeleiteten Wege der Art
+> trägt und keine Zahl von Hand (Anlagenkopplung 8.4, 11.4); die Wärmepumpe vor dem Elektrokessel, damit
+> sie Wärme liefert und die Kennlinienwahl am gerechneten Vorlauf (Anlagenkopplung 6.1) auf ein Ergebnis
+> der Basis wirkt — auf Platz 3 deckten BHKW und Elektrokessel die gekappte Last ganz.
+>
+> **Die dreizehn alten Projekte bleiben byte-gleich** — Nullnachweis vor dem Einfrieren, auf dem Stand
+> mit 1047 in der Testdatenbank: 13/13 PASS gegen R14 (4 207 049 Werte), 394/394 CSV byte-gleich, nur
+> `protokoll.txt` anders; nach der Kaskade von 1047 und den Schritten 140 und 141 ebenso byte-gleich zur
+> ersten Einfrierung dieser Basis. **1047 kommt mit 38 Dateien und 198 Skalaren dazu**: gegen 1017 die sechs Reihen
+> des Heiz- und des Kältekreises (`vorlauf_0.csv`, `ruecklauf_0.csv`, `uebergabe_0.csv`,
+> `kuehlvorlauf_0.csv`, `kuehlruecklauf_0.csv`, `kuehluebergabe_0.csv`) und die Skalare
+> `Energiebedarf.Vorlauf_Mittel`, `Ruecklauf_Mittel`, `Uebergabe_Begrenzt_Stunden` samt ihren
+> Kühl-Gegenstücken und den Vektorsummen der sechs Reihen — 394 → 432 CSV, 2 249 → 2 447 Skalare.
+>
+> | | 1017 (ideal) | 1047 (gekoppelt) |
+> |---|---:|---:|
+> | Heizwärme [MWh/a] | 90,19 | 82,75 (−8,3 %) |
+> | Heizlastspitze [kW] | 63,16 | 45,64 |
+> | mittlere Raumtemperatur der Heizzeit [°C] | 20,72 | 20,08 |
+> | Vorlauf / Rücklauf, bedarfsgewichtet [°C] | — | 36,98 / 33,56 |
+> | Stunden mit begrenzter Wärmeübergabe [h] | — | 1 108,2 (bis 2,4 K unter dem Sollwert) |
+> | Kältebedarf [MWh/a] | 2,52 | 2,33 (−7,5 %) |
+> | Kühlvorlauf / Kühlrücklauf, bedarfsgewichtet [°C] | — | 18,00 / 18,81 |
+> | Stunden mit begrenzter Kühlübergabe [h] | — | 0 |
+> | Stunden mit Kühlbedarf; Überhitzungsstunden [h] | 402; 306 | 423; 327 |
+> | Kaskade der Wärmeerzeuger | BHKW, Elektrokessel, WP | BHKW, WP, Elektrokessel |
+> | Wärmedeckung BHKW / Wärmepumpe / Elektrokessel [%] | 77,5 / 0,05 / 22,3 | 82,4 / 16,4 / 1,2 |
+> | Wärme der Wärmepumpe [MWh/a] | 0,04 | 13,60 |
+> | Strom der Wärmepumpe Heizseite / Kühlseite [MWh/a] | 0,02 / 0,55 | 3,54 / 0,51 |
+> | Jahresarbeitszahl der Wärmepumpe im Heizbetrieb | 2,49 | 3,84 |
+> | Wärme des Elektrokessels [MWh/a] | 20,12 | 1,00 |
+> | Restwärme [MWh/a] | 0,10 | 0 |
+> | Kältedeckung durch die Wärmepumpe | 98,4 % | 98,8 % |
+> | Netzbezug `Stromrestbedarf` [MWh/a] | 655,88 | 641,18 |
+>
+> **Die Abweichung ist die Kopplung, kein Fehler** (Anlagenkopplung 3.5, 4.4, 7.1). Die Wärmeübergabe
+> ist nach den Vorgaben auf die stationäre Auslegungsheizlast bemessen; nach der Absenkung reicht sie in
+> 1 108 Stunden nicht, die Aufheizspitze wird gekappt, und der P-Regler hält den Raum mit seinem Band von
+> 1 K im Mittel etwas unter dem Sollwert — beides senkt die Heizwärme um 8,3 % (Heizwärme, Spitze und
+> begrenzte Stunden wie in der Probe der zweiten Welle mit dem Heizkreis allein). Auf der Kälteseite hebt
+> das Band die Raumluft bis zu 1 K über den Kühlsollwert, bevor die Kühldecke voll liefert: Der
+> Kältebedarf sinkt um 7,5 %, die Stunden mit Kühlbedarf steigen von 402 auf 423 und die
+> Überhitzungsstunden von 306 auf 327 (die Probe der vierten Welle mit der Kühldecke allein: 2,36 MWh/a
+> und 330 Überhitzungsstunden; mit dem Heizkreis dazu liegt der Raum in der Heizzeit tiefer). Das ist
+> gewollt; die Sollwerte von 1017 bleiben.
+>
+> **Die Wärmepumpe auf Platz 2 wählt ihre Kennlinie am gerechneten Vorlauf.** Hinter dem BHKW übernimmt
+> sie 13,60 MWh/a (16,4 %), der Elektrokessel nur noch 1,00 MWh/a; der Netzbezug sinkt gegen 1017 um
+> 14,7 MWh/a. Der Lauf nennt die Stunden je Stützstelle des Heizkreises — 35 °C 3 858 h, 45 °C 1 782 h,
+> 55 °C 122 h, dazu 2 309 Stunden unter 35 °C (dort gilt die unterste Kennlinie) —, und die
+> Jahresarbeitszahl im Heizbetrieb ist 13,60 / 3,54 = **3,84**. **Gegenprobe ohne Kopplung** (nur an einer
+> Arbeitskopie außerhalb des Repositoriums, 1047 mit `Anlagenkopplung` NULL, sonst gleich): Die Wärmepumpe
+> rechnet dann durchgehend an der Kennlinie des Anlagenvorlaufs 55 °C und kommt auf eine Jahresarbeitszahl
+> von 19,04 / 6,25 = **3,05** — bei höherem Heizbedarf (90,19 MWh/a, ideal) und mehr Betriebsstunden
+> (575 statt 396 h). Die Kennlinienwahl am gerechneten Vorlauf wirkt also, und die Basis hält sie. Die
+> Kälteseite bleibt am festen Kühl-Vorlauf 18 °C der Maschine (E37, A3): EER-Jahreswert 4,52 wie in 1017,
+> Kältestrom 0,51 MWh/a, alles aus dem Netz; die Kaskade ändert daran nichts.
+>
+> **Rechenzeit (E36):** Das beidseitig gekoppelte Gebäude von 1047 rechnet in 50 bis 62 ms je Jahr
+> (Heizwärme eines Gebäudes samt Eingang, das Beste aus fünf Läufen nach dem Anlauf, zwei Messungen),
+> das ungekoppelte von 1017 in 22 ms — unter der Grenze von 100 ms.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 14/14 Projekte gerechnet. NaN steht nur, wo es gewollt ist:
+> `vorlauf_0.csv` und `ruecklauf_0.csv` von 1047 tragen in den 1 063 Stunden ohne Heizbetrieb NaN (die
+> Lücke der Reihe, Anlagenkopplung 8.3). Der Vergleich nimmt NaN gegen NaN als gleich; `pruefen` nennt die
+> Lücken dieser vier Reihenmuster als Hinweis (`Referenzlauf/Plausibilitaet.cs`, benannte Ausnahme) und
+> meldet die Basis **plausibel**.
+>
+> **Einfrierregeln:** Die Regel „gesäte Auslegungsdaten der Übergabe" entsteht mit diesem Projekt und umfasst
+> die Kaskade des gekoppelten Projekts; für den Platz der Wärmepumpe gilt zugleich „gesäte Kältedaten". 1047 ist
+> zugleich ein Referenzprojekt mit Gebäude-, Kälte- und Kälteerzeugerdaten und mit eigenen Zeilen in
+> `energy_project_settings` — die Regeln „gesäte Gebäudedaten", „gesäte Kältedaten" und die der
+> Emissionsfaktoren gelten für seine Zeilen wie für die von 1017. PV-Modulkoeffizienten und Flottenstand
+> 1046 sind nicht berührt.
+>
+> **Zweimal eingefroren, am selben Tag und vor der Veröffentlichung:** zuerst mit der Wärmepumpe auf Platz 3
+> (Schemastand 139), dann mit der Kaskade oben auf Schemastand 141. Zwischen beiden bewegt sich allein 1047
+> (neun Dateien: `aggregate.csv`, die vier Reihen der Wärmepumpe `wp_produktion`, `wp_strom`,
+> `wp_waermebedarf`, `wp_restwaerme`, drei des Kessels und `reststrom_viertelstunde.csv`); die dreizehn
+> übrigen Projekte sind byte-gleich.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **14/14 byte-gleich** (432/432 CSV) und
+> **GESAMT: PASS** gegen diese Basis (4 610 207 Werte). Der Lauf der sechs CI-Projekte mit der
+> Kommandozeile aus `kern.yml`: **6/6 PASS** (2 208 587 Werte), 198/198 CSV byte-gleich.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047 \
+>   --ziel Referenzlaeufe/2026-09-25_R15_Anlagenkopplung
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Abnahme der Stufe im
+> [Protokoll der fünften Welle AK1](../Protokolle/Gebaeudesimulation/2026-09-25_AK1_Welle5_Referenzprojekt.md)
+> und im [Status der Gebäudesimulation](../../aktuell/Status_Gebaeudesimulation_VDI6007.md).
+
+> **Nachtrag #505: Schemastand 142 (dritte Berichtigung der Anschlusslängen), die Basis bleibt.**
+> Migrationsschritt **142** (`SCHRITT_GEBAEUDE_DRITTE_REPARATUR`; die Nummer steht allein bei
+> `GebaeudeAnschlusslaengenDritteReparatur.SCHRITT`, der Quelle für Migration, Werkzeug und Testvorrichtung; er folgt
+> auf die Folgeberichtigung, 141) berichtigt nach dem Anwenderentscheid vom 25.09.2026 („Empfehlung übernommen —
+> eindeutig unplausible Werte berichtigen, den Rest lassen“) die Berichtstabelle des Nachtrags #496: 19 Zellen an
+> achtzehn Sätzen von `Tab_Gebaeude_STAMM` — **reines DML** in der Bauart von #493 und #496 (Bezeichner und
+> unplausibler Wert ± 0,05 je Spalte, dieselben Anweisungen), nichts gelöscht, Projektkopien unberührt. Neu ist allein
+> das Bild **„leer“** (NULL) für die Laibung dreier Sätze: eine feste Anweisung mehr bei
+> `GebaeudeAnschlusslaengenReparatur` (`SQL_FENSTER_WAND_LEER` samt Zählung), weil ein Wertebereich keine leere Zelle
+> trifft. Regel der Herleitung wie #496: Zwilling gleicher Geometrie, sonst Verhältnis der Quelle × Fensterfläche;
+> Kanten = Umfang U = (Außenwand + Fenster) / (Nutzfläche / Grundfläche × Raumhöhe), nicht unter der Quadratkante
+> 4·√Grundfläche. ΔH_T = Σ ψ·ΔL je Satz (ψ des Satzes; ψ 0 oder leer ergibt 0).
+>
+> | Satz | Spalte | vorher | nachher | Herleitung | ΔH_T |
+> |---|---|---|---|---|---|
+> | 6 `Pflegeheim-122-EnEV2016` | `Abmessung_Anschluß_Fenster_Wand` | 0 | 540 m | Zwilling 8 `Pflegeheim-C-S-140-EnEV2016` gleicher Geometrie (Wand 2 132, Fenster 545, Grund 540 m²): 540 m = 0,99 m/m² | +81,0 W/K (ψ 0,15) |
+> | 15 `Industriehalle-320` | dieselbe | 0 | 16 000 m | Zwilling 14 `Industrie_ne_81` (Wand 15 100, Fenster 6 400, Grund 36 587 m²): 2,5 m/m², dort plausibel | 0 (ψ 0) |
+> | 43 `Hotel_H_BZ`, 64 `kl_Hotel-H-086` | dieselbe | 0 | 391,5 m | Zwillinge 65 `kl_Hotel-I-080`, 73 `ml-Hotel-NE-68` (Wand 613,1, Fenster 156,6, Grund 254,9 m²): 2,5 m/m² | 0 (ψ 0) |
+> | 117 `Verw_H_75` | dieselbe | leer | 391,5 m | Zwilling 118 `Verw_I_33` gleicher Geometrie | +15,7 W/K (ψ 0,04) |
+> | 105 `Büro1-F-U-89`, 107 `Bürogebäude_F_72` | dieselbe | leer | 1 462,1 m | Verwaltung F (115 `Verw_F_147`): 476,8 / 164,36 = 2,901 m/m² × 504 m² | 0 (ψ leer) |
+> | 106 `Bürogebäude KfW 55` | dieselbe | 0 | 2 875 m | kein Satz gleicher Geometrie; Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 150 m² | 0 (ψ 0) |
+> | 207 `KMH-G-U-120` | dieselbe | 0 | 238,3 m | KMH G (206, 209): 268,6 / 112,015 = 2,398 m/m² × 99,37 m² | 0 (ψ 0) |
+> | 23 `Hallenbad-Umkl-140-EnEV2016` | dieselbe | 50 | 865,1 m | Ausgangssatz 24 `Hallenbad-Umkl-180`: 142 / 70,4 = 2,017 m/m² × 428,9 m² (50 m wären 0,12 m/m²) | +32,6 W/K (ψ 0,04) |
+> | 34 `gr_Hotel-80-EnEV2016` | dieselbe | 600 | 6 164,4 m | Geometrie der F-Sätze und von 37 `gr_Hotel-G-134` (Wand 10 094, Grund 1 469, Nutzfläche 18 012 m²) nach #493: 7 879 / 3 062,3 = 2,5729 m/m² × 2 395,9 m² (600 m wären 0,25 m/m²); die gerundeten Kanten 300 m (Umfang 313,8 m) bleiben | +500,8 W/K (ψ 0,09) |
+> | 108 `Bürogebäude_gross-30-EnEV2016` | dieselbe | 330 | 4 460 m | kein Satz gleicher Geometrie; Verhältnis der NE-/I-Sätze 2,5 m/m² × 1 784 m² (330 m wären 0,18 m/m²) | +371,7 W/K (ψ 0,09) |
+> | 42 `Hotel_G_96`, 72 `ml-Hotel-G-096` | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 14,6 | 86,6 m | der Umfang, den #496 als Dachkante gesetzt hat (Geometrie 87,7 m, Quadratkante 83,1 m); 14,6 m wären weniger als ein Fünftel der Quadratkante | je +46,8 W/K (ψ 0,65) |
+> | 134 `GMH-G-U-97` | dieselbe | 14,6 | 86,6 m | wie 42 | +47,9 W/K (ψ 0,665) |
+> | 84 `GMH-BZ_T`, 85 `GMH-J-015` | dieselbe | 14,6 | 122,3 m | der Umfang der eigenen Geometrie aus #496 (Dachkante), Quadratkante 88,1 m | je +71,6 W/K (ψ 0,665) |
+> | 14 `Industrie_ne_81` | `Abmessung_Anschluß_Wand_Dach` | 7 337,4 | 2 362,1 m | Umfang der eigenen Geometrie (15 100 + 6 400) / (39 645 / 36 587 × 8,4 m) = 2 362,1 m; Quadratkante 765,1 m, 7 337,4 m wären ihr 9,6-Faches | −497,5 W/K (ψ 0,10) |
+> | 14 `Industrie_ne_81` | `Abmessung_Anschluß_Außenwand_Kellerdecke` | 7 337,4 | 2 362,1 m | derselbe Umfang (der Satz führte beide Kanten gleich); die Laibung 16 000 m (2,5 m/m²) trägt und bleibt | −248,8 W/K (ψ 0,05); Satz −746,3 W/K |
+>
+> **Nicht geändert (Anwenderentscheid):** die Kanten der Laibungssätze (0 m bei ψ 0; bei 117 leer, bei 105, 107 samt
+> ψ leer), die Kellerkanten 0 m der Heime, Schulen und Hallenbäder (ψ 0), die Laibungen 0,32 bis 0,64 m/m² der Sätze
+> 46, 57, 120, die Gruppe „nur Dachkante“ (geneigte Dächer) samt den Referenzsätzen 145 und 146. Danach führt kein
+> Katalogsatz eine leere Laibung, eine Laibung 0 m bei Fenstern (`AltenH-95-EnEV2016` hat keine Fenster), eine
+> Kellerkante 14,6 m oder eine Kellerkante über dem Neunfachen der Quadratkante.
+>
+> Nachgezogen auf der Fassung von origin mit Schemastand **141** (Nachtrag #496 oben, `a427aa72…`) mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`: offen vorher
+> 19, berichtigt 19, offen danach 0, Marker 142; ein zweiter Lauf berichtigt nichts. Zellvergleich aller 144 Tabellen
+> gegen die Fassung 141 (10 506 856 Zellen): allein `SchemaVersion` 141 → 142 und die 19 Zellen der Tabelle; Schema
+> unverändert; `integrity_check` ok, `foreign_key_check` leer, 144 Tabellen (alle STRICT), 14 Sichten, 219 Indizes
+> samt den von SQLite angelegten. Größe 67 915 776 Byte (LFS-SHA-256 `fc5f143e…`). **Ergebnisneutral:** Keinen der
+> achtzehn Sätze führt ein Projekt der Testdatenbank (weder über `ID_Gebaeude_Stamm` noch über den Namen); die
+> dreizehn Referenzprojekte führen die Sätze 125, 129, 142–146, 233, 56. **Keine Einfrierregel ist berührt.**
+> Referenzlauf aller dreizehn Projekte **13/13 PASS gegen diese Basis (4 207 049 Werte, 394/394 CSV byte-gleich,
+> außer `protokoll.txt`)**.
+>
+> *Gemessen hat #505 gegen R14; der Nachtrag #496, auf den er sich bezieht, steht mit dem Nachtrag Z5 am
+> Ende des R14-Abschnitts unter `Dokumentation/ueberholt/Referenzbasen/`.* **Zusammenführung mit AK1
+> Welle 5 — R15 bleibt:** Die Testdatenbank ist
+> die Fassung von origin mit Schemastand 142 (`fc5f143e…`), auf die
+> [`Skripte/anlagenkopplung_1047_referenzprojekt.py`](../../../Referenzlaeufe/Skripte/anlagenkopplung_1047_referenzprojekt.py)
+> angewandt ist; ein zweiter Lauf ändert nichts. Zellvergleich gegen die Fassung von origin (10 507 032
+> Zellen): genau die 9 365 Zeilen des Projekts 1047 in 24 Tabellen und 21 Zeilen `sqlite_sequence`, Schema
+> gleich. `integrity_check` ok, `foreign_key_check` leer, 68 747 264 Byte (LFS-SHA-256 `1360e2be…`).
+> Referenzlauf aller vierzehn Projekte gegen diese Basis: **14/14 PASS** (4 610 207 Werte, 432/432 CSV
+> byte-gleich, außer `protokoll.txt`); die berichtigten Sätze führt auch 1047 nicht (es führt Satz 125 wie 1017).
+
+> **Die Vorgängerbasis `2026-09-24_R14_Kaelteerzeuger`**, die erste Basis mit Kälteerzeuger, ist mit dieser
+> Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Kälteerzeuger von 1017
+> und den Nachträgen zu den Schemaständen 119 bis 141 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 

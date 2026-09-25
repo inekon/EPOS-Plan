@@ -32,6 +32,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Das Referenzprojekt mit Kühlung und seine Wärmepumpe (Projektkopie, Anlagenzeile).</summary>
         private const int PROJEKT = 1017, WP_KOPIE = 1017033, ANLAGE = 10211;
 
+        /// <summary>Das Projektgerät der Kopie von 1017 im Referenzprojekt der Anlagenkopplung 1047.</summary>
+        private const int WP_REFERENZ_KOPPLUNG = 1672046;
+
         /// <summary>Ein Katalogsatz mit Kühlkennlinie (60 Stützstellen, Laststufen gepflegt).</summary>
         private const int STAMM_MIT_KUEHLKENNLINIE = 42;
 
@@ -141,7 +144,8 @@ namespace EPOS.Kern.Tests
         /// Alle sieben Spalten stehen, jede Wärmepumpe steht auf „kein Kühlbetrieb", Vorlauf,
         /// Hilfsstromanteil und Stromträgerwahl sind NULL — bis auf den Kälteerzeuger des
         /// Referenzprojekts 1017 (Projektgerät 1017033: Kühlbetrieb, Vorlauf 18 °C, Hilfsstromanteil
-        /// 0,05; Einfrierregel „gesäte Kältedaten", <c>Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py</c>);
+        /// 0,05; Einfrierregel „gesäte Kältedaten", <c>Referenzlaeufe/Skripte/kaelteerzeuger_1017_referenzprojekt.py</c>)
+        /// und seiner Kopie im Referenzprojekt der Anlagenkopplung 1047 (Projektgerät 1672046);
         /// die Beziehung steht mit <c>SET NULL</c>, der Schalter nimmt nur 0 und 1 an, und die Tabellen
         /// bleiben STRICT.
         /// </summary>
@@ -153,20 +157,23 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= 114);
             Assert.True(KuehlungSchema.ErzeugerspaltenVollstaendig());
 
+            // Die Kälteerzeuger: das Projektgerät von 1017 und seine Kopie im Referenzprojekt der
+            // Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py).
+            string saat = WP_KOPIE.ToString(CultureInfo.InvariantCulture) + ", " +
+                          WP_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture);
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE Kuehlbetrieb <> 0 AND ID <> " +
-                                      WP_KOPIE.ToString(CultureInfo.InvariantCulture)));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE Kuehlbetrieb <> 0 AND ID NOT IN (" + saat + ")"));
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE (Kuehl_Vorlauf IS NOT NULL " +
-                                      "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID <> " +
-                                      WP_KOPIE.ToString(CultureInfo.InvariantCulture)));
+                                      "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID NOT IN (" + saat + ")"));
             }
-            Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)) +
-                                      "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)) +
-                                      "|" + Convert.ToString(DataRepository.ExecuteScalar(
-                                          "SELECT Kuehl_Hilfsstromanteil FROM Tab_WP WHERE ID = " + WP_KOPIE.ToString(CultureInfo.InvariantCulture)),
-                                          CultureInfo.InvariantCulture));
+            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG })
+                Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
+                                          "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
+                                          "|" + Convert.ToString(DataRepository.ExecuteScalar(
+                                              "SELECT Kuehl_Hilfsstromanteil FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)),
+                                              CultureInfo.InvariantCulture));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_ID_Carrier IS NOT NULL"));
 
             DataTable fk = DataRepository.GetDataTable(

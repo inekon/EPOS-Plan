@@ -67,8 +67,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = ?",
                                   GebaeudeKatalogverweis.INDEX));
 
-            Assert.Equal(26L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
-            Assert.Equal(26L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude g INNER JOIN Tab_Gebaeude_STAMM s " +
+            // 27 Projektgebäude: die 26 des Schritts 121 und 10653, die Kopie von 10599 im
+            // Referenzprojekt der Anlagenkopplung 1047 - mit dem Verweis ihrer Vorlage.
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude g INNER JOIN Tab_Gebaeude_STAMM s " +
                                    "ON s.ID = g.ID_Gebaeude_Stamm WHERE s.Bezeichner = g.Gebaeudename"));
             Assert.Equal(0L, Zahl(GebaeudeKatalogverweis.ZaehlungOhneVerweis()));
             Assert.Equal((long)STAMM_EFH, Zahl("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1007));
@@ -101,10 +103,12 @@ namespace EPOS.Kern.Tests
             // Ein gesetzter Verweis bleibt stehen, auch wenn der Name anderes sagt.
             Sql("UPDATE Tab_Gebaeude SET ID_Gebaeude_Stamm = ? WHERE ID = 10599", STAMM_EFH);
 
-            Assert.Equal(22L, Zahl(GebaeudeKatalogverweis.Zaehlung()));
+            // 23 = 27 Projektgebäude - 10599 (gesetzt) - 3 ohne eindeutigen Namen; darin 10653, die
+            // Kopie von 10599 im Referenzprojekt der Anlagenkopplung 1047.
+            Assert.Equal(23L, Zahl(GebaeudeKatalogverweis.Zaehlung()));
             GebaeudeKatalogverweis.Bericht b = GebaeudeKatalogverweis.Ausfuehren();
 
-            Assert.Equal(22L, b.Nachgetragen);
+            Assert.Equal(23L, b.Nachgetragen);
             Assert.Equal(3L, b.OhneVerweis);                 // 1 ohne Katalogsatz + 2 mehrdeutig
             Assert.Null(Wert("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1007));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Gebaeudename = 'MFH-H-U-112' " +
@@ -436,6 +440,10 @@ namespace EPOS.Kern.Tests
             // Welle #496: die Folgeberichtigung (Tausch von Laibung und Dachkante, Hotel-F-228,
             // Aussenwand des Kaufhauses) - zwanzig Saetze.
             foreach (string name in GebaeudeAnschlusslaengenFolgereparatur.Berichtigungen.Select(b => b.Bezeichner).Distinct())
+                Assert.Contains(name, frei);
+            // Welle #505: die dritte Berichtigung (Laibungen 0 m oder leer, gerundete
+            // EnEV-Laibungen, Kellerkanten 14,6 m, Kanten von Industrie_ne_81) - achtzehn Saetze.
+            foreach (string name in GebaeudeAnschlusslaengenDritteReparatur.Berichtigungen.Select(b => b.Bezeichner).Distinct())
                 Assert.Contains(name, frei);
         }
 

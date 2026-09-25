@@ -598,7 +598,7 @@ namespace WindowsFormsApplication1
         /// verfügbar; der Referenzlauf bleibt byte-gleich. Die Nummer steht allein bei
         /// <see cref="TwwSchema.SCHRITT_T4_MESSREIHEN"/>.
         /// Mit der FOLGEBERICHTIGUNG IM GEBÄUDEKATALOG (Welle #496; Konzept
-        /// Administrationsdialoge 7.1 (a)) steht das Ziel auf
+        /// Administrationsdialoge 7.1 (a)) stand das Ziel auf
         /// <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>: die Scan-Kandidaten mit
         /// vertauschter Laibung und Dachkante (Alten-/Pflegeheime, Schulen, Hallenbäder, die
         /// G-096-Sätze — Tausch; „GMH-BZ_T", „GMH-J-015" — hergeleitet), die Dach- und Kellerkante
@@ -607,11 +607,20 @@ namespace WindowsFormsApplication1
         /// <see cref="GebaeudeAnschlusslaengenFolgereparatur"/>. <b>Ergebnisneutral:</b> Keinen der
         /// Sätze führt ein Referenzprojekt; der Referenzlauf bleibt byte-gleich. Die Nummer steht
         /// allein bei <see cref="GebaeudeAnschlusslaengenFolgereparatur.SCHRITT"/>.
+        /// Mit der DRITTEN BERICHTIGUNG DER ANSCHLUSSLÄNGEN (Welle #505; Anwenderentscheid vom
+        /// 25.09.2026 „eindeutig unplausible Werte berichtigen, den Rest lassen") steht das Ziel
+        /// auf <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/>: Laibungen 0 m oder
+        /// leer (aus Zwillingen gleicher Geometrie oder dem Verhältnis der Quelle), die gerundeten
+        /// EnEV-Laibungen, die Kellerkanten 14,6 m der G-096- und GMH-BZ-Sätze (Umfang) und Dach-
+        /// und Kellerkante von „Industrie_ne_81" (Umfang aus der eigenen Geometrie) — je Satz,
+        /// Spalte und Schadensbild bei <see cref="GebaeudeAnschlusslaengenDritteReparatur"/>.
+        /// <b>Ergebnisneutral:</b> Keinen der Sätze führt ein Referenzprojekt. Die Nummer steht
+        /// allein bei <see cref="GebaeudeAnschlusslaengenDritteReparatur.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = GebaeudeAnschlusslaengenFolgereparatur.SCHRITT;
+        public const int Zielversion = GebaeudeAnschlusslaengenDritteReparatur.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

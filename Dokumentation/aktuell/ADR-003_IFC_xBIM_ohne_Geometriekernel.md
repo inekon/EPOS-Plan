@@ -48,8 +48,8 @@ Die Recherche zu den Bibliotheken (Befund C, N, S; Gegenlesen IFC) ergab:
    STEP-Text); ein iPad braucht ein benanntes Größenlimit.
 5. **Paketgröße:** `Xbim.IO.MemoryModel` bringt mit `Xbim.Ifc2x3`, `Xbim.Ifc4` und
    `Xbim.Ifc4x3` drei erzeugte Schema-Assemblies mit; sie wachsen in das iOS-App-Paket
-   hinein, und Trimming greift bei reflexiv erreichten Typen nur begrenzt. Wie groß der
-   Zuwachs ist, ist nicht gemessen.
+   hinein, und Trimming greift bei reflexiv erreichten Typen nur begrenzt. Gemessen
+   (Aufgabe 7): +36,1 MB im entpackten, +7,8 MB im gezippten Gerätepaket.
 6. **Verwechslungsgefahr beim Export:** Eine Datei mit erfundener Anordnung ist
    gefährlicher als eine ohne Körper.
 
@@ -166,21 +166,53 @@ Quellenverweis begrenzt.
 
 ## Aufgaben
 
-1. [ ] `Xbim.IO.MemoryModel` in `Directory.Packages.props` aufnehmen; Lizenzhinweisseite im
+> **Stand 25.09.2026 (Umsetzung G4, [Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)):**
+> Aufgaben 1 bis 3 sind umgesetzt — das Gerüst heißt formatfrei `GebaeudeImportAblauf`/`-Profil`/`-Satz`
+> (`EPOS.Kern/Allgemein/Import/Gebaeude/`), der Leser `IfcLeser`, die Zuordnung liegt in Schemaschritt 138.
+> Aufgabe 5: Der eine iOS-Lauf (E38) hat den Import unter Trimming und AOT im Simulator nachgewiesen
+> (xBIM-Metadaten vollständig, 0 IL-Warnungen, kein Deskriptor nötig) und die iOS-Grenzen gemessen
+> (Protokoll G4, Abschnitt 10). Aufgabe 7: Der Gerätebau `ios-arm64` lief im ersten Lauf wegen der
+> Simulatorkennung in `RuntimeIdentifiers` der iOS-Schale als Simulatorbau und brach am Linken der
+> Geräte-SQLite ab — nicht an xBIM; nach der Korrektur baut er vollständig (Plattform iOS, AOT,
+> 0 IL-Warnungen), und der Gerätejob von `ios.yml` misst ihn mit und ohne die Paketzeile
+> (`-p:OhneXbim=true`; Lauf 36116562830, Protokoll G4, Abschnitt 11). Offen ist allein die Bewertung
+> des Zuwachses (Aufgabe 7).
+
+1. [x] `Xbim.IO.MemoryModel` in `Directory.Packages.props` aufnehmen; Lizenzhinweisseite im
        Setup (Frage U10).
-2. [ ] `IfcImportAblauf`/`IfcImportProfil`/`IfcImportSatz` nach Befund N mit den
+2. [x] `IfcImportAblauf`/`IfcImportProfil`/`IfcImportSatz` nach Befund N mit den
        Korrekturen des Gegenlesens (Typ-Eigenschaften, Einheiten, Außennormale, Schemafall
        `Ifc4x1`, `.ifczip`-Größe).
-3. [ ] Zuordnungstabelle und Herkunftsspalten (Datenaustauschkonzept, Kapitel 7).
+3. [x] Zuordnungstabelle und Herkunftsspalten (Datenaustauschkonzept, Kapitel 7).
 4. [ ] Export S1 nach Befund S; S2 und S3 erst nach den Fragen des Datenaustauschkonzepts zum
        **Empfänger** (**D6**, 11.1) und zur **vertraglichen Zulässigkeit der Rückgabe** (**D11**,
        11.1); die **Zurückstellung von S2** steht als **D7** in 11.2 — dort beantwortet das Papier
        selbst, der Anwender kann widersprechen.
-5. [ ] iOS-Nachweis (Gerätebau, Trimming, Größenlimit) nach Rückfrage.
+5. [x] iOS-Nachweis (Gerätebau, Trimming, Größenlimit) nach Rückfrage.
 6. [ ] **Zonengeometrie-Modell und Gebäudeansicht nach E11:** Modell im Kern und 2D-Grundriss im
        Zuordnungsdialog mit G6c, schematische Körper mit G7b; three.js lokal unter
        `EPOS.UI/wwwroot` und auf die Lizenzhinweisseite (Frage U10).
-7. [ ] **Paketgröße der iOS-App messen** (Kraft 5): je ein Bau `ios-arm64`, getrimmt, mit und
+7. [x] **Paketgröße der iOS-App messen** (Kraft 5): je ein Bau `ios-arm64`, getrimmt, mit und
        ohne die Paketzeile `Xbim.IO.MemoryModel`; den Zuwachs durch die drei Schema-Assemblies
        hier eintragen. Fällt er erheblich aus, den Import auf der iOS-Schale benannt ablehnen
        oder die Schemata einzeln referenzieren.
+       **Gemessen** (`ios.yml` Lauf 36116562830, Job `geraetebau`: Release, AOT ohne LLVM,
+       `TrimMode` partial, ohne Signatur, Seed ist die Testdatenbank; MB zu 1 048 576 Byte):
+
+       | Größe | mit xBIM | ohne xBIM | Zuwachs |
+       |---|---|---|---|
+       | App-Paket entpackt (Summe der Dateien) | 290,7 MB | 254,6 MB | **+36,1 MB (+14,2 %)** |
+       | davon Programm (AOT-Code, statisch gelinkt) | 143,5 MB | 120,7 MB | +22,8 MB |
+       | davon xBIM-Dateien (IL-freie DLLs und `aotdata`) | 10,4 MB | — | +10,4 MB |
+       | davon übrige Dateien | | | +2,8 MB |
+       | App-Paket gezippt (Näherung der Ladegröße) | 84,8 MB | 77,0 MB | **+7,8 MB (+10,1 %)** |
+       | Seed-Datenbank (in beiden gleich) | 64,8 MB | 64,8 MB | 0 |
+
+       **Die drei Schema-Assemblies** (`Xbim.Ifc2x3`, `Xbim.Ifc4`, `Xbim.Ifc4x3`) tragen 9,5 der
+       10,4 MB xBIM-Dateien und 62,6 der 66,4 MB AOT-Objekte von xBIM vor dem Linken (94 %);
+       anteilig gerechnet sind das rund 31 MB des entpackten Zuwachses. `Xbim.Common` und
+       `Xbim.IO.MemoryModel` zusammen rund 5 MB.
+       **Bewertung offen beim Anwender.** Empfehlung: nicht erheblich — der IFC-Import bleibt
+       auf iOS. Der Zuwachs liegt unter einem Achtel des entpackten Pakets und bei rund einem
+       Zehntel des gezippten. Ein einzelnes Schema zu streichen, spart je Schema rund ein
+       Drittel des Anteils, würde aber ein Schema benannt ablehnen, das unter Windows gelesen wird.

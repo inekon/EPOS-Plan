@@ -102,8 +102,12 @@ namespace WindowsFormsApplication1
     /// <para><b>Risiko R-W16-6</b> (Feld-für-Feld-Vergleich am Windows-Gerät,
     /// <c>Referenzlauf.exe</c>) ist für den BEARBEITETEN Fall geführt (#497): Projekt
     /// 1041 vor und nach einem Speichern ohne Änderung, 29 Dateien, 298 005 Werte,
-    /// byte-gleich. Der Fall eines über den Assistenten NEU angelegten Projekts steht
-    /// aus; auf Linux belegen Kern-Prüffälle den Rückzug und den Erfolgsfall.</para>
+    /// byte-gleich. Für ein über den Assistenten NEU angelegtes Projekt ebenso (#507):
+    /// Neuanlage aus Katalogsätzen (Gebäude, Kessel samt Träger, Prozesswärme,
+    /// Stromverbraucher, Stromganglinie, externer Wärmebedarf), danach Speichern ohne
+    /// Änderung über den Bearbeiten-Zweig — 17 Dateien, 192 810 Werte, byte-gleich,
+    /// Datenbank Zeile für Zeile unverändert; der Kern-Teil steht als Prüffall in
+    /// <c>AssistentAbgleichTests</c>.</para>
     /// </summary>
     public class AssistentCtrl
     {

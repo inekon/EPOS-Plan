@@ -192,10 +192,14 @@ namespace EPOS.Kern.Tests
         //  Teil 2 - die Testdatenbank und die Schritte aus dem Stand davor
         // =============================================================================
 
+        /// <summary>Das Gebäude des Referenzprojekts der Anlagenkopplung 1047 (Kopie von 10599).</summary>
+        private const int GEBAEUDE_REFERENZ_KOPPLUNG = 10653;
+
         /// <summary>
         /// Alle Strukturen stehen, die Sicht ist die geltende, alle neuen Spalten sind leer (der
-        /// Schalter 0) — die Testdatenbank trägt keine gesäten Daten der Kühlübergabe. Die
-        /// angefassten Tabellen bleiben STRICT, wo sie es waren.
+        /// Schalter 0) — bis auf die gesäte Kühlübergabe des Referenzprojekts der Anlagenkopplung
+        /// 1047 (Gebäude 10653: Schalter und Kühldecke, sonst leer). Die angefassten Tabellen
+        /// bleiben STRICT, wo sie es waren.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_steht_auf_dem_Zielstand_und_alle_neuen_Spalten_sind_leer()
@@ -216,12 +220,28 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, sicht);
             Assert.Equal(GebaeudeSchema.SICHT_KUEHLUEBERGABE, GebaeudeSchema.SichtSpalten().Take(98));
 
+            // Gesät ist allein das Gebäude des Referenzprojekts der Anlagenkopplung 1047 (Einfrierregel
+            // „gesäte Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py): Schalter
+            // und Art, alles Übrige leer.
             foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten.Concat(KuehluebergabeSchema.Ergebnisspalten))
             {
+                string ausser = s.Tabelle == "Tab_Gebaeude"
+                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
-                                      s.Name + "] <> 0"));
+                                      s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.KUEHLUEBERGABE_SCHALTER.Contains(s.Name))
-                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL"));
+                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
+            }
+            DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
+                                                           new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows[0];
+            foreach (SchemaSpalte s in GebaeudeSchema.Kuehluebergabespalten.Where(x => x.Tabelle == "Tab_Gebaeude"))
+            {
+                if (s.Name == "Kuehluebergabe_Aktiv")
+                    Assert.Equal(1L, Convert.ToInt64(referenz[s.Name], CultureInfo.InvariantCulture));
+                else if (s.Name == "Kuehl_Uebergabe_Art")
+                    Assert.Equal(DbWerte.KUEHLUEBERGABE_KUEHLDECKE, Convert.ToString(referenz[s.Name], CultureInfo.InvariantCulture));
+                else
+                    Assert.Equal(DBNull.Value, referenz[s.Name]);
             }
             foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenKuehlkreis)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + ErgebnisGebaeudeSchema.TAB + "] WHERE [" + s.Key + "] IS NOT NULL"));

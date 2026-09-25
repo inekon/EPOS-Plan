@@ -28,17 +28,24 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
   - fuenf DIN-4708-Werte (drei Belegungen, zwei Ausstattungsklassen, Sigma v*w_v in Wh) mit
     erfundenen Zahlen.
 
-ABGELEITETE VDI-6002-WERTE (Anwenderentscheid ZU19 vom 23.09.2026, Stufe Z3; Katalogausbau Z5).
-Neben dem fiktiven Katalog traegt die Testdatenbank fuenf Nutzungsarten mit GERINGFUEGIG ABWEICHENDEN VDI-6002-Werten
-(je ein eigener Tagesgangsatz; Bedarf, Jahresgang, Wochengang, Tagesgaenge). Das Skript liest sie
-allein aus tww_katalogwerte_abgeleitet.json neben diesem Skript - erzeugt von
-normzahlen_abgeleitet_bauen.py nach der dort dokumentierten Regel; die Originale braucht dieses
-Skript nicht. Niedrig/mittel/hoch der Nutzungsart sind Minimum/Mittel/Maximum der Datei (Kopf von
-normzahlen_abgeleitet_bauen.py). Die Zeilen (Nutzungsart in allen drei Provenienzgruppen,
-Tagesgaenge) tragen Herkunftsart 'FIKTIV' mit der Quelle "VDI 6002 Blatt <n> (abgeleitet)": Sie
-sind weder Eigenkonstruktion noch Normwert, sondern Testdaten nach einer Regel. Wie jede
-FIKTIV-Zeile fallen sie deshalb in der Auslieferungsvorlage (TwwKataloge.Bereinigen) - gewollt,
-solange die Frage ZU20 (abgeleitete Werte in der Auslieferung?) beim Anwender offen ist.
+ABGELEITETE VDI-6002-WERTE (Anwenderentscheide ZU19 vom 23.09.2026 und ZU20 vom 25.09.2026,
+Stufe Z3; Katalogausbau Z5). Neben dem fiktiven Katalog traegt die Testdatenbank fuenf
+Nutzungsarten mit GERINGFUEGIG ABWEICHENDEN VDI-6002-Werten (je ein eigener Tagesgangsatz; Bedarf,
+Jahresgang, Wochengang, Tagesgaenge). Das Skript liest sie allein aus
+tww_katalogwerte_abgeleitet.json neben diesem Skript - erzeugt von normzahlen_abgeleitet_bauen.py
+nach der dort dokumentierten Regel; die Originale braucht dieses Skript nicht. Niedrig/mittel/hoch
+der Nutzungsart sind Minimum/Mittel/Maximum der Datei (Kopf von normzahlen_abgeleitet_bauen.py).
+Die Zeilen (Nutzungsart in allen drei Provenienzgruppen, Tagesgaenge) tragen Herkunftsart
+'VERFAHREN' mit der Quelle "abgeleitet aus VDI 6002 Blatt <n>": Der Wert ist AUS EINEM VERFAHREN
+GERECHNET - der Ableitungsregel von normzahlen_abgeleitet_bauen.py -, nicht der Richtlinie
+entnommen und nicht aus einer frei verfuegbaren Quelle ('FREI' waere eine falsche Aussage ueber
+VDI 6002). Mit ZU20 GEHOEREN SIE ZUR AUSLIEFERUNG: Ihre Traeger sind die drei CSV-Dateien
+Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv und Tab_TwwNutzungsart_STAMM.csv des
+freien Paketteils (Status 'AUSLIEFERUNG', ReadOnly 1), die dieses Skript aus derselben JSON-Datei
+ERZEUGT (Schalter --paketteil-schreiben) und bei jedem Lauf gegen die Dateien im Arbeitsbaum
+haelt; Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein. In der Testdatenbank stehen
+dieselben Werte nach deren Regel (Kapitel 6 (c)): Status 'EIGEN', ReadOnly 0, Katalogversion
+'TEST-1'. Die drei "Testnutzung A/B/C (fiktiv)" bleiben 'FIKTIV'/'EIGEN' und nur hier.
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
@@ -46,9 +53,10 @@ Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen 
 die fuenf Setzungen der Validierung der Stufe Z5 (Zapfprofil.Validierung.*)
 und das Ecodesign-Zapfprofil L (Verordnung (EU) Nr. 814/2013 Anhang III) sind freie Daten. Sie stehen EINMAL im Repositorium, als CSV-Dateien
 im Paketformat N2 unter Referenzlaeufe/Katalogpaket_frei/ (Aufbau und Quellen in dessen
-LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vorlage ein. Dieses
-Skript liest dieselben Dateien und schreibt ihre Zeilen in die Testdatenbank - Herkunftsart
-'FREI' wie im Paket, aber nach der Regel der Testdatenbank (Kapitel 6 (c)) Status 'EIGEN',
+LIESMICH.md); Werkzeuge/Auslieferungsvorlage spielt denselben Ordner in jede Vorlage ein. Vier
+dieser Dateien (Parameter, Bedarfstag samt Ereignissen, Zapfkategorien) LIEST dieses Skript, die
+drei Traegerdateien der abgeleiteten Werte ERZEUGT es (siehe oben). Die gelesenen Zeilen gehen mit
+Herkunftsart 'FREI' wie im Paket, aber nach der Regel der Testdatenbank (Kapitel 6 (c)) Status 'EIGEN',
 ReadOnly 0 und die Katalogversion des Testkatalogs (der Paketteil fuehrt keine eigene). Die
 Kategorien des Paketteils sind VORGABESAETZE ohne Nutzungsart, je Nutzungsartengruppe einer
 (Steuerspalte "Gruppe": Wohnen, Nichtwohnen - Stufe Z5): Jede Nutzungsart dieses Katalogs bekommt
@@ -75,7 +83,9 @@ gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite
-(der Schalter --stochastik der Stufe Z2 ist ohne Wirkung)
+    py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py <db> --paketteil-schreiben
+(der Schalter --stochastik der Stufe Z2 ist ohne Wirkung; --paketteil-schreiben erzeugt die drei
+Traegerdateien der abgeleiteten Werte im freien Paketteil neu und laeuft dann normal weiter)
 """
 
 import csv
@@ -89,6 +99,10 @@ QUELLE = "Testkatalog (fiktiv)"
 VERSION = "TEST-1"
 HERKUNFT = "FIKTIV"
 STATUS = "EIGEN"
+
+# Die Provenienz-Version (Spalte Version) der Zeilen des freien Paketteils - der Stand des
+# Paketteils, nicht die Katalogversion (Regel 2 der LIESMICH.md des Paketteils).
+VERSION_PAKETTEIL = "FREI-1"
 
 SATZ = "Testsatz (fiktiv)"
 
@@ -126,9 +140,12 @@ BEZUG_KALT = 12.0
 # --- Abgeleitete VDI-6002-Werte (ZU19) ---------------------------------------------------------
 # Die Datei traegt KEINEN Originalwert; ihre Regel steht im Kopf von normzahlen_abgeleitet_bauen.py.
 ABGELEITET_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_katalogwerte_abgeleitet.json")
-HERKUNFT_ABGELEITET = "FIKTIV"      # Testdaten nach Regel - nie Eigenkonstruktion, nie Normwert
+# ZU20: aus einem Verfahren gerechnet (der Ableitungsregel) - weder Normwert noch Eigenkonstruktion
+# noch eine frei verfuegbare Quelle; die Quelle nennt Richtlinie und Blatt.
+HERKUNFT_ABGELEITET = "VERFAHREN"
 AUSGABE_VDI = "2014-03"
 ZUSATZ_ABGELEITET = " (abgeleitet)"
+QUELLE_ABGELEITET = "abgeleitet aus VDI 6002 Blatt %s"
 # Die Bedarfswerte der Quelle sind Liter je Einheit und Tag bei 60 Grad C; im Katalog stehen kWh bei
 # den Bezugstemperaturen der Zeile: kWh = l * CW * (BEZUG_ZAPF_VDI - BEZUG_KALT_VDI) / 1000.
 BEZUG_ZAPF_VDI = 60.0
@@ -177,13 +194,13 @@ def abgeleitete_saetze_und_arten():
     for (art, bezugsart, kalender, tagtypen, formart) in VDI_NUTZUNGSARTEN:
         b = bedarf[art]
         form = formart or art                      # Setzung (1): fremde Formen, wo die Quelle keine fuehrt
-        quelle = "VDI 6002 Blatt %s (abgeleitet)" % b["blatt"]
+        quelle = QUELLE_ABGELEITET % b["blatt"]
         name = art + ZUSATZ_ABGELEITET
         satzname = form + ZUSATZ_ABGELEITET        # geliehene Formen teilen den Satz, statt ihn zu doppeln
         profile = d["tagesprofile"][form]
         if formart is None:
             saetze.append((satzname, {t + 1: normiert(profile[tagtypen[t]], 1.0) for t in range(4)},
-                           quelle, AUSGABE_VDI, HERKUNFT_ABGELEITET))
+                           quelle, AUSGABE_VDI, HERKUNFT_ABGELEITET, VERSION_PAKETTEIL))
         kwh = CW * (BEZUG_ZAPF_VDI - BEZUG_KALT_VDI) / 1000.0
         # Setzung (2): ohne Mittelwert in der Quelle die Mitte der abgeleiteten Spanne.
         mittel = b["mittel"] if b["mittel"] is not None else (b["minimum"] + b["maximum"]) / 2.0
@@ -194,19 +211,20 @@ def abgeleitete_saetze_und_arten():
             monate=normiert([d["saisonfaktoren"][form][m] for m in MONATE], 12.0),
             woche=normiert([d["wochenanteile"][form][t] for t in WOCHENTAGE], 1.0),
             satz=satzname, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
-            quelle=quelle, ausgabe=AUSGABE_VDI, herkunft=HERKUNFT_ABGELEITET))
+            quelle=quelle, ausgabe=AUSGABE_VDI, herkunft=HERKUNFT_ABGELEITET, version=VERSION_PAKETTEIL))
     return saetze, arten
 
 
 ABGELEITETE_SAETZE, ABGELEITETE_NUTZUNGSARTEN = abgeleitete_saetze_und_arten()
 
-# Alle Tagesgangsaetze: (Bezeichner, {Tagtyp: 24 Anteile}, Quelle, Ausgabe, Herkunftsart).
-SAETZE = [(SATZ, TAGESGAENGE, QUELLE, None, HERKUNFT)] + ABGELEITETE_SAETZE
+# Alle Tagesgangsaetze: (Bezeichner, {Tagtyp: 24 Anteile}, Quelle, Ausgabe, Herkunftsart, Version).
+SAETZE = [(SATZ, TAGESGAENGE, QUELLE, None, HERKUNFT, VERSION)] + ABGELEITETE_SAETZE
 
 # Alle Nutzungsarten als Zeilenbeschreibung (die fiktiven auf den Testsatz).
 ALLE_NUTZUNGSARTEN = [
     dict(name=n, bezug=bz, bedarf=bd, grenze=g, kalender=k, ferien=fe, monate=mo, woche=wo,
-         satz=SATZ, bezug_zapf=BEZUG_ZAPF, bezug_kalt=BEZUG_KALT, quelle=QUELLE, ausgabe=None, herkunft=HERKUNFT)
+         satz=SATZ, bezug_zapf=BEZUG_ZAPF, bezug_kalt=BEZUG_KALT, quelle=QUELLE, ausgabe=None,
+         herkunft=HERKUNFT, version=VERSION)
     for (n, bz, bd, g, k, fe, mo, wo) in NUTZUNGSARTEN
 ] + ABGELEITETE_NUTZUNGSARTEN
 
@@ -352,6 +370,90 @@ def gruppe(kalenderart):
     return GRUPPE_WOHNEN if kalenderart == 1 else GRUPPE_NICHTWOHNEN
 
 
+# --- Die Traegerdateien der abgeleiteten Werte im Paketteil (ZU20) ------------------------------
+# Das Skript ERZEUGT sie aus derselben JSON-Datei, aus der es die Testdatenbank saet: EINE Quelle,
+# keine Handarbeit. Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein (Status
+# AUSLIEFERUNG, ReadOnly 1, ohne Katalogversion); die Testdatenbank fuehrt dieselben Werte nach
+# ihrer eigenen Regel (EIGEN, ReadOnly 0, Katalogversion TEST-1). Jeder Lauf haelt die Dateien im
+# Arbeitsbaum gegen das Erzeugnis - so kann keine der drei Ablagen von der JSON-Datei abdriften.
+T_TAGESGANGSATZ = "Tab_TwwTagesgangsatz_STAMM"
+T_TAGESGANG = "Tab_TwwTagesgang_STAMM"
+T_NUTZUNGSART = "Tab_TwwNutzungsart_STAMM"
+PAKETTEIL_ABGELEITET = (T_TAGESGANGSATZ, T_TAGESGANG, T_NUTZUNGSART)
+STUNDEN = tuple("Anteil_%02d" % h for h in range(1, 25))
+SCHALTER_SCHREIBEN = "--paketteil-schreiben"
+
+
+def feld(w):
+    """Ein Feld im Paketformat N2: Punkt als Dezimaltrenner, leer = NULL, Zahl rundreisefest."""
+    if w is None:
+        return ""
+    if isinstance(w, float):
+        return repr(w)                              # kuerzeste Schreibweise, die float() zurueckgibt
+    return str(w)
+
+
+def csv_text(kopf, zeilen):
+    """Eine Datei des Paketformats N2: Kopfzeile, Trenner ';', Zeilenende CRLF, UTF-8 ohne BOM."""
+    return "".join(";".join(feld(w) for w in z) + "\r\n" for z in [list(kopf)] + zeilen)
+
+
+def abgeleitete_traeger():
+    """Die drei Traegerdateien der abgeleiteten Werte als {Tabelle: Text}."""
+    # Die ID ist allein Schluessel des Pakets (wie beim Bedarfstag); die Datenbank vergibt die echte.
+    nummer = {s[0]: i + 1 for i, s in enumerate(ABGELEITETE_SAETZE)}
+    saetze = [[nummer[s[0]], s[0], STATUS_PAKET, 1] for s in ABGELEITETE_SAETZE]
+    gaenge = []
+    for (satz, werte, quelle, ausgabe, herkunft, version) in ABGELEITETE_SAETZE:
+        for tagtyp, anteile_ in sorted(werte.items()):
+            gaenge.append([nummer[satz], tagtyp] + list(anteile_) + [quelle, ausgabe, version, herkunft])
+    arten = []
+    for n in ABGELEITETE_NUTZUNGSARTEN:
+        provenienz = [n["quelle"], n["ausgabe"], n["version"], n["herkunft"]]
+        z = [n["name"], n["bezug"], n["bedarf"][0], n["bedarf"][1], n["bedarf"][2]] + provenienz
+        z += [n["bezug_zapf"], n["bezug_kalt"], n["grenze"], n["kalender"], n["ferien"]]
+        z += list(n["monate"]) + provenienz + list(n["woche"]) + provenienz
+        z += [nummer[n["satz"]], STATUS_PAKET, 1]
+        arten.append(z)
+    return {
+        T_TAGESGANGSATZ: csv_text(["ID", "Bezeichner", "Status", "ReadOnly"], saetze),
+        T_TAGESGANG: csv_text(["ID_Tagesgangsatz", "Tagtyp"] + list(STUNDEN) +
+                              ["Quelle", "Ausgabe", "Version", "Herkunftsart"], gaenge),
+        T_NUTZUNGSART: csv_text(
+            ["Bezeichner", "Bezugsart", "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
+             "Bedarf_Quelle", "Bedarf_Ausgabe", "Bedarf_Version", "Bedarf_Herkunftsart",
+             "Bezug_Zapftemperatur", "Bezug_Kaltwasser", "Bilanzgrenze", "Kalenderart", "Ferienfaktor"] +
+            ["Monat_%d" % m for m in range(1, 13)] +
+            ["Jahresgang_Quelle", "Jahresgang_Ausgabe", "Jahresgang_Version", "Jahresgang_Herkunftsart"] +
+            ["Woche_%d" % t for t in range(1, 8)] +
+            ["Wochengang_Quelle", "Wochengang_Ausgabe", "Wochengang_Version", "Wochengang_Herkunftsart"] +
+            ["ID_Tagesgangsatz", "Status", "ReadOnly"], arten),
+    }
+
+
+def traeger_pruefen_oder_schreiben(schreiben):
+    """Haelt die drei Traegerdateien gegen das Erzeugnis; mit `schreiben` werden sie neu geschrieben.
+    Rueckgabe: die Zahl der geaenderten Dateien. Verglichen wird zeilenweise - der Arbeitsbaum
+    checkt sie je nach Plattform mit CRLF oder LF aus (text=auto)."""
+    geaendert = 0
+    for t, text in sorted(abgeleitete_traeger().items()):
+        pfad = os.path.join(PAKETTEIL, t + ".csv")
+        ist = None
+        if os.path.exists(pfad):
+            with open(pfad, encoding="utf-8-sig", newline="") as f:
+                ist = f.read()
+        if ist is not None and ist.splitlines() == text.splitlines():
+            continue
+        if not schreiben:
+            raise AssertionError(
+                "%s.csv des freien Paketteils fehlt oder weicht vom Erzeugnis dieses Skripts ab - "
+                "mit %s neu erzeugen und im selben Schritt mitcommitten." % (t, SCHALTER_SCHREIBEN))
+        with open(pfad, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+        geaendert += 1
+    return geaendert
+
+
 def vorgabesatz(zeilen, gr):
     """Die Kategoriezeilen der Gruppe `gr`; ohne solche die Zeilen ohne Gruppe (Rueckfall)."""
     satz = [z for z in zeilen if (z.get(SPALTE_GRUPPE) or None) == gr]
@@ -431,7 +533,7 @@ ERWARTET = {
 
 def pruefe_summen():
     """Die erfundenen Formen sind in sich stimmig, der Paketteil haelt seine Regeln - vor jedem Schreiben."""
-    for (name, gaenge, _q, _a, _h) in SAETZE:
+    for (name, gaenge, _q, _a, _h, _v) in SAETZE:
         assert sorted(gaenge) == [1, 2, 3, 4], f"{name}: Tagtypen"
         for t, a in gaenge.items():
             assert len(a) == 24 and abs(sum(a) - 1.0) < 1e-12, f"{name}, Tagtyp {t}: Summe {sum(a)}"
@@ -508,9 +610,15 @@ def ereignisse_setzen(con, id_tag, ereignisse):
 
 def main():
     if len(sys.argv) < 2:
-        print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite> [--stochastik]")
+        print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite> [--stochastik] "
+              "[" + SCHALTER_SCHREIBEN + "]")
         return 2
     pruefe_summen()
+    schreiben = SCHALTER_SCHREIBEN in sys.argv[2:]
+    geaendert = traeger_pruefen_oder_schreiben(schreiben)
+    if schreiben:
+        print("Freier Paketteil: %d von %d Traegerdatei(en) der abgeleiteten Werte neu geschrieben."
+              % (geaendert, len(PAKETTEIL_ABGELEITET)))
 
     con = sqlite3.connect(sys.argv[1])
     try:
@@ -555,14 +663,14 @@ def main():
         with con:
             # --- Tagesgangsaetze und ihre vier Tagesgaenge (fiktiv und abgeleitet) -------------
             id_saetze = {}
-            for (satz, gaenge, quelle, ausgabe, herkunft) in SAETZE:
+            for (satz, gaenge, quelle, ausgabe, herkunft, version) in SAETZE:
                 id_satz = zaehlen(upsert(con, "Tab_TwwTagesgangsatz_STAMM",
                                          {"Bezeichner": satz, "Katalogversion": VERSION},
                                          {"Status": STATUS, "Beleg": None, "ReadOnly": 0}))
                 id_saetze[satz] = id_satz
                 for tagtyp, werte in sorted(gaenge.items()):
                     w = {f"Anteil_{h:02d}": werte[h - 1] for h in range(1, 25)}
-                    w.update({"Quelle": quelle, "Ausgabe": ausgabe, "Version": VERSION, "Herkunftsart": herkunft})
+                    w.update({"Quelle": quelle, "Ausgabe": ausgabe, "Version": version, "Herkunftsart": herkunft})
                     zaehlen(upsert(con, "Tab_TwwTagesgang_STAMM", {"ID_Tagesgangsatz": id_satz, "Tagtyp": tagtyp}, w))
 
             # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
@@ -573,7 +681,7 @@ def main():
                      "Bezug_Zapftemperatur": n["bezug_zapf"], "Bezug_Kaltwasser": n["bezug_kalt"],
                      "Bilanzgrenze": n["grenze"], "Kalenderart": n["kalender"], "Ferienfaktor": n["ferien"]}
                 for g in ("Bedarf", "Jahresgang", "Wochengang"):
-                    w.update({f"{g}_Quelle": n["quelle"], f"{g}_Ausgabe": n["ausgabe"], f"{g}_Version": VERSION,
+                    w.update({f"{g}_Quelle": n["quelle"], f"{g}_Ausgabe": n["ausgabe"], f"{g}_Version": n["version"],
                               f"{g}_Herkunftsart": n["herkunft"]})
                 w.update({f"Monat_{m}": n["monate"][m - 1] for m in range(1, 13)})
                 w.update({f"Woche_{t}": n["woche"][t - 1] for t in range(1, 8)})

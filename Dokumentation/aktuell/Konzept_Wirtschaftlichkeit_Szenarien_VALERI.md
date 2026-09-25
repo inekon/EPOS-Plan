@@ -176,9 +176,8 @@ Szen_Worst_Invest Szen_Worst_Ertrag    Szen_Worst_Dauer
   Spalten wären eine zweite Wahrheit für dieselbe Zahl.
 * Die Rückfallebene `SchemaKatalog.Alle` führt die Spalten **nicht** — dieselbe
   Begründung wie bei den übrigen `Tab_ProjektWirtschaftlichkeit`-Schritten (20,
-  21, 28): Kein Rechenkern der Simulation liest sie, und die tolerante Vorsorge
-  steht unmittelbar vor dem Zugriff in
-  `WirtschaftlichkeitCtrl.StelleTabellenSicher`.
+  21, 28): Kein Rechenkern der Simulation liest sie; der Schemaschritt ist ihr einziger
+  DDL-Ort.
 * **Ergebnisneutral für Erwartet**, verändernd für Best/Worst — und das ist der
   Zweck des Schritts. Der Referenzlauf ist nicht berührt: Er rechnet
   Simulationen, keine Wirtschaftlichkeit.
@@ -492,8 +491,8 @@ Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G
   Maßnahme als Ganzes.
 * **Die Rückfallebene `SchemaKatalog.Alle` führt die Spalten nicht** — wortgleiche
   Begründung wie bei den Schritten 20, 21, 28 und 71: Kein Rechenkern der Simulation
-  liest sie, p_I erreicht den `KapitalwertRechner` als PARAMETER. Die tolerante Vorsorge
-  steht in `WirtschaftlichkeitCtrl.StelleTabellenSicher`.
+  liest sie, p_I erreicht den `KapitalwertRechner` als PARAMETER. Der Schemaschritt ist
+  ihr einziger DDL-Ort.
 * **Ergebnisneutral als Schritt.** Er legt Spalten an. Erst wenn der Parametersatz sie
   liest (Teil b), rechnen Bestandsprojekte mit Ersatzbeschaffung mit p_I = p_B; ihre
   Kapitalwerte sinken dann leicht — gewollt, denn der bisherige Ausweis war der zu
@@ -523,9 +522,8 @@ Verlauf und Sensitivität gehen alle dort durch.
 Gelesen und geschrieben werden die vier Spalten im vorhandenen Weg (`LadeParameter`,
 `LiesSatz`, UPDATE und INSERT von `SpeichereParameter`); der Freitext geht als
 `LongVarWChar` (MEMO) und nicht als `VarWChar` — sonst schnitte ihn der Access-Rückweg
-bei 255 Zeichen ab. `StelleTabellenSicher` bekommt die Schleife über
-`Schritt72_ValeriErgaenzung` neben der für Schritt 71 und die vier Spalten im
-`CREATE TABLE` von `Tab_ProjektWirtschaftlichkeit` (Muster K6).
+bei 255 Zeichen ab. `StelleTabellenSicher` legt weder die Tabelle an noch zieht sie
+diese Spalten nach; Schemaschritt 72 ist ihr einziger DDL-Ort.
 
 > **Grenze, bewusst gezogen:** `Tab_ErgebnisWirtschaftlichkeit` bekommt **keine**
 > p_I-Spalte. Die Annahmenzeile der Berichte entsteht aus dem **Parametersatz**, nicht

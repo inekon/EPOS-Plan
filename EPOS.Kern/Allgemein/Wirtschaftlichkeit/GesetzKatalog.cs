@@ -846,12 +846,12 @@ namespace WindowsFormsApplication1
         /// <b>generationsweise</b> ein.
         ///
         /// <para>
-        /// <b>Warum kein Migrationsschritt.</b> Muster ist
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (Tab_KWKG_Staffel):
-        /// CREATE plus Seed. Damit bekommt jede Bestandsinstallation die Werte, ohne
-        /// dass der Anwender eine Migration anstoßen muss — der Katalog ist reine
-        /// Zusatztabelle ohne Fremdschlüssel und ohne Bezug zu Projektdaten, also genau
-        /// der Fall, für den dieses Muster im Bestand da ist. Die
+        /// <b>Warum kein Migrationsschritt.</b> CREATE plus Seed unmittelbar vor dem
+        /// Zugriff: Damit bekommt jede Bestandsinstallation die Werte, ohne dass der
+        /// Anwender eine Migration anstoßen muss — der Katalog ist reine Zusatztabelle
+        /// ohne Fremdschlüssel und ohne Bezug zu Projektdaten. Anders als die
+        /// Projekttabellen (STRICT, Fremdschlüssel auf <c>Tab_Projekt</c>, im Grundschema)
+        /// bricht eine hier angelegte Tabelle keinen Schemaschritt. Die
         /// <c>SchemaMigration</c> bleibt dem vorbehalten, was bestehende Zeilen anfasst
         /// (neue Spalten, Vorbelegungen, Beziehungen).
         /// </para>

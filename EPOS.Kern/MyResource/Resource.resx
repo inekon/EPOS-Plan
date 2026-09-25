@@ -8286,9 +8286,6 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="STEUER_ENERGIEST_54_SOCKEL" xml:space="preserve">
     <value>§ 54 EnergieStG: {0} € Entlastung liegen unter dem Sockelbetrag von {1} €/a — es bleibt bei 0 €.</value>
   </data>
-  <data name="STEUER_ENERGIEST_54_BEMESSUNG" xml:space="preserve">
-    <value>§ 54 EnergieStG entlastet HEIZstoffe; EPOS-Plan bemisst ihn hier auf den BHKW-Brennstoff — Kessel- und Spitzenlastbrennstoff sind nicht enthalten (bewusste Lücke der Etappe K6).</value>
-  </data>
   <data name="WIRT_DLG_KWKG_TATBESTAND" xml:space="preserve">
     <value>Eigenstrom-Tatbestand (§ 6 Abs. 3):</value>
   </data>
@@ -10822,9 +10819,6 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="PREIS_ST_EMPFOHLEN" xml:space="preserve">
     <value>Vorschlag zur Unternehmensart „{0}“ dieses Projekts. Eingetragen wird der Satz erst mit einem Klick.</value>
   </data>
-  <data name="PREIS_ST_GRUND_EINHEIT" xml:space="preserve">
-    <value>Die Katalogeinheit „{0}“ lässt sich nicht in ct/kWh umrechnen.</value>
-  </data>
   <data name="PREIS_ST_GRUND_KEIN_JAHR" xml:space="preserve">
     <value>Der Katalog führt für „{0}“ keinen Satz im Jahr {1}.</value>
   </data>
@@ -11380,6 +11374,12 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="KDLG_HERLEITUNG_SOLAR_KW_FLAECHE" xml:space="preserve">
     <value>{0} kW/m² × {1} m² Aperturfläche = {2} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_WP_PEL" xml:space="preserve">
+    <value>{0} kW ÷ COP {1} ({2}) = {3} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_WP_PEL_SUMME" xml:space="preserve">
+    <value>Σ P_el am Normpunkt von {0} Wärmepumpen = {1} kW</value>
   </data>
   <data name="KDLG_OHNE_BASIS_ZEILE" xml:space="preserve">
     <value>„{0}“: {1}</value>
@@ -33815,5 +33815,140 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_MESSDATEN_TITEL" xml:space="preserve">
     <value>Messdaten</value>
+  </data>
+  <data name="VF_BERICHT__TITEL" xml:space="preserve">
+    <value>Titel des Berichts: der Name des Stammprojekts.</value>
+  </data>
+  <data name="VF_BERICHT__UNTERTITEL" xml:space="preserve">
+    <value>Untertitel des Berichts („Variantenvergleich — Energie- und Wärmeversorgung“) in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_BERICHT__DATUM" xml:space="preserve">
+    <value>Erstellungsdatum des Berichts, nach der Sprache des Berichts formatiert; in Excel ein echtes Datum.</value>
+  </data>
+  <data name="VF_BERICHT__VARIANTEN__LISTE" xml:space="preserve">
+    <value>Die verglichenen Varianten, durch Kommas getrennt; ohne Variante „— (nur Stammprojekt)“.</value>
+  </data>
+  <data name="VF_BERICHT__VARIANTEN__ANZAHL" xml:space="preserve">
+    <value>Zahl der verglichenen Varianten ohne das Stammprojekt.</value>
+  </data>
+  <data name="VF_BERICHT__GEBAEUDEMODELL__AUSWEIS" xml:space="preserve">
+    <value>Ausweis des Gebäudemodells nach VDI 6007, sobald ein Stand ein Gebäude auf diesem Weg gerechnet hat; sonst der Leerwert.</value>
+  </data>
+  <data name="VF_BERICHT__EMISSIONSMODUS" xml:space="preserve">
+    <value>Die ausgewiesene Emissionsgröße des Laufs: CO₂-Emissionen oder CO₂-Äquivalent (GWP₁₀₀).</value>
+  </data>
+  <data name="VF_BERICHT__WARNUNGEN" xml:space="preserve">
+    <value>Die Hinweise dieses Berichtslaufs als Aufzählung; ohne Hinweis entfällt die Liste.</value>
+  </data>
+  <data name="VF_BERICHT__INHALT" xml:space="preserve">
+    <value>Sammelanker: setzt alle angehakten Kapitel in der Reihenfolge des Berichts ein.</value>
+  </data>
+  <data name="VF_TEXT__SEITE" xml:space="preserve">
+    <value>Festtext „Seite“ für Kopf- und Fußzeile, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_TEXT__KUNDE" xml:space="preserve">
+    <value>Festtext „Kunde“ als Beschriftung, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_TEXT__BEARBEITER" xml:space="preserve">
+    <value>Festtext „Bearbeiter“ als Beschriftung, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_TEXT__ERSTELLER" xml:space="preserve">
+    <value>Festtext „Ersteller“ als Beschriftung der erstellenden Firma, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_TEXT__VARIANTEN" xml:space="preserve">
+    <value>Festtext „Verglichene Varianten“ als Beschriftung, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_TEXT__DATUM" xml:space="preserve">
+    <value>Festtext „Berichtsdatum“ als Beschriftung, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_TEXT__ERSTELLT_MIT" xml:space="preserve">
+    <value>Festtext „Erstellt mit“ vor Programmname und Fassung, in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_ERSTELLER__FIRMA" xml:space="preserve">
+    <value>Die Firma, die den Bericht erstellt: die Einstellung des Berichts, sonst die Firma der Lizenz; leer, wenn beides fehlt.</value>
+  </data>
+  <data name="VF_ERSTELLER__PROGRAMM" xml:space="preserve">
+    <value>Der Name des Programms („EPOS-Plan“).</value>
+  </data>
+  <data name="VF_ERSTELLER__VERSION" xml:space="preserve">
+    <value>Die Fassung des Programms, wie sie das Deckblatt nennt.</value>
+  </data>
+  <data name="VF_PROJEKT__NAME" xml:space="preserve">
+    <value>Der Name des Stammprojekts.</value>
+  </data>
+  <data name="VF_PROJEKT__KUNDE" xml:space="preserve">
+    <value>Der Kunde des Stammprojekts; leer, wenn keiner eingetragen ist.</value>
+  </data>
+  <data name="VF_PROJEKT__BEARBEITER" xml:space="preserve">
+    <value>Die Person, die das Stammprojekt bearbeitet; leer, wenn keine eingetragen ist.</value>
+  </data>
+  <data name="VF_PROJEKT__BESCHREIBUNG" xml:space="preserve">
+    <value>Die Beschreibung des Stammprojekts, mehrzeilig.</value>
+  </data>
+  <data name="VF_PROJEKT__KLIMAREGION" xml:space="preserve">
+    <value>Die Klimaregion des Stammprojekts.</value>
+  </data>
+  <data name="VF_PROJEKT__ANGELEGT" xml:space="preserve">
+    <value>Das Datum, an dem das Stammprojekt angelegt wurde.</value>
+  </data>
+  <data name="VF_PROJEKT__GEAENDERT" xml:space="preserve">
+    <value>Das Datum der letzten Änderung am Stammprojekt.</value>
+  </data>
+  <data name="VF_PROJEKT__SIMULATIONSSTAND" xml:space="preserve">
+    <value>Der Zeitpunkt des Simulationslaufs des Stammprojekts, mit Uhrzeit.</value>
+  </data>
+  <data name="VF_MUSTER_STAMM_KENNZAHL" xml:space="preserve">
+    <value>Die Kennzahl „{0}“ des Stammprojekts, mit Format und Einheit des Kennzahlenkatalogs.</value>
+  </data>
+  <data name="VF_MUSTER_KENNZAHL_BESCHRIFTUNG" xml:space="preserve">
+    <value>Die Beschriftung der Kennzahl „{0}“ in der Sprache des Berichts.</value>
+  </data>
+  <data name="VF_MUSTER_KENNZAHL_EINHEIT" xml:space="preserve">
+    <value>Die Einheit der Kennzahl „{0}“.</value>
+  </data>
+  <data name="BV_TEXT_SEITE" xml:space="preserve">
+    <value>Seite</value>
+  </data>
+  <data name="BV_TEXT_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="BV_TEXT_BEARBEITER" xml:space="preserve">
+    <value>Bearbeiter</value>
+  </data>
+  <data name="BV_TEXT_ERSTELLER" xml:space="preserve">
+    <value>Ersteller</value>
+  </data>
+  <data name="BV_TEXT_VARIANTEN" xml:space="preserve">
+    <value>Verglichene Varianten</value>
+  </data>
+  <data name="BV_TEXT_DATUM" xml:space="preserve">
+    <value>Berichtsdatum</value>
+  </data>
+  <data name="BV_TEXT_ERSTELLT_MIT" xml:space="preserve">
+    <value>Erstellt mit</value>
+  </data>
+  <data name="BV_NUR_STAMMPROJEKT" xml:space="preserve">
+    <value>— (nur Stammprojekt)</value>
+  </data>
+  <data name="BV_GRUND_KEIN_STAMM" xml:space="preserve">
+    <value>kein Stammprojekt</value>
+  </data>
+  <data name="BV_GRUND_KEINE_PROJEKTDATEN" xml:space="preserve">
+    <value>keine Projektdaten</value>
+  </data>
+  <data name="BV_GRUND_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>kein Simulationsergebnis</value>
+  </data>
+  <data name="BV_GRUND_LAUF_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Lauf fehlgeschlagen</value>
+  </data>
+  <data name="BV_GRUND_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>für dieses Projekt nicht verfügbar</value>
+  </data>
+  <data name="BV_GRUND_KEIN_VDI6007" xml:space="preserve">
+    <value>kein Gebäude nach VDI 6007 gerechnet</value>
+  </data>
+  <data name="BV_GRUND_AUSNAHME" xml:space="preserve">
+    <value>Wert nicht bestimmbar</value>
   </data>
 </root>

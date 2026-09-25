@@ -1,0 +1,116 @@
+# Strukturmesslatte BV-E0 (BerichtVorlagenMesslatteTests, echte Vorlage) — Bericht_Excel_Gruppe.txt
+## Mappe · 7 Blätter
+## Blatt 1 „Übersicht“ · 20 Z. × 5 Sp. · fixiert 0/0 · Autofilter — · verbunden 0
+Z1: A=EPOS-Plan — Variantenvergleich
+Z3: A=Projekt | B=Stammprojekt
+Z4: A=Kunde
+Z5: A=Bearbeiter
+Z6: A=Klimaregion
+Z7: A=Berichtsdatum | B=<datum>
+Z9: A=Rolle | B=Bezeichner | C=Projektname | D=Simulation vom | E=Hinweis
+Z13: A=Gewerk | B=Stamm | C=Variante A
+## Blatt 2 „Vergleich“ · 1 Z. × 6 Sp. · fixiert 1/3 · Autofilter A1:F1 · verbunden 0
+Z1: A=Gruppe | B=Kennzahl | C=Einheit | D=Stamm | E=Variante A | F=Δ% Variante A
+## Blatt 3 „Wirtschaftlichkeit“ · 297 Z. × 11 Sp. · fixiert 2/0 · Autofilter — · verbunden 3
+Z1: A=Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)
+Z2: A=i = 3,0 % · T = 20 a · Preissteigerung Energie 0,0 %/a, Betrieb 0,0 %/a, Investition/Ersatz 0,0 %/a (wie Betrieb) · Einspeisevergütung 0,000 €/kWh · Tarifstruktur inaktiv (Flat-Preise der Kostenmaske) · Emissionsbilanz: Bilanzjahr 2026 (nicht gepflegt) · KWK-Strom mit Stromgutschrift über den Kraftwerkspark (nach Katalog, Verdrängungsstrommix gültig ab 2020) · Biomasse biogenes Verbrennungs-CO₂ mit null (GEG/GModG, UBA-Emissionsbilanz, BAFA) · Nachhaltigkeitsnachweis nach § 8 EBeV 2030 liegt vor · Referenz: Stammprojekt · Restwert linear · Rechenstand: <datum>
+Z3: A=Parameter der Rechnung (je Szenario) | B=Erwartet | C=Günstig | D=Ungünstig | E=Name in den Formeln
+Z23: A=Szenario: Erwartet
+Z24: A=Kennzahl | B=Stamm | C=Variante A
+Z29: A=Erlöse und Vorteile — zahlungswirksam (Jahr 1)
+Z30: A=projektweit
+Z33: A=Summe projektweit | B=# | C=#
+Z34: A=Summe Erlöse und Vorteile, zahlungswirksam [€/a] | B=# | C=#
+Z41: A=Szenario: Günstig
+Z43: A=Kennzahl | B=Stamm | C=Variante A
+Z48: A=Erlöse und Vorteile — zahlungswirksam (Jahr 1)
+Z49: A=projektweit
+Z52: A=Summe projektweit | B=# | C=#
+Z53: A=Summe Erlöse und Vorteile, zahlungswirksam [€/a] | B=# | C=#
+Z60: A=Szenario: Ungünstig
+Z62: A=Kennzahl | B=Stamm | C=Variante A
+Z67: A=Erlöse und Vorteile — zahlungswirksam (Jahr 1)
+Z68: A=projektweit
+Z71: A=Summe projektweit | B=# | C=#
+Z72: A=Summe Erlöse und Vorteile, zahlungswirksam [€/a] | B=# | C=#
+Z79: A=Bandbreite der Kapitalwertdifferenz (Ungünstig / Erwartet / Günstig)
+Z80: A=Variante | B=ΔKW Ungünstig [€] | C=ΔKW Erwartet [€] | D=ΔKW Günstig [€] | E=Spanne [€] | F=Amortisation [a] | G=Einstufung
+Z86: A=Vorschlag zur Entscheidung: Variante „Variante A“ — Kapitalwertdifferenz zu Stammprojekt +14.877 € (Erwartet), in allen drei Szenarien positiv (Worst +14.771 €, Best +14.986 €).
+Z88: A=Nicht monetäre Wirkungen
+Z90: A=Kategorie | B=Beschreibung | C=Dauer | D=Organisation | E=Mitarbeiter | F=Umwelt | G=Beurteilung
+Z94: A=Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]
+Z95: B=Ungünstig | E=Erwartet | H=Günstig
+Z96: A=Jahr | B=Stamm | C=Variante A | D=Δ Variante A − Stamm | E=Stamm | F=Variante A | G=Δ Variante A − Stamm | H=Stamm | I=Variante A | J=Δ Variante A − Stamm
+Z120: A=Mehrjahresübersicht der Zahlungsströme
+Z123: A=Stamm
+Z124: A=Jahr | B=Energiekosten | C=Netto nominal | D=Barwert | E=Kumuliert
+Z146: A=Restwert (Barwert) in T | C=# | D==C146*(1+Zins_i)^(-A145) | E==E145+D146
+Z149: A=Variante A
+Z150: A=Jahr | B=Energiekosten | C=Netto nominal | D=Barwert | E=Kumuliert | F=Δ nominal gegenüber Stamm (in T mit Restwert) | G=Δ Barwert gegenüber Stamm | H=Δ kumuliert gegenüber Stamm | I=Nulldurchgang in diesem Jahr [a] | J=Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht) | K=Vorzeichenwechsel bis hier
+Z172: A=Restwert (Barwert) in T | C=# | D==C172*(1+Zins_i)^(-A171) | E==E171+D172
+Z175: A=Mehrjahresübersicht der Zahlungsströme — Szenario „Günstig“ (T = 20 a)
+Z178: A=Stamm
+Z179: A=Jahr | B=Energiekosten | C=Netto nominal | D=Barwert | E=Kumuliert
+Z201: A=Restwert (Barwert) in T | C=# | D==C201*(1+Zins_i_Guenstig)^(-A200) | E==E200+D201
+Z204: A=Variante A
+Z205: A=Jahr | B=Energiekosten | C=Netto nominal | D=Barwert | E=Kumuliert | F=Δ nominal gegenüber Stamm (in T mit Restwert) | G=Δ Barwert gegenüber Stamm | H=Δ kumuliert gegenüber Stamm | I=Nulldurchgang in diesem Jahr [a] | J=Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht) | K=Vorzeichenwechsel bis hier
+Z227: A=Restwert (Barwert) in T | C=# | D==C227*(1+Zins_i_Guenstig)^(-A226) | E==E226+D227
+Z230: A=Mehrjahresübersicht der Zahlungsströme — Szenario „Ungünstig“ (T = 20 a)
+Z233: A=Stamm
+Z234: A=Jahr | B=Energiekosten | C=Netto nominal | D=Barwert | E=Kumuliert
+Z256: A=Restwert (Barwert) in T | C=# | D==C256*(1+Zins_i_Unguenstig)^(-A255) | E==E255+D256
+Z259: A=Variante A
+Z260: A=Jahr | B=Energiekosten | C=Netto nominal | D=Barwert | E=Kumuliert | F=Δ nominal gegenüber Stamm (in T mit Restwert) | G=Δ Barwert gegenüber Stamm | H=Δ kumuliert gegenüber Stamm | I=Nulldurchgang in diesem Jahr [a] | J=Vorzeichen Δ nominal (|Δ| ≤ 1E-6 € zählt nicht) | K=Vorzeichenwechsel bis hier
+Z282: A=Restwert (Barwert) in T | C=# | D==C282*(1+Zins_i_Unguenstig)^(-A281) | E==E281+D282
+Z285: A=Sensitivitätsanalyse (Szenario „Erwartet“)
+Z286: A=Variante: Variante A
+Z287: A=Parameter | B=KW bei −Δ [€] | C=KW Basis [€] | D=KW bei +Δ [€] | E=Steigung | F=Einheit
+Z293: A=Bewertung nach DIN EN 17463
+## Blatt 4 „Verlauf“ · 29 Z. × 4 Sp. · fixiert 5/1 · Autofilter — · verbunden 0
+Z1: A=Kumulierter Barwert der Differenz zur Referenz je Jahr [€] — ohne Restwert
+Z2: A=Verlauf über 20 Jahre, alle drei Szenarien.
+Z4: B=Ungünstig | C=Erwartet | D=Günstig
+Z5: A=Jahr | B=Variante A | C=Variante A | D=Variante A
+Z29: A=Kapitalwertdifferenz = Endwert + Restwert-Barwert [€] | B=# | C=# | D=#
+## Blatt 5 „Stamm“ · 22 Z. × 10 Sp. · fixiert 1/0 · Autofilter — · verbunden 0
+Z1: A=Stamm — Stammprojekt
+Z2: A=Simulationsstand
+Z4: A=Gruppe | B=Kennzahl | C=Wert | D=Einheit
+Z6: A=Erzeuger — Einzelauflistung (Module)
+Z7: A=Erzeuger | B=Wärme [MWh/a] | C=Strom [MWh/a] | D=Energieträger | E=Verbrauch [MWh/a]
+Z9: A=Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts)
+Z10: A=Monat | B=Wärmebedarf | C=Wärmepumpe | D=BHKW-Wärme | E=Spitzenkessel | F=Solarthermie | G=Strombedarf | H=PV-Eigenverbrauch | I=BHKW-Strom | J=Netzbezug
+## Blatt 6 „Variante A“ · 22 Z. × 10 Sp. · fixiert 1/0 · Autofilter — · verbunden 0
+Z1: A=Variante — Stammprojekt
+Z2: A=Simulationsstand
+Z4: A=Gruppe | B=Kennzahl | C=Wert | D=Einheit
+Z6: A=Erzeuger — Einzelauflistung (Module)
+Z7: A=Erzeuger | B=Wärme [MWh/a] | C=Strom [MWh/a] | D=Energieträger | E=Verbrauch [MWh/a]
+Z9: A=Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts)
+Z10: A=Monat | B=Wärmebedarf | C=Wärmepumpe | D=BHKW-Wärme | E=Spitzenkessel | F=Solarthermie | G=Strombedarf | H=PV-Eigenverbrauch | I=BHKW-Strom | J=Netzbezug
+## Blatt 7 „Checkliste Anhang E“ · 24 Z. × 6 Sp. · fixiert 4/0 · Autofilter — · verbunden 0
+Z1: A=Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)
+Z2: A=Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer.
+Z4: A=Nr. | B=Thema | C=Anforderung | D=Stelle im Bericht | E=Stand in EPOS | F=Beurteilung 1–5
+Z5: A=Gegenstand der Bewertung
+Z8: A=A · Aufbau des Modells
+Z17: A=B · Berechnung
+Z21: A=C · Auswertung
+Z23: A=D · Berichterstattung
+## Namen · 16
+Vergleich!_xlnm._FilterDatabase = Vergleich!$A$1:$F$1
+Zeitraum_T = Wirtschaftlichkeit!$B$5:$B$5
+Zeitraum_T_Guenstig = Wirtschaftlichkeit!$C$5:$C$5
+Zeitraum_T_Unguenstig = Wirtschaftlichkeit!$D$5:$D$5
+Zins_i = Wirtschaftlichkeit!$B$4:$B$4
+Zins_i_Guenstig = Wirtschaftlichkeit!$C$4:$C$4
+Zins_i_Unguenstig = Wirtschaftlichkeit!$D$4:$D$4
+p_B = Wirtschaftlichkeit!$B$7:$B$7
+p_B_Guenstig = Wirtschaftlichkeit!$C$7:$C$7
+p_B_Unguenstig = Wirtschaftlichkeit!$D$7:$D$7
+p_E = Wirtschaftlichkeit!$B$6:$B$6
+p_E_Guenstig = Wirtschaftlichkeit!$C$6:$C$6
+p_E_Unguenstig = Wirtschaftlichkeit!$D$6:$D$6
+p_I = Wirtschaftlichkeit!$B$8:$B$8
+p_I_Guenstig = Wirtschaftlichkeit!$C$8:$C$8
+p_I_Unguenstig = Wirtschaftlichkeit!$D$8:$D$8

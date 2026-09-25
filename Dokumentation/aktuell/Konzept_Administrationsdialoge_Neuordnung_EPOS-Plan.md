@@ -740,7 +740,18 @@ Krankenhaussätze. Nachweis `GebaeudeAnschlusslaengenFolgereparaturTests`. Nur b
 geändert: die Sätze mit 0 m Laibung, die gerundeten EnEV-Laibungen, die hohen Dachkanten (vermutlich
 geneigte Dächer, darunter die eingefrorenen Referenzsätze 145 und 146) und die Kellerkanten, die kein
 Ausgangssatz als Umfang führt — Vorschläge in `Referenzlaeufe/LIESMICH.md`, Entscheidung beim
-Anwender. (b)
+Anwender. ✔ **Dritte Berichtigung der Anschlusslängen (#505, Schemaschritt
+`GebaeudeAnschlusslaengenDritteReparatur.SCHRITT`, Anwenderentscheid 25.09.2026 „eindeutig unplausible
+Werte berichtigen, den Rest lassen“):** Zwölf Sätze mit Laibung 0 m, leer oder auf 0,12 bis 0,25 m je m²
+Fenster gerundet führen die Laibung eines Zwillings gleicher Geometrie oder das Verhältnis ihrer Quelle
+× eigene Fensterfläche (etwa `Industriehalle-320` 16 000 m wie `Industrie_ne_81`, `gr_Hotel-80-EnEV2016`
+6 164,4 m); die Kellerkanten 14,6 m der G-096- und GMH-BZ-Sätze stehen auf dem Umfang 86,6 bzw. 122,3 m,
+Dach- und Kellerkante von `Industrie_ne_81` auf dem Umfang der eigenen Geometrie 2 362,1 m statt
+7 337,4 m. Das Bild „leer“ ist eine eigene feste Anweisung (`SQL_FENSTER_WAND_LEER`). Nachweis
+`GebaeudeAnschlusslaengenDritteReparaturTests`, Herleitungen in `Referenzlaeufe/LIESMICH.md`. Bleiben,
+wie sie sind: die Kellerkanten 0 m (ψ 0) der Heime, Schulen und Hallenbäder, die Laibungen 0,32 bis
+0,64 m je m² der Sätze 46, 57, 120, die hohen Dachkanten geneigter Dächer samt den Referenzsätzen 145
+und 146. (b)
 Gebäudetypen (A10): Die Klappliste der Kurven kommt aus `TagVCtrl.Typen`; die Löschsperre über ein
 Stamm-Gebäude ist neu; ein Kurvenwechsel bei ungespeicherten Änderungen ist gesperrt. (c)
 Lastspitzenkappung (A11): Die Parameter stehen in drei Gruppen; die Auswahlleiste steht nur im
