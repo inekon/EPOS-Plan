@@ -86,8 +86,17 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gebäudekennung aus der Datei, ungekürzt.</summary>
         public string Gebaeudekennung { get; }
 
-        /// <summary>Die gewählte Baualtersklasse (A…U); <c>null</c> = keine — dann gibt es keine Vorgaben.</summary>
+        /// <summary>
+        /// Die Baualtersklasse des Satzes (A…U): die gewählte, sonst die aus dem Baujahr der Datei
+        /// abgeleitete (A…H); <c>null</c> = keine — dann gibt es keine Vorgaben.
+        /// </summary>
         public char? Baualtersklasse { get; }
+
+        /// <summary>
+        /// Das Baujahr der Datei (<see cref="AbbildGebaeude.Baujahr"/>); <c>null</c> = keines. Die Spalte
+        /// <c>Baujahr</c> kommt erst mit dem Schemaschritt der Stufe G4a — bis dahin reist der Wert nur hier.
+        /// </summary>
+        public int? Baujahr { get; internal set; }
 
         /// <summary>Die angewandte Zonenregel (<c>X4</c> in G4c).</summary>
         public string Zonenregel { get; }
