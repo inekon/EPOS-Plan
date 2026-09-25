@@ -2397,7 +2397,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Randbedingung eines Bauteils: Aussenluft (<c>Tab_Bauteil.Randbedingung</c>).
-        /// <b>Auch NULL bedeutet AUSSENLUFT.</b>
+        /// <b>Auch NULL bedeutet AUSSENLUFT — ausser an INNENWAND und DECKE: dort heisst NULL
+        /// „innerhalb der Zone"</b> (es gibt keinen Wert dafuer, W6). Die Regel steht an einer
+        /// Stelle: <c>GebaeudeZonenabbildung.RandAusZeile</c>.
         /// </summary>
         public const string RANDBEDINGUNG_AUSSENLUFT = "AUSSENLUFT";
 

@@ -270,6 +270,12 @@ Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
 Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
 Form_Gebaeude2.btn_Help = Gebäude#katalogeditor
 Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
+# Die zwei Kataloge der Gebaeudehuelle (Baustoffe, Bauteilaufbauten): Razor-Masken
+# ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel);
+# die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Baustoffe
+# und Bauteilaufbauten.wiki), je Maske ein Abschnitt.
+BaustoffKatalog.btn_Help = Baustoffe und Bauteilaufbauten#baustoffe
+Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
 # Gebaeudeimport (gbXML, IFC): der Zuordnungsdialog hat eine eigene Seite mit
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).

@@ -2238,6 +2238,63 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-radius: var(--epos-ecke);
 }
 
+/* --------------------------------------------------------------------------
+   Das Schichtenraster eines Bauteilaufbaus (Gebaeudesimulation G3,
+   BauteilschichtenFelder). Im Stammblatt stehen 340 bis 440 px zur
+   Verfuegung; die Zeile - eine kleine Maske - laeuft deshalb in drei Lagen
+   ueber dieselben vier Spuren: oben Nummer und Baustoff, in der Mitte die
+   vier Zahlen unter dem Spaltenkopf, unten Luftschicht, R und die
+   Zeilenknoepfe. Kopf- und Fusszelle spannen ueber alle Spuren; die Linie
+   oben setzt eine Schicht von der vorigen ab.
+   -------------------------------------------------------------------------- */
+.epos-bauteilschicht-kopf,
+.epos-bauteilschicht-fuss {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-bauteilschicht-kopf {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-bauteilschicht-kopf > .epos-feld {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.epos-bauteilschicht-nr {
+    flex: 0 0 auto;
+    min-width: 1.5em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.epos-bauteilschicht-fuss {
+    flex-wrap: wrap;
+}
+
+.epos-bauteilschicht-r {
+    flex: 1 1 auto;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+}
+
+/* Der Summenfuss im Lesemodus (Nachsatz der Gruppe "Schichten"). */
+.epos-bauteilschicht-summen {
+    margin: var(--epos-rand) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-bauteilschicht-summe--stark {
+    font-weight: 700;
+}
+
 @media (forced-colors: active) {
     .epos-ueberlagerung {
         border: 2px solid ButtonBorder;

@@ -5,6 +5,7 @@ using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 using Xunit.Abstractions;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.Kern.Tests
 {
@@ -450,23 +451,38 @@ namespace EPOS.Kern.Tests
     }
 
     /// <summary>
-    /// <b>Stufe G3, Welle W — der Bauteilweg im Lauf an Gebäuden der Testdatenbank</b>: der
-    /// Grenzfall Bauteilweg = Klassenweg im Jahreslauf für mehrere Gebäude und Varianten
-    /// (Schalter, Keller, Fenster Ost/West, Kopplung), die Fassade mit Skalierungsfaktor 1 und
-    /// benanntem Verbrauch, Auskunft = Lauf über den Zonenanschluss und der Fehlerweg bei zwei
-    /// Zonen im Protokoll.
+    /// <b>Stufe G3 — der Bauteilweg im Lauf an Gebäuden der Testdatenbank, gelesen über den
+    /// Zonenleser</b> (Welle W, Welle D1). Die Zonen stehen als echte Zeilen in einer
+    /// Arbeitskopie je Testfall: angelegt über die Gegenrichtung
+    /// (<see cref="GebaeudeZonenabbildung.AlsZoneModel"/>) und den Schreibweg
+    /// (<see cref="GebaeudeZonenCtrl.SpeichernJeGebaeude"/>), gelesen über
+    /// <see cref="ProjektGebaeudeCtrl.ReadAll"/> und <see cref="GebaeudeZonenanschluss"/>. Belegt
+    /// werden der Grenzfall „übernommene Zone = Klassenweg" samt Rundlauf Zeile ↔ Kern, Auskunft =
+    /// Lauf, ein geschichteter Aufbau aus dem Stammkatalog im Lauf, zwei Zonen und eine unlesbare
+    /// Zone als benannte Fehler, das Duplizieren eines Projekts mit Zone, der ältere Schemastand
+    /// ohne <c>Tab_Zone</c> und die feste Zahl Abfragen je Projekt.
     /// </summary>
     [Collection("Testdatenbank")]
-    public class GebaeudeBauteilwegDatenbankTests : IClassFixture<TestDatenbank>
+    public class GebaeudeBauteilwegDatenbankTests : IDisposable
     {
-        private readonly TestDatenbank _db;
+        private readonly TestDatenbank _db = new TestDatenbank();
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
         private readonly ITestOutputHelper _aus;
 
-        public GebaeudeBauteilwegDatenbankTests(TestDatenbank db, ITestOutputHelper aus)
+        public GebaeudeBauteilwegDatenbankTests(ITestOutputHelper aus)
         {
-            _db = db;
             _aus = aus;
         }
+
+        public void Dispose()
+        {
+            _kultur.Dispose();
+            _db.Dispose();
+        }
+
+        // =====================================================================
+        //  Hilfen
+        // =====================================================================
 
         private static int Klimaregion(int idProjekt)
         {
@@ -482,6 +498,7 @@ namespace EPOS.Kern.Tests
             return sim;
         }
 
+        /// <summary>Das Gebäude so, wie Lauf und Auskunft es lesen — samt seinen Zonen aus der Datenbank.</summary>
         private static ProjektGebaeudeModel Zeile(int idProjekt, int nummer = 0)
         {
             var ctrl = new ProjektGebaeudeCtrl();
@@ -499,12 +516,91 @@ namespace EPOS.Kern.Tests
                                                GebaeudeKlimaweg.ZEITBEZUG_VORGABE, sim.KuehlbetriebProjekt, stufe);
         }
 
+        /// <summary>Schreibt die Zeilen als Zonen des Gebäudes (Abgleich über die Ids) und gibt sie zurück.</summary>
+        private static List<ZoneModel> Schreiben(int idGebaeude, List<ZoneModel> zonen)
+        {
+            GebaeudeZonenCtrl.Ergebnis e = new GebaeudeZonenCtrl().SpeichernJeGebaeude(idGebaeude, zonen);
+            Assert.True(e.Ok, e.Meldung);
+            return zonen;
+        }
+
+        /// <summary>Schreibt Kern-Sätze über die Gegenrichtung als Zonen des Gebäudes.</summary>
+        private static List<ZoneModel> ZonenSchreiben(int idGebaeude, params GebaeudeZonensatz[] saetze)
+            => Schreiben(idGebaeude, saetze.Select(GebaeudeZonenabbildung.AlsZoneModel).ToList());
+
         /// <summary>
-        /// <b>Abnahme (a): der Grenzfall im Jahreslauf.</b> Fünf Gebäude der Testdatenbank (mit
-        /// und ohne Sonstiges, mit und ohne Nordfenster, ein gekühltes), je in sieben Varianten:
-        /// wie gelesen, mit Schalter „Strahlung auf Außenbauteile", mit Keller und Schalter, mit
-        /// Gegenstrahlung, mit eigenen und ohne Fensterflächen Ost/West, gekoppelt (AK1). Der Lauf
-        /// mit der übernommenen Zone liefert dieselben Reihen wie der Klassenweg.
+        /// Ein Katalogaufbau mit Schichten aus <c>Tab_Baustoff_STAMM</c> (Stoff 0 = ruhende
+        /// Luftschicht; die Wertekopie λ/ρ/c_p übernimmt das Speichern aus dem Stoff), kopiert in
+        /// das Projekt (<see cref="BauteilaufbauCtrl.CopyFromStamm"/>); liefert die Id der Kopie.
+        /// </summary>
+        private static int AufbauAusKatalog(int idProjekt, string name, string art, params (int Stoff, double Dicke)[] schichten)
+        {
+            var aufbau = new BauteilaufbauModel { Bezeichner = name, Bauteilart = art };
+            foreach ((int stoff, double dicke) in schichten)
+                aufbau.Schichten.Add(stoff > 0
+                    ? new BauteilschichtModel { ID_Baustoff = stoff, Dicke = dicke }
+                    : new BauteilschichtModel { Dicke = dicke, IstLuftschicht = true });
+            var ctrl = new BauteilaufbauCtrl();
+            BauteilaufbauCtrl.Ergebnis katalog = ctrl.KatalogSpeichern(aufbau);
+            Assert.True(katalog.Ok, katalog.Meldung);
+            int kopie = ctrl.CopyFromStamm(katalog.Id, idProjekt);
+            Assert.True(kopie > 0, "Aufbau " + name + " nicht in das Projekt kopiert.");
+            return kopie;
+        }
+
+        /// <summary>
+        /// Die geschichtete Zone eines Gebäudes: die übernommene Zone, Außenwände, Dach und
+        /// Bodenplatte auf Katalogaufbauten (U-Wert NULL = aus den Schichten), dazu Innenwände
+        /// innerhalb der Zone (leere Randbedingung) auf einem vierten Aufbau. Fenster und
+        /// Sonstiges behalten ihren U-Wert.
+        /// </summary>
+        private static ZoneModel GeschichteteZone(ProjektGebaeudeModel g, int idProjekt, out int wandAufbau)
+        {
+            // Kalkzementputz, Kalksandstein 1400, Mineralwolle 035, Luftschicht, Klinker 2000.
+            wandAufbau = AufbauAusKatalog(idProjekt, "Wand KS zweischalig", DbWerte.BAUTEILART_AUSSENWAND,
+                                          (1, 0.015), (18, 0.175), (36, 0.14), (0, 0.02), (14, 0.115));
+            // Normalbeton, EPS 035, Bitumenbahn.
+            int dach = AufbauAusKatalog(idProjekt, "Flachdach Beton", DbWerte.BAUTEILART_DACH, (9, 0.18), (39, 0.2), (56, 0.005));
+            // Zementestrich, EPS 035, Normalbeton.
+            int boden = AufbauAusKatalog(idProjekt, "Bodenplatte Beton", DbWerte.BAUTEILART_BODENPLATTE, (5, 0.05), (39, 0.1), (9, 0.2));
+            // Gipsputz, Kalksandstein 1400, Gipsputz.
+            int innen = AufbauAusKatalog(idProjekt, "Innenwand KS", DbWerte.BAUTEILART_INNENWAND, (2, 0.01), (18, 0.115), (2, 0.01));
+
+            ZoneModel zone = GebaeudeZonenabbildung.AlsZoneModel(GebaeudeZonenuebernahme.AlsEineZone(g));
+            zone.Bezeichner = "Geschichtet";
+            foreach (BauteilModel b in zone.Bauteile)
+            {
+                int? aufbau = b.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND ? wandAufbau
+                            : b.Bauteilart == DbWerte.BAUTEILART_DACH ? dach
+                            : b.Bauteilart == DbWerte.BAUTEILART_BODENPLATTE ? boden
+                            : (int?)null;
+                if (aufbau == null) continue;
+                b.ID_Aufbau = aufbau;
+                b.U_Wert = null;
+                b.Herkunft = DbWerte.HERKUNFT_KATALOG;
+            }
+            zone.Bauteile.Add(new BauteilModel
+            {
+                ID = -100, Bezeichner = "Innenwände", Bauteilart = DbWerte.BAUTEILART_INNENWAND,
+                Flaeche = g.Nutzflaeche, ID_Aufbau = innen, Herkunft = DbWerte.HERKUNFT_KATALOG,
+            });
+            return zone;
+        }
+
+        // =====================================================================
+        //  Der Grenzfall über die Datenbank
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Abnahme: der Grenzfall im Jahreslauf, über die Datenbank.</b> Fünf Gebäude der
+        /// Testdatenbank (mit und ohne Sonstiges, mit und ohne Nordfenster, ein gekühltes), je in
+        /// acht Varianten: wie gelesen, mit Schalter „Strahlung auf Außenbauteile", mit Keller
+        /// und Schalter, mit Gegenstrahlung, mit eigenen und ohne Fensterflächen Ost/West,
+        /// gekoppelt (AK1). Je Variante wird die übernommene Zone als Zeilen geschrieben und über
+        /// den Leser zurückgelesen: Der gelesene Satz ist der geschriebene, bitgleich (Kern →
+        /// Zeile → Kern), die gelesenen Zeilen sind die zurückgeschriebenen (Zeile → Kern →
+        /// Zeile), und der Lauf mit der gelesenen Zone liefert dieselben Reihen wie der
+        /// Klassenweg.
         /// </summary>
         [Theory]
         [InlineData(1045)]
@@ -512,7 +608,7 @@ namespace EPOS.Kern.Tests
         [InlineData(1017)]
         [InlineData(1018)]
         [InlineData(1023)]
-        public void Mit_uebernommener_Zone_rechnet_der_Lauf_wie_der_Klassenweg(int projekt)
+        public void Mit_uebernommener_Zone_aus_der_Datenbank_rechnet_der_Lauf_wie_der_Klassenweg(int projekt)
         {
             if (!_db.Vorhanden) return;
 
@@ -531,15 +627,62 @@ namespace EPOS.Kern.Tests
             };
             foreach (var v in varianten)
             {
+                // Die Zone der Variante als Zeilen schreiben (sie ersetzt die der vorigen).
+                ProjektGebaeudeModel vorlage = Zeile(projekt);
+                v.Aendern(vorlage);
+                GebaeudeZonensatz uebernommen = GebaeudeZonenuebernahme.AlsEineZone(vorlage);
+                ZonenSchreiben(vorlage.ID_Gebaeude, uebernommen);
+
+                // ... und über den Leser zurücklesen.
                 ProjektGebaeudeModel g = Zeile(projekt);
                 v.Aendern(g);
+                GebaeudeZonensatz gelesen = Assert.Single(g.Zonen);
+                ZonenabbildungProbe.GleicherSatz(uebernommen, gelesen);
+                ZonenabbildungProbe.GleicheZeilen(Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude)),
+                                                  GebaeudeZonenabbildung.AlsZoneModel(gelesen));
+
+                ProjektGebaeudeModel ohne = Zeile(projekt);
+                v.Aendern(ohne);
+                ohne.Zonen = null;
+
                 IReadOnlyList<SolardatenModel> klima = v.Ea ? mitEa : null;
                 string stufe = v.Kopplung ? DbWerte.ANLAGENKOPPLUNG_AK1 : null;
-                GebaeudeModellEingang klasse = Eingang(sim, g, klima, stufe);
-                GebaeudeModellEingang bauteil = Eingang(sim, BauteilwegLaufProbe.MitZone(g, GebaeudeZonenuebernahme.AlsEineZone(g)), klima, stufe);
+                GebaeudeModellEingang klasse = Eingang(sim, ohne, klima, stufe);
+                GebaeudeModellEingang bauteil = Eingang(sim, g, klima, stufe);
                 BauteilwegLaufProbe.Grenzfall(klasse, bauteil, projekt.ToString(CultureInfo.InvariantCulture) + " " + v.Fall, _aus);
             }
         }
+
+        /// <summary>
+        /// <b>Der Rundlauf über die Datenbank ist verlustfrei</b> — mit jeder Randbedingung, der
+        /// leeren an Innenwand und Decke, eigenen Fensterwerten, geneigtem Fenster, Vorhangfassade
+        /// und Trennwand zur Nachbarzone: Kern → Zeile → Datenbank → Kern ergibt den Satz Feld für
+        /// Feld, und die gelesenen Zeilen → Kern → Zeile ergeben dieselben Zeilen.
+        /// </summary>
+        [Fact]
+        public void Der_Rundlauf_ueber_die_Datenbank_ist_verlustfrei()
+        {
+            if (!_db.Vorhanden) return;
+
+            ProjektGebaeudeModel g = Zeile(1045);
+            g.Grundflaeche_Randbedingung = DbWerte.GRUND_KELLER;
+            GebaeudeZonensatz satz = ZonenabbildungProbe.Vollsatz(g);
+            List<ZoneModel> geschrieben = ZonenSchreiben(g.ID_Gebaeude, satz);
+            Assert.True(geschrieben[0].ID > 0);
+
+            GebaeudeZonensatz gelesen = Assert.Single(Zeile(1045).Zonen);
+            Assert.Equal(geschrieben[0].ID, gelesen.ZonenId);
+            ZonenabbildungProbe.GleicherSatz(satz, gelesen);
+
+            ZoneModel zeilen = Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude));
+            Assert.Null(zeilen.Bauteile.Single(b => b.Bezeichner == "Innenwände").Randbedingung);
+            Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, zeilen.Bauteile.Single(b => b.Bezeichner == "Decke Durchfahrt").Randbedingung);
+            ZonenabbildungProbe.GleicheZeilen(zeilen, GebaeudeZonenabbildung.AlsZoneModel(gelesen));
+        }
+
+        // =====================================================================
+        //  Die Fassade mit Zone
+        // =====================================================================
 
         /// <summary>
         /// <b>Die Fassade mit Zone</b> (Abnahme (a) und (c)): Mit der übernommenen Zone und einer
@@ -605,13 +748,17 @@ namespace EPOS.Kern.Tests
             Assert.True(p.IstFehlerfrei);
         }
 
+        // =====================================================================
+        //  Auskunft = Lauf
+        // =====================================================================
+
         /// <summary>
-        /// <b>Abnahme (d): Auskunft = Lauf für ein Gebäude mit Zone.</b> Über den Zonenanschluss
-        /// bekommt das eine Gebäude des Projekts 1007 eine Zone (übernommen, dazu ein Dachfenster
-        /// Süd 45°). Lauf (<c>Waermebedarf_berechnen</c>) und Auskunft
-        /// (<see cref="GebaeudeBedarfCtrl.Rechnen"/>) lesen es beide über
-        /// <see cref="ProjektGebaeudeCtrl.ReadAll"/> und liefern bitgleich dieselbe Zahl — eine
-        /// andere als ohne Zone.
+        /// <b>Abnahme: Auskunft = Lauf für ein Gebäude mit Zone.</b> Das eine Gebäude des Projekts
+        /// 1007 bekommt eine Zone als Zeilen (übernommen, dazu ein Dachfenster Süd 45°). Lauf
+        /// (<c>Waermebedarf_berechnen</c>) und Auskunft (<see cref="GebaeudeBedarfCtrl.Rechnen"/>)
+        /// lesen es beide über <see cref="ProjektGebaeudeCtrl.ReadAll"/> und liefern bitgleich
+        /// dieselbe Zahl — eine andere als ohne Zone. Sind die Zeilen entfernt, rechnet die
+        /// Auskunft wieder bitgleich wie vorher.
         /// </summary>
         [Fact]
         public void Die_Auskunft_ist_der_Lauf_fuer_ein_Gebaeude_mit_Zone()
@@ -624,73 +771,344 @@ namespace EPOS.Kern.Tests
             Assert.Single(zuordnungen);
 
             ProjektGebaeudeModel g = Zeile(projekt);
+            Assert.Null(g.Zonen);
+            double ohneZone = GebaeudeBedarfCtrl.Rechnen(projekt, region, zuordnungen[0].ID_Z).HeizwaermeMwh;
+
             GebaeudeZonensatz zone = BauteilwegLaufProbe.UebernahmePlus(g,
                 new BauteilEingang("Dachfenster", Bauteilart.Fenster, 3.0, Bauteilrand.Aussenluft, 1.3, neigungGrad: 45.0, azimutGrad: 180.0));
-            var zonen = new Dictionary<int, IReadOnlyList<GebaeudeZonensatz>> { [g.ID_Gebaeude] = new[] { zone } };
+            ZonenSchreiben(g.ID_Gebaeude, zone);
+            ZonenabbildungProbe.GleicherSatz(zone, Assert.Single(Zeile(projekt).Zonen));
 
-            double ohneZone = GebaeudeBedarfCtrl.Rechnen(projekt, region, zuordnungen[0].ID_Z).HeizwaermeMwh;
-            var vorher = GebaeudeZonenanschluss.Leser;
-            try
-            {
-                GebaeudeZonenanschluss.Leser = id => id == projekt ? zonen : null;
+            GebaeudeBedarfErgebnis auskunft = GebaeudeBedarfCtrl.Rechnen(projekt, region, zuordnungen[0].ID_Z);
+            Assert.True(auskunft.Erfolgreich);
+            var lauf = new SimulationWaermebedarf();
+            lauf.Waermebedarf_berechnen(projekt, region);
 
-                ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
-                ctrl.ReadAll(projekt);
-                Assert.Same(zone, Assert.Single(ctrl.items[0].Zonen));
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "1007: ohne Zone {0:F4} MWh, mit Zone Lauf {1:F4} MWh, Auskunft {2:F4} MWh",
+                                         ohneZone, lauf.Waermebedarf_Gebaeude_Gesamt, auskunft.HeizwaermeMwh));
+            Assert.Equal(lauf.Waermebedarf_Gebaeude_Gesamt, auskunft.HeizwaermeMwh);
+            Assert.NotEqual(ohneZone, auskunft.HeizwaermeMwh);
+            Assert.Equal(1.0, lauf.GebaeudeErgebnisse.Ergebnis(0).Skalierungsfaktor);
 
-                GebaeudeBedarfErgebnis auskunft = GebaeudeBedarfCtrl.Rechnen(projekt, region, zuordnungen[0].ID_Z);
-                Assert.True(auskunft.Erfolgreich);
-                var lauf = new SimulationWaermebedarf();
-                lauf.Waermebedarf_berechnen(projekt, region);
-
-                _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "1007: ohne Zone {0:F4} MWh, mit Zone Lauf {1:F4} MWh, Auskunft {2:F4} MWh",
-                                             ohneZone, lauf.Waermebedarf_Gebaeude_Gesamt, auskunft.HeizwaermeMwh));
-                Assert.Equal(lauf.Waermebedarf_Gebaeude_Gesamt, auskunft.HeizwaermeMwh);
-                Assert.NotEqual(ohneZone, auskunft.HeizwaermeMwh);
-                Assert.Equal(1.0, lauf.GebaeudeErgebnisse.Ergebnis(0).Skalierungsfaktor);
-            }
-            finally
-            {
-                GebaeudeZonenanschluss.Leser = vorher;
-            }
-
-            // Ohne Leser trägt kein Gebäude eine Zone.
-            ProjektGebaeudeCtrl ohne = new ProjektGebaeudeCtrl();
-            ohne.ReadAll(projekt);
-            Assert.Null(ohne.items[0].Zonen);
+            // Ohne Zeilen trägt das Gebäude keine Zone mehr.
+            Schreiben(g.ID_Gebaeude, new List<ZoneModel>());
+            Assert.Null(Zeile(projekt).Zonen);
+            Assert.Equal(ohneZone, GebaeudeBedarfCtrl.Rechnen(projekt, region, zuordnungen[0].ID_Z).HeizwaermeMwh);
         }
 
+        // =====================================================================
+        //  Geschichteter Aufbau aus dem Stammkatalog
+        // =====================================================================
+
         /// <summary>
-        /// <b>Abnahme (e): zwei Zonen im Lauf.</b> Der VDI-Weg lehnt ein Gebäude mit zwei Zonen
-        /// benannt ab — Fehler im Protokoll mit dem Grund, kein Ergebnis, kein stilles Auswählen.
-        /// Auf dem Tagesbilanz-Weg geht eine Zone nicht ein; das steht als Hinweis im Protokoll.
+        /// <b>Ein geschichteter Aufbau aus dem Stammkatalog rechnet im Lauf über den
+        /// Bauteilweg.</b> Vier Katalogaufbauten mit Schichten aus <c>Tab_Baustoff_STAMM</c>
+        /// (Außenwand zweischalig mit Luftschicht, Dach, Bodenplatte, Innenwand) werden in das
+        /// Projekt kopiert und von den Bauteilen der Zone genutzt. Der Leser liefert die
+        /// Wertekopie λ/ρ/c_p der Schichten, die Innenwand mit leerer Randbedingung rechnet in der
+        /// Innengruppe, beide Gruppen rechnen den Bauteilweg, und der Lauf meldet den Bauteilweg
+        /// mit der Zahl der geschichteten Bauteile.
+        /// </summary>
+        [Fact]
+        public void Ein_geschichteter_Aufbau_aus_dem_Katalog_rechnet_im_Lauf_den_Bauteilweg()
+        {
+            if (!_db.Vorhanden) return;
+
+            const int projekt = 1045;
+            int region = Klimaregion(projekt);
+            var ohne = new SimulationWaermebedarf();
+            ohne.Waermebedarf_berechnen(projekt, region);
+
+            ProjektGebaeudeModel g = Zeile(projekt);
+            Schreiben(g.ID_Gebaeude, new List<ZoneModel> { GeschichteteZone(g, projekt, out _) });
+
+            ProjektGebaeudeModel gelesen = Zeile(projekt);
+            GebaeudeZonensatz z = Assert.Single(gelesen.Zonen);
+            Assert.Equal("Geschichtet", z.Bezeichnung);
+            BauteilEingang wand = z.Bauteile.First(b => b.Art == Bauteilart.Aussenwand);
+            Assert.True(double.IsNaN(wand.UWert_WM2K));
+            Assert.Equal(new[]
+            {
+                new Schicht(0.015, 1.0, 1800.0, 1000.0),       // Kalkzementputz
+                new Schicht(0.175, 0.7, 1400.0, 1000.0),       // Kalksandstein 1400
+                new Schicht(0.14, 0.036, 40.0, 1030.0),        // Mineralwolle λD 0,035
+                Schicht.RuhendeLuft(0.02),
+                new Schicht(0.115, 0.96, 2000.0, 1000.0),      // Klinker 2000
+            }, wand.Schichten);
+            Assert.Equal(Bauteilgruppe.Innen, z.Bauteile.Single(b => b.Bezeichnung == "Innenwände").Gruppe);
+            int geschichtet = z.Bauteile.Count(b => b.HatSchichten);
+            Assert.Equal(z.Bauteile.Count(b => b.Art == Bauteilart.Aussenwand) + 3, geschichtet);
+
+            GebaeudeModellEingang e = Eingang(NeueRechnung(projekt), gelesen);
+            Assert.True(e.Bauteilweg);
+            Assert.Equal(Gruppenweg.Bauteilweg, e.Parameter.WegAussen);
+            Assert.Equal(Gruppenweg.Bauteilweg, e.Parameter.WegInnen);
+
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            var lauf = new SimulationWaermebedarf();
+            lauf.Waermebedarf_berechnen(projekt, region);
+            Assert.True(p.IstFehlerfrei, string.Join(" | ", p.Fehler));
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, R.SIMENG_G3_BAUTEILWEG, e.Bezeichnung, "Geschichtet",
+                                          z.Bauteile.Count.ToString(CultureInfo.CurrentCulture),
+                                          geschichtet.ToString(CultureInfo.CurrentCulture)), p.Hinweise);
+
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "1045: Klassenweg {0:F3} MWh, Bauteilweg mit Katalogaufbauten {1:F3} MWh; C_AW {2:E3} J/K, C_IW {3:E3} J/K, ΣUA_opak {4:F1} W/K",
+                ohne.Waermebedarf_Gebaeude_Gesamt, lauf.Waermebedarf_Gebaeude_Gesamt, e.Parameter.C_AW_Jk, e.Parameter.C_IW_Jk,
+                e.Parameter.SummeUA_opak_WK));
+            Assert.True(lauf.Waermebedarf_Gebaeude_Gesamt > 0.0 && !double.IsInfinity(lauf.Waermebedarf_Gebaeude_Gesamt));
+            Assert.NotEqual(ohne.Waermebedarf_Gebaeude_Gesamt, lauf.Waermebedarf_Gebaeude_Gesamt);
+            Assert.Equal(1.0, lauf.GebaeudeErgebnisse.Ergebnis(0).Skalierungsfaktor);
+        }
+
+        // =====================================================================
+        //  Benannte Fehler im Lauf
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Abnahme: zwei Zonen im Lauf.</b> Der VDI-Weg lehnt ein Gebäude mit zwei Zonen
+        /// benannt ab — Fehler im Protokoll mit dem Grund, kein stilles Auswählen. Auf dem
+        /// Tagesbilanz-Weg geht eine Zone nicht ein; das steht als Hinweis im Protokoll, und ohne
+        /// Zeilen steht er nicht.
         /// </summary>
         [Fact]
         public void Zwei_Zonen_brechen_den_Lauf_benannt_ab()
         {
             if (!_db.Vorhanden) return;
 
-            SimulationWaermebedarf sim = NeueRechnung(1045);
-            ProjektGebaeudeModel g = Zeile(1045);
+            const int projekt = 1045;
+            ProjektGebaeudeModel g = Zeile(projekt);
+            string id = "(" + g.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) + ")";
             GebaeudeZonensatz z = GebaeudeZonenuebernahme.AlsEineZone(g);
-            g.Zonen = new[] { z, z };
+            ZonenSchreiben(g.ID_Gebaeude, z, new GebaeudeZonensatz(0, "Anbau", z.Bauteile));
+
             SimulationProtokoll p = SimulationProtokoll.NeuStarten();
-            Assert.False(sim.HeizwaermeEinesGebaeudes(g, 0, new double[8760]));
+            new SimulationWaermebedarf().Waermebedarf_berechnen(projekt, Klimaregion(projekt));
+            Assert.Contains(p.Fehler, f => f.Contains(nameof(GebaeudeModellFehler.MehrereZonen), StringComparison.Ordinal)
+                                          && f.Contains(id, StringComparison.Ordinal));
+
+            ProjektGebaeudeModel mit = Zeile(projekt);
+            Assert.Equal(new[] { GebaeudeZonenuebernahme.ZONE_BEZEICHNUNG, "Anbau" }, mit.Zonen.Select(x => x.Bezeichnung));
+            SimulationWaermebedarf sim = NeueRechnung(projekt);
+            p = SimulationProtokoll.NeuStarten();
+            Assert.False(sim.HeizwaermeEinesGebaeudes(mit, 0, new double[8760]));
             Assert.Contains(p.Fehler, f => f.Contains(nameof(GebaeudeModellFehler.MehrereZonen), StringComparison.Ordinal));
 
-            string id = "(" + g.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) + ")";
-            ProjektGebaeudeModel alt = Zeile(1045);
+            ProjektGebaeudeModel alt = Zeile(projekt);
+            alt.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+            p = SimulationProtokoll.NeuStarten();
+            sim.HeizwaermeEinesGebaeudes(alt, 0, new double[8760]);
+            Assert.Single(p.Hinweise, x => x.Contains(id, StringComparison.Ordinal));
+
+            Schreiben(g.ID_Gebaeude, new List<ZoneModel>());
+            alt = Zeile(projekt);
             alt.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
             p = SimulationProtokoll.NeuStarten();
             sim.HeizwaermeEinesGebaeudes(alt, 0, new double[8760]);
             Assert.DoesNotContain(p.Hinweise, x => x.Contains(id, StringComparison.Ordinal));
+        }
 
-            alt = Zeile(1045);
-            alt.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
-            alt.Zonen = new[] { z };
-            p = SimulationProtokoll.NeuStarten();
-            sim.HeizwaermeEinesGebaeudes(alt, 0, new double[8760]);
-            Assert.Single(p.Hinweise, x => x.Contains(id, StringComparison.Ordinal));
+        /// <summary>
+        /// <b>Eine unlesbare Zone bricht nur den Lauf ab, nicht das Lesen.</b> Ein Bauteil zeigt
+        /// auf einen Projektaufbau, dessen Schicht keine Wertekopie von ρ und c_p trägt (der
+        /// Schreibweg nimmt ihn an). Das Lesen des Gebäudes — auch für den Dialog — bleibt heil;
+        /// der Lauf bricht für dieses Gebäude mit dem Grund <see cref="GebaeudeModellFehler.SchichtUngueltig"/>
+        /// ab und nennt Gebäude, Zone, Bauteil, Aufbau und Schicht.
+        /// </summary>
+        [Fact]
+        public void Eine_unlesbare_Zone_bricht_nur_den_Lauf_benannt_ab()
+        {
+            if (!_db.Vorhanden) return;
+
+            const int projekt = 1045;
+            BauteilaufbauCtrl.Ergebnis halb = new BauteilaufbauCtrl().ProjektSpeichern(projekt, new BauteilaufbauModel
+            {
+                Bezeichner = "Halb",
+                Schichten = { new BauteilschichtModel { Dicke = 0.2, Lambda = 0.7 } }
+            });
+            Assert.True(halb.Ok, halb.Meldung);
+            ProjektGebaeudeModel g = Zeile(projekt);
+            ZoneModel zone = GebaeudeZonenabbildung.AlsZoneModel(GebaeudeZonenuebernahme.AlsEineZone(g));
+            BauteilModel wand = zone.Bauteile.First(b => b.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND);
+            wand.ID_Aufbau = halb.Id;
+            wand.U_Wert = null;
+            Schreiben(g.ID_Gebaeude, new List<ZoneModel> { zone });
+
+            ProjektGebaeudeModel gelesen = Zeile(projekt);
+            GebaeudeZonensatz z = Assert.Single(gelesen.Zonen);
+            Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, z.Lesefehlergrund);
+            Assert.Empty(z.Bauteile);
+            List<Z_ProjGebModel> zuordnungen = Z_ProjGebCtrl.LiesProjekt(projekt);
+            Assert.NotNull(GebaeudeBedarfCtrl.Projektgebaeude(projekt, zuordnungen[0].ID_Z));
+
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            new SimulationWaermebedarf().Waermebedarf_berechnen(projekt, Klimaregion(projekt));
+            string erwartet = string.Format(CultureInfo.CurrentCulture, R.SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE,
+                                            GebaeudeZonenabbildung.Wer(zone.Bezeichner) + ", " + wand.Bezeichner + " (Halb)", "1", "ρ, c_p");
+            string fehler = p.Fehler.FirstOrDefault(f => f.Contains("[" + nameof(GebaeudeModellFehler.SchichtUngueltig) + "]", StringComparison.Ordinal));
+            Assert.True(fehler != null, "Kein Fehler SchichtUngueltig im Protokoll: " + string.Join(" | ", p.Fehler));
+            _aus.WriteLine(fehler);
+            Assert.Contains(erwartet, fehler, StringComparison.Ordinal);
+            Assert.Contains("(" + g.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) + "), ", fehler, StringComparison.Ordinal);
+        }
+
+        // =====================================================================
+        //  Projekt duplizieren
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Projekt duplizieren mit Zone — die Kopie rechnet identisch.</b> Das Projekt 1007
+        /// mit einer geschichteten Zone auf Katalogaufbauten wird dupliziert
+        /// (<see cref="ProjektDuplizierenCtrl"/>): Die Kopie liest denselben Kern-Satz, ihre
+        /// Bauteile zeigen auf die Aufbauten der Kopie, und der Lauf beider Projekte liefert
+        /// dieselbe Reihe, bitgleich.
+        /// </summary>
+        [Fact]
+        public void Ein_dupliziertes_Projekt_mit_Zone_rechnet_identisch()
+        {
+            if (!_db.Vorhanden) return;
+
+            const int projekt = 1007;
+            const string name = "Laurentiuskirche";
+            ProjektGebaeudeModel g = Zeile(projekt);
+            Schreiben(g.ID_Gebaeude, new List<ZoneModel> { GeschichteteZone(g, projekt, out int wandAufbau) });
+
+            int neu = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Zonen");
+            Assert.True(neu > 0, "Duplizieren fehlgeschlagen.");
+
+            ProjektGebaeudeModel quelle = Zeile(projekt), kopie = Zeile(neu);
+            Assert.NotEqual(quelle.ID_Gebaeude, kopie.ID_Gebaeude);
+            ZonenabbildungProbe.GleicherSatz(Assert.Single(quelle.Zonen), Assert.Single(kopie.Zonen));
+
+            int kopieWand = new GebaeudeZonenCtrl().LesenJeGebaeude(kopie.ID_Gebaeude)[0].Bauteile
+                .First(b => b.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND).ID_Aufbau.Value;
+            Assert.NotEqual(wandAufbau, kopieWand);
+            Assert.Contains(new BauteilaufbauCtrl().LesenJeProjekt(neu), a => a.ID == kopieWand);
+
+            // Jedes Projekt rechnet mit seiner Klimaregion — die Kopie führt eine eigene (Tab_Klimaregion.ID_Projekt).
+            var a = new SimulationWaermebedarf();
+            a.Waermebedarf_berechnen(projekt, Klimaregion(projekt));
+            var b = new SimulationWaermebedarf();
+            b.Waermebedarf_berechnen(neu, Klimaregion(neu));
+            _aus.WriteLine(string.Format(CultureInfo.InvariantCulture, "1007 mit Zone {0:F4} MWh, Kopie {1} {2:F4} MWh",
+                                         a.Waermebedarf_Gebaeude_Gesamt, neu, b.Waermebedarf_Gebaeude_Gesamt));
+            Assert.True(a.Waermebedarf_Gebaeude_Gesamt > 0.0);
+            Assert.Equal(a.Waermebedarf_Gebaeude_Gesamt, b.Waermebedarf_Gebaeude_Gesamt);
+            double[] ra = a.GebaeudeErgebnisse.Ergebnis(0).HeizlastW, rb = b.GebaeudeErgebnisse.Ergebnis(0).HeizlastW;
+            for (int h = 0; h < 8760; h++) Assert.True(ra[h].Equals(rb[h]), "Stunde " + h);
+            Assert.True(Eingang(NeueRechnung(neu), kopie).Bauteilweg);
+        }
+
+        // =====================================================================
+        //  Der Leser: Schemaprobe und Zahl der Abfragen
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Ein älterer Schemastand ohne <c>Tab_Zone</c> heißt „keine Zonen"</b> — ohne
+        /// Meldung, und nach der gemerkten Probe ohne jede weitere Abfrage. Legt der Schritt S-C
+        /// die Tabellen an, verwirft er die Probe: Eine leere Tabelle ist etwas anderes als eine
+        /// fehlende.
+        /// </summary>
+        [Fact]
+        public void Ohne_Tab_Zone_fuehrt_kein_Gebaeude_eine_Zone()
+        {
+            if (!_db.Vorhanden) return;
+
+            ProjektGebaeudeModel g = Zeile(1045);
+            ZonenSchreiben(g.ID_Gebaeude, GebaeudeZonenuebernahme.AlsEineZone(g));
+            Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
+            Assert.Single(Zeile(1045).Zonen);
+
+            // Die Importzuordnung (Schritt S-F) verweist auf Tab_Zone und Tab_Bauteil; ein Stand
+            // vor S-C kennt sie nicht, also fallen sie zuerst.
+            DataRepository.ExecuteNonQuery("DROP TABLE IF EXISTS \"" + ImportzuordnungSchema.TAB_ZUORDNUNG + "\"");
+            DataRepository.ExecuteNonQuery("DROP TABLE IF EXISTS \"" + ImportzuordnungSchema.TAB_QUELLE + "\"");
+            DataRepository.ExecuteNonQuery("DROP TABLE \"" + ZonenSchema.TAB_BAUTEIL + "\"");
+            DataRepository.ExecuteNonQuery("DROP TABLE \"" + ZonenSchema.TAB_ZONE + "\"");
+            Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());           // gemerkt, bis der Schritt sie verwirft
+            GebaeudeZonenanschluss.ProbeVerwerfen();
+
+            var meldungen = new List<string>();
+            Action<string> vorher = Meldung.Zeigen;
+            var zaehler = new Zaehlzugriff(DataRepository.Zugriff);
+            try
+            {
+                Meldung.Zeigen = meldungen.Add;
+                Assert.False(GebaeudeZonenanschluss.TabelleVorhanden());
+                DataRepository.Zugriff = zaehler;
+                var liste = new List<ProjektGebaeudeModel> { g };
+                g.Zonen = null;
+                GebaeudeZonenanschluss.Anschliessen(1045, liste);
+                Assert.Equal(0, zaehler.Gesamt);
+                Assert.Null(g.Zonen);
+                DataRepository.Zugriff = zaehler.Innen;
+                Assert.Null(Zeile(1045).Zonen);
+            }
+            finally
+            {
+                DataRepository.Zugriff = zaehler.Innen;
+                Meldung.Zeigen = vorher;
+            }
+            Assert.Empty(meldungen);
+
+            ZonenSchema.Ausfuehren();
+            Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
+            Assert.Null(Zeile(1045).Zonen);
+        }
+
+        /// <summary>
+        /// <b>Je Projekt eine feste Zahl Abfragen, nie je Zone oder je Bauteil.</b> Das Projekt
+        /// 1039 mit drei Gebäuden: ohne Zone zwei Abfragen, mit Zonen ohne Aufbau (ein Gebäude
+        /// mit zwei Zonen) ebenfalls zwei, mit Katalogaufbauten vier — gleich, wie viele Zonen,
+        /// Bauteile und Schichten es sind. Jedes Gebäude bekommt seine eigenen Zonen.
+        /// </summary>
+        [Fact]
+        public void Der_Leser_fragt_je_Projekt_eine_feste_Zahl_Abfragen()
+        {
+            if (!_db.Vorhanden) return;
+
+            const int projekt = 1039;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(projekt);
+            List<ProjektGebaeudeModel> gebaeude = ctrl.items;
+            Assert.Equal(3, gebaeude.Count);
+
+            int Abfragen()
+            {
+                foreach (ProjektGebaeudeModel x in gebaeude) x.Zonen = null;
+                Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
+                GebaeudeZonenanschluss.KuehlspaltenVorhanden();   // gemerkt wie die Tabellenprobe
+                var zaehler = new Zaehlzugriff(DataRepository.Zugriff);
+                try
+                {
+                    DataRepository.Zugriff = zaehler;
+                    GebaeudeZonenanschluss.Anschliessen(projekt, gebaeude);
+                }
+                finally
+                {
+                    DataRepository.Zugriff = zaehler.Innen;
+                }
+                return zaehler.Gesamt;
+            }
+
+            Assert.Equal(2, Abfragen());
+            Assert.All(gebaeude, x => Assert.Null(x.Zonen));
+
+            GebaeudeZonensatz a = GebaeudeZonenuebernahme.AlsEineZone(gebaeude[0]);
+            GebaeudeZonensatz b = GebaeudeZonenuebernahme.AlsEineZone(gebaeude[1]);
+            ZonenSchreiben(gebaeude[0].ID_Gebaeude, a);
+            ZonenSchreiben(gebaeude[1].ID_Gebaeude, b, new GebaeudeZonensatz(0, "Anbau", b.Bauteile));
+            Assert.Equal(2, Abfragen());
+
+            Schreiben(gebaeude[2].ID_Gebaeude, new List<ZoneModel> { GeschichteteZone(gebaeude[2], projekt, out _) });
+            Assert.Equal(4, Abfragen());
+
+            ZonenabbildungProbe.GleicherSatz(a, Assert.Single(gebaeude[0].Zonen));
+            Assert.Equal(new[] { GebaeudeZonenuebernahme.ZONE_BEZEICHNUNG, "Anbau" }, gebaeude[1].Zonen.Select(z => z.Bezeichnung));
+            ZonenabbildungProbe.GleicherSatz(b, gebaeude[1].Zonen[0]);
+            GebaeudeZonensatz c = Assert.Single(gebaeude[2].Zonen);
+            Assert.Equal("Geschichtet", c.Bezeichnung);
+            Assert.All(c.Bauteile.Where(x => x.Art == Bauteilart.Aussenwand), x => Assert.Equal(5, x.Schichten.Count));
         }
     }
 }

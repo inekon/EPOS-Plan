@@ -61,6 +61,8 @@
                AssistentGaben="@AssistentGaben"
                StromspeicherAuslegungGaben="@StromspeicherAuslegungGaben"
                SimulationGaben="@SimulationGaben"
+               BaustoffKatalogGaben="@BaustoffKatalogGaben"
+               BauteilaufbauKatalogGaben="@BauteilaufbauKatalogGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
@@ -237,6 +239,17 @@
     /// durchgereicht; das Fenster wertet nichts davon aus.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationGaben { get; set; }
+
+    /// <summary>
+    /// Die Parametersätze der zwei Kataloge der Gebäudesimulation — „Baustoffe" und
+    /// „Bauteilaufbauten" (Windows: <c>BaustoffKatalogHuelle.Gaben</c>,
+    /// <c>BauteilaufbauHuelle.Gaben</c>, Stufe G3). Nur durchgereicht; die Wurzel zeigt die
+    /// Verwaltungen als freie Ansicht.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BaustoffKatalogGaben { get; set; }
+
+    /// <summary>Siehe <see cref="BaustoffKatalogGaben"/>.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
 
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt

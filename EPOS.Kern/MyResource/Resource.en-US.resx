@@ -3247,6 +3247,30 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_G3_ZONE_ALTWEG" xml:space="preserve">
     <value>{0} is computed on the daily-balance path; its zone is not used there — only the VDI 6007 path computes the building-element method.</value>
   </data>
+  <data name="SIMENG_G3_ZONE_WER" xml:space="preserve">
+    <value>zone “{0}”</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_BAUTEILART" xml:space="preserve">
+    <value>{0}: the component type “{1}” is not one of the nine component types ({2}).</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_RANDBEDINGUNG" xml:space="preserve">
+    <value>{0}: the boundary condition “{1}” is not one of the four boundary conditions ({2}); empty means outside air, on an internal wall or ceiling “inside the zone”.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_AUFBAU_FEHLT" xml:space="preserve">
+    <value>{0}: the build-up {1} does not belong to the project of the building.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHT_OHNE_WERTE" xml:space="preserve">
+    <value>{0}, layer {1}: {2} missing; a layer that is not an air layer is computed from its copy of λ, ρ and c_p.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_INNEN" xml:space="preserve">
+    <value>{0}: “inside the zone” is stored in the zone table only on an internal wall or ceiling (empty boundary condition), not on the component type “{1}”.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_SCHICHTEN" xml:space="preserve">
+    <value>{0}: the component carries a layer build-up; the takeover writes components without a build-up.</value>
+  </data>
+  <data name="SIMENG_G3_ZEILE_ALPHA" xml:space="preserve">
+    <value>{0}: the component carries its own surface coefficient α_kon; the zone table has no column for it.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>
@@ -8465,6 +8489,15 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KFLT_SP_DICKE" xml:space="preserve">
     <value>Thickness</value>
   </data>
+  <data name="KFLT_SP_UWERT" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="KFLT_SP_RWERT" xml:space="preserve">
+    <value>R-value</value>
+  </data>
+  <data name="KFLT_SP_KAPAZITAET" xml:space="preserve">
+    <value>Heat capacity</value>
+  </data>
   <data name="BAUSTOFF_MSG_NAME_LEER" xml:space="preserve">
     <value>The building material needs a name.</value>
   </data>
@@ -8488,6 +8521,93 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="BAUSTOFF_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The building material could not be saved: {0}</value>
+  </data>
+  <data name="BST_TITEL" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="BST_LEER" xml:space="preserve">
+    <value>The catalogue does not contain any building material yet – “New…” creates one.</value>
+  </data>
+  <data name="BST_SCHALTER_NEUTRAL" xml:space="preserve">
+    <value>manufacturer-neutral only</value>
+  </data>
+  <data name="BST_NEUTRAL" xml:space="preserve">
+    <value>manufacturer-neutral</value>
+  </data>
+  <data name="BST_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BST_LBL_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="BST_LBL_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="BST_LBL_LAMBDA" xml:space="preserve">
+    <value>Thermal conductivity λ</value>
+  </data>
+  <data name="BST_LBL_RHO" xml:space="preserve">
+    <value>Density ρ</value>
+  </data>
+  <data name="BST_LBL_CP" xml:space="preserve">
+    <value>Specific heat capacity c_p</value>
+  </data>
+  <data name="BST_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="BST_LBL_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="BST_LBL_QUELLKENNUNG" xml:space="preserve">
+    <value>Source identifier</value>
+  </data>
+  <data name="BST_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="BST_EINHEIT_LAMBDA" xml:space="preserve">
+    <value>W/(mK)</value>
+  </data>
+  <data name="BST_EINHEIT_RHO" xml:space="preserve">
+    <value>kg/m³</value>
+  </data>
+  <data name="BST_EINHEIT_CP" xml:space="preserve">
+    <value>J/(kgK)</value>
+  </data>
+  <data name="BST_VERWENDUNG" xml:space="preserve">
+    <value>in {0} layer(s) of the build-up catalogue</value>
+  </data>
+  <data name="BST_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>in no layer of the build-up catalogue</value>
+  </data>
+  <data name="BST_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BST_TITEL_NEU" xml:space="preserve">
+    <value>New building material</value>
+  </data>
+  <data name="BST_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the building material “{0}”?</value>
+  </data>
+  <data name="BST_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Used in {0} layer(s) of the build-up catalogue – deletion blocked; replace it there first.</value>
+  </data>
+  <data name="BST_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Kept (used in layers): {0}</value>
+  </data>
+  <data name="BST_MSG_ANGELEGT" xml:space="preserve">
+    <value>“{0}” created.</value>
+  </data>
+  <data name="BST_MSG_GELOESCHT" xml:space="preserve">
+    <value>“{0}” deleted.</value>
+  </data>
+  <data name="BST_MSG_FEHLER" xml:space="preserve">
+    <value>The building material could not be saved.</value>
+  </data>
+  <data name="BST_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>The catalogue already contains this name for this manufacturer.</value>
+  </data>
+  <data name="BST_KEINE_ANSICHT" xml:space="preserve">
+    <value>The building material catalogue is not yet available on this device.</value>
   </data>
   <data name="BAUTEIL_FELD_QUELLKENNUNG" xml:space="preserve">
     <value>Source identifier</value>
@@ -8515,6 +8635,210 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="BAUTEIL_MSG_AUFBAU_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The construction build-up could not be saved: {0}</value>
+  </data>
+  <data name="BAUTEIL_MSG_KEINE_SCHICHT" xml:space="preserve">
+    <value>The construction build-up needs at least one layer.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_DICKE_BAND" xml:space="preserve">
+    <value>Layer {0}: the thickness {1:0.###} mm is not within {2:0.###} … {3:0.###} mm.</value>
+  </data>
+  <data name="BAUTEIL_MSG_LUFTSCHICHT_DICKE" xml:space="preserve">
+    <value>Layer {0}: the unventilated air layer is {1:0.###} mm thick; DIN EN ISO 6946 Table 8 applies up to {2:0.###} mm.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_LAMBDA" xml:space="preserve">
+    <value>Layer {0}: the thermal conductivity λ is missing – only an unventilated air layer may omit λ.</value>
+  </data>
+  <data name="BAUTEIL_MSG_SCHICHT_FEHLT" xml:space="preserve">
+    <value>Layer {0}: “{1}” is missing; the component method needs it for the thermal mass.</value>
+  </data>
+  <data name="BAUTEIL_MSG_REIHENFOLGE" xml:space="preserve">
+    <value>The layers are not numbered consecutively from 1: layer {0} carries number {1}.</value>
+  </data>
+  <data name="BTA_TITEL" xml:space="preserve">
+    <value>Construction build-ups</value>
+  </data>
+  <data name="BTA_LEER" xml:space="preserve">
+    <value>The catalogue does not contain any construction build-up yet – “New…” creates one.</value>
+  </data>
+  <data name="BTA_TITEL_NEU" xml:space="preserve">
+    <value>New construction build-up</value>
+  </data>
+  <data name="BTA_GRP_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="BTA_SCHICHTEN_ZAHL" xml:space="preserve">
+    <value>{0} layers</value>
+  </data>
+  <data name="BTA_SCHICHTEN_EINS" xml:space="preserve">
+    <value>1 layer</value>
+  </data>
+  <data name="BTA_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BTA_LBL_BAUTEILART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="BTA_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="BTA_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="BTA_LBL_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="BTA_LBL_QUELLKENNUNG" xml:space="preserve">
+    <value>Source identifier</value>
+  </data>
+  <data name="BTA_KZ_U" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="BTA_KZ_R" xml:space="preserve">
+    <value>R-value</value>
+  </data>
+  <data name="BTA_KZ_C" xml:space="preserve">
+    <value>Heat capacity</value>
+  </data>
+  <data name="BTA_EINHEIT_U" xml:space="preserve">
+    <value>W/(m²K)</value>
+  </data>
+  <data name="BTA_EINHEIT_R" xml:space="preserve">
+    <value>m²K/W</value>
+  </data>
+  <data name="BTA_EINHEIT_KAPAZITAET" xml:space="preserve">
+    <value>kJ/(m²K)</value>
+  </data>
+  <data name="BTA_EINHEIT_MM" xml:space="preserve">
+    <value>mm</value>
+  </data>
+  <data name="BTA_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BTA_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the construction build-up “{0}” with its layers?</value>
+  </data>
+  <data name="BTA_MSG_ANGELEGT" xml:space="preserve">
+    <value>“{0}” created.</value>
+  </data>
+  <data name="BTA_MSG_GELOESCHT" xml:space="preserve">
+    <value>“{0}” deleted.</value>
+  </data>
+  <data name="BTA_MSG_FEHLER" xml:space="preserve">
+    <value>The construction build-up could not be saved.</value>
+  </data>
+  <data name="BTA_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>This name already exists in the catalogue.</value>
+  </data>
+  <data name="BTA_KEINE_ANSICHT" xml:space="preserve">
+    <value>The construction build-up catalogue is not yet available on this device.</value>
+  </data>
+  <data name="BTA_WER_AUFBAU" xml:space="preserve">
+    <value>Construction build-up</value>
+  </data>
+  <data name="BTA_ART_AUSSENWAND" xml:space="preserve">
+    <value>External wall</value>
+  </data>
+  <data name="BTA_ART_DACH" xml:space="preserve">
+    <value>Roof</value>
+  </data>
+  <data name="BTA_ART_BODENPLATTE" xml:space="preserve">
+    <value>Ground floor slab</value>
+  </data>
+  <data name="BTA_ART_FENSTER" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="BTA_ART_TUER" xml:space="preserve">
+    <value>Door</value>
+  </data>
+  <data name="BTA_ART_INNENWAND" xml:space="preserve">
+    <value>Internal wall</value>
+  </data>
+  <data name="BTA_ART_DECKE" xml:space="preserve">
+    <value>Ceiling</value>
+  </data>
+  <data name="BTA_ART_VORHANGFASSADE" xml:space="preserve">
+    <value>Curtain wall</value>
+  </data>
+  <data name="BTA_ART_SONSTIGES" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="BTA_ART_JEDE" xml:space="preserve">
+    <value>any component type</value>
+  </data>
+  <data name="BTA_RASTER" xml:space="preserve">
+    <value>Layers from inside to outside</value>
+  </data>
+  <data name="BTA_LEER_SCHICHTEN" xml:space="preserve">
+    <value>No layer yet – “+ New layer …” adds the innermost one.</value>
+  </data>
+  <data name="BTA_SP_DICKE" xml:space="preserve">
+    <value>Thickness [mm]</value>
+  </data>
+  <data name="BTA_SP_LAMBDA" xml:space="preserve">
+    <value>λ [W/(mK)]</value>
+  </data>
+  <data name="BTA_SP_RHO" xml:space="preserve">
+    <value>ρ [kg/m³]</value>
+  </data>
+  <data name="BTA_SP_CP" xml:space="preserve">
+    <value>c_p [J/(kgK)]</value>
+  </data>
+  <data name="BTA_LBL_SCHICHT" xml:space="preserve">
+    <value>Layer {0}</value>
+  </data>
+  <data name="BTA_LBL_BAUSTOFF" xml:space="preserve">
+    <value>Building material</value>
+  </data>
+  <data name="BTA_FREIE_EINGABE" xml:space="preserve">
+    <value>(free entry)</value>
+  </data>
+  <data name="BTA_LBL_LUFTSCHICHT" xml:space="preserve">
+    <value>Air layer</value>
+  </data>
+  <data name="BTA_HINWEIS_LUFTSCHICHT" xml:space="preserve">
+    <value>Without λ the air layer is an unventilated air layer: its resistance follows DIN EN ISO 6946, Table 8, and it carries no thermal mass.</value>
+  </data>
+  <data name="BTA_R_SCHICHT" xml:space="preserve">
+    <value>R = {0} m²K/W</value>
+  </data>
+  <data name="BTA_R_OFFEN" xml:space="preserve">
+    <value>R: – (not determinable)</value>
+  </data>
+  <data name="BTA_BTN_INNEN" xml:space="preserve">
+    <value>Move inwards</value>
+  </data>
+  <data name="BTA_BTN_AUSSEN" xml:space="preserve">
+    <value>Move outwards</value>
+  </data>
+  <data name="BTA_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove layer</value>
+  </data>
+  <data name="BTA_BTN_NEUE_SCHICHT" xml:space="preserve">
+    <value>+ New layer …</value>
+  </data>
+  <data name="BTA_SUMME_R" xml:space="preserve">
+    <value>R = Σ d/λ = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_U" xml:space="preserve">
+    <value>U = {0} W/(m²K)</value>
+  </data>
+  <data name="BTA_SUMME_C" xml:space="preserve">
+    <value>C = Σ ρ·c_p·d = {0} kJ/(m²K)</value>
+  </data>
+  <data name="BTA_SUMME_TBT" xml:space="preserve">
+    <value>T_BT = {0} d · C₁ = {1} kJ/(m²K) (VDI 6007, eq. (10a)–(10d))</value>
+  </data>
+  <data name="BTA_SUMME_TBT_OFFEN" xml:space="preserve">
+    <value>T_BT: not determinable – {0}</value>
+  </data>
+  <data name="BTA_SUMME_OFFEN" xml:space="preserve">
+    <value>Totals not determinable – {0}</value>
+  </data>
+  <data name="BTA_HERLEITUNG_U" xml:space="preserve">
+    <value>U = 1/(R_si + R + R_se) with R_si = {0} and R_se = {1} m²K/W – tilt {2}° from the component type, to external air (DIN EN ISO 6946, Table 7).</value>
+  </data>
+  <data name="BTA_HERLEITUNG_TBT" xml:space="preserve">
+    <value>Reference period from R₁;rel = {0} and C₁;rel = {1}.</value>
   </data>
   <data name="BAUTEIL_MSG_SCHICHT_DICKE" xml:space="preserve">
     <value>Layer {0}: The thickness must be greater than zero.</value>
@@ -15702,6 +16026,12 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="MENU_GEB_TYPEN" xml:space="preserve">
     <value>Building types</value>
   </data>
+  <data name="MENU_BAUSTOFFE" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="MENU_BAUTEILAUFBAUTEN" xml:space="preserve">
+    <value>Construction build-ups</value>
+  </data>
   <data name="MENU_HELP" xml:space="preserve">
     <value>Help</value>
   </data>
@@ -22505,6 +22835,75 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_GTYP_STUNDENWERTE_ERL" xml:space="preserve">
     <value>The 24 hourly values of the selected daily curve in the working state, hour 1 to 24 – the same that “Hourly values…” shows. “Save” writes them; while changed values are unsaved, the screen holds the curve change.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BST" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="KI_DLG_MASKE_BTA" xml:space="preserve">
+    <value>Construction build-ups</value>
+  </data>
+  <data name="KI_DLG_BST_BAUSTOFF_NAME" xml:space="preserve">
+    <value>Building material</value>
+  </data>
+  <data name="KI_DLG_BST_BAUSTOFF_ERL" xml:space="preserve">
+    <value>The selected building material of the list (its key is its id). Setting it selects the row – the same as a click; unsaved changes hold the selection.</value>
+  </data>
+  <data name="KI_DLG_BST_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of the building material; together with the manufacturer it is unique in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_BST_GRUPPE_ERL" xml:space="preserve">
+    <value>The group (e.g. masonry, concrete, insulation); empty = no group.</value>
+  </data>
+  <data name="KI_DLG_BST_HERSTELLER_ERL" xml:space="preserve">
+    <value>The manufacturer; empty means manufacturer-neutral (standard or guide value).</value>
+  </data>
+  <data name="KI_DLG_BST_LAMBDA_ERL" xml:space="preserve">
+    <value>The thermal conductivity λ in W/(mK), permitted 0.005 to 500; empty = not specified (0 would be a different material).</value>
+  </data>
+  <data name="KI_DLG_BST_RHO_ERL" xml:space="preserve">
+    <value>The density ρ in kg/m³, permitted 5 to 8,000; empty = not specified.</value>
+  </data>
+  <data name="KI_DLG_BST_CP_ERL" xml:space="preserve">
+    <value>The specific heat capacity c_p in J/(kgK) – not kJ –, permitted 100 to 5,000; empty = not specified.</value>
+  </data>
+  <data name="KI_DLG_BST_QUELLE_ERL" xml:space="preserve">
+    <value>Standard or data sheet the values come from.</value>
+  </data>
+  <data name="KI_DLG_BTA_AUFBAU_NAME" xml:space="preserve">
+    <value>Construction build-up</value>
+  </data>
+  <data name="KI_DLG_BTA_AUFBAU_ERL" xml:space="preserve">
+    <value>The selected build-up of the list (its key is its id). Setting it selects the row with its layers – the same as a click.</value>
+  </data>
+  <data name="KI_DLG_BTA_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of the build-up; unique in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_BTA_BAUTEILART_ERL" xml:space="preserve">
+    <value>The component type the build-up is intended for; empty = any. The type sets the tilt and thus the surface resistances of the U-value; windows and curtain walls use their U-value and carry no layers.</value>
+  </data>
+  <data name="KI_DLG_BTA_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text about the build-up.</value>
+  </data>
+  <data name="KI_DLG_BTA_QUELLE_ERL" xml:space="preserve">
+    <value>Standard or source of the build-up.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_BAUSTOFF_ERL" xml:space="preserve">
+    <value>The building material of the layer (its key is its id; empty = free entry). Choosing it copies λ, ρ and c_p of the material; they can be overwritten afterwards.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_DICKE_ERL" xml:space="preserve">
+    <value>The thickness of the layer in mm, permitted 1 to 1,000 (an unventilated air layer up to 300).</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_LAMBDA_ERL" xml:space="preserve">
+    <value>The thermal conductivity λ of the layer in W/(mK); empty only for an unventilated air layer.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_RHO_ERL" xml:space="preserve">
+    <value>The density ρ of the layer in kg/m³; a material layer needs it for the thermal mass.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_CP_ERL" xml:space="preserve">
+    <value>The specific heat capacity c_p of the layer in J/(kgK); a material layer needs it for the thermal mass.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL" xml:space="preserve">
+    <value>The layer is an air layer. Without λ it is unventilated – its resistance follows DIN EN ISO 6946, Table 8.</value>
   </data>
   <data name="KI_DLG_GTYP_OHNE_KURVE" xml:space="preserve">
     <value>The selected building type has no daily curve; select a type with curves first.</value>

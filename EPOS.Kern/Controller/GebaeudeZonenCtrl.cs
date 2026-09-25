@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
         /// NULL bleibt NULL.
         /// </summary>
         private static IReadOnlyList<string> Kuehlspalten()
-            => KuehluebergabeSchema.ZoneVollstaendig()
+            => GebaeudeZonenanschluss.KuehlspaltenVorhanden()
                 ? KuehluebergabeSchema.SpaltenZone.Select(s => s.Key).ToList()
                 : (IReadOnlyList<string>)Array.Empty<string>();
 
@@ -123,25 +123,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Neigung, die ohne Angabe gilt: Dach und Decke 0°, Bodenplatte 180°, alles übrige
-        /// 90° (senkrecht) — Mehrzonenkonzept 4.2.
+        /// 90° (senkrecht) — Mehrzonenkonzept 4.2. Dieselbe Vorgabe, mit der der Bauteilweg eine
+        /// leere Neigung liest (<see cref="BauteilEingang.VorgabeNeigung"/>).
         /// </summary>
         public static double NeigungVorgabe(string bauteilart)
-        {
-            if (bauteilart == DbWerte.BAUTEILART_DACH || bauteilart == DbWerte.BAUTEILART_DECKE) return 0.0;
-            if (bauteilart == DbWerte.BAUTEILART_BODENPLATTE) return 180.0;
-            return 90.0;
-        }
+            => GebaeudeZonenabbildung.ArtAusZeile(bauteilart) is Bauteilart art ? BauteilEingang.VorgabeNeigung(art) : 90.0;
 
         /// <summary>
-        /// Braucht das Bauteil einen Azimut? Genau dann, wenn es an die Außenluft grenzt (NULL =
-        /// Außenluft) und nicht waagerecht liegt — Neigung (bzw. ihre Vorgabe nach Bauteilart)
-        /// weder 0° noch 180°. Eine Wand ohne Azimut wird benannt abgelehnt, nicht auf Nord
-        /// vorbelegt; an Erdreich, Zone oder unbeheiztem Raum trägt der Azimut keine Sonne.
+        /// Braucht das Bauteil einen Azimut? Genau dann, wenn es an die Außenluft grenzt und
+        /// nicht waagerecht liegt — Neigung (bzw. ihre Vorgabe nach Bauteilart) weder 0° noch
+        /// 180°. Ob es an die Außenluft grenzt, sagt die Regel der leeren Randbedingung
+        /// (<see cref="GebaeudeZonenabbildung.RandAusZeile(string, string)"/>: NULL heißt Außenluft,
+        /// an Innenwand und Decke „innerhalb der Zone"). Eine Wand ohne Azimut wird benannt
+        /// abgelehnt, nicht auf Nord vorbelegt; an Erdreich, Zone, unbeheiztem Raum oder innerhalb
+        /// der Zone trägt der Azimut keine Sonne.
         /// </summary>
         public static bool BrauchtAzimut(BauteilModel b)
         {
             if (b == null) return false;
-            bool aussen = b.Randbedingung == null || b.Randbedingung == DbWerte.RANDBEDINGUNG_AUSSENLUFT;
+            bool aussen = GebaeudeZonenabbildung.RandAusZeile(b.Bauteilart, b.Randbedingung) == Bauteilrand.Aussenluft;
             double neigung = b.Neigung ?? NeigungVorgabe(b.Bauteilart);
             return aussen && Math.Abs(neigung) > 1e-9 && Math.Abs(neigung - 180.0) > 1e-9;
         }

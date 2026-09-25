@@ -10225,6 +10225,8 @@ namespace WindowsFormsApplication1
             }
             foreach (KeyValuePair<string, string> a in ZonenSchema.Indexanweisungen)
                 if (!SqliteDdl(l, a.Value, "Index " + a.Key)) return false;
+            // Der Zonenleser des Laufs hat sich „keine Tabelle" gemerkt, falls er vorher fragte.
+            GebaeudeZonenanschluss.ProbeVerwerfen();
 
             l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von 2 Tabelle(n) angelegt (" +
                     ZonenSchema.TAB_ZONE + ", " + ZonenSchema.TAB_BAUTEIL + ") samt zwei Indizes. KEIN DML: " +
@@ -10343,6 +10345,7 @@ namespace WindowsFormsApplication1
                 if (!SqliteSpalteAnlegen(l, ZonenSchema.TAB_ZONE, s.Key, s.Value)) return false;
                 angelegt++;
             }
+            GebaeudeZonenanschluss.ProbeVerwerfen();
 
             l.Notiz(nr + ": " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
                     KuehluebergabeSchema.SpaltenZone.Count.ToString(CultureInfo.InvariantCulture) +

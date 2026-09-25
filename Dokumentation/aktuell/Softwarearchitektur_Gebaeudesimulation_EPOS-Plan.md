@@ -990,7 +990,7 @@ bleibt, keine Übersetzungstabelle.
 | `g_Wert`, `Rahmenanteil`, `Verschattungsfaktor` | `REAL` | ja | nur Fenster und Vorhangfassade; NULL = Vorgabe |
 | `Neigung` | `REAL` | ja | NULL = nach `Bauteilart` |
 | `Azimut` | `REAL` | ja | **NULL nur bei Neigung 0° oder 180° zulässig** — eine Wand ohne Azimut wird **benannt abgelehnt**, nicht auf Nord vorbelegt |
-| `Randbedingung` | `TEXT CHECK (IN ('AUSSENLUFT','ERDREICH','ZONE','UNBEHEIZT'))` | ja | NULL = Außenluft; **kein `KELLER`** (W8), und **keine Spalte `IstAussen`** (W6) |
+| `Randbedingung` | `TEXT CHECK (IN ('AUSSENLUFT','ERDREICH','ZONE','UNBEHEIZT'))` | ja | NULL = Außenluft, **an `INNENWAND` und `DECKE` NULL = innerhalb der Zone** (Innenbauteilgruppe; einen Wert dafür gibt es nicht) — die Regel steht an einer Stelle, `GebaeudeZonenabbildung.RandAusZeile`; **kein `KELLER`** (W8), und **keine Spalte `IstAussen`** (W6) |
 | `ID_Nachbarzone` | `INTEGER` | ja | FK → `Tab_Zone.ID`, **ohne** Kaskade; gesetzt **genau dann**, wenn `Randbedingung = 'ZONE'`, und ≠ `ID_Zone` (Schritt **S-G**) |
 | `Psi_L` | `REAL` | ja | ψ·L in W/K; NULL = keine Wärmebrücke |
 | `Herkunft`, `Quellkennung` | `TEXT` | ja | W9, W10 |
@@ -1372,8 +1372,20 @@ das der klassische N+1-Fall.
 | `GebaeudeZonenCtrl.LesenJeGebaeude(idGebaeude)` | drei Abfragen (Zonen, Bauteile, Luftströme), je über den Index sortiert | Der Dialog braucht die Bauteile ohnehin alle; drei Abfragen sind der Arbeitsstand |
 | `GebaeudeZonenCtrl.LesenJeProjekt(idProjekt)` | **drei** Abfragen für das **ganze** Projekt, je mit `JOIN` über `Tab_Gebaeude` und `Z_ProjektGebaeude`, sortiert nach `(ID_Gebaeude, Rang)` bzw. `(ID_Zone, Rang)`; die Zuordnung zu Gebäude und Zone geschieht **im Speicher** über die gelesenen Ids | **Nie eine Abfrage je Zone.** Muster ist der Leseweg je Projekt der Anlagenstränge; die Reihenfolge kommt aus `ORDER BY`, nicht aus dem Einfügezeitpunkt — sonst hängt das Ergebnis an der Datenbankinternen Reihenfolge und der Determinismus ist weg |
 | `BauteilaufbauCtrl.LesenJeProjekt(idProjekt)` | zwei Abfragen (Aufbauten, Schichten), Schichten sortiert nach `(ID_Aufbau, Reihenfolge)` | Ein Aufbau wird von vielen Bauteilen benutzt; er wird **einmal** gelesen und **einmal** reduziert, das Ergebnis je Aufbau zwischengespeichert |
-| `ProjektGebaeudeCtrl.ReadAll(idProjekt)` | unverändert **eine** Abfrage über die Sicht, ab **M3** nach **Namen** | 2.5 |
+| `ProjektGebaeudeCtrl.ReadAll(idProjekt)` | unverändert **eine** Abfrage über die Sicht, ab **M3** nach **Namen**; danach hängt `GebaeudeZonenanschluss.Anschliessen` jedem Gebäude seine Zonen an | 2.5; der Zonenanschluss folgt unter der Tabelle |
 | `GebaeudeStammCtrl.ReadAll(filter)` | **eine** Abfrage über `Tab_Gebaeude_STAMM` — der Leseweg des **Katalogeditors**, nicht der Sicht | Er ist mit denselben 15 Spalten zu versorgen wie die Sicht und deshalb eine eigene, mit M3 anzufassende Stelle (2.5) |
+
+**Der Zonenanschluss des Laufs** (`GebaeudeZonenanschluss`, gerufen am Ende von
+`ProjektGebaeudeCtrl.ReadAll` — Lauf und Auskunft lesen darüber dieselbe Zone): `LesenJeProjekt` der
+Zonen und, **nur wenn ein Bauteil auf einen Aufbau zeigt**, `LesenJeProjekt` der Aufbauten — höchstens
+vier Abfragen je Projekt, gleich wie viele Zonen, Bauteile und Schichten. Die Abbildung Zeile ↔ Kern
+steht an einer Stelle, `GebaeudeZonenabbildung` (ohne Datenbank): Persistenzwerte auf die
+Kern-Aufzählungen, NULL auf NaN bzw. die Vorgabe von `BauteilEingang`, `Psi_L` NULL auf 0, die Schichten
+mit ihrer Wertekopie λ/ρ/c_p; die Gegenrichtung schreibt neue Zeilen mit negativen vorläufigen Ids und
+Herkunft `VORGABE` („Gebäude als eine Zone übernehmen"). Eine Zone, deren Zeilen sich nicht abbilden
+lassen, hängt mit ihrem benannten Fehler an und bricht erst den Lauf dieses Gebäudes ab, nicht das
+Lesen. Ein Schemastand ohne `Tab_Zone` heißt „keine Zonen" (Schemaprobe mit `COUNT(*)`, gemerkt je
+Datenbankpfad).
 
 **Die Indizes, die das tragen:** `(ID_Gebaeude, Rang)` an `Tab_Zone`, `(ID_Zone, Rang)` an
 `Tab_Bauteil`, `(ID_Aufbau, Reihenfolge)` an `Tab_Bauteilschicht`, `(ID_Importquelle)` und
