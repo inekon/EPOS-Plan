@@ -108,7 +108,7 @@ jeweils der Entscheid (→ Register R‑E21).
   (vor dem gefilterten Lauf zwei fremde Testhosts abgewartet).
 - **Merge** `e7c2f8f7` auf `pm21` über `b5cc1a61` ohne Konflikt; Designer 11.006, wiederholbar (+0).
 - **Gate:** Kern-Filter 0 Fehler, ChartProben 161/161 gleich der Windows-Messlatte, voller Lauf 14.090 bestanden / 0 Fehler / 2 übersprungen (EPOS.Kern 6.885 und 1 übersprungen, EPOS.UI 6.243, KiKern 549, SpeicherEngine 386, SpeicherPlanung 27 und 1 übersprungen), Dokumentationswachen 29/29 (`GATE506b.log`, 25.09.2026 10:28–10:56 Uhr, auf dem End-Merge `365143e1` mit `f52d38ec` = #505, Schemaschritt 142).
-- **CI:** steht aus (Beobachtung nach dem Push).
+- **CI:** Kern `main` 36116638105 auf `0d1cec86` grün; Windows `main` 36116637948 und Kern ubuntu 36116630826 vom Nachfolger (#507) abgebrochen.
 
 ## Logbuch
 
