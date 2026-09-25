@@ -58,7 +58,19 @@
     <!-- 17.0: von SkiaSharp.NativeAssets.iOS 3.119 (net8.0-ios17.0) erzwungen;
          MAUI 10 selbst kaeme mit 15.0 aus (iF28 - iPads ab 2018). -->
     <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
-    <RuntimeIdentifiers>iossimulator-arm64;ios-arm64</RuntimeIdentifiers>
+    <!-- KEIN RuntimeIdentifiers HIER. Die Kennung kommt je Bau mit -r:
+         iossimulator-arm64 (Simulator, ios.yml) oder ios-arm64 (Geraet); ohne -r
+         waehlt das SDK den Simulator der Rechnerarchitektur. Eine Liste
+         "iossimulator-arm64;ios-arm64" machte den Geraetebau zum Simulatorbau:
+         Xamarin.Shared.Sdk.props setzt _SdkIsSimulator, sobald RuntimeIdentifier
+         ODER RuntimeIdentifiers "simulator" enthaelt, und das VOR der Stelle
+         (Xamarin.Shared.Sdk.DefaultItems.targets), an der ein -r die Liste
+         verwirft. Folge mit -r ios-arm64: Link gegen das Simulator-SDK, kein AOT,
+         ComputedPlatform=iPhoneSimulator - und SQLitePCLRaw.lib.e_sqlite3.ios
+         haengt die Geraete-e_sqlite3.a (RuntimeIdentifier=ios-arm64) UND die des
+         Simulators (ComputedPlatform) an; ld bricht an der Geraetebibliothek ab.
+         Ohne -r waere die gemischte Liste ein Fehler des SDK (Geraet und
+         Simulator in einem Bau). -->
 
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -182,6 +194,22 @@
     <MauiAsset Include="..\Referenzlaeufe\Importproben\ifc4_haus.ifc" LogicalName="importprobe_ifc4_haus.ifc" />
     <MauiAsset Include="..\Referenzlaeufe\Importproben\ifc4_haus.ifczip" LogicalName="importprobe_ifc4_haus.ifczip" />
     <MauiAsset Include="..\Referenzlaeufe\Importproben\ifc2x3_haus.ifc" LogicalName="importprobe_ifc2x3_haus.ifc" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- BAU OHNE xBIM (-p:OhneXbim=true; ADR-003 Aufgabe 7)                 -->
+  <!--                                                                    -->
+  <!-- Nur fuer den Groessenvergleich des Geraetebaus in ios.yml: Der Kern -->
+  <!-- baut dann ohne die Paketzeile Xbim.IO.MemoryModel (siehe            -->
+  <!-- EPOS.Kern.csproj), und die Importprobe faellt mit ihr weg - sie     -->
+  <!-- misst ueber Importmessung auch xBIM. Die Eigenschaft gilt als       -->
+  <!-- globale Eigenschaft des Aufrufs fuer alle referenzierten Projekte.  -->
+  <!-- ================================================================== -->
+  <PropertyGroup Condition="'$(OhneXbim)' == 'true'">
+    <DefineConstants>$(DefineConstants);OHNE_XBIM</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(OhneXbim)' == 'true'">
+    <Compile Remove="Pruefung\Importprobe.cs;Pruefung\Prozessspeicher.cs" />
   </ItemGroup>
 
 </Project>
