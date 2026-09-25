@@ -52,8 +52,8 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>BV-E2 (Konzept 9.5, 11 Nr. 3): die Anhang-E-Stellen.</b> Die Überlagerung
     /// „Anhang-E-Checkliste…" der Wirtschaftlichkeitsseite nennt die Stellen der gewählten Vorlage
-    /// (<see cref="AnhangEStellenDerVorlage"/>) — die Überschriften kommen aus dem Kern über den Delegaten
-    /// <see cref="Kapitelstellen"/>.</para>
+    /// (<see cref="AnhangEStellenDerVorlage"/>) — die Kapitelstellen kommen aus dem Kern über den
+    /// Delegaten <see cref="Kapitelstellen"/>, die Spalte „Stelle" baut die Checkliste des Kerns.</para>
     /// </summary>
     internal sealed class BerichtsvorlagenGaben
     {
@@ -124,20 +124,17 @@ namespace WindowsFormsApplication1
             _wege = wege;
             _sicht = sicht ?? (() => 1);
 
-            // BV-E2: die Kapitelstellen der Vorlage fuer die Anhang-E-Ueberlagerung. Der Kern liefert
-            // sie mit BerichtCtrl.KapitelstellenDerVorlage; bis zum Zusammenfuehren mit dem Kern-Stand
-            // bleibt der Delegat leer, und die Ueberlagerung nennt die Stellen der Standardvorlage.
-            // EINHAENGEN:  Kapitelstellen = _bericht.KapitelstellenDerVorlage;
-            Kapitelstellen = null;
+            // BV-E2: die Kapitelstellen der Vorlage fuer die Anhang-E-Ueberlagerung liefert der Kern.
+            Kapitelstellen = _bericht.KapitelstellenDerVorlage;
         }
 
         /// <summary>
         /// BV-E2 (Konzept 9.5, 11 Nr. 3): <b>die Kapitelstellen der gewählten Word-Vorlage</b> — je
-        /// Bausteinschlüssel (<c>BerichtsKonfiguration.B_*</c>) der Überschriftstext des Kapitels in der
-        /// Vorlage, <c>null</c> = nicht im Bericht; <c>bool</c> = Bericht auf Englisch. Gedacht für
-        /// <c>BerichtCtrl.KapitelstellenDerVorlage(BerichtsKonfiguration konfig, bool englisch)</c>, eingehängt
-        /// im Konstruktor. <c>null</c> = die Anhang-E-Überlagerung nennt die Stellen der Standardvorlage
-        /// (<see cref="AnhangEStellenDerVorlage"/>). Ein Prüfstand setzt eigene Stellen.
+        /// Stellenschlüssel (<see cref="Berichtskapitel.Stellenschluessel"/>) die Überschrift des Kapitels im
+        /// Bericht, <c>null</c> = nicht im Bericht; <c>bool</c> = Bericht auf Englisch. Im Konstruktor
+        /// eingehängt: <see cref="BerichtCtrl.KapitelstellenDerVorlage"/>. <c>null</c> = die
+        /// Anhang-E-Überlagerung nennt die Stellen der Standardvorlage (<see cref="AnhangEStellenDerVorlage"/>).
+        /// Ein Prüfstand setzt eigene Stellen.
         /// </summary>
         internal Func<BerichtsKonfiguration, bool, IReadOnlyDictionary<string, string>> Kapitelstellen { get; set; }
 
@@ -412,12 +409,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Stellen der Anhang-E-Checkliste in der gewählten Word-Vorlage</b> — für die Überlagerung
-        /// der Wirtschaftlichkeitsseite. Mit einer EIGENEN Vorlage und dem Delegaten
-        /// <see cref="Kapitelstellen"/> je Punkt die Überschriften der Kapitel, die den Nachweis tragen
-        /// (<see cref="AnhangEKapitel"/>), oder „nicht im Bericht", dazu die leise Zeile mit dem Namen der
-        /// Vorlage. Ohne Delegat, ohne eigene Vorlage (die Standardvorlage, eine fehlende Vorlage, die
-        /// durch die Standardvorlage ersetzt wird) oder wenn der Kern nicht antwortet: keine Stellen und
-        /// die Zeile „bezogen auf die Standardvorlage".
+        /// der Wirtschaftlichkeitsseite. Der Kern nennt die Kapitelstellen der Vorlage (Delegat
+        /// <see cref="Kapitelstellen"/>), seine Checkliste macht daraus je Punkt die Spalte „Stelle"
+        /// (<see cref="Stellen"/>) — derselbe Weg wie im Bericht. Gefragt wird mit der gespeicherten
+        /// Konfiguration samt Vorlagenwahl und mit den Häkchen des zweiten Einstiegs
+        /// (<see cref="BerichtSeiteGaben.BausteineFuerVergleich"/>): Die Checkliste steht nur in einem
+        /// Bericht mit Wirtschaftlichkeit, und „Bericht erzeugen" neben der Überlagerung setzt sie. Die
+        /// leise Zeile nennt eine eigene Vorlage beim Namen; mit der Standardvorlage — auch als Ersatz
+        /// einer fehlenden Vorlage — heißt sie „bezogen auf die Standardvorlage". Ohne Delegat oder wenn
+        /// der Kern wirft oder schweigt: keine Stellen, die Überlagerung nimmt ihre eigenen.
         /// </summary>
         internal AnhangEStellen AnhangEStellenDerVorlage()
         {
@@ -426,15 +426,30 @@ namespace WindowsFormsApplication1
             if (stellen == null) return standard;
 
             BerichtsKonfiguration konfig = Lade();
-            Vorlagenwahl wahl = Wahl(konfig);
-            if (wahl?.Eintrag == null || wahl.Eintrag.IstStandard || wahl.FehlendeId != null) return standard;
+            konfig.AktiveBausteine = BerichtSeiteGaben.BausteineFuerVergleich(konfig);
 
             IReadOnlyDictionary<string, string> kapitel;
             try { kapitel = stellen(konfig, Englisch); }
             catch (Exception) { return standard; }
             if (kapitel == null) return standard;
 
-            return new AnhangEStellen(Format(R.WIRT_AE_BEZUG_VORLAGE, wahl.Eintrag.Name), AnhangEKapitel.Stellen(kapitel));
+            Vorlagenwahl wahl = Wahl(konfig);
+            bool eigen = wahl?.Eintrag != null && !wahl.Eintrag.IstStandard && wahl.FehlendeId == null;
+            string bezug = eigen ? Format(R.WIRT_AE_BEZUG_VORLAGE, wahl.Eintrag.Name) : R.WIRT_AE_BEZUG_STANDARD;
+            return new AnhangEStellen(bezug, Stellen(kapitel));
+        }
+
+        /// <summary>
+        /// Je Punktnummer (<c>ChecklistenPunkt.Nummer</c>) die Spalte „Stelle" der Checkliste des Kerns
+        /// (<see cref="AnhangECheckliste.Punkte(ChecklistenLage, IReadOnlyDictionary{string, string})"/>) zu
+        /// diesen Kapitelstellen — die Stelle hängt nicht von der Lage ab.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, string> Stellen(IReadOnlyDictionary<string, string> kapitelstellen)
+        {
+            var stellen = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (ChecklistenPunkt p in AnhangECheckliste.Punkte(new ChecklistenLage(), kapitelstellen))
+                stellen[p.Nummer] = p.Stelle;
+            return stellen;
         }
 
         /// <summary>Die Befunde der Rückfrage, höchstens <see cref="BerichtCtrl.MAX_PUNKTE"/> und „… und n weitere".</summary>

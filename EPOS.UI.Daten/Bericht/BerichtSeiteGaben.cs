@@ -383,12 +383,7 @@ namespace WindowsFormsApplication1
             catch { k = BerichtsKonfiguration.Standard(); }
             if (k == null) k = BerichtsKonfiguration.Standard();
 
-            var bausteine = new List<string>(k.AktiveBausteine ?? new List<string>());
-            if (bausteine.Count == 0)
-                foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
-                    if (d.Standard) bausteine.Add(d.Schluessel);
-            if (!bausteine.Contains(BerichtsKonfiguration.B_WIRTSCHAFT))
-                bausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+            List<string> bausteine = BausteineFuerVergleich(k);
 
             var ids = new List<int>(varianten ?? new List<int>());
             var auftrag = new BerichtAuftrag
@@ -400,6 +395,22 @@ namespace WindowsFormsApplication1
                 AnzahlMitStamm = ids.Count + 1
             };
             return Erstellen(auftrag, melder, false, erzwingtWirtschaftlichkeit: true);
+        }
+
+        /// <summary>
+        /// Die Häkchen des zweiten Einstiegs: die gespeicherten — ohne gespeicherte die des Neuzustands —
+        /// und stets die Wirtschaftlichkeit. Mit ihnen fragt auch die Anhang-E-Überlagerung derselben
+        /// Seite nach ihren Stellen (<see cref="BerichtsvorlagenGaben.AnhangEStellenDerVorlage"/>).
+        /// </summary>
+        internal static List<string> BausteineFuerVergleich(BerichtsKonfiguration k)
+        {
+            var bausteine = new List<string>(k?.AktiveBausteine ?? new List<string>());
+            if (bausteine.Count == 0)
+                foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
+                    if (d.Standard) bausteine.Add(d.Schluessel);
+            if (!bausteine.Contains(BerichtsKonfiguration.B_WIRTSCHAFT))
+                bausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+            return bausteine;
         }
 
         // =====================================================================

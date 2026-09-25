@@ -14,12 +14,14 @@ using R = WindowsFormsApplication1.MyResource.Resource;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Hülle der Anhang-E-Stellen</b> (Etappe BV-E2, Teil H; Konzept Berichtsvorlagen 9.5, 11 Nr. 3):
-    /// die Zuordnung Punkt → Kapitel für jeden Punkt der Checkliste, die Stelle aus den Kapitelstellen der
-    /// Vorlage (Überschrift, Titel eines Kapitels ohne Überschrift, „nicht im Bericht"), beide Sprachen,
-    /// der Delegat <see cref="BerichtsvorlagenGaben.Kapitelstellen"/> — ohne ihn, mit der Standardvorlage,
-    /// mit einer eigenen Vorlage, wenn der Kern wirft oder schweigt — und der Weg über die Rahmenhülle an
-    /// die Wirtschaftlichkeitsseite.
+    /// <b>Die Hülle der Anhang-E-Stellen</b> (Etappe BV-E2; Konzept Berichtsvorlagen 9.5, 11 Nr. 3): EIN
+    /// Codeweg für die Spalte „Stelle" — die Kapitelstellen der gewählten Vorlage aus dem Kern
+    /// (<see cref="BerichtCtrl.KapitelstellenDerVorlage"/>, im Konstruktor eingehängt), die Stelle je Punkt
+    /// aus der Checkliste des Kerns (<see cref="AnhangECheckliste.Punkte(ChecklistenLage, IReadOnlyDictionary{string, string})"/>),
+    /// beide Sprachen; mit dem echten Kern die Standardvorlage (Deckblatt aus Platzhaltern, Kapitel unter
+    /// ihren Kapitelköpfen) und eine eigene Vorlage ohne Wirtschaftlichkeit („nicht im Bericht"); die
+    /// Häkchen des zweiten Einstiegs; ohne Delegat oder wenn der Kern wirft oder schweigt die
+    /// Standardvorlage; der Weg über die Rahmenhülle an die Wirtschaftlichkeitsseite.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class AnhangEStellenHuelleTests : IDisposable
@@ -48,11 +50,11 @@ namespace EPOS.Kern.Tests
             Probevorlagen.Aufraeumen(_wurzel);
         }
 
-        /// <summary>Kapitelstellen einer erfundenen Vorlage: mit, ohne und ganz ohne Überschrift.</summary>
+        /// <summary>Kapitelstellen einer erfundenen Vorlage, wie der Kern sie meldet: Überschrift oder <c>null</c>.</summary>
         private static Dictionary<string, string> Kapitel() => new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            [BerichtsKonfiguration.B_DECKBLATT] = "",
-            [BerichtsKonfiguration.B_PROJEKT] = " Das Projekt ",
+            [BerichtsKonfiguration.B_DECKBLATT] = null,
+            [BerichtsKonfiguration.B_PROJEKT] = "Das Projekt",
             [BerichtsKonfiguration.B_KOMPONENTEN] = null,
             [BerichtsKonfiguration.B_ERGEBNISSE] = null,
             [BerichtsKonfiguration.B_VERGLEICH] = null,
@@ -60,98 +62,139 @@ namespace EPOS.Kern.Tests
             // B_ANHANG fehlt ganz - wie null: nicht im Bericht
         };
 
-        private static string Titel(string baustein) => "T:" + baustein;
-
         // =====================================================================
-        //  Die Zuordnung und die Stelle
+        //  Die Stelle kommt aus der Checkliste des Kerns
         // =====================================================================
 
+        /// <summary>
+        /// Je Punkt der Checkliste genau die Spalte „Stelle", die die Checkliste des Kerns zu diesen
+        /// Kapitelstellen baut — kein zweiter Weg in der Hülle.
+        /// </summary>
         [Fact]
-        public void Jeder_Punkt_der_Checkliste_hat_eine_Zuordnung_auf_Bausteine_des_Katalogs()
+        public void Die_Stelle_je_Punkt_ist_die_Spalte_der_Checkliste_des_Kerns()
         {
-            List<string> punkte = AnhangECheckliste.Punkte(new ChecklistenLage()).Select(p => p.Nummer).ToList();
-            Assert.Equal(AnhangECheckliste.ANZAHL, punkte.Count);
-            Assert.Equal(punkte.OrderBy(p => p, StringComparer.Ordinal), AnhangEKapitel.Zuordnung.Keys.OrderBy(p => p, StringComparer.Ordinal));
+            IReadOnlyDictionary<string, string> stellen = BerichtsvorlagenGaben.Stellen(Kapitel());
 
-            var katalog = new HashSet<string>(BerichtsKonfiguration.AlleBausteine.Select(b => b.Schluessel), StringComparer.Ordinal);
-            foreach (KeyValuePair<string, string[]> z in AnhangEKapitel.Zuordnung)
-            {
-                Assert.NotEmpty(z.Value);
-                Assert.All(z.Value, b => Assert.Contains(b, katalog));
-            }
-        }
-
-        [Fact]
-        public void Die_Stelle_nennt_die_Ueberschriften_der_Vorlage_und_was_fehlt()
-        {
-            IReadOnlyDictionary<string, string> stellen = AnhangEKapitel.Stellen(Kapitel(), Titel);
-
-            Assert.Equal("„5 Wirtschaftliche Bewertung“", stellen["1"]);
-            Assert.Equal("„5 Wirtschaftliche Bewertung“", stellen["8"]);
-            Assert.Equal("„T:deckblatt“", stellen["0.1"]);                                     // ohne Überschrift: der Titel
-            Assert.Equal("„Das Projekt“, „T:komponenten“ nicht im Bericht", stellen["0.2"]);
-            Assert.Equal("nicht im Bericht", stellen["2a"]);                                   // keines der Kapitel
-            Assert.Equal("„5 Wirtschaftliche Bewertung“, „T:anhang“ nicht im Bericht", stellen["11"]);
+            List<ChecklistenPunkt> punkte = AnhangECheckliste.Punkte(new ChecklistenLage(), Kapitel());
             Assert.Equal(AnhangECheckliste.ANZAHL, stellen.Count);
+            Assert.All(punkte, p => Assert.Equal(p.Stelle, stellen[p.Nummer]));
 
-            // Ohne Prüfstand stehen die Titel der Berichtsseite da.
-            Assert.Equal(Format(R.WIRT_AE_STELLE_FEHLT, BerichtSeiteGaben.Bausteintitel(BerichtsKonfiguration.B_ANHANG)),
-                         AnhangEKapitel.Stelle(new[] { BerichtsKonfiguration.B_ANHANG, BerichtsKonfiguration.B_WIRTSCHAFT },
-                                               Kapitel()).Split(new[] { ", " }, StringSplitOptions.None)[0]);
+            Assert.Equal("Wortbericht: „5 Wirtschaftliche Bewertung“ › „Kennzahlen im Szenario „Erwartet““ · " +
+                         "Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“", stellen["1"]);
+            Assert.Equal("Wortbericht: „Das Projekt“ · Tabellenbericht: Blatt „Übersicht“", stellen["0.2"]);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“", stellen["0.1"]);
+            Assert.StartsWith("Wortbericht: nicht im Bericht · ", stellen["2a"]);
+            Assert.StartsWith("Wortbericht: „5 Wirtschaftliche Bewertung“ · ", stellen["11"]);   // der Anhang fehlt
         }
 
         [Fact]
-        public void Auf_Englisch_stehen_die_englischen_Anfuehrungszeichen()
+        public void Auf_Englisch_steht_die_Stelle_englisch()
         {
             using var englisch = new Kulturvorrichtung("en-US");
-            IReadOnlyDictionary<string, string> stellen = AnhangEKapitel.Stellen(Kapitel(), Titel);
+            IReadOnlyDictionary<string, string> stellen = BerichtsvorlagenGaben.Stellen(Kapitel());
 
-            Assert.Equal("“5 Wirtschaftliche Bewertung”", stellen["1"]);
-            Assert.Equal("not in the report", stellen["2a"]);
-            Assert.Equal("“5 Wirtschaftliche Bewertung”, “T:anhang” not in the report", stellen["11"]);
+            Assert.StartsWith("Word report: “5 Wirtschaftliche Bewertung” › ", stellen["1"]);
+            Assert.StartsWith("Word report: not in the report · ", stellen["2a"]);
         }
 
         // =====================================================================
         //  Der Delegat des Kerns
         // =====================================================================
 
-        /// <summary>Ohne Delegat — der Stand vor dem Zusammenführen — gilt die Standardvorlage.</summary>
+        /// <summary>Der Konstruktor hängt <see cref="BerichtCtrl.KapitelstellenDerVorlage"/> des hereingereichten Controllers ein.</summary>
+        [Fact]
+        public void Der_Delegat_ist_der_Kern()
+        {
+            var bericht = new BerichtCtrl(_vorlagen);
+            var gruppe = new BerichtsvorlagenGaben(GRUPPE, bericht, _vorlagen, new Berichtsvorlagenwege());
+
+            Assert.NotNull(gruppe.Kapitelstellen);
+            Assert.Same(bericht, gruppe.Kapitelstellen.Target);
+            Assert.Equal(nameof(BerichtCtrl.KapitelstellenDerVorlage), gruppe.Kapitelstellen.Method.Name);
+        }
+
+        /// <summary>Ohne Delegat gilt die Standardvorlage: keine Stellen, die Überlagerung nimmt ihre eigenen.</summary>
         [Fact]
         public void Ohne_Delegat_bezieht_sich_die_Ueberlagerung_auf_die_Standardvorlage()
         {
-            var gruppe = new BerichtsvorlagenGaben(GRUPPE, new BerichtCtrl(_vorlagen), _vorlagen, new Berichtsvorlagenwege());
-            Assert.Null(gruppe.Kapitelstellen);
+            var gruppe = new BerichtsvorlagenGaben(GRUPPE, new BerichtCtrl(_vorlagen), _vorlagen, new Berichtsvorlagenwege())
+            {
+                Kapitelstellen = null
+            };
 
             AnhangEStellen stellen = gruppe.AnhangEStellenDerVorlage();
             Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, stellen.Bezug);
             Assert.Empty(stellen.Stellen);
         }
 
-        /// <summary>Mit Delegat, aber ohne eigene Vorlage (die Standardvorlage ist gewählt) fragt die Hülle den Kern nicht.</summary>
+        /// <summary>
+        /// Mit der Standardvorlage und dem echten Kern: Das Deckblatt aus Platzhaltern ist die Stelle
+        /// „Deckblatt", die Kapitel stehen unter ihren Kapitelköpfen. Die Wirtschaftlichkeit steht im
+        /// Bericht, obwohl ihr Häkchen im Neuzustand aus ist — die Häkchen des zweiten Einstiegs —, und
+        /// die gespeicherte Konfiguration bleibt unberührt. Die leise Zeile bezieht sich auf die
+        /// Standardvorlage.
+        /// </summary>
         [Fact]
-        public void Mit_der_Standardvorlage_bleibt_es_bei_der_Standardvorlage()
+        public void Mit_der_Standardvorlage_nennt_der_Kern_Deckblatt_und_Kapitelkoepfe()
         {
             if (_standard == null) return;
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             Konfig();
 
-            int gefragt = 0;
-            BerichtsvorlagenGaben gruppe = Gruppe((k, e) => { gefragt++; return Kapitel(); });
+            AnhangEStellen stellen = Gruppe().AnhangEStellenDerVorlage();
 
-            AnhangEStellen stellen = gruppe.AnhangEStellenDerVorlage();
-            Assert.Equal(0, gefragt);
             Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, stellen.Bezug);
-            Assert.Empty(stellen.Stellen);
+            Assert.Equal(AnhangECheckliste.ANZAHL, stellen.Stellen.Count);
+            Assert.Equal("Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“", stellen.Stellen["0.1"]);
+            Assert.Equal("Wortbericht: „Projektbeschreibung“, „Komponenten & Varianten“ · Tabellenbericht: Blatt „Übersicht“",
+                         stellen.Stellen["0.2"]);
+            Assert.StartsWith("Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · ", stellen.Stellen["2a"]);
+            Assert.StartsWith("Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · ", stellen.Stellen["1"]);
+            Assert.StartsWith("Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · ", stellen.Stellen["11"]);
+
+            Assert.False(new BerichtCtrl(_vorlagen).Lade(GRUPPE).IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT));
         }
 
         /// <summary>
-        /// Mit einer eigenen Vorlage fragt die Hülle den Kern mit der Konfiguration der Gruppe (samt
-        /// Abweichung) und der Sprache des Berichts; die leise Zeile nennt die Vorlage, je Punkt steht
-        /// die Stelle ihrer Kapitel.
+        /// Eine eigene Vorlage ohne Kapitel Wirtschaftlichkeit mit dem echten Kern: Die Punkte der
+        /// Wirtschaftlichkeit stehen „nicht im Bericht", die Projektbeschreibung unter ihrer eigenen
+        /// Überschrift, die leise Zeile nennt die Vorlage. Fehlt danach ihre Datei, gilt die Standardvorlage.
         /// </summary>
         [Fact]
-        public async Task Mit_eigener_Vorlage_nennt_die_Ueberlagerung_die_Kapitel_der_Vorlage()
+        public async Task Eine_eigene_Vorlage_ohne_Wirtschaftlichkeit_nennt_nicht_im_Bericht()
+        {
+            if (_standard == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            Konfig();
+            Hinzu("Kurzbericht.docx", Probevorlagen.AusAbsaetzen("Kurzbericht", "{{kapitel.projekt}}"));
+
+            BerichtsvorlagenGaben gruppe = Gruppe();
+            await gruppe.VorlageGewaehlt(Id(gruppe, "Kurzbericht"));
+            AnhangEStellen stellen = gruppe.AnhangEStellenDerVorlage();
+
+            Assert.Equal(Format(R.WIRT_AE_BEZUG_VORLAGE, "Kurzbericht"), stellen.Bezug);
+            Assert.Equal("Die Stellen im Bericht nennen die Kapitel der Vorlage „Kurzbericht“.", stellen.Bezug);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“",
+                         stellen.Stellen["1"]);
+            Assert.StartsWith("Wortbericht: nicht im Bericht · ", stellen.Stellen["8"]);
+            Assert.Equal("Wortbericht: „Projektbeschreibung“ · Tabellenbericht: Blatt „Übersicht“", stellen.Stellen["0.2"]);
+            Assert.Equal("Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“", stellen.Stellen["0.1"]);
+
+            File.Delete(_vorlagen.Liste().Single(e => e.Name == "Kurzbericht").Pfad);
+            AnhangEStellen ersatz = gruppe.AnhangEStellenDerVorlage();
+            Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, ersatz.Bezug);
+            Assert.StartsWith("Wortbericht: „Wirtschaftlichkeit“ › ", ersatz.Stellen["1"]);
+        }
+
+        /// <summary>
+        /// Gefragt wird der Kern mit der Konfiguration der Gruppe samt Vorlagenwahl, den gespeicherten
+        /// Häkchen und der Wirtschaftlichkeit (zweiter Einstieg) und in der Sprache des Berichts; je Punkt
+        /// steht, was die Checkliste des Kerns aus seiner Antwort macht.
+        /// </summary>
+        [Fact]
+        public async Task Die_Huelle_fragt_mit_Vorlagenwahl_und_Haekchen_des_zweiten_Einstiegs()
         {
             if (_standard == null) return;
             using var db = new TestDatenbank();
@@ -162,18 +205,18 @@ namespace EPOS.Kern.Tests
             BerichtsKonfiguration gefragt = null;
             bool? englisch = null;
             BerichtsvorlagenGaben gruppe = Gruppe((k, e) => { gefragt = k; englisch = e; return Kapitel(); });
-            await gruppe.VorlageGewaehlt(Assert.Single(gruppe.Stand().Vorlagen, z => z.Text == "Kurzbericht").Id);
+            await gruppe.VorlageGewaehlt(Id(gruppe, "Kurzbericht"));
 
             AnhangEStellen stellen = gruppe.AnhangEStellenDerVorlage();
 
             Assert.NotNull(gefragt);
             Assert.Equal(BerichtsKonfiguration.VORLAGE_QUELLE_EIGEN, gefragt.VorlageWordQuelle);
             Assert.Equal("Kurzbericht.docx", gefragt.VorlageWordDatei);
+            Assert.True(gefragt.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT));
+            Assert.True(gefragt.IstAktiv(BerichtsKonfiguration.B_PROJEKT));
             Assert.Equal(BerichtTexte.Englisch, englisch);
             Assert.Equal(Format(R.WIRT_AE_BEZUG_VORLAGE, "Kurzbericht"), stellen.Bezug);
-            Assert.Equal("„5 Wirtschaftliche Bewertung“", stellen.Stellen["1"]);
-            Assert.Equal("nicht im Bericht", stellen.Stellen["2a"]);
-            Assert.Equal(AnhangECheckliste.ANZAHL, stellen.Stellen.Count);
+            Assert.Equal(BerichtsvorlagenGaben.Stellen(Kapitel()), stellen.Stellen);
         }
 
         /// <summary>Wirft der Kern oder antwortet er nicht, gilt die Standardvorlage — die Überlagerung geht trotzdem auf.</summary>
@@ -187,7 +230,7 @@ namespace EPOS.Kern.Tests
             Hinzu("Kurzbericht.docx", Probevorlagen.AusAbsaetzen("Kurzbericht", "{{bericht.inhalt}}"));
 
             BerichtsvorlagenGaben gruppe = Gruppe((k, e) => throw new InvalidOperationException("kaputt"));
-            await gruppe.VorlageGewaehlt(Assert.Single(gruppe.Stand().Vorlagen, z => z.Text == "Kurzbericht").Id);
+            await gruppe.VorlageGewaehlt(Id(gruppe, "Kurzbericht"));
             Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, gruppe.AnhangEStellenDerVorlage().Bezug);
 
             gruppe.Kapitelstellen = (k, e) => null;
@@ -223,7 +266,8 @@ namespace EPOS.Kern.Tests
             Assert.True(parameter.PropertyType.IsInstanceOfType(wirtschaft["AnhangEStellenLaden"]));
 
             AnhangEStellen stellen = ((Func<AnhangEStellen>)wirtschaft["AnhangEStellenLaden"])();
-            Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, stellen.Bezug);   // vor dem Einhängen des Kerns
+            Assert.Equal(R.WIRT_AE_BEZUG_STANDARD, stellen.Bezug);   // Projekt 1030: die Standardvorlage
+            Assert.Equal(AnhangECheckliste.ANZAHL, stellen.Stellen.Count);
 
             Assert.False(new WirtschaftlichkeitSeiteGaben(1030, "").Gaben().ContainsKey("AnhangEStellenLaden"));
         }
@@ -232,19 +276,30 @@ namespace EPOS.Kern.Tests
         //  Helfer
         // =====================================================================
 
-        private BerichtsvorlagenGaben Gruppe(Func<BerichtsKonfiguration, bool, IReadOnlyDictionary<string, string>> kapitelstellen)
+        private BerichtsvorlagenGaben Gruppe()
         {
-            return new BerichtsvorlagenGaben(GRUPPE, new BerichtCtrl(_vorlagen), _vorlagen, new Berichtsvorlagenwege())
-            {
-                Kapitelstellen = kapitelstellen
-            };
+            return new BerichtsvorlagenGaben(GRUPPE, new BerichtCtrl(_vorlagen), _vorlagen, new Berichtsvorlagenwege());
         }
 
+        private BerichtsvorlagenGaben Gruppe(Func<BerichtsKonfiguration, bool, IReadOnlyDictionary<string, string>> kapitelstellen)
+        {
+            BerichtsvorlagenGaben gruppe = Gruppe();
+            gruppe.Kapitelstellen = kapitelstellen;
+            return gruppe;
+        }
+
+        private static int Id(BerichtsvorlagenGaben gruppe, string text)
+        {
+            return Assert.Single(gruppe.Stand().Vorlagen, z => z.Text == text).Id;
+        }
+
+        /// <summary>Eine frische Konfiguration der Gruppe: Word, die Häkchen des Neuzustands (ohne Wirtschaftlichkeit).</summary>
         private void Konfig()
         {
             BerichtsKonfiguration k = BerichtsKonfiguration.Standard();
             k.Ausgabe = "Word";
             k.ZielOrdner = _quellen;
+            Assert.False(k.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT));
             Assert.True(new BerichtCtrl(_vorlagen).Speichere(GRUPPE, k));
         }
 

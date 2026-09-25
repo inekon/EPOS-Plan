@@ -10,11 +10,12 @@ namespace EPOS.UI.Tests.Seiten;
 
 /// <summary>
 /// BV-E2 (Konzept Berichtsvorlagen 9.5, 11 Nr. 3) — <b>die Anhang-E-Überlagerung nennt die Stelle der
-/// gewählten Vorlage</b>: Mit den Stellen der Hülle steht je Punkt die Überschrift des Kapitels der
-/// Vorlage (oder „nicht im Bericht"), darunter leise die Stelle der Standardvorlage, und die leise Zeile
-/// über der Tafel nennt die Vorlage; ohne Delegat, ohne Antwort oder bei einem Fehler gilt die
-/// Standardvorlage mit dem Zusatz „bezogen auf die Standardvorlage". Die Stellen werden bei jedem Öffnen
-/// geholt, die Wirtschaftlichkeitsseite reicht den Delegaten durch.
+/// gewählten Vorlage</b>: Mit den Stellen der Hülle steht je Punkt deren Stelle — wie die Checkliste des
+/// Kerns sie aus den Kapiteln der Vorlage baut — an der Stelle der eigenen, und die leise Zeile über der
+/// Tafel nennt die Vorlage; ein Punkt ohne Stelle der Hülle behält die eigene. Ohne Delegat, ohne
+/// Antwort oder bei einem Fehler gilt die Standardvorlage mit dem Zusatz „bezogen auf die
+/// Standardvorlage". Die Stellen werden bei jedem Öffnen geholt, die Wirtschaftlichkeitsseite reicht den
+/// Delegaten durch.
 ///
 /// <para>Kultur de-DE (Hausvorrichtung); die Stellen der Hülle sind erfunden.</para>
 /// </summary>
@@ -26,13 +27,17 @@ public class AnhangEStellenTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
-    private const string BEZUG = "Die Stellen im Bericht nennen die Kapitel der Vorlage „Kurzbericht“; die Zeile darunter nennt die Stelle in der Standardvorlage.";
+    private const string BEZUG = "Die Stellen im Bericht nennen die Kapitel der Vorlage „Kurzbericht“.";
+
+    private const string STELLE_1 = "Wortbericht: „5 Wirtschaftliche Bewertung“ › „Kennzahlen im Szenario „Erwartet““ · "
+                                  + "Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“";
+
+    private const string STELLE_01 = "Wortbericht: nicht im Bericht · Tabellenbericht: Blatt „Übersicht“";
 
     private static AnhangEStellen Kurzbericht() => new(BEZUG, new Dictionary<string, string>
     {
-        ["0.1"] = "nicht im Bericht",
-        ["1"] = "„5 Wirtschaftliche Bewertung“",
-        ["11"] = "„5 Wirtschaftliche Bewertung“, „Anhang“ nicht im Bericht"
+        ["0.1"] = STELLE_01,
+        ["1"] = STELLE_1
     });
 
     private IRenderedComponent<AnhangEChecklisteKnopf> Oeffne(Func<AnhangEStellen?>? laden)
@@ -54,8 +59,8 @@ public class AnhangEStellenTests : EposBunitContext
               .QuerySelectorAll("td")[3];
 
     /// <summary>
-    /// Die Stelle eines Punktes in der Standardvorlage: die Spalte der Checkliste des Kerns ohne
-    /// Kapitelstellen (die Ressourcen <c>WIRT_AE_*_STELLE</c> sind Muster mit <c>{0}</c>).
+    /// Die eigene Stelle eines Punktes: die Spalte der Checkliste des Kerns ohne Kapitelstellen (die
+    /// Ressourcen <c>WIRT_AE_*_STELLE</c> sind Muster mit <c>{0}</c>).
     /// </summary>
     private static string Standardstelle(string nummer)
         => WindowsFormsApplication1.AnhangECheckliste.Punkte(new WindowsFormsApplication1.ChecklistenLage())
@@ -76,8 +81,12 @@ public class AnhangEStellenTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-wirt-checkliste-stelle"));
     }
 
+    /// <summary>
+    /// Mit einer eigenen Vorlage ersetzt die Stelle der Hülle die eigene — eine Zeile, keine zweite
+    /// leise darunter; die leise Zeile über der Tafel nennt die Vorlage.
+    /// </summary>
     [Fact]
-    public void Mit_eigener_Vorlage_nennt_die_Stelle_das_Kapitel_der_Vorlage_und_leise_die_Standardstelle()
+    public void Mit_eigener_Vorlage_ersetzt_die_Stelle_der_Vorlage_die_eigene()
     {
         var cut = Oeffne(Kurzbericht);
 
@@ -85,17 +94,20 @@ public class AnhangEStellenTests : EposBunitContext
         Assert.DoesNotContain(Resource.WIRT_AE_BEZUG_STANDARD, LeiseZeilen(cut));
 
         IElement eins = Stelle(cut, "1");
-        Assert.Equal("„5 Wirtschaftliche Bewertung“", eins.QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
-        Assert.Equal(Standardstelle("1"), eins.QuerySelector(".epos-herleitung-text")!.TextContent.Trim());
+        Assert.Equal(STELLE_1, eins.QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
+        Assert.Equal(STELLE_1, eins.TextContent.Trim());
+        Assert.Null(eins.QuerySelector(".epos-herleitung-text"));
+        Assert.NotEqual(Standardstelle("1"), eins.TextContent.Trim());
 
-        Assert.Equal("nicht im Bericht", Stelle(cut, "0.1").QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
-        Assert.StartsWith("„5 Wirtschaftliche Bewertung“, „Anhang“ nicht im Bericht",
-                          Stelle(cut, "11").QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
+        Assert.Equal(STELLE_01, Stelle(cut, "0.1").QuerySelector(".epos-wirt-checkliste-stelle")!.TextContent.Trim());
 
-        // Ein Punkt ohne Stelle der Hülle zeigt die Standardstelle allein.
+        // Ein Punkt ohne Stelle der Hülle zeigt die eigene.
         IElement zweiA = Stelle(cut, "2a");
         Assert.Null(zweiA.QuerySelector(".epos-wirt-checkliste-stelle"));
         Assert.Equal(Standardstelle("2a"), zweiA.TextContent.Trim());
+
+        // Leise stehen nur der Hinweis und die Bezugszeile über der Tafel - keine Zeile je Punkt.
+        Assert.Equal(2, LeiseZeilen(cut).Count);
     }
 
     [Fact]

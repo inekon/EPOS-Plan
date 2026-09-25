@@ -81412,7 +81412,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stellen im Bericht nennen die Kapitel der Vorlage „{0}“; die Zeile darunter nennt die Stelle in der Standardvorlage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stellen im Bericht nennen die Kapitel der Vorlage „{0}“. ähnelt.
         /// </summary>
         public static string WIRT_AE_BEZUG_VORLAGE {
             get {
@@ -81489,15 +81489,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_KNOPF {
             get {
                 return ResourceManager.GetString("WIRT_AE_KNOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die nicht im Bericht ähnelt.
-        /// </summary>
-        public static string WIRT_AE_NICHT_IM_BERICHT {
-            get {
-                return ResourceManager.GetString("WIRT_AE_NICHT_IM_BERICHT", resourceCulture);
             }
         }
         
@@ -81624,15 +81615,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_AE_STAND_TEILWEISE {
             get {
                 return ResourceManager.GetString("WIRT_AE_STAND_TEILWEISE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ nicht im Bericht ähnelt.
-        /// </summary>
-        public static string WIRT_AE_STELLE_FEHLT {
-            get {
-                return ResourceManager.GetString("WIRT_AE_STELLE_FEHLT", resourceCulture);
             }
         }
         
