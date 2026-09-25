@@ -11,14 +11,23 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Der Kopf einer eingespielten Messreihe — so, wie ihn eine Liste braucht, ohne ihre Werte zu
     /// laden: Bezeichnung, Größe, Auflösung, Beginn, Zahl der Zeitschritte, Menge in der Einheit
-    /// der Größe, Quelle und Tag des Einspielens.
+    /// der Größe, Quelle, Tag des Einspielens und die Zahl der Nullläufe.
     /// </summary>
+    /// <param name="Nulllaeufe">
+    /// Wie viele Zeitschritte den Wert 0 tragen. Ein Nulllauf ist eine gefüllte Lücke ODER eine
+    /// gemessene Stunde ohne Zapfung; <b>welche von beiden, sagt die Ablage nicht</b> (dieselbe
+    /// Aussage wie beim Zurücklesen, <see cref="TwwMessreihenCtrl.Lesen"/>). Die Liste zeigt die
+    /// Zahl, damit eine Reihe mit vielen Lücken vor dem Vergleich auffällt.
+    /// </param>
     internal sealed record TwwMessreihenkopf(string Bezeichnung, ZapfMessgroesse Groesse, int AufloesungMin,
                                              string Beginn, int Schritte, double Menge, string Quelle,
-                                             string DatumImport)
+                                             string DatumImport, int Nulllaeufe = 0)
     {
         /// <summary>Die Länge der Reihe in Tagen [d].</summary>
         internal double Tage => (double)Schritte * AufloesungMin / Messreihe.MINUTEN_JE_TAG;
+
+        /// <summary>Der Anteil der Nullläufe an den Zeitschritten [-]; 0 bei einer leeren Reihe.</summary>
+        internal double Nullanteil => Schritte > 0 ? (double)Nulllaeufe / Schritte : 0.0;
     }
 
     /// <summary>
@@ -117,7 +126,8 @@ namespace WindowsFormsApplication1
             // SUM(Wert) roh und die Umrechnung in C#, an EINER Stelle (Messreihe).
             DataTable t = DataRepository.GetDataTable(
                 "SELECT \"Bezeichnung\", \"Groesse\", \"Aufloesung_min\", \"Beginn\", COUNT(*) AS \"Schritte\", " +
-                "SUM(\"Wert\") AS \"Summe\", MIN(\"Quelle\") AS \"Quelle\", MIN(\"Datum_Import\") AS \"Datum_Import\" " +
+                "SUM(\"Wert\") AS \"Summe\", MIN(\"Quelle\") AS \"Quelle\", MIN(\"Datum_Import\") AS \"Datum_Import\", " +
+                "SUM(CASE WHEN \"Wert\" = 0 THEN 1 ELSE 0 END) AS \"Nulllaeufe\" " +
                 "FROM \"" + TwwSchema.TAB_TWW_MESSREIHE + "\" WHERE \"ID_Projekt\" = ? " +
                 "GROUP BY \"Bezeichnung\", \"Groesse\", \"Aufloesung_min\", \"Beginn\" " +
                 "ORDER BY \"Bezeichnung\"",
@@ -134,7 +144,7 @@ namespace WindowsFormsApplication1
                     ? summe * aufloesung / Messreihe.MINUTEN_JE_STUNDE : summe;
                 liste.Add(new TwwMessreihenkopf(Text(r, "Bezeichnung"), groesse, aufloesung, Text(r, "Beginn"),
                                                 Ganz(r, "Schritte"), menge, Text(r, "Quelle"),
-                                                Text(r, "Datum_Import")));
+                                                Text(r, "Datum_Import"), Ganz(r, "Nulllaeufe")));
             }
             return liste;
         }

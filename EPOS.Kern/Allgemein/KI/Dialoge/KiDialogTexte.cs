@@ -1284,6 +1284,8 @@
         internal static string ZpgAnsichtErl => MyResource.Resource.KI_DLG_ZPG_ANSICHT_ERL;
         internal static string ZpgRechenwegName => MyResource.Resource.ZPG_LBL_RECHENWEG_JAHRESREIHE;
         internal static string ZpgRechenwegErl => MyResource.Resource.KI_DLG_ZPG_RECHENWEG_ERL;
+        internal static string ZpgMessreiheName => MyResource.Resource.ZPG_LBL_MESSREIHE;
+        internal static string ZpgMessreiheErl => MyResource.Resource.KI_DLG_ZPG_MESSREIHE_ERL;
         internal static string ZpgSeedName => MyResource.Resource.ZPG_LBL_SEED;
         internal static string ZpgSeedErl => MyResource.Resource.KI_DLG_ZPG_SEED_ERL;
         internal static string ZpgRealisierungenName => MyResource.Resource.ZPG_LBL_REALISIERUNGEN;
@@ -1533,6 +1535,34 @@
         internal static string ZpgtGrundErl => MyResource.Resource.KI_DLG_ZPGT_GRUND_ERL;
         internal static string ZpgtBerichtName => MyResource.Resource.ZPGT_GRP_PRUEFUNG;
         internal static string ZpgtBerichtErl => MyResource.Resource.KI_DLG_ZPGT_BERICHT_ERL;
+
+        /// <summary>Der Dialog „Messdaten" (Zapfprofilgenerator 4.8, Stufe Z5).</summary>
+        internal static string MaskeBrauchwasserMessreihen => MyResource.Resource.ZPGM_TITEL;
+
+        internal static string ZpgmAnzahlName => MyResource.Resource.KI_DLG_ZPGM_ANZAHL_NAME;
+        internal static string ZpgmAnzahlErl => MyResource.Resource.KI_DLG_ZPGM_ANZAHL_ERL;
+        internal static string ZpgmReihenName => MyResource.Resource.ZPGM_GRP_LISTE;
+        internal static string ZpgmReihenErl => MyResource.Resource.KI_DLG_ZPGM_REIHEN_ERL;
+        internal static string ZpgmGewaehltName => MyResource.Resource.KI_DLG_ZPGM_GEWAEHLT_NAME;
+        internal static string ZpgmGewaehltErl => MyResource.Resource.KI_DLG_ZPGM_GEWAEHLT_ERL;
+        internal static string ZpgmGroesseName => MyResource.Resource.ZPGM_LBL_GROESSE;
+        internal static string ZpgmGroesseErl => MyResource.Resource.KI_DLG_ZPGM_GROESSE_ERL;
+        internal static string ZpgmAufloesungName => MyResource.Resource.ZPGM_LBL_AUFLOESUNG;
+        internal static string ZpgmAufloesungErl => MyResource.Resource.KI_DLG_ZPGM_AUFLOESUNG_ERL;
+        internal static string ZpgmBeginnName => MyResource.Resource.ZPGM_LBL_BEGINN;
+        internal static string ZpgmBeginnErl => MyResource.Resource.KI_DLG_ZPGM_BEGINN_ERL;
+        internal static string ZpgmTageName => MyResource.Resource.ZPGM_LBL_TAGE;
+        internal static string ZpgmTageErl => MyResource.Resource.KI_DLG_ZPGM_TAGE_ERL;
+        internal static string ZpgmNulllaeufeName => MyResource.Resource.ZPGM_SP_NULLLAEUFE;
+        internal static string ZpgmNulllaeufeErl => MyResource.Resource.KI_DLG_ZPGM_NULLLAEUFE_ERL;
+        internal static string ZpgmQuelleName => MyResource.Resource.ZPGM_LBL_QUELLE;
+        internal static string ZpgmQuelleErl => MyResource.Resource.KI_DLG_ZPGM_QUELLE_ERL;
+        internal static string ZpgmDatumName => MyResource.Resource.ZPGM_SP_IMPORT;
+        internal static string ZpgmDatumErl => MyResource.Resource.KI_DLG_ZPGM_DATUM_ERL;
+        internal static string ZpgmGrundName => MyResource.Resource.KI_DLG_ZPGM_GRUND_NAME;
+        internal static string ZpgmGrundErl => MyResource.Resource.KI_DLG_ZPGM_GRUND_ERL;
+        internal static string ZpgmBerichtName => MyResource.Resource.ZPGM_GRP_PRUEFUNG;
+        internal static string ZpgmBerichtErl => MyResource.Resource.KI_DLG_ZPGM_BERICHT_ERL;
 
         internal static string ZpgTyptagewegName => MyResource.Resource.ZPG_LBL_TYPTAGE_AKTIV;
         internal static string ZpgTyptagewegErl => MyResource.Resource.KI_DLG_ZPG_TYPTAGEWEG_ERL;

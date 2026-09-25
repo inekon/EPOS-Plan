@@ -284,6 +284,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string BRAUCHWASSER_TYPTAGE = "Form_Brauchwasser_Typtage";
 
+        /// <summary>
+        /// Der Dialog „Messdaten" (<c>TwwMessreihenDialog</c>, Zapfprofilgenerator 4.8) — die
+        /// Ueberlagerung hinter „Messdaten…" im Zapfprofil-Dialog. Sie zeigt die Messreihen des
+        /// Projekts; Dateiwahl, Einspielen und Loeschen bleiben Klicks des Anwenders.
+        /// </summary>
+        public const string BRAUCHWASSER_MESSREIHEN = "Form_Brauchwasser_Messreihen";
+
         // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
         // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
         // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
@@ -736,6 +743,7 @@ namespace WindowsFormsApplication1
                 BrauchwasserNutzungsarten(),
                 TwwNutzungsartEditor(),
                 BrauchwasserTyptage(),
+                BrauchwasserMessreihen(),
                 BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
                             KiDialogTexte.MaskeProzesswaermeAdmin),
                 BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
@@ -3532,6 +3540,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("rechenweg_jahresreihe", ZAPFPROFIL_SICHT + ".Rechenweg",
                                      KiDialogTexte.ZpgRechenwegName, KiParameterTyp.Wahl,
                                      KiDialogTexte.ZpgRechenwegErl),
+                    new KiDialogFeld("messreihe", ZAPFPROFIL_SICHT + ".Messreihe",
+                                     KiDialogTexte.ZpgMessreiheName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ZpgMessreiheErl, leerErlaubt: true),
                     new KiDialogFeld("seed", ZAPFPROFIL_SICHT + ".Seed",
                                      KiDialogTexte.ZpgSeedName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.ZpgSeedErl, leerErlaubt: true),
@@ -4127,6 +4138,79 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("pruefbericht", TWW_TYPTAG_SICHT + ".Pruefbericht",
                                      KiDialogTexte.ZpgtBerichtName, KiParameterTyp.Text,
                                      KiDialogTexte.ZpgtBerichtErl, leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        /// <summary>Der Typname der Sichtklasse des Dialogs „Messdaten" (<c>EPOS.UI.Dialoge.Bedarf.TwwMessreihenKiSicht</c>).</summary>
+        private const string TWW_MESSREIHEN_SICHT = "TwwMessreihenKiSicht";
+
+        /// <summary>
+        /// Der Dialog „Messdaten" — zwoelf Anzeigen aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TwwMessreihenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung ohne Einstellwert</b>: Der Dialog zeigt die eingespielten Reihen und
+        /// den Bericht der Pruefung; geschrieben wird ueber „Einspielen" und „Loeschen" — Handlungen,
+        /// die Zeilen anlegen oder wegnehmen und Klicks des Anwenders bleiben (KI-D-Q11). Auch die
+        /// DATEIWAHL bleibt beim Anwender, und die Eingaben darueber (Bezeichnung, Quelle, Groesse,
+        /// Lueckenschwelle, Zeitstempel) beschreiben allein die gewaehlte Datei — ohne sie sind sie
+        /// ohne Sinn. Freigegeben sind deshalb allein Anzeigen, damit <c>dialog_lesen</c> nennt, was
+        /// eingespielt ist und was die Pruefung ergeben hat.
+        /// </para>
+        /// <para>
+        /// <b>Keine Messwerte</b>: Bezeichnung, Groesse, Raster, Beginn, Tage, Nulllaeufe, Quelle und
+        /// Tag des Einspielens sagen, WAS eingespielt ist — nie, wie gross eine gemessene Menge oder
+        /// eine gemessene Spitze ist (Konzept Kapitel 9 K5).
+        /// </para>
+        /// </remarks>
+        private static KiDialog BrauchwasserMessreihen()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BRAUCHWASSER_MESSREIHEN,
+                anzeigename: KiDialogTexte.MaskeBrauchwasserMessreihen,
+                felder: new[]
+                {
+                    new KiDialogFeld("anzahl", TWW_MESSREIHEN_SICHT + ".Anzahl",
+                                     KiDialogTexte.ZpgmAnzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgmAnzahlErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("reihen", TWW_MESSREIHEN_SICHT + ".Reihen",
+                                     KiDialogTexte.ZpgmReihenName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmReihenErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("gewaehlt", TWW_MESSREIHEN_SICHT + ".Gewaehlt",
+                                     KiDialogTexte.ZpgmGewaehltName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmGewaehltErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("groesse", TWW_MESSREIHEN_SICHT + ".Groesse",
+                                     KiDialogTexte.ZpgmGroesseName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmGroesseErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("aufloesung", TWW_MESSREIHEN_SICHT + ".AufloesungMin",
+                                     KiDialogTexte.ZpgmAufloesungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgmAufloesungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beginn", TWW_MESSREIHEN_SICHT + ".Beginn",
+                                     KiDialogTexte.ZpgmBeginnName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmBeginnErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("tage", TWW_MESSREIHEN_SICHT + ".Tage",
+                                     KiDialogTexte.ZpgmTageName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ZpgmTageErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("nulllaeufe", TWW_MESSREIHEN_SICHT + ".Nulllaeufe",
+                                     KiDialogTexte.ZpgmNulllaeufeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ZpgmNulllaeufeErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("quelle", TWW_MESSREIHEN_SICHT + ".Quelle",
+                                     KiDialogTexte.ZpgmQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmQuelleErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("importdatum", TWW_MESSREIHEN_SICHT + ".Importdatum",
+                                     KiDialogTexte.ZpgmDatumName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmDatumErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("grund", TWW_MESSREIHEN_SICHT + ".Grund",
+                                     KiDialogTexte.ZpgmGrundName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmGrundErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("pruefbericht", TWW_MESSREIHEN_SICHT + ".Pruefbericht",
+                                     KiDialogTexte.ZpgmBerichtName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmBerichtErl, leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {

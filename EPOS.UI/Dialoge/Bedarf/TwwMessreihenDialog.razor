@@ -1,0 +1,526 @@
+﻿@* Der DIALOG "Messdaten" (Umsetzungskonzept Zapfprofilgenerator 4.8, 5.8, Kapitel 7 Zeile Z5;
+   Stufe Z5, Gruppe 3) - die Ueberlagerung hinter dem Knopf "Messdaten..." im Zapfprofil-Dialog.
+
+   WAS ER TUT. Er zeigt die Messreihen DIESES Projekts (Bezeichnung, Groesse, Auflloesung, Beginn,
+   Tage, Nulllaeufe, Quelle, Tag des Einspielens), waehlt eine CSV-Datei ueber Dienste.Datei,
+   PRUEFT sie sofort ohne Schreibzugriff und zeigt den Bericht - entweder die Ablehnung mit Datei
+   und Zeile oder, was ein Einspielen ablegen wuerde, samt Hinweisen (Luecken, Sommerzeit,
+   Schalttag). "Einspielen" ersetzt eine gleichnamige Reihe desselben Projekts nach einer
+   Rueckfrage; "Loeschen" entfernt die gewaehlte Reihe nach einer Rueckfrage.
+
+   VIER EINGABEN ueber der Dateiwahl beschreiben die Datei: Bezeichnung (leer = der Dateiname),
+   Quelle, gemessene Groesse (Vorgabe "aus der Kopfzeile" - erst wenn der Kopf keine Einheit
+   traegt, ist dieses Feld die Antwort) und die Lueckenschwelle (leer = die Vorgabe des
+   Parametersatzes); dazu die Zeitrechnung der Zeitstempel (Ortszeit mit Sommerzeit oder
+   Normalzeit ohne Umstellung). Jede Aenderung prueft die gewaehlte Datei neu.
+
+   ZUM PROJEKT (Konzept Kapitel 9 K5). Messreihen gehoeren zum Objekt, nicht zur Auslieferung: Sie
+   reisen mit einer Projektkopie und einem Projektpaket und stehen in keiner Vorlage. Eine
+   Herleitungszeile sagt das. Ohne gespeichertes Projekt reicht die Huelle keine Schreibwege, und
+   die Knoepfe stehen nicht da.
+
+   KEIN ARBEITSSTAND. Einspielen und Loeschen schreiben sofort in EINER Transaktion des Kerns; es
+   gibt nichts zu verwerfen. "Beenden", das Kreuz und Esc schliessen den Dialog und melden dem
+   Wirt, ob sich der Stand geaendert hat - er liest dann seine Messreihenwahl neu.
+
+   HILFE-ASSISTENT. Die Ueberlagerung meldet sich als EIGENE Maske an
+   (KiMaskennamen.BRAUCHWASSER_MESSREIHEN): die Anzeigen des Stands ueber TwwMessreihenKiSicht.
+   Einspielen, Loeschen und die Dateiwahl bleiben Klicks des Anwenders. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-tww-messreihen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.Titel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Beenden" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_stufe" Text="@_meldung" />
+    }
+
+    <Herleitungszeile Text="@Texte.HinweisProjekt" />
+    <Herleitungszeile Text="@Texte.HinweisFormat" />
+
+    @* --- Die eingespielten Reihen ---------------------------------------------------- *@
+    <Gruppenkopf Titel="@Texte.GruppeListe">
+        <KindInhalt>
+            @if (_stand.Reihen.Count == 0)
+            {
+                <p class="epos-leisezeile epos-tww-messreihen-leer">@(_stand.Grund.Length > 0 ? _stand.Grund : Texte.Leer)</p>
+            }
+            else
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-tww-messreihen-liste">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteBezeichnung</th>
+                                <th>@Texte.SpalteGroesse</th>
+                                <th>@Texte.SpalteAufloesung</th>
+                                <th>@Texte.SpalteBeginn</th>
+                                <th>@Texte.SpalteTage</th>
+                                <th>@Texte.SpalteNulllaeufe</th>
+                                <th>@Texte.SpalteQuelle</th>
+                                <th>@Texte.SpalteImport</th>
+                                <th>@Texte.SpalteAktion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (TwwMessreiheDaten r in _stand.Reihen)
+                            {
+                                <tr @key="r.Bezeichnung" class="@(Gewaehlt(r) ? "epos-raster-zeile--gewaehlt" : "")"
+                                    data-reihe="@r.Bezeichnung">
+                                    <td>@r.Bezeichnung</td>
+                                    <td>@r.Groesse</td>
+                                    <td class="epos-zahl">@Ganz(r.AufloesungMin)</td>
+                                    <td>@r.Beginn</td>
+                                    <td class="epos-zahl">@Zahl(r.Tage, "N1")</td>
+                                    <td class="epos-zahl">@Ganz(r.Nulllaeufe)</td>
+                                    <td>@r.Quelle</td>
+                                    <td>@r.DatumImport</td>
+                                    <td>
+                                        <div class="epos-zeilenhandlungen">
+                                            <button type="button" class="epos-knopf epos-knopf--klein epos-tww-messreihen-wahl"
+                                                    @onclick="() => Waehlen(r)">@Texte.SpalteAktion</button>
+                                            @if (Loeschen is not null)
+                                            {
+                                                <button type="button" class="epos-knopf epos-knopf--klein epos-tww-messreihen-loeschen"
+                                                        @onclick="() => LoeschenFragen(r)">@Texte.KnopfLoeschen</button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <Herleitungszeile Text="@Texte.HinweisNulllaeufe" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Dateiwahl, Eingaben und Pruefung -------------------------------------------- *@
+    <Gruppenkopf Titel="@Texte.GruppeEinlesen">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@Texte.LabelBezeichnung" Wert="@_eingabe.Bezeichnung"
+                              WertChanged="w => EingabeSetzen(x => x.Bezeichnung = w ?? string.Empty)" />
+                    <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@_eingabe.Quelle"
+                              WertChanged="w => EingabeSetzen(x => x.Quelle = w ?? string.Empty)" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelGroesse" Eintraege="@Groessen"
+                                 Auswahl="@(_eingabe.GroesseId ?? GROESSE_AUS_KOPF)"
+                                 AuswahlChanged="id => EingabeSetzen(x => x.GroesseId = id ?? GROESSE_AUS_KOPF)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelLueckenschwelle" Feldname="@Texte.LabelLueckenschwelle"
+                                Einheit="-" Min="0" Max="1" Wert="@_eingabe.LueckenschwelleAnteil"
+                                Platzhalter="@Zahl(_stand.LueckenschwelleVorgabe, "0.###")"
+                                WertChanged="w => EingabeSetzen(x => x.LueckenschwelleAnteil = w)" />
+                    <Optionsgruppe Bezeichnung="@Texte.LabelZeitstempel" Eintraege="@Zeitrechnungen"
+                                   Auswahl="@_eingabe.ZeitstempelId"
+                                   AuswahlChanged="id => EingabeSetzen(x => x.ZeitstempelId = id ?? 0)" />
+                </KindInhalt>
+            </Formularraster>
+
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Dateiwahl Bezeichnung="" KnopfText="@Texte.KnopfDatei" Filter="@Texte.Dateifilter"
+                               Pfad="@_pfad" Waehlen="@DateiWahl" PfadChanged="BeiDatei" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (_bericht is not null)
+    {
+        <Gruppenkopf Titel="@Texte.GruppePruefung">
+            <KindInhalt>
+                @if (_bericht.Abgebrochen)
+                {
+                    <Warnbanner Stufe="WarnStufe.Fehler" Text="@_bericht.Abbruch" />
+                }
+                else
+                {
+                    <p class="epos-leisezeile epos-tww-messreihen-summe" role="status">@_bericht.Zusammenfassung</p>
+                    <div class="epos-raster-huelle">
+                        <table class="epos-raster epos-tww-messreihen-pruefung">
+                            <thead>
+                                <tr>
+                                    <th>@Texte.SpalteAngabe</th>
+                                    <th>@Texte.SpalteWert</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (TwwMessreihenangabeDaten z in _bericht.Angaben)
+                                {
+                                    <tr>
+                                        <td>@z.Bezeichnung</td>
+                                        <td>@z.Wert</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                @if (_bericht.Hinweise.Count > 0)
+                {
+                    <Gruppenkopf Titel="@Texte.Hinweise">
+                        <KindInhalt>
+                            @foreach (string h in _bericht.Hinweise)
+                            {
+                                <p class="epos-leisezeile epos-tww-messreihen-hinweis">@h</p>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* --- Rueckfragen ---------------------------------------------------------------- *@
+    <Rueckfrage Offen="@_frageOffen" Frage="@_frage" TitelText="@Texte.Titel" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
+
+    @* --- Die Fussleiste ------------------------------------------------------------- *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Einspielen is not null)
+        {
+            <button type="button" class="epos-knopf epos-tww-messreihen-einspielen"
+                    aria-disabled="@(Einspielbar ? null : "true")"
+                    title="@(Einspielbar ? null : Einspielgrund)"
+                    @onclick="EinspielenFragen">@Texte.KnopfEinspielen</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-tww-messreihen-beenden"
+                @onclick="Beenden">@Texte.KnopfBeenden</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Die Kennung „aus der Kopfzeile lesen“ der Größenwahl — kein Wert der Ablage.</summary>
+    private const int GROESSE_AUS_KOPF = TwwMessreihenwahl.GroesseAusKopf;
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Hülle (ZapfprofilHuelle.MessreihenGaben)
+    // =====================================================================
+
+    /// <summary>Die eingespielten Reihen des Projekts (<c>TwwMessreihenCtrl.Liste</c>).</summary>
+    [Parameter] public Func<TwwMessreihenstandDaten>? Stand { get; set; }
+
+    /// <summary>Die Dateiwahl der Plattform (<c>Dienste.Datei</c>, hinter dem Ereignis); <c>""</c> = abgebrochen.</summary>
+    [Parameter] public Func<string, Task<string>>? DateiWaehlen { get; set; }
+
+    /// <summary>Die Prüfung einer Datei OHNE Schreibzugriff (<c>Messreihenleser.AusStrom</c>).</summary>
+    [Parameter] public Func<string, TwwMessreiheneingabeDaten, TwwMessreihenpruefungDaten>? Pruefen { get; set; }
+
+    /// <summary>Das Einspielen (<c>TwwMessreihenCtrl.Importieren</c>); ohne Delegat steht der Knopf nicht da.</summary>
+    [Parameter] public Func<string, TwwMessreiheneingabeDaten, TwwMessreihenergebnisDaten>? Einspielen { get; set; }
+
+    /// <summary>Das Löschen einer Reihe (<c>TwwMessreihenCtrl.Loeschen</c>); ohne Delegat kein Knopf.</summary>
+    [Parameter] public Func<string, TwwMessreihenergebnisDaten>? Loeschen { get; set; }
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public TwwMessreihenTexte Texte { get; set; } = new();
+
+    /// <summary>Hilfeschlüssel des Dialogs (5.8).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Brauchwasser_Messreihen.btn_Help";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    /// <summary>
+    /// Der Dialog ist zu Ende; <c>true</c> = die Messreihen des Projekts haben sich geändert — der
+    /// Wirt liest dann seine Wahlliste neu und verwirft einen Vergleich, der zu einer weggefallenen
+    /// Reihe gehört.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private TwwMessreihenstandDaten _stand = new();
+    private TwwMessreiheneingabeDaten _eingabe = new();
+    private string _pfad = "";
+    private TwwMessreihenpruefungDaten? _bericht;
+    private string _meldung = "";
+    private WarnStufe _stufe = WarnStufe.Warnung;
+    private string _status = "";
+    private bool _geaendert;
+    private string _gewaehlt = "";
+
+    private bool _frageOffen;
+    private string _frage = "";
+    private string _frageLoeschen = "";
+
+    /// <summary>Der angezeigte Stand (Prüfhilfe für Tests).</summary>
+    public TwwMessreihenstandDaten Standanzeige => _stand;
+
+    /// <summary>Der Bericht der letzten Prüfung (Prüfhilfe für Tests); <c>null</c> = keiner.</summary>
+    public TwwMessreihenpruefungDaten? Bericht => _bericht;
+
+    /// <summary>Die Statuszeile (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Das Warnband (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht eine Rückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool FrageOffen => _frageOffen;
+
+    /// <summary>Die Bezeichnung der gewählten Reihe (Prüfhilfe für Tests); leer = keine.</summary>
+    public string Gewaehlte => _gewaehlt;
+
+    /// <summary>Lässt sich einspielen? Eine Datei ist gewählt und die Prüfung hat sie nicht abgelehnt.</summary>
+    private bool Einspielbar => _pfad.Length > 0 && _bericht is not null && !_bericht.Abgebrochen;
+
+    /// <summary>Warum „Einspielen" gesperrt ist — der Grund steht am Knopf, nie eine stille Sperre.</summary>
+    private string Einspielgrund
+        => _pfad.Length == 0 ? Texte.KeineDatei : _bericht?.Abbruch ?? Texte.KeineDatei;
+
+    private bool Gewaehlt(TwwMessreiheDaten r) => string.Equals(r.Bezeichnung, _gewaehlt, StringComparison.Ordinal);
+
+    /// <summary>Die Einträge der Größenwahl: „aus der Kopfzeile" und die drei Größen der Ablage.</summary>
+    private IReadOnlyList<(int Id, string Text)> Groessen => new[]
+    {
+        (GROESSE_AUS_KOPF, Texte.GroesseKopf),
+        (TwwMessreihenwahl.GroesseEnergie, Texte.GroesseEnergie),
+        (TwwMessreihenwahl.GroesseVolumen, Texte.GroesseVolumen),
+        (TwwMessreihenwahl.GroesseLeistung, Texte.GroesseLeistung)
+    };
+
+    /// <summary>Die Einträge der Zeitrechnung — die Kennungen aus <see cref="TwwMessreihenwahl"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> Zeitrechnungen => new[]
+    {
+        (TwwMessreihenwahl.ZeitOrtszeit, Texte.ZeitOrtszeit),
+        (TwwMessreihenwahl.ZeitNormalzeit, Texte.ZeitNormalzeit)
+    };
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        StandLaden();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BRAUCHWASSER_MESSREIHEN, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    private void StandLaden()
+    {
+        _stand = Stand?.Invoke() ?? new TwwMessreihenstandDaten();
+        if (_gewaehlt.Length > 0 && !_stand.Reihen.Any(Gewaehlt)) _gewaehlt = "";
+    }
+
+    // =====================================================================
+    // Eingaben, Dateiwahl und Prüfung
+    // =====================================================================
+
+    /// <summary>Eine Eingabe über der Dateiwahl: Sie beschreibt die Datei, also wird neu geprüft.</summary>
+    private void EingabeSetzen(Action<TwwMessreiheneingabeDaten> setzen)
+    {
+        setzen(_eingabe);
+        _meldung = "";
+        Pruefung();
+    }
+
+    /// <summary>Die Dateiwahl der Plattform — über den Delegaten der Hülle, erwartet (nie synchron).</summary>
+    private async Task<string?> DateiWahl(string filter)
+        => DateiWaehlen is null ? null : await DateiWaehlen(filter);
+
+    /// <summary>Eine neue Datei: Sie wird SOFORT geprüft — ohne Schreibzugriff.</summary>
+    private void BeiDatei(string pfad)
+    {
+        _pfad = pfad ?? "";
+        _meldung = "";
+        Pruefung();
+    }
+
+    /// <summary>Prüft die gewählte Datei mit den Eingaben; ohne Datei fällt der Bericht weg.</summary>
+    private void Pruefung()
+        => _bericht = _pfad.Length == 0 || Pruefen is null ? null : Pruefen(_pfad, _eingabe.Kopie());
+
+    // =====================================================================
+    // Wahl einer Reihe
+    // =====================================================================
+
+    /// <summary>
+    /// Die Wahl einer Zeile — sie sagt dem Assistenten und dem Löschen, welche Reihe gemeint ist.
+    /// Ein zweiter Klick auf dieselbe Zeile hebt die Wahl auf.
+    /// </summary>
+    private void Waehlen(TwwMessreiheDaten r)
+    {
+        _gewaehlt = Gewaehlt(r) ? "" : r.Bezeichnung;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Einspielen und Löschen — beides mit Rückfrage
+    // =====================================================================
+
+    private void EinspielenFragen()
+    {
+        if (Einspielen is null) return;
+        if (!Einspielbar)
+        {
+            _meldung = Einspielgrund;
+            _stufe = WarnStufe.Warnung;
+            return;
+        }
+        if (_bericht is null || !_bericht.ErsetztVorhandene)
+        {
+            EinspielenAusfuehren();
+            return;
+        }
+        _frageLoeschen = "";
+        _frage = Format(Texte.FrageErsetzen, _bericht.Bezeichnung);
+        _frageOffen = true;
+    }
+
+    private void LoeschenFragen(TwwMessreiheDaten r)
+    {
+        if (Loeschen is null) return;
+        _gewaehlt = r.Bezeichnung;
+        _frageLoeschen = r.Bezeichnung;
+        _frage = Format(Texte.FrageLoeschen, r.Bezeichnung);
+        _frageOffen = true;
+    }
+
+    private void FrageBeantwortet(bool? antwort)
+    {
+        _frageOffen = false;
+        string loeschen = _frageLoeschen;
+        _frageLoeschen = "";
+        if (antwort != true) return;
+        if (loeschen.Length > 0) LoeschenAusfuehren(loeschen);
+        else EinspielenAusfuehren();
+    }
+
+    private void EinspielenAusfuehren()
+    {
+        if (Einspielen is null) return;
+        TwwMessreihenergebnisDaten e = Einspielen(_pfad, _eingabe.Kopie());
+        Uebernehmen(e);
+        if (!e.Ok) return;
+        _gewaehlt = e.Bezeichnung;
+        _pfad = "";
+        // Der Bericht bleibt stehen, solange er Hinweise des gelungenen Einspielens traegt.
+        if (e.Hinweise.Count == 0) _bericht = null;
+    }
+
+    private void LoeschenAusfuehren(string bezeichnung)
+    {
+        if (Loeschen is null) return;
+        TwwMessreihenergebnisDaten e = Loeschen(bezeichnung);
+        Uebernehmen(e);
+        if (e.Ok && string.Equals(_gewaehlt, bezeichnung, StringComparison.Ordinal)) _gewaehlt = "";
+    }
+
+    /// <summary>Das Ergebnis eines Schreibwegs: Stand, Statuszeile, Banner und Hinweise.</summary>
+    private void Uebernehmen(TwwMessreihenergebnisDaten e)
+    {
+        _stand = e.Stand ?? new TwwMessreihenstandDaten();
+        if (e.Ok)
+        {
+            _geaendert = true;
+            _status = e.Meldung;
+            _meldung = "";
+            if (e.Hinweise.Count > 0)
+            {
+                _bericht = new TwwMessreihenpruefungDaten { Zusammenfassung = e.Meldung, Bezeichnung = e.Bezeichnung };
+                _bericht.Hinweise.AddRange(e.Hinweise);
+            }
+        }
+        else
+        {
+            _meldung = e.Meldung;
+            _stufe = WarnStufe.Fehler;
+        }
+        if (_gewaehlt.Length > 0 && !_stand.Reihen.Any(Gewaehlt)) _gewaehlt = "";
+    }
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    private static string Ganz(int i) => i.ToString("N0", CultureInfo.CurrentCulture);
+
+    private static string Zahl(double d, string format) => d.ToString(format, CultureInfo.CurrentCulture);
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    /// <summary>Die gewählte Reihe; <c>null</c> = keine gewählt.</summary>
+    private TwwMessreiheDaten? Wahl => _stand.Reihen.FirstOrDefault(Gewaehlt);
+
+    // =====================================================================
+    // Beenden und Tastatur
+    // =====================================================================
+
+    private Task Beenden() => Geschlossen.InvokeAsync(_geaendert);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (_frageOffen || e.Key != "Escape") return Task.CompletedTask;
+        return Beenden();
+    }
+
+    // =====================================================================
+    // Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TwwMessreihenKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Anzeigen der Liste und der gewählten Reihe.</summary>
+    private TwwMessreihenKiSicht KiSicht() => _kiSicht ??= new TwwMessreihenKiSicht
+    {
+        AnzahlLesen = () => _stand.Reihen.Count,
+        ReihenLesen = () => string.Join(", ", _stand.Reihen.Select(r => r.Bezeichnung)),
+        GewaehltLesen = () => _gewaehlt,
+        GroesseLesen = () => Wahl?.Groesse ?? "",
+        AufloesungLesen = () => Wahl?.AufloesungMin ?? 0,
+        BeginnLesen = () => Wahl?.Beginn ?? "",
+        TageLesen = () => Wahl?.Tage ?? 0.0,
+        NulllaeufeLesen = () => Wahl?.Nulllaeufe ?? 0,
+        QuelleLesen = () => Wahl?.Quelle ?? "",
+        ImportdatumLesen = () => Wahl?.DatumImport ?? "",
+        GrundLesen = () => _stand.Reihen.Count > 0 ? "" : (_stand.Grund.Length > 0 ? _stand.Grund : Texte.Leer),
+        BerichtLesen = () => _bericht is null ? "" : (_bericht.Abgebrochen ? _bericht.Abbruch : _bericht.Zusammenfassung)
+    };
+
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+}
