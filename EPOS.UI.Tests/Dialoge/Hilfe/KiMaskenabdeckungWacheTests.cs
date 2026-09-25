@@ -116,7 +116,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // zwei Wirte: der Katalogeditor (Form_Gebaeude1) und über GebaeudeStammblattFelder das
         // Stammblatt der Verwaltung (Form_Gebaeude_Admin); beide melden dieselben dreizehn Felder
         // über GebaeudeKatalogKiSicht an. Die Tabelle führt je Kind EINEN Wirt.
-        new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG)
+        new("GebaeudeWaermeuebergabeFelder",  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+
+        // Gebäudesimulation G3, Welle C: das Schichtenraster eines Aufbaus - die Verwaltung der
+        // Bauteilaufbauten meldet seine Spalten (Schichten[]) über BauteilaufbauKiSicht an.
+        new("BauteilschichtenFelder",         "BauteilaufbauDialog",         KiMaskennamen.BAUTEILAUFBAU)
     };
 
     // =====================================================================
@@ -165,6 +169,17 @@ public sealed class KiMaskenabdeckungWacheTests
         // (WirtschaftlichkeitSeite 9 -> 8).
         new("WirkungenListe", 6),
         // ---- Ende ETAPPE E17 ----
+
+        // ---- Gebäudesimulation G3, Welle C (Baustoffe, Bauteilaufbauten) ----
+        // Die sieben Kenndaten der Baustoffverwaltung stehen EINMAL als Fragment und dienen dem
+        // Stammblatt und „Neu…" (Aktion Anlegen); der Schalter „nur herstellerneutral" ist der
+        // Trichter der Spalte Hersteller, kein Maskenfeld. Die Aufbauverwaltung führt vier
+        // Kopffelder, das Schichtenraster als Baustein sechs (Baustoff, Dicke, λ, ρ, c_p,
+        // Luftschicht - die Spalten schicht_* der Feldkarte).
+        new("BaustoffKatalogDialog", 8, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
+        new("BauteilaufbauDialog", 4),
+        new("BauteilschichtenFelder", 6),
+        // ---- Ende Gebäudesimulation G3, Welle C ----
 
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),

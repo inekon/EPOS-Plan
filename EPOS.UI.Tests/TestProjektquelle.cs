@@ -123,6 +123,18 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? GesetzeskatalogGaben() => Gesetzeskatalog;
 
+    // ---- Die zwei Kataloge der Gebäudesimulation (G3) -----------------------
+
+    /// <summary>Der Parametersatz der Verwaltung „Baustoffe".</summary>
+    internal IReadOnlyDictionary<string, object>? BaustoffKatalog { get; set; }
+
+    public IReadOnlyDictionary<string, object>? BaustoffKatalogGaben() => BaustoffKatalog;
+
+    /// <summary>Der Parametersatz der Verwaltung „Bauteilaufbauten".</summary>
+    internal IReadOnlyDictionary<string, object>? BauteilaufbauKatalog { get; set; }
+
+    public IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => BauteilaufbauKatalog;
+
     /// <summary>
     /// Das Lagebild der Lizenz (Welle iF30) — <c>null</c> = kein Banner, und das ist
     /// die Vorgabe: Kein bestehender Fall soll durch die Erweiterung ein Banner bekommen.

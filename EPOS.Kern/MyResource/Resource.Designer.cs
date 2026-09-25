@@ -2996,6 +2996,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau braucht mindestens eine Schicht. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_KEINE_SCHICHT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_KEINE_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Die ruhende Luftschicht ist {1:0.###} mm dick; DIN EN ISO 6946 Tabelle 8 gilt bis {2:0.###} mm. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_LUFTSCHICHT_DICKE {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_LUFTSCHICHT_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Bauteil braucht einen Namen. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_NAME_LEER {
@@ -3014,6 +3032,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schichten sind nicht lückenlos ab 1 nummeriert: Schicht {0} trägt die Nummer {1}. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Den Baustoff mit der Kennung {1} gibt es in dieser Ablage nicht. ähnelt.
         /// </summary>
         public static string BAUTEIL_MSG_SCHICHT_BAUSTOFF {
@@ -3028,6 +3055,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BAUTEIL_MSG_SCHICHT_DICKE {
             get {
                 return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Die Dicke {1:0.###} mm liegt nicht in {2:0.###} … {3:0.###} mm. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_SCHICHT_DICKE_BAND {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_DICKE_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Die Angabe „{1}“ fehlt; der Bauteilweg braucht sie für die Speichermasse. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_SCHICHT_FEHLT {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0}: Die Wärmeleitfähigkeit λ fehlt – ohne λ ist nur eine ruhende Luftschicht zulässig. ähnelt.
+        /// </summary>
+        public static string BAUTEIL_MSG_SCHICHT_LAMBDA {
+            get {
+                return ResourceManager.GetString("BAUTEIL_MSG_SCHICHT_LAMBDA", resourceCulture);
             }
         }
         
@@ -9271,6 +9325,825 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPRO_TITEL_STROM {
             get {
                 return ResourceManager.GetString("BPRO_TITEL_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} Schicht(en) des Aufbaukatalogs verwendet – Löschen gesperrt; dort zuerst ersetzen. ähnelt.
+        /// </summary>
+        public static string BST_AW_LOESCHEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("BST_AW_LOESCHEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string BST_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BST_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die J/(kgK) ähnelt.
+        /// </summary>
+        public static string BST_EINHEIT_CP {
+            get {
+                return ResourceManager.GetString("BST_EINHEIT_CP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W/(mK) ähnelt.
+        /// </summary>
+        public static string BST_EINHEIT_LAMBDA {
+            get {
+                return ResourceManager.GetString("BST_EINHEIT_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kg/m³ ähnelt.
+        /// </summary>
+        public static string BST_EINHEIT_RHO {
+            get {
+                return ResourceManager.GetString("BST_EINHEIT_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll der Baustoff „{0}“ gelöscht werden? ähnelt.
+        /// </summary>
+        public static string BST_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BST_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baustoffverwaltung steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string BST_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("BST_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string BST_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("BST_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spez. Wärmekapazität c_p ähnelt.
+        /// </summary>
+        public static string BST_LBL_CP {
+            get {
+                return ResourceManager.GetString("BST_LBL_CP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string BST_LBL_GRUPPE {
+            get {
+                return ResourceManager.GetString("BST_LBL_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string BST_LBL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("BST_LBL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string BST_LBL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("BST_LBL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeleitfähigkeit λ ähnelt.
+        /// </summary>
+        public static string BST_LBL_LAMBDA {
+            get {
+                return ResourceManager.GetString("BST_LBL_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string BST_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("BST_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellkennung ähnelt.
+        /// </summary>
+        public static string BST_LBL_QUELLKENNUNG {
+            get {
+                return ResourceManager.GetString("BST_LBL_QUELLKENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rohdichte ρ ähnelt.
+        /// </summary>
+        public static string BST_LBL_RHO {
+            get {
+                return ResourceManager.GetString("BST_LBL_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung ähnelt.
+        /// </summary>
+        public static string BST_LBL_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("BST_LBL_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt noch keinen Baustoff – „Neu…“ legt einen an. ähnelt.
+        /// </summary>
+        public static string BST_LEER {
+            get {
+                return ResourceManager.GetString("BST_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stehen bleiben (in Schichten verwendet): {0} ähnelt.
+        /// </summary>
+        public static string BST_LOESCHEN_BLEIBEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("BST_LOESCHEN_BLEIBEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string BST_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("BST_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baustoff konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string BST_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("BST_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string BST_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BST_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Namen führt der Katalog für diesen Hersteller bereits. ähnelt.
+        /// </summary>
+        public static string BST_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("BST_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die herstellerneutral ähnelt.
+        /// </summary>
+        public static string BST_NEUTRAL {
+            get {
+                return ResourceManager.GetString("BST_NEUTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur herstellerneutral ähnelt.
+        /// </summary>
+        public static string BST_SCHALTER_NEUTRAL {
+            get {
+                return ResourceManager.GetString("BST_SCHALTER_NEUTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string BST_TITEL {
+            get {
+                return ResourceManager.GetString("BST_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Baustoff ähnelt.
+        /// </summary>
+        public static string BST_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("BST_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in {0} Schicht(en) des Aufbaukatalogs ähnelt.
+        /// </summary>
+        public static string BST_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("BST_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in keiner Schicht des Aufbaukatalogs ähnelt.
+        /// </summary>
+        public static string BST_VERWENDUNG_KEINE {
+            get {
+                return ResourceManager.GetString("BST_VERWENDUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand ähnelt.
+        /// </summary>
+        public static string BTA_ART_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("BTA_ART_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenplatte ähnelt.
+        /// </summary>
+        public static string BTA_ART_BODENPLATTE {
+            get {
+                return ResourceManager.GetString("BTA_ART_BODENPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach ähnelt.
+        /// </summary>
+        public static string BTA_ART_DACH {
+            get {
+                return ResourceManager.GetString("BTA_ART_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decke ähnelt.
+        /// </summary>
+        public static string BTA_ART_DECKE {
+            get {
+                return ResourceManager.GetString("BTA_ART_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster ähnelt.
+        /// </summary>
+        public static string BTA_ART_FENSTER {
+            get {
+                return ResourceManager.GetString("BTA_ART_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenwand ähnelt.
+        /// </summary>
+        public static string BTA_ART_INNENWAND {
+            get {
+                return ResourceManager.GetString("BTA_ART_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für jede Bauteilart ähnelt.
+        /// </summary>
+        public static string BTA_ART_JEDE {
+            get {
+                return ResourceManager.GetString("BTA_ART_JEDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges ähnelt.
+        /// </summary>
+        public static string BTA_ART_SONSTIGES {
+            get {
+                return ResourceManager.GetString("BTA_ART_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tür ähnelt.
+        /// </summary>
+        public static string BTA_ART_TUER {
+            get {
+                return ResourceManager.GetString("BTA_ART_TUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhangfassade ähnelt.
+        /// </summary>
+        public static string BTA_ART_VORHANGFASSADE {
+            get {
+                return ResourceManager.GetString("BTA_ART_VORHANGFASSADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach außen ähnelt.
+        /// </summary>
+        public static string BTA_BTN_AUSSEN {
+            get {
+                return ResourceManager.GetString("BTA_BTN_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht entfernen ähnelt.
+        /// </summary>
+        public static string BTA_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BTA_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach innen ähnelt.
+        /// </summary>
+        public static string BTA_BTN_INNEN {
+            get {
+                return ResourceManager.GetString("BTA_BTN_INNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string BTA_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BTA_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Neue Schicht … ähnelt.
+        /// </summary>
+        public static string BTA_BTN_NEUE_SCHICHT {
+            get {
+                return ResourceManager.GetString("BTA_BTN_NEUE_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kJ/(m²K) ähnelt.
+        /// </summary>
+        public static string BTA_EINHEIT_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BTA_EINHEIT_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mm ähnelt.
+        /// </summary>
+        public static string BTA_EINHEIT_MM {
+            get {
+                return ResourceManager.GetString("BTA_EINHEIT_MM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_EINHEIT_R {
+            get {
+                return ResourceManager.GetString("BTA_EINHEIT_R", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W/(m²K) ähnelt.
+        /// </summary>
+        public static string BTA_EINHEIT_U {
+            get {
+                return ResourceManager.GetString("BTA_EINHEIT_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll der Bauteilaufbau „{0}“ samt seinen Schichten gelöscht werden? ähnelt.
+        /// </summary>
+        public static string BTA_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("BTA_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (freie Eingabe) ähnelt.
+        /// </summary>
+        public static string BTA_FREIE_EINGABE {
+            get {
+                return ResourceManager.GetString("BTA_FREIE_EINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
+        /// </summary>
+        public static string BTA_GRP_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("BTA_GRP_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsperiode aus R₁;rel = {0} und C₁;rel = {1}. ähnelt.
+        /// </summary>
+        public static string BTA_HERLEITUNG_TBT {
+            get {
+                return ResourceManager.GetString("BTA_HERLEITUNG_TBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U = 1/(R_si + R + R_se) mit R_si = {0} und R_se = {1} m²K/W – Neigung {2}° aus der Bauteilart, an Außenluft (DIN EN ISO 6946, Tabelle 7). ähnelt.
+        /// </summary>
+        public static string BTA_HERLEITUNG_U {
+            get {
+                return ResourceManager.GetString("BTA_HERLEITUNG_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne λ ist die Luftschicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8, und sie trägt keine Speichermasse. ähnelt.
+        /// </summary>
+        public static string BTA_HINWEIS_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("BTA_HINWEIS_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwaltung der Bauteilaufbauten steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string BTA_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("BTA_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string BTA_KZ_C {
+            get {
+                return ResourceManager.GetString("BTA_KZ_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R-Wert ähnelt.
+        /// </summary>
+        public static string BTA_KZ_R {
+            get {
+                return ResourceManager.GetString("BTA_KZ_R", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert ähnelt.
+        /// </summary>
+        public static string BTA_KZ_U {
+            get {
+                return ResourceManager.GetString("BTA_KZ_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff ähnelt.
+        /// </summary>
+        public static string BTA_LBL_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("BTA_LBL_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilart ähnelt.
+        /// </summary>
+        public static string BTA_LBL_BAUTEILART {
+            get {
+                return ResourceManager.GetString("BTA_LBL_BAUTEILART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string BTA_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("BTA_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string BTA_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("BTA_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string BTA_LBL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("BTA_LBL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftschicht ähnelt.
+        /// </summary>
+        public static string BTA_LBL_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("BTA_LBL_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string BTA_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("BTA_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellkennung ähnelt.
+        /// </summary>
+        public static string BTA_LBL_QUELLKENNUNG {
+            get {
+                return ResourceManager.GetString("BTA_LBL_QUELLKENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0} ähnelt.
+        /// </summary>
+        public static string BTA_LBL_SCHICHT {
+            get {
+                return ResourceManager.GetString("BTA_LBL_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt noch keinen Bauteilaufbau – „Neu…“ legt einen an. ähnelt.
+        /// </summary>
+        public static string BTA_LEER {
+            get {
+                return ResourceManager.GetString("BTA_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Schicht – „+ Neue Schicht …“ legt die innerste an. ähnelt.
+        /// </summary>
+        public static string BTA_LEER_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("BTA_LEER_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string BTA_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("BTA_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string BTA_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("BTA_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string BTA_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("BTA_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Namen gibt es im Katalog bereits. ähnelt.
+        /// </summary>
+        public static string BTA_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("BTA_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten von innen nach außen ähnelt.
+        /// </summary>
+        public static string BTA_RASTER {
+            get {
+                return ResourceManager.GetString("BTA_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R: – (nicht bestimmbar) ähnelt.
+        /// </summary>
+        public static string BTA_R_OFFEN {
+            get {
+                return ResourceManager.GetString("BTA_R_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_R_SCHICHT {
+            get {
+                return ResourceManager.GetString("BTA_R_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Schicht ähnelt.
+        /// </summary>
+        public static string BTA_SCHICHTEN_EINS {
+            get {
+                return ResourceManager.GetString("BTA_SCHICHTEN_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten ähnelt.
+        /// </summary>
+        public static string BTA_SCHICHTEN_ZAHL {
+            get {
+                return ResourceManager.GetString("BTA_SCHICHTEN_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die c_p [J/(kgK)] ähnelt.
+        /// </summary>
+        public static string BTA_SP_CP {
+            get {
+                return ResourceManager.GetString("BTA_SP_CP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dicke [mm] ähnelt.
+        /// </summary>
+        public static string BTA_SP_DICKE {
+            get {
+                return ResourceManager.GetString("BTA_SP_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die λ [W/(mK)] ähnelt.
+        /// </summary>
+        public static string BTA_SP_LAMBDA {
+            get {
+                return ResourceManager.GetString("BTA_SP_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ρ [kg/m³] ähnelt.
+        /// </summary>
+        public static string BTA_SP_RHO {
+            get {
+                return ResourceManager.GetString("BTA_SP_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C = Σ ρ·c_p·d = {0} kJ/(m²K) ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_C {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summen nicht bestimmbar – {0} ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_OFFEN {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R = Σ d/λ = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_R {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_R", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T_BT = {0} d · C₁ = {1} kJ/(m²K) (VDI 6007, Gl. (10a)–(10d)) ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_TBT {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_TBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T_BT: nicht bestimmbar – {0} ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_TBT_OFFEN {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_TBT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U = {0} W/(m²K) ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_U {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string BTA_TITEL {
+            get {
+                return ResourceManager.GetString("BTA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Bauteilaufbau ähnelt.
+        /// </summary>
+        public static string BTA_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("BTA_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbau ähnelt.
+        /// </summary>
+        public static string BTA_WER_AUFBAU {
+            get {
+                return ResourceManager.GetString("BTA_WER_AUFBAU", resourceCulture);
             }
         }
         
@@ -28660,6 +29533,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogversion ähnelt.
         /// </summary>
         public static string KFLT_SP_KATALOGVERSION {
@@ -28849,6 +29731,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R-Wert ähnelt.
+        /// </summary>
+        public static string KFLT_SP_RWERT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_RWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
         /// </summary>
         public static string KFLT_SP_SCHICHTEN {
@@ -28926,6 +29817,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_UDCMAX {
             get {
                 return ResourceManager.GetString("KFLT_SP_UDCMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert ähnelt.
+        /// </summary>
+        public static string KFLT_SP_UWERT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_UWERT", resourceCulture);
             }
         }
         
@@ -31621,6 +32521,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BPF_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BPF_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Baustoff der Liste (Schlüssel ist seine Id). Ihn zu setzen wählt die Zeile – derselbe Weg wie ein Klick; ungespeicherte Änderungen halten die Wahl an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_BAUSTOFF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_BAUSTOFF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_BAUSTOFF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_BAUSTOFF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Baustoffs; zusammen mit dem Hersteller ist er im Katalog eindeutig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die spezifische Wärmekapazität c_p in J/(kgK) – nicht kJ –, zulässig 100 bis 5 000; leer = nicht angegeben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_CP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_CP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_GRUPPE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_GRUPPE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller; leer heißt herstellerneutral (Norm- oder Richtwert). ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_HERSTELLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_HERSTELLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleitfähigkeit λ in W/(mK), zulässig 0,005 bis 500; leer = nicht angegeben (0 wäre ein anderer Stoff). ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_LAMBDA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_LAMBDA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelwerk oder Datenblatt, aus dem die Werte stammen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rohdichte ρ in kg/m³, zulässig 5 bis 8 000; leer = nicht angegeben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_RHO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_RHO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Aufbau der Liste (Schlüssel ist seine Id). Ihn zu setzen wählt die Zeile samt ihren Schichten – derselbe Weg wie ein Klick. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_AUFBAU_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_AUFBAU_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbau ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_AUFBAU_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_AUFBAU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für welche Bauteilart der Aufbau gedacht ist; leer = für jede. Die Art bestimmt die Neigung und damit die Übergangswiderstände des U-Werts; Fenster und Vorhangfassade rechnen aus dem U-Wert und tragen keinen Schichtaufbau. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_BAUTEILART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_BAUTEILART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Aufbau. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Aufbaus; im Katalog eindeutig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelwerk oder Quelle des Aufbaus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Baustoff der Schicht (Schlüssel ist seine Id; leer = freie Eingabe). Die Wahl übernimmt λ, ρ und c_p des Stoffes als Kopie; danach sind sie überschreibbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_BAUSTOFF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_BAUSTOFF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die spezifische Wärmekapazität c_p der Schicht in J/(kgK); eine Stoffschicht braucht sie für die Speichermasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_CP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_CP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dicke der Schicht in mm, zulässig 1 bis 1 000 (eine ruhende Luftschicht bis 300). ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_DICKE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_DICKE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleitfähigkeit λ der Schicht in W/(mK); leer nur bei einer ruhenden Luftschicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_LAMBDA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_LAMBDA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schicht ist eine Luftschicht. Ohne λ ist sie ruhend – ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rohdichte ρ der Schicht in kg/m³; eine Stoffschicht braucht sie für die Speichermasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_RHO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_RHO_ERL", resourceCulture);
             }
         }
         
@@ -34825,6 +35914,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_BPF {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BST {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BTA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BTA", resourceCulture);
             }
         }
         
@@ -49649,6 +50756,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_ADMINISTRATION {
             get {
                 return ResourceManager.GetString("MENU_ADMINISTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string MENU_BAUSTOFFE {
+            get {
+                return ResourceManager.GetString("MENU_BAUSTOFFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilaufbauten ähnelt.
+        /// </summary>
+        public static string MENU_BAUTEILAUFBAUTEN {
+            get {
+                return ResourceManager.GetString("MENU_BAUTEILAUFBAUTEN", resourceCulture);
             }
         }
         

@@ -130,6 +130,13 @@
 //      MENU_LIZENZ_VERWALTUNG bleibt wie MENU_PC_BEARBEITEN, MENU_PV und
 //      MENU_KLIMA im Katalog stehen und wird vom Menue nicht mehr gelesen.
 //
+// GEBAEUDESIMULATION G3 (Softwarearchitektur Gebaeudesimulation 3.1) - der Knoten
+// "Gebaeude" (MenuItem_Gebaeude) fuehrt hinter "Gebaeudetypen" zwei neue Punkte:
+// "Baustoffe" (MenuItem_Baustoffe, MENU_BAUSTOFFE, Seitenschluessel.BaustoffKatalog) und
+// "Bauteilaufbauten" (MenuItem_Bauteilaufbauten, MENU_BAUTEILAUFBAUTEN,
+// Seitenschluessel.BauteilaufbauKatalog) - gemeinsam, weil ein Aufbau aus den Stoffen
+// entsteht. Beide Ziele sind freie Ansichten der AppWurzel.
+//
 // ZAPFPROFILGENERATOR (Umsetzungskonzept 5.4, Stufe Z4) - der Punkt
 // "Brauchwasser" in "Waermebedarf & Heizung" wird ein UNTERMENUE mit zwei
 // Punkten: "Brauchwasserprofile" (MenuItem_Brauchwasserprofile,
@@ -150,7 +157,7 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>61 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>63 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
@@ -164,15 +171,16 @@ namespace EPOS.UI.Bausteine;
 /// Stromspeicherimport hinzu, mit SIM-Q3 der Punkt „Simulation…", mit
 /// ND-Q3 der Punkt „Nutzungsdauern (AfA)…", mit MN-1 faellt
 /// MenuItem_LizenzVerwaltung, und mit dem Zapfprofilgenerator (5.4) kommen
-/// die zwei Punkte unter „Brauchwasser" hinzu. Also
+/// die zwei Punkte unter „Brauchwasser" hinzu, mit der Gebaeudesimulation G3 die zwei
+/// Kataloge unter „Gebaeude". Also
 /// 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 = 61, dazu 13 Trennstriche
+/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 + 2 = 63, dazu 13 Trennstriche
 /// (8 aus dem Bestand und die 5 aus MN-1: vier in der obersten Ebene des
 /// Kopfes "Administration", einer in "Daten &amp; Import").</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 61 Punkten handeln <b>47</b>, 14 klappen auf.
+/// vier klappen nur auf; von den 63 Punkten handeln <b>49</b>, 14 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
@@ -182,7 +190,8 @@ namespace EPOS.UI.Bausteine;
 /// „Simulation" (45 -> 46); GESUNKEN ist sie genau einmal - mit MN-1
 /// (19.09.2026) faellt der zweite Weg zur Lizenzverwaltung (47 -> 46), weil
 /// derselbe Dialog unter Hilfe -> Lizenz steht. Mit dem Zapfprofilgenerator
-/// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47).</para>
+/// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47), mit der
+/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49).</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -234,6 +243,11 @@ public static class Menuetabelle
             {
                 new Menuepunkt("MenuItem_GebBearbeiten", "MENU_GEB_BEARBEITEN", Seitenschluessel.GebaeudeAdmin),
                 new Menuepunkt("MenuItem_GebTypen", "MENU_GEB_TYPEN", Seitenschluessel.GebaeudetypenAdmin),
+                // Gebaeudesimulation G3 (Softwarearchitektur 3.1): die zwei Kataloge der
+                // Gebaeudehuelle, GEMEINSAM eingehaengt - Baustoffe und die Aufbauten aus
+                // ihnen. Beide sind freie Ansichten der Wurzel, auf beiden Plattformen.
+                new Menuepunkt("MenuItem_Baustoffe", "MENU_BAUSTOFFE", Seitenschluessel.BaustoffKatalog),
+                new Menuepunkt("MenuItem_Bauteilaufbauten", "MENU_BAUTEILAUFBAUTEN", Seitenschluessel.BauteilaufbauKatalog),
             },
             // W16c-O-7: der Punkt stand bis zum 07.09.2026 als EINZIGES Kind
             // im Untermenue MenuItem_Klima ("Klimadaten" ueber "Klimadaten").

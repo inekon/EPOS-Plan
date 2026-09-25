@@ -162,12 +162,20 @@ namespace WindowsFormsApplication1
         /// <para><b>Text- und Kennzeichenspalte:</b> Teilzeichenkette ueber
         /// <see cref="VdiAuswahlFilter.Passt"/>; mit <c>*</c> oder <c>?</c> geht der
         /// Ausdruck durch <see cref="Suchmuster"/>.</para>
+        /// <para><b>Jede Spalte:</b> <see cref="Katalogfilterprofil.AUSDRUCK_LEER"/> (<c>=</c>
+        /// allein) trifft genau die Zellen ohne Wert — die Zahl fehlt bzw. der Text ist leer oder
+        /// der Leerwert (Halbgeviertstrich).</para>
         /// </summary>
         public static bool PasstSpalte(Katalogspalte spalte, Katalogwert wert, string ausdruck)
         {
             string a = (ausdruck ?? "").Trim();
             if (a.Length == 0) return true;
             if (spalte == null) return true;
+
+            if (a == Katalogfilterprofil.AUSDRUCK_LEER)
+                return spalte.Art == Katalogspaltenart.Zahl
+                    ? wert.Zahl == null
+                    : string.IsNullOrWhiteSpace(wert.Text) || wert.Text == ParameterVerwendung.LEER;
 
             if (spalte.Art == Katalogspaltenart.Zahl)
             {

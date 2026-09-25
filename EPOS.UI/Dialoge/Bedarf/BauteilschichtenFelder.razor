@@ -1,0 +1,257 @@
+﻿@* DAS SCHICHTENRASTER EINES BAUTEILAUFBAUS samt Summenfuss (Gebaeudesimulation G3,
+   Welle C; Mehrzonenkonzept 5.1: "Zeilenraster Schichten: Nr | Baustoff | Dicke | lambda |
+   rho | c | R", Summenfuss R, U, C, T_BT).
+
+   DIE ZEILE IST EINE KLEINE MASKE (Baustein Zeilenraster): Im Stammblatt stehen 340 bis
+   440 px zur Verfuegung - zu wenig fuer neun Spalten. Die Zeile laeuft deshalb in drei
+   Lagen ueber dieselben vier Spuren: oben Nummer und Baustoff (Suchauswahl ueber den
+   Katalog, "(freie Eingabe)" als erster Eintrag), in der Mitte die vier Zahlen unter dem
+   Spaltenkopf (Dicke in mm, lambda, rho, c_p), unten der Schalter "Luftschicht", der
+   Widerstand der Schicht und die drei Zeilenknoepfe (nach innen, nach aussen, entfernen) -
+   immer sichtbar, 44 px. Die Abschlusszeile "+ Neue Schicht ..." haengt aussen an.
+
+   DIE OBERFLAECHE RECHNET NICHT. R je Schicht und der Summenfuss kommen fertig aus der Huelle
+   (BauteilaufbauCtrl.Kennwerte im Kern) als AufbauKennwerteDaten herein; die Komponente
+   formatiert nur. Die Operationen stehen im Arbeitsstand (BauteilaufbauArbeitsstand), damit
+   Knopf und Assistent denselben Weg gehen; nach jeder meldet sie "Geaendert", und der Wirt
+   holt den Summenfuss neu.
+
+   NUR DER SUMMENFUSS (NurSummen): der Nachsatz der Gruppe "Schichten" im Lesemodus eines
+   Auslieferungssatzes - die Schichten selbst stehen dort als Text (Werte). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+@if (!NurSummen)
+{
+    <Zeilenraster Bezeichnung="@Texte.Raster" Spalten="@Spalten"
+                  Spaltenmass="minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)"
+                  Summen="@Summen">
+        <KindInhalt>
+            @for (int i = 0; i < Stand.Schichten.Count; i++)
+            {
+                int index = i;
+                BauteilschichtDaten s = Stand.Schichten[index];
+                string nummer = string.Format(CultureInfo.CurrentCulture, Texte.Schicht, index + 1);
+                <div class="epos-zr-zeile epos-bauteilschicht" role="row" @key="s">
+                    <div class="epos-zr-zelle epos-bauteilschicht-kopf" role="cell">
+                        <span class="epos-bauteilschicht-nr" title="@nummer">@(index + 1)</span>
+                        <Suchauswahl Kurzname="@(nummer + " – " + Texte.Baustoff)" Eintraege="@Stoffeintraege"
+                                     Auswahl="@(s.IdBaustoff ?? FREI)" AuswahlChanged="id => Stoff(index, id)" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <Zahlenfeld Wert="@s.DickeMm" Titel="@(nummer + " – " + Texte.SpalteDicke)"
+                                    Feldname="@(nummer + " – " + Texte.SpalteDicke)"
+                                    WertChanged="w => Setzen(() => s.DickeMm = w)" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <Zahlenfeld Wert="@s.Lambda" Titel="@(nummer + " – " + Texte.SpalteLambda)"
+                                    Feldname="@(nummer + " – " + Texte.SpalteLambda)"
+                                    WertChanged="w => Setzen(() => s.Lambda = w)" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <Zahlenfeld Wert="@s.Rho" Titel="@(nummer + " – " + Texte.SpalteRho)"
+                                    Feldname="@(nummer + " – " + Texte.SpalteRho)"
+                                    WertChanged="w => Setzen(() => s.Rho = w)" />
+                    </div>
+                    <div class="epos-zr-zelle" role="cell">
+                        <Zahlenfeld Wert="@s.Cp" Titel="@(nummer + " – " + Texte.SpalteCp)"
+                                    Feldname="@(nummer + " – " + Texte.SpalteCp)"
+                                    WertChanged="w => Setzen(() => s.Cp = w)" />
+                    </div>
+                    <div class="epos-zr-zelle epos-bauteilschicht-fuss" role="cell">
+                        <span class="epos-bauteilschicht-luft" title="@Texte.LuftschichtHinweis">
+                            <Schalter Bezeichnung="@Texte.Luftschicht" Wert="@s.IstLuftschicht"
+                                      WertChanged="w => Setzen(() => s.IstLuftschicht = w)" />
+                        </span>
+                        <span class="epos-bauteilschicht-r">@RText(index)</span>
+                        <span class="epos-zr-aktionen">
+                            <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.NachInnen"
+                                    aria-label="@(nummer + " – " + Texte.NachInnen)" disabled="@(index == 0)"
+                                    @onclick="() => Verschieben(index, -1)"><span aria-hidden="true">▲</span></button>
+                            <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.NachAussen"
+                                    aria-label="@(nummer + " – " + Texte.NachAussen)"
+                                    disabled="@(index >= Stand.Schichten.Count - 1)"
+                                    @onclick="() => Verschieben(index, +1)"><span aria-hidden="true">▼</span></button>
+                            <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.Entfernen"
+                                    aria-label="@(nummer + " – " + Texte.Entfernen)"
+                                    @onclick="() => Entfernen(index)"><span aria-hidden="true">✕</span></button>
+                        </span>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+        <AbschlussZeile>
+            <div class="epos-zr-neuzeile epos-bauteilschicht-neu" role="row">
+                @if (Stand.Schichten.Count == 0)
+                {
+                    <p class="epos-leisezeile">@Texte.Leer</p>
+                }
+                <button type="button" class="epos-textknopf" @onclick="Anlegen">@Texte.NeueSchicht</button>
+            </div>
+        </AbschlussZeile>
+    </Zeilenraster>
+}
+else
+{
+    <ul class="epos-bauteilschicht-summen">
+        @foreach ((string text, bool stark) in Summen)
+        {
+            <li class="@(stark ? "epos-bauteilschicht-summe--stark" : null)">@text</li>
+        }
+    </ul>
+}
+@if (Herleitung.Length > 0)
+{
+    <Herleitungszeile Text="@Herleitung" />
+}
+
+@code {
+    /// <summary>Id der Wahl „(freie Eingabe)" — Baustoffe tragen Ids ab 1.</summary>
+    private const int FREI = 0;
+
+    /// <summary>Der Arbeitsstand des Aufbaus — Pflicht; die Zeilen sind seine Schichten.</summary>
+    [Parameter, EditorRequired] public BauteilaufbauArbeitsstand Stand { get; set; } = new();
+
+    /// <summary>Die Baustoffe zur Wahl (Id, Text, Werte der Kopie); leer = nur freie Eingabe.</summary>
+    [Parameter] public IReadOnlyList<BaustoffWahl> Baustoffe { get; set; } = Array.Empty<BaustoffWahl>();
+
+    /// <summary>R je Schicht und der Summenfuß, fertig aus der Hülle; ohne sie steht „nicht bestimmbar" nirgends — nur leere Summen.</summary>
+    [Parameter] public AufbauKennwerteDaten Kennwerte { get; set; } = AufbauKennwerteDaten.Leer;
+
+    /// <summary>Nur der Summenfuß samt Herleitung — der Nachsatz des Lesemodus.</summary>
+    [Parameter] public bool NurSummen { get; set; }
+
+    /// <summary>Nach jeder Änderung am Arbeitsstand — der Wirt zieht „geändert" und den Summenfuß nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public BauteilschichtenTexte Texte { get; set; } = new();
+
+    private IReadOnlyList<(int Id, string Text)>? _stoffeintraege;
+    private IReadOnlyList<BaustoffWahl>? _stoffeFuer;
+
+    private IReadOnlyList<string> Spalten => new[] { Texte.SpalteDicke, Texte.SpalteLambda, Texte.SpalteRho, Texte.SpalteCp };
+
+    /// <summary>„(freie Eingabe)" und die Baustoffe — zwischengespeichert, solange die Liste dieselbe ist.</summary>
+    private IReadOnlyList<(int Id, string Text)> Stoffeintraege
+    {
+        get
+        {
+            if (_stoffeintraege is null || !ReferenceEquals(_stoffeFuer, Baustoffe))
+            {
+                var liste = new List<(int, string)>(Baustoffe.Count + 1) { (FREI, Texte.FreieEingabe) };
+                liste.AddRange(Baustoffe.Select(b => (b.Id, b.Text)));
+                _stoffeintraege = liste;
+                _stoffeFuer = Baustoffe;
+            }
+            return _stoffeintraege;
+        }
+    }
+
+    // --- Die Operationen: alle über den Arbeitsstand, danach „Geaendert" ------------------
+
+    private Task Stoff(int index, int? id)
+    {
+        Stand.StoffWaehlen(index, id is null or FREI ? null : id, Baustoffe);
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Setzen(Action schritt)
+    {
+        schritt();
+        Stand.Eingabe();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Anlegen()
+    {
+        Stand.SchichtAnlegen();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Verschieben(int index, int richtung)
+        => Stand.Verschieben(index, richtung) ? Geaendert.InvokeAsync() : Task.CompletedTask;
+
+    private Task Entfernen(int index)
+        => Stand.Entfernen(index) ? Geaendert.InvokeAsync() : Task.CompletedTask;
+
+    // --- Anzeige: nur formatiert, nie gerechnet --------------------------------------------
+
+    private string RText(int index)
+    {
+        double? r = index < Kennwerte.RJeSchicht_M2KW.Count ? Kennwerte.RJeSchicht_M2KW[index] : null;
+        return r.HasValue
+            ? string.Format(CultureInfo.CurrentCulture, Texte.RSchicht, r.Value.ToString("0.000", CultureInfo.CurrentCulture))
+            : Texte.ROffen;
+    }
+
+    /// <summary>Der Summenfuß: R, U, C und T_BT — oder der Grund, warum sie nicht stehen.</summary>
+    private IReadOnlyList<(string Text, bool Stark)> Summen
+    {
+        get
+        {
+            var k = Kennwerte;
+            var c = CultureInfo.CurrentCulture;
+            // Ohne Schicht sagt es die Abschlusszeile - ein zweiter Satz im Summenfuss wiederholte ihn.
+            if (!k.U_WM2K.HasValue)
+                return k.Grund.Length > 0 && Stand.Schichten.Count > 0
+                    ? new[] { (string.Format(c, Texte.SummeOffen, k.Grund), false) }
+                    : Array.Empty<(string, bool)>();
+
+            var liste = new List<(string, bool)>
+            {
+                (string.Format(c, Texte.SummeR, (k.R_M2KW ?? 0).ToString("0.000", c)), false),
+                (string.Format(c, Texte.SummeU, k.U_WM2K.Value.ToString("0.000", c)), true),
+                (string.Format(c, Texte.SummeC, (k.Kapazitaet_KJM2K ?? 0).ToString("0.0", c)), false)
+            };
+            if (k.Bezugsperiode_D.HasValue)
+                liste.Add((string.Format(c, Texte.SummeTbt, k.Bezugsperiode_D.Value.ToString("0", c),
+                                         (k.KapazitaetWirksam_KJM2K ?? 0).ToString("0.0", c)), false));
+            else if (k.PeriodeGrund.Length > 0)
+                liste.Add((string.Format(c, Texte.SummeTbtOffen, k.PeriodeGrund), false));
+            return liste;
+        }
+    }
+
+    /// <summary>Die Herleitungszeile: die angesetzten Übergänge, und woraus T_BT folgt.</summary>
+    private string Herleitung
+    {
+        get
+        {
+            var k = Kennwerte;
+            if (!k.U_WM2K.HasValue) return "";
+            var c = CultureInfo.CurrentCulture;
+            string u = string.Format(c, Texte.HerleitungU, k.RSi_M2KW.ToString("0.00", c),
+                                     k.RSe_M2KW.ToString("0.00", c), k.NeigungGrad.ToString("0", c));
+            if (!k.R1Rel.HasValue || !k.C1Rel.HasValue) return u;
+            return u + " " + string.Format(c, Texte.HerleitungTbt, k.R1Rel.Value.ToString("0.000", c),
+                                           k.C1Rel.Value.ToString("0.000", c));
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Schichten als Text</b> — die Werte der Gruppe „Schichten" im Lesemodus eines
+    /// Auslieferungssatzes: je Schicht Nummer und Baustoff, Dicke, λ und R.
+    /// </summary>
+    public static IReadOnlyList<Stammblattwert> Werte(BauteilaufbauArbeitsstand stand, IReadOnlyList<BaustoffWahl> baustoffe,
+                                                      AufbauKennwerteDaten kennwerte, BauteilschichtenTexte texte)
+    {
+        var c = CultureInfo.CurrentCulture;
+        var liste = new List<Stammblattwert>(stand.Schichten.Count);
+        for (int i = 0; i < stand.Schichten.Count; i++)
+        {
+            BauteilschichtDaten s = stand.Schichten[i];
+            string stoff = s.IdBaustoff is int id ? baustoffe.FirstOrDefault(b => b.Id == id)?.Text ?? "" : texte.FreieEingabe;
+            string name = string.Format(c, texte.Schicht, i + 1) + (stoff.Length > 0 ? " – " + stoff : "");
+            var teile = new List<string>(4);
+            if (s.DickeMm.HasValue) teile.Add(s.DickeMm.Value.ToString("0.#", c) + " " + texte.EinheitMm);
+            if (s.IstLuftschicht) teile.Add(texte.Luftschicht);
+            if (s.Lambda.HasValue) teile.Add("λ " + s.Lambda.Value.ToString("0.0###", c));
+            double? r = i < kennwerte.RJeSchicht_M2KW.Count ? kennwerte.RJeSchicht_M2KW[i] : null;
+            if (r.HasValue) teile.Add(string.Format(c, texte.RSchicht, r.Value.ToString("0.000", c)));
+            liste.Add(new Stammblattwert(name, string.Join(" · ", teile)));
+        }
+        return liste;
+    }
+}
