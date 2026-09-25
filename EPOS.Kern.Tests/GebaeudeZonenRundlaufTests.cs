@@ -181,6 +181,32 @@ namespace EPOS.Kern.Tests
             Assert.True(zonenCtrl.SpeichernJeGebaeude(GEBAEUDE_B, new List<ZoneModel> { gelesen[2], gelesen[0], gelesen[1] }).Ok);
         }
 
+        /// <summary>
+        /// Ein weiteres Gebäude über den Weg der Gebäudeliste mit Importherkunft und Bauteilvorschlag
+        /// (Stufe G4b: <c>WizardCtrl.GebaeudeZuordnungAnlegen</c> schreibt Projektkopie, Aufbauten, Zone,
+        /// Bauteile und Herkunft samt Paarungen in EINEM Vorgang).
+        /// </summary>
+        /// <returns>Die Zuordnung (<c>Z_ProjektGebaeude.ID</c>) und die Projektkopie (<c>Tab_Gebaeude.ID</c>).</returns>
+        internal static (int IdZ, int IdGebaeude) ImportUeberGebaeudeliste()
+        {
+            GebaeudeImportSatz satz = GbxmlImportTests.Satz(PROBE);
+            GebaeudeBauteilvorschlag v = BauteilvorschlagProbe.Vorschlag(PROBE);
+            Assert.False(v.Abgelehnt);
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            var vorher = new HashSet<int>(liste.Select(z => z.ID_Z));
+            Z_ProjGebModel vorlage = liste[0];
+            liste.Add(new Z_ProjGebModel
+            {
+                ID_Z = 100000, ID_Projekt = PROJEKT, ID_Gebaeude_Stamm = vorlage.ID_Gebaeude_Stamm,
+                Gebaeudename = vorlage.Gebaeudename, Wohnflaeche = 100, Einheit = "Wohnfläche [m²]", Jahresnutzungsgrad = 1,
+                Importherkunft = new GebaeudeImportHerkunft(satz.Quelle, GebaeudeImportCtrl.Einzonenpaarungen(satz), v)
+            });
+            (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, liste);
+            Assert.True(ok, meldung);
+            int idZ = Z_ProjGebCtrl.LiesProjekt(PROJEKT).Select(z => z.ID_Z).Single(id => !vorher.Contains(id));
+            return (idZ, GebaeudeBedarfCtrl.TabGebaeudeId(idZ));
+        }
+
         // =============================================================================
         //  Der Abdruck
         // =============================================================================
@@ -402,6 +428,68 @@ namespace EPOS.Kern.Tests
 
             foreach (string t in ZonenRundlauf.TABELLEN)
                 Assert.True(ZonenRundlauf.Zahl(t) == 0, t + " trägt nach dem Löschen des Projekts noch Zeilen.");
+        }
+
+        /// <summary>
+        /// <b>Der Importweg der Gebäudeliste</b> (Stufe G4b, <c>WizardCtrl.GebaeudeZuordnungAnlegen</c>):
+        /// Ein Gebäude, das mit Herkunft und Bauteilvorschlag in die Liste kommt, trägt Zone, Bauteile,
+        /// Aufbauten, Importquelle und Paarungen — und sie reisen über jeden Weg des Rundlaufs: Das
+        /// Speichern der Liste lässt jede Spalte stehen, Duplikat und Transfer tragen jede Zeile und
+        /// Spalte, das Entfernen des Gebäudes nimmt seine Zeilen mit und lässt die übrigen stehen.
+        /// </summary>
+        [Fact]
+        public void Der_Import_ueber_die_Gebaeudeliste_reist_ueber_jeden_Weg()
+        {
+            if (!_db.Vorhanden) return;
+            ZonenRundlauf.Anlegen();
+            (int idZ, int idGebaeude) = ZonenRundlauf.ImportUeberGebaeudeliste();
+            Dictionary<string, List<string>> importiert = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false, idGebaeude);
+            Assert.All(ZonenRundlauf.TABELLEN.Where(ZonenRundlauf.AmGebaeude), t => Assert.NotEmpty(importiert[t]));
+            Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(idGebaeude));
+
+            Dictionary<string, List<string>> quelle = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: true);
+            Dictionary<string, List<string>> roh = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false);
+            string name = Projektname();
+
+            // Gewoehnliches Speichern der Liste.
+            Assert.True(new WizardCtrl().Speichere_Projekt_Gebaeudeliste(ZonenRundlauf.PROJEKT, Z_ProjGebCtrl.LiesProjekt(ZonenRundlauf.PROJEKT)).Gelungen);
+            ZonenRundlauf.Gleich(roh, ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false), "Gebäudeliste nach dem Import");
+
+            // Duplikat.
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Import");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            ZonenRundlauf.Gleich(quelle, ZonenRundlauf.Abdruck(kopie, ohneIds: true), "Duplikat mit Import");
+
+            // Transfer in eine Datenbank ohne Zonen.
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-g6a-import-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                string paket = Path.Combine(ordner, "g6a.wpx");
+                Assert.True(new ProjektExportImportCtrl().Exportieren(name, paket));
+                using (var ziel = new TestDatenbank())
+                {
+                    Assert.True(ziel.Vorhanden);
+                    int neu = new ProjektExportImportCtrl().Importieren(paket, name + " Transfer",
+                        ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler);
+                    Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+                    foreach (string t in ZonenRundlauf.TABELLEN)
+                        Assert.True(ZonenRundlauf.Zahl(t) == quelle[t].Count, t + ": Zeilenzahl nach dem Transfer.");
+                    ZonenRundlauf.Gleich(quelle, ZonenRundlauf.Abdruck(neu, ohneIds: true), "Transfer mit Import");
+                }
+            }
+            finally
+            {
+                try { Directory.Delete(ordner, true); } catch { /* Aufraeumen kostet keinen Test */ }
+            }
+
+            // Entfernen des importierten Gebaeudes: seine Zeilen fallen, die der uebrigen stehen.
+            Dictionary<string, List<string>> a = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false, ZonenRundlauf.GEBAEUDE_A);
+            Assert.True(new WizardCtrl().Del_Projekt_ZuordungGebäude(ZonenRundlauf.PROJEKT, idZ));
+            Dictionary<string, List<string>> nachImport = ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false, idGebaeude);
+            foreach (string t in ZonenRundlauf.TABELLEN.Where(ZonenRundlauf.AmGebaeude))
+                Assert.True(nachImport[t].Count == 0, t + " trägt nach dem Entfernen des importierten Gebäudes noch Zeilen.");
+            ZonenRundlauf.Gleich(a, ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false, ZonenRundlauf.GEBAEUDE_A), "Nachbargebäude");
         }
 
         /// <summary>
