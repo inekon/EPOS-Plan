@@ -188,6 +188,8 @@ namespace WindowsFormsApplication1
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "AssistentSeite",                B_ASSISTENT },
+            { "BaustoffKatalog",               B_GEBAEUDE },
+            { "Bauteilaufbau",                 B_GEBAEUDE },
             { "Form_AdminPV",                  B_PHOTOVOLTAIK },
             { "Form_AdminSettings",            B_ADMIN },
             { "Form_AdminStromspeicher",       B_STROMSPEICHER },

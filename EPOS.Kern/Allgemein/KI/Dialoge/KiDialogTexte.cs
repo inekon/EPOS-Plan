@@ -1189,6 +1189,66 @@
         internal static string GtypStundenwerteName => MyResource.Resource.KI_DLG_GTYP_STUNDENWERTE_NAME;
         internal static string GtypStundenwerteErl => MyResource.Resource.KI_DLG_GTYP_STUNDENWERTE_ERL;
 
+        // ================= Gebaeudesimulation G3: Baustoffe und Bauteilaufbauten
+
+        /// <summary>Die Verwaltung „Baustoffe" (G3).</summary>
+        internal static string MaskeBaustoffKatalog => MyResource.Resource.KI_DLG_MASKE_BST;
+
+        /// <summary>Die Verwaltung „Bauteilaufbauten" (G3).</summary>
+        internal static string MaskeBauteilaufbau => MyResource.Resource.KI_DLG_MASKE_BTA;
+
+        /// <summary>Einheit der Waermeleitfaehigkeit — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_LAMBDA = "W/(m·K)";
+
+        /// <summary>Einheit der Rohdichte — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_RHO = "kg/m³";
+
+        /// <summary>Einheit der spezifischen Waermekapazitaet — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_CP = "J/(kg·K)";
+
+        /// <summary>Einheit der Schichtdicke im Raster — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_MM = "mm";
+
+        internal static string BstBaustoffName => MyResource.Resource.KI_DLG_BST_BAUSTOFF_NAME;
+        internal static string BstBaustoffErl => MyResource.Resource.KI_DLG_BST_BAUSTOFF_ERL;
+        internal static string BstBezeichnerName => MyResource.Resource.BST_LBL_BEZEICHNER;
+        internal static string BstBezeichnerErl => MyResource.Resource.KI_DLG_BST_BEZEICHNER_ERL;
+        internal static string BstGruppeName => MyResource.Resource.BST_LBL_GRUPPE;
+        internal static string BstGruppeErl => MyResource.Resource.KI_DLG_BST_GRUPPE_ERL;
+        internal static string BstHerstellerName => MyResource.Resource.BST_LBL_HERSTELLER;
+        internal static string BstHerstellerErl => MyResource.Resource.KI_DLG_BST_HERSTELLER_ERL;
+        internal static string BstLambdaName => MyResource.Resource.BST_LBL_LAMBDA;
+        internal static string BstLambdaErl => MyResource.Resource.KI_DLG_BST_LAMBDA_ERL;
+        internal static string BstRhoName => MyResource.Resource.BST_LBL_RHO;
+        internal static string BstRhoErl => MyResource.Resource.KI_DLG_BST_RHO_ERL;
+        internal static string BstCpName => MyResource.Resource.BST_LBL_CP;
+        internal static string BstCpErl => MyResource.Resource.KI_DLG_BST_CP_ERL;
+        internal static string BstQuelleName => MyResource.Resource.BST_LBL_QUELLE;
+        internal static string BstQuelleErl => MyResource.Resource.KI_DLG_BST_QUELLE_ERL;
+
+        internal static string BtaAufbauName => MyResource.Resource.KI_DLG_BTA_AUFBAU_NAME;
+        internal static string BtaAufbauErl => MyResource.Resource.KI_DLG_BTA_AUFBAU_ERL;
+        internal static string BtaBezeichnerName => MyResource.Resource.BTA_LBL_BEZEICHNER;
+        internal static string BtaBezeichnerErl => MyResource.Resource.KI_DLG_BTA_BEZEICHNER_ERL;
+        internal static string BtaBauteilartName => MyResource.Resource.BTA_LBL_BAUTEILART;
+        internal static string BtaBauteilartErl => MyResource.Resource.KI_DLG_BTA_BAUTEILART_ERL;
+        internal static string BtaBeschreibungName => MyResource.Resource.BTA_LBL_BESCHREIBUNG;
+        internal static string BtaBeschreibungErl => MyResource.Resource.KI_DLG_BTA_BESCHREIBUNG_ERL;
+        internal static string BtaQuelleName => MyResource.Resource.BTA_LBL_QUELLE;
+        internal static string BtaQuelleErl => MyResource.Resource.KI_DLG_BTA_QUELLE_ERL;
+        internal static string BtaSchichtBaustoffName => MyResource.Resource.BTA_LBL_BAUSTOFF;
+        internal static string BtaSchichtBaustoffErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_BAUSTOFF_ERL;
+        internal static string BtaSchichtDickeName => MyResource.Resource.BTA_SP_DICKE;
+        internal static string BtaSchichtDickeErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_DICKE_ERL;
+        internal static string BtaSchichtLambdaName => MyResource.Resource.BTA_SP_LAMBDA;
+        internal static string BtaSchichtLambdaErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_LAMBDA_ERL;
+        internal static string BtaSchichtRhoName => MyResource.Resource.BTA_SP_RHO;
+        internal static string BtaSchichtRhoErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_RHO_ERL;
+        internal static string BtaSchichtCpName => MyResource.Resource.BTA_SP_CP;
+        internal static string BtaSchichtCpErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_CP_ERL;
+        internal static string BtaSchichtLuftschichtName => MyResource.Resource.BTA_LBL_LUFTSCHICHT;
+        internal static string BtaSchichtLuftschichtErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL;
+
         internal static string TprofTypName => MyResource.Resource.BPRO_LBL_LISTE_STROM;
         internal static string TprofTypErl => MyResource.Resource.KI_DLG_TPROF_TYP_ERL;
         internal static string TprofWochentagName => MyResource.Resource.BPRO_LBL_WOCHENTAG;

@@ -86,34 +86,278 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Zeilen der Katalogverwaltung</b> nach <see cref="Katalogfilterprofil.FuerBauteilaufbau"/>
-        /// — EINE Abfrage mit Schichtzahl und Gesamtdicke.
+        /// — ZWEI Abfragen (Köpfe, alle Schichten nach Aufbau und Reihenfolge), zusammengeführt im
+        /// Speicher. Je Aufbau stehen Bauteilart und Herkunft als Anzeigetext, dazu U, R und die
+        /// flächenbezogene Kapazität aus <see cref="Kennwerte(BauteilaufbauModel, bool)"/> — die
+        /// Liste rechnet über denselben Weg wie der Summenfuß des Stammblatts.
+        ///
+        /// <para><b>Der Schlüssel der Zeile ist die Id</b> (Mehrzonenkonzept 5.2), nicht der Name;
+        /// ein Aufbau der Auslieferung trägt das Schloss.</para>
         /// </summary>
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
             var liste = new List<Katalogfilterzeile>();
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT a.\"ID\", a.\"Bezeichner\", a.\"Bauteilart\", a.\"Herkunft\", a.\"ReadOnly\", " +
-                "COUNT(s.\"ID\") AS Schichten, SUM(s.\"Dicke\") AS Dicke " +
-                "FROM \"" + BauteilaufbauSchema.TAB_AUFBAU_STAMM + "\" a " +
-                "LEFT JOIN \"" + BauteilaufbauSchema.TAB_SCHICHT_STAMM + "\" s ON s.\"ID_Aufbau\" = a.\"ID\" " +
-                "GROUP BY a.\"ID\" ORDER BY a.\"Bezeichner\"");
-            if (dt == null) return liste;
+            DataTable kopf = StilleDb.Tabelle(
+                "SELECT * FROM \"" + BauteilaufbauSchema.TAB_AUFBAU_STAMM + "\" ORDER BY \"Bezeichner\", \"ID\"");
+            if (kopf == null) return liste;
+            DataTable schichten = StilleDb.Tabelle(
+                "SELECT " + SCHICHTSPALTEN_SQL + " FROM \"" + BauteilaufbauSchema.TAB_SCHICHT_STAMM + "\" " +
+                "ORDER BY \"ID_Aufbau\", \"Reihenfolge\", \"ID\"");
 
-            foreach (DataRow r in dt.Rows)
+            foreach (BauteilaufbauModel a in Zusammenfuehren(kopf, schichten))
             {
-                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
-                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                BauteilaufbauKennwerte k = Kennwerte(a, mitBezugsperiode: false);
+                var zeile = new Katalogfilterzeile(a.ID, a.Bezeichner)
                 {
-                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                    Geschuetzt = a.ReadOnly,
+                    Schluessel = a.ID.ToString(CultureInfo.InvariantCulture)
                 };
                 liste.Add(zeile
-                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
-                    .MitText(Katalogfilterprofil.SpBauteilart, Katalogfeld.Text(r, "Bauteilart"))
-                    .MitZahl(Katalogfilterprofil.SpSchichten, Katalogfeld.Zahl(r, "Schichten"), 0)
-                    .MitZahl(Katalogfilterprofil.SpDicke, Katalogfeld.Zahl(r, "Dicke"), 3)
-                    .MitText(Katalogfilterprofil.SpHerkunft, Katalogfeld.Text(r, "Herkunft")));
+                    .MitText(Katalogfilterprofil.SpBezeichner, a.Bezeichner)
+                    .MitText(Katalogfilterprofil.SpBauteilart, BauteilartText(a.Bauteilart))
+                    .MitZahl(Katalogfilterprofil.SpUWert, k.U_WM2K, 3)
+                    .MitZahl(Katalogfilterprofil.SpRWert, k.R_M2KW, 2)
+                    .MitZahl(Katalogfilterprofil.SpKapazitaet, k.Kapazitaet_KJM2K, 0)
+                    .MitZahl(Katalogfilterprofil.SpSchichten, a.Schichten.Count, 0)
+                    .MitZahl(Katalogfilterprofil.SpDicke, a.Schichten.Count > 0 ? a.Gesamtdicke : (double?)null, 3)
+                    .MitText(Katalogfilterprofil.SpHerkunft, BaustoffCtrl.HerkunftText(a.Herkunft)));
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Der Anzeigetext einer Bauteilart (<see cref="DbWerte.BAUTEILARTEN"/>) — nie Steuerwert;
+        /// <c>null</c> heißt am Aufbau „für jede Bauteilart", ein unbekannter Wert erscheint, wie er ist.
+        /// </summary>
+        public static string BauteilartText(string art)
+        {
+            if (art == null) return MyResource.Resource.BTA_ART_JEDE;
+            string t = DbWerte.BAUTEILARTEN.Contains(art)
+                ? MyResource.Resource.ResourceManager.GetString("BTA_ART_" + art)
+                : null;
+            return string.IsNullOrEmpty(t) ? art : t;
+        }
+
+        // =================================================================
+        //  Die Schichtdicke: gespeichert in m, angezeigt in mm
+        // =================================================================
+
+        /// <summary>Millimeter je Meter — die Anzeigeeinheit der Schichtdicke ist mm, gespeichert wird m.</summary>
+        public const double MM_JE_M = 1000.0;
+
+        /// <summary>
+        /// Eine Schichtdicke in m als Anzeigewert in mm (die EINE Umrechnung an der Anzeigekante),
+        /// auf 10⁻⁶ mm gerundet — sonst trüge 0,175 m als 175,00000000000003 mm zurück, und jedes
+        /// Speichern verschöbe die Dicke um ein Bit.
+        /// </summary>
+        public static double DickeMm(double dickeM) => Math.Round(dickeM * MM_JE_M, 6);
+
+        /// <summary>Ein Anzeigewert in mm als Schichtdicke in m, auf 10⁻⁹ m gerundet (Hin und Zurück sind stabil).</summary>
+        public static double DickeM(double dickeMm) => Math.Round(dickeMm / MM_JE_M, 9);
+
+        // =================================================================
+        //  Kennwerte eines Aufbaus (Summenfuß, Listenspalten)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Die Kennwerte eines Aufbaus</b> für die Anzeige — R je Schicht, R = Σ d/λ, U mit den
+        /// Übergängen aus der Neigung der Bauteilart an Außenluft, die flächenbezogene Kapazität
+        /// Σ ρ·c_p·d und die Bezugsperiode T_BT nach VDI 6007 Blatt 1 Gl. (10a)–(10d) samt der
+        /// wirksamen Kapazität C₁ je m². Ohne Datenbank; gerechnet über <c>Bauteilreduktion</c> —
+        /// der Weg, den der Lauf nimmt.
+        ///
+        /// <para><b>Nie eine Ausnahme.</b> Eine unvollständige Schicht (etwa während der Eingabe)
+        /// lässt die Summen leer und nennt in <see cref="BauteilaufbauKennwerte.Grund"/> die erste
+        /// Lücke; die R-Werte der übrigen Schichten stehen trotzdem.</para>
+        /// </summary>
+        /// <param name="m">Der Aufbau samt Schichten (Dicke in m).</param>
+        /// <param name="mitBezugsperiode">Auch T_BT und C₁ bestimmen (zweimal die Reduktion) — die Liste braucht es nicht.</param>
+        public static BauteilaufbauKennwerte Kennwerte(BauteilaufbauModel m, bool mitBezugsperiode = true)
+        {
+            string art = m?.Bauteilart;
+            string wer = string.IsNullOrWhiteSpace(m?.Bezeichner) ? MyResource.Resource.BTA_WER_AUFBAU : m.Bezeichner.Trim();
+            double neigung = GebaeudeZonenCtrl.NeigungVorgabe(art);
+            Waermestromrichtung richtung = Bauteilreduktion.RichtungAusNeigung(neigung);
+            (double rSi, double rSe) = Bauteilreduktion.Uebergangswiderstaende(neigung, Bauteilrand.Aussenluft);
+
+            List<BauteilschichtModel> modelle = (m?.Schichten ?? new List<BauteilschichtModel>()).Where(s => s != null).ToList();
+            var rJe = new double?[modelle.Count];
+            var schichten = new List<Schicht>(modelle.Count);
+            string grund = modelle.Count == 0 ? MyResource.Resource.BAUTEIL_MSG_KEINE_SCHICHT : null;
+
+            for (int i = 0; i < modelle.Count; i++)
+            {
+                if (!SchichtAusModell(modelle[i], i + 1, out Schicht schicht, out string fehlt))
+                {
+                    grund ??= fehlt;
+                    continue;
+                }
+                schichten.Add(schicht);
+                try
+                {
+                    Bauteilreduktion.Pruefen(new[] { schicht }, wer);
+                    rJe[i] = Bauteilreduktion.Waermedurchlasswiderstand(schicht, richtung, wer, i + 1);
+                }
+                catch (GebaeudeModellException)
+                {
+                    // Die Meldung mit der richtigen Schichtnummer liefert der Gesamtlauf darunter.
+                }
+            }
+
+            var basis = new BauteilaufbauKennwerte
+            {
+                NeigungGrad = neigung,
+                RSi_M2KW = rSi,
+                RSe_M2KW = rSe,
+                RJeSchicht_M2KW = rJe
+            };
+            if (grund != null) return basis with { Grund = grund };
+
+            Schichtkennwerte k;
+            try
+            {
+                k = Bauteilreduktion.Kennwerte(schichten, richtung, rSi, rSe, wer);
+            }
+            catch (GebaeudeModellException ex)
+            {
+                return basis with { Grund = ex.Message };
+            }
+
+            var ergebnis = basis with
+            {
+                R_M2KW = k.R_M2KW,
+                U_WM2K = k.U_WM2K,
+                Kapazitaet_KJM2K = k.Kapazitaet_JM2K / JE_KILO
+            };
+            if (!mitBezugsperiode) return ergebnis;
+
+            try
+            {
+                Bezugsperiodenwahl wahl = Bauteilreduktion.BezugsperiodeWaehlen(schichten, 1.0, richtung, wer);
+                return ergebnis with
+                {
+                    Bezugsperiode_D = wahl.Periode_d,
+                    R1Rel = wahl.R1rel,
+                    C1Rel = wahl.C1rel,
+                    KapazitaetWirksam_KJM2K = wahl.Kennwerte.C1_Jk / JE_KILO
+                };
+            }
+            catch (GebaeudeModellException ex)
+            {
+                return ergebnis with { PeriodeGrund = ex.Message };
+            }
+        }
+
+        /// <summary>J je kJ.</summary>
+        private const double JE_KILO = 1000.0;
+
+        /// <summary>
+        /// Eine Schicht des Modells als Schicht des Bauteilwegs — oder die benannte Lücke. Eine
+        /// Luftschicht ohne λ ist eine ruhende Luftschicht (DIN EN ISO 6946 Tabelle 8); jede
+        /// übrige Schicht braucht λ, eine Schicht aus Stoff dazu ρ und c_p (Mehrzonenkonzept 3.4).
+        /// </summary>
+        internal static bool SchichtAusModell(BauteilschichtModel s, int nummer, out Schicht schicht, out string fehlt)
+        {
+            schicht = default;
+            fehlt = null;
+            if (s == null || !(s.Dicke > 0) || double.IsInfinity(s.Dicke))
+            {
+                fehlt = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_SCHICHT_DICKE, nummer);
+                return false;
+            }
+            if (s.IstLuftschicht && !s.Lambda.HasValue)
+            {
+                schicht = Schicht.RuhendeLuft(s.Dicke);
+                return true;
+            }
+            if (!s.Lambda.HasValue)
+            {
+                fehlt = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_SCHICHT_LAMBDA, nummer);
+                return false;
+            }
+            if (!s.IstLuftschicht && (!s.Rho.HasValue || !s.Cp.HasValue))
+            {
+                fehlt = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_SCHICHT_FEHLT, nummer,
+                                      !s.Rho.HasValue ? MyResource.Resource.KFLT_SP_RHO : MyResource.Resource.KFLT_SP_CP);
+                return false;
+            }
+            schicht = new Schicht(s.Dicke, s.Lambda.Value, s.Rho ?? double.NaN, s.Cp ?? double.NaN, s.IstLuftschicht);
+            return true;
+        }
+
+        // =================================================================
+        //  Die Eingabeprüfung der Verwaltung (Mehrzonenkonzept 5.3)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Die Prüfregeln des Aufbaudialogs</b> (Mehrzonenkonzept 5.3) — <c>null</c> = gültig,
+        /// sonst die erste verletzte Regel als Meldung. Ohne Datenbank; die Oberfläche ruft sie
+        /// genau einmal, im Speicherweg ihrer Leiste, und der Assistent über denselben Haken.
+        ///
+        /// <para>Über <see cref="Pruefen"/> hinaus: <b>mindestens eine Schicht</b>; <b>Dicke
+        /// 0,001 … 1,0 m</b>, eine ruhende Luftschicht höchstens 0,3 m (DIN EN ISO 6946, 6.9.1);
+        /// jede Schicht mit <b>λ</b> (außer der ruhenden Luftschicht), eine Stoffschicht auch mit
+        /// <b>ρ und c_p</b> — der Bauteilweg braucht sie für die Speichermasse; die
+        /// <b>Reihenfolge lückenlos ab 1</b>, wo sie gesetzt ist; kein Schichtaufbau für Fenster
+        /// und Vorhangfassade (sie rechnen aus dem U-Wert, VDI 6007 Blatt 1 Gl. (25)/(26)).</para>
+        /// </summary>
+        public static string EingabePruefen(BauteilaufbauModel m)
+        {
+            string t = Pruefen(m);
+            if (t != null) return t;
+
+            List<BauteilschichtModel> schichten = (m.Schichten ?? new List<BauteilschichtModel>()).Where(s => s != null).ToList();
+            if (schichten.Count == 0) return MyResource.Resource.BAUTEIL_MSG_KEINE_SCHICHT;
+
+            if (m.Bauteilart == DbWerte.BAUTEILART_FENSTER || m.Bauteilart == DbWerte.BAUTEILART_VORHANGFASSADE)
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_G3_TRANSPARENT_SCHICHTEN, m.Bezeichner.Trim());
+
+            for (int i = 0; i < schichten.Count; i++)
+            {
+                BauteilschichtModel s = schichten[i];
+                int nr = i + 1;
+                if (s.Reihenfolge > 0 && s.Reihenfolge != nr)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_REIHENFOLGE, nr, s.Reihenfolge);
+
+                if (s.Dicke < GebaeudeFestwerte.SCHICHT_DICKE_MIN_M || s.Dicke > GebaeudeFestwerte.SCHICHT_DICKE_MAX_M)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_SCHICHT_DICKE_BAND, nr,
+                                         DickeMm(s.Dicke), DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MIN_M),
+                                         DickeMm(GebaeudeFestwerte.SCHICHT_DICKE_MAX_M));
+
+                bool ruhend = s.IstLuftschicht && !s.Lambda.HasValue;
+                if (ruhend && s.Dicke > GebaeudeFestwerte.LUFTSCHICHT_DICKE_MAX_M)
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_LUFTSCHICHT_DICKE, nr,
+                                         DickeMm(s.Dicke), DickeMm(GebaeudeFestwerte.LUFTSCHICHT_DICKE_MAX_M));
+
+                if (!SchichtAusModell(s, nr, out _, out string fehlt)) return fehlt;
+            }
+            return null;
+        }
+
+        // =================================================================
+        //  Duplizieren
+        // =================================================================
+
+        /// <summary>
+        /// <b>„Duplizieren…"</b>: kopiert den Katalogaufbau <paramref name="id"/> samt Schichten als
+        /// EIGENEN Aufbau unter <paramref name="neuerName"/> — <c>ReadOnly = 0</c>, Herkunft
+        /// <see cref="DbWerte.HERKUNFT_MANUELL"/>, ohne Quellkennung; Beschreibung, Bauteilart,
+        /// Quelle und alle Schichtwerte wie im Original (Entscheid AD-Q11: Auslieferungssätze werden
+        /// nie überschrieben). Über den Aggregatweg <see cref="KatalogSpeichern"/>, also in EINER
+        /// Transaktion und mit einer Id aus der Folge der Tabelle.
+        /// </summary>
+        public Ergebnis KatalogDuplizieren(int id, string neuerName)
+        {
+            BauteilaufbauModel alt = LesenKatalogsatz(id);
+            if (alt == null) return Ergebnis.Fehler(NichtGefunden(id));
+            BauteilaufbauModel neu = alt.Kopie();
+            neu.ID = 0;
+            neu.Bezeichner = neuerName ?? "";
+            neu.Herkunft = DbWerte.HERKUNFT_MANUELL;
+            neu.Quellkennung = null;
+            neu.ReadOnly = false;
+            foreach (BauteilschichtModel s in neu.Schichten) { s.ID = 0; s.ID_Aufbau = 0; }
+            return KatalogSpeichern(neu);
         }
 
         // =================================================================
