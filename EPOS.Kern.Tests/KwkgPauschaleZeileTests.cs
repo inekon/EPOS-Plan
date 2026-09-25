@@ -26,11 +26,13 @@ namespace EPOS.Kern.Tests
     /// <c>WirtschaftlichkeitCtrl.PauschaleReihe</c> gegen den Gesetzeskatalog; hier
     /// steht, was aus dem Ergebnis dieser Prüfung folgt.</para>
     /// </summary>
-    public class KwkgPauschaleZeileTests
+    public class KwkgPauschaleZeileTests : System.IDisposable
     {
         /// <summary>Die Fälle halten deutsche Ressourcentexte gegen <c>Contains</c> —
         /// ohne Pinnung wären sie auf dem Windows-Läufer (en-US) rot.</summary>
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
 
         /// <summary>1,8 kW × 60.000 h × 0,04 €/kWh — eine Anlage unter der Grenze.</summary>
         private const double PAUSCHALE_EUR = 4320.0;

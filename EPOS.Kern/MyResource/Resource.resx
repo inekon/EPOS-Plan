@@ -31318,10 +31318,10 @@ Möchten Sie das zulassen?</value>
     <value>Katalog importieren</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.</value>
+    <value>Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
-    <value>Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Vorhandene Zeilen bleiben unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“.</value>
+    <value>Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Eine vorhandene Nutzungsart bleibt unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. Ein Bedarfstag und ein Parameter werden dagegen ersetzt — auch eine Zeile der Auslieferung; der Bericht nennt jede Ersetzung.</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI" xml:space="preserve">
     <value>Paket wählen…</value>
@@ -31336,7 +31336,7 @@ Möchten Sie das zulassen?</value>
     <value>Bitte zuerst ein Paket wählen.</value>
   </data>
   <data name="ZPGK_IMPORT_ZUSAMMENFASSUNG" xml:space="preserve">
-    <value>{0} angelegt · {1} übersprungen · {2} abgelehnt</value>
+    <value>{0} angelegt · {1} ersetzt · {2} übersprungen · {3} abgelehnt</value>
   </data>
   <data name="ZPGK_IMPORT_ANGELEGT" xml:space="preserve">
     <value>angelegt</value>
@@ -35132,6 +35132,192 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="VF_PRUEF_WAS_TUN" xml:space="preserve">
     <value>Was tun: {0}</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE" xml:space="preserve">
+    <value>Das Paket führt Bedarfstage; die Datenbank führt die Tabellen der Bedarfstage nicht — sie sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_OHNE_TABELLE" xml:space="preserve">
+    <value>Das Paket führt Parameter; die Datenbank führt die Parametertabelle nicht — sie sind übergangen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEZUGSART_OHNE_SPALTE" xml:space="preserve">
+    <value>Das Paket nennt die Bezugsart der Bedarfstage; die Datenbank führt die Spalte noch nicht — die Angabe bleibt liegen.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_OHNE_TAG" xml:space="preserve">
+    <value>{0}, Zeile {1}: Das Ereignis verweist auf den Bedarfstag {2}, den das Paket nicht führt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ trägt die Bezugsmenge {1:0.###}; sie muss leer oder positiv sein.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_OHNE_EREIGNIS" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ führt kein Zapfereignis.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_FENSTER" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ führt ein Ereignis ab Minute {1} über {2} Minute(n) — es liegt nicht im Tag (0 bis 1439, Ende höchstens 1440).</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_ENERGIE" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ führt ein Ereignis mit der Energie {1:0.###} kWh; sie darf nicht negativ sein.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ENERGIE_NULL" xml:space="preserve">
+    <value>Der Bedarfstag „{0}“ trägt in der Summe keine Energie.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_EREIGNIS_REIHENFOLGE" xml:space="preserve">
+    <value>Die Reihenfolge der Ereignisse des Bedarfstags „{0}“ ist nicht lückenlos ab 1.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ERSETZT" xml:space="preserve">
+    <value>Der vorhandene Bedarfstag „{0}“ (Stand {1}) trägt jetzt die Werte des Pakets: {3} Ereignis(se) statt {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_ERSETZT" xml:space="preserve">
+    <value>Der Parameter „{0}“ trägt jetzt {2:0.#######} statt {1:0.#######} [{3}].</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_WIRKUNG" xml:space="preserve">
+    <value>{0} Parameter sind ersetzt; sie gelten für jede künftige Auslegung und jede Validierung dieser Katalogversion.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG_ERSETZT" xml:space="preserve">
+    <value>{0} Zeile(n) der Auslieferung sind ersetzt und tragen jetzt den Stand „Import“ ({1}). Die gelieferte Fassung kommt nicht von selbst zurück: Ein Programmupdate legt die Datenbank nicht neu an, und eine Auslieferungsvorlage nimmt nur Zeilen mit dem Stand „Auslieferung“ auf — die gelieferte Fassung braucht eine neue Installation oder ein Katalogpaket, das sie führt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_UNBEKANNT" xml:space="preserve">
+    <value>Den Parameter „{0}“ liest kein Rechenweg des Programms; er wird nicht eingespielt.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_EINHEIT" xml:space="preserve">
+    <value>Der Parameter „{0}“ trägt im Paket die Einheit „{1}“; das Programm liest ihn in „{2}“.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH" xml:space="preserve">
+    <value>Der Wert {1:0.#######} des Parameters „{0}“ liegt außerhalb des zulässigen Bereichs {2:0.###} bis {3:0.###}.</value>
+  </data>
+  <data name="ZPGK_IMPORT_ERSETZT" xml:space="preserve">
+    <value>ersetzt</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_ANGELEGT" xml:space="preserve">
+    <value>würde anlegen</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_ERSETZT" xml:space="preserve">
+    <value>würde ersetzen</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_UEBERSPRUNGEN" xml:space="preserve">
+    <value>würde überspringen</value>
+  </data>
+  <data name="ZPGK_IMPORT_W_ABGELEHNT" xml:space="preserve">
+    <value>würde ablehnen</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_BEDARFSTAGE" xml:space="preserve">
+    <value>Bedarfstage</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_NUTZUNGSARTEN" xml:space="preserve">
+    <value>Nutzungsarten</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_BEDARFSTAG" xml:space="preserve">
+    <value>Bedarfstag</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_PARAMETER" xml:space="preserve">
+    <value>Schlüssel</value>
+  </data>
+  <data name="ZPGK_IMPORT_PRUEFEN" xml:space="preserve">
+    <value>Nur prüfen, nichts schreiben</value>
+  </data>
+  <data name="ZPGK_IMPORT_PRUEFHINWEIS" xml:space="preserve">
+    <value>Der Prüflauf ändert nichts; die Spalte „Ergebnis“ sagt, was ein Import täte.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS" xml:space="preserve">
+    <value>Das Typtagpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG" xml:space="preserve">
+    <value>Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ZONE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>überschrieben</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_KALIBRIERT" xml:space="preserve">
+    <value>kalibriert</value>
+  </data>
+  <data name="ZPG_HERKUNFT_STAND_UMGERECHNET" xml:space="preserve">
+    <value>umgerechnet</value>
+  </data>
+  <data name="ZPG_HERKUNFT_QUELLE_ANWENDER" xml:space="preserve">
+    <value>Eingabe des Anwenders</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FASSUNG" xml:space="preserve">
+    <value>Katalogfassung {0}</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_VERFAHREN" xml:space="preserve">
+    <value>aus einem Verfahren gerechnet</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_EIGENKONSTRUKTION" xml:space="preserve">
+    <value>Eigenkonstruktion</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FREI" xml:space="preserve">
+    <value>frei verfügbare Quelle</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_IMPORT" xml:space="preserve">
+    <value>eingespielt</value>
+  </data>
+  <data name="ZPG_HERKUNFT_ART_FIKTIV" xml:space="preserve">
+    <value>erfundener Wert</value>
+  </data>
+  <data name="ZPG_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.</value>
+  </data>
+  <data name="ZPG_HERKUNFT_LEER" xml:space="preserve">
+    <value>nichts zu vermerken</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPG_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Vermerk</value>
+  </data>
+  <data name="ZPG_AUS_GRP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_UNTER" xml:space="preserve">
+    <value>Woher jeder Wert dieser Auslegung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt.</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_LEER" xml:space="preserve">
+    <value>nichts zu vermerken</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ZPG_AUS_HERKUNFT_SP_VERMERK" xml:space="preserve">
+    <value>Vermerk</value>
   </data>
   <data name="SIMENG_NACHTZEIT_NUR_EINE" xml:space="preserve">
     <value>Von der Nachtzeit ist nur eine Grenze gesetzt (Beginn {0}, Ende {1}). Beginn und Ende gehören zusammen; beide leer heißt {2} bis {3} Uhr. Das ist ein Eingabefehler; der Lauf bricht für dieses Gebäude ab.</value>

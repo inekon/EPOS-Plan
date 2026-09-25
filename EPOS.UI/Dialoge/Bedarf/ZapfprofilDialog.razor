@@ -1051,6 +1051,52 @@
                                 </ul>
                             }
                         </section>
+
+                        @* Die Karte „Herkunft" (Herkunftsprotokoll des Kerns, N19): je Wert eine
+                           Zeile in der Reihenfolge des Rechenwegs - eingeklappt, damit sie den
+                           Ergebnisbereich nicht verdeckt. AB STUFE ERWEITERT: In der Stufe Einfach
+                           steht im Dialog nur das Notwendige, und das Protokoll traegt je Zone ein
+                           Dutzend Zeilen. Leer heisst benannt "nichts zu vermerken" - eine
+                           weggelassene Karte waere von einer fehlenden nicht zu unterscheiden. *@
+                        @if (_stufe != ZapfprofilStufe.Einfach)
+                        {
+                            <details class="epos-zapfprofil-herkunft">
+                                <summary>@Texte.GruppeHerkunft</summary>
+                                <p class="epos-leisezeile">@Texte.HerkunftUnter</p>
+                                @if (Herkunftsliste.Count == 0)
+                                {
+                                    <p class="epos-leisezeile epos-zapfprofil-herkunft-leer">@Texte.HerkunftLeer</p>
+                                }
+                                else
+                                {
+                                    <table class="epos-raster epos-zapfprofil-herkunftliste">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">@Texte.HerkunftSpalteGroesse</th>
+                                                <th scope="col">@Texte.HerkunftSpalteWert</th>
+                                                <th scope="col">@Texte.HerkunftSpalteZone</th>
+                                                <th scope="col">@Texte.HerkunftSpalteStand</th>
+                                                <th scope="col">@Texte.HerkunftSpalteQuelle</th>
+                                                <th scope="col">@Texte.HerkunftSpalteVermerk</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (ZapfprofilHerkunftZeile h in Herkunftsliste)
+                                            {
+                                                <tr class="epos-zapfprofil-herkunftzeile" data-groesse="@h.Groesse">
+                                                    <th scope="row">@h.Groesse</th>
+                                                    <td class="epos-zahl">@h.Wert</td>
+                                                    <td>@h.Zone</td>
+                                                    <td>@h.Stand</td>
+                                                    <td>@h.Quelle</td>
+                                                    <td>@h.Vermerk</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            </details>
+                        }
                     }
 
                     @* Der nebenläufige Lauf der Jahresreihe (5.1): Status und Abbruch, nie im Zeichenfaden. *@
@@ -2051,6 +2097,22 @@
     private string Dauermarken(ZapfprofilDauerlinieDaten d)
         => string.Join(" · ", d.Marken.Select(m => Format(Texte.DauerlinieMarke, m.Perzentil, Zahl(m.LeistungKw, "N1"),
                                                            m.Rang.ToString("N0", CultureInfo.CurrentCulture))));
+
+    /// <summary>
+    /// <b>Das Herkunftsprotokoll des jüngsten Laufs</b> (Karte „Herkunft", N19): das des
+    /// stochastischen Laufs, sobald er dasteht, sonst das der Vorschau. Leer ohne Rechnung — die
+    /// Karte sagt dann benannt „nichts zu vermerken". Die Reihenfolge ist die des Rechenwegs.
+    /// </summary>
+    private IReadOnlyList<ZapfprofilHerkunftZeile> Herkunftsliste
+    {
+        get
+        {
+            ZapfprofilVorschauDaten? quelle = !JahresreiheLaeuft && _stochastik is { Status.Length: > 0 } ? _stochastik : _vorschau;
+            return quelle is { Zustand: ZapfprofilVorschauZustand.Gerechnet } v
+                ? (IReadOnlyList<ZapfprofilHerkunftZeile>)v.Herkunft
+                : Array.Empty<ZapfprofilHerkunftZeile>();
+        }
+    }
 
     /// <summary>Die Warnliste der aktuellen Vorschau; leer ohne.</summary>
     /// <summary>

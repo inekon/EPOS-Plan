@@ -11299,6 +11299,32 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     margin: 0 0 6px 0;
 }
 
+/* Die Karte "Herkunft" (N19): ein Aufklapper, dessen Zusammenfassung die Hausfarbe
+   des Verweises traegt - wie die Aufklapper der Flotte. Die Tabelle darin rueckt ab
+   und rollt waagerecht, denn sie fuehrt sechs Spalten. */
+.epos-zapfprofil-herkunft {
+    margin-block: var(--epos-abstand);
+}
+
+.epos-zapfprofil-herkunft > summary {
+    cursor: pointer;
+    color: var(--epos-marke);
+    min-height: var(--epos-touchziel);
+    padding: 0.6rem 0;
+}
+
+.epos-zapfprofil-herkunftliste {
+    display: block;
+    margin-top: 0.4rem;
+    overflow-x: auto;
+    font-size: 0.9rem;
+}
+
+.epos-zapfprofil-herkunftzeile > th {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
 .epos-zapfausl-wert {
     font-size: 1.25rem;
     font-weight: 600;

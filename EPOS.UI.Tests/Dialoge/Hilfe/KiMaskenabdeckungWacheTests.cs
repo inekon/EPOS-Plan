@@ -306,7 +306,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Zapfprofil Z4, Gruppe 3: der Katalog der Nutzungsarten ist lesend (Stammblatt), sein Editor
         // führt Kennung, Bezugsart, Tagesgangsatz, Bedarf samt Bandbreite, Bezugstemperaturen,
         // Bilanzgrenze, Kalender, Ferienfaktor und Monatsfaktoren (Schleifen je einmal gezählt).
-        new("TwwNutzungsartAdminDialog", 0),
+        // Zapfprofil ZU32: der Schalter „Nur prüfen, nichts schreiben" der Importüberlagerung ist
+        // keine Eingabe des Katalogs — er wählt die Betriebsart EINES Knopfdrucks und wird mit der
+        // Überlagerung wieder zurückgesetzt; gespeichert wird er nie.
+        new("TwwNutzungsartAdminDialog", 1, "Schalter der Betriebsart eines Knopfdrucks, kein Einstellwert der Maske"),
         new("TwwNutzungsartEditor", 13),
         // Zapfprofil Z4b, Gruppe 2: der Dialog der eingespielten VDI-4655-Typtage zeigt den Stand
         // und den Pruefbericht; die Paketwahl ist ein Dateidialog, Einspielen und Loeschen sind

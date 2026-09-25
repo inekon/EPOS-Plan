@@ -984,6 +984,8 @@ namespace WindowsFormsApplication1
             foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(MitPosition(Meldung(h), position));
             // Die Warnliste der Bilanz (Warnlogik Z4, N9 (g)): jeder Hinweis mit Titel und Stufe.
             foreach (ZapfHinweis h in e.Hinweise) vorschau.Warnliste.Add(Warnung(h));
+            // Das Herkunftsprotokoll (Karte "Herkunft", N19) in der Reihenfolge des Rechenwegs.
+            vorschau.Herkunft.AddRange(Herkunftszeilen(e.Herkunft));
             return vorschau;
         }
 
@@ -1535,6 +1537,96 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kennung einer Meldung zu einem Satz: sein Ressourcenschlüssel <c>ZPG_SATZ_…</c>; ohne Satz die Rückfallkennung.</summary>
         internal static string Satzkennung(ZapfSatz satz, string rueckfall) => satz?.Schluessel ?? rueckfall ?? "";
 
+        // =================================================================================
+        //  Das Herkunftsprotokoll als Karte (N19)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Das Herkunftsprotokoll des Kerns als Zeilen der Oberflächensprache</b> (Karte
+        /// „Herkunft", N19): je Eintrag eine Zeile, in der Reihenfolge des Protokolls — sie ist die
+        /// Reihenfolge, in der der Rechenweg die Werte festlegt, und wird nicht sortiert.
+        ///
+        /// <para>Übersetzt werden der <b>Vermerk</b> (der Satz des Kerns, wie bei jedem Hinweis),
+        /// der <b>Stand</b> (<see cref="Wertstatus"/>, vier Ausprägungen) und die <b>Quelle</b>
+        /// (<see cref="Herkunftsart"/>, fünf Ausprägungen; Regelwerk, Ausgabe und Katalogfassung sind
+        /// Daten). Die <b>Größe</b> bleibt der Feldname des Protokolls — der Bezeichner des
+        /// Rechenwegs, in beiden Sprachen derselbe (siehe <see cref="ZapfprofilHerkunftZeile"/>).</para>
+        ///
+        /// <para>Ein Eintrag ohne Wert trägt eine leere Wertspalte (der Vermerk sagt dann, was
+        /// geschah); die Einheit „-" steht für dimensionslos und wird nicht angehängt. Ohne Provenienz
+        /// hat der Anwender den Wert gesetzt — das sagt die Quellspalte benannt.</para>
+        /// </summary>
+        internal static List<ZapfprofilHerkunftZeile> Herkunftszeilen(IReadOnlyList<Herkunftseintrag> eintraege)
+        {
+            var zeilen = new List<ZapfprofilHerkunftZeile>();
+            if (eintraege == null) return zeilen;
+            string projekt = Text_("ZPG_HERKUNFT_ZONE_PROJEKT", "Projekt");
+            foreach (Herkunftseintrag e in eintraege)
+            {
+                if (e == null) continue;
+                zeilen.Add(new ZapfprofilHerkunftZeile(
+                    e.Feld ?? "",
+                    string.IsNullOrEmpty(e.Zone) ? projekt : e.Zone,
+                    Herkunftswert(e.Wert, e.Einheit),
+                    Standname(e.Status),
+                    Quellentext(e.Quelle),
+                    Satztext(e.Vermerk)));
+            }
+            return zeilen;
+        }
+
+        /// <summary>Wert und Einheit einer Protokollzeile; leer ohne Wert, ohne Einheit bei „-" (dimensionslos).</summary>
+        private static string Herkunftswert(double? wert, string einheit)
+        {
+            if (!wert.HasValue) return "";
+            string zahl = wert.Value.ToString("0.###", CultureInfo.CurrentCulture);
+            return string.IsNullOrEmpty(einheit) || einheit == "-" ? zahl : zahl + " " + einheit;
+        }
+
+        /// <summary>Der Stand eines Werts in der Oberflächensprache (<see cref="Wertstatus"/>).</summary>
+        private static string Standname(Wertstatus stand)
+        {
+            switch (stand)
+            {
+                case Wertstatus.Ueberschrieben: return Text_("ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN", "überschrieben");
+                case Wertstatus.Kalibriert: return Text_("ZPG_HERKUNFT_STAND_KALIBRIERT", "kalibriert");
+                case Wertstatus.Umgerechnet: return Text_("ZPG_HERKUNFT_STAND_UMGERECHNET", "umgerechnet");
+                default: return Text_("ZPG_HERKUNFT_STAND_VORGABE", "Vorgabe");
+            }
+        }
+
+        /// <summary>
+        /// Die Provenienz einer Wertgruppe als Text: Regelwerk, Ausgabe und Katalogfassung als Daten,
+        /// die Herkunftsart übersetzt, verbunden mit „ · ". Ohne Provenienz hat der Anwender den Wert
+        /// gesetzt. Die interne Spalte <c>Beleg</c> steht hier nie (Konzept Kapitel 6 (e)).
+        /// </summary>
+        private static string Quellentext(Provenienz quelle)
+        {
+            if (quelle == null) return Text_("ZPG_HERKUNFT_QUELLE_ANWENDER", "Eingabe des Anwenders");
+            var teile = new List<string>();
+            string regelwerk = string.Join(" ", new[] { quelle.Quelle, quelle.Ausgabe }
+                                                   .Where(s => !string.IsNullOrWhiteSpace(s)));
+            if (regelwerk.Length > 0) teile.Add(regelwerk);
+            if (!string.IsNullOrWhiteSpace(quelle.Version))
+                teile.Add(Format(Text_("ZPG_HERKUNFT_FASSUNG", "Katalogfassung {0}"), quelle.Version));
+            teile.Add(Artname(quelle.Art));
+            return string.Join(" · ", teile);
+        }
+
+        /// <summary>Die Herkunftsart in der Oberflächensprache (<see cref="Herkunftsart"/>).</summary>
+        private static string Artname(Herkunftsart art)
+        {
+            switch (art)
+            {
+                case Herkunftsart.Verfahren: return Text_("ZPG_HERKUNFT_ART_VERFAHREN", "aus einem Verfahren gerechnet");
+                case Herkunftsart.Eigenkonstruktion: return Text_("ZPG_HERKUNFT_ART_EIGENKONSTRUKTION", "Eigenkonstruktion");
+                case Herkunftsart.Frei: return Text_("ZPG_HERKUNFT_ART_FREI", "frei verfügbare Quelle");
+                case Herkunftsart.Import: return Text_("ZPG_HERKUNFT_ART_IMPORT", "eingespielt");
+                case Herkunftsart.Fiktiv: return Text_("ZPG_HERKUNFT_ART_FIKTIV", "erfundener Wert");
+                default: return "";
+            }
+        }
+
         /// <summary>Der Satz einer benannten Ausnahme des Kerns; <c>null</c> bei einer fremden Ausnahme.</summary>
         internal static ZapfSatz SatzAus(Exception ex)
         {
@@ -1958,6 +2050,15 @@ namespace WindowsFormsApplication1
             t.GruppeWarnliste = Text_("ZPG_GRP_WARNLISTE", t.GruppeWarnliste);
             t.WarnlisteUnter = Text_("ZPG_WARNLISTE_UNTER", t.WarnlisteUnter);
             t.WarnlisteLeer = Text_("ZPG_WARNLISTE_LEER", t.WarnlisteLeer);
+            t.GruppeHerkunft = Text_("ZPG_GRP_HERKUNFT", t.GruppeHerkunft);
+            t.HerkunftUnter = Text_("ZPG_HERKUNFT_UNTER", t.HerkunftUnter);
+            t.HerkunftLeer = Text_("ZPG_HERKUNFT_LEER", t.HerkunftLeer);
+            t.HerkunftSpalteGroesse = Text_("ZPG_HERKUNFT_SP_GROESSE", t.HerkunftSpalteGroesse);
+            t.HerkunftSpalteWert = Text_("ZPG_HERKUNFT_SP_WERT", t.HerkunftSpalteWert);
+            t.HerkunftSpalteZone = Text_("ZPG_HERKUNFT_SP_ZONE", t.HerkunftSpalteZone);
+            t.HerkunftSpalteStand = Text_("ZPG_HERKUNFT_SP_STAND", t.HerkunftSpalteStand);
+            t.HerkunftSpalteQuelle = Text_("ZPG_HERKUNFT_SP_QUELLE", t.HerkunftSpalteQuelle);
+            t.HerkunftSpalteVermerk = Text_("ZPG_HERKUNFT_SP_VERMERK", t.HerkunftSpalteVermerk);
             t.StufeWarnung = Text_("ZPG_AUS_STUFE_WARNUNG", t.StufeWarnung);
             t.StufeHinweis = Text_("ZPG_AUS_STUFE_HINWEIS", t.StufeHinweis);
             // Editoren Tagesgang und Zapfkategorien (Z4, Gruppe 2b)

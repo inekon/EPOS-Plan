@@ -91010,7 +91010,43 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Vorhandene Zeilen bleiben unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ersetzt ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfstage ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_GRP_BEDARFSTAGE {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_GRP_BEDARFSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsarten ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_GRP_NUTZUNGSARTEN {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_GRP_NUTZUNGSARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_GRP_PARAMETER {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_GRP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Eine vorhandene Nutzungsart bleibt unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. Ein Bedarfstag und ein Parameter werden dagegen ersetzt — auch eine Zeile der Auslieferung; der Bericht nennt jede Ersetzung. ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_HERKUNFT {
             get {
@@ -91019,7 +91055,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_HINWEIS {
             get {
@@ -91042,6 +91078,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPGK_IMPORT_KEIN_PAKET {
             get {
                 return ResourceManager.GetString("ZPGK_IMPORT_KEIN_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur prüfen, nichts schreiben ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_PRUEFEN {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Prüflauf ändert nichts; die Spalte „Ergebnis“ sagt, was ein Import täte. ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_PRUEFHINWEIS {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_PRUEFHINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfstag ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_SP_BEDARFSTAG {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_SP_BEDARFSTAG", resourceCulture);
             }
         }
         
@@ -91073,6 +91136,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_SP_PARAMETER {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_SP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Importieren ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_STARTEN {
@@ -91100,6 +91172,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die würde ablehnen ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_W_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_W_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die würde anlegen ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_W_ANGELEGT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_W_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die würde ersetzen ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_W_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_W_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die würde überspringen ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_W_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_W_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0} ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_ZEILE {
@@ -91109,7 +91217,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} angelegt · {1} übersprungen · {2} abgelehnt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} angelegt · {1} ersetzt · {2} übersprungen · {3} abgelehnt ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_ZUSAMMENFASSUNG {
             get {
@@ -93152,6 +93260,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Zonen: {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRP_TOPOLOGIE {
@@ -93238,6 +93355,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_GRUND_UEBERGEBEN {
             get {
                 return ResourceManager.GetString("ZPG_AUS_GRUND_UEBERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts zu vermerken ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermerk ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_SP_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher jeder Wert dieser Auslegung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_HERKUNFT_UNTER {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_HERKUNFT_UNTER", resourceCulture);
             }
         }
         
@@ -95492,6 +95681,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string ZPG_GRP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ZPG_GRP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf, Ladeleistung, Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_GRP_SCHAETZHILFEN {
@@ -95611,9 +95809,63 @@ namespace WindowsFormsApplication1.MyResource {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigenkonstruktion ähnelt.
         /// </summary>
+        public static string ZPG_HERKUNFT_ART_EIGENKONSTRUKTION {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_EIGENKONSTRUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erfundener Wert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_FIKTIV {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_FIKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die frei verfügbare Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_FREI {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingespielt ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_IMPORT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus einem Verfahren gerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ART_VERFAHREN {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ART_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenkonstruktion ähnelt.
+        /// </summary>
         public static string ZPG_HERKUNFT_EIGENKONSTRUKTION {
             get {
                 return ResourceManager.GetString("ZPG_HERKUNFT_EIGENKONSTRUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogfassung {0} ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_FASSUNG {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_FASSUNG", resourceCulture);
             }
         }
         
@@ -95645,6 +95897,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nichts zu vermerken ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Angabe ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_OHNE {
@@ -95654,11 +95915,128 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe des Anwenders ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_QUELLE_ANWENDER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_QUELLE_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_STAND {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermerk ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_VERMERK {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_VERMERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_SP_ZONE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kalibriert ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_KALIBRIERT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_KALIBRIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die überschrieben ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_UEBERSCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die umgerechnet ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_UMGERECHNET {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_UMGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_STAND_VORGABE {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_STAND_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher jeder Wert dieser Rechnung kommt — in der Reihenfolge, in der der Rechenweg ihn festlegt. ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_UNTER {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verfahren ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_VERFAHREN {
             get {
                 return ResourceManager.GetString("ZPG_HERKUNFT_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string ZPG_HERKUNFT_ZONE_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_HERKUNFT_ZONE_PROJEKT", resourceCulture);
             }
         }
         
@@ -101828,6 +102206,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeile(n) der Auslieferung sind ersetzt und tragen jetzt den Stand „Import“ ({1}). Die gelieferte Fassung kommt nicht von selbst zurück: Ein Programmupdate legt die Datenbank nicht neu an, und eine Auslieferungsvorlage nimmt nur Zeilen mit dem Stand „Auslieferung“ auf — die gelieferte Fassung braucht eine neue Installation oder ein Katalogpaket, das sie führt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_AUSLIEFERUNG_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt Bedarfstage; die Datenbank führt die Tabellen der Bedarfstage nicht — sie sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_BEDARFSTAGE_OHNE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ trägt die Bezugsmenge {1:0.###}; sie muss leer oder positiv sein. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_BEZUGSMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ trägt in der Summe keine Energie. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ENERGIE_NULL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ENERGIE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der vorhandene Bedarfstag „{0}“ (Stand {1}) trägt jetzt die Werte des Pakets: {3} Ereignis(se) statt {2}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ führt kein Zapfereignis. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_OHNE_EREIGNIS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_BEDARFSTAG_OHNE_EREIGNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket nennt die Bezugsart der Bedarfstage; die Datenbank führt die Spalte noch nicht — die Angabe bleibt liegen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_BEZUGSART_OHNE_SPALTE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_BEZUGSART_OHNE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ steht zweimal im Paket — nichts importiert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_KATALOGIMPORT_DATEI_DOPPELT {
@@ -101869,6 +102310,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DOPPELT_IM_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ führt ein Ereignis mit der Energie {1:0.###} kWh; sie darf nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_EREIGNIS_ENERGIE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_EREIGNIS_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ führt ein Ereignis ab Minute {1} über {2} Minute(n) — es liegt nicht im Tag (0 bis 1439, Ende höchstens 1440). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_EREIGNIS_FENSTER {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_EREIGNIS_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1}: Das Ereignis verweist auf den Bedarfstag {2}, den das Paket nicht führt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_EREIGNIS_OHNE_TAG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_EREIGNIS_OHNE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihenfolge der Ereignisse des Bedarfstags „{0}“ ist nicht lückenlos ab 1. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_EREIGNIS_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_EREIGNIS_REIHENFOLGE", resourceCulture);
             }
         }
         
@@ -101986,6 +102463,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_OHNE_VORGABESATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert {1:0.#######} des Parameters „{0}“ liegt außerhalb des zulässigen Bereichs {2:0.###} bis {3:0.###}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PARAMETER_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Parameter „{0}“ trägt im Paket die Einheit „{1}“; das Programm liest ihn in „{2}“. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PARAMETER_EINHEIT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PARAMETER_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Parameter „{0}“ trägt jetzt {2:0.#######} statt {1:0.#######} [{3}]. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PARAMETER_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PARAMETER_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt Parameter; die Datenbank führt die Parametertabelle nicht — sie sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PARAMETER_OHNE_TABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PARAMETER_OHNE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Parameter „{0}“ liest kein Rechenweg des Programms; er wird nicht eingespielt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PARAMETER_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PARAMETER_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Parameter sind ersetzt; sie gelten für jede künftige Auslegung und jede Validierung dieser Katalogversion. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_PARAMETER_WIRKUNG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_PARAMETER_WIRKUNG", resourceCulture);
             }
         }
         
@@ -103529,6 +104060,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Paketdatei „{0}“ ist zu groß: {1} Byte (höchstens {2}). Sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_DATEI_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Typtage ließen sich nicht schreiben: {0}. Der frühere Stand ist unverändert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_TYPTAGIMPORT_FEHLGESCHLAGEN {
@@ -103538,11 +104078,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eintrag „{0}“ des Archivs zeigt aus dem Paket heraus („..“, Wurzel oder Laufwerk). Das Paket wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_PFAD_UNZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank führt {0} nicht — die Typtage lassen sich nicht einspielen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Typtagpaket ist zu groß: {0} Einträge (höchstens {1}), entpackt {2} Byte (höchstens {3}). Es wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_TYPTAGIMPORT_ZU_GROSS", resourceCulture);
             }
         }
         

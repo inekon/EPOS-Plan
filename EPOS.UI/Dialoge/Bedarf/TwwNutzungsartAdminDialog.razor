@@ -223,8 +223,15 @@
                         <KindInhalt>
                             <Dateiwahl Bezeichnung="" KnopfText="@Texte.ImportDatei" Filter="@Texte.ImportDateifilter"
                                        Pfad="@_pfad" Waehlen="@PaketWahl" PfadChanged="BeiPaket" />
+                            @* Der Pruefmodus (ZU32): derselbe Bericht, nichts geschrieben. *@
+                            <Schalter Bezeichnung="@Texte.ImportPruefen" Wert="@_nurPruefen"
+                                      WertChanged="PruefmodusUmschalten" />
                         </KindInhalt>
                     </Formularraster>
+                    @if (_nurPruefen)
+                    {
+                        <Herleitungszeile Text="@Texte.ImportPruefhinweis" />
+                    }
 
                     @if (_bericht is not null)
                     {
@@ -235,27 +242,40 @@
                         else
                         {
                             <p class="epos-leisezeile epos-tww-import-summe" role="status">@_bericht.Zusammenfassung</p>
-                            <div class="epos-raster-huelle">
-                                <table class="epos-raster epos-tww-importbericht">
-                                    <thead>
-                                        <tr>
-                                            <th>@Texte.ImportSpalteNutzungsart</th>
-                                            <th>@Texte.ImportSpalteErgebnis</th>
-                                            <th>@Texte.ImportSpalteGrund</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (TwwImportzeileDaten z in _bericht.Zeilen)
-                                        {
-                                            <tr class="epos-tww-import-@z.Ausgang.ToString().ToLowerInvariant()">
-                                                <td>@z.Nutzungsart</td>
-                                                <td>@z.Ausgangstext</td>
-                                                <td>@z.Grund</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
+                            @* Je Tabelle eine Gruppe mit eigener Ueberschrift (ZU32); eine leere Gruppe
+                               steht nicht da - ein Paket ohne Bedarfstage soll keinen leeren Kopf zeigen. *@
+                            @foreach ((TwwImportbereichDaten bereich, string titel, string spalte) g in Berichtsgruppen())
+                            {
+                                IReadOnlyList<TwwImportzeileDaten> gruppe = _bericht.ZeilenVon(g.bereich);
+                                @if (gruppe.Count > 0)
+                                {
+                                    <Gruppenkopf Titel="@g.titel">
+                                        <KindInhalt>
+                                            <div class="epos-raster-huelle">
+                                                <table class="epos-raster epos-tww-importbericht">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@g.spalte</th>
+                                                            <th>@Texte.ImportSpalteErgebnis</th>
+                                                            <th>@Texte.ImportSpalteGrund</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (TwwImportzeileDaten z in gruppe)
+                                                        {
+                                                            <tr class="epos-tww-import-@z.Ausgang.ToString().ToLowerInvariant()">
+                                                                <td>@z.Nutzungsart</td>
+                                                                <td>@z.Ausgangstext</td>
+                                                                <td>@z.Grund</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </KindInhalt>
+                                    </Gruppenkopf>
+                                }
+                            }
                         }
                         @if (_bericht.Hinweise.Count > 0)
                         {
@@ -320,8 +340,11 @@
     /// <summary>Die Paketwahl der Plattform (<c>Dienste.Datei</c>, hinter dem Ereignis); <c>""</c> = abgebrochen.</summary>
     [Parameter] public Func<string, Task<string>>? PaketWaehlen { get; set; }
 
-    /// <summary>Der Katalogimport (<c>TwwNutzungsartCtrl.Importieren</c>). Ohne ihn steht „Import…" nicht da.</summary>
-    [Parameter] public Func<string, TwwImportberichtDaten>? Importieren { get; set; }
+    /// <summary>
+    /// Der Katalogimport (<c>TwwNutzungsartCtrl.Importieren</c>): Pfad des Pakets und ob nur
+    /// geprüft wird (dann schreibt der Kern nichts). Ohne ihn steht „Import…" nicht da.
+    /// </summary>
+    [Parameter] public Func<string, bool, TwwImportberichtDaten>? Importieren { get; set; }
 
     /// <summary>
     /// Der Parametersatz des Dialogs „VDI-4655-Typtage" (<c>ZapfprofilHuelle.TyptagGaben</c>, Stufe
@@ -369,6 +392,9 @@
     private bool _importOffen;
     private string _pfad = "";
     private TwwImportberichtDaten? _bericht;
+
+    /// <summary>Steht „Nur prüfen"? Dann schreibt der Import nichts.</summary>
+    private bool _nurPruefen;
     private IReadOnlyDictionary<string, object>? _typtagGaben;
 
     private EventCallback _speichernUnterWeg;
@@ -622,7 +648,23 @@
         _meldung = "";
         _bericht = null;
         _pfad = "";
+        _nurPruefen = false;
         _importOffen = true;
+    }
+
+    /// <summary>Die drei Gruppen des Berichts in ihrer Reihenfolge: Bedarfstage, Parameter, Nutzungsarten.</summary>
+    private (TwwImportbereichDaten bereich, string titel, string spalte)[] Berichtsgruppen() => new[]
+    {
+        (TwwImportbereichDaten.Bedarfstag, Texte.ImportGruppeBedarfstage, Texte.ImportSpalteBedarfstag),
+        (TwwImportbereichDaten.Parameter, Texte.ImportGruppeParameter, Texte.ImportSpalteParameter),
+        (TwwImportbereichDaten.Nutzungsart, Texte.ImportGruppeNutzungsarten, Texte.ImportSpalteNutzungsart)
+    };
+
+    /// <summary>„Nur prüfen": Der Bericht des letzten Laufs gilt danach nicht mehr — er steht für den anderen Modus.</summary>
+    private void PruefmodusUmschalten(bool wert)
+    {
+        _nurPruefen = wert;
+        _bericht = null;
     }
 
     private void ImportSchliessen()
@@ -661,7 +703,10 @@
         _bericht = null;
     }
 
-    /// <summary>„Importieren": der Bericht bleibt in der Überlagerung stehen; die erste neue Nutzungsart wird gewählt.</summary>
+    /// <summary>
+    /// „Importieren": der Bericht bleibt in der Überlagerung stehen; die erste neue Nutzungsart
+    /// wird gewählt. Ein Prüflauf schreibt nichts — dann wird der Katalog auch nicht neu geladen.
+    /// </summary>
     private void BeiImportieren()
     {
         if (Importieren is null) return;
@@ -670,8 +715,8 @@
             _bericht = new TwwImportberichtDaten { Abgebrochen = true, Abbruch = Texte.ImportKeinPaket };
             return;
         }
-        _bericht = Importieren(_pfad);
-        if (_bericht.Abgebrochen) return;
+        _bericht = Importieren(_pfad, _nurPruefen);
+        if (_bericht.Abgebrochen || _nurPruefen) return;
         IReadOnlyList<int> neu = _bericht.NeueIds;
         KatalogLaden(neu.Count > 0 ? neu[0] : 0);
         _status = Format(Texte.MeldungImportiert, _bericht.Zusammenfassung);

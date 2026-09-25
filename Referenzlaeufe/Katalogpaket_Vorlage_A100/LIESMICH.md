@@ -28,6 +28,8 @@ ausdrücklich gesperrt.
 | `Tab_TwwNutzungsart_STAMM.csv` | 1 | die Nutzungsart: Bezugsart, Bedarf niedrig/mittel/hoch, Bezugstemperaturen, Bilanzgrenze, Kalenderart, Ferienfaktor, zwölf Monatsfaktoren, sieben Wochenanteile, drei Provenienzgruppen (Bedarf, Jahresgang, Wochengang) und der Verweis `ID_Tagesgangsatz` auf den Satz |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 2 | ein **Vorgabesatz** der Gruppe `Nichtwohnen` ohne `ID_Nutzungsart`: je Kategorie Volumenstrom, Dauer, Anteil, Streuung, Kappung |
 
+Der Katalogimport nimmt über diese vier Dateien hinaus drei **wahlfreie** an — `Tab_TwwBedarfstag_STAMM.csv`, `Tab_TwwBedarfstagEreignis_STAMM.csv` und `Tab_TwwParameter_STAMM.csv` für Bedarfstage, ihre Zapfereignisse und die Parameter des Verfahrens; diese Vorlage führt sie nicht, und ein Paket ohne sie ist vollständig.
+
 ## Schritt für Schritt
 
 1. **Den Ordner kopieren** — außerhalb des Repositoriums, etwa nach
