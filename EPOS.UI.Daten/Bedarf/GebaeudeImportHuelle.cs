@@ -322,13 +322,20 @@ namespace WindowsFormsApplication1
         // Zuordnen und Prüfen
         // =================================================================================
 
-        /// <summary>Ordnet ein Gebäude zu (Klasse, Haken der Raumliste) und baut den Stand der Zeilen.</summary>
+        /// <summary>
+        /// Ordnet ein Gebäude zu (Klasse, Haken der Raumliste), legt die Handwerte des Dialogs auf
+        /// (Herkunft „manuell") und zieht die Vorgaben nach, die von ihnen abhängen
+        /// (<see cref="GebaeudeImportSatz.FolgevorgabenNachziehen"/>); daraus der Stand der Zeilen.
+        /// </summary>
         internal GebaeudeImportStand Zuordnen(GebaeudeZuordnungsanfrage anfrage)
         {
             if (anfrage == null || _ablauf.Abbild == null) return new GebaeudeImportStand();
 
             IReadOnlyDictionary<string, bool> haken = anfrage.BeheiztUebersteuert ?? new Dictionary<string, bool>();
             GebaeudeImportSatz satz = _ablauf.Zuordnen(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken);
+            foreach (KeyValuePair<string, double?> hand in anfrage.Handwerte ?? new Dictionary<string, double?>())
+                satz.ManuellSetzen(hand.Key, hand.Value);
+            satz.FolgevorgabenNachziehen();
             _satz = satz;
 
             return new GebaeudeImportStand
@@ -388,8 +395,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Baut den Satz eines Ergebnisses neu — dieselbe Zuordnung, darauf die Handänderungen
-        /// (Herkunft „manuell") und die Haken des Dialogs. Der Satz bleibt als <see cref="Satz"/>
-        /// stehen, für die Persistenz der Herkunft (Schritt S-F).
+        /// (Herkunft „manuell") und die Haken des Dialogs, dann die Folgevorgaben
+        /// (<see cref="GebaeudeImportSatz.FolgevorgabenNachziehen"/>), damit Vorbelegung und Prüfung
+        /// am OK stimmen. Der Satz bleibt als <see cref="Satz"/> stehen, für die Persistenz der
+        /// Herkunft (Schritt S-F).
         /// </summary>
         internal GebaeudeImportSatz SatzAusErgebnis(GebaeudeImportErgebnis ergebnis)
         {
@@ -402,8 +411,30 @@ namespace WindowsFormsApplication1
                 if (z.HerkunftSchluessel == GebaeudeHerkunftSchluessel.Manuell) satz.ManuellSetzen(z.Zielfeld, z.Wert);
                 satz.HakenSetzen(z.Zielfeld, z.Haken);
             }
+            satz.FolgevorgabenNachziehen();
             _satz = satz;
             return satz;
+        }
+
+        /// <summary>
+        /// Das Ergebnis mit nachgezogenen Folgevorgaben: Jede Zeile, die im Dialog noch die Herkunft
+        /// „Vorgabe" trägt, nimmt Wert und Beleg aus dem neu gebauten Satz (<see cref="SatzAusErgebnis"/>)
+        /// — so stimmt eine Vorgabe, die von einer Handänderung abhängt (innere Gewinne, Nachtsollwert),
+        /// auch dann, wenn der Dialog sie noch nicht neu zugeordnet hat. Der Haken bleibt der des Dialogs.
+        /// </summary>
+        internal GebaeudeImportErgebnis Nachgezogen(GebaeudeImportErgebnis ergebnis)
+        {
+            GebaeudeImportSatz satz = SatzAusErgebnis(ergebnis);
+            if (satz == null) return ergebnis;
+            string vorgabe = GebaeudeZuordnungsModell.HerkunftSchluessel(Importherkunft.Vorgabe);
+            List<GebaeudeFeldzeileDaten> zeilen = (ergebnis.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
+                .Select(z => z != null && z.HerkunftSchluessel == vorgabe
+                             && satz.Zeile(z.Zielfeld) is GebaeudeFeldzeile s && s.Herkunft == Importherkunft.Vorgabe
+                             && !Nullable.Equals(s.Wert, z.Wert)
+                    ? ZeileDaten(s) with { Haken = z.Haken }
+                    : z)
+                .ToList();
+            return ergebnis with { Zeilen = zeilen };
         }
 
         /// <summary>Der Klassenbuchstabe zum Index der Klappliste (0 = A … 20 = U); außerhalb <c>null</c>.</summary>
@@ -494,6 +525,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal GebaeudeVorbelegung Vorbelegung(GebaeudeImportErgebnis ergebnis)
         {
+            // Die Folgevorgaben (innere Gewinne, Nachtsollwert) nach den Handänderungen des Dialogs.
+            ergebnis = Nachgezogen(ergebnis);
             string vorgaben = Vorgabentext(ergebnis);
             return new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
                                            vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben);

@@ -170,5 +170,28 @@ namespace WindowsFormsApplication1
             z.HakenSetzen(haken);
             return true;
         }
+
+        /// <summary>
+        /// <b>Die Folgevorgaben nach den Handänderungen nachziehen</b> — mit denselben Regeln wie die
+        /// Zuordnung (<see cref="GebaeudeAggregation.InnereGewinneVorgeben"/>,
+        /// <see cref="GebaeudeAggregation.NachtsollwertVorgeben"/>), nur an Zeilen, die noch die
+        /// Herkunft <see cref="Importherkunft.Vorgabe"/> tragen:
+        /// <list type="bullet">
+        /// <item>Die inneren Gewinne folgen der aktuellen Nutzfläche (5 W/m² × Fläche, ohne Fläche 0 W).</item>
+        /// <item>Der Nachtsollwert folgt dem aktuellen Tagsollwert (höchstens er, sonst 18 °C).</item>
+        /// </list>
+        /// Eine von Hand gesetzte Zahl bleibt unberührt, ebenso der Haken. Ein Satz ohne Handänderung
+        /// bleibt, wie er ist.
+        /// </summary>
+        public void FolgevorgabenNachziehen()
+        {
+            GebaeudeFeldzeile gewinne = Zeile(GebaeudeZielfelder.INNERE_GEWINNE);
+            if (gewinne != null && gewinne.Herkunft == Importherkunft.Vorgabe)
+                GebaeudeAggregation.InnereGewinneNachziehen(gewinne, Zeile(GebaeudeZielfelder.NUTZFLAECHE)?.Wert);
+
+            GebaeudeFeldzeile nacht = Zeile(GebaeudeZielfelder.SOLL_NACHT);
+            if (nacht != null && nacht.Herkunft == Importherkunft.Vorgabe)
+                GebaeudeAggregation.NachtsollwertVorgeben(nacht, Zeile(GebaeudeZielfelder.SOLL_TAG)?.Wert);
+        }
     }
 }

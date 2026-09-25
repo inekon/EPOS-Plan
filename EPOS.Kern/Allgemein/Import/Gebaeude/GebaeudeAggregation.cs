@@ -325,32 +325,14 @@ namespace WindowsFormsApplication1
             // Nutzfläche bleibt es beim Wert eines neuen Gebäudes (GebaeudeModel, 0 W). Die Datei trägt
             // AUSLEGUNGSleistungen je Fläche (mit Zeitplänen gemeint), das Modell einen zeitlich
             // konstanten Gewinn — nicht dieselbe Größe; ihre Summe steht nur als Vorschlag im Beleg.
-            // Eine Handänderung der Nutzfläche im Dialog rechnet die Vorgabe NICHT nach (der Satz wird
-            // allein bei Klasse, Gebäude und Raumhaken neu zugeordnet).
-            GebaeudeFeldzeile gewinne = z[GebaeudeZielfelder.INNERE_GEWINNE];
-            double jeM2 = GebaeudeStammCtrl.INNERE_GEWINNE_JE_M2_VORGABE;
-            if (nutzflaeche > 0.0)
-            {
-                gewinne.VorgabeWert = jeM2 * nutzflaeche.Value;
-                gewinne.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_JE_FLAECHE",
-                    Zahl(jeM2), Zahl(nutzflaeche.Value), Zahl(gewinne.VorgabeWert.Value));
-            }
-            else
-            {
-                double gewinneNeu = new GebaeudeModel().Interne_Waermegewinne;
-                gewinne.VorgabeWert = gewinneNeu;
-                gewinne.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORGABE", Zahl(gewinneNeu));
-            }
-            VorgabeUebernehmen(gewinne);
+            // Die Regel steht an EINER Stelle (InnereGewinneVorgeben): Eine Handänderung der Nutzfläche
+            // zieht die Vorgabe nach (GebaeudeImportSatz.FolgevorgabenNachziehen).
             List<AbbildRaum> mitLeistung = beheizt.Where(r => r.FlaecheM2 > 0.0 && (r.LichtWm2.HasValue || r.GeraeteWm2.HasValue)).ToList();
-            if (mitLeistung.Count > 0)
-            {
-                string vorschlag = Zahl(mitLeistung.Sum(r => ((r.LichtWm2 ?? 0.0) + (r.GeraeteWm2 ?? 0.0)) * r.FlaecheM2.Value));
-                gewinne.Beleg = nutzflaeche > 0.0
-                    ? new GebaeudeBeleg("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG",
-                          Zahl(jeM2), Zahl(nutzflaeche.Value), Zahl(gewinne.VorgabeWert.Value), vorschlag, Zahl(mitLeistung.Count))
-                    : new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORSCHLAG", vorschlag, Zahl(mitLeistung.Count));
-            }
+            string vorschlag = mitLeistung.Count > 0
+                ? Zahl(mitLeistung.Sum(r => ((r.LichtWm2 ?? 0.0) + (r.GeraeteWm2 ?? 0.0)) * r.FlaecheM2.Value))
+                : null;
+            InnereGewinneVorgeben(z[GebaeudeZielfelder.INNERE_GEWINNE], nutzflaeche, vorschlag,
+                                  mitLeistung.Count > 0 ? Zahl(mitLeistung.Count) : null);
 
             // Das Baujahr (Umsetzungskonzept 3.4, Zeile „Baujahr (neue Spalte)"): die gezogene
             // Jahreszahl der Datei — IFC aus Pset_BuildingCommon.YearOfConstruction, der Beleg nennt den
@@ -1066,19 +1048,7 @@ namespace WindowsFormsApplication1
             if (!tag.Wert.HasValue) VorgabeUebernehmen(tag);
 
             // Der Nachtsollwert: 18 °C, aber nie über dem Tagsollwert - sonst hiesse die Absenkung Anhebung.
-            GebaeudeFeldzeile nacht = z[GebaeudeZielfelder.SOLL_NACHT];
-            double vorgabeNacht = GebaeudeStammCtrl.SOLLTEMPERATUR_NACHT_VORGABE;
-            if (vorgabeNacht <= tag.Wert.Value)
-            {
-                nacht.VorgabeWert = vorgabeNacht;
-                nacht.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_SOLLWERT_VORGABE", Zahl(vorgabeNacht));
-            }
-            else
-            {
-                nacht.VorgabeWert = tag.Wert.Value;
-                nacht.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG", Zahl(vorgabeNacht), Zahl(tag.Wert.Value));
-            }
-            VorgabeUebernehmen(nacht);
+            NachtsollwertVorgeben(z[GebaeudeZielfelder.SOLL_NACHT], tag.Wert);
 
             // Die Nachtzeit: 22 bis 6 Uhr (Nachtzeit.Vorgabe), als ausdrückliche Werte übernommen.
             foreach ((string feld, int stunde) in new[] { (GebaeudeZielfelder.NACHT_BEGINN, Nachtzeit.VORGABE_BEGINN),
@@ -1090,6 +1060,88 @@ namespace WindowsFormsApplication1
                     Zahl(Nachtzeit.VORGABE_BEGINN), Zahl(Nachtzeit.VORGABE_ENDE));
                 VorgabeUebernehmen(zeile);
             }
+        }
+
+        // ==================================================================
+        //  Folgevorgaben — je Regel EINE Stelle für Zuordnung und Nachzug
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Regel 1: Die inneren Gewinne folgen der Nutzfläche</b> (Entscheid E43) — die EINE Stelle,
+        /// die Zuordnung (<see cref="Bilden"/>) und Nachzug nach einer Handänderung
+        /// (<see cref="GebaeudeImportSatz.FolgevorgabenNachziehen"/>) gemeinsam benutzen: Vorgabewert =
+        /// Wert = <see cref="GebaeudeStammCtrl.INNERE_GEWINNE_JE_M2_VORGABE"/> × Nutzfläche mit Beleg
+        /// <c>GIMP_BELEG_GEWINNE_JE_FLAECHE</c>; ohne Nutzfläche größer null der Wert eines neuen
+        /// Gebäudes (0 W). Trägt die Datei Auslegungsleistungen (<paramref name="vorschlagW"/>), steht
+        /// ihre Summe als Vorschlag im Beleg — mit den Zahlen der aktuellen Fläche. Herkunft Vorgabe.
+        /// </summary>
+        /// <param name="vorschlagW">Die Summe der Auslegungsleistungen [W], invariant; <c>null</c> = keine.</param>
+        /// <param name="vorschlagRaeume">Die Zahl der Räume dazu, invariant; <c>null</c> = keine.</param>
+        internal static void InnereGewinneVorgeben(GebaeudeFeldzeile gewinne, double? nutzflaeche, string vorschlagW, string vorschlagRaeume)
+        {
+            double jeM2 = GebaeudeStammCtrl.INNERE_GEWINNE_JE_M2_VORGABE;
+            if (nutzflaeche > 0.0)
+            {
+                gewinne.VorgabeWert = jeM2 * nutzflaeche.Value;
+                gewinne.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_JE_FLAECHE",
+                    Zahl(jeM2), Zahl(nutzflaeche.Value), Zahl(gewinne.VorgabeWert.Value));
+            }
+            else
+            {
+                double gewinneNeu = new GebaeudeModel().Interne_Waermegewinne;
+                gewinne.VorgabeWert = gewinneNeu;
+                gewinne.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORGABE", Zahl(gewinneNeu));
+            }
+            VorgabeUebernehmen(gewinne);
+            if (vorschlagW != null)
+                gewinne.Beleg = nutzflaeche > 0.0
+                    ? new GebaeudeBeleg("GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG",
+                          Zahl(jeM2), Zahl(nutzflaeche.Value), Zahl(gewinne.VorgabeWert.Value), vorschlagW, vorschlagRaeume ?? "")
+                    : new GebaeudeBeleg("GIMP_BELEG_GEWINNE_VORSCHLAG", vorschlagW, vorschlagRaeume ?? "");
+        }
+
+        /// <summary>
+        /// Der Nachzug der Regel 1 nach einer Handänderung: dieselbe Vorgabe
+        /// (<see cref="InnereGewinneVorgeben"/>) aus der aktuellen Nutzfläche; der Vorschlag der Datei
+        /// bleibt im Beleg, wenn die Zeile ihn trug.
+        /// </summary>
+        internal static void InnereGewinneNachziehen(GebaeudeFeldzeile gewinne, double? nutzflaeche)
+        {
+            string vorschlagW = null, vorschlagRaeume = null;
+            GebaeudeBeleg b = gewinne.Beleg;
+            if (b != null && b.Schluessel == "GIMP_BELEG_GEWINNE_JE_FLAECHE_VORSCHLAG" && b.Werte.Length >= 5)
+            {
+                vorschlagW = b.Werte[3];
+                vorschlagRaeume = b.Werte[4];
+            }
+            else if (b != null && b.Schluessel == "GIMP_BELEG_GEWINNE_VORSCHLAG" && b.Werte.Length >= 2)
+            {
+                vorschlagW = b.Werte[0];
+                vorschlagRaeume = b.Werte[1];
+            }
+            InnereGewinneVorgeben(gewinne, nutzflaeche, vorschlagW, vorschlagRaeume);
+        }
+
+        /// <summary>
+        /// <b>Regel 2: Der Nachtsollwert folgt dem Tagsollwert</b> (Entscheid E43) — die EINE Stelle für
+        /// Zuordnung und Nachzug: Vorgabewert = Wert = min(<see cref="GebaeudeStammCtrl.SOLLTEMPERATUR_NACHT_VORGABE"/>,
+        /// Tagsollwert) mit Beleg <c>GIMP_BELEG_SOLLWERT_VORGABE</c> bzw.
+        /// <c>GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG</c>; ohne Tagsollwert die Vorgabe. Herkunft Vorgabe.
+        /// </summary>
+        internal static void NachtsollwertVorgeben(GebaeudeFeldzeile nacht, double? tag)
+        {
+            double vorgabeNacht = GebaeudeStammCtrl.SOLLTEMPERATUR_NACHT_VORGABE;
+            if (!tag.HasValue || vorgabeNacht <= tag.Value)
+            {
+                nacht.VorgabeWert = vorgabeNacht;
+                nacht.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_SOLLWERT_VORGABE", Zahl(vorgabeNacht));
+            }
+            else
+            {
+                nacht.VorgabeWert = tag.Value;
+                nacht.VorgabeBeleg = new GebaeudeBeleg("GIMP_BELEG_SOLL_NACHT_HOECHSTENS_TAG", Zahl(vorgabeNacht), Zahl(tag.Value));
+            }
+            VorgabeUebernehmen(nacht);
         }
 
         // ==================================================================

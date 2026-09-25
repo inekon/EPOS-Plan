@@ -106,9 +106,11 @@ public class GebaeudeImportDialogTests : EposBunitContext
         GebaeudeLesestand? lesestand = null,
         Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>? pruefen = null,
         Func<GebaeudeImportErgebnis, string?>? uebernehmen = null,
-        bool ohneUebernehmen = false)
+        bool ohneUebernehmen = false,
+        Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>? zuordnen = null)
     {
         GebaeudeImportProfilDaten pr = profil ?? ProfilA;
+        Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand> stand = zuordnen ?? Stand;
         return Render<GebaeudeImportDialog>(c =>
         {
             c.Add(x => x.Profil, pr);
@@ -124,7 +126,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
                 melder.Report(new GebaeudeImportFortschritt(0.5, "Liest …"));
                 return Task.FromResult(lesestand ?? Gelesen());
             }));
-            c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)(a => { p.Anfragen.Add(a); return Stand(a); }));
+            c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)(a => { p.Anfragen.Add(a); return stand(a); }));
             c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)(e =>
             {
                 p.Geprueft.Add(e);
@@ -317,6 +319,39 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.True(awfl.Haken);
     }
 
+    /// <summary>
+    /// <b>Eine Folgevorgabe zieht nach</b>: Die Datenseite rechnet die inneren Gewinne aus der
+    /// Nutzfläche der Handwerte (hier 5 W/m² wie im Kern); nach einer Flächenänderung zeigt der Dialog
+    /// den neuen Wert der Gewinne, deren Herkunft Vorgabe bleibt.
+    /// </summary>
+    [Fact]
+    public void Nach_einer_Flaechenaenderung_zeigt_der_Dialog_die_nachgezogenen_Gewinne()
+    {
+        var p = new Protokoll();
+        GebaeudeImportStand MitGewinnen(GebaeudeZuordnungsanfrage a)
+        {
+            GebaeudeImportStand s = Stand(a);
+            double flaeche = a.Handwerte is { } h && h.TryGetValue("NUTZ", out double? w) && w.HasValue ? w.Value : 50;
+            GebaeudeFeldzeileDaten gewinne = Zeile("GEW", "Kenngrößen", "Interne Wärmegewinne", 5 * flaeche, "W", haken: true, eingebbar: true)
+                with { HerkunftText = "HK-Vorgabe", HerkunftSchluessel = "VORGABE" };
+            return s with { Zeilen = s.Zeilen.Take(1).Append(gewinne).Concat(s.Zeilen.Skip(1)).ToList() };
+        }
+        var cut = Bauen(p, zuordnen: MitGewinnen);
+        Einlesen(cut);
+        Assert.Equal("250", ZeileVon(cut, "GEW").QuerySelector("input.epos-eingabe")!.GetAttribute("value"));
+
+        ZeileVon(cut, "NUTZ").QuerySelector("input.epos-eingabe")!.Input("80");
+
+        cut.WaitForAssertion(() => Assert.Equal("400", ZeileVon(cut, "GEW").QuerySelector("input.epos-eingabe")!.GetAttribute("value")));
+        Assert.Contains("HK-Vorgabe", ZeileVon(cut, "GEW").TextContent);     // die Gewinne bleiben Vorgabe
+        Assert.Contains("Hand-Probe", ZeileVon(cut, "NUTZ").TextContent);    // die Fläche ist manuell
+
+        Ok(cut);
+        cut.WaitForAssertion(() => Assert.Single(p.Geschlossen));
+        Assert.Equal(400, p.Geschlossen[0]!.Zeile("GEW")!.Wert);
+        Assert.Equal("VORGABE", p.Geschlossen[0]!.Zeile("GEW")!.HerkunftSchluessel);
+    }
+
     [Fact]
     public void Der_Klassenwechsel_ordnet_neu_zu_und_behaelt_die_Handaenderungen()
     {
@@ -326,11 +361,15 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Single(p.Anfragen);
 
         ZeileVon(cut, "NUTZ").QuerySelector("input.epos-eingabe")!.Input("77");
+        // Eine Handänderung ordnet neu zu — mit dem Handwert, damit die Datenseite nachzieht.
+        cut.WaitForAssertion(() => Assert.Equal(2, p.Anfragen.Count));
+        Assert.Equal(77, p.Anfragen[1].Handwerte!["NUTZ"]);
         ZeileVon(cut, "FNORD").QuerySelector("input[type=checkbox]")!.Change(false);
         cut.FindAll(".epos-feld")[0].QuerySelector("select")!.Change("4");   // Klasse E
 
-        cut.WaitForAssertion(() => Assert.Equal(2, p.Anfragen.Count));
-        Assert.Equal(4, p.Anfragen[1].Baualtersklasse);
+        cut.WaitForAssertion(() => Assert.Equal(3, p.Anfragen.Count));
+        Assert.Equal(4, p.Anfragen[2].Baualtersklasse);
+        Assert.Equal(77, p.Anfragen[2].Handwerte!["NUTZ"]);
         cut.WaitForAssertion(() => Assert.Contains("Vorgabe-E", ZeileVon(cut, "UAW").TextContent));
 
         GebaeudeFeldzeileDaten nutz = cut.Instance.Zeilen.Single(z => z.Zielfeld == "NUTZ");

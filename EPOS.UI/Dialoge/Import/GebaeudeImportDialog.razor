@@ -14,7 +14,9 @@
 
    DIE BAUALTERSKLASSE IST DAS ERSTE FELD. Sie steuert alle Vorgaben (U-Werte, g-Wert,
    Waermebruecken); jeder Wechsel ordnet ueber den Delegaten neu zu. Ebenso ein Haken der
-   Raumliste ("beheizt"). HANDAENDERUNGEN BLEIBEN dabei stehen, wo das Zielfeld gleich ist:
+   Raumliste ("beheizt") und eine Handaenderung eines Werts: Die Datenseite legt die Handwerte
+   auf und zieht die Vorgaben nach, die von ihnen abhaengen (innere Gewinne von der Nutzflaeche,
+   Nachtsollwert vom Tag). HANDAENDERUNGEN BLEIBEN dabei stehen, wo das Zielfeld gleich ist:
    ein geaenderter Wert (Herkunft "manuell", Markierung weg) und ein geaenderter Haken. Ein
    Gebaeudewechsel und eine neue Datei sind echte Kontextwechsel - dort faellt beides weg.
 
@@ -456,7 +458,8 @@
         if (Zuordnen is null || _lesestand is null) return;
 
         GebaeudeImportStand stand = Zuordnen(new GebaeudeZuordnungsanfrage(
-            _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal)));
+            _gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
+            new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal)));
         _stand = stand;
         _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
         if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
@@ -513,7 +516,11 @@
         _nameGeaendert = true;
     }
 
-    /// <summary>Ein geänderter Wert: Herkunft „manuell", Markierung weg; ein eingetragener Wert setzt den Haken.</summary>
+    /// <summary>
+    /// Ein geänderter Wert: Herkunft „manuell", Markierung weg; ein eingetragener Wert setzt den Haken.
+    /// Danach ordnet der Dialog neu zu — die Datenseite zieht die Vorgaben nach, die vom geänderten
+    /// Wert abhängen (etwa die inneren Gewinne von der Nutzfläche).
+    /// </summary>
     private void BeiWert(string zielfeld, double? wert)
     {
         int i = _zeilen.FindIndex(z => z.Zielfeld == zielfeld);
@@ -522,6 +529,7 @@
         if (wert.HasValue && _zeilen[i].HakenSetzbar) _handhaken[zielfeld] = true;
         _zeilen[i] = MitHandaenderungen(_zeilen[i], _stand?.ManuellHerkunftText ?? "");
         _meldung = "";
+        NeuZuordnen();
     }
 
     private void BeiHaken(string zielfeld, bool haken)

@@ -72,13 +72,16 @@ public sealed record GebaeudeLesestand(
 
 /// <summary>
 /// Eine Zuordnung, wie der Dialog sie erfragt: welches Gebäude, welche Baualtersklasse
-/// (Index 0 = A … 20 = U, <c>null</c> = keine) und welche Räume der Anwender gegen die Datei
-/// umgestellt hat (Raumkennung → beheizt).
+/// (Index 0 = A … 20 = U, <c>null</c> = keine), welche Räume der Anwender gegen die Datei
+/// umgestellt hat (Raumkennung → beheizt) und welche Werte er von Hand eingetragen hat
+/// (Zielfeld → Wert). Die Handwerte legt die Datenseite auf den Satz und zieht die Vorgaben
+/// nach, die von ihnen abhängen (innere Gewinne von der Nutzfläche, Nachtsollwert vom Tag).
 /// </summary>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
-    IReadOnlyDictionary<string, bool> BeheiztUebersteuert);
+    IReadOnlyDictionary<string, bool> BeheiztUebersteuert,
+    IReadOnlyDictionary<string, double?>? Handwerte = null);
 
 /// <summary>Ein Raum der Raumliste mit dem Haken „beheizt" und dem Grund der Entscheidung.</summary>
 /// <param name="Kennung">Raumkennung der Datei — der Schlüssel der Übersteuerung.</param>
