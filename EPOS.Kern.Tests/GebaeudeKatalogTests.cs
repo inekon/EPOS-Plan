@@ -7,9 +7,10 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <see cref="GebaeudeStammCtrl"/> nach iU9-W9.0b — die Listen, der Katalogfilter und
-    /// die beiden Ableitungen, die bis dahin in <c>Form_Gebaeude</c> und
-    /// <c>Form_Gebaeude1</c> standen; dazu <see cref="Suchmuster"/> aus W9.0e.
+    /// <see cref="GebaeudeStammCtrl"/> nach iU9-W9.0b — die Listen, die beiden Ableitungen,
+    /// die bis dahin in <c>Form_Gebaeude</c> und <c>Form_Gebaeude1</c> standen, und der
+    /// Filter der Katalogliste über die Zeilen des Katalogs; dazu <see cref="Suchmuster"/>
+    /// aus W9.0e.
     ///
     /// <para>Die Faelle mit Datenbank laufen gegen eine ARBEITSKOPIE der Testdatenbank und
     /// schweigen, wenn es sie nicht gibt (<see cref="TestDatenbank"/>).</para>
@@ -79,48 +80,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(erwartet, GebaeudeStammCtrl.BauweiseAusBauart(index, wfl));
         }
 
-        // ====================================================== Filterausdruck
-
-        [Fact]
-        public void FilterAusdruck_ohne_Auswahl_ist_nur_die_Verwendung()
-        {
-            Assert.Equal(GebaeudeStammCtrl.FILTER_WOHNGEBAEUDE,
-                GebaeudeStammCtrl.FilterAusdruck(true, null, null, false));
-            Assert.Equal(GebaeudeStammCtrl.FILTER_NICHT_WOHNGEBAEUDE,
-                GebaeudeStammCtrl.FilterAusdruck(false, null, null, false));
-        }
-
-        [Fact]
-        public void FilterAusdruck_nur_Baujahr_haengt_die_Verwendung_an()
-        {
-            Assert.Equal("Baualtersklasse='C' and " + GebaeudeStammCtrl.FILTER_WOHNGEBAEUDE,
-                GebaeudeStammCtrl.FilterAusdruck(true, null, 2, true));
-        }
-
-        /// <summary>
-        /// <b>Befund W9-B1.</b> Derselbe Zustand — Gebaeudeart gewaehlt, Baujahr „Alle" —
-        /// ergibt in den beiden Handlern des Vorlaeufers ZWEI verschiedene Ausdruecke.
-        /// Woertlich uebernommen; der Fall haelt beide fest.
-        /// </summary>
-        [Fact]
-        public void FilterAusdruck_Befund_B1_Gebaeudeart_ohne_Baujahr_haengt_am_ausloesenden_Feld()
-        {
-            Assert.Equal("Gebaeudeart='Hotel'",
-                GebaeudeStammCtrl.FilterAusdruck(true, "Hotel", null, false));   // :359
-
-            Assert.Equal("Gebaeudeart='Hotel' and " + GebaeudeStammCtrl.FILTER_WOHNGEBAEUDE,
-                GebaeudeStammCtrl.FilterAusdruck(true, "Hotel", null, true));    // :392
-        }
-
-        [Fact]
-        public void FilterAusdruck_mit_beidem_nennt_alle_drei_Bedingungen()
-        {
-            const string erwartet = "Gebaeudeart='Hotel' and Baualtersklasse='A' and " +
-                                    GebaeudeStammCtrl.FILTER_WOHNGEBAEUDE;
-            Assert.Equal(erwartet, GebaeudeStammCtrl.FilterAusdruck(true, "Hotel", 0, false));
-            Assert.Equal(erwartet, GebaeudeStammCtrl.FilterAusdruck(true, "Hotel", 0, true));
-        }
-
         // ================================================= Listen aus der Datenbank
 
         [Fact]
@@ -160,28 +119,72 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ctrl.rows, GebaeudeStammCtrl.Katalognamen().Count);
         }
 
+        // ============================ Der Filter der Katalogliste (Stufe G3, Welle K)
+
+        /// <summary>
+        /// <b>Der Trichter „Verwendung" trifft genau die Wohngebäude</b> — der Filter, der bis
+        /// Welle K als eigene SQL-Weiche im Projektdialog stand, läuft jetzt für Verwaltung und
+        /// Projektdialog über die Katalogliste im Kern. Der Anzeigetext „Wohngebäude" enthält
+        /// „Gewerbe+Sonstige" nicht und umgekehrt; der Trichter trifft deshalb genau die Sätze
+        /// mit dem Steuerwert.
+        /// </summary>
         [Fact]
-        public void Filtern_liefert_nur_Saetze_der_gewaehlten_Verwendung()
+        public void Der_Trichter_Verwendung_trifft_genau_die_Saetze_der_Verwendung()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            var ctrl = new GebaeudeStammCtrl();
-            IReadOnlyList<GebaeudeModel> wohn = ctrl.Filtern(true, null, null, false);
+            IReadOnlyList<Katalogfilterzeile> zeilen = GebaeudeStammCtrl.Katalogfilterzeilen();
 
-            Assert.All(wohn, m => Assert.Equal("Wohngebaeude", m.Wohngebaeude_Nicht_Wohngebaeude));
+            // Die Gegenrechnung ist die SQL-Bedingung auf dem Steuerwert: Ein Satz OHNE
+            // Verwendung (NULL) steht in keiner der beiden Mengen - in der Liste traegt er eine
+            // leere Zelle, die kein Trichter trifft.
+            foreach ((string steuerwert, string bedingung) in new[]
+            {
+                (GebaeudeStammCtrl.FILTERWERT_WOHN, GebaeudeStammCtrl.FILTER_WOHNGEBAEUDE),
+                (GebaeudeStammCtrl.FILTERWERT_SONSTIGE, GebaeudeStammCtrl.FILTER_NICHT_WOHNGEBAEUDE)
+            })
+            {
+                var stand = new Katalogfilterstand();
+                stand.Setzen(Katalogfilterprofil.SpVerwendung, GebaeudeStammCtrl.Verwendungstext(steuerwert));
+
+                IReadOnlyList<Katalogfilterzeile> treffer =
+                    Katalogfilter.Anwenden(Katalogfilterprofil.FuerGebaeude(), zeilen, stand);
+
+                var ctrl = new GebaeudeStammCtrl();
+                ctrl.ReadAll(bedingung);
+                var erwartet = ctrl.items.Select(m => m.Gebaeudename).OrderBy(n => n, StringComparer.Ordinal).ToList();
+
+                Assert.NotEmpty(treffer);
+                Assert.Equal(erwartet, treffer.Select(z => z.Bezeichner).OrderBy(n => n, StringComparer.Ordinal));
+            }
         }
 
+        /// <summary>
+        /// Der Trichter „Baujahr" filtert auf dem KLARTEXT der Baualtersklasse — derselbe Text,
+        /// der in der Zelle steht, nicht ihr Buchstabe.
+        /// </summary>
         [Fact]
-        public void Filtern_mit_Baujahr_liefert_nur_die_gewaehlte_Klasse()
+        public void Der_Trichter_Baujahr_trifft_die_Klasse_ueber_ihren_Klartext()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
+            IReadOnlyList<Katalogfilterzeile> zeilen = GebaeudeStammCtrl.Katalogfilterzeilen();
             var ctrl = new GebaeudeStammCtrl();
-            IReadOnlyList<GebaeudeModel> treffer = ctrl.Filtern(true, null, 0, true);
+            ctrl.ReadAll();
 
-            Assert.All(treffer, m => Assert.Equal("A", m.Baualtersklasse));
+            GebaeudeModel erster = ctrl.items.FirstOrDefault(m => !string.IsNullOrEmpty(m.Baualtersklasse));
+            if (erster is null) return;
+            string klartext = GebaeudeStammCtrl.Baualtersklassen()[GebaeudeStammCtrl.KlassenIndex(erster.Baualtersklasse)];
+
+            var stand = new Katalogfilterstand();
+            stand.Setzen(Katalogfilterprofil.SpBaujahr, klartext);
+            IReadOnlyList<Katalogfilterzeile> treffer =
+                Katalogfilter.Anwenden(Katalogfilterprofil.FuerGebaeude(), zeilen, stand);
+
+            Assert.Contains(treffer, z => z.Bezeichner == erster.Gebaeudename);
+            Assert.All(treffer, z => Assert.Contains(klartext, z.Text(Katalogfilterprofil.SpBaujahr)));
         }
 
         // ============================================================ Suchmuster
