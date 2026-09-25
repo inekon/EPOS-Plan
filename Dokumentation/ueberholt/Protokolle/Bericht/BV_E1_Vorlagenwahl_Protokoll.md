@@ -19,7 +19,7 @@ kein Rechenweg berührt, keine Basis neu eingefroren.
 
 ## 1 Entscheid BV-E1-1
 
-**Entscheid des Auftraggebers (Orchestrierung) vom 25.09.2026:** kein Übernahmeschritt und kein `[InstallDelete]`.
+**Entscheid des Auftraggebers (Orchestrierung) vom 25.09.2026, vom Anwender am 26.09.2026 bestätigt:** kein Übernahmeschritt und kein `[InstallDelete]`.
 `Berichtsvorlage.docx` bleibt als **Stilvorlage** ausgeliefert — sie ist der Rückfall des Codes, wenn die Standardvorlage
 fehlt, und die Quelle der Bereinigung: Aus ihr erzeugt `Werkzeuge/Berichtsvorlage` Beispiel- und Standardvorlage. Die
 Standardvorlage der Etappe ist eine eigene Datei: **`Berichtsvorlage_Standard.docx`**.

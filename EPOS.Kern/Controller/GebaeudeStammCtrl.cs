@@ -119,6 +119,14 @@ namespace WindowsFormsApplication1
         public const string FILTER_NICHT_WOHNGEBAEUDE = "Wohngebaeude_Nicht_Wohngebaeude='Nicht Wohngebaeude'";
 
         /// <summary>
+        /// Die Fläche je Nutzer [m²], mit der ein Gebäude ohne diese Angabe gespeichert wird — die
+        /// Regel „Flaeche_Nutzer == 0 → 35" des Vorläufers (<c>GebaeudeKatalogHuelle.NachModell</c>).
+        /// Der Gebäudeimport setzt sie als ausgewiesene Vorgabe, wenn die Datei keine vollständige
+        /// Personenangabe trägt (<c>GebaeudeAggregation</c>). Die eine Stelle der Zahl.
+        /// </summary>
+        public const double FLAECHE_JE_NUTZER_VORGABE = 35.0;
+
+        /// <summary>
         /// Die 21 Baualtersklassen in ihrer festen Reihenfolge — Index 0 ist <c>'A'</c>,
         /// Index 20 ist <c>'U'</c> (<c>Form_Gebaeude.list_geb</c>:14 und
         /// <c>Form_Gebaeude1.list_geb</c>:9, dort zweimal wortgleich).

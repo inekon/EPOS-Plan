@@ -1,0 +1,461 @@
+﻿@page "/gebaeudeimport"
+@using System.Resources
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Import
+@inject NavigationManager Navigation
+
+@*  DIE GEBAEUDEIMPORT-SICHTPROBE (Stufe G4) - Pruefstand, nicht Auslieferung.
+
+    Sie stellt den ECHTEN Zuordnungsdialog (GebaeudeImportDialog) mit der ECHTEN Huelle
+    (GebaeudeImportHuelle, ohne Projekt) in den Browser - OHNE Datenbank. Ersetzt ist allein
+    das Fenster der Dateiwahl: Der Probenwaehler liefert den Pfad der Probe aus
+    Referenzlaeufe/Importproben; Dateiart, Groessengrenze, Lesen, Zuordnen und Pruefen sind
+    der Weg der Anwendung. Der Wirt richtet die Zugriffsschicht auf einen Ordner, den es
+    nicht gibt (Program.cs) - ein Datenbankzugriff scheiterte laut.
+
+    Gaben ueber die Adresse:
+      ?datei=<name>        Dateiname in Referenzlaeufe/Importproben (Vorgabe gbxml_haus_si.xml);
+                           jede Datei des Ordners, auch eine fremde Art (benannte Ablehnung).
+      ?ios=1               Die Groessengrenze von iOS statt Windows.
+      ?kultur=de-DE|en-US  Kultur und Sprache (Kommazahlen, Ressourcentexte); Program.cs setzt sie.
+      ?dialog=gebaeude     Der Gebaeudedialog des Projekts (wie maske=projekt-gebaeude der
+                           Katalogprobe) MIT dem Knopf "Importieren (gbXML, IFC)..."; der
+                           Zuordnungsdialog steht dann in seiner Ueberlagerung.
+
+    DIE UEBERNAHME schreibt nichts. Der Schreibweg der Seite nimmt das Ergebnis entgegen und
+    bildet es wie der Gebaeudedialog auf den Gebaeudeeditor ab (GebaeudeImportHuelle.Vorbelegung
+    = NachKatalogdaten + Herleitungszeile); die Tabelle "Uebernahme" zeigt beides.
+
+    IM GEBAEUDEDIALOG oeffnet danach der Katalogeditor im Modus Neu, vorbelegt - mit dem
+    Parametersatz der Anwendung (GebaeudeKatalogHuelle.Gaben), dessen Wege zur Datenbank den
+    Proben der Seite weichen: Gebaeudetypen, Gebaeudearten, Katalognamen und die Namenspruefung
+    kommen aus dem synthetischen Katalog der Seite, "Lies" findet nichts, die hergeleiteten
+    Vorgaben der Waermeuebergabe fehlen (sie lesen die Klimareihe eines Projekts), und
+    "Speichern" schreibt nichts, sondern meldet Erfolg. Danach steht das neue Gebaeude in der
+    Projektliste (Arbeitsstand des Dialogs, wie in der Anwendung bis zu dessen OK). *@
+
+<div class="epos-probe-wirt epos-gebimportprobe">
+    <section class="epos-dialog epos-gebimportprobe-kopf">
+        <p id="probe-stand" class="epos-hinweis">
+            Gebäudeimport-Sichtprobe · Probe <strong>@_datei</strong> · Kultur @CultureInfo.CurrentCulture.Name
+            · Größengrenze @(_ios ? "iOS" : "Windows")
+            · @(_gebaeude ? "Gebäudedialog mit Import" : "Zuordnungsdialog")
+            · ohne Datenbank, geschrieben wird nichts
+        </p>
+        <p class="epos-leisezeile" id="probe-wahl">
+            Probe:
+            @foreach (string name in _proben)
+            {
+                string adresse = Adresse(datei: name);
+                <a href="@adresse" class="@(name == _datei ? "epos-gebimportprobe-aktiv" : null)"
+                   @onclick="() => Laden(adresse)" @onclick:preventDefault>@name</a>
+                @(" ")
+            }
+        </p>
+        <p class="epos-leisezeile" id="probe-schalter">
+            Kultur:
+            <a href="@Adresse(kultur: KulturDe)" @onclick="() => Laden(Adresse(kultur: KulturDe))" @onclick:preventDefault>de-DE</a>
+            <a href="@Adresse(kultur: KulturEn)" @onclick="() => Laden(Adresse(kultur: KulturEn))" @onclick:preventDefault>en-US</a>
+            · Grenze:
+            <a href="@Adresse(ios: false)" @onclick="() => Laden(Adresse(ios: false))" @onclick:preventDefault>Windows</a>
+            <a href="@Adresse(ios: true)" @onclick="() => Laden(Adresse(ios: true))" @onclick:preventDefault>iOS</a>
+            · Fall:
+            <a href="@Adresse(gebaeude: false)" @onclick="() => Laden(Adresse(gebaeude: false))" @onclick:preventDefault>Zuordnungsdialog</a>
+            <a href="@Adresse(gebaeude: true)" @onclick="() => Laden(Adresse(gebaeude: true))" @onclick:preventDefault>Gebäudedialog</a>
+        </p>
+        @if (_pfad is null)
+        {
+            <Warnbanner Stufe="WarnStufe.Fehler"
+                        Text="@($"Probe nicht gefunden: „{_datei}“ in Referenzlaeufe/Importproben - der Dateiwähler antwortet leer.")" />
+        }
+    </section>
+
+    @if (_gebaeude)
+    {
+        <GebaeudeDialog Zeilen="@Projektzeilen"
+                        Katalogzeilen="@(() => Katalog)"
+                        Katalogprofil="@Profil"
+                        Filterstandvorgabe="@_filterstand"
+                        StammDetail="@StammDetail"
+                        StammSatz="@StammSatz"
+                        ImportGaben="@(() => NeuerImportweg())"
+                        BtnImportText="@BtnImportText"
+                        BtnImportHinweis="@BtnImportHinweis"
+                        MeldungImportAufgenommen="@MeldungImportAufgenommen"
+                        Geschlossen="@(b => { })" />
+    }
+    else if (_offen && _gaben is not null)
+    {
+        <GebaeudeImportDialog @attributes="_gaben" Geschlossen="ImportGeschlossen" />
+    }
+    else
+    {
+        <section class="epos-dialog">
+            <p class="epos-leisezeile" id="probe-geschlossen">
+                Der Zuordnungsdialog ist zu (@_ausgang).
+                <button type="button" class="epos-knopf" @onclick="DialogOeffnen">Zuordnungsdialog neu öffnen</button>
+            </p>
+        </section>
+    }
+
+    @if (_ergebnis is not null && _editorDaten is not null)
+    {
+        GebaeudeImportErgebnis ergebnis = _ergebnis;
+        GebaeudeKatalogDaten d = _editorDaten;
+        List<GebaeudeFeldzeileDaten> mitHaken = ergebnis.Zeilen.Where(z => z.Haken).ToList();
+
+        <section class="epos-dialog" id="probe-uebernahme">
+            <Gruppenkopf Titel="Übernahme" />
+            <dl class="epos-gebimport-kopf">
+                <dt>Gebäudename</dt><dd id="probe-name">@ergebnis.Gebaeudename</dd>
+                <dt>Baualtersklasse</dt><dd id="probe-klasse">@KlassenText(ergebnis.Baualtersklasse)</dd>
+                <dt>Gebäude der Datei</dt><dd>Nr. @(ergebnis.Gebaeudeindex + 1)</dd>
+                <dt>Räume umgestellt</dt><dd>@ergebnis.BeheiztUebersteuert.Count</dd>
+                <dt>Zeilen mit Haken</dt><dd>@mitHaken.Count von @ergebnis.Zeilen.Count</dd>
+            </dl>
+            @if (_editorGespeichert.Length > 0)
+            {
+                <p class="epos-leisezeile" id="probe-editor-gespeichert">
+                    Im vorbelegten Editor gespeichert (Probe, nichts geschrieben): „@_editorGespeichert“
+                </p>
+            }
+
+            <Gruppenkopf Titel="Zeilen mit Haken (Ergebnis des Dialogs)" />
+            <div class="epos-raster-huelle">
+                <table class="epos-raster" id="probe-haken">
+                    <thead>
+                        <tr><th>Gruppe</th><th>Feld</th><th>Wert</th><th>Einheit</th><th>Herkunft</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GebaeudeFeldzeileDaten z in mitHaken)
+                        {
+                            <tr @key="z.Zielfeld" data-zielfeld="@z.Zielfeld">
+                                <td>@z.Gruppe</td>
+                                <td>@z.Feld</td>
+                                <td>@Wert(z)</td>
+                                <td>@z.Einheit</td>
+                                <td>@z.HerkunftText</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <Gruppenkopf Titel="Abbildung auf den Gebäudeeditor (NachKatalogdaten)" />
+            @if (_herleitung.Length > 0)
+            {
+                <p class="epos-leisezeile" id="probe-herleitung">@_herleitung</p>
+            }
+            <div class="epos-raster-huelle">
+                <table class="epos-raster" id="probe-editor">
+                    <thead>
+                        <tr><th>Feld des Editors</th><th>Wert</th><th>Einheit</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach ((string feld, string wert, string einheit) in Editorfelder(d))
+                        {
+                            <tr @key="feld"><td>@feld</td><td>@wert</td><td>@einheit</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    // ------------------------------------------------------------- Adresse
+    private string _datei = "gbxml_haus_si.xml";
+    private string _kultur = "";
+    private const string KulturDe = "de-DE", KulturEn = "en-US";
+    private bool _ios;
+    private bool _gebaeude;
+    private string? _pfad;
+    private IReadOnlyList<string> _proben = Array.Empty<string>();
+
+    // ------------------------------------------ Fall 1: der Zuordnungsdialog
+    private GebaeudeImportHuelle? _huelle;
+    private IReadOnlyDictionary<string, object>? _gaben;
+    private bool _offen;
+    private string _ausgang = "";
+
+    // ----------------------------------------------------------- Übernahme
+    private GebaeudeImportErgebnis? _ergebnis;
+    private GebaeudeKatalogDaten? _editorDaten;
+    private string _herleitung = "";
+    private string _editorGespeichert = "";
+    private IReadOnlyList<string> _klassen = Array.Empty<string>();
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("datei", out var d) && d.ToString().Length > 0) _datei = d.ToString();
+        if (abfrage.TryGetValue("kultur", out var k)) _kultur = k.ToString();
+        _ios = abfrage.TryGetValue("ios", out var i) && i.ToString() == "1";
+        _gebaeude = abfrage.TryGetValue("dialog", out var g) && g.ToString() == "gebaeude";
+
+        _pfad = Probenwaehler.Probe(_datei);
+        _proben = Probenwaehler.Gebaeudeproben();
+        if (!_gebaeude) DialogOeffnen();
+    }
+
+    /// <summary>Die Adresse dieser Seite mit geänderten Gaben — geladen wird NEU (neue Schaltung, neue Kultur).</summary>
+    private string Adresse(string? datei = null, string? kultur = null, bool? ios = null, bool? gebaeude = null)
+    {
+        var teile = new List<string> { "datei=" + Uri.EscapeDataString(datei ?? _datei) };
+        string k = kultur ?? _kultur;
+        if (k.Length > 0) teile.Add("kultur=" + Uri.EscapeDataString(k));
+        if (ios ?? _ios) teile.Add("ios=1");
+        if (gebaeude ?? _gebaeude) teile.Add("dialog=gebaeude");
+        return "gebaeudeimport?" + string.Join("&", teile);
+    }
+
+    private void Laden(string adresse) => Navigation.NavigateTo(adresse, forceLoad: true);
+
+    /// <summary>
+    /// Der Parametersatz der Hülle mit dem Dateiwähler der Probe: Um den Delegaten der Hülle legt
+    /// die Seite ihre Probe als Antwort des Probenwählers (nur für diesen Aufruf); Dateiart,
+    /// Größengrenze und die benannten Ablehnungen bleiben der Weg der Hülle.
+    /// </summary>
+    private IReadOnlyDictionary<string, object> MitProbenwahl(IReadOnlyDictionary<string, object> gaben, GebaeudeImportHuelle huelle)
+    {
+        var mit = new Dictionary<string, object>(gaben)
+        {
+            ["DateiWaehlen"] = new Func<string, Task<GebaeudeDateiwahl?>>(async filter =>
+            {
+                Probenwaehler.Antwort = _pfad;
+                return await huelle.DateiWaehlenAsync(filter);
+            })
+        };
+        return mit;
+    }
+
+    // ----------------------------------------------- Fall 1: Zuordnungsdialog
+
+    private void DialogOeffnen()
+    {
+        _huelle = new GebaeudeImportHuelle(0, _ios);
+        IReadOnlyDictionary<string, object> gaben = _huelle.Gaben(Uebernehmen);
+        _klassen = (IReadOnlyList<string>)gaben["Baualtersklassen"];
+        _gaben = MitProbenwahl(gaben, _huelle);
+        _offen = true;
+    }
+
+    /// <summary>Der Schreibweg der Seite: Er schreibt nichts, er nimmt das Ergebnis entgegen und bildet es auf den Editor ab.</summary>
+    private Task<string?> Uebernehmen(GebaeudeImportErgebnis ergebnis)
+    {
+        if (_huelle is null) return Task.FromResult<string?>("Probe: keine Hülle");
+        Uebernommen(ergebnis, _huelle.Vorbelegung(ergebnis));
+        return Task.FromResult<string?>(null);
+    }
+
+    private void ImportGeschlossen(GebaeudeImportErgebnis? ergebnis)
+    {
+        _offen = false;
+        _ausgang = ergebnis is null ? "abgebrochen" : "übernommen";
+    }
+
+    private void Uebernommen(GebaeudeImportErgebnis ergebnis, GebaeudeVorbelegung vorbelegung)
+    {
+        _ergebnis = ergebnis;
+        _editorDaten = vorbelegung.Daten;
+        _herleitung = vorbelegung.Herleitung ?? "";
+        _editorGespeichert = "";
+        _ = InvokeAsync(StateHasChanged);   // der Rückruf kommt aus einem Kind (dem Dialog)
+    }
+
+    // ---------------------------------------- Fall 2: Gebäudedialog mit Import
+
+    private readonly Katalogfilterstand _filterstand = new();
+    private Katalogfilterprofil? _profil;
+    private IReadOnlyList<Katalogfilterzeile>? _katalog;
+    private List<GebaeudeProjektZeile>? _projektzeilen;
+    private int _naechsteId = 100000;
+
+    private static readonly IReadOnlyList<string> Typen = new[] { "Wohnblock", "Schule", "Hotel", "Verwaltung" };
+    private static readonly IReadOnlyList<string> Arten =
+        new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" };
+
+    private Katalogfilterprofil Profil => _profil ??= Katalogfilterprofil.FuerGebaeude(s => Uebersetzt(s, s));
+
+    /// <summary>Ein kleiner synthetischer Katalog (zwölf Sätze) — die Namensprüfung der Übernahme läuft gegen ihn.</summary>
+    private IReadOnlyList<Katalogfilterzeile> Katalog => _katalog ??= Zeilenbau.Voll(Profil, 12);
+
+    private List<GebaeudeProjektZeile> Projektzeilen => _projektzeilen ??=
+        Katalog.Take(2).Select(z => Projektzeile(z, _naechsteId++)).ToList();
+
+    private static GebaeudeProjektZeile Projektzeile(Katalogfilterzeile z, int idZ) => new()
+    {
+        IdZ = idZ,
+        IdGebaeude = z.Id,
+        IdKatalog = z.Id,
+        Name = z.Bezeichner,
+        Art = z.Text(Katalogfilterprofil.SpGebaeudeart),
+        Beschreibung = "Beschreibung des Gebäudes " + z.Bezeichner,
+        Wohnflaeche = z.Zahl(Katalogfilterprofil.SpFlaecheM2) ?? 0,
+        Einheit = "Wohnfläche [m²]",
+        Jahresnutzungsgrad = 1,
+        Rechenweg = "VDI 6007"
+    };
+
+    private GebaeudeStammDetail? StammDetail(string name)
+    {
+        Katalogfilterzeile? z = Katalog.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : new GebaeudeStammDetail(z.Bezeichner, z.Text(Katalogfilterprofil.SpGebaeudeart),
+            "Beschreibung des Gebäudes " + z.Bezeichner, z.Text(Katalogfilterprofil.SpFlaecheM2), "VDI 6007");
+    }
+
+    private GebaeudeProjektZeile? StammSatz(string name)
+    {
+        Katalogfilterzeile? z = Katalog.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : Projektzeile(z, _naechsteId++);
+    }
+
+    private static string BtnImportText => Uebersetzt("GEB_BTN_IMPORT", "Importieren (gbXML, IFC)…");
+
+    private static string BtnImportHinweis => Uebersetzt("GEB_BTN_IMPORT_HINWEIS",
+        "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen");
+
+    private static string MeldungImportAufgenommen => Uebersetzt("GEB_MSG_IMPORT_AUFGENOMMEN",
+        "Das Gebäude „{0}“ steht jetzt im Katalog und in der Projektliste.");
+
+    /// <summary>
+    /// Der Weg EINES Imports aus dem Gebäudedialog — gebaut wie <c>GebaeudeHuelle.Importweg</c>, mit
+    /// der echten Hülle (ohne Projekt); was dort die Datenbank fragt oder schreibt, fragt hier den
+    /// synthetischen Katalog der Seite bzw. schreibt nichts.
+    /// </summary>
+    private GebaeudeImportweg NeuerImportweg()
+    {
+        var huelle = new GebaeudeImportHuelle(0, _ios);
+        GebaeudeVorbelegung? vorbelegung = null;
+        GebaeudeKatalogDaten? angelegt = null;
+
+        Func<GebaeudeImportErgebnis, Task<string?>> uebernehmen = ergebnis =>
+        {
+            vorbelegung = null;
+            angelegt = null;
+            huelle.Pruefen(ergebnis);   // derselbe Satz wie an der Prüfung (SatzAusErgebnis)
+            if (huelle.Vorbelegungstext.Length == 0)
+                return Task.FromResult<string?>(Resource.GIMP_DLG_NICHT_GELESEN);
+
+            // Statt GebaeudeKatalogHuelle.Laden (Datenbank): der Katalog der Seite.
+            string name = (ergebnis.Gebaeudename ?? "").Trim();
+            if (name.Length > 0 && Katalog.Any(z => string.Equals(z.Bezeichner, name, StringComparison.OrdinalIgnoreCase)))
+                return Task.FromResult<string?>(Uebersetzt("GEBK_MSG_NAME_VERGEBEN",
+                    "Ein Gebäude mit diesem Namen steht schon im Katalog."));
+
+            vorbelegung = huelle.Vorbelegung(ergebnis);
+            Uebernommen(ergebnis, vorbelegung);
+            return Task.FromResult<string?>(null);
+        };
+
+        Func<IReadOnlyDictionary<string, object>?> editorGaben = () =>
+        {
+            if (vorbelegung is null) return null;
+            var gaben = new Dictionary<string, object>(
+                GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu, vorbelegung))
+            {
+                ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => Typen),
+                ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => Arten),
+                ["Katalognamen"] = new Func<IReadOnlyList<string>>(() => Katalog.Select(z => z.Bezeichner).ToList()),
+                ["Lies"] = new Func<string, GebaeudeKatalogDaten?>(_ => null),
+                ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>((daten, neu, bezeichner) =>
+                {
+                    if (neu && daten is not null)
+                    {
+                        angelegt = daten.Kopie();
+                        _editorGespeichert = daten.Name ?? "";
+                        _ = InvokeAsync(StateHasChanged);
+                    }
+                    return new GebaeudeKatalogErgebnis(true, "");
+                }),
+            };
+            gaben.Remove("UebergabeHerleitung");   // liest die Klimareihe eines Projekts
+            return gaben;
+        };
+
+        Func<GebaeudeProjektZeile?> aufnehmen = () =>
+        {
+            if (angelegt is null) return null;
+            GebaeudeProjektZeile zeile = new()
+            {
+                IdZ = _naechsteId++,
+                IdGebaeude = _naechsteId,
+                IdKatalog = _naechsteId,
+                Name = angelegt.Name,
+                Art = angelegt.Gebaeudeart,
+                Beschreibung = angelegt.Beschreibung,
+                Wohnflaeche = angelegt.WohnflaecheGesamt ?? 0,
+                Einheit = "Wohnfläche [m²]",
+                Jahresnutzungsgrad = 1,
+                Rechenweg = "VDI 6007",
+                Herkunftsschluessel = "import-probe"
+            };
+            angelegt = null;
+            return zeile;
+        };
+
+        IReadOnlyDictionary<string, object> satz = huelle.Gaben(uebernehmen);
+        _klassen = (IReadOnlyList<string>)satz["Baualtersklassen"];
+        return new GebaeudeImportweg(MitProbenwahl(satz, huelle), editorGaben, aufnehmen);
+    }
+
+    // ------------------------------------------------------------- Anzeige
+
+    private static string Uebersetzt(string schluessel, string rueckfall)
+    {
+        string? text = null;
+        try { text = Resource.ResourceManager.GetString(schluessel); }
+        catch (MissingManifestResourceException) { }
+        return string.IsNullOrEmpty(text) ? rueckfall : text;
+    }
+
+    private string KlassenText(int? index)
+        => index is int k && k >= 0 && k < _klassen.Count ? _klassen[k] : "—";
+
+    private static string Zahl(double? wert) => wert is double w ? w.ToString("0.####", CultureInfo.CurrentCulture) : "—";
+
+    /// <summary>Der Wert einer Zeile: die Zahl (auch nach einer Handänderung), sonst der Anzeigetext der Hülle.</summary>
+    private static string Wert(GebaeudeFeldzeileDaten z)
+        => z.Wert.HasValue && z.Textwert is null ? Zahl(z.Wert) : (z.WertText.Length > 0 ? z.WertText : "—");
+
+    /// <summary>Die wichtigsten Felder des Gebäudeeditors nach <c>NachKatalogdaten</c>.</summary>
+    private IEnumerable<(string Feld, string Wert, string Einheit)> Editorfelder(GebaeudeKatalogDaten d)
+    {
+        const string flaeche = "m²", uWert = "W/(m²K)", psi = "W/(mK)";
+        yield return ("Name", d.Name, "");
+        yield return ("Baualtersklasse", KlassenText(d.Baualtersklasse), "");
+        yield return ("Baujahr", d.Baujahr?.ToString(CultureInfo.CurrentCulture) ?? "—", "");
+        yield return ("Nutzfläche", Zahl(d.WohnflaecheGesamt), flaeche);
+        yield return ("Raumhöhe", Zahl(d.Raumhoehe), "m");
+        yield return ("Fläche je Nutzer", Zahl(d.FlaecheNutzer), flaeche);
+        yield return ("Interne Wärmegewinne", Zahl(d.Waermegewinne), "W");
+        yield return ("Außenwand: Fläche", Zahl(d.FlaecheAussenwand), flaeche);
+        yield return ("Außenwand: U-Wert", Zahl(d.UWertAussenwand), uWert);
+        yield return ("Fenster Nord", Zahl(d.FensterflaecheNord), flaeche);
+        yield return ("Fenster Ost", Zahl(d.FensterflaecheOst), flaeche);
+        yield return ("Fenster Süd", Zahl(d.FensterflaecheSued), flaeche);
+        yield return ("Fenster West", Zahl(d.FensterflaecheWest), flaeche);
+        yield return ("Fenster Ost + West", Zahl(d.FensterflaecheOstWest), flaeche);
+        yield return ("Fenster: U-Wert", Zahl(d.UWertFenster), uWert);
+        yield return ("g-Wert (Fensterdurchlassgrad)", Zahl(d.Fensterdurchlassgrad), "");
+        yield return ("Dach: Fläche", Zahl(d.Dachflaeche), flaeche);
+        yield return ("Dach: U-Wert", Zahl(d.UWertDachflaeche), uWert);
+        yield return ("Grund: Fläche", Zahl(d.Grundflaeche), flaeche);
+        yield return ("Grund: U-Wert", Zahl(d.UWertGrundflaeche), uWert);
+        yield return ("Grund: Randbedingung", string.IsNullOrEmpty(d.GrundflaecheRandbedingung) ? "—" : d.GrundflaecheRandbedingung, "");
+        yield return ("Sonstige: Fläche", Zahl(d.SonstigeFlaechen), flaeche);
+        yield return ("Sonstige: U-Wert", Zahl(d.UWertSonstiges), uWert);
+        yield return ("ψ Fenster–Wand", Zahl(d.WbvkFensterWand), psi);
+        yield return ("ψ Wand–Dach", Zahl(d.WbvkWandDach), psi);
+        yield return ("ψ Außenwand–Keller", Zahl(d.WbvkAussenwandKeller), psi);
+        yield return ("Länge Fenster–Wand", Zahl(d.AnschlussFensterWand), "m");
+        yield return ("Länge Wand–Dach", Zahl(d.AnschlussWandDach), "m");
+        yield return ("Länge Außenwand–Keller", Zahl(d.AnschlussAussenwandKeller), "m");
+        yield return ("Luftwechsel Infiltration", Zahl(d.LuftwechselInfiltration), "1/h");
+        yield return ("Luftwechsel Nutzer", Zahl(d.LuftwechselNutzer), "1/h");
+        yield return ("Luftwechselrate", Zahl(d.Luftwechselrate), "1/h");
+        yield return ("Solltemperatur Tag", Zahl(d.SollTag), "°C");
+    }
+}

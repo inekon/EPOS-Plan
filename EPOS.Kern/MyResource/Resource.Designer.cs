@@ -24717,6 +24717,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine vollständige Personenangabe in der Datei — Vorgabe {0} m², mit der EPOS-Plan ein Gebäude ohne diese Angabe speichert ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_FLAECHE_NUTZER_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_FLAECHE_NUTZER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — {0} W wie bei einem neuen Gebäude ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_GEWINNE_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_GEWINNE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag {0} W: Auslegungsleistung für Licht und Geräte aus {1} Räumen — kein zeitlich gemittelter Gewinn, nicht übernommen ähnelt.
         /// </summary>
         public static string GIMP_BELEG_GEWINNE_VORSCHLAG {
@@ -24776,6 +24794,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_LUFTWECHSEL {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} 1/h = Infiltration {1} + Nutzerlüftung {2} (Vorgaben des Stundenmodells); gerechnet wird mit Infiltration + Nutzerlüftung: {3} 1/h ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_LUFTWECHSELRATE_VORGABE {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_LUFTWECHSELRATE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Datei — Vorgabe {0} 1/h = Infiltration {1} + Nutzerlüftung {2} (Vorgaben des Stundenmodells); Infiltration und Nutzerlüftung sind leer, gerechnet wird mit dieser Luftwechselrate ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_LUFTWECHSELRATE_VORGABE_WIRKT {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_LUFTWECHSELRATE_VORGABE_WIRKT", resourceCulture);
             }
         }
         
@@ -24965,6 +25001,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_DATEI_TITEL {
             get {
                 return ResourceManager.GetString("GIMP_DLG_DATEI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudeeditor nähme das Gebäude so nicht an: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_EDITOR_BEFUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_EDITOR_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudeeditor nähme das Gebäude so nicht an: {0} Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_EDITOR_BEFUND_KLASSE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_EDITOR_BEFUND_KLASSE", resourceCulture);
             }
         }
         
@@ -25500,6 +25554,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_LUFTWECHSELRATE {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_LUFTWECHSELRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration ähnelt.
         /// </summary>
         public static string GIMP_FELD_LUFTWECHSEL_INFILTRATION {
@@ -25847,6 +25910,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_VORBELEGT {
             get {
                 return ResourceManager.GetString("GIMP_VORBELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben, nicht aus der Datei: {0}. ähnelt.
+        /// </summary>
+        public static string GIMP_VORBELEGT_VORGABEN {
+            get {
+                return ResourceManager.GetString("GIMP_VORBELEGT_VORGABEN", resourceCulture);
             }
         }
         

@@ -62,6 +62,10 @@
     <InternalsVisibleTo Include="EPOS.iOS" />
     <InternalsVisibleTo Include="EPOS.UI.Tests" />
     <InternalsVisibleTo Include="EPOS.Kern.Tests" />
+    <!-- Der Wirt der Rasterprobe (Proben/Rasterprobe/Wirt, Pruefstand ohne Datenbank,
+         in keiner Projektmappe und keiner CI) stellt den Gebaeudeimport mit der echten
+         GebaeudeImportHuelle in den Browser (Seite /gebaeudeimport). -->
+    <InternalsVisibleTo Include="Rasterprobe.Wirt" />
   </ItemGroup>
 
 </Project>

@@ -34785,6 +34785,30 @@ Möchten Sie das zulassen?</value>
   <data name="BV_GRUND_AUSNAHME" xml:space="preserve">
     <value>Wert nicht bestimmbar</value>
   </data>
+  <data name="GIMP_FELD_LUFTWECHSELRATE" xml:space="preserve">
+    <value>Luftwechselrate</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSELRATE_VORGABE" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe {0} 1/h = Infiltration {1} + Nutzerlüftung {2} (Vorgaben des Stundenmodells); gerechnet wird mit Infiltration + Nutzerlüftung: {3} 1/h</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSELRATE_VORGABE_WIRKT" xml:space="preserve">
+    <value>nicht in der Datei — Vorgabe {0} 1/h = Infiltration {1} + Nutzerlüftung {2} (Vorgaben des Stundenmodells); Infiltration und Nutzerlüftung sind leer, gerechnet wird mit dieser Luftwechselrate</value>
+  </data>
+  <data name="GIMP_BELEG_FLAECHE_NUTZER_VORGABE" xml:space="preserve">
+    <value>keine vollständige Personenangabe in der Datei — Vorgabe {0} m², mit der EPOS-Plan ein Gebäude ohne diese Angabe speichert</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_VORGABE" xml:space="preserve">
+    <value>nicht in der Datei — {0} W wie bei einem neuen Gebäude</value>
+  </data>
+  <data name="GIMP_VORBELEGT_VORGABEN" xml:space="preserve">
+    <value>Vorgaben, nicht aus der Datei: {0}.</value>
+  </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND" xml:space="preserve">
+    <value>Der Gebäudeeditor nähme das Gebäude so nicht an: {0}</value>
+  </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND_KLASSE" xml:space="preserve">
+    <value>Der Gebäudeeditor nähme das Gebäude so nicht an: {0} Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor.</value>
+  </data>
   <data name="BK_BER_VORLAGE_BTN_ANZEIGEN" xml:space="preserve">
     <value>anzeigen</value>
   </data>

@@ -27,6 +27,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
+    <!-- Die Huellen (plattformfrei, ohne Datenbank genutzt): Ein Wirt-Fall darf den echten
+         Parametersatz einer Huelle rendern - etwa den Gebaeudeimport mit Lesen, Zuordnen, Pruefen
+         und Vorbelegung (GebaeudeDialogImportTests). EPOS.UI.Daten gibt seine internen Huellen
+         diesem Projekt frei (InternalsVisibleTo). -->
+    <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
 </Project>

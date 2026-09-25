@@ -34778,6 +34778,30 @@ Do you want to allow this?</value>
   <data name="BV_GRUND_AUSNAHME" xml:space="preserve">
     <value>value could not be determined</value>
   </data>
+  <data name="GIMP_FELD_LUFTWECHSELRATE" xml:space="preserve">
+    <value>Air exchange rate</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSELRATE_VORGABE" xml:space="preserve">
+    <value>not in the file — default {0} 1/h = infiltration {1} + occupant ventilation {2} (defaults of the hourly model); the model calculates with infiltration + occupant ventilation: {3} 1/h</value>
+  </data>
+  <data name="GIMP_BELEG_LUFTWECHSELRATE_VORGABE_WIRKT" xml:space="preserve">
+    <value>not in the file — default {0} 1/h = infiltration {1} + occupant ventilation {2} (defaults of the hourly model); infiltration and occupant ventilation are empty, the model calculates with this air exchange rate</value>
+  </data>
+  <data name="GIMP_BELEG_FLAECHE_NUTZER_VORGABE" xml:space="preserve">
+    <value>no complete occupancy in the file — default {0} m² that EPOS-Plan stores for a building without this value</value>
+  </data>
+  <data name="GIMP_BELEG_GEWINNE_VORGABE" xml:space="preserve">
+    <value>not in the file — {0} W as for a new building</value>
+  </data>
+  <data name="GIMP_VORBELEGT_VORGABEN" xml:space="preserve">
+    <value>Defaults, not from the file: {0}.</value>
+  </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND" xml:space="preserve">
+    <value>The building editor would not accept the building like this: {0}</value>
+  </data>
+  <data name="GIMP_DLG_EDITOR_BEFUND_KLASSE" xml:space="preserve">
+    <value>The building editor would not accept the building like this: {0} A building age class provides default U-values, g-value and thermal bridges.</value>
+  </data>
   <data name="BK_BER_VORLAGE_BTN_ANZEIGEN" xml:space="preserve">
     <value>show</value>
   </data>
