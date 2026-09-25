@@ -400,22 +400,22 @@ fragt `sqlite_master`, ob die Tabelle überhaupt noch ohne `STRICT` steht), läu
 Linux und kennt `--trocken` für den Blick vor dem Griff. Von Hand angelegte Spalten wären eine
 zweite Schreibweise derselben Spalte — genau das, was die Typübersetzung verhindern soll.
 
-> **Eine Spalte liegt AUSSERHALB dieses Wegs, mit Absicht: `Tab_ErgebnisWirtschaftlichkeit`.**
-> Diese Tabelle führt `WirtschaftlichkeitCtrl.StelleTabellenSicher()` seit jeher selbst nach
-> („doppelte Schema-Wahrheit", Begründung in `SchemaKatalog.cs` bei `Schritt28_KwkgTatbestand`
-> und bei `Schritt71_Szenarioparameter`/`Schritt72_ValeriErgaenzung`) — das Werkzeug oben rührt
-> sie nicht an. Beim Nachziehen auf Schemastand 72 (Auftrag #154, 09.09.2026) fehlte dort genau
-> eine Spalte, `ErsatzBarwert` (DOUBLE, Etappe W5‑B‑10), die der SQL-Dialektprüfer gegen
-> `WirtschaftlichkeitCtrl.cs:6318` meldete, ohne dass ein Schemaschritt 70–72 sie einführt. Sie
-> stand als einzige der rund fünfzig `SpalteSicher`-Spalten dieser Methode noch nicht in der
-> Testdatenbank. Nachgezogen wurde sie EINZELN per `ALTER TABLE … ADD COLUMN … REAL` (die
-> wortgleiche Ausgabe der Typübersetzung für `DOUBLE`) statt über den vollen Aufruf von
-> `StelleTabellenSicher()` — der hängt am Ende `GesetzKatalog.StelleKatalogSicher()` an, das bei
+> **Drei Spalten liegen AUSSERHALB dieses Wegs, mit Absicht: die Ergebnisspalten
+> `StromsteuerBefreiungModus`, `ErsatzBarwert` und `Nachweis_Json` von
+> `Tab_ErgebnisWirtschaftlichkeit`.** Sie führt weder das Grundschema noch ein Schemaschritt;
+> `WirtschaftlichkeitCtrl.StelleTabellenSicher()` zieht sie additiv nach, sobald sie fehlen
+> (Begründung dort). Alles Übrige der Wirtschaftlichkeit hat genau EINEN DDL-Ort: Die fünf
+> Tabellen stehen im Grundschema, STRICT und mit Fremdschlüssel auf `Tab_Projekt` (drei davon
+> aus Schritt 96), jede Eingabespalte in ihrem Schemaschritt; der Controller legt weder Tabellen
+> an noch zieht er Eingabespalten nach (Wache `WirtschaftlichkeitCtrlTabellenTests`). Das
+> Werkzeug oben trägt `StromsteuerBefreiungModus` und `Nachweis_Json` nach; `ErsatzBarwert`
+> (DOUBLE, Etappe W5‑B‑10) wurde EINZELN per `ALTER TABLE … ADD COLUMN … REAL` (die wortgleiche
+> Ausgabe der Typübersetzung für `DOUBLE`) nachgezogen — nicht über den vollen Aufruf von
+> `StelleTabellenSicher()`, der am Ende `GesetzKatalog.StelleKatalogSicher()` anhängt, das bei
 > veralteter Generation neue Gesetzesparameter-Zeilen einfügen würde, ein Dateninhalt jenseits
-> einer reinen Schema-Nachführung. **Wer künftig einen neuen `SpalteSicher`-Aufruf in
-> `WirtschaftlichkeitCtrl.StelleTabellenSicher` einführt, prüft die Testdatenbank mit — der
-> SQL-Dialektprüfer allein zeigt es zwar an, das Schließen bleibt aber Handarbeit außerhalb des
-> Werkzeugs Testdatenbankschema.**
+> einer reinen Schema-Nachführung. **Wer eine weitere Ergebnisspalte ohne Schemaschritt
+> einführt, trägt sie im Werkzeug Testdatenbankschema nach und prüft die Testdatenbank mit — der
+> SQL-Dialektprüfer zeigt die Lücke an, das Schließen bleibt Handarbeit.**
 
 > **Danach ist der Referenzlauf Pflicht, nicht Kür.** Eine Schemamigration darf keinen
 > Rechenwert verschieben; belegt wird das, indem

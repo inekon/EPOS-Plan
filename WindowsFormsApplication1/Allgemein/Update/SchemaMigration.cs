@@ -537,10 +537,8 @@ namespace WindowsFormsApplication1
         /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
         /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab),
         /// und die WHERE-Klauseln von 20b (<c>IS NULL OR = ''</c>) laufen nach dem ersten
-        /// Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich legt
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die Spalten unmittelbar vor
-        /// dem Zugriff selbst an, falls die Migration nie angestoßen wurde — beide Wege
-        /// dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// Lauf leer. Ein gepflegter Wert wird nie angefasst. Der Schritt ist der einzige
+        /// DDL-Ort dieser Spalten.
         /// </summary>
         public const int SCHRITT_20_STEUERANGABEN = 20;
 
@@ -580,10 +578,8 @@ namespace WindowsFormsApplication1
         /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
         /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab),
         /// und die WHERE-Klauseln von 21b (<c>IS NULL OR = ''</c>) laufen nach dem
-        /// ersten Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich legt
-        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die Spalten unmittelbar
-        /// vor dem Zugriff selbst an, falls die Migration nie angestoßen wurde — beide
-        /// Wege dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// ersten Lauf leer. Ein gepflegter Wert wird nie angefasst. Der Schritt ist der
+        /// einzige DDL-Ort dieser Spalten.
         /// </summary>
         public const int SCHRITT_21_TARIFMODELL = 21;
 
@@ -617,10 +613,7 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
         /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema vorab).
-        /// Zusätzlich legt <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die
-        /// Spalten unmittelbar vor dem Zugriff selbst an, falls die Migration nie
-        /// angestoßen wurde — beide Wege dürfen beliebig oft und in beliebiger
-        /// Reihenfolge laufen.
+        /// Der Schritt ist der einzige DDL-Ort dieser Spalten.
         /// </summary>
         public const int SCHRITT_22_KWKG_JE_ANLAGE = 22;
 
@@ -657,10 +650,8 @@ namespace WindowsFormsApplication1
         /// <b>Idempotent</b> (unabhängig vom Marker): Das DDL geht über vorhandene
         /// Spalten hinweg (<see cref="SpaltenAnlegen"/> prüft das Tabellenschema
         /// vorab), und die WHERE-Klauseln von 23b (<c>IS NULL OR = ''</c>) laufen nach
-        /// dem ersten Lauf leer. Ein gepflegter Wert wird nie angefasst. Zusätzlich
-        /// legt <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> die Spalten
-        /// unmittelbar vor dem Zugriff selbst an, falls die Migration nie angestoßen
-        /// wurde — beide Wege dürfen beliebig oft und in beliebiger Reihenfolge laufen.
+        /// dem ersten Lauf leer. Ein gepflegter Wert wird nie angefasst. Der Schritt ist
+        /// der einzige DDL-Ort dieser Spalten.
         /// </summary>
         public const int SCHRITT_23_BILANZKONVENTION = 23;
 
